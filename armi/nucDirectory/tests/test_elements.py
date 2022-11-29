@@ -16,7 +16,7 @@
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import unittest
 
-from armi.nucDirectory import nuclideBases  # required to init natural isotopics
+# from armi.nucDirectory import nuclideBases  # required to init natural isotopics
 from armi.nucDirectory import elements
 from armi.tests import mockRunLogs
 
@@ -30,7 +30,7 @@ class TestElement(unittest.TestCase):
             elements.factory()
 
     def test_elements_elementBulkProperties(self):
-        numElements = 118
+        numElements = 120
         self.assertEqual(
             sum(range(1, numElements + 1)), sum([ee.z for ee in elements.byZ.values()])
         )
@@ -53,7 +53,7 @@ class TestElement(unittest.TestCase):
 
     def test_element_addExistingElementFails(self):
         for ee in elements.byZ.values():
-            with self.assertRaises(Exception):
+            with self.assertRaises(ValueError):
                 elements.Element(ee.z, ee.symbol, ee.name)
 
     def test_element_addedElementAppearsInElementList(self):
@@ -66,7 +66,7 @@ class TestElement(unittest.TestCase):
         self.assertIn("BZ", elements.bySymbol)
         # re-initialize the elements
         with mockRunLogs.BufferLog():
-            elements.destroy()
+            elements.destroyGlobalElements()
             elements.factory()
 
     def test_element_isNaturallyOccurring(self):
@@ -87,13 +87,11 @@ class TestElement(unittest.TestCase):
         for ee in elements.byZ.values():
             if not ee.isNaturallyOccurring():
                 continue
-            totAbund = sum(iso.abundance for iso in ee.nuclideBases)
-            maxDeviationInRIPL = 0.000030021  # Ca sums to 1.0003002
+            totAbund = sum([iso.abundance for iso in ee.nuclides])
             self.assertAlmostEqual(
                 totAbund,
                 1.0,
-                delta=maxDeviationInRIPL,
-                msg="{} had a total abundance of {}".format(ee, totAbund),
+                places=4,
             )
 
 

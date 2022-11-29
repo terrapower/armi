@@ -75,9 +75,7 @@ def getNuclidesFromInputName(name):
         if element.isNaturallyOccurring():
             # For things like Aluminum, just give natural isotopics.
             # This is likely what the user wants.
-            return [
-                nuc for nuc in element.nuclideBases if nuc.a > 0 and nuc.abundance > 0
-            ]
+            return [nuc for nuc in element.nuclides if nuc.a > 0 and nuc.abundance > 0]
         else:
             # For things like Pu: this is unusual, users should typically provide specific isotopes as input
             # Otherwise they get like 25 nuclides, most of which are never useful to track.
@@ -322,7 +320,7 @@ def getNuclides(nucName=None, elementSymbol=None):
         # just spit back the nuclide if it's in here. Useful when iterating over the result.
         nucList = [getNuclide(nucName)]
     elif elementSymbol:
-        nucList = elements.bySymbol[elementSymbol].nuclideBases
+        nucList = elements.bySymbol[elementSymbol].nuclides
     else:
         # all nuclideBases, including shortcut nuclideBases ('CARB')
         nucList = [nuc for nuc in nuclideBases.instances if nuc.mc2id is not None]

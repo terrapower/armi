@@ -17,6 +17,8 @@ Deals with elements of the periodic table.
 """
 
 import os
+from typing import List
+from enum import Enum
 
 from armi import context
 from armi.utils.units import HEAVY_METAL_CUTOFF_Z
@@ -25,124 +27,155 @@ byZ = {}
 byName = {}
 bySymbol = {}
 
-LANTHANIDE_ELEMENTS = [
-    "LA",
-    "CE",
-    "PR",
-    "ND",
-    "PM",
-    "PX",
-    "SM",
-    "EU",
-    "GD",
-    "TB",
-    "DY",
-    "HO",
-    "ER",
-    "TM",
-    "YB",
-    "LU",
-]
-GASEOUS_ELEMENTS = ["XE", "KR"]
+
+class ChemicalPhase(Enum):
+    GAS = 1
+    LIQUID = 2
+    SOLID = 3
+    UNKNOWN = 4
+
+
+class ChemicalGroup(Enum):
+    ALKALI_METAL = 1
+    ALKALINE_EARTH_METAL = 2
+    NONMETAL = 3
+    TRANSITION_METAL = 4
+    POST_TRANSITION_METAL = 5
+    METALLOID = 6
+    HALOGEN = 7
+    NOBEL_GAS = 8
+    LANTHANIDE = 9
+    ACTINIDE = 10
+    UNKNOWN = 11
 
 
 class Element:
-    r"""
-    Represents an element, defined by its atomic number.
+    """Represents an element defined on the Periodic Table."""
 
-    Attributes
-    ----------
-    z : int
-        atomic number, number of protons
-
-    symbol : str
-        element symbol
-
-    name : str
-        element name
-
-    nuclideBases : list of nuclideBases
-        nuclideBases for this element
-    """
-
-    def __init__(self, z, symbol, name):
-        r"""
+    def __init__(self, z, symbol, name, phase="UNKNOWN", group="UNKNOWN"):
+        """
         Creates an instance of an Element.
 
         Parameters
         ----------
         z : int
             atomic number, number of protons
-
         symbol : str
             element symbol
-
         name: str
             element name
-
+        phase : str
+            Chemical phase of the element at standard temperature and pressure (e.g., gas, liquid, solid).
+        group : str
+            Chemical group of the element.
         """
         self.z = z
         self.symbol = symbol
         self.name = name
+        self.phase = ChemicalPhase[phase]
+        self.group = ChemicalGroup[group]
         self.standardWeight = None
-        self.nuclideBases = []
-
-        other = byZ.get(z, None)
-        if other is not None and other == self:
-            raise Exception(
-                "Element with atomic weight {} already exists" "".format(self)
-            )
-        byZ[z] = self
-        byName[name] = self
-        bySymbol[symbol] = self
+        self.nuclides = []
+        addGlobalElement(self)
 
     def __repr__(self):
-        return "<Element {} {}>".format(self.symbol, self.z)
+        return f"<Element {self.symbol:>3s} (Z={self.z}), {self.name}, {self.group}, {self.phase}>"
 
     def __eq__(self, other):
         return (
             self.z == other.z
             and self.symbol == other.symbol
             and self.name == other.name
+            and self.phase == other.phase
+            and self.group == other.group
+            and len(self.nuclides) == len(other.nuclides)
         )
 
     def __hash__(self):
         return hash(self.name)
 
     def __iter__(self):
-        for nuc in self.nuclideBases:
+        for nuc in sorted(self.nuclides):
             yield nuc
 
     def append(self, nuclide):
-        self.nuclideBases.append(nuclide)
+        """Assigns and sorts the nuclide to the element and ensures no duplicates."""
+        from armi.nucDirectory.nuclideBases import NuclideBase
+
+        if nuclide in self.nuclides or not isinstance(nuclide, NuclideBase):
+            return
+        self.nuclides.append(nuclide)
+        self.nuclides = sorted(self.nuclides)
 
     def isNaturallyOccurring(self):
-        r"""
-        Calculates the total natural abundance and if this value is zero returns False.
-        If any isotopes are naturally occurring the total abundance will be >0 so it will return True
-        """
-        totalAbundance = 0.0
-        for nuc in self.nuclideBases:
-            totalAbundance += nuc.abundance
-        return totalAbundance > 0.0
+        """Return True if the element is occurs in nature."""
+        return any([nuc.abundance > 0.0 for nuc in self.nuclides])
 
     def getNaturalIsotopics(self):
+        """Return a list of nuclides that are naturally occurring for this element."""
+        return [nuc for nuc in self.nuclides if nuc.abundance > 0.0 and nuc.a > 0]
+
+    def isHeavyMetal(self):
         """
-        Return the nuclide bases of any naturally-occurring isotopes of this element.
+        Return True if the atomic number of greater than 89 (i.e., Z > 89).
 
         Notes
         -----
-        Some elements have no naturally-occurring isotopes (Tc, Pu, etc.). To
-        allow this method to be used in loops it will simply return an
-        empty list in these situations.
+        Heavy metal in this instance is not related to an exact weight or density
+        cut-off, but rather is designated for nuclear fuel burn-up evaluations, where
+        the initial heavy metal mass within a component should be tracked. It is typical
+        to include any element/nuclide above Actinium.
         """
-        return [nuc for nuc in self.nuclideBases if nuc.abundance > 0.0 and nuc.a > 0]
-
-    def isHeavyMetal(self):
         return self.z > HEAVY_METAL_CUTOFF_Z
 
 
-def getName(z=None, symbol=None):
+def getElementsByChemicalPhase(phase) -> List[Element]:
+    """
+    Returns all elements that are of the given chemical phase.
+
+    Parameters
+    ----------
+    phase: ChemicalPhase
+        This should be one of the valid options from the `ChemicalPhase` class.
+
+    Returns
+    -------
+    elems : List[Element]
+        A list of elements that are associated with the given chemical phase.
+    """
+    elems = []
+    if not isinstance(phase, ChemicalPhase):
+        raise ValueError(f"{phase} is not an instance of {ChemicalPhase}")
+    for element in byName.values():
+        if element.phase == phase:
+            elems.append(element)
+    return elems
+
+
+def getElementsByChemicalGroup(group) -> List[Element]:
+    """
+    Returns all elements that are of the given chemical group.
+
+    Parameters
+    ----------
+    group: ChemicalGroup
+        This should be one of the valid options from the `ChemicalGroup` class.
+
+    Returns
+    -------
+    elems : List[Element]
+        A list of elements that are associated with the given chemical group.
+    """
+    elems = []
+    if not isinstance(group, ChemicalGroup):
+        raise ValueError(f"{group} is not an instance of {ChemicalGroup}")
+    for element in byName:
+        if element.group == group.values():
+            elems.append(element)
+    return elems
+
+
+def getName(z: int = None, symbol: str = None) -> str:
     r"""
     Returns element name
 
@@ -159,7 +192,6 @@ def getName(z=None, symbol=None):
     'Neon'
     >>> elements.getName(symbol='Ne')
     'Neon'
-
     """
     element = None
     if z:
@@ -169,7 +201,7 @@ def getName(z=None, symbol=None):
     return element.name
 
 
-def getSymbol(z=None, name=None):
+def getSymbol(z: int = None, name: str = None) -> str:
     r"""
     Returns element abbreviation given atomic number Z
 
@@ -196,7 +228,7 @@ def getSymbol(z=None, name=None):
     return element.symbol
 
 
-def getElementZ(symbol=None, name=None):
+def getElementZ(symbol: str = None, name: str = None) -> int:
     """
     Get element atomic number given a symbol or name.
 
@@ -235,15 +267,25 @@ def clearNuclideBases():
     Necessary when initializing nuclide base information multiple times (often in testing).
     """
     for _, element in byName.items():
-        element.nuclideBases = []
+        element.nuclides = []
 
 
 # method to renormalize the nuclide / element relationship
 nuclideRenormalization = None
 
 
-def destroy():
-    """Delete all elements."""
+def addGlobalElement(element: Element):
+    """Add an element to the global dictionaries."""
+    if element.z in byZ or element.name in byName or element.symbol in bySymbol:
+        raise ValueError(f"{element} has already been added and cannot be duplicated.")
+
+    byZ[element.z] = element
+    byName[element.name] = element
+    bySymbol[element.symbol] = element
+
+
+def destroyGlobalElements():
+    """Delete all global elements."""
     byZ.clear()
     byName.clear()
     bySymbol.clear()
@@ -266,6 +308,7 @@ def deriveNaturalWeights():
         for nb in element.getNaturalIsotopics():
             numer += nb.weight * nb.abundance
             denom += nb.abundance  # should add roughly to 1.0
+
         if numer:
             element.standardWeight = numer / denom
 
@@ -281,16 +324,21 @@ def factory():
         may lose their reference to the underlying :class:`Element`.
     """
     if len(byZ) == 0:
-        destroy()
-        # read all.dat -> z, symbol, name
+        destroyGlobalElements()
         with open(os.path.join(context.RES, "elements.dat"), "r") as f:
             for line in f:
-                # read z, symbol, and name
+                # Skip header lines
+                if line.startswith("#") or line.startswith("Z"):
+                    continue
+                # read z, symbol, name, phase, and chemical group
                 lineData = line.split()
                 z = int(lineData[0])
                 sym = lineData[1].upper()
-                name = lineData[2].lower()
-                Element(z, sym, name)
+                name = lineData[2]
+                phase = lineData[3]
+                group = lineData[4]
+
+                Element(z, sym, name, phase, group)
         if nuclideRenormalization is not None:
             nuclideRenormalization()  # pylint: disable=not-callable
             # this is used as a method to ensure the nuclides are

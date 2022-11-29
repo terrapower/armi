@@ -128,7 +128,7 @@ class TestNuclide(unittest.TestCase):
         ):
             numNaturals = len(list(nuc.getNaturalIsotopics()))
             self.assertGreaterEqual(
-                len(nuc.element.nuclideBases) - 1, numNaturals
+                len(nuc.element.nuclides) - 1, numNaturals
             )  # , nuc)
 
     def test_nucBases_singleFailsWithMultipleMatches(self):
@@ -219,6 +219,7 @@ class TestNuclide(unittest.TestCase):
             "CF249": 3.4000,
             "CF250": 3.5200,
             "CF252": 3.7676,
+            "U232": 1.710000,
             "U234": 1.8000,
             "U235": 1.8700,
             "U236": 1.900,
@@ -233,12 +234,23 @@ class TestNuclide(unittest.TestCase):
             "CM244": 2.6875,
             "CM245": 0.0000,
             "CM246": 2.9480,
+            "TH230": 1.390000,
             "TH232": 1.5,
             "NP237": 2.05,
+            "PA231": 1.710000,
+            "PU236": 2.120000,
+            "PU238": 2.210000,
+            "PU239": 2.320000,
+            "PU240": 2.151000,
             "PU241": 2.25,
+            "PU242": 2.141000,
+            "PU244": 2.290000,
             "U232": 1.71,
             "U233": 1.76,
             "AM241": 2.5,
+            "AM242M": 2.56,
+            "AM243": 2.61,
+            "ES253": 4.700000,
         }
         for key, val in actual.items():
             self.assertEqual(val, expected[key])
@@ -256,9 +268,9 @@ class TestNuclide(unittest.TestCase):
     def test_nucBases_Am242m(self):
         am242m = nuclideBases.byName["AM242"]
         self.assertEqual(am242m, nuclideBases.byName["AM242M"])
-        self.assertEqual("nAm242", am242m.getDatabaseName())
+        self.assertEqual("nAm242m", am242m.getDatabaseName())
         self.assertEqual(am242m, nuclideBases.byDBName["nAm242"])
-        self.assertAlmostEqual(am242m.weight, 242.05954949)
+        self.assertAlmostEqual(am242m.weight, 242.059601666)
 
         am242g = nuclideBases.byName["AM242G"]
         self.assertEqual(am242g, nuclideBases.byName["AM242G"])

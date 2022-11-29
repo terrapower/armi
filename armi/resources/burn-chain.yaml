@@ -1,5 +1,4 @@
 AM241:
-- nuSF: 2.5
 - transmutation:
     branch: 1.0
     products:
@@ -209,7 +208,6 @@ BE9:
     - DUMP1
     type: nt
 BK249:
-- nuSF: 3.4000
 - transmutation:
     branch: 1.0
     products:
@@ -238,7 +236,6 @@ BK249:
     - LFP41
     type: sf
 CF249:
-- nuSF: 3.4000
 - transmutation:
     branch: 1.0
     products:
@@ -267,7 +264,6 @@ CF249:
     - LFP41
     type: sf
 CF250:
-- nuSF: 3.5200
 - transmutation:
     branch: 1.0
     products:
@@ -318,7 +314,6 @@ CF251:
     - CM247
     type: ad
 CF252:
-- nuSF: 3.7676
 - transmutation:
     branch: 1.0
     products:
@@ -347,7 +342,6 @@ CF252:
     - LFP41
     type: sf
 CM242:
-- nuSF: 2.5280
 - transmutation:
     branch: 0.99
     products:
@@ -381,8 +375,6 @@ CM242:
     - LFP41
     type: sf
 CM243:
-# Neutron yield per spontaneous fission not available in ENDF/B-VII.1 library
-- nuSF: 0.0000
 - transmutation:
     branch: 1.0
     products:
@@ -417,7 +409,6 @@ CM243:
     - LFP41
     type: sf
 CM244:
-- nuSF: 2.6875
 - transmutation:
     branch: 1.0
     products:
@@ -446,8 +437,6 @@ CM244:
     - LFP41
     type: sf
 CM245:
-# Neutron yield per spontaneous fission not available in ENDF/B-VII.1 library
-- nuSF: 0.0000
 - transmutation:
     branch: 1.0
     products:
@@ -476,7 +465,6 @@ CM245:
     - LFP41
     type: sf
 CM246:
-- nuSF: 2.9480
 - transmutation:
     branch: 1.0
     products:
@@ -528,7 +516,6 @@ CM247:
     - AM243
     type: ad
 CM248:
-- nuSF: 3.1610
 - transmutation:
     branch: 1.0
     products:
@@ -629,7 +616,6 @@ LI7:
     - LI6
     type: n2n
 NP237:
-- nuSF: 2.05
 - transmutation:
     branch: 1.0
     products:
@@ -733,7 +719,6 @@ PA233:
     - U233
     type: bmd
 PU236:
-- nuSF: 2.1200
 - transmutation:
     branch: 1.0
     products:
@@ -763,7 +748,6 @@ PU236:
     - LFP38
     type: sf
 PU238:
-- nuSF: 2.2100
 - transmutation:
     branch: 1.0
     products:
@@ -792,7 +776,6 @@ PU238:
     - LFP38
     type: sf
 PU239:
-- nuSF: 2.3200
 - transmutation:
     branch: 1.0
     products:
@@ -828,7 +811,6 @@ PU239:
     - LFP39
     type: sf
 PU240:
-- nuSF: 2.1510
 - transmutation:
     branch: 1.0
     products:
@@ -864,7 +846,6 @@ PU240:
     - LFP40
     type: sf
 PU241:
-- nuSF: 2.25
 - transmutation:
     branch: 1.0
     products:
@@ -900,7 +881,6 @@ PU241:
     - LFP41
     type: sf
 PU242:
-- nuSF: 2.1410
 - transmutation:
     branch: 1.0
     products:
@@ -936,7 +916,6 @@ PU242:
     - LFP41
     type: sf
 TH232:
-- nuSF: 1.5
 - transmutation:
     branch: 1.0
     products:
@@ -965,7 +944,6 @@ TH232:
     - LFP35
     type: sf
 U232:
-- nuSF: 1.71
 - transmutation:
     branch: 1.0
     products:
@@ -994,7 +972,6 @@ U232:
     - LFP35
     type: sf
 U233:
-- nuSF: 1.76
 - transmutation:
     branch: 1.0
     products:
@@ -1030,7 +1007,6 @@ U233:
     - LFP35
     type: sf
 U234:
-- nuSF: 1.8
 - transmutation:
     branch: 1.0
     products:
@@ -1067,7 +1043,6 @@ U234:
     - LFP35
     type: sf
 U235:
-- nuSF: 1.87
 - transmutation:
     branch: 1.0
     products:
@@ -1104,7 +1079,6 @@ U235:
     - LFP35
     type: sf
 U236:
-- nuSF: 1.90
 - transmutation:
     branch: 1.0
     products:
@@ -1139,7 +1113,6 @@ U236:
     - LFP35
     type: sf
 U238:
-- nuSF: 2.00
 - transmutation:
     branch: 1.0
     products:

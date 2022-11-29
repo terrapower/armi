@@ -120,9 +120,8 @@ class ThermalScattering:
         subjectNbs = []
         for nbi in self.nbs:
             if isinstance(nbi, nb.NaturalNuclideBase):
-                subjectNbs.extend(nbi.element.nuclideBases)
-            else:
-                subjectNbs.append(nbi)
+                subjectNbs.extend(nbi.element.nuclides)
+            subjectNbs.append(nbi)
         return subjectNbs
 
     def _genENDFB8Label(self):

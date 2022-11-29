@@ -247,7 +247,7 @@ class Material(composites.Leaf):
         molesPerCC = massDensities / atomicMasses  # item-wise division
 
         enrichedIndex = nucsNames.index(nuclideName)
-        isoAndEles = nuclideBases.byName[nuclideName].element.nuclideBases
+        isoAndEles = nuclideBases.byName[nuclideName].element.nuclides
         allIndicesUpdated = [
             nucsNames.index(nuc.name)
             for nuc in isoAndEles

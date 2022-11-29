@@ -28,7 +28,7 @@ from armi.nucDirectory import nuclideBases
 from armi import runLog
 from armi.utils import densityTools
 
-from armi.nucDirectory.elements import LANTHANIDE_ELEMENTS, GASEOUS_ELEMENTS
+from armi.nucDirectory import elements
 
 from .fissionProductModelSettings import CONF_LFP_COMPOSITION_FILE_PATH
 
@@ -250,7 +250,9 @@ class LumpedFissionProduct:
 
         # sum up all of the nuclides that are XE or KR
         for nuc, val in self.items():
-            for element in LANTHANIDE_ELEMENTS:
+            for element in elements.getElementsByChemicalGroup(
+                elements.ChemicalGroup.LANTHANIDE
+            ):
                 if element in nuc.name:
                     totalLanthanides += val
 
@@ -723,7 +725,7 @@ def collapseFissionProducts(
 
 def isGas(nuc):
     """True if nuclide is considered a gas."""
-    for elementName in GASEOUS_ELEMENTS:
+    for elementName in elements.getElementsByChemicalPhase(elements.ChemicalPhase.GAS):
         if elementName in nuc.name:
             return True
     return False

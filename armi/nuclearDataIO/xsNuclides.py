@@ -46,8 +46,6 @@ class XSNuclide(nuclideBases.NuclideWrapper):
     XSNuclide objects can contain GAMISO, ISOTXS, and PMATRX data all on a single instance.
     """
 
-    _ensuredBurnInfo = False
-
     def __init__(self, xsCollection, xsCollectionKey):
         nuclideBases.NuclideWrapper.__init__(self, xsCollection, xsCollectionKey)
         self.xsId = xsLibraries.getSuffixFromNuclideLabel(xsCollectionKey)
@@ -66,7 +64,6 @@ class XSNuclide(nuclideBases.NuclideWrapper):
         self.isotropicProduction = None
         self.linearAnisotropicProduction = None
         self.nOrderProductionMatrix = {}
-        XSNuclide._ensuredBurnInfo = False
 
     def updateBaseNuclide(self):
         """
