@@ -224,84 +224,6 @@ def _getNeutronicsBlockParams():
         )
 
         pb.defParam(
-            "axialMgFluxReconCoeff",
-            units="",
-            description="""
-                The coefficients in the axial multigroup flux profile polynomial for this block.  The flux profile is
-                usually A*z^4 + B*z^3 + C*z^2 + D*z + E, and so this variable will be the 5 x ng list, so
-                axialMgFluxReconCoeff[g][i] is the ith coefficient for flux group g.  Also, this flux profile is
-                normalized (for each group) so that its average is always 1.0 in each block.  One must multiply the
-                coefficients of each group by the block-average group flux to obtain the axial group flux profile.
-            """,
-            location=ParamLocation.AVERAGE,
-            saveToDB=True,
-            default=None,
-        )
-
-        pb.defParam(
-            "axialMgFluxProfileNeutron",
-            units="",
-            description="",
-            location=ParamLocation.AVERAGE,
-            saveToDB=False,
-            default=None,
-        )
-
-        pb.defParam(
-            "axialMgFluxProfileGamma",
-            units="",
-            description="",
-            location=ParamLocation.AVERAGE,
-            saveToDB=False,
-            default=None,
-        )
-
-        pb.defParam(
-            "radialMgFluxProfile",
-            units="",
-            description="",
-            location=ParamLocation.AVERAGE,
-            saveToDB=True,
-            default=None,
-        )
-
-        pb.defParam(
-            "radialMgFluxProfileAdj",
-            units="",
-            description="",
-            location=ParamLocation.AVERAGE,
-            saveToDB=True,
-            default=None,
-        )
-
-        pb.defParam(
-            "radialMgFluxProfileNeutron",
-            units="",
-            description="",
-            location=ParamLocation.AVERAGE,
-            saveToDB=True,
-            default=None,
-        )
-
-        pb.defParam(
-            "radialMgFluxProfileNeutronAdj",
-            units="",
-            description="",
-            location=ParamLocation.AVERAGE,
-            saveToDB=True,
-            default=None,
-        )
-
-        pb.defParam(
-            "radialMgFluxProfileGamma",
-            units="",
-            description="",
-            location=ParamLocation.AVERAGE,
-            saveToDB=True,
-            default=None,
-        )
-
-        pb.defParam(
             "betad",
             units="",
             description="Delayed neutron beta",
@@ -700,46 +622,6 @@ def _getNeutronicsBlockParams():
             description="Fraction of flux above 100keV",
             location=ParamLocation.AVERAGE,
             categories=["detailedAxialExpansion"],
-        )
-
-        pb.defParam(
-            "cornerFastFlux",
-            units="n/cm^2/s",
-            description="Neutron flux above 100keV at hexagon block corners",
-            location=ParamLocation.CORNERS,
-            categories=["detailedAxialExpansion", "depletion"],
-            saveToDB=True,
-            default=None,
-        )
-
-        pb.defParam(
-            "pointsCornerFastFluxFr",
-            units=None,
-            description="Fraction of flux above 100keV at corners of the block",
-            location=ParamLocation.CORNERS,
-            categories=["detailedAxialExpansion", "depletion"],
-            saveToDB=True,
-            default=None,
-        )
-
-        pb.defParam(
-            "pointsCornerDpa",
-            units="dpa",
-            description="displacements per atom at corners of the block",
-            location=ParamLocation.CORNERS,
-            categories=["cumulative", "detailedAxialExpansion", "depletion"],
-            saveToDB=True,
-            default=None,
-        )
-
-        pb.defParam(
-            "pointsCornerDpaRate",
-            units="dpa/s",
-            description="Current time derivative of the displacement per atoms at corners of the block",
-            location=ParamLocation.CORNERS,
-            categories=["detailedAxialExpansion", "depletion"],
-            saveToDB=True,
-            default=None,
         )
 
         pb.defParam(
