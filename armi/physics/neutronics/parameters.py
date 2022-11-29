@@ -408,6 +408,12 @@ def _getNeutronicsBlockParams():
     ) as pb:
         # Neutronics reaction rate params that are not re-derived in mesh conversion
         pb.defParam(
+            "rateBalance",
+            units="1/cm^3/s",
+            description="Numerical balance between particle production and destruction (should be small)",
+        )
+
+        pb.defParam(
             "rateExtSrc",
             units="1/cm^3/s",
             description="Rate of production of neutrons from an external source.",
