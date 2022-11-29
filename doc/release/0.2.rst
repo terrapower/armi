@@ -14,6 +14,7 @@ What's new in ARMI
 #. Use r.core.p.axialMesh instead of r.core.refAssem.getAxialMesh() for the uniform mesh converter. (`PR#959 <https://github.com/terrapower/armi/pull/959>`_)
 #. Split algorithms specific to hex assemblies out of ``FuelHandler``. (`PR#962 <https://github.com/terrapower/armi/pull/962>`_)
 #. Add ability to load from a db using negative node index
+#. Add group structures for 21- and 94-groups used in photon transport
 
 Bug fixes
 ---------
