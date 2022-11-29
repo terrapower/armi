@@ -690,6 +690,70 @@ class Fluid(Material):
         return self.density(Tk=Tk, Tc=Tc)
 
 
+class SimpleSolid(Material):
+    """
+    Base material for a simple material that primarily defines density
+
+    Notes
+    -----
+    This function assumed the density is defined on the _density method and
+    this base class keeps density, density3 and linearExpansion all in sync
+
+    class SimpleMaterial(SimpleSolid):
+
+        def _density(self, Tk=None, Tc=None):
+            "
+            density that preserves mass when thermally expanded in 3D.
+            "
+            ...
+
+    See Also
+    --------
+    armi.materials.density:
+    armi.materials.density3:
+    """
+
+    refTempK = 300
+
+    def __init__(self):
+        Material.__init__(self)
+        self.p.refDens = self.density3(Tk=self.refTempK)
+
+    def linearExpansionPercent(self, Tk: float = None, Tc: float = None) -> float:
+        """
+        Average thermal expansion dL/L. Used for computing hot dimensions and density.
+
+        Defaults to 0.0 for materials that don't expand.
+
+        Parameters
+        ----------
+        Tk : float
+            temperature in (K)
+        Tc : float
+            Temperature in (C)
+
+        Returns
+        -------
+        dLL(T) in % m/m/K
+
+        Notes
+        -----
+        This only method only works for Simple Solid Materials which assumes
+        the density3 function returns 'free expansion' density as a function
+        temperature
+        """
+        density1 = self.density3(Tk=self.refTempK)
+        density2 = self.density3(Tk=Tk, Tc=Tc)
+
+        if density1 == density2:
+            return 0
+        else:
+            return 100 * ((density1 / density2) ** (1.0 / 3.0) - 1)
+
+    def density3(self, Tk: float = None, Tc: float = None) -> float:
+        return 0.0
+
+
 class FuelMaterial(Material):
     """
     Material that is considered a nuclear fuel.

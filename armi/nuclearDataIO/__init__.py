@@ -97,8 +97,6 @@ def _getNeutronKeywords(cycle, suffix, xsID):
             keywords = [xsID]
             if suffix not in [None, ""]:
                 keywords.append("-" + suffix)
-        else:
-            raise ValueError("The cycle or XS ID must be specified.")
     return keywords
 
 

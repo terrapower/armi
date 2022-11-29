@@ -44,7 +44,7 @@ from armi.physics.neutronics import crossSectionGroupManager
 from armi.reactor.flags import Flags
 
 
-def plotReactorPerformance(reactor, dbi, buGroups, extension=None):
+def plotReactorPerformance(reactor, dbi, buGroups, extension=None, history=None):
     """
     Generates a set of plots useful in reactor analysis given a populated reactor.
 
@@ -62,8 +62,9 @@ def plotReactorPerformance(reactor, dbi, buGroups, extension=None):
     extension : str, optional
         The file extention for saving plots
 
+    history: armi.bookkeeping.historyTracker.HistoryTrackerInterface object
+        The history tracker interface
     """
-    dbi = reactor.o.getInterface("database")
     try:
         data = dbi.getHistory(
             reactor, params=["cycle", "time", "eFeedMT", "eSWU", "eFuelCycleCost"]
@@ -95,7 +96,7 @@ def plotReactorPerformance(reactor, dbi, buGroups, extension=None):
     runLog.info("scalars for plotting {}".format(scalars))
 
     valueVsTime(
-        reactor,
+        reactor.name,
         scalars["time"],
         scalars["maxPD"],
         "maxPD",
@@ -105,32 +106,29 @@ def plotReactorPerformance(reactor, dbi, buGroups, extension=None):
         extension=extension,
     )
     keffVsTime(
-        reactor,
+        reactor.name,
         scalars["time"],
         scalars["keff"],
         scalars["keffUnc"],
         ymin=1.0,
         extension=extension,
     )
-    buVsTime(reactor, scalars, extension=extension)
-    distortionVsTime(reactor, scalars, extension=extension)
-    xsHistoryVsTime(reactor, buGroups, extension=extension)
-    movesVsCycle(reactor, scalars, extension=extension)
+    buVsTime(reactor.name, scalars, extension=extension)
+    xsHistoryVsTime(reactor.name, history, buGroups, extension=extension)
+    movesVsCycle(reactor.name, scalars, extension=extension)
 
 
 # --------------------------
 
 
-def valueVsTime(reactor, x, y, key, yaxis, title, ymin=None, extension=None):
+def valueVsTime(name, x, y, key, yaxis, title, ymin=None, extension=None):
     r"""
     Plots a value vs. time with a standard graph format
 
     Parameters
     ----------
-    reactor : armi.reactor.reactors object
-
-    reportGroup : armi.bookkeeping.report.data.Group object
-
+    name : str
+        Reactor.name
     x : iterable
         The x-axis values (the abscissa)
     y : iterable
@@ -146,7 +144,6 @@ def valueVsTime(reactor, x, y, key, yaxis, title, ymin=None, extension=None):
         it will be ignored.
     extension : str, optional
         The file extention for saving the figure
-
     """
     extension = extension or settings.Settings()["outputFileExtension"]
 
@@ -155,26 +152,28 @@ def valueVsTime(reactor, x, y, key, yaxis, title, ymin=None, extension=None):
     plt.xlabel("Time (yr)")
     plt.ylabel(yaxis)
     plt.grid(color="0.70")
-    plt.title(title + " for {0}".format(reactor.name))
+    plt.title(title + " for {0}".format(name))
 
     if ymin is not None and all([yi > ymin for yi in y]):
         # set ymin all values are greater than it and it exists.
         ax = plt.gca()
         ax.set_ylim(bottom=ymin)
 
-    figName = reactor.name + "." + key + "." + extension
+    figName = name + "." + key + "." + extension
     plt.savefig(figName)
     plt.close(1)
 
     report.setData("PlotTime", os.path.abspath(figName), report.TIME_PLOT)
 
 
-def keffVsTime(reactor, time, keff, keffUnc=None, ymin=None, extension=None):
+def keffVsTime(name, time, keff, keffUnc=None, ymin=None, extension=None):
     r"""
     Plots core keff vs. time
 
     Parameters
     ----------
+    name : str
+        reactor.name
     time : list
         Time in years
     keff : list
@@ -202,21 +201,21 @@ def keffVsTime(reactor, time, keff, keffUnc=None, ymin=None, extension=None):
     plt.xlabel("Time (yr)")
     plt.ylabel("k-eff")
     plt.grid(color="0.70")
-    plt.title("k-eff vs. time" + " for {0}".format(reactor.name))
+    plt.title("k-eff vs. time" + " for {0}".format(name))
 
     if ymin is not None and all([yi > ymin for yi in keff]):
         # set ymin all values are greater than it and it exists.
         ax = plt.gca()
         ax.set_ylim(bottom=ymin)
 
-    figName = reactor.name + ".keff." + extension
+    figName = name + ".keff." + extension
     plt.savefig(figName)
     plt.close(1)
 
     report.setData("K-Eff", os.path.abspath(figName), report.KEFF_PLOT)
 
 
-def buVsTime(reactor, scalars, extension=None):
+def buVsTime(name, scalars, extension=None):
     r"""
     produces a burnup and DPA vs. time plot for this case
 
@@ -224,12 +223,12 @@ def buVsTime(reactor, scalars, extension=None):
 
     Parameters
     ----------
+    name : str
+        reactor.name
     scalars : dict
         Scalar values for this case
-
     extension : str, optional
         The file extention for saving the figure
-
     """
     extension = extension or settings.Settings()["outputFileExtension"]
 
@@ -243,6 +242,7 @@ def buVsTime(reactor, scalars, extension=None):
         )
         plt.close(1)
         return
+
     plt.plot(scalars["time"], scalars["maxBuF"], ".-", label="Feed")
     plt.xlabel("Time (yr)")
     plt.ylabel("BU (%FIMA)")
@@ -255,59 +255,38 @@ def buVsTime(reactor, scalars, extension=None):
         plt.legend(loc="lower right")
         plt.ylabel("dpa")
         title += " and DPA"
-    title += " for " + reactor.name
+
+    title += " for " + name
 
     plt.title(title)
     plt.legend(loc="lower right")
-    figName = reactor.name + ".bu." + extension
+    figName = name + ".bu." + extension
     plt.savefig(figName)
     plt.close(1)
 
     report.setData("Burnup Plot", os.path.abspath(figName), report.BURNUP_PLOT)
 
 
-def distortionVsTime(reactor, scalars, extension=None):
-    r"""plots max distortion vs. time if the distortion interface is attached"""
-    dd = reactor.o.getInterface("ductDistortion")
-    if not dd or not "maxSwelling" in dd.__dict__:
-        return  # skip plotting
-
-    extension = extension or settings.Settings()["outputFileExtension"]
-
-    plt.figure()
-    plt.plot(scalars["time"], dd.maxTotal, label="Total")
-    plt.plot(scalars["time"], dd.maxCreep, label="Creep")
-    plt.plot(scalars["time"], dd.maxSwelling, label="Swelling")
-    plt.xlabel("Time (yr)")
-    plt.ylabel("Distortion (mm)")
-    plt.grid(color="0.70")
-    plt.legend(loc="lower right")
-    plt.title("Maximum duct distortion for " + reactor.name)
-    figName = reactor.name + ".duct." + extension
-    plt.savefig(figName)
-    plt.close(1)
-
-    report.setData("Distortion Plot", os.path.abspath(figName), report.DISTORTION_PLOT)
-
-
-def xsHistoryVsTime(reactor, buGroups, extension=None):
+def xsHistoryVsTime(name, history, buGroups, extension=None):
     r"""
     Plot cross section history vs. time.
 
     Parameters
     ----------
-    reactor : armi.reactor.reactors object
+    name : str
+        reactor.name
+    history : armi.bookkeeping.historyTracker.HistoryTrackerInterface object
+        The history interface.
     buGroups : list of float
         The burnup groups in the problem
     extension : str, optional
         The file extention for saving the figure
-
     """
     extension = extension or settings.Settings()["outputFileExtension"]
 
-    history = reactor.o.getInterface("history")
-    if not history or not history.xsHistory:
+    if not history.xsHistory:
         return
+
     colors = itertools.cycle(["b", "g", "r", "c", "m", "y", "k"])
     plt.figure()
     maxbu = 0.0
@@ -326,18 +305,18 @@ def xsHistoryVsTime(reactor, buGroups, extension=None):
         plt.axhline(y=upperBu)
 
     plt.legend()
-    plt.title("Block burnups used to generate XS for {0}".format(reactor.name))
+    plt.title("Block burnups used to generate XS for {0}".format(name))
     plt.xlabel("Time (years)")
     plt.ylabel("Burnup (% FIMA)")
 
     plt.ylim(0, maxbu * 1.05)
-    figName = reactor.name + ".bugroups." + extension
+    figName = name + ".bugroups." + extension
     plt.savefig(figName)
     plt.close(1)
     report.setData("Xs Plot", os.path.abspath(figName), report.XS_PLOT)
 
 
-def movesVsCycle(reactor, scalars, extension=None):
+def movesVsCycle(name, scalars, extension=None):
     r"""
     make a bar chart showing the number of moves per cycle in the full core
 
@@ -349,15 +328,14 @@ def movesVsCycle(reactor, scalars, extension=None):
 
     Parameters
     ----------
-    scalars : dict
-        The reactor-level params for this case.
+    name : str
+        reactor.name
     extension : str, optional
         The file extention for saving the figure
 
     See Also
     --------
     FuelHandler.outage : sets the number of moves in each cycle
-
     """
     extension = extension or settings.Settings()["outputFileExtension"]
 
@@ -367,20 +345,19 @@ def movesVsCycle(reactor, scalars, extension=None):
         if moves is None:
             moves = 0.0
         if cycle not in cycles:  # only one move per cycle
-            cycles.append(
-                cycle
-            )  # use the cycles scalar val in case burnSteps is dynamic
+            # use the cycles scalar val in case burnSteps is dynamic
+            cycles.append(cycle)
             yvals.append(moves)
 
-    plt.figure(figsize=(12, 6))  # make it wide and short.
+    plt.figure(figsize=(12, 6))  # make it wide and short
     plt.bar(cycles, yvals, align="center")
     if len(cycles) > 1:
         plt.xticks(cycles)
     plt.grid(color="0.70")
     plt.xlabel("Cycle")
     plt.ylabel("Number of Moves")
-    plt.title("Fuel management rate for " + reactor.name)
-    figName = reactor.name + ".moves." + extension
+    plt.title("Fuel management rate for " + name)
+    figName = name + ".moves." + extension
     plt.savefig(figName)
     plt.close(1)
 

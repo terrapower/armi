@@ -31,4 +31,3 @@ settings:
   summarizeAssemDesign: false
   targetK: 1.002
   transientForSensitivity: ''
-  zoneFlowSummary: false

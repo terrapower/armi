@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from armi.utils.properties import ImmutablePropertyError
 
 """
 Cross section library objects. 
@@ -364,12 +365,38 @@ class IsotxsLibrary(_XSLibrary):
     @property
     def numGroups(self):
         """Get the number of neutron energy groups"""
-        return len(self.neutronEnergyUpperBounds)
+        # This unlocks the immutable property so that it can be
+        # read prior to not being set to check the number of groups
+        # that are defined. If the property is not unlocked before
+        # accessing when it has not yet been defined then an exception
+        # is thrown.
+        properties.unlockImmutableProperties(self)
+        if self.neutronEnergyUpperBounds is not None:
+            energyBounds = self.neutronEnergyUpperBounds
+        else:
+            energyBounds = []
+
+        # Make sure to re-lock the properties after we are done.
+        properties.lockImmutableProperties(self)
+        return len(energyBounds)
 
     @property
     def numGroupsGamma(self):
         """get the number of gamma energy groups"""
-        return len(self.gammaEnergyUpperBounds)
+        # This unlocks the immutable property so that it can be
+        # read prior to not being set to check the number of groups
+        # that are defined. If the property is not unlocked before
+        # accessing when it has not yet been defined then an exception
+        # is thrown.
+        properties.unlockImmutableProperties(self)
+        if self.gammaEnergyUpperBounds is not None:
+            energyBounds = self.gammaEnergyUpperBounds
+        else:
+            energyBounds = []
+
+        # Make sure to re-lock the properties after we are done.
+        properties.lockImmutableProperties(self)
+        return len(energyBounds)
 
     @property
     def xsIDs(self):
@@ -381,15 +408,20 @@ class IsotxsLibrary(_XSLibrary):
         return list(set(getSuffixFromNuclideLabel(name) for name in self.nuclideLabels))
 
     def __repr__(self):
-        files = (
-            self.isotxsMetadata.fileNames
-            + self.pmatrxMetadata.fileNames
-            + self.gamisoMetadata.fileNames
-        )
-        if not any(files):
-            return "<IsotxsLibrary empty>"
-        return "<IsotxsLibrary id:{} containing {} nuclides from {}>".format(
-            id(self), len(self), ", ".join(files)
+        isotxs = bool(self.isotxsMetadata.keys())
+        pmatrx = bool(self.pmatrxMetadata.keys())
+        gamiso = bool(self.gamisoMetadata.keys())
+        groups = ""
+        if self.numGroups:
+            groups += f"Neutron groups: {self.numGroups}, "
+        if self.numGroupsGamma:
+            groups += f"Gamma groups: {self.numGroupsGamma},"
+
+        return (
+            f"<IsotxsLibrary (id:{id(self)}), "
+            f"ISOTXS: {isotxs}, PMATRX: {pmatrx}, GAMISO: {gamiso}, "
+            f"{groups} containing {len(self)} nuclides with "
+            f"XS IDs: {sorted(self.xsIDs)}>"
         )
 
     def __setitem__(self, key, value):
@@ -531,12 +563,7 @@ class IsotxsLibrary(_XSLibrary):
         Returns
         -------
         scatterWeights : dict
-            (xsID, fromGroup) : weight column (sparse Gx1).
-
-        See Also
-        --------
-        terrapower.physics.neutronics.uq.sensitivities.MeshMatrix.derivativeM
-
+            (xsID, fromGroup) : weight column (sparse Gx1)
         """
         runLog.info(
             "Building {0} weights on cross section library".format(scatterMatrixKey)
@@ -558,7 +585,6 @@ class IsotxsLibrary(_XSLibrary):
             a reactor, or None
 
         .. warning:: Sometimes worker nodes do not have a reactor, fission products will not be purged.
-
         """
         runLog.info("Purging detailed fission products from {}".format(self))
         modeledNucs = r.blueprints.allNuclidesInProblem

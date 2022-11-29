@@ -20,33 +20,32 @@ Assemblies are made of blocks.
 
 Blocks are made of components.
 """
-import math
-import copy
-import collections
 from typing import Optional, Type, Tuple, ClassVar
+import collections
+import copy
+import math
 
 import numpy
 
-from armi.reactor import composites
 from armi import runLog
 from armi import settings
+from armi.bookkeeping import report
 from armi.nucDirectory import nucDir
-from armi.reactor import geometry
-from armi.reactor import parameters
+from armi.physics.neutronics import GAMMA
+from armi.physics.neutronics import NEUTRON
 from armi.reactor import blockParameters
-from armi.reactor import grids
-from armi.reactor.flags import Flags
 from armi.reactor import components
+from armi.reactor import composites
+from armi.reactor import geometry
+from armi.reactor import grids
+from armi.reactor import parameters
+from armi.reactor.flags import Flags
+from armi.reactor.parameters import ParamLocation
+from armi.utils import densityTools
+from armi.utils import hexagon
 from armi.utils import units
 from armi.utils.plotting import plotBlockFlux
-from armi.bookkeeping import report
-from armi.physics import constants
 from armi.utils.units import TRACE_NUMBER_DENSITY
-from armi.utils import hexagon
-from armi.utils import densityTools
-from armi.physics.neutronics import NEUTRON
-from armi.physics.neutronics import GAMMA
-from armi.reactor.parameters import ParamLocation
 
 PIN_COMPONENTS = [
     Flags.CONTROL,
@@ -168,16 +167,23 @@ class Block(composites.Composite):
     @property
     def r(self):
         """
-        A block should only have a reactor through a parent assembly.
+        Look through the ancestors of the Block to find a Reactor, and return it.
 
+        Notes
+        -----
+        Typical hierarchy: Reactor <- Core <- Assembly <- Block
+        A block should only have a reactor through a parent assembly.
         It may make sense to try to factor out usage of ``b.r``.
 
-        For now, this is presumptive of the structure of the composite hierarchy; i.e.
-        the parent of a CORE must be the reactor. Fortunately, we probably don't
-        ultimately want to return the reactor in the first place. Rather, we probably want the core
-        anyways, since practically all `b.r` calls are historically `b.r.core`. It may be
-        prefereable to remove this property, replace with `self.core`, which can return the core.
-        Then refactor all of the b.r.cores, to b.core.
+        Returns
+        -------
+        core.parent : armi.reactor.reactors.Reactor
+            ARMI reactor object that is an ancestor of the block.
+
+        Raises
+        ------
+        ValueError
+            If the parent of the block's ``core`` is not an ``armi.reactor.reactors.Reactor``.
         """
 
         from armi.reactor.reactors import Reactor
@@ -431,18 +437,22 @@ class Block(composites.Composite):
         setting has length 1 (i.e. no burnup groups are defined). This is useful for
         high-fidelity XS modeling of V&V models such as the ZPPRs.
         """
-
         bu = self.p.buGroup
         if not bu:
             raise RuntimeError(
                 "Cannot get MicroXS suffix because {0} in {1} does not have a burnup group"
                 "".format(self, self.parent)
             )
+
         xsType = self.p.xsType
-        if len(xsType) == 2 and len(settings.getMasterCs()["buGroups"]) == 1:
-            return xsType
-        else:
+        if len(xsType) == 1:
             return xsType + bu
+        elif len(xsType) == 2 and ord(bu) > ord("A"):
+            raise ValueError(
+                f"Use of multiple burnup groups is not allowed with multi-character xs groups!"
+            )
+        else:
+            return xsType
 
     def getHeight(self):
         """Return the block height."""
@@ -508,7 +518,7 @@ class Block(composites.Composite):
 
     def getFlowAreaPerPin(self):
         """
-        Return the flowing coolant area in cm^2.
+        Return the flowing coolant area of the block in cm^2, normalized to the number of pins in the block.
 
         NumPins looks for max number of fuel, clad, control, etc.
 
@@ -1087,11 +1097,14 @@ class Block(composites.Composite):
         --------
         >>> getDim(Flags.WIRE,'od')
         0.01
-
         """
         for c in self:
             if c.hasFlags(typeSpec):
                 return c.getDimension(dimName.lower())
+
+        raise ValueError(
+            "Cannot get Dimension because Flag not found: {0}".format(typeSpec)
+        )
 
     def getPinCenterFlatToFlat(self, cold=False):
         """Return the flat-to-flat distance between the centers of opposing pins in the outermost ring."""
@@ -1260,7 +1273,7 @@ class Block(composites.Composite):
         -------
         mfp, mfpAbs, diffusionLength : tuple(float, float float)
         """
-        lib = self.r.core.lib
+        lib = self.core.lib
         flux = self.getMgFlux(gamma=gamma)
         flux = [fi / max(flux) for fi in flux]
         mfpNumerator = numpy.zeros(len(flux))
@@ -1302,36 +1315,6 @@ class Block(composites.Composite):
         # return the group the information went to
         return report.ALL[report.BLOCK_AREA_FRACS]
 
-    def getBurnupPeakingFactor(self):
-        """
-        Get the radial peaking factor to be applied to burnup and DPA
-
-        This may be informed by previous runs which used
-        detailed pin reconstruction and rotation. In that case,
-        it should be set on the cs setting ``burnupPeakingFactor``.
-
-        Otherwise, it just takes the current flux peaking, which
-        is typically conservatively high.
-
-        Returns
-        -------
-        burnupPeakingFactor : float
-            The peak/avg factor for burnup and DPA.
-
-        See Also
-        --------
-        armi.physics.neutronics.globalFlux.globalFluxInterface.GlobalFluxInterface.updateFluenceAndDPA : uses this
-        terrapower.physics.neutronics.depletion.depletion.DepletionInterface._updateBlockParametersAfterDepletion : also uses this
-        """
-        burnupPeakingFactor = settings.getMasterCs()["burnupPeakingFactor"]
-        if not burnupPeakingFactor and self.p.fluxPeak:
-            burnupPeakingFactor = self.p.fluxPeak / self.p.flux
-        elif not burnupPeakingFactor:
-            # no peak available. Finite difference model?
-            burnupPeakingFactor = 1.0
-
-        return burnupPeakingFactor
-
     def getBlocks(self):
         """
         This method returns all the block(s) included in this block
@@ -1364,24 +1347,6 @@ class Block(composites.Composite):
                 c.updateDims()
             except NotImplementedError:
                 runLog.warning("{0} has no updatedDims method -- skipping".format(c))
-
-    def getDpaXs(self):
-        """Determine which cross sections should be used to compute dpa for this block."""
-        if settings.getMasterCs()["gridPlateDpaXsSet"] and self.hasFlags(
-            Flags.GRID_PLATE
-        ):
-            dpaXsSetName = settings.getMasterCs()["gridPlateDpaXsSet"]
-        else:
-            dpaXsSetName = settings.getMasterCs()["dpaXsSet"]
-
-        if not dpaXsSetName:
-            return None
-        try:
-            return constants.DPA_CROSS_SECTIONS[dpaXsSetName]
-        except KeyError:
-            raise KeyError(
-                "DPA cross section set {} does not exist".format(dpaXsSetName)
-            )
 
     def breakFuelComponentsIntoIndividuals(self):
         """
@@ -1486,39 +1451,6 @@ class Block(composites.Composite):
         armi.physics.neutronics.fissionProductModel.lumpedFissionProduct.LumpedFissionProduct : LFP object
         """
         return composites.ArmiObject.getLumpedFissionProductCollection(self)
-
-    def getReactionRates(self, nucName, nDensity=None):
-        """
-        Parameters
-        ----------
-        nucName - str
-            nuclide name -- e.g. 'U235'
-        nDensity - float
-            number Density
-
-        Returns
-        -------
-        rxnRates : dict
-            dictionary of reaction rates (rxn/s) for nG, nF, n2n, nA and nP
-
-        Note
-        ----
-        If you set nDensity to 1/CM2_PER_BARN this makes 1 group cross section generation easier
-        """
-        if nDensity is None:
-            nDensity = self.getNumberDensity(nucName)
-        try:
-            return components.component.getReactionRateDict(
-                nucName,
-                self.r.core.lib,
-                self.p.xsType,
-                self.getIntegratedMgFlux(),
-                nDensity,
-            )
-        except AttributeError:
-            # AttributeError because there was no library because no parent.r -- this is a armiObject without flux so
-            # send it some zeros
-            return {"nG": 0, "nF": 0, "n2n": 0, "nA": 0, "nP": 0}
 
     def rotate(self, deg):
         """Function for rotating a block's spatially varying variables by a specified angle.
@@ -1672,22 +1604,30 @@ class HexBlock(Block):
             else:
                 self.p.linPowByPin = self.p[powerKey]
 
-    def rotate(self, deg):
-        """Function for rotating a block's spatially varying variables by a specified angle.
+    def rotate(self, rad):
+        """
+        Rotates a block's spatially varying parameters by a specified angle in the
+        counter-clockwise direction.
 
-        Rotates the pins and then also any parameters that defined on the corners or edges.
+        The parameters must have a ParamLocation of either CORNERS or EDGES and must be a
+        Python list of length 6 in order to be eligible for rotation; all parameters that
+        do not meet these two criteria are not rotated.
+
+        The pin indexing, as stored on the pinLocation parameter, is also updated via
+        :py:meth:`rotatePins <armi.reactor.blocks.HexBlock.rotatePins>`.
 
         Parameters
         ----------
-        deg - float
-            number specifying the angle of counter clockwise rotation
+        rad: float, required
+            Angle of counter-clockwise rotation in units of radians. Rotations must be
+            in 60-degree increments (i.e., PI/6, PI/3, PI, 2 * PI/3, 5 * PI/6,
+            and 2 * PI)
 
         See Also
         --------
-        armi.reactor.blocks.HexBlock.rotatePins
-            Rotates the pins only and not the duct.
+        :py:meth:`rotatePins <armi.reactor.blocks.HexBlock.rotatePins>`
         """
-        rotNum = round((deg % (2 * math.pi)) / math.radians(60))
+        rotNum = round((rad % (2 * math.pi)) / math.radians(60))
         self.rotatePins(rotNum)
         params = self.p.paramDefs.atLocation(ParamLocation.CORNERS).names
         params += self.p.paramDefs.atLocation(ParamLocation.EDGES).names
@@ -1699,25 +1639,48 @@ class HexBlock(Block):
                     # List hasn't been defined yet, no warning needed.
                     pass
                 else:
-                    runLog.warning(
-                        "No rotation method defined for spatial parameters that aren't defined once per hex edge/corner. No rotation performed on {}".format(
-                            param
-                        )
+                    msg = (
+                        "No rotation method defined for spatial parameters that aren't "
+                        "defined once per hex edge/corner. No rotation performed "
+                        f"on {param}"
                     )
+                    runLog.warning(msg)
             else:
                 # this is a scalar and there shouldn't be any rotation.
                 pass
-        # This specifically uses the .get() functionality to avoid an error if this parameter does not exist.
+        # This specifically uses the .get() functionality to avoid an error if this
+        # parameter does not exist.
         dispx = self.p.get("displacementX")
         dispy = self.p.get("displacementY")
         if (dispx is not None) and (dispy is not None):
-            self.p.displacementX = dispx * math.cos(deg) - dispy * math.sin(deg)
-            self.p.displacementY = dispx * math.sin(deg) + dispy * math.cos(deg)
+            self.p.displacementX = dispx * math.cos(rad) - dispy * math.sin(rad)
+            self.p.displacementY = dispx * math.sin(rad) + dispy * math.cos(rad)
 
     def rotatePins(self, rotNum, justCompute=False):
         """
         Rotate the pins of a block, which means rotating the indexing of pins. Note that this does
-        not rotate all block quantities.
+        not rotate all block quantities, just the pins.
+
+        Parameters
+        ----------
+        rotNum : int, required
+            An integer from 0 to 5, indicating the number of counterclockwise 60-degree rotations
+            from the CURRENT orientation. Degrees of counter-clockwise rotation = 60*rot
+
+        justCompute : boolean, optional
+            If True, rotateIndexLookup will be returned but NOT assigned to the object parameter
+            self.p.pinLocation. If False, rotateIndexLookup will be returned AND assigned to the
+            object variable self.p.pinLocation.  Useful for figuring out which rotation is best
+            to minimize burnup, etc.
+
+        Returns
+        -------
+        rotateIndexLookup : dict of ints
+            This is an index lookup (or mapping) between pin ids and pin locations. The pin
+            indexing is 1-D (not ring,pos or GEODST). The "ARMI pin ordering" is used for location,
+            which is counter-clockwise from 1 o'clock. Pin ids are always consecutively
+            ordered starting at 1, while pin locations are not once a rotation has been
+            applied.
 
         Notes
         -----
@@ -1736,28 +1699,7 @@ class HexBlock(Block):
         fluxRecon, which interpolates the flux spatially, or subchannel codes, which needs to know where the
         power is) need to map through the pinLocation parameters.
 
-        This method rotates the pins by changing the pinLocations.
-
-        Parameters
-        ----------
-        rotNum : int
-            An integer from 0 to 5, indicating the number of counterclockwise 60-degree rotations
-            from the CURRENT orientation. Degrees of counter-clockwise rotation = 60*rot
-
-        justCompute : Boolean, optional
-            If True, rotateIndexLookup will be returned but NOT assigned to the object variable
-            self.rotateIndexLookup.
-            If False, rotateIndexLookup will be returned AND assigned to the object variable
-            self.rotateIndexLookup.  Useful for figuring out which rotation is best to minimize
-            burnup, etc.
-
-        Returns
-        -------
-        rotateIndexLookup : dict of ints
-            This is an index lookup (or mapping) between pin ids and pin locations
-            The pin indexing is 1-D (not ring,pos or GEODST).
-            The "ARMI pin ordering" is used for location, which is counter-clockwise from 3 o'clock.
-            Pin numbers start at 1, pin locations also start at 1.
+        This method rotates the pins by changing the pinLocation parameter.
 
         See Also
         --------
@@ -1772,38 +1714,45 @@ class HexBlock(Block):
             raise ValueError(
                 "Cannot rotate {0} to rotNum {1}. Must be 0-5. ".format(self, rotNum)
             )
-        # pin numbers start at 1.
-        numPins = self.getNumComponents(Flags.CLAD)  # number of pins in this assembly
+
+        # Pin numbers start at 1. Number of pins in the block is assumed to be based on
+        # cladding count.
+        numPins = self.getNumComponents(Flags.CLAD)
         rotateIndexLookup = dict(zip(range(1, numPins + 1), range(1, numPins + 1)))
 
-        # look up the current orientation and add this to it. The math below just rotates from the
-        # reference point so we need a total rotation.
+        # Look up the current orientation and add this to it. The math below just rotates
+        # from the reference point so we need a total rotation.
         rotNum = int((self.getRotationNum() + rotNum) % 6)
 
         # non-trivial rotation requested
         # start at 2 because pin 1 never changes (it's in the center!)
         for pinNum in range(2, numPins + 1):
             if rotNum == 0:
-                # rotation to reference orientation. Pin locations are pin IDs.
+                # Rotation to reference orientation. Pin locations are pin IDs.
                 pass
             else:
-                # Determine the pin ring (courtesy of Robert Petroski from subchan.py). Rotation does not change the pin ring!
+                # Determine the pin ring. Rotation does not change the pin ring!
                 ring = int(
                     math.ceil((3.0 + math.sqrt(9.0 - 12.0 * (1.0 - pinNum))) / 6.0)
                 )
+
                 # Rotate the pin position (within the ring, which does not change)
                 tot_pins = 1 + 3 * ring * (ring - 1)
                 newPinLocation = pinNum + (ring - 1) * rotNum
                 if newPinLocation > tot_pins:
                     newPinLocation -= (ring - 1) * 6
+
                 # Assign "before" and "after" pin indices to the index lookup
                 rotateIndexLookup[pinNum] = newPinLocation
 
-            if not justCompute:
-                self.p["pinLocation", rotateIndexLookup[pinNum]] = pinNum
-
+        # Because the above math creates indices based on the absolute rotation number,
+        # the old values of pinLocation (if they've been set in the past) can be overwritten
+        # with new numbers
         if not justCompute:
             self.setRotationNum(rotNum)
+            self.p["pinLocation"] = [
+                rotateIndexLookup[pinNum] for pinNum in range(1, numPins + 1)
+            ]
 
         return rotateIndexLookup
 
@@ -1950,21 +1899,19 @@ class HexBlock(Block):
                 # central location
                 return 3.0
             else:
-                symmetryLine = self.r.core.spatialGrid.overlapsWhichSymmetryLine(
-                    indices
-                )
+                symmetryLine = self.core.spatialGrid.overlapsWhichSymmetryLine(indices)
                 # detect if upper edge assemblies are included. Doing this is the only way to know
                 # definitively whether or not the edge assemblies are half-assems or full.
                 # seeing the first one is the easiest way to detect them.
                 # Check it last in the and statement so we don't waste time doing it.
-                upperEdgeLoc = self.r.core.spatialGrid[-1, 2, 0]
+                upperEdgeLoc = self.core.spatialGrid[-1, 2, 0]
                 if (
                     symmetryLine
                     in [
                         grids.BOUNDARY_0_DEGREES,
                         grids.BOUNDARY_120_DEGREES,
                     ]
-                    and bool(self.r.core.childrenByLocator.get(upperEdgeLoc))
+                    and bool(self.core.childrenByLocator.get(upperEdgeLoc))
                 ):
                     return 2.0
         return 1.0
@@ -2063,17 +2010,15 @@ class HexBlock(Block):
         -------
         pinPitch : float
             pin pitch in cm
-
         """
         try:
             clad = self.getComponent(Flags.CLAD)
             wire = self.getComponent(Flags.WIRE)
         except ValueError:
-            runLog.info(
+            raise ValueError(
                 "Block {} has multiple clad and wire components,"
                 " so pin pitch is not well-defined.".format(self)
             )
-            return
 
         if wire and clad:
             return clad.getDimension("od", cold=cold) + wire.getDimension(
@@ -2087,20 +2032,76 @@ class HexBlock(Block):
             )
 
     def getWettedPerimeter(self):
-        """Return wetted perimeter per pin with duct averaged in."""
-        duct = self.getComponent(Flags.DUCT)
-        clad = self.getComponent(Flags.CLAD)
-        wire = self.getComponent(Flags.WIRE)
-        if not duct or not clad:
-            raise ValueError(
-                "Wetted perimeter cannot be computed in {}. No duct or clad components exist.".format(
-                    self
-                )
+        """Return the total wetted perimeter of the block in cm."""
+
+        # flags pertaining to hexagon components where the interior of the hexagon is wetted
+        wettedHollowHexagonComponentFlags = (
+            Flags.DUCT,
+            Flags.GRID_PLATE,
+            Flags.INLET_NOZZLE,
+            Flags.HANDLING_SOCKET,
+        )
+
+        # flags pertaining to circular pin components where the exterior of the circle is wetted
+        wettedPinComponentFlags = (
+            Flags.CLAD,
+            Flags.WIRE,
+        )
+
+        # flags pertaining to circular components where both the interior and exterior of the circle are wetted
+        wettedHollowCircleComponentFlags = (Flags.DUCT | Flags.INNER,)
+
+        # obtain all wetted components based on type
+        wettedHollowHexagonComponents = []
+        for flag in wettedHollowHexagonComponentFlags:
+            c = self.getComponent(flag, exact=True)
+            wettedHollowHexagonComponents.append(c) if c else None
+
+        wettedPinComponents = []
+        for flag in wettedPinComponentFlags:
+            c = self.getComponent(flag, exact=True)
+            wettedPinComponents.append(c) if c else None
+
+        wettedHollowCircleComponents = []
+        for flag in wettedHollowCircleComponentFlags:
+            c = self.getComponent(flag, exact=True)
+            wettedHollowCircleComponents.append(c) if c else None
+
+        # calculate wetted perimeters according to their geometries
+
+        # hollow hexagon = 6 * ip / sqrt(3)
+        wettedHollowHexagonPerimeter = 0.0
+        for c in wettedHollowHexagonComponents:
+            wettedHollowHexagonPerimeter += (
+                6 * c.getDimension("ip") / math.sqrt(3) if c else 0.0
             )
 
-        return math.pi * (
-            clad.getDimension("od") + wire.getDimension("od")
-        ) + 6 * duct.getDimension("ip") / math.sqrt(3) / clad.getDimension("mult")
+        # solid circle = od * pi
+        # NOTE: since these are pin components, multiply by the number of pins
+        wettedPinPerimeter = 0.0
+        for c in wettedPinComponents:
+            wettedPinPerimeter += c.getDimension("od") if c else 0.0
+        wettedPinPerimeter *= self.getNumPins() * math.pi
+
+        # hollow circle = (id + od) * pi
+        wettedHollowCirclePerimeter = 0.0
+        for c in wettedHollowCircleComponents:
+            wettedHollowCirclePerimeter += (
+                c.getDimension("id") + c.getDimension("od") if c else 0.0
+            )
+        wettedHollowCirclePerimeter *= math.pi
+
+        return (
+            wettedHollowHexagonPerimeter
+            + wettedPinPerimeter
+            + wettedHollowCirclePerimeter
+        )
+
+    def getFlowArea(self):
+        """
+        Return the total flowing coolant area of the block in cm^2.
+        """
+        return self.getComponent(Flags.COOLANT, exact=True).getArea()
 
     def getHydraulicDiameter(self):
         """
@@ -2117,7 +2118,7 @@ class HexBlock(Block):
         p = sqrt(3)*s
         l = 6*p/sqrt(3)
         """
-        return 4.0 * self.getFlowAreaPerPin() / self.getWettedPerimeter()
+        return 4.0 * self.getFlowArea() / self.getWettedPerimeter()
 
 
 class CartesianBlock(Block):
@@ -2140,9 +2141,9 @@ class CartesianBlock(Block):
         Return a factor between 1 and N where 1/N is how much cut-off by symmetry lines this mesh
         cell is.
         """
-        if self.r is not None:
+        if self.core is not None:
             indices = self.spatialLocator.getCompleteIndices()
-            if self.r.core.symmetry.isThroughCenterAssembly:
+            if self.core.symmetry.isThroughCenterAssembly:
                 if indices[0] == 0 and indices[1] == 0:
                     # central location
                     return 4.0

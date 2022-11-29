@@ -33,7 +33,7 @@ from armi.physics.fuelCycle import FuelHandlerPlugin
 from armi.reactor.flags import Flags
 from armi.settings import caseSettings
 from armi.settings import setting
-from armi.tests import TEST_ROOT
+from armi.tests import TEST_ROOT, ARMI_RUN_PATH
 from armi.utils import directoryChangers
 from armi.utils.customExceptions import NonexistentSetting
 
@@ -265,6 +265,15 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         newDefault = setting.Default(5, "testsetting")
         a.changeDefault(newDefault)
         self.assertEqual(a.value, 5)
+
+    def test_getSettingsSetByUser(self):
+        cs = caseSettings.Settings()
+        settingsList = cs.getSettingsSetByUser(ARMI_RUN_PATH)
+        # This test is dependent on the current setup of armiRun.yaml, which includes
+        # some default settings values
+        for setting in ["availabilityFactor", "economics"]:
+            self.assertIn(setting, settingsList)
+        self.assertNotIn("numProcessors", settingsList)
 
     def test_setModuleVerbosities(self):
         # init settings and use them to set module-level logging levels

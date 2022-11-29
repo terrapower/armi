@@ -25,7 +25,6 @@ from armi.bookkeeping.report.reportingUtils import (
     summarizePinDesign,
     summarizePower,
     summarizePowerPeaking,
-    summarizeZones,
     writeAssemblyMassSummary,
     writeCycleSummary,
 )
@@ -59,6 +58,19 @@ class TestReport(unittest.TestCase):
         filled_instance = report.ALL[self.test_group]
         self.assertEqual(filled_instance["banana_2"], ["sundae", "vanilla"])
         self.assertEqual(filled_instance["banana_3"], ["sundae", "chocolate"])
+
+    def test_getData(self):
+        # test the null case
+        self.assertIsNone(self.test_group["fake"])
+
+        # insert some data
+        self.test_group["banana_1"] = ["sundae", "plain"]
+
+        # validate we can pull that data back out again
+        data = self.test_group["banana_1"]
+        self.assertEqual(len(data), 2)
+        self.assertIn("sundae", data)
+        self.assertIn("plain", data)
 
     def test_reactorSpecificReporting(self):
         """Test a number of reporting utils that require reactor/core information"""
@@ -108,11 +120,6 @@ class TestReport(unittest.TestCase):
             self.assertIn("Core Average", mock._outputStream)
             self.assertIn("Outlet Temp", mock._outputStream)
             self.assertIn("End of Cycle", mock._outputStream)
-            mock._outputStream = ""
-
-            # this report won't do much for the test reactor - improve test reactor
-            summarizeZones(r.core, o.cs)
-            self.assertEqual(len(mock._outputStream), 0)
             mock._outputStream = ""
 
             # this report won't do much for the test reactor - improve test reactor

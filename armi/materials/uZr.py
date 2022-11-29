@@ -46,6 +46,9 @@ class UZr(material.FuelMaterial):
     zrFracDefault = 0.10
     uFracDefault = 1.0 - zrFracDefault
 
+    def __init__(self):
+        material.Material.__init__(self)
+
     def setDefaultMassFracs(self):
         r"""U-Pu-Zr mass fractions"""
         u235Enrichment = 0.1

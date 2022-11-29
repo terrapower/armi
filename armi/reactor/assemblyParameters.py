@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Assembly Parameter Definitions
-"""
+"""Assembly Parameter Definitions"""
 import numpy
 
 from armi import runLog
@@ -42,7 +40,7 @@ def getAssemblyParameterDefinitions():
             description="List of decay heats at each time step specified in "
             "decayHeatCalcTimesInSeconds setting.",
             saveToDB=True,
-            location=ParamLocation.AVERAGE,  # really total
+            location=ParamLocation.AVERAGE,
             default=None,
         )
 
@@ -185,22 +183,6 @@ def getAssemblyParameterDefinitions():
             saveToDB=True,
             default="",
             setter=_enforceNotesRestrictions,
-        )
-
-        pb.defParam(
-            "assyAxialSwellingSF",
-            units="mm",
-            description="Assembly axial swelling due to stress-free swelling",
-            default=0.0,
-        )
-
-        pb.defParam(
-            "fuelVent",
-            units=None,
-            description="Boolean option to turn on/off vented fuel pins in TWR design",
-            saveToDB=False,
-            default=False,
-            categories=[parameters.Category.assignInBlueprints],
         )
 
     with pDefs.createBuilder(

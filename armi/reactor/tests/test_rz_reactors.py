@@ -15,9 +15,10 @@
 """
 Test loading Theta-RZ reactor models.
 """
-import unittest
-import os
+# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import math
+import os
+import unittest
 
 from armi import settings
 from armi.tests import TEST_ROOT

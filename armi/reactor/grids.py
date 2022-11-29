@@ -1245,24 +1245,23 @@ class CartesianGrid(Grid):
 
     @staticmethod
     def getIndicesFromRingAndPos(ring, pos):
-        """
-        Not implemented for Cartesian-see getRingPos notes.
-        """
+        """Not implemented for Cartesian-see getRingPos notes."""
         raise NotImplementedError(
             "Cartesian should not need need ring/pos, use i, j indices."
             "See getRingPos doc string notes for more information/example."
         )
 
     def getMinimumRings(self, n):
-        """
-        Return the minimum number of rings needed to fit ``n`` objects.
-        """
+        """Return the minimum number of rings needed to fit ``n`` objects."""
         numPositions = 0
+        ring = 0
         for ring in itertools.count(1):
             ringPositions = self.getPositionsInRing(ring)
             numPositions += ringPositions
             if numPositions >= n:
-                return ring
+                break
+
+        return ring
 
     def getPositionsInRing(self, ring):
         """
@@ -1629,7 +1628,7 @@ class HexGrid(Grid):
             self.symmetry.domain == geometry.DomainType.THIRD_CORE
             and self.symmetry.boundary == geometry.BoundaryType.PERIODIC
         ):
-            return self._getSymmetricIdenticalsThird(indices)
+            return HexGrid._getSymmetricIdenticalsThird(indices)
         elif self.symmetry.domain == geometry.DomainType.FULL_CORE:
             return []
         else:
@@ -1639,7 +1638,8 @@ class HexGrid(Grid):
                 )
             )
 
-    def _getSymmetricIdenticalsThird(self, indices):
+    @staticmethod
+    def _getSymmetricIdenticalsThird(indices):
         """This works by rotating the indices by 120 degrees twice, counterclockwise."""
         i, j = indices[:2]
         if i == 0 and j == 0:
@@ -1704,21 +1704,21 @@ class HexGrid(Grid):
         nLocs = int(nLocs)  # need to make this an integer
 
         # next, generate a list of locations and corresponding distances
-        locList = []
+        locs = []
         for ring in range(1, hexagon.numRingsToHoldNumCells(nLocs) + 1):
             positions = self.getPositionsInRing(ring)
             for position in range(1, positions + 1):
                 i, j = self.getIndicesFromRingAndPos(ring, position)
-                locList.append(self[(i, j, 0)])
+                locs.append(self[(i, j, 0)])
         # round to avoid differences due to floating point math
-        locList.sort(
+        locs.sort(
             key=lambda loc: (
                 round(numpy.linalg.norm(loc.getGlobalCoordinates()), 6),
                 loc.i,  # loc.i=ring
                 loc.j,
             )
         )  # loc.j= pos
-        return locList[:nLocs]
+        return locs[:nLocs]
 
     # TODO: this is only used by testing and another method that just needs the count of assemblies
     #       in a ring, not the actual positions

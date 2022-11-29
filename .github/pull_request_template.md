@@ -22,7 +22,7 @@
 
 <!-- Check the project-level cruft -->
 
-- [ ] The [release notes](https://terrapower.github.io/armi/release/index.html) are up-to-date with any bug fixes or new features.
+- [ ] The [release notes](https://terrapower.github.io/armi/release/index.html) (location `doc/release/0.X.rst`) are up-to-date with any bug fixes or new features.
 - [ ] The documentation is still up-to-date in the `doc` folder.
 - [ ] The dependencies are still up-to-date in `setup.py`.
 

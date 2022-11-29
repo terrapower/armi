@@ -12,16 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Tests for nuclideBases.
-"""
-import unittest
+"""Tests for nuclideBases"""
+# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import random
 import re
+import unittest
 
-from armi.nucDirectory import nuclideBases
 from armi.nucDirectory import elements
-
+from armi.nucDirectory import nuclideBases
 from armi.nucDirectory.tests import NUCDIRECTORY_TESTS_DEFAULT_DIR_PATH
 
 
@@ -272,6 +270,11 @@ class TestNuclide(unittest.TestCase):
             self.assertFalse(nb.isHeavyMetal())
         for nb in nuclideBases.where(lambda nn: nn.z > 89):
             self.assertTrue(nb.isHeavyMetal())
+
+    def test_getDecay(self):
+        nb = list(nuclideBases.where(lambda nn: nn.z == 89))[0]
+        # This test is a bit boring, because the test nuclide library is a bit boring.
+        self.assertIsNone(nb.getDecay("sf"))
 
     def test_getEndfMatNum(self):
         self.assertEqual(nuclideBases.byName["U235"].getEndfMatNum(), "9228")

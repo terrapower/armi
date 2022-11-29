@@ -30,11 +30,16 @@ from armi import runLog
 from armi.meta import __version__ as version
 from armi import context
 from armi.settings.setting import Setting
-from armi.settings import settingsRules
 from armi.utils.customExceptions import (
     InvalidSettingsFileError,
+    InvalidSettingsStopProcess,
     SettingException,
 )
+
+# Constants defining valid output styles
+WRITE_SHORT = "short"
+WRITE_MEDIUM = "medium"
+WRITE_FULL = "full"
 
 
 class Roots:
@@ -239,62 +244,42 @@ class SettingsReader:
             runLog.warning("Ignoring invalid settings: {}".format(invalidNames))
 
     def _applySettings(self, name, val):
-        nameToSet, _wasRenamed = self._renamer.renameSetting(name)
-        settingsToApply = self.applyConversions(nameToSet, val)
-        for settingName, value in settingsToApply.items():
-            if settingName not in self.cs:
-                self.invalidSettings.add(settingName)
-            else:
-                # apply validations
-                _settingObj = self.cs.getSetting(settingName)
+        """Add a setting, if it is valid. Capture invalid settings."""
+        _nameToSet, _wasRenamed = self._renamer.renameSetting(name)
 
-                # The value is automatically coerced into the expected type
-                # when set using either the default or user-defined schema
-                self.cs[settingName] = value
+        if name not in self.cs:
+            self.invalidSettings.add(name)
+        else:
+            # apply validations
+            _settingObj = self.cs.getSetting(name)
 
-    def applyConversions(self, name, value):
-        """
-        Applies conversion rules to give special behavior to certain named settings.
-
-        Intended to be applied on setting names and attributes as soon as they're read
-        in keep in mind everything in the attributes dictionary is still a string even
-        if it's intended to be something else later, that happens at a later stage.
-        """
-        # general needs to come first for things like renaming.
-        settingsToApply = {}
-        for func in settingsRules.GENERAL_CONVERSIONS:
-            settingsToApply.update(func(self.cs, name, value))
-
-        func = settingsRules.TARGETED_CONVERSIONS.get(name, None)
-        if func is not None:
-            settingsToApply.update(func(self.cs, name, value))
-
-        return settingsToApply
+            # The val is automatically coerced into the expected type
+            # when set using either the default or user-defined schema
+            self.cs[name] = val
 
 
 class SettingsWriter:
     """Writes settings out to files.
 
-    This can write in two styles:
+    This can write in three styles:
 
     short
         setting values that are not their defaults only
+    medium
+        preserves all settings originally in file even if they match the default value
     full
         all setting values regardless of default status
 
     """
 
-    class Styles:
-        """Enumeration of valid output styles"""
-
-        short = "short"
-        full = "full"
-
-    def __init__(self, settings_instance, style="short"):
+    def __init__(self, settings_instance, style="short", settingsSetByUser=[]):
         self.cs = settings_instance
         self.style = style
-        if style not in {self.Styles.short, self.Styles.full}:
+        if style not in {WRITE_SHORT, WRITE_MEDIUM, WRITE_FULL}:
             raise ValueError("Invalid supplied setting writing style {}".format(style))
+        # The writer should know about the old settings it is overwriting,
+        # but only sometimes (when the style is medium)
+        self.settingsSetByUser = settingsSetByUser
 
     @staticmethod
     def _getVersion():
@@ -337,10 +322,17 @@ class SettingsWriter:
         This is general so it can be dumped to whatever file format.
         """
         settingData = collections.OrderedDict()
-        for _settingName, settingObject in iter(
+        for settingName, settingObject in iter(
             sorted(self.cs.items(), key=lambda name: name[0].lower())
         ):
-            if self.style == self.Styles.short and not settingObject.offDefault:
+            if self.style == WRITE_SHORT and not settingObject.offDefault:
+                continue
+
+            if (
+                self.style == WRITE_MEDIUM
+                and not settingObject.offDefault
+                and settingName not in self.settingsSetByUser
+            ):
                 continue
 
             attribs = settingObject.getCustomAttributes().items()

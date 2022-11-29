@@ -19,7 +19,6 @@ import unittest
 import h5py
 import numpy as np
 
-from armi.bookkeeping.db import database3
 from armi.bookkeeping.db.compareDB3 import (
     _compareAuxData,
     _diffSimpleData,
@@ -28,6 +27,7 @@ from armi.bookkeeping.db.compareDB3 import (
     DiffResults,
     OutputWriter,
 )
+from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.reactor.tests import test_reactors
 from armi.tests import mockRunLogs, TEST_ROOT
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
@@ -86,13 +86,15 @@ class TestCompareDB3(unittest.TestCase):
     def test_compareDatabaseDuplicate(self):
         """end-to-end test of compareDatabases() on a photocopy database"""
         # build two super-simple H5 files for testing
-        o, r = test_reactors.loadTestReactor(TEST_ROOT)
+        o, r = test_reactors.loadTestReactor(
+            TEST_ROOT, customSettings={"reloadDBName": "reloadingDB.h5"}
+        )
 
         # create two DBs, identical but for file names
         dbs = []
         for i in range(2):
             # create the tests DB
-            dbi = database3.DatabaseInterface(r, o.cs)
+            dbi = DatabaseInterface(r, o.cs)
             dbi.initDB(fName=self._testMethodName + str(i) + ".h5")
             db = dbi.database
 
@@ -115,7 +117,9 @@ class TestCompareDB3(unittest.TestCase):
     def test_compareDatabaseSim(self):
         """end-to-end test of compareDatabases() on very simlar databases"""
         # build two super-simple H5 files for testing
-        o, r = test_reactors.loadTestReactor(TEST_ROOT)
+        o, r = test_reactors.loadTestReactor(
+            TEST_ROOT, customSettings={"reloadDBName": "reloadingDB.h5"}
+        )
 
         # create two DBs, identical but for file names
         dbs = []
@@ -134,7 +138,7 @@ class TestCompareDB3(unittest.TestCase):
             )
 
             # create the tests DB
-            dbi = database3.DatabaseInterface(r, cs)
+            dbi = DatabaseInterface(r, cs)
             dbi.initDB(fName=self._testMethodName + str(nCycles) + ".h5")
             db = dbi.database
 

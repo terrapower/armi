@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Test reading/writing of NHFLUX dataset."""
+# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import os
 import re
 import shutil
@@ -24,7 +25,7 @@ import numpy as np
 
 from armi import settings
 from armi.nuclearDataIO.cccc import nhflux
-
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 THIS_DIR = os.path.dirname(__file__)
 
@@ -180,13 +181,13 @@ class TestNhflux(unittest.TestCase):
 
     def test_write(self):
         """Verify binary equivalence of written binary file."""
-        nhflux.NhfluxStream.writeBinary(self.nhf, "NHFLUX2")
-        with open(SIMPLE_HEXZ_NHFLUX, "rb") as f1, open("NHFLUX2", "rb") as f2:
-            expectedData = f1.read()
-            actualData = f2.read()
-        for expected, actual in zip(expectedData, actualData):
-            self.assertEqual(expected, actual)
-        os.remove("NHFLUX2")
+        with TemporaryDirectoryChanger():
+            nhflux.NhfluxStream.writeBinary(self.nhf, "NHFLUX2")
+            with open(SIMPLE_HEXZ_NHFLUX, "rb") as f1, open("NHFLUX2", "rb") as f2:
+                expectedData = f1.read()
+                actualData = f2.read()
+            for expected, actual in zip(expectedData, actualData):
+                self.assertEqual(expected, actual)
 
 
 class TestNhfluxVariant(unittest.TestCase):
@@ -211,7 +212,6 @@ class TestNhfluxVariant(unittest.TestCase):
         self.assertEqual(self.nhf.metadata["nMoms"], 0)
 
     def test_fluxMoments(self):
-        """"""
         # node 1 (ring=1, position=1), axial=3, group=2
         i = 0
         self.assertEqual(self.nhf.geodstCoordMap[i], 13)
@@ -239,12 +239,16 @@ class TestNhfluxVariant(unittest.TestCase):
         )
 
     def test_write(self):
-        """
-        Verify binary equivalence of written binary file. This test is not currently
-        possible because all of the partial current moments are not stored by the reader,
-        so the missing moments cannot be written to the file.
-        """
-        pass
+        """Verify binary equivalence of written binary file"""
+        with TemporaryDirectoryChanger():
+            nhflux.NhfluxStreamVariant.writeBinary(self.nhf, "NHFLUX2")
+            with open(SIMPLE_HEXZ_NHFLUX_VARIANT, "rb") as f1, open(
+                "NHFLUX2", "rb"
+            ) as f2:
+                expectedData = f1.read()
+                actualData = f2.read()
+            for expected, actual in zip(expectedData, actualData):
+                self.assertEqual(expected, actual)
 
 
 if __name__ == "__main__":

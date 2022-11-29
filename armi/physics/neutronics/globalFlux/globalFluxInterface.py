@@ -21,22 +21,24 @@ from typing import Dict, Optional
 import numpy
 import scipy.integrate
 
-from armi import runLog
 from armi import interfaces
-from armi.utils import units, codeTiming, getMaxBurnSteps
+from armi import runLog
+from armi.physics import constants
+from armi.physics import executers
+from armi.physics import neutronics
 from armi.reactor import geometry
 from armi.reactor import reactors
-from armi.reactor.converters import uniformMesh
+from armi.reactor.blocks import Block
 from armi.reactor.converters import geometryConverters
-from armi.reactor import assemblies
+from armi.reactor.converters import uniformMesh
 from armi.reactor.flags import Flags
-from armi.physics import neutronics
-from armi.physics import executers
+from armi.utils import units, codeTiming, getMaxBurnSteps
 
 ORDER = interfaces.STACK_ORDER.FLUX
 
 RX_ABS_MICRO_LABELS = ["nGamma", "fission", "nalph", "np", "nd", "nt"]
 RX_PARAM_NAMES = ["rateCap", "rateFis", "rateProdN2n", "rateProdFis", "rateAbs"]
+
 
 # pylint: disable=too-many-public-methods
 class GlobalFluxInterface(interfaces.Interface):
@@ -63,7 +65,8 @@ class GlobalFluxInterface(interfaces.Interface):
             self.nodeFmt = "1d"  # produce ig001_1.inp.
         self._bocKeff = None  # for tracking rxSwing
 
-    def getHistoryParams(self):
+    @staticmethod
+    def getHistoryParams():
         """Return parameters that will be added to assembly versus time history printouts."""
         return ["detailedDpa", "detailedDpaPeak", "detailedDpaPeakRate"]
 
@@ -296,6 +299,7 @@ class GlobalFluxOptions(executers.ExecutionOptions):
         self.isRestart = None
         self.energyDepoCalcMethodStep = None  # for gamma transport/normalization
         self.detailedAxialExpansion = None
+
         self.boundaries = None
         self.xsKernel = None
 
@@ -303,6 +307,8 @@ class GlobalFluxOptions(executers.ExecutionOptions):
         self.aclpDoseLimit = None
         self.loadPadElevation = None
         self.loadPadLength = None
+        self.cs = None
+        self.savePhysicsFilesList = None
 
         self._geomType: geometry.GeomType
         self.symmetry: str
@@ -327,6 +333,9 @@ class GlobalFluxOptions(executers.ExecutionOptions):
         self.adjoint = neutronics.adjointCalculationRequested(cs)
         self.real = neutronics.realCalculationRequested(cs)
         self.detailedAxialExpansion = cs["detailedAxialExpansion"]
+        self.hasNonUniformAssems = any(
+            [Flags.fromStringIgnoreErrors(f) for f in cs["nonUniformAssemFlags"]]
+        )
         self.eigenvalueProblem = cs["eigenProb"]
 
         # dose/dpa specific (should be separate subclass?)
@@ -336,10 +345,18 @@ class GlobalFluxOptions(executers.ExecutionOptions):
         self.loadPadLength = cs["loadPadLength"]
         self.boundaries = cs["boundaries"]
         self.xsKernel = cs["xsKernel"]
+        self.cs = cs
+        self.savePhysicsFilesList = cs["savePhysicsFiles"]
 
     def fromReactor(self, reactor: reactors.Reactor):
         self.geomType = reactor.core.geomType
         self.symmetry = reactor.core.symmetry
+
+        cycleNodeStamp = f"{reactor.p.cycle:03d}{reactor.p.timeNode:03d}"
+        if self.savePhysicsFilesList is not None:
+            self.savePhysicsFiles = cycleNodeStamp in self.savePhysicsFilesList
+        else:
+            self.savePhysicsFiles = False
 
 
 class GlobalFluxExecuter(executers.DefaultExecuter):
@@ -402,16 +419,19 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
                 + "This is a programming error and requires further investigation."
             )
         neutronicsReactor = self.r
-        if self.options.detailedAxialExpansion:
-            converter = self.geomConverters.get("axial")
-            if not converter:
+        converter = self.geomConverters.get("axial")
+        if not converter:
+            if self.options.detailedAxialExpansion or self.options.hasNonUniformAssems:
                 converter = uniformMesh.NeutronicsUniformMeshConverter(
-                    None,
+                    cs=self.options.cs,
                     calcReactionRates=self.options.calcReactionRatesOnMeshConversion,
                 )
-                neutronicsReactor = converter.convert(self.r)
+                converter.convert(self.r)
+                neutronicsReactor = converter.convReactor
+
                 if makePlots:
                     converter.plotConvertedReactor()
+
                 self.geomConverters["axial"] = converter
 
         if self.edgeAssembliesAreNeeded():
@@ -443,21 +463,26 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
             geomConverter.scaleParamsRelatedToSymmetry(
                 self.r, paramsToScaleSubset=self.options.paramsToScaleSubset
             )
+
+            # Resets the reactor core model to the correct symmetry and removes
+            # stored attributes on the converter to ensure that there is
+            # state data that is long-lived on the object in case the garbage
+            # collector does not remove it. Additionally, this will reset the
+            # global assembly counter.
             geomConverter.removeEdgeAssemblies(self.r.core)
 
         meshConverter = self.geomConverters.get("axial")
+
         if meshConverter:
-            if self.options.applyResultsToReactor:
+            if self.options.applyResultsToReactor or self.options.hasNonUniformAssems:
                 meshConverter.applyStateToOriginal()
             self.r = meshConverter._sourceReactor  # pylint: disable=protected-access;
 
-        nAssemsBeforeConversion = [
-            converter.getAssemblyModuleCounter()
-            for converter in (geomConverter, meshConverter)
-            if converter is not None
-        ]
-        if nAssemsBeforeConversion:
-            assemblies.setAssemNumCounter(min(nAssemsBeforeConversion))
+            # Resets the stored attributes on the converter to
+            # ensure that there is state data that is long-lived on the
+            # object in case the garbage collector does not remove it.
+            # Additionally, this will reset the global assembly counter.
+            meshConverter.reset()
 
         # clear the converters in case this function gets called twice
         self.geomConverters = {}
@@ -560,6 +585,60 @@ class GlobalFluxResultMapper(interfaces.OutputReader):
         self.r.core.p.maxPD = self.r.core.getMaxParam("arealPd")
         self._updateAssemblyLevelParams()
 
+    def getDpaXs(self, b: Block):
+        """Determine which cross sections should be used to compute dpa for a block.
+
+        Parameters
+        ----------
+        b: Block
+            The block we want the cross sections for
+
+        Returns
+        -------
+            list : cross section values
+        """
+        if self.cs["gridPlateDpaXsSet"] and b.hasFlags(Flags.GRID_PLATE):
+            dpaXsSetName = self.cs["gridPlateDpaXsSet"]
+        else:
+            dpaXsSetName = self.cs["dpaXsSet"]
+
+        try:
+            return constants.DPA_CROSS_SECTIONS[dpaXsSetName]
+        except KeyError:
+            raise KeyError(
+                "DPA cross section set {} does not exist".format(dpaXsSetName)
+            )
+
+    def getBurnupPeakingFactor(self, b: Block):
+        """
+        Get the radial peaking factor to be applied to burnup and DPA for a Block
+
+        This may be informed by previous runs which used
+        detailed pin reconstruction and rotation. In that case,
+        it should be set on the cs setting ``burnupPeakingFactor``.
+
+        Otherwise, it just takes the current flux peaking, which
+        is typically conservatively high.
+
+        Parameters
+        ----------
+        b: Block
+            The block we want the peaking factor for
+
+        Returns
+        -------
+        burnupPeakingFactor : float
+            The peak/avg factor for burnup and DPA.
+        """
+        burnupPeakingFactor = self.cs["burnupPeakingFactor"]
+        if not burnupPeakingFactor and b.p.fluxPeak:
+            burnupPeakingFactor = b.p.fluxPeak / b.p.flux
+        elif not burnupPeakingFactor:
+            # no peak available. Finite difference model?
+            burnupPeakingFactor = 1.0
+
+        return burnupPeakingFactor
+
     def updateDpaRate(self, blockList=None):
         """
         Update state parameters that can be known right after the flux is computed
@@ -567,30 +646,27 @@ class GlobalFluxResultMapper(interfaces.OutputReader):
         See Also
         --------
         updateFluenceAndDpa : uses values computed here to update cumulative dpa
-
         """
         if blockList is None:
             blockList = self.r.core.getBlocks()
+
         hasDPA = False
         for b in blockList:
-            xs = b.getDpaXs()
-            if not xs:
-                continue
+            xs = self.getDpaXs(b)
             hasDPA = True
             flux = b.getMgFlux()  # n/cm^2/s
             dpaPerSecond = computeDpaRate(flux, xs)
-            b.p.detailedDpaPeakRate = dpaPerSecond * b.getBurnupPeakingFactor()
+            b.p.detailedDpaPeakRate = dpaPerSecond * self.getBurnupPeakingFactor(b)
             b.p.detailedDpaRate = dpaPerSecond
 
         if not hasDPA:
             return
-        self.r.core.p.peakGridDpaAt60Years = (
-            self.r.core.getMaxBlockParam(
-                "detailedDpaPeakRate", typeSpec=Flags.GRID_PLATE, absolute=False
-            )
-            * 60.0
-            * units.SECONDS_PER_YEAR
+
+        peakRate = self.r.core.getMaxBlockParam(
+            "detailedDpaPeakRate", typeSpec=Flags.GRID_PLATE, absolute=False
         )
+        self.r.core.p.peakGridDpaAt60Years = peakRate * 60.0 * units.SECONDS_PER_YEAR
+
         # also update maxes at this point (since this runs at every timenode, not just those w/ depletion steps)
         self.updateMaxDpaParams()
 
@@ -652,6 +728,7 @@ class DoseResultsMapper(GlobalFluxResultMapper):
     def __init__(self, depletionSeconds, options):
         self.success = False
         self.options = options
+        self.cs = self.options.cs
         self.r = None
         self.depletionSeconds = depletionSeconds
 
@@ -712,7 +789,7 @@ class DoseResultsMapper(GlobalFluxResultMapper):
             )
 
         for b in blockList:
-            burnupPeakingFactor = b.getBurnupPeakingFactor()
+            burnupPeakingFactor = self.getBurnupPeakingFactor(b)
             b.p.residence += stepTimeInSeconds / units.SECONDS_PER_DAY
             b.p.fluence += b.p.flux * stepTimeInSeconds
             b.p.fastFluence += b.p.flux * stepTimeInSeconds * b.p.fastFluxFr
@@ -1065,10 +1142,10 @@ def calcReactionRates(obj, keff, lib):
 
         nucMc = lib.getNuclide(nucName, obj.getMicroSuffix())
         micros = nucMc.micros
-        for g, groupGlux in enumerate(obj.getMgFlux()):
+        for g, groupFlux in enumerate(obj.getMgFlux()):
 
             # dE = flux_e*dE
-            dphi = numberDensity * groupGlux
+            dphi = numberDensity * groupFlux
 
             tot += micros.total[g, 0] * dphi
             # absorption is fission + capture (no n2n here)

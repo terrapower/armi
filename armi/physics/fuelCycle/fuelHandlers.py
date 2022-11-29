@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """
 This module handles fuel management operations such as translation, rotation, and
 fuel processing (in fluid systems).
@@ -25,7 +24,6 @@ the particular shuffling of a case.
 
 This module also handles repeat shuffles when doing a restart.
 """
-import math
 import os
 import re
 import warnings
@@ -33,11 +31,11 @@ import warnings
 import numpy
 
 from armi import runLog
-from armi.utils.customExceptions import InputError
-from armi.reactor.flags import Flags
-from armi.utils.mathematics import findClosest, resampleStepwise
+from armi.physics.fuelCycle import assemblyRotationAlgorithms as rotAlgos
 from armi.physics.fuelCycle.fuelHandlerFactory import fuelHandlerFactory
 from armi.physics.fuelCycle.fuelHandlerInterface import FuelHandlerInterface
+from armi.reactor.flags import Flags
+from armi.utils.customExceptions import InputError
 
 
 class FuelHandler:
@@ -129,16 +127,16 @@ class FuelHandler:
 
         # do rotations if pin-level details are available (requires fluxRecon plugin)
         if self.cs["fluxRecon"] and self.cs["assemblyRotationAlgorithm"]:
-            # Rotate assemblies ONLY IF at least some assemblies have pin detail (enabled by fluxRecon)
+            # Rotate assemblies ONLY IF at least some assemblies have pin detail
             # The user can choose the algorithm method name directly in the settings
-            if hasattr(self, self.cs["assemblyRotationAlgorithm"]):
-                rotationMethod = getattr(self, self.cs["assemblyRotationAlgorithm"])
+            if hasattr(rotAlgos, self.cs["assemblyRotationAlgorithm"]):
+                rotationMethod = getattr(rotAlgos, self.cs["assemblyRotationAlgorithm"])
                 rotationMethod()
             else:
                 raise RuntimeError(
                     "FuelHandler {0} does not have a rotation algorithm called {1}.\n"
                     'Change your "assemblyRotationAlgorithm" setting'
-                    "".format(self, self.cs["assemblyRotationAlgorithm"])
+                    "".format(rotAlgos, self.cs["assemblyRotationAlgorithm"])
                 )
 
         # inform the reactor of how many moves occurred so it can put the number in the database.
@@ -178,9 +176,7 @@ class FuelHandler:
         return moved
 
     def chooseSwaps(self, shuffleFactors=None):
-        """
-        Moves the fuel around or otherwise processes it between cycles.
-        """
+        """Moves the fuel around or otherwise processes it between cycles."""
         raise NotImplementedError
 
     @staticmethod
@@ -205,192 +201,6 @@ class FuelHandler:
         defaultFactorList = {"eqShuffles": 1}
         factorSearchFlags = []
         return defaultFactorList, factorSearchFlags
-
-    def simpleAssemblyRotation(self):
-        """
-        Rotate all pin-detail assemblies that were just shuffled by 60 degrees
-
-        Notes
-        -----
-        Also, optionally rotate stationary (non-shuffled) assemblies if the setting is set.
-        Obviously, only pin-detail assemblies can be rotated, because homogenized assemblies are isotropic.
-
-        Examples
-        --------
-        >>> fh.simpleAssemblyRotation()
-
-        See Also
-        --------
-        buReducingAssemblyRotation : an alternative rotation algorithm
-        outage : calls this method based on a user setting
-        """
-        runLog.info("Rotating assemblies by 60 degrees")
-        numRotated = 0
-        hist = self.o.getInterface("history")
-        for a in hist.getDetailAssemblies():
-            if a in self.moved or self.cs["assemblyRotationStationary"]:
-                a.rotatePins(1)
-                numRotated += 1
-                i, j = a.spatialLocator.getRingPos()  # hex indices (i,j) = (ring,pos)
-                runLog.extra(
-                    "Rotating Assembly ({0},{1}) to Orientation {2}".format(i, j, 1)
-                )
-        runLog.extra("Rotated {0} assemblies".format(numRotated))
-
-    def buReducingAssemblyRotation(self):
-        r"""
-        Rotates all detail assemblies to put the highest bu pin in the lowest power orientation
-
-        See Also
-        --------
-        simpleAssemblyRotation : an alternative rotation algorithm
-        outage : calls this method based on a user setting
-
-        """
-
-        runLog.info("Algorithmically rotating assemblies to minimize burnup")
-        numRotated = 0
-        hist = self.o.getInterface("history")
-        for aPrev in self.moved:  # much more convenient to loop through aPrev first
-            aNow = self.r.core.getAssemblyWithStringLocation(aPrev.lastLocationLabel)
-            # no point in rotation if there's no pin detail
-            if aNow in hist.getDetailAssemblies():
-
-                rot = self.getOptimalAssemblyOrientation(aNow, aPrev)
-                aNow.rotatePins(rot)  # rot = integer between 0 and 5
-                numRotated += 1
-                # Print out rotation operation (mainly for testing)
-                # hex indices (i,j) = (ring,pos)
-                (i, j) = aNow.spatialLocator.getRingPos()
-                runLog.important(
-                    "Rotating Assembly ({0},{1}) to Orientation {2}".format(i, j, rot)
-                )
-
-        # rotate NON-MOVING assemblies (stationary)
-        if self.cs["assemblyRotationStationary"]:
-            for a in hist.getDetailAssemblies():
-                if a not in self.moved:
-                    rot = self.getOptimalAssemblyOrientation(a, a)
-                    a.rotatePins(rot)  # rot = integer between 0 and 6
-                    numRotated += 1
-                    (i, j) = a.spatialLocator.getRingPos()
-                    runLog.important(
-                        "Rotating Assembly ({0},{1}) to Orientation {2}".format(
-                            i, j, rot
-                        )
-                    )
-
-        runLog.info("Rotated {0} assemblies".format(numRotated))
-
-    @staticmethod
-    def getOptimalAssemblyOrientation(a, aPrev):
-        """
-        Get optimal assembly orientation/rotation to minimize peak burnup.
-
-        Notes
-        -----
-        Works by placing the highest-BU pin in the location (of 6 possible locations) with lowest
-        expected pin power. We evaluated "expected pin power" based on the power distribution in
-        aPrev, which is the previous assembly located here. If aPrev has no pin detail, then we must use its
-        corner fast fluxes to make an estimate.
-
-        Parameters
-        ----------
-        a : Assembly object
-            The assembly that is being rotated.
-
-        aPrev : Assembly object
-            The assembly that previously occupied this location (before the last shuffle).
-
-            If the assembly "a" was not shuffled, then "aPrev" = "a".
-
-            If "aPrev" has pin detail, then we will determine the orientation of "a" based on
-            the pin powers of "aPrev" when it was located here.
-
-            If "aPrev" does NOT have pin detail, then we will determine the orientation of "a" based on
-            the corner fast fluxes in "aPrev" when it was located here.
-
-        Returns
-        -------
-        rot : int
-            An integer from 0 to 5 representing the "orientation" of the assembly.
-            This orientation is relative to the current assembly orientation.
-            rot = 0 corresponds to no rotation.
-            rot represents the number of pi/3 counterclockwise rotations for the default orientation.
-
-        Examples
-        --------
-        >>> fh.getOptimalAssemblyOrientation(a,aPrev)
-        4
-
-        See Also
-        --------
-        rotateAssemblies : calls this to figure out how to rotate
-        """
-
-        # determine whether or not aPrev had pin details
-        fuelPrev = aPrev.getFirstBlock(Flags.FUEL)
-        if fuelPrev:
-            aPrevDetailFlag = fuelPrev.p.pinLocation[4] is not None
-        else:
-            aPrevDetailFlag = False
-
-        rot = 0  # default: no rotation
-        # First get pin index of maximum BU in this assembly.
-        _maxBuAssem, maxBuBlock = a.getMaxParam("percentBuMax", returnObj=True)
-        if maxBuBlock is None:
-            # no max block. They're all probably zero
-            return rot
-        # start at 0 instead of 1
-        maxBuPinIndexAssem = int(maxBuBlock.p.percentBuMaxPinLocation - 1)
-        bIndexMaxBu = a.index(maxBuBlock)
-
-        if maxBuPinIndexAssem == 0:
-            # Don't bother rotating if the highest-BU pin is the central pin. End this method.
-            return rot
-
-        else:
-
-            # transfer percentBuMax rotated pin index to non-rotated pin index
-            # maxBuPinIndexAssem = self.pinIndexLookup[maxBuPinIndexAssem]
-            # dummyList = numpy.where(self.pinIndexLookup == maxBuPinIndexAssem)
-            # maxBuPinIndexAssem = dummyList[0][0]
-
-            if aPrevDetailFlag:
-
-                # aPrev has pin detail. Excellent!
-                # Determine which of 6 possible rotated pin indices had the lowest power when aPrev was here.
-
-                prevAssemPowHereMIN = float("inf")
-
-                for possibleRotation in range(6):  # k = 1,2,3,4,5
-                    # get rotated pin index
-                    indexLookup = maxBuBlock.rotatePins(
-                        possibleRotation, justCompute=True
-                    )
-                    # rotated index of highest-BU pin
-                    index = int(indexLookup[maxBuPinIndexAssem])
-                    # get pin power at this index in the previously assembly located here
-                    # power previously at rotated index
-                    prevAssemPowHere = aPrev[bIndexMaxBu].p.linPowByPin[index - 1]
-
-                    if prevAssemPowHere is not None:
-                        runLog.debug(
-                            "Previous power in rotation {0} where pinLoc={1} is {2:.4E} W/cm"
-                            "".format(possibleRotation, index, prevAssemPowHere)
-                        )
-                        if prevAssemPowHere < prevAssemPowHereMIN:
-                            prevAssemPowHereMIN = prevAssemPowHere
-                            rot = possibleRotation
-
-            else:
-                raise ValueError(
-                    "Cannot perform detailed rotation analysis without pin-level "
-                    "flux information."
-                )
-
-            runLog.debug("Best relative rotation is {0}".format(rot))
-            return rot
 
     def _prepCore(self):
         """Aux. function to run before XS generation (do moderation, etc. here)"""
@@ -732,6 +542,7 @@ class FuelHandler:
                         # this assembly is in the excluded location list. skip it.
                         continue
 
+                # only continue of the Assembly is in a Zone
                 if zoneList:
                     found = False  # guilty until proven innocent
                     for zone in zoneList:
@@ -794,7 +605,7 @@ class FuelHandler:
                 return minDiff[1]
 
         if not minDiff[1]:
-            # warning("can't find assembly in targetRing %d with close %s to %s" % (targetRing,param,compareTo),'findAssembly')
+            # can't find assembly in targetRing with close param to compareTo
             pass
 
         if findMany:
@@ -841,7 +652,6 @@ class FuelHandler:
         -------
         assemblyList : list
             List of assemblies in each ring of the ringList. [[a1,a2,a3],[a4,a5,a6,a7],...]
-
         """
         assemblyList = [[] for _i in range(len(ringList))]  # empty lists for each ring
         if exclusions is None:
@@ -868,9 +678,7 @@ class FuelHandler:
                         assemListTmp2.append(a)
                     # make the list of lists of assemblies
                     assemblyList[i] = assemListTmp2
-
         else:
-
             if ringList[0] == "SFP":
                 # kind of a hack for now. Need the capability.
                 assemList = self.r.core.sfp.getChildren()
@@ -1097,7 +905,6 @@ class FuelHandler:
         processMoveList : Converts a stored list of moves into a functional list of assemblies to swap
         makeShuffleReport : Creates the file that is processed here
         """
-
         # read moves file
         moves = self.readMoves(explicitRepeatShuffles)
         # get the correct cycle number
@@ -1146,7 +953,6 @@ class FuelHandler:
         repeatShufflePattern : reads this file and repeats the shuffling
         outage : creates the moveList in the first place.
         makeShuffleReport : writes the file that is read here.
-
         """
         try:
             f = open(fname)
@@ -1221,7 +1027,8 @@ class FuelHandler:
         )
         return moves
 
-    def trackChain(self, moveList, startingAt, alreadyDone=None):
+    @staticmethod
+    def trackChain(moveList, startingAt, alreadyDone=None):
         r"""
         builds a chain of locations based on starting location
 
@@ -1258,9 +1065,7 @@ class FuelHandler:
         See Also
         --------
         repeatShufflePattern
-        mcnpInterface.getMoveCards
         processMoveList
-
         """
         if alreadyDone is None:
             alreadyDone = []
@@ -1378,13 +1183,10 @@ class FuelHandler:
         --------
         makeShuffleReport : writes the file that is being processed
         repeatShufflePattern : uses this to repeat shuffles
-
         """
         alreadyDone = []
         loadChains = []  # moves that have discharges
-        loadChargeTypes = (
-            []
-        )  # the assembly types (strings) that should be used in a load chain.
+        loadChargeTypes = []  # the assembly types (str) to be used in a load chain.
         loopChains = []  # moves that don't have discharges
         enriches = []  # enrichments of each loadChain
         loadNames = []  # assembly name of each load assembly (to read from SFP)
@@ -1397,7 +1199,7 @@ class FuelHandler:
 
             elif "SFP" in toLoc or "ExCore" in toLoc:
                 # discharge. Track chain.
-                chain, enrichList, assemType, loadAssemName = self.trackChain(
+                chain, enrichList, assemType, loadAssemName = FuelHandler.trackChain(
                     moveList, startingAt=fromLoc
                 )
                 runLog.extra(
@@ -1422,7 +1224,7 @@ class FuelHandler:
                 continue
             else:
                 # normal move
-                chain, _enrichList, _assemType, _loadAssemName = self.trackChain(
+                chain, _enrichList, _assemType, _loadAssemName = FuelHandler.trackChain(
                     moveList, startingAt=fromLoc
                 )
                 loopChains.append(chain)
@@ -1537,122 +1339,6 @@ class FuelHandler:
 
         return moved
 
-    def buildEqRingSchedule(self, ringSchedule):
-        r"""
-        Expands simple ringSchedule input into full-on location schedule
-
-        Parameters
-        ----------
-        ringSchedule, r, cs
-
-        Returns
-        -------
-        locationSchedule : list
-
-        """
-
-        def squaredDistanceFromOrigin(a):
-            origin = numpy.array([0.0, 0.0, 0.0])
-            p = numpy.array(a.spatialLocator.getLocalCoordinates())
-            return ((p - origin) ** 2).sum()
-
-        def assemAngle(a):
-            x, y, _ = a.spatialLocator.getLocalCoordinates()
-            return math.atan2(y, x)
-
-        locationSchedule = []
-        # start by expanding the user-input eqRingSchedule list into a list containing
-        # all the rings as it goes.
-        ringList = self.buildEqRingScheduleHelper(ringSchedule)
-
-        # now build the locationSchedule ring by ring using this ringSchedule.
-        lastRing = 0
-        for ring in ringList:
-            assemsInRing = self.r.core.getAssembliesInRing(ring, typeSpec=Flags.FUEL)
-            if self.cs["circularRingOrder"] == "angle":
-                sorter = lambda a: assemAngle(a)
-            elif self.cs["circularRingOrder"] == "distanceSmart":
-                if lastRing == ring + 1:
-                    # converging. Put things on the outside first.
-                    sorter = lambda a: -squaredDistanceFromOrigin(a)
-                else:
-                    # diverging. Put things on the inside first.
-                    sorter = lambda a: squaredDistanceFromOrigin(a)
-            else:
-                # purely based on distance. Can mix things up in convergent-divergent cases. Prefer distanceSmart
-                sorter = lambda a: squaredDistanceFromOrigin(a)
-            assemsInRing = sorted(assemsInRing, key=sorter)
-            for a in assemsInRing:
-                locationSchedule.append(a.getLocation())
-            lastRing = ring
-        return locationSchedule
-
-    def buildEqRingScheduleHelper(self, ringSchedule):
-        r"""
-        turns ringScheduler into explicit list of rings
-
-        Pulled out of buildEqRingSchedule for testing.
-
-        Parameters
-        ----------
-        ringSchedule : list
-            List of ring bounds that is required to be an even number of entries.  These
-            entries then are used in a from - to approach to add the rings.  The from ring will
-            always be included.
-
-        Returns
-        -------
-        ringList : list
-            List of all rings in the order they should be shuffled.
-
-        Examples
-        --------
-        >>> buildEqRingScheduleHelper([1,5])
-        [1,2,3,4,5]
-
-        >>> buildEqRingScheduleHelper([1,5,9,6])
-        [1,2,3,4,5,9,8,7,6]
-
-        >>> buildEqRingScheduleHelper([9,5,3,4,1,2])
-        [9,8,7,6,5,3,4,1,2]
-
-        >>> buildEqRingScheduleHelper([2,5,1,1])
-        [2,3,4,5,1]
-
-        """
-        if len(ringSchedule) % 2 != 0:
-            runLog.error("Ring schedule: {}".format(ringSchedule))
-            raise RuntimeError("Ring schedule does not have an even number of entries.")
-
-        ringList = []
-        for i in range(0, len(ringSchedule), 2):
-            fromRing = ringSchedule[i]
-            toRing = ringSchedule[i + 1]
-            numRings = abs(toRing - fromRing) + 1
-
-            ringList.extend(
-                [int(j) for j in numpy.linspace(fromRing, toRing, numRings)]
-            )
-
-        # eliminate doubles (but allow a ring to show up multiple times)
-        newList = []
-        lastRing = None
-        for ring in ringList:
-            if ring != lastRing:
-                newList.append(ring)
-            if self.r.core and ring > self.r.core.getNumRings():
-                # error checking.
-                runLog.warning(
-                    "Ring {0} in eqRingSchedule larger than largest ring in reactor {1}. "
-                    "Adjust shuffling.".format(ring, self.r.core.getNumRings()),
-                    single=True,
-                    label="too many rings",
-                )
-            lastRing = ring
-        ringList = newList
-
-        return ringList
-
     def workerOperate(self, cmd):
         """Handle a mpi command on the worker nodes."""
         pass
@@ -1671,7 +1357,6 @@ class FuelHandler:
         -------
         arrows : list
             Values are (currentCoords, oldCoords) tuples
-
         """
         arrows = []
         runLog.extra("Building list of shuffle arrows.")
@@ -1682,4 +1367,5 @@ class FuelHandler:
                 oldCoords = numpy.array((-50, -50, 0))
             elif any(currentCoords != oldCoords):
                 arrows.append((oldCoords, currentCoords))
+
         return arrows

@@ -21,7 +21,7 @@ data pathways.
 import os
 import hashlib
 
-from armi.utils import directoryChangers
+from armi.utils import directoryChangers, pathTools
 from armi import runLog
 from armi.context import getFastPath, MPI_RANK
 
@@ -53,6 +53,12 @@ class ExecutionOptions:
         a shared network location. Auto-applied during execution by default.
     label : str
         A name for the run that may be used as a prefix for input/output files generated.
+    interface : str
+        A name for the interface calling the Executer that may be used to organize the
+        input/output files generated within sub-folders under the working directory.
+    savePhysicsFiles : bool
+        Dump the physics kernel I/O files from the execution to a dedicated directory that
+        will not be overwritten so they will be available after the run.
     applyResultsToReactor : bool
         Update the in-memory reactor model with results upon completion. Set to False
         when information from a run is needed for auxiliary purposes rather than progressing
@@ -68,8 +74,10 @@ class ExecutionOptions:
         self.runDir = None
         self.workingDir = None
         self.label = label
+        self.interfaceName = None
         self.applyResultsToReactor = True
         self.paramsToScaleSubset = None
+        self.savePhysicsFiles = False
 
     def __repr__(self):
         return f"<{self.__class__.__name__}: {self.label}>"
@@ -178,11 +186,20 @@ class DefaultExecuter(Executer):
             )
         self._performGeometryTransformations()
         inputs, outputs = self._collectInputsAndOutputs()
+        state = f"c{self.r.p.cycle}n{self.r.p.timeNode}"
+        dirName = self.options.interfaceName or self.options.label
+        if self.options.savePhysicsFiles:
+            outputDir = os.path.join(pathTools.armiAbsPath(os.getcwd()), state, dirName)
+        else:
+            outputDir = None
         # must either write input to CWD for analysis and then copy to runDir
         # or not list it in inputs (for optimization)
         self.writeInput()
         with directoryChangers.ForcedCreationDirectoryChanger(
-            self.options.runDir, filesToMove=inputs, filesToRetrieve=outputs
+            self.options.runDir,
+            filesToMove=inputs,
+            filesToRetrieve=outputs,
+            outputPath=outputDir,
         ) as dc:
             self.options.workingDir = dc.initial
             self._execute()

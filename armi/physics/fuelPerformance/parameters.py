@@ -94,10 +94,4 @@ def _getFuelPerformanceBlockParams():
             default=0.0,
         )
 
-        pb.defParam(
-            "fuelRadialDisplacement",
-            units="cm",
-            description="Radial fuel displacement from irradiation",
-        )
-
     return pDefs

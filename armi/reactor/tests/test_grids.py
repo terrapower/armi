@@ -12,18 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for grids."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
-import unittest
-import math
+"""Tests for grids"""
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-self-use,attribute-defined-outside-init
 from io import BytesIO
+import math
+import unittest
 
-import numpy
-from six.moves import cPickle
-
-from armi.reactor import grids
-from armi.reactor import geometry
 from numpy.testing import assert_allclose
+from six.moves import cPickle
+import numpy
+
+from armi.reactor import geometry
+from armi.reactor import grids
 
 
 class MockLocator(grids.IndexLocation):
@@ -44,9 +44,7 @@ class MockCoordLocator(grids.CoordinateLocation):
 
 
 class MockArmiObject:
-    """
-    Any sort of object that can serve as a grid's armiObject attribute.
-    """
+    """Any sort of object that can serve as a grid's armiObject attribute."""
 
     def __init__(self, parent=None):
         self.parent = parent
@@ -66,7 +64,6 @@ class TestSpatialLocator(unittest.TestCase):
         is in the center of the central cube radially and the bottom axially due
         to the different way steps and bounds are set up.
         """
-
         core = MockArmiObject()
         assem = MockArmiObject(core)
         block = MockArmiObject(assem)
@@ -512,6 +509,10 @@ class TestCartesianGrid(unittest.TestCase):
                 ring, pos = grid.getRingPos((i, j))
                 self.assertEqual(ring, expectedRing[j + 3][i + 3])
                 self.assertEqual(pos, expectedPos[j + 3][i + 3])
+
+        # Bonus test of getMinimumRings() using the above grid
+        self.assertEqual(grid.getMinimumRings(7), 2)
+        self.assertEqual(grid.getMinimumRings(17), 3)
 
     def test_ringPosSplit(self):
         grid = grids.CartesianGrid.fromRectangle(1.0, 1.0)

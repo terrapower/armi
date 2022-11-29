@@ -163,8 +163,9 @@ def _getNeutronicsBlockParams():
             description="""
                 The block-level pin multigroup fluxes. pinMgFluxes[g][i] represents the flux in group g for pin i.  Flux
                 units are the standard n/cm^2/s.  The "ARMI pin ordering" is used, which is counter-clockwise from 3
-                o'clock.  See TP1-1.9.31-RPT-0010 for more details.
+                o'clock.
             """,
+            categories=[parameters.Category.pinQuantities],
             saveToDB=True,
             default=None,
         )
@@ -173,6 +174,7 @@ def _getNeutronicsBlockParams():
             "pinMgFluxesAdj",
             units="",
             description="should be a blank 3-D array, but re-defined later (ng x nPins x nAxialSegments)",
+            categories=[parameters.Category.pinQuantities],
             saveToDB=False,
             default=None,
         )
@@ -181,6 +183,7 @@ def _getNeutronicsBlockParams():
             "pinMgFluxesGamma",
             units="g/s/cm$^2$",
             description="should be a blank 3-D array, but re-defined later (ng x nPins x nAxialSegments)",
+            categories=[parameters.Category.pinQuantities],
             saveToDB=False,
             default=None,
         )
@@ -231,25 +234,7 @@ def _getNeutronicsBlockParams():
         )
 
         pb.defParam(
-            "axialMgFluxProfileAdj",
-            units="",
-            description="",
-            location=ParamLocation.AVERAGE,
-            saveToDB=False,
-            default=None,
-        )
-
-        pb.defParam(
             "axialMgFluxProfileNeutron",
-            units="",
-            description="",
-            location=ParamLocation.AVERAGE,
-            saveToDB=False,
-            default=None,
-        )
-
-        pb.defParam(
-            "axialMgFluxProfileNeutronAdj",
             units="",
             description="",
             location=ParamLocation.AVERAGE,
@@ -341,7 +326,14 @@ def _getNeutronicsBlockParams():
         pb.defParam(
             "linPow",
             units="W/m",
-            description="Pin-averaged linear heat generation rate",
+            description=(
+                "Pin-averaged linear heat rate, which is calculated by evaluating the block power and dividing "
+                "by the number of pins. If gamma transport is enabled, then this represents the combined "
+                "neutron and gamma heating. If gamma transport is disabled then this represents the energy "
+                "generation in the pin, where gammas are assumed to deposit their energy locally. Note that this "
+                "value does not implicitly account for axial and radial peaking factors within the block. Use `linPowByPin` "
+                "for obtaining the pin linear heat rate with peaking factors included."
+            ),
             location=ParamLocation.AVERAGE,
             default=0.0,
             categories=[parameters.Category.detailedAxialExpansion],
@@ -357,8 +349,15 @@ def _getNeutronicsBlockParams():
             "linPowByPin",
             setter=linPowByPin,
             units="W/cm",
-            description="Pin linear power",
+            description=(
+                "Pin linear linear heat rate, which is calculated through flux reconstruction and "
+                "accounts for axial and radial peaking factors. This differs from the `linPow` "
+                "parameter, which assumes no axial and radial peaking in the block as this information "
+                "is unavailable without detailed flux reconstruction. The same application of neutron and gamma "
+                "heating results applies."
+            ),
             location=ParamLocation.CHILDREN,
+            categories=[parameters.Category.pinQuantities],
             default=None,
         )
 
@@ -372,8 +371,9 @@ def _getNeutronicsBlockParams():
             "linPowByPinNeutron",
             setter=linPowByPinNeutron,
             units="W/cm",
-            description="Pin linear neutron power",
+            description="Pin linear neutron heat rate. This is the neutron heating component of `linPowByPin`",
             location=ParamLocation.CHILDREN,
+            categories=[parameters.Category.pinQuantities],
             default=None,
         )
 
@@ -387,14 +387,15 @@ def _getNeutronicsBlockParams():
             "linPowByPinGamma",
             setter=linPowByPinGamma,
             units="W/cm",
-            description="Pin linear gamma power",
+            description="Pin linear gamma heat rate. This is the gamma heating component of `linPowByPin`",
             location=ParamLocation.CHILDREN,
+            categories=[parameters.Category.pinQuantities],
             default=None,
         )
 
         pb.defParam(
             "reactionRates",
-            units="Reactions/sec",
+            units="#/s",
             description='List of reaction rates in specified by setting "reactionsToDB"',
             location=ParamLocation.VOLUME_INTEGRATED,
             default=None,
@@ -515,10 +516,6 @@ def _getNeutronicsBlockParams():
 
         pb.defParam("arealPd", units="MW/m^2", description="Power divided by XY area")
 
-        pb.defParam(
-            "arealPdGamma", units="MW/m^2", description="Areal gamma power density"
-        )
-
         pb.defParam("fertileBonus", units=None, description="The fertile bonus")
 
         pb.defParam(
@@ -529,18 +526,6 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "fisDensHom", units="1/cm^3/s", description="Homogenized fissile density"
-        )
-
-        pb.defParam(
-            "fluxDeltaFromRef",
-            units="None",
-            description="Relative difference between the current flux and the directly-computed perturbed flux.",
-        )
-
-        pb.defParam(
-            "fluxDirect",
-            units="n/cm^2/s",
-            description="Flux is computed with a direct method",
         )
 
         pb.defParam(
@@ -558,22 +543,6 @@ def _getNeutronicsBlockParams():
             units="n/cm^2/s",
             description="Peak neutron flux calculated within the mesh",
         )
-
-        pb.defParam(
-            "fluxPertDeltaFromDirect",
-            units="None",
-            description="Relative difference between the perturbed flux and the directly-computed perturbed flux",
-        )
-
-        pb.defParam(
-            "fluxPertDeltaFromDirectfluxRefWeighted", units="None", description=""
-        )
-
-        pb.defParam(
-            "fluxPerturbed", units="1/cm^2/s", description="Flux is computed by MEPT"
-        )
-
-        pb.defParam("fluxRef", units="1/cm^2/s", description="Reference flux")
 
         pb.defParam(
             "kInf",
@@ -666,20 +635,6 @@ def _getNeutronicsBlockParams():
 
     with pDefs.createBuilder(default=0.0) as pb:
         pb.defParam(
-            "detailedDpaNewCycle",
-            units="dpa",
-            description="The total DPA accumulated in all burn steps of one cycle",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "detailedDpaPeakNewCycle",
-            units="dpa",
-            description="The total peak DPA accumulated in all burn steps of one cycle",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
             "detailedDpaThisCycle",
             units="dpa",
             location=ParamLocation.AVERAGE,
@@ -712,6 +667,7 @@ def _getNeutronicsBlockParams():
             units="1/cm^2/s",
             description="Neutron flux above 100keV",
             location=ParamLocation.AVERAGE,
+            categories=["detailedAxialExpansion"],
         )
 
         pb.defParam(
@@ -722,46 +678,44 @@ def _getNeutronicsBlockParams():
             categories=["detailedAxialExpansion"],
         )
 
-        # This quantity should eventually be part of category 'detailedAxialExpansion'
-        # to be "remapped" (converter currently do not support arrays)
         pb.defParam(
             "cornerFastFlux",
             units="n/cm^2/s",
             description="Neutron flux above 100keV at hexagon block corners",
             location=ParamLocation.CORNERS,
+            categories=["detailedAxialExpansion", "depletion"],
             saveToDB=True,
+            default=None,
         )
 
-        # This quantity should eventually be part of category 'detailedAxialExpansion'
-        # to be "remapped" (converter currently do not support arrays)
         pb.defParam(
-            "pointsFastFluxFr",
+            "pointsCornerFastFluxFr",
             units=None,
-            description="Fraction of flux above 100keV at points within the block",
-            location=ParamLocation.CHILDREN,
+            description="Fraction of flux above 100keV at corners of the block",
+            location=ParamLocation.CORNERS,
+            categories=["detailedAxialExpansion", "depletion"],
             saveToDB=True,
+            default=None,
         )
 
-        # This quantity should eventually be part of category 'detailedAxialExpansion'
-        # to be "remapped" (converter currently do not support arrays)
         pb.defParam(
-            "pointsDpa",
+            "pointsCornerDpa",
             units="dpa",
-            description="displacements per atom at points within the block",
-            location=ParamLocation.CHILDREN,
-            categories=["cumulative"],
+            description="displacements per atom at corners of the block",
+            location=ParamLocation.CORNERS,
+            categories=["cumulative", "detailedAxialExpansion", "depletion"],
             saveToDB=True,
-            default=0.0,
+            default=None,
         )
 
-        # This quantity should eventually be part of category 'detailedAxialExpansion'
-        # to be "remapped" (converter currently do not support arrays)
         pb.defParam(
-            "pointsDpaRate",
+            "pointsCornerDpaRate",
             units="dpa/s",
-            description="Current time derivative of the displacement per atoms at points within the block",
-            location=ParamLocation.CHILDREN,
+            description="Current time derivative of the displacement per atoms at corners of the block",
+            location=ParamLocation.CORNERS,
+            categories=["detailedAxialExpansion", "depletion"],
             saveToDB=True,
+            default=None,
         )
 
         pb.defParam(
@@ -784,14 +738,6 @@ def _getNeutronicsCoreParams():
             description="All available lambda-eigenvalues of reactor.",
             default=None,  # will be a list though, can't set default to mutable type.
             location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "axialMesh",
-            units="cm",
-            description="Global axial mesh from bottom to top used in structured-mesh neutronics simulations.",
-            default=None,
-            location=ParamLocation.TOP,
         )
 
         pb.defParam(

@@ -30,6 +30,7 @@ from armi.utils import pathTools
 from armi import operators
 from armi.utils.customExceptions import InputError
 from armi.bookkeeping.db.database3 import Database3
+from armi import context
 
 
 ORDER = interfaces.STACK_ORDER.PREPROCESSING
@@ -139,7 +140,7 @@ class MainInterface(interfaces.Interface):
                 pass
             else:
                 with Database3(self.cs["reloadDBName"], "r") as db:
-                    r = db.load(cycle, node, self.cs, self.r.blueprints)
+                    r = db.load(cycle, node, self.cs)
 
                 self.o.reattach(r, self.cs)
 
@@ -150,11 +151,17 @@ class MainInterface(interfaces.Interface):
         runLog.warningReport()
 
     def cleanARMIFiles(self):
-        r"""delete ARMI run files like MC**2 and REBUS inputs/outputs. Useful
-        if running a clean job that doesn't require restarts."""
+        """
+        Delete temporary ARMI run files like simulation inputs/outputs.
+
+        Useful if running a clean job that doesn't require restarts.
+        """
+        if context.MPI_RANK != 0:
+            # avoid inadvertently calling from worker nodes which could cause filesystem lockups.
+            raise ValueError("Only the master node is allowed to clean files here.")
         runLog.important("Cleaning ARMI files due to smallRun option")
         for fileName in os.listdir(os.getcwd()):
-            # clean MC**2 and REBUS inputs and outputs
+            # clean simulation inputs and outputs
             for candidate in [".BCD", ".inp", ".out", "ISOTXS-"]:
                 if candidate in fileName:
                     if ".htos.out" in fileName:
@@ -174,7 +181,6 @@ class MainInterface(interfaces.Interface):
             node = int(snapText[3:])
             newFolder = "snapShot{0}_{1}".format(cycle, node)
             utils.pathTools.cleanPath(newFolder)
-            context.waitAll()
 
         # delete database if it's SQLlite
         # no need to delete because the database won't have copied it back if using fastpath.
@@ -182,12 +188,10 @@ class MainInterface(interfaces.Interface):
         # clean temp directories.
         if os.path.exists("shuffleBranches"):
             utils.pathTools.cleanPath("shuffleBranches")
-            context.waitAll()
             # Potentially, wait for all the processes to catch up.
 
         if os.path.exists("failedRuns"):
             utils.pathTools.cleanPath("failedRuns")
-            context.waitAll()
 
     # pylint: disable=no-self-use
     def cleanLastCycleFiles(self):

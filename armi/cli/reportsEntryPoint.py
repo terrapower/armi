@@ -15,7 +15,7 @@ import webbrowser
 
 from armi import getPluginManagerOrFail
 from armi import settings
-from armi.bookkeeping import newReports as reports
+from armi.bookkeeping.report import newReports as reports
 from armi.bookkeeping.db import databaseFactory
 from armi.cli import entryPoint
 from armi.reactor import blueprints
@@ -158,7 +158,7 @@ def createReportFromSettings(cs):
     This will construct a reactor from the given settings and create BOL reports for
     that reactor/settings.
     """
-    # not sure if this is necessary, but need to investigate more to understand possible
+    # TODO: not sure if this is necessary, but need to investigate more to understand possible
     # side-effects before removing. Probably better to get rid of all uses of
     # getMasterCs(), then we can remove all setMasterCs() calls without worrying.
     settings.setMasterCs(cs)

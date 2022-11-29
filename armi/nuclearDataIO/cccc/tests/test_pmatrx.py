@@ -14,17 +14,17 @@
 
 r"""
 Tests the workings of the library wrappers.
-
 """
-
+# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import filecmp
-import unittest
 import os
+import unittest
 
 from armi import nuclearDataIO
 from armi.nuclearDataIO.cccc import pmatrx
 from armi.nuclearDataIO.tests import test_xsLibraries
 from armi.utils import properties
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
 class TestPmatrxNuclides(unittest.TestCase):
@@ -88,6 +88,13 @@ class TestPmatrx(unittest.TestCase):
         # load a library that is in the ARMI tree. This should
         # be a small library with LFPs, Actinides, structure, and coolant
         cls.lib = pmatrx.readBinary(test_xsLibraries.PMATRX_AA)
+
+    def setUp(self):
+        self.td = TemporaryDirectoryChanger()
+        self.td.__enter__()
+
+    def tearDown(self):
+        self.td.__exit__(None, None, None)
 
     def test_pmatrxGammaEnergies(self):
         energies = [
@@ -198,31 +205,24 @@ class TestProductionMatrix_FromWritten(TestPmatrx):
     Note that this runs all the tests from TestPmatrx.
     """
 
-    @classmethod
-    def setUpClass(cls):
-        cls.origLib = pmatrx.readBinary(test_xsLibraries.PMATRX_AA)
-
-    def setUp(self):
-        self.fname = self._testMethodName + "temp-aa.pmatrx"
-        pmatrx.writeBinary(self.origLib, self.fname)
-        self.lib = pmatrx.readBinary(self.fname)
-
-    def tearDown(self):
-        try:
-            os.remove(self.fname)
-        except:
-            pass
-
     def test_writtenIsIdenticalToOriginal(self):
         """Make sure our writer produces something identical to the original."""
-        self.assertTrue(filecmp.cmp(test_xsLibraries.PMATRX_AA, self.fname))
+        origLib = pmatrx.readBinary(test_xsLibraries.PMATRX_AA)
+
+        fname = self._testMethodName + "temp-aa.pmatrx"
+        pmatrx.writeBinary(origLib, fname)
+        lib = pmatrx.readBinary(fname)
+
+        self.assertTrue(filecmp.cmp(test_xsLibraries.PMATRX_AA, fname))
 
 
 class TestProductionMatrix_FromWrittenAscii(TestPmatrx):
     """
     Tests that show you can read and write pmatrx files from ascii libraries.
 
-    Note that this runs all the tests from TestPmatrx.
+    Notes
+    -----
+    This runs all the tests from TestPmatrx.
     """
 
     @classmethod
@@ -230,16 +230,16 @@ class TestProductionMatrix_FromWrittenAscii(TestPmatrx):
         cls.origLib = pmatrx.readBinary(test_xsLibraries.PMATRX_AA)
 
     def setUp(self):
+        self.td = TemporaryDirectoryChanger()
+        self.td.__enter__()
+
         self.fname = self._testMethodName + "temp-aa.pmatrx.ascii"
         lib = pmatrx.readBinary(test_xsLibraries.PMATRX_AA)
         pmatrx.writeAscii(lib, self.fname)
         self.lib = pmatrx.readAscii(self.fname)
 
     def tearDown(self):
-        try:
-            os.remove(self.fname)
-        except:
-            pass
+        self.td.__exit__(None, None, None)
 
 
 if __name__ == "__main__":

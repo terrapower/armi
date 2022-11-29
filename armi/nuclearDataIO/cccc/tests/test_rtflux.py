@@ -14,10 +14,12 @@
 """
 Test rtflux reading and writing.
 """
-import unittest
+# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import os
+import unittest
 
 from armi.nuclearDataIO.cccc import rtflux
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 THIS_DIR = os.path.dirname(__file__)
 # This rtflux was made by DIF3D 11 in a Cartesian test case.
@@ -44,24 +46,24 @@ class Testrtflux(unittest.TestCase):
 
     def test_writertflux(self):
         """Ensure that we can write a modified rtflux file."""
-        flux = rtflux.RtfluxStream.readBinary(SIMPLE_RTFLUX)
-        # perturb off-diag item to check row/col ordering
-        flux.groupFluxes[2, 1, 3, 5] *= 1.1
-        flux.groupFluxes[1, 2, 4, 6] *= 1.2
-        rtflux.RtfluxStream.writeBinary(flux, "rtflux2")
-        flux2 = rtflux.RtfluxStream.readBinary("rtflux2")
-        self.assertAlmostEqual(
-            flux2.groupFluxes[2, 1, 3, 5], flux.groupFluxes[2, 1, 3, 5]
-        )
-        os.remove("rtflux2")
+        with TemporaryDirectoryChanger():
+            flux = rtflux.RtfluxStream.readBinary(SIMPLE_RTFLUX)
+            # perturb off-diag item to check row/col ordering
+            flux.groupFluxes[2, 1, 3, 5] *= 1.1
+            flux.groupFluxes[1, 2, 4, 6] *= 1.2
+            rtflux.RtfluxStream.writeBinary(flux, "rtflux2")
+            flux2 = rtflux.RtfluxStream.readBinary("rtflux2")
+            self.assertAlmostEqual(
+                flux2.groupFluxes[2, 1, 3, 5], flux.groupFluxes[2, 1, 3, 5]
+            )
 
     def test_rwAscii(self):
         """Ensure that we can read/write in ascii format."""
-        flux = rtflux.RtfluxStream.readBinary(SIMPLE_RTFLUX)
-        rtflux.RtfluxStream.writeAscii(flux, "rtflux.ascii")
-        flux2 = rtflux.RtfluxStream.readAscii("rtflux.ascii")
-        self.assertTrue((flux2.groupFluxes == flux.groupFluxes).all())
-        os.remove("rtflux.ascii")
+        with TemporaryDirectoryChanger():
+            flux = rtflux.RtfluxStream.readBinary(SIMPLE_RTFLUX)
+            rtflux.RtfluxStream.writeAscii(flux, "rtflux.ascii")
+            flux2 = rtflux.RtfluxStream.readAscii("rtflux.ascii")
+            self.assertTrue((flux2.groupFluxes == flux.groupFluxes).all())
 
     def test_adjoint(self):
         """Ensure adjoint reads energy groups differently."""

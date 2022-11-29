@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-r""" Tests for the Database3 class
-"""
+r""" Tests for the Database3 class"""
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-member,disallowed-name,invalid-name
 import subprocess
 import unittest
@@ -21,8 +20,9 @@ import unittest
 import h5py
 import numpy
 
-from armi.bookkeeping.db import _getH5File, database3
-from armi.reactor import grids
+from armi.bookkeeping.db import _getH5File
+from armi.bookkeeping.db import database3
+from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.reactor import parameters
 from armi.reactor.tests import test_reactors
 from armi.tests import TEST_ROOT
@@ -36,11 +36,13 @@ class TestDatabase3(unittest.TestCase):
     def setUp(self):
         self.td = TemporaryDirectoryChanger()
         self.td.__enter__()
-        self.o, self.r = test_reactors.loadTestReactor(TEST_ROOT)
+        self.o, self.r = test_reactors.loadTestReactor(
+            TEST_ROOT, customSettings={"reloadDBName": "reloadingDB.h5"}
+        )
 
-        self.dbi = database3.DatabaseInterface(self.r, self.o.cs)
+        self.dbi = DatabaseInterface(self.r, self.o.cs)
         self.dbi.initDB(fName=self._testMethodName + ".h5")
-        self.db: db.Database3 = self.dbi.database
+        self.db: database3.Database3 = self.dbi.database
         self.stateRetainer = self.r.retainState().__enter__()
 
         # used to test location-based history. see details below
@@ -178,8 +180,11 @@ class TestDatabase3(unittest.TestCase):
         created here for this test.
         """
         # first successfully call to prepRestartRun
-        o, r = test_reactors.loadTestReactor(TEST_ROOT)
+        o, r = test_reactors.loadTestReactor(
+            TEST_ROOT, customSettings={"reloadDBName": "reloadingDB.h5"}
+        )
         cs = o.cs
+
         ratedPower = cs["power"]
         startCycle = cs["startCycle"]
         startNode = cs["startNode"]
@@ -199,7 +204,7 @@ class TestDatabase3(unittest.TestCase):
         )
 
         # create a db based on the cs
-        dbi = database3.DatabaseInterface(r, cs)
+        dbi = DatabaseInterface(r, cs)
         dbi.initDB(fName="reloadingDB.h5")
         db = dbi.database
 
@@ -235,7 +240,7 @@ class TestDatabase3(unittest.TestCase):
         )
 
         # create a db based on the cs
-        dbi = database3.DatabaseInterface(r, cs)
+        dbi = DatabaseInterface(r, cs)
         dbi.initDB(fName="reloadingDB.h5")
         db = dbi.database
 
@@ -321,6 +326,15 @@ class TestDatabase3(unittest.TestCase):
 
         _r = self.db.load(0, 0, allowMissing=True)
 
+        # show that we can use negative indices to load
+        r = self.db.load(0, -2, allowMissing=True)
+        self.assertEqual(r.p.timeNode, 1)
+
+        with self.assertRaises(ValueError):
+            # makeShuffleHistory only populates 2 nodes, but the case settings
+            # defines 3, so we must check -4 before getting an error
+            self.db.load(0, -4, allowMissing=True)
+
         del self.db.h5db["c00n00/Reactor/missingParam"]
         _r = self.db.load(0, 0, allowMissing=False)
 
@@ -332,23 +346,34 @@ class TestDatabase3(unittest.TestCase):
         from armi.reactor import assemblies
         from armi.reactor.assemblies import resetAssemNumCounter
 
-        self.makeShuffleHistory()
+        self.makeHistory()
 
         resetAssemNumCounter()
         self.assertEqual(assemblies._assemNum, 0)
 
-        # there will 77 assemblies added to the newly created core
-        self.db.load(0, 0, allowMissing=True, updateGlobalAssemNum=False)
-        self.assertEqual(assemblies._assemNum, 85)
+        r = self.db.load(0, 0, allowMissing=True, updateGlobalAssemNum=False)
+        #  len(r.core.sfp) is zero but these nums are still reserved
+        numSFPBlueprints = 4
+        expectedNum = len(r.core) + numSFPBlueprints
+        self.assertEqual(assemblies._assemNum, expectedNum)
 
-        # now do the same call again and show that the global _assemNum just keeps going up
+        # now do the same call again and show that the global _assemNum keeps going up.
+        # in db.load, rector objects are built in layout._initComps() so the global assem num
+        # will continue to grow (in this case, double).
         self.db.load(0, 0, allowMissing=True, updateGlobalAssemNum=False)
-        self.assertEqual(assemblies._assemNum, 85 * 2)
+        self.assertEqual(assemblies._assemNum, expectedNum * 2)
 
-        # now load but also updateGlobalAssemNum and show that it updates to the value
-        # stored in self.r.p.maxAssemNum plus 1
+        # now load but set updateGlobalAssemNum=True and show that the global assem num
+        # is updated and equal to self.r.p.maxAssemNum + 1 which is equal to the number of
+        # assemblies in blueprints/core.
+        r = self.db.load(0, 0, allowMissing=True, updateGlobalAssemNum=True)
+        expected = len(self.r.core) + len(self.r.blueprints.assemblies.values())
+        self.assertEqual(assemblies._assemNum, expected)
+
+        # repeat the test above to show that subsequent db loads (with updateGlobalAssemNum=True)
+        # do not continue to increase the global assem num.
         self.db.load(0, 0, allowMissing=True, updateGlobalAssemNum=True)
-        self.assertEqual(assemblies._assemNum, self.r.core.p.maxAssemNum + 1)
+        self.assertEqual(assemblies._assemNum, expected)
 
     def test_history(self):
         self.makeShuffleHistory()
@@ -429,7 +454,7 @@ class TestDatabase3(unittest.TestCase):
         self.r.p.cycle = 1
         self.r.p.timeNode = 0
         tnGroup = self.db.getH5Group(self.r)
-        database3._writeAttrs(
+        database3.Database3._writeAttrs(
             tnGroup["layout/serialNum"],
             tnGroup,
             {
@@ -452,8 +477,10 @@ class TestDatabase3(unittest.TestCase):
                 "@/c01n00/attrs/0_fakeBigData",
             )
 
-            # actually exercise the _resolveAttrs function
-            attrs = database3._resolveAttrs(tnGroup["layout/serialNum"].attrs, tnGroup)
+            # exercise the _resolveAttrs function
+            attrs = database3.Database3._resolveAttrs(
+                tnGroup["layout/serialNum"].attrs, tnGroup
+            )
             self.assertTrue(numpy.array_equal(attrs["fakeBigData"], numpy.eye(6400)))
 
             keys = sorted(db2.keys())
@@ -599,78 +626,6 @@ class TestDatabase3(unittest.TestCase):
         bp = self.db.loadBlueprints()
         self.assertIsNone(bp.nuclideFlags)
         self.assertEqual(len(bp.assemblies), 0)
-
-
-class TestLocationPacking(unittest.TestCase):
-    r"""Tests for database location"""
-
-    def test_locationPacking(self):
-        # pylint: disable=protected-access
-        loc1 = grids.IndexLocation(1, 2, 3, None)
-        loc2 = grids.CoordinateLocation(4.0, 5.0, 6.0, None)
-        loc3 = grids.MultiIndexLocation(None)
-        loc3.append(grids.IndexLocation(7, 8, 9, None))
-        loc3.append(grids.IndexLocation(10, 11, 12, None))
-
-        locs = [loc1, loc2, loc3]
-        tp, data = database3._packLocations(locs)
-
-        self.assertEqual(tp[0], database3.LOC_INDEX)
-        self.assertEqual(tp[1], database3.LOC_COORD)
-        self.assertEqual(tp[2], database3.LOC_MULTI + "2")
-
-        unpackedData = database3._unpackLocations(tp, data)
-
-        self.assertEqual(unpackedData[0], (1, 2, 3))
-        self.assertEqual(unpackedData[1], (4.0, 5.0, 6.0))
-        self.assertEqual(unpackedData[2], [(7, 8, 9), (10, 11, 12)])
-
-    def test_locationPackingOlderVersions(self):
-        # pylint: disable=protected-access
-        for version in [1, 2]:
-            loc1 = grids.IndexLocation(1, 2, 3, None)
-            loc2 = grids.CoordinateLocation(4.0, 5.0, 6.0, None)
-            loc3 = grids.MultiIndexLocation(None)
-            loc3.append(grids.IndexLocation(7, 8, 9, None))
-            loc3.append(grids.IndexLocation(10, 11, 12, None))
-
-            locs = [loc1, loc2, loc3]
-            tp, data = database3._packLocations(locs, minorVersion=version)
-
-            self.assertEqual(tp[0], "IndexLocation")
-            self.assertEqual(tp[1], "CoordinateLocation")
-            self.assertEqual(tp[2], "MultiIndexLocation")
-
-            unpackedData = database3._unpackLocations(tp, data, minorVersion=version)
-
-            self.assertEqual(unpackedData[0], (1, 2, 3))
-            self.assertEqual(unpackedData[1], (4.0, 5.0, 6.0))
-            self.assertEqual(unpackedData[2][0].tolist(), [7, 8, 9])
-            self.assertEqual(unpackedData[2][1].tolist(), [10, 11, 12])
-
-    def test_locationPackingOldVersion(self):
-        # pylint: disable=protected-access
-        version = 3
-
-        loc1 = grids.IndexLocation(1, 2, 3, None)
-        loc2 = grids.CoordinateLocation(4.0, 5.0, 6.0, None)
-        loc3 = grids.MultiIndexLocation(None)
-        loc3.append(grids.IndexLocation(7, 8, 9, None))
-        loc3.append(grids.IndexLocation(10, 11, 12, None))
-
-        locs = [loc1, loc2, loc3]
-        tp, data = database3._packLocations(locs, minorVersion=version)
-
-        self.assertEqual(tp[0], "I")
-        self.assertEqual(tp[1], "C")
-        self.assertEqual(tp[2], "M:2")
-
-        unpackedData = database3._unpackLocations(tp, data, minorVersion=version)
-
-        self.assertEqual(unpackedData[0], (1, 2, 3))
-        self.assertEqual(unpackedData[1], (4.0, 5.0, 6.0))
-        self.assertEqual(unpackedData[2][0], (7, 8, 9))
-        self.assertEqual(unpackedData[2][1], (10, 11, 12))
 
 
 if __name__ == "__main__":

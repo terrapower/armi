@@ -11,22 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Tests for the UserPlugin class."""
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import copy
 import os
 import unittest
 
-import pluggy
-
 from armi import context
 from armi import getApp
-from armi import getPluginManagerOrFail
 from armi import interfaces
 from armi import plugins
 from armi import utils
-from armi.bookkeeping.db.database3 import DatabaseInterface
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
 from armi.settings import caseSettings
@@ -101,7 +96,7 @@ class UserPluginOnProcessCoreLoading(plugins.UserPlugin):
 
     @staticmethod
     @plugins.HOOKIMPL
-    def onProcessCoreLoading(core, cs):
+    def onProcessCoreLoading(core, cs, dbLoad):
         blocks = core.getBlocks(Flags.FUEL)
         for b in blocks:
             b.p.height += 1.0
@@ -120,7 +115,7 @@ class UpInterface(interfaces.Interface):
 
 
 class UserPluginWithInterface(plugins.UserPlugin):
-    """A little test UserPlugin, just to show how to add an Inteface through a UserPlugin"""
+    """A little test UserPlugin, just to show how to add an Interface through a UserPlugin"""
 
     @staticmethod
     @plugins.HOOKIMPL
@@ -244,7 +239,7 @@ class TestUserPlugins(unittest.TestCase):
 
         # prove that our plugin affects the core in the desired way
         heights = [float(f.p.height) for f in fuels]
-        plug0.onProcessCoreLoading(core=r.core, cs=o.cs)
+        plug0.onProcessCoreLoading(core=r.core, cs=o.cs, dbLoad=False)
         for i, height in enumerate(heights):
             self.assertEqual(fuels[i].p.height, height + 1.0)
 

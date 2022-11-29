@@ -87,8 +87,9 @@ class Mode(enum.Enum):
 
 
 ROOT = os.path.abspath(os.path.dirname(__file__))
+PROJECT_ROOT = os.path.join(ROOT, "..")
 RES = os.path.join(ROOT, "resources")
-DOC = os.path.abspath(os.path.join(ROOT, "..", "doc"))
+DOC = os.path.abspath(os.path.join(PROJECT_ROOT, "doc"))
 USER = getpass.getuser()
 START_TIME = time.ctime()
 
@@ -142,7 +143,7 @@ if MPI_NODENAMES.index(MPI_NODENAME) == MPI_RANK:
         except OSError as e:
             pass
     if not os.path.isdir(APP_DATA):
-        raise e
+        raise OSError("Directory doesn't exist {0}".format(APP_DATA))
 
 if MPI_COMM is not None:
     MPI_COMM.barrier()  # make sure app data exists before workers proceed.
@@ -282,14 +283,6 @@ def cleanAllArmiTempDirs(olderThanDays: int) -> None:
                 cleanPath(dirPath, mpiRank=MPI_RANK)
         except:  # pylint: disable=bare-except
             pass
-
-
-def waitAll() -> None:
-    """
-    If there are parallel processes running, wait for all to catch up to the checkpoint.
-    """
-    if MPI_SIZE > 1 and MPI_DISTRIBUTABLE:
-        MPI_COMM.barrier()
 
 
 def disconnectAllHdfDBs() -> None:

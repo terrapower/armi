@@ -398,7 +398,7 @@ This can be done by sublassing :py:class:`armi.plugins.UserPlugin`:
 
         @staticmethod
         @plugins.HOOKIMPL
-        def onProcessCoreLoading(core, cs):
+        def onProcessCoreLoading(core, cs, dbLoad):
         for b in core.getBlocks(Flags.FUEL):
             b.p.power += 1.0
 
@@ -410,6 +410,7 @@ In most ways, ``UserPluginExample`` above is just a normal
 :py:class:`UserPlugin <armi.plugins.UserPlugin>` class is more limited than a
 regular plugin though, you cannot implement:
 
+* :py:meth:`armi.plugins.ArmiPlugin.defineParameters`
 * :py:meth:`armi.plugins.ArmiPlugin.defineParameterRenames`
 * :py:meth:`armi.plugins.ArmiPlugin.defineSettings`
 * :py:meth:`armi.plugins.ArmiPlugin.defineSettingsValidators`

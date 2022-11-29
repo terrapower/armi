@@ -11,26 +11,26 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-Test for runsuite cli entry point
-"""
+"""Test for runsuite cli entry point"""
+# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import io
 import sys
 import unittest
+
+from armi import meta
+from armi.cli import ArmiCLI
 
 
 class TestRunSuiteSuite(unittest.TestCase):
     def test_listCommand(self):
         """Ensure run-suite entry point is registered."""
-        from armi import cli
-
-        cli = cli.ArmiCLI()
+        acli = ArmiCLI()
 
         origout = sys.stdout
         try:
             out = io.StringIO()
             sys.stdout = out
-            cli.listCommands()
+            acli.listCommands()
         finally:
             sys.stdout = origout
 
@@ -38,15 +38,11 @@ class TestRunSuiteSuite(unittest.TestCase):
 
     def test_showVersion(self):
         """Test the ArmiCLI.showVersion method"""
-        from armi import cli, meta
-
-        cli = cli.ArmiCLI()
-
         origout = sys.stdout
         try:
             out = io.StringIO()
             sys.stdout = out
-            cli.showVersion()
+            ArmiCLI.showVersion()
         finally:
             sys.stdout = origout
 

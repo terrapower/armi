@@ -19,17 +19,18 @@ It is interesting in that it has a large spontaneous fission decay mode that
 produces lots of neutrons. It's often used as a neutron source.
 """
 
-from armi.materials.material import Material
+from armi.materials.material import SimpleSolid
+from armi.utils import densityTools
 
 
-class Californium(Material):
+class Californium(SimpleSolid):
 
     name = "Californium"
 
     def setDefaultMassFracs(self):
         self.setMassFrac("CF252", 1.0)
 
-    def density(self, Tk=None, Tc=None):
+    def density3(self, Tk=None, Tc=None):
         """
         https://en.wikipedia.org/wiki/Californium
         """

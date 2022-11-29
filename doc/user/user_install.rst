@@ -133,12 +133,9 @@ GUI input
 To use the :py:mod:`graphical core-map editor <armi.utils.gridEditor>` you will need to also install
 `wxPython <https://wxpython.org/pages/downloads/index.html>`_. This is not installed
 by default during armi installation because it can cause installation complexities on some platforms.
-In many cases, a ``pip install`` should suffice::
+In any case, all GUI dependencies can be installed by::
 
-    (armi-venv) $ pip install wxpython
-
-.. warning:: On some platforms, ``pip`` may try to compile wxpython from
-    source which can take a long time and require additional dependencies.
+    (armi-venv) $ pip install armi[grids]
 
 GUI output
 ^^^^^^^^^^

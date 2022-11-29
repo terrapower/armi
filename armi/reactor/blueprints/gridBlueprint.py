@@ -198,6 +198,8 @@ class GridBlueprint(yamlize.Object):
                 "Keys need to be presented as [i, j]. Check the blueprints."
             )
 
+        return True
+
     def __init__(
         self,
         name=None,

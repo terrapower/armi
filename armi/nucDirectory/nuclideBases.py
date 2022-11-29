@@ -308,7 +308,7 @@ def __readMc2Nuclides():
     that have already been added from RIPL.
     """
     with open(os.path.join(context.RES, "mc2Nuclides.yaml"), "r") as mc2Nucs:
-        mc2Nuclides = yaml.load(mc2Nucs, yaml.RoundTripLoader)
+        mc2Nuclides = yaml.YAML().load(mc2Nucs)
 
     # now add the mc2 specific nuclideBases, and correct the mc2Ids when a > 0 and state = 0
     for name, data in mc2Nuclides.items():
@@ -400,7 +400,7 @@ def imposeBurnChain(burnChainStream):
         runLog.warning("Burn chain already imposed. Skipping reimposition.")
         return
     _burnChainImposed = True
-    burnData = yaml.load(burnChainStream, yaml.RoundTripLoader)
+    burnData = yaml.YAML().load(burnChainStream)
 
     for nucName, burnInfo in burnData.items():
         nuclide = byName[nucName]
@@ -481,7 +481,7 @@ def __readRiplDecayData():
 
     riplPath = os.environ.get(_riplEnvironVariable, None)
     if riplPath is None:
-        return None
+        return
 
     path = pathlib.Path(riplPath)
     if not path.exists() or not path.is_dir():
@@ -817,11 +817,12 @@ class INuclide(NuclideInterface):
         Returns
         -------
         decay : :py:class:`DecayModes <armi.nucDirectory.transmutations.DecayMode>`
-
         """
         for d in self.decays:
             if d.type == decayType:
                 return d
+
+        return None
 
     def isFissile(self):
         r"""Determine if the nuclide is fissile.
