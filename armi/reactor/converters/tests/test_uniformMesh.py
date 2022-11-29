@@ -48,7 +48,10 @@ class TestAssemblyUniformMesh(unittest.TestCase):
 
         self.converter._computeAverageAxialMesh()
         newAssem = self.converter.makeAssemWithUniformMesh(
-            sourceAssem, self.converter._uniformMesh, blockParamNames=[], mapNumberDensities=True
+            sourceAssem,
+            self.converter._uniformMesh,
+            blockParamNames=[],
+            mapNumberDensities=True,
         )
 
         prevB = None
