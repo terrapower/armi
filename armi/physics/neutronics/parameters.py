@@ -635,20 +635,6 @@ def _getNeutronicsBlockParams():
 
     with pDefs.createBuilder(default=0.0) as pb:
         pb.defParam(
-            "detailedDpaNewCycle",
-            units="dpa",
-            description="The total DPA accumulated in all burn steps of one cycle",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "detailedDpaPeakNewCycle",
-            units="dpa",
-            description="The total peak DPA accumulated in all burn steps of one cycle",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
             "detailedDpaThisCycle",
             units="dpa",
             location=ParamLocation.AVERAGE,
