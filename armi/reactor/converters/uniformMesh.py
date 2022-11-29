@@ -943,12 +943,12 @@ class GammaUniformMeshConverter(NeutronicsUniformMeshConverter):
             )
         b = self._sourceReactor.core.getFirstBlock()
         if direction == "out":
-            mandatoryList = b.p.paramDefs.inCategory(parameters.Category.gamma)
-            excludeList = b.p.paramDefs.inCategory(parameters.Category.cumulative)
+            mandatoryList = b.p.paramDefs.inCategory(parameters.Category.gamma).names
+            excludeList = b.p.paramDefs.inCategory(parameters.Category.cumulative).names
         else:
             mandatoryList = b.p.paramDefs.inCategory(
                 parameters.Category.detailedAxialExpansion
-            )
+            ).names
             excludeList = []
         for category in self.BLOCK_PARAMS_TO_MAP[direction]:
             self.blockParamNames.extend(
