@@ -303,10 +303,6 @@ def getBlockParameterDefinitions():
         )
 
         pb.defParam(
-            "dpaRx", units="dpa/s", description="?", location=ParamLocation.AVERAGE
-        )
-
-        pb.defParam(
             "heliumInB4C",
             units="He/s/cm$^3$",
             description="?",
@@ -336,8 +332,6 @@ def getBlockParameterDefinitions():
         pb.defParam("baseBu", units="?", description="?", saveToDB=False)
 
         pb.defParam("basePBu", units="?", description="?", saveToDB=False)
-
-        pb.defParam("hydDiam", units="?", description="?", saveToDB=False)
 
         pb.defParam(
             "nHMAtBOL",
@@ -439,14 +433,6 @@ def getBlockParameterDefinitions():
             saveToDB=True,
         )
 
-        pb.defParam(
-            "regName",
-            units="?",
-            description="Set by Assembly in writeNIP30 once the region has been placed",
-            default=False,
-            saveToDB=False,
-        )
-
     with pDefs.createBuilder(
         default=0.0,
         location=ParamLocation.AVERAGE,
@@ -468,12 +454,6 @@ def getBlockParameterDefinitions():
         pb.defParam(
             "fuelWorth",
             units="dk/kk'-kg",
-            description="Reactivity worth of fuel material per unit mass",
-        )
-
-        pb.defParam(
-            "fuelWorthDollarsPerKg",
-            units="$/kg",
             description="Reactivity worth of fuel material per unit mass",
         )
 
@@ -508,33 +488,9 @@ def getBlockParameterDefinitions():
         )
 
         pb.defParam(
-            "coolantWorthDollarsPerKg",
-            units="$/kg",
-            description="Reactivity worth of coolant material per unit mass",
-        )
-
-        pb.defParam(
             "cladWorth",
             units="dk/kk'-kg",
             description="Reactivity worth of clad material per unit mass",
-        )
-
-        pb.defParam(
-            "cladWorthDollarsPerKg",
-            units="$/kg",
-            description="Reactivity worth of clad material per unit mass",
-        )
-
-        pb.defParam(
-            "structureWorth",
-            units="dk/kk'-kg",
-            description="Reactivity worth of structure material per unit mass",
-        )
-
-        pb.defParam(
-            "structureWorthDollarsPerKg",
-            units="$/kg",
-            description="Reactivity worth of structure material (non-clad and non-wire wrap material) per unit mass",
         )
 
         pb.defParam(
@@ -644,10 +600,6 @@ def getBlockParameterDefinitions():
             "rxVoidedDopplerCentsPerPow",
             units="cents/K",
             description="Voided Doppler power reactivity coefficient",
-        )
-
-        pb.defParam(
-            "assemPeakStd", units="pcm/%/cm^3", description="Spectral reactivity"
         )
 
     with pDefs.createBuilder(
