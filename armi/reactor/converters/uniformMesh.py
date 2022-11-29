@@ -176,7 +176,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
             self._computeAverageAxialMesh()
             self._buildAllUniformAssemblies()
             self._mapStateFromReactorToOther(
-                self._sourceReactor, self.convReactor, "in", mapNumberDensities=True
+                self._sourceReactor, self.convReactor, mapNumberDensities=True
             )
             self._newAssembliesAdded = self.convReactor.core.getAssemblies()
 
@@ -276,7 +276,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
             self._cachedReactorCoreParamData = {}
             self._clearStateOnReactor(self._sourceReactor, cache=True)
             self._mapStateFromReactorToOther(
-                self.convReactor, self._sourceReactor, "out", mapNumberDensities=False
+                self.convReactor, self._sourceReactor, mapNumberDensities=False
             )
             # we should re-evaluate the use of mapNumberDensities=True here
             # Based on what we've seen with block parameters like detailedDpa and mgFlux,
