@@ -910,6 +910,17 @@ class GammaUniformMeshConverter(NeutronicsUniformMeshConverter):
     A uniform mesh converter that specifically maps gamma parameters.
     """
 
+    REACTOR_PARAMS_TO_MAP = {"in": [], "out": [parameters.Category.neutronics]}
+    BLOCK_PARAMS_TO_MAP = {
+        "in": [parameters.Category.detailedAxialExpansion],
+        "out": [
+            parameters.Category.detailedAxialExpansion,
+            parameters.Category.multiGroupQuantities,
+            parameters.Category.pinQuantities,
+        ],
+    }
+    # conditions on the output BLOCK_PARAMS_TO_MAP; non-cumulative only
+
     def _setParamsToUpdate(self, direction):
         """
         Activate conversion of the specified parameters.
@@ -931,14 +942,20 @@ class GammaUniformMeshConverter(NeutronicsUniformMeshConverter):
                 self._sourceReactor.core.p.paramDefs.inCategory(category).names
             )
         b = self._sourceReactor.core.getFirstBlock()
-        mandatoryCategory = parameters.Category.gamma
-        mandatoryParamNames = b.p.paramDefs.inCategory(mandatoryCategory).names
+        if direction == "out":
+            mandatoryList = b.p.paramDefs.inCategory(parameters.Category.gamma)
+            excludeList = b.p.paramDefs.inCategory(parameters.Category.cumulative)
+        else:
+            mandatoryList = b.p.paramDefs.inCategory(
+                parameters.Category.detailedAxialExpansion
+            )
+            excludeList = []
         for category in self.BLOCK_PARAMS_TO_MAP[direction]:
             self.blockParamNames.extend(
                 [
                     name
                     for name in b.p.paramDefs.inCategory(category).names
-                    if name in mandatoryParamNames
+                    if name in mandatoryList and not name in excludeList
                 ]
             )
 
