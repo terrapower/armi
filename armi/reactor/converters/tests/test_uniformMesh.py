@@ -452,7 +452,7 @@ class TestGammaUniformMesh(unittest.TestCase):
             self.r.core.calcTotalParam("powerGamma", generationNum=2), totalPowerGamma
         )
         self.assertAlmostEqual(
-           self.r.core.calcTotalParam("power", generationNum=2), totalPower
+            self.r.core.calcTotalParam("power", generationNum=2), totalPower
         )
 
 
