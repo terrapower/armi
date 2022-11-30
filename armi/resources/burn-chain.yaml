@@ -18,7 +18,7 @@ AM241:
 - transmutation:
     branch: 0.2
     products:
-    - AM242
+    - AM242M
     - DUMP2
     type: nGamma
 - transmutation:
@@ -111,7 +111,7 @@ AM243:
 - transmutation:
     branch: 0.5
     products:
-    - AM242
+    - AM242M
     type: n2n
 - transmutation:
     branch: 0.0865
