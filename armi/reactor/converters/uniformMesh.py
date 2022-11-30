@@ -278,9 +278,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
             self._mapStateFromReactorToOther(
                 self.convReactor, self._sourceReactor, mapNumberDensities=False
             )
-            # we should re-evaluate the use of mapNumberDensities=True here
-            # Based on what we've seen with block parameters like detailedDpa and mgFlux,
-            # this would probably cause numerical diffusion of the number densities across blocks
 
             # We want to map the converted reactor core's library to the source reactor
             # because in some instances this has changed (i.e., when generating cross sections).
@@ -367,7 +364,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
                     typeHeight[b.p.xsType] += h
 
             sourceBlock = None
-            # xsType is the one with the maeority of overlap
+            # xsType is the one with the majority of overlap
             if len(typeHeight) > 0:
                 xsType = next(
                     k for k, v in typeHeight.items() if v == max(typeHeight.values())
@@ -449,37 +446,12 @@ class UniformMeshGeometryConverter(GeometryConverter):
         calcReactionRates : bool, optional
             If True, the neutron reaction rates will be calculated on each block within the destination
             assembly. Note that this will skip the reaction rate calculations for a block if it does
-            not contain a valid multi-group flux.kkkkkkkkkkkkkkkkkk
+            not contain a valid multi-group flux.
 
         See Also
         --------
         setNumberDensitiesFromOverlaps : does this but does smarter caching for number densities.
         """
-
-        # cachedParams = UniformMeshGeometryConverter.clearStateOnAssemblies(
-        #    [destinationAssembly],
-        #    blockParamNames,
-        #    cache=True,
-        # )
-        # for destBlock in destinationAssembly:
-
-        #    # Check that the parameters on the destination block have been cleared first before attempting to
-        #    # map the data. These parameters should be cleared using ``UniformMeshGeometryConverter.clearStateOnAssemblies``.
-        #    existingDestBlockParamVals = BlockParamMapper.paramGetter(
-        #        destBlock, blockParamNames
-        #    )
-        #    clearedValues = [
-        #        True if not val else False for val in existingDestBlockParamVals
-        #    ]
-        #    if not all(clearedValues):
-        #        raise ValueError(
-        #            f"The state of {destBlock} on {destinationAssembly} "
-        #            f"was not cleared prior to calling ``setAssemblyStateFromOverlaps``. "
-        #            f"This indicates an implementation bug in the mesh converter that should "
-        #            f"be reported to the developers. The following parameters should be cleared:\n"
-        #            f"Parameters: {blockParamNames}\n"
-        #            f"Values: {existingDestBlockParamVals}"
-        #        )
 
         # The destination assembly is the assembly that the results are being mapped to
         # whereas the source assembly is the assembly that is from the uniform model. This
