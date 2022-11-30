@@ -324,6 +324,64 @@ def _getNeutronicsBlockParams():
         )
 
     with pDefs.createBuilder(
+        saveToDB=True,
+        default=None,
+        location=ParamLocation.EDGES,
+        categories=[parameters.Category.detailedAxialExpansion, "depletion"],
+    ) as pb:
+
+        pb.defParam(
+            "pointsEdgeFastFluxFr",
+            units=None,
+            description="Fraction of flux above 100keV at edges of the block",
+        )
+
+        pb.defParam(
+            "pointsEdgeDpa",
+            units="dpa",
+            description="displacements per atom at edges of the block",
+            categories=["cumulative", "detailedAxialExpansion", "depletion"],
+        )
+
+        pb.defParam(
+            "pointsEdgeDpaRate",
+            units="dpa/s",
+            description="Current time derivative of the displacement per atoms at edges of the block",
+        )
+
+    with pDefs.createBuilder(
+        saveToDB=True,
+        default=None,
+        location=ParamLocation.CORNERS,
+        categories=[parameters.Category.detailedAxialExpansion, "depletion"],
+    ) as pb:
+        pb.defParam(
+            "cornerFastFlux",
+            units="n/cm^2/s",
+            description="Neutron flux above 100keV at hexagon block corners",
+        )
+
+        pb.defParam(
+            "pointsCornerFastFluxFr",
+            units=None,
+            description="Fraction of flux above 100keV at corners of the block",
+        )
+
+        pb.defParam(
+            "pointsCornerDpa",
+            units="dpa",
+            description="displacements per atom at corners of the block",
+            location=ParamLocation.CORNERS,
+            categories=["cumulative", "detailedAxialExpansion", "depletion"],
+        )
+
+        pb.defParam(
+            "pointsCornerDpaRate",
+            units="dpa/s",
+            description="Current time derivative of the displacement per atoms at corners of the block",
+        )
+
+    with pDefs.createBuilder(
         default=0.0,
         location=ParamLocation.AVERAGE,
         categories=[parameters.Category.detailedAxialExpansion],
