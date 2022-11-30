@@ -410,6 +410,7 @@ In most ways, ``UserPluginExample`` above is just a normal
 :py:class:`UserPlugin <armi.plugins.UserPlugin>` class is more limited than a
 regular plugin though, you cannot implement:
 
+* :py:meth:`armi.plugins.ArmiPlugin.defineParameters`
 * :py:meth:`armi.plugins.ArmiPlugin.defineParameterRenames`
 * :py:meth:`armi.plugins.ArmiPlugin.defineSettings`
 * :py:meth:`armi.plugins.ArmiPlugin.defineSettingsValidators`

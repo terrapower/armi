@@ -234,25 +234,7 @@ def _getNeutronicsBlockParams():
         )
 
         pb.defParam(
-            "axialMgFluxProfileAdj",
-            units="",
-            description="",
-            location=ParamLocation.AVERAGE,
-            saveToDB=False,
-            default=None,
-        )
-
-        pb.defParam(
             "axialMgFluxProfileNeutron",
-            units="",
-            description="",
-            location=ParamLocation.AVERAGE,
-            saveToDB=False,
-            default=None,
-        )
-
-        pb.defParam(
-            "axialMgFluxProfileNeutronAdj",
             units="",
             description="",
             location=ParamLocation.AVERAGE,
@@ -534,10 +516,6 @@ def _getNeutronicsBlockParams():
 
         pb.defParam("arealPd", units="MW/m^2", description="Power divided by XY area")
 
-        pb.defParam(
-            "arealPdGamma", units="MW/m^2", description="Areal gamma power density"
-        )
-
         pb.defParam("fertileBonus", units=None, description="The fertile bonus")
 
         pb.defParam(
@@ -548,18 +526,6 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "fisDensHom", units="1/cm^3/s", description="Homogenized fissile density"
-        )
-
-        pb.defParam(
-            "fluxDeltaFromRef",
-            units="None",
-            description="Relative difference between the current flux and the directly-computed perturbed flux.",
-        )
-
-        pb.defParam(
-            "fluxDirect",
-            units="n/cm^2/s",
-            description="Flux is computed with a direct method",
         )
 
         pb.defParam(
@@ -577,22 +543,6 @@ def _getNeutronicsBlockParams():
             units="n/cm^2/s",
             description="Peak neutron flux calculated within the mesh",
         )
-
-        pb.defParam(
-            "fluxPertDeltaFromDirect",
-            units="None",
-            description="Relative difference between the perturbed flux and the directly-computed perturbed flux",
-        )
-
-        pb.defParam(
-            "fluxPertDeltaFromDirectfluxRefWeighted", units="None", description=""
-        )
-
-        pb.defParam(
-            "fluxPerturbed", units="1/cm^2/s", description="Flux is computed by MEPT"
-        )
-
-        pb.defParam("fluxRef", units="1/cm^2/s", description="Reference flux")
 
         pb.defParam(
             "kInf",
@@ -685,20 +635,6 @@ def _getNeutronicsBlockParams():
 
     with pDefs.createBuilder(default=0.0) as pb:
         pb.defParam(
-            "detailedDpaNewCycle",
-            units="dpa",
-            description="The total DPA accumulated in all burn steps of one cycle",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "detailedDpaPeakNewCycle",
-            units="dpa",
-            description="The total peak DPA accumulated in all burn steps of one cycle",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
             "detailedDpaThisCycle",
             units="dpa",
             location=ParamLocation.AVERAGE,
@@ -761,30 +697,12 @@ def _getNeutronicsBlockParams():
             saveToDB=True,
             default=None,
         )
-        pb.defParam(
-            "pointsEdgeFastFluxFr",
-            units=None,
-            description="Fraction of flux above 100keV at edges of the block",
-            location=ParamLocation.EDGES,
-            categories=["detailedAxialExpansion", "depletion"],
-            saveToDB=True,
-            default=None,
-        )
 
         pb.defParam(
             "pointsCornerDpa",
             units="dpa",
             description="displacements per atom at corners of the block",
             location=ParamLocation.CORNERS,
-            categories=["cumulative", "detailedAxialExpansion", "depletion"],
-            saveToDB=True,
-            default=None,
-        )
-        pb.defParam(
-            "pointsEdgeDpa",
-            units="dpa",
-            description="displacements per atom at edges of the block",
-            location=ParamLocation.EDGES,
             categories=["cumulative", "detailedAxialExpansion", "depletion"],
             saveToDB=True,
             default=None,
@@ -796,15 +714,6 @@ def _getNeutronicsBlockParams():
             description="Current time derivative of the displacement per atoms at corners of the block",
             location=ParamLocation.CORNERS,
             categories=["detailedAxialExpansion", "depletion"],
-            saveToDB=True,
-            default=None,
-        )
-        pb.defParam(
-            "pointsEdgeDpaRate",
-            units="dpa/s",
-            description="Current time derivative of the displacement per atoms at edges of the block",
-            categories=["detailedAxialExpansion", "depletion"],
-            location=ParamLocation.EDGES,
             saveToDB=True,
             default=None,
         )
