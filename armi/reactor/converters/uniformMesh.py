@@ -761,7 +761,10 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
     back to the source reactor.
     """
 
-    REACTOR_PARAMS_TO_MAP = {"in": [], "out": [parameters.Category.neutronics]}
+    REACTOR_PARAMS_TO_MAP = {
+        "in": [parameters.Category.neutronics],
+        "out": [parameters.Category.neutronics],
+    }
     BLOCK_PARAMS_TO_MAP = {
         "in": [],
         "out": [
@@ -867,7 +870,10 @@ class GammaUniformMeshConverter(NeutronicsUniformMeshConverter):
     A uniform mesh converter that specifically maps gamma parameters.
     """
 
-    REACTOR_PARAMS_TO_MAP = {"in": [], "out": [parameters.Category.neutronics]}
+    REACTOR_PARAMS_TO_MAP = {
+        "in": [parameters.Category.neutronics],
+        "out": [parameters.Category.neutronics],
+    }
     BLOCK_PARAMS_TO_MAP = {
         "in": [parameters.Category.detailedAxialExpansion],
         "out": [
