@@ -15,7 +15,6 @@
 """Tests for nuclideBases"""
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import random
-import re
 import unittest
 
 from armi.nucDirectory import elements
@@ -320,27 +319,6 @@ class test_getAAAZZZSId(unittest.TestCase):
             nb = nuclideBases.byName[nucName]
             if refAaazzzs:
                 self.assertEqual(refAaazzzs, nb.getAAAZZZSId())
-
-
-def readEndfMatNumIndex(path):
-    """
-    read mat nums from known endf reference
-    """
-
-    endfReferenceFile = open(path)
-    endfMatNumbers = {}
-
-    for line in endfReferenceFile:
-        if not re.search(r"^\s+\d+\)", line):
-            continue
-        data = line.split()
-        _rowNum, matNum, nuclide = data[:3]
-        _zNum, element, aNum = nuclide.split("-")
-        armiNuclideName = element + aNum
-        endfMatNumbers[armiNuclideName] = matNum
-
-    return endfMatNumbers
-
 
 if __name__ == "__main__":
     #     import sys;sys.argv = ['', 'TestNuclide.test_nucBases_factoryIsFast']
