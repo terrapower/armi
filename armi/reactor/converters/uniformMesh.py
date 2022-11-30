@@ -550,10 +550,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
                 destBlock, updatedDestVals.values(), updatedDestVals.keys()
             )
 
-            # UniformMeshGeometryConverter._applyCachedParamValues(
-            #    destBlock, blockParamNames, cachedParams
-            # )
-
             # If requested, the reaction rates will be calculated based on the
             # mapped neutron flux and the XS library.
             if calcReactionRates:
@@ -569,45 +565,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
                         single=True,
                         label="Block reaction rate calculation skipped due to insufficient multi-group flux data.",
                     )
-
-    @staticmethod
-    def _applyCachedParamValues(destBlock, paramNames, cachedParams):
-        """
-        Applies the cached parameter values back to the destination block, if there are any.
-
-        Notes
-        -----
-        This is implemented to ensure that if certain parameters are not set on the original
-        block that the destination block has the parameter data recovered rather than zeroing
-        the data out. The destination block is cleared before the mapping occurs in ``clearStateOnAssemblies``.
-        """
-
-        # For parameters that have not been set on the destination block, recover these
-        # back to their originals based on the cached values.
-        for paramName in paramNames:
-
-            # Skip over any parameter names that were not previously cached.
-            if paramName not in cachedParams[destBlock]:
-                continue
-
-            if isinstance(destBlock.p[paramName], numpy.ndarray):
-                # Using just all() on the list/array is not sufficient because if a zero value exists
-                # in the data then this would then lead to overwritting the data. This is an edge case see
-                # in the testing, so this excludes zero values on the check.
-                if (
-                    not all([val for val in destBlock.p[paramName] if val != 0.0])
-                    or not destBlock.p[paramName].size > 0
-                ):
-                    destBlock.p[paramName] = cachedParams[destBlock][paramName]
-            elif isinstance(destBlock.p[paramName], list):
-                if (
-                    not all([val for val in destBlock.p[paramName] if val != 0.0])
-                    or not destBlock.p[paramName]
-                ):
-                    destBlock.p[paramName] = cachedParams[destBlock][paramName]
-            else:
-                if not destBlock.p[paramName]:
-                    destBlock.p[paramName] = cachedParams[destBlock][paramName]
 
     @staticmethod
     def clearStateOnAssemblies(assems, blockParamNames=None, cache=True):
