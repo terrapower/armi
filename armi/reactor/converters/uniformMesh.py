@@ -294,7 +294,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
         sourceAssem,
         newMesh,
         blockParamNames,
-        mapNumberDensities=False,
+        mapNumberDensities=True,
     ):
         """
         Build new assembly based on a source assembly but apply the uniform mesh.
