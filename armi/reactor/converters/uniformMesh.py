@@ -433,8 +433,9 @@ class UniformMeshGeometryConverter(GeometryConverter):
             assem that has the state
         destinationAssembly : Assembly
             assem that has is getting the state from sourceAssembly
-        blockParamNames : list
-            List of block parameter names to be updated
+        blockParamNames : List[str]
+            A list of block parameter names to map between the source assembly and
+            the destination assembly.
         mapNumberDensities : bool, optional
             If True, number densities will be mapped from the source assembly to the destination assembly.
             This is True by default, but this can be set to False to only map block-level parameters if
