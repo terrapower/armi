@@ -176,7 +176,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
             self._computeAverageAxialMesh()
             self._buildAllUniformAssemblies()
             self._mapStateFromReactorToOther(
-                self._sourceReactor, self.convReactor, mapNumberDensities=True
+                self._sourceReactor, self.convReactor, mapNumberDensities=False
             )
             self._newAssembliesAdded = self.convReactor.core.getAssemblies()
 
