@@ -145,7 +145,12 @@ class DatabaseInterface(interfaces.Interface):
 
         DBs should receive the state information of the run at each node.
         """
-        # skip writing for last burn step since it will be written at interact EOC
+        if self.o.cs["numCoupledIterations"]:
+            return
+        self.writeDBEveryNode(cycle, node)
+
+    def writeDBEveryNode(self, cycle, node):
+        """docstring"""
         if node < self.o.burnSteps[cycle]:
             self.r.core.p.minutesSinceStart = (
                 time.time() - self.r.core.timeOfStart
