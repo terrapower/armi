@@ -144,13 +144,20 @@ class DatabaseInterface(interfaces.Interface):
         Write to database.
 
         DBs should receive the state information of the run at each node.
+
+        Notes
+        -----
+        - if tight coupling is enabled, the DB will be written in operator.py::Operator::_timeNodeLoop
+          via writeDBEveryNode
         """
         if self.o.cs["numCoupledIterations"]:
+            # h5 cant handle overwriting so we skip here and write once the tight coupling loop has completed
             return
         self.writeDBEveryNode(cycle, node)
 
     def writeDBEveryNode(self, cycle, node):
-        """docstring"""
+        """write the database at the end of the time node"""
+        # skip writing for last burn step since it will be written at interact EOC
         if node < self.o.burnSteps[cycle]:
             self.r.core.p.minutesSinceStart = (
                 time.time() - self.r.core.timeOfStart
