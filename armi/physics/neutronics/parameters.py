@@ -294,6 +294,7 @@ def _getNeutronicsBlockParams():
             else:
                 self._p_linPowByPinNeutron = numpy.array(value)
 
+        # gamma category because linPowByPin is only split by neutron/gamma when gamma is activated
         pb.defParam(
             "linPowByPinNeutron",
             setter=linPowByPinNeutron,
@@ -497,6 +498,7 @@ def _getNeutronicsBlockParams():
             categories=[parameters.Category.gamma],
         )
 
+        # gamma category because pdens is only split by neutron/gamma when gamma is activated
         pb.defParam(
             "pdensNeutron",
             units="W/cm^3",
@@ -572,6 +574,7 @@ def _getNeutronicsBlockParams():
             categories=[parameters.Category.gamma],
         )
 
+        # gamma category because power is only split by neutron/gamma when gamma is activated
         pb.defParam(
             "powerNeutron",
             units="W",
