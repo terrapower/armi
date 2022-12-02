@@ -786,9 +786,13 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
             self.reactorParamNames.extend(
                 self._sourceReactor.core.p.paramDefs.inCategory(category).names
             )
-        excludedCategory = parameters.Category.gamma
         b = self._sourceReactor.core.getFirstBlock()
-        excludedParamNames = b.p.paramDefs.inCategory(excludedCategory).names
+        excludedCategories = [parameters.Category.gamma]
+        if direction == "out":
+            excludedCategories.append(parameters.Category.cumulative)
+        excludedParamNames = []
+        for category in excludedCategories:
+            excludedParamNames.extend(b.p.paramDefs.inCategory(category).names)
         for category in self.BLOCK_PARAMS_TO_MAP[direction]:
             self.blockParamNames.extend(
                 [
@@ -841,6 +845,12 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
 class GammaUniformMeshConverter(NeutronicsUniformMeshConverter):
     """
     A uniform mesh converter that specifically maps gamma parameters.
+
+    Notes
+    -----
+    There are conditions on the output BLOCK_PARAMS_TO_MAP; only non-cumulative
+    parameters are mapped on the way out. This avoids numerical diffusion from
+    detailedAxialExpansion parameters being mapped in both directions.
     """
 
     REACTOR_PARAMS_TO_MAP = {
@@ -848,14 +858,16 @@ class GammaUniformMeshConverter(NeutronicsUniformMeshConverter):
         "out": [parameters.Category.neutronics],
     }
     BLOCK_PARAMS_TO_MAP = {
-        "in": [parameters.Category.detailedAxialExpansion],
+        "in": [
+            parameters.Category.detailedAxialExpansion,
+            parameters.Category.multiGroupQuantities,
+        ],
         "out": [
             parameters.Category.detailedAxialExpansion,
             parameters.Category.multiGroupQuantities,
             parameters.Category.pinQuantities,
         ],
     }
-    # conditions on the output BLOCK_PARAMS_TO_MAP; non-cumulative only
 
     def _setParamsToUpdate(self, direction):
         """
