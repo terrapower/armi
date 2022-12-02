@@ -101,6 +101,12 @@ class TestDatabaseInterface(unittest.TestCase):
         self.stateRetainer.__exit__()
         self.td.__exit__(None, None, None)
 
+    def test_interactEveryNodeReturn(self):
+        """test that the DB is NOT written to if cs["numCoupledIterations"] != 0"""
+        self.o.cs["numCoupledIterations"] = 2
+        self.dbi.interactEveryNode(0, 0)
+        self.assertFalse(self.dbi.database.hasTimeStep(0, 0))
+
     def test_interactBOL(self):
         self.assertIsNotNone(self.dbi._db)
         self.dbi.interactBOL()
