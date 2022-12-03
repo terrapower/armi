@@ -293,7 +293,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
     def makeAssemWithUniformMesh(
         sourceAssem,
         newMesh,
-        blockParamNames,
+        blockParamNames=None,
         mapNumberDensities=True,
     ):
         """
@@ -336,6 +336,8 @@ class UniformMeshGeometryConverter(GeometryConverter):
         runLog.debug(f"Creating a uniform mesh of {newAssem}")
         bottom = 0.0
 
+        if blockParamNames is None:
+            blockParamNames = []
         for topMeshPoint in newMesh:
             overlappingBlockInfo = sourceAssem.getBlocksBetweenElevations(
                 bottom, topMeshPoint
