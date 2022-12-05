@@ -286,13 +286,6 @@ def getAssemblyParameterDefinitions():
         )
 
         pb.defParam(
-            "THorificeSetting",
-            units="Pa/$(kg/s)^2$",
-            description="The ratio of pressure drop over mass flow rate squared, through an orifice",
-            default=None,
-        )
-
-        pb.defParam(
             "THorificeZone",
             units=None,
             description="orifice zone for assembly; should be location specific",
