@@ -347,12 +347,6 @@ def getBlockParameterDefinitions():
             categories=[parameters.Category.retainOnReplacement],
         )
 
-        pb.defParam(
-            "pinPeakingStdDev",
-            units="None",
-            description="Standard deviation of the pin peaking factors for the block",
-        )
-
     with pDefs.createBuilder() as pb:
 
         pb.defParam(
