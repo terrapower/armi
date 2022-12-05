@@ -121,6 +121,15 @@ class TestDatabaseInterface(unittest.TestCase):
         self.dbi.interactDistributeState()
         self.assertEqual(self.dbi.distributable(), 4)
 
+    def test_timeNodeLoop_numCoupledIterations(self):
+        """test that database is written out after the coupling loop has completed"""
+        # clear out interfaces (no need to run physics) but leave database
+        self.o.interfaces = [self.dbi]
+        self.o.cs["numCoupledIterations"] = 1
+        self.assertFalse(self.dbi._db.hasTimeStep(0, 0))
+        self.o._timeNodeLoop(0, 0)
+        self.assertTrue(self.dbi._db.hasTimeStep(0, 0))
+
 
 class TestDatabaseWriter(unittest.TestCase):
     def setUp(self):
