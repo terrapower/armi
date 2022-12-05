@@ -487,7 +487,6 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
         # clear the converters in case this function gets called twice
         self.geomConverters = {}
 
-
     def edgeAssembliesAreNeeded(self) -> bool:
         """
         True if edge assemblies are needed in this calculation
@@ -814,11 +813,6 @@ class DoseResultsMapper(GlobalFluxResultMapper):
                 b.p.dpaPeakFromFluence = (
                     b.p.fastFluencePeak * self.options.dpaPerFluence
                 )
-
-            if b.p.pointsCornerDpaRate:
-                b.p.pointsCornerDpa += b.p.pointsCornerDpaRate
-            if b.p.pointsEdgeDpaRate:
-                b.p.pointsEdgeDpa += b.p.pointsEdgeDpaRate
 
             # also set the burnup peaking. Requires burnup to be up-to-date
             # (this should run AFTER burnup has been updated)
