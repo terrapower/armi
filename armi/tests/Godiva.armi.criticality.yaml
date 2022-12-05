@@ -1,0 +1,29 @@
+metadata:
+  version: 0.2.3
+settings:
+  acceptableBlockAreaError: 0.0001
+  burnSteps: 0
+  comment: pylot generated ARMI model
+  crossSectionControl:
+    AA:
+      geometry: 0D
+      validBlockTypes:
+        - fuel
+      blockRepresentation: FluxWeightedAverage
+      criticalBuckling: true
+  genReports: false
+  genXS: Neutron
+  geomFile: Godiva.armi.criticality-geom.yaml
+  groupStructure: ARMI45
+  loadingFile: Godiva-blueprints.yaml
+  mc2GammaLibraryPath: \\albert\apps\dev\mc2\3.2.3\libraries\endfb-vii.0\lib.gamma.e70
+  mc2NeutronLibraryPath: \\albert\apps\dev\mc2\3.2.3\libraries\endfb-vii.0\lib.mcc.e70
+  mc2v3.path: \\albert\apps\dev\mc2\3.2.2\mcc3-20181006.exe
+  mc2XSGenerationRetries: 1
+  neutronicsKernel: DIF3D-FD
+  neutronicsOutputsToSave: All
+  neutronicsType: both
+  numProcessors: 36
+  outers: 200
+  power: 0.001
+  verbosity: debug

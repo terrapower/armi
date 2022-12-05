@@ -1,0 +1,1933 @@
+nuclide flags:
+  PU237:
+    burn: false
+    xs: true
+    expandTo: []
+  CL35:
+    burn: false
+    xs: true
+    expandTo: []
+  CL37:
+    burn: false
+    xs: true
+    expandTo: []
+  AL27:
+    burn: false
+    xs: true
+    expandTo: []
+  B10:
+    burn: false
+    xs: true
+    expandTo: []
+  B11:
+    burn: false
+    xs: true
+    expandTo: []
+  PU240:
+    burn: false
+    xs: true
+    expandTo: []
+  PU241:
+    burn: false
+    xs: true
+    expandTo: []
+  NI:
+    burn: false
+    xs: true
+    expandTo: []
+  PA233:
+    burn: false
+    xs: true
+    expandTo: []
+  NA23:
+    burn: false
+    xs: true
+    expandTo: []
+  NA22:
+    burn: false
+    xs: true
+    expandTo: []
+  PB:
+    burn: false
+    xs: true
+    expandTo: []
+  NP238:
+    burn: false
+    xs: true
+    expandTo: []
+  AR36:
+    burn: false
+    xs: true
+    expandTo: []
+  TH230:
+    burn: false
+    xs: true
+    expandTo: []
+  TI:
+    burn: false
+    xs: true
+    expandTo: []
+  AR38:
+    burn: false
+    xs: true
+    expandTo: []
+  RA226:
+    burn: false
+    xs: true
+    expandTo: []
+  U238:
+    burn: false
+    xs: true
+    expandTo: []
+  U239:
+    burn: false
+    xs: true
+    expandTo: []
+  C:
+    burn: false
+    xs: true
+    expandTo: []
+  LFP35:
+    burn: false
+    xs: true
+    expandTo: []
+  NP236:
+    burn: false
+    xs: true
+    expandTo: []
+  NP237:
+    burn: false
+    xs: true
+    expandTo: []
+  CO59:
+    burn: false
+    xs: true
+    expandTo: []
+  NP239:
+    burn: false
+    xs: true
+    expandTo: []
+  U233:
+    burn: false
+    xs: true
+    expandTo: []
+  U234:
+    burn: false
+    xs: true
+    expandTo: []
+  U235:
+    burn: false
+    xs: true
+    expandTo: []
+  U236:
+    burn: false
+    xs: true
+    expandTo: []
+  U237:
+    burn: false
+    xs: true
+    expandTo: []
+  PU239:
+    burn: false
+    xs: true
+    expandTo: []
+  PU238:
+    burn: false
+    xs: true
+    expandTo: []
+  CR:
+    burn: false
+    xs: true
+    expandTo: []
+  TH234:
+    burn: false
+    xs: true
+    expandTo: []
+  MN55:
+    burn: false
+    xs: true
+    expandTo: []
+  TH232:
+    burn: false
+    xs: true
+    expandTo: []
+  CU:
+    burn: false
+    xs: true
+    expandTo: []
+  AR40:
+    burn: false
+    xs: true
+    expandTo: []
+  MG:
+    burn: false
+    xs: true
+    expandTo: []
+  MO:
+    burn: false
+    xs: true
+    expandTo: []
+  SI:
+    burn: false
+    xs: true
+    expandTo: []
+  FE:
+    burn: false
+    xs: true
+    expandTo: []
+  LFP39:
+    burn: false
+    xs: true
+    expandTo: []
+  DUMP2:
+    burn: false
+    xs: true
+    expandTo: []
+  AM241:
+    burn: false
+    xs: true
+    expandTo: []
+  LFP41:
+    burn: false
+    xs: true
+    expandTo: []
+  LFP40:
+    burn: false
+    xs: true
+    expandTo: []
+  PU242:
+    burn: false
+    xs: true
+    expandTo: []
+  PU236:
+    burn: false
+    xs: true
+    expandTo: []
+  U232:
+    burn: false
+    xs: true
+    expandTo: []
+  DUMP1:
+    burn: false
+    xs: true
+    expandTo: []
+  LFP38:
+    burn: false
+    xs: true
+    expandTo: []
+  AM243:
+    burn: false
+    xs: true
+    expandTo: []
+  PA231:
+    burn: false
+    xs: true
+    expandTo: []
+  CM244:
+    burn: false
+    xs: true
+    expandTo: []
+  CM242:
+    burn: false
+    xs: true
+    expandTo: []
+  AM242:
+    burn: false
+    xs: true
+    expandTo: []
+  CM245:
+    burn: false
+    xs: true
+    expandTo: []
+  CM243:
+    burn: false
+    xs: true
+    expandTo: []
+  CM246:
+    burn: false
+    xs: true
+    expandTo: []
+  CM247:
+    burn: false
+    xs: true
+    expandTo: []
+  O16:
+    burn: false
+    xs: true
+    expandTo: []
+  N14:
+    burn: false
+    xs: true
+    expandTo: []
+  H:
+    burn: false
+    xs: true
+    expandTo: []
+  S:
+    burn: false
+    xs: true
+    expandTo: []
+  P31:
+    burn: false
+    xs: true
+    expandTo: []
+  TA181:
+    burn: false
+    xs: true
+    expandTo: []
+  ZR:
+    burn: false
+    xs: true
+    expandTo: []
+  K39:
+    burn: false
+    xs: true
+    expandTo: []
+  K40:
+    burn: false
+    xs: true
+    expandTo: []
+  K41:
+    burn: false
+    xs: true
+    expandTo: []
+custom isotopics: {}
+blocks: {}
+assemblies:
+  heights:
+  - 5.0
+  - 5.0
+  - 5.000000000000002
+  - 4.999999999999999
+  - 4.999999999999999
+  - 5.000000000000004
+  axial mesh points:
+  - 5
+  - 5
+  - 5
+  - 5
+  - 5
+  - 5
+  assembly1_1:
+    specifier: assembly1_1
+    blocks:
+    - name: block1_1_1
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.19634954084936207
+        outer_radius: 5.001
+        inner_radius: 0.0
+        inner_theta: 0.0
+        mult: 0.9167912602424622
+        height: 5.0
+      compliment:
+        shape: RadialSegment
+        material: Void
+        Tinput: 0.0
+        Thot: 0.0
+        outer_theta: 0.19634954084936207
+        outer_radius: 5.001
+        inner_radius: 0.0
+        inner_theta: 0.0
+        mult: 0.08320873975753784
+        height: 5.0
+    - name: block1_1_2
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.19634954084936207
+        outer_radius: 5.001
+        inner_radius: 0.0
+        inner_theta: 0.0
+        mult: 1.0
+        height: 5.0
+    - name: block1_1_3
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.19634954084936207
+        outer_radius: 5.001
+        inner_radius: 0.0
+        inner_theta: 0.0
+        mult: 1.0
+        height: 5.000000000000002
+    - name: block1_1_4
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.19634954084936207
+        outer_radius: 5.001
+        inner_radius: 0.0
+        inner_theta: 0.0
+        mult: 1.0
+        height: 4.999999999999999
+    - name: block1_1_5
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.19634954084936207
+        outer_radius: 5.001
+        inner_radius: 0.0
+        inner_theta: 0.0
+        mult: 1.0
+        height: 4.999999999999999
+    - name: block1_1_6
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.19634954084936207
+        outer_radius: 5.001
+        inner_radius: 0.0
+        inner_theta: 0.0
+        mult: 0.9150868654251099
+        height: 5.000000000000004
+      compliment:
+        shape: RadialSegment
+        material: Void
+        Tinput: 0.0
+        Thot: 0.0
+        outer_theta: 0.19634954084936207
+        outer_radius: 5.001
+        inner_radius: 0.0
+        inner_theta: 0.0
+        mult: 0.08491313457489014
+        height: 5.000000000000004
+    height:
+    - 5.0
+    - 5.0
+    - 5.000000000000002
+    - 4.999999999999999
+    - 4.999999999999999
+    - 5.000000000000004
+    axial mesh points:
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    radial mesh points: 3
+    azimuthal mesh points: 3
+    xs types:
+    - A
+    - A
+    - A
+    - A
+    - A
+    - A
+  assembly1_2:
+    specifier: assembly1_2
+    blocks:
+    - name: block1_2_1
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.39269908169872414
+        outer_radius: 5.001
+        inner_radius: 0.0
+        inner_theta: 0.19634954084936207
+        mult: 0.9128827452659607
+        height: 5.0
+      compliment:
+        shape: RadialSegment
+        material: Void
+        Tinput: 0.0
+        Thot: 0.0
+        outer_theta: 0.39269908169872414
+        outer_radius: 5.001
+        inner_radius: 0.0
+        inner_theta: 0.19634954084936207
+        mult: 0.0871172547340393
+        height: 5.0
+    - name: block1_2_2
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.39269908169872414
+        outer_radius: 5.001
+        inner_radius: 0.0
+        inner_theta: 0.19634954084936207
+        mult: 1.0
+        height: 5.0
+    - name: block1_2_3
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.39269908169872414
+        outer_radius: 5.001
+        inner_radius: 0.0
+        inner_theta: 0.19634954084936207
+        mult: 1.0
+        height: 5.000000000000002
+    - name: block1_2_4
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.39269908169872414
+        outer_radius: 5.001
+        inner_radius: 0.0
+        inner_theta: 0.19634954084936207
+        mult: 1.0
+        height: 4.999999999999999
+    - name: block1_2_5
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.39269908169872414
+        outer_radius: 5.001
+        inner_radius: 0.0
+        inner_theta: 0.19634954084936207
+        mult: 1.0
+        height: 4.999999999999999
+    - name: block1_2_6
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.39269908169872414
+        outer_radius: 5.001
+        inner_radius: 0.0
+        inner_theta: 0.19634954084936207
+        mult: 0.9191223978996277
+        height: 5.000000000000004
+      compliment:
+        shape: RadialSegment
+        material: Void
+        Tinput: 0.0
+        Thot: 0.0
+        outer_theta: 0.39269908169872414
+        outer_radius: 5.001
+        inner_radius: 0.0
+        inner_theta: 0.19634954084936207
+        mult: 0.08087760210037231
+        height: 5.000000000000004
+    height:
+    - 5.0
+    - 5.0
+    - 5.000000000000002
+    - 4.999999999999999
+    - 4.999999999999999
+    - 5.000000000000004
+    axial mesh points:
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    radial mesh points: 3
+    azimuthal mesh points: 3
+    xs types:
+    - A
+    - A
+    - A
+    - A
+    - A
+    - A
+  assembly1_3:
+    specifier: assembly1_3
+    blocks:
+    - name: block1_3_1
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.5890486225480862
+        outer_radius: 5.001
+        inner_radius: 0.0
+        inner_theta: 0.39269908169872414
+        mult: 0.9125891923904419
+        height: 5.0
+      compliment:
+        shape: RadialSegment
+        material: Void
+        Tinput: 0.0
+        Thot: 0.0
+        outer_theta: 0.5890486225480862
+        outer_radius: 5.001
+        inner_radius: 0.0
+        inner_theta: 0.39269908169872414
+        mult: 0.0874108076095581
+        height: 5.0
+    - name: block1_3_2
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.5890486225480862
+        outer_radius: 5.001
+        inner_radius: 0.0
+        inner_theta: 0.39269908169872414
+        mult: 1.0
+        height: 5.0
+    - name: block1_3_3
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.5890486225480862
+        outer_radius: 5.001
+        inner_radius: 0.0
+        inner_theta: 0.39269908169872414
+        mult: 1.0
+        height: 5.000000000000002
+    - name: block1_3_4
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.5890486225480862
+        outer_radius: 5.001
+        inner_radius: 0.0
+        inner_theta: 0.39269908169872414
+        mult: 1.0
+        height: 4.999999999999999
+    - name: block1_3_5
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.5890486225480862
+        outer_radius: 5.001
+        inner_radius: 0.0
+        inner_theta: 0.39269908169872414
+        mult: 1.0
+        height: 4.999999999999999
+    - name: block1_3_6
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.5890486225480862
+        outer_radius: 5.001
+        inner_radius: 0.0
+        inner_theta: 0.39269908169872414
+        mult: 0.9229551553726196
+        height: 5.000000000000004
+      compliment:
+        shape: RadialSegment
+        material: Void
+        Tinput: 0.0
+        Thot: 0.0
+        outer_theta: 0.5890486225480862
+        outer_radius: 5.001
+        inner_radius: 0.0
+        inner_theta: 0.39269908169872414
+        mult: 0.07704484462738037
+        height: 5.000000000000004
+    height:
+    - 5.0
+    - 5.0
+    - 5.000000000000002
+    - 4.999999999999999
+    - 4.999999999999999
+    - 5.000000000000004
+    axial mesh points:
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    radial mesh points: 3
+    azimuthal mesh points: 3
+    xs types:
+    - A
+    - A
+    - A
+    - A
+    - A
+    - A
+  assembly1_4:
+    specifier: assembly1_4
+    blocks:
+    - name: block1_4_1
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.7853981633974483
+        outer_radius: 5.001
+        inner_radius: 0.0
+        inner_theta: 0.5890486225480862
+        mult: 0.9158408641815186
+        height: 5.0
+      compliment:
+        shape: RadialSegment
+        material: Void
+        Tinput: 0.0
+        Thot: 0.0
+        outer_theta: 0.7853981633974483
+        outer_radius: 5.001
+        inner_radius: 0.0
+        inner_theta: 0.5890486225480862
+        mult: 0.08415913581848145
+        height: 5.0
+    - name: block1_4_2
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.7853981633974483
+        outer_radius: 5.001
+        inner_radius: 0.0
+        inner_theta: 0.5890486225480862
+        mult: 1.0
+        height: 5.0
+    - name: block1_4_3
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.7853981633974483
+        outer_radius: 5.001
+        inner_radius: 0.0
+        inner_theta: 0.5890486225480862
+        mult: 1.0
+        height: 5.000000000000002
+    - name: block1_4_4
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.7853981633974483
+        outer_radius: 5.001
+        inner_radius: 0.0
+        inner_theta: 0.5890486225480862
+        mult: 1.0
+        height: 4.999999999999999
+    - name: block1_4_5
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.7853981633974483
+        outer_radius: 5.001
+        inner_radius: 0.0
+        inner_theta: 0.5890486225480862
+        mult: 1.0
+        height: 4.999999999999999
+    - name: block1_4_6
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.7853981633974483
+        outer_radius: 5.001
+        inner_radius: 0.0
+        inner_theta: 0.5890486225480862
+        mult: 0.9205824136734009
+        height: 5.000000000000004
+      compliment:
+        shape: RadialSegment
+        material: Void
+        Tinput: 0.0
+        Thot: 0.0
+        outer_theta: 0.7853981633974483
+        outer_radius: 5.001
+        inner_radius: 0.0
+        inner_theta: 0.5890486225480862
+        mult: 0.07941758632659912
+        height: 5.000000000000004
+    height:
+    - 5.0
+    - 5.0
+    - 5.000000000000002
+    - 4.999999999999999
+    - 4.999999999999999
+    - 5.000000000000004
+    axial mesh points:
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    radial mesh points: 3
+    azimuthal mesh points: 3
+    xs types:
+    - A
+    - A
+    - A
+    - A
+    - A
+    - A
+  assembly2_1:
+    specifier: assembly2_1
+    blocks:
+    - name: block2_1_1
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.19634954084936207
+        outer_radius: 10.002
+        inner_radius: 5.001
+        inner_theta: 0.0
+        mult: 0.54362553358078
+        height: 5.0
+      compliment:
+        shape: RadialSegment
+        material: Void
+        Tinput: 0.0
+        Thot: 0.0
+        outer_theta: 0.19634954084936207
+        outer_radius: 10.002
+        inner_radius: 5.001
+        inner_theta: 0.0
+        mult: 0.45637446641921997
+        height: 5.0
+    - name: block2_1_2
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.19634954084936207
+        outer_radius: 10.002
+        inner_radius: 5.001
+        inner_theta: 0.0
+        mult: 1.0
+        height: 5.0
+    - name: block2_1_3
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.19634954084936207
+        outer_radius: 10.002
+        inner_radius: 5.001
+        inner_theta: 0.0
+        mult: 1.0
+        height: 5.000000000000002
+    - name: block2_1_4
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.19634954084936207
+        outer_radius: 10.002
+        inner_radius: 5.001
+        inner_theta: 0.0
+        mult: 1.0
+        height: 4.999999999999999
+    - name: block2_1_5
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.19634954084936207
+        outer_radius: 10.002
+        inner_radius: 5.001
+        inner_theta: 0.0
+        mult: 1.0
+        height: 4.999999999999999
+    - name: block2_1_6
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.19634954084936207
+        outer_radius: 10.002
+        inner_radius: 5.001
+        inner_theta: 0.0
+        mult: 0.5452947020530701
+        height: 5.000000000000004
+      compliment:
+        shape: RadialSegment
+        material: Void
+        Tinput: 0.0
+        Thot: 0.0
+        outer_theta: 0.19634954084936207
+        outer_radius: 10.002
+        inner_radius: 5.001
+        inner_theta: 0.0
+        mult: 0.45470529794692993
+        height: 5.000000000000004
+    height:
+    - 5.0
+    - 5.0
+    - 5.000000000000002
+    - 4.999999999999999
+    - 4.999999999999999
+    - 5.000000000000004
+    axial mesh points:
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    radial mesh points: 3
+    azimuthal mesh points: 3
+    xs types:
+    - A
+    - A
+    - A
+    - A
+    - A
+    - A
+  assembly2_2:
+    specifier: assembly2_2
+    blocks:
+    - name: block2_2_1
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.39269908169872414
+        outer_radius: 10.002
+        inner_radius: 5.001
+        inner_theta: 0.19634954084936207
+        mult: 0.549401044845581
+        height: 5.0
+      compliment:
+        shape: RadialSegment
+        material: Void
+        Tinput: 0.0
+        Thot: 0.0
+        outer_theta: 0.39269908169872414
+        outer_radius: 10.002
+        inner_radius: 5.001
+        inner_theta: 0.19634954084936207
+        mult: 0.45059895515441895
+        height: 5.0
+    - name: block2_2_2
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.39269908169872414
+        outer_radius: 10.002
+        inner_radius: 5.001
+        inner_theta: 0.19634954084936207
+        mult: 1.0
+        height: 5.0
+    - name: block2_2_3
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.39269908169872414
+        outer_radius: 10.002
+        inner_radius: 5.001
+        inner_theta: 0.19634954084936207
+        mult: 1.0
+        height: 5.000000000000002
+    - name: block2_2_4
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.39269908169872414
+        outer_radius: 10.002
+        inner_radius: 5.001
+        inner_theta: 0.19634954084936207
+        mult: 1.0
+        height: 4.999999999999999
+    - name: block2_2_5
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.39269908169872414
+        outer_radius: 10.002
+        inner_radius: 5.001
+        inner_theta: 0.19634954084936207
+        mult: 1.0
+        height: 4.999999999999999
+    - name: block2_2_6
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.39269908169872414
+        outer_radius: 10.002
+        inner_radius: 5.001
+        inner_theta: 0.19634954084936207
+        mult: 0.5476158261299133
+        height: 5.000000000000004
+      compliment:
+        shape: RadialSegment
+        material: Void
+        Tinput: 0.0
+        Thot: 0.0
+        outer_theta: 0.39269908169872414
+        outer_radius: 10.002
+        inner_radius: 5.001
+        inner_theta: 0.19634954084936207
+        mult: 0.45238417387008667
+        height: 5.000000000000004
+    height:
+    - 5.0
+    - 5.0
+    - 5.000000000000002
+    - 4.999999999999999
+    - 4.999999999999999
+    - 5.000000000000004
+    axial mesh points:
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    radial mesh points: 3
+    azimuthal mesh points: 3
+    xs types:
+    - A
+    - A
+    - A
+    - A
+    - A
+    - A
+  assembly2_3:
+    specifier: assembly2_3
+    blocks:
+    - name: block2_3_1
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.5890486225480862
+        outer_radius: 10.002
+        inner_radius: 5.001
+        inner_theta: 0.39269908169872414
+        mult: 0.5503354072570801
+        height: 5.0
+      compliment:
+        shape: RadialSegment
+        material: Void
+        Tinput: 0.0
+        Thot: 0.0
+        outer_theta: 0.5890486225480862
+        outer_radius: 10.002
+        inner_radius: 5.001
+        inner_theta: 0.39269908169872414
+        mult: 0.4496645927429199
+        height: 5.0
+    - name: block2_3_2
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.5890486225480862
+        outer_radius: 10.002
+        inner_radius: 5.001
+        inner_theta: 0.39269908169872414
+        mult: 1.0
+        height: 5.0
+    - name: block2_3_3
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.5890486225480862
+        outer_radius: 10.002
+        inner_radius: 5.001
+        inner_theta: 0.39269908169872414
+        mult: 1.0
+        height: 5.000000000000002
+    - name: block2_3_4
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.5890486225480862
+        outer_radius: 10.002
+        inner_radius: 5.001
+        inner_theta: 0.39269908169872414
+        mult: 1.0
+        height: 4.999999999999999
+    - name: block2_3_5
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.5890486225480862
+        outer_radius: 10.002
+        inner_radius: 5.001
+        inner_theta: 0.39269908169872414
+        mult: 1.0
+        height: 4.999999999999999
+    - name: block2_3_6
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.5890486225480862
+        outer_radius: 10.002
+        inner_radius: 5.001
+        inner_theta: 0.39269908169872414
+        mult: 0.5403251051902771
+        height: 5.000000000000004
+      compliment:
+        shape: RadialSegment
+        material: Void
+        Tinput: 0.0
+        Thot: 0.0
+        outer_theta: 0.5890486225480862
+        outer_radius: 10.002
+        inner_radius: 5.001
+        inner_theta: 0.39269908169872414
+        mult: 0.4596748948097229
+        height: 5.000000000000004
+    height:
+    - 5.0
+    - 5.0
+    - 5.000000000000002
+    - 4.999999999999999
+    - 4.999999999999999
+    - 5.000000000000004
+    axial mesh points:
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    radial mesh points: 3
+    azimuthal mesh points: 3
+    xs types:
+    - A
+    - A
+    - A
+    - A
+    - A
+    - A
+  assembly2_4:
+    specifier: assembly2_4
+    blocks:
+    - name: block2_4_1
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.7853981633974483
+        outer_radius: 10.002
+        inner_radius: 5.001
+        inner_theta: 0.5890486225480862
+        mult: 0.5451868176460266
+        height: 5.0
+      compliment:
+        shape: RadialSegment
+        material: Void
+        Tinput: 0.0
+        Thot: 0.0
+        outer_theta: 0.7853981633974483
+        outer_radius: 10.002
+        inner_radius: 5.001
+        inner_theta: 0.5890486225480862
+        mult: 0.4548131823539734
+        height: 5.0
+    - name: block2_4_2
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.7853981633974483
+        outer_radius: 10.002
+        inner_radius: 5.001
+        inner_theta: 0.5890486225480862
+        mult: 1.0
+        height: 5.0
+    - name: block2_4_3
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.7853981633974483
+        outer_radius: 10.002
+        inner_radius: 5.001
+        inner_theta: 0.5890486225480862
+        mult: 1.0
+        height: 5.000000000000002
+    - name: block2_4_4
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.7853981633974483
+        outer_radius: 10.002
+        inner_radius: 5.001
+        inner_theta: 0.5890486225480862
+        mult: 1.0
+        height: 4.999999999999999
+    - name: block2_4_5
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.7853981633974483
+        outer_radius: 10.002
+        inner_radius: 5.001
+        inner_theta: 0.5890486225480862
+        mult: 1.0
+        height: 4.999999999999999
+    - name: block2_4_6
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.7853981633974483
+        outer_radius: 10.002
+        inner_radius: 5.001
+        inner_theta: 0.5890486225480862
+        mult: 0.5424021482467651
+        height: 5.000000000000004
+      compliment:
+        shape: RadialSegment
+        material: Void
+        Tinput: 0.0
+        Thot: 0.0
+        outer_theta: 0.7853981633974483
+        outer_radius: 10.002
+        inner_radius: 5.001
+        inner_theta: 0.5890486225480862
+        mult: 0.45759785175323486
+        height: 5.000000000000004
+    height:
+    - 5.0
+    - 5.0
+    - 5.000000000000002
+    - 4.999999999999999
+    - 4.999999999999999
+    - 5.000000000000004
+    axial mesh points:
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    radial mesh points: 3
+    azimuthal mesh points: 3
+    xs types:
+    - A
+    - A
+    - A
+    - A
+    - A
+    - A
+  assembly3_1:
+    specifier: assembly3_1
+    blocks:
+    - name: block3_1_1
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.19634954084936207
+        outer_radius: 15.000000000000002
+        inner_radius: 10.002
+        inner_theta: 0.0
+        mult: 0.025512846186757088
+        height: 5.0
+      compliment:
+        shape: RadialSegment
+        material: Void
+        Tinput: 0.0
+        Thot: 0.0
+        outer_theta: 0.19634954084936207
+        outer_radius: 15.000000000000002
+        inner_radius: 10.002
+        inner_theta: 0.0
+        mult: 0.9744871538132429
+        height: 5.0
+    - name: block3_1_2
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.19634954084936207
+        outer_radius: 15.000000000000002
+        inner_radius: 10.002
+        inner_theta: 0.0
+        mult: 0.5377137660980225
+        height: 5.0
+      compliment:
+        shape: RadialSegment
+        material: Void
+        Tinput: 0.0
+        Thot: 0.0
+        outer_theta: 0.19634954084936207
+        outer_radius: 15.000000000000002
+        inner_radius: 10.002
+        inner_theta: 0.0
+        mult: 0.46228623390197754
+        height: 5.0
+    - name: block3_1_3
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.19634954084936207
+        outer_radius: 15.000000000000002
+        inner_radius: 10.002
+        inner_theta: 0.0
+        mult: 0.9337670803070068
+        height: 5.000000000000002
+      compliment:
+        shape: RadialSegment
+        material: Void
+        Tinput: 0.0
+        Thot: 0.0
+        outer_theta: 0.19634954084936207
+        outer_radius: 15.000000000000002
+        inner_radius: 10.002
+        inner_theta: 0.0
+        mult: 0.06623291969299316
+        height: 5.000000000000002
+    - name: block3_1_4
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.19634954084936207
+        outer_radius: 15.000000000000002
+        inner_radius: 10.002
+        inner_theta: 0.0
+        mult: 0.9322097301483154
+        height: 4.999999999999999
+      compliment:
+        shape: RadialSegment
+        material: Void
+        Tinput: 0.0
+        Thot: 0.0
+        outer_theta: 0.19634954084936207
+        outer_radius: 15.000000000000002
+        inner_radius: 10.002
+        inner_theta: 0.0
+        mult: 0.06779026985168457
+        height: 4.999999999999999
+    - name: block3_1_5
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.19634954084936207
+        outer_radius: 15.000000000000002
+        inner_radius: 10.002
+        inner_theta: 0.0
+        mult: 0.5325883030891418
+        height: 4.999999999999999
+      compliment:
+        shape: RadialSegment
+        material: Void
+        Tinput: 0.0
+        Thot: 0.0
+        outer_theta: 0.19634954084936207
+        outer_radius: 15.000000000000002
+        inner_radius: 10.002
+        inner_theta: 0.0
+        mult: 0.46741169691085815
+        height: 4.999999999999999
+    - name: block3_1_6
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.19634954084936207
+        outer_radius: 15.000000000000002
+        inner_radius: 10.002
+        inner_theta: 0.0
+        mult: 0.023754093796014786
+        height: 5.000000000000004
+      compliment:
+        shape: RadialSegment
+        material: Void
+        Tinput: 0.0
+        Thot: 0.0
+        outer_theta: 0.19634954084936207
+        outer_radius: 15.000000000000002
+        inner_radius: 10.002
+        inner_theta: 0.0
+        mult: 0.9762459062039852
+        height: 5.000000000000004
+    height:
+    - 5.0
+    - 5.0
+    - 5.000000000000002
+    - 4.999999999999999
+    - 4.999999999999999
+    - 5.000000000000004
+    axial mesh points:
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    radial mesh points: 3
+    azimuthal mesh points: 3
+    xs types:
+    - A
+    - A
+    - A
+    - A
+    - A
+    - A
+  assembly3_2:
+    specifier: assembly3_2
+    blocks:
+    - name: block3_2_1
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.39269908169872414
+        outer_radius: 15.000000000000002
+        inner_radius: 10.002
+        inner_theta: 0.19634954084936207
+        mult: 0.024075983092188835
+        height: 5.0
+      compliment:
+        shape: RadialSegment
+        material: Void
+        Tinput: 0.0
+        Thot: 0.0
+        outer_theta: 0.39269908169872414
+        outer_radius: 15.000000000000002
+        inner_radius: 10.002
+        inner_theta: 0.19634954084936207
+        mult: 0.9759240169078112
+        height: 5.0
+    - name: block3_2_2
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.39269908169872414
+        outer_radius: 15.000000000000002
+        inner_radius: 10.002
+        inner_theta: 0.19634954084936207
+        mult: 0.5275790691375732
+        height: 5.0
+      compliment:
+        shape: RadialSegment
+        material: Void
+        Tinput: 0.0
+        Thot: 0.0
+        outer_theta: 0.39269908169872414
+        outer_radius: 15.000000000000002
+        inner_radius: 10.002
+        inner_theta: 0.19634954084936207
+        mult: 0.47242093086242676
+        height: 5.0
+    - name: block3_2_3
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.39269908169872414
+        outer_radius: 15.000000000000002
+        inner_radius: 10.002
+        inner_theta: 0.19634954084936207
+        mult: 0.9335166811943054
+        height: 5.000000000000002
+      compliment:
+        shape: RadialSegment
+        material: Void
+        Tinput: 0.0
+        Thot: 0.0
+        outer_theta: 0.39269908169872414
+        outer_radius: 15.000000000000002
+        inner_radius: 10.002
+        inner_theta: 0.19634954084936207
+        mult: 0.06648331880569458
+        height: 5.000000000000002
+    - name: block3_2_4
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.39269908169872414
+        outer_radius: 15.000000000000002
+        inner_radius: 10.002
+        inner_theta: 0.19634954084936207
+        mult: 0.9331682920455933
+        height: 4.999999999999999
+      compliment:
+        shape: RadialSegment
+        material: Void
+        Tinput: 0.0
+        Thot: 0.0
+        outer_theta: 0.39269908169872414
+        outer_radius: 15.000000000000002
+        inner_radius: 10.002
+        inner_theta: 0.19634954084936207
+        mult: 0.06683170795440674
+        height: 4.999999999999999
+    - name: block3_2_5
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.39269908169872414
+        outer_radius: 15.000000000000002
+        inner_radius: 10.002
+        inner_theta: 0.19634954084936207
+        mult: 0.5327289700508118
+        height: 4.999999999999999
+      compliment:
+        shape: RadialSegment
+        material: Void
+        Tinput: 0.0
+        Thot: 0.0
+        outer_theta: 0.39269908169872414
+        outer_radius: 15.000000000000002
+        inner_radius: 10.002
+        inner_theta: 0.19634954084936207
+        mult: 0.46727102994918823
+        height: 4.999999999999999
+    - name: block3_2_6
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.39269908169872414
+        outer_radius: 15.000000000000002
+        inner_radius: 10.002
+        inner_theta: 0.19634954084936207
+        mult: 0.023873452097177505
+        height: 5.000000000000004
+      compliment:
+        shape: RadialSegment
+        material: Void
+        Tinput: 0.0
+        Thot: 0.0
+        outer_theta: 0.39269908169872414
+        outer_radius: 15.000000000000002
+        inner_radius: 10.002
+        inner_theta: 0.19634954084936207
+        mult: 0.9761265479028225
+        height: 5.000000000000004
+    height:
+    - 5.0
+    - 5.0
+    - 5.000000000000002
+    - 4.999999999999999
+    - 4.999999999999999
+    - 5.000000000000004
+    axial mesh points:
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    radial mesh points: 3
+    azimuthal mesh points: 3
+    xs types:
+    - A
+    - A
+    - A
+    - A
+    - A
+    - A
+  assembly3_3:
+    specifier: assembly3_3
+    blocks:
+    - name: block3_3_1
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.5890486225480862
+        outer_radius: 15.000000000000002
+        inner_radius: 10.002
+        inner_theta: 0.39269908169872414
+        mult: 0.023183858022093773
+        height: 5.0
+      compliment:
+        shape: RadialSegment
+        material: Void
+        Tinput: 0.0
+        Thot: 0.0
+        outer_theta: 0.5890486225480862
+        outer_radius: 15.000000000000002
+        inner_radius: 10.002
+        inner_theta: 0.39269908169872414
+        mult: 0.9768161419779062
+        height: 5.0
+    - name: block3_3_2
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.5890486225480862
+        outer_radius: 15.000000000000002
+        inner_radius: 10.002
+        inner_theta: 0.39269908169872414
+        mult: 0.5315818786621094
+        height: 5.0
+      compliment:
+        shape: RadialSegment
+        material: Void
+        Tinput: 0.0
+        Thot: 0.0
+        outer_theta: 0.5890486225480862
+        outer_radius: 15.000000000000002
+        inner_radius: 10.002
+        inner_theta: 0.39269908169872414
+        mult: 0.4684181213378906
+        height: 5.0
+    - name: block3_3_3
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.5890486225480862
+        outer_radius: 15.000000000000002
+        inner_radius: 10.002
+        inner_theta: 0.39269908169872414
+        mult: 0.9347671866416931
+        height: 5.000000000000002
+      compliment:
+        shape: RadialSegment
+        material: Void
+        Tinput: 0.0
+        Thot: 0.0
+        outer_theta: 0.5890486225480862
+        outer_radius: 15.000000000000002
+        inner_radius: 10.002
+        inner_theta: 0.39269908169872414
+        mult: 0.06523281335830688
+        height: 5.000000000000002
+    - name: block3_3_4
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.5890486225480862
+        outer_radius: 15.000000000000002
+        inner_radius: 10.002
+        inner_theta: 0.39269908169872414
+        mult: 0.9326208829879761
+        height: 4.999999999999999
+      compliment:
+        shape: RadialSegment
+        material: Void
+        Tinput: 0.0
+        Thot: 0.0
+        outer_theta: 0.5890486225480862
+        outer_radius: 15.000000000000002
+        inner_radius: 10.002
+        inner_theta: 0.39269908169872414
+        mult: 0.06737911701202393
+        height: 4.999999999999999
+    - name: block3_3_5
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.5890486225480862
+        outer_radius: 15.000000000000002
+        inner_radius: 10.002
+        inner_theta: 0.39269908169872414
+        mult: 0.5268162488937378
+        height: 4.999999999999999
+      compliment:
+        shape: RadialSegment
+        material: Void
+        Tinput: 0.0
+        Thot: 0.0
+        outer_theta: 0.5890486225480862
+        outer_radius: 15.000000000000002
+        inner_radius: 10.002
+        inner_theta: 0.39269908169872414
+        mult: 0.4731837511062622
+        height: 4.999999999999999
+    - name: block3_3_6
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.5890486225480862
+        outer_radius: 15.000000000000002
+        inner_radius: 10.002
+        inner_theta: 0.39269908169872414
+        mult: 0.025061648339033127
+        height: 5.000000000000004
+      compliment:
+        shape: RadialSegment
+        material: Void
+        Tinput: 0.0
+        Thot: 0.0
+        outer_theta: 0.5890486225480862
+        outer_radius: 15.000000000000002
+        inner_radius: 10.002
+        inner_theta: 0.39269908169872414
+        mult: 0.9749383516609669
+        height: 5.000000000000004
+    height:
+    - 5.0
+    - 5.0
+    - 5.000000000000002
+    - 4.999999999999999
+    - 4.999999999999999
+    - 5.000000000000004
+    axial mesh points:
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    radial mesh points: 3
+    azimuthal mesh points: 3
+    xs types:
+    - A
+    - A
+    - A
+    - A
+    - A
+    - A
+  assembly3_4:
+    specifier: assembly3_4
+    blocks:
+    - name: block3_4_1
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.7853981633974483
+        outer_radius: 15.000000000000002
+        inner_radius: 10.002
+        inner_theta: 0.5890486225480862
+        mult: 0.023954179137945175
+        height: 5.0
+      compliment:
+        shape: RadialSegment
+        material: Void
+        Tinput: 0.0
+        Thot: 0.0
+        outer_theta: 0.7853981633974483
+        outer_radius: 15.000000000000002
+        inner_radius: 10.002
+        inner_theta: 0.5890486225480862
+        mult: 0.9760458208620548
+        height: 5.0
+    - name: block3_4_2
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.7853981633974483
+        outer_radius: 15.000000000000002
+        inner_radius: 10.002
+        inner_theta: 0.5890486225480862
+        mult: 0.5365000367164612
+        height: 5.0
+      compliment:
+        shape: RadialSegment
+        material: Void
+        Tinput: 0.0
+        Thot: 0.0
+        outer_theta: 0.7853981633974483
+        outer_radius: 15.000000000000002
+        inner_radius: 10.002
+        inner_theta: 0.5890486225480862
+        mult: 0.4634999632835388
+        height: 5.0
+    - name: block3_4_3
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.7853981633974483
+        outer_radius: 15.000000000000002
+        inner_radius: 10.002
+        inner_theta: 0.5890486225480862
+        mult: 0.932323157787323
+        height: 5.000000000000002
+      compliment:
+        shape: RadialSegment
+        material: Void
+        Tinput: 0.0
+        Thot: 0.0
+        outer_theta: 0.7853981633974483
+        outer_radius: 15.000000000000002
+        inner_radius: 10.002
+        inner_theta: 0.5890486225480862
+        mult: 0.067676842212677
+        height: 5.000000000000002
+    - name: block3_4_4
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.7853981633974483
+        outer_radius: 15.000000000000002
+        inner_radius: 10.002
+        inner_theta: 0.5890486225480862
+        mult: 0.9339161515235901
+        height: 4.999999999999999
+      compliment:
+        shape: RadialSegment
+        material: Void
+        Tinput: 0.0
+        Thot: 0.0
+        outer_theta: 0.7853981633974483
+        outer_radius: 15.000000000000002
+        inner_radius: 10.002
+        inner_theta: 0.5890486225480862
+        mult: 0.06608384847640991
+        height: 4.999999999999999
+    - name: block3_4_5
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.7853981633974483
+        outer_radius: 15.000000000000002
+        inner_radius: 10.002
+        inner_theta: 0.5890486225480862
+        mult: 0.530592143535614
+        height: 4.999999999999999
+      compliment:
+        shape: RadialSegment
+        material: Void
+        Tinput: 0.0
+        Thot: 0.0
+        outer_theta: 0.7853981633974483
+        outer_radius: 15.000000000000002
+        inner_radius: 10.002
+        inner_theta: 0.5890486225480862
+        mult: 0.469407856464386
+        height: 4.999999999999999
+    - name: block3_4_6
+      Godiva:
+        shape: RadialSegment
+        material: UZr
+        Tinput: 20.0
+        Thot: 20.0
+        outer_theta: 0.7853981633974483
+        outer_radius: 15.000000000000002
+        inner_radius: 10.002
+        inner_theta: 0.5890486225480862
+        mult: 0.024524874985218048
+        height: 5.000000000000004
+      compliment:
+        shape: RadialSegment
+        material: Void
+        Tinput: 0.0
+        Thot: 0.0
+        outer_theta: 0.7853981633974483
+        outer_radius: 15.000000000000002
+        inner_radius: 10.002
+        inner_theta: 0.5890486225480862
+        mult: 0.975475125014782
+        height: 5.000000000000004
+    height:
+    - 5.0
+    - 5.0
+    - 5.000000000000002
+    - 4.999999999999999
+    - 4.999999999999999
+    - 5.000000000000004
+    axial mesh points:
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    radial mesh points: 3
+    azimuthal mesh points: 3
+    xs types:
+    - A
+    - A
+    - A
+    - A
+    - A
+    - A
+systems:
+  core:
+    grid name: core
+    origin:
+      x: 0.0
+      y: 0.0
+      z: 0.0
