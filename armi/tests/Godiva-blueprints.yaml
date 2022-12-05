@@ -317,94 +317,94 @@ assemblies:
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.19634954084936207
         outer_radius: 5.001
         inner_radius: 0.0
-        inner_theta: 0.0
         mult: 0.9167912602424622
+        inner_theta: 0.0
         height: 5.0
+        outer_theta: 0.19634954084936207
       compliment:
         shape: RadialSegment
         material: Void
         Tinput: 0.0
         Thot: 0.0
-        outer_theta: 0.19634954084936207
         outer_radius: 5.001
         inner_radius: 0.0
-        inner_theta: 0.0
         mult: 0.08320873975753784
+        inner_theta: 0.0
         height: 5.0
+        outer_theta: 0.19634954084936207
     - name: block1_1_2
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.19634954084936207
         outer_radius: 5.001
         inner_radius: 0.0
-        inner_theta: 0.0
         mult: 1.0
+        inner_theta: 0.0
         height: 5.0
+        outer_theta: 0.19634954084936207
     - name: block1_1_3
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.19634954084936207
         outer_radius: 5.001
         inner_radius: 0.0
-        inner_theta: 0.0
         mult: 1.0
+        inner_theta: 0.0
         height: 5.000000000000002
+        outer_theta: 0.19634954084936207
     - name: block1_1_4
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.19634954084936207
         outer_radius: 5.001
         inner_radius: 0.0
-        inner_theta: 0.0
         mult: 1.0
+        inner_theta: 0.0
         height: 4.999999999999999
+        outer_theta: 0.19634954084936207
     - name: block1_1_5
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.19634954084936207
         outer_radius: 5.001
         inner_radius: 0.0
-        inner_theta: 0.0
         mult: 1.0
+        inner_theta: 0.0
         height: 4.999999999999999
+        outer_theta: 0.19634954084936207
     - name: block1_1_6
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.19634954084936207
         outer_radius: 5.001
         inner_radius: 0.0
-        inner_theta: 0.0
         mult: 0.9150868654251099
+        inner_theta: 0.0
         height: 5.000000000000004
+        outer_theta: 0.19634954084936207
       compliment:
         shape: RadialSegment
         material: Void
         Tinput: 0.0
         Thot: 0.0
-        outer_theta: 0.19634954084936207
         outer_radius: 5.001
         inner_radius: 0.0
-        inner_theta: 0.0
         mult: 0.08491313457489014
+        inner_theta: 0.0
         height: 5.000000000000004
+        outer_theta: 0.19634954084936207
     height:
     - 5.0
     - 5.0
@@ -437,94 +437,94 @@ assemblies:
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.39269908169872414
         outer_radius: 5.001
         inner_radius: 0.0
-        inner_theta: 0.19634954084936207
         mult: 0.9128827452659607
+        inner_theta: 0.19634954084936207
         height: 5.0
+        outer_theta: 0.39269908169872414
       compliment:
         shape: RadialSegment
         material: Void
         Tinput: 0.0
         Thot: 0.0
-        outer_theta: 0.39269908169872414
         outer_radius: 5.001
         inner_radius: 0.0
-        inner_theta: 0.19634954084936207
         mult: 0.0871172547340393
+        inner_theta: 0.19634954084936207
         height: 5.0
+        outer_theta: 0.39269908169872414
     - name: block1_2_2
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.39269908169872414
         outer_radius: 5.001
         inner_radius: 0.0
-        inner_theta: 0.19634954084936207
         mult: 1.0
+        inner_theta: 0.19634954084936207
         height: 5.0
+        outer_theta: 0.39269908169872414
     - name: block1_2_3
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.39269908169872414
         outer_radius: 5.001
         inner_radius: 0.0
-        inner_theta: 0.19634954084936207
         mult: 1.0
+        inner_theta: 0.19634954084936207
         height: 5.000000000000002
+        outer_theta: 0.39269908169872414
     - name: block1_2_4
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.39269908169872414
         outer_radius: 5.001
         inner_radius: 0.0
-        inner_theta: 0.19634954084936207
         mult: 1.0
+        inner_theta: 0.19634954084936207
         height: 4.999999999999999
+        outer_theta: 0.39269908169872414
     - name: block1_2_5
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.39269908169872414
         outer_radius: 5.001
         inner_radius: 0.0
-        inner_theta: 0.19634954084936207
         mult: 1.0
+        inner_theta: 0.19634954084936207
         height: 4.999999999999999
+        outer_theta: 0.39269908169872414
     - name: block1_2_6
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.39269908169872414
         outer_radius: 5.001
         inner_radius: 0.0
-        inner_theta: 0.19634954084936207
         mult: 0.9191223978996277
+        inner_theta: 0.19634954084936207
         height: 5.000000000000004
+        outer_theta: 0.39269908169872414
       compliment:
         shape: RadialSegment
         material: Void
         Tinput: 0.0
         Thot: 0.0
-        outer_theta: 0.39269908169872414
         outer_radius: 5.001
         inner_radius: 0.0
-        inner_theta: 0.19634954084936207
         mult: 0.08087760210037231
+        inner_theta: 0.19634954084936207
         height: 5.000000000000004
+        outer_theta: 0.39269908169872414
     height:
     - 5.0
     - 5.0
@@ -557,94 +557,94 @@ assemblies:
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.5890486225480862
         outer_radius: 5.001
         inner_radius: 0.0
-        inner_theta: 0.39269908169872414
         mult: 0.9125891923904419
+        inner_theta: 0.39269908169872414
         height: 5.0
+        outer_theta: 0.5890486225480862
       compliment:
         shape: RadialSegment
         material: Void
         Tinput: 0.0
         Thot: 0.0
-        outer_theta: 0.5890486225480862
         outer_radius: 5.001
         inner_radius: 0.0
-        inner_theta: 0.39269908169872414
         mult: 0.0874108076095581
+        inner_theta: 0.39269908169872414
         height: 5.0
+        outer_theta: 0.5890486225480862
     - name: block1_3_2
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.5890486225480862
         outer_radius: 5.001
         inner_radius: 0.0
-        inner_theta: 0.39269908169872414
         mult: 1.0
+        inner_theta: 0.39269908169872414
         height: 5.0
+        outer_theta: 0.5890486225480862
     - name: block1_3_3
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.5890486225480862
         outer_radius: 5.001
         inner_radius: 0.0
-        inner_theta: 0.39269908169872414
         mult: 1.0
+        inner_theta: 0.39269908169872414
         height: 5.000000000000002
+        outer_theta: 0.5890486225480862
     - name: block1_3_4
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.5890486225480862
         outer_radius: 5.001
         inner_radius: 0.0
-        inner_theta: 0.39269908169872414
         mult: 1.0
+        inner_theta: 0.39269908169872414
         height: 4.999999999999999
+        outer_theta: 0.5890486225480862
     - name: block1_3_5
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.5890486225480862
         outer_radius: 5.001
         inner_radius: 0.0
-        inner_theta: 0.39269908169872414
         mult: 1.0
+        inner_theta: 0.39269908169872414
         height: 4.999999999999999
+        outer_theta: 0.5890486225480862
     - name: block1_3_6
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.5890486225480862
         outer_radius: 5.001
         inner_radius: 0.0
-        inner_theta: 0.39269908169872414
         mult: 0.9229551553726196
+        inner_theta: 0.39269908169872414
         height: 5.000000000000004
+        outer_theta: 0.5890486225480862
       compliment:
         shape: RadialSegment
         material: Void
         Tinput: 0.0
         Thot: 0.0
-        outer_theta: 0.5890486225480862
         outer_radius: 5.001
         inner_radius: 0.0
-        inner_theta: 0.39269908169872414
         mult: 0.07704484462738037
+        inner_theta: 0.39269908169872414
         height: 5.000000000000004
+        outer_theta: 0.5890486225480862
     height:
     - 5.0
     - 5.0
@@ -677,94 +677,94 @@ assemblies:
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.7853981633974483
         outer_radius: 5.001
         inner_radius: 0.0
-        inner_theta: 0.5890486225480862
         mult: 0.9158408641815186
+        inner_theta: 0.5890486225480862
         height: 5.0
+        outer_theta: 0.7853981633974483
       compliment:
         shape: RadialSegment
         material: Void
         Tinput: 0.0
         Thot: 0.0
-        outer_theta: 0.7853981633974483
         outer_radius: 5.001
         inner_radius: 0.0
-        inner_theta: 0.5890486225480862
         mult: 0.08415913581848145
+        inner_theta: 0.5890486225480862
         height: 5.0
+        outer_theta: 0.7853981633974483
     - name: block1_4_2
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.7853981633974483
         outer_radius: 5.001
         inner_radius: 0.0
-        inner_theta: 0.5890486225480862
         mult: 1.0
+        inner_theta: 0.5890486225480862
         height: 5.0
+        outer_theta: 0.7853981633974483
     - name: block1_4_3
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.7853981633974483
         outer_radius: 5.001
         inner_radius: 0.0
-        inner_theta: 0.5890486225480862
         mult: 1.0
+        inner_theta: 0.5890486225480862
         height: 5.000000000000002
+        outer_theta: 0.7853981633974483
     - name: block1_4_4
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.7853981633974483
         outer_radius: 5.001
         inner_radius: 0.0
-        inner_theta: 0.5890486225480862
         mult: 1.0
+        inner_theta: 0.5890486225480862
         height: 4.999999999999999
+        outer_theta: 0.7853981633974483
     - name: block1_4_5
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.7853981633974483
         outer_radius: 5.001
         inner_radius: 0.0
-        inner_theta: 0.5890486225480862
         mult: 1.0
+        inner_theta: 0.5890486225480862
         height: 4.999999999999999
+        outer_theta: 0.7853981633974483
     - name: block1_4_6
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.7853981633974483
         outer_radius: 5.001
         inner_radius: 0.0
-        inner_theta: 0.5890486225480862
         mult: 0.9205824136734009
+        inner_theta: 0.5890486225480862
         height: 5.000000000000004
+        outer_theta: 0.7853981633974483
       compliment:
         shape: RadialSegment
         material: Void
         Tinput: 0.0
         Thot: 0.0
-        outer_theta: 0.7853981633974483
         outer_radius: 5.001
         inner_radius: 0.0
-        inner_theta: 0.5890486225480862
         mult: 0.07941758632659912
+        inner_theta: 0.5890486225480862
         height: 5.000000000000004
+        outer_theta: 0.7853981633974483
     height:
     - 5.0
     - 5.0
@@ -797,94 +797,94 @@ assemblies:
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.19634954084936207
         outer_radius: 10.002
         inner_radius: 5.001
-        inner_theta: 0.0
         mult: 0.54362553358078
+        inner_theta: 0.0
         height: 5.0
+        outer_theta: 0.19634954084936207
       compliment:
         shape: RadialSegment
         material: Void
         Tinput: 0.0
         Thot: 0.0
-        outer_theta: 0.19634954084936207
         outer_radius: 10.002
         inner_radius: 5.001
-        inner_theta: 0.0
         mult: 0.45637446641921997
+        inner_theta: 0.0
         height: 5.0
+        outer_theta: 0.19634954084936207
     - name: block2_1_2
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.19634954084936207
         outer_radius: 10.002
         inner_radius: 5.001
-        inner_theta: 0.0
         mult: 1.0
+        inner_theta: 0.0
         height: 5.0
+        outer_theta: 0.19634954084936207
     - name: block2_1_3
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.19634954084936207
         outer_radius: 10.002
         inner_radius: 5.001
-        inner_theta: 0.0
         mult: 1.0
+        inner_theta: 0.0
         height: 5.000000000000002
+        outer_theta: 0.19634954084936207
     - name: block2_1_4
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.19634954084936207
         outer_radius: 10.002
         inner_radius: 5.001
-        inner_theta: 0.0
         mult: 1.0
+        inner_theta: 0.0
         height: 4.999999999999999
+        outer_theta: 0.19634954084936207
     - name: block2_1_5
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.19634954084936207
         outer_radius: 10.002
         inner_radius: 5.001
-        inner_theta: 0.0
         mult: 1.0
+        inner_theta: 0.0
         height: 4.999999999999999
+        outer_theta: 0.19634954084936207
     - name: block2_1_6
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.19634954084936207
         outer_radius: 10.002
         inner_radius: 5.001
-        inner_theta: 0.0
         mult: 0.5452947020530701
+        inner_theta: 0.0
         height: 5.000000000000004
+        outer_theta: 0.19634954084936207
       compliment:
         shape: RadialSegment
         material: Void
         Tinput: 0.0
         Thot: 0.0
-        outer_theta: 0.19634954084936207
         outer_radius: 10.002
         inner_radius: 5.001
-        inner_theta: 0.0
         mult: 0.45470529794692993
+        inner_theta: 0.0
         height: 5.000000000000004
+        outer_theta: 0.19634954084936207
     height:
     - 5.0
     - 5.0
@@ -917,94 +917,94 @@ assemblies:
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.39269908169872414
         outer_radius: 10.002
         inner_radius: 5.001
-        inner_theta: 0.19634954084936207
         mult: 0.549401044845581
+        inner_theta: 0.19634954084936207
         height: 5.0
+        outer_theta: 0.39269908169872414
       compliment:
         shape: RadialSegment
         material: Void
         Tinput: 0.0
         Thot: 0.0
-        outer_theta: 0.39269908169872414
         outer_radius: 10.002
         inner_radius: 5.001
-        inner_theta: 0.19634954084936207
         mult: 0.45059895515441895
+        inner_theta: 0.19634954084936207
         height: 5.0
+        outer_theta: 0.39269908169872414
     - name: block2_2_2
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.39269908169872414
         outer_radius: 10.002
         inner_radius: 5.001
-        inner_theta: 0.19634954084936207
         mult: 1.0
+        inner_theta: 0.19634954084936207
         height: 5.0
+        outer_theta: 0.39269908169872414
     - name: block2_2_3
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.39269908169872414
         outer_radius: 10.002
         inner_radius: 5.001
-        inner_theta: 0.19634954084936207
         mult: 1.0
+        inner_theta: 0.19634954084936207
         height: 5.000000000000002
+        outer_theta: 0.39269908169872414
     - name: block2_2_4
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.39269908169872414
         outer_radius: 10.002
         inner_radius: 5.001
-        inner_theta: 0.19634954084936207
         mult: 1.0
+        inner_theta: 0.19634954084936207
         height: 4.999999999999999
+        outer_theta: 0.39269908169872414
     - name: block2_2_5
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.39269908169872414
         outer_radius: 10.002
         inner_radius: 5.001
-        inner_theta: 0.19634954084936207
         mult: 1.0
+        inner_theta: 0.19634954084936207
         height: 4.999999999999999
+        outer_theta: 0.39269908169872414
     - name: block2_2_6
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.39269908169872414
         outer_radius: 10.002
         inner_radius: 5.001
-        inner_theta: 0.19634954084936207
         mult: 0.5476158261299133
+        inner_theta: 0.19634954084936207
         height: 5.000000000000004
+        outer_theta: 0.39269908169872414
       compliment:
         shape: RadialSegment
         material: Void
         Tinput: 0.0
         Thot: 0.0
-        outer_theta: 0.39269908169872414
         outer_radius: 10.002
         inner_radius: 5.001
-        inner_theta: 0.19634954084936207
         mult: 0.45238417387008667
+        inner_theta: 0.19634954084936207
         height: 5.000000000000004
+        outer_theta: 0.39269908169872414
     height:
     - 5.0
     - 5.0
@@ -1037,94 +1037,94 @@ assemblies:
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.5890486225480862
         outer_radius: 10.002
         inner_radius: 5.001
-        inner_theta: 0.39269908169872414
         mult: 0.5503354072570801
+        inner_theta: 0.39269908169872414
         height: 5.0
+        outer_theta: 0.5890486225480862
       compliment:
         shape: RadialSegment
         material: Void
         Tinput: 0.0
         Thot: 0.0
-        outer_theta: 0.5890486225480862
         outer_radius: 10.002
         inner_radius: 5.001
-        inner_theta: 0.39269908169872414
         mult: 0.4496645927429199
+        inner_theta: 0.39269908169872414
         height: 5.0
+        outer_theta: 0.5890486225480862
     - name: block2_3_2
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.5890486225480862
         outer_radius: 10.002
         inner_radius: 5.001
-        inner_theta: 0.39269908169872414
         mult: 1.0
+        inner_theta: 0.39269908169872414
         height: 5.0
+        outer_theta: 0.5890486225480862
     - name: block2_3_3
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.5890486225480862
         outer_radius: 10.002
         inner_radius: 5.001
-        inner_theta: 0.39269908169872414
         mult: 1.0
+        inner_theta: 0.39269908169872414
         height: 5.000000000000002
+        outer_theta: 0.5890486225480862
     - name: block2_3_4
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.5890486225480862
         outer_radius: 10.002
         inner_radius: 5.001
-        inner_theta: 0.39269908169872414
         mult: 1.0
+        inner_theta: 0.39269908169872414
         height: 4.999999999999999
+        outer_theta: 0.5890486225480862
     - name: block2_3_5
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.5890486225480862
         outer_radius: 10.002
         inner_radius: 5.001
-        inner_theta: 0.39269908169872414
         mult: 1.0
+        inner_theta: 0.39269908169872414
         height: 4.999999999999999
+        outer_theta: 0.5890486225480862
     - name: block2_3_6
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.5890486225480862
         outer_radius: 10.002
         inner_radius: 5.001
-        inner_theta: 0.39269908169872414
         mult: 0.5403251051902771
+        inner_theta: 0.39269908169872414
         height: 5.000000000000004
+        outer_theta: 0.5890486225480862
       compliment:
         shape: RadialSegment
         material: Void
         Tinput: 0.0
         Thot: 0.0
-        outer_theta: 0.5890486225480862
         outer_radius: 10.002
         inner_radius: 5.001
-        inner_theta: 0.39269908169872414
         mult: 0.4596748948097229
+        inner_theta: 0.39269908169872414
         height: 5.000000000000004
+        outer_theta: 0.5890486225480862
     height:
     - 5.0
     - 5.0
@@ -1157,94 +1157,94 @@ assemblies:
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.7853981633974483
         outer_radius: 10.002
         inner_radius: 5.001
-        inner_theta: 0.5890486225480862
         mult: 0.5451868176460266
+        inner_theta: 0.5890486225480862
         height: 5.0
+        outer_theta: 0.7853981633974483
       compliment:
         shape: RadialSegment
         material: Void
         Tinput: 0.0
         Thot: 0.0
-        outer_theta: 0.7853981633974483
         outer_radius: 10.002
         inner_radius: 5.001
-        inner_theta: 0.5890486225480862
         mult: 0.4548131823539734
+        inner_theta: 0.5890486225480862
         height: 5.0
+        outer_theta: 0.7853981633974483
     - name: block2_4_2
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.7853981633974483
         outer_radius: 10.002
         inner_radius: 5.001
-        inner_theta: 0.5890486225480862
         mult: 1.0
+        inner_theta: 0.5890486225480862
         height: 5.0
+        outer_theta: 0.7853981633974483
     - name: block2_4_3
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.7853981633974483
         outer_radius: 10.002
         inner_radius: 5.001
-        inner_theta: 0.5890486225480862
         mult: 1.0
+        inner_theta: 0.5890486225480862
         height: 5.000000000000002
+        outer_theta: 0.7853981633974483
     - name: block2_4_4
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.7853981633974483
         outer_radius: 10.002
         inner_radius: 5.001
-        inner_theta: 0.5890486225480862
         mult: 1.0
+        inner_theta: 0.5890486225480862
         height: 4.999999999999999
+        outer_theta: 0.7853981633974483
     - name: block2_4_5
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.7853981633974483
         outer_radius: 10.002
         inner_radius: 5.001
-        inner_theta: 0.5890486225480862
         mult: 1.0
+        inner_theta: 0.5890486225480862
         height: 4.999999999999999
+        outer_theta: 0.7853981633974483
     - name: block2_4_6
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.7853981633974483
         outer_radius: 10.002
         inner_radius: 5.001
-        inner_theta: 0.5890486225480862
         mult: 0.5424021482467651
+        inner_theta: 0.5890486225480862
         height: 5.000000000000004
+        outer_theta: 0.7853981633974483
       compliment:
         shape: RadialSegment
         material: Void
         Tinput: 0.0
         Thot: 0.0
-        outer_theta: 0.7853981633974483
         outer_radius: 10.002
         inner_radius: 5.001
-        inner_theta: 0.5890486225480862
         mult: 0.45759785175323486
+        inner_theta: 0.5890486225480862
         height: 5.000000000000004
+        outer_theta: 0.7853981633974483
     height:
     - 5.0
     - 5.0
@@ -1277,138 +1277,138 @@ assemblies:
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.19634954084936207
         outer_radius: 15.000000000000002
         inner_radius: 10.002
-        inner_theta: 0.0
         mult: 0.025512846186757088
+        inner_theta: 0.0
         height: 5.0
+        outer_theta: 0.19634954084936207
       compliment:
         shape: RadialSegment
         material: Void
         Tinput: 0.0
         Thot: 0.0
-        outer_theta: 0.19634954084936207
         outer_radius: 15.000000000000002
         inner_radius: 10.002
-        inner_theta: 0.0
         mult: 0.9744871538132429
+        inner_theta: 0.0
         height: 5.0
+        outer_theta: 0.19634954084936207
     - name: block3_1_2
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.19634954084936207
         outer_radius: 15.000000000000002
         inner_radius: 10.002
-        inner_theta: 0.0
         mult: 0.5377137660980225
+        inner_theta: 0.0
         height: 5.0
+        outer_theta: 0.19634954084936207
       compliment:
         shape: RadialSegment
         material: Void
         Tinput: 0.0
         Thot: 0.0
-        outer_theta: 0.19634954084936207
         outer_radius: 15.000000000000002
         inner_radius: 10.002
-        inner_theta: 0.0
         mult: 0.46228623390197754
+        inner_theta: 0.0
         height: 5.0
+        outer_theta: 0.19634954084936207
     - name: block3_1_3
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.19634954084936207
         outer_radius: 15.000000000000002
         inner_radius: 10.002
-        inner_theta: 0.0
         mult: 0.9337670803070068
+        inner_theta: 0.0
         height: 5.000000000000002
+        outer_theta: 0.19634954084936207
       compliment:
         shape: RadialSegment
         material: Void
         Tinput: 0.0
         Thot: 0.0
-        outer_theta: 0.19634954084936207
         outer_radius: 15.000000000000002
         inner_radius: 10.002
-        inner_theta: 0.0
         mult: 0.06623291969299316
+        inner_theta: 0.0
         height: 5.000000000000002
+        outer_theta: 0.19634954084936207
     - name: block3_1_4
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.19634954084936207
         outer_radius: 15.000000000000002
         inner_radius: 10.002
-        inner_theta: 0.0
         mult: 0.9322097301483154
+        inner_theta: 0.0
         height: 4.999999999999999
+        outer_theta: 0.19634954084936207
       compliment:
         shape: RadialSegment
         material: Void
         Tinput: 0.0
         Thot: 0.0
-        outer_theta: 0.19634954084936207
         outer_radius: 15.000000000000002
         inner_radius: 10.002
-        inner_theta: 0.0
         mult: 0.06779026985168457
+        inner_theta: 0.0
         height: 4.999999999999999
+        outer_theta: 0.19634954084936207
     - name: block3_1_5
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.19634954084936207
         outer_radius: 15.000000000000002
         inner_radius: 10.002
-        inner_theta: 0.0
         mult: 0.5325883030891418
+        inner_theta: 0.0
         height: 4.999999999999999
+        outer_theta: 0.19634954084936207
       compliment:
         shape: RadialSegment
         material: Void
         Tinput: 0.0
         Thot: 0.0
-        outer_theta: 0.19634954084936207
         outer_radius: 15.000000000000002
         inner_radius: 10.002
-        inner_theta: 0.0
         mult: 0.46741169691085815
+        inner_theta: 0.0
         height: 4.999999999999999
+        outer_theta: 0.19634954084936207
     - name: block3_1_6
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.19634954084936207
         outer_radius: 15.000000000000002
         inner_radius: 10.002
-        inner_theta: 0.0
         mult: 0.023754093796014786
+        inner_theta: 0.0
         height: 5.000000000000004
+        outer_theta: 0.19634954084936207
       compliment:
         shape: RadialSegment
         material: Void
         Tinput: 0.0
         Thot: 0.0
-        outer_theta: 0.19634954084936207
         outer_radius: 15.000000000000002
         inner_radius: 10.002
-        inner_theta: 0.0
         mult: 0.9762459062039852
+        inner_theta: 0.0
         height: 5.000000000000004
+        outer_theta: 0.19634954084936207
     height:
     - 5.0
     - 5.0
@@ -1441,138 +1441,138 @@ assemblies:
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.39269908169872414
         outer_radius: 15.000000000000002
         inner_radius: 10.002
-        inner_theta: 0.19634954084936207
         mult: 0.024075983092188835
+        inner_theta: 0.19634954084936207
         height: 5.0
+        outer_theta: 0.39269908169872414
       compliment:
         shape: RadialSegment
         material: Void
         Tinput: 0.0
         Thot: 0.0
-        outer_theta: 0.39269908169872414
         outer_radius: 15.000000000000002
         inner_radius: 10.002
-        inner_theta: 0.19634954084936207
         mult: 0.9759240169078112
+        inner_theta: 0.19634954084936207
         height: 5.0
+        outer_theta: 0.39269908169872414
     - name: block3_2_2
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.39269908169872414
         outer_radius: 15.000000000000002
         inner_radius: 10.002
-        inner_theta: 0.19634954084936207
         mult: 0.5275790691375732
+        inner_theta: 0.19634954084936207
         height: 5.0
+        outer_theta: 0.39269908169872414
       compliment:
         shape: RadialSegment
         material: Void
         Tinput: 0.0
         Thot: 0.0
-        outer_theta: 0.39269908169872414
         outer_radius: 15.000000000000002
         inner_radius: 10.002
-        inner_theta: 0.19634954084936207
         mult: 0.47242093086242676
+        inner_theta: 0.19634954084936207
         height: 5.0
+        outer_theta: 0.39269908169872414
     - name: block3_2_3
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.39269908169872414
         outer_radius: 15.000000000000002
         inner_radius: 10.002
-        inner_theta: 0.19634954084936207
         mult: 0.9335166811943054
+        inner_theta: 0.19634954084936207
         height: 5.000000000000002
+        outer_theta: 0.39269908169872414
       compliment:
         shape: RadialSegment
         material: Void
         Tinput: 0.0
         Thot: 0.0
-        outer_theta: 0.39269908169872414
         outer_radius: 15.000000000000002
         inner_radius: 10.002
-        inner_theta: 0.19634954084936207
         mult: 0.06648331880569458
+        inner_theta: 0.19634954084936207
         height: 5.000000000000002
+        outer_theta: 0.39269908169872414
     - name: block3_2_4
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.39269908169872414
         outer_radius: 15.000000000000002
         inner_radius: 10.002
-        inner_theta: 0.19634954084936207
         mult: 0.9331682920455933
+        inner_theta: 0.19634954084936207
         height: 4.999999999999999
+        outer_theta: 0.39269908169872414
       compliment:
         shape: RadialSegment
         material: Void
         Tinput: 0.0
         Thot: 0.0
-        outer_theta: 0.39269908169872414
         outer_radius: 15.000000000000002
         inner_radius: 10.002
-        inner_theta: 0.19634954084936207
         mult: 0.06683170795440674
+        inner_theta: 0.19634954084936207
         height: 4.999999999999999
+        outer_theta: 0.39269908169872414
     - name: block3_2_5
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.39269908169872414
         outer_radius: 15.000000000000002
         inner_radius: 10.002
-        inner_theta: 0.19634954084936207
         mult: 0.5327289700508118
+        inner_theta: 0.19634954084936207
         height: 4.999999999999999
+        outer_theta: 0.39269908169872414
       compliment:
         shape: RadialSegment
         material: Void
         Tinput: 0.0
         Thot: 0.0
-        outer_theta: 0.39269908169872414
         outer_radius: 15.000000000000002
         inner_radius: 10.002
-        inner_theta: 0.19634954084936207
         mult: 0.46727102994918823
+        inner_theta: 0.19634954084936207
         height: 4.999999999999999
+        outer_theta: 0.39269908169872414
     - name: block3_2_6
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.39269908169872414
         outer_radius: 15.000000000000002
         inner_radius: 10.002
-        inner_theta: 0.19634954084936207
         mult: 0.023873452097177505
+        inner_theta: 0.19634954084936207
         height: 5.000000000000004
+        outer_theta: 0.39269908169872414
       compliment:
         shape: RadialSegment
         material: Void
         Tinput: 0.0
         Thot: 0.0
-        outer_theta: 0.39269908169872414
         outer_radius: 15.000000000000002
         inner_radius: 10.002
-        inner_theta: 0.19634954084936207
         mult: 0.9761265479028225
+        inner_theta: 0.19634954084936207
         height: 5.000000000000004
+        outer_theta: 0.39269908169872414
     height:
     - 5.0
     - 5.0
@@ -1605,138 +1605,138 @@ assemblies:
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.5890486225480862
         outer_radius: 15.000000000000002
         inner_radius: 10.002
-        inner_theta: 0.39269908169872414
         mult: 0.023183858022093773
+        inner_theta: 0.39269908169872414
         height: 5.0
+        outer_theta: 0.5890486225480862
       compliment:
         shape: RadialSegment
         material: Void
         Tinput: 0.0
         Thot: 0.0
-        outer_theta: 0.5890486225480862
         outer_radius: 15.000000000000002
         inner_radius: 10.002
-        inner_theta: 0.39269908169872414
         mult: 0.9768161419779062
+        inner_theta: 0.39269908169872414
         height: 5.0
+        outer_theta: 0.5890486225480862
     - name: block3_3_2
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.5890486225480862
         outer_radius: 15.000000000000002
         inner_radius: 10.002
-        inner_theta: 0.39269908169872414
         mult: 0.5315818786621094
+        inner_theta: 0.39269908169872414
         height: 5.0
+        outer_theta: 0.5890486225480862
       compliment:
         shape: RadialSegment
         material: Void
         Tinput: 0.0
         Thot: 0.0
-        outer_theta: 0.5890486225480862
         outer_radius: 15.000000000000002
         inner_radius: 10.002
-        inner_theta: 0.39269908169872414
         mult: 0.4684181213378906
+        inner_theta: 0.39269908169872414
         height: 5.0
+        outer_theta: 0.5890486225480862
     - name: block3_3_3
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.5890486225480862
         outer_radius: 15.000000000000002
         inner_radius: 10.002
-        inner_theta: 0.39269908169872414
         mult: 0.9347671866416931
+        inner_theta: 0.39269908169872414
         height: 5.000000000000002
+        outer_theta: 0.5890486225480862
       compliment:
         shape: RadialSegment
         material: Void
         Tinput: 0.0
         Thot: 0.0
-        outer_theta: 0.5890486225480862
         outer_radius: 15.000000000000002
         inner_radius: 10.002
-        inner_theta: 0.39269908169872414
         mult: 0.06523281335830688
+        inner_theta: 0.39269908169872414
         height: 5.000000000000002
+        outer_theta: 0.5890486225480862
     - name: block3_3_4
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.5890486225480862
         outer_radius: 15.000000000000002
         inner_radius: 10.002
-        inner_theta: 0.39269908169872414
         mult: 0.9326208829879761
+        inner_theta: 0.39269908169872414
         height: 4.999999999999999
+        outer_theta: 0.5890486225480862
       compliment:
         shape: RadialSegment
         material: Void
         Tinput: 0.0
         Thot: 0.0
-        outer_theta: 0.5890486225480862
         outer_radius: 15.000000000000002
         inner_radius: 10.002
-        inner_theta: 0.39269908169872414
         mult: 0.06737911701202393
+        inner_theta: 0.39269908169872414
         height: 4.999999999999999
+        outer_theta: 0.5890486225480862
     - name: block3_3_5
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.5890486225480862
         outer_radius: 15.000000000000002
         inner_radius: 10.002
-        inner_theta: 0.39269908169872414
         mult: 0.5268162488937378
+        inner_theta: 0.39269908169872414
         height: 4.999999999999999
+        outer_theta: 0.5890486225480862
       compliment:
         shape: RadialSegment
         material: Void
         Tinput: 0.0
         Thot: 0.0
-        outer_theta: 0.5890486225480862
         outer_radius: 15.000000000000002
         inner_radius: 10.002
-        inner_theta: 0.39269908169872414
         mult: 0.4731837511062622
+        inner_theta: 0.39269908169872414
         height: 4.999999999999999
+        outer_theta: 0.5890486225480862
     - name: block3_3_6
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.5890486225480862
         outer_radius: 15.000000000000002
         inner_radius: 10.002
-        inner_theta: 0.39269908169872414
         mult: 0.025061648339033127
+        inner_theta: 0.39269908169872414
         height: 5.000000000000004
+        outer_theta: 0.5890486225480862
       compliment:
         shape: RadialSegment
         material: Void
         Tinput: 0.0
         Thot: 0.0
-        outer_theta: 0.5890486225480862
         outer_radius: 15.000000000000002
         inner_radius: 10.002
-        inner_theta: 0.39269908169872414
         mult: 0.9749383516609669
+        inner_theta: 0.39269908169872414
         height: 5.000000000000004
+        outer_theta: 0.5890486225480862
     height:
     - 5.0
     - 5.0
@@ -1769,138 +1769,138 @@ assemblies:
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.7853981633974483
         outer_radius: 15.000000000000002
         inner_radius: 10.002
-        inner_theta: 0.5890486225480862
         mult: 0.023954179137945175
+        inner_theta: 0.5890486225480862
         height: 5.0
+        outer_theta: 0.7853981633974483
       compliment:
         shape: RadialSegment
         material: Void
         Tinput: 0.0
         Thot: 0.0
-        outer_theta: 0.7853981633974483
         outer_radius: 15.000000000000002
         inner_radius: 10.002
-        inner_theta: 0.5890486225480862
         mult: 0.9760458208620548
+        inner_theta: 0.5890486225480862
         height: 5.0
+        outer_theta: 0.7853981633974483
     - name: block3_4_2
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.7853981633974483
         outer_radius: 15.000000000000002
         inner_radius: 10.002
-        inner_theta: 0.5890486225480862
         mult: 0.5365000367164612
+        inner_theta: 0.5890486225480862
         height: 5.0
+        outer_theta: 0.7853981633974483
       compliment:
         shape: RadialSegment
         material: Void
         Tinput: 0.0
         Thot: 0.0
-        outer_theta: 0.7853981633974483
         outer_radius: 15.000000000000002
         inner_radius: 10.002
-        inner_theta: 0.5890486225480862
         mult: 0.4634999632835388
+        inner_theta: 0.5890486225480862
         height: 5.0
+        outer_theta: 0.7853981633974483
     - name: block3_4_3
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.7853981633974483
         outer_radius: 15.000000000000002
         inner_radius: 10.002
-        inner_theta: 0.5890486225480862
         mult: 0.932323157787323
+        inner_theta: 0.5890486225480862
         height: 5.000000000000002
+        outer_theta: 0.7853981633974483
       compliment:
         shape: RadialSegment
         material: Void
         Tinput: 0.0
         Thot: 0.0
-        outer_theta: 0.7853981633974483
         outer_radius: 15.000000000000002
         inner_radius: 10.002
-        inner_theta: 0.5890486225480862
         mult: 0.067676842212677
+        inner_theta: 0.5890486225480862
         height: 5.000000000000002
+        outer_theta: 0.7853981633974483
     - name: block3_4_4
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.7853981633974483
         outer_radius: 15.000000000000002
         inner_radius: 10.002
-        inner_theta: 0.5890486225480862
         mult: 0.9339161515235901
+        inner_theta: 0.5890486225480862
         height: 4.999999999999999
+        outer_theta: 0.7853981633974483
       compliment:
         shape: RadialSegment
         material: Void
         Tinput: 0.0
         Thot: 0.0
-        outer_theta: 0.7853981633974483
         outer_radius: 15.000000000000002
         inner_radius: 10.002
-        inner_theta: 0.5890486225480862
         mult: 0.06608384847640991
+        inner_theta: 0.5890486225480862
         height: 4.999999999999999
+        outer_theta: 0.7853981633974483
     - name: block3_4_5
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.7853981633974483
         outer_radius: 15.000000000000002
         inner_radius: 10.002
-        inner_theta: 0.5890486225480862
         mult: 0.530592143535614
+        inner_theta: 0.5890486225480862
         height: 4.999999999999999
+        outer_theta: 0.7853981633974483
       compliment:
         shape: RadialSegment
         material: Void
         Tinput: 0.0
         Thot: 0.0
-        outer_theta: 0.7853981633974483
         outer_radius: 15.000000000000002
         inner_radius: 10.002
-        inner_theta: 0.5890486225480862
         mult: 0.469407856464386
+        inner_theta: 0.5890486225480862
         height: 4.999999999999999
+        outer_theta: 0.7853981633974483
     - name: block3_4_6
       Godiva:
         shape: RadialSegment
         material: UZr
         Tinput: 20.0
         Thot: 20.0
-        outer_theta: 0.7853981633974483
         outer_radius: 15.000000000000002
         inner_radius: 10.002
-        inner_theta: 0.5890486225480862
         mult: 0.024524874985218048
+        inner_theta: 0.5890486225480862
         height: 5.000000000000004
+        outer_theta: 0.7853981633974483
       compliment:
         shape: RadialSegment
         material: Void
         Tinput: 0.0
         Thot: 0.0
-        outer_theta: 0.7853981633974483
         outer_radius: 15.000000000000002
         inner_radius: 10.002
-        inner_theta: 0.5890486225480862
         mult: 0.975475125014782
+        inner_theta: 0.5890486225480862
         height: 5.000000000000004
+        outer_theta: 0.7853981633974483
     height:
     - 5.0
     - 5.0
@@ -1931,3 +1931,65 @@ systems:
       x: 0.0
       y: 0.0
       z: 0.0
+grids:
+  core:
+    geom: thetarz
+    lattice map:
+    grid bounds:
+      r:
+      - 0.0
+      - 5.001
+      - 10.002
+      - 15.000000000000002
+      theta:
+      - 0.0
+      - 0.19634954084936207
+      - 0.39269908169872414
+      - 0.5890486225480862
+      - 0.7853981633974483
+      z:
+      - -15.000000000000002
+      - -10.000000000000002
+      - -5.000000000000002
+      - 0.0
+      - 4.999999999999999
+      - 9.999999999999998
+      - 15.000000000000002
+    symmetry: eighth periodic
+    grid contents:
+      ? - 0
+        - 0
+      : assembly1_1
+      ? - 1
+        - 0
+      : assembly1_2
+      ? - 2
+        - 0
+      : assembly1_3
+      ? - 3
+        - 0
+      : assembly1_4
+      ? - 0
+        - 1
+      : assembly2_1
+      ? - 1
+        - 1
+      : assembly2_2
+      ? - 2
+        - 1
+      : assembly2_3
+      ? - 3
+        - 1
+      : assembly2_4
+      ? - 0
+        - 2
+      : assembly3_1
+      ? - 1
+        - 2
+      : assembly3_2
+      ? - 2
+        - 2
+      : assembly3_3
+      ? - 3
+        - 2
+      : assembly3_4

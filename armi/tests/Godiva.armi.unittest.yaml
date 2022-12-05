@@ -1,5 +1,5 @@
 metadata:
-  version: 0.2.3
+  version: 0.2.5
 settings:
   acceptableBlockAreaError: 0.0001
   burnSteps: 0
@@ -13,7 +13,6 @@ settings:
       criticalBuckling: true
   genReports: false
   genXS: Neutron
-  geomFile: Godiva.armi.criticality-geom.yaml
   groupStructure: ARMI45
   loadingFile: Godiva-blueprints.yaml
   mc2GammaLibraryPath: \\albert\apps\dev\mc2\3.2.3\libraries\endfb-vii.0\lib.gamma.e70

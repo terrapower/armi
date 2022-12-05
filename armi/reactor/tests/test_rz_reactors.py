@@ -55,7 +55,7 @@ class Test_RZT_Reactor_modern(unittest.TestCase):
         void boundary conditions) and just the fuel
         """
         cs = settings.Settings(
-            fName=os.path.join(TEST_ROOT, "Godiva.armi.criticality.yaml")
+            fName=os.path.join(TEST_ROOT, "Godiva.armi.unittest.yaml")
         )
         r = reactors.loadFromCs(cs)
 
