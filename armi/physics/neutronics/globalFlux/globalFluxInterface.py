@@ -815,10 +815,10 @@ class DoseResultsMapper(GlobalFluxResultMapper):
                     b.p.fastFluencePeak * self.options.dpaPerFluence
                 )
 
-            if b.p.pointsCornerDpaRate:
-                b.p.pointsCornerDpa += b.p.pointsCornerDpaRate
-            if b.p.pointsEdgeDpaRate:
-                b.p.pointsEdgeDpa += b.p.pointsEdgeDpaRate
+            if b.p.pointsCornerDpaRate is not None:
+                b.p.pointsCornerDpa = b.p.pointsCornerDpa + b.p.pointsCornerDpaRate * stepTimeInSeconds
+            if b.p.pointsEdgeDpaRate is not None:
+                b.p.pointsEdgeDpa = b.p.pointsEdgeDpa + b.p.pointsEdgeDpaRate * stepTimeInSeconds
 
             # also set the burnup peaking. Requires burnup to be up-to-date
             # (this should run AFTER burnup has been updated)
