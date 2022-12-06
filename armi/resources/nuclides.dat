@@ -36,12 +36,12 @@
 #
 # The half-life data for each nuclide is provided as a direct output from reading and 
 # processing the RIPL-3 "levels" data. A half-life provided as `inf` represents a stable 
-# nuclide and internally this is processed as 1E+30 seconds. Note that for some nuclides 
-# where the halflife is not known (i.e., TI48M), the halflife is set to a fixed value of 
-# 11.111 seconds. This value is set arbitrarily, but aligns with an assumption made in 
-# TerraPower's internal depletion solver. In almost all instances this assumption will 
-# not be consequential for practical reactor physics applications, but this should be verified
-# on a case-by-case basis. 
+# nuclide and internally this is processed as "infinity" using the Python numpy package. 
+# Note that for some nuclides where the half-life is not known (i.e., TI48M), 
+# the half-life is set to a fixed value of 11.111 seconds. This value is set arbitrarily, 
+# but aligns with an assumption made in TerraPower's internal depletion solver. In almost 
+# all instances this assumption will not be consequential for practical reactor physics 
+# applications, but this should be verified on a case-by-case basis. 
 #
 # Sources: (1) Reference Input Parameter Library (RIPL-3) - 
 #              https://www-nds.iaea.org/RIPL-3/

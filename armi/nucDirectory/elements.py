@@ -16,13 +16,13 @@
 This module provides fundamental element information to be used throughout the framework
 and applications.
 
-The element class structure is outlined :ref:`here: <elements-class-diagram>`.
+The element class structure is outlined :ref:`here <elements-class-diagram>`.
 
-.. elements-class-diagram:
+.. _elements-class-diagram:
 
 .. pyreverse:: armi.nucDirectory.elements
     :align: center
-    :width: 90%
+    :width: 75%
 
 Examples
 --------
@@ -35,64 +35,70 @@ Examples
 >>> elements.byName["Uranium"]
 <Element   U (Z=92), Uranium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>
 
-Retrieve gaseous elements at Standard Temperature and Pressure (STP)
+Retrieve gaseous elements at Standard Temperature and Pressure (STP):
 
 >>> elements.getElementsByChemicalPhase(elements.ChemicalPhase.GAS)
-[<Element   H (Z=1), Hydrogen, ChemicalGroup.NONMETAL, ChemicalPhase.GAS>,
- <Element  HE (Z=2), Helium, ChemicalGroup.NOBLE_GAS, ChemicalPhase.GAS>,
- <Element   N (Z=7), Nitrogen, ChemicalGroup.NONMETAL, ChemicalPhase.GAS>,
- <Element   O (Z=8), Oxygen, ChemicalGroup.NONMETAL, ChemicalPhase.GAS>,
- <Element   F (Z=9), Fluorine, ChemicalGroup.HALOGEN, ChemicalPhase.GAS>,
- <Element  NE (Z=10), Neon, ChemicalGroup.NOBLE_GAS, ChemicalPhase.GAS>,
- <Element  CL (Z=17), Chlorine, ChemicalGroup.HALOGEN, ChemicalPhase.GAS>,
- <Element  AR (Z=18), Argon, ChemicalGroup.NOBLE_GAS, ChemicalPhase.GAS>,
- <Element  KR (Z=36), Krypton, ChemicalGroup.NOBLE_GAS, ChemicalPhase.GAS>,
- <Element  XE (Z=54), Xenon, ChemicalGroup.NOBLE_GAS, ChemicalPhase.GAS>,
- <Element  RN (Z=86), Radon, ChemicalGroup.NOBLE_GAS, ChemicalPhase.GAS>,
- <Element  OG (Z=118), Oganesson, ChemicalGroup.NOBLE_GAS, ChemicalPhase.GAS>]
- 
- Retrieve gaseous elements that are classified as actinides
+    [<Element   H (Z=1), Hydrogen, ChemicalGroup.NONMETAL, ChemicalPhase.GAS>,
+     <Element  HE (Z=2), Helium, ChemicalGroup.NOBLE_GAS, ChemicalPhase.GAS>,
+     <Element   N (Z=7), Nitrogen, ChemicalGroup.NONMETAL, ChemicalPhase.GAS>,
+     <Element   O (Z=8), Oxygen, ChemicalGroup.NONMETAL, ChemicalPhase.GAS>,
+     <Element   F (Z=9), Fluorine, ChemicalGroup.HALOGEN, ChemicalPhase.GAS>,
+     <Element  NE (Z=10), Neon, ChemicalGroup.NOBLE_GAS, ChemicalPhase.GAS>,
+     <Element  CL (Z=17), Chlorine, ChemicalGroup.HALOGEN, ChemicalPhase.GAS>,
+     <Element  AR (Z=18), Argon, ChemicalGroup.NOBLE_GAS, ChemicalPhase.GAS>,
+     <Element  KR (Z=36), Krypton, ChemicalGroup.NOBLE_GAS, ChemicalPhase.GAS>,
+     <Element  XE (Z=54), Xenon, ChemicalGroup.NOBLE_GAS, ChemicalPhase.GAS>,
+     <Element  RN (Z=86), Radon, ChemicalGroup.NOBLE_GAS, ChemicalPhase.GAS>,
+     <Element  OG (Z=118), Oganesson, ChemicalGroup.NOBLE_GAS, ChemicalPhase.GAS>]
+
+
+Retrieve elements that are classified as actinides:
  
  >>> elements.getElementsByChemicalGroup(elements.ChemicalGroup.ACTINIDE)
-[<Element  AC (Z=89), Actinium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>,
- <Element  TH (Z=90), Thorium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>,
- <Element  PA (Z=91), Protactinium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>,
- <Element   U (Z=92), Uranium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>,
- <Element  NP (Z=93), Neptunium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>,
- <Element  PU (Z=94), Plutonium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>,
- <Element  AM (Z=95), Americium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>,
- <Element  CM (Z=96), Curium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>,
- <Element  BK (Z=97), Berkelium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>,
- <Element  CF (Z=98), Californium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>,
- <Element  ES (Z=99), Einsteinium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>,
- <Element  FM (Z=100), Fermium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>,
- <Element  MD (Z=101), Mendelevium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>,
- <Element  NO (Z=102), Nobelium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>,
- <Element  LR (Z=103), Lawrencium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>]
+    [<Element  AC (Z=89), Actinium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>,
+     <Element  TH (Z=90), Thorium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>,
+     <Element  PA (Z=91), Protactinium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>,
+     <Element   U (Z=92), Uranium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>,
+     <Element  NP (Z=93), Neptunium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>,
+     <Element  PU (Z=94), Plutonium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>,
+     <Element  AM (Z=95), Americium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>,
+     <Element  CM (Z=96), Curium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>,
+     <Element  BK (Z=97), Berkelium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>,
+     <Element  CF (Z=98), Californium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>,
+     <Element  ES (Z=99), Einsteinium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>,
+     <Element  FM (Z=100), Fermium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>,
+     <Element  MD (Z=101), Mendelevium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>,
+     <Element  NO (Z=102), Nobelium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>,
+     <Element  LR (Z=103), Lawrencium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>]
+
+
+For specific data on nuclides within each element, refer to the 
+:ref:`nuclide bases summary table <nuclide-bases-table>`.
+
 
 .. exec::
     from tabulate import tabulate
     from armi.nucDirectory import elements
 
-    attributes = ['name',
+    attributes = ['z',
+                  'name',
                   'symbol',
-                  'z',
                   'phase',
                   'group',
-                  'nuclides',
                   'is naturally occurring?',
-                  'is heavy metal?']
+                  'is heavy metal?',
+                  'num. nuclides',]
 
     def getAttributes(element):
         return [
-            '``{}``'.format(element.name),
-            '``{}``'.format(element.symbol),
-            '``{}``'.format(element.z),
-            '``{}``'.format(element.phase),
-            '``{}``'.format(element.group),
-            '``{}``'.format(element.nuclides),
-            '``{}``'.format(element.isNaturallyOccurring()),
-            '``{}``'.format(element.isHeavyMetal()),
+            f'``{element.z}``',
+            f'``{element.name}``',
+            f'``{element.symbol}``',
+            f'``{element.phase}``',
+            f'``{element.group}``',
+            f'``{element.isNaturallyOccurring()}``',
+            f'``{element.isHeavyMetal()}``',
+            f'``{len(element.nuclides)}``',
         ]
 
     sortedElements = sorted(elements.byZ.values())
@@ -100,6 +106,7 @@ Retrieve gaseous elements at Standard Temperature and Pressure (STP)
                                  headers=attributes,
                                  tablefmt='rst'),
                         caption='List of elements')
+
 """
 
 import os
@@ -107,7 +114,6 @@ from typing import List
 from enum import Enum
 
 from armi import context
-from armi.utils.units import HEAVY_METAL_CUTOFF_Z
 
 byZ = {}
 byName = {}
@@ -167,18 +173,16 @@ class Element:
     def __repr__(self):
         return f"<Element {self.symbol:>3s} (Z={self.z}), {self.name}, {self.group}, {self.phase}>"
 
-    def __eq__(self, other):
-        return (
-            self.z == other.z
-            and self.symbol == other.symbol
-            and self.name == other.name
-            and self.phase == other.phase
-            and self.group == other.group
-            and len(self.nuclides) == len(other.nuclides)
+    def __hash__(self):
+        return hash(
+            (self.name, self.z, self.symbol, self.phase, self.group, len(self.nuclides))
         )
 
-    def __hash__(self):
-        return hash(self.name)
+    def __lt__(self, other):
+        return self.z < other.z
+
+    def __eq__(self, other):
+        return hash(self) == hash(other)
 
     def __iter__(self):
         for nuc in sorted(self.nuclides):
@@ -201,7 +205,7 @@ class Element:
 
     def isHeavyMetal(self):
         """
-        Return True if the atomic number is greater than the ``HEAVY_METAL_CUTOFF_Z``.
+        Return True if all nuclides belonging to the element are heavy metals.
 
         Notes
         -----
@@ -209,12 +213,8 @@ class Element:
         cut-off, but rather is designated for nuclear fuel burn-up evaluations, where
         the initial heavy metal mass within a component should be tracked. It is typical
         to include any element/nuclide above Actinium.
-
-        See Also
-        --------
-        armi.utils.units.HEAVY_METAL_CUTOFF_Z
         """
-        return self.z > HEAVY_METAL_CUTOFF_Z
+        return all([n.isHeavyMetal() for n in self.nuclides])
 
 
 def getElementsByChemicalPhase(phase: ChemicalPhase) -> List[Element]:

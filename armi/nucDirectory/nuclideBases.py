@@ -15,13 +15,13 @@
 This module provides fundamental nuclide information to be used throughout the framework
 and applications.
 
-The nuclide class structure is outlined :ref:`here: <nuclide-bases-class-diagram>`.
+The nuclide class structure is outlined :ref:`here <nuclide-bases-class-diagram>`.
 
 .. _nuclide-bases-class-diagram:
 
 .. pyreverse:: armi.nucDirectory.nuclideBases
     :align: center
-    :width: 90%
+    :width: 75%
 
     Class inheritance diagram for :py:class:`INuclide`.
 
@@ -33,56 +33,65 @@ Examples
 >>> nuclideBases.byLabel['U235']
 <NuclideBase U235:  Z:92, A:235, S:0, W:2.350439e+02, Label:U235>, HL:2.22160758861e+16, Abund:7.204000e-03>
 
-Retrieve U-235 by the MC2-2 ID.
+Retrieve U-235 by the MC2-2 ID:
 
 >>> nuclideBases.byMcc2Id['U-2355']
 <NuclideBase U235:  Z:92, A:235, S:0, W:2.350439e+02, Label:U235>, HL:2.22160758861e+16, Abund:7.204000e-03>
 
-Retrieve U-235 by the MC2-3 ID.
+Retrieve U-235 by the MC2-3 ID:
 
 >>> nuclideBases.byMcc3Id['U235_7']
 <NuclideBase U235:  Z:92, A:235, S:0, W:2.350439e+02, Label:U235>, HL:2.22160758861e+16, Abund:7.204000e-03>
 
-Retrieve U-235 by the MCNP ID.
+Retrieve U-235 by the MCNP ID:
 
 >>> nuclideBases.byMcnpId['92235']
 <NuclideBase U235:  Z:92, A:235, S:0, W:2.350439e+02, Label:U235>, HL:2.22160758861e+16, Abund:7.204000e-03>
 
-Retrieve U-235 by the AAAZZZS ID.
+Retrieve U-235 by the AAAZZZS ID:
 
 >>> nuclideBases.byAAAZZZSId['2350920']
 <NuclideBase U235:  Z:92, A:235, S:0, W:2.350439e+02, Label:U235>, HL:2.22160758861e+16, Abund:7.204000e-03>
 
+.. _nuclide-bases-table:
+
+
 .. exec::
+    import numpy
     from tabulate import tabulate
     from armi.nucDirectory import nuclideBases
-
+    
     attributes = ['name',
+                  'type',
                   'a',
                   'z',
                   'state',
-                  'abundance'
+                  'abundance',
                   'weight',
-                  'halflife',
-                  'type']
-
+                  'halflife']
+    
     def getAttributes(nuc):
+        if nuc.halflife == numpy.inf:
+            halflife = "inf"
+        else:
+            halflife = f'{nuc.halflife:<12.6e}'
         return [
-            '``{}``'.format(nuc.name),
-            '``{}``'.format(nuc.a),
-            '``{}``'.format(nuc.z),
-            '``{}``'.format(nuc.state),
-            '``{}``'.format(nuc.abundance),
-            '``{}``'.format(nuc.weight),
-            '``{}``'.format(nuc.halflife),
-            ':py:class:`~armi.nucDirectory.nuclideBases.{}`'.format(nuc.__class__.__name__),
+            f'``{nuc.name}``',
+            f':py:class:`~armi.nucDirectory.nuclideBases.{nuc.__class__.__name__}`',
+            f'``{nuc.a}``',
+            f'``{nuc.z}``',
+            f'``{nuc.state}``',
+            f'``{nuc.abundance:<12.6e}``',
+            f'``{nuc.weight:<12.6e}``',
+            f'``{halflife}``',
         ]
-
+    
     sortedNucs = sorted(nuclideBases.instances)
     return create_table(tabulate(tabular_data=[getAttributes(nuc) for nuc in sortedNucs],
-                                 headers=attributes,
-                                 tablefmt='rst'),
-                        caption='List of nuclides')
+                                    headers=attributes,
+                                    tablefmt='rst'),
+                                    caption='List of nuclides')
+
 """
 
 import os
@@ -788,6 +797,9 @@ class DummyNuclideBase(INuclide):
         return
         yield
 
+    def isHeavyMetal(self):
+        return False
+
     def getMcc2Id(self):
         """Return the MC2-2 nuclide identification label based on the ENDF/B-V.2 cross section library."""
         return self.mcc2id
@@ -839,6 +851,9 @@ class LumpNuclideBase(INuclide):
         """
         return
         yield
+
+    def isHeavyMetal(self):
+        return False
 
     def getMcc2Id(self):
         """Return the MC2-2 nuclide identification label based on the ENDF/B-V.2 cross section library."""
@@ -1116,7 +1131,7 @@ def __addNuclideBases():
             abun = float(lineData[6])
             halflife = lineData[7]
             if halflife == "inf":
-                halflife = 1e30
+                halflife = numpy.inf
             else:
                 halflife = float(halflife)
             nuSF = float(lineData[8])

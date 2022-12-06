@@ -255,7 +255,12 @@ class TestNuclide(unittest.TestCase):
         for nb in nuclideBases.where(lambda nn: nn.z <= 89):
             self.assertFalse(nb.isHeavyMetal())
         for nb in nuclideBases.where(lambda nn: nn.z > 89):
-            self.assertTrue(nb.isHeavyMetal())
+            if isinstance(nb, nuclideBases.DummyNuclideBase) or isinstance(
+                nb, nuclideBases.LumpNuclideBase
+            ):
+                self.assertFalse(nb.isHeavyMetal())
+            else:
+                self.assertTrue(nb.isHeavyMetal())
 
     def test_getDecay(self):
         nb = list(nuclideBases.where(lambda nn: nn.z == 89))[0]
