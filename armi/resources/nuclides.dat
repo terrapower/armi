@@ -10,7 +10,7 @@
 # higher (e.g., 1, 2, 3, etc.) representing excited/metastable states. In
 # most instances, the ground state represents the most commonly produced isotope
 # from fission or activation, but there are some known exceptions. For example,
-# AM242M is a more common nuclide produced from activation than the group state
+# AM242M is a more common nuclide produced from activation than the ground state
 # of AM242 and TA180M is the naturally occurring isomer of TA180.
 #
 # The mass data is acquired from (1) by parsing the FRDM database provided
@@ -36,12 +36,12 @@
 #
 # The half-life data for each nuclide is provided as a direct output from reading and 
 # processing the RIPL-3 "levels" data. A half-life provided as `inf` represents a stable 
-# nuclide and internally this is processed as an "infinity" using the Python numpy package.
-# Note that for some nuclides where the halflife is not known (i.e., TI48M), the halflife
-# is set to a fixed value of 11.111 seconds. This value is set arbitrarily, but aligns with
-# an assumption made in TerraPower's internal depletion solver. In almost all instances this
-# this assumption will not be consequential for practical reactor physics applications, but this
-# should be verified.
+# nuclide and internally this is processed as 1E+30 seconds. Note that for some nuclides 
+# where the halflife is not known (i.e., TI48M), the halflife is set to a fixed value of 
+# 11.111 seconds. This value is set arbitrarily, but aligns with an assumption made in 
+# TerraPower's internal depletion solver. In almost all instances this assumption will 
+# not be consequential for practical reactor physics applications, but this should be verified
+# on a case-by-case basis. 
 #
 # Sources: (1) Reference Input Parameter Library (RIPL-3) - 
 #              https://www-nds.iaea.org/RIPL-3/
@@ -4088,7 +4088,7 @@ Z	N	A	S	El	  Mass, amu	        Abundance, %      Half-life (sec)   Spontaneous F
 91  137 228 0   PA    2.28031051190e+02 0.00000000000e+00 7.92000000000e+04 0.000000
 91  138 229 0   PA    2.29032096822e+02 0.00000000000e+00 1.29600000000e+05 0.000000
 91  139 230 0   PA    2.30034541281e+02 0.00000000000e+00 1.50336000000e+06 0.000000
-91  140 231 0   PA    2.31035884285e+02 0.00000000000e+00 1.03380489493e+12 1.710000
+91  140 231 0   PA    2.31035884285e+02 1.00000000000e+00 1.03380489493e+12 1.710000
 91  141 232 0   PA    2.32038591763e+02 0.00000000000e+00 1.14048000000e+05 0.000000
 91  142 233 0   PA    2.33040247168e+02 0.00000000000e+00 2.33064000000e+06 0.000000
 91  143 234 0   PA    2.34043307843e+02 0.00000000000e+00 2.41200000000e+04 0.000000

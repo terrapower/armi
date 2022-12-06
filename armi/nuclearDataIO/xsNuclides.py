@@ -79,7 +79,7 @@ class XSNuclide(nuclideBases.NuclideWrapper):
             return
         # most nuclides have the correct NuclideBase ID
         nuclideId = self.isotxsMetadata["nuclideId"]
-        nuclideBase = nuclideBases.byMccId.get(nuclideId, None)
+        nuclideBase = nuclideBases.byName.get(nuclideId, None)
         if nuclideBase is None or isinstance(
             nuclideBase, nuclideBases.DummyNuclideBase
         ):

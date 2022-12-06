@@ -1,0 +1,2468 @@
+AC225:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: AC2257
+  a: 225
+  state: 0
+  z: 89
+AC226:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: AC2267
+  a: 226
+  state: 0
+  z: 89
+AC227:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: AC2277
+  a: 227
+  state: 0
+  z: 89
+AG107:
+  ENDF/B-V.2: AG1075
+  ENDF/B-VII.0: AG1077
+  a: 107
+  state: 0
+  z: 47
+AG109:
+  ENDF/B-V.2: AG1095
+  ENDF/B-VII.0: AG1097
+  a: 109
+  state: 0
+  z: 47
+AG110M:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: AG10M7
+  a: 110
+  state: 1
+  z: 47
+AG111:
+  ENDF/B-V.2: AG1115
+  ENDF/B-VII.0: AG1117
+  a: 111
+  state: 0
+  z: 47
+AL27:
+  ENDF/B-V.2: AL27 5
+  ENDF/B-VII.0: AL27_7
+  a: 27
+  state: 0
+  z: 13
+AM241:
+  ENDF/B-V.2: AM2415
+  ENDF/B-VII.0: AM2417
+  a: 241
+  state: 0
+  z: 95
+AM242:
+  ENDF/B-V.2: AM242M
+  ENDF/B-VII.0: AM2427
+  a: 242
+  state: 1
+  z: 95
+AM242M:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: AM42M7
+  a: 242
+  state: 1
+  z: 95
+AM243:
+  ENDF/B-V.2: AM243V
+  ENDF/B-VII.0: AM2437
+  a: 243
+  state: 0
+  z: 95
+AM244:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: AM2447
+  a: 244
+  state: 0
+  z: 95
+AM244M:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: AM44M7
+  a: 244
+  state: 1
+  z: 95
+AR36:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: AR36_7
+  a: 36
+  state: 0
+  z: 18
+AR38:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: AR38_7
+  a: 38
+  state: 0
+  z: 18
+AR40:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: AR40_7
+  a: 40
+  state: 0
+  z: 18
+AS75:
+  ENDF/B-V.2: AS75 5
+  ENDF/B-VII.0: AS75_7
+  a: 75
+  state: 0
+  z: 33
+AU197:
+  ENDF/B-V.2: AU1975
+  ENDF/B-VII.0: AU1977
+  a: 197
+  state: 0
+  z: 79
+B10:
+  ENDF/B-V.2: B-10 5
+  ENDF/B-VII.0: B10__7
+  a: 10
+  state: 0
+  z: 5
+B11:
+  ENDF/B-V.2: B-11 5
+  ENDF/B-VII.0: B11__7
+  a: 11
+  state: 0
+  z: 5
+BA130:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: BA1307
+  a: 130
+  state: 0
+  z: 56
+BA132:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: BA1327
+  a: 132
+  state: 0
+  z: 56
+BA133:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: BA1337
+  a: 133
+  state: 0
+  z: 56
+BA134:
+  ENDF/B-V.2: BA1345
+  ENDF/B-VII.0: BA1347
+  a: 134
+  state: 0
+  z: 56
+BA135:
+  ENDF/B-V.2: BA1355
+  ENDF/B-VII.0: BA1357
+  a: 135
+  state: 0
+  z: 56
+BA136:
+  ENDF/B-V.2: BA1365
+  ENDF/B-VII.0: BA1367
+  a: 136
+  state: 0
+  z: 56
+BA137:
+  ENDF/B-V.2: BA1375
+  ENDF/B-VII.0: BA1377
+  a: 137
+  state: 0
+  z: 56
+BA138:
+  ENDF/B-V.2: BA1385
+  ENDF/B-VII.0: BA1387
+  a: 138
+  state: 0
+  z: 56
+BA140:
+  ENDF/B-V.2: BA1405
+  ENDF/B-VII.0: BA1407
+  a: 140
+  state: 0
+  z: 56
+BE7:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: BE7__7
+  a: 7
+  state: 0
+  z: 4
+BE9:
+  ENDF/B-V.2: BE-9 3
+  ENDF/B-VII.0: BE9__7
+  a: 9
+  state: 0
+  z: 4
+BI209:
+  ENDF/B-V.2: BI2095
+  ENDF/B-VII.0: BI2097
+  a: 209
+  state: 0
+  z: 83
+BK249:
+  ENDF/B-V.2: BK2495
+  ENDF/B-VII.0: BK2497
+  a: 249
+  state: 0
+  z: 97
+BK250:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: BK2507
+  a: 250
+  state: 0
+  z: 97
+BR79:
+  ENDF/B-V.2: BR79 5
+  ENDF/B-VII.0: BR79_7
+  a: 79
+  state: 0
+  z: 35
+BR81:
+  ENDF/B-V.2: BR81 5
+  ENDF/B-VII.0: BR81_7
+  a: 81
+  state: 0
+  z: 35
+C:
+  ENDF/B-V.2: C    5
+  ENDF/B-VII.0: C____7
+  a: 0
+  state: 0
+  z: 6
+CA:
+  ENDF/B-V.2: CA   5
+  ENDF/B-VII.0: null
+  a: 0
+  state: 0
+  z: 20
+CA40:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: CA40_7
+  a: 40
+  state: 0
+  z: 20
+CA42:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: CA42_7
+  a: 42
+  state: 0
+  z: 20
+CA43:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: CA43_7
+  a: 43
+  state: 0
+  z: 20
+CA44:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: CA44_7
+  a: 44
+  state: 0
+  z: 20
+CA46:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: CA46_7
+  a: 46
+  state: 0
+  z: 20
+CA48:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: CA48_7
+  a: 48
+  state: 0
+  z: 20
+CD:
+  ENDF/B-V.2: CD   5
+  ENDF/B-VII.0: null
+  a: 0
+  state: 0
+  z: 48
+CD106:
+  ENDF/B-V.2: CD1065
+  ENDF/B-VII.0: CD1067
+  a: 106
+  state: 0
+  z: 48
+CD108:
+  ENDF/B-V.2: CD1085
+  ENDF/B-VII.0: CD1087
+  a: 108
+  state: 0
+  z: 48
+CD110:
+  ENDF/B-V.2: CD1105
+  ENDF/B-VII.0: CD1107
+  a: 110
+  state: 0
+  z: 48
+CD111:
+  ENDF/B-V.2: CD1115
+  ENDF/B-VII.0: CD1117
+  a: 111
+  state: 0
+  z: 48
+CD112:
+  ENDF/B-V.2: CD1125
+  ENDF/B-VII.0: CD1127
+  a: 112
+  state: 0
+  z: 48
+CD113:
+  ENDF/B-V.2: CD1135
+  ENDF/B-VII.0: CD1137
+  a: 113
+  state: 0
+  z: 48
+CD114:
+  ENDF/B-V.2: CD1145
+  ENDF/B-VII.0: CD1147
+  a: 114
+  state: 0
+  z: 48
+CD115M:
+  ENDF/B-V.2: CD115M
+  ENDF/B-VII.0: CD15M7
+  a: 115
+  state: 1
+  z: 48
+CD116:
+  ENDF/B-V.2: CD1165
+  ENDF/B-VII.0: CD1167
+  a: 116
+  state: 0
+  z: 48
+CE136:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: CE1367
+  a: 136
+  state: 0
+  z: 58
+CE138:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: CE1387
+  a: 138
+  state: 0
+  z: 58
+CE139:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: CE1397
+  a: 139
+  state: 0
+  z: 58
+CE140:
+  ENDF/B-V.2: CE1405
+  ENDF/B-VII.0: CE1407
+  a: 140
+  state: 0
+  z: 58
+CE141:
+  ENDF/B-V.2: CE1415
+  ENDF/B-VII.0: CE1417
+  a: 141
+  state: 0
+  z: 58
+CE142:
+  ENDF/B-V.2: CE1425
+  ENDF/B-VII.0: CE1427
+  a: 142
+  state: 0
+  z: 58
+CE143:
+  ENDF/B-V.2: CE1435
+  ENDF/B-VII.0: CE1437
+  a: 143
+  state: 0
+  z: 58
+CE144:
+  ENDF/B-V.2: CE1445
+  ENDF/B-VII.0: CE1447
+  a: 144
+  state: 0
+  z: 58
+CF249:
+  ENDF/B-V.2: CF2495
+  ENDF/B-VII.0: CF2497
+  a: 249
+  state: 0
+  z: 98
+CF250:
+  ENDF/B-V.2: CF2505
+  ENDF/B-VII.0: CF2507
+  a: 250
+  state: 0
+  z: 98
+CF251:
+  ENDF/B-V.2: CF2515
+  ENDF/B-VII.0: CF2517
+  a: 251
+  state: 0
+  z: 98
+CF252:
+  ENDF/B-V.2: CF2525
+  ENDF/B-VII.0: CF2527
+  a: 252
+  state: 0
+  z: 98
+CF253:
+  ENDF/B-V.2: CF2535
+  ENDF/B-VII.0: CF2537
+  a: 253
+  state: 0
+  z: 98
+CF254:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: CF2547
+  a: 254
+  state: 0cd 
+  z: 98
+CL:
+  ENDF/B-V.2: CL   5
+  ENDF/B-VII.0: null
+  a: 0
+  state: 0
+  z: 17
+CL35:
+  ENDF/B-V.2: CL35_7
+  ENDF/B-VII.0: CL35_7
+  a: 35
+  state: 0
+  z: 17
+CL37:
+  ENDF/B-V.2: CL37_7
+  ENDF/B-VII.0: CL37_7
+  a: 37
+  state: 0
+  z: 17
+CM241:
+  ENDF/B-V.2: CM2415
+  ENDF/B-VII.0: CM2417
+  a: 241
+  state: 0
+  z: 96
+CM242:
+  ENDF/B-V.2: CM2425
+  ENDF/B-VII.0: CM2427
+  a: 242
+  state: 0
+  z: 96
+CM243:
+  ENDF/B-V.2: CM2435
+  ENDF/B-VII.0: CM2437
+  a: 243
+  state: 0
+  z: 96
+CM244:
+  ENDF/B-V.2: CM2445
+  ENDF/B-VII.0: CM2447
+  a: 244
+  state: 0
+  z: 96
+CM245:
+  ENDF/B-V.2: CM2455
+  ENDF/B-VII.0: CM2457
+  a: 245
+  state: 0
+  z: 96
+CM246:
+  ENDF/B-V.2: CM2465
+  ENDF/B-VII.0: CM2467
+  a: 246
+  state: 0
+  z: 96
+CM247:
+  ENDF/B-V.2: CM2475
+  ENDF/B-VII.0: CM2477
+  a: 247
+  state: 0
+  z: 96
+CM248:
+  ENDF/B-V.2: CM2485
+  ENDF/B-VII.0: CM2487
+  a: 248
+  state: 0
+  z: 96
+CM249:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: CM2497
+  a: 249
+  state: 0
+  z: 96
+CM250:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: CM2507
+  a: 250
+  state: 0
+  z: 96
+CO58:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: CO58_7
+  a: 58
+  state: 0
+  z: 27
+CO58M:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: CO58M7
+  a: 58
+  state: 1
+  z: 27
+CO59:
+  ENDF/B-V.2: CO59 5
+  ENDF/B-VII.0: CO59_7
+  a: 59
+  state: 0
+  z: 27
+CR:
+  ENDF/B-V.2: CR   S
+  ENDF/B-VII.0: null
+  a: 0
+  state: 0
+  z: 24
+CR50:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: CR50_7
+  a: 50
+  state: 0
+  z: 24
+CR52:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: CR52_7
+  a: 52
+  state: 0
+  z: 24
+CR53:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: CR53_7
+  a: 53
+  state: 0
+  z: 24
+CR54:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: CR54_7
+  a: 54
+  state: 0
+  z: 24
+CS133:
+  ENDF/B-V.2: CS1335
+  ENDF/B-VII.0: CS1337
+  a: 133
+  state: 0
+  z: 55
+CS134:
+  ENDF/B-V.2: CS1345
+  ENDF/B-VII.0: CS1347
+  a: 134
+  state: 0
+  z: 55
+CS135:
+  ENDF/B-V.2: CS1355
+  ENDF/B-VII.0: CS1357
+  a: 135
+  state: 0
+  z: 55
+CS136:
+  ENDF/B-V.2: CS1365
+  ENDF/B-VII.0: CS1367
+  a: 136
+  state: 0
+  z: 55
+CS137:
+  ENDF/B-V.2: CS1375
+  ENDF/B-VII.0: CS1377
+  a: 137
+  state: 0
+  z: 55
+CU:
+  ENDF/B-V.2: CU   5
+  ENDF/B-VII.0: null
+  a: 0
+  state: 0
+  z: 29
+CU63:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: CU63_7
+  a: 63
+  state: 0
+  z: 29
+CU65:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: CU65_7
+  a: 65
+  state: 0
+  z: 29
+DUMP1:
+  ENDF/B-V.2: DUMMY1
+  ENDF/B-VII.0: DUMMY
+  a: 0
+  state: 0
+  weight: 10.0
+  z: 0
+DUMP2:
+  ENDF/B-V.2: DUMMY2
+  ENDF/B-VII.0: DUMMY
+  a: 0
+  state: 0
+  weight: 240.0
+  z: 0
+DY156:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: DY1567
+  a: 156
+  state: 0
+  z: 66
+DY158:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: DY1587
+  a: 158
+  state: 0
+  z: 66
+DY160:
+  ENDF/B-V.2: DY1605
+  ENDF/B-VII.0: DY1607
+  a: 160
+  state: 0
+  z: 66
+DY161:
+  ENDF/B-V.2: DY1615
+  ENDF/B-VII.0: DY1617
+  a: 161
+  state: 0
+  z: 66
+DY162:
+  ENDF/B-V.2: DY1625
+  ENDF/B-VII.0: DY1627
+  a: 162
+  state: 0
+  z: 66
+DY163:
+  ENDF/B-V.2: DY1635
+  ENDF/B-VII.0: DY1637
+  a: 163
+  state: 0
+  z: 66
+DY164:
+  ENDF/B-V.2: DY1645
+  ENDF/B-VII.0: DY1647
+  a: 164
+  state: 0
+  z: 66
+ER162:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: ER1627
+  a: 162
+  state: 0
+  z: 68
+ER164:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: ER1647
+  a: 164
+  state: 0
+  z: 68
+ER166:
+  ENDF/B-V.2: ER1665
+  ENDF/B-VII.0: ER1667
+  a: 166
+  state: 0
+  z: 68
+ER167:
+  ENDF/B-V.2: ER1675
+  ENDF/B-VII.0: ER1677
+  a: 167
+  state: 0
+  z: 68
+ER168:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: ER1687
+  a: 168
+  state: 0
+  z: 68
+ER170:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: ER1707
+  a: 170
+  state: 0
+  z: 68
+ES253:
+  ENDF/B-V.2: ES2535
+  ENDF/B-VII.0: ES2537
+  a: 253
+  state: 0
+  z: 99
+ES254:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: ES2547
+  a: 254
+  state: 0
+  z: 99
+ES255:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: ES2557
+  a: 255
+  state: 0
+  z: 99
+EU151:
+  ENDF/B-V.2: EU1515
+  ENDF/B-VII.0: EU1517
+  a: 151
+  state: 0
+  z: 63
+EU152:
+  ENDF/B-V.2: EU1525
+  ENDF/B-VII.0: EU1527
+  a: 152
+  state: 0
+  z: 63
+EU153:
+  ENDF/B-V.2: EU1535
+  ENDF/B-VII.0: EU1537
+  a: 153
+  state: 0
+  z: 63
+EU154:
+  ENDF/B-V.2: EU1545
+  ENDF/B-VII.0: EU1547
+  a: 154
+  state: 0
+  z: 63
+EU155:
+  ENDF/B-V.2: EU1555
+  ENDF/B-VII.0: EU1557
+  a: 155
+  state: 0
+  z: 63
+EU156:
+  ENDF/B-V.2: EU1565
+  ENDF/B-VII.0: EU1567
+  a: 156
+  state: 0
+  z: 63
+EU157:
+  ENDF/B-V.2: EU1575
+  ENDF/B-VII.0: EU1577
+  a: 157
+  state: 0
+  z: 63
+F19:
+  ENDF/B-V.2: F-19 5
+  ENDF/B-VII.0: F19__7
+  a: 19
+  state: 0
+  z: 9
+FE:
+  ENDF/B-V.2: FE  SV
+  ENDF/B-VII.0: null
+  a: 0
+  state: 0
+  z: 26
+FE54:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: FE54_7
+  a: 54
+  state: 0
+  z: 26
+FE56:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: FE56_7
+  a: 56
+  state: 0
+  z: 26
+FE57:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: FE57_7
+  a: 57
+  state: 0
+  z: 26
+FE58:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: FE58_7
+  a: 58
+  state: 0
+  z: 26
+FM255:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: FM2557
+  a: 255
+  state: 0
+  z: 100
+GA:
+  ENDF/B-V.2: GA   5
+  ENDF/B-VII.0: null
+  a: 0
+  state: 0
+  z: 31
+GA69:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: GA69_7
+  a: 69
+  state: 0
+  z: 31
+GA71:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: GA71_7
+  a: 71
+  state: 0
+  z: 31
+GD152:
+  ENDF/B-V.2: GD1525
+  ENDF/B-VII.0: GD1527
+  a: 152
+  state: 0
+  z: 64
+GD153:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: GD1537
+  a: 153
+  state: 0
+  z: 64
+GD154:
+  ENDF/B-V.2: GD1545
+  ENDF/B-VII.0: GD1547
+  a: 154
+  state: 0
+  z: 64
+GD155:
+  ENDF/B-V.2: GD1555
+  ENDF/B-VII.0: GD1557
+  a: 155
+  state: 0
+  z: 64
+GD156:
+  ENDF/B-V.2: GD1565
+  ENDF/B-VII.0: GD1567
+  a: 156
+  state: 0
+  z: 64
+GD157:
+  ENDF/B-V.2: GD1575
+  ENDF/B-VII.0: GD1577
+  a: 157
+  state: 0
+  z: 64
+GD158:
+  ENDF/B-V.2: GD1585
+  ENDF/B-VII.0: GD1587
+  a: 158
+  state: 0
+  z: 64
+GD160:
+  ENDF/B-V.2: GD1605
+  ENDF/B-VII.0: GD1607
+  a: 160
+  state: 0
+  z: 64
+GE70:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: GE70_7
+  a: 70
+  state: 0
+  z: 32
+GE72:
+  ENDF/B-V.2: GE72 5
+  ENDF/B-VII.0: GE72_7
+  a: 72
+  state: 0
+  z: 32
+GE73:
+  ENDF/B-V.2: GE73 5
+  ENDF/B-VII.0: GE73_7
+  a: 73
+  state: 0
+  z: 32
+GE74:
+  ENDF/B-V.2: GE74 5
+  ENDF/B-VII.0: GE74_7
+  a: 74
+  state: 0
+  z: 32
+GE76:
+  ENDF/B-V.2: GE76 5
+  ENDF/B-VII.0: GE76_7
+  a: 76
+  state: 0
+  z: 32
+H1:
+  ENDF/B-V.2: HYDRGN
+  ENDF/B-VII.0: H1___7
+  a: 0
+  state: 0
+  z: 1
+H2:
+  ENDF/B-V.2: H-2  5
+  ENDF/B-VII.0: H2___7
+  a: 2
+  state: 0
+  z: 1
+H3:
+  ENDF/B-V.2: H-3  5
+  ENDF/B-VII.0: H3___7
+  a: 3
+  state: 0
+  z: 1
+HE3:
+  ENDF/B-V.2: HE3  5
+  ENDF/B-VII.0: HE3__7
+  a: 3
+  state: 0
+  z: 2
+HE4:
+  ENDF/B-V.2: HE4  5
+  ENDF/B-VII.0: HE4__7
+  a: 4
+  state: 0
+  z: 2
+HF:
+  ENDF/B-V.2: HF   5
+  ENDF/B-VII.0: null
+  a: 0
+  state: 0
+  z: 72
+HF174:
+  ENDF/B-V.2: HF1745
+  ENDF/B-VII.0: HF1747
+  a: 174
+  state: 0
+  z: 72
+HF176:
+  ENDF/B-V.2: HF1765
+  ENDF/B-VII.0: HF1767
+  a: 176
+  state: 0
+  z: 72
+HF177:
+  ENDF/B-V.2: HF1775
+  ENDF/B-VII.0: HF1777
+  a: 177
+  state: 0
+  z: 72
+HF178:
+  ENDF/B-V.2: HF1785
+  ENDF/B-VII.0: HF1787
+  a: 178
+  state: 0
+  z: 72
+HF179:
+  ENDF/B-V.2: HF1795
+  ENDF/B-VII.0: HF1797
+  a: 179
+  state: 0
+  z: 72
+HF180:
+  ENDF/B-V.2: HF1805
+  ENDF/B-VII.0: HF1807
+  a: 180
+  state: 0
+  z: 72
+HG196:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: HG1967
+  a: 196
+  state: 0
+  z: 80
+HG198:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: HG1987
+  a: 198
+  state: 0
+  z: 80
+HG199:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: HG1997
+  a: 199
+  state: 0
+  z: 80
+HG200:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: HG2007
+  a: 200
+  state: 0
+  z: 80
+HG201:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: HG2017
+  a: 201
+  state: 0
+  z: 80
+HG202:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: HG2027
+  a: 202
+  state: 0
+  z: 80
+HG204:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: HG2047
+  a: 204
+  state: 0
+  z: 80
+HO165:
+  ENDF/B-V.2: HO1655
+  ENDF/B-VII.0: HO1657
+  a: 165
+  state: 0
+  z: 67
+HO166M:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: HO66M7
+  a: 166
+  state: 1
+  z: 67
+I127:
+  ENDF/B-V.2: I-1275
+  ENDF/B-VII.0: I127_7
+  a: 127
+  state: 0
+  z: 53
+I129:
+  ENDF/B-V.2: I-1295
+  ENDF/B-VII.0: I129_7
+  a: 129
+  state: 0
+  z: 53
+I130:
+  ENDF/B-V.2: I-1305
+  ENDF/B-VII.0: I130_7
+  a: 130
+  state: 0
+  z: 53
+I131:
+  ENDF/B-V.2: I-1315
+  ENDF/B-VII.0: I131_7
+  a: 131
+  state: 0
+  z: 53
+I135:
+  ENDF/B-V.2: I-1355
+  ENDF/B-VII.0: I135_7
+  a: 135
+  state: 0
+  z: 53
+IN113:
+  ENDF/B-V.2: IN1135
+  ENDF/B-VII.0: IN1137
+  a: 113
+  state: 0
+  z: 49
+IN115:
+  ENDF/B-V.2: IN1155
+  ENDF/B-VII.0: IN1157
+  a: 115
+  state: 0
+  z: 49
+IR191:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: IR1917
+  a: 191
+  state: 0
+  z: 77
+IR193:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: IR1937
+  a: 193
+  state: 0
+  z: 77
+K:
+  ENDF/B-V.2: K    5
+  ENDF/B-VII.0: null
+  a: 0
+  state: 0
+  z: 19
+K39:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: K39__7
+  a: 39
+  state: 0
+  z: 19
+K40:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: K40__7
+  a: 40
+  state: 0
+  z: 19
+K41:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: K41__7
+  a: 41
+  state: 0
+  z: 19
+KR78:
+  ENDF/B-V.2: KR78 5
+  ENDF/B-VII.0: KR78_7
+  a: 78
+  state: 0
+  z: 36
+KR80:
+  ENDF/B-V.2: KR80 5
+  ENDF/B-VII.0: KR80_7
+  a: 80
+  state: 0
+  z: 36
+KR82:
+  ENDF/B-V.2: KR82 5
+  ENDF/B-VII.0: KR82_7
+  a: 82
+  state: 0
+  z: 36
+KR83:
+  ENDF/B-V.2: KR83 5
+  ENDF/B-VII.0: KR83_7
+  a: 83
+  state: 0
+  z: 36
+KR84:
+  ENDF/B-V.2: KR84 5
+  ENDF/B-VII.0: KR84_7
+  a: 84
+  state: 0
+  z: 36
+KR85:
+  ENDF/B-V.2: KR85 5
+  ENDF/B-VII.0: KR85_7
+  a: 85
+  state: 0
+  z: 36
+KR86:
+  ENDF/B-V.2: KR86 5
+  ENDF/B-VII.0: KR86_7
+  a: 86
+  state: 0
+  z: 36
+LA138:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: LA1387
+  a: 138
+  state: 0
+  z: 57
+LA139:
+  ENDF/B-V.2: LA1395
+  ENDF/B-VII.0: LA1397
+  a: 139
+  state: 0
+  z: 57
+LA140:
+  ENDF/B-V.2: LA1405
+  ENDF/B-VII.0: LA1407
+  a: 140
+  state: 0
+  z: 57
+LI6:
+  ENDF/B-V.2: LI-6 5
+  ENDF/B-VII.0: LI6__7
+  a: 6
+  state: 0
+  z: 3
+LI7:
+  ENDF/B-V.2: LI-7 V
+  ENDF/B-VII.0: LI7__7
+  a: 7
+  state: 0
+  z: 3
+LU175:
+  ENDF/B-V.2: LU1755
+  ENDF/B-VII.0: LU1757
+  a: 175
+  state: 0
+  z: 71
+LU176:
+  ENDF/B-V.2: LU1765
+  ENDF/B-VII.0: LU1767
+  a: 176
+  state: 0
+  z: 71
+MG:
+  ENDF/B-V.2: MG   5
+  ENDF/B-VII.0: null
+  a: 0
+  state: 0
+  z: 12
+MG24:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: MG24_7
+  a: 24
+  state: 0
+  z: 12
+MG25:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: MG25_7
+  a: 25
+  state: 0
+  z: 12
+MG26:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: MG26_7
+  a: 26
+  state: 0
+  z: 12
+MN55:
+  ENDF/B-V.2: MN55 S
+  ENDF/B-VII.0: MN55_7
+  a: 55
+  state: 0
+  z: 25
+MO:
+  ENDF/B-V.2: MO   S
+  ENDF/B-VII.0: null
+  a: 0
+  state: 0
+  z: 42
+MO100:
+  ENDF/B-V.2: MO1005
+  ENDF/B-VII.0: MO1007
+  a: 100
+  state: 0
+  z: 42
+MO92:
+  ENDF/B-V.2: MO92 5
+  ENDF/B-VII.0: MO92_7
+  a: 92
+  state: 0
+  z: 42
+MO94:
+  ENDF/B-V.2: MO94 5
+  ENDF/B-VII.0: MO94_7
+  a: 94
+  state: 0
+  z: 42
+MO95:
+  ENDF/B-V.2: MO95 5
+  ENDF/B-VII.0: MO95_7
+  a: 95
+  state: 0
+  z: 42
+MO96:
+  ENDF/B-V.2: MO96 5
+  ENDF/B-VII.0: MO96_7
+  a: 96
+  state: 0
+  z: 42
+MO97:
+  ENDF/B-V.2: MO97 5
+  ENDF/B-VII.0: MO97_7
+  a: 97
+  state: 0
+  z: 42
+MO98:
+  ENDF/B-V.2: MO98 5
+  ENDF/B-VII.0: MO98_7
+  a: 98
+  state: 0
+  z: 42
+MO99:
+  ENDF/B-V.2: MO99 5
+  ENDF/B-VII.0: MO99_7
+  a: 99
+  state: 0
+  z: 42
+N14:
+  ENDF/B-V.2: N-14 5
+  ENDF/B-VII.0: N14__7
+  a: 14
+  state: 0
+  z: 7
+N15:
+  ENDF/B-V.2: N-15 5
+  ENDF/B-VII.0: N15__7
+  a: 15
+  state: 0
+  z: 7
+NA22:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: NA22_7
+  a: 22
+  state: 0
+  z: 11
+NA23:
+  ENDF/B-V.2: NA23 S
+  ENDF/B-VII.0: NA23_7
+  a: 23
+  state: 0
+  z: 11
+NB93:
+  ENDF/B-V.2: NB93 5
+  ENDF/B-VII.0: NB93_7
+  a: 93
+  state: 0
+  z: 41
+NB94:
+  ENDF/B-V.2: NB94 5
+  ENDF/B-VII.0: NB94_7
+  a: 94
+  state: 0
+  z: 41
+NB95:
+  ENDF/B-V.2: NB95 5
+  ENDF/B-VII.0: NB95_7
+  a: 95
+  state: 0
+  z: 41
+ND142:
+  ENDF/B-V.2: ND1425
+  ENDF/B-VII.0: ND1427
+  a: 142
+  state: 0
+  z: 60
+ND143:
+  ENDF/B-V.2: ND1435
+  ENDF/B-VII.0: ND1437
+  a: 143
+  state: 0
+  z: 60
+ND144:
+  ENDF/B-V.2: ND1445
+  ENDF/B-VII.0: ND1447
+  a: 144
+  state: 0
+  z: 60
+ND145:
+  ENDF/B-V.2: ND1455
+  ENDF/B-VII.0: ND1457
+  a: 145
+  state: 0
+  z: 60
+ND146:
+  ENDF/B-V.2: ND1465
+  ENDF/B-VII.0: ND1467
+  a: 146
+  state: 0
+  z: 60
+ND147:
+  ENDF/B-V.2: ND1475
+  ENDF/B-VII.0: ND1477
+  a: 147
+  state: 0
+  z: 60
+ND148:
+  ENDF/B-V.2: ND1485
+  ENDF/B-VII.0: ND1487
+  a: 148
+  state: 0
+  z: 60
+ND150:
+  ENDF/B-V.2: ND1505
+  ENDF/B-VII.0: ND1507
+  a: 150
+  state: 0
+  z: 60
+NI:
+  ENDF/B-V.2: NI   S
+  ENDF/B-VII.0: null
+  a: 0
+  state: 0
+  z: 28
+NI58:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: NI58_7
+  a: 58
+  state: 0
+  z: 28
+NI59:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: NI59_7
+  a: 59
+  state: 0
+  z: 28
+NI60:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: NI60_7
+  a: 60
+  state: 0
+  z: 28
+NI61:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: NI61_7
+  a: 61
+  state: 0
+  z: 28
+NI62:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: NI62_7
+  a: 62
+  state: 0
+  z: 28
+NI64:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: NI64_7
+  a: 64
+  state: 0
+  z: 28
+NP235:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: NP2357
+  a: 235
+  state: 0
+  z: 93
+NP236:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: NP2367
+  a: 236
+  state: 0
+  z: 93
+NP237:
+  ENDF/B-V.2: NP237V
+  ENDF/B-VII.0: NP2377
+  a: 237
+  state: 0
+  z: 93
+NP238:
+  ENDF/B-V.2: NP2385
+  ENDF/B-VII.0: NP2387
+  a: 238
+  state: 0
+  z: 93
+NP239:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: NP2397
+  a: 239
+  state: 0
+  z: 93
+O16:
+  ENDF/B-V.2: O-16 5
+  ENDF/B-VII.0: O16__7
+  a: 16
+  state: 0
+  z: 8
+O17:
+  ENDF/B-V.2: O-17 5
+  ENDF/B-VII.0: O17__7
+  a: 17
+  state: 0
+  z: 8
+P31:
+  ENDF/B-V.2: P-31 5
+  ENDF/B-VII.0: P31__7
+  a: 31
+  state: 0
+  z: 15
+PA231:
+  ENDF/B-V.2: PA2315
+  ENDF/B-VII.0: PA2317
+  a: 231
+  state: 0
+  z: 91
+PA232:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: PA2327
+  a: 232
+  state: 0
+  z: 91
+PA233:
+  ENDF/B-V.2: PA2335
+  ENDF/B-VII.0: PA2337
+  a: 233
+  state: 0
+  z: 91
+PB:
+  ENDF/B-V.2: PB   5
+  ENDF/B-VII.0: null
+  a: 0
+  state: 0
+  z: 82
+PB204:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: PB2047
+  a: 204
+  state: 0
+  z: 82
+PB206:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: PB2067
+  a: 206
+  state: 0
+  z: 82
+PB207:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: PB2077
+  a: 207
+  state: 0
+  z: 82
+PB208:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: PB2087
+  a: 208
+  state: 0
+  z: 82
+PD102:
+  ENDF/B-V.2: PD1025
+  ENDF/B-VII.0: PD1027
+  a: 102
+  state: 0
+  z: 46
+PD104:
+  ENDF/B-V.2: PD1045
+  ENDF/B-VII.0: PD1047
+  a: 104
+  state: 0
+  z: 46
+PD105:
+  ENDF/B-V.2: PD1055
+  ENDF/B-VII.0: PD1057
+  a: 105
+  state: 0
+  z: 46
+PD106:
+  ENDF/B-V.2: PD1065
+  ENDF/B-VII.0: PD1067
+  a: 106
+  state: 0
+  z: 46
+PD107:
+  ENDF/B-V.2: PD1075
+  ENDF/B-VII.0: PD1077
+  a: 107
+  state: 0
+  z: 46
+PD108:
+  ENDF/B-V.2: PD1085
+  ENDF/B-VII.0: PD1087
+  a: 108
+  state: 0
+  z: 46
+PD110:
+  ENDF/B-V.2: PD1105
+  ENDF/B-VII.0: PD1107
+  a: 110
+  state: 0
+  z: 46
+PM147:
+  ENDF/B-V.2: PM1475
+  ENDF/B-VII.0: PM1477
+  a: 147
+  state: 0
+  z: 61
+PM148:
+  ENDF/B-V.2: PM1485
+  ENDF/B-VII.0: PM1487
+  a: 148
+  state: 0
+  z: 61
+PM148M:
+  ENDF/B-V.2: PM148M
+  ENDF/B-VII.0: PM48M7
+  a: 148
+  state: 1
+  z: 61
+PM149:
+  ENDF/B-V.2: PM1495
+  ENDF/B-VII.0: PM1497
+  a: 149
+  state: 0
+  z: 61
+PM151:
+  ENDF/B-V.2: PM1515
+  ENDF/B-VII.0: PM1517
+  a: 151
+  state: 0
+  z: 61
+PR141:
+  ENDF/B-V.2: PR1415
+  ENDF/B-VII.0: PR1417
+  a: 141
+  state: 0
+  z: 59
+PR142:
+  ENDF/B-V.2: PR1425
+  ENDF/B-VII.0: PR1427
+  a: 142
+  state: 0
+  z: 59
+PR143:
+  ENDF/B-V.2: PR1435
+  ENDF/B-VII.0: PR1437
+  a: 143
+  state: 0
+  z: 59
+PU236:
+  ENDF/B-V.2: PU2365
+  ENDF/B-VII.0: PU2367
+  a: 236
+  state: 0
+  z: 94
+PU237:
+  ENDF/B-V.2: PU2375
+  ENDF/B-VII.0: PU2377
+  a: 237
+  state: 0
+  z: 94
+PU238:
+  ENDF/B-V.2: PU2385
+  ENDF/B-VII.0: PU2387
+  a: 238
+  state: 0
+  z: 94
+PU239:
+  ENDF/B-V.2: PU239V
+  ENDF/B-VII.0: PU2397
+  a: 239
+  state: 0
+  z: 94
+PU240:
+  ENDF/B-V.2: PU2405
+  ENDF/B-VII.0: PU2407
+  a: 240
+  state: 0
+  z: 94
+PU241:
+  ENDF/B-V.2: PU2415
+  ENDF/B-VII.0: PU2417
+  a: 241
+  state: 0
+  z: 94
+PU242:
+  ENDF/B-V.2: PU2425
+  ENDF/B-VII.0: PU2427
+  a: 242
+  state: 0
+  z: 94
+PU243:
+  ENDF/B-V.2: PU2435
+  ENDF/B-VII.0: PU2437
+  a: 243
+  state: 0
+  z: 94
+PU244:
+  ENDF/B-V.2: PU2445
+  ENDF/B-VII.0: PU2447
+  a: 244
+  state: 0
+  z: 94
+PU246:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: PU2467
+  a: 246
+  state: 0
+  z: 94
+RA223:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: RA2237
+  a: 223
+  state: 0
+  z: 88
+RA224:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: RA2247
+  a: 224
+  state: 0
+  z: 88
+RA225:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: RA2257
+  a: 225
+  state: 0
+  z: 88
+RA226:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: RA2267
+  a: 226
+  state: 0
+  z: 88
+RB85:
+  ENDF/B-V.2: RB85 5
+  ENDF/B-VII.0: RB85_7
+  a: 85
+  state: 0
+  z: 37
+RB86:
+  ENDF/B-V.2: RB86 5
+  ENDF/B-VII.0: RB86_7
+  a: 86
+  state: 0
+  z: 37
+RB87:
+  ENDF/B-V.2: RB87 5
+  ENDF/B-VII.0: RB87_7
+  a: 87
+  state: 0
+  z: 37
+RE185:
+  ENDF/B-V.2: RE1855
+  ENDF/B-VII.0: RE1857
+  a: 185
+  state: 0
+  z: 75
+RE187:
+  ENDF/B-V.2: RE1875
+  ENDF/B-VII.0: RE1877
+  a: 187
+  state: 0
+  z: 75
+RH103:
+  ENDF/B-V.2: RH1035
+  ENDF/B-VII.0: RH1037
+  a: 103
+  state: 0
+  z: 45
+RH105:
+  ENDF/B-V.2: RH1055
+  ENDF/B-VII.0: RH1057
+  a: 105
+  state: 0
+  z: 45
+RU100:
+  ENDF/B-V.2: RU1005
+  ENDF/B-VII.0: RU1007
+  a: 100
+  state: 0
+  z: 44
+RU101:
+  ENDF/B-V.2: RU1015
+  ENDF/B-VII.0: RU1017
+  a: 101
+  state: 0
+  z: 44
+RU102:
+  ENDF/B-V.2: RU1025
+  ENDF/B-VII.0: RU1027
+  a: 102
+  state: 0
+  z: 44
+RU103:
+  ENDF/B-V.2: RU1035
+  ENDF/B-VII.0: RU1037
+  a: 103
+  state: 0
+  z: 44
+RU104:
+  ENDF/B-V.2: RU1045
+  ENDF/B-VII.0: RU1047
+  a: 104
+  state: 0
+  z: 44
+RU105:
+  ENDF/B-V.2: RU1055
+  ENDF/B-VII.0: RU1057
+  a: 105
+  state: 0
+  z: 44
+RU106:
+  ENDF/B-V.2: RU1065
+  ENDF/B-VII.0: RU1067
+  a: 106
+  state: 0
+  z: 44
+RU96:
+  ENDF/B-V.2: RU96 5
+  ENDF/B-VII.0: RU96_7
+  a: 96
+  state: 0
+  z: 44
+RU98:
+  ENDF/B-V.2: RU98 5
+  ENDF/B-VII.0: RU98_7
+  a: 98
+  state: 0
+  z: 44
+RU99:
+  ENDF/B-V.2: RU99 5
+  ENDF/B-VII.0: RU99_7
+  a: 99
+  state: 0
+  z: 44
+S:
+  ENDF/B-V.2: S    5
+  ENDF/B-VII.0: null
+  a: 0
+  state: 0
+  z: 16
+S32:
+  ENDF/B-V.2: S-32 5
+  ENDF/B-VII.0: S32__7
+  a: 32
+  state: 0
+  z: 16
+S33:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: S33__7
+  a: 33
+  state: 0
+  z: 16
+S34:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: S34__7
+  a: 34
+  state: 0
+  z: 16
+S36:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: S36__7
+  a: 36
+  state: 0
+  z: 16
+SB121:
+  ENDF/B-V.2: SB1215
+  ENDF/B-VII.0: SB1217
+  a: 121
+  state: 0
+  z: 51
+SB123:
+  ENDF/B-V.2: SB1235
+  ENDF/B-VII.0: SB1237
+  a: 123
+  state: 0
+  z: 51
+SB124:
+  ENDF/B-V.2: SB1245
+  ENDF/B-VII.0: SB1247
+  a: 124
+  state: 0
+  z: 51
+SB125:
+  ENDF/B-V.2: SB1255
+  ENDF/B-VII.0: SB1257
+  a: 125
+  state: 0
+  z: 51
+SB126:
+  ENDF/B-V.2: SB1265
+  ENDF/B-VII.0: SB1267
+  a: 126
+  state: 0
+  z: 51
+SC45:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: SC45_7
+  a: 45
+  state: 0
+  z: 21
+SE74:
+  ENDF/B-V.2: SE74 5
+  ENDF/B-VII.0: SE74_7
+  a: 74
+  state: 0
+  z: 34
+SE76:
+  ENDF/B-V.2: SE76 5
+  ENDF/B-VII.0: SE76_7
+  a: 76
+  state: 0
+  z: 34
+SE77:
+  ENDF/B-V.2: SE77 5
+  ENDF/B-VII.0: SE77_7
+  a: 77
+  state: 0
+  z: 34
+SE78:
+  ENDF/B-V.2: SE78 5
+  ENDF/B-VII.0: SE78_7
+  a: 78
+  state: 0
+  z: 34
+SE79:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: SE79_7
+  a: 79
+  state: 0
+  z: 34
+SE80:
+  ENDF/B-V.2: SE80 5
+  ENDF/B-VII.0: SE80_7
+  a: 80
+  state: 0
+  z: 34
+SE82:
+  ENDF/B-V.2: SE82 5
+  ENDF/B-VII.0: SE82_7
+  a: 82
+  state: 0
+  z: 34
+SI:
+  ENDF/B-V.2: SI   5
+  ENDF/B-VII.0: null
+  a: 0
+  state: 0
+  z: 14
+SI28:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: SI28_7
+  a: 28
+  state: 0
+  z: 14
+SI29:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: SI29_7
+  a: 29
+  state: 0
+  z: 14
+SI30:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: SI30_7
+  a: 30
+  state: 0
+  z: 14
+SM144:
+  ENDF/B-V.2: SM1445
+  ENDF/B-VII.0: SM1447
+  a: 144
+  state: 0
+  z: 62
+SM147:
+  ENDF/B-V.2: SM1475
+  ENDF/B-VII.0: SM1477
+  a: 147
+  state: 0
+  z: 62
+SM148:
+  ENDF/B-V.2: SM1485
+  ENDF/B-VII.0: SM1487
+  a: 148
+  state: 0
+  z: 62
+SM149:
+  ENDF/B-V.2: SM1495
+  ENDF/B-VII.0: SM1497
+  a: 149
+  state: 0
+  z: 62
+SM150:
+  ENDF/B-V.2: SM1505
+  ENDF/B-VII.0: SM1507
+  a: 150
+  state: 0
+  z: 62
+SM151:
+  ENDF/B-V.2: SM1515
+  ENDF/B-VII.0: SM1517
+  a: 151
+  state: 0
+  z: 62
+SM152:
+  ENDF/B-V.2: SM1525
+  ENDF/B-VII.0: SM1527
+  a: 152
+  state: 0
+  z: 62
+SM153:
+  ENDF/B-V.2: SM1535
+  ENDF/B-VII.0: SM1537
+  a: 153
+  state: 0
+  z: 62
+SM154:
+  ENDF/B-V.2: SM1545
+  ENDF/B-VII.0: SM1547
+  a: 154
+  state: 0
+  z: 62
+SN112:
+  ENDF/B-V.2: SN1125
+  ENDF/B-VII.0: SN1127
+  a: 112
+  state: 0
+  z: 50
+SN113:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: SN1137
+  a: 113
+  state: 0
+  z: 50
+SN114:
+  ENDF/B-V.2: SN1145
+  ENDF/B-VII.0: SN1147
+  a: 114
+  state: 0
+  z: 50
+SN115:
+  ENDF/B-V.2: SN1155
+  ENDF/B-VII.0: SN1157
+  a: 115
+  state: 0
+  z: 50
+SN116:
+  ENDF/B-V.2: SN1165
+  ENDF/B-VII.0: SN1167
+  a: 116
+  state: 0
+  z: 50
+SN117:
+  ENDF/B-V.2: SN1175
+  ENDF/B-VII.0: SN1177
+  a: 117
+  state: 0
+  z: 50
+SN118:
+  ENDF/B-V.2: SN1185
+  ENDF/B-VII.0: SN1187
+  a: 118
+  state: 0
+  z: 50
+SN119:
+  ENDF/B-V.2: SN1195
+  ENDF/B-VII.0: SN1197
+  a: 119
+  state: 0
+  z: 50
+SN120:
+  ENDF/B-V.2: SN1205
+  ENDF/B-VII.0: SN1207
+  a: 120
+  state: 0
+  z: 50
+SN122:
+  ENDF/B-V.2: SN1225
+  ENDF/B-VII.0: SN1227
+  a: 122
+  state: 0
+  z: 50
+SN123:
+  ENDF/B-V.2: SN1235
+  ENDF/B-VII.0: SN1237
+  a: 123
+  state: 0
+  z: 50
+SN124:
+  ENDF/B-V.2: SN1245
+  ENDF/B-VII.0: SN1247
+  a: 124
+  state: 0
+  z: 50
+SN125:
+  ENDF/B-V.2: SN1255
+  ENDF/B-VII.0: SN1257
+  a: 125
+  state: 0
+  z: 50
+SN126:
+  ENDF/B-V.2: SN1265
+  ENDF/B-VII.0: SN1267
+  a: 126
+  state: 0
+  z: 50
+SR84:
+  ENDF/B-V.2: SR84 5
+  ENDF/B-VII.0: SR84_7
+  a: 84
+  state: 0
+  z: 38
+SR86:
+  ENDF/B-V.2: SR86 5
+  ENDF/B-VII.0: SR86_7
+  a: 86
+  state: 0
+  z: 38
+SR87:
+  ENDF/B-V.2: SR87 5
+  ENDF/B-VII.0: SR87_7
+  a: 87
+  state: 0
+  z: 38
+SR88:
+  ENDF/B-V.2: SR88 5
+  ENDF/B-VII.0: SR88_7
+  a: 88
+  state: 0
+  z: 38
+SR89:
+  ENDF/B-V.2: SR89 5
+  ENDF/B-VII.0: SR89_7
+  a: 89
+  state: 0
+  z: 38
+SR90:
+  ENDF/B-V.2: SR90 5
+  ENDF/B-VII.0: SR90_7
+  a: 90
+  state: 0
+  z: 38
+TA181:
+  ENDF/B-V.2: TA1815
+  ENDF/B-VII.0: TA1817
+  a: 181
+  state: 0
+  z: 73
+TA182:
+  ENDF/B-V.2: TA1825
+  ENDF/B-VII.0: TA1827
+  a: 182
+  state: 0
+  z: 73
+TB159:
+  ENDF/B-V.2: TB1595
+  ENDF/B-VII.0: TB1597
+  a: 159
+  state: 0
+  z: 65
+TB160:
+  ENDF/B-V.2: TB1605
+  ENDF/B-VII.0: TB1607
+  a: 160
+  state: 0
+  z: 65
+TC99:
+  ENDF/B-V.2: TC99 5
+  ENDF/B-VII.0: TC99_7
+  a: 99
+  state: 0
+  z: 43
+TE120:
+  ENDF/B-V.2: TE1205
+  ENDF/B-VII.0: TE1207
+  a: 120
+  state: 0
+  z: 52
+TE122:
+  ENDF/B-V.2: TE1225
+  ENDF/B-VII.0: TE1227
+  a: 122
+  state: 0
+  z: 52
+TE123:
+  ENDF/B-V.2: TE1235
+  ENDF/B-VII.0: TE1237
+  a: 123
+  state: 0
+  z: 52
+TE124:
+  ENDF/B-V.2: TE1245
+  ENDF/B-VII.0: TE1247
+  a: 124
+  state: 0
+  z: 52
+TE125:
+  ENDF/B-V.2: TE1255
+  ENDF/B-VII.0: TE1257
+  a: 125
+  state: 0
+  z: 52
+TE126:
+  ENDF/B-V.2: TE1265
+  ENDF/B-VII.0: TE1267
+  a: 126
+  state: 0
+  z: 52
+TE127M:
+  ENDF/B-V.2: TE127M
+  ENDF/B-VII.0: TE27M7
+  a: 127
+  state: 1
+  z: 52
+TE128:
+  ENDF/B-V.2: TE1285
+  ENDF/B-VII.0: TE1287
+  a: 128
+  state: 0
+  z: 52
+TE129M:
+  ENDF/B-V.2: TE129M
+  ENDF/B-VII.0: TE29M7
+  a: 129
+  state: 1
+  z: 52
+TE130:
+  ENDF/B-V.2: TE1305
+  ENDF/B-VII.0: TE1307
+  a: 130
+  state: 0
+  z: 52
+TE132:
+  ENDF/B-V.2: TE1325
+  ENDF/B-VII.0: TE1327
+  a: 132
+  state: 0
+  z: 52
+TH227:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: TH2277
+  a: 227
+  state: 0
+  z: 90
+TH228:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: TH2287
+  a: 228
+  state: 0
+  z: 90
+TH229:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: TH2297
+  a: 229
+  state: 0
+  z: 90
+TH230:
+  ENDF/B-V.2: TH2305
+  ENDF/B-VII.0: TH2307
+  a: 230
+  state: 0
+  z: 90
+TH232:
+  ENDF/B-V.2: TH2325
+  ENDF/B-VII.0: TH2327
+  a: 232
+  state: 0
+  z: 90
+TH233:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: TH2337
+  a: 233
+  state: 0
+  z: 90
+TH234:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: TH2347
+  a: 234
+  state: 0
+  z: 90
+TI:
+  ENDF/B-V.2: TI   5
+  ENDF/B-VII.0: null
+  a: 0
+  state: 0
+  z: 22
+TI46:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: TI46_7
+  a: 46
+  state: 0
+  z: 22
+TI47:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: TI47_7
+  a: 47
+  state: 0
+  z: 22
+TI48:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: TI48_7
+  a: 48
+  state: 0
+  z: 22
+TI49:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: TI49_7
+  a: 49
+  state: 0
+  z: 22
+TI50:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: TI50_7
+  a: 50
+  state: 0
+  z: 22
+U232:
+  ENDF/B-V.2: U-2325
+  ENDF/B-VII.0: U232_7
+  a: 232
+  state: 0
+  z: 92
+U233:
+  ENDF/B-V.2: U-2335
+  ENDF/B-VII.0: U233_7
+  a: 233
+  state: 0
+  z: 92
+U234:
+  ENDF/B-V.2: U-2345
+  ENDF/B-VII.0: U234_7
+  a: 234
+  state: 0
+  z: 92
+U235:
+  ENDF/B-V.2: U-2355
+  ENDF/B-VII.0: U235_7
+  a: 235
+  state: 0
+  z: 92
+U236:
+  ENDF/B-V.2: U-2365
+  ENDF/B-VII.0: U236_7
+  a: 236
+  state: 0
+  z: 92
+U237:
+  ENDF/B-V.2: U-2375
+  ENDF/B-VII.0: U237_7
+  a: 237
+  state: 0
+  z: 92
+U238:
+  ENDF/B-V.2: U-2385
+  ENDF/B-VII.0: U238_7
+  a: 238
+  state: 0
+  z: 92
+U239:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: U239_7
+  a: 239
+  state: 0
+  z: 92
+U240:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: U240_7
+  a: 240
+  state: 0
+  z: 92
+U241:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: U241_7
+  a: 241
+  state: 0
+  z: 92
+V:
+  ENDF/B-V.2: V    5
+  ENDF/B-VII.0: V____7
+  a: 0
+  state: 0
+  z: 23
+W182:
+  ENDF/B-V.2: W-182V
+  ENDF/B-VII.0: W182_7
+  a: 182
+  state: 0
+  z: 74
+W183:
+  ENDF/B-V.2: W-183V
+  ENDF/B-VII.0: W183_7
+  a: 183
+  state: 0
+  z: 74
+W184:
+  ENDF/B-V.2: W-184V
+  ENDF/B-VII.0: W184_7
+  a: 184
+  state: 0
+  z: 74
+W186:
+  ENDF/B-V.2: W-186V
+  ENDF/B-VII.0: W186_7
+  a: 186
+  state: 0
+  z: 74
+XE123:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: XE1237
+  a: 123
+  state: 0
+  z: 54
+XE124:
+  ENDF/B-V.2: XE1245
+  ENDF/B-VII.0: XE1247
+  a: 124
+  state: 0
+  z: 54
+XE126:
+  ENDF/B-V.2: XE1265
+  ENDF/B-VII.0: XE1267
+  a: 126
+  state: 0
+  z: 54
+XE128:
+  ENDF/B-V.2: XE1285
+  ENDF/B-VII.0: XE1287
+  a: 128
+  state: 0
+  z: 54
+XE129:
+  ENDF/B-V.2: XE1295
+  ENDF/B-VII.0: XE1297
+  a: 129
+  state: 0
+  z: 54
+XE130:
+  ENDF/B-V.2: XE1305
+  ENDF/B-VII.0: XE1307
+  a: 130
+  state: 0
+  z: 54
+XE131:
+  ENDF/B-V.2: XE1315
+  ENDF/B-VII.0: XE1317
+  a: 131
+  state: 0
+  z: 54
+XE132:
+  ENDF/B-V.2: XE1325
+  ENDF/B-VII.0: XE1327
+  a: 132
+  state: 0
+  z: 54
+XE133:
+  ENDF/B-V.2: XE1335
+  ENDF/B-VII.0: XE1337
+  a: 133
+  state: 0
+  z: 54
+XE134:
+  ENDF/B-V.2: XE1345
+  ENDF/B-VII.0: XE1347
+  a: 134
+  state: 0
+  z: 54
+XE135:
+  ENDF/B-V.2: XE1355
+  ENDF/B-VII.0: XE1357
+  a: 135
+  state: 0
+  z: 54
+XE136:
+  ENDF/B-V.2: XE1365
+  ENDF/B-VII.0: XE1367
+  a: 136
+  state: 0
+  z: 54
+Y89:
+  ENDF/B-V.2: Y89  5
+  ENDF/B-VII.0: Y89__7
+  a: 89
+  state: 0
+  z: 39
+Y90:
+  ENDF/B-V.2: Y90  5
+  ENDF/B-VII.0: null
+  a: 90
+  state: 0
+  z: 39
+Y91:
+  ENDF/B-V.2: Y91  5
+  ENDF/B-VII.0: Y91__7
+  a: 91
+  state: 0
+  z: 39
+ZN:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: ZN___7
+  a: 0
+  state: 0
+  z: 30
+ZR:
+  ENDF/B-V.2: ZIRCSV
+  ENDF/B-VII.0: null
+  a: 0
+  state: 0
+  z: 40
+ZR90:
+  ENDF/B-V.2: ZR90SV
+  ENDF/B-VII.0: ZR90_7
+  a: 90
+  state: 0
+  z: 40
+ZR91:
+  ENDF/B-V.2: ZR91SV
+  ENDF/B-VII.0: ZR91_7
+  a: 91
+  state: 0
+  z: 40
+ZR92:
+  ENDF/B-V.2: ZR92SV
+  ENDF/B-VII.0: ZR92_7
+  a: 92
+  state: 0
+  z: 40
+ZR93:
+  ENDF/B-V.2: ZR93 5
+  ENDF/B-VII.0: ZR93_7
+  a: 93
+  state: 0
+  z: 40
+ZR94:
+  ENDF/B-V.2: ZR94SV
+  ENDF/B-VII.0: ZR94_7
+  a: 94
+  state: 0
+  z: 40
+ZR95:
+  ENDF/B-V.2: ZR95 5
+  ENDF/B-VII.0: ZR95_7
+  a: 95
+  state: 0
+  z: 40
+ZR96:
+  ENDF/B-V.2: ZR96 5
+  ENDF/B-VII.0: ZR96_7
+  a: 96
+  state: 0
+  z: 40

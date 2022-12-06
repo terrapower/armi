@@ -490,7 +490,7 @@ def autoSelectElementsToKeepFromSettings(cs):
     for element in elements.byName.values():
         # any NaturalNuclideBase that's available in MC2 libs
         nnb = nuclideBases.byName.get(element.symbol)
-        if nnb and nnb.mc2id:
+        if nnb and nnb.getMcc2Id():
             elementalsInMC2.add(nnb)
 
     if "MCNP" in cs["neutronicsKernel"]:
@@ -533,7 +533,7 @@ def autoSelectElementsToKeepFromSettings(cs):
             )
 
     elif cs["xsKernel"] == "MC2v2":
-        # strip out any NaturalNuclideBase with no mc2id (not on mc2Nuclides.yaml)
+        # strip out any NaturalNuclideBase with no getMcc2Id() (not on mcc-nuclides.yaml)
         elementalsToKeep.update(elementalsInMC2)
         expansionStrings.update(mc2Expansions)
 

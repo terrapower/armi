@@ -2,131 +2,137 @@
 # ELEMENTAL DATA
 # ---------------------------------------------------------------------
 # This file contains the complete set of elements from the
-# Periodic Table, with chemical phase and group metadata. The
-# data here is manually curated for applications within the ARMI
-# framework and for down-stream applications, but the dataset may be
-# extended if other chemical attributes are required.
+# Periodic Table, with chemical phase (at STP), chemical group metadata, and 
+# standard atomic weights. The data here is manually curated for 
+# applications within the ARMI framework and for down-stream 
+# applications, but the dataset may be extended if other 
+# chemical attributes are required.
+#
+# The standard atomic weights are characterized as being "derived"
+# or specifically set when no stable nuclides for the element exist.
+# The derivation of the standard atomic weights is based on nuclide
+# abundances and nuclide masses (in amu). 
 #
 # Source: Periodic Table of Elements (circa, 2022)
 # ---------------------------------------------------------------------
-Z   E   Name          Phase    Chemical Group         
-1	H	Hydrogen                    GAS      NONMETAL
-2	He	Helium                      GAS      NOBEL_GAS
-3	Li	Lithium                     SOLID    ALKALI_METAL
-4	Be	Beryllium                   SOLID    ALKALINE_EARTH_METAL
-5	B	Boron                       SOLID    METALLOID
-6	C	Carbon                      SOLID    NONMETAL
-7	N	Nitrogen                    GAS      NONMETAL
-8	O	Oxygen                      GAS      NONMETAL
-9	F	Fluorine                    GAS      HALOGEN
-10	Ne	Neon                        GAS      NOBEL_GAS
-11	Na	Sodium                      SOLID    ALKALI_METAL
-12	Mg	Magnesium                   SOLID    ALKALINE_EARTH_METAL
-13	Al	Aluminium                   SOLID    POST_TRANSITION_METAL
-14	Si	Silicon                     SOLID    METALLOID
-15	P	Phosphorus                  SOLID    NONMETAL
-16	S	Sulfur                      SOLID    NONMETAL
-17	Cl	Chlorine                    GAS      HALOGEN
-18	Ar	Argon                       GAS      NOBEL_GAS
-19	K	Potassium                   SOLID    ALKALI_METAL
-20	Ca	Calcium                     SOLID    ALKALINE_EARTH_METAL
-21	Sc	Scandium                    SOLID    TRANSITION_METAL
-22	Ti	Titanium                    SOLID    TRANSITION_METAL
-23	V	Vanadium                    SOLID    TRANSITION_METAL
-24	Cr	Chromium                    SOLID    TRANSITION_METAL
-25	Mn	Manganese                   SOLID    TRANSITION_METAL
-26	Fe	Iron                        SOLID    TRANSITION_METAL
-27	Co	Cobalt                      SOLID    TRANSITION_METAL
-28	Ni	Nickel                      SOLID    TRANSITION_METAL
-29	Cu	Copper                      SOLID    TRANSITION_METAL
-30	Zn	Zinc                        SOLID    TRANSITION_METAL
-31	Ga	Gallium                     SOLID    POST_TRANSITION_METAL
-32	Ge	Germanium                   SOLID    METALLOID
-33	As	Arsenic                     SOLID    METALLOID
-34	Se	Selenium                    SOLID    NONMETAL
-35	Br	Bromine                     LIQUID   HALOGEN
-36	Kr	Krypton                     GAS      NOBEL_GAS
-37	Rb	Rubidium                    SOLID    ALKALI_METAL
-38	Sr	Strontium                   SOLID    ALKALINE_EARTH_METAL
-39	Y	Yttrium                     SOLID    TRANSITION_METAL
-40	Zr	Zirconium                   SOLID    TRANSITION_METAL
-41	Nb	Niobium                     SOLID    TRANSITION_METAL
-42	Mo	Molybdenum                  SOLID    TRANSITION_METAL
-43	Tc	Technetium                  SOLID    TRANSITION_METAL
-44	Ru	Ruthenium                   SOLID    TRANSITION_METAL
-45	Rh	Rhodium                     SOLID    TRANSITION_METAL
-46	Pd	Palladium                   SOLID    TRANSITION_METAL
-47	Ag	Silver                      SOLID    TRANSITION_METAL
-48	Cd	Cadmium                     SOLID    TRANSITION_METAL
-49	In	Indium                      SOLID    POST_TRANSITION_METAL
-50	Sn	Tin                         SOLID    POST_TRANSITION_METAL
-51	Sb	Antimony                    SOLID    METALLOID
-52	Te	Tellurium                   SOLID    METALLOID
-53	I	Iodine                      SOLID    HALOGEN
-54	Xe	Xenon                       GAS      NOBEL_GAS
-55	Cs	Caesium                     SOLID    ALKALI_METAL
-56	Ba	Barium                      SOLID    ALKALINE_EARTH_METAL
-57	La	Lanthanum                   SOLID    LANTHANIDE
-58	Ce	Cerium                      SOLID    LANTHANIDE
-59	Pr	Praseodymium                SOLID    LANTHANIDE
-60	Nd	Neodymium                   SOLID    LANTHANIDE
-61	Pm	Promethium                  SOLID    LANTHANIDE
-62	Sm	Samarium                    SOLID    LANTHANIDE
-63	Eu	Europium                    SOLID    LANTHANIDE
-64	Gd	Gadolinium                  SOLID    LANTHANIDE
-65	Tb	Terbium                     SOLID    LANTHANIDE
-66	Dy	Dysprosium                  SOLID    LANTHANIDE
-67	Ho	Holmium                     SOLID    LANTHANIDE
-68	Er	Erbium                      SOLID    LANTHANIDE
-69	Tm	Thulium                     SOLID    LANTHANIDE
-70	Yb	Ytterbium                   SOLID    LANTHANIDE
-71	Lu	Lutetium                    SOLID    LANTHANIDE
-72	Hf	Hafnium                     SOLID    TRANSITION_METAL
-73	Ta	Tantalum                    SOLID    TRANSITION_METAL
-74	W	Tungsten                    SOLID    TRANSITION_METAL
-75	Re	Rhenium                     SOLID    TRANSITION_METAL
-76	Os	Osmium                      SOLID    TRANSITION_METAL
-77	Ir	Iridium                     SOLID    TRANSITION_METAL
-78	Pt	Platinum                    SOLID    TRANSITION_METAL
-79	Au	Gold                        SOLID    TRANSITION_METAL
-80	Hg	Mercury                     LIQUID   TRANSITION_METAL
-81	Tl	Thallium                    SOLID    POST_TRANSITION_METAL
-82	Pb	Lead                        SOLID    POST_TRANSITION_METAL
-83	Bi	Bismuth                     SOLID    POST_TRANSITION_METAL
-84	Po	Polonium                    SOLID    METALLOID
-85	At	Astatine                    SOLID    HALOGEN
-86	Rn	Radon                       GAS      NOBEL_GAS
-87	Fr	Francium                    SOLID    ALKALI_METAL
-88	Ra	Radium                      SOLID    ALKALINE_EARTH_METAL
-89	Ac	Actinium                    SOLID    ACTINIDE
-90	Th	Thorium                     SOLID    ACTINIDE
-91	Pa	Protactinium                SOLID    ACTINIDE
-92	U	Uranium                     SOLID    ACTINIDE
-93	Np	Neptunium                   SOLID    ACTINIDE
-94	Pu	Plutonium                   SOLID    ACTINIDE
-95	Am	Americium                   SOLID    ACTINIDE
-96	Cm	Curium                      SOLID    ACTINIDE
-97	Bk	Berkelium                   SOLID    ACTINIDE
-98	Cf	Californium                 SOLID    ACTINIDE
-99	Es	Einsteinium                 SOLID    ACTINIDE
-100	Fm	Fermium                     SOLID    ACTINIDE
-101	Md	Mendelevium                 SOLID    ACTINIDE
-102	No	Nobelium                    SOLID    ACTINIDE
-103	Lr	Lawrencium                  SOLID    ACTINIDE
-104	Rf	Rutherfordium               SOLID    TRANSITION_METAL
-105	Db	Dubnium                     SOLID    TRANSITION_METAL
-106	Sg	Seaborgium                  SOLID    TRANSITION_METAL
-107	Bh	Bohrium                     SOLID    TRANSITION_METAL
-108	Hs	Hassium                     SOLID    TRANSITION_METAL
-109	Mt	Meitnerium                  SOLID    TRANSITION_METAL
-110	Ds	Darmstadtium                SOLID    TRANSITION_METAL
-111	Rg	Roentgenium                 SOLID    TRANSITION_METAL
-112	Cn	Copernicium                 SOLID    TRANSITION_METAL
-113	Nh	Nihonium                    SOLID    POST_TRANSITION_METAL
-114	Fl	Flevrovium                  SOLID    POST_TRANSITION_METAL
-115	Mc	Moscovium                   SOLID    POST_TRANSITION_METAL
-116	Lv	Livermorium                 SOLID    POST_TRANSITION_METAL
-117	Ts	Tennessine                  SOLID    HALOGEN
-118	Og	Oganesson                   GAS      NOBEL_GAS
-119	Dp	Dummy	                    UNKNOWN  UNKNOWN
-120	Lp	LumpedFissionProduct	    UNKNOWN  UNKNOWN
+Z   E   Name                        Phase    Chemical Group           Standard Atomic Weight
+1	H	Hydrogen                    GAS      NONMETAL                 Derived
+2	He	Helium                      GAS      NOBLE_GAS                Derived
+3	Li	Lithium                     SOLID    ALKALI_METAL             Derived
+4	Be	Beryllium                   SOLID    ALKALINE_EARTH_METAL     Derived
+5	B	Boron                       SOLID    METALLOID                Derived
+6	C	Carbon                      SOLID    NONMETAL                 Derived
+7	N	Nitrogen                    GAS      NONMETAL                 Derived
+8	O	Oxygen                      GAS      NONMETAL                 Derived
+9	F	Fluorine                    GAS      HALOGEN                  Derived
+10	Ne	Neon                        GAS      NOBLE_GAS                Derived
+11	Na	Sodium                      SOLID    ALKALI_METAL             Derived
+12	Mg	Magnesium                   SOLID    ALKALINE_EARTH_METAL     Derived
+13	Al	Aluminium                   SOLID    POST_TRANSITION_METAL    Derived
+14	Si	Silicon                     SOLID    METALLOID                Derived
+15	P	Phosphorus                  SOLID    NONMETAL                 Derived
+16	S	Sulfur                      SOLID    NONMETAL                 Derived
+17	Cl	Chlorine                    GAS      HALOGEN                  Derived
+18	Ar	Argon                       GAS      NOBLE_GAS                Derived
+19	K	Potassium                   SOLID    ALKALI_METAL             Derived
+20	Ca	Calcium                     SOLID    ALKALINE_EARTH_METAL     Derived
+21	Sc	Scandium                    SOLID    TRANSITION_METAL         Derived
+22	Ti	Titanium                    SOLID    TRANSITION_METAL         Derived
+23	V	Vanadium                    SOLID    TRANSITION_METAL         Derived
+24	Cr	Chromium                    SOLID    TRANSITION_METAL         Derived
+25	Mn	Manganese                   SOLID    TRANSITION_METAL         Derived
+26	Fe	Iron                        SOLID    TRANSITION_METAL         Derived
+27	Co	Cobalt                      SOLID    TRANSITION_METAL         Derived
+28	Ni	Nickel                      SOLID    TRANSITION_METAL         Derived
+29	Cu	Copper                      SOLID    TRANSITION_METAL         Derived
+30	Zn	Zinc                        SOLID    TRANSITION_METAL         Derived
+31	Ga	Gallium                     SOLID    POST_TRANSITION_METAL    Derived
+32	Ge	Germanium                   SOLID    METALLOID                Derived
+33	As	Arsenic                     SOLID    METALLOID                Derived
+34	Se	Selenium                    SOLID    NONMETAL                 Derived
+35	Br	Bromine                     LIQUID   HALOGEN                  Derived
+36	Kr	Krypton                     GAS      NOBLE_GAS                Derived
+37	Rb	Rubidium                    SOLID    ALKALI_METAL             Derived
+38	Sr	Strontium                   SOLID    ALKALINE_EARTH_METAL     Derived
+39	Y	Yttrium                     SOLID    TRANSITION_METAL         Derived
+40	Zr	Zirconium                   SOLID    TRANSITION_METAL         Derived
+41	Nb	Niobium                     SOLID    TRANSITION_METAL         Derived
+42	Mo	Molybdenum                  SOLID    TRANSITION_METAL         Derived
+43	Tc	Technetium                  SOLID    TRANSITION_METAL         98
+44	Ru	Ruthenium                   SOLID    TRANSITION_METAL         Derived
+45	Rh	Rhodium                     SOLID    TRANSITION_METAL         Derived
+46	Pd	Palladium                   SOLID    TRANSITION_METAL         Derived
+47	Ag	Silver                      SOLID    TRANSITION_METAL         Derived
+48	Cd	Cadmium                     SOLID    TRANSITION_METAL         Derived
+49	In	Indium                      SOLID    POST_TRANSITION_METAL    Derived
+50	Sn	Tin                         SOLID    POST_TRANSITION_METAL    Derived
+51	Sb	Antimony                    SOLID    METALLOID                Derived
+52	Te	Tellurium                   SOLID    METALLOID                Derived
+53	I	Iodine                      SOLID    HALOGEN                  Derived
+54	Xe	Xenon                       GAS      NOBLE_GAS                Derived
+55	Cs	Cesium                      SOLID    ALKALI_METAL             Derived
+56	Ba	Barium                      SOLID    ALKALINE_EARTH_METAL     Derived
+57	La	Lanthanum                   SOLID    LANTHANIDE               Derived
+58	Ce	Cerium                      SOLID    LANTHANIDE               Derived
+59	Pr	Praseodymium                SOLID    LANTHANIDE               Derived
+60	Nd	Neodymium                   SOLID    LANTHANIDE               Derived
+61	Pm	Promethium                  SOLID    LANTHANIDE               145
+62	Sm	Samarium                    SOLID    LANTHANIDE               Derived
+63	Eu	Europium                    SOLID    LANTHANIDE               Derived
+64	Gd	Gadolinium                  SOLID    LANTHANIDE               Derived
+65	Tb	Terbium                     SOLID    LANTHANIDE               Derived
+66	Dy	Dysprosium                  SOLID    LANTHANIDE               Derived
+67	Ho	Holmium                     SOLID    LANTHANIDE               Derived
+68	Er	Erbium                      SOLID    LANTHANIDE               Derived
+69	Tm	Thulium                     SOLID    LANTHANIDE               Derived
+70	Yb	Ytterbium                   SOLID    LANTHANIDE               Derived
+71	Lu	Lutetium                    SOLID    LANTHANIDE               Derived
+72	Hf	Hafnium                     SOLID    TRANSITION_METAL         Derived
+73	Ta	Tantalum                    SOLID    TRANSITION_METAL         Derived
+74	W	Tungsten                    SOLID    TRANSITION_METAL         Derived
+75	Re	Rhenium                     SOLID    TRANSITION_METAL         Derived
+76	Os	Osmium                      SOLID    TRANSITION_METAL         Derived
+77	Ir	Iridium                     SOLID    TRANSITION_METAL         Derived
+78	Pt	Platinum                    SOLID    TRANSITION_METAL         Derived
+79	Au	Gold                        SOLID    TRANSITION_METAL         Derived
+80	Hg	Mercury                     LIQUID   TRANSITION_METAL         Derived
+81	Tl	Thallium                    SOLID    POST_TRANSITION_METAL    Derived
+82	Pb	Lead                        SOLID    POST_TRANSITION_METAL    Derived
+83	Bi	Bismuth                     SOLID    POST_TRANSITION_METAL    Derived
+84	Po	Polonium                    SOLID    METALLOID                209
+85	At	Astatine                    SOLID    HALOGEN                  210
+86	Rn	Radon                       GAS      NOBLE_GAS                222
+87	Fr	Francium                    SOLID    ALKALI_METAL             223
+88	Ra	Radium                      SOLID    ALKALINE_EARTH_METAL     226
+89	Ac	Actinium                    SOLID    ACTINIDE                 227
+90	Th	Thorium                     SOLID    ACTINIDE                 Derived
+91	Pa	Protactinium                SOLID    ACTINIDE                 Derived
+92	U	Uranium                     SOLID    ACTINIDE                 Derived
+93	Np	Neptunium                   SOLID    ACTINIDE                 237
+94	Pu	Plutonium                   SOLID    ACTINIDE                 244
+95	Am	Americium                   SOLID    ACTINIDE                 243
+96	Cm	Curium                      SOLID    ACTINIDE                 247
+97	Bk	Berkelium                   SOLID    ACTINIDE                 247
+98	Cf	Californium                 SOLID    ACTINIDE                 251
+99	Es	Einsteinium                 SOLID    ACTINIDE                 252
+100	Fm	Fermium                     SOLID    ACTINIDE                 257
+101	Md	Mendelevium                 SOLID    ACTINIDE                 258
+102	No	Nobelium                    SOLID    ACTINIDE                 259
+103	Lr	Lawrencium                  SOLID    ACTINIDE                 262
+104	Rf	Rutherfordium               SOLID    TRANSITION_METAL         261
+105	Db	Dubnium                     SOLID    TRANSITION_METAL         262
+106	Sg	Seaborgium                  SOLID    TRANSITION_METAL         269
+107	Bh	Bohrium                     SOLID    TRANSITION_METAL         264
+108	Hs	Hassium                     SOLID    TRANSITION_METAL         269
+109	Mt	Meitnerium                  SOLID    TRANSITION_METAL         278
+110	Ds	Darmstadtium                SOLID    TRANSITION_METAL         281
+111	Rg	Roentgenium                 SOLID    TRANSITION_METAL         282
+112	Cn	Copernicium                 SOLID    TRANSITION_METAL         285
+113	Nh	Nihonium                    SOLID    POST_TRANSITION_METAL    286
+114	Fl	Flevrovium                  SOLID    POST_TRANSITION_METAL    289
+115	Mc	Moscovium                   SOLID    POST_TRANSITION_METAL    289
+116	Lv	Livermorium                 SOLID    POST_TRANSITION_METAL    293
+117	Ts	Tennessine                  SOLID    HALOGEN                  294
+118	Og	Oganesson                   GAS      NOBLE_GAS                294
+119	Dp	Dummy	                    UNKNOWN  UNKNOWN                  0
+120	Lp	LumpedFissionProduct	    UNKNOWN  UNKNOWN                  0

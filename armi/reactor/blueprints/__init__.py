@@ -454,7 +454,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
         )
 
         # Inform user which nuclides are truncating the burn chain.
-        if undefBurnChainActiveNuclides:
+        if undefBurnChainActiveNuclides and nuclideBases.burnChainImposed:
             runLog.info(
                 tabulate.tabulate(
                     [

@@ -104,10 +104,19 @@ class ThermalScattering:
         if isinstance(nuclideBases, nb.INuclide):
             # handle common single entry for convenience
             nuclideBases = [nuclideBases]
-        self.nbs = nuclideBases
+        self.nbs = frozenset(set(nuclideBases))
         self.compoundName = compoundName
         self.endf8Label = endf8Label or self._genENDFB8Label()
         self.aceLabel = aceLabel or self._genACELabel()
+
+    def __repr__(self):
+        return f"<ThermalScatteringLaw - Compound: {self.compoundName}, Nuclides: {self.nbs}"
+
+    def __hash__(self):
+        return hash((self.compoundName, self.nbs))
+
+    def __eq__(self, other):
+        return hash(self) == hash(other)
 
     def getSubjectNuclideBases(self):
         """
@@ -117,11 +126,13 @@ class ThermalScattering:
         isotopes of the element as well as the element it self should trigger it.
         This helps handle cases where, for example, C or C12 is present.
         """
-        subjectNbs = []
+        subjectNbs = set()
         for nbi in self.nbs:
+            subjectNbs.add(nbi)
             if isinstance(nbi, nb.NaturalNuclideBase):
-                subjectNbs.extend(nbi.element.nuclides)
-            subjectNbs.append(nbi)
+                for nuc in nbi.element.nuclides:
+                    subjectNbs.add(nuc)
+        subjectNbs = sorted(subjectNbs)
         return subjectNbs
 
     def _genENDFB8Label(self):

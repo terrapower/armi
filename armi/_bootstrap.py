@@ -34,9 +34,6 @@ if (
     )
 
 
-from armi import context
-
-
 def _addCustomTabulateTables():
     """Create a custom ARMI tables within tabulate."""
     tabulate._table_formats["armi"] = tabulate.TableFormat(
@@ -56,8 +53,6 @@ def _addCustomTabulateTables():
 # runLog makes tables, so make sure this is setup before we initialize the runLog
 _addCustomTabulateTables()
 
-
-from armi import runLog
 
 from armi.nucDirectory import nuclideBases
 

@@ -76,6 +76,7 @@ fission. This is used for intrinsic source term calculations.
 """
 import math
 
+from armi import runLog
 from armi.utils import iterables
 
 LN2 = math.log(2)
@@ -136,7 +137,12 @@ class Transmutable:
         self.productParticle = dataDict.get(
             "productParticle", PRODUCT_PARTICLES.get(self.type)
         )
-        self.branch = dataDict.get("branch", 1.0)
+        self.branch = dataDict.get("branch", None)
+        if self.branch is None:
+            self.branch = 1.0
+            runLog.info(
+                f"The branching ratio for {self} was not defined and is assumed to be 1.0."
+            )
 
     def getPreferredProduct(self, libraryNucNames):
         """
@@ -172,7 +178,7 @@ class Transmutation(Transmutable):
     The supported transmutation types include:
 
     * :math:`n,2n`
-    * fission
+    * :math:`n,fission`
     * :math:`n,\gamma` (``nGamma``)
     * :math:`n,\alpha` (``nalph``)
     * :math:`n,p` (proton) (``np``)
@@ -212,7 +218,21 @@ class DecayMode(Transmutable):
 
     def __init__(self, parent, dataDict):
         Transmutable.__init__(self, parent, dataDict)
-        self.halfLifeInSeconds = dataDict["halfLifeInSeconds"]
+        self.halfLifeInSeconds = parent.halflife
+
+        # Check for user-defined value of half-life within the burn-chain data. If this is
+        # updated then prefer the user change and then note this to the user. Otherwise,
+        # maintain the default loaded from the nuclide bases.
+        userHalfLife = dataDict.get("halfLifeInSeconds", None)
+        if userHalfLife:
+            if userHalfLife != parent.halflife:
+                runLog.info(
+                    f"Half-life provided for {self} will be updated from "
+                    f"{parent.halflife:<15.11e} to {userHalfLife:<15.11e} seconds based on "
+                    f"user provided burn-chain data."
+                )
+
+                self.halfLifeInSeconds = dataDict["halfLifeInSeconds"]
         self.decay = (
             LN2 / self.halfLifeInSeconds * self.branch
         )  # decay constant, reduced by branch to make it accurate

@@ -14,11 +14,12 @@
 
 """Tests for nuclideBases"""
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+import os
 import random
 import unittest
 
-from armi.nucDirectory import elements
-from armi.nucDirectory import nuclideBases
+from armi.context import RES
+from armi.nucDirectory import nuclideBases, elements
 from armi.nucDirectory.tests import NUCDIRECTORY_TESTS_DEFAULT_DIR_PATH
 
 
@@ -26,25 +27,32 @@ class TestNuclide(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.nucDirectoryTestsPath = NUCDIRECTORY_TESTS_DEFAULT_DIR_PATH
+        nuclideBases.destroyGlobalNuclides()
+        elements.factory()
+        nuclideBases.factory()
+        # Ensure that the burn chain data is initialized before running these tests.
+        nuclideBases.burnChainImposed = False
+        with open(os.path.join(RES, "burn-chain.yaml"), "r") as burnChainStream:
+            nuclideBases.imposeBurnChain(burnChainStream)
 
     def test_nucBases_fromNameBadNameRaisesException(self):
         with self.assertRaises(KeyError):
-            nuclideBases.byName["WTF"]
+            nuclideBases.byName["Cat"]
 
     def test_nucBase_AllAbundancesAddToOne(self):
         for zz in range(1, 102):
-            clides = nuclideBases.isotopes(zz)
+            nuclides = nuclideBases.isotopes(zz)
             # We only process nuclides with measured masses. Some are purely theoretical, mostly over z=100
             self.assertTrue(
-                len(clides) > 0, msg="z={} unexpectedly has no nuclides".format(zz)
+                len(nuclides) > 0, msg="z={} unexpectedly has no nuclides".format(zz)
             )
-            total = sum([nn.abundance for nn in clides if nn.a > 0])
+            total = sum([nn.abundance for nn in nuclides if nn.a > 0])
             self.assertAlmostEqual(
-                any([nn.abundance > 0 for nn in clides]),
+                any([nn.abundance > 0 for nn in nuclides]),
                 total,
                 delta=1e-4,
                 msg="Abundance ({}) not 1.0 for nuclideBases:\n  {}"
-                "".format(total, "\n  ".join(repr(nn) for nn in clides)),
+                "".format(total, "\n  ".join(repr(nn) for nn in nuclides)),
             )
 
     def test_nucBases_AllLabelsAreUnique(self):
@@ -66,7 +74,6 @@ class TestNuclide(unittest.TestCase):
 
     def test_nucBases_Mc2Elementals(self):
         notElemental = [
-            "LFP00",  # this is an on-the-fly fission product
             "LFP35",
             "LFP38",
             "LFP39",
@@ -85,36 +92,6 @@ class TestNuclide(unittest.TestCase):
             else:
                 self.assertIsInstance(lump, nuclideBases.NaturalNuclideBase)
 
-    def test_element_getNatrualIsotpicsOnlyRetrievesAbundaceGt0(self):
-        # so this test LOOKS like it is in the wrong file,
-        # but being here eliminates a dependency for test_elements,
-        # which will make test_elements run faster (particularly when run by itself)
-        for ee in elements.byZ.values():
-            if not ee.isNaturallyOccurring():
-                continue
-            for nuc in ee.getNaturalIsotopics():
-                self.assertGreater(nuc.abundance, 0.0)
-                self.assertGreater(nuc.a, 0)
-
-    def test_element_getNaturalIsotopicsAddsToOne(self):
-        # so this test LOOKS like it is in the wrong file,
-        # but being here eliminates a dependency for test_elements,
-        # which will make test_elements run faster (particularly when run by itself)
-        count = 0
-        for ee in elements.byZ.values():
-            if not ee.isNaturallyOccurring():
-                continue
-            if any(ee.getNaturalIsotopics()):
-                count += 1
-                self.assertAlmostEqual(
-                    1.0,
-                    sum([ee.abundance for ee in ee.getNaturalIsotopics()]),
-                    delta=1e-4,
-                )
-        self.assertGreater(
-            count, 10, "Not enough natural isotopes, something went wrong"
-        )
-
     def test_LumpNuclideBase_getNatrualIsotopicsDoesNotFail(self):
         for nuc in nuclideBases.where(
             lambda nn: isinstance(nn, nuclideBases.LumpNuclideBase) and nn.z == 0
@@ -126,9 +103,7 @@ class TestNuclide(unittest.TestCase):
             lambda nn: isinstance(nn, nuclideBases.NaturalNuclideBase)
         ):
             numNaturals = len(list(nuc.getNaturalIsotopics()))
-            self.assertGreaterEqual(
-                len(nuc.element.nuclides) - 1, numNaturals
-            )  # , nuc)
+            self.assertGreaterEqual(len(nuc.element.nuclides) - 1, numNaturals)
 
     def test_nucBases_singleFailsWithMultipleMatches(self):
         with self.assertRaises(Exception):
@@ -319,6 +294,7 @@ class test_getAAAZZZSId(unittest.TestCase):
             nb = nuclideBases.byName[nucName]
             if refAaazzzs:
                 self.assertEqual(refAaazzzs, nb.getAAAZZZSId())
+
 
 if __name__ == "__main__":
     #     import sys;sys.argv = ['', 'TestNuclide.test_nucBases_factoryIsFast']

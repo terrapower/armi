@@ -31,21 +31,18 @@ class Lithium_TestCase(_Material_Test, unittest.TestCase):
         self.mat = Lithium()
 
         self.Lithium_LI_wt_frac = Lithium()
-        self.Lithium_LI_wt_frac.applyInputParams(LI_wt_frac=0.5)
+        self.Lithium_LI_wt_frac.applyInputParams(LI6_wt_frac=0.5)
 
         self.Lithium_LI6_wt_frac = Lithium()
         self.Lithium_LI6_wt_frac.applyInputParams(LI6_wt_frac=0.6)
 
         self.Lithium_both = Lithium()
-        self.Lithium_both.applyInputParams(LI_wt_frac=0.7, LI6_wt_frac=0.8)
+        self.Lithium_both.applyInputParams(LI6_wt_frac=0.8)
 
     def test_Lithium_material_modifications(self):
         self.assertEqual(self.mat.getMassFrac("LI6"), self.defaultMassFrac)
-
         self.assertEqual(self.Lithium_LI_wt_frac.getMassFrac("LI6"), 0.5)
-
         self.assertEqual(self.Lithium_LI6_wt_frac.getMassFrac("LI6"), 0.6)
-
         self.assertEqual(self.Lithium_both.getMassFrac("LI6"), 0.8)
 
     def test_density(self):

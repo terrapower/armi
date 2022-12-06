@@ -13,7 +13,93 @@
 # limitations under the License.
 
 """
-Deals with elements of the periodic table.
+This module provides fundamental element information to be used throughout the framework
+and applications.
+
+The element class structure is outlined :ref:`here: <elements-class-diagram>`.
+
+.. elements-class-diagram:
+
+.. pyreverse:: armi.nucDirectory.elements
+    :align: center
+    :width: 90%
+
+Examples
+--------
+>>> elements.byZ[92]
+<Element   U (Z=92), Uranium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>
+
+>>> elements.bySymbol["U"]
+<Element   U (Z=92), Uranium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>
+
+>>> elements.byName["Uranium"]
+<Element   U (Z=92), Uranium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>
+
+Retrieve gaseous elements at Standard Temperature and Pressure (STP)
+
+>>> elements.getElementsByChemicalPhase(elements.ChemicalPhase.GAS)
+[<Element   H (Z=1), Hydrogen, ChemicalGroup.NONMETAL, ChemicalPhase.GAS>,
+ <Element  HE (Z=2), Helium, ChemicalGroup.NOBLE_GAS, ChemicalPhase.GAS>,
+ <Element   N (Z=7), Nitrogen, ChemicalGroup.NONMETAL, ChemicalPhase.GAS>,
+ <Element   O (Z=8), Oxygen, ChemicalGroup.NONMETAL, ChemicalPhase.GAS>,
+ <Element   F (Z=9), Fluorine, ChemicalGroup.HALOGEN, ChemicalPhase.GAS>,
+ <Element  NE (Z=10), Neon, ChemicalGroup.NOBLE_GAS, ChemicalPhase.GAS>,
+ <Element  CL (Z=17), Chlorine, ChemicalGroup.HALOGEN, ChemicalPhase.GAS>,
+ <Element  AR (Z=18), Argon, ChemicalGroup.NOBLE_GAS, ChemicalPhase.GAS>,
+ <Element  KR (Z=36), Krypton, ChemicalGroup.NOBLE_GAS, ChemicalPhase.GAS>,
+ <Element  XE (Z=54), Xenon, ChemicalGroup.NOBLE_GAS, ChemicalPhase.GAS>,
+ <Element  RN (Z=86), Radon, ChemicalGroup.NOBLE_GAS, ChemicalPhase.GAS>,
+ <Element  OG (Z=118), Oganesson, ChemicalGroup.NOBLE_GAS, ChemicalPhase.GAS>]
+ 
+ Retrieve gaseous elements that are classified as actinides
+ 
+ >>> elements.getElementsByChemicalGroup(elements.ChemicalGroup.ACTINIDE)
+[<Element  AC (Z=89), Actinium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>,
+ <Element  TH (Z=90), Thorium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>,
+ <Element  PA (Z=91), Protactinium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>,
+ <Element   U (Z=92), Uranium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>,
+ <Element  NP (Z=93), Neptunium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>,
+ <Element  PU (Z=94), Plutonium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>,
+ <Element  AM (Z=95), Americium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>,
+ <Element  CM (Z=96), Curium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>,
+ <Element  BK (Z=97), Berkelium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>,
+ <Element  CF (Z=98), Californium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>,
+ <Element  ES (Z=99), Einsteinium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>,
+ <Element  FM (Z=100), Fermium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>,
+ <Element  MD (Z=101), Mendelevium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>,
+ <Element  NO (Z=102), Nobelium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>,
+ <Element  LR (Z=103), Lawrencium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>]
+
+.. exec::
+    from tabulate import tabulate
+    from armi.nucDirectory import elements
+
+    attributes = ['name',
+                  'symbol',
+                  'z',
+                  'phase',
+                  'group',
+                  'nuclides',
+                  'is naturally occurring?',
+                  'is heavy metal?']
+
+    def getAttributes(element):
+        return [
+            '``{}``'.format(element.name),
+            '``{}``'.format(element.symbol),
+            '``{}``'.format(element.z),
+            '``{}``'.format(element.phase),
+            '``{}``'.format(element.group),
+            '``{}``'.format(element.nuclides),
+            '``{}``'.format(element.isNaturallyOccurring()),
+            '``{}``'.format(element.isHeavyMetal()),
+        ]
+
+    sortedElements = sorted(elements.byZ.values())
+    return create_table(tabulate(tabular_data=[getAttributes(elem) for elem in sortedElements],
+                                 headers=attributes,
+                                 tablefmt='rst'),
+                        caption='List of elements')
 """
 
 import os
@@ -43,7 +129,7 @@ class ChemicalGroup(Enum):
     POST_TRANSITION_METAL = 5
     METALLOID = 6
     HALOGEN = 7
-    NOBEL_GAS = 8
+    NOBLE_GAS = 8
     LANTHANIDE = 9
     ACTINIDE = 10
     UNKNOWN = 11
@@ -100,9 +186,7 @@ class Element:
 
     def append(self, nuclide):
         """Assigns and sorts the nuclide to the element and ensures no duplicates."""
-        from armi.nucDirectory.nuclideBases import NuclideBase
-
-        if nuclide in self.nuclides or not isinstance(nuclide, NuclideBase):
+        if nuclide in self.nuclides:
             return
         self.nuclides.append(nuclide)
         self.nuclides = sorted(self.nuclides)
@@ -117,7 +201,7 @@ class Element:
 
     def isHeavyMetal(self):
         """
-        Return True if the atomic number of greater than 89 (i.e., Z > 89).
+        Return True if the atomic number is greater than the ``HEAVY_METAL_CUTOFF_Z``.
 
         Notes
         -----
@@ -125,11 +209,15 @@ class Element:
         cut-off, but rather is designated for nuclear fuel burn-up evaluations, where
         the initial heavy metal mass within a component should be tracked. It is typical
         to include any element/nuclide above Actinium.
+
+        See Also
+        --------
+        armi.utils.units.HEAVY_METAL_CUTOFF_Z
         """
         return self.z > HEAVY_METAL_CUTOFF_Z
 
 
-def getElementsByChemicalPhase(phase) -> List[Element]:
+def getElementsByChemicalPhase(phase: ChemicalPhase) -> List[Element]:
     """
     Returns all elements that are of the given chemical phase.
 
@@ -152,7 +240,7 @@ def getElementsByChemicalPhase(phase) -> List[Element]:
     return elems
 
 
-def getElementsByChemicalGroup(group) -> List[Element]:
+def getElementsByChemicalGroup(group: ChemicalGroup) -> List[Element]:
     """
     Returns all elements that are of the given chemical group.
 
@@ -169,8 +257,8 @@ def getElementsByChemicalGroup(group) -> List[Element]:
     elems = []
     if not isinstance(group, ChemicalGroup):
         raise ValueError(f"{group} is not an instance of {ChemicalGroup}")
-    for element in byName:
-        if element.group == group.values():
+    for element in byName.values():
+        if element.group == group:
             elems.append(element)
     return elems
 
@@ -260,18 +348,33 @@ def getElementZ(symbol: str = None, name: str = None) -> int:
     return element.z
 
 
-def clearNuclideBases():
+def factory():
     """
-    Delete all nuclide base links.
+    Generate the :class:`Elements <Element>` instances.
 
-    Necessary when initializing nuclide base information multiple times (often in testing).
+    .. warning::
+        This method gets called by default when loading the module, so don't call it
+        unless you know what you're doing.
+        Any existing :class:`Nuclides <armi.nucDirectory.nuclide.Nuclide>`
+        may lose their reference to the underlying :class:`Element`.
     """
-    for _, element in byName.items():
-        element.nuclides = []
-
-
-# method to renormalize the nuclide / element relationship
-nuclideRenormalization = None
+    destroyGlobalElements()
+    with open(os.path.join(context.RES, "elements.dat"), "r") as f:
+        for line in f:
+            # Skip header lines
+            if line.startswith("#") or line.startswith("Z"):
+                continue
+            # read z, symbol, name, phase, and chemical group
+            lineData = line.split()
+            z = int(lineData[0])
+            sym = lineData[1].upper()
+            name = lineData[2]
+            phase = lineData[3]
+            group = lineData[4]
+            standardWeight = lineData[5]
+            e = Element(z, sym, name, phase, group)
+            if standardWeight != "Derived":
+                e.standardWeight = float(standardWeight)
 
 
 def addGlobalElement(element: Element):
@@ -286,65 +389,13 @@ def addGlobalElement(element: Element):
 
 def destroyGlobalElements():
     """Delete all global elements."""
+    global byZ
+    global byName
+    global bySymbol
+
     byZ.clear()
     byName.clear()
     bySymbol.clear()
-
-
-def deriveNaturalWeights():
-    """
-    Loop over all defined elements and compute the natural isotope-weighted atomic weight.
-
-    Must be run after all nuclideBases are initialized.
-
-    Notes
-    -----
-    Abundances may not add exactly to 1.0 because they're read from measurements
-    that have uncertainties.
-    """
-    for element in byName.values():
-        numer = 0.0
-        denom = 0.0
-        for nb in element.getNaturalIsotopics():
-            numer += nb.weight * nb.abundance
-            denom += nb.abundance  # should add roughly to 1.0
-
-        if numer:
-            element.standardWeight = numer / denom
-
-
-def factory():
-    """
-    Generate the :class:`Elements <Element>` instances.
-
-    .. warning::
-        This method gets called by default when loading the module, so don't call it
-        unless you know what you're doing.
-        Any existing :class:`Nuclides <armi.nucDirectory.nuclide.Nuclide>`
-        may lose their reference to the underlying :class:`Element`.
-    """
-    if len(byZ) == 0:
-        destroyGlobalElements()
-        with open(os.path.join(context.RES, "elements.dat"), "r") as f:
-            for line in f:
-                # Skip header lines
-                if line.startswith("#") or line.startswith("Z"):
-                    continue
-                # read z, symbol, name, phase, and chemical group
-                lineData = line.split()
-                z = int(lineData[0])
-                sym = lineData[1].upper()
-                name = lineData[2]
-                phase = lineData[3]
-                group = lineData[4]
-
-                Element(z, sym, name, phase, group)
-        if nuclideRenormalization is not None:
-            nuclideRenormalization()  # pylint: disable=not-callable
-            # this is used as a method to ensure the nuclides are
-            # renormalized to actual elements if the elements.factory()
-            # was called for some reason.
-        deriveNaturalWeights()  # calling here is only useful after a destroy(); nucBases must exist
 
 
 factory()

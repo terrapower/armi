@@ -310,8 +310,16 @@ class Material(composites.Leaf):
         updatedMassDensities = molesPerCC * atomicMasses
         updatedDensity = updatedMassDensities.sum()
         massFracs = updatedMassDensities / updatedDensity
-        self.p.massFrac = {nuc: weight for nuc, weight in zip(nucsNames, massFracs)}
 
+        # There can be small floating point issues with division, so this
+        # rounds the mass fractions to the nearest 10 decimals.
+        massFracs = massFracs.round(decimals=10)
+        if massFracs.sum() != 1.0:
+            raise RuntimeError(
+                f"The mass fractions {massFracs} in {self} do not sum to 1.0."
+            )
+
+        self.p.massFrac = {nuc: weight for nuc, weight in zip(nucsNames, massFracs)}
         if self.p.refDens != 0.0:  # don't update density if not assigned
             self.p.refDens = updatedDensity
 
