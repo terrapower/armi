@@ -31,6 +31,7 @@ def defineSettings():
             description="The fission product model to use in this ARMI run",
             options=[
                 "noFissionProducts",
+                "explicitFissionProducts",
                 "infinitelyDilute",
                 "2ndOrder",
                 "2ndOrderWithTransmutation",

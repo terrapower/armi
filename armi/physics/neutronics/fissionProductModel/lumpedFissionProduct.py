@@ -21,6 +21,8 @@ These are generally managed by the
 
 
 """
+import os
+
 from armi.nucDirectory import nuclideBases
 from armi import runLog
 
@@ -291,11 +293,11 @@ class LumpedFissionProductCollection(dict):
 
     def getAllFissionProductNuclideBases(self):
         """Gets names of all fission products in this collection"""
-        clideBases = set()
+        nucs = set()
         for _lfpName, lfp in self.items():
             for fp in lfp.keys():
-                clideBases.add(fp)
-        return sorted(clideBases)
+                nucs.add(fp)
+        return sorted(nucs)
 
     def getNumberDensities(self, objectWithParentDensities=None, densFunc=None):
         """
@@ -476,7 +478,12 @@ def lumpedFissionProductFactory(cs):
         return _buildMo99LumpedFissionProduct()
 
     lfpPath = cs[CONF_LFP_COMPOSITION_FILE_PATH]
-    if not lfpPath:
+    if not lfpPath or not os.path.exists(lfpPath):
+        raise ValueError(
+            f"The fission product reference file does "
+            f"not exist or is not a valid path. Path provided: {lfpPath}"
+        )
+
         return None
     runLog.extra(f"Loading global lumped fission products (LFPs) from {lfpPath}")
     with open(lfpPath) as lfpStream:
@@ -504,6 +511,14 @@ def _buildMo99LumpedFissionProduct():
         mo99FP[mo99] = 2.0
         mo99LFPs[lfp.name] = mo99FP
     return mo99LFPs
+
+
+def getFissionProductNuclideNames(cs):
+    nuclideNames = []
+    if cs["fpModel"] == "explicitFissionProducts":
+        lfps = lumpedFissionProductFactory(cs)
+        nuclideNames = lfps.getAllFissionProductNames()
+    return nuclideNames
 
 
 def expandFissionProducts(massFrac, lumpedFissionProducts):

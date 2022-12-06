@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 r"""
 Blueprints describe the geometric and composition details of the objects in the reactor
 (e.g. fuel assemblies, control rods, etc.).
@@ -91,6 +90,9 @@ from armi.reactor import geometry
 from armi.reactor import systemLayoutInput
 from armi.scripts import migration
 from armi.utils import textProcessors
+from armi.physics.neutronics.fissionProductModel import lumpedFissionProduct
+from armi.nucDirectory import elements
+
 
 # NOTE: using non-ARMI-standard imports because these are all a part of this package,
 # and using the module imports would make the attribute definitions extremely long
@@ -364,6 +366,22 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
         if self.nuclideFlags is None:
             self.nuclideFlags = isotopicOptions.genDefaultNucFlags()
 
+        fpNuclideNames = lumpedFissionProduct.getFissionProductNuclideNames(cs)
+        if fpNuclideNames:
+            runLog.info(
+                f"Adding explicit fission products to the nuclide flags "
+                f"for auto-initialization."
+            )
+            for nuc in fpNuclideNames:
+                nb = nuclideBases.byName[nuc]
+                if nuc in self.nuclideFlags or elements.byZ[nb.z] in self.nuclideFlags:
+                    continue
+                nuclideFlag = isotopicOptions.NuclideFlag(
+                    nuc, burn=True, xs=True, expandTo=[]
+                )
+                self.nuclideFlags[nuc] = nuclideFlag
+                print(f"adding {nuclideFlag}")
+
         self.elementsToExpand = []
         for nucFlag in self.nuclideFlags:
             # this returns any nuclides that are flagged specifically for expansion by input
@@ -371,6 +389,8 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
                 actives, inerts, undefBurnChainActiveNuclides
             )
             self.elementsToExpand.extend(expandedElements)
+
+        print(self.elementsToExpand)
 
         inerts -= actives
         self.customIsotopics = self.customIsotopics or isotopicOptions.CustomIsotopics()

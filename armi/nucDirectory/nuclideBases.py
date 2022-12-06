@@ -864,7 +864,9 @@ class LumpNuclideBase(INuclide):
         return self.mcc3id
 
 
-def initReachableActiveNuclidesThroughBurnChain(numberDensityDict, activeNuclides):
+def initReachableActiveNuclidesThroughBurnChain(
+    numberDensityDict, activeNuclides, allNuclides
+):
     """
     March through the depletion chain and find all nuclides that can be reached by depleting nuclides passed in.
 
@@ -887,27 +889,38 @@ def initReachableActiveNuclidesThroughBurnChain(numberDensityDict, activeNuclide
         # Skip the nuclide if it is not `active` in the burn-chain
         if not nuclide in activeNuclides:
             continue
+
+        # If the burn chain then the logic below can be shortcut.
+        if not burnChainImposed:
+            continue
+
         nuclideObj = byName[nuclide]
 
-        # If the burn chain has been imposed by reading from a file then
-        # check that the nuclides are defined and their initial number
-        # densities are set to zero.
-        if burnChainImposed:
-            for interaction in nuclideObj.trans + nuclideObj.decays:
-                try:
-                    # Interaction nuclides can only be added to the number density
-                    # dictionary if they are a part of the user-defined active nuclides
-                    productNuclide = interaction.getPreferredProduct(activeNuclides)
-                    if productNuclide not in numberDensityDict:
-                        numberDensityDict[productNuclide] = 0.0
-                except KeyError:
-                    # Keep track of the first production nuclide
-                    missingActiveNuclides.add(interaction.productNuclides)
+        for interaction in nuclideObj.trans + nuclideObj.decays:
+            try:
+                # Interaction nuclides can only be added to the number density
+                # dictionary if they are a part of the user-defined active nuclides
+                productNuclide = interaction.getPreferredProduct(activeNuclides)
+                if productNuclide not in numberDensityDict:
+                    numberDensityDict[productNuclide] = 0.0
+            except KeyError:
+                # Keep track of the first production nuclide
+                missingActiveNuclides.add(interaction.productNuclides)
 
         difference = set(numberDensityDict).difference(memo)
 
     if missingActiveNuclides:
         _failOnMissingActiveNuclides(missingActiveNuclides)
+
+    # If the burn-chain is imposed then go ahead and return, but if not
+    # then we are going to add missing nuclides to the number density dictionary
+    # so that these nuclides are reflected in the model.
+    if burnChainImposed:
+        return
+
+    for nuc in allNuclides:
+        if nuc not in numberDensityDict:
+            numberDensityDict[nuc] = 0.0
 
 
 def _failOnMissingActiveNuclides(missingActiveNuclides):
