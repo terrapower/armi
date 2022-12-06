@@ -64,9 +64,7 @@ class FissionProductModel(interfaces.Interface):
 
     def __init__(self, r, cs):
         interfaces.Interface.__init__(self, r, cs)
-        self._globalLFPs = None
         self._globalLFPs = lumpedFissionProduct.lumpedFissionProductFactory(self.cs)
-        self.fissionProductNames = []
 
     @property
     def _useGlobalLFPs(self):
@@ -180,7 +178,7 @@ class FissionProductModel(interfaces.Interface):
     def interactDistributeState(self):
         self.setAllBlockLFPs()
 
-    def _getAllFissionProductNames(self):
+    def getAllFissionProductNames(self):
         """
          Find all fission product names in the problem
 
@@ -190,7 +188,6 @@ class FissionProductModel(interfaces.Interface):
         sets fissionProductNames, a list of nuclide names of all the
         fission products
         """
-        runLog.debug("  Gathering all possible FPs")
         fissionProductNames = []
         lfpCollections = []
         # get all possible lfp collections (global + block-level)
@@ -205,17 +202,7 @@ class FissionProductModel(interfaces.Interface):
                 if fpName not in fissionProductNames:
                     fissionProductNames.append(fpName)
 
-        self.fissionProductNames = fissionProductNames
-
-    def _cacheLFPDensities(self, blockList):
-        # pass 2: Cache all LFP densities for all blocks (so they aren't read
-        # for each FP)
-        runLog.debug("  Caching LFP densities of all blocks")
-        lfpDensities = {}
-        for b in blockList:
-            for lfpName in self._globalLFPs:
-                lfpDensities[lfpName, b.getName()] = b.getNumberDensity(lfpName)
-        return lfpDensities
+        return fissionProductNames
 
     def updateFissionGasRemovalFractions(self):
         """
