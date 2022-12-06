@@ -48,7 +48,7 @@ class Test_RZT_Reactor(unittest.TestCase):
 class Test_RZT_Reactor_modern(unittest.TestCase):
     def test_loadRZT_reactor(self):
         """
-        The Godiva benchmark model is a Sphere of UZr with a diameter of 30cm
+        The Godiva benchmark model is a HEU sphere with a radius of 8.74 cm
 
         This unit tests loading and verifies the reactor is loaded correctly by
         comparing volumes against expected volumes for full core (including
@@ -59,11 +59,12 @@ class Test_RZT_Reactor_modern(unittest.TestCase):
         )
         r = reactors.loadFromCs(cs)
 
-        diameter_cm = 30
-        height_cm = diameter_cm
+        godiva_radius = 8.7407
+        reactor_radius = 9
+        reactor_height = 17.5
 
-        ref_reactor_volume = math.pi / 4.0 * diameter_cm ** 2 * height_cm / 8
-        ref_fuel_volume = 4.0 / 3.0 * math.pi * (diameter_cm / 2) ** 3 / 8
+        ref_reactor_volume = math.pi * reactor_radius ** 2 * reactor_height / 8
+        ref_fuel_volume = 4.0 / 3.0 * math.pi * (godiva_radius) ** 3 / 8
 
         reactor_volumes = []
         fuel_volumes = []
