@@ -3,8 +3,8 @@
 # ---------------------------------------------------------------------
 # This file contains a set of 4614 nuclides and their associated metadata
 # of atomic number (Z), number of neutrons (N), mass number (A), stability
-# state number (S), Mass (amu), natural abundance (%), half-life (sec), and
-# the spontaneous fission neutron yield (nu-bar).
+# state number (S), Mass (amu), natural abundance (fractional), half-life (sec), 
+# and the spontaneous fission neutron yield (nu-bar).
 # 
 # The stability state is either a zero (0), representing the ground state, or
 # higher (e.g., 1, 2, 3, etc.) representing excited/metastable states. In
@@ -26,28 +26,31 @@
 #      ME is the mass excess in units of MeV, and
 #       C is the atomic mass to energy equivalency 
 #         constant in units of MeV/amu -- 931.49410242 MeV/amu.
-# 
-#  Note: If the nuclide mass has a "*" denoted at the end of the value then this
-#        is still taken from the FRDM database, but the value is calculated rather
-#        than experimentally measured.
 #
 # The nuclide natural abundance data is acquired from (1) by parsing the "abundance"
 # data file. The original source of this data is from the Brookhaven Nuclear Wallet Cards (2).       
 #
 # The half-life data for each nuclide is provided as a direct output from reading and 
-# processing the RIPL-3 "levels" data. A half-life provided as `inf` represents a stable 
-# nuclide and internally this is processed as "infinity" using the Python numpy package. 
-# Note that for some nuclides where the half-life is not known (i.e., TI48M), 
-# the half-life is set to a fixed value of 11.111 seconds. This value is set arbitrarily, 
-# but aligns with an assumption made in TerraPower's internal depletion solver. In almost 
-# all instances this assumption will not be consequential for practical reactor physics 
+# processing the IAEA Chart of the Nuclides data (3). The IAEA Chart of Nuclides offers
+# an API that is accessible through Python and this is included as a reference in the developer
+# documentation for repeatability.
+#
+# A half-life provided as `inf` represents a stable nuclide and internally this is processed as 
+# "infinity" using the Python numpy package. Note that for some nuclides where the half-life 
+# is not known (i.e., TI48M), the half-life is set to a fixed value of 11.111 seconds. This value 
+# is set arbitrarily, but aligns with an assumption made in TerraPower's internal depletion solver. 
+# In almost all instances this assumption will not be consequential for practical reactor physics 
 # applications, but this should be verified on a case-by-case basis. 
 #
-# Sources: (1) Reference Input Parameter Library (RIPL-3) - 
-#              https://www-nds.iaea.org/RIPL-3/
+# The spontaneous fission neutron yield data is available directly from ENDF data (4), specifically
+# taken from the ENDF/B-VII.1 data library, MF=1, MT=452, Radioactive Decay Library.
+#
+# Sources: (1) Reference Input Parameter Library (RIPL-3) - https://www-nds.iaea.org/RIPL-3/, Accessed December 2022.
 #          (2) J.K. Tuli, Nuclear Wallet Cards (NNDC, Brookhaven National Laboratory), 2005.
+#          (3) https://www-nds.iaea.org/relnsd/vcharthtml/VChartHTML.html, Accessed December 2022.
+#          (4) https://www.nndc.bnl.gov/sigma/basicsearch.jsp, Accessed December 2022.
 # ---------------------------------------------------------------------
-Z	N	A	S	El	  Mass, amu	        Abundance, %      Half-life (sec)   Spontaneous Fission Yield (nu-bar)
+Z	N	A	S	El	  Mass, amu	        Abundance, frac.  Half-life (sec)   Spontaneous Fission Yield (nu-bar)
 1   0   1   0   H     1.00782506296e+00 9.99850010000e-01 inf               0.000000
 1   1   2   0   H     2.01410207533e+00 1.50000000000e-04 inf               0.000000
 1   2   3   0   H     3.01604948433e+00 0.00000000000e+00 3.88781328007e+08 0.000000
@@ -4191,7 +4194,7 @@ Z	N	A	S	El	  Mass, amu	        Abundance, %      Half-life (sec)   Spontaneous F
 94  144 238 0   PU    2.38049560163e+02 0.00000000000e+00 2.76754240797e+09 2.210000
 94  145 239 0   PU    2.39052163508e+02 0.00000000000e+00 7.60837485247e+11 2.320000
 94  146 240 0   PU    2.40053813545e+02 0.00000000000e+00 2.07044991319e+11 2.151000
-94  147 241 0   PU    2.41056851675e+02 0.00000000000e+00 4.52179192290e+08 2.250000
+94  147 241 0   PU    2.41056851675e+02 0.00000000000e+00 4.52179192290e+08 0.000000
 94  147 241 1   PU    2.41059213472e+02 0.00000000000e+00 2.05000000000e-05 0.000000
 94  148 242 0   PU    2.42058742186e+02 0.00000000000e+00 1.18338472405e+13 2.141000
 94  149 243 0   PU    2.43062003613e+02 0.00000000000e+00 1.78416000000e+04 0.000000
@@ -4225,7 +4228,7 @@ Z	N	A	S	El	  Mass, amu	        Abundance, %      Half-life (sec)   Spontaneous F
 95  145 240 0   AM    2.40055300404e+02 0.00000000000e+00 1.82880000000e+05 0.000000
 95  145 240 1   AM    2.40058521036e+02 0.00000000000e+00 9.40000000000e-04 0.000000
 95  146 241 0   AM    2.41056829131e+02 0.00000000000e+00 1.36515261766e+10 2.500000
-95  147 242 0   AM    2.42059549491e+02 0.00000000000e+00 5.76720000000e+04 0.000000
+95  147 242 0   AM    2.42059549491e+02 0.00000000000e+00 5.76720000000e+04 2.560000
 95  147 242 1   AM    2.42059601666e+02 0.00000000000e+00 4.45000000000e+09 2.560000
 95  147 242 2   AM    2.42061911288e+02 0.00000000000e+00 1.40000000000e-02 0.000000
 95  148 243 0   AM    2.43061380958e+02 0.00000000000e+00 2.32385202877e+11 2.610000
