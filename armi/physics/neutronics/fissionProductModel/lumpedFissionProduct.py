@@ -513,11 +513,16 @@ def _buildMo99LumpedFissionProduct():
     return mo99LFPs
 
 
-def getFissionProductNuclideNames(cs):
+def getAllNuclideBasesByLibrary(cs):
     nuclideNames = []
     if cs["fpModel"] == "explicitFissionProducts":
-        lfps = lumpedFissionProductFactory(cs)
-        nuclideNames = lfps.getAllFissionProductNames()
+        if cs["fpModelLibrary"] == "MC2-3":
+            nuclideNames = nuclideBases.byMcc3Id.values()
+        else:
+            raise ValueError(
+                f"An option to handle the `fpModelLibrary` "
+                f"set to {cs['fpModelLibrary']}."
+            )
     return nuclideNames
 
 

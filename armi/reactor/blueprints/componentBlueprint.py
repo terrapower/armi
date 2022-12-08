@@ -304,8 +304,15 @@ def insertDepletableNuclideKeys(c, blueprint):
         nuclideBases.initReachableActiveNuclidesThroughBurnChain(
             c.p.numberDensities,
             blueprint.activeNuclides,
-            blueprint.allNuclidesInProblem,
         )
+        # If the burn-chain is not imposed then ensure that all nuclides
+        # defined in the problem. The `allNuclidesInProblem` are derived
+        # from the blueprint `nuclideFlags`, which are established in
+        # ``blueprints._autoUpdateNuclideFlags``.
+        if not nuclideBases.burnChainImposed:
+            for nuc in blueprint.allNuclidesInProblem:
+                if nuc not in c.p.numberDensities:
+                    c.p.numberDensities[nuc] = 0.0
 
 
 class ComponentKeyedList(yamlize.KeyedList):

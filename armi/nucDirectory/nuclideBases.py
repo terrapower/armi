@@ -645,7 +645,7 @@ class NuclideBase(INuclide, IMcnpNuclide):
                     ni.a for ni in naturalIsotopes
                 )  # no guarantee they were sorted
             else:
-                raise KeyError("Nuclide {0} is unknown in the MAT number lookup")
+                raise KeyError(f"Nuclide {self} is unknown in the MAT number lookup")
 
         isotopeNum = (a - smallestStableA) * 3 + self.state + 25
         mat = z * 100 + isotopeNum
@@ -864,9 +864,7 @@ class LumpNuclideBase(INuclide):
         return self.mcc3id
 
 
-def initReachableActiveNuclidesThroughBurnChain(
-    numberDensityDict, activeNuclides, allNuclides
-):
+def initReachableActiveNuclidesThroughBurnChain(numberDensityDict, activeNuclides):
     """
     March through the depletion chain and find all nuclides that can be reached by depleting nuclides passed in.
 
@@ -890,10 +888,6 @@ def initReachableActiveNuclidesThroughBurnChain(
         if not nuclide in activeNuclides:
             continue
 
-        # If the burn chain then the logic below can be shortcut.
-        if not burnChainImposed:
-            continue
-
         nuclideObj = byName[nuclide]
 
         for interaction in nuclideObj.trans + nuclideObj.decays:
@@ -909,18 +903,8 @@ def initReachableActiveNuclidesThroughBurnChain(
 
         difference = set(numberDensityDict).difference(memo)
 
-    if missingActiveNuclides:
+    if burnChainImposed and missingActiveNuclides:
         _failOnMissingActiveNuclides(missingActiveNuclides)
-
-    # If the burn-chain is imposed then go ahead and return, but if not
-    # then we are going to add missing nuclides to the number density dictionary
-    # so that these nuclides are reflected in the model.
-    if burnChainImposed:
-        return
-
-    for nuc in allNuclides:
-        if nuc not in numberDensityDict:
-            numberDensityDict[nuc] = 0.0
 
 
 def _failOnMissingActiveNuclides(missingActiveNuclides):
