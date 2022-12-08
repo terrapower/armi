@@ -185,15 +185,6 @@ def getAssemblyParameterDefinitions():
             setter=_enforceNotesRestrictions,
         )
 
-        pb.defParam(
-            "fuelVent",
-            units=None,
-            description="Boolean option to turn on/off vented fuel pins in TWR design",
-            saveToDB=False,
-            default=False,
-            categories=[parameters.Category.assignInBlueprints],
-        )
-
     with pDefs.createBuilder(
         location="N/A", default=0.0, categories=["control rods"]
     ) as pb:
@@ -292,13 +283,6 @@ def getAssemblyParameterDefinitions():
             units=units.DEGC,
             description="Maximum delta-Ts for outlet temperatures of fuel assemblies",
             categories=["broadcast"],
-        )
-
-        pb.defParam(
-            "THorificeSetting",
-            units="Pa/$(kg/s)^2$",
-            description="The ratio of pressure drop over mass flow rate squared, through an orifice",
-            default=None,
         )
 
         pb.defParam(
