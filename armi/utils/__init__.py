@@ -320,7 +320,7 @@ def getBurnSteps(cs):
 
 
 def hasBurnup(cs):
-    """Is depletion being modeling?
+    """Is depletion being modeled?
 
     Parameters
     ----------
