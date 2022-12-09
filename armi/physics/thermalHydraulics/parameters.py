@@ -43,31 +43,9 @@ def _getBlockParams():
             categories=[parameters.Category.assignInBlueprints],
         )
 
-        pb.defParam(
-            "inletLossCoeff",
-            units="",
-            description="Pressure loss coefficients from form losses to be applied at the block "
-            "inlet",
-            default=None,
-            categories=[parameters.Category.assignInBlueprints],
-        )
-
     with pDefs.createBuilder(
         default=0.0, location=ParamLocation.AVERAGE, categories=["thermal hydraulics"]
     ) as pb:
-        pb.defParam(
-            "THaveInletVel",
-            units="m/s",
-            saveToDB=True,
-            description="Average fluid velocity taken at the inlet of the block.",
-        )
-
-        pb.defParam(
-            "THaveOutletVel",
-            units="m/s",
-            saveToDB=True,
-            description="Average fluid velocity taken at the outlet of the block.",
-        )
 
         pb.defParam(
             "THhotChannelCladMidwallT",
@@ -81,34 +59,6 @@ def _getBlockParams():
             units="W/m^2/K",
             saveToDB=True,
             description="Film heat transfer coefficient for hot channel in the assembly.",
-        )
-
-        pb.defParam(
-            "THinletDynamicPressure",
-            units="Pa",
-            saveToDB=False,
-            description="Dynamic pressure drop component taken at the inlet of the block.",
-        )
-
-        pb.defParam(
-            "THmixingLength",
-            units=units.UNITLESS,
-            saveToDB=False,
-            description="Approximation of length for subchannel mixing in subchan model.",
-        )
-
-        pb.defParam(
-            "THpeakingStdDev",
-            units=units.UNITLESS,
-            saveToDB=False,
-            description="Standard deviation of pin peaking for modeling pin-level power in subchan.",
-        )
-
-        pb.defParam(
-            "THradialPeakingFactor",
-            units=units.UNITLESS,
-            saveToDB=False,
-            description="Approximation of radial peaking for modeling pin-level power in subchan.",
         )
 
     with pDefs.createBuilder(
@@ -140,13 +90,6 @@ def _getBlockParams():
             "THhotChannelFuelCenterlineT",
             units=units.DEGC,
             description="Nominal hot channel fuel centerline temperature",
-            categories=["thInterface"],
-        )
-
-        pb.defParam(
-            "THdeltaPBundle",
-            units="Pa",
-            description="Pressure difference in a bundle, including contributions from friction, acceleration, and gravity",
             categories=["thInterface"],
         )
 
@@ -193,27 +136,6 @@ def _getBlockParams():
         )
 
         pb.defParam(
-            "TH0SigmaFuelCenterlineT",
-            units=units.DEGC,
-            description="0-sigma fuel centerline temperature",
-            categories=["thInterface"],
-        )
-
-        pb.defParam(
-            "TH2SigmaFuelCenterlineT",
-            units=units.DEGC,
-            description="2-sigma fuel centerline temperature",
-            categories=["thInterface"],
-        )
-
-        pb.defParam(
-            "TH3SigmaFuelCenterlineT",
-            units=units.DEGC,
-            description="3-sigma fuel centerline temperature",
-            categories=["thInterface"],
-        )
-
-        pb.defParam(
             "THdilationPressure",
             units="Pa",
             description="Dilation pressure",
@@ -225,27 +147,6 @@ def _getBlockParams():
     with pDefs.createBuilder(
         default=0.0, categories=["thInterface"], saveToDB=True
     ) as pb:
-
-        pb.defParam(
-            "TH0SigmaOutletT",
-            units=units.DEGC,
-            description="0-sigma clad outer diameter temperature of the hot pin",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "TH2SigmaOutletT",
-            units=units.DEGC,
-            description="2-sigma clad outer diameter temperature of the hot pin",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "TH3SigmaOutletT",
-            units=units.DEGC,
-            description="3-sigma clad outer diameter temperature of the hot pin",
-            location=ParamLocation.AVERAGE,
-        )
 
         pb.defParam(
             "THTfuelCL",
@@ -272,13 +173,6 @@ def _getBlockParams():
             "THaverageCladIDT",
             units=units.DEGC,
             description="Block average of the inner clad temperature",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "THaveCoolantVel",
-            units="m/s",
-            description="Average of the inlet and outlet coolant velocities",
             location=ParamLocation.AVERAGE,
         )
 
@@ -333,27 +227,6 @@ def _getBlockParams():
         )
 
         pb.defParam(
-            "THdeltaPFormLoss",
-            units="Pa",
-            description="Pressure differences due to user input loss coefficeints",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "THdeltaPGrav",
-            units="Pa",
-            description="hydrostatic pressure difference in a block",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "THdeltaPNoGrav",
-            units="Pa",
-            description="Sum of the loss pressure drops due to friction, acceleration, and inlet + outlet",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
             "THdeltaPTotal",
             units="Pa",
             description="Total pressure difference in a block",
@@ -389,20 +262,6 @@ def _getBlockParams():
         )
 
         pb.defParam(
-            "THmaxCoolantVel",
-            units="m/s",
-            description="The maximum outlet coolant velocity",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "THorificeSetting",
-            units="Pa/(kg/s)**2",
-            description="A list of orifice settings corresponding to the assembly list",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
             "THorificeZone",
             units=units.UNITLESS,
             description="A list of orificing zones corresponding to the assembly list",
@@ -428,44 +287,10 @@ def _getBlockParams():
         )
 
         pb.defParam(
-            "THbundleAveTemp",
-            units=units.DEGC,
-            description="Bundle averaged temperature",
-            location=ParamLocation.TOP,
-        )
-
-        pb.defParam(
-            "THcoldChanTemp",
-            units=units.DEGC,
-            description="Best estimate cold channel temperature",
-            location=ParamLocation.TOP,
-        )
-
-        pb.defParam(
-            "THcoldChannel",
-            units=units.UNITLESS,
-            description="Cold channel (lowest coolant dT) identifier",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "THcoldPin",
-            units=units.UNITLESS,
-            description="Cold pin (lowest PCT) pin identifier",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
             "THhotChannel",
             units=units.UNITLESS,
             description="Hot channel (highest coolant dT) identifier",
             location=ParamLocation.AVERAGE,
         )
 
-        pb.defParam(
-            "THhotPin",
-            units=units.UNITLESS,
-            description="Hot pin (highest PCT) pin identifier",
-            location=ParamLocation.AVERAGE,
-        )
     return pDefs

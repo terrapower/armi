@@ -12,10 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Parameter definitions for Blocks."""
-
+"""Parameter definitions for Blocks"""
 import numpy
-
 import six
 
 from armi import runLog
@@ -305,10 +303,6 @@ def getBlockParameterDefinitions():
         )
 
         pb.defParam(
-            "dpaRx", units="dpa/s", description="?", location=ParamLocation.AVERAGE
-        )
-
-        pb.defParam(
             "heliumInB4C",
             units="He/s/cm$^3$",
             description="?",
@@ -339,8 +333,6 @@ def getBlockParameterDefinitions():
 
         pb.defParam("basePBu", units="?", description="?", saveToDB=False)
 
-        pb.defParam("hydDiam", units="?", description="?", saveToDB=False)
-
         pb.defParam(
             "nHMAtBOL",
             units="atoms/bn-cm.",
@@ -353,12 +345,6 @@ def getBlockParameterDefinitions():
             units="cm",
             description="Center axial dimension of this block",
             categories=[parameters.Category.retainOnReplacement],
-        )
-
-        pb.defParam(
-            "pinPeakingStdDev",
-            units="None",
-            description="Standard deviation of the pin peaking factors for the block",
         )
 
     with pDefs.createBuilder() as pb:
@@ -441,14 +427,6 @@ def getBlockParameterDefinitions():
             saveToDB=True,
         )
 
-        pb.defParam(
-            "regName",
-            units="?",
-            description="Set by Assembly in writeNIP30 once the region has been placed",
-            default=False,
-            saveToDB=False,
-        )
-
     with pDefs.createBuilder(
         default=0.0,
         location=ParamLocation.AVERAGE,
@@ -468,21 +446,8 @@ def getBlockParameterDefinitions():
         )
 
         pb.defParam(
-            "distortWorth",
-            units="pcm/cm^3",
-            description="Distortion reactivity distribution",
-            default=None,
-        )
-
-        pb.defParam(
             "fuelWorth",
             units="dk/kk'-kg",
-            description="Reactivity worth of fuel material per unit mass",
-        )
-
-        pb.defParam(
-            "fuelWorthDollarsPerKg",
-            units="$/kg",
             description="Reactivity worth of fuel material per unit mass",
         )
 
@@ -517,33 +482,9 @@ def getBlockParameterDefinitions():
         )
 
         pb.defParam(
-            "coolantWorthDollarsPerKg",
-            units="$/kg",
-            description="Reactivity worth of coolant material per unit mass",
-        )
-
-        pb.defParam(
             "cladWorth",
             units="dk/kk'-kg",
             description="Reactivity worth of clad material per unit mass",
-        )
-
-        pb.defParam(
-            "cladWorthDollarsPerKg",
-            units="$/kg",
-            description="Reactivity worth of clad material per unit mass",
-        )
-
-        pb.defParam(
-            "structureWorth",
-            units="dk/kk'-kg",
-            description="Reactivity worth of structure material per unit mass",
-        )
-
-        pb.defParam(
-            "structureWorthDollarsPerKg",
-            units="$/kg",
-            description="Reactivity worth of structure material (non-clad and non-wire wrap material) per unit mass",
         )
 
         pb.defParam(
@@ -654,36 +595,6 @@ def getBlockParameterDefinitions():
             units="cents/K",
             description="Voided Doppler power reactivity coefficient",
         )
-
-        pb.defParam(
-            "virdentGr",
-            units="pcm/%/cm^3",
-            description="Radial surface leakage reactivity",
-        )
-
-        pb.defParam(
-            "virdentGz",
-            units="pcm/%/cm^3",
-            description="Axial surface leakage reactivity",
-        )
-
-        pb.defParam(
-            "virdentLr",
-            units="pcm/%/cm^3",
-            description="Radial volume leakage reactivity",
-        )
-
-        pb.defParam(
-            "virdentLz",
-            units="pcm/%/cm^3",
-            description="Axial volume leakage reactivity",
-        )
-
-        pb.defParam(
-            "assemPeakStd", units="pcm/%/cm^3", description="Spectral reactivity"
-        )
-
-        pb.defParam("virdentS", units="pcm/%/cm^3", description="Spectral reactivity")
 
     with pDefs.createBuilder(
         default=0.0,
@@ -872,13 +783,6 @@ def getBlockParameterDefinitions():
     with pDefs.createBuilder(default=0.0) as pb:
 
         pb.defParam(
-            "VirDenTerr",
-            units="%",
-            description="VirDenT error",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
             "assemNum",
             units="None",
             description="Index that refers, nominally, to the assemNum parameter of "
@@ -1007,96 +911,6 @@ def getBlockParameterDefinitions():
         )
 
         pb.defParam(
-            "dilationElasticPM",
-            units="mm",
-            description="Combined elastic membrane and bending components of duct dilation",
-            location=ParamLocation.AVERAGE,
-            categories=["distortion"],
-        )
-
-        pb.defParam(
-            "dilationElasticT",
-            units="mm",
-            description="Thermal expansion component of duct dilation",
-            location=ParamLocation.AVERAGE,
-            categories=["distortion"],
-        )
-
-        pb.defParam(
-            "dilationElasticTRefueling",
-            units="mm",
-            description="Thermal expansion component of duct dilation at refueling temperature (180C)",
-            location=ParamLocation.AVERAGE,
-            categories=["distortion"],
-        )
-
-        pb.defParam(
-            "dilationCreepIrrad",
-            units="mm",
-            description="Irradiation creep component of duct dilation",
-            location=ParamLocation.AVERAGE,
-            categories=["cumulative", "distortion"],
-        )
-
-        pb.defParam(
-            "dilationSwellingSF",
-            units="mm",
-            description="Stress-free void swelling component of duct dilation",
-            location=ParamLocation.AVERAGE,
-            categories=["cumulative", "distortion"],
-        )
-
-        pb.defParam(
-            "blockAxialSwellingSF",
-            units="mm",
-            description="Axial stress-free void swelling of block",
-            location=ParamLocation.AVERAGE,
-            categories=["cumulative", "distortion"],
-        )
-
-        pb.defParam(
-            "dilationSwellingSE",
-            units="mm",
-            description="Stress-enhanced swelling component of duct dilation",
-            location=ParamLocation.AVERAGE,
-            categories=["cumulative", "distortion"],
-        )
-
-        pb.defParam(
-            "dilationCreepTh1",
-            units="mm",
-            description="Primary thermal creep component of duct dilation",
-            location=ParamLocation.AVERAGE,
-            categories=["cumulative", "distortion"],
-        )
-
-        pb.defParam(
-            "dilationCreepTh2",
-            units="mm",
-            description="Secondary thermal creep component of duct dilation",
-            location=ParamLocation.AVERAGE,
-            categories=["cumulative", "distortion"],
-        )
-
-        pb.defParam(
-            "dilationTotal",
-            units="mm",
-            description="Total duct dilation",
-            location=ParamLocation.AVERAGE,
-            categories=["distortion"],
-        )
-
-        pb.defParam(
-            "dilationRefueling",
-            units="mm",
-            description="Amount of duct dilation at refueling temperature (180C)",
-            location=ParamLocation.AVERAGE,
-            categories=["distortion"],
-        )
-
-        pb.defParam("displacementMAG", units="?", description="?")
-
-        pb.defParam(
             "heightBOL",
             units="cm",
             description="As-fabricated height of this block (as input). Used in fuel performance. Should be constant.",
@@ -1170,13 +984,6 @@ def getBlockParameterDefinitions():
         )
 
         pb.defParam(
-            "powerShapePercent",
-            units="%",
-            description="Percent change in power shape when core temperature rises.",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
             "puFrac",
             units="None",
             description="Current Pu number density relative to HM at BOL",
@@ -1189,13 +996,5 @@ def getBlockParameterDefinitions():
             description="Smear density of fuel pins in this block. Defined as the ratio of fuel area to total space inside cladding.",
             location=ParamLocation.AVERAGE,
         )
-
-    with pDefs.createBuilder(location=ParamLocation.AVERAGE) as pb:
-
-        pb.defParam("distortionReactivity", units="?", description="?")
-
-        pb.defParam("harmonic", units="?", description="?")
-
-        pb.defParam("harmonicAdj", units="?", description="?")
 
     return pDefs
