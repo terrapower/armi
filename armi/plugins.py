@@ -640,6 +640,9 @@ class UserPlugin(ArmiPlugin):
         """
         if issubclass(self.__class__, UserPlugin):
             assert (
+                len(self.__class__.defineParameters()) == 0
+            ), "UserPlugins cannot define parameters, consider using an ArmiPlugin."
+            assert (
                 len(self.__class__.defineParameterRenames()) == 0
             ), "UserPlugins cannot define parameter renames, consider using an ArmiPlugin."
             assert (
@@ -653,6 +656,23 @@ class UserPlugin(ArmiPlugin):
 
     @staticmethod
     @HOOKSPEC
+    def defineParameters():
+        """
+        Prevents defining additional parameters.
+
+        .. warning:: This is not overridable.
+
+        Notes
+        -----
+        It is a designed limitation of user plugins that they not define parameters.
+        Parameters are defined when the App() is read in, which is LONG before the settings
+        file has been read. So the parameters are defined before we discover the user plugin.
+        If this is a feature you need, just use an ArmiPlugin.
+        """
+        return {}
+
+    @staticmethod
+    @HOOKSPEC
     def defineParameterRenames():
         """
         Prevents parameter renames.
@@ -662,7 +682,9 @@ class UserPlugin(ArmiPlugin):
         Notes
         -----
         It is a designed limitation of user plugins that they not generate parameter renames,
-        so that they are able to be added to the plugin stack during run time.
+        Parameters are defined when the App() is read in, which is LONG before the settings
+        file has been read. So the parameters are defined before we discover the user plugin.
+        If this is a feature you need, just use a normal Plugin.
         """
         return {}
 

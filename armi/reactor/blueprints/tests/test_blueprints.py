@@ -181,7 +181,6 @@ assemblies:
         xs types: [A]
     fuel b:
         <<: *assembly_a
-        fuelVent: True
         hotChannelFactors: Reactor
     fuel c: &assembly_c
         specifier: OC
@@ -215,10 +214,7 @@ grids:
             self.assertEqual(paramDef.default, fa.p[paramDef.name])
             self.assertIn(paramDef.name, fb.p)
 
-        self.assertFalse(fa.p.fuelVent)
         self.assertEqual(fa.p.hotChannelFactors, "Default")
-
-        self.assertTrue(fb.p.fuelVent)
         self.assertEqual(fb.p.hotChannelFactors, "Reactor")
 
     def test_nuclidesMc2v2(self):

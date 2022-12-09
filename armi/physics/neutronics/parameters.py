@@ -219,102 +219,6 @@ def _getNeutronicsBlockParams():
         )
 
         pb.defParam(
-            "axialMgFluxReconCoeff",
-            units="",
-            description="""
-                The coefficients in the axial multigroup flux profile polynomial for this block.  The flux profile is
-                usually A*z^4 + B*z^3 + C*z^2 + D*z + E, and so this variable will be the 5 x ng list, so
-                axialMgFluxReconCoeff[g][i] is the ith coefficient for flux group g.  Also, this flux profile is
-                normalized (for each group) so that its average is always 1.0 in each block.  One must multiply the
-                coefficients of each group by the block-average group flux to obtain the axial group flux profile.
-            """,
-            location=ParamLocation.AVERAGE,
-            saveToDB=True,
-            default=None,
-        )
-
-        pb.defParam(
-            "axialMgFluxProfileAdj",
-            units="",
-            description="",
-            location=ParamLocation.AVERAGE,
-            saveToDB=False,
-            default=None,
-        )
-
-        pb.defParam(
-            "axialMgFluxProfileNeutron",
-            units="",
-            description="",
-            location=ParamLocation.AVERAGE,
-            saveToDB=False,
-            default=None,
-        )
-
-        pb.defParam(
-            "axialMgFluxProfileNeutronAdj",
-            units="",
-            description="",
-            location=ParamLocation.AVERAGE,
-            saveToDB=False,
-            default=None,
-        )
-
-        pb.defParam(
-            "axialMgFluxProfileGamma",
-            units="",
-            description="",
-            location=ParamLocation.AVERAGE,
-            saveToDB=False,
-            default=None,
-        )
-
-        pb.defParam(
-            "radialMgFluxProfile",
-            units="",
-            description="",
-            location=ParamLocation.AVERAGE,
-            saveToDB=True,
-            default=None,
-        )
-
-        pb.defParam(
-            "radialMgFluxProfileAdj",
-            units="",
-            description="",
-            location=ParamLocation.AVERAGE,
-            saveToDB=True,
-            default=None,
-        )
-
-        pb.defParam(
-            "radialMgFluxProfileNeutron",
-            units="",
-            description="",
-            location=ParamLocation.AVERAGE,
-            saveToDB=True,
-            default=None,
-        )
-
-        pb.defParam(
-            "radialMgFluxProfileNeutronAdj",
-            units="",
-            description="",
-            location=ParamLocation.AVERAGE,
-            saveToDB=True,
-            default=None,
-        )
-
-        pb.defParam(
-            "radialMgFluxProfileGamma",
-            units="",
-            description="",
-            location=ParamLocation.AVERAGE,
-            saveToDB=True,
-            default=None,
-        )
-
-        pb.defParam(
             "betad",
             units="",
             description="Delayed neutron beta",
@@ -417,6 +321,64 @@ def _getNeutronicsBlockParams():
             description='List of reaction rates in specified by setting "reactionsToDB"',
             location=ParamLocation.VOLUME_INTEGRATED,
             default=None,
+        )
+
+    with pDefs.createBuilder(
+        saveToDB=True,
+        default=None,
+        location=ParamLocation.EDGES,
+        categories=[parameters.Category.detailedAxialExpansion, "depletion"],
+    ) as pb:
+
+        pb.defParam(
+            "pointsEdgeFastFluxFr",
+            units=None,
+            description="Fraction of flux above 100keV at edges of the block",
+        )
+
+        pb.defParam(
+            "pointsEdgeDpa",
+            units="dpa",
+            description="displacements per atom at edges of the block",
+            categories=["cumulative", "detailedAxialExpansion", "depletion"],
+        )
+
+        pb.defParam(
+            "pointsEdgeDpaRate",
+            units="dpa/s",
+            description="Current time derivative of the displacement per atoms at edges of the block",
+        )
+
+    with pDefs.createBuilder(
+        saveToDB=True,
+        default=None,
+        location=ParamLocation.CORNERS,
+        categories=[parameters.Category.detailedAxialExpansion, "depletion"],
+    ) as pb:
+        pb.defParam(
+            "cornerFastFlux",
+            units="n/cm^2/s",
+            description="Neutron flux above 100keV at hexagon block corners",
+        )
+
+        pb.defParam(
+            "pointsCornerFastFluxFr",
+            units=None,
+            description="Fraction of flux above 100keV at corners of the block",
+        )
+
+        pb.defParam(
+            "pointsCornerDpa",
+            units="dpa",
+            description="displacements per atom at corners of the block",
+            location=ParamLocation.CORNERS,
+            categories=["cumulative", "detailedAxialExpansion", "depletion"],
+        )
+
+        pb.defParam(
+            "pointsCornerDpaRate",
+            units="dpa/s",
+            description="Current time derivative of the displacement per atoms at corners of the block",
         )
 
     with pDefs.createBuilder(
@@ -534,10 +496,6 @@ def _getNeutronicsBlockParams():
 
         pb.defParam("arealPd", units="MW/m^2", description="Power divided by XY area")
 
-        pb.defParam(
-            "arealPdGamma", units="MW/m^2", description="Areal gamma power density"
-        )
-
         pb.defParam("fertileBonus", units=None, description="The fertile bonus")
 
         pb.defParam(
@@ -548,18 +506,6 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "fisDensHom", units="1/cm^3/s", description="Homogenized fissile density"
-        )
-
-        pb.defParam(
-            "fluxDeltaFromRef",
-            units="None",
-            description="Relative difference between the current flux and the directly-computed perturbed flux.",
-        )
-
-        pb.defParam(
-            "fluxDirect",
-            units="n/cm^2/s",
-            description="Flux is computed with a direct method",
         )
 
         pb.defParam(
@@ -577,22 +523,6 @@ def _getNeutronicsBlockParams():
             units="n/cm^2/s",
             description="Peak neutron flux calculated within the mesh",
         )
-
-        pb.defParam(
-            "fluxPertDeltaFromDirect",
-            units="None",
-            description="Relative difference between the perturbed flux and the directly-computed perturbed flux",
-        )
-
-        pb.defParam(
-            "fluxPertDeltaFromDirectfluxRefWeighted", units="None", description=""
-        )
-
-        pb.defParam(
-            "fluxPerturbed", units="1/cm^2/s", description="Flux is computed by MEPT"
-        )
-
-        pb.defParam("fluxRef", units="1/cm^2/s", description="Reference flux")
 
         pb.defParam(
             "kInf",
@@ -685,20 +615,6 @@ def _getNeutronicsBlockParams():
 
     with pDefs.createBuilder(default=0.0) as pb:
         pb.defParam(
-            "detailedDpaNewCycle",
-            units="dpa",
-            description="The total DPA accumulated in all burn steps of one cycle",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "detailedDpaPeakNewCycle",
-            units="dpa",
-            description="The total peak DPA accumulated in all burn steps of one cycle",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
             "detailedDpaThisCycle",
             units="dpa",
             location=ParamLocation.AVERAGE,
@@ -740,73 +656,6 @@ def _getNeutronicsBlockParams():
             description="Fraction of flux above 100keV",
             location=ParamLocation.AVERAGE,
             categories=["detailedAxialExpansion"],
-        )
-
-        pb.defParam(
-            "cornerFastFlux",
-            units="n/cm^2/s",
-            description="Neutron flux above 100keV at hexagon block corners",
-            location=ParamLocation.CORNERS,
-            categories=["detailedAxialExpansion", "depletion"],
-            saveToDB=True,
-            default=None,
-        )
-
-        pb.defParam(
-            "pointsCornerFastFluxFr",
-            units=None,
-            description="Fraction of flux above 100keV at corners of the block",
-            location=ParamLocation.CORNERS,
-            categories=["detailedAxialExpansion", "depletion"],
-            saveToDB=True,
-            default=None,
-        )
-        pb.defParam(
-            "pointsEdgeFastFluxFr",
-            units=None,
-            description="Fraction of flux above 100keV at edges of the block",
-            location=ParamLocation.EDGES,
-            categories=["detailedAxialExpansion", "depletion"],
-            saveToDB=True,
-            default=None,
-        )
-
-        pb.defParam(
-            "pointsCornerDpa",
-            units="dpa",
-            description="displacements per atom at corners of the block",
-            location=ParamLocation.CORNERS,
-            categories=["cumulative", "detailedAxialExpansion", "depletion"],
-            saveToDB=True,
-            default=None,
-        )
-        pb.defParam(
-            "pointsEdgeDpa",
-            units="dpa",
-            description="displacements per atom at edges of the block",
-            location=ParamLocation.EDGES,
-            categories=["cumulative", "detailedAxialExpansion", "depletion"],
-            saveToDB=True,
-            default=None,
-        )
-
-        pb.defParam(
-            "pointsCornerDpaRate",
-            units="dpa/s",
-            description="Current time derivative of the displacement per atoms at corners of the block",
-            location=ParamLocation.CORNERS,
-            categories=["detailedAxialExpansion", "depletion"],
-            saveToDB=True,
-            default=None,
-        )
-        pb.defParam(
-            "pointsEdgeDpaRate",
-            units="dpa/s",
-            description="Current time derivative of the displacement per atoms at edges of the block",
-            categories=["detailedAxialExpansion", "depletion"],
-            location=ParamLocation.EDGES,
-            saveToDB=True,
-            default=None,
         )
 
         pb.defParam(
