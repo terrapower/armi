@@ -968,7 +968,7 @@ class HexReactorTests(ReactorTests):
         origBlockPitch = list(
             b.getPitch() for b in self.r.core.getBlocks(bType=Flags.GRID_PLATE)
         )
-        newInletTemp = 400.0  # deg C
+        newInletTemp = 500.0  # deg C
         self.r.core.updateGridPlatePitch(newInletTemp, updateInletTemp=True)
         self.checkGridPlatePitchAndTemp(
             origGridPlatePitch, origBlockPitch, newInletTemp
@@ -980,7 +980,7 @@ class HexReactorTests(ReactorTests):
         origBlockPitch = list(
             b.getPitch() for b in self.r.core.getBlocks(bType=Flags.GRID_PLATE)
         )
-        newInletTemp = 400.0  # deg C
+        newInletTemp = 500.0  # deg C
         self.r.core.updateInletTemp(newInletTemp, updatePitch=True)
         self.checkGridPlatePitchAndTemp(
             origGridPlatePitch, origBlockPitch, newInletTemp

@@ -2156,11 +2156,12 @@ class Core(composites.Composite):
         """
         self.checkGridPlateMaterialConsistency()
         # retrieve the first grid plate's material (all grid plates are the same material, so just get the first)
-        gridPlateMaterial = (
-            self.getFirstBlock(Flags.GRID_PLATE).getComponent(Flags.GRID_PLATE).material
+        gridPlateComponent = self.getFirstBlock(Flags.GRID_PLATE).getComponent(
+            Flags.GRID_PLATE
         )
+        gridPlateMaterial = gridPlateComponent.material
         currentGridPlatePitch = self.getAssemblyPitch()
-        currentGridPlateTemp = self.refAssem.p.THcoolantInletT
+        currentGridPlateTemp = gridPlateComponent.temperatureInC
         runLog.info(
             f"Using a {Flags.GRID_PLATE} material of {gridPlateMaterial} for grid plate expansion/contraction calculations "
             f"with an initial temperature of {currentGridPlateTemp} C and new temperature of {inletTemp} C."
