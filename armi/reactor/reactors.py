@@ -2186,8 +2186,8 @@ class Core(composites.Composite):
 
         Notes
         -----
-        1) all grid plate blocks are the same material
-        2) all grid plate blocks are isothermal and equal to inletTemp
+        1) assumes all grid plate blocks are the same material
+        2) assumes all grid plate blocks are isothermal and equal to inletTemp
 
         See Also
         --------
