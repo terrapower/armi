@@ -37,6 +37,7 @@ from armi.utils import (
     getCycleNodeFromCumulativeNode,
     getPreviousTimeNode,
     getCumulativeNodeNum,
+    hasBurnup,
 )
 
 
@@ -299,6 +300,9 @@ settings:
         self.assertEqual(
             getBurnSteps(self.standaloneSimpleCS), self.burnStepsSimpleSolution
         )
+
+    def test_hasBurnup(self):
+        self.assertTrue(hasBurnup(self.standaloneDetailedCS))
 
     def test_getMaxBurnSteps(self):
         self.assertEqual(
