@@ -68,21 +68,19 @@ class LumpedFissionProduct:
         """
         self.name = name
         self.yld = {}
-        self.gasRemainingFrac = 1.0
 
     def duplicate(self):
         """
         Make a copy of this w/o using deepcopy
         """
         new = self.__class__(self.name)
-        new.gasRemainingFrac = self.gasRemainingFrac
         for key, val in self.yld.items():
             new.yld[key] = val
         return new
 
     def __getitem__(self, fissionProduct, default=None):
-        r"""
-        Return the FP yield of a particular FP
+        """
+        Return the yield of a particular fission product.
 
         This allows the LFP to be accessed via indexing, like this: ``lfp[fp]``
 
@@ -91,16 +89,9 @@ class LumpedFissionProduct:
         yld : yield of the fission product. Defaults to None.
         """
         yld = self.yld.get(fissionProduct, default)
-        if yld and isGas(fissionProduct):
-            yld *= self.gasRemainingFrac
         return yld
 
     def __setitem__(self, key, val):
-        if self.gasRemainingFrac != 1.0 and isGas(key):
-            raise RuntimeError(
-                "Cannot set {0} yield on {1} when gas frac is {2}"
-                "".format(key, self, self.gasRemainingFrac)
-            )
         self.yld[key] = val
 
     def __contains__(self, item):
@@ -116,23 +107,11 @@ class LumpedFissionProduct:
         return self.yld.values()
 
     def items(self):
-        """
-        make sure gas fraction gets applied
-        """
         for nuc in self.keys():
             yield nuc, self[nuc]
 
-    def setGasRemovedFrac(self, removedFrac):
-        """
-        Set the fraction of total fission gas that is removed from this LFP.
-        """
-        self.gasRemainingFrac = 1.0 - removedFrac
-
-    def getGasRemovedFrac(self):
-        return 1.0 - self.gasRemainingFrac
-
     def getTotalYield(self):
-        r"""
+        """
         Get the fractional yield of all nuclides in this lumped fission product
 
         Accounts for any fission gas that may be removed.
@@ -157,22 +136,6 @@ class LumpedFissionProduct:
         for nuc in self.keys():
             massFracs[nuc] = self.getMassFrac(nuclideBase=nuc)
         return massFracs
-
-    def getNumberFracs(self):
-        """
-        Return a dictionary of number fractions indexed by nuclide.
-
-        Returns
-        -------
-        numberFracs : dict
-            number fractions (floats) of fission products indexed by nuclide.
-        """
-
-        numberFracs = {}
-        totalNumber = sum(self.yld.values())
-        for nuc, yld in self.yld.items():
-            numberFracs[nuc] = yld / totalNumber
-        return numberFracs
 
     def getMassFrac(
         self, nucName=None, nuclideBase=None, useCache=True, storeCache=True
@@ -221,41 +184,6 @@ class LumpedFissionProduct:
         massVector.update((nuc, mass * mFrac) for nuc, mFrac in massVector.items())
 
         return massVector
-
-    def getGasFraction(self):
-        r"""
-        get the fraction of gas that is from Xe and Kr gas
-
-        Returns
-        -------
-        gasFrac : float
-            Fraction of LFP that is gaseous
-        """
-        totalGas = 0
-
-        # sum up all of the nuclides that are XE or KR
-        for nuc, val in self.items():
-            if isGas(nuc):
-                totalGas += val
-
-        # normalize the total gas released by the total yield fraction and return
-        return totalGas / self.getTotalYield()
-
-    def getLanthanideFraction(self):
-        """Return the fraction of fission products that are lanthanides."""
-
-        totalLanthanides = 0
-
-        # sum up all of the nuclides that are XE or KR
-        for nuc, val in self.items():
-            for element in elements.getElementsByChemicalGroup(
-                elements.ChemicalGroup.LANTHANIDE
-            ):
-                if element.symbol in nuc.name:
-                    totalLanthanides += val
-
-        # normalize the total gas released by the total yield fraction and return
-        return totalLanthanides / self.getTotalYield()
 
     def printDensities(self, lfpDens):
         """Print densities of nuclides given a LFP density."""
@@ -344,27 +272,6 @@ class LumpedFissionProductCollection(dict):
                     massFrac[nuc] = lfpMFrac * mFrac
 
         return massFrac
-
-    def setGasRemovedFrac(self, removedFrac):
-        """
-        Set the fraction of total fission gas that is removed from all LFPs.
-        """
-        for lfp in self.values():
-            lfp.setGasRemovedFrac(removedFrac)
-
-    def getGasRemovedFrac(self):
-        """
-        Get the fraction of total fission gas that is removed from all LFPs.
-        """
-        lastVal = -1
-        for lfp in self.values():
-            myVal = lfp.getGasRemovedFrac()
-            if lastVal not in (-1, lastVal):
-                raise RuntimeError(
-                    "Fission gas release fracs in {0} are decoupled" "".format(self)
-                )
-            lastVal = myVal
-        return lastVal
 
 
 class FissionProductDefinitionFile:
@@ -471,6 +378,9 @@ class FissionProductDefinitionFile:
 
 def lumpedFissionProductFactory(cs):
     """Build lumped fission products."""
+    if cs["fpModel"] == "explicitFissionProducts":
+        return None
+
     if cs["fpModel"] == "MO99":
         runLog.warning(
             "Activating MO99-fission product model. All FPs are treated a MO99!"
@@ -484,12 +394,44 @@ def lumpedFissionProductFactory(cs):
             f"not exist or is not a valid path. Path provided: {lfpPath}"
         )
 
-        return None
     runLog.extra(f"Loading global lumped fission products (LFPs) from {lfpPath}")
     with open(lfpPath) as lfpStream:
         lfpFile = FissionProductDefinitionFile(lfpStream)
         lfps = lfpFile.createLFPsFromFile()
     return lfps
+
+
+def _buildExplictFissionProducts(cs, modeledNuclides):
+    """
+    Build a LFP collection that is a single fission product for each
+    additional nuclide not already initialized in the nuclide flags.
+    """
+    lfpCollections = LumpedFissionProductCollection()
+    allNuclideBases = getAllNuclideBasesByLibrary(cs)
+    modeledNuclideBases = [nuclideBases.byName[nuc] for nuc in modeledNuclides]
+    fissionProductNuclideBases = set(allNuclideBases).difference(
+        set(modeledNuclideBases)
+    )
+    for nb in fissionProductNuclideBases:
+        addedFissionProduct = LumpedFissionProduct(nb.name)
+        addedFissionProduct[nb] = 1.0
+        lfpCollections[nb.name] = addedFissionProduct
+    return lfpCollections
+
+
+def getAllNuclideBasesByLibrary(cs):
+    """Return a list of nuclide bases that are available for a given `fpModelLibrary`."""
+    nbs = []
+    if cs["fpModel"] == "explicitFissionProducts":
+        if cs["fpModelLibrary"] == "MC2-3":
+            nbs = nuclideBases.byMcc3Id.values()
+        else:
+            raise ValueError(
+                f"An option to handle the `fpModelLibrary` "
+                f"set to {cs['fpModelLibrary']} has not been "
+                f"implemented."
+            )
+    return nbs
 
 
 def _buildMo99LumpedFissionProduct():
@@ -504,26 +446,13 @@ def _buildMo99LumpedFissionProduct():
     for lfp in nuclideBases.where(
         lambda nb: isinstance(nb, nuclideBases.LumpNuclideBase)
     ):
-        # Not all lump nuclide bases defined are fission products, so ensure that only fission products are considered.
+        # Not all lump nuclides bases defined are fission products, so ensure that only fission products are considered.
         if not ("FP" in lfp.name or "REGN" in lfp.name):
             continue
         mo99FP = LumpedFissionProduct(lfp.name)
         mo99FP[mo99] = 2.0
         mo99LFPs[lfp.name] = mo99FP
     return mo99LFPs
-
-
-def getAllNuclideBasesByLibrary(cs):
-    nuclideNames = []
-    if cs["fpModel"] == "explicitFissionProducts":
-        if cs["fpModelLibrary"] == "MC2-3":
-            nuclideNames = nuclideBases.byMcc3Id.values()
-        else:
-            raise ValueError(
-                f"An option to handle the `fpModelLibrary` "
-                f"set to {cs['fpModelLibrary']}."
-            )
-    return nuclideNames
 
 
 def expandFissionProducts(massFrac, lumpedFissionProducts):

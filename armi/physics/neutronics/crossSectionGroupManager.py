@@ -249,7 +249,6 @@ class MedianBlockCollection(BlockCollection):
         lfpCollection = medianBlock.getLumpedFissionProductCollection()
         if lfpCollection:
             lfpCollection = lfpCollection.duplicate()
-            lfpCollection.setGasRemovedFrac(newBlock.p.gasReleaseFraction)
             newBlock.setLumpedFissionProducts(lfpCollection)
         else:
             runLog.warning("Representative block {0} has no LFPs".format(medianBlock))
@@ -326,35 +325,10 @@ class AverageBlockCollection(BlockCollection):
         ndens = weights.dot([b.getNuclideNumberDensities(nuclides) for b in blocks])
         return dict(zip(nuclides, ndens))
 
-    def _getAverageFissionGasRemoved(self):
-        """
-        Get weighted average fission gas release fraction.
-
-        Notes
-        -----
-        - Will be applied to LFP composition.
-        """
-        totalWeight = 0.0
-        fgRelease = 0.0
-        for b in self.getCandidateBlocks():
-            weight = self.getWeight(b)
-            totalWeight += weight
-            fgRelease += b.p.gasReleaseFraction * weight
-        return fgRelease / totalWeight
-
     def _getAverageFuelLFP(self):
         """Compute the average lumped fission products."""
-        # TODO: make do actual average of LFPs
         b = self.getCandidateBlocks()[0]
-        lfpCollection = b.getLumpedFissionProductCollection()
-        if lfpCollection:
-            lfpCollectionCopy = lfpCollection.duplicate()
-            fgRemoved = self._getAverageFissionGasRemoved()
-            lfpCollectionCopy.setGasRemovedFrac(fgRemoved)
-        else:
-            lfpCollectionCopy = lfpCollection
-
-        return lfpCollectionCopy
+        return b.getLumpedFissionProductCollection()
 
     def _getNucTempHelper(self):
         """All candidate blocks are used in the average."""
@@ -1012,15 +986,9 @@ class CrossSectionGroupManager(interfaces.Interface):
                 xsIDGroup = self._getXsIDGroup(xsID)
                 if xsIDGroup == self._REPR_GROUP:
                     reprBlock = self.representativeBlocks.get(xsID)
-                    lfps = reprBlock.getLumpedFissionProductCollection()
-                    if lfps:
-                        fissionGasRemoved = list(lfps.values())[0].getGasRemovedFrac()
-                    else:
-                        fissionGasRemoved = 0.0
                     runLog.extra(
-                        "XS ID {} contains {:4d} blocks, represented by: {:65s}"
-                        " Fission Gas Removal Fraction: {:.2f}".format(
-                            xsID, len(blocks), reprBlock, fissionGasRemoved
+                        "XS ID {} contains {:4d} blocks, represented by: {:65s}".format(
+                            xsID, len(blocks), reprBlock
                         )
                     )
                 elif xsIDGroup == self._NON_REPR_GROUP:

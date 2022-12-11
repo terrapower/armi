@@ -878,6 +878,9 @@ def initReachableActiveNuclidesThroughBurnChain(numberDensityDict, activeNuclide
     activeNuclides : OrderedSet
         Active nuclides defined on the reactor blueprints object. See: armi.reactor.blueprints.py
     """
+    if not burnChainImposed:
+        return
+
     missingActiveNuclides = set()
     memo = set()
     difference = set(numberDensityDict).difference(memo)

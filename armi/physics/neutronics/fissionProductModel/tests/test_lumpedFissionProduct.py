@@ -98,15 +98,6 @@ class TestLumpedFissionProduct(unittest.TestCase):
             io.StringIO(LFP_TEXT)
         )
 
-    def test_setGasRemovedFrac(self):
-        """Test of the set gas removal fraction"""
-        lfp = self.fpd.createSingleLFPFromFile("LFP38")
-        xe135 = nuclideBases.fromName("XE135")
-        gas1 = lfp[xe135]
-        lfp.setGasRemovedFrac(0.25)
-        gas2 = lfp[xe135]
-        self.assertAlmostEqual(gas1 * 0.75, gas2)
-
     def test_getYield(self):
         """Test of the yield of a fission product"""
         xe135 = nuclideBases.fromName("XE135")
@@ -116,36 +107,16 @@ class TestLumpedFissionProduct(unittest.TestCase):
         self.assertEqual(val3, 3)
         self.assertIsNone(lfp[5])
 
-    def test_getNumberFracs(self):
-        xe135 = nuclideBases.fromName("XE135")
-        lfp = self.fpd.createSingleLFPFromFile("LFP38")
-        numberFracs = lfp.getNumberFracs()
-        self.assertEqual(numberFracs.get(xe135), 1.0)
-
     def test_getExpandedMass(self):
         xe135 = nuclideBases.fromName("XE135")
         lfp = self.fpd.createSingleLFPFromFile("LFP38")
         massVector = lfp.getExpandedMass(mass=0.99)
         self.assertEqual(massVector.get(xe135), 0.99)
 
-    def test_getGasFraction(self):
-        """Test of the get gas removal fraction"""
-        lfp = self.fpd.createSingleLFPFromFile("LFP35")
-        frac = lfp.getGasFraction()
-        self.assertGreater(frac, 0.0)
-        self.assertLess(frac, 1.0)
-
     def test_printDensities(self):
         _ = nuclideBases.fromName("XE135")
         lfp = self.fpd.createSingleLFPFromFile("LFP38")
         lfp.printDensities(10.0)
-
-    def test_getLanthanideFraction(self):
-        """Test of the lanthanide fraction function"""
-        lfp = self.fpd.createSingleLFPFromFile("LFP35")
-        frac = lfp.getLanthanideFraction()
-        self.assertGreater(frac, 0.0)
-        self.assertLess(frac, 1.0)
 
 
 class TestLumpedFissionProductCollection(unittest.TestCase):
