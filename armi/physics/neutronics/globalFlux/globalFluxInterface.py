@@ -353,7 +353,7 @@ class GlobalFluxOptions(executers.ExecutionOptions):
         self.symmetry = reactor.core.symmetry
 
         cycleNodeStamp = f"{reactor.p.cycle:03d}{reactor.p.timeNode:03d}"
-        if self.savePhysicsFilesList is not None:
+        if self.savePhysicsFilesList:
             self.savePhysicsFiles = cycleNodeStamp in self.savePhysicsFilesList
         else:
             self.savePhysicsFiles = False
