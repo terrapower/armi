@@ -34,7 +34,6 @@ from armi.utils.units import C_TO_K
 from armi.materials import void
 from armi.nucDirectory import nuclideBases
 from armi import materials
-from armi.reactor.flags import Flags
 
 COMPONENT_LINK_REGEX = re.compile(r"^\s*(.+?)\s*\.\s*(.+?)\s*$")
 
@@ -792,8 +791,7 @@ class Component(composites.Composite, metaclass=ComponentType):
             If True, the val will be applied to the dimension of linked
             component which indirectly changes this component's dimensions.
         cold : book, optional
-            If True sets the component to the dimension that would cause
-            the hot dimension to be the specified value.
+            If True sets the component cold dimension to the specified value.
         """
         if not key:
             return
