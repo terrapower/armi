@@ -100,6 +100,12 @@ AR40:
   a: 40
   state: 0
   z: 18
+AS74:
+  ENDF/B-V.2: null
+  ENDF/B-VII.0: AS74_7
+  a: 75
+  state: 0
+  z: 33
 AS75:
   ENDF/B-V.2: AS75 5
   ENDF/B-VII.0: AS75_7
@@ -586,19 +592,19 @@ CU65:
   a: 65
   state: 0
   z: 29
-DUMP1:
-  ENDF/B-V.2: DUMMY1
-  ENDF/B-VII.0: DUMMY
-  a: 0
-  state: 0
-  weight: 10.0
-  z: 0
 DUMP2:
   ENDF/B-V.2: DUMMY2
   ENDF/B-VII.0: DUMMY
   a: 0
   state: 0
   weight: 240.0
+  z: 0
+DUMP1:
+  ENDF/B-V.2: DUMMY1
+  ENDF/B-VII.0: DUMMY
+  a: 0
+  state: 0
+  weight: 10.0
   z: 0
 DY156:
   ENDF/B-V.2: null
