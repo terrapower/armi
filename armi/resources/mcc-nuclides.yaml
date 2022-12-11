@@ -100,12 +100,6 @@ AR40:
   a: 40
   state: 0
   z: 18
-AS74:
-  ENDF/B-V.2: null
-  ENDF/B-VII.0: AS74_7
-  a: 75
-  state: 0
-  z: 33
 AS75:
   ENDF/B-V.2: AS75 5
   ENDF/B-VII.0: AS75_7
