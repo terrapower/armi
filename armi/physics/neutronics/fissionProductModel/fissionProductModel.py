@@ -104,7 +104,8 @@ class FissionProductModel(interfaces.Interface):
 
     def setAllBlockLFPs(self):
         """
-        Sets all the block lumped fission products attributes
+        Sets all the block lumped fission products attributes and adds fission products
+        to each block if `self._explicitFissionProducts` is set to True.
 
         See Also
         --------
@@ -123,11 +124,8 @@ class FissionProductModel(interfaces.Interface):
 
             # Initialize the fission products explicitly on the block component
             # that matches the `self._fissionProductBlockType` if it exists.
-            print(",,..")
-            print(b)
             if self._explicitFissionProducts and not self._initialized:
                 targetComponent = b.getComponent(self._fissionProductBlockType)
-                print(targetComponent)
                 if not targetComponent:
                     continue
                 ndens = targetComponent.getNumberDensities()

@@ -59,7 +59,7 @@ AM242:
   state: 1
   z: 95
 AM242M:
-  ENDF/B-V.2: null
+  ENDF/B-V.2: AM242M
   ENDF/B-VII.0: AM42M7
   a: 242
   state: 1
@@ -586,19 +586,19 @@ CU65:
   a: 65
   state: 0
   z: 29
-DUMP2:
-  ENDF/B-V.2: DUMMY2
-  ENDF/B-VII.0: DUMMY
-  a: 0
-  state: 0
-  weight: 240.0
-  z: 0
 DUMP1:
   ENDF/B-V.2: DUMMY1
   ENDF/B-VII.0: DUMMY
   a: 0
   state: 0
   weight: 10.0
+  z: 0
+DUMP2:
+  ENDF/B-V.2: DUMMY2
+  ENDF/B-VII.0: DUMMY
+  a: 0
+  state: 0
+  weight: 240.0
   z: 0
 DY156:
   ENDF/B-V.2: null

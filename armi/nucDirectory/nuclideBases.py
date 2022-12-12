@@ -780,6 +780,17 @@ class DummyNuclideBase(INuclide):
     def __repr__(self):
         return f"<{self.__class__.__name__} {self.name}:  W:{self.weight:<12.6e}, Label:{self.label}>"
 
+    def __hash__(self):
+        return hash((self.a, self.z, self.state, self.weight))
+
+    def __lt__(self, other):
+        return (self.z, self.a, self.state, self.weight) < (
+            other.z,
+            other.a,
+            other.state,
+            other.weight,
+        )
+
     def getNaturalIsotopics(self):
         r"""Gets the natural isotopics, an empty iterator.
 
@@ -834,6 +845,17 @@ class LumpNuclideBase(INuclide):
 
     def __repr__(self):
         return f"<{self.__class__.__name__} {self.name}:  W:{self.weight:<12.6e}, Label:{self.label}>"
+
+    def __hash__(self):
+        return hash((self.a, self.z, self.state, self.weight))
+
+    def __lt__(self, other):
+        return (self.z, self.a, self.state, self.weight) < (
+            other.z,
+            other.a,
+            other.state,
+            other.weight,
+        )
 
     def getNaturalIsotopics(self):
         r"""Gets the natural isotopics, an empty iterator.
