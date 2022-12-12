@@ -790,7 +790,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         retainLink : bool, optional
             If True, the val will be applied to the dimension of linked
             component which indirectly changes this component's dimensions.
-        cold : book, optional
+        cold : bool, optional
             If True sets the component cold dimension to the specified value.
         """
         if not key:
@@ -799,13 +799,15 @@ class Component(composites.Composite, metaclass=ComponentType):
             linkedComp, linkedDimName = self.p[key]
             linkedComp.setDimension(linkedDimName, val, cold=cold)
         else:
-            expansionFactor = (
-                self.getThermalExpansionFactor()
-                if key in self.THERMAL_EXPANSION_DIMS
-                else 1.0
-            )
-            val = val / expansionFactor if not cold else val
+            if not cold:
+                expansionFactor = (
+                    self.getThermalExpansionFactor()
+                    if key in self.THERMAL_EXPANSION_DIMS
+                    else 1.0
+                )
+                val /= expansionFactor
             self.p[key] = val
+
         self.clearLinkedCache()
 
     def getDimension(self, key, Tc=None, cold=False):
