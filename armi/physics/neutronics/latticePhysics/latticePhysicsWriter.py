@@ -214,20 +214,21 @@ class LatticePhysicsWriter(interfaces.InputWriter):
             self.r.blueprints.activeNuclides, self.block
         )
         objNuclides = subjectObject.getNuclides()
-
-        numDensities = subjectObject.getNuclideNumberDensities(
-            self.r.blueprints.allNuclidesInProblem
-        )
-
+        
         # If the explicit fission product model is enabled then the number densities
         # on the components will already contain all the nuclides required to be
         # modeled by the lattice physics writer. Otherwise, assume that `allNuclidesInProblem`
         # should be modeled.
         nuclides = (
-            sorted(subjectObject.getNumberDensities())
+            sorted(objNuclides)
             if self.explicitFissionProducts
             else self.r.blueprints.allNuclidesInProblem
         )
+
+        numDensities = subjectObject.getNuclideNumberDensities(
+            nuclides
+        )
+
         for nucName, dens in zip(nuclides, numDensities):
             nuc = nuclideBases.byName[nucName]
             if isinstance(nuc, nuclideBases.LumpNuclideBase):
