@@ -319,6 +319,21 @@ def getBurnSteps(cs):
     return [len(steps) for steps in stepLengths]
 
 
+def hasBurnup(cs):
+    """Is depletion being modeled?
+
+    Parameters
+    ----------
+    cs : case settings object
+
+    Returns
+    -------
+    bool
+        Are there any burnup steps?
+    """
+    return sum(getBurnSteps(cs)) > 0
+
+
 def getMaxBurnSteps(cs):
     burnSteps = getBurnSteps(cs)
     return max(burnSteps)
