@@ -1,5 +1,6 @@
 --prefer-binary
 numpy>=1.21
+coveralls
 
 # docutils 0.17 introduced a bug that prevents bullets from rendering
 # see https://github.com/terrapower/armi/issues/274
