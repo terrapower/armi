@@ -15,11 +15,13 @@ What's new in ARMI
 #. Split algorithms specific to hex assemblies out of ``FuelHandler``. (`PR#962 <https://github.com/terrapower/armi/pull/962>`_)
 #. Add ability to load from a db using negative node index
 #. Add group structures for 21- and 94-groups used in photon transport
+#. An explicit fission product modeling option was added in `PR#1022 <https://github.com/terrapower/armi/pull/1022>`_.
 
 Bug fixes
 ---------
 #. Fixed bug in ``referenceBlockAxialMesh`` and ``axialMesh`` during process loading. (`PR#980 <https://github.com/terrapower/armi/pull/980>`)
 #. Removed Barriers in temp directory changers and output cache to avoid deadlocks in MPI cases
+#. A bug was fixed in `PR#1022 <https://github.com/terrapower/armi/pull/1022>`_ where the gaseous fission products were not being removed from the core directly, but instead the fission yields within the lumped fission products were being adjusted.
 
 
 ARMI v0.2.5

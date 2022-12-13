@@ -225,8 +225,9 @@ class FissionProductModel(interfaces.Interface):
                 if not lumpedFissionProduct.isGas(nb):
                     continue
                 yld = lfp[nuc]
-                block.getNumberDensity(lfp.name)
-                numberDensities[nuc] = 
+                ndens = block.getNumberDensity(lfp.name)
+                numberDensities[nuc] = ndens * yld
+            return numberDensities
                 
         
         runLog.info(f"Removing the gaseous fission products from the core.")
@@ -248,8 +249,8 @@ class FissionProductModel(interfaces.Interface):
                 b.updateNumberDensities(updatedNumberDensities)
                 
         else:
-            avgGasReleased = 0.0
-            totalWeight = 0.0
+            avgGasReleased = {}
+            totalWeight = {}
             for block in self.r.core.getBlocks():
                 lfpCollection = block.getLumpedFissionProductCollection()
                 # Skip this block if there is no lumped fission product
@@ -258,24 +259,39 @@ class FissionProductModel(interfaces.Interface):
                 if lfpCollection is None or b not in gasRemovalFractions:
                     continue
                 
-                # If the lumped fission products are global then we are going
-                # release the average across all the blocks in the core and these
-                # this data is collected iteratively.
-                if self._useGlobalLFPs:
-                    weight = block.getVolume() * (block.p.flux or 1.0)
-                    avgGasReleased += block.p.gasReleaseFraction * weight
-                    totalWeight += weight
+                
+                numberDensities = block.getNumberDensities()
+                for lfp in lfpCollection:
+                    ndens = _getGaseousFissionProductNumberDensities(block, lfp)
+                    removedFraction = gasRemovalFractions[b]
                     
-                # Otherwise, if the lumped fission products are not global
-                # go ahead of make the change now.
-                else:
-                    # set individually
-                    block.getLumpedFissionProductCollection().setGasRemovedFrac(
-                        block.p.gasReleaseFraction
-                    )
+                    # If the lumped fission products are global then we are going
+                    # release the average across all the blocks in the core and these
+                    # this data is collected iteratively.
+                    if self._useGlobalLFPs: 
+                        avgGasReleased[lfp] += sum(ndens.values()) * removedFraction
+                        totalWeight[lfp] += block.getVolume() * (block.p.flux or 1.0)
+                        
+                    # Otherwise, if the lumped fission products are not global
+                    # go ahead of make the change now.
+                    else:
+                        updatedLFPNumberDensity = numberDensities[lfp.name] - sum(ndens.values()) * removedFraction
+                        numberDensities.update({lfp.name: updatedLFPNumberDensity})
+                        block.setNumberDensities(numberDensities)
     
             # adjust global lumps if they exist.
             if self._useGlobalLFPs and totalWeight:
-                self.getGlobalLumpedFissionProducts().setGasRemovedFrac(
-                    avgGasReleased / totalWeight
-                )
+                for b in self.r.core.getBlocks():
+                    lfpCollection = block.getLumpedFissionProductCollection()
+                    # Skip this block if there is no lumped fission product
+                    # collection or this block is not in the dictionary
+                    # of gas removal fractions.
+                    if lfpCollection is None or b not in gasRemovalFractions:
+                        continue
+                    
+                    for lfp in lfpCollection:
+                        updatedLFPNumberDensity = numberDensities[lfp.name] - (avgGasReleased[lfp] / totalWeight[lfp])
+                        numberDensities.update({lfp.name: updatedLFPNumberDensity})
+                        block.setNumberDensities(numberDensities)
+                    
+                

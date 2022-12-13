@@ -48,6 +48,13 @@ class TestFissionProductModel(unittest.TestCase):
         fissionProductNames = self.fpModel.getAllFissionProductNames()
         self.assertGreater(len(fissionProductNames), 5)
         self.assertIn("XE135", fissionProductNames)
+        
+    def test_removeGaseousFissionProductsLFP(self):
+        gasRemovalFractions = {}
+        for b in self.r.core.getBlocks():
+            
+        
+        self.fpModel.removeFissionGasesFromBlocks()
 
 
 if __name__ == "__main__":
