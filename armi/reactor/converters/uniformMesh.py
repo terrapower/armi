@@ -93,7 +93,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
         - Mapping number densities and block parameters between one assembly to another. See: `<UniformMeshGeometryConverter.setAssemblyStateFromOverlaps>`
 
     This class is meant to be extended for specific physics calculations that require a uniform mesh.
-    The child types of this class should define custom `REACTOR_PARAMS_TO_MAP` and `BLOCK_PARAMS_TO_MAP` attributes, and the `_setParamsToUpdate` method
+    The child types of this class should define custom `reactorParamsToMap` and `blockParamsToMap` attributes, and the `_setParamsToUpdate` method
     to specify the precise parameters that need to be mapped in each direction between the non-uniform and uniform mesh assemblies. The definitions should avoid mapping
     block parameters in both directions because the mapping process will cause numerical diffusion. The behavior of `setAssemblyStateFromOverlaps` is dependent on the
     direction in which the mapping is being applied to prevent the numerical diffusion problem.
@@ -108,16 +108,16 @@ class UniformMeshGeometryConverter(GeometryConverter):
         converted (uniform mesh) state, that parameter *must* be included in the list
         of `reactorParamNames` or `blockParamNames` to be mapped back to the non-uniform
         reactor; otherwise, it will be lost. These lists are defined through the
-        `_setParamsToUpdate` method, which uses the `REACTOR_PARAMS_TO_MAP` and
-        `BLOCK_PARAMS_TO_MAP` attributes and applies custom logic to create a list of
+        `_setParamsToUpdate` method, which uses the `reactorParamMappingCategories` and
+        `blockParamMappingCategories` attributes and applies custom logic to create a list of
         parameters to be mapped in each direction.
     """
 
-    REACTOR_PARAMS_TO_MAP = {
+    reactorParamMappingCategories = {
         "in": [],
         "out": [],
     }
-    BLOCK_PARAMS_TO_MAP = {
+    blockParamMappingCategories = {
         "in": [],
         "out": [],
     }
@@ -779,16 +779,16 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
         converted (uniform mesh) state, that parameter *must* be included in the list
         of `reactorParamNames` or `blockParamNames` to be mapped back to the non-uniform
         reactor; otherwise, it will be lost. These lists are defined through the
-        `_setParamsToUpdate` method, which uses the `REACTOR_PARAMS_TO_MAP` and
-        `BLOCK_PARAMS_TO_MAP` attributes and applies custom logic to create a list of
+        `_setParamsToUpdate` method, which uses the `reactorParamMappingCategories` and
+        `blockParamMappingCategories` attributes and applies custom logic to create a list of
         parameters to be mapped in each direction.
     """
 
-    REACTOR_PARAMS_TO_MAP = {
+    reactorParamMappingCategories = {
         "in": [parameters.Category.neutronics],
         "out": [parameters.Category.neutronics],
     }
-    BLOCK_PARAMS_TO_MAP = {
+    blockParamMappingCategories = {
         "in": [],
         "out": [
             parameters.Category.detailedAxialExpansion,
@@ -820,7 +820,7 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
         -----
         For the fission-source neutronics calculation, there are no block parameters
         that need to be mapped in. This function applies additional filters to the
-        list of categories defined in `BLOCK_PARAMS_TO_MAP[out]` to avoid mapping
+        list of categories defined in `blockParamMappingCategories[out]` to avoid mapping
         out cumulative parameters like DPA or burnup. These parameters should not
         exist on the neutronics uniform mesh assembly anyway, but this filtering
         provides an added layer of safety to prevent data from being inadvertently
@@ -834,7 +834,7 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
         """
         UniformMeshGeometryConverter._setParamsToUpdate(self, direction)
 
-        for category in self.REACTOR_PARAMS_TO_MAP[direction]:
+        for category in self.reactorParamMappingCategories[direction]:
             self.reactorParamNames.extend(
                 self._sourceReactor.core.p.paramDefs.inCategory(category).names
             )
@@ -845,7 +845,7 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
         excludedParamNames = []
         for category in excludedCategories:
             excludedParamNames.extend(b.p.paramDefs.inCategory(category).names)
-        for category in self.BLOCK_PARAMS_TO_MAP[direction]:
+        for category in self.blockParamMappingCategories[direction]:
             self.blockParamNames.extend(
                 [
                     name
@@ -912,16 +912,16 @@ class GammaUniformMeshConverter(NeutronicsUniformMeshConverter):
         converted (uniform mesh) state, that parameter *must* be included in the list
         of `reactorParamNames` or `blockParamNames` to be mapped back to the non-uniform
         reactor; otherwise, it will be lost. These lists are defined through the
-        `_setParamsToUpdate` method, which uses the `REACTOR_PARAMS_TO_MAP` and
-        `BLOCK_PARAMS_TO_MAP` attributes and applies custom logic to create a list of
+        `_setParamsToUpdate` method, which uses the `reactorParamMappingCategories` and
+        `blockParamMappingCategories` attributes and applies custom logic to create a list of
         parameters to be mapped in each direction.
     """
 
-    REACTOR_PARAMS_TO_MAP = {
+    reactorParamMappingCategories = {
         "in": [parameters.Category.neutronics],
         "out": [parameters.Category.neutronics],
     }
-    BLOCK_PARAMS_TO_MAP = {
+    blockParamMappingCategories = {
         "in": [
             parameters.Category.detailedAxialExpansion,
             parameters.Category.multiGroupQuantities,
@@ -941,7 +941,7 @@ class GammaUniformMeshConverter(NeutronicsUniformMeshConverter):
         -----
         For gamma transport, only a small subset of neutronics parameters need to be
         mapped out. The set is defined in this method. There are conditions on the
-        output BLOCK_PARAMS_TO_MAP: only non-cumulative, gamma parameters are mapped out.
+        output blockParamMappingCategories: only non-cumulative, gamma parameters are mapped out.
         This avoids numerical diffusion of cumulative parameters or those created by the
         initial eigenvalue neutronics solve from being mapped in both directions by the
         mesh converter for the fixed-source gamma run.
@@ -954,7 +954,7 @@ class GammaUniformMeshConverter(NeutronicsUniformMeshConverter):
         """
         UniformMeshGeometryConverter._setParamsToUpdate(self, direction)
 
-        for category in self.REACTOR_PARAMS_TO_MAP[direction]:
+        for category in self.reactorParamMappingCategories[direction]:
             self.reactorParamNames.extend(
                 self._sourceReactor.core.p.paramDefs.inCategory(category).names
             )
@@ -964,10 +964,10 @@ class GammaUniformMeshConverter(NeutronicsUniformMeshConverter):
             excludeList = b.p.paramDefs.inCategory(parameters.Category.cumulative).names
         else:
             mandatoryList = []
-            for category in self.BLOCK_PARAMS_TO_MAP["in"]:
+            for category in self.blockParamMappingCategories["in"]:
                 mandatoryList.extend(b.p.paramDefs.inCategory(category).names)
             excludeList = []
-        for category in self.BLOCK_PARAMS_TO_MAP[direction]:
+        for category in self.blockParamMappingCategories[direction]:
             self.blockParamNames.extend(
                 [
                     name
