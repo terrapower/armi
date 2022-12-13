@@ -91,6 +91,17 @@ class UniformMeshGeometryConverter(GeometryConverter):
         - Creation of a new assembly with a new axial mesh applied. See: `<UniformMeshGeometryConverter.makeAssemWithUniformMesh>`
         - Resetting the parameter state of an assembly back to the defaults for the provided block parameters. See: `<UniformMeshGeometryConverter.clearStateOnAssemblies>`
         - Mapping number densities and block parameters between one assembly to another. See: `<UniformMeshGeometryConverter.setAssemblyStateFromOverlaps>`
+
+    This class is meant to be extended for specific physics calculations that require a uniform mesh.
+    The child types of this class should define custom `REACTOR_PARAMS_TO_MAP` and `BLOCK_PARAMS_TO_MAP` attributes, and the `_setParamsToUpdate` method
+    to specify the precise parameters that need to be mapped in each direction between the non-uniform and uniform mesh assemblies. The definitions should avoid mapping
+    block parameters in both directions because the mapping process will cause numerical diffusion. The behavior of `setAssemblyStateFromOverlaps` is dependent on the
+    direction in which the mapping is being applied to prevent the numerical diffusion problem.
+
+    - "in" is used when mapping parameters into the uniform assembly
+    from the non-uniform assembly.
+    - "out" is used when mapping parameters from the uniform assembly back
+    to the non-uniform assembly.
     """
 
     REACTOR_PARAMS_TO_MAP = {
@@ -616,7 +627,25 @@ class UniformMeshGeometryConverter(GeometryConverter):
         super().reset()
 
     def _setParamsToUpdate(self, direction):
-        """Activate conversion of various paramters."""
+        """
+        Activate conversion of the specified parameters.
+
+        Notes
+        -----
+        The parameters mapped into and out of the uniform mesh will vary depending on
+        the physics kernel using the uniform mesh. The parameters to be mapped in each
+        direction are defined as a class attribute. New options can be created by extending
+        the base class with different class attributes for parameters to map, and applying
+        special modifications to these categorized lists with the `_setParamsToUpdate` method.
+        The base class is meant to be extended, so this method only initializes the empty
+        lists and does not perform any significant function.
+
+        Parameters
+        ----------
+        direction : str
+            "in" or "out". The direction of mapping; "in" to the uniform mesh assembly, or "out" of it.
+            Different parameters are mapped in each direction.
+        """
         self.reactorParamNames = []
         self.blockParamNames = []
 
@@ -729,11 +758,12 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
 
     Notes
     -----
-    If a case runs where two mesh conversions happen one after the other
-    (e.g. a fixed source gamma transport step that needs appropriate
-    fission rates), it is essential that the neutronics params be
-    mapped onto the newly converted reactor as well as off of it
-    back to the source reactor.
+    This uniform mesh converter is intended for setting up an eigenvalue
+    (fission-source) neutronics solve. There are no block parameters that need
+    to be mapped in for a basic eigenvalue calculation, just number densities.
+    The results of the calculation are mapped out (i.e., back to the non-uniform
+    mesh). The results mapped out include things like flux, power, and reaction
+    rates.
     """
 
     REACTOR_PARAMS_TO_MAP = {
@@ -770,11 +800,13 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
 
         Notes
         -----
-        The parameters mapped into and out of the uniform mesh will vary depending on
-        the physics kernel using the uniform mesh. The parameters to be mapped in each
-        direction are defined as a class attribute. New options can be created by extending
-        the NeutronicsUniformMeshConverter with different class attributes for parameters to
-        map.
+        For the fission-source neutronics calculation, there are no block parameters
+        that need to be mapped in. This function applies additional filters to the
+        list of categories defined in `BLOCK_PARAMS_TO_MAP[out]` to avoid mapping
+        out cumulative parameters like DPA or burnup. These parameters should not
+        exist on the neutronics uniform mesh assembly anyway, but this filtering
+        provides an added layer of safety to prevent data from being inadvertently
+        overwritten.
 
         Parameters
         ----------
@@ -850,9 +882,26 @@ class GammaUniformMeshConverter(NeutronicsUniformMeshConverter):
 
     Notes
     -----
-    There are conditions on the output BLOCK_PARAMS_TO_MAP; only non-cumulative
-    parameters are mapped on the way out. This avoids numerical diffusion from
-    detailedAxialExpansion parameters being mapped in both directions.
+
+    When case runs where two mesh conversions happen one after the other
+    (e.g. a fixed source gamma transport step that needs appropriate
+    fission rates), it is essential that the neutronics params be
+    mapped into the newly converted reactor, but they should not be
+    mapped back off of it to the source reactor because this will cause
+    numerical diffusion. Instead, only newly-calculated parameters should
+    be mapped off of the uniform assembly back to the original non-uniform
+    assembly.
+     Thus, the *_PARAMS_TO_MAP dictionaries and behavior of
+    `_setParamsToUpdate` are dependent on the direction of mapping.
+
+
+    This uniform mesh converter is intended for setting up an eigenvalue
+    (fission-source) neutronics solve. There are no block parameters that need
+    to be mapped in for a basic eigenvalue calculation, just number densities.
+    The results of the calculation are mapped out (i.e., back to the non-uniform
+    mesh). The results mapped out include things like flux, power, and reaction
+    rates.
+
     """
 
     REACTOR_PARAMS_TO_MAP = {
@@ -877,7 +926,12 @@ class GammaUniformMeshConverter(NeutronicsUniformMeshConverter):
 
         Notes
         -----
-        For gamma transport, only a small subset of neutronics parameters need to be mapped.
+        For gamma transport, only a small subset of neutronics parameters need to be
+        mapped out. The set is defined in this method. There are conditions on the
+        output BLOCK_PARAMS_TO_MAP: only non-cumulative, gamma parameters are mapped out.
+        This avoids numerical diffusion of cumulative parameters or those created by the
+        initial eigenvalue neutronics solve from being mapped in both directions by the
+        mesh converter for the fixed-source gamma run.
 
         Parameters
         ----------
