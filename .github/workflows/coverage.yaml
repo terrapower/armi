@@ -26,15 +26,19 @@ jobs:
       - name: Run Coverage Part 1
         run: tox -e cov1 || true
       - name: Run Coverage Part 2
-        env:
-          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
         run: tox -e cov2
-      - name: Run Coverage Part 3
+      - name: Covert Coverage Results
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
         run: |
-          pip install coveralls
-          coveralls --service=github
+          pip install coveragepy-lcov
+          coveragepy-lcov --data_file_path coverage_results.cov --output_file_path lcov.info
+#      - name: Run Coverage Part 3
+#        env:
+#          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+#        run: |
+#          pip install coveralls
+#          coveralls --service=github
       - name: Publish to coveralls.io
         uses: coverallsapp/github-action@v1.1.2
         with:
