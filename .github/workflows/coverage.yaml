@@ -9,6 +9,7 @@ jobs:
 
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
 
     steps:
       - uses: actions/checkout@v2
@@ -25,5 +26,16 @@ jobs:
       - name: Run Coverage Part 1
         run: tox -e cov1 || true
       - name: Run Coverage Part 2
-        run: tox -e cov2,report
+        run: tox -e cov2
+      - name: Convert Coverage Results
+        env:
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+        run: |
+          pip install coveragepy-lcov
+          coveragepy-lcov --data_file_path coverage_results.cov --output_file_path lcov.txt
+      - name: Publish to coveralls.io
+        uses: coverallsapp/github-action@v1.1.2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path-to-lcov: lcov.txt
 
