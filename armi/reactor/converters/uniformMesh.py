@@ -102,6 +102,15 @@ class UniformMeshGeometryConverter(GeometryConverter):
     from the non-uniform assembly.
     - "out" is used when mapping parameters from the uniform assembly back
     to the non-uniform assembly.
+
+    .. warning::
+        If a parameter is calculated by a physics solver while the reactor is in its
+        converted (uniform mesh) state, that parameter *must* be included in the list
+        of `reactorParamNames` or `blockParamNames` to be mapped back to the non-uniform
+        reactor; otherwise, it will be lost. These lists are defined through the
+        `_setParamsToUpdate` method, which uses the `REACTOR_PARAMS_TO_MAP` and
+        `BLOCK_PARAMS_TO_MAP` attributes and applies custom logic to create a list of
+        parameters to be mapped in each direction.
     """
 
     REACTOR_PARAMS_TO_MAP = {
@@ -764,6 +773,15 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
     The results of the calculation are mapped out (i.e., back to the non-uniform
     mesh). The results mapped out include things like flux, power, and reaction
     rates.
+
+    .. warning::
+        If a parameter is calculated by a physics solver while the reactor is in its
+        converted (uniform mesh) state, that parameter *must* be included in the list
+        of `reactorParamNames` or `blockParamNames` to be mapped back to the non-uniform
+        reactor; otherwise, it will be lost. These lists are defined through the
+        `_setParamsToUpdate` method, which uses the `REACTOR_PARAMS_TO_MAP` and
+        `BLOCK_PARAMS_TO_MAP` attributes and applies custom logic to create a list of
+        parameters to be mapped in each direction.
     """
 
     REACTOR_PARAMS_TO_MAP = {
@@ -882,26 +900,21 @@ class GammaUniformMeshConverter(NeutronicsUniformMeshConverter):
 
     Notes
     -----
+    This uniform mesh converter is intended for setting up a fixed-source gamma transport solve.
+    Some block parameters from the neutronics solve, such as `b.p.mgFlux`, may need to be mapped
+    into the uniform mesh reactor so that the gamma source can be calculated by the ARMI plugin
+    performing gamma transport. Parameters that are updated with gamma transport results, such
+    as `powerGenerated`, `powerNeutron`, and `powerGamma`, need to be mapped back to the
+    non-uniform reactor.
 
-    When case runs where two mesh conversions happen one after the other
-    (e.g. a fixed source gamma transport step that needs appropriate
-    fission rates), it is essential that the neutronics params be
-    mapped into the newly converted reactor, but they should not be
-    mapped back off of it to the source reactor because this will cause
-    numerical diffusion. Instead, only newly-calculated parameters should
-    be mapped off of the uniform assembly back to the original non-uniform
-    assembly.
-     Thus, the *_PARAMS_TO_MAP dictionaries and behavior of
-    `_setParamsToUpdate` are dependent on the direction of mapping.
-
-
-    This uniform mesh converter is intended for setting up an eigenvalue
-    (fission-source) neutronics solve. There are no block parameters that need
-    to be mapped in for a basic eigenvalue calculation, just number densities.
-    The results of the calculation are mapped out (i.e., back to the non-uniform
-    mesh). The results mapped out include things like flux, power, and reaction
-    rates.
-
+    .. warning::
+        If a parameter is calculated by a physics solver while the reactor is in its
+        converted (uniform mesh) state, that parameter *must* be included in the list
+        of `reactorParamNames` or `blockParamNames` to be mapped back to the non-uniform
+        reactor; otherwise, it will be lost. These lists are defined through the
+        `_setParamsToUpdate` method, which uses the `REACTOR_PARAMS_TO_MAP` and
+        `BLOCK_PARAMS_TO_MAP` attributes and applies custom logic to create a list of
+        parameters to be mapped in each direction.
     """
 
     REACTOR_PARAMS_TO_MAP = {
