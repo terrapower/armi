@@ -493,8 +493,10 @@ def _compareComponentData(
 
         if srcSpecial ^ refSpecial:
             out.writeln(
-                "Could not compare data because one uses special formatting, "
-                "and the other does not. Ref: {} Src: {}".format(refSpecial, srcSpecial)
+                "Could not compare data for parameter {} because one uses special "
+                "formatting, and the other does not. Ref: {} Src: {}".format(
+                    paramName, refSpecial, srcSpecial
+                )
             )
             diffResults.addDiff(
                 refGroup.name, paramName, numpy.inf, numpy.inf, numpy.inf
