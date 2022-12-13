@@ -41,7 +41,6 @@ class TestConverterFactory(unittest.TestCase):
         self.dummyOptions = DummyFluxOptions()
 
     def test_converterFactory(self):
-        print(self.dummyOptions)
         self.dummyOptions.photons = False
         neutronConverter = uniformMesh.converterFactory(self.dummyOptions)
         self.assertTrue(neutronConverter, uniformMesh.NeutronicsUniformMeshConverter)
