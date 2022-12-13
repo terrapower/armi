@@ -1,5 +1,5 @@
 metadata:
-  version: 0.2.5
+  version: uncontrolled
 settings:
   acceptableBlockAreaError: 0.0001
   burnSteps: 0

@@ -295,11 +295,11 @@ custom isotopics: {}
 blocks: {}
 assemblies:
   heights:
-  - 3.5000000000000004
-  - 3.5000000000000004
-  - 3.5000000000000004
-  - 3.5000000000000004
-  - 3.5000000000000004
+  - 3.5
+  - 3.5
+  - 3.5
+  - 3.5
+  - 3.5
   axial mesh points:
   - 5
   - 5
@@ -316,7 +316,7 @@ assemblies:
         Tinput: 26.85
         Thot: 26.85
         outer_theta: 0.7853981633974483
-        height: 3.5000000000000004
+        height: 3.5
         inner_theta: 0.0
         outer_radius: 3.001
         inner_radius: 0.0
@@ -327,7 +327,7 @@ assemblies:
         Tinput: 0.0
         Thot: 0.0
         outer_theta: 0.7853981633974483
-        height: 3.5000000000000004
+        height: 3.5
         inner_theta: 0.0
         outer_radius: 3.001
         inner_radius: 0.0
@@ -339,7 +339,7 @@ assemblies:
         Tinput: 26.85
         Thot: 26.85
         outer_theta: 0.7853981633974483
-        height: 3.5000000000000004
+        height: 3.5
         inner_theta: 0.0
         outer_radius: 3.001
         inner_radius: 0.0
@@ -351,7 +351,7 @@ assemblies:
         Tinput: 26.85
         Thot: 26.85
         outer_theta: 0.7853981633974483
-        height: 3.5000000000000004
+        height: 3.5
         inner_theta: 0.0
         outer_radius: 3.001
         inner_radius: 0.0
@@ -363,7 +363,7 @@ assemblies:
         Tinput: 26.85
         Thot: 26.85
         outer_theta: 0.7853981633974483
-        height: 3.5000000000000004
+        height: 3.5
         inner_theta: 0.0
         outer_radius: 3.001
         inner_radius: 0.0
@@ -375,7 +375,7 @@ assemblies:
         Tinput: 26.85
         Thot: 26.85
         outer_theta: 0.7853981633974483
-        height: 3.5000000000000004
+        height: 3.5
         inner_theta: 0.0
         outer_radius: 3.001
         inner_radius: 0.0
@@ -386,17 +386,17 @@ assemblies:
         Tinput: 0.0
         Thot: 0.0
         outer_theta: 0.7853981633974483
-        height: 3.5000000000000004
+        height: 3.5
         inner_theta: 0.0
         outer_radius: 3.001
         inner_radius: 0.0
         mult: 0.07288855314254761
     height:
-    - 3.5000000000000004
-    - 3.5000000000000004
-    - 3.5000000000000004
-    - 3.5000000000000004
-    - 3.5000000000000004
+    - 3.5
+    - 3.5
+    - 3.5
+    - 3.5
+    - 3.5
     axial mesh points:
     - 5
     - 5
@@ -434,7 +434,7 @@ assemblies:
         Tinput: 26.85
         Thot: 26.85
         outer_theta: 0.7853981633974483
-        height: 3.5000000000000004
+        height: 3.5
         inner_theta: 0.0
         outer_radius: 6.002
         inner_radius: 3.001
@@ -445,7 +445,7 @@ assemblies:
         Tinput: 0.0
         Thot: 0.0
         outer_theta: 0.7853981633974483
-        height: 3.5000000000000004
+        height: 3.5
         inner_theta: 0.0
         outer_radius: 6.002
         inner_radius: 3.001
@@ -457,7 +457,7 @@ assemblies:
         Tinput: 26.85
         Thot: 26.85
         outer_theta: 0.7853981633974483
-        height: 3.5000000000000004
+        height: 3.5
         inner_theta: 0.0
         outer_radius: 6.002
         inner_radius: 3.001
@@ -469,7 +469,7 @@ assemblies:
         Tinput: 26.85
         Thot: 26.85
         outer_theta: 0.7853981633974483
-        height: 3.5000000000000004
+        height: 3.5
         inner_theta: 0.0
         outer_radius: 6.002
         inner_radius: 3.001
@@ -481,7 +481,7 @@ assemblies:
         Tinput: 26.85
         Thot: 26.85
         outer_theta: 0.7853981633974483
-        height: 3.5000000000000004
+        height: 3.5
         inner_theta: 0.0
         outer_radius: 6.002
         inner_radius: 3.001
@@ -493,7 +493,7 @@ assemblies:
         Tinput: 26.85
         Thot: 26.85
         outer_theta: 0.7853981633974483
-        height: 3.5000000000000004
+        height: 3.5
         inner_theta: 0.0
         outer_radius: 6.002
         inner_radius: 3.001
@@ -504,17 +504,17 @@ assemblies:
         Tinput: 0.0
         Thot: 0.0
         outer_theta: 0.7853981633974483
-        height: 3.5000000000000004
+        height: 3.5
         inner_theta: 0.0
         outer_radius: 6.002
         inner_radius: 3.001
         mult: 0.40755581855773926
     height:
-    - 3.5000000000000004
-    - 3.5000000000000004
-    - 3.5000000000000004
-    - 3.5000000000000004
-    - 3.5000000000000004
+    - 3.5
+    - 3.5
+    - 3.5
+    - 3.5
+    - 3.5
     axial mesh points:
     - 5
     - 5
@@ -552,7 +552,7 @@ assemblies:
         Tinput: 26.85
         Thot: 26.85
         outer_theta: 0.7853981633974483
-        height: 3.5000000000000004
+        height: 3.5
         inner_theta: 0.0
         outer_radius: 9.0
         inner_radius: 6.002
@@ -563,7 +563,7 @@ assemblies:
         Tinput: 0.0
         Thot: 0.0
         outer_theta: 0.7853981633974483
-        height: 3.5000000000000004
+        height: 3.5
         inner_theta: 0.0
         outer_radius: 9.0
         inner_radius: 6.002
@@ -575,7 +575,7 @@ assemblies:
         Tinput: 26.85
         Thot: 26.85
         outer_theta: 0.7853981633974483
-        height: 3.5000000000000004
+        height: 3.5
         inner_theta: 0.0
         outer_radius: 9.0
         inner_radius: 6.002
@@ -586,7 +586,7 @@ assemblies:
         Tinput: 0.0
         Thot: 0.0
         outer_theta: 0.7853981633974483
-        height: 3.5000000000000004
+        height: 3.5
         inner_theta: 0.0
         outer_radius: 9.0
         inner_radius: 6.002
@@ -598,7 +598,7 @@ assemblies:
         Tinput: 26.85
         Thot: 26.85
         outer_theta: 0.7853981633974483
-        height: 3.5000000000000004
+        height: 3.5
         inner_theta: 0.0
         outer_radius: 9.0
         inner_radius: 6.002
@@ -609,7 +609,7 @@ assemblies:
         Tinput: 0.0
         Thot: 0.0
         outer_theta: 0.7853981633974483
-        height: 3.5000000000000004
+        height: 3.5
         inner_theta: 0.0
         outer_radius: 9.0
         inner_radius: 6.002
@@ -621,7 +621,7 @@ assemblies:
         Tinput: 26.85
         Thot: 26.85
         outer_theta: 0.7853981633974483
-        height: 3.5000000000000004
+        height: 3.5
         inner_theta: 0.0
         outer_radius: 9.0
         inner_radius: 6.002
@@ -632,7 +632,7 @@ assemblies:
         Tinput: 0.0
         Thot: 0.0
         outer_theta: 0.7853981633974483
-        height: 3.5000000000000004
+        height: 3.5
         inner_theta: 0.0
         outer_radius: 9.0
         inner_radius: 6.002
@@ -644,7 +644,7 @@ assemblies:
         Tinput: 26.85
         Thot: 26.85
         outer_theta: 0.7853981633974483
-        height: 3.5000000000000004
+        height: 3.5
         inner_theta: 0.0
         outer_radius: 9.0
         inner_radius: 6.002
@@ -655,17 +655,17 @@ assemblies:
         Tinput: 0.0
         Thot: 0.0
         outer_theta: 0.7853981633974483
-        height: 3.5000000000000004
+        height: 3.5
         inner_theta: 0.0
         outer_radius: 9.0
         inner_radius: 6.002
         mult: 0.953195508569479
     height:
-    - 3.5000000000000004
-    - 3.5000000000000004
-    - 3.5000000000000004
-    - 3.5000000000000004
-    - 3.5000000000000004
+    - 3.5
+    - 3.5
+    - 3.5
+    - 3.5
+    - 3.5
     axial mesh points:
     - 5
     - 5

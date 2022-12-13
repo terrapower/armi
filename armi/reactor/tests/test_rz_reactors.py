@@ -77,9 +77,7 @@ class Test_RZT_Reactor_modern(unittest.TestCase):
         verify the total reactor volume is as expected
         """
         tolerance = 1e-3
-        error = math.fabs(
-            (refReactorVolume - sum(reactorVolumes)) / refReactorVolume
-        )
+        error = math.fabs((refReactorVolume - sum(reactorVolumes)) / refReactorVolume)
         self.assertLess(error, tolerance)
 
         """
