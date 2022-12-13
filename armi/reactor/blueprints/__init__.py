@@ -91,6 +91,8 @@ from armi.reactor import geometry
 from armi.reactor import systemLayoutInput
 from armi.scripts import migration
 from armi.utils import textProcessors
+from armi.physics.neutronics.fissionProductModel import lumpedFissionProduct
+from armi.nucDirectory import elements
 
 # NOTE: using non-ARMI-standard imports because these are all a part of this package,
 # and using the module imports would make the attribute definitions extremely long
@@ -342,6 +344,33 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
                     if bDesign not in self.blockDesigns:
                         self.blockDesigns.add(bDesign)
 
+    def _autoUpdateNuclideFlags(self, cs):
+        """
+        This method is responsible for examining the fission product model treatment
+        that is selected by the user and adding a set of nuclides to the `nuclideFlags`
+        list.
+        Notes
+        -----
+        The reason for adding this method is that when switching between fission product
+        modeling treatments it can be time-consuming to manually adjust the `nuclideFlags`
+        inputs. This is specifically the case with the fission product model is set to
+        `explicitFissionProducts`.
+        """
+        nbs = lumpedFissionProduct.getAllNuclideBasesByLibrary(cs)
+        if nbs:
+            runLog.info(
+                f"Adding explicit fission products to the nuclide flags based on the "
+                f"fission product model set to `{cs['fpModel']}`."
+            )
+            for nb in nbs:
+                nuc = nb.name
+                if nuc in self.nuclideFlags or elements.byZ[nb.z] in self.nuclideFlags:
+                    continue
+                nuclideFlag = isotopicOptions.NuclideFlag(
+                    nuc, burn=False, xs=True, expandTo=[]
+                )
+                self.nuclideFlags[nuc] = nuclideFlag
+
     def _resolveNuclides(self, cs):
         """
         Process elements and determine how to expand them to natural isotopics.
@@ -363,6 +392,8 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
         undefBurnChainActiveNuclides = set()
         if self.nuclideFlags is None:
             self.nuclideFlags = isotopicOptions.genDefaultNucFlags()
+
+        self._autoUpdateNuclideFlags(cs)
 
         self.elementsToExpand = []
         for nucFlag in self.nuclideFlags:
@@ -454,7 +485,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
         )
 
         # Inform user which nuclides are truncating the burn chain.
-        if undefBurnChainActiveNuclides:
+        if undefBurnChainActiveNuclides and nuclideBases.burnChainImposed:
             runLog.info(
                 tabulate.tabulate(
                     [

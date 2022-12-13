@@ -346,15 +346,7 @@ class AverageBlockCollection(BlockCollection):
         """Compute the average lumped fission products."""
         # TODO: make do actual average of LFPs
         b = self.getCandidateBlocks()[0]
-        lfpCollection = b.getLumpedFissionProductCollection()
-        if lfpCollection:
-            lfpCollectionCopy = lfpCollection.duplicate()
-            fgRemoved = self._getAverageFissionGasRemoved()
-            lfpCollectionCopy.setGasRemovedFrac(fgRemoved)
-        else:
-            lfpCollectionCopy = lfpCollection
-
-        return lfpCollectionCopy
+        return b.getLumpedFissionProductCollection()
 
     def _getNucTempHelper(self):
         """All candidate blocks are used in the average."""
@@ -1012,15 +1004,9 @@ class CrossSectionGroupManager(interfaces.Interface):
                 xsIDGroup = self._getXsIDGroup(xsID)
                 if xsIDGroup == self._REPR_GROUP:
                     reprBlock = self.representativeBlocks.get(xsID)
-                    lfps = reprBlock.getLumpedFissionProductCollection()
-                    if lfps:
-                        fissionGasRemoved = list(lfps.values())[0].getGasRemovedFrac()
-                    else:
-                        fissionGasRemoved = 0.0
                     runLog.extra(
-                        "XS ID {} contains {:4d} blocks, represented by: {:65s}"
-                        " Fission Gas Removal Fraction: {:.2f}".format(
-                            xsID, len(blocks), reprBlock, fissionGasRemoved
+                        "XS ID {} contains {:4d} blocks, represented by: {:65s}".format(
+                            xsID, len(blocks), reprBlock
                         )
                     )
                 elif xsIDGroup == self._NON_REPR_GROUP:
