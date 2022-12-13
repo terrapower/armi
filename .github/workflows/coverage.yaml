@@ -32,7 +32,7 @@ jobs:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
         run: |
           pip install coveragepy-lcov
-          coveragepy-lcov --data_file_path coverage_results.cov --output_file_path lcov.info
+          coveragepy-lcov --data_file_path coverage_results.cov --output_file_path lcov.txt
 #      - name: Run Coverage Part 3
 #        env:
 #          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
@@ -43,5 +43,5 @@ jobs:
         uses: coverallsapp/github-action@v1.1.2
         with:
           github-token: ${{ secrets.COVERALLS_REPO_TOKEN }}
-          path-to-lcov: lcov.info
+          path-to-lcov: lcov.txt
 
