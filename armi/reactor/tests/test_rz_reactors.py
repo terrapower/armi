@@ -59,33 +59,33 @@ class Test_RZT_Reactor_modern(unittest.TestCase):
         )
         r = reactors.loadFromCs(cs)
 
-        godiva_radius = 8.7407
-        reactor_radius = 9
-        reactor_height = 17.5
+        godivaRadius = 8.7407
+        reactorRadius = 9
+        reactorHeight = 17.5
 
-        ref_reactor_volume = math.pi * reactor_radius ** 2 * reactor_height / 8
-        ref_fuel_volume = 4.0 / 3.0 * math.pi * (godiva_radius) ** 3 / 8
+        refReactorVolume = math.pi * reactorRadius ** 2 * reactorHeight / 8
+        refFuelVolume = 4.0 / 3.0 * math.pi * (godivaRadius) ** 3 / 8
 
-        reactor_volumes = []
-        fuel_volumes = []
+        reactorVolumes = []
+        fuelVolumes = []
         for b in r.core.getBlocks():
-            reactor_volumes.append(b.getVolume())
+            reactorVolumes.append(b.getVolume())
             for c in b:
                 if "Godiva" in c.name:
-                    fuel_volumes.append(c.getVolume())
+                    fuelVolumes.append(c.getVolume())
         """
         verify the total reactor volume is as expected
         """
         tolerance = 1e-3
         error = math.fabs(
-            (ref_reactor_volume - sum(reactor_volumes)) / ref_reactor_volume
+            (refReactorVolume - sum(reactorVolumes)) / refReactorVolume
         )
         self.assertLess(error, tolerance)
 
         """
         verify the total fuel volume is as expected
         """
-        error = math.fabs((ref_fuel_volume - sum(fuel_volumes)) / ref_fuel_volume)
+        error = math.fabs((refFuelVolume - sum(fuelVolumes)) / refFuelVolume)
         self.assertLess(error, tolerance)
 
 
