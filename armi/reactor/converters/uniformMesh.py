@@ -896,9 +896,9 @@ class GammaUniformMeshConverter(NeutronicsUniformMeshConverter):
             mandatoryList = b.p.paramDefs.inCategory(parameters.Category.gamma).names
             excludeList = b.p.paramDefs.inCategory(parameters.Category.cumulative).names
         else:
-            mandatoryList = b.p.paramDefs.inCategory(
-                parameters.Category.detailedAxialExpansion
-            ).names
+            mandatoryList = []
+            for category in self.BLOCK_PARAMS_TO_MAP["in"]:
+                mandatoryList.extend(b.p.paramDefs.inCategory(category).names)
             excludeList = []
         for category in self.BLOCK_PARAMS_TO_MAP[direction]:
             self.blockParamNames.extend(
