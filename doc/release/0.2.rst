@@ -22,7 +22,7 @@ Bug fixes
 #. Fixed bug in ``referenceBlockAxialMesh`` and ``axialMesh`` during process loading. (`PR#980 <https://github.com/terrapower/armi/pull/980>`)
 #. Removed Barriers in temp directory changers and output cache to avoid deadlocks in MPI cases
 #. Fixed bug with database writing and tight coupling. (`PR#1005 https://github.com/terrapower/armi/pull/1005`)
-
+#. Fixed a bug where snapshot load would not respect the new cs["power"] setting.
 
 ARMI v0.2.5
 ===========
