@@ -22,6 +22,12 @@ from armi.reactor.tests.test_reactors import buildOperatorOfEmptyHexBlocks
 
 from armi.physics.neutronics.fissionProductModel.tests import test_lumpedFissionProduct
 
+def _getLumpedFissionProductNumberDensities(b):
+    """Returns the number densities for each lumped fission product in a block."""
+    nDens = {}
+    for lfp in b.getLumpedFissionProductCollection():
+        nDens[lfp] = b.getNumberDensity(lfp.name)
+    return nDens
 
 class TestFissionProductModel(unittest.TestCase):
     """
@@ -38,23 +44,47 @@ class TestFissionProductModel(unittest.TestCase):
         self.fpModel.setAllBlockLFPs()
 
     def test_loadGlobalLFPsFromFile(self):
-        # pylint: disable = protected-access
+        """Tests that loading lumped fission products from a file."""
         self.assertEqual(len(self.fpModel._globalLFPs), 3)
         lfps = self.fpModel.getGlobalLumpedFissionProducts()
         self.assertIn("LFP39", lfps)
 
     def test_getAllFissionProductNames(self):
-        # pylint: disable = protected-access
+        """Tests retrieval of the fission product names within all the lumped fission products of the core."""
         fissionProductNames = self.fpModel.getAllFissionProductNames()
         self.assertGreater(len(fissionProductNames), 5)
         self.assertIn("XE135", fissionProductNames)
         
     def test_removeGaseousFissionProductsLFP(self):
+        """Tests removal of gaseous fission products globally in the core."""
         gasRemovalFractions = {}
+        previousBlockFissionProductNumberDensities = {}
+        updatedBlockFissionProductNumberDensities = {}
         for b in self.r.core.getBlocks():
+            lfpCollection = b.getLumpedFissionProductCollection()
+            if lfpCollection is None:
+                continue
+            
+            previousBlockFissionProductNumberDensities[b] = _getLumpedFissionProductNumberDensities(b)
+            gasRemovalFractions = {b: 0.1}
+        
+        self.fpModel.removeFissionGasesFromBlocks(gasRemovalFractions)
+        for b in self.r.core.getBlocks():
+            lfpCollection = b.getLumpedFissionProductCollection()
+            if lfpCollection is None:
+                continue
+            
+            updatedBlockFissionProductNumberDensities[b] = _getLumpedFissionProductNumberDensities(b)
+            for lfp in lfpCollection:
+                old = previousBlockFissionProductNumberDensities[b][lfp]
+                new = updatedBlockFissionProductNumberDensities[b][lfp]
+                self.assertAlmostEqual(new, old * (1.0 - gasRemovalFractions[b]))
             
         
-        self.fpModel.removeFissionGasesFromBlocks()
+        
+    def test_removeGaseousFissionProductsLFPFailure(self):
+        """Tests failure when the gaseous removal fractions are out of range."""
+        
 
 
 if __name__ == "__main__":

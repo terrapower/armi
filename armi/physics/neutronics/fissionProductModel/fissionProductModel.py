@@ -264,6 +264,8 @@ class FissionProductModel(interfaces.Interface):
                 for lfp in lfpCollection:
                     ndens = _getGaseousFissionProductNumberDensities(block, lfp)
                     removedFraction = gasRemovalFractions[b]
+                    if removedFraction < 0.0 or removedFraction > 1.0:
+                        raise ValueError(f"The gaseous removal fraction in {block} is not within [0.0, 1.0].")
                     
                     # If the lumped fission products are global then we are going
                     # release the average across all the blocks in the core and these
