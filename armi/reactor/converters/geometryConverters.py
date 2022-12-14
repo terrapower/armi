@@ -27,32 +27,33 @@ Generally, mass is conserved in geometry conversions.
 import collections
 import copy
 import math
-import matplotlib
-import matplotlib.pyplot as plt
-import numpy
 import operator
 import os
 
+import matplotlib
+import matplotlib.pyplot as plt
+import numpy
+
 from armi import materials
 from armi import runLog
+from armi.physics.neutronics.fissionProductModel import lumpedFissionProduct
 from armi.reactor import assemblies
 from armi.reactor import blocks
 from armi.reactor import components
-from armi.reactor import reactors
-from armi.reactor import parameters
-from armi.reactor.parameters import Category
-from armi.reactor.parameters import ParamLocation
-from armi.reactor.parameters import NEVER
-from armi.reactor.parameters import SINCE_LAST_GEOMETRY_TRANSFORMATION
 from armi.reactor import geometry
+from armi.reactor import grids
+from armi.reactor import parameters
+from armi.reactor import reactors
+from armi.reactor.converters import blockConverters
 from armi.reactor.converters import meshConverters
+from armi.reactor.flags import Flags
+from armi.reactor.parameters import Category
+from armi.reactor.parameters import NEVER
+from armi.reactor.parameters import ParamLocation
+from armi.reactor.parameters import SINCE_LAST_GEOMETRY_TRANSFORMATION
+from armi.utils import hexagon
 from armi.utils import plotting
 from armi.utils import units
-from armi.reactor import grids
-from armi.reactor.flags import Flags
-from armi.utils import hexagon
-from armi.reactor.converters import blockConverters
-from armi.reactor import assemblies
 
 BLOCK_AXIAL_MESH_SPACING = (
     20  # Block axial mesh spacing set for nodal diffusion calculation (cm)
@@ -386,7 +387,6 @@ class HexToRZThetaConverter(GeometryConverter):
     ):
         GeometryConverter.__init__(self, cs)
         self.converterSettings = converterSettings
-        self._o = None
         self.meshConverter = None
         self._expandSourceReactor = expandReactor
         self._strictHomogenization = strictHomogenization
@@ -398,6 +398,7 @@ class HexToRZThetaConverter(GeometryConverter):
         self._newBlockNum = 0
         self.blockMap = collections.defaultdict(list)
         self.blockVolFracs = collections.defaultdict(dict)
+        self._homogenizeAxiallyByFlags = False
 
     def _generateConvertedReactorMesh(self):
         """Convert the source reactor using the converterSettings"""
@@ -576,7 +577,6 @@ class HexToRZThetaConverter(GeometryConverter):
         self._sourceReactor.core.summarizeReactorStats()
         if self._expandSourceReactor:
             self._expandSourceReactorGeometry()
-        self._o = self._sourceReactor.o
 
     def _setupConvertedReactor(self, grid):
         self.convReactor = reactors.Reactor(
@@ -603,7 +603,6 @@ class HexToRZThetaConverter(GeometryConverter):
         self._assemsInRadialZone keeps track of the unique assemblies that are in each radial ring. This
         ensures that no assemblies are duplicated when using self._getAssemsInRadialThetaZone()
         """
-
         lowerTheta = 0.0
         for _thetaIndex, upperTheta in enumerate(self.meshConverter.thetaMesh):
             assemsInRadialThetaZone = self._getAssemsInRadialThetaZone(
@@ -734,7 +733,6 @@ class HexToRZThetaConverter(GeometryConverter):
         outerDiameter : float
             The outer diameter (in cm) of the radial zone just added
         """
-
         newAssembly = assemblies.ThRZAssembly("mixtureAssem")
         newAssembly.spatialLocator = self.convReactor.core.spatialGrid[
             thetaIndex, radialIndex, 0
@@ -744,9 +742,10 @@ class HexToRZThetaConverter(GeometryConverter):
             len(self.meshConverter.axialMesh), armiObject=newAssembly
         )
 
+        lfp = lumpedFissionProduct.lumpedFissionProductFactory(self._cs)
+
         lowerAxialZ = 0.0
         for axialIndex, upperAxialZ in enumerate(self.meshConverter.axialMesh):
-
             # Setup the new block data
             newBlockName = "B{:04d}{}".format(
                 int(newAssembly.getNum()), chr(axialIndex + 65)
@@ -793,6 +792,7 @@ class HexToRZThetaConverter(GeometryConverter):
             }
             for nuc in self._sourceReactor.blueprints.allNuclidesInProblem:
                 material.setMassFrac(nuc, 0.0)
+
             newComponent = components.DifferentialRadialSegment(
                 "mixture", material, **dims
             )
@@ -800,8 +800,7 @@ class HexToRZThetaConverter(GeometryConverter):
             newBlock.p.zbottom = lowerAxialZ
             newBlock.p.ztop = upperAxialZ
 
-            fpi = self._o.getInterface("fissionProducts")
-            newBlock.setLumpedFissionProducts(fpi.getGlobalLumpedFissionProducts())
+            newBlock.setLumpedFissionProducts(lfp)
 
             # Assign the new block cross section type and burn up group
             newBlock.setType(newBlockType)
@@ -822,6 +821,7 @@ class HexToRZThetaConverter(GeometryConverter):
 
             newAssembly.add(newBlock)
             lowerAxialZ = upperAxialZ
+
         newAssembly.calculateZCoords()  # builds mesh
         self.convReactor.core.add(newAssembly)
 
@@ -1053,7 +1053,6 @@ class HexToRZThetaConverter(GeometryConverter):
 
         This makes plots of each individual theta mesh
         """
-
         runLog.info(
             "Generating plot(s) of the converted {} reactor".format(
                 str(self.convReactor.core.geomType).upper()
@@ -1190,7 +1189,6 @@ class HexToRZThetaConverter(GeometryConverter):
 
     def reset(self):
         """Clear out attribute data, including holding the state of the converted reactor core model."""
-        self._o = None
         self.meshConverter = None
         self._radialMeshConversionType = None
         self._axialMeshConversionType = None
@@ -1279,6 +1277,7 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
                     self._sourceReactor.core.geomType,
                 )
             )
+
         edgeChanger = EdgeAssemblyChanger()
         edgeChanger.removeEdgeAssemblies(self._sourceReactor.core)
         runLog.info("Expanding to full core geometry")
@@ -1446,7 +1445,6 @@ class EdgeAssemblyChanger(GeometryChanger):
         See Also
         --------
         addEdgeAssemblies : adds the edge assemblies
-
         """
         if core.isFullCore:
             return
