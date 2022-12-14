@@ -144,7 +144,7 @@ def _getNeutronicsBlockParams():
             location=ParamLocation.AVERAGE,
             saveToDB=True,
             categories=[parameters.Category.gamma],
-            default=None,
+            default=0.0,
         )
 
         pb.defParam(
