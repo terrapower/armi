@@ -1233,6 +1233,7 @@ def __updateNuclideBasesForSpecialCases():
     byDBName["nAm242"] = am242m
     byDBName[byName["AM242"].getDatabaseName()] = am242m
 
+
 def __renormalizeNuclideToElementRelationship():
     for nuc in instances:
         if nuc.element is not None:
