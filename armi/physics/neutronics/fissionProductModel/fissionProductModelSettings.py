@@ -20,7 +20,6 @@ from armi.physics.neutronics import fissionProductModel
 CONF_FP_MODEL = "fpModel"
 CONF_MAKE_ALL_BLOCK_LFPS_INDEPENDENT = "makeAllBlockLFPsIndependent"
 CONF_LFP_COMPOSITION_FILE_PATH = "lfpCompositionFilePath"
-CONF_FISSION_PRODUCT_LIBRARY_NAME = "fpModelLibrary"
 
 
 def defineSettings():
@@ -29,30 +28,13 @@ def defineSettings():
             CONF_FP_MODEL,
             default="infinitelyDilute",
             label="Fission Product Model",
-            description="",
+            description="The fission product model to use in this ARMI run",
             options=[
                 "noFissionProducts",
                 "infinitelyDilute",
+                "2ndOrder",
+                "2ndOrderWithTransmutation",
                 "MO99",
-                "explicitFissionProducts",
-            ],
-        ),
-        setting.Setting(
-            CONF_FISSION_PRODUCT_LIBRARY_NAME,
-            default="MC2-3",
-            label="Fission Product Library",
-            description=(
-                f"This setting is used when the `{CONF_FP_MODEL}` setting "
-                f"is set to `explicitFissionProducts` and is used to configure "
-                f"all the nuclides that should be modeled within the core. "
-                f"Setting this is equivalent to adding all nuclides in the "
-                f"selected code library (i.e., MC2-3) within the blueprints "
-                f"`nuclideFlags` to be [xs:true, burn:false]. This option acts "
-                f"as a short-cut so that analysts do not need to change their "
-                f"inputs when modifying the fission product treatment for calculations."
-            ),
-            options=[
-                "MC2-3",
             ],
         ),
         setting.Setting(

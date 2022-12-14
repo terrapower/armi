@@ -108,7 +108,6 @@ class LatticePhysicsWriter(interfaces.InputWriter):
         self.modelFissionProducts = (
             blockNeedsFPs and self.cs["fpModel"] != "noFissionProducts"
         )
-        self.explicitFissionProducts = self.cs["fpModel"] == "explicitFissionProducts"
         self.diluteFissionProducts = (
             blockNeedsFPs and self.cs["fpModel"] == "infinitelyDilute"
         )
@@ -214,22 +213,12 @@ class LatticePhysicsWriter(interfaces.InputWriter):
             self.r.blueprints.activeNuclides, self.block
         )
         objNuclides = subjectObject.getNuclides()
-        
-        # If the explicit fission product model is enabled then the number densities
-        # on the components will already contain all the nuclides required to be
-        # modeled by the lattice physics writer. Otherwise, assume that `allNuclidesInProblem`
-        # should be modeled.
-        nuclides = (
-            sorted(objNuclides)
-            if self.explicitFissionProducts
-            else self.r.blueprints.allNuclidesInProblem
-        )
 
         numDensities = subjectObject.getNuclideNumberDensities(
-            nuclides
+            self.r.blueprints.allNuclidesInProblem
         )
 
-        for nucName, dens in zip(nuclides, numDensities):
+        for nucName, dens in zip(self.r.blueprints.allNuclidesInProblem, numDensities):
             nuc = nuclideBases.byName[nucName]
             if isinstance(nuc, nuclideBases.LumpNuclideBase):
                 continue  # skip LFPs here but add individual FPs below.
@@ -299,7 +288,6 @@ class LatticePhysicsWriter(interfaces.InputWriter):
         fissionProductDensities = collections.OrderedDict(
             sorted(fissionProductDensities.items(), key=sortFunc)
         )
-
         return nucDensities, fissionProductDensities
 
     def _getAvgNuclideTemperatureInC(self, nucName):
@@ -383,9 +371,8 @@ class LatticePhysicsWriter(interfaces.InputWriter):
             # now, go through the list and make sure that there aren't any values less than the
             # minimumNuclideDensity; we need to keep trace amounts of nuclides in the problem
             for fpName, fpDens in dfpDensitiesByName.items():
-                fp = nuclideBases.byName[fpName]
+                fp = nuclideBases.fromName(fpName)
                 dfpDensities[fp] = max(fpDens, self.minimumNuclideDensity)
-
         return dfpDensities
 
     def _writeNuclide(

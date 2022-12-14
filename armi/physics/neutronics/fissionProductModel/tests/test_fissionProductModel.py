@@ -36,8 +36,6 @@ class TestFissionProductModel(unittest.TestCase):
         dummyLFPs = test_lumpedFissionProduct.getDummyLFPFile()
         self.fpModel.setGlobalLumpedFissionProducts(dummyLFPs.createLFPsFromFile())
         self.fpModel.setAllBlockLFPs()
-        b = o.r.core.getFirstBlock()
-        print(b.getNumberDensities())
 
     def test_loadGlobalLFPsFromFile(self):
         # pylint: disable = protected-access
@@ -47,9 +45,9 @@ class TestFissionProductModel(unittest.TestCase):
 
     def test_getAllFissionProductNames(self):
         # pylint: disable = protected-access
-        fissionProductNames = self.fpModel.getAllFissionProductNames()
-        self.assertGreater(len(fissionProductNames), 5)
-        self.assertIn("XE135", fissionProductNames)
+        self.fpModel._getAllFissionProductNames()
+        self.assertGreater(len(self.fpModel.fissionProductNames), 5)
+        self.assertIn("XE135", self.fpModel.fissionProductNames)
 
 
 if __name__ == "__main__":

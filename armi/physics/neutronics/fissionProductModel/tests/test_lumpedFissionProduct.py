@@ -27,16 +27,16 @@ from armi.reactor.tests.test_reactors import buildOperatorOfEmptyHexBlocks
 from armi.reactor.flags import Flags
 from armi.nucDirectory import nuclideBases
 
-LFP_TEXT = """LFP35 GE73   5.9000E-06
-LFP35 GE74    1.4000E-05
-LFP35 GE76    1.6000E-04
-LFP35 AS75    8.9000E-05
-LFP35 KR85    8.9000E-05
-LFP35 MO99    8.9000E-05
-LFP35 SM150   8.9000E-05
-LFP35 XE135   8.9000E-05
-LFP39 XE135   8.9000E-05
-LFP38 XE135   8.9000E-05
+LFP_TEXT = """        13          LFP35 GE73 5  5.9000E-06
+        13          LFP35 GE74 5  1.4000E-05
+        13          LFP35 GE76 5  1.6000E-04
+        13          LFP35 AS75 5  8.9000E-05
+        13          LFP35 KR85 5  8.9000E-05
+        13          LFP35 MO99 5  8.9000E-05
+        13          LFP35 SM1505  8.9000E-05
+        13          LFP35 XE1355  8.9000E-05
+        13          LFP39 XE1355  8.9000E-05
+        13          LFP38 XE1355  8.9000E-05
 """
 
 
@@ -98,6 +98,15 @@ class TestLumpedFissionProduct(unittest.TestCase):
             io.StringIO(LFP_TEXT)
         )
 
+    def test_setGasRemovedFrac(self):
+        """Test of the set gas removal fraction"""
+        lfp = self.fpd.createSingleLFPFromFile("LFP38")
+        xe135 = nuclideBases.fromName("XE135")
+        gas1 = lfp[xe135]
+        lfp.setGasRemovedFrac(0.25)
+        gas2 = lfp[xe135]
+        self.assertAlmostEqual(gas1 * 0.75, gas2)
+
     def test_getYield(self):
         """Test of the yield of a fission product"""
         xe135 = nuclideBases.fromName("XE135")
@@ -107,16 +116,36 @@ class TestLumpedFissionProduct(unittest.TestCase):
         self.assertEqual(val3, 3)
         self.assertIsNone(lfp[5])
 
+    def test_getNumberFracs(self):
+        xe135 = nuclideBases.fromName("XE135")
+        lfp = self.fpd.createSingleLFPFromFile("LFP38")
+        numberFracs = lfp.getNumberFracs()
+        self.assertEqual(numberFracs.get(xe135), 1.0)
+
     def test_getExpandedMass(self):
         xe135 = nuclideBases.fromName("XE135")
         lfp = self.fpd.createSingleLFPFromFile("LFP38")
         massVector = lfp.getExpandedMass(mass=0.99)
         self.assertEqual(massVector.get(xe135), 0.99)
 
+    def test_getGasFraction(self):
+        """Test of the get gas removal fraction"""
+        lfp = self.fpd.createSingleLFPFromFile("LFP35")
+        frac = lfp.getGasFraction()
+        self.assertGreater(frac, 0.0)
+        self.assertLess(frac, 1.0)
+
     def test_printDensities(self):
         _ = nuclideBases.fromName("XE135")
         lfp = self.fpd.createSingleLFPFromFile("LFP38")
         lfp.printDensities(10.0)
+
+    def test_getLanthanideFraction(self):
+        """Test of the lanthanide fraction function"""
+        lfp = self.fpd.createSingleLFPFromFile("LFP35")
+        frac = lfp.getLanthanideFraction()
+        self.assertGreater(frac, 0.0)
+        self.assertLess(frac, 1.0)
 
 
 class TestLumpedFissionProductCollection(unittest.TestCase):
@@ -202,6 +231,59 @@ class TestMo99LFP(unittest.TestCase):
         self.assertIn("MO99", names)
         self.assertNotIn("KR85", names)
         self.assertAlmostEqual(self.lfps["LFP35"].getTotalYield(), 2.0)
+
+
+class TestExpandCollapse(unittest.TestCase):
+    """Test of the ability of the fission product file to expand from the LFPs"""
+
+    def test_expand(self):
+
+        fpd = lumpedFissionProduct.FissionProductDefinitionFile(io.StringIO(LFP_TEXT))
+        lfps = fpd.createSingleLFPCollectionFromFile("LFP35")
+
+        massFrac = {
+            "U238": 24482008.501781337,
+            "LFP35": 0.0,
+            "CL35": 1617.0794376133247,
+            "CL37": 17091083.486970097,
+            "U235": 3390057.9136671578,
+            "NA23": 367662.29994516558,
+        }
+        refMassFrac = massFrac.copy()
+        del refMassFrac["LFP35"]
+        testMassFrac = lumpedFissionProduct.expandFissionProducts(massFrac, {})
+
+        for nucName, mass in refMassFrac.items():
+            normalizedMass = (testMassFrac[nucName] - mass) / mass
+            self.assertAlmostEqual(normalizedMass, 0, 6)
+
+        refMassFrac = lfps.getFirstLfp().getMassFracs()
+        massFrac = {lfps.getFirstLfp().name: 1}
+        newMassFrac = lumpedFissionProduct.expandFissionProducts(massFrac, lfps)
+
+        for nb, mass in refMassFrac.items():
+            normalizedMass = (newMassFrac[nb.name] - mass) / mass
+            self.assertAlmostEqual(normalizedMass, 0, 6)
+
+    def test_collapse(self):
+
+        fpd = lumpedFissionProduct.FissionProductDefinitionFile(io.StringIO(LFP_TEXT))
+        lfps = fpd.createSingleLFPCollectionFromFile("LFP35")
+
+        burnup = 0.01  # fima
+
+        # make 1% burnup fuel
+        refMassFracs = {"U235": 1 - burnup}
+
+        lfp = lfps.getFirstLfp()
+        for nb, mFrac in lfp.getMassFracs().items():
+            refMassFracs[nb.name] = burnup * mFrac
+
+        newMassFracs = lumpedFissionProduct.collapseFissionProducts(refMassFracs, lfps)
+
+        self.assertAlmostEqual(newMassFracs["LFP35"], burnup, 6)
+        lfps.updateYieldVector(massFrac=newMassFracs)
+        self.assertAlmostEqual(lfps["LFP35"].getTotalYield(), 2.0)
 
 
 if __name__ == "__main__":
