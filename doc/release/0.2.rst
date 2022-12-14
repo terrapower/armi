@@ -15,6 +15,7 @@ What's new in ARMI
 #. Split algorithms specific to hex assemblies out of ``FuelHandler``. (`PR#962 <https://github.com/terrapower/armi/pull/962>`_)
 #. Add ability to load from a db using negative node index
 #. Add group structures for 21- and 94-groups used in photon transport
+#. Fix numerical diffusion bug in uniform mesh converter that affects number densities and cumulative parameters like DPA. (`PR#992 <https://github.com/terrapower/armi/pull/992>`_)
 
 Bug fixes
 ---------
