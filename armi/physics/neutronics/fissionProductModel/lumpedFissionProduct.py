@@ -249,7 +249,7 @@ class LumpedFissionProduct:
 
         # sum up all of the nuclides that are XE or KR
         for nuc, val in self.items():
-            for element in elements.getElementsByChemicalPhase(
+            for element in elements.getElementsByChemicalGroup(
                 elements.ChemicalGroup.LANTHANIDE
             ):
                 if element == nuc.element:
