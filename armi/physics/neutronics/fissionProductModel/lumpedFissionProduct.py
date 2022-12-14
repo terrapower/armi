@@ -27,8 +27,7 @@ from armi.utils.textProcessors import SCIENTIFIC_PATTERN
 from armi.nucDirectory import nuclideBases
 from armi import runLog
 from armi.utils import densityTools
-
-from armi.nucDirectory.elements import LANTHANIDE_ELEMENTS, GASEOUS_ELEMENTS
+from armi.nucDirectory import elements
 
 from .fissionProductModelSettings import CONF_LFP_COMPOSITION_FILE_PATH
 
@@ -250,8 +249,10 @@ class LumpedFissionProduct:
 
         # sum up all of the nuclides that are XE or KR
         for nuc, val in self.items():
-            for element in LANTHANIDE_ELEMENTS:
-                if element in nuc.name:
+            for element in elements.getElementsByChemicalPhase(
+                elements.ChemicalGroup.LANTHANIDE
+            ):
+                if element == nuc.element:
                     totalLanthanides += val
 
         # normalize the total gas released by the total yield fraction and return
@@ -571,7 +572,7 @@ class FissionProductDefinitionFile:
                 )
             parent = match.group(1)
             nucLibId = match.group(2)
-            nuc = nuclideBases.byMccId[nucLibId]
+            nuc = nuclideBases.byMcc3Id[nucLibId]
             yld = float(match.group(3))
             lfp.yld[nuc] = yld
             totalYield += yld
@@ -723,7 +724,7 @@ def collapseFissionProducts(
 
 def isGas(nuc):
     """True if nuclide is considered a gas."""
-    for elementName in GASEOUS_ELEMENTS:
-        if elementName in nuc.name:
+    for element in elements.getElementsByChemicalPhase(elements.ChemicalPhase.GAS):
+        if element == nuc.element:
             return True
     return False
