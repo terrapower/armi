@@ -478,6 +478,16 @@ class Inspector:
         )
 
         self.addQuery(
+            lambda: not self.cs["looseCoupling"]
+            and self.cs["numCoupledIterations"] > 0,
+            "You have {0} coupled iterations selected, but have not activated loose coupling.".format(
+                self.cs["numCoupledIterations"]
+            ),
+            "Set looseCoupling to True?",
+            lambda: self._assignCS("looseCoupling", True),
+        )
+
+        self.addQuery(
             lambda: self.cs["numCoupledIterations"] > 0,
             "You have {0} coupling iterations selected.".format(
                 self.cs["numCoupledIterations"]
