@@ -94,10 +94,6 @@ class MainInterface(interfaces.Interface):
             self.r.p.cycle = self.cs["startCycle"]
             self.r.p.timeNode = self.cs["startNode"]
 
-            # need to update reactor power after the database load
-            # this is normally handled in operator._cycleLoop
-            self.r.p.core.power = self.cs["power"]
-
     def _moveFiles(self):
         # check for orificed flow bounds files. These will often be named based on the
         # case that this one is dependent upon, but not always. For example, testSassys
