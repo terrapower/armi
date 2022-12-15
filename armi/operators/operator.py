@@ -380,6 +380,9 @@ class Operator:  # pylint: disable=too-many-public-methods
             for coupledIteration in range(self.cs["numCoupledIterations"]):
                 self.r.core.p.coupledIteration = coupledIteration + 1
                 self.interactAllCoupled(coupledIteration)
+            # database has not yet been written, so we need to write it.
+            dbi = self.getInterface("database")
+            dbi.writeDBEveryNode(cycle, timeNode)
 
     def _interactAll(self, interactionName, activeInterfaces, *args):
         """
