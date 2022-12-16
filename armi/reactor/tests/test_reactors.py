@@ -213,9 +213,16 @@ def reduceTestReactorRings(r, cs, maxNumRings):
     The goal is to reduce the size of the reactor for tests that don't neeed
     such a large reactor, and would run much faster with a smaller one
     """
-    if 9 > maxNumRings > 1:
-        for ring in range(9, maxNumRings, -1):
-            r.core.removeAssembliesInRing(ring, cs)
+    maxRings = r.core.getNumRings()
+    if maxNumRings > maxRings:
+        runLog.info("The test reactor has a maximum of {} rings.".format(maxRings))
+        return
+    elif maxNumRings <= 1:
+        raise ValueError("The test reactor must have multiple rings.")
+
+    # reducing the size of the test reactor, by removing the outer rings
+    for ring in range(maxRings, maxNumRings, -1):
+        r.core.removeAssembliesInRing(ring, cs)
 
 
 class ReactorTests(unittest.TestCase):
