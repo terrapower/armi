@@ -197,9 +197,11 @@ class TestDatabase3(unittest.TestCase):
         ]
         cycleP, nodeP = getPreviousTimeNode(startCycle, startNode, cs)
         cyclesSetting[cycleP]["power fractions"][nodeP] = 0.5
+        numCycles = 2
+        numNodes = 2
         cs = cs.modified(
             newSettings={
-                "nCycles": 3,
+                "nCycles": numCycles,
                 "cycles": cyclesSetting,
                 "reloadDBName": "something_fake.h5",
             }
@@ -211,7 +213,9 @@ class TestDatabase3(unittest.TestCase):
         db = dbi.database
 
         # populate the db with some things
-        for cycle, node in ((cycle, node) for cycle in range(3) for node in range(2)):
+        for cycle, node in (
+            (cycle, node) for cycle in range(numCycles) for node in range(numNodes)
+        ):
             r.p.cycle = cycle
             r.p.timeNode = node
             r.p.cycleLength = sum(cyclesSetting[cycle]["step days"])
@@ -247,7 +251,9 @@ class TestDatabase3(unittest.TestCase):
         db = dbi.database
 
         # populate the db with something
-        for cycle, node in ((cycle, node) for cycle in range(3) for node in range(2)):
+        for cycle, node in (
+            (cycle, node) for cycle in range(numCycles) for node in range(numNodes)
+        ):
             r.p.cycle = cycle
             r.p.timeNode = node
             r.p.cycleLength = 2000
