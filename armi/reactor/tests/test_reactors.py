@@ -136,10 +136,7 @@ of downstream tests that import this method. Probably still worth it though.
 
 
 def loadTestReactor(
-    inputFilePath=TEST_ROOT,
-    customSettings=None,
-    inputFileName="armiRun.yaml",
-    maxNumRings=9,
+    inputFilePath=TEST_ROOT, customSettings=None, inputFileName="armiRun.yaml"
 ):
     r"""
     Loads a test reactor. Can be used in other test modules.
@@ -156,10 +153,6 @@ def loadTestReactor(
 
     inputFileName : str, default="armiRun.yaml"
         Name of the input file to run.
-
-    maxNumRings : int, default=9
-        You can reduce the size of the reactor; by number of rings (1-9).
-        This does not affect pickled reactors.
 
     Returns
     -------
@@ -198,11 +191,6 @@ def loadTestReactor(
     o = operators.factory(cs)
     r = reactors.loadFromCs(cs)
 
-    # make the reactor smaller, just to make the tests go faster
-    if 9 > maxNumRings > 1:
-        for ring in range(9, maxNumRings, -1):
-            r.core.removeAssembliesInRing(ring, o.cs)
-
     o.initializeInterfaces(r)
 
     # put some stuff in the SFP too.
@@ -218,6 +206,16 @@ def loadTestReactor(
         TEST_REACTOR = cPickle.dumps((o, o.r, assemblies.getAssemNum()), protocol=2)
 
     return o, o.r
+
+
+def reduceTestReactorRings(r, cs, maxNumRings):
+    """Helper method for the test reactor above
+    The goal is to reduce the size of the reactor for tests that don't neeed
+    such a large reactor, and would run much faster with a smaller one
+    """
+    if 9 > maxNumRings > 1:
+        for ring in range(9, maxNumRings, -1):
+            r.core.removeAssembliesInRing(ring, cs)
 
 
 class ReactorTests(unittest.TestCase):

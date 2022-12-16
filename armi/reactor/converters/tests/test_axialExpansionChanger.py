@@ -25,7 +25,7 @@ from armi.reactor.assemblies import grids
 from armi.reactor.assemblies import HexAssembly
 from armi.reactor.blocks import HexBlock
 from armi.reactor.components import DerivedShape, UnshapedComponent
-from armi.reactor.tests.test_reactors import loadTestReactor
+from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
 from armi.tests import TEST_ROOT
 from armi.reactor.components.basicShapes import (
     Circle,
@@ -541,7 +541,8 @@ class TestManageCoreMesh(unittest.TestCase):
 
     def setUp(self):
         self.axialExpChngr = AxialExpansionChanger()
-        o, self.r = loadTestReactor(TEST_ROOT, maxNumRings=3)
+        o, self.r = loadTestReactor(TEST_ROOT)
+        reduceTestReactorRings(self.r, o.cs, 3)
 
         self.oldAxialMesh = self.r.core.p.axialMesh
         # expand refAssem by 10%
@@ -817,16 +818,16 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
         o, r = loadTestReactor(
             os.path.join(TEST_ROOT, "detailedAxialExpansion"),
             customSettings={"inputHeightsConsideredHot": True},
-            maxNumRings=3,
         )
+        reduceTestReactorRings(r, o.cs, 3)
 
         self.stdAssems = [a for a in r.core.getAssemblies()]
 
         oCold, rCold = loadTestReactor(
             os.path.join(TEST_ROOT, "detailedAxialExpansion"),
             customSettings={"inputHeightsConsideredHot": False},
-            maxNumRings=3,
         )
+        reduceTestReactorRings(rCold, oCold.cs, 3)
 
         self.testAssems = [a for a in rCold.core.getAssemblies()]
 
@@ -868,6 +869,7 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
                     ):
                         # custom materials don't expand
                         self.assertGreater(bExp.getMass("U235"), bStd.getMass("U235"))
+
                 if not aStd.hasFlags(Flags.CONTROL) and not aStd.hasFlags(Flags.TEST):
                     if not hasCustomMaterial:
                         # skip blocks of custom material where liner is merged with clad

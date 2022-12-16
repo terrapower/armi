@@ -31,7 +31,7 @@ from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.cases import case
 from armi.reactor import grids
 from armi.reactor.flags import Flags
-from armi.reactor.tests import test_reactors
+from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
 from armi.settings.fwSettings.databaseSettings import CONF_FORCE_DB_PARAMS
 from armi.tests import TEST_ROOT
 from armi.utils import directoryChangers
@@ -87,7 +87,7 @@ class TestDatabaseInterface(unittest.TestCase):
     def setUp(self):
         self.td = directoryChangers.TemporaryDirectoryChanger()
         self.td.__enter__()
-        self.o, self.r = test_reactors.loadTestReactor(TEST_ROOT)
+        self.o, self.r = loadTestReactor(TEST_ROOT)
 
         self.dbi = DatabaseInterface(self.r, self.o.cs)
         self.dbi.initDB(fName=self._testMethodName + ".h5")
@@ -261,7 +261,8 @@ class TestDatabaseReading(unittest.TestCase):
         newSettings = {"verbosity": "extra"}
         newSettings["nCycles"] = 2
         newSettings["burnSteps"] = 2
-        o, r = test_reactors.loadTestReactor(customSettings=newSettings, maxNumRings=3)
+        o, r = loadTestReactor(customSettings=newSettings)
+        reduceTestReactorRings(r, o.cs, 3)
 
         settings.setMasterCs(o.cs)
 

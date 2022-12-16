@@ -28,7 +28,7 @@ from armi.reactor import grids
 from armi.tests import TEST_ROOT
 from armi.reactor.converters import geometryConverters
 from armi.reactor.converters import uniformMesh
-from armi.reactor.tests.test_reactors import loadTestReactor
+from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
 from armi.reactor.flags import Flags
 from armi.utils import directoryChangers
 
@@ -132,7 +132,8 @@ class TestGeometryConverters(unittest.TestCase):
 
 class TestHexToRZConverter(unittest.TestCase):
     def setUp(self):
-        self.o, self.r = loadTestReactor(TEST_ROOT, maxNumRings=2)
+        self.o, self.r = loadTestReactor(TEST_ROOT)
+        reduceTestReactorRings(self.r, self.o.cs, 2)
         self.cs = settings.getMasterCs()
 
         runLog.setVerbosity("extra")
@@ -264,7 +265,8 @@ class TestHexToRZConverter(unittest.TestCase):
 class TestEdgeAssemblyChanger(unittest.TestCase):
     def setUp(self):
         r"""Use the related setup in the testFuelHandlers module"""
-        self.o, self.r = loadTestReactor(TEST_ROOT, maxNumRings=3)
+        self.o, self.r = loadTestReactor(TEST_ROOT)
+        reduceTestReactorRings(self.r, self.o.cs, 3)
 
     def tearDown(self):
         del self.o
@@ -298,7 +300,8 @@ class TestEdgeAssemblyChanger(unittest.TestCase):
 
 class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
     def setUp(self):
-        self.o, self.r = loadTestReactor(TEST_ROOT, maxNumRings=2)
+        self.o, self.r = loadTestReactor(TEST_ROOT)
+        reduceTestReactorRings(self.r, self.o.cs, 2)
 
         # initialize the block powers to a uniform power profile, accounting for
         # the loaded reactor being 1/3 core
