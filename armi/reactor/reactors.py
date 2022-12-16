@@ -2387,7 +2387,7 @@ class Core(composites.Composite):
                 # since we can't do axial expansion (yet)
                 axialExpChngr.applyColdHeightMassIncrease()
                 axialExpChngr.expansionData.computeThermalExpansionFactors()
-                axialExpChngr.axiallyExpandAssembly(thermal=True)
+                axialExpChngr.axiallyExpandAssembly()
         # resolve axially disjoint mesh (if needed)
         if not dbLoad:
             axialExpChngr.manageCoreMesh(self.parent)
