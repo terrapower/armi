@@ -246,9 +246,9 @@ class Test_Air(unittest.TestCase):
         error = math.fabs(nDens["N"] / sum(nDens.values()) - refN)
         self.assertLess(error, 1e-4)
         error = math.fabs(nDens["O"] / sum(nDens.values()) - refO)
-        self.assertLess(error, 1e-3)
+        self.assertLess(error, 1e-4)
         error = math.fabs(nDens["AR"] / sum(nDens.values()) - refAR)
-        self.assertLess(error, 1e-3)
+        self.assertLess(error, 1e-4)
 
     def test_checkPropertyTempRange(self):
 
