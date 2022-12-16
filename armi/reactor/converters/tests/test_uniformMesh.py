@@ -37,11 +37,8 @@ class TestConverterFactory(unittest.TestCase):
     def setUp(self):
         self.o, self.r = test_reactors.loadTestReactor(
             inputFilePath=os.path.join(TEST_ROOT, "detailedAxialExpansion"),
+            maxNumRings=2,
         )
-
-        # make the reactor smaller, just to make the tests go faster
-        for ring in [9, 8, 7, 6, 5, 4, 3]:
-            self.r.core.removeAssembliesInRing(ring, self.o.cs)
 
         self.dummyOptions = DummyFluxOptions()
 
@@ -65,11 +62,8 @@ class TestAssemblyUniformMesh(unittest.TestCase):
     def setUp(self):
         self.o, self.r = test_reactors.loadTestReactor(
             inputFilePath=os.path.join(TEST_ROOT, "detailedAxialExpansion"),
+            maxNumRings=2,
         )
-
-        # make the reactor smaller, just to make the tests go faster
-        for ring in [9, 8, 7, 6, 5, 4, 3]:
-            self.r.core.removeAssembliesInRing(ring, self.o.cs)
 
         self.converter = uniformMesh.NeutronicsUniformMeshConverter(cs=self.o.cs)
         self.converter._sourceReactor = self.r
@@ -227,13 +221,9 @@ class TestUniformMeshComponents(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.o, cls.r = test_reactors.loadTestReactor(
-            TEST_ROOT, customSettings={"xsKernel": "MC2v2"}
+            TEST_ROOT, customSettings={"xsKernel": "MC2v2"}, maxNumRings=4
         )
         cls.r.core.lib = isotxs.readBinary(ISOAA_PATH)
-
-        # make the reactor smaller, just to make the tests go faster
-        for ring in [9, 8, 7, 6, 5]:
-            cls.r.core.removeAssembliesInRing(ring, cls.o.cs)
 
         # make the mesh a little non-uniform
         a = cls.r.core[4]
@@ -301,14 +291,10 @@ class TestUniformMesh(unittest.TestCase):
 
     def setUp(self):
         self.o, self.r = test_reactors.loadTestReactor(
-            TEST_ROOT, customSettings={"xsKernel": "MC2v2"}
+            TEST_ROOT, customSettings={"xsKernel": "MC2v2"}, maxNumRings=3
         )
         self.r.core.lib = isotxs.readBinary(ISOAA_PATH)
         self.r.core.p.keff = 1.0
-
-        # make the reactor smaller, just to make the tests go faster
-        for ring in [9, 8, 7, 6, 5, 4]:
-            self.r.core.removeAssembliesInRing(ring, self.o.cs)
 
         self.converter = uniformMesh.NeutronicsUniformMeshConverter(
             cs=self.o.cs, calcReactionRates=True
