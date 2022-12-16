@@ -55,8 +55,8 @@ class Air(material.Fluid):
         https://www.pnnl.gov/main/publications/external/technical_reports/PNNL-15870Rev1.pdf
         """
         self.setMassFrac("C", 0.000124)
-        self.setMassFrac("N14", 0.755268)
-        self.setMassFrac("O16", 0.231781)
+        self.setMassFrac("N", 0.755268)
+        self.setMassFrac("O", 0.231781)
         self.setMassFrac("AR", 0.012827)
 
     def density(
