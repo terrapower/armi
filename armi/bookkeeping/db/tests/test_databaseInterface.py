@@ -270,8 +270,9 @@ class TestDatabaseReading(unittest.TestCase):
         dbi.enabled(True)
         dbi.initDB()  # Main Interface normally does this
 
+        # make the reactor smaller, just to make the tests go faster
         for ring in [9, 8, 7, 6, 5, 4]:
-            r.core.removeAssembliesInRing(ring, o.cs, overrideCircularRingMode=False)
+            r.core.removeAssembliesInRing(ring, o.cs)
 
         # update a few parameters
         def writeFlux(cycle, node):

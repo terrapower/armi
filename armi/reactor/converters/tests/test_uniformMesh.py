@@ -38,6 +38,11 @@ class TestConverterFactory(unittest.TestCase):
         self.o, self.r = test_reactors.loadTestReactor(
             inputFilePath=os.path.join(TEST_ROOT, "detailedAxialExpansion"),
         )
+
+        # make the reactor smaller, just to make the tests go faster
+        for ring in [9, 8, 7, 6, 5, 4, 3]:
+            self.r.core.removeAssembliesInRing(ring, self.o.cs)
+
         self.dummyOptions = DummyFluxOptions()
 
     def test_converterFactory(self):
@@ -61,6 +66,11 @@ class TestAssemblyUniformMesh(unittest.TestCase):
         self.o, self.r = test_reactors.loadTestReactor(
             inputFilePath=os.path.join(TEST_ROOT, "detailedAxialExpansion"),
         )
+
+        # make the reactor smaller, just to make the tests go faster
+        for ring in [9, 8, 7, 6, 5, 4, 3]:
+            self.r.core.removeAssembliesInRing(ring, self.o.cs)
+
         self.converter = uniformMesh.NeutronicsUniformMeshConverter(cs=self.o.cs)
         self.converter._sourceReactor = self.r
 
@@ -220,6 +230,11 @@ class TestUniformMeshComponents(unittest.TestCase):
             TEST_ROOT, customSettings={"xsKernel": "MC2v2"}
         )
         cls.r.core.lib = isotxs.readBinary(ISOAA_PATH)
+
+        # make the reactor smaller, just to make the tests go faster
+        for ring in [9, 8, 7, 6, 5]:
+            cls.r.core.removeAssembliesInRing(ring, cls.o.cs)
+
         # make the mesh a little non-uniform
         a = cls.r.core[4]
         a[2].setHeight(a[2].getHeight() * 1.05)
@@ -290,6 +305,11 @@ class TestUniformMesh(unittest.TestCase):
         )
         self.r.core.lib = isotxs.readBinary(ISOAA_PATH)
         self.r.core.p.keff = 1.0
+
+        # make the reactor smaller, just to make the tests go faster
+        for ring in [9, 8, 7, 6, 5, 4]:
+            self.r.core.removeAssembliesInRing(ring, self.o.cs)
+
         self.converter = uniformMesh.NeutronicsUniformMeshConverter(
             cs=self.o.cs, calcReactionRates=True
         )

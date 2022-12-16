@@ -128,6 +128,13 @@ def buildOperatorOfEmptyCartesianBlocks(customSettings=None):
     return o
 
 
+"""
+NOTE: If this reactor had 3 rings instead of 9, most unit tests that use it
+go 4 times faster (based on testing). The problem is it would breat a LOT
+of downstream tests that import this method. Probably still worth it though.
+"""
+
+
 def loadTestReactor(
     inputFilePath=TEST_ROOT, customSettings=None, inputFileName="armiRun.yaml"
 ):
