@@ -292,10 +292,19 @@ class TestDatabaseReading(unittest.TestCase):
         del cls.r
         cls.r = None
 
+    def _fullCoreSizeChecker(self, r):
+        """TODO"""
+        self.assertEqual(r.core.numRings, 3)
+        self.assertEqual(r.p.cycle, 0)
+        self.assertEqual(len(r.core.assembliesByName), 19)
+        self.assertEqual(len(r.core.circularRingList), 0)
+        self.assertEqual(len(r.core.blocksByName), 95)
+
     def test_growToFullCore(self):
         with Database3(self.dbName, "r") as db:
             r = db.load(0, 0, allowMissing=True)
 
+        # test partial core values
         self.assertEqual(r.core.numRings, 3)
         self.assertEqual(r.p.cycle, 0)
         self.assertEqual(len(r.core.assembliesByName), 7)
@@ -303,24 +312,14 @@ class TestDatabaseReading(unittest.TestCase):
         self.assertEqual(len(r.core.blocksByName), 35)
 
         r.core.growToFullCore(None)
-
-        self.assertEqual(r.core.numRings, 3)
-        self.assertEqual(r.p.cycle, 0)
-        self.assertEqual(len(r.core.assembliesByName), 19)
-        self.assertEqual(len(r.core.circularRingList), 0)
-        self.assertEqual(len(r.core.blocksByName), 95)
+        self._fullCoreSizeChecker(r)
 
     def test_growToFullCoreWithCS(self):
         with Database3(self.dbName, "r") as db:
             r = db.load(0, 0, allowMissing=True)
 
         r.core.growToFullCore(self.cs)
-
-        self.assertEqual(r.core.numRings, 3)
-        self.assertEqual(r.p.cycle, 0)
-        self.assertEqual(len(r.core.assembliesByName), 19)
-        self.assertEqual(len(r.core.circularRingList), 0)
-        self.assertEqual(len(r.core.blocksByName), 95)
+        self._fullCoreSizeChecker(r)
 
     def test_growToFullCoreFromFactory(self):
         from armi.bookkeeping.db import databaseFactory
@@ -330,12 +329,7 @@ class TestDatabaseReading(unittest.TestCase):
             r = db.load(0, 0, allowMissing=True)
 
         r.core.growToFullCore(None)
-
-        self.assertEqual(r.core.numRings, 3)
-        self.assertEqual(r.p.cycle, 0)
-        self.assertEqual(len(r.core.assembliesByName), 19)
-        self.assertEqual(len(r.core.circularRingList), 0)
-        self.assertEqual(len(r.core.blocksByName), 95)
+        self._fullCoreSizeChecker(r)
 
     def test_growToFullCoreFromFactoryWithCS(self):
         from armi.bookkeeping.db import databaseFactory
@@ -345,12 +339,7 @@ class TestDatabaseReading(unittest.TestCase):
             r = db.load(0, 0, allowMissing=True)
 
         r.core.growToFullCore(self.cs)
-
-        self.assertEqual(r.core.numRings, 3)
-        self.assertEqual(r.p.cycle, 0)
-        self.assertEqual(len(r.core.assembliesByName), 19)
-        self.assertEqual(len(r.core.circularRingList), 0)
-        self.assertEqual(len(r.core.blocksByName), 95)
+        self._fullCoreSizeChecker(r)
 
     def test_readWritten(self):
         with Database3(self.dbName, "r") as db:
