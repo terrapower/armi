@@ -323,7 +323,7 @@ assemblies:
         mult: 0.9226919412612915
       compliment:
         shape: RadialSegment
-        material: Void
+        material: Air
         Tinput: 0.0
         Thot: 0.0
         outer_theta: 0.7853981633974483
@@ -382,7 +382,7 @@ assemblies:
         mult: 0.9271114468574524
       compliment:
         shape: RadialSegment
-        material: Void
+        material: Air
         Tinput: 0.0
         Thot: 0.0
         outer_theta: 0.7853981633974483
@@ -441,7 +441,7 @@ assemblies:
         mult: 0.5954532027244568
       compliment:
         shape: RadialSegment
-        material: Void
+        material: Air
         Tinput: 0.0
         Thot: 0.0
         outer_theta: 0.7853981633974483
@@ -500,7 +500,7 @@ assemblies:
         mult: 0.5924441814422607
       compliment:
         shape: RadialSegment
-        material: Void
+        material: Air
         Tinput: 0.0
         Thot: 0.0
         outer_theta: 0.7853981633974483
@@ -559,7 +559,7 @@ assemblies:
         mult: 0.046154800802469254
       compliment:
         shape: RadialSegment
-        material: Void
+        material: Air
         Tinput: 0.0
         Thot: 0.0
         outer_theta: 0.7853981633974483
@@ -582,7 +582,7 @@ assemblies:
         mult: 0.6035306453704834
       compliment:
         shape: RadialSegment
-        material: Void
+        material: Air
         Tinput: 0.0
         Thot: 0.0
         outer_theta: 0.7853981633974483
@@ -605,7 +605,7 @@ assemblies:
         mult: 0.8756284713745117
       compliment:
         shape: RadialSegment
-        material: Void
+        material: Air
         Tinput: 0.0
         Thot: 0.0
         outer_theta: 0.7853981633974483
@@ -628,7 +628,7 @@ assemblies:
         mult: 0.5993080139160156
       compliment:
         shape: RadialSegment
-        material: Void
+        material: Air
         Tinput: 0.0
         Thot: 0.0
         outer_theta: 0.7853981633974483
@@ -651,7 +651,7 @@ assemblies:
         mult: 0.04680449143052101
       compliment:
         shape: RadialSegment
-        material: Void
+        material: Air
         Tinput: 0.0
         Thot: 0.0
         outer_theta: 0.7853981633974483
