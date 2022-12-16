@@ -72,7 +72,6 @@ class TestGeometryConverters(unittest.TestCase):
         r"""
         Tests that the setNumberOfFuelAssems method properly changes the number of fuel assemblies.
         """
-
         # tests ability to add fuel assemblies
         converter = geometryConverters.FuelAssemNumModifier(self.cs)
         converter.numFuelAssems = 60
@@ -123,9 +122,8 @@ class TestGeometryConverters(unittest.TestCase):
         third = geometryConverters.HexToRZConverter._getAssembliesInSector(
             self.r.core, 0, 30
         )
-        self.assertAlmostEqual(
-            25, len(third)
-        )  # could solve this analytically based on test core size
+        # could solve this analytically based on test core size
+        self.assertAlmostEqual(25, len(third))
         oneLine = geometryConverters.HexToRZConverter._getAssembliesInSector(
             self.r.core, 0, 0.001
         )
@@ -136,6 +134,11 @@ class TestHexToRZConverter(unittest.TestCase):
     def setUp(self):
         self.o, self.r = loadTestReactor(TEST_ROOT)
         self.cs = settings.getMasterCs()
+
+        # make the reactor smaller, just to make the tests go faster
+        for ring in [9, 8, 7, 6, 5, 4, 3]:
+            self.r.core.removeAssembliesInRing(ring, self.cs)
+
         runLog.setVerbosity("extra")
         self._expandReactor = False
         self._massScaleFactor = 1.0
@@ -184,18 +187,6 @@ class TestHexToRZConverter(unittest.TestCase):
         expectedRadialMesh = [
             8.794379,
             23.26774,
-            35.177517,
-            38.33381,
-            51.279602,
-            53.494121,
-            63.417171,
-            66.975997,
-            68.686298,
-            83.893031,
-            96.738172,
-            99.107621,
-            114.32693,
-            129.549296,
         ]
         assert_allclose(expectedThetaMesh, thetaMesh)
         assert_allclose(expectedRadialMesh, radialMesh)
@@ -277,6 +268,10 @@ class TestEdgeAssemblyChanger(unittest.TestCase):
         """
         self.o, self.r = loadTestReactor(TEST_ROOT)
 
+        # make the reactor smaller, just to make the tests go faster
+        for ring in [9, 8, 7, 6, 5, 4]:
+            self.r.core.removeAssembliesInRing(ring, self.o.cs)
+
     def tearDown(self):
         del self.o
         del self.r
@@ -310,6 +305,10 @@ class TestEdgeAssemblyChanger(unittest.TestCase):
 class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
     def setUp(self):
         self.o, self.r = loadTestReactor(TEST_ROOT)
+
+        # make the reactor smaller, just to make the tests go faster
+        for ring in [9, 8, 7, 6, 5, 4, 3]:
+            self.r.core.removeAssembliesInRing(ring, self.o.cs)
 
         # initialize the block powers to a uniform power profile, accounting for
         # the loaded reactor being 1/3 core
