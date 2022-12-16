@@ -261,7 +261,7 @@ class TestDatabaseReading(unittest.TestCase):
         newSettings = {"verbosity": "extra"}
         newSettings["nCycles"] = 2
         newSettings["burnSteps"] = 2
-        o, r = test_reactors.loadTestReactor(customSettings=newSettings)
+        o, r = test_reactors.loadTestReactor(customSettings=newSettings, maxNumRings=3)
 
         settings.setMasterCs(o.cs)
 
@@ -269,10 +269,6 @@ class TestDatabaseReading(unittest.TestCase):
         dbi = o.getInterface("database")
         dbi.enabled(True)
         dbi.initDB()  # Main Interface normally does this
-
-        # make the reactor smaller, just to make the tests go faster
-        for ring in [9, 8, 7, 6, 5, 4]:
-            r.core.removeAssembliesInRing(ring, o.cs)
 
         # update a few parameters
         def writeFlux(cycle, node):
