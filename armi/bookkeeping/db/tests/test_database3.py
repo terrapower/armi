@@ -96,7 +96,7 @@ class TestDatabase3(unittest.TestCase):
 
     def makeHistory(self):
         """Walk the reactor through a few time steps and write them to the db."""
-        for cycle, node in ((cycle, node) for cycle in range(3) for node in range(3)):
+        for cycle, node in ((cycle, node) for cycle in range(2) for node in range(2)):
             self.r.p.cycle = cycle
             self.r.p.timeNode = node
             # something that splitDatabase won't change, so that we can make sure that
@@ -492,14 +492,14 @@ class TestDatabase3(unittest.TestCase):
             self.assertTrue(numpy.array_equal(attrs["fakeBigData"], numpy.eye(6400)))
 
             keys = sorted(db2.keys())
-            self.assertEqual(len(keys), 8)
-            self.assertEqual(keys[:3], ["/c00n00", "/c00n01", "/c00n02"])
+            self.assertEqual(len(keys), 4)
+            self.assertEqual(keys[:3], ["/c00n00", "/c00n01", "/c01n00"])
 
     def test_splitDatabase(self):
         self.makeHistory()
 
         self.db.splitDatabase(
-            [(c, n) for c in (1, 2) for n in range(3)], "-all-iterations"
+            [(c, n) for c in (0, 1) for n in range(2)], "-all-iterations"
         )
 
         # Closing to copy back from fast path
@@ -507,8 +507,8 @@ class TestDatabase3(unittest.TestCase):
 
         with h5py.File("test_splitDatabase.h5", "r") as newDb:
             self.assertEqual(newDb["c00n00/Reactor/cycle"][()], 0)
-            self.assertEqual(newDb["c00n00/Reactor/cycleLength"][()], 1)
-            self.assertNotIn("c02n00", newDb)
+            self.assertEqual(newDb["c00n00/Reactor/cycleLength"][()][0], 0)
+            self.assertNotIn("c03n00", newDb)
             self.assertEqual(newDb.attrs["databaseVersion"], database3.DB_VERSION)
 
             # validate that the min set of meta data keys exists
@@ -538,7 +538,7 @@ class TestDatabase3(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.db.h5db = None
             self.db.splitDatabase(
-                [(c, n) for c in (1, 2) for n in range(3)], "-all-iterations"
+                [(c, n) for c in (0, 1) for n in range(2)], "-all-iterations"
             )
 
     def test_grabLocalCommitHash(self):
