@@ -177,6 +177,14 @@ class TestHexToRZConverter(unittest.TestCase):
         with directoryChangers.TemporaryDirectoryChanger():
             geomConv.plotConvertedReactor("fname")
 
+        # bonus test: reset() works after converter has filled in values
+        geomConv.reset()
+        self.assertIsNone(geomConv.convReactor)
+        self.assertIsNone(geomConv._radialMeshConversionType)
+        self.assertIsNone(geomConv._axialMeshConversionType)
+        self.assertIsNone(geomConv._currentRadialZoneType)
+        self.assertEqual(geomConv._newBlockNum, 0)
+
     def _checkBlockAtMeshPoint(self, geomConv):
         b = geomConv._getBlockAtMeshPoint(0.0, 2.0 * math.pi, 0.0, 12.0, 50.0, 75.0)
         self.assertTrue(b.hasFlags(Flags.FUEL))
