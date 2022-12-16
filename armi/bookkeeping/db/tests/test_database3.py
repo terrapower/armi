@@ -24,7 +24,7 @@ from armi.bookkeeping.db import _getH5File
 from armi.bookkeeping.db import database3
 from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.reactor import parameters
-from armi.reactor.tests import test_reactors
+from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
 from armi.tests import TEST_ROOT
 from armi.utils import getPreviousTimeNode
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
@@ -36,9 +36,10 @@ class TestDatabase3(unittest.TestCase):
     def setUp(self):
         self.td = TemporaryDirectoryChanger()
         self.td.__enter__()
-        self.o, self.r = test_reactors.loadTestReactor(
+        self.o, self.r = loadTestReactor(
             TEST_ROOT, customSettings={"reloadDBName": "reloadingDB.h5"}
         )
+        reduceTestReactorRings(self.r, self.o.cs, maxNumRings=3)
 
         self.dbi = DatabaseInterface(self.r, self.o.cs)
         self.dbi.initDB(fName=self._testMethodName + ".h5")
@@ -95,7 +96,7 @@ class TestDatabase3(unittest.TestCase):
 
     def makeHistory(self):
         """Walk the reactor through a few time steps and write them to the db."""
-        for cycle, node in ((cycle, node) for cycle in range(3) for node in range(3)):
+        for cycle, node in ((cycle, node) for cycle in range(2) for node in range(2)):
             self.r.p.cycle = cycle
             self.r.p.timeNode = node
             # something that splitDatabase won't change, so that we can make sure that
@@ -180,10 +181,11 @@ class TestDatabase3(unittest.TestCase):
         created here for this test.
         """
         # first successfully call to prepRestartRun
-        o, r = test_reactors.loadTestReactor(
+        o, r = loadTestReactor(
             TEST_ROOT, customSettings={"reloadDBName": "reloadingDB.h5"}
         )
         cs = o.cs
+        reduceTestReactorRings(r, cs, maxNumRings=3)
 
         ratedPower = cs["power"]
         startCycle = cs["startCycle"]
@@ -195,9 +197,11 @@ class TestDatabase3(unittest.TestCase):
         ]
         cycleP, nodeP = getPreviousTimeNode(startCycle, startNode, cs)
         cyclesSetting[cycleP]["power fractions"][nodeP] = 0.5
+        numCycles = 2
+        numNodes = 2
         cs = cs.modified(
             newSettings={
-                "nCycles": 3,
+                "nCycles": numCycles,
                 "cycles": cyclesSetting,
                 "reloadDBName": "something_fake.h5",
             }
@@ -209,7 +213,9 @@ class TestDatabase3(unittest.TestCase):
         db = dbi.database
 
         # populate the db with some things
-        for cycle, node in ((cycle, node) for cycle in range(3) for node in range(2)):
+        for cycle, node in (
+            (cycle, node) for cycle in range(numCycles) for node in range(numNodes)
+        ):
             r.p.cycle = cycle
             r.p.timeNode = node
             r.p.cycleLength = sum(cyclesSetting[cycle]["step days"])
@@ -245,7 +251,9 @@ class TestDatabase3(unittest.TestCase):
         db = dbi.database
 
         # populate the db with something
-        for cycle, node in ((cycle, node) for cycle in range(3) for node in range(2)):
+        for cycle, node in (
+            (cycle, node) for cycle in range(numCycles) for node in range(numNodes)
+        ):
             r.p.cycle = cycle
             r.p.timeNode = node
             r.p.cycleLength = 2000
@@ -368,12 +376,12 @@ class TestDatabase3(unittest.TestCase):
         # assemblies in blueprints/core.
         r = self.db.load(0, 0, allowMissing=True, updateGlobalAssemNum=True)
         expected = len(self.r.core) + len(self.r.blueprints.assemblies.values())
-        self.assertEqual(assemblies._assemNum, expected)
+        self.assertEqual(15, expected)
 
         # repeat the test above to show that subsequent db loads (with updateGlobalAssemNum=True)
         # do not continue to increase the global assem num.
         self.db.load(0, 0, allowMissing=True, updateGlobalAssemNum=True)
-        self.assertEqual(assemblies._assemNum, expected)
+        self.assertEqual(15, expected)
 
     def test_history(self):
         self.makeShuffleHistory()
@@ -484,14 +492,14 @@ class TestDatabase3(unittest.TestCase):
             self.assertTrue(numpy.array_equal(attrs["fakeBigData"], numpy.eye(6400)))
 
             keys = sorted(db2.keys())
-            self.assertEqual(len(keys), 8)
-            self.assertEqual(keys[:3], ["/c00n00", "/c00n01", "/c00n02"])
+            self.assertEqual(len(keys), 4)
+            self.assertEqual(keys[:3], ["/c00n00", "/c00n01", "/c01n00"])
 
     def test_splitDatabase(self):
         self.makeHistory()
 
         self.db.splitDatabase(
-            [(c, n) for c in (1, 2) for n in range(3)], "-all-iterations"
+            [(c, n) for c in (0, 1) for n in range(2)], "-all-iterations"
         )
 
         # Closing to copy back from fast path
@@ -499,8 +507,8 @@ class TestDatabase3(unittest.TestCase):
 
         with h5py.File("test_splitDatabase.h5", "r") as newDb:
             self.assertEqual(newDb["c00n00/Reactor/cycle"][()], 0)
-            self.assertEqual(newDb["c00n00/Reactor/cycleLength"][()], 1)
-            self.assertNotIn("c02n00", newDb)
+            self.assertEqual(newDb["c00n00/Reactor/cycleLength"][()][0], 0)
+            self.assertNotIn("c03n00", newDb)
             self.assertEqual(newDb.attrs["databaseVersion"], database3.DB_VERSION)
 
             # validate that the min set of meta data keys exists
@@ -530,7 +538,7 @@ class TestDatabase3(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.db.h5db = None
             self.db.splitDatabase(
-                [(c, n) for c in (1, 2) for n in range(3)], "-all-iterations"
+                [(c, n) for c in (0, 1) for n in range(2)], "-all-iterations"
             )
 
     def test_grabLocalCommitHash(self):
