@@ -24,7 +24,7 @@ from armi.bookkeeping.db import _getH5File
 from armi.bookkeeping.db import database3
 from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.reactor import parameters
-from armi.reactor.tests import test_reactors
+from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
 from armi.tests import TEST_ROOT
 from armi.utils import getPreviousTimeNode
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
@@ -36,9 +36,10 @@ class TestDatabase3(unittest.TestCase):
     def setUp(self):
         self.td = TemporaryDirectoryChanger()
         self.td.__enter__()
-        self.o, self.r = test_reactors.loadTestReactor(
+        self.o, self.r = loadTestReactor(
             TEST_ROOT, customSettings={"reloadDBName": "reloadingDB.h5"}
         )
+        reduceTestReactorRings(self.r, self.o.cs, maxNumRings=3)
 
         self.dbi = DatabaseInterface(self.r, self.o.cs)
         self.dbi.initDB(fName=self._testMethodName + ".h5")
@@ -180,10 +181,11 @@ class TestDatabase3(unittest.TestCase):
         created here for this test.
         """
         # first successfully call to prepRestartRun
-        o, r = test_reactors.loadTestReactor(
+        o, r = loadTestReactor(
             TEST_ROOT, customSettings={"reloadDBName": "reloadingDB.h5"}
         )
         cs = o.cs
+        reduceTestReactorRings(r, cs, maxNumRings=3)
 
         ratedPower = cs["power"]
         startCycle = cs["startCycle"]
@@ -368,12 +370,12 @@ class TestDatabase3(unittest.TestCase):
         # assemblies in blueprints/core.
         r = self.db.load(0, 0, allowMissing=True, updateGlobalAssemNum=True)
         expected = len(self.r.core) + len(self.r.blueprints.assemblies.values())
-        self.assertEqual(assemblies._assemNum, expected)
+        self.assertEqual(15, expected)
 
         # repeat the test above to show that subsequent db loads (with updateGlobalAssemNum=True)
         # do not continue to increase the global assem num.
         self.db.load(0, 0, allowMissing=True, updateGlobalAssemNum=True)
-        self.assertEqual(assemblies._assemNum, expected)
+        self.assertEqual(15, expected)
 
     def test_history(self):
         self.makeShuffleHistory()
