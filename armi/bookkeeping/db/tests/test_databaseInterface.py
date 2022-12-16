@@ -11,9 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-r""" Tests of the Database Interface
-"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
+r""" Tests of the Database Interface"""
+# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-method-argument,import-outside-toplevel
 import os
 import types
 import unittest
@@ -160,7 +159,6 @@ class TestDatabaseWriter(unittest.TestCase):
             self.assertIn("startTime", h5.attrs)
             self.assertIn("machines", h5.attrs)
             self.assertIn("caseTitle", h5.attrs)
-
             self.assertIn("geomFile", h5["inputs"])
             self.assertIn("settings", h5["inputs"])
             self.assertIn("blueprints", h5["inputs"])

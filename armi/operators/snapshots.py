@@ -66,7 +66,7 @@ class OperatorSnapshots(operatorMPI.OperatorMPI):
 
             # need to update reactor power after the database load
             # this is normally handled in operator._cycleLoop
-            self.r.p.core.power = self.cs["power"]
+            self.r.core.p.power = self.cs["power"]
 
             halt = self.interactAllBOC(self.r.p.cycle)
             if halt:
