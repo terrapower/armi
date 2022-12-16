@@ -132,12 +132,8 @@ class TestGeometryConverters(unittest.TestCase):
 
 class TestHexToRZConverter(unittest.TestCase):
     def setUp(self):
-        self.o, self.r = loadTestReactor(TEST_ROOT)
+        self.o, self.r = loadTestReactor(TEST_ROOT, maxNumRings=2)
         self.cs = settings.getMasterCs()
-
-        # make the reactor smaller, just to make the tests go faster
-        for ring in [9, 8, 7, 6, 5, 4, 3]:
-            self.r.core.removeAssembliesInRing(ring, self.cs)
 
         runLog.setVerbosity("extra")
         self._expandReactor = False
@@ -151,6 +147,10 @@ class TestHexToRZConverter(unittest.TestCase):
         del self.r
 
     def test_convert(self):
+        # make the reactor smaller, because of a test parallelization edge case
+        for ring in [9, 8, 7, 6, 5, 4, 3]:
+            self.r.core.removeAssembliesInRing(ring, self.o.cs)
+
         converterSettings = {
             "radialConversionType": "Ring Compositions",
             "axialConversionType": "Axial Coordinates",
@@ -263,14 +263,8 @@ class TestHexToRZConverter(unittest.TestCase):
 
 class TestEdgeAssemblyChanger(unittest.TestCase):
     def setUp(self):
-        r"""
-        Use the related setup in the testFuelHandlers module
-        """
-        self.o, self.r = loadTestReactor(TEST_ROOT)
-
-        # make the reactor smaller, just to make the tests go faster
-        for ring in [9, 8, 7, 6, 5, 4]:
-            self.r.core.removeAssembliesInRing(ring, self.o.cs)
+        r"""Use the related setup in the testFuelHandlers module"""
+        self.o, self.r = loadTestReactor(TEST_ROOT, maxNumRings=3)
 
     def tearDown(self):
         del self.o
@@ -304,11 +298,7 @@ class TestEdgeAssemblyChanger(unittest.TestCase):
 
 class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
     def setUp(self):
-        self.o, self.r = loadTestReactor(TEST_ROOT)
-
-        # make the reactor smaller, just to make the tests go faster
-        for ring in [9, 8, 7, 6, 5, 4, 3]:
-            self.r.core.removeAssembliesInRing(ring, self.o.cs)
+        self.o, self.r = loadTestReactor(TEST_ROOT, maxNumRings=2)
 
         # initialize the block powers to a uniform power profile, accounting for
         # the loaded reactor being 1/3 core
