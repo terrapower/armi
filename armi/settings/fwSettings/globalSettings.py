@@ -134,6 +134,7 @@ def defineSettings() -> List[setting.Setting]:
             CONF_INITIALIZE_BURN_CHAIN,
             default=True,
             label="Initialize Burn Chain",
+            schema=vol.Coerce(type(bool)),
             description=(
                 f"This setting is paired with the `{CONF_BURN_CHAIN_FILE_NAME}` setting. "
                 f"When enabled, this will initialize the burn-chain on initializing the case and "

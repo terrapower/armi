@@ -447,8 +447,6 @@ class INuclide(NuclideInterface):
     def isFissile(self):
         """Determine if the nuclide is fissile.
 
-        Determines if the nuclide is fissle.
-
         Returns
         -------
         answer: bool

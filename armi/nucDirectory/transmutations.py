@@ -232,7 +232,7 @@ class DecayMode(Transmutable):
                     f"user provided burn-chain data."
                 )
 
-                self.halfLifeInSeconds = dataDict["halfLifeInSeconds"]
+                self.halfLifeInSeconds = userHalfLife
         self.decay = (
             LN2 / self.halfLifeInSeconds * self.branch
         )  # decay constant, reduced by branch to make it accurate

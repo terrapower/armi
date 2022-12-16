@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Tests for elements"""
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import os
@@ -104,6 +103,13 @@ class TestElement(unittest.TestCase):
                 1.0,
                 places=4,
             )
+
+    def test_isHeavyMetal(self):
+        for ee in elements.byZ.values():
+            if ee.z > 89:
+                self.assertTrue(ee.isHeavyMetal())
+            else:
+                self.assertFalse(ee.isHeavyMetal())
 
 
 if __name__ == "__main__":

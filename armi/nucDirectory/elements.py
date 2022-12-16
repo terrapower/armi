@@ -114,6 +114,7 @@ from typing import List
 from enum import Enum
 
 from armi import context
+from armi.utils.units import HEAVY_METAL_CUTOFF_Z
 
 byZ = {}
 byName = {}
@@ -200,7 +201,14 @@ class Element:
         return any([nuc.abundance > 0.0 for nuc in self.nuclides])
 
     def getNaturalIsotopics(self):
-        """Return a list of nuclides that are naturally occurring for this element."""
+        """
+        Return a list of nuclides that are naturally occurring for this element.
+
+        Notes
+        -----
+        This method will filter out any NaturalNuclideBases from the `nuclides`
+        attribute.
+        """
         return [nuc for nuc in self.nuclides if nuc.abundance > 0.0 and nuc.a > 0]
 
     def isHeavyMetal(self):
@@ -214,7 +222,7 @@ class Element:
         the initial heavy metal mass within a component should be tracked. It is typical
         to include any element/nuclide above Actinium.
         """
-        return all([n.isHeavyMetal() for n in self.nuclides])
+        return self.z > HEAVY_METAL_CUTOFF_Z
 
 
 def getElementsByChemicalPhase(phase: ChemicalPhase) -> List[Element]:

@@ -99,7 +99,7 @@ number (A), the natural abundance, and all of the decay and transmutation modes 
 decay and transmutation modes).
 
 Nuclide names, labels, and IDs
-------------------------
+------------------------------
 Nuclides have names, labels and IDs. 
 
 :py:attr:`INuclide.name <armi.nucDirectory.nuclideBases.INuclide.name>`

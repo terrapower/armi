@@ -224,7 +224,7 @@ class LumpedFissionProduct:
         return massVector
 
     def getGasFraction(self):
-        r"""
+        """
         get the fraction of gas that is from Xe and Kr gas
 
         Returns
@@ -233,8 +233,6 @@ class LumpedFissionProduct:
             Fraction of LFP that is gaseous
         """
         totalGas = 0
-
-        # sum up all of the nuclides that are XE or KR
         for nuc, val in self.items():
             if isGas(nuc):
                 totalGas += val

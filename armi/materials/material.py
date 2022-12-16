@@ -311,10 +311,7 @@ class Material(composites.Leaf):
         updatedDensity = updatedMassDensities.sum()
         massFracs = updatedMassDensities / updatedDensity
 
-        # There can be small floating point issues with division, so this
-        # rounds the mass fractions to the nearest 10 decimals.
-        massFracs = massFracs.round(decimals=10)
-        if massFracs.sum() != 1.0:
+        if not numpy.isclose(sum(massFracs), 1.0, atol=1e-10):
             raise RuntimeError(
                 f"The mass fractions {massFracs} in {self} do not sum to 1.0."
             )
