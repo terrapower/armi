@@ -1,6 +1,6 @@
 name: black
 
-on: [push, pull_request]
+on: [push]
 
 # use workaround due to: https://github.com/psf/black/issues/2079#issuecomment-812359146
 jobs:
