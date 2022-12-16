@@ -3,26 +3,6 @@ nuclide flags:
     burn: false
     xs: true
     expandTo: []
-  CL35:
-    burn: false
-    xs: true
-    expandTo: []
-  CL37:
-    burn: false
-    xs: true
-    expandTo: []
-  AL27:
-    burn: false
-    xs: true
-    expandTo: []
-  B10:
-    burn: false
-    xs: true
-    expandTo: []
-  B11:
-    burn: false
-    xs: true
-    expandTo: []
   PU240:
     burn: false
     xs: true
@@ -31,23 +11,11 @@ nuclide flags:
     burn: false
     xs: true
     expandTo: []
-  NI:
+  AR:
     burn: false
     xs: true
     expandTo: []
   PA233:
-    burn: false
-    xs: true
-    expandTo: []
-  NA23:
-    burn: false
-    xs: true
-    expandTo: []
-  NA22:
-    burn: false
-    xs: true
-    expandTo: []
-  PB:
     burn: false
     xs: true
     expandTo: []
@@ -63,15 +31,7 @@ nuclide flags:
     burn: false
     xs: true
     expandTo: []
-  TI:
-    burn: false
-    xs: true
-    expandTo: []
   AR38:
-    burn: false
-    xs: true
-    expandTo: []
-  RA226:
     burn: false
     xs: true
     expandTo: []
@@ -88,22 +48,6 @@ nuclide flags:
     xs: true
     expandTo: []
   LFP35:
-    burn: false
-    xs: true
-    expandTo: []
-  NP236:
-    burn: false
-    xs: true
-    expandTo: []
-  NP237:
-    burn: false
-    xs: true
-    expandTo: []
-  CO59:
-    burn: false
-    xs: true
-    expandTo: []
-  NP239:
     burn: false
     xs: true
     expandTo: []
@@ -135,15 +79,7 @@ nuclide flags:
     burn: false
     xs: true
     expandTo: []
-  CR:
-    burn: false
-    xs: true
-    expandTo: []
   TH234:
-    burn: false
-    xs: true
-    expandTo: []
-  MN55:
     burn: false
     xs: true
     expandTo: []
@@ -151,27 +87,7 @@ nuclide flags:
     burn: false
     xs: true
     expandTo: []
-  CU:
-    burn: false
-    xs: true
-    expandTo: []
   AR40:
-    burn: false
-    xs: true
-    expandTo: []
-  MG:
-    burn: false
-    xs: true
-    expandTo: []
-  MO:
-    burn: false
-    xs: true
-    expandTo: []
-  SI:
-    burn: false
-    xs: true
-    expandTo: []
-  FE:
     burn: false
     xs: true
     expandTo: []
@@ -180,10 +96,6 @@ nuclide flags:
     xs: true
     expandTo: []
   DUMP2:
-    burn: false
-    xs: true
-    expandTo: []
-  AM241:
     burn: false
     xs: true
     expandTo: []
@@ -251,43 +163,15 @@ nuclide flags:
     burn: false
     xs: true
     expandTo: []
-  O16:
+  O:
     burn: false
     xs: true
-    expandTo: []
-  N14:
+    expandTo: [O16]
+  N:
     burn: false
     xs: true
-    expandTo: []
-  H:
-    burn: false
-    xs: true
-    expandTo: []
-  S:
-    burn: false
-    xs: true
-    expandTo: []
-  P31:
-    burn: false
-    xs: true
-    expandTo: []
-  TA181:
-    burn: false
-    xs: true
-    expandTo: []
+    expandTo: [N14]
   ZR:
-    burn: false
-    xs: true
-    expandTo: []
-  K39:
-    burn: false
-    xs: true
-    expandTo: []
-  K40:
-    burn: false
-    xs: true
-    expandTo: []
-  K41:
     burn: false
     xs: true
     expandTo: []
