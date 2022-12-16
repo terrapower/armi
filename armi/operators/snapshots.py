@@ -63,6 +63,11 @@ class OperatorSnapshots(operatorMPI.OperatorMPI):
                 "Beginning snapshot ({0:02d}, {1:02d})".format(ssCycle, ssNode)
             )
             dbi.loadState(ssCycle, ssNode)
+
+            # need to update reactor power after the database load
+            # this is normally handled in operator._cycleLoop
+            self.r.core.p.power = self.cs["power"]
+
             halt = self.interactAllBOC(self.r.p.cycle)
             if halt:
                 break

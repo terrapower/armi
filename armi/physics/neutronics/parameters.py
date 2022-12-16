@@ -99,6 +99,7 @@ def _getNeutronicsBlockParams():
             categories=[
                 parameters.Category.fluxQuantities,
                 parameters.Category.multiGroupQuantities,
+                parameters.Category.gamma,
             ],
             default=None,
         )
@@ -129,7 +130,10 @@ def _getNeutronicsBlockParams():
             description="multigroup gamma source",
             location=ParamLocation.AVERAGE,
             saveToDB=True,
-            categories=[parameters.Category.multiGroupQuantities],
+            categories=[
+                parameters.Category.multiGroupQuantities,
+                parameters.Category.gamma,
+            ],
             default=None,
         )
 
@@ -139,7 +143,8 @@ def _getNeutronicsBlockParams():
             description="gamma source",
             location=ParamLocation.AVERAGE,
             saveToDB=True,
-            default=None,
+            categories=[parameters.Category.gamma],
+            default=0.0,
         )
 
         pb.defParam(
@@ -163,8 +168,9 @@ def _getNeutronicsBlockParams():
             description="""
                 The block-level pin multigroup fluxes. pinMgFluxes[g][i] represents the flux in group g for pin i.  Flux
                 units are the standard n/cm^2/s.  The "ARMI pin ordering" is used, which is counter-clockwise from 3
-                o'clock.  See TP1-1.9.31-RPT-0010 for more details.
+                o'clock.
             """,
+            categories=[parameters.Category.pinQuantities],
             saveToDB=True,
             default=None,
         )
@@ -173,6 +179,7 @@ def _getNeutronicsBlockParams():
             "pinMgFluxesAdj",
             units="",
             description="should be a blank 3-D array, but re-defined later (ng x nPins x nAxialSegments)",
+            categories=[parameters.Category.pinQuantities],
             saveToDB=False,
             default=None,
         )
@@ -181,6 +188,7 @@ def _getNeutronicsBlockParams():
             "pinMgFluxesGamma",
             units="g/s/cm$^2$",
             description="should be a blank 3-D array, but re-defined later (ng x nPins x nAxialSegments)",
+            categories=[parameters.Category.pinQuantities, parameters.Category.gamma],
             saveToDB=False,
             default=None,
         )
@@ -208,102 +216,6 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "axialPowerProfileGamma",
-            units="",
-            description="",
-            location=ParamLocation.AVERAGE,
-            saveToDB=True,
-            default=None,
-        )
-
-        pb.defParam(
-            "axialMgFluxReconCoeff",
-            units="",
-            description="""
-                The coefficients in the axial multigroup flux profile polynomial for this block.  The flux profile is
-                usually A*z^4 + B*z^3 + C*z^2 + D*z + E, and so this variable will be the 5 x ng list, so
-                axialMgFluxReconCoeff[g][i] is the ith coefficient for flux group g.  Also, this flux profile is
-                normalized (for each group) so that its average is always 1.0 in each block.  One must multiply the
-                coefficients of each group by the block-average group flux to obtain the axial group flux profile.
-            """,
-            location=ParamLocation.AVERAGE,
-            saveToDB=True,
-            default=None,
-        )
-
-        pb.defParam(
-            "axialMgFluxProfileAdj",
-            units="",
-            description="",
-            location=ParamLocation.AVERAGE,
-            saveToDB=False,
-            default=None,
-        )
-
-        pb.defParam(
-            "axialMgFluxProfileNeutron",
-            units="",
-            description="",
-            location=ParamLocation.AVERAGE,
-            saveToDB=False,
-            default=None,
-        )
-
-        pb.defParam(
-            "axialMgFluxProfileNeutronAdj",
-            units="",
-            description="",
-            location=ParamLocation.AVERAGE,
-            saveToDB=False,
-            default=None,
-        )
-
-        pb.defParam(
-            "axialMgFluxProfileGamma",
-            units="",
-            description="",
-            location=ParamLocation.AVERAGE,
-            saveToDB=False,
-            default=None,
-        )
-
-        pb.defParam(
-            "radialMgFluxProfile",
-            units="",
-            description="",
-            location=ParamLocation.AVERAGE,
-            saveToDB=True,
-            default=None,
-        )
-
-        pb.defParam(
-            "radialMgFluxProfileAdj",
-            units="",
-            description="",
-            location=ParamLocation.AVERAGE,
-            saveToDB=True,
-            default=None,
-        )
-
-        pb.defParam(
-            "radialMgFluxProfileNeutron",
-            units="",
-            description="",
-            location=ParamLocation.AVERAGE,
-            saveToDB=True,
-            default=None,
-        )
-
-        pb.defParam(
-            "radialMgFluxProfileNeutronAdj",
-            units="",
-            description="",
-            location=ParamLocation.AVERAGE,
-            saveToDB=True,
-            default=None,
-        )
-
-        pb.defParam(
-            "radialMgFluxProfileGamma",
             units="",
             description="",
             location=ParamLocation.AVERAGE,
@@ -372,6 +284,7 @@ def _getNeutronicsBlockParams():
                 "heating results applies."
             ),
             location=ParamLocation.CHILDREN,
+            categories=[parameters.Category.pinQuantities],
             default=None,
         )
 
@@ -381,12 +294,14 @@ def _getNeutronicsBlockParams():
             else:
                 self._p_linPowByPinNeutron = numpy.array(value)
 
+        # gamma category because linPowByPin is only split by neutron/gamma when gamma is activated
         pb.defParam(
             "linPowByPinNeutron",
             setter=linPowByPinNeutron,
             units="W/cm",
             description="Pin linear neutron heat rate. This is the neutron heating component of `linPowByPin`",
             location=ParamLocation.CHILDREN,
+            categories=[parameters.Category.pinQuantities, parameters.Category.gamma],
             default=None,
         )
 
@@ -402,6 +317,7 @@ def _getNeutronicsBlockParams():
             units="W/cm",
             description="Pin linear gamma heat rate. This is the gamma heating component of `linPowByPin`",
             location=ParamLocation.CHILDREN,
+            categories=[parameters.Category.pinQuantities, parameters.Category.gamma],
             default=None,
         )
 
@@ -410,7 +326,66 @@ def _getNeutronicsBlockParams():
             units="#/s",
             description='List of reaction rates in specified by setting "reactionsToDB"',
             location=ParamLocation.VOLUME_INTEGRATED,
+            categories=[parameters.Category.fluxQuantities],
             default=None,
+        )
+
+    with pDefs.createBuilder(
+        saveToDB=True,
+        default=None,
+        location=ParamLocation.EDGES,
+        categories=[parameters.Category.detailedAxialExpansion, "depletion"],
+    ) as pb:
+
+        pb.defParam(
+            "pointsEdgeFastFluxFr",
+            units=None,
+            description="Fraction of flux above 100keV at edges of the block",
+        )
+
+        pb.defParam(
+            "pointsEdgeDpa",
+            units="dpa",
+            description="displacements per atom at edges of the block",
+            categories=["cumulative", "detailedAxialExpansion", "depletion"],
+        )
+
+        pb.defParam(
+            "pointsEdgeDpaRate",
+            units="dpa/s",
+            description="Current time derivative of the displacement per atoms at edges of the block",
+        )
+
+    with pDefs.createBuilder(
+        saveToDB=True,
+        default=None,
+        location=ParamLocation.CORNERS,
+        categories=[parameters.Category.detailedAxialExpansion, "depletion"],
+    ) as pb:
+        pb.defParam(
+            "cornerFastFlux",
+            units="n/cm^2/s",
+            description="Neutron flux above 100keV at hexagon block corners",
+        )
+
+        pb.defParam(
+            "pointsCornerFastFluxFr",
+            units=None,
+            description="Fraction of flux above 100keV at corners of the block",
+        )
+
+        pb.defParam(
+            "pointsCornerDpa",
+            units="dpa",
+            description="displacements per atom at corners of the block",
+            location=ParamLocation.CORNERS,
+            categories=["cumulative", "detailedAxialExpansion", "depletion"],
+        )
+
+        pb.defParam(
+            "pointsCornerDpaRate",
+            units="dpa/s",
+            description="Current time derivative of the displacement per atoms at corners of the block",
         )
 
     with pDefs.createBuilder(
@@ -528,10 +503,6 @@ def _getNeutronicsBlockParams():
 
         pb.defParam("arealPd", units="MW/m^2", description="Power divided by XY area")
 
-        pb.defParam(
-            "arealPdGamma", units="MW/m^2", description="Areal gamma power density"
-        )
-
         pb.defParam("fertileBonus", units=None, description="The fertile bonus")
 
         pb.defParam(
@@ -542,18 +513,6 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "fisDensHom", units="1/cm^3/s", description="Homogenized fissile density"
-        )
-
-        pb.defParam(
-            "fluxDeltaFromRef",
-            units="None",
-            description="Relative difference between the current flux and the directly-computed perturbed flux.",
-        )
-
-        pb.defParam(
-            "fluxDirect",
-            units="n/cm^2/s",
-            description="Flux is computed with a direct method",
         )
 
         pb.defParam(
@@ -571,22 +530,6 @@ def _getNeutronicsBlockParams():
             units="n/cm^2/s",
             description="Peak neutron flux calculated within the mesh",
         )
-
-        pb.defParam(
-            "fluxPertDeltaFromDirect",
-            units="None",
-            description="Relative difference between the perturbed flux and the directly-computed perturbed flux",
-        )
-
-        pb.defParam(
-            "fluxPertDeltaFromDirectfluxRefWeighted", units="None", description=""
-        )
-
-        pb.defParam(
-            "fluxPerturbed", units="1/cm^2/s", description="Flux is computed by MEPT"
-        )
-
-        pb.defParam("fluxRef", units="1/cm^2/s", description="Reference flux")
 
         pb.defParam(
             "kInf",
@@ -610,17 +553,25 @@ def _getNeutronicsBlockParams():
             "pdensGamma",
             units="W/cm^3",
             description="Average volumetric gamma power density",
+            categories=[parameters.Category.gamma],
         )
 
+        # gamma category because pdens is only split by neutron/gamma when gamma is activated
         pb.defParam(
             "pdensNeutron",
             units="W/cm^3",
             description="Average volumetric neutron power density",
+            categories=[parameters.Category.gamma],
         )
 
         pb.defParam("ppdens", units="W/cm^3", description="Peak power density")
 
-        pb.defParam("ppdensGamma", units="W/cm^3", description="Peak gamma density")
+        pb.defParam(
+            "ppdensGamma",
+            units="W/cm^3",
+            description="Peak gamma density",
+            categories=[parameters.Category.gamma],
+        )
 
     # rx rate params that are derived during mesh conversion.
     # We'd like all things that can be derived from flux and XS to be
@@ -667,31 +618,29 @@ def _getNeutronicsBlockParams():
             "powerGenerated",
             units=" W",
             description="Generated power. Different than b.p.power only when gamma transport is activated.",
+            categories=[parameters.Category.gamma],
         )
 
         pb.defParam("power", units="W", description="Total power")
 
         pb.defParam("powerDecay", units="W", description="Total decay power")
 
-        pb.defParam("powerGamma", units="W", description="Total gamma power")
+        pb.defParam(
+            "powerGamma",
+            units="W",
+            description="Total gamma power",
+            categories=[parameters.Category.gamma],
+        )
 
-        pb.defParam("powerNeutron", units="W", description="Total neutron power")
+        # gamma category because power is only split by neutron/gamma when gamma is activated
+        pb.defParam(
+            "powerNeutron",
+            units="W",
+            description="Total neutron power",
+            categories=[parameters.Category.gamma],
+        )
 
     with pDefs.createBuilder(default=0.0) as pb:
-        pb.defParam(
-            "detailedDpaNewCycle",
-            units="dpa",
-            description="The total DPA accumulated in all burn steps of one cycle",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "detailedDpaPeakNewCycle",
-            units="dpa",
-            description="The total peak DPA accumulated in all burn steps of one cycle",
-            location=ParamLocation.AVERAGE,
-        )
-
         pb.defParam(
             "detailedDpaThisCycle",
             units="dpa",
@@ -737,77 +686,11 @@ def _getNeutronicsBlockParams():
         )
 
         pb.defParam(
-            "cornerFastFlux",
-            units="n/cm^2/s",
-            description="Neutron flux above 100keV at hexagon block corners",
-            location=ParamLocation.CORNERS,
-            categories=["detailedAxialExpansion", "depletion"],
-            saveToDB=True,
-            default=None,
-        )
-
-        pb.defParam(
-            "pointsCornerFastFluxFr",
-            units=None,
-            description="Fraction of flux above 100keV at corners of the block",
-            location=ParamLocation.CORNERS,
-            categories=["detailedAxialExpansion", "depletion"],
-            saveToDB=True,
-            default=None,
-        )
-        pb.defParam(
-            "pointsEdgeFastFluxFr",
-            units=None,
-            description="Fraction of flux above 100keV at edges of the block",
-            location=ParamLocation.EDGES,
-            categories=["detailedAxialExpansion", "depletion"],
-            saveToDB=True,
-            default=None,
-        )
-
-        pb.defParam(
-            "pointsCornerDpa",
-            units="dpa",
-            description="displacements per atom at corners of the block",
-            location=ParamLocation.CORNERS,
-            categories=["cumulative", "detailedAxialExpansion", "depletion"],
-            saveToDB=True,
-            default=None,
-        )
-        pb.defParam(
-            "pointsEdgeDpa",
-            units="dpa",
-            description="displacements per atom at edges of the block",
-            location=ParamLocation.EDGES,
-            categories=["cumulative", "detailedAxialExpansion", "depletion"],
-            saveToDB=True,
-            default=None,
-        )
-
-        pb.defParam(
-            "pointsCornerDpaRate",
-            units="dpa/s",
-            description="Current time derivative of the displacement per atoms at corners of the block",
-            location=ParamLocation.CORNERS,
-            categories=["detailedAxialExpansion", "depletion"],
-            saveToDB=True,
-            default=None,
-        )
-        pb.defParam(
-            "pointsEdgeDpaRate",
-            units="dpa/s",
-            description="Current time derivative of the displacement per atoms at edges of the block",
-            categories=["detailedAxialExpansion", "depletion"],
-            location=ParamLocation.EDGES,
-            saveToDB=True,
-            default=None,
-        )
-
-        pb.defParam(
             "pdensGenerated",
             units="W/cm^3",
             description="Volume-averaged generated power density. Different than b.p.pdens only when gamma transport is activated.",
             location=ParamLocation.AVERAGE,
+            categories=[parameters.Category.gamma],
         )
 
     return pDefs

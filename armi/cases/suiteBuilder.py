@@ -95,7 +95,7 @@ class SuiteBuilder:
         """
         raise NotImplementedError
 
-    def addModiferSet(self, inputModifierSet: List):
+    def addModifierSet(self, inputModifierSet: List):
         """
         Add a single input modifier set to the suite.
 

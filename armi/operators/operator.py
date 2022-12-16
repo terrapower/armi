@@ -395,6 +395,9 @@ class Operator:  # pylint: disable=too-many-public-methods
                 if converged:
                     break
             self._printTightCouplingReport()
+            # database has not yet been written, so we need to write it.
+            dbi = self.getInterface("database")
+            dbi.writeDBEveryNode(cycle, timeNode)
 
     def _interactAll(self, interactionName, activeInterfaces, *args):
         """

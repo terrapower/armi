@@ -480,7 +480,7 @@ class Inspector:
         self.addQuery(
             lambda: (not self.cs["tightCoupling"] and self.cs["tightCouplingMaxNumIters"] != 15),
             "You've requested a non default number of tight coupling iterations but left tightCoupling: False."
-            "Assuming you meant to set tightCoupling: True.",
+            "Do you want to set tightCoupling to True?",
             "",
             lambda: self._assignCS("tightCoupling", True),
         )

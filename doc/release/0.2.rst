@@ -8,13 +8,21 @@ Release Date: TBD
 
 What's new in ARMI
 ------------------
-#. Split 3 classes in ``da5abase3.py`` into 3 files (`PR#955 <https://github.com/terrapower/armi/pull/955>`_)
-#. TBD
+#. Split 3 classes in ``database3.py`` into 3 files (`PR#955 <https://github.com/terrapower/armi/pull/955>`_)
+#. savePhysicsFiles setting to copy physics kernel input and output to directories organized by cycle and time step number (e.g., c2n1) to retain files from a simulation and avoid overwriting them. (`PR#958 <https://github.com/terrapower/armi/pull/952>`_)
+#. Add pinQuantities parameter category for blockParams that have spatial distribution within a block.
+#. Use r.core.p.axialMesh instead of r.core.refAssem.getAxialMesh() for the uniform mesh converter. (`PR#959 <https://github.com/terrapower/armi/pull/959>`_)
+#. Split algorithms specific to hex assemblies out of ``FuelHandler``. (`PR#962 <https://github.com/terrapower/armi/pull/962>`_)
+#. Add ability to load from a db using negative node index
+#. Add group structures for 21- and 94-groups used in photon transport
+#. Fix numerical diffusion bug in uniform mesh converter that affects number densities and cumulative parameters like DPA. (`PR#992 <https://github.com/terrapower/armi/pull/992>`_)
 
 Bug fixes
 ---------
-#. TBD
-
+#. Fixed bug in ``referenceBlockAxialMesh`` and ``axialMesh`` during process loading. (`PR#980 <https://github.com/terrapower/armi/pull/980>`)
+#. Removed Barriers in temp directory changers and output cache to avoid deadlocks in MPI cases
+#. Fixed bug with database writing and tight coupling. (`PR#1005 https://github.com/terrapower/armi/pull/1005`)
+#. Fixed a bug where snapshot load would not respect the new cs["power"] setting.
 
 ARMI v0.2.5
 ===========

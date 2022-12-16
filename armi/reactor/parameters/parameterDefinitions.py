@@ -58,23 +58,29 @@ NEVER = 32
 
 
 class Category:
-    """A "namespace" for storing parameter categories."""
+    """
+    A "namespace" for storing parameter categories.
 
+    Notes
+    -----
+    * `cumulative` parameters are accumulated over many time steps
+    * `pinQuantities` parameters are defined on the pin level within a block
+    * `multiGroupQuantities` parameters have group dependence (often a 1D numpy array)
+    * `fluxQuantities` parameters are related to neutron or gamma flux
+    * `neutronics` parameters are calculated in a neutronics global flux solve
+    * `gamma` parameters are calculated in a fixed-source gamma solve
+    * `detailedAxialExpansion` parameters are marked as such so that they are mapped from the uniform mesh back to the non-uniform mesh
+    """
+
+    cumulative = "cumulative"
     assignInBlueprints = "assign in blueprints"
-
     retainOnReplacement = "retain on replacement"
-
-    volumeIntegrated = "volumeIntegrated"
-
+    pinQuantities = "pinQuantities"
     fluxQuantities = "fluxQuantities"
-
     multiGroupQuantities = "multi-group quantities"
-
-    # This is used to tell the UniformMesh converter to map these parameters back and
-    # forth between the source and destination meshs.
-    detailedAxialExpansion = "detailedAxialExpansion"
-
     neutronics = "neutronics"
+    gamma = "gamma"
+    detailedAxialExpansion = "detailedAxialExpansion"
 
 
 class ParamLocation(enum.Flag):

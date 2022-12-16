@@ -29,7 +29,13 @@ from armi.tests import ISOAA_PATH
 
 
 # pylint: disable=abstract-method
-class MockParams:
+class MockReactorParams:
+    def __init__(self):
+        self.cycle = 1
+        self.timeNode = 2
+
+
+class MockCoreParams:
     pass
 
 
@@ -38,13 +44,14 @@ class MockCore:
         # just pick a random geomType
         self.geomType = geometry.GeomType.CARTESIAN
         self.symmetry = "full"
-        self.p = MockParams()
+        self.p = MockCoreParams()
 
 
 class MockReactor:
     def __init__(self):
         self.core = MockCore()
         self.o = None
+        self.p = MockReactorParams()
 
 
 class MockGlobalFluxInterface(globalFluxInterface.GlobalFluxInterface):
@@ -68,6 +75,18 @@ class MockGlobalFluxWithExecuters(
 ):
     def getExecuterCls(self):
         return MockGlobalFluxExecuter
+
+
+class MockGlobalFluxWithExecutersNonUniform(MockGlobalFluxWithExecuters):
+    def getExecuterOptions(self, label=None):
+        """
+        Return modified executerOptions
+        """
+        opts = globalFluxInterface.GlobalFluxInterfaceUsingExecuters.getExecuterOptions(
+            self, label=label
+        )
+        opts.hasNonUniformAssems = True  # to increase test coverage
+        return opts
 
 
 class MockGlobalFluxExecuter(globalFluxInterface.GlobalFluxExecuter):
@@ -96,6 +115,21 @@ class TestGlobalFluxOptions(unittest.TestCase):
         opts = globalFluxInterface.GlobalFluxOptions("neutronics-run")
         opts.fromReactor(reactor)
         self.assertEqual(opts.geomType, geometry.GeomType.CARTESIAN)
+        self.assertFalse(opts.savePhysicsFiles)
+
+    def test_savePhysicsFiles(self):
+        reactor = MockReactor()
+        opts = globalFluxInterface.GlobalFluxOptions("neutronics-run")
+
+        # savePhysicsFilesList matches MockReactor parameters
+        opts.savePhysicsFilesList = ["001002"]
+        opts.fromReactor(reactor)
+        self.assertTrue(opts.savePhysicsFiles)
+
+        # savePhysicsFilesList does not match MockReactor parameters
+        opts.savePhysicsFilesList = ["001000"]
+        opts.fromReactor(reactor)
+        self.assertFalse(opts.savePhysicsFiles)
 
 
 class TestGlobalFluxInterface(unittest.TestCase):
@@ -142,6 +176,33 @@ class TestGlobalFluxInterfaceWithExecuters(unittest.TestCase):
         cls.gfi = MockGlobalFluxWithExecuters(cls.r, cs)
 
     def test_executerInteraction(self):
+        gfi, r = self.gfi, self.r
+        gfi.interactBOC()
+        gfi.interactEveryNode(0, 0)
+        r.p.timeNode += 1
+        gfi.interactEveryNode(0, 1)
+        gfi.interactEOC()
+        self.assertAlmostEqual(r.core.p.rxSwing, (1.02 - 1.01) / 1.01 * 1e5)
+
+    def test_calculateKeff(self):
+        self.assertEqual(self.gfi.calculateKeff(), 1.05)  # set in mock
+
+    def test_getExecuterCls(self):
+        class0 = globalFluxInterface.GlobalFluxInterfaceUsingExecuters.getExecuterCls()
+        self.assertEqual(class0, globalFluxInterface.GlobalFluxExecuter)
+
+
+class TestGlobalFluxInterfaceWithExecutersNonUniform(unittest.TestCase):
+    """Tests for global flux execution with non-uniform assemblies."""
+
+    @classmethod
+    def setUpClass(cls):
+        cs = settings.Settings()
+        _o, cls.r = test_reactors.loadTestReactor()
+        cls.r.core.p.keff = 1.0
+        cls.gfi = MockGlobalFluxWithExecutersNonUniform(cls.r, cs)
+
+    def test_executerInteractionNonUniformAssems(self):
         gfi, r = self.gfi, self.r
         gfi.interactBOC()
         gfi.interactEveryNode(0, 0)
