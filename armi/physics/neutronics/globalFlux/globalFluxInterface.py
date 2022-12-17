@@ -421,11 +421,7 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
         converter = self.geomConverters.get("axial")
         if not converter:
             if self.options.detailedAxialExpansion or self.options.hasNonUniformAssems:
-                converterCls = uniformMesh.converterFactory(self.options)
-                converter = converterCls(
-                    cs=self.options.cs,
-                    calcReactionRates=self.options.calcReactionRatesOnMeshConversion,
-                )
+                converter = uniformMesh.converterFactory(self.options)
                 converter.convert(self.r)
                 neutronicsReactor = converter.convReactor
 

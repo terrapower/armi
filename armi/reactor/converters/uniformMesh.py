@@ -75,9 +75,12 @@ from armi.reactor.reactors import Reactor
 
 def converterFactory(globalFluxOptions):
     if globalFluxOptions.photons:
-        return GammaUniformMeshConverter
+        return GammaUniformMeshConverter(globalFluxOptions.cs)
     else:
-        return NeutronicsUniformMeshConverter
+        return NeutronicsUniformMeshConverter(
+            globalFluxOptions.cs,
+            calcReactionRates=globalFluxOptions.calcReactionRatesOnMeshConversion,
+        )
 
 
 class UniformMeshGeometryConverter(GeometryConverter):
@@ -195,9 +198,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
             self.convReactor = self.initNewReactor(r, self._cs)
             self._computeAverageAxialMesh()
             self._buildAllUniformAssemblies()
-            self._mapStateFromReactorToOther(
-                self._sourceReactor, self.convReactor, mapNumberDensities=False
-            )
+            self._mapStateFromReactorToOther(self._sourceReactor, self.convReactor)
             self._newAssembliesAdded = self.convReactor.core.getAssemblies()
 
         self.convReactor.core.updateAxialMesh()
@@ -295,9 +296,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
             # parameters that did not change.
             self._cachedReactorCoreParamData = {}
             self._clearStateOnReactor(self._sourceReactor, cache=True)
-            self._mapStateFromReactorToOther(
-                self.convReactor, self._sourceReactor, mapNumberDensities=False
-            )
+            self._mapStateFromReactorToOther(self.convReactor, self._sourceReactor)
 
             # We want to map the converted reactor core's library to the source reactor
             # because in some instances this has changed (i.e., when generating cross sections).
@@ -480,6 +479,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
         # whereas the source assembly is the assembly that is from the uniform model. This
         # loop iterates over each block in the destination assembly and determines the mesh
         # coordinates that the uniform mesh (source assembly) will be mapped to.
+        runLog.debug(f"Mapping the following params: {blockParamNames}")
         for destBlock in destinationAssembly:
 
             zLower = destBlock.p.zbottom
@@ -541,6 +541,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
                     updatedDestVals[paramName] += sourceBlockVal * integrationFactor
 
+            runLog.debug(f"Mapping params for {destBlock}")
             BlockParamMapper.paramSetter(
                 destBlock, updatedDestVals.values(), updatedDestVals.keys()
             )
@@ -548,6 +549,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
             # If requested, the reaction rates will be calculated based on the
             # mapped neutron flux and the XS library.
             if calcReactionRates:
+                runLog.debug(f"Calculating reaction rates with updated flux")
                 core = sourceAssembly.getAncestor(lambda c: isinstance(c, Core))
                 if core is not None:
                     UniformMeshGeometryConverter._calculateReactionRates(
@@ -733,9 +735,38 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
         Notes
         -----
-        This can be implemented in sub-classes to map specific reactor and assembly data.
+        This is a basic parameter mapping routine that can be used by most sub-classes.
+        If special mapping logic is required, this method can be defined on sub-classes as necessary.
         """
-        pass
+
+        # Map reactor core parameters
+        for paramName in self.reactorParamNames:
+            # Check if the source reactor has a value assigned for this
+            # parameter and if so, then apply it. Otherwise, revert back to
+            # the original value.
+            if (
+                sourceReactor.core.p[paramName]
+                or paramName not in self._cachedReactorCoreParamData
+            ):
+                val = sourceReactor.core.p[paramName]
+            else:
+                val = self._cachedReactorCoreParamData[paramName]
+            destReactor.core.p[paramName] = val
+
+        # Map block parameters
+        for aSource in sourceReactor.core:
+            aDest = destReactor.core.getAssemblyByName(aSource.getName())
+            UniformMeshGeometryConverter.setAssemblyStateFromOverlaps(
+                aSource,
+                aDest,
+                self.blockParamNames,
+                mapNumberDensities,
+                calcReactionRates=self.calcReactionRates,
+            )
+
+        # Clear the cached data after it has been mapped to prevent issues with
+        # holding on to block data long-term.
+        self._cachedReactorCoreParamData = {}
 
     @staticmethod
     def _calculateReactionRates(lib, keff, assem):
@@ -854,47 +885,8 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
                 ]
             )
 
-    def _mapStateFromReactorToOther(
-        self, sourceReactor, destReactor, mapNumberDensities=False
-    ):
-        UniformMeshGeometryConverter._mapStateFromReactorToOther(
-            self,
-            sourceReactor,
-            destReactor,
-            mapNumberDensities,
-        )
 
-        # Map reactor core parameters
-        for paramName in self.reactorParamNames:
-            # Check if the source reactor has a value assigned for this
-            # parameter and if so, then apply it. Otherwise, revert back to
-            # the original value.
-            if (
-                sourceReactor.core.p[paramName]
-                or paramName not in self._cachedReactorCoreParamData
-            ):
-                val = sourceReactor.core.p[paramName]
-            else:
-                val = self._cachedReactorCoreParamData[paramName]
-            destReactor.core.p[paramName] = val
-
-        # Map block parameters
-        for aSource in sourceReactor.core:
-            aDest = destReactor.core.getAssemblyByName(aSource.getName())
-            UniformMeshGeometryConverter.setAssemblyStateFromOverlaps(
-                aSource,
-                aDest,
-                self.blockParamNames,
-                mapNumberDensities,
-                calcReactionRates=self.calcReactionRates,
-            )
-
-        # Clear the cached data after it has been mapped to prevent issues with
-        # holding on to block data long-term.
-        self._cachedReactorCoreParamData = {}
-
-
-class GammaUniformMeshConverter(NeutronicsUniformMeshConverter):
+class GammaUniformMeshConverter(UniformMeshGeometryConverter):
     """
     A uniform mesh converter that specifically maps gamma parameters.
 
