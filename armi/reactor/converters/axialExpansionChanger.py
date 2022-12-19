@@ -818,14 +818,8 @@ class ExpansionData:
         - This serves as an example to check for fuel/clad locking/interaction found in SFRs.
         - A more realistic/physical implementation is reserved for ARMI plugin(s).
         """
-        c = b.getChildrenWithFlags(Flags.FUEL)
-        if len(c) == 0:  # pylint: disable=no-else-raise
-            raise RuntimeError("No fuel component within {0}!".format(b))
-        elif len(c) > 1:
-            raise RuntimeError(
-                "Cannot have more than one fuel component within {0}!".format(b)
-            )
-        self._componentDeterminesBlockHeight[c[0]] = True
+        c = b.getComponent(Flags.FUEL)
+        self._componentDeterminesBlockHeight[c] = True
 
     def isTargetComponent(self, c):
         """returns bool if c is a target component
