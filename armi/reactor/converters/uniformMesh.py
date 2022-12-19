@@ -479,7 +479,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
         # whereas the source assembly is the assembly that is from the uniform model. This
         # loop iterates over each block in the destination assembly and determines the mesh
         # coordinates that the uniform mesh (source assembly) will be mapped to.
-        runLog.debug(f"Mapping the following params: {blockParamNames}")
+        runLog.debug(f"Mapping the following params: {blockParamNames} for {destinationAssembly}")
         for destBlock in destinationAssembly:
 
             zLower = destBlock.p.zbottom
@@ -507,6 +507,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
             updatedDestVals = collections.defaultdict(float)
 
             if mapNumberDensities:
+                runLog.debug(f"Mapping number densities for {destBlock}")
                 setNumberDensitiesFromOverlaps(destBlock, sourceBlocksInfo)
             for sourceBlock, sourceBlockOverlapHeight in sourceBlocksInfo:
                 sourceBlockVals = BlockParamMapper.paramGetter(
