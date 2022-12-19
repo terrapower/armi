@@ -296,7 +296,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
             # parameters that did not change.
             self._cachedReactorCoreParamData = {}
             self._clearStateOnReactor(self._sourceReactor, cache=True)
-            self._mapStateFromReactorToOther(self.convReactor, self._sourceReactor)
+            self._mapStateFromReactorToOther(self.convReactor, self._sourceReactor, mapNumberDensities=True)
 
             # We want to map the converted reactor core's library to the source reactor
             # because in some instances this has changed (i.e., when generating cross sections).
@@ -414,10 +414,12 @@ class UniformMeshGeometryConverter(GeometryConverter):
                 sourceBlock = blocks[0]
                 xsType = blocks[0].p.xsType
 
-            block = copy.deepcopy(sourceBlock)
+            block = sourceBlock.createBlankCopy()
             block.p.xsType = xsType
             block.setHeight(topMeshPoint - bottom)
             block.p.axMesh = 1
+            block.p.zbottom = bottom
+            block.p.ztop = topMeshPoint
             newAssem.add(block)
             bottom = topMeshPoint
 
@@ -729,7 +731,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
             reactor.core.p[rp] = 0.0
 
     def _mapStateFromReactorToOther(
-        self, sourceReactor, destReactor, mapNumberDensities=False
+        self, sourceReactor, destReactor, mapNumberDensities=False, mapBlockParams=False
     ):
         """
         Map parameters from one reactor to another.
@@ -754,16 +756,17 @@ class UniformMeshGeometryConverter(GeometryConverter):
                 val = self._cachedReactorCoreParamData[paramName]
             destReactor.core.p[paramName] = val
 
-        # Map block parameters
-        for aSource in sourceReactor.core:
-            aDest = destReactor.core.getAssemblyByName(aSource.getName())
-            UniformMeshGeometryConverter.setAssemblyStateFromOverlaps(
-                aSource,
-                aDest,
-                self.blockParamNames,
-                mapNumberDensities,
-                calcReactionRates=self.calcReactionRates,
-            )
+        if mapBlockParams:
+            # Map block parameters
+            for aSource in sourceReactor.core:
+                aDest = destReactor.core.getAssemblyByName(aSource.getName())
+                UniformMeshGeometryConverter.setAssemblyStateFromOverlaps(
+                    aSource,
+                    aDest,
+                    self.blockParamNames,
+                    mapNumberDensities,
+                    calcReactionRates=self.calcReactionRates,
+                )
 
         # Clear the cached data after it has been mapped to prevent issues with
         # holding on to block data long-term.

@@ -157,6 +157,33 @@ class Block(composites.Composite):
 
         return b
 
+    def createBlankCopy(self):
+        """
+        Create a blank copy of a blank (ligher weight than deepcopy)
+
+        We detach the recursive links to the parent and the reactor to prevent blocks carrying large
+        independent copies of stale reactors in memory. If you make a new block, you must add it to
+        an assembly and a reactor.
+        """
+
+        #b = self.__class__.__new__(self.__class__)
+        b = self.__class__(self.getName(), height=self.getHeight())
+        # add self to memo to prevent child objects from duplicating the parent block
+        # memo[id(self)] = b = self.__class__.__new__(self.__class__)
+
+        b.setName(self.getName())
+        b.setType(self.getType())
+
+        # assign LFP
+        b._lumpedFissionProducts = self._lumpedFissionProducts
+        b.p.buGroup = self.p.buGroup
+
+        # add components
+        for comp in self.iterComponents():
+            b.add(copy.copy(comp))
+
+        return b
+
     @property
     def core(self):
         from armi.reactor.reactors import Core
