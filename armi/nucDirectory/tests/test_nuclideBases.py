@@ -16,9 +16,11 @@
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import os
 import random
+import math
 import unittest
 
 from armi.context import RES
+from armi.utils.units import SECONDS_PER_HOUR, AVOGADROS_NUMBER, CURIE_PER_BECQUEREL
 from armi.nucDirectory import nuclideBases, elements
 from armi.nucDirectory.tests import NUCDIRECTORY_TESTS_DEFAULT_DIR_PATH
 
@@ -282,6 +284,92 @@ class TestNuclide(unittest.TestCase):
         """Make sure nuclides that aren't in MC2 still get nuclide bases."""
         nuc = nuclideBases.byName["YB154"]
         self.assertEqual(nuc.a, 154)
+
+    def test_kryptonDecayConstants(self):
+        """Tests that the nuclides data contains the expected decay constants."""
+        # hand calculated reference data includes stable isotopes, radioactive
+        # isotopes, metastable isotopes and exercises metastable minimum halflife
+        REF_KR_DECAY_CONSTANTS = [
+            ("KR69", 24.755256448569472),
+            ("KR70", 17.3286795139986),
+            ("KR71", 6.93147180559945),
+            ("KR72", 0.04053492283976288),
+            ("KR73", 0.0253900066139174),
+            ("KR74", 0.0010045611312463),
+            ("KR75", 0.00251140282811574),
+            ("KR76", 0.0000130095191546536),
+            ("KR77", 0.000162139691359051),
+            ("KR78", 0),
+            ("KR79", 5.49488822742219e-06),
+            ("KR79M", 0.0138629436111989),
+            ("KR80", 0),
+            ("KR81", 9.591693391393433e-14),
+            ("KR81M", 0.0529119985160263),
+            ("KR82", 0),
+            ("KR83", 0),
+            ("KR83M", math.log(2) / (1.83 * SECONDS_PER_HOUR)),
+            ("KR84", 0),
+            ("KR85", 2.0453466678736843e-09),
+            ("KR85M", 4.29725468419061e-05),
+            ("KR86", 0),
+            ("KR87", 0.000151408296321526),
+            ("KR88", 0.0000681560649518136),
+            ("KR89", 0.00366744539978807),
+            ("KR90", 0.021446385537127),
+            ("KR91", 0.0808806511738559),
+            ("KR92", 0.376710424217362),
+            ("KR93", 0.538994697169475),
+            ("KR94", 3.26956217245257),
+            ("KR95", 6.08023842596443),
+            ("KR96", 8.66433975699932),
+            ("KR97", 11.0023361993642),
+            ("KR98", 16.1197018734871),
+            ("KR99", 53.3190138892265),
+            ("KR100", 99.0210257942778),
+            ("KR101", 1091570.36308652),
+        ]
+
+        for nucName, refDecayConstant in REF_KR_DECAY_CONSTANTS:
+            refNb = nuclideBases.byName[nucName]
+            decayConstantNb = math.log(2) / refNb.halflife
+            try:
+                self.assertAlmostEqual(
+                    (refDecayConstant - decayConstantNb) / refDecayConstant,
+                    0,
+                    6,
+                )
+            except ZeroDivisionError:
+                self.assertEqual(refDecayConstant, decayConstantNb)
+            except AssertionError:
+                errorMessage = (
+                    "{} reference decay constant {} ARMI decay constant {}".format(
+                        nucName, refDecayConstant, decayConstantNb
+                    )
+                )
+                raise AssertionError(errorMessage)
+
+        for nucName in ["XE134", "XE136", "EU151"]:
+            nb = nuclideBases.byName[nucName]
+            decayConstantNb = math.log(2) / nb.halflife
+            self.assertAlmostEqual(decayConstantNb, 0, places=3)
+
+    def test_curieDefinitionWithRa226(self):
+        """
+        Tests that the decay constant of Ra-226 is close to 1 Ci.
+
+        Notes
+        -----
+        The original definition of 1 Ci was based on the half-life of Ra-226
+        for 1 gram. The latest evaluations show that 1 gram is defined as
+        0.988 Ci.
+        """
+        ra226 = nuclideBases.byName["RA226"]
+        decayConstantRa226 = math.log(2) / ra226.halflife
+        weight = ra226.weight
+        mass = 1  # gram
+        activity = mass * AVOGADROS_NUMBER / weight * decayConstantRa226  # 1 gram
+        activity = activity * CURIE_PER_BECQUEREL
+        self.assertAlmostEqual(activity, 0.9885593, places=6)
 
 
 class test_getAAAZZZSId(unittest.TestCase):
