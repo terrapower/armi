@@ -75,15 +75,13 @@ class YamlIncludeTest(unittest.TestCase):
 
 class SequentialReaderTests(unittest.TestCase):
 
-    textStream = """This is an example test stream.\n
-    This has multiple lines in it and below it contains a set of data that\n
-    can be found using a regular expression pattern.\n
-    \n
-    FILE DATA\n
-    X  Y  3.5\n
-    X  Y  4.2\n
-    X  Y  0.0\n
-    """
+    textStream = """This is an example test stream.
+This has multiple lines in it and below it contains a set of data that
+can be found using a regular expression pattern.
+FILE DATA
+X  Y  3.5
+X  Y  4.2
+X  Y  0.0"""
 
     _DUMMY_FILE_NAME = "DUMMY.txt"
 
@@ -101,6 +99,11 @@ class SequentialReaderTests(unittest.TestCase):
         with textProcessors.SequentialReader(self._DUMMY_FILE_NAME) as sr:
             self.assertTrue(sr.searchForText("FILE DATA"))
             self.assertFalse(sr.searchForText("This text isn't here."))
+
+    def test_readFileWithPattern(self):
+        with textProcessors.SequentialReader(self._DUMMY_FILE_NAME) as sr:
+            self.assertTrue(sr.searchForPattern("(X\s+Y\s+\d+\.\d+)"))
+            self.assertEqual(float(sr.line.split()[2]), 3.5)
 
 
 if __name__ == "__main__":
