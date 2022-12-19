@@ -35,7 +35,8 @@ jobs:
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
         run: |
-          pip install coveragepy-lcov
+          pip install click==7.1.2
+          pip install coveragepy-lcov==0.1.2
           coveragepy-lcov --data_file_path coverage_results.cov --output_file_path lcov.txt
       - name: Publish to coveralls.io
         uses: coverallsapp/github-action@v1.1.2
