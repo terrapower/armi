@@ -79,7 +79,7 @@ class SequentialReaderTests(unittest.TestCase):
 This has multiple lines in it and below it contains a set of data that
 can be found using a regular expression pattern.
 FILE DATA
-X  Y  3.5 
+X  Y  3.5
 X  Y  4.2
 X  Y  0.0"""
 
