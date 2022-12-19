@@ -28,6 +28,13 @@ def _getFuelPerformanceBlockParams():
     with pDefs.createBuilder(default=0.0, location=ParamLocation.AVERAGE) as pb:
 
         pb.defParam(
+            "fuelCladLocked",
+            units=bool,
+            default=False,
+            description="Boolean to indicate if the fuel is locked with the clad.",
+        )
+
+        pb.defParam(
             "gasReleaseFraction",
             units="fraction",
             description="Fraction of generated fission gas that no longer exists in the block."
