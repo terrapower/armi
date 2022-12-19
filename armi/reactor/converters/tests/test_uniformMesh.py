@@ -24,7 +24,7 @@ from armi.nuclearDataIO.cccc import isotxs
 from armi.reactor.converters import uniformMesh
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_assemblies
-from armi.reactor.tests import test_reactors
+from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
 from armi.tests import TEST_ROOT, ISOAA_PATH
 
 
@@ -35,9 +35,11 @@ class DummyFluxOptions:
 
 class TestConverterFactory(unittest.TestCase):
     def setUp(self):
-        self.o, self.r = test_reactors.loadTestReactor(
-            inputFilePath=os.path.join(TEST_ROOT, "detailedAxialExpansion"),
+        self.o, self.r = loadTestReactor(
+            inputFilePath=os.path.join(TEST_ROOT, "detailedAxialExpansion")
         )
+        reduceTestReactorRings(self.r, self.o.cs, 2)
+
         self.dummyOptions = DummyFluxOptions()
 
     def test_converterFactory(self):
@@ -58,9 +60,11 @@ class TestAssemblyUniformMesh(unittest.TestCase):
     """
 
     def setUp(self):
-        self.o, self.r = test_reactors.loadTestReactor(
-            inputFilePath=os.path.join(TEST_ROOT, "detailedAxialExpansion"),
+        self.o, self.r = loadTestReactor(
+            inputFilePath=os.path.join(TEST_ROOT, "detailedAxialExpansion")
         )
+        reduceTestReactorRings(self.r, self.o.cs, 2)
+
         self.converter = uniformMesh.NeutronicsUniformMeshConverter(cs=self.o.cs)
         self.converter._sourceReactor = self.r
 
@@ -216,10 +220,10 @@ class TestUniformMeshComponents(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.o, cls.r = test_reactors.loadTestReactor(
-            TEST_ROOT, customSettings={"xsKernel": "MC2v2"}
-        )
+        cls.o, cls.r = loadTestReactor(TEST_ROOT, customSettings={"xsKernel": "MC2v2"})
+        reduceTestReactorRings(cls.r, cls.o.cs, 4)
         cls.r.core.lib = isotxs.readBinary(ISOAA_PATH)
+
         # make the mesh a little non-uniform
         a = cls.r.core[4]
         a[2].setHeight(a[2].getHeight() * 1.05)
@@ -285,11 +289,13 @@ class TestUniformMesh(unittest.TestCase):
         random.seed(987324987234)
 
     def setUp(self):
-        self.o, self.r = test_reactors.loadTestReactor(
+        self.o, self.r = loadTestReactor(
             TEST_ROOT, customSettings={"xsKernel": "MC2v2"}
         )
+        reduceTestReactorRings(self.r, self.o.cs, 3)
         self.r.core.lib = isotxs.readBinary(ISOAA_PATH)
         self.r.core.p.keff = 1.0
+
         self.converter = uniformMesh.NeutronicsUniformMeshConverter(
             cs=self.o.cs, calcReactionRates=True
         )
@@ -368,7 +374,7 @@ class TestGammaUniformMesh(unittest.TestCase):
         random.seed(987324987234)
 
     def setUp(self):
-        self.o, self.r = test_reactors.loadTestReactor(
+        self.o, self.r = loadTestReactor(
             TEST_ROOT, customSettings={"xsKernel": "MC2v2"}
         )
         self.r.core.lib = isotxs.readBinary(ISOAA_PATH)
@@ -542,7 +548,7 @@ class TestUniformMeshNonUniformAssemFlags(unittest.TestCase):
         random.seed(987324987234)
 
     def setUp(self):
-        self.o, self.r = test_reactors.loadTestReactor(
+        self.o, self.r = loadTestReactor(
             TEST_ROOT,
             customSettings={
                 "xsKernel": "MC2v2",

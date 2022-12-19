@@ -128,6 +128,13 @@ def buildOperatorOfEmptyCartesianBlocks(customSettings=None):
     return o
 
 
+"""
+NOTE: If this reactor had 3 rings instead of 9, most unit tests that use it
+go 4 times faster (based on testing). The problem is it would breat a LOT
+of downstream tests that import this method. Probably still worth it though.
+"""
+
+
 def loadTestReactor(
     inputFilePath=TEST_ROOT, customSettings=None, inputFileName="armiRun.yaml"
 ):
@@ -183,6 +190,7 @@ def loadTestReactor(
 
     o = operators.factory(cs)
     r = reactors.loadFromCs(cs)
+
     o.initializeInterfaces(r)
 
     # put some stuff in the SFP too.
@@ -198,6 +206,23 @@ def loadTestReactor(
         TEST_REACTOR = cPickle.dumps((o, o.r, assemblies.getAssemNum()), protocol=2)
 
     return o, o.r
+
+
+def reduceTestReactorRings(r, cs, maxNumRings):
+    """Helper method for the test reactor above
+    The goal is to reduce the size of the reactor for tests that don't neeed
+    such a large reactor, and would run much faster with a smaller one
+    """
+    maxRings = r.core.getNumRings()
+    if maxNumRings > maxRings:
+        runLog.info("The test reactor has a maximum of {} rings.".format(maxRings))
+        return
+    elif maxNumRings <= 1:
+        raise ValueError("The test reactor must have multiple rings.")
+
+    # reducing the size of the test reactor, by removing the outer rings
+    for ring in range(maxRings, maxNumRings, -1):
+        r.core.removeAssembliesInRing(ring, cs)
 
 
 class ReactorTests(unittest.TestCase):
