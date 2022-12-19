@@ -34,6 +34,9 @@ if (
     )
 
 
+from armi import context
+
+
 def _addCustomTabulateTables():
     """Create a custom ARMI tables within tabulate."""
     tabulate._table_formats["armi"] = tabulate.TableFormat(
