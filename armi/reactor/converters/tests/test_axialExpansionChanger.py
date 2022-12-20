@@ -662,6 +662,7 @@ class TestExceptions(Base, unittest.TestCase):
             self.assertEqual(the_exception.error_code, 3)
 
     def test_isFuelLocked(self):
+        """ensures that the RuntimeError statement in ExpansionData::_isFuelLocked is raised appropriately"""
         expdata = ExpansionData(HexAssembly("testAssemblyType"), setFuel=True)
         b_NoFuel = HexBlock("fuel", height=10.0)
         shieldDims = {
