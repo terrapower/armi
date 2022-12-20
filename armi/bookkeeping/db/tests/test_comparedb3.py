@@ -20,6 +20,7 @@ import h5py
 import numpy as np
 
 from armi.bookkeeping.db.compareDB3 import (
+    _compareSets,
     _compareAuxData,
     _diffSimpleData,
     _diffSpecialData,
@@ -51,6 +52,16 @@ class TestCompareDB3(unittest.TestCase):
         txt = open(fileName, "r").read()
         self.assertIn("Rubber", txt)
 
+    def test_compareSets(self):
+        shorter = set({1, 2, 3})
+        longer = set({1, 2, 3, 4})
+        fileName = "fakeOutWriter.txt"
+        with OutputWriter(fileName) as out:
+            nDiffs = _compareSets(shorter, longer, out, name="number")
+            self.assertEqual(nDiffs, 1)
+            nDiffs = _compareSets(longer, shorter, out, name="number")
+            self.assertEqual(nDiffs, 1)
+        
     def test_diffResultsBasic(self):
         # init an instance of the class
         dr = DiffResults(0.01)
