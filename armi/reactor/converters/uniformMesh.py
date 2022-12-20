@@ -296,7 +296,9 @@ class UniformMeshGeometryConverter(GeometryConverter):
             # parameters that did not change.
             self._cachedReactorCoreParamData = {}
             self._clearStateOnReactor(self._sourceReactor, cache=True)
-            self._mapStateFromReactorToOther(self.convReactor, self._sourceReactor, mapNumberDensities=True)
+            self._mapStateFromReactorToOther(
+                self.convReactor, self._sourceReactor, mapNumberDensities=True
+            )
 
             # We want to map the converted reactor core's library to the source reactor
             # because in some instances this has changed (i.e., when generating cross sections).
@@ -481,7 +483,9 @@ class UniformMeshGeometryConverter(GeometryConverter):
         # whereas the source assembly is the assembly that is from the uniform model. This
         # loop iterates over each block in the destination assembly and determines the mesh
         # coordinates that the uniform mesh (source assembly) will be mapped to.
-        runLog.debug(f"Mapping the following params: {blockParamNames} for {destinationAssembly}")
+        runLog.debug(
+            f"Mapping the following params: {blockParamNames} for {destinationAssembly}"
+        )
         for destBlock in destinationAssembly:
 
             zLower = destBlock.p.zbottom
@@ -873,6 +877,9 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
             self.reactorParamNames.extend(
                 self._sourceReactor.core.p.paramDefs.inCategory(category).names
             )
+        if direction == "out":
+            self.reactorParamNames.append("axialMesh")
+
         b = self._sourceReactor.core.getFirstBlock()
         excludedCategories = [parameters.Category.gamma]
         if direction == "out":
@@ -888,6 +895,8 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
                     if not name in excludedParamNames
                 ]
             )
+        if direction == "in":
+            self.blockParamNames.extend(["molesHmBOL", "massHmBOL"])
 
 
 class GammaUniformMeshConverter(UniformMeshGeometryConverter):
@@ -952,6 +961,8 @@ class GammaUniformMeshConverter(UniformMeshGeometryConverter):
             self.reactorParamNames.extend(
                 self._sourceReactor.core.p.paramDefs.inCategory(category).names
             )
+        if direction == "out":
+            self.reactorParamNames.append("axialMesh")
         b = self._sourceReactor.core.getFirstBlock()
         if direction == "out":
             excludeList = b.p.paramDefs.inCategory(parameters.Category.cumulative).names

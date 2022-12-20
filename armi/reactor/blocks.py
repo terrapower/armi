@@ -35,6 +35,7 @@ from armi.physics.neutronics import GAMMA
 from armi.physics.neutronics import NEUTRON
 from armi.reactor import blockParameters
 from armi.reactor import components
+from armi.reactor.components.basicShapes import Hexagon
 from armi.reactor import composites
 from armi.reactor import geometry
 from armi.reactor import grids
@@ -159,28 +160,30 @@ class Block(composites.Composite):
 
     def createBlankCopy(self):
         """
-        Create a blank copy of a blank (ligher weight than deepcopy)
+        Create a blank copy of a block (ligher weight than deepcopy)
 
         We detach the recursive links to the parent and the reactor to prevent blocks carrying large
         independent copies of stale reactors in memory. If you make a new block, you must add it to
         an assembly and a reactor.
         """
 
-        #b = self.__class__.__new__(self.__class__)
         b = self.__class__(self.getName(), height=self.getHeight())
-        # add self to memo to prevent child objects from duplicating the parent block
-        # memo[id(self)] = b = self.__class__.__new__(self.__class__)
-
         b.setName(self.getName())
         b.setType(self.getType())
 
-        # assign LFP
+        # assign macros and LFP
+        b.macros = self.macros
         b._lumpedFissionProducts = self._lumpedFissionProducts
         b.p.buGroup = self.p.buGroup
 
-        # add components
-        for comp in self.iterComponents():
-            b.add(copy.copy(comp))
+        hexComponent = Hexagon(
+            "homogenizedHex",
+            "HT9",
+            self.getAverageTempInC(),
+            self.getAverageTempInC(),
+            self._pitchDefiningComponent[1],
+        )
+        b.add(hexComponent)
 
         return b
 
