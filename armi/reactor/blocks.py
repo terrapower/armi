@@ -162,13 +162,12 @@ class Block(composites.Composite):
         """
         Create a blank copy of a block (ligher weight than deepcopy)
 
-        We detach the recursive links to the parent and the reactor to prevent blocks carrying large
-        independent copies of stale reactors in memory. If you make a new block, you must add it to
-        an assembly and a reactor.
+        Notes
+        -----
+        If you make a new block, you must add it to an assembly and a reactor.
         """
 
         b = self.__class__(self.getName(), height=self.getHeight())
-        b.setName(self.getName())
         b.setType(self.getType())
 
         # assign macros and LFP
@@ -178,11 +177,19 @@ class Block(composites.Composite):
 
         hexComponent = Hexagon(
             "homogenizedHex",
-            "HT9",
+            "HT9", # placeholder; need to create a "homogenizedMixture" material
             self.getAverageTempInC(),
             self.getAverageTempInC(),
             self._pitchDefiningComponent[1],
         )
+        # give the component cladding flags and spatialLocator from source block's clad component
+        # in case pin locations need to be known for physics solver
+        # only works if there is a single clad component with MultiIndexLocation
+        if self.hasComponents(Flags.CLAD):
+            clad = self.getComponent(Flags.CLAD)
+            if isinstance(clad.spatialLocator, grids.MultiIndexLocation):
+                hexComponent.setType("homogenizedHex", Flags.CLAD)
+                hexComponent.spatialLocator = clad.spatialLocator
         b.add(hexComponent)
 
         return b
