@@ -661,6 +661,23 @@ class TestExceptions(Base, unittest.TestCase):
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
 
+    def test_isFuelLocked(self):
+        expdata = ExpansionData(HexAssembly("testAssemblyType"), setFuel=True)
+        b_NoFuel = HexBlock("fuel", height=10.0)
+        shieldDims = {
+            "Tinput": 25.0,
+            "Thot": 25.0,
+            "od": 0.76,
+            "id": 0.00,
+            "mult": 127.0,
+        }
+        shield = Circle("shield", "FakeMat", **shieldDims)
+        b_NoFuel.add(shield)
+        with self.assertRaises(RuntimeError) as cm:
+            expdata._isFuelLocked(b_NoFuel)
+            the_exception = cm.exception
+            self.assertEqual(the_exception.error_code, 3)
+
     def test_determineLinked(self):
         compDims = {"Tinput": 25.0, "Thot": 25.0}
         compA = UnshapedComponent("unshaped_1", "FakeMat", **compDims)

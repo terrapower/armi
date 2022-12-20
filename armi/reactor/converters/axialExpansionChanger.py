@@ -819,6 +819,8 @@ class ExpansionData:
         - A more realistic/physical implementation is reserved for ARMI plugin(s).
         """
         c = b.getComponent(Flags.FUEL)
+        if c is None:
+            raise RuntimeError(f"No fuel component within {b}!")
         self._componentDeterminesBlockHeight[c] = True
 
     def isTargetComponent(self, c):
