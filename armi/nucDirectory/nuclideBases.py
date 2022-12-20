@@ -1118,8 +1118,8 @@ def factory():
     __addNaturalNuclideBases()
     __addDummyNuclideBases()
     __addLumpedFissionProductNuclideBases()
-    __readMCCNuclideData()
     __updateNuclideBasesForSpecialCases()
+    __readMCCNuclideData()
     __renormalizeNuclideToElementRelationship()
     __deriveElementalWeightsByNaturalNuclideAbundances()
 
@@ -1218,7 +1218,6 @@ def __updateNuclideBasesForSpecialCases():
     when being requested rather than than the ground state (i.e., S=0) of
     `AM242`.
     """
-
     # Change the name of `AM242` to specific represent its ground state.
     am242g = byName["AM242"]
     am242g.name = "AM242G"

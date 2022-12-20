@@ -18,6 +18,7 @@ import os
 import random
 import math
 import unittest
+from ruamel import yaml
 
 from armi.context import RES
 from armi.utils.units import SECONDS_PER_HOUR, AVOGADROS_NUMBER, CURIE_PER_BECQUEREL
@@ -370,6 +371,37 @@ class TestNuclide(unittest.TestCase):
         activity = mass * AVOGADROS_NUMBER / weight * decayConstantRa226  # 1 gram
         activity = activity * CURIE_PER_BECQUEREL
         self.assertAlmostEqual(activity, 0.9885593, places=6)
+
+    def test_loadMcc2Data(self):
+        """Tests consistency with the `mcc-nuclides.yaml` input and the nuclides in the data model."""
+        with open(os.path.join(RES, "mcc-nuclides.yaml")) as f:
+            data = yaml.load(f, Loader=yaml.RoundTripLoader)
+            expectedNuclides = set(
+                [nuc for nuc in data.keys() if data[nuc]["ENDF/B-V.2"] is not None]
+            )
+
+        for nuc, nb in nuclideBases.byMcc2Id.items():
+            self.assertIn(nb.name, expectedNuclides)
+            self.assertEqual(nb.getMcc2Id(), nb.mcc2id)
+            self.assertEqual(nb.getMcc2Id(), nuc)
+
+        self.assertEqual(len(nuclideBases.byMcc2Id), len(expectedNuclides))
+
+    def test_loadMcc3Data(self):
+        """Tests consistency with the `mcc-nuclides.yaml` input and the nuclides in the data model."""
+        with open(os.path.join(RES, "mcc-nuclides.yaml")) as f:
+            data = yaml.load(f, Loader=yaml.RoundTripLoader)
+            expectedNuclides = set(
+                [nuc for nuc in data.keys() if data[nuc]["ENDF/B-VII.0"] is not None]
+            )
+
+        for nuc, nb in nuclideBases.byMcc3Id.items():
+            self.assertIn(nb.name, expectedNuclides)
+            self.assertEqual(nb.getMcc3Id(), nb.mcc3id)
+            self.assertEqual(nb.getMcc3Id(), nuc)
+
+        # Subtract 1 nuclide due to DUMP2.
+        self.assertEqual(len(nuclideBases.byMcc3Id), len(expectedNuclides) - 1)
 
 
 class test_getAAAZZZSId(unittest.TestCase):

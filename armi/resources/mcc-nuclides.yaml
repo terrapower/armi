@@ -1,3 +1,9 @@
+# This file contains the nuclides that are defined by the MC2-2 and MC2-3
+# codes. The MC2-2 code base uses ENDF/B-V.2 and the MC2-3 code base uses
+# ENDF/B-VII.0. This file can be amended in the future for MC2-3 as the
+# code base changes, but the nuclides that MC2-3 models are consistent with
+# the data that is supplied by ENDF/B-VII.0. See: Appendix B of ANL/NE-11/41 Rev.3 
+# Public Link: https://publications.anl.gov/anlpubs/2018/10/147840.pdf.
 AC225:
   ENDF/B-V.2: null
   ENDF/B-VII.0: AC2257
@@ -25,8 +31,8 @@ AL27:
 AM241:
   ENDF/B-V.2: AM2415
   ENDF/B-VII.0: AM2417
-AM242:
-  ENDF/B-V.2: AM242M
+AM242G:
+  ENDF/B-V.2: AM242
   ENDF/B-VII.0: AM2427
 AM242M:
   ENDF/B-V.2: AM242M

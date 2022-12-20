@@ -1681,6 +1681,10 @@ class ArmiObject(metaclass=CompositeModelType):
     def setLumpedFissionProducts(self, lfpCollection):
         self._lumpedFissionProducts = lfpCollection
 
+    def setChildrenLumpedFissionProducts(self, lfpCollection):
+        for c in self.getChildren():
+            c.setLumpedFissionProducts(lfpCollection)
+
     def getFissileMassEnrich(self):
         r"""returns the fissile mass enrichment."""
         hm = self.getHMMass()
