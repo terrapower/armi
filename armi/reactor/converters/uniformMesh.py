@@ -174,6 +174,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
                     assem,
                     self.convReactor.core.p.axialMesh[1:],
                     self.blockParamNames,
+                    self.bpm,
                 )
                 homogAssem.spatialLocator = assem.spatialLocator
 
@@ -267,6 +268,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
                             assem,
                             storedAssem,
                             self.blockParamNames,
+                            self.bpm,
                             mapNumberDensities=False,
                             calcReactionRates=self.calcReactionRates,
                         )
@@ -315,6 +317,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
         sourceAssem,
         newMesh,
         blockParamNames=None,
+        blockParamMapper=None,
         mapNumberDensities=True,
     ):
         """
@@ -429,7 +432,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
         newAssem.calculateZCoords()
 
         UniformMeshGeometryConverter.setAssemblyStateFromOverlaps(
-            sourceAssem, newAssem, blockParamNames, mapNumberDensities
+            sourceAssem, newAssem, blockParamNames, blockParamMapper, mapNumberDensities
         )
         return newAssem
 
@@ -438,6 +441,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
         sourceAssembly,
         destinationAssembly,
         blockParamNames,
+        blockParamMapper,
         mapNumberDensities=False,
         calcReactionRates=False,
     ):
@@ -516,7 +520,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
                 runLog.debug(f"Mapping number densities for {destBlock}")
                 setNumberDensitiesFromOverlaps(destBlock, sourceBlocksInfo)
             for sourceBlock, sourceBlockOverlapHeight in sourceBlocksInfo:
-                sourceBlockVals = BlockParamMapper.paramGetter(
+                sourceBlockVals = blockParamMapper.paramGetter(
                     sourceBlock,
                     blockParamNames,
                 )
@@ -549,7 +553,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
                     updatedDestVals[paramName] += sourceBlockVal * integrationFactor
 
             runLog.debug(f"Mapping params for {destBlock}")
-            BlockParamMapper.paramSetter(
+            blockParamMapper.paramSetter(
                 destBlock, updatedDestVals.values(), updatedDestVals.keys()
             )
 
@@ -591,13 +595,14 @@ class UniformMeshGeometryConverter(GeometryConverter):
         cachedBlockParamData = collections.defaultdict(dict)
 
         blocks = []
-        for a in assems:
-            blocks.extend(a.getBlocks())
-        for b in blocks:
-            for paramName in blockParamNames:
-                if cache:
-                    cachedBlockParamData[b][paramName] = b.p[paramName]
-                b.p[paramName] = b.p.pDefs[paramName].default
+        for paramName in blockParamNames:
+            defaultValue = b.p.pDefs[paramName].default
+            for a in assems:
+                blocks.extend(a.getBlocks())
+                for b in blocks:
+                    if cache:
+                        cachedBlockParamData[b][paramName] = b.p[paramName]
+                    b.p[paramName] = defaultValue
 
         return cachedBlockParamData
 
@@ -716,7 +721,10 @@ class UniformMeshGeometryConverter(GeometryConverter):
         )
         for sourceAssem in self._sourceReactor.core:
             newAssem = self.makeAssemWithUniformMesh(
-                sourceAssem, self._uniformMesh, self.blockParamNames
+                sourceAssem,
+                self._uniformMesh,
+                self.blockParamNames,
+                self.bpm,
             )
             src = sourceAssem.spatialLocator
             newLoc = self.convReactor.core.spatialGrid[src.i, src.j, 0]
@@ -768,6 +776,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
                     aSource,
                     aDest,
                     self.blockParamNames,
+                    self.bpm,
                     mapNumberDensities,
                     calcReactionRates=self.calcReactionRates,
                 )
@@ -898,6 +907,8 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
         if direction == "in":
             self.blockParamNames.extend(["molesHmBOL", "massHmBOL"])
 
+        self.bpm = BlockParamMapper(self.blockParamNames, b)
+
 
 class GammaUniformMeshConverter(UniformMeshGeometryConverter):
     """
@@ -977,6 +988,8 @@ class GammaUniformMeshConverter(UniformMeshGeometryConverter):
                 ]
             )
 
+        self.bpm = BlockParamMapper(self.blockParamNames, b)
+
 
 class BlockParamMapper:
     """
@@ -984,6 +997,17 @@ class BlockParamMapper:
     transferring data from one assembly to another during the mesh
     conversion process.
     """
+
+    def __init__(self, blockParamNames, b):
+        """
+        Initialize the list of parameter defaults
+
+        The ParameterDefinitionCollection lookup is very slow, so this we do it once
+        and store it as a hashed list.
+        """
+        self.paramDefaults = {
+            paramName: b.p.pDefs[paramName].default for paramName in blockParamNames
+        }
 
     @staticmethod
     def paramSetter(block, vals, paramNames):
@@ -998,13 +1022,15 @@ class BlockParamMapper:
             else:
                 BlockParamMapper._scalarParamSetter(block, [val], [paramName])
 
-    @staticmethod
-    def paramGetter(block, paramNames):
+    def paramGetter(self, block, paramNames):
         """Returns block parameter values as an array in the order of the parameter names given."""
         paramVals = []
+        # paramDict = dict(block.p.items())
         for paramName in paramNames:
             val = block.p[paramName]
-            valType = type(block.p.pDefs[paramName].default)
+            defaultValue = self.paramDefaults[paramName]
+            # val = paramDict.get(paramName, self.paramDefaults[paramName])
+            valType = type(defaultValue)
             # Array / list parameters can be have values that are `None`, lists, or numpy arrays. This first
             # checks if the value type is any of these and if so, the block-level parameter is treated as an
             # array.
@@ -1019,8 +1045,8 @@ class BlockParamMapper:
                     paramVals.append(numpy.array(val))
             # Otherwise, the parameter is treated as a scalar, like a float/string/integer.
             else:
-                if val == block.p.pDefs[paramName].default:
-                    paramVals.append(block.p.pDefs[paramName].default)
+                if val == defaultValue:
+                    paramVals.append(defaultValue)
                 else:
                     paramVals.append(val)
 
@@ -1054,15 +1080,14 @@ def setNumberDensitiesFromOverlaps(block, overlappingBlockInfo):
 
         N^{\prime} =  \sum_i N_i \frac{h_i}{H}
     """
-    totalDensities = {}
+    totalDensities = collections.defaultdict(float)
     block.clearNumberDensities()
     blockHeightInCm = block.getHeight()
+    # tomorrow, implement simple vector math here to avoid iterating over the dictionaries
     for overlappingBlock, overlappingHeightInCm in overlappingBlockInfo:
+        heightScaling = overlappingHeightInCm / blockHeightInCm
         for nucName, numberDensity in overlappingBlock.getNumberDensities().items():
-            totalDensities[nucName] = (
-                totalDensities.get(nucName, 0.0)
-                + numberDensity * overlappingHeightInCm / blockHeightInCm
-            )
+            totalDensities[nucName] += numberDensity * heightScaling
     block.setNumberDensities(totalDensities)
     # Set the volume of each component in the block to `None` so that the
     # volume of each component is recomputed.
