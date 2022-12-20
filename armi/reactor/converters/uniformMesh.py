@@ -199,7 +199,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
             self.convReactor = self.initNewReactor(r, self._cs)
             self._computeAverageAxialMesh()
             self._buildAllUniformAssemblies()
-            self._mapStateFromReactorToOther(self._sourceReactor, self.convReactor)
+            self._mapStateFromReactorToOther(self._sourceReactor, self.convReactor, mapBlockParams=False)
             self._newAssembliesAdded = self.convReactor.core.getAssemblies()
 
         self.convReactor.core.updateAxialMesh()
@@ -568,7 +568,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
                         label="Block reaction rate calculation skipped due to insufficient multi-group flux data.",
                     )
 
-    @staticmethod
     def clearStateOnAssemblies(assems, blockParamNames=None, cache=True):
         """
         Clears the parameter state of blocks for a list of assemblies.
@@ -588,11 +587,13 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
         cachedBlockParamData = collections.defaultdict(dict)
 
-        blocks = []
-        for paramName in blockParamNames:
-            defaultValue = b.p.pDefs[paramName].default
+        if len(assems) > 0:
+            b = assems[0][0]
+            blocks = []
             for a in assems:
                 blocks.extend(a.getBlocks())
+            for paramName in blockParamNames:
+                defaultValue = b.p.pDefs[paramName].default
                 for b in blocks:
                     if cache:
                         cachedBlockParamData[b][paramName] = b.p[paramName]
@@ -737,7 +738,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
             reactor.core.p[rp] = 0.0
 
     def _mapStateFromReactorToOther(
-        self, sourceReactor, destReactor, mapNumberDensities=False, mapBlockParams=False
+        self, sourceReactor, destReactor, mapNumberDensities=False, mapBlockParams=True
     ):
         """
         Map parameters from one reactor to another.
@@ -1077,12 +1078,11 @@ def setNumberDensitiesFromOverlaps(block, overlappingBlockInfo):
     totalDensities = collections.defaultdict(float)
     block.clearNumberDensities()
     blockHeightInCm = block.getHeight()
-    # tomorrow, implement simple vector math here to avoid iterating over the dictionaries
     for overlappingBlock, overlappingHeightInCm in overlappingBlockInfo:
         heightScaling = overlappingHeightInCm / blockHeightInCm
         for nucName, numberDensity in overlappingBlock.getNumberDensities().items():
             totalDensities[nucName] += numberDensity * heightScaling
-    block.setNumberDensities(totalDensities)
+    block.setNumberDensities(dict(totalDensities))
     # Set the volume of each component in the block to `None` so that the
     # volume of each component is recomputed.
     for c in block:
