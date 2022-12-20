@@ -29,8 +29,10 @@ from armi.tests import TEST_ROOT, ISOAA_PATH
 
 
 class DummyFluxOptions:
-    def __init__(self):
+    def __init__(self, cs):
+        self.cs = cs
         self.photons = False
+        self.calcReactionRatesOnMeshConversion = True
 
 
 class TestConverterFactory(unittest.TestCase):
@@ -40,7 +42,7 @@ class TestConverterFactory(unittest.TestCase):
         )
         reduceTestReactorRings(self.r, self.o.cs, 2)
 
-        self.dummyOptions = DummyFluxOptions()
+        self.dummyOptions = DummyFluxOptions(self.o.cs)
 
     def test_converterFactory(self):
         self.dummyOptions.photons = False
@@ -67,16 +69,19 @@ class TestAssemblyUniformMesh(unittest.TestCase):
 
         self.converter = uniformMesh.NeutronicsUniformMeshConverter(cs=self.o.cs)
         self.converter._sourceReactor = self.r
+        self.converter._setParamsToUpdate("in")
 
     def test_makeAssemWithUniformMesh(self):
 
         sourceAssem = self.r.core.getFirstAssembly(Flags.IGNITER)
 
         self.converter._computeAverageAxialMesh()
+        b = sourceAssem.getFirstBlock(Flags.FUEL)
         newAssem = self.converter.makeAssemWithUniformMesh(
             sourceAssem,
             self.converter._uniformMesh,
             blockParamNames=["power"],
+            blockParamMapper=uniformMesh.BlockParamMapper(["power"], b),
             mapNumberDensities=True,
         )
 
@@ -118,7 +123,8 @@ class TestAssemblyUniformMesh(unittest.TestCase):
 
         self.r.core.updateAxialMesh()
         newAssem = self.converter.makeAssemWithUniformMesh(
-            sourceAssem, self.r.core.p.axialMesh[1:], blockParamNames=["power"]
+            sourceAssem, self.r.core.p.axialMesh[1:], blockParamNames=["power"],
+            blockParamMapper=uniformMesh.BlockParamMapper(["power"], b),
         )
 
         self.assertNotEqual(len(newAssem), len(sourceAssem))
@@ -139,10 +145,12 @@ class TestAssemblyUniformMesh(unittest.TestCase):
         # Create a new assembly that has the same mesh as the source assem, but also
         # demonstrates the transfer of number densities and parameter data as a 1:1 mapping
         # without any volume integration/data migration based on a differing mesh.
+        bpNames = ["flux", "power", "mgFlux"]
         newAssem = self.converter.makeAssemWithUniformMesh(
             sourceAssem,
             sourceAssem.getAxialMesh(),
-            blockParamNames=["flux", "power", "mgFlux"],
+            blockParamNames=bpNames,
+            blockParamMapper=uniformMesh.BlockParamMapper(bpNames, b),
             mapNumberDensities=True,
         )
         for b, origB in zip(newAssem, sourceAssem):
@@ -163,10 +171,12 @@ class TestAssemblyUniformMesh(unittest.TestCase):
             b.p.flux = 2.0
             b.p.power = 20.0
             b.p.mgFlux = [2.0, 4.0]
+        bpNames = ["flux", "power", "mgFlux"]
         uniformMesh.UniformMeshGeometryConverter.setAssemblyStateFromOverlaps(
             sourceAssembly=newAssem,
             destinationAssembly=sourceAssem,
-            blockParamNames=["flux", "power", "mgFlux"],
+            blockParamNames=bpNames,
+            blockParamMapper=uniformMesh.BlockParamMapper(bpNames, b),
         )
         for b, updatedB in zip(newAssem, sourceAssem):
             self.assertEqual(b.p.flux, 2.0)
@@ -379,9 +389,7 @@ class TestGammaUniformMesh(unittest.TestCase):
         )
         self.r.core.lib = isotxs.readBinary(ISOAA_PATH)
         self.r.core.p.keff = 1.0
-        self.converter = uniformMesh.GammaUniformMeshConverter(
-            cs=self.o.cs, calcReactionRates=False
-        )
+        self.converter = uniformMesh.GammaUniformMeshConverter(cs=self.o.cs)
 
     def test_convertNumberDensities(self):
         refMass = self.r.core.getMass("U235")
@@ -511,10 +519,12 @@ class TestParamConversion(unittest.TestCase):
             for b in self.sourceAssem:
                 b.p[pName] = 3
 
+        bpNames = paramList + ["mgNeutronVelocity"]
         uniformMesh.UniformMeshGeometryConverter.setAssemblyStateFromOverlaps(
             self.sourceAssem,
             self.destinationAssem,
-            blockParamNames=paramList + ["mgNeutronVelocity"],
+            blockParamNames=bpNames,
+            blockParamMapper=uniformMesh.BlockParamMapper(bpNames, b),
         )
 
         for paramName in paramList:
