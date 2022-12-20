@@ -296,7 +296,7 @@ def _compareSets(
         )
 
     if src - ref:
-        nDiffs += len(ref - src)
+        nDiffs += len(src - ref)
         out.writeln(
             "src has {}not in ref: {}".format(name + " " or "", list(src - ref))
         )
