@@ -538,6 +538,19 @@ class Case:
         but not long after (because nucDir is framework-level and expected to be
         up-to-date by lots of modules).
         """
+        if not self.cs["initializeBurnChain"]:
+            runLog.info(
+                "Skipping burn-chain initialization due disabling of the `initializeBurnChain` setting."
+            )
+            return
+
+        if not os.path.exists(self.cs["burnChainFileName"]):
+            raise ValueError(
+                f"The burn-chain file {self.cs['burnChainFileName']} does not exist. The "
+                f"data cannot be loaded. Fix this path or disable burn-chain initialization using "
+                f"the `initializeBurnChain` setting."
+            )
+
         with open(self.cs["burnChainFileName"]) as burnChainStream:
             nuclideBases.imposeBurnChain(burnChainStream)
 

@@ -514,7 +514,7 @@ class TestXSlibraryMerging(unittest.TestCase, TempFileMixin):
             "XE1357",
             "XE1367",
         ]:
-            nucLabel = nuclideBases.byMccId[nucId].label
+            nucLabel = nuclideBases.byMcc3Id[nucId].label
             del emptyXSLib[nucLabel + "AA"]
             del emptyXSLib[nucLabel + "AB"]
         self.assertEqual(

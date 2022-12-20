@@ -27,16 +27,16 @@ from armi.reactor.tests.test_reactors import buildOperatorOfEmptyHexBlocks
 from armi.reactor.flags import Flags
 from armi.nucDirectory import nuclideBases
 
-LFP_TEXT = """        13          LFP35 GE73 5  5.9000E-06
-        13          LFP35 GE74 5  1.4000E-05
-        13          LFP35 GE76 5  1.6000E-04
-        13          LFP35 AS75 5  8.9000E-05
-        13          LFP35 KR85 5  8.9000E-05
-        13          LFP35 MO99 5  8.9000E-05
-        13          LFP35 SM1505  8.9000E-05
-        13          LFP35 XE1355  8.9000E-05
-        13          LFP39 XE1355  8.9000E-05
-        13          LFP38 XE1355  8.9000E-05
+LFP_TEXT = """        13          LFP35 GE73_7  5.9000E-06
+        13          LFP35 GE74_7  1.4000E-05
+        13          LFP35 GE76_7  1.6000E-04
+        13          LFP35 AS75_7  8.9000E-05
+        13          LFP35 KR85_7  8.9000E-05
+        13          LFP35 MO99_7  8.9000E-05
+        13          LFP35 SM1507  8.9000E-05
+        13          LFP35 XE1357  8.9000E-05
+        13          LFP39 XE1357  8.9000E-05
+        13          LFP38 XE1357  8.9000E-05
 """
 
 
