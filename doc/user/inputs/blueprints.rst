@@ -867,7 +867,6 @@ deplete.::
         CU: *carbon_flags
         FE: *carbon_flags
         H: {burn: false, xs: true}
-        LFP00: {burn: true, xs: true}
         MN: {burn: false, xs: true}
         MO: {burn: false, xs: true}
         N: {burn: false, xs: true}

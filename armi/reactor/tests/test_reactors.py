@@ -581,7 +581,7 @@ class HexReactorTests(ReactorTests):
                 mass3 = b3.getMass(element.symbol)
                 assert_allclose(mass2, mass3)
 
-                constituentNucs = [nn.name for nn in element.nuclideBases if nn.a > 0]
+                constituentNucs = [nn.name for nn in element.nuclides if nn.a > 0]
                 nuclideLevelMass3 = b3.getMass(constituentNucs)
                 assert_allclose(mass3, nuclideLevelMass3)
 

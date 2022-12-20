@@ -57,8 +57,6 @@ def _addCustomTabulateTables():
 _addCustomTabulateTables()
 
 
-from armi import runLog
-
 from armi.nucDirectory import nuclideBases
 
 # Nuclide bases get built explicitly here to have better determinism

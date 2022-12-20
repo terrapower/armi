@@ -191,7 +191,7 @@ class DefaultExecuter(Executer):
         if self.options.savePhysicsFiles:
             outputDir = os.path.join(pathTools.armiAbsPath(os.getcwd()), state, dirName)
         else:
-            outputDir = None
+            outputDir = pathTools.armiAbsPath(os.getcwd())
         # must either write input to CWD for analysis and then copy to runDir
         # or not list it in inputs (for optimization)
         self.writeInput()

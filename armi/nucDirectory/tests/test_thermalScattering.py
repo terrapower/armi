@@ -13,14 +13,12 @@
 # limitations under the License.
 """Tests for thermal scattering metadata"""
 # pylint: disable=protected-access
-
 import unittest
 
 from armi.reactor import blocks
 from armi.reactor import components
-
-from .. import thermalScattering as ts
-from .. import nuclideBases as nb
+from armi.nucDirectory import thermalScattering as ts
+from armi.nucDirectory import nuclideBases as nb
 
 
 def buildBlockWithTSL():
@@ -50,8 +48,10 @@ class TestThermalScattering(unittest.TestCase):
         tsl = getNuclideThermalScatteringData(b)
         carbon = nb.byName["C"]
         carbon12 = nb.byName["C12"]
+
         self.assertIn(carbon, tsl)
         self.assertNotIn(carbon12, tsl)
+        self.assertEqual(tsl[carbon], ts.byNbAndCompound[carbon, ts.GRAPHITE_10P])
 
         b.expandElementalToIsotopics(carbon)
 
@@ -59,7 +59,7 @@ class TestThermalScattering(unittest.TestCase):
         self.assertNotIn(carbon, tsl)
         self.assertIn(carbon12, tsl)
 
-        self.assertIs(tsl[carbon12], ts.byNbAndCompound[carbon, ts.GRAPHITE_10P])
+        self.assertEqual(tsl[carbon12], ts.byNbAndCompound[carbon, ts.GRAPHITE_10P])
 
     def test_endf8Compound(self):
         si = nb.byName["SI"]

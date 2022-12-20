@@ -21,7 +21,6 @@ information for :py:mod:`~armi.nucDirectory.nuclide` module.
 #. :ref:`Generic nuclide data <doc-nuclide-bases>` - this includes  mass, atomic number, natural
    abundance and various names and labels that are used in ARMI for the nuclide. It also includes
    decay and transmutation modes.
-#. Nuclide specific :ref:`cross section information <doc-nuclides>`.
 
 .. _doc-elements:
 
@@ -99,8 +98,8 @@ basic information about a nuclide, such as the atomic mass, atomic number (Z), t
 number (A), the natural abundance, and all of the decay and transmutation modes (well, ARMI's
 decay and transmutation modes).
 
-Nuclide names, labels and MC\*\*2 IDs
--------------------------------------
+Nuclide names, labels, and IDs
+------------------------------
 Nuclides have names, labels and IDs. 
 
 :py:attr:`INuclide.name <armi.nucDirectory.nuclideBases.INuclide.name>`
@@ -109,20 +108,15 @@ Nuclides have names, labels and IDs.
     from the corresponding element symbol and mass number (A).
 
 :py:attr:`INuclide.label <armi.nucDirectory.nuclideBases.INuclide.label>`
-    The nuclide label is a unique 4 character name which identifies the nuclide from all others
-    within MC\*\*2 and DIF3D. The label must be 4 characters, because MC\*\*2 and DIF3D only
-    allow 6 character labels, two of which we reserver for the cross section ID. Labels
-    are not necessarily human readable, but are generally the nuclide symbol followed by
-    the last two digits of the mass number (A), so the nuclide for U235 has the label
-    ``U235``, but PU239 has the label ``PU39``.
-
-:py:attr:`INuclide.mc2id <armi.nucDirectory.nuclideBases.INuclide.mc2id>`
-    The mc2id is the MC\*\*2 id used for MC\*\*2 version 2. This should only be used
-    when loading an ISOTXS file, or writing MC\*\*2 input.
-
-:py:meth:`INuclide.mc3id() <armi.nucDirectory.nuclideBases.INuclide.mc3id>`
-    The mc3id is the MC\*\*2 id used for MC\*\*2 version 3. This should only be used
-    when loading an ISOTXS file, or writing MC\*\*2 input.
+    The nuclide label is a unique 4 character name which identifies the nuclide from all others. 
+    The label is fixed to 4 characters to conform with the CCCC standard files, which traditionally
+    only allow for a maximum of 6 character labels in legacy nuclear codes. Of the 6 allowable
+    characters, 4 are reserved for the unique identifier of the nuclide and 2 characters are reserved
+    for cross section labels (i.e., AA, AB, ZA, etc.). The cross section labels are based on the
+    cross section group manager implementation within the framework. These labels are not necessarily 
+    human readable/interpretable, but are generally the nuclide symbol followed by the last two digits 
+    of the mass number (A), so the nuclide for U235 has the label ``U235``, but PU239 has the label 
+    ``PU39``.
 
 For reference, there is a complete list of the nuclides along with the names, labels and IDs
 :py:mod:`here <armi.nucDirectory.nuclideBases>`.
@@ -134,8 +128,9 @@ There are three main ways to retrieve a nuclide, which are provided for convenie
 what information you have, or "know," about a nuclide. For example, if you know a nuclide name, use
 the :py:data:`~armi.nucDirectory.nuclideBases.byName` dictionary. There are also dictionaries
 available for retrieving by the label, :py:data:`~armi.nucDirectory.nuclideBases.byLabel`, and by
-the MC\*\*2 ID, :py:data:`~armi.nucDirectory.nuclideBases.byMccId` (this works for both version 2
-and version 3 IDs).
+other software-specific IDs (i.e., MCNP, Serpent, MC2-2, and MC2-3). The software-specific labels
+are incorporated into the framework to support plugin developments and may be extended as needed
+by end-users as needs arise.
 
     >>> from armi.nucDirectory import nuclideBases
     >>> pu239 = nuclideBases.byName['PU239']
@@ -160,15 +155,4 @@ Just like with elements, the item retrieved from the various dictionaries are th
     However, often times they will also need other information, such as the mass. Consequently,
     the index which contains the name or label is not fulfilling its intended purpose; in order to
     perform the operation, ``weight * numberDensity``, you'll still need the nuclide object!
-
-.. _doc-nuclides:
-
-Nuclides
-========
-
-Another closely related object is the :py:class:`armi.nucDirectory.nuclide.Nuclide`.
-:py:class:`Nuclides <nuclide.Nuclide>` are created when loading an ISOTXS file from MC\*\*2.
-:py:class:`Nuclides <nuclide.Nuclide>` contain the same information as
-:py:class:`INuclides <INuclide>`, but also contain multi-group microscopic cross section data.
-
 """
