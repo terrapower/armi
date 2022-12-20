@@ -579,6 +579,7 @@ def _getNeutronicsBlockParams():
     with pDefs.createBuilder(
         default=0.0,
         location=ParamLocation.AVERAGE,
+        categories=[parameters.Category.detailedAxialExpansion],
     ) as pb:
         pb.defParam(
             "rateAbs",
