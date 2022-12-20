@@ -77,6 +77,18 @@ class MockGlobalFluxWithExecuters(
         return MockGlobalFluxExecuter
 
 
+class MockGlobalFluxWithExecutersNonUniform(MockGlobalFluxWithExecuters):
+    def getExecuterOptions(self, label=None):
+        """
+        Return modified executerOptions
+        """
+        opts = globalFluxInterface.GlobalFluxInterfaceUsingExecuters.getExecuterOptions(
+            self, label=label
+        )
+        opts.hasNonUniformAssems = True  # to increase test coverage
+        return opts
+
+
 class MockGlobalFluxExecuter(globalFluxInterface.GlobalFluxExecuter):
     """Tests for code that uses Executers, which rely on OutputReaders to update state."""
 
@@ -164,6 +176,33 @@ class TestGlobalFluxInterfaceWithExecuters(unittest.TestCase):
         cls.gfi = MockGlobalFluxWithExecuters(cls.r, cs)
 
     def test_executerInteraction(self):
+        gfi, r = self.gfi, self.r
+        gfi.interactBOC()
+        gfi.interactEveryNode(0, 0)
+        r.p.timeNode += 1
+        gfi.interactEveryNode(0, 1)
+        gfi.interactEOC()
+        self.assertAlmostEqual(r.core.p.rxSwing, (1.02 - 1.01) / 1.01 * 1e5)
+
+    def test_calculateKeff(self):
+        self.assertEqual(self.gfi.calculateKeff(), 1.05)  # set in mock
+
+    def test_getExecuterCls(self):
+        class0 = globalFluxInterface.GlobalFluxInterfaceUsingExecuters.getExecuterCls()
+        self.assertEqual(class0, globalFluxInterface.GlobalFluxExecuter)
+
+
+class TestGlobalFluxInterfaceWithExecutersNonUniform(unittest.TestCase):
+    """Tests for global flux execution with non-uniform assemblies."""
+
+    @classmethod
+    def setUpClass(cls):
+        cs = settings.Settings()
+        _o, cls.r = test_reactors.loadTestReactor()
+        cls.r.core.p.keff = 1.0
+        cls.gfi = MockGlobalFluxWithExecutersNonUniform(cls.r, cs)
+
+    def test_executerInteractionNonUniformAssems(self):
         gfi, r = self.gfi, self.r
         gfi.interactBOC()
         gfi.interactEveryNode(0, 0)

@@ -14,17 +14,19 @@
 
 """Test axialExpansionChanger"""
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
-import os
 from statistics import mean
+import os
 import unittest
+
 from numpy import linspace, array, vstack, zeros
-from armi.reactor.tests.test_reactors import loadTestReactor
+
 from armi.materials import material
-from armi.tests import TEST_ROOT
 from armi.reactor.assemblies import grids
 from armi.reactor.assemblies import HexAssembly
 from armi.reactor.blocks import HexBlock
 from armi.reactor.components import DerivedShape, UnshapedComponent
+from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
+from armi.tests import TEST_ROOT
 from armi.reactor.components.basicShapes import (
     Circle,
     Hexagon,
@@ -36,11 +38,11 @@ from armi.reactor.converters.axialExpansionChanger import (
     ExpansionData,
     _determineLinked,
 )
-from armi.reactor.flags import Flags
 from armi import materials
-from armi.utils import units
 from armi.materials import custom
+from armi.reactor.flags import Flags
 from armi.tests import mockRunLogs
+from armi.utils import units
 
 # set namespace order for materials so that fake HT9 material can be found
 materials.setMaterialNamespaceOrder(
@@ -539,7 +541,9 @@ class TestManageCoreMesh(unittest.TestCase):
 
     def setUp(self):
         self.axialExpChngr = AxialExpansionChanger()
-        _o, self.r = loadTestReactor(TEST_ROOT)
+        o, self.r = loadTestReactor(TEST_ROOT)
+        reduceTestReactorRings(self.r, o.cs, 3)
+
         self.oldAxialMesh = self.r.core.p.axialMesh
         # expand refAssem by 10%
         componentLst = [c for b in self.r.core.refAssem for c in b]
@@ -811,16 +815,20 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
     def setUp(self):
         """This test uses a different armiRun.yaml than the default"""
 
-        _o, r = loadTestReactor(
+        o, r = loadTestReactor(
             os.path.join(TEST_ROOT, "detailedAxialExpansion"),
             customSettings={"inputHeightsConsideredHot": True},
         )
+        reduceTestReactorRings(r, o.cs, 3)
+
         self.stdAssems = [a for a in r.core.getAssemblies()]
 
-        _oCold, rCold = loadTestReactor(
+        oCold, rCold = loadTestReactor(
             os.path.join(TEST_ROOT, "detailedAxialExpansion"),
             customSettings={"inputHeightsConsideredHot": False},
         )
+        reduceTestReactorRings(rCold, oCold.cs, 3)
+
         self.testAssems = [a for a in rCold.core.getAssemblies()]
 
     def test_coldAssemblyExpansion(self):
@@ -861,6 +869,7 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
                     ):
                         # custom materials don't expand
                         self.assertGreater(bExp.getMass("U235"), bStd.getMass("U235"))
+
                 if not aStd.hasFlags(Flags.CONTROL) and not aStd.hasFlags(Flags.TEST):
                     if not hasCustomMaterial:
                         # skip blocks of custom material where liner is merged with clad

@@ -24,7 +24,6 @@ class TestNucDirectory(unittest.TestCase):
     def setUp(self):
         with mockRunLogs.BufferLog():
             elements.factory()
-            nuclideBases.factory()
 
     def test_nucDir_getNameForOldDashedNames(self):
         oldNames = [
@@ -57,10 +56,6 @@ class TestNucDirectory(unittest.TestCase):
     def test_nucDir_getNuclidesFromForBadName(self):
         with self.assertRaises(Exception):
             nucDir.getNuclideFromName("Charlie")
-
-    def test_nucDir_getNuclidesFromForUnnatural(self):
-        with self.assertRaises(NotImplementedError):
-            nucDir.getNuclidesFromInputName("PU")
 
 
 if __name__ == "__main__":

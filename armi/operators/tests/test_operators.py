@@ -14,7 +14,7 @@
 
 """Tests for operators"""
 
-# pylint: disable=abstract-method,no-self-use,unused-argument
+# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-method-argument,import-outside-toplevel
 import unittest
 
 from armi import settings
@@ -44,78 +44,75 @@ class InterfaceC(Interface):
 
 # TODO: Add a test that shows time evolution of Reactor (REQ_EVOLVING_STATE)
 class OperatorTests(unittest.TestCase):
+    def setUp(self):
+        self.o, self.r = test_reactors.loadTestReactor()
+
     def test_addInterfaceSubclassCollision(self):
-        self.cs = settings.Settings()
-        o, r = test_reactors.loadTestReactor()
+        cs = settings.Settings()
 
-        interfaceA = InterfaceA(r, self.cs)
+        interfaceA = InterfaceA(self.r, cs)
 
-        interfaceB = InterfaceB(r, self.cs)
-        o.addInterface(interfaceA)
+        interfaceB = InterfaceB(self.r, cs)
+        self.o.addInterface(interfaceA)
 
         # 1) Adds B and gets rid of A
-        o.addInterface(interfaceB)
-        self.assertEqual(o.getInterface("Second"), interfaceB)
-        self.assertEqual(o.getInterface("First"), None)
+        self.o.addInterface(interfaceB)
+        self.assertEqual(self.o.getInterface("Second"), interfaceB)
+        self.assertEqual(self.o.getInterface("First"), None)
 
         # 2) Now we have B which is a subclass of A,
         #    we want to not add A (but also not have an error)
-        o.addInterface(interfaceA)
-        self.assertEqual(o.getInterface("Second"), interfaceB)
-        self.assertEqual(o.getInterface("First"), None)
+        self.o.addInterface(interfaceA)
+        self.assertEqual(self.o.getInterface("Second"), interfaceB)
+        self.assertEqual(self.o.getInterface("First"), None)
 
         # 3) Also if another class not a subclass has the same function,
         #    raise an error
-        interfaceC = InterfaceC(r, self.cs)
-        self.assertRaises(RuntimeError, o.addInterface, interfaceC)
+        interfaceC = InterfaceC(self.r, cs)
+        self.assertRaises(RuntimeError, self.o.addInterface, interfaceC)
 
         # 4) Check adding a different function Interface
         interfaceC.function = "C"
-        o.addInterface(interfaceC)
-        self.assertEqual(o.getInterface("Second"), interfaceB)
-        self.assertEqual(o.getInterface("Third"), interfaceC)
+        self.o.addInterface(interfaceC)
+        self.assertEqual(self.o.getInterface("Second"), interfaceB)
+        self.assertEqual(self.o.getInterface("Third"), interfaceC)
 
     def test_checkCsConsistency(self):
-        o, _r = test_reactors.loadTestReactor()
-        o._checkCsConsistency()  # passes without error
+        self.o._checkCsConsistency()  # passes without error
 
-        o.cs = o.cs.modified(newSettings={"nCycles": 66})
+        self.o.cs = self.o.cs.modified(newSettings={"nCycles": 66})
         with self.assertRaises(RuntimeError):
-            o._checkCsConsistency()
+            self.o._checkCsConsistency()
 
     def test_interfaceIsActive(self):
-        o, _r = test_reactors.loadTestReactor()
-        self.assertTrue(o.interfaceIsActive("main"))
-        self.assertFalse(o.interfaceIsActive("Fake-o"))
+        self.o, _r = test_reactors.loadTestReactor()
+        self.assertTrue(self.o.interfaceIsActive("main"))
+        self.assertFalse(self.o.interfaceIsActive("Fake-o"))
 
     def test_loadStateError(self):
         """The loadTestReactor() test tool does not have any history in the DB to load from"""
-        o, _r = test_reactors.loadTestReactor()
 
         # a first, simple test that this method fails correctly
         with self.assertRaises(RuntimeError):
-            o.loadState(0, 1)
+            self.o.loadState(0, 1)
 
     def test_couplingIsActive(self):
-        o, _r = test_reactors.loadTestReactor()
-        self.assertFalse(o.couplingIsActive())
+        self.assertFalse(self.o.couplingIsActive())
 
     def test_setStateToDefault(self):
-        o, _r = test_reactors.loadTestReactor()
 
         # reset the runType for testing
-        self.assertEqual(o.cs["runType"], "Standard")
-        o.cs = o.cs.modified(newSettings={"runType": "fake"})
-        self.assertEqual(o.cs["runType"], "fake")
+        self.assertEqual(self.o.cs["runType"], "Standard")
+        self.o.cs = self.o.cs.modified(newSettings={"runType": "fake"})
+        self.assertEqual(self.o.cs["runType"], "fake")
 
         # validate the method works
-        cs = o.setStateToDefault(o.cs)
+        cs = self.o.setStateToDefault(self.o.cs)
         self.assertEqual(cs["runType"], "Standard")
 
     def test_snapshotRequest(self):
-        o, _r = test_reactors.loadTestReactor()
         with TemporaryDirectoryChanger():
-            o.snapshotRequest(0, 1)
+            self.o.snapshotRequest(0, 1)
 
 
 class CyclesSettingsTests(unittest.TestCase):

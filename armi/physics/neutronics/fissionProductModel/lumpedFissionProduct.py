@@ -25,7 +25,6 @@ import os
 
 from armi.nucDirectory import nuclideBases
 from armi import runLog
-
 from armi.nucDirectory import elements
 
 from .fissionProductModelSettings import CONF_LFP_COMPOSITION_FILE_PATH
@@ -511,6 +510,6 @@ def expandFissionProducts(massFrac, lumpedFissionProducts):
 def isGas(nuc):
     """True if nuclide is considered a gas."""
     for element in elements.getElementsByChemicalPhase(elements.ChemicalPhase.GAS):
-        if element.symbol in nuc.name:
+        if element == nuc.element:
             return True
     return False

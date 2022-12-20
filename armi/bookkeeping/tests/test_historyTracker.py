@@ -74,6 +74,7 @@ class TestHistoryTracker(ArmiTestHelper):
         cs = settings.Settings(f"{CASE_TITLE}.yaml")
         newSettings = {}
         newSettings["db"] = True
+        newSettings["nCycles"] = 2
         newSettings["detailAssemLocationsBOL"] = ["001-001"]
         newSettings["loadStyle"] = "fromDB"
         newSettings["reloadDBName"] = pathlib.Path(f"{CASE_TITLE}.h5").absolute()
@@ -119,9 +120,8 @@ class TestHistoryTracker(ArmiTestHelper):
 
         hti = o.getInterface("history")
 
-        timesInYears = [
-            duration or 1.0 for duration in hti.getTimeSteps()
-        ]  # duration is None in this DB
+        # duration is None in this DB
+        timesInYears = [duration or 1.0 for duration in hti.getTimeSteps()]
         timeStepsToRead = [
             utils.getCycleNodeFromCumulativeNode(i, self.o.cs)
             for i in range(len(timesInYears))

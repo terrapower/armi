@@ -7,7 +7,7 @@ omit =
     venv/
 source = armi
 # change default .coverage file to something that doesn't have a dot
-# because our Windows file server can't handle dots. :s
+# because the Windows file server can't handle dots.
 data_file = coverage_results.cov
 
 [coverage:run]

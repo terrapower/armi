@@ -34,7 +34,6 @@ from armi.utils.units import C_TO_K
 from armi.materials import void
 from armi.nucDirectory import nuclideBases
 from armi import materials
-from armi.reactor.flags import Flags
 
 COMPONENT_LINK_REGEX = re.compile(r"^\s*(.+?)\s*\.\s*(.+?)\s*$")
 
@@ -708,7 +707,7 @@ class Component(composites.Composite, metaclass=ComponentType):
                 "".format(self.material)
             )
         enrichedNuclide = nuclideBases.byName[self.material.enrichedNuclide]
-        baselineNucNames = [nb.name for nb in enrichedNuclide.element.nuclideBases]
+        baselineNucNames = [nb.name for nb in enrichedNuclide.element.nuclides]
         massFracs = self.getMassFracs()
         massFracEnrichedElement = sum(
             massFrac
@@ -791,9 +790,8 @@ class Component(composites.Composite, metaclass=ComponentType):
         retainLink : bool, optional
             If True, the val will be applied to the dimension of linked
             component which indirectly changes this component's dimensions.
-        cold : book, optional
-            If True sets the component to the dimension that would cause
-            the hot dimension to be the specified value.
+        cold : bool, optional
+            If True sets the component cold dimension to the specified value.
         """
         if not key:
             return
@@ -801,13 +799,15 @@ class Component(composites.Composite, metaclass=ComponentType):
             linkedComp, linkedDimName = self.p[key]
             linkedComp.setDimension(linkedDimName, val, cold=cold)
         else:
-            expansionFactor = (
-                self.getThermalExpansionFactor()
-                if key in self.THERMAL_EXPANSION_DIMS
-                else 1.0
-            )
-            val = val / expansionFactor if not cold else val
+            if not cold:
+                expansionFactor = (
+                    self.getThermalExpansionFactor()
+                    if key in self.THERMAL_EXPANSION_DIMS
+                    else 1.0
+                )
+                val /= expansionFactor
             self.p[key] = val
+
         self.clearLinkedCache()
 
     def getDimension(self, key, Tc=None, cold=False):
@@ -1094,7 +1094,7 @@ class Component(composites.Composite, metaclass=ComponentType):
                 "".format(self.material)
             )
         enrichedNuclide = nuclideBases.byName[self.material.enrichedNuclide]
-        baselineNucNames = [nb.name for nb in enrichedNuclide.element.nuclideBases]
+        baselineNucNames = [nb.name for nb in enrichedNuclide.element.nuclides]
         massFracsBefore = self.getMassFracs()
         massFracEnrichedElement = sum(
             massFrac
