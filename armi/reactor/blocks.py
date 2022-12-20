@@ -190,6 +190,11 @@ class Block(composites.Composite):
             if isinstance(clad.spatialLocator, grids.MultiIndexLocation):
                 hexComponent.setType("homogenizedHex", Flags.CLAD)
                 hexComponent.spatialLocator = clad.spatialLocator
+
+        emptyNDens = {
+            nuc: 0.0 for nuc in self.getNuclides()
+        }
+        hexComponent.setNumberDensities(emptyNDens)
         b.add(hexComponent)
 
         return b
