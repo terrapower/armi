@@ -881,9 +881,6 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
             self.reactorParamNames.extend(
                 self._sourceReactor.core.p.paramDefs.inCategory(category).names
             )
-        if direction == "out":
-            self.reactorParamNames.append("axialMesh")
-
         b = self._sourceReactor.core.getFirstBlock()
         excludedCategories = [parameters.Category.gamma]
         if direction == "out":
@@ -967,8 +964,6 @@ class GammaUniformMeshConverter(UniformMeshGeometryConverter):
             self.reactorParamNames.extend(
                 self._sourceReactor.core.p.paramDefs.inCategory(category).names
             )
-        if direction == "out":
-            self.reactorParamNames.append("axialMesh")
         b = self._sourceReactor.core.getFirstBlock()
         if direction == "out":
             excludeList = b.p.paramDefs.inCategory(parameters.Category.cumulative).names
