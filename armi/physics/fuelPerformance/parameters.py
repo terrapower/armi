@@ -29,7 +29,7 @@ def _getFuelPerformanceBlockParams():
 
         pb.defParam(
             "fuelCladLocked",
-            units=bool,
+            units="",
             default=False,
             description="Boolean to indicate if the fuel is locked with the clad.",
         )
