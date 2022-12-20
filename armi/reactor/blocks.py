@@ -177,7 +177,7 @@ class Block(composites.Composite):
 
         hexComponent = Hexagon(
             "homogenizedHex",
-            "HT9", # placeholder; need to create a "homogenizedMixture" material
+            "Mixture",
             self.getAverageTempInC(),
             self.getAverageTempInC(),
             self._pitchDefiningComponent[1],
