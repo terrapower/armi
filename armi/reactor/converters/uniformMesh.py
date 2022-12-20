@@ -487,9 +487,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
         # whereas the source assembly is the assembly that is from the uniform model. This
         # loop iterates over each block in the destination assembly and determines the mesh
         # coordinates that the uniform mesh (source assembly) will be mapped to.
-        runLog.debug(
-            f"Mapping the following params: {blockParamNames} for {destinationAssembly}"
-        )
         for destBlock in destinationAssembly:
 
             zLower = destBlock.p.zbottom
@@ -517,7 +514,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
             updatedDestVals = collections.defaultdict(float)
 
             if mapNumberDensities:
-                runLog.debug(f"Mapping number densities for {destBlock}")
                 setNumberDensitiesFromOverlaps(destBlock, sourceBlocksInfo)
             for sourceBlock, sourceBlockOverlapHeight in sourceBlocksInfo:
                 sourceBlockVals = blockParamMapper.paramGetter(
@@ -552,7 +548,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
                     updatedDestVals[paramName] += sourceBlockVal * integrationFactor
 
-            runLog.debug(f"Mapping params for {destBlock}")
             blockParamMapper.paramSetter(
                 destBlock, updatedDestVals.values(), updatedDestVals.keys()
             )
@@ -560,7 +555,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
             # If requested, the reaction rates will be calculated based on the
             # mapped neutron flux and the XS library.
             if calcReactionRates:
-                runLog.debug(f"Calculating reaction rates with updated flux")
                 core = sourceAssembly.getAncestor(lambda c: isinstance(c, Core))
                 if core is not None:
                     UniformMeshGeometryConverter._calculateReactionRates(
