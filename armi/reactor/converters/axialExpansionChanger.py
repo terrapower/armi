@@ -192,7 +192,7 @@ class AxialExpansionChanger:
         for ib, b in enumerate(self.linked.a):
 
             runLog.debug(msg=f"  Block {b}")
-            blockHeight = b.p.height
+            blockHeight = b.getHeight()
             # set bottom of block equal to top of block below it
             # if ib == 0, leave block bottom = 0.0
             if ib > 0:
@@ -234,14 +234,14 @@ class AxialExpansionChanger:
             # see also b.setHeight()
             # - the above not chosen due to call to calculateZCoords
             oldComponentVolumes = [c.getVolume() for c in b]
-            oldHeight = b.p.height
+            oldHeight = b.getHeight()
             b.p.height = b.p.ztop - b.p.zbottom
 
             _checkBlockHeight(b)
             self._conserveComponentDensity(b, oldHeight, oldComponentVolumes)
             # set block mid point and redo mesh
             # - functionality based on assembly.calculateZCoords()
-            b.p.z = b.p.zbottom + b.p.height / 2.0
+            b.p.z = b.p.zbottom + b.getHeight() / 2.0
             mesh.append(b.p.ztop)
             b.spatialLocator = self.linked.a.spatialGrid[0, 0, ib]
 
@@ -294,7 +294,7 @@ class AxialExpansionChanger:
 
         solidComponents = _getSolidComponents(b)
         for ic, c in enumerate(b):
-            c.p.volume = oldVolume[ic] * b.p.height / oldHeight
+            c.p.volume = oldVolume[ic] * b.getHeight() / oldHeight
             if c in solidComponents:
                 growFrac = self.expansionData.getExpansionFactor(c)
                 if growFrac >= 0.0:
@@ -318,16 +318,16 @@ def _getSolidComponents(b):
 
 
 def _checkBlockHeight(b):
-    if b.p.height < 3.0:
+    if b.getHeight() < 3.0:
         runLog.debug(
             "Block {0:s} ({1:s}) has a height less than 3.0 cm. ({2:.12e})".format(
-                b.name, str(b.p.flags), b.p.height
+                b.name, str(b.p.flags), b.getHeight()
             )
         )
-    if b.p.height < 0.0:
+    if b.getHeight() < 0.0:
         raise ArithmeticError(
             "Block {0:s} ({1:s}) has a negative height! ({2:.12e})".format(
-                b.name, str(b.p.flags), b.p.height
+                b.name, str(b.p.flags), b.getHeight()
             )
         )
 
