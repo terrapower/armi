@@ -289,16 +289,17 @@ def _compareSets(
     src: set, ref: set, out: OutputWriter, name: Optional[str] = None
 ) -> int:
     nDiffs = 0
+    printName = "" if name is None else name + " "
     if ref - src:
         nDiffs += len(ref - src)
         out.writeln(
-            "ref has {}not in src: {}".format(name + " " or "", list(ref - src))
+            "ref has {}not in src: {}".format(printName, list(ref - src))
         )
 
     if src - ref:
         nDiffs += len(src - ref)
         out.writeln(
-            "src has {}not in ref: {}".format(name + " " or "", list(src - ref))
+            "src has {}not in ref: {}".format(printName, list(src - ref))
         )
 
     return nDiffs
