@@ -199,7 +199,9 @@ class UniformMeshGeometryConverter(GeometryConverter):
             self.convReactor = self.initNewReactor(r, self._cs)
             self._computeAverageAxialMesh()
             self._buildAllUniformAssemblies()
-            self._mapStateFromReactorToOther(self._sourceReactor, self.convReactor, mapBlockParams=False)
+            self._mapStateFromReactorToOther(
+                self._sourceReactor, self.convReactor, mapBlockParams=False
+            )
             self._newAssembliesAdded = self.convReactor.core.getAssemblies()
 
         self.convReactor.core.updateAxialMesh()
@@ -432,7 +434,11 @@ class UniformMeshGeometryConverter(GeometryConverter):
         newAssem.calculateZCoords()
 
         UniformMeshGeometryConverter.setAssemblyStateFromOverlaps(
-            sourceAssem, newAssem, blockParamNames, blockParamMapper, mapNumberDensities
+            sourceAssem,
+            newAssem,
+            blockParamNames,
+            blockParamMapper,
+            mapNumberDensities,
         )
         return newAssem
 
@@ -515,46 +521,57 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
             if mapNumberDensities:
                 setNumberDensitiesFromOverlaps(destBlock, sourceBlocksInfo)
-            for sourceBlock, sourceBlockOverlapHeight in sourceBlocksInfo:
-                sourceBlockVals = blockParamMapper.paramGetter(
-                    sourceBlock,
-                    blockParamNames,
-                )
-                sourceBlockHeight = sourceBlock.getHeight()
-
-                for paramName, sourceBlockVal in zip(blockParamNames, sourceBlockVals):
-                    # The value can be `None` if it has not been set yet. In this case,
-                    # the mapping should be skipped.
-                    if sourceBlockVal is None:
-                        continue
-
-                    # Determine if the parameter is volumed integrated or not.
-                    isVolIntegrated = sourceBlock.p.paramDefs[paramName].atLocation(
-                        parameters.ParamLocation.VOLUME_INTEGRATED
+            if blockParamMapper is not None:
+                for sourceBlock, sourceBlockOverlapHeight in sourceBlocksInfo:
+                    sourceBlockVals = blockParamMapper.paramGetter(
+                        sourceBlock,
+                        blockParamNames,
                     )
+                    sourceBlockHeight = sourceBlock.getHeight()
 
-                    # If the parameter is volume integrated (e.g., flux, linear power)
-                    # then calculate the fractional contribution from the source block.
-                    if isVolIntegrated:
-                        integrationFactor = sourceBlockOverlapHeight / sourceBlockHeight
+                    for paramName, sourceBlockVal in zip(
+                        blockParamNames, sourceBlockVals
+                    ):
+                        # The value can be `None` if it has not been set yet. In this case,
+                        # the mapping should be skipped.
+                        if sourceBlockVal is None:
+                            continue
 
-                    # If the parameter is not volume integrated (e.g., volumetric reaction rate)
-                    # then calculate the fraction contribution on the destination block.
-                    # This smears the parameter over the destination block.
-                    else:
-                        integrationFactor = (
-                            sourceBlockOverlapHeight / destinationBlockHeight
+                        # Determine if the parameter is volumed integrated or not.
+                        isVolIntegrated = sourceBlock.p.paramDefs[paramName].atLocation(
+                            parameters.ParamLocation.VOLUME_INTEGRATED
                         )
 
-                    updatedDestVals[paramName] += sourceBlockVal * integrationFactor
+                        # If the parameter is volume integrated (e.g., flux, linear power)
+                        # then calculate the fractional contribution from the source block.
+                        if isVolIntegrated:
+                            integrationFactor = (
+                                sourceBlockOverlapHeight / sourceBlockHeight
+                            )
 
-            blockParamMapper.paramSetter(
-                destBlock, updatedDestVals.values(), updatedDestVals.keys()
-            )
+                        # If the parameter is not volume integrated (e.g., volumetric reaction rate)
+                        # then calculate the fraction contribution on the destination block.
+                        # This smears the parameter over the destination block.
+                        else:
+                            integrationFactor = (
+                                sourceBlockOverlapHeight / destinationBlockHeight
+                            )
+
+                        updatedDestVals[paramName] += sourceBlockVal * integrationFactor
+
+                blockParamMapper.paramSetter(
+                    destBlock, updatedDestVals.values(), updatedDestVals.keys()
+                )
 
             # If requested, the reaction rates will be calculated based on the
             # mapped neutron flux and the XS library.
             if calcReactionRates:
+                if blockParamMapper is None:
+                    runLog.warning(
+                        f"Reaction rates requested for {destinationAssembly}, but no BlockParamMapper was "
+                        "provided to setAssemblyStateFromOverlaps(). Reaction rates calculated will likely "
+                        "reflect the intended result without new parameter values being mapped in."
+                    )
                 core = sourceAssembly.getAncestor(lambda c: isinstance(c, Core))
                 if core is not None:
                     UniformMeshGeometryConverter._calculateReactionRates(
