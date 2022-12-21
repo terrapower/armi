@@ -563,27 +563,27 @@ class UniformMeshGeometryConverter(GeometryConverter):
                     destBlock, updatedDestVals.values(), updatedDestVals.keys()
                 )
 
-            # If requested, the reaction rates will be calculated based on the
-            # mapped neutron flux and the XS library.
-            if calcReactionRates:
-                if blockParamMapper is None:
-                    runLog.warning(
-                        f"Reaction rates requested for {destinationAssembly}, but no BlockParamMapper was "
-                        "provided to setAssemblyStateFromOverlaps(). Reaction rates calculated will likely "
-                        "reflect the intended result without new parameter values being mapped in."
-                    )
-                core = sourceAssembly.getAncestor(lambda c: isinstance(c, Core))
-                if core is not None:
-                    UniformMeshGeometryConverter._calculateReactionRates(
-                        lib=core.lib, keff=core.p.keff, assem=destinationAssembly
-                    )
-                else:
-                    runLog.warning(
-                        f"Reaction rates requested for {destinationAssembly}, but no core object exists. This calculation "
-                        "will be skipped.",
-                        single=True,
-                        label="Block reaction rate calculation skipped due to insufficient multi-group flux data.",
-                    )
+        # If requested, the reaction rates will be calculated based on the
+        # mapped neutron flux and the XS library.
+        if calcReactionRates:
+            if blockParamMapper is None:
+                runLog.warning(
+                    f"Reaction rates requested for {destinationAssembly}, but no BlockParamMapper was "
+                    "provided to setAssemblyStateFromOverlaps(). Reaction rates calculated will likely "
+                    "reflect the intended result without new parameter values being mapped in."
+                )
+            core = sourceAssembly.getAncestor(lambda c: isinstance(c, Core))
+            if core is not None:
+                UniformMeshGeometryConverter._calculateReactionRates(
+                    lib=core.lib, keff=core.p.keff, assem=destinationAssembly
+                )
+            else:
+                runLog.warning(
+                    f"Reaction rates requested for {destinationAssembly}, but no core object exists. This calculation "
+                    "will be skipped.",
+                    single=True,
+                    label="Block reaction rate calculation skipped due to insufficient multi-group flux data.",
+                )
 
     def clearStateOnAssemblies(assems, blockParamNames=None, cache=True):
         """
