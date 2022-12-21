@@ -38,6 +38,8 @@ Examples
     lfp35.keys()
 
 """
+import collections
+
 
 from armi import runLog
 from armi import interfaces
@@ -95,7 +97,8 @@ class FissionProductModel(interfaces.Interface):
         blockType = None if self.getInterface("mcnp") is not None else Flags.FUEL
         if blockType is None and self._explicitFissionProducts:
             raise ValueError(
-                f"Expicit fission products model is not compatible with the MCNP interface."
+                f"The explicit fission products model is not compatible with the MCNP interface. "
+                f"Select another `fpModel` option."
             )
         return blockType
 
@@ -167,9 +170,6 @@ class FissionProductModel(interfaces.Interface):
         """
         self.setAllBlockLFPs()
 
-    def interactEveryNode(self, _cycle, _node):
-        self.updateFissionGasRemovalFractions()
-
     def interactDistributeState(self):
         self.setAllBlockLFPs()
 
@@ -183,7 +183,7 @@ class FissionProductModel(interfaces.Interface):
         sets fissionProductNames, a list of nuclide names of all the
         fission products
         """
-        runLog.debug("  Gathering all possible FPs")
+        runLog.debug("Gathering all possible fission products that are modeled.")
         fissionProductNames = []
         lfpCollections = []
         # get all possible lfp collections (global + block-level)
@@ -216,84 +216,128 @@ class FissionProductModel(interfaces.Interface):
         of each of the blocks and the gaseous fission products are not
         moved or displaced to another area in the core.
         """
-        
-        def _getGaseousFissionProductNumberDensities(block, lfp):
-            """Look into a single lumped fission product object and pull out just the gaseous atom number densities."""
-            numberDensities = {}
-            for nuc in lfp.keys():
-                nb = nuclideBases.byName[nuc]
-                if not lumpedFissionProduct.isGas(nb):
-                    continue
-                yld = lfp[nuc]
-                ndens = block.getNumberDensity(lfp.name)
-                numberDensities[nuc] = ndens * yld
-            return numberDensities
-                
-        
+        if not self.cs["fgRemoval"]:
+            runLog.info(
+                "Skipping removal of gaseous fission products since the `fgRemoval` setting is disabled."
+            )
+            return
+
         runLog.info(f"Removing the gaseous fission products from the core.")
         if not isinstance(gasRemovalFractions, dict):
             raise TypeError(f"The gas removal fractions input is not a dictionary.")
 
-        if self._explicitFissionProducts:
-            for b in self.r.core.getBlocks():
+        # Check that the gas removal fractions supplied are within [0.0, 1.0] and cap them
+        # at these limits otherwise.
+        updatedGasRemovalFractions = {}
+        for b, frac in gasRemovalFractions.items():
+            if frac < 0.0:
+                runLog.warning(
+                    f"The fission gas removal fraction is less than zero for {b}. Setting to zero."
+                )
+                updatedGasRemovalFractions[b] = 0.0
+            elif frac > 1.0:
+                runLog.warning(
+                    f"The fission gas removal fraction is greater than one for {b}. Setting to one."
+                )
+                updatedGasRemovalFractions[b] = 1.0
+            else:
+                updatedGasRemovalFractions[b] = frac
+        gasRemovalFractions.update(updatedGasRemovalFractions)
+
+        def _getGaseousFissionProductNumberDensities(b, lfp):
+            """Look into a single lumped fission product object and pull out the gaseous atom number densities."""
+            numberDensities = {}
+            for nb in lfp.keys():
+                if not lumpedFissionProduct.isGas(nb):
+                    continue
+                yld = lfp[nb]
+                ndens = b.getNumberDensity(lfp.name)
+                numberDensities[nb.name] = ndens * yld
+            return numberDensities
+
+        def _removeFissionGasesExplicitFissionProductModeling(
+            core, gasRemovalFractions
+        ):
+            """
+            This is called when `explicitFissionProducts` are selected as the fission product model.
+
+            Notes
+            -----
+            The input provided has the amount of gas to be removed by each block in the core. The
+            gas that remains in a block is first calculated and then the number density of the
+            gaseous nuclides is multiplied by the fraction that remains and the update number
+            density vector for the block is updated.
+            """
+            for b in core.getBlocks():
                 if b not in gasRemovalFractions:
                     continue
-                updatedNumberDensities = {}
                 removedFraction = gasRemovalFractions[b]
                 remainingFraction = 1.0 - removedFraction
+                updatedNumberDensities = {}
                 for nuc, val in b.getNumberDensities().items():
                     nb = nuclideBases.byName[nuc]
-                    if lumpedFissionProduct.isGas(nb):
-                        val = remainingFraction * val
-                    updatedNumberDensities[nuc] = val
+                    updatedNumberDensities[nuc] = (
+                        remainingFraction * val
+                        if lumpedFissionProduct.isGas(nb)
+                        else val
+                    )
                 b.updateNumberDensities(updatedNumberDensities)
-                
-        else:
-            avgGasReleased = {}
-            totalWeight = {}
-            for block in self.r.core.getBlocks():
-                lfpCollection = block.getLumpedFissionProductCollection()
-                # Skip this block if there is no lumped fission product
-                # collection or this block is not in the dictionary
-                # of gas removal fractions.
+
+        def _removeFissionGasesLumpedFissionProductModeling(core, gasRemovalFractions):
+            weightedGasRemoved = collections.defaultdict(float)
+            totalWeight = collections.defaultdict(float)
+            for b in core.getBlocks():
+                lfpCollection = b.getLumpedFissionProductCollection()
                 if lfpCollection is None or b not in gasRemovalFractions:
                     continue
-                
-                
-                numberDensities = block.getNumberDensities()
-                for lfp in lfpCollection:
-                    ndens = _getGaseousFissionProductNumberDensities(block, lfp)
+
+                numberDensities = b.getNumberDensities()
+                for lfp in lfpCollection.values():
+                    ndens = _getGaseousFissionProductNumberDensities(b, lfp)
                     removedFraction = gasRemovalFractions[b]
-                    if removedFraction < 0.0 or removedFraction > 1.0:
-                        raise ValueError(f"The gaseous removal fraction in {block} is not within [0.0, 1.0].")
-                    
+                    remainingFraction = 1.0 - removedFraction
+
                     # If the lumped fission products are global then we are going
-                    # release the average across all the blocks in the core and these
+                    # release the average across all the blocks in the core and
                     # this data is collected iteratively.
-                    if self._useGlobalLFPs: 
-                        avgGasReleased[lfp] += sum(ndens.values()) * removedFraction
-                        totalWeight[lfp] += block.getVolume() * (block.p.flux or 1.0)
-                        
+                    if self._useGlobalLFPs:
+                        weight = b.getVolume() * (b.p.flux or 1.0)
+                        weightedGasRemoved[lfp] += (
+                            sum(ndens.values()) * removedFraction * weight
+                        )
+                        totalWeight[lfp] += weight
+
                     # Otherwise, if the lumped fission products are not global
                     # go ahead of make the change now.
                     else:
-                        updatedLFPNumberDensity = numberDensities[lfp.name] - sum(ndens.values()) * removedFraction
+                        updatedLFPNumberDensity = (
+                            numberDensities[lfp.name] * remainingFraction
+                        )
                         numberDensities.update({lfp.name: updatedLFPNumberDensity})
-                        block.setNumberDensities(numberDensities)
-    
-            # adjust global lumps if they exist.
+                        b.setNumberDensities(numberDensities)
+
+            # Apply the global updates to the fission products uniformly across the core.
             if self._useGlobalLFPs and totalWeight:
                 for b in self.r.core.getBlocks():
-                    lfpCollection = block.getLumpedFissionProductCollection()
-                    # Skip this block if there is no lumped fission product
-                    # collection or this block is not in the dictionary
-                    # of gas removal fractions.
+                    lfpCollection = b.getLumpedFissionProductCollection()
                     if lfpCollection is None or b not in gasRemovalFractions:
                         continue
-                    
-                    for lfp in lfpCollection:
-                        updatedLFPNumberDensity = numberDensities[lfp.name] - (avgGasReleased[lfp] / totalWeight[lfp])
+
+                    for lfp in lfpCollection.values():
+                        # The updated number density is calculated as the current number density subtracting
+                        # the amount of gaseous fission products that are being removed.
+                        updatedLFPNumberDensity = b.getNumberDensity(lfp.name) - (
+                            weightedGasRemoved[lfp] / totalWeight[lfp]
+                        )
                         numberDensities.update({lfp.name: updatedLFPNumberDensity})
-                        block.setNumberDensities(numberDensities)
-                    
-                
+                        b.setNumberDensities(numberDensities)
+
+        if self._explicitFissionProducts:
+            _removeFissionGasesExplicitFissionProductModeling(
+                self.r.core, gasRemovalFractions
+            )
+
+        else:
+            _removeFissionGasesLumpedFissionProductModeling(
+                self.r.core, gasRemovalFractions
+            )

@@ -32,7 +32,6 @@ from armi.reactor import geometry
 from armi.reactor import systemLayoutInput
 from armi.physics import neutronics
 from armi.utils import directoryChangers
-from armi.settings.fwSettings import globalSettings
 from armi.settings.settingsIO import (
     prompt,
     RunLogPromptCancel,
@@ -67,7 +66,6 @@ class Query:
         self.correction = correction
         # True if the query is `passed` and does not result in an immediate failure
         self._passed = False
-        self._corrected = False
         self.autoResolved = True
 
     def __repr__(self):
@@ -107,9 +105,7 @@ class Query:
                         )
                         if make_correction:
                             self.correction()
-                            self._corrected = True
-                        else:
-                            self._passed = True
+                        self._passed = True
                     except RunLogPromptCancel as ki:
                         raise KeyboardInterrupt from ki
                 else:
@@ -191,7 +187,6 @@ class Inspector:
 
         # the following attribute changes will alter what the queries investigate when
         # resolved
-        correctionsMade = False
         self.cs = cs or self.cs
         runLog.debug("{} executing queries.".format(self.__class__.__name__))
         if not any(self.queries):
@@ -203,8 +198,6 @@ class Inspector:
         else:
             for query in self.queries:
                 query.resolve()
-                if query._corrected:  # pylint: disable=protected-access
-                    correctionsMade = True
             issues = [
                 query
                 for query in self.queries
@@ -220,8 +213,6 @@ class Inspector:
                     "some issues are creating cyclic resolutions: {}".format(issues)
                 )
             runLog.debug("{} has finished querying.".format(self.__class__.__name__))
-
-        return correctionsMade
 
     def addQuery(self, condition, statement, question, correction):
         """Convenience method, query must be resolved, else run fails"""
@@ -262,6 +253,7 @@ class Inspector:
         """Lambda assignment workaround"""
         # this type of assignment works, but be mindful of
         # scoping when trying different methods
+        runLog.extra(f"Updating setting `{key}` to `{value}`")
         self.cs[key] = value
 
     def _raise(self):  # pylint: disable=no-self-use

@@ -168,10 +168,10 @@ class Settings:
 
         if key in SIMPLE_CYCLES_INPUTS and self.__settings["cycles"].value != []:
             err = ValueError(
-                "Cannot grab simple cycles information from the case settings"
-                " when detailed cycles information is also entered.\n In general"
-                " cycles information should be pulled off the operator or parsed"
-                " using the appropriate getter in the utils."
+                "Cannot grab simple cycles information from the case settings "
+                "when detailed cycles information is also entered. In general "
+                "cycles information should be pulled off the operator or parsed "
+                "using the appropriate getter in the utils. "
             )
 
             return False, err

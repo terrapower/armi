@@ -18,11 +18,14 @@ Tests for lumpedFissionProduce module
 import unittest
 import io
 import math
+import os
 
 from armi.physics.neutronics.fissionProductModel import (
     lumpedFissionProduct,
     REFERENCE_LUMPED_FISSION_PRODUCT_FILE,
 )
+from armi.context import RES
+from armi.settings import Settings
 from armi.reactor.tests.test_reactors import buildOperatorOfEmptyHexBlocks
 from armi.reactor.flags import Flags
 from armi.nucDirectory import nuclideBases
@@ -102,10 +105,10 @@ class TestLumpedFissionProduct(unittest.TestCase):
         """Test of the yield of a fission product"""
         xe135 = nuclideBases.fromName("XE135")
         lfp = self.fpd.createSingleLFPFromFile("LFP39")
-        lfp[xe135] = 3
+        lfp[xe135] = 1.2
         val3 = lfp[xe135]
-        self.assertEqual(val3, 3)
-        self.assertIsNone(lfp[5])
+        self.assertEqual(val3, 1.2)
+        self.assertEqual(lfp[5], 0.0)
 
     def test_getExpandedMass(self):
         xe135 = nuclideBases.fromName("XE135")
@@ -140,10 +143,6 @@ class TestLumpedFissionProductCollection(unittest.TestCase):
         self.assertIn(xe135, clideBases)
         self.assertIn(kr85, clideBases)
 
-    def test_getGasRemovedFrac(self):
-        val = self.lfps.getGasRemovedFrac()
-        self.assertEqual(val, 0.0)
-
     def test_duplicate(self):
         """Test to ensure that when we duplicate, we don't adjust the original file"""
         newLfps = self.lfps.duplicate()
@@ -151,7 +150,7 @@ class TestLumpedFissionProductCollection(unittest.TestCase):
         lfp1 = self.lfps["LFP39"]
         lfp2 = newLfps["LFP39"]
         v1 = lfp1[ba]
-        lfp1[ba] += 5.0  # make sure copy doesn't change w/ first.
+        lfp1[ba] += 1.3  # make sure copy doesn't change w/ first.
         v2 = lfp2[ba]
         self.assertEqual(v1, v2)
 
@@ -186,6 +185,30 @@ class TestLumpedFissionProductCollection(unittest.TestCase):
         }
         for fp, newMassFrac in newMassFracs.items():
             self.assertAlmostEqual(newMassFrac, refMassFrac[fp.name])
+
+
+class TestLumpedFissionProductsFromReferenceFile(unittest.TestCase):
+    """Tests loading from the `referenceFissionProducts.dat` file."""
+
+    def test_fissionProductYields(self):
+        """Test that the fission product yields for the lumped fission products sums to 2.0"""
+        cs = Settings()
+        cs["fpModel"] = "infinitelyDilute"
+        cs["lfpCompositionFilePath"] = os.path.join(RES, "referenceFissionProducts.dat")
+        self.lfps = lumpedFissionProduct.lumpedFissionProductFactory(cs)
+        for lfp in self.lfps.values():
+            self.assertAlmostEqual(lfp.getTotalYield(), 2.0, places=3)
+
+
+class TestLumpedFissionProductsExplicit(unittest.TestCase):
+    """Tests loading fission products with explicit modeling."""
+
+    def test_explicitFissionProducts(self):
+        """Tests that there are no lumped fission products added when the `explicitFissionProducts` model is enabled."""
+        cs = Settings()
+        cs["fpModel"] = "explicitFissionProducts"
+        self.lfps = lumpedFissionProduct.lumpedFissionProductFactory(cs)
+        self.assertIsNone(self.lfps)
 
 
 class TestMo99LFP(unittest.TestCase):
