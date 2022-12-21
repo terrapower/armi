@@ -568,9 +568,9 @@ class UniformMeshGeometryConverter(GeometryConverter):
         if calcReactionRates:
             if blockParamMapper is None:
                 runLog.warning(
-                    f"Reaction rates requested for {destinationAssembly}, but no BlockParamMapper was "
-                    "provided to setAssemblyStateFromOverlaps(). Reaction rates calculated will likely "
-                    "reflect the intended result without new parameter values being mapped in."
+                    f"Reaction rates requested for {destinationAssembly}, but no BlockParamMapper "
+                    "was provided to setAssemblyStateFromOverlaps(). Reaction rates calculated "
+                    "will reflect the intended result without new parameter values being mapped in."
                 )
             core = sourceAssembly.getAncestor(lambda c: isinstance(c, Core))
             if core is not None:
@@ -579,8 +579,8 @@ class UniformMeshGeometryConverter(GeometryConverter):
                 )
             else:
                 runLog.warning(
-                    f"Reaction rates requested for {destinationAssembly}, but no core object exists. This calculation "
-                    "will be skipped.",
+                    f"Reaction rates requested for {destinationAssembly}, but no core object "
+                    "exists. This calculation will be skipped.",
                     single=True,
                     label="Block reaction rate calculation skipped due to insufficient multi-group flux data.",
                 )
