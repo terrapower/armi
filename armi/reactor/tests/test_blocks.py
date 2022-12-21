@@ -451,14 +451,18 @@ class Block_TestCase(unittest.TestCase):
                     break
             else:
                 # didn't find the homogenized hex in the block copy
-                self.assertTrue(False, f"{self.block} does not have a {shapeType} component!")
+                self.assertTrue(
+                    False, f"{self.block} does not have a {shapeType} component!"
+                )
 
         cur = homogBlock.getMass()
         self.assertEqual(0.0, cur)
 
         self.assertEqual(homogBlock.getType(), self.block.getType())
         self.assertEqual(homogBlock.macros, self.block.macros)
-        self.assertEqual(homogBlock._lumpedFissionProducts, self.block._lumpedFissionProducts)
+        self.assertEqual(
+            homogBlock._lumpedFissionProducts, self.block._lumpedFissionProducts
+        )
 
         ref = self.block.getArea()
         cur = homogBlock.getArea()

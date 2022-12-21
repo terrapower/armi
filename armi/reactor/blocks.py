@@ -162,7 +162,7 @@ class Block(composites.Composite):
         """
         Create a copy of a block
 
-        Used to implement a copy function for a specific block types that is lighter 
+        Used to implement a copy function for a specific block types that is lighter
         than a deepcopy. This base class implementation is just a deepcopy.
 
         Notes
