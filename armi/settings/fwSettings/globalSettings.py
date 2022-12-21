@@ -80,6 +80,7 @@ CONF_MPI_TASKS_PER_NODE = "mpiTasksPerNode"
 CONF_N_CYCLES = "nCycles"
 CONF_TIGHT_COUPLING = "tightCoupling"
 CONF_TIGHT_COUPLING_MAX_ITERS = "tightCouplingMaxNumIters"
+CONF_TIGHT_COUPLING_CONV_CRIT = "tightCouplingConvergenceCriteria"
 CONF_OPERATOR_LOCATION = "operatorLocation"
 CONF_OUTPUT_FILE_EXTENSION = "outputFileExtension"
 CONF_PLOTS = "plots"
@@ -596,6 +597,12 @@ def defineSettings() -> List[setting.Setting]:
             default=4,
             label="Maximum number of iterations for tight coupling.",
             description="Maximum number of iterations for tight coupling."
+        ),
+        setting.Setting(
+            CONF_TIGHT_COUPLING_CONV_CRIT,
+            default=1e-4,
+            label="Convergence criteria for tight coupling. This is used across all plugins.",
+            description="Convergence criteria for tight coupling. This is used across all plugins."
         ),
         setting.Setting(
             CONF_OPERATOR_LOCATION,

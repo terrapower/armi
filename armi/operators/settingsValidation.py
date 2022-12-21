@@ -478,8 +478,16 @@ class Inspector:
         )
 
         self.addQuery(
-            lambda: (not self.cs["tightCoupling"] and self.cs["tightCouplingMaxNumIters"] != 15),
+            lambda: (not self.cs["tightCoupling"] and self.cs["tightCouplingMaxNumIters"] != 4),
             "You've requested a non default number of tight coupling iterations but left tightCoupling: False."
+            "Do you want to set tightCoupling to True?",
+            "",
+            lambda: self._assignCS("tightCoupling", True),
+        )
+
+        self.addQuery(
+            lambda: (not self.cs["tightCoupling"] and self.cs["tightCouplingConvergenceCriteria"] != 1e-4),
+            "You've requested a non default convergence criteria for tight coupling but left tightCoupling: False."
             "Do you want to set tightCoupling to True?",
             "",
             lambda: self._assignCS("tightCoupling", True),

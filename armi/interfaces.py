@@ -154,7 +154,7 @@ class Interface:
         self.r = r
         self.o = r.o if r else None
         # default interface variables used for tight coupling
-        self.tightCouplingTolerance = 1e-4
+        self.tightCouplingTolerance = cs["tightCouplingConvergenceCriteria"]
         self.tightCouplingVariables = None
         self.tightCouplingConvergeOn = None
         self.tightCouplingOldValue = None
