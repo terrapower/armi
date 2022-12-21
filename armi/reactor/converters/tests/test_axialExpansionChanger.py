@@ -45,7 +45,7 @@ from armi.tests import mockRunLogs
 from armi.utils import units
 
 
-class Base(unittest.TestCase):
+class AxialExpansionTestBase(unittest.TestCase):
     """common methods and variables for unit tests"""
 
     Steel_Component_Lst = [
@@ -177,11 +177,11 @@ class Temperature:
                 self.tempField[i, :] = tmp[i]
 
 
-class TestAxialExpansionHeight(Base, unittest.TestCase):
+class TestAxialExpansionHeight(AxialExpansionTestBase, unittest.TestCase):
     """verify that test assembly is expanded correctly"""
 
     def setUp(self):
-        Base.setUp(self)
+        AxialExpansionTestBase.setUp(self)
         self.a = buildTestAssemblyWithFakeMaterial(name="FakeMat")
 
         self.temp = Temperature(
@@ -201,7 +201,7 @@ class TestAxialExpansionHeight(Base, unittest.TestCase):
             self.axialMeshLocs[idt, :] = self.a.getAxialMesh()
 
     def tearDown(self):
-        Base.tearDown(self)
+        AxialExpansionTestBase.tearDown(self)
 
     def test_AssemblyAxialExpansionHeight(self):
         """test the axial expansion gives correct heights for component-based expansion"""
@@ -274,15 +274,15 @@ class TestAxialExpansionHeight(Base, unittest.TestCase):
         return mean(tmpMapping)
 
 
-class TestConservation(Base, unittest.TestCase):
+class TestConservation(AxialExpansionTestBase, unittest.TestCase):
     """verify that conservation is maintained in assembly-level axial expansion"""
 
     def setUp(self):
-        Base.setUp(self)
+        AxialExpansionTestBase.setUp(self)
         self.a = buildTestAssemblyWithFakeMaterial(name="FakeMat")
 
     def tearDown(self):
-        Base.tearDown(self)
+        AxialExpansionTestBase.tearDown(self)
 
     def expandAssemForMassConservationTest(self):
         """initialize class variables for mass conservation checks"""
@@ -573,16 +573,16 @@ class TestManageCoreMesh(unittest.TestCase):
             self.assertLess(old, new)
 
 
-class TestExceptions(Base, unittest.TestCase):
+class TestExceptions(AxialExpansionTestBase, unittest.TestCase):
     """Verify exceptions are caught"""
 
     def setUp(self):
-        Base.setUp(self)
+        AxialExpansionTestBase.setUp(self)
         self.a = buildTestAssemblyWithFakeMaterial(name="FakeMatException")
         self.obj.setAssembly(self.a)
 
     def tearDown(self):
-        Base.tearDown(self)
+        AxialExpansionTestBase.tearDown(self)
 
     def test_isTopDummyBlockPresent(self):
         # build test assembly without dummy
@@ -717,11 +717,11 @@ class TestExceptions(Base, unittest.TestCase):
             self.assertEqual(cm.exception, 3)
 
 
-class TestDetermineTargetComponent(unittest.TestCase):
+class TestDetermineTargetComponent(AxialExpansionTestBase, unittest.TestCase):
     """verify determineTargetComponent method is properly updating _componentDeterminesBlockHeight"""
 
     def setUp(self):
-        Base.setUp(self)
+        AxialExpansionTestBase.setUp(self)
         self.obj = AxialExpansionChanger()
         self.a = buildTestAssemblyWithFakeMaterial(name="FakeMatException")
         self.obj.setAssembly(self.a)
@@ -729,7 +729,7 @@ class TestDetermineTargetComponent(unittest.TestCase):
         self.obj.expansionData._componentDeterminesBlockHeight = {}
 
     def tearDown(self):
-        Base.tearDown(self)
+        AxialExpansionTestBase.tearDown(self)
 
     def test_determineTargetComponent(self):
         # build a test block
@@ -917,16 +917,16 @@ def checkColdBlockHeight(bStd, bExp, assertType, strForAssertion):
     )
 
 
-class TestLinkage(Base, unittest.TestCase):
+class TestLinkage(AxialExpansionTestBase, unittest.TestCase):
     """test axial linkage between components"""
 
     def setUp(self):
         """contains common dimensions for all component class types"""
-        Base.setUp(self)
+        AxialExpansionTestBase.setUp(self)
         self.common = ("test", "FakeMat", 25.0, 25.0)  # name, material, Tinput, Thot
 
     def tearDown(self):
-        Base.tearDown(self)
+        AxialExpansionTestBase.tearDown(self)
 
     def runTest(
         self,
