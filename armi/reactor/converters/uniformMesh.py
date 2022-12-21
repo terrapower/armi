@@ -312,7 +312,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
         runLog.extra(
             f"Parameter remapping time: {completeEndTime-completeStartTime} seconds"
         )
-        self.reset()
 
     @staticmethod
     def makeAssemWithUniformMesh(
