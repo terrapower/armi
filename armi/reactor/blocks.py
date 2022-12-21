@@ -158,52 +158,18 @@ class Block(composites.Composite):
 
         return b
 
-    def createBlankCopy(self):
+    def createCopy(self):
         """
-        Create a blank copy of a block (ligher weight than deepcopy)
+        Create a copy of a block
+
+        Used to implement a copy function for a specific block types that is lighter 
+        than a deepcopy. This base class implementation is just a deepcopy.
 
         Notes
         -----
-        If you make a new block, you must add it to an assembly and a reactor.
+        Only impelemented for HexBlock right now.
         """
-
-        b = self.__class__(self.getName(), height=self.getHeight())
-        b.setType(self.getType())
-
-        # assign macros and LFP
-        b.macros = self.macros
-        b._lumpedFissionProducts = self._lumpedFissionProducts
-        b.p.buGroup = self.p.buGroup
-
-        hexComponent = Hexagon(
-            "homogenizedHex",
-            "Mixture",
-            self.getAverageTempInC(),
-            self.getAverageTempInC(),
-            self._pitchDefiningComponent[1],
-        )
-        emptyNDens = {nuc: 0.0 for nuc in self.getNuclides()}
-        hexComponent.setNumberDensities(emptyNDens)
-        b.add(hexComponent)
-
-        # create a null component with cladding flags and spatialLocator from source block's
-        # clad component in case pin locations need to be known for physics solver
-        # only works if there is a single clad component with MultiIndexLocation
-        if self.hasComponents(Flags.CLAD):
-            pinComponent = Circle(
-                "voidPin",
-                "Void",
-                self.getAverageTempInC(),
-                self.getAverageTempInC(),
-                0.0,
-            )
-            clad = self.getComponent(Flags.CLAD)
-            if isinstance(clad.spatialLocator, grids.MultiIndexLocation):
-                pinComponent.setType("pin", Flags.CLAD)
-                pinComponent.spatialLocator = clad.spatialLocator
-                pinComponent.setDimension("mult", clad.getDimension("mult"))
-
-        return b
+        return copy.deepcopy(self)
 
     @property
     def core(self):
@@ -1566,6 +1532,53 @@ class HexBlock(Block):
             round(x, units.FLOAT_DIMENSION_DECIMALS),
             round(y, units.FLOAT_DIMENSION_DECIMALS),
         )
+
+    def createCopy(self):
+        """
+        Create a blank copy of a block (ligher weight than deepcopy)
+
+        Notes
+        -----
+        If you make a new block, you must add it to an assembly and a reactor.
+        """
+
+        b = self.__class__(self.getName(), height=self.getHeight())
+        b.setType(self.getType())
+
+        # assign macros and LFP
+        b.macros = self.macros
+        b._lumpedFissionProducts = self._lumpedFissionProducts
+        b.p.buGroup = self.p.buGroup
+
+        hexComponent = Hexagon(
+            "homogenizedHex",
+            "Mixture",
+            self.getAverageTempInC(),
+            self.getAverageTempInC(),
+            self._pitchDefiningComponent[1],
+        )
+        emptyNDens = {nuc: 0.0 for nuc in self.getNuclides()}
+        hexComponent.setNumberDensities(emptyNDens)
+        b.add(hexComponent)
+
+        # create a null component with cladding flags and spatialLocator from source block's
+        # clad component in case pin locations need to be known for physics solver
+        # only works if there is a single clad component that has a MultiIndexLocation
+        if self.hasComponents(Flags.CLAD):
+            pinComponent = Circle(
+                "voidPin",
+                "Void",
+                self.getAverageTempInC(),
+                self.getAverageTempInC(),
+                0.0,
+            )
+            clad = self.getComponent(Flags.CLAD)
+            if isinstance(clad.spatialLocator, grids.MultiIndexLocation):
+                pinComponent.setType("pin", Flags.CLAD)
+                pinComponent.spatialLocator = clad.spatialLocator
+                pinComponent.setDimension("mult", clad.getDimension("mult"))
+
+        return b
 
     def getMaxArea(self):
         """Compute the max area of this block if it was totally full."""
