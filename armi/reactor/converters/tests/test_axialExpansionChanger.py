@@ -39,15 +39,10 @@ from armi.reactor.converters.axialExpansionChanger import (
     _determineLinked,
 )
 from armi import materials
-from armi.materials import custom
+from armi.materials import custom, _MATERIAL_NAMESPACE_ORDER
 from armi.reactor.flags import Flags
 from armi.tests import mockRunLogs
 from armi.utils import units
-
-# set namespace order for materials so that fake HT9 material can be found
-materials.setMaterialNamespaceOrder(
-    ["armi.reactor.converters.tests.test_axialExpansionChanger", "armi.materials"]
-)
 
 
 class Base(unittest.TestCase):
@@ -69,6 +64,18 @@ class Base(unittest.TestCase):
         self.massAndDens = {}
         self.steelMass = []
         self.blockHeights = {}
+        self.origNameSpace = _MATERIAL_NAMESPACE_ORDER
+        # set namespace order for materials so that fake HT9 material can be found
+        materials.setMaterialNamespaceOrder(
+            [
+                "armi.reactor.converters.tests.test_axialExpansionChanger",
+                "armi.materials",
+            ]
+        )
+
+    def tearDown(self):
+        # reset global namespace
+        materials.setMaterialNamespaceOrder(self.origNameSpace)
 
     def _getConservationMetrics(self, a):
         """retrieves and stores various conservation metrics
@@ -193,6 +200,9 @@ class TestAxialExpansionHeight(Base, unittest.TestCase):
             self._getConservationMetrics(self.a)
             self.axialMeshLocs[idt, :] = self.a.getAxialMesh()
 
+    def tearDown(self):
+        Base.tearDown(self)
+
     def test_AssemblyAxialExpansionHeight(self):
         """test the axial expansion gives correct heights for component-based expansion"""
         for idt in range(self.temp.tempSteps):
@@ -270,6 +280,9 @@ class TestConservation(Base, unittest.TestCase):
     def setUp(self):
         Base.setUp(self)
         self.a = buildTestAssemblyWithFakeMaterial(name="FakeMat")
+
+    def tearDown(self):
+        Base.tearDown(self)
 
     def expandAssemForMassConservationTest(self):
         """initialize class variables for mass conservation checks"""
@@ -568,6 +581,9 @@ class TestExceptions(Base, unittest.TestCase):
         self.a = buildTestAssemblyWithFakeMaterial(name="FakeMatException")
         self.obj.setAssembly(self.a)
 
+    def tearDown(self):
+        Base.tearDown(self)
+
     def test_isTopDummyBlockPresent(self):
         # build test assembly without dummy
         assembly = HexAssembly("testAssemblyType")
@@ -705,11 +721,15 @@ class TestDetermineTargetComponent(unittest.TestCase):
     """verify determineTargetComponent method is properly updating _componentDeterminesBlockHeight"""
 
     def setUp(self):
+        Base.setUp(self)
         self.obj = AxialExpansionChanger()
         self.a = buildTestAssemblyWithFakeMaterial(name="FakeMatException")
         self.obj.setAssembly(self.a)
         # need an empty dictionary because we want to test for the added component only
         self.obj.expansionData._componentDeterminesBlockHeight = {}
+
+    def tearDown(self):
+        Base.tearDown(self)
 
     def test_determineTargetComponent(self):
         # build a test block
@@ -897,12 +917,16 @@ def checkColdBlockHeight(bStd, bExp, assertType, strForAssertion):
     )
 
 
-class TestLinkage(unittest.TestCase):
+class TestLinkage(Base, unittest.TestCase):
     """test axial linkage between components"""
 
     def setUp(self):
         """contains common dimensions for all component class types"""
+        Base.setUp(self)
         self.common = ("test", "FakeMat", 25.0, 25.0)  # name, material, Tinput, Thot
+
+    def tearDown(self):
+        Base.tearDown(self)
 
     def runTest(
         self,
