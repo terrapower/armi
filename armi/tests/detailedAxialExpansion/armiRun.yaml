@@ -39,7 +39,6 @@ settings:
   nCycles: 6
   outputFileExtension: png
   power: 100000000.0
-  shuffleLogic: ../refSmallReactorShuffleLogic.py
   summarizeAssemDesign: false
   targetK: 1.002
   verbosity: extra

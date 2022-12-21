@@ -279,7 +279,7 @@ class _DlayxsIO(cccc.Stream):
             if len(self.dlayxs) == 0:
                 # create data structure if reading
                 nuclides = [
-                    nuclideBases.byMccId[nucName]
+                    nuclideBases.byMcc3Id[nucName]
                     for nucName in self.metadata["nuclideIDs"]
                 ]
                 for nuc in nuclides:

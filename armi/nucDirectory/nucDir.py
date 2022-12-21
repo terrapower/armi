@@ -23,7 +23,6 @@ This may be deprecated. Consider using the appropriate instance methods availabl
 """
 import re
 
-from armi import runLog
 from armi.nucDirectory import elements, nuclideBases
 
 nuclidePattern = re.compile(r"([A-Za-z]+)-?(\d{0,3})(\d*)(\S*)")
@@ -64,32 +63,6 @@ def getNuclideFromName(name):
         actualName = name.replace("_", "")
 
     return nuclideBases.byName[actualName]
-
-
-def getNuclidesFromInputName(name):
-    """Convert nuclide specifier strings to isotopically-expanded nuclide bases"""
-    name = name.upper()
-
-    if name in elements.bySymbol:
-        element = elements.bySymbol[name]
-        if element.isNaturallyOccurring():
-            # For things like Aluminum, just give natural isotopics.
-            # This is likely what the user wants.
-            return [
-                nuc for nuc in element.nuclideBases if nuc.a > 0 and nuc.abundance > 0
-            ]
-        else:
-            # For things like Pu: this is unusual, users should typically provide specific isotopes as input
-            # Otherwise they get like 25 nuclides, most of which are never useful to track.
-            raise NotImplementedError(
-                "Expanding non-natural elements to all known nuclides is probably "
-                "not what you want to do. Please specify isotopes of {} individually "
-                "in the input file.".format(name)
-            )
-    else:
-        raise ValueError(
-            "Unrecognized nuclide/isotope/element in input: {}".format(name)
-        )
 
 
 def getNaturalIsotopics(elementSymbol=None, z=None):
@@ -172,60 +145,6 @@ def getMc2Label(name):
     return nuc.label
 
 
-def getMc2LibName(name):
-    r"""
-    returns a MC2 library name given an ARMI nuclide name
-
-    These are all 6 characters 'U-2355', 'ZR   S', etc.
-
-    Parameters
-    ----------
-    name : str
-        ARMI nuclide name of the nuclide
-
-    Returns
-    -------
-    mc2LibLabel : str
-        The 6-character MC**2 library ID for this nuclide
-
-    See Also
-    --------
-    readMc2Nuclides : reads a data file containing all the mc2 labels
-        and chooses the proper library extension for each.
-
-    """
-    nuc = getNuclide(name)  # converts ZIRC to ZR, etc.
-    return nuc.mc2id
-
-
-def getRebusLabel(name):
-    r"""
-    Return a REBUS label for the rebus input file.
-
-    This should have no intermediate spaces and should be 5 characters long
-    Examples: "U235 ", "B10  ", etc.
-
-    Technically, this should be in the rebusInterface. No need to
-    put specifics in this general module.
-
-    Parameters
-    ----------
-    name : str
-        ARMI nuclide name like U235, B10, ZR, CU, etc.
-    """
-    return "{0:5s}".format(name[:5])
-
-
-def getMc2LabelFromRebusLabel(rebusLabel):
-    r""" """
-    return getMc2Label(rebusLabel)
-
-
-def getRebusLabelFromMc2Label(mc2Label):
-    r""" """
-    return getRebusNameFromMC2(mc2Label)
-
-
 def getElementName(z=None, symbol=None):
     r"""
     Returns element name
@@ -299,7 +218,7 @@ def getNuclide(nucName):
     if nucName and not nuc:
         nuc = getNuclideFromName(nucName)
     if not nuc:
-        raise KeyError("Nuclide name {} is invalid.".format(nucName))
+        raise KeyError(f"Nuclide name {nucName} is invalid.")
     return nuc
 
 
@@ -322,10 +241,10 @@ def getNuclides(nucName=None, elementSymbol=None):
         # just spit back the nuclide if it's in here. Useful when iterating over the result.
         nucList = [getNuclide(nucName)]
     elif elementSymbol:
-        nucList = elements.bySymbol[elementSymbol].nuclideBases
+        nucList = elements.bySymbol[elementSymbol].nuclides
     else:
         # all nuclideBases, including shortcut nuclideBases ('CARB')
-        nucList = [nuc for nuc in nuclideBases.instances if nuc.mc2id is not None]
+        nucList = [nuc for nuc in nuclideBases.instances if nuc.getMcc2Id() is not None]
 
     return nucList
 
@@ -388,90 +307,19 @@ def getAtomicWeight(lab=None, z=None, a=None):
         nuclide = None
         if lab in nuclideBases.byLabel:
             nuclide = nuclideBases.byLabel[lab]
-        elif lab in nuclideBases.byMccId:
-            nuclide = nuclideBases.byMccId[lab]
-        if "DUMP1" in lab:
-            return 10.0  # small dump.
-        elif "DUMP2" in lab:
-            return 240.0  # large dump.
-        elif "FP35" in lab:
-            return 233.2730
-        elif "FP38" in lab:
-            return 235.78
-        elif "FP39" in lab:
-            return 236.898
-        elif "FP40" in lab:
-            return 237.7
-        elif "FP41" in lab:
-            return 238.812
-        elif "MELT" in lab:
-            # arbitrary melt refined.
-            return 238
+        elif lab in nuclideBases.byMcc3Id:
+            nuclide = nuclideBases.byMcc3Id[lab]
         else:
             nuclide = getNuclideFromName(lab)
         return nuclide.weight
     elif z == 0 and a == 0:
-        # dummy nuclide
         return 0.0
     if a == 0 and z:
-        # natural abundance sent. Figure it out.
         element = elements.byZ[z]
         return element.standardWeight
     else:
         nuclide = nuclideBases.single(lambda nn: nn.a == a and nn.z == z)
         return nuclide.weight
-
-
-def getRebusNameFromMC2(mc2LibLabel=None, mc2Label=None):
-    r"""
-    maps an MC2 label to a rebus label
-
-    Parameters
-    ----------
-    mc2LibLabel : str
-        THe library ID on the MC**2 binary file (e.g. U-235S)
-    mc2Label : str
-        The mc**2 prefix to look up (e.g. U235)
-    """
-    name = getNameFromMC2(mc2LibLabel, mc2Label)
-    return getRebusLabel(name)
-
-    runLog.warning("MC2 label {0}/{1} had no Rebus Name".format(mc2LibLabel, mc2Label))
-
-
-def getNameFromMC2(mc2LibLabel=None, mc2Label=None):
-    r"""
-    maps an MC2 label to an ARMI label
-
-    Tries to maintain some backwards compatibility with old ISOTXS libs
-    with B-10AA, CARBAA, etc.
-
-    Parameters
-    ----------
-    mc2LibLabel : str
-        THe library ID on the MC**2 binary file (e.g. U-235S)
-    mc2Label : str
-        The mc**2 prefix to look up (e.g. U235)
-    """
-    nuclide = None
-    if mc2LibLabel:
-        nuclide = nuclideBases.byMccId[mc2LibLabel]
-    else:
-        nuclide = nuclideBases.byLabel[mc2Label]
-    return nuclide.name
-    # TODO: Not sure if this is the desired behaviour.
-    # if not a warning, this fails on checking the LFP components to see if they're already
-    # in the problem.
-    runLog.warning(
-        "Nuclide with mc2LibName/mc2Label {}/{} had no corresponding ARMI nuclide Name"
-        "".format(mc2LibLabel, mc2Label)
-    )
-    return None
-
-
-def getStructuralElements():
-    r"""return list of element symbol in structure"""
-    return ["MN", "W", "HE", "C", "CR", "FE", "MO", "NI", "SI", "V"]
 
 
 def isHeavyMetal(name):
@@ -512,7 +360,7 @@ def getThresholdDisplacementEnergy(nuc):
     """
 
     nuc = getNuclide(nuc)
-    el = getElementSymbol(nuc.z)
+    el = elements.byZ[nuc.z]
     try:
         ed = eDisplacement[el]
     except KeyError:

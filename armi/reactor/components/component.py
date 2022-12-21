@@ -707,7 +707,7 @@ class Component(composites.Composite, metaclass=ComponentType):
                 "".format(self.material)
             )
         enrichedNuclide = nuclideBases.byName[self.material.enrichedNuclide]
-        baselineNucNames = [nb.name for nb in enrichedNuclide.element.nuclideBases]
+        baselineNucNames = [nb.name for nb in enrichedNuclide.element.nuclides]
         massFracs = self.getMassFracs()
         massFracEnrichedElement = sum(
             massFrac
@@ -1094,7 +1094,7 @@ class Component(composites.Composite, metaclass=ComponentType):
                 "".format(self.material)
             )
         enrichedNuclide = nuclideBases.byName[self.material.enrichedNuclide]
-        baselineNucNames = [nb.name for nb in enrichedNuclide.element.nuclideBases]
+        baselineNucNames = [nb.name for nb in enrichedNuclide.element.nuclides]
         massFracsBefore = self.getMassFracs()
         massFracEnrichedElement = sum(
             massFrac

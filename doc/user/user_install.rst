@@ -143,17 +143,3 @@ ARMI can write VTK and XDMF output files which can be viewed in tools such as
 `ParaView <https://www.paraview.org/>`_ and
 `VisIT <https://wci.llnl.gov/simulation/computer-codes/visit>`_. Download and install those
 tools from their websites.
-
-RIPL-3 Nuclide Decay Database
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-The RIPL-3 decay files (``levels.zip``) can be downloaded from `<https://www-nds.iaea.org/RIPL-3/levels/>`_.
-
-By default, nuclides within :py:mod:`armi.nucDirectory.nuclideBases` are initialized from
-a subset of the RIPL-3 database, which ships with ARMI. The base data set contains 2339
-nuclides and RIPL-3 decay data set increases this to 4379 nuclides. The RIPL-3 decay data
-files mainly add metastable nuclides and other exotic nuclides that could be important for
-detailed depletion/decay models or activation analyses.
-
-Once the ``levels.zip`` file is downloaded and unzipped, an environment variable :envvar:`ARMI_RIPL_PATH`
-should be created and set to the directory containing the ``z*.dat`` files.
-
