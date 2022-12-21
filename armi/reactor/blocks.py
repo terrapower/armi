@@ -1573,10 +1573,10 @@ class HexBlock(Block):
                 0.0,
             )
             clad = self.getComponent(Flags.CLAD)
-            if isinstance(clad.spatialLocator, grids.MultiIndexLocation):
-                pinComponent.setType("pin", Flags.CLAD)
-                pinComponent.spatialLocator = clad.spatialLocator
-                pinComponent.setDimension("mult", clad.getDimension("mult"))
+            pinComponent.setType("pin", Flags.CLAD)
+            pinComponent.spatialLocator = clad.spatialLocator
+            pinComponent.setDimension("mult", clad.getDimension("mult"))
+            b.add(pinComponent)
 
         return b
 

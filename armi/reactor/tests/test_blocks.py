@@ -23,6 +23,7 @@ import numpy
 from numpy.testing import assert_allclose
 
 from armi import materials, runLog, settings, tests
+from armi.reactor.components import basicShapes
 from armi.nucDirectory import nucDir, nuclideBases
 from armi.nuclearDataIO.cccc import isotxs
 from armi.physics.neutronics import NEUTRON, GAMMA
@@ -407,7 +408,7 @@ class Block_TestCase(unittest.TestCase):
         self.assertFalse(self.block.hasFlags(Flags.IGNITER | Flags.FUEL))
 
     def test_duplicate(self):
-        Block2 = copy.deepcopy(self.block)
+        Block2 = blocks.Block.createCopy(self)
         originalComponents = self.block.getComponents()
         newComponents = Block2.getComponents()
         for c1, c2 in zip(originalComponents, newComponents):
@@ -440,6 +441,38 @@ class Block_TestCase(unittest.TestCase):
         cur = Block2.getHeight()
         places = 6
         self.assertAlmostEqual(ref, cur, places=places)
+
+    def test_homogenizedMixture(self):
+        homogBlock = self.block.createCopy()
+        for shapeType in (basicShapes.Hexagon, basicShapes.Circle):
+            for c in homogBlock.getComponents():
+                if isinstance(c, shapeType):
+                    print(c)
+                    break
+            else:
+                # didn't find the homogenized hex in the block copy
+                self.assertTrue(False, f"{self.block} does not have a {shapeType} component!")
+
+        cur = homogBlock.getMass()
+        self.assertEqual(0.0, cur)
+
+        self.assertEqual(homogBlock.getType(), self.block.getType())
+        self.assertEqual(homogBlock.macros, self.block.macros)
+        self.assertEqual(homogBlock._lumpedFissionProducts, self.block._lumpedFissionProducts)
+
+        ref = self.block.getArea()
+        cur = homogBlock.getArea()
+        places = 6
+        self.assertAlmostEqual(ref, cur, places=places)
+
+        ref = self.block.getHeight()
+        cur = homogBlock.getHeight()
+        places = 6
+        self.assertAlmostEqual(ref, cur, places=places)
+
+        clad = homogBlock.getComponent(Flags.CLAD)
+        clad = self.block.getComponent(Flags.CLAD)
+        self.assertEqual(self.block.getNumPins(), homogBlock.getNumPins())
 
     def test_getXsType(self):
         self.cs = settings.getMasterCs()
