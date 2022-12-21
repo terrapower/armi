@@ -35,7 +35,7 @@ from armi.physics.neutronics import GAMMA
 from armi.physics.neutronics import NEUTRON
 from armi.reactor import blockParameters
 from armi.reactor import components
-from armi.reactor.components.basicShapes import Hexagon
+from armi.reactor.components.basicShapes import Hexagon, Circle
 from armi.reactor import composites
 from armi.reactor import geometry
 from armi.reactor import grids
@@ -182,20 +182,28 @@ class Block(composites.Composite):
             self.getAverageTempInC(),
             self._pitchDefiningComponent[1],
         )
-        # give the component cladding flags and spatialLocator from source block's clad component
-        # in case pin locations need to be known for physics solver
-        # only works if there is a single clad component with MultiIndexLocation
-        if self.hasComponents(Flags.CLAD):
-            clad = self.getComponent(Flags.CLAD)
-            if isinstance(clad.spatialLocator, grids.MultiIndexLocation):
-                hexComponent.setType("homogenizedHex", Flags.CLAD)
-                hexComponent.spatialLocator = clad.spatialLocator
-
         emptyNDens = {
             nuc: 0.0 for nuc in self.getNuclides()
         }
         hexComponent.setNumberDensities(emptyNDens)
         b.add(hexComponent)
+
+        # create a null component with cladding flags and spatialLocator from source block's
+        # clad component in case pin locations need to be known for physics solver
+        # only works if there is a single clad component with MultiIndexLocation
+        if self.hasComponents(Flags.CLAD):
+            pinComponent = Circle(
+                "voidPin",
+                "Void",
+                self.getAverageTempInC(),
+                self.getAverageTempInC(),
+                0.0,
+            )
+            clad = self.getComponent(Flags.CLAD)
+            if isinstance(clad.spatialLocator, grids.MultiIndexLocation):
+                pinComponent.setType("pin", Flags.CLAD)
+                pinComponent.spatialLocator = clad.spatialLocator
+                pinComponent.setDimension("mult", clad.getDimension("mult"))
 
         return b
 
