@@ -715,28 +715,6 @@ class Lead_TestCase(_Material_Test, unittest.TestCase):
             ),
         )
 
-
-class Lead_TestCase(_Material_Test, unittest.TestCase):
-    MAT_CLASS = materials.Lead
-
-    def test_volumetricExpansion(self):
-        self.assertAlmostEqual(
-            self.mat.volumetricExpansion(800),
-            1.1472e-4,
-            4,
-            msg="\n\nIncorrect Lead volumetricExpansion(Tk=None,Tc=None)\nReceived:{}\nExpected:{}\n".format(
-                self.mat.volumetricExpansion(800), 1.1472e-4
-            ),
-        )
-        self.assertAlmostEqual(
-            self.mat.volumetricExpansion(1200),
-            1.20237e-4,
-            4,
-            msg="\n\nIncorrect Lead volumetricExpansion(Tk=None,Tc=None)\nReceived:{}\nExpected:{}\n".format(
-                self.mat.volumetricExpansion(1200), 1.20237e-4
-            ),
-        )
-
     def test_linearExpansion(self):
         cur = self.mat.linearExpansion(400)
         ref = 0.0
