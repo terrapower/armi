@@ -593,7 +593,7 @@ def defineSettings() -> List[setting.Setting]:
         ),
         setting.Setting(
             CONF_TIGHT_COUPLING_MAX_ITERS,
-            default=15,
+            default=4,
             label="Maximum number of iterations for tight coupling.",
             description="Maximum number of iterations for tight coupling."
         ),
