@@ -424,8 +424,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
             block.p.xsType = xsType
             block.setHeight(topMeshPoint - bottom)
             block.p.axMesh = 1
-            block.p.zbottom = bottom
-            block.p.ztop = topMeshPoint
             newAssem.add(block)
             bottom = topMeshPoint
 
