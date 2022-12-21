@@ -116,6 +116,10 @@ class Interface:
     interfaces.
     """
 
+    # class attributes for tight coupling
+    tightCouplingVariables = None
+    tightCouplingConvergeOn = None
+
     class Distribute:  # pylint: disable=too-few-public-methods
         """Enum-like return flag for behavior on interface broadcasting with MPI."""
 
@@ -155,8 +159,6 @@ class Interface:
         self.o = r.o if r else None
         # default interface variables used for tight coupling
         self.tightCouplingTolerance = cs["tightCouplingConvergenceCriteria"]
-        self.tightCouplingVariables = None
-        self.tightCouplingConvergeOn = None
         self.tightCouplingOldValue = None
 
     def __repr__(self):

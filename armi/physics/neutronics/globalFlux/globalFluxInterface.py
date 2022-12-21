@@ -51,6 +51,12 @@ class GlobalFluxInterface(interfaces.Interface):
     function = "globalFlux"
     _ENERGY_BALANCE_REL_TOL = 1e-5
 
+    # for tight coupling, overwrite base class
+    # TODO: expose tightCouplingConvergeOn to user and allow flexibility via case settings
+    # to change to other options within tightCouplingVariables.
+    tightCouplingVariables = ["keff", "power"]
+    tightCouplingConvergeOn = "keff"
+
     def __init__(self, r, cs):
         interfaces.Interface.__init__(self, r, cs)
         if self.cs["nCycles"] > 1000:
@@ -63,9 +69,6 @@ class GlobalFluxInterface(interfaces.Interface):
         else:
             self.nodeFmt = "1d"  # produce ig001_1.inp.
         self._bocKeff = None  # for tracking rxSwing
-        # for tight coupling, overwrite base class
-        self.tightCouplingVariables = ["keff", "power"]
-        self.tightCouplingConvergeOn = "keff"
 
     @staticmethod
     def getHistoryParams():
@@ -234,10 +237,10 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
                 scaledPower = []
                 assemPower = sum(b.p.power for b in a)
                 for b in a:
-                    scaledPower.append(b.p.power/assemPower)
-                
+                    scaledPower.append(b.p.power / assemPower)
+
                 scaledCorePowerDistribution.append(scaledPower)
-            
+
             return numpy.array(scaledCorePowerDistribution, dtype=object)
 
         return None
