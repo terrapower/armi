@@ -26,6 +26,7 @@ Bug fixes
 #. Fixed bug with database writing and tight coupling. (`PR#1005 https://github.com/terrapower/armi/pull/1005`)
 #. Fixed a bug where snapshot load would not respect the new cs["power"] setting.
 #. Froze the NumPy version to be <= 1.23.5 (`PR#1035 https://github.com/terrapower/armi/pull/1035`) to continue to support numpy jagged arrays within the Database interface.
+#. Fixed a bug where the material namespace order for test_axialExpansionChanger.py was persisting beyond the tests. (`PR#1046 https://github.com/terrapower/armi/pull/1046`)
 
 ARMI v0.2.5
 ===========
