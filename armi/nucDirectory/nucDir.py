@@ -362,7 +362,7 @@ def getThresholdDisplacementEnergy(nuc):
     nuc = getNuclide(nuc)
     el = elements.byZ[nuc.z]
     try:
-        ed = eDisplacement[el]
+        ed = eDisplacement[el.symbol]
     except KeyError:
         print(
             "The element {0} of nuclide {1} does not have a displacement energy in the library. Please add one."
