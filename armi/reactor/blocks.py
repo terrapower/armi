@@ -182,9 +182,7 @@ class Block(composites.Composite):
             self.getAverageTempInC(),
             self._pitchDefiningComponent[1],
         )
-        emptyNDens = {
-            nuc: 0.0 for nuc in self.getNuclides()
-        }
+        emptyNDens = {nuc: 0.0 for nuc in self.getNuclides()}
         hexComponent.setNumberDensities(emptyNDens)
         b.add(hexComponent)
 

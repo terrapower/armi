@@ -603,17 +603,19 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
         cachedBlockParamData = collections.defaultdict(dict)
 
-        if len(assems) > 0:
-            b = assems[0][0]
-            blocks = []
-            for a in assems:
-                blocks.extend(a.getBlocks())
-            for paramName in blockParamNames:
-                defaultValue = b.p.pDefs[paramName].default
-                for b in blocks:
-                    if cache:
-                        cachedBlockParamData[b][paramName] = b.p[paramName]
-                    b.p[paramName] = defaultValue
+        if not assems:
+            return cachedBlockParamData
+
+        blocks = []
+        for a in assems:
+            blocks.extend(a.getBlocks())
+        firstBlock = blocks[0]
+        for paramName in blockParamNames:
+            defaultValue = firstBlock.p.pDefs[paramName].default
+            for b in blocks:
+                if cache:
+                    cachedBlockParamData[b][paramName] = b.p[paramName]
+                b.p[paramName] = defaultValue
 
         return cachedBlockParamData
 
@@ -1031,11 +1033,9 @@ class BlockParamMapper:
     def paramGetter(self, block, paramNames):
         """Returns block parameter values as an array in the order of the parameter names given."""
         paramVals = []
-        # paramDict = dict(block.p.items())
         for paramName in paramNames:
             val = block.p[paramName]
             defaultValue = self.paramDefaults[paramName]
-            # val = paramDict.get(paramName, self.paramDefaults[paramName])
             valType = type(defaultValue)
             # Array / list parameters can be have values that are `None`, lists, or numpy arrays. This first
             # checks if the value type is any of these and if so, the block-level parameter is treated as an

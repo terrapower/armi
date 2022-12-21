@@ -123,7 +123,9 @@ class TestAssemblyUniformMesh(unittest.TestCase):
 
         self.r.core.updateAxialMesh()
         newAssem = self.converter.makeAssemWithUniformMesh(
-            sourceAssem, self.r.core.p.axialMesh[1:], blockParamNames=["power"],
+            sourceAssem,
+            self.r.core.p.axialMesh[1:],
+            blockParamNames=["power"],
             blockParamMapper=uniformMesh.BlockParamMapper(["power"], b),
         )
 

@@ -18,11 +18,12 @@ Homogenized mixture material
 
 from armi import materials
 
+
 class Mixture(materials.Material):
     """
     Homogenized mixture of materials
 
-    .. warning:: This class is meant to be used for homogenized block models for neutronics and other 
+    .. warning:: This class is meant to be used for homogenized block models for neutronics and other
        physics solvers.
     """
 
