@@ -29,7 +29,15 @@ def defineSettings():
             CONF_FP_MODEL,
             default="infinitelyDilute",
             label="Fission Product Model",
-            description="",
+            description=(
+                "This setting is used to determine how fission products are treated in an analysis. "
+                "By choosing `noFissionProducts`, no fission products will be added. By selecting, `infinitelyDilute`, "
+                "lumped fission products will be initialized to a very small number on the blocks/components that require them. "
+                "By choosing `MO99`, the fission products will be represented only by Mo-99. This is a simplistic assumption that "
+                "is commonly used by fast reactor analyses in scoping calculations and is not necessarily a great assumption for "
+                "depletion evaluations. Finally, by choosing `explicitFissionProducts` the fission products will be added explicitly "
+                "to the blocks/components that are depletable. This is useful for detailed tracking of fission products."
+            ),
             options=[
                 "noFissionProducts",
                 "infinitelyDilute",
@@ -49,7 +57,9 @@ def defineSettings():
                 f"selected code library (i.e., MC2-3) within the blueprints "
                 f"`nuclideFlags` to be [xs:true, burn:false]. This option acts "
                 f"as a short-cut so that analysts do not need to change their "
-                f"inputs when modifying the fission product treatment for calculations."
+                f"inputs when modifying the fission product treatment for "
+                f"calculations. This may be extended for other cross section "
+                f"generation codes."
             ),
             options=[
                 "",
@@ -60,7 +70,10 @@ def defineSettings():
             CONF_MAKE_ALL_BLOCK_LFPS_INDEPENDENT,
             default=False,
             label="Use Independent LFPs",
-            description="Flag to make all blocks have independent lumped fission products",
+            description=(
+                "Flag to make all blocks have independent lumped fission products. Note that this is forced to be True "
+                "when the `explicitFissionProducts` modeling option is selected."
+            ),
         ),
         setting.Setting(
             CONF_LFP_COMPOSITION_FILE_PATH,
@@ -68,7 +81,8 @@ def defineSettings():
             label="LFP Definition File",
             description=(
                 "Path to the file that contains lumped fission product composition "
-                "definitions (e.g. equilibrium yields)"
+                "definitions (e.g. equilibrium yields). This is unused when the "
+                "`explicitFissionProducts` or `MO99` modeling options are selected."
             ),
         ),
     ]
