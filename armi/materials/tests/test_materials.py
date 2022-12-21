@@ -671,6 +671,51 @@ class Void_TestCase(_Material_Test, unittest.TestCase):
         self.assertEqual(len(self.mat.propertyValidTemperature), 0)
 
 
+class Mixture_TestCase(_Material_Test, unittest.TestCase):
+    MAT_CLASS = materials.Mixture
+
+    def test_density3(self):
+        """
+        this material has no density function
+        """
+        self.assertEqual(self.mat.density(500), 0)
+
+    def test_setDefaultMassFracs(self):
+        self.mat.setDefaultMassFracs()
+        cur = self.mat.p.density
+        ref = 0.0
+        self.assertEqual(cur, ref)
+
+    def test_linearExpansion(self):
+        with self.assertRaises(NotImplementedError):
+            cur = self.mat.linearExpansion(400)
+
+    def test_propertyValidTemperature(self):
+        self.assertEqual(len(self.mat.propertyValidTemperature), 0)
+
+
+class Lead_TestCase(_Material_Test, unittest.TestCase):
+    MAT_CLASS = materials.Lead
+
+    def test_volumetricExpansion(self):
+        self.assertAlmostEqual(
+            self.mat.volumetricExpansion(800),
+            1.1472e-4,
+            4,
+            msg="\n\nIncorrect Lead volumetricExpansion(Tk=None,Tc=None)\nReceived:{}\nExpected:{}\n".format(
+                self.mat.volumetricExpansion(800), 1.1472e-4
+            ),
+        )
+        self.assertAlmostEqual(
+            self.mat.volumetricExpansion(1200),
+            1.20237e-4,
+            4,
+            msg="\n\nIncorrect Lead volumetricExpansion(Tk=None,Tc=None)\nReceived:{}\nExpected:{}\n".format(
+                self.mat.volumetricExpansion(1200), 1.20237e-4
+            ),
+        )
+
+
 class Lead_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.Lead
 
