@@ -662,34 +662,26 @@ class TestExceptions(Base, unittest.TestCase):
             self.assertEqual(the_exception.error_code, 3)
 
     def test_isFuelLocked(self):
-        b_TwoFuel = HexBlock("fuel", height=10.0)
-        fuelDims = {"Tinput": 25.0, "Thot": 25.0, "od": 0.76, "id": 0.00, "mult": 127.0}
-        fuel2Dims = {
+        """ensures that the RuntimeError statement in ExpansionData::_isFuelLocked is raised appropriately
+
+        Notes
+        ------
+        This is implemented by creating a fuel block that contains no fuel component
+        and passing it to ExpansionData::_isFuelLocked.
+        """
+        expdata = ExpansionData(HexAssembly("testAssemblyType"), setFuel=True)
+        b_NoFuel = HexBlock("fuel", height=10.0)
+        shieldDims = {
             "Tinput": 25.0,
             "Thot": 25.0,
-            "od": 0.80,
-            "id": 0.77,
+            "od": 0.76,
+            "id": 0.00,
             "mult": 127.0,
         }
-        fuel = Circle("fuel", "FakeMat", **fuelDims)
-        fuel2 = Circle("fuel", "FakeMat", **fuel2Dims)
-        b_TwoFuel.add(fuel)
-        b_TwoFuel.add(fuel2)
-        b_TwoFuel.setType("test")
-        expdata = ExpansionData(HexAssembly("testAssemblyType"), setFuel=True)
-        # do test
-        with self.assertRaises(RuntimeError) as cm:
-            expdata._isFuelLocked(b_TwoFuel)
-
-            the_exception = cm.exception
-            self.assertEqual(the_exception.error_code, 3)
-
-        b_NoFuel = HexBlock("fuel", height=10.0)
-        shield = Circle("shield", "FakeMat", **fuelDims)
+        shield = Circle("shield", "FakeMat", **shieldDims)
         b_NoFuel.add(shield)
         with self.assertRaises(RuntimeError) as cm:
             expdata._isFuelLocked(b_NoFuel)
-
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
 

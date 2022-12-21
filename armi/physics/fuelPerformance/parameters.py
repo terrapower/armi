@@ -36,6 +36,15 @@ def _getFuelPerformanceBlockParams():
             self._p_gasReleaseFraction = value
 
         pb.defParam(
+            "fuelCladLocked",
+            units="",
+            default=False,
+            description="Boolean to indicate if the fuel is locked with the clad."
+            " This is used to determine the expansion constraints for the fuel during"
+            " thermal and/or burn-up expansion of the fuel and cladding materials.",
+        )
+
+        pb.defParam(
             "gasReleaseFraction",
             setter=gasReleaseFraction,
             units="fraction",
