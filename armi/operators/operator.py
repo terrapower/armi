@@ -643,28 +643,33 @@ class Operator:  # pylint: disable=too-many-public-methods
         convergence = []
         for interface in activeInterfaces:
             if interface.tightCouplingOldValue is not None:
-                key = interface.name+": "+interface.tightCouplingConvergeOn
+                key = "".join([interface.name, ": ", interface.tightCouplingConvergeOn])
                 if isinstance(interface.tightCouplingOldValue, float):
-                    eps = abs(interface.tightCouplingOldValue - interface.getTightCouplingValue())
+                    eps = abs(
+                        interface.tightCouplingOldValue
+                        - interface.getTightCouplingValue()
+                    )
                 elif isinstance(interface.tightCouplingOldValue, ndarray):
                     newValue = interface.getTightCouplingValue()
                     epsVec = []
-                    for old,new in zip(interface.tightCouplingOldValue, newValue):
-                        epsVec.append(norm(subtract(old,new), ord=2))
+                    for old, new in zip(interface.tightCouplingOldValue, newValue):
+                        epsVec.append(norm(subtract(old, new), ord=2))
                     eps = norm(epsVec, ord=inf)
                 else:
-                    raise RuntimeError("Only currently set up to handle either floats or lists... Sorry.")
+                    raise RuntimeError(
+                        "Only currently set up to handle either floats or lists... Sorry."
+                    )
                 self.convergenceSummary[key].append(eps)
                 if eps > interface.tightCouplingTolerance:
                     convergence.append(False)
                 else:
                     convergence.append(True)
-        
-        self._printTightCouplingReport() # it's usually useful to print convergence progress as it unfolds
+
+        self._printTightCouplingReport()  # it's usually useful to print convergence progress as it unfolds
         return all(convergence)
-    
+
     def _checkTightCouplingConvergence(self):
-        for interface,convergenceList in self.convergenceSummary.items():
+        for interface, convergenceList in self.convergenceSummary.items():
             for value in convergenceList:
                 if value > interface.tightCouplingTolerance:
                     # one of the interfaces is not converged
@@ -675,7 +680,9 @@ class Operator:  # pylint: disable=too-many-public-methods
     def _printTightCouplingReport(self):
         runLog.info("Tight Coupling Convergence Summary: Norm Type = Inf")
         runLog.info(
-            tabulate(self.convergenceSummary, headers="keys", showindex=True, tablefmt="armi")
+            tabulate(
+                self.convergenceSummary, headers="keys", showindex=True, tablefmt="armi"
+            )
         )
 
     def interactAllError(self):
