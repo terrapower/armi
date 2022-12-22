@@ -411,7 +411,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
                     )
                     for xs, h in typeHeight.items():
                         heightFrac = h / totalHeight
-                        runLog.extra(f"XSType {xs}: {heightFrac:.4f}")
+                        runLog.debug(f"XSType {xs}: {heightFrac:.4f}")
 
             # If no blocks meet the FUEL or CONTROL criteria above, or there is only one
             # XS type present, just select the first block as the source block and use
