@@ -459,6 +459,14 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
         which can be solved piecewise for z-coordinates along the source blocks.
 
+        Notes
+        -----
+        * If the parameter is volume integrated (e.g., flux, linear power)
+          then calculate the fractional contribution from the source block.
+        * If the parameter is not volume integrated (e.g., volumetric reaction rate)
+          then calculate the fraction contribution on the destination block.
+          This smears the parameter over the destination block.
+
         Parameters
         ----------
         sourceAssembly : Assembly
@@ -486,12 +494,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
         setNumberDensitiesFromOverlaps : does this but does smarter caching for number densities.
         """
 
-        # The destination assembly is the assembly that the results are being mapped to
-        # whereas the source assembly is the assembly that is from the uniform model. This
-        # loop iterates over each block in the destination assembly and determines the mesh
-        # coordinates that the uniform mesh (source assembly) will be mapped to.
         for destBlock in destinationAssembly:
-
             zLower = destBlock.p.zbottom
             zUpper = destBlock.p.ztop
             destinationBlockHeight = destBlock.getHeight()
@@ -511,14 +514,23 @@ class UniformMeshGeometryConverter(GeometryConverter):
                     f"be reported to the developers."
                 )
 
-            # Iterate over each of the blocks that were found in the uniform mesh
-            # source assembly within the lower and upper bounds of the destination
-            # block and perform the parameter mapping.
-            updatedDestVals = collections.defaultdict(float)
+            if blockParamNames is not None:
+                # Determine which parameters are volume integrated
+                isVolIntegrated = {
+                    paramName: destBlock.p.paramDefs[paramName].atLocation(
+                        parameters.ParamLocation.VOLUME_INTEGRATED
+                    )
+                    for paramName in blockParamNames
+                }
 
             if mapNumberDensities:
                 setNumberDensitiesFromOverlaps(destBlock, sourceBlocksInfo)
+
+            # Iterate over each of the blocks that were found in the uniform mesh
+            # source assembly within the lower and upper bounds of the destination
+            # block and perform the parameter mapping.
             if blockParamMapper is not None:
+                updatedDestVals = collections.defaultdict(float)
                 for sourceBlock, sourceBlockOverlapHeight in sourceBlocksInfo:
                     sourceBlockVals = blockParamMapper.paramGetter(
                         sourceBlock,
@@ -529,31 +541,13 @@ class UniformMeshGeometryConverter(GeometryConverter):
                     for paramName, sourceBlockVal in zip(
                         blockParamNames, sourceBlockVals
                     ):
-                        # The value can be `None` if it has not been set yet. In this case,
-                        # the mapping should be skipped.
                         if sourceBlockVal is None:
                             continue
-
-                        # Determine if the parameter is volumed integrated or not.
-                        isVolIntegrated = sourceBlock.p.paramDefs[paramName].atLocation(
-                            parameters.ParamLocation.VOLUME_INTEGRATED
-                        )
-
-                        # If the parameter is volume integrated (e.g., flux, linear power)
-                        # then calculate the fractional contribution from the source block.
-                        if isVolIntegrated:
-                            integrationFactor = (
-                                sourceBlockOverlapHeight / sourceBlockHeight
-                            )
-
-                        # If the parameter is not volume integrated (e.g., volumetric reaction rate)
-                        # then calculate the fraction contribution on the destination block.
-                        # This smears the parameter over the destination block.
+                        if isVolIntegrated[paramName]:
+                            denominator = sourceBlockHeight
                         else:
-                            integrationFactor = (
-                                sourceBlockOverlapHeight / destinationBlockHeight
-                            )
-
+                            denominator = destinationBlockHeight
+                        integrationFactor = sourceBlockOverlapHeight / denominator
                         updatedDestVals[paramName] += sourceBlockVal * integrationFactor
 
                 blockParamMapper.paramSetter(
