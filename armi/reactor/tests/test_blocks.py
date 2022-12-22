@@ -232,6 +232,7 @@ def loadTestBlock(cold=True):
 
     block.setHeight(16.0)
 
+    block.autoCreateSpatialGrids()
     assembly.add(block)
     r.core.add(assembly)
     return block
@@ -474,9 +475,12 @@ class Block_TestCase(unittest.TestCase):
         places = 6
         self.assertAlmostEqual(ref, cur, places=places)
 
-        clad = homogBlock.getComponent(Flags.CLAD)
-        clad = self.block.getComponent(Flags.CLAD)
+        # check that homogenized block has correct pin coordinates
         self.assertEqual(self.block.getNumPins(), homogBlock.getNumPins())
+        pinCoords = self.block.getPinCoordinates()
+        homogPinCoords = homogBlock.getPinCoordinates()
+        for refXYZ, homogXYZ in zip(list(pinCoords), list(homogPinCoords)):
+            self.assertListEqual(list(refXYZ), list(homogXYZ))
 
     def test_getXsType(self):
         self.cs = settings.getMasterCs()
