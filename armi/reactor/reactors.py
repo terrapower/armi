@@ -2262,15 +2262,7 @@ class Core(composites.Composite):
                     if any(a.hasFlags(f) for f in nonUniformAssems):
                         continue
                     a.makeAxialSnapList(refAssem=finestMeshAssembly)
-            if not cs["inputHeightsConsideredHot"]:
-                runLog.header(
-                    "=========== Axially expanding blueprints assemblies (except control) from Tinput to Thot ==========="
-                )
-                self._applyThermalExpansion(
-                    self.parent.blueprints.assemblies.values(),
-                    dbLoad,
-                    finestMeshAssembly,
-                )
+            self.updateAxialMesh()
 
         else:
             if not cs["detailedAxialExpansion"]:
@@ -2279,11 +2271,6 @@ class Core(composites.Composite):
                     if any(a.hasFlags(f) for f in nonUniformAssems):
                         continue
                     a.makeAxialSnapList(self.refAssem)
-            if not cs["inputHeightsConsideredHot"]:
-                runLog.header(
-                    "=========== Axially expanding all assemblies (except control) from Tinput to Thot ==========="
-                )
-                self._applyThermalExpansion(self.getAssemblies(includeAll=True), dbLoad)
 
             # some assemblies, like control assemblies, have a non-conforming mesh
             # and should not be included in self.p.referenceBlockAxialMesh and self.p.axialMesh
@@ -2360,44 +2347,3 @@ class Core(composites.Composite):
 
         if not len(self.zones):
             runLog.debug("No manual zones defined in `zoneDefinitions` setting")
-
-    def _applyThermalExpansion(
-        self, assems: list, dbLoad: bool, referenceAssembly=None
-    ):
-        """expand assemblies, resolve disjoint axial mesh (if needed), and update block BOL heights
-
-        Parameters
-        ----------
-        assems: list
-            list of :py:class:`Assembly <armi.reactor.assemblies.Assembly>` objects to be thermally expanded
-        dbLoad: bool
-            boolean to determine if Core::processLoading is loading a database or constructing a Core
-        referenceAssembly: optional, :py:class:`Assembly <armi.reactor.assemblies.Assembly>`
-            is the thermally expanded assembly whose axial mesh is used to snap the
-            blueprints assemblies axial mesh to
-        """
-        axialExpChngr = AxialExpansionChanger(self._detailedAxialExpansion)
-        for a in assems:
-            if not a.hasFlags(Flags.CONTROL):
-                axialExpChngr.setAssembly(a)
-                # this doesn't get applied to control assems, so CR will be interpreted
-                # as hot. This should be conservative because the control rods will
-                # be modeled as slightly shorter with the correct hot density. Density
-                # is more important than height, so we are forcing density to be correct
-                # since we can't do axial expansion (yet)
-                axialExpChngr.applyColdHeightMassIncrease()
-                axialExpChngr.expansionData.computeThermalExpansionFactors()
-                axialExpChngr.axiallyExpandAssembly(thermal=True)
-        # resolve axially disjoint mesh (if needed)
-        if not dbLoad:
-            axialExpChngr.manageCoreMesh(self.parent)
-        elif not self._detailedAxialExpansion:
-            for a in assems:
-                if not a.hasFlags(Flags.CONTROL):
-                    a.setBlockMesh(referenceAssembly.getAxialMesh())
-        # update block BOL heights to reflect hot heights
-        for a in assems:
-            if not a.hasFlags(Flags.CONTROL):
-                for b in a:
-                    b.p.heightBOL = b.getHeight()
-                    b.completeInitialLoading()

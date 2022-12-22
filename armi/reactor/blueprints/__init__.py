@@ -89,7 +89,9 @@ from armi.nucDirectory import nuclideBases
 from armi.reactor import assemblies
 from armi.reactor import geometry
 from armi.reactor import systemLayoutInput
+from armi.reactor.flags import Flags
 from armi.scripts import migration
+
 from armi.utils import textProcessors
 
 # NOTE: using non-ARMI-standard imports because these are all a part of this package,
@@ -102,6 +104,7 @@ from armi.reactor.blueprints.componentBlueprint import ComponentKeyedList
 from armi.reactor.blueprints.componentBlueprint import ComponentGroups
 from armi.reactor.blueprints import isotopicOptions
 from armi.reactor.blueprints.gridBlueprint import Grids, Triplet
+from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
 
 context.BLUEPRINTS_IMPORTED = True
 context.BLUEPRINTS_IMPORT_CONTEXT = "".join(traceback.format_stack())
@@ -325,6 +328,8 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
             self._checkAssemblyAreaConsistency(cs)
 
             runLog.header("=========== Verifying Assembly Configurations ===========")
+            if not cs["inputHeightsConsideredHot"]:
+                self._applyThermalExpansion(cs["detailedAxialExpansion"])
 
             # pylint: disable=no-member
             getPluginManagerOrFail().hook.afterConstructionOfAssemblies(
@@ -332,6 +337,52 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
             )
 
         self._prepped = True
+
+    def _applyThermalExpansion(
+        self,
+        isDetailedAxialExpansion,
+    ):
+        """
+        Expand BOL assemblies, resolve disjoint axial mesh (if needed), and update block BOL heights
+
+        Parameters
+        ----------
+        assems: list
+            list of :py:class:`Assembly <armi.reactor.assemblies.Assembly>` objects to be thermally expanded
+        """
+        runLog.header(
+            "=========== Axially expanding all assemblies (except control) from Tinput to Thot ==========="
+        )
+        assems = (self.assemblies.values(),)
+
+        # assume finest mesh is reference
+        referenceAssembly = sorted(
+            self.parent.blueprints.assemblies.values(),
+            key=lambda a: len(a),
+            reverse=True,
+        )[0]
+        axialExpChngr = AxialExpansionChanger(isDetailedAxialExpansion)
+        for a in assems:
+            if not a.hasFlags(Flags.CONTROL):
+                axialExpChngr.setAssembly(a)
+                # this doesn't get applied to control assems, so CR will be interpreted
+                # as hot. This should be conservative because the control rods will
+                # be modeled as slightly shorter with the correct hot density. Density
+                # is more important than height, so we are forcing density to be correct
+                # since we can't do axial expansion (yet)
+                axialExpChngr.applyColdHeightMassIncrease()
+                axialExpChngr.expansionData.computeThermalExpansionFactors()
+                axialExpChngr.axiallyExpandAssembly(thermal=True)
+        if not isDetailedAxialExpansion:
+            for a in assems:
+                if not a.hasFlags(Flags.CONTROL):
+                    a.setBlockMesh(referenceAssembly.getAxialMesh())
+        # update block BOL heights to reflect hot heights
+        for a in assems:
+            if not a.hasFlags(Flags.CONTROL):
+                for b in a:
+                    b.p.heightBOL = b.getHeight()
+                    b.completeInitialLoading()
 
     def _assignTypeNums(self):
         if self.blockDesigns is None:
