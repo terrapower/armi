@@ -1575,8 +1575,11 @@ class HexBlock(Block):
             clad = self.getComponent(Flags.CLAD)
             pinComponent.setType("pin", Flags.CLAD)
             pinComponent.spatialLocator = copy.deepcopy(clad.spatialLocator)
-            for i1, i2 in zip(iter(pinComponent.spatialLocator), iter(clad.spatialLocator)):
-                i1.associate(i2.grid)
+            if isinstance(pinComponent.spatialLocator, grids.MultiIndexLocation):
+                for i1, i2 in zip(
+                    list(pinComponent.spatialLocator), list(clad.spatialLocator)
+                ):
+                    i1.associate(i2.grid)
             pinComponent.setDimension("mult", clad.getDimension("mult"))
             b.add(pinComponent)
 
