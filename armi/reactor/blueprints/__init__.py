@@ -353,11 +353,11 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
         runLog.header(
             "=========== Axially expanding all assemblies (except control) from Tinput to Thot ==========="
         )
-        assems = (self.assemblies.values(),)
+        assems = list(self.assemblies.values())
 
         # assume finest mesh is reference
         referenceAssembly = sorted(
-            self.parent.blueprints.assemblies.values(),
+            assems,
             key=lambda a: len(a),
             reverse=True,
         )[0]
