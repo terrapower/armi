@@ -94,13 +94,7 @@ class FissionProductModel(interfaces.Interface):
         products be consistent across all blocks, even if fission products are
         not generated when the block is depleted.
         """
-        blockType = None if self.getInterface("mcnp") is not None else Flags.FUEL
-        if blockType is None and self._explicitFissionProducts:
-            raise ValueError(
-                f"The explicit fission products model is not compatible with the MCNP interface. "
-                f"Select another `fpModel` option."
-            )
-        return blockType
+        return None if self.getInterface("mcnp") is not None else Flags.FUEL
 
     def interactBOL(self):
         interfaces.Interface.interactBOL(self)
