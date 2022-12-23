@@ -11,40 +11,94 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """
-Fission product model
-
-All blocks have a _lumpedFissionProducts attribute that points to a
-:py:class:`~armi.physics.neutronics.fissionProductModel.lumpedFissionProduct.LumpedFissionProductCollection`.
-The LFP collection may be global or each block may have its own.
-The collection may have multiple LFPs from various parents or just one single one.
-This module is the shepherd of the block's _lumpedFissionProducts attribute.
-All other modules can just assume there's a LFP collection and use it as needed.
+This module contains the implementation of the ``FissionProductModel`` interface.
 
 
-Examples
---------
+This ``FissionProductModel`` class implements the management of fission products within 
+the reactor core and can be extended to support more general applications. Currently, the 
+fission product model supports explicit modeling of fission products in each of the 
+blocks/components, independent management of lumped fission products for each
+blocks/components within the core, or global management of lumped fission products
+where the fission products between all blocks/components are shared and are modified
+together.
 
-    from armi.physics.neutronics.fissionProductModel import fissionProductModel
-    fpInterface = fissionProductModel.FissionProductModel()
-    lfp = fpInterface.getGlobalLumpedFissionProducts()
-    lfp['LFP35']
-    lfp35 = lfp['LFP35']
-    lfp35.printDensities(0.05)
-    lfp35.values()
-    allFPs = [(fpY, fpNuc) for (fpNuc,fpY) in lfp35.items()]
-    allFPs.sort()
-    lfp35.keys()
+Within the framework, there is a coupling between the management of the fission products
+through this model to neutronics evaluations of flux and depletion calculations. 
 
+When using a Monte Carlo solver, such as MCNP (i.e., there is an interface that is attached
+to the operator that has a name of "mcnp"), the fission products will always be treated
+independently and fission products (either explicit or lumped) will be added to all 
+blocks/components in the core. The reason for this is that Monte Carlo solvers, like MCNP, 
+may implement their own coupling between flux and depletion evaluations and having the 
+initialization of these fission products in each block/component independently will
+allow that solver to manage the inventory over time.
+
+When determining which fission product model to use (either explicit or lumped) it is
+important to consider which cross section data is available to the flux and/or depletion
+solvers, and what level of fidelity is required for the analysis. This is where decisions 
+as a developer/user need to be made, and the implementation of this specific model may 
+not be, in general, accurate for any reactor system. It is dependent on which plugins 
+are implemented and the requirements of the individual flux/depletion solver.
+
+Lumped fission products are generally useful for fast reactor applications, especially
+in fuel cycle calculations or scoping evaluations where the tracking of the detailed
+nuclide inventory would not have substantial impacts on core reactivity predictions.
+This is typically done by collapsing all fission products into lumped nuclides, like
+``LFP35``, ``LFP38``, ``LFP39``, ``LFP40``, and ``LFP41``. This is the implementation
+in the framework, which is discussed a bit more in the ``fpModel`` setting. These
+lumped fission products are separated into different bins that represent the fission
+product yields from U-235, U-238, Pu-239, Pu-240, and Pu-241/Am-241, respectively. The
+exact binning of which fission events from which target nuclides is specified by the
+``burn-chain.yaml`` file, which can be modified by a user/developer. When selecting this
+modeling option, the blocks/components will have these ``LFP`` nuclides in the number
+density dictionaries. The key thing here is that these lumped nuclides do not exist
+in nature and therefore do not have nuclear data directly available in cross section
+evaluations, like ENDF/B. If the user wishes to consider these nuclides in the flux/depletion
+evaluations, then cross sections for these ``LFP`` nuclides will need to be prepared. Generally
+speaking, the the ``crossSectionGroupManager`` and the  ``latticePhysicsInterface`` could be
+used to implement this for cross section generation codes, like NJOY, CASMO, MC2-3, Serpent,
+etc.
+
+.. warning::
+    
+    The lumped fission product model and the ``burn-chain.yaml`` data may not be directly
+    applicable to light water reactor systems, especially if there are strong reactivity 
+    impacts with fission products like ``Xe`` and ``Sm`` that need to be tracked independently.
+    A user/developer may update the ``referenceFissionProducts.dat`` data file to exclude
+    these important nuclides from the lumped fission product models if need be, but this
+    would also require updating the ``burn-chain.yaml`` file as well as updating the
+    ``nuclideFlags`` specification within the reactor blueprints input.
+
+A further simplified option for lumped fission product treatment that is available is to
+treat all fission products explicitly as ``Mo-99``. This is not guaranteed to be an accurate
+treatment of the fission products from a reactivity/depletion perspective, but it is 
+available for quick scoping evaluations and model building.
+
+Finally, the explicit fission product modeling aims to include as many nuclides on the 
+blocks/components as the user wishes to consider, but the nuclides that are modeled
+must be compatible with the plugins that are implemented for the application. When using this 
+option, the user should look to set the ``fpModelLibrary`` setting. 
+
+    - If this setting is not set, then it is expected that the user will need to manually add 
+      all nuclides to the ``nuclideFlags`` section of the reactor core blueprints. 
+
+    - If the ``fpModelLibrary`` is selected then this will automatically add to the 
+      ``nuclideFlags`` input using :py:func:`isotopicOptions.autoUpdateNuclideFlags` 
+      and this class will initialize all added nuclides to have zero number densities.
+
+.. warning::
+
+    The explicit fission product model is being implemented with the vision of using
+    generating multi-group cross sections for nuclides that are added with the
+    ``fpModelLibrary`` setting with follow-on depletion calculations that will be managed by
+    a detailed depletion solver, like ORIGEN. There are many caveats to how this model
+    is initialized and may not be an out-of-the-box general solution.
 """
-import collections
-
 
 from armi import runLog
 from armi import interfaces
 from armi.reactor.flags import Flags
-from armi.nucDirectory import nuclideBases
 from armi.physics.neutronics.fissionProductModel import lumpedFissionProduct
 
 NUM_FISSION_PRODUCTS_PER_LFP = 2.0
@@ -169,7 +223,7 @@ class FissionProductModel(interfaces.Interface):
 
     def getAllFissionProductNames(self):
         """
-         Find all fission product names in the problem
+        Find all fission product names in the problem
 
          Considers all LFP collections, whether they be global,
          block-level, or a mix of these.
@@ -194,144 +248,13 @@ class FissionProductModel(interfaces.Interface):
 
         return fissionProductNames
 
-    def removeFissionGasesFromBlocks(self, gasRemovalFractions: dict):
+    def removeFissionGasesFromBlocks(self):
         """
-        Removes the fission gases from each of the blocks in the core.
-
-        Parameters
-        ----------
-        gasRemovalFractions : dict
-            Dictionary with block objects as the keys and the fraction
-            of gaseous fission products to remove.
+        Return False to indicate that no fission products are being removed.
 
         Notes
         -----
-        The current implementation will update the number density vector
-        of each of the blocks and the gaseous fission products are not
-        moved or displaced to another area in the core.
+        This should be implemented on an application-specific model.
         """
-        if not self.cs["fgRemoval"]:
-            runLog.info(
-                "Skipping removal of gaseous fission products since the `fgRemoval` setting is disabled."
-            )
-            return
-
-        runLog.info(f"Removing the gaseous fission products from the core.")
-        if not isinstance(gasRemovalFractions, dict):
-            raise TypeError(f"The gas removal fractions input is not a dictionary.")
-
-        # Check that the gas removal fractions supplied are within [0.0, 1.0] and cap them
-        # at these limits otherwise.
-        updatedGasRemovalFractions = {}
-        for b, frac in gasRemovalFractions.items():
-            if frac < 0.0:
-                runLog.warning(
-                    f"The fission gas removal fraction is less than zero for {b}. Setting to zero."
-                )
-                updatedGasRemovalFractions[b] = 0.0
-            elif frac > 1.0:
-                runLog.warning(
-                    f"The fission gas removal fraction is greater than one for {b}. Setting to one."
-                )
-                updatedGasRemovalFractions[b] = 1.0
-            else:
-                updatedGasRemovalFractions[b] = frac
-        gasRemovalFractions.update(updatedGasRemovalFractions)
-
-        def _getGaseousFissionProductNumberDensities(b, lfp):
-            """Look into a single lumped fission product object and pull out the gaseous atom number densities."""
-            numberDensities = {}
-            for nb in lfp.keys():
-                if not lumpedFissionProduct.isGas(nb):
-                    continue
-                yld = lfp[nb]
-                ndens = b.getNumberDensity(lfp.name)
-                numberDensities[nb.name] = ndens * yld
-            return numberDensities
-
-        def _removeFissionGasesExplicitFissionProductModeling(
-            core, gasRemovalFractions
-        ):
-            """
-            This is called when `explicitFissionProducts` are selected as the fission product model.
-
-            Notes
-            -----
-            The input provided has the amount of gas to be removed by each block in the core. The
-            gas that remains in a block is first calculated and then the number density of the
-            gaseous nuclides is multiplied by the fraction that remains and the update number
-            density vector for the block is updated.
-            """
-            for b in core.getBlocks():
-                if b not in gasRemovalFractions:
-                    continue
-                removedFraction = gasRemovalFractions[b]
-                remainingFraction = 1.0 - removedFraction
-                updatedNumberDensities = {}
-                for nuc, val in b.getNumberDensities().items():
-                    nb = nuclideBases.byName[nuc]
-                    updatedNumberDensities[nuc] = (
-                        remainingFraction * val
-                        if lumpedFissionProduct.isGas(nb)
-                        else val
-                    )
-                b.updateNumberDensities(updatedNumberDensities)
-
-        def _removeFissionGasesLumpedFissionProductModeling(core, gasRemovalFractions):
-            weightedGasRemoved = collections.defaultdict(float)
-            totalWeight = collections.defaultdict(float)
-            for b in core.getBlocks():
-                lfpCollection = b.getLumpedFissionProductCollection()
-                if lfpCollection is None or b not in gasRemovalFractions:
-                    continue
-
-                numberDensities = b.getNumberDensities()
-                for lfp in lfpCollection.values():
-                    ndens = _getGaseousFissionProductNumberDensities(b, lfp)
-                    removedFraction = gasRemovalFractions[b]
-                    remainingFraction = 1.0 - removedFraction
-
-                    # If the lumped fission products are global then we are going
-                    # release the average across all the blocks in the core and
-                    # this data is collected iteratively.
-                    if self._useGlobalLFPs:
-                        weight = b.getVolume() * (b.p.flux or 1.0)
-                        weightedGasRemoved[lfp] += (
-                            sum(ndens.values()) * removedFraction * weight
-                        )
-                        totalWeight[lfp] += weight
-
-                    # Otherwise, if the lumped fission products are not global
-                    # go ahead of make the change now.
-                    else:
-                        updatedLFPNumberDensity = (
-                            numberDensities[lfp.name] * remainingFraction
-                        )
-                        numberDensities.update({lfp.name: updatedLFPNumberDensity})
-                        b.setNumberDensities(numberDensities)
-
-            # Apply the global updates to the fission products uniformly across the core.
-            if self._useGlobalLFPs and totalWeight:
-                for b in self.r.core.getBlocks():
-                    lfpCollection = b.getLumpedFissionProductCollection()
-                    if lfpCollection is None or b not in gasRemovalFractions:
-                        continue
-
-                    for lfp in lfpCollection.values():
-                        # The updated number density is calculated as the current number density subtracting
-                        # the amount of gaseous fission products that are being removed.
-                        updatedLFPNumberDensity = b.getNumberDensity(lfp.name) - (
-                            weightedGasRemoved[lfp] / totalWeight[lfp]
-                        )
-                        numberDensities.update({lfp.name: updatedLFPNumberDensity})
-                        b.setNumberDensities(numberDensities)
-
-        if self._explicitFissionProducts:
-            _removeFissionGasesExplicitFissionProductModeling(
-                self.r.core, gasRemovalFractions
-            )
-
-        else:
-            _removeFissionGasesLumpedFissionProductModeling(
-                self.r.core, gasRemovalFractions
-            )
+        runLog.warning(f"Fission gas removal is not implemented in {self}")
+        return False

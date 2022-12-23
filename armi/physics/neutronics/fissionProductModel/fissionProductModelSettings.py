@@ -72,7 +72,8 @@ def defineSettings():
             label="Use Independent LFPs",
             description=(
                 "Flag to make all blocks have independent lumped fission products. Note that this is forced to be True "
-                "when the `explicitFissionProducts` modeling option is selected."
+                "when the ``explicitFissionProducts`` modeling option is selected or an interface named `mcnp` is "
+                "on registered on the operator stack."
             ),
         ),
         setting.Setting(

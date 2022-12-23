@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """
 The lumped fission product (LFP)  module deals with representing LFPs and loading
 them from files.
@@ -90,13 +89,19 @@ class LumpedFissionProduct:
         return self.yld.get(fissionProduct, 0.0)
 
     def __setitem__(self, key, val):
+        from armi.physics.neutronics.fissionProductModel.fissionProductModel import (
+            NUM_FISSION_PRODUCTS_PER_LFP,
+        )
+
         if val < 0.0:
             raise ValueError(
-                f"Cannot set the yield of {key} in {self} to be less than zero as this is non-physical."
+                f"Cannot set the yield of {key} in {self} to be "
+                f"less than zero as this is non-physical."
             )
-        if val > 2.0:
+        if val > NUM_FISSION_PRODUCTS_PER_LFP:
             raise ValueError(
-                f"Cannot set the yield of {key} in {self} to be greater than two as this is non-physical."
+                f"Cannot set the yield of {key} in {self} to be "
+                f"greater than {NUM_FISSION_PRODUCTS_PER_LFP}."
             )
 
         self.yld[key] = val
@@ -404,13 +409,9 @@ class FissionProductDefinitionFile:
 def lumpedFissionProductFactory(cs):
     """Build lumped fission products."""
     if cs["fpModel"] == "explicitFissionProducts":
-        runLog.info("Fission products will be modeled explicitly.")
         return None
 
     if cs["fpModel"] == "MO99":
-        runLog.info(
-            "Activating MO99-fission product model. All FPs are treated a MO99!"
-        )
         return _buildMo99LumpedFissionProduct()
 
     lfpPath = cs[CONF_LFP_COMPOSITION_FILE_PATH]
@@ -425,21 +426,6 @@ def lumpedFissionProductFactory(cs):
         lfpFile = FissionProductDefinitionFile(lfpStream)
         lfps = lfpFile.createLFPsFromFile()
     return lfps
-
-
-def getAllNuclideBasesByLibrary(cs):
-    """Return a list of nuclide bases that are available for a given `fpModelLibrary`."""
-    nbs = []
-    if cs["fpModel"] == "explicitFissionProducts":
-        if cs["fpModelLibrary"] == "MC2-3":
-            nbs = nuclideBases.byMcc3Id.values()
-        else:
-            raise ValueError(
-                f"An option to handle the `fpModelLibrary` "
-                f"set to `{cs['fpModelLibrary']}` has not been "
-                f"implemented."
-            )
-    return nbs
 
 
 def _buildMo99LumpedFissionProduct():
