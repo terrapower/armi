@@ -110,10 +110,34 @@ class TestLumpedFissionProduct(unittest.TestCase):
         self.assertEqual(val3, 1.2)
         self.assertEqual(lfp[5], 0.0)
 
+    def test_gaseousYieldFraction(self):
+        lfp = self.fpd.createSingleLFPFromFile("LFP39")
+        # This is equal to the Xe yield set in the dummy ``LFP_TEXT``
+        # data for these tests.
+        self.assertEqual(lfp.getGaseousYieldFraction(), 8.9000e-05)
+
     def test_printDensities(self):
         _ = nuclideBases.fromName("XE135")
         lfp = self.fpd.createSingleLFPFromFile("LFP38")
         lfp.printDensities(10.0)
+
+    def test_isGas(self):
+        """Tests that a nuclide is a gas or not at STP based on its chemical phase."""
+        nb = nuclideBases.byName["H1"]
+        self.assertTrue(lumpedFissionProduct.isGas(nb))
+        nb = nuclideBases.byName["H2"]
+        self.assertTrue(lumpedFissionProduct.isGas(nb))
+        nb = nuclideBases.byName["H3"]
+        self.assertTrue(lumpedFissionProduct.isGas(nb))
+
+        nb = nuclideBases.byName["U235"]
+        self.assertFalse(lumpedFissionProduct.isGas(nb))
+
+        nb = nuclideBases.byName["O16"]
+        self.assertTrue(lumpedFissionProduct.isGas(nb))
+
+        nb = nuclideBases.byName["XE135"]
+        self.assertTrue(lumpedFissionProduct.isGas(nb))
 
 
 class TestLumpedFissionProductCollection(unittest.TestCase):
