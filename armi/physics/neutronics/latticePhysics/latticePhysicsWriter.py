@@ -363,15 +363,12 @@ class LatticePhysicsWriter(interfaces.InputWriter):
             return dfpDensities
         lfpCollection = self.block.getLumpedFissionProductCollection()
         if self.diluteFissionProducts:
-            # set all densities to near zero.
-            try:
-                _, dfp = list(lfpCollection.items())[0]
-            except IndexError:
-                raise IndexError(
+            if lfpCollection is None:
+                raise ValueError(
                     "Lumped fission products are not initialized. Did interactAll BOL run?"
                 )
-
-            for individualFpBase in dfp.keys():
+            dfps = lfpCollection.getAllFissionProductNuclideBases()
+            for individualFpBase in dfps:
                 dfpDensities[individualFpBase] = self.minimumNuclideDensity
         else:
             # expand densities and sum
