@@ -16,9 +16,15 @@ Test the fission product module to ensure all FP are available.
 """
 import unittest
 
-from armi.physics.neutronics.fissionProductModel import fissionProductModel
-from armi.reactor.tests.test_reactors import buildOperatorOfEmptyHexBlocks
 
+from armi import nuclideBases
+from armi.reactor.flags import Flags
+
+from armi.physics.neutronics.fissionProductModel import fissionProductModel
+from armi.reactor.tests.test_reactors import (
+    buildOperatorOfEmptyHexBlocks,
+    loadTestReactor,
+)
 from armi.physics.neutronics.fissionProductModel.tests import test_lumpedFissionProduct
 
 
@@ -64,6 +70,36 @@ class TestFissionProductModelLumpedFissionProducts(unittest.TestCase):
         fissionProductNames = self.fpModel.getAllFissionProductNames()
         self.assertGreater(len(fissionProductNames), 5)
         self.assertIn("XE135", fissionProductNames)
+
+
+class TestFissionProductModelExplicitMC2Library(unittest.TestCase):
+    """
+    Tests the fission product model interface behavior when explicit fission products are enabled.
+    """
+
+    def setUp(self):
+        o, r = loadTestReactor(
+            customSettings={
+                "fpModel": "explicitFissionProducts",
+                "fpModelLibrary": "MC2-3",
+            }
+        )
+        self.r = r
+        self.fpModel = fissionProductModel.FissionProductModel(o.r, o.cs)
+        # Set up the global LFPs and check that they are setup.
+        self.fpModel.setAllBlockLFPs()
+        self.assertFalse(self.fpModel._useGlobalLFPs)
+
+    def test_nuclideFlags(self):
+        """Test that the nuclide flags contain the set of MC2-3 modeled nuclides."""
+        for nb in nuclideBases.byMcc3Id.values():
+            self.assertIn(nb.name, self.r.blueprints.nuclideFlags.keys())
+
+    def test_nuclidesInModel(self):
+        """Test that the fuel blocks contain all the MC2-3 modeled nuclides."""
+        b = self.r.core.getFirstBlock(Flags.FUEL)
+        for nb in nuclideBases.byMcc3Id.values():
+            self.assertIn(nb.name, b.getNuclides())
 
 
 if __name__ == "__main__":

@@ -65,6 +65,7 @@ class Query:
         self.question = question
         self.correction = correction
         # True if the query is `passed` and does not result in an immediate failure
+        self.corrected = False
         self._passed = False
         self.autoResolved = True
 
@@ -105,6 +106,7 @@ class Query:
                         )
                         if make_correction:
                             self.correction()
+                            self.corrected = True
                         self._passed = True
                     except RunLogPromptCancel as ki:
                         raise KeyboardInterrupt from ki
@@ -185,8 +187,8 @@ class Inspector:
         if context.MPI_RANK != 0:
             return False
 
-        # the following attribute changes will alter what the queries investigate when
-        # resolved
+        # the following attribute changes will alter what the queries investigate when resolved
+        correctionsMade = False
         self.cs = cs or self.cs
         runLog.debug("{} executing queries.".format(self.__class__.__name__))
         if not any(self.queries):
@@ -198,6 +200,8 @@ class Inspector:
         else:
             for query in self.queries:
                 query.resolve()
+                if query.corrected:
+                    correctionsMade = True
             issues = [
                 query
                 for query in self.queries
@@ -213,6 +217,8 @@ class Inspector:
                     "some issues are creating cyclic resolutions: {}".format(issues)
                 )
             runLog.debug("{} has finished querying.".format(self.__class__.__name__))
+
+        return correctionsMade
 
     def addQuery(self, condition, statement, question, correction):
         """Convenience method, query must be resolved, else run fails"""

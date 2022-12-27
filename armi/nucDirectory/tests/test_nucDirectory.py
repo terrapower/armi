@@ -57,6 +57,14 @@ class TestNucDirectory(unittest.TestCase):
         with self.assertRaises(Exception):
             nucDir.getNuclideFromName("Charlie")
 
+    def test_getDisplacementEnergy(self):
+        """Test getting the displacement energy for a given nuclide."""
+        ed = nucDir.getThresholdDisplacementEnergy("H1")
+        self.assertEqual(ed, 10.0)
+
+        with self.assertRaises(KeyError):
+            nucDir.getThresholdDisplacementEnergy("fail")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -171,7 +171,7 @@ class Settings:
                 "Cannot grab simple cycles information from the case settings "
                 "when detailed cycles information is also entered. In general "
                 "cycles information should be pulled off the operator or parsed "
-                "using the appropriate getter in the utils. "
+                "using the appropriate getter in the utils."
             )
 
             return False, err

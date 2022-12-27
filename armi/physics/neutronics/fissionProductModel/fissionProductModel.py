@@ -158,34 +158,37 @@ class FissionProductModel(interfaces.Interface):
         """
         Sets all the block lumped fission products attributes and adds fission products
         to each block if `self._explicitFissionProducts` is set to True.
+
         See Also
         --------
         armi.reactor.components.Component.setLumpedFissionProducts
         """
         for b in self.r.core.getBlocks(self._fissionProductBlockType, includeAll=True):
+
             if self._useGlobalLFPs:
                 b.setLumpedFissionProducts(self.getGlobalLumpedFissionProducts())
             else:
                 lfps = self.getGlobalLumpedFissionProducts()
+
+                # There will be no lumped fission products when explicitFissionProducts
+                # are modeled.
                 if lfps is None:
                     b.setLumpedFissionProducts(None)
+                    if not self._initialized:
+                        targetComponent = b.getComponent(self._fissionProductBlockType)
+                        if not targetComponent:
+                            continue
+                        ndens = targetComponent.getNumberDensities()
+                        updatedNDens = {}
+                        for nuc in self.r.blueprints.allNuclidesInProblem:
+                            if nuc in ndens:
+                                continue
+                            updatedNDens[nuc] = 0.0
+                        targetComponent.updateNumberDensities(updatedNDens)
                 else:
-                    independentLFPs = self.getGlobalLumpedFissionProducts().duplicate()
+                    independentLFPs = lfps.duplicate()
                     b.setLumpedFissionProducts(independentLFPs)
 
-            # Initialize the fission products explicitly on the block component
-            # that matches the `self._fissionProductBlockType` if it exists.
-            if self._explicitFissionProducts and not self._initialized:
-                targetComponent = b.getComponent(self._fissionProductBlockType)
-                if not targetComponent:
-                    continue
-                ndens = targetComponent.getNumberDensities()
-                updatedNDens = {}
-                for nuc in self.r.blueprints.allNuclidesInProblem:
-                    if nuc in ndens:
-                        continue
-                    updatedNDens[nuc] = 0.0
-                targetComponent.updateNumberDensities(updatedNDens)
         self._initialized = True
 
     def getGlobalLumpedFissionProducts(self):
@@ -223,13 +226,12 @@ class FissionProductModel(interfaces.Interface):
 
     def getAllFissionProductNames(self):
         """
-        Find all fission product names in the problem
+        Find all fission product names from the lumped fission product collection.
 
-         Considers all LFP collections, whether they be global,
-         block-level, or a mix of these.
-
-        sets fissionProductNames, a list of nuclide names of all the
-        fission products
+        Notes
+        -----
+        This considers all LFP collections, whether they are global, block-level,
+        or a mix of these.
         """
         runLog.debug("Gathering all possible fission products that are modeled.")
         fissionProductNames = []

@@ -326,22 +326,6 @@ class AverageBlockCollection(BlockCollection):
         ndens = weights.dot([b.getNuclideNumberDensities(nuclides) for b in blocks])
         return dict(zip(nuclides, ndens))
 
-    def _getAverageFissionGasRemoved(self):
-        """
-        Get weighted average fission gas release fraction.
-
-        Notes
-        -----
-        - Will be applied to LFP composition.
-        """
-        totalWeight = 0.0
-        fgRelease = 0.0
-        for b in self.getCandidateBlocks():
-            weight = self.getWeight(b)
-            totalWeight += weight
-            fgRelease += b.p.gasReleaseFraction * weight
-        return fgRelease / totalWeight
-
     def _getAverageFuelLFP(self):
         """Compute the average lumped fission products."""
         # TODO: make do actual average of LFPs

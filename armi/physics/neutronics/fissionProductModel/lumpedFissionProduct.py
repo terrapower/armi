@@ -158,9 +158,7 @@ class LumpedFissionProduct:
             massFracs[nuc] = self.getMassFrac(nuclideBase=nuc)
         return massFracs
 
-    def getMassFrac(
-        self, nucName=None, nuclideBase=None, useCache=True, storeCache=True
-    ):
+    def getMassFrac(self, nucName=None, nuclideBase=None):
         """
         Return the mass fraction of the given nuclide.
 
@@ -168,41 +166,21 @@ class LumpedFissionProduct:
         -------
         nuclide mass fraction (float)
         """
-        massFracDenom = self.getMassFracDenom(useCache=useCache, storeCache=storeCache)
+        massFracDenom = self.getMassFracDenom()
         if not nuclideBase:
             nuclideBase = nuclideBases.byName[nucName]
         return self.__getitem__(nuclideBase) * (nuclideBase.weight / massFracDenom)
 
-    def getMassFracDenom(self, useCache=True, storeCache=True):
+    def getMassFracDenom(self):
         """
         See Also
         --------
         armi.physics.neutronics.fissionProductModel.lumpedFissionProduct.LumpedFissionProduct.getMassFrac
         """
-        if hasattr(self, "massFracDenom") and useCache:
-            return self.massFracDenom
-        else:
-            massFracDenom = 0
-            for nuc in self.keys():
-                massFracDenom += self[nuc] * nuc.weight
-            if storeCache:
-                self.massFracDenom = massFracDenom
-            return massFracDenom
-
-    def getExpandedMass(self, mass=1.0):
-        """
-        returns a dictionary of masses indexed by nuclide base objects
-
-        Parameters
-        ----------
-        mass : float,
-            the mass of all the expanded mass of the given LFP.
-        """
-
-        massVector = self.getMassFracs()
-        massVector.update((nuc, mass * mFrac) for nuc, mFrac in massVector.items())
-
-        return massVector
+        massFracDenom = 0.0
+        for nuc in self.keys():
+            massFracDenom += self[nuc] * nuc.weight
+        return massFracDenom
 
     def printDensities(self, lfpDens):
         """
@@ -322,7 +300,7 @@ class FissionProductDefinitionFile:
     >>> fpd = FissionProductDefinitionFile(stream)
     >>> lfps = fpd.createLFPsFromFile()
 
-    The path to this file name is specified by the
+    The path to this file is specified by the `lfpCompositionFilePath` user setting.
     """
 
     def __init__(self, stream):
@@ -447,59 +425,6 @@ def _buildMo99LumpedFissionProduct():
         mo99FP[mo99] = 2.0
         mo99LFPs[lfp.name] = mo99FP
     return mo99LFPs
-
-
-def expandFissionProducts(massFrac, lumpedFissionProducts):
-    """
-    expands lumped fission products in a massFrac vector
-
-    Parameters
-    ----------
-    massFrac : dict
-
-    lumpedFissionProducts : LumpedFissionProductCollection (acts like a dict)
-        result of <fissionProductInterface>.getGlobalLumpedFissionProducts
-
-    Returns
-    -------
-    newMassFracs : dict
-    """
-    lfpNbs = []
-    elementalNbs = []
-    newMassFrac = {}
-
-    for nucName in massFrac.keys():
-        nB = nuclideBases.byName[nucName]
-        if isinstance(nB, nuclideBases.LumpNuclideBase):
-            lfpNbs.append(nB)
-        elif isinstance(nB, nuclideBases.NaturalNuclideBase):
-            elementalNbs.append(nB)
-        else:
-            newMassFrac[nucName] = massFrac[nucName]
-
-    for lfp in lfpNbs:
-        if massFrac[lfp.name] != 0:
-            try:
-                lfpFP = lumpedFissionProducts[lfp.name]
-            except KeyError:
-                errorMessage = ["{}".format(lumpedFissionProducts)]
-                errorMessage.append("\ntype {}".format(type(lumpedFissionProducts)))
-                errorMessage.append("\nmassFrac dict {}".format(massFrac))
-                errorMessage.append("\nLumped Fission Product Name {}".format(lfp.name))
-                runLog.debug("".join(errorMessage))
-
-            for nB in lfpFP.keys():
-                newMassFrac[nB.name] = massFrac.get(nB.name, 0) + massFrac[
-                    lfp.name
-                ] * lfpFP.getMassFrac(nuclideBase=nB)
-
-    for element in elementalNbs:
-        for nB in element.getNaturalIsotopics():
-            newMassFrac[nB.name] = (
-                massFrac.get(nB.name, 0)
-                + massFrac[element.name] * nB.abundance * nB.weight / element.weight
-            )
-    return newMassFrac
 
 
 def isGas(nuc):

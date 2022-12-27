@@ -50,16 +50,16 @@ def defineSettings():
             default="",
             label="Fission Product Library",
             description=(
-                f"This setting is used when the `{CONF_FP_MODEL}` setting "
-                f"is set to `explicitFissionProducts` and is used to configure "
-                f"all the nuclides that should be modeled within the core. "
-                f"Setting this is equivalent to adding all nuclides in the "
-                f"selected code library (i.e., MC2-3) within the blueprints "
-                f"`nuclideFlags` to be [xs:true, burn:false]. This option acts "
-                f"as a short-cut so that analysts do not need to change their "
-                f"inputs when modifying the fission product treatment for "
-                f"calculations. This may be extended for other cross section "
-                f"generation codes."
+                f"This setting can used when the `{CONF_FP_MODEL}` setting "
+                "is set to `explicitFissionProducts` and is used to configure "
+                "all the nuclides that should be modeled within the core. "
+                "Setting this is equivalent to adding all nuclides in the "
+                "selected code library (i.e., MC2-3) within the blueprints "
+                "`nuclideFlags` to be [xs:true, burn:false]. This option acts "
+                "as a short-cut so that analysts do not need to change their "
+                "inputs when modifying the fission product treatment for "
+                "calculations. This may be extended for other cross section "
+                "generation codes."
             ),
             options=[
                 "",
@@ -103,10 +103,10 @@ def getFissionProductModelSettingValidators(inspector):
             lambda: inspector.cs["fpModel"] != "explicitFissionProducts"
             and not bool(inspector.cs["initializeBurnChain"]),
             (
-                f"The burn chain is not being initialized and the fission product model is not set to `explicitFissionProducts`. "
-                f"This will likely fail."
+                "The burn chain is not being initialized and the fission product model is not set to `explicitFissionProducts`. "
+                "This will likely fail."
             ),
-            (f"Would you like to set the `fpModel` to `explicitFissionProducts`?"),
+            "Would you like to set the `fpModel` to `explicitFissionProducts`?",
             lambda: inspector._assignCS("fpModel", "explicitFissionProducts"),
         )
     )
@@ -116,10 +116,10 @@ def getFissionProductModelSettingValidators(inspector):
             lambda: inspector.cs["fpModel"] != "explicitFissionProducts"
             and inspector.cs["fpModelLibrary"] != "",
             (
-                f"The explicit fission product model is disabled and the fission product model library is set. This will have no "
-                f"impact on the results, but it is best to disable the `fpModelLibrary` option."
+                "The explicit fission product model is disabled and the fission product model library is set. This will have no "
+                "impact on the results, but it is best to disable the `fpModelLibrary` option."
             ),
-            (f"Would you like to do this?"),
+            "Would you like to do this?",
             lambda: inspector._assignCS("fpModelLibrary", ""),
         )
     )
@@ -129,10 +129,10 @@ def getFissionProductModelSettingValidators(inspector):
             lambda: inspector.cs["fpModel"] == "explicitFissionProducts"
             and bool(inspector.cs["initializeBurnChain"]),
             (
-                f"The explicit fission product model is enabled, but initializing the burn chain is also enabled. This will "
-                f"likely fail."
+                "The explicit fission product model is enabled, but initializing the burn chain is also enabled. This will "
+                "likely fail."
             ),
-            (f"Would you like to disable the burn chain initialization?"),
+            "Would you like to disable the burn chain initialization?",
             lambda: inspector._assignCS("initializeBurnChain", False),
         )
     )
@@ -142,13 +142,10 @@ def getFissionProductModelSettingValidators(inspector):
             lambda: inspector.cs["fpModel"] == "explicitFissionProducts"
             and inspector.cs["fpModelLibrary"] == "",
             (
-                f"The explicit fission product model is enabled and the fission product model library is disabled. This will result "
-                f"in a failure. Note that the fission product model library will determine which nuclides to add to the depletable regions of the core "
-                f"that are not already included in the blueprints `nuclideFlags`."
+                "The explicit fission product model is enabled and the fission product model library is disabled. May result in "
+                "no fission product nuclides being added to the case, unless these have manually added in `nuclideFlags`."
             ),
-            (
-                f"Would you like to set the `fpModelLibrary` option to be equal to the default implementation of MC2-3?."
-            ),
+            "Would you like to set the `fpModelLibrary` option to be equal to the default implementation of MC2-3?.",
             lambda: inspector._assignCS("fpModelLibrary", "MC2-3"),
         )
     )

@@ -110,12 +110,6 @@ class TestLumpedFissionProduct(unittest.TestCase):
         self.assertEqual(val3, 1.2)
         self.assertEqual(lfp[5], 0.0)
 
-    def test_getExpandedMass(self):
-        xe135 = nuclideBases.fromName("XE135")
-        lfp = self.fpd.createSingleLFPFromFile("LFP38")
-        massVector = lfp.getExpandedMass(mass=0.99)
-        self.assertEqual(massVector.get(xe135), 0.99)
-
     def test_printDensities(self):
         _ = nuclideBases.fromName("XE135")
         lfp = self.fpd.createSingleLFPFromFile("LFP38")
