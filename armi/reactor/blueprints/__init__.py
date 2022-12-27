@@ -327,27 +327,28 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
             runLog.header("=========== Verifying Assembly Configurations ===========")
             self._checkAssemblyAreaConsistency(cs)
 
-            # assume finest mesh is reference
-            referenceAssembly = sorted(
-                self.assemblies.values(),
-                key=lambda a: len(a),
-                reverse=True,
-            )[0]
-            if not cs["detailedAxialExpansion"]:
-                # make the snap lists so assems know how to expand
-                nonUniformAssems = [
-                    Flags.fromStringIgnoreErrors(t) for t in cs["nonUniformAssemFlags"]
-                ]
-                # prepare core for mesh snapping during axial expansion
-                for a in self.assemblies.values():
-                    if any(a.hasFlags(f) for f in nonUniformAssems):
-                        continue
-                    a.makeAxialSnapList(referenceAssembly)
-            if not cs["inputHeightsConsideredHot"]:
-                # expand axial heights from cold to hot
-                self._applyThermalExpansion(
-                    referenceAssembly, cs["detailedAxialExpansion"]
-                )
+            if self.assemblies.values():
+                # if assemblies are defined in blueprints, handle meshing
+                # assume finest mesh is reference
+                referenceAssembly = sorted(
+                    self.assemblies.values(),
+                    key=lambda a: len(a),
+                    reverse=True,
+                )[0]
+                if not cs["detailedAxialExpansion"]:
+                    # make the snap lists so assems know how to expand
+                    nonUniformAssems = [
+                        Flags.fromStringIgnoreErrors(t)
+                        for t in cs["nonUniformAssemFlags"]
+                    ]
+                    # prepare core for mesh snapping during axial expansion
+                    for a in self.assemblies.values():
+                        if any(a.hasFlags(f) for f in nonUniformAssems):
+                            continue
+                        a.makeAxialSnapList(referenceAssembly)
+                if not cs["inputHeightsConsideredHot"]:
+                    # expand axial heights from cold to hot
+                    self._coldDimsToHot(referenceAssembly, cs["detailedAxialExpansion"])
 
             # pylint: disable=no-member
             getPluginManagerOrFail().hook.afterConstructionOfAssemblies(
@@ -356,7 +357,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
 
         self._prepped = True
 
-    def _applyThermalExpansion(
+    def _coldDimsToHot(
         self,
         referenceAssembly,
         isDetailedAxialExpansion,

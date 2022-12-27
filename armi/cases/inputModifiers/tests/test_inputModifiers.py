@@ -121,6 +121,7 @@ class TestsuiteBuilderIntegrations(unittest.TestCase):
         geom.readGeomFromStream(GEOM_INPUT)
         bp = blueprints.Blueprints.load(BLUEPRINT_INPUT_LINKS)
         cs = settings.Settings()
+        cs["detailedAxialExpansion"] = True
         bp._prepConstruction(cs)
         cls.baseCase = cases.Case(cs=cs, bp=bp, geom=geom)
 
