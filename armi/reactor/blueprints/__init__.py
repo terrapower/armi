@@ -324,12 +324,30 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
                 self.assemblies[aDesign.name] = a
             if currentCount != 0:
                 assemblies.setAssemNumCounter(currentCount)
-
+            runLog.header("=========== Verifying Assembly Configurations ===========")
             self._checkAssemblyAreaConsistency(cs)
 
-            runLog.header("=========== Verifying Assembly Configurations ===========")
+            # assume finest mesh is reference
+            referenceAssembly = sorted(
+                self.assemblies.values(),
+                key=lambda a: len(a),
+                reverse=True,
+            )[0]
+            if not cs["detailedAxialExpansion"]:
+                # make the snap lists so assems know how to expand
+                nonUniformAssems = [
+                    Flags.fromStringIgnoreErrors(t) for t in cs["nonUniformAssemFlags"]
+                ]
+                # prepare core for mesh snapping during axial expansion
+                for a in self.assemblies.values():
+                    if any(a.hasFlags(f) for f in nonUniformAssems):
+                        continue
+                    a.makeAxialSnapList(referenceAssembly)
             if not cs["inputHeightsConsideredHot"]:
-                self._applyThermalExpansion(cs["detailedAxialExpansion"])
+                # expand axial heights from cold to hot
+                self._applyThermalExpansion(
+                    referenceAssembly, cs["detailedAxialExpansion"]
+                )
 
             # pylint: disable=no-member
             getPluginManagerOrFail().hook.afterConstructionOfAssemblies(
@@ -340,6 +358,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
 
     def _applyThermalExpansion(
         self,
+        referenceAssembly,
         isDetailedAxialExpansion,
     ):
         """
@@ -355,24 +374,18 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
         )
         assems = list(self.assemblies.values())
 
-        # assume finest mesh is reference
-        referenceAssembly = sorted(
-            assems,
-            key=lambda a: len(a),
-            reverse=True,
-        )[0]
-        axialExpChngr = AxialExpansionChanger(isDetailedAxialExpansion)
+        axialExpChanger = AxialExpansionChanger(isDetailedAxialExpansion)
         for a in assems:
             if not a.hasFlags(Flags.CONTROL):
-                axialExpChngr.setAssembly(a)
+                axialExpChanger.setAssembly(a)
                 # this doesn't get applied to control assems, so CR will be interpreted
                 # as hot. This should be conservative because the control rods will
                 # be modeled as slightly shorter with the correct hot density. Density
                 # is more important than height, so we are forcing density to be correct
                 # since we can't do axial expansion (yet)
-                axialExpChngr.applyColdHeightMassIncrease()
-                axialExpChngr.expansionData.computeThermalExpansionFactors()
-                axialExpChngr.axiallyExpandAssembly(thermal=True)
+                axialExpChanger.applyColdHeightMassIncrease()
+                axialExpChanger.expansionData.computeThermalExpansionFactors()
+                axialExpChanger.axiallyExpandAssembly(thermal=True)
         if not isDetailedAxialExpansion:
             for a in assems:
                 if not a.hasFlags(Flags.CONTROL):

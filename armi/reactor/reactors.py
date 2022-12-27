@@ -2239,39 +2239,17 @@ class Core(composites.Composite):
                 "Please make sure that this is intended and not a input error."
             )
 
-        nonUniformAssems = [
-            Flags.fromStringIgnoreErrors(t) for t in cs["nonUniformAssemFlags"]
-        ]
         if dbLoad:
             # reactor.blueprints.assemblies need to be populated
             # this normally happens during armi/reactor/blueprints/__init__.py::constructAssem
             # but for DB load, this is not called so it must be here.
             # pylint: disable=protected-access
             self.parent.blueprints._prepConstruction(cs)
-            if not cs["detailedAxialExpansion"]:
-                # Apply mesh snapping for self.parent.blueprints.assemblies
-                # This is stored as a param for assemblies in-core, so only blueprints assemblies are
-                # considered here. To guarantee mesh snapping will function, makeAxialSnapList
-                # should be in reference to the assembly with the finest mesh as defined in the blueprints.
-                finestMeshAssembly = sorted(
-                    self.parent.blueprints.assemblies.values(),
-                    key=lambda a: len(a),
-                    reverse=True,
-                )[0]
-                for a in self.parent.blueprints.assemblies.values():
-                    if any(a.hasFlags(f) for f in nonUniformAssems):
-                        continue
-                    a.makeAxialSnapList(refAssem=finestMeshAssembly)
-            self.updateAxialMesh()
-
         else:
-            if not cs["detailedAxialExpansion"]:
-                # prepare core for mesh snapping during axial expansion
-                for a in self.getAssemblies(includeAll=True):
-                    if any(a.hasFlags(f) for f in nonUniformAssems):
-                        continue
-                    a.makeAxialSnapList(self.refAssem)
-
+            # set reactor level meshing params
+            nonUniformAssems = [
+                Flags.fromStringIgnoreErrors(t) for t in cs["nonUniformAssemFlags"]
+            ]
             # some assemblies, like control assemblies, have a non-conforming mesh
             # and should not be included in self.p.referenceBlockAxialMesh and self.p.axialMesh
             uniformAssems = [
