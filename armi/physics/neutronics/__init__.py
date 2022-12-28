@@ -102,8 +102,13 @@ class NeutronicsPlugin(plugins.ArmiPlugin):
     def defineSettingsValidators(inspector):
         """Implementation of settings inspections for neutronics settings."""
         from armi.physics.neutronics.settings import getNeutronicsSettingValidators
+        from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import (
+            getFissionProductModelSettingValidators,
+        )
 
-        return getNeutronicsSettingValidators(inspector)
+        settingsValidators = getNeutronicsSettingValidators(inspector)
+        settingsValidators.extend(getFissionProductModelSettingValidators(inspector))
+        return settingsValidators
 
     @staticmethod
     @plugins.HOOKIMPL

@@ -11,32 +11,89 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """
-Fission product model
-
-All blocks have a _lumpedFissionProducts attribute that points to a
-:py:class:`~armi.physics.neutronics.fissionProductModel.lumpedFissionProduct.LumpedFissionProductCollection`.
-The LFP collection may be global or each block may have its own.
-The collection may have multiple LFPs from various parents or just one single one.
-This module is the shepherd of the block's _lumpedFissionProducts attribute.
-All other modules can just assume there's a LFP collection and use it as needed.
+This module contains the implementation of the ``FissionProductModel`` interface.
 
 
-Examples
---------
+This ``FissionProductModel`` class implements the management of fission products within 
+the reactor core and can be extended to support more general applications. Currently, the 
+fission product model supports explicit modeling of fission products in each of the 
+blocks/components, independent management of lumped fission products for each
+blocks/components within the core, or global management of lumped fission products
+where the fission products between all blocks/components are shared and are modified
+together.
 
-    from armi.physics.neutronics.fissionProductModel import fissionProductModel
-    fpInterface = fissionProductModel.FissionProductModel()
-    lfp = fpInterface.getGlobalLumpedFissionProducts()
-    lfp['LFP35']
-    lfp35 = lfp['LFP35']
-    lfp35.printDensities(0.05)
-    lfp35.values()
-    allFPs = [(fpY, fpNuc) for (fpNuc,fpY) in lfp35.items()]
-    allFPs.sort()
-    lfp35.keys()
+Within the framework, there is a coupling between the management of the fission products
+through this model to neutronics evaluations of flux and depletion calculations. 
 
+When using a Monte Carlo solver, such as MCNP (i.e., there is an interface that is attached
+to the operator that has a name of "mcnp"), the fission products will always be treated
+independently and fission products (either explicit or lumped) will be added to all 
+blocks/components in the core. The reason for this is that Monte Carlo solvers, like MCNP, 
+may implement their own coupling between flux and depletion evaluations and having the 
+initialization of these fission products in each block/component independently will
+allow that solver to manage the inventory over time.
+
+When determining which fission product model to use (either explicit or lumped) it is
+important to consider which cross section data is available to the flux and/or depletion
+solvers, and what level of fidelity is required for the analysis. This is where decisions 
+as a developer/user need to be made, and the implementation of this specific model may 
+not be, in general, accurate for any reactor system. It is dependent on which plugins 
+are implemented and the requirements of the individual flux/depletion solver.
+
+Lumped fission products are generally useful for fast reactor applications, especially
+in fuel cycle calculations or scoping evaluations where the tracking of the detailed
+nuclide inventory would not have substantial impacts on core reactivity predictions.
+This is typically done by collapsing all fission products into lumped nuclides, like
+``LFP35``, ``LFP38``, ``LFP39``, ``LFP40``, and ``LFP41``. This is the implementation
+in the framework, which is discussed a bit more in the ``fpModel`` setting. These
+lumped fission products are separated into different bins that represent the fission
+product yields from U-235, U-238, Pu-239, Pu-240, and Pu-241/Am-241, respectively. The
+exact binning of which fission events from which target nuclides is specified by the
+``burn-chain.yaml`` file, which can be modified by a user/developer. When selecting this
+modeling option, the blocks/components will have these ``LFP`` nuclides in the number
+density dictionaries. The key thing here is that these lumped nuclides do not exist
+in nature and therefore do not have nuclear data directly available in cross section
+evaluations, like ENDF/B. If the user wishes to consider these nuclides in the flux/depletion
+evaluations, then cross sections for these ``LFP`` nuclides will need to be prepared. Generally
+speaking, the the ``crossSectionGroupManager`` and the  ``latticePhysicsInterface`` could be
+used to implement this for cross section generation codes, like NJOY, CASMO, MC2-3, Serpent,
+etc.
+
+.. warning::
+    
+    The lumped fission product model and the ``burn-chain.yaml`` data may not be directly
+    applicable to light water reactor systems, especially if there are strong reactivity 
+    impacts with fission products like ``Xe`` and ``Sm`` that need to be tracked independently.
+    A user/developer may update the ``referenceFissionProducts.dat`` data file to exclude
+    these important nuclides from the lumped fission product models if need be, but this
+    would also require updating the ``burn-chain.yaml`` file as well as updating the
+    ``nuclideFlags`` specification within the reactor blueprints input.
+
+A further simplified option for lumped fission product treatment that is available is to
+treat all fission products explicitly as ``Mo-99``. This is not guaranteed to be an accurate
+treatment of the fission products from a reactivity/depletion perspective, but it is 
+available for quick scoping evaluations and model building.
+
+Finally, the explicit fission product modeling aims to include as many nuclides on the 
+blocks/components as the user wishes to consider, but the nuclides that are modeled
+must be compatible with the plugins that are implemented for the application. When using this 
+option, the user should look to set the ``fpModelLibrary`` setting. 
+
+    - If this setting is not set, then it is expected that the user will need to manually add 
+      all nuclides to the ``nuclideFlags`` section of the reactor core blueprints. 
+
+    - If the ``fpModelLibrary`` is selected then this will automatically add to the 
+      ``nuclideFlags`` input using :py:func:`isotopicOptions.autoUpdateNuclideFlags` 
+      and this class will initialize all added nuclides to have zero number densities.
+
+.. warning::
+
+    The explicit fission product model is being implemented with the vision of using
+    generating multi-group cross sections for nuclides that are added with the
+    ``fpModelLibrary`` setting with follow-on depletion calculations that will be managed by
+    a detailed depletion solver, like ORIGEN. There are many caveats to how this model
+    is initialized and may not be an out-of-the-box general solution.
 """
 
 from armi import runLog
@@ -64,13 +121,20 @@ class FissionProductModel(interfaces.Interface):
 
     def __init__(self, r, cs):
         interfaces.Interface.__init__(self, r, cs)
-        self._globalLFPs = None
         self._globalLFPs = lumpedFissionProduct.lumpedFissionProductFactory(self.cs)
-        self.fissionProductNames = []
+        # Boolean that tracks if `setAllBlockLFPs` was called previously.
+        self._initialized = False
+
+    @property
+    def _explicitFissionProducts(self):
+        return self.cs["fpModel"] == "explicitFissionProducts"
 
     @property
     def _useGlobalLFPs(self):
-        return False if self.cs["makeAllBlockLFPsIndependent"] else True
+        if self.cs["makeAllBlockLFPsIndependent"] or self._explicitFissionProducts:
+            return False
+        else:
+            return True
 
     @property
     def _fissionProductBlockType(self):
@@ -84,65 +148,48 @@ class FissionProductModel(interfaces.Interface):
         products be consistent across all blocks, even if fission products are
         not generated when the block is depleted.
         """
-        blockType = None if self.getInterface("mcnp") is not None else Flags.FUEL
-        return blockType
+        return None if self.getInterface("mcnp") is not None else Flags.FUEL
 
     def interactBOL(self):
         interfaces.Interface.interactBOL(self)
         self.setAllBlockLFPs()
 
-    def setAllBlockLFPs(self, blockType=None, setMaterialsLFP=False):
+    def setAllBlockLFPs(self):
         """
-        Set ALL the block _lumpedFissionProduct attributes
-
-        Can set them to global or turns on independent block-level LFPs if
-        requested
-
-        sets block._lumpedFissionProducts to something other than the global.
-
-        Parameters
-        ----------
-        blockType : Flags, optional
-            this is the type of block that the global lumped fission product is
-            being applied to. If this is not provided it will get the default
-            behavior from ``self._fissionProductBlockType``.
-
-        setMaterialsLFP : bool, optional
-            this is a flag to tell the method whether or not to try to apply
-            the global lumped fission product to the component and thereby
-            material -- this is only compatable with
-            LumpedFissionProductCompatableMaterial
-
-        Examples
-        --------
-        self.setAllBlockLFPs(blockType='fuel')
-        will apply the global lumped fission product or independent LFPs to only
-        fuel type blocks
+        Sets all the block lumped fission products attributes and adds fission products
+        to each block if `self._explicitFissionProducts` is set to True.
 
         See Also
         --------
-        armi.materials.lumpedFissionProductCompatableMaterial.LumpedFissionProductCompatableMaterial
         armi.reactor.components.Component.setLumpedFissionProducts
-        armi.physics.neutronics.fissionProductModel.fissionProductModel.FissionProductModel.setAllBlockLFPs
         """
-        blockType = blockType or self._fissionProductBlockType
-        for b in self.r.core.getBlocks(blockType, includeAll=True):
+        for b in self.r.core.getBlocks(self._fissionProductBlockType, includeAll=True):
+
             if self._useGlobalLFPs:
                 b.setLumpedFissionProducts(self.getGlobalLumpedFissionProducts())
             else:
-                independentLFPs = self.getGlobalLumpedFissionProducts().duplicate()
-                b.setLumpedFissionProducts(independentLFPs)
+                lfps = self.getGlobalLumpedFissionProducts()
 
-        # use two loops to pass setting the material LFPs
-        if setMaterialsLFP:
-            for b in self.r.core.getBlocks(blockType, includeAll=True):
-                if self._useGlobalLFPs:
-                    b.setChildrenLumpedFissionProducts(
-                        self.getGlobalLumpedFissionProducts()
-                    )
+                # There will be no lumped fission products when explicitFissionProducts
+                # are modeled.
+                if lfps is None:
+                    b.setLumpedFissionProducts(None)
+                    if not self._initialized:
+                        targetComponent = b.getComponent(self._fissionProductBlockType)
+                        if not targetComponent:
+                            continue
+                        ndens = targetComponent.getNumberDensities()
+                        updatedNDens = {}
+                        for nuc in self.r.blueprints.allNuclidesInProblem:
+                            if nuc in ndens:
+                                continue
+                            updatedNDens[nuc] = 0.0
+                        targetComponent.updateNumberDensities(updatedNDens)
                 else:
-                    independentLFPs = self.getGlobalLumpedFissionProducts().duplicate()
-                    b.setChildrenLumpedFissionProducts(independentLFPs)
+                    independentLFPs = lfps.duplicate()
+                    b.setLumpedFissionProducts(independentLFPs)
+
+        self._initialized = True
 
     def getGlobalLumpedFissionProducts(self):
         r"""
@@ -174,23 +221,19 @@ class FissionProductModel(interfaces.Interface):
         """
         self.setAllBlockLFPs()
 
-    def interactEveryNode(self, _cycle, _node):
-        self.updateFissionGasRemovalFractions()
-
     def interactDistributeState(self):
         self.setAllBlockLFPs()
 
-    def _getAllFissionProductNames(self):
+    def getAllFissionProductNames(self):
         """
-         Find all fission product names in the problem
+        Find all fission product names from the lumped fission product collection.
 
-         Considers all LFP collections, whether they be global,
-         block-level, or a mix of these.
-
-        sets fissionProductNames, a list of nuclide names of all the
-        fission products
+        Notes
+        -----
+        This considers all LFP collections, whether they are global, block-level,
+        or a mix of these.
         """
-        runLog.debug("  Gathering all possible FPs")
+        runLog.debug("Gathering all possible fission products that are modeled.")
         fissionProductNames = []
         lfpCollections = []
         # get all possible lfp collections (global + block-level)
@@ -205,60 +248,15 @@ class FissionProductModel(interfaces.Interface):
                 if fpName not in fissionProductNames:
                     fissionProductNames.append(fpName)
 
-        self.fissionProductNames = fissionProductNames
+        return fissionProductNames
 
-    def _cacheLFPDensities(self, blockList):
-        # pass 2: Cache all LFP densities for all blocks (so they aren't read
-        # for each FP)
-        runLog.debug("  Caching LFP densities of all blocks")
-        lfpDensities = {}
-        for b in blockList:
-            for lfpName in self._globalLFPs:
-                lfpDensities[lfpName, b.getName()] = b.getNumberDensity(lfpName)
-        return lfpDensities
-
-    def updateFissionGasRemovalFractions(self):
+    def removeFissionGasesFromBlocks(self):
         """
-        Synchronize fission gas removal fractions of all LFP objects with the reactor state.
-
-        The block parameter ``fgRemoval`` is adjusted by fuel performance
-        modules and is applied here.
-
-        If the ``makeAllBlockLFPsIndependent`` setting is not activated
-        (default), the global lump gets the flux-weighted average of all blocks.
-        Otherwise, each block gets its own fission gas release fraction applied
-        to its individual LFPs. For MCNP restart cases, it is recommended to
-        activate the ``makeAllBlockLFPsIndependent`` setting.
+        Return False to indicate that no fission products are being removed.
 
         Notes
         -----
-        The CrossSectionGroupManager does this for each XSG individually for
-        lattice physics, but it's important to keep these up to date as well for
-        anything else that may be interested in fission product information
-        (e.g. MCNP).
-
-        See Also
-        --------
-        armi.physics.neutronics.crossSectionGroupManager.AverageBlockCollection.getRepresentativeBlock
-
+        This should be implemented on an application-specific model.
         """
-        runLog.extra("Updating lumped fission product gas removal fractions")
-        avgGasReleased = 0.0
-        totalWeight = 0.0
-        for block in self.r.core.getBlocks(Flags.FUEL):
-            if self._useGlobalLFPs:
-                # add to average for globals
-                weight = block.getVolume() * (block.p.flux or 1.0)
-                avgGasReleased += block.p.gasReleaseFraction * weight
-                totalWeight += weight
-            else:
-                # set individually
-                block.getLumpedFissionProductCollection().setGasRemovedFrac(
-                    block.p.gasReleaseFraction
-                )
-
-        # adjust global lumps if they exist.
-        if avgGasReleased:
-            self.getGlobalLumpedFissionProducts().setGasRemovedFrac(
-                avgGasReleased / totalWeight
-            )
+        runLog.warning(f"Fission gas removal is not implemented in {self}")
+        return False

@@ -18,6 +18,7 @@ What's new in ARMI
 #. Fix numerical diffusion bug in uniform mesh converter that affects number densities and cumulative parameters like DPA. (`PR#992 <https://github.com/terrapower/armi/pull/992>`_)
 #. A more complete set of nuclides has been added to the framework to decouple the optional loading of RIPL-3 data and to embed 4614 nuclides into the standard loading process for the framework. This allows for further extensibility of framework to support end-users. (`PR#998 <https://github.com/terrapower/armi/pull/998>`_)
 #. Add block parameter, fuelCladLocked, to track whether or not the fuel and clad are locked. (`PR#1038 <https://github.com/terrapower/armi/pull/1038>`_)
+#. An explicit fission product modeling option was added in `PR#1022 <https://github.com/terrapower/armi/pull/1022>`_.
 
 Bug fixes
 ---------
@@ -27,6 +28,8 @@ Bug fixes
 #. Fixed a bug where snapshot load would not respect the new cs["power"] setting.
 #. Froze the NumPy version to be <= 1.23.5 (`PR#1035 https://github.com/terrapower/armi/pull/1035`) to continue to support numpy jagged arrays within the Database interface.
 #. Fixed a bug where the material namespace order for test_axialExpansionChanger.py was persisting beyond the tests. (`PR#1046 https://github.com/terrapower/armi/pull/1046`)
+#. A bug was fixed in `PR#1022 <https://github.com/terrapower/armi/pull/1022>`_ where the gaseous fission products were not being removed from the core directly, but instead the fission yields within the lumped fission products were being adjusted.
+
 
 ARMI v0.2.5
 ===========
