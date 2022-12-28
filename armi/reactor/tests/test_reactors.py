@@ -894,7 +894,6 @@ class HexReactorTests(ReactorTests):
         nonEqualParameters = ["heightBOL", "molesHmBOL", "massHmBOL"]
         equalParameters = ["smearDensity", "nHMAtBOL", "enrichmentBOL"]
 
-        print("loading cold")
         _o, coldHeightR = loadTestReactor(
             self.directoryChanger.destination,
             customSettings={"inputHeightsConsideredHot": False},
@@ -907,10 +906,8 @@ class HexReactorTests(ReactorTests):
 
         coldHeightAssems = coldHeightR.core.getAssemblies()
         for a, coldHeightA in zip(originalAssems, coldHeightAssems):
-            print(a, coldHeightA)
             if not a.hasFlags(Flags.CONTROL):
                 for b, coldHeightB in zip(a[1:], coldHeightA[1:]):
-                    print(b, coldHeightB)
                     for param in nonEqualParameters:
                         p, coldHeightP = b.p[param], coldHeightB.p[param]
                         if p and coldHeightP:
