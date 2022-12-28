@@ -136,7 +136,9 @@ of downstream tests that import this method. Probably still worth it though.
 
 
 def loadTestReactor(
-    inputFilePath=TEST_ROOT, customSettings=None, inputFileName="armiRun.yaml"
+    inputFilePath=TEST_ROOT,
+    customSettings=None,
+    inputFileName="armiRun.yaml",
 ):
     r"""
     Loads a test reactor. Can be used in other test modules.
