@@ -830,6 +830,7 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
         o, r = loadTestReactor(
             os.path.join(TEST_ROOT, "detailedAxialExpansion"),
             customSettings={"inputHeightsConsideredHot": True},
+            setGlobalCs=False,
         )
         reduceTestReactorRings(r, o.cs, 3)
 
@@ -838,6 +839,7 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
         oCold, rCold = loadTestReactor(
             os.path.join(TEST_ROOT, "detailedAxialExpansion"),
             customSettings={"inputHeightsConsideredHot": False},
+            setGlobalCs=False,
         )
         reduceTestReactorRings(rCold, oCold.cs, 3)
 

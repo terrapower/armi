@@ -136,7 +136,10 @@ of downstream tests that import this method. Probably still worth it though.
 
 
 def loadTestReactor(
-    inputFilePath=TEST_ROOT, customSettings=None, inputFileName="armiRun.yaml"
+    inputFilePath=TEST_ROOT,
+    customSettings=None,
+    inputFileName="armiRun.yaml",
+    setGlobalCs=True,
 ):
     r"""
     Loads a test reactor. Can be used in other test modules.
@@ -171,7 +174,8 @@ def loadTestReactor(
         # return test reactor only if no custom settings are needed.
         o, r, assemNum = cPickle.loads(TEST_REACTOR)
         assemblies.setAssemNumCounter(assemNum)
-        settings.setMasterCs(o.cs)
+        if setGlobalCs:
+            settings.setMasterCs(o.cs)
         o.reattach(r, o.cs)
         return o, r
 
@@ -186,7 +190,8 @@ def loadTestReactor(
 
     newSettings = {}
     cs = cs.modified(newSettings=newSettings)
-    settings.setMasterCs(cs)
+    if setGlobalCs:
+        settings.setMasterCs(cs)
 
     o = operators.factory(cs)
     r = reactors.loadFromCs(cs)
