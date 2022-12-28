@@ -139,7 +139,6 @@ def loadTestReactor(
     inputFilePath=TEST_ROOT,
     customSettings=None,
     inputFileName="armiRun.yaml",
-    setGlobalCs=True,
 ):
     r"""
     Loads a test reactor. Can be used in other test modules.
@@ -174,8 +173,7 @@ def loadTestReactor(
         # return test reactor only if no custom settings are needed.
         o, r, assemNum = cPickle.loads(TEST_REACTOR)
         assemblies.setAssemNumCounter(assemNum)
-        if setGlobalCs:
-            settings.setMasterCs(o.cs)
+        settings.setMasterCs(o.cs)
         o.reattach(r, o.cs)
         return o, r
 
@@ -190,8 +188,7 @@ def loadTestReactor(
 
     newSettings = {}
     cs = cs.modified(newSettings=newSettings)
-    if setGlobalCs:
-        settings.setMasterCs(cs)
+    settings.setMasterCs(cs)
 
     o = operators.factory(cs)
     r = reactors.loadFromCs(cs)
