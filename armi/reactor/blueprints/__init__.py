@@ -91,6 +91,8 @@ from armi.reactor import geometry
 from armi.reactor import systemLayoutInput
 from armi.scripts import migration
 from armi.utils import textProcessors
+from armi.physics.neutronics.fissionProductModel import lumpedFissionProduct
+from armi.nucDirectory import elements
 
 # NOTE: using non-ARMI-standard imports because these are all a part of this package,
 # and using the module imports would make the attribute definitions extremely long
@@ -364,6 +366,8 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
         if self.nuclideFlags is None:
             self.nuclideFlags = isotopicOptions.genDefaultNucFlags()
 
+        isotopicOptions.autoUpdateNuclideFlags(cs, self.nuclideFlags)
+
         self.elementsToExpand = []
         for nucFlag in self.nuclideFlags:
             # this returns any nuclides that are flagged specifically for expansion by input
@@ -454,7 +458,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
         )
 
         # Inform user which nuclides are truncating the burn chain.
-        if undefBurnChainActiveNuclides:
+        if undefBurnChainActiveNuclides and nuclideBases.burnChainImposed:
             runLog.info(
                 tabulate.tabulate(
                     [

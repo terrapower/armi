@@ -423,8 +423,7 @@ class Material(composites.Composite):
             )
             return None
         f = (1.0 + dLL / 100.0) ** 3
-        dRhoOverRho = (1.0 - f) / f
-        return refD * (dRhoOverRho + 1)
+        return refD / f
 
     def density3KgM3(self, Tk: float = None, Tc: float = None) -> float:
         """Return density that preserves mass when thermally expanded in 3D in units of kg/m^3.

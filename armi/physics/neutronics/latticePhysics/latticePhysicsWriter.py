@@ -108,6 +108,7 @@ class LatticePhysicsWriter(interfaces.InputWriter):
         self.modelFissionProducts = (
             blockNeedsFPs and self.cs["fpModel"] != "noFissionProducts"
         )
+        self.explicitFissionProducts = self.cs["fpModel"] == "explicitFissionProducts"
         self.diluteFissionProducts = (
             blockNeedsFPs and self.cs["fpModel"] == "infinitelyDilute"
         )
@@ -214,11 +215,18 @@ class LatticePhysicsWriter(interfaces.InputWriter):
         )
         objNuclides = subjectObject.getNuclides()
 
-        numDensities = subjectObject.getNuclideNumberDensities(
-            self.r.blueprints.allNuclidesInProblem
+        # If the explicit fission product model is enabled then the number densities
+        # on the components will already contain all the nuclides required to be
+        # modeled by the lattice physics writer. Otherwise, assume that `allNuclidesInProblem`
+        # should be modeled.
+        nuclides = (
+            sorted(objNuclides)
+            if self.explicitFissionProducts
+            else self.r.blueprints.allNuclidesInProblem
         )
+        numDensities = subjectObject.getNuclideNumberDensities(nuclides)
 
-        for nucName, dens in zip(self.r.blueprints.allNuclidesInProblem, numDensities):
+        for nucName, dens in zip(nuclides, numDensities):
             nuc = nuclideBases.byName[nucName]
             if isinstance(nuc, nuclideBases.LumpNuclideBase):
                 continue  # skip LFPs here but add individual FPs below.
@@ -355,15 +363,12 @@ class LatticePhysicsWriter(interfaces.InputWriter):
             return dfpDensities
         lfpCollection = self.block.getLumpedFissionProductCollection()
         if self.diluteFissionProducts:
-            # set all densities to near zero.
-            try:
-                _, dfp = list(lfpCollection.items())[0]
-            except IndexError:
-                raise IndexError(
+            if lfpCollection is None:
+                raise ValueError(
                     "Lumped fission products are not initialized. Did interactAll BOL run?"
                 )
-
-            for individualFpBase in dfp.keys():
+            dfps = lfpCollection.getAllFissionProductNuclideBases()
+            for individualFpBase in dfps:
                 dfpDensities[individualFpBase] = self.minimumNuclideDensity
         else:
             # expand densities and sum
@@ -371,7 +376,7 @@ class LatticePhysicsWriter(interfaces.InputWriter):
             # now, go through the list and make sure that there aren't any values less than the
             # minimumNuclideDensity; we need to keep trace amounts of nuclides in the problem
             for fpName, fpDens in dfpDensitiesByName.items():
-                fp = nuclideBases.fromName(fpName)
+                fp = nuclideBases.byName[fpName]
                 dfpDensities[fp] = max(fpDens, self.minimumNuclideDensity)
         return dfpDensities
 

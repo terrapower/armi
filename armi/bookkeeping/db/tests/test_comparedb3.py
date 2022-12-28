@@ -20,6 +20,7 @@ import h5py
 import numpy as np
 
 from armi.bookkeeping.db.compareDB3 import (
+    _compareSets,
     _compareAuxData,
     _diffSimpleData,
     _diffSpecialData,
@@ -50,6 +51,16 @@ class TestCompareDB3(unittest.TestCase):
 
         txt = open(fileName, "r").read()
         self.assertIn("Rubber", txt)
+
+    def test_compareSets(self):
+        shorter = set({1, 2, 3})
+        longer = set({1, 2, 3, 4})
+        fileName = "fakeOutWriter.txt"
+        with OutputWriter(fileName) as out:
+            nDiffs = _compareSets(shorter, longer, out, name="number")
+            self.assertEqual(nDiffs, 1)
+            nDiffs = _compareSets(longer, shorter, out, name="number")
+            self.assertEqual(nDiffs, 1)
 
     def test_diffResultsBasic(self):
         # init an instance of the class
@@ -123,38 +134,34 @@ class TestCompareDB3(unittest.TestCase):
 
         # create two DBs, identical but for file names
         dbs = []
-        for nCycles in range(1, 3):
+        for lenCycle in range(1, 3):
             # build some test data
-            days = 100 * nCycles
-            cycles = [
-                {"step days": [days, days], "power fractions": [1, 0.5]}
-            ] * nCycles
+            days = 100
             cs = o.cs.modified(
                 newSettings={
-                    "nCycles": nCycles,
-                    "cycles": cycles,
+                    "cycles": [
+                        {"step days": [days, days], "power fractions": [1, 0.5]}
+                    ],
                     "reloadDBName": "something_fake.h5",
                 }
             )
 
             # create the tests DB
             dbi = DatabaseInterface(r, cs)
-            dbi.initDB(fName=self._testMethodName + str(nCycles) + ".h5")
+            dbi.initDB(fName=self._testMethodName + str(lenCycle) + ".h5")
             db = dbi.database
 
             # populate the db with something
-            for cycle, node in (
-                (cycle, node) for cycle in range(nCycles + 1) for node in range(2)
-            ):
-                r.p.cycle = cycle
+            r.p.cycle = 0
+            for node in range(2):
                 r.p.timeNode = node
-                r.p.cycleLength = days * 2
+                r.p.cycleLength = days * lenCycle
                 db.writeToDB(r)
 
             # validate the file exists, and force it to be readable again
             b = h5py.File(db._fullPath, "r")
             dbKeys = sorted(b.keys())
-            self.assertEqual(len(dbKeys), 2 * (nCycles + 1) + 1)
+            self.assertEqual(len(dbKeys), 3)
             self.assertIn("inputs", dbKeys)
             self.assertIn("c00n00", dbKeys)
             self.assertEqual(
@@ -168,6 +175,7 @@ class TestCompareDB3(unittest.TestCase):
         # end-to-end validation that comparing a photocopy database works
         diffs = compareDatabases(dbs[0]._fullPath, dbs[1]._fullPath)
         self.assertEqual(len(diffs.diffs), 456)
+        # Cycle length is only diff (x3)
         self.assertEqual(diffs.nDiffs(), 3)
 
     def test_diffSpecialData(self):

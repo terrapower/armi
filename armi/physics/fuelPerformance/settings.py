@@ -23,6 +23,7 @@ CONF_BOND_REMOVAL = "bondRemoval"
 CONF_CLADDING_STRAIN = "claddingStrain"
 CONF_CLADDING_WASTAGE = "claddingWastage"
 CONF_FGR_REMOVAL = "fgRemoval"
+CONF_FGYF = "fissionGasYieldFraction"
 CONF_FUEL_PERFORMANCE_ENGINE = "fuelPerformanceEngine"
 
 
@@ -38,6 +39,12 @@ def defineSettings():
                 " axial growth, wastage, and cladding strain."
             ),
             options=[""],
+        ),
+        setting.Setting(
+            CONF_FGYF,
+            default=0.25,
+            label="Fission Gas Yield Fraction",
+            description="The fraction of gaseous atoms produced per fission event, assuming a fission product yield of 2.0",
         ),
         setting.Setting(
             CONF_AXIAL_EXPANSION,
