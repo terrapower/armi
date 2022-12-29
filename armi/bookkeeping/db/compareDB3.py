@@ -289,17 +289,14 @@ def _compareSets(
     src: set, ref: set, out: OutputWriter, name: Optional[str] = None
 ) -> int:
     nDiffs = 0
+    printName = "" if name is None else name + " "
     if ref - src:
         nDiffs += len(ref - src)
-        out.writeln(
-            "ref has {}not in src: {}".format(name + " " or "", list(ref - src))
-        )
+        out.writeln("ref has {}not in src: {}".format(printName, list(ref - src)))
 
     if src - ref:
-        nDiffs += len(ref - src)
-        out.writeln(
-            "src has {}not in ref: {}".format(name + " " or "", list(src - ref))
-        )
+        nDiffs += len(src - ref)
+        out.writeln("src has {}not in ref: {}".format(printName, list(src - ref)))
 
     return nDiffs
 
@@ -493,8 +490,10 @@ def _compareComponentData(
 
         if srcSpecial ^ refSpecial:
             out.writeln(
-                "Could not compare data because one uses special formatting, "
-                "and the other does not. Ref: {} Src: {}".format(refSpecial, srcSpecial)
+                "Could not compare data for parameter {} because one uses special "
+                "formatting, and the other does not. Ref: {} Src: {}".format(
+                    paramName, refSpecial, srcSpecial
+                )
             )
             diffResults.addDiff(
                 refGroup.name, paramName, numpy.inf, numpy.inf, numpy.inf

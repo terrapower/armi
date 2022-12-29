@@ -14,7 +14,7 @@
 
 """Tests for operators"""
 
-# pylint: disable=abstract-method,protected-access,unused-argument
+# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-method-argument,import-outside-toplevel
 import unittest
 
 from armi import settings

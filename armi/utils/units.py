@@ -43,7 +43,11 @@ SECONDS_PER_DAY = HOURS_PER_DAY * SECONDS_PER_HOUR
 DAYS_PER_YEAR = 365.24219  # mean tropical year
 SECONDS_PER_YEAR = 31556926.0
 GAS_CONSTANT = 8.3144621  # J/mol-K
+
+# Cut-off is taken to be any element/nuclide with an atomic number
+# that is greater than Actinium (i.e., the first classified Actinide).
 HEAVY_METAL_CUTOFF_Z = 89
+
 MICRONS_PER_METER = 1.0e6
 CM2_PER_M2 = 1.0e4
 CM3_PER_M3 = 1.0e6
