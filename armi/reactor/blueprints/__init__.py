@@ -89,7 +89,6 @@ from armi.nucDirectory import nuclideBases
 from armi.reactor import assemblies
 from armi.reactor import geometry
 from armi.reactor import systemLayoutInput
-from armi.reactor.flags import Flags
 from armi.scripts import migration
 
 from armi.utils import textProcessors
