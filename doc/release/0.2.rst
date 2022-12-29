@@ -19,6 +19,7 @@ What's new in ARMI
 #. A more complete set of nuclides has been added to the framework to decouple the optional loading of RIPL-3 data and to embed 4614 nuclides into the standard loading process for the framework. This allows for further extensibility of framework to support end-users. (`PR#998 <https://github.com/terrapower/armi/pull/998>`_)
 #. Add block parameter, fuelCladLocked, to track whether or not the fuel and clad are locked. (`PR#1038 <https://github.com/terrapower/armi/pull/1038>`_)
 #. An explicit fission product modeling option was added in `PR#1022 <https://github.com/terrapower/armi/pull/1022>`_.
+#. Cleanup of unnecessary and confusing functionality in axialExpansionChanger.py. (`PR#1032 <https://github.com/terrapower/armi/pull/1032>`_)
 
 Bug fixes
 ---------
