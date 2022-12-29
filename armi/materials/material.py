@@ -490,8 +490,6 @@ class Material(composites.Composite):
     def getMassFrac(
         self,
         nucName=None,
-        elementSymbol=None,
-        nucList=None,
         normalized=True,
         expandFissionProducts=False,
     ):
@@ -502,12 +500,6 @@ class Material(composites.Composite):
         ----------
         nucName : str, optional
             Nuclide name to return ('ZR','PU239',etc.)
-
-        elementSymbol :str, optional
-             Return mass fractions of all isotopes of this element (example: 'Pu', 'U')
-
-        nucList : optional, list
-            List of nuclides to sum up and return the total
 
         normalized : bool, optional
             Return the mass fraction such that the sum of all nuclides is sum to 1.0. Default True
