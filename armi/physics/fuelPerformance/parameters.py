@@ -36,19 +36,35 @@ def _getFuelPerformanceBlockParams():
             " thermal and/or burn-up expansion of the fuel and cladding materials.",
         )
 
+        def gasReleaseFraction(self, value):
+            if value < 0.0 or value > 1.0:
+                raise ValueError(
+                    f"Cannot set a gas release fraction "
+                    f"of {value} outside of the bounds of [0.0, 1.0]"
+                )
+            self._p_gasReleaseFraction = value
+
         pb.defParam(
             "gasReleaseFraction",
+            setter=gasReleaseFraction,
             units="fraction",
-            description="Fraction of generated fission gas that no longer exists in the block."
-            " Should be between 0 and 1, inclusive.",
+            description="Fraction of generated fission gas that no longer exists in the block.",
             categories=["eq cumulative shift"],
         )
 
+        def bondRemoved(self, value):
+            if value < 0.0 or value > 1.0:
+                raise ValueError(
+                    f"Cannot set a bond removed "
+                    f"of {value} outside of the bounds of [0.0, 1.0]"
+                )
+            self._p_bondRemoved = value
+
         pb.defParam(
             "bondRemoved",
+            setter=bondRemoved,
             units="fraction",
-            description="Fraction of thermal bond between fuel and clad that has been pushed out. "
-            "Should be between 0 and 1, inclusive.",
+            description="Fraction of thermal bond between fuel and clad that has been pushed out.",
             categories=["eq cumulative shift"],
         )
 

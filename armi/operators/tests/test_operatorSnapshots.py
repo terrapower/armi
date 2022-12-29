@@ -20,6 +20,7 @@ from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.operators.snapshots import OperatorSnapshots
 from armi.reactor.tests import test_reactors
 from armi.settings.fwSettings.databaseSettings import CONF_FORCE_DB_PARAMS
+from armi.operators.runTypes import RunTypes
 
 
 class TestOperatorSnapshots(unittest.TestCase):
@@ -43,13 +44,18 @@ class TestOperatorSnapshots(unittest.TestCase):
     def test_atEOL(self):
         self.assertFalse(self.o.atEOL)
 
+    def test_setStateToDefault(self):
+        cs0 = self.o.cs.modified(newSettings={"runType": RunTypes.SNAPSHOTS})
+        self.assertEqual(cs0["runType"], RunTypes.SNAPSHOTS)
+        cs = self.o.setStateToDefault(cs0)
+        self.assertEqual(cs["runType"], RunTypes.STANDARD)
+
     def test_mainOperate(self):
-        # Mock some unimportant tooling
+        # Mock some tooling that we aren't testing
         self.o.interactBOL = lambda: None
         self.o.getInterface = (
             lambda s: self.dbi if s == "database" else super().getInterface(s)
         )
-        self.o.interactAllBOC = lambda c: True
 
         self.assertEqual(self.r.core.p.power, 0.0)
         self.o._mainOperate()

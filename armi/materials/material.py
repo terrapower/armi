@@ -30,17 +30,18 @@ from scipy.optimize import fsolve
 import numpy
 
 from armi import runLog
+from armi.materials import materialParameters
 from armi.nucDirectory import nuclideBases
 from armi.reactor import composites
-from armi.materials import materialParameters
-from armi.utils.units import getTk, getTc
+from armi.reactor.flags import TypeSpec
 from armi.utils import densityTools
+from armi.utils.units import getTk, getTc
 
 # globals
 FAIL_ON_RANGE = False
 
 
-class Material(composites.Leaf):
+class Material(composites.Composite):
     """
     A material is made up of elements or isotopes. It has bulk properties like mass density.
     """
@@ -72,7 +73,7 @@ class Material(composites.Leaf):
     with information about thermal scattering."""
 
     def __init__(self):
-        composites.Leaf.__init__(self, self.__class__.name)
+        composites.Composite.__init__(self, self.__class__.name)
         self.p.massFrac = {}
 
         # track sum of massFrac (which are modified and won't always sum to 1.0!)
@@ -89,6 +90,16 @@ class Material(composites.Leaf):
 
     def __repr__(self):
         return "<Material: {0}>".format(self.getName())
+
+    def getChildren(
+        self, deep=False, generationNum=1, includeMaterials=False, predicate=None
+    ):
+        """Return empty list, representing that this object has no children."""
+        return []
+
+    def getChildrenWithFlags(self, typeSpec: TypeSpec, exactMatch=True):
+        """Return empty list, representing that this object has no children."""
+        return []
 
     def duplicate(self):
         r"""copy without needing a deepcopy."""
@@ -412,8 +423,7 @@ class Material(composites.Leaf):
             )
             return None
         f = (1.0 + dLL / 100.0) ** 3
-        dRhoOverRho = (1.0 - f) / f
-        return refD * (dRhoOverRho + 1)
+        return refD / f
 
     def density3KgM3(self, Tk: float = None, Tc: float = None) -> float:
         """Return density that preserves mass when thermally expanded in 3D in units of kg/m^3.
@@ -480,8 +490,6 @@ class Material(composites.Leaf):
     def getMassFrac(
         self,
         nucName=None,
-        elementSymbol=None,
-        nucList=None,
         normalized=True,
         expandFissionProducts=False,
     ):
@@ -492,12 +500,6 @@ class Material(composites.Leaf):
         ----------
         nucName : str, optional
             Nuclide name to return ('ZR','PU239',etc.)
-
-        elementSymbol :str, optional
-             Return mass fractions of all isotopes of this element (example: 'Pu', 'U')
-
-        nucList : optional, list
-            List of nuclides to sum up and return the total
 
         normalized : bool, optional
             Return the mass fraction such that the sum of all nuclides is sum to 1.0. Default True
