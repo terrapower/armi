@@ -104,7 +104,7 @@ from armi.reactor.blueprints.componentBlueprint import ComponentKeyedList
 from armi.reactor.blueprints.componentBlueprint import ComponentGroups
 from armi.reactor.blueprints import isotopicOptions
 from armi.reactor.blueprints.gridBlueprint import Grids, Triplet
-from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
+from armi.reactor.converters import axialExpansionChanger
 
 context.BLUEPRINTS_IMPORTED = True
 context.BLUEPRINTS_IMPORT_CONTEXT = "".join(traceback.format_stack())
@@ -327,76 +327,26 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
             runLog.header("=========== Verifying Assembly Configurations ===========")
             self._checkAssemblyAreaConsistency(cs)
 
-            # if assemblies are defined in blueprints, handle meshing
-            # assume finest mesh is reference
-            assemsByNumBlocks = sorted(
-                self.assemblies.values(),
-                key=lambda a: len(a),
-                reverse=True,
-            )
-            referenceAssembly = assemsByNumBlocks[0] if assemsByNumBlocks else None
-
             if not cs["detailedAxialExpansion"]:
-                # make the snap lists so assems know how to expand
-                nonUniformAssems = [
-                    Flags.fromStringIgnoreErrors(t) for t in cs["nonUniformAssemFlags"]
-                ]
-                # prepare core for mesh snapping during axial expansion
-                for a in self.assemblies.values():
-                    if any(a.hasFlags(f) for f in nonUniformAssems):
-                        continue
-                    a.makeAxialSnapList(referenceAssembly)
+                axialExpansionChanger.makeAssemsAbleToSnapToUniformMesh(
+                    self.assemblies.values(), cs["nonUniformAssemFlags"]
+                )
             if not cs["inputHeightsConsideredHot"]:
-                # expand axial heights from cold to hot
-                self._coldDimsToHot(referenceAssembly, cs["detailedAxialExpansion"])
+                runLog.header(
+                    "=========== Axially expanding all assemblies (except control) from Tinput to Thot ==========="
+                )
+                # expand axial heights from cold to hot so dims and masses are consistent
+                # with specified component hot temperatures.
+                axialExpansionChanger.expandColdDimsToHot(
+                    self.assemblies.values(), cs["detailedAxialExpansion"]
+                )
 
-        # pylint: disable=no-member
-        getPluginManagerOrFail().hook.afterConstructionOfAssemblies(
-            assemblies=self.assemblies.values(), cs=cs
-        )
+            # pylint: disable=no-member
+            getPluginManagerOrFail().hook.afterConstructionOfAssemblies(
+                assemblies=self.assemblies.values(), cs=cs
+            )
 
         self._prepped = True
-
-    def _coldDimsToHot(
-        self,
-        referenceAssembly,
-        isDetailedAxialExpansion,
-    ):
-        """
-        Expand BOL assemblies, resolve disjoint axial mesh (if needed), and update block BOL heights
-
-        Parameters
-        ----------
-        assems: list
-            list of :py:class:`Assembly <armi.reactor.assemblies.Assembly>` objects to be thermally expanded
-        """
-        runLog.header(
-            "=========== Axially expanding all assemblies (except control) from Tinput to Thot ==========="
-        )
-        assems = list(self.assemblies.values())
-
-        axialExpChanger = AxialExpansionChanger(isDetailedAxialExpansion)
-        for a in assems:
-            if not a.hasFlags(Flags.CONTROL):
-                axialExpChanger.setAssembly(a)
-                # this doesn't get applied to control assems, so CR will be interpreted
-                # as hot. This should be conservative because the control rods will
-                # be modeled as slightly shorter with the correct hot density. Density
-                # is more important than height, so we are forcing density to be correct
-                # since we can't do axial expansion (yet)
-                axialExpChanger.applyColdHeightMassIncrease()
-                axialExpChanger.expansionData.computeThermalExpansionFactors()
-                axialExpChanger.axiallyExpandAssembly(thermal=True)
-        if not isDetailedAxialExpansion:
-            for a in assems:
-                if not a.hasFlags(Flags.CONTROL):
-                    a.setBlockMesh(referenceAssembly.getAxialMesh())
-        # update block BOL heights to reflect hot heights
-        for a in assems:
-            if not a.hasFlags(Flags.CONTROL):
-                for b in a:
-                    b.p.heightBOL = b.getHeight()
-                    b.completeInitialLoading()
 
     def _assignTypeNums(self):
         if self.blockDesigns is None:
