@@ -64,6 +64,11 @@ def expandColdDimsToHot(assems, isDetailedAxialExpansion, referenceAssembly=None
     ----------
     assems: list
         list of :py:class:`Assembly <armi.reactor.assemblies.Assembly>` objects to be thermally expanded
+    isDetailedAxialExpansion: bool
+        If true assemblies will be forced to conform to the reference mesh after expansion
+    referenceAssembly: assembly, optional
+        Assembly whose mesh other meshes wil conform to if isDetailedAxialExpansion is true.
+        If not provided, will assume the finest mesh assembly which is typically fuel.
     """
     assems = list(assems)
     if not referenceAssembly:
