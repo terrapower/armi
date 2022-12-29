@@ -2239,52 +2239,17 @@ class Core(composites.Composite):
                 "Please make sure that this is intended and not a input error."
             )
 
-        nonUniformAssems = [
-            Flags.fromStringIgnoreErrors(t) for t in cs["nonUniformAssemFlags"]
-        ]
         if dbLoad:
             # reactor.blueprints.assemblies need to be populated
             # this normally happens during armi/reactor/blueprints/__init__.py::constructAssem
             # but for DB load, this is not called so it must be here.
             # pylint: disable=protected-access
             self.parent.blueprints._prepConstruction(cs)
-            if not cs["detailedAxialExpansion"]:
-                # Apply mesh snapping for self.parent.blueprints.assemblies
-                # This is stored as a param for assemblies in-core, so only blueprints assemblies are
-                # considered here. To guarantee mesh snapping will function, makeAxialSnapList
-                # should be in reference to the assembly with the finest mesh as defined in the blueprints.
-                finestMeshAssembly = sorted(
-                    self.parent.blueprints.assemblies.values(),
-                    key=lambda a: len(a),
-                    reverse=True,
-                )[0]
-                for a in self.parent.blueprints.assemblies.values():
-                    if any(a.hasFlags(f) for f in nonUniformAssems):
-                        continue
-                    a.makeAxialSnapList(refAssem=finestMeshAssembly)
-            if not cs["inputHeightsConsideredHot"]:
-                runLog.header(
-                    "=========== Axially expanding blueprints assemblies (except control) from Tinput to Thot ==========="
-                )
-                self._applyThermalExpansion(
-                    self.parent.blueprints.assemblies.values(),
-                    dbLoad,
-                    finestMeshAssembly,
-                )
-
         else:
-            if not cs["detailedAxialExpansion"]:
-                # prepare core for mesh snapping during axial expansion
-                for a in self.getAssemblies(includeAll=True):
-                    if any(a.hasFlags(f) for f in nonUniformAssems):
-                        continue
-                    a.makeAxialSnapList(self.refAssem)
-            if not cs["inputHeightsConsideredHot"]:
-                runLog.header(
-                    "=========== Axially expanding all assemblies (except control) from Tinput to Thot ==========="
-                )
-                self._applyThermalExpansion(self.getAssemblies(includeAll=True), dbLoad)
-
+            # set reactor level meshing params
+            nonUniformAssems = [
+                Flags.fromStringIgnoreErrors(t) for t in cs["nonUniformAssemFlags"]
+            ]
             # some assemblies, like control assemblies, have a non-conforming mesh
             # and should not be included in self.p.referenceBlockAxialMesh and self.p.axialMesh
             uniformAssems = [
@@ -2360,44 +2325,3 @@ class Core(composites.Composite):
 
         if not len(self.zones):
             runLog.debug("No manual zones defined in `zoneDefinitions` setting")
-
-    def _applyThermalExpansion(
-        self, assems: list, dbLoad: bool, referenceAssembly=None
-    ):
-        """expand assemblies, resolve disjoint axial mesh (if needed), and update block BOL heights
-
-        Parameters
-        ----------
-        assems: list
-            list of :py:class:`Assembly <armi.reactor.assemblies.Assembly>` objects to be thermally expanded
-        dbLoad: bool
-            boolean to determine if Core::processLoading is loading a database or constructing a Core
-        referenceAssembly: optional, :py:class:`Assembly <armi.reactor.assemblies.Assembly>`
-            is the thermally expanded assembly whose axial mesh is used to snap the
-            blueprints assemblies axial mesh to
-        """
-        axialExpChngr = AxialExpansionChanger(self._detailedAxialExpansion)
-        for a in assems:
-            if not a.hasFlags(Flags.CONTROL):
-                axialExpChngr.setAssembly(a)
-                # this doesn't get applied to control assems, so CR will be interpreted
-                # as hot. This should be conservative because the control rods will
-                # be modeled as slightly shorter with the correct hot density. Density
-                # is more important than height, so we are forcing density to be correct
-                # since we can't do axial expansion (yet)
-                axialExpChngr.applyColdHeightMassIncrease()
-                axialExpChngr.expansionData.computeThermalExpansionFactors()
-                axialExpChngr.axiallyExpandAssembly()
-        # resolve axially disjoint mesh (if needed)
-        if not dbLoad:
-            axialExpChngr.manageCoreMesh(self.parent)
-        elif not self._detailedAxialExpansion:
-            for a in assems:
-                if not a.hasFlags(Flags.CONTROL):
-                    a.setBlockMesh(referenceAssembly.getAxialMesh())
-        # update block BOL heights to reflect hot heights
-        for a in assems:
-            if not a.hasFlags(Flags.CONTROL):
-                for b in a:
-                    b.p.heightBOL = b.getHeight()
-                    b.completeInitialLoading()

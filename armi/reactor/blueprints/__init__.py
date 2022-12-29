@@ -90,6 +90,7 @@ from armi.reactor import assemblies
 from armi.reactor import geometry
 from armi.reactor import systemLayoutInput
 from armi.scripts import migration
+
 from armi.utils import textProcessors
 from armi.physics.neutronics.fissionProductModel import lumpedFissionProduct
 from armi.nucDirectory import elements
@@ -104,6 +105,7 @@ from armi.reactor.blueprints.componentBlueprint import ComponentKeyedList
 from armi.reactor.blueprints.componentBlueprint import ComponentGroups
 from armi.reactor.blueprints import isotopicOptions
 from armi.reactor.blueprints.gridBlueprint import Grids, Triplet
+from armi.reactor.converters import axialExpansionChanger
 
 context.BLUEPRINTS_IMPORTED = True
 context.BLUEPRINTS_IMPORT_CONTEXT = "".join(traceback.format_stack())
@@ -323,10 +325,25 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
                 self.assemblies[aDesign.name] = a
             if currentCount != 0:
                 assemblies.setAssemNumCounter(currentCount)
-
+            runLog.header("=========== Verifying Assembly Configurations ===========")
             self._checkAssemblyAreaConsistency(cs)
 
-            runLog.header("=========== Verifying Assembly Configurations ===========")
+            if not cs["detailedAxialExpansion"]:
+                # this is required to set up assemblies so they know how to snap
+                # to the reference mesh. They wont know the mesh to conform to
+                # otherwise....
+                axialExpansionChanger.makeAssemsAbleToSnapToUniformMesh(
+                    self.assemblies.values(), cs["nonUniformAssemFlags"]
+                )
+            if not cs["inputHeightsConsideredHot"]:
+                runLog.header(
+                    "=========== Axially expanding all assemblies (except control) from Tinput to Thot ==========="
+                )
+                # expand axial heights from cold to hot so dims and masses are consistent
+                # with specified component hot temperatures.
+                axialExpansionChanger.expandColdDimsToHot(
+                    self.assemblies.values(), cs["detailedAxialExpansion"]
+                )
 
             # pylint: disable=no-member
             getPluginManagerOrFail().hook.afterConstructionOfAssemblies(

@@ -20,6 +20,7 @@ What's new in ARMI
 #. Add block parameter, fuelCladLocked, to track whether or not the fuel and clad are locked. (`PR#1038 <https://github.com/terrapower/armi/pull/1038>`_)
 #. An explicit fission product modeling option was added in `PR#1022 <https://github.com/terrapower/armi/pull/1022>`_.
 #. Cleanup of unnecessary and confusing functionality in axialExpansionChanger.py. (`PR#1032 <https://github.com/terrapower/armi/pull/1032>`_)
+#. Axially expand from cold to hot before deepcopy of assemblies into reactor improving speed and preserving same functionality. (`PR#1047 <https://github.com/terrapower/armi/pull/1047>`_)
 
 Bug fixes
 ---------
