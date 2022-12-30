@@ -362,3 +362,11 @@ A few examples of restart cases:
             reloadDBName: my-original-results.h5
 
 .. note:: The ``skipCycles`` setting is related to skipping the lattice physics calculation specifically, it is not required to do a restart run.
+
+.. note:: The *-SHUFFLES.txt file is required to do explicit repeated fuel management.
+
+.. note:: The restart.dat file is required to repeat the exact fuel management methods during a branch search. These can potentially modify the reactor state in ways that cannot be captures with the SHUFFLES.txt file.
+
+.. note:: The ISO* binary cross section libraries are required to run cases that skip the lattice physics calculation (e.g. MC**2)
+
+.. note:: The multigroup flux is not yet stored on the output databases. If you need to do a restart with these values (e.g. for depletion), then you need to reload from neutronics outputs.
