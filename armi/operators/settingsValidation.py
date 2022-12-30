@@ -32,7 +32,6 @@ from armi.reactor import geometry
 from armi.reactor import systemLayoutInput
 from armi.physics import neutronics
 from armi.utils import directoryChangers
-from armi.settings.fwSettings import globalSettings
 from armi.settings.settingsIO import (
     prompt,
     RunLogPromptCancel,
@@ -66,8 +65,8 @@ class Query:
         self.question = question
         self.correction = correction
         # True if the query is `passed` and does not result in an immediate failure
+        self.corrected = False
         self._passed = False
-        self._corrected = False
         self.autoResolved = True
 
     def __repr__(self):
@@ -107,9 +106,8 @@ class Query:
                         )
                         if make_correction:
                             self.correction()
-                            self._corrected = True
-                        else:
-                            self._passed = True
+                            self.corrected = True
+                        self._passed = True
                     except RunLogPromptCancel as ki:
                         raise KeyboardInterrupt from ki
                 else:
@@ -189,8 +187,7 @@ class Inspector:
         if context.MPI_RANK != 0:
             return False
 
-        # the following attribute changes will alter what the queries investigate when
-        # resolved
+        # the following attribute changes will alter what the queries investigate when resolved
         correctionsMade = False
         self.cs = cs or self.cs
         runLog.debug("{} executing queries.".format(self.__class__.__name__))
@@ -203,7 +200,7 @@ class Inspector:
         else:
             for query in self.queries:
                 query.resolve()
-                if query._corrected:  # pylint: disable=protected-access
+                if query.corrected:
                     correctionsMade = True
             issues = [
                 query
@@ -262,6 +259,7 @@ class Inspector:
         """Lambda assignment workaround"""
         # this type of assignment works, but be mindful of
         # scoping when trying different methods
+        runLog.extra(f"Updating setting `{key}` to `{value}`")
         self.cs[key] = value
 
     def _raise(self):  # pylint: disable=no-self-use
@@ -475,6 +473,16 @@ class Inspector:
             ),
             "",
             self.NO_ACTION,
+        )
+
+        self.addQuery(
+            lambda: not self.cs["looseCoupling"]
+            and self.cs["numCoupledIterations"] > 0,
+            "You have {0} coupled iterations selected, but have not activated loose coupling.".format(
+                self.cs["numCoupledIterations"]
+            ),
+            "Set looseCoupling to True?",
+            lambda: self._assignCS("looseCoupling", True),
         )
 
         self.addQuery(

@@ -704,7 +704,7 @@ class Assembly_TestCase(unittest.TestCase):
             "residence": 3.145,
             "eqRegion": -1,
             "id": 299.0,
-            "bondRemoved": 33.7,
+            "bondRemoved": 0.337,
             "buRate": 42.0,
         }
         # Set some params

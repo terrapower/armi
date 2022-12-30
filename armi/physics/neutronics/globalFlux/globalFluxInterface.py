@@ -39,7 +39,6 @@ ORDER = interfaces.STACK_ORDER.FLUX
 RX_ABS_MICRO_LABELS = ["nGamma", "fission", "nalph", "np", "nd", "nt"]
 RX_PARAM_NAMES = ["rateCap", "rateFis", "rateProdN2n", "rateProdFis", "rateAbs"]
 
-
 # pylint: disable=too-many-public-methods
 class GlobalFluxInterface(interfaces.Interface):
     """
@@ -286,7 +285,7 @@ class GlobalFluxOptions(executers.ExecutionOptions):
         self.real = True
         self.adjoint = False
         self.neutrons = True
-        self.photons = None
+        self.photons = False
         self.boundaryConditions = {}
         self.epsFissionSourceAvg = None
         self.epsFissionSourcePoint = None
@@ -353,7 +352,7 @@ class GlobalFluxOptions(executers.ExecutionOptions):
         self.symmetry = reactor.core.symmetry
 
         cycleNodeStamp = f"{reactor.p.cycle:03d}{reactor.p.timeNode:03d}"
-        if self.savePhysicsFilesList is not None:
+        if self.savePhysicsFilesList:
             self.savePhysicsFiles = cycleNodeStamp in self.savePhysicsFilesList
         else:
             self.savePhysicsFiles = False
@@ -422,7 +421,8 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
         converter = self.geomConverters.get("axial")
         if not converter:
             if self.options.detailedAxialExpansion or self.options.hasNonUniformAssems:
-                converter = uniformMesh.NeutronicsUniformMeshConverter(
+                converterCls = uniformMesh.converterFactory(self.options)
+                converter = converterCls(
                     cs=self.options.cs,
                     calcReactionRates=self.options.calcReactionRatesOnMeshConversion,
                 )

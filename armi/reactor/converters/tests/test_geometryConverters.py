@@ -28,7 +28,7 @@ from armi.reactor import grids
 from armi.tests import TEST_ROOT
 from armi.reactor.converters import geometryConverters
 from armi.reactor.converters import uniformMesh
-from armi.reactor.tests.test_reactors import loadTestReactor
+from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
 from armi.reactor.flags import Flags
 from armi.utils import directoryChangers
 
@@ -72,7 +72,6 @@ class TestGeometryConverters(unittest.TestCase):
         r"""
         Tests that the setNumberOfFuelAssems method properly changes the number of fuel assemblies.
         """
-
         # tests ability to add fuel assemblies
         converter = geometryConverters.FuelAssemNumModifier(self.cs)
         converter.numFuelAssems = 60
@@ -123,9 +122,8 @@ class TestGeometryConverters(unittest.TestCase):
         third = geometryConverters.HexToRZConverter._getAssembliesInSector(
             self.r.core, 0, 30
         )
-        self.assertAlmostEqual(
-            25, len(third)
-        )  # could solve this analytically based on test core size
+        # could solve this analytically based on test core size
+        self.assertAlmostEqual(25, len(third))
         oneLine = geometryConverters.HexToRZConverter._getAssembliesInSector(
             self.r.core, 0, 0.001
         )
@@ -135,7 +133,9 @@ class TestGeometryConverters(unittest.TestCase):
 class TestHexToRZConverter(unittest.TestCase):
     def setUp(self):
         self.o, self.r = loadTestReactor(TEST_ROOT)
+        reduceTestReactorRings(self.r, self.o.cs, 2)
         self.cs = settings.getMasterCs()
+
         runLog.setVerbosity("extra")
         self._expandReactor = False
         self._massScaleFactor = 1.0
@@ -148,6 +148,10 @@ class TestHexToRZConverter(unittest.TestCase):
         del self.r
 
     def test_convert(self):
+        # make the reactor smaller, because of a test parallelization edge case
+        for ring in [9, 8, 7, 6, 5, 4, 3]:
+            self.r.core.removeAssembliesInRing(ring, self.o.cs)
+
         converterSettings = {
             "radialConversionType": "Ring Compositions",
             "axialConversionType": "Axial Coordinates",
@@ -173,6 +177,14 @@ class TestHexToRZConverter(unittest.TestCase):
         with directoryChangers.TemporaryDirectoryChanger():
             geomConv.plotConvertedReactor("fname")
 
+        # bonus test: reset() works after converter has filled in values
+        geomConv.reset()
+        self.assertIsNone(geomConv.convReactor)
+        self.assertIsNone(geomConv._radialMeshConversionType)
+        self.assertIsNone(geomConv._axialMeshConversionType)
+        self.assertIsNone(geomConv._currentRadialZoneType)
+        self.assertEqual(geomConv._newBlockNum, 0)
+
     def _checkBlockAtMeshPoint(self, geomConv):
         b = geomConv._getBlockAtMeshPoint(0.0, 2.0 * math.pi, 0.0, 12.0, 50.0, 75.0)
         self.assertTrue(b.hasFlags(Flags.FUEL))
@@ -184,18 +196,6 @@ class TestHexToRZConverter(unittest.TestCase):
         expectedRadialMesh = [
             8.794379,
             23.26774,
-            35.177517,
-            38.33381,
-            51.279602,
-            53.494121,
-            63.417171,
-            66.975997,
-            68.686298,
-            83.893031,
-            96.738172,
-            99.107621,
-            114.32693,
-            129.549296,
         ]
         assert_allclose(expectedThetaMesh, thetaMesh)
         assert_allclose(expectedRadialMesh, radialMesh)
@@ -272,10 +272,9 @@ class TestHexToRZConverter(unittest.TestCase):
 
 class TestEdgeAssemblyChanger(unittest.TestCase):
     def setUp(self):
-        r"""
-        Use the related setup in the testFuelHandlers module
-        """
+        r"""Use the related setup in the testFuelHandlers module"""
         self.o, self.r = loadTestReactor(TEST_ROOT)
+        reduceTestReactorRings(self.r, self.o.cs, 3)
 
     def tearDown(self):
         del self.o
@@ -310,6 +309,7 @@ class TestEdgeAssemblyChanger(unittest.TestCase):
 class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
     def setUp(self):
         self.o, self.r = loadTestReactor(TEST_ROOT)
+        reduceTestReactorRings(self.r, self.o.cs, 2)
 
         # initialize the block powers to a uniform power profile, accounting for
         # the loaded reactor being 1/3 core

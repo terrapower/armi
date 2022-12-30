@@ -27,9 +27,7 @@ include armi/nuclearDataIO/tests/library-file-generation/mc2v2-dlayxs.inp
 include armi/nuclearDataIO/tests/library-file-generation/mc2v3-AA.inp
 include armi/nuclearDataIO/tests/library-file-generation/mc2v3-AB.inp
 include armi/nuclearDataIO/tests/library-file-generation/mc2v3-dlayxs.inp
-include armi/nuclearDataIO/tests/longLivedRipleData.dat
 include armi/nuclearDataIO/tests/simple_hexz.inp
-include armi/nuclearDataIO/tests/z036.dat
 include armi/tests/1DslabXSByCompTest.yaml
 include armi/tests/COMPXS.ascii
 include armi/tests/ISOAA

@@ -252,9 +252,7 @@ grids:
 
         assem = design.constructAssem(cs, name="fuel a")
         # the assembly won't get non-naturally occurring nuclides
-        unnaturalZr = (
-            n.name for n in bySymbol["ZR"].nuclideBases if n.abundance == 0.0
-        )
+        unnaturalZr = (n.name for n in bySymbol["ZR"].nuclides if n.abundance == 0.0)
         designNucs = set(design.allNuclidesInProblem).difference(unnaturalZr)
         self.assertTrue(set(assem.getNuclides()).issubset(designNucs))
 
