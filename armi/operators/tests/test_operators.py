@@ -23,6 +23,9 @@ from armi.operators.operator import Operator
 from armi.reactor.tests import test_reactors
 from armi.settings.caseSettings import Settings
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
+from armi.physics.neutronics.globalFlux.globalFluxInterface import (
+    GlobalFluxInterfaceUsingExecuters,
+)
 
 
 class InterfaceA(Interface):
@@ -46,6 +49,7 @@ class InterfaceC(Interface):
 class OperatorTests(unittest.TestCase):
     def setUp(self):
         self.o, self.r = test_reactors.loadTestReactor()
+        self.activeInterfaces = [ii for ii in self.o.interfaces if ii.enabled()]
 
     def test_addInterfaceSubclassCollision(self):
         cs = settings.Settings()
@@ -98,6 +102,22 @@ class OperatorTests(unittest.TestCase):
 
     def test_couplingIsActive(self):
         self.assertFalse(self.o.couplingIsActive())
+
+    def test_tightCouplingOldValues(self):
+        self.o._tightCouplingOldValues()
+        for interface in self.activeInterfaces:
+            self.assertIsNone(interface.tightCouplingOldValue)
+
+    def test_computeTightCouplingConvergence(self):
+        # ensure global flux converges on keff and give an old value
+        globalFlux = GlobalFluxInterfaceUsingExecuters(self.r, self.o.cs)
+        globalFlux.tightCouplingConvergeOn = "keff"
+        globalFlux.tightCouplingOldValue = 0.9
+        # add global flux interface to operator interface stack
+        self.o.addInterface(globalFlux)
+        # set keff to some new value and compute tight coupling convergence
+        self.r.core.p.keff = 1.0
+        self.assertFalse(self.o._computeTightCouplingConvergence())
 
     def test_setStateToDefault(self):
 

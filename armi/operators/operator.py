@@ -141,7 +141,7 @@ class Operator:  # pylint: disable=too-many-public-methods
         self._maxBurnSteps = None
         self._powerFractions = None
         self._availabilityFactors = None
-        self.convergenceSummary = None
+        self.convergenceSummary = collections.defaultdict(list)
 
         # Create the welcome headers for the case (case, input, machine, and some basic reactor information)
         reportingUtils.writeWelcomeHeaders(self, cs)
@@ -386,7 +386,6 @@ class Operator:  # pylint: disable=too-many-public-methods
         self.interactAllEveryNode(cycle, timeNode)
         # perform tight coupling if requested
         if self.cs["tightCoupling"]:
-            self.convergenceSummary = collections.defaultdict(list)
             for coupledIteration in range(self.cs["tightCouplingMaxNumIters"]):
                 self.r.core.p.coupledIteration = coupledIteration + 1
                 self._tightCouplingOldValues()
@@ -666,15 +665,6 @@ class Operator:  # pylint: disable=too-many-public-methods
 
         self._printTightCouplingReport()  # it's usually useful to print convergence progress as it unfolds
         return all(convergence)
-
-    def _checkTightCouplingConvergence(self):
-        for interface, convergenceList in self.convergenceSummary.items():
-            for value in convergenceList:
-                if value > interface.tightCouplingTolerance:
-                    # one of the interfaces is not converged
-                    return False
-        # all interfaces are converged!
-        return True
 
     def _printTightCouplingReport(self):
         runLog.info("Tight Coupling Convergence Summary: Norm Type = Inf")
