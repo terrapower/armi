@@ -699,6 +699,9 @@ class UniformMeshGeometryConverter(GeometryConverter):
         refNumPoints = len(src.core.findAllAxialMeshPoints([refAssem])) - 1
         allMeshes = []
         for a in src.core:
+            if a.hasFlags(Flags.CONTROL):
+                # don't include control assemblies; their mesh lines move a bunch
+                continue
             # Get the mesh points of the assembly, neglecting the first coordinate
             # (typically zero).
             aMesh = src.core.findAllAxialMeshPoints([a])[1:]
