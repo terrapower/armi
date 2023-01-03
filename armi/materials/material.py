@@ -23,6 +23,7 @@ All temperatures are in K, but Tc can be specified and the functions will conver
      a TerraPower proprietary system. You will see references to it in this module.
 
 """
+# pylint: disable=unused-argument
 import copy
 import warnings
 
@@ -31,10 +32,9 @@ import numpy
 
 from armi import runLog
 from armi.materials import materialParameters
-from armi.reactor.parameters import resolveCollections
 from armi.nucDirectory import nuclideBases
-from armi.reactor import composites
 from armi.reactor.flags import TypeSpec
+from armi.reactor.parameters import resolveCollections
 from armi.utils import densityTools
 from armi.utils.units import getTk, getTc
 
@@ -87,7 +87,10 @@ class Material(metaclass=MaterialMetaType):
     with information about thermal scattering."""
 
     def __init__(self):
-        composites.Composite.__init__(self, self.__class__.name)
+        self.parent = None
+        self.cached = {}
+        self._backupCache = None
+        self.p = self.paramCollectionType()  # pylint: disable=no-member
         self.p.massFrac = {}
 
         # track sum of massFrac (which are modified and won't always sum to 1.0!)
@@ -652,7 +655,6 @@ class Material(metaclass=MaterialMetaType):
 
     def getNuclides(self):
         warnings.warn("Material.getNuclides is being deprecated.", DeprecationWarning)
-        print(self.parent)
         return self.parent.getNuclides()
 
     def getTempChangeForDensityChange(
