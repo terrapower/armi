@@ -31,6 +31,7 @@ import numpy
 
 from armi import runLog
 from armi.materials import materialParameters
+from armi.reactor.parameters import resolveCollections
 from armi.nucDirectory import nuclideBases
 from armi.reactor import composites
 from armi.reactor.flags import TypeSpec
@@ -41,7 +42,20 @@ from armi.utils.units import getTk, getTc
 FAIL_ON_RANGE = False
 
 
-class Material(metaclass=composites.CompositeModelType):
+class MaterialMetaType(resolveCollections.ResolveParametersMeta):
+    """TODO: JOHN
+    Metaclass for automatically defining associated ParameterCollection classes.
+    """
+
+    def __new__(cls, name, bases, attrs):
+        newType = resolveCollections.ResolveParametersMeta.__new__(
+            cls, name, bases, attrs
+        )
+
+        return newType
+
+
+class Material(metaclass=MaterialMetaType):
     """
     A material is made up of elements or isotopes. It has bulk properties like mass density.
     """
