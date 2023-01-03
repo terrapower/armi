@@ -72,6 +72,7 @@ from armi.reactor.converters.geometryConverters import GeometryConverter
 from armi.reactor import parameters
 from armi.reactor.reactors import Reactor
 
+HEAVY_METAL_PARAMS = ["molesHmBOL", "massHmBOL"]
 
 def converterFactory(globalFluxOptions):
     if globalFluxOptions.photons:
@@ -910,7 +911,8 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
                 ]
             )
         if direction == "in":
-            self.blockParamNames.extend(["molesHmBOL", "massHmBOL"])
+            # initial heavy metal masses are needed to calculate burnup in MWd/kg
+            self.blockParamNames.extend(HEAVY_METAL_PARAMS)
 
         self.bpm = BlockParamMapper(self.blockParamNames, b)
 
