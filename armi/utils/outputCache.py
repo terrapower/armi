@@ -69,7 +69,7 @@ def retrieveOutput(exePath, inputPaths, cacheDir, locToRetrieveTo=None):
         successful = _copyOutputs(cachedFolder, locToRetrieveTo)
 
         if successful:
-            runLog.extra("Retrieved cached outputs for {}".format(exePath))
+            runLog.info("Retrieved cached outputs for {}".format(exePath))
             return True
         else:
             # outputs didn't match manifest. Just delete to save checking next time.
