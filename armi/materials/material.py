@@ -43,8 +43,8 @@ FAIL_ON_RANGE = False
 
 
 class MaterialMetaType(resolveCollections.ResolveParametersMeta):
-    """TODO: JOHN
-    Metaclass for automatically defining associated ParameterCollection classes.
+    """
+    Metaclass for automatically defining ParameterCollection classes.
     """
 
     def __new__(cls, name, bases, attrs):
@@ -106,7 +106,6 @@ class Material(metaclass=MaterialMetaType):
         return "<Material: {0}>".format(self.getName())
 
     def getName(self):
-        # TODO: JOHN! if hasattr(self, 'parent'): EXPLODE!
         return self.name
 
     @classmethod
@@ -561,8 +560,6 @@ class Material(metaclass=MaterialMetaType):
         See Also
         --------
         setMassFrac
-        getNDens
-
         """
         return self.p.massFrac.get(nucName, 0.0)
 
@@ -578,14 +575,6 @@ class Material(metaclass=MaterialMetaType):
         except KeyError:
             # the nuc isn't in the mass Frac vector
             pass
-
-            """
-    def removeLumpedFissionProducts(self) -> None:
-        for nuc in self.getNuclides():
-            if "LF" in nuc:
-                # this component has a lumped fission product to remove
-                self.removeNucMassFrac(nuc)
-            """
 
     def getMassFracCopy(self):
         return copy.deepcopy(self.p.massFrac)
