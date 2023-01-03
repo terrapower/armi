@@ -1557,7 +1557,9 @@ class HexBlock(Block):
             self.getAverageTempInC(),
             self._pitchDefiningComponent[1],
         )
-        emptyNDens = {nuc: 0.0 for nuc in self.getNuclides()}
+        emptyNDens = {
+            nuc: 0.0 for nuc, dens in self.getNumberDensities().items() if dens > 0.0
+        }
         hexComponent.setNumberDensities(emptyNDens)
         b.add(hexComponent)
 
@@ -1582,6 +1584,9 @@ class HexBlock(Block):
                     i1.associate(i2.grid)
             pinComponent.setDimension("mult", clad.getDimension("mult"))
             b.add(pinComponent)
+
+        if self.spatialGrid is not None:
+            b.spatialGrid = self.spatialGrid
 
         return b
 
