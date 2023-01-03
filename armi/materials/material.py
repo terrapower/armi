@@ -124,55 +124,24 @@ class Material(metaclass=MaterialMetaType):
         return []
 
     def backUp(self):
-        """
-        Create and store a backup of the state.
-
-        This needed to be overridden due to linked components which actually have a
-        parameter value of another ARMI component.
-        """
-        self._backupCache = (self.cached, self._backupCache)
-        self.cached = {}  # don't .clear(), using reference above!
-        self.p.backUp()
+        """Empty because statelss materials shouldn't use cache"""
+        pass
 
     def restoreBackup(self, paramsToApply):
-        """
-        Restore the parameters from previously created backup.
-
-        Parameters
-        ----------
-        paramsToApply : list of ParmeterDefinitions
-            restores the state of all parameters not in `paramsToApply`
-        """
-        self.p.restoreBackup(paramsToApply)
-        self.cached, self._backupCache = self._backupCache
+        """Empty because statelss materials shouldn't use cache"""
+        pass
 
     def clearCache(self):
-        """Clear the cache so all new values are recomputed."""
-        self.cached = {}
-        for child in self.getChildren():
-            child.clearCache()
+        """Empty because statelss materials shouldn't use cache"""
+        pass
 
-    def _getCached(self, name):  # TODO: stop the "returns None" nonsense?
-        """
-        Obtain a value from the cache.
+    def _getCached(self, name):
+        """Empty because statelss materials shouldn't use cache"""
+        return None
 
-        Cached values can be used to temporarily store frequently read but
-        long-to-compute values.  The practice is generally discouraged because it's
-        challenging to make sure to properly invalidate the cache when the state
-        changes.
-
-        """
-        return self.cached.get(name, None)
-
-    def _setCache(self, name, val):  # TODO: remove me
-        """
-        Set a value in the cache.
-
-        See Also
-        --------
-        _getCached : returns a previously-cached value
-        """
-        self.cached[name] = val
+    def _setCache(self, name, val):
+        """Empty because statelss materials shouldn't use cache"""
+        pass
 
     def duplicate(self):
         r"""copy without needing a deepcopy."""

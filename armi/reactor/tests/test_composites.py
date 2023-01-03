@@ -420,9 +420,6 @@ class TestCompositeTree(unittest.TestCase):
         component = a[0][0]
         referenceDensity = component.material.p.density
         self.assertEqual(component.material.p.density, referenceDensity)
-        with a.retainState():
-            component.material.p.density = 5.0
-        self.assertEqual(component.material.p.density, referenceDensity)
 
     def test_getHMMass(self):
         fuelDims = {"Tinput": 273.0, "Thot": 273.0, "od": 0.76, "id": 0.0, "mult": 1.0}
