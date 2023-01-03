@@ -169,7 +169,7 @@ def store(exePath, inputPaths, outputFiles, cacheDir):
         cachedLoc = os.path.join(folderLoc, baseName)
         shutil.copy(outputFile, cachedLoc)
 
-    runLog.extra("Added outputs for {} to the cache.".format(exePath))
+    runLog.info("Added outputs for {} to the cache.".format(exePath))
 
 
 def deleteCache(cachedFolder):
