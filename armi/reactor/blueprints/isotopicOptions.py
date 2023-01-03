@@ -555,3 +555,53 @@ def genDefaultNucFlags():
         )
         flags[nucName] = flag
     return flags
+
+
+def autoUpdateNuclideFlags(cs, nuclideFlags):
+    """
+    This function is responsible for examining the fission product model treatment
+    that is selected by the user and adding a set of nuclides to the `nuclideFlags`
+    list.
+
+    Notes
+    -----
+    The reason for adding this method is that when switching between fission product
+    modeling treatments it can be time-consuming to manually adjust the ``nuclideFlags``
+    inputs.
+
+    See Also
+    --------
+    genDefaultNucFlags
+    """
+    nbs = getAllNuclideBasesByLibrary(cs)
+    if nbs:
+        runLog.info(
+            f"Adding explicit fission products to the nuclide flags based on the "
+            f"fission product model set to `{cs['fpModel']}`."
+        )
+        for nb in nbs:
+            nuc = nb.name
+            if nuc in nuclideFlags or elements.byZ[nb.z] in nuclideFlags:
+                continue
+            nuclideFlag = NuclideFlag(nuc, burn=False, xs=True, expandTo=[])
+            nuclideFlags[nuc] = nuclideFlag
+
+
+def getAllNuclideBasesByLibrary(cs):
+    """
+    Return a list of nuclide bases available for cross section modeling
+    based on the ``fpModelLibrary`` setting.
+    """
+    nbs = []
+    if cs["fpModel"] == "explicitFissionProducts":
+        if not cs["fpModelLibrary"]:
+            nbs = []
+        if cs["fpModelLibrary"] == "MC2-3":
+            nbs = nuclideBases.byMcc3Id.values()
+        else:
+            raise ValueError(
+                f"An option to handle the `fpModelLibrary` "
+                f"set to `{cs['fpModelLibrary']}` has not been "
+                f"implemented."
+            )
+    return nbs

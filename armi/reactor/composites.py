@@ -35,8 +35,8 @@ import timeit
 from typing import Dict, Optional, Type, Tuple, List, Union
 
 import numpy
-import tabulate
 import six
+import tabulate
 
 from armi import context
 from armi import runLog
@@ -47,7 +47,6 @@ from armi.nuclearDataIO import xsCollections
 from armi.physics.neutronics.fissionProductModel import fissionProductModel
 from armi.reactor import grids
 from armi.reactor import parameters
-
 from armi.reactor.flags import Flags, TypeSpec
 from armi.reactor.parameters import resolveCollections
 from armi.utils import densityTools
@@ -3203,20 +3202,6 @@ class Composite(ArmiObject):
                 for comp in self.iterComponents()
             ]
         )
-
-
-class Leaf(Composite):
-    """Defines behavior for primitive objects in the composition."""
-
-    def getChildren(
-        self, deep=False, generationNum=1, includeMaterials=False, predicate=None
-    ):
-        """Return empty list, representing that this object has no children."""
-        return []
-
-    def getChildrenWithFlags(self, typeSpec: TypeSpec, exactMatch=True):
-        """Return empty list, representing that this object has no children."""
-        return []
 
 
 class StateRetainer:
