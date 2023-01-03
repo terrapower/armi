@@ -394,7 +394,6 @@ class Operator:  # pylint: disable=too-many-public-methods
                 converged = self._computeTightCouplingConvergence()
                 if converged:
                     break
-            self._printTightCouplingReport()
             # database has not yet been written, so we need to write it.
             dbi = self.getInterface("database")
             dbi.writeDBEveryNode(cycle, timeNode)
