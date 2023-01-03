@@ -41,7 +41,7 @@ from armi.utils.units import getTk, getTc
 FAIL_ON_RANGE = False
 
 
-class Material(composites.Composite):
+class Material(metaclass=composites.CompositeModelType):
     """
     A material is made up of elements or isotopes. It has bulk properties like mass density.
     """
@@ -91,6 +91,14 @@ class Material(composites.Composite):
     def __repr__(self):
         return "<Material: {0}>".format(self.getName())
 
+    def getName(self):
+        # TODO: JOHN! if hasattr(self, 'parent'): EXPLODE!
+        return self.name
+
+    @classmethod
+    def getParameterCollection(cls):
+        return cls.paramCollectionType()
+
     def getChildren(
         self, deep=False, generationNum=1, includeMaterials=False, predicate=None
     ):
@@ -100,6 +108,57 @@ class Material(composites.Composite):
     def getChildrenWithFlags(self, typeSpec: TypeSpec, exactMatch=True):
         """Return empty list, representing that this object has no children."""
         return []
+
+    def backUp(self):
+        """
+        Create and store a backup of the state.
+
+        This needed to be overridden due to linked components which actually have a
+        parameter value of another ARMI component.
+        """
+        self._backupCache = (self.cached, self._backupCache)
+        self.cached = {}  # don't .clear(), using reference above!
+        self.p.backUp()
+
+    def restoreBackup(self, paramsToApply):
+        """
+        Restore the parameters from previously created backup.
+
+        Parameters
+        ----------
+        paramsToApply : list of ParmeterDefinitions
+            restores the state of all parameters not in `paramsToApply`
+        """
+        self.p.restoreBackup(paramsToApply)
+        self.cached, self._backupCache = self._backupCache
+
+    def clearCache(self):
+        """Clear the cache so all new values are recomputed."""
+        self.cached = {}
+        for child in self.getChildren():
+            child.clearCache()
+
+    def _getCached(self, name):  # TODO: stop the "returns None" nonsense?
+        """
+        Obtain a value from the cache.
+
+        Cached values can be used to temporarily store frequently read but
+        long-to-compute values.  The practice is generally discouraged because it's
+        challenging to make sure to properly invalidate the cache when the state
+        changes.
+
+        """
+        return self.cached.get(name, None)
+
+    def _setCache(self, name, val):  # TODO: remove me
+        """
+        Set a value in the cache.
+
+        See Also
+        --------
+        _getCached : returns a previously-cached value
+        """
+        self.cached[name] = val
 
     def duplicate(self):
         r"""copy without needing a deepcopy."""
@@ -537,11 +596,13 @@ class Material(composites.Composite):
             # the nuc isn't in the mass Frac vector
             pass
 
+            """
     def removeLumpedFissionProducts(self) -> None:
         for nuc in self.getNuclides():
             if "LF" in nuc:
                 # this component has a lumped fission product to remove
                 self.removeNucMassFrac(nuc)
+            """
 
     def getMassFracCopy(self):
         return copy.deepcopy(self.p.massFrac)
@@ -619,6 +680,7 @@ class Material(composites.Composite):
 
     def getNuclides(self):
         warnings.warn("Material.getNuclides is being deprecated.", DeprecationWarning)
+        print(self.parent)
         return self.parent.getNuclides()
 
     def getTempChangeForDensityChange(
