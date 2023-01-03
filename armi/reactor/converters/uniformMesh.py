@@ -74,6 +74,7 @@ from armi.reactor.reactors import Reactor
 
 HEAVY_METAL_PARAMS = ["molesHmBOL", "massHmBOL"]
 
+
 def converterFactory(globalFluxOptions):
     if globalFluxOptions.photons:
         return GammaUniformMeshConverter(globalFluxOptions.cs)
