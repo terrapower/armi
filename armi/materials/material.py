@@ -88,8 +88,6 @@ class Material(metaclass=MaterialMetaType):
 
     def __init__(self):
         self.parent = None
-        self.cached = {}
-        self._backupCache = None
         self.p = self.paramCollectionType()  # pylint: disable=no-member
         self.p.massFrac = {}
 
