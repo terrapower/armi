@@ -25,6 +25,17 @@ class Mixture(materials.Material):
 
     .. warning:: This class is meant to be used for homogenized block models for neutronics and other
        physics solvers.
+
+    Notes
+    -----
+    This material class can be used to represent a homognized mixture of materials within a block.
+    This would be done for performance reasons. It allows ARMI to avoid copying and carrying around
+    the detailed, explicit representation of components within a block to be used in a physics solver
+    when that solver only needs to know the homogenized number density within a block.
+
+    See Also
+    --------
+    armi.reactor.blocks.HexBlock.createCopy
     """
 
     name = "Mixture"

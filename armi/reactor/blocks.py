@@ -162,8 +162,10 @@ class Block(composites.Composite):
         """
         Create a copy of a block
 
-        Used to implement a copy function for a specific block types that is lighter
-        than a deepcopy. This base class implementation is just a deepcopy.
+        Notes
+        -----
+        Used to implement a copy function for a specific block types that can
+        be faster than a deepcopy. This base class implementation is just a deepcopy.
 
         Notes
         -----
@@ -1535,11 +1537,35 @@ class HexBlock(Block):
 
     def createCopy(self):
         """
-        Create a blank copy of a block (ligher weight than deepcopy)
+        Create a new copy of a block that is less expensive than a full deepcopy.
 
         Notes
         -----
-        If you make a new block, you must add it to an assembly and a reactor.
+        This can be used to improve performance when a new copy of a reactor needs to be
+        built, but the full detail of the block (including component geometry, material,
+        number density, etc.) is not required for the targeted physics solver being applied
+        to the new reactor model.
+
+        The main use case is for the uniform mesh converter (UMC). Frequently, a deterministic
+        nutronics solver will require a uniform mesh reactor, which is produced by the UMC.
+        Many deterministic solvers for fast spectrum reactors will also treat the individual
+        blocks as homogenized mixtures. Since the neutronics solver does not need to know about
+        the geometric and material details of the individual child components within a block,
+        we can save significant effort while building the uniform mesh reactor with the UMC
+        by omitting this detailed data and only providing the necessary level of detail for
+        the uniform mesh reactor: number densities on each block.
+
+        .. note: Individual components within a block can have different temperatures, and this
+        can affect cross sections. This temperature variation is captured by the lattice physics
+        module. As long as temperature distribution is correctly captured during cross section
+        generation, it doesn't need to be transferred to the neutronics solver directly through
+        this copy operation.
+
+        .. note: If you make a new block, you must add it to an assembly and a reactor.
+
+        See Also
+        --------
+        armi.reactor.converters.uniformMesh.UniformMeshGeometryConverter.makeAssemWithUniformMesh
         """
 
         b = self.__class__(self.getName(), height=self.getHeight())
