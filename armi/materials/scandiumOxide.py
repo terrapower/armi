@@ -14,8 +14,8 @@
 
 """Scandium Oxide"""
 
-from armi.utils.units import getTk
 from armi.materials.material import Material
+from armi.utils.units import getTk
 
 
 class Sc2O3(Material):

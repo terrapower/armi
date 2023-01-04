@@ -23,7 +23,7 @@ class Molybdenum(SimpleSolid):
     name = "Molybdenum"
 
     def setDefaultMassFracs(self):
-        """Moly mass fractions."""
+        """Moly mass fractions"""
         self.setMassFrac("MO", 1.0)
 
     def density3(self, Tk=None, Tc=None):

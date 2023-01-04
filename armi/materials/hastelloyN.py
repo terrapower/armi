@@ -16,8 +16,8 @@
 Hastelloy-N is a high-nickel structural material invented by ORNL for handling molten fluoride salts.
 """
 
-from armi.utils.units import getTk, getTc
 from armi.materials.material import Material
+from armi.utils.units import getTk, getTc
 
 
 class HastelloyN(Material):

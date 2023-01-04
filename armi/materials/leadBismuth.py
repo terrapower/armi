@@ -20,8 +20,8 @@ This is a great coolant for superfast neutron reactors. It's heavy though.
 
 import math
 
-from armi.utils.units import getTk
 from armi.materials import material
+from armi.utils.units import getTk
 
 
 class LeadBismuth(material.Fluid):

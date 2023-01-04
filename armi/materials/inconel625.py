@@ -17,8 +17,8 @@ Inconel625
 """
 import numpy
 
-from armi.utils.units import getTc
 from armi.materials.material import Material
+from armi.utils.units import getTc
 
 
 class Inconel625(Material):

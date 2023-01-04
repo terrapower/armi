@@ -21,8 +21,8 @@ Data is from [#IAEA-TECDOCT-1450]_.
     https://www-pub.iaea.org/mtcd/publications/pdf/te_1450_web.pdf
 """
 from armi import runLog
-from armi.utils.units import getTk
 from armi.materials.material import Material, FuelMaterial
+from armi.utils.units import getTk
 
 
 class ThoriumOxide(FuelMaterial):
@@ -75,7 +75,8 @@ class ThoriumOxide(FuelMaterial):
         grams of Th-232 = 232.030806 g/mol* 1 mol  =  232.030806 g
         grams of Oxygen = 15.9994 g/mol* 2 mol = 31.9988 g
         total=264.029606 g.
-        Mass fractions are computed from this."""
+        Mass fractions are computed from this.
+        """
         self.setMassFrac("TH232", 0.8788)
         self.setMassFrac("O16", 0.1212)
 
@@ -106,8 +107,6 @@ class ThoriumOxide(FuelMaterial):
 
 
 class ThO2(ThoriumOxide):
-    """
-    Another name for ThoriumOxide.
-    """
+    """Another name for ThoriumOxide"""
 
     pass
