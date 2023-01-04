@@ -133,7 +133,9 @@ These settings come with a few caveats:
        neutron fraction for the system is calculated as the summation of the
        group-wise delayed neutron fractions.
 
-Cycle History
+.. _cycle-history:
+
+Cycle history
 -------------
 For all cases, ``nCycles`` and ``power`` must be specified by the user.
 In the case that only a single state is to be examined (i.e. no burnup), the user need only additionally specify ``nCycles = 1``.
@@ -225,3 +227,148 @@ As can be seen, the detailed cycle history option provides much greated flexibil
 .. note:: The ``name`` field of the detailed cycle history is not yet used for anything, but this information will still be accessible on the operator during runtime.
 
 .. note:: Cycles without names will be given the name ``None``
+
+.. _restart-cases:
+
+Restart cases
+-------------
+
+Oftentimes the user is interested in re-examining just a specific set of time nodes from an existing run.
+In these cases, it is sometimes not necessary to rerun an entire reactor history, and one may instead use one of the following options:
+    
+    1. Snapshot, where the reactor state is loaded from a database and just a single time node is run.
+
+    2. Restart, where the cycle history is loaded from a database and the calculation continues through the remaining specified time history.
+
+For either of these options, it is possible to alter the specific settings applied to the run by simply adjusting the case settings for the run.
+For instance, a run that originally had only neutronics may incorporate thermal hydraulics during a snapshot run by adding in the relevant TH settings.
+
+.. note:: For either of these options, it is advisable to first create a new case settings file with a name different than the one from which you will be restarting off of, so as to not overwrite those results.
+
+To run a snapshot, the following settings must be added to your case settings:
+
+    * Set ``runType`` to ``Snapshots``
+    * Add a list of cycle/node pairs corresponding to the desired snapshots to ``dumpSnapshot`` formatted as ``'CCCNNN'``
+    * Set ``reloadDBName`` to the existing database file that you would like to load the reactor state from
+
+An example of a snapshot run input:
+
+.. code-block:: yaml
+    runType: Snapshots
+    reloadDBName: my-old-results.h5
+    dumpSnapshot: ['000000', '001002'] # would produce 2 snapshots, at BOL and at node 2 of cycle 1
+
+To run a restart, the following settings must be added to your case settings:
+
+    * Set ``runType`` to ``Standard``
+    * Set ``loadStyle`` to ``fromDB``
+    * Set ``startCycle`` and ``startNode`` to the cycle/node that you would like to continue the calculation from (inclusive). 
+    ``startNode`` may use negative indexing.
+    * Set ``reloadDBName`` to the existing database file from which you would like to load the reactor history up to the restart point
+    * If you would like to change the specified reactor history (see :ref:`restart-cases`), keep the history up to the restarting cycle/node
+    unchanged, and just alter the history after that point. This means that the cycle history specified in your restart run should include
+    all cycles/nodes up to the end of the simulation. For complicated restarts, it
+    may be necessary to use the detailed ``cycles`` setting, even if the original case only used the simple history option.
+
+A few examples of restart cases:
+    
+    - Restarting a calculation at a specific cycle/node and continuing for the remainder of the originally-specified cycle history:
+        .. code-block:: yaml
+            # old settings
+            nCycles: 2
+            burnSteps: 2
+            cycleLengths: [100, 100]
+            runType: Standard
+            loadStyle: fromInput
+            loadingFile: my-blueprints.yaml
+
+        .. code-block:: yaml
+            # restart settings
+            nCycles: 2
+            burnSteps: 2
+            cycleLengths: [100, 100]
+            runType: Standard
+            loadStyle: fromDB
+            startCycle: 1
+            startNode: 0
+            reloadDBName: my-original-results.h5
+
+    - Add an additional cycle to the end of a case:
+        .. code-block:: yaml
+            # old settings
+            nCycles: 1
+            burnSteps: 2
+            cycleLengths: [100]
+            runType: Standard
+            loadStyle: fromInput
+            loadingFile: my-blueprints.yaml
+
+        .. code-block:: yaml
+            # restart settings
+            nCycles: 2
+            burnSteps: 2
+            cycleLengths: [100, 100]
+            runType: Standard
+            loadStyle: fromDB
+            startCycle: 0
+            startNode: -1
+            reloadDBName: my-original-results.h5
+
+    - Restart but cut the reactor history short:
+        .. code-block:: yaml
+            # old settings
+            nCycles: 3
+            burnSteps: 2
+            cycleLengths: [100, 100, 100]
+            runType: Standard
+            loadStyle: fromInput
+            loadingFile: my-blueprints.yaml
+
+        .. code-block:: yaml
+            # restart settings
+            nCycles: 2
+            burnSteps: 2
+            cycleLengths: [100, 100]
+            runType: Standard
+            loadStyle: fromDB
+            startCycle: 1
+            startNode: 0
+            reloadDBName: my-original-results.h5
+
+    - Restart with a different number of steps in the third cycle using the detailed ``cycles`` setting:
+        .. code-block:: yaml
+            # old settings
+            nCycles: 3
+            burnSteps: 2
+            cycleLengths: [100, 100, 100]
+            runType: Standard
+            loadStyle: fromInput
+            loadingFile: my-blueprints.yaml
+
+        .. code-block:: yaml
+            # restart settings
+            nCycles: 3
+            cycles:
+              - cycle length: 100
+                burn steps: 2
+              - cycle length: 100
+                burn steps: 2
+              - cycle length: 100
+                burn steps: 4
+            runType: Standard
+            loadStyle: fromDB
+            startCycle: 2
+            startNode: 0
+            reloadDBName: my-original-results.h5
+
+.. note:: The ``skipCycles`` setting is related to skipping the lattice physics calculation specifically, it is not required to do a restart run.
+
+.. note:: The *-SHUFFLES.txt file is required to do explicit repeated fuel management.
+
+.. note:: The restart.dat file is required to repeat the exact fuel management methods during a branch search. These can potentially modify the reactor state in ways that cannot be captures with the SHUFFLES.txt file.
+
+.. note:: The ISO* binary cross section libraries are required to run cases that skip the lattice physics calculation (e.g. MC**2)
+
+.. note:: The multigroup flux is not yet stored on the output databases. If you need to do a restart with these values (e.g. for depletion), then you need to reload from neutronics outputs.
+
+.. note:: Restarting a calculation with an different version of ARMI than what was used to produce the restarting database may result in undefined behavior.
