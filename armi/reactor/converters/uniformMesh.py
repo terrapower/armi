@@ -302,9 +302,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
             # parameters that did not change.
             self._cachedReactorCoreParamData = {}
             self._clearStateOnReactor(self._sourceReactor, cache=True)
-            self._mapStateFromReactorToOther(
-                self.convReactor, self._sourceReactor, mapNumberDensities=True
-            )
+            self._mapStateFromReactorToOther(self.convReactor, self._sourceReactor)
 
             # We want to map the converted reactor core's library to the source reactor
             # because in some instances this has changed (i.e., when generating cross sections).
