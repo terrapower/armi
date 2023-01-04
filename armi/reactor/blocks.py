@@ -158,7 +158,7 @@ class Block(composites.Composite):
 
         return b
 
-    def _createHomogenizedCopy(self):
+    def _createHomogenizedCopy(self, pinSpatialLocators=False):
         """
         Create a copy of a block
 
@@ -1536,7 +1536,7 @@ class HexBlock(Block):
             round(y, units.FLOAT_DIMENSION_DECIMALS),
         )
 
-    def _createHomogenizedCopy(self):
+    def _createHomogenizedCopy(self, pinSpatialLocators=False):
         """
         Create a new homogenized copy of a block that is less expensive than a full deepcopy.
 
@@ -1587,27 +1587,29 @@ class HexBlock(Block):
         hexComponent.setNumberDensities(self.getNumberDensities())
         b.add(hexComponent)
 
-        # create a null component with cladding flags and spatialLocator from source block's
-        # clad component in case pin locations need to be known for phm ysics solver
-        # only works if there is a single clad component that has a MultiIndexLocation
-        if self.hasComponents(Flags.CLAD):
-            pinComponent = Circle(
-                "voidPin",
-                "Void",
-                self.getAverageTempInC(),
-                self.getAverageTempInC(),
-                0.0,
-            )
-            clad = self.getComponent(Flags.CLAD)
-            pinComponent.setType("pin", Flags.CLAD)
-            pinComponent.spatialLocator = copy.deepcopy(clad.spatialLocator)
-            if isinstance(pinComponent.spatialLocator, grids.MultiIndexLocation):
-                for i1, i2 in zip(
-                    list(pinComponent.spatialLocator), list(clad.spatialLocator)
-                ):
-                    i1.associate(i2.grid)
-            pinComponent.setDimension("mult", clad.getDimension("mult"))
-            b.add(pinComponent)
+        if pinSpatialLocators:
+            # create a null component with cladding flags and spatialLocator from source block's
+            # clad component in case pin locations need to be known for physics solver
+            # only works if there is a single clad component that has a MultiIndexLocation
+            if self.hasComponents(Flags.CLAD):
+                cladComponents = self.getComponents(Flags.CLAD)
+                for i, clad in enumerate(cladComponents):
+                    pinComponent = Circle(
+                        "voidPin{i}",
+                        "Void",
+                        self.getAverageTempInC(),
+                        self.getAverageTempInC(),
+                        0.0,
+                    )
+                    pinComponent.setType("pin", Flags.CLAD)
+                    pinComponent.spatialLocator = copy.deepcopy(clad.spatialLocator)
+                    if isinstance(pinComponent.spatialLocator, grids.MultiIndexLocation):
+                        for i1, i2 in zip(
+                            list(pinComponent.spatialLocator), list(clad.spatialLocator)
+                        ):
+                            i1.associate(i2.grid)
+                    pinComponent.setDimension("mult", clad.getDimension("mult"))
+                    b.add(pinComponent)
 
         if self.spatialGrid is not None:
             b.spatialGrid = self.spatialGrid

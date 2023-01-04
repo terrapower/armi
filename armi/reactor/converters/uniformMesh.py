@@ -132,6 +132,8 @@ class UniformMeshGeometryConverter(GeometryConverter):
         GeometryConverter.__init__(self, cs)
         self._uniformMesh = None
         self.calcReactionRates = False
+        self.includePinCoordinates = False
+
         self.reactorParamNames = []
         self.blockParamNames = []
 
@@ -177,6 +179,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
                     self.convReactor.core.p.axialMesh[1:],
                     self.blockParamNames,
                     self.bpm,
+                    self.includePinCoordinates,
                 )
                 homogAssem.spatialLocator = assem.spatialLocator
 
@@ -320,6 +323,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
         blockParamNames=None,
         blockParamMapper=None,
         mapNumberDensities=True,
+        includePinCoordinates=False,
     ):
         """
         Build new assembly based on a source assembly but apply the uniform mesh.
@@ -420,7 +424,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
                 sourceBlock = blocks[0]
                 xsType = blocks[0].p.xsType
 
-            block = sourceBlock._createHomogenizedCopy()
+            block = sourceBlock._createHomogenizedCopy(includePinCoordinates)
             block.p.xsType = xsType
             block.setHeight(topMeshPoint - bottom)
             block.p.axMesh = 1
@@ -733,6 +737,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
                 self._uniformMesh,
                 self.blockParamNames,
                 self.bpm,
+                self.includePinCoordinates,
             )
             src = sourceAssem.spatialLocator
             newLoc = self.convReactor.core.spatialGrid[src.i, src.j, 0]
