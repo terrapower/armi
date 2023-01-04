@@ -164,11 +164,10 @@ class Block(composites.Composite):
 
         Notes
         -----
-        Used to implement a copy function for a specific block types that can
+        Used to implement a copy function for specific block types that can
         be much faster than a deepcopy by glossing over details that may be
         unnecessary in certain contexts.
 
-        Creating a homogenized copy of the block is only implemented for HexBlock right now.
         This base class implementation is just a deepcopy of the block, in full detail
         (not homogenized).
         """
