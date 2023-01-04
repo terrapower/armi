@@ -1589,13 +1589,12 @@ class HexBlock(Block):
 
         if pinSpatialLocators:
             # create a null component with cladding flags and spatialLocator from source block's
-            # clad component in case pin locations need to be known for physics solver
-            # only works if there is a single clad component that has a MultiIndexLocation
+            # clad components in case pin locations need to be known for physics solver
             if self.hasComponents(Flags.CLAD):
                 cladComponents = self.getComponents(Flags.CLAD)
                 for i, clad in enumerate(cladComponents):
                     pinComponent = Circle(
-                        "voidPin{i}",
+                        f"voidPin{i}",
                         "Void",
                         self.getAverageTempInC(),
                         self.getAverageTempInC(),
