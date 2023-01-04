@@ -12,18 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Settings related to fuel performance."""
+"""Settings related to fuel performance"""
 
-from armi.settings import setting
 from armi.operators.settingsValidation import Query
+from armi.settings import setting
 
 
-CONF_FUEL_PERFORMANCE_ENGINE = "fuelPerformanceEngine"
 CONF_AXIAL_EXPANSION = "axialExpansion"
 CONF_BOND_REMOVAL = "bondRemoval"
-CONF_FGR_REMOVAL = "fgRemoval"
-CONF_CLADDING_WASTAGE = "claddingWastage"
 CONF_CLADDING_STRAIN = "claddingStrain"
+CONF_CLADDING_WASTAGE = "claddingWastage"
+CONF_FGR_REMOVAL = "fgRemoval"
+CONF_FGYF = "fissionGasYieldFraction"
+CONF_FUEL_PERFORMANCE_ENGINE = "fuelPerformanceEngine"
 
 
 def defineSettings():
@@ -38,6 +39,12 @@ def defineSettings():
                 " axial growth, wastage, and cladding strain."
             ),
             options=[""],
+        ),
+        setting.Setting(
+            CONF_FGYF,
+            default=0.25,
+            label="Fission Gas Yield Fraction",
+            description="The fraction of gaseous atoms produced per fission event, assuming a fission product yield of 2.0",
         ),
         setting.Setting(
             CONF_AXIAL_EXPANSION,

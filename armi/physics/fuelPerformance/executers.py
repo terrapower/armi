@@ -30,6 +30,7 @@ from .settings import (
     CONF_FGR_REMOVAL,
     CONF_CLADDING_WASTAGE,
     CONF_CLADDING_STRAIN,
+    CONF_FGYF,
 )
 
 
@@ -53,6 +54,7 @@ class FuelPerformanceOptions(executers.ExecutionOptions):
         self.fissionGasRemoval = cs[CONF_FGR_REMOVAL]
         self.claddingWastage = cs[CONF_CLADDING_WASTAGE]
         self.claddingStrain = cs[CONF_CLADDING_STRAIN]
+        self.fissionGasYieldFraction = cs[CONF_FGYF]
 
     def fromReactor(self, reactor):
         """Load options from reactor."""

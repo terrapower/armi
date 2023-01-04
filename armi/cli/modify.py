@@ -30,7 +30,7 @@ class ModifyCaseSettingsCommand(EntryPoint):
 
     Run the entry point like this::
 
-        $ python -m armi modify --numProcessors=3 *.xml
+        $ python -m armi modify --numProcessors=3 *.yaml
 
     """
 
@@ -56,26 +56,38 @@ class ModifyCaseSettingsCommand(EntryPoint):
             "suppress the inspection step.",
         )
         self.parser.add_argument(
+            "--rootDir",
+            type=str,
+            default=".",
+            help="A root directory in which to search for settings files, e.g., armi/tests.",
+        )
+        self.parser.add_argument(
+            "--settingsWriteStyle",
+            type=str,
+            default="short",
+            help="Writing style for which settings get written back to the settings files.",
+            choices=["short", "medium", "full"],
+        )
+        self.parser.add_argument(
             "patterns",
             type=str,
             nargs="*",
             default=["*.yaml"],
-            help="Pattern(s) to use to find match file names (e.g. *.xml)",
+            help="Pattern(s) to use to find match file names (e.g. *.yaml)",
         )
         for settingName in self.cs.keys():
-            # verbosity and branchVerbosity already have command line options in the default parser
-            # adding them again would result in an error from argparse.
-            if settingName not in ["verbosity", "branchVerbosity"]:
-                # can't modify case title.., just use clone
-                self.createOptionFromSetting(settingName, suppressHelp=True)
+            self.createOptionFromSetting(settingName, suppressHelp=True)
 
     def invoke(self):
-        csInstances = settings.recursivelyLoadSettingsFiles(".", self.args.patterns)
+        csInstances = settings.recursivelyLoadSettingsFiles(
+            self.args.rootDir, self.args.patterns
+        )
         messages = (
             ("found", "listing")
             if self.args.list_setting_files
             else ("writing", "modifying")
         )
+
         for cs in csInstances:
             runLog.important("{} settings file {}".format(messages[0], cs.path))
             for settingName in self.settingsProvidedOnCommandLine:
@@ -90,12 +102,15 @@ class ModifyCaseSettingsCommand(EntryPoint):
                         )
                     )
                 cs[settingName] = self.cs[settingName]
-            # if we are only listing setting files, don't write them; it is OK that we modified them in memory :-)
+
+            # if we are only listing setting files, don't write them; it is OK that we modified them in memory
             if not self.args.skip_inspection:
                 inspector = operators.getOperatorClassFromSettings(cs).inspector(cs)
                 inspector.run()
+
             if not self.args.list_setting_files:
-                cs.writeToYamlFile(cs.path)
+                cs.writeToYamlFile(cs.path, style=self.args.settingsWriteStyle)
+
         runLog.important(
             "Finished {} {} settings files.".format(messages[1], len(csInstances))
         )

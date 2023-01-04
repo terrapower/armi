@@ -17,10 +17,9 @@ Tests some capabilities of the fuel handling machine.
 This test is high enough level that it requires input files to be present. The ones to use
 are called armiRun.yaml which is located in armi.tests
 """
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
+# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import collections
 import copy
-import os
 import unittest
 
 import numpy as np
@@ -34,7 +33,7 @@ from armi.tests import ArmiTestHelper, TEST_ROOT
 from armi.utils import directoryChangers
 
 
-class TestFuelHandler(ArmiTestHelper):
+class FuelHandlerTestHelper(ArmiTestHelper):
     @classmethod
     def setUpClass(cls):
         # prepare the input files. This is important so the unit tests run from wherever
@@ -119,6 +118,8 @@ class TestFuelHandler(ArmiTestHelper):
 
         self.directoryChanger.close()
 
+
+class TestFuelHandler(FuelHandlerTestHelper):
     def test_findHighBu(self):
         loc = self.r.core.spatialGrid.getLocatorFromRingAndPos(5, 4)
         a = self.r.core.childrenByLocator[loc]
@@ -333,25 +334,6 @@ class TestFuelHandler(ArmiTestHelper):
                 self.assertEqual(a.getLocation(), "SFP")
         fh.interactEOL()
 
-    def test_buildEqRingScheduleHelper(self):
-        fh = fuelHandlers.FuelHandler(self.o)
-
-        ringList1 = [1, 5]
-        buildRing1 = fh.buildEqRingScheduleHelper(ringList1)
-        self.assertEqual(buildRing1, [1, 2, 3, 4, 5])
-
-        ringList2 = [1, 5, 9, 6]
-        buildRing2 = fh.buildEqRingScheduleHelper(ringList2)
-        self.assertEqual(buildRing2, [1, 2, 3, 4, 5, 9, 8, 7, 6])
-
-        ringList3 = [9, 5, 3, 4, 1, 2]
-        buildRing3 = fh.buildEqRingScheduleHelper(ringList3)
-        self.assertEqual(buildRing3, [9, 8, 7, 6, 5, 3, 4, 1, 2])
-
-        ringList4 = [2, 5, 1, 1]
-        buildRing1 = fh.buildEqRingScheduleHelper(ringList4)
-        self.assertEqual(buildRing1, [2, 3, 4, 5, 1])
-
     def test_repeatShuffles(self):
         r"""
         Builds a dummy core. Does some shuffles. Repeats the shuffles. Checks that it was a perfect repeat.
@@ -400,18 +382,6 @@ class TestFuelHandler(ArmiTestHelper):
         for a in self.r.core.sfp.getChildren():
             self.assertEqual(a.getLocation(), "SFP")
 
-        if os.path.exists("armiRun2-SHUFFLES.txt"):
-            # sometimes pytest runs two of these at once.
-            os.remove("armiRun2-SHUFFLES.txt")
-
-        restartFileName = "armiRun2.restart.dat"
-        if os.path.exists(restartFileName):
-            os.remove(restartFileName)
-        for i in range(3):
-            fname = f"armiRun2.shuffles_{i}.png"
-            if os.path.exists(fname):
-                os.remove(fname)
-
     def test_readMoves(self):
         """
         Depends on the shuffleLogic created by repeatShuffles
@@ -459,19 +429,6 @@ class TestFuelHandler(ArmiTestHelper):
         factors, _ = fh.getFactorList(0)
         self.assertIn("eqShuffles", factors)
 
-    def test_simpleAssemblyRotation(self):
-        fh = fuelHandlers.FuelHandler(self.o)
-        newSettings = {"assemblyRotationStationary": True}
-        self.o.cs = self.o.cs.modified(newSettings=newSettings)
-        hist = self.o.getInterface("history")
-        assems = hist.o.r.core.getAssemblies(Flags.FUEL)[:5]
-        addSomeDetailAssemblies(hist, assems)
-        b = self.o.r.core.getFirstBlock(Flags.FUEL)
-        rotNum = b.getRotationNum()
-        fh.simpleAssemblyRotation()
-        fh.simpleAssemblyRotation()
-        self.assertEqual(b.getRotationNum(), rotNum + 2)
-
     def test_linPowByPin(self):
         _fh = fuelHandlers.FuelHandler(self.o)
         _hist = self.o.getInterface("history")
@@ -513,74 +470,6 @@ class TestFuelHandler(ArmiTestHelper):
 
         b.p.linPowByPinGamma = np.array([1, 2, 3])
         self.assertEqual(type(b.p.linPowByPinGamma), np.ndarray)
-
-    def test_buReducingAssemblyRotation(self):
-        fh = fuelHandlers.FuelHandler(self.o)
-        hist = self.o.getInterface("history")
-        newSettings = {"assemblyRotationStationary": True}
-        self.o.cs = self.o.cs.modified(newSettings=newSettings)
-        assem = self.o.r.core.getFirstAssembly(Flags.FUEL)
-
-        # apply dummy pin-level data to allow intelligent rotation
-        for b in assem.getBlocks(Flags.FUEL):
-            b.breakFuelComponentsIntoIndividuals()
-            b.initializePinLocations()
-            b.p.percentBuMaxPinLocation = 10
-            b.p.percentBuMax = 5
-            b.p.linPowByPin = list(reversed(range(b.getNumPins())))
-
-        addSomeDetailAssemblies(hist, [assem])
-        rotNum = b.getRotationNum()
-        fh.buReducingAssemblyRotation()
-        self.assertNotEqual(b.getRotationNum(), rotNum)
-
-    def test_buildRingSchedule(self):
-        fh = fuelHandlers.FuelHandler(self.o)
-
-        # simple divergent
-        schedule, widths = fh.buildRingSchedule(1, 9)
-        self.assertEqual(schedule, [9, 8, 7, 6, 5, 4, 3, 2, 1])
-
-        # simple with no jumps
-        schedule, widths = fh.buildRingSchedule(9, 1, jumpRingTo=1)
-        self.assertEqual(schedule, [1, 2, 3, 4, 5, 6, 7, 8, 9])
-
-        # simple with 1 jump
-        schedule, widths = fh.buildRingSchedule(9, 1, jumpRingFrom=6)
-        self.assertEqual(schedule, [5, 4, 3, 2, 1, 6, 7, 8, 9])
-        self.assertEqual(widths, [0, 0, 0, 0, 0, 0, 0, 0, 0])
-
-        # 1 jump plus auto-correction to core size
-        schedule, widths = fh.buildRingSchedule(1, 17, jumpRingFrom=5)
-        self.assertEqual(schedule, [6, 7, 8, 9, 5, 4, 3, 2, 1])
-        self.assertEqual(widths, [0, 0, 0, 0, 0, 0, 0, 0, 0])
-
-        # crash on invalid jumpring
-        with self.assertRaises(ValueError):
-            schedule, widths = fh.buildRingSchedule(1, 17, jumpRingFrom=0)
-
-        # test 4: Mid way jumping
-        schedule, widths = fh.buildRingSchedule(1, 9, jumpRingTo=6, jumpRingFrom=3)
-        self.assertEqual(schedule, [9, 8, 7, 4, 5, 6, 3, 2, 1])
-
-    def test_buildConvergentRingSchedule(self):
-        fh = fuelHandlers.FuelHandler(self.o)
-        schedule, widths = fh.buildConvergentRingSchedule(17, 1)
-        self.assertEqual(schedule, [1, 17])
-        self.assertEqual(widths, [16, 1])
-
-    def test_buildEqRingSchedule(self):
-        fh = fuelHandlers.FuelHandler(self.o)
-        locSchedule = fh.buildEqRingSchedule([2, 1])
-        self.assertEqual(locSchedule, ["002-001", "002-002", "001-001"])
-
-        fh.cs["circularRingOrder"] = "distanceSmart"
-        locSchedule = fh.buildEqRingSchedule([2, 1])
-        self.assertEqual(locSchedule, ["002-001", "002-002", "001-001"])
-
-        fh.cs["circularRingOrder"] = "somethingCrazy"
-        locSchedule = fh.buildEqRingSchedule([2, 1])
-        self.assertEqual(locSchedule, ["002-001", "002-002", "001-001"])
 
     def test_transferStationaryBlocks(self):
         """

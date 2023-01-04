@@ -15,7 +15,7 @@
 """
 Module for testing componentBlueprint
 """
-
+# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import inspect
 import unittest
 
@@ -169,7 +169,6 @@ assemblies:
                 PU241: {burn: true, xs: true}
                 AM242G: {burn: true, xs: true}
                 AM242M: {burn: true, xs: true}
-                AM242M: {burn: true, xs: true}
                 AM241: {burn: true, xs: true}
                 LFP41: {burn: true, xs: true}
                 PU240: {burn: true, xs: true}
@@ -221,7 +220,7 @@ assemblies:
             "AM241",
             "U238",
             "AM243",
-            "AM242",
+            "AM242M",
             "NP237",
             "NP238",
             "U234",
@@ -265,7 +264,6 @@ assemblies:
                 CM242: {burn: true, xs: true}
                 PU241: {burn: true, xs: true}
                 AM242G: {burn: true, xs: true}
-                AM242M: {burn: true, xs: true}
                 AM242M: {burn: true, xs: true}
                 AM241: {burn: true, xs: true}
                 LFP41: {burn: true, xs: true}

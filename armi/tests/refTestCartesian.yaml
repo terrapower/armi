@@ -27,8 +27,6 @@ settings:
   outputFileExtension: png
   percentNaReduction: 10.0
   power: 400000000.0
-  refType: inner igniter fuel
   summarizeAssemDesign: false
   targetK: 1.002
   transientForSensitivity: ''
-  zoneFlowSummary: false

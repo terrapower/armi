@@ -23,21 +23,24 @@ See Also
 --------
 armi.cases.suite : A collection of Cases
 """
+from typing import Dict, Optional, Sequence, Set, Union
+import ast
 import cProfile
+import glob
 import os
 import pathlib
+import platform
 import pstats
 import re
+import shutil
 import sys
-import trace
-import time
 import textwrap
-import ast
-from typing import Dict, Optional, Sequence, Set, Union
-import glob
-import tabulate
-import six
+import time
+import trace
+
 import coverage
+import six
+import tabulate
 
 from armi import context
 from armi import getPluginManager
@@ -53,12 +56,12 @@ from armi.reactor import reactors
 from armi.reactor import systemLayoutInput
 from armi.utils import pathTools
 from armi.utils import textProcessors
+from armi.utils.customExceptions import NonexistentSetting
 from armi.utils.directoryChangers import DirectoryChanger
 from armi.utils.directoryChangers import ForcedCreationDirectoryChanger
-from armi.utils.customExceptions import NonexistentSetting
 
 # change from default .coverage to help with Windows dotfile issues.
-# Must correspond with data_file entry in `coveragerc`!!
+# Must correspond with data_file entry in `coveragerc`!
 COVERAGE_RESULTS_FILE = "coverage_results.cov"
 
 
@@ -67,8 +70,8 @@ class Case:
     An ARMI Case that can be used for suite set up and post-analysis.
 
     A Case is capable of loading inputs, checking that they are valid, and
-    initializing a reactor model. Cases can also compare against
-    other cases and be collected into :py:class:`armi.cases.suite.CaseSuite`\ s.
+    initializing a reactor model. Cases can also compare against other
+    cases and be collected into multiple :py:class:`armi.cases.suite.CaseSuite`
     """
 
     def __init__(self, cs, caseSuite=None, bp=None, geom=None):
@@ -341,31 +344,16 @@ class Case:
         out of here to a more elegant place (like a context manager?).
         """
         # Start the log here so that the verbosities for the head and workers
-        # can be configured based on the user settings for the rest of the
-        # run.
+        # can be configured based on the user settings for the rest of the run
         runLog.LOG.startLog(self.cs.caseTitle)
         if context.MPI_RANK == 0:
             runLog.setVerbosity(self.cs["verbosity"])
         else:
             runLog.setVerbosity(self.cs["branchVerbosity"])
 
-        cov = None
-        if self.cs["coverage"]:
-            cov = coverage.Coverage(
-                config_file=os.path.join(context.RES, "coveragerc"), debug=["dataio"]
-            )
-            if context.MPI_SIZE > 1:
-                # interestingly, you cannot set the parallel flag in the constructor
-                # without auto-specifying the data suffix. This should enable
-                # parallel coverage with auto-generated data file suffixes and
-                # combinations.
-                cov.config.parallel = True
-            cov.start()
-
-        profiler = None
-        if self.cs["profile"]:
-            profiler = cProfile.Profile()
-            profiler.enable(subcalls=True, builtins=True)
+        # if in the settings, start the coverage and profiling
+        cov = self._startCoverage()
+        profiler = self._startProfiling()
 
         self.checkInputs()
         o = self.initializeOperator()
@@ -378,50 +366,153 @@ class Case:
             else:
                 o.operate()
 
-        if profiler is not None:
-            profiler.disable()
-            profiler.dump_stats("profiler.{:0>3}.stats".format(context.MPI_RANK))
-            statsStream = six.StringIO()
-            summary = pstats.Stats(profiler, stream=statsStream).sort_stats(
-                "cumulative"
+        # if in the settings, report the coverage and profiling
+        Case._endCoverage(self.cs["coverageConfigFile"], cov)
+        Case._endProfiling(profiler)
+
+    def _startCoverage(self):
+        """Helper to the Case.run(): spin up the code coverage tooling,
+        if the CaseSettings file says to.
+
+        Returns
+        -------
+        coverage.Coverage
+            Coverage object for pytest or unittest
+        """
+        cov = None
+        if self.cs["coverage"]:
+            cov = coverage.Coverage(
+                config_file=Case._getCoverageRcFile(
+                    userCovFile=self.cs["coverageConfigFile"], makeCopy=True
+                ),
+                debug=["dataio"],
             )
-            summary.print_stats()
-            if context.MPI_SIZE > 0:
-                allStats = context.MPI_COMM.gather(statsStream.getvalue(), root=0)
-                if context.MPI_RANK == 0:
-                    for rank, statsString in enumerate(allStats):
-                        # using print statements because the logger has been turned off
-                        print("=" * 100)
-                        print(
-                            "{:^100}".format(
-                                " Profiler statistics for RANK={} ".format(rank)
-                            )
-                        )
-                        print(statsString)
-                        print("=" * 100)
-            else:
-                print(statsStream.getvalue())
-
-        if cov is not None:
-            cov.stop()
-            cov.save()
-
             if context.MPI_SIZE > 1:
-                context.MPI_COMM.barrier()  # force waiting for everyone to finish
+                # interestingly, you cannot set the parallel flag in the constructor
+                # without auto-specifying the data suffix. This should enable
+                # parallel coverage with auto-generated data file suffixes and
+                # combinations.
+                cov.config.parallel = True
+            cov.start()
 
-            if context.MPI_RANK == 0 and context.MPI_SIZE > 1:
-                # combine all the parallel coverage data files into one and make
-                # the XML and HTML reports for the whole run.
-                combinedCoverage = coverage.Coverage(
-                    config_file=os.path.join(context.RES, "coveragerc"),
-                    debug=["dataio"],
-                )
-                combinedCoverage.config.parallel = True
-                # combine does delete the files it merges
-                combinedCoverage.combine()
-                combinedCoverage.save()
-                combinedCoverage.html_report()
-                combinedCoverage.xml_report()
+        return cov
+
+    @staticmethod
+    def _endCoverage(userCovFile, cov=None):
+        """Helper to the Case.run(): stop and report code coverage,
+        if the CaseSettings file says to.
+
+        Parameters
+        ----------
+        userCovFile : str
+            File path to user-supplied coverage configuration file (default setting is
+            empty string)
+        cov: coverage.Coverage (optional)
+            Hopefully, a valid and non-empty set of coverage data.
+        """
+        if cov is None:
+            return
+
+        cov.stop()
+        cov.save()
+
+        if context.MPI_SIZE > 1:
+            context.MPI_COMM.barrier()  # force waiting for everyone to finish
+
+        if context.MPI_RANK == 0 and context.MPI_SIZE > 1:
+            # combine all the parallel coverage data files into one and make
+            # the XML and HTML reports for the whole run.
+            combinedCoverage = coverage.Coverage(
+                config_file=Case._getCoverageRcFile(userCovFile), debug=["dataio"]
+            )
+            combinedCoverage.config.parallel = True
+            # combine does delete the files it merges
+            combinedCoverage.combine()
+            combinedCoverage.save()
+            combinedCoverage.html_report()
+            combinedCoverage.xml_report()
+
+    @staticmethod
+    def _getCoverageRcFile(userCovFile, makeCopy=False):
+        """Helper to provide the coverage configuration file according to the OS. A
+        user-supplied file will take precedence, and is not checked for a dot-filename.
+
+        Parameters
+        ----------
+        userCovFile : str
+            File path to user-supplied coverage configuration file (default setting is
+            empty string)
+        makeCopy : bool (optional)
+            Whether or not to copy the coverage config file to an alternate file path
+
+        Returns
+        -------
+        covFile : str
+            path of coveragerc file
+        """
+        # User-defined file takes precedence.
+        if userCovFile:
+            return os.path.abspath(userCovFile)
+
+        covRcDir = os.path.abspath(context.PROJECT_ROOT)
+        covFile = os.path.join(covRcDir, ".coveragerc")
+        if platform.system() == "Windows":
+            covFileWin = os.path.join(covRcDir, "coveragerc")
+            if makeCopy == True:
+                # Make a copy of the file without the dot in the name
+                shutil.copy(covFile, covFileWin)
+            return covFileWin
+        return covFile
+
+    def _startProfiling(self):
+        """Helper to the Case.run(): start the Python profiling,
+        if the CaseSettings file says to.
+
+        Returns
+        -------
+        cProfile.Profile
+            Standard Python profiling object
+        """
+        profiler = None
+        if self.cs["profile"]:
+            profiler = cProfile.Profile()
+            profiler.enable(subcalls=True, builtins=True)
+
+        return profiler
+
+    @staticmethod
+    def _endProfiling(profiler=None):
+        """Helper to the Case.run(): stop and report python profiling,
+        if the CaseSettings file says to.
+
+        Parameters
+        ----------
+        profiler: cProfile.Profile (optional)
+            Hopefully, a valid and non-empty set of profiling data.
+        """
+        if profiler is None:
+            return
+
+        profiler.disable()
+        profiler.dump_stats("profiler.{:0>3}.stats".format(context.MPI_RANK))
+        statsStream = six.StringIO()
+        summary = pstats.Stats(profiler, stream=statsStream).sort_stats("cumulative")
+        summary.print_stats()
+        if context.MPI_SIZE > 0 and context.MPI_COMM is not None:
+            allStats = context.MPI_COMM.gather(statsStream.getvalue(), root=0)
+            if context.MPI_RANK == 0:
+                for rank, statsString in enumerate(allStats):
+                    # using print statements because the logger has been turned off
+                    print("=" * 100)
+                    print(
+                        "{:^100}".format(
+                            " Profiler statistics for RANK={} ".format(rank)
+                        )
+                    )
+                    print(statsString)
+                    print("=" * 100)
+        else:
+            print(statsStream.getvalue())
 
     def initializeOperator(self, r=None):
         """Creates and returns an Operator."""
@@ -447,6 +538,19 @@ class Case:
         but not long after (because nucDir is framework-level and expected to be
         up-to-date by lots of modules).
         """
+        if not self.cs["initializeBurnChain"]:
+            runLog.info(
+                "Skipping burn-chain initialization since `initializeBurnChain` setting is disabled."
+            )
+            return
+
+        if not os.path.exists(self.cs["burnChainFileName"]):
+            raise ValueError(
+                f"The burn-chain file {self.cs['burnChainFileName']} does not exist. The "
+                f"data cannot be loaded. Fix this path or disable burn-chain initialization using "
+                f"the `initializeBurnChain` setting."
+            )
+
         with open(self.cs["burnChainFileName"]) as burnChainStream:
             nuclideBases.imposeBurnChain(burnChainStream)
 
@@ -459,38 +563,38 @@ class Case:
         bool
             True if the inputs are all good, False otherwise
         """
+        runLog.header("=========== Settings Validation Checks ===========")
         with DirectoryChanger(self.cs.inputDirectory, dumpOnException=False):
             operatorClass = operators.getOperatorClassFromSettings(self.cs)
             inspector = operatorClass.inspector(self.cs)
             inspectorIssues = [query for query in inspector.queries if query]
+
+            # Write out the settings validation issues that will be prompted for
+            # resolution if in an interactive session or forced to be resolved
+            # otherwise.
+            queryData = []
+            for i, query in enumerate(inspectorIssues, start=1):
+                queryData.append(
+                    (
+                        i,
+                        textwrap.fill(
+                            query.statement, width=50, break_long_words=False
+                        ),
+                        textwrap.fill(query.question, width=50, break_long_words=False),
+                    )
+                )
+
+            if queryData and context.MPI_RANK == 0:
+                runLog.info(
+                    tabulate.tabulate(
+                        queryData,
+                        headers=["Number", "Statement", "Question"],
+                        tablefmt="armi",
+                    )
+                )
             if context.CURRENT_MODE == context.Mode.INTERACTIVE:
                 # if interactive, ask user to deal with settings issues
                 inspector.run()
-            else:
-                # when not interactive, just print out the info in the stdout
-                queryData = []
-                for i, query in enumerate(inspectorIssues, start=1):
-                    queryData.append(
-                        (
-                            i,
-                            textwrap.fill(
-                                query.statement, width=50, break_long_words=False
-                            ),
-                            textwrap.fill(
-                                query.question, width=50, break_long_words=False
-                            ),
-                        )
-                    )
-
-                if queryData and context.MPI_RANK == 0:
-                    runLog.header("=========== Settings Input Queries ===========")
-                    runLog.info(
-                        tabulate.tabulate(
-                            queryData,
-                            headers=["Number", "Statement", "Question"],
-                            tablefmt="armi",
-                        )
-                    )
 
             return not any(inspectorIssues)
 
@@ -524,7 +628,13 @@ class Case:
 
         return command
 
-    def clone(self, additionalFiles=None, title=None, modifiedSettings=None):
+    def clone(
+        self,
+        additionalFiles=None,
+        title=None,
+        modifiedSettings=None,
+        writeStyle="short",
+    ):
         """
         Clone existing ARMI inputs to current directory with optional settings modifications.
 
@@ -539,6 +649,9 @@ class Case:
             title of new case
         modifiedSettings : dict (optional)
             settings to set/modify before creating the cloned case
+        writeStyle : str (optional)
+            Writing style for which settings get written back to the settings files
+            (short, medium, or full).
 
         Raises
         ------
@@ -567,7 +680,7 @@ class Case:
         clone.cs = newCs
 
         runLog.important("writing settings file {}".format(clone.cs.path))
-        clone.cs.writeToYamlFile(clone.cs.path)
+        clone.cs.writeToYamlFile(clone.cs.path, style=writeStyle, fromFile=self.cs.path)
         runLog.important("finished writing {}".format(clone.cs))
 
         fromPath = lambda fname: pathTools.armiAbsPath(self.cs.inputDirectory, fname)
@@ -655,7 +768,9 @@ class Case:
 
         return code
 
-    def writeInputs(self, sourceDir: Optional[str] = None):
+    def writeInputs(
+        self, sourceDir: Optional[str] = None, writeStyle: Optional[str] = "short"
+    ):
         """
         Write the inputs to disk.
 
@@ -665,9 +780,12 @@ class Case:
 
         Parameters
         ----------
-        sourceDir : str, optional
+        sourceDir : str (optional)
             The path to copy inputs from (if different from the cs.path). Needed
             in SuiteBuilder cases to find the baseline inputs from plugins (e.g. shuffleLogic)
+        writeStyle : str (optional)
+            Writing style for which settings get written back to the settings files
+            (short, medium, or full).
 
         Notes
         -----
@@ -712,7 +830,13 @@ class Case:
                 newSettings[settingName] = value
 
             self.cs = self.cs.modified(newSettings=newSettings)
-            self.cs.writeToYamlFile(self.title + ".yaml")
+            if sourceDir:
+                fromPath = os.path.join(sourceDir, self.title + ".yaml")
+            else:
+                fromPath = self.cs.path
+            self.cs.writeToYamlFile(
+                self.title + ".yaml", style=writeStyle, fromFile=fromPath
+            )
 
 
 def _copyInputsHelper(
@@ -730,13 +854,10 @@ def _copyInputsHelper(
     ----------
     fileDescription : str
         A file description for the copyOrWarn method
-
     sourcePath : str
         The absolute file path of the file to copy
-
     destPath : str
         The target directory to copy input files to
-
     origFile : str
         File path as defined in the original settings file
 
@@ -780,11 +901,9 @@ def copyInterfaceInputs(
     ----------
     cs : CaseSettings
         The source case settings to find input files
-
     destination : str
         The target directory to copy input files to
-
-    sourceDir : str, optional
+    sourceDir : str (optional)
         The directory from which to copy files. Defaults to cs.inputDirectory
 
     Returns
@@ -837,7 +956,8 @@ def copyInterfaceInputs(
                     try:
                         if path.is_absolute() and path.exists() and path.is_file():
                             # Path is absolute, no settings modification or filecopy needed
-                            pass
+                            newFiles.append(path)
+                            continue
                     except OSError:
                         pass
                 # Attempt to construct an absolute file path

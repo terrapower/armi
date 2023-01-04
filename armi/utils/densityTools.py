@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Assorted utilities to help with basic density calculations"""
 from typing import Tuple, List, Dict
 
 from armi.nucDirectory import nucDir, nuclideBases, elements
@@ -260,7 +261,6 @@ def normalizeNuclideList(nuclideVector, normalization=1.0):
     nuclideVector : dict
         dictionary of values indexed by nuclide identifiers -- e.g. nucNames or nuclideBases
     """
-
     normalizationFactor = sum(nuclideVector.values()) / normalization
 
     for nucName, mFrac in nuclideVector.items():

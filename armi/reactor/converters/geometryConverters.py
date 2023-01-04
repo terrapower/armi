@@ -27,32 +27,33 @@ Generally, mass is conserved in geometry conversions.
 import collections
 import copy
 import math
-import matplotlib
-import matplotlib.pyplot as plt
-import numpy
 import operator
 import os
 
+import matplotlib
+import matplotlib.pyplot as plt
+import numpy
+
 from armi import materials
 from armi import runLog
+from armi.physics.neutronics.fissionProductModel import lumpedFissionProduct
 from armi.reactor import assemblies
 from armi.reactor import blocks
 from armi.reactor import components
-from armi.reactor import reactors
-from armi.reactor import parameters
-from armi.reactor.parameters import Category
-from armi.reactor.parameters import ParamLocation
-from armi.reactor.parameters import NEVER
-from armi.reactor.parameters import SINCE_LAST_GEOMETRY_TRANSFORMATION
 from armi.reactor import geometry
+from armi.reactor import grids
+from armi.reactor import parameters
+from armi.reactor import reactors
+from armi.reactor.converters import blockConverters
 from armi.reactor.converters import meshConverters
+from armi.reactor.flags import Flags
+from armi.reactor.parameters import Category
+from armi.reactor.parameters import NEVER
+from armi.reactor.parameters import ParamLocation
+from armi.reactor.parameters import SINCE_LAST_GEOMETRY_TRANSFORMATION
+from armi.utils import hexagon
 from armi.utils import plotting
 from armi.utils import units
-from armi.reactor import grids
-from armi.reactor.flags import Flags
-from armi.utils import hexagon
-from armi.reactor.converters import blockConverters
-from armi.reactor import assemblies
 
 BLOCK_AXIAL_MESH_SPACING = (
     20  # Block axial mesh spacing set for nodal diffusion calculation (cm)
@@ -208,7 +209,7 @@ class FuelAssemNumModifier(GeometryChanger):
                 # Add new fuel assembly to the core
                 if assem.hasFlags(self.overwriteList):
                     fuelAssem = self._sourceReactor.core.createAssemblyOfType(
-                        assemType=self.fuelType
+                        assemType=self.fuelType, cs=self._cs
                     )
                     # Remove existing assembly in the core location before adding new assembly
                     if assem.hasFlags(self.overwriteList):
@@ -308,8 +309,8 @@ class FuelAssemNumModifier(GeometryChanger):
             if dist <= newRingDist:  # check distance
                 if assem is None:  # no assembly in that position, add assembly
                     newAssem = r.core.createAssemblyOfType(
-                        assemType=assemType
-                    )  # create a fuel assembly
+                        assemType=assemType, cs=self._cs
+                    )
                     r.core.add(newAssem, locator)  # put new assembly in reactor!
                 else:  # all other types of assemblies (fuel, control, etc) leave as is
                     pass
@@ -386,7 +387,6 @@ class HexToRZThetaConverter(GeometryConverter):
     ):
         GeometryConverter.__init__(self, cs)
         self.converterSettings = converterSettings
-        self._o = None
         self.meshConverter = None
         self._expandSourceReactor = expandReactor
         self._strictHomogenization = strictHomogenization
@@ -398,6 +398,7 @@ class HexToRZThetaConverter(GeometryConverter):
         self._newBlockNum = 0
         self.blockMap = collections.defaultdict(list)
         self.blockVolFracs = collections.defaultdict(dict)
+        self._homogenizeAxiallyByFlags = False
 
     def _generateConvertedReactorMesh(self):
         """Convert the source reactor using the converterSettings"""
@@ -576,7 +577,6 @@ class HexToRZThetaConverter(GeometryConverter):
         self._sourceReactor.core.summarizeReactorStats()
         if self._expandSourceReactor:
             self._expandSourceReactorGeometry()
-        self._o = self._sourceReactor.o
 
     def _setupConvertedReactor(self, grid):
         self.convReactor = reactors.Reactor(
@@ -603,7 +603,6 @@ class HexToRZThetaConverter(GeometryConverter):
         self._assemsInRadialZone keeps track of the unique assemblies that are in each radial ring. This
         ensures that no assemblies are duplicated when using self._getAssemsInRadialThetaZone()
         """
-
         lowerTheta = 0.0
         for _thetaIndex, upperTheta in enumerate(self.meshConverter.thetaMesh):
             assemsInRadialThetaZone = self._getAssemsInRadialThetaZone(
@@ -734,7 +733,6 @@ class HexToRZThetaConverter(GeometryConverter):
         outerDiameter : float
             The outer diameter (in cm) of the radial zone just added
         """
-
         newAssembly = assemblies.ThRZAssembly("mixtureAssem")
         newAssembly.spatialLocator = self.convReactor.core.spatialGrid[
             thetaIndex, radialIndex, 0
@@ -744,9 +742,10 @@ class HexToRZThetaConverter(GeometryConverter):
             len(self.meshConverter.axialMesh), armiObject=newAssembly
         )
 
+        lfp = lumpedFissionProduct.lumpedFissionProductFactory(self._cs)
+
         lowerAxialZ = 0.0
         for axialIndex, upperAxialZ in enumerate(self.meshConverter.axialMesh):
-
             # Setup the new block data
             newBlockName = "B{:04d}{}".format(
                 int(newAssembly.getNum()), chr(axialIndex + 65)
@@ -793,6 +792,7 @@ class HexToRZThetaConverter(GeometryConverter):
             }
             for nuc in self._sourceReactor.blueprints.allNuclidesInProblem:
                 material.setMassFrac(nuc, 0.0)
+
             newComponent = components.DifferentialRadialSegment(
                 "mixture", material, **dims
             )
@@ -800,8 +800,7 @@ class HexToRZThetaConverter(GeometryConverter):
             newBlock.p.zbottom = lowerAxialZ
             newBlock.p.ztop = upperAxialZ
 
-            fpi = self._o.getInterface("fissionProducts")
-            newBlock.setLumpedFissionProducts(fpi.getGlobalLumpedFissionProducts())
+            newBlock.setLumpedFissionProducts(lfp)
 
             # Assign the new block cross section type and burn up group
             newBlock.setType(newBlockType)
@@ -822,6 +821,7 @@ class HexToRZThetaConverter(GeometryConverter):
 
             newAssembly.add(newBlock)
             lowerAxialZ = upperAxialZ
+
         newAssembly.calculateZCoords()  # builds mesh
         self.convReactor.core.add(newAssembly)
 
@@ -1053,7 +1053,6 @@ class HexToRZThetaConverter(GeometryConverter):
 
         This makes plots of each individual theta mesh
         """
-
         runLog.info(
             "Generating plot(s) of the converted {} reactor".format(
                 str(self.convReactor.core.geomType).upper()
@@ -1190,7 +1189,6 @@ class HexToRZThetaConverter(GeometryConverter):
 
     def reset(self):
         """Clear out attribute data, including holding the state of the converted reactor core model."""
-        self._o = None
         self.meshConverter = None
         self._radialMeshConversionType = None
         self._axialMeshConversionType = None
@@ -1279,6 +1277,7 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
                     self._sourceReactor.core.geomType,
                 )
             )
+
         edgeChanger = EdgeAssemblyChanger()
         edgeChanger.removeEdgeAssemblies(self._sourceReactor.core)
         runLog.info("Expanding to full core geometry")
@@ -1296,16 +1295,23 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
         for a in self._sourceReactor.core.getAssemblies():
             # make extras and add them too. since the input is assumed to be 1/3 core.
             otherLocs = grid.getSymmetricEquivalents(a.spatialLocator.indices)
+            thisZone = (
+                self._sourceReactor.core.zones.findZoneItIsIn(a)
+                if len(self._sourceReactor.core.zones) > 0
+                else None
+            )
             angle = 2 * math.pi / (len(otherLocs) + 1)
             count = 1
             for i, j in otherLocs:
                 newAssem = copy.deepcopy(a)
                 newAssem.makeUnique()
                 newAssem.rotate(count * angle)
-                count = count + 1
+                count += 1
                 self._sourceReactor.core.add(
                     newAssem, self._sourceReactor.core.spatialGrid[i, j, 0]
                 )
+                if thisZone:
+                    thisZone.addLoc(newAssem.getLocation())
                 self._newAssembliesAdded.append(newAssem)
 
             if a.getLocation() == "001-001":
@@ -1439,7 +1445,6 @@ class EdgeAssemblyChanger(GeometryChanger):
         See Also
         --------
         addEdgeAssemblies : adds the edge assemblies
-
         """
         if core.isFullCore:
             return

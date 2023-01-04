@@ -14,17 +14,19 @@
 
 """Test axialExpansionChanger"""
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
-import os
 from statistics import mean
+import os
 import unittest
+
 from numpy import linspace, array, vstack, zeros
-from armi.reactor.tests.test_reactors import loadTestReactor
+
 from armi.materials import material
-from armi.tests import TEST_ROOT
 from armi.reactor.assemblies import grids
 from armi.reactor.assemblies import HexAssembly
 from armi.reactor.blocks import HexBlock
 from armi.reactor.components import DerivedShape, UnshapedComponent
+from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
+from armi.tests import TEST_ROOT
 from armi.reactor.components.basicShapes import (
     Circle,
     Hexagon,
@@ -36,19 +38,14 @@ from armi.reactor.converters.axialExpansionChanger import (
     ExpansionData,
     _determineLinked,
 )
-from armi.reactor.flags import Flags
 from armi import materials
-from armi.utils import units
-from armi.materials import custom
+from armi.materials import custom, _MATERIAL_NAMESPACE_ORDER
+from armi.reactor.flags import Flags
 from armi.tests import mockRunLogs
-
-# set namespace order for materials so that fake HT9 material can be found
-materials.setMaterialNamespaceOrder(
-    ["armi.reactor.converters.tests.test_axialExpansionChanger", "armi.materials"]
-)
+from armi.utils import units
 
 
-class Base(unittest.TestCase):
+class AxialExpansionTestBase(unittest.TestCase):
     """common methods and variables for unit tests"""
 
     Steel_Component_Lst = [
@@ -67,6 +64,18 @@ class Base(unittest.TestCase):
         self.massAndDens = {}
         self.steelMass = []
         self.blockHeights = {}
+        self.origNameSpace = _MATERIAL_NAMESPACE_ORDER
+        # set namespace order for materials so that fake HT9 material can be found
+        materials.setMaterialNamespaceOrder(
+            [
+                "armi.reactor.converters.tests.test_axialExpansionChanger",
+                "armi.materials",
+            ]
+        )
+
+    def tearDown(self):
+        # reset global namespace
+        materials.setMaterialNamespaceOrder(self.origNameSpace)
 
     def _getConservationMetrics(self, a):
         """retrieves and stores various conservation metrics
@@ -168,11 +177,11 @@ class Temperature:
                 self.tempField[i, :] = tmp[i]
 
 
-class TestAxialExpansionHeight(Base, unittest.TestCase):
+class TestAxialExpansionHeight(AxialExpansionTestBase, unittest.TestCase):
     """verify that test assembly is expanded correctly"""
 
     def setUp(self):
-        Base.setUp(self)
+        AxialExpansionTestBase.setUp(self)
         self.a = buildTestAssemblyWithFakeMaterial(name="FakeMat")
 
         self.temp = Temperature(
@@ -190,6 +199,9 @@ class TestAxialExpansionHeight(Base, unittest.TestCase):
             )
             self._getConservationMetrics(self.a)
             self.axialMeshLocs[idt, :] = self.a.getAxialMesh()
+
+    def tearDown(self):
+        AxialExpansionTestBase.tearDown(self)
 
     def test_AssemblyAxialExpansionHeight(self):
         """test the axial expansion gives correct heights for component-based expansion"""
@@ -262,12 +274,15 @@ class TestAxialExpansionHeight(Base, unittest.TestCase):
         return mean(tmpMapping)
 
 
-class TestConservation(Base, unittest.TestCase):
+class TestConservation(AxialExpansionTestBase, unittest.TestCase):
     """verify that conservation is maintained in assembly-level axial expansion"""
 
     def setUp(self):
-        Base.setUp(self)
+        AxialExpansionTestBase.setUp(self)
         self.a = buildTestAssemblyWithFakeMaterial(name="FakeMat")
+
+    def tearDown(self):
+        AxialExpansionTestBase.tearDown(self)
 
     def expandAssemForMassConservationTest(self):
         """initialize class variables for mass conservation checks"""
@@ -539,7 +554,9 @@ class TestManageCoreMesh(unittest.TestCase):
 
     def setUp(self):
         self.axialExpChngr = AxialExpansionChanger()
-        _o, self.r = loadTestReactor(TEST_ROOT)
+        o, self.r = loadTestReactor(TEST_ROOT)
+        reduceTestReactorRings(self.r, o.cs, 3)
+
         self.oldAxialMesh = self.r.core.p.axialMesh
         # expand refAssem by 10%
         componentLst = [c for b in self.r.core.refAssem for c in b]
@@ -556,13 +573,16 @@ class TestManageCoreMesh(unittest.TestCase):
             self.assertLess(old, new)
 
 
-class TestExceptions(Base, unittest.TestCase):
+class TestExceptions(AxialExpansionTestBase, unittest.TestCase):
     """Verify exceptions are caught"""
 
     def setUp(self):
-        Base.setUp(self)
+        AxialExpansionTestBase.setUp(self)
         self.a = buildTestAssemblyWithFakeMaterial(name="FakeMatException")
         self.obj.setAssembly(self.a)
+
+    def tearDown(self):
+        AxialExpansionTestBase.tearDown(self)
 
     def test_isTopDummyBlockPresent(self):
         # build test assembly without dummy
@@ -658,34 +678,26 @@ class TestExceptions(Base, unittest.TestCase):
             self.assertEqual(the_exception.error_code, 3)
 
     def test_isFuelLocked(self):
-        b_TwoFuel = HexBlock("fuel", height=10.0)
-        fuelDims = {"Tinput": 25.0, "Thot": 25.0, "od": 0.76, "id": 0.00, "mult": 127.0}
-        fuel2Dims = {
+        """ensures that the RuntimeError statement in ExpansionData::_isFuelLocked is raised appropriately
+
+        Notes
+        ------
+        This is implemented by creating a fuel block that contains no fuel component
+        and passing it to ExpansionData::_isFuelLocked.
+        """
+        expdata = ExpansionData(HexAssembly("testAssemblyType"), setFuel=True)
+        b_NoFuel = HexBlock("fuel", height=10.0)
+        shieldDims = {
             "Tinput": 25.0,
             "Thot": 25.0,
-            "od": 0.80,
-            "id": 0.77,
+            "od": 0.76,
+            "id": 0.00,
             "mult": 127.0,
         }
-        fuel = Circle("fuel", "FakeMat", **fuelDims)
-        fuel2 = Circle("fuel", "FakeMat", **fuel2Dims)
-        b_TwoFuel.add(fuel)
-        b_TwoFuel.add(fuel2)
-        b_TwoFuel.setType("test")
-        expdata = ExpansionData(HexAssembly("testAssemblyType"), setFuel=True)
-        # do test
-        with self.assertRaises(RuntimeError) as cm:
-            expdata._isFuelLocked(b_TwoFuel)
-
-            the_exception = cm.exception
-            self.assertEqual(the_exception.error_code, 3)
-
-        b_NoFuel = HexBlock("fuel", height=10.0)
-        shield = Circle("shield", "FakeMat", **fuelDims)
+        shield = Circle("shield", "FakeMat", **shieldDims)
         b_NoFuel.add(shield)
         with self.assertRaises(RuntimeError) as cm:
             expdata._isFuelLocked(b_NoFuel)
-
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
 
@@ -705,15 +717,19 @@ class TestExceptions(Base, unittest.TestCase):
             self.assertEqual(cm.exception, 3)
 
 
-class TestDetermineTargetComponent(unittest.TestCase):
+class TestDetermineTargetComponent(AxialExpansionTestBase, unittest.TestCase):
     """verify determineTargetComponent method is properly updating _componentDeterminesBlockHeight"""
 
     def setUp(self):
+        AxialExpansionTestBase.setUp(self)
         self.obj = AxialExpansionChanger()
         self.a = buildTestAssemblyWithFakeMaterial(name="FakeMatException")
         self.obj.setAssembly(self.a)
         # need an empty dictionary because we want to test for the added component only
         self.obj.expansionData._componentDeterminesBlockHeight = {}
+
+    def tearDown(self):
+        AxialExpansionTestBase.tearDown(self)
 
     def test_determineTargetComponent(self):
         # build a test block
@@ -811,16 +827,20 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
     def setUp(self):
         """This test uses a different armiRun.yaml than the default"""
 
-        _o, r = loadTestReactor(
+        o, r = loadTestReactor(
             os.path.join(TEST_ROOT, "detailedAxialExpansion"),
             customSettings={"inputHeightsConsideredHot": True},
         )
+        reduceTestReactorRings(r, o.cs, 3)
+
         self.stdAssems = [a for a in r.core.getAssemblies()]
 
-        _oCold, rCold = loadTestReactor(
+        oCold, rCold = loadTestReactor(
             os.path.join(TEST_ROOT, "detailedAxialExpansion"),
             customSettings={"inputHeightsConsideredHot": False},
         )
+        reduceTestReactorRings(rCold, oCold.cs, 3)
+
         self.testAssems = [a for a in rCold.core.getAssemblies()]
 
     def test_coldAssemblyExpansion(self):
@@ -861,6 +881,7 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
                     ):
                         # custom materials don't expand
                         self.assertGreater(bExp.getMass("U235"), bStd.getMass("U235"))
+
                 if not aStd.hasFlags(Flags.CONTROL) and not aStd.hasFlags(Flags.TEST):
                     if not hasCustomMaterial:
                         # skip blocks of custom material where liner is merged with clad
@@ -896,12 +917,16 @@ def checkColdBlockHeight(bStd, bExp, assertType, strForAssertion):
     )
 
 
-class TestLinkage(unittest.TestCase):
+class TestLinkage(AxialExpansionTestBase, unittest.TestCase):
     """test axial linkage between components"""
 
     def setUp(self):
         """contains common dimensions for all component class types"""
+        AxialExpansionTestBase.setUp(self)
         self.common = ("test", "FakeMat", 25.0, 25.0)  # name, material, Tinput, Thot
+
+    def tearDown(self):
+        AxialExpansionTestBase.tearDown(self)
 
     def runTest(
         self,

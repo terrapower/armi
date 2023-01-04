@@ -18,17 +18,17 @@ import os
 from armi.settings import setting
 from armi.operators import settingsValidation
 
-CONF_ASSEMBLY_ROTATION_ALG = "assemblyRotationAlgorithm"
 CONF_ASSEM_ROTATION_STATIONARY = "assemblyRotationStationary"
+CONF_ASSEMBLY_ROTATION_ALG = "assemblyRotationAlgorithm"
 CONF_CIRCULAR_RING_MODE = "circularRingMode"
 CONF_CIRCULAR_RING_ORDER = "circularRingOrder"
 CONF_CUSTOM_FUEL_MANAGEMENT_INDEX = "customFuelManagementIndex"
-CONF_RUN_LATTICE_BEFORE_SHUFFLING = "runLatticePhysicsBeforeShuffling"
-CONF_SHUFFLE_LOGIC = "shuffleLogic"
-CONF_PLOT_SHUFFLE_ARROWS = "plotShuffleArrows"
 CONF_FUEL_HANDLER_NAME = "fuelHandlerName"
 CONF_JUMP_RING_NUM = "jumpRingNum"
 CONF_LEVELS_PER_CASCADE = "levelsPerCascade"
+CONF_PLOT_SHUFFLE_ARROWS = "plotShuffleArrows"
+CONF_RUN_LATTICE_BEFORE_SHUFFLING = "runLatticePhysicsBeforeShuffling"
+CONF_SHUFFLE_LOGIC = "shuffleLogic"
 
 
 def getFuelCycleSettings():

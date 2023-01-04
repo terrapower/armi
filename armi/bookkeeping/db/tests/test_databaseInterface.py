@@ -11,9 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-r""" Tests of the Database Interface
-"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
+r""" Tests of the Database Interface"""
+# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-method-argument,import-outside-toplevel
 import os
 import types
 import unittest
@@ -26,11 +25,12 @@ from armi import __version__ as version
 from armi import interfaces
 from armi import runLog
 from armi import settings
-from armi.bookkeeping.db.database3 import DatabaseInterface, Database3
+from armi.bookkeeping.db.database3 import Database3
+from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.cases import case
 from armi.reactor import grids
 from armi.reactor.flags import Flags
-from armi.reactor.tests import test_reactors
+from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
 from armi.settings.fwSettings.databaseSettings import CONF_FORCE_DB_PARAMS
 from armi.tests import TEST_ROOT
 from armi.utils import directoryChangers
@@ -51,10 +51,8 @@ def getSimpleDBOperator(cs):
     newSettings["db"] = True
     newSettings["runType"] = "Standard"
     newSettings["geomFile"] = "geom1Assem.xml"
-    newSettings["nCycles"] = 2
-    newSettings[CONF_FORCE_DB_PARAMS] = [
-        "baseBu",
-    ]
+    newSettings["nCycles"] = 1
+    newSettings[CONF_FORCE_DB_PARAMS] = ["baseBu"]
     cs = cs.modified(newSettings=newSettings)
     genDBCase = case.Case(cs)
     settings.setMasterCs(cs)
@@ -88,7 +86,7 @@ class TestDatabaseInterface(unittest.TestCase):
     def setUp(self):
         self.td = directoryChangers.TemporaryDirectoryChanger()
         self.td.__enter__()
-        self.o, self.r = test_reactors.loadTestReactor(TEST_ROOT)
+        self.o, self.r = loadTestReactor(TEST_ROOT)
 
         self.dbi = DatabaseInterface(self.r, self.o.cs)
         self.dbi.initDB(fName=self._testMethodName + ".h5")
@@ -99,6 +97,12 @@ class TestDatabaseInterface(unittest.TestCase):
         self.db.close()
         self.stateRetainer.__exit__()
         self.td.__exit__(None, None, None)
+
+    def test_interactEveryNodeReturn(self):
+        """test that the DB is NOT written to if cs["numCoupledIterations"] != 0"""
+        self.o.cs["numCoupledIterations"] = 1
+        self.dbi.interactEveryNode(0, 0)
+        self.assertFalse(self.dbi.database.hasTimeStep(0, 0))
 
     def test_interactBOL(self):
         self.assertIsNotNone(self.dbi._db)
@@ -113,6 +117,15 @@ class TestDatabaseInterface(unittest.TestCase):
         self.assertEqual(self.dbi.distributable(), 4)
         self.dbi.interactDistributeState()
         self.assertEqual(self.dbi.distributable(), 4)
+
+    def test_timeNodeLoop_numCoupledIterations(self):
+        """test that database is written out after the coupling loop has completed"""
+        # clear out interfaces (no need to run physics) but leave database
+        self.o.interfaces = [self.dbi]
+        self.o.cs["numCoupledIterations"] = 1
+        self.assertFalse(self.dbi._db.hasTimeStep(0, 0))
+        self.o._timeNodeLoop(0, 0)
+        self.assertTrue(self.dbi._db.hasTimeStep(0, 0))
 
 
 class TestDatabaseWriter(unittest.TestCase):
@@ -134,7 +147,7 @@ class TestDatabaseWriter(unittest.TestCase):
         with self.o:
             self.o.operate()
 
-        self.assertEqual(1, self.r.p.cycle)
+        self.assertEqual(0, self.r.p.cycle)
         self.assertEqual(2, self.r.p.timeNode)
 
         with h5py.File(self.o.cs.caseTitle + ".h5", "r") as h5:
@@ -146,15 +159,14 @@ class TestDatabaseWriter(unittest.TestCase):
             self.assertIn("startTime", h5.attrs)
             self.assertIn("machines", h5.attrs)
             self.assertIn("caseTitle", h5.attrs)
-
             self.assertIn("geomFile", h5["inputs"])
             self.assertIn("settings", h5["inputs"])
             self.assertIn("blueprints", h5["inputs"])
-            self.assertIn("baseBu", h5["c01n02/HexBlock"])
+            self.assertIn("baseBu", h5["c00n02/HexBlock"])
 
     def test_metaDataEndFail(self):
         def failMethod(cycle, node):  # pylint: disable=unused-argument
-            if cycle == 1 and node == 1:
+            if cycle == 0 and node == 1:
                 raise Exception("forcing failure")
 
         self.o.interfaces.append(MockInterface(self.o.r, self.o.cs, failMethod))
@@ -163,7 +175,7 @@ class TestDatabaseWriter(unittest.TestCase):
             with self.o:
                 self.o.operate()
 
-        self.assertEqual(1, self.r.p.cycle)
+        self.assertEqual(0, self.r.p.cycle)
         self.assertEqual(1, self.r.p.timeNode)
 
         with h5py.File(self.o.cs.caseTitle + ".h5", "r") as h5:
@@ -187,7 +199,7 @@ class TestDatabaseWriter(unittest.TestCase):
         self.called = False
 
         def getFluxAwesome(cycle, node):  # pylint: disable=unused-argument
-            if cycle != 1 or node != 2:
+            if cycle != 0 or node != 2:
                 return
 
             blocks = self.r.core.getBlocks()
@@ -245,9 +257,10 @@ class TestDatabaseReading(unittest.TestCase):
         # than the original input file. This allows settings to be
         # changed in memory like this and survive for testing.
         newSettings = {"verbosity": "extra"}
-        newSettings["nCycles"] = 3
-        newSettings["burnSteps"] = 3
-        o, _r = test_reactors.loadTestReactor(customSettings=newSettings)
+        newSettings["nCycles"] = 2
+        newSettings["burnSteps"] = 2
+        o, r = loadTestReactor(customSettings=newSettings)
+        reduceTestReactorRings(r, o.cs, 3)
 
         settings.setMasterCs(o.cs)
 
@@ -279,29 +292,34 @@ class TestDatabaseReading(unittest.TestCase):
         del cls.r
         cls.r = None
 
+    def _fullCoreSizeChecker(self, r):
+        """TODO"""
+        self.assertEqual(r.core.numRings, 3)
+        self.assertEqual(r.p.cycle, 0)
+        self.assertEqual(len(r.core.assembliesByName), 19)
+        self.assertEqual(len(r.core.circularRingList), 0)
+        self.assertEqual(len(r.core.blocksByName), 95)
+
     def test_growToFullCore(self):
         with Database3(self.dbName, "r") as db:
             r = db.load(0, 0, allowMissing=True)
 
-        r.core.growToFullCore(None)
-
-        self.assertEqual(r.core.numRings, 9)
+        # test partial core values
+        self.assertEqual(r.core.numRings, 3)
         self.assertEqual(r.p.cycle, 0)
-        self.assertEqual(len(r.core.assembliesByName), 217)
+        self.assertEqual(len(r.core.assembliesByName), 7)
         self.assertEqual(len(r.core.circularRingList), 0)
-        self.assertEqual(len(r.core.blocksByName), 1085)
+        self.assertEqual(len(r.core.blocksByName), 35)
+
+        r.core.growToFullCore(None)
+        self._fullCoreSizeChecker(r)
 
     def test_growToFullCoreWithCS(self):
         with Database3(self.dbName, "r") as db:
             r = db.load(0, 0, allowMissing=True)
 
         r.core.growToFullCore(self.cs)
-
-        self.assertEqual(r.core.numRings, 9)
-        self.assertEqual(r.p.cycle, 0)
-        self.assertEqual(len(r.core.assembliesByName), 217)
-        self.assertEqual(len(r.core.circularRingList), 0)
-        self.assertEqual(len(r.core.blocksByName), 1085)
+        self._fullCoreSizeChecker(r)
 
     def test_growToFullCoreFromFactory(self):
         from armi.bookkeeping.db import databaseFactory
@@ -311,12 +329,7 @@ class TestDatabaseReading(unittest.TestCase):
             r = db.load(0, 0, allowMissing=True)
 
         r.core.growToFullCore(None)
-
-        self.assertEqual(r.core.numRings, 9)
-        self.assertEqual(r.p.cycle, 0)
-        self.assertEqual(len(r.core.assembliesByName), 217)
-        self.assertEqual(len(r.core.circularRingList), 0)
-        self.assertEqual(len(r.core.blocksByName), 1085)
+        self._fullCoreSizeChecker(r)
 
     def test_growToFullCoreFromFactoryWithCS(self):
         from armi.bookkeeping.db import databaseFactory
@@ -326,12 +339,7 @@ class TestDatabaseReading(unittest.TestCase):
             r = db.load(0, 0, allowMissing=True)
 
         r.core.growToFullCore(self.cs)
-
-        self.assertEqual(r.core.numRings, 9)
-        self.assertEqual(r.p.cycle, 0)
-        self.assertEqual(len(r.core.assembliesByName), 217)
-        self.assertEqual(len(r.core.circularRingList), 0)
-        self.assertEqual(len(r.core.blocksByName), 1085)
+        self._fullCoreSizeChecker(r)
 
     def test_readWritten(self):
         with Database3(self.dbName, "r") as db:
@@ -387,7 +395,7 @@ class TestDatabaseReading(unittest.TestCase):
 
     def test_variousTypesWork(self):
         with Database3(self.dbName, "r") as db:
-            r2 = db.load(1, 3)
+            r2 = db.load(1, 1)
 
         b1 = self.r.core.getFirstBlock(Flags.FUEL)
         b2 = r2.core.getFirstBlock(Flags.FUEL)
@@ -440,6 +448,7 @@ class TestStandardFollowOn(unittest.TestCase):
 
         mock = MockInterface(o.r, o.cs, None)
 
+        # pylint: disable=unused-argument
         def interactEveryNode(self, cycle, node):
             # Could use just += 1 but this will show more errors since it is less
             # suseptable to cancelation of errors off by one.
@@ -473,7 +482,7 @@ class TestStandardFollowOn(unittest.TestCase):
             newSettings = {}
             newSettings["loadStyle"] = "fromDB"
             newSettings["reloadDBName"] = loadDB
-            newSettings["startCycle"] = 1
+            newSettings["startCycle"] = 0
             newSettings["startNode"] = 1
             cs = cs.modified(newSettings=newSettings)
             o = self._getOperatorThatChangesVariables(cs)

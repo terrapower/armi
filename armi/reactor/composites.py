@@ -35,8 +35,8 @@ import timeit
 from typing import Dict, Optional, Type, Tuple, List, Union
 
 import numpy
-import tabulate
 import six
+import tabulate
 
 from armi import context
 from armi import runLog
@@ -898,10 +898,14 @@ class ArmiObject(metaclass=CompositeModelType):
 
         """
         nuclideNames = self._getNuclidesFromSpecifier(nucName)
-        return sum(self.getMassFracs().get(nucName, 0.0) for nucName in nuclideNames)
+        massFracs = self.getMassFracs()
+        return sum(massFracs.get(nucName, 0.0) for nucName in nuclideNames)
 
     def getMicroSuffix(self):
-        pass
+        raise NotImplementedError(
+            f"Cannot get the suffix on {type(self)} objects. Only certain subclasses"
+            " of composite such as Blocks or Components have the concept of micro suffixes."
+        )
 
     def _getNuclidesFromSpecifier(self, nucSpec):
         """
@@ -941,7 +945,7 @@ class ArmiObject(metaclass=CompositeModelType):
                 # has no natural isotopics!
                 nucs = [
                     nb.name
-                    for nb in elements.bySymbol[nucName].nuclideBases
+                    for nb in elements.bySymbol[nucName].nuclides
                     if not isinstance(nb, nuclideBases.NaturalNuclideBase)
                 ]
                 convertedNucNames.extend(nucs)
@@ -1492,10 +1496,6 @@ class ArmiObject(metaclass=CompositeModelType):
         armi.composites.ArmiObject
             the first ancestor up the chain of parents that matches the passed flags
 
-        Notes
-        -----
-        This will throw an error if no ancestor can be found that matches the typeSpec
-
         See Also
         --------
         ArmiObject.hasFlags()
@@ -1720,7 +1720,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
     def getPuN(self):
         """Returns total number density of Pu isotopes"""
-        nucNames = [nuc.name for nuc in elements.byZ[94].nuclideBases]
+        nucNames = [nuc.name for nuc in elements.byZ[94].nuclides]
         return sum(self.getNuclideNumberDensities(nucNames))
 
     def calcTotalParam(
@@ -2073,7 +2073,7 @@ class ArmiObject(metaclass=CompositeModelType):
     def getPuMass(self):
         """Get the mass of Pu in this object in grams."""
         nucs = []
-        for nucName in [nuc.name for nuc in elements.byZ[94].nuclideBases]:
+        for nucName in [nuc.name for nuc in elements.byZ[94].nuclides]:
             nucs.append(nucName)
         pu = self.getMass(nucs)
         return pu
@@ -2097,7 +2097,7 @@ class ArmiObject(metaclass=CompositeModelType):
     def getZrFrac(self):
         """return the total zr/(hm+zr) fraction in this assembly"""
         hm = self.getHMMass()
-        zrNucs = [nuc.name for nuc in elements.bySymbol["ZR"].nuclideBases]
+        zrNucs = [nuc.name for nuc in elements.bySymbol["ZR"].nuclides]
         zr = self.getMass(zrNucs)
         if hm + zr > 0:
             return zr / (hm + zr)
@@ -2143,7 +2143,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
         ma_nuclides = iterables.flatten(
             [
-                ele.nuclideBases
+                ele.nuclides
                 for ele in [
                     elements.byZ[key] for key in elements.byZ.keys() if key > 94
                 ]
@@ -3097,15 +3097,58 @@ class Composite(ArmiObject):
             )
         return integratedMgFlux
 
+    def _getReactionRates(self, nucName, nDensity=None):
+        """
+        Parameters
+        ----------
+        nucName : str
+            nuclide name -- e.g. 'U235'
+        nDensity : float
+            number density
+
+        Returns
+        -------
+        rxnRates : dict
+            dictionary of reaction rates (rxn/s) for nG, nF, n2n, nA and nP
+
+        Notes
+        ----
+        If you set nDensity to 1/CM2_PER_BARN this makes 1 group cross section generation easier
+        """
+        from armi.reactor.blocks import Block
+
+        if nDensity is None:
+            nDensity = self.getNumberDensity(nucName)
+        try:
+            return getReactionRateDict(
+                nucName,
+                self.getAncestorWithFlags(Flags.CORE).lib,
+                self.getAncestor(lambda x: isinstance(x, Block)).getMicroSuffix(),
+                self.getIntegratedMgFlux(),
+                nDensity,
+            )
+        except AttributeError:
+            runLog.warning(
+                f"Object {self} does not belong to a core and so has no reaction rates.",
+                single=True,
+            )
+            return {"nG": 0, "nF": 0, "n2n": 0, "nA": 0, "nP": 0}
+        except KeyError:
+            runLog.warning(
+                f"Attempting to get a reaction rate on an isotope not in the lib {nucName}.",
+                single=True,
+            )
+            return {"nG": 0, "nF": 0, "n2n": 0, "nA": 0, "nP": 0}
+
     def getReactionRates(self, nucName, nDensity=None):
         """
         Get the reaction rates of a certain nuclide on this object.
 
         Parameters
         ----------
-        nucName - str
+        nucName : str
             nuclide name -- e.g. 'U235'
-        nDensity - float
+        nDensity : float
             number Density
 
         Returns
@@ -3121,8 +3164,10 @@ class Composite(ArmiObject):
         """
         rxnRates = {"nG": 0, "nF": 0, "n2n": 0, "nA": 0, "nP": 0, "n3n": 0}
 
-        for armiObject in self:
-            for rxName, val in armiObject.getReactionRates(
+        # not all composite objects are iterable (i.e. components), so in that
+        # case just examine only the object itself
+        for armiObject in self.getChildren() or [self]:
+            for rxName, val in armiObject._getReactionRates(
                 nucName, nDensity=nDensity
             ).items():
                 rxnRates[rxName] += val
@@ -3158,20 +3203,6 @@ class Composite(ArmiObject):
                 for comp in self.iterComponents()
             ]
         )
-
-
-class Leaf(Composite):
-    """Defines behavior for primitive objects in the composition."""
-
-    def getChildren(
-        self, deep=False, generationNum=1, includeMaterials=False, predicate=None
-    ):
-        """Return empty list, representing that this object has no children."""
-        return []
-
-    def getChildrenWithFlags(self, typeSpec: TypeSpec, exactMatch=True):
-        """Return empty list, representing that this object has no children."""
-        return []
 
 
 class StateRetainer:
@@ -3292,3 +3323,45 @@ def getDominantMaterial(
         return samples[maxMatName]
 
     return None
+
+
+def getReactionRateDict(nucName, lib, xsSuffix, mgFlux, nDens):
+    """
+    Parameters
+    ----------
+    nucName : str
+        nuclide name -- e.g. 'U235', 'PU239', etc. Not to be confused with the nuclide
+        _label_, see the nucDirectory module for a description of the difference.
+    lib : isotxs
+        cross section library
+    xsSuffix : str
+        cross section suffix, consisting of the type followed by the burnup group,
+        e.g. 'AB' for the second burnup group of type A
+    mgFlux : numpy.nArray
+        integrated mgFlux (n-cm/s)
+    nDens : float
+        number density (atom/bn-cm)
+
+    Returns
+    -------
+    rxnRates - dict
+        dictionary of reaction rates (rxn/s) for nG, nF, n2n, nA and nP
+
+    Notes
+    -----
+    Assume there is no n3n cross section in ISOTXS
+    """
+    nucLabel = nuclideBases.byName[nucName].label
+    key = "{}{}".format(nucLabel, xsSuffix)
+    libNuc = lib[key]
+    rxnRates = {"n3n": 0}
+    for rxName, mgXSs in [
+        ("nG", libNuc.micros.nGamma),
+        ("nF", libNuc.micros.fission),
+        ("n2n", libNuc.micros.n2n),
+        ("nA", libNuc.micros.nalph),
+        ("nP", libNuc.micros.np),
+    ]:
+        rxnRates[rxName] = nDens * sum(mgXSs * mgFlux)
+
+    return rxnRates

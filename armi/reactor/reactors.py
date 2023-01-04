@@ -32,13 +32,13 @@ import collections
 import copy
 import itertools
 import os
-import tabulate
 import time
 
 import numpy
+import tabulate
 
-from armi import runLog
 from armi import getPluginManagerOrFail, materials, nuclearDataIO, settings
+from armi import runLog
 from armi.nuclearDataIO import xsLibraries
 from armi.reactor import assemblies
 from armi.reactor import assemblyLists
@@ -49,13 +49,13 @@ from armi.reactor import parameters
 from armi.reactor import reactorParameters
 from armi.reactor import systemLayoutInput
 from armi.reactor import zones
+from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
 from armi.reactor.flags import Flags
 from armi.settings.fwSettings.globalSettings import CONF_MATERIAL_NAMESPACE_ORDER
 from armi.utils import createFormattedStrWithDelimiter, units
 from armi.utils import directoryChangers
 from armi.utils.iterables import Sequence
 from armi.utils.mathematics import average1DWithinTolerance
-from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
 
 
 class Reactor(composites.Composite):
@@ -164,10 +164,6 @@ class Core(composites.Composite):
 
     assemblies : list
         List of assembly objects that are currently in the core
-
-    cs : CaseSettings object
-        Global settings for the case
-
     """
 
     pDefs = reactorParameters.defineCoreParameters()
@@ -198,7 +194,7 @@ class Core(composites.Composite):
         self.locParams = {}  # location-based parameters
         # overridden in case.py to include pre-reactor time.
         self.timeOfStart = time.time()
-        self.zones = None
+        self.zones = zones.Zones()  # initialize with empty Zones object
         # initialize the list that holds all shuffles
         self.moveList = {}
         self.scalarVals = {}
@@ -436,7 +432,7 @@ class Core(composites.Composite):
         else:
             self._removeListFromAuxiliaries(a1)
 
-    def removeAssembliesInRing(self, ringNum, overrideCircularRingMode=False):
+    def removeAssembliesInRing(self, ringNum, cs, overrideCircularRingMode=False):
         """
         Removes all of the assemblies in a given ring
 
@@ -444,7 +440,8 @@ class Core(composites.Composite):
         ----------
         ringNum : int
             The ring to remove
-
+        cs: CaseSettings
+            A relevant settings object
         overrideCircularRingMode : bool, optional
             False ~ default: use circular/square/hex rings, just as the reactor defines them
             True ~ If you know you don't want to use the circular ring mode, and instead want square or hex.
@@ -458,7 +455,7 @@ class Core(composites.Composite):
         ):
             self.removeAssembly(a)
 
-        self.processLoading(settings.getMasterCs())
+        self.processLoading(cs)
 
     def _removeListFromAuxiliaries(self, assembly):
         """
@@ -1022,15 +1019,14 @@ class Core(composites.Composite):
         includeAll : bool, optional
             Will include ALL assemblies.
 
-        zones : str or iterable, optional
-            Only include assemblies that are in this zone/these zones
+        zones : iterable, optional
+            Only include assemblies that are in this these zones
 
         Notes
         -----
         Attempts have been made to make this a generator but there were some Cython
         incompatibilities that we could not get around and so we are sticking with a
         list.
-
         """
         if includeAll:
             includeBolAssems = includeSFP = True
@@ -1214,9 +1210,6 @@ class Core(composites.Composite):
         """
         self._getAssembliesByName()
         self._genBlocksByName()
-        runLog.important("Regenerating Core Zones")
-        # TODO: this call is questionable... the cs should correspond to analysis
-        self.buildZones(settings.getMasterCs())
         self._genChildByLocationLookupTable()
 
     def getAllXsSuffixes(self):
@@ -1645,20 +1638,20 @@ class Core(composites.Composite):
             self.moveList[cycle].remove(data)
         self.moveList[cycle].append(data)
 
-    def createFreshFeed(self):
+    def createFreshFeed(self, cs=None):
         """
         Creates a new feed assembly.
+
+        Parameters
+        ----------
+        cs : CaseSettings object
+            Global settings for the case
 
         See Also
         --------
         createAssemblyOfType: creates an assembly
-
-        Notes
-        -----
-        createFreshFeed and createAssemblyOfType and this
-        all need to be merged together somehow.
         """
-        return self.createAssemblyOfType(assemType=self._freshFeedType)
+        return self.createAssemblyOfType(assemType=self._freshFeedType, cs=cs)
 
     def createAssemblyOfType(self, assemType=None, enrichList=None, cs=None):
         """
@@ -1670,6 +1663,8 @@ class Core(composites.Composite):
             The assembly type to create
         enrichList : list
             weight percent enrichments of each block
+        cs : CaseSettings object
+            Global settings for the case
 
         Returns
         -------
@@ -1689,9 +1684,7 @@ class Core(composites.Composite):
         --------
         armi.fuelHandler.doRepeatShuffle : uses this to repeat shuffling
         """
-        a = self.parent.blueprints.constructAssem(
-            cs or settings.getMasterCs(), name=assemType
-        )
+        a = self.parent.blueprints.constructAssem(cs, name=assemType)
 
         # check to see if a default bol assembly is being used or we are adding more information
         if enrichList:
@@ -1762,11 +1755,6 @@ class Core(composites.Composite):
         # in order of innermost to outermost (for averaging)
         assembliesOnLine.sort(key=lambda a: a.spatialLocator.getRingPos())
         return assembliesOnLine
-
-    def buildZones(self, cs):
-        """Update the zones on the reactor."""
-        self.zones = zones.buildZones(self, cs)
-        self.zones = zones.splitZones(self, cs, self.zones)
 
     def getCoreRadius(self):
         """Returns a radius that the core would fit into."""
@@ -2257,43 +2245,26 @@ class Core(composites.Composite):
             # but for DB load, this is not called so it must be here.
             # pylint: disable=protected-access
             self.parent.blueprints._prepConstruction(cs)
-            if not cs["detailedAxialExpansion"]:
-                # Apply mesh snapping for self.parent.blueprints.assemblies
-                # This is stored as a param for assemblies in-core, so only blueprints assemblies are
-                # considered here. To guarantee mesh snapping will function, makeAxialSnapList
-                # should be in reference to the assembly with the finest mesh as defined in the blueprints.
-                finestMeshAssembly = sorted(
-                    self.parent.blueprints.assemblies.values(),
-                    key=lambda a: len(a),
-                    reverse=True,
-                )[0]
-                for a in self.parent.blueprints.assemblies.values():
-                    a.makeAxialSnapList(refAssem=finestMeshAssembly)
-            if not cs["inputHeightsConsideredHot"]:
-                runLog.header(
-                    "=========== Axially expanding blueprints assemblies (except control) from Tinput to Thot ==========="
-                )
-                self._applyThermalExpansion(
-                    self.parent.blueprints.assemblies.values(),
-                    dbLoad,
-                    finestMeshAssembly,
-                )
-
         else:
-            if not cs["detailedAxialExpansion"]:
-                # prepare core for mesh snapping during axial expansion
-                for a in self.getAssemblies(includeAll=True):
-                    a.makeAxialSnapList(self.refAssem)
-            if not cs["inputHeightsConsideredHot"]:
-                runLog.header(
-                    "=========== Axially expanding all assemblies (except control) from Tinput to Thot ==========="
-                )
-                self._applyThermalExpansion(self.getAssemblies(includeAll=True), dbLoad)
-
+            # set reactor level meshing params
+            nonUniformAssems = [
+                Flags.fromStringIgnoreErrors(t) for t in cs["nonUniformAssemFlags"]
+            ]
+            # some assemblies, like control assemblies, have a non-conforming mesh
+            # and should not be included in self.p.referenceBlockAxialMesh and self.p.axialMesh
+            uniformAssems = [
+                a
+                for a in self.getAssemblies()
+                if not any(a.hasFlags(f) for f in nonUniformAssems)
+            ]
             self.p.referenceBlockAxialMesh = self.findAllAxialMeshPoints(
-                applySubMesh=False
+                assems=uniformAssems,
+                applySubMesh=False,
             )
-            self.p.axialMesh = self.findAllAxialMeshPoints()
+            self.p.axialMesh = self.findAllAxialMeshPoints(
+                assems=uniformAssems,
+                applySubMesh=True,
+            )
 
         self.numRings = self.getNumRings()  # TODO: why needed?
 
@@ -2307,51 +2278,50 @@ class Core(composites.Composite):
 
         self.stationaryBlockFlagsList = stationaryBlockFlags
 
-        # Perform initial zoning task
-        self.buildZones(cs)
-
         self.p.maxAssemNum = self.getMaxParam("assemNum")
 
         getPluginManagerOrFail().hook.onProcessCoreLoading(
             core=self, cs=cs, dbLoad=dbLoad
         )
 
-    def _applyThermalExpansion(
-        self, assems: list, dbLoad: bool, referenceAssembly=None
-    ):
-        """expand assemblies, resolve disjoint axial mesh (if needed), and update block BOL heights
+    def buildManualZones(self, cs):
+        """
+        Build the Zones that are defined manually in the given CaseSettings file,
+        in the `zoneDefinitions` setting.
 
         Parameters
         ----------
-        assems: list
-            list of :py:class:`Assembly <armi.reactor.assemblies.Assembly>` objects to be thermally expanded
-        dbLoad: bool
-            boolean to determine if Core::processLoading is loading a database or constructing a Core
-        referenceAssembly: optional, :py:class:`Assembly <armi.reactor.assemblies.Assembly>`
-            is the thermally expanded assembly whose axial mesh is used to snap the
-            blueprints assemblies axial mesh to
+        cs : CaseSettings
+            The standard ARMI settings object
+
+        Examples
+        --------
+        Manual zones will be defined in a special string format, e.g.:
+
+        zoneDefinitions:
+            - ring-1: 001-001
+            - ring-2: 002-001, 002-002
+            - ring-3: 003-001, 003-002, 003-003
+
+        Notes
+        -----
+        This function will just define the Zones it sees in the settings, it does
+        not do any validation against a Core object to ensure those manual zones
+        make sense.
         """
-        axialExpChngr = AxialExpansionChanger(self._detailedAxialExpansion)
-        for a in assems:
-            if not a.hasFlags(Flags.CONTROL):
-                axialExpChngr.setAssembly(a)
-                # this doesn't get applied to control assems, so CR will be interpreted
-                # as hot. This should be conservative because the control rods will
-                # be modeled as slightly shorter with the correct hot density. Density
-                # is more important than height, so we are forcing density to be correct
-                # since we can't do axial expansion (yet)
-                axialExpChngr.applyColdHeightMassIncrease()
-                axialExpChngr.expansionData.computeThermalExpansionFactors()
-                axialExpChngr.axiallyExpandAssembly(thermal=True)
-        # resolve axially disjoint mesh (if needed)
-        if not dbLoad:
-            axialExpChngr.manageCoreMesh(self.parent)
-        elif not self._detailedAxialExpansion:
-            for a in assems:
-                if not a.hasFlags(Flags.CONTROL):
-                    a.setBlockMesh(referenceAssembly.getAxialMesh())
-        # update block BOL heights to reflect hot heights
-        for a in assems:
-            if not a.hasFlags(Flags.CONTROL):
-                for b in a:
-                    b.p.heightBOL = b.getHeight()
+        runLog.debug(
+            "Building Zones by manual definitions in `zoneDefinitions` setting"
+        )
+        stripper = lambda s: s.strip()
+        self.zones = zones.Zones()
+
+        # parse the special input string for zone definitions
+        for zoneString in cs["zoneDefinitions"]:
+            zoneName, zoneLocs = zoneString.split(":")
+            zoneLocs = zoneLocs.split(",")
+            zone = zones.Zone(zoneName.strip())
+            zone.addLocs(map(stripper, zoneLocs))
+            self.zones.addZone(zone)
+
+        if not len(self.zones):
+            runLog.debug("No manual zones defined in `zoneDefinitions` setting")

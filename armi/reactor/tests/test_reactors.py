@@ -19,25 +19,25 @@ import copy
 import os
 import unittest
 
-from six.moves import cPickle
 from numpy.testing import assert_allclose, assert_equal
+from six.moves import cPickle
 
 from armi import operators
 from armi import runLog
 from armi import settings
 from armi import tests
 from armi.materials import uZr
-from armi.reactor.flags import Flags
 from armi.reactor import assemblies
 from armi.reactor import blocks
-from armi.reactor import grids
 from armi.reactor import geometry
+from armi.reactor import grids
 from armi.reactor import reactors
 from armi.reactor.components import Hexagon, Rectangle
 from armi.reactor.converters import geometryConverters
+from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
+from armi.reactor.flags import Flags
 from armi.tests import ARMI_RUN_PATH, mockRunLogs, TEST_ROOT
 from armi.utils import directoryChangers
-from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
 
 TEST_REACTOR = None  # pickled string of test reactor (for fast caching)
 
@@ -128,18 +128,27 @@ def buildOperatorOfEmptyCartesianBlocks(customSettings=None):
     return o
 
 
+"""
+NOTE: If this reactor had 3 rings instead of 9, most unit tests that use it
+go 4 times faster (based on testing). The problem is it would breat a LOT
+of downstream tests that import this method. Probably still worth it though.
+"""
+
+
 def loadTestReactor(
-    inputFilePath=TEST_ROOT, customSettings=None, inputFileName="armiRun.yaml"
+    inputFilePath=TEST_ROOT,
+    customSettings=None,
+    inputFileName="armiRun.yaml",
 ):
     r"""
     Loads a test reactor. Can be used in other test modules.
 
     Parameters
     ----------
-    inputFilePath : str
+    inputFilePath : str, default=TEST_ROOT
         Path to the directory of the input file.
 
-    customSettings : dict with str keys and values of any type
+    customSettings : dict with str keys and values of any type, default=None
         For each key in customSettings, the cs which is loaded from the
         armiRun.yaml will be overwritten to the value given in customSettings
         for that key.
@@ -183,6 +192,7 @@ def loadTestReactor(
 
     o = operators.factory(cs)
     r = reactors.loadFromCs(cs)
+
     o.initializeInterfaces(r)
 
     # put some stuff in the SFP too.
@@ -198,6 +208,23 @@ def loadTestReactor(
         TEST_REACTOR = cPickle.dumps((o, o.r, assemblies.getAssemNum()), protocol=2)
 
     return o, o.r
+
+
+def reduceTestReactorRings(r, cs, maxNumRings):
+    """Helper method for the test reactor above
+    The goal is to reduce the size of the reactor for tests that don't neeed
+    such a large reactor, and would run much faster with a smaller one
+    """
+    maxRings = r.core.getNumRings()
+    if maxNumRings > maxRings:
+        runLog.info("The test reactor has a maximum of {} rings.".format(maxRings))
+        return
+    elif maxNumRings <= 1:
+        raise ValueError("The test reactor must have multiple rings.")
+
+    # reducing the size of the test reactor, by removing the outer rings
+    for ring in range(maxRings, maxNumRings, -1):
+        r.core.removeAssembliesInRing(ring, cs)
 
 
 class ReactorTests(unittest.TestCase):
@@ -556,7 +583,7 @@ class HexReactorTests(ReactorTests):
                 mass3 = b3.getMass(element.symbol)
                 assert_allclose(mass2, mass3)
 
-                constituentNucs = [nn.name for nn in element.nuclideBases if nn.a > 0]
+                constituentNucs = [nn.name for nn in element.nuclides if nn.a > 0]
                 nuclideLevelMass3 = b3.getMass(constituentNucs)
                 assert_allclose(mass3, nuclideLevelMass3)
 
@@ -598,7 +625,6 @@ class HexReactorTests(ReactorTests):
             b.p.mgFlux = range(5)
             b.p.adjMgFlux = range(5)
         self.r.core.saveAllFlux()
-        os.remove("allFlux.txt")
 
     def test_getFluxVector(self):
         class MockLib:
@@ -719,14 +745,14 @@ class HexReactorTests(ReactorTests):
             for i, loc in enumerate(aLoc)
             if loc in self.r.core.childrenByLocator
         }
-        self.r.core.removeAssembliesInRing(3)
+        self.r.core.removeAssembliesInRing(3, self.o.cs)
         for i, a in assems.items():
             self.assertNotEqual(aLoc[i], a.spatialLocator)
             self.assertEqual(a.spatialLocator.grid, self.r.core.sfp.spatialGrid)
 
     def test_removeAssembliesInRingByCount(self):
         self.assertEqual(self.r.core.getNumRings(), 9)
-        self.r.core.removeAssembliesInRing(9)
+        self.r.core.removeAssembliesInRing(9, self.o.cs)
         self.assertEqual(self.r.core.getNumRings(), 8)
 
     def test_removeAssembliesInRingHex(self):
@@ -736,7 +762,9 @@ class HexReactorTests(ReactorTests):
         """
         self.assertEqual(self.r.core.getNumRings(), 9)
         for ringNum in range(6, 10):
-            self.r.core.removeAssembliesInRing(ringNum, overrideCircularRingMode=True)
+            self.r.core.removeAssembliesInRing(
+                ringNum, self.o.cs, overrideCircularRingMode=True
+            )
         self.assertEqual(self.r.core.getNumRings(), 5)
 
     def test_getNozzleTypes(self):
@@ -749,7 +777,7 @@ class HexReactorTests(ReactorTests):
         """Test creation of new assemblies."""
         # basic creation
         aOld = self.r.core.getFirstAssembly(Flags.FUEL)
-        aNew = self.r.core.createAssemblyOfType(aOld.getType())
+        aNew = self.r.core.createAssemblyOfType(aOld.getType(), cs=self.o.cs)
         self.assertAlmostEqual(aOld.getMass(), aNew.getMass())
 
         # test axial mesh alignment
@@ -760,7 +788,7 @@ class HexReactorTests(ReactorTests):
             )  # use i+1 to skip 0.0
 
         # creation with modified enrichment
-        aNew2 = self.r.core.createAssemblyOfType(aOld.getType(), 0.195)
+        aNew2 = self.r.core.createAssemblyOfType(aOld.getType(), 0.195, self.o.cs)
         fuelBlock = aNew2.getFirstBlock(Flags.FUEL)
         self.assertAlmostEqual(fuelBlock.getUraniumMassEnrich(), 0.195)
 
@@ -769,11 +797,17 @@ class HexReactorTests(ReactorTests):
         bol = self.r.blueprints.assemblies[aOld.getType()]
         changer = AxialExpansionChanger()
         changer.performPrescribedAxialExpansion(bol, [fuelComp], [0.05])
-        aNew3 = self.r.core.createAssemblyOfType(aOld.getType(), 0.195)
+        aNew3 = self.r.core.createAssemblyOfType(aOld.getType(), 0.195, self.o.cs)
         self.assertAlmostEqual(
             aNew3.getFirstBlock(Flags.FUEL).getUraniumMassEnrich(), 0.195
         )
         self.assertAlmostEqual(aNew3.getMass(), bol.getMass())
+
+    def test_createFreshFeed(self):
+        # basic creation
+        aOld = self.r.core.getFirstAssembly(Flags.FEED)
+        aNew = self.r.core.createFreshFeed(cs=self.o.cs)
+        self.assertAlmostEqual(aOld.getMass(), aNew.getMass())
 
     def test_createAssemblyOfTypeExpandedCore(self):
         """Test creation of new assemblies in an expanded core."""
@@ -791,7 +825,7 @@ class HexReactorTests(ReactorTests):
         aType = self.r.core.getFirstAssembly(Flags.FUEL).getType()
 
         # demonstrate we can still create assemblies
-        self.assertTrue(self.r.core.createAssemblyOfType(aType))
+        self.assertTrue(self.r.core.createAssemblyOfType(aType, cs=self.o.cs))
 
     def test_getAvgTemp(self):
         t0 = self.r.core.getAvgTemp([Flags.CLAD, Flags.WIRE, Flags.DUCT])
@@ -832,57 +866,116 @@ class HexReactorTests(ReactorTests):
             coords = b.getPinCoordinates()
             self.assertGreater(len(coords), -1)
 
+    def test_nonUniformAssems(self):
+        o, r = loadTestReactor(
+            customSettings={"nonUniformAssemFlags": ["primary control"]}
+        )
+        a = o.r.core.getFirstAssembly(Flags.FUEL)
+        self.assertTrue(all(b.p.topIndex != 0 for b in a[1:]))
+        a = o.r.core.getFirstAssembly(Flags.PRIMARY)
+        self.assertTrue(all(b.p.topIndex == 0 for b in a))
+        originalHeights = [b.p.height for b in a]
+        differntMesh = [val + 2 for val in r.core.p.referenceBlockAxialMesh]
+        # wont change because nonUnfiform assem doesn't conform to reference mesh
+        a.setBlockMesh(differntMesh)
+        heights = [b.p.height for b in a]
+        self.assertEqual(originalHeights, heights)
+
     def test_applyThermalExpansion_CoreConstruct(self):
-        """test Core::_applyThermalExpansion for core construction
+        """test that assemblies in core are correctly expanded.
 
         Notes:
         ------
         - all assertions skip the first block as it has no $\Delta T$ and does not expand
-        - to maintain code coverage, _applyThermalExpansion is called via processLoading
         """
-        self.o.cs["inputHeightsConsideredHot"] = False
-        assemsToChange = self.r.core.getAssemblies()
+        originalAssems = self.r.core.getAssemblies()
         # stash original axial mesh info
         oldRefBlockAxialMesh = self.r.core.p.referenceBlockAxialMesh
         oldAxialMesh = self.r.core.p.axialMesh
-        oldBlockBOLHeights = {}
-        for a in assemsToChange:
-            for b in a[1:]:
-                oldBlockBOLHeights[b] = b.p.heightBOL
-        self.r.core.processLoading(self.o.cs, dbLoad=False)
+
+        nonEqualParameters = ["heightBOL", "molesHmBOL", "massHmBOL"]
+        equalParameters = ["smearDensity", "nHMAtBOL", "enrichmentBOL"]
+
+        _o, coldHeightR = loadTestReactor(
+            self.directoryChanger.destination,
+            customSettings={"inputHeightsConsideredHot": False},
+        )
+
         for i, val in enumerate(oldRefBlockAxialMesh[1:]):
-            self.assertNotEqual(val, self.r.core.p.referenceBlockAxialMesh[i])
+            self.assertNotEqual(val, coldHeightR.core.p.referenceBlockAxialMesh[i])
         for i, val in enumerate(oldAxialMesh[1:]):
-            self.assertNotEqual(val, self.r.core.p.axialMesh[i])
-        for a in assemsToChange:
+            self.assertNotEqual(val, coldHeightR.core.p.axialMesh[i])
+
+        coldHeightAssems = coldHeightR.core.getAssemblies()
+        for a, coldHeightA in zip(originalAssems, coldHeightAssems):
             if not a.hasFlags(Flags.CONTROL):
-                for b in a[1:]:
-                    self.assertNotEqual(oldBlockBOLHeights[b], b.p.heightBOL)
+                for b, coldHeightB in zip(a[1:], coldHeightA[1:]):
+                    for param in nonEqualParameters:
+                        p, coldHeightP = b.p[param], coldHeightB.p[param]
+                        if p and coldHeightP:
+                            self.assertNotEqual(
+                                p, coldHeightP, f"{param} {p} {coldHeightP}"
+                            )
+                        else:
+                            self.assertAlmostEqual(p, coldHeightP)
+                    for param in equalParameters:
+                        p, coldHeightP = b.p[param], coldHeightB.p[param]
+                        self.assertAlmostEqual(p, coldHeightP)
 
     def test_updateBlockBOLHeights_DBLoad(self):
-        """test Core::_applyThermalExpansion for db load
+        """Test that blueprints assemblies are expanded in DB load.
 
         Notes:
         ------
         - all assertions skip the first block as it has no $\Delta T$ and does not expand
-        - to maintain code coverage, _applyThermalExpansion is called via processLoading
         """
-        self.o.cs["inputHeightsConsideredHot"] = False
-        # stash original blueprint assemblies axial mesh info
-        oldBlockBOLHeights = {}
-        assemsToChange = [a for a in self.r.blueprints.assemblies.values()]
-        for a in assemsToChange:
-            for b in a[1:]:
-                oldBlockBOLHeights[b] = b.p.heightBOL
-        self.r.core.processLoading(self.o.cs, dbLoad=True)
-        for a in assemsToChange:
+        originalAssems = sorted(a for a in self.r.blueprints.assemblies.values())
+        nonEqualParameters = ["heightBOL", "molesHmBOL", "massHmBOL"]
+        equalParameters = ["smearDensity", "nHMAtBOL", "enrichmentBOL"]
+
+        _o, coldHeightR = loadTestReactor(
+            self.directoryChanger.destination,
+            customSettings={"inputHeightsConsideredHot": False},
+        )
+        coldHeightAssems = sorted(a for a in coldHeightR.blueprints.assemblies.values())
+        for a, coldHeightA in zip(originalAssems, coldHeightAssems):
             if not a.hasFlags(Flags.CONTROL):
-                for b in a[1:]:
-                    self.assertNotEqual(
-                        oldBlockBOLHeights[b],
-                        b.p.heightBOL,
-                        msg="{0}, {1}".format(a, b),
-                    )
+                for b, coldHeightB in zip(a[1:], coldHeightA[1:]):
+                    for param in nonEqualParameters:
+                        p, coldHeightP = b.p[param], coldHeightB.p[param]
+                        if p and coldHeightP:
+                            self.assertNotEqual(p, coldHeightP)
+                        else:
+                            self.assertAlmostEqual(p, coldHeightP)
+                    for param in equalParameters:
+                        p, coldHeightP = b.p[param], coldHeightB.p[param]
+                        self.assertAlmostEqual(p, coldHeightP)
+
+    def test_buildManualZones(self):
+        # define some manual zones in the settings
+        newSettings = {}
+        newSettings["zoneDefinitions"] = [
+            "ring-1: 001-001",
+            "ring-2: 002-001, 002-002",
+            "ring-3: 003-001, 003-002, 003-003",
+        ]
+        cs = self.o.cs.modified(newSettings=newSettings)
+        self.r.core.buildManualZones(cs)
+
+        zonez = self.r.core.zones
+        self.assertEqual(len(list(zonez)), 3)
+        self.assertIn("002-001", zonez["ring-2"])
+        self.assertIn("003-002", zonez["ring-3"])
+
+    def test_buildManualZonesEmpty(self):
+        # ensure there are no zone definitions in the settings
+        newSettings = {}
+        newSettings["zoneDefinitions"] = []
+        cs = self.o.cs.modified(newSettings=newSettings)
+
+        # verify that buildZones behaves well when no zones are defined
+        self.r.core.buildManualZones(cs)
+        self.assertEqual(len(list(self.r.core.zones)), 0)
 
 
 class CartesianReactorTests(ReactorTests):

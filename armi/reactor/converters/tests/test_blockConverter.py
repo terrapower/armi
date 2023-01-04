@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Test block conversions."""
-import unittest
+"""Test block conversions"""
+# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import os
+import unittest
 
 import numpy
 
@@ -225,9 +226,9 @@ class TestBlockConverter(unittest.TestCase):
 
             for c in list(reversed(convertedBlock))[:externalRings]:
                 self.assertTrue(c.isFuel(), "c was {}".format(c.name))
-                convertedBlock.remove(
-                    c
-                )  # remove external driver rings in preperation to check composition
+                # remove external driver rings in preperation to check composition
+                convertedBlock.remove(c)
+
             self._checkAreaAndComposition(block, convertedBlock)
 
     def _checkAreaAndComposition(self, block, convertedBlock):

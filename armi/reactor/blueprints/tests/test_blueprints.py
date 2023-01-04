@@ -13,22 +13,23 @@
 # limitations under the License.
 
 """Tests the blueprints (loading input) file"""
+# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import os
 import pathlib
 import unittest
 
 import yamlize
 
+from armi import settings
+from armi.nucDirectory.elements import bySymbol
 from armi.reactor import blueprints
 from armi.reactor import parameters
+from armi.reactor.blueprints.componentBlueprint import ComponentBlueprint
+from armi.reactor.blueprints.isotopicOptions import NuclideFlags, CustomIsotopics
 from armi.reactor.flags import Flags
-from armi.nucDirectory.elements import bySymbol
-from armi import settings
 from armi.tests import TEST_ROOT
 from armi.utils import directoryChangers
 from armi.utils import textProcessors
-from armi.reactor.blueprints.isotopicOptions import NuclideFlags, CustomIsotopics
-from armi.reactor.blueprints.componentBlueprint import ComponentBlueprint
 
 
 class TestBlueprints(unittest.TestCase):
@@ -180,7 +181,6 @@ assemblies:
         xs types: [A]
     fuel b:
         <<: *assembly_a
-        fuelVent: True
         hotChannelFactors: Reactor
     fuel c: &assembly_c
         specifier: OC
@@ -214,10 +214,7 @@ grids:
             self.assertEqual(paramDef.default, fa.p[paramDef.name])
             self.assertIn(paramDef.name, fb.p)
 
-        self.assertFalse(fa.p.fuelVent)
         self.assertEqual(fa.p.hotChannelFactors, "Default")
-
-        self.assertTrue(fb.p.fuelVent)
         self.assertEqual(fb.p.hotChannelFactors, "Reactor")
 
     def test_nuclidesMc2v2(self):
@@ -255,9 +252,7 @@ grids:
 
         assem = design.constructAssem(cs, name="fuel a")
         # the assembly won't get non-naturally occurring nuclides
-        unnaturalZr = (
-            n.name for n in bySymbol["ZR"].nuclideBases if n.abundance == 0.0
-        )
+        unnaturalZr = (n.name for n in bySymbol["ZR"].nuclides if n.abundance == 0.0)
         designNucs = set(design.allNuclidesInProblem).difference(unnaturalZr)
         self.assertTrue(set(assem.getNuclides()).issubset(designNucs))
 

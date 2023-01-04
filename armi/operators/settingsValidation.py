@@ -32,7 +32,6 @@ from armi.reactor import geometry
 from armi.reactor import systemLayoutInput
 from armi.physics import neutronics
 from armi.utils import directoryChangers
-from armi.settings.fwSettings import globalSettings
 from armi.settings.settingsIO import (
     prompt,
     RunLogPromptCancel,
@@ -66,8 +65,8 @@ class Query:
         self.question = question
         self.correction = correction
         # True if the query is `passed` and does not result in an immediate failure
+        self.corrected = False
         self._passed = False
-        self._corrected = False
         self.autoResolved = True
 
     def __repr__(self):
@@ -107,9 +106,8 @@ class Query:
                         )
                         if make_correction:
                             self.correction()
-                            self._corrected = True
-                        else:
-                            self._passed = True
+                            self.corrected = True
+                        self._passed = True
                     except RunLogPromptCancel as ki:
                         raise KeyboardInterrupt from ki
                 else:
@@ -125,7 +123,6 @@ class Query:
                             raise KeyboardInterrupt
                     except RunLogPromptCancel as ki:
                         raise KeyboardInterrupt from ki
-
             except RunLogPromptUnresolvable:
                 self.autoResolved = False
                 self._passed = True
@@ -190,8 +187,7 @@ class Inspector:
         if context.MPI_RANK != 0:
             return False
 
-        # the following attribute changes will alter what the queries investigate when
-        # resolved
+        # the following attribute changes will alter what the queries investigate when resolved
         correctionsMade = False
         self.cs = cs or self.cs
         runLog.debug("{} executing queries.".format(self.__class__.__name__))
@@ -204,7 +200,7 @@ class Inspector:
         else:
             for query in self.queries:
                 query.resolve()
-                if query._corrected:  # pylint: disable=protected-access
+                if query.corrected:
                     correctionsMade = True
             issues = [
                 query
@@ -221,6 +217,7 @@ class Inspector:
                     "some issues are creating cyclic resolutions: {}".format(issues)
                 )
             runLog.debug("{} has finished querying.".format(self.__class__.__name__))
+
         return correctionsMade
 
     def addQuery(self, condition, statement, question, correction):
@@ -262,6 +259,7 @@ class Inspector:
         """Lambda assignment workaround"""
         # this type of assignment works, but be mindful of
         # scoping when trying different methods
+        runLog.extra(f"Updating setting `{key}` to `{value}`")
         self.cs[key] = value
 
     def _raise(self):  # pylint: disable=no-self-use
@@ -315,8 +313,38 @@ class Inspector:
         self._assignCS("availabilityFactors", None)
         self._assignCS("cycles", [])
 
-    def _setBurnStepsToFour(self):
-        self._assignCS("burnSteps", 4)
+    def _checkForBothSimpleAndDetailedCyclesInputs(self):
+        """
+        Because the only way to check if a setting has been "entered" is to check
+        against the default, if the user specifies all the simple cycle settings
+        _exactly_ as the defaults, this won't be caught. But, it would be very
+        coincidental for the user to _specify_ all the default values when
+        performing any real analysis, so whatever.
+
+        Also, we must bypass the `Settings` getter and reach directly
+        into the underlying `__settings` dict to avoid triggering an error
+        at this stage in the run. Otherwise an error will inherently be raised
+        if the detailed cycles input is used because the simple cycles inputs
+        have defaults. We don't care that those defaults are there, we only
+        have a problem with those defaults being _used_, which will be caught
+        later on.
+        """
+        bothCyclesInputTypesPresent = (
+            self.cs._Settings__settings["cycleLength"].value
+            != self.cs._Settings__settings["cycleLength"].default
+            or self.cs._Settings__settings["cycleLengths"].value
+            != self.cs._Settings__settings["cycleLengths"].default
+            or self.cs._Settings__settings["burnSteps"].value
+            != self.cs._Settings__settings["burnSteps"].default
+            or self.cs._Settings__settings["availabilityFactor"].value
+            != self.cs._Settings__settings["availabilityFactor"].default
+            or self.cs._Settings__settings["availabilityFactors"].value
+            != self.cs._Settings__settings["availabilityFactors"].default
+            or self.cs._Settings__settings["powerFractions"].value
+            != self.cs._Settings__settings["powerFractions"].default
+        ) and self.cs["cycles"] != []
+
+        return bothCyclesInputTypesPresent
 
     def _inspectSettings(self):
         """Check settings for inconsistencies."""
@@ -333,16 +361,6 @@ class Inspector:
             lambda: self._assignCS("outputFileExtension", "png"),
         )
 
-        self.addQuery(
-            lambda: (
-                self.cs[globalSettings.CONF_ZONING_STRATEGY] == "manual"
-                and not self.cs["zoneDefinitions"]
-            ),
-            "`manual` zoningStrategy requires that `zoneDefinitions` setting be defined. Run will have "
-            "no zones.",
-            "",
-            self.NO_ACTION,
-        )
         self.addQuery(
             lambda: (
                 (
@@ -458,6 +476,16 @@ class Inspector:
         )
 
         self.addQuery(
+            lambda: not self.cs["looseCoupling"]
+            and self.cs["numCoupledIterations"] > 0,
+            "You have {0} coupled iterations selected, but have not activated loose coupling.".format(
+                self.cs["numCoupledIterations"]
+            ),
+            "Set looseCoupling to True?",
+            lambda: self._assignCS("looseCoupling", True),
+        )
+
+        self.addQuery(
             lambda: self.cs["numCoupledIterations"] > 0,
             "You have {0} coupling iterations selected.".format(
                 self.cs["numCoupledIterations"]
@@ -483,29 +511,8 @@ class Inspector:
             self._correctCyclesToZeroBurnup,
         )
 
-        def _checkForBothSimpleAndDetailedCyclesInputs():
-            """
-            Note that we must bypass the `Settings` getter and reach directly
-            into the underlying `__settings` dict to avoid triggering an error
-            at this stage in the run. Otherwise an error will inherently be raised
-            if the detailed cycles input is used because the simple cycles inputs
-            have defaults. We don't care that those defaults are there, we only
-            have a problem with those defaults being _used_, which will be caught
-            later on.
-            """
-            bothCyclesInputTypesPresent = (
-                self.cs._Settings__settings["cycleLength"]
-                or self.cs._Settings__settings["cycleLengths"]
-                or self.cs._Settings__settings["burnSteps"]
-                or self.cs._Settings__settings["availabilityFactor"]
-                or self.cs._Settings__settings["availabilityFactors"]
-                or self.cs._Settings__settings["powerFractions"]
-            ) and self.cs["cycles"] != []
-
-            return bothCyclesInputTypesPresent
-
         self.addQuery(
-            _checkForBothSimpleAndDetailedCyclesInputs,
+            self._checkForBothSimpleAndDetailedCyclesInputs,
             "If specifying detailed cycle history with `cycles`, you may not"
             " also use any of the simple cycle history inputs `cycleLength(s)`,"
             " `burnSteps`, `availabilityFactor(s)`, or `powerFractions`."

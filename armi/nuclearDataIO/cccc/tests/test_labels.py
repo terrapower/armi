@@ -15,10 +15,12 @@
 """
 Test the reading and writing of the DIF3D/VARIANT LABELS interface file
 """
-import unittest
+# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import os
+import unittest
 
 from armi.nuclearDataIO.cccc import labels
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 THIS_DIR = os.path.dirname(__file__)
 
@@ -48,15 +50,15 @@ class TestLabels(unittest.TestCase):
         self.assertEqual(len(labelsData.regionLabels), expectedNumRegions)
 
     def test_writeLabelsAscii(self):
-        labelsData = labels.readBinary(LABELS_FILE_BIN)
-        labels.writeAscii(labelsData, self._testMethodName + "labels.ascii")
-        with open(self._testMethodName + "labels.ascii", "r") as f:
-            actualData = f.read().splitlines()
-        with open(LABELS_FILE_ASCII) as f:
-            expectedData = f.read().splitlines()
-        for expected, actual in zip(expectedData, actualData):
-            self.assertEqual(expected, actual)
-        os.remove(self._testMethodName + "labels.ascii")
+        with TemporaryDirectoryChanger():
+            labelsData = labels.readBinary(LABELS_FILE_BIN)
+            labels.writeAscii(labelsData, self._testMethodName + "labels.ascii")
+            with open(self._testMethodName + "labels.ascii", "r") as f:
+                actualData = f.read().splitlines()
+            with open(LABELS_FILE_ASCII) as f:
+                expectedData = f.read().splitlines()
+            for expected, actual in zip(expectedData, actualData):
+                self.assertEqual(expected, actual)
 
 
 if __name__ == "__main__":

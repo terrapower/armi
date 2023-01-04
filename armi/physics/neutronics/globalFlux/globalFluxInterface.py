@@ -21,17 +21,18 @@ from typing import Dict, Optional
 import numpy
 import scipy.integrate
 
-from armi import runLog
 from armi import interfaces
-from armi.utils import units, codeTiming, getMaxBurnSteps
+from armi import runLog
+from armi.physics import constants
+from armi.physics import executers
+from armi.physics import neutronics
 from armi.reactor import geometry
 from armi.reactor import reactors
-from armi.reactor.converters import uniformMesh
+from armi.reactor.blocks import Block
 from armi.reactor.converters import geometryConverters
-from armi.reactor import assemblies
+from armi.reactor.converters import uniformMesh
 from armi.reactor.flags import Flags
-from armi.physics import neutronics
-from armi.physics import executers
+from armi.utils import units, codeTiming, getMaxBurnSteps
 
 ORDER = interfaces.STACK_ORDER.FLUX
 
@@ -63,7 +64,8 @@ class GlobalFluxInterface(interfaces.Interface):
             self.nodeFmt = "1d"  # produce ig001_1.inp.
         self._bocKeff = None  # for tracking rxSwing
 
-    def getHistoryParams(self):
+    @staticmethod
+    def getHistoryParams():
         """Return parameters that will be added to assembly versus time history printouts."""
         return ["detailedDpa", "detailedDpaPeak", "detailedDpaPeakRate"]
 
@@ -283,7 +285,7 @@ class GlobalFluxOptions(executers.ExecutionOptions):
         self.real = True
         self.adjoint = False
         self.neutrons = True
-        self.photons = None
+        self.photons = False
         self.boundaryConditions = {}
         self.epsFissionSourceAvg = None
         self.epsFissionSourcePoint = None
@@ -304,6 +306,8 @@ class GlobalFluxOptions(executers.ExecutionOptions):
         self.aclpDoseLimit = None
         self.loadPadElevation = None
         self.loadPadLength = None
+        self.cs = None
+        self.savePhysicsFilesList = None
 
         self._geomType: geometry.GeomType
         self.symmetry: str
@@ -341,10 +345,17 @@ class GlobalFluxOptions(executers.ExecutionOptions):
         self.boundaries = cs["boundaries"]
         self.xsKernel = cs["xsKernel"]
         self.cs = cs
+        self.savePhysicsFilesList = cs["savePhysicsFiles"]
 
     def fromReactor(self, reactor: reactors.Reactor):
         self.geomType = reactor.core.geomType
         self.symmetry = reactor.core.symmetry
+
+        cycleNodeStamp = f"{reactor.p.cycle:03d}{reactor.p.timeNode:03d}"
+        if self.savePhysicsFilesList:
+            self.savePhysicsFiles = cycleNodeStamp in self.savePhysicsFilesList
+        else:
+            self.savePhysicsFiles = False
 
 
 class GlobalFluxExecuter(executers.DefaultExecuter):
@@ -410,7 +421,8 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
         converter = self.geomConverters.get("axial")
         if not converter:
             if self.options.detailedAxialExpansion or self.options.hasNonUniformAssems:
-                converter = uniformMesh.NeutronicsUniformMeshConverter(
+                converterCls = uniformMesh.converterFactory(self.options)
+                converter = converterCls(
                     cs=self.options.cs,
                     calcReactionRates=self.options.calcReactionRatesOnMeshConversion,
                 )
@@ -573,6 +585,60 @@ class GlobalFluxResultMapper(interfaces.OutputReader):
         self.r.core.p.maxPD = self.r.core.getMaxParam("arealPd")
         self._updateAssemblyLevelParams()
 
+    def getDpaXs(self, b: Block):
+        """Determine which cross sections should be used to compute dpa for a block.
+
+        Parameters
+        ----------
+        b: Block
+            The block we want the cross sections for
+
+        Returns
+        -------
+            list : cross section values
+        """
+        if self.cs["gridPlateDpaXsSet"] and b.hasFlags(Flags.GRID_PLATE):
+            dpaXsSetName = self.cs["gridPlateDpaXsSet"]
+        else:
+            dpaXsSetName = self.cs["dpaXsSet"]
+
+        try:
+            return constants.DPA_CROSS_SECTIONS[dpaXsSetName]
+        except KeyError:
+            raise KeyError(
+                "DPA cross section set {} does not exist".format(dpaXsSetName)
+            )
+
+    def getBurnupPeakingFactor(self, b: Block):
+        """
+        Get the radial peaking factor to be applied to burnup and DPA for a Block
+
+        This may be informed by previous runs which used
+        detailed pin reconstruction and rotation. In that case,
+        it should be set on the cs setting ``burnupPeakingFactor``.
+
+        Otherwise, it just takes the current flux peaking, which
+        is typically conservatively high.
+
+        Parameters
+        ----------
+        b: Block
+            The block we want the peaking factor for
+
+        Returns
+        -------
+        burnupPeakingFactor : float
+            The peak/avg factor for burnup and DPA.
+        """
+        burnupPeakingFactor = self.cs["burnupPeakingFactor"]
+        if not burnupPeakingFactor and b.p.fluxPeak:
+            burnupPeakingFactor = b.p.fluxPeak / b.p.flux
+        elif not burnupPeakingFactor:
+            # no peak available. Finite difference model?
+            burnupPeakingFactor = 1.0
+
+        return burnupPeakingFactor
+
     def updateDpaRate(self, blockList=None):
         """
         Update state parameters that can be known right after the flux is computed
@@ -580,30 +646,27 @@ class GlobalFluxResultMapper(interfaces.OutputReader):
         See Also
         --------
         updateFluenceAndDpa : uses values computed here to update cumulative dpa
-
         """
         if blockList is None:
             blockList = self.r.core.getBlocks()
+
         hasDPA = False
         for b in blockList:
-            xs = b.getDpaXs()
-            if not xs:
-                continue
+            xs = self.getDpaXs(b)
             hasDPA = True
             flux = b.getMgFlux()  # n/cm^2/s
             dpaPerSecond = computeDpaRate(flux, xs)
-            b.p.detailedDpaPeakRate = dpaPerSecond * b.getBurnupPeakingFactor()
+            b.p.detailedDpaPeakRate = dpaPerSecond * self.getBurnupPeakingFactor(b)
             b.p.detailedDpaRate = dpaPerSecond
 
         if not hasDPA:
             return
-        self.r.core.p.peakGridDpaAt60Years = (
-            self.r.core.getMaxBlockParam(
-                "detailedDpaPeakRate", typeSpec=Flags.GRID_PLATE, absolute=False
-            )
-            * 60.0
-            * units.SECONDS_PER_YEAR
+
+        peakRate = self.r.core.getMaxBlockParam(
+            "detailedDpaPeakRate", typeSpec=Flags.GRID_PLATE, absolute=False
         )
+        self.r.core.p.peakGridDpaAt60Years = peakRate * 60.0 * units.SECONDS_PER_YEAR
+
         # also update maxes at this point (since this runs at every timenode, not just those w/ depletion steps)
         self.updateMaxDpaParams()
 
@@ -665,6 +728,7 @@ class DoseResultsMapper(GlobalFluxResultMapper):
     def __init__(self, depletionSeconds, options):
         self.success = False
         self.options = options
+        self.cs = self.options.cs
         self.r = None
         self.depletionSeconds = depletionSeconds
 
@@ -725,7 +789,7 @@ class DoseResultsMapper(GlobalFluxResultMapper):
             )
 
         for b in blockList:
-            burnupPeakingFactor = b.getBurnupPeakingFactor()
+            burnupPeakingFactor = self.getBurnupPeakingFactor(b)
             b.p.residence += stepTimeInSeconds / units.SECONDS_PER_DAY
             b.p.fluence += b.p.flux * stepTimeInSeconds
             b.p.fastFluence += b.p.flux * stepTimeInSeconds * b.p.fastFluxFr

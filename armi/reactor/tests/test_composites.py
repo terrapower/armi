@@ -17,22 +17,25 @@
 from copy import deepcopy
 import unittest
 
+from armi import nuclearDataIO
 from armi import runLog
 from armi import settings
-from armi.nucDirectory import nucDir, nuclideBases
 from armi import utils
+from armi.nucDirectory import nucDir, nuclideBases
 from armi.physics.neutronics.fissionProductModel.tests.test_lumpedFissionProduct import (
     getDummyLFPFile,
 )
+from armi.reactor import assemblies
 from armi.reactor import components
 from armi.reactor import composites
-from armi.reactor import assemblies
-from armi.reactor.components import basicShapes
 from armi.reactor import grids
-from armi.reactor.blueprints import assemblyBlueprint
 from armi.reactor import parameters
-from armi.reactor.flags import Flags
+from armi.reactor.blueprints import assemblyBlueprint
+from armi.reactor.components import basicShapes
+from armi.reactor.composites import getReactionRateDict
+from armi.reactor.flags import Flags, TypeSpec
 from armi.reactor.tests.test_blocks import loadTestBlock
+from armi.tests import ISOAA_PATH
 
 
 class MockBP:
@@ -59,12 +62,22 @@ class DummyComposite(composites.Composite):
         self.p.type = name
 
 
-class DummyLeaf(composites.Leaf):
+class DummyLeaf(composites.Composite):
     pDefs = getDummyParamDefs()
 
     def __init__(self, name):
-        composites.Leaf.__init__(self, name)
+        composites.Composite.__init__(self, name)
         self.p.type = name
+
+    def getChildren(
+        self, deep=False, generationNum=1, includeMaterials=False, predicate=None
+    ):
+        """Return empty list, representing that this object has no children."""
+        return []
+
+    def getChildrenWithFlags(self, typeSpec: TypeSpec, exactMatch=True):
+        """Return empty list, representing that this object has no children."""
+        return []
 
     def getBoundingCircleOuterDiameter(self, Tc=None, cold=False):
         return 1.0
@@ -606,6 +619,15 @@ class TestMiscMethods(unittest.TestCase):
         obj2.p.percentBu = 15.2
         self.obj.copyParamsFrom(obj2)
         self.assertEqual(obj2.p.percentBu, self.obj.p.percentBu)
+
+
+class TestGetReactionRateDict(unittest.TestCase):
+    def test_getReactionRateDict(self):
+        lib = nuclearDataIO.isotxs.readBinary(ISOAA_PATH)
+        rxRatesDict = getReactionRateDict(
+            nucName="PU239", lib=lib, xsSuffix="AA", mgFlux=1, nDens=1
+        )
+        self.assertEqual(rxRatesDict["nG"], sum(lib["PU39AA"].micros.nGamma))
 
 
 if __name__ == "__main__":

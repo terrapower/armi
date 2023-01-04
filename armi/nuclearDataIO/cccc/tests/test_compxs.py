@@ -15,17 +15,18 @@
 """
 Test the COMPXS reader/writer with a simple problem.
 """
-
-import unittest
+# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import os
+import unittest
 
 import numpy
 from scipy.sparse import csc_matrix
 
-from armi.tests import COMPXS_PATH, TEST_ROOT
 from armi import nuclearDataIO
 from armi.nuclearDataIO.cccc import compxs
 from armi.nuclearDataIO.xsLibraries import CompxsLibrary
+from armi.tests import COMPXS_PATH
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
 class TestCompxs(unittest.TestCase):
@@ -33,11 +34,11 @@ class TestCompxs(unittest.TestCase):
 
     @property
     def binaryWritePath(self):
-        return os.path.join(TEST_ROOT, self._testMethodName + "compxs-b")
+        return os.path.join(self._testMethodName + "compxs-b")
 
     @property
     def asciiWritePath(self):
-        return os.path.join(TEST_ROOT, self._testMethodName + "compxs-a.txt")
+        return os.path.join(self._testMethodName + "compxs-a.txt")
 
     @classmethod
     def setUpClass(cls):
@@ -296,17 +297,19 @@ class TestCompxs(unittest.TestCase):
 
     def test_binaryRW(self):
         """Test to make sure the binary read/writer reads/writes the exact same library."""
-        compxs.writeBinary(self.lib, self.binaryWritePath)
-        self.assertTrue(
-            compxs.compare(self.lib, compxs.readBinary(self.binaryWritePath))
-        )
-        os.remove(self.binaryWritePath)
+        with TemporaryDirectoryChanger():
+            compxs.writeBinary(self.lib, self.binaryWritePath)
+            self.assertTrue(
+                compxs.compare(self.lib, compxs.readBinary(self.binaryWritePath))
+            )
 
     def test_asciiRW(self):
         """Test to make sure the ascii reader/writer reads/writes the exact same library."""
-        compxs.writeAscii(self.lib, self.asciiWritePath)
-        self.assertTrue(compxs.compare(self.lib, compxs.readAscii(self.asciiWritePath)))
-        os.remove(self.asciiWritePath)
+        with TemporaryDirectoryChanger():
+            compxs.writeAscii(self.lib, self.asciiWritePath)
+            self.assertTrue(
+                compxs.compare(self.lib, compxs.readAscii(self.asciiWritePath))
+            )
 
     def test_mergeCompxsLibraries(self):
         """Test to verify the compxs merging returns a library with new regions."""

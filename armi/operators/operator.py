@@ -380,6 +380,9 @@ class Operator:  # pylint: disable=too-many-public-methods
             for coupledIteration in range(self.cs["numCoupledIterations"]):
                 self.r.core.p.coupledIteration = coupledIteration + 1
                 self.interactAllCoupled(coupledIteration)
+            # database has not yet been written, so we need to write it.
+            dbi = self.getInterface("database")
+            dbi.writeDBEveryNode(cycle, timeNode)
 
     def _interactAll(self, interactionName, activeInterfaces, *args):
         """
@@ -903,25 +906,6 @@ class Operator:  # pylint: disable=too-many-public-methods
         """
         for i in self.interfaces:
             i.attachReactor(self, self.r)
-
-    def dumpRestartData(self, cycle, time_, factorList):
-        """
-        Write some information about the cycle and shuffling to a auxiliary file for potential restarting.
-
-        Notes
-        -----
-        This is old and can be deprecated now that the database contains
-        the entire state. This was historically needed to have complete information regarding
-        shuffling when figuring out ideal fuel management operations.
-        """
-        if cycle >= len(self.restartData):
-            self.restartData.append((cycle, time_, factorList))
-        else:
-            # try to preserve loaded restartdata so we don't lose it in restarts.
-            self.restartData[cycle] = (cycle, time_, factorList)
-        with open(self.cs.caseTitle + ".restart.dat", "w") as restart:
-            for info in self.restartData:
-                restart.write("cycle=%d   time=%10.6E   factorList=%s\n" % info)
 
     def _loadRestartData(self):
         """

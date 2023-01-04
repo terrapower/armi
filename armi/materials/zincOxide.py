@@ -27,7 +27,7 @@ class ZnO(Material):
         self.setMassFrac("ZN", 0.8034)
         self.setMassFrac("O16", 0.1966)
 
-    def density(self, Tk=None, Tc=None):
+    def density3(self, Tk=None, Tc=None):
         return 5.61
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
@@ -43,5 +43,5 @@ class ZnO(Material):
         self.checkPropertyTempRange("linear expansion percent", Tk)
 
         return (
-            -1.9183e-03 * Tk ** 3 + 6.5944e-07 * Tk ** 2 + 5.2992e-05 * Tk - 5.2631e-02
+            -1.9183e-10 * Tk ** 3 + 6.5944e-07 * Tk ** 2 + 5.2992e-05 * Tk - 5.2631e-02
         )

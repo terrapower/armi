@@ -14,12 +14,14 @@
 """
 Test GEODST reading and writing.
 """
-import unittest
+# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import os
+import unittest
 
 from numpy.testing import assert_equal
 
 from armi.nuclearDataIO.cccc import geodst
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 THIS_DIR = os.path.dirname(__file__)
 SIMPLE_GEODST = os.path.join(THIS_DIR, "fixtures", "simple_hexz.geodst")
@@ -45,10 +47,10 @@ class TestGeodst(unittest.TestCase):
 
     def test_writeGeodst(self):
         """Ensure that we can write a modified GEODST."""
-        geo = geodst.readBinary(SIMPLE_GEODST)
-        geo.zmesh[-1] *= 2
-        geodst.writeBinary(geo, "GEODST2")
-        geo2 = geodst.readBinary("GEODST2")
-        self.assertAlmostEqual(geo2.zmesh[-1], 448.0 * 2, places=5)
-        assert_equal(geo.kintervals, geo2.kintervals)
-        os.remove("GEODST2")
+        with TemporaryDirectoryChanger():
+            geo = geodst.readBinary(SIMPLE_GEODST)
+            geo.zmesh[-1] *= 2
+            geodst.writeBinary(geo, "GEODST2")
+            geo2 = geodst.readBinary("GEODST2")
+            self.assertAlmostEqual(geo2.zmesh[-1], 448.0 * 2, places=5)
+            assert_equal(geo.kintervals, geo2.kintervals)

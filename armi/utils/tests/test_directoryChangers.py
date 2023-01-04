@@ -117,6 +117,7 @@ class TestDirectoryChangers(unittest.TestCase):
         * Checks basic copy feature
         * Checks rename feature
         * Checks glob expansion
+        * Checks copy to output path
         """
 
         def f(name):
@@ -133,7 +134,8 @@ class TestDirectoryChangers(unittest.TestCase):
         os.remove(f("newfile1.txt"))
 
         with directoryChangers.TemporaryDirectoryChanger(
-            filesToRetrieve=[f("file*.txt")]
+            filesToRetrieve=[f("file*.txt")],
+            outputPath="temp",
         ) as _:
             Path(f("file1.txt")).touch()
             Path(f("file2.txt")).touch()
@@ -142,6 +144,11 @@ class TestDirectoryChangers(unittest.TestCase):
         self.assertTrue(os.path.exists(f("file2.txt")))
         os.remove(f("file1.txt"))
         os.remove(f("file2.txt"))
+
+        self.assertTrue(os.path.exists(os.path.join("temp", f("file1.txt"))))
+        self.assertTrue(os.path.exists(os.path.join("temp", f("file2.txt"))))
+        os.remove(os.path.join("temp", f("file1.txt")))
+        os.remove(os.path.join("temp", f("file2.txt")))
 
     def test_file_retrieval_missing_file(self):
         """Tests that the directory changer still returns a subset of files even if all do not exist."""

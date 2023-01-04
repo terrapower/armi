@@ -20,7 +20,6 @@ import copy
 import math
 import unittest
 
-from armi import nuclearDataIO
 from armi.reactor import components
 from armi.reactor.components import (
     Component,
@@ -46,8 +45,6 @@ from armi.reactor.components import (
     ComponentType,
 )
 from armi.reactor.components import materials
-from armi.reactor.components.component import getReactionRateDict
-from armi.tests import ISOAA_PATH
 from armi.utils import units
 
 
@@ -497,28 +494,39 @@ class TestCircle(TestShapedComponent):
 
 
 class TestComponentExpansion(unittest.TestCase):
-    # when comparing to 3D density, the comparison is not quite correct.
-    # We need a bigger delta, this will be investigated/fixed in another PR
+    tCold = 20
     tWarm = 50
     tHot = 500
     coldOuterDiameter = 1.0
 
-    def test_ComponentMassIndependentOfInputTemp(self):
-        coldT = 20
-        circle1 = Circle("circle", "HT9", coldT, self.tHot, self.coldOuterDiameter)
-        coldT += 200
+    def test_HT9Expansion(self):
+        self.runExpansionTests(mat="HT9", isotope="FE")
+
+    def test_UZrExpansion(self):
+        self.runExpansionTests(mat="UZr", isotope="U235")
+
+    def test_B4CExpansion(self):
+        self.runExpansionTests(mat="B4C", isotope="B10")
+
+    def runExpansionTests(self, mat: str, isotope: str):
+        self.componentMassIndependentOfInputTemp(mat)
+        self.expansionConservationHotHeightDefined(mat, isotope)
+        self.expansionConservationColdHeightDefined(mat)
+
+    def componentMassIndependentOfInputTemp(self, mat: str):
+        circle1 = Circle("circle", mat, self.tCold, self.tHot, self.coldOuterDiameter)
         # pick the input dimension to get the same hot component
         hotterDim = self.coldOuterDiameter * (
-            1 + circle1.material.linearExpansionFactor(coldT, 20)
+            1 + circle1.material.linearExpansionFactor(self.tCold + 200, self.tCold)
         )
-        circle2 = Circle("circle", "HT9", coldT, self.tHot, hotterDim)
+        circle2 = Circle("circle", mat, self.tCold + 200, self.tHot, hotterDim)
         self.assertAlmostEqual(circle1.getDimension("od"), circle2.getDimension("od"))
         self.assertAlmostEqual(circle1.getArea(), circle2.getArea())
         self.assertAlmostEqual(circle1.getMassDensity(), circle2.getMassDensity())
 
-    def test_ExpansionConservationHotHeightDefined(self):
+    def expansionConservationHotHeightDefined(self, mat: str, isotope: str):
         """
-        Demonstrate tutorial for how to expand and relation ships conserved at during expansion.
+        Demonstrate tutorial for how to expand and relationships conserved at during expansion.
 
         Notes
         -----
@@ -527,13 +535,13 @@ class TestComponentExpansion(unittest.TestCase):
         """
         hotHeight = 1.0
 
-        circle1 = Circle("circle", "HT9", 20, self.tWarm, self.coldOuterDiameter)
-        circle2 = Circle("circle", "HT9", 20, self.tHot, self.coldOuterDiameter)
+        circle1 = Circle("circle", mat, self.tCold, self.tWarm, self.coldOuterDiameter)
+        circle2 = Circle("circle", mat, self.tCold, self.tHot, self.coldOuterDiameter)
 
         # mass density is proportional to Fe number density and derived from
         # all the number densities and atomic masses
         self.assertAlmostEqual(
-            circle1.p.numberDensities["FE"] / circle2.p.numberDensities["FE"],
+            circle1.p.numberDensities[isotope] / circle2.p.numberDensities[isotope],
             circle1.getMassDensity() / circle2.getMassDensity(),
         )
 
@@ -618,7 +626,7 @@ class TestComponentExpansion(unittest.TestCase):
             mass1, circle1.getMassDensity() * circle1.getArea() * hotHeight
         )
 
-    def test_ExpansionConservationColdHeightDefined(self):
+    def expansionConservationColdHeightDefined(self, mat: str):
         """
         Demonstrate that material is conserved at during expansion
 
@@ -628,10 +636,12 @@ class TestComponentExpansion(unittest.TestCase):
           inputHeightsConsideredHot = False
         """
         coldHeight = 1.0
-        circle1 = Circle("circle", "HT9", 20, self.tWarm, self.coldOuterDiameter)
-        circle2 = Circle("circle", "HT9", 20, self.tHot, self.coldOuterDiameter)
+        circle1 = Circle("circle", mat, self.tCold, self.tWarm, self.coldOuterDiameter)
+        circle2 = Circle("circle", mat, self.tCold, self.tHot, self.coldOuterDiameter)
         # same as 1 but we will make like 2
-        circle1AdjustTo2 = Circle("circle", "HT9", 20, self.tWarm, 1.0)
+        circle1AdjustTo2 = Circle(
+            "circle", mat, self.tCold, self.tWarm, self.coldOuterDiameter
+        )
 
         # make it hot like 2
         circle1AdjustTo2.adjustDensityForHeightExpansion(self.tHot)
@@ -1412,15 +1422,6 @@ class TestMaterialAdjustments(unittest.TestCase):
     def test_getEnrichment(self):
         self.fuel.adjustMassEnrichment(0.3)
         self.assertAlmostEqual(self.fuel.getEnrichment(), 0.3)
-
-
-class TestGetReactionRateDict(unittest.TestCase):
-    def test_getReactionRateDict(self):
-        lib = nuclearDataIO.isotxs.readBinary(ISOAA_PATH)
-        rxRatesDict = getReactionRateDict(
-            nucName="PU239", lib=lib, xsType="A", mgFlux=1, nDens=1
-        )
-        self.assertEqual(rxRatesDict["nG"], sum(lib["PU39AA"].micros.nGamma))
 
 
 if __name__ == "__main__":

@@ -11,10 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """
 Tests for functions in textProcessors.py
 """
+# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import os
 import pathlib
 import unittest
@@ -71,6 +71,39 @@ class YamlIncludeTest(unittest.TestCase):
             self.assertTrue((RES_DIR / i).exists())
 
         self.assertEqual(len(includes), 2)
+
+
+class SequentialReaderTests(unittest.TestCase):
+
+    textStream = """This is an example test stream.
+This has multiple lines in it and below it contains a set of data that
+can be found using a regular expression pattern.
+FILE DATA
+X  Y  3.5
+X  Y  4.2
+X  Y  0.0"""
+
+    _DUMMY_FILE_NAME = "DUMMY.txt"
+
+    @classmethod
+    def setUpClass(cls):
+        with open(cls._DUMMY_FILE_NAME, "w") as f:
+            f.write(cls.textStream)
+
+    @classmethod
+    def tearDownClass(cls):
+        if os.path.exists(cls._DUMMY_FILE_NAME):
+            os.remove(cls._DUMMY_FILE_NAME)
+
+    def test_readFile(self):
+        with textProcessors.SequentialReader(self._DUMMY_FILE_NAME) as sr:
+            self.assertTrue(sr.searchForText("FILE DATA"))
+            self.assertFalse(sr.searchForText("This text isn't here."))
+
+    def test_readFileWithPattern(self):
+        with textProcessors.SequentialReader(self._DUMMY_FILE_NAME) as sr:
+            self.assertTrue(sr.searchForPattern("(X\s+Y\s+\d+\.\d+)"))
+            self.assertEqual(float(sr.line.split()[2]), 3.5)
 
 
 if __name__ == "__main__":

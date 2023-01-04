@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests nuclide directory."""
-
+"""Tests nuclide directory"""
+# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import unittest
 
 from armi.nucDirectory import nucDir, elements, nuclideBases
@@ -24,7 +24,6 @@ class TestNucDirectory(unittest.TestCase):
     def setUp(self):
         with mockRunLogs.BufferLog():
             elements.factory()
-            nuclideBases.factory()
 
     def test_nucDir_getNameForOldDashedNames(self):
         oldNames = [
@@ -58,9 +57,13 @@ class TestNucDirectory(unittest.TestCase):
         with self.assertRaises(Exception):
             nucDir.getNuclideFromName("Charlie")
 
-    def test_nucDir_getNuclidesFromForUnnatural(self):
-        with self.assertRaises(NotImplementedError):
-            nucDir.getNuclidesFromInputName("PU")
+    def test_getDisplacementEnergy(self):
+        """Test getting the displacement energy for a given nuclide."""
+        ed = nucDir.getThresholdDisplacementEnergy("H1")
+        self.assertEqual(ed, 10.0)
+
+        with self.assertRaises(KeyError):
+            nucDir.getThresholdDisplacementEnergy("fail")
 
 
 if __name__ == "__main__":

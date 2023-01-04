@@ -48,6 +48,7 @@ tags
 .pytest_cache/
 pytestdebug.log
 dump-temp-*
+dump-tests*
 .vim-bookmarks
 venv*/
 .mypy_cache/

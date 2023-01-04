@@ -132,27 +132,6 @@ def packHexStrings(valueDict):
 # -------------------------------
 
 
-class Overlap:
-    """common list overlap comparison"""
-
-    def __init__(self, src, ref):
-        src_set, ref_set = set(src), set(ref)
-        self.matched = ref_set.intersection(src_set)
-        self.src_missed = src_set.difference(ref_set)
-        self.ref_missed = ref_set.difference(src_set)
-
-    def __bool__(self):
-        """Check if content between the lists is a perfect match"""
-        return not bool(self.src_missed) and not bool(self.ref_missed)
-
-    __nonzero__ = __bool__  # py2
-
-    def __str__(self):
-        return "- Overlap -\n\tmatched: {}\n\tsrc_missed: {}\n\tref_missed: {}".format(
-            self.matched, self.src_missed, self.ref_missed
-        )
-
-
 class Sequence:
     """
     The Sequence class partially implements a list-like interface,
@@ -258,6 +237,7 @@ class Sequence:
         self.extend([item])
 
     def __radd__(self, other):
+        """s1 += s2"""
         new = Sequence(other)
         new += Sequence(self)
         return new

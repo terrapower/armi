@@ -14,7 +14,7 @@
 """
 Tests for boron carbide
 """
-
+# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import unittest
 
 from armi.materials.b4c import B4C, DEFAULT_THEORETICAL_DENSITY_FRAC

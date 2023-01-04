@@ -15,6 +15,7 @@
 """
 This module tests the __init__.py file since it has rather unique behavior.
 """
+# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import unittest
 
 from armi import materials

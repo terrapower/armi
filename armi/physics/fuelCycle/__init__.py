@@ -32,16 +32,14 @@ import os
 
 import voluptuous as vol
 
-from armi import runLog
 from armi import interfaces
-from armi import plugins
 from armi import operators
-from armi.utils import directoryChangers
+from armi import plugins
+from armi import runLog
 from armi.operators import RunTypes
-
-
-from . import fuelHandlers
-from . import settings
+from armi.physics.fuelCycle import fuelHandlers
+from armi.physics.fuelCycle import settings
+from armi.utils import directoryChangers
 
 ORDER = interfaces.STACK_ORDER.FUEL_MANAGEMENT
 

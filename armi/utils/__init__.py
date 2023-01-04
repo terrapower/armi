@@ -319,6 +319,21 @@ def getBurnSteps(cs):
     return [len(steps) for steps in stepLengths]
 
 
+def hasBurnup(cs):
+    """Is depletion being modeled?
+
+    Parameters
+    ----------
+    cs : case settings object
+
+    Returns
+    -------
+    bool
+        Are there any burnup steps?
+    """
+    return sum(getBurnSteps(cs)) > 0
+
+
 def getMaxBurnSteps(cs):
     burnSteps = getBurnSteps(cs)
     return max(burnSteps)
@@ -570,42 +585,6 @@ def slantSplit(val, ratio, nodes, order="low first"):
         X.reverse()
 
     return X
-
-
-def runFunctionFromAllModules(funcName, *args, **kwargs):
-    r"""
-    Runs funcName on all modules of ARMI, if it exists.
-
-    Parameters
-    ----------
-    funcName : str
-        The function to run if it is found in a module.
-
-    \*args, \*\*kwargs : arguments to pass to func if it is found
-
-    Notes
-    -----
-    This imports all modules in ARMI, and if you have a script that isn't inside a
-    ``if __name__=='__main__'``, you will be in trouble.
-
-    This could also be useful for finding input consistency checkers for the GUI.
-
-    See Also
-    --------
-    armi.settings.addAllDefaultSettings : gets all the settings from all modules
-
-    """
-    for _modImporter, name, _ispkg in pkgutil.walk_packages(
-        path=armi_path, prefix=armi_name + "."
-    ):
-        try:
-            mod = importlib.import_module(name)
-            if funcName in dir(mod):  # there is a module.funcName. so call it.
-                func = getattr(mod, funcName)
-                func(*args, **kwargs)
-        except:
-            # just print traceback but don't throw an error.
-            traceback.print_exc()
 
 
 def prependToList(originalList, listToPrepend):

@@ -19,7 +19,6 @@ from armi import runLog
 from armi.materials import material
 from armi.reactor.flags import Flags
 from armi.reactor.components import UnshapedComponent
-from armi.utils import densityTools
 
 TARGET_FLAGS_IN_PREFERRED_ORDER = [
     Flags.FUEL,
@@ -28,6 +27,73 @@ TARGET_FLAGS_IN_PREFERRED_ORDER = [
     Flags.SHIELD,
     Flags.SLUG,
 ]
+
+
+def getDefaultReferenceAssem(assems):
+    """Return a default reference assembly."""
+    # if assemblies are defined in blueprints, handle meshing
+    # assume finest mesh is reference
+    assemsByNumBlocks = sorted(
+        assems,
+        key=lambda a: len(a),
+        reverse=True,
+    )
+    return assemsByNumBlocks[0] if assemsByNumBlocks else None
+
+
+def makeAssemsAbleToSnapToUniformMesh(
+    assems, nonUniformAssemFlags, referenceAssembly=None
+):
+    """Make this set of assemblies aware of the reference mesh so they can stay uniform as they axially expand."""
+    if not referenceAssembly:
+        referenceAssembly = getDefaultReferenceAssem(assems)
+    # make the snap lists so assems know how to expand
+    nonUniformAssems = [Flags.fromStringIgnoreErrors(t) for t in nonUniformAssemFlags]
+    for a in assems:
+        if any(a.hasFlags(f) for f in nonUniformAssems):
+            continue
+        a.makeAxialSnapList(referenceAssembly)
+
+
+def expandColdDimsToHot(assems, isDetailedAxialExpansion, referenceAssembly=None):
+    """
+    Expand BOL assemblies, resolve disjoint axial mesh (if needed), and update block BOL heights
+
+    Parameters
+    ----------
+    assems: list
+        list of :py:class:`Assembly <armi.reactor.assemblies.Assembly>` objects to be thermally expanded
+    isDetailedAxialExpansion: bool
+        If true assemblies will be forced to conform to the reference mesh after expansion
+    referenceAssembly: assembly, optional
+        Assembly whose mesh other meshes wil conform to if isDetailedAxialExpansion is true.
+        If not provided, will assume the finest mesh assembly which is typically fuel.
+    """
+    assems = list(assems)
+    if not referenceAssembly:
+        referenceAssembly = getDefaultReferenceAssem(assems)
+    axialExpChanger = AxialExpansionChanger(isDetailedAxialExpansion)
+    for a in assems:
+        if not a.hasFlags(Flags.CONTROL):
+            axialExpChanger.setAssembly(a)
+            # this doesn't get applied to control assems, so CR will be interpreted
+            # as hot. This should be conservative because the control rods will
+            # be modeled as slightly shorter with the correct hot density. Density
+            # is more important than height, so we are forcing density to be correct
+            # since we can't do axial expansion (yet)
+            axialExpChanger.applyColdHeightMassIncrease()
+            axialExpChanger.expansionData.computeThermalExpansionFactors()
+            axialExpChanger.axiallyExpandAssembly()
+    if not isDetailedAxialExpansion:
+        for a in assems:
+            if not a.hasFlags(Flags.CONTROL):
+                a.setBlockMesh(referenceAssembly.getAxialMesh())
+    # update block BOL heights to reflect hot heights
+    for a in assems:
+        if not a.hasFlags(Flags.CONTROL):
+            for b in a:
+                b.p.heightBOL = b.getHeight()
+                b.completeInitialLoading()
 
 
 class AxialExpansionChanger:
@@ -70,7 +136,7 @@ class AxialExpansionChanger:
         ----------
         a : :py:class:`Assembly <armi.reactor.assemblies.Assembly>` object.
             ARMI assembly to be changed
-        componentList : :py:class:`Component <armi.reactor.components.component.Component>`, list
+        componentLst : :py:class:`Component <armi.reactor.components.component.Component>`, list
             list of :py:class:`Component <armi.reactor.components.component.Component>` objects to be expanded
         percents : float, list
             list of expansion percentages for each component listed in componentList
@@ -84,7 +150,7 @@ class AxialExpansionChanger:
         """
         self.setAssembly(a, setFuel)
         self.expansionData.setExpansionFactors(componentLst, percents)
-        self.axiallyExpandAssembly(thermal=False)
+        self.axiallyExpandAssembly()
 
     def performThermalAxialExpansion(
         self,
@@ -123,7 +189,7 @@ class AxialExpansionChanger:
             tempGrid, tempField, updateNDensForRadialExp
         )
         self.expansionData.computeThermalExpansionFactors()
-        self.axiallyExpandAssembly(thermal=True)
+        self.axiallyExpandAssembly()
 
     def reset(self):
         self.linked = None
@@ -173,41 +239,27 @@ class AxialExpansionChanger:
         blkLst = self.linked.a.getBlocks()
         if not blkLst[-1].hasFlags(Flags.DUMMY):
             runLog.warning(
-                "No dummy block present at the top of {0}! "
+                f"No dummy block present at the top of {self.linked.a}! "
                 "Top most block will be artificially chopped "
-                "to preserve assembly height".format(self.linked.a)
+                "to preserve assembly height"
             )
             if self._detailedAxialExpansion:
                 msg = "Cannot run detailedAxialExpansion without a dummy block at the top of the assembly!"
                 runLog.error(msg)
                 raise RuntimeError(msg)
 
-    def axiallyExpandAssembly(self, thermal: bool = False):
-        """Utilizes assembly linkage to do axial expansion
-
-        Parameters
-        ----------
-        thermal : bool, optional
-            boolean to determine whether or not expansion is thermal or non-thermal driven
-
-        Notes
-        -----
-            The "thermal" parameter plays a role as thermal expansion is relative to the
-            BOL heights where non-thermal is relative to the most recent height.
-        """
+    def axiallyExpandAssembly(self):
+        """Utilizes assembly linkage to do axial expansion"""
         mesh = [0.0]
         numOfBlocks = self.linked.a.countBlocksWithFlags()
         runLog.debug(
             "Printing component expansion information (growth percentage and 'target component')"
-            "for each block in assembly {0}.".format(self.linked.a)
+            f"for each block in assembly {self.linked.a}."
         )
         for ib, b in enumerate(self.linked.a):
 
-            runLog.debug(msg="  Block {0}".format(b))
-            if thermal:
-                blockHeight = b.p.heightBOL
-            else:
-                blockHeight = b.p.height
+            runLog.debug(msg=f"  Block {b}")
+            blockHeight = b.getHeight()
             # set bottom of block equal to top of block below it
             # if ib == 0, leave block bottom = 0.0
             if ib > 0:
@@ -216,13 +268,7 @@ class AxialExpansionChanger:
             if not isDummyBlock:
                 for c in _getSolidComponents(b):
                     growFrac = self.expansionData.getExpansionFactor(c)
-                    runLog.debug(
-                        msg="      Component {0}, growFrac = {1:.4e}".format(
-                            c, growFrac
-                        )
-                    )
-                    if thermal and c in self.expansionData.componentReferenceHeight:
-                        blockHeight = self.expansionData.componentReferenceHeight[c]
+                    runLog.debug(msg=f"      Component {c}, growFrac = {growFrac:.4e}")
                     if growFrac >= 0.0:
                         c.height = (1.0 + growFrac) * blockHeight
                     else:
@@ -244,29 +290,25 @@ class AxialExpansionChanger:
                     if self.expansionData.isTargetComponent(c):
                         if b.axialExpTargetComponent is None:
                             runLog.debug(
-                                "      Component {0} is target component (inferred)".format(
-                                    c
-                                )
+                                f"      Component {c} is target component (inferred)"
                             )
                         else:
                             runLog.debug(
-                                "      Component {0} is target component (blueprints defined)".format(
-                                    c
-                                )
+                                f"      Component {c} is target component (blueprints defined)"
                             )
                         b.p.ztop = c.ztop
 
             # see also b.setHeight()
             # - the above not chosen due to call to calculateZCoords
             oldComponentVolumes = [c.getVolume() for c in b]
-            oldHeight = b.p.height
+            oldHeight = b.getHeight()
             b.p.height = b.p.ztop - b.p.zbottom
 
             _checkBlockHeight(b)
             self._conserveComponentDensity(b, oldHeight, oldComponentVolumes)
             # set block mid point and redo mesh
             # - functionality based on assembly.calculateZCoords()
-            b.p.z = b.p.zbottom + b.p.height / 2.0
+            b.p.z = b.p.zbottom + b.getHeight() / 2.0
             mesh.append(b.p.ztop)
             b.spatialLocator = self.linked.a.spatialGrid[0, 0, ib]
 
@@ -319,7 +361,7 @@ class AxialExpansionChanger:
 
         solidComponents = _getSolidComponents(b)
         for ic, c in enumerate(b):
-            c.p.volume = oldVolume[ic] * b.p.height / oldHeight
+            c.p.volume = oldVolume[ic] * b.getHeight() / oldHeight
             if c in solidComponents:
                 growFrac = self.expansionData.getExpansionFactor(c)
                 if growFrac >= 0.0:
@@ -343,16 +385,16 @@ def _getSolidComponents(b):
 
 
 def _checkBlockHeight(b):
-    if b.p.height < 3.0:
+    if b.getHeight() < 3.0:
         runLog.debug(
             "Block {0:s} ({1:s}) has a height less than 3.0 cm. ({2:.12e})".format(
-                b.name, str(b.p.flags), b.p.height
+                b.name, str(b.p.flags), b.getHeight()
             )
         )
-    if b.p.height < 0.0:
+    if b.getHeight() < 0.0:
         raise ArithmeticError(
             "Block {0:s} ({1:s}) has a negative height! ({2:.12e})".format(
-                b.name, str(b.p.flags), b.p.height
+                b.name, str(b.p.flags), b.getHeight()
             )
         )
 
@@ -565,7 +607,6 @@ class ExpansionData:
 
     def __init__(self, a, setFuel):
         self._a = a
-        self.componentReferenceHeight = {}
         self.componentReferenceTemperature = {}
         self._expansionFactors = {}
         self._componentDeterminesBlockHeight = {}
@@ -686,7 +727,6 @@ class ExpansionData:
           updateNDensForRadialExp should be set to True to capture radial expansion/contraction
           effects associated with updating the component temperature.
         """
-        self.componentReferenceHeight[c] = b.getHeight()
         self.componentReferenceTemperature[c] = c.temperatureInC
         if not updateNDensForRadialExp:
             # Update component temp manually to avoid the call to changeNDensByFactor(f) within c.setTemperature().
@@ -818,14 +858,10 @@ class ExpansionData:
         - This serves as an example to check for fuel/clad locking/interaction found in SFRs.
         - A more realistic/physical implementation is reserved for ARMI plugin(s).
         """
-        c = b.getChildrenWithFlags(Flags.FUEL)
-        if len(c) == 0:  # pylint: disable=no-else-raise
-            raise RuntimeError("No fuel component within {0}!".format(b))
-        elif len(c) > 1:
-            raise RuntimeError(
-                "Cannot have more than one fuel component within {0}!".format(b)
-            )
-        self._componentDeterminesBlockHeight[c[0]] = True
+        c = b.getComponent(Flags.FUEL)
+        if c is None:
+            raise RuntimeError(f"No fuel component within {b}!")
+        self._componentDeterminesBlockHeight[c] = True
 
     def isTargetComponent(self, c):
         """returns bool if c is a target component

@@ -32,15 +32,19 @@ class MpiDirectoryChanger(directoryChangers.DirectoryChanger):
     intended since this would cause a race condition between deleting and moving files.
     """
 
-    def __init__(self, destination):
+    def __init__(self, destination, outputPath=None):
         """Establish the new and return directories
 
         Parameters
         ----------
         destination : str
             destination directory
+        outputPath : str, optional
+            directory for outputs
         """
-        directoryChangers.DirectoryChanger.__init__(self, destination)
+        directoryChangers.DirectoryChanger.__init__(
+            self, destination, outputPath=outputPath
+        )
 
     def open(self):
         cdma = _ChangeDirectoryMpiAction(self.destination)

@@ -15,9 +15,10 @@
 """
 Test loading Theta-RZ reactor models.
 """
-import unittest
-import os
+# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import math
+import os
+import unittest
 
 from armi import settings
 from armi.tests import TEST_ROOT
@@ -42,6 +43,48 @@ class Test_RZT_Reactor(unittest.TestCase):
     def test_findAllMeshPoints(self):
         i, _, _ = self.r.core.findAllMeshPoints()
         self.assertLess(i[-1], 2 * math.pi)
+
+
+class Test_RZT_Reactor_modern(unittest.TestCase):
+    def test_loadRZT_reactor(self):
+        """
+        The Godiva benchmark model is a HEU sphere with a radius of 8.74 cm
+
+        This unit tests loading and verifies the reactor is loaded correctly by
+        comparing volumes against expected volumes for full core (including
+        void boundary conditions) and just the fuel
+        """
+        cs = settings.Settings(
+            fName=os.path.join(TEST_ROOT, "Godiva.armi.unittest.yaml")
+        )
+        r = reactors.loadFromCs(cs)
+
+        godivaRadius = 8.7407
+        reactorRadius = 9
+        reactorHeight = 17.5
+
+        refReactorVolume = math.pi * reactorRadius ** 2 * reactorHeight / 8
+        refFuelVolume = 4.0 / 3.0 * math.pi * (godivaRadius) ** 3 / 8
+
+        reactorVolumes = []
+        fuelVolumes = []
+        for b in r.core.getBlocks():
+            reactorVolumes.append(b.getVolume())
+            for c in b:
+                if "Godiva" in c.name:
+                    fuelVolumes.append(c.getVolume())
+        """
+        verify the total reactor volume is as expected
+        """
+        tolerance = 1e-3
+        error = math.fabs((refReactorVolume - sum(reactorVolumes)) / refReactorVolume)
+        self.assertLess(error, tolerance)
+
+        """
+        verify the total fuel volume is as expected
+        """
+        error = math.fabs((refFuelVolume - sum(fuelVolumes)) / refFuelVolume)
+        self.assertLess(error, tolerance)
 
 
 if __name__ == "__main__":

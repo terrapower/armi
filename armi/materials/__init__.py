@@ -159,20 +159,20 @@ def resolveMaterialClassByName(name: str, namespaceOrder: List[str] = None):
 
     Examples
     --------
-    >>> resolveMaterialClassByName("UO2", ["terrapower.twr.materials", "armi.materials"])
-    <class 'terrapower.twr.materials.UO2'>
+    >>> resolveMaterialClassByName("UO2", ["something.else.materials", "armi.materials"])
+    <class 'something.else.materials.UO2'>
 
     See Also
     --------
     armi.reactor.reactors.factory
         Applies user settings to default namespace order.
-
     """
     if ":" in name:
         # assume direct package path like `armi.materials.uZr:UZr`
         modPath, clsName = name.split(":")
         mod = importlib.import_module(modPath)
         return getattr(mod, clsName)
+
     namespaceOrder = namespaceOrder or _MATERIAL_NAMESPACE_ORDER
     for namespace in namespaceOrder:
         mod = importlib.import_module(namespace)

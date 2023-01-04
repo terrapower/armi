@@ -563,12 +563,7 @@ class IsotxsLibrary(_XSLibrary):
         Returns
         -------
         scatterWeights : dict
-            (xsID, fromGroup) : weight column (sparse Gx1).
-
-        See Also
-        --------
-        terrapower.physics.neutronics.uq.sensitivities.MeshMatrix.derivativeM
-
+            (xsID, fromGroup) : weight column (sparse Gx1)
         """
         runLog.info(
             "Building {0} weights on cross section library".format(scatterMatrixKey)
@@ -590,7 +585,6 @@ class IsotxsLibrary(_XSLibrary):
             a reactor, or None
 
         .. warning:: Sometimes worker nodes do not have a reactor, fission products will not be purged.
-
         """
         runLog.info("Purging detailed fission products from {}".format(self))
         modeledNucs = r.blueprints.allNuclidesInProblem

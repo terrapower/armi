@@ -33,13 +33,14 @@ from armi.utils.mathematics import isMonotonic
 
 # Framework settings
 CONF_NUM_PROCESSORS = "numProcessors"
+CONF_INITIALIZE_BURN_CHAIN = "initializeBurnChain"
 CONF_BURN_CHAIN_FILE_NAME = "burnChainFileName"
-CONF_ZONING_STRATEGY = "zoningStrategy"
 CONF_AXIAL_MESH_REFINEMENT_FACTOR = "axialMeshRefinementFactor"
 CONF_AUTOMATIC_VARIABLE_MESH = "automaticVariableMesh"
 CONF_TRACE = "trace"
 CONF_PROFILE = "profile"
 CONF_COVERAGE = "coverage"
+CONF_COVERAGE_CONFIG_FILE = "coverageConfigFile"
 CONF_MIN_MESH_SIZE_RATIO = "minMeshSizeRatio"
 CONF_CYCLE_LENGTH = "cycleLength"
 CONF_CYCLE_LENGTHS = "cycleLengths"
@@ -56,7 +57,6 @@ CONF_CIRCULAR_RING_PITCH = "circularRingPitch"
 CONF_COMMENT = "comment"
 CONF_COPY_FILES_FROM = "copyFilesFrom"
 CONF_COPY_FILES_TO = "copyFilesTo"
-CONF_CREATE_ASSEMBLY_TYPE_ZONES = "createAssemblyTypeZones"
 CONF_DEBUG = "debug"
 CONF_DEBUG_MEM = "debugMem"
 CONF_DEBUG_MEM_SIZE = "debugMemSize"
@@ -65,6 +65,7 @@ CONF_DETAIL_ALL_ASSEMS = "detailAllAssems"
 CONF_DETAIL_ASSEM_LOCATIONS_BOL = "detailAssemLocationsBOL"
 CONF_DETAIL_ASSEM_NUMS = "detailAssemNums"
 CONF_DUMP_SNAPSHOT = "dumpSnapshot"
+CONF_PHYSICS_FILES = "savePhysicsFiles"
 CONF_DO_ORIFICED_TH = "doOrificedTH"  # zones
 CONF_EQ_DIRECT = "eqDirect"  # fuelCycle/equilibrium coupling
 CONF_FRESH_FEED_TYPE = "freshFeedType"
@@ -93,8 +94,6 @@ CONF_TRACK_ASSEMS = "trackAssems"
 CONF_VERBOSITY = "verbosity"
 CONF_ZONE_DEFINITIONS = "zoneDefinitions"
 CONF_ACCEPTABLE_BLOCK_AREA_ERROR = "acceptableBlockAreaError"
-CONF_RING_ZONES = "ringZones"
-CONF_SPLIT_ZONES = "splitZones"
 CONF_FLUX_RECON = "fluxRecon"  # strange coupling in fuel handlers
 CONF_INDEPENDENT_VARIABLES = "independentVariables"
 CONF_HCF_CORETYPE = "HCFcoretype"
@@ -132,21 +131,22 @@ def defineSettings() -> List[setting.Setting]:
             schema=vol.All(vol.Coerce(int), vol.Range(min=1)),
         ),
         setting.Setting(
+            CONF_INITIALIZE_BURN_CHAIN,
+            default=True,
+            label="Initialize Burn Chain",
+            description=(
+                f"This setting is paired with the `{CONF_BURN_CHAIN_FILE_NAME}` setting. "
+                f"When enabled, this will initialize the burn-chain on initializing the case and "
+                f"is required for running depletion calculations where the transmutations and decays "
+                f"are controlled by the framework. If an external software, such as ORIGEN, contains "
+                f"data for the burn-chain already embedded then this may be disabled."
+            ),
+        ),
+        setting.Setting(
             CONF_BURN_CHAIN_FILE_NAME,
             default=os.path.join(context.RES, "burn-chain.yaml"),
             label="Burn Chain File",
             description="Path to YAML file that has the depletion chain defined in it",
-        ),
-        setting.Setting(
-            CONF_ZONING_STRATEGY,
-            default="byRingZone",
-            label="Automatic core zone creation strategy",
-            description="Channel Grouping Options for Safety;"
-            "everyFA: every FA is its own channel, "
-            "byRingZone: based on ringzones, "
-            "byFuelType: based on fuel type, "
-            "Manual: you must specify 'zoneDefinitions' setting",
-            options=["byRingZone", "byOrifice", "byFuelType", "everyFA", "manual"],
         ),
         setting.Setting(
             CONF_AXIAL_MESH_REFINEMENT_FACTOR,
@@ -226,6 +226,12 @@ def defineSettings() -> List[setting.Setting]:
             description="Turn on coverage report generation which tracks all the lines "
             "of code that execute during a run",
             isEnvironment=True,
+        ),
+        setting.Setting(
+            CONF_COVERAGE_CONFIG_FILE,
+            default="",
+            label="File to Define Coverage Configuration",
+            description="User-defined coverage configuration file",
         ),
         setting.Setting(
             CONF_MIN_MESH_SIZE_RATIO,
@@ -403,12 +409,6 @@ def defineSettings() -> List[setting.Setting]:
             CONF_COPY_FILES_TO, default=[], label="None", description="None"
         ),
         setting.Setting(
-            CONF_CREATE_ASSEMBLY_TYPE_ZONES,
-            default=False,
-            label="Create Fuel Zones Automatically",
-            description="Let ARMI create zones based on fuel type automatically ",
-        ),
-        setting.Setting(
             CONF_DEBUG, default=False, label="Python Debug Mode", description="None"
         ),
         setting.Setting(
@@ -459,9 +459,15 @@ def defineSettings() -> List[setting.Setting]:
             CONF_DUMP_SNAPSHOT,
             default=[],
             label="Detailed Reactor Snapshots",
-            description="List of snapshots to dump detailed reactor analysis data. Can "
-            "be used to perform follow-on analysis (i.e., reactivity coefficient "
-            "generation).",
+            description="List of snapshots to perform detailed reactor analysis, "
+            "such as reactivity coefficient generation.",
+        ),
+        setting.Setting(
+            CONF_PHYSICS_FILES,
+            default=[],
+            label="Dump Snapshot Files",
+            description="List of snapshots to dump reactor physics kernel input and "
+            "output files. Can be used to perform follow-on analysis.",
         ),
         setting.Setting(
             CONF_DO_ORIFICED_TH,
@@ -698,9 +704,9 @@ def defineSettings() -> List[setting.Setting]:
             CONF_ZONE_DEFINITIONS,
             default=[],
             label="Zone Definitions",
-            description="Definitions of zones as lists of assembly locations (e.g. "
-            "'zoneName: loc1, loc2, loc3') . Zones are groups of assemblies used by "
-            "various summary and calculation routines.",
+            description="Manual definitions of zones as lists of assembly locations "
+            "(e.g. 'zoneName: loc1, loc2, loc3') . Zones are groups of assemblies used "
+            "by various summary and calculation routines.",
         ),
         setting.Setting(
             CONF_ACCEPTABLE_BLOCK_AREA_ERROR,
@@ -710,21 +716,6 @@ def defineSettings() -> List[setting.Setting]:
             "sectional area and the reference block used during the assembly area "
             "consistency check",
             schema=vol.All(vol.Coerce(float), vol.Range(min=0, min_included=False)),
-        ),
-        setting.Setting(
-            CONF_RING_ZONES,
-            default=[],
-            label="Ring Zones",
-            description="Define zones by concentric radial rings. Each zone will get "
-            "independent reactivity coefficients.",
-            schema=vol.Schema([int]),
-        ),
-        setting.Setting(
-            CONF_SPLIT_ZONES,
-            default=True,
-            label="Split Zones",
-            description="Automatically split defined zones further based on number of "
-            "blocks and assembly types",
         ),
         setting.Setting(
             CONF_INDEPENDENT_VARIABLES,

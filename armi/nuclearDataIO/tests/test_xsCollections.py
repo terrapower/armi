@@ -12,15 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Module that tests methods within xsCollections
-"""
+"""Module that tests methods within xsCollections"""
+# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import unittest
 
-from armi.nuclearDataIO import xsCollections
-from armi.tests import ISOAA_PATH
-from armi.physics.neutronics.tests import test_cross_section_manager
 from armi.nuclearDataIO import isotxs
+from armi.nuclearDataIO import xsCollections
+from armi.physics.neutronics.tests import test_cross_section_manager
+from armi.tests import ISOAA_PATH
 
 
 class TestXsCollections(unittest.TestCase):

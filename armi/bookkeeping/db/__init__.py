@@ -18,39 +18,47 @@ The db package is responsible for reading and writing the state of the reactor t
 As an ARMI run progresses, this is periodically updated as the primary output file.
 It can also be an input file for follow-on analysis or restart runs.
 
-The database can be visualized through various tools such as XTVIEW.
-
 This module contains factories for selecting and building DB-related objects.
 
-Some notes on versions
-----------------------
-Persistent storage of ARMI models has seen many changes throughout the years.
-Calculation results were originally stored on a SQL database (version 1), which has been
-fully deprecated at this point.
+When updating a db version
+--------------------------
+The code associated with reading and writing database files may not benefit from Don't
+Repeat Yourself (DRY) practices in the same way as other code. Therefore, do not share
+code between different major versions of the databases. Create a new module if you are
+creating a new major database version.
 
-Version 2 was the first to use HDF5 as the primary storage format. This was beneficial,
-as it did not rely on any external infrastructure to operate, and benefited from the
-suite of tools that help interact with HDF5 files. It was eventually replaced because
-it did not store a complete model of the reactor, but rather a ghost of assembly, block,
-and reactor parameters that could be applied to an existing reactor model (so long as
-the dimensions were consistent!). This led to loading reactors being inconvenient and
-error-prone, and also posed a limitation for representing more complex systems that have
-non-core components.
 
-Version 3 was created to make the schema more flexible and to permit storing the entire
-reactor model within the HDF5 file. All objects in the ARMI Composite Model are written
-to the database, and the model can be recovered in its entirety just from the HDF5 file.
-Since it's inception, it has seen a number of tweaks to improve its functionality and
-fix bugs.
+Database revision changelog
+---------------------------
+ - 1: Originally, calculation results were stored in a SQL database.
 
-Being a serialization format, the code associated with reading and writing database
-files may not benefit from Don't Repeat Yourself (DRY) practices in the same way as
-other code. Therefore, we do not share much, if any, code between different major
-versions of the databases. As such, new major-versioned database implementations should
-exist in their own modules. Minor revisions (e.g. M.(N+1)) to the database structure
-should be simple enough that specialized logic can be used to support all minor versions
-without posing a maintenance burden. A detailed change log should be maintained of each
-minor revision.
+ - 2: The storage format was changed to HDF5. This required less external
+   infrastructure than SQL. However, the implementation did not store a complete
+   model of a reactor, but a ghost of assembly, block, and reactor parameters that
+   could be applied to an existing reactor model (so long as the dimensions were
+   consistent). This was inconvenient and error prone.
+
+ - 3: The HDF5 format was kept, but the schema was made more flexible to permit
+   storing the entire reactor model. All objects in the ARMI Composite Model are
+   written to the database, and the model can be completely recovered from just the
+   HDF5 file.
+
+     - 3.1: Improved the handling of reading/writing grids.
+
+     - 3.2: Changed the strategy for storing large attributes to using a special
+       string starting with an "@" symbol (e.g., "@/c00n00/attrs/5_linkedDims"). This
+       was done to support copying time node datasets from one file to another without
+       invalidating the references. Support was maintained for reading previous
+       versions, by performing a ``mergeHistory()`` and converting to the new naming
+       strategy, but the old version cannot be written.
+
+     - 3.3: Compressed the way locations are stored in the database and allow
+       MultiIndex locations to be read and written.
+
+     - 3.4: Modified the way locations are stored in the database to include complete
+       indices for indices that can be composed from multiple grids. Having complete
+       indices allows for more efficient means of extracting information based on
+       location, without having to compose the full model.
 """
 import os
 from typing import Optional, List, Tuple
@@ -62,7 +70,8 @@ from armi.reactor import reactors
 
 # re-export package components for easier import
 from .permissions import Permissions
-from .database3 import Database3, DatabaseInterface, updateGlobalAssemblyNum
+from .database3 import Database3, updateGlobalAssemblyNum
+from .databaseInterface import DatabaseInterface
 from .compareDB3 import compareDatabases
 from .factory import databaseFactory
 
@@ -145,11 +154,13 @@ def loadOperator(pathToDb, loadCycle, loadNode, allowMissing=False):
     updateGlobalAssemblyNum(r)
 
     o = thisCase.initializeOperator(r=r)
-    runLog.warning(
-        "The operator provided is not in the same state as the operator was.\n"
-        "When the reactor was at the prescribed cycle and node, it should have\n"
-        "access to the same interface stack, but the interfaces will also not be in the "
-        "same state.\n"
+    runLog.important(
+        "The operator will not be in the same state that it was at that cycle and "
+        "node, only the reactor.\n"
+        "The operator should have access to the same interface stack, but the "
+        "interfaces will not be in the same state (they will be fresh instances "
+        "of each interface as if __init__ was just called rather than the state "
+        "during the run at this time node.)\n"
         "ARMI does not support loading operator states, as they are not stored."
     )
     return o

@@ -85,7 +85,7 @@ class Report:
         runLog.debug("Writing HTML document {}.".format(filename))
 
         with html.HTMLFile(filename, "w") as f:
-            html.writeStandardReportTemplate(f, self)
+            html.writeStandardReportTemplate(f, self, self.title)
 
         runLog.info("HTML document {} written".format(filename))
 
