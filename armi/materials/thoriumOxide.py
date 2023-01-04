@@ -21,7 +21,7 @@ Data is from [#IAEA-TECDOCT-1450]_.
     https://www-pub.iaea.org/mtcd/publications/pdf/te_1450_web.pdf
 """
 from armi import runLog
-from armi.materials.material import Material, FuelMaterial
+from armi.materials.material import FuelMaterial
 from armi.utils.units import getTk
 
 
