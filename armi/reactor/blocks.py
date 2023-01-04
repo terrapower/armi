@@ -1583,14 +1583,12 @@ class HexBlock(Block):
             self.getAverageTempInC(),
             self._pitchDefiningComponent[1],
         )
-        emptyNDens = {
-            nuc: 0.0 for nuc, dens in self.getNumberDensities().items() if dens > 0.0
-        }
+        emptyNDens = { nuc: 0.0 for nuc in self.getNuclides() }
         hexComponent.setNumberDensities(emptyNDens)
         b.add(hexComponent)
 
         # create a null component with cladding flags and spatialLocator from source block's
-        # clad component in case pin locations need to be known for physics solver
+        # clad component in case pin locations need to be known for phm ysics solver
         # only works if there is a single clad component that has a MultiIndexLocation
         if self.hasComponents(Flags.CLAD):
             pinComponent = Circle(
