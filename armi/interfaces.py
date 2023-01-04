@@ -31,6 +31,9 @@ from typing import NamedTuple
 from typing import List
 from typing import Dict
 
+import numpy
+from numpy.linalg import norm
+
 from armi import getPluginManagerOrFail, settings, utils
 from armi.utils import textProcessors
 from armi.reactor import parameters
@@ -77,6 +80,117 @@ class STACK_ORDER:  # pylint: disable=invalid-name, too-few-public-methods
     POSTPROCESSING = BOOKKEEPING + 1
 
 
+class TightCoupler:
+    """
+    Data structure that defines tight coupling attributes that are implemented
+    within an Interface and called upon when ``interactCoupled`` is called.
+
+    Parameters
+    ----------
+    param : str
+        The name of a parameter defined in the ARMI Reactor model.
+
+    tolerance : float
+        Defines the allowable error, epsilon, between the current previous
+        parameter value(s) to determine if the selected coupling parameter has
+        been converged.
+
+    maxIters : int
+        Maximum number of iterations allowed before the ``isConverged`` method
+        will return True and the state of the object will be cleared.
+    """
+
+    _SUPPORTED_TYPES = [float, int, list, numpy.ndarray]
+
+    def __init__(self, param, tolerance, maxIters):
+        self.param = param
+        self.tolerance = tolerance
+        self.maxIters = maxIters
+        self._numIters = 0
+        self._previousIterationValue = None
+        self.eps = numpy.inf
+
+    def __repr__(self):
+        return f"<{self.__class__.__name__}, Parameter: {self.param}, Convergence Criteria: {self.tolerance}, Maximum Coupled Iterations: {self.maxIters}>"
+
+    def storePreviousIterationValue(self, val):
+        """
+        Stores the previous iteration value of the given parameter.
+
+        Notes
+        -----
+        This checks the type of the value against ``_SUPPORTED_TYPES`` before storing.
+        """
+        if type(val) not in self._SUPPORTED_TYPES:
+            raise TypeError(
+                f"{val} supplied has type {type(val)} which is not supported in {self}. "
+                f"Supported types: {self._SUPPORTED_TYPES}"
+            )
+        self._previousIterationValue = val
+
+    def isConverged(self, val):
+        """
+        Return True if the convergence criteria between the current and previous iteration values are met.
+
+        Notes
+        -----
+        On convergence, this class is automatically reset to its initial condition to avoid retaining
+        or holding a stale state. Calling this method will increment a counter that when exceeded will
+        clear the state. A warning will be reported if the state is cleared prior to the convergence
+        criteria being met.
+
+        Raises
+        ------
+        ValueError
+            If the previous iteration value has not been assigned. The ``storePreviousIterationValue`` method
+            must be called first.
+
+        TypeError
+            If the type of the current value provided is not the same as the previous iteration value.
+        """
+        if self._previousIterationValue is None:
+            raise ValueError(
+                f"Cannot check convergence of {self} with no previous iteration value set. "
+                f"Set using `storePreviousIterationValue` first."
+            )
+
+        if not isinstance(val, type(self._previousIterationValue)):
+            raise TypeError(
+                f"The current value {val} is not the same type as the previous "
+                f"iteration value of {self._previousIterationValue}"
+            )
+
+        previous = self._previousIterationValue
+
+        # Check convergence for integer or float values.
+        if isinstance(val, int) or isinstance(val, float):
+            self.eps = abs(val - previous)
+
+        # Convert list values to a numpy array.
+        if isinstance(val, list):
+            val = numpy.array(val)
+            previous = numpy.array(previous)
+
+        # Check convergence for numpy array values.
+        if isinstance(val, numpy.ndarray):
+            epsVec = []
+            for old, new in zip(previous, val):
+                epsVec.append(norm(numpy.subtract(old, new), ord=2))
+            self.eps = norm(epsVec, ord=numpy.inf)
+
+        # Check convergence and if convergence is satisfied then reset the state of this
+        # object back to its originally defined state by calling __init__(...)
+        converged = self.eps < self.tolerance
+        if converged:
+            self.__init__(self.param, self.tolerance, self.maxIters)
+        else:
+            self._numIters += 1
+            if self._numIters == self.maxIters:
+                self.__init__(self.param, self.tolerance, self.maxIters)
+
+        return converged
+
+
 class Interface:
     """
     The eponymous Interface between the ARMI Reactor model and modules that operate upon it.
@@ -116,10 +230,6 @@ class Interface:
     interfaces.
     """
 
-    # class attributes for tight coupling
-    tightCouplingVariables = None
-    tightCouplingConvergeOn = None
-
     class Distribute:  # pylint: disable=too-few-public-methods
         """Enum-like return flag for behavior on interface broadcasting with MPI."""
 
@@ -157,9 +267,7 @@ class Interface:
         self.cs = settings.getMasterCs() if cs is None else cs
         self.r = r
         self.o = r.o if r else None
-        # default interface variables used for tight coupling
-        self.tightCouplingTolerance = cs["tightCouplingConvergenceCriteria"]
-        self.tightCouplingOldValue = None
+        self.coupler = _setTightCouplerByInterfaceFunction(self, cs)
 
     def __repr__(self):
         return "<Interface {0}>".format(self.name)
@@ -314,11 +422,11 @@ class Interface:
         pass
 
     def interactCoupled(self, iteration):
-        """Called repeatedly at each time node/subcycle when tight physics couping is active."""
+        """Called repeatedly at each time node/subcycle when tight physics coupling is active."""
         pass
 
     def getTightCouplingValue(self):
-        """abstract method to retrive the value in which tight coupling is to converge on"""
+        """Abstract method to retrieve the value in which tight coupling will converge on."""
         pass
 
     def interactError(self):
@@ -537,6 +645,42 @@ class OutputReader:
         values in some other data structure.
         """
         raise NotImplementedError()
+
+
+def _setTightCouplerByInterfaceFunction(klass, cs):
+    """
+    Return an instance of a ``TightCoupler`` class or ``None``.
+
+    Parameters
+    ----------
+    klass : Interface
+        Interface that a ``TightCoupler`` object will be added to.
+
+    cs : Settings
+        Case settings that are parsed to determine if tight coupling is enabled
+        globally and if both a target parameter and convergence criteria defined.
+    """
+    # No type coupling if there is no function for the Interface defined.
+    if klass.function is None:
+        return None
+
+    # This will use the operator to determine if coupling is active
+    # if the Interface klass has an operator attached. Otherwise, we
+    # fall back to checking the case settings under special cases, like
+    # if the interface is initialized as stand alone.
+    if klass.o is not None:
+        activeCoupling = klass.o.couplingIsActive()
+    else:
+        activeCoupling = cs["tightCoupling"]
+
+    if not activeCoupling or (klass.function not in cs["tightCouplingSettings"]):
+        return None
+
+    parameter = cs["tightCouplingSettings"][klass.function]["parameter"]
+    tolerance = cs["tightCouplingSettings"][klass.function]["convergence"]
+    maxIters = cs["tightCouplingMaxNumIters"]
+
+    return TightCoupler(parameter, tolerance, maxIters)
 
 
 def getActiveInterfaceInfo(cs):

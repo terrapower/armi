@@ -51,11 +51,8 @@ class GlobalFluxInterface(interfaces.Interface):
     function = "globalFlux"
     _ENERGY_BALANCE_REL_TOL = 1e-5
 
-    # for tight coupling, overwrite base class
-    # TODO: expose tightCouplingConvergeOn to user and allow flexibility via case settings
-    # to change to other options within tightCouplingVariables.
-    tightCouplingVariables = ["keff", "power"]
-    tightCouplingConvergeOn = "keff"
+    TIGHT_COUPLING_VARIABLES = ["keff", "power"]
+    TIGHT_COUPLING_CONVERGENCE_VARIABLE = "keff"
 
     def __init__(self, r, cs):
         interfaces.Interface.__init__(self, r, cs)
@@ -229,9 +226,10 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
         GlobalFluxInterface.interactCoupled(self, iteration)
 
     def getTightCouplingValue(self):
-        if self.tightCouplingConvergeOn == "keff":
+        """Return the parameter value"""
+        if self.TIGHT_COUPLING_CONVERGENCE_VARIABLE == "keff":
             return self.r.core.p.keff
-        if self.tightCouplingConvergeOn == "power":
+        if self.TIGHT_COUPLING_CONVERGENCE_VARIABLE == "power":
             scaledCorePowerDistribution = []
             for a in self.r.core.getChildren():
                 scaledPower = []

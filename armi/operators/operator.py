@@ -30,14 +30,7 @@ import os
 import re
 import shutil
 import time
-import collections
 from tabulate import tabulate
-from numpy.linalg import norm
-from numpy import (
-    subtract,
-    inf,
-    ndarray,
-)
 
 from armi import context
 from armi import interfaces
@@ -141,7 +134,6 @@ class Operator:  # pylint: disable=too-many-public-methods
         self._maxBurnSteps = None
         self._powerFractions = None
         self._availabilityFactors = None
-        self.convergenceSummary = collections.defaultdict(list)
 
         # Create the welcome headers for the case (case, input, machine, and some basic reactor information)
         reportingUtils.writeWelcomeHeaders(self, cs)
@@ -385,12 +377,10 @@ class Operator:  # pylint: disable=too-many-public-methods
         self.r.p.timeNode = timeNode
         self.interactAllEveryNode(cycle, timeNode)
         # perform tight coupling if requested
-        if self.cs["tightCoupling"]:
+        if self.couplingIsActive():
             for coupledIteration in range(self.cs["tightCouplingMaxNumIters"]):
                 self.r.core.p.coupledIteration = coupledIteration + 1
-                self._tightCouplingOldValues()
-                self.interactAllCoupled(coupledIteration)
-                converged = self._computeTightCouplingConvergence()
+                converged = self.interactAllCoupled(coupledIteration)
                 if converged:
                     break
             # database has not yet been written, so we need to write it.
@@ -628,51 +618,40 @@ class Operator:  # pylint: disable=too-many-public-methods
         in the current flux solution. It's also distinct from full coupling where all fields are solved simultaneously.
         ARMI supports tight and loose coupling.
         """
+        converged = []
+        convergenceSummary = {}
         activeInterfaces = [ii for ii in self.interfaces if ii.enabled()]
+
+        # Store the previous iteration values before calling the coupled interactiojn
+        # for each interface.
+        for interface in activeInterfaces:
+            if interface.coupler is None:
+                continue
+            interface.coupler.storePreviousIterationValue(
+                interface.getTightCouplingValue()
+            )
+
         self._interactAll("Coupled", activeInterfaces, coupledIteration)
 
-    def _tightCouplingOldValues(self):
-        activeInterfaces = [ii for ii in self.interfaces if ii.enabled()]
+        # Summarize the coupled results and the convergence status.
         for interface in activeInterfaces:
-            interface.tightCouplingOldValue = interface.getTightCouplingValue()
+            coupler = interface.coupler
+            if coupler is None:
+                continue
 
-    def _computeTightCouplingConvergence(self):
-        activeInterfaces = [ii for ii in self.interfaces if ii.enabled()]
-        convergence = []
-        for interface in activeInterfaces:
-            if interface.tightCouplingOldValue is not None:
-                key = "".join([interface.name, ": ", interface.tightCouplingConvergeOn])
-                if isinstance(interface.tightCouplingOldValue, float):
-                    eps = abs(
-                        interface.tightCouplingOldValue
-                        - interface.getTightCouplingValue()
-                    )
-                elif isinstance(interface.tightCouplingOldValue, ndarray):
-                    newValue = interface.getTightCouplingValue()
-                    epsVec = []
-                    for old, new in zip(interface.tightCouplingOldValue, newValue):
-                        epsVec.append(norm(subtract(old, new), ord=2))
-                    eps = norm(epsVec, ord=inf)
-                else:
-                    raise RuntimeError(
-                        "Only currently set up to handle either floats or lists... Sorry."
-                    )
-                self.convergenceSummary[key].append(eps)
-                if eps > interface.tightCouplingTolerance:
-                    convergence.append(False)
-                else:
-                    convergence.append(True)
-
-        self._printTightCouplingReport()  # it's usually useful to print convergence progress as it unfolds
-        return all(convergence)
-
-    def _printTightCouplingReport(self):
-        runLog.info("Tight Coupling Convergence Summary: Norm Type = Inf")
-        runLog.info(
-            tabulate(
-                self.convergenceSummary, headers="keys", showindex=True, tablefmt="armi"
+            key = "".join(
+                [
+                    interface.name,
+                    ": ",
+                    coupler.parameter,
+                ]
             )
-        )
+
+            convergenceSummary[key].append(coupler.eps)
+            converged.append(coupler.isConverged())
+
+        reportingUtils.writeTightCouplingConvergenceSummary(convergenceSummary)
+        return all(converged)
 
     def interactAllError(self):
         """Interact when an error is raised by any other interface. Provides a wrap-up option on the way to a crash."""
@@ -703,6 +682,7 @@ class Operator:  # pylint: disable=too-many-public-methods
         armi.interfaces.getActiveInterfaceInfo : Collects the interface classes from relevant
             packages.
         """
+        runLog.header("=========== Creating Interfaces ===========")
         interfaceList = interfaces.getActiveInterfaceInfo(self.cs)
 
         for klass, kwargs in interfaceList:
