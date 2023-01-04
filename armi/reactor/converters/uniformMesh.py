@@ -134,8 +134,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
         self.calcReactionRates = False
         self.includePinCoordinates = False
 
-        self.reactorParamNames = []
-        self.blockParamNames = []
+        self.paramMapper = None
 
         # These dictionaries represent back-up data from the source reactor
         # that can be recovered if the data is not being brought back from
@@ -177,8 +176,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
                 homogAssem = self.makeAssemWithUniformMesh(
                     assem,
                     self.convReactor.core.p.axialMesh[1:],
-                    self.blockParamNames,
-                    self.bpm,
+                    self.paramMapper,
                     self.includePinCoordinates,
                 )
                 homogAssem.spatialLocator = assem.spatialLocator
@@ -274,8 +272,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
                         self.setAssemblyStateFromOverlaps(
                             assem,
                             storedAssem,
-                            self.blockParamNames,
-                            self.bpm,
+                            self.paramMapper,
                             mapNumberDensities=False,
                             calcReactionRates=self.calcReactionRates,
                         )
@@ -320,8 +317,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
     def makeAssemWithUniformMesh(
         sourceAssem,
         newMesh,
-        blockParamNames=None,
-        blockParamMapper=None,
+        paramMapper=None,
         mapNumberDensities=True,
         includePinCoordinates=False,
     ):
@@ -437,8 +433,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
         UniformMeshGeometryConverter.setAssemblyStateFromOverlaps(
             sourceAssem,
             newAssem,
-            blockParamNames,
-            blockParamMapper,
+            paramMapper,
             mapNumberDensities,
         )
         return newAssem
@@ -447,8 +442,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
     def setAssemblyStateFromOverlaps(
         sourceAssembly,
         destinationAssembly,
-        blockParamNames,
-        blockParamMapper,
+        paramMapper,
         mapNumberDensities=False,
         calcReactionRates=False,
     ):
@@ -518,52 +512,43 @@ class UniformMeshGeometryConverter(GeometryConverter):
                     f"be reported to the developers."
                 )
 
-            if blockParamNames is not None:
-                # Determine which parameters are volume integrated
-                isVolIntegrated = {
-                    paramName: destBlock.p.paramDefs[paramName].atLocation(
-                        parameters.ParamLocation.VOLUME_INTEGRATED
-                    )
-                    for paramName in blockParamNames
-                }
-
             if mapNumberDensities:
                 setNumberDensitiesFromOverlaps(destBlock, sourceBlocksInfo)
 
             # Iterate over each of the blocks that were found in the uniform mesh
             # source assembly within the lower and upper bounds of the destination
             # block and perform the parameter mapping.
-            if blockParamMapper is not None:
+            if paramMapper is not None:
                 updatedDestVals = collections.defaultdict(float)
                 for sourceBlock, sourceBlockOverlapHeight in sourceBlocksInfo:
-                    sourceBlockVals = blockParamMapper.paramGetter(
+                    sourceBlockVals = paramMapper.paramGetter(
                         sourceBlock,
-                        blockParamNames,
+                        paramMapper.blockParamNames,
                     )
                     sourceBlockHeight = sourceBlock.getHeight()
 
                     for paramName, sourceBlockVal in zip(
-                        blockParamNames, sourceBlockVals
+                        paramMapper.blockParamNames, sourceBlockVals
                     ):
                         if sourceBlockVal is None:
                             continue
-                        if isVolIntegrated[paramName]:
+                        if paramMapper.isVolIntegrated[paramName]:
                             denominator = sourceBlockHeight
                         else:
                             denominator = destinationBlockHeight
                         integrationFactor = sourceBlockOverlapHeight / denominator
                         updatedDestVals[paramName] += sourceBlockVal * integrationFactor
 
-                blockParamMapper.paramSetter(
+                paramMapper.paramSetter(
                     destBlock, updatedDestVals.values(), updatedDestVals.keys()
                 )
 
         # If requested, the reaction rates will be calculated based on the
         # mapped neutron flux and the XS library.
         if calcReactionRates:
-            if blockParamMapper is None:
+            if paramMapper is None:
                 runLog.warning(
-                    f"Reaction rates requested for {destinationAssembly}, but no BlockParamMapper "
+                    f"Reaction rates requested for {destinationAssembly}, but no ParamMapper "
                     "was provided to setAssemblyStateFromOverlaps(). Reaction rates calculated "
                     "will reflect the intended result without new parameter values being mapped in."
                 )
@@ -653,8 +638,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
     def reset(self):
         """Clear out stored attributes and reset the global assembly number."""
-        self.reactorParamNames = []
-        self.blockParamNames = []
         self._cachedReactorCoreParamData = {}
         super().reset()
 
@@ -678,8 +661,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
             "in" or "out". The direction of mapping; "in" to the uniform mesh assembly, or "out" of it.
             Different parameters are mapped in each direction.
         """
-        self.reactorParamNames = []
-        self.blockParamNames = []
+        pass
 
     def _checkConversion(self):
         """Perform checks to ensure conversion occurred properly."""
@@ -735,8 +717,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
             newAssem = self.makeAssemWithUniformMesh(
                 sourceAssem,
                 self._uniformMesh,
-                self.blockParamNames,
-                self.bpm,
+                self.paramMapper,
                 self.includePinCoordinates,
             )
             src = sourceAssem.spatialLocator
@@ -750,7 +731,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
         The summations should start at zero but will happen for all overlaps.
         """
         runLog.debug("Clearing params from source reactor that will be converted.")
-        for rp in self.reactorParamNames:
+        for rp in self.paramMapper.reactorParamNames:
             if cache:
                 self._cachedReactorCoreParamData[rp] = reactor.core.p[rp]
             reactor.core.p[rp] = 0.0
@@ -768,7 +749,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
         """
 
         # Map reactor core parameters
-        for paramName in self.reactorParamNames:
+        for paramName in self.paramMapper.reactorParamNames:
             # Check if the source reactor has a value assigned for this
             # parameter and if so, then apply it. Otherwise, revert back to
             # the original value.
@@ -788,8 +769,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
                 UniformMeshGeometryConverter.setAssemblyStateFromOverlaps(
                     aSource,
                     aDest,
-                    self.blockParamNames,
-                    self.bpm,
+                    self.paramMapper,
                     mapNumberDensities,
                     calcReactionRates=self.calcReactionRates,
                 )
@@ -918,7 +898,7 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
             # initial heavy metal masses are needed to calculate burnup in MWd/kg
             self.blockParamNames.extend(HEAVY_METAL_PARAMS)
 
-        self.bpm = BlockParamMapper(self.blockParamNames, b)
+        self.paramMapper = ParamMapper(self.reactorParamNames, self.blockParamNames, b)
 
 
 class GammaUniformMeshConverter(UniformMeshGeometryConverter):
@@ -997,17 +977,19 @@ class GammaUniformMeshConverter(UniformMeshGeometryConverter):
                 ]
             )
 
-        self.bpm = BlockParamMapper(self.blockParamNames, b)
+        self.paramMapper = ParamMapper(self.reactorParamNames, self.blockParamNames, b)
 
 
-class BlockParamMapper:
+class ParamMapper:
     """
-    Namespace for parameter setters/getters that can be used when
+    Utility for parameter setters/getters that can be used when
     transferring data from one assembly to another during the mesh
-    conversion process.
+    conversion process. Stores some data like parameter defaults and
+    properties to save effort of accessing paramDefs many times for
+    the same data.
     """
 
-    def __init__(self, blockParamNames, b):
+    def __init__(self, reactorParamNames, blockParamNames, b):
         """
         Initialize the list of parameter defaults
 
@@ -1018,6 +1000,17 @@ class BlockParamMapper:
             paramName: b.p.pDefs[paramName].default for paramName in blockParamNames
         }
 
+        # Determine which parameters are volume integrated
+        self.isVolIntegrated = {
+            paramName: b.p.paramDefs[paramName].atLocation(
+                parameters.ParamLocation.VOLUME_INTEGRATED
+            )
+            for paramName in blockParamNames
+        }
+
+        self.reactorParamNames = reactorParamNames
+        self.blockParamNames = blockParamNames
+
     @staticmethod
     def paramSetter(block, vals, paramNames):
         """Sets block parameter data."""
@@ -1027,9 +1020,9 @@ class BlockParamMapper:
                 continue
 
             if isinstance(val, list) or isinstance(val, numpy.ndarray):
-                BlockParamMapper._arrayParamSetter(block, [val], [paramName])
+                paramMapper._arrayParamSetter(block, [val], [paramName])
             else:
-                BlockParamMapper._scalarParamSetter(block, [val], [paramName])
+                paramMapper._scalarParamSetter(block, [val], [paramName])
 
     def paramGetter(self, block, paramNames):
         """Returns block parameter values as an array in the order of the parameter names given."""
