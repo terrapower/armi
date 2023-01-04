@@ -169,7 +169,7 @@ class Block(composites.Composite):
 
         Notes
         -----
-        Only impelemented for HexBlock right now.
+        Only implemented for HexBlock right now.
         """
         return copy.deepcopy(self)
 
