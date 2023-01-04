@@ -212,6 +212,36 @@ class MOX_TestCase(_Material_Test, unittest.TestCase):
         ref = 2996.788765
         self.assertAlmostEqual(self.mat.meltingPoint(), ref, delta=ref * 0.001)
 
+    def test_applyInputParams(self):
+        massFracNameList = [
+            "AM241",
+            "O16",
+            "PU238",
+            "PU239",
+            "PU240",
+            "PU241",
+            "PU242",
+            "U235",
+            "U238",
+        ]
+        massFracRefValList = [
+            0.000998,
+            0.118643,
+            0.000156,
+            0.119839,
+            0.029999,
+            0.00415,
+            0.000858,
+            0.166759,
+            0.558597,
+        ]
+
+        self.mat.applyInputParams()
+
+        for name, frac in zip(massFracNameList, massFracRefValList):
+            cur = self.mat.p.massFrac[name]
+            self.assertEqual(cur, frac)
+
 
 class NaCl_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.NaCl
