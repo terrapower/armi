@@ -158,18 +158,19 @@ class Block(composites.Composite):
 
         return b
 
-    def createCopy(self):
+    def _createHomogenizedCopy(self):
         """
         Create a copy of a block
 
         Notes
         -----
         Used to implement a copy function for a specific block types that can
-        be faster than a deepcopy. This base class implementation is just a deepcopy.
+        be much faster than a deepcopy by glossing over details that may be
+        unnecessary in certain contexts.
 
-        Notes
-        -----
-        Only implemented for HexBlock right now.
+        Creating a homogenized copy of the block is only implemented for HexBlock right now.
+        This base class implementation is just a deepcopy of the block, in full detail
+        (not homogenized).
         """
         return copy.deepcopy(self)
 
@@ -1535,9 +1536,9 @@ class HexBlock(Block):
             round(y, units.FLOAT_DIMENSION_DECIMALS),
         )
 
-    def createCopy(self):
+    def _createHomogenizedCopy(self):
         """
-        Create a new copy of a block that is less expensive than a full deepcopy.
+        Create a new homogenized copy of a block that is less expensive than a full deepcopy.
 
         Notes
         -----
@@ -1547,7 +1548,7 @@ class HexBlock(Block):
         to the new reactor model.
 
         The main use case is for the uniform mesh converter (UMC). Frequently, a deterministic
-        nutronics solver will require a uniform mesh reactor, which is produced by the UMC.
+        neutronics solver will require a uniform mesh reactor, which is produced by the UMC.
         Many deterministic solvers for fast spectrum reactors will also treat the individual
         blocks as homogenized mixtures. Since the neutronics solver does not need to know about
         the geometric and material details of the individual child components within a block,
@@ -1583,8 +1584,7 @@ class HexBlock(Block):
             self.getAverageTempInC(),
             self._pitchDefiningComponent[1],
         )
-        emptyNDens = {nuc: 0.0 for nuc in self.getNuclides()}
-        hexComponent.setNumberDensities(emptyNDens)
+        hexComponent.setNumberDensities(self.getNumberDensities())
         b.add(hexComponent)
 
         # create a null component with cladding flags and spatialLocator from source block's

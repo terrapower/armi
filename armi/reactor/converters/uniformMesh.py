@@ -420,7 +420,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
                 sourceBlock = blocks[0]
                 xsType = blocks[0].p.xsType
 
-            block = sourceBlock.createCopy()
+            block = sourceBlock._createHomogenizedCopy()
             block.p.xsType = xsType
             block.setHeight(topMeshPoint - bottom)
             block.p.axMesh = 1
