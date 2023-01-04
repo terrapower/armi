@@ -101,7 +101,6 @@ class Material(metaclass=MaterialMetaType):
 
         # call subclass implementations
         self.setDefaultMassFracs()
-        self.propertyRangeUpdated = False
 
     def __repr__(self):
         return "<Material: {0}>".format(self.getName())
