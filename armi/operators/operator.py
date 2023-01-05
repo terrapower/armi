@@ -622,7 +622,7 @@ class Operator:  # pylint: disable=too-many-public-methods
         convergenceSummary = {}
         activeInterfaces = [ii for ii in self.interfaces if ii.enabled()]
 
-        # Store the previous iteration values before calling the coupled interactiojn
+        # Store the previous iteration values before calling interactAllCoupled
         # for each interface.
         for interface in activeInterfaces:
             if interface.coupler is None:
