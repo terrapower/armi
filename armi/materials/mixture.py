@@ -19,7 +19,7 @@ Homogenized mixture material
 from armi import materials
 
 
-class Mixture(materials.Material):
+class _Mixture(materials.Material):
     """
     Homogenized mixture of materials
 

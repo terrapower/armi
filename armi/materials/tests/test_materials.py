@@ -672,7 +672,7 @@ class Void_TestCase(_Material_Test, unittest.TestCase):
 
 
 class Mixture_TestCase(_Material_Test, unittest.TestCase):
-    MAT_CLASS = materials.Mixture
+    MAT_CLASS = materials._Mixture
 
     def test_density3(self):
         """
