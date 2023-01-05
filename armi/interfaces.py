@@ -37,6 +37,7 @@ from numpy.linalg import norm
 from armi import getPluginManagerOrFail, settings, utils
 from armi.utils import textProcessors
 from armi.reactor import parameters
+from armi import runLog
 
 
 class STACK_ORDER:  # pylint: disable=invalid-name, too-few-public-methods
@@ -110,16 +111,28 @@ class TightCoupler:
         self._previousIterationValue = None
         self.eps = numpy.inf
 
+    def _resetParams(self):
+        self._numIters = 0
+        self._previousIterationValue = None
+        self.eps = numpy.inf
+
     def __repr__(self):
         return f"<{self.__class__.__name__}, Parameter: {self.parameter}, Convergence Criteria: {self.tolerance}, Maximum Coupled Iterations: {self.maxIters}>"
 
-    def storePreviousIterationValue(self, val):
+    def storePreviousIterationValue(self, val: float):
         """
         Stores the previous iteration value of the given parameter.
 
-        Notes
-        -----
-        This checks the type of the value against ``_SUPPORTED_TYPES`` before storing.
+        Parameters
+        ----------
+        val : float
+            the value to store. Is commonly equal to interface.getTightCouplingValue()
+
+        Raises
+        ------
+        TypeError
+            Checks the type of the value against ``_SUPPORTED_TYPES`` before storing.
+            If invalid, a TypeError is raised.
         """
         if type(val) not in self._SUPPORTED_TYPES:
             raise TypeError(
@@ -163,7 +176,7 @@ class TightCoupler:
         previous = self._previousIterationValue
 
         # Check convergence for integer or float values.
-        if isinstance(val, int) or isinstance(val, float):
+        if isinstance(val, (int, float)):
             self.eps = abs(val - previous)
 
         # Convert list values to a numpy array.
@@ -182,11 +195,15 @@ class TightCoupler:
         # object back to its originally defined state by calling __init__(...)
         converged = self.eps < self.tolerance
         if converged:
-            self.__init__(self.parameter, self.tolerance, self.maxIters)
+            self._resetParams()
         else:
             self._numIters += 1
             if self._numIters == self.maxIters:
-                self.__init__(self.parameter, self.tolerance, self.maxIters)
+                runLog.warning(
+                    f"Maximum number of iterations for {self.parameter} reached without convergence!"
+                    f"Prescribed convergence criteria is {self.tolerance}."
+                )
+                self._resetParams()
 
         return converged
 
