@@ -224,9 +224,9 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
 
     def getTightCouplingValue(self):
         """Return the parameter value"""
-        if self.coupler.param == "keff":
+        if self.coupler.parameter == "keff":
             return self.r.core.p.keff
-        if self.coupler.param == "power":
+        if self.coupler.parameter == "power":
             scaledCorePowerDistribution = []
             for a in self.r.core.getChildren():
                 scaledPower = []

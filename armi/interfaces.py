@@ -103,7 +103,7 @@ class TightCoupler:
     _SUPPORTED_TYPES = [float, int, list, numpy.ndarray]
 
     def __init__(self, param, tolerance, maxIters):
-        self.param = param
+        self.parameter = param
         self.tolerance = tolerance
         self.maxIters = maxIters
         self._numIters = 0
@@ -111,7 +111,7 @@ class TightCoupler:
         self.eps = numpy.inf
 
     def __repr__(self):
-        return f"<{self.__class__.__name__}, Parameter: {self.param}, Convergence Criteria: {self.tolerance}, Maximum Coupled Iterations: {self.maxIters}>"
+        return f"<{self.__class__.__name__}, Parameter: {self.parameter}, Convergence Criteria: {self.tolerance}, Maximum Coupled Iterations: {self.maxIters}>"
 
     def storePreviousIterationValue(self, val):
         """
@@ -182,11 +182,11 @@ class TightCoupler:
         # object back to its originally defined state by calling __init__(...)
         converged = self.eps < self.tolerance
         if converged:
-            self.__init__(self.param, self.tolerance, self.maxIters)
+            self.__init__(self.parameter, self.tolerance, self.maxIters)
         else:
             self._numIters += 1
             if self._numIters == self.maxIters:
-                self.__init__(self.param, self.tolerance, self.maxIters)
+                self.__init__(self.parameter, self.tolerance, self.maxIters)
 
         return converged
 
