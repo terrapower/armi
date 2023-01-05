@@ -26,6 +26,9 @@ from armi.reactor.tests.test_reactors import (
     loadTestReactor,
 )
 from armi.physics.neutronics.fissionProductModel.tests import test_lumpedFissionProduct
+from armi.physics.neutronics.isotopicDepletion.isotopicDepletionInterface import (
+    isDepletable,
+)
 
 
 def _getLumpedFissionProductNumberDensities(b):
@@ -56,7 +59,7 @@ class TestFissionProductModelLumpedFissionProducts(unittest.TestCase):
         self.fpModel.setGlobalLumpedFissionProducts(dummyLFPs.createLFPsFromFile())
 
         # Set up the global LFPs and check that they are setup.
-        self.fpModel.setAllBlockLFPs()
+        self.fpModel.interactBOL()
         self.assertTrue(self.fpModel._useGlobalLFPs)
 
     def test_loadGlobalLFPsFromFile(self):
@@ -87,19 +90,55 @@ class TestFissionProductModelExplicitMC2Library(unittest.TestCase):
         self.r = r
         self.fpModel = fissionProductModel.FissionProductModel(o.r, o.cs)
         # Set up the global LFPs and check that they are setup.
-        self.fpModel.setAllBlockLFPs()
         self.assertFalse(self.fpModel._useGlobalLFPs)
 
     def test_nuclideFlags(self):
         """Test that the nuclide flags contain the set of MC2-3 modeled nuclides."""
+        # Run the ``interactBOL`` here to trigger setting up the fission
+        # products in the reactor data model.
+        self.fpModel.interactBOL()
+
         for nb in nuclideBases.byMcc3Id.values():
             self.assertIn(nb.name, self.r.blueprints.nuclideFlags.keys())
 
-    def test_nuclidesInModel(self):
+    def test_nuclidesInModelFuel(self):
         """Test that the fuel blocks contain all the MC2-3 modeled nuclides."""
+        # Run the ``interactBOL`` here to trigger setting up the fission
+        # products in the reactor data model.
+        self.fpModel.interactBOL()
+
         b = self.r.core.getFirstBlock(Flags.FUEL)
         for nb in nuclideBases.byMcc3Id.values():
             self.assertIn(nb.name, b.getNuclides())
+
+    def test_nuclidesInModelAllDepletableBlocks(self):
+        """Test that the depletable blocks contain all the MC2-3 modeled nuclides."""
+
+        # Check that there are some fuel and control blocks in the core model.
+        fuelBlocks = self.r.core.getBlocks(Flags.FUEL)
+        controlBlocks = self.r.core.getBlocks(Flags.CONTROL)
+        self.assertGreater(len(fuelBlocks), 0)
+        self.assertGreater(len(controlBlocks), 0)
+
+        # Force the the first component in the control blocks
+        # to be labeled as depletable for checking that explicit
+        # fission products can be assigned.
+        for b in controlBlocks:
+            c = b.getComponents()[0]
+            c.p.flags |= Flags.DEPLETABLE
+
+        # Run the ``interactBOL`` here to trigger setting up the fission
+        # products in the reactor data model.
+        self.fpModel.interactBOL()
+
+        # Check that the depletable blocks have all explicit
+        # fission products in them.
+        for b in self.r.core.getBlocks():
+            if isDepletable(b):
+                for nb in nuclideBases.byMcc3Id.values():
+                    self.assertIn(nb.name, b.getNuclides())
+            else:
+                self.assertLess(len(b.getNuclides()), len(nuclideBases.byMcc3Id))
 
 
 if __name__ == "__main__":
