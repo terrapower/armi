@@ -1577,7 +1577,7 @@ class HexBlock(Block):
 
         hexComponent = Hexagon(
             "homogenizedHex",
-            "Mixture",
+            "_Mixture",
             self.getAverageTempInC(),
             self.getAverageTempInC(),
             self._pitchDefiningComponent[1],

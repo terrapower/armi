@@ -80,8 +80,7 @@ class TestAssemblyUniformMesh(unittest.TestCase):
         newAssem = self.converter.makeAssemWithUniformMesh(
             sourceAssem,
             self.converter._uniformMesh,
-            blockParamNames=["power"],
-            blockParamMapper=uniformMesh.BlockParamMapper(["power"], b),
+            paramMapper=uniformMesh.ParamMapper([], ["power"], b),
             mapNumberDensities=True,
         )
 
@@ -125,8 +124,7 @@ class TestAssemblyUniformMesh(unittest.TestCase):
         newAssem = self.converter.makeAssemWithUniformMesh(
             sourceAssem,
             self.r.core.p.axialMesh[1:],
-            blockParamNames=["power"],
-            blockParamMapper=uniformMesh.BlockParamMapper(["power"], b),
+            paramMapper=uniformMesh.ParamMapper([], ["power"], b),
         )
 
         self.assertNotEqual(len(newAssem), len(sourceAssem))
@@ -151,8 +149,7 @@ class TestAssemblyUniformMesh(unittest.TestCase):
         newAssem = self.converter.makeAssemWithUniformMesh(
             sourceAssem,
             sourceAssem.getAxialMesh(),
-            blockParamNames=bpNames,
-            blockParamMapper=uniformMesh.BlockParamMapper(bpNames, b),
+            paramMapper=uniformMesh.ParamMapper([], bpNames, b),
             mapNumberDensities=True,
         )
         for b, origB in zip(newAssem, sourceAssem):
@@ -177,8 +174,7 @@ class TestAssemblyUniformMesh(unittest.TestCase):
         uniformMesh.UniformMeshGeometryConverter.setAssemblyStateFromOverlaps(
             sourceAssembly=newAssem,
             destinationAssembly=sourceAssem,
-            blockParamNames=bpNames,
-            blockParamMapper=uniformMesh.BlockParamMapper(bpNames, b),
+            paramMapper=uniformMesh.ParamMapper([], bpNames, b),
         )
         for b, updatedB in zip(newAssem, sourceAssem):
             self.assertEqual(b.p.flux, 2.0)
@@ -525,8 +521,7 @@ class TestParamConversion(unittest.TestCase):
         uniformMesh.UniformMeshGeometryConverter.setAssemblyStateFromOverlaps(
             self.sourceAssem,
             self.destinationAssem,
-            blockParamNames=bpNames,
-            blockParamMapper=uniformMesh.BlockParamMapper(bpNames, b),
+            paramMapper=uniformMesh.ParamMapper([], bpNames, b),
         )
 
         for paramName in paramList:
