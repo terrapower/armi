@@ -1569,8 +1569,7 @@ class HexBlock(Block):
         """
 
         b = self.__class__(self.getName(), height=self.getHeight())
-        b.setType(self.getType())
-        b.p.flags = self.p.flags
+        b.setType(self.getType(), self.p.flags)
 
         # assign macros and LFP
         b.macros = self.macros
