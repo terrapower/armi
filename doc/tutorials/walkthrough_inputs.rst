@@ -360,11 +360,14 @@ First we need to supply some metadata about the settings themselves:
     :start-after: begin-metadata
     :end-before: begin-settings
 
-Here, the version is "uncontrolled" because this is just a test file we want
-to always work with the latest ARMI. But if you are doing a really important
-analysis, you probably want to specify which version of ARMI you used, like:
-"version: 0.2.5", or similar. Obviously, metadata is for documentation
-purposes, so it's optional. And "uncontrolled" is the preferred default.
+The version here is the version of ARMI. It shows "uncontrolled" (the
+preferred default) because this is just a test file we want to always work
+with the latest ARMI. But if you are doing a really important analysis, you
+might want to document which specific version of ARMI you used, like:
+"version: 0.2.5" or similar. This field is mostly for documentation purposes,
+and is not enforced by ARMI. However, if your settings file has an invalid
+setting, you will see any version mismatch here printed as a little hint as
+to why your settings file might be wrong.
 
 The thermal power in this reference is 1000 MWt. The thermal efficiency isn't
 specified, so let's assume 0.38. From Table 4.8, the cycle length is 370 EFPD.
