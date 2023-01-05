@@ -51,9 +51,6 @@ class GlobalFluxInterface(interfaces.Interface):
     function = "globalFlux"
     _ENERGY_BALANCE_REL_TOL = 1e-5
 
-    TIGHT_COUPLING_VARIABLES = ["keff", "power"]
-    TIGHT_COUPLING_CONVERGENCE_VARIABLE = "keff"
-
     def __init__(self, r, cs):
         interfaces.Interface.__init__(self, r, cs)
         if self.cs["nCycles"] > 1000:
@@ -227,9 +224,9 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
 
     def getTightCouplingValue(self):
         """Return the parameter value"""
-        if self.TIGHT_COUPLING_CONVERGENCE_VARIABLE == "keff":
+        if self.coupler.param == "keff":
             return self.r.core.p.keff
-        if self.TIGHT_COUPLING_CONVERGENCE_VARIABLE == "power":
+        if self.coupler.param == "power":
             scaledCorePowerDistribution = []
             for a in self.r.core.getChildren():
                 scaledPower = []
