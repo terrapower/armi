@@ -652,16 +652,21 @@ class UniformMeshGeometryConverter(GeometryConverter):
         direction are defined as a class attribute. New options can be created by extending
         the base class with different class attributes for parameters to map, and applying
         special modifications to these categorized lists with the `_setParamsToUpdate` method.
-        The base class is meant to be extended, so this method only initializes the empty
-        lists and does not perform any significant function.
+
+        This base class `_setParamsToUpdate()` method should not be called, so this raises a
+        NotImplementedError.
 
         Parameters
         ----------
         direction : str
             "in" or "out". The direction of mapping; "in" to the uniform mesh assembly, or "out" of it.
             Different parameters are mapped in each direction.
+
+        Raises
+        ------
+        NotImplementedError
         """
-        pass
+        raise NotImplementedError
 
     def _checkConversion(self):
         """Perform checks to ensure conversion occurred properly."""
@@ -870,10 +875,11 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
             "in" or "out". The direction of mapping; "in" to the uniform mesh assembly, or "out" of it.
             Different parameters are mapped in each direction.
         """
-        UniformMeshGeometryConverter._setParamsToUpdate(self, direction)
+        reactorParamNames = []
+        blockParamNames = []
 
         for category in self.reactorParamMappingCategories[direction]:
-            self.reactorParamNames.extend(
+            reactorParamNames.extend(
                 self._sourceReactor.core.p.paramDefs.inCategory(category).names
             )
         b = self._sourceReactor.core.getFirstBlock()
@@ -884,7 +890,7 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
         for category in excludedCategories:
             excludedParamNames.extend(b.p.paramDefs.inCategory(category).names)
         for category in self.blockParamMappingCategories[direction]:
-            self.blockParamNames.extend(
+            blockParamNames.extend(
                 [
                     name
                     for name in b.p.paramDefs.inCategory(category).names
@@ -893,9 +899,9 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
             )
         if direction == "in":
             # initial heavy metal masses are needed to calculate burnup in MWd/kg
-            self.blockParamNames.extend(HEAVY_METAL_PARAMS)
+            blockParamNames.extend(HEAVY_METAL_PARAMS)
 
-        self.paramMapper = ParamMapper(self.reactorParamNames, self.blockParamNames, b)
+        self.paramMapper = ParamMapper(reactorParamNames, blockParamNames, b)
 
 
 class GammaUniformMeshConverter(UniformMeshGeometryConverter):
@@ -954,10 +960,11 @@ class GammaUniformMeshConverter(UniformMeshGeometryConverter):
             "in" or "out". The direction of mapping; "in" to the uniform mesh assembly, or "out" of it.
             Different parameters are mapped in each direction.
         """
-        UniformMeshGeometryConverter._setParamsToUpdate(self, direction)
+        reactorParamNames = []
+        blockParamNames = []
 
         for category in self.reactorParamMappingCategories[direction]:
-            self.reactorParamNames.extend(
+            reactorParamNames.extend(
                 self._sourceReactor.core.p.paramDefs.inCategory(category).names
             )
         b = self._sourceReactor.core.getFirstBlock()
@@ -966,7 +973,7 @@ class GammaUniformMeshConverter(UniformMeshGeometryConverter):
         else:
             excludeList = b.p.paramDefs.inCategory(parameters.Category.gamma).names
         for category in self.blockParamMappingCategories[direction]:
-            self.blockParamNames.extend(
+            blockParamNames.extend(
                 [
                     name
                     for name in b.p.paramDefs.inCategory(category).names
@@ -974,7 +981,7 @@ class GammaUniformMeshConverter(UniformMeshGeometryConverter):
                 ]
             )
 
-        self.paramMapper = ParamMapper(self.reactorParamNames, self.blockParamNames, b)
+        self.paramMapper = ParamMapper(reactorParamNames, blockParamNames, b)
 
 
 class ParamMapper:
