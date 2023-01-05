@@ -893,6 +893,21 @@ class Assembly_TestCase(unittest.TestCase):
 
         self.assertRaises(TypeError, self.assembly.getBlocksAndZ, 1.0)
 
+    def test_getBlockAtElevation(self):
+        """Ensure that blocks are returned in the correct range of elevations"""
+        zBounds = self.assembly.spatialGrid.getBounds()[2]
+        getter = self.assembly.getBlockAtElevation
+        # Bottom block returned for values
+        self.assertIs(getter(zBounds[0]), self.assembly[0])
+        self.assertIs(getter(zBounds[1]), self.assembly[0])
+        # Second block returned for values in range (z[1], z[2]]
+        # (exclusive left, inclusive right)
+        mid = 0.5 * (zBounds[1] + zBounds[2])
+        self.assertIs(getter(mid), self.assembly[1])
+
+        # Nothing is returned if z > max
+        self.assertIsNone(getter(zBounds[-1] * 1.1))
+
     def test_getBlocksBetweenElevations(self):
         # assembly should have 3 blocks of 10 cm in it
 

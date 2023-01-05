@@ -37,6 +37,7 @@ from armi.reactor import blockParameters
 from armi.reactor import components
 from armi.reactor.components.basicShapes import Hexagon, Circle
 from armi.reactor import composites
+from armi.reactor import compositeList
 from armi.reactor import geometry
 from armi.reactor import grids
 from armi.reactor import parameters
@@ -61,7 +62,7 @@ PIN_COMPONENTS = [
 _PitchDefiningComponent = Optional[Tuple[Type[components.Component], ...]]
 
 
-class Block(composites.Composite):
+class Block(compositeList.CompositeWithHeight):
     """
     A homogenized axial slab of material.
 

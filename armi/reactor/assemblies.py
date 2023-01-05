@@ -29,6 +29,7 @@ from armi.reactor import assemblyLists
 from armi.reactor import assemblyParameters
 from armi.reactor import blocks
 from armi.reactor import composites
+from armi.reactor import compositeList
 from armi.reactor import grids
 from armi.reactor.flags import Flags
 from armi.reactor.parameters import ParamLocation
@@ -59,7 +60,7 @@ def setAssemNumCounter(val):
     _assemNum = val
 
 
-class Assembly(composites.Composite):
+class Assembly(compositeList.CompositeList):
     """
     A single assembly in a reactor made up of blocks built from the bottom up.
     Append blocks to add them up. Index blocks with 0 being the bottom.
@@ -99,7 +100,7 @@ class Assembly(composites.Composite):
         if assemNum is None:
             assemNum = incrementAssemNum()
         name = self.makeNameFromAssemNum(assemNum)
-        composites.Composite.__init__(self, name)
+        super().__init__(name)
         self.p.assemNum = assemNum
         self.setType(typ)
         self._current = 0  # for iterating
@@ -148,7 +149,7 @@ class Assembly(composites.Composite):
         self.p.assemNum = incrementAssemNum()
         self.name = self.makeNameFromAssemNum(self.p.assemNum)
         for bi, b in enumerate(self):
-            b.setName(b.makeName(self.p.assemNum, bi))
+            self._renameChild(b, bi)
 
     @staticmethod
     def makeNameFromAssemNum(assemNum):
@@ -160,26 +161,6 @@ class Assembly(composites.Composite):
         name = "A{0:04d}".format(int(assemNum))
         return name
 
-    def add(self, obj):
-        """
-        Add an object to this assembly.
-
-        The simple act of adding a block to an assembly fully defines the location of
-        the block in 3-D.
-        """
-        composites.Composite.add(self, obj)
-        obj.spatialLocator = self.spatialGrid[0, 0, len(self) - 1]
-        # assemblies have bounds-based 1-D spatial grids. Adjust it to have the right
-        # value.
-        if len(self.spatialGrid._bounds[2]) < len(self):
-            self.spatialGrid._bounds[2][len(self)] = (
-                self.spatialGrid._bounds[2][len(self) - 1] + obj.getHeight()
-            )
-        else:
-            # more work is needed, make a new mesh
-            self.reestablishBlockOrder()
-            self.calculateZCoords()
-
     def moveTo(self, locator):
         """Move an assembly somewhere else."""
         composites.Composite.moveTo(self, locator)
@@ -189,11 +170,6 @@ class Assembly(composites.Composite):
         self.parent.childrenByLocator[locator] = self
         # symmetry may have changed (either moving on or off of symmetry line)
         self.clearCache()
-
-    def insert(self, index, obj):
-        """Insert an object at a given index position with the assembly."""
-        composites.Composite.insert(self, index, obj)
-        obj.spatialLocator = self.spatialGrid[0, 0, index]
 
     def getNum(self):
         """Return unique integer for this assembly"""
@@ -225,24 +201,6 @@ class Assembly(composites.Composite):
         """
         x, y, _z = self.spatialLocator.getGlobalCoordinates()
         return (x, y)
-
-    def getArea(self):
-        """
-        Return the area of the assembly by looking at its first block.
-
-        The assumption is that all blocks in an assembly have the same area.
-        """
-        try:
-            return self[0].getArea()
-        except IndexError:
-            runLog.warning(
-                "{} has no blocks and therefore no area. Assuming 1.0".format(self)
-            )
-            return 1.0
-
-    def getVolume(self):
-        """Calculate the total assembly volume in cm^3."""
-        return self.getArea() * self.getTotalHeight()
 
     def getPinPlenumVolumeInCubicMeters(self):
         """
@@ -413,33 +371,6 @@ class Assembly(composites.Composite):
 
         return meshVals
 
-    def calculateZCoords(self):
-        """
-        Set the center z-coords of each block and the params for axial expansion.
-
-        See Also
-        --------
-        reestablishBlockOrder
-        """
-        bottom = 0.0
-        mesh = [bottom]
-        for bi, b in enumerate(self):
-            b.p.z = bottom + (b.getHeight() / 2.0)
-            b.p.zbottom = bottom
-            top = bottom + b.getHeight()
-            b.p.ztop = top
-            mesh.append(top)
-            bottom = top
-            b.spatialLocator = self.spatialGrid[0, 0, bi]
-
-        # also update the 1-D axial assembly level grid (this is intended to replace z,
-        # ztop, zbottom, etc.)
-
-        # length of this is numBlocks + 1
-        bounds = list(self.spatialGrid._bounds)
-        bounds[2] = numpy.array(mesh)
-        self.spatialGrid._bounds = tuple(bounds)
-
     def getTotalHeight(self, typeSpec=None):
         """
         Determine the height of this assembly in cm
@@ -454,14 +385,7 @@ class Assembly(composites.Composite):
             the height in cm
 
         """
-        h = 0.0
-        for b in self:
-            if b.hasFlags(typeSpec):
-                h += b.getHeight()
-        return h
-
-    def getHeight(self, typeSpec=None):
-        return self.getTotalHeight(typeSpec)
+        return self.getHeight(typeSpec)
 
     def getReactiveHeight(self, enrichThresh=0.02):
         """
@@ -814,26 +738,7 @@ class Assembly(composites.Composite):
             print({0}'s bottom mesh point is {1}'.format(block, bottomZ))
         """
 
-        if returnBottomZ and returnTopZ:
-            raise ValueError("Both returnTopZ and returnBottomZ are set to `True`")
-
-        blocks, zCoords = [], []
-        bottom = 0.0
-        for b in self:
-            top = bottom + b.getHeight()
-            mid = (bottom + top) / 2.0
-            if b.hasFlags(typeSpec):
-                blocks.append(b)
-                if returnBottomZ:
-                    val = bottom
-                elif returnTopZ:
-                    val = top
-                else:
-                    val = mid
-                zCoords.append(val)
-            bottom = top
-
-        return zip(blocks, zCoords)
+        return self.getChildrenAndZ(typeSpec, returnBottomZ, returnTopZ)
 
     def hasContinuousCoolantChannel(self):
         for b in self.getBlocks():
@@ -862,6 +767,11 @@ class Assembly(composites.Composite):
         """
         Returns the block at a specified axial dimension elevation (given in cm)
 
+        Block ``i`` will be returned for ``(z[i], z[i])`` where the range
+        is exclusive left and inclusive right and ``z[i]`` is the top of
+        the block at postion ``i``. Special case is the first block which
+        is returned at elevation less than or equal to ``z[0]``.
+
         If height matches the exact top of the block, the block is considered at that
         height.
 
@@ -878,15 +788,9 @@ class Assembly(composites.Composite):
         targetBlock : block
             The block that exists at the specified height in the reactor
         """
-        bottomOfBlock = 0.0
-        for b in self:
-            topOfBlock = bottomOfBlock + b.getHeight()
-            if (
-                topOfBlock > elevation
-                or abs(topOfBlock - elevation) / elevation < 1e-10
-            ) and bottomOfBlock < elevation:
+        for b, z in self.getChildrenAndZ(returnTopZ=True):
+            if z > elevation or math.isclose(z, elevation):
                 return b
-            bottomOfBlock = topOfBlock
         return None
 
     def getBIndexFromZIndex(self, zIndex):
@@ -1132,13 +1036,10 @@ class Assembly(composites.Composite):
         calculateZCoords : updates the ztop/zbottom params on each block after
             reordering.
         """
-        # replace grid with one that has the right number of locations
-        self.spatialGrid = grids.axialUnitGrid(len(self))
-        self.spatialGrid.armiObject = self
-        for zi, b in enumerate(self):
-            b.spatialLocator = self.spatialGrid[0, 0, zi]
-            # update the name too. NOTE: You must update the history tracker.
-            b.setName(b.makeName(self.p.assemNum, zi))
+        self.reestablishOrder()
+
+    def _renameChild(self, b: blocks.Block, index: int):
+        b.setName(b.makeName(self.getNum(), index))
 
     def renameBlocksAccordingToAssemblyNum(self):
         """
@@ -1155,9 +1056,8 @@ class Assembly(composites.Composite):
         You must run armi.reactor.reactors.Reactor.regenAssemblyLists after calling
         this.
         """
-        assemNum = self.getNum()
         for bi, b in enumerate(self):
-            b.setName(b.makeName(assemNum, bi))
+            self._renameChild(b, bi)
 
     def countBlocksWithFlags(self, blockTypeSpec=None):
         """
