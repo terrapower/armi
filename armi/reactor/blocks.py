@@ -1601,7 +1601,9 @@ class HexBlock(Block):
                     )
                     pinComponent.setType("pin", Flags.CLAD)
                     pinComponent.spatialLocator = copy.deepcopy(clad.spatialLocator)
-                    if isinstance(pinComponent.spatialLocator, grids.MultiIndexLocation):
+                    if isinstance(
+                        pinComponent.spatialLocator, grids.MultiIndexLocation
+                    ):
                         for i1, i2 in zip(
                             list(pinComponent.spatialLocator), list(clad.spatialLocator)
                         ):

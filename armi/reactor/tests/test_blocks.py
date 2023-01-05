@@ -446,8 +446,11 @@ class Block_TestCase(unittest.TestCase):
         self.assertEqual(self.block.p.flags, Block2.p.flags)
 
     def test_homogenizedMixture(self):
-        args = [False, True] # pinSpatialLocator argument
-        expectedShapes = [[basicShapes.Hexagon], [basicShapes.Hexagon, basicShapes.Circle]]
+        args = [False, True]  # pinSpatialLocator argument
+        expectedShapes = [
+            [basicShapes.Hexagon],
+            [basicShapes.Hexagon, basicShapes.Circle],
+        ]
 
         for arg, shapes in zip(args, expectedShapes):
             homogBlock = self.block._createHomogenizedCopy(pinSpatialLocators=arg)
@@ -469,25 +472,25 @@ class Block_TestCase(unittest.TestCase):
                 for refXYZ, homogXYZ in zip(list(pinCoords), list(homogPinCoords)):
                     self.assertListEqual(list(refXYZ), list(homogXYZ))
 
-        cur = homogBlock.getMass()
-        self.assertAlmostEqual(self.block.getMass(), homogBlock.getMass())
+            cur = homogBlock.getMass()
+            self.assertAlmostEqual(self.block.getMass(), homogBlock.getMass())
 
-        self.assertEqual(homogBlock.getType(), self.block.getType())
-        self.assertEqual(homogBlock.p.flags, self.block.p.flags)
-        self.assertEqual(homogBlock.macros, self.block.macros)
-        self.assertEqual(
-            homogBlock._lumpedFissionProducts, self.block._lumpedFissionProducts
-        )
+            self.assertEqual(homogBlock.getType(), self.block.getType())
+            self.assertEqual(homogBlock.p.flags, self.block.p.flags)
+            self.assertEqual(homogBlock.macros, self.block.macros)
+            self.assertEqual(
+                homogBlock._lumpedFissionProducts, self.block._lumpedFissionProducts
+            )
 
-        ref = self.block.getArea()
-        cur = homogBlock.getArea()
-        places = 6
-        self.assertAlmostEqual(ref, cur, places=places)
+            ref = self.block.getArea()
+            cur = homogBlock.getArea()
+            places = 6
+            self.assertAlmostEqual(ref, cur, places=places)
 
-        ref = self.block.getHeight()
-        cur = homogBlock.getHeight()
-        places = 6
-        self.assertAlmostEqual(ref, cur, places=places)
+            ref = self.block.getHeight()
+            cur = homogBlock.getHeight()
+            places = 6
+            self.assertAlmostEqual(ref, cur, places=places)
 
     def test_getXsType(self):
         self.cs = settings.getMasterCs()
