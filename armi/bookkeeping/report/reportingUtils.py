@@ -239,7 +239,7 @@ def getInterfaceStackSummary(o):
 def writeTightCouplingConvergenceSummary(convergenceSummary):
     runLog.info("Tight Coupling Convergence Summary: Norm Type = Inf")
     runLog.info(
-        tabulate(convergenceSummary, headers="keys", showindex=True, tablefmt="armi")
+        tabulate.tabulate(convergenceSummary, headers="keys", showindex=True, tablefmt="armi")
     )
 
 

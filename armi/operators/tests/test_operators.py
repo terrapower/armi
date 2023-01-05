@@ -16,6 +16,7 @@
 
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-method-argument,import-outside-toplevel
 import unittest
+import collections
 
 from armi import settings
 from armi.interfaces import Interface
@@ -107,24 +108,29 @@ class OperatorTests(unittest.TestCase):
         self.assertTrue(self.o.couplingIsActive())
 
     def test_computeTightCouplingConvergence(self):
-        """a simplified version of o.interactAllCoupled
+        """ensure that tight coupling convergence can be computed and checked
 
         Notes
         -----
-        - a direct call to o.interactAllCoupled is not used to avoid running o._interactAll
+        - Assertion #1: ensure that the convergence of Keff, eps, is greater than 1e-5 (the prescribed convergence criteria)
+        - Assertion #2: ensure that eps is (prevIterKeff - currIterKeff)
         """
-        # pylint: disable=no-member
+        prevIterKeff = 0.9
+        currIterKeff = 1.0
         self.o.cs["tightCoupling"] = True
         self.o.cs["tightCouplingSettings"] = {
             "globalFlux": {"parameter": "keff", "convergence": 1e-05}
         }
-        # ensure global flux converges on keff and give an old value
         globalFlux = GlobalFluxInterfaceUsingExecuters(self.r, self.o.cs)
-        globalFlux.coupler.storePreviousIterationValue(0.9)
+        globalFlux.coupler.storePreviousIterationValue(prevIterKeff)
+        self.o.addInterface(globalFlux)
         # set keff to some new value and compute tight coupling convergence
-        self.r.core.p.keff = 1.0
-        self.assertFalse(
-            globalFlux.coupler.isConverged(globalFlux.getTightCouplingValue())
+        self.r.core.p.keff = currIterKeff
+        self.o._convergenceSummary = collections.defaultdict(list)
+        self.assertFalse(self.o._checkTightCouplingConvergence([globalFlux]))
+        self.assertAlmostEqual(
+            globalFlux.coupler.eps,
+            currIterKeff - prevIterKeff,
         )
 
     def test_setStateToDefault(self):

@@ -30,7 +30,7 @@ import os
 import re
 import shutil
 import time
-from tabulate import tabulate
+import collections
 
 from armi import context
 from armi import interfaces
@@ -134,6 +134,7 @@ class Operator:  # pylint: disable=too-many-public-methods
         self._maxBurnSteps = None
         self._powerFractions = None
         self._availabilityFactors = None
+        self._convergenceSummary = None
 
         # Create the welcome headers for the case (case, input, machine, and some basic reactor information)
         reportingUtils.writeWelcomeHeaders(self, cs)
@@ -378,6 +379,7 @@ class Operator:  # pylint: disable=too-many-public-methods
         self.interactAllEveryNode(cycle, timeNode)
         # perform tight coupling if requested
         if self.couplingIsActive():
+            self._convergenceSummary = collections.defaultdict(list)
             for coupledIteration in range(self.cs["tightCouplingMaxNumIters"]):
                 self.r.core.p.coupledIteration = coupledIteration + 1
                 converged = self.interactAllCoupled(coupledIteration)
@@ -618,8 +620,6 @@ class Operator:  # pylint: disable=too-many-public-methods
         in the current flux solution. It's also distinct from full coupling where all fields are solved simultaneously.
         ARMI supports tight and loose coupling.
         """
-        converged = []
-        convergenceSummary = {}
         activeInterfaces = [ii for ii in self.interfaces if ii.enabled()]
 
         # Store the previous iteration values before calling interactAllCoupled
@@ -632,21 +632,29 @@ class Operator:  # pylint: disable=too-many-public-methods
 
         self._interactAll("Coupled", activeInterfaces, coupledIteration)
 
+        return self._checkTightCouplingConvergence(activeInterfaces)
+
+    def _checkTightCouplingConvergence(self, activeInterfaces: list):
+        """check if interfaces are converged
+
+        Parameters
+        ----------
+        activeInterfaces : list
+            the list of active interfaces on the operator
+
+        Notes
+        -----
+        This is split off from self.interactAllCoupled to accomodate testing"""
         # Summarize the coupled results and the convergence status.
+        converged = []
         for interface in activeInterfaces:
             coupler = interface.coupler
             if coupler is not None:
-                key = "".join(
-                    [
-                        interface.name,
-                        ": ",
-                        coupler.parameter,
-                    ]
-                )
-                convergenceSummary[key].append(coupler.eps)
-                converged.append(coupler.isConverged())
+                key = f"{interface.name}: {coupler.parameter}"
+                self._convergenceSummary[key].append(coupler.eps)
+                converged.append(coupler.isConverged(interface.getTightCouplingValue()))
 
-        reportingUtils.writeTightCouplingConvergenceSummary(convergenceSummary)
+        reportingUtils.writeTightCouplingConvergenceSummary(self._convergenceSummary)
         return all(converged)
 
     def interactAllError(self):
