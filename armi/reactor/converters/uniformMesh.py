@@ -339,9 +339,8 @@ class UniformMeshGeometryConverter(GeometryConverter):
             A list of the new axial mesh coordinates of the blocks. Note that these mesh
             coordinates are in cm and should represent the top axial mesh coordinates of
             the new blocks.
-        blockParamNames : List[str], optional
-            A list of block parameter names to map between the source assembly and the newly
-            created assembly with the provided `newMesh`.
+        paramMapper : ParamMapper
+            Object that contains list of parameters to be mapped and has methods for mapping
         mapNumberDensities : bool, optional
             If True, number densities will be mapped from the source assembly to the new assembly.
             This is True by default, but this can be set to False to only map block-level parameters if
@@ -361,8 +360,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
         runLog.debug(f"Creating a uniform mesh of {newAssem}")
         bottom = 0.0
 
-        if blockParamNames is None:
-            blockParamNames = []
         for topMeshPoint in newMesh:
             overlappingBlockInfo = sourceAssem.getBlocksBetweenElevations(
                 bottom, topMeshPoint
@@ -471,9 +468,8 @@ class UniformMeshGeometryConverter(GeometryConverter):
             assem that has the state
         destinationAssembly : Assembly
             assem that has is getting the state from sourceAssembly
-        blockParamNames : List[str]
-            A list of block parameter names to map between the source assembly and
-            the destination assembly.
+        paramMapper : ParamMapper
+            Object that contains list of parameters to be mapped and has methods for mapping
         mapNumberDensities : bool, optional
             If True, number densities will be mapped from the source assembly to the destination assembly.
             This is True by default, but this can be set to False to only map block-level parameters if
@@ -1024,9 +1020,9 @@ class ParamMapper:
                 continue
 
             if isinstance(val, list) or isinstance(val, numpy.ndarray):
-                paramMapper._arrayParamSetter(block, [val], [paramName])
+                ParamMapper._arrayParamSetter(block, [val], [paramName])
             else:
-                paramMapper._scalarParamSetter(block, [val], [paramName])
+                ParamMapper._scalarParamSetter(block, [val], [paramName])
 
     def paramGetter(self, block, paramNames):
         """Returns block parameter values as an array in the order of the parameter names given."""
