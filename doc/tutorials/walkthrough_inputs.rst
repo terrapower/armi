@@ -353,12 +353,18 @@ Now we need to specify some **settings** that define fundamental reactor
 parameters, as well as modeling approximation options. For this, we make a
 **settings file**, called ``anl-afci-177.yaml``.
 
-First we need to supply some metadata.
+First we need to supply some metadata about the settings themselves:
 
 .. literalinclude:: ../../armi/tests/tutorials/anl-afci-177.yaml
     :language: yaml
     :start-after: begin-metadata
     :end-before: begin-settings
+
+Here, the version is "uncontrolled" because this is just a test file we want
+to always work with the latest ARMI. But if you are doing a really important
+analysis, you probably want to specify which version of ARMI you used, like:
+"version: 0.2.5", or similar. Obviously, metadata is for documentation
+purposes, so it's optional. And "uncontrolled" is the preferred default.
 
 The thermal power in this reference is 1000 MWt. The thermal efficiency isn't
 specified, so let's assume 0.38. From Table 4.8, the cycle length is 370 EFPD.
