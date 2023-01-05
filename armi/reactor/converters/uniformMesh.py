@@ -176,8 +176,8 @@ class UniformMeshGeometryConverter(GeometryConverter):
                 homogAssem = self.makeAssemWithUniformMesh(
                     assem,
                     self.convReactor.core.p.axialMesh[1:],
-                    self.paramMapper,
-                    self.includePinCoordinates,
+                    paramMapper=self.paramMapper,
+                    includePinCoordinates=self.includePinCoordinates,
                 )
                 homogAssem.spatialLocator = assem.spatialLocator
 
@@ -715,8 +715,8 @@ class UniformMeshGeometryConverter(GeometryConverter):
             newAssem = self.makeAssemWithUniformMesh(
                 sourceAssem,
                 self._uniformMesh,
-                self.paramMapper,
-                self.includePinCoordinates,
+                paramMapper=self.paramMapper,
+                includePinCoordinates=self.includePinCoordinates,
             )
             src = sourceAssem.spatialLocator
             newLoc = self.convReactor.core.spatialGrid[src.i, src.j, 0]
