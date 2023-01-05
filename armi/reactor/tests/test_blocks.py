@@ -409,7 +409,7 @@ class Block_TestCase(unittest.TestCase):
         self.assertFalse(self.block.hasFlags(Flags.IGNITER | Flags.FUEL))
 
     def test_duplicate(self):
-        Block2 = blocks.Block.createCopy(self.block)
+        Block2 = blocks.Block._createHomogenizedCopy(self.block)
         originalComponents = self.block.getComponents()
         newComponents = Block2.getComponents()
         for c1, c2 in zip(originalComponents, newComponents):
@@ -443,23 +443,37 @@ class Block_TestCase(unittest.TestCase):
         places = 6
         self.assertAlmostEqual(ref, cur, places=places)
 
+        self.assertEqual(self.block.p.flags, Block2.p.flags)
+
     def test_homogenizedMixture(self):
-        homogBlock = self.block.createCopy()
-        for shapeType in (basicShapes.Hexagon, basicShapes.Circle):
-            for c in homogBlock.getComponents():
-                if isinstance(c, shapeType):
-                    print(c)
-                    break
-            else:
-                # didn't find the homogenized hex in the block copy
-                self.assertTrue(
-                    False, f"{self.block} does not have a {shapeType} component!"
-                )
+        args = [False, True] # pinSpatialLocator argument
+        expectedShapes = [[basicShapes.Hexagon], [basicShapes.Hexagon, basicShapes.Circle]]
+
+        for arg, shapes in zip(args, expectedShapes):
+            homogBlock = self.block._createHomogenizedCopy(pinSpatialLocators=arg)
+            for shapeType in shapes:
+                for c in homogBlock.getComponents():
+                    if isinstance(c, shapeType):
+                        print(c)
+                        break
+                else:
+                    # didn't find the homogenized hex in the block copy
+                    self.assertTrue(
+                        False, f"{self.block} does not have a {shapeType} component!"
+                    )
+            if arg:
+                # check that homogenized block has correct pin coordinates
+                self.assertEqual(self.block.getNumPins(), homogBlock.getNumPins())
+                pinCoords = self.block.getPinCoordinates()
+                homogPinCoords = homogBlock.getPinCoordinates()
+                for refXYZ, homogXYZ in zip(list(pinCoords), list(homogPinCoords)):
+                    self.assertListEqual(list(refXYZ), list(homogXYZ))
 
         cur = homogBlock.getMass()
-        self.assertEqual(0.0, cur)
+        self.assertAlmostEqual(self.block.getMass(), homogBlock.getMass())
 
         self.assertEqual(homogBlock.getType(), self.block.getType())
+        self.assertEqual(homogBlock.p.flags, self.block.p.flags)
         self.assertEqual(homogBlock.macros, self.block.macros)
         self.assertEqual(
             homogBlock._lumpedFissionProducts, self.block._lumpedFissionProducts
@@ -474,13 +488,6 @@ class Block_TestCase(unittest.TestCase):
         cur = homogBlock.getHeight()
         places = 6
         self.assertAlmostEqual(ref, cur, places=places)
-
-        # check that homogenized block has correct pin coordinates
-        self.assertEqual(self.block.getNumPins(), homogBlock.getNumPins())
-        pinCoords = self.block.getPinCoordinates()
-        homogPinCoords = homogBlock.getPinCoordinates()
-        for refXYZ, homogXYZ in zip(list(pinCoords), list(homogPinCoords)):
-            self.assertListEqual(list(refXYZ), list(homogXYZ))
 
     def test_getXsType(self):
         self.cs = settings.getMasterCs()
@@ -1627,7 +1634,7 @@ class Block_TestCase(unittest.TestCase):
     def test_getReactionRates(self):
         block = blocks.HexBlock("HexBlock")
         block.setType("defaultType")
-        comp = components.basicShapes.Hexagon("hexagon", "MOX", 1, 1, 1)
+        comp = basicShapes.Hexagon("hexagon", "MOX", 1, 1, 1)
         block.add(comp)
         block.setHeight(1)
         block.p.xsType = "A"
