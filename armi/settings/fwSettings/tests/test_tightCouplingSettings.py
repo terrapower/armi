@@ -115,6 +115,14 @@ class TestTightCouplingSettings(unittest.TestCase):
             }
             tc = tightCouplingSettingsValidator(tc)
 
+    def test_serializeSettingsException(self):
+        """ensure the TypeError in serializeTightCouplingSettings can be reached"""
+        tc = ["globalFlux"]
+        with self.assertRaises(TypeError) as cm:
+            tc = tightCouplingSettingsValidator(tc)
+            the_exception = cm.exception
+            self.assertEqual(the_exception.error_code, 3)
+
     def test_yamlIO(self):
         """Ensure we can read/write this custom setting object to yaml"""
         yaml = YAML()
