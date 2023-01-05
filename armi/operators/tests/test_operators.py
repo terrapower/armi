@@ -101,23 +101,31 @@ class OperatorTests(unittest.TestCase):
             self.o.loadState(0, 1)
 
     def test_couplingIsActive(self):
+        """ensure that cs["tightCoupling"] controls couplingIsActive"""
         self.assertFalse(self.o.couplingIsActive())
-
-    def test_tightCouplingOldValues(self):
-        self.o._tightCouplingOldValues()
-        for interface in self.activeInterfaces:
-            self.assertIsNone(interface.tightCouplingOldValue)
+        self.o.cs["tightCoupling"] = True
+        self.assertTrue(self.o.couplingIsActive())
 
     def test_computeTightCouplingConvergence(self):
+        """a simplified version of o.interactAllCoupled
+
+        Notes
+        -----
+        - a direct call to o.interactAllCoupled is not used to avoid running o._interactAll
+        """
+        # pylint: disable=no-member
+        self.o.cs["tightCoupling"] = True
+        self.o.cs["tightCouplingSettings"] = {
+            "globalFlux": {"parameter": "keff", "convergence": 1e-05}
+        }
         # ensure global flux converges on keff and give an old value
         globalFlux = GlobalFluxInterfaceUsingExecuters(self.r, self.o.cs)
-        globalFlux.tightCouplingConvergeOn = "keff"
-        globalFlux.tightCouplingOldValue = 0.9
-        # add global flux interface to operator interface stack
-        self.o.addInterface(globalFlux)
+        globalFlux.coupler.storePreviousIterationValue(0.9)
         # set keff to some new value and compute tight coupling convergence
         self.r.core.p.keff = 1.0
-        self.assertFalse(self.o._computeTightCouplingConvergence())
+        self.assertFalse(
+            globalFlux.coupler.isConverged(globalFlux.getTightCouplingValue())
+        )
 
     def test_setStateToDefault(self):
 
