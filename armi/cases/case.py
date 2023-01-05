@@ -538,6 +538,19 @@ class Case:
         but not long after (because nucDir is framework-level and expected to be
         up-to-date by lots of modules).
         """
+        if not self.cs["initializeBurnChain"]:
+            runLog.info(
+                "Skipping burn-chain initialization since `initializeBurnChain` setting is disabled."
+            )
+            return
+
+        if not os.path.exists(self.cs["burnChainFileName"]):
+            raise ValueError(
+                f"The burn-chain file {self.cs['burnChainFileName']} does not exist. The "
+                f"data cannot be loaded. Fix this path or disable burn-chain initialization using "
+                f"the `initializeBurnChain` setting."
+            )
+
         with open(self.cs["burnChainFileName"]) as burnChainStream:
             nuclideBases.imposeBurnChain(burnChainStream)
 
@@ -550,38 +563,38 @@ class Case:
         bool
             True if the inputs are all good, False otherwise
         """
+        runLog.header("=========== Settings Validation Checks ===========")
         with DirectoryChanger(self.cs.inputDirectory, dumpOnException=False):
             operatorClass = operators.getOperatorClassFromSettings(self.cs)
             inspector = operatorClass.inspector(self.cs)
             inspectorIssues = [query for query in inspector.queries if query]
+
+            # Write out the settings validation issues that will be prompted for
+            # resolution if in an interactive session or forced to be resolved
+            # otherwise.
+            queryData = []
+            for i, query in enumerate(inspectorIssues, start=1):
+                queryData.append(
+                    (
+                        i,
+                        textwrap.fill(
+                            query.statement, width=50, break_long_words=False
+                        ),
+                        textwrap.fill(query.question, width=50, break_long_words=False),
+                    )
+                )
+
+            if queryData and context.MPI_RANK == 0:
+                runLog.info(
+                    tabulate.tabulate(
+                        queryData,
+                        headers=["Number", "Statement", "Question"],
+                        tablefmt="armi",
+                    )
+                )
             if context.CURRENT_MODE == context.Mode.INTERACTIVE:
                 # if interactive, ask user to deal with settings issues
                 inspector.run()
-            else:
-                # when not interactive, just print out the info in the stdout
-                queryData = []
-                for i, query in enumerate(inspectorIssues, start=1):
-                    queryData.append(
-                        (
-                            i,
-                            textwrap.fill(
-                                query.statement, width=50, break_long_words=False
-                            ),
-                            textwrap.fill(
-                                query.question, width=50, break_long_words=False
-                            ),
-                        )
-                    )
-
-                if queryData and context.MPI_RANK == 0:
-                    runLog.header("=========== Settings Input Queries ===========")
-                    runLog.info(
-                        tabulate.tabulate(
-                            queryData,
-                            headers=["Number", "Statement", "Question"],
-                            tablefmt="armi",
-                        )
-                    )
 
             return not any(inspectorIssues)
 

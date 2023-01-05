@@ -33,6 +33,7 @@ from armi.utils.mathematics import isMonotonic
 
 # Framework settings
 CONF_NUM_PROCESSORS = "numProcessors"
+CONF_INITIALIZE_BURN_CHAIN = "initializeBurnChain"
 CONF_BURN_CHAIN_FILE_NAME = "burnChainFileName"
 CONF_AXIAL_MESH_REFINEMENT_FACTOR = "axialMeshRefinementFactor"
 CONF_AUTOMATIC_VARIABLE_MESH = "automaticVariableMesh"
@@ -128,6 +129,18 @@ def defineSettings() -> List[setting.Setting]:
             label="CPUs",
             description="Number of CPUs to request on the cluster",
             schema=vol.All(vol.Coerce(int), vol.Range(min=1)),
+        ),
+        setting.Setting(
+            CONF_INITIALIZE_BURN_CHAIN,
+            default=True,
+            label="Initialize Burn Chain",
+            description=(
+                f"This setting is paired with the `{CONF_BURN_CHAIN_FILE_NAME}` setting. "
+                f"When enabled, this will initialize the burn-chain on initializing the case and "
+                f"is required for running depletion calculations where the transmutations and decays "
+                f"are controlled by the framework. If an external software, such as ORIGEN, contains "
+                f"data for the burn-chain already embedded then this may be disabled."
+            ),
         ),
         setting.Setting(
             CONF_BURN_CHAIN_FILE_NAME,

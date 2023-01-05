@@ -14,12 +14,15 @@
 
 """Tests for nuclideBases"""
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+import os
 import random
-import re
+import math
 import unittest
+from ruamel import yaml
 
-from armi.nucDirectory import elements
-from armi.nucDirectory import nuclideBases
+from armi.context import RES
+from armi.utils.units import SECONDS_PER_HOUR, AVOGADROS_NUMBER, CURIE_PER_BECQUEREL
+from armi.nucDirectory import nuclideBases, elements
 from armi.nucDirectory.tests import NUCDIRECTORY_TESTS_DEFAULT_DIR_PATH
 
 
@@ -27,25 +30,32 @@ class TestNuclide(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.nucDirectoryTestsPath = NUCDIRECTORY_TESTS_DEFAULT_DIR_PATH
+        nuclideBases.destroyGlobalNuclides()
+        elements.factory()
+        nuclideBases.factory()
+        # Ensure that the burn chain data is initialized before running these tests.
+        nuclideBases.burnChainImposed = False
+        with open(os.path.join(RES, "burn-chain.yaml"), "r") as burnChainStream:
+            nuclideBases.imposeBurnChain(burnChainStream)
 
     def test_nucBases_fromNameBadNameRaisesException(self):
         with self.assertRaises(KeyError):
-            nuclideBases.byName["WTF"]
+            nuclideBases.byName["Cat"]
 
     def test_nucBase_AllAbundancesAddToOne(self):
         for zz in range(1, 102):
-            clides = nuclideBases.isotopes(zz)
+            nuclides = nuclideBases.isotopes(zz)
             # We only process nuclides with measured masses. Some are purely theoretical, mostly over z=100
             self.assertTrue(
-                len(clides) > 0, msg="z={} unexpectedly has no nuclides".format(zz)
+                len(nuclides) > 0, msg="z={} unexpectedly has no nuclides".format(zz)
             )
-            total = sum([nn.abundance for nn in clides if nn.a > 0])
+            total = sum([nn.abundance for nn in nuclides if nn.a > 0])
             self.assertAlmostEqual(
-                any([nn.abundance > 0 for nn in clides]),
+                any([nn.abundance > 0 for nn in nuclides]),
                 total,
                 delta=1e-4,
                 msg="Abundance ({}) not 1.0 for nuclideBases:\n  {}"
-                "".format(total, "\n  ".join(repr(nn) for nn in clides)),
+                "".format(total, "\n  ".join(repr(nn) for nn in nuclides)),
             )
 
     def test_nucBases_AllLabelsAreUnique(self):
@@ -67,7 +77,6 @@ class TestNuclide(unittest.TestCase):
 
     def test_nucBases_Mc2Elementals(self):
         notElemental = [
-            "LFP00",  # this is an on-the-fly fission product
             "LFP35",
             "LFP38",
             "LFP39",
@@ -86,36 +95,6 @@ class TestNuclide(unittest.TestCase):
             else:
                 self.assertIsInstance(lump, nuclideBases.NaturalNuclideBase)
 
-    def test_element_getNatrualIsotpicsOnlyRetrievesAbundaceGt0(self):
-        # so this test LOOKS like it is in the wrong file,
-        # but being here eliminates a dependency for test_elements,
-        # which will make test_elements run faster (particularly when run by itself)
-        for ee in elements.byZ.values():
-            if not ee.isNaturallyOccurring():
-                continue
-            for nuc in ee.getNaturalIsotopics():
-                self.assertGreater(nuc.abundance, 0.0)
-                self.assertGreater(nuc.a, 0)
-
-    def test_element_getNaturalIsotopicsAddsToOne(self):
-        # so this test LOOKS like it is in the wrong file,
-        # but being here eliminates a dependency for test_elements,
-        # which will make test_elements run faster (particularly when run by itself)
-        count = 0
-        for ee in elements.byZ.values():
-            if not ee.isNaturallyOccurring():
-                continue
-            if any(ee.getNaturalIsotopics()):
-                count += 1
-                self.assertAlmostEqual(
-                    1.0,
-                    sum([ee.abundance for ee in ee.getNaturalIsotopics()]),
-                    delta=1e-4,
-                )
-        self.assertGreater(
-            count, 10, "Not enough natural isotopes, something went wrong"
-        )
-
     def test_LumpNuclideBase_getNatrualIsotopicsDoesNotFail(self):
         for nuc in nuclideBases.where(
             lambda nn: isinstance(nn, nuclideBases.LumpNuclideBase) and nn.z == 0
@@ -127,9 +106,7 @@ class TestNuclide(unittest.TestCase):
             lambda nn: isinstance(nn, nuclideBases.NaturalNuclideBase)
         ):
             numNaturals = len(list(nuc.getNaturalIsotopics()))
-            self.assertGreaterEqual(
-                len(nuc.element.nuclideBases) - 1, numNaturals
-            )  # , nuc)
+            self.assertGreaterEqual(len(nuc.element.nuclides) - 1, numNaturals)
 
     def test_nucBases_singleFailsWithMultipleMatches(self):
         with self.assertRaises(Exception):
@@ -219,6 +196,7 @@ class TestNuclide(unittest.TestCase):
             "CF249": 3.4000,
             "CF250": 3.5200,
             "CF252": 3.7676,
+            "U232": 1.710000,
             "U234": 1.8000,
             "U235": 1.8700,
             "U236": 1.900,
@@ -233,12 +211,23 @@ class TestNuclide(unittest.TestCase):
             "CM244": 2.6875,
             "CM245": 0.0000,
             "CM246": 2.9480,
+            "TH230": 1.390000,
             "TH232": 1.5,
             "NP237": 2.05,
+            "PA231": 1.710000,
+            "PU236": 2.120000,
+            "PU238": 2.210000,
+            "PU239": 2.320000,
+            "PU240": 2.151000,
             "PU241": 2.25,
+            "PU242": 2.141000,
+            "PU244": 2.290000,
             "U232": 1.71,
             "U233": 1.76,
             "AM241": 2.5,
+            "AM242M": 2.56,
+            "AM243": 2.61,
+            "ES253": 4.700000,
         }
         for key, val in actual.items():
             self.assertEqual(val, expected[key])
@@ -256,9 +245,9 @@ class TestNuclide(unittest.TestCase):
     def test_nucBases_Am242m(self):
         am242m = nuclideBases.byName["AM242"]
         self.assertEqual(am242m, nuclideBases.byName["AM242M"])
-        self.assertEqual("nAm242", am242m.getDatabaseName())
+        self.assertEqual("nAm242m", am242m.getDatabaseName())
         self.assertEqual(am242m, nuclideBases.byDBName["nAm242"])
-        self.assertAlmostEqual(am242m.weight, 242.05954949)
+        self.assertAlmostEqual(am242m.weight, 242.059601666)
 
         am242g = nuclideBases.byName["AM242G"]
         self.assertEqual(am242g, nuclideBases.byName["AM242G"])
@@ -269,7 +258,12 @@ class TestNuclide(unittest.TestCase):
         for nb in nuclideBases.where(lambda nn: nn.z <= 89):
             self.assertFalse(nb.isHeavyMetal())
         for nb in nuclideBases.where(lambda nn: nn.z > 89):
-            self.assertTrue(nb.isHeavyMetal())
+            if isinstance(nb, nuclideBases.DummyNuclideBase) or isinstance(
+                nb, nuclideBases.LumpNuclideBase
+            ):
+                self.assertFalse(nb.isHeavyMetal())
+            else:
+                self.assertTrue(nb.isHeavyMetal())
 
     def test_getDecay(self):
         nb = list(nuclideBases.where(lambda nn: nn.z == 89))[0]
@@ -292,6 +286,123 @@ class TestNuclide(unittest.TestCase):
         nuc = nuclideBases.byName["YB154"]
         self.assertEqual(nuc.a, 154)
 
+    def test_kryptonDecayConstants(self):
+        """Tests that the nuclides data contains the expected decay constants."""
+        # hand calculated reference data includes stable isotopes, radioactive
+        # isotopes, metastable isotopes and exercises metastable minimum halflife
+        REF_KR_DECAY_CONSTANTS = [
+            ("KR69", 24.755256448569472),
+            ("KR70", 17.3286795139986),
+            ("KR71", 6.93147180559945),
+            ("KR72", 0.04053492283976288),
+            ("KR73", 0.0253900066139174),
+            ("KR74", 0.0010045611312463),
+            ("KR75", 0.00251140282811574),
+            ("KR76", 0.0000130095191546536),
+            ("KR77", 0.000162139691359051),
+            ("KR78", 0),
+            ("KR79", 5.49488822742219e-06),
+            ("KR79M", 0.0138629436111989),
+            ("KR80", 0),
+            ("KR81", 9.591693391393433e-14),
+            ("KR81M", 0.0529119985160263),
+            ("KR82", 0),
+            ("KR83", 0),
+            ("KR83M", math.log(2) / (1.83 * SECONDS_PER_HOUR)),
+            ("KR84", 0),
+            ("KR85", 2.0453466678736843e-09),
+            ("KR85M", 4.29725468419061e-05),
+            ("KR86", 0),
+            ("KR87", 0.000151408296321526),
+            ("KR88", 0.0000681560649518136),
+            ("KR89", 0.00366744539978807),
+            ("KR90", 0.021446385537127),
+            ("KR91", 0.0808806511738559),
+            ("KR92", 0.376710424217362),
+            ("KR93", 0.538994697169475),
+            ("KR94", 3.26956217245257),
+            ("KR95", 6.08023842596443),
+            ("KR96", 8.66433975699932),
+            ("KR97", 11.0023361993642),
+            ("KR98", 16.1197018734871),
+            ("KR99", 53.3190138892265),
+            ("KR100", 99.0210257942778),
+            ("KR101", 1091570.36308652),
+        ]
+
+        for nucName, refDecayConstant in REF_KR_DECAY_CONSTANTS:
+            refNb = nuclideBases.byName[nucName]
+            decayConstantNb = math.log(2) / refNb.halflife
+            try:
+                self.assertAlmostEqual(
+                    (refDecayConstant - decayConstantNb) / refDecayConstant,
+                    0,
+                    6,
+                )
+            except ZeroDivisionError:
+                self.assertEqual(refDecayConstant, decayConstantNb)
+            except AssertionError:
+                errorMessage = (
+                    "{} reference decay constant {} ARMI decay constant {}".format(
+                        nucName, refDecayConstant, decayConstantNb
+                    )
+                )
+                raise AssertionError(errorMessage)
+
+        for nucName in ["XE134", "XE136", "EU151"]:
+            nb = nuclideBases.byName[nucName]
+            decayConstantNb = math.log(2) / nb.halflife
+            self.assertAlmostEqual(decayConstantNb, 0, places=3)
+
+    def test_curieDefinitionWithRa226(self):
+        """
+        Tests that the decay constant of Ra-226 is close to 1 Ci.
+
+        Notes
+        -----
+        The original definition of 1 Ci was based on the half-life of Ra-226
+        for 1 gram. The latest evaluations show that 1 gram is defined as
+        0.988 Ci.
+        """
+        ra226 = nuclideBases.byName["RA226"]
+        decayConstantRa226 = math.log(2) / ra226.halflife
+        weight = ra226.weight
+        mass = 1  # gram
+        activity = mass * AVOGADROS_NUMBER / weight * decayConstantRa226  # 1 gram
+        activity = activity * CURIE_PER_BECQUEREL
+        self.assertAlmostEqual(activity, 0.9885593, places=6)
+
+    def test_loadMcc2Data(self):
+        """Tests consistency with the `mcc-nuclides.yaml` input and the nuclides in the data model."""
+        with open(os.path.join(RES, "mcc-nuclides.yaml")) as f:
+            data = yaml.load(f, Loader=yaml.RoundTripLoader)
+            expectedNuclides = set(
+                [nuc for nuc in data.keys() if data[nuc]["ENDF/B-V.2"] is not None]
+            )
+
+        for nuc, nb in nuclideBases.byMcc2Id.items():
+            self.assertIn(nb.name, expectedNuclides)
+            self.assertEqual(nb.getMcc2Id(), nb.mcc2id)
+            self.assertEqual(nb.getMcc2Id(), nuc)
+
+        self.assertEqual(len(nuclideBases.byMcc2Id), len(expectedNuclides))
+
+    def test_loadMcc3Data(self):
+        """Tests consistency with the `mcc-nuclides.yaml` input and the nuclides in the data model."""
+        with open(os.path.join(RES, "mcc-nuclides.yaml")) as f:
+            data = yaml.load(f, Loader=yaml.RoundTripLoader)
+            expectedNuclides = set(
+                [nuc for nuc in data.keys() if data[nuc]["ENDF/B-VII.0"] is not None]
+            )
+
+        for nuc, nb in nuclideBases.byMcc3Id.items():
+            self.assertIn(nb.name, expectedNuclides)
+            self.assertEqual(nb.getMcc3Id(), nb.mcc3id)
+            self.assertEqual(nb.getMcc3Id(), nuc)
+
+        # Subtract 1 nuclide due to DUMP2.
+        self.assertEqual(len(nuclideBases.byMcc3Id), len(expectedNuclides) - 1)
+
 
 class test_getAAAZZZSId(unittest.TestCase):
     def test_AAAZZZSNameGenerator(self):
@@ -308,26 +419,6 @@ class test_getAAAZZZSId(unittest.TestCase):
             nb = nuclideBases.byName[nucName]
             if refAaazzzs:
                 self.assertEqual(refAaazzzs, nb.getAAAZZZSId())
-
-
-def readEndfMatNumIndex(path):
-    """
-    read mat nums from known endf reference
-    """
-
-    endfReferenceFile = open(path)
-    endfMatNumbers = {}
-
-    for line in endfReferenceFile:
-        if not re.search(r"^\s+\d+\)", line):
-            continue
-        data = line.split()
-        _rowNum, matNum, nuclide = data[:3]
-        _zNum, element, aNum = nuclide.split("-")
-        armiNuclideName = element + aNum
-        endfMatNumbers[armiNuclideName] = matNum
-
-    return endfMatNumbers
 
 
 if __name__ == "__main__":

@@ -52,7 +52,6 @@ settings:
   outputFileExtension: png
   percentNaReduction: 10.0
   power: 100000000.0
-  refType: inner igniter fuel
   shuffleLogic: refSmallReactorShuffleLogic.py
   smallRun: true
   summarizeAssemDesign: false

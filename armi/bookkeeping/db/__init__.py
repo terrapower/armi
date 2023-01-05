@@ -154,11 +154,13 @@ def loadOperator(pathToDb, loadCycle, loadNode, allowMissing=False):
     updateGlobalAssemblyNum(r)
 
     o = thisCase.initializeOperator(r=r)
-    runLog.warning(
-        "The operator provided is not in the same state as the operator was.\n"
-        "When the reactor was at the prescribed cycle and node, it should have\n"
-        "access to the same interface stack, but the interfaces will also not be in the "
-        "same state.\n"
+    runLog.important(
+        "The operator will not be in the same state that it was at that cycle and "
+        "node, only the reactor.\n"
+        "The operator should have access to the same interface stack, but the "
+        "interfaces will not be in the same state (they will be fresh instances "
+        "of each interface as if __init__ was just called rather than the state "
+        "during the run at this time node.)\n"
         "ARMI does not support loading operator states, as they are not stored."
     )
     return o

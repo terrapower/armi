@@ -136,7 +136,9 @@ of downstream tests that import this method. Probably still worth it though.
 
 
 def loadTestReactor(
-    inputFilePath=TEST_ROOT, customSettings=None, inputFileName="armiRun.yaml"
+    inputFilePath=TEST_ROOT,
+    customSettings=None,
+    inputFileName="armiRun.yaml",
 ):
     r"""
     Loads a test reactor. Can be used in other test modules.
@@ -581,7 +583,7 @@ class HexReactorTests(ReactorTests):
                 mass3 = b3.getMass(element.symbol)
                 assert_allclose(mass2, mass3)
 
-                constituentNucs = [nn.name for nn in element.nuclideBases if nn.a > 0]
+                constituentNucs = [nn.name for nn in element.nuclides if nn.a > 0]
                 nuclideLevelMass3 = b3.getMass(constituentNucs)
                 assert_allclose(mass3, nuclideLevelMass3)
 
@@ -880,15 +882,13 @@ class HexReactorTests(ReactorTests):
         self.assertEqual(originalHeights, heights)
 
     def test_applyThermalExpansion_CoreConstruct(self):
-        """test Core::_applyThermalExpansion for core construction
+        """test that assemblies in core are correctly expanded.
 
         Notes:
         ------
         - all assertions skip the first block as it has no $\Delta T$ and does not expand
-        - to maintain code coverage, _applyThermalExpansion is called via processLoading
         """
-        self.o.cs["inputHeightsConsideredHot"] = False
-        assemsToChange = self.r.core.getAssemblies()
+        originalAssems = self.r.core.getAssemblies()
         # stash original axial mesh info
         oldRefBlockAxialMesh = self.r.core.p.referenceBlockAxialMesh
         oldAxialMesh = self.r.core.p.axialMesh
@@ -896,70 +896,60 @@ class HexReactorTests(ReactorTests):
         nonEqualParameters = ["heightBOL", "molesHmBOL", "massHmBOL"]
         equalParameters = ["smearDensity", "nHMAtBOL", "enrichmentBOL"]
 
-        oldBlockParameters = {}
-        for param in nonEqualParameters + equalParameters:
-            oldBlockParameters[param] = {}
-            for a in assemsToChange:
-                for b in a[1:]:
-                    oldBlockParameters[param][b] = b.p[param]
+        _o, coldHeightR = loadTestReactor(
+            self.directoryChanger.destination,
+            customSettings={"inputHeightsConsideredHot": False},
+        )
 
-        self.r.core.processLoading(self.o.cs, dbLoad=False)
         for i, val in enumerate(oldRefBlockAxialMesh[1:]):
-            self.assertNotEqual(val, self.r.core.p.referenceBlockAxialMesh[i])
+            self.assertNotEqual(val, coldHeightR.core.p.referenceBlockAxialMesh[i])
         for i, val in enumerate(oldAxialMesh[1:]):
-            self.assertNotEqual(val, self.r.core.p.axialMesh[i])
+            self.assertNotEqual(val, coldHeightR.core.p.axialMesh[i])
 
-        for a in assemsToChange:
+        coldHeightAssems = coldHeightR.core.getAssemblies()
+        for a, coldHeightA in zip(originalAssems, coldHeightAssems):
             if not a.hasFlags(Flags.CONTROL):
-                for b in a[1:]:
+                for b, coldHeightB in zip(a[1:], coldHeightA[1:]):
                     for param in nonEqualParameters:
-                        if oldBlockParameters[param][b] and b.p[param]:
+                        p, coldHeightP = b.p[param], coldHeightB.p[param]
+                        if p and coldHeightP:
                             self.assertNotEqual(
-                                oldBlockParameters[param][b], b.p[param]
+                                p, coldHeightP, f"{param} {p} {coldHeightP}"
                             )
                         else:
-                            self.assertAlmostEqual(
-                                oldBlockParameters[param][b], b.p[param]
-                            )
+                            self.assertAlmostEqual(p, coldHeightP)
                     for param in equalParameters:
-                        self.assertAlmostEqual(oldBlockParameters[param][b], b.p[param])
+                        p, coldHeightP = b.p[param], coldHeightB.p[param]
+                        self.assertAlmostEqual(p, coldHeightP)
 
     def test_updateBlockBOLHeights_DBLoad(self):
-        """test Core::_applyThermalExpansion for db load
+        """Test that blueprints assemblies are expanded in DB load.
 
         Notes:
         ------
         - all assertions skip the first block as it has no $\Delta T$ and does not expand
-        - to maintain code coverage, _applyThermalExpansion is called via processLoading
         """
-        self.o.cs["inputHeightsConsideredHot"] = False
-        assemsToChange = [a for a in self.r.blueprints.assemblies.values()]
-        # stash original blueprint assemblies axial mesh info
+        originalAssems = sorted(a for a in self.r.blueprints.assemblies.values())
         nonEqualParameters = ["heightBOL", "molesHmBOL", "massHmBOL"]
         equalParameters = ["smearDensity", "nHMAtBOL", "enrichmentBOL"]
-        oldBlockParameters = {}
-        for param in nonEqualParameters + equalParameters:
-            oldBlockParameters[param] = {}
-            for a in assemsToChange:
-                for b in a[1:]:
-                    oldBlockParameters[param][b] = b.p[param]
 
-        self.r.core.processLoading(self.o.cs, dbLoad=True)
-
-        for a in assemsToChange:
+        _o, coldHeightR = loadTestReactor(
+            self.directoryChanger.destination,
+            customSettings={"inputHeightsConsideredHot": False},
+        )
+        coldHeightAssems = sorted(a for a in coldHeightR.blueprints.assemblies.values())
+        for a, coldHeightA in zip(originalAssems, coldHeightAssems):
             if not a.hasFlags(Flags.CONTROL):
-                for b in a[1:]:
+                for b, coldHeightB in zip(a[1:], coldHeightA[1:]):
                     for param in nonEqualParameters:
-                        if oldBlockParameters[param][b] and b.p[param]:
-                            self.assertNotEqual(
-                                oldBlockParameters[param][b], b.p[param]
-                            )
+                        p, coldHeightP = b.p[param], coldHeightB.p[param]
+                        if p and coldHeightP:
+                            self.assertNotEqual(p, coldHeightP)
                         else:
-                            self.assertAlmostEqual(
-                                oldBlockParameters[param][b], b.p[param]
-                            )
+                            self.assertAlmostEqual(p, coldHeightP)
                     for param in equalParameters:
-                        self.assertAlmostEqual(oldBlockParameters[param][b], b.p[param])
+                        p, coldHeightP = b.p[param], coldHeightB.p[param]
+                        self.assertAlmostEqual(p, coldHeightP)
 
     def test_buildManualZones(self):
         # define some manual zones in the settings

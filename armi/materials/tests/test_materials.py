@@ -49,6 +49,12 @@ class _Material_Test:
         """Test that all materials produce a zero density from density3"""
         self.assertNotEqual(self.mat.density3(500), 0)
 
+    def test_getChildren(self):
+        self.assertEqual(len(self.mat.getChildren()), 0)
+
+    def test_getChildrenWithFlags(self):
+        self.assertEqual(len(self.mat.getChildrenWithFlags("anything")), 0)
+
 
 class MaterialConstructionTests(unittest.TestCase):
     def test_material_initialization(self):
@@ -1724,7 +1730,7 @@ assemblies:
 
         # should error because class2_custom_isotopics doesn't exist
         with self.assertRaises(KeyError):
-            a = self.loadAssembly(
+            _a = self.loadAssembly(
                 """
         material modifications:
             class1_wt_frac: [0.5]

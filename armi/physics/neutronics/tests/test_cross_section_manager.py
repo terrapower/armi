@@ -109,9 +109,6 @@ class TestBlockCollectionAverage(unittest.TestCase):
         # 0 + 1/4 + 2/4 + 3/4 + 4/4 =
         # (0 + 1 + 2 + 3 + 4 ) / 5 = 10/5 = 2.0
         self.assertAlmostEqual(avgB.getNumberDensity("U235"), 2.0)
-        lfps = avgB.getLumpedFissionProductCollection()
-        lfp = list(lfps.values())[0]
-        self.assertAlmostEqual(lfp.gasRemainingFrac, 0.5)
 
 
 class TestBlockCollectionComponentAverage(unittest.TestCase):
@@ -226,9 +223,6 @@ class TestBlockCollectionFluxWeightedAverage(unittest.TestCase):
         avgB = self.bc.createRepresentativeBlock()
         self.assertNotIn(avgB, self.bc)
         self.assertAlmostEqual(avgB.getNumberDensity("U235"), 1.0)
-        lfps = avgB.getLumpedFissionProductCollection()
-        lfp = list(lfps.values())[0]
-        self.assertAlmostEqual(lfp.gasRemainingFrac, 0.75)
 
     def test_invalidWeights(self):
         self.bc[0].p.flux = 0.0

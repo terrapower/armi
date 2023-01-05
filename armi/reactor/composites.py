@@ -35,8 +35,8 @@ import timeit
 from typing import Dict, Optional, Type, Tuple, List, Union
 
 import numpy
-import tabulate
 import six
+import tabulate
 
 from armi import context
 from armi import runLog
@@ -47,7 +47,6 @@ from armi.nuclearDataIO import xsCollections
 from armi.physics.neutronics.fissionProductModel import fissionProductModel
 from armi.reactor import grids
 from armi.reactor import parameters
-
 from armi.reactor.flags import Flags, TypeSpec
 from armi.reactor.parameters import resolveCollections
 from armi.utils import densityTools
@@ -899,7 +898,8 @@ class ArmiObject(metaclass=CompositeModelType):
 
         """
         nuclideNames = self._getNuclidesFromSpecifier(nucName)
-        return sum(self.getMassFracs().get(nucName, 0.0) for nucName in nuclideNames)
+        massFracs = self.getMassFracs()
+        return sum(massFracs.get(nucName, 0.0) for nucName in nuclideNames)
 
     def getMicroSuffix(self):
         raise NotImplementedError(
@@ -945,7 +945,7 @@ class ArmiObject(metaclass=CompositeModelType):
                 # has no natural isotopics!
                 nucs = [
                     nb.name
-                    for nb in elements.bySymbol[nucName].nuclideBases
+                    for nb in elements.bySymbol[nucName].nuclides
                     if not isinstance(nb, nuclideBases.NaturalNuclideBase)
                 ]
                 convertedNucNames.extend(nucs)
@@ -1722,7 +1722,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
     def getPuN(self):
         """Returns total number density of Pu isotopes"""
-        nucNames = [nuc.name for nuc in elements.byZ[94].nuclideBases]
+        nucNames = [nuc.name for nuc in elements.byZ[94].nuclides]
         return sum(self.getNuclideNumberDensities(nucNames))
 
     def calcTotalParam(
@@ -2075,7 +2075,7 @@ class ArmiObject(metaclass=CompositeModelType):
     def getPuMass(self):
         """Get the mass of Pu in this object in grams."""
         nucs = []
-        for nucName in [nuc.name for nuc in elements.byZ[94].nuclideBases]:
+        for nucName in [nuc.name for nuc in elements.byZ[94].nuclides]:
             nucs.append(nucName)
         pu = self.getMass(nucs)
         return pu
@@ -2099,7 +2099,7 @@ class ArmiObject(metaclass=CompositeModelType):
     def getZrFrac(self):
         """return the total zr/(hm+zr) fraction in this assembly"""
         hm = self.getHMMass()
-        zrNucs = [nuc.name for nuc in elements.bySymbol["ZR"].nuclideBases]
+        zrNucs = [nuc.name for nuc in elements.bySymbol["ZR"].nuclides]
         zr = self.getMass(zrNucs)
         if hm + zr > 0:
             return zr / (hm + zr)
@@ -2145,7 +2145,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
         ma_nuclides = iterables.flatten(
             [
-                ele.nuclideBases
+                ele.nuclides
                 for ele in [
                     elements.byZ[key] for key in elements.byZ.keys() if key > 94
                 ]
@@ -3205,20 +3205,6 @@ class Composite(ArmiObject):
                 for comp in self.iterComponents()
             ]
         )
-
-
-class Leaf(Composite):
-    """Defines behavior for primitive objects in the composition."""
-
-    def getChildren(
-        self, deep=False, generationNum=1, includeMaterials=False, predicate=None
-    ):
-        """Return empty list, representing that this object has no children."""
-        return []
-
-    def getChildrenWithFlags(self, typeSpec: TypeSpec, exactMatch=True):
-        """Return empty list, representing that this object has no children."""
-        return []
 
 
 class StateRetainer:

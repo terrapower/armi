@@ -28,9 +28,8 @@ import math
 import numpy
 
 from armi import runLog
-from armi import settings
 from armi.bookkeeping import report
-from armi.nucDirectory import nucDir
+from armi import nuclideBases
 from armi.physics.neutronics import GAMMA
 from armi.physics.neutronics import NEUTRON
 from armi.reactor import blockParameters
@@ -1300,7 +1299,7 @@ class Block(composites.Composite):
 
         # vol = self.getVolume()
         for nucName, nDen in numDensities.items():
-            nucMc = nucDir.getMc2Label(nucName) + self.getMicroSuffix()
+            nucMc = nuclideBases.byName[nucName].label + self.getMicroSuffix()
             if gamma:
                 micros = lib[nucMc].gammaXS
             else:
