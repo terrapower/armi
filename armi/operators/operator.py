@@ -625,30 +625,26 @@ class Operator:  # pylint: disable=too-many-public-methods
         # Store the previous iteration values before calling interactAllCoupled
         # for each interface.
         for interface in activeInterfaces:
-            if interface.coupler is None:
-                continue
-            interface.coupler.storePreviousIterationValue(
-                interface.getTightCouplingValue()
-            )
+            if interface.coupler is not None:
+                interface.coupler.storePreviousIterationValue(
+                    interface.getTightCouplingValue()
+                )
 
         self._interactAll("Coupled", activeInterfaces, coupledIteration)
 
         # Summarize the coupled results and the convergence status.
         for interface in activeInterfaces:
             coupler = interface.coupler
-            if coupler is None:
-                continue
-
-            key = "".join(
-                [
-                    interface.name,
-                    ": ",
-                    coupler.parameter,
-                ]
-            )
-
-            convergenceSummary[key].append(coupler.eps)
-            converged.append(coupler.isConverged())
+            if coupler is not None:
+                key = "".join(
+                    [
+                        interface.name,
+                        ": ",
+                        coupler.parameter,
+                    ]
+                )
+                convergenceSummary[key].append(coupler.eps)
+                converged.append(coupler.isConverged())
 
         reportingUtils.writeTightCouplingConvergenceSummary(convergenceSummary)
         return all(converged)
