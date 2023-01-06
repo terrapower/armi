@@ -18,7 +18,6 @@ import unittest
 
 import voluptuous as vol
 
-import armi
 from armi.settings import caseSettings
 
 
@@ -66,11 +65,6 @@ class TestSchema(unittest.TestCase):
             "decayConstants": {
                 "valid": [1, 1],
                 "invalid": [-1, 1],
-                "error": vol.error.AnyInvalid,
-            },
-            "decayConstants": {
-                "valid": [1, 1],
-                "invalid": (1, 1),
                 "error": vol.error.AnyInvalid,
             },
             "buGroups": {
@@ -141,7 +135,7 @@ class TestSchema(unittest.TestCase):
 
     def test_schema(self):
         # first test that a valid case goes through without error
-        for setting in self.settings.keys():
+        for setting in self.settings:
             # breakpoint()
             validOption = self.settings[setting]["valid"]
             self.cs = self.cs.modified(newSettings={setting: validOption})
