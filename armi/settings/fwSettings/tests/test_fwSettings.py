@@ -136,7 +136,6 @@ class TestSchema(unittest.TestCase):
     def test_schema(self):
         # first test that a valid case goes through without error
         for setting in self.settings:
-            # breakpoint()
             validOption = self.settings[setting]["valid"]
             self.cs = self.cs.modified(newSettings={setting: validOption})
 
