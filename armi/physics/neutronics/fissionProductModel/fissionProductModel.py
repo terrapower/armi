@@ -163,15 +163,13 @@ class FissionProductModel(interfaces.Interface):
         ensure that fission products are initialized on the depletable components within
         the reactor data model.
 
-        .. note::
-
-            When explicit fission products are enabled and the user has not already included
-            all fission products in the blueprints (in ``nuclideFlags``), the ``fpModelLibrary`` setting is used
-            to autofill all the nuclides in a given library into the ``blueprints.allNuclidesInProblem``
-            list. All nuclides that were not manually initialized by the user are added to
-            the ``DEPLETABLE`` components throughout every block in the core. The ``DEPLETABLE``
-            flag is based on the user adding this explicitly in the blueprints, or is based on
-            the user setting a nuclide to ``burn: true`` in the blueprint ``nuclideFlags``.
+        When explicit fission products are enabled and the user has not already included
+        all fission products in the blueprints (in ``nuclideFlags``), the ``fpModelLibrary`` setting is used
+        to autofill all the nuclides in a given library into the ``blueprints.allNuclidesInProblem``
+        list. All nuclides that were not manually initialized by the user are added to
+        the ``DEPLETABLE`` components throughout every block in the core. The ``DEPLETABLE``
+        flag is based on the user adding this explicitly in the blueprints, or is based on
+        the user setting a nuclide to ``burn: true`` in the blueprint ``nuclideFlags``.
 
         See Also
         --------
