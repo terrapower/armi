@@ -672,37 +672,30 @@ class OutputReader:
         raise NotImplementedError()
 
 
-def _setTightCouplerByInterfaceFunction(klass, cs):
+def _setTightCouplerByInterfaceFunction(interfaceClass, cs):
     """
     Return an instance of a ``TightCoupler`` class or ``None``.
 
     Parameters
     ----------
-    klass : Interface
-        Interface that a ``TightCoupler`` object will be added to.
+    interfaceClass : Interface
+        Interface class that a ``TightCoupler`` object will be added to.
 
     cs : Settings
         Case settings that are parsed to determine if tight coupling is enabled
         globally and if both a target parameter and convergence criteria defined.
     """
-    # No type coupling if there is no function for the Interface defined.
-    if klass.function is None:
+    # No tight coupling if there is no function for the Interface defined.
+    if interfaceClass.function is None:
         return None
 
-    # This will use the operator to determine if coupling is active
-    # if the Interface klass has an operator attached. Otherwise, we
-    # fall back to checking the case settings under special cases, like
-    # if the interface is initialized as stand alone.
-    if klass.o is not None:
-        activeCoupling = klass.o.couplingIsActive()
-    else:
-        activeCoupling = cs["tightCoupling"]
-
-    if not activeCoupling or (klass.function not in cs["tightCouplingSettings"]):
+    if not cs["tightCoupling"] or (
+        interfaceClass.function not in cs["tightCouplingSettings"]
+    ):
         return None
 
-    parameter = cs["tightCouplingSettings"][klass.function]["parameter"]
-    tolerance = cs["tightCouplingSettings"][klass.function]["convergence"]
+    parameter = cs["tightCouplingSettings"][interfaceClass.function]["parameter"]
+    tolerance = cs["tightCouplingSettings"][interfaceClass.function]["convergence"]
     maxIters = cs["tightCouplingMaxNumIters"]
 
     return TightCoupler(parameter, tolerance, maxIters)
