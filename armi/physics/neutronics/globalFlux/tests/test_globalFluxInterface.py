@@ -191,6 +191,15 @@ class TestGlobalFluxInterfaceWithExecuters(unittest.TestCase):
         class0 = globalFluxInterface.GlobalFluxInterfaceUsingExecuters.getExecuterCls()
         self.assertEqual(class0, globalFluxInterface.GlobalFluxExecuter)
 
+    def test_getTightCouplingValue(self):
+        """test getTightCouplingValue returns the correct value for keff and type for power"""
+        self.assertEqual(self.gfi.getTightCouplingValue(), 1.0)  # set in setUp
+        self.gfi.coupler.parameter = "power"
+        for a in self.r.core.getChildren():
+            for b in a:
+                b.p.power = 10.0
+        self.assertIsInstance(self.gfi.getTightCouplingValue(), numpy.ndarray)
+
 
 class TestGlobalFluxInterfaceWithExecutersNonUniform(unittest.TestCase):
     """Tests for global flux execution with non-uniform assemblies."""

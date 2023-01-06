@@ -63,6 +63,12 @@ class GlobalFluxInterface(interfaces.Interface):
         else:
             self.nodeFmt = "1d"  # produce ig001_1.inp.
         self._bocKeff = None  # for tracking rxSwing
+        # set default tight coupling settings
+        # pylint: disable=access-member-before-definition
+        if self.coupler is None:
+            self.coupler = interfaces.TightCoupler(
+                "keff", 1.0e-4, cs["tightCouplingMaxNumIters"]
+            )
 
     @staticmethod
     def getHistoryParams():
@@ -236,7 +242,7 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
 
                 scaledCorePowerDistribution.append(scaledPower)
 
-            return numpy.array(scaledCorePowerDistribution, dtype=object)
+            return numpy.array(scaledCorePowerDistribution)
 
         return None
 
