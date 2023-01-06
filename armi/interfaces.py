@@ -119,19 +119,19 @@ class TightCoupler:
     def __repr__(self):
         return f"<{self.__class__.__name__}, Parameter: {self.parameter}, Convergence Criteria: {self.tolerance}, Maximum Coupled Iterations: {self.maxIters}>"
 
-    def storePreviousIterationValue(self, val: float):
+    def storePreviousIterationValue(self, val: _SUPPORTED_TYPES):
         """
         Stores the previous iteration value of the given parameter.
 
         Parameters
         ----------
-        val : float
+        val : _SUPPORTED_TYPES
             the value to store. Is commonly equal to interface.getTightCouplingValue()
 
         Raises
         ------
         TypeError
-            Checks the type of the value against ``_SUPPORTED_TYPES`` before storing.
+            Checks the type of the val against ``_SUPPORTED_TYPES`` before storing.
             If invalid, a TypeError is raised.
         """
         if type(val) not in self._SUPPORTED_TYPES:
@@ -141,25 +141,33 @@ class TightCoupler:
             )
         self._previousIterationValue = val
 
-    def isConverged(self, val):
+    def isConverged(self, val: _SUPPORTED_TYPES):
         """
         Return True if the convergence criteria between the current and previous iteration values are met.
 
+        Parameters
+        ----------
+        val : _SUPPORTED_TYPES
+            the value to store. Is commonly equal to interface.getTightCouplingValue()
+
         Notes
         -----
-        On convergence, this class is automatically reset to its initial condition to avoid retaining
-        or holding a stale state. Calling this method will increment a counter that when exceeded will
-        clear the state. A warning will be reported if the state is cleared prior to the convergence
-        criteria being met.
+        - On convergence, this class is automatically reset to its initial condition to avoid retaining
+          or holding a stale state. Calling this method will increment a counter that when exceeded will
+          clear the state. A warning will be reported if the state is cleared prior to the convergence
+          criteria being met.
+        - For computing convergence of arrays, only up to 2D is allowed. 3D arrays would arise from considering
+          component level parameters. However, converging on component level parameters is not supported at this time.
 
         Raises
         ------
         ValueError
             If the previous iteration value has not been assigned. The ``storePreviousIterationValue`` method
             must be called first.
-
         TypeError
             If the type of the current value provided is not the same as the previous iteration value.
+        RuntimeError
+            Only support calculating norms for up to 2D arrays.
         """
         if self._previousIterationValue is None:
             raise ValueError(
@@ -175,24 +183,24 @@ class TightCoupler:
 
         previous = self._previousIterationValue
 
-        # Check convergence for integer or float values.
+        # calculate convergence of val and previous
         if isinstance(val, (int, float)):
             self.eps = abs(val - previous)
+        else:
+            if len(numpy.array(val).shape) == 1:
+                self.eps = norm(numpy.subtract(val, previous), ord=2)
+            elif len(numpy.array(val).shape) == 2:
+                epsVec = []
+                for old, new in zip(previous, val):
+                    epsVec.append(norm(numpy.subtract(old, new), ord=2))
+                self.eps = norm(epsVec, ord=numpy.inf)
+            else:
+                raise RuntimeError(
+                    "Currently only support up to 2D arrays for calculating convergence of arrays."
+                )
 
-        # Convert list values to a numpy array.
-        if isinstance(val, list):
-            val = numpy.array(val)
-            previous = numpy.array(previous)
-
-        # Check convergence for numpy array values.
-        if isinstance(val, numpy.ndarray):
-            epsVec = []
-            for old, new in zip(previous, val):
-                epsVec.append(norm(numpy.subtract(old, new), ord=2))
-            self.eps = norm(epsVec, ord=numpy.inf)
-
-        # Check convergence and if convergence is satisfied then reset the state of this
-        # object back to its originally defined state by calling __init__(...)
+        # Check if convergence is satisfied. If so, or if reached max number of iters, then
+        # reset the state of this object by calling self.resetParams().
         converged = self.eps < self.tolerance
         if converged:
             self._resetParams()

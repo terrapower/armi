@@ -16,6 +16,7 @@
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import unittest
 import os
+from numpy import inf, array
 
 from armi import interfaces
 from armi import settings
@@ -25,6 +26,7 @@ from armi.utils import textProcessors
 
 class DummyInterface(interfaces.Interface):
     name = "Dummy"
+    function = "dummyAction"
 
 
 class TestCodeInterface(unittest.TestCase):
@@ -70,6 +72,78 @@ class TestTextProcessor(unittest.TestCase):
         line = self.tp.fsearch("xml", textFlag=True)
         self.assertIn("version", line)
         self.assertEqual(self.tp.fsearch("xml"), "")
+
+
+class TestTightCoupler(unittest.TestCase):
+    """test the tight coupler class"""
+
+    def setUp(self):
+        cs = settings.Settings()
+        cs["tightCoupling"] = True
+        cs["tightCouplingSettings"] = {
+            "dummyAction": {"parameter": "nothing", "convergence": 1.0e-5}
+        }
+        self.interface = DummyInterface(None, cs)
+
+    def test_couplerActive(self):
+        self.assertIsNotNone(self.interface.coupler)
+
+    def test_resetParams(self):
+        self.interface.coupler._numIters = 5
+        self.interface.coupler._previousIterationValue = 1.0
+        self.interface.coupler.eps = 0.01
+        self.interface.coupler._resetParams()
+        self.assertEqual(self.interface.coupler._numIters, 0)
+        self.assertIsNone(self.interface.coupler._previousIterationValue)
+        self.assertEqual(self.interface.coupler.eps, inf)
+
+    def test_storePreviousIterationValue(self):
+        self.interface.coupler.storePreviousIterationValue(1.0)
+        self.assertEqual(self.interface.coupler._previousIterationValue, 1.0)
+
+    def test_storePreviousIterationValueException(self):
+        with self.assertRaises(TypeError) as cm:
+            self.interface.coupler.storePreviousIterationValue({5.0})
+            the_exception = cm.exception
+            self.assertEqual(the_exception.error_code, 3)
+
+    def test_isConvergedValueError(self):
+        with self.assertRaises(ValueError) as cm:
+            self.interface.coupler.isConverged(1.0)
+            the_exception = cm.exception
+            self.assertEqual(the_exception.error_code, 3)
+
+    def test_isConvergedTypeError(self):
+        self.interface.coupler._previousIterationValue = 1
+        with self.assertRaises(TypeError) as cm:
+            self.interface.coupler.isConverged(1.0)
+            the_exception = cm.exception
+            self.assertEqual(the_exception.error_code, 3)
+
+    def test_isConverged(self):
+        previousValues = {
+            "float": 1.0,
+            "list": [1.0, 2.0],
+            "array": array([[1, 2, 3], [1, 2, 3]]),
+        }
+        updatedValues = {
+            "float": 5.0,
+            "list": [5.0, 6.0],
+            "array": array([[5, 6, 7], [5, 6, 7]]),
+        }
+        for previous, current in zip(previousValues.values(), updatedValues.values()):
+            self.interface.coupler.storePreviousIterationValue(previous)
+            self.assertFalse(self.interface.coupler.isConverged(current))
+
+    def test_isConvergedRuntimeError(self):
+        """test to ensure 3D arrays do not work"""
+        previous = array([[[1, 2, 3]], [[1, 2, 3]], [[1, 2, 3]]])
+        updatedValues = array([[[5, 6, 7]], [[5, 6, 7]], [[5, 6, 7]]])
+        self.interface.coupler.storePreviousIterationValue(previous)
+        with self.assertRaises(RuntimeError) as cm:
+            self.interface.coupler.isConverged(updatedValues)
+            the_exception = cm.exception
+            self.assertEqual(the_exception.error_code, 3)
 
 
 if __name__ == "__main__":
