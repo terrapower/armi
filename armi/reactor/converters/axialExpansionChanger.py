@@ -257,7 +257,6 @@ class AxialExpansionChanger:
             f"for each block in assembly {self.linked.a}."
         )
         for ib, b in enumerate(self.linked.a):
-
             runLog.debug(msg=f"  Block {b}")
             blockHeight = b.getHeight()
             # set bottom of block equal to top of block below it
@@ -385,12 +384,20 @@ def _getSolidComponents(b):
 
 
 def _checkBlockHeight(b):
+    """
+    Do some basic block height validation
+
+    Notes
+    -----
+    3cm is a presumptive lower threshhold for DIF3D
+    """
     if b.getHeight() < 3.0:
         runLog.debug(
             "Block {0:s} ({1:s}) has a height less than 3.0 cm. ({2:.12e})".format(
                 b.name, str(b.p.flags), b.getHeight()
             )
         )
+
     if b.getHeight() < 0.0:
         raise ArithmeticError(
             "Block {0:s} ({1:s}) has a negative height! ({2:.12e})".format(
@@ -471,7 +478,8 @@ class AssemblyAxialLinkage:
                     str(self.a.getName()),
                     str(self.a.getLocation()),
                     str(b.p.flags),
-                )
+                ),
+                single=True,
             )
         if upperLinkedBlock is None:
             runLog.debug(
@@ -480,7 +488,8 @@ class AssemblyAxialLinkage:
                     str(self.a.getName()),
                     str(self.a.getLocation()),
                     str(b.p.flags),
-                )
+                ),
+                single=True,
             )
 
     def _getLinkedComponents(self, b, c):
@@ -526,7 +535,8 @@ class AssemblyAxialLinkage:
                     str(self.a.getLocation()),
                     str(b.p.flags),
                     str(c.p.flags),
-                )
+                ),
+                single=True,
             )
         if lstLinkedC[1] is None:
             runLog.debug(
@@ -536,7 +546,8 @@ class AssemblyAxialLinkage:
                     str(self.a.getLocation()),
                     str(b.p.flags),
                     str(c.p.flags),
-                )
+                ),
+                single=True,
             )
 
 
