@@ -27,6 +27,7 @@ import re
 from armi import runLog
 from armi.nucDirectory import nuclideBases
 from armi.nuclearDataIO.nuclearFileMetadata import NuclideXSMetadata, RegionXSMetadata
+from armi.nuclearDataIO import xsNuclides
 from armi.utils import properties
 
 _ISOTXS_EXT = "ISO"
@@ -144,7 +145,12 @@ def getISOTXSLibrariesToMerge(xsLibrarySuffix, xsLibFileNames):
     return isosToMerge
 
 
-def mergeXSLibrariesInWorkingDirectory(lib, xsLibrarySuffix="", mergeGammaLibs=False):
+def mergeXSLibrariesInWorkingDirectory(
+    lib,
+    xsLibrarySuffix="",
+    mergeGammaLibs=False,
+    dummyNucNames=None,
+):
     """
     Merge neutron (ISOTXS) and gamma (GAMISO/PMATRX) library data into the provided library.
 
@@ -161,6 +167,9 @@ def mergeXSLibrariesInWorkingDirectory(lib, xsLibrarySuffix="", mergeGammaLibs=F
     mergeGammaLibs : bool, optional
         If True, the GAMISO and PMATRX files that correspond to the ISOTXS library will be merged. Note: if these
         files do not exist this will fail.
+
+    dummyNucNames : List[nucName], optional
+        A list of the dummy nuclide names to be added to ISOTXS, GAMISO, and PMATRX
     """
     # pylint: disable=import-outside-toplevel) ; avoid cyclic import with isotxs bringing this in for data structure
     from armi.nuclearDataIO.cccc import isotxs
@@ -197,11 +206,42 @@ def mergeXSLibrariesInWorkingDirectory(lib, xsLibrarySuffix="", mergeGammaLibs=F
                 )
             )
             continue
+
         neutronLibrary = isotxs.readBinary(xsLibFilePath)
         neutronVelocities[xsID] = neutronLibrary.neutronVelocity
         librariesToMerge.append(neutronLibrary)
+
+        dummyNuclidesInNeutron = [
+            nuc
+            for nuc in neutronLibrary.nuclides
+            if isinstance(nuc._base, nuclideBases.DummyNuclideBase)
+        ]
+        if not dummyNuclidesInNeutron:
+            if dummyNucNames is not None:
+                dummyNuclides = [
+                    xsNuclides.XSNuclide(lib, nuclideBases.byName[nucName].label + xsID)
+                    for nucName in dummyNucNames
+                ]
+
+                isotxsLibraryPath = nuclearDataIO.getExpectedISOTXSFileName(
+                    suffix=xsLibrarySuffix, xsID=xsID
+                )
+
+                addedDummyData = isotxs.addDummyNuclidesToLibrary(
+                    neutronLibrary, dummyNuclides
+                )  # Add DUMMY nuclide data not produced by MC2-3
+                if addedDummyData:
+                    isotxsDummyPath = os.path.abspath(
+                        os.path.join(os.getcwd(), isotxsLibraryPath)
+                    )
+                    isotxs.writeBinary(neutronLibrary, isotxsDummyPath)
+                    neutronLibraryDummyData = isotxs.readBinary(isotxsDummyPath)
+                    librariesToMerge.append(neutronLibraryDummyData)
+
+                dummyNuclidesInNeutron = dummyNuclides
+
         if mergeGammaLibs:
-            dummyNuclides = [
+            dummyNuclidesInNeutron = [
                 nuc
                 for nuc in neutronLibrary.nuclides
                 if isinstance(nuc._base, nuclideBases.DummyNuclideBase)
@@ -232,7 +272,7 @@ def mergeXSLibrariesInWorkingDirectory(lib, xsLibrarySuffix="", mergeGammaLibs=F
             # GAMISO data
             gammaLibrary = gamiso.readBinary(gamisoLibraryPath)
             addedDummyData = gamiso.addDummyNuclidesToLibrary(
-                gammaLibrary, dummyNuclides
+                gammaLibrary, dummyNuclidesInNeutron
             )  # Add DUMMY nuclide data not produced by MC2-3
             if addedDummyData:
                 gamisoDummyPath = os.path.abspath(
@@ -247,7 +287,7 @@ def mergeXSLibrariesInWorkingDirectory(lib, xsLibrarySuffix="", mergeGammaLibs=F
             # PMATRX data
             pmatrxLibrary = pmatrx.readBinary(pmatrxLibraryPath)
             addedDummyData = pmatrx.addDummyNuclidesToLibrary(
-                pmatrxLibrary, dummyNuclides
+                pmatrxLibrary, dummyNuclidesInNeutron
             )  # Add DUMMY nuclide data not produced by MC2-3
             if addedDummyData:
                 pmatrxDummyPath = os.path.abspath(

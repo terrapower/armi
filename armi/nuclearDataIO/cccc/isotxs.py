@@ -133,6 +133,92 @@ def compareNuclideXS(nuc1, nuc2, tolerance=0.0, verbose=False):
     return equal
 
 
+def _setNuclideMetadata(dummyNuclide, numGroups):
+    """
+    Set basic metadata for a dummy nuclide
+
+    Parameters
+    ----------
+    dummyNuclide : xsNuclide
+        Dummy nuclide (e.g., DUMP1, DUMP2)
+    """
+    dummyNuclide.isotxsMetadata["nuclideId"] = "DUMMY"
+    dummyNuclide.isotxsMetadata["libName"] = ""
+    dummyNuclide.isotxsMetadata["isoIdent"] = ""
+    dummyNuclide.isotxsMetadata["amass"] = 0.0
+    dummyNuclide.isotxsMetadata["efiss"] = 0.0
+    dummyNuclide.isotxsMetadata["ecapt"] = 0.0
+    dummyNuclide.isotxsMetadata["temp"] = 300.0
+    dummyNuclide.isotxsMetadata["sigPot"] = 0.0
+    dummyNuclide.isotxsMetadata["adens"] = 1.0e-08
+    dummyNuclide.isotxsMetadata["classif"] = 0
+    dummyNuclide.isotxsMetadata["chiFlag"] = 0
+    dummyNuclide.isotxsMetadata["fisFlag"] = 0
+    dummyNuclide.isotxsMetadata["nalph"] = 0
+    dummyNuclide.isotxsMetadata["np"] = 0
+    dummyNuclide.isotxsMetadata["n2n"] = 0
+    dummyNuclide.isotxsMetadata["nd"] = 0
+    dummyNuclide.isotxsMetadata["nt"] = 0
+    dummyNuclide.isotxsMetadata["ltot"] = 4
+    dummyNuclide.isotxsMetadata["ltrn"] = 3
+    dummyNuclide.isotxsMetadata["strpd"] = 0
+    dummyNuclide.isotxsMetadata["scatFlag"] = numpy.array(
+        [100, 101, 102, 103, 200, 201, 300]
+    )
+    dummyNuclide.isotxsMetadata["ords"] = numpy.array([1, 1, 1, 1, 1, 1, 1])
+    for key in ["jj", "jband"]:
+        dummyNuclide.isotxsMetadata[key] = dict()
+        for ig in range(numGroups):
+            for jg in range(numGroups):
+                dummyNuclide.isotxsMetadata[key][(jg, ig)] = 1
+
+
+def addDummyNuclidesToLibrary(lib, dummyNuclides):
+    """
+    This method adds DUMMY nuclides to the current ISOTXS library.
+
+    Parameters
+    ----------
+    lib : obj
+        ISOTXS library object
+
+    dummyNuclides: list
+        List of DUMMY nuclide objects that will be copied and added to the GAMISO file
+
+    Notes
+    -----
+    Since MC2-3 does not write DUMMY nuclide information for GAMISO files, this is necessary to provide a
+    consistent set of nuclide-level data across all the nuclides in a
+    :py:class:`~armi.nuclearDataIO.xsLibraries.XSLibrary`.
+    """
+    if not dummyNuclides:
+        runLog.important("No dummy nuclide data provided to be added to {}".format(lib))
+        return False
+    elif len(lib.xsIDs) > 1:
+        runLog.warning(
+            "Cannot add dummy nuclide data to ISOTXS library {} containing data for more than 1 XS ID.".format(
+                lib
+            )
+        )
+        return False
+
+    dummyNuclideKeysAddedToLibrary = []
+    for dummyNuclide in dummyNuclides:
+        dummyKey = dummyNuclide.nucLabel
+        if len(lib.xsIDs):
+            dummyKey += lib.xsIDs[0]
+        if dummyKey in lib:
+            continue
+
+        runLog.debug("Adding {} nuclide data to {}".format(dummyKey, lib))
+        _setNuclideMetadata(dummyNuclide, lib.numGroups)
+
+        lib[dummyKey] = dummyNuclide
+        dummyNuclideKeysAddedToLibrary.append(dummyKey)
+
+    return any(dummyNuclideKeysAddedToLibrary)
+
+
 class _IsotxsIO(cccc.Stream):
     """
     A semi-abstract stream for reading and writing to a :py:class:`~armi.nuclearDataIO.isotxs.Isotxs`.
@@ -313,10 +399,10 @@ class _IsotxsIO(cccc.Stream):
         This is not used within ARMI, because it can compute it arbitrarily. Other codes use this to seek to a
         specific position within an ISOTXS file.
         """
-        recordsPerNuclude = [
+        recordsPerNuclide = [
             self._computeNumIsotxsRecords(nuc) for nuc in self._lib.nuclides
         ]
-        return [sum(recordsPerNuclude[0:ii]) for ii in range(len(self._lib))]
+        return [sum(recordsPerNuclide[0:ii]) for ii in range(len(self._lib))]
 
     def _computeNumIsotxsRecords(self, nuclide):
         """Compute the number of ISOTXS records for a specific nuclide."""
