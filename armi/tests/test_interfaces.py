@@ -32,11 +32,13 @@ class DummyInterface(interfaces.Interface):
 class TestCodeInterface(unittest.TestCase):
     """Test Code interface."""
 
+    def setUp(self):
+        self.cs = settings.Settings()
+
     def test_isRequestedDetailPoint(self):
         """Tests notification of detail points."""
-        cs = settings.Settings()
         newSettings = {"dumpSnapshot": ["000001", "995190"]}
-        cs = cs.modified(newSettings=newSettings)
+        cs = self.cs.modified(newSettings=newSettings)
 
         i = DummyInterface(None, cs)
 
@@ -46,7 +48,7 @@ class TestCodeInterface(unittest.TestCase):
 
     def test_enabled(self):
         """Test turning interfaces on and off."""
-        i = DummyInterface(None, None)
+        i = DummyInterface(None, self.cs)
 
         self.assertEqual(i.enabled(), True)
         i.enabled(False)

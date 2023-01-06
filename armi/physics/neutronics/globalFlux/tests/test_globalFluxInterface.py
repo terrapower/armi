@@ -170,10 +170,12 @@ class TestGlobalFluxInterfaceWithExecuters(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cs = settings.Settings()
+        cls.cs = settings.Settings()
         _o, cls.r = test_reactors.loadTestReactor()
-        cls.r.core.p.keff = 1.0
-        cls.gfi = MockGlobalFluxWithExecuters(cls.r, cs)
+
+    def setUp(self):
+        self.r.core.p.keff = 1.0
+        self.gfi = MockGlobalFluxWithExecuters(self.r, self.cs)
 
     def test_executerInteraction(self):
         gfi, r = self.gfi, self.r
