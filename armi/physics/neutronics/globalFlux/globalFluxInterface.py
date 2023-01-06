@@ -1135,6 +1135,8 @@ def calcReactionRates(obj, keff, lib):
     numberDensities = obj.getNumberDensities()
 
     for nucName, numberDensity in numberDensities.items():
+        if numberDensity == 0.0:
+            continue
         nucrate = {}
         for simple in RX_PARAM_NAMES:
             nucrate[simple] = 0.0

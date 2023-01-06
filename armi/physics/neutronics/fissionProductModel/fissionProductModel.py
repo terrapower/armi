@@ -181,10 +181,9 @@ class FissionProductModel(interfaces.Interface):
         for b in self.r.core.getBlocks(includeAll=True):
             b.setLumpedFissionProducts(None)
             for c in b.getComponents(Flags.DEPLETABLE):
-                ndens = c.getNumberDensities()
-                updatedNDens = {}
+                updatedNDens = c.getNumberDensities()
                 for nuc in self.r.blueprints.allNuclidesInProblem:
-                    if nuc in ndens:
+                    if nuc in updatedNDens:
                         continue
                     updatedNDens[nuc] = 0.0
                 c.updateNumberDensities(updatedNDens)
@@ -227,7 +226,10 @@ class FissionProductModel(interfaces.Interface):
         self._globalLFPs = lfps
 
     def interactDistributeState(self):
-        self.setAllBlockLFPs()
+        if self._explicitFissionProducts:
+            self.setAllComponentFissionProducts()
+        else:
+            self.setAllBlockLFPs()
 
     def getAllFissionProductNames(self):
         """
