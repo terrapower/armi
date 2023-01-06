@@ -29,8 +29,7 @@ from armi.settings.fwSettings.tightCouplingSettings import (
     tightCouplingSettingsValidator,
 )
 
-TIGHT_COUPLING_SETTINGS_EXAMPLE = (
-    """
+TIGHT_COUPLING_SETTINGS_EXAMPLE = """
     globalFlux:
         parameter: keff
         convergence: 1e-05
@@ -38,7 +37,6 @@ TIGHT_COUPLING_SETTINGS_EXAMPLE = (
         parameter: peakFuelTemperature
         convergence: 1e-02
     """
-)
 
 
 class TestTightCouplingSettings(unittest.TestCase):

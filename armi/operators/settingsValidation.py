@@ -487,10 +487,7 @@ class Inspector:
         )
 
         self.addQuery(
-            lambda: (
-                not self.cs["tightCoupling"]
-                and self.cs["tightCouplingSettings"]
-            ),
+            lambda: (not self.cs["tightCoupling"] and self.cs["tightCouplingSettings"]),
             "You've requested non default tight coupling settings but tightCoupling: False."
             "Do you want to set tightCoupling to True?",
             "",
