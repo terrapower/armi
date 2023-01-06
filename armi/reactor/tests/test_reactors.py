@@ -54,7 +54,8 @@ def buildOperatorOfEmptyHexBlocks(customSettings=None):
         Dictionary of off-default settings to update
     """
     settings.setMasterCs(None)  # clear
-    cs = settings.getMasterCs()  # fetch new
+    cs = settings.Settings()  # fetch new
+    settings.setMasterCs(cs)  # reset
 
     if customSettings is None:
         customSettings = {}
@@ -93,7 +94,8 @@ def buildOperatorOfEmptyCartesianBlocks(customSettings=None):
         Dictionary of off-default settings to update
     """
     settings.setMasterCs(None)  # clear
-    cs = settings.getMasterCs()  # fetch new
+    cs = settings.Settings()  # fetch new
+    settings.setMasterCs(cs)  # reset
 
     if customSettings is None:
         customSettings = {}

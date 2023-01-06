@@ -1678,7 +1678,7 @@ assemblies:
     def loadAssembly(self, materialModifications):
         yamlString = self.baseInput + "\n" + materialModifications
         design = blueprints.Blueprints.load(yamlString)
-        design._prepConstruction(settings.getMasterCs())
+        design._prepConstruction(settings.Settings())
         return design.assemblies["fuel a"]
 
     def test_class1Class2_class1_wt_frac(self):

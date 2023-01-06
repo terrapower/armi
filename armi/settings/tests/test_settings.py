@@ -205,7 +205,7 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
 
     def test_csWorks(self):
         """Ensure plugin settings become available and have defaults"""
-        a = settings.getMasterCs()
+        a = settings.Settings()
         self.assertEqual(a["circularRingOrder"], "angle")
 
     def test_pluginValidatorsAreDiscovered(self):
