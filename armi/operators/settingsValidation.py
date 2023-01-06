@@ -489,9 +489,9 @@ class Inspector:
         self.addQuery(
             lambda: (
                 not self.cs["tightCoupling"]
-                and self.cs["tightCouplingConvergenceCriteria"] != 1e-4
+                and self.cs["tightCouplingSettings"]
             ),
-            "You've requested a non default convergence criteria for tight coupling but left tightCoupling: False."
+            "You've requested non default tight coupling settings but tightCoupling: False."
             "Do you want to set tightCoupling to True?",
             "",
             lambda: self._assignCS("tightCoupling", True),

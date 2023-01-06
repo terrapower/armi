@@ -11,7 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""tight coupling settings tests"""
+"""
+Unit testing for tight coupling settings.
+- The settings example below shows the intended use for these settings in
+  an ARMI yaml input file.
+- Note, for these to be recognized, they need to be prefixed with "tightCouplingSettings:"
+"""
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,unused-variable
 import unittest
 import io
@@ -24,14 +29,16 @@ from armi.settings.fwSettings.tightCouplingSettings import (
     tightCouplingSettingsValidator,
 )
 
-
-TIGHT_COUPLING_SETTINGS_EXAMPLE = """globalFlux:
-    parameter: keff
-    convergence: 1e-05
-fuelPerformance:
-    parameter: peakFuelTemperature
-    convergence: 1e-02
-"""
+TIGHT_COUPLING_SETTINGS_EXAMPLE = (
+    """
+    globalFlux:
+        parameter: keff
+        convergence: 1e-05
+    fuelPerformance:
+        parameter: peakFuelTemperature
+        convergence: 1e-02
+    """
+)
 
 
 class TestTightCouplingSettings(unittest.TestCase):
