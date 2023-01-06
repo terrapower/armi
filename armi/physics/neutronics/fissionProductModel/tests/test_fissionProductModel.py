@@ -108,8 +108,9 @@ class TestFissionProductModelExplicitMC2Library(unittest.TestCase):
         self.fpModel.interactBOL()
 
         b = self.r.core.getFirstBlock(Flags.FUEL)
+        nuclideList = b.getNuclides()
         for nb in nuclideBases.byMcc3Id.values():
-            self.assertIn(nb.name, b.getNuclides())
+            self.assertIn(nb.name, nuclideList)
 
     def test_nuclidesInModelAllDepletableBlocks(self):
         """Test that the depletable blocks contain all the MC2-3 modeled nuclides."""
@@ -134,9 +135,10 @@ class TestFissionProductModelExplicitMC2Library(unittest.TestCase):
         # Check that the depletable blocks have all explicit
         # fission products in them.
         for b in self.r.core.getBlocks():
+            nuclideList = b.getNuclides()
             if isDepletable(b):
                 for nb in nuclideBases.byMcc3Id.values():
-                    self.assertIn(nb.name, b.getNuclides())
+                    self.assertIn(nb.name, nuclideList)
             else:
                 self.assertLess(len(b.getNuclides()), len(nuclideBases.byMcc3Id))
 
