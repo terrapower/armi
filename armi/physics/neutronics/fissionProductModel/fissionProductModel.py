@@ -231,7 +231,6 @@ class FissionProductModel(interfaces.Interface):
         else:
             self.setAllBlockLFPs()
 
-
     def getAllFissionProductNames(self):
         """
         Find all fission product names from the lumped fission product collection.
