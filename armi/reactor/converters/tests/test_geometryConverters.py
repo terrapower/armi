@@ -39,7 +39,7 @@ THIS_DIR = os.path.dirname(__file__)
 class TestGeometryConverters(unittest.TestCase):
     def setUp(self):
         self.o, self.r = loadTestReactor(TEST_ROOT)
-        self.cs = settings.getMasterCs()
+        self.cs = self.o.cs
 
     def test_addRing(self):
         r"""
@@ -134,7 +134,7 @@ class TestHexToRZConverter(unittest.TestCase):
     def setUp(self):
         self.o, self.r = loadTestReactor(TEST_ROOT)
         reduceTestReactorRings(self.r, self.o.cs, 2)
-        self.cs = settings.getMasterCs()
+        self.cs = self.o.cs
 
         runLog.setVerbosity("extra")
         self._expandReactor = False
