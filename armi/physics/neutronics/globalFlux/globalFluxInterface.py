@@ -273,6 +273,7 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
         """
         executer = self.getExecuter(label=label)
         executer.options.applyResultsToReactor = False
+        executer.options.calcReactionRatesOnMeshConversion = False
         output = executer.run()
         return output.getKeff()
 
