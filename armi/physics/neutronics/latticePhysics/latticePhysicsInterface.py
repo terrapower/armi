@@ -197,19 +197,29 @@ class LatticePhysicsInterface(interfaces.Interface):
 
     def interactCoupled(self, iteration):
         """
-        Runs on secondary coupled iterations.
+        Runs on coupled iterations to generate cross sections that are updated with the temperature state.
 
-        After a coupled iteration, the cross sections need to be regenerated.
-        This will bring in the spectral effects of changes in densities, as well as changes in
-        Doppler.
+        Notes
+        -----
+        This accounts for impacts cross section data due to temperature changes, which are important
+        for cross section resonance evaluations and parameters like Doppler constant and coefficient
+        evaluations. This coupling iteration is limited to when the time node is equal to zero. This
+        is assumed to be reasonable for most applications since microscopic cross section changes with
+        burn-up are deemed to be less significant compared to convergence on the temperature state.
+
+        .. warning::
+
+            The assumption of burn-up dependence impacts are design-specific, so this should be
+            considered when subclassing this base interface.
 
         Parameters
         ----------
         iteration : int
             This is unused since cross sections are generated on a per-cycle basis.
         """
-        self.r.core.lib = None
-        self.updateXSLibrary(self.r.p.cycle)
+        if self.r.p.timeNode == 0:
+            self.r.core.lib = None
+            self.updateXSLibrary(self.r.p.cycle)
 
     def clearXS(self):
         raise NotImplementedError
