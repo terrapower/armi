@@ -180,7 +180,7 @@ assemblies:
     def loadCustomAssembly(self, assemblyInput):
         yamlString = assemblyInput
         design = blueprints.Blueprints.load(yamlString)
-        design._prepConstruction(settings.getMasterCs())
+        design._prepConstruction(settings.Settings())
         return design.assemblies["fuel a"]
 
     def test_checkParamConsistency(self):
