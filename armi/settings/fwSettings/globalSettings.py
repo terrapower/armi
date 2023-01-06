@@ -29,7 +29,7 @@ import voluptuous as vol
 from armi import context
 from armi.settings import setting
 from armi.utils.mathematics import isMonotonic
-from . import tightCouplingSettings
+from armi.settings.fwSettings import tightCouplingSettings
 
 
 # Framework settings
