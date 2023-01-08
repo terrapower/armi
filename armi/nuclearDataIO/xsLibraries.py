@@ -149,10 +149,16 @@ def mergeXSLibrariesInWorkingDirectory(
     lib,
     xsLibrarySuffix="",
     mergeGammaLibs=False,
-    dummyNucNames=None,
 ):
     """
     Merge neutron (ISOTXS) and gamma (GAMISO/PMATRX) library data into the provided library.
+
+    Notes
+    -----
+    Convention is for fuel XS id to come first alphabetically (A, B, C, etc.) and then be
+    followed by non-fuel. This should allow `referenceDummyNuclide` to be defined before
+    it is needed by a non-fuel cross section, but if the convention is not followed then
+    this could cause an issue.
 
     Parameters
     ----------
@@ -167,9 +173,6 @@ def mergeXSLibrariesInWorkingDirectory(
     mergeGammaLibs : bool, optional
         If True, the GAMISO and PMATRX files that correspond to the ISOTXS library will be merged. Note: if these
         files do not exist this will fail.
-
-    dummyNucNames : List[nucName], optional
-        A list of the dummy nuclide names to be added to ISOTXS, GAMISO, and PMATRX
     """
     # pylint: disable=import-outside-toplevel) ; avoid cyclic import with isotxs bringing this in for data structure
     from armi.nuclearDataIO.cccc import isotxs
@@ -182,6 +185,7 @@ def mergeXSLibrariesInWorkingDirectory(
     )
     librariesToMerge = []
     neutronVelocities = {}  # Dictionary of neutron velocities from each ISOTXS file
+    referenceDummyNuclides = None
     for xsLibFilePath in sorted(xsLibFiles):
         try:
             xsID = re.search("ISO([A-Z0-9]{2})", xsLibFilePath).group(
@@ -209,7 +213,6 @@ def mergeXSLibrariesInWorkingDirectory(
 
         neutronLibrary = isotxs.readBinary(xsLibFilePath)
         neutronVelocities[xsID] = neutronLibrary.neutronVelocity
-        librariesToMerge.append(neutronLibrary)
 
         dummyNuclidesInNeutron = [
             nuc
@@ -217,36 +220,26 @@ def mergeXSLibrariesInWorkingDirectory(
             if isinstance(nuc._base, nuclideBases.DummyNuclideBase)
         ]
         if not dummyNuclidesInNeutron:
-            if dummyNucNames is not None:
-                dummyNuclides = [
-                    xsNuclides.XSNuclide(lib, nuclideBases.byName[nucName].label + xsID)
-                    for nucName in dummyNucNames
-                ]
-
-                isotxsLibraryPath = nuclearDataIO.getExpectedISOTXSFileName(
-                    suffix=xsLibrarySuffix, xsID=xsID
-                )
-
-                addedDummyData = isotxs.addDummyNuclidesToLibrary(
-                    neutronLibrary, dummyNuclides
-                )  # Add DUMMY nuclide data not produced by MC2-3
-                if addedDummyData:
-                    isotxsDummyPath = os.path.abspath(
-                        os.path.join(os.getcwd(), isotxsLibraryPath)
-                    )
-                    isotxs.writeBinary(neutronLibrary, isotxsDummyPath)
-                    neutronLibraryDummyData = isotxs.readBinary(isotxsDummyPath)
-                    librariesToMerge.append(neutronLibraryDummyData)
-
-                dummyNuclidesInNeutron = dummyNuclides
+            runLog.info(f"Adding dummy nuclides to library {xsID}")
+            addedDummyData = isotxs.addDummyNuclidesToLibrary(
+                neutronLibrary, referenceDummyNuclides
+            )  # Add DUMMY nuclide data not produced by MC2-3
+            isotxsLibraryPath = nuclearDataIO.getExpectedISOTXSFileName(
+                suffix=xsLibrarySuffix, xsID=xsID
+            )
+            isotxsDummyPath = os.path.abspath(
+                os.path.join(os.getcwd(), isotxsLibraryPath)
+            )
+            isotxs.writeBinary(neutronLibrary, isotxsDummyPath)
+            neutronLibraryDummyData = isotxs.readBinary(isotxsDummyPath)
+            librariesToMerge.append(neutronLibraryDummyData)
+            dummyNuclidesInNeutron = referenceDummyNuclides
+        else:
+            librariesToMerge.append(neutronLibrary)
+            if not referenceDummyNuclides:
+                referenceDummyNuclides = dummyNuclidesInNeutron
 
         if mergeGammaLibs:
-            dummyNuclidesInNeutron = [
-                nuc
-                for nuc in neutronLibrary.nuclides
-                if isinstance(nuc._base, nuclideBases.DummyNuclideBase)
-            ]
-
             gamisoLibraryPath = nuclearDataIO.getExpectedGAMISOFileName(
                 suffix=xsLibrarySuffix, xsID=xsID
             )

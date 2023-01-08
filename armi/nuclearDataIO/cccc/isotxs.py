@@ -133,46 +133,6 @@ def compareNuclideXS(nuc1, nuc2, tolerance=0.0, verbose=False):
     return equal
 
 
-def _setNuclideMetadata(dummyNuclide, numGroups):
-    """
-    Set basic metadata for a dummy nuclide
-
-    Parameters
-    ----------
-    dummyNuclide : xsNuclide
-        Dummy nuclide (e.g., DUMP1, DUMP2)
-    """
-    dummyNuclide.isotxsMetadata["nuclideId"] = "DUMMY"
-    dummyNuclide.isotxsMetadata["libName"] = ""
-    dummyNuclide.isotxsMetadata["isoIdent"] = ""
-    dummyNuclide.isotxsMetadata["amass"] = 0.0
-    dummyNuclide.isotxsMetadata["efiss"] = 0.0
-    dummyNuclide.isotxsMetadata["ecapt"] = 0.0
-    dummyNuclide.isotxsMetadata["temp"] = 300.0
-    dummyNuclide.isotxsMetadata["sigPot"] = 0.0
-    dummyNuclide.isotxsMetadata["adens"] = 1.0e-08
-    dummyNuclide.isotxsMetadata["classif"] = 0
-    dummyNuclide.isotxsMetadata["chiFlag"] = 0
-    dummyNuclide.isotxsMetadata["fisFlag"] = 0
-    dummyNuclide.isotxsMetadata["nalph"] = 0
-    dummyNuclide.isotxsMetadata["np"] = 0
-    dummyNuclide.isotxsMetadata["n2n"] = 0
-    dummyNuclide.isotxsMetadata["nd"] = 0
-    dummyNuclide.isotxsMetadata["nt"] = 0
-    dummyNuclide.isotxsMetadata["ltot"] = 4
-    dummyNuclide.isotxsMetadata["ltrn"] = 3
-    dummyNuclide.isotxsMetadata["strpd"] = 0
-    dummyNuclide.isotxsMetadata["scatFlag"] = numpy.array(
-        [100, 101, 102, 103, 200, 201, 300]
-    )
-    dummyNuclide.isotxsMetadata["ords"] = numpy.array([1, 1, 1, 1, 1, 1, 1])
-    for key in ["jj", "jband"]:
-        dummyNuclide.isotxsMetadata[key] = dict()
-        for ig in range(numGroups):
-            for jg in range(numGroups):
-                dummyNuclide.isotxsMetadata[key][(jg, ig)] = 1
-
-
 def addDummyNuclidesToLibrary(lib, dummyNuclides):
     """
     This method adds DUMMY nuclides to the current ISOTXS library.
@@ -210,10 +170,17 @@ def addDummyNuclidesToLibrary(lib, dummyNuclides):
         if dummyKey in lib:
             continue
 
-        runLog.debug("Adding {} nuclide data to {}".format(dummyKey, lib))
-        _setNuclideMetadata(dummyNuclide, lib.numGroups)
+        newDummy = xsNuclides.XSNuclide(lib, dummyKey)
+        # Copy isotxs metadata from the isotxs metadata of the given dummy nuclide
+        for kk, vv in dummyNuclide.isotxsMetadata.items():
+            if kk in ["jj", "jband"]:
+                newDummy.isotxsMetadata[kk] = {}
+                for mm in vv:
+                    newDummy.isotxsMetadata[kk][mm] = 1
+            else:
+                newDummy.isotxsMetadata[kk] = vv
 
-        lib[dummyKey] = dummyNuclide
+        lib[dummyKey] = newDummy
         dummyNuclideKeysAddedToLibrary.append(dummyKey)
 
     return any(dummyNuclideKeysAddedToLibrary)
