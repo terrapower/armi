@@ -97,8 +97,7 @@ class TightCoupler:
         been converged.
 
     maxIters : int
-        Maximum number of iterations allowed before the ``isConverged`` method
-        will return True and the state of the object will be cleared.
+        Maximum number of tight coupling iterations allowed
     """
 
     _SUPPORTED_TYPES = [float, int, list, numpy.ndarray]
@@ -141,14 +140,19 @@ class TightCoupler:
             )
         self._previousIterationValue = val
 
-    def isConverged(self, val: _SUPPORTED_TYPES):
+    def isConverged(self, val: _SUPPORTED_TYPES) -> bool:
         """
-        Return True if the convergence criteria between the current and previous iteration values are met.
+        Return boolean indicating if the convergence criteria between the current and previous iteration values are met.
 
         Parameters
         ----------
         val : _SUPPORTED_TYPES
             the value to store. Is commonly equal to interface.getTightCouplingValue()
+
+        Returns
+        -------
+        boolean
+            True (False) interface is (not) converged
 
         Notes
         -----
@@ -164,8 +168,6 @@ class TightCoupler:
         ValueError
             If the previous iteration value has not been assigned. The ``storePreviousIterationValue`` method
             must be called first.
-        TypeError
-            If the type of the current value provided is not the same as the previous iteration value.
         RuntimeError
             Only support calculating norms for up to 2D arrays.
         """
@@ -173,12 +175,6 @@ class TightCoupler:
             raise ValueError(
                 f"Cannot check convergence of {self} with no previous iteration value set. "
                 f"Set using `storePreviousIterationValue` first."
-            )
-
-        if not isinstance(val, type(self._previousIterationValue)):
-            raise TypeError(
-                f"The current value {val} is not the same type as the previous "
-                f"iteration value of {self._previousIterationValue}"
             )
 
         previous = self._previousIterationValue

@@ -115,13 +115,6 @@ class TestTightCoupler(unittest.TestCase):
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
 
-    def test_isConvergedTypeError(self):
-        self.interface.coupler._previousIterationValue = 1
-        with self.assertRaises(TypeError) as cm:
-            self.interface.coupler.isConverged(1.0)
-            the_exception = cm.exception
-            self.assertEqual(the_exception.error_code, 3)
-
     def test_isConverged(self):
         previousValues = {
             "float": 1.0,
