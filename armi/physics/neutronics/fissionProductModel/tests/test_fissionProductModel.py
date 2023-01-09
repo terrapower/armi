@@ -77,7 +77,7 @@ class TestFissionProductModelLumpedFissionProducts(unittest.TestCase):
 
 class TestFissionProductModelIndependentLumpedFissionProducts(unittest.TestCase):
     """
-    Tests the fission product model interface behavior when lumped fission products are enabled but made 
+    Tests the fission product model interface behavior when lumped fission products are enabled but made
     independent for each block. Mainly tests the FissionProductModel._useGlobalLFPs property.
 
     Notes
