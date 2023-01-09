@@ -113,17 +113,13 @@ def describeInterfaces(_cs):
 
 
 class FissionProductModel(interfaces.Interface):
-    """
-    Code interface that coordinates the fission product model on the reactor.
-    """
+    """Coordinates the fission product model on the reactor."""
 
     name = "fissionProducts"
 
     def __init__(self, r, cs):
         interfaces.Interface.__init__(self, r, cs)
         self._globalLFPs = lumpedFissionProduct.lumpedFissionProductFactory(self.cs)
-        # Boolean that tracks if `setAllBlockLFPs` was called previously.
-        self._initialized = False
 
     @property
     def _explicitFissionProducts(self):
@@ -152,44 +148,58 @@ class FissionProductModel(interfaces.Interface):
 
     def interactBOL(self):
         interfaces.Interface.interactBOL(self)
-        self.setAllBlockLFPs()
+        if self._explicitFissionProducts:
+            self.setAllComponentFissionProducts()
+        else:
+            self.setAllBlockLFPs()
+
+    def setAllComponentFissionProducts(self):
+        """
+        Initialize all blueprint nuclides for each ``DEPLETABLE`` component in the core.
+
+        Notes
+        -----
+        This should be called when explicit fission product modeling is enabled to
+        ensure that fission products are initialized on the depletable components within
+        the reactor data model.
+
+        When explicit fission products are enabled and the user has not already included
+        all fission products in the blueprints (in ``nuclideFlags``), the ``fpModelLibrary`` setting is used
+        to autofill all the nuclides in a given library into the ``blueprints.allNuclidesInProblem``
+        list. All nuclides that were not manually initialized by the user are added to
+        the ``DEPLETABLE`` components throughout every block in the core. The ``DEPLETABLE``
+        flag is based on the user adding this explicitly in the blueprints, or is based on
+        the user setting a nuclide to ``burn: true`` in the blueprint ``nuclideFlags``.
+
+        See Also
+        --------
+        armi.reactor.blueprints.isotopicOptions.autoUpdateNuclideFlags
+        armi.reactor.blueprints.isotopicOptions.getAllNuclideBasesByLibrary
+        """
+        for b in self.r.core.getBlocks(includeAll=True):
+            b.setLumpedFissionProducts(None)
+            for c in b.getComponents(Flags.DEPLETABLE):
+                updatedNDens = c.getNumberDensities()
+                for nuc in self.r.blueprints.allNuclidesInProblem:
+                    if nuc in updatedNDens:
+                        continue
+                    updatedNDens[nuc] = 0.0
+                c.updateNumberDensities(updatedNDens)
 
     def setAllBlockLFPs(self):
         """
-        Sets all the block lumped fission products attributes and adds fission products
-        to each block if `self._explicitFissionProducts` is set to True.
+        Sets all the block lumped fission products attributes.
 
         See Also
         --------
         armi.reactor.components.Component.setLumpedFissionProducts
         """
         for b in self.r.core.getBlocks(self._fissionProductBlockType, includeAll=True):
-
             if self._useGlobalLFPs:
                 b.setLumpedFissionProducts(self.getGlobalLumpedFissionProducts())
             else:
-                lfps = self.getGlobalLumpedFissionProducts()
-
-                # There will be no lumped fission products when explicitFissionProducts
-                # are modeled.
-                if lfps is None:
-                    b.setLumpedFissionProducts(None)
-                    if not self._initialized:
-                        targetComponent = b.getComponent(self._fissionProductBlockType)
-                        if not targetComponent:
-                            continue
-                        ndens = targetComponent.getNumberDensities()
-                        updatedNDens = {}
-                        for nuc in self.r.blueprints.allNuclidesInProblem:
-                            if nuc in ndens:
-                                continue
-                            updatedNDens[nuc] = 0.0
-                        targetComponent.updateNumberDensities(updatedNDens)
-                else:
-                    independentLFPs = lfps.duplicate()
-                    b.setLumpedFissionProducts(independentLFPs)
-
-        self._initialized = True
+                independentLFPs = self.getGlobalLumpedFissionProducts().duplicate()
+                b.setLumpedFissionProducts(independentLFPs)
 
     def getGlobalLumpedFissionProducts(self):
         r"""
@@ -213,16 +223,11 @@ class FissionProductModel(interfaces.Interface):
 
         self._globalLFPs = lfps
 
-    def interactBOC(self, cycle=None):
-        """
-        Update block groups and fg removal
-
-        Cross sections update at BOC, so we must prepare LFPs at BOC.
-        """
-        self.setAllBlockLFPs()
-
     def interactDistributeState(self):
-        self.setAllBlockLFPs()
+        if self._explicitFissionProducts:
+            self.setAllComponentFissionProducts()
+        else:
+            self.setAllBlockLFPs()
 
     def getAllFissionProductNames(self):
         """

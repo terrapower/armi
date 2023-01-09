@@ -25,14 +25,14 @@ What's new in ARMI
 
 Bug fixes
 ---------
-#. Fixed bug in ``referenceBlockAxialMesh`` and ``axialMesh`` during process loading. (`PR#980 <https://github.com/terrapower/armi/pull/980>`)
+#. Fixed bug in ``referenceBlockAxialMesh`` and ``axialMesh`` during process loading. (`PR#980 <https://github.com/terrapower/armi/pull/980>`_)
 #. Removed Barriers in temp directory changers and output cache to avoid deadlocks in MPI cases
-#. Fixed bug with database writing and tight coupling. (`PR#1005 https://github.com/terrapower/armi/pull/1005`)
+#. Fixed bug with database writing and tight coupling. (`PR#1005 https://github.com/terrapower/armi/pull/1005`_)
 #. Fixed a bug where snapshot load would not respect the new cs["power"] setting.
-#. Froze the NumPy version to be <= 1.23.5 (`PR#1035 https://github.com/terrapower/armi/pull/1035`) to continue to support numpy jagged arrays within the Database interface.
-#. Fixed a bug where the material namespace order for test_axialExpansionChanger.py was persisting beyond the tests. (`PR#1046 https://github.com/terrapower/armi/pull/1046`)
+#. Froze the NumPy version to be <= 1.23.5 (`PR#1035 https://github.com/terrapower/armi/pull/1035`_) to continue to support numpy jagged arrays within the Database interface.
+#. Fixed a bug where the material namespace order for test_axialExpansionChanger.py was persisting beyond the tests. (`PR#1046 https://github.com/terrapower/armi/pull/1046`_)
 #. A bug was fixed in `PR#1022 <https://github.com/terrapower/armi/pull/1022>`_ where the gaseous fission products were not being removed from the core directly, but instead the fission yields within the lumped fission products were being adjusted.
-
+#. Fixed a bug where non-fuel depletable components were not being initialized with all nuclides with the ``explicitFissionProducts`` model (`PR#1067 https://github.com/terrapower/armi/pull/1067`_)
 
 ARMI v0.2.5
 ===========
