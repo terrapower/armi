@@ -1100,12 +1100,8 @@ class ArmiObject(metaclass=CompositeModelType):
         We can scale each Oi evenly by multiplying by the factor f2
         Oi' = Oi * (1-C-v)/O = Oi * f2  where f2= (1-C-v)
 
-        Since massFracs is not necessarily normalized, A+C+O actually =
-        self.p.massFracNorm
-
         See Also
         --------
-
         setMassFrac
         getMassFrac
         """

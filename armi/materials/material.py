@@ -91,9 +91,6 @@ class Material(metaclass=MaterialMetaType):
         self.p = self.paramCollectionType()  # pylint: disable=no-member
         self.p.massFrac = {}
 
-        # track sum of massFrac (which are modified and won't always sum to 1.0!)
-        self.p.massFracNorm = 0.0
-
         self.p.refDens = 0.0
 
         # call subclass implementations
@@ -563,7 +560,6 @@ class Material(metaclass=MaterialMetaType):
     def clearMassFrac(self) -> None:
         r"""zero out all nuclide mass fractions."""
         self.p.massFrac.clear()
-        self.p.massFracNorm = 0.0
 
     def removeNucMassFrac(self, nuc: str) -> None:
         self.setMassFrac(nuc, 0)

@@ -74,8 +74,6 @@ def getMaterialParameterDefinitions():
 
         pb.defParam("massFrac", units=None, description="mass fractions")
 
-        pb.defParam("massFracNorm", units=None, description="mass fractions")
-
     return pDefs
 
 
