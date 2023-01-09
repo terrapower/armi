@@ -76,12 +76,6 @@ def getMaterialParameterDefinitions():
 
         pb.defParam("massFracNorm", units=None, description="mass fractions")
 
-        pb.defParam(
-            "atomFracDenom",
-            units=None,
-            description="Aux param to avoid summing each time ( O(1) vs. O(N))",
-        )
-
     return pDefs
 
 

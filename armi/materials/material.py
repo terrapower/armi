@@ -94,9 +94,6 @@ class Material(metaclass=MaterialMetaType):
         # track sum of massFrac (which are modified and won't always sum to 1.0!)
         self.p.massFracNorm = 0.0
 
-        # so it doesn't have to be summed each time ( O(1) vs. O(N))
-        self.p.atomFracDenom = 0.0
-
         self.p.refDens = 0.0
 
         # call subclass implementations
