@@ -149,6 +149,7 @@ def mergeXSLibrariesInWorkingDirectory(
     lib,
     xsLibrarySuffix="",
     mergeGammaLibs=False,
+    alternateDirectory=None,
 ):
     """
     Merge neutron (ISOTXS) and gamma (GAMISO/PMATRX) library data into the provided library.
@@ -173,6 +174,10 @@ def mergeXSLibrariesInWorkingDirectory(
     mergeGammaLibs : bool, optional
         If True, the GAMISO and PMATRX files that correspond to the ISOTXS library will be merged. Note: if these
         files do not exist this will fail.
+
+    alternateDirectory : str, optional
+        An alternate directory in which to search for files other than the working directory. The main purpose
+        of this is for testing, but it could also be useful to users.
     """
     # pylint: disable=import-outside-toplevel) ; avoid cyclic import with isotxs bringing this in for data structure
     from armi.nuclearDataIO.cccc import isotxs
@@ -180,8 +185,10 @@ def mergeXSLibrariesInWorkingDirectory(
     from armi.nuclearDataIO.cccc import pmatrx
     from armi import nuclearDataIO
 
+    baseDir = alternateDirectory or os.getcwd()
+    globPath = os.path.join(baseDir, _ISOTXS_EXT + "*")
     xsLibFiles = getISOTXSLibrariesToMerge(
-        xsLibrarySuffix, [iso for iso in glob.glob(_ISOTXS_EXT + "*")]
+        xsLibrarySuffix, [iso for iso in glob.glob(globPath)]
     )
     librariesToMerge = []
     neutronVelocities = {}  # Dictionary of neutron velocities from each ISOTXS file
@@ -224,12 +231,13 @@ def mergeXSLibrariesInWorkingDirectory(
             addedDummyData = isotxs.addDummyNuclidesToLibrary(
                 neutronLibrary, referenceDummyNuclides
             )  # Add DUMMY nuclide data not produced by MC2-3
-            isotxsLibraryPath = nuclearDataIO.getExpectedISOTXSFileName(
-                suffix=xsLibrarySuffix, xsID=xsID
+            isotxsLibraryPath = os.path.join(
+                baseDir,
+                nuclearDataIO.getExpectedISOTXSFileName(
+                    suffix=xsLibrarySuffix, xsID=xsID
+                ),
             )
-            isotxsDummyPath = os.path.abspath(
-                os.path.join(os.getcwd(), isotxsLibraryPath)
-            )
+            isotxsDummyPath = isotxsLibraryPath
             isotxs.writeBinary(neutronLibrary, isotxsDummyPath)
             neutronLibraryDummyData = isotxs.readBinary(isotxsDummyPath)
             librariesToMerge.append(neutronLibraryDummyData)
@@ -240,11 +248,17 @@ def mergeXSLibrariesInWorkingDirectory(
                 referenceDummyNuclides = dummyNuclidesInNeutron
 
         if mergeGammaLibs:
-            gamisoLibraryPath = nuclearDataIO.getExpectedGAMISOFileName(
-                suffix=xsLibrarySuffix, xsID=xsID
+            gamisoLibraryPath = os.path.join(
+                baseDir,
+                nuclearDataIO.getExpectedGAMISOFileName(
+                    suffix=xsLibrarySuffix, xsID=xsID
+                ),
             )
-            pmatrxLibraryPath = nuclearDataIO.getExpectedPMATRXFileName(
-                suffix=xsLibrarySuffix, xsID=xsID
+            pmatrxLibraryPath = os.path.join(
+                baseDir,
+                nuclearDataIO.getExpectedPMATRXFileName(
+                    suffix=xsLibrarySuffix, xsID=xsID
+                ),
             )
 
             # Check if the gamiso and pmatrx data paths exist with the xs library suffix so that
@@ -259,8 +273,12 @@ def mergeXSLibrariesInWorkingDirectory(
                     f"Attempting to find GAMISO/PMATRX data with "
                     f"only XS ID {xsID} instead."
                 )
-                gamisoLibraryPath = nuclearDataIO.getExpectedGAMISOFileName(xsID=xsID)
-                pmatrxLibraryPath = nuclearDataIO.getExpectedPMATRXFileName(xsID=xsID)
+                gamisoLibraryPath = os.path.join(
+                    baseDir, nuclearDataIO.getExpectedGAMISOFileName(xsID=xsID)
+                )
+                pmatrxLibraryPath = os.path.join(
+                    baseDir, nuclearDataIO.getExpectedPMATRXFileName(xsID=xsID)
+                )
 
             # GAMISO data
             gammaLibrary = gamiso.readBinary(gamisoLibraryPath)
@@ -268,9 +286,7 @@ def mergeXSLibrariesInWorkingDirectory(
                 gammaLibrary, dummyNuclidesInNeutron
             )  # Add DUMMY nuclide data not produced by MC2-3
             if addedDummyData:
-                gamisoDummyPath = os.path.abspath(
-                    os.path.join(os.getcwd(), gamisoLibraryPath)
-                )
+                gamisoDummyPath = gamisoLibraryPath
                 gamiso.writeBinary(gammaLibrary, gamisoDummyPath)
                 gammaLibraryDummyData = gamiso.readBinary(gamisoDummyPath)
                 librariesToMerge.append(gammaLibraryDummyData)
@@ -283,9 +299,7 @@ def mergeXSLibrariesInWorkingDirectory(
                 pmatrxLibrary, dummyNuclidesInNeutron
             )  # Add DUMMY nuclide data not produced by MC2-3
             if addedDummyData:
-                pmatrxDummyPath = os.path.abspath(
-                    os.path.join(os.getcwd(), pmatrxLibraryPath)
-                )
+                pmatrxDummyPath = pmatrxLibraryPath
                 pmatrx.writeBinary(pmatrxLibrary, pmatrxDummyPath)
                 pmatrxLibraryDummyData = pmatrx.readBinary(pmatrxDummyPath)
                 librariesToMerge.append(pmatrxLibraryDummyData)

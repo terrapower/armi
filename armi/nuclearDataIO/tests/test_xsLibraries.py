@@ -40,18 +40,18 @@ FIXTURE_DIR = os.path.join(THIS_DIR, "fixtures")
 # CCCC fixtures are less fancy than these merging ones.
 FIXTURE_DIR_CCCC = os.path.join(os.path.dirname(isotxs.__file__), "tests", "fixtures")
 
-ISOTXS_AA = os.path.join(FIXTURE_DIR, "mc2v3-AA.isotxs")
-ISOTXS_AB = os.path.join(FIXTURE_DIR, "mc2v3-AB.isotxs")
+ISOTXS_AA = os.path.join(FIXTURE_DIR, "ISOAA")
+ISOTXS_AB = os.path.join(FIXTURE_DIR, "ISOAB")
 ISOTXS_AA_AB = os.path.join(FIXTURE_DIR, "combined-AA-AB.isotxs")
 ISOTXS_LUMPED = os.path.join(FIXTURE_DIR, "combined-and-lumped-AA-AB.isotxs")
 
-PMATRX_AA = os.path.join(FIXTURE_DIR, "mc2v3-AA.pmatrx")
-PMATRX_AB = os.path.join(FIXTURE_DIR, "mc2v3-AB.pmatrx")
+PMATRX_AA = os.path.join(FIXTURE_DIR, "AA.pmatrx")
+PMATRX_AB = os.path.join(FIXTURE_DIR, "AB.pmatrx")
 PMATRX_AA_AB = os.path.join(FIXTURE_DIR, "combined-AA-AB.pmatrx")
 PMATRX_LUMPED = os.path.join(FIXTURE_DIR, "combined-and-lumped-AA-AB.pmatrx")
 
-GAMISO_AA = os.path.join(FIXTURE_DIR, "mc2v3-AA.gamiso")
-GAMISO_AB = os.path.join(FIXTURE_DIR, "mc2v3-AB.gamiso")
+GAMISO_AA = os.path.join(FIXTURE_DIR, "AA.gamiso")
+GAMISO_AB = os.path.join(FIXTURE_DIR, "AB.gamiso")
 GAMISO_AA_AB = os.path.join(FIXTURE_DIR, "combined-AA-AB.gamiso")
 GAMISO_LUMPED = os.path.join(FIXTURE_DIR, "combined-and-lumped-AA-AB.gamiso")
 
@@ -260,7 +260,7 @@ class TestXSLibrary(unittest.TestCase, TempFileMixin):
                 lib = xsLibraries.IsotxsLibrary()
                 xsLibraries.mergeXSLibrariesInWorkingDirectory(lib)
                 self.assertIn(
-                    f"Ignoring file {dummyFileName} in the merging of ISOXX files",
+                    f"{dummyFileName} in the merging of ISOXX files",
                     log.getStdoutValue(),
                 )
         finally:
@@ -401,8 +401,6 @@ class Test_GetISOTXSFilesInWorkingDirectory(unittest.TestCase):
         self.assertEqual(set(), container & set(shouldNotBeThere))
 
 
-# LOOK OUT, THIS GETS DELETED LATER ON SO IT DOESN'T RUN... IT IS AN ABSTRACT CLASS!!
-# LOOK OUT, THIS GETS DELETED LATER ON SO IT DOESN'T RUN... IT IS AN ABSTRACT CLASS!!
 # LOOK OUT, THIS GETS DELETED LATER ON SO IT DOESN'T RUN... IT IS AN ABSTRACT CLASS!!
 class TestXSlibraryMerging(unittest.TestCase, TempFileMixin):
     """A shared class that defines tests that should be true for all IsotxsLibrary merging."""
@@ -602,6 +600,57 @@ class Gamiso_merge_Tests(TestXSlibraryMerging):
 
     def getLibLumpedPath(self):
         return GAMISO_LUMPED
+
+
+class Combined_merge_Tests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.isotxsAA = None
+        cls.isotxsAB = None
+        cls.gamisoAA = None
+        cls.gamisoAB = None
+        cls.pmatrxAA = None
+        cls.pmatrxAB = None
+        cls.libCombined = None
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.isotxsAA = None
+        cls.isotxsAB = None
+        cls.gamisoAA = None
+        cls.gamisoAB = None
+        cls.pmatrxAA = None
+        cls.pmatrxAB = None
+        cls.libCombined = None
+        del cls.isotxsAA
+        del cls.isotxsAB
+        del cls.gamisoAA
+        del cls.gamisoAB
+        del cls.pmatrxAA
+        del cls.pmatrxAB
+        del cls.libCombined
+
+    def setUp(self):
+        # load a library that is in the ARMI tree. This should
+        # be a small library with LFPs, Actinides, structure, and coolant
+        for attrName, path, readFunc in [
+            ("isotxsAA", ISOTXS_AA, isotxs.readBinary),
+            ("gamisoAA", GAMISO_AA, gamiso.readBinary),
+            ("pmatrxAA", PMATRX_AA, pmatrx.readBinary),
+            ("isotxsAB", ISOTXS_AB, isotxs.readBinary),
+            ("gamisoAB", GAMISO_AB, gamiso.readBinary),
+            ("pmatrxAB", PMATRX_AB, pmatrx.readBinary),
+            ("libCombined", ISOTXS_AA_AB, isotxs.readBinary),
+        ]:
+            if getattr(self.__class__, attrName) is None:
+                setattr(self.__class__, attrName, readFunc(path))
+
+    def test_mergeAllXSLibFiles(self):
+        lib = xsLibraries.IsotxsLibrary()
+        xsLibraries.mergeXSLibrariesInWorkingDirectory(
+            lib, xsLibrarySuffix="", mergeGammaLibs=True, alternateDirectory=FIXTURE_DIR
+        )
+        self.assertEqual(set(lib.nuclideLabels), set(self.libCombined.nuclideLabels))
 
 
 # Remove the abstract class, so that it does not run (all tests would fail)
