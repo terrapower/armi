@@ -80,15 +80,5 @@ def getFuelMaterialParameterDefinitions():
         pb.defParam(
             "class1_wt_frac", units=None, description="~Fissile/HM mass fraction"
         )
-        pb.defParam(
-            "class1_custom_isotopics",
-            units=None,
-            description="Name of high-reactivity custom isotopics",
-        )
-        pb.defParam(
-            "class2_custom_isotopics",
-            units=None,
-            description="Name of low-reactivity custom isotopicsn",
-        )
 
     return pDefs

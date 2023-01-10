@@ -796,6 +796,11 @@ class FuelMaterial(Material):
 
     pDefs = materialParameters.getFuelMaterialParameterDefinitions()
 
+    def __init__(self):
+        Material.__init__(self)
+        self.class1_custom_isotopics = None
+        self.class2_custom_isotopics = None
+
     def applyInputParams(
         self,
         class1_custom_isotopics=None,
@@ -839,8 +844,8 @@ class FuelMaterial(Material):
                 )
 
             self.p.class1_wt_frac = class1_wt_frac
-            self.p.class1_custom_isotopics = class1_custom_isotopics
-            self.p.class2_custom_isotopics = class2_custom_isotopics
+            self.class1_custom_isotopics = class1_custom_isotopics
+            self.class2_custom_isotopics = class2_custom_isotopics
 
             self._applyIsotopicsMixFromCustomIsotopicsInput(customIsotopics)
 
@@ -853,6 +858,6 @@ class FuelMaterial(Material):
         This may also be needed for building charge assemblies during reprocessing, but
         will take input from the SFP rather than from the input external feeds.
         """
-        class1Isotopics = customIsotopics[self.p.class1_custom_isotopics]
-        class2Isotopics = customIsotopics[self.p.class2_custom_isotopics]
+        class1Isotopics = customIsotopics[self.class1_custom_isotopics]
+        class2Isotopics = customIsotopics[self.class2_custom_isotopics]
         densityTools.applyIsotopicsMix(self, class1Isotopics, class2Isotopics)
