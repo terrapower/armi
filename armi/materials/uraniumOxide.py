@@ -104,7 +104,9 @@ class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
     ]
 
     def __init__(self):
-        material.SimpleSolid.__init__(self)
+        material.FuelMaterial.__init__(self)
+        self.theoreticalDensityFrac = 1.0
+        self.p.refDens = self.density3(Tk=self.refTempK)
 
     def adjustTD(self, val: float) -> None:
         self.theoreticalDensityFrac = val
@@ -136,6 +138,7 @@ class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
             self.adjustTD(td)
         else:
             self.adjustTD(1.00)  # default to fully dense.
+
         material.FuelMaterial.applyInputParams(self, *args, **kwargs)
 
     def setDefaultMassFracs(self) -> None:

@@ -28,10 +28,10 @@ from armi.utils.units import getTk
 class ThoriumOxide(FuelMaterial):
     name = "ThO2"
     propertyValidTemperature = {"linear expansion": ((298, 1223), "K")}
-    theoreticalDensityFrac = 1.0
 
     def __init__(self):
         FuelMaterial.__init__(self)
+        self.theoreticalDensityFrac = 1.0
         self.adjustTD(self.theoreticalDensityFrac)
 
     def adjustTD(self, val):

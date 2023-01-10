@@ -91,6 +91,7 @@ class Material(metaclass=MaterialMetaType):
         self.p = self.paramCollectionType()  # pylint: disable=no-member
         self.p.massFrac = {}
         self.p.refDens = 0.0
+        self.theoreticalDensityFrac = 0.0
 
         # call subclass implementations
         self.setDefaultMassFracs()
