@@ -111,8 +111,8 @@ def getISOTXSLibrariesToMerge(xsLibrarySuffix, xsLibFileNames):
         XS library suffix is used to determine which ISOTXS files should be merged together. This can be an
         empty string or be something like `-doppler`.
 
-    xsLibPathames : list
-        A list of library file paths like ISOAA, ISOBA, ISOCA, etc.
+    xsLibFileNames : list
+        A list of library file paths like ISOAA, ISOBA, ISOCA, etc. Can be a standalone file name or a full path.
 
     Notes
     -----
