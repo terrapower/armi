@@ -29,14 +29,12 @@ class UThZr(Material):
 
     name = "UThZr"
     enrichedNuclide = "U235"
+    thFrac = 0.00001
 
-    def applyInputParams(self, U235_wt_frac=None, ZR_wt_frac=None, TH_wt_frac=None):
+    def applyInputParams(self, U235_wt_frac=None, ZR_wt_frac=None):
         self.parent.adjustMassEnrichment(U235_wt_frac)
         self.parent.adjustMassFrac("ZR", elementToHoldConstant="TH", val=ZR_wt_frac)
-        self.parent.adjustMassFrac(
-            elementToAdjust="TH", nuclideToHoldConstant="ZR", val=TH_wt_frac
-        )
-        self.p.thFrac = TH_wt_frac
+        self.parent.adjustMassFrac(elementToAdjust="TH", nuclideToHoldConstant="ZR")
         self.p.zrFrac = ZR_wt_frac
 
     def setDefaultMassFracs(self):
@@ -47,12 +45,11 @@ class UThZr(Material):
         self.setMassFrac("TH232", 0.00001)
 
         self.p.zrFrac = 0.09999  # custom param REM
-        self.p.thFrac = 0.00001
 
     def density(self, Tk=None, Tc=None):
         """Calculate the mass density in g/cc of U-Zr alloy with various percents"""
         zrFrac = self.p.zrFrac
-        thFrac = self.p.thFrac
+        thFrac = self.thFrac
         uFrac = 1 - zrFrac - thFrac
 
         if zrFrac is None:

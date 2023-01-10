@@ -54,8 +54,6 @@ def getMaterialParameterDefinitions():
             "puFrac", units=None, description="The Pu weight fraction of a material"
         )
 
-        pb.defParam("thFrac", units=None, description="Thorium weight fraction")
-
         pb.defParam("refTempK", units="K", description="Reference temperature")
 
         pb.defParam(
