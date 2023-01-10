@@ -131,7 +131,7 @@ def getISOTXSLibrariesToMerge(xsLibrarySuffix, xsLibFileNames):
         isosWithSuffix = [
             iso
             for iso in isosToMerge
-            if re.match(f".*ISO[A-Z]{{2}}{xsLibrarySuffix}$", iso)
+            if re.match(f".*ISO[A-Z]{{2}}F?{xsLibrarySuffix}$", iso)
         ]
         isosToMerge = [
             iso
