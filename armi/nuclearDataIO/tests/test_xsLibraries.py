@@ -371,7 +371,13 @@ class Test_GetISOTXSFilesInWorkingDirectory(unittest.TestCase):
         self.assert_contains_only(toMerge, shouldBeThere, shouldNotBeThere)
 
     def test_getISOTXSFilesWithLibrarySuffix(self):
-        shouldBeThere = ["ISOAA-n23", "ISOAAF-n23", "ISOBA-n23", "ISODA", r"file-path\ISOCA-n23"]
+        shouldBeThere = [
+            "ISOAA-n23",
+            "ISOAAF-n23",
+            "ISOBA-n23",
+            "ISODA",
+            r"file-path\ISOCA-n23",
+        ]
         shouldNotBeThere = [
             "ISOAA",
             "ISOAA-n24",
@@ -384,7 +390,7 @@ class Test_GetISOTXSFilesInWorkingDirectory(unittest.TestCase):
             "ISOAA.BCD",
             "ISOCA-doppler",
             "ISOSA-void",
-            r"file-path\ISOCA-ISO"
+            r"file-path\ISOCA-ISO",
         ]
         filesInDirectory = shouldBeThere + shouldNotBeThere
         toMerge = xsLibraries.getISOTXSLibrariesToMerge("-n23", filesInDirectory)
