@@ -20,29 +20,44 @@ import unittest
 
 from numpy import linspace, array, vstack, zeros
 
-from armi.materials import material
-from armi.reactor.assemblies import grids
-from armi.reactor.assemblies import HexAssembly
+from armi import (
+    materials,
+    settings,
+)
+from armi.materials import (
+    material,
+    custom,
+    _MATERIAL_NAMESPACE_ORDER,
+)
+from armi.reactor.assemblies import (
+    grids,
+    HexAssembly,
+)
 from armi.reactor.blocks import HexBlock
-from armi.reactor.components import DerivedShape, UnshapedComponent
-from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
-from armi.tests import TEST_ROOT
+from armi.reactor.components import (
+    DerivedShape,
+    UnshapedComponent,
+)
 from armi.reactor.components.basicShapes import (
     Circle,
     Hexagon,
     Rectangle,
 )
 from armi.reactor.components.complexShapes import Helix
+from armi.tests import (
+    TEST_ROOT,
+    mockRunLogs,
+    getEmptyHexReactor,
+)
+from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
 from armi.reactor.converters.axialExpansionChanger import (
     AxialExpansionChanger,
     ExpansionData,
     _determineLinked,
 )
-from armi import materials
-from armi.materials import custom, _MATERIAL_NAMESPACE_ORDER
 from armi.reactor.flags import Flags
-from armi.tests import mockRunLogs
 from armi.utils import units
+from armi.operators.operator import Operator
 
 
 class AxialExpansionTestBase(unittest.TestCase):
@@ -549,24 +564,38 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
                     )
 
 
-class TestManageCoreMesh(unittest.TestCase):
+class TestManageCoreMesh(AxialExpansionTestBase, unittest.TestCase):
     """verify that manage core mesh unifies the mesh for detailedAxialExpansion: False"""
 
     def setUp(self):
-        self.axialExpChngr = AxialExpansionChanger()
-        o, self.r = loadTestReactor(TEST_ROOT)
-        reduceTestReactorRings(self.r, o.cs, 3)
+        AxialExpansionTestBase.setUp(self)
+        self.r = getEmptyHexReactor()
+        self.r.o = Operator
+        self.r.o.cs = settings.Settings()
+        self.r.core.add(buildTestAssemblyWithFakeMaterial(name="FakeMat", hot=False))
+        self.r.core.add(buildTestAssemblyWithFakeMaterial(name="FakeMat", hot=False))
+        for a in self.r.core:
+            a.makeAxialSnapList(refAssem=self.r.core[0])
+            for b in a:
+                b.p.axMesh = 1
+        self.r.core.p.referenceBlockAxialMesh = self.r.core.findAllAxialMeshPoints(
+            applySubMesh=False,
+        )
+        self.r.core.updateAxialMesh()
 
         self.oldAxialMesh = self.r.core.p.axialMesh
         # expand refAssem by 10%
         componentLst = [c for b in self.r.core.refAssem for c in b]
         percents = 0.01 + zeros(len(componentLst))
-        self.axialExpChngr.performPrescribedAxialExpansion(
+        self.obj.performPrescribedAxialExpansion(
             self.r.core.refAssem, componentLst, percents, setFuel=True
         )
 
+    def tearDown(self):
+        AxialExpansionTestBase.tearDown(self)
+
     def test_manageCoreMesh(self):
-        self.axialExpChngr.manageCoreMesh(self.r)
+        self.obj.manageCoreMesh(self.r)
         newAxialMesh = self.r.core.p.axialMesh
         # skip first and last entries as they do not change
         for old, new in zip(self.oldAxialMesh[1:-1], newAxialMesh[1:-1]):
@@ -833,7 +862,7 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
         )
         reduceTestReactorRings(r, o.cs, 3)
 
-        self.stdAssems = [a for a in r.core.getAssemblies()]
+        self.stdAssems = list(a for a in r.core.getAssemblies())
 
         oCold, rCold = loadTestReactor(
             os.path.join(TEST_ROOT, "detailedAxialExpansion"),
@@ -841,7 +870,12 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
         )
         reduceTestReactorRings(rCold, oCold.cs, 3)
 
-        self.testAssems = [a for a in rCold.core.getAssemblies()]
+        self.testAssems = list(a for a in rCold.core.getAssemblies())
+
+    def tearDown(self):
+        settings.setMasterCs(None)  # clear
+        cs = settings.Settings()  # fetch new
+        settings.setMasterCs(cs)  # reset
 
     def test_coldAssemblyExpansion(self):
         """block heights are cold and should be expanded
