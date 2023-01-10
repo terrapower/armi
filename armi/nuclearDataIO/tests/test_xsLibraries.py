@@ -357,7 +357,7 @@ class TestXSLibrary(unittest.TestCase, TempFileMixin):
 
 class Test_GetISOTXSFilesInWorkingDirectory(unittest.TestCase):
     def test_getISOTXSFilesWithoutLibrarySuffix(self):
-        shouldBeThere = ["ISOAA", "ISOBA", r"file-path\ISOCA"]
+        shouldBeThere = ["ISOAA", "ISOBA", os.path.join("file-path", "ISOCA")]
         shouldNotBeThere = [
             "ISOBA-n2",
             "ISOTXS",
@@ -376,7 +376,7 @@ class Test_GetISOTXSFilesInWorkingDirectory(unittest.TestCase):
             "ISOAAF-n23",
             "ISOBA-n23",
             "ISODA",
-            r"file-path\ISOCA-n23",
+            os.path.join("file-path", "ISOCA-n23"),
         ]
         shouldNotBeThere = [
             "ISOAA",
@@ -390,7 +390,7 @@ class Test_GetISOTXSFilesInWorkingDirectory(unittest.TestCase):
             "ISOAA.BCD",
             "ISOCA-doppler",
             "ISOSA-void",
-            r"file-path\ISOCA-ISO",
+            os.path.join("file-path", "ISOCA-ISO"),
         ]
         filesInDirectory = shouldBeThere + shouldNotBeThere
         toMerge = xsLibraries.getISOTXSLibrariesToMerge("-n23", filesInDirectory)
