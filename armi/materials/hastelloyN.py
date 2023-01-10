@@ -46,6 +46,8 @@ class HastelloyN(Material):
         "thermal expansion": ((293.15, 1173.15), "K"),
     }
 
+    refTempK = 293.15
+
     def setDefaultMassFracs(self):
         r"""
         Hastelloy N mass fractions
@@ -66,7 +68,6 @@ class HastelloyN(Material):
         self.setMassFrac("TI", 0.0025)  # max.
         self.setMassFrac("NI", 1.0 - sum(self.p.massFrac.values()))  # balance
 
-        self.p.refTempK = 273.15 + 20
         self.p.refDens = 8.86
 
     def thermalConductivity(self, Tk=None, Tc=None):
@@ -137,7 +138,7 @@ class HastelloyN(Material):
         %dLL(T) in m/m/K
         """
         Tc = getTc(Tc, Tk)
-        refTempC = getTc(Tk=self.p.refTempK)
+        refTempC = getTc(Tk=self.refTempK)
         return 100.0 * self.meanCoefficientThermalExpansion(Tc=Tc) * (Tc - refTempC)
 
     def meanCoefficientThermalExpansion(self, Tk=None, Tc=None):

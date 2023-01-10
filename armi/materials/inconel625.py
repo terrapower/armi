@@ -37,10 +37,10 @@ class Inconel625(Material):
         "thermalConductivity": "http://www.specialmetals.com/assets/documents/alloys/inconel/inconel-alloy-625.pdf",
         "specific heat": "http://www.specialmetals.com/assets/documents/alloys/inconel/inconel-alloy-625.pdf",
     }
+    refTempK = 294.15
 
     def __init__(self):
         Material.__init__(self)
-        self.p.refTempK = 294.15
         self.p.refDens = 8.44  # g/cc
         # Only density measurement presented in the reference.
         # Presumed to be performed at 21C since this was the reference temperature for linear expansion measurements.
@@ -185,7 +185,7 @@ class Inconel625(Material):
         -------
         list of length 'power' containing the polynomial fit coefficients for linearExpansionPercent
         """
-        refTempC = getTc(None, Tk=self.p.refTempK)
+        refTempC = getTc(None, Tk=self.refTempK)
         Tc = [93.0, 204.0, 316.0, 427.0, 538.0, 649.0, 760.0, 871.0, 927.0]
         alpha_mean = [
             1.28e-05,
