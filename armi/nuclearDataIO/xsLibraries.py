@@ -137,11 +137,13 @@ def getISOTXSLibrariesToMerge(xsLibrarySuffix, xsLibFileNames):
             iso
             for iso in isosToMerge
             if "-" not in os.path.basename(iso)
-            and not any(iso == iws.split("-")[0] for iws in isosWithSuffix)
+            and not any(
+                iso == os.path.basename(iws).split("-")[0] for iws in isosWithSuffix
+            )
         ]
         isosToMerge += isosWithSuffix
     else:
-        isosToMerge = [iso for iso in isosToMerge if "-" not in iso]
+        isosToMerge = [iso for iso in isosToMerge if "-" not in os.path.basename(iso)]
     return isosToMerge
 
 
