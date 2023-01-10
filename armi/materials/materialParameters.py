@@ -55,14 +55,6 @@ def getMaterialParameterDefinitions():
         )
 
         pb.defParam(
-            "theoreticalDensityFrac",
-            units=None,
-            description=(
-                "Fraction of theoretical density this material is " "fabricated at"
-            ),
-        )
-
-        pb.defParam(
             "thermalConductivity", units="W-m/K", description="Thermal conductivity"
         )
 

@@ -90,7 +90,6 @@ class Material(metaclass=MaterialMetaType):
         self.parent = None
         self.p = self.paramCollectionType()  # pylint: disable=no-member
         self.p.massFrac = {}
-
         self.p.refDens = 0.0
 
         # call subclass implementations
