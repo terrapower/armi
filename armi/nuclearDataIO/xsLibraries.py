@@ -111,8 +111,8 @@ def getISOTXSLibrariesToMerge(xsLibrarySuffix, xsLibFileNames):
         XS library suffix is used to determine which ISOTXS files should be merged together. This can be an
         empty string or be something like `-doppler`.
 
-    xsLibFileNames : list
-        A list of library names like ISOAA, ISOBA, ISOCA, etc.
+    xsLibPathames : list
+        A list of library file paths like ISOAA, ISOBA, ISOCA, etc.
 
     Notes
     -----
@@ -131,7 +131,7 @@ def getISOTXSLibrariesToMerge(xsLibrarySuffix, xsLibFileNames):
         isosWithSuffix = [
             iso
             for iso in isosToMerge
-            if re.match("ISO[A-Z]{{2}}F?{}$".format(xsLibrarySuffix), iso)
+            if re.match(f".*ISO[A-Z]{{2}}{xsLibrarySuffix}$", iso)
         ]
         isosToMerge = [
             iso
@@ -195,9 +195,8 @@ def mergeXSLibrariesInWorkingDirectory(
     referenceDummyNuclides = None
     for xsLibFilePath in sorted(xsLibFiles):
         try:
-            xsID = re.search("ISO([A-Z0-9]{2})", xsLibFilePath).group(
-                1
-            )  # get XS ID from the cross section library name
+            # get XS ID from the cross section library name
+            xsID = re.search("ISO([A-Z0-9]{2})", xsLibFilePath).group(1)
         except AttributeError:
             # if glob has matched something that is not actually an ISOXX file,
             # the .group() call will fail
