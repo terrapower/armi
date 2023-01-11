@@ -35,10 +35,6 @@ def getMaterialParameterDefinitions():
     ) as pb:
 
         pb.defParam(
-            "density", units="g/$cm^3$", description="density used for custom material"
-        )
-
-        pb.defParam(
             "zrFrac",
             units=None,
             description="The zirconium weight fraction of a material",

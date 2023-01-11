@@ -692,11 +692,15 @@ class Void_TestCase(_Material_Test, unittest.TestCase):
         """
         self.assertEqual(self.mat.density(500), 0)
 
-    def test_setDefaultMassFracs(self):
+    def test_density(self):
         self.mat.setDefaultMassFracs()
-        cur = self.mat.p.density
-        ref = 0.0
-        self.assertEqual(cur, ref)
+        cur = self.mat.density()
+        self.assertEqual(cur, 0.0)
+
+    def test_density3(self):
+        self.mat.setDefaultMassFracs()
+        cur = self.mat.density3()
+        self.assertEqual(cur, 0.0)
 
     def test_linearExpansion(self):
         cur = self.mat.linearExpansion(400)
