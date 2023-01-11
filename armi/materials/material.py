@@ -499,11 +499,11 @@ class Material(metaclass=MaterialMetaType):
 
     def yieldStrength(self, Tk: float = None, Tc: float = None) -> float:
         r"""returns yield strength at given T in MPa"""
-        return self.p.yieldStrength
+        pass
 
     def thermalConductivity(self, Tk: float = None, Tc: float = None) -> float:
         r"""thermal conductivity in given T in K"""
-        return self.p.thermalConductivity
+        pass
 
     def getProperty(
         self, propName: str, Tk: float = None, Tc: float = None, **kwargs

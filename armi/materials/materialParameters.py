@@ -54,10 +54,6 @@ def getMaterialParameterDefinitions():
             "puFrac", units=None, description="The Pu weight fraction of a material"
         )
 
-        pb.defParam(
-            "thermalConductivity", units="W-m/K", description="Thermal conductivity"
-        )
-
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=False) as pb:
 
         pb.defParam("massFrac", units=None, description="mass fractions")
