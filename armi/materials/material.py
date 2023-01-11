@@ -74,6 +74,8 @@ class Material:
         self.massFrac = {}
         self.refDens = 0.0
         self.theoreticalDensityFrac = 0.0
+        self.cached = {}
+        self._backupCache = None
 
         # call subclass implementations
         self.setDefaultMassFracs()
@@ -95,25 +97,33 @@ class Material:
         return []
 
     def backUp(self):
-        """Empty because stateless materials shouldn't use cache"""
-        pass
+        """Create and store a backup of the state."""
+        self._backupCache = (self.cached, self._backupCache)
+        self.cached = {}  # don't .clear(), using reference above!
 
     def restoreBackup(self, paramsToApply):
-        """Empty because stateless materials shouldn't use cache"""
-        pass
+        """Restore the parameters from previously created backup."""
+        self.cached, self._backupCache = self._backupCache
 
     def clearCache(self):
-        """Empty because stateless materials shouldn't use cache"""
-        pass
+        """Clear the cache so all new values are recomputed."""
+        self.cached = {}
 
     def _getCached(self, name):
-        """Empty because stateless materials shouldn't use cache"""
-        return None
+        """Obtain a value from the cache."""
+        return self.cached.get(name, None)
 
     def _setCache(self, name, val):
-        """Empty because stateless materials shouldn't use cache"""
-        pass
+        """
+        Set a value in the cache.
 
+        See Also
+        --------
+        _getCached : returns a previously-cached value
+        """
+        self.cached[name] = val
+
+    # TODO: Needs more! JOHN! Also... test it!
     def duplicate(self):
         r"""copy without needing a deepcopy."""
         m = self.__class__()
@@ -618,6 +628,7 @@ class Material:
 
     def getNuclides(self):
         warnings.warn("Material.getNuclides is being deprecated.", DeprecationWarning)
+        # NOTE: Material still has a self.parent because of this method.
         return self.parent.getNuclides()
 
     def getTempChangeForDensityChange(
