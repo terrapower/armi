@@ -33,7 +33,6 @@ import numpy
 from armi import runLog
 from armi.nucDirectory import nuclideBases
 from armi.reactor.flags import TypeSpec
-from armi.reactor.parameters import resolveCollections
 from armi.utils import densityTools
 from armi.utils.units import getTk, getTc
 

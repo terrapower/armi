@@ -107,6 +107,6 @@ class ThoriumOxide(FuelMaterial):
 
 
 class ThO2(ThoriumOxide):
-    """Another name for ThoriumOxide"""
+    """Another name for ThoriumOxide."""
 
     pass
