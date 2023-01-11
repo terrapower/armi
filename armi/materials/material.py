@@ -31,7 +31,6 @@ from scipy.optimize import fsolve
 import numpy
 
 from armi import runLog
-from armi.materials import materialParameters
 from armi.nucDirectory import nuclideBases
 from armi.reactor.flags import TypeSpec
 from armi.reactor.parameters import resolveCollections
@@ -42,26 +41,10 @@ from armi.utils.units import getTk, getTc
 FAIL_ON_RANGE = False
 
 
-class MaterialMetaType(resolveCollections.ResolveParametersMeta):
-    """
-    Metaclass for automatically defining ParameterCollection classes.
-    """
-
-    def __new__(cls, name, bases, attrs):
-        newType = resolveCollections.ResolveParametersMeta.__new__(
-            cls, name, bases, attrs
-        )
-
-        return newType
-
-
-class Material(metaclass=MaterialMetaType):
+class Material:
     """
     A material is made up of elements or isotopes. It has bulk properties like mass density.
     """
-
-    pDefs = materialParameters.getMaterialParameterDefinitions()
-    """State parameter definitions"""
 
     DATA_SOURCE = "ARMI"
     """Indication of where the material is loaded from (may be plugin name)"""
@@ -88,8 +71,7 @@ class Material(metaclass=MaterialMetaType):
 
     def __init__(self):
         self.parent = None
-        self.p = self.paramCollectionType()  # pylint: disable=no-member
-        self.p.massFrac = {}
+        self.massFrac = {}
         self.refDens = 0.0
         self.theoreticalDensityFrac = 0.0
 
@@ -102,14 +84,10 @@ class Material(metaclass=MaterialMetaType):
     def getName(self):
         return self.name
 
-    @classmethod
-    def getParameterCollection(cls):
-        return cls.paramCollectionType()
-
     def getChildren(
         self, deep=False, generationNum=1, includeMaterials=False, predicate=None
     ):
-        """Return empty list, representing that this object has no children."""
+        """Return empty list, representing that materials have no children."""
         return []
 
     def getChildrenWithFlags(self, typeSpec: TypeSpec, exactMatch=True):
@@ -117,33 +95,33 @@ class Material(metaclass=MaterialMetaType):
         return []
 
     def backUp(self):
-        """Empty because statelss materials shouldn't use cache"""
+        """Empty because stateless materials shouldn't use cache"""
         pass
 
     def restoreBackup(self, paramsToApply):
-        """Empty because statelss materials shouldn't use cache"""
+        """Empty because stateless materials shouldn't use cache"""
         pass
 
     def clearCache(self):
-        """Empty because statelss materials shouldn't use cache"""
+        """Empty because stateless materials shouldn't use cache"""
         pass
 
     def _getCached(self, name):
-        """Empty because statelss materials shouldn't use cache"""
+        """Empty because stateless materials shouldn't use cache"""
         return None
 
     def _setCache(self, name, val):
-        """Empty because statelss materials shouldn't use cache"""
+        """Empty because stateless materials shouldn't use cache"""
         pass
 
     def duplicate(self):
         r"""copy without needing a deepcopy."""
         m = self.__class__()
-        for key, val in self.p.items():
-            m.p[key] = val
-        m.p.massFrac = {}
-        for key, val in self.p.massFrac.items():
-            m.p.massFrac[key] = val
+
+        m.massFrac = {}
+        for key, val in self.massFrac.items():
+            m.massFrac[key] = val
+
         m.parent = self.parent
 
         return m
@@ -238,7 +216,7 @@ class Material(metaclass=MaterialMetaType):
         pass
 
     def setMassFrac(self, nucName: str, massFrac: float) -> None:
-        self.p.massFrac[nucName] = massFrac
+        self.massFrac[nucName] = massFrac
 
     def applyInputParams(self):
         """Apply material-specific material input parameters."""
@@ -280,13 +258,11 @@ class Material(metaclass=MaterialMetaType):
                 )
             )
 
-        nucsNames = list(self.p.massFrac)
+        nucsNames = list(self.massFrac)
 
         # refDens could be zero, but cannot normalize to zero.
         density = self.refDens or 1.0
-        massDensities = (
-            numpy.array([self.p.massFrac[nuc] for nuc in nucsNames]) * density
-        )
+        massDensities = numpy.array([self.massFrac[nuc] for nuc in nucsNames]) * density
         atomicMasses = numpy.array(
             [nuclideBases.byName[nuc].weight for nuc in nucsNames]
         )  # in AMU
@@ -295,9 +271,7 @@ class Material(metaclass=MaterialMetaType):
         enrichedIndex = nucsNames.index(nuclideName)
         isoAndEles = nuclideBases.byName[nuclideName].element.nuclides
         allIndicesUpdated = [
-            nucsNames.index(nuc.name)
-            for nuc in isoAndEles
-            if nuc.name in self.p.massFrac
+            nucsNames.index(nuc.name) for nuc in isoAndEles if nuc.name in self.massFrac
         ]
 
         if len(allIndicesUpdated) == 1:
@@ -329,7 +303,7 @@ class Material(metaclass=MaterialMetaType):
                     raise ValueError(
                         "Material {} has too many masses set to zero. cannot enrich {} to {}. Current "
                         "mass fractions: {}".format(
-                            self, nuclideName, massFraction, self.p.massFrac
+                            self, nuclideName, massFraction, self.massFrac
                         )
                     )
                 # massDensities get normalized later when conserving atoms; these are just ratios
@@ -362,7 +336,7 @@ class Material(metaclass=MaterialMetaType):
                 f"The mass fractions {massFracs} in {self} do not sum to 1.0."
             )
 
-        self.p.massFrac = {nuc: weight for nuc, weight in zip(nucsNames, massFracs)}
+        self.massFrac = {nuc: weight for nuc, weight in zip(nucsNames, massFracs)}
         if self.refDens != 0.0:  # don't update density if not assigned
             self.refDens = updatedDensity
 
@@ -540,7 +514,7 @@ class Material(metaclass=MaterialMetaType):
 
         Notes
         -----
-        self.p.massFrac are modified mass fractions that may not add up to 1.0
+        self.massFrac are modified mass fractions that may not add up to 1.0
         (for instance, after a axial expansion, the modified mass fracs will sum to less than one.
         The alternative is to put a multiplier on the density. They're mathematically equivalent.
 
@@ -554,22 +528,22 @@ class Material(metaclass=MaterialMetaType):
         --------
         setMassFrac
         """
-        return self.p.massFrac.get(nucName, 0.0)
+        return self.massFrac.get(nucName, 0.0)
 
     def clearMassFrac(self) -> None:
         r"""zero out all nuclide mass fractions."""
-        self.p.massFrac.clear()
+        self.massFrac.clear()
 
     def removeNucMassFrac(self, nuc: str) -> None:
         self.setMassFrac(nuc, 0)
         try:
-            del self.p.massFrac[nuc]
+            del self.massFrac[nuc]
         except KeyError:
             # the nuc isn't in the mass Frac vector
             pass
 
     def getMassFracCopy(self):
-        return copy.deepcopy(self.p.massFrac)
+        return copy.deepcopy(self.massFrac)
 
     def checkPropertyTempRange(self, label, val):
         r"""Checks if the given property / value combination fall between the min and max valid
@@ -792,9 +766,6 @@ class FuelMaterial(Material):
 
     All this really does is enable the special class 1/class 2 isotopics input option.
     """
-
-    # fuel materials don't need the generic material parameters
-    pDefs = None
 
     def __init__(self):
         Material.__init__(self)

@@ -66,7 +66,7 @@ class HastelloyN(Material):
         self.setMassFrac("W", 0.005)  # max.
         self.setMassFrac("AL", 0.0025)  # max.
         self.setMassFrac("TI", 0.0025)  # max.
-        self.setMassFrac("NI", 1.0 - sum(self.p.massFrac.values()))  # balance
+        self.setMassFrac("NI", 1.0 - sum(self.massFrac.values()))  # balance
 
         self.refDens = 8.86
 

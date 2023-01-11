@@ -239,7 +239,7 @@ class MOX_TestCase(_Material_Test, unittest.TestCase):
         self.mat.applyInputParams()
 
         for name, frac in zip(massFracNameList, massFracRefValList):
-            cur = self.mat.p.massFrac[name]
+            cur = self.mat.massFrac[name]
             self.assertEqual(cur, frac)
 
 
@@ -469,7 +469,7 @@ class UraniumOxide_TestCase(_Material_Test, unittest.TestCase):
         self.mat.adjustMassEnrichment(0.02)
 
         gPerMol = 2 * o16 + 0.02 * u235 + 0.98 * u238
-        massFracs = self.mat.p.massFrac
+        massFracs = self.mat.massFrac
 
         testing.assert_allclose(massFracs["O"], 2 * o16 / gPerMol, rtol=5e-4)
         testing.assert_allclose(
@@ -480,7 +480,7 @@ class UraniumOxide_TestCase(_Material_Test, unittest.TestCase):
         )
 
         self.mat.adjustMassEnrichment(0.2)
-        massFracs = self.mat.p.massFrac
+        massFracs = self.mat.massFrac
         gPerMol = 2 * o16 + 0.8 * u238 + 0.2 * u235
 
         testing.assert_allclose(massFracs["O"], 2 * o16 / gPerMol, rtol=5e-4)
@@ -575,7 +575,7 @@ class UraniumOxide_TestCase(_Material_Test, unittest.TestCase):
 
     def test_removeNucMassFrac(self):
         self.mat.removeNucMassFrac("O")
-        massFracs = [str(k) for k in self.mat.p.massFrac.keys()]
+        massFracs = [str(k) for k in self.mat.massFrac.keys()]
         self.assertListEqual(["U235", "U238"], massFracs)
 
     def test_densityTimesHeatCapactiy(self):
@@ -596,15 +596,13 @@ class UraniumOxide_TestCase(_Material_Test, unittest.TestCase):
 
     def test_duplicate(self):
         duplicateU = self.mat.duplicate()
-        for key in self.mat.p:
-            self.assertEqual(duplicateU.p[key], self.mat.p[key])
 
-        for key in self.mat.p.massFrac:
-            self.assertEqual(duplicateU.p.massFrac[key], self.mat.p.massFrac[key])
+        for key in self.mat.massFrac:
+            self.assertEqual(duplicateU.massFrac[key], self.mat.massFrac[key])
 
         duplicateMassFrac = self.mat.getMassFracCopy()
-        for key in self.mat.p.massFrac.keys():
-            self.assertEqual(duplicateMassFrac[key], self.mat.p.massFrac[key])
+        for key in self.mat.massFrac.keys():
+            self.assertEqual(duplicateMassFrac[key], self.mat.massFrac[key])
 
     def test_propertyValidTemperature(self):
         self.assertGreater(len(self.mat.propertyValidTemperature), 0)
@@ -620,7 +618,7 @@ class Thorium_TestCase(_Material_Test, unittest.TestCase):
 
     def test_setDefaultMassFracs(self):
         self.mat.setDefaultMassFracs()
-        cur = self.mat.p.massFrac
+        cur = self.mat.massFrac
         ref = {"TH232": 1.0}
         self.assertEqual(cur, ref)
 
@@ -739,7 +737,7 @@ class Lead_TestCase(_Material_Test, unittest.TestCase):
 
     def test_setDefaultMassFracs(self):
         self.mat.setDefaultMassFracs()
-        cur = self.mat.p.massFrac
+        cur = self.mat.massFrac
         ref = {"PB": 1}
         self.assertEqual(cur, ref)
 
@@ -769,7 +767,7 @@ class LeadBismuth_TestCase(_Material_Test, unittest.TestCase):
 
     def test_setDefaultMassFracs(self):
         self.mat.setDefaultMassFracs()
-        cur = self.mat.p.massFrac
+        cur = self.mat.massFrac
         ref = {"BI209": 0.555, "PB": 0.445}
         self.assertEqual(cur, ref)
 
@@ -835,7 +833,7 @@ class Sulfur_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.Sulfur
 
     def test_setDefaultMassFracs(self):
-        cur = self.mat.p.massFrac
+        cur = self.mat.massFrac
         ref = {"S34": 0.0429, "S36": 0.002, "S33": 0.0076, "S32": 0.9493}
         self.assertEqual(cur, ref)
 
@@ -1424,7 +1422,7 @@ class Alloy200_TestCase(_Material_Test, unittest.TestCase):
 
     def test_nickleContent(self):
         """Assert alloy 200 has more than 99% nickle per its spec"""
-        self.assertGreater(self.mat.p.massFrac["NI"], 0.99)
+        self.assertGreater(self.mat.massFrac["NI"], 0.99)
 
     def test_linearExpansion(self):
         ref = self.mat.linearExpansion(Tc=100)
@@ -1575,7 +1573,7 @@ class TZM_TestCase(_Material_Test, unittest.TestCase):
         self.mat.applyInputParams()
 
         for name, frac in zip(massFracNameList, massFracRefValList):
-            cur = self.mat.p.massFrac[name]
+            cur = self.mat.massFrac[name]
             ref = frac
             self.assertEqual(cur, ref)
 

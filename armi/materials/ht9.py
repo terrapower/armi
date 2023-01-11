@@ -56,7 +56,7 @@ class HT9(materials.Material):
         self.setMassFrac("MO", 0.01)
         self.setMassFrac("W", 0.0055)
         self.setMassFrac("V", 0.0030)
-        self.setMassFrac("FE", 1.0 - sum(self.p.massFrac.values()))
+        self.setMassFrac("FE", 1.0 - sum(self.massFrac.values()))
 
         self.refDens = 7.778
 

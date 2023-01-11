@@ -3251,7 +3251,9 @@ class StateRetainer:
         for child in [self.composite] + self.composite.getChildren(
             deep=True, includeMaterials=True
         ):
-            paramDefs.update(child.p.paramDefs)
+            if hasattr(child, "p"):
+                # materials don't have Parameters
+                paramDefs.update(child.p.paramDefs)
             func(child)
         for paramDef in paramDefs:
             func(paramDef)

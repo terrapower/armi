@@ -345,7 +345,7 @@ class CustomIsotopic(yamlize.Map):
         material : Material
             An ARMI Material instance.
         """
-        material.p.massFrac = dict(self.massFracs)
+        material.massFrac = dict(self.massFracs)
         if self.density is not None:
             if not isinstance(material, materials.Custom):
                 runLog.warning(

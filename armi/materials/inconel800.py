@@ -44,9 +44,7 @@ class Inconel800(Material):
         self.setMassFrac("CU", 0.0075)  # max.
         self.setMassFrac("AL", 0.00375)  # ave.
         self.setMassFrac("TI", 0.00375)  # ave.
-        self.setMassFrac(
-            "FE", 1.0 - sum(self.p.massFrac.values())
-        )  # balance, 0.395 min.
+        self.setMassFrac("FE", 1.0 - sum(self.massFrac.values()))  # balance, 0.395 min.
 
         self.refDens = 7.94
 
