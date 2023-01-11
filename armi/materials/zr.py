@@ -81,7 +81,7 @@ class Zr(Material):
 
     def __init__(self):
         Material.__init__(self)
-        self.p.refDens = self._computeReferenceDensity(Tk=self.refTempK)
+        self.refDens = self._computeReferenceDensity(Tk=self.refTempK)
 
     def setDefaultMassFracs(self):
         self.setMassFrac("ZR", 1.0)

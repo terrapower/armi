@@ -76,7 +76,7 @@ class SiC(Material):
         self.setMassFrac("C", 0.299547726)
         self.setMassFrac("SI", 0.700452274)
 
-        self.p.refDens = 3.21
+        self.refDens = 3.21
 
     def meltingPoint(self):
         return 3003.0

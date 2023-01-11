@@ -87,7 +87,7 @@ class UZr(material.FuelMaterial):
         u0 = 19.1
         zr0 = 6.52
         specificVolume = uFrac / u0 + zrFrac / zr0
-        self.p.refDens = 1.0 / specificVolume
+        self.refDens = 1.0 / specificVolume
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
         """

@@ -134,7 +134,7 @@ class B4C(material.Material):
         self.setMassFrac("B10", gBoron10)
         self.setMassFrac("B11", gBoron11)
         self.setMassFrac("C", gCarbon)
-        self.p.refDens = DEFAULT_MASS_DENSITY
+        self.refDens = DEFAULT_MASS_DENSITY
         # TD reference : Dunner, Heuvel, "Absorber Materials for control rod systems of fast breeder reactors"
         # Journal of nuclear materials, 124, 185-194, (1984)."
         self.theoreticalDensityFrac = (

@@ -41,7 +41,7 @@ class Inconel625(Material):
 
     def __init__(self):
         Material.__init__(self)
-        self.p.refDens = 8.44  # g/cc
+        self.refDens = 8.44  # g/cc
         # Only density measurement presented in the reference.
         # Presumed to be performed at 21C since this was the reference temperature for linear expansion measurements.
 

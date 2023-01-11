@@ -36,7 +36,7 @@ class ThoriumOxide(FuelMaterial):
 
     def adjustTD(self, val):
         self.theoreticalDensityFrac = val
-        self.p.refDens = 10.00 * val
+        self.refDens = 10.00 * val
 
     def getTD(self):
         return self.theoreticalDensityFrac

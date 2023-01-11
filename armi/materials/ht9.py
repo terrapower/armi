@@ -58,7 +58,7 @@ class HT9(materials.Material):
         self.setMassFrac("V", 0.0030)
         self.setMassFrac("FE", 1.0 - sum(self.p.massFrac.values()))
 
-        self.p.refDens = 7.778
+        self.refDens = 7.778
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
         """

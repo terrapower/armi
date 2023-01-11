@@ -34,7 +34,7 @@ class ThU(material.Material):
     def __init__(self):
         material.Material.__init__(self)
         """g/cc from IAEA TE 1450"""
-        self.p.refDens = 11.68
+        self.refDens = 11.68
 
     def getEnrichment(self):
         return self.getMassFrac("U233") / (

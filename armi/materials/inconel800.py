@@ -48,7 +48,7 @@ class Inconel800(Material):
             "FE", 1.0 - sum(self.p.massFrac.values())
         )  # balance, 0.395 min.
 
-        self.p.refDens = 7.94
+        self.refDens = 7.94
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
         r"""

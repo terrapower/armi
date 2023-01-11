@@ -38,8 +38,6 @@ def getMaterialParameterDefinitions():
             "density", units="g/$cm^3$", description="density used for custom material"
         )
 
-        pb.defParam("refDens", units="g/$cm^3$", description="reference density")
-
         pb.defParam(
             "zrFrac",
             units=None,

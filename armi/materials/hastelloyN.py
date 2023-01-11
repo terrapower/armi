@@ -68,7 +68,7 @@ class HastelloyN(Material):
         self.setMassFrac("TI", 0.0025)  # max.
         self.setMassFrac("NI", 1.0 - sum(self.p.massFrac.values()))  # balance
 
-        self.p.refDens = 8.86
+        self.refDens = 8.86
 
     def thermalConductivity(self, Tk=None, Tc=None):
         r"""

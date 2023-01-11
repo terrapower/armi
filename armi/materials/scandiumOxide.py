@@ -28,7 +28,7 @@ class Sc2O3(Material):
         """
         https://en.wikipedia.org/wiki/Scandium_oxide
         """
-        self.p.refDens = 3.86
+        self.refDens = 3.86
 
     def setDefaultMassFracs(self):
         self.setMassFrac("SC45", 0.6520)

@@ -90,7 +90,7 @@ class Material(metaclass=MaterialMetaType):
         self.parent = None
         self.p = self.paramCollectionType()  # pylint: disable=no-member
         self.p.massFrac = {}
-        self.p.refDens = 0.0
+        self.refDens = 0.0
         self.theoreticalDensityFrac = 0.0
 
         # call subclass implementations
@@ -283,7 +283,7 @@ class Material(metaclass=MaterialMetaType):
         nucsNames = list(self.p.massFrac)
 
         # refDens could be zero, but cannot normalize to zero.
-        density = self.p.refDens or 1.0
+        density = self.refDens or 1.0
         massDensities = (
             numpy.array([self.p.massFrac[nuc] for nuc in nucsNames]) * density
         )
@@ -363,8 +363,8 @@ class Material(metaclass=MaterialMetaType):
             )
 
         self.p.massFrac = {nuc: weight for nuc, weight in zip(nucsNames, massFracs)}
-        if self.p.refDens != 0.0:  # don't update density if not assigned
-            self.p.refDens = updatedDensity
+        if self.refDens != 0.0:  # don't update density if not assigned
+            self.refDens = updatedDensity
 
     def volumetricExpansion(self, Tk=None, Tc=None):
         pass
@@ -412,17 +412,16 @@ class Material(metaclass=MaterialMetaType):
         """
         Tk = getTk(Tc, Tk)
         dLL = self.linearExpansionPercent(Tk=Tk)
-        if self.p.refDens is None:
+        if self.refDens is None:
             runLog.warning(
                 "{0} has no reference density".format(self),
                 single=True,
                 label="No refD " + self.getName(),
             )
-            self.p.refDens = 0.0
+            self.refDens = 0.0
+
         f = (1.0 + dLL / 100.0) ** 2
-        # dRhoOverRho = (1.0 - f)/f
-        # rho = rho + dRho = (1 + dRho/rho) * rho
-        return self.p.refDens / f  # g/cm^3
+        return self.refDens / f  # g/cm^3
 
     def densityKgM3(self, Tk: float = None, Tc: float = None) -> float:
         """
@@ -449,7 +448,7 @@ class Material(metaclass=MaterialMetaType):
         """
         Tk = getTk(Tc, Tk)
         dLL = self.linearExpansionPercent(Tk=Tk)
-        refD = self.p.refDens
+        refD = self.refDens
         if refD is None:
             runLog.warning(
                 "{0} has no reference density".format(self),
@@ -750,7 +749,7 @@ class SimpleSolid(Material):
 
     def __init__(self):
         Material.__init__(self)
-        self.p.refDens = self.density3(Tk=self.refTempK)
+        self.refDens = self.density3(Tk=self.refTempK)
 
     def linearExpansionPercent(self, Tk: float = None, Tc: float = None) -> float:
         """

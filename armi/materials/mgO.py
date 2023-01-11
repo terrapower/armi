@@ -32,7 +32,7 @@ class MgO(Material):
         """same reference as linear expansion. Table II.
         Reference density is from Wolfram Alpha At STP (273 K)
         """
-        self.p.refDens = 3.58
+        self.refDens = 3.58
 
     def setDefaultMassFracs(self):
         r"""mass fractions"""

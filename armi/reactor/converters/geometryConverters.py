@@ -778,7 +778,7 @@ class HexToRZThetaConverter(GeometryConverter):
             # Set new homogenized block parameters
             material = materials.material.Material()
             material.name = "mixture"
-            material.p.refDens = 1.0  # generic density. Will cancel out.
+            material.refDens = 1.0  # generic density. Will cancel out.
             dims = {
                 "inner_radius": innerDiameter / 2.0,
                 "radius_differential": (outerDiameter - innerDiameter) / 2.0,
