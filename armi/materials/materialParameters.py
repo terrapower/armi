@@ -63,22 +63,3 @@ def getMaterialParameterDefinitions():
         pb.defParam("massFrac", units=None, description="mass fractions")
 
     return pDefs
-
-
-def getFuelMaterialParameterDefinitions():
-    """
-    Define the state parameters available on a FuelMaterial object.
-
-    .. note:: These are not stored in the database.
-    """
-    pDefs = parameters.ParameterDefinitionCollection()
-    with pDefs.createBuilder(
-        location=ParamLocation.AVERAGE, default=0.0, saveToDB=False
-    ) as pb:
-
-        # not strictly fissile when the class 1/class 2 custom isotopic input option is used
-        pb.defParam(
-            "class1_wt_frac", units=None, description="~Fissile/HM mass fraction"
-        )
-
-    return pDefs

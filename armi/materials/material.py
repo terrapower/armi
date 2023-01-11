@@ -794,10 +794,12 @@ class FuelMaterial(Material):
     All this really does is enable the special class 1/class 2 isotopics input option.
     """
 
-    pDefs = materialParameters.getFuelMaterialParameterDefinitions()
+    # fuel materials don't need the generic material parameters
+    pDefs = None
 
     def __init__(self):
         Material.__init__(self)
+        self.class1_wt_frac = None
         self.class1_custom_isotopics = None
         self.class2_custom_isotopics = None
 
@@ -843,7 +845,7 @@ class FuelMaterial(Material):
                     f" are both '{class1_custom_isotopics}'. You are not actually blending anything!"
                 )
 
-            self.p.class1_wt_frac = class1_wt_frac
+            self.class1_wt_frac = class1_wt_frac
             self.class1_custom_isotopics = class1_custom_isotopics
             self.class2_custom_isotopics = class2_custom_isotopics
 

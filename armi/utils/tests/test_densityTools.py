@@ -87,7 +87,7 @@ class Test_densityTools(unittest.TestCase):
         """Ensure isotopc classes get mixed properly."""
         uo2 = UO2()
         massFracO = uo2.p.massFrac["O"]
-        uo2.p.class1_wt_frac = 0.2
+        uo2.class1_wt_frac = 0.2
         enrichedMassFracs = {"U235": 0.3, "U234": 0.1, "PU239": 0.6}
         fertileMassFracs = {"U238": 0.3, "PU240": 0.7}
         densityTools.applyIsotopicsMix(uo2, enrichedMassFracs, fertileMassFracs)

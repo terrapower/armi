@@ -409,7 +409,7 @@ def applyIsotopicsMix(
         if nb.isHeavyMetal():
             hm += massFrac
     hmFrac = hm / total
-    hmEnrich = material.p.class1_wt_frac
+    hmEnrich = material.class1_wt_frac
     for nucName in (
         set(enrichedMassFracs.keys())
         .union(set(fertileMassFracs.keys()))
