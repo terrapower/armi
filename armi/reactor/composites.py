@@ -1172,7 +1172,7 @@ class ArmiObject(metaclass=CompositeModelType):
                 # custom parameter only set here to determine how to behave for UZr
                 # density, linear expansion. Can't let it roam with each mass frac
                 # 'cause then the density roams too and there are "oscillations"
-                self.p.zrFrac = newMassFrac
+                self.zrFrac = newMassFrac
 
         # error checking.
         if abs(newA - val) > 1e-10:

@@ -30,23 +30,6 @@ def getMaterialParameterDefinitions():
     .. note:: These are not stored in the database.
     """
     pDefs = parameters.ParameterDefinitionCollection()
-    with pDefs.createBuilder(
-        location=ParamLocation.AVERAGE, default=0.0, saveToDB=False
-    ) as pb:
-
-        pb.defParam(
-            "zrFrac",
-            units=None,
-            description="The zirconium weight fraction of a material",
-        )
-
-        pb.defParam(
-            "uFrac", units=None, description="The uranium weight fraction of a material"
-        )
-
-        pb.defParam(
-            "puFrac", units=None, description="The Pu weight fraction of a material"
-        )
 
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=False) as pb:
 

@@ -798,9 +798,14 @@ class FuelMaterial(Material):
 
     def __init__(self):
         Material.__init__(self)
+        # support for custom isotopics
         self.class1_wt_frac = None
         self.class1_custom_isotopics = None
         self.class2_custom_isotopics = None
+        # tracking depletion status
+        self.puFrac = 0.0
+        self.uFrac = 0.0
+        self.zrFrac = 0.0
 
     def applyInputParams(
         self,
