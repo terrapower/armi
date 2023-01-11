@@ -55,6 +55,17 @@ class _Material_Test:
     def test_getChildrenWithFlags(self):
         self.assertEqual(len(self.mat.getChildrenWithFlags("anything")), 0)
 
+    def test_duplicate(self):
+        mat = self.mat.duplicate()
+
+        self.assertEqual(len(mat.massFrac), len(self.mat.massFrac))
+        for key in self.mat.massFrac:
+            self.assertEqual(mat.massFrac[key], self.mat.massFrac[key])
+
+        self.assertEqual(mat.parent, self.mat.parent)
+        self.assertEqual(mat.refDens, self.mat.refDens)
+        self.assertEqual(mat.theoreticalDensityFrac, self.mat.theoreticalDensityFrac)
+
 
 class MaterialConstructionTests(unittest.TestCase):
     def test_material_initialization(self):

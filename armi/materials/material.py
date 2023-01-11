@@ -123,7 +123,6 @@ class Material:
         """
         self.cached[name] = val
 
-    # TODO: Needs more! JOHN! Also... test it!
     def duplicate(self):
         r"""copy without needing a deepcopy."""
         m = self.__class__()
@@ -133,6 +132,8 @@ class Material:
             m.massFrac[key] = val
 
         m.parent = self.parent
+        m.refDens = self.refDens
+        m.theoreticalDensityFrac = self.theoreticalDensityFrac
 
         return m
 
@@ -849,3 +850,24 @@ class FuelMaterial(Material):
         class1Isotopics = customIsotopics[self.class1_custom_isotopics]
         class2Isotopics = customIsotopics[self.class2_custom_isotopics]
         densityTools.applyIsotopicsMix(self, class1Isotopics, class2Isotopics)
+
+    def duplicate(self):
+        r"""copy without needing a deepcopy."""
+        m = self.__class__()
+
+        m.massFrac = {}
+        for key, val in self.massFrac.items():
+            m.massFrac[key] = val
+
+        m.parent = self.parent
+        m.refDens = self.refDens
+        m.theoreticalDensityFrac = self.theoreticalDensityFrac
+
+        m.class1_wt_frac = self.class1_wt_frac
+        m.class1_custom_isotopics = self.class1_custom_isotopics
+        m.class2_custom_isotopics = self.class2_custom_isotopics
+        m.puFrac = self.puFrac
+        m.uFrac = self.uFrac
+        m.zrFrac = self.zrFrac
+
+        return m
