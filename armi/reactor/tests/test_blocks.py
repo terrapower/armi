@@ -493,7 +493,7 @@ class Block_TestCase(unittest.TestCase):
             self.assertAlmostEqual(ref, cur, places=places)
 
     def test_getXsType(self):
-        self.cs = settings.getMasterCs()
+        self.cs = settings.Settings()
         newSettings = {"loadingFile": os.path.join(TEST_ROOT, "refSmallReactor.yaml")}
         self.cs = self.cs.modified(newSettings=newSettings)
 

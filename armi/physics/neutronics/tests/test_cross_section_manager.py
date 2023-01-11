@@ -19,14 +19,13 @@ Test the cross section manager
 """
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 
-import unittest
-import copy
 from io import BytesIO
+import copy
+import unittest
 
 from six.moves import cPickle
 
 from armi import settings
-from armi.utils import units
 from armi.physics.neutronics import crossSectionGroupManager
 from armi.physics.neutronics.crossSectionGroupManager import (
     BlockCollection,
@@ -37,11 +36,12 @@ from armi.physics.neutronics.crossSectionGroupManager import (
     AverageBlockCollection,
 )
 from armi.physics.neutronics.crossSectionGroupManager import CrossSectionGroupManager
+from armi.physics.neutronics.fissionProductModel.tests import test_lumpedFissionProduct
 from armi.reactor.blocks import HexBlock
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
 from armi.tests import TEST_ROOT
-from armi.physics.neutronics.fissionProductModel.tests import test_lumpedFissionProduct
+from armi.utils import units
 
 
 class TestBlockCollection(unittest.TestCase):
@@ -377,7 +377,7 @@ class MockBlueprints:
 class MockBlock(HexBlock):
     def __init__(self, name=None, cs=None):
         self.density = {}
-        HexBlock.__init__(self, name or "MockBlock", cs or settings.getMasterCs())
+        HexBlock.__init__(self, name or "MockBlock", cs or settings.Settings())
         self.r = MockReactor()
 
     @property
