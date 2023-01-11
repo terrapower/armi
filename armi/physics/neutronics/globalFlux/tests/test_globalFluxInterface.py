@@ -214,7 +214,7 @@ class TestGlobalFluxInterfaceWithExecuters(unittest.TestCase):
     def _setTightCouplingTrue(self):
         # pylint: disable=no-member,protected-access
         self.cs["tightCoupling"] = True
-        self.gfi._setTightCouplingDefaults(self.cs)
+        self.gfi._setTightCouplingDefaults()
 
     def _setTightCouplingFalse(self):
         self.cs["tightCoupling"] = False

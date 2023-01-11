@@ -63,18 +63,18 @@ class GlobalFluxInterface(interfaces.Interface):
         else:
             self.nodeFmt = "1d"  # produce ig001_1.inp.
         self._bocKeff = None  # for tracking rxSwing
-        self._setTightCouplingDefaults(cs)
+        self._setTightCouplingDefaults()
 
-    def _setTightCouplingDefaults(self, cs):
+    def _setTightCouplingDefaults(self):
         """enable tight coupling defaults for the interface
 
         - allows users to set tightCoupling: true in settings without
           having to specify the specific tightCouplingSettings for this interface.
         - this is splt off from self.__init__ for testing
         """
-        if self.coupler is None and cs["tightCoupling"]:
+        if self.coupler is None and self.cs["tightCoupling"]:
             self.coupler = interfaces.TightCoupler(
-                "keff", 1.0e-4, cs["tightCouplingMaxNumIters"]
+                "keff", 1.0e-4, self.cs["tightCouplingMaxNumIters"]
             )
 
     @staticmethod
