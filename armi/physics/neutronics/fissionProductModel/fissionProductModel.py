@@ -223,6 +223,12 @@ class FissionProductModel(interfaces.Interface):
 
         self._globalLFPs = lfps
 
+    def interactBOC(self, cycle=None):
+        if self._explicitFissionProducts:
+            self.setAllComponentFissionProducts()
+        else:
+            self.setAllBlockLFPs()
+
     def interactDistributeState(self):
         if self._explicitFissionProducts:
             self.setAllComponentFissionProducts()

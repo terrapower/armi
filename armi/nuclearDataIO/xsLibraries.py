@@ -112,7 +112,7 @@ def getISOTXSLibrariesToMerge(xsLibrarySuffix, xsLibFileNames):
         empty string or be something like `-doppler`.
 
     xsLibFileNames : list
-        A list of library names like ISOAA, ISOBA, ISOCA, etc.
+        A list of library file paths like ISOAA, ISOBA, ISOCA, etc. Can be a standalone file name or a full path.
 
     Notes
     -----
@@ -131,17 +131,19 @@ def getISOTXSLibrariesToMerge(xsLibrarySuffix, xsLibFileNames):
         isosWithSuffix = [
             iso
             for iso in isosToMerge
-            if re.match("ISO[A-Z]{{2}}F?{}$".format(xsLibrarySuffix), iso)
+            if re.match(f".*ISO[A-Z]{{2}}F?{xsLibrarySuffix}$", iso)
         ]
         isosToMerge = [
             iso
             for iso in isosToMerge
-            if "-" not in iso
-            and not any(iso == iws.split("-")[0] for iws in isosWithSuffix)
+            if "-" not in os.path.basename(iso)
+            and not any(
+                iso == os.path.basename(iws).split("-")[0] for iws in isosWithSuffix
+            )
         ]
         isosToMerge += isosWithSuffix
     else:
-        isosToMerge = [iso for iso in isosToMerge if "-" not in iso]
+        isosToMerge = [iso for iso in isosToMerge if "-" not in os.path.basename(iso)]
     return isosToMerge
 
 
@@ -195,9 +197,8 @@ def mergeXSLibrariesInWorkingDirectory(
     referenceDummyNuclides = None
     for xsLibFilePath in sorted(xsLibFiles):
         try:
-            xsID = re.search("ISO([A-Z0-9]{2})", xsLibFilePath).group(
-                1
-            )  # get XS ID from the cross section library name
+            # get XS ID from the cross section library name
+            xsID = re.search("ISO([A-Z0-9]{2})", xsLibFilePath).group(1)
         except AttributeError:
             # if glob has matched something that is not actually an ISOXX file,
             # the .group() call will fail
