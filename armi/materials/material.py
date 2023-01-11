@@ -863,11 +863,23 @@ class FuelMaterial(Material):
         m.refDens = self.refDens
         m.theoreticalDensityFrac = self.theoreticalDensityFrac
 
-        m.class1_wt_frac = self.class1_wt_frac
-        m.class1_custom_isotopics = self.class1_custom_isotopics
-        m.class2_custom_isotopics = self.class2_custom_isotopics
-        m.puFrac = self.puFrac
-        m.uFrac = self.uFrac
-        m.zrFrac = self.zrFrac
+        # Handle the case where a developer creates a FuelMaterial,
+        # but only calls the Material.__init__().
+        m.class1_wt_frac = (
+            self.class1_wt_frac if hasattr(self, "class1_wt_frac") else None
+        )
+        m.class1_custom_isotopics = (
+            self.class1_custom_isotopics
+            if hasattr(self, "class1_custom_isotopics")
+            else None
+        )
+        m.class2_custom_isotopics = (
+            self.class2_custom_isotopics
+            if hasattr(self, "class2_custom_isotopics")
+            else None
+        )
+        m.puFrac = self.puFrac if hasattr(self, "puFrac") else 0.0
+        m.uFrac = self.uFrac if hasattr(self, "uFrac") else 0.0
+        m.zrFrac = self.zrFrac if hasattr(self, "zrFrac") else 0.0
 
         return m
