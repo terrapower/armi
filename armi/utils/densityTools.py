@@ -192,7 +192,10 @@ def formatMaterialCard(
         for nuc in densities
     ):
         return []  # no valid nuclides to write
-    mCard = ["m{matNum}\n".format(matNum=matNum)]
+    if matNum > 0:
+        mCard = ["m{matNum}\n".format(matNum=matNum)]
+    else:
+        mCard = ["m{}\n"]
     for nuc, dens in sorted(densities.items()):
         # skip LFPs and Dummies.
         if isinstance(nuc, (nuclideBases.LumpNuclideBase)):
