@@ -1,7 +1,6 @@
 [MESSAGES CONTROL]
 
 # ** Reasons disabled **
-# bad-whitespace: Not well justified. Need autoformatter.
 # trailing-whitespace: Not well justified.
 # missing-param-doc: Not well justified
 # missing-type-doc: Not well justified
@@ -10,7 +9,6 @@
 # locally-disabled: It's appropriate to decide to violate pylint sometimes
 # superfluous-parens: Python 2 and 3 compatibility
 # too-many-locals: annoying
-# bad-continuation: https://github.com/ambv/black/issues/48
 # too-many-instance-attributes: Some of our classes are big and could use refactoring, but this can
 #     be a bit overzealous
 # too-many-*: ditto above
@@ -25,7 +23,6 @@
 # logging-format-interpolation: this rule seems arbitrary and useless
 # unnecessary-pass: We actually like these, particularly for abstract classes.
 disable =
-    bad-whitespace,
     trailing-whitespace,
     missing-param-doc,
     missing-type-doc,
@@ -35,7 +32,6 @@ disable =
     locally-disabled,
     superfluous-parens,
     too-many-locals,
-    bad-continuation,
     too-many-instance-attributes,
     too-many-arguments,
     too-many-statements,
@@ -92,15 +88,12 @@ good-names=o,r,g,a,_,b,c,f,i,j,k,x,y,z,s,t,n,m,p,N,D,G
 # Bad variable names which should always be refused, separated by a comma
 bad-names=foo,bar,baz,toto,tutu,tata
 
-# List of builtins function names that should not be used, separated by a comma
-bad-functions=apply,input,super
-
 [FORMAT]
 # Maximum number of characters on a single line.
 max-line-length=120
 
 [MASTER]
-unsafe-load-any-extensions=yes
+unsafe-load-any-extension=yes
 load-plugins=pylint.extensions.docparams,pylint.extensions.docstyle
 extension-pkg-whitelist=armi.reactor.composites,armi.materials,numpy,pylab,pyodbc,mpi4py.MPI,matplotlib.cm.jet,pyodbc,scipy,wx
 

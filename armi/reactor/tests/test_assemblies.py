@@ -195,7 +195,7 @@ class Assembly_TestCase(unittest.TestCase):
         self.name = "A0015"
         self.assemNum = 15
         self.height = 10
-        self.cs = settings.getMasterCs()
+        self.cs = settings.Settings()
         # Print nothing to the screen that would normally go to the log.
         runLog.setVerbosity("error")
 

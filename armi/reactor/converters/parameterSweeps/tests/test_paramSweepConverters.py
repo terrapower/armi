@@ -40,7 +40,7 @@ THIS_DIR = os.path.dirname(__file__)
 class TestParamSweepConverters(unittest.TestCase):
     def setUp(self):
         self.o, self.r = loadTestReactor(TEST_ROOT)
-        self.cs = settings.getMasterCs()
+        self.cs = self.o.cs
 
     def test_paramSweepConverter(self):
         """basic test of the param sweep converter"""

@@ -34,7 +34,7 @@ from armi.tests import mockRunLogs
 
 class TestReport(unittest.TestCase):
     def setUp(self):
-        self.test_group = data.Table(settings.getMasterCs(), "banana")
+        self.test_group = data.Table(settings.Settings(), "banana")
 
     def test_setData(self):
         report.setData("banana_1", ["sundae", "plain"])
