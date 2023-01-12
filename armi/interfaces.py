@@ -110,11 +110,6 @@ class TightCoupler:
         self._previousIterationValue = None
         self.eps = numpy.inf
 
-    def _resetParams(self):
-        self._numIters = 0
-        self._previousIterationValue = None
-        self.eps = numpy.inf
-
     def __repr__(self):
         return f"<{self.__class__.__name__}, Parameter: {self.parameter}, Convergence Criteria: {self.tolerance}, Maximum Coupled Iterations: {self.maxIters}>"
 
@@ -147,7 +142,7 @@ class TightCoupler:
         Parameters
         ----------
         val : _SUPPORTED_TYPES
-            the value to store. Is commonly equal to interface.getTightCouplingValue()
+            the most recent value for computing convergence critera. Is commonly equal to interface.getTightCouplingValue()
 
         Returns
         -------
@@ -183,9 +178,10 @@ class TightCoupler:
         if isinstance(val, (int, float)):
             self.eps = abs(val - previous)
         else:
-            if len(numpy.array(val).shape) == 1:
+            dim = self._getListDimension(val)
+            if dim == 1:  # 1D array
                 self.eps = norm(numpy.subtract(val, previous), ord=2)
-            elif len(numpy.array(val).shape) == 2:
+            elif dim == 2:  # 2D array
                 epsVec = []
                 for old, new in zip(previous, val):
                     epsVec.append(norm(numpy.subtract(old, new), ord=2))
@@ -196,10 +192,10 @@ class TightCoupler:
                 )
 
         # Check if convergence is satisfied. If so, or if reached max number of iters, then
-        # reset the state of this object by calling self.resetParams().
+        # reset the number of iterations
         converged = self.eps < self.tolerance
         if converged:
-            self._resetParams()
+            self._numIters = 0
         else:
             self._numIters += 1
             if self._numIters == self.maxIters:
@@ -207,9 +203,19 @@ class TightCoupler:
                     f"Maximum number of iterations for {self.parameter} reached without convergence!"
                     f"Prescribed convergence criteria is {self.tolerance}."
                 )
-                self._resetParams()
+                self._numIters = 0
 
         return converged
+
+    @staticmethod
+    def _getListDimension(listToCheck: list, dim: int = 1):
+        # pylint: disable=protected-access
+        for v in listToCheck:
+            if isinstance(v, list):
+                dim += 1
+                dim = TightCoupler._getListDimension(v, dim)
+            break
+        return dim
 
 
 class Interface:

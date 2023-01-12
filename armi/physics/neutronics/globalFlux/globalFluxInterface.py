@@ -249,7 +249,7 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
 
                 scaledCorePowerDistribution.append(scaledPower)
 
-            return numpy.array(scaledCorePowerDistribution)
+            return scaledCorePowerDistribution
 
         return None
 

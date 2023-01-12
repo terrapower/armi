@@ -208,7 +208,7 @@ class TestGlobalFluxInterfaceWithExecuters(unittest.TestCase):
         for a in self.r.core.getChildren():
             for b in a:
                 b.p.power = 10.0
-        self.assertIsInstance(self.gfi.getTightCouplingValue(), numpy.ndarray)
+        self.assertIsInstance(self.gfi.getTightCouplingValue(), list)
         self._setTightCouplingFalse()
 
     def _setTightCouplingTrue(self):

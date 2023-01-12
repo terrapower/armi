@@ -651,8 +651,8 @@ class Operator:  # pylint: disable=too-many-public-methods
             coupler = interface.coupler
             if coupler is not None:
                 key = f"{interface.name}: {coupler.parameter}"
-                self._convergenceSummary[key].append(coupler.eps)
                 converged.append(coupler.isConverged(interface.getTightCouplingValue()))
+                self._convergenceSummary[key].append(coupler.eps)
 
         reportingUtils.writeTightCouplingConvergenceSummary(self._convergenceSummary)
         return all(converged)

@@ -16,7 +16,6 @@
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import unittest
 import os
-from numpy import inf, array
 
 from armi import interfaces
 from armi import settings
@@ -90,15 +89,6 @@ class TestTightCoupler(unittest.TestCase):
     def test_couplerActive(self):
         self.assertIsNotNone(self.interface.coupler)
 
-    def test_resetParams(self):
-        self.interface.coupler._numIters = 5
-        self.interface.coupler._previousIterationValue = 1.0
-        self.interface.coupler.eps = 0.01
-        self.interface.coupler._resetParams()
-        self.assertEqual(self.interface.coupler._numIters, 0)
-        self.assertIsNone(self.interface.coupler._previousIterationValue)
-        self.assertEqual(self.interface.coupler.eps, inf)
-
     def test_storePreviousIterationValue(self):
         self.interface.coupler.storePreviousIterationValue(1.0)
         self.assertEqual(self.interface.coupler._previousIterationValue, 1.0)
@@ -116,15 +106,23 @@ class TestTightCoupler(unittest.TestCase):
             self.assertEqual(the_exception.error_code, 3)
 
     def test_isConverged(self):
+        """ensure TightCoupler.isConverged() works with float, 1D list, and ragged 2D list
+
+        Notes
+        -----
+        2D lists can end up being ragged as assemblies can have different number of blocks.
+        Ragged lists are easier to manage with lists as opposed to numpy.arrays,
+        namely, their dimension is preserved.
+        """
         previousValues = {
             "float": 1.0,
-            "list": [1.0, 2.0],
-            "array": array([[1, 2, 3], [1, 2, 3]]),
+            "list1D": [1.0, 2.0],
+            "list2D": [[1, 2, 3], [1, 2]],
         }
         updatedValues = {
             "float": 5.0,
-            "list": [5.0, 6.0],
-            "array": array([[5, 6, 7], [5, 6, 7]]),
+            "list1D": [5.0, 6.0],
+            "list2D": [[5, 6, 7], [5, 6]],
         }
         for previous, current in zip(previousValues.values(), updatedValues.values()):
             self.interface.coupler.storePreviousIterationValue(previous)
@@ -132,13 +130,22 @@ class TestTightCoupler(unittest.TestCase):
 
     def test_isConvergedRuntimeError(self):
         """test to ensure 3D arrays do not work"""
-        previous = array([[[1, 2, 3]], [[1, 2, 3]], [[1, 2, 3]]])
-        updatedValues = array([[[5, 6, 7]], [[5, 6, 7]], [[5, 6, 7]]])
+        previous = [[[1, 2, 3]], [[1, 2, 3]], [[1, 2, 3]]]
+        updatedValues = [[[5, 6, 7]], [[5, 6, 7]], [[5, 6, 7]]]
         self.interface.coupler.storePreviousIterationValue(previous)
         with self.assertRaises(RuntimeError) as cm:
             self.interface.coupler.isConverged(updatedValues)
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
+
+    def test_getListDimension(self):
+        # pylint: disable=no-member
+        a = [1, 2, 3]
+        self.assertEqual(interfaces.TightCoupler._getListDimension(a), 1)
+        a = [[1, 2, 3]]
+        self.assertEqual(interfaces.TightCoupler._getListDimension(a), 2)
+        a = [[[1, 2, 3]]]
+        self.assertEqual(interfaces.TightCoupler._getListDimension(a), 3)
 
 
 if __name__ == "__main__":
