@@ -66,6 +66,15 @@ class _Material_Test:
         self.assertEqual(mat.refDens, self.mat.refDens)
         self.assertEqual(mat.theoreticalDensityFrac, self.mat.theoreticalDensityFrac)
 
+    def test_cache(self):
+        self.assertEqual(len(self.mat.cached), 0)
+
+        self.mat._setCache("Emmy", "Noether")
+        self.assertEqual(len(self.mat.cached), 1)
+
+        val = self.mat._getCached("Emmy")
+        self.assertEqual(val, "Noether")
+
 
 class MaterialConstructionTests(unittest.TestCase):
     def test_material_initialization(self):
@@ -121,6 +130,11 @@ class Californium_TestCase(_Material_Test, unittest.TestCase):
 
     def test_propertyValidTemperature(self):
         self.assertEqual(len(self.mat.propertyValidTemperature), 0)
+
+    def test_porosities(self):
+        self.mat.parent = None
+        self.assertEqual(self.mat.liquidPorosity, 0.0)
+        self.assertEqual(self.mat.gasPorosity, 0.0)
 
 
 class Cesium_TestCase(_Material_Test, unittest.TestCase):

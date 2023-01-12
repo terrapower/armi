@@ -2970,9 +2970,12 @@ class Composite(ArmiObject):
         """
         paramDefs = set()
         for child in [self] + self.getChildren(deep=True, includeMaterials=True):
-            # below reads as: assigned & everything_but(SINCE_LAST_DISTRIBUTE_STATE)
-            child.p.assigned &= ~parameters.SINCE_LAST_DISTRIBUTE_STATE
+            # Materials don't have a "p" / Parameter attribute to sync
+            if hasattr(child, "p"):
+                # below reads as: assigned & everything_but(SINCE_LAST_DISTRIBUTE_STATE)
+                child.p.assigned &= ~parameters.SINCE_LAST_DISTRIBUTE_STATE
             paramDefs.add(child.p.paramDefs)
+
         for paramDef in paramDefs:
             paramDef.resetAssignmentFlag(parameters.SINCE_LAST_DISTRIBUTE_STATE)
 
