@@ -627,8 +627,20 @@ class Material:
         return rhoCp
 
     def getNuclides(self):
+        """
+        Return nuclides in the component that contains this Material.
+
+        Notes
+        -----
+        This method is the only reason Materials still have self.parent.
+        Essentially, we want to change that, but right now the logic for finding
+        nuclides in the Reactor is recursive and considers Materials first.
+        The bulk of the work in finally removing this method will come in
+        downstream repos, where users have fully embraced this method and call
+        it directly in many, many places.
+        Please do not use this method, as it is being deprecated.
+        """
         warnings.warn("Material.getNuclides is being deprecated.", DeprecationWarning)
-        # NOTE: Material still has a self.parent because of this method.
         return self.parent.getNuclides()
 
     def getTempChangeForDensityChange(
