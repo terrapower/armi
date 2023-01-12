@@ -67,6 +67,7 @@ class _Material_Test:
         self.assertEqual(mat.theoreticalDensityFrac, self.mat.theoreticalDensityFrac)
 
     def test_cache(self):
+        self.mat.clearCache()
         self.assertEqual(len(self.mat.cached), 0)
 
         self.mat._setCache("Emmy", "Noether")
