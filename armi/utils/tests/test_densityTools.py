@@ -159,6 +159,7 @@ class Test_densityTools(unittest.TestCase):
         numDens = {o16: 0.7, pu239: 1e-8, u235: 0.2, lfp35: 1e-3, dump1: 1e-4}
         matCard = densityTools.formatMaterialCard(
             numDens,
+            matNum=-1,
             minDens=1e-6,
             mcnp6Compatible=True,
             mcnpLibrary="81",
@@ -174,7 +175,6 @@ class Test_densityTools(unittest.TestCase):
         numDens = {lfp35: 0.5, dump1: 0.5}
         matCard = densityTools.formatMaterialCard(
             numDens,
-            matNum=1,
             mcnp6Compatible=False,
             mcnpLibrary=None,
         )
