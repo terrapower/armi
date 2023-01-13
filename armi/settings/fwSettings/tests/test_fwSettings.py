@@ -13,12 +13,10 @@
 # limitations under the License.
 
 """Tests for the framework settings"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import unittest
 
 import voluptuous as vol
 
-import armi
 from armi.settings import caseSettings
 
 
@@ -66,11 +64,6 @@ class TestSchema(unittest.TestCase):
             "decayConstants": {
                 "valid": [1, 1],
                 "invalid": [-1, 1],
-                "error": vol.error.AnyInvalid,
-            },
-            "decayConstants": {
-                "valid": [1, 1],
-                "invalid": (1, 1),
                 "error": vol.error.AnyInvalid,
             },
             "buGroups": {
@@ -136,15 +129,14 @@ class TestSchema(unittest.TestCase):
 
     def test_schema(self):
         # first test that a valid case goes through without error
-        for setting in self.settings.keys():
-            # breakpoint()
-            validOption = self.settings[setting]["valid"]
-            self.cs = self.cs.modified(newSettings={setting: validOption})
+        for settingName, settingVal in self.settings.items():
+            validOption = settingVal["valid"]
+            self.cs = self.cs.modified(newSettings={settingName: validOption})
 
-            invalidOption = self.settings[setting]["invalid"]
-            expectedError = self.settings[setting]["error"]
+            invalidOption = settingVal["invalid"]
+            expectedError = settingVal["error"]
             with self.assertRaises(expectedError):
-                self.cs = self.cs.modified(newSettings={setting: invalidOption})
+                self.cs = self.cs.modified(newSettings={settingName: invalidOption})
 
 
 if __name__ == "__main__":

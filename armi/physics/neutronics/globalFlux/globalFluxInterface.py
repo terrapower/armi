@@ -1166,10 +1166,11 @@ def calcReactionRates(obj, keff, lib):
     numberDensities = obj.getNumberDensities()
 
     for nucName, numberDensity in numberDensities.items():
+        if numberDensity == 0.0:
+            continue
         nucrate = {}
         for simple in RX_PARAM_NAMES:
             nucrate[simple] = 0.0
-        tot = 0.0
 
         nucMc = lib.getNuclide(nucName, obj.getMicroSuffix())
         micros = nucMc.micros
@@ -1178,7 +1179,6 @@ def calcReactionRates(obj, keff, lib):
             # dE = flux_e*dE
             dphi = numberDensity * groupFlux
 
-            tot += micros.total[g, 0] * dphi
             # absorption is fission + capture (no n2n here)
             for name in RX_ABS_MICRO_LABELS:
                 nucrate["rateAbs"] += dphi * micros[name][g]

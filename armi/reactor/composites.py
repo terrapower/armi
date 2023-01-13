@@ -898,7 +898,8 @@ class ArmiObject(metaclass=CompositeModelType):
 
         """
         nuclideNames = self._getNuclidesFromSpecifier(nucName)
-        return sum(self.getMassFracs().get(nucName, 0.0) for nucName in nuclideNames)
+        massFracs = self.getMassFracs()
+        return sum(massFracs.get(nucName, 0.0) for nucName in nuclideNames)
 
     def getMicroSuffix(self):
         raise NotImplementedError(
@@ -1275,9 +1276,6 @@ class ArmiObject(metaclass=CompositeModelType):
         ----------
         expandFissionProducts : bool (optional)
             expand the fission product number densities
-
-        nuclideNames : iterable (optional)
-            nuclide names to get number densities
 
         Returns
         -------
