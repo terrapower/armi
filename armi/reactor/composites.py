@@ -1279,9 +1279,6 @@ class ArmiObject(metaclass=CompositeModelType):
         expandFissionProducts : bool (optional)
             expand the fission product number densities
 
-        nuclideNames : iterable (optional)
-            nuclide names to get number densities
-
         Returns
         -------
         numberDensities : dict

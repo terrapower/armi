@@ -1148,6 +1148,7 @@ def calcReactionRates(obj, keff, lib):
                 # dE = flux_e*dE
                 dphi = numberDensity * groupFlux
                 nucrate["rateAbs"] += dphi * xs
+
                 if name != "fission":
                     nucrate["rateCap"] += dphi * xs
                 else:
