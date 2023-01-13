@@ -2893,6 +2893,9 @@ class Composite(ArmiObject):
             )
 
         for ci, comp in enumerate(allComps):
+            if not hasattr(comp, "_syncParameters"):
+                # materials don't have Parameters to sync
+                continue
             data = (nodeSyncData[ci] for nodeSyncData in allSyncData)
             syncCount += comp._syncParameters(  # pylint: disable=protected-access
                 data, errors
