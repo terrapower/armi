@@ -136,6 +136,50 @@ class Test_densityTools(unittest.TestCase):
         self.assertAlmostEqual(norm["U234"], 2.1502965265880334e-05)
         self.assertAlmostEqual(norm["U235"], 0.5951128604216736)
 
+    def test_formatMaterialCard(self):
+        u235 = nuclideBases.byName["U235"]
+        pu239 = nuclideBases.byName["PU239"]
+        o16 = nuclideBases.byName["O16"]
+        numDens = {o16: 0.7, pu239: 0.1, u235: 0.2}
+        matCard = densityTools.formatMaterialCard(
+            numDens,
+            matNum=1,
+            sigFigs=4,
+        )
+        refMatCard = """m1
+       8016 7.0000e-01
+      92235 2.0000e-01
+      94239 1.0000e-01
+"""
+        self.assertEqual(refMatCard, "".join(matCard))
+
+        lfp35 = nuclideBases.byName["LFP35"]
+        dump1 = nuclideBases.byName["DUMP1"]
+        o16 = nuclideBases.byName["O16"]
+        numDens = {o16: 0.7, pu239: 1e-8, u235: 0.2, lfp35: 1e-3, dump1: 1e-4}
+        matCard = densityTools.formatMaterialCard(
+            numDens,
+            minDens=1e-6,
+            mcnp6Compatible=True,
+            mcnpLibrary="81",
+        )
+        refMatCard = """m{}
+       8016 7.00000000e-01
+      92235 2.00000000e-01
+      94239 1.00000000e-06
+      nlib=81c
+"""
+        self.assertEqual(refMatCard, "".join(matCard))
+
+        numDens = {lfp35: 0.5, dump1: 0.5}
+        matCard = densityTools.formatMaterialCard(
+            numDens,
+            matNum=1,
+            mcnp6Compatible=False,
+            mcnpLibrary=None,
+        )
+        refMatCard = []
+        self.assertEqual(refMatCard, matCard)
 
 if __name__ == "__main__":
     unittest.main()
