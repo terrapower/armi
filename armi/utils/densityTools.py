@@ -192,7 +192,7 @@ def formatMaterialCard(
         for nuc in densities
     ):
         return []  # no valid nuclides to write
-    if matNum > 0:
+    if matNum >= 0:
         mCard = ["m{matNum}\n".format(matNum=matNum)]
     else:
         mCard = ["m{}\n"]
