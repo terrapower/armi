@@ -52,6 +52,7 @@ class B4C(material.Material):
 
     def updateTD(self, td: float) -> None:
         self.theoreticalDensityFrac = td
+        self.clearCache()
 
     def setNewMassFracsFromMassEnrich(self, massEnrichment):
         r"""
