@@ -139,13 +139,12 @@ class TestTightCoupler(unittest.TestCase):
             self.assertEqual(the_exception.error_code, 3)
 
     def test_getListDimension(self):
-        # pylint: disable=no-member
         a = [1, 2, 3]
-        self.assertEqual(interfaces.TightCoupler._getListDimension(a), 1)
+        self.assertEqual(interfaces.TightCoupler.getListDimension(a), 1)
         a = [[1, 2, 3]]
-        self.assertEqual(interfaces.TightCoupler._getListDimension(a), 2)
+        self.assertEqual(interfaces.TightCoupler.getListDimension(a), 2)
         a = [[[1, 2, 3]]]
-        self.assertEqual(interfaces.TightCoupler._getListDimension(a), 3)
+        self.assertEqual(interfaces.TightCoupler.getListDimension(a), 3)
 
 
 if __name__ == "__main__":

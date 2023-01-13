@@ -178,7 +178,7 @@ class TightCoupler:
         if isinstance(val, (int, float)):
             self.eps = abs(val - previous)
         else:
-            dim = self._getListDimension(val)
+            dim = self.getListDimension(val)
             if dim == 1:  # 1D array
                 self.eps = norm(numpy.subtract(val, previous), ord=2)
             elif dim == 2:  # 2D array
@@ -208,12 +208,25 @@ class TightCoupler:
         return converged
 
     @staticmethod
-    def _getListDimension(listToCheck: list, dim: int = 1):
-        # pylint: disable=protected-access
+    def getListDimension(listToCheck: list, dim: int = 1) -> int:
+        """return the dimension of a python list
+
+        Parameters
+        ----------
+        listToCheck: list
+            the supplied python list to have its dimension returned
+        dim: int, optional
+            the dimension of the list
+
+        Returns
+        -------
+        dim, int
+            the dimension of the list. Typically 1, 2, or 3 but can be arbitrary order, N.
+        """
         for v in listToCheck:
             if isinstance(v, list):
                 dim += 1
-                dim = TightCoupler._getListDimension(v, dim)
+                dim = TightCoupler.getListDimension(v, dim)
             break
         return dim
 
