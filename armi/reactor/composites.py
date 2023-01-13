@@ -2863,7 +2863,7 @@ class Composite(ArmiObject):
         startTime = timeit.default_timer()
         # sync parameters...
         allComps = [self] + self.getChildren(deep=True, includeMaterials=True)
-        sendBuf = [c.p.getSyncData() for c in allComps]
+        sendBuf = [c.p.getSyncData() for c in allComps if hasattr(c, "p")]
         runLog.debug("syncMpiState has {} comps".format(len(allComps)))
 
         try:
