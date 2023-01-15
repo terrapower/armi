@@ -60,7 +60,7 @@ found in [#touranarmi]_.
 
 Quick start
 -----------
-Before starting, you need to have `Python <https://www.python.org/downloads/>`_ 3.6+ on
+Before starting, you need to have `Python <https://www.python.org/downloads/>`_ 3.7+ on
 Windows or Linux.
 
 Get the ARMI code, install the prerequisites, and fire up the launcher with the following
