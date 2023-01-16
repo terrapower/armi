@@ -516,7 +516,7 @@ class ParameterDefinitionCollection:
         return self._paramDefDict[name, compositeType.paramCollectionType]
 
     def byNameAndCollectionType(self, name, collectionType):
-        r"""Get a :py:class:`Parameter` by compositeType and name."""
+        r"""Get a :py:class:`Parameter` by collectionType and name."""
         return self._paramDefDict[name, collectionType]
 
     @property

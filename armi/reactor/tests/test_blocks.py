@@ -23,6 +23,7 @@ import numpy
 from numpy.testing import assert_allclose
 
 from armi import materials, runLog, settings, tests
+from armi.reactor.components import basicShapes
 from armi.nucDirectory import nucDir, nuclideBases
 from armi.nuclearDataIO.cccc import isotxs
 from armi.physics.neutronics import NEUTRON, GAMMA
@@ -231,6 +232,7 @@ def loadTestBlock(cold=True):
 
     block.setHeight(16.0)
 
+    block.autoCreateSpatialGrids()
     assembly.add(block)
     r.core.add(assembly)
     return block
@@ -407,7 +409,7 @@ class Block_TestCase(unittest.TestCase):
         self.assertFalse(self.block.hasFlags(Flags.IGNITER | Flags.FUEL))
 
     def test_duplicate(self):
-        Block2 = copy.deepcopy(self.block)
+        Block2 = blocks.Block._createHomogenizedCopy(self.block)
         originalComponents = self.block.getComponents()
         newComponents = Block2.getComponents()
         for c1, c2 in zip(originalComponents, newComponents):
@@ -440,6 +442,55 @@ class Block_TestCase(unittest.TestCase):
         cur = Block2.getHeight()
         places = 6
         self.assertAlmostEqual(ref, cur, places=places)
+
+        self.assertEqual(self.block.p.flags, Block2.p.flags)
+
+    def test_homogenizedMixture(self):
+        args = [False, True]  # pinSpatialLocator argument
+        expectedShapes = [
+            [basicShapes.Hexagon],
+            [basicShapes.Hexagon, basicShapes.Circle],
+        ]
+
+        for arg, shapes in zip(args, expectedShapes):
+            homogBlock = self.block._createHomogenizedCopy(pinSpatialLocators=arg)
+            for shapeType in shapes:
+                for c in homogBlock.getComponents():
+                    if isinstance(c, shapeType):
+                        print(c)
+                        break
+                else:
+                    # didn't find the homogenized hex in the block copy
+                    self.assertTrue(
+                        False, f"{self.block} does not have a {shapeType} component!"
+                    )
+            if arg:
+                # check that homogenized block has correct pin coordinates
+                self.assertEqual(self.block.getNumPins(), homogBlock.getNumPins())
+                pinCoords = self.block.getPinCoordinates()
+                homogPinCoords = homogBlock.getPinCoordinates()
+                for refXYZ, homogXYZ in zip(list(pinCoords), list(homogPinCoords)):
+                    self.assertListEqual(list(refXYZ), list(homogXYZ))
+
+            cur = homogBlock.getMass()
+            self.assertAlmostEqual(self.block.getMass(), homogBlock.getMass())
+
+            self.assertEqual(homogBlock.getType(), self.block.getType())
+            self.assertEqual(homogBlock.p.flags, self.block.p.flags)
+            self.assertEqual(homogBlock.macros, self.block.macros)
+            self.assertEqual(
+                homogBlock._lumpedFissionProducts, self.block._lumpedFissionProducts
+            )
+
+            ref = self.block.getArea()
+            cur = homogBlock.getArea()
+            places = 6
+            self.assertAlmostEqual(ref, cur, places=places)
+
+            ref = self.block.getHeight()
+            cur = homogBlock.getHeight()
+            places = 6
+            self.assertAlmostEqual(ref, cur, places=places)
 
     def test_getXsType(self):
         self.cs = settings.Settings()
@@ -1586,7 +1637,7 @@ class Block_TestCase(unittest.TestCase):
     def test_getReactionRates(self):
         block = blocks.HexBlock("HexBlock")
         block.setType("defaultType")
-        comp = components.basicShapes.Hexagon("hexagon", "MOX", 1, 1, 1)
+        comp = basicShapes.Hexagon("hexagon", "MOX", 1, 1, 1)
         block.add(comp)
         block.setHeight(1)
         block.p.xsType = "A"
