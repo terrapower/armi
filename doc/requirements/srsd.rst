@@ -201,7 +201,7 @@ Many analysis tasks require high performance computing (HPC), and the operator p
 
 .. req:: The operator package shall allow physics coupling between analysis plugins.
    :id: REQ_OPERATOR_COUPLING
-   :status: needs implementation, needs test
+   :status: implemented, needs more tests
 
 For coupled physics (e.g. neutronics depends on thermal hydraulics depends on neutronics), the operator package shall allow loose and/or tight coupling. Loose coupling is using the values from the previous timestep to update the next timestep. Tight is an operator-splitting iteration until convergence between one or more plugins.
 
