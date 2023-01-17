@@ -1245,12 +1245,14 @@ class ArmiObject(metaclass=CompositeModelType):
             # there are no children so no volume or number density
             return [0.0] * len(nucNames)
 
-        nucDensForEachComp = numpy.array(
-            [
-                [c.getNumberDensity(nuc) for nuc in nucNames]
-                for c in self.iterComponents()
-            ]
-        )  # c x n
+        densListForEachComp = []
+        for c in self.iterComponents():
+            numberDensityDict = c.getNumberDensities()
+            densListForEachComp.append(
+                [numberDensityDict.get(nuc, 0.0) for nuc in nucNames]
+            )
+        nucDensForEachComp = numpy.array(densListForEachComp)  # c x n
+
         return volumes.dot(nucDensForEachComp) / totalVol
 
     def _getNdensHelper(self):
@@ -1272,9 +1274,6 @@ class ArmiObject(metaclass=CompositeModelType):
         ----------
         expandFissionProducts : bool (optional)
             expand the fission product number densities
-
-        nuclideNames : iterable (optional)
-            nuclide names to get number densities
 
         Returns
         -------

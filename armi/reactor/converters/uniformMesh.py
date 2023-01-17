@@ -72,12 +72,17 @@ from armi.reactor.converters.geometryConverters import GeometryConverter
 from armi.reactor import parameters
 from armi.reactor.reactors import Reactor
 
+HEAVY_METAL_PARAMS = ["molesHmBOL", "massHmBOL"]
+
 
 def converterFactory(globalFluxOptions):
     if globalFluxOptions.photons:
-        return GammaUniformMeshConverter
+        return GammaUniformMeshConverter(globalFluxOptions.cs)
     else:
-        return NeutronicsUniformMeshConverter
+        return NeutronicsUniformMeshConverter(
+            globalFluxOptions.cs,
+            calcReactionRates=globalFluxOptions.calcReactionRatesOnMeshConversion,
+        )
 
 
 class UniformMeshGeometryConverter(GeometryConverter):
@@ -127,8 +132,9 @@ class UniformMeshGeometryConverter(GeometryConverter):
         GeometryConverter.__init__(self, cs)
         self._uniformMesh = None
         self.calcReactionRates = False
-        self.reactorParamNames = []
-        self.blockParamNames = []
+        self.includePinCoordinates = False
+
+        self.paramMapper = None
 
         # These dictionaries represent back-up data from the source reactor
         # that can be recovered if the data is not being brought back from
@@ -170,7 +176,8 @@ class UniformMeshGeometryConverter(GeometryConverter):
                 homogAssem = self.makeAssemWithUniformMesh(
                     assem,
                     self.convReactor.core.p.axialMesh[1:],
-                    self.blockParamNames,
+                    paramMapper=self.paramMapper,
+                    includePinCoordinates=self.includePinCoordinates,
                 )
                 homogAssem.spatialLocator = assem.spatialLocator
 
@@ -196,7 +203,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
             self._computeAverageAxialMesh()
             self._buildAllUniformAssemblies()
             self._mapStateFromReactorToOther(
-                self._sourceReactor, self.convReactor, mapNumberDensities=False
+                self._sourceReactor, self.convReactor, mapBlockParams=False
             )
             self._newAssembliesAdded = self.convReactor.core.getAssemblies()
 
@@ -265,7 +272,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
                         self.setAssemblyStateFromOverlaps(
                             assem,
                             storedAssem,
-                            self.blockParamNames,
+                            self.paramMapper,
                             mapNumberDensities=False,
                             calcReactionRates=self.calcReactionRates,
                         )
@@ -295,9 +302,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
             # parameters that did not change.
             self._cachedReactorCoreParamData = {}
             self._clearStateOnReactor(self._sourceReactor, cache=True)
-            self._mapStateFromReactorToOther(
-                self.convReactor, self._sourceReactor, mapNumberDensities=False
-            )
+            self._mapStateFromReactorToOther(self.convReactor, self._sourceReactor)
 
             # We want to map the converted reactor core's library to the source reactor
             # because in some instances this has changed (i.e., when generating cross sections).
@@ -307,14 +312,14 @@ class UniformMeshGeometryConverter(GeometryConverter):
         runLog.extra(
             f"Parameter remapping time: {completeEndTime-completeStartTime} seconds"
         )
-        self.reset()
 
     @staticmethod
     def makeAssemWithUniformMesh(
         sourceAssem,
         newMesh,
-        blockParamNames=None,
+        paramMapper=None,
         mapNumberDensities=True,
+        includePinCoordinates=False,
     ):
         """
         Build new assembly based on a source assembly but apply the uniform mesh.
@@ -334,9 +339,8 @@ class UniformMeshGeometryConverter(GeometryConverter):
             A list of the new axial mesh coordinates of the blocks. Note that these mesh
             coordinates are in cm and should represent the top axial mesh coordinates of
             the new blocks.
-        blockParamNames : List[str], optional
-            A list of block parameter names to map between the source assembly and the newly
-            created assembly with the provided `newMesh`.
+        paramMapper : ParamMapper
+            Object that contains list of parameters to be mapped and has methods for mapping
         mapNumberDensities : bool, optional
             If True, number densities will be mapped from the source assembly to the new assembly.
             This is True by default, but this can be set to False to only map block-level parameters if
@@ -356,8 +360,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
         runLog.debug(f"Creating a uniform mesh of {newAssem}")
         bottom = 0.0
 
-        if blockParamNames is None:
-            blockParamNames = []
         for topMeshPoint in newMesh:
             overlappingBlockInfo = sourceAssem.getBlocksBetweenElevations(
                 bottom, topMeshPoint
@@ -400,13 +402,13 @@ class UniformMeshGeometryConverter(GeometryConverter):
             if len(typeHeight) > 1:
                 if sourceBlock:
                     totalHeight = sum(typeHeight.values())
-                    runLog.extra(
+                    runLog.debug(
                         f"Multiple XS types exist between {bottom} and {topMeshPoint}. "
                         f"Using the XS type from the largest region, {xsType}"
                     )
                     for xs, h in typeHeight.items():
                         heightFrac = h / totalHeight
-                        runLog.extra(f"XSType {xs}: {heightFrac:.4f}")
+                        runLog.debug(f"XSType {xs}: {heightFrac:.4f}")
 
             # If no blocks meet the FUEL or CONTROL criteria above, or there is only one
             # XS type present, just select the first block as the source block and use
@@ -415,7 +417,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
                 sourceBlock = blocks[0]
                 xsType = blocks[0].p.xsType
 
-            block = copy.deepcopy(sourceBlock)
+            block = sourceBlock._createHomogenizedCopy(includePinCoordinates)
             block.p.xsType = xsType
             block.setHeight(topMeshPoint - bottom)
             block.p.axMesh = 1
@@ -426,7 +428,10 @@ class UniformMeshGeometryConverter(GeometryConverter):
         newAssem.calculateZCoords()
 
         UniformMeshGeometryConverter.setAssemblyStateFromOverlaps(
-            sourceAssem, newAssem, blockParamNames, mapNumberDensities
+            sourceAssem,
+            newAssem,
+            paramMapper,
+            mapNumberDensities,
         )
         return newAssem
 
@@ -434,7 +439,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
     def setAssemblyStateFromOverlaps(
         sourceAssembly,
         destinationAssembly,
-        blockParamNames,
+        paramMapper,
         mapNumberDensities=False,
         calcReactionRates=False,
     ):
@@ -449,15 +454,22 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
         which can be solved piecewise for z-coordinates along the source blocks.
 
+        Notes
+        -----
+        * If the parameter is volume integrated (e.g., flux, linear power)
+          then calculate the fractional contribution from the source block.
+        * If the parameter is not volume integrated (e.g., volumetric reaction rate)
+          then calculate the fraction contribution on the destination block.
+          This smears the parameter over the destination block.
+
         Parameters
         ----------
         sourceAssembly : Assembly
             assem that has the state
         destinationAssembly : Assembly
             assem that has is getting the state from sourceAssembly
-        blockParamNames : List[str]
-            A list of block parameter names to map between the source assembly and
-            the destination assembly.
+        paramMapper : ParamMapper
+            Object that contains list of parameters to be mapped and has methods for mapping
         mapNumberDensities : bool, optional
             If True, number densities will be mapped from the source assembly to the destination assembly.
             This is True by default, but this can be set to False to only map block-level parameters if
@@ -476,12 +488,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
         setNumberDensitiesFromOverlaps : does this but does smarter caching for number densities.
         """
 
-        # The destination assembly is the assembly that the results are being mapped to
-        # whereas the source assembly is the assembly that is from the uniform model. This
-        # loop iterates over each block in the destination assembly and determines the mesh
-        # coordinates that the uniform mesh (source assembly) will be mapped to.
         for destBlock in destinationAssembly:
-
             zLower = destBlock.p.zbottom
             zUpper = destBlock.p.ztop
             destinationBlockHeight = destBlock.getHeight()
@@ -501,67 +508,59 @@ class UniformMeshGeometryConverter(GeometryConverter):
                     f"be reported to the developers."
                 )
 
+            if mapNumberDensities:
+                setNumberDensitiesFromOverlaps(destBlock, sourceBlocksInfo)
+
             # Iterate over each of the blocks that were found in the uniform mesh
             # source assembly within the lower and upper bounds of the destination
             # block and perform the parameter mapping.
-            updatedDestVals = collections.defaultdict(float)
+            if paramMapper is not None:
+                updatedDestVals = collections.defaultdict(float)
+                for sourceBlock, sourceBlockOverlapHeight in sourceBlocksInfo:
+                    sourceBlockVals = paramMapper.paramGetter(
+                        sourceBlock,
+                        paramMapper.blockParamNames,
+                    )
+                    sourceBlockHeight = sourceBlock.getHeight()
 
-            if mapNumberDensities:
-                setNumberDensitiesFromOverlaps(destBlock, sourceBlocksInfo)
-            for sourceBlock, sourceBlockOverlapHeight in sourceBlocksInfo:
-                sourceBlockVals = BlockParamMapper.paramGetter(
-                    sourceBlock,
-                    blockParamNames,
+                    for paramName, sourceBlockVal in zip(
+                        paramMapper.blockParamNames, sourceBlockVals
+                    ):
+                        if sourceBlockVal is None:
+                            continue
+                        if paramMapper.isVolIntegrated[paramName]:
+                            denominator = sourceBlockHeight
+                        else:
+                            denominator = destinationBlockHeight
+                        integrationFactor = sourceBlockOverlapHeight / denominator
+                        updatedDestVals[paramName] += sourceBlockVal * integrationFactor
+
+                paramMapper.paramSetter(
+                    destBlock, updatedDestVals.values(), updatedDestVals.keys()
                 )
-                sourceBlockHeight = sourceBlock.getHeight()
 
-                for paramName, sourceBlockVal in zip(blockParamNames, sourceBlockVals):
-                    # The value can be `None` if it has not been set yet. In this case,
-                    # the mapping should be skipped.
-                    if sourceBlockVal is None:
-                        continue
+        # If requested, the reaction rates will be calculated based on the
+        # mapped neutron flux and the XS library.
+        if calcReactionRates:
+            if paramMapper is None:
+                runLog.warning(
+                    f"Reaction rates requested for {destinationAssembly}, but no ParamMapper "
+                    "was provided to setAssemblyStateFromOverlaps(). Reaction rates calculated "
+                    "will reflect the intended result without new parameter values being mapped in."
+                )
+            core = sourceAssembly.getAncestor(lambda c: isinstance(c, Core))
+            if core is not None:
+                UniformMeshGeometryConverter._calculateReactionRates(
+                    lib=core.lib, keff=core.p.keff, assem=destinationAssembly
+                )
+            else:
+                runLog.warning(
+                    f"Reaction rates requested for {destinationAssembly}, but no core object "
+                    "exists. This calculation will be skipped.",
+                    single=True,
+                    label="Block reaction rate calculation skipped due to insufficient multi-group flux data.",
+                )
 
-                    # Determine if the parameter is volumed integrated or not.
-                    isVolIntegrated = sourceBlock.p.paramDefs[paramName].atLocation(
-                        parameters.ParamLocation.VOLUME_INTEGRATED
-                    )
-
-                    # If the parameter is volume integrated (e.g., flux, linear power)
-                    # then calculate the fractional contribution from the source block.
-                    if isVolIntegrated:
-                        integrationFactor = sourceBlockOverlapHeight / sourceBlockHeight
-
-                    # If the parameter is not volume integrated (e.g., volumetric reaction rate)
-                    # then calculate the fraction contribution on the destination block.
-                    # This smears the parameter over the destination block.
-                    else:
-                        integrationFactor = (
-                            sourceBlockOverlapHeight / destinationBlockHeight
-                        )
-
-                    updatedDestVals[paramName] += sourceBlockVal * integrationFactor
-
-            BlockParamMapper.paramSetter(
-                destBlock, updatedDestVals.values(), updatedDestVals.keys()
-            )
-
-            # If requested, the reaction rates will be calculated based on the
-            # mapped neutron flux and the XS library.
-            if calcReactionRates:
-                core = sourceAssembly.getAncestor(lambda c: isinstance(c, Core))
-                if core is not None:
-                    UniformMeshGeometryConverter._calculateReactionRates(
-                        lib=core.lib, keff=core.p.keff, assem=destinationAssembly
-                    )
-                else:
-                    runLog.warning(
-                        f"Reaction rates requested for {destinationAssembly}, but no core object exists. This calculation "
-                        "will be skipped.",
-                        single=True,
-                        label="Block reaction rate calculation skipped due to insufficient multi-group flux data.",
-                    )
-
-    @staticmethod
     def clearStateOnAssemblies(assems, blockParamNames=None, cache=True):
         """
         Clears the parameter state of blocks for a list of assemblies.
@@ -581,14 +580,19 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
         cachedBlockParamData = collections.defaultdict(dict)
 
+        if not assems:
+            return cachedBlockParamData
+
         blocks = []
         for a in assems:
             blocks.extend(a.getBlocks())
-        for b in blocks:
-            for paramName in blockParamNames:
+        firstBlock = blocks[0]
+        for paramName in blockParamNames:
+            defaultValue = firstBlock.p.pDefs[paramName].default
+            for b in blocks:
                 if cache:
                     cachedBlockParamData[b][paramName] = b.p[paramName]
-                b.p[paramName] = b.p.pDefs[paramName].default
+                b.p[paramName] = defaultValue
 
         return cachedBlockParamData
 
@@ -630,8 +634,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
     def reset(self):
         """Clear out stored attributes and reset the global assembly number."""
-        self.reactorParamNames = []
-        self.blockParamNames = []
         self._cachedReactorCoreParamData = {}
         super().reset()
 
@@ -646,17 +648,21 @@ class UniformMeshGeometryConverter(GeometryConverter):
         direction are defined as a class attribute. New options can be created by extending
         the base class with different class attributes for parameters to map, and applying
         special modifications to these categorized lists with the `_setParamsToUpdate` method.
-        The base class is meant to be extended, so this method only initializes the empty
-        lists and does not perform any significant function.
+
+        This base class `_setParamsToUpdate()` method should not be called, so this raises a
+        NotImplementedError.
 
         Parameters
         ----------
         direction : str
             "in" or "out". The direction of mapping; "in" to the uniform mesh assembly, or "out" of it.
             Different parameters are mapped in each direction.
+
+        Raises
+        ------
+        NotImplementedError
         """
-        self.reactorParamNames = []
-        self.blockParamNames = []
+        raise NotImplementedError
 
     def _checkConversion(self):
         """Perform checks to ensure conversion occurred properly."""
@@ -707,7 +713,10 @@ class UniformMeshGeometryConverter(GeometryConverter):
         )
         for sourceAssem in self._sourceReactor.core:
             newAssem = self.makeAssemWithUniformMesh(
-                sourceAssem, self._uniformMesh, self.blockParamNames
+                sourceAssem,
+                self._uniformMesh,
+                paramMapper=self.paramMapper,
+                includePinCoordinates=self.includePinCoordinates,
             )
             src = sourceAssem.spatialLocator
             newLoc = self.convReactor.core.spatialGrid[src.i, src.j, 0]
@@ -720,22 +729,52 @@ class UniformMeshGeometryConverter(GeometryConverter):
         The summations should start at zero but will happen for all overlaps.
         """
         runLog.debug("Clearing params from source reactor that will be converted.")
-        for rp in self.reactorParamNames:
+        for rp in self.paramMapper.reactorParamNames:
             if cache:
                 self._cachedReactorCoreParamData[rp] = reactor.core.p[rp]
             reactor.core.p[rp] = 0.0
 
     def _mapStateFromReactorToOther(
-        self, sourceReactor, destReactor, mapNumberDensities=False
+        self, sourceReactor, destReactor, mapNumberDensities=False, mapBlockParams=True
     ):
         """
         Map parameters from one reactor to another.
 
         Notes
         -----
-        This can be implemented in sub-classes to map specific reactor and assembly data.
+        This is a basic parameter mapping routine that can be used by most sub-classes.
+        If special mapping logic is required, this method can be defined on sub-classes as necessary.
         """
-        pass
+
+        # Map reactor core parameters
+        for paramName in self.paramMapper.reactorParamNames:
+            # Check if the source reactor has a value assigned for this
+            # parameter and if so, then apply it. Otherwise, revert back to
+            # the original value.
+            if (
+                sourceReactor.core.p[paramName]
+                or paramName not in self._cachedReactorCoreParamData
+            ):
+                val = sourceReactor.core.p[paramName]
+            else:
+                val = self._cachedReactorCoreParamData[paramName]
+            destReactor.core.p[paramName] = val
+
+        if mapBlockParams:
+            # Map block parameters
+            for aSource in sourceReactor.core:
+                aDest = destReactor.core.getAssemblyByName(aSource.getName())
+                UniformMeshGeometryConverter.setAssemblyStateFromOverlaps(
+                    aSource,
+                    aDest,
+                    self.paramMapper,
+                    mapNumberDensities,
+                    calcReactionRates=self.calcReactionRates,
+                )
+
+        # Clear the cached data after it has been mapped to prevent issues with
+        # holding on to block data long-term.
+        self._cachedReactorCoreParamData = {}
 
     @staticmethod
     def _calculateReactionRates(lib, keff, assem):
@@ -832,10 +871,11 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
             "in" or "out". The direction of mapping; "in" to the uniform mesh assembly, or "out" of it.
             Different parameters are mapped in each direction.
         """
-        UniformMeshGeometryConverter._setParamsToUpdate(self, direction)
+        reactorParamNames = []
+        blockParamNames = []
 
         for category in self.reactorParamMappingCategories[direction]:
-            self.reactorParamNames.extend(
+            reactorParamNames.extend(
                 self._sourceReactor.core.p.paramDefs.inCategory(category).names
             )
         b = self._sourceReactor.core.getFirstBlock()
@@ -846,55 +886,21 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
         for category in excludedCategories:
             excludedParamNames.extend(b.p.paramDefs.inCategory(category).names)
         for category in self.blockParamMappingCategories[direction]:
-            self.blockParamNames.extend(
+            blockParamNames.extend(
                 [
                     name
                     for name in b.p.paramDefs.inCategory(category).names
                     if not name in excludedParamNames
                 ]
             )
+        if direction == "in":
+            # initial heavy metal masses are needed to calculate burnup in MWd/kg
+            blockParamNames.extend(HEAVY_METAL_PARAMS)
 
-    def _mapStateFromReactorToOther(
-        self, sourceReactor, destReactor, mapNumberDensities=False
-    ):
-        UniformMeshGeometryConverter._mapStateFromReactorToOther(
-            self,
-            sourceReactor,
-            destReactor,
-            mapNumberDensities,
-        )
-
-        # Map reactor core parameters
-        for paramName in self.reactorParamNames:
-            # Check if the source reactor has a value assigned for this
-            # parameter and if so, then apply it. Otherwise, revert back to
-            # the original value.
-            if (
-                sourceReactor.core.p[paramName]
-                or paramName not in self._cachedReactorCoreParamData
-            ):
-                val = sourceReactor.core.p[paramName]
-            else:
-                val = self._cachedReactorCoreParamData[paramName]
-            destReactor.core.p[paramName] = val
-
-        # Map block parameters
-        for aSource in sourceReactor.core:
-            aDest = destReactor.core.getAssemblyByName(aSource.getName())
-            UniformMeshGeometryConverter.setAssemblyStateFromOverlaps(
-                aSource,
-                aDest,
-                self.blockParamNames,
-                mapNumberDensities,
-                calcReactionRates=self.calcReactionRates,
-            )
-
-        # Clear the cached data after it has been mapped to prevent issues with
-        # holding on to block data long-term.
-        self._cachedReactorCoreParamData = {}
+        self.paramMapper = ParamMapper(reactorParamNames, blockParamNames, b)
 
 
-class GammaUniformMeshConverter(NeutronicsUniformMeshConverter):
+class GammaUniformMeshConverter(UniformMeshGeometryConverter):
     """
     A uniform mesh converter that specifically maps gamma parameters.
 
@@ -950,10 +956,11 @@ class GammaUniformMeshConverter(NeutronicsUniformMeshConverter):
             "in" or "out". The direction of mapping; "in" to the uniform mesh assembly, or "out" of it.
             Different parameters are mapped in each direction.
         """
-        UniformMeshGeometryConverter._setParamsToUpdate(self, direction)
+        reactorParamNames = []
+        blockParamNames = []
 
         for category in self.reactorParamMappingCategories[direction]:
-            self.reactorParamNames.extend(
+            reactorParamNames.extend(
                 self._sourceReactor.core.p.paramDefs.inCategory(category).names
             )
         b = self._sourceReactor.core.getFirstBlock()
@@ -962,7 +969,7 @@ class GammaUniformMeshConverter(NeutronicsUniformMeshConverter):
         else:
             excludeList = b.p.paramDefs.inCategory(parameters.Category.gamma).names
         for category in self.blockParamMappingCategories[direction]:
-            self.blockParamNames.extend(
+            blockParamNames.extend(
                 [
                     name
                     for name in b.p.paramDefs.inCategory(category).names
@@ -970,13 +977,39 @@ class GammaUniformMeshConverter(NeutronicsUniformMeshConverter):
                 ]
             )
 
+        self.paramMapper = ParamMapper(reactorParamNames, blockParamNames, b)
 
-class BlockParamMapper:
+
+class ParamMapper:
     """
-    Namespace for parameter setters/getters that can be used when
+    Utility for parameter setters/getters that can be used when
     transferring data from one assembly to another during the mesh
-    conversion process.
+    conversion process. Stores some data like parameter defaults and
+    properties to save effort of accessing paramDefs many times for
+    the same data.
     """
+
+    def __init__(self, reactorParamNames, blockParamNames, b):
+        """
+        Initialize the list of parameter defaults
+
+        The ParameterDefinitionCollection lookup is very slow, so this we do it once
+        and store it as a hashed list.
+        """
+        self.paramDefaults = {
+            paramName: b.p.pDefs[paramName].default for paramName in blockParamNames
+        }
+
+        # Determine which parameters are volume integrated
+        self.isVolIntegrated = {
+            paramName: b.p.paramDefs[paramName].atLocation(
+                parameters.ParamLocation.VOLUME_INTEGRATED
+            )
+            for paramName in blockParamNames
+        }
+
+        self.reactorParamNames = reactorParamNames
+        self.blockParamNames = blockParamNames
 
     @staticmethod
     def paramSetter(block, vals, paramNames):
@@ -987,17 +1020,17 @@ class BlockParamMapper:
                 continue
 
             if isinstance(val, list) or isinstance(val, numpy.ndarray):
-                BlockParamMapper._arrayParamSetter(block, [val], [paramName])
+                ParamMapper._arrayParamSetter(block, [val], [paramName])
             else:
-                BlockParamMapper._scalarParamSetter(block, [val], [paramName])
+                ParamMapper._scalarParamSetter(block, [val], [paramName])
 
-    @staticmethod
-    def paramGetter(block, paramNames):
+    def paramGetter(self, block, paramNames):
         """Returns block parameter values as an array in the order of the parameter names given."""
         paramVals = []
         for paramName in paramNames:
             val = block.p[paramName]
-            valType = type(block.p.pDefs[paramName].default)
+            defaultValue = self.paramDefaults[paramName]
+            valType = type(defaultValue)
             # Array / list parameters can be have values that are `None`, lists, or numpy arrays. This first
             # checks if the value type is any of these and if so, the block-level parameter is treated as an
             # array.
@@ -1012,8 +1045,8 @@ class BlockParamMapper:
                     paramVals.append(numpy.array(val))
             # Otherwise, the parameter is treated as a scalar, like a float/string/integer.
             else:
-                if val == block.p.pDefs[paramName].default:
-                    paramVals.append(block.p.pDefs[paramName].default)
+                if val == defaultValue:
+                    paramVals.append(defaultValue)
                 else:
                     paramVals.append(val)
 
@@ -1047,16 +1080,14 @@ def setNumberDensitiesFromOverlaps(block, overlappingBlockInfo):
 
         N^{\prime} =  \sum_i N_i \frac{h_i}{H}
     """
-    totalDensities = {}
+    totalDensities = collections.defaultdict(float)
     block.clearNumberDensities()
     blockHeightInCm = block.getHeight()
     for overlappingBlock, overlappingHeightInCm in overlappingBlockInfo:
+        heightScaling = overlappingHeightInCm / blockHeightInCm
         for nucName, numberDensity in overlappingBlock.getNumberDensities().items():
-            totalDensities[nucName] = (
-                totalDensities.get(nucName, 0.0)
-                + numberDensity * overlappingHeightInCm / blockHeightInCm
-            )
-    block.setNumberDensities(totalDensities)
+            totalDensities[nucName] += numberDensity * heightScaling
+    block.setNumberDensities(dict(totalDensities))
     # Set the volume of each component in the block to `None` so that the
     # volume of each component is recomputed.
     for c in block:

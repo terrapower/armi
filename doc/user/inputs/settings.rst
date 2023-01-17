@@ -157,14 +157,16 @@ in power, length, and uptime.
 The history is restricted, however, to each cycle having a constant power, to
 each cycle having the same number of burnup nodes, and to those burnup nodes being
 evenly spaced within each cycle.
-An example simple cycle history might look like::
+An example simple cycle history might look like
 
-    power: 1000000
-    nCycles: 3
-    burnSteps: 2
-    cycleLengths: [100, R2]
-    powerFractions: [1.0, 0.5, 1.0]
-    availabilityFactors: [0.9, 0.3, 0.93]
+.. code-block:: yaml
+
+       power: 1000000
+       nCycles: 3
+       burnSteps: 2
+       cycleLengths: [100, R2]
+       powerFractions: [1.0, 0.5, 1.0]
+       availabilityFactors: [0.9, 0.3, 0.93]
 
 Note the use of the special shorthand list notation, where repeated values in a list can be specified using an "R" followed by the number of times the value is to be repeated.
 
@@ -187,24 +189,26 @@ For each cycle, an entry to the ``cycles`` list is made with the following optio
     * ``cumulative days``, ``step days``, or ``burn steps`` + ``cycle length``
     * ``availability factor``
 
-An example detailed cycle history employing all of these fields could look like::
+An example detailed cycle history employing all of these fields could look like
 
-    power: 1000000
-    nCycles: 4
-    cycles: 
-      - name: A
-        step days: [1, 1, 98]
-        power fractions: [0.1, 0.2, 1]
-        availability factor: 0.1
-      - name: B
-        cumulative days: [2, 72, 78, 86]
-        power fractions: [0.2, 1.0, 0.95, 0.93]
-      - name: C
-        step days: [5, R5]
-        power fractions: [1, R5]
-      - cycle length: 100
-        burn steps: 2
-        availability factor: 0.9
+.. code-block:: yaml
+
+       power: 1000000
+       nCycles: 4
+       cycles:
+         - name: A
+           step days: [1, 1, 98]
+           power fractions: [0.1, 0.2, 1]
+           availability factor: 0.1
+         - name: B
+           cumulative days: [2, 72, 78, 86]
+           power fractions: [0.2, 1.0, 0.95, 0.93]
+         - name: C
+           step days: [5, R5]
+           power fractions: [1, R5]
+         - cycle length: 100
+           burn steps: 2
+           availability factor: 0.9
 
 Note that repeated values in a list may be again be entered using the shorthand notation for ``step days``, ``power fractions``, and ``availability factors`` (though not ``cumulative days`` because entries must be monotonically increasing).
 
@@ -254,9 +258,10 @@ To run a snapshot, the following settings must be added to your case settings:
 An example of a snapshot run input:
 
 .. code-block:: yaml
-    runType: Snapshots
-    reloadDBName: my-old-results.h5
-    dumpSnapshot: ['000000', '001002'] # would produce 2 snapshots, at BOL and at node 2 of cycle 1
+       
+       runType: Snapshots
+       reloadDBName: my-old-results.h5
+       dumpSnapshot: ['000000', '001002'] # would produce 2 snapshots, at BOL and at node 2 of cycle 1
 
 To run a restart, the following settings must be added to your case settings:
 
@@ -274,92 +279,100 @@ A few examples of restart cases:
     
     - Restarting a calculation at a specific cycle/node and continuing for the remainder of the originally-specified cycle history:
         .. code-block:: yaml
-            # old settings
-            nCycles: 2
-            burnSteps: 2
-            cycleLengths: [100, 100]
-            runType: Standard
-            loadStyle: fromInput
-            loadingFile: my-blueprints.yaml
+               
+               # old settings
+               nCycles: 2
+               burnSteps: 2
+               cycleLengths: [100, 100]
+               runType: Standard
+               loadStyle: fromInput
+               loadingFile: my-blueprints.yaml
 
         .. code-block:: yaml
-            # restart settings
-            nCycles: 2
-            burnSteps: 2
-            cycleLengths: [100, 100]
-            runType: Standard
-            loadStyle: fromDB
-            startCycle: 1
-            startNode: 0
-            reloadDBName: my-original-results.h5
+            
+               # restart settings
+               nCycles: 2
+               burnSteps: 2
+               cycleLengths: [100, 100]
+               runType: Standard
+               loadStyle: fromDB
+               startCycle: 1
+               startNode: 0
+               reloadDBName: my-original-results.h5
 
     - Add an additional cycle to the end of a case:
         .. code-block:: yaml
-            # old settings
-            nCycles: 1
-            burnSteps: 2
-            cycleLengths: [100]
-            runType: Standard
-            loadStyle: fromInput
-            loadingFile: my-blueprints.yaml
+            
+               # old settings
+               nCycles: 1
+               burnSteps: 2
+               cycleLengths: [100]
+               runType: Standard
+               loadStyle: fromInput
+               loadingFile: my-blueprints.yaml
 
         .. code-block:: yaml
-            # restart settings
-            nCycles: 2
-            burnSteps: 2
-            cycleLengths: [100, 100]
-            runType: Standard
-            loadStyle: fromDB
-            startCycle: 0
-            startNode: -1
-            reloadDBName: my-original-results.h5
+            
+               # restart settings
+               nCycles: 2
+               burnSteps: 2
+               cycleLengths: [100, 100]
+               runType: Standard
+               loadStyle: fromDB
+               startCycle: 0
+               startNode: -1
+               reloadDBName: my-original-results.h5
 
     - Restart but cut the reactor history short:
         .. code-block:: yaml
-            # old settings
-            nCycles: 3
-            burnSteps: 2
-            cycleLengths: [100, 100, 100]
-            runType: Standard
-            loadStyle: fromInput
-            loadingFile: my-blueprints.yaml
+            
+               # old settings
+               nCycles: 3
+               burnSteps: 2
+               cycleLengths: [100, 100, 100]
+               runType: Standard
+               loadStyle: fromInput
+               loadingFile: my-blueprints.yaml
 
         .. code-block:: yaml
-            # restart settings
-            nCycles: 2
-            burnSteps: 2
-            cycleLengths: [100, 100]
-            runType: Standard
-            loadStyle: fromDB
-            startCycle: 1
-            startNode: 0
-            reloadDBName: my-original-results.h5
+            
+               # restart settings
+               nCycles: 2
+               burnSteps: 2
+               cycleLengths: [100, 100]
+               runType: Standard
+               loadStyle: fromDB
+               startCycle: 1
+               startNode: 0
+               reloadDBName: my-original-results.h5
 
     - Restart with a different number of steps in the third cycle using the detailed ``cycles`` setting:
         .. code-block:: yaml
-            # old settings
-            nCycles: 3
-            burnSteps: 2
-            cycleLengths: [100, 100, 100]
-            runType: Standard
-            loadStyle: fromInput
-            loadingFile: my-blueprints.yaml
+            
+               # old settings
+               nCycles: 3
+               burnSteps: 2
+               cycleLengths: [100, 100, 100]
+               runType: Standard
+               loadStyle: fromInput
+               loadingFile: my-blueprints.yaml
 
         .. code-block:: yaml
-            # restart settings
-            nCycles: 3
-            cycles:
-              - cycle length: 100
-                burn steps: 2
-              - cycle length: 100
-                burn steps: 2
-              - cycle length: 100
-                burn steps: 4
-            runType: Standard
-            loadStyle: fromDB
-            startCycle: 2
-            startNode: 0
-            reloadDBName: my-original-results.h5
+            
+               # restart settings
+               nCycles: 3
+               cycles:
+                 - cycle length: 100
+                   burn steps: 2
+                 - cycle length: 100
+                   burn steps: 2
+                 - cycle length: 100
+                   burn steps: 4
+               runType: Standard
+               loadStyle: fromDB
+               startCycle: 2
+               startNode: 0
+               reloadDBName: my-original-results.h5
 
 .. note:: The ``skipCycles`` setting is related to skipping the lattice physics calculation specifically, it is not required to do a restart run.
 

@@ -171,6 +171,7 @@ def addDummyNuclidesToLibrary(lib, dummyNuclides):
             continue
 
         newDummy = xsNuclides.XSNuclide(lib, dummyKey)
+        newDummy.micros = dummyNuclide.micros
         # Copy isotxs metadata from the isotxs metadata of the given dummy nuclide
         for kk, vv in dummyNuclide.isotxsMetadata.items():
             if kk in ["jj", "jband"]:
