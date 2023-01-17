@@ -367,8 +367,10 @@ class AxialExpansionChanger:
                     growth = 1.0 + growFrac
                 else:
                     growth = 1.0 / (1.0 - growFrac)
-                for key in c.getNuclides():
-                    c.setNumberDensity(key, c.getNumberDensity(key) / growth)
+                newNumberDensities = {
+                    nuc: c.getNumberDensity(nuc) / growth for nuc in c.getNuclides()
+                }
+                c.setNumberDensities(newNumberDensities)
 
 
 def _getSolidComponents(b):

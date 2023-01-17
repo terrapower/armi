@@ -593,16 +593,6 @@ def _getNeutronicsBlockParams():
         )
 
         pb.defParam(
-            "rateFis", units="1/cm^3/s", description="Fission rate in this block."
-        )
-
-        pb.defParam(
-            "rateProdFis",
-            units="1/cm^3/s",
-            description="Production rate of neutrons from fission reactions (nu * fission source / k-eff)",
-        )
-
-        pb.defParam(
             "rateProdN2n",
             units="1/cm^3/s",
             description="Production rate of neutrons from n2n reactions.",
@@ -613,6 +603,15 @@ def _getNeutronicsBlockParams():
         location=ParamLocation.VOLUME_INTEGRATED,
         categories=[parameters.Category.detailedAxialExpansion],
     ) as pb:
+        pb.defParam(
+            "rateFis", units="1/cm^3/s", description="Fission rate in this block."
+        )
+
+        pb.defParam(
+            "rateProdFis",
+            units="1/cm^3/s",
+            description="Production rate of neutrons from fission reactions (nu * fission source / k-eff)",
+        )
 
         pb.defParam(
             "powerGenerated",

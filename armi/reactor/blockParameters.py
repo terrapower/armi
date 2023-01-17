@@ -93,14 +93,12 @@ def getBlockParameterDefinitions():
             "molesHmBOL",
             units="mole",
             description="Total number of atoms of heavy metal at BOL assuming a full assembly",
-            default=None,
         )
 
         pb.defParam(
             "massHmBOL",
             units="grams",
             description="Mass of heavy metal at BOL",
-            default=None,
         )
 
         pb.defParam(

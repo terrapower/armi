@@ -677,6 +677,29 @@ class Void_TestCase(_Material_Test, unittest.TestCase):
         self.assertEqual(len(self.mat.propertyValidTemperature), 0)
 
 
+class Mixture_TestCase(_Material_Test, unittest.TestCase):
+    MAT_CLASS = materials._Mixture
+
+    def test_density3(self):
+        """
+        this material has no density function
+        """
+        self.assertEqual(self.mat.density(500), 0)
+
+    def test_setDefaultMassFracs(self):
+        self.mat.setDefaultMassFracs()
+        cur = self.mat.p.density
+        ref = 0.0
+        self.assertEqual(cur, ref)
+
+    def test_linearExpansion(self):
+        with self.assertRaises(NotImplementedError):
+            cur = self.mat.linearExpansion(400)
+
+    def test_propertyValidTemperature(self):
+        self.assertEqual(len(self.mat.propertyValidTemperature), 0)
+
+
 class Lead_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.Lead
 
