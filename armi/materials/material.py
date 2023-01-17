@@ -387,6 +387,7 @@ class Material:
     def gasPorosity(self) -> float:
         return 0.0 if self.parent is None else self.parent.gasPorosity
 
+    # TODO: JOHN: Second: density -> pseudoDensity
     def density(self, Tk: float = None, Tc: float = None) -> float:
         """
         Return density that preserves mass when thermally expanded in 2D.
@@ -421,6 +422,7 @@ class Material:
         f = (1.0 + dLL / 100.0) ** 2
         return self.refDens / f  # g/cm^3
 
+    # TODO: JOHN: First: densityKgM3 -> pseudoDensityKgM3
     def densityKgM3(self, Tk: float = None, Tc: float = None) -> float:
         """
         Return density that preserves mass when thermally expanded in 2D in units of kg/m^3
@@ -432,6 +434,7 @@ class Material:
         """
         return self.density(Tk, Tc) * 1000.0
 
+    # TODO: JOHN: Fourth: density3 -> density
     def density3(self, Tk: float = None, Tc: float = None) -> float:
         """
         Return density that preserves mass when thermally expanded in 3D.
@@ -457,6 +460,7 @@ class Material:
         f = (1.0 + dLL / 100.0) ** 3
         return refD / f
 
+    # TODO: JOHN: Third: density3KgM3 -> densityKgM3
     def density3KgM3(self, Tk: float = None, Tc: float = None) -> float:
         """Return density that preserves mass when thermally expanded in 3D in units of kg/m^3.
 
