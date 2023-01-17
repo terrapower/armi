@@ -746,7 +746,7 @@ class Mixture_TestCase(_Material_Test, unittest.TestCase):
 
     def test_setDefaultMassFracs(self):
         self.mat.setDefaultMassFracs()
-        cur = self.mat.p.density
+        cur = self.mat.density(500)
         ref = 0.0
         self.assertEqual(cur, ref)
 
