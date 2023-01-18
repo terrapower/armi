@@ -1585,6 +1585,7 @@ class HexBlock(Block):
         hexComponent.setNumberDensities(self.getNumberDensities())
         b.add(hexComponent)
 
+        b.p.nPins = self.p.nPins
         if pinSpatialLocators:
             # create a null component with cladding flags and spatialLocator from source block's
             # clad components in case pin locations need to be known for physics solver
