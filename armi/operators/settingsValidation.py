@@ -737,7 +737,7 @@ def validateVersion(versionThis: str, versionRequired: str) -> bool:
     versionThis: str
         The version of this ARMI, App, or Plugin.
         This MUST be in the form: 1.2.3
-    versionRequired: str:
+    versionRequired: str
         The version to compare against, say in a Settings file.
         This must be in one of the forms: 1.2.3, 1.2, or 1
 
@@ -750,7 +750,10 @@ def validateVersion(versionThis: str, versionRequired: str) -> bool:
     medV = "[0-9]\.[0-9]"
     minV = "[0-9]"
 
-    if re.search(fullV, versionThis) is None:
+    if versionRequired == "uncontrolled":
+        # This default flag means we don't want to check the version.
+        return True
+    elif re.search(fullV, versionThis) is None:
         raise ValueError(
             "The input version ({0}) does not match the required format: {1}".format(
                 versionThis, fullV

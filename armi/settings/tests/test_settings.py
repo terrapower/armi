@@ -459,6 +459,7 @@ class TestSettingsValidationUtils(unittest.TestCase):
         self.assertTrue(validateVersion("1.2.3", "1.2.3"))
         self.assertTrue(validateVersion("1.2.3", "1.2"))
         self.assertTrue(validateVersion("1.2.3", "1"))
+        self.assertTrue(validateVersion("4.2.0", "uncontrolled"))
         self.assertFalse(validateVersion("1.2.3", "1.2.4"))
         self.assertFalse(validateVersion("1.2.3", "3.2.1"))
         self.assertFalse(validateVersion("1.2.3", "2.2"))
