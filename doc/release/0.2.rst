@@ -24,6 +24,7 @@ What's new in ARMI
 #. Add a how-to on restart calculations in the docs
 #. General improvements to efficiency in many places to speed up uniform mesh conversion. (`PR#1042 <https://github.com/terrapower/armi/pull/1042>`_)
 #. Allow MCNP material card number to be defined after the card is written. (`PR#1086 <https://github.com/terrapower/armi/pull/1086>`_)
+#. Refine logic for Block.getNumPins() to only count components that are actually pins. (`PR#1098 <https://github.com/terrapower/armi/pull/1098>`_)
 
 Bug fixes
 ---------
