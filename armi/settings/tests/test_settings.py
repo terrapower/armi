@@ -28,7 +28,7 @@ from armi import getApp
 from armi import getPluginManagerOrFail
 from armi import plugins
 from armi import settings
-from armi.operators import settingsValidation
+from armi.operators.settingsValidation import Inspector, validateVersion
 from armi.physics.fuelCycle import FuelHandlerPlugin
 from armi.reactor.flags import Flags
 from armi.settings import caseSettings
@@ -219,7 +219,7 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
             },
         )
 
-        inspector = settingsValidation.Inspector(cs)
+        inspector = Inspector(cs)
         self.assertTrue(
             any(
                 [
@@ -452,6 +452,25 @@ class TestFlagListSetting(unittest.TestCase):
         fs = setting.FlagListSetting(name="testFlagSetting", default=[])
         with self.assertRaises(TypeError):
             fs.value = "DUCT"
+
+
+class TestSettingsValidationUtils(unittest.TestCase):
+    def test_validateVersion(self):
+        self.assertTrue(validateVersion("1.2.3", "1.2.3"))
+        self.assertTrue(validateVersion("1.2.3", "1.2"))
+        self.assertTrue(validateVersion("1.2.3", "1"))
+        self.assertFalse(validateVersion("1.2.3", "1.2.4"))
+        self.assertFalse(validateVersion("1.2.3", "3.2.1"))
+        self.assertFalse(validateVersion("1.2.3", "2.2"))
+
+        with self.assertRaises(ValueError):
+            validateVersion("1.2.a", "1.2.3")
+
+        with self.assertRaises(ValueError):
+            validateVersion("nope", "7")
+
+        with self.assertRaises(ValueError):
+            validateVersion("1.2.3", "zzz")
 
 
 if __name__ == "__main__":
