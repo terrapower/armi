@@ -934,6 +934,7 @@ class GammaUniformMeshConverter(UniformMeshGeometryConverter):
         ],
         "out": [
             parameters.Category.gamma,
+            parameters.Category.neutronics,
         ],
     }
 
