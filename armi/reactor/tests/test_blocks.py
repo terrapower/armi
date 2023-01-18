@@ -23,7 +23,7 @@ import numpy
 from numpy.testing import assert_allclose
 
 from armi import materials, runLog, settings, tests
-from armi.reactor.components import basicShapes
+from armi.reactor.components import basicShapes, complexShapes
 from armi.nucDirectory import nucDir, nuclideBases
 from armi.nuclearDataIO.cccc import isotxs
 from armi.physics.neutronics import NEUTRON, GAMMA
@@ -1241,6 +1241,23 @@ class Block_TestCase(unittest.TestCase):
 
         emptyBlock = blocks.HexBlock("empty")
         self.assertEqual(emptyBlock.getNumPins(), 0)
+
+        holedRectangle = complexShapes.HoledRectangle(
+            "holedRectangle", "HT9", 1, 1, 0.5, 1.0, 1.0
+        )
+        holedRectangle.setType("component", flags=Flags.CONTROL)
+        emptyBlock.add(holedRectangle)
+        self.assertEqual(emptyBlock.getNumPins(), 0)
+
+        hexagon = basicShapes.Hexagon("hexagon", "HT9", 1, 1, 1)
+        hexagon.setType("component", flags=Flags.SHIELD)
+        emptyBlock.add(hexagon)
+        self.assertEqual(emptyBlock.getNumPins(), 0)
+
+        pins = basicShapes.Circle("circle", "HT9", 1, 1, 1, 0, 8)
+        pins.setType("component", flags=Flags.PLENUM)
+        emptyBlock.add(pins)
+        self.assertEqual(emptyBlock.getNumPins(), 8)
 
     def test_setLinPowByPin(self):
         numPins = self.block.getNumPins()
