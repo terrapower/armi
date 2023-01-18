@@ -467,6 +467,7 @@ class Block_TestCase(unittest.TestCase):
             if arg:
                 # check that homogenized block has correct pin coordinates
                 self.assertEqual(self.block.getNumPins(), homogBlock.getNumPins())
+                self.assertEqual(self.block.p.nPins, homogBlock.p.nPins)
                 pinCoords = self.block.getPinCoordinates()
                 homogPinCoords = homogBlock.getPinCoordinates()
                 for refXYZ, homogXYZ in zip(list(pinCoords), list(homogPinCoords)):
