@@ -1242,6 +1242,11 @@ class Block_TestCase(unittest.TestCase):
         emptyBlock = blocks.HexBlock("empty")
         self.assertEqual(emptyBlock.getNumPins(), 0)
 
+        comp = basicShapes.Hexagon("hexagon", "HT9", 1, 1, 1)
+        comp.setType("component", flags=Flags.SHIELD)
+        emptyBlock.add(comp)
+        self.assertEqual(emptyBlock.getNumPins(), 0)
+
     def test_setLinPowByPin(self):
         numPins = self.block.getNumPins()
         neutronPower = [10.0 * i for i in range(numPins)]
