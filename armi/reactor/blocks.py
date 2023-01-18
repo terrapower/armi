@@ -1018,14 +1018,16 @@ class Block(composites.Composite):
     def getNumPins(self):
         """Return the number of pins in this block."""
         nPins = [
-            sum[
-                int(c.getDimension("mult"))
-                for c in self.iterComponents(compType)
-                if isinstance(c, basicShapes.Circle)
-                else 0
-            ]
+            sum(
+                [
+                    int(c.getDimension("mult"))
+                    if isinstance(c, basicShapes.Circle)
+                    else 0
+                    for c in self.iterComponents(compType)
+                ]
+            )
             for compType in PIN_COMPONENTS
-        ] 
+        ]
         return 0 if not nPins else max(nPins)
 
     def mergeWithBlock(self, otherBlock, fraction):
