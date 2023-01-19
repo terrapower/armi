@@ -15,10 +15,12 @@ import collections
 import os
 import numpy
 
-from armi.reactor.components import component
 from armi import runLog
-from armi.reactor.flags import Flags
 from armi.bookkeeping.report import newReports
+from armi.materials import custom
+from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
+from armi.reactor.components import component
+from armi.reactor.flags import Flags
 from armi.utils import (
     units,
     plotting,
@@ -27,7 +29,6 @@ from armi.utils import (
     getCycleLengths,
     getStepLengths,
 )
-from armi.materials import custom
 
 
 def insertBlueprintContent(r, cs, report, blueprint):
@@ -193,7 +194,7 @@ def _setGeneralCoreDesignData(cs, coreDesignTable):
     coreDesignTable.addRow(["Geometry File", "{}".format(cs["geomFile"])])
     coreDesignTable.addRow(["Loading File", "{}".format(cs["loadingFile"])])
     coreDesignTable.addRow(
-        ["Fuel Shuffling Logic File", "{}".format(cs["shuffleLogic"])]
+        ["Fuel Shuffling Logic File", "{}".format(cs[CONF_SHUFFLE_LOGIC])]
     )
     coreDesignTable.addRow(["Reactor State Loading", "{}".format(cs["loadStyle"])])
     if cs["loadStyle"] == "fromDB":

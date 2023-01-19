@@ -41,6 +41,7 @@ from armi import getPluginManagerOrFail, materials, nuclearDataIO, settings
 from armi import runLog
 from armi.nuclearDataIO import xsLibraries
 from armi.physics.fuelCycle.settings import CONF_CIRCULAR_RING_MODE
+from armi.physics.fuelCycle.settings import CONF_JUMP_RING_NUM
 from armi.reactor import assemblies
 from armi.reactor import assemblyLists
 from armi.reactor import composites
@@ -213,7 +214,7 @@ class Core(composites.Composite):
 
     def setOptionsFromCs(self, cs):
         # these are really "user modifiable modeling constants"
-        self.p.jumpRing = cs["jumpRingNum"]
+        self.p.jumpRing = cs[CONF_JUMP_RING_NUM]
         self._freshFeedType = cs["freshFeedType"]
         self._trackAssems = cs["trackAssems"]
         self._circularRingMode = cs[CONF_CIRCULAR_RING_MODE]

@@ -39,6 +39,7 @@ from armi.bookkeeping import memoryProfiler
 from armi.bookkeeping.report import reportingUtils
 from armi.operators import settingsValidation
 from armi.operators.runTypes import RunTypes
+from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
 from armi.utils import codeTiming
 from armi.utils import (
     pathTools,
@@ -1037,7 +1038,7 @@ class Operator:  # pylint: disable=too-many-public-methods
             newFolder,
         )
         pathTools.copyOrWarn(
-            "Shuffle logic for snapshot", self.cs["shuffleLogic"], newFolder
+            "Shuffle logic for snapshot", self.cs[CONF_SHUFFLE_LOGIC], newFolder
         )
         pathTools.copyOrWarn(
             "Geometry file for snapshot", self.cs["geomFile"], newFolder

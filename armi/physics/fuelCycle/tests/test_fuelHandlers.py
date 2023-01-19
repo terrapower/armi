@@ -26,6 +26,7 @@ import numpy as np
 
 from armi.physics.fuelCycle import fuelHandlers, settings
 from armi.physics.fuelCycle.settings import CONF_ASSEM_ROTATION_STATIONARY
+from armi.physics.fuelCycle.settings import CONF_PLOT_SHUFFLE_ARROWS
 from armi.reactor import assemblies, blocks, components, grids
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
@@ -368,7 +369,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         # reset assembly counter to get the same assem nums.
         self.setUp()
 
-        newSettings = {"plotShuffleArrows": True}
+        newSettings = {CONF_PLOT_SHUFFLE_ARROWS: True}
         # now repeat shuffles
         newSettings["explicitRepeatShuffles"] = "armiRun-SHUFFLES.txt"
         self.o.cs = self.o.cs.modified(newSettings=newSettings)

@@ -111,7 +111,7 @@ CONF_INPUT_HEIGHTS_HOT = "inputHeightsConsideredHot"
 CONF_CYCLES = "cycles"
 CONF_USER_PLUGINS = "userPlugins"
 
-# Unused by ARMI, slated for removal
+# TODO: Unused by ARMI, slated for removal
 CONF_CONDITIONAL_MODULE_NAME = "conditionalModuleName"  # mcfr
 CONF_GROW_TO_FULL_CORE_AFTER_LOAD = "growToFullCoreAfterLoad"  # mcnp & gui
 CONF_MEM_PER_NODE = "memPerNode"  # unused?
