@@ -746,9 +746,9 @@ def validateVersion(versionThis: str, versionRequired: str) -> bool:
     bool
         Does this version match the version in the Settings file/object?
     """
-    fullV = "[0-9]\.[0-9]\.[0-9]"
-    medV = "[0-9]\.[0-9]"
-    minV = "[0-9]"
+    fullV = "\d+\.\d+\.\d+"
+    medV = "\d+\.\d+"
+    minV = "\d+"
 
     if versionRequired == "uncontrolled":
         # This default flag means we don't want to check the version.

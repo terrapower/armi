@@ -456,16 +456,22 @@ class TestFlagListSetting(unittest.TestCase):
 
 class TestSettingsValidationUtils(unittest.TestCase):
     def test_validateVersion(self):
-        self.assertTrue(validateVersion("1.2.3", "1.2.3"))
+        # controlled version, and true
+        self.assertTrue(validateVersion("1.22.3", "1.22.3"))
         self.assertTrue(validateVersion("1.2.3", "1.2"))
-        self.assertTrue(validateVersion("1.2.3", "1"))
-        self.assertTrue(validateVersion("4.2.0", "uncontrolled"))
-        self.assertFalse(validateVersion("1.2.3", "1.2.4"))
-        self.assertFalse(validateVersion("1.2.3", "3.2.1"))
-        self.assertFalse(validateVersion("1.2.3", "2.2"))
+        self.assertTrue(validateVersion("1.22.310", "1"))
 
+        # uncontrolled version is always true
+        self.assertTrue(validateVersion("4.2.0", "uncontrolled"))
+
+        # controlled versions and false
+        self.assertFalse(validateVersion("11.2.3", "11.2.4"))
+        self.assertFalse(validateVersion("1.2.3", "3.2.1"))
+        self.assertFalse(validateVersion("11.2.3", "2.2"))
+
+        # examples of various errors
         with self.assertRaises(ValueError):
-            validateVersion("1.2.a", "1.2.3")
+            validateVersion("1.2.a", "1.20.3")
 
         with self.assertRaises(ValueError):
             validateVersion("nope", "7")
