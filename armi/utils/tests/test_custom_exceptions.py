@@ -28,10 +28,10 @@ class CustomExceptionTests(unittest.TestCase):
 
     def test_info_decorator(self):
         with mockRunLogs.BufferLog() as mock:
-            self.assertEqual("", mock._outputStream)
+            self.assertEqual("", mock.getStdout())
             for ii in range(1, 3):
                 self.exampleInfoMessage()
-                self.assertEqual("[info] output message\n" * ii, mock._outputStream)
+                self.assertEqual("[info] output message\n" * ii, mock.getStdout())
 
     @important
     def exampleImportantMessage(self):
@@ -39,10 +39,10 @@ class CustomExceptionTests(unittest.TestCase):
 
     def test_important_decorator(self):
         with mockRunLogs.BufferLog() as mock:
-            self.assertEqual("", mock._outputStream)
+            self.assertEqual("", mock.getStdout())
             for ii in range(1, 3):
                 self.exampleImportantMessage()
-                self.assertEqual("[impt] important message?\n" * ii, mock._outputStream)
+                self.assertEqual("[impt] important message?\n" * ii, mock.getStdout())
 
     @warn
     def exampleWarnMessage(self):
@@ -54,7 +54,7 @@ class CustomExceptionTests(unittest.TestCase):
                 self.exampleWarnMessage()
                 self.assertEqual(
                     "[warn] you're not tall enough to ride this elephant\n" * ii,
-                    mock._outputStream,
+                    mock.getStdout(),
                 )
 
     @warn_when_root
@@ -68,10 +68,10 @@ class CustomExceptionTests(unittest.TestCase):
             for ii in range(1, 4):
                 self.exampleWarnWhenRootMessage()
                 msg = "[warn] warning from root\n" * ii
-                self.assertEqual(msg, mock._outputStream)
+                self.assertEqual(msg, mock.getStdout())
                 armi.MPI_RANK = 1
                 self.exampleWarnWhenRootMessage()
-                self.assertEqual(msg, mock._outputStream)
+                self.assertEqual(msg, mock.getStdout())
                 armi.MPI_RANK = 0
 
 
