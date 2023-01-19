@@ -114,10 +114,10 @@ CONF_USER_PLUGINS = "userPlugins"
 # TODO: Unused by ARMI, slated for removal
 CONF_CONDITIONAL_MODULE_NAME = "conditionalModuleName"  # mcfr
 CONF_GROW_TO_FULL_CORE_AFTER_LOAD = "growToFullCoreAfterLoad"  # mcnp & gui
-CONF_MEM_PER_NODE = "memPerNode"  # unused?
-CONF_NUM_CONTROL_BLOCKS = "numControlBlocks"  # dif3d
-CONF_REMOVE_PER_CYCLE = "removePerCycle"  # fuel handler, equilibrium, mcnp
-CONF_USE_INPUT_TEMPERATURES_ON_DBLOAD = "useInputTemperaturesOnDBLoad"  # th
+CONF_MEM_PER_NODE = "memPerNode"  # unused
+CONF_NUM_CONTROL_BLOCKS = "numControlBlocks"  # unused
+CONF_REMOVE_PER_CYCLE = "removePerCycle"  # crucible, equilibrium, gui
+CONF_USE_INPUT_TEMPERATURES_ON_DBLOAD = "useInputTemperaturesOnDBLoad"  # unused
 
 
 def defineSettings() -> List[setting.Setting]:
