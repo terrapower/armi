@@ -51,7 +51,7 @@ class C5G7ReactorTests(unittest.TestCase):
         """
         with mockRunLogs.BufferLog() as mock:
             # we should start with a clean slate
-            self.assertEqual("", mock._outputStream)
+            self.assertEqual("", mock.getStdout())
             runLog.LOG.startLog("test_loadC5G7")
             runLog.LOG.setVerbosity(WARNING)
 
@@ -61,7 +61,7 @@ class C5G7ReactorTests(unittest.TestCase):
             b = o.r.core.getFirstBlock(Flags.MOX)
 
             # test warnings are being logged for malformed isotopics info in the settings file
-            streamVal = mock._outputStream
+            streamVal = mock.getStdout()
             self.assertGreater(streamVal.count("[warn]"), 32, msg=streamVal)
             self.assertGreater(streamVal.count("custom isotopics"), 32, msg=streamVal)
             self.assertIn("Uranium Oxide", streamVal, msg=streamVal)

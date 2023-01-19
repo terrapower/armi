@@ -244,7 +244,7 @@ class TestXSLibrary(unittest.TestCase, TempFileMixin):
                 lib = xsLibraries.IsotxsLibrary()
                 with self.assertRaises(OSError):
                     xsLibraries.mergeXSLibrariesInWorkingDirectory(lib, "ISOTXS", "")
-                self.assertIn(dummyFileName, log.getStdoutValue())
+                self.assertIn(dummyFileName, log.getStdout())
         finally:
             os.remove(dummyFileName)
 
@@ -261,7 +261,7 @@ class TestXSLibrary(unittest.TestCase, TempFileMixin):
                 xsLibraries.mergeXSLibrariesInWorkingDirectory(lib)
                 self.assertIn(
                     f"{dummyFileName} in the merging of ISOXX files",
-                    log.getStdoutValue(),
+                    log.getStdout(),
                 )
         finally:
             pass

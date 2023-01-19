@@ -196,39 +196,39 @@ class TestRunLog(unittest.TestCase):
         """Let's test the setVerbosity() method carefully"""
         with mockRunLogs.BufferLog() as mock:
             # we should start with a clean slate
-            self.assertEqual("", mock._outputStream)
+            self.assertEqual("", mock.getStdout())
             runLog.LOG.startLog("test_setVerbosity")
             runLog.LOG.setVerbosity(logging.INFO)
 
             # we should start at info level, and that should be working correctly
             self.assertEqual(runLog.LOG.getVerbosity(), logging.INFO)
             runLog.info("hi")
-            self.assertIn("hi", mock._outputStream)
-            mock._outputStream = ""
+            self.assertIn("hi", mock.getStdout())
+            mock.emptyStdout()
 
             runLog.debug("invisible")
-            self.assertEqual("", mock._outputStream)
+            self.assertEqual("", mock.getStdout())
 
             # setVerbosity() to WARNING, and verify it is working
             runLog.LOG.setVerbosity(logging.WARNING)
             runLog.info("still invisible")
-            self.assertEqual("", mock._outputStream)
+            self.assertEqual("", mock.getStdout())
             runLog.warning("visible")
-            self.assertIn("visible", mock._outputStream)
-            mock._outputStream = ""
+            self.assertIn("visible", mock.getStdout())
+            mock.emptyStdout()
 
             # setVerbosity() to DEBUG, and verify it is working
             runLog.LOG.setVerbosity(logging.DEBUG)
             runLog.debug("Visible")
-            self.assertIn("Visible", mock._outputStream)
-            mock._outputStream = ""
+            self.assertIn("Visible", mock.getStdout())
+            mock.emptyStdout()
 
             # setVerbosity() to ERROR, and verify it is working
             runLog.LOG.setVerbosity(logging.ERROR)
             runLog.warning("Still Invisible")
-            self.assertEqual("", mock._outputStream)
+            self.assertEqual("", mock.getStdout())
             runLog.error("Visible!")
-            self.assertIn("Visible!", mock._outputStream)
+            self.assertIn("Visible!", mock.getStdout())
 
             # we shouldn't be able to setVerbosity() to a non-canonical value (logging module defense)
             self.assertEqual(runLog.LOG.getVerbosity(), logging.ERROR)
@@ -239,29 +239,29 @@ class TestRunLog(unittest.TestCase):
         """The user/dev my accidentally call setVerbosity() before startLog(), this should be mostly supportable"""
         with mockRunLogs.BufferLog() as mock:
             # we should start with a clean slate
-            self.assertEqual("", mock._outputStream)
+            self.assertEqual("", mock.getStdout())
             runLog.LOG.setVerbosity(logging.DEBUG)
             runLog.LOG.startLog("test_setVerbosityBeforeStartLog")
 
             # we should start at info level, and that should be working correctly
             self.assertEqual(runLog.LOG.getVerbosity(), logging.DEBUG)
             runLog.debug("hi")
-            self.assertIn("hi", mock._outputStream)
-            mock._outputStream = ""
+            self.assertIn("hi", mock.getStdout())
+            mock.emptyStdout()
 
     def test_callingStartLogMultipleTimes(self):
         """calling startLog() multiple times will lead to multiple output files, but logging should still work"""
         with mockRunLogs.BufferLog() as mock:
             # we should start with a clean slate
-            self.assertEqual("", mock._outputStream)
+            self.assertEqual("", mock.getStdout())
             runLog.LOG.startLog("test_callingStartLogMultipleTimes1")
             runLog.LOG.setVerbosity(logging.INFO)
 
             # we should start at info level, and that should be working correctly
             self.assertEqual(runLog.LOG.getVerbosity(), logging.INFO)
             runLog.info("hi1")
-            self.assertIn("hi1", mock._outputStream)
-            mock._outputStream = ""
+            self.assertIn("hi1", mock.getStdout())
+            mock.emptyStdout()
 
             # call startLog() again
             runLog.LOG.startLog("test_callingStartLogMultipleTimes2")
@@ -270,8 +270,8 @@ class TestRunLog(unittest.TestCase):
             # we should start at info level, and that should be working correctly
             self.assertEqual(runLog.LOG.getVerbosity(), logging.INFO)
             runLog.info("hi2")
-            self.assertIn("hi2", mock._outputStream)
-            mock._outputStream = ""
+            self.assertIn("hi2", mock.getStdout())
+            mock.emptyStdout()
 
             # call startLog() again
             runLog.LOG.startLog("test_callingStartLogMultipleTimes3")
@@ -280,8 +280,8 @@ class TestRunLog(unittest.TestCase):
             # we should start at info level, and that should be working correctly
             self.assertEqual(runLog.LOG.getVerbosity(), logging.INFO)
             runLog.info("hi3")
-            self.assertIn("hi3", mock._outputStream)
-            mock._outputStream = ""
+            self.assertIn("hi3", mock.getStdout())
+            mock.emptyStdout()
 
             # call startLog() again, with a duplicate logger name
             runLog.LOG.startLog("test_callingStartLogMultipleTimes3")
@@ -290,8 +290,8 @@ class TestRunLog(unittest.TestCase):
             # we should start at info level, and that should be working correctly
             self.assertEqual(runLog.LOG.getVerbosity(), logging.INFO)
             runLog.info("hi333")
-            self.assertIn("hi333", mock._outputStream)
-            mock._outputStream = ""
+            self.assertIn("hi333", mock.getStdout())
+            mock.emptyStdout()
 
     def test_concatenateLogs(self):
         """simple test of the concat logs function"""
