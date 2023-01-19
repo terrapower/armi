@@ -424,6 +424,7 @@ class TestGammaUniformMesh(unittest.TestCase):
         for b in self.converter.convReactor.core.getBlocks():
             b.p.powerGamma = 0.5
             b.p.powerNeutron = 0.5
+            b.p.power = b.p.powerGamma + b.p.powerNeutron
 
         # check integral and density params
         assemblyPowers = [
@@ -446,11 +447,11 @@ class TestGammaUniformMesh(unittest.TestCase):
             self.assertEqual(b.p.fastFlux, 2.0)
             self.assertEqual(b.p.flux, 5.0)
             self.assertEqual(b.p.fastFlux, 2.0)
-            self.assertEqual(b.p.power, 5.0)
 
             # not equal because blocks are different size
             self.assertNotEqual(b.p.powerGamma, 0.5)
             self.assertNotEqual(b.p.powerNeutron, 0.5)
+            self.assertNotEqual(b.p.power, 1.0)
 
         # equal because these are mapped
         for expectedPower, expectedGammaPower, a in zip(

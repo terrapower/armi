@@ -492,7 +492,10 @@ def _getNeutronicsBlockParams():
         )
 
         pb.defParam(
-            "pdens", units="W/cm$^3$", description="Average volumetric power density"
+            "pdens",
+            units="W/cm$^3$",
+            description="Average volumetric power density",
+            categories=[parameters.Category.neutronics],
         )
 
         pb.defParam(
@@ -620,7 +623,12 @@ def _getNeutronicsBlockParams():
             categories=[parameters.Category.gamma],
         )
 
-        pb.defParam("power", units="W", description="Total power")
+        pb.defParam(
+            "power",
+            units="W",
+            description="Total power",
+            categories=[parameters.Category.neutronics],
+        )
 
         pb.defParam("powerDecay", units="W", description="Total decay power")
 
