@@ -13,20 +13,22 @@
 # limitations under the License.
 """XS Settings tests"""
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,unused-variable
-import unittest
 import io
+import unittest
 
 from ruamel.yaml import YAML
 import voluptuous as vol
 
 from armi import settings
-from armi.settings import caseSettings
+from armi.physics.neutronics.const import CONF_CROSS_SECTION
+from armi.physics.neutronics.crossSectionSettings import CONF_BLOCK_REPRESENTATION
+from armi.physics.neutronics.crossSectionSettings import CONF_GEOM
 from armi.physics.neutronics.crossSectionSettings import XSModelingOptions
-from armi.physics.neutronics.crossSectionSettings import XSSettings
 from armi.physics.neutronics.crossSectionSettings import XSSettingDef
+from armi.physics.neutronics.crossSectionSettings import XSSettings
 from armi.physics.neutronics.crossSectionSettings import xsSettingsValidator
 from armi.physics.neutronics.tests.test_neutronicsPlugin import XS_EXAMPLE
-from armi.physics.neutronics.const import CONF_CROSS_SECTION
+from armi.settings import caseSettings
 
 
 class TestCrossSectionSettings(unittest.TestCase):
@@ -138,7 +140,7 @@ class TestCrossSectionSettings(unittest.TestCase):
         with self.assertRaises(TypeError):
             # This will fail because it is not the required
             # Dict[str: Dict] structure
-            xsSettingsValidator({"geometry": "4D"})
+            xsSettingsValidator({CONF_GEOM: "4D"})
 
         with self.assertRaises(vol.error.MultipleInvalid):
             # This will fail because it has an invalid type for ``driverID``
@@ -147,12 +149,12 @@ class TestCrossSectionSettings(unittest.TestCase):
         with self.assertRaises(vol.error.MultipleInvalid):
             # This will fail because it has an invalid value for
             # the ``blockRepresentation``
-            xsSettingsValidator({"AA": {"blockRepresentation": "Invalid"}})
+            xsSettingsValidator({"AA": {CONF_BLOCK_REPRESENTATION: "Invalid"}})
 
         with self.assertRaises(vol.error.MultipleInvalid):
             # This will fail because the ``xsID`` is not one or two
             # characters
-            xsSettingsValidator({"AAA": {"blockRepresentation": "Average"}})
+            xsSettingsValidator({"AAA": {CONF_BLOCK_REPRESENTATION: "Average"}})
 
 
 class Test_XSSettings(unittest.TestCase):
@@ -211,7 +213,7 @@ class Test_XSSettings(unittest.TestCase):
         # a dictionary.
         cs = _setInitialXSSettings()
         cs[CONF_CROSS_SECTION].update(
-            {"CA": XSModelingOptions("CA", geometry="0D"), "DA": {"geometry": "0D"}}
+            {"CA": XSModelingOptions("CA", geometry="0D"), "DA": {CONF_GEOM: "0D"}}
         )
         self.assertIn("AA", cs[CONF_CROSS_SECTION])
         self.assertIn("BA", cs[CONF_CROSS_SECTION])
