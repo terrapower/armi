@@ -31,24 +31,23 @@ from typing import Dict, Union
 import voluptuous as vol
 
 from armi import runLog
+from armi.physics.neutronics.crossSectionGroupManager import BLOCK_COLLECTIONS
 from armi.settings import Setting
 
-from armi.physics.neutronics.crossSectionGroupManager import BLOCK_COLLECTIONS
-
-CONF_XSID = "xsID"
-CONF_GEOM = "geometry"
 CONF_BLOCK_REPRESENTATION = "blockRepresentation"
-CONF_DRIVER = "driverID"
-CONF_BUCKLING = "criticalBuckling"
-CONF_REACTION_DRIVER = "nuclideReactionDriver"
 CONF_BLOCKTYPES = "validBlockTypes"
+CONF_BUCKLING = "criticalBuckling"
+CONF_DRIVER = "driverID"
 CONF_EXTERNAL_DRIVER = "externalDriver"
+CONF_EXTERNAL_RINGS = "numExternalRings"
+CONF_FILE_LOCATION = "fileLocation"
+CONF_GEOM = "geometry"
 CONF_HOMOGBLOCK = "useHomogenizedBlockComposition"
 CONF_INTERNAL_RINGS = "numInternalRings"
-CONF_EXTERNAL_RINGS = "numExternalRings"
 CONF_MERGE_INTO_CLAD = "mergeIntoClad"
-CONF_FILE_LOCATION = "fileLocation"
 CONF_MESH_PER_CM = "meshSubdivisionsPerCm"
+CONF_REACTION_DRIVER = "nuclideReactionDriver"
+CONF_XSID = "xsID"
 
 # These may be used as arguments to ``latticePhysicsInterface._getGeomDependentWriters``.
 # This could be an ENUM later.
@@ -401,8 +400,8 @@ class XSModelingOptions:
         return self.fileLocation is not None
 
     def serialize(self):
-        """Return as a dictionary without ``xsID`` and with ``None`` values excluded."""
-        doNotSerialize = ["xsID"]
+        """Return as a dictionary without ``CONF_XSID`` and with ``None`` values excluded."""
+        doNotSerialize = [CONF_XSID]
         return {
             key: val
             for key, val in self
@@ -573,7 +572,7 @@ def serializeXSSettings(xsSettingsDict: Union[XSSettings, Dict]) -> Dict[str, Di
             xsIDVals = {
                 config: confVal
                 for config, confVal in xsOpts.items()
-                if config != "xsID" and confVal is not None
+                if config != CONF_XSID and confVal is not None
             }
         else:
             raise TypeError(
