@@ -164,6 +164,27 @@ add a little more to the plugin.
     :language: python
 
 
+Defining custom settings
+========================
+An important facet of the above plugin is that it takes custom Settings, and has some
+validation built in for those ``Setting`` values. That is, the plugin registers new
+settings that can go in the settings file, and help the user define how the simulation
+runs.
+
+The following example boiler plate code defines three settings. We define two simple
+number settings (inlet and outlet temperatures), and we use :py:class:`Query 
+<armi.operators.settingsValidation .Query>` to define validation on those settings. Here,
+the validation isn't very exciting, we just make sure the temperatures are above zero.
+That's not particularly physically meaningful, but serves as a simple example. The next
+setting is a little more complicated, we define a setting ``myAppVersion`` that defines
+a specific version of our app that this setting file is valid for. And if you try to run
+a different version you get a nasty warning printed to the screen.
+
+.. literalinclude:: armi-example-app/myapp/settings.py
+    :caption: ``myapp/settings.py``
+    :language: python
+
+
 Creating the physics kernels
 ============================
 So far we have basically been weaving an administrative thread to tell ARMI about the code
