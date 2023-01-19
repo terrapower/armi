@@ -147,15 +147,15 @@ class TestReportContentCreation(unittest.TestCase):
         env = data.Report("Environment", "ARMI Env Info")
 
         with mockRunLogs.BufferLog() as mock:
-            self.assertEqual("", mock._outputStream)
+            self.assertEqual("", mock.getStdout())
             _ = env["badStuff"]
-            self.assertIn("Cannot locate group", mock._outputStream)
+            self.assertIn("Cannot locate group", mock.getStdout())
 
-            mock._outputStream = ""
-            self.assertEqual("", mock._outputStream)
+            mock.emptyStdout()
+            self.assertEqual("", mock.getStdout())
             env.writeHTML()
-            self.assertIn("Writing HTML document", mock._outputStream)
-            self.assertIn("[info] HTML document", mock._outputStream)
+            self.assertIn("Writing HTML document", mock.getStdout())
+            self.assertIn("[info] HTML document", mock.getStdout())
 
 
 if __name__ == "__main__":
