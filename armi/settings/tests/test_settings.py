@@ -30,6 +30,7 @@ from armi import plugins
 from armi import settings
 from armi.operators import settingsValidation
 from armi.physics.fuelCycle import FuelHandlerPlugin
+from armi.physics.fuelCycle.settings import CONF_CIRCULAR_RING_ORDER
 from armi.reactor.flags import Flags
 from armi.settings import caseSettings
 from armi.settings import setting
@@ -206,7 +207,7 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
     def test_csWorks(self):
         """Ensure plugin settings become available and have defaults"""
         a = settings.Settings()
-        self.assertEqual(a["circularRingOrder"], "angle")
+        self.assertEqual(a[CONF_CIRCULAR_RING_ORDER], "angle")
 
     def test_pluginValidatorsAreDiscovered(self):
         cs = caseSettings.Settings()

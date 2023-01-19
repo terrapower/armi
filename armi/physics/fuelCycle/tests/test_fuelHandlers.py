@@ -25,6 +25,7 @@ import unittest
 import numpy as np
 
 from armi.physics.fuelCycle import fuelHandlers, settings
+from armi.physics.fuelCycle.settings import CONF_ASSEM_ROTATION_STATIONARY
 from armi.reactor import assemblies, blocks, components, grids
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
@@ -432,7 +433,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
     def test_linPowByPin(self):
         _fh = fuelHandlers.FuelHandler(self.o)
         _hist = self.o.getInterface("history")
-        newSettings = {"assemblyRotationStationary": True}
+        newSettings = {CONF_ASSEM_ROTATION_STATIONARY: True}
         self.o.cs = self.o.cs.modified(newSettings=newSettings)
         assem = self.o.r.core.getFirstAssembly(Flags.FUEL)
         b = assem.getBlocks(Flags.FUEL)[0]
@@ -446,7 +447,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
     def test_linPowByPinNeutron(self):
         _fh = fuelHandlers.FuelHandler(self.o)
         _hist = self.o.getInterface("history")
-        newSettings = {"assemblyRotationStationary": True}
+        newSettings = {CONF_ASSEM_ROTATION_STATIONARY: True}
         self.o.cs = self.o.cs.modified(newSettings=newSettings)
         assem = self.o.r.core.getFirstAssembly(Flags.FUEL)
         b = assem.getBlocks(Flags.FUEL)[0]
@@ -460,7 +461,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
     def test_linPowByPinGamma(self):
         _fh = fuelHandlers.FuelHandler(self.o)
         _hist = self.o.getInterface("history")
-        newSettings = {"assemblyRotationStationary": True}
+        newSettings = {CONF_ASSEM_ROTATION_STATIONARY: True}
         self.o.cs = self.o.cs.modified(newSettings=newSettings)
         assem = self.o.r.core.getFirstAssembly(Flags.FUEL)
         b = assem.getBlocks(Flags.FUEL)[0]
@@ -472,9 +473,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         self.assertEqual(type(b.p.linPowByPinGamma), np.ndarray)
 
     def test_transferStationaryBlocks(self):
-        """
-        Test the _transferStationaryBlocks method .
-        """
+        """Test the _transferStationaryBlocks method."""
         # grab stationary block flags
         sBFList = self.r.core.stationaryBlockFlagsList
 
