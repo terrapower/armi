@@ -8,8 +8,7 @@ Release Date: TBD
 
 What's new in ARMI
 ------------------
-#. TBD
-#. TBD
+#. Provide :class:`armi.reactor.compositeLists.CompositeList` base class for things that contain composites on a 1-D grid, like assemblies (`PR#1088 <https://github.com/terrapower/armi/pull/1088>`_)
 
 Bug fixes
 ---------
