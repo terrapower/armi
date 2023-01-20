@@ -28,12 +28,13 @@ from armi import interfaces
 from armi import plugins
 from armi import runLog
 from armi import settings
+from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
 from armi.reactor import blueprints
 from armi.reactor import systemLayoutInput
 from armi.settings import setMasterCs
 from armi.tests import ARMI_RUN_PATH
-from armi.tests import TEST_ROOT
 from armi.tests import mockRunLogs
+from armi.tests import TEST_ROOT
 from armi.utils import directoryChangers
 
 
@@ -411,7 +412,7 @@ class TestExtraInputWriting(unittest.TestCase):
         with directoryChangers.TemporaryDirectoryChanger():
             case = baseCase.clone()
             case.writeInputs()
-            self.assertTrue(os.path.exists(cs["shuffleLogic"]))
+            self.assertTrue(os.path.exists(cs[CONF_SHUFFLE_LOGIC]))
             # Availability factor is in the original settings file but since it is a
             # default value, gets removed for the write-out
             txt = open("armiRun.yaml", "r").read()
@@ -485,7 +486,7 @@ class TestCopyInterfaceInputs(unittest.TestCase):
 
     def test_copyInputsHelper(self):
         """Test the helper function for copyInterfaceInputs."""
-        testSetting = "shuffleLogic"
+        testSetting = CONF_SHUFFLE_LOGIC
         cs = settings.Settings(ARMI_RUN_PATH)
         shuffleFile = cs[testSetting]
 
@@ -514,7 +515,7 @@ class TestCopyInterfaceInputs(unittest.TestCase):
             self.assertEqual(destFilePath, shuffleFile)
 
     def test_copyInterfaceInputs_singleFile(self):
-        testSetting = "shuffleLogic"
+        testSetting = CONF_SHUFFLE_LOGIC
         cs = settings.Settings(ARMI_RUN_PATH)
         shuffleFile = cs[testSetting]
 
@@ -527,7 +528,7 @@ class TestCopyInterfaceInputs(unittest.TestCase):
             self.assertEqual(newSettings[testSetting], str(newFilepath))
 
     def test_copyInterfaceInputs_nonFilePath(self):
-        testSetting = "shuffleLogic"
+        testSetting = CONF_SHUFFLE_LOGIC
         cs = settings.Settings(ARMI_RUN_PATH)
         fakeShuffle = "fakeFile.py"
         cs = cs.modified(newSettings={testSetting: fakeShuffle})
@@ -567,7 +568,7 @@ class TestCopyInterfaceInputs(unittest.TestCase):
             self.assertEqual(newSettings[testSetting], newFilepaths)
 
     def test_copyInterfaceInputs_wildcardFile(self):
-        testSetting = "shuffleLogic"
+        testSetting = CONF_SHUFFLE_LOGIC
         cs = settings.Settings(ARMI_RUN_PATH)
         # Use something that isn't the shuffle logic file in the case settings
         wcFile = "ISO*"
@@ -591,7 +592,7 @@ class TestCopyInterfaceInputs(unittest.TestCase):
             self.assertEqual(newSettings[testSetting], [wcFile])
 
     def test_copyInterfaceInputs_relPath(self):
-        testSetting = "shuffleLogic"
+        testSetting = CONF_SHUFFLE_LOGIC
         cs = settings.Settings(ARMI_RUN_PATH)
         shuffleFile = cs[testSetting]
         relFile = "../tests/" + shuffleFile
@@ -606,7 +607,7 @@ class TestCopyInterfaceInputs(unittest.TestCase):
             self.assertEqual(newSettings[testSetting], newFilepath)
 
     def test_copyInterfaceInputs_absPath(self):
-        testSetting = "shuffleLogic"
+        testSetting = CONF_SHUFFLE_LOGIC
         cs = settings.Settings(ARMI_RUN_PATH)
         shuffleFile = cs[testSetting]
         absFile = os.path.dirname(os.path.abspath(ARMI_RUN_PATH))
