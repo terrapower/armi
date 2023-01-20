@@ -17,6 +17,7 @@
 import pathlib
 import random
 import unittest
+import unittest.mock
 
 from numpy.testing import assert_allclose
 
@@ -891,7 +892,26 @@ class Assembly_TestCase(unittest.TestCase):
             self.assertGreater(c, lastZ)
             lastZ = c
 
+        blocksAndBottoms = self.assembly.getBlocksAndZ(returnBottomZ=True)
+        blocksAndTops = self.assembly.getBlocksAndZ(returnTopZ=True)
+
+        for (centerBlock, center), (bottomBlock, bottom), (topBlock, top) in zip(
+            blocksAndCenters, blocksAndBottoms, blocksAndTops
+        ):
+            # Blocks are returned in the same order regardless of how
+            # the heights are presented
+            self.assertIs(centerBlock, bottomBlock)
+            self.assertIs(centerBlock, topBlock)
+            # Heights are consistent
+            self.assertGreater(top, bottom)
+            self.assertAlmostEqual(top - bottom, centerBlock.getHeight())
+            expectedCenter = bottom + 0.5 * (top - bottom)
+            self.assertAlmostEqual(center, expectedCenter)
+
         self.assertRaises(TypeError, self.assembly.getBlocksAndZ, 1.0)
+
+        with self.assertRaises(ValueError):
+            self.assembly.getBlocksAndZ(returnBottomZ=True, returnTopZ=True)
 
     def test_getBlockAtElevation(self):
         """Ensure that blocks are returned in the correct range of elevations"""
@@ -1344,6 +1364,22 @@ assemblies:
         actualAssemblyArea = math.sqrt(3) / 2.0 * intercoolant.p.op ** 2
 
         self.assertAlmostEqual(bpAssemblyArea, actualAssemblyArea)
+
+
+class BareAssemblyTester(unittest.TestCase):
+    def setUp(self) -> None:
+        self.assembly = assemblies.Assembly("test")
+
+    def testBareAreaReturnsUnity(self):
+        messages = []
+        # Mock the runlog so we can intercept it
+        with unittest.mock.patch(
+            "armi.reactor.compositeList.runLog.warning", messages.append
+        ):
+            area = self.assembly.getArea()
+        self.assertEqual(area, 1.0)
+        # Ensure one warning is raised by the run log
+        self.assertEqual(len(messages), 1)
 
 
 if __name__ == "__main__":
