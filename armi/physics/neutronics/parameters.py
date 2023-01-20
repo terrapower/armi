@@ -613,7 +613,7 @@ def _getNeutronicsBlockParams():
 
     with pDefs.createBuilder(
         default=0.0,
-        location=ParamLocation.VOLUME_INTEGRATED,
+        location=ParamLocation.AVERAGE,
         categories=[parameters.Category.detailedAxialExpansion],
     ) as pb:
         pb.defParam(
@@ -626,6 +626,11 @@ def _getNeutronicsBlockParams():
             description="Production rate of neutrons from fission reactions (nu * fission source / k-eff)",
         )
 
+    with pDefs.createBuilder(
+        default=0.0,
+        location=ParamLocation.VOLUME_INTEGRATED,
+        categories=[parameters.Category.detailedAxialExpansion],
+    ) as pb:
         pb.defParam(
             "powerGenerated",
             units=" W",
