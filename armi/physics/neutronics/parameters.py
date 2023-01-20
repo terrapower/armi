@@ -360,7 +360,10 @@ def _getNeutronicsBlockParams():
         saveToDB=True,
         default=None,
         location=ParamLocation.CORNERS,
-        categories=[parameters.Category.detailedAxialExpansion, "depletion"],
+        categories=[
+            parameters.Category.detailedAxialExpansion,
+            parameters.Category.depletion,
+        ],
     ) as pb:
         pb.defParam(
             "cornerFastFlux",
@@ -459,7 +462,10 @@ def _getNeutronicsBlockParams():
             "fastFluence",
             units="#/cm^2",
             description="Fast spectrum fluence",
-            categories=["cumulative"],
+            categories=[
+                parameters.Category.cumulative,
+                parameters.Category.detailedAxialExpansion,
+            ],
         )
 
         pb.defParam(
@@ -467,7 +473,10 @@ def _getNeutronicsBlockParams():
             units="#/cm^2",
             description="Fast spectrum fluence with a peaking factor",
             location=ParamLocation.MAX,
-            categories=["cumulative"],
+            categories=[
+                parameters.Category.cumulative,
+                parameters.Category.detailedAxialExpansion,
+            ],
         )
 
         pb.defParam(
@@ -535,7 +544,6 @@ def _getNeutronicsBlockParams():
             "fluxPeak",
             units="n/cm^2/s",
             description="Peak neutron flux calculated within the mesh",
-            categories=parameters.Category.fluxQuantities,
             location=ParamLocation.MAX,
         )
 
@@ -685,7 +693,7 @@ def _getNeutronicsBlockParams():
             units="dpa",
             description="DPA approximation based on a fluence conversion factor set in the dpaPerFluence setting",
             location=ParamLocation.MAX,
-            categories=["cumulative"],
+            categories=["cumulative", "detailedAxialExpansion"],
         )
 
         pb.defParam(

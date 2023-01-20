@@ -888,12 +888,8 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
         b = self._sourceReactor.core.getFirstBlock()
         excludedCategories = [parameters.Category.gamma]
         if direction == "out":
-            excludeList = (
-                b.p.paramDefs.inCategory(parameters.Category.cumulative).names
-                + b.p.paramDefs.inCategory(
-                    parameters.Category.cumulativeOverCycle
-                ).names
-            )
+            excludedCategories.append(parameters.Category.cumulative)
+            excludedCategories.append(parameters.Category.cumulativeOverCycle)
         excludedParamNames = []
         for category in excludedCategories:
             excludedParamNames.extend(b.p.paramDefs.inCategory(category).names)
