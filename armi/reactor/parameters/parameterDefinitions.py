@@ -73,6 +73,7 @@ class Category:
     """
 
     cumulative = "cumulative"
+    cumulativeOverCycle = "cumulative over cycle"
     assignInBlueprints = "assign in blueprints"
     retainOnReplacement = "retain on replacement"
     pinQuantities = "pinQuantities"

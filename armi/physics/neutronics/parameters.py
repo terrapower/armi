@@ -467,6 +467,7 @@ def _getNeutronicsBlockParams():
             units="#/cm^2",
             description="Fast spectrum fluence with a peaking factor",
             location=ParamLocation.MAX,
+            categories=["cumulative"],
         )
 
         pb.defParam(
@@ -683,6 +684,7 @@ def _getNeutronicsBlockParams():
             units="dpa",
             description="DPA approximation based on a fluence conversion factor set in the dpaPerFluence setting",
             location=ParamLocation.MAX,
+            categories=["cumulative"],
         )
 
         pb.defParam(
