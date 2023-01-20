@@ -100,7 +100,7 @@ class Assembly(compositeList.CompositeList):
         if assemNum is None:
             assemNum = incrementAssemNum()
         name = self.makeNameFromAssemNum(assemNum)
-        super().__init__(name)
+        compositeList.CompositeList.__init__(self, name)
         self.p.assemNum = assemNum
         self.setType(typ)
         self._current = 0  # for iterating
