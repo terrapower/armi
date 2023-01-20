@@ -528,12 +528,19 @@ class UniformMeshGeometryConverter(GeometryConverter):
                     ):
                         if sourceBlockVal is None:
                             continue
-                        if paramMapper.isVolIntegrated[paramName]:
-                            denominator = sourceBlockHeight
+                        if paramMapper.isPeak[paramName]:
+                            updatedDestVals[paramName] = max(
+                                sourceBlockVal, updatedDestVals[paramName]
+                            )
                         else:
-                            denominator = destinationBlockHeight
-                        integrationFactor = sourceBlockOverlapHeight / denominator
-                        updatedDestVals[paramName] += sourceBlockVal * integrationFactor
+                            if paramMapper.isVolIntegrated[paramName]:
+                                denominator = sourceBlockHeight
+                            else:
+                                denominator = destinationBlockHeight
+                            integrationFactor = sourceBlockOverlapHeight / denominator
+                            updatedDestVals[paramName] += (
+                                sourceBlockVal * integrationFactor
+                            )
 
                 paramMapper.paramSetter(
                     destBlock, updatedDestVals.values(), updatedDestVals.keys()
@@ -1006,6 +1013,16 @@ class ParamMapper:
             paramName: b.p.paramDefs[paramName].atLocation(
                 parameters.ParamLocation.VOLUME_INTEGRATED
             )
+            for paramName in blockParamNames
+        }
+        # determine which parameters are peak/max
+        # Unfortunately, these parameters don't tell you WHERE in the block the peak
+        # value occurs. So when mapping block parameters in setAssemblyStateFromOverlaps(),
+        # we will just grab the maximum value over all of the source blocks. This effectively
+        # assumes that all of the source blocks overlap 100% with the destination block,
+        # although this is rarely actually the case.
+        self.isPeak = {
+            paramName: b.p.paramDefs[paramName].atLocation(parameters.ParamLocation.MAX)
             for paramName in blockParamNames
         }
 

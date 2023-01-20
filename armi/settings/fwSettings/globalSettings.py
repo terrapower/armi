@@ -384,7 +384,7 @@ def defineSettings() -> List[setting.Setting]:
         ),
         setting.Setting(
             CONF_BURNUP_PEAKING_FACTOR,
-            default=0.0,
+            default=1.0,
             label="Burn-up Peaking Factor",
             description="None",
             schema=vol.All(vol.Coerce(float), vol.Range(min=0)),

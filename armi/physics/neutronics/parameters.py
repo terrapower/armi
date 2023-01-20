@@ -466,6 +466,7 @@ def _getNeutronicsBlockParams():
             "fastFluencePeak",
             units="#/cm^2",
             description="Fast spectrum fluence with a peaking factor",
+            location=ParamLocation.MAX,
         )
 
         pb.defParam(
@@ -489,6 +490,7 @@ def _getNeutronicsBlockParams():
             "fluxAdjPeak",
             units="",
             description="Adjoint flux",
+            location=ParamLocation.MAX,
         )
 
         pb.defParam(
@@ -532,6 +534,8 @@ def _getNeutronicsBlockParams():
             "fluxPeak",
             units="n/cm^2/s",
             description="Peak neutron flux calculated within the mesh",
+            categories=parameters.Category.fluxQuantities,
+            location=ParamLocation.MAX,
         )
 
         pb.defParam(
@@ -567,13 +571,19 @@ def _getNeutronicsBlockParams():
             categories=[parameters.Category.gamma],
         )
 
-        pb.defParam("ppdens", units="W/cm^3", description="Peak power density")
+        pb.defParam(
+            "ppdens",
+            units="W/cm^3",
+            description="Peak power density",
+            location=ParamLocation.MAX,
+        )
 
         pb.defParam(
             "ppdensGamma",
             units="W/cm^3",
             description="Peak gamma density",
             categories=[parameters.Category.gamma],
+            location=ParamLocation.MAX,
         )
 
     # rx rate params that are derived during mesh conversion.
@@ -660,14 +670,14 @@ def _getNeutronicsBlockParams():
             "detailedDpaPeakRate",
             units="DPA/s",
             description="Peak DPA rate based on detailedDpaPeak",
-            location=ParamLocation.AVERAGE,
+            location=ParamLocation.MAX,
         )
 
         pb.defParam(
             "dpaPeakFromFluence",
             units="dpa",
             description="DPA approximation based on a fluence conversion factor set in the dpaPerFluence setting",
-            location=ParamLocation.AVERAGE,
+            location=ParamLocation.MAX,
         )
 
         pb.defParam(
