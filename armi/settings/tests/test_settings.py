@@ -153,7 +153,7 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
 """
         )
 
-        yaml = YAML()
+        yaml = YAML(typ="rt")
 
         inp = yaml.load(good_input)
         for inputSetting, inputVal in inp.items():
