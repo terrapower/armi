@@ -762,9 +762,9 @@ def validateVersion(versionThis: str, versionRequired: str) -> bool:
     elif re.search(fullV, versionRequired) is not None:
         return versionThis == versionRequired
     elif re.search(medV, versionRequired) is not None:
-        return versionThis[:-2] == versionRequired
+        return ".".join(versionThis.split(".")[:2]) == versionRequired
     elif re.search(minV, versionRequired) is not None:
-        return versionThis[0] == versionRequired
+        return versionThis.split(".")[0] == versionRequired
     else:
         raise ValueError(
             "The required version is not a valid format: {}".format(versionRequired)

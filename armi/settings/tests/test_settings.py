@@ -458,7 +458,10 @@ class TestSettingsValidationUtils(unittest.TestCase):
     def test_validateVersion(self):
         # controlled version, and true
         self.assertTrue(validateVersion("1.22.3", "1.22.3"))
+        self.assertTrue(validateVersion("1.3.102", "1.3.102"))
         self.assertTrue(validateVersion("1.2.3", "1.2"))
+        self.assertTrue(validateVersion("1.2.37", "1.2"))
+        self.assertTrue(validateVersion("13.7.3", "13.7"))
         self.assertTrue(validateVersion("1.22.310", "1"))
 
         # uncontrolled version is always true
