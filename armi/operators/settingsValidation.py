@@ -21,6 +21,7 @@ dialogues in the GUI. They say things like: "Your ___ setting has the value ___,
 is impossible. Would you like to switch to ___?"
 
 """
+import re
 import os
 
 from armi import context
@@ -726,3 +727,45 @@ def createQueryRevertBadPathToDefault(inspector, settingName, initialLambda=None
         inspector.cs.getSetting(settingName).revertToDefault,
     )
     return query
+
+
+def validateVersion(versionThis: str, versionRequired: str) -> bool:
+    """Helper function to allow users to verify that their version matches the settings file.
+
+    Parameters
+    ----------
+    versionThis: str
+        The version of this ARMI, App, or Plugin.
+        This MUST be in the form: 1.2.3
+    versionRequired: str
+        The version to compare against, say in a Settings file.
+        This must be in one of the forms: 1.2.3, 1.2, or 1
+
+    Returns
+    -------
+    bool
+        Does this version match the version in the Settings file/object?
+    """
+    fullV = "\d+\.\d+\.\d+"
+    medV = "\d+\.\d+"
+    minV = "\d+"
+
+    if versionRequired == "uncontrolled":
+        # This default flag means we don't want to check the version.
+        return True
+    elif re.search(fullV, versionThis) is None:
+        raise ValueError(
+            "The input version ({0}) does not match the required format: {1}".format(
+                versionThis, fullV
+            )
+        )
+    elif re.search(fullV, versionRequired) is not None:
+        return versionThis == versionRequired
+    elif re.search(medV, versionRequired) is not None:
+        return ".".join(versionThis.split(".")[:2]) == versionRequired
+    elif re.search(minV, versionRequired) is not None:
+        return versionThis.split(".")[0] == versionRequired
+    else:
+        raise ValueError(
+            "The required version is not a valid format: {}".format(versionRequired)
+        )
