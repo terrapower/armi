@@ -677,7 +677,10 @@ def _getNeutronicsBlockParams():
             units="dpa",
             location=ParamLocation.AVERAGE,
             description="Displacement per atom accumulated during this cycle. This accumulates over a cycle and resets to zero at BOC.",
-            categories=["cumulative over cycle", "detailedAxialExpansion"],
+            categories=[
+                parameters.Category.cumulativeOverCycle,
+                parameters.Category.detailedAxialExpansion,
+            ],
         )
 
         pb.defParam(
@@ -685,7 +688,7 @@ def _getNeutronicsBlockParams():
             units="DPA/s",
             description="Peak DPA rate based on detailedDpaPeak",
             location=ParamLocation.MAX,
-            categories=["detailedAxialExpansion", "neutronics"],
+            categories=[parameters.Category.cumulative, parameters.Category.neutronics],
         )
 
         pb.defParam(
@@ -693,7 +696,10 @@ def _getNeutronicsBlockParams():
             units="dpa",
             description="DPA approximation based on a fluence conversion factor set in the dpaPerFluence setting",
             location=ParamLocation.MAX,
-            categories=["cumulative", "detailedAxialExpansion"],
+            categories=[
+                parameters.Category.cumulative,
+                parameters.Category.detailedAxialExpansion,
+            ],
         )
 
         pb.defParam(
