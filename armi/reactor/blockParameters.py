@@ -275,6 +275,7 @@ def getBlockParameterDefinitions():
             units="dpa",
             description="displacements per atom with peaking factor",
             categories=["cumulative", "detailedAxialExpansion", "depletion"],
+            location=ParamLocation.MAX,
         )
 
         pb.defParam(

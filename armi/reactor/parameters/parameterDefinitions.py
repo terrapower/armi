@@ -72,7 +72,9 @@ class Category:
     * `detailedAxialExpansion` parameters are marked as such so that they are mapped from the uniform mesh back to the non-uniform mesh
     """
 
+    depletion = "depletion"
     cumulative = "cumulative"
+    cumulativeOverCycle = "cumulative over cycle"
     assignInBlueprints = "assign in blueprints"
     retainOnReplacement = "retain on replacement"
     pinQuantities = "pinQuantities"
