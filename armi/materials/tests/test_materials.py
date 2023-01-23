@@ -55,6 +55,15 @@ class _Material_Test:
     def test_getChildrenWithFlags(self):
         self.assertEqual(len(self.mat.getChildrenWithFlags("anything")), 0)
 
+    def test_TD(self):
+        self.assertEqual(self.mat.getTD(), self.mat.p.theoreticalDensityFrac)
+
+        self.mat._setCache("dummy", 666)
+        self.assertEqual(self.mat.cached, {"dummy": 666})
+        self.mat.adjustTD(0.5)
+        self.assertEqual(0.5, self.mat.p.theoreticalDensityFrac)
+        self.assertEqual(self.mat.cached, {})
+
 
 class MaterialConstructionTests(unittest.TestCase):
     def test_material_initialization(self):
@@ -578,11 +587,6 @@ class UraniumOxide_TestCase(_Material_Test, unittest.TestCase):
 
     def test_propertyValidTemperature(self):
         self.assertGreater(len(self.mat.propertyValidTemperature), 0)
-
-    def test_adjustTD(self):
-        self.assertEqual(self.mat.theoreticalDensityFrac, 1.0)
-        self.mat.adjustTD(0.123)
-        self.assertEqual(self.mat.theoreticalDensityFrac, 0.123)
 
 
 class Thorium_TestCase(_Material_Test, unittest.TestCase):
