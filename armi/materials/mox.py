@@ -39,8 +39,6 @@ class MOX(UraniumOxide):
 
     name = "MOX"
 
-    theoreticalDensityFrac = 1.0  # Default value
-
     enrichedNuclide = "U235"
 
     def applyInputParams(
@@ -65,8 +63,6 @@ class MOX(UraniumOxide):
                     label="Zero theoretical density",
                 )
             self.adjustTD(td)
-        else:
-            self.adjustTD(1.00)  # default to fully dense.
 
         if mass_frac_PU02 is not None:
             self.setMassFracPuO2(mass_frac_PU02)

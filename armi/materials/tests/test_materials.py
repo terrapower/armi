@@ -631,6 +631,11 @@ class ThoriumOxide_TestCase(_Material_Test, unittest.TestCase):
         accuracy = 4
         self.assertAlmostEqual(cur, ref, accuracy)
 
+        # make sure that material modifications are correctly applied
+        self.mat.applyInputParams(TD_frac=0.1)
+        cur = self.mat.density3(Tc=25)
+        self.assertAlmostEqual(cur, ref * 0.1, accuracy)
+
     def test_linearExpansion(self):
         cur = self.mat.linearExpansion(400)
         ref = 9.67e-6

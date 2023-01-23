@@ -68,8 +68,6 @@ class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
         "heat capacity": "ORNL/TM-2000/351",
     }
 
-    theoreticalDensityFrac = 1.0  # Default value
-
     thermalScatteringLaws = (
         tsl.byNbAndCompound[nb.byName["U"], tsl.UO2],
         tsl.byNbAndCompound[nb.byName["O"], tsl.UO2],
@@ -106,12 +104,6 @@ class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
     def __init__(self):
         material.SimpleSolid.__init__(self)
 
-    def adjustTD(self, val: float) -> None:
-        self.theoreticalDensityFrac = val
-
-    def getTD(self) -> float:
-        return self.theoreticalDensityFrac
-
     def applyInputParams(
         self, U235_wt_frac: float = None, TD_frac: float = None, *args, **kwargs
     ) -> None:
@@ -134,8 +126,7 @@ class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
                     label="Zero theoretical density",
                 )
             self.adjustTD(td)
-        else:
-            self.adjustTD(1.00)  # default to fully dense.
+
         material.FuelMaterial.applyInputParams(self, *args, **kwargs)
 
     def setDefaultMassFracs(self) -> None:

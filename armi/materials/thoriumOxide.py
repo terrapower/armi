@@ -22,26 +22,18 @@ Data is from [#IAEA-TECDOCT-1450]_.
 """
 from armi import runLog
 from armi.utils.units import getTk
-from armi.materials.material import Material, FuelMaterial
+from armi.materials.material import Material, FuelMaterial, SimpleSolid
 
 
-class ThoriumOxide(FuelMaterial):
+class ThoriumOxide(FuelMaterial, SimpleSolid):
     name = "ThO2"
     propertyValidTemperature = {"linear expansion": ((298, 1223), "K")}
-    theoreticalDensityFrac = 1.0
 
     def __init__(self):
-        FuelMaterial.__init__(self)
-        self.adjustTD(self.theoreticalDensityFrac)
+        Material.__init__(self)
+        self.p.refDens = 10.00
 
-    def adjustTD(self, val):
-        self.theoreticalDensityFrac = val
-        self.p.refDens = 10.00 * val
-
-    def getTD(self):
-        return self.theoreticalDensityFrac
-
-    def applyInputParams(self, TD_frac, *args, **kwargs):
+    def applyInputParams(self, TD_frac=None, *args, **kwargs):
         if TD_frac is not None:
             if TD_frac > 1.0:
                 runLog.warning(
@@ -103,6 +95,9 @@ class ThoriumOxide(FuelMaterial):
     def meltingPoint(self):
         r"""melting point in K from IAEA TE 1450"""
         return 3643.0
+
+    def density3(self, Tk=None, Tc=None):
+        return Material.density3(self, Tk, Tc) * self.getTD()
 
 
 class ThO2(ThoriumOxide):
