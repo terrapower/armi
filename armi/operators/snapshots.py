@@ -76,7 +76,7 @@ class OperatorSnapshots(operatorMPI.OperatorMPI):
             self.interactAllEveryNode(
                 ssCycle, ssNode, excludedInterfaceNames=("database",)
             )
-            self._performTightCoupling(ssCycle, ssNode)
+            self._performTightCoupling(ssCycle, ssNode, writeDB=False)
 
             # database is excluded at last snapshot since it writes at EOL
             exclude = ("database",) if (ssCycle, ssNode) == lastTimeStep else ()
