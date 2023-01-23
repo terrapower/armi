@@ -378,7 +378,10 @@ class Operator:  # pylint: disable=too-many-public-methods
         """Run the portion of the main loop that happens each subcycle."""
         self.r.p.timeNode = timeNode
         self.interactAllEveryNode(cycle, timeNode)
-        # perform tight coupling if requested
+        self._performTightCoupling(cycle, timeNode)
+
+    def _performTightCoupling(self, cycle: int, timeNode: int):
+        """if requested, perform tight coupling"""
         if self.couplingIsActive():
             self._convergenceSummary = collections.defaultdict(list)
             for coupledIteration in range(self.cs["tightCouplingMaxNumIters"]):
