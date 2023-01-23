@@ -477,22 +477,22 @@ class Inspector:
         )
 
         self.addQuery(
-            lambda: not self.cs["looseCoupling"]
-            and self.cs["numCoupledIterations"] > 0,
-            "You have {0} coupled iterations selected, but have not activated loose coupling.".format(
-                self.cs["numCoupledIterations"]
+            lambda: (
+                not self.cs["tightCoupling"]
+                and self.cs["tightCouplingMaxNumIters"] != 4
             ),
-            "Set looseCoupling to True?",
-            lambda: self._assignCS("looseCoupling", True),
+            "You've requested a non default number of tight coupling iterations but left tightCoupling: False."
+            "Do you want to set tightCoupling to True?",
+            "",
+            lambda: self._assignCS("tightCoupling", True),
         )
 
         self.addQuery(
-            lambda: self.cs["numCoupledIterations"] > 0,
-            "You have {0} coupling iterations selected.".format(
-                self.cs["numCoupledIterations"]
-            ),
-            "1 coupling iteration doubles run time (2 triples, etc). Do you want to use 0 instead? ",
-            lambda: self._assignCS("numCoupledIterations", 0),
+            lambda: (not self.cs["tightCoupling"] and self.cs["tightCouplingSettings"]),
+            "You've requested non default tight coupling settings but tightCoupling: False."
+            "Do you want to set tightCoupling to True?",
+            "",
+            lambda: self._assignCS("tightCoupling", True),
         )
 
         self.addQuery(

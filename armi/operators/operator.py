@@ -30,6 +30,7 @@ import os
 import re
 import shutil
 import time
+import collections
 
 from armi import context
 from armi import interfaces
@@ -134,6 +135,7 @@ class Operator:  # pylint: disable=too-many-public-methods
         self._maxBurnSteps = None
         self._powerFractions = None
         self._availabilityFactors = None
+        self._convergenceSummary = None
 
         # Create the welcome headers for the case (case, input, machine, and some basic reactor information)
         reportingUtils.writeWelcomeHeaders(self, cs)
@@ -377,10 +379,13 @@ class Operator:  # pylint: disable=too-many-public-methods
         self.r.p.timeNode = timeNode
         self.interactAllEveryNode(cycle, timeNode)
         # perform tight coupling if requested
-        if self.cs["numCoupledIterations"]:
-            for coupledIteration in range(self.cs["numCoupledIterations"]):
+        if self.couplingIsActive():
+            self._convergenceSummary = collections.defaultdict(list)
+            for coupledIteration in range(self.cs["tightCouplingMaxNumIters"]):
                 self.r.core.p.coupledIteration = coupledIteration + 1
-                self.interactAllCoupled(coupledIteration)
+                converged = self.interactAllCoupled(coupledIteration)
+                if converged:
+                    break
             # database has not yet been written, so we need to write it.
             dbi = self.getInterface("database")
             dbi.writeDBEveryNode(cycle, timeNode)
@@ -617,7 +622,41 @@ class Operator:  # pylint: disable=too-many-public-methods
         ARMI supports tight and loose coupling.
         """
         activeInterfaces = [ii for ii in self.interfaces if ii.enabled()]
+
+        # Store the previous iteration values before calling interactAllCoupled
+        # for each interface.
+        for interface in activeInterfaces:
+            if interface.coupler is not None:
+                interface.coupler.storePreviousIterationValue(
+                    interface.getTightCouplingValue()
+                )
+
         self._interactAll("Coupled", activeInterfaces, coupledIteration)
+
+        return self._checkTightCouplingConvergence(activeInterfaces)
+
+    def _checkTightCouplingConvergence(self, activeInterfaces: list):
+        """check if interfaces are converged
+
+        Parameters
+        ----------
+        activeInterfaces : list
+            the list of active interfaces on the operator
+
+        Notes
+        -----
+        This is split off from self.interactAllCoupled to accomodate testing"""
+        # Summarize the coupled results and the convergence status.
+        converged = []
+        for interface in activeInterfaces:
+            coupler = interface.coupler
+            if coupler is not None:
+                key = f"{interface.name}: {coupler.parameter}"
+                converged.append(coupler.isConverged(interface.getTightCouplingValue()))
+                self._convergenceSummary[key].append(coupler.eps)
+
+        reportingUtils.writeTightCouplingConvergenceSummary(self._convergenceSummary)
+        return all(converged)
 
     def interactAllError(self):
         """Interact when an error is raised by any other interface. Provides a wrap-up option on the way to a crash."""
@@ -648,6 +687,7 @@ class Operator:  # pylint: disable=too-many-public-methods
         armi.interfaces.getActiveInterfaceInfo : Collects the interface classes from relevant
             packages.
         """
+        runLog.header("=========== Creating Interfaces ===========")
         interfaceList = interfaces.getActiveInterfaceInfo(self.cs)
 
         for klass, kwargs in interfaceList:
@@ -1064,4 +1104,4 @@ class Operator:  # pylint: disable=too-many-public-methods
 
     def couplingIsActive(self):
         """True if any kind of physics coupling is active."""
-        return self.cs["looseCoupling"] or self.cs["numCoupledIterations"] > 0
+        return self.cs["tightCoupling"]

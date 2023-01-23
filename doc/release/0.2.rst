@@ -22,6 +22,7 @@ What's new in ARMI
 #. Cleanup of unnecessary and confusing functionality in axialExpansionChanger.py. (`PR#1032 <https://github.com/terrapower/armi/pull/1032>`_)
 #. Axially expand from cold to hot before deepcopy of assemblies into reactor improving speed and preserving same functionality. (`PR#1047 <https://github.com/terrapower/armi/pull/1047>`_)
 #. Add a how-to on restart calculations in the docs
+#. Overhaul of the tight coupling routine in ARMI. Removal of ``looseCoupling`` setting and introduction of new tight coupling user interface. (`https://github.com/terrapower/armi/pull/1033`_)
 #. General improvements to efficiency in many places to speed up uniform mesh conversion. (`PR#1042 <https://github.com/terrapower/armi/pull/1042>`_)
 #. Allow MCNP material card number to be defined after the card is written. (`PR#1086 <https://github.com/terrapower/armi/pull/1086>`_)
 #. Refine logic for Block.getNumPins() to only count components that are actually pins. (`PR#1098 <https://github.com/terrapower/armi/pull/1098>`_)
