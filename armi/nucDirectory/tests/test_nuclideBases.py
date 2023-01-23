@@ -14,16 +14,17 @@
 
 """Tests for nuclideBases"""
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+import math
 import os
 import random
-import math
 import unittest
-from ruamel import yaml
+
+from ruamel.yaml import YAML
 
 from armi.context import RES
-from armi.utils.units import SECONDS_PER_HOUR, AVOGADROS_NUMBER, CURIE_PER_BECQUEREL
 from armi.nucDirectory import nuclideBases, elements
 from armi.nucDirectory.tests import NUCDIRECTORY_TESTS_DEFAULT_DIR_PATH
+from armi.utils.units import SECONDS_PER_HOUR, AVOGADROS_NUMBER, CURIE_PER_BECQUEREL
 
 
 class TestNuclide(unittest.TestCase):
@@ -375,7 +376,8 @@ class TestNuclide(unittest.TestCase):
     def test_loadMcc2Data(self):
         """Tests consistency with the `mcc-nuclides.yaml` input and the nuclides in the data model."""
         with open(os.path.join(RES, "mcc-nuclides.yaml")) as f:
-            data = yaml.load(f, Loader=yaml.RoundTripLoader)
+            yaml = YAML(typ="rt")
+            data = yaml.load(f)
             expectedNuclides = set(
                 [nuc for nuc in data.keys() if data[nuc]["ENDF/B-V.2"] is not None]
             )
@@ -390,7 +392,8 @@ class TestNuclide(unittest.TestCase):
     def test_loadMcc3Data(self):
         """Tests consistency with the `mcc-nuclides.yaml` input and the nuclides in the data model."""
         with open(os.path.join(RES, "mcc-nuclides.yaml")) as f:
-            data = yaml.load(f, Loader=yaml.RoundTripLoader)
+            yaml = YAML(typ="rt")
+            data = yaml.load(f)
             expectedNuclides = set(
                 [nuc for nuc in data.keys() if data[nuc]["ENDF/B-VII.0"] is not None]
             )

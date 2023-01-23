@@ -360,7 +360,10 @@ def _getNeutronicsBlockParams():
         saveToDB=True,
         default=None,
         location=ParamLocation.CORNERS,
-        categories=[parameters.Category.detailedAxialExpansion, "depletion"],
+        categories=[
+            parameters.Category.detailedAxialExpansion,
+            parameters.Category.depletion,
+        ],
     ) as pb:
         pb.defParam(
             "cornerFastFlux",
@@ -459,13 +462,21 @@ def _getNeutronicsBlockParams():
             "fastFluence",
             units="#/cm^2",
             description="Fast spectrum fluence",
-            categories=["cumulative"],
+            categories=[
+                parameters.Category.cumulative,
+                parameters.Category.detailedAxialExpansion,
+            ],
         )
 
         pb.defParam(
             "fastFluencePeak",
             units="#/cm^2",
             description="Fast spectrum fluence with a peaking factor",
+            location=ParamLocation.MAX,
+            categories=[
+                parameters.Category.cumulative,
+                parameters.Category.detailedAxialExpansion,
+            ],
         )
 
         pb.defParam(
@@ -489,10 +500,14 @@ def _getNeutronicsBlockParams():
             "fluxAdjPeak",
             units="",
             description="Adjoint flux",
+            location=ParamLocation.MAX,
         )
 
         pb.defParam(
-            "pdens", units="W/cm$^3$", description="Average volumetric power density"
+            "pdens",
+            units="W/cm$^3$",
+            description="Average volumetric power density",
+            categories=[parameters.Category.neutronics],
         )
 
         pb.defParam(
@@ -529,6 +544,7 @@ def _getNeutronicsBlockParams():
             "fluxPeak",
             units="n/cm^2/s",
             description="Peak neutron flux calculated within the mesh",
+            location=ParamLocation.MAX,
         )
 
         pb.defParam(
@@ -564,13 +580,19 @@ def _getNeutronicsBlockParams():
             categories=[parameters.Category.gamma],
         )
 
-        pb.defParam("ppdens", units="W/cm^3", description="Peak power density")
+        pb.defParam(
+            "ppdens",
+            units="W/cm^3",
+            description="Peak power density",
+            location=ParamLocation.MAX,
+        )
 
         pb.defParam(
             "ppdensGamma",
             units="W/cm^3",
             description="Peak gamma density",
             categories=[parameters.Category.gamma],
+            location=ParamLocation.MAX,
         )
 
     # rx rate params that are derived during mesh conversion.
@@ -593,6 +615,17 @@ def _getNeutronicsBlockParams():
         )
 
         pb.defParam(
+            "rateProdN2n",
+            units="1/cm^3/s",
+            description="Production rate of neutrons from n2n reactions.",
+        )
+
+    with pDefs.createBuilder(
+        default=0.0,
+        location=ParamLocation.AVERAGE,
+        categories=[parameters.Category.detailedAxialExpansion],
+    ) as pb:
+        pb.defParam(
             "rateFis", units="1/cm^3/s", description="Fission rate in this block."
         )
 
@@ -602,18 +635,11 @@ def _getNeutronicsBlockParams():
             description="Production rate of neutrons from fission reactions (nu * fission source / k-eff)",
         )
 
-        pb.defParam(
-            "rateProdN2n",
-            units="1/cm^3/s",
-            description="Production rate of neutrons from n2n reactions.",
-        )
-
     with pDefs.createBuilder(
         default=0.0,
         location=ParamLocation.VOLUME_INTEGRATED,
         categories=[parameters.Category.detailedAxialExpansion],
     ) as pb:
-
         pb.defParam(
             "powerGenerated",
             units=" W",
@@ -621,7 +647,12 @@ def _getNeutronicsBlockParams():
             categories=[parameters.Category.gamma],
         )
 
-        pb.defParam("power", units="W", description="Total power")
+        pb.defParam(
+            "power",
+            units="W",
+            description="Total power",
+            categories=[parameters.Category.neutronics],
+        )
 
         pb.defParam("powerDecay", units="W", description="Total decay power")
 
@@ -646,21 +677,29 @@ def _getNeutronicsBlockParams():
             units="dpa",
             location=ParamLocation.AVERAGE,
             description="Displacement per atom accumulated during this cycle. This accumulates over a cycle and resets to zero at BOC.",
-            categories=["cumulative over cycle", "detailedAxialExpansion"],
+            categories=[
+                parameters.Category.cumulativeOverCycle,
+                parameters.Category.detailedAxialExpansion,
+            ],
         )
 
         pb.defParam(
             "detailedDpaPeakRate",
             units="DPA/s",
             description="Peak DPA rate based on detailedDpaPeak",
-            location=ParamLocation.AVERAGE,
+            location=ParamLocation.MAX,
+            categories=[parameters.Category.cumulative, parameters.Category.neutronics],
         )
 
         pb.defParam(
             "dpaPeakFromFluence",
             units="dpa",
             description="DPA approximation based on a fluence conversion factor set in the dpaPerFluence setting",
-            location=ParamLocation.AVERAGE,
+            location=ParamLocation.MAX,
+            categories=[
+                parameters.Category.cumulative,
+                parameters.Category.detailedAxialExpansion,
+            ],
         )
 
         pb.defParam(

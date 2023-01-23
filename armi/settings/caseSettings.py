@@ -405,6 +405,7 @@ class Settings:
             yaml = YAML()
             tree = yaml.load(stream)
             userSettings = tree[settingsIO.Roots.CUSTOM]
+
         userSettingsNames = list(userSettings.keys())
         return userSettingsNames
 

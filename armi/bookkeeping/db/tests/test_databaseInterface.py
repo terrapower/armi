@@ -99,8 +99,8 @@ class TestDatabaseInterface(unittest.TestCase):
         self.td.__exit__(None, None, None)
 
     def test_interactEveryNodeReturn(self):
-        """test that the DB is NOT written to if cs["numCoupledIterations"] != 0"""
-        self.o.cs["numCoupledIterations"] = 1
+        """test that the DB is NOT written to if cs["tightCoupling"] = True"""
+        self.o.cs["tightCoupling"] = True
         self.dbi.interactEveryNode(0, 0)
         self.assertFalse(self.dbi.database.hasTimeStep(0, 0))
 
@@ -118,11 +118,11 @@ class TestDatabaseInterface(unittest.TestCase):
         self.dbi.interactDistributeState()
         self.assertEqual(self.dbi.distributable(), 4)
 
-    def test_timeNodeLoop_numCoupledIterations(self):
+    def test_timeNodeLoop_tightCoupling(self):
         """test that database is written out after the coupling loop has completed"""
         # clear out interfaces (no need to run physics) but leave database
         self.o.interfaces = [self.dbi]
-        self.o.cs["numCoupledIterations"] = 1
+        self.o.cs["tightCoupling"] = True
         self.assertFalse(self.dbi._db.hasTimeStep(0, 0))
         self.o._timeNodeLoop(0, 0)
         self.assertTrue(self.dbi._db.hasTimeStep(0, 0))

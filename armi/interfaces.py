@@ -31,9 +31,13 @@ from typing import NamedTuple
 from typing import List
 from typing import Dict
 
+import numpy
+from numpy.linalg import norm
+
 from armi import getPluginManagerOrFail, settings, utils
 from armi.utils import textProcessors
 from armi.reactor import parameters
+from armi import runLog
 
 
 class STACK_ORDER:  # pylint: disable=invalid-name, too-few-public-methods
@@ -75,6 +79,156 @@ class STACK_ORDER:  # pylint: disable=invalid-name, too-few-public-methods
     TRANSIENT = REACTIVITY_COEFFS + 1
     BOOKKEEPING = TRANSIENT + 1
     POSTPROCESSING = BOOKKEEPING + 1
+
+
+class TightCoupler:
+    """
+    Data structure that defines tight coupling attributes that are implemented
+    within an Interface and called upon when ``interactCoupled`` is called.
+
+    Parameters
+    ----------
+    param : str
+        The name of a parameter defined in the ARMI Reactor model.
+
+    tolerance : float
+        Defines the allowable error, epsilon, between the current previous
+        parameter value(s) to determine if the selected coupling parameter has
+        been converged.
+
+    maxIters : int
+        Maximum number of tight coupling iterations allowed
+    """
+
+    _SUPPORTED_TYPES = [float, int, list, numpy.ndarray]
+
+    def __init__(self, param, tolerance, maxIters):
+        self.parameter = param
+        self.tolerance = tolerance
+        self.maxIters = maxIters
+        self._numIters = 0
+        self._previousIterationValue = None
+        self.eps = numpy.inf
+
+    def __repr__(self):
+        return f"<{self.__class__.__name__}, Parameter: {self.parameter}, Convergence Criteria: {self.tolerance}, Maximum Coupled Iterations: {self.maxIters}>"
+
+    def storePreviousIterationValue(self, val: _SUPPORTED_TYPES):
+        """
+        Stores the previous iteration value of the given parameter.
+
+        Parameters
+        ----------
+        val : _SUPPORTED_TYPES
+            the value to store. Is commonly equal to interface.getTightCouplingValue()
+
+        Raises
+        ------
+        TypeError
+            Checks the type of the val against ``_SUPPORTED_TYPES`` before storing.
+            If invalid, a TypeError is raised.
+        """
+        if type(val) not in self._SUPPORTED_TYPES:
+            raise TypeError(
+                f"{val} supplied has type {type(val)} which is not supported in {self}. "
+                f"Supported types: {self._SUPPORTED_TYPES}"
+            )
+        self._previousIterationValue = val
+
+    def isConverged(self, val: _SUPPORTED_TYPES) -> bool:
+        """
+        Return boolean indicating if the convergence criteria between the current and previous iteration values are met.
+
+        Parameters
+        ----------
+        val : _SUPPORTED_TYPES
+            the most recent value for computing convergence critera. Is commonly equal to interface.getTightCouplingValue()
+
+        Returns
+        -------
+        boolean
+            True (False) interface is (not) converged
+
+        Notes
+        -----
+        - On convergence, this class is automatically reset to its initial condition to avoid retaining
+          or holding a stale state. Calling this method will increment a counter that when exceeded will
+          clear the state. A warning will be reported if the state is cleared prior to the convergence
+          criteria being met.
+        - For computing convergence of arrays, only up to 2D is allowed. 3D arrays would arise from considering
+          component level parameters. However, converging on component level parameters is not supported at this time.
+
+        Raises
+        ------
+        ValueError
+            If the previous iteration value has not been assigned. The ``storePreviousIterationValue`` method
+            must be called first.
+        RuntimeError
+            Only support calculating norms for up to 2D arrays.
+        """
+        if self._previousIterationValue is None:
+            raise ValueError(
+                f"Cannot check convergence of {self} with no previous iteration value set. "
+                f"Set using `storePreviousIterationValue` first."
+            )
+
+        previous = self._previousIterationValue
+
+        # calculate convergence of val and previous
+        if isinstance(val, (int, float)):
+            self.eps = abs(val - previous)
+        else:
+            dim = self.getListDimension(val)
+            if dim == 1:  # 1D array
+                self.eps = norm(numpy.subtract(val, previous), ord=2)
+            elif dim == 2:  # 2D array
+                epsVec = []
+                for old, new in zip(previous, val):
+                    epsVec.append(norm(numpy.subtract(old, new), ord=2))
+                self.eps = norm(epsVec, ord=numpy.inf)
+            else:
+                raise RuntimeError(
+                    "Currently only support up to 2D arrays for calculating convergence of arrays."
+                )
+
+        # Check if convergence is satisfied. If so, or if reached max number of iters, then
+        # reset the number of iterations
+        converged = self.eps < self.tolerance
+        if converged:
+            self._numIters = 0
+        else:
+            self._numIters += 1
+            if self._numIters == self.maxIters:
+                runLog.warning(
+                    f"Maximum number of iterations for {self.parameter} reached without convergence!"
+                    f"Prescribed convergence criteria is {self.tolerance}."
+                )
+                self._numIters = 0
+
+        return converged
+
+    @staticmethod
+    def getListDimension(listToCheck: list, dim: int = 1) -> int:
+        """return the dimension of a python list
+
+        Parameters
+        ----------
+        listToCheck: list
+            the supplied python list to have its dimension returned
+        dim: int, optional
+            the dimension of the list
+
+        Returns
+        -------
+        dim, int
+            the dimension of the list. Typically 1, 2, or 3 but can be arbitrary order, N.
+        """
+        for v in listToCheck:
+            if isinstance(v, list):
+                dim += 1
+                dim = TightCoupler.getListDimension(v, dim)
+            break
+        return dim
 
 
 class Interface:
@@ -153,6 +307,7 @@ class Interface:
         self.cs = settings.getMasterCs() if cs is None else cs
         self.r = r
         self.o = r.o if r else None
+        self.coupler = _setTightCouplerByInterfaceFunction(self, cs)
 
     def __repr__(self):
         return "<Interface {0}>".format(self.name)
@@ -307,7 +462,11 @@ class Interface:
         pass
 
     def interactCoupled(self, iteration):
-        """Called repeatedly at each time node/subcycle when tight physics couping is active."""
+        """Called repeatedly at each time node/subcycle when tight physics coupling is active."""
+        pass
+
+    def getTightCouplingValue(self):
+        """Abstract method to retrieve the value in which tight coupling will converge on."""
         pass
 
     def interactError(self):
@@ -526,6 +685,35 @@ class OutputReader:
         values in some other data structure.
         """
         raise NotImplementedError()
+
+
+def _setTightCouplerByInterfaceFunction(interfaceClass, cs):
+    """
+    Return an instance of a ``TightCoupler`` class or ``None``.
+
+    Parameters
+    ----------
+    interfaceClass : Interface
+        Interface class that a ``TightCoupler`` object will be added to.
+
+    cs : Settings
+        Case settings that are parsed to determine if tight coupling is enabled
+        globally and if both a target parameter and convergence criteria defined.
+    """
+    # No tight coupling if there is no function for the Interface defined.
+    if interfaceClass.function is None:
+        return None
+
+    if not cs["tightCoupling"] or (
+        interfaceClass.function not in cs["tightCouplingSettings"]
+    ):
+        return None
+
+    parameter = cs["tightCouplingSettings"][interfaceClass.function]["parameter"]
+    tolerance = cs["tightCouplingSettings"][interfaceClass.function]["convergence"]
+    maxIters = cs["tightCouplingMaxNumIters"]
+
+    return TightCoupler(parameter, tolerance, maxIters)
 
 
 def getActiveInterfaceInfo(cs):

@@ -170,10 +170,12 @@ class TestGlobalFluxInterfaceWithExecuters(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cs = settings.Settings()
+        cls.cs = settings.Settings()
         _o, cls.r = test_reactors.loadTestReactor()
-        cls.r.core.p.keff = 1.0
-        cls.gfi = MockGlobalFluxWithExecuters(cls.r, cs)
+
+    def setUp(self):
+        self.r.core.p.keff = 1.0
+        self.gfi = MockGlobalFluxWithExecuters(self.r, self.cs)
 
     def test_executerInteraction(self):
         gfi, r = self.gfi, self.r
@@ -190,6 +192,32 @@ class TestGlobalFluxInterfaceWithExecuters(unittest.TestCase):
     def test_getExecuterCls(self):
         class0 = globalFluxInterface.GlobalFluxInterfaceUsingExecuters.getExecuterCls()
         self.assertEqual(class0, globalFluxInterface.GlobalFluxExecuter)
+
+    def test_setTightCouplingDefaults(self):
+        """assert that tight coupling defaults are only set if cs["tightCoupling"]=True"""
+        self.assertIsNone(self.gfi.coupler)
+        self._setTightCouplingTrue()
+        self.assertEqual(self.gfi.coupler.parameter, "keff")
+        self._setTightCouplingFalse()
+
+    def test_getTightCouplingValue(self):
+        """test getTightCouplingValue returns the correct value for keff and type for power"""
+        self._setTightCouplingTrue()
+        self.assertEqual(self.gfi.getTightCouplingValue(), 1.0)  # set in setUp
+        self.gfi.coupler.parameter = "power"
+        for a in self.r.core.getChildren():
+            for b in a:
+                b.p.power = 10.0
+        self.assertIsInstance(self.gfi.getTightCouplingValue(), list)
+        self._setTightCouplingFalse()
+
+    def _setTightCouplingTrue(self):
+        # pylint: disable=no-member,protected-access
+        self.cs["tightCoupling"] = True
+        self.gfi._setTightCouplingDefaults()
+
+    def _setTightCouplingFalse(self):
+        self.cs["tightCoupling"] = False
 
 
 class TestGlobalFluxInterfaceWithExecutersNonUniform(unittest.TestCase):
