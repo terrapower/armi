@@ -62,8 +62,9 @@ def getMaterialParameterDefinitions():
             "theoreticalDensityFrac",
             units=None,
             description=(
-                "Fraction of theoretical density this material is " "fabricated at"
+                "Fraction of theoretical density this material is fabricated at"
             ),
+            default=1.0,
         )
 
         pb.defParam(

@@ -647,6 +647,13 @@ class Material(composites.Composite):
             f"Material {type(self).__name__} does not implement heatCapacity"
         )
 
+    def getTD(self):
+        return self.p.theoreticalDensityFrac
+
+    def adjustTD(self, val):
+        self.p.theoreticalDensityFrac = val
+        self.clearCache()
+
 
 class Fluid(Material):
     """A material that fills its container. Could also be a gas."""
@@ -759,6 +766,13 @@ class SimpleSolid(Material):
 
     def density3(self, Tk: float = None, Tc: float = None) -> float:
         return 0.0
+
+    def density(self, Tk: float = None, Tc: float = None) -> float:
+        """
+        The same method as the parent class, but with the ability to apply a
+        non-unity theoretical density.
+        """
+        return Material.density(self, Tk=Tk, Tc=Tc) * self.getTD()
 
 
 class FuelMaterial(Material):
