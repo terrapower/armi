@@ -32,6 +32,7 @@ from armi.bookkeeping import report
 from armi import nuclideBases
 from armi.physics.neutronics import GAMMA
 from armi.physics.neutronics import NEUTRON
+from armi.reactor.components import basicShapes
 from armi.reactor import blockParameters
 from armi.reactor import components
 from armi.reactor.components.basicShapes import Hexagon, Circle
@@ -1016,7 +1017,17 @@ class Block(composites.Composite):
 
     def getNumPins(self):
         """Return the number of pins in this block."""
-        nPins = [self.getNumComponents(compType) for compType in PIN_COMPONENTS]
+        nPins = [
+            sum(
+                [
+                    int(c.getDimension("mult"))
+                    if isinstance(c, basicShapes.Circle)
+                    else 0
+                    for c in self.iterComponents(compType)
+                ]
+            )
+            for compType in PIN_COMPONENTS
+        ]
         return 0 if not nPins else max(nPins)
 
     def mergeWithBlock(self, otherBlock, fraction):
@@ -1585,6 +1596,7 @@ class HexBlock(Block):
         hexComponent.setNumberDensities(self.getNumberDensities())
         b.add(hexComponent)
 
+        b.p.nPins = self.p.nPins
         if pinSpatialLocators:
             # create a null component with cladding flags and spatialLocator from source block's
             # clad components in case pin locations need to be known for physics solver

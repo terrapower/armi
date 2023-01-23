@@ -63,6 +63,19 @@ class GlobalFluxInterface(interfaces.Interface):
         else:
             self.nodeFmt = "1d"  # produce ig001_1.inp.
         self._bocKeff = None  # for tracking rxSwing
+        self._setTightCouplingDefaults()
+
+    def _setTightCouplingDefaults(self):
+        """enable tight coupling defaults for the interface
+
+        - allows users to set tightCoupling: true in settings without
+          having to specify the specific tightCouplingSettings for this interface.
+        - this is splt off from self.__init__ for testing
+        """
+        if self.coupler is None and self.cs["tightCoupling"]:
+            self.coupler = interfaces.TightCoupler(
+                "keff", 1.0e-4, self.cs["tightCouplingMaxNumIters"]
+            )
 
     @staticmethod
     def getHistoryParams():
@@ -221,6 +234,24 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
         executer.run()
 
         GlobalFluxInterface.interactCoupled(self, iteration)
+
+    def getTightCouplingValue(self):
+        """Return the parameter value"""
+        if self.coupler.parameter == "keff":
+            return self.r.core.p.keff
+        if self.coupler.parameter == "power":
+            scaledCorePowerDistribution = []
+            for a in self.r.core.getChildren():
+                scaledPower = []
+                assemPower = sum(b.p.power for b in a)
+                for b in a:
+                    scaledPower.append(b.p.power / assemPower)
+
+                scaledCorePowerDistribution.append(scaledPower)
+
+            return scaledCorePowerDistribution
+
+        return None
 
     @staticmethod
     def getOptionsCls():

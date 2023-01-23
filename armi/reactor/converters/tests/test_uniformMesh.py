@@ -331,13 +331,14 @@ class TestUniformMesh(unittest.TestCase):
         applyNonUniformHeightDistribution(self.r)  # note: this perturbs the ref. mass
 
         self.converter.convert(self.r)
-        for b in self.converter.convReactor.core.getBlocks():
+        for ib, b in enumerate(self.converter.convReactor.core.getBlocks()):
             b.p.mgFlux = range(33)
             b.p.adjMgFlux = range(33)
             b.p.fastFlux = 2.0
             b.p.flux = 5.0
             b.p.power = 5.0
             b.p.pdens = 0.5
+            b.p.fluxPeak = 10.0 + (-1) ** ib
 
         # check integral and density params
         assemblyPowers = [
@@ -356,6 +357,11 @@ class TestUniformMesh(unittest.TestCase):
             self.assertAlmostEqual(b.p.fastFlux, 2.0)
             self.assertAlmostEqual(b.p.flux, 5.0)
             self.assertAlmostEqual(b.p.pdens, 0.5)
+
+            # fluxPeak is mapped differently as a ParamLocation.MAX value
+            # make sure that it's one of the two exact possible values
+            print(b.p.fluxPeak)
+            self.assertIn(b.p.fluxPeak, [9.0, 11.0])
 
         for expectedPower, a in zip(assemblyPowers, self.r.core):
             self.assertAlmostEqual(a.calcTotalParam("power"), expectedPower)
@@ -424,6 +430,7 @@ class TestGammaUniformMesh(unittest.TestCase):
         for b in self.converter.convReactor.core.getBlocks():
             b.p.powerGamma = 0.5
             b.p.powerNeutron = 0.5
+            b.p.power = b.p.powerGamma + b.p.powerNeutron
 
         # check integral and density params
         assemblyPowers = [
@@ -445,12 +452,11 @@ class TestGammaUniformMesh(unittest.TestCase):
             # equal to original value because these were never mapped
             self.assertEqual(b.p.fastFlux, 2.0)
             self.assertEqual(b.p.flux, 5.0)
-            self.assertEqual(b.p.fastFlux, 2.0)
-            self.assertEqual(b.p.power, 5.0)
 
             # not equal because blocks are different size
             self.assertNotEqual(b.p.powerGamma, 0.5)
             self.assertNotEqual(b.p.powerNeutron, 0.5)
+            self.assertNotEqual(b.p.power, 1.0)
 
         # equal because these are mapped
         for expectedPower, expectedGammaPower, a in zip(

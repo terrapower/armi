@@ -150,7 +150,7 @@ class DatabaseInterface(interfaces.Interface):
         - if tight coupling is enabled, the DB will be written in operator.py::Operator::_timeNodeLoop
           via writeDBEveryNode
         """
-        if self.o.cs["numCoupledIterations"]:
+        if self.o.cs["tightCoupling"]:
             # h5 cant handle overwriting so we skip here and write once the tight coupling loop has completed
             return
         self.writeDBEveryNode(cycle, node)

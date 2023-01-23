@@ -27,6 +27,7 @@ from six.moves import cPickle
 
 from armi import settings
 from armi.physics.neutronics import crossSectionGroupManager
+from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.physics.neutronics.crossSectionGroupManager import (
     BlockCollection,
     FluxWeightedAverageBlockCollection,
@@ -167,14 +168,14 @@ class TestBlockCollectionComponentAverage(unittest.TestCase):
         """
         xsgm = self.o.getInterface("xsGroups")
 
-        for _xsID, xsOpt in self.o.cs["crossSectionControl"].items():
+        for _xsID, xsOpt in self.o.cs[CONF_CROSS_SECTION].items():
             self.assertEqual(xsOpt.blockRepresentation, None)
 
         xsgm.interactBOL()
 
         # Check that the correct defaults are propagated after the interactBOL
         # from the cross section group manager is called.
-        for _xsID, xsOpt in self.o.cs["crossSectionControl"].items():
+        for _xsID, xsOpt in self.o.cs[CONF_CROSS_SECTION].items():
             self.assertEqual(
                 xsOpt.blockRepresentation, self.o.cs["xsBlockRepresentation"]
             )

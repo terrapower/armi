@@ -1010,12 +1010,11 @@ class CartesianReactorTests(ReactorTests):
 
         # run the actual method in question
         self.r.core.getNuclideCategories()
-        messages = log.getStdoutValue()
+        messages = log.getStdout()
 
         self.assertIn("Nuclide categorization", messages)
         self.assertIn("Structure", messages)
 
 
 if __name__ == "__main__":
-    # import sys;sys.argv = ["", "ReactorTests.test_genAssembliesAddedThisCycle"]
     unittest.main()

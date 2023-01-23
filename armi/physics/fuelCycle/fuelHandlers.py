@@ -34,6 +34,7 @@ from armi import runLog
 from armi.physics.fuelCycle import assemblyRotationAlgorithms as rotAlgos
 from armi.physics.fuelCycle.fuelHandlerFactory import fuelHandlerFactory
 from armi.physics.fuelCycle.fuelHandlerInterface import FuelHandlerInterface
+from armi.physics.fuelCycle.settings import CONF_ASSEMBLY_ROTATION_ALG
 from armi.reactor.flags import Flags
 from armi.utils.customExceptions import InputError
 
@@ -117,17 +118,21 @@ class FuelHandler:
             self.chooseSwaps(factor)
 
         # do rotations if pin-level details are available (requires fluxRecon plugin)
-        if self.cs["fluxRecon"] and self.cs["assemblyRotationAlgorithm"]:
+        if self.cs["fluxRecon"] and self.cs[CONF_ASSEMBLY_ROTATION_ALG]:
             # Rotate assemblies ONLY IF at least some assemblies have pin detail
             # The user can choose the algorithm method name directly in the settings
-            if hasattr(rotAlgos, self.cs["assemblyRotationAlgorithm"]):
-                rotationMethod = getattr(rotAlgos, self.cs["assemblyRotationAlgorithm"])
+            if hasattr(rotAlgos, self.cs[CONF_ASSEMBLY_ROTATION_ALG]):
+                rotationMethod = getattr(rotAlgos, self.cs[CONF_ASSEMBLY_ROTATION_ALG])
                 rotationMethod()
             else:
                 raise RuntimeError(
                     "FuelHandler {0} does not have a rotation algorithm called {1}.\n"
-                    'Change your "assemblyRotationAlgorithm" setting'
-                    "".format(rotAlgos, self.cs["assemblyRotationAlgorithm"])
+                    "Change your {2} setting"
+                    "".format(
+                        rotAlgos,
+                        self.cs[CONF_ASSEMBLY_ROTATION_ALG],
+                        CONF_ASSEMBLY_ROTATION_ALG,
+                    )
                 )
 
         # inform the reactor of how many moves occurred so it can put the number in the database.

@@ -37,7 +37,6 @@ settings:
   moduleVerbosity:
     armi.reactor.reactors: info
   nCycles: 6
-  numCoupledIterations: 0
   outputFileExtension: png
   power: 100000000.0
   summarizeAssemDesign: false
