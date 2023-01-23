@@ -159,7 +159,7 @@ class B4C(material.SimpleSolid):
         -----
         - applies theoretical density of B4C to parent method
         """
-        return material.Material.density3(self, Tk, Tc) * self.getTD()
+        return material.Material.density3(self, Tk, Tc)
 
     def linearExpansionPercent(self, Tk: float = None, Tc: float = None) -> float:
         """Boron carbide expansion. Very preliminary"""

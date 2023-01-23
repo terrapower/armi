@@ -58,6 +58,7 @@ class _Material_Test:
     def test_TD(self):
         self.assertEqual(self.mat.getTD(), self.mat.p.theoreticalDensityFrac)
 
+        self.mat.clearCache()
         self.mat._setCache("dummy", 666)
         self.assertEqual(self.mat.cached, {"dummy": 666})
         self.mat.adjustTD(0.5)
