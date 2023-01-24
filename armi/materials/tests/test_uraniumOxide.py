@@ -31,7 +31,6 @@ class UraniumOxide_TestCase(_Material_Test, unittest.TestCase):
         _Material_Test.setUp(self)
 
     def test_applyInputParams(self):
-        # TODO add other matMods
         UO2_TD = UO2()
         original = UO2_TD.density3(500)
         UO2_TD.applyInputParams(TD_frac=0.1)
