@@ -41,7 +41,7 @@ class Graphite(Material):
         Room temperature density from [INL-EXT-16-38241]_, table 2.
         """
         self.setMassFrac("C", 1.0)
-        self.p.refDens = 1.8888
+        self.refDens = 1.8888
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
         """

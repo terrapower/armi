@@ -343,7 +343,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         density = self.material.getProperty("density", Tc=self.temperatureInC)
 
         self.p.numberDensities = densityTools.getNDensFromMasses(
-            density, self.material.p.massFrac
+            density, self.material.massFrac
         )
 
         # material needs to be expanded from the material's cold temp to hot,

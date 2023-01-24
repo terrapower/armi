@@ -16,8 +16,8 @@
 Lead
 """
 
-from armi.utils.units import getTk
 from armi.materials import material
+from armi.utils.units import getTk
 
 
 class Lead(material.Fluid):

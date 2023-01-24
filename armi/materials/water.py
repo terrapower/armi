@@ -64,14 +64,15 @@ class Water(Fluid):
 
     # coefficients for auxiliary quantity for enthalpy and entropy
     # kept as d to match original source
-    d = {}
-    d["alpha"] = -1135.905627715
-    d["phi"] = 2319.5246
-    d[1] = -5.65134998e-8
-    d[2] = 2690.66631
-    d[3] = 127.287297
-    d[4] = -135.003439
-    d[5] = 0.981825814
+    d = {
+        1: -5.65134998e-08,
+        2: 2690.66631,
+        3: 127.287297,
+        4: -135.003439,
+        5: 0.981825814,
+        "alpha": -1135.905627715,
+        "phi": 2319.5246,
+    }
 
     def setDefaultMassFracs(self) -> None:
         massHydrogen = elements.bySymbol["H"].standardWeight

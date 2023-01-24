@@ -41,6 +41,9 @@ class MOX(UraniumOxide):
 
     enrichedNuclide = "U235"
 
+    def __init__(self):
+        UraniumOxide.__init__(self)
+
     def applyInputParams(
         self, U235_wt_frac=None, TD_frac=None, mass_frac_PU02=None, *args, **kwargs
     ):

@@ -70,12 +70,13 @@ class SiC(Material):
         "thermal conductivity": ((0, 2000), "C"),
     }
 
+    refTempK = 298.15
+
     def setDefaultMassFracs(self):
         self.setMassFrac("C", 0.299547726)
         self.setMassFrac("SI", 0.700452274)
 
-        self.p.refTempK = 298.15
-        self.p.refDens = 3.21
+        self.refDens = 3.21
 
     def meltingPoint(self):
         return 3003.0

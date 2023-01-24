@@ -25,7 +25,7 @@ class Y2O3(Material):
 
     def __init__(self):
         Material.__init__(self)
-        self.p.refDens = 5.03
+        self.refDens = 5.03
 
     def setDefaultMassFracs(self):
         self.setMassFrac("Y89", 0.7875)

@@ -69,9 +69,9 @@ assemblies:
         uzr = materials.UZr()
         fuelComponent = a[0][0]
         totalMass = fuelComponent.getMass()
-        for nucName in uzr.p.massFrac:
+        for nucName in uzr.massFrac:
             massFrac = fuelComponent.getMass(nucName) / totalMass
-            assert_allclose(uzr.p.massFrac[nucName], massFrac)
+            assert_allclose(uzr.massFrac[nucName], massFrac)
 
     def test_u235_wt_frac_modification(self):
         a = self.loadUZrAssembly(

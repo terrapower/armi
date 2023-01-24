@@ -50,14 +50,14 @@ class Test_densityTools(unittest.TestCase):
         o16 = nuclideBases.byName["O16"]
 
         uo2 = UO2()
-        uo2Chemicals = densityTools.getChemicals(uo2.p.massFrac)
+        uo2Chemicals = densityTools.getChemicals(uo2.massFrac)
         for symbol in ["U", "O"]:
             self.assertIn(symbol, uo2Chemicals.keys())
 
         self.assertAlmostEqual(
-            uo2Chemicals["U"], uo2.p.massFrac["U235"] + uo2.p.massFrac["U238"], 6
+            uo2Chemicals["U"], uo2.massFrac["U235"] + uo2.massFrac["U238"], 6
         )
-        self.assertAlmostEqual(uo2Chemicals["O"], uo2.p.massFrac["O"], 6)
+        self.assertAlmostEqual(uo2Chemicals["O"], uo2.massFrac["O"], 6)
 
         # ensure getChemicals works if the nuclideBase is the dict key
         massFrac = {u238: 0.87, u235: 0.12, o16: 0.01}
@@ -86,19 +86,19 @@ class Test_densityTools(unittest.TestCase):
     def test_applyIsotopicsMix(self):
         """Ensure isotopc classes get mixed properly."""
         uo2 = UO2()
-        massFracO = uo2.p.massFrac["O"]
-        uo2.p.class1_wt_frac = 0.2
+        massFracO = uo2.massFrac["O"]
+        uo2.class1_wt_frac = 0.2
         enrichedMassFracs = {"U235": 0.3, "U234": 0.1, "PU239": 0.6}
         fertileMassFracs = {"U238": 0.3, "PU240": 0.7}
         densityTools.applyIsotopicsMix(uo2, enrichedMassFracs, fertileMassFracs)
 
         self.assertAlmostEqual(
-            uo2.p.massFrac["U234"], (1 - massFracO) * 0.2 * 0.1
+            uo2.massFrac["U234"], (1 - massFracO) * 0.2 * 0.1
         )  # HM blended
         self.assertAlmostEqual(
-            uo2.p.massFrac["U238"], (1 - massFracO) * 0.8 * 0.3
+            uo2.massFrac["U238"], (1 - massFracO) * 0.8 * 0.3
         )  # HM blended
-        self.assertAlmostEqual(uo2.p.massFrac["O"], massFracO)  # non-HM stays unchanged
+        self.assertAlmostEqual(uo2.massFrac["O"], massFracO)  # non-HM stays unchanged
 
     def test_getMassFractions(self):
         numDens = {"O17": 0.1512, "PU239": 1.5223, "U234": 0.135}

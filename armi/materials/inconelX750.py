@@ -37,11 +37,11 @@ class InconelX750(Material):
         "linearExpansionPercent": "http://www.specialmetals.com/documents/Inconel%20alloy%20X-750.pdf",
         "linearExpansion": "http://www.specialmetals.com/documents/Inconel%20alloy%20X-750.pdf",
     }
+    refTempK = 294.15
 
     def __init__(self):
         Material.__init__(self)
-        self.p.refTempK = 294.15
-        self.p.refDens = 8.28  # g/cc
+        self.refDens = 8.28  # g/cc
         # Only density measurement presented in the reference.
         # Presumed to be performed at 21C since this was the reference temperature for linear expansion measurements.
 
@@ -188,7 +188,7 @@ class InconelX750(Material):
         -------
         list of length 'power' containing the polynomial fit coefficients for linearExpansionPercent
         """
-        refTempC = getTc(None, Tk=self.p.refTempK)
+        refTempC = getTc(None, Tk=self.refTempK)
         Tc = [93.3, 204.4, 315.6, 426.7, 537.8, 648.9, 760.0, 871.1, 982.2]
         alpha_mean = [
             1.260e-05,
