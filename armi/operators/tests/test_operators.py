@@ -27,6 +27,8 @@ from armi.utils.directoryChangers import TemporaryDirectoryChanger
 from armi.physics.neutronics.globalFlux.globalFluxInterface import (
     GlobalFluxInterfaceUsingExecuters,
 )
+from armi.utils import directoryChangers
+from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 
 
 class InterfaceA(Interface):
@@ -106,6 +108,30 @@ class OperatorTests(unittest.TestCase):
         self.assertFalse(self.o.couplingIsActive())
         self.o.cs["tightCoupling"] = True
         self.assertTrue(self.o.couplingIsActive())
+
+    def test_dbWrittenForCoupling(self):
+        with directoryChangers.TemporaryDirectoryChanger():
+            self.o.cs["tightCoupling"] = True
+            self.o.removeAllInterfaces()
+            dbi = DatabaseInterface(self.r, self.o.cs)
+            dbi.initDB(fName=self._testMethodName + ".h5")
+            self.o.addInterface(dbi)
+            self.o._performTightCoupling(0, 0, writeDB=True)
+            h5Contents = list(dbi.database.getH5Group(dbi.r).items())
+            self.assertTrue(h5Contents)
+            dbi.database.close()
+
+    def test_dbNotWrittenForCoupling(self):
+        with directoryChangers.TemporaryDirectoryChanger():
+            self.o.cs["tightCoupling"] = True
+            self.o.removeAllInterfaces()
+            dbi = DatabaseInterface(self.r, self.o.cs)
+            dbi.initDB(fName=self._testMethodName + ".h5")
+            self.o.addInterface(dbi)
+            self.o._performTightCoupling(0, 0, writeDB=False)
+            h5Contents = list(dbi.database.getH5Group(dbi.r).items())
+            self.assertFalse(h5Contents)
+            dbi.database.close()
 
     def test_computeTightCouplingConvergence(self):
         """ensure that tight coupling convergence can be computed and checked
