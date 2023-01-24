@@ -119,4 +119,4 @@ class Alloy200(Material):
             nickleMassFrac -= assumedMassFrac
 
         self.setMassFrac("NI", nickleMassFrac)
-        self.p.refDens = 8.9
+        self.refDens = 8.9

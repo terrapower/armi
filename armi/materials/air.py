@@ -11,12 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from armi.utils import units
 
 """Simple air material"""
-
 from armi.materials import material
-from armi.utils.units import getTk
+from armi.utils.units import getTk, G_PER_CM3_TO_KG_PER_M3
 
 
 class Air(material.Fluid):
@@ -86,7 +84,7 @@ class Air(material.Fluid):
         self.checkPropertyTempRange("density", Tk)
         inv_Tk = 1.0 / getTk(Tc, Tk)
         rho_kgPerM3 = 1.15675e03 * inv_Tk ** 2 + 3.43413e02 * inv_Tk + 2.99731e-03
-        return rho_kgPerM3 / units.G_PER_CM3_TO_KG_PER_M3
+        return rho_kgPerM3 / G_PER_CM3_TO_KG_PER_M3
 
     def specificVolumeLiquid(self, Tk=None, Tc=None):
         """

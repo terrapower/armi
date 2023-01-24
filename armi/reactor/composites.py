@@ -1100,12 +1100,8 @@ class ArmiObject(metaclass=CompositeModelType):
         We can scale each Oi evenly by multiplying by the factor f2
         Oi' = Oi * (1-C-v)/O = Oi * f2  where f2= (1-C-v)
 
-        Since massFracs is not necessarily normalized, A+C+O actually =
-        self.p.massFracNorm
-
         See Also
         --------
-
         setMassFrac
         getMassFrac
         """
@@ -1176,7 +1172,7 @@ class ArmiObject(metaclass=CompositeModelType):
                 # custom parameter only set here to determine how to behave for UZr
                 # density, linear expansion. Can't let it roam with each mass frac
                 # 'cause then the density roams too and there are "oscillations"
-                self.p.zrFrac = newMassFrac
+                self.zrFrac = newMassFrac
 
         # error checking.
         if abs(newA - val) > 1e-10:
@@ -2866,6 +2862,7 @@ class Composite(ArmiObject):
         startTime = timeit.default_timer()
         # sync parameters...
         allComps = [self] + self.getChildren(deep=True, includeMaterials=True)
+        allComps = [c for c in allComps if hasattr(c, "p")]
         sendBuf = [c.p.getSyncData() for c in allComps]
         runLog.debug("syncMpiState has {} comps".format(len(allComps)))
 
@@ -2896,6 +2893,9 @@ class Composite(ArmiObject):
             )
 
         for ci, comp in enumerate(allComps):
+            if not hasattr(comp, "_syncParameters"):
+                # materials don't have Parameters to sync
+                continue
             data = (nodeSyncData[ci] for nodeSyncData in allSyncData)
             syncCount += comp._syncParameters(  # pylint: disable=protected-access
                 data, errors
@@ -2973,9 +2973,12 @@ class Composite(ArmiObject):
         """
         paramDefs = set()
         for child in [self] + self.getChildren(deep=True, includeMaterials=True):
-            # below reads as: assigned & everything_but(SINCE_LAST_DISTRIBUTE_STATE)
-            child.p.assigned &= ~parameters.SINCE_LAST_DISTRIBUTE_STATE
-            paramDefs.add(child.p.paramDefs)
+            # Materials don't have a "p" / Parameter attribute to sync
+            if hasattr(child, "p"):
+                # below reads as: assigned & everything_but(SINCE_LAST_DISTRIBUTE_STATE)
+                child.p.assigned &= ~parameters.SINCE_LAST_DISTRIBUTE_STATE
+                paramDefs.add(child.p.paramDefs)
+
         for paramDef in paramDefs:
             paramDef.resetAssignmentFlag(parameters.SINCE_LAST_DISTRIBUTE_STATE)
 
@@ -3254,7 +3257,9 @@ class StateRetainer:
         for child in [self.composite] + self.composite.getChildren(
             deep=True, includeMaterials=True
         ):
-            paramDefs.update(child.p.paramDefs)
+            if hasattr(child, "p"):
+                # materials don't have Parameters
+                paramDefs.update(child.p.paramDefs)
             func(child)
         for paramDef in paramDefs:
             func(paramDef)

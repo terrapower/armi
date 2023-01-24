@@ -34,7 +34,7 @@ class ThU(material.Material):
     def __init__(self):
         material.Material.__init__(self)
         """g/cc from IAEA TE 1450"""
-        self.p.refDens = 11.68
+        self.refDens = 11.68
 
     def getEnrichment(self):
         return self.getMassFrac("U233") / (
@@ -42,7 +42,11 @@ class ThU(material.Material):
         )
 
     def applyInputParams(self, U233_wt_frac=None, *args, **kwargs):
-        runLog.warning("Material {} has not yet been tested for accuracy".format("ThU"))
+        runLog.warning(
+            "Material {} has not yet been tested for accuracy".format("ThU"),
+            single=True,
+            label="ThU applyInputParams",
+        )
 
         if U233_wt_frac is not None:
             self.adjustMassEnrichment(U233_wt_frac)

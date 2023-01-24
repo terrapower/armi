@@ -20,7 +20,6 @@ produces lots of neutrons. It's often used as a neutron source.
 """
 
 from armi.materials.material import SimpleSolid
-from armi.utils import densityTools
 
 
 class Californium(SimpleSolid):
