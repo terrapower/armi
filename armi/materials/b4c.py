@@ -22,7 +22,7 @@ DEFAULT_THEORETICAL_DENSITY_FRAC = 0.90
 DEFAULT_MASS_DENSITY = 2.52
 
 
-class B4C(material.SimpleSolid):
+class B4C(material.Material):
     name = "B4C"
     enrichedNuclide = "B10"
 
@@ -47,9 +47,13 @@ class B4C(material.SimpleSolid):
                     f"for {self}. 'TD_frac' will be used."
                 )
             else:
-                self.adjustTD(theoretical_density)
+                self.updateTD(theoretical_density)
         if TD_frac is not None:
-            self.adjustTD(TD_frac)
+            self.updateTD(TD_frac)
+
+    def updateTD(self, TD: float) -> None:
+        self.p.theoreticalDensityFrac = TD
+        self.clearCache()
 
     def setNewMassFracsFromMassEnrich(self, massEnrichment):
         r"""
@@ -136,7 +140,9 @@ class B4C(material.SimpleSolid):
         self.p.refDens = DEFAULT_MASS_DENSITY
         # TD reference : Dunner, Heuvel, "Absorber Materials for control rod systems of fast breeder reactors"
         # Journal of nuclear materials, 124, 185-194, (1984)."
-        self.adjustTD(DEFAULT_THEORETICAL_DENSITY_FRAC)  # normally is around 0.88-93.
+        self.p.theoreticalDensityFrac = (
+            DEFAULT_THEORETICAL_DENSITY_FRAC  # normally is around 0.88-93.
+        )
 
     @staticmethod
     def getMassEnrichmentFromNumEnrich(naturalB10NumberFraction: float) -> float:
@@ -151,6 +157,16 @@ class B4C(material.SimpleSolid):
             )
         )
 
+    def density(self, Tk: float = None, Tc: float = None) -> float:
+        """
+        Return density that preserves mass when thermally expanded in 2D.
+
+        Notes
+        -----
+        - applies theoretical density of B4C to parent method
+        """
+        return material.Material.density(self, Tk, Tc) * self.p.theoreticalDensityFrac
+
     def density3(self, Tk: float = None, Tc: float = None) -> float:
         """
         Return density that preserves mass when thermally expanded in 3D.
@@ -159,7 +175,7 @@ class B4C(material.SimpleSolid):
         -----
         - applies theoretical density of B4C to parent method
         """
-        return material.Material.density3(self, Tk, Tc)
+        return material.Material.density3(self, Tk, Tc) * self.p.theoreticalDensityFrac
 
     def linearExpansionPercent(self, Tk: float = None, Tc: float = None) -> float:
         """Boron carbide expansion. Very preliminary"""
