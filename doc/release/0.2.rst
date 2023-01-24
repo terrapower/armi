@@ -27,6 +27,7 @@ What's new in ARMI
 #. Allow MCNP material card number to be defined after the card is written. (`PR#1086 <https://github.com/terrapower/armi/pull/1086>`_)
 #. Refine logic for Block.getNumPins() to only count components that are actually pins. (`PR#1098 <https://github.com/terrapower/armi/pull/1098>`_)
 #. Improve handling of peak/max parameters by the UniformMeshConverter parameter mapper. (`PR#1108 <https://github.com/terrapower/armi/pull/1108>`_)
+#. Bug fix to expose new tight coupling functionality to ``OperatorSnapshots``. (`PR#1113 https://github.com/terrapower/armi/pull/1113`_)
 
 Bug fixes
 ---------
