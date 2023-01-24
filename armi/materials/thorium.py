@@ -30,7 +30,7 @@ class Thorium(Material):
 
     def __init__(self):
         Material.__init__(self)
-        self.p.refDens = 11.68
+        self.refDens = 11.68
 
     def setDefaultMassFracs(self):
         self.setMassFrac("TH232", 1.0)

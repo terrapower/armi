@@ -52,11 +52,11 @@ class UZr(material.FuelMaterial):
     def setDefaultMassFracs(self):
         r"""U-Pu-Zr mass fractions"""
         u235Enrichment = 0.1
-        self.p.uFrac = self.uFracDefault
-        self.p.zrFrac = self.zrFracDefault
-        self.setMassFrac("ZR", self.p.zrFrac)
-        self.setMassFrac("U235", u235Enrichment * self.p.uFrac)
-        self.setMassFrac("U238", (1.0 - u235Enrichment) * self.p.uFrac)
+        self.uFrac = self.uFracDefault
+        self.zrFrac = self.zrFracDefault
+        self.setMassFrac("ZR", self.zrFrac)
+        self.setMassFrac("U235", u235Enrichment * self.uFrac)
+        self.setMassFrac("U238", (1.0 - u235Enrichment) * self.uFrac)
         self._calculateReferenceDensity()
 
     def applyInputParams(
@@ -65,11 +65,11 @@ class UZr(material.FuelMaterial):
         """Apply user input."""
         ZR_wt_frac = self.zrFracDefault if ZR_wt_frac is None else ZR_wt_frac
         U235_wt_frac = 0.1 if U235_wt_frac is None else U235_wt_frac
-        self.p.zrFrac = ZR_wt_frac
-        self.p.uFrac = 1.0 - ZR_wt_frac
+        self.zrFrac = ZR_wt_frac
+        self.uFrac = 1.0 - ZR_wt_frac
         self.setMassFrac("ZR", ZR_wt_frac)
-        self.setMassFrac("U235", U235_wt_frac * self.p.uFrac)
-        self.setMassFrac("U238", (1.0 - U235_wt_frac) * self.p.uFrac)
+        self.setMassFrac("U235", U235_wt_frac * self.uFrac)
+        self.setMassFrac("U238", (1.0 - U235_wt_frac) * self.uFrac)
         self._calculateReferenceDensity()
         material.FuelMaterial.applyInputParams(self, *args, **kwargs)
 
@@ -81,13 +81,13 @@ class UZr(material.FuelMaterial):
             But it's complicated to update material fractions one at a time when density
             is changing on the fly.
         """
-        zrFrac = self.p.zrFrac
-        uFrac = self.p.uFrac
+        zrFrac = self.zrFrac
+        uFrac = self.uFrac
         # use vergard's law to mix densities by weight fraction at 293K
         u0 = 19.1
         zr0 = 6.52
         specificVolume = uFrac / u0 + zrFrac / zr0
-        self.p.refDens = 1.0 / specificVolume
+        self.refDens = 1.0 / specificVolume
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
         """

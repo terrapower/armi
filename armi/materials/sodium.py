@@ -14,8 +14,8 @@
 
 """Simple sodium material"""
 
-from armi.materials import material
 from armi import runLog
+from armi.materials import material
 from armi.utils.units import getTc, getTk
 
 
@@ -31,7 +31,6 @@ class Sodium(material.Fluid):
     .. [ANL-RE-95-2] Fink, J.K., and Leibowitz, L. Thermodynamic and transport properties of sodium
         liquid and vapor. United States: N. p., 1995. Web. doi:10.2172/94649.
         https://www.osti.gov/biblio/94649-gXNdLI/webviewable/
-
     """
 
     name = "Sodium"
@@ -45,7 +44,7 @@ class Sodium(material.Fluid):
     def setDefaultMassFracs(self):
         """It's just sodium"""
         self.setMassFrac("NA", 1.0)
-        self.p.refDens = 0.968
+        self.refDens = 0.968
 
     def density(self, Tk=None, Tc=None):
         """
@@ -127,7 +126,6 @@ class Sodium(material.Fluid):
         -------
         thermalConductivity : float
             thermal conductivity of Sodium (W/m-K)
-
         """
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("thermal conductivity", Tk)

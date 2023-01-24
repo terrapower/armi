@@ -16,9 +16,9 @@
 Inconel PE16
 """
 
+from armi import runLog
 from armi.materials.material import SimpleSolid
 from armi.nucDirectory import nuclideBases
-from armi import runLog
 
 
 class InconelPE16(SimpleSolid):
@@ -62,5 +62,6 @@ class InconelPE16(SimpleSolid):
         runLog.warning(
             "PE16 mass density is not temperature dependent, using room temperature value",
             single=True,
+            label="InconelPE16 density3",
         )
         return 8.00

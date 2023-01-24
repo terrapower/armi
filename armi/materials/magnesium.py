@@ -27,7 +27,8 @@ class Magnesium(material.Fluid):
 
     def density(self, Tk=None, Tc=None):
         r"""returns mass density of magnesium in g/cc
-        The Liquid Temperature Range, Density and Constants of Magnesium. P.J. McGonigal. Temple University 1961."""
+        The Liquid Temperature Range, Density and Constants of Magnesium. P.J. McGonigal. Temple University 1961.
+        """
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("density", Tk)
 
