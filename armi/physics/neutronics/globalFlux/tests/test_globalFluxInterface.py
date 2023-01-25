@@ -313,6 +313,7 @@ class TestGlobalFluxUtils(unittest.TestCase):
         self.assertGreater(b.p.fisDens, 0.0)
         self.assertGreater(b.p.fisDensHom, 0.0)
 
+
 def applyDummyFlux(r, ng=33):
     """Set arbitrary flux distribution on reactor."""
     for b in r.core.getBlocks():
