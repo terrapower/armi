@@ -103,7 +103,6 @@ class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
 
     def __init__(self):
         material.FuelMaterial.__init__(self)
-        self.theoreticalDensityFrac = 1.0
         self.refDens = self.density3(Tk=self.refTempK)
 
     def applyInputParams(
