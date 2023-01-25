@@ -59,6 +59,7 @@ import collections
 from timeit import default_timer as timer
 
 import numpy
+from scipy.cluster.vq import kmeans
 
 import armi
 from armi import runLog
@@ -73,6 +74,21 @@ from armi.reactor import parameters
 from armi.reactor.reactors import Reactor
 
 HEAVY_METAL_PARAMS = ["molesHmBOL", "massHmBOL"]
+
+
+def roundAndRemoveDuplicates(z, places=5):
+    """
+    Round all values in a list a floats and remove any duplicates after rounding.
+
+    Parameters
+    ----------
+    z : list of float
+        List to be operated on
+    places : int, optional
+        Number of places to round to
+    """
+    rounded = [round(x, places) for x in z]
+    return sorted(list(set(rounded)))
 
 
 def converterFactory(globalFluxOptions):
@@ -201,6 +217,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
             runLog.extra(f"Building copy of {r} with a uniform axial mesh.")
             self.convReactor = self.initNewReactor(r, self._cs)
             self._computeKMeansAxialMesh()
+            runLog.extra(f"Uniform mesh: {self._uniformMesh}")
             self._buildAllUniformAssemblies()
             self._mapStateFromReactorToOther(
                 self._sourceReactor, self.convReactor, mapBlockParams=False
@@ -383,21 +400,34 @@ class UniformMeshGeometryConverter(GeometryConverter):
             #     3. Use the first block of the majority XS type as the representative block.
             typeHeight = collections.defaultdict(float)
             blocks = [b for b, _h in overlappingBlockInfo]
-            for b, h in overlappingBlockInfo:
-                if b.hasFlags([Flags.FUEL, Flags.CONTROL]):
-                    typeHeight[b.p.xsType] += h
 
             sourceBlock = None
+            xsType = None
             # xsType is the one with the majority of overlap
-            if len(typeHeight) > 0:
-                xsType = next(
-                    k for k, v in typeHeight.items() if v == max(typeHeight.values())
-                )
-                for b in blocks:
+            if any([b.hasFlags([Flags.FUEL, Flags.CONTROL]) for b in blocks]):
+                for b, h in overlappingBlockInfo:
                     if b.hasFlags([Flags.FUEL, Flags.CONTROL]):
-                        if b.p.xsType == xsType:
-                            sourceBlock = b
-                            break
+                        typeHeight[b.p.xsType] += h
+            else:
+                # no Flags.FUEL or Flags.CONTROL present; just take majority overlap block
+                for b, h in overlappingBlockInfo:
+                    typeHeight[b.p.xsType] += h
+
+            xsType = next(
+                k for k, v in typeHeight.items() if v == max(typeHeight.values())
+            )
+
+            for b in blocks:
+                if b.p.xsType == xsType:
+                    sourceBlock = b
+                    break
+
+            # If no blocks meet the FUEL or CONTROL criteria above, or there is only one
+            # XS type present, just select the first block as the source block and use
+            # its cross section type.
+            if sourceBlock is None:
+                sourceBlock = blocks[0]
+                xsType = blocks[0].p.xsType
 
             if len(typeHeight) > 1:
                 if sourceBlock:
@@ -409,13 +439,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
                     for xs, h in typeHeight.items():
                         heightFrac = h / totalHeight
                         runLog.debug(f"XSType {xs}: {heightFrac:.4f}")
-
-            # If no blocks meet the FUEL or CONTROL criteria above, or there is only one
-            # XS type present, just select the first block as the source block and use
-            # its cross section type.
-            if sourceBlock is None:
-                sourceBlock = blocks[0]
-                xsType = blocks[0].p.xsType
 
             block = sourceBlock._createHomogenizedCopy(includePinCoordinates)
             block.p.xsType = xsType
@@ -688,55 +711,65 @@ class UniformMeshGeometryConverter(GeometryConverter):
         The goal of this function is to produce a uniform mesh with lines closer to the material
         boundaries of the non-uniform mesh reactor.
 
+        The mesh tolerance is used to define the proximity at which a mesh line will be grouped
+        together with other mesh lines.
+
         Parameters
         ----------
         tolerance : float, optional
             The error tolerance at which point the k-means iteration can stop
         meshTolerance : float, optional
-            The minimum desired mesh size to be produce by k-means
+            The minimum desired mesh size to be produced by k-means. When a k-means result is
+            within this tolerance of a cluster of non-uniform mesh lines, those lines will be
+            replaced by the k-means value.
 
         See Also
         --------
         _computeAverageAxialMesh
         """
-        from scipy.cluster.vq import kmeans
 
         src = self._sourceReactor
         refAssem = src.core.refAssem
 
-        refNumPoints = len(src.core.findAllAxialMeshPoints([refAssem])) - 1
+        refNumPoints = len(src.core.findAllAxialMeshPoints([refAssem])) - 2
         allMeshes = []
+        lastMeshPoint = src.core.findAllAxialMeshPoints([refAssem])[-1]
         for a in src.core:
             # Get the mesh points of the assembly, neglecting the first coordinate
-            # (typically zero).
-            aMesh = src.core.findAllAxialMeshPoints([a])[1:]
+            # (typically zero) and the last (will be fixed).
+            aMesh = src.core.findAllAxialMeshPoints([a])[1:-1]
             if len(aMesh) == refNumPoints:
                 allMeshes.extend(aMesh)
+        allMeshes = roundAndRemoveDuplicates(allMeshes, places=2)
 
         # run kmeans with an increasing number of coordinates until one of two
         # stop conditions are met
-        # 1. The newest addition is within 1 cm of another coordinate
-        # 2. The total error goes below the tolerance
+        # 1. The total error goes below the tolerance
+        # 2. The number of mesh points is twice the number in the reference assembly
         stop = False
         nMesh = refNumPoints
         while not stop:
-            meanMesh, error = kmeans(allMeshes, nMesh)
+            meanMesh, error = kmeans(allMeshes, min(nMesh, len(allMeshes)), iter=10, seed=123456789)
             sortedMesh = numpy.array(sorted(meanMesh))
             dMesh = sortedMesh[1:] - sortedMesh[:-1]
-            if any(dMesh < meshTolerance):
+            if error < tolerance:
                 stop = True
-                # go back one
-                meanMesh, error = kmeans(allMeshes, nMesh - 1)
-                self._uniformMesh = numpy.array(sorted(meanMesh))
-            else:
-                if error < tolerance:
-                    stop = True
-                    self._uniformMesh = sortedMesh
-                elif nMesh > 2 * refNumPoints:
-                    # don't iterate infinitely
-                    stop = True
-                    self._uniformMesh = sortedMesh
+                selectedMesh = list(sortedMesh) + [lastMeshPoint]
+            elif nMesh > 2 * refNumPoints:
+                # don't iterate infinitely
+                stop = True
+                selectedMesh = list(sortedMesh) + [lastMeshPoint]
+
+            # if any k-means point is within tolerance of an original mesh, replace the original
+            for i in range(len(allMeshes)):
+                for x in sortedMesh:
+                    if abs(allMeshes[i] - x) < meshTolerance:
+                        allMeshes[i] = x
+                        break
+            allMeshes = roundAndRemoveDuplicates(allMeshes)
             nMesh += 1
+
+        self._uniformMesh = numpy.array(selectedMesh)
 
     def _computeAverageAxialMesh(self):
         """
