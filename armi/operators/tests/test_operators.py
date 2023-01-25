@@ -16,6 +16,7 @@
 
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-method-argument,import-outside-toplevel
 import unittest
+import collections
 
 from armi import settings
 from armi.interfaces import Interface
@@ -23,6 +24,11 @@ from armi.operators.operator import Operator
 from armi.reactor.tests import test_reactors
 from armi.settings.caseSettings import Settings
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
+from armi.physics.neutronics.globalFlux.globalFluxInterface import (
+    GlobalFluxInterfaceUsingExecuters,
+)
+from armi.utils import directoryChangers
+from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 
 
 class InterfaceA(Interface):
@@ -46,6 +52,7 @@ class InterfaceC(Interface):
 class OperatorTests(unittest.TestCase):
     def setUp(self):
         self.o, self.r = test_reactors.loadTestReactor()
+        self.activeInterfaces = [ii for ii in self.o.interfaces if ii.enabled()]
 
     def test_addInterfaceSubclassCollision(self):
         cs = settings.Settings()
@@ -97,7 +104,55 @@ class OperatorTests(unittest.TestCase):
             self.o.loadState(0, 1)
 
     def test_couplingIsActive(self):
+        """ensure that cs["tightCoupling"] controls couplingIsActive"""
         self.assertFalse(self.o.couplingIsActive())
+        self.o.cs["tightCoupling"] = True
+        self.assertTrue(self.o.couplingIsActive())
+
+    def test_dbWriteForCoupling(self):
+        with directoryChangers.TemporaryDirectoryChanger():
+            self.o.cs["tightCoupling"] = True
+            self.dbWriteForCoupling(writeDB=True)
+            self.dbWriteForCoupling(writeDB=False)
+
+    def dbWriteForCoupling(self, writeDB: bool):
+        self.o.removeAllInterfaces()
+        dbi = DatabaseInterface(self.r, self.o.cs)
+        dbi.initDB(fName=self._testMethodName + ".h5")
+        self.o.addInterface(dbi)
+        self.o._performTightCoupling(0, 0, writeDB=writeDB)
+        h5Contents = list(dbi.database.getH5Group(dbi.r).items())
+        if writeDB:
+            self.assertTrue(h5Contents)
+        else:
+            self.assertFalse(h5Contents)
+        dbi.database.close()
+
+    def test_computeTightCouplingConvergence(self):
+        """ensure that tight coupling convergence can be computed and checked
+
+        Notes
+        -----
+        - Assertion #1: ensure that the convergence of Keff, eps, is greater than 1e-5 (the prescribed convergence criteria)
+        - Assertion #2: ensure that eps is (prevIterKeff - currIterKeff)
+        """
+        prevIterKeff = 0.9
+        currIterKeff = 1.0
+        self.o.cs["tightCoupling"] = True
+        self.o.cs["tightCouplingSettings"] = {
+            "globalFlux": {"parameter": "keff", "convergence": 1e-05}
+        }
+        globalFlux = GlobalFluxInterfaceUsingExecuters(self.r, self.o.cs)
+        globalFlux.coupler.storePreviousIterationValue(prevIterKeff)
+        self.o.addInterface(globalFlux)
+        # set keff to some new value and compute tight coupling convergence
+        self.r.core.p.keff = currIterKeff
+        self.o._convergenceSummary = collections.defaultdict(list)
+        self.assertFalse(self.o._checkTightCouplingConvergence([globalFlux]))
+        self.assertAlmostEqual(
+            globalFlux.coupler.eps,
+            currIterKeff - prevIterKeff,
+        )
 
     def test_setStateToDefault(self):
 

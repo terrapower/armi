@@ -25,16 +25,19 @@ from armi.utils import textProcessors
 
 class DummyInterface(interfaces.Interface):
     name = "Dummy"
+    function = "dummyAction"
 
 
 class TestCodeInterface(unittest.TestCase):
     """Test Code interface."""
 
+    def setUp(self):
+        self.cs = settings.Settings()
+
     def test_isRequestedDetailPoint(self):
         """Tests notification of detail points."""
-        cs = settings.Settings()
         newSettings = {"dumpSnapshot": ["000001", "995190"]}
-        cs = cs.modified(newSettings=newSettings)
+        cs = self.cs.modified(newSettings=newSettings)
 
         i = DummyInterface(None, cs)
 
@@ -44,7 +47,7 @@ class TestCodeInterface(unittest.TestCase):
 
     def test_enabled(self):
         """Test turning interfaces on and off."""
-        i = DummyInterface(None, None)
+        i = DummyInterface(None, self.cs)
 
         self.assertEqual(i.enabled(), True)
         i.enabled(False)
@@ -70,6 +73,78 @@ class TestTextProcessor(unittest.TestCase):
         line = self.tp.fsearch("xml", textFlag=True)
         self.assertIn("version", line)
         self.assertEqual(self.tp.fsearch("xml"), "")
+
+
+class TestTightCoupler(unittest.TestCase):
+    """test the tight coupler class"""
+
+    def setUp(self):
+        cs = settings.Settings()
+        cs["tightCoupling"] = True
+        cs["tightCouplingSettings"] = {
+            "dummyAction": {"parameter": "nothing", "convergence": 1.0e-5}
+        }
+        self.interface = DummyInterface(None, cs)
+
+    def test_couplerActive(self):
+        self.assertIsNotNone(self.interface.coupler)
+
+    def test_storePreviousIterationValue(self):
+        self.interface.coupler.storePreviousIterationValue(1.0)
+        self.assertEqual(self.interface.coupler._previousIterationValue, 1.0)
+
+    def test_storePreviousIterationValueException(self):
+        with self.assertRaises(TypeError) as cm:
+            self.interface.coupler.storePreviousIterationValue({5.0})
+            the_exception = cm.exception
+            self.assertEqual(the_exception.error_code, 3)
+
+    def test_isConvergedValueError(self):
+        with self.assertRaises(ValueError) as cm:
+            self.interface.coupler.isConverged(1.0)
+            the_exception = cm.exception
+            self.assertEqual(the_exception.error_code, 3)
+
+    def test_isConverged(self):
+        """ensure TightCoupler.isConverged() works with float, 1D list, and ragged 2D list
+
+        Notes
+        -----
+        2D lists can end up being ragged as assemblies can have different number of blocks.
+        Ragged lists are easier to manage with lists as opposed to numpy.arrays,
+        namely, their dimension is preserved.
+        """
+        previousValues = {
+            "float": 1.0,
+            "list1D": [1.0, 2.0],
+            "list2D": [[1, 2, 3], [1, 2]],
+        }
+        updatedValues = {
+            "float": 5.0,
+            "list1D": [5.0, 6.0],
+            "list2D": [[5, 6, 7], [5, 6]],
+        }
+        for previous, current in zip(previousValues.values(), updatedValues.values()):
+            self.interface.coupler.storePreviousIterationValue(previous)
+            self.assertFalse(self.interface.coupler.isConverged(current))
+
+    def test_isConvergedRuntimeError(self):
+        """test to ensure 3D arrays do not work"""
+        previous = [[[1, 2, 3]], [[1, 2, 3]], [[1, 2, 3]]]
+        updatedValues = [[[5, 6, 7]], [[5, 6, 7]], [[5, 6, 7]]]
+        self.interface.coupler.storePreviousIterationValue(previous)
+        with self.assertRaises(RuntimeError) as cm:
+            self.interface.coupler.isConverged(updatedValues)
+            the_exception = cm.exception
+            self.assertEqual(the_exception.error_code, 3)
+
+    def test_getListDimension(self):
+        a = [1, 2, 3]
+        self.assertEqual(interfaces.TightCoupler.getListDimension(a), 1)
+        a = [[1, 2, 3]]
+        self.assertEqual(interfaces.TightCoupler.getListDimension(a), 2)
+        a = [[[1, 2, 3]]]
+        self.assertEqual(interfaces.TightCoupler.getListDimension(a), 3)
 
 
 if __name__ == "__main__":

@@ -23,6 +23,8 @@ from armi.materials import material
 class Void(material.Fluid):
     name = "Void"
 
-    def setDefaultMassFracs(self):
-        r"""init for void"""
-        self.p.density = 0.0
+    def density(self, Tk: float = None, Tc: float = None) -> float:
+        return 0.0
+
+    def density3(self, Tk: float = None, Tc: float = None) -> float:
+        return 0.0

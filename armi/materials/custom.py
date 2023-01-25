@@ -40,7 +40,7 @@ class Custom(Material):
         by a constant user-input density.
         """
         Material.__init__(self)
-        self.p.density = 1.0
+        self.customDensity = 1.0
 
     def density(self, Tk=None, Tc=None):
         r"""
@@ -50,10 +50,10 @@ class Custom(Material):
         CustomLocation materials), so the missing density warning will appear no matter
         what.
         """
-        return self.p.density
+        return self.customDensity
 
     def setMassFrac(self, *args, **kwargs):
-        if self.p.density == 1.0:
+        if self.customDensity == 1.0:
             raise ValueError(
                 "Cannot set mass fractions on Custom materials unless a density "
                 "is defined."

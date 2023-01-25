@@ -295,7 +295,7 @@ def _setGeneralSimulationData(core, cs, coreDesignTable):
     coreDesignTable.addRow(["  ", ""])
     coreDesignTable.addRow(["Full Core Model", "{}".format(core.isFullCore)])
     coreDesignTable.addRow(
-        ["Loose Physics Coupling Enabled", "{}".format(bool(cs["looseCoupling"]))]
+        ["Tight Physics Coupling Enabled", "{}".format(bool(cs["tightCoupling"]))]
     )
     coreDesignTable.addRow(["Lattice Physics Enabled for", "{}".format(cs["genXS"])])
     coreDesignTable.addRow(

@@ -33,8 +33,7 @@ class Be9(Material):
 
     def setDefaultMassFracs(self):
         self.setMassFrac("BE9", 1.0)
-
-        self.p.refDens = 1.85
+        self.refDens = 1.85
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
         r"""

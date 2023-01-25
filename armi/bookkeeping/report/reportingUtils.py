@@ -41,7 +41,6 @@ from armi.utils import iterables
 from armi.utils import plotting
 from armi.utils import textProcessors
 from armi.utils import units
-from armi.utils.mathematics import findClosest
 
 
 # Set to prevent the image and text from being too small to read.
@@ -236,6 +235,15 @@ def getInterfaceStackSummary(o):
     )
     text = text
     return text
+
+
+def writeTightCouplingConvergenceSummary(convergenceSummary):
+    runLog.info("Tight Coupling Convergence Summary: Norm Type = Inf")
+    runLog.info(
+        tabulate.tabulate(
+            convergenceSummary, headers="keys", showindex=True, tablefmt="armi"
+        )
+    )
 
 
 def writeAssemblyMassSummary(r):
@@ -766,8 +774,8 @@ def _setGeneralSimulationData(core, cs, coreDesignTable):
         "Full Core Model", "{}".format(core.isFullCore), coreDesignTable, report.DESIGN
     )
     report.setData(
-        "Loose Physics Coupling Enabled",
-        "{}".format(bool(cs["looseCoupling"])),
+        "Tight Physics Coupling Enabled",
+        "{}".format(bool(cs["tightCoupling"])),
         coreDesignTable,
         report.DESIGN,
     )

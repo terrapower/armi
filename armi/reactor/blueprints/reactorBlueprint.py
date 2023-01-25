@@ -246,10 +246,6 @@ def summarizeMaterialData(container):
     container : Core object
         Any Core object with Blocks and Components defined.
     """
-
-    def _getMaterialSourceData(materialObj):
-        return (materialObj.DATA_SOURCE, materialObj.propertyRangeUpdated)
-
     runLog.header(
         "=========== Summarizing Source of Material Data for {} ===========".format(
             container
@@ -260,8 +256,7 @@ def summarizeMaterialData(container):
     for c in container.iterComponents():
         if c.material.name in materialNames:
             continue
-        sourceLocation, wasModified = _getMaterialSourceData(c.material)
-        materialData.append((c.material.name, sourceLocation, wasModified))
+        materialData.append((c.material.name, c.material.DATA_SOURCE, False))
         materialNames.add(c.material.name)
     materialData = sorted(materialData)
     runLog.info(
