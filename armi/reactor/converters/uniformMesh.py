@@ -200,7 +200,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
         else:
             runLog.extra(f"Building copy of {r} with a uniform axial mesh.")
             self.convReactor = self.initNewReactor(r, self._cs)
-            self._computeAverageAxialMesh()
+            self._computeKMeansAxialMesh()
             self._buildAllUniformAssemblies()
             self._mapStateFromReactorToOther(
                 self._sourceReactor, self.convReactor, mapBlockParams=False
@@ -674,6 +674,69 @@ class UniformMeshGeometryConverter(GeometryConverter):
     def _checkConversion(self):
         """Perform checks to ensure conversion occurred properly."""
         pass
+
+    def _computeKMeansAxialMesh(self, tolerance=1e-5, meshTolerance=1.0):
+        """
+        Use kMeans clustering to determine an appropriate mesh for the uniform assemblies.
+
+        Notes
+        -----
+        _computeAverageAxialMesh will drop assemblies that have extreme mesh differences until
+        all mesh points are within a tolerance of the average mesh (20%).
+        Sometimes, we don't want to drop assemblies that have extreme differences, and we also
+        may not want to average out two mesh lines that are within tolerance of the average.
+        The goal of this function is to produce a uniform mesh with lines closer to the material
+        boundaries of the non-uniform mesh reactor.
+
+        Parameters
+        ----------
+        tolerance : float, optional
+            The error tolerance at which point the k-means iteration can stop
+        meshTolerance : float, optional
+            The minimum desired mesh size to be produce by k-means
+
+        See Also
+        --------
+        _computeAverageAxialMesh
+        """
+        from scipy.cluster.vq import kmeans
+
+        src = self._sourceReactor
+        refAssem = src.core.refAssem
+
+        refNumPoints = len(src.core.findAllAxialMeshPoints([refAssem])) - 1
+        allMeshes = []
+        for a in src.core:
+            # Get the mesh points of the assembly, neglecting the first coordinate
+            # (typically zero).
+            aMesh = src.core.findAllAxialMeshPoints([a])[1:]
+            if len(aMesh) == refNumPoints:
+                allMeshes.extend(aMesh)
+
+        # run kmeans with an increasing number of coordinates until one of two
+        # stop conditions are met
+        # 1. The newest addition is within 1 cm of another coordinate
+        # 2. The total error goes below the tolerance
+        stop = False
+        nMesh = refNumPoints
+        while not stop:
+            meanMesh, error = kmeans(allMeshes, nMesh)
+            sortedMesh = numpy.array(sorted(meanMesh))
+            dMesh = sortedMesh[1:] - sortedMesh[:-1]
+            if any(dMesh < meshTolerance):
+                stop = True
+                # go back one
+                meanMesh, error = kmeans(allMeshes, nMesh - 1)
+                self._uniformMesh = numpy.array(sorted(meanMesh))
+            else:
+                if error < tolerance:
+                    stop = True
+                    self._uniformMesh = sortedMesh
+                elif nMesh > 2 * refNumPoints:
+                    # don't iterate infinitely
+                    stop = True
+                    self._uniformMesh = sortedMesh
+            nMesh += 1
 
     def _computeAverageAxialMesh(self):
         """
