@@ -263,7 +263,10 @@ def _getNeutronicsBlockParams():
             ),
             location=ParamLocation.AVERAGE,
             default=0.0,
-            categories=[parameters.Category.detailedAxialExpansion],
+            categories=[
+                parameters.Category.detailedAxialExpansion,
+                parameters.Category.neutronics,
+            ],
         )
 
         def linPowByPin(self, value):
