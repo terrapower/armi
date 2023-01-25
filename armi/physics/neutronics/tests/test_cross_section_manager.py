@@ -348,6 +348,16 @@ class Test_CrossSectionGroupManager(unittest.TestCase):
             newReprBlock.getNumberDensities(), oldReprBlock.getNumberDensities()
         )
 
+    def test_interactCoupled(self):
+        # ensure that representativeBlocks remains empty if timeNode == 1
+        self.blockList[0].r.p.timeNode = 1
+        self.csm.interactCoupled(iteration=0)
+        self.assertFalse(self.csm.representativeBlocks)
+        # ensure that representativeBlocks get populated if timeNode == 0
+        self.blockList[0].r.p.timeNode = 0
+        self.csm.interactCoupled(iteration=0)
+        self.assertTrue(self.csm.representativeBlocks)
+
 
 class TestXSNumberConverters(unittest.TestCase):
     def test_conversion(self):
