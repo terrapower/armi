@@ -1172,9 +1172,8 @@ def calcReactionRates(obj, keff, lib):
 
     if rate["rateFis"] > 0.0:
         vFuel = obj.getComponentAreaFrac(Flags.FUEL)
-        vol = obj.getVolume()
-        obj.p.fisDens = rate["rateFis"] / (vol * vFuel)
-        obj.p.fisDensHom = rate["rateFis"] / vol
+        obj.p.fisDens = rate["rateFis"] / vFuel
+        obj.p.fisDensHom = rate["rateFis"]
     else:
         obj.p.fisDens = 0.0
         obj.p.fisDensHom = 0.0

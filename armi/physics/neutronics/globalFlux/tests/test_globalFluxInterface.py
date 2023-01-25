@@ -310,8 +310,9 @@ class TestGlobalFluxUtils(unittest.TestCase):
         self.assertAlmostEqual(b.p.rateAbs, 0.0)
         globalFluxInterface.calcReactionRates(b, 1.01, b.r.core.lib)
         self.assertGreater(b.p.rateAbs, 0.0)
-        self.assertGreater(b.p.fisDens, 0.0)
-        self.assertGreater(b.p.fisDensHom, 0.0)
+        vfrac = b.getComponentAreaFrac(Flags.FUEL)
+        self.assertEqual(b.p.fisDens, b.p.rateFis / vfrac)
+        self.assertEqual(b.p.fisDensHom, b.p.rateFis)
 
 
 def applyDummyFlux(r, ng=33):
