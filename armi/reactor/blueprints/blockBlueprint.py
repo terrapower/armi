@@ -169,11 +169,12 @@ class BlockBlueprint(yamlize.KeyedList):
                     c.material.applyInputParams
                 ).parameters.keys()
 
-        for key in materialInput["byBlock"].keys():
-            if key not in validMatModOptions:
-                raise ValueError(
-                    f"Block {self.name} has invalid material modification key: {key}"
-                )
+        if "byBlock" in materialInput.keys():
+            for key in materialInput["byBlock"].keys():
+                if key not in validMatModOptions:
+                    raise ValueError(
+                        f"Block {self.name} has invalid material modification key: {key}"
+                    )
 
         # Resolve linked dims after all components in the block are created
         for c in components.values():
