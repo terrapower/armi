@@ -749,7 +749,9 @@ class UniformMeshGeometryConverter(GeometryConverter):
         stop = False
         nMesh = refNumPoints
         while not stop:
-            meanMesh, error = kmeans(allMeshes, min(nMesh, len(allMeshes)), iter=10, seed=123456789)
+            meanMesh, error = kmeans(
+                allMeshes, min(nMesh, len(allMeshes)), iter=10, seed=123456789
+            )
             sortedMesh = numpy.array(sorted(meanMesh))
             dMesh = sortedMesh[1:] - sortedMesh[:-1]
             if error < tolerance:
