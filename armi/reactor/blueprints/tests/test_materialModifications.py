@@ -189,7 +189,7 @@ assemblies:
             "fuel2": {"ZR_wt_frac": 0.3, "U235_wt_frac": 0.3},
         }
         componentDesign = a[0][0]
-        filteredMaterialInput = BlockBlueprint._filterMaterialInput(
+        filteredMaterialInput, _ = BlockBlueprint._filterMaterialInput(
             materialInput, componentDesign
         )
 

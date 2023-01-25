@@ -115,7 +115,7 @@ class BlockBlueprint(yamlize.KeyedList):
         self._checkByComponentMaterialInput(materialInput)
 
         for componentDesign in self:
-            filteredMaterialInput = self._filterMaterialInput(
+            filteredMaterialInput, byComponentMatModKeys = self._filterMaterialInput(
                 materialInput, componentDesign
             )
             c = componentDesign.construct(blueprint, filteredMaterialInput)
@@ -216,6 +216,7 @@ class BlockBlueprint(yamlize.KeyedList):
         for a given component, the by-component value will be used.
         """
         filteredMaterialInput = {}
+        byComponentMatModKeys = set()
 
         # first add the by-block modifications without question
         if "byBlock" in materialInput:
@@ -232,9 +233,10 @@ class BlockBlueprint(yamlize.KeyedList):
                 # overwriting any by-block modifications of the same type
                 if component == componentDesign.name:
                     for modName, modVal in mod.items():
+                        byComponentMatModKeys.add(modName)
                         filteredMaterialInput[modName] = modVal
 
-        return filteredMaterialInput
+        return filteredMaterialInput, byComponentMatModKeys
 
     def _getGridDesign(self, blueprint):
         """
