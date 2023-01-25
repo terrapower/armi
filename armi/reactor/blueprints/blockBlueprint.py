@@ -25,6 +25,7 @@ from armi.reactor import blocks
 from armi.reactor import parameters
 from armi.reactor.flags import Flags
 from armi.reactor.blueprints import componentBlueprint
+from armi.reactor.components.component import Component
 from armi.reactor.converters import blockConverters
 from armi.settings.fwSettings import globalSettings
 
@@ -124,14 +125,17 @@ class BlockBlueprint(yamlize.KeyedList):
 
             # check that the mat mods for this component are valid options
             # this will only examine by-component mods, block mods are done later
-            validMatModOptions = signature(
-                c.material.applyInputParams
-            ).parameters.keys()
-            for key in byComponentMatModKeys:
-                if key not in validMatModOptions:
-                    raise ValueError(
-                        f"{c} in block {self.name} has invalid material modification: {key}"
-                    )
+            if isinstance(c, Component):
+                # there are other things like composite groups that don't get
+                # material modifications -- skip those
+                validMatModOptions = signature(
+                    c.material.applyInputParams
+                ).parameters.keys()
+                for key in byComponentMatModKeys:
+                    if key not in validMatModOptions:
+                        raise ValueError(
+                            f"{c} in block {self.name} has invalid material modification: {key}"
+                        )
 
             if spatialGrid:
                 componentLocators = gridDesign.getMultiLocator(
@@ -158,9 +162,12 @@ class BlockBlueprint(yamlize.KeyedList):
         # as we did for the by-component mods above
         validMatModOptions = set()
         for c in components.values():
-            validMatModOptions |= signature(
-                c.material.applyInputParams
-            ).parameters.keys()
+            if isinstance(c, Component):
+                # there are other things like composite groups that don't get
+                # material modifications -- skip those
+                validMatModOptions |= signature(
+                    c.material.applyInputParams
+                ).parameters.keys()
 
         for key in materialInput["byBlock"].keys():
             if key not in validMatModOptions:
