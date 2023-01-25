@@ -96,7 +96,7 @@ Retrieve U-235 by the AAAZZZS ID:
 
 import os
 
-from ruamel import yaml
+from ruamel.yaml import YAML
 import numpy
 
 from armi import context
@@ -1082,7 +1082,8 @@ def imposeBurnChain(burnChainStream):
         runLog.warning("Burn chain already imposed. Skipping reimposition.")
         return
     burnChainImposed = True
-    burnData = yaml.load(burnChainStream, yaml.RoundTripLoader)
+    yaml = YAML(typ="rt")
+    burnData = yaml.load(burnChainStream)
 
     for nucName, burnInfo in burnData.items():
         nuclide = byName[nucName]
@@ -1193,7 +1194,9 @@ def __addLumpedFissionProductNuclideBases():
 def __readMCCNuclideData():
     """Read in the label data for the MC2-2 and MC2-3 cross section codes to the nuclide bases."""
     with open(os.path.join(context.RES, "mcc-nuclides.yaml"), "r") as f:
-        nuclides = yaml.load(f, yaml.RoundTripLoader)
+        yaml = YAML(typ="rt")
+        nuclides = yaml.load(f)
+
     for n in nuclides:
         nb = byName[n]
         mcc2id = nuclides[n]["ENDF/B-V.2"]

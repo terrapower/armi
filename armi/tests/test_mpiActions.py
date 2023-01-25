@@ -144,18 +144,18 @@ class MpiIterTests(unittest.TestCase):
         o, _ = test_reactors.loadTestReactor(TEST_ROOT)
 
         with mockRunLogs.BufferLog() as mock:
-            self.assertEqual("", mock._outputStream)
+            self.assertEqual("", mock.getStdout())
 
             # Run the diagnosis on the test reactor
             _diagnosePickleError(o)
 
             # Hopefully, the test reactor can be pickled, and we get no errors
-            self.assertIn("Pickle Error Detection", mock._outputStream)
-            self.assertIn("Scanning the Reactor", mock._outputStream)
-            self.assertIn("Scanning all assemblies", mock._outputStream)
-            self.assertIn("Scanning all blocks", mock._outputStream)
-            self.assertIn("Scanning blocks by name", mock._outputStream)
-            self.assertIn("Scanning the ISOTXS library", mock._outputStream)
+            self.assertIn("Pickle Error Detection", mock.getStdout())
+            self.assertIn("Scanning the Reactor", mock.getStdout())
+            self.assertIn("Scanning all assemblies", mock.getStdout())
+            self.assertIn("Scanning all blocks", mock.getStdout())
+            self.assertIn("Scanning blocks by name", mock.getStdout())
+            self.assertIn("Scanning the ISOTXS library", mock.getStdout())
 
 
 def passer():

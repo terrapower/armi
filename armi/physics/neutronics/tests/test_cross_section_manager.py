@@ -19,15 +19,15 @@ Test the cross section manager
 """
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 
-import unittest
-import copy
 from io import BytesIO
+import copy
+import unittest
 
 from six.moves import cPickle
 
 from armi import settings
-from armi.utils import units
 from armi.physics.neutronics import crossSectionGroupManager
+from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.physics.neutronics.crossSectionGroupManager import (
     BlockCollection,
     FluxWeightedAverageBlockCollection,
@@ -37,11 +37,12 @@ from armi.physics.neutronics.crossSectionGroupManager import (
     AverageBlockCollection,
 )
 from armi.physics.neutronics.crossSectionGroupManager import CrossSectionGroupManager
+from armi.physics.neutronics.fissionProductModel.tests import test_lumpedFissionProduct
 from armi.reactor.blocks import HexBlock
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
 from armi.tests import TEST_ROOT
-from armi.physics.neutronics.fissionProductModel.tests import test_lumpedFissionProduct
+from armi.utils import units
 
 
 class TestBlockCollection(unittest.TestCase):
@@ -167,14 +168,14 @@ class TestBlockCollectionComponentAverage(unittest.TestCase):
         """
         xsgm = self.o.getInterface("xsGroups")
 
-        for _xsID, xsOpt in self.o.cs["crossSectionControl"].items():
+        for _xsID, xsOpt in self.o.cs[CONF_CROSS_SECTION].items():
             self.assertEqual(xsOpt.blockRepresentation, None)
 
         xsgm.interactBOL()
 
         # Check that the correct defaults are propagated after the interactBOL
         # from the cross section group manager is called.
-        for _xsID, xsOpt in self.o.cs["crossSectionControl"].items():
+        for _xsID, xsOpt in self.o.cs[CONF_CROSS_SECTION].items():
             self.assertEqual(
                 xsOpt.blockRepresentation, self.o.cs["xsBlockRepresentation"]
             )
@@ -347,6 +348,16 @@ class Test_CrossSectionGroupManager(unittest.TestCase):
             newReprBlock.getNumberDensities(), oldReprBlock.getNumberDensities()
         )
 
+    def test_interactCoupled(self):
+        # ensure that representativeBlocks remains empty if timeNode == 1
+        self.blockList[0].r.p.timeNode = 1
+        self.csm.interactCoupled(iteration=0)
+        self.assertFalse(self.csm.representativeBlocks)
+        # ensure that representativeBlocks get populated if timeNode == 0
+        self.blockList[0].r.p.timeNode = 0
+        self.csm.interactCoupled(iteration=0)
+        self.assertTrue(self.csm.representativeBlocks)
+
 
 class TestXSNumberConverters(unittest.TestCase):
     def test_conversion(self):
@@ -377,7 +388,7 @@ class MockBlueprints:
 class MockBlock(HexBlock):
     def __init__(self, name=None, cs=None):
         self.density = {}
-        HexBlock.__init__(self, name or "MockBlock", cs or settings.getMasterCs())
+        HexBlock.__init__(self, name or "MockBlock", cs or settings.Settings())
         self.r = MockReactor()
 
     @property

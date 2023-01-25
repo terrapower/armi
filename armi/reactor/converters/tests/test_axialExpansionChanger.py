@@ -817,8 +817,8 @@ class TestDetermineTargetComponent(AxialExpansionTestBase, unittest.TestCase):
         assembly.reestablishBlockOrder()
         with mockRunLogs.BufferLog() as mock:
             self.obj.performPrescribedAxialExpansion(assembly, [dummy], [0.01])
-            self.assertIn("(blueprints defined)", mock._outputStream)
-            self.assertIn("(inferred)", mock._outputStream)
+            self.assertIn("(blueprints defined)", mock.getStdout())
+            self.assertIn("(inferred)", mock.getStdout())
 
 
 class TestInputHeightsConsideredHot(unittest.TestCase):

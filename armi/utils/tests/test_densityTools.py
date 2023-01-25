@@ -50,14 +50,14 @@ class Test_densityTools(unittest.TestCase):
         o16 = nuclideBases.byName["O16"]
 
         uo2 = UO2()
-        uo2Chemicals = densityTools.getChemicals(uo2.p.massFrac)
+        uo2Chemicals = densityTools.getChemicals(uo2.massFrac)
         for symbol in ["U", "O"]:
             self.assertIn(symbol, uo2Chemicals.keys())
 
         self.assertAlmostEqual(
-            uo2Chemicals["U"], uo2.p.massFrac["U235"] + uo2.p.massFrac["U238"], 6
+            uo2Chemicals["U"], uo2.massFrac["U235"] + uo2.massFrac["U238"], 6
         )
-        self.assertAlmostEqual(uo2Chemicals["O"], uo2.p.massFrac["O"], 6)
+        self.assertAlmostEqual(uo2Chemicals["O"], uo2.massFrac["O"], 6)
 
         # ensure getChemicals works if the nuclideBase is the dict key
         massFrac = {u238: 0.87, u235: 0.12, o16: 0.01}
@@ -86,19 +86,19 @@ class Test_densityTools(unittest.TestCase):
     def test_applyIsotopicsMix(self):
         """Ensure isotopc classes get mixed properly."""
         uo2 = UO2()
-        massFracO = uo2.p.massFrac["O"]
-        uo2.p.class1_wt_frac = 0.2
+        massFracO = uo2.massFrac["O"]
+        uo2.class1_wt_frac = 0.2
         enrichedMassFracs = {"U235": 0.3, "U234": 0.1, "PU239": 0.6}
         fertileMassFracs = {"U238": 0.3, "PU240": 0.7}
         densityTools.applyIsotopicsMix(uo2, enrichedMassFracs, fertileMassFracs)
 
         self.assertAlmostEqual(
-            uo2.p.massFrac["U234"], (1 - massFracO) * 0.2 * 0.1
+            uo2.massFrac["U234"], (1 - massFracO) * 0.2 * 0.1
         )  # HM blended
         self.assertAlmostEqual(
-            uo2.p.massFrac["U238"], (1 - massFracO) * 0.8 * 0.3
+            uo2.massFrac["U238"], (1 - massFracO) * 0.8 * 0.3
         )  # HM blended
-        self.assertAlmostEqual(uo2.p.massFrac["O"], massFracO)  # non-HM stays unchanged
+        self.assertAlmostEqual(uo2.massFrac["O"], massFracO)  # non-HM stays unchanged
 
     def test_getMassFractions(self):
         numDens = {"O17": 0.1512, "PU239": 1.5223, "U234": 0.135}
@@ -135,6 +135,51 @@ class Test_densityTools(unittest.TestCase):
         self.assertAlmostEqual(norm["PU239"], 0.40486563661306063)
         self.assertAlmostEqual(norm["U234"], 2.1502965265880334e-05)
         self.assertAlmostEqual(norm["U235"], 0.5951128604216736)
+
+    def test_formatMaterialCard(self):
+        u235 = nuclideBases.byName["U235"]
+        pu239 = nuclideBases.byName["PU239"]
+        o16 = nuclideBases.byName["O16"]
+        numDens = {o16: 0.7, pu239: 0.1, u235: 0.2}
+        matCard = densityTools.formatMaterialCard(
+            numDens,
+            matNum=1,
+            sigFigs=4,
+        )
+        refMatCard = """m1
+       8016 7.0000e-01
+      92235 2.0000e-01
+      94239 1.0000e-01
+"""
+        self.assertEqual(refMatCard, "".join(matCard))
+
+        lfp35 = nuclideBases.byName["LFP35"]
+        dump1 = nuclideBases.byName["DUMP1"]
+        o16 = nuclideBases.byName["O16"]
+        numDens = {o16: 0.7, pu239: 1e-8, u235: 0.2, lfp35: 1e-3, dump1: 1e-4}
+        matCard = densityTools.formatMaterialCard(
+            numDens,
+            matNum=-1,
+            minDens=1e-6,
+            mcnp6Compatible=True,
+            mcnpLibrary="81",
+        )
+        refMatCard = """m{}
+       8016 7.00000000e-01
+      92235 2.00000000e-01
+      94239 1.00000000e-06
+      nlib=81c
+"""
+        self.assertEqual(refMatCard, "".join(matCard))
+
+        numDens = {lfp35: 0.5, dump1: 0.5}
+        matCard = densityTools.formatMaterialCard(
+            numDens,
+            mcnp6Compatible=False,
+            mcnpLibrary=None,
+        )
+        refMatCard = []
+        self.assertEqual(refMatCard, matCard)
 
 
 if __name__ == "__main__":

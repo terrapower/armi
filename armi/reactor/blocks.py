@@ -32,8 +32,10 @@ from armi.bookkeeping import report
 from armi import nuclideBases
 from armi.physics.neutronics import GAMMA
 from armi.physics.neutronics import NEUTRON
+from armi.reactor.components import basicShapes
 from armi.reactor import blockParameters
 from armi.reactor import components
+from armi.reactor.components.basicShapes import Hexagon, Circle
 from armi.reactor import composites
 from armi.reactor import geometry
 from armi.reactor import grids
@@ -155,6 +157,21 @@ class Block(composites.Composite):
         b._lumpedFissionProducts = self._lumpedFissionProducts
 
         return b
+
+    def _createHomogenizedCopy(self, pinSpatialLocators=False):
+        """
+        Create a copy of a block
+
+        Notes
+        -----
+        Used to implement a copy function for specific block types that can
+        be much faster than a deepcopy by glossing over details that may be
+        unnecessary in certain contexts.
+
+        This base class implementation is just a deepcopy of the block, in full detail
+        (not homogenized).
+        """
+        return copy.deepcopy(self)
 
     @property
     def core(self):
@@ -1000,7 +1017,17 @@ class Block(composites.Composite):
 
     def getNumPins(self):
         """Return the number of pins in this block."""
-        nPins = [self.getNumComponents(compType) for compType in PIN_COMPONENTS]
+        nPins = [
+            sum(
+                [
+                    int(c.getDimension("mult"))
+                    if isinstance(c, basicShapes.Circle)
+                    else 0
+                    for c in self.iterComponents(compType)
+                ]
+            )
+            for compType in PIN_COMPONENTS
+        ]
         return 0 if not nPins else max(nPins)
 
     def mergeWithBlock(self, otherBlock, fraction):
@@ -1517,6 +1544,88 @@ class HexBlock(Block):
             round(x, units.FLOAT_DIMENSION_DECIMALS),
             round(y, units.FLOAT_DIMENSION_DECIMALS),
         )
+
+    def _createHomogenizedCopy(self, pinSpatialLocators=False):
+        """
+        Create a new homogenized copy of a block that is less expensive than a full deepcopy.
+
+        Notes
+        -----
+        This can be used to improve performance when a new copy of a reactor needs to be
+        built, but the full detail of the block (including component geometry, material,
+        number density, etc.) is not required for the targeted physics solver being applied
+        to the new reactor model.
+
+        The main use case is for the uniform mesh converter (UMC). Frequently, a deterministic
+        neutronics solver will require a uniform mesh reactor, which is produced by the UMC.
+        Many deterministic solvers for fast spectrum reactors will also treat the individual
+        blocks as homogenized mixtures. Since the neutronics solver does not need to know about
+        the geometric and material details of the individual child components within a block,
+        we can save significant effort while building the uniform mesh reactor with the UMC
+        by omitting this detailed data and only providing the necessary level of detail for
+        the uniform mesh reactor: number densities on each block.
+
+        .. note: Individual components within a block can have different temperatures, and this
+        can affect cross sections. This temperature variation is captured by the lattice physics
+        module. As long as temperature distribution is correctly captured during cross section
+        generation, it doesn't need to be transferred to the neutronics solver directly through
+        this copy operation.
+
+        .. note: If you make a new block, you must add it to an assembly and a reactor.
+
+        See Also
+        --------
+        armi.reactor.converters.uniformMesh.UniformMeshGeometryConverter.makeAssemWithUniformMesh
+        """
+
+        b = self.__class__(self.getName(), height=self.getHeight())
+        b.setType(self.getType(), self.p.flags)
+
+        # assign macros and LFP
+        b.macros = self.macros
+        b._lumpedFissionProducts = self._lumpedFissionProducts
+        b.p.buGroup = self.p.buGroup
+
+        hexComponent = Hexagon(
+            "homogenizedHex",
+            "_Mixture",
+            self.getAverageTempInC(),
+            self.getAverageTempInC(),
+            self._pitchDefiningComponent[1],
+        )
+        hexComponent.setNumberDensities(self.getNumberDensities())
+        b.add(hexComponent)
+
+        b.p.nPins = self.p.nPins
+        if pinSpatialLocators:
+            # create a null component with cladding flags and spatialLocator from source block's
+            # clad components in case pin locations need to be known for physics solver
+            if self.hasComponents(Flags.CLAD):
+                cladComponents = self.getComponents(Flags.CLAD)
+                for i, clad in enumerate(cladComponents):
+                    pinComponent = Circle(
+                        f"voidPin{i}",
+                        "Void",
+                        self.getAverageTempInC(),
+                        self.getAverageTempInC(),
+                        0.0,
+                    )
+                    pinComponent.setType("pin", Flags.CLAD)
+                    pinComponent.spatialLocator = copy.deepcopy(clad.spatialLocator)
+                    if isinstance(
+                        pinComponent.spatialLocator, grids.MultiIndexLocation
+                    ):
+                        for i1, i2 in zip(
+                            list(pinComponent.spatialLocator), list(clad.spatialLocator)
+                        ):
+                            i1.associate(i2.grid)
+                    pinComponent.setDimension("mult", clad.getDimension("mult"))
+                    b.add(pinComponent)
+
+        if self.spatialGrid is not None:
+            b.spatialGrid = self.spatialGrid
+
+        return b
 
     def getMaxArea(self):
         """Compute the max area of this block if it was totally full."""

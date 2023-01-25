@@ -158,11 +158,6 @@ def createReportFromSettings(cs):
     This will construct a reactor from the given settings and create BOL reports for
     that reactor/settings.
     """
-    # TODO: not sure if this is necessary, but need to investigate more to understand possible
-    # side-effects before removing. Probably better to get rid of all uses of
-    # getMasterCs(), then we can remove all setMasterCs() calls without worrying.
-    settings.setMasterCs(cs)
-
     blueprint = blueprints.loadFromCs(cs)
     r = reactors.factory(cs, blueprint)
     report = reports.ReportContent("Overview")

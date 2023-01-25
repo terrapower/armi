@@ -718,7 +718,6 @@ class Database3:
 
         cs = cs or self.loadCS()
         if updateMasterCs:
-            # apply to avoid defaults in getMasterCs calls
             settings.setMasterCs(cs)
         bp = bp or self.loadBlueprints()
 

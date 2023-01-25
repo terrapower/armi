@@ -192,7 +192,10 @@ def formatMaterialCard(
         for nuc in densities
     ):
         return []  # no valid nuclides to write
-    mCard = ["m{matNum}\n".format(matNum=matNum)]
+    if matNum >= 0:
+        mCard = ["m{matNum}\n".format(matNum=matNum)]
+    else:
+        mCard = ["m{}\n"]
     for nuc, dens in sorted(densities.items()):
         # skip LFPs and Dummies.
         if isinstance(nuc, (nuclideBases.LumpNuclideBase)):
@@ -402,22 +405,22 @@ def applyIsotopicsMix(
     fertileMassFracs : dict
         Nuclide names and weight fractions of the class 2 nuclides
     """
-    total = sum(material.p.massFrac.values())
+    total = sum(material.massFrac.values())
     hm = 0.0
-    for nucName, massFrac in material.p.massFrac.items():
+    for nucName, massFrac in material.massFrac.items():
         nb = nuclideBases.byName[nucName]
         if nb.isHeavyMetal():
             hm += massFrac
     hmFrac = hm / total
-    hmEnrich = material.p.class1_wt_frac
+    hmEnrich = material.class1_wt_frac
     for nucName in (
         set(enrichedMassFracs.keys())
         .union(set(fertileMassFracs.keys()))
-        .union(set(material.p.massFrac.keys()))
+        .union(set(material.massFrac.keys()))
     ):
         nb = nuclideBases.byName[nucName]
         if nb.isHeavyMetal():
-            material.p.massFrac[nucName] = hmFrac * (
+            material.massFrac[nucName] = hmFrac * (
                 hmEnrich * enrichedMassFracs.get(nucName, 0.0)
                 + (1 - hmEnrich) * fertileMassFracs.get(nucName, 0.0)
             )

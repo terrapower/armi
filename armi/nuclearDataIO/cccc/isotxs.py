@@ -133,6 +133,60 @@ def compareNuclideXS(nuc1, nuc2, tolerance=0.0, verbose=False):
     return equal
 
 
+def addDummyNuclidesToLibrary(lib, dummyNuclides):
+    """
+    This method adds DUMMY nuclides to the current ISOTXS library.
+
+    Parameters
+    ----------
+    lib : obj
+        ISOTXS library object
+
+    dummyNuclides: list
+        List of DUMMY nuclide objects that will be copied and added to the GAMISO file
+
+    Notes
+    -----
+    Since MC2-3 does not write DUMMY nuclide information for GAMISO files, this is necessary to provide a
+    consistent set of nuclide-level data across all the nuclides in a
+    :py:class:`~armi.nuclearDataIO.xsLibraries.XSLibrary`.
+    """
+    if not dummyNuclides:
+        runLog.important("No dummy nuclide data provided to be added to {}".format(lib))
+        return False
+    elif len(lib.xsIDs) > 1:
+        runLog.warning(
+            "Cannot add dummy nuclide data to ISOTXS library {} containing data for more than 1 XS ID.".format(
+                lib
+            )
+        )
+        return False
+
+    dummyNuclideKeysAddedToLibrary = []
+    for dummyNuclide in dummyNuclides:
+        dummyKey = dummyNuclide.nucLabel
+        if len(lib.xsIDs):
+            dummyKey += lib.xsIDs[0]
+        if dummyKey in lib:
+            continue
+
+        newDummy = xsNuclides.XSNuclide(lib, dummyKey)
+        newDummy.micros = dummyNuclide.micros
+        # Copy isotxs metadata from the isotxs metadata of the given dummy nuclide
+        for kk, vv in dummyNuclide.isotxsMetadata.items():
+            if kk in ["jj", "jband"]:
+                newDummy.isotxsMetadata[kk] = {}
+                for mm in vv:
+                    newDummy.isotxsMetadata[kk][mm] = 1
+            else:
+                newDummy.isotxsMetadata[kk] = vv
+
+        lib[dummyKey] = newDummy
+        dummyNuclideKeysAddedToLibrary.append(dummyKey)
+
+    return any(dummyNuclideKeysAddedToLibrary)
+
+
 class _IsotxsIO(cccc.Stream):
     """
     A semi-abstract stream for reading and writing to a :py:class:`~armi.nuclearDataIO.isotxs.Isotxs`.
@@ -313,10 +367,10 @@ class _IsotxsIO(cccc.Stream):
         This is not used within ARMI, because it can compute it arbitrarily. Other codes use this to seek to a
         specific position within an ISOTXS file.
         """
-        recordsPerNuclude = [
+        recordsPerNuclide = [
             self._computeNumIsotxsRecords(nuc) for nuc in self._lib.nuclides
         ]
-        return [sum(recordsPerNuclude[0:ii]) for ii in range(len(self._lib))]
+        return [sum(recordsPerNuclide[0:ii]) for ii in range(len(self._lib))]
 
     def _computeNumIsotxsRecords(self, nuclide):
         """Compute the number of ISOTXS records for a specific nuclide."""

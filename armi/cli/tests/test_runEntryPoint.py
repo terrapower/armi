@@ -85,12 +85,12 @@ class TestCheckInputEntryPoint(unittest.TestCase):
         ci.parse_args([ARMI_RUN_PATH])
 
         with mockRunLogs.BufferLog() as mock:
-            self.assertEqual("", mock._outputStream)
+            self.assertEqual("", mock.getStdout())
 
             ci.invoke()
 
-            self.assertIn(ARMI_RUN_PATH, mock._outputStream)
-            self.assertIn("input is self consistent", mock._outputStream)
+            self.assertIn(ARMI_RUN_PATH, mock.getStdout())
+            self.assertIn("input is self consistent", mock.getStdout())
 
 
 class TestCloneArmiRunCommandBatch(unittest.TestCase):
@@ -195,7 +195,7 @@ class TestConvertDB(unittest.TestCase):
             cdb.args.nodes = [1, 2, 3]
             with self.assertRaises(ValueError):
                 cdb.invoke()
-            self.assertIn("Converting the", mock._outputStream)
+            self.assertIn("Converting the", mock.getStdout())
 
     def test_convertDbOutputVersion(self):
         cdb = ConvertDB()
@@ -221,9 +221,9 @@ class TestExpandBlueprints(unittest.TestCase):
 
         # Since the file is fake, invoke() should exit early.
         with mockRunLogs.BufferLog() as mock:
-            self.assertEqual("", mock._outputStream)
+            self.assertEqual("", mock.getStdout())
             ebp.invoke()
-            self.assertIn("does not exist", mock._outputStream)
+            self.assertIn("does not exist", mock.getStdout())
 
 
 class TestExtractInputs(unittest.TestCase):

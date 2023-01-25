@@ -41,7 +41,7 @@ zVals = np.zeros((numMats, MAX_Z))
 for mi, matCls in enumerate(mats):
     m = matCls()
     materialNames.append(m.name)
-    for nucName, frac in m.p.massFrac.items():
+    for nucName, frac in m.massFrac.items():
         nb = nuclideBases.byName[nucName]
         idx = mi, nb.z - 1
         try:

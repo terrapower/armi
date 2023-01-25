@@ -14,8 +14,8 @@
 
 """Potassium"""
 
-from armi.utils.units import getTc, getTk
 from armi.materials import material
+from armi.utils.units import getTc, getTk
 
 
 class Potassium(material.Fluid):

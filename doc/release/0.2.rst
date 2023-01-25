@@ -8,6 +8,7 @@ Release Date: TBD
 
 What's new in ARMI
 ------------------
+#. The ``Material`` class no longer subclasses ``Composite`` (`PR#1062 <https://github.com/terrapower/armi/pull/1062>`_)
 #. Split 3 classes in ``database3.py`` into 3 files (`PR#955 <https://github.com/terrapower/armi/pull/955>`_)
 #. savePhysicsFiles setting to copy physics kernel input and output to directories organized by cycle and time step number (e.g., c2n1) to retain files from a simulation and avoid overwriting them. (`PR#958 <https://github.com/terrapower/armi/pull/952>`_)
 #. Add pinQuantities parameter category for blockParams that have spatial distribution within a block.
@@ -21,18 +22,26 @@ What's new in ARMI
 #. An explicit fission product modeling option was added in `PR#1022 <https://github.com/terrapower/armi/pull/1022>`_.
 #. Cleanup of unnecessary and confusing functionality in axialExpansionChanger.py. (`PR#1032 <https://github.com/terrapower/armi/pull/1032>`_)
 #. Axially expand from cold to hot before deepcopy of assemblies into reactor improving speed and preserving same functionality. (`PR#1047 <https://github.com/terrapower/armi/pull/1047>`_)
+#. Add a how-to on restart calculations in the docs
+#. Overhaul of the tight coupling routine in ARMI. Removal of ``looseCoupling`` setting and introduction of new tight coupling user interface. (`https://github.com/terrapower/armi/pull/1033`_)
+#. General improvements to efficiency in many places to speed up uniform mesh conversion. (`PR#1042 <https://github.com/terrapower/armi/pull/1042>`_)
+#. Allow MCNP material card number to be defined after the card is written. (`PR#1086 <https://github.com/terrapower/armi/pull/1086>`_)
+#. Refine logic for Block.getNumPins() to only count components that are actually pins. (`PR#1098 <https://github.com/terrapower/armi/pull/1098>`_)
+#. Improve handling of peak/max parameters by the UniformMeshConverter parameter mapper. (`PR#1108 <https://github.com/terrapower/armi/pull/1108>`_)
+#. Bug fix to expose new tight coupling functionality to ``OperatorSnapshots``. (`PR#1113 https://github.com/terrapower/armi/pull/1113`_)
 #. Check blueprints for invalid material modification keys
 
 Bug fixes
 ---------
-#. Fixed bug in ``referenceBlockAxialMesh`` and ``axialMesh`` during process loading. (`PR#980 <https://github.com/terrapower/armi/pull/980>`)
+#. Fixed bug in ``referenceBlockAxialMesh`` and ``axialMesh`` during process loading. (`PR#980 <https://github.com/terrapower/armi/pull/980>`_)
 #. Removed Barriers in temp directory changers and output cache to avoid deadlocks in MPI cases
-#. Fixed bug with database writing and tight coupling. (`PR#1005 https://github.com/terrapower/armi/pull/1005`)
+#. Fixed bug with database writing and tight coupling. (`PR#1005 https://github.com/terrapower/armi/pull/1005`_)
 #. Fixed a bug where snapshot load would not respect the new cs["power"] setting.
-#. Froze the NumPy version to be <= 1.23.5 (`PR#1035 https://github.com/terrapower/armi/pull/1035`) to continue to support numpy jagged arrays within the Database interface.
-#. Fixed a bug where the material namespace order for test_axialExpansionChanger.py was persisting beyond the tests. (`PR#1046 https://github.com/terrapower/armi/pull/1046`)
+#. Froze the NumPy version to be <= 1.23.5 (`PR#1035 https://github.com/terrapower/armi/pull/1035`_) to continue to support numpy jagged arrays within the Database interface.
+#. Fixed a bug where the material namespace order for test_axialExpansionChanger.py was persisting beyond the tests. (`PR#1046 https://github.com/terrapower/armi/pull/1046`_)
 #. A bug was fixed in `PR#1022 <https://github.com/terrapower/armi/pull/1022>`_ where the gaseous fission products were not being removed from the core directly, but instead the fission yields within the lumped fission products were being adjusted.
-
+#. Fixed a bug where non-fuel depletable components were not being initialized with all nuclides with the ``explicitFissionProducts`` model (`PR#1067 https://github.com/terrapower/armi/pull/1067`_)
+#. Bug fix to ensure consistency between cross section group manager and lattice physics interface for tight coupling. (`PR#1118 <https://github.com/terrapower/armi/pull/1118>`_)
 
 ARMI v0.2.5
 ===========

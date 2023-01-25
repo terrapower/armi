@@ -319,7 +319,7 @@ class TestShapedComponent(TestGeneralComponents):
             return  # no area defined
         unexpandedHeight = c.parent.getHeight() / c.getThermalExpansionFactor()
         self.assertAlmostEqual(
-            c.getArea(cold=True) * unexpandedHeight * c.material.p.refDens,
+            c.getArea(cold=True) * unexpandedHeight * c.material.refDens,
             self.component.getMass(),
         )
         self.assertAlmostEqual(

@@ -214,7 +214,7 @@ class TestCompareDB3(unittest.TestCase):
             with mockRunLogs.BufferLog() as mock:
                 _diffSpecialData(refData, srcData3, out, dr)
                 self.assertEqual(dr.nDiffs(), 0)
-                self.assertIn("Special formatting parameters for", mock._outputStream)
+                self.assertIn("Special formatting parameters for", mock.getStdout())
 
             # make an H5 datasets that will cause unpackSpecialData to fail
             f4 = h5py.File("test_diffSpecialData4.hdf5", "w")

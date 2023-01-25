@@ -63,6 +63,19 @@ class GlobalFluxInterface(interfaces.Interface):
         else:
             self.nodeFmt = "1d"  # produce ig001_1.inp.
         self._bocKeff = None  # for tracking rxSwing
+        self._setTightCouplingDefaults()
+
+    def _setTightCouplingDefaults(self):
+        """enable tight coupling defaults for the interface
+
+        - allows users to set tightCoupling: true in settings without
+          having to specify the specific tightCouplingSettings for this interface.
+        - this is splt off from self.__init__ for testing
+        """
+        if self.coupler is None and self.cs["tightCoupling"]:
+            self.coupler = interfaces.TightCoupler(
+                "keff", 1.0e-4, self.cs["tightCouplingMaxNumIters"]
+            )
 
     @staticmethod
     def getHistoryParams():
@@ -222,6 +235,24 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
 
         GlobalFluxInterface.interactCoupled(self, iteration)
 
+    def getTightCouplingValue(self):
+        """Return the parameter value"""
+        if self.coupler.parameter == "keff":
+            return self.r.core.p.keff
+        if self.coupler.parameter == "power":
+            scaledCorePowerDistribution = []
+            for a in self.r.core.getChildren():
+                scaledPower = []
+                assemPower = sum(b.p.power for b in a)
+                for b in a:
+                    scaledPower.append(b.p.power / assemPower)
+
+                scaledCorePowerDistribution.append(scaledPower)
+
+            return scaledCorePowerDistribution
+
+        return None
+
     @staticmethod
     def getOptionsCls():
         """
@@ -273,6 +304,7 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
         """
         executer = self.getExecuter(label=label)
         executer.options.applyResultsToReactor = False
+        executer.options.calcReactionRatesOnMeshConversion = False
         output = executer.run()
         return output.getKeff()
 
@@ -421,11 +453,7 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
         converter = self.geomConverters.get("axial")
         if not converter:
             if self.options.detailedAxialExpansion or self.options.hasNonUniformAssems:
-                converterCls = uniformMesh.converterFactory(self.options)
-                converter = converterCls(
-                    cs=self.options.cs,
-                    calcReactionRates=self.options.calcReactionRatesOnMeshConversion,
-                )
+                converter = uniformMesh.converterFactory(self.options)
                 converter.convert(self.r)
                 neutronicsReactor = converter.convReactor
 
@@ -1135,33 +1163,36 @@ def calcReactionRates(obj, keff, lib):
     numberDensities = obj.getNumberDensities()
 
     for nucName, numberDensity in numberDensities.items():
+        if numberDensity == 0.0:
+            continue
         nucrate = {}
         for simple in RX_PARAM_NAMES:
             nucrate[simple] = 0.0
-        tot = 0.0
 
         nucMc = lib.getNuclide(nucName, obj.getMicroSuffix())
         micros = nucMc.micros
-        for g, groupFlux in enumerate(obj.getMgFlux()):
 
-            # dE = flux_e*dE
-            dphi = numberDensity * groupFlux
+        # absorption is fission + capture (no n2n here)
+        mgFlux = obj.getMgFlux()
+        for name in RX_ABS_MICRO_LABELS:
+            for g, (groupFlux, xs) in enumerate(zip(mgFlux, micros[name])):
+                # dE = flux_e*dE
+                dphi = numberDensity * groupFlux
+                nucrate["rateAbs"] += dphi * xs
 
-            tot += micros.total[g, 0] * dphi
-            # absorption is fission + capture (no n2n here)
-            for name in RX_ABS_MICRO_LABELS:
-                nucrate["rateAbs"] += dphi * micros[name][g]
-
-            for name in RX_ABS_MICRO_LABELS:
                 if name != "fission":
-                    nucrate["rateCap"] += dphi * micros[name][g]
+                    nucrate["rateCap"] += dphi * xs
+                else:
+                    nucrate["rateFis"] += dphi * xs
+                    # scale nu by keff.
+                    nucrate["rateProdFis"] += (
+                        dphi * xs * micros.neutronsPerFission[g] / keff
+                    )
 
-            fis = micros.fission[g]
-            nucrate["rateFis"] += dphi * fis
-            # scale nu by keff.
-            nucrate["rateProdFis"] += dphi * fis * micros.neutronsPerFission[g] / keff
+        for groupFlux, n2nXs in zip(mgFlux, micros.n2n):
             # this n2n xs is reaction based. Multiply by 2.
-            nucrate["rateProdN2n"] += 2.0 * dphi * micros.n2n[g]
+            dphi = numberDensity * groupFlux
+            nucrate["rateProdN2n"] += 2.0 * dphi * n2nXs
 
         for simple in RX_PARAM_NAMES:
             if nucrate[simple]:

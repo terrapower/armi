@@ -16,6 +16,7 @@ r"""
 A collection of miscellaneous functions used by ReportInterface to generate
 various reports
 """
+from copy import copy
 import collections
 import os
 import pathlib
@@ -24,7 +25,6 @@ import sys
 import tabulate
 import textwrap
 import time
-from copy import copy
 
 import numpy
 
@@ -33,6 +33,7 @@ from armi import interfaces
 from armi import runLog
 from armi.bookkeeping import report
 from armi.operators import RunTypes
+from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
 from armi.reactor.components import ComponentType
 from armi.reactor.flags import Flags
 from armi.utils import getFileSHA1Hash
@@ -40,7 +41,6 @@ from armi.utils import iterables
 from armi.utils import plotting
 from armi.utils import textProcessors
 from armi.utils import units
-from armi.utils.mathematics import findClosest
 
 
 # Set to prevent the image and text from being too small to read.
@@ -235,6 +235,15 @@ def getInterfaceStackSummary(o):
     )
     text = text
     return text
+
+
+def writeTightCouplingConvergenceSummary(convergenceSummary):
+    runLog.info("Tight Coupling Convergence Summary: Norm Type = Inf")
+    runLog.info(
+        tabulate.tabulate(
+            convergenceSummary, headers="keys", showindex=True, tablefmt="armi"
+        )
+    )
 
 
 def writeAssemblyMassSummary(r):
@@ -631,7 +640,7 @@ def _setGeneralCoreDesignData(cs, coreDesignTable):
     )
     report.setData(
         "Fuel Shuffling Logic File",
-        "{}".format(cs["shuffleLogic"]),
+        "{}".format(cs[CONF_SHUFFLE_LOGIC]),
         coreDesignTable,
         report.DESIGN,
     )
@@ -765,8 +774,8 @@ def _setGeneralSimulationData(core, cs, coreDesignTable):
         "Full Core Model", "{}".format(core.isFullCore), coreDesignTable, report.DESIGN
     )
     report.setData(
-        "Loose Physics Coupling Enabled",
-        "{}".format(bool(cs["looseCoupling"])),
+        "Tight Physics Coupling Enabled",
+        "{}".format(bool(cs["tightCoupling"])),
         coreDesignTable,
         report.DESIGN,
     )

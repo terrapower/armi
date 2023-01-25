@@ -23,6 +23,7 @@ All temperatures are in K, but Tc can be specified and the functions will conver
      a TerraPower proprietary system. You will see references to it in this module.
 
 """
+# pylint: disable=unused-argument
 import copy
 import warnings
 
@@ -30,9 +31,7 @@ from scipy.optimize import fsolve
 import numpy
 
 from armi import runLog
-from armi.materials import materialParameters
 from armi.nucDirectory import nuclideBases
-from armi.reactor import composites
 from armi.reactor.flags import TypeSpec
 from armi.utils import densityTools
 from armi.utils.units import getTk, getTc
@@ -41,13 +40,10 @@ from armi.utils.units import getTk, getTc
 FAIL_ON_RANGE = False
 
 
-class Material(composites.Composite):
+class Material:
     """
     A material is made up of elements or isotopes. It has bulk properties like mass density.
     """
-
-    pDefs = materialParameters.getMaterialParameterDefinitions()
-    """State parameter definitions"""
 
     DATA_SOURCE = "ARMI"
     """Indication of where the material is loaded from (may be plugin name)"""
@@ -73,43 +69,70 @@ class Material(composites.Composite):
     with information about thermal scattering."""
 
     def __init__(self):
-        composites.Composite.__init__(self, self.__class__.name)
-        self.p.massFrac = {}
-
-        # track sum of massFrac (which are modified and won't always sum to 1.0!)
-        self.p.massFracNorm = 0.0
-
-        # so it doesn't have to be summed each time ( O(1) vs. O(N))
-        self.p.atomFracDenom = 0.0
-
-        self.p.refDens = 0.0
+        self.parent = None
+        self.massFrac = {}
+        self.refDens = 0.0
+        self.theoreticalDensityFrac = 0.0
+        self.cached = {}
+        self._backupCache = None
 
         # call subclass implementations
         self.setDefaultMassFracs()
-        self.propertyRangeUpdated = False
 
     def __repr__(self):
         return "<Material: {0}>".format(self.getName())
 
+    def getName(self):
+        return self.name
+
     def getChildren(
         self, deep=False, generationNum=1, includeMaterials=False, predicate=None
     ):
-        """Return empty list, representing that this object has no children."""
+        """Return empty list, representing that materials have no children."""
         return []
 
     def getChildrenWithFlags(self, typeSpec: TypeSpec, exactMatch=True):
         """Return empty list, representing that this object has no children."""
         return []
 
+    def backUp(self):
+        """Create and store a backup of the state."""
+        self._backupCache = (self.cached, self._backupCache)
+        self.cached = {}  # don't .clear(), using reference above!
+
+    def restoreBackup(self, paramsToApply):
+        """Restore the parameters from previously created backup."""
+        self.cached, self._backupCache = self._backupCache
+
+    def clearCache(self):
+        """Clear the cache so all new values are recomputed."""
+        self.cached = {}
+
+    def _getCached(self, name):
+        """Obtain a value from the cache."""
+        return self.cached.get(name, None)
+
+    def _setCache(self, name, val):
+        """
+        Set a value in the cache.
+
+        See Also
+        --------
+        _getCached : returns a previously-cached value
+        """
+        self.cached[name] = val
+
     def duplicate(self):
         r"""copy without needing a deepcopy."""
         m = self.__class__()
-        for key, val in self.p.items():
-            m.p[key] = val
-        m.p.massFrac = {}
-        for key, val in self.p.massFrac.items():
-            m.p.massFrac[key] = val
+
+        m.massFrac = {}
+        for key, val in self.massFrac.items():
+            m.massFrac[key] = val
+
         m.parent = self.parent
+        m.refDens = self.refDens
+        m.theoreticalDensityFrac = self.theoreticalDensityFrac
 
         return m
 
@@ -203,7 +226,7 @@ class Material(composites.Composite):
         pass
 
     def setMassFrac(self, nucName: str, massFrac: float) -> None:
-        self.p.massFrac[nucName] = massFrac
+        self.massFrac[nucName] = massFrac
 
     def applyInputParams(self):
         """Apply material-specific material input parameters."""
@@ -245,13 +268,11 @@ class Material(composites.Composite):
                 )
             )
 
-        nucsNames = list(self.p.massFrac)
+        nucsNames = list(self.massFrac)
 
         # refDens could be zero, but cannot normalize to zero.
-        density = self.p.refDens or 1.0
-        massDensities = (
-            numpy.array([self.p.massFrac[nuc] for nuc in nucsNames]) * density
-        )
+        density = self.refDens or 1.0
+        massDensities = numpy.array([self.massFrac[nuc] for nuc in nucsNames]) * density
         atomicMasses = numpy.array(
             [nuclideBases.byName[nuc].weight for nuc in nucsNames]
         )  # in AMU
@@ -260,9 +281,7 @@ class Material(composites.Composite):
         enrichedIndex = nucsNames.index(nuclideName)
         isoAndEles = nuclideBases.byName[nuclideName].element.nuclides
         allIndicesUpdated = [
-            nucsNames.index(nuc.name)
-            for nuc in isoAndEles
-            if nuc.name in self.p.massFrac
+            nucsNames.index(nuc.name) for nuc in isoAndEles if nuc.name in self.massFrac
         ]
 
         if len(allIndicesUpdated) == 1:
@@ -294,7 +313,7 @@ class Material(composites.Composite):
                     raise ValueError(
                         "Material {} has too many masses set to zero. cannot enrich {} to {}. Current "
                         "mass fractions: {}".format(
-                            self, nuclideName, massFraction, self.p.massFrac
+                            self, nuclideName, massFraction, self.massFrac
                         )
                     )
                 # massDensities get normalized later when conserving atoms; these are just ratios
@@ -327,9 +346,9 @@ class Material(composites.Composite):
                 f"The mass fractions {massFracs} in {self} do not sum to 1.0."
             )
 
-        self.p.massFrac = {nuc: weight for nuc, weight in zip(nucsNames, massFracs)}
-        if self.p.refDens != 0.0:  # don't update density if not assigned
-            self.p.refDens = updatedDensity
+        self.massFrac = {nuc: weight for nuc, weight in zip(nucsNames, massFracs)}
+        if self.refDens != 0.0:  # don't update density if not assigned
+            self.refDens = updatedDensity
 
     def volumetricExpansion(self, Tk=None, Tc=None):
         pass
@@ -377,17 +396,16 @@ class Material(composites.Composite):
         """
         Tk = getTk(Tc, Tk)
         dLL = self.linearExpansionPercent(Tk=Tk)
-        if self.p.refDens is None:
+        if self.refDens is None:
             runLog.warning(
                 "{0} has no reference density".format(self),
                 single=True,
                 label="No refD " + self.getName(),
             )
-            self.p.refDens = 0.0
+            self.refDens = 0.0
+
         f = (1.0 + dLL / 100.0) ** 2
-        # dRhoOverRho = (1.0 - f)/f
-        # rho = rho + dRho = (1 + dRho/rho) * rho
-        return self.p.refDens / f  # g/cm^3
+        return self.refDens / f  # g/cm^3
 
     def densityKgM3(self, Tk: float = None, Tc: float = None) -> float:
         """
@@ -414,7 +432,7 @@ class Material(composites.Composite):
         """
         Tk = getTk(Tc, Tk)
         dLL = self.linearExpansionPercent(Tk=Tk)
-        refD = self.p.refDens
+        refD = self.refDens
         if refD is None:
             runLog.warning(
                 "{0} has no reference density".format(self),
@@ -464,11 +482,11 @@ class Material(composites.Composite):
 
     def yieldStrength(self, Tk: float = None, Tc: float = None) -> float:
         r"""returns yield strength at given T in MPa"""
-        return self.p.yieldStrength
+        pass
 
     def thermalConductivity(self, Tk: float = None, Tc: float = None) -> float:
         r"""thermal conductivity in given T in K"""
-        return self.p.thermalConductivity
+        pass
 
     def getProperty(
         self, propName: str, Tk: float = None, Tc: float = None, **kwargs
@@ -506,7 +524,7 @@ class Material(composites.Composite):
 
         Notes
         -----
-        self.p.massFrac are modified mass fractions that may not add up to 1.0
+        self.massFrac are modified mass fractions that may not add up to 1.0
         (for instance, after a axial expansion, the modified mass fracs will sum to less than one.
         The alternative is to put a multiplier on the density. They're mathematically equivalent.
 
@@ -519,32 +537,23 @@ class Material(composites.Composite):
         See Also
         --------
         setMassFrac
-        getNDens
-
         """
-        return self.p.massFrac.get(nucName, 0.0)
+        return self.massFrac.get(nucName, 0.0)
 
     def clearMassFrac(self) -> None:
         r"""zero out all nuclide mass fractions."""
-        self.p.massFrac.clear()
-        self.p.massFracNorm = 0.0
+        self.massFrac.clear()
 
     def removeNucMassFrac(self, nuc: str) -> None:
         self.setMassFrac(nuc, 0)
         try:
-            del self.p.massFrac[nuc]
+            del self.massFrac[nuc]
         except KeyError:
             # the nuc isn't in the mass Frac vector
             pass
 
-    def removeLumpedFissionProducts(self) -> None:
-        for nuc in self.getNuclides():
-            if "LF" in nuc:
-                # this component has a lumped fission product to remove
-                self.removeNucMassFrac(nuc)
-
     def getMassFracCopy(self):
-        return copy.deepcopy(self.p.massFrac)
+        return copy.deepcopy(self.massFrac)
 
     def checkPropertyTempRange(self, label, val):
         r"""Checks if the given property / value combination fall between the min and max valid
@@ -618,6 +627,19 @@ class Material(composites.Composite):
         return rhoCp
 
     def getNuclides(self):
+        """
+        Return nuclides in the component that contains this Material.
+
+        Notes
+        -----
+        This method is the only reason Materials still have self.parent.
+        Essentially, we want to change that, but right now the logic for finding
+        nuclides in the Reactor is recursive and considers Materials first.
+        The bulk of the work in finally removing this method will come in
+        downstream repos, where users have fully embraced this method and call
+        it directly in many, many places.
+        Please do not use this method, as it is being deprecated.
+        """
         warnings.warn("Material.getNuclides is being deprecated.", DeprecationWarning)
         return self.parent.getNuclides()
 
@@ -724,7 +746,7 @@ class SimpleSolid(Material):
 
     def __init__(self):
         Material.__init__(self)
-        self.p.refDens = self.density3(Tk=self.refTempK)
+        self.refDens = self.density3(Tk=self.refTempK)
 
     def linearExpansionPercent(self, Tk: float = None, Tc: float = None) -> float:
         """
@@ -768,7 +790,16 @@ class FuelMaterial(Material):
     All this really does is enable the special class 1/class 2 isotopics input option.
     """
 
-    pDefs = materialParameters.getFuelMaterialParameterDefinitions()
+    def __init__(self):
+        Material.__init__(self)
+        # support for custom isotopics
+        self.class1_wt_frac = None
+        self.class1_custom_isotopics = None
+        self.class2_custom_isotopics = None
+        # tracking depletion status
+        self.puFrac = 0.0
+        self.uFrac = 0.0
+        self.zrFrac = 0.0
 
     def applyInputParams(
         self,
@@ -812,9 +843,9 @@ class FuelMaterial(Material):
                     f" are both '{class1_custom_isotopics}'. You are not actually blending anything!"
                 )
 
-            self.p.class1_wt_frac = class1_wt_frac
-            self.p.class1_custom_isotopics = class1_custom_isotopics
-            self.p.class2_custom_isotopics = class2_custom_isotopics
+            self.class1_wt_frac = class1_wt_frac
+            self.class1_custom_isotopics = class1_custom_isotopics
+            self.class2_custom_isotopics = class2_custom_isotopics
 
             self._applyIsotopicsMixFromCustomIsotopicsInput(customIsotopics)
 
@@ -827,6 +858,39 @@ class FuelMaterial(Material):
         This may also be needed for building charge assemblies during reprocessing, but
         will take input from the SFP rather than from the input external feeds.
         """
-        class1Isotopics = customIsotopics[self.p.class1_custom_isotopics]
-        class2Isotopics = customIsotopics[self.p.class2_custom_isotopics]
+        class1Isotopics = customIsotopics[self.class1_custom_isotopics]
+        class2Isotopics = customIsotopics[self.class2_custom_isotopics]
         densityTools.applyIsotopicsMix(self, class1Isotopics, class2Isotopics)
+
+    def duplicate(self):
+        r"""copy without needing a deepcopy."""
+        m = self.__class__()
+
+        m.massFrac = {}
+        for key, val in self.massFrac.items():
+            m.massFrac[key] = val
+
+        m.parent = self.parent
+        m.refDens = self.refDens
+        m.theoreticalDensityFrac = self.theoreticalDensityFrac
+
+        # Handle the case where a developer creates a FuelMaterial,
+        # but only calls the Material.__init__().
+        m.class1_wt_frac = (
+            self.class1_wt_frac if hasattr(self, "class1_wt_frac") else None
+        )
+        m.class1_custom_isotopics = (
+            self.class1_custom_isotopics
+            if hasattr(self, "class1_custom_isotopics")
+            else None
+        )
+        m.class2_custom_isotopics = (
+            self.class2_custom_isotopics
+            if hasattr(self, "class2_custom_isotopics")
+            else None
+        )
+        m.puFrac = self.puFrac if hasattr(self, "puFrac") else 0.0
+        m.uFrac = self.uFrac if hasattr(self, "uFrac") else 0.0
+        m.zrFrac = self.zrFrac if hasattr(self, "zrFrac") else 0.0
+
+        return m
