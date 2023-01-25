@@ -251,6 +251,54 @@ class TestUniformMeshComponents(unittest.TestCase):
         self.assertEqual(refMesh[0], avgMesh[0])
         self.assertNotEqual(refMesh[4], avgMesh[4], "Not equal above the fuel.")
 
+    def test_computeKMeansAxialMesh(self):
+        refMesh = self.r.core.findAllAxialMeshPoints(
+            [self.r.core.getFirstAssembly(Flags.FUEL)]
+        )[1:]
+        self.converter._computeKMeansAxialMesh()
+        avgMesh = self.converter._uniformMesh
+
+        self.assertEqual(len(refMesh), len(avgMesh))
+        self.assertEqual(refMesh[0], avgMesh[0])
+        self.assertNotEqual(refMesh[4], avgMesh[4], "Not equal above the fuel.")
+
+        # reduce mesh tolerance -> get more points
+        self.converter._computeKMeansAxialMesh(meshTolerance=0.5)
+        avgMesh = self.converter._uniformMesh
+        self.assertNotEqual(len(refMesh), len(avgMesh))
+        self.assertEqual(refMesh[1], avgMesh[1])
+        self.assertNotEqual(refMesh[4], avgMesh[4], "Not equal above the fuel.")
+        self.assertEqual(refMesh[5], avgMesh[8], "Not equal above the fuel.")
+        self.assertTrue(
+            set(avgMesh).issuperset(refMesh), "refMesh is not subset of refined avgMesh"
+        )
+
+    def test_computeKMeansAxialMeshSizeLimit(self):
+        # make the mesh even more non-uniform
+        a = self.converter._sourceReactor.core[2]
+        a[2].setHeight(a[2].getHeight() * 1.10)
+
+        a = self.converter._sourceReactor.core[6]
+        a[2].setHeight(a[2].getHeight() * 0.95)
+
+        refMesh = self.r.core.findAllAxialMeshPoints(
+            [self.r.core.getFirstAssembly(Flags.FUEL)]
+        )[1:]
+
+        # reduce mesh tolerance to force a large number of points
+        self.converter._computeKMeansAxialMesh(meshTolerance=0.1)
+        avgMesh = self.converter._uniformMesh
+
+        self.assertNotEqual(len(refMesh), len(avgMesh))
+        self.assertEqual(refMesh[1], avgMesh[1])
+        self.assertNotEqual(refMesh[4], avgMesh[4], "Not equal above the fuel.")
+        # when we hit the limit on number of mesh points, the uniformMesh does not
+        # yet cover all of the mesh points in all assemblies. The refMesh is not a
+        # subset of the uniformMesh in this case.
+        self.assertFalse(
+            set(avgMesh).issuperset(refMesh), "refMesh is a subset of refined avgMesh"
+        )
+
     def test_blueprintCopy(self):
         """Ensure that necessary blueprint attributes are set"""
         convReactor = self.converter.initNewReactor(
