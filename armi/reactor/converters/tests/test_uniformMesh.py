@@ -424,12 +424,14 @@ class TestGammaUniformMesh(unittest.TestCase):
             b.p.fastFlux = 2.0
             b.p.flux = 5.0
             b.p.power = 5.0
+            b.p.linPow = 2.0
 
-        # set original parameters on pre-mapped core with non-uniform assemblies
+        # set new parameters on core with uniform assemblies (emulate a physics kernel)
         self.converter.convert(self.r)
         for b in self.converter.convReactor.core.getBlocks():
             b.p.powerGamma = 0.5
             b.p.powerNeutron = 0.5
+            b.p.linPow = 10.0
             b.p.power = b.p.powerGamma + b.p.powerNeutron
 
         # check integral and density params
@@ -457,6 +459,9 @@ class TestGammaUniformMesh(unittest.TestCase):
             self.assertNotEqual(b.p.powerGamma, 0.5)
             self.assertNotEqual(b.p.powerNeutron, 0.5)
             self.assertNotEqual(b.p.power, 1.0)
+
+            # has updated value
+            self.assertAlmostEqual(b.p.linPow, 10.0)
 
         # equal because these are mapped
         for expectedPower, expectedGammaPower, a in zip(
