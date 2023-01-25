@@ -1169,3 +1169,10 @@ def calcReactionRates(obj, keff, lib):
 
     for paramName, val in rate.items():
         obj.p[paramName] = val  # put in #/cm^3/s
+
+    # if necessary, de-homogenize b.p.fisDensHom to b.p.fisDens
+    if rate["rateFis"] > 0.0:
+        vFuel = obj.getComponentAreaFrac(Flags.FUEL)
+        vol = obj.getVolume()
+        obj.p.fisDens = rate["rateFis"] / (vol * vFuel)
+        obj.p.fisDensHom = rate["rateFis"] / vol
