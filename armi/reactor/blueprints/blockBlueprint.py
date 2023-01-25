@@ -16,8 +16,9 @@
 This module defines the ARMI input for a block definition, and code for constructing an ARMI ``Block``.
 """
 import collections
-
 import yamlize
+
+from inspect import signature
 
 from armi import getPluginManagerOrFail, runLog
 from armi.reactor import blocks
@@ -120,6 +121,18 @@ class BlockBlueprint(yamlize.KeyedList):
             )
             c = componentDesign.construct(blueprint, filteredMaterialInput)
             components[c.name] = c
+
+            # check that the mat mods for this component are valid options
+            # this will only examine by-component mods, block mods are done later
+            validMatModOptions = signature(
+                c.material.applyInputParams
+            ).parameters.keys()
+            for key in byComponentMatModKeys:
+                if key not in validMatModOptions:
+                    raise ValueError(
+                        f"{c} in block {self.name} has invalid material modification: {key}"
+                    )
+
             if spatialGrid:
                 componentLocators = gridDesign.getMultiLocator(
                     spatialGrid, componentDesign.latticeIDs
@@ -140,6 +153,20 @@ class BlockBlueprint(yamlize.KeyedList):
                     elif not mult or mult == 1.0:
                         # learn mult from grid definition
                         c.setDimension("mult", len(c.spatialLocator))
+
+        # check that the block level mat mods use valid options in the same way
+        # as we did for the by-component mods above
+        validMatModOptions = set()
+        for c in components.values():
+            validMatModOptions |= signature(
+                c.material.applyInputParams
+            ).parameters.keys()
+
+        for key in materialInput["byBlock"].keys():
+            if key not in validMatModOptions:
+                raise ValueError(
+                    f"Block {self.name} has invalid material modification key: {key}"
+                )
 
         # Resolve linked dims after all components in the block are created
         for c in components.values():
