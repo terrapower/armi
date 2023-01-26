@@ -698,7 +698,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
         """Perform checks to ensure conversion occurred properly."""
         pass
 
-    def _computeKMeansAxialMesh(self, tolerance=1e-5, meshTolerance=1.0):
+    def _computeKMeansAxialMesh(self, tolerance=1e-5, meshTolerance=2.0):
         """
         Use kMeans clustering to determine an appropriate mesh for the uniform assemblies.
 
