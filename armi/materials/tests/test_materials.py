@@ -159,13 +159,13 @@ class Magnesium_TestCase(_Material_Test, unittest.TestCase):
 
     def test_density(self):
         cur = self.mat.density(923)
-        ref = 1.59
-        delta = ref * 0.05
+        ref = 1.5897
+        delta = ref * 0.0001
         self.assertAlmostEqual(cur, ref, delta=delta)
 
         cur = self.mat.density(1390)
-        ref = 1.466
-        delta = ref * 0.05
+        ref = 1.4661
+        delta = ref * 0.0001
         self.assertAlmostEqual(cur, ref, delta=delta)
 
     def test_propertyValidTemperature(self):
