@@ -16,9 +16,9 @@
 This module defines the ARMI input for a block definition, and code for constructing an ARMI ``Block``.
 """
 import collections
-import yamlize
-
 from inspect import signature
+
+import yamlize
 
 from armi import getPluginManagerOrFail, runLog
 from armi.reactor import blocks
@@ -169,8 +169,8 @@ class BlockBlueprint(yamlize.KeyedList):
                     c.material.applyInputParams
                 ).parameters.keys()
 
-        if "byBlock" in materialInput.keys():
-            for key in materialInput["byBlock"].keys():
+        if "byBlock" in materialInput:
+            for key in materialInput["byBlock"]:
                 if key not in validMatModOptions:
                     raise ValueError(
                         f"Block {self.name} has invalid material modification key: {key}"
