@@ -794,18 +794,17 @@ class UniformMeshGeometryConverter(GeometryConverter):
                 allMeshes, min(nMesh, len(allMeshes)), iter=10, seed=123456789
             )
             # if any k-means point is within tolerance of an original mesh, replace the original
+            previousSize = len(allMeshes)
             allMeshes = reduceAllMeshes(allMeshes, sorted(meanMesh), meshTolerance)
 
-            if error < tolerance:
-                stop = True
-                selectedMesh = allMeshes + [lastMeshPoint]
-            elif nMesh > 2 * refNumPoints:
-                # don't iterate infinitely
-                stop = True
-                selectedMesh = allMeshes + [lastMeshPoint]
+            # only increment if we haven't reduced the size of allMeshes
+            if len(allMeshes) == previousSize:
+                nMesh += 1
 
-            nMesh += 1
+            # stop if we meet error criterion or new mesh gets too fine
+            stop = error < tolerance or nMesh > 2 * refNumPoints
 
+        selectedMesh = allMeshes + [lastMeshPoint]
         self._uniformMesh = numpy.array(selectedMesh)
 
     def _computeAverageAxialMesh(self):
