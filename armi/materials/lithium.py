@@ -53,12 +53,15 @@ class Lithium(material.Fluid):
             self.adjustMassEnrichment(LI6_wt_frac)
 
     def density(self, Tk=None, Tc=None):
-        r"""
-        Wikipedia
+        r"""Density (g/cc) from Wikipedia.
 
         Will be liquid above 180C.
+
+        Notes
+        -----
+        In ARMI, we define density() and density3() as the same for Fluids.
         """
-        return 0.512  # g/cc
+        return 0.512
 
     def setDefaultMassFracs(self):
         self.setMassFrac("LI6", nb.byName["LI6"].abundance)

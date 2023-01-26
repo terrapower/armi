@@ -75,6 +75,10 @@ class Air(material.Fluid):
         Tc : float, optional
             temperature in degrees Celsius
 
+        Notes
+        -----
+        In ARMI, we define density() and density3() as the same for Fluids.
+
         Returns
         -------
         density : float
