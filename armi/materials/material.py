@@ -714,7 +714,7 @@ class Fluid(Material):
 
         Notes
         -----
-        for fluids, there is no such thing as 2 d expansion so density() is already 3D.
+        For fluids, there is no such thing as 2D expansion so density() is already 3D.
         """
         return self.density(Tk=Tk, Tc=Tc)
 
