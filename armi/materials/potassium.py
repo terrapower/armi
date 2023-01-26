@@ -26,7 +26,7 @@ class Potassium(material.Fluid):
     """
 
     name = "Potassium"
-    propertyValidTemperature = {"density": ((63.38, 759), "K")}
+    propertyValidTemperature = {"density": ((63.38, 1250), "C")}
 
     def density(self, Tk=None, Tc=None):
         r"""
