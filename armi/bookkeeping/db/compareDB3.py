@@ -164,6 +164,7 @@ def compareDatabases(
     srcFileName: str,
     exclusions: Optional[Sequence[str]] = None,
     tolerance: float = 0.0,
+    timestepMatchup: Sequence[Tuple[int, int]] = None,
 ) -> Optional[DiffResults]:
     """High-level method to compare two ARMI H5 files, given file paths."""
     compiledExclusions = None
@@ -185,21 +186,24 @@ def compareDatabases(
             )
 
         with ref, src:
-            _, nDiff = _compareH5Groups(out, ref, src, "timesteps")
+            if not timestepMatchup:
+                _, nDiff = _compareH5Groups(out, ref, src, "timesteps")
 
-            if nDiff > 0:
-                runLog.warning(
-                    "{} and {} have differing timestep groups, and are "
-                    "probably not safe to compare. This is likely due to one of "
-                    "the cases having failed to complete.".format(ref, src)
-                )
-                return None
+                if nDiff > 0:
+                    runLog.warning(
+                        "{} and {} have differing timestep groups, and are "
+                        "probably not safe to compare. This is likely due to one of "
+                        "the cases having failed to complete.".format(ref, src)
+                    )
+                    return None
 
             for refGroup, srcGroup in zip(
-                ref.genTimeStepGroups(), src.genTimeStepGroups()
+                ref.genTimeStepGroups(timeSteps=timestepMatchup),
+                src.genTimeStepGroups(timeSteps=timestepMatchup),
             ):
                 runLog.info(
-                    "Comparing time step {}".format(refGroup.name.split("/")[1])
+                    f"Comparing ref time step {refGroup.name.split('/')[1]} to src time "
+                    f"step {srcGroup.name.split('/')[1]}"
                 )
                 diffResults.addTimeStep(refGroup.name)
                 _compareTimeStep(
