@@ -219,7 +219,7 @@ class CaseSuite:
         exclusion: Optional[Sequence[str]] = None,
         weights=None,
         tolerance=0.01,
-        timestepMatchup=None,
+        timestepCompare=None,
     ) -> int:
         """
         Compare one case suite with another.
@@ -261,7 +261,7 @@ class CaseSuite:
                     cmpCase,
                     exclusion=exclusion,
                     tolerance=tolerance,
-                    timestepMatchup=timestepMatchup,
+                    timestepCompare=timestepCompare,
                 )
             nIssues += caseIssues
             tableResults[caseTitle] = (userFile, refFile, caseIssues)

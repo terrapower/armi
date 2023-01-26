@@ -742,7 +742,7 @@ class Case:
         that,
         exclusion: Optional[Sequence[str]] = None,
         tolerance=0.01,
-        timestepMatchup=None,
+        timestepCompare=None,
     ) -> int:
         """
         Compare the output databases from two run cases. Return number of differences.
@@ -759,7 +759,7 @@ class Case:
             that.dbName,
             tolerance=tolerance,
             exclusions=exclusion,
-            timestepMatchup=timestepMatchup,
+            timestepCompare=timestepCompare,
         )
 
         code = 1 if diffResults is None else diffResults.nDiffs()

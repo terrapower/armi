@@ -164,7 +164,7 @@ def compareDatabases(
     srcFileName: str,
     exclusions: Optional[Sequence[str]] = None,
     tolerance: float = 0.0,
-    timestepMatchup: Sequence[Tuple[int, int]] = None,
+    timestepCompare: Optional[Sequence[Tuple[int, int]]] = None,
 ) -> Optional[DiffResults]:
     """High-level method to compare two ARMI H5 files, given file paths."""
     compiledExclusions = None
@@ -186,7 +186,7 @@ def compareDatabases(
             )
 
         with ref, src:
-            if not timestepMatchup:
+            if not timestepCompare:
                 _, nDiff = _compareH5Groups(out, ref, src, "timesteps")
 
                 if nDiff > 0:
@@ -198,8 +198,8 @@ def compareDatabases(
                     return None
 
             for refGroup, srcGroup in zip(
-                ref.genTimeStepGroups(timeSteps=timestepMatchup),
-                src.genTimeStepGroups(timeSteps=timestepMatchup),
+                ref.genTimeStepGroups(timeSteps=timestepCompare),
+                src.genTimeStepGroups(timeSteps=timestepCompare),
             ):
                 runLog.info(
                     f"Comparing ref time step {refGroup.name.split('/')[1]} to src time "
