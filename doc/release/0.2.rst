@@ -43,6 +43,7 @@ Bug fixes
 #. A bug was fixed in `PR#1022 <https://github.com/terrapower/armi/pull/1022>`_ where the gaseous fission products were not being removed from the core directly, but instead the fission yields within the lumped fission products were being adjusted.
 #. Fixed a bug where non-fuel depletable components were not being initialized with all nuclides with the ``explicitFissionProducts`` model (`PR#1067 https://github.com/terrapower/armi/pull/1067`_)
 #. Bug fix to ensure consistency between cross section group manager and lattice physics interface for tight coupling. (`PR#1118 <https://github.com/terrapower/armi/pull/1118>`_)
+#. Bug fix to update pseudo density to physical density in densityTimesHeatCapacity materials method. (`PR#1129 <https://github.com/terrapower/armi/pull/1129>`_)
 
 ARMI v0.2.5
 ===========
