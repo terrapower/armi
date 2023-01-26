@@ -41,5 +41,5 @@ class Potassium(material.Fluid):
         """
         Tc = getTc(Tc, Tk)
         Tk = getTk(Tc=Tc)
-        self.checkPropertyTempRange("density", Tk)
+        self.checkPropertyTempRange("density", Tc)
         return 0.8415 - 2.172e-4 * Tc - 2.70e-8 * Tc ** 2 + 4.77e-12 * Tc ** 3
