@@ -100,8 +100,8 @@ class CompareCases(EntryPoint):
         EntryPoint.parse(self, args)
 
         if self.args.timestepMatchup:
-            self.args.timestepMatchup = dict(
-                map(int, kv.split(".")) for kv in self.args.timestepMatchup
+            self.args.timestepMatchup = list(
+                tuple(map(int, step.split("."))) for step in self.args.timestepMatchup
             )
 
         if self.args.weights:
@@ -115,6 +115,7 @@ class CompareCases(EntryPoint):
             self.args.cmpDB,
             tolerance=self.args.tolerance,
             exclusions=self.args.exclude,
+            timestepMatchup=self.args.timestepMatchup,
         )
         return diffs.nDiffs()
 

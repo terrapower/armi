@@ -258,7 +258,10 @@ class CaseSuite:
                 suiteHasMissingFiles = False
             else:
                 caseIssues = refCase.compare(
-                    cmpCase, exclusion=exclusion, tolerance=tolerance
+                    cmpCase,
+                    exclusion=exclusion,
+                    tolerance=tolerance,
+                    timestepMatchup=timestepMatchup,
                 )
             nIssues += caseIssues
             tableResults[caseTitle] = (userFile, refFile, caseIssues)
