@@ -616,7 +616,7 @@ class UraniumOxide_TestCase(_Material_Test, unittest.TestCase):
 
     def test_densityTimesHeatCapactiy(self):
         Tc = 500.0
-        expectedRhoCp = self.mat.density(Tc=Tc) * 1000.0 * self.mat.heatCapacity(Tc=Tc)
+        expectedRhoCp = self.mat.density3(Tc=Tc) * 1000.0 * self.mat.heatCapacity(Tc=Tc)
         self.assertAlmostEqual(expectedRhoCp, self.mat.densityTimesHeatCapacity(Tc=Tc))
 
     def test_getTempChangeForDensityChange(self):
