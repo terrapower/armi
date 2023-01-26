@@ -305,18 +305,28 @@ class Potassium_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.Potassium
 
     def test_density(self):
-        cur = self.mat.density(Tk=333)
-        ref = 0.828
+        cur = self.mat.density(Tc=100)
+        ref = 0.8195
         delta = ref * 0.001
         self.assertAlmostEqual(cur, ref, delta=delta)
 
-        cur = self.mat.density(Tk=500)
-        ref = 0.7909
+        cur = self.mat.density(Tc=333)
+        ref = 0.7664
         delta = ref * 0.001
         self.assertAlmostEqual(cur, ref, delta=delta)
 
-        cur = self.mat.density(Tk=750)
-        ref = 0.732
+        cur = self.mat.density(Tc=500)
+        ref = 0.7267
+        delta = ref * 0.001
+        self.assertAlmostEqual(cur, ref, delta=delta)
+
+        cur = self.mat.density(Tc=750)
+        ref = 0.6654
+        delta = ref * 0.001
+        self.assertAlmostEqual(cur, ref, delta=delta)
+
+        cur = self.mat.density(Tc=1200)
+        ref = 0.5502
         delta = ref * 0.001
         self.assertAlmostEqual(cur, ref, delta=delta)
 
