@@ -91,6 +91,47 @@ def roundAndRemoveDuplicates(z, places=5):
     return sorted(list(set(rounded)))
 
 
+def reduceAllMeshes(allMeshes, kMeansCoords, meshTolerance):
+    """
+    Find clusters of points within mesh tolerance and reduce them to a single point.
+
+    Notes
+    -----
+    The first step is to identify the nearest point in kMeansCoords for each point in allMeshes.
+    Points in allMeshes are grouped by nearest-neighbor kMeansCoords centroid. If all points in
+    a cluster are within meshTolerance of their kMeansCoords centroid, then they are all replaced
+    by the centroid coordinate value.
+
+    Parameters
+    ----------
+    allMeshes: list of float
+        Dynamic list of current mesh points. Reduces in size as the iteration progresses.
+    kMeansCoords: list of float
+        The list of k-means coordinates
+    meshTolerance: float
+        The tolerance for error between the uniform mesh and the non-uniform mesh.
+        This is effectively half of the minimum mesh size of the uniform mesh.
+    """
+    clusterPoints = [[] for _k in range(len(kMeansCoords))]
+    for i, m in enumerate(allMeshes):
+        minDistance = allMeshes[-1]
+        minLoc = 0
+        for k, centroid in enumerate(kMeansCoords):
+            if abs(m - centroid) < minDistance:
+                minDistance = abs(m - centroid)
+                minLoc = k
+        clusterPoints[minLoc].append(i)
+
+    for centroid, meshList in zip(kMeansCoords, clusterPoints):
+        diffs = [abs(allMeshes[i] - centroid) for i in meshList]
+        if max(diffs) < meshTolerance:
+            # cluster is within tolerance; group them together
+            for i in meshList:
+                allMeshes[i] = centroid
+
+    return roundAndRemoveDuplicates(allMeshes)
+
+
 def converterFactory(globalFluxOptions):
     if globalFluxOptions.photons:
         return GammaUniformMeshConverter(globalFluxOptions.cs)
@@ -752,23 +793,17 @@ class UniformMeshGeometryConverter(GeometryConverter):
             meanMesh, error = kmeans(
                 allMeshes, min(nMesh, len(allMeshes)), iter=10, seed=123456789
             )
-            sortedMesh = numpy.array(sorted(meanMesh))
-            dMesh = sortedMesh[1:] - sortedMesh[:-1]
+            # if any k-means point is within tolerance of an original mesh, replace the original
+            allMeshes = reduceAllMeshes(allMeshes, sorted(meanMesh), meshTolerance)
+
             if error < tolerance:
                 stop = True
-                selectedMesh = list(sortedMesh) + [lastMeshPoint]
+                selectedMesh = allMeshes + [lastMeshPoint]
             elif nMesh > 2 * refNumPoints:
                 # don't iterate infinitely
                 stop = True
-                selectedMesh = list(sortedMesh) + [lastMeshPoint]
+                selectedMesh = allMeshes + [lastMeshPoint]
 
-            # if any k-means point is within tolerance of an original mesh, replace the original
-            for i in range(len(allMeshes)):
-                for x in sortedMesh:
-                    if abs(allMeshes[i] - x) < meshTolerance:
-                        allMeshes[i] = x
-                        break
-            allMeshes = roundAndRemoveDuplicates(allMeshes)
             nMesh += 1
 
         self._uniformMesh = numpy.array(selectedMesh)
