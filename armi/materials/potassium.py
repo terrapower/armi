@@ -30,9 +30,14 @@ class Potassium(material.Fluid):
 
     def density(self, Tk=None, Tc=None):
         r"""
-        Calculates the density of molten Potassium in g/cc
+        Calculates the density of molten Potassium in g/cc.
+
         From Foust, O.J. Sodium-NaK Engineering Handbook Vol. 1. New York: Gordon and Breach, 1972.
         Page 18.
+
+        Notes
+        -----
+        In ARMI, we define density() and density3() as the same for Fluids.
         """
         Tc = getTc(Tc, Tk)
         Tk = getTk(Tc=Tc)
