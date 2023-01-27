@@ -28,8 +28,13 @@ class Cs(Fluid):
         self.setMassFrac("CS133", 1.0)
 
     def density(self, Tk=None, Tc=None):
-        """
+        """The 2D/3D density of liquid Cesium.
+
         https://en.wikipedia.org/wiki/Caesium
+
+        Notes
+        -----
+        In ARMI, we define density() and density3() as the same for Fluids.
         """
         Tk = getTk(Tc, Tk)
         if Tk < self.meltingPoint():

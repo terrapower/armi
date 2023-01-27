@@ -622,7 +622,7 @@ class Material:
         """
         Tc = getTc(Tc, Tk)
 
-        rhoCp = self.density(Tc=Tc) * 1000.0 * self.heatCapacity(Tc=Tc)
+        rhoCp = self.density3(Tc=Tc) * 1000.0 * self.heatCapacity(Tc=Tc)
 
         return rhoCp
 
@@ -714,7 +714,7 @@ class Fluid(Material):
 
         Notes
         -----
-        for fluids, there is no such thing as 2 d expansion so density() is already 3D.
+        For fluids, there is no such thing as 2D expansion so density() is already 3D.
         """
         return self.density(Tk=Tk, Tc=Tc)
 
