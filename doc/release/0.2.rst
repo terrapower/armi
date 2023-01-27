@@ -31,6 +31,7 @@ What's new in ARMI
 #. Bug fix to expose new tight coupling functionality to ``OperatorSnapshots``. (`PR#1113 https://github.com/terrapower/armi/pull/1113`_)
 #. But fix for Magnessium density curve. (`PR#1126 https://github.com/terrapower/armi/pull/1126`_)
 #. But fix for Potassium density curve. (`PR#1128 https://github.com/terrapower/armi/pull/1128`_)
+#. But fix for Concrete density curve. (`PR#1131 https://github.com/terrapower/armi/pull/1131`_)
 
 Bug fixes
 ---------
