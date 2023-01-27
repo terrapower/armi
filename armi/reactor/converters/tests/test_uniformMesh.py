@@ -277,13 +277,10 @@ class TestUniformMeshComponents(unittest.TestCase):
         # make the mesh even more non-uniform
         a = self.converter._sourceReactor.core[2]
         a[2].setHeight(a[2].getHeight() * 1.10)
+        refMesh = self.r.core.findAllAxialMeshPoints([a])[1:]
 
         a = self.converter._sourceReactor.core[6]
         a[2].setHeight(a[2].getHeight() * 0.95)
-
-        refMesh = self.r.core.findAllAxialMeshPoints(
-            [self.r.core.getFirstAssembly(Flags.FUEL)]
-        )[1:]
 
         # reduce mesh tolerance to force a large number of points
         self.converter._computeKMeansAxialMesh(meshTolerance=0.1)
@@ -408,7 +405,6 @@ class TestUniformMesh(unittest.TestCase):
 
             # fluxPeak is mapped differently as a ParamLocation.MAX value
             # make sure that it's one of the two exact possible values
-            print(b.p.fluxPeak)
             self.assertIn(b.p.fluxPeak, [9.0, 11.0])
 
         for expectedPower, a in zip(assemblyPowers, self.r.core):
