@@ -113,6 +113,7 @@ def reduceAllMeshes(allMeshes, kMeansCoords, meshTolerance):
         This is effectively half of the minimum mesh size of the uniform mesh.
     """
     clusterPoints = [[] for _k in range(len(kMeansCoords))]
+    newMesh = list(allMeshes)
     for i, m in enumerate(allMeshes):
         minDistance = allMeshes[-1]
         minLoc = 0
@@ -127,9 +128,8 @@ def reduceAllMeshes(allMeshes, kMeansCoords, meshTolerance):
         if max(diffs) < meshTolerance:
             # cluster is within tolerance; group them together
             for i in meshList:
-                allMeshes[i] = centroid
-
-    return roundAndRemoveDuplicates(allMeshes)
+                newMesh[i] = centroid
+    return roundAndRemoveDuplicates(newMesh)
 
 
 def converterFactory(globalFluxOptions):
@@ -787,22 +787,37 @@ class UniformMeshGeometryConverter(GeometryConverter):
         # stop conditions are met
         # 1. The total error goes below the tolerance
         # 2. The number of mesh points is twice the number in the reference assembly
+        # (or if we end up oscillating in an infinite loop. shouldn't happen, but you never know)
         stop = False
         nMesh = refNumPoints
+        maxIters = refNumPoints * 10
+        iters = 0
         while not stop:
             meanMesh, error = kmeans(
                 allMeshes, min(nMesh, len(allMeshes)), iter=10, seed=123456789
             )
+            sortedCoords = sorted(meanMesh)
             # if any k-means point is within tolerance of an original mesh, replace the original
-            previousSize = len(allMeshes)
-            allMeshes = reduceAllMeshes(allMeshes, sorted(meanMesh), meshTolerance)
+            reducedMesh = reduceAllMeshes(allMeshes, sortedCoords, meshTolerance)
 
-            # only increment if we haven't reduced the size of allMeshes
-            if len(allMeshes) == previousSize:
-                nMesh += 1
+            # check if reduced mesh is too fine before using it
+            meshSpacing = numpy.array(sortedCoords)[1:] - numpy.array(sortedCoords[:-1])
+            if any(meshSpacing < meshTolerance):
+                # the mesh is too fine, keep going
+                nMesh -= 1
+            else:
+                # only increment nMesh if we haven't reduced the size of allMeshes
+                if len(allMeshes) == len(reducedMesh):
+                    nMesh += 1
+                allMeshes = list(reducedMesh)
 
-            # stop if we meet error criterion or new mesh gets too fine
-            stop = error < tolerance or nMesh > 2 * refNumPoints
+                # stop if we meet error criterion or new mesh gets too fine
+                # infinite loop shouldn't happen, but it is theoretically possible with
+                # nMesh += 1 and nMesh -= 1 oscillating
+                # if this happens, just quit and spit out the mesh
+                stop = error < tolerance or nMesh > 2 * refNumPoints or iters > maxIters
+
+            iters += 1
 
         selectedMesh = allMeshes + [lastMeshPoint]
         self._uniformMesh = numpy.array(selectedMesh)
