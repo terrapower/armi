@@ -15,13 +15,7 @@
 """
 Base Material classes.
 
-All temperatures are in K, but Tc can be specified and the functions will convert for you.
-
-.. warning:: ARMI uses these objects for all material properties. Under the hood,
-     A system called MAT_PROPS is in charge of several material properties. It
-     is a more industrial-strength material property system that is currently
-     a TerraPower proprietary system. You will see references to it in this module.
-
+Most temperatures may be specified in either K or C and the functions will convert for you.
 """
 # pylint: disable=unused-argument
 import copy
