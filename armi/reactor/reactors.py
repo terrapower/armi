@@ -374,6 +374,12 @@ class Core(composites.Composite):
             )
         )
 
+    def setBlockMassParams(self):
+        """Set the parameters kgHM and kgFis for each block"""
+        for b in self.getBlocks():
+            b.p.kgHM = b.getHMMass()
+            b.p.kgFis = b.geFissileMass()
+
     def getScalarEvolution(self, key):
         return self.scalarVals[key]
 
@@ -2279,6 +2285,8 @@ class Core(composites.Composite):
             stationaryBlockFlags.append(Flags.fromString(stationaryBlockFlagString))
 
         self.stationaryBlockFlagsList = stationaryBlockFlags
+
+        self.setBlockMassParams()
 
         self.p.maxAssemNum = self.getMaxParam("assemNum")
 

@@ -162,6 +162,8 @@ class FuelHandler:
 
         self.o.r.core.p.numMoves = numMoved
 
+        self.o.r.core.setBlockMassParams()
+
         runLog.important(
             "Fuel handler performed {0} assembly shuffles.".format(numMoved)
         )
