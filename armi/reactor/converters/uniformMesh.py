@@ -781,7 +781,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
             aMesh = src.core.findAllAxialMeshPoints([a])[1:-1]
             if len(aMesh) == refNumPoints:
                 allMeshes.extend(aMesh)
-        allMeshes = roundAndRemoveDuplicates(allMeshes, places=1)
+        allMeshes = roundAndRemoveDuplicates(allMeshes, places=2)
 
         # run kmeans with an increasing number of coordinates until one of three
         # stop conditions are met
