@@ -378,7 +378,7 @@ class Core(composites.Composite):
         """Set the parameters kgHM and kgFis for each block"""
         for b in self.getBlocks():
             b.p.kgHM = b.getHMMass()
-            b.p.kgFis = b.geFissileMass()
+            b.p.kgFis = b.getFissileMass()
 
     def getScalarEvolution(self, key):
         return self.scalarVals[key]
