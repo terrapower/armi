@@ -28,8 +28,10 @@ from armi import getApp
 from armi import getPluginManagerOrFail
 from armi import plugins
 from armi import settings
-from armi.operators import settingsValidation
+from armi.operators.settingsValidation import Inspector, validateVersion
 from armi.physics.fuelCycle import FuelHandlerPlugin
+from armi.physics.fuelCycle.settings import CONF_CIRCULAR_RING_ORDER
+from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
 from armi.reactor.flags import Flags
 from armi.settings import caseSettings
 from armi.settings import setting
@@ -151,7 +153,7 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
 """
         )
 
-        yaml = YAML()
+        yaml = YAML(typ="rt")
 
         inp = yaml.load(good_input)
         for inputSetting, inputVal in inp.items():
@@ -205,21 +207,21 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
 
     def test_csWorks(self):
         """Ensure plugin settings become available and have defaults"""
-        a = settings.getMasterCs()
-        self.assertEqual(a["circularRingOrder"], "angle")
+        a = settings.Settings()
+        self.assertEqual(a[CONF_CIRCULAR_RING_ORDER], "angle")
 
     def test_pluginValidatorsAreDiscovered(self):
         cs = caseSettings.Settings()
         cs = cs.modified(
             caseTitle="test_pluginValidatorsAreDiscovered",
             newSettings={
-                "shuffleLogic": "nothere",
+                CONF_SHUFFLE_LOGIC: "nothere",
                 "cycleLengths": [3, 4, 5, 6, 9],
                 "powerFractions": [0.2, 0.2, 0.2, 0.2, 0.2],
             },
         )
 
-        inspector = settingsValidation.Inspector(cs)
+        inspector = Inspector(cs)
         self.assertTrue(
             any(
                 [
@@ -452,6 +454,35 @@ class TestFlagListSetting(unittest.TestCase):
         fs = setting.FlagListSetting(name="testFlagSetting", default=[])
         with self.assertRaises(TypeError):
             fs.value = "DUCT"
+
+
+class TestSettingsValidationUtils(unittest.TestCase):
+    def test_validateVersion(self):
+        # controlled version, and true
+        self.assertTrue(validateVersion("1.22.3", "1.22.3"))
+        self.assertTrue(validateVersion("1.3.102", "1.3.102"))
+        self.assertTrue(validateVersion("1.2.3", "1.2"))
+        self.assertTrue(validateVersion("1.2.37", "1.2"))
+        self.assertTrue(validateVersion("13.7.3", "13.7"))
+        self.assertTrue(validateVersion("1.22.310", "1"))
+
+        # uncontrolled version is always true
+        self.assertTrue(validateVersion("4.2.0", "uncontrolled"))
+
+        # controlled versions and false
+        self.assertFalse(validateVersion("11.2.3", "11.2.4"))
+        self.assertFalse(validateVersion("1.2.3", "3.2.1"))
+        self.assertFalse(validateVersion("11.2.3", "2.2"))
+
+        # examples of various errors
+        with self.assertRaises(ValueError):
+            validateVersion("1.2.a", "1.20.3")
+
+        with self.assertRaises(ValueError):
+            validateVersion("nope", "7")
+
+        with self.assertRaises(ValueError):
+            validateVersion("1.2.3", "zzz")
 
 
 if __name__ == "__main__":

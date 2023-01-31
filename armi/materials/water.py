@@ -64,14 +64,15 @@ class Water(Fluid):
 
     # coefficients for auxiliary quantity for enthalpy and entropy
     # kept as d to match original source
-    d = {}
-    d["alpha"] = -1135.905627715
-    d["phi"] = 2319.5246
-    d[1] = -5.65134998e-8
-    d[2] = 2690.66631
-    d[3] = 127.287297
-    d[4] = -135.003439
-    d[5] = 0.981825814
+    d = {
+        1: -5.65134998e-08,
+        2: 2690.66631,
+        3: 127.287297,
+        4: -135.003439,
+        5: 0.981825814,
+        "alpha": -1135.905627715,
+        "phi": 2319.5246,
+    }
 
     def setDefaultMassFracs(self) -> None:
         massHydrogen = elements.bySymbol["H"].standardWeight
@@ -312,6 +313,13 @@ class Water(Fluid):
         return phi + 1.0 / rho * dp_dT
 
     def density(self, Tk=None, Tc=None):
+        """
+        Density for arbitrary forms of water.
+
+        Notes
+        -----
+        In ARMI, we define density() and density3() as the same for Fluids.
+        """
         raise NotImplementedError(
             "Please use a concrete instance: SaturatedWater or SaturatedSteam."
         )
@@ -349,6 +357,7 @@ class SaturatedWater(Water):
 
         Note
         ----
+        In ARMI, we define density() and density3() as the same for Fluids.
         IAPWS-IF97
         http://www.iapws.org/relguide/supsat.pdf
         IAPWS-IF97 is now the international standard for calculations in the steam power industry
@@ -406,8 +415,9 @@ class SaturatedSteam(Water):
         density: float
             density in g/cc
 
-        Note
-        ----
+        Notes
+        -----
+        In ARMI, we define density() and density3() as the same for Fluids.
         IAPWS-IF97
         http://www.iapws.org/relguide/supsat.pdf
         IAPWS-IF97 is now the international standard for calculations in the steam power industry

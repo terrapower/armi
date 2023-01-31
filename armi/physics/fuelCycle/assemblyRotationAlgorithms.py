@@ -25,6 +25,7 @@ from armi import runLog
 from armi.physics.fuelCycle.hexAssemblyFuelMgmtUtils import (
     getOptimalAssemblyOrientation,
 )
+from armi.physics.fuelCycle.settings import CONF_ASSEM_ROTATION_STATIONARY
 
 
 def buReducingAssemblyRotation(fh):
@@ -58,7 +59,7 @@ def buReducingAssemblyRotation(fh):
             )
 
     # rotate NON-MOVING assemblies (stationary)
-    if fh.cs["assemblyRotationStationary"]:
+    if fh.cs[CONF_ASSEM_ROTATION_STATIONARY]:
         for a in hist.getDetailAssemblies():
             if a not in fh.moved:
                 rot = getOptimalAssemblyOrientation(a, a)
@@ -98,7 +99,7 @@ def simpleAssemblyRotation(fh):
     numRotated = 0
     hist = fh.o.getInterface("history")
     for a in hist.getDetailAssemblies():
-        if a in fh.moved or fh.cs["assemblyRotationStationary"]:
+        if a in fh.moved or fh.cs[CONF_ASSEM_ROTATION_STATIONARY]:
             a.rotatePins(1)
             numRotated += 1
             i, j = a.spatialLocator.getRingPos()  # hex indices (i,j) = (ring,pos)

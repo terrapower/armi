@@ -239,7 +239,7 @@ class Test_Air(unittest.TestCase):
         refO = 0.210748
         refAR = 0.004671
 
-        nDens = densityTools.getNDensFromMasses(air.density(Tk=300), air.p.massFrac)
+        nDens = densityTools.getNDensFromMasses(air.density(Tk=300), air.massFrac)
 
         error = math.fabs(nDens["C"] / sum(nDens.values()) - refC)
         self.assertLess(error, 1e-4)

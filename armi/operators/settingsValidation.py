@@ -21,6 +21,7 @@ dialogues in the GUI. They say things like: "Your ___ setting has the value ___,
 is impossible. Would you like to switch to ___?"
 
 """
+import re
 import os
 
 from armi import context
@@ -476,22 +477,22 @@ class Inspector:
         )
 
         self.addQuery(
-            lambda: not self.cs["looseCoupling"]
-            and self.cs["numCoupledIterations"] > 0,
-            "You have {0} coupled iterations selected, but have not activated loose coupling.".format(
-                self.cs["numCoupledIterations"]
+            lambda: (
+                not self.cs["tightCoupling"]
+                and self.cs["tightCouplingMaxNumIters"] != 4
             ),
-            "Set looseCoupling to True?",
-            lambda: self._assignCS("looseCoupling", True),
+            "You've requested a non default number of tight coupling iterations but left tightCoupling: False."
+            "Do you want to set tightCoupling to True?",
+            "",
+            lambda: self._assignCS("tightCoupling", True),
         )
 
         self.addQuery(
-            lambda: self.cs["numCoupledIterations"] > 0,
-            "You have {0} coupling iterations selected.".format(
-                self.cs["numCoupledIterations"]
-            ),
-            "1 coupling iteration doubles run time (2 triples, etc). Do you want to use 0 instead? ",
-            lambda: self._assignCS("numCoupledIterations", 0),
+            lambda: (not self.cs["tightCoupling"] and self.cs["tightCouplingSettings"]),
+            "You've requested non default tight coupling settings but tightCoupling: False."
+            "Do you want to set tightCoupling to True?",
+            "",
+            lambda: self._assignCS("tightCoupling", True),
         )
 
         self.addQuery(
@@ -726,3 +727,45 @@ def createQueryRevertBadPathToDefault(inspector, settingName, initialLambda=None
         inspector.cs.getSetting(settingName).revertToDefault,
     )
     return query
+
+
+def validateVersion(versionThis: str, versionRequired: str) -> bool:
+    """Helper function to allow users to verify that their version matches the settings file.
+
+    Parameters
+    ----------
+    versionThis: str
+        The version of this ARMI, App, or Plugin.
+        This MUST be in the form: 1.2.3
+    versionRequired: str
+        The version to compare against, say in a Settings file.
+        This must be in one of the forms: 1.2.3, 1.2, or 1
+
+    Returns
+    -------
+    bool
+        Does this version match the version in the Settings file/object?
+    """
+    fullV = "\d+\.\d+\.\d+"
+    medV = "\d+\.\d+"
+    minV = "\d+"
+
+    if versionRequired == "uncontrolled":
+        # This default flag means we don't want to check the version.
+        return True
+    elif re.search(fullV, versionThis) is None:
+        raise ValueError(
+            "The input version ({0}) does not match the required format: {1}".format(
+                versionThis, fullV
+            )
+        )
+    elif re.search(fullV, versionRequired) is not None:
+        return versionThis == versionRequired
+    elif re.search(medV, versionRequired) is not None:
+        return ".".join(versionThis.split(".")[:2]) == versionRequired
+    elif re.search(minV, versionRequired) is not None:
+        return versionThis.split(".")[0] == versionRequired
+    else:
+        raise ValueError(
+            "The required version is not a valid format: {}".format(versionRequired)
+        )

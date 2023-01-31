@@ -167,20 +167,16 @@ class MaterialInAssembly_TestCase(unittest.TestCase):
         self.assertFalse(self.assembly2 < self.assembly)
 
     def test_UThZrMaterial(self):
-        """
-        Test the ternary UThZr material.
-
-        """
+        """Test the ternary UThZr material."""
         b2 = self.assembly2[0]
         uThZrFuel = b2.getComponent(Flags.FUEL | Flags.B)
         mat = uThZrFuel.getProperties()
-        mat.applyInputParams(0.1, 0.0, 0.30)
+        mat.applyInputParams(0.1, 0.0)
         self.assertAlmostEqual(
             uThZrFuel.getMass("U235")
             / (uThZrFuel.getMass("U238") + uThZrFuel.getMass("U235")),
             0.1,
         )
-        self.assertAlmostEqual(uThZrFuel.getMassFrac("TH232"), 0.3)
 
 
 def makeTestAssembly(
@@ -199,7 +195,7 @@ class Assembly_TestCase(unittest.TestCase):
         self.name = "A0015"
         self.assemNum = 15
         self.height = 10
-        self.cs = settings.getMasterCs()
+        self.cs = settings.Settings()
         # Print nothing to the screen that would normally go to the log.
         runLog.setVerbosity("error")
 

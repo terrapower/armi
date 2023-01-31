@@ -22,8 +22,9 @@ These algorithms are defined in assemblyRotationAlgorithms.py, but they are used
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import unittest
 
-from armi.physics.fuelCycle import fuelHandlers
 from armi.physics.fuelCycle import assemblyRotationAlgorithms as rotAlgos
+from armi.physics.fuelCycle import fuelHandlers
+from armi.physics.fuelCycle.settings import CONF_ASSEM_ROTATION_STATIONARY
 from armi.physics.fuelCycle.tests.test_fuelHandlers import addSomeDetailAssemblies
 from armi.physics.fuelCycle.tests.test_fuelHandlers import FuelHandlerTestHelper
 from armi.reactor.flags import Flags
@@ -33,7 +34,7 @@ class TestFuelHandlerMgmtTools(FuelHandlerTestHelper):
     def test_buReducingAssemblyRotation(self):
         fh = fuelHandlers.FuelHandler(self.o)
         hist = self.o.getInterface("history")
-        newSettings = {"assemblyRotationStationary": True}
+        newSettings = {CONF_ASSEM_ROTATION_STATIONARY: True}
         self.o.cs = self.o.cs.modified(newSettings=newSettings)
         assem = self.o.r.core.getFirstAssembly(Flags.FUEL)
 
@@ -52,7 +53,7 @@ class TestFuelHandlerMgmtTools(FuelHandlerTestHelper):
 
     def test_simpleAssemblyRotation(self):
         fh = fuelHandlers.FuelHandler(self.o)
-        newSettings = {"assemblyRotationStationary": True}
+        newSettings = {CONF_ASSEM_ROTATION_STATIONARY: True}
         self.o.cs = self.o.cs.modified(newSettings=newSettings)
         hist = self.o.getInterface("history")
         assems = hist.o.r.core.getAssemblies(Flags.FUEL)[:5]

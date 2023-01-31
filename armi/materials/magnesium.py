@@ -26,9 +26,15 @@ class Magnesium(material.Fluid):
         self.setMassFrac("MG", 1.0)
 
     def density(self, Tk=None, Tc=None):
-        r"""returns mass density of magnesium in g/cc
-        The Liquid Temperature Range, Density and Constants of Magnesium. P.J. McGonigal. Temple University 1961."""
+        r"""Returns mass density of magnesium in g/cm3.
+
+        The Liquid Temperature Range, Density and Constants of Magnesium. P.J. McGonigal. Temple University 1961.
+
+        Notes
+        -----
+        For Fluids, ARMI defines this 2D pseudodensity is the same as the usual 3D physical density.
+        """
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("density", Tk)
 
-        return 1.59 - 0.00026 * (Tk - 924.0)
+        return 1.834 - 2.647e-4 * Tk

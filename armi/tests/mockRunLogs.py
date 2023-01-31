@@ -93,8 +93,11 @@ class BufferLog(runLog._RunLog):
         """Reset the single warned list so we get messages again."""
         self._singleMessageCounts.clear()
 
-    def getStdoutValue(self):
+    def getStdout(self):
         return self._outputStream
+
+    def emptyStdout(self):
+        self._outputStream = ""
 
     def getStderrValue(self):
         return self._errStream.getvalue()

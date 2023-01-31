@@ -69,7 +69,7 @@ def retrieveOutput(exePath, inputPaths, cacheDir, locToRetrieveTo=None):
         successful = _copyOutputs(cachedFolder, locToRetrieveTo)
 
         if successful:
-            runLog.extra("Retrieved cached outputs for {}".format(exePath))
+            runLog.info("Retrieved cached outputs for {}".format(exePath))
             return True
         else:
             # outputs didn't match manifest. Just delete to save checking next time.
@@ -169,7 +169,7 @@ def store(exePath, inputPaths, outputFiles, cacheDir):
         cachedLoc = os.path.join(folderLoc, baseName)
         shutil.copy(outputFile, cachedLoc)
 
-    runLog.extra("Added outputs for {} to the cache.".format(exePath))
+    runLog.info("Added outputs for {} to the cache.".format(exePath))
 
 
 def deleteCache(cachedFolder):

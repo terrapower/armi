@@ -14,8 +14,8 @@
 
 """Incoloy 800"""
 
-from armi.utils.units import getTc
 from armi.materials.material import Material
+from armi.utils.units import getTc
 
 
 class Inconel800(Material):
@@ -26,8 +26,8 @@ class Inconel800(Material):
         (https://www.specialmetals.com/assets/smc/documents/alloys/incoloy/incoloy-alloy-800.pdf)
     """
     name = "Inconel800"
-
     propertyValidTemperature = {"thermal expansion": ((20.0, 800.0), "C")}
+    refTempK = 294.15
 
     def setDefaultMassFracs(self):
         r"""
@@ -44,12 +44,9 @@ class Inconel800(Material):
         self.setMassFrac("CU", 0.0075)  # max.
         self.setMassFrac("AL", 0.00375)  # ave.
         self.setMassFrac("TI", 0.00375)  # ave.
-        self.setMassFrac(
-            "FE", 1.0 - sum(self.p.massFrac.values())
-        )  # balance, 0.395 min.
+        self.setMassFrac("FE", 1.0 - sum(self.massFrac.values()))  # balance, 0.395 min.
 
-        self.p.refTempK = 273.15 + 21.0
-        self.p.refDens = 7.94
+        self.refDens = 7.94
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
         r"""
@@ -67,7 +64,7 @@ class Inconel800(Material):
         %dLL(T) in m/m/K
         """
         Tc = getTc(Tc, Tk)
-        refTempC = getTc(Tk=self.p.refTempK)
+        refTempC = getTc(Tk=self.refTempK)
         return 100.0 * self.meanCoefficientThermalExpansion(Tc=Tc) * (Tc - refTempC)
 
     def meanCoefficientThermalExpansion(self, Tk=None, Tc=None):

@@ -610,8 +610,26 @@ class CrossSectionGroupManager(interfaces.Interface):
         self.clearRepresentativeBlocks()
 
     def interactCoupled(self, iteration):
-        """Update XS groups on each physics coupling iteration to get latest temperatures."""
-        self.interactBOC(cycle=None)
+        """Update XS groups on each physics coupling iteration to get latest temperatures.
+
+        Notes
+        -----
+        This coupling iteration is limited to when the time node is equal to zero. This is
+        assumed to be reasonable for most applications as 1) microscopic cross section changes with burn-up
+        are deemed to be less significant compared to convergence on the temperature state, and 2) temperature
+        distributions are not expected to dramatically change for time steps > 0.
+
+        .. warning::
+
+            The latter assumptions are design and application-specific and a subclass should be
+            considered when violated.
+
+        See Also
+        --------
+        :py:meth:`Assembly <armi.physics.neutronics.latticePhysics.latticePhysics.LatticePhysicsInterface.interactCoupled>`
+        """
+        if self.r.p.timeNode == 0:
+            self.interactBOC(cycle=None)
 
     def clearRepresentativeBlocks(self):
         """Clear the representative blocks."""

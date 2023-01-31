@@ -35,12 +35,14 @@ class Lithium(material.Fluid):
                 "The 'LI_wt_frac' material modification for Lithium will be deprecated"
                 " Update your inputs to use 'LI6_wt_frac' instead.",
                 single=True,
+                label="Lithium applyInputParams 1",
             )
             if LI6_wt_frac is not None:
                 runLog.warning(
                     "Both 'LI_wt_frac' and 'LI6_wt_frac' are specified "
                     f"for {self}. 'LI6_wt_frac' will be used.",
                     single=True,
+                    label="Lithium applyInputParams 2",
                 )
 
         LI6_wt_frac = LI6_wt_frac or LI_wt_frac
@@ -51,12 +53,15 @@ class Lithium(material.Fluid):
             self.adjustMassEnrichment(LI6_wt_frac)
 
     def density(self, Tk=None, Tc=None):
-        r"""
-        Wikipedia.
+        r"""Density (g/cc) from Wikipedia.
 
         Will be liquid above 180C.
+
+        Notes
+        -----
+        In ARMI, we define density() and density3() as the same for Fluids.
         """
-        return 0.512  # g/cc
+        return 0.512
 
     def setDefaultMassFracs(self):
         self.setMassFrac("LI6", nb.byName["LI6"].abundance)
@@ -69,9 +74,7 @@ class Lithium(material.Fluid):
         return 1615.0  # K
 
     def thermalConductivity(self, Tk=None, Tc=None):
-        r"""
-        Wikipedia
-        """
+        r"""Wikipedia"""
         return 84.8  # W/m-K
 
     def heatCapacity(self, Tk=None, Tc=None):

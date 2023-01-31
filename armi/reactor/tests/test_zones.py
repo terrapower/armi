@@ -281,15 +281,15 @@ class TestZones(unittest.TestCase):
         with mockRunLogs.BufferLog() as mock:
             runLog.LOG.startLog("test_summary")
             runLog.LOG.setVerbosity(logging.INFO)
-            self.assertEqual("", mock._outputStream)
+            self.assertEqual("", mock.getStdout())
 
             self.zonez.summary()
 
-            self.assertIn("zoneDefinitions:", mock._outputStream)
-            self.assertIn("- ring-1: ", mock._outputStream)
-            self.assertIn("- ring-2: ", mock._outputStream)
-            self.assertIn("- ring-3: ", mock._outputStream)
-            self.assertIn("003-001, 003-002, 003-003", mock._outputStream)
+            self.assertIn("zoneDefinitions:", mock.getStdout())
+            self.assertIn("- ring-1: ", mock.getStdout())
+            self.assertIn("- ring-2: ", mock.getStdout())
+            self.assertIn("- ring-3: ", mock.getStdout())
+            self.assertIn("003-001, 003-002, 003-003", mock.getStdout())
 
     def test_sortZones(self):
         # create some zones in non-alphabetical order

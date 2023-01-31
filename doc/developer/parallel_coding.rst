@@ -2,7 +2,7 @@
 Parallel Code in ARMI
 #####################
 
-ARMI simulations can be parallelized using the `mpi4py <http://mpi4py.scipy.org/docs/usrman/index.html>`_
+ARMI simulations can be parallelized using the `mpi4py <https://mpi4py.readthedocs.io/en/stable/mpi4py.html>`_
 module. You should go there and read about collective and point-to-point communication if you want to
 understand everything in-depth.
 

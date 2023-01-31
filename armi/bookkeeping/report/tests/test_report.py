@@ -34,7 +34,7 @@ from armi.tests import mockRunLogs
 
 class TestReport(unittest.TestCase):
     def setUp(self):
-        self.test_group = data.Table(settings.getMasterCs(), "banana")
+        self.test_group = data.Table(settings.Settings(), "banana")
 
     def test_setData(self):
         report.setData("banana_1", ["sundae", "plain"])
@@ -78,58 +78,58 @@ class TestReport(unittest.TestCase):
 
         with mockRunLogs.BufferLog() as mock:
             # we should start with a clean slate
-            self.assertEqual("", mock._outputStream)
+            self.assertEqual("", mock.getStdout())
             runLog.LOG.startLog("test_reactorSpecificReporting")
             runLog.LOG.setVerbosity(logging.INFO)
 
             writeAssemblyMassSummary(r)
-            self.assertIn("BOL Assembly Mass Summary", mock._outputStream)
-            self.assertIn("igniter fuel", mock._outputStream)
-            self.assertIn("primary control", mock._outputStream)
-            self.assertIn("plenum", mock._outputStream)
-            mock._outputStream = ""
+            self.assertIn("BOL Assembly Mass Summary", mock.getStdout())
+            self.assertIn("igniter fuel", mock.getStdout())
+            self.assertIn("primary control", mock.getStdout())
+            self.assertIn("plenum", mock.getStdout())
+            mock.emptyStdout()
 
             setNeutronBalancesReport(r.core)
-            self.assertIn("No rate information", mock._outputStream)
-            mock._outputStream = ""
+            self.assertIn("No rate information", mock.getStdout())
+            mock.emptyStdout()
 
             r.core.getFirstBlock().p.rateCap = 1.0
             r.core.getFirstBlock().p.rateProdFis = 1.02
             r.core.getFirstBlock().p.rateFis = 1.01
             r.core.getFirstBlock().p.rateAbs = 1.0
             setNeutronBalancesReport(r.core)
-            self.assertIn("Fission", mock._outputStream)
-            self.assertIn("Capture", mock._outputStream)
-            self.assertIn("Absorption", mock._outputStream)
-            self.assertIn("Leakage", mock._outputStream)
-            mock._outputStream = ""
+            self.assertIn("Fission", mock.getStdout())
+            self.assertIn("Capture", mock.getStdout())
+            self.assertIn("Absorption", mock.getStdout())
+            self.assertIn("Leakage", mock.getStdout())
+            mock.emptyStdout()
 
             summarizePinDesign(r.core)
-            self.assertIn("Assembly Design Summary", mock._outputStream)
-            self.assertIn("Design & component information", mock._outputStream)
-            self.assertIn("Multiplicity", mock._outputStream)
-            mock._outputStream = ""
+            self.assertIn("Assembly Design Summary", mock.getStdout())
+            self.assertIn("Design & component information", mock.getStdout())
+            self.assertIn("Multiplicity", mock.getStdout())
+            mock.emptyStdout()
 
             summarizePower(r.core)
-            self.assertIn("Power in radial shield", mock._outputStream)
-            self.assertIn("Power in primary control", mock._outputStream)
-            self.assertIn("Power in feed fuel", mock._outputStream)
-            mock._outputStream = ""
+            self.assertIn("Power in radial shield", mock.getStdout())
+            self.assertIn("Power in primary control", mock.getStdout())
+            self.assertIn("Power in feed fuel", mock.getStdout())
+            mock.emptyStdout()
 
             writeCycleSummary(r.core)
-            self.assertIn("Core Average", mock._outputStream)
-            self.assertIn("Outlet Temp", mock._outputStream)
-            self.assertIn("End of Cycle", mock._outputStream)
-            mock._outputStream = ""
+            self.assertIn("Core Average", mock.getStdout())
+            self.assertIn("Outlet Temp", mock.getStdout())
+            self.assertIn("End of Cycle", mock.getStdout())
+            mock.emptyStdout()
 
             # this report won't do much for the test reactor - improve test reactor
             makeBlockDesignReport(r)
-            self.assertEqual(len(mock._outputStream), 0)
-            mock._outputStream = ""
+            self.assertEqual(len(mock.getStdout()), 0)
+            mock.emptyStdout()
 
             # this report won't do much for the test reactor - improve test reactor
             summarizePowerPeaking(r.core)
-            self.assertEqual(len(mock._outputStream), 0)
+            self.assertEqual(len(mock.getStdout()), 0)
 
 
 class TestReportInterface(unittest.TestCase):
@@ -156,10 +156,10 @@ class TestReportInterface(unittest.TestCase):
 
         with mockRunLogs.BufferLog() as mock:
             repInt.interactBOL()
-            self.assertIn("Writing assem layout", mock._outputStream)
-            self.assertIn("BOL Assembly", mock._outputStream)
-            self.assertIn("wetMass", mock._outputStream)
-            self.assertIn("moveable plenum", mock._outputStream)
+            self.assertIn("Writing assem layout", mock.getStdout())
+            self.assertIn("BOL Assembly", mock.getStdout())
+            self.assertIn("wetMass", mock.getStdout())
+            self.assertIn("moveable plenum", mock.getStdout())
 
     def test_interactEveryNode(self):
         o, r = loadTestReactor()
@@ -167,9 +167,9 @@ class TestReportInterface(unittest.TestCase):
 
         with mockRunLogs.BufferLog() as mock:
             repInt.interactEveryNode(0, 0)
-            self.assertIn("Cycle 0", mock._outputStream)
-            self.assertIn("node 0", mock._outputStream)
-            self.assertIn("keff=", mock._outputStream)
+            self.assertIn("Cycle 0", mock.getStdout())
+            self.assertIn("node 0", mock.getStdout())
+            self.assertIn("keff=", mock.getStdout())
 
     def test_interactBOC(self):
         o, r = loadTestReactor()
@@ -185,8 +185,8 @@ class TestReportInterface(unittest.TestCase):
 
         with mockRunLogs.BufferLog() as mock:
             repInt.interactEOC(0)
-            self.assertIn("Cycle 0", mock._outputStream)
-            self.assertIn("TIMER REPORTS", mock._outputStream)
+            self.assertIn("Cycle 0", mock.getStdout())
+            self.assertIn("TIMER REPORTS", mock.getStdout())
 
     def test_interactEOL(self):
         o, r = loadTestReactor()
@@ -194,8 +194,8 @@ class TestReportInterface(unittest.TestCase):
 
         with mockRunLogs.BufferLog() as mock:
             repInt.interactEOL()
-            self.assertIn("Comprehensive Core Report", mock._outputStream)
-            self.assertIn("Assembly Area Fractions", mock._outputStream)
+            self.assertIn("Comprehensive Core Report", mock.getStdout())
+            self.assertIn("Assembly Area Fractions", mock.getStdout())
 
 
 if __name__ == "__main__":

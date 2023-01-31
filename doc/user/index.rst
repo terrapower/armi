@@ -20,5 +20,5 @@ analyzing ARMI output files, etc.
    core_parameters_report
    assembly_parameters_report
    block_parameters_report
-   assorted_guide
+   physics_coupling
    accessingEntryPoints

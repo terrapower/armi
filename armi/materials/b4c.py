@@ -12,10 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Boron carbide; a very typical reactor control material."""
+"""
+Boron carbide; a very typical reactor control material.
+
+Note that this material defaults to a theoretical density fraction of 0.9, reflecting
+the difficulty of producing B4C at 100% theoretical density in real life. To get
+different fraction, use the `TD_frac` material modification in your assembly definition.
+"""
+from armi import runLog
 from armi.materials import material
 from armi.nucDirectory import nuclideBases
-from armi import runLog
 from armi.utils.units import getTc
 
 DEFAULT_THEORETICAL_DENSITY_FRAC = 0.90
@@ -25,7 +31,6 @@ DEFAULT_MASS_DENSITY = 2.52
 class B4C(material.Material):
     name = "B4C"
     enrichedNuclide = "B10"
-
     propertyValidTemperature = {"linear expansion percent": ((25, 500), "C")}
 
     def applyInputParams(
@@ -51,8 +56,8 @@ class B4C(material.Material):
         if TD_frac is not None:
             self.updateTD(TD_frac)
 
-    def updateTD(self, TD: float) -> None:
-        self.p.theoreticalDensityFrac = TD
+    def updateTD(self, td: float) -> None:
+        self.theoreticalDensityFrac = td
         self.clearCache()
 
     def setNewMassFracsFromMassEnrich(self, massEnrichment):
@@ -127,7 +132,6 @@ class B4C(material.Material):
 
         total=55.2547 g.
         Mass fractions are computed from this.
-
         """
         massEnrich = self.getMassEnrichmentFromNumEnrich(naturalB10NumberFraction=0.199)
 
@@ -137,10 +141,10 @@ class B4C(material.Material):
         self.setMassFrac("B10", gBoron10)
         self.setMassFrac("B11", gBoron11)
         self.setMassFrac("C", gCarbon)
-        self.p.refDens = DEFAULT_MASS_DENSITY
+        self.refDens = DEFAULT_MASS_DENSITY
         # TD reference : Dunner, Heuvel, "Absorber Materials for control rod systems of fast breeder reactors"
         # Journal of nuclear materials, 124, 185-194, (1984)."
-        self.p.theoreticalDensityFrac = (
+        self.theoreticalDensityFrac = (
             DEFAULT_THEORETICAL_DENSITY_FRAC  # normally is around 0.88-93.
         )
 
@@ -165,7 +169,7 @@ class B4C(material.Material):
         -----
         - applies theoretical density of B4C to parent method
         """
-        return material.Material.density(self, Tk, Tc) * self.p.theoreticalDensityFrac
+        return material.Material.density(self, Tk, Tc) * self.theoreticalDensityFrac
 
     def density3(self, Tk: float = None, Tc: float = None) -> float:
         """
@@ -175,7 +179,7 @@ class B4C(material.Material):
         -----
         - applies theoretical density of B4C to parent method
         """
-        return material.Material.density3(self, Tk, Tc) * self.p.theoreticalDensityFrac
+        return material.Material.density3(self, Tk, Tc) * self.theoreticalDensityFrac
 
     def linearExpansionPercent(self, Tk: float = None, Tc: float = None) -> float:
         """Boron carbide expansion. Very preliminary"""

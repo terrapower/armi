@@ -14,6 +14,8 @@
 
 """factory for the FuelHandler"""
 from armi.physics.fuelCycle import fuelHandlers
+from armi.physics.fuelCycle.settings import CONF_FUEL_HANDLER_NAME
+from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
 from armi.utils import directoryChangers, pathTools
 
 
@@ -26,8 +28,8 @@ def fuelHandlerFactory(operator):
     called again to instantiate a new FuelHandler.
     """
     cs = operator.cs
-    fuelHandlerClassName = cs["fuelHandlerName"]
-    fuelHandlerModulePath = cs["shuffleLogic"]
+    fuelHandlerClassName = cs[CONF_FUEL_HANDLER_NAME]
+    fuelHandlerModulePath = cs[CONF_SHUFFLE_LOGIC]
 
     if not fuelHandlerClassName:
         # give the default FuelHandler. This does not have an implemented outage, but

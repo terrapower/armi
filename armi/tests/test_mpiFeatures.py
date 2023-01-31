@@ -34,6 +34,7 @@ from armi import settings
 from armi.interfaces import Interface
 from armi.mpiActions import DistributeStateAction
 from armi.operators import OperatorMPI
+from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.reactor import blueprints
 from armi.reactor import reactors
 from armi.reactor.parameters import parameterDefinitions
@@ -178,9 +179,9 @@ class MpiDistributeStateTests(unittest.TestCase):
             original = {ss.name: ss.value for ss in self.cs.values()}
             current = {ss.name: ss.value for ss in self.action.o.cs.values()}
             # remove values that are *expected to be* different...
-            # crossSectionControl is removed because unittest is being mean about
+            # CONF_CROSS_SECTION is removed because unittest is being mean about
             # comparing dicts...
-            for key in ["stationaryBlockFlags", "verbosity", "crossSectionControl"]:
+            for key in ["stationaryBlockFlags", "verbosity", CONF_CROSS_SECTION]:
                 if key in original:
                     del original[key]
                 if key in current:
