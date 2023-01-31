@@ -165,7 +165,7 @@ class TestCompareCases(unittest.TestCase):
         cc.parse_args(["/path/to/fake1.h5", "/path/to/fake2.h5"])
 
         self.assertEqual(cc.name, "compare")
-        self.assertIsNone(cc.args.timestepMatchup)
+        self.assertIsNone(cc.args.timestepCompare)
         self.assertIsNone(cc.args.weights)
 
 

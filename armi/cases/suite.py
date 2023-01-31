@@ -219,7 +219,7 @@ class CaseSuite:
         exclusion: Optional[Sequence[str]] = None,
         weights=None,
         tolerance=0.01,
-        timestepMatchup=None,
+        timestepCompare=None,
     ) -> int:
         """
         Compare one case suite with another.
@@ -258,7 +258,10 @@ class CaseSuite:
                 suiteHasMissingFiles = False
             else:
                 caseIssues = refCase.compare(
-                    cmpCase, exclusion=exclusion, tolerance=tolerance
+                    cmpCase,
+                    exclusion=exclusion,
+                    tolerance=tolerance,
+                    timestepCompare=timestepCompare,
                 )
             nIssues += caseIssues
             tableResults[caseTitle] = (userFile, refFile, caseIssues)
