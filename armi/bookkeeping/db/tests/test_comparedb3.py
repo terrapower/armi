@@ -174,7 +174,6 @@ class TestCompareDB3(unittest.TestCase):
 
         # end-to-end validation that comparing a photocopy database works
         diffs = compareDatabases(dbs[0]._fullPath, dbs[1]._fullPath)
-        print(diffs.diffs)
         self.assertEqual(len(diffs.diffs), 462)
         # Cycle length is only diff (x3)
         self.assertEqual(diffs.nDiffs(), 3)
