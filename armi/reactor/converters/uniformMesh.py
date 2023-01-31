@@ -781,13 +781,13 @@ class UniformMeshGeometryConverter(GeometryConverter):
             aMesh = src.core.findAllAxialMeshPoints([a])[1:-1]
             if len(aMesh) == refNumPoints:
                 allMeshes.extend(aMesh)
-        allMeshes = roundAndRemoveDuplicates(allMeshes, places=2)
+        allMeshes = roundAndRemoveDuplicates(allMeshes, places=1)
 
-        # run kmeans with an increasing number of coordinates until one of two
+        # run kmeans with an increasing number of coordinates until one of three
         # stop conditions are met
         # 1. The total error goes below the tolerance
         # 2. The number of mesh points is twice the number in the reference assembly
-        # (or if we end up oscillating in an infinite loop. shouldn't happen, but you never know)
+        # 3. Maximum number of iterations is exceeded (10 * refNumPoints)
         stop = False
         nMesh = refNumPoints
         maxIters = refNumPoints * 10
@@ -797,8 +797,9 @@ class UniformMeshGeometryConverter(GeometryConverter):
                 allMeshes, min(nMesh, len(allMeshes)), iter=10, seed=123456789
             )
             sortedCoords = sorted(meanMesh)
-            # if any k-means point is within tolerance of an original mesh, replace the original
-            reducedMesh = reduceAllMeshes(allMeshes, sortedCoords, meshTolerance)
+            # if any k-means point is within tolerance of a cluster of the original mesh,
+            # replace the original locations with the k-means coordinate
+            allMeshes = reduceAllMeshes(allMeshes, sortedCoords, meshTolerance)
 
             # check if reduced mesh is too fine before using it
             meshSpacing = numpy.array(sortedCoords)[1:] - numpy.array(sortedCoords[:-1])
@@ -806,21 +807,34 @@ class UniformMeshGeometryConverter(GeometryConverter):
                 # the mesh is too fine, keep going
                 nMesh -= 1
             else:
-                # only increment nMesh if we haven't reduced the size of allMeshes
-                if len(allMeshes) == len(reducedMesh):
-                    nMesh += 1
-                allMeshes = list(reducedMesh)
+                nMesh += 1
 
                 # stop if we meet error criterion or new mesh gets too fine
                 # infinite loop shouldn't happen, but it is theoretically possible with
                 # nMesh += 1 and nMesh -= 1 oscillating
-                # if this happens, just quit and spit out the mesh
+                # if this happens, just quit and spit out the mesh after maxIters
                 stop = error < tolerance or nMesh > 2 * refNumPoints or iters > maxIters
 
             iters += 1
 
-        selectedMesh = allMeshes + [lastMeshPoint]
-        self._uniformMesh = numpy.array(selectedMesh)
+        if error > tolerance:
+            warningMsg = (
+                "Uniform mesh converter failed to converge!"
+                + f"error = {error}, tolerance = {tolerance}\n"
+            )
+            if nMesh > 2 * refNumPoints:
+                warningMsg += (
+                    "- Uniform mesh got too fine!"
+                    f"Number of mesh points = {2 * refNumPoints}"
+                )
+            elif iters > maxIters:
+                warningMsg += (
+                    "- Number of iterations for uniform mesh generator exceeded "
+                    f" before convergence! maxIters = {maxIters}"
+                )
+            runLog.warning(warningMsg)
+
+        self._uniformMesh = numpy.array(allMeshes + [lastMeshPoint])
 
     def _computeAverageAxialMesh(self):
         """
