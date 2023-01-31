@@ -74,8 +74,9 @@ class BlockConverter:
         """
         runLog.extra(
             "Homogenizing the {} component into the {} component in block {}".format(
-                soluteName, solventName, self._sourceBlock
-            )
+                soluteName, solventName, self._sourceBlock.getType()
+            ),
+            single=True,
         )
         # break up dimension links since we will be messing with this block's components
         newBlock = copy.deepcopy(self._sourceBlock)
@@ -154,7 +155,8 @@ class BlockConverter:
         runLog.extra(
             "Solute is linked to component(s) {} and these links will be reestablished.".format(
                 soluteLinks
-            )
+            ),
+            single=True,
         )
         for linkedC in soluteLinks:
             if linkedC in solvent.getLinkedComponents():
@@ -167,14 +169,16 @@ class BlockConverter:
                     )
                 runLog.extra(
                     "Removing void component {} in converted block {}."
-                    "".format(linkedC, self._sourceBlock)
+                    "".format(linkedC, self._sourceBlock.getType()),
+                    single=True,
                 )
                 self._sourceBlock.remove(linkedC)
             else:
                 dims = linkedC.getDimensionNamesLinkedTo(solute)
                 runLog.extra(
                     "Linking component {} in converted block {} to solvent {}."
-                    "".format(linkedC, self._sourceBlock, solvent)
+                    "".format(linkedC, self._sourceBlock.getType(), solvent),
+                    single=True,
                 )
                 for dimToChange, dimOfOther in dims:
                     linkedC.setLink(dimToChange, solvent, dimOfOther)

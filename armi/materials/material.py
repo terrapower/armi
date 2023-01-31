@@ -622,7 +622,7 @@ class Material:
         """
         Tc = getTc(Tc, Tk)
 
-        rhoCp = self.density(Tc=Tc) * 1000.0 * self.heatCapacity(Tc=Tc)
+        rhoCp = self.density3(Tc=Tc) * 1000.0 * self.heatCapacity(Tc=Tc)
 
         return rhoCp
 
