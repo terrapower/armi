@@ -683,6 +683,15 @@ class Material:
             f"Material {type(self).__name__} does not implement heatCapacity"
         )
 
+    def getTD(self):
+        """Get the fraction of theoretical density for this material."""
+        return self.theoreticalDensityFrac
+
+    def adjustTD(self, val):
+        """Set or change the fraction of theoretical density for this material."""
+        self.theoreticalDensityFrac = val
+        self.clearCache()
+
 
 class Fluid(Material):
     """A material that fills its container. Could also be a gas."""
