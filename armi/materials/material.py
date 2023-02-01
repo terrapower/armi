@@ -86,7 +86,7 @@ class Material:
         self.parent = None
         self.massFrac = {}
         self.refDens = 0.0
-        self.theoreticalDensityFrac = 0.0
+        self.theoreticalDensityFrac = 1.0
         self.cached = {}
         self._backupCache = None
 
