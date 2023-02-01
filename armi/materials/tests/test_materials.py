@@ -653,11 +653,6 @@ class UraniumOxide_TestCase(_Material_Test, unittest.TestCase):
     def test_propertyValidTemperature(self):
         self.assertGreater(len(self.mat.propertyValidTemperature), 0)
 
-    def test_adjustTD(self):
-        self.assertEqual(self.mat.theoreticalDensityFrac, 1.0)
-        self.mat.adjustTD(0.123)
-        self.assertEqual(self.mat.theoreticalDensityFrac, 0.123)
-
 
 class Thorium_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.Thorium
@@ -704,6 +699,11 @@ class ThoriumOxide_TestCase(_Material_Test, unittest.TestCase):
         ref = 10.00
         accuracy = 4
         self.assertAlmostEqual(cur, ref, accuracy)
+
+        # make sure that material modifications are correctly applied
+        self.mat.applyInputParams(TD_frac=0.1)
+        cur = self.mat.density3(Tc=25)
+        self.assertAlmostEqual(cur, ref * 0.1, accuracy)
 
     def test_linearExpansion(self):
         cur = self.mat.linearExpansion(400)
