@@ -653,6 +653,21 @@ class UraniumOxide_TestCase(_Material_Test, unittest.TestCase):
     def test_propertyValidTemperature(self):
         self.assertGreater(len(self.mat.propertyValidTemperature), 0)
 
+    def test_applyInputParams(self):
+        UO2_TD = UO2()
+        original = UO2_TD.density3(500)
+        UO2_TD.applyInputParams(TD_frac=0.1)
+        new = UO2_TD.density3(500)
+        ratio = new / original
+        self.assertAlmostEqual(ratio, 0.1)
+
+        UO2_TD = UO2()
+        original = UO2_TD.density(500)
+        UO2_TD.applyInputParams(TD_frac=0.1)
+        new = UO2_TD.density(500)
+        ratio = new / original
+        self.assertAlmostEqual(ratio, 0.1)
+
 
 class Thorium_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.Thorium
