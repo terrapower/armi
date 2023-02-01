@@ -27,9 +27,6 @@ from armi.materials.tests.test_materials import _Material_Test
 class UraniumOxide_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = UO2
 
-    def setUp(self):
-        _Material_Test.setUp(self)
-
     def test_applyInputParams(self):
         UO2_TD = UO2()
         original = UO2_TD.density3(500)
