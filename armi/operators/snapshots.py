@@ -31,7 +31,10 @@ class OperatorSnapshots(operatorMPI.OperatorMPI):
         # disable fuel management and optimization
         # disable depletion because we don't want to change number densities for tn's >0 (or any)
         for toDisable in ["fuelHandler", "optimize", "depletion"]:
-            i = self.getInterface(toDisable)
+            i = self.getInterface(name=toDisable)
+            if i:
+                i.enabled(False)
+            i = self.getInterface(function=toDisable)
             if i:
                 i.enabled(False)
 
