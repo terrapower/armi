@@ -15,13 +15,7 @@
 """
 Base Material classes.
 
-All temperatures are in K, but Tc can be specified and the functions will convert for you.
-
-.. warning:: ARMI uses these objects for all material properties. Under the hood,
-     A system called MAT_PROPS is in charge of several material properties. It
-     is a more industrial-strength material property system that is currently
-     a TerraPower proprietary system. You will see references to it in this module.
-
+Most temperatures may be specified in either K or C and the functions will convert for you.
 """
 # pylint: disable=unused-argument
 import copy
@@ -43,6 +37,26 @@ FAIL_ON_RANGE = False
 class Material:
     """
     A material is made up of elements or isotopes. It has bulk properties like mass density.
+
+    Attributes
+    ----------
+    parent : Component
+        The component to which this material belongs
+    massFrac : dict
+        Mass fractions for all nuclides in the material keyed on the nuclide symbols
+    refDens : float
+        A reference density used by some materials, for instance `SimpleSolid`s,
+        during thermal expansion
+    theoreticalDensityFrac : float
+        Fraction of the material's density in reality, which is commonly different
+        from 1.0 in solid materials due to the manufacturing process.
+        Can often be set from the blueprints input via the TD_frac material modification.
+        For programmatic setting, use `adjustTD()`.
+
+    Notes
+    -----
+    Specific material classes may have many more attributes specific to the implementation
+    for that material.
     """
 
     DATA_SOURCE = "ARMI"
