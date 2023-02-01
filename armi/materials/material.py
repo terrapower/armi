@@ -805,6 +805,13 @@ class SimpleSolid(Material):
     def density3(self, Tk: float = None, Tc: float = None) -> float:
         return 0.0
 
+    def density(self, Tk: float = None, Tc: float = None) -> float:
+        """
+        The same method as the parent class, but with the ability to apply a
+        non-unity theoretical density.
+        """
+        return Material.density(self, Tk=Tk, Tc=Tc) * self.getTD()
+
 
 class FuelMaterial(Material):
     """
