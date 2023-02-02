@@ -46,6 +46,7 @@ Bug fixes
 #. Fixed a bug where non-fuel depletable components were not being initialized with all nuclides with the ``explicitFissionProducts`` model (`PR#1067 https://github.com/terrapower/armi/pull/1067`_)
 #. Bug fix to ensure consistency between cross section group manager and lattice physics interface for tight coupling. (`PR#1118 <https://github.com/terrapower/armi/pull/1118>`_)
 #. Bug fix to update pseudo density to physical density in densityTimesHeatCapacity materials method. (`PR#1129 <https://github.com/terrapower/armi/pull/1129>`_)
+#. Fixed a bug in which the TD_frac material modification on UraniumOxide and MOX materials was not being applied correctly in density calculations
 
 ARMI v0.2.5
 ===========
