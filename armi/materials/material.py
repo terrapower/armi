@@ -823,6 +823,9 @@ class FuelMaterial(Material):
     class1_wt_frac = None
     class1_custom_isotopics = None
     class2_custom_isotopics = None
+    puFrac = 0.0
+    uFrac = 0.0
+    zrFrac = 0.0
 
     def applyInputParams(
         self,
@@ -900,5 +903,8 @@ class FuelMaterial(Material):
         m.class1_wt_frac = self.class1_wt_frac
         m.class1_custom_isotopics = self.class1_custom_isotopics
         m.class2_custom_isotopics = self.class2_custom_isotopics
+        m.puFrac = self.puFrac if hasattr(self, "puFrac") else 0.0
+        m.uFrac = self.uFrac if hasattr(self, "uFrac") else 0.0
+        m.zrFrac = self.zrFrac if hasattr(self, "zrFrac") else 0.0
 
         return m
