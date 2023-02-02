@@ -903,8 +903,8 @@ class FuelMaterial(Material):
         m.class1_wt_frac = self.class1_wt_frac
         m.class1_custom_isotopics = self.class1_custom_isotopics
         m.class2_custom_isotopics = self.class2_custom_isotopics
-        m.puFrac = self.puFrac if hasattr(self, "puFrac") else 0.0
-        m.uFrac = self.uFrac if hasattr(self, "uFrac") else 0.0
-        m.zrFrac = self.zrFrac if hasattr(self, "zrFrac") else 0.0
+        m.puFrac = self.puFrac
+        m.uFrac = self.uFrac
+        m.zrFrac = self.zrFrac
 
         return m
