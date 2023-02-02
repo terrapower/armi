@@ -116,28 +116,6 @@ class MaterialFindingTests(unittest.TestCase):
             )
 
 
-class Californium_TestCase(_Material_Test, unittest.TestCase):
-
-    MAT_CLASS = materials.Californium
-
-    def test_density(self):
-        ref = 15.1
-
-        cur = self.mat.density(923)
-        self.assertEqual(cur, ref)
-
-        cur = self.mat.density(1390)
-        self.assertEqual(cur, ref)
-
-    def test_propertyValidTemperature(self):
-        self.assertEqual(len(self.mat.propertyValidTemperature), 0)
-
-    def test_porosities(self):
-        self.mat.parent = None
-        self.assertEqual(self.mat.liquidPorosity, 0.0)
-        self.assertEqual(self.mat.gasPorosity, 0.0)
-
-
 class Cesium_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.Cs
 
@@ -215,58 +193,6 @@ class Molybdenum_TestCase(_Material_Test, unittest.TestCase):
 
     def test_propertyValidTemperature(self):
         self.assertEqual(len(self.mat.propertyValidTemperature), 0)
-
-
-class MOX_TestCase(_Material_Test, unittest.TestCase):
-    MAT_CLASS = materials.MOX
-
-    def test_density(self):
-        cur = self.mat.density3(333)
-        ref = 10.926
-        delta = ref * 0.0001
-        self.assertAlmostEqual(cur, ref, delta=delta)
-
-    def test_getMassFracPuO2(self):
-        ref = 0.176067
-        self.assertAlmostEqual(self.mat.getMassFracPuO2(), ref, delta=ref * 0.001)
-
-    def test_getMolFracPuO2(self):
-        ref = 0.209
-        self.assertAlmostEqual(self.mat.getMolFracPuO2(), ref, delta=ref * 0.001)
-
-    def test_getMolFracPuO2(self):
-        ref = 2996.788765
-        self.assertAlmostEqual(self.mat.meltingPoint(), ref, delta=ref * 0.001)
-
-    def test_applyInputParams(self):
-        massFracNameList = [
-            "AM241",
-            "O16",
-            "PU238",
-            "PU239",
-            "PU240",
-            "PU241",
-            "PU242",
-            "U235",
-            "U238",
-        ]
-        massFracRefValList = [
-            0.000998,
-            0.118643,
-            0.000156,
-            0.119839,
-            0.029999,
-            0.00415,
-            0.000858,
-            0.166759,
-            0.558597,
-        ]
-
-        self.mat.applyInputParams()
-
-        for name, frac in zip(massFracNameList, massFracRefValList):
-            cur = self.mat.massFrac[name]
-            self.assertEqual(cur, frac)
 
 
 class NaCl_TestCase(_Material_Test, unittest.TestCase):
@@ -350,57 +276,6 @@ class ScandiumOxide_TestCase(_Material_Test, unittest.TestCase):
         cur = self.mat.linearExpansionPercent(Tc=400)
         ref = 0.28322
         self.assertAlmostEqual(cur, ref, delta=abs(ref * 0.001))
-
-    def test_propertyValidTemperature(self):
-        self.assertGreater(len(self.mat.propertyValidTemperature), 0)
-
-
-class Sodium_TestCase(_Material_Test, unittest.TestCase):
-    MAT_CLASS = materials.Sodium
-
-    def test_density(self):
-        cur = self.mat.density(300)
-        ref = 0.941
-        delta = ref * 0.001
-        self.assertAlmostEqual(cur, ref, delta=delta)
-
-        cur = self.mat.density(1700)
-        ref = 0.597
-        delta = ref * 0.001
-        self.assertAlmostEqual(cur, ref, delta=delta)
-
-    def test_specificVolumeLiquid(self):
-        cur = self.mat.specificVolumeLiquid(300)
-        ref = 0.001062
-        delta = ref * 0.001
-        self.assertAlmostEqual(cur, ref, delta=delta)
-
-        cur = self.mat.specificVolumeLiquid(1700)
-        ref = 0.001674
-        delta = ref * 0.001
-        self.assertAlmostEqual(cur, ref, delta=delta)
-
-    def test_enthalpy(self):
-        cur = self.mat.enthalpy(300)
-        ref = 107518.523
-        delta = ref * 0.001
-        self.assertAlmostEqual(cur, ref, delta=delta)
-
-        cur = self.mat.enthalpy(1700)
-        ref = 1959147.963
-        delta = ref * 0.001
-        self.assertAlmostEqual(cur, ref, delta=delta)
-
-    def test_thermalConductivity(self):
-        cur = self.mat.thermalConductivity(300)
-        ref = 95.1776
-        delta = ref * 0.001
-        self.assertAlmostEqual(cur, ref, delta=delta)
-
-        cur = self.mat.thermalConductivity(1700)
-        ref = 32.616
-        delta = ref * 0.001
-        self.assertAlmostEqual(cur, ref, delta=delta)
 
     def test_propertyValidTemperature(self):
         self.assertGreater(len(self.mat.propertyValidTemperature), 0)
