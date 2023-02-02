@@ -935,14 +935,14 @@ def getBlockParameterDefinitions():
             "kgFis",
             units="kg",
             description="Mass of fissile material in block",
-            location=ParamLocation.AVERAGE,
+            location=ParamLocation.VOLUME_INTEGRATED,
         )
 
         pb.defParam(
             "kgHM",
             units="kg",
             description="Mass of heavy metal in block",
-            location=ParamLocation.AVERAGE,
+            location=ParamLocation.VOLUME_INTEGRATED,
         )
 
         pb.defParam(

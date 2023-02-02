@@ -334,6 +334,10 @@ class TestFuelHandler(FuelHandlerTestHelper):
             fh.manageFuel(cycle)
             for a in self.r.core.sfp.getChildren():
                 self.assertEqual(a.getLocation(), "SFP")
+            for b in self.r.core.getBlocks(Flags.FUEL):
+                self.assertGreater(b.p.kgHM, 0.0, "b.p.kgHM not populated!")
+                self.assertGreater(b.p.kgFis, 0.0, "b.p.kgFis not populated!")
+
         fh.interactEOL()
 
     def test_repeatShuffles(self):
