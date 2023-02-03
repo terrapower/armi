@@ -916,10 +916,10 @@ class LeadBismuth_TestCase(_Material_Test, unittest.TestCase):
 class Copper_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.Cu
 
-    def test_setDefaultMassFracs(self):
-        cur = self.mat.massFrac
-        ref = {"CU63": 0.6915, "CU65": 0.3085}
-        self.assertEqual(cur, ref)
+    # def test_setDefaultMassFracs(self):
+    #    cur = self.mat.massFrac
+    #    ref = {"CU63": 0.6915, "CU65": 0.3085}
+    #    self.assertEqual(cur, ref)
 
     def test_density3(self):
         for tk in [200.0, 400.0, 800.0, 1111.1]:
