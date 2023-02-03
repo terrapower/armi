@@ -55,7 +55,7 @@ class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
     propertyUnits = {"heat capacity": "J/mol-K"}
 
     propertyValidTemperature = {
-        "density": ((300, 3100), "K"),
+        "density3": ((300, 3100), "K"),
         "heat capacity": ((298.15, 3120), "K"),
         "linear expansion": ((273, 3120), "K"),
         "linear expansion percent": ((273, __meltingPoint), "K"),
@@ -166,7 +166,7 @@ class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
         Polynomial line fit to data from [#ornltm2000]_ on page 11.
         """
         Tk = getTk(Tc, Tk)
-        self.checkPropertyTempRange("density", Tk)
+        self.checkPropertyTempRange("density3", Tk)
 
         return (-1.01147e-7 * Tk ** 2 - 1.29933e-4 * Tk + 1.09805e1) * self.getTD()
 
