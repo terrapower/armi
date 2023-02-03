@@ -21,6 +21,7 @@ from inspect import signature
 import yamlize
 
 from armi import getPluginManagerOrFail, runLog
+from armi.materials.material import Material
 from armi.reactor import blocks
 from armi.reactor import parameters
 from armi.reactor.flags import Flags
@@ -128,9 +129,14 @@ class BlockBlueprint(yamlize.KeyedList):
             if isinstance(c, Component):
                 # there are other things like composite groups that don't get
                 # material modifications -- skip those
-                validMatModOptions = signature(
-                    c.material.applyInputParams
-                ).parameters.keys()
+                validMatModOptions = set()
+                for materialParentClass in c.material.__class__.__mro__:
+                    # we must loop over parents as well, since applyInputParams
+                    # could call to Parent.applyInputParams()
+                    if issubclass(materialParentClass, Material):
+                        validMatModOptions |= signature(
+                            c.material.applyInputParams
+                        ).parameters.keys()
                 for key in byComponentMatModKeys:
                     if key not in validMatModOptions:
                         raise ValueError(
@@ -165,9 +171,13 @@ class BlockBlueprint(yamlize.KeyedList):
             if isinstance(c, Component):
                 # there are other things like composite groups that don't get
                 # material modifications -- skip those
-                validMatModOptions |= signature(
-                    c.material.applyInputParams
-                ).parameters.keys()
+                for materialParentClass in c.material.__class__.__mro__:
+                    # we must loop over parents as well, since applyInputParams
+                    # could call to Parent.applyInputParams()
+                    if issubclass(materialParentClass, Material):
+                        validMatModOptions |= signature(
+                            materialParentClass.applyInputParams
+                        ).parameters.keys()
 
         if "byBlock" in materialInput:
             for key in materialInput["byBlock"]:
