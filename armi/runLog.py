@@ -383,23 +383,23 @@ def raw(msg):
     """
     Print raw text without any special functionality.
     """
-    LOG.log("header", msg, single=False, label=msg)
+    LOG.log("header", msg, single=False)
 
 
 def extra(msg, single=False, label=None):
-    LOG.log("extra", msg, single=single, label=label)
+    LOG.log("extra", msg, single=single)
 
 
 def debug(msg, single=False, label=None):
-    LOG.log("debug", msg, single=single, label=label)
+    LOG.log("debug", msg, single=single)
 
 
 def info(msg, single=False, label=None):
-    LOG.log("info", msg, single=single, label=label)
+    LOG.log("info", msg, single=single)
 
 
 def important(msg, single=False, label=None):
-    LOG.log("important", msg, single=single, label=label)
+    LOG.log("important", msg, single=single)
 
 
 def warning(msg, single=False, label=None):
@@ -446,18 +446,23 @@ class DeduplicationFilter(logging.Filter):
         # determine if this is a "do not duplicate" message
         msg = str(record.msg)
         single = getattr(record, "single", False)
-        label = getattr(record, "label", msg)
-        label = msg if label is None else label
 
         # If the message is set to "do not duplicate" we may filter it out
         if single:
             if record.levelno in (logging.WARNING, logging.CRITICAL):
+                # if this is from the custom logger, it will have a "label"
+                label = getattr(record, "label", msg)
+                # the "label" default is None, which needs to be replaced
+                label = msg if label is None else label
+
                 if label not in self.singleWarningMessageCounts:
                     self.singleWarningMessageCounts[label] = 1
                 else:
                     self.singleWarningMessageCounts[label] += 1
                     return False
             else:
+                # in sub-warning cases, hash the msg, for a faster label lookup
+                label = hash(msg)
                 if label not in self.singleMessageCounts:
                     self.singleMessageCounts[label] = 1
                 else:
