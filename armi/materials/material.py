@@ -820,16 +820,12 @@ class FuelMaterial(Material):
     All this really does is enable the special class 1/class 2 isotopics input option.
     """
 
-    def __init__(self):
-        Material.__init__(self)
-        # support for custom isotopics
-        self.class1_wt_frac = None
-        self.class1_custom_isotopics = None
-        self.class2_custom_isotopics = None
-        # tracking depletion status
-        self.puFrac = 0.0
-        self.uFrac = 0.0
-        self.zrFrac = 0.0
+    class1_wt_frac = None
+    class1_custom_isotopics = None
+    class2_custom_isotopics = None
+    puFrac = 0.0
+    uFrac = 0.0
+    zrFrac = 0.0
 
     def applyInputParams(
         self,
@@ -904,23 +900,11 @@ class FuelMaterial(Material):
         m.refDens = self.refDens
         m.theoreticalDensityFrac = self.theoreticalDensityFrac
 
-        # Handle the case where a developer creates a FuelMaterial,
-        # but only calls the Material.__init__().
-        m.class1_wt_frac = (
-            self.class1_wt_frac if hasattr(self, "class1_wt_frac") else None
-        )
-        m.class1_custom_isotopics = (
-            self.class1_custom_isotopics
-            if hasattr(self, "class1_custom_isotopics")
-            else None
-        )
-        m.class2_custom_isotopics = (
-            self.class2_custom_isotopics
-            if hasattr(self, "class2_custom_isotopics")
-            else None
-        )
-        m.puFrac = self.puFrac if hasattr(self, "puFrac") else 0.0
-        m.uFrac = self.uFrac if hasattr(self, "uFrac") else 0.0
-        m.zrFrac = self.zrFrac if hasattr(self, "zrFrac") else 0.0
+        m.class1_wt_frac = self.class1_wt_frac
+        m.class1_custom_isotopics = self.class1_custom_isotopics
+        m.class2_custom_isotopics = self.class2_custom_isotopics
+        m.puFrac = self.puFrac
+        m.uFrac = self.uFrac
+        m.zrFrac = self.zrFrac
 
         return m
