@@ -15,8 +15,8 @@
 r"""Tests materials.py"""
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-member,invalid-name
 
-import pickle
 import math
+import pickle
 import unittest
 
 from numpy import testing
@@ -913,7 +913,6 @@ class LeadBismuth_TestCase(_Material_Test, unittest.TestCase):
         self.assertGreater(len(self.mat.propertyValidTemperature), 0)
 
 
-"""
 class Copper_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.Cu
 
@@ -922,11 +921,13 @@ class Copper_TestCase(_Material_Test, unittest.TestCase):
     #    ref = {"CU63": 0.6915, "CU65": 0.3085}
     #    self.assertEqual(cur, ref)
 
-    def test_density3(self):
+    def test_densityNeverChanges(self):
         for tk in [200.0, 400.0, 800.0, 1111.1]:
             cur = self.mat.density3(tk)
             self.assertAlmostEqual(cur, 8.913, 4)
 
+
+"""
     def test_linearExpansionPercent(self):
         temps = [100.0, 200.0, 600.0]
         expansions = [-0.2955, -0.1500, 0.5326]
