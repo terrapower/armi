@@ -49,12 +49,6 @@ class _Material_Test:
         """Test that all materials produce a zero density from density3"""
         self.assertNotEqual(self.mat.density3(500), 0)
 
-    def test_getChildren(self):
-        self.assertEqual(len(self.mat.getChildren()), 0)
-
-    def test_getChildrenWithFlags(self):
-        self.assertEqual(len(self.mat.getChildrenWithFlags("anything")), 0)
-
     def test_TD(self):
         self.assertEqual(self.mat.getTD(), self.mat.theoreticalDensityFrac)
 
