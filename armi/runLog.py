@@ -450,8 +450,9 @@ class DeduplicationFilter(logging.Filter):
         # If the message is set to "do not duplicate" we may filter it out
         if single:
             if record.levelno in (logging.WARNING, logging.CRITICAL):
-                # grab the custom label, if it exists, for warning logging later
+                # if this is from the custom logger, it will have a "label"
                 label = getattr(record, "label", msg)
+                # the "label" default is None, which needs to be replaced
                 label = msg if label is None else label
 
                 if label not in self.singleWarningMessageCounts:
