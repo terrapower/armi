@@ -29,6 +29,7 @@ from armi.cases.inputModifiers import (
     inputModifiers,
     pinTypeInputModifiers,
 )
+from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import CONF_FP_MODEL
 from armi.reactor.tests import test_reactors
 
 
@@ -141,7 +142,7 @@ class TestsuiteBuilderIntegrations(unittest.TestCase):
     def test_settingsModifier(self):
         builder = suiteBuilder.SeparateEffectsSuiteBuilder(self.baseCase)
         builder.addDegreeOfFreedom(
-            inputModifiers.SettingsModifier("fpModel", v)
+            inputModifiers.SettingsModifier(CONF_FP_MODEL, v)
             for v in ("noFissionProducts", "infinitelyDilute", "MO99")
         )
         builder.addDegreeOfFreedom(

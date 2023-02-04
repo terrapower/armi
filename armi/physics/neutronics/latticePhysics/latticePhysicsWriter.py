@@ -34,6 +34,7 @@ from armi.nucDirectory import nuclideBases
 from armi.reactor.flags import Flags
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.utils.customExceptions import warn_when_root
+from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import CONF_FP_MODEL
 
 
 # number of decimal places to round temperatures to in _groupNuclidesByTemperature
@@ -106,11 +107,11 @@ class LatticePhysicsWriter(interfaces.InputWriter):
         blockNeedsFPs = representativeBlock.getLumpedFissionProductCollection() != None
 
         self.modelFissionProducts = (
-            blockNeedsFPs and self.cs["fpModel"] != "noFissionProducts"
+            blockNeedsFPs and self.cs[CONF_FP_MODEL] != "noFissionProducts"
         )
-        self.explicitFissionProducts = self.cs["fpModel"] == "explicitFissionProducts"
+        self.explicitFissionProducts = self.cs[CONF_FP_MODEL] == "explicitFissionProducts"
         self.diluteFissionProducts = (
-            blockNeedsFPs and self.cs["fpModel"] == "infinitelyDilute"
+            blockNeedsFPs and self.cs[CONF_FP_MODEL] == "infinitelyDilute"
         )
         self.minimumNuclideDensity = self.cs["minimumNuclideDensity"]
         self._unusedNuclides = set()
@@ -336,7 +337,7 @@ class LatticePhysicsWriter(interfaces.InputWriter):
         Assumes that all fission products are at the same temperature of the lumped fission product of U238 within the
         block.
         """
-        if self.cs["fpModel"] != "noFissionProducts":
+        if self.cs[CONF_FP_MODEL] != "noFissionProducts":
             fissProductTemperatureInC = self._getAvgNuclideTemperatureInC("LFP38")
             return {
                 fp: (dens, fissProductTemperatureInC, self.FISSION_PRODUCT_CATEGORY)

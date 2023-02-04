@@ -29,6 +29,7 @@ from armi.settings import Settings
 from armi.reactor.tests.test_reactors import buildOperatorOfEmptyHexBlocks
 from armi.reactor.flags import Flags
 from armi.nucDirectory import nuclideBases
+from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import CONF_FP_MODEL
 
 LFP_TEXT = """LFP35 GE73   5.9000E-06
 LFP35 GE74    1.4000E-05
@@ -211,7 +212,7 @@ class TestLumpedFissionProductsFromReferenceFile(unittest.TestCase):
     def test_fissionProductYields(self):
         """Test that the fission product yields for the lumped fission products sums to 2.0"""
         cs = Settings()
-        cs["fpModel"] = "infinitelyDilute"
+        cs[CONF_FP_MODEL] = "infinitelyDilute"
         cs["lfpCompositionFilePath"] = os.path.join(RES, "referenceFissionProducts.dat")
         self.lfps = lumpedFissionProduct.lumpedFissionProductFactory(cs)
         for lfp in self.lfps.values():
@@ -224,7 +225,7 @@ class TestLumpedFissionProductsExplicit(unittest.TestCase):
     def test_explicitFissionProducts(self):
         """Tests that there are no lumped fission products added when the `explicitFissionProducts` model is enabled."""
         cs = Settings()
-        cs["fpModel"] = "explicitFissionProducts"
+        cs[CONF_FP_MODEL] = "explicitFissionProducts"
         self.lfps = lumpedFissionProduct.lumpedFissionProductFactory(cs)
         self.assertIsNone(self.lfps)
 

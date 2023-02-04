@@ -28,6 +28,7 @@ from armi.nucDirectory import nucDir
 from armi.nucDirectory import nuclideBases
 from armi.utils import densityTools
 from armi.utils.customExceptions import InputError
+from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import CONF_FP_MODEL
 
 ALLOWED_KEYS = set(nuclideBases.byName.keys()) | set(elements.bySymbol.keys())
 
@@ -578,7 +579,7 @@ def autoUpdateNuclideFlags(cs, nuclideFlags):
     if nbs:
         runLog.info(
             f"Adding explicit fission products to the nuclide flags based on the "
-            f"fission product model set to `{cs['fpModel']}`."
+            f"fission product model set to `{cs[CONF_FP_MODEL]}`."
         )
         for nb in nbs:
             nuc = nb.name
@@ -594,7 +595,7 @@ def getAllNuclideBasesByLibrary(cs):
     based on the ``fpModelLibrary`` setting.
     """
     nbs = []
-    if cs["fpModel"] == "explicitFissionProducts":
+    if cs[CONF_FP_MODEL] == "explicitFissionProducts":
         if not cs["fpModelLibrary"]:
             nbs = []
         if cs["fpModelLibrary"] == "MC2-3":

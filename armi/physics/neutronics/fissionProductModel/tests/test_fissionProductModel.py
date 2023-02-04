@@ -29,6 +29,10 @@ from armi.physics.neutronics.fissionProductModel.tests import test_lumpedFission
 from armi.physics.neutronics.isotopicDepletion.isotopicDepletionInterface import (
     isDepletable,
 )
+from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import (
+    CONF_FP_MODEL,
+    CONF_MAKE_ALL_BLOCK_LFPS_INDEPENDENT,
+)
 
 
 def _getLumpedFissionProductNumberDensities(b):
@@ -87,7 +91,7 @@ class TestFissionProductModelIndependentLumpedFissionProducts(unittest.TestCase)
 
     def setUp(self):
         o = buildOperatorOfEmptyHexBlocks()
-        o.cs["makeAllBlockLFPsIndependent"] = True
+        o.cs[CONF_MAKE_ALL_BLOCK_LFPS_INDEPENDENT] = True
         o.removeAllInterfaces()
         self.fpModel = fissionProductModel.FissionProductModel(o.r, o.cs)
         o.addInterface(self.fpModel)
@@ -109,7 +113,7 @@ class TestFissionProductModelExplicitMC2Library(unittest.TestCase):
     def setUp(self):
         o, r = loadTestReactor(
             customSettings={
-                "fpModel": "explicitFissionProducts",
+                CONF_FP_MODEL: "explicitFissionProducts",
                 "fpModelLibrary": "MC2-3",
             }
         )
