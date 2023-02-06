@@ -299,8 +299,12 @@ zero pylint warnings or errors.
 General do's and don'ts
 =======================
 
-Do not use ``print``.
+do not use ``print``
     ARMI code should not use the ``print`` function; use one of the methods within ``armi.runLog``.
 
-Do not add new ``TODO`` statements in your commits and PRs.
-    If your new ``TODO`` statement is important, it should be a GitHub Issue. Yes, we have existing ``TODO`` statements in the code, those are relic and should be handled.
+do not use ``super``
+    In preference to the ``super`` function, explicitly call the parent object's method. For example, in an
+    ``__init__``, use ``ParentClass.__init__(self, plus, additional, arguments)``.
+
+do not leave ``TODO`` statements in production code
+    If your ``TODO`` statement is important, perhaps it should be a GitHub Issue.
