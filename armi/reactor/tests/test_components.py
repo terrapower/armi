@@ -1389,6 +1389,10 @@ class TestMaterialAdjustments(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.fuel.adjustMassFrac(nuclideToAdjust="ZR", val=1.12)
 
+        alwaysFalse = lambda a: False
+        self.fuel.parent = None
+        self.assertIsNone(self.fuel.getAncestorAndDistance(alwaysFalse))
+
     def test_adjustMassFrac_U235(self):
         zrMass = self.fuel.getMass("ZR")
         uMass = self.fuel.getMass("U")
