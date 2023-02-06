@@ -16,6 +16,7 @@
 This module defines the ARMI input for a block definition, and code for constructing an ARMI ``Block``.
 """
 import collections
+from inspect import signature
 
 import yamlize
 
@@ -24,6 +25,7 @@ from armi.reactor import blocks
 from armi.reactor import parameters
 from armi.reactor.flags import Flags
 from armi.reactor.blueprints import componentBlueprint
+from armi.reactor.components.component import Component
 from armi.reactor.converters import blockConverters
 from armi.settings.fwSettings import globalSettings
 
@@ -115,11 +117,26 @@ class BlockBlueprint(yamlize.KeyedList):
         self._checkByComponentMaterialInput(materialInput)
 
         for componentDesign in self:
-            filteredMaterialInput = self._filterMaterialInput(
+            filteredMaterialInput, byComponentMatModKeys = self._filterMaterialInput(
                 materialInput, componentDesign
             )
             c = componentDesign.construct(blueprint, filteredMaterialInput)
             components[c.name] = c
+
+            # check that the mat mods for this component are valid options
+            # this will only examine by-component mods, block mods are done later
+            if isinstance(c, Component):
+                # there are other things like composite groups that don't get
+                # material modifications -- skip those
+                validMatModOptions = signature(
+                    c.material.applyInputParams
+                ).parameters.keys()
+                for key in byComponentMatModKeys:
+                    if key not in validMatModOptions:
+                        raise ValueError(
+                            f"{c} in block {self.name} has invalid material modification: {key}"
+                        )
+
             if spatialGrid:
                 componentLocators = gridDesign.getMultiLocator(
                     spatialGrid, componentDesign.latticeIDs
@@ -140,6 +157,24 @@ class BlockBlueprint(yamlize.KeyedList):
                     elif not mult or mult == 1.0:
                         # learn mult from grid definition
                         c.setDimension("mult", len(c.spatialLocator))
+
+        # check that the block level mat mods use valid options in the same way
+        # as we did for the by-component mods above
+        validMatModOptions = set()
+        for c in components.values():
+            if isinstance(c, Component):
+                # there are other things like composite groups that don't get
+                # material modifications -- skip those
+                validMatModOptions |= signature(
+                    c.material.applyInputParams
+                ).parameters.keys()
+
+        if "byBlock" in materialInput:
+            for key in materialInput["byBlock"]:
+                if key not in validMatModOptions:
+                    raise ValueError(
+                        f"Block {self.name} has invalid material modification key: {key}"
+                    )
 
         # Resolve linked dims after all components in the block are created
         for c in components.values():
@@ -216,6 +251,7 @@ class BlockBlueprint(yamlize.KeyedList):
         for a given component, the by-component value will be used.
         """
         filteredMaterialInput = {}
+        byComponentMatModKeys = set()
 
         # first add the by-block modifications without question
         if "byBlock" in materialInput:
@@ -232,9 +268,10 @@ class BlockBlueprint(yamlize.KeyedList):
                 # overwriting any by-block modifications of the same type
                 if component == componentDesign.name:
                     for modName, modVal in mod.items():
+                        byComponentMatModKeys.add(modName)
                         filteredMaterialInput[modName] = modVal
 
-        return filteredMaterialInput
+        return filteredMaterialInput, byComponentMatModKeys
 
     def _getGridDesign(self, blueprint):
         """
