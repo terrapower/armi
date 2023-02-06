@@ -840,9 +840,13 @@ class DoseResultsMapper(GlobalFluxResultMapper):
             # this is specific to hex geometry, but they are general neutronics block parameters
             # if it is a non-hex block, this should be a no-op
             if not None in (b.p.pointsCornerDpa, b.p.pointsCornerDpaRate):
-                b.p.pointsCornerDpa = b.p.pointsCornerDpa + b.p.pointsCornerDpaRate * stepTimeInSeconds
+                b.p.pointsCornerDpa = (
+                    b.p.pointsCornerDpa + b.p.pointsCornerDpaRate * stepTimeInSeconds
+                )
             if not None in (b.p.pointsDpa, b.p.pointsEdgeDpaRate):
-                b.p.pointsEdgeDpa = b.p.pointsEdgeDpa + b.p.pointsEdgeDpaRate * stepTimeInSeconds
+                b.p.pointsEdgeDpa = (
+                    b.p.pointsEdgeDpa + b.p.pointsEdgeDpaRate * stepTimeInSeconds
+                )
 
             if self.options.dpaPerFluence:
                 # do the less rigorous fluence -> DPA conversion if the user gave a factor.
