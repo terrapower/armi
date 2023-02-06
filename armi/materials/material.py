@@ -422,8 +422,7 @@ class Material:
         f = (1.0 + dLL / 100.0) ** 2
         return self.refDens / f  # g/cm^3
 
-    # TODO: JOHN: First: densityKgM3 -> pseudoDensityKgM3
-    def densityKgM3(self, Tk: float = None, Tc: float = None) -> float:
+    def pseudoDensityKgM3(self, Tk: float = None, Tc: float = None) -> float:
         """
         Return density that preserves mass when thermally expanded in 2D in units of kg/m^3
 
@@ -460,7 +459,7 @@ class Material:
         f = (1.0 + dLL / 100.0) ** 3
         return refD / f
 
-    # TODO: JOHN: Third: density3KgM3 -> densityKgM3
+    # TODO: JOHN: Third: density3KgM3 -> pseudoDensityKgM3
     def density3KgM3(self, Tk: float = None, Tc: float = None) -> float:
         """Return density that preserves mass when thermally expanded in 3D in units of kg/m^3.
 

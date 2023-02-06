@@ -278,7 +278,7 @@ class Water(Fluid):
         """
         alpha = self.auxiliaryQuantitySpecificEnthalpy(Tc=Tc, Tk=Tk)
         T = getTk(Tc=Tc, Tk=Tk)
-        rho = self.densityKgM3(Tc=Tc, Tk=Tk)
+        rho = self.pseudoDensityKgM3(Tc=Tc, Tk=Tk)
         dp_dT = self.vaporPressurePrime(Tc=Tc, Tk=Tk)
 
         return alpha + T / rho * dp_dT
@@ -307,7 +307,7 @@ class Water(Fluid):
         steam power industry
         """
         phi = self.auxiliaryQuantitySpecificEntropy(Tc=Tc, Tk=Tk)
-        rho = self.densityKgM3(Tc=Tc, Tk=Tk)
+        rho = self.pseudoDensityKgM3(Tc=Tc, Tk=Tk)
         dp_dT = self.vaporPressurePrime(Tc=Tc, Tk=Tk)
 
         return phi + 1.0 / rho * dp_dT
