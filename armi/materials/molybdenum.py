@@ -26,5 +26,5 @@ class Molybdenum(SimpleSolid):
         """Moly mass fractions."""
         self.setMassFrac("MO", 1.0)
 
-    def density3(self, Tk=None, Tc=None):
+    def density(self, Tk=None, Tc=None):
         return 10.28  # g/cc

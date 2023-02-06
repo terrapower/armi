@@ -59,7 +59,7 @@ class Lithium(material.Fluid):
 
         Notes
         -----
-        In ARMI, we define pseudoDensity() and density3() as the same for Fluids.
+        In ARMI, we define pseudoDensity() and density() as the same for Fluids.
         """
         return 0.512
 

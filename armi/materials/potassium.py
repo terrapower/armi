@@ -37,7 +37,7 @@ class Potassium(material.Fluid):
 
         Notes
         -----
-        In ARMI, we define pseudoDensity() and density3() as the same for Fluids.
+        In ARMI, we define pseudoDensity() and density() as the same for Fluids.
         """
         Tc = getTc(Tc, Tk)
         Tk = getTk(Tc=Tc)

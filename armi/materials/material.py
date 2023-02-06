@@ -396,14 +396,14 @@ class Material:
         This density will not agree with the component density since this method only expands in 2 dimensions.
         The component has been manually expanded axially with the manually entered block hot height.
         The density returned by this should be a factor of 1 + dLL higher than the density on the component.
-        density3 should be in agreement at both cold and hot temperatures as long as the block height is correct for
+        density should be in agreement at both cold and hot temperatures as long as the block height is correct for
         the specified temperature.
-        In the case of Fluids, density and density3 are the same as density is not driven by linear expansion, but
+        In the case of Fluids, density and density are the same as density is not driven by linear expansion, but
         rather an explicit density function dependent on Temperature. linearExpansionPercent is zero for a fluid.
 
         See Also
         --------
-        armi.materials.density3:
+        armi.materials.density:
             component density should be in agreement with this density
         armi.reactor.blueprints._applyBlockDesign:
             2D expansion and axial density reduction occurs here.
@@ -432,8 +432,7 @@ class Material:
         """
         return self.pseudoDensity(Tk, Tc) * 1000.0
 
-    # TODO: JOHN: Fourth: density3 -> density
-    def density3(self, Tk: float = None, Tc: float = None) -> float:
+    def density(self, Tk: float = None, Tc: float = None) -> float:
         """
         Return density that preserves mass when thermally expanded in 3D.
 
@@ -463,10 +462,10 @@ class Material:
 
         See Also
         --------
-        armi.materials.density3:
+        armi.materials.density:
             Arguments are forwarded to the g/cc version
         """
-        return self.density3(Tk, Tc) * 1000.0
+        return self.density(Tk, Tc) * 1000.0
 
     def getCorrosionRate(self, Tk: float = None, Tc: float = None) -> float:
         r"""
@@ -616,7 +615,7 @@ class Material:
         """
         Tc = getTc(Tc, Tk)
 
-        rhoCp = self.density3(Tc=Tc) * 1000.0 * self.heatCapacity(Tc=Tc)
+        rhoCp = self.density(Tc=Tc) * 1000.0 * self.heatCapacity(Tc=Tc)
 
         return rhoCp
 
@@ -711,7 +710,7 @@ class Fluid(Material):
             )
         return deltaT
 
-    def density3(self, Tk=None, Tc=None):
+    def density(self, Tk=None, Tc=None):
         """
         Return the density at the specified temperature for 3D expansion.
 
@@ -729,14 +728,14 @@ class SimpleSolid(Material):
     See Also
     --------
     armi.materials.pseudoDensity:
-    armi.materials.density3:
+    armi.materials.density:
     """
 
     refTempK = 300
 
     def __init__(self):
         Material.__init__(self)
-        self.refDens = self.density3(Tk=self.refTempK)
+        self.refDens = self.density(Tk=self.refTempK)
 
     def linearExpansionPercent(self, Tk: float = None, Tc: float = None) -> float:
         """
@@ -758,18 +757,18 @@ class SimpleSolid(Material):
         Notes
         -----
         This only method only works for Simple Solid Materials which assumes
-        the density3 function returns 'free expansion' density as a function
+        the density function returns 'free expansion' density as a function
         temperature
         """
-        density1 = self.density3(Tk=self.refTempK)
-        density2 = self.density3(Tk=Tk, Tc=Tc)
+        density1 = self.density(Tk=self.refTempK)
+        density2 = self.density(Tk=Tk, Tc=Tc)
 
         if density1 == density2:
             return 0
         else:
             return 100 * ((density1 / density2) ** (1.0 / 3.0) - 1)
 
-    def density3(self, Tk: float = None, Tc: float = None) -> float:
+    def density(self, Tk: float = None, Tc: float = None) -> float:
         return 0.0
 
     def pseudoDensity(self, Tk: float = None, Tc: float = None) -> float:

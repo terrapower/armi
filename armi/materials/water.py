@@ -318,7 +318,7 @@ class Water(Fluid):
 
         Notes
         -----
-        In ARMI, we define pseudoDensity() and density3() as the same for Fluids.
+        In ARMI, we define pseudoDensity() and density() as the same for Fluids.
         """
         raise NotImplementedError(
             "Please use a concrete instance: SaturatedWater or SaturatedSteam."
@@ -357,7 +357,7 @@ class SaturatedWater(Water):
 
         Note
         ----
-        In ARMI, we define pseudoDensity() and density3() as the same for Fluids.
+        In ARMI, we define pseudoDensity() and density() as the same for Fluids.
         IAPWS-IF97
         http://www.iapws.org/relguide/supsat.pdf
         IAPWS-IF97 is now the international standard for calculations in the steam power industry
@@ -417,7 +417,7 @@ class SaturatedSteam(Water):
 
         Notes
         -----
-        In ARMI, we define pseudoDensity() and density3() as the same for Fluids.
+        In ARMI, we define pseudoDensity() and density() as the same for Fluids.
         IAPWS-IF97
         http://www.iapws.org/relguide/supsat.pdf
         IAPWS-IF97 is now the international standard for calculations in the steam power industry

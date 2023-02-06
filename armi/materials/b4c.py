@@ -173,7 +173,7 @@ class B4C(material.Material):
             material.Material.pseudoDensity(self, Tk, Tc) * self.theoreticalDensityFrac
         )
 
-    def density3(self, Tk: float = None, Tc: float = None) -> float:
+    def density(self, Tk: float = None, Tc: float = None) -> float:
         """
         Return density that preserves mass when thermally expanded in 3D.
 
@@ -181,7 +181,7 @@ class B4C(material.Material):
         -----
         - applies theoretical density of B4C to parent method
         """
-        return material.Material.density3(self, Tk, Tc) * self.theoreticalDensityFrac
+        return material.Material.density(self, Tk, Tc) * self.theoreticalDensityFrac
 
     def linearExpansionPercent(self, Tk: float = None, Tc: float = None) -> float:
         """Boron carbide expansion. Very preliminary"""

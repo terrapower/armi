@@ -29,7 +29,7 @@ class Cu(Material):
         self.setMassFrac("CU63", 0.6915)
         self.setMassFrac("CU65", 0.3085)
 
-    def density3(self, Tk=None, Tc=None):
+    def density(self, Tk=None, Tc=None):
         return 8.913  # g/cm3
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
