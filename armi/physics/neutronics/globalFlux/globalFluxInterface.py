@@ -843,7 +843,7 @@ class DoseResultsMapper(GlobalFluxResultMapper):
                 b.p.pointsCornerDpa = (
                     b.p.pointsCornerDpa + b.p.pointsCornerDpaRate * stepTimeInSeconds
                 )
-            if not None in (b.p.pointsDpa, b.p.pointsEdgeDpaRate):
+            if not None in (b.p.pointsEdgeDpa, b.p.pointsEdgeDpaRate):
                 b.p.pointsEdgeDpa = (
                     b.p.pointsEdgeDpa + b.p.pointsEdgeDpaRate * stepTimeInSeconds
                 )
