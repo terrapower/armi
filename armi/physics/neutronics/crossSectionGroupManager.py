@@ -733,7 +733,9 @@ class CrossSectionGroupManager(interfaces.Interface):
                     xsFileName, os.path.dirname(xsFileLocation), xsID
                 )
             )
-            shutil.copy(xsFileLocation, dest)
+            # Prevent copy error if the path and destination are the same.
+            if xsFileLocation != dest:
+                shutil.copy(xsFileLocation, dest)
 
     def _copyPregeneratedFluxSolutionFile(self, xsID):
         # stop a race condition to copy files between all processors
@@ -747,7 +749,9 @@ class CrossSectionGroupManager(interfaces.Interface):
                 fluxFileName, os.path.dirname(fluxFileLocation), xsID
             )
         )
-        shutil.copy(fluxFileLocation, dest)
+        # Prevent copy error if the path and destination are the same.
+        if fluxFileLocation != dest:
+            shutil.copy(fluxFileLocation, dest)
 
     def _getPregeneratedXsFileLocationData(self, xsID):
         """
