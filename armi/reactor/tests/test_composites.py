@@ -260,6 +260,11 @@ class TestCompositePattern(unittest.TestCase):
         self.assertEqual(len(rRates), 6)
         self.assertEqual(sum([r for r in rRates.values()]), 0)
 
+    def test_syncParameters(self):
+        data = [{"serialNum": 123}, {"flags": "FAKE"}]
+        numSynced = self.container._syncParameters(data, {})
+        self.assertEqual(numSynced, 2)
+
 
 class TestCompositeTree(unittest.TestCase):
 
