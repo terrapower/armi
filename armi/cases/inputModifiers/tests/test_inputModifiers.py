@@ -32,7 +32,11 @@ from armi.cases.inputModifiers import (
 from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import (
     CONF_FP_MODEL,
 )
-from armi.physics.neutronics.settings import CONF_EPS_EIG
+from armi.physics.neutronics.settings import (
+    CONF_EPS_EIG,
+    CONF_EPS_FSAVG,
+    CONF_EPS_FSPOINT,
+)
 from armi.reactor.tests import test_reactors
 
 
@@ -225,8 +229,8 @@ class TestSettingsModifiers(unittest.TestCase):
             cs, None, None
         )
         self.assertAlmostEqual(cs[CONF_EPS_EIG], 1e-2)
-        self.assertAlmostEqual(cs["epsFSAvg"], 1.0)
-        self.assertAlmostEqual(cs["epsFSPoint"], 1.0)
+        self.assertAlmostEqual(cs[CONF_EPS_FSAVG], 1.0)
+        self.assertAlmostEqual(cs[CONF_EPS_FSPOINT], 1.0)
 
 
 class NeutronicsKernelOpts(inputModifiers.InputModifier):

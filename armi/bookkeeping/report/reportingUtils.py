@@ -37,6 +37,7 @@ from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
 from armi.physics.neutronics.settings import (
     CONF_GEN_XS,
     CONF_GLOBAL_FLUX_ACTIVE,
+    CONF_LOADING_FILE,
 )
 from armi.reactor.components import ComponentType
 from armi.reactor.flags import Flags
@@ -100,7 +101,7 @@ def writeWelcomeHeaders(o, cs):
             (label, fileName, shaHash) tuples
         """
 
-        pathToLoading = pathlib.Path(cs.inputDirectory) / cs["loadingFile"]
+        pathToLoading = pathlib.Path(cs.inputDirectory) / cs[CONF_LOADING_FILE]
 
         if pathToLoading.is_file():
             includedBlueprints = [
@@ -114,7 +115,7 @@ def writeWelcomeHeaders(o, cs):
         inputFiles = (
             [
                 ("Case Settings", cs.caseTitle + ".yaml"),
-                ("Blueprints", cs["loadingFile"]),
+                ("Blueprints", cs[CONF_LOADING_FILE]),
             ]
             + [("Included blueprints", inclBp) for inclBp in includedBlueprints]
             + [("Geometry", cs["geomFile"])]
@@ -640,7 +641,10 @@ def _setGeneralCoreDesignData(cs, coreDesignTable):
         "Geometry File", "{}".format(cs["geomFile"]), coreDesignTable, report.DESIGN
     )
     report.setData(
-        "Loading File", "{}".format(cs["loadingFile"]), coreDesignTable, report.DESIGN
+        "Loading File",
+        "{}".format(cs[CONF_LOADING_FILE]),
+        coreDesignTable,
+        report.DESIGN,
     )
     report.setData(
         "Fuel Shuffling Logic File",

@@ -20,6 +20,7 @@ import yamlize
 
 from armi.reactor import blueprints
 from armi import settings
+from armi.physics.neutronics.settings import CONF_XS_KERNEL
 from armi.reactor.blueprints import isotopicOptions
 from armi.reactor.flags import Flags
 
@@ -189,7 +190,7 @@ assemblies:
     @classmethod
     def setUpClass(cls):
         cs = settings.Settings()
-        cs = cs.modified(newSettings={"xsKernel": "MC2v2"})
+        cs = cs.modified(newSettings={CONF_XS_KERNEL: "MC2v2"})
 
         cls.bp = blueprints.Blueprints.load(cls.yamlString)
         cls.a = cls.bp.constructAssem(cs, name="fuel a")
@@ -256,7 +257,7 @@ assemblies:
 
     def test_expandedNatural(self):
         cs = settings.Settings()
-        cs = cs.modified(newSettings={"xsKernel": "MC2v3"})
+        cs = cs.modified(newSettings={CONF_XS_KERNEL: "MC2v3"})
 
         bp = blueprints.Blueprints.load(self.yamlString)
         a = bp.constructAssem(cs, name="fuel a")
@@ -352,7 +353,7 @@ assemblies:
 
     def test_expandedNatural(self):
         cs = settings.Settings()
-        cs = cs.modified(newSettings={"xsKernel": "MC2v3"})
+        cs = cs.modified(newSettings={CONF_XS_KERNEL: "MC2v3"})
 
         bp = blueprints.Blueprints.load(self.yamlString)
         a = bp.constructAssem(cs, name="fuel a")

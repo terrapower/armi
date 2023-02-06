@@ -27,6 +27,7 @@ import os
 
 from armi import runLog
 from armi.settings import caseSettings
+from armi.physics.neutronics.settings import CONF_LOADING_FILE
 
 
 class Migration:
@@ -103,7 +104,7 @@ class BlueprintsMigration(Migration):
     def _loadStreamFromPath(self):
         Migration._loadStreamFromPath(self)
         cs = caseSettings.Settings(fName=self.path)
-        self.path = cs["loadingFile"]
+        self.path = cs[CONF_LOADING_FILE]
         self.stream = open(self.path)
 
 

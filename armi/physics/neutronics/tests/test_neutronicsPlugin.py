@@ -27,6 +27,7 @@ from armi.physics.neutronics.settings import (
     CONF_GEN_XS,
     CONF_GLOBAL_FLUX_ACTIVE,
     CONF_GROUP_STRUCTURE,
+    CONF_DPA_XS_SET,
     CONF_OUTERS_,
     CONF_INNERS_,
     CONF_NEUTRONICS_KERNEL,
@@ -37,7 +38,10 @@ from armi.tests import TEST_ROOT
 from armi.tests.test_plugins import TestPlugin
 from armi.utils import directoryChangers
 from armi import getPluginManagerOrFail, settings, tests
-from armi.physics.neutronics.settings import CONF_BOUNDARIES
+from armi.physics.neutronics.settings import (
+    CONF_BOUNDARIES,
+    CONF_GRID_PLATE_DPA_XS_SET,
+)
 
 XS_EXAMPLE = """AA:
     geometry: 0D
@@ -314,19 +318,21 @@ class NeutronicsReactorTests(unittest.TestCase):
         self.assertEqual(inspector.cs[CONF_GROUP_STRUCTURE], "ANL33")
 
         # Test the Query: migrating some common shortened names for dpa XS sets
-        cs = cs.modified(newSettings={"dpaXsSet": "dpaHT9_33"})
+        cs = cs.modified(newSettings={CONF_DPA_XS_SET: "dpaHT9_33"})
         inspector = settingsValidation.Inspector(cs)
         sv = getNeutronicsSettingValidators(inspector)
 
         self.__autoCorrectAllQueries(sv)
-        self.assertEqual(inspector.cs["dpaXsSet"], "dpaHT9_ANL33_TwrBol")
+        self.assertEqual(inspector.cs[CONF_DPA_XS_SET], "dpaHT9_ANL33_TwrBol")
 
-        cs = cs.modified(newSettings={"gridPlateDpaXsSet": "dpa_SS316"})
+        cs = cs.modified(newSettings={CONF_GRID_PLATE_DPA_XS_SET: "dpa_SS316"})
         inspector = settingsValidation.Inspector(cs)
         sv = getNeutronicsSettingValidators(inspector)
 
         self.__autoCorrectAllQueries(sv)
-        self.assertEqual(inspector.cs["gridPlateDpaXsSet"], "dpaSS316_ANL33_TwrBol")
+        self.assertEqual(
+            inspector.cs[CONF_GRID_PLATE_DPA_XS_SET], "dpaSS316_ANL33_TwrBol"
+        )
 
 
 if __name__ == "__main__":

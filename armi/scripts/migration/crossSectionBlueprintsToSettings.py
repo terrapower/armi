@@ -37,6 +37,7 @@ from armi import runLog
 from armi.settings import caseSettings
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.physics.neutronics.crossSectionSettings import *
+from armi.physics.neutronics.settings import CONF_LOADING_FILE
 from armi.scripts.migration.base import SettingsMigration
 from armi.settings import settingsIO
 
@@ -82,7 +83,7 @@ def migrateCrossSectionsFromBlueprints(settingsObj):
     cs = caseSettings.Settings()
     cs.loadFromInputFile(settingsPath)
 
-    fullBlueprintsPath = os.path.join(cs.inputDirectory, cs["loadingFile"])
+    fullBlueprintsPath = os.path.join(cs.inputDirectory, cs[CONF_LOADING_FILE])
     origXsInputLines = _convertBlueprints(fullBlueprintsPath)
     if not origXsInputLines:
         runLog.warning(

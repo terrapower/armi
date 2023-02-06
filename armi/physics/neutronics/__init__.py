@@ -43,6 +43,7 @@ from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.physics.neutronics.settings import (
     CONF_GEN_XS,
     CONF_GLOBAL_FLUX_ACTIVE,
+    CONF_NEUTRONICS_TYPE,
 )
 
 
@@ -211,13 +212,13 @@ def gammaXsAreRequested(cs):
 
 
 def adjointCalculationRequested(cs):
-    """Return true if an adjoint calculation is requested based on the ``neutronicsType`` setting."""
-    return cs["neutronicsType"] in [ADJOINT_CALC, ADJREAL_CALC]
+    """Return true if an adjoint calculation is requested based on the ``CONF_NEUTRONICS_TYPE`` setting."""
+    return cs[CONF_NEUTRONICS_TYPE] in [ADJOINT_CALC, ADJREAL_CALC]
 
 
 def realCalculationRequested(cs):
-    """Return true if a real calculation is requested based on the ``neutronicsType`` type setting."""
-    return cs["neutronicsType"] in ["real", "both"]
+    """Return true if a real calculation is requested based on the ``CONF_NEUTRONICS_TYPE`` type setting."""
+    return cs[CONF_NEUTRONICS_TYPE] in ["real", "both"]
 
 
 def applyEffectiveDelayedNeutronFractionToCore(core, cs):

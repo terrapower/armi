@@ -38,6 +38,7 @@ from armi.physics.neutronics.crossSectionGroupManager import (
 )
 from armi.physics.neutronics.crossSectionGroupManager import CrossSectionGroupManager
 from armi.physics.neutronics.fissionProductModel.tests import test_lumpedFissionProduct
+from armi.physics.neutronics.settings import CONF_XS_BLOCK_REPRESENTATION
 from armi.reactor.blocks import HexBlock
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
@@ -177,7 +178,7 @@ class TestBlockCollectionComponentAverage(unittest.TestCase):
         # from the cross section group manager is called.
         for _xsID, xsOpt in self.o.cs[CONF_CROSS_SECTION].items():
             self.assertEqual(
-                xsOpt.blockRepresentation, self.o.cs["xsBlockRepresentation"]
+                xsOpt.blockRepresentation, self.o.cs[CONF_XS_BLOCK_REPRESENTATION]
             )
 
         xsgm.createRepresentativeBlocks()

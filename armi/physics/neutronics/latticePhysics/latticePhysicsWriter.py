@@ -36,6 +36,8 @@ from armi.utils.customExceptions import warn_when_root
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import (
     CONF_FP_MODEL,
+    CONF_MINIMUM_FISSILE_FRACTION,
+    CONF_MINIMUM_NUCLIDE_DENSITY,
 )
 from armi.physics.neutronics.settings import CONF_GEN_XS
 
@@ -118,7 +120,7 @@ class LatticePhysicsWriter(interfaces.InputWriter):
         self.diluteFissionProducts = (
             blockNeedsFPs and self.cs[CONF_FP_MODEL] == "infinitelyDilute"
         )
-        self.minimumNuclideDensity = self.cs["minimumNuclideDensity"]
+        self.minimumNuclideDensity = self.cs[CONF_MINIMUM_NUCLIDE_DENSITY]
         self._unusedNuclides = set()
         self._allNuclideObjects = None
 
@@ -409,7 +411,7 @@ class LatticePhysicsWriter(interfaces.InputWriter):
         Notes
         -----
         We're going to increase the Pu-239 density to make the ratio of fissile mass to heavy metal mass equal to the
-        target ``minimumFissileFraction``::
+        target ``CONF_MINIMUM_FISSILE_FRACTION``::
 
             minFrac = (fiss - old + new) / (hm - old + new)
             minFrac * (hm - old + new) = fiss - old + new
@@ -418,7 +420,7 @@ class LatticePhysicsWriter(interfaces.InputWriter):
 
         where::
 
-            minFrac = ``minimumFissileFraction`` setting
+            minFrac = ``CONF_MINIMUM_FISSILE_FRACTION`` setting
             fiss = fissile mass of block
             hm = heavy metal mass of block
             old = number density of Pu-239 before adjustment
@@ -426,7 +428,7 @@ class LatticePhysicsWriter(interfaces.InputWriter):
 
         """
 
-        minFrac = self.cs["minimumFissileFraction"]
+        minFrac = self.cs[CONF_MINIMUM_FISSILE_FRACTION]
         fiss = sum(dens[0] for nuc, dens in nucDensities.items() if nuc.isFissile())
         hm = sum(dens[0] for nuc, dens in nucDensities.items() if nuc.isHeavyMetal())
 

@@ -41,6 +41,7 @@ from armi.bookkeeping.report import reportingUtils
 from armi.operators import settingsValidation
 from armi.operators.runTypes import RunTypes
 from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
+from armi.physics.neutronics.settings import CONF_LOADING_FILE
 from armi.utils import codeTiming
 from armi.utils import (
     pathTools,
@@ -1093,7 +1094,7 @@ class Operator:  # pylint: disable=too-many-public-methods
             "Geometry file for snapshot", self.cs["geomFile"], newFolder
         )
         pathTools.copyOrWarn(
-            "Loading definition for snapshot", self.cs["loadingFile"], newFolder
+            "Loading definition for snapshot", self.cs[CONF_LOADING_FILE], newFolder
         )
         pathTools.copyOrWarn(
             "Flow history for snapshot",

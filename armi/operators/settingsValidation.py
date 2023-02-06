@@ -38,7 +38,13 @@ from armi.settings.settingsIO import (
     RunLogPromptCancel,
     RunLogPromptUnresolvable,
 )
-from armi.physics.neutronics.settings import CONF_BC_COEFFICIENT, CONF_BOUNDARIES
+from armi.physics.neutronics.settings import (
+    CONF_BC_COEFFICIENT,
+    CONF_BOUNDARIES,
+    CONF_LOADING_FILE,
+    CONF_XS_KERNEL,
+    CONF_XS_SCATTERING_ORDER,
+)
 
 
 class Query:
@@ -274,16 +280,16 @@ class Inspector:
             return
 
         self.addQuery(
-            lambda: not self.cs["loadingFile"],
+            lambda: not self.cs[CONF_LOADING_FILE],
             "No blueprints file loaded. Run will probably fail.",
             "",
             self.NO_ACTION,
         )
 
         self.addQuery(
-            lambda: not self._csRelativePathExists(self.cs["loadingFile"]),
+            lambda: not self._csRelativePathExists(self.cs[CONF_LOADING_FILE]),
             "Blueprints file {} not found. Run will fail.".format(
-                self.cs["loadingFile"]
+                self.cs[CONF_LOADING_FILE]
             ),
             "",
             self.NO_ACTION,
@@ -458,13 +464,13 @@ class Inspector:
         # gamma cross sections enabled.
         self.addQuery(
             lambda: (
-                "MC2v3" in self.cs["xsKernel"]
+                "MC2v3" in self.cs[CONF_XS_KERNEL]
                 and neutronics.gammaXsAreRequested(self.cs)
-                and self.cs["xsScatteringOrder"] != 3
+                and self.cs[CONF_XS_SCATTERING_ORDER] != 3
             ),
             "MC2-3 will crash if a scattering order is not set to 3 when generating gamma XS.",
-            "Would you like to set the `xsScatteringOrder` to 3?",
-            lambda: self._assignCS("xsScatteringOrder", 3),
+            f"Would you like to set the `{CONF_XS_SCATTERING_ORDER}` to 3?",
+            lambda: self._assignCS(CONF_XS_SCATTERING_ORDER, 3),
         )
 
         self.addQuery(

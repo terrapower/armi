@@ -32,6 +32,10 @@ from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings imp
     CONF_FP_MODEL,
     CONF_FISSION_PRODUCT_LIBRARY_NAME,
 )
+from armi.physics.neutronics.settings import (
+    CONF_NEUTRONICS_KERNEL,
+    CONF_XS_KERNEL,
+)
 
 ALLOWED_KEYS = set(nuclideBases.byName.keys()) | set(elements.bySymbol.keys())
 
@@ -498,7 +502,7 @@ def autoSelectElementsToKeepFromSettings(cs):
         if nnb and nnb.getMcc2Id():
             elementalsInMC2.add(nnb)
 
-    if "MCNP" in cs["neutronicsKernel"]:
+    if "MCNP" in cs[CONF_NEUTRONICS_KERNEL]:
         expansionStrings.update(mcnpExpansions)
         if int(cs["mcnpLibrary"]) == 50:
             elementalsToKeep.update(nuclideBases.instances)  # skip expansion
@@ -516,11 +520,11 @@ def autoSelectElementsToKeepFromSettings(cs):
                 )
             )
 
-    elif cs["xsKernel"] in ["", "SERPENT", "MC2v3", "MC2v3-PARTISN"]:
+    elif cs[CONF_XS_KERNEL] in ["", "SERPENT", "MC2v3", "MC2v3-PARTISN"]:
         elementalsToKeep.update(endf70Elementals)
         expansionStrings.update(mc2Expansions)
 
-    elif cs["xsKernel"] == "DRAGON":
+    elif cs[CONF_XS_KERNEL] == "DRAGON":
         # Users need to use default nuclear lib name. This is documented.
         dragLib = cs["dragonDataPath"]
         # only supports ENDF/B VII/VIII at the moment.
@@ -537,7 +541,7 @@ def autoSelectElementsToKeepFromSettings(cs):
                 f"Unrecognized DRAGLIB name: {dragLib} Use default file name."
             )
 
-    elif cs["xsKernel"] == "MC2v2":
+    elif cs[CONF_XS_KERNEL] == "MC2v2":
         # strip out any NaturalNuclideBase with no getMcc2Id() (not on mcc-nuclides.yaml)
         elementalsToKeep.update(elementalsInMC2)
         expansionStrings.update(mc2Expansions)

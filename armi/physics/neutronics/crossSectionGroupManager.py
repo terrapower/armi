@@ -63,6 +63,12 @@ from armi import context
 from armi import interfaces
 from armi import runLog
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
+from armi.physics.neutronics.settings import (
+    CONF_NEUTRONICS_KERNEL,
+    CONF_XS_BLOCK_REPRESENTATION,
+    CONF_XS_BLOCK_REPRESENTATION,
+    CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION,
+)
 from armi.reactor.components import basicShapes
 from armi.reactor.flags import Flags
 from armi.utils.units import TRACE_NUMBER_DENSITY
@@ -73,7 +79,7 @@ ORDER = interfaces.STACK_ORDER.BEFORE + interfaces.STACK_ORDER.FUEL_MANAGEMENT
 def describeInterfaces(cs):
     """Function for exposing interface(s) to other code"""
 
-    if "MCNP" not in cs["neutronicsKernel"]:  # MCNP does not use CSGM
+    if "MCNP" not in cs[CONF_NEUTRONICS_KERNEL]:  # MCNP does not use CSGM
         return (CrossSectionGroupManager, {})
 
     return None
@@ -587,8 +593,8 @@ class CrossSectionGroupManager(interfaces.Interface):
         # now that all cs settings are loaded, apply defaults to compound XS settings
 
         self.cs[CONF_CROSS_SECTION].setDefaults(
-            self.cs["xsBlockRepresentation"],
-            self.cs["disableBlockTypeExclusionInXsGeneration"],
+            self.cs[CONF_XS_BLOCK_REPRESENTATION],
+            self.cs[CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION],
         )
 
     def interactBOC(self, cycle=None):
@@ -999,7 +1005,7 @@ class CrossSectionGroupManager(interfaces.Interface):
         """Summarize current contents of the XS groups."""
         runLog.extra("Cross section group manager summary")
         runLog.extra(
-            "Averaging performed by `{0}`".format(self.cs["xsBlockRepresentation"])
+            "Averaging performed by `{0}`".format(self.cs[CONF_XS_BLOCK_REPRESENTATION])
         )
         for xsID, blocks in blockCollectionsByXsGroup.items():
             if blocks:

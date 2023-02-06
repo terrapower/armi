@@ -25,7 +25,12 @@ from armi import interfaces, runLog
 from armi.utils import codeTiming
 from armi.physics import neutronics
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
-from armi.physics.neutronics.settings import CONF_GEN_XS
+from armi.physics.neutronics.settings import (
+    CONF_GEN_XS,
+    CONF_CLEAR_XS,
+    CONF_TOLERATE_BURNUP_CHANGE,
+    CONF_XS_KERNEL,
+)
 from armi.utils.customExceptions import important
 
 
@@ -82,7 +87,7 @@ class LatticePhysicsInterface(interfaces.Interface):
         self._SLAB_MODEL = " slab"
         self._CYLINDER_MODEL = " cylinder"
         self._HEX_MODEL = " hex"
-        self._burnupTolerance = self.cs["tolerateBurnupChange"]
+        self._burnupTolerance = self.cs[CONF_TOLERATE_BURNUP_CHANGE]
         self._oldXsIdsAndBurnup = {}
         self.executablePath = self._getExecutablePath()
         self.executableRoot = os.path.dirname(self.executablePath)
@@ -124,7 +129,7 @@ class LatticePhysicsInterface(interfaces.Interface):
         runLog.important("Preparing XS for cycle {}".format(cycle))
         representativeBlocks, xsIds = self._getBlocksAndXsIds()
         if self._newLibraryShouldBeCreated(cycle, representativeBlocks, xsIds):
-            if self.cs["clearXS"]:
+            if self.cs[CONF_CLEAR_XS]:
                 self.clearXS()
             self.computeCrossSections(
                 blockList=representativeBlocks, xsLibrarySuffix=self._getSuffix(cycle)
@@ -185,12 +190,12 @@ class LatticePhysicsInterface(interfaces.Interface):
 
     def _readGammaBinaries(self, lib, gamisoFileName, pmatrxFileName):
         raise NotImplementedError(
-            "Gamma cross sections not implemented in {}".format(self.cs["xsKernel"])
+            "Gamma cross sections not implemented in {}".format(self.cs[CONF_XS_KERNEL])
         )
 
     def _writeGammaBinaries(self, lib, gamisoFileName, pmatrxFileName):
         raise NotImplementedError(
-            "Gamma cross sections not implemented in {}".format(self.cs["xsKernel"])
+            "Gamma cross sections not implemented in {}".format(self.cs[CONF_XS_KERNEL])
         )
 
     def _getSuffix(self, cycle):  # pylint: disable=unused-argument, no-self-use
