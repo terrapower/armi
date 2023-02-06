@@ -17,6 +17,7 @@ from collections import defaultdict
 from armi.bookkeeping.report import newReportUtils
 from armi.bookkeeping.report import newReports
 from armi.reactor.flags import Flags
+from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import CONF_FP_MODEL
 
 
 def insertNeutronicsReport(r, cs, report, stage):
@@ -55,7 +56,7 @@ def insertNeutronicsBOLContent(r, cs, report):
     table = section.get(
         newReportUtils.SETTINGS, newReports.Table("Settings", "Overview of the Run")
     )
-    for key in ["boundaries", "neutronicsKernel", "neutronicsType", "fpModel"]:
+    for key in ["boundaries", "neutronicsKernel", "neutronicsType", CONF_FP_MODEL]:
         table.addRow([key, cs[key]])
 
     insertInitialCoreFuelAssem(r, report)

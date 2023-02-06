@@ -50,7 +50,7 @@ def defineSettings():
             default="",
             label="Fission Product Library",
             description=(
-                f"This setting can used when the `{CONF_FP_MODEL}` setting "
+                "This setting can used when the `fpModel` setting "
                 "is set to `explicitFissionProducts` and is used to configure "
                 "all the nuclides that should be modeled within the core. "
                 "Setting this is equivalent to adding all nuclides in the "
@@ -106,7 +106,7 @@ def getFissionProductModelSettingValidators(inspector):
                 "The burn chain is not being initialized and the fission product model is not set to `explicitFissionProducts`. "
                 "This will likely fail."
             ),
-            f"Would you like to set the `{CONF_FP_MODEL}` to `explicitFissionProducts`?",
+            "Would you like to set the `CONF_FP_MODEL` to `explicitFissionProducts`?",
             lambda: inspector._assignCS(CONF_FP_MODEL, "explicitFissionProducts"),
         )
     )
@@ -117,7 +117,7 @@ def getFissionProductModelSettingValidators(inspector):
             and inspector.cs[CONF_FISSION_PRODUCT_LIBRARY_NAME] != "",
             (
                 "The explicit fission product model is disabled and the fission product model library is set. This will have no "
-                f"impact on the results, but it is best to disable the `{CONF_FISSION_PRODUCT_LIBRARY_NAME}` option."
+                "impact on the results, but it is best to disable the `CONF_FISSION_PRODUCT_LIBRARY_NAME` option."
             ),
             "Would you like to do this?",
             lambda: inspector._assignCS(CONF_FISSION_PRODUCT_LIBRARY_NAME, ""),

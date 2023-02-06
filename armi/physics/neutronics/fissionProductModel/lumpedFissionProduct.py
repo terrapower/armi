@@ -303,7 +303,7 @@ class FissionProductDefinitionFile:
     >>> fpd = FissionProductDefinitionFile(stream)
     >>> lfps = fpd.createLFPsFromFile()
 
-    The path to this file is specified by the `lfpCompositionFilePath` user setting.
+    The path to this file is specified by the CONF_LFP_COMPOSITION_FILE_PATH user setting.
     """
 
     def __init__(self, stream):

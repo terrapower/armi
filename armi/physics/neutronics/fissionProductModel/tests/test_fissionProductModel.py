@@ -32,6 +32,7 @@ from armi.physics.neutronics.isotopicDepletion.isotopicDepletionInterface import
 from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import (
     CONF_FP_MODEL,
     CONF_MAKE_ALL_BLOCK_LFPS_INDEPENDENT,
+    CONF_FISSION_PRODUCT_LIBRARY_NAME,
 )
 
 
@@ -114,7 +115,7 @@ class TestFissionProductModelExplicitMC2Library(unittest.TestCase):
         o, r = loadTestReactor(
             customSettings={
                 CONF_FP_MODEL: "explicitFissionProducts",
-                "fpModelLibrary": "MC2-3",
+                CONF_FISSION_PRODUCT_LIBRARY_NAME: "MC2-3",
             }
         )
         self.r = r
