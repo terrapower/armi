@@ -473,27 +473,6 @@ class Material:
         """
         return 0.0
 
-    def getLifeMetalCorrelation(self, days: float, Tk: float) -> float:
-        r"""
-        life-metal correlation calculates the wastage of the material due to fission products.
-        """
-        return 0.0
-
-    def getReverseLifeMetalCorrelation(
-        self, thicknessFCCIWastageMicrons: float, Tk: float
-    ) -> float:
-        r"""
-        Life metal correlation reverse lookup.  Knowing wastage and Temperature
-        determine the effective time at that temperature.
-        """
-        return 0.0
-
-    def getLifeMetalConservativeFcciCoeff(self, Tk: float) -> float:
-        """
-        Return the coefficient to be used in the LIFE-METAL correlation
-        """
-        return 0.0
-
     def yieldStrength(self, Tk: float = None, Tc: float = None) -> float:
         r"""returns yield strength at given T in MPa"""
         pass
