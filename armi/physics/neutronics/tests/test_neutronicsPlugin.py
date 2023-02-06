@@ -15,11 +15,11 @@
 """unit tests for the neutronics plugin"""
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import io
-import os
 import unittest
 
 from ruamel.yaml import YAML
 
+from armi import getPluginManagerOrFail, settings, tests
 from armi.operators import settingsValidation
 from armi.physics import neutronics
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
@@ -37,7 +37,6 @@ from armi.settings import caseSettings
 from armi.tests import TEST_ROOT
 from armi.tests.test_plugins import TestPlugin
 from armi.utils import directoryChangers
-from armi import getPluginManagerOrFail, settings, tests
 from armi.physics.neutronics.settings import (
     CONF_BOUNDARIES,
     CONF_GRID_PLATE_DPA_XS_SET,

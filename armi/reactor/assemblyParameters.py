@@ -359,7 +359,7 @@ def getAssemblyParameterDefinitions():
             description="Definition of set of HCFs to be applied to assembly.",
             location="?",
             default="Default",
-            saveToDB=False,
+            saveToDB=True,
             categories=[parameters.Category.assignInBlueprints],
         )
 
