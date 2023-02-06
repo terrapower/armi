@@ -23,7 +23,7 @@ from armi.materials import material
 class Void(material.Fluid):
     name = "Void"
 
-    def density(self, Tk: float = None, Tc: float = None) -> float:
+    def pseudoDensity(self, Tk: float = None, Tc: float = None) -> float:
         return 0.0
 
     def density3(self, Tk: float = None, Tc: float = None) -> float:

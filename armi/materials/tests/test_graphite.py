@@ -45,7 +45,7 @@ class Graphite_TestCase(unittest.TestCase):
     def test_propertyValidTemperature(self):
         self.assertEqual(len(self.mat.propertyValidTemperature), 0)
 
-    def test_density(self):
+    def test_density3(self):
         """
         test to reproduce density measurements results in table 2 from
         [INL-EXT-16-38241]

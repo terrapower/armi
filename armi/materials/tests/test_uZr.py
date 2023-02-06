@@ -23,7 +23,7 @@ from armi.materials.tests import test_materials
 class UZR_TestCase(test_materials._Material_Test, unittest.TestCase):
     MAT_CLASS = UZr
 
-    def test_density(self):
+    def test_density3(self):
         cur = self.mat.density3(400)
         ref = 15.94
         delta = ref * 0.01

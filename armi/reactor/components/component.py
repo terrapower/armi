@@ -340,7 +340,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         # note, that this is not the actual material density, but rather 2D expanded
         # `density3` is 3D density
         # call getProperty to cache and improve speed
-        density = self.material.getProperty("density", Tc=self.temperatureInC)
+        density = self.material.getProperty("pseudoDensity", Tc=self.temperatureInC)
 
         self.p.numberDensities = densityTools.getNDensFromMasses(
             density, self.material.massFrac

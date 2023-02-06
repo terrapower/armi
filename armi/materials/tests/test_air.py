@@ -183,7 +183,7 @@ class Test_Air(unittest.TestCase):
     unit tests for air materials
     """
 
-    def test_density(self):
+    def test_pseudoDensity(self):
         """
         Reproduce verification results at 300K from Incropera, Frank P., et al.
         Fundamentals of heat and mass transfer. Vol. 5. New York: Wiley, 2002.
@@ -192,7 +192,9 @@ class Test_Air(unittest.TestCase):
 
         for Tk, densKgPerM3 in zip(REFERENCE_Tk, REFERENCE_DENSITY_KG_PER_M3):
             if Tk < 2400:
-                error = math.fabs((air.pseudoDensityKgM3(Tk=Tk) - densKgPerM3) / densKgPerM3)
+                error = math.fabs(
+                    (air.pseudoDensityKgM3(Tk=Tk) - densKgPerM3) / densKgPerM3
+                )
                 self.assertLess(error, 1e-2)
 
     def test_heatCapacity(self):
@@ -231,7 +233,6 @@ class Test_Air(unittest.TestCase):
         """
         reproduce the number ratios results to PNNL-15870 Rev 1
         """
-
         air = Air()
 
         refC = 0.000150
@@ -239,7 +240,7 @@ class Test_Air(unittest.TestCase):
         refO = 0.210748
         refAR = 0.004671
 
-        nDens = densityTools.getNDensFromMasses(air.density(Tk=300), air.massFrac)
+        nDens = densityTools.getNDensFromMasses(air.pseudoDensity(Tk=300), air.massFrac)
 
         error = math.fabs(nDens["C"] / sum(nDens.values()) - refC)
         self.assertLess(error, 1e-4)
@@ -251,12 +252,11 @@ class Test_Air(unittest.TestCase):
         self.assertLess(error, 1e-4)
 
     def test_checkPropertyTempRange(self):
-
         air = Air()
 
-        air.density(Tk=2399)
+        air.pseudoDensity(Tk=2399)
         try:
-            air.density(Tk=2401)
+            air.pseudoDensity(Tk=2401)
         except AssertionError:
             pass
 

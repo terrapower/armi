@@ -24,8 +24,8 @@ class Test_SiC(test_materials._Material_Test, unittest.TestCase):
 
     MAT_CLASS = SiC
 
-    def test_density(self):
-        cur = self.mat.density(Tc=25)
+    def test_pseudoDensity(self):
+        cur = self.mat.pseudoDensity(Tc=25)
         ref = 3.159
         delta = ref * 0.001
         self.assertAlmostEqual(cur, ref, delta=delta)

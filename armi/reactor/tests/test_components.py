@@ -309,10 +309,12 @@ class TestShapedComponent(TestGeneralComponents):
 
         # test 2D expanding density
         if c.temperatureInC == c.inputTemperatureInC:
-            self.assertAlmostEqual(c.density(), c.material.density(Tc=c.temperatureInC))
+            self.assertAlmostEqual(
+                c.density(), c.material.pseudoDensity(Tc=c.temperatureInC)
+            )
         dLL = c.material.linearExpansionPercent(units.getTk(Tc=c.temperatureInC))
         self.assertAlmostEqual(
-            c.density(), c.material.density(Tc=c.temperatureInC) * dLL
+            c.density(), c.material.pseudoDensity(Tc=c.temperatureInC) * dLL
         )  # 2d density off by dLL
 
         # test mass agreement using area
@@ -590,14 +592,14 @@ class TestComponentExpansion(unittest.TestCase):
             # which happens during construction
             self.assertNotAlmostEqual(
                 circle.getMassDensity(),
-                circle.material.density(Tc=circle.temperatureInC),
+                circle.material.pseudoDensity(Tc=circle.temperatureInC),
             )
             # 2D density is off by the material thermal exp factor
             percent = circle.material.linearExpansionPercent(Tc=circle.temperatureInC)
             thermalExpansionFactorFromColdMatTemp = 1 + percent / 100
             self.assertAlmostEqual(
                 circle.getMassDensity() * thermalExpansionFactorFromColdMatTemp,
-                circle.material.density(Tc=circle.temperatureInC),
+                circle.material.pseudoDensity(Tc=circle.temperatureInC),
             )
             self.assertAlmostEqual(
                 circle.getMassDensity(),
