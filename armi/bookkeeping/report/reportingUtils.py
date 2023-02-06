@@ -34,6 +34,10 @@ from armi import runLog
 from armi.bookkeeping import report
 from armi.operators import RunTypes
 from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
+from armi.physics.neutronics.settings import (
+    CONF_GEN_XS,
+    CONF_GLOBAL_FLUX_ACTIVE,
+)
 from armi.reactor.components import ComponentType
 from armi.reactor.flags import Flags
 from armi.utils import getFileSHA1Hash
@@ -781,13 +785,13 @@ def _setGeneralSimulationData(core, cs, coreDesignTable):
     )
     report.setData(
         "Lattice Physics Enabled for",
-        "{}".format(cs["genXS"]),
+        "{}".format(cs[CONF_GEN_XS]),
         coreDesignTable,
         report.DESIGN,
     )
     report.setData(
         "Neutronics Enabled for",
-        "{}".format(cs["globalFluxActive"]),
+        "{}".format(cs[CONF_GLOBAL_FLUX_ACTIVE]),
         coreDesignTable,
         report.DESIGN,
     )

@@ -19,6 +19,10 @@ from armi import runLog
 from armi.bookkeeping.report import newReports
 from armi.materials import custom
 from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
+from armi.physics.neutronics.settings import (
+    CONF_GEN_XS,
+    CONF_GLOBAL_FLUX_ACTIVE,
+)
 from armi.reactor.components import component
 from armi.reactor.flags import Flags
 from armi.utils import (
@@ -297,9 +301,9 @@ def _setGeneralSimulationData(core, cs, coreDesignTable):
     coreDesignTable.addRow(
         ["Tight Physics Coupling Enabled", "{}".format(bool(cs["tightCoupling"]))]
     )
-    coreDesignTable.addRow(["Lattice Physics Enabled for", "{}".format(cs["genXS"])])
+    coreDesignTable.addRow(["Lattice Physics Enabled for", "{}".format(cs[CONF_GEN_XS])])
     coreDesignTable.addRow(
-        ["Neutronics Enabled for", "{}".format(cs["globalFluxActive"])]
+        ["Neutronics Enabled for", "{}".format(cs[CONF_GLOBAL_FLUX_ACTIVE])]
     )
 
 
@@ -431,7 +435,7 @@ def insertSettingsData(cs, report):
     for key in ["power", "Tin", "Tout"]:
         report[COMPREHENSIVE_REPORT][REACTOR_PARAMS].addRow([key, cs[key]])
 
-    for key in ["genXS", "neutronicsKernel"]:
+    for key in [CONF_GEN_XS, "neutronicsKernel"]:
         report[COMPREHENSIVE_REPORT][CASE_CONTROLS].addRow([key, str(cs[key])])
 
     for key in ["buGroups"]:

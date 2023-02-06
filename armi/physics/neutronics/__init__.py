@@ -40,6 +40,10 @@ import tabulate
 from armi import plugins
 from armi import runLog
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
+from armi.physics.neutronics.settings import (
+    CONF_GEN_XS,
+    CONF_GLOBAL_FLUX_ACTIVE,
+)
 
 
 class NeutronicsPlugin(plugins.ArmiPlugin):
@@ -186,7 +190,7 @@ def gammaTransportIsRequested(cs):
     flag : bool
         Returns true if gamma transport is requested.
     """
-    return GAMMA in cs["globalFluxActive"]
+    return GAMMA in cs[CONF_GLOBAL_FLUX_ACTIVE]
 
 
 def gammaXsAreRequested(cs):
@@ -203,7 +207,7 @@ def gammaXsAreRequested(cs):
     flag : bool
         Returns true if gamma cross section generation is requested.
     """
-    return GAMMA in cs["genXS"]
+    return GAMMA in cs[CONF_GEN_XS]
 
 
 def adjointCalculationRequested(cs):

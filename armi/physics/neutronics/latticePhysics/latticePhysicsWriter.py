@@ -32,9 +32,10 @@ from armi.physics import neutronics
 from armi.reactor import components
 from armi.nucDirectory import nuclideBases
 from armi.reactor.flags import Flags
-from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.utils.customExceptions import warn_when_root
+from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import CONF_FP_MODEL
+from armi.physics.neutronics.settings import CONF_GEN_XS
 
 
 # number of decimal places to round temperatures to in _groupNuclidesByTemperature
@@ -94,7 +95,8 @@ class LatticePhysicsWriter(interfaces.InputWriter):
             self.cs
         ):
             raise ValueError(
-                "Invalid `genXS` setting to generate gamma XS for {}.".format(
+                "Invalid `{}` setting to generate gamma XS for {}.".format(
+                    CONF_GEN_XS,
                     self.block
                 )
             )

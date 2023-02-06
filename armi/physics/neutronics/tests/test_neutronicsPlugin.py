@@ -24,6 +24,9 @@ from armi.operators import settingsValidation
 from armi.physics import neutronics
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.physics.neutronics.settings import (
+    CONF_GEN_XS,
+    CONF_GLOBAL_FLUX_ACTIVE,
+    CONF_GROUP_STRUCTURE,
     CONF_OUTERS_,
     CONF_INNERS_,
     CONF_NEUTRONICS_KERNEL,
@@ -34,6 +37,7 @@ from armi.tests import TEST_ROOT
 from armi.tests.test_plugins import TestPlugin
 from armi.utils import directoryChangers
 from armi import getPluginManagerOrFail, settings, tests
+from armi.physics.neutronics.settings import CONF_BOUNDARIES
 
 XS_EXAMPLE = """AA:
     geometry: 0D
@@ -257,57 +261,57 @@ class NeutronicsReactorTests(unittest.TestCase):
         self.assertEqual(len(sv), 8)
 
         # Test the Query: boundaries are now "Extrapolated", not "Normal"
-        cs = cs.modified(newSettings={"boundaries": "Normal"})
+        cs = cs.modified(newSettings={CONF_BOUNDARIES: "Normal"})
         inspector = settingsValidation.Inspector(cs)
         sv = getNeutronicsSettingValidators(inspector)
 
         self.__autoCorrectAllQueries(sv)
-        self.assertEqual(inspector.cs["boundaries"], "Extrapolated")
+        self.assertEqual(inspector.cs[CONF_BOUNDARIES], "Extrapolated")
 
         # Test the Query: genXS are no longer True/False
-        cs = cs.modified(newSettings={"genXS": "True"})
+        cs = cs.modified(newSettings={CONF_GEN_XS: "True"})
         inspector = settingsValidation.Inspector(cs)
         sv = getNeutronicsSettingValidators(inspector)
 
         self.__autoCorrectAllQueries(sv)
-        self.assertEqual(inspector.cs["genXS"], "Neutron")
+        self.assertEqual(inspector.cs[CONF_GEN_XS], "Neutron")
 
-        cs = cs.modified(newSettings={"genXS": "False"})
+        cs = cs.modified(newSettings={CONF_GEN_XS: "False"})
         inspector = settingsValidation.Inspector(cs)
         sv = getNeutronicsSettingValidators(inspector)
 
         self.__autoCorrectAllQueries(sv)
-        self.assertEqual(inspector.cs["genXS"], "")
+        self.assertEqual(inspector.cs[CONF_GEN_XS], "")
 
-        # Test the Query: globalFluxActive are no longer True/False
-        cs = cs.modified(newSettings={"globalFluxActive": "True"})
+        # Test the Query: CONF_GLOBAL_FLUX_ACTIVE are no longer True/False
+        cs = cs.modified(newSettings={CONF_GLOBAL_FLUX_ACTIVE: "True"})
         inspector = settingsValidation.Inspector(cs)
         sv = getNeutronicsSettingValidators(inspector)
 
         self.__autoCorrectAllQueries(sv)
-        self.assertEqual(inspector.cs["globalFluxActive"], "Neutron")
+        self.assertEqual(inspector.cs[CONF_GLOBAL_FLUX_ACTIVE], "Neutron")
 
-        cs = cs.modified(newSettings={"globalFluxActive": "False"})
+        cs = cs.modified(newSettings={CONF_GLOBAL_FLUX_ACTIVE: "False"})
         inspector = settingsValidation.Inspector(cs)
         sv = getNeutronicsSettingValidators(inspector)
 
         self.__autoCorrectAllQueries(sv)
-        self.assertEqual(inspector.cs["globalFluxActive"], "")
+        self.assertEqual(inspector.cs[CONF_GLOBAL_FLUX_ACTIVE], "")
 
         # Test the Query: try to migrate the Group Structure name
-        cs = cs.modified(newSettings={"groupStructure": "armi45"})
+        cs = cs.modified(newSettings={CONF_GROUP_STRUCTURE: "armi45"})
         inspector = settingsValidation.Inspector(cs)
         sv = getNeutronicsSettingValidators(inspector)
 
         self.__autoCorrectAllQueries(sv)
-        self.assertEqual(inspector.cs["groupStructure"], "ARMI45")
+        self.assertEqual(inspector.cs[CONF_GROUP_STRUCTURE], "ARMI45")
 
-        cs = cs.modified(newSettings={"groupStructure": "bad_value"})
+        cs = cs.modified(newSettings={CONF_GROUP_STRUCTURE: "bad_value"})
         inspector = settingsValidation.Inspector(cs)
         sv = getNeutronicsSettingValidators(inspector)
 
         self.__autoCorrectAllQueries(sv)
-        self.assertEqual(inspector.cs["groupStructure"], "ANL33")
+        self.assertEqual(inspector.cs[CONF_GROUP_STRUCTURE], "ANL33")
 
         # Test the Query: migrating some common shortened names for dpa XS sets
         cs = cs.modified(newSettings={"dpaXsSet": "dpaHT9_33"})

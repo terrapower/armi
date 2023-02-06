@@ -38,6 +38,10 @@ from armi.settings.settingsIO import (
     RunLogPromptCancel,
     RunLogPromptUnresolvable,
 )
+from armi.physics.neutronics.settings import (
+    CONF_BC_COEFFICIENT,
+    CONF_BOUNDARIES
+)
 
 
 class Query:
@@ -663,11 +667,11 @@ class Inspector:
 
         self.addQuery(
             lambda: (
-                self.cs["boundaries"] != neutronics.GENERAL_BC
-                and self.cs["bcCoefficient"]
+                self.cs[CONF_BOUNDARIES] != neutronics.GENERAL_BC
+                and self.cs[CONF_BC_COEFFICIENT]
             ),
-            "General neutronic boundary condition was not selected, but `bcCoefficient` was defined. "
-            "Please enable `Generalized` neutronic boundary condition or disable `bcCoefficient`.",
+            f"General neutronic boundary condition was not selected, but `{CONF_BC_COEFFICIENT}` was defined. "
+            f"Please enable `Generalized` neutronic boundary condition or disable `{CONF_BC_COEFFICIENT}`.",
             "",
             self.NO_ACTION,
         )

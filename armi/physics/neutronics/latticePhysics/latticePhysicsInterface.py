@@ -25,6 +25,7 @@ from armi import interfaces, runLog
 from armi.utils import codeTiming
 from armi.physics import neutronics
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
+from armi.physics.neutronics.settings import CONF_GEN_XS
 from armi.utils.customExceptions import important
 
 
@@ -364,14 +365,14 @@ class LatticePhysicsInterface(interfaces.Interface):
 
         Criteria include:
 
-        #. genXS setting is turned on
+        #. CONF_GEN_XS setting is turned on
         #. We are beyond any requested skipCycles (restart cycles)
         #. The blocks have changed burnup beyond the burnup threshold
         #. Lattice physics kernel (e.g. MC2) hasn't already been executed for this cycle
            (possible if it runs during fuel handling)
 
         """
-        executeXSGen = bool(self.cs["genXS"] and cycle >= self.cs["skipCycles"])
+        executeXSGen = bool(self.cs[CONF_GEN_XS] and cycle >= self.cs["skipCycles"])
         idsChangedBurnup = self._checkBurnupThresholds(representativeBlockList)
         if executeXSGen and not idsChangedBurnup:
             executeXSGen = False
@@ -412,7 +413,7 @@ class LatticePhysicsInterface(interfaces.Interface):
         else:
             runLog.info(
                 f"Cross sections will not be generated on cycle {cycle}. The "
-                f"setting `genXS` is {self.cs['genXS']} and `skipCycles` "
+                f"setting `{CONF_GEN_XS}` is {self.cs[CONF_GEN_XS]} and `skipCycles` "
                 f"is {self.cs['skipCycles']}"
             )
 

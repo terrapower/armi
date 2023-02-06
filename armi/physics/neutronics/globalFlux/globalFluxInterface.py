@@ -33,6 +33,11 @@ from armi.reactor.converters import geometryConverters
 from armi.reactor.converters import uniformMesh
 from armi.reactor.flags import Flags
 from armi.utils import units, codeTiming, getMaxBurnSteps
+from armi.physics.neutronics.settings import (
+    CONF_BOUNDARIES,
+    CONF_DPA_PER_FLUENCE,
+    CONF_EIGEN_PROB,
+)
 
 ORDER = interfaces.STACK_ORDER.FLUX
 
@@ -367,14 +372,14 @@ class GlobalFluxOptions(executers.ExecutionOptions):
         self.hasNonUniformAssems = any(
             [Flags.fromStringIgnoreErrors(f) for f in cs["nonUniformAssemFlags"]]
         )
-        self.eigenvalueProblem = cs["eigenProb"]
+        self.eigenvalueProblem = cs[CONF_EIGEN_PROB]
 
         # dose/dpa specific (should be separate subclass?)
-        self.dpaPerFluence = cs["dpaPerFluence"]
+        self.dpaPerFluence = cs[CONF_DPA_PER_FLUENCE]
         self.aclpDoseLimit = cs["aclpDoseLimit"]
         self.loadPadElevation = cs["loadPadElevation"]
         self.loadPadLength = cs["loadPadLength"]
-        self.boundaries = cs["boundaries"]
+        self.boundaries = cs[CONF_BOUNDARIES]
         self.xsKernel = cs["xsKernel"]
         self.cs = cs
         self.savePhysicsFilesList = cs["savePhysicsFiles"]
