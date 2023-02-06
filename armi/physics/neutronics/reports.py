@@ -17,7 +17,9 @@ from collections import defaultdict
 from armi.bookkeeping.report import newReportUtils
 from armi.bookkeeping.report import newReports
 from armi.reactor.flags import Flags
-from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import CONF_FP_MODEL
+from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import (
+    CONF_FP_MODEL,
+)
 from armi.physics.neutronics.settings import CONF_BOUNDARIES
 
 

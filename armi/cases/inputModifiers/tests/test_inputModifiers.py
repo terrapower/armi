@@ -29,7 +29,9 @@ from armi.cases.inputModifiers import (
     inputModifiers,
     pinTypeInputModifiers,
 )
-from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import CONF_FP_MODEL
+from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import (
+    CONF_FP_MODEL,
+)
 from armi.physics.neutronics.settings import CONF_EPS_EIG
 from armi.reactor.tests import test_reactors
 

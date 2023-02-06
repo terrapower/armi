@@ -216,7 +216,9 @@ class TestLumpedFissionProductsFromReferenceFile(unittest.TestCase):
         """Test that the fission product yields for the lumped fission products sums to 2.0"""
         cs = Settings()
         cs[CONF_FP_MODEL] = "infinitelyDilute"
-        cs[CONF_LFP_COMPOSITION_FILE_PATH] = os.path.join(RES, "referenceFissionProducts.dat")
+        cs[CONF_LFP_COMPOSITION_FILE_PATH] = os.path.join(
+            RES, "referenceFissionProducts.dat"
+        )
         self.lfps = lumpedFissionProduct.lumpedFissionProductFactory(cs)
         for lfp in self.lfps.values():
             self.assertAlmostEqual(lfp.getTotalYield(), 2.0, places=3)

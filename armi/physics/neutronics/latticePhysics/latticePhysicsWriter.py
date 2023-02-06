@@ -34,7 +34,9 @@ from armi.nucDirectory import nuclideBases
 from armi.reactor.flags import Flags
 from armi.utils.customExceptions import warn_when_root
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
-from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import CONF_FP_MODEL
+from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import (
+    CONF_FP_MODEL,
+)
 from armi.physics.neutronics.settings import CONF_GEN_XS
 
 
@@ -96,8 +98,7 @@ class LatticePhysicsWriter(interfaces.InputWriter):
         ):
             raise ValueError(
                 "Invalid `{}` setting to generate gamma XS for {}.".format(
-                    CONF_GEN_XS,
-                    self.block
+                    CONF_GEN_XS, self.block
                 )
             )
         self.xsId = representativeBlock.getMicroSuffix()
@@ -111,7 +112,9 @@ class LatticePhysicsWriter(interfaces.InputWriter):
         self.modelFissionProducts = (
             blockNeedsFPs and self.cs[CONF_FP_MODEL] != "noFissionProducts"
         )
-        self.explicitFissionProducts = self.cs[CONF_FP_MODEL] == "explicitFissionProducts"
+        self.explicitFissionProducts = (
+            self.cs[CONF_FP_MODEL] == "explicitFissionProducts"
+        )
         self.diluteFissionProducts = (
             blockNeedsFPs and self.cs[CONF_FP_MODEL] == "infinitelyDilute"
         )

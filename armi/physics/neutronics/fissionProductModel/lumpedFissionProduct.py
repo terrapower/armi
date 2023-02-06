@@ -26,10 +26,7 @@ from armi.nucDirectory import nuclideBases
 from armi import runLog
 from armi.nucDirectory import elements
 
-from .fissionProductModelSettings import (
-    CONF_LFP_COMPOSITION_FILE_PATH,
-    CONF_FP_MODEL
-)
+from .fissionProductModelSettings import CONF_LFP_COMPOSITION_FILE_PATH, CONF_FP_MODEL
 
 
 class LumpedFissionProduct:

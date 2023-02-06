@@ -38,10 +38,7 @@ from armi.settings.settingsIO import (
     RunLogPromptCancel,
     RunLogPromptUnresolvable,
 )
-from armi.physics.neutronics.settings import (
-    CONF_BC_COEFFICIENT,
-    CONF_BOUNDARIES
-)
+from armi.physics.neutronics.settings import CONF_BC_COEFFICIENT, CONF_BOUNDARIES
 
 
 class Query:

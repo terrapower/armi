@@ -26,6 +26,7 @@ from armi.physics.neutronics.settings import (
     CONF_EPS_FSPOINT,
 )
 
+
 class NeutronicConvergenceModifier(inputModifiers.InputModifier):
     """
     Adjust the neutronics convergence parameters ``CONF_EPS_EIG``, ``CONF_EPS_FSAVG``, and ``CONF_EPS_FSPOINT``.

@@ -22,6 +22,7 @@ from armi.physics.neutronics.settings import (
     CONF_EPS_FSPOINT,
 )
 
+
 class ParameterSweepConverter(GeometryConverter):
     """Abstract parameter sweep converter object."""
 

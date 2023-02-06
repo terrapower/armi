@@ -301,7 +301,9 @@ def _setGeneralSimulationData(core, cs, coreDesignTable):
     coreDesignTable.addRow(
         ["Tight Physics Coupling Enabled", "{}".format(bool(cs["tightCoupling"]))]
     )
-    coreDesignTable.addRow(["Lattice Physics Enabled for", "{}".format(cs[CONF_GEN_XS])])
+    coreDesignTable.addRow(
+        ["Lattice Physics Enabled for", "{}".format(cs[CONF_GEN_XS])]
+    )
     coreDesignTable.addRow(
         ["Neutronics Enabled for", "{}".format(cs[CONF_GLOBAL_FLUX_ACTIVE])]
     )
