@@ -32,6 +32,7 @@ What's new in ARMI
 #. Bug fix for Magnessium density curve. (`PR#1126 https://github.com/terrapower/armi/pull/1126`_)
 #. Bug fix for Potassium density curve. (`PR#1128 https://github.com/terrapower/armi/pull/1128`_)
 #. Bug fix for Concrete density curve. (`PR#1131 https://github.com/terrapower/armi/pull/1131`_)
+#. Bug fix for Copper density curve. (`PR#1150 https://github.com/terrapower/armi/pull/1150`_)
 #. Bug fix for Component.density. (`PR#1149 https://github.com/terrapower/armi/pull/1149`_)
 #. Calculate block kgHM and kgFis on core loading and after shuffling. (`PR#1136 https://github.com/terrapower/armi/pull/1136`_)
 
