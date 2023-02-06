@@ -13,4 +13,4 @@ jobs:
         run: cat grep_results.txt
       - name: Evaluate results
         run: | 
-            [[ -s grep_results.txt ]] && exit 1 || exit 0;
+            [[ -s grep_results.txt ]] && exit 1 || exit 1;
