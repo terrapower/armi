@@ -1382,6 +1382,13 @@ class TestMaterialAdjustments(unittest.TestCase):
         self.fuel.setMassFrac("U235", target35)
         self.assertAlmostEqual(self.fuel.getMassFrac("U235"), target35)
 
+    def test_adjustMassFrac_invalid(self):
+        with self.assertRaises(ValueError):
+            self.fuel.adjustMassFrac(nuclideToAdjust="ZR", val=-0.23)
+
+        with self.assertRaises(ValueError):
+            self.fuel.adjustMassFrac(nuclideToAdjust="ZR", val=1.12)
+
     def test_adjustMassFrac_U235(self):
         zrMass = self.fuel.getMass("ZR")
         uMass = self.fuel.getMass("U")
