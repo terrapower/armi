@@ -49,6 +49,7 @@ Bug fixes
 #. Bug fix to ensure consistency between cross section group manager and lattice physics interface for tight coupling. (`PR#1118 <https://github.com/terrapower/armi/pull/1118>`_)
 #. Bug fix to update pseudo density to physical density in densityTimesHeatCapacity materials method. (`PR#1129 <https://github.com/terrapower/armi/pull/1129>`_)
 #. Fixed a bug in which the TD_frac material modification on UraniumOxide and MOX materials was not being applied correctly in density calculations
+#. Added hotChannelFactors assembly parameter to the DB so that snapshot runs know about the parameter. (`PR#1157 <https://github.com/terrapower/armi/pull/1157>`_)
 
 ARMI v0.2.5
 ===========
