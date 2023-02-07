@@ -48,6 +48,9 @@ CONF_NEUTRONICS_TYPE = "neutronicsType"
 CONF_NUMBER_MESH_PER_EDGE = "numberMeshPerEdge"
 CONF_OUTERS_ = "outers"
 CONF_RESTART_NEUTRONICS = "restartNeutronics"
+CONF_UNIFORM_MESH_GENERATOR = "uniformMeshGenerator"
+CONF_AVERAGE_MESH_TOLERANCE = "averageMeshTolerance"
+CONF_UNIFORM_MESH_TOLERANCE = "uniformMeshTolerance"
 
 # Used for dpa/dose analysis.
 # TODO: These should be relocated to more design-specific places
@@ -64,6 +67,11 @@ CONF_OPT_DPA = [
     "dpa_EBRII_HT9",
     "dpa_EBRII_PE16",
     "dpa_EBRII_INC625",
+]
+
+CONF_OPT_GENERATOR = [
+    "average",
+    "kMeansCluster",
 ]
 
 # moved from xsSettings
@@ -342,6 +350,25 @@ def defineSettings():
             label="Eigenvalue Convergence Criteria",
             description="Convergence criteria for the eigenvalue in the lattice physics kernel",
         ),
+        setting.Setting(
+            CONF_UNIFORM_MESH_GENERATOR,
+            default="average",
+            label="Uniform Mesh Generator algorithm",
+            description="Algorithm used to generate the uniform axial mesh (average or kMeansCluster)",
+            options=CONF_OPT_GENERATOR,
+        ),
+        setting.Setting(
+            CONF_UNIFORM_MESH_TOLERANCE,
+            default=2.0,
+            label="k-means uniform mesh tolerance",
+            description="Mesh tolerance (in cm) for the k-means clustering uniform mesh algorithm",
+        ),
+        setting.Setting(
+            CONF_AVERAGE_MESH_TOLERANCE,
+            default=0.2,
+            label="Average uniform mesh tolerance",
+            description="Mesh tolerance (in %) for the average-mesh uniform mesh algorithm",
+        ),
     ]
 
     return settings
@@ -523,6 +550,50 @@ def getNeutronicsSettingValidators(inspector):
                 CONF_NON_UNIFORM_ASSEM_FLAGS,
                 inspector.cs.getSetting(CONF_NON_UNIFORM_ASSEM_FLAGS).default,
             ),
+        )
+    )
+    queries.append(
+        settingsValidation.Query(
+            lambda: inspector.cs[CONF_UNIFORM_MESH_GENERATOR] == "kMeansCluster"
+            and inspector.cs[CONF_AVERAGE_MESH_TOLERANCE]
+            and not inspector.cs[CONF_UNIFORM_MESH_TOLERANCE],
+            f"{CONF_AVERAGE_MESH_TOLERANCE} is ignored when using the kMeansCluster mesh generating algorithm."
+            f"Please use {CONF_UNIFORM_MESH_TOLERANCE} instead.",
+            f"Using default {CONF_UNIFORM_MESH_TOLERANCE} value of "
+            f"{inspector.cs[CONF_UNIFORM_MESH_TOLERANCE].default}",
+            inspector.NO_ACTION,
+        )
+    )
+    queries.append(
+        settingsValidation.Query(
+            lambda: inspector.cs[CONF_UNIFORM_MESH_GENERATOR] == "kMeansCluster"
+            and inspector.cs[CONF_AVERAGE_MESH_TOLERANCE]
+            and inspector.cs[CONF_UNIFORM_MESH_TOLERANCE],
+            f"{CONF_AVERAGE_MESH_TOLERANCE} is ignored when using the kMeansCluster mesh generating algorithm.",
+            f"Using {CONF_UNIFORM_MESH_TOLERANCE}.",
+            inspector.NO_ACTION,
+        )
+    )
+    queries.append(
+        settingsValidation.Query(
+            lambda: inspector.cs[CONF_UNIFORM_MESH_GENERATOR] == "average"
+            and inspector.cs[CONF_UNIFORM_MESH_TOLERANCE]
+            and not inspector.cs[CONF_AVERAGE_MESH_TOLERANCE],
+            f"{CONF_UNIFORM_MESH_TOLERANCE} is ignored when using the average uniform mesh generating algorithm."
+            f"Please use {CONF_AVERAGE_MESH_TOLERANCE} instead.",
+            f"Using default {CONF_AVERAGE_MESH_TOLERANCE} value of "
+            f"{inspector.cs[CONF_AVERAGE_MESH_TOLERANCE].default}",
+            inspector.NO_ACTION,
+        )
+    )
+    queries.append(
+        settingsValidation.Query(
+            lambda: inspector.cs[CONF_UNIFORM_MESH_GENERATOR] == "average"
+            and inspector.cs[CONF_UNIFORM_MESH_TOLERANCE]
+            and inspector.cs[CONF_AVERAGE_MESH_TOLERANCE],
+            f"{CONF_UNIFORM_MESH_TOLERANCE} is ignored when using the average mesh generating algorithm.",
+            f"Using {CONF_AVERAGE_MESH_TOLERANCE}.",
+            inspector.NO_ACTION,
         )
     )
 

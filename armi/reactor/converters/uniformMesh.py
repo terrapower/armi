@@ -154,6 +154,9 @@ class UniformMeshGeometryConverter(GeometryConverter):
         - Resetting the parameter state of an assembly back to the defaults for the provided block parameters. See: `<UniformMeshGeometryConverter.clearStateOnAssemblies>`
         - Mapping number densities and block parameters between one assembly to another. See: `<UniformMeshGeometryConverter.setAssemblyStateFromOverlaps>`
 
+    There are two algorithms available for generating a uniform axial mesh: "average" and "kMeansCluster". These are chosen in the caseSettings. A mesh tolerance can also
+    be provided in the caseSettings.
+
     This class is meant to be extended for specific physics calculations that require a uniform mesh.
     The child types of this class should define custom `reactorParamsToMap` and `blockParamsToMap` attributes, and the `_setParamsToUpdate` method
     to specify the precise parameters that need to be mapped in each direction between the non-uniform and uniform mesh assemblies. The definitions should avoid mapping
@@ -209,6 +212,15 @@ class UniformMeshGeometryConverter(GeometryConverter):
             ]
             self._hasNonUniformAssems = any(self._nonUniformMeshFlags)
 
+            self._meshGenerator = cs["uniformMeshGenerator"]
+            if cs["uniformMeshGenerator"] == "average":
+                self._meshTolerance = cs["averageMeshTolerance"]
+            elif cs["uniformMeshGenerator"] == "kMeansCluster":
+                self._meshTolerance = cs["uniformMeshTolerance"]
+        else:
+            self._meshGenerator = "average"
+            self._meshTolerance = 0.2
+
     def convert(self, r=None):
         """Create a new reactor core with a uniform mesh."""
         if r is None:
@@ -257,7 +269,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
         else:
             runLog.extra(f"Building copy of {r} with a uniform axial mesh.")
             self.convReactor = self.initNewReactor(r, self._cs)
-            self._computeKMeansAxialMesh()
+            self._createUniformMesh()
             runLog.extra(f"Uniform mesh: {self._uniformMesh}")
             self._buildAllUniformAssemblies()
             self._mapStateFromReactorToOther(
@@ -739,6 +751,15 @@ class UniformMeshGeometryConverter(GeometryConverter):
         """Perform checks to ensure conversion occurred properly."""
         pass
 
+    def _createUniformMesh(self):
+        """
+        Perform the uniform mesh calculation algorithm specified by the caseSettings.
+        """
+        if self._meshGenerator == "average":
+            self._computeAverageAxialMesh(meshTolerance=self._meshTolerance)
+        elif self._meshGenerator == "kMeansCluster":
+            self._computeKMeansAxialMesh(meshTolerance=self._meshTolerance)
+
     def _computeKMeansAxialMesh(self, tolerance=1e-5, meshTolerance=2.0):
         """
         Use kMeans clustering to determine an appropriate mesh for the uniform assemblies.
@@ -762,7 +783,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
         meshTolerance : float, optional
             The minimum desired mesh size to be produced by k-means. When a k-means result is
             within this tolerance of a cluster of non-uniform mesh lines, those lines will be
-            replaced by the k-means value.
+            replaced by the k-means value. Set by the caseSettings "uniformMeshTolerance".
 
         See Also
         --------
@@ -836,7 +857,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
         self._uniformMesh = numpy.array(allMeshes + [lastMeshPoint])
 
-    def _computeAverageAxialMesh(self):
+    def _computeAverageAxialMesh(self, meshTolerance=0.2):
         """
         Computes an average axial mesh based on the core's reference assembly.
 
@@ -847,6 +868,27 @@ class UniformMeshGeometryConverter(GeometryConverter):
         this, the proposed uniform mesh will be some average of many assemblies in the core.
         The reason for this is to account for the fact that multiple assemblies (i.e., fuel assemblies)
         may have a different mesh due to differences in thermal and/or burn-up expansion.
+
+        This will disregard any assembly that does not have the same number of fine-mesh
+        points as the `refAssem` of the core.
+
+        Parameters
+        ----------
+        meshTolerance : float, optional
+            The tolerance for mesh point deviation as a percentage of the mesh size.
+            If an assembly has fine mesh regions with relative size discrepancies compared
+            to the average mesh that are greater than meshTolerance, that assembly will be
+            removed from the set of assemblies used to determine the average axial mesh,
+            and the process will continue without those mesh points included.
+            Set by the caseSettings "averageMeshTolerance".
+            Technically, any value >= 0 would be valid, although the behvaior
+            of the algorithm would be completely different at 0.0 than at 1.0.
+            The default meshTolerance is 0.2. A value in the range of 0.05-0.30 is recommended,
+            although there could be situations where going outside of that range is appropriate.
+
+        See Also
+        --------
+        _computeKMeansAxialMesh
         """
         src = self._sourceReactor
         refAssem = src.core.refAssem
@@ -859,7 +901,9 @@ class UniformMeshGeometryConverter(GeometryConverter):
             aMesh = src.core.findAllAxialMeshPoints([a])[1:]
             if len(aMesh) == refNumPoints:
                 allMeshes.append(aMesh)
-        self._uniformMesh = average1DWithinTolerance(numpy.array(allMeshes))
+        self._uniformMesh = average1DWithinTolerance(
+            numpy.array(allMeshes), tolerance=meshTolerance
+        )
 
     @staticmethod
     def _createNewAssembly(sourceAssembly):
