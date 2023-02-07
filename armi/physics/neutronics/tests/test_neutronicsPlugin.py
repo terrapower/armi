@@ -254,7 +254,7 @@ class NeutronicsReactorTests(unittest.TestCase):
         cs = settings.Settings()
         inspector = settingsValidation.Inspector(cs)
         sv = getNeutronicsSettingValidators(inspector)
-        self.assertEqual(len(sv), 8)
+        self.assertEqual(len(sv), 10)
 
         # Test the Query: boundaries are now "Extrapolated", not "Normal"
         cs = cs.modified(newSettings={"boundaries": "Normal"})
@@ -323,6 +323,44 @@ class NeutronicsReactorTests(unittest.TestCase):
 
         self.__autoCorrectAllQueries(sv)
         self.assertEqual(inspector.cs["gridPlateDpaXsSet"], "dpaSS316_ANL33_TwrBol")
+
+        # Test the k-means and average axial uniform mesh generator validators
+        addedSettings = {}
+        cs = settings.Settings()
+        addedSettings["uniformMeshGenerator"] = "kMeansCluster"
+        addedSettings["uniformMeshTolerance"] = 4.0
+        self._checkUniformMeshQueries(cs.modified(newSettings=addedSettings), 0)
+        addedSettings["averageMeshTolerance"] = 0.3
+        self._checkUniformMeshQueries(cs.modified(newSettings=addedSettings), 1)
+        del addedSettings["uniformMeshTolerance"]
+        self._checkUniformMeshQueries(cs.modified(newSettings=addedSettings), 1)
+        addedSettings["uniformMeshGenerator"] = "average"
+        self._checkUniformMeshQueries(cs.modified(newSettings=addedSettings), 0)
+        addedSettings["uniformMeshTolerance"] = 4.0
+        self._checkUniformMeshQueries(cs.modified(newSettings=addedSettings), 1)
+        del addedSettings["averageMeshTolerance"]
+        self._checkUniformMeshQueries(cs.modified(newSettings=addedSettings), 1)
+
+    def _checkUniformMeshQueries(self, newCs, expectedTriggers):
+        """
+        Run a settingsValidation and count number of queries triggered.
+
+        addedSettings: dict
+            Dictionary of settings to add to base caseSettings
+        expectedTriggers: int
+            Expected number of settings validation queries to be triggered.
+        """
+        inspector = settingsValidation.Inspector(newCs)
+        queriesTriggered = sum(
+            1 if query.condition() else 0
+            for query in getNeutronicsSettingValidators(inspector)
+        )
+        statements = [
+            query.statement
+            for query in getNeutronicsSettingValidators(inspector)
+            if query.condition()
+        ]
+        self.assertEqual(queriesTriggered, expectedTriggers, statements)
 
 
 if __name__ == "__main__":

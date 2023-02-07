@@ -555,44 +555,20 @@ def getNeutronicsSettingValidators(inspector):
     queries.append(
         settingsValidation.Query(
             lambda: inspector.cs[CONF_UNIFORM_MESH_GENERATOR] == "kMeansCluster"
-            and inspector.cs[CONF_AVERAGE_MESH_TOLERANCE]
-            and not inspector.cs[CONF_UNIFORM_MESH_TOLERANCE],
-            f"{CONF_AVERAGE_MESH_TOLERANCE} is ignored when using the kMeansCluster mesh generating algorithm."
-            f"Please use {CONF_UNIFORM_MESH_TOLERANCE} instead.",
-            f"Using default {CONF_UNIFORM_MESH_TOLERANCE} value of "
-            f"{inspector.cs[CONF_UNIFORM_MESH_TOLERANCE].default}",
-            inspector.NO_ACTION,
-        )
-    )
-    queries.append(
-        settingsValidation.Query(
-            lambda: inspector.cs[CONF_UNIFORM_MESH_GENERATOR] == "kMeansCluster"
-            and inspector.cs[CONF_AVERAGE_MESH_TOLERANCE]
-            and inspector.cs[CONF_UNIFORM_MESH_TOLERANCE],
+            and not inspector.cs[CONF_AVERAGE_MESH_TOLERANCE]
+            == inspector.cs.getSetting(CONF_AVERAGE_MESH_TOLERANCE).default,
             f"{CONF_AVERAGE_MESH_TOLERANCE} is ignored when using the kMeansCluster mesh generating algorithm.",
-            f"Using {CONF_UNIFORM_MESH_TOLERANCE}.",
+            f"Use {CONF_UNIFORM_MESH_TOLERANCE} instead.",
             inspector.NO_ACTION,
         )
     )
     queries.append(
         settingsValidation.Query(
             lambda: inspector.cs[CONF_UNIFORM_MESH_GENERATOR] == "average"
-            and inspector.cs[CONF_UNIFORM_MESH_TOLERANCE]
-            and not inspector.cs[CONF_AVERAGE_MESH_TOLERANCE],
-            f"{CONF_UNIFORM_MESH_TOLERANCE} is ignored when using the average uniform mesh generating algorithm."
-            f"Please use {CONF_AVERAGE_MESH_TOLERANCE} instead.",
-            f"Using default {CONF_AVERAGE_MESH_TOLERANCE} value of "
-            f"{inspector.cs[CONF_AVERAGE_MESH_TOLERANCE].default}",
-            inspector.NO_ACTION,
-        )
-    )
-    queries.append(
-        settingsValidation.Query(
-            lambda: inspector.cs[CONF_UNIFORM_MESH_GENERATOR] == "average"
-            and inspector.cs[CONF_UNIFORM_MESH_TOLERANCE]
-            and inspector.cs[CONF_AVERAGE_MESH_TOLERANCE],
-            f"{CONF_UNIFORM_MESH_TOLERANCE} is ignored when using the average mesh generating algorithm.",
-            f"Using {CONF_AVERAGE_MESH_TOLERANCE}.",
+            and not inspector.cs[CONF_UNIFORM_MESH_TOLERANCE]
+            == inspector.cs.getSetting(CONF_UNIFORM_MESH_TOLERANCE).default,
+            f"{CONF_UNIFORM_MESH_TOLERANCE} is ignored when using the average uniform mesh generating algorithm.",
+            f"Use {CONF_AVERAGE_MESH_TOLERANCE} instead.",
             inspector.NO_ACTION,
         )
     )
