@@ -80,6 +80,16 @@ class _Material_Test:
         val = self.mat._getCached("Emmy")
         self.assertEqual(val, "Noether")
 
+    def test_densityKgM3(self):
+        dens = self.mat.density(500)
+        densKgM3 = self.mat.densityKgM3(500)
+        self.assertEqual(dens * 1000.0, densKgM3)
+
+    def test_pseudoDensityKgM3(self):
+        dens = self.mat.pseudoDensity(500)
+        densKgM3 = self.mat.pseudoDensityKgM3(500)
+        self.assertEqual(dens * 1000.0, densKgM3)
+
 
 class MaterialConstructionTests(unittest.TestCase):
     def test_material_initialization(self):
@@ -140,6 +150,9 @@ class Californium_TestCase(_Material_Test, unittest.TestCase):
         self.mat.parent = None
         self.assertEqual(self.mat.liquidPorosity, 0.0)
         self.assertEqual(self.mat.gasPorosity, 0.0)
+
+    def test_getCorrosionRate(self):
+        self.assertEqual(self.mat.getCorrosionRate(500), 0.0)
 
 
 class Cesium_TestCase(_Material_Test, unittest.TestCase):
