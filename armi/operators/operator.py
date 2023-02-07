@@ -1076,6 +1076,8 @@ class Operator:  # pylint: disable=too-many-public-methods
                         newFolder, "{0}_{1:03d}_{2:d}{3}".format(base, cycle, node, ext)
                     ),
                 )
+            if "rzmflx" in fileName:
+                pathTools.copyOrWarn("rzmflx for snapshot", fileName, newFolder)
 
         isoFName = "ISOTXS-c{0}".format(cycle)
         pathTools.copyOrWarn(
