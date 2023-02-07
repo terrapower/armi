@@ -21,15 +21,14 @@ import unittest
 from numpy.testing import assert_allclose
 
 from armi import runLog
-from armi import settings
 from armi.reactor import blocks
 from armi.reactor import geometry
 from armi.reactor import grids
-from armi.tests import TEST_ROOT
 from armi.reactor.converters import geometryConverters
 from armi.reactor.converters import uniformMesh
-from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
 from armi.reactor.flags import Flags
+from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
+from armi.tests import TEST_ROOT
 from armi.utils import directoryChangers
 
 

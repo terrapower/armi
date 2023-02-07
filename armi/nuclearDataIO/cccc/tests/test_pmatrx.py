@@ -17,7 +17,6 @@ Tests the workings of the library wrappers.
 """
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import filecmp
-import os
 import unittest
 
 from armi import nuclearDataIO
