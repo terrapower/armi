@@ -109,7 +109,7 @@ class AxialExpansionTestBase(unittest.TestCase):
         tmp = array(
             [
                 c.getMass(),
-                c.material.getProperty("pseudoDensity", c.temperatureInK),
+                c.material.getProperty("density", c.temperatureInK),
             ]
         )
         if c.parent.name not in self.massAndDens:
