@@ -285,6 +285,14 @@ class MOX_TestCase(_Material_Test, unittest.TestCase):
             cur = self.mat.massFrac[name]
             self.assertEqual(cur, frac)
 
+        # bonus code coverage for clearMassFrac()
+        self.mat.clearMassFrac()
+        self.assertEqual(len(self.mat.massFrac), 0)
+
+        # bonus coverage for removeNucMassFrac
+        self.mat.removeNucMassFrac("PassWithoutWarning")
+        self.assertEqual(len(self.mat.massFrac), 0)
+
 
 class NaCl_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.NaCl
