@@ -135,7 +135,7 @@ class BlockBlueprint(yamlize.KeyedList):
                     # could call to Parent.applyInputParams()
                     if issubclass(materialParentClass, Material):
                         validMatModOptions |= signature(
-                            c.material.applyInputParams
+                            materialParentClass.applyInputParams
                         ).parameters.keys()
                 for key in byComponentMatModKeys:
                     if key not in validMatModOptions:
