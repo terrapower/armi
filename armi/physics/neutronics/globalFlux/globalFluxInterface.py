@@ -839,11 +839,15 @@ class DoseResultsMapper(GlobalFluxResultMapper):
             # increment point dpas
             # this is specific to hex geometry, but they are general neutronics block parameters
             # if it is a non-hex block, this should be a no-op
-            if b.p.pointsCornerDpa is not None and b.p.pointsCornerDpaRate is not None:
+            if b.p.pointsCornerDpaRate is not None:
+                if b.p.pointsCornerDpa is None:
+                    b.p.pointsCornerDpa = numpy.zeros((6,))
                 b.p.pointsCornerDpa = (
                     b.p.pointsCornerDpa + b.p.pointsCornerDpaRate * stepTimeInSeconds
                 )
-            if b.p.pointsEdgeDpa is not None and b.p.pointsEdgeDpaRate is not None:
+            if b.p.pointsEdgeDpaRate is not None:
+                if b.p.pointsEdgeDpa is None:
+                    b.p.pointsEdgeDpa = numpy.zeros((6,))
                 b.p.pointsEdgeDpa = (
                     b.p.pointsEdgeDpa + b.p.pointsEdgeDpaRate * stepTimeInSeconds
                 )
