@@ -19,6 +19,7 @@ Test the cross section manager
 """
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 
+import os
 from io import BytesIO
 import copy
 import unittest
@@ -43,6 +44,9 @@ from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
 from armi.tests import TEST_ROOT
 from armi.utils import units
+
+
+THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 class TestBlockCollection(unittest.TestCase):
@@ -359,10 +363,19 @@ class Test_CrossSectionGroupManager(unittest.TestCase):
         self.assertTrue(self.csm.representativeBlocks)
 
     def test_copyPregeneratedFiles(self):
-        _o, r = test_reactors.loadTestReactor(TEST_ROOT)
+        """
+        Tests copying pre-generated cross section and flux files
+        using reactor that is built from a case settings file.
+        """
+        _o, _r = test_reactors.loadTestReactor(TEST_ROOT)
+        currentDir = os.getcwd()
+        os.chdir(THIS_DIR)
         self.csm.createRepresentativeBlocks()
         self.csm._copyPregeneratedXSFile("XA")
         self.csm._copyPregeneratedFluxSolutionFile("YA")
+        os.chdir(currentDir)
+        self.assertTrue(os.path.exists(os.path.join(os.getcwd(), "ISOXA")))
+        self.assertTrue(os.path.exists(os.path.join(os.getcwd(), "rzmflxYA")))
 
 
 class TestXSNumberConverters(unittest.TestCase):
