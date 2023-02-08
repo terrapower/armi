@@ -212,8 +212,9 @@ def getAssemblyParameterDefinitions():
             "crInsertedElevation",
             units="cm",
             description=(
-                "The elevation of the bottom of the bottom-most moveable block in a control rod assembly when fully inserted. Note that this should "
-                "be considered a lower elevation than the ``crWithdrawnElevation`` by definition and modeling semantics."
+                "The elevation of the furthest-most insertion point of a control rod assembly. For a control rod assembly "
+                "inserted from the top, this will be the lower tip of the bottom-most moveable section in the assembly when "
+                "fully inserted."
             ),
             categories=[parameters.Category.assignInBlueprints],
             saveToDB=True,
@@ -230,8 +231,9 @@ def getAssemblyParameterDefinitions():
             "crWithdrawnElevation",
             units="cm",
             description=(
-                "The elevation of the bottom of the bottom-most moveable section of a control rod assembly when fully withdrawn. Note that this should "
-                "be considered a higher elevation than the ``crInsertedElevation`` by definition and modeling semantics."
+                "The elevation of the tip of a control rod assembly when it is fully withdrawn. For a control rod assembly "
+                "inserted from the top, this will be the lower tip of the bottom-most moveable section in the assembly when "
+                "fully withdrawn."
             ),
             categories=[parameters.Category.assignInBlueprints],
             saveToDB=True,
