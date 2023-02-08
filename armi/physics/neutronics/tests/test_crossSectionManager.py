@@ -27,7 +27,6 @@ import unittest
 from six.moves import cPickle
 
 from armi import settings
-from armi import cases
 from armi.physics.neutronics import crossSectionGroupManager
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.physics.neutronics.crossSectionGroupManager import (
