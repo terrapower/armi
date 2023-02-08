@@ -272,16 +272,16 @@ class XSModelingOptions:
         attribute is not provided. This cannot be set if the ``xsFileLocation``
         is provided.
 
-    xsFileLocation: list of str
+    xsFileLocation: list of str or None
         This should be a list of paths where the cross sections for this
         xsID can be copied from. This is required if the ``geometry``
         attribute is not provided. This cannot be set if the ``geometry``
         is provided.
 
-    fluxFileLocation: str
+    fluxFileLocation: str or None
         This should be a path where a pre-calculated flux solution
-        for this xsID can be copied from. This may be provided regardless if
-        the ``geometry`` attribute is provided.
+        for this xsID can be copied from. The ``geometry`` attribute
+        must be provided with this input.
 
     validBlockTypes: str or None
         This is a configuration option for how the cross section group manager

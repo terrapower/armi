@@ -21,7 +21,10 @@ settings:
       numExternalRings: 1
     XA:
       xsFileLocation:
-        - ISOXA
+        - .\ISOXA
+    YA:
+      geometry: 0D
+      fluxFileLocation: .\rzmflxYA
   cycleLength: 2000.0
   db: false
   detailAssemLocationsBOL:
