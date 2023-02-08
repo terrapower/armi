@@ -1064,7 +1064,9 @@ class Operator:  # pylint: disable=too-many-public-methods
         else:
             os.mkdir(newFolder)
 
-        # copy the cross section inputs
+        # Moving the cross section files is to a snapshot directory is a reasonable
+        # requirement, but these hard-coded names are not desirable. This is legacy
+        # and should be updated to be more robust for users.
         for fileName in os.listdir("."):
             if "mcc" in fileName and re.search(r"[A-Z]AF?\d?.inp", fileName):
                 base, ext = os.path.splitext(fileName)
