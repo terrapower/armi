@@ -105,6 +105,16 @@ compute flux with thousands of energy groups to properly capture the spectral-sp
 coupling in a core/reflector interface. The converters are used heavily in these
 operations.
 
+Another example is the :py:mod:`armi.reactor.converters.uniformMesh.UniformMeshConverter`
+class. This converter type can take a reactor core with a "non-uniform" axial mesh
+(i.e., one where the different assemblies do not have the same axial mesh) and produce
+an approximate uniform mesh version of that core by defining a common uniform axial
+mesh and homogenizing the assemblies onto that mesh. This can be useful for phyiscs kernels
+that require a uniform mesh model (e.g., many neutronics solvers). There are two methods for
+generating the uniform axial mesh: one performs a simple averaging of assembly mesh points,
+and the other uses a k-means clustering algorithm to reduce the many different assembly
+mesh points down to a common, reasonably-sized axial mesh.
+
 Blueprints
 ----------
 
