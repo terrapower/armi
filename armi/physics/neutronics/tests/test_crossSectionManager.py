@@ -27,6 +27,7 @@ import unittest
 from six.moves import cPickle
 
 from armi import settings
+from armi import cases
 from armi.physics.neutronics import crossSectionGroupManager
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.physics.neutronics.crossSectionGroupManager import (
@@ -44,6 +45,7 @@ from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
 from armi.tests import TEST_ROOT
 from armi.utils import units
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -367,15 +369,21 @@ class Test_CrossSectionGroupManager(unittest.TestCase):
         Tests copying pre-generated cross section and flux files
         using reactor that is built from a case settings file.
         """
-        _o, _r = test_reactors.loadTestReactor(TEST_ROOT)
-        currentDir = os.getcwd()
-        os.chdir(THIS_DIR)
-        self.csm.createRepresentativeBlocks()
-        self.csm._copyPregeneratedXSFile("XA")
-        self.csm._copyPregeneratedFluxSolutionFile("YA")
-        self.assertTrue(os.path.exists(os.path.join(os.getcwd(), "ISOXA")))
-        self.assertTrue(os.path.exists(os.path.join(os.getcwd(), "rzmflxYA")))
-        os.chdir(currentDir)
+        o, r = test_reactors.loadTestReactor(TEST_ROOT)
+        # Need to overwrite the relative paths with absolute
+        o.cs[CONF_CROSS_SECTION]["XA"].xsFileLocation = [
+            os.path.join(THIS_DIR, "ISOXA")
+        ]
+        o.cs[CONF_CROSS_SECTION]["YA"].fluxFileLocation = os.path.join(
+            THIS_DIR, "rzmflxYA"
+        )
+        csm = CrossSectionGroupManager(r, o.cs)
+
+        with TemporaryDirectoryChanger(root=THIS_DIR):
+            csm._copyPregeneratedXSFile("XA")
+            csm._copyPregeneratedFluxSolutionFile("YA")
+            self.assertTrue(os.path.exists("ISOXA"))
+            self.assertTrue(os.path.exists("rzmflxYA"))
 
 
 class TestXSNumberConverters(unittest.TestCase):
