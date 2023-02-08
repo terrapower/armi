@@ -515,7 +515,9 @@ class ArmiObject(metaclass=CompositeModelType):
         for paramName, val in new.p.items():
             self.p[paramName] = val
 
-    def getChildren(self, deep=False, generationNum=1, includeMaterials=False):
+    def getChildren(
+        self, deep=False, generationNum=1, includeMaterials=False, predicate=None
+    ):
         """Return the children of this object."""
         raise NotImplementedError
 
@@ -3091,6 +3093,9 @@ class Composite(ArmiObject):
         integratedFlux : numpy.array
             multigroup neutron tracklength in [n-cm/s]
         """
+        print(
+            "TODO: JOHN: COMPOSITE getIntegratedMgFlux   yYyYyYyYyYyYyYyYyYyYyYyYyYyYyYyYyYyY"
+        )
         integratedMgFlux = numpy.zeros(1)
 
         for c in self:
@@ -3348,7 +3353,7 @@ def getReactionRateDict(nucName, lib, xsSuffix, mgFlux, nDens):
 
     Returns
     -------
-    rxnRates - dict
+    dict
         dictionary of reaction rates (rxn/s) for nG, nF, n2n, nA and nP
 
     Notes

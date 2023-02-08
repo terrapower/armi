@@ -402,6 +402,21 @@ class TestDatabaseReading(unittest.TestCase):
 
         self.assertIsInstance(b1.p.mgFlux, numpy.ndarray)
         self.assertIsInstance(b2.p.mgFlux, numpy.ndarray)
+
+        print(
+            f"TODO JOHN!  aaaaaaaaaaaaaaaaaaaa\n{b1}\n{b2}\nxxxxxxxxxxxxxxxxxxxxxxxxx"
+        )
+        for k in b1.p.keys():
+            print(f"{k} .....................")
+            print(b1.p[k])
+            print(b2.p[k])
+        print("zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz")
+
+        # TODO: JOHN: NOTE! All three of these are slightly not-equal...
+        assert_allclose(b1.p.mgFlux, b2.p.mgFlux)
+        assert_allclose(b1.p.nHMAtBOL, b2.p.nHMAtBOL)
+        assert_allclose(b1.p.flux, b2.p.flux)
+
         assert_allclose(b1, b2)
 
         c1 = b1.getComponent(Flags.FUEL)

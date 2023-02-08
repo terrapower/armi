@@ -17,12 +17,13 @@
 import os
 import unittest
 
-from armi.reactor import blueprints
 from armi import settings
+from armi.reactor import blueprints
 from armi.reactor import reactors
-from armi.reactor.blueprints import reactorBlueprint
 from armi.reactor.blueprints import gridBlueprint
+from armi.reactor.blueprints import reactorBlueprint
 from armi.reactor.blueprints.tests import test_customIsotopics
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 CORE_BLUEPRINT = """
 core:
@@ -102,21 +103,23 @@ class TestReactorBlueprints(unittest.TestCase):
 
     def test_construct(self):
         """Actually construct some reactor systems."""
-        core, sfp = self._setupReactor()
-        self.assertEqual(len(core), 2)
-        self.assertEqual(len(sfp), 4)
+        with TemporaryDirectoryChanger():
+            core, sfp = self._setupReactor()
+            self.assertEqual(len(core), 2)
+            self.assertEqual(len(sfp), 4)
 
     def test_materialDataSummary(self):
         """Test that the material data summary for the core is valid as a printout to the stdout."""
-        expectedMaterialData = [
-            ("Custom Material", "ARMI", False),
-            ("HT9", "ARMI", False),
-            ("UZr", "ARMI", False),
-        ]
-        core, _sfp = self._setupReactor()
-        materialData = reactorBlueprint.summarizeMaterialData(core)
-        for actual, expected in zip(materialData, expectedMaterialData):
-            self.assertEqual(actual, expected)
+        with TemporaryDirectoryChanger():
+            expectedMaterialData = [
+                ("Custom Material", "ARMI", False),
+                ("HT9", "ARMI", False),
+                ("UZr", "ARMI", False),
+            ]
+            core, _sfp = self._setupReactor()
+            materialData = reactorBlueprint.summarizeMaterialData(core)
+            for actual, expected in zip(materialData, expectedMaterialData):
+                self.assertEqual(actual, expected)
 
 
 if __name__ == "__main__":

@@ -22,18 +22,19 @@ import re
 
 import numpy
 
-from armi.materials import material
-from armi.materials import custom
+from armi import materials
 from armi import runLog
 from armi.bookkeeping import report
+from armi.materials import custom
+from armi.materials import material
+from armi.materials import void
+from armi.nucDirectory import nuclideBases
 from armi.reactor import composites
 from armi.reactor import parameters
 from armi.reactor.components import componentParameters
+from armi.reactor.flags import Flags
 from armi.utils import densityTools
 from armi.utils.units import C_TO_K
-from armi.materials import void
-from armi.nucDirectory import nuclideBases
-from armi import materials
 
 COMPONENT_LINK_REGEX = re.compile(r"^\s*(.+?)\s*\.\s*(.+?)\s*$")
 
@@ -162,7 +163,7 @@ class ComponentType(composites.CompositeModelType):
         return newType
 
 
-class Component(composites.Composite, metaclass=ComponentType):
+class Component(composites.ArmiObject, metaclass=ComponentType):
     """
     A primitive object in a reactor that has definite area/volume, material and composition.
 
@@ -224,7 +225,7 @@ class Component(composites.Composite, metaclass=ComponentType):
                 "Non-unique component name {} repeated in same block.".format(name)
             )
 
-        composites.Composite.__init__(self, str(name))
+        composites.ArmiObject.__init__(self, str(name))
         componentTypeIsValid(self, str(name))
         self.p.area = area
         self.inputTemperatureInC = Tinput
@@ -270,7 +271,25 @@ class Component(composites.Composite, metaclass=ComponentType):
             )
 
     def __setstate__(self, state):
-        composites.Composite.__setstate__(self, state)
+        """
+        Sets the state of this Component.
+
+        Notes
+        -----
+        This Component may have lost a reference to its parent. If the parent was also
+        pickled (serialized), then the parent should update the ``.parent`` attribute
+        during its own ``__setstate__``. That means within the context of
+        ``__setstate__`` one should not rely upon ``self.parent``.
+        """
+        self.__dict__.update(state)
+
+        if self.spatialGrid is not None:
+            self.spatialGrid.armiObject = self
+            # Spatial locators also get disassociated with their grids when detached;
+            # make sure they get hooked back up
+            for c in self:
+                c.spatialLocator.associate(self.spatialGrid)
+
         self.material.parent = self
 
     def _linkAndStoreDimensions(self, components, **dims):
@@ -309,6 +328,41 @@ class Component(composites.Composite, metaclass=ComponentType):
                                 dimName, value
                             )
                         )
+
+    def backUp(self):
+        """
+        Create and store a backup of the state.
+
+        This needed to be overridden due to linked components which actually have a
+        parameter value of another ARMI component.
+        """
+        linkedDims = self._getLinkedDimsAndValues()
+
+        self._backupCache = (self.cached, self._backupCache)
+        self.cached = {}  # don't .clear(), using reference above!
+        self.p.backUp()
+        if self.spatialGrid:
+            self.spatialGrid.backUp()
+
+        self._restoreLinkedDims(linkedDims)
+
+    def restoreBackup(self, paramsToApply):
+        """
+        Restore the parameters from previously created backup.
+
+        Parameters
+        ----------
+        paramsToApply : list of ParmeterDefinitions
+            restores the state of all parameters not in `paramsToApply`
+        """
+        linkedDims = self._getLinkedDimsAndValues()
+
+        self.p.restoreBackup(paramsToApply)
+        self.cached, self._backupCache = self._backupCache
+        if self.spatialGrid:
+            self.spatialGrid.restoreBackup()
+
+        self._restoreLinkedDims(linkedDims)
 
     def setLink(self, key, otherComp, otherCompKey):
         """Set the dimension link."""
@@ -419,6 +473,24 @@ class Component(composites.Composite, metaclass=ComponentType):
             # This material doesn't setLumpedFissionProducts because it's a regular
             # material, not a lumpedFissionProductCompatable material
             pass
+
+    def getChildren(
+        self, deep=False, generationNum=1, includeMaterials=False, predicate=None
+    ):
+        """TODO: JOHN! 'Components are leafs...'"""
+        return []
+
+    def __len__(self):
+        """TODO: JOHN! 'Components are leafs...'"""
+        return 0
+
+    def __iter__(self):
+        """TODO: JOHN! 'Components are leafs...'"""
+        return iter([])
+
+    def __contains__(self, item):
+        """TODO: JOHN! 'Components are leafs...'"""
+        return item == self
 
     def getArea(self, cold=False):
         """
@@ -635,7 +707,7 @@ class Component(composites.Composite, metaclass=ComponentType):
 
     def setName(self, name):
         """Components use name for type and name."""
-        composites.Composite.setName(self, name)
+        composites.ArmiObject.setName(self, name)
         self.setType(name)
 
     def setNumberDensity(self, nucName, val):
@@ -1022,28 +1094,6 @@ class Component(composites.Composite, metaclass=ComponentType):
         if self.hasFlags(typeSpec, exact):
             yield self
 
-    def backUp(self):
-        """
-        Create and store a backup of the state.
-
-        This needed to be overridden due to linked components which actually have a parameter value of another
-        ARMI component.
-        """
-        linkedDims = self._getLinkedDimsAndValues()
-        composites.Composite.backUp(self)
-        self._restoreLinkedDims(linkedDims)
-
-    def restoreBackup(self, paramsToApply):
-        r"""
-        Restore the parameters from perviously created backup.
-
-        This needed to be overridden due to linked components which actually have a parameter value of another
-        ARMI component.
-        """
-        linkedDims = self._getLinkedDimsAndValues()
-        composites.Composite.restoreBackup(self, paramsToApply)
-        self._restoreLinkedDims(linkedDims)
-
     def _getLinkedDimsAndValues(self):
         linkedDims = []
 
@@ -1120,6 +1170,80 @@ class Component(composites.Composite, metaclass=ComponentType):
             )
         self.setMassFracs(adjustedMassFracs)
 
+    def _getReactionRates(self, nucName, nDensity=None):
+        """
+        Parameters
+        ----------
+        nucName : str
+            nuclide name -- e.g. 'U235'
+        nDensity : float
+            number density
+
+        Returns
+        -------
+        rxnRates : dict
+            dictionary of reaction rates (rxn/s) for nG, nF, n2n, nA and nP
+
+        Notes
+        ----
+        If you set nDensity to 1/CM2_PER_BARN this makes 1 group cross section generation easier
+        """
+        from armi.reactor.blocks import Block
+
+        if nDensity is None:
+            nDensity = self.getNumberDensity(nucName)
+        try:
+            return composites.getReactionRateDict(
+                nucName,
+                self.getAncestorWithFlags(Flags.CORE).lib,
+                # TODO: JOHN! inspect this logic some more   V
+                self.getAncestor(lambda x: isinstance(x, Block)).getMicroSuffix(),
+                self.getIntegratedMgFlux(),
+                nDensity,
+            )
+        except AttributeError:
+            runLog.warning(
+                f"Object {self} does not belong to a core and so has no reaction rates.",
+                single=True,
+            )
+            return {"nG": 0, "nF": 0, "n2n": 0, "nA": 0, "nP": 0}
+        except KeyError:
+            runLog.warning(
+                f"Attempting to get a reaction rate on an isotope not in the lib {nucName}.",
+                single=True,
+            )
+            return {"nG": 0, "nF": 0, "n2n": 0, "nA": 0, "nP": 0}
+
+    def getReactionRates(self, nucName, nDensity=None):
+        """
+        Get the reaction rates of a certain nuclide on this component.
+
+        Parameters
+        ----------
+        nucName : str
+            nuclide name -- e.g. 'U235'
+        nDensity : float
+            number Density
+
+        Returns
+        -------
+        rxnRates : dict
+            reaction rates (1/s) for nG, nF, n2n, nA and nP
+
+        Notes
+        -----
+        This is volume integrated NOT (1/cm3-s)
+
+        If you set nDensity to 1 this makes 1-group cross section generation easier
+        """
+        rxnRates = {"nG": 0, "nF": 0, "n2n": 0, "nA": 0, "nP": 0, "n3n": 0}
+
+        # components have no children, we we only need to examine self
+        for rxName, val in self._getReactionRates(nucName, nDensity=nDensity).items():
+            rxnRates[rxName] += val
+
+        return rxnRates
+
     def getIntegratedMgFlux(self, adjoint=False, gamma=False):
         """
         Return the multigroup neutron tracklength in [n-cm/s]
@@ -1139,6 +1263,9 @@ class Component(composites.Composite, metaclass=ComponentType):
         -------
         integratedFlux : multigroup neutron tracklength in [n-cm/s]
         """
+        print(
+            "TODO: JOHN: COMPONENT getIntegratedMgFlux   xXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxX"
+        )
         if self.p.pinNum is None:
             # no pin-level flux is available
             if not self.parent:
@@ -1157,11 +1284,12 @@ class Component(composites.Composite, metaclass=ComponentType):
                 pinFluxes = self.parent.p.pinMgFluxesAdj
             else:
                 pinFluxes = self.parent.p.pinMgFluxes
+
         return pinFluxes[self.p.pinNum - 1] * self.getVolume()
 
     def density(self):
         """Returns the mass density of the object in g/cc."""
-        density = composites.Composite.density(self)
+        density = composites.ArmiObject.density(self)
 
         if not density:
             # possible that there are no nuclides in this component yet. In that case, defer to Material.
