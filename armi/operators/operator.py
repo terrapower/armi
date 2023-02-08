@@ -479,10 +479,21 @@ class Operator:  # pylint: disable=too-many-public-methods
 
     @staticmethod
     def _expandCycleAndTimeNodeArgs(*args):
-        """Return text annotating the (cycle, time node) args for each that are present."""
+        """Return text annotating information for current run event.
+
+        Notes
+        -----
+        - Init: empty
+        - Everynode: (cycle, time node)
+        - Coupling: iteration number
+        """
         cycleNodeInfo = ""
-        for label, step in zip((" - cycle {}", ", node {}"), args):
-            cycleNodeInfo += label.format(step)
+        if args:
+            if len(args) == 1:
+                # useful for tight coupling
+                cycleNodeInfo = f" - iteration {args[0]}"
+            else:
+                cycleNodeInfo = f" - cycle {args[0]}, node {args[1]}"
         return cycleNodeInfo
 
     def _debugDB(self, interactionName, interfaceName, statePointIndex=0):
