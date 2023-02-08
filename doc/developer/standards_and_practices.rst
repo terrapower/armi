@@ -181,8 +181,8 @@ than 100 lines, see if you can't break it up. This does a few things:
 Avoid repeating code
 ====================
 In other words, don't repeat yourself. (`D. R. Y. <https://en.wikipedia.org/wiki/Don't_repeat_yourself>`_).
-Repetitious code is harder to read, and harderd for others to update. If you ever find yourself copying and pasting
-code, consider pulling the repeated code out into it's own function, or using a loop.
+Repetitious code is harder to read, and harder for others to update. If you ever find yourself copying and pasting
+code, consider pulling the repeated code out into its own function, or using a loop.
 
 Public methods should have docstrings
 =====================================
