@@ -373,9 +373,9 @@ class Test_CrossSectionGroupManager(unittest.TestCase):
         self.csm.createRepresentativeBlocks()
         self.csm._copyPregeneratedXSFile("XA")
         self.csm._copyPregeneratedFluxSolutionFile("YA")
-        os.chdir(currentDir)
         self.assertTrue(os.path.exists(os.path.join(os.getcwd(), "ISOXA")))
         self.assertTrue(os.path.exists(os.path.join(os.getcwd(), "rzmflxYA")))
+        os.chdir(currentDir)
 
 
 class TestXSNumberConverters(unittest.TestCase):
