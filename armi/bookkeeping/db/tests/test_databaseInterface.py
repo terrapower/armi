@@ -395,7 +395,7 @@ class TestDatabaseReading(unittest.TestCase):
 
     def test_variousTypesWork(self):
         with Database3(self.dbName, "r") as db:
-            r2 = db.load(1, 1)
+            r2 = db.load(1, 2)
 
         b1 = self.r.core.getFirstBlock(Flags.FUEL)
         b2 = r2.core.getFirstBlock(Flags.FUEL)
@@ -403,19 +403,22 @@ class TestDatabaseReading(unittest.TestCase):
         self.assertIsInstance(b1.p.mgFlux, numpy.ndarray)
         self.assertIsInstance(b2.p.mgFlux, numpy.ndarray)
 
-        print(
-            f"TODO JOHN!  aaaaaaaaaaaaaaaaaaaa\n{b1}\n{b2}\nxxxxxxxxxxxxxxxxxxxxxxxxx"
-        )
-        for k in b1.p.keys():
-            print(f"{k} .....................")
-            print(b1.p[k])
-            print(b2.p[k])
-        print("zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz")
-
         # TODO: JOHN: NOTE! All three of these are slightly not-equal...
-        assert_allclose(b1.p.mgFlux, b2.p.mgFlux)
         assert_allclose(b1.p.nHMAtBOL, b2.p.nHMAtBOL)
+        """
+        0.01649591495688153 - in memory
+        0 - from DB
+        """
         assert_allclose(b1.p.flux, b2.p.flux)
+        """
+        1000102.0 - in memory
+        1000101.0 - from DB
+        """
+        assert_allclose(b1.p.mgFlux, b2.p.mgFlux)
+        """
+        30306.12121212 - in memory
+        30306.09090909 - from DB
+        """
 
         assert_allclose(b1, b2)
 

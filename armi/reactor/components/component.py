@@ -477,19 +477,19 @@ class Component(composites.ArmiObject, metaclass=ComponentType):
     def getChildren(
         self, deep=False, generationNum=1, includeMaterials=False, predicate=None
     ):
-        """TODO: JOHN! 'Components are leafs...'"""
+        """Components are leafs"""
         return []
 
     def __len__(self):
-        """TODO: JOHN! 'Components are leafs...'"""
+        """Components are leafs"""
         return 0
 
     def __iter__(self):
-        """TODO: JOHN! 'Components are leafs...'"""
+        """Components are leafs"""
         return iter([])
 
     def __contains__(self, item):
-        """TODO: JOHN! 'Components are leafs...'"""
+        """Components are leafs"""
         return item == self
 
     def getArea(self, cold=False):
@@ -1263,9 +1263,6 @@ class Component(composites.ArmiObject, metaclass=ComponentType):
         -------
         integratedFlux : multigroup neutron tracklength in [n-cm/s]
         """
-        print(
-            "TODO: JOHN: COMPONENT getIntegratedMgFlux   xXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxX"
-        )
         if self.p.pinNum is None:
             # no pin-level flux is available
             if not self.parent:

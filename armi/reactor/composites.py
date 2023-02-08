@@ -3093,9 +3093,6 @@ class Composite(ArmiObject):
         integratedFlux : numpy.array
             multigroup neutron tracklength in [n-cm/s]
         """
-        print(
-            "TODO: JOHN: COMPOSITE getIntegratedMgFlux   yYyYyYyYyYyYyYyYyYyYyYyYyYyYyYyYyYyY"
-        )
         integratedMgFlux = numpy.zeros(1)
 
         for c in self:
