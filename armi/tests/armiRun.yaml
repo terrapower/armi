@@ -22,6 +22,9 @@ settings:
     XA:
       xsFileLocation:
         - ISOXA
+    YA:
+      geometry: 0D
+      fluxFileLocation: rzmflxYA
   cycleLength: 2000.0
   db: false
   detailAssemLocationsBOL:

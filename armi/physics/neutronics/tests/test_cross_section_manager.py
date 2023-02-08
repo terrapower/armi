@@ -358,6 +358,12 @@ class Test_CrossSectionGroupManager(unittest.TestCase):
         self.csm.interactCoupled(iteration=0)
         self.assertTrue(self.csm.representativeBlocks)
 
+    def test_copyPregeneratedFiles(self):
+        _o, r = test_reactors.loadTestReactor(TEST_ROOT)
+        self.csm.createRepresentativeBlocks()
+        self.csm._copyPregeneratedXSFile("XA")
+        self.csm._copyPregeneratedFluxSolutionFile("YA")
+
 
 class TestXSNumberConverters(unittest.TestCase):
     def test_conversion(self):
