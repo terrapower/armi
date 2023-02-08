@@ -42,6 +42,17 @@ class MpiIterTests(unittest.TestCase):
         context.MPI_SIZE = self._mpiSize
         context.MPI_RANK = 0
 
+    def test_parallel(self):
+        self.action.serial = False
+        self.assertTrue(self.action.parallel)
+
+        self.action.serial = True
+        self.assertFalse(self.action.parallel)
+
+    def test_serialGather(self):
+        self.action.serial = True
+        self.assertEqual(len(self.action.gather()), 1)
+
     def test_mpiIter(self):
         allObjs = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
         distObjs = [[0, 1, 2], [3, 4, 5], [6, 7], [8, 9], [10, 11]]

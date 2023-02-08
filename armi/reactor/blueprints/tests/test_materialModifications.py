@@ -239,6 +239,54 @@ assemblies:
         """
             )
 
+    def test_matModsUpTheMRO(self):
+        """
+        Make sure that valid/invalid material modifications are searched up
+        the MRO for a material class.
+        """
+        a = self.loadUZrAssembly(
+            """
+        material modifications:
+            ZR_wt_frac: [1]
+            class1_wt_frac: [1]
+            class1_custom_isotopics: [dummy]
+            class2_custom_isotopics: [dummy]
+            by component:
+                fuel2:
+                    ZR_wt_frac: [0]
+                    class1_wt_frac: [1]
+                    class1_custom_isotopics: [dummy]
+                    class2_custom_isotopics: [dummy]
+custom isotopics:
+    dummy:
+        input format: mass fractions
+        density: 1
+        U: 1
+"""
+        )
+
+        with self.assertRaises(ValueError):
+            a = self.loadUZrAssembly(
+                """
+        material modifications:
+            ZR_wt_frac: [1]
+            klass1_wt_frac: [1]
+            klass1_custom_isotopics: [dummy]
+            klass2_custom_isotopics: [dummy]
+            by component:
+                fuel2:
+                    ZR_wt_frac: [0]
+                    klass1_wt_frac: [1]
+                    klass1_custom_isotopics: [dummy]
+                    klass2_custom_isotopics: [dummy]
+custom isotopics:
+    dummy:
+        input format: mass fractions
+        density: 1
+        U: 1
+"""
+            )
+
 
 if __name__ == "__main__":
     unittest.main()
