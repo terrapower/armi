@@ -19,7 +19,7 @@ settings:
       numInternalRings: 1
       numExternalRings: 1
     XA:
-      fileLocation:
+      xsFileLocation:
         - ISOXA
   cycleLength: 2000.0
   db: false

@@ -65,3 +65,5 @@ include armi/tests/tutorials/anl-afci-177.yaml
 include armi/tests/tutorials/data_model.ipynb
 include armi/tests/zpprTest.yaml
 include armi/tests/zpprTestGeom.xml
+include armi/physics/neutronics/tests/ISOXA
+include armi/physics/neutronics/tests/rzmflxYA

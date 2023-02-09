@@ -375,10 +375,13 @@ class Core(composites.Composite):
         )
 
     def setBlockMassParams(self):
-        """Set the parameters kgHM and kgFis for each block"""
+        """Set the parameters kgHM and kgFis for each block and calculate Pu fraction"""
         for b in self.getBlocks():
             b.p.kgHM = b.getHMMass() / units.G_PER_KG
             b.p.kgFis = b.getFissileMass() / units.G_PER_KG
+            b.p.puFrac = (
+                b.getPuMoles() / b.p.molesHmBOL if b.p.molesHmBOL > 0.0 else 0.0
+            )
 
     def getScalarEvolution(self, key):
         return self.scalarVals[key]

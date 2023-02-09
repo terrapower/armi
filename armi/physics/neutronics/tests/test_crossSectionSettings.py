@@ -41,21 +41,41 @@ class TestCrossSectionSettings(unittest.TestCase):
         )
         self.assertEqual("AA", xsModel.xsID)
         self.assertEqual("0D", xsModel.geometry)
-        self.assertEqual(True, xsModel.criticalBuckling)
         self.assertEqual("Median", xsModel.blockRepresentation)
+        self.assertFalse(xsModel.fluxIsPregenerated)
+        self.assertFalse(xsModel.xsIsPregenerated)
+        self.assertTrue(xsModel.criticalBuckling)
 
     def test_pregeneratedCrossSections(self):
         cs = settings.Settings()
         xs = XSSettings()
-        xa = XSModelingOptions("XA", fileLocation=["ISOXA"])
+        xa = XSModelingOptions("XA", xsFileLocation=["ISOXA"])
         xs["XA"] = xa
-        self.assertEqual(["ISOXA"], xa.fileLocation)
+        self.assertEqual(["ISOXA"], xa.xsFileLocation)
         self.assertNotIn("XB", xs)
         xs.setDefaults(
             cs["xsBlockRepresentation"], cs["disableBlockTypeExclusionInXsGeneration"]
         )
         # Check that the file location of 'XB' still points to the same file location as 'XA'.
         self.assertEqual(xa, xs["XB"])
+        self.assertFalse(xa.fluxIsPregenerated)
+        self.assertTrue(xa.xsIsPregenerated)
+        self.assertFalse(xa.criticalBuckling)
+
+    def test_pregeneratedFluxInputs(self):
+        xsModel = XSModelingOptions(
+            xsID="AA",
+            fluxFileLocation="ISOAA",
+            geometry="0D",
+            criticalBuckling=True,
+            blockRepresentation="Median",
+        )
+        self.assertEqual("AA", xsModel.xsID)
+        self.assertEqual("0D", xsModel.geometry)
+        self.assertEqual("ISOAA", xsModel.fluxFileLocation)
+        self.assertTrue(xsModel.fluxIsPregenerated)
+        self.assertTrue(xsModel.criticalBuckling)
+        self.assertEqual("Median", xsModel.blockRepresentation)
 
     def test_homogeneousXsDefaultSettingAssignment(self):
         """
@@ -268,12 +288,12 @@ class Test_XSSettings(unittest.TestCase):
     def test_csBlockRepresentationFileLocation(self):
         """
         Test that default blockRepresentation is applied correctly to a
-        XSModelingOption that has the ``fileLocation`` attribute defined.
+        XSModelingOption that has the ``xsFileLocation`` attribute defined.
         """
         cs = caseSettings.Settings()
         cs["xsBlockRepresentation"] = "FluxWeightedAverage"
         cs[CONF_CROSS_SECTION] = XSSettings()
-        cs[CONF_CROSS_SECTION]["AA"] = XSModelingOptions("AA", fileLocation=[])
+        cs[CONF_CROSS_SECTION]["AA"] = XSModelingOptions("AA", xsFileLocation=[])
 
         # Check FluxWeightedAverage
         cs[CONF_CROSS_SECTION].setDefaults(
@@ -285,7 +305,7 @@ class Test_XSSettings(unittest.TestCase):
 
         # Check Average
         cs["xsBlockRepresentation"] = "Average"
-        cs[CONF_CROSS_SECTION]["AA"] = XSModelingOptions("AA", fileLocation=[])
+        cs[CONF_CROSS_SECTION]["AA"] = XSModelingOptions("AA", xsFileLocation=[])
         cs[CONF_CROSS_SECTION].setDefaults(
             cs["xsBlockRepresentation"], cs["disableBlockTypeExclusionInXsGeneration"]
         )
@@ -294,7 +314,7 @@ class Test_XSSettings(unittest.TestCase):
         # Check Median
         cs["xsBlockRepresentation"] = "Average"
         cs[CONF_CROSS_SECTION]["AA"] = XSModelingOptions(
-            "AA", fileLocation=[], blockRepresentation="Median"
+            "AA", xsFileLocation=[], blockRepresentation="Median"
         )
         cs[CONF_CROSS_SECTION].setDefaults(
             cs["xsBlockRepresentation"], cs["disableBlockTypeExclusionInXsGeneration"]
