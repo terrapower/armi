@@ -27,7 +27,6 @@ import os
 
 from armi import runLog
 from armi.settings import caseSettings
-from armi.physics.neutronics.settings import CONF_LOADING_FILE
 
 
 class Migration:
@@ -102,6 +101,8 @@ class BlueprintsMigration(Migration):
     """Migration for blueprints input."""
 
     def _loadStreamFromPath(self):
+        # pylint: disable=import-outside-toplevel # avoid cyclic import
+        from armi.physics.neutronics.settings import CONF_LOADING_FILE
         Migration._loadStreamFromPath(self)
         cs = caseSettings.Settings(fName=self.path)
         self.path = cs[CONF_LOADING_FILE]

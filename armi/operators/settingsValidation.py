@@ -38,13 +38,6 @@ from armi.settings.settingsIO import (
     RunLogPromptCancel,
     RunLogPromptUnresolvable,
 )
-from armi.physics.neutronics.settings import (
-    CONF_BC_COEFFICIENT,
-    CONF_BOUNDARIES,
-    CONF_LOADING_FILE,
-    CONF_XS_KERNEL,
-    CONF_XS_SCATTERING_ORDER,
-)
 
 
 class Query:
@@ -275,6 +268,8 @@ class Inspector:
 
     def _inspectBlueprints(self):
         """Blueprints early error detection and old format conversions."""
+        # pylint: disable=import-outside-toplevel; avoid circular import
+        from armi.physics.neutronics.settings import CONF_LOADING_FILE
         # if there is a blueprints object, we don't need to check for a file
         if self.cs.filelessBP:
             return
@@ -357,7 +352,14 @@ class Inspector:
     def _inspectSettings(self):
         """Check settings for inconsistencies."""
         # import here to avoid cyclic issues
+        # pylint: disable=import-outside-toplevel;
         from armi import operators
+        from armi.physics.neutronics.settings import (
+            CONF_BC_COEFFICIENT,
+            CONF_BOUNDARIES,
+            CONF_XS_KERNEL,
+            CONF_XS_SCATTERING_ORDER,
+        )
 
         self.addQueryBadLocationWillLikelyFail("operatorLocation")
 

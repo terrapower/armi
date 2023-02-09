@@ -41,7 +41,6 @@ from armi.bookkeeping.report import reportingUtils
 from armi.operators import settingsValidation
 from armi.operators.runTypes import RunTypes
 from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
-from armi.physics.neutronics.settings import CONF_LOADING_FILE
 from armi.utils import codeTiming
 from armi.utils import (
     pathTools,
@@ -1048,6 +1047,8 @@ class Operator:  # pylint: disable=too-many-public-methods
         of snapshots has evolved with respect to the
         :py:class:`~armi.operators.snapshots.OperatorSnapshots`.
         """
+        # pylint: disable=import-outside-toplevel # avoid cyclic import
+        from armi.physics.neutronics.settings import CONF_LOADING_FILE
         runLog.info("Producing snapshot for cycle {0} node {1}".format(cycle, node))
         self.r.core.zones.summary()
 

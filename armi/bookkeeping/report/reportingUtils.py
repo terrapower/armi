@@ -34,11 +34,6 @@ from armi import runLog
 from armi.bookkeeping import report
 from armi.operators import RunTypes
 from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
-from armi.physics.neutronics.settings import (
-    CONF_GEN_XS,
-    CONF_GLOBAL_FLUX_ACTIVE,
-    CONF_LOADING_FILE,
-)
 from armi.reactor.components import ComponentType
 from armi.reactor.flags import Flags
 from armi.utils import getFileSHA1Hash
@@ -100,6 +95,8 @@ def writeWelcomeHeaders(o, cs):
         inputInfo : list
             (label, fileName, shaHash) tuples
         """
+        # pylint: disable=import-outside-toplevel # avoid cyclic import
+        from armi.physics.neutronics.settings import CONF_LOADING_FILE
 
         pathToLoading = pathlib.Path(cs.inputDirectory) / cs[CONF_LOADING_FILE]
 
@@ -631,6 +628,8 @@ def makeCoreDesignReport(core, cs):
 
 
 def _setGeneralCoreDesignData(cs, coreDesignTable):
+    # pylint: disable=import-outside-toplevel # avoid cyclic import
+    from armi.physics.neutronics.settings import CONF_LOADING_FILE
     report.setData(
         "Case Title", "{}".format(cs.caseTitle), coreDesignTable, report.DESIGN
     )
@@ -777,6 +776,11 @@ def _setGeneralCoreParametersData(core, cs, coreDesignTable):
 
 
 def _setGeneralSimulationData(core, cs, coreDesignTable):
+    # pylint: disable=import-outside-toplevel # avoid cyclic import
+    from armi.physics.neutronics.settings import (
+        CONF_GEN_XS,
+        CONF_GLOBAL_FLUX_ACTIVE,
+    )
     report.setData("  ", "", coreDesignTable, report.DESIGN)
     report.setData(
         "Full Core Model", "{}".format(core.isFullCore), coreDesignTable, report.DESIGN

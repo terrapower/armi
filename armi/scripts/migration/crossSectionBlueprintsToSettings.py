@@ -37,7 +37,6 @@ from armi import runLog
 from armi.settings import caseSettings
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.physics.neutronics.crossSectionSettings import *
-from armi.physics.neutronics.settings import CONF_LOADING_FILE
 from armi.scripts.migration.base import SettingsMigration
 from armi.settings import settingsIO
 
@@ -74,6 +73,8 @@ class MoveCrossSectionsFromBlueprints(SettingsMigration):
 
 
 def migrateCrossSectionsFromBlueprints(settingsObj):
+    # pylint: disable=import-outside-toplevel # avoid cyclic import
+    from armi.physics.neutronics.settings import CONF_LOADING_FILE
     settingsPath = settingsObj.path
     runLog.info(
         "Migrating cross section settings from blueprints file to settings file ({})...".format(

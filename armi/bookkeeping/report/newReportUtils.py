@@ -19,12 +19,6 @@ from armi import runLog
 from armi.bookkeeping.report import newReports
 from armi.materials import custom
 from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
-from armi.physics.neutronics.settings import (
-    CONF_GEN_XS,
-    CONF_GLOBAL_FLUX_ACTIVE,
-    CONF_LOADING_FILE,
-    CONF_NEUTRONICS_KERNEL,
-)
 from armi.reactor.components import component
 from armi.reactor.flags import Flags
 from armi.utils import (
@@ -195,6 +189,9 @@ def insertCoreDesignReport(core, cs, report):
 
 
 def _setGeneralCoreDesignData(cs, coreDesignTable):
+    # pylint: disable=import-outside-toplevel # avoid cyclic import
+    from armi.physics.neutronics.settings import CONF_LOADING_FILE
+
     coreDesignTable.addRow(["Case Title", "{}".format(cs.caseTitle)])
     coreDesignTable.addRow(["Run Type", "{}".format(cs["runType"])])
     coreDesignTable.addRow(["Geometry File", "{}".format(cs["geomFile"])])
@@ -298,6 +295,12 @@ def _setGeneralCoreParametersData(core, cs, coreDesignTable):
 
 
 def _setGeneralSimulationData(core, cs, coreDesignTable):
+    # pylint: disable=import-outside-toplevel # avoid cyclic import
+    from armi.physics.neutronics.settings import (
+        CONF_GEN_XS,
+        CONF_GLOBAL_FLUX_ACTIVE,
+    )
+
     coreDesignTable.addRow(["  ", ""])
     coreDesignTable.addRow(["Full Core Model", "{}".format(core.isFullCore)])
     coreDesignTable.addRow(
@@ -414,6 +417,11 @@ def insertSettingsData(cs, report):
     report: ReportContent
         The report to be added to
     """
+    # pylint: disable=import-outside-toplevel # avoid cyclic import
+    from armi.physics.neutronics.settings import (
+        CONF_GEN_XS,
+        CONF_NEUTRONICS_KERNEL,
+    )
     report[COMPREHENSIVE_REPORT][CASE_PARAMETERS] = newReports.Table("Case Parameters")
     report[COMPREHENSIVE_REPORT][REACTOR_PARAMS] = newReports.Table(
         "Reactor Parameters"
