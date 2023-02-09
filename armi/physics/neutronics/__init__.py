@@ -187,6 +187,7 @@ def gammaTransportIsRequested(cs):
         Returns true if gamma transport is requested.
     """
     from armi.physics.neutronics.settings import CONF_GLOBAL_FLUX_ACTIVE
+
     return GAMMA in cs[CONF_GLOBAL_FLUX_ACTIVE]
 
 
@@ -205,18 +206,21 @@ def gammaXsAreRequested(cs):
         Returns true if gamma cross section generation is requested.
     """
     from armi.physics.neutronics.settings import CONF_GEN_XS
+
     return GAMMA in cs[CONF_GEN_XS]
 
 
 def adjointCalculationRequested(cs):
     """Return true if an adjoint calculation is requested based on the ``CONF_NEUTRONICS_TYPE`` setting."""
     from armi.physics.neutronics.settings import CONF_NEUTRONICS_TYPE
+
     return cs[CONF_NEUTRONICS_TYPE] in [ADJOINT_CALC, ADJREAL_CALC]
 
 
 def realCalculationRequested(cs):
     """Return true if a real calculation is requested based on the ``CONF_NEUTRONICS_TYPE`` type setting."""
     from armi.physics.neutronics.settings import CONF_NEUTRONICS_TYPE
+
     return cs[CONF_NEUTRONICS_TYPE] in ["real", "both"]
 
 

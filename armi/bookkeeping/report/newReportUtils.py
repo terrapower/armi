@@ -422,6 +422,7 @@ def insertSettingsData(cs, report):
         CONF_GEN_XS,
         CONF_NEUTRONICS_KERNEL,
     )
+
     report[COMPREHENSIVE_REPORT][CASE_PARAMETERS] = newReports.Table("Case Parameters")
     report[COMPREHENSIVE_REPORT][REACTOR_PARAMS] = newReports.Table(
         "Reactor Parameters"

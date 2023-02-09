@@ -1049,6 +1049,7 @@ class Operator:  # pylint: disable=too-many-public-methods
         """
         # pylint: disable=import-outside-toplevel # avoid cyclic import
         from armi.physics.neutronics.settings import CONF_LOADING_FILE
+
         runLog.info("Producing snapshot for cycle {0} node {1}".format(cycle, node))
         self.r.core.zones.summary()
 

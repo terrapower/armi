@@ -103,6 +103,7 @@ class BlueprintsMigration(Migration):
     def _loadStreamFromPath(self):
         # pylint: disable=import-outside-toplevel # avoid cyclic import
         from armi.physics.neutronics.settings import CONF_LOADING_FILE
+
         Migration._loadStreamFromPath(self)
         cs = caseSettings.Settings(fName=self.path)
         self.path = cs[CONF_LOADING_FILE]

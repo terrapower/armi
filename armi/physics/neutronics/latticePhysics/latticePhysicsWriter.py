@@ -34,7 +34,9 @@ from armi.nucDirectory import nuclideBases
 from armi.reactor.flags import Flags
 from armi.utils.customExceptions import warn_when_root
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
-from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import CONF_FP_MODEL
+from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import (
+    CONF_FP_MODEL,
+)
 from armi.physics.neutronics.settings import (
     CONF_MINIMUM_FISSILE_FRACTION,
     CONF_MINIMUM_NUCLIDE_DENSITY,

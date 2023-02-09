@@ -270,6 +270,7 @@ class Inspector:
         """Blueprints early error detection and old format conversions."""
         # pylint: disable=import-outside-toplevel; avoid circular import
         from armi.physics.neutronics.settings import CONF_LOADING_FILE
+
         # if there is a blueprints object, we don't need to check for a file
         if self.cs.filelessBP:
             return

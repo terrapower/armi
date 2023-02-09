@@ -75,6 +75,7 @@ class MoveCrossSectionsFromBlueprints(SettingsMigration):
 def migrateCrossSectionsFromBlueprints(settingsObj):
     # pylint: disable=import-outside-toplevel # avoid cyclic import
     from armi.physics.neutronics.settings import CONF_LOADING_FILE
+
     settingsPath = settingsObj.path
     runLog.info(
         "Migrating cross section settings from blueprints file to settings file ({})...".format(

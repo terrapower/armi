@@ -630,6 +630,7 @@ def makeCoreDesignReport(core, cs):
 def _setGeneralCoreDesignData(cs, coreDesignTable):
     # pylint: disable=import-outside-toplevel # avoid cyclic import
     from armi.physics.neutronics.settings import CONF_LOADING_FILE
+
     report.setData(
         "Case Title", "{}".format(cs.caseTitle), coreDesignTable, report.DESIGN
     )
@@ -781,6 +782,7 @@ def _setGeneralSimulationData(core, cs, coreDesignTable):
         CONF_GEN_XS,
         CONF_GLOBAL_FLUX_ACTIVE,
     )
+
     report.setData("  ", "", coreDesignTable, report.DESIGN)
     report.setData(
         "Full Core Model", "{}".format(core.isFullCore), coreDesignTable, report.DESIGN
