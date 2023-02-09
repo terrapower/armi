@@ -48,7 +48,7 @@ Bug fixes
 ---------
 #. Fixed ``referenceBlockAxialMesh`` and ``axialMesh`` during process loading. (`PR#980 <https://github.com/terrapower/armi/pull/980>`_)
 #. Fixed deadelines in MPI cases due to barriers in temp directory changers.
-#. Fixed the material namespace order for ``test_axialExpansionChanger.py`` persisting after tests. (`PR#1046 https://github.com/terrapower/armi/pull/1046`_)
+#. Fixed the material namespace order for ``test_axialExpansionChanger.py`` persisting after tests. (`PR#1046 <https://github.com/terrapower/armi/pull/1046>`_)
 #. Fixed the gaseous fission products not being removed from the core directly, but instead the fission yields within the lumped fission products were being adjusted. (`PR#1022 <https://github.com/terrapower/armi/pull/1022>`_)
 #. Fixed non-fuel depletable components not being initialized with all nuclides with the ``explicitFissionProducts`` model (`PR#1067 https://github.com/terrapower/armi/pull/1067`_)
 #. Fixed consistency between cross section group manager and lattice physics interface for tight coupling. (`PR#1118 <https://github.com/terrapower/armi/pull/1118>`_)
