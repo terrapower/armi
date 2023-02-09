@@ -836,6 +836,22 @@ class DoseResultsMapper(GlobalFluxResultMapper):
             b.p.detailedDpaPeak = b.p.detailedDpaPeak + newDPAPeak
             b.p.detailedDpaThisCycle = b.p.detailedDpaThisCycle + newDpaThisStep
 
+            # increment point dpas
+            # this is specific to hex geometry, but they are general neutronics block parameters
+            # if it is a non-hex block, this should be a no-op
+            if b.p.pointsCornerDpaRate is not None:
+                if b.p.pointsCornerDpa is None:
+                    b.p.pointsCornerDpa = numpy.zeros((6,))
+                b.p.pointsCornerDpa = (
+                    b.p.pointsCornerDpa + b.p.pointsCornerDpaRate * stepTimeInSeconds
+                )
+            if b.p.pointsEdgeDpaRate is not None:
+                if b.p.pointsEdgeDpa is None:
+                    b.p.pointsEdgeDpa = numpy.zeros((6,))
+                b.p.pointsEdgeDpa = (
+                    b.p.pointsEdgeDpa + b.p.pointsEdgeDpaRate * stepTimeInSeconds
+                )
+
             if self.options.dpaPerFluence:
                 # do the less rigorous fluence -> DPA conversion if the user gave a factor.
                 b.p.dpaPeakFromFluence = (
@@ -1200,3 +1216,7 @@ def calcReactionRates(obj, keff, lib):
 
     for paramName, val in rate.items():
         obj.p[paramName] = val  # put in #/cm^3/s
+
+    vFuel = obj.getComponentAreaFrac(Flags.FUEL) if rate["rateFis"] > 0.0 else 1.0
+    obj.p.fisDens = rate["rateFis"] / vFuel
+    obj.p.fisDensHom = rate["rateFis"]

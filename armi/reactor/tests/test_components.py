@@ -20,6 +20,7 @@ import copy
 import math
 import unittest
 
+from armi.materials.material import Material
 from armi.reactor import components
 from armi.reactor.components import (
     Component,
@@ -325,6 +326,31 @@ class TestShapedComponent(TestGeneralComponents):
         self.assertAlmostEqual(
             c.getArea() * c.parent.getHeight() * c.density(), self.component.getMass()
         )
+
+    def test_density3D(self):
+        """Testing the Component density gets the correct 3D material density."""
+
+        class StrangeMaterial(Material):
+            """material designed to make the test easier to understand"""
+
+            def density(self, Tk=None, Tc=None):
+                return 1.0
+
+            def density3(self, Tk=None, Tc=None):
+                return 3.0
+
+        c = Sphere(
+            name="strangeBall",
+            material=StrangeMaterial(),
+            Tinput=200,
+            Thot=500,
+            od=1,
+            id=0,
+            mult=1,
+        )
+
+        # we expect to see the 3D material density here
+        self.assertEqual(c.density(), 3.0)
 
 
 class TestDerivedShape(TestShapedComponent):
@@ -1355,6 +1381,17 @@ class TestMaterialAdjustments(unittest.TestCase):
         target35 = 0.2
         self.fuel.setMassFrac("U235", target35)
         self.assertAlmostEqual(self.fuel.getMassFrac("U235"), target35)
+
+    def test_adjustMassFrac_invalid(self):
+        with self.assertRaises(ValueError):
+            self.fuel.adjustMassFrac(nuclideToAdjust="ZR", val=-0.23)
+
+        with self.assertRaises(ValueError):
+            self.fuel.adjustMassFrac(nuclideToAdjust="ZR", val=1.12)
+
+        alwaysFalse = lambda a: False
+        self.fuel.parent = None
+        self.assertIsNone(self.fuel.getAncestorAndDistance(alwaysFalse))
 
     def test_adjustMassFrac_U235(self):
         zrMass = self.fuel.getMass("ZR")

@@ -16,11 +16,13 @@
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-method-argument,import-outside-toplevel
 import unittest
 
+from armi import settings
 from armi.bookkeeping.db.databaseInterface import DatabaseInterface
+from armi.operators import getOperatorClassFromSettings
+from armi.operators.runTypes import RunTypes
 from armi.operators.snapshots import OperatorSnapshots
 from armi.reactor.tests import test_reactors
 from armi.settings.fwSettings.databaseSettings import CONF_FORCE_DB_PARAMS
-from armi.operators.runTypes import RunTypes
 
 
 class TestOperatorSnapshots(unittest.TestCase):
@@ -60,6 +62,14 @@ class TestOperatorSnapshots(unittest.TestCase):
         self.assertEqual(self.r.core.p.power, 0.0)
         self.o._mainOperate()
         self.assertEqual(self.r.core.p.power, 100000000.0)
+
+
+class TestOperatorSnapshotsSettings(unittest.TestCase):
+    def test_getOperatorClassFromSettings(self):
+        cs = settings.Settings()
+        cs = cs.modified(newSettings={"runType": RunTypes.SNAPSHOTS})
+        clazz = getOperatorClassFromSettings(cs)
+        self.assertEqual(clazz, OperatorSnapshots)
 
 
 if __name__ == "__main__":

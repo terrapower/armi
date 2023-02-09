@@ -15,13 +15,7 @@
 """
 Base Material classes.
 
-All temperatures are in K, but Tc can be specified and the functions will convert for you.
-
-.. warning:: ARMI uses these objects for all material properties. Under the hood,
-     A system called MAT_PROPS is in charge of several material properties. It
-     is a more industrial-strength material property system that is currently
-     a TerraPower proprietary system. You will see references to it in this module.
-
+Most temperatures may be specified in either K or C and the functions will convert for you.
 """
 # pylint: disable=unused-argument
 import copy
@@ -43,6 +37,26 @@ FAIL_ON_RANGE = False
 class Material:
     """
     A material is made up of elements or isotopes. It has bulk properties like mass density.
+
+    Attributes
+    ----------
+    parent : Component
+        The component to which this material belongs
+    massFrac : dict
+        Mass fractions for all nuclides in the material keyed on the nuclide symbols
+    refDens : float
+        A reference density used by some materials, for instance `SimpleSolid`s,
+        during thermal expansion
+    theoreticalDensityFrac : float
+        Fraction of the material's density in reality, which is commonly different
+        from 1.0 in solid materials due to the manufacturing process.
+        Can often be set from the blueprints input via the TD_frac material modification.
+        For programmatic setting, use `adjustTD()`.
+
+    Notes
+    -----
+    Specific material classes may have many more attributes specific to the implementation
+    for that material.
     """
 
     DATA_SOURCE = "ARMI"
@@ -72,7 +86,7 @@ class Material:
         self.parent = None
         self.massFrac = {}
         self.refDens = 0.0
-        self.theoreticalDensityFrac = 0.0
+        self.theoreticalDensityFrac = 1.0
         self.cached = {}
         self._backupCache = None
 
@@ -459,27 +473,6 @@ class Material:
         """
         return 0.0
 
-    def getLifeMetalCorrelation(self, days: float, Tk: float) -> float:
-        r"""
-        life-metal correlation calculates the wastage of the material due to fission products.
-        """
-        return 0.0
-
-    def getReverseLifeMetalCorrelation(
-        self, thicknessFCCIWastageMicrons: float, Tk: float
-    ) -> float:
-        r"""
-        Life metal correlation reverse lookup.  Knowing wastage and Temperature
-        determine the effective time at that temperature.
-        """
-        return 0.0
-
-    def getLifeMetalConservativeFcciCoeff(self, Tk: float) -> float:
-        """
-        Return the coefficient to be used in the LIFE-METAL correlation
-        """
-        return 0.0
-
     def yieldStrength(self, Tk: float = None, Tc: float = None) -> float:
         r"""returns yield strength at given T in MPa"""
         pass
@@ -622,7 +615,7 @@ class Material:
         """
         Tc = getTc(Tc, Tk)
 
-        rhoCp = self.density(Tc=Tc) * 1000.0 * self.heatCapacity(Tc=Tc)
+        rhoCp = self.density3(Tc=Tc) * 1000.0 * self.heatCapacity(Tc=Tc)
 
         return rhoCp
 
@@ -669,6 +662,15 @@ class Material:
             f"Material {type(self).__name__} does not implement heatCapacity"
         )
 
+    def getTD(self):
+        """Get the fraction of theoretical density for this material."""
+        return self.theoreticalDensityFrac
+
+    def adjustTD(self, val):
+        """Set or change the fraction of theoretical density for this material."""
+        self.theoreticalDensityFrac = val
+        self.clearCache()
+
 
 class Fluid(Material):
     """A material that fills its container. Could also be a gas."""
@@ -714,7 +716,7 @@ class Fluid(Material):
 
         Notes
         -----
-        for fluids, there is no such thing as 2 d expansion so density() is already 3D.
+        For fluids, there is no such thing as 2D expansion so density() is already 3D.
         """
         return self.density(Tk=Tk, Tc=Tc)
 
@@ -782,6 +784,13 @@ class SimpleSolid(Material):
     def density3(self, Tk: float = None, Tc: float = None) -> float:
         return 0.0
 
+    def density(self, Tk: float = None, Tc: float = None) -> float:
+        """
+        The same method as the parent class, but with the ability to apply a
+        non-unity theoretical density.
+        """
+        return Material.density(self, Tk=Tk, Tc=Tc) * self.getTD()
+
 
 class FuelMaterial(Material):
     """
@@ -790,16 +799,12 @@ class FuelMaterial(Material):
     All this really does is enable the special class 1/class 2 isotopics input option.
     """
 
-    def __init__(self):
-        Material.__init__(self)
-        # support for custom isotopics
-        self.class1_wt_frac = None
-        self.class1_custom_isotopics = None
-        self.class2_custom_isotopics = None
-        # tracking depletion status
-        self.puFrac = 0.0
-        self.uFrac = 0.0
-        self.zrFrac = 0.0
+    class1_wt_frac = None
+    class1_custom_isotopics = None
+    class2_custom_isotopics = None
+    puFrac = 0.0
+    uFrac = 0.0
+    zrFrac = 0.0
 
     def applyInputParams(
         self,
@@ -874,23 +879,11 @@ class FuelMaterial(Material):
         m.refDens = self.refDens
         m.theoreticalDensityFrac = self.theoreticalDensityFrac
 
-        # Handle the case where a developer creates a FuelMaterial,
-        # but only calls the Material.__init__().
-        m.class1_wt_frac = (
-            self.class1_wt_frac if hasattr(self, "class1_wt_frac") else None
-        )
-        m.class1_custom_isotopics = (
-            self.class1_custom_isotopics
-            if hasattr(self, "class1_custom_isotopics")
-            else None
-        )
-        m.class2_custom_isotopics = (
-            self.class2_custom_isotopics
-            if hasattr(self, "class2_custom_isotopics")
-            else None
-        )
-        m.puFrac = self.puFrac if hasattr(self, "puFrac") else 0.0
-        m.uFrac = self.uFrac if hasattr(self, "uFrac") else 0.0
-        m.zrFrac = self.zrFrac if hasattr(self, "zrFrac") else 0.0
+        m.class1_wt_frac = self.class1_wt_frac
+        m.class1_custom_isotopics = self.class1_custom_isotopics
+        m.class2_custom_isotopics = self.class2_custom_isotopics
+        m.puFrac = self.puFrac
+        m.uFrac = self.uFrac
+        m.zrFrac = self.zrFrac
 
         return m
