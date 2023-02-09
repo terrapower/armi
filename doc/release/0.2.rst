@@ -42,7 +42,7 @@ What's new in ARMI
 #. Refine logic for ``Block.getNumPins()`` to only count components that are actually pins. (`PR#1098 <https://github.com/terrapower/armi/pull/1098>`_)
 #. Improve handling of peak/max parameters by the ``UniformMeshConverter`` parameter mapper. (`PR#1108 <https://github.com/terrapower/armi/pull/1108>`_)
 #. Calculate block kgHM and kgFis on core loading and after shuffling. (`PR#1136 https://github.com/terrapower/armi/pull/1136`_)
-#. Calculate block ``PuFrac`` on core loading and after shuffling. (`PR#1165 https://github.com/terrapower/armi/pull/1165`_)
+#. Calculate block ``PuFrac`` on core loading and after shuffling. (`PR#1165 <https://github.com/terrapower/armi/pull/1165>`_)
 
 Bug fixes
 ---------
