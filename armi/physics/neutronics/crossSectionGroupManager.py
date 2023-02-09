@@ -721,8 +721,12 @@ class CrossSectionGroupManager(interfaces.Interface):
         return self.cs[CONF_CROSS_SECTION][xsID]
 
     def xsTypeIsPregenerated(self, xsID):
-        """Return True if the xs id is pre-generated."""
-        return self.cs[CONF_CROSS_SECTION][xsID].isPregenerated
+        """Return True if the cross sections for the given ``xsID`` is pre-generated."""
+        return self.cs[CONF_CROSS_SECTION][xsID].xsIsPregenerated
+
+    def fluxSolutionIsPregenerated(self, xsID):
+        """Return True if an external flux solution file for the given ``xsID`` is pre-generated."""
+        return self.cs[CONF_CROSS_SECTION][xsID].fluxIsPregenerated
 
     def _copyPregeneratedXSFile(self, xsID):
         # stop a race condition to copy files between all processors
@@ -736,11 +740,29 @@ class CrossSectionGroupManager(interfaces.Interface):
                     xsFileName, os.path.dirname(xsFileLocation), xsID
                 )
             )
-            shutil.copy(xsFileLocation, dest)
+            # Prevent copy error if the path and destination are the same.
+            if xsFileLocation != dest:
+                shutil.copy(xsFileLocation, dest)
+
+    def _copyPregeneratedFluxSolutionFile(self, xsID):
+        # stop a race condition to copy files between all processors
+        if context.MPI_RANK != 0:
+            return
+
+        fluxFileLocation, fluxFileName = self._getPregeneratedFluxFileLocationData(xsID)
+        dest = os.path.join(os.getcwd(), fluxFileName)
+        runLog.extra(
+            "Copying pre-generated flux solution file {} from {} for XS ID {}".format(
+                fluxFileName, os.path.dirname(fluxFileLocation), xsID
+            )
+        )
+        # Prevent copy error if the path and destination are the same.
+        if fluxFileLocation != dest:
+            shutil.copy(fluxFileLocation, dest)
 
     def _getPregeneratedXsFileLocationData(self, xsID):
         """
-        Gather the pregenerated cross section file data and check that the files exist.
+        Gather the pre-generated cross section file data and check that the files exist.
 
         Notes
         -----
@@ -748,7 +770,7 @@ class CrossSectionGroupManager(interfaces.Interface):
         and returns a list of tuples (file path, fileName).
         """
         fileData = []
-        filePaths = self.cs[CONF_CROSS_SECTION][xsID].fileLocation
+        filePaths = self.cs[CONF_CROSS_SECTION][xsID].xsFileLocation
         for filePath in filePaths:
             filePath = os.path.abspath(filePath)
             if not os.path.exists(filePath) or os.path.isdir(filePath):
@@ -760,6 +782,19 @@ class CrossSectionGroupManager(interfaces.Interface):
             fileName = os.path.basename(filePath)
             fileData.append((filePath, fileName))
         return fileData
+
+    def _getPregeneratedFluxFileLocationData(self, xsID):
+        """Gather the pre-generated flux solution file data and check that the files exist."""
+        filePath = self.cs[CONF_CROSS_SECTION][xsID].fluxFileLocation
+        filePath = os.path.abspath(filePath)
+        if not os.path.exists(filePath) or os.path.isdir(filePath):
+            raise ValueError(
+                "External cross section path for XS ID {} is not a valid file location {}".format(
+                    xsID, filePath
+                )
+            )
+        fileName = os.path.basename(filePath)
+        return (filePath, fileName)
 
     def createRepresentativeBlocks(self):
         """
@@ -777,6 +812,8 @@ class CrossSectionGroupManager(interfaces.Interface):
                 continue
             if numCandidateBlocks > 0:
                 runLog.debug("Creating representative block for {}".format(xsID))
+                if self.fluxSolutionIsPregenerated(xsID):
+                    self._copyPregeneratedFluxSolutionFile(xsID)
                 reprBlock = collection.createRepresentativeBlock()
                 representativeBlocks[xsID] = reprBlock
                 self.avgNucTemperatures[xsID] = collection.avgNucTemperatures

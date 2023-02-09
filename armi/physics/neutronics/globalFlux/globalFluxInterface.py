@@ -849,6 +849,22 @@ class DoseResultsMapper(GlobalFluxResultMapper):
             b.p.detailedDpaPeak = b.p.detailedDpaPeak + newDPAPeak
             b.p.detailedDpaThisCycle = b.p.detailedDpaThisCycle + newDpaThisStep
 
+            # increment point dpas
+            # this is specific to hex geometry, but they are general neutronics block parameters
+            # if it is a non-hex block, this should be a no-op
+            if b.p.pointsCornerDpaRate is not None:
+                if b.p.pointsCornerDpa is None:
+                    b.p.pointsCornerDpa = numpy.zeros((6,))
+                b.p.pointsCornerDpa = (
+                    b.p.pointsCornerDpa + b.p.pointsCornerDpaRate * stepTimeInSeconds
+                )
+            if b.p.pointsEdgeDpaRate is not None:
+                if b.p.pointsEdgeDpa is None:
+                    b.p.pointsEdgeDpa = numpy.zeros((6,))
+                b.p.pointsEdgeDpa = (
+                    b.p.pointsEdgeDpa + b.p.pointsEdgeDpaRate * stepTimeInSeconds
+                )
+
             if self.options.dpaPerFluence:
                 # do the less rigorous fluence -> DPA conversion if the user gave a factor.
                 b.p.dpaPeakFromFluence = (

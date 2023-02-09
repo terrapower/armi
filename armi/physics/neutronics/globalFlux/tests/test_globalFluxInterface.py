@@ -280,6 +280,10 @@ class TestGlobalFluxResultMapper(unittest.TestCase):
         block = r.core.getFirstBlock()
         self.assertGreater(block.p.detailedDpaRate, 0)
         self.assertEqual(block.p.detailedDpa, 0)
+        block.p.pointsEdgeDpa = numpy.array([0 for i in range(6)])
+        block.p.pointsCornerDpa = numpy.array([0 for i in range(6)])
+        block.p.pointsEdgeDpaRate = numpy.array([1.0e-5 for i in range(6)])
+        block.p.pointsCornerDpaRate = numpy.array([1.0e-5 for i in range(6)])
 
         # Test DoseResultsMapper. Pass in full list of blocks to apply() in order
         # to exercise blockList option (does not change behavior, since this is what
@@ -289,6 +293,8 @@ class TestGlobalFluxResultMapper(unittest.TestCase):
         dosemapper = globalFluxInterface.DoseResultsMapper(1000, opts)
         dosemapper.apply(r, blockList=r.core.getBlocks())
         self.assertGreater(block.p.detailedDpa, 0)
+        self.assertGreater(numpy.min(block.p.pointsCornerDpa), 0)
+        self.assertGreater(numpy.min(block.p.pointsEdgeDpa), 0)
 
         mapper.clearFlux()
         self.assertEqual(len(block.p.mgFlux), 0)

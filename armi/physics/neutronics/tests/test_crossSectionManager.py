@@ -19,6 +19,7 @@ Test the cross section manager
 """
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 
+import os
 from io import BytesIO
 import copy
 import unittest
@@ -44,6 +45,10 @@ from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
 from armi.tests import TEST_ROOT
 from armi.utils import units
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
+
+
+THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 class TestBlockCollection(unittest.TestCase):
@@ -358,6 +363,27 @@ class Test_CrossSectionGroupManager(unittest.TestCase):
         self.blockList[0].r.p.timeNode = 0
         self.csm.interactCoupled(iteration=0)
         self.assertTrue(self.csm.representativeBlocks)
+
+    def test_copyPregeneratedFiles(self):
+        """
+        Tests copying pre-generated cross section and flux files
+        using reactor that is built from a case settings file.
+        """
+        o, r = test_reactors.loadTestReactor(TEST_ROOT)
+        # Need to overwrite the relative paths with absolute
+        o.cs[CONF_CROSS_SECTION]["XA"].xsFileLocation = [
+            os.path.join(THIS_DIR, "ISOXA")
+        ]
+        o.cs[CONF_CROSS_SECTION]["YA"].fluxFileLocation = os.path.join(
+            THIS_DIR, "rzmflxYA"
+        )
+        csm = CrossSectionGroupManager(r, o.cs)
+
+        with TemporaryDirectoryChanger(root=THIS_DIR):
+            csm._copyPregeneratedXSFile("XA")
+            csm._copyPregeneratedFluxSolutionFile("YA")
+            self.assertTrue(os.path.exists("ISOXA"))
+            self.assertTrue(os.path.exists("rzmflxYA"))
 
 
 class TestXSNumberConverters(unittest.TestCase):

@@ -131,7 +131,7 @@ def _migrateInputData(origXsInputLines):
         "internal rings": CONF_INTERNAL_RINGS,
         "external rings": CONF_EXTERNAL_RINGS,
         "merge into clad": CONF_MERGE_INTO_CLAD,
-        "file location": CONF_FILE_LOCATION,
+        "file location": CONF_XS_FILE_LOCATION,
         "mesh points per cm": CONF_MESH_PER_CM,
     }
     yaml = YAML()
