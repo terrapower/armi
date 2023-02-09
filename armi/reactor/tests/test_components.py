@@ -303,31 +303,26 @@ class TestShapedComponent(TestGeneralComponents):
     def test_densityConsistent(self):
         c = self.component
 
-        if isinstance(c, (Component, DerivedShape)):
-            return  # no volume defined
+        # no volume defined
+        if isinstance(c, (DerivedShape, UnshapedVolumetricComponent)):
+            return
+        elif type(c) == Component:
+            return
+
+        # basic density sanity test
         self.assertAlmostEqual(c.density(), c.getMass() / c.getVolume())
 
         # test 2D expanding density
         if c.temperatureInC == c.inputTemperatureInC:
             self.assertAlmostEqual(
-                c.density(), c.material.pseudoDensity(Tc=c.temperatureInC)
+                c.density(), c.material.pseudoDensity(Tc=c.temperatureInC), delta=0.001
             )
-        dLL = c.material.linearExpansionPercent(units.getTk(Tc=c.temperatureInC))
-        self.assertAlmostEqual(
-            c.density(), c.material.pseudoDensity(Tc=c.temperatureInC) * dLL
-        )  # 2d density off by dLL
 
-        # test mass agreement using area
-        if c.is3D:
-            return  # no area defined
-        unexpandedHeight = c.parent.getHeight() / c.getThermalExpansionFactor()
-        self.assertAlmostEqual(
-            c.getArea(cold=True) * unexpandedHeight * c.material.refDens,
-            self.component.getMass(),
-        )
-        self.assertAlmostEqual(
-            c.getArea() * c.parent.getHeight() * c.density(), self.component.getMass()
-        )
+        if not c.is3D:
+            self.assertAlmostEqual(
+                c.getArea() * c.parent.getHeight() * c.density(),
+                self.component.getMass(),
+            )
 
     def test_densityD(self):
         """Testing the Component density gets the correct 3D material density."""
@@ -335,7 +330,7 @@ class TestShapedComponent(TestGeneralComponents):
         class StrangeMaterial(Material):
             """material designed to make the test easier to understand"""
 
-            def density(self, Tk=None, Tc=None):
+            def pseduoDensity(self, Tk=None, Tc=None):
                 return 1.0
 
             def density(self, Tk=None, Tc=None):

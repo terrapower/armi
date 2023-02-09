@@ -8,7 +8,7 @@ Release Date: TBD
 
 What's new in ARMI
 ------------------
-#. The method ``Material.density3`` is now called ``density`` (`PR#1999 <https://github.com/terrapower/armi/pull/1999>`_)
+#. The method ``Material.density3`` is now called ``density``, and the old ``density`` is now called ``pseudoDensity``. (`PR#1999 <https://github.com/terrapower/armi/pull/1999>`_)
 #. The ``Material`` class no longer subclasses ``Composite`` (`PR#1062 <https://github.com/terrapower/armi/pull/1062>`_)
 #. Split 3 classes in ``database3.py`` into 3 files (`PR#955 <https://github.com/terrapower/armi/pull/955>`_)
 #. savePhysicsFiles setting to copy physics kernel input and output to directories organized by cycle and time step number (e.g., c2n1) to retain files from a simulation and avoid overwriting them. (`PR#958 <https://github.com/terrapower/armi/pull/952>`_)

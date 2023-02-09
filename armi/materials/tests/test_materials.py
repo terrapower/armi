@@ -630,7 +630,7 @@ class UraniumOxide_TestCase(_Material_Test, unittest.TestCase):
         expectedTemperature = 100.0
 
         ref_density = 10.86792660463439e3
-        test_density = self.mat.pseudoDensityKgM3(Tc=expectedTemperature)
+        test_density = self.mat.densityKgM3(Tc=expectedTemperature)
         error = math.fabs((ref_density - test_density) / ref_density)
         self.assertLess(error, 0.005)
 
