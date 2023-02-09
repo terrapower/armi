@@ -2,57 +2,65 @@
 ARMI v0.2 Release Notes
 =======================
 
-ARMI v0.2.6
+ARMI v0.2.7
 ===========
 Release Date: TBD
 
 What's new in ARMI
 ------------------
-#. The ``Material`` class no longer subclasses ``Composite`` (`PR#1062 <https://github.com/terrapower/armi/pull/1062>`_)
-#. Split 3 classes in ``database3.py`` into 3 files (`PR#955 <https://github.com/terrapower/armi/pull/955>`_)
-#. savePhysicsFiles setting to copy physics kernel input and output to directories organized by cycle and time step number (e.g., c2n1) to retain files from a simulation and avoid overwriting them. (`PR#958 <https://github.com/terrapower/armi/pull/952>`_)
-#. Add pinQuantities parameter category for blockParams that have spatial distribution within a block.
-#. Use r.core.p.axialMesh instead of r.core.refAssem.getAxialMesh() for the uniform mesh converter. (`PR#959 <https://github.com/terrapower/armi/pull/959>`_)
-#. Split algorithms specific to hex assemblies out of ``FuelHandler``. (`PR#962 <https://github.com/terrapower/armi/pull/962>`_)
-#. Add ability to load from a db using negative node index
-#. Add group structures for 21- and 94-groups used in photon transport
-#. Fix numerical diffusion bug in uniform mesh converter that affects number densities and cumulative parameters like DPA. (`PR#992 <https://github.com/terrapower/armi/pull/992>`_)
-#. A more complete set of nuclides has been added to the framework to decouple the optional loading of RIPL-3 data and to embed 4614 nuclides into the standard loading process for the framework. This allows for further extensibility of framework to support end-users. (`PR#998 <https://github.com/terrapower/armi/pull/998>`_)
-#. Add block parameter, fuelCladLocked, to track whether or not the fuel and clad are locked. (`PR#1038 <https://github.com/terrapower/armi/pull/1038>`_)
-#. An explicit fission product modeling option was added in `PR#1022 <https://github.com/terrapower/armi/pull/1022>`_.
-#. Cleanup of unnecessary and confusing functionality in axialExpansionChanger.py. (`PR#1032 <https://github.com/terrapower/armi/pull/1032>`_)
-#. Axially expand from cold to hot before deepcopy of assemblies into reactor improving speed and preserving same functionality. (`PR#1047 <https://github.com/terrapower/armi/pull/1047>`_)
-#. Add a how-to on restart calculations in the docs
-#. Overhaul of the tight coupling routine in ARMI. Removal of ``looseCoupling`` setting and introduction of new tight coupling user interface. (`https://github.com/terrapower/armi/pull/1033`_)
-#. General improvements to efficiency in many places to speed up uniform mesh conversion. (`PR#1042 <https://github.com/terrapower/armi/pull/1042>`_)
-#. Allow MCNP material card number to be defined after the card is written. (`PR#1086 <https://github.com/terrapower/armi/pull/1086>`_)
-#. Refine logic for Block.getNumPins() to only count components that are actually pins. (`PR#1098 <https://github.com/terrapower/armi/pull/1098>`_)
-#. Improve handling of peak/max parameters by the UniformMeshConverter parameter mapper. (`PR#1108 <https://github.com/terrapower/armi/pull/1108>`_)
-#. Bug fix to expose new tight coupling functionality to ``OperatorSnapshots``. (`PR#1113 https://github.com/terrapower/armi/pull/1113`_)
-#. Bug fix for Magnessium density curve. (`PR#1126 https://github.com/terrapower/armi/pull/1126`_)
-#. Bug fix for Potassium density curve. (`PR#1128 https://github.com/terrapower/armi/pull/1128`_)
-#. Bug fix for Concrete density curve. (`PR#1131 https://github.com/terrapower/armi/pull/1131`_)
-#. Bug fix for Copper density curve. (`PR#1150 https://github.com/terrapower/armi/pull/1150`_)
-#. Bug fix for Component.density. (`PR#1149 https://github.com/terrapower/armi/pull/1149`_)
-#. Calculate block kgHM and kgFis on core loading and after shuffling. (`PR#1136 https://github.com/terrapower/armi/pull/1136`_)
-#. Update point DPAs along with block aveage DPA values. (`PR#1156 https://github.com/terrapower/armi/pull/1156`_)
-#. Calculate block PuFrac on core loading and after shuffling. (`PR#1165 https://github.com/terrapower/armi/pull/1165`_)
-#. Fix the formula to calculate b.p.puFrac. (`PR#1168 https://github.com/terrapower/armi/pull/1168`_)
+#. TBD
+#. TBD
 
 Bug fixes
 ---------
-#. Fixed bug in ``referenceBlockAxialMesh`` and ``axialMesh`` during process loading. (`PR#980 <https://github.com/terrapower/armi/pull/980>`_)
-#. Removed Barriers in temp directory changers and output cache to avoid deadlocks in MPI cases
-#. Fixed bug with database writing and tight coupling. (`PR#1005 https://github.com/terrapower/armi/pull/1005`_)
-#. Fixed a bug where snapshot load would not respect the new cs["power"] setting.
-#. Froze the NumPy version to be <= 1.23.5 (`PR#1035 https://github.com/terrapower/armi/pull/1035`_) to continue to support numpy jagged arrays within the Database interface.
-#. Fixed a bug where the material namespace order for test_axialExpansionChanger.py was persisting beyond the tests. (`PR#1046 https://github.com/terrapower/armi/pull/1046`_)
-#. A bug was fixed in `PR#1022 <https://github.com/terrapower/armi/pull/1022>`_ where the gaseous fission products were not being removed from the core directly, but instead the fission yields within the lumped fission products were being adjusted.
-#. Fixed a bug where non-fuel depletable components were not being initialized with all nuclides with the ``explicitFissionProducts`` model (`PR#1067 https://github.com/terrapower/armi/pull/1067`_)
-#. Bug fix to ensure consistency between cross section group manager and lattice physics interface for tight coupling. (`PR#1118 <https://github.com/terrapower/armi/pull/1118>`_)
-#. Bug fix to update pseudo density to physical density in densityTimesHeatCapacity materials method. (`PR#1129 <https://github.com/terrapower/armi/pull/1129>`_)
-#. Fixed a bug in which the TD_frac material modification on UraniumOxide and MOX materials was not being applied correctly in density calculations
-#. Added hotChannelFactors assembly parameter to the DB so that snapshot runs know about the parameter. (`PR#1157 <https://github.com/terrapower/armi/pull/1157>`_)
+#. Fixed TBD
+#. Fixed TBD
+
+
+ARMI v0.2.6
+===========
+Release Date: 2023-02-09
+
+What's new in ARMI
+------------------
+#. The ``Material`` class no longer subclasses ``Composite`` (`PR#1062 <https://github.com/terrapower/armi/pull/1062>`_)
+#. Froze the NumPy version to <= 1.23.5 (`PR#1035 <https://github.com/terrapower/armi/pull/1035>`_) to continue to support NumPy jagged arrays in the DatabaseInterface.
+#. Split 3 classes in ``database3.py`` into 3 files (`PR#955 <https://github.com/terrapower/armi/pull/955>`_)
+#. Split algorithms specific to hex assemblies out of ``FuelHandler``. (`PR#962 <https://github.com/terrapower/armi/pull/962>`_)
+#. Added 4614 nuclides to decouple the loading of RIPL-3 data from the standard framework run. (`PR#998 <https://github.com/terrapower/armi/pull/998>`_)
+#. Overhaul of the tight coupling routine in ARMI, and removal of ``looseCoupling`` setting. (`PR #1033 <https://github.com/terrapower/armi/pull/1033>`_)
+#. Added ``savePhysicsFiles`` setting to copy physics kernel I/O to directories organized by cycle and time step (e.g., c2n1). (`PR#952 <https://github.com/terrapower/armi/pull/952>`_)
+#. Add ``pinQuantities`` parameter category for block params that have spatial distribution.
+#. Use ``r.core.p.axialMesh`` instead of ``r.core.refAssem.getAxialMesh()`` for the uniform mesh converter. (`PR#959 <https://github.com/terrapower/armi/pull/959>`_)
+#. Add group structures for 21- and 94-groups used in photon transport.
+#. Add block parameter, ``fuelCladLocked``, to track whether or not the fuel and clad are locked. (`PR#1038 <https://github.com/terrapower/armi/pull/1038>`_)
+#. An explicit fission product modeling option was added. (`PR#1022 <https://github.com/terrapower/armi/pull/1022>`_)
+#. Axially expand from cold to hot before deepcopy of assemblies into reactor; improving speed. (`PR#1047 <https://github.com/terrapower/armi/pull/1047>`_)
+#. Add a how-to on restart calculations in the docs.
+#. General improvements to efficiency in uniform mesh conversion. (`PR#1042 <https://github.com/terrapower/armi/pull/1042>`_)
+#. Allow MCNP material card number to be defined after the card is written. (`PR#1086 <https://github.com/terrapower/armi/pull/1086>`_)
+#. Refine logic for ``Block.getNumPins()`` to only count components that are actually pins. (`PR#1098 <https://github.com/terrapower/armi/pull/1098>`_)
+#. Improve handling of peak/max parameters by the ``UniformMeshConverter`` parameter mapper. (`PR#1108 <https://github.com/terrapower/armi/pull/1108>`_)
+#. Calculate block kgHM and kgFis on core loading and after shuffling. (`PR#1136 https://github.com/terrapower/armi/pull/1136`_)
+#. Calculate block ``PuFrac`` on core loading and after shuffling. (`PR#1165 <https://github.com/terrapower/armi/pull/1165>`_)
+
+Bug fixes
+---------
+#. Fixed ``referenceBlockAxialMesh`` and ``axialMesh`` during process loading. (`PR#980 <https://github.com/terrapower/armi/pull/980>`_)
+#. Fixed deadelines in MPI cases due to barriers in temp directory changers.
+#. Fixed the material namespace order for ``test_axialExpansionChanger.py`` persisting after tests. (`PR#1046 <https://github.com/terrapower/armi/pull/1046>`_)
+#. Fixed the gaseous fission products not being removed from the core directly, but instead the fission yields within the lumped fission products were being adjusted. (`PR#1022 <https://github.com/terrapower/armi/pull/1022>`_)
+#. Fixed non-fuel depletable components not being initialized with all nuclides with the ``explicitFissionProducts`` model (`PR#1067 <https://github.com/terrapower/armi/pull/1067>`_)
+#. Fixed consistency between cross section group manager and lattice physics interface for tight coupling. (`PR#1118 <https://github.com/terrapower/armi/pull/1118>`_)
+#. Fixed numerical diffusion in uniform mesh converter that affects number densities and cumulative parameters like DPA. (`PR#992 <https://github.com/terrapower/armi/pull/992>`_)
+#. Fix the formula to calculate ``b.p.puFrac``. (`PR#1168 <https://github.com/terrapower/armi/pull/1168>`_)
+#. Fixed ``Material.densityTimesHeatCapacity()``, moving from pseudo-density to physical density. (`PR#1129 <https://github.com/terrapower/armi/pull/1129>`_)
+#. Fixed ``TD_frac`` modification on UraniumOxide and MOX was not being applied correctly.
+#. Fixed Magnessium density curve. (`PR#1126 <https://github.com/terrapower/armi/pull/1126>`_)
+#. Fixed Potassium density curve. (`PR#1128 <https://github.com/terrapower/armi/pull/1128>`_)
+#. Fixed Concrete density curve. (`PR#1131 <https://github.com/terrapower/armi/pull/1131>`_)
+#. Fixed Copper density curve. (`PR#1150 <https://github.com/terrapower/armi/pull/1150>`_)
+#. Fixed Component.density. (`PR#1149 <https://github.com/terrapower/armi/pull/1149>`_)
 
 ARMI v0.2.5
 ===========
@@ -113,8 +121,8 @@ Bug fixes
 #. Fixed issue in ``armi/reactor/converters/uniformMesh.py`` was clearing out unchanged param data.
 #. Fixed issue where components were different if initialized through blueprints vs init.
 #. Fixed issue where component mass was conserved in axial expansion instead of density (`PR#846 <https://github.com/terrapower/armi/pull/846>`_)
-#. Fixed issue in ``HexBlock::rotatePins`` failed to modify ``pinLocation`` param (`#855 <https://github.com/terrapower/armi/pull/855>`_).
-#. Fixed issue in ``Core::_applyThermalExpansion`` failed to call ``block.completeInitiaLoading`` (`#885 <https://github.com/terrapower/armi/pull/885>`_).
+#. Fixed issue in ``HexBlock::rotatePins`` failed to modify ``pinLocation`` param. (`#855 <https://github.com/terrapower/armi/pull/855>`_)
+#. Fixed issue in ``Core::_applyThermalExpansion`` failed to call ``block.completeInitiaLoading``. (`#885 <https://github.com/terrapower/armi/pull/885>`_)
 #. Fixed issue where a validator would complain both simple and detailed cycles settings were used.
 #. Fixed issue where ``getReactionRates()`` was not accounting for burnup-dependent cross-sections.
 
