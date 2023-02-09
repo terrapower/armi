@@ -29,7 +29,7 @@ What's new in ARMI
 #. Split algorithms specific to hex assemblies out of ``FuelHandler``. (`PR#962 <https://github.com/terrapower/armi/pull/962>`_)
 #. Added 4614 nuclides to decouple the loading of RIPL-3 data from the standard framework run. (`PR#998 <https://github.com/terrapower/armi/pull/998>`_)
 #. Overhaul of the tight coupling routine in ARMI, and removal of ``looseCoupling`` setting. (`PR #1033 <https://github.com/terrapower/armi/pull/1033>`_)
-#. Added ``savePhysicsFiles`` setting to copy physics kernel I/O to directories organized by cycle and time step (e.g., c2n1). (`PR#958 <https://github.com/terrapower/armi/pull/952>`_)
+#. Added ``savePhysicsFiles`` setting to copy physics kernel I/O to directories organized by cycle and time step (e.g., c2n1). (`PR#952 <https://github.com/terrapower/armi/pull/952>`_)
 #. Add ``pinQuantities`` parameter category for block params that have spatial distribution.
 #. Use ``r.core.p.axialMesh`` instead of ``r.core.refAssem.getAxialMesh()`` for the uniform mesh converter. (`PR#959 <https://github.com/terrapower/armi/pull/959>`_)
 #. Add group structures for 21- and 94-groups used in photon transport.
