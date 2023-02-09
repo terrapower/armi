@@ -24,7 +24,7 @@ Release Date: 2023-02-09
 What's new in ARMI
 ------------------
 #. The ``Material`` class no longer subclasses ``Composite`` (`PR#1062 <https://github.com/terrapower/armi/pull/1062>`_)
-#. Froze the NumPy version to <= 1.23.5 (`PR#1035 https://github.com/terrapower/armi/pull/1035`_) to continue to support NumPy jagged arrays in the DatabaseInterface.
+#. Froze the NumPy version to <= 1.23.5 (`PR#1035 <https://github.com/terrapower/armi/pull/1035>`_) to continue to support NumPy jagged arrays in the DatabaseInterface.
 #. Split 3 classes in ``database3.py`` into 3 files (`PR#955 <https://github.com/terrapower/armi/pull/955>`_)
 #. Split algorithms specific to hex assemblies out of ``FuelHandler``. (`PR#962 <https://github.com/terrapower/armi/pull/962>`_)
 #. Added 4614 nuclides to decouple the loading of RIPL-3 data from the standard framework run. (`PR#998 <https://github.com/terrapower/armi/pull/998>`_)
