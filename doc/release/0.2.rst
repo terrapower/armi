@@ -53,7 +53,7 @@ Bug fixes
 #. Fixed non-fuel depletable components not being initialized with all nuclides with the ``explicitFissionProducts`` model (`PR#1067 <https://github.com/terrapower/armi/pull/1067>`_)
 #. Fixed consistency between cross section group manager and lattice physics interface for tight coupling. (`PR#1118 <https://github.com/terrapower/armi/pull/1118>`_)
 #. Fixed numerical diffusion in uniform mesh converter that affects number densities and cumulative parameters like DPA. (`PR#992 <https://github.com/terrapower/armi/pull/992>`_)
-#. Fix the formula to calculate ``b.p.puFrac``. (`PR#1168 https://github.com/terrapower/armi/pull/1168`_)
+#. Fix the formula to calculate ``b.p.puFrac``. (`PR#1168 <https://github.com/terrapower/armi/pull/1168>`_)
 #. Fixed ``Material.densityTimesHeatCapacity()``, moving from pseudo-density to physical density. (`PR#1129 <https://github.com/terrapower/armi/pull/1129>`_)
 #. Fixed ``TD_frac`` modification on UraniumOxide and MOX was not being applied correctly.
 #. Fixed Magnessium density curve. (`PR#1126 <https://github.com/terrapower/armi/pull/1126>`_)
