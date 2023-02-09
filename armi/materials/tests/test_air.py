@@ -228,10 +228,7 @@ class Test_Air(unittest.TestCase):
                 self.assertLess(error, 1e-2)
 
     def test_massFrac(self):
-        """
-        reproduce the number ratios results to PNNL-15870 Rev 1
-        """
-
+        """Reproduce the number ratios results to PNNL-15870 Rev 1."""
         air = Air()
 
         refC = 0.000150
@@ -250,31 +247,20 @@ class Test_Air(unittest.TestCase):
         error = math.fabs(nDens["AR"] / sum(nDens.values()) - refAR)
         self.assertLess(error, 1e-4)
 
-    def test_checkPropertyTempRange(self):
-
+    def test_validRanges(self):
         air = Air()
 
-        air.density(Tk=2399)
-        try:
-            air.density(Tk=2401)
-        except AssertionError:
-            pass
+        den0 = air.density(Tk=101)
+        denf = air.density(Tk=2399)
+        self.assertLess(denf, den0)
 
-        air.heatCapacity(Tk=1299)
-        try:
-            air.heatCapacity(Tk=1301)
-        except AssertionError:
-            pass
+        hc0 = air.heatCapacity(Tk=101)
+        hcf = air.heatCapacity(Tk=1299)
+        self.assertGreater(hcf, hc0)
 
-        air.thermalConductivity(Tk=849)
-        try:
-            air.thermalConductivity(Tk=851)
-        except AssertionError:
-            pass
-        try:
-            air.thermalConductivity(Tk=199)
-        except AssertionError:
-            pass
+        tc0 = air.thermalConductivity(Tk=201)
+        tcf = air.thermalConductivity(Tk=849)
+        self.assertGreater(tcf, tc0)
 
 
 if __name__ == "__main__":

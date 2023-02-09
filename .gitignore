@@ -24,6 +24,7 @@ doc/gallery
 doc/gallery-src/framework/*.yaml
 .coverage
 coverage.xml
+coverage_results.*
 htmlcov/
 monkeytype.*
 
