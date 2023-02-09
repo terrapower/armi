@@ -56,11 +56,11 @@ Bug fixes
 #. Fix the formula to calculate ``b.p.puFrac``. (`PR#1168 https://github.com/terrapower/armi/pull/1168`_)
 #. Fixed ``Material.densityTimesHeatCapacity()``, moving from pseudo-density to physical density. (`PR#1129 <https://github.com/terrapower/armi/pull/1129>`_)
 #. Fixed ``TD_frac`` modification on UraniumOxide and MOX was not being applied correctly.
-#. Fixed Magnessium density curve. (`PR#1126 https://github.com/terrapower/armi/pull/1126`_)
-#. Fixed Potassium density curve. (`PR#1128 https://github.com/terrapower/armi/pull/1128`_)
-#. Fixed Concrete density curve. (`PR#1131 https://github.com/terrapower/armi/pull/1131`_)
-#. Fixed Copper density curve. (`PR#1150 https://github.com/terrapower/armi/pull/1150`_)
-#. Fixed Component.density. (`PR#1149 https://github.com/terrapower/armi/pull/1149`_)
+#. Fixed Magnessium density curve. (`PR#1126 <https://github.com/terrapower/armi/pull/1126>`_)
+#. Fixed Potassium density curve. (`PR#1128 <https://github.com/terrapower/armi/pull/1128>`_)
+#. Fixed Concrete density curve. (`PR#1131 <https://github.com/terrapower/armi/pull/1131>`_)
+#. Fixed Copper density curve. (`PR#1150 <https://github.com/terrapower/armi/pull/1150>`_)
+#. Fixed Component.density. (`PR#1149 <https://github.com/terrapower/armi/pull/1149>`_)
 
 ARMI v0.2.5
 ===========
