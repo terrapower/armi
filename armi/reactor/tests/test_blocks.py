@@ -1009,6 +1009,38 @@ class Block_TestCase(unittest.TestCase):
         places = 6
         self.assertAlmostEqual(cur, ref, places=places)
 
+    def test_getPuMoles(self):
+        fuel = self.block.getComponent(Flags.FUEL)
+        vFrac = fuel.getVolumeFraction()
+        refDict = {
+            "AM241": 2.695633500634074e-05,
+            "U238": 0.015278429635341755,
+            "O16": 0.04829586365251901,
+            "U235": 0.004619446966056436,
+            "PU239": 0.0032640382635406515,
+            "PU238": 4.266845903720035e-06,
+            "PU240": 0.000813669265183342,
+            "PU241": 0.00011209296581262849,
+            "PU242": 2.3078961257395204e-05,
+        }
+        fuel.setNumberDensities({nuc: v / vFrac for nuc, v in refDict.items()})
+
+        cur = self.block.getPuMoles()
+
+        ndens = 0.0
+        for nucName in refDict.keys():
+            if nucName in ["PU238", "PU239", "PU240", "PU241", "PU242"]:
+                ndens += self.block.getNumberDensity(nucName)
+        ref = (
+            ndens
+            / units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
+            * self.block.getVolume()
+            * self.block.getSymmetryFactor()
+        )
+
+        places = 6
+        self.assertAlmostEqual(cur, ref, places=places)
+
     def test_getPuMass(self):
         fuel = self.block.getComponent(Flags.FUEL)
         refDict = {
