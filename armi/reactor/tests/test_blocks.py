@@ -1031,7 +1031,6 @@ class Block_TestCase(unittest.TestCase):
                 pu += self.block.getMass(nucName)
         self.assertAlmostEqual(cur, pu)
 
-
     def test_adjustDensity(self):
         u235Dens = 0.003
         u238Dens = 0.010
