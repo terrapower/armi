@@ -31,6 +31,12 @@ from armi.utils import directoryChangers
 from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.tests import mockRunLogs
 from armi.reactor.reactors import Reactor, Core
+from armi.settings.fwSettings.globalSettings import (
+    CONF_RUN_TYPE,
+    CONF_TIGHT_COUPLING,
+    CONF_CYCLES_SKIP_TIGHT_COUPLING_INTERACTION,
+    CONF_TIGHT_COUPLING_SETTINGS,
+)
 
 
 class InterfaceA(Interface):
@@ -108,13 +114,13 @@ class OperatorTests(unittest.TestCase):
     def test_setStateToDefault(self):
 
         # reset the runType for testing
-        self.assertEqual(self.o.cs["runType"], "Standard")
+        self.assertEqual(self.o.cs[CONF_RUN_TYPE], "Standard")
         self.o.cs = self.o.cs.modified(newSettings={"runType": "fake"})
-        self.assertEqual(self.o.cs["runType"], "fake")
+        self.assertEqual(self.o.cs[CONF_RUN_TYPE], "fake")
 
         # validate the method works
         cs = self.o.setStateToDefault(self.o.cs)
-        self.assertEqual(cs["runType"], "Standard")
+        self.assertEqual(cs[CONF_RUN_TYPE], "Standard")
 
     def test_snapshotRequest(self):
         with TemporaryDirectoryChanger():
@@ -123,28 +129,26 @@ class OperatorTests(unittest.TestCase):
 
 class TestTightCoupling(unittest.TestCase):
     def setUp(self):
-        self.cs = settings.Settings()
-        settings.setMasterCs(self.cs)
-        self.cs["tightCoupling"] = True
+        self.cs[CONF_TIGHT_COUPLING] = True
         self.o = Operator(self.cs)
         self.o.r = Reactor("empty", None)
         self.o.r.core = Core("empty")
 
     def test_couplingIsActive(self):
-        """ensure that cs["tightCoupling"] controls couplingIsActive"""
+        """ensure that cs[CONF_TIGHT_COUPLING] controls couplingIsActive"""
         self.assertTrue(self.o.couplingIsActive())
-        self.o.cs["tightCoupling"] = False
+        self.o.cs[CONF_TIGHT_COUPLING] = False
         self.assertFalse(self.o.couplingIsActive())
 
     def test_performTightCoupling_Inactive(self):
-        """ensures no action by _performTightCoupling if cs["tightCoupling"] = false"""
-        self.o.cs["tightCoupling"] = False
+        """ensures no action by _performTightCoupling if cs[CONF_TIGHT_COUPLING] = false"""
+        self.o.cs[CONF_TIGHT_COUPLING] = False
         self.o._performTightCoupling(0, 0, writeDB=False)
         self.assertEqual(self.o.r.core.p.coupledIteration, 0)
 
     def test_performTightCoupling_skip(self):
-        """ensure that cycles within cs["cyclesSkipTightCouplingInteraction"] are skipped"""
-        self.o.cs["cyclesSkipTightCouplingInteraction"] = [1]
+        """ensure that cycles within cs[CONF_CYCLES_SKIP_TIGHT_COUPLING_INTERACTION] are skipped"""
+        self.o.cs[CONF_CYCLES_SKIP_TIGHT_COUPLING_INTERACTION] = [1]
         with mockRunLogs.BufferLog() as mock:
             self.o._performTightCoupling(1, 0, writeDB=False)
             self.assertIn("interactAllCoupled disabled this cycle", mock.getStdout())
@@ -216,8 +220,7 @@ class TestTightCoupling(unittest.TestCase):
         """
         prevIterKeff = 0.9
         currIterKeff = 1.0
-        self.o.cs["tightCoupling"] = True
-        self.o.cs["tightCouplingSettings"] = {
+        self.o.cs[CONF_TIGHT_COUPLING_SETTINGS] = {
             "globalFlux": {"parameter": "keff", "convergence": 1e-05}
         }
         globalFlux = GlobalFluxInterfaceUsingExecuters(self.o.r, self.o.cs)
