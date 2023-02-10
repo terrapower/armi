@@ -405,7 +405,7 @@ class Operator:  # pylint: disable=too-many-public-methods
                 self.r.core.p.coupledIteration = coupledIteration + 1
                 converged = self.interactAllCoupled(coupledIteration)
                 if converged:
-                    runLog.extra(
+                    runLog.important(
                         f"Tight coupling iterations for c{cycle:02d}n{timeNode:02d} have converged!"
                     )
                     break
