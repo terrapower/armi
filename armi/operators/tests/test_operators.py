@@ -114,12 +114,12 @@ class OperatorTests(unittest.TestCase):
             # test cases where we should do a coupling interaction
             self.o.cs["cyclesSkipTightCouplingInteraction"] = [1]
             self.o.cs["tightCoupling"] = True
-            hasCouplingIntearction = 1
+            hasCouplingInteraction = 1
             self.dbWriteForCoupling(writeDB=True)
-            self.assertEqual(self.r.core.p.coupledIteration, hasCouplingIntearction)
+            self.assertEqual(self.r.core.p.coupledIteration, hasCouplingInteraction)
             self.r.core.p.coupledIteration = 0
             self.dbWriteForCoupling(writeDB=False)
-            self.assertEqual(self.r.core.p.coupledIteration, hasCouplingIntearction)
+            self.assertEqual(self.r.core.p.coupledIteration, hasCouplingInteraction)
 
             # test cases where no coupling interaction due to settings
             self.r.core.p.coupledIteration = 0
