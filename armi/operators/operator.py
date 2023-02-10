@@ -395,7 +395,7 @@ class Operator:  # pylint: disable=too-many-public-methods
         if cycle in skipCycles:
             runLog.warning(
                 f"interactAllCoupled disabled this cycle ({self.r.p.cycle}) due to "
-                "`cycleTreatTightConverged` setting."
+                "`cyclesSkipTightCouplingInteraction` setting."
             )
         else:
             self._convergenceSummary = collections.defaultdict(list)
