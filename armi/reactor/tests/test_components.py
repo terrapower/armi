@@ -1114,7 +1114,7 @@ class TestHexHoledCircle(TestShapedComponent):
         """Test that ARMI can thermally expands a holed hexagon
 
         .. test:: Test that ARMI can thermally expands a holed hexagon
-           :id: TEST_REACTOR_THERMAL_EXPANSION_9
+           :id: TEST_REACTOR_THERMAL_EXPANSION_10
            :links: REQ_REACTOR_THERMAL_EXPANSION
         """
         self.assertTrue(self.component.THERMAL_EXPANSION_DIMS)
