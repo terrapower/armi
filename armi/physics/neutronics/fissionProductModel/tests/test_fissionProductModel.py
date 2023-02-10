@@ -71,7 +71,6 @@ class TestFissionProductModelLumpedFissionProducts(unittest.TestCase):
         self.assertIn("XE135", fissionProductNames)
 
 
-
 class TestFissionProductModelExplicitMC2Library(unittest.TestCase):
     """
     Tests the fission product model interface behavior when explicit fission products are enabled.
