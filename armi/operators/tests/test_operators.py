@@ -19,7 +19,7 @@ import unittest
 import collections
 
 from armi import settings
-from armi.interfaces import Interface
+from armi.interfaces import Interface, TightCoupler
 from armi.operators.operator import Operator
 from armi.reactor.tests import test_reactors
 from armi.settings.caseSettings import Settings
@@ -29,6 +29,7 @@ from armi.physics.neutronics.globalFlux.globalFluxInterface import (
 )
 from armi.utils import directoryChangers
 from armi.bookkeeping.db.databaseInterface import DatabaseInterface
+from armi.tests import mockRunLogs
 
 
 class InterfaceA(Interface):
@@ -109,27 +110,65 @@ class OperatorTests(unittest.TestCase):
         self.o.cs["tightCoupling"] = True
         self.assertTrue(self.o.couplingIsActive())
 
-    def test_performTightCoupling(self):
+    def test_performTightCoupling_Inactive(self):
+        """ensures no action by _performTightCoupling if cs["tightCoupling"] = false"""
+        self.o.cs["tightCoupling"] = False
+        self.o._performTightCoupling(0, 0, writeDB=False)
+        self.assertEqual(self.r.core.p.coupledIteration, 0)
+
+    def test_performTightCoupling_skip(self):
+        """ensure that cycles within cs["cyclesSkipTightCouplingInteraction"] are skipped"""
+        self.o.cs["cyclesSkipTightCouplingInteraction"] = [1]
+        self.o.cs["tightCoupling"] = True
+        with mockRunLogs.BufferLog() as mock:
+            self.o._performTightCoupling(1, 0, writeDB=False)
+            self.assertIn("interactAllCoupled disabled this cycle", mock.getStdout())
+            self.assertEqual(self.r.core.p.coupledIteration, 0)
+
+    def test_performTightCoupling_notConverged(self):
+        """ensure that the appropriate runLog.warning is addressed in tight coupling reaches max num of iters"""
+
+        class NoConverge(TightCoupler):
+            def isConverged(self, _val: TightCoupler._SUPPORTED_TYPES) -> bool:
+                return False
+
+        # pylint: disable=abstract-method
+        class InterfaceNoConverge(Interface):
+            name = "NoConverge"
+
+            def __init__(self, r, cs):
+                super().__init__(r, cs)
+                self.coupler = NoConverge(param="dummy", tolerance=None, maxIters=1)
+
+            def getTightCouplingValue(self):
+                return 0.0
+
+        self.o.removeAllInterfaces()
+        self.o.addInterface(InterfaceNoConverge(None, settings.Settings()))
+        self.o.cs["tightCoupling"] = True
+        with mockRunLogs.BufferLog() as mock:
+            self.o._performTightCoupling(0, 0, writeDB=False)
+            self.assertIn(
+                "have not converged! The maximum number of iterations", mock.getStdout()
+            )
+
+    def test_performTightCoupling_WriteDB(self):
+        """ensure a tight coupling iteration accours and that a DB WILL be written if requested"""
+        self.o.cs["tightCoupling"] = True
+        hasCouplingInteraction = 1
         with directoryChangers.TemporaryDirectoryChanger():
-            # test cases where we should do a coupling interaction
-            self.o.cs["cyclesSkipTightCouplingInteraction"] = [1]
-            self.o.cs["tightCoupling"] = True
-            hasCouplingInteraction = 1
-            self.dbWriteForCoupling(writeDB=True)
-            self.assertEqual(self.r.core.p.coupledIteration, hasCouplingInteraction)
-            self.r.core.p.coupledIteration = 0
+            with mockRunLogs.BufferLog() as mock:
+                self.dbWriteForCoupling(writeDB=True)
+                self.assertIn("Writing to database for statepoint:", mock.getStdout())
+                self.assertEqual(self.r.core.p.coupledIteration, hasCouplingInteraction)
+
+    def test_performTightCoupling_NoWriteDB(self):
+        """ensure a tight coupling iteration accours and that a DB WILL NOT be written if requested"""
+        self.o.cs["tightCoupling"] = True
+        hasCouplingInteraction = 1
+        with directoryChangers.TemporaryDirectoryChanger():
             self.dbWriteForCoupling(writeDB=False)
             self.assertEqual(self.r.core.p.coupledIteration, hasCouplingInteraction)
-
-            # test cases where no coupling interaction due to settings
-            self.r.core.p.coupledIteration = 0
-            noCouplingInteractions = 0
-            # because cyclesSkipTightCouplingInteraction above
-            self.o._performTightCoupling(1, 0, writeDB=False)
-            self.assertEqual(self.r.core.p.coupledIteration, noCouplingInteractions)
-            self.o.cs["tightCoupling"] = False
-            self.o._performTightCoupling(2, 0, writeDB=False)
-            self.assertEqual(self.r.core.p.coupledIteration, noCouplingInteractions)
 
     def dbWriteForCoupling(self, writeDB: bool):
         self.o.removeAllInterfaces()

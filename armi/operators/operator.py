@@ -412,7 +412,7 @@ class Operator:  # pylint: disable=too-many-public-methods
             if not converged:
                 runLog.warning(
                     f"Tight coupling iterations for c{cycle:02d}n{timeNode:02d} have not converged!"
-                    f"The maximum number of iterations, {self.cs[CONF_TIGHT_COUPLING_MAX_ITERS]}, was reached."
+                    f" The maximum number of iterations, {self.cs[CONF_TIGHT_COUPLING_MAX_ITERS]}, was reached."
                 )
         if writeDB:
             # database has not yet been written, so we need to write it.
