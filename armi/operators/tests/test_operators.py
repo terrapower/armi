@@ -145,7 +145,6 @@ class TestTightCoupling(unittest.TestCase):
     def test_performTightCoupling_skip(self):
         """ensure that cycles within cs["cyclesSkipTightCouplingInteraction"] are skipped"""
         self.o.cs["cyclesSkipTightCouplingInteraction"] = [1]
-        self.o.cs["tightCoupling"] = True
         with mockRunLogs.BufferLog() as mock:
             self.o._performTightCoupling(1, 0, writeDB=False)
             self.assertIn("interactAllCoupled disabled this cycle", mock.getStdout())
@@ -170,7 +169,6 @@ class TestTightCoupling(unittest.TestCase):
                 return 0.0
 
         self.o.addInterface(InterfaceNoConverge(None, self.o.cs))
-        self.o.cs["tightCoupling"] = True
         with mockRunLogs.BufferLog() as mock:
             self.o._performTightCoupling(0, 0, writeDB=False)
             self.assertIn(
@@ -179,7 +177,6 @@ class TestTightCoupling(unittest.TestCase):
 
     def test_performTightCoupling_WriteDB(self):
         """ensure a tight coupling iteration accours and that a DB WILL be written if requested"""
-        self.o.cs["tightCoupling"] = True
         hasCouplingInteraction = 1
         with directoryChangers.TemporaryDirectoryChanger():
             with mockRunLogs.BufferLog() as mock:
@@ -191,7 +188,6 @@ class TestTightCoupling(unittest.TestCase):
 
     def test_performTightCoupling_NoWriteDB(self):
         """ensure a tight coupling iteration accours and that a DB WILL NOT be written if requested"""
-        self.o.cs["tightCoupling"] = True
         hasCouplingInteraction = 1
         with directoryChangers.TemporaryDirectoryChanger():
             self.dbWriteForCoupling(writeDB=False)
