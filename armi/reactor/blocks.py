@@ -814,6 +814,11 @@ class Block(composites.Composite):
         for child in self.iterComponents():
             child.p.massHmBOL = child.getHMMass() * sf  # scale to full block
             massHmBOL += child.p.massHmBOL
+            self.p.puFrac = (
+                self.getPuMoles() / self.p.molesHmBOL
+                if self.p.molesHmBOL > 0.0
+                else 0.0
+            )
         self.p.massHmBOL = massHmBOL
         return hmDens
 
