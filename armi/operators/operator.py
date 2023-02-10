@@ -415,7 +415,9 @@ class Operator:  # pylint: disable=too-many-public-methods
 
         halt = False
 
-        cycleNodeTag = self._expandCycleAndTimeNodeArgs(*args)
+        cycleNodeTag = self._expandCycleAndTimeNodeArgs(
+            *args, interactionName=interactionName
+        )
         runLog.header(
             "===========  Triggering {} Event ===========".format(
                 interactionName + cycleNodeTag
@@ -471,27 +473,32 @@ class Operator:  # pylint: disable=too-many-public-methods
         This looks better as multiple lines but it's a lot easier to grep as one line.
         We leverage newlines instead of long banners to save disk space.
         """
-        nodeInfo = self._expandCycleAndTimeNodeArgs(*args)
+        nodeInfo = self._expandCycleAndTimeNodeArgs(
+            *args, interactionName=interactionName
+        )
         line = "=========== {:02d} - {:30s} {:15s} ===========".format(
             statePointIndex, interface.name, interactionName + nodeInfo
         )
         runLog.header(line)
 
     @staticmethod
-    def _expandCycleAndTimeNodeArgs(*args):
+    def _expandCycleAndTimeNodeArgs(*args, interactionName):
         """Return text annotating information for current run event.
 
         Notes
         -----
-        - Init: empty
+        - Init, BOL, EOL: empty
         - Everynode: (cycle, time node)
+        - BOC: cycle number
         - Coupling: iteration number
         """
         cycleNodeInfo = ""
         if args:
             if len(args) == 1:
-                # useful for tight coupling
-                cycleNodeInfo = f" - iteration {args[0]}"
+                if interactionName == "Coupled":
+                    cycleNodeInfo = f" - iteration {args[0]}"
+                elif interactionName in ("BOC", "EOC"):
+                    cycleNodeInfo = f" - cycle {args[0]}"
             else:
                 cycleNodeInfo = f" - cycle {args[0]}, node {args[1]}"
         return cycleNodeInfo
