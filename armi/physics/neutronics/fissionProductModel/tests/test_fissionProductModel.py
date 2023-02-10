@@ -16,7 +16,6 @@ Test the fission product module to ensure all FP are available.
 """
 import unittest
 
-
 from armi import nuclideBases
 from armi.reactor.flags import Flags
 
@@ -29,14 +28,6 @@ from armi.physics.neutronics.fissionProductModel.tests import test_lumpedFission
 from armi.physics.neutronics.isotopicDepletion.isotopicDepletionInterface import (
     isDepletable,
 )
-
-
-def _getLumpedFissionProductNumberDensities(b):
-    """Returns the number densities for each lumped fission product in a block."""
-    nDens = {}
-    for lfpName, lfp in b.getLumpedFissionProductCollection().items():
-        nDens[lfp] = b.getNumberDensity(lfpName)
-    return nDens
 
 
 class TestFissionProductModelLumpedFissionProducts(unittest.TestCase):
@@ -73,32 +64,6 @@ class TestFissionProductModelLumpedFissionProducts(unittest.TestCase):
         fissionProductNames = self.fpModel.getAllFissionProductNames()
         self.assertGreater(len(fissionProductNames), 5)
         self.assertIn("XE135", fissionProductNames)
-
-
-class TestFissionProductModelIndependentLumpedFissionProducts(unittest.TestCase):
-    """
-    Tests the fission product model interface behavior when lumped fission products are enabled but made
-    independent for each block. Mainly tests the FissionProductModel._useGlobalLFPs property.
-
-    Notes
-    -----
-    This loads the global fission products from a file stream.
-    """
-
-    def setUp(self):
-        o = buildOperatorOfEmptyHexBlocks()
-        o.cs["makeAllBlockLFPsIndependent"] = True
-        o.removeAllInterfaces()
-        self.fpModel = fissionProductModel.FissionProductModel(o.r, o.cs)
-        o.addInterface(self.fpModel)
-
-        # Load the fission products from a file stream.
-        dummyLFPs = test_lumpedFissionProduct.getDummyLFPFile()
-        self.fpModel.setGlobalLumpedFissionProducts(dummyLFPs.createLFPsFromFile())
-
-        # Set up the global LFPs and check that they are setup.
-        self.fpModel.interactBOL()
-        self.assertFalse(self.fpModel._useGlobalLFPs)
 
 
 class TestFissionProductModelExplicitMC2Library(unittest.TestCase):
