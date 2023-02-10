@@ -387,17 +387,26 @@ class Operator:  # pylint: disable=too-many-public-methods
         -----
         writeDB is False for OperatorSnapshots as the DB gets written at EOL.
         """
-        if self.couplingIsActive():
+        if not self.couplingIsActive():
+            # no coupling was requested
+            return
+        skipCycles = (int(val) for val in self.cs["cyclesSkipTightCouplingInteraction"])
+        if self.r.p.cycle in skipCycles:
+            runLog.warning(
+                f"interactAllCoupled disabled this cycle ({self.r.p.cycle}) due to "
+                "`cycleTreatTightConverged` setting."
+            )
+        else:
             self._convergenceSummary = collections.defaultdict(list)
             for coupledIteration in range(self.cs["tightCouplingMaxNumIters"]):
                 self.r.core.p.coupledIteration = coupledIteration + 1
                 converged = self.interactAllCoupled(coupledIteration)
                 if converged:
                     break
-            if writeDB:
-                # database has not yet been written, so we need to write it.
-                dbi = self.getInterface("database")
-                dbi.writeDBEveryNode(cycle, timeNode)
+        if writeDB:
+            # database has not yet been written, so we need to write it.
+            dbi = self.getInterface("database")
+            dbi.writeDBEveryNode(cycle, timeNode)
 
     def _interactAll(self, interactionName, activeInterfaces, *args):
         """
@@ -666,16 +675,9 @@ class Operator:  # pylint: disable=too-many-public-methods
 
         reportingUtils.writeTightCouplingConvergenceSummary(self._convergenceSummary)
         converged = all(converged)
-        convCycleInts = (int(val) for val in self.cs["cycleTreatTightConverged"])
         if converged:
             runLog.important(
                 "Tight Coupling Convergence reached, proceeding to next cycle."
-            )
-            return True
-        elif self.r.p.cycle in convCycleInts:
-            runLog.warning(
-                "Tight Coupling Convergence not reached, but treating "
-                "as converged due to `cycleTreatTightConverged` setting."
             )
             return True
         else:

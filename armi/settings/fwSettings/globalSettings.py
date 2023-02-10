@@ -82,7 +82,7 @@ CONF_N_CYCLES = "nCycles"
 CONF_TIGHT_COUPLING = "tightCoupling"
 CONF_TIGHT_COUPLING_MAX_ITERS = "tightCouplingMaxNumIters"
 CONF_TIGHT_COUPLING_SETTINGS = "tightCouplingSettings"
-CONF_CYCLE_TREAT_TIGHT_CONVERGED = "cycleTreatTightConverged"
+CONF_CYCLES_SKIP_TIGHT_COUPLING_INTERACTION = "cyclesSkipTightCouplingInteraction"
 CONF_OPERATOR_LOCATION = "operatorLocation"
 CONF_OUTPUT_FILE_EXTENSION = "outputFileExtension"
 CONF_PLOTS = "plots"
@@ -600,10 +600,12 @@ def defineSettings() -> List[setting.Setting]:
             description="Maximum number of iterations for tight coupling.",
         ),
         setting.Setting(
-            CONF_CYCLE_TREAT_TIGHT_CONVERGED,
+            CONF_CYCLES_SKIP_TIGHT_COUPLING_INTERACTION,
             default=[],
-            label="Cycles to treat as converged.",
-            description="List of cycle numbers to treat as converged.",
+            label="Cycles to skip the tight coupling infraction.",
+            description="List of cycle numbers skip tight coupling interaction for. "
+            "Will still update component temps, etc during these cycles, will just "
+            "not iterate a second (or more) time.",
         ),
         tightCouplingSettings.TightCouplingSettingDef(
             CONF_TIGHT_COUPLING_SETTINGS,
