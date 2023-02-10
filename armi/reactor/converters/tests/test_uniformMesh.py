@@ -53,13 +53,21 @@ class TestConverterFactory(unittest.TestCase):
         gammaConverter = uniformMesh.converterFactory(self.dummyOptions)
         self.assertTrue(gammaConverter, uniformMesh.GammaUniformMeshConverter)
 
-
+# LOOK OUT, THIS GETS DELETED LATER ON SO IT DOESN'T RUN... IT IS AN ABSTRACT CLASS!!
 class TestAssemblyUniformMesh(unittest.TestCase):
     """
     Tests individual operations of the uniform mesh converter
 
     Uses the test reactor for detailedAxialExpansion
+
+    This class uses the default axial average uniform mesh generator
     """
+    def getSettings(self):
+        uniformMeshSettings = {
+            "uniformMeshGenerator": "average",
+            "averageMeshTolerance": 2.0,
+        }
+        return self.o.cs.modified(newSettings=uniformMeshSettings)
 
     def setUp(self):
         self.o, self.r = loadTestReactor(
@@ -67,7 +75,7 @@ class TestAssemblyUniformMesh(unittest.TestCase):
         )
         reduceTestReactorRings(self.r, self.o.cs, 2)
 
-        self.converter = uniformMesh.NeutronicsUniformMeshConverter(cs=self.o.cs)
+        self.converter = uniformMesh.NeutronicsUniformMeshConverter(cs=self.getSettings())
         self.converter._sourceReactor = self.r
         self.converter._setParamsToUpdate("in")
 
@@ -217,6 +225,18 @@ class TestAssemblyUniformMesh(unittest.TestCase):
             self.assertEqual(cachedBlockParams[b]["flux"], 1.0)
             self.assertEqual(cachedBlockParams[b]["power"], 10.0)
             self.assertListEqual(list(cachedBlockParams[b]["mgFlux"]), [1.0, 2.0])
+
+
+class TestAssemblyUniformMeshKMeans(TestAssemblyUniformMesh):
+    """
+    This class uses the k-means clustering uniform mesh generator
+    """
+    def getSettings(self):
+        uniformMeshSettings = {
+            "uniformMeshGenerator": "kMeansClustering",
+            "uniformMeshTolerance": 2.0,
+        }
+        return self.o.cs.modified(newSettings=uniformMeshSettings)
 
 
 class TestUniformMeshComponents(unittest.TestCase):
