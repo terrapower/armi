@@ -602,7 +602,7 @@ def defineSettings() -> List[setting.Setting]:
         setting.Setting(
             CONF_CYCLES_SKIP_TIGHT_COUPLING_INTERACTION,
             default=[],
-            label="Cycles to skip the tight coupling infraction.",
+            label="Cycles to skip the tight coupling interaction.",
             description="List of cycle numbers skip tight coupling interaction for. "
             "Will still update component temps, etc during these cycles, will just "
             "not iterate a second (or more) time.",
