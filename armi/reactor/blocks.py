@@ -1900,7 +1900,7 @@ class HexBlock(Block):
         nRings = hexagon.numRingsToHoldNumCells(self.getNumPins())
         if not numPins == 3 * nRings * (nRings - 1) + 1:
             runLog.warning(
-                f"Block design for {b} cannot be verified because of a non-regular hex lattice."
+                f"Block design for {self} cannot be verified because of a non-regular hex lattice."
                 f"Number of pins = {numPins}",
                 single=True,
             )
@@ -1964,7 +1964,6 @@ class HexBlock(Block):
                 # has no ip and is circular on inside so following
                 # code will not work
                 duct = None
-
         clad = self.getComponent(Flags.CLAD)
         if any(c is None for c in (duct, wire, clad)):
             return None
