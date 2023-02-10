@@ -1107,7 +1107,7 @@ class TestHexHoledCircle(TestShapedComponent):
 
     def test_getArea(self):
         od = self.component.getDimension("od")
-        opHole = self.component.getDimension("holeOP")
+        holeOP = self.component.getDimension("holeOP")
         mult = self.component.getDimension("mult")
         hexarea = math.sqrt(3.0) / 2.0 * (holeOP ** 2)
         holeArea = math.pi * ((od / 2.0) ** 2)
