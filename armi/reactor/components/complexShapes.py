@@ -92,7 +92,7 @@ class HoledHexagon(basicShapes.Hexagon):
 
 
 class HexHoledCircle(basicShapes.Circle):
-    """Circle with a uniform hexagonal hole hollowed out of it."""
+    """Circle with a single uniform hexagonal hole hollowed out of it."""
 
     THERMAL_EXPANSION_DIMS = {"od", "holeOP"}
 
