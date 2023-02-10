@@ -238,7 +238,7 @@ class TestAssemblyUniformMeshKMeans(TestAssemblyUniformMesh):
 
     def getSettings(self):
         uniformMeshSettings = {
-            "uniformMeshGenerator": "kMeansClustering",
+            "uniformMeshGenerator": "kMeansCluster",
             "uniformMeshTolerance": 2.0,
         }
         return self.o.cs.modified(newSettings=uniformMeshSettings)
