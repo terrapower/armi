@@ -388,7 +388,16 @@ class Operator:  # pylint: disable=too-many-public-methods
         -----
         writeDB is False for OperatorSnapshots as the DB gets written at EOL.
         """
-        if self.couplingIsActive():
+        if not self.couplingIsActive():
+            # no coupling was requested
+            return
+        skipCycles = (int(val) for val in self.cs["cyclesSkipTightCouplingInteraction"])
+        if cycle in skipCycles:
+            runLog.warning(
+                f"interactAllCoupled disabled this cycle ({self.r.p.cycle}) due to "
+                "`cycleTreatTightConverged` setting."
+            )
+        else:
             self._convergenceSummary = collections.defaultdict(list)
             for coupledIteration in range(self.cs["tightCouplingMaxNumIters"]):
                 self.r.core.p.coupledIteration = coupledIteration + 1
@@ -403,10 +412,10 @@ class Operator:  # pylint: disable=too-many-public-methods
                     f"Tight coupling iterations for c{cycle:02d}n{timeNode:02d} have not converged!"
                     f"The maximum number of iterations, {self.cs[CONF_TIGHT_COUPLING_MAX_ITERS]}, was reached."
                 )
-            if writeDB:
-                # database has not yet been written, so we need to write it.
-                dbi = self.getInterface("database")
-                dbi.writeDBEveryNode(cycle, timeNode)
+        if writeDB:
+            # database has not yet been written, so we need to write it.
+            dbi = self.getInterface("database")
+            dbi.writeDBEveryNode(cycle, timeNode)
 
     def _interactAll(self, interactionName, activeInterfaces, *args):
         """
