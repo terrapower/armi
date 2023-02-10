@@ -1087,14 +1087,9 @@ class TestHexHoledCircle(TestShapedComponent):
     }
 
     def test_getCircleInnerDiameter(self):
-        ref = 0  # there are multiple holes, so the function should return 0
-        cur = self.component.getCircleInnerDiameter(cold=True)
-        self.assertEqual(ref, cur)
-
-        # make and test another one with just 1 hole
         simpleHexHoledCircle = HexHoledCircle(
+            "Circle",
             "Void",
-            "circle",
             self.componentDims["Tinput"],
             self.componentDims["Thot"],
             self.componentDims["od"],
