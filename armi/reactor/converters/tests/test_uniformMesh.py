@@ -53,6 +53,7 @@ class TestConverterFactory(unittest.TestCase):
         gammaConverter = uniformMesh.converterFactory(self.dummyOptions)
         self.assertTrue(gammaConverter, uniformMesh.GammaUniformMeshConverter)
 
+
 # LOOK OUT, THIS GETS DELETED LATER ON SO IT DOESN'T RUN... IT IS AN ABSTRACT CLASS!!
 class TestAssemblyUniformMesh(unittest.TestCase):
     """
@@ -62,6 +63,7 @@ class TestAssemblyUniformMesh(unittest.TestCase):
 
     This class uses the default axial average uniform mesh generator
     """
+
     def getSettings(self):
         uniformMeshSettings = {
             "uniformMeshGenerator": "average",
@@ -75,7 +77,9 @@ class TestAssemblyUniformMesh(unittest.TestCase):
         )
         reduceTestReactorRings(self.r, self.o.cs, 2)
 
-        self.converter = uniformMesh.NeutronicsUniformMeshConverter(cs=self.getSettings())
+        self.converter = uniformMesh.NeutronicsUniformMeshConverter(
+            cs=self.getSettings()
+        )
         self.converter._sourceReactor = self.r
         self.converter._setParamsToUpdate("in")
 
@@ -231,6 +235,7 @@ class TestAssemblyUniformMeshKMeans(TestAssemblyUniformMesh):
     """
     This class uses the k-means clustering uniform mesh generator
     """
+
     def getSettings(self):
         uniformMeshSettings = {
             "uniformMeshGenerator": "kMeansClustering",
