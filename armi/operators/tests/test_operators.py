@@ -109,11 +109,27 @@ class OperatorTests(unittest.TestCase):
         self.o.cs["tightCoupling"] = True
         self.assertTrue(self.o.couplingIsActive())
 
-    def test_dbWriteForCoupling(self):
+    def test_performTightCoupling(self):
         with directoryChangers.TemporaryDirectoryChanger():
+            # test cases where we should do a coupling interaction
+            self.o.cs["cyclesSkipTightCouplingInteraction"] = [1]
             self.o.cs["tightCoupling"] = True
+            hasCouplingInteraction = 1
             self.dbWriteForCoupling(writeDB=True)
+            self.assertEqual(self.r.core.p.coupledIteration, hasCouplingInteraction)
+            self.r.core.p.coupledIteration = 0
             self.dbWriteForCoupling(writeDB=False)
+            self.assertEqual(self.r.core.p.coupledIteration, hasCouplingInteraction)
+
+            # test cases where no coupling interaction due to settings
+            self.r.core.p.coupledIteration = 0
+            noCouplingInteractions = 0
+            # because cyclesSkipTightCouplingInteraction above
+            self.o._performTightCoupling(1, 0, writeDB=False)
+            self.assertEqual(self.r.core.p.coupledIteration, noCouplingInteractions)
+            self.o.cs["tightCoupling"] = False
+            self.o._performTightCoupling(2, 0, writeDB=False)
+            self.assertEqual(self.r.core.p.coupledIteration, noCouplingInteractions)
 
     def dbWriteForCoupling(self, writeDB: bool):
         self.o.removeAllInterfaces()
