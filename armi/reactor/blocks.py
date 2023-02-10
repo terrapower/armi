@@ -1883,7 +1883,6 @@ class HexBlock(Block):
             )
             return
         # check wire wrap in contact with clad
-
         if (
             self.getComponent(Flags.CLAD) is not None
             and self.getComponent(Flags.WIRE) is not None
@@ -1896,16 +1895,16 @@ class HexBlock(Block):
                     single=True,
                 )
 
+        # check if it is a regular hex lattice; this code won't work otherwise
         numPins = self.getNumPins()
         nRings = hexagon.numRingsToHoldNumCells(self.getNumPins())
         if not numPins == 3 * nRings * (nRings - 1) + 1:
-            # not a regular hex lattice; this code won't work
             runLog.warning(
                 f"Block design for {b} cannot be verified because of a non-regular hex lattice."
                 f"Number of pins = {numPins}",
                 single=True,
             )
-            return None
+            return
 
         # check clad duct overlap
         pinToDuctGap = self.getPinToDuctGap(cold=True)
