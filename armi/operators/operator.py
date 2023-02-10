@@ -665,7 +665,21 @@ class Operator:  # pylint: disable=too-many-public-methods
                 self._convergenceSummary[key].append(coupler.eps)
 
         reportingUtils.writeTightCouplingConvergenceSummary(self._convergenceSummary)
-        return all(converged)
+        converged = all(converged)
+        convCycleInts = (int(val) for val in self.cs["cycleTreatTightConverged"])
+        if converged:
+            runLog.important(
+                "Tight Coupling Convergence reached, proceeding to next cycle."
+            )
+            return True
+        elif self.r.p.cycle in convCycleInts:
+            runLog.warning(
+                "Tight Coupling Convergence not reached, but treating "
+                "as converged due to `cycleTreatTightConverged` setting."
+            )
+            return True
+        else:
+            return False
 
     def interactAllError(self):
         """Interact when an error is raised by any other interface. Provides a wrap-up option on the way to a crash."""

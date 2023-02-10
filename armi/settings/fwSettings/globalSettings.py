@@ -82,6 +82,7 @@ CONF_N_CYCLES = "nCycles"
 CONF_TIGHT_COUPLING = "tightCoupling"
 CONF_TIGHT_COUPLING_MAX_ITERS = "tightCouplingMaxNumIters"
 CONF_TIGHT_COUPLING_SETTINGS = "tightCouplingSettings"
+CONF_CYCLE_TREAT_TIGHT_CONVERGED = "cycleTreatTightConverged"
 CONF_OPERATOR_LOCATION = "operatorLocation"
 CONF_OUTPUT_FILE_EXTENSION = "outputFileExtension"
 CONF_PLOTS = "plots"
@@ -597,6 +598,12 @@ def defineSettings() -> List[setting.Setting]:
             default=4,
             label="Maximum number of iterations for tight coupling.",
             description="Maximum number of iterations for tight coupling.",
+        ),
+        setting.Setting(
+            CONF_CYCLE_TREAT_TIGHT_CONVERGED,
+            default=[],
+            label="Cycles to treat as converged.",
+            description="List of cycle numbers to treat as converged.",
         ),
         tightCouplingSettings.TightCouplingSettingDef(
             CONF_TIGHT_COUPLING_SETTINGS,
