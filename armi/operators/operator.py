@@ -41,7 +41,11 @@ from armi.bookkeeping.report import reportingUtils
 from armi.operators import settingsValidation
 from armi.operators.runTypes import RunTypes
 from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
-from armi.settings.fwSettings.globalSettings import CONF_TIGHT_COUPLING_MAX_ITERS
+from armi.settings.fwSettings.globalSettings import (
+    CONF_TIGHT_COUPLING,
+    CONF_TIGHT_COUPLING_MAX_ITERS,
+    CONF_CYCLES_SKIP_TIGHT_COUPLING_INTERACTION,
+)
 from armi.utils import codeTiming
 from armi.utils import (
     pathTools,
@@ -392,7 +396,7 @@ class Operator:  # pylint: disable=too-many-public-methods
             # no coupling was requested
             return
         skipCycles = tuple(
-            int(val) for val in self.cs["cyclesSkipTightCouplingInteraction"]
+            int(val) for val in self.cs[CONF_CYCLES_SKIP_TIGHT_COUPLING_INTERACTION]
         )
         if cycle in skipCycles:
             runLog.warning(
@@ -401,7 +405,7 @@ class Operator:  # pylint: disable=too-many-public-methods
             )
         else:
             self._convergenceSummary = collections.defaultdict(list)
-            for coupledIteration in range(self.cs["tightCouplingMaxNumIters"]):
+            for coupledIteration in range(self.cs[CONF_TIGHT_COUPLING_MAX_ITERS]):
                 self.r.core.p.coupledIteration = coupledIteration + 1
                 converged = self.interactAllCoupled(coupledIteration)
                 if converged:
@@ -1137,4 +1141,4 @@ class Operator:  # pylint: disable=too-many-public-methods
 
     def couplingIsActive(self):
         """True if any kind of physics coupling is active."""
-        return self.cs["tightCoupling"]
+        return self.cs[CONF_TIGHT_COUPLING]
