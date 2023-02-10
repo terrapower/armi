@@ -129,6 +129,7 @@ class OperatorTests(unittest.TestCase):
 
 class TestTightCoupling(unittest.TestCase):
     def setUp(self):
+        self.cs = settings.getMasterCs()
         self.cs[CONF_TIGHT_COUPLING] = True
         self.o = Operator(self.cs)
         self.o.r = Reactor("empty", None)
