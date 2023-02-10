@@ -391,7 +391,9 @@ class Operator:  # pylint: disable=too-many-public-methods
         if not self.couplingIsActive():
             # no coupling was requested
             return
-        skipCycles = (int(val) for val in self.cs["cyclesSkipTightCouplingInteraction"])
+        skipCycles = tuple(
+            int(val) for val in self.cs["cyclesSkipTightCouplingInteraction"]
+        )
         if cycle in skipCycles:
             runLog.warning(
                 f"interactAllCoupled disabled this cycle ({self.r.p.cycle}) due to "
