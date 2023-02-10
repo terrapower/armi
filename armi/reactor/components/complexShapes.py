@@ -127,7 +127,7 @@ class HexHoledCircle(basicShapes.Circle):
         )
 
     def getComponentArea(self, cold=False):
-        r"""Computes the area for the hexagon with n number of circular holes in cm^2."""
+        r"""Computes the area for the circle with one hexagonal hole."""
         od = self.getDimension("od", cold=cold)
         holeOP = self.getDimension("holeOP", cold=cold)
         mult = self.getDimension("mult")
