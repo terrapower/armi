@@ -29,6 +29,7 @@ from armi.reactor.components import (
     Circle,
     Hexagon,
     HoledHexagon,
+    HexHoledCircle,
     HoledRectangle,
     HoledSquare,
     Helix,

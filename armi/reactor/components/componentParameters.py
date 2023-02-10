@@ -169,8 +169,8 @@ def getHexHoledCircleParameterDefinitions():
 
     pDefs = parameters.ParameterDefinitionCollection()
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:
-        pb.defParam("holeOP", units="cm", description="Pitch of interior hole(s)")
-
+        pb.defParam("holeOP", units="cm", description="Pitch of interior hole")
+        pb.defParam("od", units="cm", description="Outer diameter of circle")
     return pDefs
 
 

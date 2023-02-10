@@ -92,7 +92,7 @@ class HoledHexagon(basicShapes.Hexagon):
 
 
 class HexHoledCircle(basicShapes.Circle):
-    """Circle with n uniform hexagon holes hollowed out of it."""
+    """Circle with a uniform hexagonal hole hollowed out of it."""
 
     THERMAL_EXPANSION_DIMS = {"od", "holeOP"}
 
@@ -136,15 +136,11 @@ class HexHoledCircle(basicShapes.Circle):
         area = mult * (circularArea - hexArea)
         return area
 
-    def getHexInnerPitch(self, Tc=None, cold=False):
+    def getCircleInnerDiameter(self, Tc=None, cold=False):
         """
-        For the special case of only one single hole, returns the
-        diameter of that hole.
-
-        For any other case, returns 0.0 because an "circle inner diameter" becomes
-        undefined.
+        Returns the diameter of the hole equal to the hexagon outer pitch
         """
-        return 0.0
+        return self.getDimension("holeOP", Tc, cold)
 
 
 class HoledRectangle(basicShapes.Rectangle):
