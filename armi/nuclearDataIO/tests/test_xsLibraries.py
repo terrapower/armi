@@ -16,23 +16,18 @@
 import copy
 import filecmp
 import os
-import shutil
-import subprocess
 import traceback
 import unittest
 
 from six.moves import cPickle
 
-from armi import settings
-from armi.tests import mockRunLogs
 from armi.nucDirectory import nuclideBases
+from armi.nuclearDataIO import xsLibraries
+from armi.nuclearDataIO.cccc import gamiso
 from armi.nuclearDataIO.cccc import isotxs
 from armi.nuclearDataIO.cccc import pmatrx
-from armi.nuclearDataIO.cccc import gamiso
-from armi.nuclearDataIO import xsLibraries
-from armi.utils import directoryChangers
+from armi.tests import mockRunLogs
 from armi.utils import properties
-from armi.utils import outputCache
 
 THIS_DIR = os.path.dirname(__file__)
 RUN_DIR = os.path.join(THIS_DIR, "library-file-generation")
@@ -57,122 +52,6 @@ GAMISO_LUMPED = os.path.join(FIXTURE_DIR, "combined-and-lumped-AA-AB.gamiso")
 
 DLAYXS_MCC3 = os.path.join(FIXTURE_DIR_CCCC, "mc2v3.dlayxs")
 UFG_FLUX_EDIT = os.path.join(FIXTURE_DIR, "mc2v3-AA.flux_ufg")
-
-
-def copyInputForPmatrxAndGamsio(inpPath):
-    with open(inpPath, "r") as inp, open(
-        inpPath.replace(".inp", ".pmatrx.inp"), "w"
-    ) as pmatrxInp, open(inpPath.replace(".inp", ".gamiso.inp"), "w") as gamisoInp:
-        for line in inp:
-            pmatrxInp.write(line.replace("isotxs", "pmatrx"))
-            gamisoInp.write(line.replace(".isotxs", ".gamiso"))
-
-
-def createTestXSLibraryFiles(cachePath):
-    r"""This method is used to generate 5 ISOTXS files used during testing.
-
-    Notes
-    -----
-    It runs a batch file pointing to the MC**2-v3 executable with MC**2-v3 inputs within the repository,
-    instead of placing the larger binary ISOTXS files within the repository.
-
-    Also, the _CREATE_ERROR module attribute is used to track whether we have already tried to generate
-    ISOTXS files. Basically, this method can (and should) be called in the setUp/setUpClass of any test
-    that uses the generated ISOTXS files. Therefore, it is possible that for some reason the ISOTXS
-    generation fails, and it would not be worth the time to continually try to recreate the ISOTXS files
-    for each test that uses them, instead just raise the error that occurred the first time.
-    """
-    cs = settings.Settings()
-    cs["outputCacheLocation"] = cachePath
-    mc2v3 = cs.get("mc2v3.path").default
-    with directoryChangers.DirectoryChanger(RUN_DIR):
-        # the two lines below basically copy the inputs to be used for PMATRX and GAMISO generation.
-        # Since they are inputs to secondary calculations, the inputs need to be created before any
-        # other output is generated. Do not move the two lines below to, for exmaple just before they
-        # are used, otherwise the input to the GAMISO calculation would be younger than the output
-        # DLAYXS, which would cause this the @fixture to determine that targets are out of date.
-        # The result would be that the targets will never be up to date, which defeats the purpose ;-).
-        # IMPORTANT!! these two lines cannot move!
-        copyInputForPmatrxAndGamsio("combine-AA-AB.inp")
-        copyInputForPmatrxAndGamsio("combine-and-lump-AA-AB.inp")
-        # IMPORTANT!! these two lines cannot move!
-        ############################################################
-        ##                                                        ##
-        ##                   GENERATE DLAYXS                      ##
-        ##                                                        ##
-        ############################################################
-        outputCache.cacheCall(
-            cs["outputCacheLocation"], mc2v3, ["mc2v3-dlayxs.inp"], ["DLAYXS"]
-        )
-        shutil.move("DLAYXS", DLAYXS_MCC3)
-
-        ############################################################
-        ##                                                        ##
-        ##                   GENERATE ISOTXS                      ##
-        ##                                                        ##
-        ############################################################
-        outputCache.cacheCall(
-            cs["outputCacheLocation"],
-            mc2v3,
-            ["mc2v3-AA.inp"],
-            ["ISOTXS.merged", "GAMISO.merged", "PMATRX.merged", "output.flux_ufg"],
-        )
-        shutil.move("ISOTXS.merged", ISOTXS_AA)
-        shutil.move("GAMISO.merged", GAMISO_AA)
-        shutil.move("PMATRX.merged", PMATRX_AA)
-        shutil.move("output.flux_ufg", UFG_FLUX_EDIT)
-
-        outputCache.cacheCall(
-            cs["outputCacheLocation"],
-            mc2v3,
-            ["mc2v3-AB.inp"],
-            ["ISOTXS.merged", "GAMISO.merged", "PMATRX.merged"],
-        )
-        shutil.move("ISOTXS.merged", ISOTXS_AB)
-        shutil.move("GAMISO.merged", GAMISO_AB)
-        shutil.move("PMATRX.merged", PMATRX_AB)
-
-        # ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-        # ::                                                      ::
-        # ::                     COMBINE                          ::
-        # ::                                                      ::
-        # ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-        outputCache.cacheCall(
-            cs["outputCacheLocation"], mc2v3, ["combine-AA-AB.inp"], ["ISOTXS.merged"]
-        )
-        shutil.move("ISOTXS.merged", ISOTXS_AA_AB)
-
-        outputCache.cacheCall(
-            cs["outputCacheLocation"],
-            mc2v3,
-            ["combine-AA-AB.pmatrx.inp"],
-            ["PMATRX.merged"],
-        )
-        shutil.move("PMATRX.merged", PMATRX_AA_AB)
-
-        outputCache.cacheCall(
-            cs["outputCacheLocation"],
-            mc2v3,
-            ["combine-AA-AB.gamiso.inp"],
-            ["ISOTXS.merged"],
-        )
-        shutil.move("ISOTXS.merged", GAMISO_AA_AB)
-
-        # ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-        # ::                                                      ::
-        # ::                COMBINE AND LUMP                      ::
-        # ::                                                      ::
-        # ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-        subprocess.call([mc2v3, "combine-and-lump-AA-AB.inp"])
-        shutil.move("ISOTXS.merged", ISOTXS_LUMPED)
-
-        subprocess.call([mc2v3, "combine-and-lump-AA-AB.pmatrx.inp"])
-        shutil.move("PMATRX.merged", PMATRX_LUMPED)
-
-        subprocess.call([mc2v3, "combine-and-lump-AA-AB.gamiso.inp"])
-        shutil.move("ISOTXS.merged", GAMISO_LUMPED)
 
 
 class TempFileMixin:

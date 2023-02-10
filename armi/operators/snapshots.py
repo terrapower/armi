@@ -26,11 +26,17 @@ class OperatorSnapshots(operatorMPI.OperatorMPI):
     This operator can be run as a restart, adding new physics to a previous run.
     """
 
-    def createInterfaces(self):
-        operatorMPI.OperatorMPI.createInterfaces(self)
+    def __init__(self, cs):
+        super().__init__(cs)
+
         # disable fuel management and optimization
         # disable depletion because we don't want to change number densities for tn's >0 (or any)
-        for toDisable in ["fuelHandler", "optimize", "depletion"]:
+        self.disabledInterfaces = ["depletion", "fuelHandler", "optimize"]
+
+    def createInterfaces(self):
+        operatorMPI.OperatorMPI.createInterfaces(self)
+
+        for toDisable in self.disabledInterfaces:
             i = self.getInterface(name=toDisable, function=toDisable)
             if i:
                 i.enabled(False)
