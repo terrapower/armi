@@ -100,7 +100,6 @@ CONF_ZONE_DEFINITIONS = "zoneDefinitions"
 CONF_ACCEPTABLE_BLOCK_AREA_ERROR = "acceptableBlockAreaError"
 CONF_FLUX_RECON = "fluxRecon"  # strange coupling in fuel handlers
 CONF_INDEPENDENT_VARIABLES = "independentVariables"
-CONF_HCF_CORETYPE = "HCFcoretype"
 CONF_T_IN = "Tin"
 CONF_T_OUT = "Tout"
 CONF_DEFERRED_INTERFACES_CYCLE = "deferredInterfacesCycle"
@@ -741,14 +740,6 @@ def defineSettings() -> List[setting.Setting]:
             label="Independent Variables",
             description="List of (independentVarName, value) tuples to inform "
             "optimization post-processing",
-        ),
-        setting.Setting(
-            CONF_HCF_CORETYPE,
-            default="TWRC",
-            label="Hot Channel Factor Set",
-            description="Switch to apply different sets of hot channel factors based "
-            "on design being analyzed",
-            options=["TWRC", "TWRP", "TWRC-HEX"],
         ),
         setting.Setting(
             CONF_T_IN,

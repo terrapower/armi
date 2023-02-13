@@ -87,13 +87,7 @@ class TestInspector(unittest.TestCase):
 
     def test_assignCS(self):
         keys = sorted(self.inspector.cs.keys())
-        self.assertIn("HCFcoretype", keys)
-
-        self.assertEqual(self.inspector.cs["HCFcoretype"], "TWRC")
-        self.inspector._assignCS(
-            "HCFcoretype", "FAKE"
-        )  # pylint: disable=protected-access
-        self.assertEqual(self.inspector.cs["HCFcoretype"], "FAKE")
+        self.assertIn("nCycles", keys)
 
     def test_createQueryRevertBadPathToDefault(self):
         query = createQueryRevertBadPathToDefault(self.inspector, "numProcessors")
