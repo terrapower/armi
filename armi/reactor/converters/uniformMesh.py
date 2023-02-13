@@ -57,6 +57,7 @@ import glob
 import copy
 import collections
 from timeit import default_timer as timer
+from logging import DEBUG
 
 import numpy
 from scipy.cluster.vq import kmeans
@@ -473,16 +474,17 @@ class UniformMeshGeometryConverter(GeometryConverter):
                     sourceBlock = b
                     break
 
-            if len(typeHeight) > 1:
-                if sourceBlock:
-                    totalHeight = sum(typeHeight.values())
-                    runLog.debug(
-                        f"Multiple XS types exist between {bottom} and {topMeshPoint}. "
-                        f"Using the XS type from the largest region, {xsType}"
-                    )
-                    for xs, h in typeHeight.items():
-                        heightFrac = h / totalHeight
-                        runLog.debug(f"XSType {xs}: {heightFrac:.4f}")
+            if runLog.getVerbosity() == DEBUG:
+                if len(typeHeight) > 1:
+                    if sourceBlock:
+                        totalHeight = sum(typeHeight.values())
+                        runLog.debug(
+                            f"Multiple XS types exist between {bottom} and {topMeshPoint}. "
+                            f"Using the XS type from the largest region, {xsType}"
+                        )
+                        for xs, h in typeHeight.items():
+                            heightFrac = h / totalHeight
+                            runLog.debug(f"XSType {xs}: {heightFrac:.4f}")
 
             block = sourceBlock._createHomogenizedCopy(includePinCoordinates)
             block.p.xsType = xsType
