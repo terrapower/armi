@@ -76,7 +76,7 @@ from armi.reactor.reactors import Reactor
 HEAVY_METAL_PARAMS = ["molesHmBOL", "massHmBOL"]
 
 
-def roundAndRemoveDuplicates(z, places=5):
+def _roundAndRemoveDuplicates(z, places=5):
     """
     Round all values in a list a floats and remove any duplicates after rounding.
 
@@ -91,7 +91,7 @@ def roundAndRemoveDuplicates(z, places=5):
     return sorted(list(set(rounded)))
 
 
-def reduceAllMeshes(allMeshes, kMeansCoords, meshTolerance):
+def _reduceAllMeshes(allMeshes, kMeansCoords, meshTolerance):
     """
     Find clusters of points within mesh tolerance and reduce them to a single point.
 
@@ -125,11 +125,11 @@ def reduceAllMeshes(allMeshes, kMeansCoords, meshTolerance):
 
     for centroid, meshList in zip(kMeansCoords, clusterPoints):
         diffs = [abs(allMeshes[i] - centroid) for i in meshList]
-        if max(diffs) < meshTolerance:
+        if max(diffs) < self._meshTolerance:
             # cluster is within tolerance; group them together
             for i in meshList:
                 newMesh[i] = centroid
-    return roundAndRemoveDuplicates(newMesh)
+    return _roundAndRemoveDuplicates(newMesh)
 
 
 def converterFactory(globalFluxOptions):
@@ -214,9 +214,9 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
             self._meshGenerator = cs["uniformMeshGenerator"]
             if cs["uniformMeshGenerator"] == "average":
-                self._meshTolerance = cs["averageMeshTolerance"]
+                self._meshTolerance = cs["uniformMeshToleranceRelative"]
             elif cs["uniformMeshGenerator"] == "kMeansCluster":
-                self._meshTolerance = cs["uniformMeshTolerance"]
+                self._meshTolerance = cs["uniformMeshToleranceAbsolute"]
         else:
             self._meshGenerator = "average"
             self._meshTolerance = 0.2
@@ -466,21 +466,12 @@ class UniformMeshGeometryConverter(GeometryConverter):
                 for b, h in overlappingBlockInfo:
                     typeHeight[b.p.xsType] += h
 
-            xsType = next(
-                k for k, v in typeHeight.items() if v == max(typeHeight.values())
-            )
+            xsType = list(typeHeight.keys())[numpy.argmax(typeHeight.values())]
 
             for b in blocks:
                 if b.p.xsType == xsType:
                     sourceBlock = b
                     break
-
-            # If no blocks meet the FUEL or CONTROL criteria above, or there is only one
-            # XS type present, just select the first block as the source block and use
-            # its cross section type.
-            if sourceBlock is None:
-                sourceBlock = blocks[0]
-                xsType = blocks[0].p.xsType
 
             if len(typeHeight) > 1:
                 if sourceBlock:
@@ -783,7 +774,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
         meshTolerance : float, optional
             The minimum desired mesh size to be produced by k-means. When a k-means result is
             within this tolerance of a cluster of non-uniform mesh lines, those lines will be
-            replaced by the k-means value. Set by the caseSettings "uniformMeshTolerance".
+            replaced by the k-means value. Set by the caseSettings "uniformMeshToleranceAbsolute".
 
         See Also
         --------
@@ -793,19 +784,19 @@ class UniformMeshGeometryConverter(GeometryConverter):
         src = self._sourceReactor
         refAssem = src.core.refAssem
 
-        refNumPoints = len(src.core.findAllAxialMeshPoints([refAssem])) - 2
+        refMesh = src.core.findAllAxialMeshPoints([refAssem])
+        refNumPoints = len(refMesh) - 2
+        lastMeshPoint = refMesh[-1]
         allMeshes = []
-        lastMeshPoint = src.core.findAllAxialMeshPoints([refAssem])[-1]
         for a in src.core:
             # Get the mesh points of the assembly, neglecting the first coordinate
             # (typically zero) and the last (will be fixed).
             aMesh = src.core.findAllAxialMeshPoints([a])[1:-1]
-            if len(aMesh) == refNumPoints:
-                allMeshes.extend(aMesh)
-        allMeshes = roundAndRemoveDuplicates(allMeshes, places=2)
+            allMeshes.extend(aMesh)
+        allMeshes = _roundAndRemoveDuplicates(allMeshes, places=2)
 
         # run kmeans with an increasing number of coordinates until one of three
-        # stop conditions are met
+        # stop conditions is met
         # 1. The total error goes below the tolerance
         # 2. The number of mesh points is twice the number in the reference assembly
         # 3. Maximum number of iterations is exceeded (10 * refNumPoints)
@@ -818,9 +809,9 @@ class UniformMeshGeometryConverter(GeometryConverter):
                 allMeshes, min(nMesh, len(allMeshes)), iter=10, seed=123456789
             )
             sortedCoords = sorted(meanMesh)
-            # if any k-means point is within tolerance of a cluster of the original mesh,
-            # replace the original locations with the k-means coordinate
-            allMeshes = reduceAllMeshes(allMeshes, sortedCoords, meshTolerance)
+            # if any k-means point is within tolerance of a full cluster of the original
+            # mesh,  replace the original locations with the k-means coordinate
+            allMeshes = _reduceAllMeshes(allMeshes, sortedCoords, meshTolerance)
 
             # check if reduced mesh is too fine before using it
             meshSpacing = numpy.array(sortedCoords)[1:] - numpy.array(sortedCoords[:-1])
@@ -880,7 +871,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
             to the average mesh that are greater than meshTolerance, that assembly will be
             removed from the set of assemblies used to determine the average axial mesh,
             and the process will continue without those mesh points included.
-            Set by the caseSettings "averageMeshTolerance".
+            Set by the caseSettings "uniformMeshToleranceRelative".
             Technically, any value >= 0 would be valid, although the behvaior
             of the algorithm would be completely different at 0.0 than at 1.0.
             The default meshTolerance is 0.2. A value in the range of 0.05-0.30 is recommended,

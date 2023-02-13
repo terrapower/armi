@@ -49,8 +49,8 @@ CONF_NUMBER_MESH_PER_EDGE = "numberMeshPerEdge"
 CONF_OUTERS_ = "outers"
 CONF_RESTART_NEUTRONICS = "restartNeutronics"
 CONF_UNIFORM_MESH_GENERATOR = "uniformMeshGenerator"
-CONF_AVERAGE_MESH_TOLERANCE = "averageMeshTolerance"
-CONF_UNIFORM_MESH_TOLERANCE = "uniformMeshTolerance"
+CONF_UNIFORM_MESH_TOLERANCE_RELATIVE = "uniformMeshToleranceRelative"
+CONF_UNIFORM_MESH_TOLERANCE_ABSOLUTE = "uniformMeshToleranceAbsolute"
 
 # Used for dpa/dose analysis.
 # TODO: These should be relocated to more design-specific places
@@ -358,16 +358,17 @@ def defineSettings():
             options=CONF_OPT_GENERATOR,
         ),
         setting.Setting(
-            CONF_UNIFORM_MESH_TOLERANCE,
+            CONF_UNIFORM_MESH_TOLERANCE_ABSOLUTE,
             default=2.0,
-            label="k-means uniform mesh tolerance",
-            description="Mesh tolerance (in cm) for the k-means clustering uniform mesh algorithm",
+            label="Absolute uniform mesh tolerance",
+            description="Mesh tolerance (in cm) used for the k-means clustering uniform mesh algorithm.",
         ),
         setting.Setting(
-            CONF_AVERAGE_MESH_TOLERANCE,
+            CONF_UNIFORM_MESH_TOLERANCE_RELATIVE,
             default=0.2,
-            label="Average uniform mesh tolerance",
-            description="Mesh tolerance (in %) for the average-mesh uniform mesh algorithm",
+            label="Relative uniform mesh tolerance",
+            description="Mesh tolerance (as a fraction) for the average-mesh uniform mesh algorithm. "
+            "Tolerance for mesh differences is relative to the size of the mesh.",
         ),
     ]
 
