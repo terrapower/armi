@@ -78,7 +78,7 @@ HEAVY_METAL_PARAMS = ["molesHmBOL", "massHmBOL"]
 
 def _roundAndRemoveDuplicates(z, places=5):
     """
-    Round all values in a list a floats and remove any duplicates after rounding.
+    Round all values in a list of floats and remove any duplicates after rounding.
 
     Parameters
     ----------
@@ -125,7 +125,7 @@ def _reduceAllMeshes(allMeshes, kMeansCoords, meshTolerance):
 
     for centroid, meshList in zip(kMeansCoords, clusterPoints):
         diffs = [abs(allMeshes[i] - centroid) for i in meshList]
-        if max(diffs) < self._meshTolerance:
+        if max(diffs) < meshTolerance:
             # cluster is within tolerance; group them together
             for i in meshList:
                 newMesh[i] = centroid
