@@ -91,6 +91,58 @@ class HoledHexagon(basicShapes.Hexagon):
             return 0.0
 
 
+class HexHoledCircle(basicShapes.Circle):
+    """Circle with a single uniform hexagonal hole hollowed out of it."""
+
+    THERMAL_EXPANSION_DIMS = {"od", "holeOP"}
+
+    pDefs = componentParameters.getHexHoledCircleParameterDefinitions()
+
+    def __init__(
+        self,
+        name,
+        material,
+        Tinput,
+        Thot,
+        od,
+        holeOP,
+        mult=1.0,
+        modArea=None,
+        isotopics=None,
+        mergeWith=None,
+        components=None,
+    ):
+        ShapedComponent.__init__(
+            self,
+            name,
+            material,
+            Tinput,
+            Thot,
+            isotopics=isotopics,
+            mergeWith=mergeWith,
+            components=components,
+        )
+        self._linkAndStoreDimensions(
+            components, od=od, holeOP=holeOP, mult=mult, modArea=modArea
+        )
+
+    def getComponentArea(self, cold=False):
+        r"""Computes the area for the circle with one hexagonal hole."""
+        od = self.getDimension("od", cold=cold)
+        holeOP = self.getDimension("holeOP", cold=cold)
+        mult = self.getDimension("mult")
+        hexArea = math.sqrt(3.0) / 2.0 * (holeOP ** 2)
+        circularArea = math.pi * ((od / 2.0) ** 2)
+        area = mult * (circularArea - hexArea)
+        return area
+
+    def getCircleInnerDiameter(self, Tc=None, cold=False):
+        """
+        Returns the diameter of the hole equal to the hexagon outer pitch
+        """
+        return self.getDimension("holeOP", Tc, cold)
+
+
 class HoledRectangle(basicShapes.Rectangle):
     """Rectangle with one circular hole in it."""
 

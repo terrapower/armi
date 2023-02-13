@@ -165,6 +165,16 @@ def getHoledHexagonParameterDefinitions():
     return pDefs
 
 
+def getHexHoledCircleParameterDefinitions():
+    """Return parameters for HexHoledCircle."""
+
+    pDefs = parameters.ParameterDefinitionCollection()
+    with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:
+        pb.defParam("holeOP", units="cm", description="Pitch of interior hole")
+
+    return pDefs
+
+
 def getHoledRectangleParameterDefinitions():
     """Return parameters for HoledRectangle."""
 
