@@ -8,7 +8,7 @@ Release Date: TBD
 
 What's new in ARMI
 ------------------
-#. TBD
+#. Remove unused `HCFcoretype` setting. (`PR#1179 <https://github.com/terrapower/armi/pull/1179>`_)
 #. TBD
 
 Bug fixes
