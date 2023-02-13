@@ -327,17 +327,18 @@ class NeutronicsReactorTests(unittest.TestCase):
         addedSettings = {}
         cs = settings.Settings()
         addedSettings["uniformMeshGenerator"] = "kMeansCluster"
-        addedSettings["uniformMeshTolerance"] = 4.0
+        addedSettings["uniformMeshToleranceAbsolute"] = 4.0
         self._checkUniformMeshQueries(cs.modified(newSettings=addedSettings), 0)
-        addedSettings["averageMeshTolerance"] = 0.3
+        addedSettings["uniformMeshToleranceRelative"] = 0.3
         self._checkUniformMeshQueries(cs.modified(newSettings=addedSettings), 1)
-        del addedSettings["uniformMeshTolerance"]
+        del addedSettings["uniformMeshToleranceAbsolute"]
         self._checkUniformMeshQueries(cs.modified(newSettings=addedSettings), 1)
         addedSettings["uniformMeshGenerator"] = "average"
+        print(addedSettings)
         self._checkUniformMeshQueries(cs.modified(newSettings=addedSettings), 0)
-        addedSettings["uniformMeshTolerance"] = 4.0
+        addedSettings["uniformMeshToleranceAbsolute"] = 4.0
         self._checkUniformMeshQueries(cs.modified(newSettings=addedSettings), 1)
-        del addedSettings["averageMeshTolerance"]
+        del addedSettings["uniformMeshToleranceRelative"]
         self._checkUniformMeshQueries(cs.modified(newSettings=addedSettings), 1)
 
     def _checkUniformMeshQueries(self, newCs, expectedTriggers):

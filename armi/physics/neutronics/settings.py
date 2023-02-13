@@ -566,7 +566,7 @@ def getNeutronicsSettingValidators(inspector):
     queries.append(
         settingsValidation.Query(
             lambda: inspector.cs[CONF_UNIFORM_MESH_GENERATOR] == "average"
-            and not inspector.cs[CONF_UNIFORM_MESH_TOLERANCE_RELATIVE]
+            and not inspector.cs[CONF_UNIFORM_MESH_TOLERANCE_ABSOLUTE]
             == inspector.cs.getSetting(CONF_UNIFORM_MESH_TOLERANCE_ABSOLUTE).default,
             f"{CONF_UNIFORM_MESH_TOLERANCE_ABSOLUTE} is ignored when using the average uniform mesh generating algorithm.",
             f"Use {CONF_UNIFORM_MESH_TOLERANCE_RELATIVE} instead.",
