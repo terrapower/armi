@@ -556,20 +556,20 @@ def getNeutronicsSettingValidators(inspector):
     queries.append(
         settingsValidation.Query(
             lambda: inspector.cs[CONF_UNIFORM_MESH_GENERATOR] == "kMeansCluster"
-            and not inspector.cs[CONF_AVERAGE_MESH_TOLERANCE]
-            == inspector.cs.getSetting(CONF_AVERAGE_MESH_TOLERANCE).default,
-            f"{CONF_AVERAGE_MESH_TOLERANCE} is ignored when using the kMeansCluster mesh generating algorithm.",
-            f"Use {CONF_UNIFORM_MESH_TOLERANCE} instead.",
+            and not inspector.cs[CONF_UNIFORM_MESH_TOLERANCE_RELATIVE]
+            == inspector.cs.getSetting(CONF_UNIFORM_MESH_TOLERANCE_RELATIVE).default,
+            f"{CONF_UNIFORM_MESH_TOLERANCE_RELATIVE} is ignored when using the kMeansCluster mesh generating algorithm.",
+            f"Use {CONF_UNIFORM_MESH_TOLERANCE_ABSOLUTE} instead.",
             inspector.NO_ACTION,
         )
     )
     queries.append(
         settingsValidation.Query(
             lambda: inspector.cs[CONF_UNIFORM_MESH_GENERATOR] == "average"
-            and not inspector.cs[CONF_UNIFORM_MESH_TOLERANCE]
-            == inspector.cs.getSetting(CONF_UNIFORM_MESH_TOLERANCE).default,
-            f"{CONF_UNIFORM_MESH_TOLERANCE} is ignored when using the average uniform mesh generating algorithm.",
-            f"Use {CONF_AVERAGE_MESH_TOLERANCE} instead.",
+            and not inspector.cs[CONF_UNIFORM_MESH_TOLERANCE_RELATIVE]
+            == inspector.cs.getSetting(CONF_UNIFORM_MESH_TOLERANCE_ABSOLUTE).default,
+            f"{CONF_UNIFORM_MESH_TOLERANCE_ABSOLUTE} is ignored when using the average uniform mesh generating algorithm.",
+            f"Use {CONF_UNIFORM_MESH_TOLERANCE_RELATIVE} instead.",
             inspector.NO_ACTION,
         )
     )
