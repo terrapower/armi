@@ -240,6 +240,7 @@ class TestAssemblyUniformMeshKMeans(TestAssemblyUniformMesh):
         uniformMeshSettings = {
             "uniformMeshGenerator": "kMeansCluster",
             "uniformMeshTolerance": 2.0,
+            "verbosity": "debug",
         }
         return self.o.cs.modified(newSettings=uniformMeshSettings)
 
