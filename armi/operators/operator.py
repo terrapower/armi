@@ -1087,8 +1087,15 @@ class Operator:  # pylint: disable=too-many-public-methods
                         newFolder, "{0}_{1:03d}_{2:d}{3}".format(base, cycle, node, ext)
                     ),
                 )
-            if "rzmflx" in fileName:
-                pathTools.copyOrWarn("rzmflx for snapshot", fileName, newFolder)
+
+        # rzmflx files may be in the run directory, or they may be elsewhere and listed
+        # as absolute file paths. This means we need to parse the crossSectionControl
+        # setting without knowing the relevant xsIDs.
+        if self.cs[CONF_CROSS_SECTION]:
+            for xsID in self.cs[CONF_CROSS_SECTION].keys():
+                fluxFile = self.cs[CONF_CROSS_SECTION][xsID].fluxFileLocation
+                if fluxFile:
+                    pathTools.copyOrWarn("rzmflx for snapshot", fluxFile, newFolder)
 
         isoFName = "ISOTXS-c{0}".format(cycle)
         pathTools.copyOrWarn(
