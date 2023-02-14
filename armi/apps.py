@@ -269,7 +269,7 @@ class App:
                 # The path is of the form: armi.thing.what.MyPlugin
                 self.__registerUserPluginsInternalImport(pluginPath)
 
-    def _isPluginRegistered(self, pluginPath:str):
+    def _isPluginRegistered(self, pluginPath: str):
         """
         Check if the plugin at the provided path is already registered.
 
@@ -284,11 +284,12 @@ class App:
         or on Windows:
         ``C:\\path\\to\\pluginMod.py:pluginCls``
         """
+
         if ":" in pluginPath:
             pluginName = pluginPath.strip().split(":")[-1]
         else:
             pluginName = pluginPath.strip().split(".")[-1]
-        
+
         return self._pm.has_plugin(pluginName)
 
     def __registerUserPluginsAbsPath(self, pluginPath):
