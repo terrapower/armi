@@ -41,6 +41,7 @@ from armi.bookkeeping.report import reportingUtils
 from armi.operators import settingsValidation
 from armi.operators.runTypes import RunTypes
 from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
+from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.utils import codeTiming
 from armi.utils import (
     pathTools,

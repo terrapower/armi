@@ -15,20 +15,24 @@
 """Tests for operators"""
 
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-method-argument,import-outside-toplevel
-import unittest
 import collections
+import os
+import unittest
 
 from armi import settings
+from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.interfaces import Interface
 from armi.operators.operator import Operator
-from armi.reactor.tests import test_reactors
-from armi.settings.caseSettings import Settings
-from armi.utils.directoryChangers import TemporaryDirectoryChanger
+from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.physics.neutronics.globalFlux.globalFluxInterface import (
     GlobalFluxInterfaceUsingExecuters,
 )
+from armi.reactor.tests import test_reactors
+from armi.settings.caseSettings import Settings
 from armi.utils import directoryChangers
-from armi.bookkeeping.db.databaseInterface import DatabaseInterface
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
+
+THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 class InterfaceA(Interface):
@@ -183,7 +187,13 @@ class OperatorTests(unittest.TestCase):
 
     def test_snapshotRequest(self):
         with TemporaryDirectoryChanger():
+            fluxFile = "rzmflxYA"
+            self.o.cs[CONF_CROSS_SECTION]["YA"].fluxFileLocation = os.path.join(
+                THIS_DIR, "../../physics/neutronics/tests", fluxFile
+            )
             self.o.snapshotRequest(0, 1)
+            self.assertTrue(os.path.exists("snapShot0_1"))
+            self.assertTrue(os.path.exists(os.path.join("snapShot0_1", fluxFile)))
 
 
 class CyclesSettingsTests(unittest.TestCase):
