@@ -6,9 +6,7 @@ Loose Coupling
 ----------------
 ARMI supports loose and tight coupling. Loose coupling is interpreted as one-way coupling between physics for a single time node. For example, a power distribution in cycle 0 node 0 is used to calculate a temperature distribution in cycle 0 node 0. This temperature is then used in cycle 0 node 1 to compute new cross sections and a new power distribution. This process repeats itself for the lifetime of the simulation. 
 
-.. image:: images/looseCouplingIllustration.png
-    :width: 800
-    :alt: Loose coupling illustration.
+.. graphviz:: inputs/looseCouplingIllustration.dot
 
 Loose coupling is enabled by default in ARMI simulations.
 
@@ -16,9 +14,7 @@ Tight Coupling
 -----------------
 Tight coupling is interpreted as two-way communication between physics within a given time node. Revisiting our previous example, enabling tight coupling results in the temperature distribution being used to generate updated cross sections (new temperatures induce changes such as Doppler broadening feedback) and ultimately an updated power distribution. This process is repeated iteratively until a numerical convergence criteria is met.
 
-.. image:: images/tightCouplingIllustration.png
-    :width: 800
-    :alt: Tight coupling illustration.
+.. graphviz:: inputs/tightCouplingIllustration.dot
 
 The following settings are involved with enabling tight coupling in ARMI:
 
