@@ -190,7 +190,7 @@ class OperatorTests(unittest.TestCase):
             fluxFile = "rzmflxYA"
             # update the case settings object so that the snapshot request will copy a file
             self.o.cs[CONF_CROSS_SECTION]["YA"].fluxFileLocation = os.path.join(
-                THIS_DIR, "../../physics/neutronics/tests", fluxFile
+                THIS_DIR, fluxFile
             )
             self.o.snapshotRequest(0, 1)
             # A snapshot dir should have been created
