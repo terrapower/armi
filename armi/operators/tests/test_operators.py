@@ -125,6 +125,7 @@ class OperatorTests(unittest.TestCase):
     def test_snapshotRequest(self):
         with TemporaryDirectoryChanger():
             self.o.snapshotRequest(0, 1)
+            self.assertTrue(os.path.exists("snapShot0_1"))
 
 
 class TestTightCoupling(unittest.TestCase):
