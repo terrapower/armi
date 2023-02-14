@@ -188,11 +188,14 @@ class OperatorTests(unittest.TestCase):
     def test_snapshotRequest(self):
         with TemporaryDirectoryChanger():
             fluxFile = "rzmflxYA"
+            # update the case settings object so that the snapshot request will copy a file
             self.o.cs[CONF_CROSS_SECTION]["YA"].fluxFileLocation = os.path.join(
                 THIS_DIR, "../../physics/neutronics/tests", fluxFile
             )
             self.o.snapshotRequest(0, 1)
+            # A snapshot dir should have been created
             self.assertTrue(os.path.exists("snapShot0_1"))
+            # and our empty flux file should have been copied to it
             self.assertTrue(os.path.exists(os.path.join("snapShot0_1", fluxFile)))
 
 

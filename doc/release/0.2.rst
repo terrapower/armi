@@ -13,7 +13,7 @@ What's new in ARMI
 
 Bug fixes
 ---------
-#. Fixed TBD
+#. Fixed a bug to allow snapshotRequest to copy rzmflx files with both absolute and relative paths (`PR#1182 <https://github.com/terrapower/armi/pull/1182>`_)
 #. Fixed TBD
 
 
