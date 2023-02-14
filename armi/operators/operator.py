@@ -424,7 +424,9 @@ class Operator:  # pylint: disable=too-many-public-methods
 
         halt = False
 
-        cycleNodeTag = self._expandCycleAndTimeNodeArgs(*args)
+        cycleNodeTag = self._expandCycleAndTimeNodeArgs(
+            *args, interactionName=interactionName
+        )
         runLog.header(
             "===========  Triggering {} Event ===========".format(
                 interactionName + cycleNodeTag
@@ -480,18 +482,34 @@ class Operator:  # pylint: disable=too-many-public-methods
         This looks better as multiple lines but it's a lot easier to grep as one line.
         We leverage newlines instead of long banners to save disk space.
         """
-        nodeInfo = self._expandCycleAndTimeNodeArgs(*args)
+        nodeInfo = self._expandCycleAndTimeNodeArgs(
+            *args, interactionName=interactionName
+        )
         line = "=========== {:02d} - {:30s} {:15s} ===========".format(
             statePointIndex, interface.name, interactionName + nodeInfo
         )
         runLog.header(line)
 
     @staticmethod
-    def _expandCycleAndTimeNodeArgs(*args):
-        """Return text annotating the (cycle, time node) args for each that are present."""
+    def _expandCycleAndTimeNodeArgs(*args, interactionName):
+        """Return text annotating information for current run event.
+
+        Notes
+        -----
+        - Init, BOL, EOL: empty
+        - Everynode: (cycle, time node)
+        - BOC: cycle number
+        - Coupling: iteration number
+        """
         cycleNodeInfo = ""
-        for label, step in zip((" - cycle {}", ", node {}"), args):
-            cycleNodeInfo += label.format(step)
+        if args:
+            if len(args) == 1:
+                if interactionName == "Coupled":
+                    cycleNodeInfo = f" - iteration {args[0]}"
+                elif interactionName in ("BOC", "EOC"):
+                    cycleNodeInfo = f" - cycle {args[0]}"
+            else:
+                cycleNodeInfo = f" - cycle {args[0]}, node {args[1]}"
         return cycleNodeInfo
 
     def _debugDB(self, interactionName, interfaceName, statePointIndex=0):

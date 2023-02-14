@@ -286,5 +286,37 @@ settings:
         self.assertEqual(self.detailedOperator.maxBurnSteps, self.maxBurnStepsSolution)
 
 
+class TestInterfaceAndEventHeaders(unittest.TestCase):
+    def test_expandCycleAndTimeNodeArgs_Empty(self):
+        """when *args are empty, cycleNodeInfo should be an empty string"""
+        for task in ["Init", "BOL", "EOL"]:
+            self.assertEqual(
+                Operator._expandCycleAndTimeNodeArgs(interactionName=task), ""
+            )
+
+    def test_expandCycleAndTimeNodeArgs_OneArg(self):
+        """when *args is a single value, cycleNodeInfo should return the right string"""
+        cycle = 0
+        for task in ["BOC", "EOC"]:
+            self.assertEqual(
+                Operator._expandCycleAndTimeNodeArgs(cycle, interactionName=task),
+                f" - cycle {cycle}",
+            )
+        self.assertEqual(
+            Operator._expandCycleAndTimeNodeArgs(cycle, interactionName="Coupled"),
+            f" - iteration {cycle}",
+        )
+
+    def test_expandCycleAndTimeNodeArgs_TwoArg(self):
+        """when *args is two values, cycleNodeInfo should return the right string"""
+        cycle, timeNode = 0, 0
+        self.assertEqual(
+            Operator._expandCycleAndTimeNodeArgs(
+                cycle, timeNode, interactionName="EveryNode"
+            ),
+            f" - cycle {cycle}, node {timeNode}",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()
