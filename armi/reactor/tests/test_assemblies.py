@@ -38,7 +38,7 @@ from armi.reactor.assemblies import (
     numpy,
     runLog,
 )
-from armi.tests import TEST_ROOT
+from armi.tests import TEST_ROOT, mockRunLogs
 from armi.utils import directoryChangers
 from armi.utils import textProcessors
 from armi.reactor.tests import test_reactors
@@ -1046,6 +1046,32 @@ class Assembly_TestCase(unittest.TestCase):
         b.p.THcornTemp = "bad data"
         with self.assertRaises(TypeError):
             a.rotate(math.radians(120))
+
+        # check that list of len != 6 ends up in runlog warning
+        # list len=5
+        b.p.THcornTemp = [400, 450, 500, 550, 600]
+        with mockRunLogs.BufferLog() as mock:
+            self.assertEqual("", mock.getStdout())
+            a.rotate(math.radians(120))
+            self.assertIn("No rotation method defined", mock.getStdout())
+        # np.ndarray len=5
+        b.p.THcornTemp = np.array([400, 450, 500, 550, 600])
+        with mockRunLogs.BufferLog() as mock:
+            self.assertEqual("", mock.getStdout())
+            a.rotate(math.radians(120))
+            self.assertIn("No rotation method defined", mock.getStdout())
+        # list len=7
+        b.p.THcornTemp = [400, 450, 500, 550, 600, 650, 700]
+        with mockRunLogs.BufferLog() as mock:
+            self.assertEqual("", mock.getStdout())
+            a.rotate(math.radians(120))
+            self.assertIn("No rotation method defined", mock.getStdout())
+        # np.ndarray len=7
+        b.p.THcornTemp = np.array([400, 450, 500, 550, 600, 650, 700])
+        with mockRunLogs.BufferLog() as mock:
+            self.assertEqual("", mock.getStdout())
+            a.rotate(math.radians(120))
+            self.assertIn("No rotation method defined", mock.getStdout())
 
 
 class AssemblyInReactor_TestCase(unittest.TestCase):
