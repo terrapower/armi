@@ -1,0 +1,10 @@
+ci:
+  - .github/workflows/*
+
+documentation:
+  - README.rst
+  - doc/**/*.rst
+  - !doc/release/*
+
+
+  

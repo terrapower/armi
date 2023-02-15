@@ -1,0 +1,38 @@
+name: Enforce Pull Request Quality
+
+on: [pull_request]
+
+jobs:
+  pr-length:
+    steps:
+      - name: Enforce Pull Request Description Length
+        uses: ryanvade/enforce-pr-description-length-action@v1
+        with:
+          minLength: 1175
+
+  pr-label:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Auto-Label the Pull Request
+        uses: actions/labeler@v4
+        with:
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"
+          sync-labels: true
+          configuration-path: .github/workflows/labeler.yaml
+
+  size-label:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Pull Request Size Labeling
+        uses: "pascalgn/size-label-action@v0.4.3"
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        with:
+          sizes: >
+            {
+              "0": "XS",
+              "20": "S",
+              "60": "M",
+              "140": "L",
+              "250": "Too Large"
+            }
