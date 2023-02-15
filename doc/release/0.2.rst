@@ -13,7 +13,8 @@ What's new in ARMI
 
 Bug fixes
 ---------
-#. Fixed interface/event ``runLog.header`` for tight coupling. (`PR#1178 https://github.com/terrapower/armi/pull/1178`_) 
+#. Fixed interface/event ``runLog.header`` for tight coupling. (`PR#1178 https://github.com/terrapower/armi/pull/1178`_)
+#. Fixed circular import bug in ``reactors.py`` caused by importing settings constants. (`PR#1185 <https://github.com/terrapower/armi/pull/1185>`_)
 #. Fixed TBD
 
 
