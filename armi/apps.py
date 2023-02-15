@@ -283,6 +283,16 @@ class App:
 
         or on Windows:
         ``C:\\path\\to\\pluginMod.py:pluginCls``
+
+        Parameters
+        -----------
+        pluginPath : str
+            String path to a userPlugin.
+
+        Returns
+        --------
+        bool
+            Whether or not the plugin name is already registered with the manager.
         """
 
         if ":" in pluginPath:

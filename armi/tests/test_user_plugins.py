@@ -281,3 +281,29 @@ class TestUserPlugins(unittest.TestCase):
         o.cs["nCycles"] = 2
         o.operate()
         self.assertGreater(r.core.p.power, power0)
+
+    def test_registerRepeatedUserPlugins(self):
+        app = getApp()
+
+        # Test plugin registration with two userPlugins with the same name
+        with directoryChangers.TemporaryDirectoryChanger():
+            # write a simple UserPlugin to a simple Python file
+            with open("plugin4.py", "w") as f:
+                f.write(upFlags4)
+
+            # register that plugin using an absolute path
+            cwd = os.getcwd()
+            plugins = [os.path.join(cwd, "plugin4.py") + ":UserPluginFlags4"] * 2
+            app.registerUserPlugins(plugins)
+
+        # Repeat test for other type of path
+        cs = caseSettings.Settings().modified(
+            caseTitle="test_registerUserPluginsFromSettings",
+            newSettings={
+                "userPlugins": [
+                    "armi.tests.test_user_plugins.UserPluginFlags3",
+                    "armi.tests.test_user_plugins.UserPluginFlags3",
+                ],
+            },
+        )
+        cs.registerUserPlugins()
