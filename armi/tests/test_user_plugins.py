@@ -295,6 +295,8 @@ class TestUserPlugins(unittest.TestCase):
             cwd = os.getcwd()
             plugins = [os.path.join(cwd, "plugin4.py") + ":UserPluginFlags4"] * 2
             app.registerUserPlugins(plugins)
+        pluginNames = [p[0] for p in app.pluginManager.list_name_plugin()]
+        self.assertEqual(pluginNames.count("UserPluginFlags4"), 1)
 
         # Repeat test for other type of path
         cs = caseSettings.Settings().modified(
@@ -307,3 +309,5 @@ class TestUserPlugins(unittest.TestCase):
             },
         )
         cs.registerUserPlugins()
+        pluginNames = [p[0] for p in app.pluginManager.list_name_plugin()]
+        self.assertEqual(pluginNames.count("UserPluginFlags3"), 1)
