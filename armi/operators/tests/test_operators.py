@@ -15,11 +15,12 @@
 """Tests for operators"""
 
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-method-argument,import-outside-toplevel
+import os
 import unittest
 import collections
 
 from armi import settings
-from armi.interfaces import Interface
+from armi.interfaces import Interface, TightCoupler
 from armi.operators.operator import Operator
 from armi.reactor.tests import test_reactors
 from armi.settings.caseSettings import Settings
@@ -29,6 +30,14 @@ from armi.physics.neutronics.globalFlux.globalFluxInterface import (
 )
 from armi.utils import directoryChangers
 from armi.bookkeeping.db.databaseInterface import DatabaseInterface
+from armi.tests import mockRunLogs
+from armi.reactor.reactors import Reactor, Core
+from armi.settings.fwSettings.globalSettings import (
+    CONF_RUN_TYPE,
+    CONF_TIGHT_COUPLING,
+    CONF_CYCLES_SKIP_TIGHT_COUPLING_INTERACTION,
+    CONF_TIGHT_COUPLING_SETTINGS,
+)
 
 
 class InterfaceA(Interface):
@@ -103,37 +112,103 @@ class OperatorTests(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             self.o.loadState(0, 1)
 
+    def test_setStateToDefault(self):
+
+        # reset the runType for testing
+        self.assertEqual(self.o.cs[CONF_RUN_TYPE], "Standard")
+        self.o.cs = self.o.cs.modified(newSettings={"runType": "fake"})
+        self.assertEqual(self.o.cs[CONF_RUN_TYPE], "fake")
+
+        # validate the method works
+        cs = self.o.setStateToDefault(self.o.cs)
+        self.assertEqual(cs[CONF_RUN_TYPE], "Standard")
+
+    def test_snapshotRequest(self):
+        with TemporaryDirectoryChanger():
+            self.o.snapshotRequest(0, 1)
+            self.assertTrue(os.path.exists("snapShot0_1"))
+
+
+class TestTightCoupling(unittest.TestCase):
+    def setUp(self):
+        self.cs = settings.getMasterCs()
+        self.cs[CONF_TIGHT_COUPLING] = True
+        self.o = Operator(self.cs)
+        self.o.r = Reactor("empty", None)
+        self.o.r.core = Core("empty")
+
     def test_couplingIsActive(self):
-        """ensure that cs["tightCoupling"] controls couplingIsActive"""
-        self.assertFalse(self.o.couplingIsActive())
-        self.o.cs["tightCoupling"] = True
+        """ensure that cs[CONF_TIGHT_COUPLING] controls couplingIsActive"""
         self.assertTrue(self.o.couplingIsActive())
+        self.o.cs[CONF_TIGHT_COUPLING] = False
+        self.assertFalse(self.o.couplingIsActive())
 
-    def test_performTightCoupling(self):
-        with directoryChangers.TemporaryDirectoryChanger():
-            # test cases where we should do a coupling interaction
-            self.o.cs["cyclesSkipTightCouplingInteraction"] = [1]
-            self.o.cs["tightCoupling"] = True
-            hasCouplingInteraction = 1
-            self.dbWriteForCoupling(writeDB=True)
-            self.assertEqual(self.r.core.p.coupledIteration, hasCouplingInteraction)
-            self.r.core.p.coupledIteration = 0
-            self.dbWriteForCoupling(writeDB=False)
-            self.assertEqual(self.r.core.p.coupledIteration, hasCouplingInteraction)
+    def test_performTightCoupling_Inactive(self):
+        """ensures no action by _performTightCoupling if cs[CONF_TIGHT_COUPLING] = false"""
+        self.o.cs[CONF_TIGHT_COUPLING] = False
+        self.o._performTightCoupling(0, 0, writeDB=False)
+        self.assertEqual(self.o.r.core.p.coupledIteration, 0)
 
-            # test cases where no coupling interaction due to settings
-            self.r.core.p.coupledIteration = 0
-            noCouplingInteractions = 0
-            # because cyclesSkipTightCouplingInteraction above
+    def test_performTightCoupling_skip(self):
+        """ensure that cycles within cs[CONF_CYCLES_SKIP_TIGHT_COUPLING_INTERACTION] are skipped"""
+        self.o.cs[CONF_CYCLES_SKIP_TIGHT_COUPLING_INTERACTION] = [1]
+        with mockRunLogs.BufferLog() as mock:
             self.o._performTightCoupling(1, 0, writeDB=False)
-            self.assertEqual(self.r.core.p.coupledIteration, noCouplingInteractions)
-            self.o.cs["tightCoupling"] = False
-            self.o._performTightCoupling(2, 0, writeDB=False)
-            self.assertEqual(self.r.core.p.coupledIteration, noCouplingInteractions)
+            self.assertIn("interactAllCoupled disabled this cycle", mock.getStdout())
+            self.assertEqual(self.o.r.core.p.coupledIteration, 0)
+
+    def test_performTightCoupling_notConverged(self):
+        """ensure that the appropriate runLog.warning is addressed in tight coupling reaches max num of iters"""
+
+        class NoConverge(TightCoupler):
+            def isConverged(self, _val: TightCoupler._SUPPORTED_TYPES) -> bool:
+                return False
+
+        # pylint: disable=abstract-method
+        class InterfaceNoConverge(Interface):
+            name = "NoConverge"
+
+            def __init__(self, r, cs):
+                super().__init__(r, cs)
+                self.coupler = NoConverge(param="dummy", tolerance=None, maxIters=1)
+
+            def getTightCouplingValue(self):
+                return 0.0
+
+        self.o.addInterface(InterfaceNoConverge(None, self.o.cs))
+        with mockRunLogs.BufferLog() as mock:
+            self.o._performTightCoupling(0, 0, writeDB=False)
+            self.assertIn(
+                "have not converged! The maximum number of iterations", mock.getStdout()
+            )
+
+    def test_performTightCoupling_WriteDB(self):
+        """ensure a tight coupling iteration accours and that a DB WILL be written if requested"""
+        hasCouplingInteraction = 1
+        with directoryChangers.TemporaryDirectoryChanger():
+            with mockRunLogs.BufferLog() as mock:
+                self.dbWriteForCoupling(writeDB=True)
+                self.assertIn("Writing to database for statepoint:", mock.getStdout())
+                self.assertEqual(
+                    self.o.r.core.p.coupledIteration, hasCouplingInteraction
+                )
+
+    def test_performTightCoupling_NoWriteDB(self):
+        """ensure a tight coupling iteration accours and that a DB WILL NOT be written if requested"""
+        hasCouplingInteraction = 1
+        with directoryChangers.TemporaryDirectoryChanger():
+            with mockRunLogs.BufferLog() as mock:
+                self.dbWriteForCoupling(writeDB=False)
+                self.assertNotIn(
+                    "Writing to database for statepoint:", mock.getStdout()
+                )
+                self.assertEqual(
+                    self.o.r.core.p.coupledIteration, hasCouplingInteraction
+                )
 
     def dbWriteForCoupling(self, writeDB: bool):
         self.o.removeAllInterfaces()
-        dbi = DatabaseInterface(self.r, self.o.cs)
+        dbi = DatabaseInterface(self.o.r, self.o.cs)
         dbi.initDB(fName=self._testMethodName + ".h5")
         self.o.addInterface(dbi)
         self.o._performTightCoupling(0, 0, writeDB=writeDB)
@@ -154,36 +229,20 @@ class OperatorTests(unittest.TestCase):
         """
         prevIterKeff = 0.9
         currIterKeff = 1.0
-        self.o.cs["tightCoupling"] = True
-        self.o.cs["tightCouplingSettings"] = {
+        self.o.cs[CONF_TIGHT_COUPLING_SETTINGS] = {
             "globalFlux": {"parameter": "keff", "convergence": 1e-05}
         }
-        globalFlux = GlobalFluxInterfaceUsingExecuters(self.r, self.o.cs)
+        globalFlux = GlobalFluxInterfaceUsingExecuters(self.o.r, self.o.cs)
         globalFlux.coupler.storePreviousIterationValue(prevIterKeff)
         self.o.addInterface(globalFlux)
         # set keff to some new value and compute tight coupling convergence
-        self.r.core.p.keff = currIterKeff
+        self.o.r.core.p.keff = currIterKeff
         self.o._convergenceSummary = collections.defaultdict(list)
         self.assertFalse(self.o._checkTightCouplingConvergence([globalFlux]))
         self.assertAlmostEqual(
             globalFlux.coupler.eps,
             currIterKeff - prevIterKeff,
         )
-
-    def test_setStateToDefault(self):
-
-        # reset the runType for testing
-        self.assertEqual(self.o.cs["runType"], "Standard")
-        self.o.cs = self.o.cs.modified(newSettings={"runType": "fake"})
-        self.assertEqual(self.o.cs["runType"], "fake")
-
-        # validate the method works
-        cs = self.o.setStateToDefault(self.o.cs)
-        self.assertEqual(cs["runType"], "Standard")
-
-    def test_snapshotRequest(self):
-        with TemporaryDirectoryChanger():
-            self.o.snapshotRequest(0, 1)
 
 
 class CyclesSettingsTests(unittest.TestCase):

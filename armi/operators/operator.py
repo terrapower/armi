@@ -41,6 +41,11 @@ from armi.bookkeeping.report import reportingUtils
 from armi.operators import settingsValidation
 from armi.operators.runTypes import RunTypes
 from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
+from armi.settings.fwSettings.globalSettings import (
+    CONF_TIGHT_COUPLING,
+    CONF_TIGHT_COUPLING_MAX_ITERS,
+    CONF_CYCLES_SKIP_TIGHT_COUPLING_INTERACTION,
+)
 from armi.utils import codeTiming
 from armi.utils import (
     pathTools,
@@ -390,19 +395,29 @@ class Operator:  # pylint: disable=too-many-public-methods
         if not self.couplingIsActive():
             # no coupling was requested
             return
-        skipCycles = (int(val) for val in self.cs["cyclesSkipTightCouplingInteraction"])
+        skipCycles = tuple(
+            int(val) for val in self.cs[CONF_CYCLES_SKIP_TIGHT_COUPLING_INTERACTION]
+        )
         if cycle in skipCycles:
             runLog.warning(
                 f"interactAllCoupled disabled this cycle ({self.r.p.cycle}) due to "
-                "`cycleTreatTightConverged` setting."
+                "`cyclesSkipTightCouplingInteraction` setting."
             )
         else:
             self._convergenceSummary = collections.defaultdict(list)
-            for coupledIteration in range(self.cs["tightCouplingMaxNumIters"]):
+            for coupledIteration in range(self.cs[CONF_TIGHT_COUPLING_MAX_ITERS]):
                 self.r.core.p.coupledIteration = coupledIteration + 1
                 converged = self.interactAllCoupled(coupledIteration)
                 if converged:
+                    runLog.important(
+                        f"Tight coupling iterations for c{cycle:02d}n{timeNode:02d} have converged!"
+                    )
                     break
+            if not converged:
+                runLog.warning(
+                    f"Tight coupling iterations for c{cycle:02d}n{timeNode:02d} have not converged!"
+                    f" The maximum number of iterations, {self.cs[CONF_TIGHT_COUPLING_MAX_ITERS]}, was reached."
+                )
         if writeDB:
             # database has not yet been written, so we need to write it.
             dbi = self.getInterface("database")
@@ -1144,4 +1159,4 @@ class Operator:  # pylint: disable=too-many-public-methods
 
     def couplingIsActive(self):
         """True if any kind of physics coupling is active."""
-        return self.cs["tightCoupling"]
+        return self.cs[CONF_TIGHT_COUPLING]
