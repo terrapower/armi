@@ -3,3 +3,7 @@ ci:
 
 documentation:
   - any: ['*.rst', 'doc/**/*.rst', '!doc/release/*']
+
+testing:
+  - any: [tox.ini, pytest.ini, .coveragerc]
+  - all: ['**/tests/*']
