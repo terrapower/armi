@@ -9,7 +9,7 @@ jobs:
       - name: Enforce Pull Request Description Length
         uses: ryanvade/enforce-pr-description-length-action@v1
         with:
-          minLength: 1175
+          minLength: 1180
 
   pr-label:
     runs-on: ubuntu-22.04

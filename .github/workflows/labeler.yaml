@@ -4,7 +4,7 @@ ci:
 documentation:
   - README.rst
   - doc/**/*.rst
-  - !doc/release/*
+  - '!doc/release/*'
 
 
   
