@@ -342,7 +342,7 @@ class BlockAvgToCylConverter(BlockConverter):
     def _addBlockRings(
         self, blockToAdd, blockName, numRingsToAdd, firstRing, mainComponent=None
     ):
-        """Add a homogenous block ring to the converted block."""
+        """Add a homogeneous block ring to the converted block."""
         runLog.info(
             "Converting representative block {} to its equivalent cylindrical model".format(
                 self._sourceBlock
