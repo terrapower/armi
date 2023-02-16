@@ -1,6 +1,6 @@
 name: Enforce Pull Request Quality
 
-on: [pull_request]
+on: [push, pull_request]
 
 jobs:
   pr-length:
