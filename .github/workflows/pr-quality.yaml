@@ -3,11 +3,12 @@ name: Enforce Pull Request Quality
 on: pull_request
 
 jobs:
-  runs-on: ubuntu-22.04
-  env:
+  pr-quality:
+    runs-on: ubuntu-22.04
+    env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  pr-length:
+  #pr-length:
     #runs-on: ubuntu-22.04
     steps:
       - name: Enforce Pull Request Description Length
@@ -15,9 +16,9 @@ jobs:
         with:
           minLength: 1180 # Num chars in PR template plus 5
 
-  pr-label:
+  #pr-label:
     #runs-on: ubuntu-22.04
-    steps:
+    #steps:
       - name: Auto-Label the Pull Request
         uses: actions/labeler@v4.0.2
         with:
@@ -25,9 +26,9 @@ jobs:
           sync-labels: true
           configuration-path: .github/workflows/labeler.yaml
 
-  size-label:
+  #size-label:
     #runs-on: ubuntu-22.04
-    steps:
+    #steps:
       - name: Pull Request Size Labeling
         uses: pascalgn/size-label-action@v0.4.3
         env:
