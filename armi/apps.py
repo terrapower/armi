@@ -260,12 +260,47 @@ class App:
         restrict their flexibility and power as compared to the usual ArmiPlugins.
         """
         for pluginPath in pluginPaths:
+            if self._isPluginRegistered(pluginPath):
+                continue
             if ".py:" in pluginPath:
                 # The path is of the form: /path/to/why.py:MyPlugin
                 self.__registerUserPluginsAbsPath(pluginPath)
             else:
                 # The path is of the form: armi.thing.what.MyPlugin
                 self.__registerUserPluginsInternalImport(pluginPath)
+
+    def _isPluginRegistered(self, pluginPath: str):
+        """
+        Check if the plugin at the provided path is already registered.
+
+        The expected path formats are:
+        ------------------------------
+        importable namespace:
+        ``armi.stuff.plugindir.pluginMod.pluginCls``
+
+        or on Linux/Unix:
+        ``/path/to/pluginMod.py:pluginCls``
+
+        or on Windows:
+        ``C:\\path\\to\\pluginMod.py:pluginCls``
+
+        Parameters
+        -----------
+        pluginPath : str
+            String path to a userPlugin.
+
+        Returns
+        --------
+        bool
+            Whether or not the plugin name is already registered with the manager.
+        """
+
+        if ":" in pluginPath:
+            pluginName = pluginPath.strip().split(":")[-1]
+        else:
+            pluginName = pluginPath.strip().split(".")[-1]
+
+        return self._pm.has_plugin(pluginName)
 
     def __registerUserPluginsAbsPath(self, pluginPath):
         """Helper method to register a single UserPlugin where
