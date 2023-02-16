@@ -9,15 +9,15 @@ jobs:
       - name: Enforce Pull Request Description Length
         uses: ryanvade/enforce-pr-description-length-action@v1
         with:
-          minLength: 1180
+          minLength: 1180 # Num chars in PR template plus 5
 
   pr-label:
     runs-on: ubuntu-22.04
     steps:
       - name: Auto-Label the Pull Request
-        uses: actions/labeler@v4
+        uses: actions/labeler@v4.0.2
         with:
-          repo-token: "${{ secrets.GITHUB_TOKEN }}"
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
           sync-labels: true
           configuration-path: .github/workflows/labeler.yaml
 
@@ -25,9 +25,9 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Pull Request Size Labeling
-        uses: "pascalgn/size-label-action@v0.4.3"
+        uses: pascalgn/size-label-action@v0.4.3
         env:
-          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           sizes: >
             {
