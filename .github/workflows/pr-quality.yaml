@@ -1,6 +1,6 @@
 name: Enforce Pull Request Quality
 
-on: pull_request
+on: pull_request_target
 
 jobs:
   pr-quality:
