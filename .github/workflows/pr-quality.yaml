@@ -8,8 +8,8 @@ permissions:
 jobs:
   pr-quality:
     runs-on: ubuntu-22.04
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #env:
+    #  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   #pr-length:
     #runs-on: ubuntu-22.04
@@ -19,23 +19,13 @@ jobs:
         with:
           minLength: 1180 # Num chars in PR template plus 5
 
-  #pr-label:
-    #runs-on: ubuntu-22.04
-    #steps:
-      - name: Auto-Label the Pull Request
-        uses: actions/labeler@v4.0.2
-        with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          sync-labels: true
-          configuration-path: .github/workflows/labeler.yaml
-
   #size-label:
     #runs-on: ubuntu-22.04
     #steps:
       - name: Pull Request Size Labeling
         uses: pascalgn/size-label-action@v0.4.3
-        #env:
-        #  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           sizes: >
             {
@@ -45,3 +35,12 @@ jobs:
               "140": "L",
               "250": "Too Large"
             }
+  #pr-label:
+    #runs-on: ubuntu-22.04
+    #steps:
+      - name: Auto-Label the Pull Request
+        uses: actions/labeler@v4.0.2
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          sync-labels: true
+          configuration-path: .github/workflows/labeler.yaml
