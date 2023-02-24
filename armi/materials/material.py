@@ -240,7 +240,16 @@ class Material:
         pass
 
     def setMassFrac(self, nucName: str, massFrac: float) -> None:
-        self.massFrac[nucName] = massFrac
+        """
+        Assigns the mass fraction of a nuclide within the material.
+
+        Notes
+        -----
+        This will try to convert the provided ``massFrac`` into a float
+        for assignment. If the conversion cannot occur then an error
+        will be thrown.
+        """
+        self.massFrac[nucName] = float(massFrac)
 
     def applyInputParams(self):
         """Apply material-specific material input parameters."""
