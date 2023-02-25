@@ -249,7 +249,29 @@ class Material:
         for assignment. If the conversion cannot occur then an error
         will be thrown.
         """
-        self.massFrac[nucName] = float(massFrac)
+        try:
+            massFrac = float(massFrac)
+        except Exception as ee:
+            raise TypeError(
+                f"Error is converting the mass fraction of {massFrac} "
+                f"for nuclide {nucName} in {self} to a float. "
+                f"Exception: {ee}"
+            )
+        if massFrac < 0.0:
+            raise ValueError(
+                f"Cannot assign a negative mass "
+                f"fraction of {massFrac} to {nucName} "
+                f"within {self}"
+            )
+
+        if massFrac > 1.0:
+            raise ValueError(
+                f"Cannot assign a negative mass "
+                f"fraction of {massFrac} to {nucName} "
+                f"within {self}"
+            )
+
+        self.massFrac[nucName] = massFrac
 
     def applyInputParams(self):
         """Apply material-specific material input parameters."""
