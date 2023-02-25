@@ -1457,7 +1457,7 @@ class TestMaterialAdjustments(unittest.TestCase):
         self.assertAlmostEqual(self.fuel.material.getMassFrac("U235"), 0.0)
 
         # One is acceptable
-        self.fuel.setMassFrac("U235", 1.0)
+        self.fuel.material.setMassFrac("U235", 1.0)
         self.assertAlmostEqual(self.fuel.material.getMassFrac("U235"), 1.0)
 
     def test_adjustMassFrac_invalid(self):
