@@ -806,6 +806,23 @@ class UniformMeshGeometryConverter(GeometryConverter):
                 continue
             globalFluxInterface.calcReactionRates(b, keff, lib)
 
+    def updateReactionRates(self):
+        """
+        Update reaction rates on converted assemblies
+
+        Notes
+        -----
+        In some cases, we may want to read flux into a converted reactor from a
+        pre-existing physics output instead of mapping it in from the pre-conversion
+        source reactor. This method can be called after reading that flux in to
+        calculate updated reaction rates derived from that flux.
+        """
+        if self._hasNonUniformAssems:
+            for assem in self.convReactor.core.getAssemblies(self._nonUniformMeshFlags):
+                self._calculateReactionRates(self.convReactor.core.lib, self.convReactor.core.p.keff, assem)
+        else:
+            for assem in self.convReactor.core.getAssemblies():
+                self._calculateReactionRates(self.convReactor.core.lib, self.convReactor.core.p.keff, assem)
 
 class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
     """
