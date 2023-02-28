@@ -8,13 +8,10 @@ Release Date: TBD
 
 What's new in ARMI
 ------------------
-#. Remove unused `HCFcoretype` setting. (`PR#1179 <https://github.com/terrapower/armi/pull/1179>`_)
 #. TBD
 
 Bug fixes
 ---------
-#. Fixed interface/event ``runLog.header`` for tight coupling. (`PR#1178 https://github.com/terrapower/armi/pull/1178`_)
-#. Fixed circular import bug in ``reactors.py`` caused by importing settings constants. (`PR#1185 <https://github.com/terrapower/armi/pull/1185>`_)
 #. Fixed TBD
 
 
@@ -42,9 +39,10 @@ What's new in ARMI
 #. Allow MCNP material card number to be defined after the card is written. (`PR#1086 <https://github.com/terrapower/armi/pull/1086>`_)
 #. Refine logic for ``Block.getNumPins()`` to only count components that are actually pins. (`PR#1098 <https://github.com/terrapower/armi/pull/1098>`_)
 #. Improve handling of peak/max parameters by the ``UniformMeshConverter`` parameter mapper. (`PR#1108 <https://github.com/terrapower/armi/pull/1108>`_)
-#. Calculate block kgHM and kgFis on core loading and after shuffling. (`PR#1136 https://github.com/terrapower/armi/pull/1136`_)
+#. Calculate block kgHM and kgFis on core loading and after shuffling. (`PR#1136 <https://github.com/terrapower/armi/pull/1136>`_)
 #. Calculate block ``PuFrac`` on core loading and after shuffling. (`PR#1165 <https://github.com/terrapower/armi/pull/1165>`_)
 #. Add setting ``cyclesSkipTightCouplingInteraction`` to skip coupling interaction on specified cycles. (`PR#1173 <https://github.com/terrapower/armi/pull/1173>`_)
+#. Remove unused `HCFcoretype` setting. (`PR#1179 <https://github.com/terrapower/armi/pull/1179>`_)
 
 Bug fixes
 ---------
@@ -63,6 +61,8 @@ Bug fixes
 #. Fixed Concrete density curve. (`PR#1131 <https://github.com/terrapower/armi/pull/1131>`_)
 #. Fixed Copper density curve. (`PR#1150 <https://github.com/terrapower/armi/pull/1150>`_)
 #. Fixed Component.density. (`PR#1149 <https://github.com/terrapower/armi/pull/1149>`_)
+#. Fixed interface/event ``runLog.header`` for tight coupling. (`PR#1178 <https://github.com/terrapower/armi/pull/1178>`_)
+#. Fixed circular import bug in ``reactors.py`` caused by importing settings constants. (`PR#1185 <https://github.com/terrapower/armi/pull/1185>`_)
 
 ARMI v0.2.5
 ===========
