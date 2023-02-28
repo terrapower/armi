@@ -937,7 +937,6 @@ class GammaUniformMeshConverter(UniformMeshGeometryConverter):
     }
     blockParamMappingCategories = {
         "in": [
-            parameters.Category.detailedAxialExpansion,
             parameters.Category.multiGroupQuantities,
         ],
         "out": [
