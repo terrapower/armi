@@ -2379,7 +2379,7 @@ class MassConservationTests(unittest.TestCase):
         # we are at cold temp so cold and hot area are equal
         self.assertAlmostEqual(fuel.getArea(cold=True), fuel.getArea())
         height = self.b.getHeight()  # hot height.
-        rho = fuel.getProperties().density3(Tc=Tcold)
+        rho = fuel.getProperties().density(Tc=Tcold)
         # can't use getThermalExpansionFactor since hot=cold so it would be 0
         dllHot = fuel.getProperties().linearExpansionFactor(Tc=Thot, T0=Tcold)
         coldHeight = height / (1 + dllHot)

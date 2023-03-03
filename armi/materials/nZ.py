@@ -26,5 +26,5 @@ class NZ(SimpleSolid):
         self.setMassFrac("NB93", 0.99)
         self.setMassFrac("ZR", 0.01)
 
-    def density3(self, Tk=None, Tc=None):
+    def density(self, Tk=None, Tc=None):
         return 8.66  # g/cc

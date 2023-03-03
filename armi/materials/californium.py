@@ -29,7 +29,7 @@ class Californium(SimpleSolid):
     def setDefaultMassFracs(self):
         self.setMassFrac("CF252", 1.0)
 
-    def density3(self, Tk=None, Tc=None):
+    def density(self, Tk=None, Tc=None):
         """
         https://en.wikipedia.org/wiki/Californium
         """

@@ -332,7 +332,7 @@ class TestGriddedBlock(unittest.TestCase):
         programaticClad = programmaticBlock.getComponent(Flags.CLAD)
         self.assertAlmostEqual(
             clad.getMassDensity(),
-            clad.material.density3(Tc=clad.temperatureInC),
+            clad.material.density(Tc=clad.temperatureInC),
         )
 
         self.assertAlmostEqual(
