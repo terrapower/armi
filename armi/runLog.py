@@ -522,12 +522,6 @@ class RunLogger(logging.Logger):
         # Determine the log level: users can optionally pass in custom strings ("debug")
         msgLevel = msgType if isinstance(msgType, int) else LOG.logLevels[msgType][0]
 
-        # os.path.exists is slow, only call this if writing is needed
-        if self.isEnabledFor(msgLevel):
-            # If the log dir hasn't been created yet, create it.
-            if not os.path.exists(LOG_DIR):
-                createLogDir(LOG_DIR)
-
         # Do the actual logging
         logging.Logger.log(
             self, msgLevel, str(msg), extra={"single": single, "label": label}
@@ -663,6 +657,8 @@ def createLogDir(logDir: str = None) -> None:
         time.sleep(secondsWait)
 
 
+if not os.path.exists(LOG_DIR):
+    createLogDir(LOG_DIR)
 # ---------------------------------------
 
 
