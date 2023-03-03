@@ -1,7 +1,5 @@
 
-
-
-|Build Status| |Code Coverage|
+|Build Status| |Code Coverage| |Commit Activity| |Good First Issues|
 
 The Advanced Reactor Modeling Interface (ARMI\ :sup:`®`) is an open-source tool that
 streamlines your nuclear reactor design/analysis needs by providing a
@@ -437,3 +435,8 @@ only use third-party Python libraries that have MIT or BSD licenses.
 .. |Code Coverage| image:: https://coveralls.io/repos/github/terrapower/armi/badge.svg?branch=main&kill_cache=2
     :target: https://coveralls.io/github/terrapower/armi?branch=main
 
+.. |Commit Activity| image:: https://img.shields.io/github/commit-activity/m/terrapower/armi
+    :target: https://github.com/terrapower/armi/pulse
+
+.. |Good First Issues| image:: https://img.shields.io/github/issues/terrapower/armi/good%20first%20issue
+    :target: https://github.com/terrapower/armi/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22

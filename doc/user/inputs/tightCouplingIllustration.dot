@@ -1,0 +1,49 @@
+digraph tightCoupling {
+        label="Tight Coupling"
+        layout="dot";
+        rankdir=TB;
+        e [label="Converged?", shape="diamond", style="filled", color="white"]
+        e1 [label="Converged?", shape="diamond", style="filled", color="white"]
+        e2 [label="Converged?", shape="diamond", style="filled", color="white"]
+        a [label="Temp.", shape="Rectangle", style="rounded,filled", color="white"]
+        a1 [label="Temp.", shape="Rectangle", style="rounded,filled", color="white"]
+        a2 [label="Temp.", shape="Rectangle", style="rounded,filled", color="white"]
+        b [label="Power", shape="Rectangle", style="rounded,filled", color="white"]
+        b1 [label="Power", shape="Rectangle", style="rounded,filled", color="white"]
+        b2 [label="Power", shape="Rectangle", style="rounded,filled", color="white"]
+        c [label="Cross Sections", shape="Rectangle", style="rounded,filled", color="white"]
+        c1 [label="Cross Sections", shape="Rectangle", style="rounded,filled", color="white"]
+        c2 [label="Cross Sections", shape="Rectangle", style="rounded,filled", color="white"]
+        d [label="...", shape="plaintext"]
+
+        subgraph cluster_c00n00{
+            label="Cycle 0, Node 0";
+            style="rounded,filled";
+            color=lightblue;
+            c -> b 
+            b -> a 
+            a -> e [constraint=false]
+            e -> c [constraint=false, label="no"]
+        }
+        e -> c1 [label="yes"]
+        subgraph cluster_c00n01{
+            label="Cycle 0, Node 1"
+            style="rounded,filled";
+            color=lightblue;
+            c1 -> b1
+            b1 -> a1
+            a1 -> e1 [constraint=false]
+            e1 -> c1 [constraint=false, label="no"]
+        }
+        e1 -> c2 [label="yes"]
+        subgraph cluster_c00n02{
+            label="Cycle 0, Node 2"
+            style="rounded,filled";
+            color=lightblue;
+            c2 -> b2
+            b2 -> a2
+            a2 -> e2 [constraint=false]
+            e2 -> c2 [constraint=false, label="no"]
+        }
+        e2 -> d [label="yes"]
+}

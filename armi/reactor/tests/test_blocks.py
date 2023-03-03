@@ -1835,7 +1835,7 @@ class HexBlock_TestCase(unittest.TestCase):
         nRings = hexagon.numRingsToHoldNumCells(nPins) - 1
         self.assertAlmostEqual(math.sqrt(cornerMag), nRings * pinPitch)
 
-    def test_getPitchHomogenousBlock(self):
+    def test_getPitchHomogeneousBlock(self):
         """
         Demonstrate how to communicate pitch on a hex block with unshaped components.
 
@@ -2135,7 +2135,7 @@ class CartesianBlock_TestCase(unittest.TestCase):
     def test_getPitchSquare(self):
         self.assertEqual(self.cartesianBlock.getPitch(), (self.PITCH, self.PITCH))
 
-    def test_getPitchHomogenousBlock(self):
+    def test_getPitchHomogeneousBlock(self):
         """
         Demonstrate how to communicate pitch on a hex block with unshaped components.
 
@@ -2158,7 +2158,7 @@ class CartesianBlock_TestCase(unittest.TestCase):
         # the desired area fraction.
         # The second way is to define all physical material components as unshaped, and
         # add an additional infinitely thin Void component (no area) that defines pitch.
-        # See second part of HexBlock_TestCase.test_getPitchHomogenousBlock for
+        # See second part of HexBlock_TestCase.test_getPitchHomogeneousBlock for
         # demonstration.
         cartBlock = blocks.CartesianBlock("TestCartBlock")
 

@@ -82,6 +82,7 @@ CONF_N_CYCLES = "nCycles"
 CONF_TIGHT_COUPLING = "tightCoupling"
 CONF_TIGHT_COUPLING_MAX_ITERS = "tightCouplingMaxNumIters"
 CONF_TIGHT_COUPLING_SETTINGS = "tightCouplingSettings"
+CONF_CYCLES_SKIP_TIGHT_COUPLING_INTERACTION = "cyclesSkipTightCouplingInteraction"
 CONF_OPERATOR_LOCATION = "operatorLocation"
 CONF_OUTPUT_FILE_EXTENSION = "outputFileExtension"
 CONF_PLOTS = "plots"
@@ -99,7 +100,6 @@ CONF_ZONE_DEFINITIONS = "zoneDefinitions"
 CONF_ACCEPTABLE_BLOCK_AREA_ERROR = "acceptableBlockAreaError"
 CONF_FLUX_RECON = "fluxRecon"  # strange coupling in fuel handlers
 CONF_INDEPENDENT_VARIABLES = "independentVariables"
-CONF_HCF_CORETYPE = "HCFcoretype"
 CONF_T_IN = "Tin"
 CONF_T_OUT = "Tout"
 CONF_DEFERRED_INTERFACES_CYCLE = "deferredInterfacesCycle"
@@ -598,6 +598,14 @@ def defineSettings() -> List[setting.Setting]:
             label="Maximum number of iterations for tight coupling.",
             description="Maximum number of iterations for tight coupling.",
         ),
+        setting.Setting(
+            CONF_CYCLES_SKIP_TIGHT_COUPLING_INTERACTION,
+            default=[],
+            label="Cycles to skip the tight coupling interaction.",
+            description="List of cycle numbers skip tight coupling interaction for. "
+            "Will still update component temps, etc during these cycles, will just "
+            "not iterate a second (or more) time.",
+        ),
         tightCouplingSettings.TightCouplingSettingDef(
             CONF_TIGHT_COUPLING_SETTINGS,
         ),
@@ -732,14 +740,6 @@ def defineSettings() -> List[setting.Setting]:
             label="Independent Variables",
             description="List of (independentVarName, value) tuples to inform "
             "optimization post-processing",
-        ),
-        setting.Setting(
-            CONF_HCF_CORETYPE,
-            default="TWRC",
-            label="Hot Channel Factor Set",
-            description="Switch to apply different sets of hot channel factors based "
-            "on design being analyzed",
-            options=["TWRC", "TWRP", "TWRC-HEX"],
         ),
         setting.Setting(
             CONF_T_IN,

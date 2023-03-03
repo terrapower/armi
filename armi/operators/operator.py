@@ -41,6 +41,11 @@ from armi.bookkeeping.report import reportingUtils
 from armi.operators import settingsValidation
 from armi.operators.runTypes import RunTypes
 from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
+from armi.settings.fwSettings.globalSettings import (
+    CONF_TIGHT_COUPLING,
+    CONF_TIGHT_COUPLING_MAX_ITERS,
+    CONF_CYCLES_SKIP_TIGHT_COUPLING_INTERACTION,
+)
 from armi.utils import codeTiming
 from armi.utils import (
     pathTools,
@@ -387,17 +392,36 @@ class Operator:  # pylint: disable=too-many-public-methods
         -----
         writeDB is False for OperatorSnapshots as the DB gets written at EOL.
         """
-        if self.couplingIsActive():
+        if not self.couplingIsActive():
+            # no coupling was requested
+            return
+        skipCycles = tuple(
+            int(val) for val in self.cs[CONF_CYCLES_SKIP_TIGHT_COUPLING_INTERACTION]
+        )
+        if cycle in skipCycles:
+            runLog.warning(
+                f"interactAllCoupled disabled this cycle ({self.r.p.cycle}) due to "
+                "`cyclesSkipTightCouplingInteraction` setting."
+            )
+        else:
             self._convergenceSummary = collections.defaultdict(list)
-            for coupledIteration in range(self.cs["tightCouplingMaxNumIters"]):
+            for coupledIteration in range(self.cs[CONF_TIGHT_COUPLING_MAX_ITERS]):
                 self.r.core.p.coupledIteration = coupledIteration + 1
                 converged = self.interactAllCoupled(coupledIteration)
                 if converged:
+                    runLog.important(
+                        f"Tight coupling iterations for c{cycle:02d}n{timeNode:02d} have converged!"
+                    )
                     break
-            if writeDB:
-                # database has not yet been written, so we need to write it.
-                dbi = self.getInterface("database")
-                dbi.writeDBEveryNode(cycle, timeNode)
+            if not converged:
+                runLog.warning(
+                    f"Tight coupling iterations for c{cycle:02d}n{timeNode:02d} have not converged!"
+                    f" The maximum number of iterations, {self.cs[CONF_TIGHT_COUPLING_MAX_ITERS]}, was reached."
+                )
+        if writeDB:
+            # database has not yet been written, so we need to write it.
+            dbi = self.getInterface("database")
+            dbi.writeDBEveryNode(cycle, timeNode)
 
     def _interactAll(self, interactionName, activeInterfaces, *args):
         """
@@ -415,7 +439,9 @@ class Operator:  # pylint: disable=too-many-public-methods
 
         halt = False
 
-        cycleNodeTag = self._expandCycleAndTimeNodeArgs(*args)
+        cycleNodeTag = self._expandCycleAndTimeNodeArgs(
+            *args, interactionName=interactionName
+        )
         runLog.header(
             "===========  Triggering {} Event ===========".format(
                 interactionName + cycleNodeTag
@@ -471,18 +497,34 @@ class Operator:  # pylint: disable=too-many-public-methods
         This looks better as multiple lines but it's a lot easier to grep as one line.
         We leverage newlines instead of long banners to save disk space.
         """
-        nodeInfo = self._expandCycleAndTimeNodeArgs(*args)
+        nodeInfo = self._expandCycleAndTimeNodeArgs(
+            *args, interactionName=interactionName
+        )
         line = "=========== {:02d} - {:30s} {:15s} ===========".format(
             statePointIndex, interface.name, interactionName + nodeInfo
         )
         runLog.header(line)
 
     @staticmethod
-    def _expandCycleAndTimeNodeArgs(*args):
-        """Return text annotating the (cycle, time node) args for each that are present."""
+    def _expandCycleAndTimeNodeArgs(*args, interactionName):
+        """Return text annotating information for current run event.
+
+        Notes
+        -----
+        - Init, BOL, EOL: empty
+        - Everynode: (cycle, time node)
+        - BOC: cycle number
+        - Coupling: iteration number
+        """
         cycleNodeInfo = ""
-        for label, step in zip((" - cycle {}", ", node {}"), args):
-            cycleNodeInfo += label.format(step)
+        if args:
+            if len(args) == 1:
+                if interactionName == "Coupled":
+                    cycleNodeInfo = f" - iteration {args[0]}"
+                elif interactionName in ("BOC", "EOC"):
+                    cycleNodeInfo = f" - cycle {args[0]}"
+            else:
+                cycleNodeInfo = f" - cycle {args[0]}, node {args[1]}"
         return cycleNodeInfo
 
     def _debugDB(self, interactionName, interfaceName, statePointIndex=0):
@@ -1117,4 +1159,4 @@ class Operator:  # pylint: disable=too-many-public-methods
 
     def couplingIsActive(self):
         """True if any kind of physics coupling is active."""
-        return self.cs["tightCoupling"]
+        return self.cs[CONF_TIGHT_COUPLING]

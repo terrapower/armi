@@ -1483,13 +1483,13 @@ class Block(composites.Composite):
         """
         return composites.ArmiObject.getLumpedFissionProductCollection(self)
 
-    def rotate(self, deg):
-        """Function for rotating a block's spatially varying variables by a specified angle.
+    def rotate(self, rad):
+        """Function for rotating a block's spatially varying variables by a specified angle (radians).
 
         Parameters
         ----------
-        deg - float
-            number specifying the angle of counter clockwise rotation
+        rad - float
+            number (in radians) specifying the angle of counter clockwise rotation
         """
         raise NotImplementedError
 
@@ -1758,9 +1758,32 @@ class HexBlock(Block):
                         f"on {param}"
                     )
                     runLog.warning(msg)
-            else:
+            elif isinstance(self.p[param], numpy.ndarray):
+                if len(self.p[param]) == 6:
+                    self.p[param] = numpy.concatenate(
+                        (self.p[param][-rotNum:], self.p[param][:-rotNum])
+                    )
+                elif len(self.p[param]) == 0:
+                    # Hasn't been defined yet, no warning needed.
+                    pass
+                else:
+                    msg = (
+                        "No rotation method defined for spatial parameters that aren't "
+                        "defined once per hex edge/corner. No rotation performed "
+                        f"on {param}"
+                    )
+                    runLog.warning(msg)
+            elif isinstance(self.p[param], (int, float)):
                 # this is a scalar and there shouldn't be any rotation.
                 pass
+            elif self.p[param] is None:
+                # param is not set yet. no rotations as well.
+                pass
+            else:
+                raise TypeError(
+                    f"b.rotate() method received unexpected data type for {param} on block {self}\n"
+                    + f"expected list, np.ndarray, int, or float. received {self.p[param]}"
+                )
         # This specifically uses the .get() functionality to avoid an error if this
         # parameter does not exist.
         dispx = self.p.get("displacementX")

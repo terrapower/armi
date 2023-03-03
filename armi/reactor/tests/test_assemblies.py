@@ -17,7 +17,7 @@
 import pathlib
 import random
 import unittest
-
+import numpy as np
 from numpy.testing import assert_allclose
 
 from armi import settings
@@ -38,7 +38,7 @@ from armi.reactor.assemblies import (
     numpy,
     runLog,
 )
-from armi.tests import TEST_ROOT
+from armi.tests import TEST_ROOT, mockRunLogs
 from armi.utils import directoryChangers
 from armi.utils import textProcessors
 from armi.reactor.tests import test_reactors
@@ -1022,9 +1022,56 @@ class Assembly_TestCase(unittest.TestCase):
         rotY = -0.5
         a.add(b)
         a.rotate(math.radians(120))
+        # test list rotation
         self.assertEqual(a.getBlocks()[0].p.THcornTemp, rotTemp)
         self.assertAlmostEqual(a.getBlocks()[0].p.displacementX, rotX)
         self.assertAlmostEqual(a.getBlocks()[0].p.displacementY, rotY)
+
+        b.p.THcornTemp = np.array([400, 450, 500, 550, 600, 650])
+        rotTemp = np.array([600, 650, 400, 450, 500, 550])
+        a.rotate(math.radians(120))
+        # test np.ndarray rotation
+        for i in range(len(b.p.THcornTemp)):
+            self.assertEqual(a.getBlocks()[0].p.THcornTemp[i], rotTemp[i])
+
+        # test that floats and ints are left alone
+        b.p.THcornTemp = 3
+        a.rotate(math.radians(120))
+        self.assertEqual(a.getBlocks()[0].p.THcornTemp, 3)
+        b.p.THcornTemp = 4.0
+        a.rotate(math.radians(120))
+        self.assertEqual(a.getBlocks()[0].p.THcornTemp, 4.0)
+
+        # check that TypeError is raised for unexpected data type
+        b.p.THcornTemp = "bad data"
+        with self.assertRaises(TypeError):
+            a.rotate(math.radians(120))
+
+        # check that list of len != 6 ends up in runlog warning
+        # list len=5
+        b.p.THcornTemp = [400, 450, 500, 550, 600]
+        with mockRunLogs.BufferLog() as mock:
+            self.assertEqual("", mock.getStdout())
+            a.rotate(math.radians(120))
+            self.assertIn("No rotation method defined", mock.getStdout())
+        # np.ndarray len=5
+        b.p.THcornTemp = np.array([400, 450, 500, 550, 600])
+        with mockRunLogs.BufferLog() as mock:
+            self.assertEqual("", mock.getStdout())
+            a.rotate(math.radians(120))
+            self.assertIn("No rotation method defined", mock.getStdout())
+        # list len=7
+        b.p.THcornTemp = [400, 450, 500, 550, 600, 650, 700]
+        with mockRunLogs.BufferLog() as mock:
+            self.assertEqual("", mock.getStdout())
+            a.rotate(math.radians(120))
+            self.assertIn("No rotation method defined", mock.getStdout())
+        # np.ndarray len=7
+        b.p.THcornTemp = np.array([400, 450, 500, 550, 600, 650, 700])
+        with mockRunLogs.BufferLog() as mock:
+            self.assertEqual("", mock.getStdout())
+            a.rotate(math.radians(120))
+            self.assertIn("No rotation method defined", mock.getStdout())
 
 
 class AssemblyInReactor_TestCase(unittest.TestCase):

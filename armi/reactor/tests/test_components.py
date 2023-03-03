@@ -29,6 +29,7 @@ from armi.reactor.components import (
     Circle,
     Hexagon,
     HoledHexagon,
+    HexHoledCircle,
     HoledRectangle,
     HoledSquare,
     Helix,
@@ -1066,6 +1067,57 @@ class TestHoledHexagon(TestShapedComponent):
 
     def test_dimensionThermallyExpands(self):
         expandedDims = ["op", "holeOD", "mult"]
+        ref = [True, True, False]
+        for i, d in enumerate(expandedDims):
+            cur = d in self.component.THERMAL_EXPANSION_DIMS
+            self.assertEqual(cur, ref[i])
+
+
+class TestHexHoledCircle(TestShapedComponent):
+    componentCls = HexHoledCircle
+    componentDims = {
+        "Tinput": 25.0,
+        "Thot": 430.0,
+        "od": 16.5,
+        "holeOP": 3.6,
+        "mult": 1.0,
+    }
+
+    def test_getCircleInnerDiameter(self):
+        simpleHexHoledCircle = HexHoledCircle(
+            "Circle",
+            "Void",
+            self.componentDims["Tinput"],
+            self.componentDims["Thot"],
+            self.componentDims["od"],
+            self.componentDims["holeOP"],
+        )
+        self.assertEqual(
+            self.componentDims["holeOP"],
+            simpleHexHoledCircle.getCircleInnerDiameter(cold=True),
+        )
+
+    def test_getArea(self):
+        od = self.component.getDimension("od")
+        holeOP = self.component.getDimension("holeOP")
+        mult = self.component.getDimension("mult")
+        hexarea = math.sqrt(3.0) / 2.0 * (holeOP ** 2)
+        holeArea = math.pi * ((od / 2.0) ** 2)
+        ref = mult * (holeArea - hexarea)
+        cur = self.component.getArea()
+        self.assertAlmostEqual(cur, ref)
+
+    def test_thermallyExpands(self):
+        """Test that ARMI can thermally expands a holed hexagon
+
+        .. test:: Test that ARMI can thermally expands a holed hexagon
+           :id: TEST_REACTOR_THERMAL_EXPANSION_10
+           :links: REQ_REACTOR_THERMAL_EXPANSION
+        """
+        self.assertTrue(self.component.THERMAL_EXPANSION_DIMS)
+
+    def test_dimensionThermallyExpands(self):
+        expandedDims = ["od", "holeOP", "mult"]
         ref = [True, True, False]
         for i, d in enumerate(expandedDims):
             cur = d in self.component.THERMAL_EXPANSION_DIMS
