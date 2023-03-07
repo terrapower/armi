@@ -212,7 +212,7 @@ class Material:
 
         See Also
         --------
-        :py:meth: `armi.materials.material.Material.linearExpansionPercent`
+        linearExpansionPercent
         """
         dLLhot = self.linearExpansionPercent(Tc=Tc)
         dLLcold = self.linearExpansionPercent(Tc=T0)
