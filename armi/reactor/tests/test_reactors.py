@@ -27,6 +27,7 @@ from armi import runLog
 from armi import settings
 from armi import tests
 from armi.materials import uZr
+from armi.physics.neutronics.settings import CONF_XS_KERNEL
 from armi.reactor import assemblies
 from armi.reactor import blocks
 from armi.reactor import geometry
@@ -571,8 +572,8 @@ class HexReactorTests(ReactorTests):
         self.assertEqual(aListLength, len(self.r.core.getAssemblies()))
 
     def test_differentNuclideModels(self):
-        self.assertEqual(self.o.cs["xsKernel"], "MC2v3")
-        _o2, r2 = loadTestReactor(customSettings={"xsKernel": "MC2v2"})
+        self.assertEqual(self.o.cs[CONF_XS_KERNEL], "MC2v3")
+        _o2, r2 = loadTestReactor(customSettings={CONF_XS_KERNEL: "MC2v2"})
 
         self.assertNotEqual(
             set(self.r.blueprints.elementsToExpand), set(r2.blueprints.elementsToExpand)

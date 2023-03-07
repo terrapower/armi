@@ -29,6 +29,14 @@ from armi.cases.inputModifiers import (
     inputModifiers,
     pinTypeInputModifiers,
 )
+from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import (
+    CONF_FP_MODEL,
+)
+from armi.physics.neutronics.settings import (
+    CONF_EPS_EIG,
+    CONF_EPS_FSAVG,
+    CONF_EPS_FSPOINT,
+)
 from armi.reactor.tests import test_reactors
 
 
@@ -141,7 +149,7 @@ class TestsuiteBuilderIntegrations(unittest.TestCase):
     def test_settingsModifier(self):
         builder = suiteBuilder.SeparateEffectsSuiteBuilder(self.baseCase)
         builder.addDegreeOfFreedom(
-            inputModifiers.SettingsModifier("fpModel", v)
+            inputModifiers.SettingsModifier(CONF_FP_MODEL, v)
             for v in ("noFissionProducts", "infinitelyDilute", "MO99")
         )
         builder.addDegreeOfFreedom(
@@ -220,9 +228,9 @@ class TestSettingsModifiers(unittest.TestCase):
         cs, _, _ = neutronicsModifiers.NeutronicConvergenceModifier(1e-2)(
             cs, None, None
         )
-        self.assertAlmostEqual(cs["epsEig"], 1e-2)
-        self.assertAlmostEqual(cs["epsFSAvg"], 1.0)
-        self.assertAlmostEqual(cs["epsFSPoint"], 1.0)
+        self.assertAlmostEqual(cs[CONF_EPS_EIG], 1e-2)
+        self.assertAlmostEqual(cs[CONF_EPS_FSAVG], 1.0)
+        self.assertAlmostEqual(cs[CONF_EPS_FSPOINT], 1.0)
 
 
 class NeutronicsKernelOpts(inputModifiers.InputModifier):
