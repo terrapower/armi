@@ -55,7 +55,7 @@ class TestLatticePhysicsInterface(unittest.TestCase):
         cls.o.addInterface(cls.latticeInterface)
 
     def setUp(self):
-        self.o.r.core.lib = "Nonesense"
+        self.o.r.core.lib = "Nonsense"
 
     def test_LatticePhysicsInterface(self):
         """Super basic test of the LatticePhysicsInterface"""
