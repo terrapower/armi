@@ -216,7 +216,9 @@ class LatticePhysicsInterface(interfaces.Interface):
         temperature state, and 2) temperature distributions are not expected to dramatically change for
         time steps > 0.
 
-        For Snapshot run types, the coupling iteration is always executed.
+        For Snapshot run types, the coupling iteration is always executed. This is to accomodate cases where
+        the requested reactor state, which may not be at time node 0, may sufficiently differ from what
+        exists on the database and where tight coupling is needed to capture temperature effects.
 
         .. warning::
 
