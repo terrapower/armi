@@ -19,15 +19,17 @@ import unittest
 from armi.physics.neutronics.latticePhysics.latticePhysicsInterface import (
     LatticePhysicsInterface,
 )
-from armi.reactor.tests.test_reactors import loadTestReactor
-from armi.settings import Settings
-
+from armi import settings
+from armi.settings.fwSettings.globalSettings import CONF_RUN_TYPE
+from armi.operators.operator import Operator
+from armi.reactor.reactors import Reactor, Core
+from armi.physics.neutronics.crossSectionGroupManager import CrossSectionGroupManager
 
 # As an interface, LatticePhysicsInterface must be subclassed to be used
 class LatticeInterfaceTester(LatticePhysicsInterface):
     def __init__(self, r, cs):
         self.name = "LatticeInterfaceTester"
-        super(LatticeInterfaceTester, self).__init__(r, cs)
+        super().__init__(r, cs)
 
     def _getExecutablePath(self):
         return "/tmp/fake_path"
@@ -35,22 +37,53 @@ class LatticeInterfaceTester(LatticePhysicsInterface):
     def readExistingXSLibraries(self, cycle):
         pass
 
+    def _newLibraryShouldBeCreated(self, cycle, representativeBlockList, xsIDs):
+        return False
+
 
 class TestLatticePhysicsInterface(unittest.TestCase):
     """Test Lattice Physics Interface."""
 
+    @classmethod
+    def setUpClass(cls):
+        cls.o = Operator(settings.Settings())
+        cls.o.r = Reactor("empty", None)
+        cls.o.r.core = Core("empty")
+        xsGroupInterface = CrossSectionGroupManager(cls.o.r, cls.o.cs)
+        cls.latticeInterface = LatticeInterfaceTester(cls.o.r, cls.o.cs)
+        cls.o.addInterface(xsGroupInterface)
+        cls.o.addInterface(cls.latticeInterface)
+
+    def setUp(self):
+        self.o.r.core.lib = "Nonesense"
+
     def test_LatticePhysicsInterface(self):
         """Super basic test of the LatticePhysicsInterface"""
-        cs = Settings()
-        _o, r = loadTestReactor()
-        i = LatticeInterfaceTester(r, cs)
+        self.assertEqual(self.latticeInterface._HEX_MODEL.strip(), "hex")
+        self.assertEqual(self.latticeInterface.executablePath, "/tmp/fake_path")
+        self.assertEqual(self.latticeInterface.executableRoot, "/tmp")
 
-        self.assertEqual(i._HEX_MODEL.strip(), "hex")
-        self.assertEqual(i.executablePath, "/tmp/fake_path")
-        self.assertEqual(i.executableRoot, "/tmp")
+        self.latticeInterface.updateXSLibrary(0)
+        self.assertEqual(len(self.latticeInterface._oldXsIdsAndBurnup), 0)
 
-        i.updateXSLibrary(0)
-        self.assertEqual(len(i._oldXsIdsAndBurnup), 0)
+    def test_interactCoupled_Snapshots(self):
+        """should change self.o.r.core.lib from Nonesense to None"""
+        self.o.cs[CONF_RUN_TYPE] = "Snapshots"
+        self.latticeInterface.interactCoupled(iteration=0)
+        self.assertIsNone(self.o.r.core.lib)
+        # reset runtype
+        self.o.cs[CONF_RUN_TYPE] = "Standard"
+
+    def test_interactCoupled_TimeNode0(self):
+        """make sure updateXSLibrary is run"""
+        self.latticeInterface.interactCoupled(iteration=0)
+        self.assertIsNone(self.o.r.core.lib)
+
+    def test_interactCoupled_TimeNode1(self):
+        """make sure updateXSLibrary is NOT run"""
+        self.o.r.p.timeNode = 1
+        self.latticeInterface.interactCoupled(iteration=0)
+        self.assertEqual(self.o.r.core.lib, "Nonesense")
 
 
 if __name__ == "__main__":

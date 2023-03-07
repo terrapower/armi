@@ -32,6 +32,7 @@ from armi.physics.neutronics.settings import (
     CONF_XS_KERNEL,
 )
 from armi.utils.customExceptions import important
+from armi.settings.fwSettings.globalSettings import CONF_RUN_TYPE
 
 
 LATTICE_PHYSICS = "latticePhysics"
@@ -209,10 +210,13 @@ class LatticePhysicsInterface(interfaces.Interface):
         -----
         This accounts for changes in cross section data due to temperature changes, which are important
         for cross section resonance effects and accurately characterizing Doppler constant and coefficient
-        evaluations. This coupling iteration is limited to when the time node is equal to zero. This is
-        assumed to be reasonable for most applications as 1) microscopic cross section changes with burn-up
-        are deemed to be less significant compared to convergence on the temperature state, and 2) temperature
-        distributions are not expected to dramatically change for time steps > 0.
+        evaluations. For Standard and Equilibrium run types, this coupling iteration is limited to when the
+        time node is equal to zero. This is assumed to be reasonable for most applications as 1) microscopic
+        cross section changes with burn-up are deemed to be less significant compared to convergence on the
+        temperature state, and 2) temperature distributions are not expected to dramatically change for
+        time steps > 0.
+
+        For Snapshot run types, the coupling iteration is always executed.
 
         .. warning::
 
@@ -224,7 +228,7 @@ class LatticePhysicsInterface(interfaces.Interface):
         iteration : int
             This is unused since cross sections are generated on a per-cycle basis.
         """
-        if self.r.p.timeNode == 0:
+        if self.cs[CONF_RUN_TYPE] == "Snapshots" or self.r.p.timeNode == 0:
             self.r.core.lib = None
             self.updateXSLibrary(self.r.p.cycle)
 
