@@ -83,7 +83,7 @@ class TestLatticePhysicsInterface(unittest.TestCase):
         """make sure updateXSLibrary is NOT run"""
         self.o.r.p.timeNode = 1
         self.latticeInterface.interactCoupled(iteration=0)
-        self.assertEqual(self.o.r.core.lib, "Nonesense")
+        self.assertEqual(self.o.r.core.lib, "Nonsense")
 
 
 if __name__ == "__main__":
