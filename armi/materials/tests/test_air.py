@@ -183,7 +183,7 @@ class Test_Air(unittest.TestCase):
     unit tests for air materials
     """
 
-    def test_density(self):
+    def test_pseudoDensity(self):
         """
         Reproduce verification results at 300K from Incropera, Frank P., et al.
         Fundamentals of heat and mass transfer. Vol. 5. New York: Wiley, 2002.
@@ -192,7 +192,9 @@ class Test_Air(unittest.TestCase):
 
         for Tk, densKgPerM3 in zip(REFERENCE_Tk, REFERENCE_DENSITY_KG_PER_M3):
             if Tk < 2400:
-                error = math.fabs((air.densityKgM3(Tk=Tk) - densKgPerM3) / densKgPerM3)
+                error = math.fabs(
+                    (air.pseudoDensityKgM3(Tk=Tk) - densKgPerM3) / densKgPerM3
+                )
                 self.assertLess(error, 1e-2)
 
     def test_heatCapacity(self):
@@ -236,7 +238,7 @@ class Test_Air(unittest.TestCase):
         refO = 0.210748
         refAR = 0.004671
 
-        nDens = densityTools.getNDensFromMasses(air.density(Tk=300), air.massFrac)
+        nDens = densityTools.getNDensFromMasses(air.pseudoDensity(Tk=300), air.massFrac)
 
         error = math.fabs(nDens["C"] / sum(nDens.values()) - refC)
         self.assertLess(error, 1e-4)

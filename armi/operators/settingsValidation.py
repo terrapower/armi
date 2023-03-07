@@ -268,21 +268,24 @@ class Inspector:
 
     def _inspectBlueprints(self):
         """Blueprints early error detection and old format conversions."""
+        # pylint: disable=import-outside-toplevel; avoid circular import
+        from armi.physics.neutronics.settings import CONF_LOADING_FILE
+
         # if there is a blueprints object, we don't need to check for a file
         if self.cs.filelessBP:
             return
 
         self.addQuery(
-            lambda: not self.cs["loadingFile"],
+            lambda: not self.cs[CONF_LOADING_FILE],
             "No blueprints file loaded. Run will probably fail.",
             "",
             self.NO_ACTION,
         )
 
         self.addQuery(
-            lambda: not self._csRelativePathExists(self.cs["loadingFile"]),
+            lambda: not self._csRelativePathExists(self.cs[CONF_LOADING_FILE]),
             "Blueprints file {} not found. Run will fail.".format(
-                self.cs["loadingFile"]
+                self.cs[CONF_LOADING_FILE]
             ),
             "",
             self.NO_ACTION,
@@ -350,7 +353,14 @@ class Inspector:
     def _inspectSettings(self):
         """Check settings for inconsistencies."""
         # import here to avoid cyclic issues
+        # pylint: disable=import-outside-toplevel;
         from armi import operators
+        from armi.physics.neutronics.settings import (
+            CONF_BC_COEFFICIENT,
+            CONF_BOUNDARIES,
+            CONF_XS_KERNEL,
+            CONF_XS_SCATTERING_ORDER,
+        )
 
         self.addQueryBadLocationWillLikelyFail("operatorLocation")
 
@@ -457,13 +467,13 @@ class Inspector:
         # gamma cross sections enabled.
         self.addQuery(
             lambda: (
-                "MC2v3" in self.cs["xsKernel"]
+                "MC2v3" in self.cs[CONF_XS_KERNEL]
                 and neutronics.gammaXsAreRequested(self.cs)
-                and self.cs["xsScatteringOrder"] != 3
+                and self.cs[CONF_XS_SCATTERING_ORDER] != 3
             ),
             "MC2-3 will crash if a scattering order is not set to 3 when generating gamma XS.",
-            "Would you like to set the `xsScatteringOrder` to 3?",
-            lambda: self._assignCS("xsScatteringOrder", 3),
+            f"Would you like to set the `{CONF_XS_SCATTERING_ORDER}` to 3?",
+            lambda: self._assignCS(CONF_XS_SCATTERING_ORDER, 3),
         )
 
         self.addQuery(
@@ -663,11 +673,11 @@ class Inspector:
 
         self.addQuery(
             lambda: (
-                self.cs["boundaries"] != neutronics.GENERAL_BC
-                and self.cs["bcCoefficient"]
+                self.cs[CONF_BOUNDARIES] != neutronics.GENERAL_BC
+                and self.cs[CONF_BC_COEFFICIENT]
             ),
-            "General neutronic boundary condition was not selected, but `bcCoefficient` was defined. "
-            "Please enable `Generalized` neutronic boundary condition or disable `bcCoefficient`.",
+            f"General neutronic boundary condition was not selected, but `{CONF_BC_COEFFICIENT}` was defined. "
+            f"Please enable `Generalized` neutronic boundary condition or disable `{CONF_BC_COEFFICIENT}`.",
             "",
             self.NO_ACTION,
         )

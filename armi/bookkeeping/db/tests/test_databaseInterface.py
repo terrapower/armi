@@ -34,6 +34,7 @@ from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorR
 from armi.settings.fwSettings.databaseSettings import CONF_FORCE_DB_PARAMS
 from armi.tests import TEST_ROOT
 from armi.utils import directoryChangers
+from armi.physics.neutronics.settings import CONF_LOADING_FILE
 
 
 def getSimpleDBOperator(cs):
@@ -46,7 +47,7 @@ def getSimpleDBOperator(cs):
     It's used to make the db unit tests run very quickly.
     """
     newSettings = {}
-    newSettings["loadingFile"] = "refOneBlockReactor.yaml"
+    newSettings[CONF_LOADING_FILE] = "refOneBlockReactor.yaml"
     newSettings["verbosity"] = "important"
     newSettings["db"] = True
     newSettings["runType"] = "Standard"

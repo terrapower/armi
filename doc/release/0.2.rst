@@ -8,7 +8,7 @@ Release Date: TBD
 
 What's new in ARMI
 ------------------
-#. TBD
+#. The method ``Material.density3`` is now called ``density``, and the old ``density`` is now called ``pseudoDensity``. (`PR#1163 <https://github.com/terrapower/armi/pull/1999>`_)
 
 Bug fixes
 ---------

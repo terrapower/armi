@@ -24,8 +24,8 @@ class Test_Be9(test_materials._Material_Test, unittest.TestCase):
 
     MAT_CLASS = Be9
 
-    def test_density(self):
-        cur = self.mat.density(Tc=25)
+    def test_pseudoDensity(self):
+        cur = self.mat.pseudoDensity(Tc=25)
         ref = 1.85
         delta = ref * 0.001
         self.assertAlmostEqual(cur, ref, delta=delta)
