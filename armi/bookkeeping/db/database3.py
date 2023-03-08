@@ -82,6 +82,7 @@ from armi.reactor import systemLayoutInput
 from armi.utils import getNodesPerCycle
 from armi.utils.textProcessors import resolveMarkupInclusions
 from armi.nucDirectory import nuclideBases
+from armi.physics.neutronics.settings import CONF_LOADING_FILE
 
 # CONSTANTS
 _SERIALIZER_NAME = "serializerName"
@@ -471,12 +472,12 @@ class Database3:
             csString = stream.read()
 
         if bpString is None:
-            bpPath = pathlib.Path(cs.inputDirectory) / cs["loadingFile"]
+            bpPath = pathlib.Path(cs.inputDirectory) / cs[CONF_LOADING_FILE]
             # only store blueprints if we actually loaded from them
             if bpPath.exists() and bpPath.is_file():
                 # Ensure that the input as stored in the DB is complete
                 bpString = resolveMarkupInclusions(
-                    pathlib.Path(cs.inputDirectory) / cs["loadingFile"]
+                    pathlib.Path(cs.inputDirectory) / cs[CONF_LOADING_FILE]
                 ).read()
             else:
                 bpString = ""

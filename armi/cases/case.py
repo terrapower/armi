@@ -51,6 +51,7 @@ from armi import settings
 from armi.bookkeeping.db import compareDatabases
 from armi.cli import reportsEntryPoint
 from armi.nucDirectory import nuclideBases
+from armi.physics.neutronics.settings import CONF_LOADING_FILE
 from armi.reactor import blueprints
 from armi.reactor import reactors
 from armi.reactor import systemLayoutInput
@@ -685,7 +686,7 @@ class Case:
 
         fromPath = lambda fname: pathTools.armiAbsPath(self.cs.inputDirectory, fname)
 
-        for inputFileSetting in ["loadingFile", "geomFile"]:
+        for inputFileSetting in [CONF_LOADING_FILE, "geomFile"]:
             fileName = self.cs[inputFileSetting]
             if fileName:
                 pathTools.copyOrWarn(
@@ -698,16 +699,16 @@ class Case:
                     "skipping {}, there is no file specified".format(inputFileSetting)
                 )
 
-        with open(self.cs["loadingFile"], "r") as f:
+        with open(self.cs[CONF_LOADING_FILE], "r") as f:
             # The root for handling YAML includes is relative to the YAML file, not the
             # settings file
             root = (
                 pathlib.Path(self.cs.inputDirectory)
-                / pathlib.Path(self.cs["loadingFile"]).parent
+                / pathlib.Path(self.cs[CONF_LOADING_FILE]).parent
             )
             cloneRoot = (
                 pathlib.Path(clone.cs.inputDirectory)
-                / pathlib.Path(clone.cs["loadingFile"]).parent
+                / pathlib.Path(clone.cs[CONF_LOADING_FILE]).parent
             )
             for includePath, mark in textProcessors.findYamlInclusions(f, root=root):
                 if not includePath.is_absolute():
@@ -815,7 +816,7 @@ class Case:
             self.geom  # pylint: disable=pointless-statement
 
             newSettings = {}
-            newSettings["loadingFile"] = self.title + "-blueprints.yaml"
+            newSettings[CONF_LOADING_FILE] = self.title + "-blueprints.yaml"
             if self.geom:
                 newSettings["geomFile"] = self.title + "-geom.yaml"
                 self.geom.writeGeom(newSettings["geomFile"])
@@ -826,7 +827,7 @@ class Case:
                     for varName, val in self.independentVariables.items()
                 ]
 
-            with open(newSettings["loadingFile"], "w") as loadingFile:
+            with open(newSettings[CONF_LOADING_FILE], "w") as loadingFile:
                 blueprints.Blueprints.dump(self.bp, loadingFile)
 
             # copy input files from other modules/plugins

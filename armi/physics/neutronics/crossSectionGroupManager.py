@@ -72,8 +72,10 @@ ORDER = interfaces.STACK_ORDER.BEFORE + interfaces.STACK_ORDER.FUEL_MANAGEMENT
 
 def describeInterfaces(cs):
     """Function for exposing interface(s) to other code"""
+    # pylint: disable=import-outside-toplevel # avoid cyclic import
+    from armi.physics.neutronics.settings import CONF_NEUTRONICS_KERNEL
 
-    if "MCNP" not in cs["neutronicsKernel"]:  # MCNP does not use CSGM
+    if "MCNP" not in cs[CONF_NEUTRONICS_KERNEL]:  # MCNP does not use CSGM
         return (CrossSectionGroupManager, {})
 
     return None
@@ -585,10 +587,15 @@ class CrossSectionGroupManager(interfaces.Interface):
 
     def interactBOL(self):
         # now that all cs settings are loaded, apply defaults to compound XS settings
+        # pylint: disable=import-outside-toplevel # avoid cyclic import
+        from armi.physics.neutronics.settings import (
+            CONF_XS_BLOCK_REPRESENTATION,
+            CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION,
+        )
 
         self.cs[CONF_CROSS_SECTION].setDefaults(
-            self.cs["xsBlockRepresentation"],
-            self.cs["disableBlockTypeExclusionInXsGeneration"],
+            self.cs[CONF_XS_BLOCK_REPRESENTATION],
+            self.cs[CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION],
         )
 
     def interactBOC(self, cycle=None):
@@ -1034,9 +1041,12 @@ class CrossSectionGroupManager(interfaces.Interface):
 
     def _summarizeGroups(self, blockCollectionsByXsGroup):
         """Summarize current contents of the XS groups."""
+        # pylint: disable=import-outside-toplevel # avoid cyclic import
+        from armi.physics.neutronics.settings import CONF_XS_BLOCK_REPRESENTATION
+
         runLog.extra("Cross section group manager summary")
         runLog.extra(
-            "Averaging performed by `{0}`".format(self.cs["xsBlockRepresentation"])
+            "Averaging performed by `{0}`".format(self.cs[CONF_XS_BLOCK_REPRESENTATION])
         )
         for xsID, blocks in blockCollectionsByXsGroup.items():
             if blocks:
