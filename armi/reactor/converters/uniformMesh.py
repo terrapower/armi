@@ -237,7 +237,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
         coreDesign.construct(cs, bp, newReactor, loadAssems=False)
         newReactor.p.cycle = sourceReactor.p.cycle
         newReactor.p.timeNode = sourceReactor.p.timeNode
-        newReactor.p.coupledIteration = sourceReactor.p.coupledIteration
+        newReactor.core.p.coupledIteration = sourceReactor.core.p.coupledIteration
         newReactor.core.lib = sourceReactor.core.lib
         newReactor.core.setPitchUniform(sourceReactor.core.getAssemblyPitch())
         newReactor.o = (
