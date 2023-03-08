@@ -127,6 +127,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
         "out": [],
     }
     _TEMP_STORAGE_NAME_SUFFIX = "-TEMP"
+    _TIME_PARAMS = ["cycle", "node", "coupledIteration"]
 
     def __init__(self, cs=None):
         GeometryConverter.__init__(self, cs)
@@ -1009,6 +1010,7 @@ class GammaUniformMeshConverter(UniformMeshGeometryConverter):
                 ]
             )
 
+        reactorParamNames.extend(self._TIME_PARAMS)
         # remove any duplicates (from parameters that have multiple categories)
         blockParamNames = list(set(blockParamNames))
         self.paramMapper = ParamMapper(reactorParamNames, blockParamNames, b)
