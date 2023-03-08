@@ -22,7 +22,7 @@ through the :py:class:`armi.settings.caseSettings.Settings` object, which is typ
     for setting in sorted(cs.values(), key=lambda s: s.name):
         content += '   * - {}\n'.format(' '.join(wrapper.wrap(setting.name)))
         content += '     - {}\n'.format(' '.join(wrapper.wrap(setting.description or '')))
-        content += '     - {}\n'.format(' '.join(['``{}``'.format(wrapped) for wrapped in wrapper2.wrap(str(getattr(setting,'default','') or '').split("/")[-1])]))
+        content += '     - {}\n'.format(' '.join(['``{}``'.format(wrapped) for wrapped in wrapper2.wrap((z if (z:=str(getattr(setting,'default',None)) is not None else '').split("/")[-1])])) # need to be able to print falsey booleans, so this looks a bit complicated
         content += '     - {}\n'.format(' '.join(['``{}``'.format(wrapped) for wrapped in wrapper.wrap(str(getattr(setting,'options','') or ''))]))
 
     content += '\n'
