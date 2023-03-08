@@ -127,7 +127,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
         "out": [],
     }
     _TEMP_STORAGE_NAME_SUFFIX = "-TEMP"
-    _TIME_PARAMS = ["cycle", "node", "coupledIteration"]
 
     def __init__(self, cs=None):
         GeometryConverter.__init__(self, cs)
@@ -236,6 +235,9 @@ class UniformMeshGeometryConverter(GeometryConverter):
         coreDesign = bp.systemDesigns["core"]
 
         coreDesign.construct(cs, bp, newReactor, loadAssems=False)
+        newReactor.p.cycle = sourceReactor.p.cycle
+        newReactor.p.timeNode = sourceReactor.p.timeNode
+        newReactor.p.coupledIteration = sourceReactor.p.coupledIteration
         newReactor.core.lib = sourceReactor.core.lib
         newReactor.core.setPitchUniform(sourceReactor.core.getAssemblyPitch())
         newReactor.o = (
@@ -1010,7 +1012,6 @@ class GammaUniformMeshConverter(UniformMeshGeometryConverter):
                 ]
             )
 
-        reactorParamNames.extend(self._TIME_PARAMS)
         # remove any duplicates (from parameters that have multiple categories)
         blockParamNames = list(set(blockParamNames))
         self.paramMapper = ParamMapper(reactorParamNames, blockParamNames, b)
