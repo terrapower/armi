@@ -922,6 +922,8 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
             # initial heavy metal masses are needed to calculate burnup in MWd/kg
             blockParamNames.extend(HEAVY_METAL_PARAMS)
 
+        # remove any duplicates (from parameters that have multiple categories)
+        blockParamNames = list(set(blockParamNames))
         self.paramMapper = ParamMapper(reactorParamNames, blockParamNames, b)
 
 
@@ -1007,6 +1009,8 @@ class GammaUniformMeshConverter(UniformMeshGeometryConverter):
                 ]
             )
 
+        # remove any duplicates (from parameters that have multiple categories)
+        blockParamNames = list(set(blockParamNames))
         self.paramMapper = ParamMapper(reactorParamNames, blockParamNames, b)
 
 
