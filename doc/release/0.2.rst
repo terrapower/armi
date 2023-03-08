@@ -12,6 +12,7 @@ What's new in ARMI
 
 Bug fixes
 ---------
+#. Fixed an invalid assumption on the lattice physics interface when using tight coupling for snapshot runs. (`PR#1206 <https://github.com/terrapower/armi/pull/1206>`_)
 #. Fixed TBD
 
 
