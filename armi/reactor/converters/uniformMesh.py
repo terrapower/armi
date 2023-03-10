@@ -822,10 +822,15 @@ class UniformMeshGeometryConverter(GeometryConverter):
         """
         if self._hasNonUniformAssems:
             for assem in self.convReactor.core.getAssemblies(self._nonUniformMeshFlags):
-                self._calculateReactionRates(self.convReactor.core.lib, self.convReactor.core.p.keff, assem)
+                self._calculateReactionRates(
+                    self.convReactor.core.lib, self.convReactor.core.p.keff, assem
+                )
         else:
             for assem in self.convReactor.core.getAssemblies():
-                self._calculateReactionRates(self.convReactor.core.lib, self.convReactor.core.p.keff, assem)
+                self._calculateReactionRates(
+                    self.convReactor.core.lib, self.convReactor.core.p.keff, assem
+                )
+
 
 class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
     """
