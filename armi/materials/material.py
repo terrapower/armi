@@ -208,7 +208,7 @@ class Material:
         Returns
         -------
         dLL: float
-            The average thermal expansion between Tc and T0
+            The average thermal expansion between Tc and T0. If there is no dLL, it should return 0.0.
 
         See Also
         --------
