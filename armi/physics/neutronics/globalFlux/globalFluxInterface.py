@@ -339,6 +339,7 @@ class GlobalFluxOptions(executers.ExecutionOptions):
         # can happen in eig if Fredholm Alternative satisfied
         self.includeFixedSource = False
         self.eigenvalueProblem = True
+        self.noOutput = False
         self.kernelName: str
         self.isRestart = None
         self.energyDepoCalcMethodStep = None  # for gamma transport/normalization
