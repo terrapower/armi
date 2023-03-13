@@ -13,7 +13,7 @@ What's new in ARMI
 
 Bug fixes
 ---------
-#. Fixed TBD
+#. Force GAMISO/PMATRX file path extensions to be lower case for linux support (`PR#1216 <https://github.com/terrapower/armi/pull/1216>`_)
 
 
 ARMI v0.2.6
