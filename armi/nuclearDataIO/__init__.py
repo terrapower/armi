@@ -115,7 +115,13 @@ def getExpectedGAMISOFileName(cycle=None, suffix=None, xsID=None):
     getExpectedCOMPXSFileName
     getExpectedPMATRXFileName
     """
-    return _findExpectedGammaFileName("gamiso", _getGammaKeywords(cycle, suffix, xsID))
+    if None not in (cycle, suffix, xsID):
+        # file path extensions are lower case
+        gamiso = neutronics.GAMISO
+    else:
+        # GAMISO as a file is upper case
+        gamiso = neutronics.GAMISO_BASE
+    return _findExpectedGammaFileName(gamiso, _getGammaKeywords(cycle, suffix, xsID))
 
 
 def getExpectedPMATRXFileName(cycle=None, suffix=None, xsID=None):
@@ -133,7 +139,13 @@ def getExpectedPMATRXFileName(cycle=None, suffix=None, xsID=None):
     getExpectedCOMPXSFileName
     getExpectedGAMISOFileName
     """
-    return _findExpectedGammaFileName("pmatrx", _getGammaKeywords(cycle, suffix, xsID))
+    if None not in (cycle, suffix, xsID):
+        # file path extensions are lower case
+        pmatrx = neutronics.PMATRX
+    else:
+        # PMATRX as a file is upper case
+        pmatrx = neutronics.PMATRX_BASE
+    return _findExpectedGammaFileName(pmatrx, _getGammaKeywords(cycle, suffix, xsID))
 
 
 def _findExpectedGammaFileName(fileType, fileNameKeywords):
