@@ -115,7 +115,7 @@ def getExpectedGAMISOFileName(cycle=None, suffix=None, xsID=None):
     getExpectedCOMPXSFileName
     getExpectedPMATRXFileName
     """
-    if None not in (cycle, suffix, xsID):
+    if any(i is not None for i in (cycle, suffix, xsID)):
         # file path extensions are lower case
         gamiso = neutronics.GAMISO_EXT
     else:
@@ -139,7 +139,7 @@ def getExpectedPMATRXFileName(cycle=None, suffix=None, xsID=None):
     getExpectedCOMPXSFileName
     getExpectedGAMISOFileName
     """
-    if None not in (cycle, suffix, xsID):
+    if any(i is not None for i in (cycle, suffix, xsID)):
         # file path extensions are lower case
         pmatrx = neutronics.PMATRX_EXT
     else:
