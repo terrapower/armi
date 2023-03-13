@@ -145,13 +145,13 @@ class LatticePhysicsInterface(interfaces.Interface):
         shutil.copy(neutronics.ISOTXS, nuclearDataIO.getExpectedISOTXSFileName(cycle))
         if self.includeGammaXS:
             shutil.copy(
-                neutronics.GAMISO_BASE,
+                neutronics.GAMISO,
                 nuclearDataIO.getExpectedGAMISOFileName(
                     cycle=cycle, suffix=self._getSuffix(cycle)
                 ),
             )
             shutil.copy(
-                neutronics.PMATRX_BASE,
+                neutronics.PMATRX,
                 nuclearDataIO.getExpectedPMATRXFileName(
                     cycle=cycle, suffix=self._getSuffix(cycle)
                 ),

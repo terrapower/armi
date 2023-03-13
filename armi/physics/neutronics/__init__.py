@@ -137,10 +137,10 @@ from armi.physics.neutronics.const import (
 
 # ARC and CCCC cross section file format names
 COMPXS = "COMPXS"
-PMATRX_BASE = "PMATRX"
-GAMISO_BASE = "GAMISO"
-PMATRX = "pmatrx"
-GAMISO = "gamiso"
+PMATRX = "PMATRX"
+GAMISO = "GAMISO"
+PMATRX_EXT = "pmatrx"
+GAMISO_EXT = "gamiso"
 ISOTXS = "ISOTXS"
 
 # Constants for neutronics calculation types
