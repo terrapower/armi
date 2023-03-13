@@ -190,19 +190,13 @@ class Material:
 
     def linearExpansionFactor(self, Tc: float, T0: float) -> float:
         """
-        Return a dL/L factor relative to T0 instead of to the material-dependent reference
-        temperature. This factor dL/Lc is a ratio and will be used in dimensions through the
-        formula::
+        Return a dL/L factor relative to T0 instead of the material-dependent reference
+        temperature.
 
-            dim = dim0*(1+dLL).
-
-        If there is no dLL, it should return 0.0
-
-        calculate thermal expansion based on dL/L0, which is dependent on the mat-dep ref temp.::
-
-             L(T) = L0(1+dL/L0)
-             (Lh-Lc)/L0 = dL/L0(Th) - dL/L0(Tc)
-             (Lh-Lc)/Lc = (Lh-Lc)/L0 * L0/Lc = (dL/L0(Th)-dL/L0(Tc)/L0 / (dL/L0(Tc)+1.0)
+        Notes
+        -----
+        For a detailed description of the linear expansion methodology, see
+        :ref:`thermalExpansion` in the documentation.
 
         Parameters
         ----------
@@ -213,13 +207,12 @@ class Material:
 
         Returns
         -------
-        dL/L_fromCold : float
-            The average thermal expansion between T_current and T0
+        dLL: float
+            The average thermal expansion between Tc and T0. If there is no dLL, it should return 0.0.
 
         See Also
         --------
         linearExpansionPercent
-        components.Component.getThermalExpansionFactor
         """
         dLLhot = self.linearExpansionPercent(Tc=Tc)
         dLLcold = self.linearExpansionPercent(Tc=T0)

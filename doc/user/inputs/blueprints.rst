@@ -186,6 +186,8 @@ the difference between the area of the block and the sum of the areas
 comprised by the other components in the block. This is useful for complex shapes like coolant surrounding
 a lattice of pins.
 
+.. _componentLinks:
+
 Component Links
 ---------------
 Dimensions of a component may depend on the dimensions of a previously-defined component in the same
