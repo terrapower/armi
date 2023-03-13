@@ -39,7 +39,6 @@ from armi import runLog
 from armi.operators import RunTypes
 from armi.physics.fuelCycle import fuelHandlers
 from armi.physics.fuelCycle import settings
-from armi.physics.neutronics.settings import CONF_NEUTRONICS_KERNEL
 from armi.utils import directoryChangers
 
 ORDER = interfaces.STACK_ORDER.FUEL_MANAGEMENT
@@ -59,6 +58,8 @@ class FuelHandlerPlugin(plugins.ArmiPlugin):
         The interface may import user input modules to customize the actual
         fuel management.
         """
+        from armi.physics.neutronics.settings import CONF_NEUTRONICS_KERNEL
+
         fuelHandlerNeedsToBeActive = cs[settings.CONF_FUEL_HANDLER_NAME] or (
             cs["eqDirect"] and cs["runType"].lower() == RunTypes.STANDARD.lower()
         )
