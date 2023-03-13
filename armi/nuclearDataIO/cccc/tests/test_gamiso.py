@@ -24,7 +24,7 @@ from armi.nuclearDataIO.xsNuclides import XSNuclide
 
 THIS_DIR = os.path.dirname(__file__)
 FIXTURE_DIR = os.path.join(THIS_DIR, "..", "..", "tests", "fixtures")
-GAMISO_AA = os.path.join(FIXTURE_DIR, "AA.GAMISO")
+GAMISO_AA = os.path.join(FIXTURE_DIR, "AA.gamiso")
 
 
 class TestGamiso(unittest.TestCase):
