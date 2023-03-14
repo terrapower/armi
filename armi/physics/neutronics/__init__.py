@@ -139,6 +139,8 @@ from armi.physics.neutronics.const import (
 COMPXS = "COMPXS"
 PMATRX = "PMATRX"
 GAMISO = "GAMISO"
+PMATRX_EXT = "pmatrx"
+GAMISO_EXT = "gamiso"
 ISOTXS = "ISOTXS"
 
 # Constants for neutronics calculation types
