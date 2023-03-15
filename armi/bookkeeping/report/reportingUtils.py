@@ -33,7 +33,6 @@ from armi import interfaces
 from armi import runLog
 from armi.bookkeeping import report
 from armi.operators import RunTypes
-from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
 from armi.reactor.components import ComponentType
 from armi.reactor.flags import Flags
 from armi.utils import getFileSHA1Hash
@@ -629,6 +628,7 @@ def makeCoreDesignReport(core, cs):
 
 def _setGeneralCoreDesignData(cs, coreDesignTable):
     # pylint: disable=import-outside-toplevel # avoid cyclic import
+    from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
     from armi.physics.neutronics.settings import CONF_LOADING_FILE
 
     report.setData(
