@@ -227,6 +227,7 @@ class LatticePhysicsInterface(interfaces.Interface):
         iteration : int
             This is unused since cross sections are generated on a per-cycle basis.
         """
+        # always run for snapshots to account for temp effect of different flow or power statepoint
         if self.cs[CONF_RUN_TYPE] == "Snapshots" or self.r.p.timeNode == 0:
             self.r.core.lib = None
             self.updateXSLibrary(self.r.p.cycle)
