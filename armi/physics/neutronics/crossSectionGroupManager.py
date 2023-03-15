@@ -850,8 +850,10 @@ class CrossSectionGroupManager(interfaces.Interface):
         ----------
         blockList : list
             A list of blocks defined within the core
-        originalRepresentativeBlocks : list
-            A list of unperturbed representative blocks that the new representative blocks are formed from
+        originalRepresentativeBlocks : dict
+            A dict of unperturbed representative blocks that the new representative blocks are formed from
+            keys: XS group ID (e.g., "AA")
+            values: representative block for the XS group
 
         Returns
         -------
