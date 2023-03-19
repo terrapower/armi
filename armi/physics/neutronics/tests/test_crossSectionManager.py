@@ -343,7 +343,7 @@ class Test_CrossSectionGroupManager(unittest.TestCase):
         (
             _bCollect,
             newRepresentativeBlocks,
-            _origXSIDsFromNew,
+            origXSIDsFromNew,
         ) = self.csm.createRepresentativeBlocksUsingExistingBlocks(
             blockList, unperturbedReprBlocks
         )
@@ -354,6 +354,7 @@ class Test_CrossSectionGroupManager(unittest.TestCase):
         self.assertEqual(
             newReprBlock.getNumberDensities(), oldReprBlock.getNumberDensities()
         )
+        self.assertEqual(origXSIDsFromNew["BA"], "AA")
 
     def test_interactCoupled(self):
         # ensure that representativeBlocks remains empty if timeNode == 1
