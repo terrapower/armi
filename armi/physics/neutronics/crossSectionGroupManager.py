@@ -861,6 +861,8 @@ class CrossSectionGroupManager(interfaces.Interface):
             Mapping between XS IDs and the new block collections
         modifiedReprBlocks : dict
             Mapping between XS IDs and the new representative blocks
+        origXSIDsFromNew : dict
+            Mapping of original XS IDs to new
 
         Raises
         ------
@@ -890,7 +892,7 @@ class CrossSectionGroupManager(interfaces.Interface):
                 oldBlockCollection.allNuclidesInProblem
             )
             newBlockCollectionsByXsGroup[newXSID] = newBlockCollection
-        return newBlockCollectionsByXsGroup, modifiedReprBlocks
+        return newBlockCollectionsByXsGroup, modifiedReprBlocks, origXSIDsFromNew
 
     def _getModifiedReprBlocks(self, blockList, originalRepresentativeBlocks):
         """
@@ -1152,7 +1154,11 @@ class CrossSectionGroupManager(interfaces.Interface):
         for xsID, collection in blockCollectionsByXsGroup.items():
             collection.calcAvgNuclideTemperatures()
             self.avgNucTemperatures[xsID] = collection.avgNucTemperatures
-            runLog.extra("XS ID: {}, Collection: {}".format(xsID, collection))
+            runLog.extra(
+                "XS ID: {}, Collection: {}, temperature: {}".format(
+                    xsID, collection, self.avgNucTemperatures[xsID]
+                )
+            )
 
 
 BLOCK_COLLECTIONS = {

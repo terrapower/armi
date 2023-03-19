@@ -343,6 +343,7 @@ class Test_CrossSectionGroupManager(unittest.TestCase):
         (
             _bCollect,
             newRepresentativeBlocks,
+            _origXSIDsFromNew,
         ) = self.csm.createRepresentativeBlocksUsingExistingBlocks(
             blockList, unperturbedReprBlocks
         )
