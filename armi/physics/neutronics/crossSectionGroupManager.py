@@ -1154,11 +1154,7 @@ class CrossSectionGroupManager(interfaces.Interface):
         for xsID, collection in blockCollectionsByXsGroup.items():
             collection.calcAvgNuclideTemperatures()
             self.avgNucTemperatures[xsID] = collection.avgNucTemperatures
-            runLog.extra(
-                "XS ID: {}, Collection: {}, temperature: {}".format(
-                    xsID, collection, self.avgNucTemperatures[xsID]
-                )
-            )
+            runLog.extra("XS ID: {}, Collection: {}".format(xsID, collection))
 
 
 BLOCK_COLLECTIONS = {
