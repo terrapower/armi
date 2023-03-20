@@ -10,6 +10,7 @@ What's new in ARMI
 ------------------
 #. The method ``Material.density3`` is now called ``density``, and the old ``density`` is now called ``pseudoDensity``. (`PR#1163 <https://github.com/terrapower/armi/pull/1163>`_)
 #. Added documentation for the thermal expansion approach used in ARMI. (`PR#1204 <https://github.com/terrapower/armi/pull/1204>`_)
+#. createRepresentativeBlocksFromExistingBlocks() now returns the mapping of original to new XS IDs. (`PR#1217 <https://github.com/terrapower/armi/pull/1217>`_)
 
 Bug fixes
 ---------
