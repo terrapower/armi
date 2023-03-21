@@ -195,7 +195,7 @@ class DefaultExecuter(Executer):
         # must either write input to CWD for analysis and then copy to runDir
         # or not list it in inputs (for optimization)
         self.writeInput()
-        with directoryChangers.ForcedCreationDirectoryChanger(
+        with directoryChangers.TemporaryDirectoryChanger(
             self.options.runDir,
             filesToMove=inputs,
             filesToRetrieve=outputs,
