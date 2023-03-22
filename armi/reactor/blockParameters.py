@@ -47,6 +47,7 @@ def getBlockParameterDefinitions():
             units=None,
             saveToDB=False,
             default=None,
+            location=ParamLocation.CHILDREN,
         )
 
         def detailedNDens(self, value):
@@ -150,6 +151,7 @@ def getBlockParameterDefinitions():
             "percentBuMaxPinLocation",
             units="int",
             description="Peak burnup pin location",
+            location=ParamLocation.MAX,
         )
 
         pb.defParam(
@@ -969,14 +971,14 @@ def getBlockParameterDefinitions():
             "newDPAPeak",
             units="dpa",
             description="The peak DPA accumulated in the last burn step",
-            location=ParamLocation.AVERAGE,
+            location=ParamLocation.MAX,
         )
 
         pb.defParam(
             "percentBuPeak",
             units="%FIMA",
             description="Peak percentage of the initial heavy metal atoms that have been fissioned",
-            location=ParamLocation.AVERAGE,
+            location=ParamLocation.MAX,
         )
 
         pb.defParam(
