@@ -14,6 +14,7 @@
 """Tests for generic global flux interface"""
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import unittest
+import os
 
 import numpy
 
@@ -222,6 +223,22 @@ class TestGlobalFluxInterfaceWithExecuters(unittest.TestCase):
 
     def _setTightCouplingFalse(self):
         self.cs["tightCoupling"] = False
+
+    def test_collectInputsAndOutputs(self):
+        """
+        Verify that the executer can select to not copy back output.
+        """
+        executer = self.gfi.getExecuter()
+        cs = settings.Settings()
+        executer.options.fromUserSettings(cs)
+        executer.options.inputFile = "test.inp"
+        executer.options.outputFile = "test.out"
+        executer.options.copyOutput = False
+        inputs, outputs = executer._collectInputsAndOutputs()
+        self.assertEqual(
+            "test.inp", inputs[0], "Input file was not successfully identified."
+        )
+        self.assertTrue(outputs == [], "Outputs were returned erroneously!")
 
 
 class TestGlobalFluxInterfaceWithExecutersNonUniform(unittest.TestCase):

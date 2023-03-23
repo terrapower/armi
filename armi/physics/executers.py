@@ -224,7 +224,7 @@ class DefaultExecuter(Executer):
         if self.options.outputFile and self.options.copyOutput:
             outputs = [self.options.outputFile]
         else:
-            []
+            outputs = []
         outputs.extend(self.options.extraOutputFiles)
         return inputs, outputs
 
