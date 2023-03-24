@@ -14,6 +14,8 @@ What's new in ARMI
 Bug fixes
 ---------
 #. Force GAMISO/PMATRX file path extensions to be lower case for linux support (`PR#1216 <https://github.com/terrapower/armi/pull/1216>`_)
+#. Fixed an invalid assumption on the lattice physics and cross section manager interfaces when using tight coupling for snapshot runs. (`PR#1206 <https://github.com/terrapower/armi/pull/1206>`_)
+#. Fixed TBD
 
 
 ARMI v0.2.6
