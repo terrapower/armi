@@ -240,6 +240,15 @@ class TestGlobalFluxInterfaceWithExecuters(unittest.TestCase):
         )
         self.assertTrue(outputs == [], "Outputs were returned erroneously!")
 
+        executer.options.copyOutput = True
+        inputs, outputs = executer._collectInputsAndOutputs()
+        self.assertEqual(
+            "test.inp", inputs[0], "Input file was not successfully identified."
+        )
+        self.assertEqual(
+            "test.out", outputs[0], "Output file was not successfully identified."
+        )
+
 
 class TestGlobalFluxInterfaceWithExecutersNonUniform(unittest.TestCase):
     """Tests for global flux execution with non-uniform assemblies."""
