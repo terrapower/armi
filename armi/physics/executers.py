@@ -99,7 +99,7 @@ class ExecutionOptions:
 
         This is optional (you can set runDir to whatever you want). If you
         use this, you will get a relatively consistent naming convention
-        for your fast-past folders.
+        for your fast-path folders.
         """
         # This creates a hash of the case title plus the label
         # to shorten the running directory and to avoid path length
@@ -196,12 +196,13 @@ class DefaultExecuter(Executer):
         # or not list it in inputs (for optimization)
         self.writeInput()
         with directoryChangers.TemporaryDirectoryChanger(
-            self.options.runDir,
+            root=self.options.runDir,
             filesToMove=inputs,
             filesToRetrieve=outputs,
             outputPath=outputDir,
         ) as dc:
             self.options.workingDir = dc.initial
+            self.options.runDir = dc.destination
             self._execute()
             output = self._readOutput()
             if self.options.applyResultsToReactor:
