@@ -213,11 +213,15 @@ class DefaultExecuter(Executer):
         """
         Get total lists of input and output files.
 
-        If self.options.copyOutput is false, don't copy the main `outputFile` back from the working directory.
+        If self.options.copyOutput is false, don't copy the main `outputFile` back from 
+        the working directory.
 
-        In some ARMI runs, the executer can be run hundreds or thousands of times and generate many output files that
-        aren't strictly necessary to keep around. One can save space by choosing not to copy the outputs back in these
-        special cases. extraOutputFiles are typically controlled by the subclass, so
+        In some ARMI runs, the executer can be run hundreds or thousands of times and 
+        generate many output files that aren't strictly necessary to keep around. One 
+        can save space by choosing not to copy the outputs back in these special cases. 
+        ``extraOutputFiles`` are typically controlled by the subclass, so the copyOutput 
+        option only affects the main ``outputFile``.
+
         """
         inputs = [self.options.inputFile] if self.options.inputFile else []
         inputs.extend(self.options.extraInputFiles)
