@@ -33,7 +33,6 @@ from armi import interfaces
 from armi import runLog
 from armi.bookkeeping import report
 from armi.operators import RunTypes
-from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
 from armi.reactor.components import ComponentType
 from armi.reactor.flags import Flags
 from armi.utils import getFileSHA1Hash
@@ -95,8 +94,10 @@ def writeWelcomeHeaders(o, cs):
         inputInfo : list
             (label, fileName, shaHash) tuples
         """
+        # pylint: disable=import-outside-toplevel # avoid cyclic import
+        from armi.physics.neutronics.settings import CONF_LOADING_FILE
 
-        pathToLoading = pathlib.Path(cs.inputDirectory) / cs["loadingFile"]
+        pathToLoading = pathlib.Path(cs.inputDirectory) / cs[CONF_LOADING_FILE]
 
         if pathToLoading.is_file():
             includedBlueprints = [
@@ -110,7 +111,7 @@ def writeWelcomeHeaders(o, cs):
         inputFiles = (
             [
                 ("Case Settings", cs.caseTitle + ".yaml"),
-                ("Blueprints", cs["loadingFile"]),
+                ("Blueprints", cs[CONF_LOADING_FILE]),
             ]
             + [("Included blueprints", inclBp) for inclBp in includedBlueprints]
             + [("Geometry", cs["geomFile"])]
@@ -626,6 +627,10 @@ def makeCoreDesignReport(core, cs):
 
 
 def _setGeneralCoreDesignData(cs, coreDesignTable):
+    # pylint: disable=import-outside-toplevel # avoid cyclic import
+    from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
+    from armi.physics.neutronics.settings import CONF_LOADING_FILE
+
     report.setData(
         "Case Title", "{}".format(cs.caseTitle), coreDesignTable, report.DESIGN
     )
@@ -636,7 +641,10 @@ def _setGeneralCoreDesignData(cs, coreDesignTable):
         "Geometry File", "{}".format(cs["geomFile"]), coreDesignTable, report.DESIGN
     )
     report.setData(
-        "Loading File", "{}".format(cs["loadingFile"]), coreDesignTable, report.DESIGN
+        "Loading File",
+        "{}".format(cs[CONF_LOADING_FILE]),
+        coreDesignTable,
+        report.DESIGN,
     )
     report.setData(
         "Fuel Shuffling Logic File",
@@ -769,6 +777,12 @@ def _setGeneralCoreParametersData(core, cs, coreDesignTable):
 
 
 def _setGeneralSimulationData(core, cs, coreDesignTable):
+    # pylint: disable=import-outside-toplevel # avoid cyclic import
+    from armi.physics.neutronics.settings import (
+        CONF_GEN_XS,
+        CONF_GLOBAL_FLUX_ACTIVE,
+    )
+
     report.setData("  ", "", coreDesignTable, report.DESIGN)
     report.setData(
         "Full Core Model", "{}".format(core.isFullCore), coreDesignTable, report.DESIGN
@@ -781,13 +795,13 @@ def _setGeneralSimulationData(core, cs, coreDesignTable):
     )
     report.setData(
         "Lattice Physics Enabled for",
-        "{}".format(cs["genXS"]),
+        "{}".format(cs[CONF_GEN_XS]),
         coreDesignTable,
         report.DESIGN,
     )
     report.setData(
         "Neutronics Enabled for",
-        "{}".format(cs["globalFluxActive"]),
+        "{}".format(cs[CONF_GLOBAL_FLUX_ACTIVE]),
         coreDesignTable,
         report.DESIGN,
     )

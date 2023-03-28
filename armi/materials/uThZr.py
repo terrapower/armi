@@ -46,7 +46,7 @@ class UThZr(Material):
         self.zrFrac = 0.09999  # custom param REM
         self.thFrac = 0.00001
 
-    def density(self, Tk=None, Tc=None):
+    def pseudoDensity(self, Tk=None, Tc=None):
         """Calculate the mass density in g/cc of U-Zr alloy with various percents"""
         zrFrac = self.zrFrac
         thFrac = self.thFrac

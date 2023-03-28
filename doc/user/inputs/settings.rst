@@ -232,6 +232,8 @@ As can be seen, the detailed cycle history option provides much greated flexibil
 
 .. note:: Cycles without names will be given the name ``None``
 
+.. warning:: When a detailed cycle history is combined with tight coupling, a subclass of :py:meth:`LatticePhysicsInterface.interactCoupled <armi.physics.neutronics.latticePhysics.latticePhysicsInterface.LatticePhysicsInterface.interactCoupled>` should be used.
+
 .. _restart-cases:
 
 Restart cases

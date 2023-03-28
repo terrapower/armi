@@ -8,14 +8,17 @@ Release Date: TBD
 
 What's new in ARMI
 ------------------
-#. Remove unused `HCFcoretype` setting. (`PR#1179 <https://github.com/terrapower/armi/pull/1179>`_)
-#. TBD
+#. The method ``Material.density3`` is now called ``density``, and the old ``density`` is now called ``pseudoDensity``. (`PR#1163 <https://github.com/terrapower/armi/pull/1163>`_)
+#. Added documentation for the thermal expansion approach used in ARMI. (`PR#1204 <https://github.com/terrapower/armi/pull/1204>`_)
+#. Use TemporaryDirectoryChanger for executer.run() so dirs are cleaned up during run. (`PR#1209 <https://github.com/terrapower/armi/pull/1209>`_)
 
 Bug fixes
 ---------
 #. Fixed interface/event ``runLog.header`` for tight coupling. (`PR#1178 https://github.com/terrapower/armi/pull/1178`_)
 #. Fixed circular import bug in ``reactors.py`` caused by importing settings constants. (`PR#1185 <https://github.com/terrapower/armi/pull/1185>`_)
 #. Read flux directly from output into Gamma uniform mesh instead of mapping it in from block params. (`PR#1213 <https://github.com/terrapower/armi/pull/1213>`_)
+#. Force GAMISO/PMATRX file path extensions to be lower case for linux support (`PR#1216 <https://github.com/terrapower/armi/pull/1216>`_)
+#. Fixed an invalid assumption on the lattice physics and cross section manager interfaces when using tight coupling for snapshot runs. (`PR#1206 <https://github.com/terrapower/armi/pull/1206>`_)
 #. Fixed TBD
 
 
@@ -43,9 +46,10 @@ What's new in ARMI
 #. Allow MCNP material card number to be defined after the card is written. (`PR#1086 <https://github.com/terrapower/armi/pull/1086>`_)
 #. Refine logic for ``Block.getNumPins()`` to only count components that are actually pins. (`PR#1098 <https://github.com/terrapower/armi/pull/1098>`_)
 #. Improve handling of peak/max parameters by the ``UniformMeshConverter`` parameter mapper. (`PR#1108 <https://github.com/terrapower/armi/pull/1108>`_)
-#. Calculate block kgHM and kgFis on core loading and after shuffling. (`PR#1136 https://github.com/terrapower/armi/pull/1136`_)
+#. Calculate block kgHM and kgFis on core loading and after shuffling. (`PR#1136 <https://github.com/terrapower/armi/pull/1136>`_)
 #. Calculate block ``PuFrac`` on core loading and after shuffling. (`PR#1165 <https://github.com/terrapower/armi/pull/1165>`_)
 #. Add setting ``cyclesSkipTightCouplingInteraction`` to skip coupling interaction on specified cycles. (`PR#1173 <https://github.com/terrapower/armi/pull/1173>`_)
+#. Remove unused `HCFcoretype` setting. (`PR#1179 <https://github.com/terrapower/armi/pull/1179>`_)
 
 Bug fixes
 ---------
@@ -64,6 +68,8 @@ Bug fixes
 #. Fixed Concrete density curve. (`PR#1131 <https://github.com/terrapower/armi/pull/1131>`_)
 #. Fixed Copper density curve. (`PR#1150 <https://github.com/terrapower/armi/pull/1150>`_)
 #. Fixed Component.density. (`PR#1149 <https://github.com/terrapower/armi/pull/1149>`_)
+#. Fixed interface/event ``runLog.header`` for tight coupling. (`PR#1178 <https://github.com/terrapower/armi/pull/1178>`_)
+#. Fixed circular import bug in ``reactors.py`` caused by importing settings constants. (`PR#1185 <https://github.com/terrapower/armi/pull/1185>`_)
 
 ARMI v0.2.5
 ===========

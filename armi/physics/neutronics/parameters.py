@@ -24,6 +24,7 @@ from armi.reactor import parameters
 from armi.reactor.parameters import ParamLocation
 from armi.reactor.blocks import Block
 from armi.reactor.reactors import Core
+from armi.physics.neutronics.settings import CONF_DPA_PER_FLUENCE
 
 
 def getNeutronicsParameterDefinitions():
@@ -697,7 +698,7 @@ def _getNeutronicsBlockParams():
         pb.defParam(
             "dpaPeakFromFluence",
             units="dpa",
-            description="DPA approximation based on a fluence conversion factor set in the dpaPerFluence setting",
+            description=f"DPA approximation based on a fluence conversion factor set in the {CONF_DPA_PER_FLUENCE} setting",
             location=ParamLocation.MAX,
             categories=[
                 parameters.Category.cumulative,
