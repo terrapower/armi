@@ -14,8 +14,6 @@ What's new in ARMI
 
 Bug fixes
 ---------
-#. Fixed interface/event ``runLog.header`` for tight coupling. (`PR#1178 https://github.com/terrapower/armi/pull/1178`_)
-#. Fixed circular import bug in ``reactors.py`` caused by importing settings constants. (`PR#1185 <https://github.com/terrapower/armi/pull/1185>`_)
 #. Read flux directly from output into Gamma uniform mesh instead of mapping it in from block params. (`PR#1213 <https://github.com/terrapower/armi/pull/1213>`_)
 #. Force GAMISO/PMATRX file path extensions to be lower case for linux support (`PR#1216 <https://github.com/terrapower/armi/pull/1216>`_)
 #. Fixed an invalid assumption on the lattice physics and cross section manager interfaces when using tight coupling for snapshot runs. (`PR#1206 <https://github.com/terrapower/armi/pull/1206>`_)
