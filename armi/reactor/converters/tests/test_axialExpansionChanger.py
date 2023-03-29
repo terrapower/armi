@@ -893,7 +893,9 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
                                 msg=msg,
                             )
 
-    def checkColdHeightBlockMass(self, bStd: HexBlock, bExp: HexBlock, flagType: Flags, nuclide: str):
+    def checkColdHeightBlockMass(
+        self, bStd: HexBlock, bExp: HexBlock, flagType: Flags, nuclide: str
+    ):
         """checks that nuclide masses for blocks with input cold heights and "inputHeightsConsideredHot": True are underpredicted
 
         Notes
@@ -904,10 +906,9 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
         are thermally expanded.
         """
         # custom materials don't expand
-        if not isinstance(
-            bStd.getComponent(flagType).material, custom.Custom
-        ):
+        if not isinstance(bStd.getComponent(flagType).material, custom.Custom):
             self.assertGreater(bExp.getMass(nuclide), bStd.getMass(nuclide))
+
 
 def checkColdBlockHeight(bStd, bExp, assertType, strForAssertion):
     assertType(
