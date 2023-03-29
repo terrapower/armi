@@ -59,6 +59,8 @@ class ExecutionOptions:
     savePhysicsFiles : bool
         Dump the physics kernel I/O files from the execution to a dedicated directory that
         will not be overwritten so they will be available after the run.
+    copyOutput : bool
+        Copy the output from running the executable back to the working directory.
     applyResultsToReactor : bool
         Update the in-memory reactor model with results upon completion. Set to False
         when information from a run is needed for auxiliary purposes rather than progressing
@@ -78,6 +80,7 @@ class ExecutionOptions:
         self.applyResultsToReactor = True
         self.paramsToScaleSubset = None
         self.savePhysicsFiles = False
+        self.copyOutput = True
 
     def __repr__(self):
         return f"<{self.__class__.__name__}: {self.label}>"

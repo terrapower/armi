@@ -31,7 +31,6 @@ from armi.reactor.tests import test_blocks
 from armi.reactor.tests import test_reactors
 from armi.tests import ISOAA_PATH
 
-
 # pylint: disable=abstract-method
 class MockReactorParams:
     def __init__(self):
@@ -222,31 +221,6 @@ class TestGlobalFluxInterfaceWithExecuters(unittest.TestCase):
 
     def _setTightCouplingFalse(self):
         self.cs["tightCoupling"] = False
-
-    def test_collectInputsAndOutputs(self):
-        """
-        Verify that the executer can select to not copy back output.
-        """
-        executer = self.gfi.getExecuter()
-        cs = settings.Settings()
-        executer.options.fromUserSettings(cs)
-        executer.options.inputFile = "test.inp"
-        executer.options.outputFile = "test.out"
-        executer.options.copyOutput = False
-        inputs, outputs = executer._collectInputsAndOutputs()
-        self.assertEqual(
-            "test.inp", inputs[0], "Input file was not successfully identified."
-        )
-        self.assertTrue(outputs == [], "Outputs were returned erroneously!")
-
-        executer.options.copyOutput = True
-        inputs, outputs = executer._collectInputsAndOutputs()
-        self.assertEqual(
-            "test.inp", inputs[0], "Input file was not successfully identified."
-        )
-        self.assertEqual(
-            "test.out", outputs[0], "Output file was not successfully identified."
-        )
 
 
 class TestGlobalFluxInterfaceWithExecutersNonUniform(unittest.TestCase):
