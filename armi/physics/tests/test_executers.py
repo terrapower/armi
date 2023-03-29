@@ -18,7 +18,7 @@ import os
 import unittest
 
 from armi.reactor import geometry
-from armi import settings
+from armi.utils import directoryChangers
 from armi.physics import executers
 
 # pylint: disable=abstract-method
@@ -75,7 +75,6 @@ class TestExecuters(unittest.TestCase):
         """
         Verify that the executer can select to not copy back output.
         """
-        cs = settings.Settings()
         self.executer.options.inputFile = "test.inp"
         self.executer.options.outputFile = "test.out"
         self.executer.options.copyOutput = False
@@ -93,6 +92,24 @@ class TestExecuters(unittest.TestCase):
         self.assertEqual(
             "test.out", outputs[0], "Output file was not successfully identified."
         )
+
+    def test_updateRunDir(self):
+        """
+        Verify that runDir is updated when TemporaryDirectoryChanger is used and
+        not updated when ForcedCreationDirectoryChanger is used
+        """
+
+        self.assertEqual(
+            self.executer.dcType, directoryChangers.TemporaryDirectoryChanger
+        )
+        self.executer._updateRunDir("updatedRunDir")
+        self.assertEqual(self.executer.options.runDir, "updatedRunDir")
+
+        # change directoryChanger type, runDir not updated
+        self.executer.options.runDir = "runDir"
+        self.executer.dcType = directoryChangers.ForcedCreationDirectoryChanger
+        self.executer._updateRunDir("notThisString")
+        self.assertEqual(self.executer.options.runDir, "runDir")
 
 
 if __name__ == "__main__":
