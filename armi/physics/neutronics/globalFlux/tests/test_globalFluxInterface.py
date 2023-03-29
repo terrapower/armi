@@ -14,7 +14,6 @@
 """Tests for generic global flux interface"""
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import unittest
-import os
 
 import numpy
 
