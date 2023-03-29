@@ -10,7 +10,8 @@ What's new in ARMI
 ------------------
 #. The method ``Material.density3`` is now called ``density``, and the old ``density`` is now called ``pseudoDensity``. (`PR#1163 <https://github.com/terrapower/armi/pull/1163>`_)
 #. Added documentation for the thermal expansion approach used in ARMI. (`PR#1204 <https://github.com/terrapower/armi/pull/1204>`_)
-#. Use TemporaryDirectoryChanger for executer.run() so dirs are cleaned up during run. (`PR#1209 <https://github.com/terrapower/armi/pull/1209>`_)
+#. Use TemporaryDirectoryChanger for executer.run() so dirs are cleaned up during run. (`PR#1219 <https://github.com/terrapower/armi/pull/1219>`_)
+#. New option ``copyOutput`` for globalFluxInterface to not copy output back to working directory. (`PR#1218 <https://github.com/terrapower/armi/pull/1218>`_)
 
 Bug fixes
 ---------
