@@ -12,11 +12,13 @@ What's new in ARMI
 #. Added documentation for the thermal expansion approach used in ARMI. (`PR#1204 <https://github.com/terrapower/armi/pull/1204>`_)
 #. Use TemporaryDirectoryChanger for executer.run() so dirs are cleaned up during run. (`PR#1219 <https://github.com/terrapower/armi/pull/1219>`_)
 #. New option ``copyOutput`` for globalFluxInterface to not copy output back to working directory. (`PR#1218 <https://github.com/terrapower/armi/pull/1218>`_, `PR#1227 <https://github.com/terrapower/armi/pull/1227>`_)
+#. `Executer` class has a ``dcType`` attribute to define the type of ``DirectoryChanger`` it will use. (`PR#1228 <https://github.com/terrapower/armi/pull/1228>`_)
 
 Bug fixes
 ---------
 #. Force GAMISO/PMATRX file path extensions to be lower case for linux support (`PR#1216 <https://github.com/terrapower/armi/pull/1216>`_)
 #. Fixed an invalid assumption on the lattice physics and cross section manager interfaces when using tight coupling for snapshot runs. (`PR#1206 <https://github.com/terrapower/armi/pull/1206>`_)
+#. Fixed a bug where the precision used to determine the axial submesh was too small. (`PR#1225 <https://github.com/terrapower/armi/pull/1225>`_)
 #. Fixed TBD
 
 

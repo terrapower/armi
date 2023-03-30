@@ -1802,6 +1802,11 @@ class Core(composites.Composite):
         from fuel performance, an imbalanced axial mesh may result.
 
         There is a challenge with TRZ blocks because we need the mesh centroid in terms of RZT, not XYZ
+
+        When determining the submesh, it is important to not use too small of a rounding precision. It was
+        found that when using a precision of units.FLOAT_DIMENSION_DECIMALS, that the division in `step`
+        can produce mesh points that are the same up to the 9th or 10th digit, resulting in a repeated
+        mesh point. This repetition results in problems in downstream methods, such as the uniform mesh converter.
         """
         runLog.debug("Finding all mesh points.")
         if assems is None:
@@ -1825,10 +1830,10 @@ class Core(composites.Composite):
                     axisVal = float(base[axis])  # convert from numpy.float64
                     step = float(top[axis] - axisVal) / subdivisions
                     for _subdivision in range(subdivisions):
-                        collection.add(round(axisVal, units.FLOAT_DIMENSION_DECIMALS))
+                        collection.add(round(axisVal, 8))
                         axisVal += step
                     # add top too (only needed for last point)
-                    collection.add(round(axisVal, units.FLOAT_DIMENSION_DECIMALS))
+                    collection.add(round(axisVal, 8))
 
         iMesh, jMesh, kMesh = map(sorted, (iMesh, jMesh, kMesh))
 
