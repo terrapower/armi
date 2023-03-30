@@ -134,6 +134,7 @@ class Executer:
     def __init__(self, options, reactor):
         self.options = options
         self.r = reactor
+        self.dcType = directoryChangers.TemporaryDirectoryChanger
 
     def run(self):
         """
@@ -198,20 +199,34 @@ class DefaultExecuter(Executer):
         # must either write input to CWD for analysis and then copy to runDir
         # or not list it in inputs (for optimization)
         self.writeInput()
-        with directoryChangers.TemporaryDirectoryChanger(
-            root=self.options.runDir,
+        with self.dcType(
+            self.options.runDir,
             filesToMove=inputs,
             filesToRetrieve=outputs,
             outputPath=outputDir,
         ) as dc:
             self.options.workingDir = dc.initial
-            self.options.runDir = dc.destination
+            self._updateRunDir(dc.destination)
             self._execute()
             output = self._readOutput()
             if self.options.applyResultsToReactor:
                 output.apply(self.r)
         self._undoGeometryTransformations()
         return output
+
+    def _updateRunDir(self, directory):
+        """
+        If a TemporaryDirectoryChanger is used, the runDir needs to be updated
+
+        If a ForcedCreationDirectoryChanger is used instead, nothing needs to be done.
+
+        Parameters
+        ----------
+        directory : str
+            New path for runDir
+        """
+        if self.dcType == directoryChangers.TemporaryDirectoryChanger:
+            self.options.runDir = directory
 
     def _collectInputsAndOutputs(self):
         """
