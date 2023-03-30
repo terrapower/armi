@@ -201,6 +201,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
             runLog.extra(f"Building copy of {r} with a uniform axial mesh.")
             self.convReactor = self.initNewReactor(r, self._cs)
             self._computeAverageAxialMesh()
+            self._decuspAxialMesh(meshTolerance=3.0)
             self._buildAllUniformAssemblies()
             self._mapStateFromReactorToOther(
                 self._sourceReactor, self.convReactor, mapBlockParams=False
@@ -235,6 +236,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
         coreDesign = bp.systemDesigns["core"]
 
         coreDesign.construct(cs, bp, newReactor, loadAssems=False)
+        newReactor.core.p.coupledIteration = sourceReactor.core.p.coupledIteration
         newReactor.core.lib = sourceReactor.core.lib
         newReactor.core.setPitchUniform(sourceReactor.core.getAssemblyPitch())
         newReactor.o = (
@@ -675,6 +677,132 @@ class UniformMeshGeometryConverter(GeometryConverter):
         """Perform checks to ensure conversion occurred properly."""
         pass
 
+    def _determineIndexToRemove(self, ibot, itop, meshPoints, anchorPoints):
+        """
+        Determine which mesh to remove when two points are too close together
+
+        Rules:
+            1. Always keep anchorPoints
+            2. If neither mesh point is in anchorPointws, keep the lower one
+
+        Parameters
+        ----------
+        ibot : int, required
+            Bottom index
+        itop : int, required
+            Top index
+        meshPoints : [float, float], required
+            The two mesh points within meshTolerance of each other
+        anchorPoints : list[float], required
+            The anchor points that will not be removed from the mesh
+        """
+        meshBot, meshTop = tuple(meshPoints)
+        if meshTop in anchorPoints:
+            if meshBot in anchorPoints:
+                runLog.error(
+                    "The uniform mesh tolerance for decusping is smaller than the gap between anchor points!"
+                    f"{meshBot}, {meshTop}, gap = {meshTop-meshBot}."
+                )
+                raise ValueError
+            return ibot
+        else:
+            return itop
+
+    def _filterMesh(self, meshList, meshTolerance, anchorPoints, warn=False):
+        """
+        Check for mesh violating the mesh tolerance and remove them if necessary
+
+        Parameters
+        ----------
+        meshList : list of float, required
+            List of mesh points to be filtered by tolerance
+        meshTolerance : float, required
+            The minimum mesh size tolerance
+        anchorPoints : (float, float), required
+            These mesh points will not be removed. In first run through, these are the top and bottom of fuel.
+            On second run through, it is top and bottom of fuel plus bottom of all control absorbers.
+        warn : bool, optional
+            Whether to log a warning when a mesh is removed. This is true if a
+            control material boundary is removed, but otherwise it is false.
+        """
+        keepChecking = True
+        while keepChecking:
+            for i in range(len(meshList) - 1):
+                difference = meshList[i + 1] - meshList[i]
+                if difference < meshTolerance:
+                    removeIndex = self._determineIndexToRemove(
+                        i, i + 1, meshList[i : i + 2], anchorPoints
+                    )
+                    if warn:
+                        runLog.warning(
+                            f"{meshList[i + 1]} is too close to {meshList[i]}! "
+                            f"Difference = {difference} is less than mesh size "
+                            f"tolerance of {meshTolerance}. The uniform mesh will "
+                            f"remove {meshList[removeIndex]}."
+                        )
+                    break
+            else:
+                return meshList
+            meshList.pop(removeIndex)
+            keepChecking = True
+
+    def _decuspAxialMesh(self, meshTolerance=3.0):
+        """
+        Preserve control rod material boundaries to reduce control rod cusping effect.
+
+        Notes
+        -----
+        Uniform mesh conversion can lead to axial smearing of control assembly material, which causes
+        a pronounced control rod "cusping" affect in the differential rod worth. This function
+        modifies the uniform mesh to honor control rod material boundaries while avoiding excessively
+        small mesh sizes.
+
+        If adding control rod material boundaries to the mesh creates excessively small mesh regions,
+        this function will move fuel region boundaries to make room for the control rod boundaries.
+
+        Parameters
+        ----------
+        meshTolerance : float, required
+            The minimum mesh size tolerance
+        """
+        matBoundaries = set()
+        # find all control assembly boundaries
+        for a in self._sourceReactor.core.getAssemblies(Flags.CONTROL):
+            firstBlock = a.getFirstBlock(Flags.CONTROL)
+            matBoundaries.add(round(firstBlock.p.zbottom, 3))
+
+        # add bottom and top of fuel
+        fuelBottom = min(
+            a.getFirstBlock(Flags.FUEL).p.zbottom
+            for a in self._sourceReactor.core.getAssemblies(Flags.FUEL)
+        )
+        fuelTop = max(
+            a.getFirstBlock(Flags.FUEL).p.ztop
+            for a in self._sourceReactor.core.getAssemblies(Flags.FUEL)
+        )
+        matBoundaries.add(fuelBottom)
+        matBoundaries.add(fuelTop)
+
+        ## don't worry about control material above active core
+        # matBoundaries = [ x for x in list(matBoundaries) if x <= fuelTop]
+
+        boundList = sorted(list(matBoundaries))
+        runLog.extra(
+            f"Attempting to honor control and fuel material boundaries in uniform mesh "
+            f"for {self} while also keeping minimum mesh size of {meshTolerance}. "
+            f"Material boundaries are: {boundList}"
+        )
+        filteredMeshAdditions = self._filterMesh(
+            boundList, meshTolerance, [fuelBottom, fuelTop], warn=True
+        )
+        roundedMesh = [
+            round(x, 5) for x in list(self._uniformMesh) + filteredMeshAdditions
+        ]
+        combinedMesh = sorted(list(set(roundedMesh)))
+        self._uniformMesh = self._filterMesh(
+            combinedMesh, meshTolerance, filteredMeshAdditions
+        )
+
     def _computeAverageAxialMesh(self):
         """
         Computes an average axial mesh based on the core's reference assembly.
@@ -806,6 +934,28 @@ class UniformMeshGeometryConverter(GeometryConverter):
                 continue
             globalFluxInterface.calcReactionRates(b, keff, lib)
 
+    def updateReactionRates(self):
+        """
+        Update reaction rates on converted assemblies
+
+        Notes
+        -----
+        In some cases, we may want to read flux into a converted reactor from a
+        pre-existing physics output instead of mapping it in from the pre-conversion
+        source reactor. This method can be called after reading that flux in to
+        calculate updated reaction rates derived from that flux.
+        """
+        if self._hasNonUniformAssems:
+            for assem in self.convReactor.core.getAssemblies(self._nonUniformMeshFlags):
+                self._calculateReactionRates(
+                    self.convReactor.core.lib, self.convReactor.core.p.keff, assem
+                )
+        else:
+            for assem in self.convReactor.core.getAssemblies():
+                self._calculateReactionRates(
+                    self.convReactor.core.lib, self.convReactor.core.p.keff, assem
+                )
+
 
 class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
     """
@@ -905,6 +1055,8 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
             # initial heavy metal masses are needed to calculate burnup in MWd/kg
             blockParamNames.extend(HEAVY_METAL_PARAMS)
 
+        # remove any duplicates (from parameters that have multiple categories)
+        blockParamNames = list(set(blockParamNames))
         self.paramMapper = ParamMapper(reactorParamNames, blockParamNames, b)
 
 
@@ -937,7 +1089,6 @@ class GammaUniformMeshConverter(UniformMeshGeometryConverter):
     }
     blockParamMappingCategories = {
         "in": [
-            parameters.Category.detailedAxialExpansion,
             parameters.Category.multiGroupQuantities,
         ],
         "out": [
@@ -991,6 +1142,8 @@ class GammaUniformMeshConverter(UniformMeshGeometryConverter):
                 ]
             )
 
+        # remove any duplicates (from parameters that have multiple categories)
+        blockParamNames = list(set(blockParamNames))
         self.paramMapper = ParamMapper(reactorParamNames, blockParamNames, b)
 
 
