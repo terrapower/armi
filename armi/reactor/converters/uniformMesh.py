@@ -85,6 +85,264 @@ def converterFactory(globalFluxOptions):
         )
 
 
+class UniformMeshGenerator:
+
+    FLOAT_ROUNDING_DECIMALS = 5
+
+    def __init__(self, r, meshTolerance):
+        """
+        Initialize an object to generate an appropriate common axial mesh to use for uniform mesh conversion.
+
+        Parameters
+        ----------
+        r : :py:class:`Reactor <armi.reactor.reactors.Reactor>` object.
+            Reactor for which a common mesh is generated
+        meshTolerance : float, required
+            Minimum allowed separation between axial mesh points in cm
+        """
+        self._sourceReactor = r
+        self.meshTolerance = meshTolerance
+        self._commonMesh = None
+
+    def generateCommonMesh(self):
+        """
+        Generate a common axial mesh to use
+        """
+        self._computeAverageAxialMesh()
+        self._decuspAxialMesh()
+
+    def _computeAverageAxialMesh(self):
+        """
+        Computes an average axial mesh based on the core's reference assembly.
+
+        Notes
+        -----
+        This iterates over all the assemblies in the core and collects all assembly meshes
+        that have the same number of fine-mesh points as the `refAssem` for the core. Based on
+        this, the proposed uniform mesh will be some average of many assemblies in the core.
+        The reason for this is to account for the fact that multiple assemblies (i.e., fuel assemblies)
+        may have a different mesh due to differences in thermal and/or burn-up expansion.
+        """
+        src = self._sourceReactor
+        refAssem = src.core.refAssem
+
+        refNumPoints = len(src.core.findAllAxialMeshPoints([refAssem])) - 1
+        allMeshes = []
+        for a in src.core:
+            # Get the mesh points of the assembly, neglecting the first coordinate
+            # (typically zero).
+            aMesh = src.core.findAllAxialMeshPoints([a])[1:]
+            if len(aMesh) == refNumPoints:
+                allMeshes.append(aMesh)
+        averageMesh = average1DWithinTolerance(numpy.array(allMeshes))
+        self._commonMesh = numpy.array(
+            [round(z, self.FLOAT_ROUNDING_DECIMALS) for z in averageMesh]
+        )
+
+    def _decuspAxialMesh(self):
+        """
+        Preserve control rod material boundaries to reduce control rod cusping effect.
+
+        Notes
+        -----
+        Uniform mesh conversion can lead to axial smearing of control assembly material, which causes
+        a pronounced control rod "cusping" affect in the differential rod worth. This function
+        modifies the uniform mesh to honor fuel and control rod material boundaries while avoiding excessively
+        small mesh sizes.
+
+        If adding control rod material boundaries to the mesh creates excessively small mesh regions,
+        this function will move internal fuel region boundaries to make room for the control rod boundaries.
+        """
+        # filter fuel material boundaries to mesh tolerance
+        filteredBottomFuel, filteredTopFuel = self._getFilteredFuelTopAndBottom()
+        (
+            filteredBottomControl,
+            filteredTopControl,
+        ) = self._getFilteredControlTopAndBottom(filteredBottomFuel, filteredTopFuel)
+        materialBottoms = filteredBottomFuel + filteredBottomControl
+        materialTops = filteredTopFuel + filteredTopControl
+
+        # combine the bottoms and tops into one list with bottom preference
+        allMatBounds = materialBottoms + materialTops
+        materialAnchors = self._filterMesh(
+            allMatBounds,
+            self.meshTolerance,
+            filteredBottomFuel + filteredTopFuel,
+            preference="bottom",
+            warn=True,
+        )
+
+        runLog.extra(
+            f"Attempting to honor control and fuel material boundaries in uniform mesh "
+            f"for {self} while also keeping minimum mesh size of {self.meshTolerance}. "
+            f"Material boundaries are: {allMatBounds}"
+        )
+
+        # combine material bottom boundaries with full mesh using bottom preference
+        meshWithBottoms = self._filterMesh(
+            list(self._commonMesh) + materialBottoms,
+            self.meshTolerance,
+            materialBottoms,
+            preference="bottom",
+        )
+        # combine material top boundaries with full mesh using top preference
+        meshWithTops = self._filterMesh(
+            list(self._commonMesh) + materialTops,
+            self.meshTolerance,
+            materialTops,
+            preference="top",
+        )
+        # combine all mesh points using all material boundaries as anchors with bottom preference
+        combinedMesh = self._filterMesh(
+            list(set(meshWithBottoms + meshWithTops)),
+            self.meshTolerance,
+            materialAnchors,
+            preference="bottom",
+        )
+
+        self._commonMesh = numpy.array(combinedMesh)
+
+    def _filterMesh(
+        self, meshList, meshTolerance, anchorPoints, preference="bottom", warn=False
+    ):
+        """
+        Check for mesh violating the mesh tolerance and remove them if necessary
+
+        Parameters
+        ----------
+        meshList : list of float, required
+            List of mesh points to be filtered by tolerance
+        meshTolerance : float, required
+            Minimum allowed separation between axial mesh points in cm
+        anchorPoints : (float, float), required
+            These mesh points will not be removed. In first run through, these are the top and bottom of fuel.
+            On second run through, it is top and bottom of fuel plus bottom of all control absorbers.
+        warn : bool, optional
+            Whether to log a warning when a mesh is removed. This is true if a
+            control material boundary is removed, but otherwise it is false.
+        """
+        if preference == "bottom":
+            meshList = sorted(list(set(meshList)))
+        elif preference == "top":
+            meshList = sorted(list(set(meshList)), reverse=True)
+
+        keepChecking = True
+        while keepChecking:
+            for i in range(len(meshList) - 1):
+                difference = abs(meshList[i + 1] - meshList[i])
+                if difference < meshTolerance:
+                    removeIndex = self._determineIndexToRemove(
+                        i, i + 1, meshList[i : i + 2], anchorPoints
+                    )
+                    if warn:
+                        runLog.warning(
+                            f"{meshList[i + 1]} is too close to {meshList[i]}! "
+                            f"Difference = {difference} is less than mesh size "
+                            f"tolerance of {meshTolerance}. The uniform mesh will "
+                            f"remove {meshList[removeIndex]}."
+                        )
+                    break
+            else:
+                return meshList
+            meshList.pop(removeIndex)
+            keepChecking = True
+
+    def _getFilteredFuelTopAndBottom(self):
+        assemblyTypeFlags = [
+            a.p.flags for a in self._sourceReactor.core.getAssemblies(Flags.FUEL)
+        ]
+        fuelBottoms = [
+            min(
+                round(
+                    a.getFirstBlock(Flags.FUEL).p.zbottom, self.FLOAT_ROUNDING_DECIMALS
+                )
+                for a in self._sourceReactor.core.getAssemblies(assemFlags)
+            )
+            for assemFlags in assemblyTypeFlags
+        ]
+        fuelTops = [
+            max(
+                round(a.getBlocks(Flags.FUEL)[-1].p.ztop, self.FLOAT_ROUNDING_DECIMALS)
+                for a in self._sourceReactor.core.getAssemblies(assemFlags)
+            )
+            for assemFlags in assemblyTypeFlags
+        ]
+        filteredBottoms = self._filterMesh(
+            fuelBottoms,
+            self.meshTolerance,
+            [min(fuelBottoms)],
+            preference="bottom",
+            warn=True,
+        )
+        filteredTops = self._filterMesh(
+            fuelTops, self.meshTolerance, [max(fuelTops)], preference="top", warn=True
+        )
+
+        return filteredBottoms, filteredTops
+
+    def _getFilteredControlTopAndBottom(self, fuelBottoms, fuelTops):
+        """
+        Get top and bottom boundaries of control rod material boundaries filtered to mesh tolerance
+        """
+        bottomMatBoundaries = set(fuelBottoms)
+        topMatBoundaries = set(fuelTops)
+
+        # find all control assembly boundaries
+        for a in self._sourceReactor.core.getAssemblies(Flags.CONTROL):
+            firstBlock = a.getFirstBlock(Flags.CONTROL)
+            lastBlock = a.getBlocks(Flags.CONTROL)[-1]
+            bottomMatBoundaries.add(
+                round(firstBlock.p.zbottom, self.FLOAT_ROUNDING_DECIMALS)
+            )
+            topMatBoundaries.add(round(lastBlock.p.ztop, self.FLOAT_ROUNDING_DECIMALS))
+        bottomBoundList = sorted(list(bottomMatBoundaries))
+        topBoundList = sorted(list(topMatBoundaries))
+        # filter control boundaries to mesh tolerance
+        filteredBottomCtrl = self._filterMesh(
+            bottomBoundList,
+            self.meshTolerance,
+            fuelBottoms,
+            preference="bottom",
+            warn=True,
+        )
+        filteredTopCtrl = self._filterMesh(
+            topBoundList, self.meshTolerance, fuelTops, preference="top", warn=True
+        )
+        return filteredBottomCtrl, filteredTopCtrl
+
+    @staticmethod
+    def _determineIndexToRemove(ileft, iright, meshPoints, anchorPoints):
+        """
+        Determine which mesh to remove when two points are too close together
+
+        Rules:
+            1. Always keep anchorPoints
+            2. If neither mesh point is in anchorPointws, keep the lower one
+
+        Parameters
+        ----------
+        ibot : int, required
+            "left" index (bottom if preference is "bottom", top if preference is "top"
+        iright : int, required
+            "right" index (opposite of the "left" index)
+        meshPoints : [float, float], required
+            The two mesh points within meshTolerance of each other
+        anchorPoints : list[float], required
+            The anchor points that will not be removed from the mesh
+        """
+        meshLeft, meshRight = tuple(meshPoints)
+        if meshRight in anchorPoints:
+            if meshLeft in anchorPoints:
+                runLog.error(
+                    "The uniform mesh tolerance for decusping is smaller than the gap between anchor points!\n"
+                    f"{meshLeft}, {meshRight}, gap = {abs(meshLeft-meshRight)}."
+                )
+                raise ValueError
+            return ileft
+        else:
+            return iright
+
+
 class UniformMeshGeometryConverter(GeometryConverter):
     """
     This geometry converter can be used to change the axial mesh structure of the reactor core.
@@ -200,8 +458,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
         else:
             runLog.extra(f"Building copy of {r} with a uniform axial mesh.")
             self.convReactor = self.initNewReactor(r, self._cs)
-            self._computeAverageAxialMesh()
-            self._decuspAxialMesh(meshTolerance=3.0)
+            self._generateUniformMesh(meshTolerance=3.0)
             self._buildAllUniformAssemblies()
             self._mapStateFromReactorToOther(
                 self._sourceReactor, self.convReactor, mapBlockParams=False
@@ -214,6 +471,21 @@ class UniformMeshGeometryConverter(GeometryConverter):
         runLog.extra(
             f"Reactor core conversion time: {completeEndTime-completeStartTime} seconds"
         )
+
+    def _generateUniformMesh(self, meshTolerance):
+        """
+        Generate a common axial mesh to use for uniform mesh conversion
+
+        Parameters
+        ----------
+        meshTolerance : float, required
+            Minimum allowed separation between axial mesh points in cm
+        """
+        generator = UniformMeshGenerator(
+            self._sourceReactor, meshTolerance=meshTolerance
+        )
+        generator.generateCommonMesh()
+        self._uniformMesh = generator._commonMesh
 
     @staticmethod
     def initNewReactor(sourceReactor, cs):
@@ -676,157 +948,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
     def _checkConversion(self):
         """Perform checks to ensure conversion occurred properly."""
         pass
-
-    def _determineIndexToRemove(self, ibot, itop, meshPoints, anchorPoints):
-        """
-        Determine which mesh to remove when two points are too close together
-
-        Rules:
-            1. Always keep anchorPoints
-            2. If neither mesh point is in anchorPointws, keep the lower one
-
-        Parameters
-        ----------
-        ibot : int, required
-            Bottom index
-        itop : int, required
-            Top index
-        meshPoints : [float, float], required
-            The two mesh points within meshTolerance of each other
-        anchorPoints : list[float], required
-            The anchor points that will not be removed from the mesh
-        """
-        meshBot, meshTop = tuple(meshPoints)
-        if meshTop in anchorPoints:
-            if meshBot in anchorPoints:
-                runLog.error(
-                    "The uniform mesh tolerance for decusping is smaller than the gap between anchor points!"
-                    f"{meshBot}, {meshTop}, gap = {meshTop-meshBot}."
-                )
-                raise ValueError
-            return ibot
-        else:
-            return itop
-
-    def _filterMesh(self, meshList, meshTolerance, anchorPoints, warn=False):
-        """
-        Check for mesh violating the mesh tolerance and remove them if necessary
-
-        Parameters
-        ----------
-        meshList : list of float, required
-            List of mesh points to be filtered by tolerance
-        meshTolerance : float, required
-            The minimum mesh size tolerance
-        anchorPoints : (float, float), required
-            These mesh points will not be removed. In first run through, these are the top and bottom of fuel.
-            On second run through, it is top and bottom of fuel plus bottom of all control absorbers.
-        warn : bool, optional
-            Whether to log a warning when a mesh is removed. This is true if a
-            control material boundary is removed, but otherwise it is false.
-        """
-        keepChecking = True
-        while keepChecking:
-            for i in range(len(meshList) - 1):
-                difference = meshList[i + 1] - meshList[i]
-                if difference < meshTolerance:
-                    removeIndex = self._determineIndexToRemove(
-                        i, i + 1, meshList[i : i + 2], anchorPoints
-                    )
-                    if warn:
-                        runLog.warning(
-                            f"{meshList[i + 1]} is too close to {meshList[i]}! "
-                            f"Difference = {difference} is less than mesh size "
-                            f"tolerance of {meshTolerance}. The uniform mesh will "
-                            f"remove {meshList[removeIndex]}."
-                        )
-                    break
-            else:
-                return meshList
-            meshList.pop(removeIndex)
-            keepChecking = True
-
-    def _decuspAxialMesh(self, meshTolerance=3.0):
-        """
-        Preserve control rod material boundaries to reduce control rod cusping effect.
-
-        Notes
-        -----
-        Uniform mesh conversion can lead to axial smearing of control assembly material, which causes
-        a pronounced control rod "cusping" affect in the differential rod worth. This function
-        modifies the uniform mesh to honor control rod material boundaries while avoiding excessively
-        small mesh sizes.
-
-        If adding control rod material boundaries to the mesh creates excessively small mesh regions,
-        this function will move fuel region boundaries to make room for the control rod boundaries.
-
-        Parameters
-        ----------
-        meshTolerance : float, required
-            The minimum mesh size tolerance
-        """
-        matBoundaries = set()
-        # find all control assembly boundaries
-        for a in self._sourceReactor.core.getAssemblies(Flags.CONTROL):
-            firstBlock = a.getFirstBlock(Flags.CONTROL)
-            matBoundaries.add(round(firstBlock.p.zbottom, 3))
-
-        # add bottom and top of fuel
-        fuelBottom = min(
-            a.getFirstBlock(Flags.FUEL).p.zbottom
-            for a in self._sourceReactor.core.getAssemblies(Flags.FUEL)
-        )
-        fuelTop = max(
-            a.getFirstBlock(Flags.FUEL).p.ztop
-            for a in self._sourceReactor.core.getAssemblies(Flags.FUEL)
-        )
-        matBoundaries.add(fuelBottom)
-        matBoundaries.add(fuelTop)
-
-        ## don't worry about control material above active core
-        # matBoundaries = [ x for x in list(matBoundaries) if x <= fuelTop]
-
-        boundList = sorted(list(matBoundaries))
-        runLog.extra(
-            f"Attempting to honor control and fuel material boundaries in uniform mesh "
-            f"for {self} while also keeping minimum mesh size of {meshTolerance}. "
-            f"Material boundaries are: {boundList}"
-        )
-        filteredMeshAdditions = self._filterMesh(
-            boundList, meshTolerance, [fuelBottom, fuelTop], warn=True
-        )
-        roundedMesh = [
-            round(x, 5) for x in list(self._uniformMesh) + filteredMeshAdditions
-        ]
-        combinedMesh = sorted(list(set(roundedMesh)))
-        self._uniformMesh = self._filterMesh(
-            combinedMesh, meshTolerance, filteredMeshAdditions
-        )
-
-    def _computeAverageAxialMesh(self):
-        """
-        Computes an average axial mesh based on the core's reference assembly.
-
-        Notes
-        -----
-        This iterates over all the assemblies in the core and collects all assembly meshes
-        that have the same number of fine-mesh points as the `refAssem` for the core. Based on
-        this, the proposed uniform mesh will be some average of many assemblies in the core.
-        The reason for this is to account for the fact that multiple assemblies (i.e., fuel assemblies)
-        may have a different mesh due to differences in thermal and/or burn-up expansion.
-        """
-        src = self._sourceReactor
-        refAssem = src.core.refAssem
-
-        refNumPoints = len(src.core.findAllAxialMeshPoints([refAssem])) - 1
-        allMeshes = []
-        for a in src.core:
-            # Get the mesh points of the assembly, neglecting the first coordinate
-            # (typically zero).
-            aMesh = src.core.findAllAxialMeshPoints([a])[1:]
-            if len(aMesh) == refNumPoints:
-                allMeshes.append(aMesh)
-        self._uniformMesh = average1DWithinTolerance(numpy.array(allMeshes))
 
     @staticmethod
     def _createNewAssembly(sourceAssembly):
