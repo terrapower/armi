@@ -94,6 +94,10 @@ class UniformMeshGenerator:
     an representative "average" of the assembly meshes in the reactor. It then modifies that
     mesh to more faithfully represent important material boundaries of fuel and control absorber
     material.
+
+    The decusping feature is controlled with the case setting ``uniformMeshMinimumSize``. If no 
+    value is provided for this setting, the uniform mesh generator will skip the decusping step 
+    and just provide the result of ``_computeAverageAxialMesh``.
     """
 
     FLOAT_ROUNDING_DECIMALS = 5
