@@ -260,7 +260,7 @@ class UniformMeshGenerator:
                         )
                     break
             else:
-                return meshList
+                return sorted(meshList)
             meshList.pop(removeIndex)
             keepChecking = True
 
@@ -374,8 +374,10 @@ class UniformMeshGenerator:
         if meshRight in anchorPoints:
             if meshLeft in anchorPoints:
                 runLog.error(
-                    "The uniform mesh minimum size for decusping is smaller than the gap between anchor points!\n"
-                    f"{meshLeft}, {meshRight}, gap = {abs(meshLeft-meshRight)}."
+                    "Attempting to remove two anchor points!\n"
+                    "The uniform mesh minimum size for decusping may be smaller than the "
+                    "gap between anchor points:\n"
+                    f"{meshLeft}, {meshRight}, gap = {abs(meshLeft-meshRight)}"
                 )
                 raise ValueError
             return ileft
