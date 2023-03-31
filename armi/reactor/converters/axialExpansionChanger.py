@@ -851,7 +851,9 @@ class ExpansionData:
             componentWFlag = [c for c in b.getChildren() if c.hasFlags(flagOfInterest)]
         if len(componentWFlag) == 0:
             # didn't match flags so check type before failing
-            componentWFlag = [c for c in b if c.p.type == b.p.type]
+            componentWFlag = [
+                c for c in b if (c.p.type in b.p.type or b.p.type in c.p.type)
+            ]
         if len(componentWFlag) == 0:
             # if only 1 solid, be smart enought to snag it
             solidMaterials = list(

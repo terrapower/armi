@@ -769,7 +769,10 @@ class TestDetermineTargetComponent(AxialExpansionTestBase, unittest.TestCase):
         """
         b = HexBlock("detector", height=10.0)
         detectorDims = {"Tinput": 25.0, "Thot": 25.0, "widthOuter": 1.1, "mult": 1.0}
-        detector = Rectangle("detector", "FakeMat", **detectorDims)
+        ductDims = {"Tinput": 25.0, "Thot": 25.0, "op": 17, "ip": 0.0, "mult": 1.0}
+        detector = Rectangle("detector neutron", "FakeMat", **detectorDims)
+        duct = Hexagon("duct", "FakeMat", **ductDims)
+        b.add(duct)
         b.add(detector)
         b.add(self.coolant)
         b.setType("detector")
