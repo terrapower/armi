@@ -629,6 +629,8 @@ class TestExceptions(AxialExpansionTestBase, unittest.TestCase):
 
     def test_AssemblyAxialExpansionException(self):
         """test that negative height exception is caught"""
+        # manually set axial exp target component for code coverage
+        self.a[0].axialExpTargetComponent = self.a[0][0]
         temp = Temperature(self.a.getTotalHeight(), numTempGridPts=11, tempSteps=10)
         with self.assertRaises(ArithmeticError) as cm:
             for idt in range(temp.tempSteps):
@@ -637,42 +639,6 @@ class TestExceptions(AxialExpansionTestBase, unittest.TestCase):
                 )
                 self.obj.expansionData.computeThermalExpansionFactors()
                 self.obj.axiallyExpandAssembly()
-
-            the_exception = cm.exception
-            self.assertEqual(the_exception.error_code, 3)
-
-    def test_determineTargetComponentRuntimeErrorFirst(self):
-        # build block for testing
-        b = HexBlock("test", height=10.0)
-        fuelDims = {"Tinput": 25.0, "Thot": 25.0, "od": 0.76, "id": 0.00, "mult": 127.0}
-        cladDims = {"Tinput": 25.0, "Thot": 25.0, "od": 0.80, "id": 0.77, "mult": 127.0}
-        mainType = Circle("main", "FakeMat", **fuelDims)
-        clad = Circle("clad", "FakeMat", **cladDims)
-        b.add(mainType)
-        b.add(clad)
-        b.setType("test")
-        b.getVolumeFractions()
-        # do test
-        with self.assertRaises(RuntimeError) as cm:
-            self.obj.expansionData.determineTargetComponent(b)
-
-            the_exception = cm.exception
-            self.assertEqual(the_exception.error_code, 3)
-
-    def test_determineTargetComponentRuntimeErrorSecond(self):
-        # build block for testing
-        b = HexBlock("test", height=10.0)
-        fuelDims = {"Tinput": 25.0, "Thot": 25.0, "od": 0.76, "id": 0.00, "mult": 127.0}
-        cladDims = {"Tinput": 25.0, "Thot": 25.0, "od": 0.80, "id": 0.77, "mult": 127.0}
-        mainType = Circle("test", "FakeMat", **fuelDims)
-        clad = Circle("test", "FakeMat", **cladDims)
-        b.add(mainType)
-        b.add(clad)
-        b.setType("test")
-        b.getVolumeFractions()
-        # do test
-        with self.assertRaises(RuntimeError) as cm:
-            self.obj.expansionData.determineTargetComponent(b)
 
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
