@@ -854,10 +854,9 @@ class ExpansionData:
             componentWFlag = [c for c in b if c.p.type == b.p.type]
         if len(componentWFlag) == 0:
             # if only 1 solid, be smart enought to snag it
-            solidMaterials = []
-            for c in b:
-                if not isinstance(c.material, material.Fluid):
-                    solidMaterials.append(c)
+            solidMaterials = list(
+                c for c in b if not isinstance(c.material, material.Fluid)
+            )
             if len(solidMaterials) == 1:
                 componentWFlag = solidMaterials
         if len(componentWFlag) == 0:
