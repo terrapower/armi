@@ -95,8 +95,8 @@ class UniformMeshGenerator:
     mesh to more faithfully represent important material boundaries of fuel and control absorber
     material.
 
-    The decusping feature is controlled with the case setting ``uniformMeshMinimumSize``. If no 
-    value is provided for this setting, the uniform mesh generator will skip the decusping step 
+    The decusping feature is controlled with the case setting ``uniformMeshMinimumSize``. If no
+    value is provided for this setting, the uniform mesh generator will skip the decusping step
     and just provide the result of ``_computeAverageAxialMesh``.
     """
 
