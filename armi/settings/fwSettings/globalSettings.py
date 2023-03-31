@@ -161,7 +161,7 @@ def defineSettings() -> List[setting.Setting]:
         ),
         setting.Setting(
             CONF_UNIFORM_MESH_MINIMUM_SIZE,
-            default=1.0,
+            default=None,
             label="Minimum axial mesh size in cm for uniform mesh",
             description="Minimum mesh size used when generating an axial mesh for the "
             "uniform mesh converter.",

@@ -98,7 +98,7 @@ class UniformMeshGenerator:
 
     FLOAT_ROUNDING_DECIMALS = 5
 
-    def __init__(self, r, minimumMeshSize: float):
+    def __init__(self, r, minimumMeshSize=None):
         """
         Initialize an object to generate an appropriate common axial mesh to use for uniform mesh conversion.
 
@@ -106,11 +106,12 @@ class UniformMeshGenerator:
         ----------
         r : :py:class:`Reactor <armi.reactor.reactors.Reactor>` object.
             Reactor for which a common mesh is generated
-        minimumMeshSize : float, required
+        minimumMeshSize : float, optional
             Minimum allowed separation between axial mesh points in cm
+            If no miminmum mesh size is provided, no "decusping" is performed
         """
         self._sourceReactor = r
-        self.minimumMeshSize = float(minimumMeshSize)
+        self.minimumMeshSize = minimumMeshSize
         self._commonMesh = None
 
     def generateCommonMesh(self):
@@ -123,7 +124,8 @@ class UniformMeshGenerator:
         control absorber material boundaries in the common mesh.
         """
         self._computeAverageAxialMesh()
-        self._decuspAxialMesh()
+        if self.minimumMeshSize is not None:
+            self._decuspAxialMesh()
 
     def _computeAverageAxialMesh(self):
         """
