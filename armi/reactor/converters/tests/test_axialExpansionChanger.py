@@ -722,17 +722,15 @@ class TestDetermineTargetComponent(AxialExpansionTestBase, unittest.TestCase):
 
     def setUp(self):
         AxialExpansionTestBase.setUp(self)
-        self.obj = AxialExpansionChanger()
-        self.a = buildTestAssemblyWithFakeMaterial(name="FakeMatException")
-        self.obj.setAssembly(self.a)
-        # need an empty dictionary because we want to test for the added component only
-        self.obj.expansionData._componentDeterminesBlockHeight = {}
+        self.expData = ExpansionData([], None)
+        coolDims = {"Tinput": 25.0, "Thot": 25.0}
+        self.coolant = DerivedShape("coolant", "Sodium", **coolDims)
 
     def tearDown(self):
         AxialExpansionTestBase.tearDown(self)
 
     def test_determineTargetComponent(self):
-        # build a test block
+        """provides coverage for searching TARGET_FLAGS_IN_PREFERRED_ORDER"""
         b = HexBlock("fuel", height=10.0)
         fuelDims = {"Tinput": 25.0, "Thot": 25.0, "od": 0.76, "id": 0.00, "mult": 127.0}
         cladDims = {"Tinput": 25.0, "Thot": 25.0, "od": 0.80, "id": 0.77, "mult": 127.0}
@@ -740,85 +738,129 @@ class TestDetermineTargetComponent(AxialExpansionTestBase, unittest.TestCase):
         clad = Circle("clad", "FakeMat", **cladDims)
         b.add(fuel)
         b.add(clad)
+        b.add(self.coolant)
         # call method, and check that target component is correct
-        self.obj.expansionData.determineTargetComponent(b)
+        self.expData.determineTargetComponent(b)
         self.assertTrue(
-            self.obj.expansionData.isTargetComponent(fuel),
-            msg="determineTargetComponent failed to recognize intended component: {}".format(
-                fuel
-            ),
+            self.expData.isTargetComponent(fuel),
+            msg=f"determineTargetComponent failed to recognize intended component: {fuel}",
         )
 
     def test_determineTargetComponentBlockWithMultipleFlags(self):
+        """provides coverage for searching TARGET_FLAGS_IN_PREFERRED_ORDER with multiple flags"""
         # build a block that has two flags as well as a component matching each
-        # flag
         b = HexBlock("fuel poison", height=10.0)
-        fuelDims = {"Tinput": 25.0, "Thot": 600.0, "od": 0.9, "id": 0.5, "mult": 200.0}
-        poisonDims = {"Tinput": 25.0, "Thot": 400.0, "od": 0.5, "id": 0.0, "mult": 10.0}
+        fuelDims = {"Tinput": 25.0, "Thot": 25.0, "od": 0.9, "id": 0.5, "mult": 200.0}
+        poisonDims = {"Tinput": 25.0, "Thot": 25.0, "od": 0.5, "id": 0.0, "mult": 10.0}
         fuel = Circle("fuel", "FakeMat", **fuelDims)
         poison = Circle("poison", "FakeMat", **poisonDims)
         b.add(fuel)
         b.add(poison)
+        b.add(self.coolant)
         # call method, and check that target component is correct
-        self.obj.expansionData.determineTargetComponent(b)
+        self.expData.determineTargetComponent(b)
         self.assertTrue(
-            self.obj.expansionData.isTargetComponent(fuel),
-            msg="determineTargetComponent failed to recognize intended component: {}".format(
-                fuel
-            ),
+            self.expData.isTargetComponent(fuel),
+            msg=f"determineTargetComponent failed to recognize intended component: {fuel}",
         )
 
-    def test_specifyTargetComponet_BlueprintSpecified(self):
-        b = HexBlock("SodiumBlock", height=10.0)
-        sodiumDims = {"Tinput": 25.0, "Thot": 25.0, "op": 17, "ip": 0.0, "mult": 1.0}
-        ductDims = {"Tinput": 25.0, "Thot": 25.0, "op": 16, "ip": 15.0, "mult": 1.0}
-        dummy = Hexagon("coolant", "Sodium", **sodiumDims)
-        dummyDuct = Hexagon("duct", "FakeMat", **sodiumDims)
-        b.add(dummy)
-        b.add(dummyDuct)
-        b.getVolumeFractions()
-        b.setType("DuctBlock")
-
-        # check for no target component found
+    def test_specifyTargetComponent_NotFound(self):
+        """ensure RuntimeError gets raised when no target component is found"""
+        b = HexBlock("fuel", height=10.0)
+        b.add(self.coolant)
+        b.setType("fuel")
         with self.assertRaises(RuntimeError) as cm:
-            self.obj.expansionData.determineTargetComponent(b)
+            self.expData.determineTargetComponent(b)
+            the_exception = cm.exception
+            self.assertEqual(the_exception.error_code, 3)
+        with self.assertRaises(RuntimeError) as cm:
+            self.expData.determineTargetComponent(b, Flags.FUEL)
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
 
-        # check that target component is explicitly specified
-        b.setAxialExpTargetComp(dummyDuct)
+    def test_specifyTargetComponent_singleSolid(self):
+        """ensures that specifyTargetComponent is smart enough to set the only solid as the target component"""
+        b = HexBlock("plenum", height=10.0)
+        ductDims = {"Tinput": 25.0, "Thot": 25.0, "op": 17, "ip": 0.0, "mult": 1.0}
+        duct = Hexagon("duct", "FakeMat", **ductDims)
+        b.add(duct)
+        b.add(self.coolant)
+        b.getVolumeFractions()
+        b.setType("plenum")
+        self.expData.determineTargetComponent(b)
+        self.assertTrue(
+            self.expData.isTargetComponent(duct),
+            msg=f"determineTargetComponent failed to recognize intended component: {duct}",
+        )
+
+    def test_specifyTargetComponent_viaType(self):
+        """set target component via type and not flags
+
+        Notes
+        -----
+        For the case in which a block contains a component that does not have Flags defined.
+        So instead of matching on flags, we match on type.
+        """
+        b = HexBlock("detector", height=10.0)
+        detectorDims = {"Tinput": 25.0, "Thot": 25.0, "widthOuter": 1.1, "mult": 1.0}
+        detector = Rectangle("detector", "FakeMat", **detectorDims)
+        b.add(detector)
+        b.add(self.coolant)
+        b.setType("detector")
+        self.expData.determineTargetComponent(b)
+        self.assertTrue(
+            self.expData.isTargetComponent(detector),
+            msg=f"determineTargetComponent failed to recognize intended component: {detector}",
+        )
+
+    def test_specifyTargetComponet_MultipleFound(self):
+        """ensure RuntimeError is hit when multiple target components are found
+
+        Notes
+        -----
+        This can occur if a block has a mixture of fuel types. E.g., different fuel materials,
+        or different fuel geometries.
+        """
+        b = HexBlock("fuel", height=10.0)
+        fuelAnnularDims = {
+            "Tinput": 25.0,
+            "Thot": 25.0,
+            "od": 0.9,
+            "id": 0.5,
+            "mult": 100.0,
+        }
+        fuelDims = {"Tinput": 25.0, "Thot": 25.0, "od": 1.0, "id": 0.0, "mult": 10.0}
+        fuel = Circle("fuel", "FakeMat", **fuelDims)
+        fuelAnnular = Circle("fuel annular", "FakeMat", **fuelAnnularDims)
+        b.add(fuel)
+        b.add(fuelAnnular)
+        b.add(self.coolant)
+        b.setType("FuelBlock")
+        with self.assertRaises(RuntimeError) as cm:
+            self.expData.determineTargetComponent(b, flagOfInterest=Flags.FUEL)
+            the_exception = cm.exception
+            self.assertEqual(the_exception.error_code, 3)
+
+    def test_manuallySetTargetComponent(self):
+        """ensures that target components can be manually set (is done in practice via blueprints)"""
+        b = HexBlock("dummy", height=10.0)
+        ductDims = {"Tinput": 25.0, "Thot": 25.0, "op": 17, "ip": 0.0, "mult": 1.0}
+        duct = Hexagon("duct", "FakeMat", **ductDims)
+        b.add(duct)
+        b.add(self.coolant)
+        b.getVolumeFractions()
+        b.setType("duct")
+
+        # manually set target component
+        b.setAxialExpTargetComp(duct)
         self.assertEqual(
             b.axialExpTargetComponent,
-            dummyDuct,
+            duct,
         )
 
         # check that target component is stored on expansionData object correctly
-        self.obj.expansionData._componentDeterminesBlockHeight[
-            b.axialExpTargetComponent
-        ] = True
-        self.assertTrue(
-            self.obj.expansionData._componentDeterminesBlockHeight[
-                b.axialExpTargetComponent
-            ]
-        )
-
-        # get coverage for runLog statements on origination of target components
-        # axial exp changer skips formal expansion of the top most block so we
-        # need three blocks.
-        b0 = _buildTestBlock("b0", "FakeMat", 25.0, 10.0)
-        b2 = _buildTestBlock("b1", "FakeMat", 25.0, 10.0)
-        assembly = HexAssembly("testAssemblyType")
-        assembly.spatialGrid = grids.axialUnitGrid(numCells=1)
-        assembly.spatialGrid.armiObject = assembly
-        assembly.add(b0)
-        assembly.add(b)
-        assembly.add(b2)
-        assembly.calculateZCoords()
-        assembly.reestablishBlockOrder()
-        with mockRunLogs.BufferLog() as mock:
-            self.obj.performPrescribedAxialExpansion(assembly, [dummy], [0.01])
-            self.assertIn("(blueprints defined)", mock.getStdout())
-            self.assertIn("(inferred)", mock.getStdout())
+        self.expData._componentDeterminesBlockHeight[b.axialExpTargetComponent] = True
+        self.assertTrue(self.expData.isTargetComponent(duct))
 
 
 class TestInputHeightsConsideredHot(unittest.TestCase):

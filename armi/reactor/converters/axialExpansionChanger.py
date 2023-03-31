@@ -850,13 +850,22 @@ class ExpansionData:
         else:
             componentWFlag = [c for c in b.getChildren() if c.hasFlags(flagOfInterest)]
         if len(componentWFlag) == 0:
-            raise RuntimeError("No target component found!\n   Block {0}".format(b))
+            # didn't match flags so check type before failing
+            componentWFlag = [c for c in b if c.p.type == b.p.type]
+        if len(componentWFlag) == 0:
+            # if only 1 solid, be smart enought to snag it
+            solidMaterials = []
+            for c in b:
+                if not isinstance(c.material, material.Fluid):
+                    solidMaterials.append(c)
+            if len(solidMaterials) == 1:
+                componentWFlag = solidMaterials
+        if len(componentWFlag) == 0:
+            raise RuntimeError(f"No target component found!\n   Block {b}")
         if len(componentWFlag) > 1:
             raise RuntimeError(
-                "Cannot have more than one component within a block that has the target flag!"
-                "Block {0}\nflagOfInterest {1}\nComponents {2}".format(
-                    b, flagOfInterest, componentWFlag
-                )
+                f"Cannot have more than one component within a block that has the target flag!"
+                f"Block {b}\nflagOfInterest {flagOfInterest}\nComponents {componentWFlag}"
             )
         self._componentDeterminesBlockHeight[componentWFlag[0]] = True
 
