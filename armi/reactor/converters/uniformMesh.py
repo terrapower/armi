@@ -217,7 +217,7 @@ class UniformMeshGenerator:
             list(set(meshWithBottoms + meshWithTops)),
             self.minimumMeshSize,
             materialAnchors,
-            preference="bottom",
+            preference="top",
         )
 
         self._commonMesh = numpy.array(combinedMesh)
