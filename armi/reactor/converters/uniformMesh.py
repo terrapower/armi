@@ -708,21 +708,21 @@ class UniformMeshGeometryConverter(GeometryConverter):
             #     3. Use the first block of the majority XS type as the representative block.
             typeHeight = collections.defaultdict(float)
             blocks = [b for b, _h in overlappingBlockInfo]
+            fuelOrControl = any(b.hasFlags([Flags.FUEL, Flags.CONTROL]) for b in blocks)
             for b, h in overlappingBlockInfo:
-                if b.hasFlags([Flags.FUEL, Flags.CONTROL]):
+                if b.hasFlags([Flags.FUEL, Flags.CONTROL]) or not fuelOrControl:
                     typeHeight[b.p.xsType] += h
 
             sourceBlock = None
             # xsType is the one with the majority of overlap
-            if len(typeHeight) > 0:
-                xsType = next(
-                    k for k, v in typeHeight.items() if v == max(typeHeight.values())
-                )
-                for b in blocks:
-                    if b.hasFlags([Flags.FUEL, Flags.CONTROL]):
-                        if b.p.xsType == xsType:
-                            sourceBlock = b
-                            break
+            xsType = next(
+                k for k, v in typeHeight.items() if v == max(typeHeight.values())
+            )
+            for b in blocks:
+                if b.hasFlags([Flags.FUEL, Flags.CONTROL]) or not fuelOrControl:
+                    if b.p.xsType == xsType:
+                        sourceBlock = b
+                        break
 
             if len(typeHeight) > 1:
                 if sourceBlock:
@@ -734,13 +734,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
                     for xs, h in typeHeight.items():
                         heightFrac = h / totalHeight
                         runLog.debug(f"XSType {xs}: {heightFrac:.4f}")
-
-            # If no blocks meet the FUEL or CONTROL criteria above, or there is only one
-            # XS type present, just select the first block as the source block and use
-            # its cross section type.
-            if sourceBlock is None:
-                sourceBlock = blocks[0]
-                xsType = blocks[0].p.xsType
 
             block = sourceBlock._createHomogenizedCopy(includePinCoordinates)
             block.p.xsType = xsType
