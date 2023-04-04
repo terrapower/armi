@@ -334,7 +334,10 @@ class UniformMeshGenerator:
             bottomMatBoundaries.add(
                 round(firstBlock.p.zbottom, self.FLOAT_ROUNDING_DECIMALS)
             )
-            topMatBoundaries.add(round(lastBlock.p.ztop, self.FLOAT_ROUNDING_DECIMALS))
+            topMatBoundaries.add(
+                round(lastBlock.p.ztop, self.FLOAT_ROUNDING_DECIMALS)
+            )
+
         bottomBoundList = sorted(list(bottomMatBoundaries))
         topBoundList = sorted(list(topMatBoundaries))
         # filter control boundaries to minimum mesh size
@@ -708,9 +711,10 @@ class UniformMeshGeometryConverter(GeometryConverter):
             #     3. Use the first block of the majority XS type as the representative block.
             typeHeight = collections.defaultdict(float)
             blocks = [b for b, _h in overlappingBlockInfo]
-            fuelOrControl = any(b.hasFlags([Flags.FUEL, Flags.CONTROL]) for b in blocks)
+            priorityFlags = [Flags.FUEL, Flags.CONTROL, Flags.SHIELD | Flags.RADIAL]
+            fuelOrAbsorber = any(b.hasFlags(priorityFlags) for b in blocks)
             for b, h in overlappingBlockInfo:
-                if b.hasFlags([Flags.FUEL, Flags.CONTROL]) or not fuelOrControl:
+                if b.hasFlags(priorityFlags) or not fuelOrAbsorber:
                     typeHeight[b.p.xsType] += h
 
             sourceBlock = None
@@ -719,7 +723,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
                 k for k, v in typeHeight.items() if v == max(typeHeight.values())
             )
             for b in blocks:
-                if b.hasFlags([Flags.FUEL, Flags.CONTROL]) or not fuelOrControl:
+                if b.hasFlags(priorityFlags) or not fuelOrAbsorber:
                     if b.p.xsType == xsType:
                         sourceBlock = b
                         break
