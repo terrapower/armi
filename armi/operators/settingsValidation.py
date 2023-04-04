@@ -644,16 +644,6 @@ class Inspector:
         )
 
         self.addQuery(
-            lambda: self.cs["runType"] == operators.RunTypes.EQUILIBRIUM
-            and self.cs["cycles"],
-            "Equilibrium cases cannot use the `cycles` case setting to define detailed"
-            " cycle information. Try instead using the simple cycle history inputs"
-            " `cycleLength(s)`, `burnSteps`, `availabilityFactor(s)`, and/or `powerFractions`",
-            "",
-            self.NO_ACTION,
-        )
-
-        self.addQuery(
             lambda: self.cs["skipCycles"] > 0
             and not os.path.exists(self.cs.caseTitle + ".restart.dat"),
             "This is a restart case, but the required restart file {0}.restart.dat is not found".format(
