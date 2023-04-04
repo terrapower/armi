@@ -100,7 +100,7 @@ class UniformMeshGenerator:
     and just provide the result of ``_computeAverageAxialMesh``.
     """
 
-    FLOAT_ROUNDING_DECIMALS = 5
+    FLOAT_ROUNDING_DECIMALS = 12
 
     def __init__(self, r, minimumMeshSize=None):
         """
@@ -291,14 +291,14 @@ class UniformMeshGenerator:
                 )
                 for a in self._sourceReactor.core.getAssemblies(assemFlags)
             )
-            for assemFlags in assemblyTypeFlags
+            for assemFlags in set(assemblyTypeFlags)
         ]
         fuelTops = [
             max(
                 round(a.getBlocks(Flags.FUEL)[-1].p.ztop, self.FLOAT_ROUNDING_DECIMALS)
                 for a in self._sourceReactor.core.getAssemblies(assemFlags)
             )
-            for assemFlags in assemblyTypeFlags
+            for assemFlags in set(assemblyTypeFlags)
         ]
         filteredBottoms = self._filterMesh(
             fuelBottoms,
