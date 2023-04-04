@@ -226,8 +226,6 @@ As can be seen, the detailed cycle history option provides much greated flexibil
 
 .. note:: Although the detailed cycle history option allows for powers to change within each cycle, it should be noted that the power over each step is still considered to be constant.
 
-.. note:: The detailed cycle history may not be used for equilibrium calculations at this time.
-
 .. note:: The ``name`` field of the detailed cycle history is not yet used for anything, but this information will still be accessible on the operator during runtime.
 
 .. note:: Cycles without names will be given the name ``None``
