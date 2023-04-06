@@ -776,7 +776,6 @@ class FuelHandler:
                 )
             )
             
-
         # swap stationary blocks
         for (assem1Block, assem1BlockIndex), (assem2Block, assem2BlockIndex) in zip(
             a1StationaryBlocks, a2StationaryBlocks
