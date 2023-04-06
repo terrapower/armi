@@ -55,7 +55,12 @@ def makeAssemsAbleToSnapToUniformMesh(
         a.makeAxialSnapList(referenceAssembly)
 
 
-def expandColdDimsToHot(assems, isDetailedAxialExpansion, referenceAssembly=None):
+def expandColdDimsToHot(
+    assems: list,
+    isDetailedAxialExpansion: bool,
+    assemsToSkip: list[str],
+    referenceAssembly=None,
+):
     """
     Expand BOL assemblies, resolve disjoint axial mesh (if needed), and update block BOL heights
 
@@ -64,23 +69,23 @@ def expandColdDimsToHot(assems, isDetailedAxialExpansion, referenceAssembly=None
     assems: list[:py:class:`Assembly <armi.reactor.assemblies.Assembly>`]
         list of assemblies to be thermally expanded
     isDetailedAxialExpansion: bool
-        If true assemblies will be forced to conform to the reference mesh after expansion
+        If False, assemblies will be forced to conform to the reference mesh after expansion
+    assemsToSkip: list[str]
+        list of strings to be converted to flags to indicate which assemblies to skip axial expansion
     referenceAssembly: :py:class:`Assembly <armi.reactor.assemblies.Assembly>`, optional
-        Assembly whose mesh other meshes wil conform to if isDetailedAxialExpansion is true.
+        Assembly whose mesh other meshes will conform to if isDetailedAxialExpansion is False.
         If not provided, will assume the finest mesh assembly which is typically fuel.
     """
+    aToSkip = list(Flags.fromStringIgnoreErrors(t) for t in assemsToSkip)
     assems = list(assems)
     if not referenceAssembly:
         referenceAssembly = getDefaultReferenceAssem(assems)
     axialExpChanger = AxialExpansionChanger(isDetailedAxialExpansion)
     for a in assems:
-        if not a.hasFlags(Flags.CONTROL):
+        if not a.hasFlags(Flags.CONTROL) or any(
+            a.hasFlags(aFlags) for aFlags in aToSkip
+        ):
             axialExpChanger.setAssembly(a)
-            # this doesn't get applied to control assems, so CR will be interpreted
-            # as hot. This should be conservative because the control rods will
-            # be modeled as slightly shorter with the correct hot density. Density
-            # is more important than height, so we are forcing density to be correct
-            # since we can't do axial expansion (yet)
             axialExpChanger.applyColdHeightMassIncrease()
             axialExpChanger.expansionData.computeThermalExpansionFactors()
             axialExpChanger.axiallyExpandAssembly()
