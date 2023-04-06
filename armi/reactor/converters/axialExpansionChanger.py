@@ -14,6 +14,7 @@
 """Enable component-wise axial expansion for assemblies and/or a reactor"""
 
 from statistics import mean
+from typing import List
 from numpy import array
 from armi import runLog
 from armi.materials import material
@@ -58,7 +59,7 @@ def makeAssemsAbleToSnapToUniformMesh(
 def expandColdDimsToHot(
     assems: list,
     isDetailedAxialExpansion: bool,
-    assemsToSkip: list[str],
+    assemsToSkip: List[str],
     referenceAssembly=None,
 ):
     """
@@ -70,7 +71,7 @@ def expandColdDimsToHot(
         list of assemblies to be thermally expanded
     isDetailedAxialExpansion: bool
         If False, assemblies will be forced to conform to the reference mesh after expansion
-    assemsToSkip: list[str]
+    assemsToSkip: List[str]
         list of strings to be converted to flags to indicate which assemblies to skip axial expansion
     referenceAssembly: :py:class:`Assembly <armi.reactor.assemblies.Assembly>`, optional
         Assembly whose mesh other meshes will conform to if isDetailedAxialExpansion is False.
