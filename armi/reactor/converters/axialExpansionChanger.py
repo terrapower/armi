@@ -14,7 +14,6 @@
 """Enable component-wise axial expansion for assemblies and/or a reactor"""
 
 from statistics import mean
-from typing import List
 from numpy import array
 from armi import runLog
 from armi.materials import material
@@ -59,7 +58,6 @@ def makeAssemsAbleToSnapToUniformMesh(
 def expandColdDimsToHot(
     assems: list,
     isDetailedAxialExpansion: bool,
-    assemsToSkip: List[str],
     referenceAssembly=None,
 ):
     """
@@ -71,19 +69,16 @@ def expandColdDimsToHot(
         list of assemblies to be thermally expanded
     isDetailedAxialExpansion: bool
         If False, assemblies will be forced to conform to the reference mesh after expansion
-    assemsToSkip: List[str]
-        list of strings to be converted to flags to indicate which assemblies to skip axial expansion
     referenceAssembly: :py:class:`Assembly <armi.reactor.assemblies.Assembly>`, optional
         Assembly whose mesh other meshes will conform to if isDetailedAxialExpansion is False.
         If not provided, will assume the finest mesh assembly which is typically fuel.
     """
-    aToSkip = list(Flags.fromStringIgnoreErrors(t) for t in assemsToSkip)
     assems = list(assems)
     if not referenceAssembly:
         referenceAssembly = getDefaultReferenceAssem(assems)
     axialExpChanger = AxialExpansionChanger(isDetailedAxialExpansion)
     for a in assems:
-        if a.hasFlags(Flags.CONTROL) or any(a.hasFlags(aFlags) for aFlags in aToSkip):
+        if a.hasFlags(Flags.CONTROL):
             continue
         axialExpChanger.setAssembly(a)
         axialExpChanger.applyColdHeightMassIncrease()
