@@ -775,7 +775,7 @@ class FuelHandler:
                     a2StationaryBlocks[-1][0].p.ztop,
                 )
             )
-            
+
         # swap stationary blocks
         for (assem1Block, assem1BlockIndex), (assem2Block, assem2BlockIndex) in zip(
             a1StationaryBlocks, a2StationaryBlocks
