@@ -82,13 +82,12 @@ def expandColdDimsToHot(
         referenceAssembly = getDefaultReferenceAssem(assems)
     axialExpChanger = AxialExpansionChanger(isDetailedAxialExpansion)
     for a in assems:
-        if not a.hasFlags(Flags.CONTROL) or any(
-            a.hasFlags(aFlags) for aFlags in aToSkip
-        ):
-            axialExpChanger.setAssembly(a)
-            axialExpChanger.applyColdHeightMassIncrease()
-            axialExpChanger.expansionData.computeThermalExpansionFactors()
-            axialExpChanger.axiallyExpandAssembly()
+        if a.hasFlags(Flags.CONTROL) or any(a.hasFlags(aFlags) for aFlags in aToSkip):
+            continue
+        axialExpChanger.setAssembly(a)
+        axialExpChanger.applyColdHeightMassIncrease()
+        axialExpChanger.expansionData.computeThermalExpansionFactors()
+        axialExpChanger.axiallyExpandAssembly()
     if not isDetailedAxialExpansion:
         for a in assems:
             if not a.hasFlags(Flags.CONTROL):
