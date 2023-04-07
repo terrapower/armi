@@ -523,7 +523,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         # validate the stationary blocks have swapped locations and are aligned
         self.assertEqual(a1PostSwapStationaryBlocks, a2PreSwapStationaryBlocks)
         self.assertEqual(a2PostSwapStationaryBlocks, a1PreSwapStationaryBlocks)
-        
+
     def test_transferIncompatibleStationaryBlocks(self):
         """
         Test the _transferStationaryBlocks method
