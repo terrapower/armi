@@ -91,7 +91,7 @@ class UniformMeshGenerator:
     The :py:class:`UniformMeshGenerator <armi.reactor.converters.UniformMeshGenerator>`
     generates a common axial mesh to for the uniform mesh converter to use. The generation
     algorithm starts with the simple ``average1DWithinTolerance`` utility function to compute
-    an representative "average" of the assembly meshes in the reactor. It then modifies that
+    a representative "average" of the assembly meshes in the reactor. It then modifies that
     mesh to more faithfully represent important material boundaries of fuel and control absorber
     material.
 
@@ -124,8 +124,9 @@ class UniformMeshGenerator:
 
         Notes
         -----
-        Attempts to reduce the effect of control rod absorber smearing ("cusping" effect) by keeping
-        control absorber material boundaries in the common mesh.
+        Attempts to reduce the effect of fuel and control rod absorber smearing 
+        ("cusping" effect) by keeping important material boundaries in the 
+        common mesh.
         """
         self._computeAverageAxialMesh()
         if self.minimumMeshSize is not None:
@@ -172,6 +173,10 @@ class UniformMeshGenerator:
 
         If adding control rod material boundaries to the mesh creates excessively small mesh regions,
         this function will move internal fuel region boundaries to make room for the control rod boundaries.
+
+        This function operates by filtering out mesh points that are too close together while always holding on 
+        to the specified "anchor" points in the mesh. The anchor points are built up progressively as the 
+        appropriate bottom and top boundaries of fuel and control assemblies are determined.
         """
         # filter fuel material boundaries to mininum mesh size
         filteredBottomFuel, filteredTopFuel = self._getFilteredFuelTopAndBottom()
@@ -212,7 +217,7 @@ class UniformMeshGenerator:
             materialTops,
             preference="top",
         )
-        # combine all mesh points using all material boundaries as anchors with bottom preference
+        # combine all mesh points using all material boundaries as anchors with top preference
         combinedMesh = self._filterMesh(
             list(set(meshWithBottoms + meshWithTops)),
             self.minimumMeshSize,
@@ -234,12 +239,12 @@ class UniformMeshGenerator:
             List of mesh points to be filtered by minimum mesh size
         minimumMeshSize : float, required
             Minimum allowed separation between axial mesh points in cm
-        anchorPoints : (float, float), required
-            These mesh points will not be removed. In first run through, these are the top and bottom of fuel.
-            On second run through, it is top and bottom of fuel plus bottom of all control absorbers.
+        anchorPoints : list of float, required
+            These mesh points will not be removed. Note that the anchor points must be separated by 
+            at least the ``minimumMeshSize``.
         preference : str, optional
             When neither mesh point is in the list of ``anchorPoints``, which mesh point is given preference
-            ("left" or "right")
+            ("bottom" or "top")
         warn : bool, optional
             Whether to log a warning when a mesh is removed. This is true if a
             control material boundary is removed, but otherwise it is false.
@@ -276,29 +281,29 @@ class UniformMeshGenerator:
 
         Returns
         -------
-            filteredBottoms : the bottom of fuel assemblies, filtered to a minimum separation of
-                ``minimumMeshSize`` with preference for the lowest bounds
-            filteredTops : the top of fuel assemblies, filtered to a minimum separation of
-                ``minimumMeshSize`` with preference for the top bounds
+        filteredBottoms : the bottom of fuel assemblies, filtered to a minimum separation of
+            ``minimumMeshSize`` with preference for the lowest bounds
+        filteredTops : the top of fuel assemblies, filtered to a minimum separation of
+            ``minimumMeshSize`` with preference for the top bounds
         """
-        assemblyTypeFlags = [
-            a.p.flags for a in self._sourceReactor.core.getAssemblies(Flags.FUEL)
-        ]
+        assemblyTypeFlags = set(
+            [a.p.flags for a in self._sourceReactor.core.getAssemblies(Flags.FUEL)]
+        )
         fuelBottoms = [
             min(
                 round(
                     a.getFirstBlock(Flags.FUEL).p.zbottom, self.FLOAT_ROUNDING_DECIMALS
                 )
-                for a in self._sourceReactor.core.getAssemblies(assemFlags)
+                for a in self._sourceReactor.core.getAssemblies(assemFlags, exact=True)
             )
-            for assemFlags in set(assemblyTypeFlags)
+            for assemFlags in assemblyTypeFlags
         ]
         fuelTops = [
             max(
                 round(a.getBlocks(Flags.FUEL)[-1].p.ztop, self.FLOAT_ROUNDING_DECIMALS)
-                for a in self._sourceReactor.core.getAssemblies(assemFlags)
+                for a in self._sourceReactor.core.getAssemblies(assemFlags, exact=True)
             )
-            for assemFlags in set(assemblyTypeFlags)
+            for assemFlags in assemblyTypeFlags
         ]
         filteredBottoms = self._filterMesh(
             fuelBottoms,
@@ -319,10 +324,10 @@ class UniformMeshGenerator:
 
         Returns
         -------
-            filteredBottoms : the bottom of control assemblies, filtered to a minimum separation of
-                ``minimumMeshSize`` with preference for the lowest bounds
-            filteredTops : the top of control assemblies, filtered to a minimum separation of
-                ``minimumMeshSize`` with preference for the top bounds
+        filteredBottomCtrl : the bottom of control assemblies, filtered to a minimum separation of
+            ``minimumMeshSize`` with preference for the lowest bounds
+        filteredTopCtrl : the top of control assemblies, filtered to a minimum separation of
+            ``minimumMeshSize`` with preference for the top bounds
         """
         bottomMatBoundaries = set(fuelBottoms)
         topMatBoundaries = set(fuelTops)
