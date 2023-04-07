@@ -22,7 +22,7 @@ from armi.mpiActions import (
     DistributionAction,
     MpiAction,
     runActions,
-    _disableProcessors,
+    _disableForExclusiveTasks,
     _makeQueue,
 )
 from armi import context
@@ -172,7 +172,7 @@ class MpiIterTests(unittest.TestCase):
 
 
 class QueueActionsTests(unittest.TestCase):
-    def test_disableProcessors(self):
+    def test_disableForExclusiveTasks(self):
         num = 5
         actionsThisRound = [MpiAction() for _ in range(num)]
         useForComputation = [True] * num
@@ -180,7 +180,9 @@ class QueueActionsTests(unittest.TestCase):
         for i in exclusiveIndices:
             actionsThisRound[i].runActionExclusive = True
 
-        useForComputation = _disableProcessors(actionsThisRound, useForComputation)
+        useForComputation = _disableForExclusiveTasks(
+            actionsThisRound, useForComputation
+        )
         for i in range(num):
             if i in exclusiveIndices:
                 # wont be used for computation in future round

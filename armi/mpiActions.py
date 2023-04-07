@@ -331,7 +331,9 @@ def runActions(o, r, cs, actions, numPerNode=None, serial=False):
         actionsThisRound = []
         for useRank in useForComputation:
             actionsThisRound.append(queue.pop(0) if useRank and queue else None)
-        useForComputation = _disableProcessors(actionsThisRound, useForComputation)
+        useForComputation = _disableForExclusiveTasks(
+            actionsThisRound, useForComputation
+        )
         realActions = [
             (context.MPI_NODENAMES[rank], rank, act)
             for rank, act in enumerate(actionsThisRound)
@@ -352,7 +354,7 @@ def runActions(o, r, cs, actions, numPerNode=None, serial=False):
     return results
 
 
-def _disableProcessors(actionsThisRound, useForComputation):
+def _disableForExclusiveTasks(actionsThisRound, useForComputation):
     # disable processors that are exclusive for next
     indicesToDisable = [
         i for i, action in enumerate(actionsThisRound) if action.runActionExclusive
