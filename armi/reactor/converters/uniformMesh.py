@@ -334,9 +334,7 @@ class UniformMeshGenerator:
             bottomMatBoundaries.add(
                 round(firstBlock.p.zbottom, self.FLOAT_ROUNDING_DECIMALS)
             )
-            topMatBoundaries.add(
-                round(lastBlock.p.ztop, self.FLOAT_ROUNDING_DECIMALS)
-            )
+            topMatBoundaries.add(round(lastBlock.p.ztop, self.FLOAT_ROUNDING_DECIMALS))
 
         bottomBoundList = sorted(list(bottomMatBoundaries))
         topBoundList = sorted(list(topMatBoundaries))
