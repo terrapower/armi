@@ -124,8 +124,8 @@ class UniformMeshGenerator:
 
         Notes
         -----
-        Attempts to reduce the effect of fuel and control rod absorber smearing 
-        ("cusping" effect) by keeping important material boundaries in the 
+        Attempts to reduce the effect of fuel and control rod absorber smearing
+        ("cusping" effect) by keeping important material boundaries in the
         common mesh.
         """
         self._computeAverageAxialMesh()
@@ -174,8 +174,8 @@ class UniformMeshGenerator:
         If adding control rod material boundaries to the mesh creates excessively small mesh regions,
         this function will move internal fuel region boundaries to make room for the control rod boundaries.
 
-        This function operates by filtering out mesh points that are too close together while always holding on 
-        to the specified "anchor" points in the mesh. The anchor points are built up progressively as the 
+        This function operates by filtering out mesh points that are too close together while always holding on
+        to the specified "anchor" points in the mesh. The anchor points are built up progressively as the
         appropriate bottom and top boundaries of fuel and control assemblies are determined.
         """
         # filter fuel material boundaries to mininum mesh size
@@ -240,7 +240,7 @@ class UniformMeshGenerator:
         minimumMeshSize : float, required
             Minimum allowed separation between axial mesh points in cm
         anchorPoints : list of float, required
-            These mesh points will not be removed. Note that the anchor points must be separated by 
+            These mesh points will not be removed. Note that the anchor points must be separated by
             at least the ``minimumMeshSize``.
         preference : str, optional
             When neither mesh point is in the list of ``anchorPoints``, which mesh point is given preference
