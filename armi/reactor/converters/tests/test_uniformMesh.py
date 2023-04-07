@@ -311,10 +311,10 @@ class TestUniformMeshGenerator(unittest.TestCase):
             50.0,
             75.0,
             101.25,
-            118.80952,
-            137.55952,
-            156.30952,
-            175.05952,
+            118.809523809524,
+            137.559523809524,
+            156.309523809524,
+            175.059523809524,
         ]
         self.assertListEqual(list(self.generator._commonMesh), expectedMesh)
 
