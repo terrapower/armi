@@ -528,9 +528,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         """
         Test the _transferStationaryBlocks method
         for the case where the input assemblies have
-        different numbers as well as unaligned locations
-        of stationary blocks. Also tests the case where
-        the total height of the stationary blocks does not match.
+        different numbers of stationary blocks.
         """
         # grab stationary block flags
         sBFList = self.r.core.stationaryBlockFlagsList
@@ -604,6 +602,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
                 break
 
         # try to swap stationary blocks between assembly 1 and 2
+        fh = fuelHandlers.FuelHandler(self.o)
         with self.assertRaises(ValueError):
             fh._transferStationaryBlocks(a1, a2)
 
@@ -631,6 +630,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
                 a1[block.spatialLocator.k].setHeight(nomHeight - 1e-5)
 
         # try to swap stationary blocks between assembly 1 and 2
+        fh = fuelHandlers.FuelHandler(self.o)
         with mockRunLogs.BufferLog() as mock:
             fh._transferStationaryBlocks(a1, a2)
             self.assertIn("top elevation of stationary", mock.getStdout())
