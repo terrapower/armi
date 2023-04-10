@@ -339,7 +339,7 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
             The coupled iteration index
         """
         if iteration is not None:
-            return f"{caseTitle}-flux-c{cycle}n{timeNode}i{iteration}"
+            return f"{caseTitle}-flux-c{cycle}n{node}i{iteration}"
         else:
             return f"{caseTitle}-flux-c{cycle}n{node}"
 
