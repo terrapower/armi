@@ -833,6 +833,7 @@ def getBlockParameterDefinitions():
             "breedRatio",
             units="None",
             description="Breeding ratio",
+            categories=["detailedAxialExpansion"],
             location=ParamLocation.AVERAGE,
         )
 
@@ -870,6 +871,7 @@ def getBlockParameterDefinitions():
             "convRatio",
             units="None",
             description="Conversion ratio",
+            categories=["detailedAxialExpansion"],
             location=ParamLocation.AVERAGE,
         )
 
