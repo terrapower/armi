@@ -524,12 +524,13 @@ class TestFuelHandler(FuelHandlerTestHelper):
         self.assertEqual(a1PostSwapStationaryBlocks, a2PreSwapStationaryBlocks)
         self.assertEqual(a2PostSwapStationaryBlocks, a1PreSwapStationaryBlocks)
 
-    def test_transferIncompatibleStationaryBlocks(self):
+    def test_transferDifferentNumberStationaryBlocks(self):
         """
         Test the _transferStationaryBlocks method
         for the case where the input assemblies have
-        different numbers as well as unaligned locations of stationary blocks.
-        Also tests the case where the total height of the stationary blocks does not match.
+        different numbers as well as unaligned locations
+        of stationary blocks. Also tests the case where
+        the total height of the stationary blocks does not match.
         """
         # grab stationary block flags
         sBFList = self.r.core.stationaryBlockFlagsList
@@ -555,9 +556,19 @@ class TestFuelHandler(FuelHandlerTestHelper):
         with self.assertRaises(ValueError):
             fh._transferStationaryBlocks(a1, a2)
 
-        # re-initialize assemblies
-        self.setUp()
+    def test_transferUnalignedLocationStationaryBlocks(self):
+        """
+        Test the _transferStationaryBlocks method
+        for the case where the input assemblies have
+        unaligned locations of stationary blocks.
+        """
+        # grab stationary block flags
+        sBFList = self.r.core.stationaryBlockFlagsList
+
+        # grab the assemblies
         assems = self.r.core.getAssemblies(Flags.FUEL)
+
+        # grab two arbitrary assemblies
         a1 = assems[1]
         a2 = assems[2]
 
@@ -596,9 +607,19 @@ class TestFuelHandler(FuelHandlerTestHelper):
         with self.assertRaises(ValueError):
             fh._transferStationaryBlocks(a1, a2)
 
-        # re-initialize assemblies
-        self.setUp()
+    def test_transferIncompatibleHeightStationaryBlocks(self):
+        """
+        Test the _transferStationaryBlocks method
+        for the case where the total height of the
+        stationary blocks is unequal between input assemblies.
+        """
+        # grab stationary block flags
+        sBFList = self.r.core.stationaryBlockFlagsList
+
+        # grab the assemblies
         assems = self.r.core.getAssemblies(Flags.FUEL)
+
+        # grab two arbitrary assemblies
         a1 = assems[1]
         a2 = assems[2]
 
