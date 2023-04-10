@@ -200,8 +200,8 @@ class QueueActionsTests(unittest.TestCase):
         queue, numBatches = _makeQueue(actions, useForComputation)
         self.assertEqual(numBatches, 2)
         self.assertEqual(len(queue), len(actions))
-        lastPriority = -999
 
+        lastPriority = -999
         for action in queue:
             # check that when more exclusive than cpus they go to non-exclusive
             self.assertFalse(action.runActionExclusive)

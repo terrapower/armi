@@ -371,11 +371,11 @@ def _makeQueue(actions, useForComputation):
     Notes
     -----
     All exclusive actions will occur first regardless of the priority.
-    All non-exclusive actions with be after all exclusive actions regardless of the priority.
+    All non-exclusive actions will be after all exclusive actions regardless of the priority.
     Within these 2 bins, priority matters.
     In the event that more exclusive actions are requested than CPUs - 1, all actions will
-    be changed to non-exclusive but order will remain.
-    CPUs - 1 is to reserve at least 1 CPU for non-exclusive actions
+    be changed to non-exclusive but previously evaluated order will remain.
+    CPUs - 1 is to reserve at least 1 CPU for non-exclusive actions.
     """
 
     def sortActionPriority(action):
