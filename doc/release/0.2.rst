@@ -10,6 +10,7 @@ What's new in ARMI
 ------------------
 #. Remove unused `HCFcoretype` setting. (`PR#1179 <https://github.com/terrapower/armi/pull/1179>`_)
 #. Added a capability to prioritize mpi action execution and exclusivity.  (`PR#1237 <https://github.com/terrapower/armi/pull/1237>`_)
+#. TBD
 
 Bug fixes
 ---------
