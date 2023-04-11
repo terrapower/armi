@@ -93,6 +93,7 @@ from armi.scripts import migration
 
 from armi.utils import textProcessors
 from armi.physics.neutronics.fissionProductModel import lumpedFissionProduct
+from armi.physics.neutronics.settings import CONF_LOADING_FILE
 from armi.nucDirectory import elements
 
 # NOTE: using non-ARMI-standard imports because these are all a part of this package,
@@ -119,8 +120,8 @@ def loadFromCs(cs, roundTrip=False):
     from armi.utils import directoryChangers
 
     with directoryChangers.DirectoryChanger(cs.inputDirectory, dumpOnException=False):
-        with open(cs["loadingFile"], "r") as bpYaml:
-            root = pathlib.Path(cs["loadingFile"]).parent.absolute()
+        with open(cs[CONF_LOADING_FILE], "r") as bpYaml:
+            root = pathlib.Path(cs[CONF_LOADING_FILE]).parent.absolute()
             bpYaml = textProcessors.resolveMarkupInclusions(bpYaml, root)
             try:
                 bp = Blueprints.load(bpYaml, roundTrip=roundTrip)
@@ -129,7 +130,7 @@ def loadFromCs(cs, roundTrip=False):
                     runLog.error(
                         "The loading file {} contains invalid `cross sections` input. "
                         "Please run the `modify` entry point on this case to automatically convert."
-                        "".format(cs["loadingFile"])
+                        "".format(cs[CONF_LOADING_FILE])
                     )
                 raise
     return bp

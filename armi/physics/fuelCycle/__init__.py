@@ -58,10 +58,12 @@ class FuelHandlerPlugin(plugins.ArmiPlugin):
         The interface may import user input modules to customize the actual
         fuel management.
         """
+        from armi.physics.neutronics.settings import CONF_NEUTRONICS_KERNEL
+
         fuelHandlerNeedsToBeActive = cs[settings.CONF_FUEL_HANDLER_NAME] or (
             cs["eqDirect"] and cs["runType"].lower() == RunTypes.STANDARD.lower()
         )
-        if not fuelHandlerNeedsToBeActive or "MCNP" in cs["neutronicsKernel"]:
+        if not fuelHandlerNeedsToBeActive or "MCNP" in cs[CONF_NEUTRONICS_KERNEL]:
             return []
         else:
 

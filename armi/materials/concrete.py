@@ -39,5 +39,5 @@ class Concrete(Material):
         self.setMassFrac("CA", 0.100 / 2.302)
         self.setMassFrac("FE", 0.032 / 2.302)
 
-    def density3(self, Tk=None, Tc=None):
+    def density(self, Tk=None, Tc=None):
         return 2.302  # g/cm3

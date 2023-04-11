@@ -33,6 +33,19 @@ from armi.reactor.converters import geometryConverters
 from armi.reactor.converters import uniformMesh
 from armi.reactor.flags import Flags
 from armi.utils import units, codeTiming, getMaxBurnSteps
+from armi.physics.neutronics.settings import (
+    CONF_BOUNDARIES,
+    CONF_DPA_PER_FLUENCE,
+    CONF_EIGEN_PROB,
+    CONF_NEUTRONICS_KERNEL,
+    CONF_RESTART_NEUTRONICS,
+    CONF_ACLP_DOSE_LIMIT,
+    CONF_DPA_XS_SET,
+    CONF_GRID_PLATE_DPA_XS_SET,
+    CONF_LOAD_PAD_ELEVATION,
+    CONF_LOAD_PAD_LENGTH,
+    CONF_XS_KERNEL,
+)
 
 ORDER = interfaces.STACK_ORDER.FLUX
 
@@ -358,24 +371,24 @@ class GlobalFluxOptions(executers.ExecutionOptions):
 
         This is not required; these options can alternatively be set programmatically.
         """
-        self.kernelName = cs["neutronicsKernel"]
+        self.kernelName = cs[CONF_NEUTRONICS_KERNEL]
         self.setRunDirFromCaseTitle(cs.caseTitle)
-        self.isRestart = cs["restartNeutronics"]
+        self.isRestart = cs[CONF_RESTART_NEUTRONICS]
         self.adjoint = neutronics.adjointCalculationRequested(cs)
         self.real = neutronics.realCalculationRequested(cs)
         self.detailedAxialExpansion = cs["detailedAxialExpansion"]
         self.hasNonUniformAssems = any(
             [Flags.fromStringIgnoreErrors(f) for f in cs["nonUniformAssemFlags"]]
         )
-        self.eigenvalueProblem = cs["eigenProb"]
+        self.eigenvalueProblem = cs[CONF_EIGEN_PROB]
 
         # dose/dpa specific (should be separate subclass?)
-        self.dpaPerFluence = cs["dpaPerFluence"]
-        self.aclpDoseLimit = cs["aclpDoseLimit"]
-        self.loadPadElevation = cs["loadPadElevation"]
-        self.loadPadLength = cs["loadPadLength"]
-        self.boundaries = cs["boundaries"]
-        self.xsKernel = cs["xsKernel"]
+        self.dpaPerFluence = cs[CONF_DPA_PER_FLUENCE]
+        self.aclpDoseLimit = cs[CONF_ACLP_DOSE_LIMIT]
+        self.loadPadElevation = cs[CONF_LOAD_PAD_ELEVATION]
+        self.loadPadLength = cs[CONF_LOAD_PAD_LENGTH]
+        self.boundaries = cs[CONF_BOUNDARIES]
+        self.xsKernel = cs[CONF_XS_KERNEL]
         self.cs = cs
         self.savePhysicsFilesList = cs["savePhysicsFiles"]
 
@@ -625,10 +638,10 @@ class GlobalFluxResultMapper(interfaces.OutputReader):
         -------
             list : cross section values
         """
-        if self.cs["gridPlateDpaXsSet"] and b.hasFlags(Flags.GRID_PLATE):
-            dpaXsSetName = self.cs["gridPlateDpaXsSet"]
+        if self.cs[CONF_GRID_PLATE_DPA_XS_SET] and b.hasFlags(Flags.GRID_PLATE):
+            dpaXsSetName = self.cs[CONF_GRID_PLATE_DPA_XS_SET]
         else:
-            dpaXsSetName = self.cs["dpaXsSet"]
+            dpaXsSetName = self.cs[CONF_DPA_XS_SET]
 
         try:
             return constants.DPA_CROSS_SECTIONS[dpaXsSetName]

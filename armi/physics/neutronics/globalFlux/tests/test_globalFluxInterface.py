@@ -20,13 +20,16 @@ import numpy
 from armi import settings
 from armi.nuclearDataIO.cccc import isotxs
 from armi.physics.neutronics.globalFlux import globalFluxInterface
+from armi.physics.neutronics.settings import (
+    CONF_GRID_PLATE_DPA_XS_SET,
+    CONF_XS_KERNEL,
+)
 from armi.reactor import geometry
 from armi.reactor.blocks import HexBlock
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_blocks
 from armi.reactor.tests import test_reactors
 from armi.tests import ISOAA_PATH
-
 
 # pylint: disable=abstract-method
 class MockReactorParams:
@@ -260,7 +263,7 @@ class TestGlobalFluxResultMapper(unittest.TestCase):
     def test_mapper(self):
         # Switch to MC2v2 setting to make sure the isotopic/elemental expansions are compatible
         # with actually doing some math using the ISOAA test microscopic library
-        o, r = test_reactors.loadTestReactor(customSettings={"xsKernel": "MC2v2"})
+        o, r = test_reactors.loadTestReactor(customSettings={CONF_XS_KERNEL: "MC2v2"})
         applyDummyFlux(r)
         r.core.lib = isotxs.readBinary(ISOAA_PATH)
         mapper = globalFluxInterface.GlobalFluxResultMapper()
@@ -310,13 +313,13 @@ class TestGlobalFluxResultMapper(unittest.TestCase):
         self.assertTrue(b.hasFlags(Flags.GRID_PLATE))
 
         # test grid plate block
-        mapper.cs["gridPlateDpaXsSet"] = "dpa_EBRII_PE16"
+        mapper.cs[CONF_GRID_PLATE_DPA_XS_SET] = "dpa_EBRII_PE16"
         vals = mapper.getDpaXs(b)
         self.assertEqual(len(vals), 33)
         self.assertAlmostEqual(vals[0], 2478.95, 1)
 
         # test null case
-        mapper.cs["gridPlateDpaXsSet"] = "fake"
+        mapper.cs[CONF_GRID_PLATE_DPA_XS_SET] = "fake"
         with self.assertRaises(KeyError):
             mapper.getDpaXs(b)
 

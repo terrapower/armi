@@ -63,7 +63,7 @@ class Graphite_TestCase(unittest.TestCase):
             (800.9, 1.8748),
         ]:
 
-            test_rho = self.mat.density3(Tc=Tc)
+            test_rho = self.mat.density(Tc=Tc)
             error = math.fabs((ref_rho - test_rho) / ref_rho)
 
             self.assertLess(error, uncertainty)
