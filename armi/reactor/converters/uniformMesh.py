@@ -147,7 +147,7 @@ class UniformMeshGenerator:
         src = self._sourceReactor
         refAssem = src.core.refAssem
 
-        refNumPoints = len(src.core.findAllAxialMeshPoints([refAssem])) - 1
+        refNumPoints = len(src.core.findAllAxialMeshPoints([refAssem])[1:])
         allMeshes = []
         for a in src.core:
             # Get the mesh points of the assembly, neglecting the first coordinate
@@ -254,14 +254,27 @@ class UniformMeshGenerator:
         elif preference == "top":
             meshList = sorted(list(set(meshList)), reverse=True)
 
-        keepChecking = True
-        while keepChecking:
+        while True:
             for i in range(len(meshList) - 1):
                 difference = abs(meshList[i + 1] - meshList[i])
                 if difference < minimumMeshSize:
                     removeIndex = self._determineIndexToRemove(
                         i, i + 1, meshList[i : i + 2], anchorPoints
                     )
+                    if meshList[i] in anchorPoints and meshList[i + 1] in anchorPoints:
+                        errorMsg = (
+                            "Attempting to remove two anchor points!\n"
+                            "The uniform mesh minimum size for decusping is smaller than the "
+                            "gap between anchor points:\n"
+                            f"{meshList[i]}, {meshList[i+1]}, gap = {abs(meshList[i]-meshList[i+1])}"
+                        )
+                        runLog.error(errorMsg)
+                        raise ValueError(errorMsg)
+                    if meshList[i + 1] in anchorPoints:
+                        removeIndex = i + 1
+                    else:
+                        removeIndex = i
+
                     if warn:
                         runLog.warning(
                             f"{meshList[i + 1]} is too close to {meshList[i]}! "
@@ -273,7 +286,6 @@ class UniformMeshGenerator:
             else:
                 return sorted(meshList)
             meshList.pop(removeIndex)
-            keepChecking = True
 
     def _getFilteredFuelTopAndBottom(self):
         """
