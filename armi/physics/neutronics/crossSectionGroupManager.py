@@ -67,6 +67,7 @@ from armi.reactor.components import basicShapes
 from armi.reactor.flags import Flags
 from armi.utils.units import TRACE_NUMBER_DENSITY
 from armi.settings.fwSettings.globalSettings import CONF_RUN_TYPE
+from armi.physics.neutronics.settings import CONF_FORCE_LATTICE_PHYSICS
 
 ORDER = interfaces.STACK_ORDER.BEFORE + interfaces.STACK_ORDER.FUEL_MANAGEMENT
 
@@ -617,6 +618,10 @@ class CrossSectionGroupManager(interfaces.Interface):
         """
         self.clearRepresentativeBlocks()
 
+    def interactEveryNode(self, cycle=None):
+        if self.cs[CONF_FORCE_LATTICE_PHYSICS]:
+            self.interactBOC(cycle=None)
+
     def interactCoupled(self, iteration):
         """Update XS groups on each physics coupling iteration to get latest temperatures.
 
@@ -637,7 +642,12 @@ class CrossSectionGroupManager(interfaces.Interface):
         :py:meth:`Assembly <armi.physics.neutronics.latticePhysics.latticePhysics.LatticePhysicsInterface.interactCoupled>`
         """
         # always run for snapshots to account for temp effect of different flow or power statepoint
-        if self.cs[CONF_RUN_TYPE] == "Snapshots" or self.r.p.timeNode == 0:
+        secondIterOnFirstPointWithUpdatedTemps = self.r.p.timeNode == 0
+        if (
+            self.cs[CONF_FORCE_LATTICE_PHYSICS]
+            or self.cs[CONF_RUN_TYPE] == "Snapshots"
+            or secondIterOnFirstPointWithUpdatedTemps
+        ):
             self.interactBOC(cycle=None)
 
     def clearRepresentativeBlocks(self):

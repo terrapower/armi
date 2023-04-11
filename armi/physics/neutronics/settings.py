@@ -80,6 +80,7 @@ CONF_XS_KERNEL = "xsKernel"
 CONF_XS_SCATTERING_ORDER = "xsScatteringOrder"
 CONF_XS_BUCKLING_CONVERGENCE = "xsBucklingConvergence"
 CONF_XS_EIGENVALUE_CONVERGENCE = "xsEigenvalueConvergence"
+CONF_FORCE_LATTICE_PHYSICS = "forceLatticePhysics"
 
 
 def defineSettings():
@@ -319,6 +320,12 @@ def defineSettings():
             label="Lattice Physics Kernel",
             description="Method to determine broad group cross sections for assemblies",
             options=["", "MC2v2", "MC2v3", "MC2v3-PARTISN", "SERPENT"],
+        ),
+        setting.Setting(
+            CONF_FORCE_LATTICE_PHYSICS,
+            default=False,
+            label="Lattice physics at all nodes.",
+            description="Forced lattice physics to be run at all time nodes/coupled iterations instead of just BOC.",
         ),
         setting.Setting(
             CONF_XS_SCATTERING_ORDER,

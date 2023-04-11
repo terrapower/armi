@@ -30,6 +30,7 @@ from armi.physics.neutronics.settings import (
     CONF_CLEAR_XS,
     CONF_TOLERATE_BURNUP_CHANGE,
     CONF_XS_KERNEL,
+    CONF_FORCE_LATTICE_PHYSICS
 )
 from armi.utils.customExceptions import important
 from armi.settings.fwSettings.globalSettings import CONF_RUN_TYPE
@@ -202,6 +203,11 @@ class LatticePhysicsInterface(interfaces.Interface):
     def _getSuffix(self, cycle):  # pylint: disable=unused-argument, no-self-use
         return ""
 
+    def interactEveryNode(self, cycle=None):
+        if self.cs[CONF_FORCE_LATTICE_PHYSICS]:
+            self.r.core.lib = None
+            self.updateXSLibrary(self.r.p.cycle)
+
     def interactCoupled(self, iteration):
         """
         Runs on coupled iterations to generate cross sections that are updated with the temperature state.
@@ -228,7 +234,12 @@ class LatticePhysicsInterface(interfaces.Interface):
             This is unused since cross sections are generated on a per-cycle basis.
         """
         # always run for snapshots to account for temp effect of different flow or power statepoint
-        if self.cs[CONF_RUN_TYPE] == "Snapshots" or self.r.p.timeNode == 0:
+        secondIterOnFirstPointWithUpdatedTemps = self.r.p.timeNode == 0
+        if (
+            self.cs[CONF_FORCE_LATTICE_PHYSICS]
+            or self.cs[CONF_RUN_TYPE] == "Snapshots"
+            or secondIterOnFirstPointWithUpdatedTemps
+        ):
             self.r.core.lib = None
             self.updateXSLibrary(self.r.p.cycle)
 
