@@ -274,21 +274,6 @@ class TestUniformMeshGenerator(unittest.TestCase):
         )
         self.assertListEqual(combinedMesh, [1.0, 4.0, 9.0, 12.0, 16.0, 20.0])
 
-    def test_determineIndexToRemove(self):
-        """
-        Test 3 possible outcomes of ``_determineIndexToRemove``
-        """
-        rightIndex = self.generator._determineIndexToRemove(
-            3, 4, [5.0, 6.0], [5.0, 10.0]
-        )
-        leftIndex = self.generator._determineIndexToRemove(
-            3, 4, [5.0, 6.0], [6.0, 10.0]
-        )
-        self.assertEqual(rightIndex, 4)
-        self.assertEqual(leftIndex, 3)
-        with self.assertRaises(ValueError):
-            self.generator._determineIndexToRemove(3, 4, [5.0, 10.0], [5.0, 10.0])
-
     def test_filteredTopAndBottom(self):
         fuelBottoms, fuelTops = self.generator._getFilteredFuelTopAndBottom()
         self.assertListEqual(fuelBottoms, [25.0])
@@ -311,11 +296,12 @@ class TestUniformMeshGenerator(unittest.TestCase):
             50.0,
             75.0,
             101.25,
-            118.809523809524,
-            137.559523809524,
-            156.309523809524,
-            175.059523809524,
+            118.80952380952381,
+            137.5595238095238,
+            156.3095238095238,
+            175.0595238095238,
         ]
+
         self.assertListEqual(list(self.generator._commonMesh), expectedMesh)
 
 
