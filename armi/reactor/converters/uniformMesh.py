@@ -254,9 +254,6 @@ class UniformMeshGenerator:
             for i in range(len(meshList) - 1):
                 difference = abs(meshList[i + 1] - meshList[i])
                 if difference < minimumMeshSize:
-                    removeIndex = self._determineIndexToRemove(
-                        i, i + 1, meshList[i : i + 2], anchorPoints
-                    )
                     if meshList[i] in anchorPoints and meshList[i + 1] in anchorPoints:
                         errorMsg = (
                             "Attempting to remove two anchor points!\n"
