@@ -27,6 +27,7 @@ from armi import runLog
 from armi import settings
 from armi import tests
 from armi.materials import uZr
+from armi.physics.neutronics.settings import CONF_XS_KERNEL
 from armi.reactor import assemblies
 from armi.reactor import blocks
 from armi.reactor import geometry
@@ -387,6 +388,13 @@ class HexReactorTests(ReactorTests):
         blockMesh = self.r.core.getFirstAssembly(Flags.FUEL).spatialGrid._bounds[2]
         assert_allclose(blockMesh, mesh)
 
+    def test_findAllAxialMeshPoints_wSubmesh(self):
+        referenceMesh = [0.0, 25.0, 50.0, 75.0, 100.0, 118.75, 137.5, 156.25, 175.0]
+        mesh = self.r.core.findAllAxialMeshPoints(
+            assems=[self.r.core.getFirstAssembly(Flags.FUEL)], applySubMesh=True
+        )
+        self.assertListEqual(referenceMesh, mesh)
+
     def test_findAllAziMeshPoints(self):
         aziPoints = self.r.core.findAllAziMeshPoints()
         expectedPoints = [
@@ -571,8 +579,8 @@ class HexReactorTests(ReactorTests):
         self.assertEqual(aListLength, len(self.r.core.getAssemblies()))
 
     def test_differentNuclideModels(self):
-        self.assertEqual(self.o.cs["xsKernel"], "MC2v3")
-        _o2, r2 = loadTestReactor(customSettings={"xsKernel": "MC2v2"})
+        self.assertEqual(self.o.cs[CONF_XS_KERNEL], "MC2v3")
+        _o2, r2 = loadTestReactor(customSettings={CONF_XS_KERNEL: "MC2v2"})
 
         self.assertNotEqual(
             set(self.r.blueprints.elementsToExpand), set(r2.blueprints.elementsToExpand)

@@ -42,7 +42,7 @@ class Custom(Material):
         Material.__init__(self)
         self.customDensity = 1.0
 
-    def density(self, Tk=None, Tc=None):
+    def pseudoDensity(self, Tk=None, Tc=None):
         r"""
         The density value is set in the loading input.
 

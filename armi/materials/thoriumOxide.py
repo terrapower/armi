@@ -97,8 +97,8 @@ class ThoriumOxide(FuelMaterial, SimpleSolid):
         r"""melting point in K from IAEA TE 1450"""
         return 3643.0
 
-    def density3(self, Tk=None, Tc=None):
-        return Material.density3(self, Tk, Tc) * self.getTD()
+    def density(self, Tk=None, Tc=None):
+        return Material.density(self, Tk, Tc) * self.getTD()
 
 
 class ThO2(ThoriumOxide):

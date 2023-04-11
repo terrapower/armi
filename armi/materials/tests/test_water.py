@@ -49,8 +49,12 @@ class Test_Water(unittest.TestCase):
         self.assertAlmostEqual(ref_dp_dT, water.vaporPressurePrime(Tk=Tk), 3)
         self.assertAlmostEqual(ref_dp_dT, steam.vaporPressurePrime(Tk=Tk), 3)
 
-        self.assertAlmostEqual(ref_saturated_water_rho, water.densityKgM3(Tk=Tk), 0)
-        self.assertAlmostEqual(ref_saturated_steam_rho, steam.densityKgM3(Tk=Tk), 0)
+        self.assertAlmostEqual(
+            ref_saturated_water_rho, water.pseudoDensityKgM3(Tk=Tk), 0
+        )
+        self.assertAlmostEqual(
+            ref_saturated_steam_rho, steam.pseudoDensityKgM3(Tk=Tk), 0
+        )
 
         self.assertAlmostEqual(
             ref_alpha, water.auxiliaryQuantitySpecificEnthalpy(Tk=Tk), 3
@@ -101,8 +105,12 @@ class Test_Water(unittest.TestCase):
         self.assertAlmostEqual(ref_dp_dT / water.vaporPressurePrime(Tk=Tk), 1, 3)
         self.assertAlmostEqual(ref_dp_dT / steam.vaporPressurePrime(Tk=Tk), 1, 3)
 
-        self.assertAlmostEqual(ref_saturated_water_rho, water.densityKgM3(Tk=Tk), 0)
-        self.assertAlmostEqual(ref_saturated_steam_rho, steam.densityKgM3(Tk=Tk), 0)
+        self.assertAlmostEqual(
+            ref_saturated_water_rho, water.pseudoDensityKgM3(Tk=Tk), 0
+        )
+        self.assertAlmostEqual(
+            ref_saturated_steam_rho, steam.pseudoDensityKgM3(Tk=Tk), 0
+        )
 
         self.assertAlmostEqual(
             ref_alpha / water.auxiliaryQuantitySpecificEnthalpy(Tk=Tk), 1, 3
@@ -155,8 +163,12 @@ class Test_Water(unittest.TestCase):
         self.assertAlmostEqual(ref_dp_dT / water.vaporPressurePrime(Tk=Tk), 1, 3)
         self.assertAlmostEqual(ref_dp_dT / steam.vaporPressurePrime(Tk=Tk), 1, 3)
 
-        self.assertAlmostEqual(ref_saturated_water_rho, water.densityKgM3(Tk=Tk), 0)
-        self.assertAlmostEqual(ref_saturated_steam_rho, steam.densityKgM3(Tk=Tk), 0)
+        self.assertAlmostEqual(
+            ref_saturated_water_rho, water.pseudoDensityKgM3(Tk=Tk), 0
+        )
+        self.assertAlmostEqual(
+            ref_saturated_steam_rho, steam.pseudoDensityKgM3(Tk=Tk), 0
+        )
 
         self.assertAlmostEqual(
             ref_alpha / water.auxiliaryQuantitySpecificEnthalpy(Tk=Tk), 1, 3

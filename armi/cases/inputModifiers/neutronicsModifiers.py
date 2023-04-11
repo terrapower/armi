@@ -20,13 +20,18 @@ This may make more sense in the neutronics physics plugin.
 """
 
 from armi.cases.inputModifiers import inputModifiers
+from armi.physics.neutronics.settings import (
+    CONF_EPS_EIG,
+    CONF_EPS_FSAVG,
+    CONF_EPS_FSPOINT,
+)
 
 
 class NeutronicConvergenceModifier(inputModifiers.InputModifier):
     """
-    Adjust the neutronics convergence parameters ``epsEig``, ``epsFSAvg``, and ``epsFSPoint``.
+    Adjust the neutronics convergence parameters ``CONF_EPS_EIG``, ``CONF_EPS_FSAVG``, and ``CONF_EPS_FSPOINT``.
 
-    The supplied value is used for ``epsEig``. ``epsFSAvg`` and ``epsFSPoint`` are set
+    The supplied value is used for ``CONF_EPS_EIG``. ``CONF_EPS_FSAVG`` and ``CONF_EPS_FSPOINT`` are set
     to 100 times the supplied value.
 
     This can be used to perform sensitivity studies on convergence criteria.
@@ -43,9 +48,9 @@ class NeutronicConvergenceModifier(inputModifiers.InputModifier):
 
     def __call__(self, cs, bp, geom):
         newSettings = {}
-        newSettings["epsFSAvg"] = self.value * 100
-        newSettings["epsFSPoint"] = self.value * 100
-        newSettings["epsEig"] = self.value
+        newSettings[CONF_EPS_FSAVG] = self.value * 100
+        newSettings[CONF_EPS_FSPOINT] = self.value * 100
+        newSettings[CONF_EPS_EIG] = self.value
         cs = cs.modified(newSettings=newSettings)
 
         return cs, bp, geom

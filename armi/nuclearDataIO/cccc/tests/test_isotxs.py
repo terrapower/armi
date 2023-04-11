@@ -138,20 +138,20 @@ class TestIsotxs(unittest.TestCase):
 
     def test_getGAMISOFileName(self):
         self.assertEqual(
-            nuclearDataIO.getExpectedGAMISOFileName(cycle=0), "cycle0.GAMISO"
+            nuclearDataIO.getExpectedGAMISOFileName(cycle=0), "cycle0.gamiso"
         )
         self.assertEqual(
-            nuclearDataIO.getExpectedGAMISOFileName(cycle=1), "cycle1.GAMISO"
+            nuclearDataIO.getExpectedGAMISOFileName(cycle=1), "cycle1.gamiso"
         )
         self.assertEqual(
-            nuclearDataIO.getExpectedGAMISOFileName(cycle=23), "cycle23.GAMISO"
+            nuclearDataIO.getExpectedGAMISOFileName(cycle=23), "cycle23.gamiso"
         )
         self.assertEqual(
-            nuclearDataIO.getExpectedGAMISOFileName(xsID="AA"), "AA.GAMISO"
+            nuclearDataIO.getExpectedGAMISOFileName(xsID="AA"), "AA.gamiso"
         )
         self.assertEqual(
             nuclearDataIO.getExpectedGAMISOFileName(xsID="AA", suffix="test"),
-            "AA-test.GAMISO",
+            "AA-test.gamiso",
         )
         self.assertEqual(nuclearDataIO.getExpectedGAMISOFileName(), "GAMISO")
         with self.assertRaises(ValueError):
