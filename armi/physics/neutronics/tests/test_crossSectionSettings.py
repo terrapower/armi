@@ -82,6 +82,28 @@ class TestCrossSectionSettings(unittest.TestCase):
         self.assertTrue(xsModel.criticalBuckling)
         self.assertEqual("Median", xsModel.blockRepresentation)
 
+    def test_prioritization(self):
+        xsModel = XSModelingOptions(
+            xsID="AA",
+            geometry="0D",
+            criticalBuckling=True,
+            xsPriority=2,
+            xsExecuteExclusive=True,
+        )
+        self.assertEqual("AA", xsModel.xsID)
+        self.assertEqual(True, xsModel.xsExecuteExclusive)
+        self.assertEqual(2, xsModel.xsPriority)
+
+        xsModel = XSModelingOptions(
+            xsID="AA",
+            geometry="0D",
+            criticalBuckling=True,
+        )
+        # defaults work
+        xsModel.setDefaults("Average", False)
+        self.assertEqual(False, xsModel.xsExecuteExclusive)
+        self.assertEqual(5, xsModel.xsPriority)
+
     def test_homogeneousXsDefaultSettingAssignment(self):
         """
         Make sure the object can whip up an unspecified xsID by default.

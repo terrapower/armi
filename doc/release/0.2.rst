@@ -8,11 +8,14 @@ Release Date: TBD
 
 What's new in ARMI
 ------------------
+#. Remove unused `HCFcoretype` setting. (`PR#1179 <https://github.com/terrapower/armi/pull/1179>`_)
 #. The method ``Material.density3`` is now called ``density``, and the old ``density`` is now called ``pseudoDensity``. (`PR#1163 <https://github.com/terrapower/armi/pull/1163>`_)
 #. Added documentation for the thermal expansion approach used in ARMI. (`PR#1204 <https://github.com/terrapower/armi/pull/1204>`_)
 #. Use TemporaryDirectoryChanger for executer.run() so dirs are cleaned up during run. (`PR#1219 <https://github.com/terrapower/armi/pull/1219>`_)
 #. New option ``copyOutput`` for globalFluxInterface to not copy output back to working directory. (`PR#1218 <https://github.com/terrapower/armi/pull/1218>`_, `PR#1227 <https://github.com/terrapower/armi/pull/1227>`_)
 #. `Executer` class has a ``dcType`` attribute to define the type of ``DirectoryChanger`` it will use. (`PR#1228 <https://github.com/terrapower/armi/pull/1228>`_)
+#. Added a capability to prioritize mpi action execution and exclusivity.  (`PR#1237 <https://github.com/terrapower/armi/pull/1237>`_)
+#. TBD
 
 Bug fixes
 ---------

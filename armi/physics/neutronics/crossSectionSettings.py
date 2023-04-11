@@ -50,6 +50,8 @@ CONF_MERGE_INTO_CLAD = "mergeIntoClad"
 CONF_MESH_PER_CM = "meshSubdivisionsPerCm"
 CONF_REACTION_DRIVER = "nuclideReactionDriver"
 CONF_XSID = "xsID"
+CONF_XS_EXECUTE_EXCLUSIVE = "xsExecuteExclusive"
+CONF_XS_PRIORITY = "xsPriority"
 
 # These may be used as arguments to ``latticePhysicsInterface._getGeomDependentWriters``.
 # This could be an ENUM later.
@@ -71,6 +73,8 @@ _VALID_INPUTS_BY_GEOMETRY_TYPE = {
         CONF_BLOCKTYPES,
         CONF_BLOCK_REPRESENTATION,
         CONF_EXTERNAL_FLUX_FILE_LOCATION,
+        CONF_XS_EXECUTE_EXCLUSIVE,
+        CONF_XS_PRIORITY,
     },
     "1D slab": {
         CONF_XSID,
@@ -79,6 +83,8 @@ _VALID_INPUTS_BY_GEOMETRY_TYPE = {
         CONF_BLOCKTYPES,
         CONF_BLOCK_REPRESENTATION,
         CONF_EXTERNAL_FLUX_FILE_LOCATION,
+        CONF_XS_EXECUTE_EXCLUSIVE,
+        CONF_XS_PRIORITY,
     },
     "1D cylinder": {
         CONF_XSID,
@@ -92,6 +98,8 @@ _VALID_INPUTS_BY_GEOMETRY_TYPE = {
         CONF_BLOCKTYPES,
         CONF_BLOCK_REPRESENTATION,
         CONF_EXTERNAL_FLUX_FILE_LOCATION,
+        CONF_XS_EXECUTE_EXCLUSIVE,
+        CONF_XS_PRIORITY,
     },
     "2D hex": {
         CONF_XSID,
@@ -103,6 +111,8 @@ _VALID_INPUTS_BY_GEOMETRY_TYPE = {
         CONF_EXTERNAL_RINGS,
         CONF_BLOCK_REPRESENTATION,
         CONF_EXTERNAL_FLUX_FILE_LOCATION,
+        CONF_XS_EXECUTE_EXCLUSIVE,
+        CONF_XS_PRIORITY,
     },
 }
 
@@ -127,6 +137,8 @@ _SINGLE_XS_SCHEMA = vol.Schema(
         vol.Optional(CONF_XS_FILE_LOCATION): [str],
         vol.Optional(CONF_EXTERNAL_FLUX_FILE_LOCATION): str,
         vol.Optional(CONF_MESH_PER_CM): vol.Coerce(float),
+        vol.Optional(CONF_XS_EXECUTE_EXCLUSIVE): bool,
+        vol.Optional(CONF_XS_PRIORITY): vol.Coerce(float),
     }
 )
 
@@ -346,6 +358,15 @@ class XSModelingOptions:
         This is a lattice physics configuration option that can be used to control
         subregion meshing of the representative block in 1D problems.
 
+    xsExecuteExclusive : bool
+        The mpi task that results from this xsID will reserve a full processor and
+        no others will allocate to it. This is useful for time balancing when you
+        have one task that takes much longer than the others.
+
+    xsPriority:
+        The priority of the mpi tasks that results from this xsID. Lower priority
+        will execute first. starting longer jobs first is generally more efficient.
+
     Notes
     -----
     Not all default attributes may be useful for your specific application and you may
@@ -372,6 +393,8 @@ class XSModelingOptions:
         numExternalRings=None,
         mergeIntoClad=None,
         meshSubdivisionsPerCm=None,
+        xsExecuteExclusive=None,
+        xsPriority=None,
     ):
         self.xsID = xsID
         self.geometry = geometry
@@ -391,6 +414,10 @@ class XSModelingOptions:
         self.numExternalRings = numExternalRings
         self.mergeIntoClad = mergeIntoClad
         self.meshSubdivisionsPerCm = meshSubdivisionsPerCm
+
+        # these are related to execution
+        self.xsExecuteExclusive = xsExecuteExclusive
+        self.xsPriority = xsPriority
 
     def __repr__(self):
         if self.xsIsPregenerated:
@@ -568,6 +595,9 @@ class XSModelingOptions:
                 CONF_EXTERNAL_RINGS: 1,
                 CONF_BLOCK_REPRESENTATION: blockRepresentation,
             }
+
+        defaults[CONF_XS_EXECUTE_EXCLUSIVE] = False
+        defaults[CONF_XS_PRIORITY] = 5
 
         for attrName, defaultValue in defaults.items():
             currentValue = getattr(self, attrName)
