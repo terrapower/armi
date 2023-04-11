@@ -864,7 +864,7 @@ class CrossSectionGroupManager(interfaces.Interface):
         modifiedReprBlocks : dict
             Mapping between XS IDs and the new representative blocks
         origXSIDsFromNew : dict
-            Mapping of original XS IDs to new XS IDs. New XS IDs are created to 
+            Mapping of original XS IDs to new XS IDs. New XS IDs are created to
             represent a modified state (e.g., a Doppler temperature perturbation).
 
         Raises
