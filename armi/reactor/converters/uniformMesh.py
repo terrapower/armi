@@ -88,12 +88,11 @@ def converterFactory(globalFluxOptions):
 
 class UniformMeshGenerator:
     """
-    The :py:class:`UniformMeshGenerator <armi.reactor.converters.UniformMeshGenerator>`
-    generates a common axial mesh to for the uniform mesh converter to use. The generation
-    algorithm starts with the simple ``average1DWithinTolerance`` utility function to compute
-    a representative "average" of the assembly meshes in the reactor. It then modifies that
-    mesh to more faithfully represent important material boundaries of fuel and control absorber
-    material.
+    This class generates a common axial mesh to for the uniform mesh converter to use. The
+    generation algorithm starts with the simple ``average1DWithinTolerance`` utility function
+    to compute a representative "average" of the assembly meshes in the reactor. It then modifies
+    that mesh to more faithfully represent important material boundaries of fuel and control
+    absorber material.
 
     The decusping feature is controlled with the case setting ``uniformMeshMinimumSize``. If no
     value is provided for this setting, the uniform mesh generator will skip the decusping step
@@ -141,6 +140,15 @@ class UniformMeshGenerator:
         this, the proposed uniform mesh will be some average of many assemblies in the core.
         The reason for this is to account for the fact that multiple assemblies (i.e., fuel assemblies)
         may have a different mesh due to differences in thermal and/or burn-up expansion.
+
+        Averaging all the assembly meshes that have the same number of points can be undesirable
+        in certain corner cases because no preference is assigned based on assembly type. For
+        example: if the reflector assemblies have the same number of mesh points as the fuel
+        assemblies but the size of the blocks is slightly different, the reflector mesh can influence
+        the uniform mesh and effectively pull it away from the fuel mesh boundaries, potentially
+        resulting in smearing (i.e., homogenization) of fuel with non-fuel materials. This is an
+        undesirable outcome. In the future, it may be advantageous to determine a better way of
+        sorting and prioritizing assembly meshes for generating the uniform mesh.
         """
         src = self._sourceReactor
         refAssem = src.core.refAssem
@@ -214,6 +222,7 @@ class UniformMeshGenerator:
             preference="top",
         )
         # combine all mesh points using all material boundaries as anchors with top preference
+        # top vs. bottom preference is somewhat arbitrary here
         combinedMesh = self._filterMesh(
             list(set(meshWithBottoms + meshWithTops)),
             self.minimumMeshSize,
@@ -249,6 +258,10 @@ class UniformMeshGenerator:
             meshList = sorted(list(set(meshList)))
         elif preference == "top":
             meshList = sorted(list(set(meshList)), reverse=True)
+        else:
+            raise ValueError(
+                f"Mesh filtering preference {preference} is not an option! Preference must be either bottom or top"
+            )
 
         while True:
             for i in range(len(meshList) - 1):
@@ -258,7 +271,7 @@ class UniformMeshGenerator:
                         errorMsg = (
                             "Attempting to remove two anchor points!\n"
                             "The uniform mesh minimum size for decusping is smaller than the "
-                            "gap between anchor points:\n"
+                            "gap between anchor points, which cannot be removed:\n"
                             f"{meshList[i]}, {meshList[i+1]}, gap = {abs(meshList[i]-meshList[i+1])}"
                         )
                         runLog.error(errorMsg)
@@ -356,46 +369,6 @@ class UniformMeshGenerator:
             topBoundList, self.minimumMeshSize, fuelTops, preference="top", warn=True
         )
         return filteredBottomCtrl, filteredTopCtrl
-
-    @staticmethod
-    def _determineIndexToRemove(ileft, iright, meshPoints, anchorPoints):
-        """
-        Determine which mesh to remove when two points are too close together
-
-        Rules:
-            1. Always keep anchorPoints
-            2. If neither mesh point is in anchorPointws, keep the "left" one
-
-        Notes
-        -----
-        ``UniformMeshGenerator._filterMesh`` sorts the mesh based on the option
-        passed for ``preference`` (``bottom`` or ``top``) so in this method,
-        ``ileft`` always has preference over ``iright``.
-
-        Parameters
-        ----------
-        ileft : int, required
-            "left" index (bottom if preference is "bottom", top if preference is "top"
-        iright : int, required
-            "right" index (opposite of the "left" index)
-        meshPoints : [float, float], required
-            The two mesh points within minimumMeshSize of each other
-        anchorPoints : list[float], required
-            The anchor points that will not be removed from the mesh
-        """
-        meshLeft, meshRight = tuple(meshPoints)
-        if meshRight in anchorPoints:
-            if meshLeft in anchorPoints:
-                runLog.error(
-                    "Attempting to remove two anchor points!\n"
-                    "The uniform mesh minimum size for decusping may be smaller than the "
-                    "gap between anchor points:\n"
-                    f"{meshLeft}, {meshRight}, gap = {abs(meshLeft-meshRight)}"
-                )
-                raise ValueError
-            return ileft
-        else:
-            return iright
 
 
 class UniformMeshGeometryConverter(GeometryConverter):
@@ -709,10 +682,12 @@ class UniformMeshGeometryConverter(GeometryConverter):
             # select one as a "source" for determining which cross section
             # type to use. This uses the following rules:
             #     1. Determine the total height corresponding to each XS type that
-            #     appears for blocks with FUEL or CONTROL flags in this domain.
+            #     appears for blocks with FUEL, CONTROL, or SHIELD|RADIAL flags in this domain.
             #     2. Determine the single XS type that represents the largest fraction
-            #     of the total height of FUEL or CONTROL cross sections.
-            #     3. Use the first block of the majority XS type as the representative block.
+            #     of the total height of FUEL, CONTROL, or SHIELD|RADIAL cross sections.
+            #     3. Use the first block of the majority XS type as the source block.
+            #     4. If none of the special block types are present(fuelOrAbsorber == False),
+            #     use the xs type that represents the largest fraction of the destination block.
             typeHeight = collections.defaultdict(float)
             blocks = [b for b, _h in overlappingBlockInfo]
             priorityFlags = [Flags.FUEL, Flags.CONTROL, Flags.SHIELD | Flags.RADIAL]
