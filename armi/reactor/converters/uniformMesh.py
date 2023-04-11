@@ -665,6 +665,16 @@ class UniformMeshGeometryConverter(GeometryConverter):
         runLog.debug(f"Creating a uniform mesh of {newAssem}")
         bottom = 0.0
 
+        def checkPriorityFlags(b):
+            """
+            Check that a block has the flags that are prioritized for uniform mesh conversion
+
+            Also check that it's not different type of block that is a superset of the
+            priority flags, like "Flags.FUEL | Flags.PLENUM"
+            """
+            priorityFlags = [Flags.FUEL, Flags.CONTROL, Flags.SHIELD | Flags.RADIAL]
+            return b.hasFlags(priorityFlags) and not b.hasFlags(Flags.PLENUM)
+
         for topMeshPoint in newMesh:
             overlappingBlockInfo = sourceAssem.getBlocksBetweenElevations(
                 bottom, topMeshPoint
@@ -690,10 +700,9 @@ class UniformMeshGeometryConverter(GeometryConverter):
             #     use the xs type that represents the largest fraction of the destination block.
             typeHeight = collections.defaultdict(float)
             blocks = [b for b, _h in overlappingBlockInfo]
-            priorityFlags = [Flags.FUEL, Flags.CONTROL, Flags.SHIELD | Flags.RADIAL]
-            fuelOrAbsorber = any(b.hasFlags(priorityFlags) for b in blocks)
+            fuelOrAbsorber = any(checkPriorityFlags(b) for b in blocks)
             for b, h in overlappingBlockInfo:
-                if b.hasFlags(priorityFlags) or not fuelOrAbsorber:
+                if checkPriorityFlags(b) or not fuelOrAbsorber:
                     typeHeight[b.p.xsType] += h
 
             sourceBlock = None
@@ -702,7 +711,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
                 k for k, v in typeHeight.items() if v == max(typeHeight.values())
             )
             for b in blocks:
-                if b.hasFlags(priorityFlags) or not fuelOrAbsorber:
+                if checkPriorityFlags(b) or not fuelOrAbsorber:
                     if b.p.xsType == xsType:
                         sourceBlock = b
                         break
