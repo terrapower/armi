@@ -271,9 +271,9 @@ class UniformMeshGenerator:
                         runLog.error(errorMsg)
                         raise ValueError(errorMsg)
                     if meshList[i + 1] in anchorPoints:
-                        removeIndex = i + 1
-                    else:
                         removeIndex = i
+                    else:
+                        removeIndex = i + 1
 
                     if warn:
                         runLog.warning(
