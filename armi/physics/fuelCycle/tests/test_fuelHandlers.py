@@ -33,6 +33,7 @@ from armi.reactor.tests import test_reactors
 from armi.settings import caseSettings
 from armi.tests import ArmiTestHelper, TEST_ROOT
 from armi.utils import directoryChangers
+from armi.tests import mockRunLogs
 
 
 class FuelHandlerTestHelper(ArmiTestHelper):
@@ -523,11 +524,11 @@ class TestFuelHandler(FuelHandlerTestHelper):
         self.assertEqual(a1PostSwapStationaryBlocks, a2PreSwapStationaryBlocks)
         self.assertEqual(a2PostSwapStationaryBlocks, a1PreSwapStationaryBlocks)
 
-    def test_transferIncompatibleStationaryBlocks(self):
+    def test_transferDifferentNumberStationaryBlocks(self):
         """
         Test the _transferStationaryBlocks method
         for the case where the input assemblies have
-        different numbers as well as unaligned locations of stationary blocks.
+        different numbers of stationary blocks.
         """
         # grab stationary block flags
         sBFList = self.r.core.stationaryBlockFlagsList
@@ -553,9 +554,19 @@ class TestFuelHandler(FuelHandlerTestHelper):
         with self.assertRaises(ValueError):
             fh._transferStationaryBlocks(a1, a2)
 
-        # re-initialize assemblies
-        self.setUp()
+    def test_transferUnalignedLocationStationaryBlocks(self):
+        """
+        Test the _transferStationaryBlocks method
+        for the case where the input assemblies have
+        unaligned locations of stationary blocks.
+        """
+        # grab stationary block flags
+        sBFList = self.r.core.stationaryBlockFlagsList
+
+        # grab the assemblies
         assems = self.r.core.getAssemblies(Flags.FUEL)
+
+        # grab two arbitrary assemblies
         a1 = assems[1]
         a2 = assems[2]
 
@@ -591,8 +602,38 @@ class TestFuelHandler(FuelHandlerTestHelper):
                 break
 
         # try to swap stationary blocks between assembly 1 and 2
+        fh = fuelHandlers.FuelHandler(self.o)
         with self.assertRaises(ValueError):
             fh._transferStationaryBlocks(a1, a2)
+
+    def test_transferIncompatibleHeightStationaryBlocks(self):
+        """
+        Test the _transferStationaryBlocks method
+        for the case where the total height of the
+        stationary blocks is unequal between input assemblies.
+        """
+        # grab stationary block flags
+        sBFList = self.r.core.stationaryBlockFlagsList
+
+        # grab the assemblies
+        assems = self.r.core.getAssemblies(Flags.FUEL)
+
+        # grab two arbitrary assemblies
+        a1 = assems[1]
+        a2 = assems[2]
+
+        # change height of a stationary block in assembly 1
+        for block in a1:
+            if any(block.hasFlags(sbf) for sbf in sBFList):
+                # change height of first identified stationary block
+                nomHeight = block.getHeight()
+                a1[block.spatialLocator.k].setHeight(nomHeight - 1e-5)
+
+        # try to swap stationary blocks between assembly 1 and 2
+        fh = fuelHandlers.FuelHandler(self.o)
+        with mockRunLogs.BufferLog() as mock:
+            fh._transferStationaryBlocks(a1, a2)
+            self.assertIn("top elevation of stationary", mock.getStdout())
 
     def test_dischargeSwap(self):
         """

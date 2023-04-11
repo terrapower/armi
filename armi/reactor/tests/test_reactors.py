@@ -388,6 +388,13 @@ class HexReactorTests(ReactorTests):
         blockMesh = self.r.core.getFirstAssembly(Flags.FUEL).spatialGrid._bounds[2]
         assert_allclose(blockMesh, mesh)
 
+    def test_findAllAxialMeshPoints_wSubmesh(self):
+        referenceMesh = [0.0, 25.0, 50.0, 75.0, 100.0, 118.75, 137.5, 156.25, 175.0]
+        mesh = self.r.core.findAllAxialMeshPoints(
+            assems=[self.r.core.getFirstAssembly(Flags.FUEL)], applySubMesh=True
+        )
+        self.assertListEqual(referenceMesh, mesh)
+
     def test_findAllAziMeshPoints(self):
         aziPoints = self.r.core.findAllAziMeshPoints()
         expectedPoints = [
