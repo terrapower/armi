@@ -124,7 +124,7 @@ class TestCrossSectionSettings(unittest.TestCase):
         rq = XSModelingOptions(
             "RQ",
             geometry="1D cylinder",
-            blockRepresentation="Average",
+            blockRepresentation="ComponentAverage1DCylinder",
             meshSubdivisionsPerCm=1.0,
         )
         xsModel["RQ"] = rq

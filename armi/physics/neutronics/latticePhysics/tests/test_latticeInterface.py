@@ -45,7 +45,7 @@ class TestLatticePhysicsInterface(unittest.TestCase):
         _o, r = loadTestReactor()
         i = LatticeInterfaceTester(r, cs)
 
-        self.assertEqual(i._HEX_MODEL.strip(), "hex")
+        self.assertEqual(i._updateBlockNeutronVelocities, True)
         self.assertEqual(i.executablePath, "/tmp/fake_path")
         self.assertEqual(i.executableRoot, "/tmp")
 
