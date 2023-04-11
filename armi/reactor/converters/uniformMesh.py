@@ -100,8 +100,6 @@ class UniformMeshGenerator:
     and just provide the result of ``_computeAverageAxialMesh``.
     """
 
-    FLOAT_ROUNDING_DECIMALS = 12
-
     def __init__(self, r, minimumMeshSize=None):
         """
         Initialize an object to generate an appropriate common axial mesh to use for uniform mesh conversion.
@@ -156,9 +154,7 @@ class UniformMeshGenerator:
             if len(aMesh) == refNumPoints:
                 allMeshes.append(aMesh)
         averageMesh = average1DWithinTolerance(numpy.array(allMeshes))
-        self._commonMesh = numpy.array(
-            [round(z, self.FLOAT_ROUNDING_DECIMALS) for z in averageMesh]
-        )
+        self._commonMesh = numpy.array(averageMesh)
 
     def _decuspAxialMesh(self):
         """
@@ -303,16 +299,14 @@ class UniformMeshGenerator:
         )
         fuelBottoms = [
             min(
-                round(
-                    a.getFirstBlock(Flags.FUEL).p.zbottom, self.FLOAT_ROUNDING_DECIMALS
-                )
+                a.getFirstBlock(Flags.FUEL).p.zbottom
                 for a in self._sourceReactor.core.getAssemblies(assemFlags, exact=True)
             )
             for assemFlags in assemblyTypeFlags
         ]
         fuelTops = [
             max(
-                round(a.getBlocks(Flags.FUEL)[-1].p.ztop, self.FLOAT_ROUNDING_DECIMALS)
+                a.getBlocks(Flags.FUEL)[-1].p.ztop
                 for a in self._sourceReactor.core.getAssemblies(assemFlags, exact=True)
             )
             for assemFlags in assemblyTypeFlags
@@ -348,10 +342,8 @@ class UniformMeshGenerator:
         for a in self._sourceReactor.core.getAssemblies(Flags.CONTROL):
             firstBlock = a.getFirstBlock(Flags.CONTROL)
             lastBlock = a.getBlocks(Flags.CONTROL)[-1]
-            bottomMatBoundaries.add(
-                round(firstBlock.p.zbottom, self.FLOAT_ROUNDING_DECIMALS)
-            )
-            topMatBoundaries.add(round(lastBlock.p.ztop, self.FLOAT_ROUNDING_DECIMALS))
+            bottomMatBoundaries.add(firstBlock.p.zbottom)
+            topMatBoundaries.add(lastBlock.p.ztop)
 
         bottomBoundList = sorted(list(bottomMatBoundaries))
         topBoundList = sorted(list(topMatBoundaries))
