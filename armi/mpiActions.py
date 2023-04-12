@@ -357,7 +357,9 @@ def runActions(o, r, cs, actions, numPerNode=None, serial=False):
 def _disableForExclusiveTasks(actionsThisRound, useForComputation):
     # disable processors that are exclusive for next
     indicesToDisable = [
-        i for i, action in enumerate(actionsThisRound) if action.runActionExclusive
+        i
+        for i, action in enumerate(actionsThisRound)
+        if action is not None and action.runActionExclusive
     ]
     for i in indicesToDisable:
         useForComputation[i] = False
