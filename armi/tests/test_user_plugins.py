@@ -177,6 +177,7 @@ class TestUserPlugins(unittest.TestCase):
 
         pluginNames = [p[0] for p in app.pluginManager.list_name_plugin()]
         self.assertIn("UserPluginFlags2", pluginNames)
+        self.assertIn("FLAG2", dir(Flags))
 
     def test_registerUserPluginsAbsPath(self):
         app = getApp()
@@ -193,6 +194,7 @@ class TestUserPlugins(unittest.TestCase):
 
         pluginNames = [p[0] for p in app.pluginManager.list_name_plugin()]
         self.assertIn("UserPluginFlags4", pluginNames)
+        self.assertIn("FLAG4", dir(Flags))
 
     def test_registerUserPluginsFromSettings(self):
         app = getApp()
@@ -210,6 +212,7 @@ class TestUserPlugins(unittest.TestCase):
 
         pluginNames = [p[0] for p in app.pluginManager.list_name_plugin()]
         self.assertIn("UserPluginFlags3", pluginNames)
+        self.assertIn("FLAG3", dir(Flags))
 
     def test_userPluginOnProcessCoreLoading(self):
         """
