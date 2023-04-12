@@ -762,6 +762,20 @@ class FuelHandler:
                     assembly1, a1StationaryBlocks, assembly2, a2StationaryBlocks
                 )
             )
+        if a1StationaryBlocks and a2StationaryBlocks:
+            if a1StationaryBlocks[-1][0].p.ztop != a2StationaryBlocks[-1][0].p.ztop:
+                runLog.warning(
+                    """Difference in top elevation of stationary blocks 
+                     between {} (Stationary Blocks: {}, Elevation at top of stationary blocks {}) 
+                     and {} (Stationary Blocks: {}, Elevation at top of stationary blocks {}))""".format(
+                        assembly1,
+                        a1StationaryBlocks,
+                        a1StationaryBlocks[-1][0].p.ztop,
+                        assembly2,
+                        a2StationaryBlocks,
+                        a2StationaryBlocks[-1][0].p.ztop,
+                    )
+                )
 
         # swap stationary blocks
         for (assem1Block, assem1BlockIndex), (assem2Block, assem2BlockIndex) in zip(
