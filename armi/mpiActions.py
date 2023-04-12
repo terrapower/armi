@@ -77,7 +77,7 @@ class MpiAction:
     """Base of all MPI actions.
 
     MPI Actions are tasks that can be executed without needing lots of other
-    information. When a worker node sits in it's main loop, and receives an MPI Action, it will
+    information. When a worker node sits in its main loop, and receives an MPI Action, it will
     simply call :py:meth:`~armi.mpiActions.MpiAction.invoke`.
     """
 
