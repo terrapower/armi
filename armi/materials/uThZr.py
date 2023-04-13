@@ -30,7 +30,7 @@ class UThZr(FuelMaterial):
     name = "UThZr"
     enrichedNuclide = "U235"
 
-    def applyInputParams(self, U235_wt_frac=None, ZR_wt_frac=None):
+    def applyInputParams(self, U235_wt_frac=None, ZR_wt_frac=None, *args, **kwargs):
         self.parent.adjustMassEnrichment(U235_wt_frac)
         self.parent.adjustMassFrac("ZR", elementToHoldConstant="TH", val=ZR_wt_frac)
         self.parent.adjustMassFrac(elementToAdjust="TH", nuclideToHoldConstant="ZR")
