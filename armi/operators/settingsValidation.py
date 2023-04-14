@@ -187,7 +187,6 @@ class Inspector:
         """
         if context.MPI_RANK != 0:
             return False
-
         # the following attribute changes will alter what the queries investigate when resolved
         correctionsMade = False
         self.cs = cs or self.cs
@@ -198,11 +197,17 @@ class Inspector:
                     self.__class__.__name__
                 )
             )
+
         else:
             for query in self.queries:
                 query.resolve()
                 if query.corrected:
                     correctionsMade = True
+            if correctionsMade:
+                runLog.extra(
+                    f"At least one setting correction detected. Overwriting settings file `{self.cs.path}`."
+                )
+                self.cs.writeToYamlFile(self.cs.path)
             issues = [
                 query
                 for query in self.queries
