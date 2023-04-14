@@ -203,6 +203,11 @@ class Inspector:
                 query.resolve()
                 if query.corrected:
                     correctionsMade = True
+                if correctionsMade:
+                    runLog.extra(
+                        f"At least one setting correction detected. Overwriting settings file `{self.cs.path}`."
+                    )
+                    self.cs.writeToYamlFile(self.cs.path)
             issues = [
                 query
                 for query in self.queries
