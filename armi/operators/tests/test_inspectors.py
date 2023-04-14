@@ -16,6 +16,7 @@
 Tests for settings validation system.
 """
 import unittest
+import os
 
 from armi import settings
 from armi import operators
@@ -58,9 +59,10 @@ class TestInspector(unittest.TestCase):
         Tests the case where a corrective query is resolved.
         Checks to make sure the settings file is overwritten with the resolved setting.
         """
+        self.filepathYaml = os.path.join(os.getcwd(), "testSettings.yaml")
 
         # load settings from test settings file
-        self.cs.loadFromInputFile("testSettings.yaml")
+        self.cs.loadFromInputFile(self.filepathYaml)
         self.assertEqual(self.cs["cycleLength"], 300.0)
 
         # define corrective query
