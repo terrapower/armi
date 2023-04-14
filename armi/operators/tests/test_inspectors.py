@@ -33,6 +33,9 @@ class TestInspector(unittest.TestCase):
             self.cs
         )
         self.inspector.queries = []  # clear out the auto-generated ones
+        self.filepathYaml = os.path.join(
+            os.getcwd(), self._testMethodName + "test_setting_io.yaml"
+        )
 
     def test_query(self):
         buh = {1: 2, 3: 4}
@@ -59,9 +62,9 @@ class TestInspector(unittest.TestCase):
         Tests the case where a corrective query is resolved.
         Checks to make sure the settings file is overwritten with the resolved setting.
         """
-        self.filepathYaml = os.path.join(os.getcwd(), "testSettings.yaml")
-
         # load settings from test settings file
+        self.cs["cycleLength"] = 300.0
+        self.cs.writeToYamlFile(self.filepathYaml)
         self.cs.loadFromInputFile(self.filepathYaml)
         self.assertEqual(self.cs["cycleLength"], 300.0)
 
@@ -87,7 +90,7 @@ class TestInspector(unittest.TestCase):
         self.inspector.run()
 
         # check to see if file was overwritten correctly
-        self.cs.loadFromInputFile("testSettings.yaml")
+        self.cs.loadFromInputFile(self.filepathYaml)
 
         self.assertEqual(self.cs["cycleLength"], 666)
 
@@ -96,7 +99,7 @@ class TestInspector(unittest.TestCase):
 
         # reset test settings file
         self.cs["cycleLength"] = 300.0
-        self.cs.writeToYamlFile("testSettings.yaml", "short")
+        self.cs.writeToYamlFile(self.filepathYaml)
 
     def test_changeOfCS(self):
         self.inspector.addQuery(
