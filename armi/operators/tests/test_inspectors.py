@@ -20,6 +20,7 @@ import unittest
 from armi import settings
 from armi import operators
 from armi.operators.settingsValidation import createQueryRevertBadPathToDefault
+from armi.operators import settingsValidation
 
 
 class TestInspector(unittest.TestCase):
@@ -51,6 +52,49 @@ class TestInspector(unittest.TestCase):
         self.assertFalse(query)
 
         self.assertEqual(str(query), "<Query: beepbopboopbeep>")
+
+    def test_overwriteSettingsCorrectiveQuery(self):
+        """
+        Tests the case where a corrective query is resolved.
+        Checks to make sure the settings file is overwritten with the resolved setting.
+        """
+
+        # load settings from test settings file
+        self.cs.loadFromInputFile("testSettings.yaml")
+        self.assertEqual(self.cs["cycleLength"], 300.0)
+
+        # define corrective query
+        def csChange(x, y, z):
+            x[y] = z
+
+        self.inspector.addQuery(
+            lambda: self.inspector.cs["cycleLength"] == 300.0,
+            "Changing `cycleLength` from 300.0 to 666",
+            ":D",
+            lambda: csChange(self.cs, "cycleLength", 666),
+        )
+
+        # redefine prompt function in order to circumvent need for user input
+        def fakePrompt(*inputs):
+            return True
+
+        nominalPromptFunction = settingsValidation.prompt
+        settingsValidation.prompt = fakePrompt
+
+        # run inspector
+        self.inspector.run()
+
+        # check to see if file was overwritten correctly
+        self.cs.loadFromInputFile("testSettings.yaml")
+
+        self.assertEqual(self.cs["cycleLength"], 666)
+
+        # reset prompt function to nominal
+        settingsValidation.prompt = nominalPromptFunction
+
+        # reset test settings file
+        self.cs["cycleLength"] = 300.0
+        self.cs.writeToYamlFile("testSettings.yaml", "short")
 
     def test_changeOfCS(self):
         self.inspector.addQuery(
