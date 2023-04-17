@@ -24,6 +24,7 @@ from numpy import testing
 from armi import materials, settings
 from armi.nucDirectory import nuclideBases
 from armi.reactor import blueprints
+from armi.tests import mockRunLogs
 from armi.utils import units
 
 
@@ -489,12 +490,6 @@ class ThoriumUraniumMetal_TestCase(_Material_Test, unittest.TestCase):
 class Uranium_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.Uranium
 
-    def test_density(self):
-        """
-        this material has no density function
-        """
-        pass
-
     def test_thermalConductivity(self):
         cur = self.mat.thermalConductivity(Tc=100)
         ref = 28.489312629207500293659904855
@@ -518,6 +513,43 @@ class Uranium_TestCase(_Material_Test, unittest.TestCase):
 
     def test_propertyValidTemperature(self):
         self.assertGreater(len(self.mat.propertyValidTemperature), 0)
+
+        # ensure that material properties check the bounds and that the bounds
+        # align with what is expected
+        for propName, methodName in zip(
+            [
+                "thermal conductivity",
+                "heat capacity",
+                "density",
+                "linear expansion",
+                "linear expansion percent",
+            ],
+            [
+                "thermalConductivity",
+                "heatCapacity",
+                "density",
+                "linearExpansion",
+                "linearExpansionPercent",
+            ],
+        ):
+            lowerBound = self.mat.propertyValidTemperature[propName][0][0]
+            upperBound = self.mat.propertyValidTemperature[propName][0][1]
+            unit = self.mat.propertyValidTemperature[propName][1]
+            with mockRunLogs.BufferLog() as mock:
+                getattr(self.mat, methodName)(lowerBound - 1)
+                self.assertIn(
+                    f"Temperature {float(lowerBound-1)} out of range ({lowerBound} "
+                    f"to {upperBound}) for {self.mat.name} {propName}",
+                    mock.getStdout(),
+                )
+
+            with mockRunLogs.BufferLog() as mock:
+                getattr(self.mat, methodName)(upperBound + 1)
+                self.assertIn(
+                    f"Temperature {float(upperBound+1)} out of range ({lowerBound} "
+                    f"to {upperBound}) for {self.mat.name} {propName}",
+                    mock.getStdout(),
+                )
 
 
 class UraniumOxide_TestCase(_Material_Test, unittest.TestCase):
