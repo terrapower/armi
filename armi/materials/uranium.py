@@ -30,6 +30,8 @@ from armi.utils.units import getTk
 class Uranium(FuelMaterial):
     name = "Uranium"
 
+    enrichedNuclide = "U235"
+
     materialIntro = ""
 
     propertyNotes = {"thermal conductivity": ""}
@@ -276,7 +278,11 @@ class Uranium(FuelMaterial):
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("density", Tk)
 
-        return interp(Tk, self._densityTableK, self._densityTable)
+        return interp(Tk, self._densityTableK, self._densityTable) * self.getTD()
+
+    def pseudoDensity(self, Tk: float = None, Tc: float = None) -> float:
+        """2D-expanded density in g/cc"""
+        return super().pseudoDensity(Tk=Tk, Tc=Tc) * self.getTD()
 
     def linearExpansion(self, Tk: float = None, Tc: float = None) -> float:
         """Linear expansion coefficient in 1/K"""
