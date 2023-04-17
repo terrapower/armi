@@ -234,7 +234,7 @@ class ComponentBlueprint(yamlize.Object):
         if len(matMods) > 1:
             # don't apply if only customIsotopics is in there
             try:
-                # update material with updated input params from blueprints file.]
+                # update material with updated input params from blueprints file.
                 mat.applyInputParams(**matMods)
             except TypeError:
                 # This component does not accept material modification inputs of the names passed in
