@@ -454,6 +454,11 @@ class CylindricalComponentsAverageBlockCollection(BlockCollection):
             the components in the representative block. This check includes component area, component multiplicity,
             and nuclide composition.
         """
+        if len(b) != len(repBlock):
+            raise ValueError(
+                f"Blocks {b} and {repBlock} have differing number "
+                f"of components and cannot be homogenized"
+            )
         for c, repC in zip(b, repBlock):
             compString = (
                 f"Component {repC} in block {repBlock} and component {c} in block {b}"
@@ -488,15 +493,9 @@ class CylindricalComponentsAverageBlockCollection(BlockCollection):
         """Order the components based on dimension and material type within the representative block."""
         orderedComponents = [[] for _ in repBlock]
         for b in self.getCandidateBlocks():
-            if len(b) != len(repBlock):
-                raise ValueError(
-                    f"Blocks {b} and {repBlock} have differing number "
-                    f"of components and cannot be homogenized"
-                )
             self._checkComponentConsistency(b, repBlock)
-            for i, c in enumerate(b):
-                orderedComponents[i].append(c)
-        return orderedComponents
+        componentLists = [ list(b) for b in self.getCandidateBlocks() ]
+        return [ list(comps) for comps in zip(*componentLists) ]
 
 
 class SlabComponentsAverageBlockCollection(BlockCollection):
