@@ -412,7 +412,7 @@ class CylindricalComponentsAverageBlockCollection(BlockCollection):
         """Selects the candidate block with the median block-average temperature."""
         info = []
         for b in self.getCandidateBlocks():
-            info.append((b.getAverageTempInC() * self.getWeight(b), b.getName(), b))
+            info.append((b.getAverageTempInC(), b.getName(), b))
         info.sort()
         medianBlockData = info[len(info) // 2]
         return medianBlockData[-1]
@@ -443,9 +443,9 @@ class CylindricalComponentsAverageBlockCollection(BlockCollection):
         return sorted(list(nucs))
 
     @staticmethod
-    def _checkComponentConsisteny(b, repBlock):
+    def _checkComponentConsistency(b, repBlock):
         """
-        Verify that all components being homogenized are rectangular and have consistent dimensions.
+        Verify that all components being homogenized have same multiplicity and nuclides
 
         Raises
         ------
@@ -493,9 +493,8 @@ class CylindricalComponentsAverageBlockCollection(BlockCollection):
                     f"Blocks {b} and {repBlock} have differing number "
                     f"of components and cannot be homogenized"
                 )
-            self._checkComponentConsisteny(b, repBlock)
-            componentsToAdd = [c for c in b]
-            for i, c in enumerate(componentsToAdd):
+            self._checkComponentConsistency(b, repBlock)
+            for i, c in enumerate(b):
                 orderedComponents[i].append(c)
         return orderedComponents
 

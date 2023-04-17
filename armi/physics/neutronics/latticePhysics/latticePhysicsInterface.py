@@ -81,7 +81,7 @@ class LatticePhysicsInterface(interfaces.Interface):
 
         # Set to True by default, but should be disabled when perturbed cross sections are generated.
         self._updateBlockNeutronVelocities = True
-        self._burnupTolerance = self.cs["tolerateBurnupChange"]
+        self._burnupTolerance = self.cs[CONF_TOLERATE_BURNUP_CHANGE]
         self._oldXsIdsAndBurnup = {}
         self.executablePath = self._getExecutablePath()
         self.executableRoot = os.path.dirname(self.executablePath)
