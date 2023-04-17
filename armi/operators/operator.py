@@ -1089,6 +1089,9 @@ class Operator:  # pylint: disable=too-many-public-methods
         of snapshots has evolved with respect to the
         :py:class:`~armi.operators.snapshots.OperatorSnapshots`.
         """
+        # pylint: disable=import-outside-toplevel # avoid cyclic import
+        from armi.physics.neutronics.settings import CONF_LOADING_FILE
+
         runLog.info("Producing snapshot for cycle {0} node {1}".format(cycle, node))
         self.r.core.zones.summary()
 
@@ -1139,7 +1142,7 @@ class Operator:  # pylint: disable=too-many-public-methods
             "Geometry file for snapshot", self.cs["geomFile"], newFolder
         )
         pathTools.copyOrWarn(
-            "Loading definition for snapshot", self.cs["loadingFile"], newFolder
+            "Loading definition for snapshot", self.cs[CONF_LOADING_FILE], newFolder
         )
         pathTools.copyOrWarn(
             "Flow history for snapshot",

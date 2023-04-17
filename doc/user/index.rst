@@ -21,4 +21,5 @@ analyzing ARMI output files, etc.
    assembly_parameters_report
    block_parameters_report
    physics_coupling
+   radial_and_axial_expansion
    accessingEntryPoints

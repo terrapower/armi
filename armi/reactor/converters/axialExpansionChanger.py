@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""enable component-wise axial expansion for assemblies and/or a reactor"""
+"""Enable component-wise axial expansion for assemblies and/or a reactor"""
 
 from statistics import mean
 from numpy import array
@@ -61,11 +61,11 @@ def expandColdDimsToHot(assems, isDetailedAxialExpansion, referenceAssembly=None
 
     Parameters
     ----------
-    assems: list
-        list of :py:class:`Assembly <armi.reactor.assemblies.Assembly>` objects to be thermally expanded
+    assems: list[:py:class:`Assembly <armi.reactor.assemblies.Assembly>`]
+        list of assemblies to be thermally expanded
     isDetailedAxialExpansion: bool
         If true assemblies will be forced to conform to the reference mesh after expansion
-    referenceAssembly: assembly, optional
+    referenceAssembly: :py:class:`Assembly <armi.reactor.assemblies.Assembly>`, optional
         Assembly whose mesh other meshes wil conform to if isDetailedAxialExpansion is true.
         If not provided, will assume the finest mesh assembly which is typically fuel.
     """
@@ -102,9 +102,9 @@ class AxialExpansionChanger:
 
     Attributes
     ----------
-    linked : :py:class:`AssemblyAxialLinkage` object.
+    linked : :py:class:`AssemblyAxialLinkage`
         establishes object containing axial linkage information
-    expansionData : :py:class:`ExpansionData <armi.reactor.converters.axialExpansionChanger.ExpansionData>` object.
+    expansionData : :py:class:`ExpansionData <armi.reactor.converters.axialExpansionChanger.ExpansionData>`
         establishes object to store and access relevant expansion data
 
     Notes
@@ -134,11 +134,11 @@ class AxialExpansionChanger:
 
         Parameters
         ----------
-        a : :py:class:`Assembly <armi.reactor.assemblies.Assembly>` object.
+        a : :py:class:`Assembly <armi.reactor.assemblies.Assembly>`
             ARMI assembly to be changed
-        componentLst : :py:class:`Component <armi.reactor.components.component.Component>`, list
-            list of :py:class:`Component <armi.reactor.components.component.Component>` objects to be expanded
-        percents : float, list
+        componentLst : list[:py:class:`Component <armi.reactor.components.component.Component>`]
+            list of Components to be expanded
+        percents : list[float]
             list of expansion percentages for each component listed in componentList
         setFuel : boolean, optional
             Boolean to determine whether or not fuel blocks should have their target components set
@@ -164,7 +164,7 @@ class AxialExpansionChanger:
 
         Parameters
         ----------
-        a : :py:class:`Assembly <armi.reactor.assemblies.Assembly>` object.
+        a : :py:class:`Assembly <armi.reactor.assemblies.Assembly>`
             ARMI assembly to be changed
         tempGrid : float, list
             Axial temperature grid (in cm) (i.e., physical locations where temp is stored)
@@ -200,7 +200,7 @@ class AxialExpansionChanger:
 
         Parameters
         ----------
-         a : :py:class:`Assembly <armi.reactor.assemblies.Assembly>` object.
+         a : :py:class:`Assembly <armi.reactor.assemblies.Assembly>`
             ARMI assembly to be changed
         setFuel : boolean, optional
             Boolean to determine whether or not fuel blocks should have their target components set
@@ -322,7 +322,7 @@ class AxialExpansionChanger:
 
         Parameters
         ----------
-        r : :py:class:`Reactor <armi.reactor.reactors.Reactor>` object.
+        r : :py:class:`Reactor <armi.reactor.reactors.Reactor>`
             ARMI reactor to have mesh modified
 
         Notes
@@ -413,16 +413,23 @@ class AssemblyAxialLinkage:
 
     Attributes
     ----------
-    a : :py:class:`Assembly <armi.reactor.assemblies.Assembly>` object.
+    a : :py:class:`Assembly <armi.reactor.assemblies.Assembly>`
         reference to original assembly; is directly modified/changed during expansion.
+
     linkedBlocks : dict
-        keys   --> :py:class:`Block <armi.reactor.blocks.Block>` object
+        keys   --> :py:class:`Block <armi.reactor.blocks.Block>`
+
         values --> list of axially linked blocks; index 0 = lower linked block; index 1: upper linked block.
-                   see also: self._getLinkedBlocks()
+
+        see also: self._getLinkedBlocks()
+
     linkedComponents : dict
-        keys -->   :py:class:`Component <armi.reactor.components.component.Component>` object
+        keys -->   :py:class:`Component <armi.reactor.components.component.Component>`
+
         values --> list of axially linked components; index 0 = lower linked component; index 1: upper linked component.
-                   see also: self._getLinkedComponents
+
+        see also: self._getLinkedComponents
+
     """
 
     def __init__(self, StdAssem):
@@ -443,7 +450,7 @@ class AssemblyAxialLinkage:
 
         Parameters
         ----------
-        b : :py:class:`Block <armi.reactor.blocks.Block>` object
+        b : :py:class:`Block <armi.reactor.blocks.Block>`
             block to determine axial linkage for
 
         Notes
@@ -499,9 +506,9 @@ class AssemblyAxialLinkage:
 
         Parameters
         ----------
-        b : :py:class:`Block <armi.reactor.blocks.Block>` object
+        b : :py:class:`Block <armi.reactor.blocks.Block>`
             key to access blocks containing linked components
-        c : :py:class:`Component <armi.reactor.components.component.Component>` object
+        c : :py:class:`Component <armi.reactor.components.component.Component>`
             component to determine axial linkage for
 
         Raises
@@ -630,9 +637,9 @@ class ExpansionData:
 
         Parameters
         ----------
-        componentLst : list of :py:class:`Component <armi.reactor.components.component.Component>`
-            list of :py:class:`Component <armi.reactor.components.component.Component>` objects to have their heights changed # pylint: disable=line-too-long
-        percents : list of floats
+        componentLst : list[:py:class:`Component <armi.reactor.components.component.Component>`]
+            list of Components to have their heights changed
+        percents : list[float]
             list of height changes in percent that are to be applied to componentLst
 
         Raises
@@ -720,10 +727,10 @@ class ExpansionData:
 
         Parameters
         ----------
-        b : :py:class:`Block <armi.reactor.blocks.Block>` object
+        b : :py:class:`Block <armi.reactor.blocks.Block>`
             parent block for c
-        c : py:class:`Component <armi.reactor.components.component.Component>` object
-            component object to which the temperature, temp, is to be applied
+        c : :py:class:`Component <armi.reactor.components.component.Component>`
+            component to which the temperature, temp, is to be applied
         temp : float
             new component temperature in C
         updateNDensForRadialExp : bool
@@ -776,8 +783,8 @@ class ExpansionData:
 
         Parameters
         ----------
-        c : :py:class:`Component <armi.reactor.components.component.Component>` object
-            :py:class:`Component <armi.reactor.components.component.Component>` object to retrive expansion factor for
+        c : :py:class:`Component <armi.reactor.components.component.Component>`
+            Component to retrive expansion factor for
 
         """
         if c in self._expansionFactors:
@@ -812,9 +819,9 @@ class ExpansionData:
 
         Parameters
         ----------
-        b : :py:class:`Block <armi.reactor.blocks.Block>` object
+        b : :py:class:`Block <armi.reactor.blocks.Block>`
             block to specify target component for
-        flagOfInterest : :py:class:`Flags <armi.reactor.flags.Flags>` object
+        flagOfInterest : :py:class:`Flags <armi.reactor.flags.Flags>`
             the flag of interest to identify the target component
 
         Notes
@@ -858,7 +865,7 @@ class ExpansionData:
 
         Parameters
         ----------
-        b : :py:class:`Block <armi.reactor.blocks.Block>` object
+        b : :py:class:`Block <armi.reactor.blocks.Block>`
             block to specify target component for
 
         Raises
@@ -881,7 +888,7 @@ class ExpansionData:
 
         Parameters
         ----------
-        c : :py:class:`Component <armi.reactor.components.component.Component>` object
-            :py:class:`Component <armi.reactor.components.component.Component>` object to check target component status
+        c : :py:class:`Component <armi.reactor.components.component.Component>`
+            Component to check target component status
         """
         return bool(c in self._componentDeterminesBlockHeight)

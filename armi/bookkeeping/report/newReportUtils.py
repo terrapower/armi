@@ -189,10 +189,13 @@ def insertCoreDesignReport(core, cs, report):
 
 
 def _setGeneralCoreDesignData(cs, coreDesignTable):
+    # pylint: disable=import-outside-toplevel # avoid cyclic import
+    from armi.physics.neutronics.settings import CONF_LOADING_FILE
+
     coreDesignTable.addRow(["Case Title", "{}".format(cs.caseTitle)])
     coreDesignTable.addRow(["Run Type", "{}".format(cs["runType"])])
     coreDesignTable.addRow(["Geometry File", "{}".format(cs["geomFile"])])
-    coreDesignTable.addRow(["Loading File", "{}".format(cs["loadingFile"])])
+    coreDesignTable.addRow(["Loading File", "{}".format(cs[CONF_LOADING_FILE])])
     coreDesignTable.addRow(
         ["Fuel Shuffling Logic File", "{}".format(cs[CONF_SHUFFLE_LOGIC])]
     )
@@ -292,14 +295,22 @@ def _setGeneralCoreParametersData(core, cs, coreDesignTable):
 
 
 def _setGeneralSimulationData(core, cs, coreDesignTable):
+    # pylint: disable=import-outside-toplevel # avoid cyclic import
+    from armi.physics.neutronics.settings import (
+        CONF_GEN_XS,
+        CONF_GLOBAL_FLUX_ACTIVE,
+    )
+
     coreDesignTable.addRow(["  ", ""])
     coreDesignTable.addRow(["Full Core Model", "{}".format(core.isFullCore)])
     coreDesignTable.addRow(
         ["Tight Physics Coupling Enabled", "{}".format(bool(cs["tightCoupling"]))]
     )
-    coreDesignTable.addRow(["Lattice Physics Enabled for", "{}".format(cs["genXS"])])
     coreDesignTable.addRow(
-        ["Neutronics Enabled for", "{}".format(cs["globalFluxActive"])]
+        ["Lattice Physics Enabled for", "{}".format(cs[CONF_GEN_XS])]
+    )
+    coreDesignTable.addRow(
+        ["Neutronics Enabled for", "{}".format(cs[CONF_GLOBAL_FLUX_ACTIVE])]
     )
 
 
@@ -406,6 +417,12 @@ def insertSettingsData(cs, report):
     report: ReportContent
         The report to be added to
     """
+    # pylint: disable=import-outside-toplevel # avoid cyclic import
+    from armi.physics.neutronics.settings import (
+        CONF_GEN_XS,
+        CONF_NEUTRONICS_KERNEL,
+    )
+
     report[COMPREHENSIVE_REPORT][CASE_PARAMETERS] = newReports.Table("Case Parameters")
     report[COMPREHENSIVE_REPORT][REACTOR_PARAMS] = newReports.Table(
         "Reactor Parameters"
@@ -431,7 +448,7 @@ def insertSettingsData(cs, report):
     for key in ["power", "Tin", "Tout"]:
         report[COMPREHENSIVE_REPORT][REACTOR_PARAMS].addRow([key, cs[key]])
 
-    for key in ["genXS", "neutronicsKernel"]:
+    for key in [CONF_GEN_XS, CONF_NEUTRONICS_KERNEL]:
         report[COMPREHENSIVE_REPORT][CASE_CONTROLS].addRow([key, str(cs[key])])
 
     for key in ["buGroups"]:

@@ -55,7 +55,7 @@ class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
     propertyUnits = {"heat capacity": "J/mol-K"}
 
     propertyValidTemperature = {
-        "density3": ((300, 3100), "K"),
+        "density": ((300, 3100), "K"),
         "heat capacity": ((298.15, 3120), "K"),
         "linear expansion": ((273, 3120), "K"),
         "linear expansion percent": ((273, __meltingPoint), "K"),
@@ -103,7 +103,7 @@ class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
 
     def __init__(self):
         material.FuelMaterial.__init__(self)
-        self.refDens = self.density3(Tk=self.refTempK)
+        self.refDens = self.density(Tk=self.refTempK)
 
     def applyInputParams(
         self, U235_wt_frac: float = None, TD_frac: float = None, *args, **kwargs
@@ -159,14 +159,14 @@ class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
         """
         return self.__meltingPoint
 
-    def density3(self, Tk: float = None, Tc: float = None) -> float:
+    def density(self, Tk: float = None, Tc: float = None) -> float:
         """
         Density in (g/cc)
 
         Polynomial line fit to data from [#ornltm2000]_ on page 11.
         """
         Tk = getTk(Tc, Tk)
-        self.checkPropertyTempRange("density3", Tk)
+        self.checkPropertyTempRange("density", Tk)
 
         return (-1.01147e-7 * Tk ** 2 - 1.29933e-4 * Tk + 1.09805e1) * self.getTD()
 

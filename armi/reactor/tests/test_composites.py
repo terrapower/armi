@@ -423,8 +423,8 @@ class TestCompositeTree(unittest.TestCase):
         assemDesign = assemblyBlueprint.AssemblyBlueprint.load(self.blueprintYaml)
         a = assemDesign.construct(cs, MockBP)
         component = a[0][0]
-        referenceDensity = component.material.density(Tc=200)
-        self.assertEqual(component.material.density(Tc=200), referenceDensity)
+        referenceDensity = component.material.pseudoDensity(Tc=200)
+        self.assertEqual(component.material.pseudoDensity(Tc=200), referenceDensity)
 
     def test_getHMMass(self):
         fuelDims = {"Tinput": 273.0, "Thot": 273.0, "od": 0.76, "id": 0.0, "mult": 1.0}

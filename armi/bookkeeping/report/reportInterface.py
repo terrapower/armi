@@ -23,6 +23,7 @@ from armi import runLog
 from armi.bookkeeping import report
 from armi.bookkeeping.report import reportingUtils
 from armi.physics import neutronics
+from armi.physics.neutronics.settings import CONF_NEUTRONICS_TYPE
 from armi.reactor.flags import Flags
 from armi.utils import directoryChangers
 from armi.utils import reportPlotting
@@ -83,7 +84,7 @@ class ReportInterface(interfaces.Interface):
         )
 
         if self.cs["plots"]:
-            adjoint = self.cs["neutronicsType"] == neutronics.ADJREAL_CALC
+            adjoint = self.cs[CONF_NEUTRONICS_TYPE] == neutronics.ADJREAL_CALC
             figName = (
                 self.cs.caseTitle
                 + "_{0}_{1}".format(cycle, node)

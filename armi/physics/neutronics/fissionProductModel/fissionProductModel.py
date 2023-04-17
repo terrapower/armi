@@ -100,6 +100,10 @@ from armi import runLog
 from armi import interfaces
 from armi.reactor.flags import Flags
 from armi.physics.neutronics.fissionProductModel import lumpedFissionProduct
+from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import (
+    CONF_FP_MODEL,
+    CONF_MAKE_ALL_BLOCK_LFPS_INDEPENDENT,
+)
 
 NUM_FISSION_PRODUCTS_PER_LFP = 2.0
 
@@ -123,11 +127,14 @@ class FissionProductModel(interfaces.Interface):
 
     @property
     def _explicitFissionProducts(self):
-        return self.cs["fpModel"] == "explicitFissionProducts"
+        return self.cs[CONF_FP_MODEL] == "explicitFissionProducts"
 
     @property
     def _useGlobalLFPs(self):
-        if self.cs["makeAllBlockLFPsIndependent"] or self._explicitFissionProducts:
+        if (
+            self.cs[CONF_MAKE_ALL_BLOCK_LFPS_INDEPENDENT]
+            or self._explicitFissionProducts
+        ):
             return False
         else:
             return True

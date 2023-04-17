@@ -20,6 +20,10 @@ from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.physics.neutronics.latticePhysics.latticePhysicsWriter import (
     LatticePhysicsWriter,
 )
+from armi.physics.neutronics.settings import (
+    CONF_XS_BLOCK_REPRESENTATION,
+    CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION,
+)
 from armi.reactor.tests.test_reactors import loadTestReactor
 from armi.tests import TEST_ROOT
 
@@ -54,7 +58,8 @@ class TestLatticePhysicsWriter(unittest.TestCase):
         o, r = loadTestReactor(TEST_ROOT)
         cs = o.cs
         o.cs[CONF_CROSS_SECTION].setDefaults(
-            cs["xsBlockRepresentation"], cs["disableBlockTypeExclusionInXsGeneration"]
+            cs[CONF_XS_BLOCK_REPRESENTATION],
+            cs[CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION],
         )
         block = r.core.getFirstBlock()
         w = FakeLatticePhysicsWriter(block, r, o)

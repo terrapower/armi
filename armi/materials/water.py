@@ -278,7 +278,7 @@ class Water(Fluid):
         """
         alpha = self.auxiliaryQuantitySpecificEnthalpy(Tc=Tc, Tk=Tk)
         T = getTk(Tc=Tc, Tk=Tk)
-        rho = self.densityKgM3(Tc=Tc, Tk=Tk)
+        rho = self.pseudoDensityKgM3(Tc=Tc, Tk=Tk)
         dp_dT = self.vaporPressurePrime(Tc=Tc, Tk=Tk)
 
         return alpha + T / rho * dp_dT
@@ -307,18 +307,18 @@ class Water(Fluid):
         steam power industry
         """
         phi = self.auxiliaryQuantitySpecificEntropy(Tc=Tc, Tk=Tk)
-        rho = self.densityKgM3(Tc=Tc, Tk=Tk)
+        rho = self.pseudoDensityKgM3(Tc=Tc, Tk=Tk)
         dp_dT = self.vaporPressurePrime(Tc=Tc, Tk=Tk)
 
         return phi + 1.0 / rho * dp_dT
 
-    def density(self, Tk=None, Tc=None):
+    def pseudoDensity(self, Tk=None, Tc=None):
         """
         Density for arbitrary forms of water.
 
         Notes
         -----
-        In ARMI, we define density() and density3() as the same for Fluids.
+        In ARMI, we define pseudoDensity() and density() as the same for Fluids.
         """
         raise NotImplementedError(
             "Please use a concrete instance: SaturatedWater or SaturatedSteam."
@@ -339,7 +339,7 @@ class SaturatedWater(Water):
 
     name = "SaturatedWater"
 
-    def density(self, Tk: float = None, Tc: float = None) -> float:
+    def pseudoDensity(self, Tk: float = None, Tc: float = None) -> float:
         """
         returns density in g/cc
 
@@ -357,7 +357,7 @@ class SaturatedWater(Water):
 
         Note
         ----
-        In ARMI, we define density() and density3() as the same for Fluids.
+        In ARMI, we define pseudoDensity() and density() as the same for Fluids.
         IAPWS-IF97
         http://www.iapws.org/relguide/supsat.pdf
         IAPWS-IF97 is now the international standard for calculations in the steam power industry
@@ -399,7 +399,7 @@ class SaturatedSteam(Water):
 
     name = "SaturatedSteam"
 
-    def density(self, Tk: float = None, Tc: float = None) -> float:
+    def pseudoDensity(self, Tk: float = None, Tc: float = None) -> float:
         """
         returns density in g/cc
 
@@ -417,7 +417,7 @@ class SaturatedSteam(Water):
 
         Notes
         -----
-        In ARMI, we define density() and density3() as the same for Fluids.
+        In ARMI, we define pseudoDensity() and density() as the same for Fluids.
         IAPWS-IF97
         http://www.iapws.org/relguide/supsat.pdf
         IAPWS-IF97 is now the international standard for calculations in the steam power industry

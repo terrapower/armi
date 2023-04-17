@@ -52,14 +52,14 @@ class Lithium(material.Fluid):
         if enrich is not None:
             self.adjustMassEnrichment(LI6_wt_frac)
 
-    def density(self, Tk=None, Tc=None):
+    def pseudoDensity(self, Tk=None, Tc=None):
         r"""Density (g/cc) from Wikipedia.
 
         Will be liquid above 180C.
 
         Notes
         -----
-        In ARMI, we define density() and density3() as the same for Fluids.
+        In ARMI, we define pseudoDensity() and density() as the same for Fluids.
         """
         return 0.512
 

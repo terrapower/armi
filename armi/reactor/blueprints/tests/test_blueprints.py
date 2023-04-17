@@ -22,6 +22,7 @@ import yamlize
 
 from armi import settings
 from armi.nucDirectory.elements import bySymbol
+from armi.physics.neutronics.settings import CONF_XS_KERNEL
 from armi.reactor import blueprints
 from armi.reactor import parameters
 from armi.reactor.blueprints.componentBlueprint import ComponentBlueprint
@@ -220,7 +221,7 @@ grids:
     def test_nuclidesMc2v2(self):
         """Tests that ZR is not expanded to its isotopics for this setting."""
         cs = settings.Settings()
-        newSettings = {"xsKernel": "MC2v2"}
+        newSettings = {CONF_XS_KERNEL: "MC2v2"}
         cs = cs.modified(newSettings=newSettings)
 
         design = blueprints.Blueprints.load(self._yamlString)
@@ -237,7 +238,7 @@ grids:
     def test_nuclidesMc2v3(self):
         """Tests that ZR is expanded to its isotopics for MC2v3."""
         cs = settings.Settings()
-        newSettings = {"xsKernel": "MC2v3"}
+        newSettings = {CONF_XS_KERNEL: "MC2v3"}
         cs = cs.modified(newSettings=newSettings)
 
         design = blueprints.Blueprints.load(self._yamlString)

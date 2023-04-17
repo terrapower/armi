@@ -28,6 +28,14 @@ from armi.nucDirectory import nucDir
 from armi.nucDirectory import nuclideBases
 from armi.utils import densityTools
 from armi.utils.customExceptions import InputError
+from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import (
+    CONF_FP_MODEL,
+    CONF_FISSION_PRODUCT_LIBRARY_NAME,
+)
+from armi.physics.neutronics.settings import (
+    CONF_NEUTRONICS_KERNEL,
+    CONF_XS_KERNEL,
+)
 
 ALLOWED_KEYS = set(nuclideBases.byName.keys()) | set(elements.bySymbol.keys())
 
@@ -494,7 +502,7 @@ def autoSelectElementsToKeepFromSettings(cs):
         if nnb and nnb.getMcc2Id():
             elementalsInMC2.add(nnb)
 
-    if "MCNP" in cs["neutronicsKernel"]:
+    if "MCNP" in cs[CONF_NEUTRONICS_KERNEL]:
         expansionStrings.update(mcnpExpansions)
         if int(cs["mcnpLibrary"]) == 50:
             elementalsToKeep.update(nuclideBases.instances)  # skip expansion
@@ -512,11 +520,11 @@ def autoSelectElementsToKeepFromSettings(cs):
                 )
             )
 
-    elif cs["xsKernel"] in ["", "SERPENT", "MC2v3", "MC2v3-PARTISN"]:
+    elif cs[CONF_XS_KERNEL] in ["", "SERPENT", "MC2v3", "MC2v3-PARTISN"]:
         elementalsToKeep.update(endf70Elementals)
         expansionStrings.update(mc2Expansions)
 
-    elif cs["xsKernel"] == "DRAGON":
+    elif cs[CONF_XS_KERNEL] == "DRAGON":
         # Users need to use default nuclear lib name. This is documented.
         dragLib = cs["dragonDataPath"]
         # only supports ENDF/B VII/VIII at the moment.
@@ -533,7 +541,7 @@ def autoSelectElementsToKeepFromSettings(cs):
                 f"Unrecognized DRAGLIB name: {dragLib} Use default file name."
             )
 
-    elif cs["xsKernel"] == "MC2v2":
+    elif cs[CONF_XS_KERNEL] == "MC2v2":
         # strip out any NaturalNuclideBase with no getMcc2Id() (not on mcc-nuclides.yaml)
         elementalsToKeep.update(elementalsInMC2)
         expansionStrings.update(mc2Expansions)
@@ -578,7 +586,7 @@ def autoUpdateNuclideFlags(cs, nuclideFlags):
     if nbs:
         runLog.info(
             f"Adding explicit fission products to the nuclide flags based on the "
-            f"fission product model set to `{cs['fpModel']}`."
+            f"fission product model set to `{cs[CONF_FP_MODEL]}`."
         )
         for nb in nbs:
             nuc = nb.name
@@ -591,18 +599,18 @@ def autoUpdateNuclideFlags(cs, nuclideFlags):
 def getAllNuclideBasesByLibrary(cs):
     """
     Return a list of nuclide bases available for cross section modeling
-    based on the ``fpModelLibrary`` setting.
+    based on the ``CONF_FISSION_PRODUCT_LIBRARY_NAME`` setting.
     """
     nbs = []
-    if cs["fpModel"] == "explicitFissionProducts":
-        if not cs["fpModelLibrary"]:
+    if cs[CONF_FP_MODEL] == "explicitFissionProducts":
+        if not cs[CONF_FISSION_PRODUCT_LIBRARY_NAME]:
             nbs = []
-        if cs["fpModelLibrary"] == "MC2-3":
+        if cs[CONF_FISSION_PRODUCT_LIBRARY_NAME] == "MC2-3":
             nbs = nuclideBases.byMcc3Id.values()
         else:
             raise ValueError(
-                f"An option to handle the `fpModelLibrary` "
-                f"set to `{cs['fpModelLibrary']}` has not been "
+                f"An option to handle the `CONF_FISSION_PRODUCT_LIBRARY_NAME` "
+                f"set to `{cs[CONF_FISSION_PRODUCT_LIBRARY_NAME]}` has not been "
                 f"implemented."
             )
     return nbs

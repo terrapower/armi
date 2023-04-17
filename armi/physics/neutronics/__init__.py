@@ -139,6 +139,8 @@ from armi.physics.neutronics.const import (
 COMPXS = "COMPXS"
 PMATRX = "PMATRX"
 GAMISO = "GAMISO"
+PMATRX_EXT = "pmatrx"
+GAMISO_EXT = "gamiso"
 ISOTXS = "ISOTXS"
 
 # Constants for neutronics calculation types
@@ -186,7 +188,9 @@ def gammaTransportIsRequested(cs):
     flag : bool
         Returns true if gamma transport is requested.
     """
-    return GAMMA in cs["globalFluxActive"]
+    from armi.physics.neutronics.settings import CONF_GLOBAL_FLUX_ACTIVE
+
+    return GAMMA in cs[CONF_GLOBAL_FLUX_ACTIVE]
 
 
 def gammaXsAreRequested(cs):
@@ -203,17 +207,23 @@ def gammaXsAreRequested(cs):
     flag : bool
         Returns true if gamma cross section generation is requested.
     """
-    return GAMMA in cs["genXS"]
+    from armi.physics.neutronics.settings import CONF_GEN_XS
+
+    return GAMMA in cs[CONF_GEN_XS]
 
 
 def adjointCalculationRequested(cs):
-    """Return true if an adjoint calculation is requested based on the ``neutronicsType`` setting."""
-    return cs["neutronicsType"] in [ADJOINT_CALC, ADJREAL_CALC]
+    """Return true if an adjoint calculation is requested based on the ``CONF_NEUTRONICS_TYPE`` setting."""
+    from armi.physics.neutronics.settings import CONF_NEUTRONICS_TYPE
+
+    return cs[CONF_NEUTRONICS_TYPE] in [ADJOINT_CALC, ADJREAL_CALC]
 
 
 def realCalculationRequested(cs):
-    """Return true if a real calculation is requested based on the ``neutronicsType`` type setting."""
-    return cs["neutronicsType"] in ["real", "both"]
+    """Return true if a real calculation is requested based on the ``CONF_NEUTRONICS_TYPE`` type setting."""
+    from armi.physics.neutronics.settings import CONF_NEUTRONICS_TYPE
+
+    return cs[CONF_NEUTRONICS_TYPE] in ["real", "both"]
 
 
 def applyEffectiveDelayedNeutronFractionToCore(core, cs):

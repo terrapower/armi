@@ -7,10 +7,10 @@ include armi/nuclearDataIO/cccc/tests/fixtures/simple_cartesian.rtflux
 include armi/nuclearDataIO/cccc/tests/fixtures/simple_cartesian.rzflux
 include armi/nuclearDataIO/cccc/tests/fixtures/simple_hexz.geodst
 include armi/nuclearDataIO/cccc/tests/fixtures/simple_hexz.nhflux
-include armi/nuclearDataIO/tests/fixtures/AA.GAMISO
-include armi/nuclearDataIO/tests/fixtures/AA.PMATRX
-include armi/nuclearDataIO/tests/fixtures/AB.GAMISO
-include armi/nuclearDataIO/tests/fixtures/AB.PMATRX
+include armi/nuclearDataIO/tests/fixtures/AA.gamiso
+include armi/nuclearDataIO/tests/fixtures/AA.pmatrx
+include armi/nuclearDataIO/tests/fixtures/AB.gamiso
+include armi/nuclearDataIO/tests/fixtures/AB.pmatrx
 include armi/nuclearDataIO/tests/fixtures/ISOAA
 include armi/nuclearDataIO/tests/fixtures/ISOAB
 include armi/nuclearDataIO/tests/fixtures/combined-AA-AB.gamiso

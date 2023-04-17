@@ -28,7 +28,7 @@ class Potassium(material.Fluid):
     name = "Potassium"
     propertyValidTemperature = {"density": ((63.2, 1250), "C")}
 
-    def density(self, Tk=None, Tc=None):
+    def pseudoDensity(self, Tk=None, Tc=None):
         r"""
         Calculates the density of molten Potassium in g/cc.
 
@@ -37,7 +37,7 @@ class Potassium(material.Fluid):
 
         Notes
         -----
-        In ARMI, we define density() and density3() as the same for Fluids.
+        In ARMI, we define pseudoDensity() and density() as the same for Fluids.
         """
         Tc = getTc(Tc, Tk)
         Tk = getTk(Tc=Tc)

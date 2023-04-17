@@ -23,5 +23,5 @@ class Tantalum(SimpleSolid):
     def setDefaultMassFracs(self):
         self.setMassFrac("TA181", 1)
 
-    def density3(self, Tk=None, Tc=None):
+    def density(self, Tk=None, Tc=None):
         return 16.6  # g/cc

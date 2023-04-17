@@ -26,7 +26,7 @@ from armi.nucDirectory import nuclideBases
 from armi import runLog
 from armi.nucDirectory import elements
 
-from .fissionProductModelSettings import CONF_LFP_COMPOSITION_FILE_PATH
+from .fissionProductModelSettings import CONF_LFP_COMPOSITION_FILE_PATH, CONF_FP_MODEL
 
 
 class LumpedFissionProduct:
@@ -386,10 +386,10 @@ class FissionProductDefinitionFile:
 
 def lumpedFissionProductFactory(cs):
     """Build lumped fission products."""
-    if cs["fpModel"] == "explicitFissionProducts":
+    if cs[CONF_FP_MODEL] == "explicitFissionProducts":
         return None
 
-    if cs["fpModel"] == "MO99":
+    if cs[CONF_FP_MODEL] == "MO99":
         return _buildMo99LumpedFissionProduct()
 
     lfpPath = cs[CONF_LFP_COMPOSITION_FILE_PATH]

@@ -91,7 +91,7 @@ class SiC(Material):
         self.checkPropertyTempRange("cumulative linear expansion", Tc)
         return (4.22 + 8.33e-4 * Tc - 3.51 * math.exp(-0.00527 * Tc)) * 1.0e-6
 
-    def density(self, Tc=None, Tk=None):
+    def pseudoDensity(self, Tc=None, Tk=None):
         Tc = getTc(Tc, Tk)
         self.checkPropertyTempRange("density", Tc)
         rho0 = 3.16

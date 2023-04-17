@@ -44,6 +44,10 @@ from armi.utils import textProcessors
 from armi.reactor.tests import test_reactors
 from armi.reactor.assemblies import getAssemNum
 from armi.reactor.assemblies import resetAssemNumCounter
+from armi.physics.neutronics.settings import (
+    CONF_LOADING_FILE,
+    CONF_XS_KERNEL,
+)
 
 
 NUM_BLOCKS = 3
@@ -578,10 +582,10 @@ class Assembly_TestCase(unittest.TestCase):
     def _setup_blueprints(self, filename="refSmallReactor.yaml"):
         # need this for the getAllNuclides call
         with directoryChangers.DirectoryChanger(TEST_ROOT):
-            newSettings = {"loadingFile": filename}
+            newSettings = {CONF_LOADING_FILE: filename}
             self.cs = self.cs.modified(newSettings=newSettings)
 
-            with open(self.cs["loadingFile"], "r") as y:
+            with open(self.cs[CONF_LOADING_FILE], "r") as y:
                 y = textProcessors.resolveMarkupInclusions(
                     y, pathlib.Path(self.cs.inputDirectory)
                 )
@@ -1290,7 +1294,7 @@ class AnnularFuelTestCase(unittest.TestCase):
     # pylint: disable=locally-disabled,protected-access
     def setUp(self):
         self.cs = settings.Settings()
-        newSettings = {"xsKernel": "MC2v2"}  # don't try to expand elementals
+        newSettings = {CONF_XS_KERNEL: "MC2v2"}  # don't try to expand elementals
         self.cs = self.cs.modified(newSettings=newSettings)
 
         settings.setMasterCs(self.cs)

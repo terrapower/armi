@@ -17,7 +17,34 @@
 import os
 import unittest
 
+from armi.reactor import geometry
+from armi.utils import directoryChangers
 from armi.physics import executers
+
+# pylint: disable=abstract-method
+class MockReactorParams:
+    def __init__(self):
+        self.cycle = 1
+        self.timeNode = 2
+
+
+class MockCoreParams:
+    pass
+
+
+class MockCore:
+    def __init__(self):
+        # just pick a random geomType
+        self.geomType = geometry.GeomType.CARTESIAN
+        self.symmetry = "full"
+        self.p = MockCoreParams()
+
+
+class MockReactor:
+    def __init__(self):
+        self.core = MockCore()
+        self.o = None
+        self.p = MockReactorParams()
 
 
 class TestExecutionOptions(unittest.TestCase):
@@ -37,6 +64,52 @@ class TestExecutionOptions(unittest.TestCase):
         e = executers.ExecutionOptions(label="label2")
         e.setRunDirFromCaseTitle(caseTitle="test")
         self.assertEqual(os.path.basename(e.runDir), "9c1c83cb-0")
+
+
+class TestExecuters(unittest.TestCase):
+    def setUp(self):
+        e = executers.ExecutionOptions(label=None)
+        self.executer = executers.DefaultExecuter(e, MockReactor())
+
+    def test_collectInputsAndOutputs(self):
+        """
+        Verify that the executer can select to not copy back output.
+        """
+        self.executer.options.inputFile = "test.inp"
+        self.executer.options.outputFile = "test.out"
+        self.executer.options.copyOutput = False
+        inputs, outputs = self.executer._collectInputsAndOutputs()
+        self.assertEqual(
+            "test.inp", inputs[0], "Input file was not successfully identified."
+        )
+        self.assertTrue(outputs == [], "Outputs were returned erroneously!")
+
+        self.executer.options.copyOutput = True
+        inputs, outputs = self.executer._collectInputsAndOutputs()
+        self.assertEqual(
+            "test.inp", inputs[0], "Input file was not successfully identified."
+        )
+        self.assertEqual(
+            "test.out", outputs[0], "Output file was not successfully identified."
+        )
+
+    def test_updateRunDir(self):
+        """
+        Verify that runDir is updated when TemporaryDirectoryChanger is used and
+        not updated when ForcedCreationDirectoryChanger is used
+        """
+
+        self.assertEqual(
+            self.executer.dcType, directoryChangers.TemporaryDirectoryChanger
+        )
+        self.executer._updateRunDir("updatedRunDir")
+        self.assertEqual(self.executer.options.runDir, "updatedRunDir")
+
+        # change directoryChanger type, runDir not updated
+        self.executer.options.runDir = "runDir"
+        self.executer.dcType = directoryChangers.ForcedCreationDirectoryChanger
+        self.executer._updateRunDir("notThisString")
+        self.assertEqual(self.executer.options.runDir, "runDir")
 
 
 if __name__ == "__main__":

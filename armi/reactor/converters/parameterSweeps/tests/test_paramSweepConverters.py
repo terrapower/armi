@@ -32,6 +32,7 @@ from armi.reactor.converters.parameterSweeps.generalParameterSweepConverters imp
 )
 from armi.reactor.tests.test_reactors import loadTestReactor
 from armi.reactor.flags import Flags
+from armi.physics.neutronics.settings import CONF_EPS_FSPOINT
 
 
 THIS_DIR = os.path.dirname(__file__)
@@ -56,7 +57,7 @@ class TestParamSweepConverters(unittest.TestCase):
         self.assertEqual(custom._parameter, 1000)
 
         custom.convert(self.r)
-        self.assertAlmostEqual(custom._cs["epsFSPoint"], 1, delta=1e-3)
+        self.assertAlmostEqual(custom._cs[CONF_EPS_FSPOINT], 1, delta=1e-3)
 
     def test_settingsModifier(self):
         """Super basic test of the Settings Modifier"""

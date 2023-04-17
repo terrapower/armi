@@ -41,7 +41,7 @@ class Inconel(SimpleSolid):
         self.setMassFrac("B10", 0.00003 * 0.1997)
         self.setMassFrac("B11", 0.00003 * (1.0 - 0.1997))
 
-    def density3(self, Tk=None, Tc=None):
+    def density(self, Tk=None, Tc=None):
         return 8.3600
 
 

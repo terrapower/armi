@@ -59,6 +59,8 @@ class ExecutionOptions:
     savePhysicsFiles : bool
         Dump the physics kernel I/O files from the execution to a dedicated directory that
         will not be overwritten so they will be available after the run.
+    copyOutput : bool
+        Copy the output from running the executable back to the working directory.
     applyResultsToReactor : bool
         Update the in-memory reactor model with results upon completion. Set to False
         when information from a run is needed for auxiliary purposes rather than progressing
@@ -78,6 +80,7 @@ class ExecutionOptions:
         self.applyResultsToReactor = True
         self.paramsToScaleSubset = None
         self.savePhysicsFiles = False
+        self.copyOutput = True
 
     def __repr__(self):
         return f"<{self.__class__.__name__}: {self.label}>"
@@ -99,7 +102,7 @@ class ExecutionOptions:
 
         This is optional (you can set runDir to whatever you want). If you
         use this, you will get a relatively consistent naming convention
-        for your fast-past folders.
+        for your fast-path folders.
         """
         # This creates a hash of the case title plus the label
         # to shorten the running directory and to avoid path length
@@ -131,6 +134,7 @@ class Executer:
     def __init__(self, options, reactor):
         self.options = options
         self.r = reactor
+        self.dcType = directoryChangers.TemporaryDirectoryChanger
 
     def run(self):
         """
@@ -195,13 +199,14 @@ class DefaultExecuter(Executer):
         # must either write input to CWD for analysis and then copy to runDir
         # or not list it in inputs (for optimization)
         self.writeInput()
-        with directoryChangers.ForcedCreationDirectoryChanger(
+        with self.dcType(
             self.options.runDir,
             filesToMove=inputs,
             filesToRetrieve=outputs,
             outputPath=outputDir,
         ) as dc:
             self.options.workingDir = dc.initial
+            self._updateRunDir(dc.destination)
             self._execute()
             output = self._readOutput()
             if self.options.applyResultsToReactor:
@@ -209,11 +214,40 @@ class DefaultExecuter(Executer):
         self._undoGeometryTransformations()
         return output
 
+    def _updateRunDir(self, directory):
+        """
+        If a TemporaryDirectoryChanger is used, the runDir needs to be updated
+
+        If a ForcedCreationDirectoryChanger is used instead, nothing needs to be done.
+
+        Parameters
+        ----------
+        directory : str
+            New path for runDir
+        """
+        if self.dcType == directoryChangers.TemporaryDirectoryChanger:
+            self.options.runDir = directory
+
     def _collectInputsAndOutputs(self):
-        """Get total lists of input and output files."""
+        """
+        Get total lists of input and output files.
+
+        If self.options.copyOutput is false, don't copy the main `outputFile` back from
+        the working directory.
+
+        In some ARMI runs, the executer can be run hundreds or thousands of times and
+        generate many output files that aren't strictly necessary to keep around. One
+        can save space by choosing not to copy the outputs back in these special cases.
+        ``extraOutputFiles`` are typically controlled by the subclass, so the copyOutput
+        option only affects the main ``outputFile``.
+
+        """
         inputs = [self.options.inputFile] if self.options.inputFile else []
         inputs.extend(self.options.extraInputFiles)
-        outputs = [self.options.outputFile] if self.options.outputFile else []
+        if self.options.outputFile and self.options.copyOutput:
+            outputs = [self.options.outputFile]
+        else:
+            outputs = []
         outputs.extend(self.options.extraOutputFiles)
         return inputs, outputs
 

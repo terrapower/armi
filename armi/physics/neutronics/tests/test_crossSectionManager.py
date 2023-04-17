@@ -39,12 +39,14 @@ from armi.physics.neutronics.crossSectionGroupManager import (
 )
 from armi.physics.neutronics.crossSectionGroupManager import CrossSectionGroupManager
 from armi.physics.neutronics.fissionProductModel.tests import test_lumpedFissionProduct
+from armi.physics.neutronics.settings import CONF_XS_BLOCK_REPRESENTATION
 from armi.reactor.blocks import HexBlock
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
 from armi.tests import TEST_ROOT
 from armi.utils import units
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
+from armi.settings.fwSettings.globalSettings import CONF_RUN_TYPE
 
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -182,7 +184,7 @@ class TestBlockCollectionComponentAverage(unittest.TestCase):
         # from the cross section group manager is called.
         for _xsID, xsOpt in self.o.cs[CONF_CROSS_SECTION].items():
             self.assertEqual(
-                xsOpt.blockRepresentation, self.o.cs["xsBlockRepresentation"]
+                xsOpt.blockRepresentation, self.o.cs[CONF_XS_BLOCK_REPRESENTATION]
             )
 
         xsgm.createRepresentativeBlocks()
@@ -342,6 +344,7 @@ class Test_CrossSectionGroupManager(unittest.TestCase):
         (
             _bCollect,
             newRepresentativeBlocks,
+            origXSIDsFromNew,
         ) = self.csm.createRepresentativeBlocksUsingExistingBlocks(
             blockList, unperturbedReprBlocks
         )
@@ -352,14 +355,24 @@ class Test_CrossSectionGroupManager(unittest.TestCase):
         self.assertEqual(
             newReprBlock.getNumberDensities(), oldReprBlock.getNumberDensities()
         )
+        self.assertEqual(origXSIDsFromNew["BA"], "AA")
 
-    def test_interactCoupled(self):
-        # ensure that representativeBlocks remains empty if timeNode == 1
+    def test_interactCoupled_UpdateTrue(self):
+        """ensure that representativeBlocks get populated if timeNode == 0"""
+        self.blockList[0].r.p.timeNode = 0
+        self.csm.interactCoupled(iteration=0)
+        self.assertTrue(self.csm.representativeBlocks)
+
+    def test_interactCoupled_UpdateFalse(self):
+        """ensure that representativeBlocks remains empty if timeNode == 1"""
         self.blockList[0].r.p.timeNode = 1
         self.csm.interactCoupled(iteration=0)
         self.assertFalse(self.csm.representativeBlocks)
-        # ensure that representativeBlocks get populated if timeNode == 0
-        self.blockList[0].r.p.timeNode = 0
+
+    def test_interactCoupled_Snapshots(self):
+        """ensure that representativeBlocks get populated if runtype is snapshots"""
+        self.csm.cs[CONF_RUN_TYPE] = "Snapshots"
+        self.blockList[0].r.p.timeNode = 2
         self.csm.interactCoupled(iteration=0)
         self.assertTrue(self.csm.representativeBlocks)
 

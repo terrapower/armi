@@ -29,7 +29,7 @@ class NaCl(SimpleSolid):
         self.setMassFrac("CL35", 0.4596)
         self.setMassFrac("CL37", 0.1470)
 
-    def density3(self, Tk=None, Tc=None):
+    def density(self, Tk=None, Tc=None):
         """
         Return the density of Sodium Chloride.
 

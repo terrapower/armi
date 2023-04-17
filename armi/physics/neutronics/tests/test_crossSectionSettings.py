@@ -28,6 +28,10 @@ from armi.physics.neutronics.crossSectionSettings import XSSettingDef
 from armi.physics.neutronics.crossSectionSettings import XSSettings
 from armi.physics.neutronics.crossSectionSettings import xsSettingsValidator
 from armi.physics.neutronics.tests.test_neutronicsPlugin import XS_EXAMPLE
+from armi.physics.neutronics.settings import (
+    CONF_XS_BLOCK_REPRESENTATION,
+    CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION,
+)
 from armi.settings import caseSettings
 
 
@@ -54,7 +58,8 @@ class TestCrossSectionSettings(unittest.TestCase):
         self.assertEqual(["ISOXA"], xa.xsFileLocation)
         self.assertNotIn("XB", xs)
         xs.setDefaults(
-            cs["xsBlockRepresentation"], cs["disableBlockTypeExclusionInXsGeneration"]
+            cs[CONF_XS_BLOCK_REPRESENTATION],
+            cs[CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION],
         )
         # Check that the file location of 'XB' still points to the same file location as 'XA'.
         self.assertEqual(xa, xs["XB"])
@@ -77,6 +82,28 @@ class TestCrossSectionSettings(unittest.TestCase):
         self.assertTrue(xsModel.criticalBuckling)
         self.assertEqual("Median", xsModel.blockRepresentation)
 
+    def test_prioritization(self):
+        xsModel = XSModelingOptions(
+            xsID="AA",
+            geometry="0D",
+            criticalBuckling=True,
+            xsPriority=2,
+            xsExecuteExclusive=True,
+        )
+        self.assertEqual("AA", xsModel.xsID)
+        self.assertEqual(True, xsModel.xsExecuteExclusive)
+        self.assertEqual(2, xsModel.xsPriority)
+
+        xsModel = XSModelingOptions(
+            xsID="AA",
+            geometry="0D",
+            criticalBuckling=True,
+        )
+        # defaults work
+        xsModel.setDefaults("Average", False)
+        self.assertEqual(False, xsModel.xsExecuteExclusive)
+        self.assertEqual(5, xsModel.xsPriority)
+
     def test_homogeneousXsDefaultSettingAssignment(self):
         """
         Make sure the object can whip up an unspecified xsID by default.
@@ -86,7 +113,8 @@ class TestCrossSectionSettings(unittest.TestCase):
         cs = settings.Settings()
         xsModel = XSSettings()
         xsModel.setDefaults(
-            cs["xsBlockRepresentation"], cs["disableBlockTypeExclusionInXsGeneration"]
+            cs[CONF_XS_BLOCK_REPRESENTATION],
+            cs[CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION],
         )
         self.assertNotIn("YA", xsModel)
         self.assertEqual(xsModel["YA"].geometry, "0D")
@@ -99,7 +127,8 @@ class TestCrossSectionSettings(unittest.TestCase):
         jd = XSModelingOptions("JD", geometry="0D", criticalBuckling=False)
         xs["JD"] = jd
         xs.setDefaults(
-            cs["xsBlockRepresentation"], cs["disableBlockTypeExclusionInXsGeneration"]
+            cs[CONF_XS_BLOCK_REPRESENTATION],
+            cs[CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION],
         )
 
         self.assertIn("JD", xs)
@@ -129,7 +158,8 @@ class TestCrossSectionSettings(unittest.TestCase):
         )
         xsModel["RQ"] = rq
         xsModel.setDefaults(
-            cs["xsBlockRepresentation"], cs["disableBlockTypeExclusionInXsGeneration"]
+            cs[CONF_XS_BLOCK_REPRESENTATION],
+            cs[CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION],
         )
 
         # Check that new micro suffix `RY` with higher burn-up group gets assigned the same settings as `RQ`
@@ -151,7 +181,8 @@ class TestCrossSectionSettings(unittest.TestCase):
         da = XSModelingOptions("DA", geometry="1D cylinder", meshSubdivisionsPerCm=1.0)
         xsModel["DA"] = da
         xsModel.setDefaults(
-            cs["xsBlockRepresentation"], cs["disableBlockTypeExclusionInXsGeneration"]
+            cs[CONF_XS_BLOCK_REPRESENTATION],
+            cs[CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION],
         )
         self.assertEqual(xsModel["DA"].mergeIntoClad, ["gap"])
         self.assertEqual(xsModel["DA"].meshSubdivisionsPerCm, 1.0)
@@ -252,8 +283,8 @@ class Test_XSSettings(unittest.TestCase):
             cs[CONF_CROSS_SECTION]["AA"]
 
         cs[CONF_CROSS_SECTION].setDefaults(
-            blockRepresentation=cs["xsBlockRepresentation"],
-            validBlockTypes=cs["disableBlockTypeExclusionInXsGeneration"],
+            blockRepresentation=cs[CONF_XS_BLOCK_REPRESENTATION],
+            validBlockTypes=cs[CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION],
         )
 
         cs[CONF_CROSS_SECTION]["AA"]
@@ -266,7 +297,7 @@ class Test_XSSettings(unittest.TestCase):
         has not already been assigned.
         """
         cs = caseSettings.Settings()
-        cs["xsBlockRepresentation"] = "FluxWeightedAverage"
+        cs[CONF_XS_BLOCK_REPRESENTATION] = "FluxWeightedAverage"
         cs[CONF_CROSS_SECTION] = XSSettings()
         cs[CONF_CROSS_SECTION]["AA"] = XSModelingOptions("AA", geometry="0D")
         cs[CONF_CROSS_SECTION]["BA"] = XSModelingOptions(
@@ -277,7 +308,8 @@ class Test_XSSettings(unittest.TestCase):
         self.assertEqual(cs[CONF_CROSS_SECTION]["BA"].blockRepresentation, "Average")
 
         cs[CONF_CROSS_SECTION].setDefaults(
-            cs["xsBlockRepresentation"], cs["disableBlockTypeExclusionInXsGeneration"]
+            cs[CONF_XS_BLOCK_REPRESENTATION],
+            cs[CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION],
         )
 
         self.assertEqual(
@@ -291,57 +323,60 @@ class Test_XSSettings(unittest.TestCase):
         XSModelingOption that has the ``xsFileLocation`` attribute defined.
         """
         cs = caseSettings.Settings()
-        cs["xsBlockRepresentation"] = "FluxWeightedAverage"
+        cs[CONF_XS_BLOCK_REPRESENTATION] = "FluxWeightedAverage"
         cs[CONF_CROSS_SECTION] = XSSettings()
         cs[CONF_CROSS_SECTION]["AA"] = XSModelingOptions("AA", xsFileLocation=[])
 
         # Check FluxWeightedAverage
         cs[CONF_CROSS_SECTION].setDefaults(
-            cs["xsBlockRepresentation"], cs["disableBlockTypeExclusionInXsGeneration"]
+            cs[CONF_XS_BLOCK_REPRESENTATION],
+            cs[CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION],
         )
         self.assertEqual(
             cs[CONF_CROSS_SECTION]["AA"].blockRepresentation, "FluxWeightedAverage"
         )
 
         # Check Average
-        cs["xsBlockRepresentation"] = "Average"
+        cs[CONF_XS_BLOCK_REPRESENTATION] = "Average"
         cs[CONF_CROSS_SECTION]["AA"] = XSModelingOptions("AA", xsFileLocation=[])
         cs[CONF_CROSS_SECTION].setDefaults(
-            cs["xsBlockRepresentation"], cs["disableBlockTypeExclusionInXsGeneration"]
+            cs[CONF_XS_BLOCK_REPRESENTATION],
+            cs[CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION],
         )
         self.assertEqual(cs[CONF_CROSS_SECTION]["AA"].blockRepresentation, "Average")
 
         # Check Median
-        cs["xsBlockRepresentation"] = "Average"
+        cs[CONF_XS_BLOCK_REPRESENTATION] = "Average"
         cs[CONF_CROSS_SECTION]["AA"] = XSModelingOptions(
             "AA", xsFileLocation=[], blockRepresentation="Median"
         )
         cs[CONF_CROSS_SECTION].setDefaults(
-            cs["xsBlockRepresentation"], cs["disableBlockTypeExclusionInXsGeneration"]
+            cs[CONF_XS_BLOCK_REPRESENTATION],
+            cs[CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION],
         )
         self.assertEqual(cs[CONF_CROSS_SECTION]["AA"].blockRepresentation, "Median")
 
     def test_xsSettingsSetDefault(self):
         """Test the configuration options of the ``setDefaults`` method."""
         cs = caseSettings.Settings()
-        cs["xsBlockRepresentation"] = "FluxWeightedAverage"
+        cs[CONF_XS_BLOCK_REPRESENTATION] = "FluxWeightedAverage"
         cs[CONF_CROSS_SECTION].setDefaults(
-            blockRepresentation=cs["xsBlockRepresentation"], validBlockTypes=None
+            blockRepresentation=cs[CONF_XS_BLOCK_REPRESENTATION], validBlockTypes=None
         )
         self.assertEqual(cs[CONF_CROSS_SECTION]["AA"].validBlockTypes, None)
 
         cs[CONF_CROSS_SECTION].setDefaults(
-            blockRepresentation=cs["xsBlockRepresentation"], validBlockTypes=True
+            blockRepresentation=cs[CONF_XS_BLOCK_REPRESENTATION], validBlockTypes=True
         )
         self.assertEqual(cs[CONF_CROSS_SECTION]["AA"].validBlockTypes, None)
 
         cs[CONF_CROSS_SECTION].setDefaults(
-            blockRepresentation=cs["xsBlockRepresentation"], validBlockTypes=False
+            blockRepresentation=cs[CONF_XS_BLOCK_REPRESENTATION], validBlockTypes=False
         )
         self.assertEqual(cs[CONF_CROSS_SECTION]["AA"].validBlockTypes, ["fuel"])
 
         cs[CONF_CROSS_SECTION].setDefaults(
-            blockRepresentation=cs["xsBlockRepresentation"],
+            blockRepresentation=cs[CONF_XS_BLOCK_REPRESENTATION],
             validBlockTypes=["control", "fuel", "plenum"],
         )
         self.assertEqual(

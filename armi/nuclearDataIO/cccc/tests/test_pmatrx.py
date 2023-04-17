@@ -58,20 +58,20 @@ class TestPmatrxNuclides(unittest.TestCase):
 
     def test_getPMATRXFileName(self):
         self.assertEqual(
-            nuclearDataIO.getExpectedPMATRXFileName(cycle=0), "cycle0.PMATRX"
+            nuclearDataIO.getExpectedPMATRXFileName(cycle=0), "cycle0.pmatrx"
         )
         self.assertEqual(
-            nuclearDataIO.getExpectedPMATRXFileName(cycle=1), "cycle1.PMATRX"
+            nuclearDataIO.getExpectedPMATRXFileName(cycle=1), "cycle1.pmatrx"
         )
         self.assertEqual(
-            nuclearDataIO.getExpectedPMATRXFileName(cycle=23), "cycle23.PMATRX"
+            nuclearDataIO.getExpectedPMATRXFileName(cycle=23), "cycle23.pmatrx"
         )
         self.assertEqual(
-            nuclearDataIO.getExpectedPMATRXFileName(xsID="AA"), "AA.PMATRX"
+            nuclearDataIO.getExpectedPMATRXFileName(xsID="AA"), "AA.pmatrx"
         )
         self.assertEqual(
             nuclearDataIO.getExpectedPMATRXFileName(xsID="AA", suffix="test"),
-            "AA-test.PMATRX",
+            "AA-test.pmatrx",
         )
         self.assertEqual(nuclearDataIO.getExpectedPMATRXFileName(), "PMATRX")
         with self.assertRaises(ValueError):

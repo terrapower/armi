@@ -66,14 +66,17 @@ from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.reactor.components import basicShapes
 from armi.reactor.flags import Flags
 from armi.utils.units import TRACE_NUMBER_DENSITY
+from armi.settings.fwSettings.globalSettings import CONF_RUN_TYPE
 
 ORDER = interfaces.STACK_ORDER.BEFORE + interfaces.STACK_ORDER.FUEL_MANAGEMENT
 
 
 def describeInterfaces(cs):
     """Function for exposing interface(s) to other code"""
+    # pylint: disable=import-outside-toplevel # avoid cyclic import
+    from armi.physics.neutronics.settings import CONF_NEUTRONICS_KERNEL
 
-    if "MCNP" not in cs["neutronicsKernel"]:  # MCNP does not use CSGM
+    if "MCNP" not in cs[CONF_NEUTRONICS_KERNEL]:  # MCNP does not use CSGM
         return (CrossSectionGroupManager, {})
 
     return None
@@ -585,10 +588,15 @@ class CrossSectionGroupManager(interfaces.Interface):
 
     def interactBOL(self):
         # now that all cs settings are loaded, apply defaults to compound XS settings
+        # pylint: disable=import-outside-toplevel # avoid cyclic import
+        from armi.physics.neutronics.settings import (
+            CONF_XS_BLOCK_REPRESENTATION,
+            CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION,
+        )
 
         self.cs[CONF_CROSS_SECTION].setDefaults(
-            self.cs["xsBlockRepresentation"],
-            self.cs["disableBlockTypeExclusionInXsGeneration"],
+            self.cs[CONF_XS_BLOCK_REPRESENTATION],
+            self.cs[CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION],
         )
 
     def interactBOC(self, cycle=None):
@@ -628,7 +636,8 @@ class CrossSectionGroupManager(interfaces.Interface):
         --------
         :py:meth:`Assembly <armi.physics.neutronics.latticePhysics.latticePhysics.LatticePhysicsInterface.interactCoupled>`
         """
-        if self.r.p.timeNode == 0:
+        # always run for snapshots to account for temp effect of different flow or power statepoint
+        if self.cs[CONF_RUN_TYPE] == "Snapshots" or self.r.p.timeNode == 0:
             self.interactBOC(cycle=None)
 
     def clearRepresentativeBlocks(self):
@@ -843,8 +852,10 @@ class CrossSectionGroupManager(interfaces.Interface):
         ----------
         blockList : list
             A list of blocks defined within the core
-        originalRepresentativeBlocks : list
-            A list of unperturbed representative blocks that the new representative blocks are formed from
+        originalRepresentativeBlocks : dict
+            A dict of unperturbed representative blocks that the new representative blocks are formed from
+            keys: XS group ID (e.g., "AA")
+            values: representative block for the XS group
 
         Returns
         -------
@@ -852,6 +863,9 @@ class CrossSectionGroupManager(interfaces.Interface):
             Mapping between XS IDs and the new block collections
         modifiedReprBlocks : dict
             Mapping between XS IDs and the new representative blocks
+        origXSIDsFromNew : dict
+            Mapping of original XS IDs to new XS IDs. New XS IDs are created to
+            represent a modified state (e.g., a Doppler temperature perturbation).
 
         Raises
         ------
@@ -881,7 +895,7 @@ class CrossSectionGroupManager(interfaces.Interface):
                 oldBlockCollection.allNuclidesInProblem
             )
             newBlockCollectionsByXsGroup[newXSID] = newBlockCollection
-        return newBlockCollectionsByXsGroup, modifiedReprBlocks
+        return newBlockCollectionsByXsGroup, modifiedReprBlocks, origXSIDsFromNew
 
     def _getModifiedReprBlocks(self, blockList, originalRepresentativeBlocks):
         """
@@ -1034,9 +1048,12 @@ class CrossSectionGroupManager(interfaces.Interface):
 
     def _summarizeGroups(self, blockCollectionsByXsGroup):
         """Summarize current contents of the XS groups."""
+        # pylint: disable=import-outside-toplevel # avoid cyclic import
+        from armi.physics.neutronics.settings import CONF_XS_BLOCK_REPRESENTATION
+
         runLog.extra("Cross section group manager summary")
         runLog.extra(
-            "Averaging performed by `{0}`".format(self.cs["xsBlockRepresentation"])
+            "Averaging performed by `{0}`".format(self.cs[CONF_XS_BLOCK_REPRESENTATION])
         )
         for xsID, blocks in blockCollectionsByXsGroup.items():
             if blocks:

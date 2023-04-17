@@ -27,6 +27,10 @@ from armi.reactor.components import basicShapes, complexShapes
 from armi.nucDirectory import nucDir, nuclideBases
 from armi.nuclearDataIO.cccc import isotxs
 from armi.physics.neutronics import NEUTRON, GAMMA
+from armi.physics.neutronics.settings import (
+    CONF_LOADING_FILE,
+    CONF_XS_KERNEL,
+)
 from armi.reactor import blocks, components, geometry, grids
 from armi.reactor.flags import Flags
 from armi.reactor.tests.test_assemblies import makeTestAssembly
@@ -74,7 +78,7 @@ def loadTestBlock(cold=True):
     """Build an annular test block for evaluating unit tests."""
     caseSetting = settings.Settings()
     settings.setMasterCs(caseSetting)
-    caseSetting["xsKernel"] = "MC2v2"
+    caseSetting[CONF_XS_KERNEL] = "MC2v2"
     runLog.setVerbosity("error")
     caseSetting["nCycles"] = 1
     r = tests.getEmptyHexReactor()
@@ -495,7 +499,9 @@ class Block_TestCase(unittest.TestCase):
 
     def test_getXsType(self):
         self.cs = settings.Settings()
-        newSettings = {"loadingFile": os.path.join(TEST_ROOT, "refSmallReactor.yaml")}
+        newSettings = {
+            CONF_LOADING_FILE: os.path.join(TEST_ROOT, "refSmallReactor.yaml")
+        }
         self.cs = self.cs.modified(newSettings=newSettings)
 
         self.block.p.xsType = "B"
@@ -2379,7 +2385,7 @@ class MassConservationTests(unittest.TestCase):
         # we are at cold temp so cold and hot area are equal
         self.assertAlmostEqual(fuel.getArea(cold=True), fuel.getArea())
         height = self.b.getHeight()  # hot height.
-        rho = fuel.getProperties().density3(Tc=Tcold)
+        rho = fuel.getProperties().density(Tc=Tcold)
         # can't use getThermalExpansionFactor since hot=cold so it would be 0
         dllHot = fuel.getProperties().linearExpansionFactor(Tc=Thot, T0=Tcold)
         coldHeight = height / (1 + dllHot)

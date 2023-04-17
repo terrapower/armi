@@ -304,40 +304,37 @@ class TestShapedComponent(TestGeneralComponents):
     def test_densityConsistent(self):
         c = self.component
 
-        if isinstance(c, (Component, DerivedShape)):
-            return  # no volume defined
+        # no volume defined
+        if isinstance(c, (DerivedShape, UnshapedVolumetricComponent)):
+            return
+        elif type(c) == Component:
+            return
+
+        # basic density sanity test
         self.assertAlmostEqual(c.density(), c.getMass() / c.getVolume())
 
         # test 2D expanding density
         if c.temperatureInC == c.inputTemperatureInC:
-            self.assertAlmostEqual(c.density(), c.material.density(Tc=c.temperatureInC))
-        dLL = c.material.linearExpansionPercent(units.getTk(Tc=c.temperatureInC))
-        self.assertAlmostEqual(
-            c.density(), c.material.density(Tc=c.temperatureInC) * dLL
-        )  # 2d density off by dLL
+            self.assertAlmostEqual(
+                c.density(), c.material.pseudoDensity(Tc=c.temperatureInC), delta=0.001
+            )
 
-        # test mass agreement using area
-        if c.is3D:
-            return  # no area defined
-        unexpandedHeight = c.parent.getHeight() / c.getThermalExpansionFactor()
-        self.assertAlmostEqual(
-            c.getArea(cold=True) * unexpandedHeight * c.material.refDens,
-            self.component.getMass(),
-        )
-        self.assertAlmostEqual(
-            c.getArea() * c.parent.getHeight() * c.density(), self.component.getMass()
-        )
+        if not c.is3D:
+            self.assertAlmostEqual(
+                c.getArea() * c.parent.getHeight() * c.density(),
+                self.component.getMass(),
+            )
 
-    def test_density3D(self):
+    def test_densityD(self):
         """Testing the Component density gets the correct 3D material density."""
 
         class StrangeMaterial(Material):
             """material designed to make the test easier to understand"""
 
-            def density(self, Tk=None, Tc=None):
+            def pseduoDensity(self, Tk=None, Tc=None):
                 return 1.0
 
-            def density3(self, Tk=None, Tc=None):
+            def density(self, Tk=None, Tc=None):
                 return 3.0
 
         c = Sphere(
@@ -585,24 +582,24 @@ class TestComponentExpansion(unittest.TestCase):
         )
 
         # material.density is the 2D density of a material
-        # material.density3 is true density and not equal in this case
+        # material.density is true density and not equal in this case
         for circle in [circle1, circle2]:
             # 2D density is not equal after application of coldMatAxialExpansionFactor
             # which happens during construction
             self.assertNotAlmostEqual(
                 circle.getMassDensity(),
-                circle.material.density(Tc=circle.temperatureInC),
+                circle.material.pseudoDensity(Tc=circle.temperatureInC),
             )
             # 2D density is off by the material thermal exp factor
             percent = circle.material.linearExpansionPercent(Tc=circle.temperatureInC)
             thermalExpansionFactorFromColdMatTemp = 1 + percent / 100
             self.assertAlmostEqual(
                 circle.getMassDensity() * thermalExpansionFactorFromColdMatTemp,
-                circle.material.density(Tc=circle.temperatureInC),
+                circle.material.pseudoDensity(Tc=circle.temperatureInC),
             )
             self.assertAlmostEqual(
                 circle.getMassDensity(),
-                circle.material.density3(Tc=circle.temperatureInC),
+                circle.material.density(Tc=circle.temperatureInC),
             )
 
         # brief 2D expansion with set temp to show mass is conserved
@@ -640,7 +637,7 @@ class TestComponentExpansion(unittest.TestCase):
 
         self.assertAlmostEqual(
             circle1.getMassDensity(),
-            circle1.material.density3(Tc=circle1.temperatureInC),
+            circle1.material.density(Tc=circle1.temperatureInC),
         )
         # change back to old temp
         circle1.adjustDensityForHeightExpansion(self.tWarm)
@@ -683,7 +680,7 @@ class TestComponentExpansion(unittest.TestCase):
 
             self.assertAlmostEqual(
                 circle.getMassDensity(),
-                circle.material.density3(Tc=circle.temperatureInC),
+                circle.material.density(Tc=circle.temperatureInC),
             )
             # total mass consistent between hot and cold
             # Hot height will be taller
@@ -691,7 +688,7 @@ class TestComponentExpansion(unittest.TestCase):
             self.assertAlmostEqual(
                 coldHeight
                 * circle.getArea(cold=True)
-                * circle.material.density3(Tc=circle.inputTemperatureInC),
+                * circle.material.density(Tc=circle.inputTemperatureInC),
                 hotHeight * circle.getArea() * circle.getMassDensity(),
             )
 

@@ -887,12 +887,12 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
                         # skip blocks of custom material where liner is merged with clad
                         for cExp in bExp:
                             if not isinstance(cExp.material, custom.Custom):
-                                matDens = cExp.material.density3(Tc=cExp.temperatureInC)
+                                matDens = cExp.material.density(Tc=cExp.temperatureInC)
                                 compDens = cExp.getMassDensity()
                                 msg = (
                                     f"{cExp} {cExp.material} in {bExp} was not at correct density. \n"
                                     + f"expansion = {bExp.p.height / bStd.p.height} \n"
-                                    + f"density3 = {matDens}, component density = {compDens} \n"
+                                    + f"density = {matDens}, component density = {compDens} \n"
                                 )
                                 self.assertAlmostEqual(
                                     matDens,

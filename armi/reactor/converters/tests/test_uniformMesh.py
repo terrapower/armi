@@ -21,6 +21,7 @@ import random
 import unittest
 
 from armi.nuclearDataIO.cccc import isotxs
+from armi.physics.neutronics.settings import CONF_XS_KERNEL
 from armi.reactor.converters import uniformMesh
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_assemblies
@@ -228,7 +229,9 @@ class TestUniformMeshComponents(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.o, cls.r = loadTestReactor(TEST_ROOT, customSettings={"xsKernel": "MC2v2"})
+        cls.o, cls.r = loadTestReactor(
+            TEST_ROOT, customSettings={CONF_XS_KERNEL: "MC2v2"}
+        )
         reduceTestReactorRings(cls.r, cls.o.cs, 4)
         cls.r.core.lib = isotxs.readBinary(ISOAA_PATH)
 
@@ -298,7 +301,7 @@ class TestUniformMesh(unittest.TestCase):
 
     def setUp(self):
         self.o, self.r = loadTestReactor(
-            TEST_ROOT, customSettings={"xsKernel": "MC2v2"}
+            TEST_ROOT, customSettings={CONF_XS_KERNEL: "MC2v2"}
         )
         reduceTestReactorRings(self.r, self.o.cs, 3)
         self.r.core.lib = isotxs.readBinary(ISOAA_PATH)
@@ -389,7 +392,7 @@ class TestGammaUniformMesh(unittest.TestCase):
 
     def setUp(self):
         self.o, self.r = loadTestReactor(
-            TEST_ROOT, customSettings={"xsKernel": "MC2v2"}
+            TEST_ROOT, customSettings={CONF_XS_KERNEL: "MC2v2"}
         )
         self.r.core.lib = isotxs.readBinary(ISOAA_PATH)
         self.r.core.p.keff = 1.0
@@ -569,7 +572,7 @@ class TestUniformMeshNonUniformAssemFlags(unittest.TestCase):
         self.o, self.r = loadTestReactor(
             TEST_ROOT,
             customSettings={
-                "xsKernel": "MC2v2",
+                CONF_XS_KERNEL: "MC2v2",
                 "nonUniformAssemFlags": ["primary control"],
             },
         )

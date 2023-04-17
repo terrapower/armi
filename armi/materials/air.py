@@ -34,7 +34,7 @@ class Air(material.Fluid):
     temperature ranges based on where values are more than 1% off of reference
     """
     propertyValidTemperature = {
-        "density": ((100, 2400), "K"),
+        "pseudoDensity": ((100, 2400), "K"),
         "heat capacity": ((100, 1300), "K"),
         "thermal conductivity": ((200, 850), "K"),
     }
@@ -57,7 +57,7 @@ class Air(material.Fluid):
         self.setMassFrac("O", 0.231781)
         self.setMassFrac("AR", 0.012827)
 
-    def density(
+    def pseudoDensity(
         self,
         Tk=None,
         Tc=None,
@@ -77,7 +77,7 @@ class Air(material.Fluid):
 
         Notes
         -----
-        In ARMI, we define density() and density3() as the same for Fluids.
+        In ARMI, we define pseudoDensity() and density() as the same for Fluids.
 
         Returns
         -------
@@ -85,7 +85,7 @@ class Air(material.Fluid):
             mass density in g/cc
         """
         Tk = getTk(Tc, Tk)
-        self.checkPropertyTempRange("density", Tk)
+        self.checkPropertyTempRange("pseudoDensity", Tk)
         inv_Tk = 1.0 / getTk(Tc, Tk)
         rho_kgPerM3 = 1.15675e03 * inv_Tk ** 2 + 3.43413e02 * inv_Tk + 2.99731e-03
         return rho_kgPerM3 / G_PER_CM3_TO_KG_PER_M3
@@ -94,7 +94,7 @@ class Air(material.Fluid):
         """
         Returns the liquid specific volume in m^3/kg of this material given Tk in K or Tc in C.
         """
-        return 1 / (1000.0 * self.density(Tk, Tc))
+        return 1 / (1000.0 * self.pseudoDensity(Tk, Tc))
 
     def thermalConductivity(self, Tk=None, Tc=None):
         """

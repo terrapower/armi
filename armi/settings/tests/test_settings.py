@@ -32,6 +32,7 @@ from armi.operators.settingsValidation import Inspector, validateVersion
 from armi.physics.fuelCycle import FuelHandlerPlugin
 from armi.physics.fuelCycle.settings import CONF_CIRCULAR_RING_ORDER
 from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
+from armi.physics.neutronics.settings import CONF_NEUTRONICS_KERNEL
 from armi.reactor.flags import Flags
 from armi.settings import caseSettings
 from armi.settings import setting
@@ -73,8 +74,8 @@ class PluginAddsOptions(plugins.ArmiPlugin):
     @plugins.HOOKIMPL
     def defineSettings():
         return [
-            setting.Option("MCNP", "neutronicsKernel"),
-            setting.Option("MCNP_Slab", "neutronicsKernel"),
+            setting.Option("MCNP", CONF_NEUTRONICS_KERNEL),
+            setting.Option("MCNP_Slab", CONF_NEUTRONICS_KERNEL),
         ]
 
 
@@ -123,7 +124,7 @@ class TestAddingOptions(unittest.TestCase):
         # this settings file should load fine, and test some basics
         cs = settings.Settings(fout)
         self.assertEqual(cs["burnSteps"], 2)
-        self.assertEqual(cs["neutronicsKernel"], "MCNP")
+        self.assertEqual(cs[CONF_NEUTRONICS_KERNEL], "MCNP")
 
 
 class TestSettings2(unittest.TestCase):

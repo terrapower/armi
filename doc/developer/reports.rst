@@ -154,7 +154,7 @@ Similarily that same ``Table`` is accessed within Neutronics for additional sett
 
     >>> section = report[newReportUtils.COMPREHENSIVE_REPORT]
     >>> table = section.get(newReportUtils.SETTINGS, newReports.Table("Settings", "Overview of the Run"))
-    >>> for key in ["boundaries", "neutronicsKernel", "neutronicsType", "fpModel"]:
+    >>> for key in [CONF_BOUNDARIES, CONF_NEUTRONICS_KERNEL, CONF_NEUTRONICS_TYPE, CONF_FP_MODEL]:
     >>>    table.addRow([key, cs[key]])
 
 

@@ -58,14 +58,14 @@ class Sulfur(material.Fluid):
         self.setMassFrac("S34", 0.0429)
         self.setMassFrac("S36", 0.002)
 
-    def density(self, Tk=None, Tc=None):
+    def pseudoDensity(self, Tk=None, Tc=None):
         r"""Density of Liquid Sulfur.
 
         Ref: P. Espeau, R. Ceolin "density of molten sulfur in the 334-508K range"
 
         Notes
         -----
-        In ARMI, we define density() and density3() as the same for Fluids.
+        In ARMI, we define pseudoDensity() and density() as the same for Fluids.
         """
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("density", Tk)

@@ -40,13 +40,13 @@ ISOTXS_AB = os.path.join(FIXTURE_DIR, "ISOAB")
 ISOTXS_AA_AB = os.path.join(FIXTURE_DIR, "combined-AA-AB.isotxs")
 ISOTXS_LUMPED = os.path.join(FIXTURE_DIR, "combined-and-lumped-AA-AB.isotxs")
 
-PMATRX_AA = os.path.join(FIXTURE_DIR, "AA.PMATRX")
-PMATRX_AB = os.path.join(FIXTURE_DIR, "AB.PMATRX")
+PMATRX_AA = os.path.join(FIXTURE_DIR, "AA.pmatrx")
+PMATRX_AB = os.path.join(FIXTURE_DIR, "AB.pmatrx")
 PMATRX_AA_AB = os.path.join(FIXTURE_DIR, "combined-AA-AB.pmatrx")
 PMATRX_LUMPED = os.path.join(FIXTURE_DIR, "combined-and-lumped-AA-AB.pmatrx")
 
-GAMISO_AA = os.path.join(FIXTURE_DIR, "AA.GAMISO")
-GAMISO_AB = os.path.join(FIXTURE_DIR, "AB.GAMISO")
+GAMISO_AA = os.path.join(FIXTURE_DIR, "AA.gamiso")
+GAMISO_AB = os.path.join(FIXTURE_DIR, "AB.gamiso")
 GAMISO_AA_AB = os.path.join(FIXTURE_DIR, "combined-AA-AB.gamiso")
 GAMISO_LUMPED = os.path.join(FIXTURE_DIR, "combined-and-lumped-AA-AB.gamiso")
 

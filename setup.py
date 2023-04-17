@@ -74,7 +74,7 @@ setup(
         "pyDOE",
     ],
     extras_require={
-        "mpi": ["mpi4py"],
+        "mpi": ["mpi4py==3.0.3"],
         "grids": ["wxpython<=4.1.1"],
         "memprof": ["psutil"],
         "dev": [

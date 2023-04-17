@@ -49,12 +49,12 @@ class Lithium_TestCase(_Material_Test, unittest.TestCase):
         )
         self.assertAlmostEqual(self.Lithium_both.getMassFrac("LI6"), 0.8, places=10)
 
-    def test_density(self):
-        ref = self.mat.density(Tc=100)
+    def test_pseudoDensity(self):
+        ref = self.mat.pseudoDensity(Tc=100)
         cur = 0.512
         self.assertAlmostEqual(ref, cur, delta=abs(ref * 0.001))
 
-        ref = self.mat.density(Tc=200)
+        ref = self.mat.pseudoDensity(Tc=200)
         cur = 0.512
         self.assertAlmostEqual(ref, cur, delta=abs(ref * 0.001))
 
