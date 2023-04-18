@@ -39,7 +39,6 @@ from armi.tests import ISOAA_PATH
 class LatticeInterfaceTester(LatticePhysicsInterface):
     def __init__(self, r, cs):
         self.name = "LatticeInterfaceTester"
-        self.testVerification = False
         super().__init__(r, cs)
 
     def _getExecutablePath(self):
@@ -86,6 +85,7 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
 
     def setUp(self):
         self.o.r.core.lib = "Nonsense"
+        self.latticeInterface.testVerification = False
 
     def test_LatticePhysicsInterface(self):
         """Super basic test of the LatticePhysicsInterface"""
