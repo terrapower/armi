@@ -558,7 +558,7 @@ def getNeutronicsSettingValidators(inspector):
             ),
             queryMsg,
             queryPrompt,
-            lambda: inspector.assignCS(
+            lambda: inspector._assignCS(
                 CONF_LATTICE_PHYSICS_UPDATE_FREQUENCY,
                 "firstCoupled",
             ),

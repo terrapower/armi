@@ -332,7 +332,7 @@ class NeutronicsReactorTests(unittest.TestCase):
 
         self.__autoCorrectAllQueries(sv)
         self.assertEqual(
-            inspector.cs[CONF_GRID_PLATE_DPA_XS_SET], "dpaSS316_ANL33_TwrBOL"
+            inspector.cs[CONF_GRID_PLATE_DPA_XS_SET], "dpaSS316_ANL33_TwrBol"
         )
 
         # Test the Query: migrating some common shortened names for dpa XS sets
