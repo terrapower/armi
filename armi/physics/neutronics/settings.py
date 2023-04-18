@@ -14,6 +14,7 @@
 
 """Some generic neutronics-related settings"""
 import os
+from enum import Enum
 
 from armi import runLog
 from armi.operators import settingsValidation
@@ -80,7 +81,7 @@ CONF_XS_KERNEL = "xsKernel"
 CONF_XS_SCATTERING_ORDER = "xsScatteringOrder"
 CONF_XS_BUCKLING_CONVERGENCE = "xsBucklingConvergence"
 CONF_XS_EIGENVALUE_CONVERGENCE = "xsEigenvalueConvergence"
-CONF_FORCE_LATTICE_PHYSICS = "forceLatticePhysics"
+CONF_LATTICE_PHYSICS_UPDATE_FREQUENCY = "latticePhysicsUpdateFrequency"
 
 
 def defineSettings():
@@ -322,10 +323,10 @@ def defineSettings():
             options=["", "MC2v2", "MC2v3", "MC2v3-PARTISN", "SERPENT"],
         ),
         setting.Setting(
-            CONF_FORCE_LATTICE_PHYSICS,
-            default=False,
-            label="Lattice physics at all nodes.",
-            description="Forced lattice physics to be run at all time nodes/coupled iterations instead of just BOC.",
+            CONF_LATTICE_PHYSICS_UPDATE_FREQUENCY,
+            default="BOC",
+            label="Frequency of lattice physics updates",
+            description="Define the frequency at which cross sections are updated with new lattice physics interactions.",
         ),
         setting.Setting(
             CONF_XS_SCATTERING_ORDER,
@@ -533,4 +534,125 @@ def getNeutronicsSettingValidators(inspector):
         )
     )
 
+    queryMsg = (
+        "A Snapshots case is selected but the `latticePhysicsUpdateFrequency` "
+        "{0} is less than `firstCoupled`. `firstCoupled` or `all` is recommended "
+        "for Snapshots when they involve large changes in power or flow compared "
+        "to the loaded state."
+    ).format(inspector.cs[CONF_LATTICE_PHYSICS_UPDATE_FREQUENCY])
+    queryPrompt = (
+        "Would you like to update `latticePhysicsUpdateFrequency` from "
+        "{0} to `firstCoupled`?".format(
+            inspector.cs[CONF_LATTICE_PHYSICS_UPDATE_FREQUENCY]
+        )
+    )
+    queries.append(
+        settingsValidation.Query(
+            lambda: inspector.cs[CONF_RUN_TYPE] == "Snapshots"
+            and not LatticePhysicsUpdateFrequency.checkFrequency(
+                inspector.cs[CONF_LATTICE_PHYSICS_UPDATE_FREQUENCY],
+                LatticePhysicsUpdateFrequency.FIRST_COUPLED,
+            ),
+            queryMsg,
+            queryPrompt,
+            lambda: inspector.assignCS(
+                CONF_LATTICE_PHYSICS_UPDATE_FREQUENCY,
+                "firstCoupled",
+            ),
+        )
+    )
+
     return queries
+
+
+class LatticePhysicsUpdateFrequency(Enum):
+    """
+    Enumeration for lattice physics update frequency options.
+    """
+
+    BEGINNING_OF_LIFE = 1
+    BEGINNING_OF_CYCLE = 2
+    EVERY_NODE = 3
+    FIRST_COUPLED = 4
+    ALL = 5
+    SNAPSHOTS = 6
+
+    _MAPPING = {
+        BEGINNING_OF_LIFE: "BOL",
+        BEGINNING_OF_CYCLE: "BOC",
+        EVERY_NODE: "everyNode",
+        FIRST_COUPLED: "firstCoupled",
+        ALL: "all",
+        SNAPSHOTS: "snapshots",
+    }
+
+    @classmethod
+    def getStr(cls, typeSpec: Enum) -> str:
+        """
+        Return a string representation of the given ``typeSpec``
+        """
+
+        updateFrequencyOpts = [typ for typ in list(cls) if isinstance(typ, int)]
+        if typeSpec not in updateFrequencyOpts:
+            raise TypeError(f"{typeSpec} not in {updateFrequencyOpts}")
+        return cls._MAPPING[cls[typeSpec.name]]
+
+    @classmethod
+    def fromStr(cls, typeSpec: str) -> Enum:
+        """
+        Return the enumeration from a string
+        """
+
+        updateFrequencyOpts = [
+            cls._MAPPING(typ) for typ in list(cls) if isinstance(typ, int)
+        ]
+        if typeSpec not in updateFrequencyOpts:
+            raise TypeError(f"{typeSpec} not in {updateFrequencyOpts}")
+        reverseMapping = {y: x for x, y in cls._MAPPING.items()}
+        return reverseMapping[typeSpec]
+
+    @classmethod
+    def fromAny(cls, typeSpec: [Enum, str]) -> Enum:
+        """
+        Return an enumeration from a
+        """
+
+    @classmethod
+    def checkFrequency(cls, evalFrequency, targetFrequency, exact=False):
+        """
+        Evaluate whether the provided frequency is inclusive of the target frequency
+
+        Notes
+        -----
+        Typically the ``evalFrequency`` is the value provided in the case settings
+        and the ``targetFrequency`` is a frequency encoded into a specific interface
+        immplementation that is being checked against.
+
+        Parameters
+        ----------
+        evalFrequency : str, int, or Enum
+            A frequency setting that to be evaluated against a target
+        targetFrequency : str, int, or Enum
+            A target frequency setting against which ``evalFrequency`` is compared
+        exact : bool, optional
+            Whether to require an exact match of frequencies
+
+        Examples
+        --------
+        LatticePhysicsUpdateFrequency.checkFrequency("everyNode", 0) == True
+        LatticePhysicsUpdateFrequency.checkFrequency(4, 3) == True
+        LatticePhysicsUpdateFrequency.checkFrequency("BOC", 4) == False
+        LatticePhysicsUpdateFrequency.checkFrequency("all", 3) == True
+        LatticePhysicsUpdateFrequency.checkFrequency("all", 3, exact=True) == False
+        LatticePhysicsUpdateFrequency.checkFrequency("all", 5) == True
+        """
+
+        if isinstance(evalFrequency, str):
+            evalFrequency = cls.fromStr(evalFrequency)
+        if isinstance(targetFrequency, str):
+            targetFrequency = cls.fromStr(targetFrequency)
+
+        if exact:
+            return evalFrequency == targetFrequency
+        else:
+            return evalFrequency >= targetFrequency

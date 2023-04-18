@@ -35,6 +35,8 @@ from armi.physics.neutronics.crossSectionGroupManager import BLOCK_COLLECTIONS
 from armi.settings import Setting
 from armi import context
 
+from armi.settings.fwSettings.globalSettings import CONF_RUN_TYPE
+
 CONF_BLOCK_REPRESENTATION = "blockRepresentation"
 CONF_BLOCKTYPES = "validBlockTypes"
 CONF_BUCKLING = "criticalBuckling"

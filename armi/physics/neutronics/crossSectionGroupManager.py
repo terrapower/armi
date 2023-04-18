@@ -66,8 +66,8 @@ from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.reactor.components import basicShapes
 from armi.reactor.flags import Flags
 from armi.utils.units import TRACE_NUMBER_DENSITY
-from armi.settings.fwSettings.globalSettings import CONF_RUN_TYPE
-from armi.physics.neutronics.settings import CONF_FORCE_LATTICE_PHYSICS
+from armi.physics.neutronics.settings import CONF_LATTICE_PHYSICS_UPDATE_FREQUENCY
+from armi.physics.neutronics.settings import LatticePhysicsUpdateFrequency
 
 ORDER = interfaces.STACK_ORDER.BEFORE + interfaces.STACK_ORDER.FUEL_MANAGEMENT
 
@@ -600,6 +600,13 @@ class CrossSectionGroupManager(interfaces.Interface):
             self.cs[CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION],
         )
 
+        if LatticePhysicsUpdateFrequency.checkFrequency(
+            self.cs[CONF_LATTICE_PHYSICS_UPDATE_FREQUENCY],
+            LatticePhysicsUpdateFrequency.BEGINNING_OF_LIFE,
+            exact=True,
+        ):
+            self.createRepresentativeBlocks()
+
     def interactBOC(self, cycle=None):
         """
         Update representative blocks and block burnup groups.
@@ -608,7 +615,11 @@ class CrossSectionGroupManager(interfaces.Interface):
         -----
         The block list each each block collection cannot be emptied since it is used to derive nuclide temperatures.
         """
-        self.createRepresentativeBlocks()
+        if LatticePhysicsUpdateFrequency.checkFrequency(
+            self.cs[CONF_LATTICE_PHYSICS_UPDATE_FREQUENCY],
+            LatticePhysicsUpdateFrequency.BEGINNING_OF_CYCLE,
+        ):
+            self.createRepresentativeBlocks()
 
     def interactEOC(self, cycle=None):
         """
@@ -619,8 +630,11 @@ class CrossSectionGroupManager(interfaces.Interface):
         self.clearRepresentativeBlocks()
 
     def interactEveryNode(self, cycle=None):
-        if self.cs[CONF_FORCE_LATTICE_PHYSICS]:
-            self.interactBOC(cycle=None)
+        if LatticePhysicsUpdateFrequency.checkFrequency(
+            self.cs[CONF_LATTICE_PHYSICS_UPDATE_FREQUENCY],
+            LatticePhysicsUpdateFrequency.EVERY_NODE,
+        ):
+            self.createRepresentativeBlocks()
 
     def interactCoupled(self, iteration):
         """Update XS groups on each physics coupling iteration to get latest temperatures.
@@ -641,14 +655,15 @@ class CrossSectionGroupManager(interfaces.Interface):
         --------
         :py:meth:`Assembly <armi.physics.neutronics.latticePhysics.latticePhysics.LatticePhysicsInterface.interactCoupled>`
         """
-        # always run for snapshots to account for temp effect of different flow or power statepoint
-        secondIterOnFirstPointWithUpdatedTemps = self.r.p.timeNode == 0
-        if (
-            self.cs[CONF_FORCE_LATTICE_PHYSICS]
-            or self.cs[CONF_RUN_TYPE] == "Snapshots"
-            or secondIterOnFirstPointWithUpdatedTemps
+        if iteration == 0:
+            targetFrequency = LatticePhysicsUpdateFrequency.FIRST_COUPLED
+        else:
+            targetFrequency = LatticePhysicsUpdateFrequency.ALL
+
+        if LatticePhysicsUpdateFrequency.checkFrequency(
+            self.cs[CONF_LATTICE_PHYSICS_UPDATE_FREQUENCY], targetFrequency
         ):
-            self.interactBOC(cycle=None)
+            self.createRepresentativeBlocks()
 
     def clearRepresentativeBlocks(self):
         """Clear the representative blocks."""

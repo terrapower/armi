@@ -30,7 +30,7 @@ from armi.physics.neutronics.settings import (
     CONF_CLEAR_XS,
     CONF_TOLERATE_BURNUP_CHANGE,
     CONF_XS_KERNEL,
-    CONF_FORCE_LATTICE_PHYSICS
+    CONF_FORCE_LATTICE_PHYSICS,
 )
 from armi.utils.customExceptions import important
 from armi.settings.fwSettings.globalSettings import CONF_RUN_TYPE
