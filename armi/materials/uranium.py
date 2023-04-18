@@ -20,11 +20,11 @@ Much info is from [AAAFuels]_.
 .. [AAAFuels]  Kim, Y S, and Hofman, G L. AAA fuels handbook.. United States: N. p., 2003. Web. doi:10.2172/822554. .
 """
 
-from armi.materials.material import Material
+from armi.materials.material import FuelMaterial
 from armi.utils.units import getTk
 
 
-class Uranium(Material):
+class Uranium(FuelMaterial):
     name = "Uranium"
 
     materialIntro = ""
