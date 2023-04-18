@@ -633,7 +633,7 @@ class CrossSectionGroupManager(interfaces.Interface):
         """
         self.clearRepresentativeBlocks()
 
-    def interactEveryNode(self, cycle=None):
+    def interactEveryNode(self, cycle=None, tn=None):
         if LatticePhysicsUpdateFrequency.checkFrequency(
             self._latticePhysicsUpdateFrequency,
             LatticePhysicsUpdateFrequency.EVERY_NODE,
