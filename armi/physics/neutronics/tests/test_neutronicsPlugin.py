@@ -31,8 +31,10 @@ from armi.physics.neutronics.settings import (
     CONF_OUTERS_,
     CONF_INNERS_,
     CONF_NEUTRONICS_KERNEL,
+    CONF_LATTICE_PHYSICS_UPDATE_FREQUENCY,
     getNeutronicsSettingValidators,
 )
+from armi.settings.fwSettings.globalSettings import CONF_RUN_TYPE
 from armi.settings import caseSettings
 from armi.tests import TEST_ROOT
 from armi.tests.test_plugins import TestPlugin
@@ -261,7 +263,7 @@ class NeutronicsReactorTests(unittest.TestCase):
         cs = settings.Settings()
         inspector = settingsValidation.Inspector(cs)
         sv = getNeutronicsSettingValidators(inspector)
-        self.assertEqual(len(sv), 8)
+        self.assertEqual(len(sv), 9)
 
         # Test the Query: boundaries are now "Extrapolated", not "Normal"
         cs = cs.modified(newSettings={CONF_BOUNDARIES: "Normal"})
@@ -330,7 +332,22 @@ class NeutronicsReactorTests(unittest.TestCase):
 
         self.__autoCorrectAllQueries(sv)
         self.assertEqual(
-            inspector.cs[CONF_GRID_PLATE_DPA_XS_SET], "dpaSS316_ANL33_TwrBol"
+            inspector.cs[CONF_GRID_PLATE_DPA_XS_SET], "dpaSS316_ANL33_TwrBOL"
+        )
+
+        # Test the Query: migrating some common shortened names for dpa XS sets
+        cs = cs.modified(
+            newSettings={
+                CONF_RUN_TYPE: "Snapshots",
+                CONF_LATTICE_PHYSICS_UPDATE_FREQUENCY: "BOC",
+            }
+        )
+        inspector = settingsValidation.Inspector(cs)
+        sv = getNeutronicsSettingValidators(inspector)
+
+        self.__autoCorrectAllQueries(sv)
+        self.assertEqual(
+            inspector.cs[CONF_LATTICE_PHYSICS_UPDATE_FREQUENCY], "firstCoupled"
         )
 
 
