@@ -377,7 +377,7 @@ assemblies:
         blocks: [*block_grid_plate, *block_fuel2, *block_fuel2, *block_fuel2, *block_plenum]
         height: *standard_heights
         axial mesh points: *standard_axial_mesh_points
-        xs types: *igniter_fuel_xs_types
+        xs types: &middle_fuel_xs_types [Z, Z, Z, Z, Z]
     annular fuel:
         specifier: AF
         blocks: [*block_grid_plate, *block_fuel3, *block_fuel3, *block_fuel3, *block_plenum]

@@ -494,8 +494,8 @@ class CylindricalComponentsAverageBlockCollection(BlockCollection):
         orderedComponents = [[] for _ in repBlock]
         for b in self.getCandidateBlocks():
             self._checkComponentConsistency(b, repBlock)
-        componentLists = [ list(b) for b in self.getCandidateBlocks() ]
-        return [ list(comps) for comps in zip(*componentLists) ]
+        componentLists = [list(b) for b in self.getCandidateBlocks()]
+        return [list(comps) for comps in zip(*componentLists)]
 
 
 class SlabComponentsAverageBlockCollection(BlockCollection):
