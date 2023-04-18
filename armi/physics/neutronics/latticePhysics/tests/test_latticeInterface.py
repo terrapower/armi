@@ -39,6 +39,7 @@ from armi.tests import ISOAA_PATH
 class LatticeInterfaceTester(LatticePhysicsInterface):
     def __init__(self, r, cs):
         self.name = "LatticeInterfaceTester"
+        self.testVerification = False
         super().__init__(r, cs)
 
     def _getExecutablePath(self):
@@ -52,6 +53,7 @@ class LatticeInterfaceTesterLibFalse(LatticeInterfaceTester):
     """subclass setting _newLibraryShouldBeCreated = False"""
 
     def _newLibraryShouldBeCreated(self, cycle, representativeBlockList, xsIDs):
+        self.testVerification = True
         return False
 
 
@@ -94,17 +96,58 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
         self.latticeInterface.updateXSLibrary(0)
         self.assertEqual(len(self.latticeInterface._oldXsIdsAndBurnup), 0)
 
-    def test_interactCoupled_Snapshots(self):
-        """should change self.o.r.core.lib from Nonesense to None"""
-        self.o.cs[CONF_RUN_TYPE] = "Snapshots"
+    def test_interactBOC(self):
+        """
+        Test interactBOC() with different update frequencies
+
+        Notes
+        -----
+        Unlike other interactions, self.o.r.core.lib is not set to
+        None by the BOC interaction, so this test does not have a
+        good means of verifying the correct function,
+        so we use self.testVerification instead.
+        """
+        self.latticeInterface._latticePhysicsUpdateFrequency = "BOL"
+        self.latticeInterface.interactBOC()
+        self.assertFalse(self.latticeInterface.testVerification)
+        self.latticeInterface._latticePhysicsUpdateFrequency = "everyNode"
+        self.latticeInterface.interactBOC()
+        self.assertFalse(self.latticeInterface.testVerification)
+        self.latticeInterface._latticePhysicsUpdateFrequency = "BOC"
+        self.latticeInterface.interactBOC()
+        self.assertTrue(self.latticeInterface.testVerification)
+
+    def test_interactEveryNode(self):
+        """
+        Test interactEveryNode() with different update frequencies
+        """
+        self.latticeInterface._latticePhysicsUpdateFrequency = "BOC"
+        self.latticeInterface.interactEveryNode()
+        self.assertEqual(self.o.r.core.lib, "Nonsense")
+        self.latticeInterface._latticePhysicsUpdateFrequency = "everyNode"
+        self.latticeInterface.interactEveryNode()
+        self.assertIsNone(self.o.r.core.lib)
+
+    def test_interactFirstCoupled(self):
+        """
+        Test interactCoupled() with different update frequencies on first interation
+        """
+        self.latticeInterface._latticePhysicsUpdateFrequency = "everyNode"
+        self.latticeInterface.interactCoupled(iteration=0)
+        self.assertEqual(self.o.r.core.lib, "Nonsense")
+        self.latticeInterface._latticePhysicsUpdateFrequency = "firstCoupled"
         self.latticeInterface.interactCoupled(iteration=0)
         self.assertIsNone(self.o.r.core.lib)
-        # reset runtype
-        self.o.cs[CONF_RUN_TYPE] = "Standard"
 
-    def test_interactCoupled_TimeNode0(self):
-        """make sure updateXSLibrary is run"""
-        self.latticeInterface.interactCoupled(iteration=0)
+    def test_interactAll(self):
+        """
+        Test interactCoupled() with different update frequencies on non-first iteration
+        """
+        self.latticeInterface._latticePhysicsUpdateFrequency = "firstCoupled"
+        self.latticeInterface.interactCoupled(iteration=1)
+        self.assertEqual(self.o.r.core.lib, "Nonsense")
+        self.latticeInterface._latticePhysicsUpdateFrequency = "all"
+        self.latticeInterface.interactCoupled(iteration=1)
         self.assertIsNone(self.o.r.core.lib)
 
     def test_interactCoupled_TimeNode1(self):

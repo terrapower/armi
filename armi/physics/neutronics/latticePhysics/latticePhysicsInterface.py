@@ -30,10 +30,13 @@ from armi.physics.neutronics.settings import (
     CONF_CLEAR_XS,
     CONF_TOLERATE_BURNUP_CHANGE,
     CONF_XS_KERNEL,
-    CONF_FORCE_LATTICE_PHYSICS,
+    CONF_LATTICE_PHYSICS_UPDATE_FREQUENCY,
 )
 from armi.utils.customExceptions import important
 from armi.settings.fwSettings.globalSettings import CONF_RUN_TYPE
+from armi.physics.neutronics.crossSectionGroupManager import (
+    LatticePhysicsUpdateFrequency,
+)
 
 
 LATTICE_PHYSICS = "latticePhysics"
@@ -96,16 +99,20 @@ class LatticePhysicsInterface(interfaces.Interface):
         self.includeGammaXS = neutronics.gammaTransportIsRequested(
             cs
         ) or neutronics.gammaXsAreRequested(cs)
+        self._latticePhysicsUpdateFrequency = LatticePhysicsUpdateFrequency.fromStr(
+            self.cs[CONF_LATTICE_PHYSICS_UPDATE_FREQUENCY]
+        )
 
     def _getExecutablePath(self):
         raise NotImplementedError
 
     @codeTiming.timed
-    def interactBOC(self, cycle=0):
+    def interactBOL(self, cycle=0):
         """
         Run the lattice physics code if ``genXS`` is set and update burnup groups.
 
-        Generate new cross sections based off the case settings and the current state of the reactor.
+        Generate new cross sections based off the case settings and the current state
+        of the reactor if the lattice physics frequency is BOL.
 
         Notes
         -----
@@ -113,7 +120,29 @@ class LatticePhysicsInterface(interfaces.Interface):
         ``runLatticePhysicsBeforeShuffling``setting is True.
         This happens because branch searches may need XS.
         """
-        self.updateXSLibrary(cycle)
+        if LatticePhysicsUpdateFrequency.checkFrequency(
+            self._latticePhysicsUpdateFrequency, "BOL", exact=True
+        ):
+            self.updateXSLibrary(cycle)
+
+    @codeTiming.timed
+    def interactBOC(self, cycle=0):
+        """
+        Run the lattice physics code if ``genXS`` is set and update burnup groups.
+
+        Generate new cross sections based off the case settings and the current state
+        of the reactor if the lattice physics frequency is BOC.
+
+        Notes
+        -----
+        :py:meth:`armi.physics.fuelCycle.fuelHandlers.FuelHandler.interactBOC` also calls this if the
+        ``runLatticePhysicsBeforeShuffling``setting is True.
+        This happens because branch searches may need XS.
+        """
+        if LatticePhysicsUpdateFrequency.checkFrequency(
+            self._latticePhysicsUpdateFrequency, "BOC", exact=True
+        ):
+            self.updateXSLibrary(cycle)
 
     def updateXSLibrary(self, cycle):
         """
@@ -204,7 +233,15 @@ class LatticePhysicsInterface(interfaces.Interface):
         return ""
 
     def interactEveryNode(self, cycle=None):
-        if self.cs[CONF_FORCE_LATTICE_PHYSICS]:
+        """
+        Run the lattice physics code if ``genXS`` is set and update burnup groups.
+
+        Generate new cross sections based off the case settings and the current state
+        of the reactor if the lattice physics frequency is at least everyNode.
+        """
+        if LatticePhysicsUpdateFrequency.checkFrequency(
+            self._latticePhysicsUpdateFrequency, "everyNode"
+        ):
             self.r.core.lib = None
             self.updateXSLibrary(self.r.p.cycle)
 
@@ -234,11 +271,9 @@ class LatticePhysicsInterface(interfaces.Interface):
             This is unused since cross sections are generated on a per-cycle basis.
         """
         # always run for snapshots to account for temp effect of different flow or power statepoint
-        secondIterOnFirstPointWithUpdatedTemps = self.r.p.timeNode == 0
-        if (
-            self.cs[CONF_FORCE_LATTICE_PHYSICS]
-            or self.cs[CONF_RUN_TYPE] == "Snapshots"
-            or secondIterOnFirstPointWithUpdatedTemps
+        targetFrequency = "firstCoupled" if iteration == 0 else "all"
+        if LatticePhysicsUpdateFrequency.checkFrequency(
+            self._latticePhysicsUpdateFrequency, targetFrequency
         ):
             self.r.core.lib = None
             self.updateXSLibrary(self.r.p.cycle)
