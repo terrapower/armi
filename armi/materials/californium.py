@@ -19,10 +19,10 @@ It is interesting in that it has a large spontaneous fission decay mode that
 produces lots of neutrons. It's often used as a neutron source.
 """
 
-from armi.materials.material import SimpleSolid, FuelMaterial
+from armi.materials.material import SimpleSolid
 
 
-class Californium(SimpleSolid, FuelMaterial):
+class Californium(SimpleSolid):
 
     name = "Californium"
 
