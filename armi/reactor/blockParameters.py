@@ -17,8 +17,7 @@ import numpy
 import six
 
 from armi import runLog
-from armi.physics.neutronics import crossSectionGroupManager
-from armi.reactor.flags import Flags  # non-standard import to avoid name conflict below
+from armi.physics.neutronics.crossSectionGroupManager import getXSTypeLabelFromNumber
 from armi.utils import units
 from armi.utils.units import ASCII_LETTER_A
 
@@ -388,7 +387,7 @@ def getBlockParameterDefinitions():
 
         def xsType(self, value):  # pylint: disable=method-hidden
             self._p_xsType = value  # pylint: disable=attribute-defined-outside-init
-            self._p_xsTypeNum = crossSectionGroupManager.getXSTypeNumberFromLabel(
+            self._p_xsTypeNum = getXSTypeNumberFromLabel(
                 value
             )  # pylint: disable=attribute-defined-outside-init
             xsTypeNumDef = parameters.ALL_DEFINITIONS["xsTypeNum"]
@@ -404,7 +403,7 @@ def getBlockParameterDefinitions():
 
         def xsTypeNum(self, value):  # pylint: disable=method-hidden
             self._p_xsTypeNum = value  # pylint: disable=attribute-defined-outside-init
-            self._p_xsType = crossSectionGroupManager.getXSTypeLabelFromNumber(
+            self._p_xsType = getXSTypeLabelFromNumber(
                 value
             )  # pylint: disable=attribute-defined-outside-init
             xsTypeDef = parameters.ALL_DEFINITIONS["xsType"]
