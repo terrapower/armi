@@ -22,6 +22,7 @@ import unittest
 
 from armi.nuclearDataIO.cccc import isotxs
 from armi.physics.neutronics.settings import CONF_XS_KERNEL
+from armi.settings.fwSettings.globalSettings import CONF_UNIFORM_MESH_MINIMUM_SIZE
 from armi.reactor.converters import uniformMesh
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_assemblies
@@ -76,7 +77,7 @@ class TestAssemblyUniformMesh(unittest.TestCase):
 
         sourceAssem = self.r.core.getFirstAssembly(Flags.IGNITER)
 
-        self.converter._computeAverageAxialMesh()
+        self.converter._generateUniformMesh(minimumMeshSize=0.01)
         b = sourceAssem.getFirstBlock(Flags.FUEL)
         newAssem = self.converter.makeAssemWithUniformMesh(
             sourceAssem,
@@ -220,6 +221,99 @@ class TestAssemblyUniformMesh(unittest.TestCase):
             self.assertListEqual(list(cachedBlockParams[b]["mgFlux"]), [1.0, 2.0])
 
 
+class TestUniformMeshGenerator(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        newSettings = {
+            CONF_XS_KERNEL: "MC2v2",
+            CONF_UNIFORM_MESH_MINIMUM_SIZE: 3.0,
+        }
+        cls.o, cls.r = loadTestReactor(TEST_ROOT, customSettings=newSettings)
+        reduceTestReactorRings(cls.r, cls.o.cs, 5)
+        cls.r.core.lib = isotxs.readBinary(ISOAA_PATH)
+
+        # make the mesh a little non-uniform
+        a = cls.r.core[4]
+        a[2].setHeight(a[2].getHeight() * 1.05)
+
+    def setUp(self):
+        self.generator = uniformMesh.UniformMeshGenerator(
+            self.r, self.o.cs[CONF_UNIFORM_MESH_MINIMUM_SIZE]
+        )
+
+    def test_computeAverageAxialMesh(self):
+        refMesh = self.r.core.findAllAxialMeshPoints(
+            [self.r.core.getFirstAssembly(Flags.FUEL)]
+        )[1:]
+        self.generator._computeAverageAxialMesh()
+        avgMesh = self.generator._commonMesh
+
+        self.assertEqual(len(refMesh), len(avgMesh))
+        self.assertEqual(refMesh[0], avgMesh[0])
+        self.assertNotEqual(refMesh[4], avgMesh[4], "Not equal above the fuel.")
+
+    def test_filterMesh(self):
+        """
+        Test that the mesh can be correctly filtered
+        """
+        meshList = [1.0, 3.0, 4.0, 7.0, 9.0, 12.0, 16.0, 19.0, 20.0]
+        anchorPoints = [4.0, 16.0]
+        combinedMesh = self.generator._filterMesh(
+            meshList,
+            self.generator.minimumMeshSize,
+            anchorPoints,
+            preference="bottom",
+        )
+        self.assertListEqual(combinedMesh, [1.0, 4.0, 7.0, 12.0, 16.0, 19.0])
+
+        combinedMesh = self.generator._filterMesh(
+            meshList,
+            self.generator.minimumMeshSize,
+            anchorPoints,
+            preference="top",
+        )
+        self.assertListEqual(combinedMesh, [1.0, 4.0, 9.0, 12.0, 16.0, 20.0])
+
+        anchorPoints = [3.0, 4.0]
+        with self.assertRaises(ValueError):
+            self.generator._filterMesh(
+                meshList,
+                self.generator.minimumMeshSize,
+                anchorPoints,
+                preference="top",
+            )
+
+    def test_filteredTopAndBottom(self):
+        fuelBottoms, fuelTops = self.generator._getFilteredFuelTopAndBottom()
+        self.assertListEqual(fuelBottoms, [25.0])
+        self.assertListEqual(fuelTops, [101.25])
+
+        # ctrlBottoms and ctrlTops include the fuelBottoms and fuelTops, respectively
+        ctrlBottoms, ctrlTops = self.generator._getFilteredControlTopAndBottom(
+            fuelBottoms, fuelTops
+        )
+        self.assertListEqual(ctrlBottoms, [25.0, 50.0])
+        self.assertListEqual(ctrlTops, [75.0, 101.25])
+
+    def test_generateCommonMesh(self):
+        """
+        Covers generateCommonmesh() and _decuspAxialMesh()
+        """
+        self.generator.generateCommonMesh()
+        expectedMesh = [
+            25.0,
+            50.0,
+            75.0,
+            101.25,
+            118.80952380952381,
+            137.5595238095238,
+            156.3095238095238,
+            175.0595238095238,
+        ]
+
+        self.assertListEqual(list(self.generator._commonMesh), expectedMesh)
+
+
 class TestUniformMeshComponents(unittest.TestCase):
     """
     Tests individual operations of the uniform mesh converter
@@ -242,17 +336,6 @@ class TestUniformMeshComponents(unittest.TestCase):
     def setUp(self):
         self.converter = uniformMesh.NeutronicsUniformMeshConverter(cs=self.o.cs)
         self.converter._sourceReactor = self.r
-
-    def test_computeAverageAxialMesh(self):
-        refMesh = self.r.core.findAllAxialMeshPoints(
-            [self.r.core.getFirstAssembly(Flags.FUEL)]
-        )[1:]
-        self.converter._computeAverageAxialMesh()
-        avgMesh = self.converter._uniformMesh
-
-        self.assertEqual(len(refMesh), len(avgMesh))
-        self.assertEqual(refMesh[0], avgMesh[0])
-        self.assertNotEqual(refMesh[4], avgMesh[4], "Not equal above the fuel.")
 
     def test_blueprintCopy(self):
         """Ensure that necessary blueprint attributes are set"""
