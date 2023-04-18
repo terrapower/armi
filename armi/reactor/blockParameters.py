@@ -17,12 +17,12 @@ import numpy
 import six
 
 from armi import runLog
+from armi.physics.neutronics import crossSectionGroupManager
 from armi.utils import units
 from armi.utils.units import ASCII_LETTER_A
 
 from armi.reactor import parameters
 from armi.reactor.parameters import ParamLocation, Parameter, NoDefault
-from armi.physics.neutronics import crossSectionGroupManager
 
 
 def getBlockParameterDefinitions():
