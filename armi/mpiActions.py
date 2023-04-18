@@ -77,7 +77,7 @@ class MpiAction:
     """Base of all MPI actions.
 
     MPI Actions are tasks that can be executed without needing lots of other
-    information. When a worker node sits in it's main loop, and receives an MPI Action, it will
+    information. When a worker node sits in its main loop, and receives an MPI Action, it will
     simply call :py:meth:`~armi.mpiActions.MpiAction.invoke`.
     """
 
@@ -357,7 +357,9 @@ def runActions(o, r, cs, actions, numPerNode=None, serial=False):
 def _disableForExclusiveTasks(actionsThisRound, useForComputation):
     # disable processors that are exclusive for next
     indicesToDisable = [
-        i for i, action in enumerate(actionsThisRound) if action.runActionExclusive
+        i
+        for i, action in enumerate(actionsThisRound)
+        if action is not None and action.runActionExclusive
     ]
     for i in indicesToDisable:
         useForComputation[i] = False
