@@ -14,7 +14,6 @@
 
 """Some generic neutronics-related settings"""
 import os
-from enum import Enum
 
 from armi import runLog
 from armi.operators import settingsValidation
@@ -23,11 +22,15 @@ from armi.physics.neutronics.energyGroups import GROUP_STRUCTURE
 from armi.scripts.migration.crossSectionBlueprintsToSettings import (
     migrateCrossSectionsFromBlueprints,
 )
+from armi.physics.neutronics.crossSectionGroupManager import (
+    LatticePhysicsUpdateFrequency,
+)
 from armi.settings import setting
 from armi.utils import directoryChangers
 from armi.settings.fwSettings.globalSettings import (
     CONF_DETAILED_AXIAL_EXPANSION,
     CONF_NON_UNIFORM_ASSEM_FLAGS,
+    CONF_RUN_TYPE,
 )
 
 
@@ -563,96 +566,3 @@ def getNeutronicsSettingValidators(inspector):
     )
 
     return queries
-
-
-class LatticePhysicsUpdateFrequency(Enum):
-    """
-    Enumeration for lattice physics update frequency options.
-    """
-
-    BEGINNING_OF_LIFE = 1
-    BEGINNING_OF_CYCLE = 2
-    EVERY_NODE = 3
-    FIRST_COUPLED = 4
-    ALL = 5
-    SNAPSHOTS = 6
-
-    _MAPPING = {
-        BEGINNING_OF_LIFE: "BOL",
-        BEGINNING_OF_CYCLE: "BOC",
-        EVERY_NODE: "everyNode",
-        FIRST_COUPLED: "firstCoupled",
-        ALL: "all",
-        SNAPSHOTS: "snapshots",
-    }
-
-    @classmethod
-    def getStr(cls, typeSpec: Enum) -> str:
-        """
-        Return a string representation of the given ``typeSpec``
-        """
-
-        updateFrequencyOpts = [typ for typ in list(cls) if isinstance(typ, int)]
-        if typeSpec not in updateFrequencyOpts:
-            raise TypeError(f"{typeSpec} not in {updateFrequencyOpts}")
-        return cls._MAPPING[cls[typeSpec.name]]
-
-    @classmethod
-    def fromStr(cls, typeSpec: str) -> Enum:
-        """
-        Return the enumeration from a string
-        """
-
-        updateFrequencyOpts = [
-            cls._MAPPING(typ) for typ in list(cls) if isinstance(typ, int)
-        ]
-        if typeSpec not in updateFrequencyOpts:
-            raise TypeError(f"{typeSpec} not in {updateFrequencyOpts}")
-        reverseMapping = {y: x for x, y in cls._MAPPING.items()}
-        return reverseMapping[typeSpec]
-
-    @classmethod
-    def fromAny(cls, typeSpec: [Enum, str]) -> Enum:
-        """
-        Return an enumeration from a
-        """
-
-    @classmethod
-    def checkFrequency(cls, evalFrequency, targetFrequency, exact=False):
-        """
-        Evaluate whether the provided frequency is inclusive of the target frequency
-
-        Notes
-        -----
-        Typically the ``evalFrequency`` is the value provided in the case settings
-        and the ``targetFrequency`` is a frequency encoded into a specific interface
-        immplementation that is being checked against.
-
-        Parameters
-        ----------
-        evalFrequency : str, int, or Enum
-            A frequency setting that to be evaluated against a target
-        targetFrequency : str, int, or Enum
-            A target frequency setting against which ``evalFrequency`` is compared
-        exact : bool, optional
-            Whether to require an exact match of frequencies
-
-        Examples
-        --------
-        LatticePhysicsUpdateFrequency.checkFrequency("everyNode", 0) == True
-        LatticePhysicsUpdateFrequency.checkFrequency(4, 3) == True
-        LatticePhysicsUpdateFrequency.checkFrequency("BOC", 4) == False
-        LatticePhysicsUpdateFrequency.checkFrequency("all", 3) == True
-        LatticePhysicsUpdateFrequency.checkFrequency("all", 3, exact=True) == False
-        LatticePhysicsUpdateFrequency.checkFrequency("all", 5) == True
-        """
-
-        if isinstance(evalFrequency, str):
-            evalFrequency = cls.fromStr(evalFrequency)
-        if isinstance(targetFrequency, str):
-            targetFrequency = cls.fromStr(targetFrequency)
-
-        if exact:
-            return evalFrequency == targetFrequency
-        else:
-            return evalFrequency >= targetFrequency
