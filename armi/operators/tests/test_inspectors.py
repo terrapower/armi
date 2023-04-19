@@ -22,20 +22,29 @@ from armi import settings
 from armi import operators
 from armi.operators.settingsValidation import createQueryRevertBadPathToDefault
 from armi.operators import settingsValidation
+from armi.utils import directoryChangers
+from armi import context
 
 
 class TestInspector(unittest.TestCase):
     """Test case"""
 
     def setUp(self):
+        self.td = directoryChangers.TemporaryDirectoryChanger()
+        self.td.__enter__()
+        self.init_mode = context.CURRENT_MODE
         self.cs = settings.Settings()
         self.inspector = operators.getOperatorClassFromSettings(self.cs).inspector(
             self.cs
         )
         self.inspector.queries = []  # clear out the auto-generated ones
         self.filepathYaml = os.path.join(
-            os.getcwd(), self._testMethodName + "test_setting_io.yaml"
+            os.getcwd(), self._testMethodName + "_test_setting_io.yaml"
         )
+
+    def tearDown(self):
+        context.Mode.setMode(self.init_mode)
+        self.td.__exit__(None, None, None)
 
     def test_query(self):
         buh = {1: 2, 3: 4}
@@ -86,20 +95,16 @@ class TestInspector(unittest.TestCase):
         nominalPromptFunction = settingsValidation.prompt
         settingsValidation.prompt = fakePrompt
 
-        # run inspector
-        self.inspector.run()
+        try:
+            # run inspector
+            self.inspector.run()
+            # check to see if file was overwritten correctly
+            self.cs.loadFromInputFile(self.filepathYaml)
+            self.assertEqual(self.cs["cycleLength"], 666)
 
-        # check to see if file was overwritten correctly
-        self.cs.loadFromInputFile(self.filepathYaml)
-
-        self.assertEqual(self.cs["cycleLength"], 666)
-
-        # reset prompt function to nominal
-        settingsValidation.prompt = nominalPromptFunction
-
-        # reset test settings file
-        self.cs["cycleLength"] = 300.0
-        self.cs.writeToYamlFile(self.filepathYaml)
+        finally:
+            # reset prompt function to nominal
+            settingsValidation.prompt = nominalPromptFunction
 
     def test_changeOfCS(self):
         self.inspector.addQuery(
