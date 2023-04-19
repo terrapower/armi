@@ -968,8 +968,10 @@ class CrossSectionGroupManager(interfaces.Interface):
         ----------
         blockList : list
             A list of blocks defined within the core
-        originalRepresentativeBlocks : list
-            A list of unperturbed representative blocks that the new representative blocks are formed from
+        originalRepresentativeBlocks : dict
+            A dict of unperturbed representative blocks that the new representative blocks are formed from
+            keys: XS group ID (e.g., "AA")
+            values: representative block for the XS group
 
         Returns
         -------
@@ -977,6 +979,9 @@ class CrossSectionGroupManager(interfaces.Interface):
             Mapping between XS IDs and the new block collections
         modifiedReprBlocks : dict
             Mapping between XS IDs and the new representative blocks
+        origXSIDsFromNew : dict
+            Mapping of original XS IDs to new XS IDs. New XS IDs are created to
+            represent a modified state (e.g., a Doppler temperature perturbation).
 
         Raises
         ------
@@ -1006,7 +1011,7 @@ class CrossSectionGroupManager(interfaces.Interface):
                 oldBlockCollection.allNuclidesInProblem
             )
             newBlockCollectionsByXsGroup[newXSID] = newBlockCollection
-        return newBlockCollectionsByXsGroup, modifiedReprBlocks
+        return newBlockCollectionsByXsGroup, modifiedReprBlocks, origXSIDsFromNew
 
     def _getModifiedReprBlocks(self, blockList, originalRepresentativeBlocks):
         """

@@ -20,16 +20,16 @@ Data is from [#IAEA-TECDOCT-1450]_.
 .. [#IAEA-TECDOCT-1450] Thorium fuel cycle -- Potential benefits and challenges, IAEA-TECDOC-1450 (2005).
     https://www-pub.iaea.org/mtcd/publications/pdf/te_1450_web.pdf
 """
-from armi.materials.material import Material
+from armi.materials.material import FuelMaterial
 from armi.utils.units import getTk
 
 
-class Thorium(Material):
+class Thorium(FuelMaterial):
     name = "Thorium metal"
     propertyValidTemperature = {"linear expansion": ((30, 600), "K")}
 
     def __init__(self):
-        Material.__init__(self)
+        FuelMaterial.__init__(self)
         self.refDens = 11.68
 
     def setDefaultMassFracs(self):
