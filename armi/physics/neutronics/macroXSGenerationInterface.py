@@ -26,6 +26,7 @@ from armi import mpiActions
 from armi import runLog
 from armi.nuclearDataIO import xsCollections
 from armi.utils import iterables
+from armi.physics.neutronics.settings import CONF_MINIMUM_NUCLIDE_DENSITY
 
 
 class MacroXSGenerator(mpiActions.MpiAction):
@@ -125,7 +126,7 @@ class MacroXSGenerationInterface(interfaces.Interface):
     def __init__(self, r, cs):
         interfaces.Interface.__init__(self, r, cs)
         self.macrosLastBuiltAt = None
-        self.minimumNuclideDensity = cs["minimumNuclideDensity"]
+        self.minimumNuclideDensity = cs[CONF_MINIMUM_NUCLIDE_DENSITY]
 
     def buildMacros(
         self,
