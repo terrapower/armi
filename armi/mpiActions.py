@@ -398,7 +398,7 @@ def _makeQueue(actions, useForComputation):
     else:
         nLeftoverCPUs = nCPUsAvailable - nExclusiveCPUs
         nLeftoverActions = len(actions) - nExclusiveCPUs
-        numBatches = int(math.ceil(nLeftoverActions) / float(nLeftoverCPUs))
+        numBatches = int(math.ceil(nLeftoverActions / nLeftoverCPUs))
     return queue, numBatches
 
 
