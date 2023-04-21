@@ -17,6 +17,7 @@ What's new in ARMI
 #. Implement control rod decusping option for uniform mesh converter. (`PR#1229 <https://github.com/terrapower/armi/pull/1229>`_)
 #. createRepresentativeBlocksFromExistingBlocks() now returns the mapping of original to new XS IDs. (`PR#1217 <https://github.com/terrapower/armi/pull/1217>`_)
 #. Added a capability to prioritize mpi action execution and exclusivity.  (`PR#1237 <https://github.com/terrapower/armi/pull/1237>`_)
+#. Use ``minimumNuclideDensity`` setting when generating macroscopic XS.  (`PR#1248 <https://github.com/terrapower/armi/pull/1248>`_)
 #. TBD
 
 Bug fixes
