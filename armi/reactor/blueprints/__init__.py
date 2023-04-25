@@ -89,12 +89,19 @@ from armi.nucDirectory import nuclideBases
 from armi.reactor import assemblies
 from armi.reactor import geometry
 from armi.reactor import systemLayoutInput
+from armi.reactor.flags import Flags
 from armi.scripts import migration
 
 from armi.utils import textProcessors
-from armi.physics.neutronics.fissionProductModel import lumpedFissionProduct
+from armi.settings.fwSettings.globalSettings import (
+    CONF_DETAILED_AXIAL_EXPANSION,
+    CONF_ASSEM_FLAGS_SKIP_AXIAL_EXP,
+    CONF_INPUT_HEIGHTS_HOT,
+    CONF_NON_UNIFORM_ASSEM_FLAGS,
+    CONF_ACCEPTABLE_BLOCK_AREA_ERROR,
+    CONF_GEOM_FILE,
+)
 from armi.physics.neutronics.settings import CONF_LOADING_FILE
-from armi.nucDirectory import elements
 
 # NOTE: using non-ARMI-standard imports because these are all a part of this package,
 # and using the module imports would make the attribute definitions extremely long
@@ -329,21 +336,31 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
             runLog.header("=========== Verifying Assembly Configurations ===========")
             self._checkAssemblyAreaConsistency(cs)
 
-            if not cs["detailedAxialExpansion"]:
+            if not cs[CONF_DETAILED_AXIAL_EXPANSION]:
                 # this is required to set up assemblies so they know how to snap
                 # to the reference mesh. They wont know the mesh to conform to
                 # otherwise....
                 axialExpansionChanger.makeAssemsAbleToSnapToUniformMesh(
-                    self.assemblies.values(), cs["nonUniformAssemFlags"]
+                    self.assemblies.values(), cs[CONF_NON_UNIFORM_ASSEM_FLAGS]
                 )
-            if not cs["inputHeightsConsideredHot"]:
+            if not cs[CONF_INPUT_HEIGHTS_HOT]:
                 runLog.header(
                     "=========== Axially expanding all assemblies from Tinput to Thot ==========="
                 )
                 # expand axial heights from cold to hot so dims and masses are consistent
                 # with specified component hot temperatures.
+                assemsToSkip = [
+                    Flags.fromStringIgnoreErrors(t)
+                    for t in cs[CONF_ASSEM_FLAGS_SKIP_AXIAL_EXP]
+                ]
+                assemsToExpand = list(
+                    a
+                    for a in list(self.assemblies.values())
+                    if not any(a.hasFlags(f) for f in assemsToSkip)
+                )
                 axialExpansionChanger.expandColdDimsToHot(
-                    self.assemblies.values(), cs["detailedAxialExpansion"]
+                    assemsToExpand,
+                    cs[CONF_DETAILED_AXIAL_EXPANSION],
                 )
 
             # pylint: disable=no-member
@@ -518,7 +535,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
             for b in a[1:]:
                 if (
                     abs(b.getArea() - blockArea) / blockArea
-                    > cs["acceptableBlockAreaError"]
+                    > cs[CONF_ACCEPTABLE_BLOCK_AREA_ERROR]
                 ):
                     runLog.error("REFERENCE COMPARISON BLOCK:")
                     a[0].printContents(includeNuclides=False)
@@ -594,7 +611,7 @@ def migrate(bp: Blueprints, cs):
         raise ValueError("Cannot auto-create a 2nd `core` grid. Adjust input.")
 
     geom = systemLayoutInput.SystemLayoutInput()
-    geom.readGeomFromFile(os.path.join(cs.inputDirectory, cs["geomFile"]))
+    geom.readGeomFromFile(os.path.join(cs.inputDirectory, cs[CONF_GEOM_FILE]))
     gridDesigns = geom.toGridBlueprints("core")
     for design in gridDesigns:
         bp.gridDesigns[design.name] = design
@@ -616,7 +633,7 @@ def migrate(bp: Blueprints, cs):
                 "The system layout described in {} has non-uniform "
                 "azimuthal and/or radial submeshing. This migration is currently "
                 "only smart enough to handle a single radial and single azimuthal "
-                "submesh for all assemblies.".format(cs["geomFile"])
+                "submesh for all assemblies.".format(cs[CONF_GEOM_FILE])
             )
         radMesh = next(iter(radMeshes))
         aziMesh = next(iter(aziMeshes))

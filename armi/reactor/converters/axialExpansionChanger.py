@@ -55,7 +55,11 @@ def makeAssemsAbleToSnapToUniformMesh(
         a.makeAxialSnapList(referenceAssembly)
 
 
-def expandColdDimsToHot(assems, isDetailedAxialExpansion, referenceAssembly=None):
+def expandColdDimsToHot(
+    assems: list,
+    isDetailedAxialExpansion: bool,
+    referenceAssembly=None,
+):
     """
     Expand BOL assemblies, resolve disjoint axial mesh (if needed), and update block BOL heights
 
@@ -64,9 +68,9 @@ def expandColdDimsToHot(assems, isDetailedAxialExpansion, referenceAssembly=None
     assems: list[:py:class:`Assembly <armi.reactor.assemblies.Assembly>`]
         list of assemblies to be thermally expanded
     isDetailedAxialExpansion: bool
-        If true assemblies will be forced to conform to the reference mesh after expansion
+        If False, assemblies will be forced to conform to the reference mesh after expansion
     referenceAssembly: :py:class:`Assembly <armi.reactor.assemblies.Assembly>`, optional
-        Assembly whose mesh other meshes wil conform to if isDetailedAxialExpansion is true.
+        Assembly whose mesh other meshes will conform to if isDetailedAxialExpansion is False.
         If not provided, will assume the finest mesh assembly which is typically fuel.
     """
     assems = list(assems)

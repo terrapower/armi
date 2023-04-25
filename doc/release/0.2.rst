@@ -14,6 +14,7 @@ What's new in ARMI
 #. Use TemporaryDirectoryChanger for executer.run() so dirs are cleaned up during run. (`PR#1219 <https://github.com/terrapower/armi/pull/1219>`_)
 #. New option ``copyOutput`` for globalFluxInterface to not copy output back to working directory. (`PR#1218 <https://github.com/terrapower/armi/pull/1218>`_, `PR#1227 <https://github.com/terrapower/armi/pull/1227>`_)
 #. `Executer` class has a ``dcType`` attribute to define the type of ``DirectoryChanger`` it will use. (`PR#1228 <https://github.com/terrapower/armi/pull/1228>`_)
+#. Added new setting ``assemFlagsToSkipAxialExpansion`` to enable users to list flags of assemblies to skip axial expansion. (`PR#1235 <https://github.com/terrapower/armi/pull/1235>`_)
 #. Enabling one-way (upwards) axial expansion of control assemblies. (`PR#1226 <https://github.com/terrapower/armi/pull/1226>`_)
 #. Implement control rod decusping option for uniform mesh converter. (`PR#1229 <https://github.com/terrapower/armi/pull/1229>`_)
 #. createRepresentativeBlocksFromExistingBlocks() now returns the mapping of original to new XS IDs. (`PR#1217 <https://github.com/terrapower/armi/pull/1217>`_)
