@@ -22,17 +22,17 @@ Data is from [#IAEA-TECDOCT-1450]_.
 """
 
 from armi.utils.units import getTk
-from armi.materials import material
+from armi.materials.material import FuelMaterial
 from armi import runLog
 
 
-class ThU(material.Material):
+class ThU(FuelMaterial):
     name = "ThU"
     enrichedNuclide = "U233"
     propertyValidTemperature = {"linear expansion": ((30, 600), "K")}
 
     def __init__(self):
-        material.Material.__init__(self)
+        FuelMaterial.__init__(self)
         """g/cc from IAEA TE 1450"""
         self.refDens = 11.68
 
@@ -50,7 +50,8 @@ class ThU(material.Material):
 
         if U233_wt_frac is not None:
             self.adjustMassEnrichment(U233_wt_frac)
-        material.FuelMaterial.applyInputParams(self, *args, **kwargs)
+
+        FuelMaterial.applyInputParams(self, *args, **kwargs)
 
     def setDefaultMassFracs(self):
         self.setMassFrac("TH232", 1.0)
