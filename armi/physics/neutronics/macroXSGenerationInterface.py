@@ -26,6 +26,7 @@ from armi import mpiActions
 from armi import runLog
 from armi.nuclearDataIO import xsCollections
 from armi.utils import iterables
+from armi.physics.neutronics.settings import CONF_MINIMUM_NUCLIDE_DENSITY
 
 
 class MacroXSGenerator(mpiActions.MpiAction):
@@ -38,7 +39,7 @@ class MacroXSGenerator(mpiActions.MpiAction):
         buildScatterMatrix,
         buildOnlyCoolant,
         libType,
-        minimumNuclideDensity,
+        minimumNuclideDensity=0.0,
     ):
         mpiActions.MpiAction.__init__(self)
         self.buildScatterMatrix = buildScatterMatrix
@@ -84,7 +85,7 @@ class MacroXSGenerator(mpiActions.MpiAction):
         mc = xsCollections.MacroscopicCrossSectionCreator(
             self.buildScatterMatrix,
             self.buildOnlyCoolant,
-            self.minimummNuclideDensity,
+            self.minimumNuclideDensity,
         )
 
         if context.MPI_SIZE > 1:
@@ -125,7 +126,7 @@ class MacroXSGenerationInterface(interfaces.Interface):
     def __init__(self, r, cs):
         interfaces.Interface.__init__(self, r, cs)
         self.macrosLastBuiltAt = None
-        self.minimumNuclideDensity = cs["minimumNuclideDensity"]
+        self.minimumNuclideDensity = cs[CONF_MINIMUM_NUCLIDE_DENSITY]
 
     def buildMacros(
         self,

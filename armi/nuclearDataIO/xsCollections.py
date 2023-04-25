@@ -424,9 +424,11 @@ class MacroscopicCrossSectionCreator:
         self.block = block
         self.xsSuffix = block.getMicroSuffix()
         self.macros = XSCollection(parent=block)
-        self.densities = filterDictValues(
-            dict(zip(nucNames, block.getNuclideNumberDensities(nucNames))),
-            self.minimumNuclideDensity,
+        self.densities = dict(
+            filter(
+                lambda x: x[1] > self.minimumNuclideDensity,
+                zip(nucNames, block.getNuclideNumberDensities(nucNames)),
+            )
         )
         self.ng = getattr(self.microLibrary, "numGroups" + _getLibTypeSuffix(libType))
 
