@@ -26,18 +26,28 @@ from armi import mpiActions
 from armi import runLog
 from armi.nuclearDataIO import xsCollections
 from armi.utils import iterables
+from armi.physics.neutronics.settings import CONF_MINIMUM_NUCLIDE_DENSITY
 
 
 class MacroXSGenerator(mpiActions.MpiAction):
     """An action that can make macroscopic cross sections, even in parallel."""
 
-    def __init__(self, blocks, lib, buildScatterMatrix, buildOnlyCoolant, libType):
+    def __init__(
+        self,
+        blocks,
+        lib,
+        buildScatterMatrix,
+        buildOnlyCoolant,
+        libType,
+        minimumNuclideDensity=0.0,
+    ):
         mpiActions.MpiAction.__init__(self)
         self.buildScatterMatrix = buildScatterMatrix
         self.buildOnlyCoolant = buildOnlyCoolant
         self.libType = libType
         self.lib = lib
         self.blocks = blocks
+        self.minimumNuclideDensity = minimumNuclideDensity
 
     def __reduce__(self):
         # Prevent blocks and lib from being broadcast by passing None to ctor.
@@ -46,7 +56,14 @@ class MacroXSGenerator(mpiActions.MpiAction):
         # which utilizes this action. Default arguments make things more complicated.
         return (
             MacroXSGenerator,
-            (None, None, self.buildScatterMatrix, self.buildOnlyCoolant, self.libType),
+            (
+                None,
+                None,
+                self.buildScatterMatrix,
+                self.buildOnlyCoolant,
+                self.libType,
+                self.minimumNuclideDensity,
+            ),
         )
 
     def invokeHook(self):
@@ -66,7 +83,9 @@ class MacroXSGenerator(mpiActions.MpiAction):
             lib = None
 
         mc = xsCollections.MacroscopicCrossSectionCreator(
-            self.buildScatterMatrix, self.buildOnlyCoolant
+            self.buildScatterMatrix,
+            self.buildOnlyCoolant,
+            self.minimumNuclideDensity,
         )
 
         if context.MPI_SIZE > 1:
@@ -107,6 +126,7 @@ class MacroXSGenerationInterface(interfaces.Interface):
     def __init__(self, r, cs):
         interfaces.Interface.__init__(self, r, cs)
         self.macrosLastBuiltAt = None
+        self.minimumNuclideDensity = cs[CONF_MINIMUM_NUCLIDE_DENSITY]
 
     def buildMacros(
         self,
@@ -154,7 +174,12 @@ class MacroXSGenerationInterface(interfaces.Interface):
 
         runLog.important("Building macro XS")
         xsGen = MacroXSGenerator(
-            bListSome, lib, buildScatterMatrix, buildOnlyCoolant, libType
+            bListSome,
+            lib,
+            buildScatterMatrix,
+            buildOnlyCoolant,
+            libType,
+            self.minimumNuclideDensity,
         )
         xsGen.broadcast()
         xsGen.invoke(self.o, self.r, self.cs)
