@@ -28,7 +28,9 @@ class TestXsCollections(unittest.TestCase):
         cls.microLib = isotxs.readBinary(ISOAA_PATH)
 
     def setUp(self):
-        self.mc = xsCollections.MacroscopicCrossSectionCreator()
+        self.mc = xsCollections.MacroscopicCrossSectionCreator(
+            minimumNuclideDensity=1e-13
+        )
         self.block = test_crossSectionManager.MockBlock()
         self.block.setNumberDensity("U235", 0.02)
         self.block.setNumberDensity("FE", 0.01)
@@ -63,6 +65,7 @@ class TestXsCollections(unittest.TestCase):
         )
 
     def test_createMacrosFromMicros(self):
+        self.assertEqual(self.mc.minimumNuclideDensity, 1e-13)
         self.mc.createMacrosFromMicros(self.microLib, self.block)
         totalMacroFissionXs = 0.0
         totalMacroAbsXs = 0.0

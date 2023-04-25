@@ -74,26 +74,18 @@ def expandColdDimsToHot(assems, isDetailedAxialExpansion, referenceAssembly=None
         referenceAssembly = getDefaultReferenceAssem(assems)
     axialExpChanger = AxialExpansionChanger(isDetailedAxialExpansion)
     for a in assems:
-        if not a.hasFlags(Flags.CONTROL):
-            axialExpChanger.setAssembly(a)
-            # this doesn't get applied to control assems, so CR will be interpreted
-            # as hot. This should be conservative because the control rods will
-            # be modeled as slightly shorter with the correct hot density. Density
-            # is more important than height, so we are forcing density to be correct
-            # since we can't do axial expansion (yet)
-            axialExpChanger.applyColdHeightMassIncrease()
-            axialExpChanger.expansionData.computeThermalExpansionFactors()
-            axialExpChanger.axiallyExpandAssembly()
+        axialExpChanger.setAssembly(a)
+        axialExpChanger.applyColdHeightMassIncrease()
+        axialExpChanger.expansionData.computeThermalExpansionFactors()
+        axialExpChanger.axiallyExpandAssembly()
     if not isDetailedAxialExpansion:
         for a in assems:
-            if not a.hasFlags(Flags.CONTROL):
-                a.setBlockMesh(referenceAssembly.getAxialMesh())
+            a.setBlockMesh(referenceAssembly.getAxialMesh())
     # update block BOL heights to reflect hot heights
     for a in assems:
-        if not a.hasFlags(Flags.CONTROL):
-            for b in a:
-                b.p.heightBOL = b.getHeight()
-                b.completeInitialLoading()
+        for b in a:
+            b.p.heightBOL = b.getHeight()
+            b.completeInitialLoading()
 
 
 class AxialExpansionChanger:

@@ -77,7 +77,7 @@ class MpiAction:
     """Base of all MPI actions.
 
     MPI Actions are tasks that can be executed without needing lots of other
-    information. When a worker node sits in it's main loop, and receives an MPI Action, it will
+    information. When a worker node sits in its main loop, and receives an MPI Action, it will
     simply call :py:meth:`~armi.mpiActions.MpiAction.invoke`.
     """
 
@@ -86,6 +86,13 @@ class MpiAction:
         self.r = None
         self.cs = None
         self.serial = False
+        # items can be set to exclusive if they will take considerably longer
+        # they will be queued first, and the CPUs for this action will not
+        # be used for any other purpose (except when number of exclusive actions > num CPU groups)
+        self.runActionExclusive = False
+        # lower number is higher; halfway between 1-10.. probably dont need more
+        # than 10 priorities but negative nums work too...
+        self.priority = 5
 
     @property
     def parallel(self):
@@ -308,26 +315,25 @@ def runActions(o, r, cs, actions, numPerNode=None, serial=False):
             raise ValueError("numPerNode must be >= 1")
         numThisNode = {nodeName: 0 for nodeName in context.MPI_NODENAMES}
         for rank, nodeName in enumerate(context.MPI_NODENAMES):
+            # if we have more processors than tasks, disable the extra
             useForComputation[rank] = numThisNode[nodeName] < numPerNode
             numThisNode[nodeName] += 1
-    numBatches = int(
-        math.ceil(
-            len(actions) / float(len([rank for rank in useForComputation if rank]))
-        )
-    )
+
+    queue, numBatches = _makeQueue(actions, useForComputation)
     runLog.extra(
         "Running {} MPI actions in parallel over {} batches".format(
             len(actions), numBatches
         )
     )
-
-    queue = list(actions)  # create a new list.. we will use as a queue
     results = []
     batchNum = 0
     while queue:
         actionsThisRound = []
         for useRank in useForComputation:
             actionsThisRound.append(queue.pop(0) if useRank and queue else None)
+        useForComputation = _disableForExclusiveTasks(
+            actionsThisRound, useForComputation
+        )
         realActions = [
             (context.MPI_NODENAMES[rank], rank, act)
             for rank, act in enumerate(actionsThisRound)
@@ -346,6 +352,54 @@ def runActions(o, r, cs, actions, numPerNode=None, serial=False):
         distrib.broadcast()
         results.append(distrib.invoke(o, r, cs))
     return results
+
+
+def _disableForExclusiveTasks(actionsThisRound, useForComputation):
+    # disable processors that are exclusive for next
+    indicesToDisable = [
+        i
+        for i, action in enumerate(actionsThisRound)
+        if action is not None and action.runActionExclusive
+    ]
+    for i in indicesToDisable:
+        useForComputation[i] = False
+    return useForComputation
+
+
+def _makeQueue(actions, useForComputation):
+    """
+    Sort actions by priority in a queue, if more exclusive than CPUs makes all non-exclusive.
+
+    Notes
+    -----
+    All exclusive actions will occur first regardless of the priority.
+    All non-exclusive actions will be after all exclusive actions regardless of the priority.
+    Within these 2 bins, priority matters.
+    In the event that more exclusive actions are requested than CPUs - 1, all actions will
+    be changed to non-exclusive but previously evaluated order will remain.
+    CPUs - 1 is to reserve at least 1 CPU for non-exclusive actions.
+    """
+
+    def sortActionPriority(action):
+        # exclusive actions first and those groups of CPUs only get 1 action
+        exclusivePriority = 1 if action.runActionExclusive else 2
+        return (exclusivePriority, action.priority)
+
+    queue = list(sorted(actions, key=sortActionPriority))
+    minCPUsForRemainingTasks = 1
+    nExclusiveCPUs = len([action for action in queue if action.runActionExclusive])
+    nCPUsAvailable = len([rank for rank in useForComputation if rank])
+    if nExclusiveCPUs + minCPUsForRemainingTasks > nCPUsAvailable:
+        # there are more exclusive tasks than sets of CPUs, so just make them all
+        # non-exclusive and evenly balance them
+        for action in queue:
+            action.runActionExclusive = False
+        numBatches = int(math.ceil(len(actions) / float(nCPUsAvailable)))
+    else:
+        nLeftoverCPUs = nCPUsAvailable - nExclusiveCPUs
+        nLeftoverActions = len(actions) - nExclusiveCPUs
+        numBatches = int(math.ceil(nLeftoverActions / nLeftoverCPUs))
+    return queue, numBatches
 
 
 def runActionsInSerial(o, r, cs, actions):

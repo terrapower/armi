@@ -37,6 +37,7 @@ CONF_NUM_PROCESSORS = "numProcessors"
 CONF_INITIALIZE_BURN_CHAIN = "initializeBurnChain"
 CONF_BURN_CHAIN_FILE_NAME = "burnChainFileName"
 CONF_AXIAL_MESH_REFINEMENT_FACTOR = "axialMeshRefinementFactor"
+CONF_UNIFORM_MESH_MINIMUM_SIZE = "uniformMeshMinimumSize"
 CONF_AUTOMATIC_VARIABLE_MESH = "automaticVariableMesh"
 CONF_TRACE = "trace"
 CONF_PROFILE = "profile"
@@ -157,6 +158,15 @@ def defineSettings() -> List[setting.Setting]:
             description="Multiplicative factor on the Global Flux number of mesh per "
             "block. Used for axial mesh refinement.",
             schema=vol.All(vol.Coerce(int), vol.Range(min=0, min_included=False)),
+        ),
+        setting.Setting(
+            CONF_UNIFORM_MESH_MINIMUM_SIZE,
+            default=None,
+            label="Minimum axial mesh size in cm for uniform mesh",
+            description="Minimum mesh size used when generating an axial mesh for the "
+            "uniform mesh converter. Providing a value for this setting allows fuel "
+            "and control material boundaries to be enforced better in uniform mesh.",
+            schema=vol.All(vol.Coerce(float), vol.Range(min=0.0, min_included=False)),
         ),
         setting.Setting(
             CONF_DETAILED_AXIAL_EXPANSION,
