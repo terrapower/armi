@@ -831,7 +831,7 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
             os.path.join(TEST_ROOT, "detailedAxialExpansion"),
             customSettings={"inputHeightsConsideredHot": True},
         )
-        reduceTestReactorRings(r, o.cs, 3)
+        reduceTestReactorRings(r, o.cs, 5)
 
         self.stdAssems = [a for a in r.core.getAssemblies()]
 
@@ -839,7 +839,7 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
             os.path.join(TEST_ROOT, "detailedAxialExpansion"),
             customSettings={"inputHeightsConsideredHot": False},
         )
-        reduceTestReactorRings(rCold, oCold.cs, 3)
+        reduceTestReactorRings(rCold, oCold.cs, 5)
 
         self.testAssems = [a for a in rCold.core.getAssemblies()]
 
@@ -853,9 +853,6 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
             2. in armi.tests.detailedAxialExpansion.refSmallReactorBase.yaml,
                Thot > Tinput resulting in a non-zero DeltaT. Each block in the
                expanded case should therefore be a different height than that of the standard case.
-               - The one exception is for control assemblies. These designs can be unique from regular
-                 pin type assemblies by allowing downward expansion. Because of this, they are skipped
-                 for axial expansion.
         """
         for aStd, aExp in zip(self.stdAssems, self.testAssems):
             self.assertAlmostEqual(
@@ -869,37 +866,48 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
                 hasCustomMaterial = any(
                     isinstance(c.material, custom.Custom) for c in bStd
                 )
-                if (aStd.hasFlags(Flags.CONTROL)) or (hasCustomMaterial):
+                if hasCustomMaterial:
                     checkColdBlockHeight(bStd, bExp, self.assertAlmostEqual, "the same")
                 else:
                     checkColdBlockHeight(bStd, bExp, self.assertNotEqual, "different")
                 if bStd.hasFlags(Flags.FUEL):
-                    # fuel mass should grow because heights are considered cold heights
-                    # and a cold 1 cm column has more mass than a hot 1 cm column
-                    if not isinstance(
-                        bStd.getComponent(Flags.FUEL).material, custom.Custom
-                    ):
-                        # custom materials don't expand
-                        self.assertGreater(bExp.getMass("U235"), bStd.getMass("U235"))
+                    self.checkColdHeightBlockMass(bStd, bExp, Flags.FUEL, "U235")
+                elif bStd.hasFlags(Flags.CONTROL):
+                    self.checkColdHeightBlockMass(bStd, bExp, Flags.CONTROL, "B10")
 
-                if not aStd.hasFlags(Flags.CONTROL) and not aStd.hasFlags(Flags.TEST):
-                    if not hasCustomMaterial:
-                        # skip blocks of custom material where liner is merged with clad
-                        for cExp in bExp:
-                            if not isinstance(cExp.material, custom.Custom):
-                                matDens = cExp.material.density(Tc=cExp.temperatureInC)
-                                compDens = cExp.getMassDensity()
-                                msg = (
-                                    f"{cExp} {cExp.material} in {bExp} was not at correct density. \n"
-                                    + f"expansion = {bExp.p.height / bStd.p.height} \n"
-                                    + f"density = {matDens}, component density = {compDens} \n"
-                                )
-                                self.assertAlmostEqual(
-                                    matDens,
-                                    compDens,
-                                    places=7,
-                                    msg=msg,
-                                )
+                if not aStd.hasFlags(Flags.TEST) and not hasCustomMaterial:
+                    # skip blocks of custom material where liner is merged with clad
+                    for cExp in bExp:
+                        if not isinstance(cExp.material, custom.Custom):
+                            matDens = cExp.material.density(Tc=cExp.temperatureInC)
+                            compDens = cExp.getMassDensity()
+                            msg = (
+                                f"{cExp} {cExp.material} in {bExp} was not at correct density. \n"
+                                + f"expansion = {bExp.p.height / bStd.p.height} \n"
+                                + f"density = {matDens}, component density = {compDens} \n"
+                            )
+                            self.assertAlmostEqual(
+                                matDens,
+                                compDens,
+                                places=7,
+                                msg=msg,
+                            )
+
+    def checkColdHeightBlockMass(
+        self, bStd: HexBlock, bExp: HexBlock, flagType: Flags, nuclide: str
+    ):
+        """checks that nuclide masses for blocks with input cold heights and "inputHeightsConsideredHot": True are underpredicted
+
+        Notes
+        -----
+        If blueprints have cold blocks heights with "inputHeightsConsideredHot": True in the inputs, then
+        the nuclide densities are thermally expanded but the block height is not. This ultimately results in
+        nuclide masses being underpredicted relative to the case where both nuclide densities and block heights
+        are thermally expanded.
+        """
+        # custom materials don't expand
+        if not isinstance(bStd.getComponent(flagType).material, custom.Custom):
+            self.assertGreater(bExp.getMass(nuclide), bStd.getMass(nuclide))
 
 
 def checkColdBlockHeight(bStd, bExp, assertType, strForAssertion):
