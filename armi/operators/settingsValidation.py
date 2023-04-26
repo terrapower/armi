@@ -251,8 +251,9 @@ class Inspector:
                 )
                 if preserve_settings:
                     self.csOriginal.writeToYamlFile(oldFilePath)
-        # overwrite settings file
-        self.cs.writeToYamlFile(self.cs.path)
+            # overwrite settings file
+            self.cs.writeToYamlFile(self.cs.path)
+
         return correctionsMade
 
     def addQuery(self, condition, statement, question, correction):
