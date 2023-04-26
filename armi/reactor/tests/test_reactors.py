@@ -39,6 +39,7 @@ from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
 from armi.reactor.flags import Flags
 from armi.tests import ARMI_RUN_PATH, mockRunLogs, TEST_ROOT
 from armi.utils import directoryChangers
+from armi.settings.fwSettings.globalSettings import CONF_ASSEM_FLAGS_SKIP_AXIAL_EXP
 
 TEST_REACTOR = None  # pickled string of test reactor (for fast caching)
 
@@ -906,9 +907,16 @@ class HexReactorTests(ReactorTests):
         nonEqualParameters = ["heightBOL", "molesHmBOL", "massHmBOL"]
         equalParameters = ["smearDensity", "nHMAtBOL", "enrichmentBOL"]
 
-        _o, coldHeightR = loadTestReactor(
+        o, coldHeightR = loadTestReactor(
             self.directoryChanger.destination,
-            customSettings={"inputHeightsConsideredHot": False},
+            customSettings={
+                "inputHeightsConsideredHot": False,
+                "assemFlagsToSkipAxialExpansion": ["feed fuel"],
+            },
+        )
+        aToSkip = list(
+            Flags.fromStringIgnoreErrors(t)
+            for t in o.cs[CONF_ASSEM_FLAGS_SKIP_AXIAL_EXP]
         )
 
         for i, val in enumerate(oldRefBlockAxialMesh[1:]):
@@ -918,19 +926,22 @@ class HexReactorTests(ReactorTests):
 
         coldHeightAssems = coldHeightR.core.getAssemblies()
         for a, coldHeightA in zip(originalAssems, coldHeightAssems):
-            if not a.hasFlags(Flags.CONTROL):
-                for b, coldHeightB in zip(a[1:], coldHeightA[1:]):
-                    for param in nonEqualParameters:
-                        p, coldHeightP = b.p[param], coldHeightB.p[param]
-                        if p and coldHeightP:
-                            self.assertNotEqual(
-                                p, coldHeightP, f"{param} {p} {coldHeightP}"
-                            )
-                        else:
-                            self.assertAlmostEqual(p, coldHeightP)
-                    for param in equalParameters:
-                        p, coldHeightP = b.p[param], coldHeightB.p[param]
+            if a.hasFlags(Flags.CONTROL) or any(
+                a.hasFlags(aFlags) for aFlags in aToSkip
+            ):
+                continue
+            for b, coldHeightB in zip(a[1:], coldHeightA[1:]):
+                for param in nonEqualParameters:
+                    p, coldHeightP = b.p[param], coldHeightB.p[param]
+                    if p and coldHeightP:
+                        self.assertNotEqual(
+                            p, coldHeightP, f"{param} {p} {coldHeightP}"
+                        )
+                    else:
                         self.assertAlmostEqual(p, coldHeightP)
+                for param in equalParameters:
+                    p, coldHeightP = b.p[param], coldHeightB.p[param]
+                    self.assertAlmostEqual(p, coldHeightP)
 
     def test_updateBlockBOLHeights_DBLoad(self):
         """Test that blueprints assemblies are expanded in DB load.

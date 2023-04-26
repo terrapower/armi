@@ -629,6 +629,8 @@ class TestExceptions(AxialExpansionTestBase, unittest.TestCase):
 
     def test_AssemblyAxialExpansionException(self):
         """test that negative height exception is caught"""
+        # manually set axial exp target component for code coverage
+        self.a[0].axialExpTargetComponent = self.a[0][0]
         temp = Temperature(self.a.getTotalHeight(), numTempGridPts=11, tempSteps=10)
         with self.assertRaises(ArithmeticError) as cm:
             for idt in range(temp.tempSteps):
@@ -637,42 +639,6 @@ class TestExceptions(AxialExpansionTestBase, unittest.TestCase):
                 )
                 self.obj.expansionData.computeThermalExpansionFactors()
                 self.obj.axiallyExpandAssembly()
-
-            the_exception = cm.exception
-            self.assertEqual(the_exception.error_code, 3)
-
-    def test_determineTargetComponentRuntimeErrorFirst(self):
-        # build block for testing
-        b = HexBlock("test", height=10.0)
-        fuelDims = {"Tinput": 25.0, "Thot": 25.0, "od": 0.76, "id": 0.00, "mult": 127.0}
-        cladDims = {"Tinput": 25.0, "Thot": 25.0, "od": 0.80, "id": 0.77, "mult": 127.0}
-        mainType = Circle("main", "FakeMat", **fuelDims)
-        clad = Circle("clad", "FakeMat", **cladDims)
-        b.add(mainType)
-        b.add(clad)
-        b.setType("test")
-        b.getVolumeFractions()
-        # do test
-        with self.assertRaises(RuntimeError) as cm:
-            self.obj.expansionData.determineTargetComponent(b)
-
-            the_exception = cm.exception
-            self.assertEqual(the_exception.error_code, 3)
-
-    def test_determineTargetComponentRuntimeErrorSecond(self):
-        # build block for testing
-        b = HexBlock("test", height=10.0)
-        fuelDims = {"Tinput": 25.0, "Thot": 25.0, "od": 0.76, "id": 0.00, "mult": 127.0}
-        cladDims = {"Tinput": 25.0, "Thot": 25.0, "od": 0.80, "id": 0.77, "mult": 127.0}
-        mainType = Circle("test", "FakeMat", **fuelDims)
-        clad = Circle("test", "FakeMat", **cladDims)
-        b.add(mainType)
-        b.add(clad)
-        b.setType("test")
-        b.getVolumeFractions()
-        # do test
-        with self.assertRaises(RuntimeError) as cm:
-            self.obj.expansionData.determineTargetComponent(b)
 
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
@@ -722,17 +688,15 @@ class TestDetermineTargetComponent(AxialExpansionTestBase, unittest.TestCase):
 
     def setUp(self):
         AxialExpansionTestBase.setUp(self)
-        self.obj = AxialExpansionChanger()
-        self.a = buildTestAssemblyWithFakeMaterial(name="FakeMatException")
-        self.obj.setAssembly(self.a)
-        # need an empty dictionary because we want to test for the added component only
-        self.obj.expansionData._componentDeterminesBlockHeight = {}
+        self.expData = ExpansionData([], None)
+        coolDims = {"Tinput": 25.0, "Thot": 25.0}
+        self.coolant = DerivedShape("coolant", "Sodium", **coolDims)
 
     def tearDown(self):
         AxialExpansionTestBase.tearDown(self)
 
     def test_determineTargetComponent(self):
-        # build a test block
+        """provides coverage for searching TARGET_FLAGS_IN_PREFERRED_ORDER"""
         b = HexBlock("fuel", height=10.0)
         fuelDims = {"Tinput": 25.0, "Thot": 25.0, "od": 0.76, "id": 0.00, "mult": 127.0}
         cladDims = {"Tinput": 25.0, "Thot": 25.0, "od": 0.80, "id": 0.77, "mult": 127.0}
@@ -740,85 +704,109 @@ class TestDetermineTargetComponent(AxialExpansionTestBase, unittest.TestCase):
         clad = Circle("clad", "FakeMat", **cladDims)
         b.add(fuel)
         b.add(clad)
+        b.add(self.coolant)
         # call method, and check that target component is correct
-        self.obj.expansionData.determineTargetComponent(b)
+        self.expData.determineTargetComponent(b)
         self.assertTrue(
-            self.obj.expansionData.isTargetComponent(fuel),
-            msg="determineTargetComponent failed to recognize intended component: {}".format(
-                fuel
-            ),
+            self.expData.isTargetComponent(fuel),
+            msg=f"determineTargetComponent failed to recognize intended component: {fuel}",
         )
 
     def test_determineTargetComponentBlockWithMultipleFlags(self):
+        """provides coverage for searching TARGET_FLAGS_IN_PREFERRED_ORDER with multiple flags"""
         # build a block that has two flags as well as a component matching each
-        # flag
         b = HexBlock("fuel poison", height=10.0)
-        fuelDims = {"Tinput": 25.0, "Thot": 600.0, "od": 0.9, "id": 0.5, "mult": 200.0}
-        poisonDims = {"Tinput": 25.0, "Thot": 400.0, "od": 0.5, "id": 0.0, "mult": 10.0}
+        fuelDims = {"Tinput": 25.0, "Thot": 25.0, "od": 0.9, "id": 0.5, "mult": 200.0}
+        poisonDims = {"Tinput": 25.0, "Thot": 25.0, "od": 0.5, "id": 0.0, "mult": 10.0}
         fuel = Circle("fuel", "FakeMat", **fuelDims)
         poison = Circle("poison", "FakeMat", **poisonDims)
         b.add(fuel)
         b.add(poison)
+        b.add(self.coolant)
         # call method, and check that target component is correct
-        self.obj.expansionData.determineTargetComponent(b)
+        self.expData.determineTargetComponent(b)
         self.assertTrue(
-            self.obj.expansionData.isTargetComponent(fuel),
-            msg="determineTargetComponent failed to recognize intended component: {}".format(
-                fuel
-            ),
+            self.expData.isTargetComponent(fuel),
+            msg=f"determineTargetComponent failed to recognize intended component: {fuel}",
         )
 
-    def test_specifyTargetComponet_BlueprintSpecified(self):
-        b = HexBlock("SodiumBlock", height=10.0)
-        sodiumDims = {"Tinput": 25.0, "Thot": 25.0, "op": 17, "ip": 0.0, "mult": 1.0}
-        ductDims = {"Tinput": 25.0, "Thot": 25.0, "op": 16, "ip": 15.0, "mult": 1.0}
-        dummy = Hexagon("coolant", "Sodium", **sodiumDims)
-        dummyDuct = Hexagon("duct", "FakeMat", **sodiumDims)
-        b.add(dummy)
-        b.add(dummyDuct)
-        b.getVolumeFractions()
-        b.setType("DuctBlock")
-
-        # check for no target component found
+    def test_specifyTargetComponent_NotFound(self):
+        """ensure RuntimeError gets raised when no target component is found"""
+        b = HexBlock("fuel", height=10.0)
+        b.add(self.coolant)
+        b.setType("fuel")
         with self.assertRaises(RuntimeError) as cm:
-            self.obj.expansionData.determineTargetComponent(b)
+            self.expData.determineTargetComponent(b)
+            the_exception = cm.exception
+            self.assertEqual(the_exception.error_code, 3)
+        with self.assertRaises(RuntimeError) as cm:
+            self.expData.determineTargetComponent(b, Flags.FUEL)
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
 
-        # check that target component is explicitly specified
-        b.setAxialExpTargetComp(dummyDuct)
+    def test_specifyTargetComponent_singleSolid(self):
+        """ensures that specifyTargetComponent is smart enough to set the only solid as the target component"""
+        b = HexBlock("plenum", height=10.0)
+        ductDims = {"Tinput": 25.0, "Thot": 25.0, "op": 17, "ip": 0.0, "mult": 1.0}
+        duct = Hexagon("duct", "FakeMat", **ductDims)
+        b.add(duct)
+        b.add(self.coolant)
+        b.getVolumeFractions()
+        b.setType("plenum")
+        self.expData.determineTargetComponent(b)
+        self.assertTrue(
+            self.expData.isTargetComponent(duct),
+            msg=f"determineTargetComponent failed to recognize intended component: {duct}",
+        )
+
+    def test_specifyTargetComponet_MultipleFound(self):
+        """ensure RuntimeError is hit when multiple target components are found
+
+        Notes
+        -----
+        This can occur if a block has a mixture of fuel types. E.g., different fuel materials,
+        or different fuel geometries.
+        """
+        b = HexBlock("fuel", height=10.0)
+        fuelAnnularDims = {
+            "Tinput": 25.0,
+            "Thot": 25.0,
+            "od": 0.9,
+            "id": 0.5,
+            "mult": 100.0,
+        }
+        fuelDims = {"Tinput": 25.0, "Thot": 25.0, "od": 1.0, "id": 0.0, "mult": 10.0}
+        fuel = Circle("fuel", "FakeMat", **fuelDims)
+        fuelAnnular = Circle("fuel annular", "FakeMat", **fuelAnnularDims)
+        b.add(fuel)
+        b.add(fuelAnnular)
+        b.add(self.coolant)
+        b.setType("FuelBlock")
+        with self.assertRaises(RuntimeError) as cm:
+            self.expData.determineTargetComponent(b, flagOfInterest=Flags.FUEL)
+            the_exception = cm.exception
+            self.assertEqual(the_exception.error_code, 3)
+
+    def test_manuallySetTargetComponent(self):
+        """ensures that target components can be manually set (is done in practice via blueprints)"""
+        b = HexBlock("dummy", height=10.0)
+        ductDims = {"Tinput": 25.0, "Thot": 25.0, "op": 17, "ip": 0.0, "mult": 1.0}
+        duct = Hexagon("duct", "FakeMat", **ductDims)
+        b.add(duct)
+        b.add(self.coolant)
+        b.getVolumeFractions()
+        b.setType("duct")
+
+        # manually set target component
+        b.setAxialExpTargetComp(duct)
         self.assertEqual(
             b.axialExpTargetComponent,
-            dummyDuct,
+            duct,
         )
 
         # check that target component is stored on expansionData object correctly
-        self.obj.expansionData._componentDeterminesBlockHeight[
-            b.axialExpTargetComponent
-        ] = True
-        self.assertTrue(
-            self.obj.expansionData._componentDeterminesBlockHeight[
-                b.axialExpTargetComponent
-            ]
-        )
-
-        # get coverage for runLog statements on origination of target components
-        # axial exp changer skips formal expansion of the top most block so we
-        # need three blocks.
-        b0 = _buildTestBlock("b0", "FakeMat", 25.0, 10.0)
-        b2 = _buildTestBlock("b1", "FakeMat", 25.0, 10.0)
-        assembly = HexAssembly("testAssemblyType")
-        assembly.spatialGrid = grids.axialUnitGrid(numCells=1)
-        assembly.spatialGrid.armiObject = assembly
-        assembly.add(b0)
-        assembly.add(b)
-        assembly.add(b2)
-        assembly.calculateZCoords()
-        assembly.reestablishBlockOrder()
-        with mockRunLogs.BufferLog() as mock:
-            self.obj.performPrescribedAxialExpansion(assembly, [dummy], [0.01])
-            self.assertIn("(blueprints defined)", mock.getStdout())
-            self.assertIn("(inferred)", mock.getStdout())
+        self.expData._componentDeterminesBlockHeight[b.axialExpTargetComponent] = True
+        self.assertTrue(self.expData.isTargetComponent(duct))
 
 
 class TestInputHeightsConsideredHot(unittest.TestCase):
@@ -831,7 +819,7 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
             os.path.join(TEST_ROOT, "detailedAxialExpansion"),
             customSettings={"inputHeightsConsideredHot": True},
         )
-        reduceTestReactorRings(r, o.cs, 3)
+        reduceTestReactorRings(r, o.cs, 5)
 
         self.stdAssems = [a for a in r.core.getAssemblies()]
 
@@ -839,7 +827,7 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
             os.path.join(TEST_ROOT, "detailedAxialExpansion"),
             customSettings={"inputHeightsConsideredHot": False},
         )
-        reduceTestReactorRings(rCold, oCold.cs, 3)
+        reduceTestReactorRings(rCold, oCold.cs, 5)
 
         self.testAssems = [a for a in rCold.core.getAssemblies()]
 
@@ -853,9 +841,6 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
             2. in armi.tests.detailedAxialExpansion.refSmallReactorBase.yaml,
                Thot > Tinput resulting in a non-zero DeltaT. Each block in the
                expanded case should therefore be a different height than that of the standard case.
-               - The one exception is for control assemblies. These designs can be unique from regular
-                 pin type assemblies by allowing downward expansion. Because of this, they are skipped
-                 for axial expansion.
         """
         for aStd, aExp in zip(self.stdAssems, self.testAssems):
             self.assertAlmostEqual(
@@ -869,37 +854,48 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
                 hasCustomMaterial = any(
                     isinstance(c.material, custom.Custom) for c in bStd
                 )
-                if (aStd.hasFlags(Flags.CONTROL)) or (hasCustomMaterial):
+                if hasCustomMaterial:
                     checkColdBlockHeight(bStd, bExp, self.assertAlmostEqual, "the same")
                 else:
                     checkColdBlockHeight(bStd, bExp, self.assertNotEqual, "different")
                 if bStd.hasFlags(Flags.FUEL):
-                    # fuel mass should grow because heights are considered cold heights
-                    # and a cold 1 cm column has more mass than a hot 1 cm column
-                    if not isinstance(
-                        bStd.getComponent(Flags.FUEL).material, custom.Custom
-                    ):
-                        # custom materials don't expand
-                        self.assertGreater(bExp.getMass("U235"), bStd.getMass("U235"))
+                    self.checkColdHeightBlockMass(bStd, bExp, Flags.FUEL, "U235")
+                elif bStd.hasFlags(Flags.CONTROL):
+                    self.checkColdHeightBlockMass(bStd, bExp, Flags.CONTROL, "B10")
 
-                if not aStd.hasFlags(Flags.CONTROL) and not aStd.hasFlags(Flags.TEST):
-                    if not hasCustomMaterial:
-                        # skip blocks of custom material where liner is merged with clad
-                        for cExp in bExp:
-                            if not isinstance(cExp.material, custom.Custom):
-                                matDens = cExp.material.density(Tc=cExp.temperatureInC)
-                                compDens = cExp.getMassDensity()
-                                msg = (
-                                    f"{cExp} {cExp.material} in {bExp} was not at correct density. \n"
-                                    + f"expansion = {bExp.p.height / bStd.p.height} \n"
-                                    + f"density = {matDens}, component density = {compDens} \n"
-                                )
-                                self.assertAlmostEqual(
-                                    matDens,
-                                    compDens,
-                                    places=7,
-                                    msg=msg,
-                                )
+                if not aStd.hasFlags(Flags.TEST) and not hasCustomMaterial:
+                    # skip blocks of custom material where liner is merged with clad
+                    for cExp in bExp:
+                        if not isinstance(cExp.material, custom.Custom):
+                            matDens = cExp.material.density(Tc=cExp.temperatureInC)
+                            compDens = cExp.getMassDensity()
+                            msg = (
+                                f"{cExp} {cExp.material} in {bExp} was not at correct density. \n"
+                                + f"expansion = {bExp.p.height / bStd.p.height} \n"
+                                + f"density = {matDens}, component density = {compDens} \n"
+                            )
+                            self.assertAlmostEqual(
+                                matDens,
+                                compDens,
+                                places=7,
+                                msg=msg,
+                            )
+
+    def checkColdHeightBlockMass(
+        self, bStd: HexBlock, bExp: HexBlock, flagType: Flags, nuclide: str
+    ):
+        """checks that nuclide masses for blocks with input cold heights and "inputHeightsConsideredHot": True are underpredicted
+
+        Notes
+        -----
+        If blueprints have cold blocks heights with "inputHeightsConsideredHot": True in the inputs, then
+        the nuclide densities are thermally expanded but the block height is not. This ultimately results in
+        nuclide masses being underpredicted relative to the case where both nuclide densities and block heights
+        are thermally expanded.
+        """
+        # custom materials don't expand
+        if not isinstance(bStd.getComponent(flagType).material, custom.Custom):
+            self.assertGreater(bExp.getMass(nuclide), bStd.getMass(nuclide))
 
 
 def checkColdBlockHeight(bStd, bExp, assertType, strForAssertion):
