@@ -174,7 +174,8 @@ class MpiIterTests(unittest.TestCase):
 class QueueActionsTests(unittest.TestCase):
     def test_disableForExclusiveTasks(self):
         num = 5
-        actionsThisRound = [MpiAction() for _ in range(num)]
+        actionsThisRound = [MpiAction() for _ in range(num - 1)]
+        actionsThisRound.append(None)
         useForComputation = [True] * num
         exclusiveIndices = [1, 3]
         for i in exclusiveIndices:

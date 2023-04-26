@@ -29,6 +29,7 @@ class TestMacroXSGenerationInterface(unittest.TestCase):
         i = MacroXSGenerationInterface(r, cs)
 
         self.assertIsNone(i.macrosLastBuiltAt)
+        self.assertEqual(i.minimumNuclideDensity, 1e-15)
         self.assertEqual(i.name, "macroXsGen")
 
 

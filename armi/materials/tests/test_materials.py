@@ -24,6 +24,7 @@ from numpy import testing
 from armi import materials, settings
 from armi.nucDirectory import nuclideBases
 from armi.reactor import blueprints
+from armi.tests import mockRunLogs
 from armi.utils import units
 
 
@@ -489,11 +490,26 @@ class ThoriumUraniumMetal_TestCase(_Material_Test, unittest.TestCase):
 class Uranium_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.Uranium
 
-    def test_density(self):
-        """
-        this material has no density function
-        """
-        pass
+    def test_applyInputParams(self):
+        # check the defaults when applyInputParams is applied without arguments
+        U235_wt_frac_default = 0.0071136523
+        TD_frac_default = 1.0
+        self.mat.applyInputParams()
+        self.assertAlmostEqual(self.mat.massFrac["U235"], U235_wt_frac_default)
+        densityTemp = self.mat.density(Tk=materials.Uranium._densityTableK[0])
+        expectedDensity = materials.Uranium._densityTable[0]
+        self.assertEqual(densityTemp, expectedDensity)
+
+        originalPseudoDensity = self.mat.pseudoDensity(Tk=densityTemp)
+
+        newWtFrac = 1.0
+        newTDFrac = 0.5
+        self.mat.applyInputParams(U235_wt_frac=newWtFrac, TD_frac=newTDFrac)
+        self.assertEqual(self.mat.massFrac["U235"], newWtFrac)
+        self.assertEqual(self.mat.density(Tk=densityTemp), expectedDensity * newTDFrac)
+        self.assertEqual(
+            self.mat.pseudoDensity(Tk=densityTemp), originalPseudoDensity * newTDFrac
+        )
 
     def test_thermalConductivity(self):
         cur = self.mat.thermalConductivity(Tc=100)
@@ -518,6 +534,43 @@ class Uranium_TestCase(_Material_Test, unittest.TestCase):
 
     def test_propertyValidTemperature(self):
         self.assertGreater(len(self.mat.propertyValidTemperature), 0)
+
+        # ensure that material properties check the bounds and that the bounds
+        # align with what is expected
+        for propName, methodName in zip(
+            [
+                "thermal conductivity",
+                "heat capacity",
+                "density",
+                "linear expansion",
+                "linear expansion percent",
+            ],
+            [
+                "thermalConductivity",
+                "heatCapacity",
+                "density",
+                "linearExpansion",
+                "linearExpansionPercent",
+            ],
+        ):
+            lowerBound = self.mat.propertyValidTemperature[propName][0][0]
+            upperBound = self.mat.propertyValidTemperature[propName][0][1]
+            unit = self.mat.propertyValidTemperature[propName][1]
+            with mockRunLogs.BufferLog() as mock:
+                getattr(self.mat, methodName)(lowerBound - 1)
+                self.assertIn(
+                    f"Temperature {float(lowerBound-1)} out of range ({lowerBound} "
+                    f"to {upperBound}) for {self.mat.name} {propName}",
+                    mock.getStdout(),
+                )
+
+            with mockRunLogs.BufferLog() as mock:
+                getattr(self.mat, methodName)(upperBound + 1)
+                self.assertIn(
+                    f"Temperature {float(upperBound+1)} out of range ({lowerBound} "
+                    f"to {upperBound}) for {self.mat.name} {propName}",
+                    mock.getStdout(),
+                )
 
 
 class UraniumOxide_TestCase(_Material_Test, unittest.TestCase):
