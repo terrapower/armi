@@ -335,7 +335,6 @@ class NeutronicsReactorTests(unittest.TestCase):
             inspector.cs[CONF_GRID_PLATE_DPA_XS_SET], "dpaSS316_ANL33_TwrBol"
         )
 
-        # Test the Query: migrating some common shortened names for dpa XS sets
         cs = cs.modified(
             newSettings={
                 CONF_RUN_TYPE: "Snapshots",

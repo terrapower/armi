@@ -334,6 +334,7 @@ def defineSettings():
             default="BOC",
             label="Frequency of lattice physics updates",
             description="Define the frequency at which cross sections are updated with new lattice physics interactions.",
+            options=["", "BOL", "BOC", "everyNode", "firstCoupled", "all"],
         ),
         setting.Setting(
             CONF_XS_SCATTERING_ORDER,
