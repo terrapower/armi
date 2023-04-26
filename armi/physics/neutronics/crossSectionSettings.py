@@ -56,6 +56,7 @@ CONF_REACTION_DRIVER = "nuclideReactionDriver"
 CONF_XSID = "xsID"
 CONF_XS_EXECUTE_EXCLUSIVE = "xsExecuteExclusive"
 CONF_XS_PRIORITY = "xsPriority"
+CONF_XS_MAX_ATOM_NUMBER = "xsMaxAtomNumber"
 
 
 class XSGeometryTypes(Enum):
@@ -115,6 +116,7 @@ _VALID_INPUTS_BY_GEOMETRY_TYPE = {
         CONF_EXTERNAL_FLUX_FILE_LOCATION,
         CONF_XS_EXECUTE_EXCLUSIVE,
         CONF_XS_PRIORITY,
+        CONF_XS_MAX_ATOM_NUMBER,
     },
     XSGeometryTypes.getStr(XSGeometryTypes.ONE_DIMENSIONAL_SLAB): {
         CONF_XSID,
@@ -125,6 +127,7 @@ _VALID_INPUTS_BY_GEOMETRY_TYPE = {
         CONF_EXTERNAL_FLUX_FILE_LOCATION,
         CONF_XS_EXECUTE_EXCLUSIVE,
         CONF_XS_PRIORITY,
+        CONF_XS_MAX_ATOM_NUMBER,
     },
     XSGeometryTypes.getStr(XSGeometryTypes.ONE_DIMENSIONAL_CYLINDER): {
         CONF_XSID,
@@ -140,6 +143,7 @@ _VALID_INPUTS_BY_GEOMETRY_TYPE = {
         CONF_EXTERNAL_FLUX_FILE_LOCATION,
         CONF_XS_EXECUTE_EXCLUSIVE,
         CONF_XS_PRIORITY,
+        CONF_XS_MAX_ATOM_NUMBER,
     },
     XSGeometryTypes.getStr(XSGeometryTypes.TWO_DIMENSIONAL_HEX): {
         CONF_XSID,
@@ -153,6 +157,7 @@ _VALID_INPUTS_BY_GEOMETRY_TYPE = {
         CONF_EXTERNAL_FLUX_FILE_LOCATION,
         CONF_XS_EXECUTE_EXCLUSIVE,
         CONF_XS_PRIORITY,
+        CONF_XS_MAX_ATOM_NUMBER,
     },
 }
 
@@ -179,6 +184,7 @@ _SINGLE_XS_SCHEMA = vol.Schema(
         vol.Optional(CONF_MESH_PER_CM): vol.Coerce(float),
         vol.Optional(CONF_XS_EXECUTE_EXCLUSIVE): bool,
         vol.Optional(CONF_XS_PRIORITY): vol.Coerce(float),
+        vol.Optional(CONF_XS_MAX_ATOM_NUMBER): vol.Coerce(int),
     }
 )
 
@@ -409,6 +415,12 @@ class XSModelingOptions:
         The priority of the mpi tasks that results from this xsID. Lower priority
         will execute first. starting longer jobs first is generally more efficient.
 
+    xsMaxAtomNumber : int
+        The maximum atom number to model for infinite dilute isotopes in lattice physics.
+        This is used to avoid modeling isotopes with a large atomic number
+        (e.g., fission products) as a depletion product of an isotope with a much
+        smaller atomic number.
+
     Notes
     -----
     Not all default attributes may be useful for your specific application and you may
@@ -437,6 +449,7 @@ class XSModelingOptions:
         meshSubdivisionsPerCm=None,
         xsExecuteExclusive=None,
         xsPriority=None,
+        xsMaxAtomNumber=None,
     ):
         self.xsID = xsID
         self.geometry = geometry
@@ -456,6 +469,7 @@ class XSModelingOptions:
         self.numExternalRings = numExternalRings
         self.mergeIntoClad = mergeIntoClad
         self.meshSubdivisionsPerCm = meshSubdivisionsPerCm
+        self.xsMaxAtomNumber = xsMaxAtomNumber
 
         # these are related to execution
         self.xsExecuteExclusive = xsExecuteExclusive
