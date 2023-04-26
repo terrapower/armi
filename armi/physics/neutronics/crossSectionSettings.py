@@ -26,11 +26,13 @@ object hold actual instances of these data.
 See detailed docs in `:doc: Lattice Physics <reference/physics/neutronics/latticePhysics/latticePhysics>`.
 """
 
+from enum import Enum
 from typing import Dict, Union
 
 import voluptuous as vol
 
 from armi import runLog
+from armi.physics.neutronics import crossSectionGroupManager
 from armi.physics.neutronics.crossSectionGroupManager import BLOCK_COLLECTIONS
 from armi.settings import Setting
 from armi import context
@@ -55,19 +57,55 @@ CONF_XSID = "xsID"
 CONF_XS_EXECUTE_EXCLUSIVE = "xsExecuteExclusive"
 CONF_XS_PRIORITY = "xsPriority"
 
-# These may be used as arguments to ``latticePhysicsInterface._getGeomDependentWriters``.
-# This could be an ENUM later.
+
+class XSGeometryTypes(Enum):
+    """
+    Data structure for storing the available geometry options
+    within the framework.
+    """
+
+    ZERO_DIMENSIONAL = 1
+    ONE_DIMENSIONAL_SLAB = 2
+    ONE_DIMENSIONAL_CYLINDER = 4
+    TWO_DIMENSIONAL_HEX = 8
+
+    @classmethod
+    def _mapping(cls):
+        mapping = {
+            cls.ZERO_DIMENSIONAL: "0D",
+            cls.ONE_DIMENSIONAL_SLAB: "1D slab",
+            cls.ONE_DIMENSIONAL_CYLINDER: "1D cylinder",
+            cls.TWO_DIMENSIONAL_HEX: "2D hex",
+        }
+        return mapping
+
+    @classmethod
+    def getStr(cls, typeSpec: Enum):
+        """
+        Return a string representation of the given ``typeSpec``.
+
+        Examples
+        --------
+        XSGeometryTypes.getStr(XSGeometryTypes.ZERO_DIMENSIONAL) == "0D"
+        XSGeometryTypes.getStr(XSGeometryTypes.TWO_DIMENSIONAL_HEX) == "2D hex"
+        """
+        geometryTypes = [typ for typ in list(cls)]
+        if typeSpec not in geometryTypes:
+            raise TypeError(f"{typeSpec} not in {geometryTypes}")
+        return cls._mapping()[cls[typeSpec.name]]
+
+
 XS_GEOM_TYPES = {
-    "0D",
-    "1D slab",
-    "1D cylinder",
-    "2D hex",
+    XSGeometryTypes.getStr(XSGeometryTypes.ZERO_DIMENSIONAL),
+    XSGeometryTypes.getStr(XSGeometryTypes.ONE_DIMENSIONAL_SLAB),
+    XSGeometryTypes.getStr(XSGeometryTypes.ONE_DIMENSIONAL_CYLINDER),
+    XSGeometryTypes.getStr(XSGeometryTypes.TWO_DIMENSIONAL_HEX),
 }
 
 # This dictionary defines the valid set of inputs based on
 # the geometry type within the ``XSModelingOptions``
 _VALID_INPUTS_BY_GEOMETRY_TYPE = {
-    "0D": {
+    XSGeometryTypes.getStr(XSGeometryTypes.ZERO_DIMENSIONAL): {
         CONF_XSID,
         CONF_GEOM,
         CONF_BUCKLING,
@@ -78,7 +116,7 @@ _VALID_INPUTS_BY_GEOMETRY_TYPE = {
         CONF_XS_EXECUTE_EXCLUSIVE,
         CONF_XS_PRIORITY,
     },
-    "1D slab": {
+    XSGeometryTypes.getStr(XSGeometryTypes.ONE_DIMENSIONAL_SLAB): {
         CONF_XSID,
         CONF_GEOM,
         CONF_MESH_PER_CM,
@@ -88,7 +126,7 @@ _VALID_INPUTS_BY_GEOMETRY_TYPE = {
         CONF_XS_EXECUTE_EXCLUSIVE,
         CONF_XS_PRIORITY,
     },
-    "1D cylinder": {
+    XSGeometryTypes.getStr(XSGeometryTypes.ONE_DIMENSIONAL_CYLINDER): {
         CONF_XSID,
         CONF_GEOM,
         CONF_MERGE_INTO_CLAD,
@@ -103,7 +141,7 @@ _VALID_INPUTS_BY_GEOMETRY_TYPE = {
         CONF_XS_EXECUTE_EXCLUSIVE,
         CONF_XS_PRIORITY,
     },
-    "2D hex": {
+    XSGeometryTypes.getStr(XSGeometryTypes.TWO_DIMENSIONAL_HEX): {
         CONF_XSID,
         CONF_GEOM,
         CONF_BUCKLING,
@@ -265,7 +303,9 @@ class XSSettings(dict):
                     "before attempting to add a new XS ID."
                 )
 
-        xsOpt = XSModelingOptions(xsID, geometry="0D")
+        xsOpt = XSModelingOptions(
+            xsID, geometry=XSGeometryTypes.getStr(XSGeometryTypes.ZERO_DIMENSIONAL)
+        )
         xsOpt.setDefaults(self._blockRepresentation, self._validBlockTypes)
         xsOpt.validate()
         return xsOpt
@@ -553,43 +593,70 @@ class XSModelingOptions:
 
         defaults = {}
         if self.xsIsPregenerated:
+            allowableBlockCollections = [
+                crossSectionGroupManager.MEDIAN_BLOCK_COLLECTION,
+                crossSectionGroupManager.AVERAGE_BLOCK_COLLECTION,
+                crossSectionGroupManager.FLUX_WEIGHTED_AVERAGE_BLOCK_COLLECTION,
+            ]
             defaults = {
                 CONF_XS_FILE_LOCATION: self.xsFileLocation,
                 CONF_BLOCK_REPRESENTATION: blockRepresentation,
             }
 
-        elif self.geometry == "0D":
+        elif self.geometry == XSGeometryTypes.getStr(XSGeometryTypes.ZERO_DIMENSIONAL):
+            allowableBlockCollections = [
+                crossSectionGroupManager.MEDIAN_BLOCK_COLLECTION,
+                crossSectionGroupManager.AVERAGE_BLOCK_COLLECTION,
+                crossSectionGroupManager.FLUX_WEIGHTED_AVERAGE_BLOCK_COLLECTION,
+            ]
             bucklingSearch = False if self.fluxIsPregenerated else True
             defaults = {
-                CONF_GEOM: "0D",
+                CONF_GEOM: self.geometry,
                 CONF_BUCKLING: bucklingSearch,
                 CONF_DRIVER: "",
                 CONF_BLOCK_REPRESENTATION: blockRepresentation,
                 CONF_BLOCKTYPES: validBlockTypes,
                 CONF_EXTERNAL_FLUX_FILE_LOCATION: self.fluxFileLocation,
             }
-        elif self.geometry == "1D slab":
+        elif self.geometry == XSGeometryTypes.getStr(
+            XSGeometryTypes.ONE_DIMENSIONAL_SLAB
+        ):
+            allowableBlockCollections = [
+                crossSectionGroupManager.SLAB_COMPONENTS_BLOCK_COLLECTION,
+            ]
             defaults = {
-                CONF_GEOM: "1D slab",
+                CONF_GEOM: self.geometry,
                 CONF_MESH_PER_CM: 1.0,
-                CONF_BLOCK_REPRESENTATION: blockRepresentation,
+                CONF_BLOCK_REPRESENTATION: crossSectionGroupManager.SLAB_COMPONENTS_BLOCK_COLLECTION,
                 CONF_BLOCKTYPES: validBlockTypes,
             }
-        elif self.geometry == "1D cylinder":
+        elif self.geometry == XSGeometryTypes.getStr(
+            XSGeometryTypes.ONE_DIMENSIONAL_CYLINDER
+        ):
+            allowableBlockCollections = [
+                crossSectionGroupManager.CYLINDRICAL_COMPONENTS_BLOCK_COLLECTION
+            ]
             defaults = {
-                CONF_GEOM: "1D cylinder",
+                CONF_GEOM: self.geometry,
                 CONF_DRIVER: "",
                 CONF_MERGE_INTO_CLAD: ["gap"],
                 CONF_MESH_PER_CM: 1.0,
                 CONF_INTERNAL_RINGS: 0,
                 CONF_EXTERNAL_RINGS: 1,
                 CONF_HOMOGBLOCK: False,
-                CONF_BLOCK_REPRESENTATION: blockRepresentation,
+                CONF_BLOCK_REPRESENTATION: crossSectionGroupManager.CYLINDRICAL_COMPONENTS_BLOCK_COLLECTION,
                 CONF_BLOCKTYPES: validBlockTypes,
             }
-        elif self.geometry == "2D hex":
+        elif self.geometry == XSGeometryTypes.getStr(
+            XSGeometryTypes.TWO_DIMENSIONAL_HEX
+        ):
+            allowableBlockCollections = [
+                crossSectionGroupManager.MEDIAN_BLOCK_COLLECTION,
+                crossSectionGroupManager.AVERAGE_BLOCK_COLLECTION,
+                crossSectionGroupManager.FLUX_WEIGHTED_AVERAGE_BLOCK_COLLECTION,
+            ]
             defaults = {
-                CONF_GEOM: "2D hex",
+                CONF_GEOM: self.geometry,
                 CONF_BUCKLING: False,
                 CONF_EXTERNAL_DRIVER: True,
                 CONF_DRIVER: "",
@@ -605,6 +672,14 @@ class XSModelingOptions:
             currentValue = getattr(self, attrName)
             if currentValue is None:
                 setattr(self, attrName, defaultValue)
+            else:
+                if attrName == CONF_BLOCK_REPRESENTATION:
+                    if currentValue not in allowableBlockCollections:
+                        raise ValueError(
+                            f"Invalid block collection type `{currentValue}` assigned "
+                            f"for {self.xsID}. Expected one of the "
+                            f"following: {allowableBlockCollections}"
+                        )
 
         self.validate()
 

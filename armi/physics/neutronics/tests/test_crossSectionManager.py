@@ -163,7 +163,7 @@ class TestBlockCollectionComponentAverage(unittest.TestCase):
             },  # Steel
         ]
         # later sorted by density so less massive block first
-        self.expectedBlockDensites = [
+        self.expectedBlockDensities = [
             expectedRepBlanketBlock,
             expectedRepFuelBlock,
             expectedRepFuelBlock,
@@ -194,9 +194,9 @@ class TestBlockCollectionComponentAverage(unittest.TestCase):
         representativeBlockList = list(xsgm.representativeBlocks.values())
         representativeBlockList.sort(key=lambda repB: repB.getMass() / repB.getVolume())
 
-        assert len(representativeBlockList) == len(self.expectedBlockDensites)
+        assert len(representativeBlockList) == len(self.expectedBlockDensities)
         for b, componentDensities, areas in zip(
-            representativeBlockList, self.expectedBlockDensites, self.expectedAreas
+            representativeBlockList, self.expectedBlockDensities, self.expectedAreas
         ):
             assert len(b) == len(componentDensities) and len(b) == len(areas)
             for c, compDensity, compArea in zip(b, componentDensities, areas):
@@ -210,6 +210,117 @@ class TestBlockCollectionComponentAverage(unittest.TestCase):
             "Assemblies not in the core should still have XS groups"
             "see getUnrepresentedBlocks()"
         )
+
+
+class TestBlockCollectionComponentAverage1DCylinder(unittest.TestCase):
+    r"""
+    tests for 1D cylinder XS gen cases
+    """
+
+    def setUp(self):
+        r"""
+        First part of setup same as test_Cartesian.
+        Second part of setup builds lists/dictionaries of expected values to compare to.
+        has expected values for component isotopic atom density and component area
+        """
+        self.o, self.r = test_reactors.loadTestReactor(TEST_ROOT)
+
+        sodiumDensity = {"NA23": 0.022166571826233578}
+        steelDensity = {
+            "C": 0.0007685664978992269,
+            "V": 0.0002718224847461385,
+            "SI28": 0.0003789374369638149,
+            "SI29": 1.924063709833714e-05,
+            "SI30": 1.268328992580968e-05,
+            "CR50": 0.0004532023742335746,
+            "CR52": 0.008739556775111474,
+            "CR53": 0.0009909955713678232,
+            "CR54": 0.000246679773317009,
+            "MN55": 0.0004200803669857142,
+            "FE54": 0.004101496663229472,
+            "FE56": 0.06438472483061823,
+            "FE57": 0.0014869241111006412,
+            "FE58": 0.00019788230265709334,
+            "NI58": 0.0002944487657779742,
+            "NI60": 0.00011342053328927859,
+            "NI61": 4.930763373747379e-06,
+            "NI62": 1.571788956157717e-05,
+            "NI64": 4.005163933412346e-06,
+            "MO92": 7.140180476114493e-05,
+            "MO94": 4.4505841916481845e-05,
+            "MO95": 7.659816252004227e-05,
+            "MO96": 8.02548587207478e-05,
+            "MO97": 4.594927462728666e-05,
+            "MO98": 0.00011610009956095838,
+            "MO100": 4.6334190016834624e-05,
+            "W182": 3.663619370317025e-05,
+            "W183": 1.9783544599711936e-05,
+            "W184": 4.235973352562047e-05,
+            "W186": 3.9304414603061506e-05,
+        }
+        linerAdjustment = 1.014188527784268
+        cladDensity = {
+            nuc: dens * linerAdjustment for nuc, dens in steelDensity.items()
+        }
+        fuelDensity = {
+            "AM241": 2.3605999999999997e-05,
+            "PU238": 3.7387e-06,
+            "PU239": 0.0028603799999999996,
+            "PU240": 0.000712945,
+            "PU241": 9.823120000000004e-05,
+            "PU242": 2.02221e-05,
+            "U235": 0.00405533,
+            "U238": 0.0134125,
+        }
+        self.expectedComponentDensities = [
+            fuelDensity,
+            cladDensity,
+            sodiumDensity,
+            steelDensity,
+            sodiumDensity,
+            steelDensity,
+            sodiumDensity,
+        ]
+        self.expectedComponentAreas = [
+            99.54797488948871,
+            30.07759373476877,
+            29.719913442616843,
+            1.365897776727751,
+            63.184097853691235,
+            17.107013842808822,
+            1.9717608091694139,
+        ]
+
+    def test_ComponentAverage1DCylinder(self):
+        r"""
+        tests that the XS group manager calculates the expected component atom density
+        and component area correctly. Order of components is also checked since in
+        1D cases the order of the components matters.
+        """
+        xsgm = self.o.getInterface("xsGroups")
+
+        xsgm.interactBOL()
+
+        # Check that the correct defaults are propagated after the interactBOL
+        # from the cross section group manager is called.
+        xsOpt = self.o.cs[CONF_CROSS_SECTION]["ZA"]
+        self.assertEqual(xsOpt.blockRepresentation, "ComponentAverage1DCylinder")
+
+        xsgm.createRepresentativeBlocks()
+        representativeBlockList = list(xsgm.representativeBlocks.values())
+        representativeBlockList.sort(key=lambda repB: repB.getMass() / repB.getVolume())
+        reprBlock = xsgm.representativeBlocks["ZA"]
+        self.assertEqual(reprBlock.name, "1D_CYL_AVG_ZA")
+
+        for c, compDensity, compArea in zip(
+            reprBlock, self.expectedComponentDensities, self.expectedComponentAreas
+        ):
+            self.assertEqual(compArea, c.getArea())
+            cNucs = c.getNuclides()
+            for nuc in cNucs:
+                self.assertAlmostEqual(
+                    c.getNumberDensity(nuc), compDensity.get(nuc, 0.0)
+                )
 
 
 class TestBlockCollectionFluxWeightedAverage(unittest.TestCase):
@@ -347,6 +458,7 @@ class Test_CrossSectionGroupManager(unittest.TestCase):
         (
             _bCollect,
             newRepresentativeBlocks,
+            origXSIDsFromNew,
         ) = self.csm.createRepresentativeBlocksUsingExistingBlocks(
             blockList, unperturbedReprBlocks
         )
@@ -357,6 +469,7 @@ class Test_CrossSectionGroupManager(unittest.TestCase):
         self.assertEqual(
             newReprBlock.getNumberDensities(), oldReprBlock.getNumberDensities()
         )
+        self.assertEqual(origXSIDsFromNew["BA"], "AA")
 
     def test_interactBOL(self):
         """Test `BOL` lattice physics update frequency"""

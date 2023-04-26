@@ -85,13 +85,6 @@ class LatticePhysicsInterface(interfaces.Interface):
 
         # Set to True by default, but should be disabled when perturbed cross sections are generated.
         self._updateBlockNeutronVelocities = True
-        # Geometry options available through the lattice physics interfaces
-        self._ZERO_DIMENSIONAL_GEOM = "0D"
-        self._ONE_DIMENSIONAL_GEOM = "1D"
-        self._TWO_DIMENSIONAL_GEOM = "2D"
-        self._SLAB_MODEL = " slab"
-        self._CYLINDER_MODEL = " cylinder"
-        self._HEX_MODEL = " hex"
         self._burnupTolerance = self.cs[CONF_TOLERATE_BURNUP_CHANGE]
         self._oldXsIdsAndBurnup = {}
         self.executablePath = self._getExecutablePath()

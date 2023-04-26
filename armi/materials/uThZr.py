@@ -16,11 +16,11 @@
 Uranium Thorium Zirconium alloy metal
 """
 from armi.utils.units import getTk
-from armi.materials.material import Material
+from armi.materials.material import FuelMaterial
 from armi import runLog
 
 
-class UThZr(Material):
+class UThZr(FuelMaterial):
     """
     U-235 enriched uranium with Thorium 232 - Zirc fuel.
 
@@ -30,11 +30,13 @@ class UThZr(Material):
     name = "UThZr"
     enrichedNuclide = "U235"
 
-    def applyInputParams(self, U235_wt_frac=None, ZR_wt_frac=None):
+    def applyInputParams(self, U235_wt_frac=None, ZR_wt_frac=None, *args, **kwargs):
         self.parent.adjustMassEnrichment(U235_wt_frac)
         self.parent.adjustMassFrac("ZR", elementToHoldConstant="TH", val=ZR_wt_frac)
         self.parent.adjustMassFrac(elementToAdjust="TH", nuclideToHoldConstant="ZR")
         self.zrFrac = ZR_wt_frac
+
+        FuelMaterial.applyInputParams(self, *args, **kwargs)
 
     def setDefaultMassFracs(self):
         r"""U-ZR mass fractions"""

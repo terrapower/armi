@@ -89,10 +89,9 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
 
     def test_LatticePhysicsInterface(self):
         """Super basic test of the LatticePhysicsInterface"""
-        self.assertEqual(self.latticeInterface._HEX_MODEL.strip(), "hex")
+        self.assertEqual(self.latticeInterface._updateBlockNeutronVelocities, True)
         self.assertEqual(self.latticeInterface.executablePath, "/tmp/fake_path")
         self.assertEqual(self.latticeInterface.executableRoot, "/tmp")
-
         self.latticeInterface.updateXSLibrary(0)
         self.assertEqual(len(self.latticeInterface._oldXsIdsAndBurnup), 0)
 

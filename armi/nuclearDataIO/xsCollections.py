@@ -365,10 +365,13 @@ class MacroscopicCrossSectionCreator:
     macroscopic cross sections.
     """
 
-    def __init__(self, buildScatterMatrix=True, buildOnlyCoolant=False):
+    def __init__(
+        self, buildScatterMatrix=True, buildOnlyCoolant=False, minimumNuclideDensity=0.0
+    ):
         self.densities = None
         self.macros = None
         self.micros = None
+        self.minimumNuclideDensity = minimumNuclideDensity
         self.buildScatterMatrix = buildScatterMatrix
         self.buildOnlyCoolant = (
             buildOnlyCoolant  # TODO: this is not implemented yet. is it needed?
@@ -421,7 +424,12 @@ class MacroscopicCrossSectionCreator:
         self.block = block
         self.xsSuffix = block.getMicroSuffix()
         self.macros = XSCollection(parent=block)
-        self.densities = dict(zip(nucNames, block.getNuclideNumberDensities(nucNames)))
+        self.densities = dict(
+            filter(
+                lambda x: x[1] > self.minimumNuclideDensity,
+                zip(nucNames, block.getNuclideNumberDensities(nucNames)),
+            )
+        )
         self.ng = getattr(self.microLibrary, "numGroups" + _getLibTypeSuffix(libType))
 
         self._initializeMacros()
@@ -907,3 +915,11 @@ def _getMicroGroupConstants(libNuclide, constantName, nuclideName, libType):
         )
 
     return microGroupConstants
+
+
+def filterDictValues(dict, filterVal):
+    """
+    Filter dictionary items by value
+    """
+
+    return {k: v for k, v in dict.items() if v >= filterVal}
