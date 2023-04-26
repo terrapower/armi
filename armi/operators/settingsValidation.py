@@ -198,16 +198,16 @@ class Inspector:
                     self.__class__.__name__
                 )
             )
+
         else:
+            # preserve original settings
+            if any(query.isCorrective() for query in self.queries):
+                self.csOriginal = self.cs.duplicate()
+
             for query in self.queries:
                 query.resolve()
                 if query.corrected:
                     correctionsMade = True
-                if correctionsMade:
-                    runLog.extra(
-                        f"At least one setting correction detected. Overwriting settings file `{self.cs.path}`."
-                    )
-                    self.cs.writeToYamlFile(self.cs.path)
             issues = [
                 query
                 for query in self.queries
@@ -223,6 +223,35 @@ class Inspector:
                     "some issues are creating cyclic resolutions: {}".format(issues)
                 )
             runLog.debug("{} has finished querying.".format(self.__class__.__name__))
+
+        # Decide what to do with original settings
+        if correctionsMade:
+            self.cs.writeToYamlFile(self.cs.path)
+            oldFilePath = "{}_old.yaml".format(self.cs.path.split(".yaml")[0])
+            if os.path.exists(oldFilePath):
+                overwrite_file = prompt(
+                    'INSPECTOR: At least one corrective query has been resolved and an "_old" settings file {} exists.'.format(
+                        oldFilePath
+                    ),
+                    'Overwrite "_old.yaml" settings file to preserve originally submitted settings?',
+                    "YES_NO",
+                    "NO_DEFAULT",
+                    "CANCEL",
+                )
+                if overwrite_file:
+                    self.csOriginal.writeToYamlFile(oldFilePath)
+            else:
+                preserve_settings = prompt(
+                    "INSPECTOR: At least one corrective query has been resolved.",
+                    "Preserve originally submitted settings in: {}?".format(
+                        oldFilePath
+                    ),
+                    "YES_NO",
+                    "NO_DEFAULT",
+                    "CANCEL",
+                )
+                if preserve_settings:
+                    self.csOriginal.writeToYamlFile(oldFilePath)
 
         return correctionsMade
 
