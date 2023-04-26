@@ -226,9 +226,8 @@ class Inspector:
 
         # decide what to do with original settings
         if correctionsMade:
-            self.cs.writeToYamlFile(self.cs.path)
             oldFilePath = "{}_old.yaml".format(self.cs.path.split(".yaml")[0])
-            if os.path.exists(oldFilePath):
+            if self._csRelativePathExists(oldFilePath):
                 overwrite_file = prompt(
                     'INSPECTOR: At least one corrective query has been resolved and an "_old.yaml" settings file {} exists.'.format(
                         oldFilePath
@@ -252,7 +251,8 @@ class Inspector:
                 )
                 if preserve_settings:
                     self.csOriginal.writeToYamlFile(oldFilePath)
-
+        # overwrite settings file
+        self.cs.writeToYamlFile(self.cs.path)
         return correctionsMade
 
     def addQuery(self, condition, statement, question, correction):

@@ -98,9 +98,17 @@ class TestInspector(unittest.TestCase):
         try:
             # run inspector
             self.inspector.run()
+
             # check to see if file was overwritten correctly
             self.cs.loadFromInputFile(self.filepathYaml)
             self.assertEqual(self.cs["cycleLength"], 666)
+
+            # check to see if original settings were saved in "_old.yaml" file
+            oldFilePath = "{}_old.yaml".format(self.filepathYaml.split(".yaml")[0])
+            self.assertTrue(os.path.exists(oldFilePath) and os.path.isfile(oldFilePath))
+            self.csOriginal = settings.Settings()
+            self.csOriginal.loadFromInputFile(oldFilePath)
+            self.assertEqual(self.csOriginal["cycleLength"], 300.0)
 
         finally:
             # reset prompt function to nominal
