@@ -200,7 +200,7 @@ class Inspector:
             )
 
         else:
-            # preserve original settings
+            # preserve original settings in case a corrective query is resolved
             if any(query.isCorrective() for query in self.queries):
                 self.csOriginal = self.cs.duplicate()
 
@@ -224,13 +224,13 @@ class Inspector:
                 )
             runLog.debug("{} has finished querying.".format(self.__class__.__name__))
 
-        # Decide what to do with original settings
+        # decide what to do with original settings
         if correctionsMade:
             self.cs.writeToYamlFile(self.cs.path)
             oldFilePath = "{}_old.yaml".format(self.cs.path.split(".yaml")[0])
             if os.path.exists(oldFilePath):
                 overwrite_file = prompt(
-                    'INSPECTOR: At least one corrective query has been resolved and an "_old" settings file {} exists.'.format(
+                    'INSPECTOR: At least one corrective query has been resolved and an "_old.yaml" settings file {} exists.'.format(
                         oldFilePath
                     ),
                     'Overwrite "_old.yaml" settings file to preserve originally submitted settings?',
