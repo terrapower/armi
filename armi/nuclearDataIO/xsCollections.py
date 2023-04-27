@@ -915,11 +915,3 @@ def _getMicroGroupConstants(libNuclide, constantName, nuclideName, libType):
         )
 
     return microGroupConstants
-
-
-def filterDictValues(dict, filterVal):
-    """
-    Filter dictionary items by value
-    """
-
-    return {k: v for k, v in dict.items() if v >= filterVal}

@@ -87,7 +87,7 @@ class XSGeometryTypes(Enum):
         XSGeometryTypes.getStr(XSGeometryTypes.ZERO_DIMENSIONAL) == "0D"
         XSGeometryTypes.getStr(XSGeometryTypes.TWO_DIMENSIONAL_HEX) == "2D hex"
         """
-        geometryTypes = [typ for typ in list(cls)]
+        geometryTypes = list(cls)
         if typeSpec not in geometryTypes:
             raise TypeError(f"{typeSpec} not in {geometryTypes}")
         return cls._mapping()[cls[typeSpec.name]]
