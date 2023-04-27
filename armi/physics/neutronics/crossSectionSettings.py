@@ -427,7 +427,7 @@ class XSModelingOptions:
         smaller atomic number.
 
     minDriverDensity: float
-        The minimum number density for nuclides included in driver material for a 1D 
+        The minimum number density for nuclides included in driver material for a 1D
         lattice physics model.
 
     Notes
