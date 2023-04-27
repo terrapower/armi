@@ -57,6 +57,7 @@ CONF_XSID = "xsID"
 CONF_XS_EXECUTE_EXCLUSIVE = "xsExecuteExclusive"
 CONF_XS_PRIORITY = "xsPriority"
 CONF_XS_MAX_ATOM_NUMBER = "xsMaxAtomNumber"
+CONF_MIN_DRIVER_DENSITY = "minDriverDensity"
 
 
 class XSGeometryTypes(Enum):
@@ -128,6 +129,7 @@ _VALID_INPUTS_BY_GEOMETRY_TYPE = {
         CONF_XS_EXECUTE_EXCLUSIVE,
         CONF_XS_PRIORITY,
         CONF_XS_MAX_ATOM_NUMBER,
+        CONF_MIN_DRIVER_DENSITY,
     },
     XSGeometryTypes.getStr(XSGeometryTypes.ONE_DIMENSIONAL_CYLINDER): {
         CONF_XSID,
@@ -144,6 +146,7 @@ _VALID_INPUTS_BY_GEOMETRY_TYPE = {
         CONF_XS_EXECUTE_EXCLUSIVE,
         CONF_XS_PRIORITY,
         CONF_XS_MAX_ATOM_NUMBER,
+        CONF_MIN_DRIVER_DENSITY,
     },
     XSGeometryTypes.getStr(XSGeometryTypes.TWO_DIMENSIONAL_HEX): {
         CONF_XSID,
@@ -158,6 +161,7 @@ _VALID_INPUTS_BY_GEOMETRY_TYPE = {
         CONF_XS_EXECUTE_EXCLUSIVE,
         CONF_XS_PRIORITY,
         CONF_XS_MAX_ATOM_NUMBER,
+        CONF_MIN_DRIVER_DENSITY,
     },
 }
 
@@ -185,6 +189,7 @@ _SINGLE_XS_SCHEMA = vol.Schema(
         vol.Optional(CONF_XS_EXECUTE_EXCLUSIVE): bool,
         vol.Optional(CONF_XS_PRIORITY): vol.Coerce(float),
         vol.Optional(CONF_XS_MAX_ATOM_NUMBER): vol.Coerce(int),
+        vol.Optional(CONF_MIN_DRIVER_DENSITY): vol.Coerce(float),
     }
 )
 
@@ -421,6 +426,10 @@ class XSModelingOptions:
         (e.g., fission products) as a depletion product of an isotope with a much
         smaller atomic number.
 
+    minDriverDensity: float
+        The minimum number density for nuclides included in driver material for a 1D 
+        lattice physics model.
+
     Notes
     -----
     Not all default attributes may be useful for your specific application and you may
@@ -450,6 +459,7 @@ class XSModelingOptions:
         xsExecuteExclusive=None,
         xsPriority=None,
         xsMaxAtomNumber=None,
+        minDriverDensity=None,
     ):
         self.xsID = xsID
         self.geometry = geometry
@@ -470,6 +480,7 @@ class XSModelingOptions:
         self.mergeIntoClad = mergeIntoClad
         self.meshSubdivisionsPerCm = meshSubdivisionsPerCm
         self.xsMaxAtomNumber = xsMaxAtomNumber
+        self.minDriverDensity = minDriverDensity
 
         # these are related to execution
         self.xsExecuteExclusive = xsExecuteExclusive
