@@ -20,7 +20,8 @@ What's new in ARMI
 #. createRepresentativeBlocksFromExistingBlocks() now returns the mapping of original to new XS IDs. (`PR#1217 <https://github.com/terrapower/armi/pull/1217>`_)
 #. Added a capability to prioritize mpi action execution and exclusivity.  (`PR#1237 <https://github.com/terrapower/armi/pull/1237>`_)
 #. Use ``minimumNuclideDensity`` setting when generating macroscopic XS.  (`PR#1248 <https://github.com/terrapower/armi/pull/1248>`_)
-#. Improve support for single component axial expansion and general cleanup of axial expansion unit tests. (`PR#1230 <https://github.com/terrapower/armi/pull/1230>`_) 
+#. Improve support for single component axial expansion and general cleanup of axial expansion unit tests. (`PR#1230 <https://github.com/terrapower/armi/pull/1230>`_)
+#. New cross section group representative block type for 1D cylindrical models. (`PR#1238 <https://github.com/terrapower/armi/pull/1238>`_)
 #. TBD
 
 Bug fixes

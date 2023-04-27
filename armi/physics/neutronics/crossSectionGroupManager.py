@@ -387,6 +387,113 @@ def getBlockNuclideTemperatureAvgTerms(block, allNucNames):
     return nvt, nv
 
 
+class CylindricalComponentsAverageBlockCollection(BlockCollection):
+    """
+    Creates a representative block for the purpose of cross section generation with a one-dimensional
+    cylindrical model.
+
+    Notes
+    -----
+    When generating the representative block within this collection, the geometry is checked
+    against all other blocks to ensure that the number of components are consistent. This implementation
+    is intended to be opinionated, so if a user attempts to put blocks that have geometric differences
+    then this will fail.
+
+    This selects a representative block based on the collection of candidates based on the
+    median block average temperatures as an assumption.
+    """
+
+    def _getNewBlock(self):
+        newBlock = copy.deepcopy(self._selectCandidateBlock())
+        newBlock.name = "1D_CYL_AVG_" + newBlock.getMicroSuffix()
+        return newBlock
+
+    def _selectCandidateBlock(self):
+        """Selects the candidate block with the median block-average temperature."""
+        info = []
+        for b in self.getCandidateBlocks():
+            info.append((b.getAverageTempInC(), b.getName(), b))
+        info.sort()
+        medianBlockData = info[len(info) // 2]
+        return medianBlockData[-1]
+
+    def _makeRepresentativeBlock(self):
+        """Build a representative fuel block based on component number densities."""
+        repBlock = self._getNewBlock()
+        bWeights = [self.getWeight(b) for b in self.getCandidateBlocks()]
+        componentsInOrder = self._orderComponentsInGroup(repBlock)
+
+        for c, allSimilarComponents in zip(repBlock, componentsInOrder):
+            allNucsNames, densities = self._getAverageComponentNucs(
+                allSimilarComponents, bWeights
+            )
+            for nuc, aDensity in zip(allNucsNames, densities):
+                c.setNumberDensity(nuc, aDensity)
+        return repBlock
+
+    @staticmethod
+    def _getAllNucs(components):
+        """Iterate through components and get all unique nuclides."""
+        nucs = set()
+        for c in components:
+            nucs = nucs.union(c.getNuclides())
+        return sorted(list(nucs))
+
+    @staticmethod
+    def _checkComponentConsistency(b, repBlock):
+        """
+        Verify that all components being homogenized have same multiplicity and nuclides
+
+        Raises
+        ------
+        ValueError
+            When the components in a candidate block do not align with
+            the components in the representative block. This check includes component area, component multiplicity,
+            and nuclide composition.
+        """
+        if len(b) != len(repBlock):
+            raise ValueError(
+                f"Blocks {b} and {repBlock} have differing number "
+                f"of components and cannot be homogenized"
+            )
+        for c, repC in zip(b, repBlock):
+            compString = (
+                f"Component {repC} in block {repBlock} and component {c} in block {b}"
+            )
+            if c.p.mult != repC.p.mult:
+                raise ValueError(
+                    f"{compString} must have the same multiplicity, but they have."
+                    f"{repC.p.mult} and {c.p.mult}, respectively."
+                )
+
+            theseNucs = set(c.getNuclides())
+            thoseNucs = set(repC.getNuclides())
+            diffNucs = theseNucs.symmetric_difference(thoseNucs)
+            if diffNucs:
+                raise ValueError(
+                    f"{compString} are in the same location, but nuclides "
+                    f"differ by {diffNucs}. \n{theseNucs} \n{thoseNucs}"
+                )
+
+    def _getAverageComponentNucs(self, components, bWeights):
+        """Compute average nuclide densities by block weights and component area fractions."""
+        allNucNames = self._getAllNucs(components)
+        densities = numpy.zeros(len(allNucNames))
+        totalWeight = 0.0
+        for c, bWeight in zip(components, bWeights):
+            weight = bWeight * c.getArea()
+            totalWeight += weight
+            densities += weight * numpy.array(c.getNuclideNumberDensities(allNucNames))
+        return allNucNames, densities / totalWeight
+
+    def _orderComponentsInGroup(self, repBlock):
+        """Order the components based on dimension and material type within the representative block."""
+        for b in self.getCandidateBlocks():
+            self._checkComponentConsistency(b, repBlock)
+        componentLists = [list(b) for b in self.getCandidateBlocks()]
+        return [list(comps) for comps in zip(*componentLists)]
+
+
 class SlabComponentsAverageBlockCollection(BlockCollection):
     """
     Creates a representative 1D slab block.
@@ -402,6 +509,11 @@ class SlabComponentsAverageBlockCollection(BlockCollection):
 
     """
 
+    def _getNewBlock(self):
+        newBlock = copy.deepcopy(self.getCandidateBlocks()[0])
+        newBlock.name = "1D_SLAB_AVG_" + newBlock.getMicroSuffix()
+        return newBlock
+
     def _makeRepresentativeBlock(self):
         """Build a representative fuel block based on component number densities."""
         repBlock = self._getNewBlock()
@@ -409,7 +521,7 @@ class SlabComponentsAverageBlockCollection(BlockCollection):
         componentsInOrder = self._orderComponentsInGroup(repBlock)
 
         for c, allSimilarComponents in zip(repBlock, componentsInOrder):
-            allNucsNames, densities = self._getAverageComponantNucs(
+            allNucsNames, densities = self._getAverageComponentNucs(
                 allSimilarComponents, bWeights
             )
             for nuc, aDensity in zip(allNucsNames, densities):
@@ -510,7 +622,7 @@ class SlabComponentsAverageBlockCollection(BlockCollection):
                 repBlock.remove(c)
         return repBlock
 
-    def _getAverageComponantNucs(self, components, bWeights):
+    def _getAverageComponentNucs(self, components, bWeights):
         """Compute average nuclide densities by block weights and component area fractions."""
         allNucNames = self._getAllNucs(components)
         densities = numpy.zeros(len(allNucNames))
@@ -1160,11 +1272,21 @@ class CrossSectionGroupManager(interfaces.Interface):
             runLog.extra("XS ID: {}, Collection: {}".format(xsID, collection))
 
 
+# String constants
+MEDIAN_BLOCK_COLLECTION = "Median"
+AVERAGE_BLOCK_COLLECTION = "Average"
+FLUX_WEIGHTED_AVERAGE_BLOCK_COLLECTION = "FluxWeightedAverage"
+SLAB_COMPONENTS_BLOCK_COLLECTION = "ComponentAverage1DSlab"
+CYLINDRICAL_COMPONENTS_BLOCK_COLLECTION = "ComponentAverage1DCylinder"
+
+# Mapping between block collection string constants and their
+# respective block collection classes.
 BLOCK_COLLECTIONS = {
-    "Median": MedianBlockCollection,
-    "Average": AverageBlockCollection,
-    "ComponentAverage1DSlab": SlabComponentsAverageBlockCollection,
-    "FluxWeightedAverage": FluxWeightedAverageBlockCollection,
+    MEDIAN_BLOCK_COLLECTION: MedianBlockCollection,
+    AVERAGE_BLOCK_COLLECTION: AverageBlockCollection,
+    FLUX_WEIGHTED_AVERAGE_BLOCK_COLLECTION: FluxWeightedAverageBlockCollection,
+    SLAB_COMPONENTS_BLOCK_COLLECTION: SlabComponentsAverageBlockCollection,
+    CYLINDRICAL_COMPONENTS_BLOCK_COLLECTION: CylindricalComponentsAverageBlockCollection,
 }
 
 
