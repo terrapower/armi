@@ -237,6 +237,14 @@ blocks:
             isotopics: MOX
             mult: 169.0
             od: 0.86602
+        bond: &component_fuel_bond2
+            shape: Circle
+            material: Sodium
+            Tinput: 450.0
+            Thot: 450.0
+            id: fuel.od
+            mult: fuel.mult
+            od: liner1.id
         clad: *component_fuel_clad
         liner1: &component_fuel2_liner1
             shape: Circle
@@ -256,14 +264,6 @@ blocks:
             mergeWith: clad
             mult: 169.0
             od: 0.99
-        bond: &component_fuel_bond2
-            shape: Circle
-            material: Sodium
-            Tinput: 450.0
-            Thot: 450.0
-            id: fuel.od
-            mult: fuel.mult
-            od: liner1.id
         wire: *component_fuel_wire
         coolant: *component_fuel_coolant
         duct: *component_fuel_duct
