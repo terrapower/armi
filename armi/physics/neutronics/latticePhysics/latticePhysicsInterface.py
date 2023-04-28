@@ -127,7 +127,7 @@ class LatticePhysicsInterface(interfaces.Interface):
         ``runLatticePhysicsBeforeShuffling``setting is True.
         This happens because branch searches may need XS.
         """
-        if self._latticePhysicsFrequency >= LatticePhysicsFrequency.BOC:
+        if self._latticePhysicsFrequency == LatticePhysicsFrequency.BOC:
             self.updateXSLibrary(cycle)
 
     def updateXSLibrary(self, cycle):

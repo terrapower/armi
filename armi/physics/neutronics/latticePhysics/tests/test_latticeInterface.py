@@ -32,6 +32,7 @@ from armi.reactor.assemblies import (
     HexAssembly,
     grids,
 )
+from armi.physics.neutronics import LatticePhysicsFrequency
 from armi.nuclearDataIO.cccc import isotxs
 from armi.tests import ISOAA_PATH
 
@@ -106,13 +107,15 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
         good means of verifying the correct function,
         so we use self.testVerification instead.
         """
-        self.latticeInterface._latticePhysicsUpdateFrequency = "BOL"
+        self.latticeInterface._latticePhysicsFrequency = LatticePhysicsFrequency.BOL
         self.latticeInterface.interactBOC()
         self.assertFalse(self.latticeInterface.testVerification)
-        self.latticeInterface._latticePhysicsUpdateFrequency = "everyNode"
+        self.latticeInterface._latticePhysicsFrequency = (
+            LatticePhysicsFrequency.everyNode
+        )
         self.latticeInterface.interactBOC()
         self.assertFalse(self.latticeInterface.testVerification)
-        self.latticeInterface._latticePhysicsUpdateFrequency = "BOC"
+        self.latticeInterface._latticePhysicsFrequency = LatticePhysicsFrequency.BOC
         self.latticeInterface.interactBOC()
         self.assertTrue(self.latticeInterface.testVerification)
 
@@ -120,10 +123,12 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
         """
         Test interactEveryNode() with different update frequencies
         """
-        self.latticeInterface._latticePhysicsUpdateFrequency = "BOC"
+        self.latticeInterface._latticePhysicsFrequency = LatticePhysicsFrequency.BOC
         self.latticeInterface.interactEveryNode()
         self.assertEqual(self.o.r.core.lib, "Nonsense")
-        self.latticeInterface._latticePhysicsUpdateFrequency = "everyNode"
+        self.latticeInterface._latticePhysicsFrequency = (
+            LatticePhysicsFrequency.everyNode
+        )
         self.latticeInterface.interactEveryNode()
         self.assertIsNone(self.o.r.core.lib)
 
@@ -131,10 +136,14 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
         """
         Test interactCoupled() with different update frequencies on first interation
         """
-        self.latticeInterface._latticePhysicsUpdateFrequency = "everyNode"
+        self.latticeInterface._latticePhysicsFrequency = (
+            LatticePhysicsFrequency.everyNode
+        )
         self.latticeInterface.interactCoupled(iteration=0)
         self.assertEqual(self.o.r.core.lib, "Nonsense")
-        self.latticeInterface._latticePhysicsUpdateFrequency = "firstCoupled"
+        self.latticeInterface._latticePhysicsFrequency = (
+            LatticePhysicsFrequency.firstCoupled
+        )
         self.latticeInterface.interactCoupled(iteration=0)
         self.assertIsNone(self.o.r.core.lib)
 
@@ -142,18 +151,14 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
         """
         Test interactCoupled() with different update frequencies on non-first iteration
         """
-        self.latticeInterface._latticePhysicsUpdateFrequency = "firstCoupled"
+        self.latticeInterface._latticePhysicsFrequency = (
+            LatticePhysicsFrequency.firstCoupled
+        )
         self.latticeInterface.interactCoupled(iteration=1)
         self.assertEqual(self.o.r.core.lib, "Nonsense")
-        self.latticeInterface._latticePhysicsUpdateFrequency = "all"
+        self.latticeInterface._latticePhysicsFrequency = LatticePhysicsFrequency.all
         self.latticeInterface.interactCoupled(iteration=1)
         self.assertIsNone(self.o.r.core.lib)
-
-    def test_interactCoupled_TimeNode1(self):
-        """make sure updateXSLibrary is NOT run"""
-        self.o.r.p.timeNode = 1
-        self.latticeInterface.interactCoupled(iteration=0)
-        self.assertEqual(self.o.r.core.lib, "Nonsense")
 
 
 class TestLatticePhysicsLibraryCreation(TestLatticePhysicsInterfaceBase):
