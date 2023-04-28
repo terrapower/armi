@@ -56,8 +56,6 @@ import copy
 import os
 import shutil
 import string
-from enum import IntEnum
-from typing import Optional
 
 import numpy
 
@@ -68,6 +66,7 @@ from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.reactor.components import basicShapes
 from armi.reactor.flags import Flags
 from armi.utils.units import TRACE_NUMBER_DENSITY
+from armi.physics.neutronics import LatticePhysicsFrequency
 
 ORDER = interfaces.STACK_ORDER.BEFORE + interfaces.STACK_ORDER.FUEL_MANAGEMENT
 
@@ -705,22 +704,15 @@ class CrossSectionGroupManager(interfaces.Interface):
         from armi.physics.neutronics.settings import (
             CONF_XS_BLOCK_REPRESENTATION,
             CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION,
-            CONF_LATTICE_PHYSICS_UPDATE_FREQUENCY,
+            CONF_LATTICE_PHYSICS_FREQUENCY,
         )
 
         self.cs[CONF_CROSS_SECTION].setDefaults(
             self.cs[CONF_XS_BLOCK_REPRESENTATION],
             self.cs[CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION],
         )
-        self._latticePhysicsUpdateFrequency = self.cs[
-            CONF_LATTICE_PHYSICS_UPDATE_FREQUENCY
-        ]
-
-        if LatticePhysicsUpdateFrequency.checkFrequency(
-            self._latticePhysicsUpdateFrequency,
-            LatticePhysicsUpdateFrequency.BEGINNING_OF_LIFE,
-            exact=True,
-        ):
+        self._latticePhysicsFrequency = LatticePhysicsFrequency[self.cs[CONF_LATTICE_PHYSICS_FREQUENCY]]
+        if self._latticePhysicsFrequency == LatticePhysicsFrequency.BOL:
             self.createRepresentativeBlocks()
 
     def interactBOC(self, cycle=None):
@@ -731,10 +723,7 @@ class CrossSectionGroupManager(interfaces.Interface):
         -----
         The block list each each block collection cannot be emptied since it is used to derive nuclide temperatures.
         """
-        if LatticePhysicsUpdateFrequency.checkFrequency(
-            self._latticePhysicsUpdateFrequency,
-            LatticePhysicsUpdateFrequency.BEGINNING_OF_CYCLE,
-        ):
+        if self._latticePhysicsFrequency >= LatticePhysicsFrequency.BOC:
             self.createRepresentativeBlocks()
 
     def interactEOC(self, cycle=None):
@@ -746,10 +735,7 @@ class CrossSectionGroupManager(interfaces.Interface):
         self.clearRepresentativeBlocks()
 
     def interactEveryNode(self, cycle=None, tn=None):
-        if LatticePhysicsUpdateFrequency.checkFrequency(
-            self._latticePhysicsUpdateFrequency,
-            LatticePhysicsUpdateFrequency.EVERY_NODE,
-        ):
+        if self._latticePhysicsFrequency >= LatticePhysicsFrequency.everyNode:
             self.createRepresentativeBlocks()
 
     def interactCoupled(self, iteration):
@@ -771,15 +757,11 @@ class CrossSectionGroupManager(interfaces.Interface):
         --------
         :py:meth:`Assembly <armi.physics.neutronics.latticePhysics.latticePhysics.LatticePhysicsInterface.interactCoupled>`
         """
-        if iteration == 0:
-            targetFrequency = LatticePhysicsUpdateFrequency.FIRST_COUPLED
-        else:
-            targetFrequency = LatticePhysicsUpdateFrequency.ALL
 
-        if LatticePhysicsUpdateFrequency.checkFrequency(
-            self._latticePhysicsUpdateFrequency,
-            targetFrequency,
-        ):
+        if (
+            iteration == 0
+            and self._latticePhysicsFrequency == LatticePhysicsFrequency.firstCoupled
+        ) or self._latticePhysicsFrequency == LatticePhysicsFrequency.all:
             self.createRepresentativeBlocks()
 
     def clearRepresentativeBlocks(self):
@@ -1329,115 +1311,3 @@ def blockCollectionFactory(xsSettings, allNuclidesInProblem):
     return BLOCK_COLLECTIONS[blockRepresentation](
         allNuclidesInProblem, validBlockTypes=validBlockTypes
     )
-
-
-class LatticePhysicsUpdateFrequency(IntEnum):
-    """
-    Enumeration for lattice physics update frequency options.
-    """
-
-    BEGINNING_OF_LIFE = 1
-    BEGINNING_OF_CYCLE = 2
-    EVERY_NODE = 3
-    FIRST_COUPLED = 4
-    ALL = 5
-
-    @classmethod
-    def _stringMapping(cls, value):
-        return {
-            cls.BEGINNING_OF_LIFE: "BOL",
-            cls.BEGINNING_OF_CYCLE: "BOC",
-            cls.EVERY_NODE: "everyNode",
-            cls.FIRST_COUPLED: "firstCoupled",
-            cls.ALL: "all",
-        }[value]
-
-    @classmethod
-    def getStr(cls, typeSpec: IntEnum) -> str:
-        """
-        Return a string representation of the given ``typeSpec``
-
-        Parameters
-        ----------
-        typeSpec: IntEnum
-            The IntEnum representation for lattice physics update frequency
-
-        Returns
-        -------
-        str representation for lattice physics update frequency
-        """
-
-        updateFrequencyOpts = list(cls)
-        if typeSpec not in updateFrequencyOpts:
-            raise TypeError(f"{typeSpec} not in {updateFrequencyOpts}")
-        return cls._stringMapping(typeSpec)
-
-    @classmethod
-    def fromStr(cls, typeSpec: str) -> IntEnum:
-        """
-        Return the enumeration from a string
-
-        Parameters
-        ----------
-        typeSpec: str
-            The string representation of the lattice physics update frequency
-
-        Returns
-        -------
-        LatticePhysicsUpdateFrequency : IntEnum
-            The option for lattice physics update frequency
-        """
-
-        reverseMapping = {cls._stringMapping(val): val for val in list(cls)}
-        if typeSpec not in reverseMapping:
-            raise TypeError(f"{typeSpec} not in {reverseMapping.keys()}")
-        return reverseMapping[typeSpec]
-
-    @classmethod
-    def checkFrequency(
-        cls,
-        evalFrequency: [IntEnum, str],
-        targetFrequency: [IntEnum, str],
-        exact: Optional[bool] = False,
-    ):
-        """
-        Evaluate whether the provided frequency is inclusive of the target frequency
-
-        Notes
-        -----
-        Typically the ``evalFrequency`` is the value provided in the case settings
-        and the ``targetFrequency`` is a frequency encoded into a specific interface
-        immplementation that is being checked against.
-
-        Parameters
-        ----------
-        evalFrequency : str, int, or IntEnum
-            A frequency setting that to be evaluated against a target
-        targetFrequency : str, int, or IntEnum
-            A target frequency setting against which ``evalFrequency`` is compared
-        exact : bool, optional
-            Whether to require an exact match of frequencies
-
-        Returns
-        -------
-        True or False indicating whether to perform lattice physics calculation
-
-        Examples
-        --------
-        LatticePhysicsUpdateFrequency.checkFrequency("everyNode", 0) == True
-        LatticePhysicsUpdateFrequency.checkFrequency(4, 3) == True
-        LatticePhysicsUpdateFrequency.checkFrequency("BOC", 4) == False
-        LatticePhysicsUpdateFrequency.checkFrequency("all", 3) == True
-        LatticePhysicsUpdateFrequency.checkFrequency("all", 3, exact=True) == False
-        LatticePhysicsUpdateFrequency.checkFrequency("all", 5) == True
-        """
-
-        if isinstance(evalFrequency, str):
-            evalFrequency = cls.fromStr(evalFrequency)
-        if isinstance(targetFrequency, str):
-            targetFrequency = cls.fromStr(targetFrequency)
-
-        if exact:
-            return evalFrequency == targetFrequency
-        else:
-            return evalFrequency >= targetFrequency

@@ -31,7 +31,7 @@ from armi.physics.neutronics.settings import (
     CONF_OUTERS_,
     CONF_INNERS_,
     CONF_NEUTRONICS_KERNEL,
-    CONF_LATTICE_PHYSICS_UPDATE_FREQUENCY,
+    CONF_LATTICE_PHYSICS_FREQUENCY,
     getNeutronicsSettingValidators,
 )
 from armi.settings.fwSettings.globalSettings import CONF_RUN_TYPE
@@ -338,16 +338,14 @@ class NeutronicsReactorTests(unittest.TestCase):
         cs = cs.modified(
             newSettings={
                 CONF_RUN_TYPE: "Snapshots",
-                CONF_LATTICE_PHYSICS_UPDATE_FREQUENCY: "BOC",
+                CONF_LATTICE_PHYSICS_FREQUENCY: "BOC",
             }
         )
         inspector = settingsValidation.Inspector(cs)
         sv = getNeutronicsSettingValidators(inspector)
 
         self.__autoCorrectAllQueries(sv)
-        self.assertEqual(
-            inspector.cs[CONF_LATTICE_PHYSICS_UPDATE_FREQUENCY], "firstCoupled"
-        )
+        self.assertEqual(inspector.cs[CONF_LATTICE_PHYSICS_FREQUENCY], "firstCoupled")
 
 
 if __name__ == "__main__":

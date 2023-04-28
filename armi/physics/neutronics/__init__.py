@@ -32,7 +32,7 @@ independent interfaces:
 
 """
 
-import os
+from enum import IntEnum
 
 import numpy
 import tabulate
@@ -273,3 +273,21 @@ def applyEffectiveDelayedNeutronFractionToCore(core, cs):
                 tablefmt="armi",
             )
         )
+
+
+class LatticePhysicsFrequency(IntEnum):
+    """
+    Enumeration for lattice physics update frequency options.
+
+    BOL = Beginning-of-life (c0n0)
+    BOC = Beginning-of-cycle (c*n0)
+    everyNode = Every interaction node (c*n*)
+    firstCoupled = every node + the first coupled iteration at each node
+    all = every node + every coupled iteration
+    """
+
+    BOL = 1
+    BOC = 2
+    everyNode = 3
+    firstCoupled = 4
+    all = 5

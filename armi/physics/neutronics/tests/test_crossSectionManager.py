@@ -41,7 +41,7 @@ from armi.physics.neutronics.crossSectionGroupManager import CrossSectionGroupMa
 from armi.physics.neutronics.fissionProductModel.tests import test_lumpedFissionProduct
 from armi.physics.neutronics.settings import (
     CONF_XS_BLOCK_REPRESENTATION,
-    CONF_LATTICE_PHYSICS_UPDATE_FREQUENCY,
+    CONF_LATTICE_PHYSICS_FREQUENCY,
 )
 from armi.reactor.blocks import HexBlock
 from armi.reactor.flags import Flags
@@ -474,50 +474,47 @@ class Test_CrossSectionGroupManager(unittest.TestCase):
     def test_interactBOL(self):
         """Test `BOL` lattice physics update frequency"""
         self.blockList[0].r.p.timeNode = 0
-        self.csm.cs[CONF_LATTICE_PHYSICS_UPDATE_FREQUENCY] = "BOL"
+        self.csm.cs[CONF_LATTICE_PHYSICS_FREQUENCY] = "BOL"
         self.csm.interactBOL()
         self.assertTrue(self.csm.representativeBlocks)
 
     def test_interactBOC(self):
         """Test `BOC` lattice physics update frequency"""
         self.blockList[0].r.p.timeNode = 0
-        self.csm.cs[CONF_LATTICE_PHYSICS_UPDATE_FREQUENCY] = "BOC"
+        self.csm.cs[CONF_LATTICE_PHYSICS_FREQUENCY] = "BOC"
         self.csm.interactBOL()
         self.csm.interactBOC()
         self.assertTrue(self.csm.representativeBlocks)
 
     def test_interactEveryNode(self):
         """Test `everyNode` lattice physics update frequency"""
-        self.blockList[0].r.p.timeNode = 1
-        self.csm.cs[CONF_LATTICE_PHYSICS_UPDATE_FREQUENCY] = "BOC"
+        self.csm.cs[CONF_LATTICE_PHYSICS_FREQUENCY] = "BOC"
         self.csm.interactBOL()
         self.csm.interactEveryNode()
         self.assertFalse(self.csm.representativeBlocks)
-        self.csm.cs[CONF_LATTICE_PHYSICS_UPDATE_FREQUENCY] = "everyNode"
+        self.csm.cs[CONF_LATTICE_PHYSICS_FREQUENCY] = "everyNode"
         self.csm.interactBOL()
         self.csm.interactEveryNode()
         self.assertTrue(self.csm.representativeBlocks)
 
     def test_interactFirstCoupled(self):
         """Test `firstCoupled` lattice physics update frequency"""
-        self.blockList[0].r.p.timeNode = 1
-        self.csm.cs[CONF_LATTICE_PHYSICS_UPDATE_FREQUENCY] = "everyNode"
+        self.csm.cs[CONF_LATTICE_PHYSICS_FREQUENCY] = "everyNode"
         self.csm.interactBOL()
         self.csm.interactCoupled(iteration=0)
         self.assertFalse(self.csm.representativeBlocks)
-        self.csm.cs[CONF_LATTICE_PHYSICS_UPDATE_FREQUENCY] = "firstCoupled"
+        self.csm.cs[CONF_LATTICE_PHYSICS_FREQUENCY] = "firstCoupled"
         self.csm.interactBOL()
         self.csm.interactCoupled(iteration=0)
         self.assertTrue(self.csm.representativeBlocks)
 
     def test_interactAllCoupled(self):
         """Test `all` lattice physics update frequency"""
-        self.blockList[0].r.p.timeNode = 1
-        self.csm.cs[CONF_LATTICE_PHYSICS_UPDATE_FREQUENCY] = "firstCoupled"
+        self.csm.cs[CONF_LATTICE_PHYSICS_FREQUENCY] = "firstCoupled"
         self.csm.interactBOL()
         self.csm.interactCoupled(iteration=1)
         self.assertFalse(self.csm.representativeBlocks)
-        self.csm.cs[CONF_LATTICE_PHYSICS_UPDATE_FREQUENCY] = "all"
+        self.csm.cs[CONF_LATTICE_PHYSICS_FREQUENCY] = "all"
         self.csm.interactBOL()
         self.csm.interactCoupled(iteration=1)
         self.assertTrue(self.csm.representativeBlocks)

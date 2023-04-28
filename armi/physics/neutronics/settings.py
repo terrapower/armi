@@ -22,9 +22,7 @@ from armi.physics.neutronics.energyGroups import GROUP_STRUCTURE
 from armi.scripts.migration.crossSectionBlueprintsToSettings import (
     migrateCrossSectionsFromBlueprints,
 )
-from armi.physics.neutronics.crossSectionGroupManager import (
-    LatticePhysicsUpdateFrequency,
-)
+from armi.physics.neutronics import LatticePhysicsFrequency
 from armi.settings import setting
 from armi.utils import directoryChangers
 from armi.settings.fwSettings.globalSettings import (
@@ -84,7 +82,7 @@ CONF_XS_KERNEL = "xsKernel"
 CONF_XS_SCATTERING_ORDER = "xsScatteringOrder"
 CONF_XS_BUCKLING_CONVERGENCE = "xsBucklingConvergence"
 CONF_XS_EIGENVALUE_CONVERGENCE = "xsEigenvalueConvergence"
-CONF_LATTICE_PHYSICS_UPDATE_FREQUENCY = "latticePhysicsUpdateFrequency"
+CONF_LATTICE_PHYSICS_FREQUENCY = "latticePhysicsFrequency"
 
 
 def defineSettings():
@@ -330,11 +328,11 @@ def defineSettings():
             options=["", "MC2v2", "MC2v3", "MC2v3-PARTISN", "SERPENT"],
         ),
         setting.Setting(
-            CONF_LATTICE_PHYSICS_UPDATE_FREQUENCY,
+            CONF_LATTICE_PHYSICS_FREQUENCY,
             default="BOC",
             label="Frequency of lattice physics updates",
             description="Define the frequency at which cross sections are updated with new lattice physics interactions.",
-            options=["", "BOL", "BOC", "everyNode", "firstCoupled", "all"],
+            options=[""] + [x.name for x in list(LatticePhysicsFrequency)],
         ),
         setting.Setting(
             CONF_XS_SCATTERING_ORDER,
@@ -543,28 +541,24 @@ def getNeutronicsSettingValidators(inspector):
     )
 
     queryMsg = (
-        "A Snapshots case is selected but the `latticePhysicsUpdateFrequency` "
+        "A Snapshots case is selected but the `latticePhysicsFrequency` "
         "{0} is less than `firstCoupled`. `firstCoupled` or `all` is recommended "
         "for Snapshots when they involve large changes in power or flow compared "
         "to the loaded state."
-    ).format(inspector.cs[CONF_LATTICE_PHYSICS_UPDATE_FREQUENCY])
+    ).format(inspector.cs[CONF_LATTICE_PHYSICS_FREQUENCY])
     queryPrompt = (
-        "Would you like to update `latticePhysicsUpdateFrequency` from "
-        "{0} to `firstCoupled`?".format(
-            inspector.cs[CONF_LATTICE_PHYSICS_UPDATE_FREQUENCY]
-        )
+        "Would you like to update `latticePhysicsFrequency` from "
+        f"{inspector.cs[CONF_LATTICE_PHYSICS_FREQUENCY]} to `firstCoupled`?"
     )
     queries.append(
         settingsValidation.Query(
             lambda: inspector.cs[CONF_RUN_TYPE] == "Snapshots"
-            and not LatticePhysicsUpdateFrequency.checkFrequency(
-                inspector.cs[CONF_LATTICE_PHYSICS_UPDATE_FREQUENCY],
-                LatticePhysicsUpdateFrequency.FIRST_COUPLED,
-            ),
+            and not inspector.cs[CONF_LATTICE_PHYSICS_FREQUENCY]
+            >= LatticePhysicsFrequency.firstCoupled,
             queryMsg,
             queryPrompt,
             lambda: inspector._assignCS(
-                CONF_LATTICE_PHYSICS_UPDATE_FREQUENCY,
+                CONF_LATTICE_PHYSICS_FREQUENCY,
                 "firstCoupled",
             ),
         )
