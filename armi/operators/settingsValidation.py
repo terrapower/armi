@@ -199,7 +199,6 @@ class Inspector:
                     self.__class__.__name__
                 )
             )
-
         else:
             for query in self.queries:
                 query.resolve()
