@@ -90,7 +90,7 @@ class LatticePhysicsInterface(interfaces.Interface):
             cs
         ) or neutronics.gammaXsAreRequested(cs)
         self._latticePhysicsFrequency = LatticePhysicsFrequency[
-            self.cs[CONF_LATTICE_PHYSICS_UPDATE_FREQUENCY]
+            self.cs[CONF_LATTICE_PHYSICS_FREQUENCY]
         ]
 
     def _getExecutablePath(self):

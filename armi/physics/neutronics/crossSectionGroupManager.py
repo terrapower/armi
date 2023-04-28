@@ -711,7 +711,9 @@ class CrossSectionGroupManager(interfaces.Interface):
             self.cs[CONF_XS_BLOCK_REPRESENTATION],
             self.cs[CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION],
         )
-        self._latticePhysicsFrequency = LatticePhysicsFrequency[self.cs[CONF_LATTICE_PHYSICS_FREQUENCY]]
+        self._latticePhysicsFrequency = LatticePhysicsFrequency[
+            self.cs[CONF_LATTICE_PHYSICS_FREQUENCY]
+        ]
         if self._latticePhysicsFrequency == LatticePhysicsFrequency.BOL:
             self.createRepresentativeBlocks()
 
@@ -743,15 +745,10 @@ class CrossSectionGroupManager(interfaces.Interface):
 
         Notes
         -----
-        This coupling iteration is limited to when the time node is equal to zero. This is
-        assumed to be reasonable for most applications as 1) microscopic cross section changes with burn-up
-        are deemed to be less significant compared to convergence on the temperature state, and 2) temperature
-        distributions are not expected to dramatically change for time steps > 0.
-
-        .. warning::
-
-            The latter assumptions are design and application-specific and a subclass should be
-            considered when violated.
+        Updating the XS on only the first (i.e., iteration == 0) timenode can be a reasonable approximation to
+        get new cross sections with some temperature updates but not have to run lattice physics on each
+        coupled iteration. If the user desires to have the cross sections updated with every coupling iteration,
+        the ``latticEPhysicsFrequency: all`` option.
 
         See Also
         --------
