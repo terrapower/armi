@@ -237,7 +237,9 @@ class Inspector:
 
             # preserve old file before saving settings file
             if not self._csRelativePathExists(oldFilePath) or saveOldSettings:
-                runLog.extra(f"Preserving originally submitted settings file in `{oldFilePath}`")
+                runLog.extra(
+                    f"Preserving originally submitted settings file in `{oldFilePath}`"
+                )
                 shutil.copy(self.cs.path, oldFilePath)
 
             # save settings file
