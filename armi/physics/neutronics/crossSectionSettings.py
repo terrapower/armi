@@ -91,46 +91,7 @@ class XSGeometryTypes(Enum):
         XSGeometryTypes.getStr(XSGeometryTypes.ZERO_DIMENSIONAL) == "0D"
         XSGeometryTypes.getStr(XSGeometryTypes.TWO_DIMENSIONAL_HEX) == "2D hex"
         """
-        geometryTypes = [typ for typ in list(cls)]
-        if typeSpec not in geometryTypes:
-            raise TypeError(f"{typeSpec} not in {geometryTypes}")
-        return cls._mapping()[cls[typeSpec.name]]
-
-
-class XSGeometryTypes(Enum):
-    """
-    Data structure for storing the available geometry options
-    within the framework.
-    """
-
-    ZERO_DIMENSIONAL = 1
-    ONE_DIMENSIONAL_SLAB = 2
-    ONE_DIMENSIONAL_CYLINDER = 4
-    TWO_DIMENSIONAL_HEX = 8
-
-    @classmethod
-    def _mapping(cls):
-        mapping = {
-            cls.ZERO_DIMENSIONAL: "0D",
-            cls.ONE_DIMENSIONAL_SLAB: "1D slab",
-            cls.ONE_DIMENSIONAL_CYLINDER: "1D cylinder",
-            cls.TWO_DIMENSIONAL_HEX: "2D hex",
-        }
-        return mapping
-
-    @classmethod
-    def getStr(cls, typeSpec: Enum):
-        """
-        Return a string representation of the given ``typeSpec``.
-
-        Examples
-        --------
-        XSGeometryTypes.getStr(XSGeometryTypes.ZERO_DIMENSIONAL) == "0D"
-        XSGeometryTypes.getStr(XSGeometryTypes.TWO_DIMENSIONAL_HEX) == "2D hex"
-        """
-        geometryTypes = list(cls)
-        if typeSpec not in geometryTypes:
-            raise TypeError(f"{typeSpec} not in {geometryTypes}")
+        geometryTypes =     raise TypeError(f"{typeSpec} not in {geometryTypes}")
         return cls._mapping()[cls[typeSpec.name]]
 
 
@@ -169,7 +130,8 @@ _VALID_INPUTS_BY_GEOMETRY_TYPE = {
         CONF_MIN_DRIVER_DENSITY,
     },
     XSGeometryTypes.getStr(XSGeometryTypes.ONE_DIMENSIONAL_CYLINDER): {
-        CONF_XSID,
+        C
+    Data structure for storing the available geometry optionONF_XSID,
         CONF_GEOM,
         CONF_MERGE_INTO_CLAD,
         CONF_DRIVER,
