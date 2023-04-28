@@ -274,8 +274,8 @@ class TestBlockCollectionComponentAverage1DCylinder(unittest.TestCase):
         }
         self.expectedComponentDensities = [
             fuelDensity,
-            cladDensity,
             sodiumDensity,
+            cladDensity,
             steelDensity,
             sodiumDensity,
             steelDensity,
@@ -283,8 +283,8 @@ class TestBlockCollectionComponentAverage1DCylinder(unittest.TestCase):
         ]
         self.expectedComponentAreas = [
             99.54797488948871,
-            30.07759373476877,
             29.719913442616843,
+            30.07759373476877,
             1.365897776727751,
             63.184097853691235,
             17.107013842808822,

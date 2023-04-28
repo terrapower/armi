@@ -432,9 +432,6 @@ class CylindricalComponentsAverageBlockCollection(BlockCollection):
                 c.setNumberDensity(nuc, aDensity)
         return repBlock
 
-    def _getNucTempHelper(self):
-        raise NotImplementedError
-
     @staticmethod
     def _getAllNucs(components):
         """Iterate through components and get all unique nuclides."""
@@ -492,7 +489,6 @@ class CylindricalComponentsAverageBlockCollection(BlockCollection):
 
     def _orderComponentsInGroup(self, repBlock):
         """Order the components based on dimension and material type within the representative block."""
-        orderedComponents = [[] for _ in repBlock]
         for b in self.getCandidateBlocks():
             self._checkComponentConsistency(b, repBlock)
         componentLists = [list(b) for b in self.getCandidateBlocks()]
