@@ -23,6 +23,7 @@ is impossible. Would you like to switch to ___?"
 """
 import re
 import os
+import shutil
 
 from armi import context
 from armi import getPluginManagerOrFail
@@ -200,9 +201,10 @@ class Inspector:
             )
 
         else:
-            # preserve original settings in case a corrective query is resolved
+            # preserve original settings file in case a corrective query is resolved
             if any(query.isCorrective() for query in self.queries):
-                self.csOriginal = self.cs.duplicate()
+                tempFilePath = "{}_temp.yaml".format(self.cs.path.split(".yaml")[0])
+                shutil.copyfile(self.cs.path, tempFilePath)
 
             for query in self.queries:
                 query.resolve()
@@ -224,21 +226,21 @@ class Inspector:
                 )
             runLog.debug("{} has finished querying.".format(self.__class__.__name__))
 
-        # decide what to do with original settings
+        # decide what to do with original settings file
         if correctionsMade:
             oldFilePath = "{}_old.yaml".format(self.cs.path.split(".yaml")[0])
             if self._csRelativePathExists(oldFilePath):
                 overwrite_file = prompt(
-                    'INSPECTOR: At least one corrective query has been resolved and an "_old.yaml" settings file {} exists.'.format(
+                    'INSPECTOR: At least one corrective query has been resolved and an "_old.yaml" settings file {} already exists.'.format(
                         oldFilePath
                     ),
-                    'Overwrite "_old.yaml" settings file to preserve originally submitted settings?',
+                    'Overwrite "_old.yaml" settings file to preserve originally submitted settings file?',
                     "YES_NO",
                     "NO_DEFAULT",
                     "CANCEL",
                 )
                 if overwrite_file:
-                    self.csOriginal.writeToYamlFile(oldFilePath)
+                    os.replace(tempFilePath, oldFilePath)
             else:
                 preserve_settings = prompt(
                     "INSPECTOR: At least one corrective query has been resolved.",
@@ -250,9 +252,11 @@ class Inspector:
                     "CANCEL",
                 )
                 if preserve_settings:
-                    self.csOriginal.writeToYamlFile(oldFilePath)
+                    os.replace(tempFilePath, oldFilePath)
             # overwrite settings file
             self.cs.writeToYamlFile(self.cs.path)
+            if self._csRelativePathExists(tempFilePath):
+                os.remove(tempFilePath)
 
         return correctionsMade
 
