@@ -110,10 +110,6 @@ class TestInspector(unittest.TestCase):
             self.csOriginal.loadFromInputFile(oldFilePath)
             self.assertEqual(self.csOriginal["cycleLength"], 300.0)
 
-            # check to see that the temp file was deleted
-            tempFilePath = "{}_temp.yaml".format(self.cs.path.split(".yaml")[0])
-            self.assertFalse(os.path.exists(tempFilePath))
-
         finally:
             # reset prompt function to nominal
             settingsValidation.prompt = nominalPromptFunction

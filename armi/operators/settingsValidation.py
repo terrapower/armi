@@ -201,11 +201,6 @@ class Inspector:
             )
 
         else:
-            # preserve original settings file in case a corrective query is resolved
-            if any(query.isCorrective() for query in self.queries):
-                tempFilePath = "{}_temp.yaml".format(self.cs.path.split(".yaml")[0])
-                shutil.copyfile(self.cs.path, tempFilePath)
-
             for query in self.queries:
                 query.resolve()
                 if query.corrected:
@@ -230,7 +225,7 @@ class Inspector:
         if correctionsMade:
             oldFilePath = "{}_old.yaml".format(self.cs.path.split(".yaml")[0])
             if self._csRelativePathExists(oldFilePath):
-                overwrite_file = prompt(
+                saveOldSettings = prompt(
                     'INSPECTOR: At least one corrective query has been resolved and an "_old.yaml" settings file {} already exists.'.format(
                         oldFilePath
                     ),
@@ -239,24 +234,14 @@ class Inspector:
                     "NO_DEFAULT",
                     "CANCEL",
                 )
-                if overwrite_file:
-                    os.replace(tempFilePath, oldFilePath)
-            else:
-                preserve_settings = prompt(
-                    "INSPECTOR: At least one corrective query has been resolved.",
-                    "Preserve originally submitted settings in: {}?".format(
-                        oldFilePath
-                    ),
-                    "YES_NO",
-                    "NO_DEFAULT",
-                    "CANCEL",
-                )
-                if preserve_settings:
-                    os.replace(tempFilePath, oldFilePath)
-            # overwrite settings file
+
+            # preserve old file before saving settings file
+            if not self._csRelativePathExists(oldFilePath) or saveOldSettings:
+                runLog.extra(f"Preserving originally submitted settings file in `{oldFilePath}`")
+                shutil.copy(self.cs.path, oldFilePath)
+
+            # save settings file
             self.cs.writeToYamlFile(self.cs.path)
-            if self._csRelativePathExists(tempFilePath):
-                os.remove(tempFilePath)
 
         return correctionsMade
 
