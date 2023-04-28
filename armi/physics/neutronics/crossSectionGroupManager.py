@@ -1367,7 +1367,7 @@ class LatticePhysicsUpdateFrequency(IntEnum):
         str representation for lattice physics update frequency
         """
 
-        updateFrequencyOpts = [typ for typ in list(cls)]
+        updateFrequencyOpts = list(cls)
         if typeSpec not in updateFrequencyOpts:
             raise TypeError(f"{typeSpec} not in {updateFrequencyOpts}")
         return cls._stringMapping(typeSpec)
