@@ -45,7 +45,7 @@ class LatticeInterfaceTester(LatticePhysicsInterface):
     def _getExecutablePath(self):
         return "/tmp/fake_path"
 
-    def readExistingXSLibraries(self, cycle):
+    def readExistingXSLibraries(self, cycle, node):
         pass
 
 
