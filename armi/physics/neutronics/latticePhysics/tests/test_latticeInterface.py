@@ -96,6 +96,29 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
         self.latticeInterface.updateXSLibrary(0)
         self.assertEqual(len(self.latticeInterface._oldXsIdsAndBurnup), 0)
 
+    def test_interactBOL(self):
+        """
+        Test interactBOL() with different update frequencies
+
+        Notes
+        -----
+        Unlike other interactions, self.o.r.core.lib is not set to
+        None by the BOC interaction, so this test does not have a
+        good means of verifying the correct function,
+        so we use self.testVerification instead.
+        """
+        self.latticeInterface._latticePhysicsFrequency = LatticePhysicsFrequency.never
+        self.latticeInterface.interactBOL()
+        self.assertFalse(self.latticeInterface.testVerification)
+        self.latticeInterface._latticePhysicsFrequency = (
+            LatticePhysicsFrequency.everyNode
+        )
+        self.latticeInterface.interactBOL()
+        self.assertFalse(self.latticeInterface.testVerification)
+        self.latticeInterface._latticePhysicsFrequency = LatticePhysicsFrequency.BOL
+        self.latticeInterface.interactBOL()
+        self.assertTrue(self.latticeInterface.testVerification)
+
     def test_interactBOC(self):
         """
         Test interactBOC() with different update frequencies

@@ -218,7 +218,7 @@ class LatticePhysicsInterface(interfaces.Interface):
     def _getSuffix(self, cycle):  # pylint: disable=unused-argument, no-self-use
         return ""
 
-    def interactEveryNode(self, cycle=None, tn=None):
+    def interactEveryNode(self, cycle=None, node=None):
         """
         Run the lattice physics code if ``genXS`` is set and update burnup groups.
 

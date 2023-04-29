@@ -332,7 +332,7 @@ def defineSettings():
             default="BOC",
             label="Frequency of lattice physics updates",
             description="Define the frequency at which cross sections are updated with new lattice physics interactions.",
-            options=[""] + [x.name for x in list(LatticePhysicsFrequency)],
+            options=[opt.name for opt in list(LatticePhysicsFrequency)],
         ),
         setting.Setting(
             CONF_XS_SCATTERING_ORDER,

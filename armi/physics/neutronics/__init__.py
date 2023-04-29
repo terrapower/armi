@@ -279,6 +279,7 @@ class LatticePhysicsFrequency(IntEnum):
     """
     Enumeration for lattice physics update frequency options.
 
+    NEVER = never automatically trigger lattice physics (a custom script could still trigger it)
     BOL = Beginning-of-life (c0n0)
     BOC = Beginning-of-cycle (c*n0)
     everyNode = Every interaction node (c*n*)
@@ -286,6 +287,7 @@ class LatticePhysicsFrequency(IntEnum):
     all = every node + every coupled iteration
     """
 
+    never = 0
     BOL = 1
     BOC = 2
     everyNode = 3
