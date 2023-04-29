@@ -553,7 +553,9 @@ def getNeutronicsSettingValidators(inspector):
     queries.append(
         settingsValidation.Query(
             lambda: inspector.cs[CONF_RUN_TYPE] == "Snapshots"
-            and not inspector.cs[CONF_LATTICE_PHYSICS_FREQUENCY]
+            and not LatticePhysicsFrequency[
+                inspector.cs[CONF_LATTICE_PHYSICS_FREQUENCY]
+            ]
             >= LatticePhysicsFrequency.firstCoupled,
             queryMsg,
             queryPrompt,
