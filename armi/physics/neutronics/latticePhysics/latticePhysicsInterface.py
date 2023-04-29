@@ -130,7 +130,7 @@ class LatticePhysicsInterface(interfaces.Interface):
         if self._latticePhysicsFrequency == LatticePhysicsFrequency.BOC:
             self.updateXSLibrary(cycle)
 
-    def updateXSLibrary(self, cycle):
+    def updateXSLibrary(self, cycle, node=None):
         """
         Update the current XS library, either by creating or reloading one.
 
@@ -138,6 +138,8 @@ class LatticePhysicsInterface(interfaces.Interface):
         ----------
         cycle : int
             The cycle that is being processed. Used to name the library.
+        node : int, optional
+            The node that is being processed. Used to name the library.
 
         See Also
         --------
@@ -151,36 +153,38 @@ class LatticePhysicsInterface(interfaces.Interface):
             self.computeCrossSections(
                 blockList=representativeBlocks, xsLibrarySuffix=self._getSuffix(cycle)
             )
-            self._renameExistingLibrariesForCycle(cycle)
+            self._renameExistingLibrariesForStatepoint(cycle, node)
         else:
-            self.readExistingXSLibraries(cycle)
+            self.readExistingXSLibraries(cycle, node)
 
         self._checkInputs()
 
-    def _renameExistingLibrariesForCycle(self, cycle):
+    def _renameExistingLibrariesForStatepoint(self, cycle, node):
         """Copy the existing neutron and/or gamma libraries into cycle-dependent files."""
-        shutil.copy(neutronics.ISOTXS, nuclearDataIO.getExpectedISOTXSFileName(cycle))
+        shutil.copy(
+            neutronics.ISOTXS, nuclearDataIO.getExpectedISOTXSFileName(cycle, node)
+        )
         if self.includeGammaXS:
             shutil.copy(
                 neutronics.GAMISO,
                 nuclearDataIO.getExpectedGAMISOFileName(
-                    cycle=cycle, suffix=self._getSuffix(cycle)
+                    cycle=cycle, node=node, suffix=self._getSuffix(cycle)
                 ),
             )
             shutil.copy(
                 neutronics.PMATRX,
                 nuclearDataIO.getExpectedPMATRXFileName(
-                    cycle=cycle, suffix=self._getSuffix(cycle)
+                    cycle=cycle, node=node, suffix=self._getSuffix(cycle)
                 ),
             )
 
     def _checkInputs(self):
         pass
 
-    def readExistingXSLibraries(self, cycle):
+    def readExistingXSLibraries(self, cycle, node):
         raise NotImplementedError
 
-    def makeCycleXSFilesAsBaseFiles(self, cycle):
+    def makeCycleXSFilesAsBaseFiles(self, cycle, node):
         raise NotImplementedError
 
     @staticmethod
@@ -227,7 +231,7 @@ class LatticePhysicsInterface(interfaces.Interface):
         """
         if self._latticePhysicsFrequency == LatticePhysicsFrequency.everyNode:
             self.r.core.lib = None
-            self.updateXSLibrary(self.r.p.cycle)
+            self.updateXSLibrary(self.r.p.cycle, self.r.p.timeNode)
 
     def interactCoupled(self, iteration):
         """
@@ -262,7 +266,7 @@ class LatticePhysicsInterface(interfaces.Interface):
         )
         if self._latticePhysicsFrequency >= targetFrequency:
             self.r.core.lib = None
-            self.updateXSLibrary(self.r.p.cycle)
+            self.updateXSLibrary(self.r.p.cycle, self.r.p.timeNode)
 
     def clearXS(self):
         raise NotImplementedError

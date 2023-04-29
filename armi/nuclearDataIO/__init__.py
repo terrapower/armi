@@ -36,7 +36,7 @@ from .cccc import (
 )
 
 
-def getExpectedISOTXSFileName(cycle=None, suffix=None, xsID=None):
+def getExpectedISOTXSFileName(cycle=None, node=None, suffix=None, xsID=None):
     """
     Return the ISOTXS file that matches either the current cycle or xsID with a suffix.
 
@@ -57,11 +57,11 @@ def getExpectedISOTXSFileName(cycle=None, suffix=None, xsID=None):
     else:
         neutronFileName = neutronics.ISOTXS
     return _findExpectedNeutronFileName(
-        neutronFileName, _getNeutronKeywords(cycle, suffix, xsID)
+        neutronFileName, _getNeutronKeywords(cycle, node, suffix, xsID)
     )
 
 
-def getExpectedCOMPXSFileName(cycle=None):
+def getExpectedCOMPXSFileName(cycle=None, node=None):
     """
     Return the COMPXS file that matches either the current cycle.
 
@@ -72,7 +72,7 @@ def getExpectedCOMPXSFileName(cycle=None):
     getExpectedPMATRXFileName
     """
     return _findExpectedNeutronFileName(
-        neutronics.COMPXS, _getNeutronKeywords(cycle, suffix=None, xsID=None)
+        neutronics.COMPXS, _getNeutronKeywords(cycle, node, suffix=None, xsID=None)
     )
 
 
@@ -80,7 +80,7 @@ def _findExpectedNeutronFileName(fileType, fileNameKeywords):
     return fileType + "".join(fileNameKeywords)
 
 
-def _getNeutronKeywords(cycle, suffix, xsID):
+def _getNeutronKeywords(cycle, node, suffix, xsID):
     if cycle is not None and xsID is not None:
         raise ValueError("Keywords are over-specified. Choose `cycle` or `xsID` only")
 
@@ -91,7 +91,7 @@ def _getNeutronKeywords(cycle, suffix, xsID):
     else:
         # example: ISOTXS-c0
         if cycle is not None:
-            keywords = ["-c", str(cycle)]
+            keywords = ["-c{cycle}n{node}"] if node is not None else ["-c", str(cycle)]
         # example: ISOAA-test
         elif xsID is not None:
             keywords = [xsID]
@@ -100,7 +100,7 @@ def _getNeutronKeywords(cycle, suffix, xsID):
     return keywords
 
 
-def getExpectedGAMISOFileName(cycle=None, suffix=None, xsID=None):
+def getExpectedGAMISOFileName(cycle=None, node=None, suffix=None, xsID=None):
     """
     Return the GAMISO file that matches either the ``cycle`` or ``xsID`` and ``suffix``.
 
@@ -121,10 +121,12 @@ def getExpectedGAMISOFileName(cycle=None, suffix=None, xsID=None):
     else:
         # GAMISO as a file is upper case
         gamiso = neutronics.GAMISO
-    return _findExpectedGammaFileName(gamiso, _getGammaKeywords(cycle, suffix, xsID))
+    return _findExpectedGammaFileName(
+        gamiso, _getGammaKeywords(cycle, node, suffix, xsID)
+    )
 
 
-def getExpectedPMATRXFileName(cycle=None, suffix=None, xsID=None):
+def getExpectedPMATRXFileName(cycle=None, node=None, suffix=None, xsID=None):
     """
     Return the PMATRX file that matches either the ``cycle`` or ``xsID`` and ``suffix``.
 
@@ -145,14 +147,16 @@ def getExpectedPMATRXFileName(cycle=None, suffix=None, xsID=None):
     else:
         # PMATRX as a file is upper case
         pmatrx = neutronics.PMATRX
-    return _findExpectedGammaFileName(pmatrx, _getGammaKeywords(cycle, suffix, xsID))
+    return _findExpectedGammaFileName(
+        pmatrx, _getGammaKeywords(cycle, node, suffix, xsID)
+    )
 
 
 def _findExpectedGammaFileName(fileType, fileNameKeywords):
     return "".join(fileNameKeywords) + fileType
 
 
-def _getGammaKeywords(cycle, suffix, xsID):
+def _getGammaKeywords(cycle, node, suffix, xsID):
     if cycle is not None and xsID is not None:
         raise ValueError("Keywords are over-specified. Choose `cycle` or `xsID` only")
 
@@ -163,7 +167,8 @@ def _getGammaKeywords(cycle, suffix, xsID):
     else:
         # example: cycle0.gamiso
         if cycle is not None:
-            keywords = ["cycle", str(cycle)]
+            keywords = ["cycle", str(cycle)] if node is not None else [f"cycle{cycle}"]
+
         elif xsID is not None:
             keywords = [xsID]
             if suffix not in [None, ""]:
