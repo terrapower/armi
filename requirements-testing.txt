@@ -1,4 +1,5 @@
 numpy>=1.21,<=1.23.5
+ipython==8.12.0
 
 # docutils 0.17 introduced a bug that prevents bullets from rendering
 # see https://github.com/terrapower/armi/issues/274
