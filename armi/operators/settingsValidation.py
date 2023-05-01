@@ -226,9 +226,9 @@ class Inspector:
             strSkeleton = "{}_old".format(self.cs.path.split(".yaml")[0])
             for num in itertools.count():
                 if num == 0:
-                    renamePath = "{strSkeleton}.yaml"
+                    renamePath = f"{strSkeleton}.yaml"
                 else:
-                    renamePath = "{strSkeleton}{num}.yaml"
+                    renamePath = f"{strSkeleton}{num}.yaml"
                 if not self._csRelativePathExists(renamePath):
                     break
             # preserve old file before saving settings file
