@@ -725,7 +725,7 @@ class CrossSectionGroupManager(interfaces.Interface):
         -----
         The block list each each block collection cannot be emptied since it is used to derive nuclide temperatures.
         """
-        if self._latticePhysicsFrequency >= LatticePhysicsFrequency.BOC:
+        if self._latticePhysicsFrequency == LatticePhysicsFrequency.BOC:
             self.createRepresentativeBlocks()
 
     def interactEOC(self, cycle=None):
@@ -748,7 +748,7 @@ class CrossSectionGroupManager(interfaces.Interface):
         Updating the XS on only the first (i.e., iteration == 0) timenode can be a reasonable approximation to
         get new cross sections with some temperature updates but not have to run lattice physics on each
         coupled iteration. If the user desires to have the cross sections updated with every coupling iteration,
-        the ``latticEPhysicsFrequency: all`` option.
+        the ``latticePhysicsFrequency: all`` option.
 
         See Also
         --------

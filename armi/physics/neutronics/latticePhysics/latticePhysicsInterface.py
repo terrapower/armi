@@ -103,12 +103,6 @@ class LatticePhysicsInterface(interfaces.Interface):
 
         Generate new cross sections based off the case settings and the current state
         of the reactor if the lattice physics frequency is BOL.
-
-        Notes
-        -----
-        :py:meth:`armi.physics.fuelCycle.fuelHandlers.FuelHandler.interactBOC` also calls this if the
-        ``runLatticePhysicsBeforeShuffling``setting is True.
-        This happens because branch searches may need XS.
         """
         if self._latticePhysicsFrequency == LatticePhysicsFrequency.BOL:
             self.updateXSLibrary(cycle)
@@ -123,8 +117,8 @@ class LatticePhysicsInterface(interfaces.Interface):
 
         Notes
         -----
-        :py:meth:`armi.physics.fuelCycle.fuelHandlers.FuelHandler.interactBOC` also calls this if the
-        ``runLatticePhysicsBeforeShuffling``setting is True.
+        :py:meth:`armi.physics.fuelCycle.fuelHandlerInterface.FuelHandlerInterface.interactBOC`
+        also calls this if the ``runLatticePhysicsBeforeShuffling``setting is True.
         This happens because branch searches may need XS.
         """
         if self._latticePhysicsFrequency == LatticePhysicsFrequency.BOC:

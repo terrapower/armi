@@ -102,10 +102,9 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
 
         Notes
         -----
-        Unlike other interactions, self.o.r.core.lib is not set to
-        None by the BOC interaction, so this test does not have a
-        good means of verifying the correct function,
-        so we use self.testVerification instead.
+        Unlike other interactions, self.o.r.core.lib is not set to None by the BOC
+        interaction, so this test does not have a good means of verifying the
+        correct function, so we use self.testVerification instead.
         """
         self.latticeInterface._latticePhysicsFrequency = LatticePhysicsFrequency.never
         self.latticeInterface.interactBOL()
