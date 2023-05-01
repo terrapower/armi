@@ -24,7 +24,7 @@ is impossible. Would you like to switch to ___?"
 import re
 import os
 import shutil
-import ittertools
+import itertools
 
 from armi import context
 from armi import getPluginManagerOrFail
@@ -224,7 +224,7 @@ class Inspector:
         if correctionsMade:
             # find unused file path to store original settings as to avoid overwrite
             strSkeleton = "{}_old".format(self.cs.path.split(".yaml")[0])
-            for num in ittertools.count():
+            for num in itertools.count():
                 if num == 0:
                     renamePath = "{strSkeleton}.yaml"
                 else:
