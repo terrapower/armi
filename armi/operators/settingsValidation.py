@@ -24,6 +24,7 @@ is impossible. Would you like to switch to ___?"
 import re
 import os
 import shutil
+import ittertools
 
 from armi import context
 from armi import getPluginManagerOrFail
@@ -220,27 +221,21 @@ class Inspector:
                 )
             runLog.debug("{} has finished querying.".format(self.__class__.__name__))
 
-        # decide what to do with original settings file
         if correctionsMade:
-            oldFilePath = "{}_old.yaml".format(self.cs.path.split(".yaml")[0])
-            if self._csRelativePathExists(oldFilePath):
-                saveOldSettings = prompt(
-                    'INSPECTOR: At least one corrective query has been resolved and an "_old.yaml" settings file {} already exists.'.format(
-                        oldFilePath
-                    ),
-                    'Overwrite "_old.yaml" settings file to preserve originally submitted settings file?',
-                    "YES_NO",
-                    "NO_DEFAULT",
-                    "CANCEL",
-                )
-
+            # find unused file path to store original settings as to avoid overwrite
+            strSkeleton = "{}_old".format(self.cs.path.split(".yaml")[0])
+            for num in ittertools.count():
+                if num == 0:
+                    renamePath = "{strSkeleton}.yaml"
+                else:
+                    renamePath = "{strSkeleton}{num}.yaml"
+                if not self._csRelativePathExists(renamePath):
+                    break
             # preserve old file before saving settings file
-            if not self._csRelativePathExists(oldFilePath) or saveOldSettings:
-                runLog.extra(
-                    f"Preserving originally submitted settings file in `{oldFilePath}`"
-                )
-                shutil.copy(self.cs.path, oldFilePath)
-
+            runLog.important(
+                f"Preserving original settings file by renaming `{renamePath}`"
+            )
+            shutil.copy(self.cs.path, renamePath)
             # save settings file
             self.cs.writeToYamlFile(self.cs.path)
 
