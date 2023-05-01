@@ -25,6 +25,16 @@ settings:
     YA:
       geometry: 0D
       fluxFileLocation: rzmflxYA
+    ZA:
+      geometry: 1D cylinder
+      blockRepresentation: ComponentAverage1DCylinder
+      validBlockTypes:
+        - fuel
+      externalDriver: false
+      mergeIntoClad:
+        - gap
+      numInternalRings: 1
+      numExternalRings: 1
   cycleLength: 2000.0
   db: false
   detailAssemLocationsBOL:
