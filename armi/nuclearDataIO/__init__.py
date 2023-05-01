@@ -167,7 +167,9 @@ def _getGammaKeywords(cycle, node, suffix, xsID):
     else:
         # example: cycle0.gamiso
         if cycle is not None:
-            keywords = [f"cycle{cycle}node{node}"] if node is not None else [f"cycle{cycle}"]
+            keywords = (
+                [f"cycle{cycle}node{node}"] if node is not None else [f"cycle{cycle}"]
+            )
 
         elif xsID is not None:
             keywords = [xsID]
