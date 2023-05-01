@@ -91,7 +91,7 @@ def _getNeutronKeywords(cycle, node, suffix, xsID):
     else:
         # example: ISOTXS-c0
         if cycle is not None:
-            keywords = ["-c{cycle}n{node}"] if node is not None else ["-c", str(cycle)]
+            keywords = [f"-c{cycle}n{node}"] if node is not None else ["-c", str(cycle)]
         # example: ISOAA-test
         elif xsID is not None:
             keywords = [xsID]
@@ -167,7 +167,7 @@ def _getGammaKeywords(cycle, node, suffix, xsID):
     else:
         # example: cycle0.gamiso
         if cycle is not None:
-            keywords = ["cycle", str(cycle)] if node is not None else [f"cycle{cycle}"]
+            keywords = [f"cycle{cycle}node{node}"] if node is not None else [f"cycle{cycle}"]
 
         elif xsID is not None:
             keywords = [xsID]
