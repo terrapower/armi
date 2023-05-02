@@ -144,7 +144,6 @@ class FIXSRC(cccc.Stream):
         """
 
         with self.createRecord() as record:
-
             ni = self.fc["ninti"]
             nj = self.fc["nintj"]
 

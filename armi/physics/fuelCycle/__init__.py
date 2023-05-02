@@ -66,7 +66,6 @@ class FuelHandlerPlugin(plugins.ArmiPlugin):
         if not fuelHandlerNeedsToBeActive or "MCNP" in cs[CONF_NEUTRONICS_KERNEL]:
             return []
         else:
-
             enabled = cs["runType"] != operators.RunTypes.SNAPSHOTS
             return [
                 interfaces.InterfaceInfo(

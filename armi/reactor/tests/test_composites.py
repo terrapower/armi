@@ -49,7 +49,6 @@ class MockBP:
 def getDummyParamDefs():
     dummyDefs = parameters.ParameterDefinitionCollection()
     with dummyDefs.createBuilder() as pb:
-
         pb.defParam("type", units="none", description="Fake type")
     return dummyDefs
 
@@ -267,7 +266,6 @@ class TestCompositePattern(unittest.TestCase):
 
 
 class TestCompositeTree(unittest.TestCase):
-
     blueprintYaml = """
     name: test assembly
     height: [1, 1]  # 2 blocks

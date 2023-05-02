@@ -21,7 +21,6 @@ from armi.utils.units import getTk
 
 
 class Cs(Fluid):
-
     name = "Cesium"
 
     def setDefaultMassFracs(self):

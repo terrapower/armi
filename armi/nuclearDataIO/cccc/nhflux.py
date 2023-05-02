@@ -272,7 +272,6 @@ class NhfluxStream(cccc.StreamWithDataContainer):
         # an NHFLUX file produced by VARPOW (where 'iwnhfl'=1), the flux-only data has units
         # of W/cc (there is no current data written to the file).
         if self._data.fluxMomentsAll.size == 0:
-
             # Initialize using metadata info for reading
             totalMoments = (
                 self._metadata["nMom"]
@@ -314,7 +313,6 @@ class NhfluxStream(cccc.StreamWithDataContainer):
 
                 # Loop through axial nodes
                 for z in range(nz):
-
                     # Process flux moments
                     self._data.fluxMomentsAll[:, z, :, gEff] = self._rwFluxMoments3D(
                         self._data.fluxMomentsAll[:, z, :, gEff]
@@ -541,7 +539,6 @@ class NhfluxStream(cccc.StreamWithDataContainer):
         discarded the unwanted data at another level if that is much faster.
         """
         with self.createRecord() as record:
-
             nAssem = self._metadata["nintxy"]
             nSurf = self._metadata["nSurf"]
 
@@ -601,7 +598,6 @@ class NhfluxStream(cccc.StreamWithDataContainer):
         nuclearDataIO.NHFLUX._rwGeodstCoordMap2D
         """
         with self.createRecord() as record:
-
             nAssem = self._metadata["nintxy"]
             nSurf = 2
             nscoef = self._metadata["nscoef"]

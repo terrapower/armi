@@ -182,7 +182,6 @@ class ReportContent:
 
 
 class ReportNode(ABC):
-
     levelDict = collections.defaultdict(lambda: htmltree.H5())
     levelDict[0] = htmltree.H2()
     levelDict[1] = htmltree.H3()
@@ -328,7 +327,6 @@ class Image(ReportNode):
 
         xtn = os.path.splitext(imagePath)[1][1:]  # [1:] to cut out the period
         if xtn == "pdf":
-
             runLog.warning(
                 "'.pdf' images cannot be embedded into this HTML report. Path name was {}, cannot be inserted.".format(
                     imagePath

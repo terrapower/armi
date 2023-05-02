@@ -46,8 +46,8 @@ class LiteralEvalTest(unittest.TestCase):
         )
         self.assertEqual(parsing.tryLiteralEval("(1,2)"), (1, 2))
         self.assertEqual(parsing.tryLiteralEval((1, 2)), (1, 2))
-        self.assertEqual(parsing.tryLiteralEval("u'apple'"), u"apple")
-        self.assertEqual(parsing.tryLiteralEval(u"apple"), u"apple")
+        self.assertEqual(parsing.tryLiteralEval("u'apple'"), "apple")
+        self.assertEqual(parsing.tryLiteralEval("apple"), "apple")
         self.assertEqual(parsing.tryLiteralEval("apple"), "apple")
         self.assertEqual(parsing.tryLiteralEval(tuple), tuple)
 

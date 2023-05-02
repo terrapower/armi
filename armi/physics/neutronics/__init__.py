@@ -173,6 +173,7 @@ EXTRAPOLATED = "Extrapolated"
 ZEROFLUX = "ZeroSurfaceFlux"
 ZERO_INWARD_CURRENT = "ZeroInwardCurrent"
 
+
 # Common settings checks
 def gammaTransportIsRequested(cs):
     """

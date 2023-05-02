@@ -101,7 +101,6 @@ class AssemblyList(composites.Composite):
     """
 
     def __init__(self, name, parent=None):
-
         composites.Composite.__init__(self, name)
         self.parent = parent
         # make a Cartesian assembly rack by default. Anything that really cares about

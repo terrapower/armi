@@ -35,7 +35,6 @@ def getNeutronicsParameterDefinitions():
 def _getNeutronicsBlockParams():
     pDefs = parameters.ParameterDefinitionCollection()
     with pDefs.createBuilder() as pb:
-
         pb.defParam(
             "axMesh",
             units="",
@@ -340,7 +339,6 @@ def _getNeutronicsBlockParams():
         location=ParamLocation.EDGES,
         categories=[parameters.Category.detailedAxialExpansion, "depletion"],
     ) as pb:
-
         pb.defParam(
             "pointsEdgeFastFluxFr",
             units=None,

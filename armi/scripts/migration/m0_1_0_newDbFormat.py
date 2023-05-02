@@ -75,7 +75,6 @@ def _migrateDatabase(databasePath, preCollector, visitor):
     newDBName = root + "_migrated" + ext
     runLog.info("Copying database from {} to {}".format(databasePath, newDBName))
     with h5py.File(newDBName, "w") as newDB, h5py.File(databasePath, "r") as oldDB:
-
         preCollection = preCollector(oldDB)
 
         def closure(name, dataset):
@@ -96,7 +95,6 @@ def _migrateDatabase(databasePath, preCollector, visitor):
 
 
 def _visit(newDB, preCollection, name, dataset):
-
     updated = False
     # runLog.important(f"Visiting Dataset {name}")
     path = name.split("/")

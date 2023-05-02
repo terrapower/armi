@@ -113,7 +113,6 @@ class OperatorTests(unittest.TestCase):
             self.o.loadState(0, 1)
 
     def test_setStateToDefault(self):
-
         # reset the runType for testing
         self.assertEqual(self.o.cs[CONF_RUN_TYPE], "Standard")
         self.o.cs = self.o.cs.modified(newSettings={"runType": "fake"})

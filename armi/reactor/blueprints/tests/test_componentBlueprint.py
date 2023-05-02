@@ -25,7 +25,6 @@ from armi.reactor.flags import Flags
 
 
 class TestComponentBlueprint(unittest.TestCase):
-
     componentString = r"""
 blocks:
     block: &block

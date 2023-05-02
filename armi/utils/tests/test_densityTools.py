@@ -44,7 +44,6 @@ class Test_densityTools(unittest.TestCase):
         self.assertAlmostEqual(sum(mass.values()), 1.0)
 
     def test_getChemicals(self):
-
         u235 = nuclideBases.byName["U235"]
         u238 = nuclideBases.byName["U238"]
         o16 = nuclideBases.byName["O16"]

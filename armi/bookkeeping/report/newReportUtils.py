@@ -440,7 +440,6 @@ def insertSettingsData(cs, report):
         report[COMPREHENSIVE_REPORT][CASE_PARAMETERS].addRow([key, cs[key]])
 
     for key in cs.environmentSettings:
-
         report[COMPREHENSIVE_REPORT][SETTINGS].addRow([key, str(cs[key])])
     for key in ["reloadDBName", "startCycle", "startNode"]:
         report[COMPREHENSIVE_REPORT][SNAPSHOT].addRow([key, cs[key]])
@@ -564,7 +563,6 @@ def createDimensionReport(comp):
     }
     reportGroup = None
     for componentType, componentReport in REPORT_GROUPS.items():
-
         if comp.hasFlags(componentType):
             reportGroup = newReports.Table(componentReport.capitalize())
             break
@@ -627,7 +625,6 @@ def createDimensionReport(comp):
 def insertCoreAndAssemblyMaps(
     r, cs, report, blueprint, generateFullCoreMap=False, showBlockAxMesh=True
 ):
-
     r"""Create core and assembly design plots
 
     Parameters

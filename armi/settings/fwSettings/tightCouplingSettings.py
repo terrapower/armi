@@ -71,7 +71,6 @@ def serializeTightCouplingSettings(
 
     output = {}
     for interfaceFunction, options in tightCouplingSettingsDict.items():
-
         # Setting the value to an empty dictionary
         # if it is set to a None or an empty
         # dictionary.

@@ -409,7 +409,6 @@ class TestNuclide(unittest.TestCase):
 
 class test_getAAAZZZSId(unittest.TestCase):
     def test_AAAZZZSNameGenerator(self):
-
         referenceNucNames = [
             ("C", "120060"),
             ("U235", "2350920"),

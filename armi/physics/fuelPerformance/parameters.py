@@ -26,7 +26,6 @@ def getFuelPerformanceParameterDefinitions():
 def _getFuelPerformanceBlockParams():
     pDefs = parameters.ParameterDefinitionCollection()
     with pDefs.createBuilder(default=0.0, location=ParamLocation.AVERAGE) as pb:
-
         pb.defParam(
             "fuelCladLocked",
             units="",

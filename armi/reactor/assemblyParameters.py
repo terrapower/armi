@@ -45,7 +45,6 @@ def getAssemblyParameterDefinitions():
         )
 
     with pDefs.createBuilder(location=ParamLocation.CENTROID) as pb:
-
         pb.defParam(
             "orientation",
             units="degrees",
@@ -57,7 +56,6 @@ def getAssemblyParameterDefinitions():
         )
 
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, default=0.0) as pb:
-
         pb.defParam(
             "arealPd",
             units="MW/m^2",
@@ -188,7 +186,6 @@ def getAssemblyParameterDefinitions():
     with pDefs.createBuilder(
         location="N/A", default=0.0, categories=["control rods"]
     ) as pb:
-
         pb.defParam(
             "crCriticalFraction",
             units="",
@@ -242,7 +239,6 @@ def getAssemblyParameterDefinitions():
     with pDefs.createBuilder(
         location=ParamLocation.AVERAGE, default=0.0, categories=["thermal hydraulics"]
     ) as pb:
-
         pb.defParam("THdeltaPNoGrav", units="Pa", description="?")
 
         pb.defParam(
@@ -295,7 +291,6 @@ def getAssemblyParameterDefinitions():
         )
 
     with pDefs.createBuilder() as pb:
-
         pb.defParam(
             "type",
             units="?",
@@ -316,7 +311,6 @@ def getAssemblyParameterDefinitions():
         )
 
     with pDefs.createBuilder(default=0.0) as pb:
-
         pb.defParam("Pos", units="?", description="?", location="?")
 
         pb.defParam("Ring", units="?", description="?", location="?")
@@ -380,7 +374,6 @@ def getAssemblyParameterDefinitions():
         )
 
     with pDefs.createBuilder(categories=["radialGeometry"]) as pb:
-
         pb.defParam(
             "AziMesh",
             units="?",

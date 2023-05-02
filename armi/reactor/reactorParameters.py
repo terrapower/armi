@@ -84,7 +84,6 @@ def defineReactorParameters():
     with pDefs.createBuilder(
         location=ParamLocation.AVERAGE, default=0.0, categories=["economics"]
     ) as pb:
-
         pb.defParam(
             "eFeedMT",
             units="MT",
@@ -127,7 +126,6 @@ def defineCoreParameters():
         )
 
     with pDefs.createBuilder(location=ParamLocation.CENTROID) as pb:
-
         pb.defParam(
             "orientation",
             units="degrees",
@@ -139,7 +137,6 @@ def defineCoreParameters():
         )
 
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, default=0.0) as pb:
-
         pb.defParam("currentPercentExpanded", units="", description="")
 
         pb.defParam(
@@ -149,7 +146,6 @@ def defineCoreParameters():
         pb.defParam("numMoves", units="", description="numMoves", default=0)
 
     with pDefs.createBuilder(location="N/A", categories=["control rods"]) as pb:
-
         pb.defParam(
             "crMostValuablePrimaryRodLocation",
             default="",
@@ -194,7 +190,6 @@ def defineCoreParameters():
         )
 
     with pDefs.createBuilder() as pb:
-
         pb.defParam(
             "axialMesh",
             units="cm",
@@ -204,7 +199,6 @@ def defineCoreParameters():
         )
 
     with pDefs.createBuilder(default=0.0, location="N/A") as pb:
-
         pb.defParam(
             "referenceBlockAxialMesh",
             units="cm",
@@ -315,7 +309,6 @@ def defineCoreParameters():
     with pDefs.createBuilder(
         location=ParamLocation.AVERAGE, default=0.0, categories=["thermal hydraulics"]
     ) as pb:
-
         pb.defParam(
             "THmaxDeltaPPump",
             units="Pa",
@@ -335,7 +328,6 @@ def defineCoreParameters():
     with pDefs.createBuilder(
         location=ParamLocation.AVERAGE, default=0.0, categories=["neutronics"]
     ) as pb:
-
         pb.defParam(
             "power",
             units="W",
@@ -467,7 +459,6 @@ def defineCoreParameters():
         location=ParamLocation.AVERAGE,
         categories=["reactivity coefficients"],
     ) as pb:
-
         pb.defParam("axial", units="cents/K", description="Axial expansion coefficient")
 
         pb.defParam("doppler", units="cents/K", description="Doppler coefficient")
@@ -523,7 +514,6 @@ def defineCoreParameters():
         location=ParamLocation.AVERAGE,
         categories=["reactivity coefficients", "kinetics"],
     ) as pb:
-
         pb.defParam(
             "beta",
             units=None,
@@ -706,7 +696,6 @@ def defineCoreParameters():
     with pDefs.createBuilder(
         location=ParamLocation.AVERAGE, categories=["equilibrium"]
     ) as pb:
-
         pb.defParam("boecKeff", units=None, description="BOEC Keff", default=0.0)
 
         pb.defParam(
@@ -729,7 +718,6 @@ def defineCoreParameters():
     with pDefs.createBuilder(
         location=ParamLocation.AVERAGE, categories=["equilibrium"]
     ) as pb:
-
         pb.defParam(
             "breedingRatio",
             units="N/A",

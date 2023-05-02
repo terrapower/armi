@@ -148,7 +148,6 @@ def _collectObjectData(
     includeParams: Optional[Set[str]] = None,
     excludeParams: Optional[Set[str]] = None,
 ) -> Dict[str, Any]:
-
     allData = dict()
 
     for pDef in type(objs[0]).pDefs.toWriteToDB(parameters.SINCE_ANYTHING):

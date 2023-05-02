@@ -26,7 +26,6 @@ from armi.reactor.flags import Flags
 
 
 class TestCustomIsotopics(unittest.TestCase):
-
     yamlString = r"""
 nuclide flags:
     U238: {burn: true, xs: true}

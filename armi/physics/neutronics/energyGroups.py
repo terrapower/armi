@@ -291,6 +291,7 @@ GROUP_STRUCTURE["ANL2082"] = _create_anl_energies_with_group_lethargies(
     itertools.repeat(1, 2082)
 )
 
+
 # fmt: on
 def _create_multigroup_structures_on_finegroup_energies(
     multigroup_energy_bounds, finegroup_energy_bounds

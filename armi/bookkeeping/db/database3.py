@@ -1366,7 +1366,6 @@ class Database3:
 
                     # iterating of numpy is not fast..
                     for c, val in zip(reorderedComps, data.tolist()):
-
                         if isinstance(val, list):
                             val = numpy.array(val)
 

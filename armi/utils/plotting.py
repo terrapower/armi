@@ -371,7 +371,7 @@ def plotFaceMap(
 
     # make it 2-D, for now...
     shuffleArrows = shuffleArrows or []
-    for (sourceCoords, destinationCoords) in shuffleArrows:
+    for sourceCoords, destinationCoords in shuffleArrows:
         ax.annotate(
             "",
             xy=destinationCoords[:2],
@@ -1269,7 +1269,6 @@ def _makeComponentPatch(component, position, cold):
             - (component.getDimension("id", cold=cold) / 2),
         )
     elif isinstance(component, Circle):
-
         blockPatch = matplotlib.patches.Wedge(
             (x, y),
             component.getDimension("od", cold=cold) / 2,

@@ -60,7 +60,7 @@ class IORecord:
     _intSize = struct.calcsize("i")
     _longSize = struct.calcsize("q")
     maxsize = len(
-        str(2 ** 31 - 1)
+        str(2**31 - 1)
     )  # limit to max short even though Python3 can go bigger.
     _intFormat = " {{:>+{}}}".format(maxsize)
     _intLength = maxsize + 1

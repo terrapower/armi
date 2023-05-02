@@ -274,7 +274,6 @@ class XSCollection:
         """Compare the cross sections between two XSCollections objects."""
         equal = True
         for xsName in ALL_COLLECTION_DATA:
-
             myXsData = self.__dict__[xsName]
             theirXsData = other.__dict__[xsName]
 

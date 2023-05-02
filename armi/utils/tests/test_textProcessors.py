@@ -74,7 +74,6 @@ class YamlIncludeTest(unittest.TestCase):
 
 
 class SequentialReaderTests(unittest.TestCase):
-
     textStream = """This is an example test stream.
 This has multiple lines in it and below it contains a set of data that
 can be found using a regular expression pattern.

@@ -143,7 +143,7 @@ class MpiAction:
             self.o = self.r = self.cs = None
         try:
             return mpiFunction(obj, root=0)
-        except (cPickle.PicklingError) as error:
+        except cPickle.PicklingError as error:
             runLog.error("Failed to {} {}.".format(mpiFunction.__name__, obj))
             runLog.error(error)
             raise

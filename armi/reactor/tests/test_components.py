@@ -677,7 +677,6 @@ class TestComponentExpansion(unittest.TestCase):
         self.assertAlmostEqual(circle2.getArea(), circle1AdjustTo2.getArea())
 
         for circle in [circle1, circle2, circle1AdjustTo2]:
-
             self.assertAlmostEqual(
                 circle.getMassDensity(),
                 circle.material.density(Tc=circle.temperatureInC),
@@ -989,7 +988,7 @@ class TestHexagon(TestShapedComponent):
         mult = self.component.getDimension("mult")
         op = self.component.getDimension("op")
         ip = self.component.getDimension("ip")
-        ref = math.sqrt(3.0) / 2.0 * (op ** 2 - ip ** 2) * mult
+        ref = math.sqrt(3.0) / 2.0 * (op**2 - ip**2) * mult
         self.assertAlmostEqual(cur, ref)
 
     def test_thermallyExpands(self):
@@ -1050,7 +1049,7 @@ class TestHoledHexagon(TestShapedComponent):
         odHole = self.component.getDimension("holeOD")
         nHoles = self.component.getDimension("nHoles")
         mult = self.component.getDimension("mult")
-        hexarea = math.sqrt(3.0) / 2.0 * (op ** 2)
+        hexarea = math.sqrt(3.0) / 2.0 * (op**2)
         holeArea = nHoles * math.pi * ((odHole / 2.0) ** 2)
         ref = mult * (hexarea - holeArea)
         cur = self.component.getArea()
@@ -1101,7 +1100,7 @@ class TestHexHoledCircle(TestShapedComponent):
         od = self.component.getDimension("od")
         holeOP = self.component.getDimension("holeOP")
         mult = self.component.getDimension("mult")
-        hexarea = math.sqrt(3.0) / 2.0 * (holeOP ** 2)
+        hexarea = math.sqrt(3.0) / 2.0 * (holeOP**2)
         holeArea = math.pi * ((od / 2.0) ** 2)
         ref = mult * (holeArea - hexarea)
         cur = self.component.getArea()
@@ -1150,7 +1149,7 @@ class TestHoledRectangle(TestShapedComponent):
 
     def test_getBoundingCircleOuterDiameter(self):
         # hypotenuse
-        ref = (self.length ** 2 + self.width ** 2) ** 0.5
+        ref = (self.length**2 + self.width**2) ** 0.5
         cur = self.component.getBoundingCircleOuterDiameter()
         self.assertAlmostEqual(ref, cur)
 
@@ -1180,7 +1179,6 @@ class TestHoledRectangle(TestShapedComponent):
 
 
 class TestHoledSquare(TestHoledRectangle):
-
     componentCls = HoledSquare
 
     componentDims = {
@@ -1236,11 +1234,11 @@ class TestHelix(TestShapedComponent):
         outerDiameter = self.component.getDimension("od")
         mult = self.component.getDimension("mult")
         c = axialPitch / (2.0 * math.pi)
-        helixFactor = math.sqrt((helixDiameter / 2.0) ** 2 + c ** 2) / c
+        helixFactor = math.sqrt((helixDiameter / 2.0) ** 2 + c**2) / c
         ref = (
             mult
             * math.pi
-            * (outerDiameter ** 2 / 4.0 - innerDiameter ** 2 / 4.0)
+            * (outerDiameter**2 / 4.0 - innerDiameter**2 / 4.0)
             * helixFactor
         )
         self.assertAlmostEqual(cur, ref)
@@ -1355,7 +1353,7 @@ class TestRadialSegment(TestShapedComponent):
         outerTheta = self.component.getDimension("outer_theta")
         innerTheta = self.component.getDimension("inner_theta")
         height = self.component.getDimension("height")
-        radialArea = math.pi * (outerRad ** 2 - innerRad ** 2)
+        radialArea = math.pi * (outerRad**2 - innerRad**2)
         aziFraction = (outerTheta - innerTheta) / (math.pi * 2.0)
         ref = mult * radialArea * aziFraction * height
         cur = self.component.getVolume()
@@ -1388,7 +1386,7 @@ class TestDifferentialRadialSegment(TestShapedComponent):
         outerTheta = self.component.getDimension("outer_theta")
         innerTheta = self.component.getDimension("inner_theta")
         height = self.component.getDimension("height")
-        radialArea = math.pi * (outerRad ** 2 - innerRad ** 2)
+        radialArea = math.pi * (outerRad**2 - innerRad**2)
         aziFraction = (outerTheta - innerTheta) / (math.pi * 2.0)
         ref = mult * radialArea * aziFraction * height
         cur = self.component.getVolume()

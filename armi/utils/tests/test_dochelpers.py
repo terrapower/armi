@@ -29,7 +29,6 @@ class TestDocHelpers(unittest.TestCase):
     """Tests for the utility dochelpers functions."""
 
     def test_paramTable(self):
-
         table = generateParamTable(
             reactors.Core,
             reactorParameters.defineCoreParameters(),

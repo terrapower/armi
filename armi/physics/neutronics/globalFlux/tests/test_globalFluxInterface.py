@@ -31,6 +31,7 @@ from armi.reactor.tests import test_blocks
 from armi.reactor.tests import test_reactors
 from armi.tests import ISOAA_PATH
 
+
 # pylint: disable=abstract-method
 class MockReactorParams:
     def __init__(self):

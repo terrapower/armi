@@ -222,7 +222,7 @@ class Uranium(FuelMaterial):
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("thermal conductivity", Tk)
 
-        kU = 21.73 + (0.01591 * Tk) + (0.000005907 * Tk ** 2)
+        kU = 21.73 + (0.01591 * Tk) + (0.000005907 * Tk**2)
         return kU
 
     def heatCapacity(self, Tk: float = None, Tc: float = None) -> float:

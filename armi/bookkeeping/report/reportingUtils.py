@@ -142,7 +142,7 @@ def writeWelcomeHeaders(o, cs):
     def _writeInputFileInformation(cs):
         """Create a table that contains basic input file information."""
         inputFileData = []
-        for (label, fileName, shaHash) in _listInputFiles(cs):
+        for label, fileName, shaHash in _listInputFiles(cs):
             inputFileData.append((label, fileName, shaHash))
 
         runLog.header("=========== Input File Information ===========")

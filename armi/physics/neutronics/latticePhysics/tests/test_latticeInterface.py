@@ -35,6 +35,7 @@ from armi.reactor.assemblies import (
 from armi.nuclearDataIO.cccc import isotxs
 from armi.tests import ISOAA_PATH
 
+
 # As an interface, LatticePhysicsInterface must be subclassed to be used
 class LatticeInterfaceTester(LatticePhysicsInterface):
     def __init__(self, r, cs):

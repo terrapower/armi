@@ -77,7 +77,7 @@ def adjustSmearDensity(obj, value, bolBlock=None):
         newID = fuelOD * math.sqrt(1.0 - value)
         fuel.setDimension("id", newID)
     else:  # Slug fuel (Adjust fuel OD to get new smear density)
-        newOD = math.sqrt(value * cladID ** 2)
+        newOD = math.sqrt(value * cladID**2)
         fuel.setDimension("od", newOD)
 
     # update things like hm at BOC and smear density parameters.

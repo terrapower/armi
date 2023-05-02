@@ -1468,7 +1468,6 @@ class Core(composites.Composite):
         if assemblyName:
             return self.getAssemblyByName(assemblyName)
         for a in self.getAssemblies(*args, **kwargs):
-
             if a.getLocation() == locationString:
                 return a
             if a.getNum() == assemNum:
@@ -2079,7 +2078,7 @@ class Core(composites.Composite):
 
         for b in blockList:
             if flux2Weight:
-                weight = b.p.flux ** 2.0
+                weight = b.p.flux**2.0
             else:
                 weight = 1.0
             for c in b.iterComponents(typeSpec):

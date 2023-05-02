@@ -43,5 +43,5 @@ class ZnO(Material):
         self.checkPropertyTempRange("linear expansion percent", Tk)
 
         return (
-            -1.9183e-10 * Tk ** 3 + 6.5944e-07 * Tk ** 2 + 5.2992e-05 * Tk - 5.2631e-02
+            -1.9183e-10 * Tk**3 + 6.5944e-07 * Tk**2 + 5.2992e-05 * Tk - 5.2631e-02
         )

@@ -344,14 +344,13 @@ class Torus(ShapedComponent):
         vol = (
             mult
             * dTh
-            * (3 * R * dPhi * dRad * totRad + 2 * (r1 ** 3 - r2 ** 3) * dAngle)
+            * (3 * R * dPhi * dRad * totRad + 2 * (r1**3 - r2**3) * dAngle)
             / 6.0
         )
         return vol
 
 
 class RadialSegment(ShapedComponent):
-
     is3D = True
 
     THERMAL_EXPANSION_DIMS = {}
@@ -426,7 +425,7 @@ class RadialSegment(ShapedComponent):
         outerTheta = self.getDimension("outer_theta")
         innerTheta = self.getDimension("inner_theta")
         height = self.getDimension("height")
-        radialArea = math.pi * (outerRad ** 2 - innerRad ** 2)
+        radialArea = math.pi * (outerRad**2 - innerRad**2)
         aziFraction = (outerTheta - innerTheta) / (math.pi * 2.0)
         vol = mult * radialArea * aziFraction * height
         return vol

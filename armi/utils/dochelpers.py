@@ -98,7 +98,6 @@ class ExecDirective(Directive):
             result = locals()["usermethod"]()
 
             if result is None:
-
                 raise self.error(
                     "Return value needed! The body of your `.. exec::` is used as a "
                     "function call that must return a value."

@@ -48,7 +48,6 @@ class EquilibriumShuffler(FuelHandler):
 
 
 def getFactorList(cycle, cs=None, fallBack=False):
-
     # prefer to keep these 0 through 1 since this is what the branch search can do.
     defaultFactorList = {}
     factorSearchFlags = []

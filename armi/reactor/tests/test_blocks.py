@@ -1082,7 +1082,6 @@ class Block_TestCase(unittest.TestCase):
         self.assertAlmostEqual(cur, ref, places=places)
 
     def test_add(self):
-
         numComps = len(self.block.getComponents())
 
         fuelDims = {"Tinput": 25.0, "Thot": 600, "od": 0.76, "id": 0.00, "mult": 127.0}
@@ -1102,7 +1101,6 @@ class Block_TestCase(unittest.TestCase):
         )
 
     def test_getComponentNames(self):
-
         cur = self.block.getComponentNames()
         ref = set(
             [
@@ -1386,7 +1384,7 @@ class Block_TestCase(unittest.TestCase):
             fracs[c.getName()] = a / tot
 
         places = 6
-        for (c, a) in cur:
+        for c, a in cur:
             self.assertAlmostEqual(a, fracs[c.getName()], places=places)
 
         self.assertAlmostEqual(sum(fracs.values()), sum([a for c, a in cur]))
@@ -1575,7 +1573,7 @@ class Block_TestCase(unittest.TestCase):
         self.assertAlmostEqual(
             blockPitch, self.block.getComponent(Flags.INTERCOOLANT).getDimension("op")
         )
-        totalHexArea = blockPitch ** 2 * math.sqrt(3) / 2.0
+        totalHexArea = blockPitch**2 * math.sqrt(3) / 2.0
 
         clad = self.block.getComponent(Flags.CLAD)
         pinArea = (
@@ -1752,7 +1750,7 @@ class HexBlock_TestCase(unittest.TestCase):
 
     def test_getArea(self):
         cur = self.HexBlock.getArea()
-        ref = math.sqrt(3) / 2.0 * 70.6 ** 2
+        ref = math.sqrt(3) / 2.0 * 70.6**2
         places = 6
         self.assertAlmostEqual(cur, ref, places=places)
 
@@ -1831,7 +1829,7 @@ class HexBlock_TestCase(unittest.TestCase):
         self.assertGreater(min(x), -side)
 
         # center pin should be at 0
-        mags = [(xi ** 2 + yi ** 2, (xi, yi)) for xi, yi, zi in xyz]
+        mags = [(xi**2 + yi**2, (xi, yi)) for xi, yi, zi in xyz]
         _centerMag, (cx, cy) = min(mags)
         self.assertAlmostEqual(cx, 0.0)
         self.assertAlmostEqual(cy, 0.0)

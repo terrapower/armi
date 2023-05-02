@@ -81,7 +81,6 @@ def getMasterTimer():
 
 
 class MasterTimer:
-
     _instance = None
 
     def __init__(self):

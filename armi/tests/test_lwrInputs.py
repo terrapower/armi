@@ -34,7 +34,6 @@ TEST_INPUT_TITLE = "c5g7-settings"
 class C5G7ReactorTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-
         cls.directoryChanger = directoryChangers.DirectoryChanger(
             os.path.join(TEST_ROOT, "tutorials")
         )

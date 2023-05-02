@@ -44,4 +44,4 @@ class Cu(Material):
         """
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("linear expansion percent", Tk)
-        return 5.0298e-07 * Tk ** 2 + 1.3042e-03 * Tk - 4.3097e-01
+        return 5.0298e-07 * Tk**2 + 1.3042e-03 * Tk - 4.3097e-01

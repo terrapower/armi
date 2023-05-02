@@ -30,7 +30,6 @@ def getBlockParameterDefinitions():
     pDefs = parameters.ParameterDefinitionCollection()
 
     with pDefs.createBuilder(location=ParamLocation.CENTROID) as pb:
-
         pb.defParam(
             "orientation",
             units="degrees",
@@ -75,7 +74,6 @@ def getBlockParameterDefinitions():
     with pDefs.createBuilder(
         default=0.0, location=ParamLocation.AVERAGE, categories=["depletion"]
     ) as pb:
-
         pb.defParam(
             "burnupMWdPerKg",
             units="MWd/kg",
@@ -189,7 +187,6 @@ def getBlockParameterDefinitions():
     )
 
     with pDefs.createBuilder(default=0.0, location=ParamLocation.AVERAGE) as pb:
-
         pb.defParam("bu", units="", description="?")
 
         def buGroup(self, buGroupChar):  # pylint: disable=method-hidden
@@ -347,7 +344,6 @@ def getBlockParameterDefinitions():
         )
 
     with pDefs.createBuilder() as pb:
-
         pb.defParam(
             "topIndex",
             units="",
@@ -431,7 +427,6 @@ def getBlockParameterDefinitions():
         location=ParamLocation.AVERAGE,
         categories=["reactivity coefficients"],
     ) as pb:
-
         pb.defParam(
             "VoideddopplerWorth",
             units="dk/kk' K**(n-1)",
@@ -604,7 +599,6 @@ def getBlockParameterDefinitions():
             "mass normalized",
         ],
     ) as pb:
-
         # FUEL COEFFICIENTS
         pb.defParam(
             "rxFuelDensityCoeffPerMass",
@@ -696,7 +690,6 @@ def getBlockParameterDefinitions():
             "temperature normalized",
         ],
     ) as pb:
-
         # FUEL COEFFICIENTS
         pb.defParam(
             "rxFuelDensityCoeffPerTemp",
@@ -780,7 +773,6 @@ def getBlockParameterDefinitions():
         )
 
     with pDefs.createBuilder(default=0.0) as pb:
-
         pb.defParam(
             "assemNum",
             units="None",

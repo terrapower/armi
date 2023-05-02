@@ -21,6 +21,7 @@ from armi.reactor import geometry
 from armi.utils import directoryChangers
 from armi.physics import executers
 
+
 # pylint: disable=abstract-method
 class MockReactorParams:
     def __init__(self):

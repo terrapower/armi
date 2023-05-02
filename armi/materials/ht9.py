@@ -68,7 +68,7 @@ class HT9(materials.Material):
         """
         tk = units.getTk(Tc, Tk)
         self.checkPropertyTempRange("linear expansion", tk)
-        return -0.16256 + 1.62307e-4 * tk + 1.42357e-6 * tk ** 2 - 5.50344e-10 * tk ** 3
+        return -0.16256 + 1.62307e-4 * tk + 1.42357e-6 * tk**2 - 5.50344e-10 * tk**3
 
     def thermalConductivity(self, Tk=None, Tc=None):
         """
@@ -82,7 +82,7 @@ class HT9(materials.Material):
         return (
             29.65
             - 6.668e-2 * Tk
-            + 2.184e-4 * Tk ** 2
-            - 2.527e-7 * Tk ** 3
-            + 9.621e-11 * Tk ** 4
+            + 2.184e-4 * Tk**2
+            - 2.527e-7 * Tk**3
+            + 9.621e-11 * Tk**4
         )

@@ -132,7 +132,6 @@ class MaterialFindingTests(unittest.TestCase):
 
 
 class Californium_TestCase(_Material_Test, unittest.TestCase):
-
     MAT_CLASS = materials.Californium
 
     def test_pseudoDensity(self):

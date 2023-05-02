@@ -212,7 +212,7 @@ class TestHexGrid(unittest.TestCase):
         jDirection = tuple(direction[1] for direction in unitSteps)
         for directionVector in (iDirection, jDirection):
             self.assertAlmostEqual(
-                (sum(val ** 2 for val in directionVector)) ** 0.5,
+                (sum(val**2 for val in directionVector)) ** 0.5,
                 1.0,
                 msg=f"Direction vector {directionVector} should have "
                 "magnitude 1 for pitch 1.",

@@ -80,7 +80,6 @@ class ReportsEntryPoint(entryPoint.EntryPoint):
         # self.createOptionFromSetting("imperialunits", "-i")
 
     def invoke(self):
-
         nodes = self.args.nodes
 
         if self.args.h5db is None:
@@ -105,7 +104,6 @@ class ReportsEntryPoint(entryPoint.EntryPoint):
                 with directoryChangers.ForcedCreationDirectoryChanger(
                     "reportsOutputFiles"
                 ):
-
                     dbNodes = list(db.genTimeSteps())
                     cs = db.loadCS()
                     if self.args.bp is None:

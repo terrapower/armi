@@ -22,7 +22,6 @@ from armi.utils.units import getTk
 
 
 class Alloy200(Material):
-
     name = "Alloy200"
     references = {
         "linearExpansion": [

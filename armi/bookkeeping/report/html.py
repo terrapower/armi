@@ -209,7 +209,6 @@ def writeStandardReportTemplate(f, report, caseTitle=""):
                     f.write(caseTitle)
 
         with Body(f):
-
             with Div(
                 f,
                 attrs={
@@ -219,7 +218,6 @@ def writeStandardReportTemplate(f, report, caseTitle=""):
             ):
                 with Div(f, attrs={"class": "container"}):
                     with Div(f, attrs={"class": "navbar-header"}):
-
                         with Span(
                             f, attrs={"class": "navbar-text navbar-version pull-left"}
                         ):
@@ -260,7 +258,6 @@ def writeStandardReportTemplate(f, report, caseTitle=""):
                                 f.write(datetime.datetime.now().isoformat())
 
             with Div(f, attrs={"class": "container", "style": "padding-top: 20px;"}):
-
                 with Div(f, attrs={"class": "page-header"}):
                     with H1(f):
                         f.write(report.title)

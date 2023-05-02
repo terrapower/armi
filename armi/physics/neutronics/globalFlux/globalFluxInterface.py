@@ -52,6 +52,7 @@ ORDER = interfaces.STACK_ORDER.FLUX
 RX_ABS_MICRO_LABELS = ["nGamma", "fission", "nalph", "np", "nd", "nt"]
 RX_PARAM_NAMES = ["rateCap", "rateFis", "rateProdN2n", "rateProdFis", "rateAbs"]
 
+
 # pylint: disable=too-many-public-methods
 class GlobalFluxInterface(interfaces.Interface):
     """

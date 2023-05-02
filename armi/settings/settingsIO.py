@@ -337,7 +337,7 @@ class SettingsWriter:
 
             attribs = settingObject.getCustomAttributes().items()
             settingDatum = {}
-            for (attribName, attribValue) in attribs:
+            for attribName, attribValue in attribs:
                 if isinstance(attribValue, type):
                     attribValue = attribValue.__name__
                 settingDatum[attribName] = attribValue

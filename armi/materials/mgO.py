@@ -51,4 +51,4 @@ class MgO(Material):
         Tc = getTc(Tc, Tk)
         Tk = getTk(Tc=Tc)
         self.checkPropertyTempRange("linear expansion percent", Tk)
-        return 1.0489e-5 * Tc + 6.0458e-9 * Tc ** 2 - 2.6875e-12 * Tc ** 3
+        return 1.0489e-5 * Tc + 6.0458e-9 * Tc**2 - 2.6875e-12 * Tc**3

@@ -96,7 +96,7 @@ class Inconel600(Material):
         """
         Tc = getTc(Tc, Tk)
         self.checkPropertyTempRange("thermal conductivity", Tc)
-        thermalCond = 3.4938e-6 * Tc ** 2 + 1.3403e-2 * Tc + 14.572
+        thermalCond = 3.4938e-6 * Tc**2 + 1.3403e-2 * Tc + 14.572
         return thermalCond  # W/m-C
 
     def polyfitHeatCapacity(self, power=2):
@@ -136,7 +136,7 @@ class Inconel600(Material):
         """
         Tc = getTc(Tc, Tk)
         self.checkPropertyTempRange("heat capacity", Tc)
-        heatCapacity = 7.4021e-6 * Tc ** 2 + 0.20573 * Tc + 441.3
+        heatCapacity = 7.4021e-6 * Tc**2 + 0.20573 * Tc + 441.3
         return heatCapacity  # J/kg-C
 
     def polyfitLinearExpansionPercent(self, power=2):
@@ -198,7 +198,7 @@ class Inconel600(Material):
         """
         Tc = getTc(Tc, Tk)
         self.checkPropertyTempRange("linear expansion percent", Tc)
-        linExpPercent = 3.722e-7 * Tc ** 2 + 1.303e-3 * Tc - 2.863e-2
+        linExpPercent = 3.722e-7 * Tc**2 + 1.303e-3 * Tc - 2.863e-2
         return linExpPercent
 
     def linearExpansion(self, Tk=None, Tc=None):

@@ -91,7 +91,6 @@ class TestBlockCollectionMedian(unittest.TestCase):
         self.bc.extend(self.blockList)
 
     def test_createRepresentativeBlock(self):
-
         avgB = self.bc.createRepresentativeBlock()
         self.assertAlmostEqual(avgB.p.percentBu, 50.0)
 

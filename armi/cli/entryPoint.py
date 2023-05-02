@@ -223,7 +223,6 @@ class EntryPoint:
             self._createToggleFromSetting(settingName, helpMessage, additionalAlias)
 
         else:
-
             choices = None
             if suppressHelp:
                 helpMessage = argparse.SUPPRESS

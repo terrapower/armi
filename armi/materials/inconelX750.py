@@ -126,7 +126,7 @@ class InconelX750(Material):
         """
         Tc = getTc(Tc, Tk)
         self.checkPropertyTempRange("thermal conductivity", Tc)
-        thermalCond = 1.4835e-6 * Tc ** 2 + 1.2668e-2 * Tc + 11.632
+        thermalCond = 1.4835e-6 * Tc**2 + 1.2668e-2 * Tc + 11.632
         return thermalCond  # W/m-C
 
     def polyfitHeatCapacity(self, power=3):
@@ -167,7 +167,7 @@ class InconelX750(Material):
         Tc = getTc(Tc, Tk)
         self.checkPropertyTempRange("heat capacity", Tc)
         heatCapacity = (
-            9.2261e-7 * Tc ** 3 - 9.6368e-4 * Tc ** 2 + 4.7778e-1 * Tc + 420.55
+            9.2261e-7 * Tc**3 - 9.6368e-4 * Tc**2 + 4.7778e-1 * Tc + 420.55
         )
         return heatCapacity  # J/kg-C
 
@@ -230,7 +230,7 @@ class InconelX750(Material):
         """
         Tc = getTc(Tc, Tk)
         self.checkPropertyTempRange("linear expansion percent", Tc)
-        linExpPercent = 6.8378e-7 * Tc ** 2 + 1.056e-3 * Tc - 1.3161e-2
+        linExpPercent = 6.8378e-7 * Tc**2 + 1.056e-3 * Tc - 1.3161e-2
         return linExpPercent
 
     def linearExpansion(self, Tk=None, Tc=None):

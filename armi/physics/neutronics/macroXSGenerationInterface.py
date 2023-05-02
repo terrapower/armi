@@ -67,7 +67,6 @@ class MacroXSGenerator(mpiActions.MpiAction):
         )
 
     def invokeHook(self):
-
         # logic here gets messy due to all the default arguments in the calling
         # method. There exists a large number of permutations to be handled.
 

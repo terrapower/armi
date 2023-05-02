@@ -200,7 +200,7 @@ class _IsotxsIO(cccc.Stream):
     specified in http://t2.lanl.gov/codes/transx-hyper/isotxs.html.
     """
 
-    _FILE_LABEL = u"ISOTXS"
+    _FILE_LABEL = "ISOTXS"
 
     def __init__(self, fileName, lib, fileMode, getNuclideFunc):
         cccc.Stream.__init__(self, fileName, fileMode)

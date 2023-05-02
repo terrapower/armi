@@ -42,4 +42,4 @@ class Y2O3(Material):
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("linear expansion percent", Tk)
 
-        return 1.4922e-07 * Tk ** 2 + 6.2448e-04 * Tk - 1.8414e-01
+        return 1.4922e-07 * Tk**2 + 6.2448e-04 * Tk - 1.8414e-01

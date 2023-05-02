@@ -44,4 +44,4 @@ class Be9(Material):
         """
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("linear expansion percent", Tk)
-        return 1e-4 * (8.4305 + 1.1464e-2 * Tk - 2.9752e-6 * Tk ** 2)
+        return 1e-4 * (8.4305 + 1.1464e-2 * Tk - 2.9752e-6 * Tk**2)

@@ -234,7 +234,6 @@ class Table(Group):
         Group.__setitem__(self, name, value)
 
     def writeHTML(self, f):
-
         with html.Table(f, attrs={"class": "table table-striped table-hover "}):
             with html.H4(f, attrs={"style": self.titleStyle}):
                 f.writeEscaped(self.title)
@@ -260,7 +259,6 @@ class Table(Group):
 
 
 class Image(Group):
-
     count = 0
 
     def __init__(self, title, description=""):
@@ -268,9 +266,7 @@ class Image(Group):
         self._shortformTitle = title.replace(" ", "").lower()
 
     def writeHTML(self, f):
-
         if len(self.data.keys()) == 1:
-
             # single images don't get the standard Header as the same information is moved to it's Figure Caption
 
             with html.Img(
@@ -289,7 +285,6 @@ class Image(Group):
                     f.writeEscaped(self.description)
 
         elif len(self.data.keys()) > 1:
-
             with html.H4(f, attrs={"style": self.titleStyle}):
                 f.writeEscaped(self.title)
                 with html.Span(f, attrs={"style": self.descStyle}):

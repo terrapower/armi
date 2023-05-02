@@ -165,7 +165,7 @@ class _BlueprintsPluginCollector(yamlize.objects.ObjectType):
         else:
             pluginSections = pm.hook.defineBlueprintsSections()
             for plug in pluginSections:
-                for (attrName, section, resolver) in plug:
+                for attrName, section, resolver in plug:
                     assert isinstance(section, yamlize.Attribute)
                     if attrName in attrs:
                         raise plugins.PluginError(

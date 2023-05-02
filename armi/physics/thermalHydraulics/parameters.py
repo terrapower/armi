@@ -32,7 +32,6 @@ def _getBlockParams():
         saveToDB=False,
         categories=["thermal hydraulics"],
     ) as pb:
-
         pb.defParam(
             "pressureLossCoeffs",
             units="",
@@ -46,7 +45,6 @@ def _getBlockParams():
     with pDefs.createBuilder(
         default=0.0, location=ParamLocation.AVERAGE, categories=["thermal hydraulics"]
     ) as pb:
-
         pb.defParam(
             "THhotChannelCladMidwallT",
             units=units.DEGC,
@@ -64,7 +62,6 @@ def _getBlockParams():
     with pDefs.createBuilder(
         default=None, saveToDB=True, categories=["thermal hydraulics"]
     ) as pb:
-
         pb.defParam(
             "THhotChannelCladODT",
             units=units.DEGC,
@@ -147,7 +144,6 @@ def _getBlockParams():
     with pDefs.createBuilder(
         default=0.0, categories=["thInterface"], saveToDB=True
     ) as pb:
-
         pb.defParam(
             "THTfuelCL",
             units=units.DEGC,
@@ -271,7 +267,6 @@ def _getBlockParams():
     with pDefs.createBuilder(
         default=0.0, categories=["thermal hydraulics", "mongoose"], saveToDB=True
     ) as pb:
-
         pb.defParam(
             "THcornTemp",
             units=units.DEGC,

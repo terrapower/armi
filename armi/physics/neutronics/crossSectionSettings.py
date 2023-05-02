@@ -695,7 +695,6 @@ def serializeXSSettings(xsSettingsDict: Union[XSSettings, Dict]) -> Dict[str, Di
 
     output = {}
     for xsID, xsOpts in xsSettingsDict.items():
-
         # Setting the value to an empty dictionary
         # if it is set to a None or an empty
         # dictionary.

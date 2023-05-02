@@ -179,7 +179,6 @@ class GeodstStream(cccc.StreamWithDataContainer):
     def _rw2DRecord(self):
         """Read/write 1-D coarse mesh boundaries and fine mesh intervals."""
         with self.createRecord() as record:
-
             self._data.xmesh = record.rwList(
                 self._data.xmesh, "double", self._metadata["NCINTI"] + 1
             )
@@ -190,7 +189,6 @@ class GeodstStream(cccc.StreamWithDataContainer):
     def _rw3DRecord(self):
         """Read/write 2-D coarse mesh boundaries and fine mesh intervals."""
         with self.createRecord() as record:
-
             self._data.xmesh = record.rwList(
                 self._data.xmesh, "double", self._metadata["NCINTI"] + 1
             )
@@ -207,7 +205,6 @@ class GeodstStream(cccc.StreamWithDataContainer):
     def _rw4DRecord(self):
         """Read/write 3-D coarse mesh boundaries and fine mesh intervals."""
         with self.createRecord() as record:
-
             self._data.xmesh = record.rwList(
                 self._data.xmesh, "double", self._metadata["NCINTI"] + 1
             )
