@@ -87,7 +87,7 @@ setup(
             "docutils",
             "sphinx",
             "sphinx-rtd-theme",
-            "click",  
+            "click",
             "black",
             # for running jupyter dynamically in docs
             "sphinxcontrib-apidoc",
