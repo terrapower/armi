@@ -914,6 +914,11 @@ class Assembly_TestCase(unittest.TestCase):
         self.assertEqual(blocksAndHeights[1], (self.assembly[1], 10.0))
         self.assertEqual(blocksAndHeights[2], (self.assembly[2], 1.0))
 
+        # tests EPS option
+        blocksAndHeights = self.assembly.getBlocksBetweenElevations(9.9999, 21.0, EPS=1e-3)
+        self.assertEqual(blocksAndHeights[0], (self.assembly[1], 10.0))
+        self.assertEqual(blocksAndHeights[1], (self.assembly[2], 1.0))
+
         blocksAndHeights = self.assembly.getBlocksBetweenElevations(-10, 1000.0)
         self.assertEqual(len(blocksAndHeights), len(self.assembly))
         self.assertAlmostEqual(

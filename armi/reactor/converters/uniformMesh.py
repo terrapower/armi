@@ -677,7 +677,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
         for topMeshPoint in newMesh:
             overlappingBlockInfo = sourceAssem.getBlocksBetweenElevations(
-                bottom, topMeshPoint
+                bottom, topMeshPoint, EPS=1e-5
             )
             # This is not expected to occur given that the assembly mesh is consistent with
             # the blocks within it, but this is added for defensive programming and to
@@ -804,7 +804,9 @@ class UniformMeshGeometryConverter(GeometryConverter):
             destinationBlockHeight = destBlock.getHeight()
             # Determine which blocks in the uniform mesh source assembly are
             # within the lower and upper bounds of the destination block.
-            sourceBlocksInfo = sourceAssembly.getBlocksBetweenElevations(zLower, zUpper)
+            sourceBlocksInfo = sourceAssembly.getBlocksBetweenElevations(
+                zLower, zUpper, EPS=1e-5
+            )
 
             if abs(zUpper - zLower) < 1e-6 and not sourceBlocksInfo:
                 continue
