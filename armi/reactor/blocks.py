@@ -1248,7 +1248,7 @@ class Block(composites.Composite):
         """
         maxDim = -float("inf")
         largestComponent = None
-        for c in self.iterComponents():
+        for c in self:
             try:
                 dimVal = c.getDimension(dimension)
             except parameters.ParameterError:
