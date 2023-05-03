@@ -1504,7 +1504,7 @@ class Block(composites.Composite):
         --------
         armi.reactor.converters.axialExpansionChanger.py::ExpansionData::_setTargetComponents
         """
-        self.p.axialExpTargetComponent = targetComponent
+        self.p.axialExpTargetComponent = targetComponent.name
 
     def getPinCoordinates(self):
         """

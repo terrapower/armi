@@ -715,7 +715,7 @@ class TestDetermineTargetComponent(AxialExpansionTestBase, unittest.TestCase):
         )
         self.assertEqual(
             b.p.axialExpTargetComponent,
-            fuel,
+            fuel.name,
             msg=f"determineTargetComponent failed to recognize intended component: {fuel}",
         )
 
@@ -808,11 +808,13 @@ class TestDetermineTargetComponent(AxialExpansionTestBase, unittest.TestCase):
         b.setAxialExpTargetComp(duct)
         self.assertEqual(
             b.p.axialExpTargetComponent,
-            duct,
+            duct.name,
         )
 
         # check that target component is stored on expansionData object correctly
-        self.expData._componentDeterminesBlockHeight[b.p.axialExpTargetComponent] = True
+        self.expData._componentDeterminesBlockHeight[
+            b.getComponentByName(b.p.axialExpTargetComponent)
+        ] = True
         self.assertTrue(self.expData.isTargetComponent(duct))
 
 

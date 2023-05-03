@@ -800,7 +800,9 @@ class ExpansionData:
         """
         for b in self._a:
             if b.p.axialExpTargetComponent is not None:
-                self._componentDeterminesBlockHeight[b.p.axialExpTargetComponent] = True
+                self._componentDeterminesBlockHeight[
+                    b.getComponentByName(b.p.axialExpTargetComponent)
+                ] = True
             elif b.hasFlags(Flags.PLENUM) or b.hasFlags(Flags.ACLP):
                 self.determineTargetComponent(b, Flags.CLAD)
             elif b.hasFlags(Flags.DUMMY):
@@ -860,7 +862,7 @@ class ExpansionData:
                 f"Block {b}\nflagOfInterest {flagOfInterest}\nComponents {componentWFlag}"
             )
         self._componentDeterminesBlockHeight[componentWFlag[0]] = True
-        b.p.axialExpTargetComponent = componentWFlag[0]
+        b.p.axialExpTargetComponent = componentWFlag[0].name
 
     def _isFuelLocked(self, b):
         """physical/realistic implementation reserved for ARMI plugin

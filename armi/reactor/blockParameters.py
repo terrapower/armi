@@ -350,7 +350,7 @@ def getBlockParameterDefinitions():
         pb.defParam(
             "axialExpTargetComponent",
             units="",
-            description="The target component used for axial expansion and contraction of solid components.",
+            description="The name of the target component used for axial expansion and contraction of solid components.",
             default=None,
             saveToDB=True,
         )
