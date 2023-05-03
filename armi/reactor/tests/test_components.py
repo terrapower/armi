@@ -22,6 +22,7 @@ import unittest
 
 from armi.materials.material import Material
 from armi.reactor import components
+from armi.reactor import flags
 from armi.reactor.components import (
     Component,
     UnshapedComponent,
@@ -515,6 +516,13 @@ class TestCircle(TestShapedComponent):
         self.assertEqual(self.component.getNumberDensity("NA23"), 1.0)
         self.component.changeNDensByFactor(3.0)
         self.assertEqual(self.component.getNumberDensity("NA23"), 3.0)
+
+    def test_fuelMass(self):
+        nominalMass = self.component.getMass()
+        self.component.p.flags = flags.Flags.FUEL
+        self.assertEqual(self.component.getFuelMass(), nominalMass)
+        self.component.p.flags = flags.Flags.MODERATOR
+        self.assertEqual(self.component.getFuelMass(), 0.0)
 
 
 class TestComponentExpansion(unittest.TestCase):
