@@ -2126,7 +2126,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
     def getFuelMass(self):
         """returns mass of fuel in grams."""
-        return sum([fuel.getMass() for fuel in self.iterComponents(Flags.FUEL)], 0.0)
+        return sum((c.getFuelMass() for c in self))
 
     def constituentReport(self):
         """A print out of some pertinent constituent information"""
