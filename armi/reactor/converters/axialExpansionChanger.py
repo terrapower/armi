@@ -283,13 +283,13 @@ class AxialExpansionChanger:
                     c.ztop = c.zbottom + c.height
                     # redistribute block boundaries if on the target component
                     if self.expansionData.isTargetComponent(c):
-                        if b.axialExpTargetComponent is None:
+                        if b.p.axialExpTargetComponent is None:
                             runLog.debug(
                                 f"      Component {c} is target component (inferred)"
                             )
                         else:
                             runLog.debug(
-                                f"      Component {c} is target component (blueprints defined)"
+                                f"      Component {c} is target component (blueprints defined or loaded from DB)"
                             )
                         b.p.ztop = c.ztop
 
@@ -799,8 +799,8 @@ class ExpansionData:
             target components should be determined on the fly.
         """
         for b in self._a:
-            if b.axialExpTargetComponent is not None:
-                self._componentDeterminesBlockHeight[b.axialExpTargetComponent] = True
+            if b.p.axialExpTargetComponent is not None:
+                self._componentDeterminesBlockHeight[b.p.axialExpTargetComponent] = True
             elif b.hasFlags(Flags.PLENUM) or b.hasFlags(Flags.ACLP):
                 self.determineTargetComponent(b, Flags.CLAD)
             elif b.hasFlags(Flags.DUMMY):
@@ -811,7 +811,7 @@ class ExpansionData:
                 self.determineTargetComponent(b)
 
     def determineTargetComponent(self, b, flagOfInterest=None):
-        """appends target component to self._componentDeterminesBlockHeight
+        """determines target component, stores it on the block, and appends it to self._componentDeterminesBlockHeight
 
         Parameters
         ----------
@@ -860,6 +860,7 @@ class ExpansionData:
                 f"Block {b}\nflagOfInterest {flagOfInterest}\nComponents {componentWFlag}"
             )
         self._componentDeterminesBlockHeight[componentWFlag[0]] = True
+        b.p.axialExpTargetComponent = componentWFlag[0]
 
     def _isFuelLocked(self, b):
         """physical/realistic implementation reserved for ARMI plugin

@@ -630,7 +630,7 @@ class TestExceptions(AxialExpansionTestBase, unittest.TestCase):
     def test_AssemblyAxialExpansionException(self):
         """test that negative height exception is caught"""
         # manually set axial exp target component for code coverage
-        self.a[0].axialExpTargetComponent = self.a[0][0]
+        self.a[0].p.axialExpTargetComponent = self.a[0][0]
         temp = Temperature(self.a.getTotalHeight(), numTempGridPts=11, tempSteps=10)
         with self.assertRaises(ArithmeticError) as cm:
             for idt in range(temp.tempSteps):
@@ -705,10 +705,17 @@ class TestDetermineTargetComponent(AxialExpansionTestBase, unittest.TestCase):
         b.add(fuel)
         b.add(clad)
         b.add(self.coolant)
+        # make sure that b.p.axialExpTargetComponent is None initially
+        self.assertIsNone(b.p.axialExpTargetComponent)
         # call method, and check that target component is correct
         self.expData.determineTargetComponent(b)
         self.assertTrue(
             self.expData.isTargetComponent(fuel),
+            msg=f"determineTargetComponent failed to recognize intended component: {fuel}",
+        )
+        self.assertEqual(
+            b.p.axialExpTargetComponent,
+            fuel,
             msg=f"determineTargetComponent failed to recognize intended component: {fuel}",
         )
 
@@ -800,12 +807,12 @@ class TestDetermineTargetComponent(AxialExpansionTestBase, unittest.TestCase):
         # manually set target component
         b.setAxialExpTargetComp(duct)
         self.assertEqual(
-            b.axialExpTargetComponent,
+            b.p.axialExpTargetComponent,
             duct,
         )
 
         # check that target component is stored on expansionData object correctly
-        self.expData._componentDeterminesBlockHeight[b.axialExpTargetComponent] = True
+        self.expData._componentDeterminesBlockHeight[b.p.axialExpTargetComponent] = True
         self.assertTrue(self.expData.isTargetComponent(duct))
 
 

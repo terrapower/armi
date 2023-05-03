@@ -347,6 +347,13 @@ def getBlockParameterDefinitions():
         )
 
     with pDefs.createBuilder() as pb:
+        pb.defParam(
+            "axialExpTargetComponent",
+            units="",
+            description="The target component used for axial expansion and contraction of solid components.",
+            default=None,
+            saveToDB=True,
+        )
 
         pb.defParam(
             "topIndex",
