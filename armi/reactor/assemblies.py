@@ -970,7 +970,7 @@ class Assembly(composites.Composite):
 
         # Verify that the heights of all the blocks are equal to the expected
         # height for the given zUpper and zLower.
-        if abs(totalHeight - expectedHeight) > 1e-3:
+        if abs(totalHeight - expectedHeight) > 1e-5:
             raise ValueError(
                 f"The cumulative height of {blocksHere} is {totalHeight} cm "
                 f"and does not equal the expected height of {expectedHeight} cm.\n"
