@@ -884,9 +884,7 @@ class ArmiObject(metaclass=CompositeModelType):
         mass : float
             The mass in grams.
         """
-        return sum(
-            [c.getMass(nuclideNames=nuclideNames) for c in self.iterComponents()]
-        )
+        return sum([c.getMass(nuclideNames=nuclideNames) for c in self])
 
     def getMassFrac(self, nucName):
         """
