@@ -1236,7 +1236,7 @@ class ArmiObject(metaclass=CompositeModelType):
         volumes = numpy.array(
             [
                 c.getVolume() / (c.parent.getSymmetryFactor() if c.parent else 1.0)
-                for c in self.iterComponents()
+                for c in self
             ]
         )  # c x 1
         totalVol = volumes.sum()
@@ -1245,7 +1245,7 @@ class ArmiObject(metaclass=CompositeModelType):
             return [0.0] * len(nucNames)
 
         densListForEachComp = []
-        for c in self.iterComponents():
+        for c in self:
             numberDensityDict = c.getNumberDensities()
             densListForEachComp.append(
                 [numberDensityDict.get(nuc, 0.0) for nuc in nucNames]
