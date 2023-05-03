@@ -31,6 +31,7 @@ See Also: :doc:`/developer/index`.
 """
 import collections
 import itertools
+import operator
 import timeit
 from typing import Dict, Optional, Type, Tuple, List, Union
 
@@ -3206,12 +3207,8 @@ class Composite(ArmiObject):
 
         Used to roughly approximate relative size vs. other objects
         """
-        return sum(
-            [
-                comp.getBoundingCircleOuterDiameter(Tc, cold)
-                for comp in self.iterComponents()
-            ]
-        )
+        getter = operator.methodcaller("getBoundingCircleOuterDiameter", Tc, cold)
+        return sum(map(getter, self))
 
 
 class StateRetainer:
