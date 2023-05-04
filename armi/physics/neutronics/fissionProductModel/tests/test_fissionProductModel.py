@@ -139,7 +139,7 @@ class TestFissionProductModelExplicitMC2Library(unittest.TestCase):
             else:
                 self.assertLess(len(b.getNuclides()), len(nuclideBases.byMcc3Id))
 
-        # now check if deatiled axial expanion that all blocks have detailed nuclides
+        # now check if detailed axial expansion that all blocks have detailed nuclides
         self.fpModel.cs[CONF_DETAILED_AXIAL_EXPANSION] = True
 
         self.fpModel.interactBOL()
