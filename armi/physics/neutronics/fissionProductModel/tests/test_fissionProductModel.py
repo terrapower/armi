@@ -33,6 +33,7 @@ from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings imp
     CONF_MAKE_ALL_BLOCK_LFPS_INDEPENDENT,
     CONF_FISSION_PRODUCT_LIBRARY_NAME,
 )
+from armi.settings.fwSettings.globalSettings import CONF_DETAILED_AXIAL_EXPANSION
 
 
 class TestFissionProductModelLumpedFissionProducts(unittest.TestCase):
@@ -137,6 +138,15 @@ class TestFissionProductModelExplicitMC2Library(unittest.TestCase):
                     self.assertIn(nb.name, nuclideList)
             else:
                 self.assertLess(len(b.getNuclides()), len(nuclideBases.byMcc3Id))
+
+        # now check if deatiled axial expanion that all blocks have detailed nuclides
+        self.fpModel.cs[CONF_DETAILED_AXIAL_EXPANSION] = True
+
+        self.fpModel.interactBOL()
+        for b in self.r.core.getBlocks():
+            nuclideList = b.getNuclides()
+            for nb in nuclideBases.byMcc3Id.values():
+                self.assertIn(nb.name, nuclideList)
 
 
 if __name__ == "__main__":

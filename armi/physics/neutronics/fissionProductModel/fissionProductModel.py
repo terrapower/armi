@@ -194,19 +194,22 @@ class FissionProductModel(interfaces.Interface):
             b.setLumpedFissionProducts(None)
 
             # If detailed axial expansion is active, mapping between blocks occurs on uniform mesh
-            # and this can cause blocks to have isotopes that they dont have cross sections for
-            # fix this by adding all isotopes to all blocks.
+            # and this can cause blocks to have isotopes that they dont have cross sections for/
+            # Fix this by adding all isotopes to all blocks so they are present it lattice physics.
             allBlocksNeedAllNucs = self.cs[CONF_DETAILED_AXIAL_EXPANSION]
+
             compsToAddIso = b.getComponents(Flags.DEPLETABLE)
             if allBlocksNeedAllNucs and not compsToAddIso:
-                # add the isotopics to the smallest solid since that is usually the most "intersting"
+                # add the isotopics to the smallest solid since that is usually the most "interesting"
                 # sorted() calls getBoundingCircleOuterDiameter under the hood
                 solidsOrderedBySize = sorted(c for c in b if c.containsSolidMaterial())
                 if solidsOrderedBySize:
-                    compsToAddIso = solidsOrderedBySize[0]
+                    compsToAddIso = [solidsOrderedBySize[0]]
                 else:
                     # no solids, so just add to smallest component
-                    compsToAddIso = sorted(c for c in b if c.containsSolidMaterial())[0]
+                    compsToAddIso = [
+                        sorted(c for c in b if c.containsSolidMaterial())[0]
+                    ]
             for c in compsToAddIso:
                 updatedNDens = c.getNumberDensities()
                 for nuc in self.r.blueprints.allNuclidesInProblem:
