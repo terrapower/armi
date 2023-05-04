@@ -918,6 +918,10 @@ class Assembly_TestCase(unittest.TestCase):
         blocksAndHeights = self.assembly.getBlocksBetweenElevations(
             9.9999, 21.0, EPS=1e-3
         )
+        with self.assertRaises(ValueError):
+            blocksAndHeights = self.assembly.getBlocksBetweenElevations(
+                9.99, 21.0, EPS=1e-2
+            )
         self.assertEqual(blocksAndHeights[0], (self.assembly[1], 10.0))
         self.assertEqual(blocksAndHeights[1], (self.assembly[2], 1.0))
 
