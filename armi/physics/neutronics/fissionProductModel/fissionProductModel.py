@@ -104,6 +104,7 @@ from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings imp
     CONF_FP_MODEL,
     CONF_MAKE_ALL_BLOCK_LFPS_INDEPENDENT,
 )
+from armi.settings.fwSettings.globalSettings import CONF_DETAILED_AXIAL_EXPANSION
 
 NUM_FISSION_PRODUCTS_PER_LFP = 2.0
 
@@ -162,21 +163,27 @@ class FissionProductModel(interfaces.Interface):
 
     def setAllComponentFissionProducts(self):
         """
-        Initialize all blueprint nuclides for each ``DEPLETABLE`` component in the core.
+        Initialize all nuclides for each ``DEPLETABLE`` component in the core, or all blocks if mesh conversion.
 
         Notes
         -----
         This should be called when explicit fission product modeling is enabled to
-        ensure that fission products are initialized on the depletable components within
-        the reactor data model.
+        ensure that all isotopes are initialized on the depletable components within
+        the reactor data model so that cross sections are created during depletion.
+
+        When detailedAxialExpansion is also enabled, all regions will have fission/activation
+        products added to avoid missing cross sections during mesh conversion (since converted
+        blocks only have one xsID but may have isotopes from multiple blocks with different IDs.)
+        Setting density to zero her enables small number densities is XS generation.
 
         When explicit fission products are enabled and the user has not already included
         all fission products in the blueprints (in ``nuclideFlags``), the ``fpModelLibrary`` setting is used
         to autofill all the nuclides in a given library into the ``blueprints.allNuclidesInProblem``
         list. All nuclides that were not manually initialized by the user are added to
-        the ``DEPLETABLE`` components throughout every block in the core. The ``DEPLETABLE``
-        flag is based on the user adding this explicitly in the blueprints, or is based on
-        the user setting a nuclide to ``burn: true`` in the blueprint ``nuclideFlags``.
+        the ``DEPLETABLE`` components throughout every block in the core.
+
+        The ``DEPLETABLE`` flag is based on the user adding this explicitly in the blueprints,
+        or is based on the user setting a nuclide to ``burn: true`` in the blueprint ``nuclideFlags``.
 
         See Also
         --------
@@ -185,7 +192,22 @@ class FissionProductModel(interfaces.Interface):
         """
         for b in self.r.core.getBlocks(includeAll=True):
             b.setLumpedFissionProducts(None)
-            for c in b.getComponents(Flags.DEPLETABLE):
+
+            # If detailed axial expansion is active, mapping between blocks occurs on uniform mesh
+            # and this can cause blocks to have isotopes that they dont have cross sections for
+            # fix this by adding all isotopes to all blocks.
+            allBlocksNeedAllNucs = self.cs[CONF_DETAILED_AXIAL_EXPANSION]
+            compsToAddIso = b.getComponents(Flags.DEPLETABLE)
+            if allBlocksNeedAllNucs and not compsToAddIso:
+                # add the isotopics to the smallest solid since that is usually the most "intersting"
+                # sorted() calls getBoundingCircleOuterDiameter under the hood
+                solidsOrderedBySize = sorted(c for c in b if c.containsSolidMaterial())
+                if solidsOrderedBySize:
+                    compsToAddIso = solidsOrderedBySize[0]
+                else:
+                    # no solids, so just add to smallest component
+                    compsToAddIso = sorted(c for c in b if c.containsSolidMaterial())[0]
+            for c in compsToAddIso:
                 updatedNDens = c.getNumberDensities()
                 for nuc in self.r.blueprints.allNuclidesInProblem:
                     if nuc in updatedNDens:
