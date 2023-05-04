@@ -126,7 +126,7 @@ class FissionProductModel(interfaces.Interface):
         interfaces.Interface.__init__(self, r, cs)
         self._globalLFPs = lumpedFissionProduct.lumpedFissionProductFactory(self.cs)
         # If detailed axial expansion is active, mapping between blocks occurs on uniform mesh
-        # and this can cause blocks to have isotopes that they dont have cross sections for/
+        # and this can cause blocks to have isotopes that they don't have cross sections for.
         # Fix this by adding all isotopes to all blocks so they are present it lattice physics.
         self.allBlocksNeedAllNucs = self.cs[CONF_DETAILED_AXIAL_EXPANSION]
 
@@ -181,7 +181,7 @@ class FissionProductModel(interfaces.Interface):
 
     def setAllComponentFissionProducts(self):
         """
-        Initialize all nuclides for each ``DEPLETABLE`` component in the core, or all blocks if mesh conversion.
+        Initialize all nuclides for each ``DEPLETABLE`` component in the core, or all blocks if detailedAxialExpansion is enable.
 
         Notes
         -----
@@ -192,7 +192,7 @@ class FissionProductModel(interfaces.Interface):
         When detailedAxialExpansion is also enabled, all regions will have fission/activation
         products added to avoid missing cross sections during mesh conversion (since converted
         blocks only have one xsID but may have isotopes from multiple blocks with different IDs.)
-        Setting density to zero her enables small number densities is XS generation.
+        Setting density to zero here enables small number densities is XS generation.
 
         When explicit fission products are enabled and the user has not already included
         all fission products in the blueprints (in ``nuclideFlags``), the ``fpModelLibrary`` setting is used
