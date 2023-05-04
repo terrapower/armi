@@ -377,7 +377,9 @@ def _diffSpecialData(
         if isinstance(dSrc, numpy.ndarray) and isinstance(dRef, numpy.ndarray):
             if dSrc.shape != dRef.shape:
                 out.writeln("Shapes did not match for {}".format(refData))
-                diffResults.addDiff(compName, paramName, numpy.inf, numpy.inf, numpy.inf)
+                diffResults.addDiff(
+                    compName, paramName, numpy.inf, numpy.inf, numpy.inf
+                )
                 return
 
             # make sure not to try to compare empty arrays. Numpy is mediocre at
