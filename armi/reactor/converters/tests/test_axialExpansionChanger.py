@@ -705,8 +705,8 @@ class TestDetermineTargetComponent(AxialExpansionTestBase, unittest.TestCase):
         b.add(fuel)
         b.add(clad)
         b.add(self.coolant)
-        # make sure that b.p.axialExpTargetComponent is None initially
-        self.assertIsNone(b.p.axialExpTargetComponent)
+        # make sure that b.p.axialExpTargetComponent is empty initially
+        self.assertFalse(b.p.axialExpTargetComponent)
         # call method, and check that target component is correct
         self.expData.determineTargetComponent(b)
         self.assertTrue(

@@ -283,7 +283,7 @@ class AxialExpansionChanger:
                     c.ztop = c.zbottom + c.height
                     # redistribute block boundaries if on the target component
                     if self.expansionData.isTargetComponent(c):
-                        if b.p.axialExpTargetComponent is None:
+                        if not b.p.axialExpTargetComponent:
                             runLog.debug(
                                 f"      Component {c} is target component (inferred)"
                             )
@@ -799,7 +799,7 @@ class ExpansionData:
             target components should be determined on the fly.
         """
         for b in self._a:
-            if b.p.axialExpTargetComponent is not None:
+            if b.p.axialExpTargetComponent:
                 self._componentDeterminesBlockHeight[
                     b.getComponentByName(b.p.axialExpTargetComponent)
                 ] = True
