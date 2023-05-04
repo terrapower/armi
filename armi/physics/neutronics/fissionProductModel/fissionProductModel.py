@@ -125,6 +125,10 @@ class FissionProductModel(interfaces.Interface):
     def __init__(self, r, cs):
         interfaces.Interface.__init__(self, r, cs)
         self._globalLFPs = lumpedFissionProduct.lumpedFissionProductFactory(self.cs)
+        # If detailed axial expansion is active, mapping between blocks occurs on uniform mesh
+        # and this can cause blocks to have isotopes that they dont have cross sections for/
+        # Fix this by adding all isotopes to all blocks so they are present it lattice physics.
+        self.allBlocksNeedAllNucs = self.cs[CONF_DETAILED_AXIAL_EXPANSION]
 
     @property
     def _explicitFissionProducts(self):
@@ -152,7 +156,10 @@ class FissionProductModel(interfaces.Interface):
         products be consistent across all blocks, even if fission products are
         not generated when the block is depleted.
         """
-        return None if self.getInterface("mcnp") is not None else Flags.FUEL
+        if self.getInterface("mcnp") or self.allBlocksNeedAllNucs:
+            return None
+        else:
+            return Flags.FUEL
 
     def interactBOL(self):
         interfaces.Interface.interactBOL(self)
@@ -160,6 +167,17 @@ class FissionProductModel(interfaces.Interface):
             self.setAllComponentFissionProducts()
         else:
             self.setAllBlockLFPs()
+
+    def _getComponentToInitDensities(self, b):
+        """Get the component to initialize ndens keys on."""
+        # add the isotopics to the smallest solid since that is usually the most "interesting"
+        # sorted() calls getBoundingCircleOuterDiameter under the hood
+        solidsOrderedBySize = sorted(c for c in b if c.containsSolidMaterial())
+        if solidsOrderedBySize:
+            return solidsOrderedBySize[0]
+        else:
+            # no solids, so just add to smallest component
+            return sorted(c for c in b)[0]
 
     def setAllComponentFissionProducts(self):
         """
@@ -192,29 +210,28 @@ class FissionProductModel(interfaces.Interface):
         """
         for b in self.r.core.getBlocks(includeAll=True):
             b.setLumpedFissionProducts(None)
+            self._initializeIsoDensities(b)
 
-            # If detailed axial expansion is active, mapping between blocks occurs on uniform mesh
-            # and this can cause blocks to have isotopes that they dont have cross sections for/
-            # Fix this by adding all isotopes to all blocks so they are present it lattice physics.
-            allBlocksNeedAllNucs = self.cs[CONF_DETAILED_AXIAL_EXPANSION]
+    def _initializeIsoDensities(self, b):
+        """
+        Initialize isotope densities to include all on depletable components.
 
-            compsToAddIso = b.getComponents(Flags.DEPLETABLE)
-            if allBlocksNeedAllNucs and not compsToAddIso:
-                # add the isotopics to the smallest solid since that is usually the most "interesting"
-                # sorted() calls getBoundingCircleOuterDiameter under the hood
-                solidsOrderedBySize = sorted(c for c in b if c.containsSolidMaterial())
-                if solidsOrderedBySize:
-                    compsToAddIso = [solidsOrderedBySize[0]]
-                else:
-                    # no solids, so just add to smallest component
-                    compsToAddIso = [sorted(c for c in b)[0]]
-            for c in compsToAddIso:
-                updatedNDens = c.getNumberDensities()
-                for nuc in self.r.blueprints.allNuclidesInProblem:
-                    if nuc in updatedNDens:
-                        continue
-                    updatedNDens[nuc] = 0.0
-                c.updateNumberDensities(updatedNDens)
+        Notes
+        -----
+        In non-uniform reactor cases all blocks will get all isotopes so that the
+        global flux solve does not have any missing cross sections.
+        """
+        compsToAddIso = b.getComponents(Flags.DEPLETABLE)
+        if self.allBlocksNeedAllNucs and not compsToAddIso:
+            compsToAddIso = [self._getComponentToInitDensities(b)]
+        for c in compsToAddIso:
+            # Add all isotopes in problem at 0.0 density
+            updatedNDens = c.getNumberDensities()
+            for nuc in self.r.blueprints.allNuclidesInProblem:
+                if nuc in updatedNDens:
+                    continue
+                updatedNDens[nuc] = 0.0
+            c.updateNumberDensities(updatedNDens)
 
     def setAllBlockLFPs(self):
         """
@@ -230,6 +247,7 @@ class FissionProductModel(interfaces.Interface):
             else:
                 independentLFPs = self.getGlobalLumpedFissionProducts().duplicate()
                 b.setLumpedFissionProducts(independentLFPs)
+            self._initializeIsoDensities(b)
 
     def getGlobalLumpedFissionProducts(self):
         r"""
