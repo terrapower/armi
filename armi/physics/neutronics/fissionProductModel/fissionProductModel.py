@@ -207,9 +207,7 @@ class FissionProductModel(interfaces.Interface):
                     compsToAddIso = [solidsOrderedBySize[0]]
                 else:
                     # no solids, so just add to smallest component
-                    compsToAddIso = [
-                        sorted(c for c in b if c.containsSolidMaterial())[0]
-                    ]
+                    compsToAddIso = [sorted(c for c in b)[0]]
             for c in compsToAddIso:
                 updatedNDens = c.getNumberDensities()
                 for nuc in self.r.blueprints.allNuclidesInProblem:
