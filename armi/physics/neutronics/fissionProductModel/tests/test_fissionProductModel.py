@@ -70,6 +70,27 @@ class TestFissionProductModelLumpedFissionProducts(unittest.TestCase):
         self.assertGreater(len(fissionProductNames), 5)
         self.assertIn("XE135", fissionProductNames)
 
+    def test_fpApplication(self):
+        o, r = loadTestReactor()
+        fpModel = fissionProductModel.FissionProductModel(o.r, o.cs)
+        # Set up the global LFPs and check that they are setup.
+        self.assertTrue(fpModel._useGlobalLFPs)
+        fpModel.interactBOL()
+        for b in r.core.getBlocks():
+            if b.isFuel():
+                self.assertTrue(b._lumpedFissionProducts is not None)
+            else:
+                self.assertTrue(b._lumpedFissionProducts is None)
+
+        # now check if detailed axial expansion that all blocks have ALL nuclides
+        fpModel.allBlocksNeedAllNucs = True
+        fpModel.interactBOL()
+        for b in r.core.getBlocks():
+            nuclideList = b.getNuclides()
+            for nuc in r.blueprints.allNuclidesInProblem:
+                self.assertIn(nuc, nuclideList)
+            self.assertTrue(b._lumpedFissionProducts is not None)
+
 
 class TestFissionProductModelExplicitMC2Library(unittest.TestCase):
     """
@@ -137,6 +158,15 @@ class TestFissionProductModelExplicitMC2Library(unittest.TestCase):
                     self.assertIn(nb.name, nuclideList)
             else:
                 self.assertLess(len(b.getNuclides()), len(nuclideBases.byMcc3Id))
+
+        # now check if detailed axial expansion that all blocks have detailed nuclides
+        self.fpModel.allBlocksNeedAllNucs = True
+
+        self.fpModel.interactBOL()
+        for b in self.r.core.getBlocks():
+            nuclideList = b.getNuclides()
+            for nb in nuclideBases.byMcc3Id.values():
+                self.assertIn(nb.name, nuclideList)
 
 
 if __name__ == "__main__":
