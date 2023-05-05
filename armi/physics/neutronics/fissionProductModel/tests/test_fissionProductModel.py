@@ -86,7 +86,6 @@ class TestFissionProductModelLumpedFissionProducts(unittest.TestCase):
         fpModel.allBlocksNeedAllNucs = False
         fpModel.interactBOL()
         allNucsInProblem = set(r.blueprints.allNuclidesInProblem)
-        print(allNucsInProblem)
         for b in r.core.getBlocks():
             if isDepletable(b):
                 if len(allNucsInProblem - set(b.getNuclides())) > 0:
