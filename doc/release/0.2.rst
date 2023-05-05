@@ -22,6 +22,7 @@ What's new in ARMI
 #. Use ``minimumNuclideDensity`` setting when generating macroscopic XS.  (`PR#1248 <https://github.com/terrapower/armi/pull/1248>`_)
 #. Improve support for single component axial expansion and general cleanup of axial expansion unit tests. (`PR#1230 <https://github.com/terrapower/armi/pull/1230>`_)
 #. New cross section group representative block type for 1D cylindrical models. (`PR#1238 <https://github.com/terrapower/armi/pull/1238>`_)
+#. Store the axial expansion target component name as a block parameter. (`PR#1256 https://github.com/terrapower/armi/pull/1256`_) 
 #. When using non-uniform mesh, detailed fission/activation products have cross sections generated to avoid blocks without xs data. (`PR#1257 <https://github.com/terrapower/armi/pull/1257>`_)
 #. TBD
 

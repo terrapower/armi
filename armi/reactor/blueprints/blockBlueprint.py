@@ -216,12 +216,10 @@ class BlockBlueprint(yamlize.KeyedList):
                 b.setAxialExpTargetComp(components[self.axialExpTargetComponent])
             except KeyError as noMatchingComponent:
                 raise RuntimeError(
-                    "Block {0} --> axial expansion target component {1} specified in the blueprints does not "
-                    "match any component names. Revise axial expansion target component in blueprints "
-                    "to match the name of a component and retry.".format(
-                        b,
-                        self.axialExpTargetComponent,
-                    )
+                    f"Block {b} --> axial expansion target component {self.axialExpTargetComponent} "
+                    "specified in the blueprints does not match any component names. "
+                    "Revise axial expansion target component in blueprints "
+                    "to match the name of a component and retry."
                 ) from noMatchingComponent
 
         for c in components.values():
