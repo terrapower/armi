@@ -329,7 +329,6 @@ def _diffSpecialData(
     diffResults.addStructureDiffs(nDiffs)
 
     if not keysMatch:
-        print("Keys don't match!")
         diffResults.addDiff(name, name, numpy.inf, numpy.inf, numpy.inf)
         return
 
