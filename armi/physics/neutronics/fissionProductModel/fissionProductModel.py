@@ -210,8 +210,7 @@ class FissionProductModel(interfaces.Interface):
         """
         for b in self.r.core.getBlocks(includeAll=True):
             b.setLumpedFissionProducts(None)
-            if self.allBlocksNeedAllNucs:
-                self._initializeIsoDensities(b)
+            self._initializeIsoDensities(b)
 
     def _initializeIsoDensities(self, b):
         """
@@ -248,7 +247,8 @@ class FissionProductModel(interfaces.Interface):
             else:
                 independentLFPs = self.getGlobalLumpedFissionProducts().duplicate()
                 b.setLumpedFissionProducts(independentLFPs)
-            self._initializeIsoDensities(b)
+            if self.allBlocksNeedAllNucs:
+                self._initializeIsoDensities(b)
 
     def getGlobalLumpedFissionProducts(self):
         r"""
