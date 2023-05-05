@@ -82,6 +82,17 @@ class TestFissionProductModelLumpedFissionProducts(unittest.TestCase):
             else:
                 self.assertTrue(b._lumpedFissionProducts is None)
 
+        # now check if all depletable blocks do not have all nuclides if not detailedAxialExpansion
+        fpModel.allBlocksNeedAllNucs = False
+        fpModel.interactBOL()
+        allNucsInProblem = set(r.blueprints.allNuclidesInProblem)
+        for b in r.core.getBlocks():
+            if isDepletable(b):
+                if len(allNucsInProblem - set(b.getNuclides())) > 0:
+                    break
+        else:
+            self.assertTrue(False, "All blocks have all nuclides!")
+
         # now check if detailed axial expansion that all blocks have ALL nuclides
         fpModel.allBlocksNeedAllNucs = True
         fpModel.interactBOL()
