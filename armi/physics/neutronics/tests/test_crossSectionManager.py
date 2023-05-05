@@ -497,20 +497,20 @@ class Test_CrossSectionGroupManager(unittest.TestCase):
         self.csm.interactEveryNode()
         self.assertTrue(self.csm.representativeBlocks)
 
-    def test_interactFirstCoupled(self):
-        """Test `firstCoupled` lattice physics update frequency"""
+    def test_interactFirstCoupledIteration(self):
+        """Test `firstCoupledIteration` lattice physics update frequency"""
         self.csm.cs[CONF_LATTICE_PHYSICS_FREQUENCY] = "everyNode"
         self.csm.interactBOL()
         self.csm.interactCoupled(iteration=0)
         self.assertFalse(self.csm.representativeBlocks)
-        self.csm.cs[CONF_LATTICE_PHYSICS_FREQUENCY] = "firstCoupled"
+        self.csm.cs[CONF_LATTICE_PHYSICS_FREQUENCY] = "firstCoupledIteration"
         self.csm.interactBOL()
         self.csm.interactCoupled(iteration=0)
         self.assertTrue(self.csm.representativeBlocks)
 
     def test_interactAllCoupled(self):
         """Test `all` lattice physics update frequency"""
-        self.csm.cs[CONF_LATTICE_PHYSICS_FREQUENCY] = "firstCoupled"
+        self.csm.cs[CONF_LATTICE_PHYSICS_FREQUENCY] = "firstCoupledIteration"
         self.csm.interactBOL()
         self.csm.interactCoupled(iteration=1)
         self.assertFalse(self.csm.representativeBlocks)

@@ -254,7 +254,7 @@ class LatticePhysicsInterface(interfaces.Interface):
         """
         # always run for snapshots to account for temp effect of different flow or power statepoint
         targetFrequency = (
-            LatticePhysicsFrequency.firstCoupled
+            LatticePhysicsFrequency.firstCoupledIteration
             if iteration == 0
             else LatticePhysicsFrequency.all
         )

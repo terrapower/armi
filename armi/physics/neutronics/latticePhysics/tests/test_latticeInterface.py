@@ -154,9 +154,9 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
         self.latticeInterface.interactEveryNode()
         self.assertIsNone(self.o.r.core.lib)
 
-    def test_interactFirstCoupled(self):
+    def test_interactFirstCoupledIteration(self):
         """
-        Test interactCoupled() with different update frequencies on first interation
+        Test interactCoupled() with different update frequencies on first iteration
         """
         self.latticeInterface._latticePhysicsFrequency = (
             LatticePhysicsFrequency.everyNode
@@ -164,7 +164,7 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
         self.latticeInterface.interactCoupled(iteration=0)
         self.assertEqual(self.o.r.core.lib, "Nonsense")
         self.latticeInterface._latticePhysicsFrequency = (
-            LatticePhysicsFrequency.firstCoupled
+            LatticePhysicsFrequency.firstCoupledIteration
         )
         self.latticeInterface.interactCoupled(iteration=0)
         self.assertIsNone(self.o.r.core.lib)
@@ -174,7 +174,7 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
         Test interactCoupled() with different update frequencies on non-first iteration
         """
         self.latticeInterface._latticePhysicsFrequency = (
-            LatticePhysicsFrequency.firstCoupled
+            LatticePhysicsFrequency.firstCoupledIteration
         )
         self.latticeInterface.interactCoupled(iteration=1)
         self.assertEqual(self.o.r.core.lib, "Nonsense")

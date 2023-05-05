@@ -283,7 +283,7 @@ class LatticePhysicsFrequency(IntEnum):
     BOL = Beginning-of-life (c0n0)
     BOC = Beginning-of-cycle (c*n0)
     everyNode = Every interaction node (c*n*)
-    firstCoupled = every node + the first coupled iteration at each node
+    firstCoupledIteration = every node + the first coupled iteration at each node
     all = every node + every coupled iteration
     """
 
@@ -291,5 +291,5 @@ class LatticePhysicsFrequency(IntEnum):
     BOL = 1
     BOC = 2
     everyNode = 3
-    firstCoupled = 4
+    firstCoupledIteration = 4
     all = 5

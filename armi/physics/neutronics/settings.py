@@ -542,13 +542,13 @@ def getNeutronicsSettingValidators(inspector):
 
     queryMsg = (
         "A Snapshots case is selected but the `latticePhysicsFrequency` "
-        "{0} is less than `firstCoupled`. `firstCoupled` or `all` is recommended "
-        "for Snapshots when they involve large changes in power or flow compared "
-        "to the loaded state."
+        "{0} is less than `firstCoupledIteration`. `firstCoupledIteration`"
+        " or `all` is recommended for Snapshots when they involve large changes "
+        "in power or flow compared to the loaded state."
     ).format(inspector.cs[CONF_LATTICE_PHYSICS_FREQUENCY])
     queryPrompt = (
         "Would you like to update `latticePhysicsFrequency` from "
-        f"{inspector.cs[CONF_LATTICE_PHYSICS_FREQUENCY]} to `firstCoupled`?"
+        f"{inspector.cs[CONF_LATTICE_PHYSICS_FREQUENCY]} to `firstCoupledIteration`?"
     )
     queries.append(
         settingsValidation.Query(
@@ -556,12 +556,12 @@ def getNeutronicsSettingValidators(inspector):
             and not LatticePhysicsFrequency[
                 inspector.cs[CONF_LATTICE_PHYSICS_FREQUENCY]
             ]
-            >= LatticePhysicsFrequency.firstCoupled,
+            >= LatticePhysicsFrequency.firstCoupledIteration,
             queryMsg,
             queryPrompt,
             lambda: inspector._assignCS(
                 CONF_LATTICE_PHYSICS_FREQUENCY,
-                "firstCoupled",
+                "firstCoupledIteration"
             ),
         )
     )

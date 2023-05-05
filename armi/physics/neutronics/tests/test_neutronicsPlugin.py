@@ -345,7 +345,7 @@ class NeutronicsReactorTests(unittest.TestCase):
         sv = getNeutronicsSettingValidators(inspector)
 
         self.__autoCorrectAllQueries(sv)
-        self.assertEqual(inspector.cs[CONF_LATTICE_PHYSICS_FREQUENCY], "firstCoupled")
+        self.assertEqual(inspector.cs[CONF_LATTICE_PHYSICS_FREQUENCY], "firstCoupledIteration")
 
 
 if __name__ == "__main__":
