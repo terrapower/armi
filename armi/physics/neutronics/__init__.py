@@ -285,6 +285,15 @@ class LatticePhysicsFrequency(IntEnum):
     everyNode = Every interaction node (c*n*)
     firstCoupledIteration = every node + the first coupled iteration at each node
     all = every node + every coupled iteration
+
+    Notes
+    -----
+    firstCoupledIteration only updates the cross sections during the first coupled iteration,
+    but not on any subsequent iterations. This may be an appropriate approximation in some cases
+    to save compute time, but each individual user should give careful consideration to whether
+    this is the behavior they want for a particular application. The main purpose of this setting
+    is to capture a large change in temperature distribution when running a snapshot at a different
+    power/flow condition than the original state being loaded from the database.
     """
 
     never = 0

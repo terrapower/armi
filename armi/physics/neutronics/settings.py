@@ -560,8 +560,7 @@ def getNeutronicsSettingValidators(inspector):
             queryMsg,
             queryPrompt,
             lambda: inspector._assignCS(
-                CONF_LATTICE_PHYSICS_FREQUENCY,
-                "firstCoupledIteration"
+                CONF_LATTICE_PHYSICS_FREQUENCY, "firstCoupledIteration"
             ),
         )
     )

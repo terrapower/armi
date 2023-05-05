@@ -757,7 +757,8 @@ class CrossSectionGroupManager(interfaces.Interface):
 
         if (
             iteration == 0
-            and self._latticePhysicsFrequency == LatticePhysicsFrequency.firstCoupledIteration
+            and self._latticePhysicsFrequency
+            == LatticePhysicsFrequency.firstCoupledIteration
         ) or self._latticePhysicsFrequency == LatticePhysicsFrequency.all:
             self.createRepresentativeBlocks()
 
