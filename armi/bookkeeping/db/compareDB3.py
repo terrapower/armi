@@ -323,12 +323,13 @@ def _diffSpecialData(
     compName = refData.name.split("/")[-2]
 
     nDiffs = _compareSets(
-        set(srcData.attrs.keys()), set(refData.attrs.keys()), "formatting data"
+        set(srcData.attrs.keys()), set(refData.attrs.keys()), out, "formatting data"
     )
     keysMatch = nDiffs == 0
     diffResults.addStructureDiffs(nDiffs)
 
     if not keysMatch:
+        print("Keys don't match!")
         diffResults.addDiff(name, name, numpy.inf, numpy.inf, numpy.inf)
         return
 
