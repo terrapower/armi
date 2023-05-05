@@ -630,7 +630,7 @@ class TestExceptions(AxialExpansionTestBase, unittest.TestCase):
     def test_AssemblyAxialExpansionException(self):
         """test that negative height exception is caught"""
         # manually set axial exp target component for code coverage
-        self.a[0].p.axialExpTargetComponent = self.a[0][0]
+        self.a[0].p.axialExpTargetComponent = self.a[0][0].name
         temp = Temperature(self.a.getTotalHeight(), numTempGridPts=11, tempSteps=10)
         with self.assertRaises(ArithmeticError) as cm:
             for idt in range(temp.tempSteps):
