@@ -235,6 +235,17 @@ class TestCompareDB3(unittest.TestCase):
                 _diffSpecialData(refData4, srcData5, out, dr)
                 self.assertIn("Unable to unpack special data for paramName", e)
 
+            # make an H5 datasets that will add a np.inf diff because keys don't match
+            f6 = h5py.File("test_diffSpecialData6.hdf5", "w")
+            refData6 = f6.create_dataset("numberDensities", data=a2)
+            refData6.attrs["shapes"] = "2"
+            refData6.attrs["numDens"] = a2
+            f7 = h5py.File("test_diffSpecialData7.hdf5", "w")
+            srcData7 = f7.create_dataset("densities", data=a2)
+            srcData7.attrs["colors"] = "2"
+            srcData7.attrs["numberDens"] = a2
+            _diffSpecialData(refData6, srcData7, out, dr)
+
     def test_diffSimpleData(self):
         dr = DiffResults(0.01)
 

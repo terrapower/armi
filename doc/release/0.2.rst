@@ -24,6 +24,7 @@ What's new in ARMI
 #. New cross section group representative block type for 1D cylindrical models. (`PR#1238 <https://github.com/terrapower/armi/pull/1238>`_)
 #. Store the axial expansion target component name as a block parameter. (`PR#1256 https://github.com/terrapower/armi/pull/1256`_) 
 #. When using non-uniform mesh, detailed fission/activation products have cross sections generated to avoid blocks without xs data. (`PR#1257 <https://github.com/terrapower/armi/pull/1257>`_)
+#. Fix a bug in database comparison. (`PR#1258 <https://github.com/terrapower/armi/pull/1258>`_)
 #. TBD
 
 Bug fixes
