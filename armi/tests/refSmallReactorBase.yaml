@@ -426,7 +426,7 @@ assemblies:
         blocks: [*block_grid_plate, *block_duct, *block_control, *block_plenum, *block_duct]
         height: *standard_heights
         axial mesh points: *standard_axial_mesh_points
-        xs types: &control_xs_types [A, A, B, A, A]
+        xs types: *igniter_fuel_xs_types
     radial shield:
         specifier: SH
         blocks: [*block_grid_plate, *block_axial_shield, *block_axial_shield, *block_axial_shield, *block_plenum]

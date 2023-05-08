@@ -458,7 +458,7 @@ class XSModelingOptions:
         xsExecuteExclusive=None,
         xsPriority=None,
         xsMaxAtomNumber=None,
-        minDriverDensity=0.0,
+        minDriverDensity=None,
     ):
         self.xsID = xsID
         self.geometry = geometry

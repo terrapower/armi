@@ -19,17 +19,6 @@ settings:
       useHomogenizedBlockComposition: false
       numInternalRings: 1
       numExternalRings: 1
-    BA:
-      geometry: 1D cylinder
-      validBlockTypes:
-        - control
-      blockRepresentation: ComponentAverage1DCylinder
-      externalDriver: true
-      driverID: AA
-      numExternalRings: 2
-      mergeIntoClad:
-        - gap
-      meshSubdivisionsPerCm: 1.0
     XA:
       xsFileLocation:
         - ISOXA
