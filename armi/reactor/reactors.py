@@ -1264,7 +1264,9 @@ class Core(composites.Composite):
             for c in self.iterComponents():
                 # get only nuclides with non-zero number density
                 # nuclides could be present at 0.0 density just for XS generation
-                nuclides = [nuc for nuc, dens in c.getNumberDensities().items() if dens > 0.0]
+                nuclides = [
+                    nuc for nuc, dens in c.getNumberDensities().items() if dens > 0.0
+                ]
                 if c.getName() == "coolant":
                     coolantNuclides.update(nuclides)
                 elif "fuel" in c.getName():
