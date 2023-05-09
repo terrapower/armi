@@ -223,7 +223,7 @@ class LatticePhysicsInterface(interfaces.Interface):
         Generate new cross sections based off the case settings and the current state
         of the reactor if the lattice physics frequency is at least everyNode.
         """
-        if self._latticePhysicsFrequency == LatticePhysicsFrequency.everyNode:
+        if self._latticePhysicsFrequency >= LatticePhysicsFrequency.everyNode:
             self.r.core.lib = None
             self.updateXSLibrary(self.r.p.cycle, self.r.p.timeNode)
 
