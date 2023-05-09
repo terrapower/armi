@@ -22,11 +22,13 @@ from armi.physics.neutronics.energyGroups import GROUP_STRUCTURE
 from armi.scripts.migration.crossSectionBlueprintsToSettings import (
     migrateCrossSectionsFromBlueprints,
 )
+from armi.physics.neutronics import LatticePhysicsFrequency
 from armi.settings import setting
 from armi.utils import directoryChangers
 from armi.settings.fwSettings.globalSettings import (
     CONF_DETAILED_AXIAL_EXPANSION,
     CONF_NON_UNIFORM_ASSEM_FLAGS,
+    CONF_RUN_TYPE,
 )
 
 
@@ -80,6 +82,7 @@ CONF_XS_KERNEL = "xsKernel"
 CONF_XS_SCATTERING_ORDER = "xsScatteringOrder"
 CONF_XS_BUCKLING_CONVERGENCE = "xsBucklingConvergence"
 CONF_XS_EIGENVALUE_CONVERGENCE = "xsEigenvalueConvergence"
+CONF_LATTICE_PHYSICS_FREQUENCY = "latticePhysicsFrequency"
 
 
 def defineSettings():
@@ -325,6 +328,13 @@ def defineSettings():
             options=["", "MC2v2", "MC2v3", "MC2v3-PARTISN", "SERPENT"],
         ),
         setting.Setting(
+            CONF_LATTICE_PHYSICS_FREQUENCY,
+            default="BOC",
+            label="Frequency of lattice physics updates",
+            description="Define the frequency at which cross sections are updated with new lattice physics interactions.",
+            options=[opt.name for opt in list(LatticePhysicsFrequency)],
+        ),
+        setting.Setting(
             CONF_XS_SCATTERING_ORDER,
             default=3,
             label="Scattering Order",
@@ -526,6 +536,31 @@ def getNeutronicsSettingValidators(inspector):
             lambda: inspector._assignCS(
                 CONF_NON_UNIFORM_ASSEM_FLAGS,
                 inspector.cs.getSetting(CONF_NON_UNIFORM_ASSEM_FLAGS).default,
+            ),
+        )
+    )
+
+    queryMsg = (
+        "A Snapshots case is selected but the `latticePhysicsFrequency` "
+        "{0} is less than `firstCoupledIteration`. `firstCoupledIteration`"
+        " or `all` is recommended for Snapshots when they involve large changes "
+        "in power or flow compared to the loaded state."
+    ).format(inspector.cs[CONF_LATTICE_PHYSICS_FREQUENCY])
+    queryPrompt = (
+        "Would you like to update `latticePhysicsFrequency` from "
+        f"{inspector.cs[CONF_LATTICE_PHYSICS_FREQUENCY]} to `firstCoupledIteration`?"
+    )
+    queries.append(
+        settingsValidation.Query(
+            lambda: inspector.cs[CONF_RUN_TYPE] == "Snapshots"
+            and not LatticePhysicsFrequency[
+                inspector.cs[CONF_LATTICE_PHYSICS_FREQUENCY]
+            ]
+            >= LatticePhysicsFrequency.firstCoupledIteration,
+            queryMsg,
+            queryPrompt,
+            lambda: inspector._assignCS(
+                CONF_LATTICE_PHYSICS_FREQUENCY, "firstCoupledIteration"
             ),
         )
     )

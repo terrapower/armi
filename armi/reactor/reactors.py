@@ -1262,12 +1262,17 @@ class Core(composites.Composite):
             fuelNuclides = set()
             structureNuclides = set()
             for c in self.iterComponents():
+                # get only nuclides with non-zero number density
+                # nuclides could be present at 0.0 density just for XS generation
+                nuclides = [
+                    nuc for nuc, dens in c.getNumberDensities().items() if dens > 0.0
+                ]
                 if c.getName() == "coolant":
-                    coolantNuclides.update(c.getNuclides())
+                    coolantNuclides.update(nuclides)
                 elif "fuel" in c.getName():
-                    fuelNuclides.update(c.getNuclides())
+                    fuelNuclides.update(nuclides)
                 else:
-                    structureNuclides.update(c.getNuclides())
+                    structureNuclides.update(nuclides)
             structureNuclides -= coolantNuclides
             structureNuclides -= fuelNuclides
             remainingNuclides = (

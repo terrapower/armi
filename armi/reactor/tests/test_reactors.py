@@ -998,6 +998,16 @@ class HexReactorTests(ReactorTests):
         self.r.core.buildManualZones(cs)
         self.assertEqual(len(list(self.r.core.zones)), 0)
 
+    def test_getNuclideCategories(self):
+        # test that nuclides are categorized correctly
+        self.r.core.getNuclideCategories()
+        self.assertIn("coolant", self.r.core._nuclideCategories)
+        self.assertIn("structure", self.r.core._nuclideCategories)
+        self.assertIn("fuel", self.r.core._nuclideCategories)
+        self.assertEqual(self.r.core._nuclideCategories["coolant"], set(["NA23"]))
+        self.assertIn("FE56", self.r.core._nuclideCategories["structure"])
+        self.assertIn("U235", self.r.core._nuclideCategories["fuel"])
+
 
 class CartesianReactorTests(ReactorTests):
     def setUp(self):
