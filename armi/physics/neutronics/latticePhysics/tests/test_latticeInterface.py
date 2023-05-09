@@ -158,7 +158,9 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
         """
         Test interactEveryNode() with LatticePhysicsFrequency.firstCoupledIteration
         """
-        self.latticeInterface._latticePhysicsFrequency = LatticePhysicsFrequency.firstCoupledIteration
+        self.latticeInterface._latticePhysicsFrequency = (
+            LatticePhysicsFrequency.firstCoupledIteration
+        )
         self.latticeInterface.interactEveryNode()
         self.assertIsNone(self.o.r.core.lib)
 
