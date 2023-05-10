@@ -23,6 +23,8 @@ is impossible. Would you like to switch to ___?"
 """
 import re
 import os
+import shutil
+import itertools
 
 from armi import context
 from armi import getPluginManagerOrFail
@@ -218,6 +220,24 @@ class Inspector:
                     "some issues are creating cyclic resolutions: {}".format(issues)
                 )
             runLog.debug("{} has finished querying.".format(self.__class__.__name__))
+
+        if correctionsMade:
+            # find unused file path to store original settings as to avoid overwrite
+            strSkeleton = "{}_old".format(self.cs.path.split(".yaml")[0])
+            for num in itertools.count():
+                if num == 0:
+                    renamePath = f"{strSkeleton}.yaml"
+                else:
+                    renamePath = f"{strSkeleton}{num}.yaml"
+                if not self._csRelativePathExists(renamePath):
+                    break
+            # preserve old file before saving settings file
+            runLog.important(
+                f"Preserving original settings file by renaming `{renamePath}`"
+            )
+            shutil.copy(self.cs.path, renamePath)
+            # save settings file
+            self.cs.writeToYamlFile(self.cs.path)
 
         return correctionsMade
 
@@ -639,16 +659,6 @@ class Inspector:
             "The `runType` setting is set to `{0}` but there is a `custom operator location` defined".format(
                 self.cs["runType"]
             ),
-            "",
-            self.NO_ACTION,
-        )
-
-        self.addQuery(
-            lambda: self.cs["runType"] == operators.RunTypes.EQUILIBRIUM
-            and self.cs["cycles"],
-            "Equilibrium cases cannot use the `cycles` case setting to define detailed"
-            " cycle information. Try instead using the simple cycle history inputs"
-            " `cycleLength(s)`, `burnSteps`, `availabilityFactor(s)`, and/or `powerFractions`",
             "",
             self.NO_ACTION,
         )

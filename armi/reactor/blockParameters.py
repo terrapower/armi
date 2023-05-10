@@ -18,7 +18,6 @@ import six
 
 from armi import runLog
 from armi.physics.neutronics import crossSectionGroupManager
-from armi.reactor.flags import Flags  # non-standard import to avoid name conflict below
 from armi.utils import units
 from armi.utils.units import ASCII_LETTER_A
 
@@ -353,6 +352,13 @@ def getBlockParameterDefinitions():
         )
 
     with pDefs.createBuilder() as pb:
+        pb.defParam(
+            "axialExpTargetComponent",
+            units="",
+            description="The name of the target component used for axial expansion and contraction of solid components.",
+            default="",
+            saveToDB=True,
+        )
 
         pb.defParam(
             "topIndex",

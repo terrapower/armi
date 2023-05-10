@@ -22,6 +22,8 @@ from armi.mpiActions import (
     DistributionAction,
     MpiAction,
     runActions,
+    _disableForExclusiveTasks,
+    _makeQueue,
 )
 from armi import context
 from armi.reactor.tests import test_reactors
@@ -167,6 +169,70 @@ class MpiIterTests(unittest.TestCase):
             self.assertIn("Scanning all blocks", mock.getStdout())
             self.assertIn("Scanning blocks by name", mock.getStdout())
             self.assertIn("Scanning the ISOTXS library", mock.getStdout())
+
+
+class QueueActionsTests(unittest.TestCase):
+    def test_disableForExclusiveTasks(self):
+        num = 5
+        actionsThisRound = [MpiAction() for _ in range(num - 1)]
+        actionsThisRound.append(None)
+        useForComputation = [True] * num
+        exclusiveIndices = [1, 3]
+        for i in exclusiveIndices:
+            actionsThisRound[i].runActionExclusive = True
+
+        useForComputation = _disableForExclusiveTasks(
+            actionsThisRound, useForComputation
+        )
+        for i in range(num):
+            if i in exclusiveIndices:
+                # wont be used for computation in future round
+                self.assertFalse(useForComputation[i])
+            else:
+                self.assertTrue(useForComputation[i])
+
+    def test_makeQueue(self):
+        num = 5
+        actions = [MpiAction() for _ in range(num)]
+        for i, action in enumerate(actions):
+            action.runActionExclusive = True
+            action.priority = 10 - i  # make it reverse so it actually has to sort
+        useForComputation = [True] * (num - 1)
+        queue, numBatches = _makeQueue(actions, useForComputation)
+        self.assertEqual(numBatches, 2)
+        self.assertEqual(len(queue), len(actions))
+
+        lastPriority = -999
+        for action in queue:
+            # check that when more exclusive than cpus they go to non-exclusive
+            self.assertFalse(action.runActionExclusive)
+            self.assertGreaterEqual(action.priority, lastPriority)
+            lastPriority = action.priority
+
+        exclusiveIndices = [1, 3]
+        for i in exclusiveIndices:
+            actions[i].runActionExclusive = True
+        useForComputation = [True] * (num - 2)
+        queue, numBatches = _makeQueue(actions, useForComputation)
+        # 3 batches since 2 are exclusive and 3 left over tasks
+        self.assertEqual(numBatches, 3)
+        # check that they remain exclusive
+        for i in exclusiveIndices:
+            self.assertTrue(actions[i].runActionExclusive)
+
+        lastPriority = -999
+        foundFirstNonExclusive = False
+        for action in queue:
+            if not action.runActionExclusive:
+                foundFirstNonExclusive = True
+                # priority order resets for non-exclusive
+                lastPriority = -999
+
+            if foundFirstNonExclusive:
+                # all after the first nonExclusive should be non-exclusive
+                self.assertFalse(action.runActionExclusive)
+            self.assertGreaterEqual(action.priority, lastPriority)
+            lastPriority = action.priority
 
 
 def passer():

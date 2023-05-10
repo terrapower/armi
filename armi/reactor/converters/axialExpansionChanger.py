@@ -55,7 +55,11 @@ def makeAssemsAbleToSnapToUniformMesh(
         a.makeAxialSnapList(referenceAssembly)
 
 
-def expandColdDimsToHot(assems, isDetailedAxialExpansion, referenceAssembly=None):
+def expandColdDimsToHot(
+    assems: list,
+    isDetailedAxialExpansion: bool,
+    referenceAssembly=None,
+):
     """
     Expand BOL assemblies, resolve disjoint axial mesh (if needed), and update block BOL heights
 
@@ -64,9 +68,9 @@ def expandColdDimsToHot(assems, isDetailedAxialExpansion, referenceAssembly=None
     assems: list[:py:class:`Assembly <armi.reactor.assemblies.Assembly>`]
         list of assemblies to be thermally expanded
     isDetailedAxialExpansion: bool
-        If true assemblies will be forced to conform to the reference mesh after expansion
+        If False, assemblies will be forced to conform to the reference mesh after expansion
     referenceAssembly: :py:class:`Assembly <armi.reactor.assemblies.Assembly>`, optional
-        Assembly whose mesh other meshes wil conform to if isDetailedAxialExpansion is true.
+        Assembly whose mesh other meshes will conform to if isDetailedAxialExpansion is False.
         If not provided, will assume the finest mesh assembly which is typically fuel.
     """
     assems = list(assems)
@@ -74,26 +78,18 @@ def expandColdDimsToHot(assems, isDetailedAxialExpansion, referenceAssembly=None
         referenceAssembly = getDefaultReferenceAssem(assems)
     axialExpChanger = AxialExpansionChanger(isDetailedAxialExpansion)
     for a in assems:
-        if not a.hasFlags(Flags.CONTROL):
-            axialExpChanger.setAssembly(a)
-            # this doesn't get applied to control assems, so CR will be interpreted
-            # as hot. This should be conservative because the control rods will
-            # be modeled as slightly shorter with the correct hot density. Density
-            # is more important than height, so we are forcing density to be correct
-            # since we can't do axial expansion (yet)
-            axialExpChanger.applyColdHeightMassIncrease()
-            axialExpChanger.expansionData.computeThermalExpansionFactors()
-            axialExpChanger.axiallyExpandAssembly()
+        axialExpChanger.setAssembly(a)
+        axialExpChanger.applyColdHeightMassIncrease()
+        axialExpChanger.expansionData.computeThermalExpansionFactors()
+        axialExpChanger.axiallyExpandAssembly()
     if not isDetailedAxialExpansion:
         for a in assems:
-            if not a.hasFlags(Flags.CONTROL):
-                a.setBlockMesh(referenceAssembly.getAxialMesh())
+            a.setBlockMesh(referenceAssembly.getAxialMesh())
     # update block BOL heights to reflect hot heights
     for a in assems:
-        if not a.hasFlags(Flags.CONTROL):
-            for b in a:
-                b.p.heightBOL = b.getHeight()
-                b.completeInitialLoading()
+        for b in a:
+            b.p.heightBOL = b.getHeight()
+            b.completeInitialLoading()
 
 
 class AxialExpansionChanger:
@@ -287,14 +283,6 @@ class AxialExpansionChanger:
                     c.ztop = c.zbottom + c.height
                     # redistribute block boundaries if on the target component
                     if self.expansionData.isTargetComponent(c):
-                        if b.axialExpTargetComponent is None:
-                            runLog.debug(
-                                f"      Component {c} is target component (inferred)"
-                            )
-                        else:
-                            runLog.debug(
-                                f"      Component {c} is target component (blueprints defined)"
-                            )
                         b.p.ztop = c.ztop
 
             # see also b.setHeight()
@@ -803,8 +791,10 @@ class ExpansionData:
             target components should be determined on the fly.
         """
         for b in self._a:
-            if b.axialExpTargetComponent is not None:
-                self._componentDeterminesBlockHeight[b.axialExpTargetComponent] = True
+            if b.p.axialExpTargetComponent:
+                self._componentDeterminesBlockHeight[
+                    b.getComponentByName(b.p.axialExpTargetComponent)
+                ] = True
             elif b.hasFlags(Flags.PLENUM) or b.hasFlags(Flags.ACLP):
                 self.determineTargetComponent(b, Flags.CLAD)
             elif b.hasFlags(Flags.DUMMY):
@@ -815,7 +805,7 @@ class ExpansionData:
                 self.determineTargetComponent(b)
 
     def determineTargetComponent(self, b, flagOfInterest=None):
-        """appends target component to self._componentDeterminesBlockHeight
+        """determines target component, stores it on the block, and appends it to self._componentDeterminesBlockHeight
 
         Parameters
         ----------
@@ -850,15 +840,21 @@ class ExpansionData:
         else:
             componentWFlag = [c for c in b.getChildren() if c.hasFlags(flagOfInterest)]
         if len(componentWFlag) == 0:
-            raise RuntimeError("No target component found!\n   Block {0}".format(b))
+            # if only 1 solid, be smart enought to snag it
+            solidMaterials = list(
+                c for c in b if not isinstance(c.material, material.Fluid)
+            )
+            if len(solidMaterials) == 1:
+                componentWFlag = solidMaterials
+        if len(componentWFlag) == 0:
+            raise RuntimeError(f"No target component found!\n   Block {b}")
         if len(componentWFlag) > 1:
             raise RuntimeError(
-                "Cannot have more than one component within a block that has the target flag!"
-                "Block {0}\nflagOfInterest {1}\nComponents {2}".format(
-                    b, flagOfInterest, componentWFlag
-                )
+                f"Cannot have more than one component within a block that has the target flag!"
+                f"Block {b}\nflagOfInterest {flagOfInterest}\nComponents {componentWFlag}"
             )
         self._componentDeterminesBlockHeight[componentWFlag[0]] = True
+        b.p.axialExpTargetComponent = componentWFlag[0].name
 
     def _isFuelLocked(self, b):
         """physical/realistic implementation reserved for ARMI plugin
@@ -882,6 +878,7 @@ class ExpansionData:
         if c is None:
             raise RuntimeError(f"No fuel component within {b}!")
         self._componentDeterminesBlockHeight[c] = True
+        b.p.axialExpTargetComponent = c.name
 
     def isTargetComponent(self, c):
         """returns bool if c is a target component

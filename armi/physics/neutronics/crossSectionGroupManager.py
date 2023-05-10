@@ -66,7 +66,7 @@ from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.reactor.components import basicShapes
 from armi.reactor.flags import Flags
 from armi.utils.units import TRACE_NUMBER_DENSITY
-from armi.settings.fwSettings.globalSettings import CONF_RUN_TYPE
+from armi.physics.neutronics import LatticePhysicsFrequency
 
 ORDER = interfaces.STACK_ORDER.BEFORE + interfaces.STACK_ORDER.FUEL_MANAGEMENT
 
@@ -387,6 +387,113 @@ def getBlockNuclideTemperatureAvgTerms(block, allNucNames):
     return nvt, nv
 
 
+class CylindricalComponentsAverageBlockCollection(BlockCollection):
+    """
+    Creates a representative block for the purpose of cross section generation with a one-dimensional
+    cylindrical model.
+
+    Notes
+    -----
+    When generating the representative block within this collection, the geometry is checked
+    against all other blocks to ensure that the number of components are consistent. This implementation
+    is intended to be opinionated, so if a user attempts to put blocks that have geometric differences
+    then this will fail.
+
+    This selects a representative block based on the collection of candidates based on the
+    median block average temperatures as an assumption.
+    """
+
+    def _getNewBlock(self):
+        newBlock = copy.deepcopy(self._selectCandidateBlock())
+        newBlock.name = "1D_CYL_AVG_" + newBlock.getMicroSuffix()
+        return newBlock
+
+    def _selectCandidateBlock(self):
+        """Selects the candidate block with the median block-average temperature."""
+        info = []
+        for b in self.getCandidateBlocks():
+            info.append((b.getAverageTempInC(), b.getName(), b))
+        info.sort()
+        medianBlockData = info[len(info) // 2]
+        return medianBlockData[-1]
+
+    def _makeRepresentativeBlock(self):
+        """Build a representative fuel block based on component number densities."""
+        repBlock = self._getNewBlock()
+        bWeights = [self.getWeight(b) for b in self.getCandidateBlocks()]
+        componentsInOrder = self._orderComponentsInGroup(repBlock)
+
+        for c, allSimilarComponents in zip(repBlock, componentsInOrder):
+            allNucsNames, densities = self._getAverageComponentNucs(
+                allSimilarComponents, bWeights
+            )
+            for nuc, aDensity in zip(allNucsNames, densities):
+                c.setNumberDensity(nuc, aDensity)
+        return repBlock
+
+    @staticmethod
+    def _getAllNucs(components):
+        """Iterate through components and get all unique nuclides."""
+        nucs = set()
+        for c in components:
+            nucs = nucs.union(c.getNuclides())
+        return sorted(list(nucs))
+
+    @staticmethod
+    def _checkComponentConsistency(b, repBlock):
+        """
+        Verify that all components being homogenized have same multiplicity and nuclides
+
+        Raises
+        ------
+        ValueError
+            When the components in a candidate block do not align with
+            the components in the representative block. This check includes component area, component multiplicity,
+            and nuclide composition.
+        """
+        if len(b) != len(repBlock):
+            raise ValueError(
+                f"Blocks {b} and {repBlock} have differing number "
+                f"of components and cannot be homogenized"
+            )
+        for c, repC in zip(b, repBlock):
+            compString = (
+                f"Component {repC} in block {repBlock} and component {c} in block {b}"
+            )
+            if c.p.mult != repC.p.mult:
+                raise ValueError(
+                    f"{compString} must have the same multiplicity, but they have."
+                    f"{repC.p.mult} and {c.p.mult}, respectively."
+                )
+
+            theseNucs = set(c.getNuclides())
+            thoseNucs = set(repC.getNuclides())
+            diffNucs = theseNucs.symmetric_difference(thoseNucs)
+            if diffNucs:
+                raise ValueError(
+                    f"{compString} are in the same location, but nuclides "
+                    f"differ by {diffNucs}. \n{theseNucs} \n{thoseNucs}"
+                )
+
+    def _getAverageComponentNucs(self, components, bWeights):
+        """Compute average nuclide densities by block weights and component area fractions."""
+        allNucNames = self._getAllNucs(components)
+        densities = numpy.zeros(len(allNucNames))
+        totalWeight = 0.0
+        for c, bWeight in zip(components, bWeights):
+            weight = bWeight * c.getArea()
+            totalWeight += weight
+            densities += weight * numpy.array(c.getNuclideNumberDensities(allNucNames))
+        return allNucNames, densities / totalWeight
+
+    def _orderComponentsInGroup(self, repBlock):
+        """Order the components based on dimension and material type within the representative block."""
+        for b in self.getCandidateBlocks():
+            self._checkComponentConsistency(b, repBlock)
+        componentLists = [list(b) for b in self.getCandidateBlocks()]
+        return [list(comps) for comps in zip(*componentLists)]
+
+
 class SlabComponentsAverageBlockCollection(BlockCollection):
     """
     Creates a representative 1D slab block.
@@ -402,6 +509,11 @@ class SlabComponentsAverageBlockCollection(BlockCollection):
 
     """
 
+    def _getNewBlock(self):
+        newBlock = copy.deepcopy(self.getCandidateBlocks()[0])
+        newBlock.name = "1D_SLAB_AVG_" + newBlock.getMicroSuffix()
+        return newBlock
+
     def _makeRepresentativeBlock(self):
         """Build a representative fuel block based on component number densities."""
         repBlock = self._getNewBlock()
@@ -409,7 +521,7 @@ class SlabComponentsAverageBlockCollection(BlockCollection):
         componentsInOrder = self._orderComponentsInGroup(repBlock)
 
         for c, allSimilarComponents in zip(repBlock, componentsInOrder):
-            allNucsNames, densities = self._getAverageComponantNucs(
+            allNucsNames, densities = self._getAverageComponentNucs(
                 allSimilarComponents, bWeights
             )
             for nuc, aDensity in zip(allNucsNames, densities):
@@ -510,7 +622,7 @@ class SlabComponentsAverageBlockCollection(BlockCollection):
                 repBlock.remove(c)
         return repBlock
 
-    def _getAverageComponantNucs(self, components, bWeights):
+    def _getAverageComponentNucs(self, components, bWeights):
         """Compute average nuclide densities by block weights and component area fractions."""
         allNucNames = self._getAllNucs(components)
         densities = numpy.zeros(len(allNucNames))
@@ -592,12 +704,18 @@ class CrossSectionGroupManager(interfaces.Interface):
         from armi.physics.neutronics.settings import (
             CONF_XS_BLOCK_REPRESENTATION,
             CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION,
+            CONF_LATTICE_PHYSICS_FREQUENCY,
         )
 
         self.cs[CONF_CROSS_SECTION].setDefaults(
             self.cs[CONF_XS_BLOCK_REPRESENTATION],
             self.cs[CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION],
         )
+        self._latticePhysicsFrequency = LatticePhysicsFrequency[
+            self.cs[CONF_LATTICE_PHYSICS_FREQUENCY]
+        ]
+        if self._latticePhysicsFrequency == LatticePhysicsFrequency.BOL:
+            self.createRepresentativeBlocks()
 
     def interactBOC(self, cycle=None):
         """
@@ -607,7 +725,8 @@ class CrossSectionGroupManager(interfaces.Interface):
         -----
         The block list each each block collection cannot be emptied since it is used to derive nuclide temperatures.
         """
-        self.createRepresentativeBlocks()
+        if self._latticePhysicsFrequency == LatticePhysicsFrequency.BOC:
+            self.createRepresentativeBlocks()
 
     def interactEOC(self, cycle=None):
         """
@@ -617,28 +736,31 @@ class CrossSectionGroupManager(interfaces.Interface):
         """
         self.clearRepresentativeBlocks()
 
+    def interactEveryNode(self, cycle=None, tn=None):
+        if self._latticePhysicsFrequency >= LatticePhysicsFrequency.everyNode:
+            self.createRepresentativeBlocks()
+
     def interactCoupled(self, iteration):
         """Update XS groups on each physics coupling iteration to get latest temperatures.
 
         Notes
         -----
-        This coupling iteration is limited to when the time node is equal to zero. This is
-        assumed to be reasonable for most applications as 1) microscopic cross section changes with burn-up
-        are deemed to be less significant compared to convergence on the temperature state, and 2) temperature
-        distributions are not expected to dramatically change for time steps > 0.
-
-        .. warning::
-
-            The latter assumptions are design and application-specific and a subclass should be
-            considered when violated.
+        Updating the XS on only the first (i.e., iteration == 0) timenode can be a reasonable approximation to
+        get new cross sections with some temperature updates but not have to run lattice physics on each
+        coupled iteration. If the user desires to have the cross sections updated with every coupling iteration,
+        the ``latticePhysicsFrequency: all`` option.
 
         See Also
         --------
         :py:meth:`Assembly <armi.physics.neutronics.latticePhysics.latticePhysics.LatticePhysicsInterface.interactCoupled>`
         """
-        # always run for snapshots to account for temp effect of different flow or power statepoint
-        if self.cs[CONF_RUN_TYPE] == "Snapshots" or self.r.p.timeNode == 0:
-            self.interactBOC(cycle=None)
+
+        if (
+            iteration == 0
+            and self._latticePhysicsFrequency
+            == LatticePhysicsFrequency.firstCoupledIteration
+        ) or self._latticePhysicsFrequency == LatticePhysicsFrequency.all:
+            self.createRepresentativeBlocks()
 
     def clearRepresentativeBlocks(self):
         """Clear the representative blocks."""
@@ -852,8 +974,10 @@ class CrossSectionGroupManager(interfaces.Interface):
         ----------
         blockList : list
             A list of blocks defined within the core
-        originalRepresentativeBlocks : list
-            A list of unperturbed representative blocks that the new representative blocks are formed from
+        originalRepresentativeBlocks : dict
+            A dict of unperturbed representative blocks that the new representative blocks are formed from
+            keys: XS group ID (e.g., "AA")
+            values: representative block for the XS group
 
         Returns
         -------
@@ -861,6 +985,9 @@ class CrossSectionGroupManager(interfaces.Interface):
             Mapping between XS IDs and the new block collections
         modifiedReprBlocks : dict
             Mapping between XS IDs and the new representative blocks
+        origXSIDsFromNew : dict
+            Mapping of original XS IDs to new XS IDs. New XS IDs are created to
+            represent a modified state (e.g., a Doppler temperature perturbation).
 
         Raises
         ------
@@ -890,7 +1017,7 @@ class CrossSectionGroupManager(interfaces.Interface):
                 oldBlockCollection.allNuclidesInProblem
             )
             newBlockCollectionsByXsGroup[newXSID] = newBlockCollection
-        return newBlockCollectionsByXsGroup, modifiedReprBlocks
+        return newBlockCollectionsByXsGroup, modifiedReprBlocks, origXSIDsFromNew
 
     def _getModifiedReprBlocks(self, blockList, originalRepresentativeBlocks):
         """
@@ -1155,11 +1282,21 @@ class CrossSectionGroupManager(interfaces.Interface):
             runLog.extra("XS ID: {}, Collection: {}".format(xsID, collection))
 
 
+# String constants
+MEDIAN_BLOCK_COLLECTION = "Median"
+AVERAGE_BLOCK_COLLECTION = "Average"
+FLUX_WEIGHTED_AVERAGE_BLOCK_COLLECTION = "FluxWeightedAverage"
+SLAB_COMPONENTS_BLOCK_COLLECTION = "ComponentAverage1DSlab"
+CYLINDRICAL_COMPONENTS_BLOCK_COLLECTION = "ComponentAverage1DCylinder"
+
+# Mapping between block collection string constants and their
+# respective block collection classes.
 BLOCK_COLLECTIONS = {
-    "Median": MedianBlockCollection,
-    "Average": AverageBlockCollection,
-    "ComponentAverage1DSlab": SlabComponentsAverageBlockCollection,
-    "FluxWeightedAverage": FluxWeightedAverageBlockCollection,
+    MEDIAN_BLOCK_COLLECTION: MedianBlockCollection,
+    AVERAGE_BLOCK_COLLECTION: AverageBlockCollection,
+    FLUX_WEIGHTED_AVERAGE_BLOCK_COLLECTION: FluxWeightedAverageBlockCollection,
+    SLAB_COMPONENTS_BLOCK_COLLECTION: SlabComponentsAverageBlockCollection,
+    CYLINDRICAL_COMPONENTS_BLOCK_COLLECTION: CylindricalComponentsAverageBlockCollection,
 }
 
 
