@@ -35,8 +35,9 @@ import sys
 
 from armi import context, plugins, pluginManager, meta, settings
 from armi.reactor import parameters
-from armi.settings import Setting
+from armi.reactor.flags import Flags
 from armi.settings import fwSettings
+from armi.settings import Setting
 
 
 class App:
@@ -294,7 +295,6 @@ class App:
         bool
             Whether or not the plugin name is already registered with the manager.
         """
-
         if ":" in pluginPath:
             pluginName = pluginPath.strip().split(":")[-1]
         else:
@@ -320,6 +320,11 @@ class App:
         assert issubclass(plugin, plugins.UserPlugin)
         self._pm.register(plugin)
 
+        # ensure UserPlugin flags are loaded
+        newFlags = plugin.defineFlags()
+        if newFlags:
+            Flags.extend(newFlags)
+
     def __registerUserPluginsInternalImport(self, pluginPath):
         """Helper method to register a single UserPlugin where
         the given path is of the form: armi.thing.what.MyPlugin
@@ -331,6 +336,11 @@ class App:
         plugin = getattr(mod, clsName)
         assert issubclass(plugin, plugins.UserPlugin)
         self._pm.register(plugin)
+
+        # ensure UserPlugin flags are loaded
+        newFlags = plugin.defineFlags()
+        if newFlags:
+            Flags.extend(newFlags)
 
     @property
     def splashText(self):
