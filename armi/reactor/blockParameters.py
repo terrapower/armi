@@ -46,6 +46,7 @@ def getBlockParameterDefinitions():
             units=None,
             saveToDB=False,
             default=None,
+            location=ParamLocation.CHILDREN,
         )
 
         def detailedNDens(self, value):
@@ -106,6 +107,7 @@ def getBlockParameterDefinitions():
             description="Total number of atoms of heavy metal at BOL",
             default=None,
             saveToDB=False,
+            location=ParamLocation.CHILDREN,
         )
 
         pb.defParam(
@@ -133,6 +135,7 @@ def getBlockParameterDefinitions():
             description="Percent burnup of the initial heavy metal atoms that have been fissioned for each pin",
             default=None,
             saveToDB=False,
+            location=ParamLocation.CHILDREN,
         )
 
         pb.defParam(
@@ -140,18 +143,21 @@ def getBlockParameterDefinitions():
             units="%FIMA",
             description="Maximum percentage in a single pin of the initial heavy metal "
             "atoms that have been fissioned",
+            location=ParamLocation.MAX,
         )
 
         pb.defParam(
             "percentBuMaxPinLocation",
             units="int",
             description="Peak burnup pin location",
+            location=ParamLocation.MAX,
         )
 
         pb.defParam(
             "percentBuMin",
             units="%FIMA",
             description="Minimum percentage of the initial heavy metal atoms that have been fissioned",
+            location=ParamLocation.MAX,
         )
 
         pb.defParam(
@@ -973,14 +979,14 @@ def getBlockParameterDefinitions():
             "newDPAPeak",
             units="dpa",
             description="The peak DPA accumulated in the last burn step",
-            location=ParamLocation.AVERAGE,
+            location=ParamLocation.MAX,
         )
 
         pb.defParam(
             "percentBuPeak",
             units="%FIMA",
             description="Peak percentage of the initial heavy metal atoms that have been fissioned",
-            location=ParamLocation.AVERAGE,
+            location=ParamLocation.MAX,
         )
 
         pb.defParam(

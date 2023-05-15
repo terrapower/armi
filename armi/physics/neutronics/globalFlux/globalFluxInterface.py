@@ -235,17 +235,18 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
         Flux, power, and keff are generally calculated at every timestep to ensure flux
         is up to date with the reactor state.
         """
-        executer = self.getExecuter(label=f"{self.cs.caseTitle}-flux-c{cycle}n{node}")
+        executer = self.getExecuter(label=self.getLabel(self.cs.caseTitle, cycle, node))
         executer.run()
         GlobalFluxInterface.interactEveryNode(self, cycle, node)
 
     def interactCoupled(self, iteration):
         """Runs during a tightly-coupled physics iteration to updated the flux and power."""
         executer = self.getExecuter(
-            label=f"c{self.r.p.cycle}n{self.r.p.timeNode}i{iteration}"
+            label=self.getLabel(
+                self.cs.caseTitle, self.r.p.cycle, self.r.p.timeNode, iteration
+            )
         )
         executer.run()
-
         GlobalFluxInterface.interactCoupled(self, iteration)
 
     def getTightCouplingValue(self):
@@ -320,6 +321,27 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
         executer.options.calcReactionRatesOnMeshConversion = False
         output = executer.run()
         return output.getKeff()
+
+    @staticmethod
+    def getLabel(caseTitle, cycle, node, iteration=None):
+        """
+        Make a label (input/output file name) for the executer based on cycle, node, iteration
+
+        Parameters
+        ----------
+        caseTitle : str, required
+            The caseTitle for the ARMI run
+        cycle : int, required
+            The cycle number
+        node : int, required
+            The time node index
+        iteration : int, optional
+            The coupled iteration index
+        """
+        if iteration is not None:
+            return f"{caseTitle}-flux-c{cycle}n{node}i{iteration}"
+        else:
+            return f"{caseTitle}-flux-c{cycle}n{node}"
 
 
 class GlobalFluxOptions(executers.ExecutionOptions):
