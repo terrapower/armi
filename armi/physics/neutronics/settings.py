@@ -285,8 +285,8 @@ def defineSettings():
             default=1e-15,
             label="Minimum nuclide density",
             description="Density to use for nuclides and fission products at infinite dilution. "
-            "This is also used as the minimum density considered for computing macroscopic cross "
-            "sections. It can also be passed to physics plugins.",
+            + "This is also used as the minimum density considered for computing macroscopic cross "
+            + "sections. It can also be passed to physics plugins.",
         ),
         setting.Setting(
             CONF_INFINITE_DILUTE_CUTOFF,
