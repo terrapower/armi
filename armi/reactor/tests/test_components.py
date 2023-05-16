@@ -325,7 +325,7 @@ class TestShapedComponent(TestGeneralComponents):
                 self.component.getMass(),
             )
 
-    def test_densityD(self):
+    def test_density(self):
         """Testing the Component density gets the correct 3D material density."""
 
         class StrangeMaterial(Material):
@@ -581,7 +581,7 @@ class TestComponentExpansion(unittest.TestCase):
             mass2 * circle2.getThermalExpansionFactor(),
         )
 
-        # material.density is the 2D density of a material
+        # material.pseudoDensity is the 2D density of a material
         # material.density is true density and not equal in this case
         for circle in [circle1, circle2]:
             # 2D density is not equal after application of coldMatAxialExpansionFactor
