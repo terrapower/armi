@@ -304,7 +304,7 @@ def defineSettings():
         ),
         setting.Setting(
             CONF_XS_BLOCK_REPRESENTATION,
-            default="FluxWeightedAverage",
+            default="Average",
             label="Cross Section Block Averaging Method",
             description="The type of averaging to perform when creating cross sections for a group of blocks",
             options=[
