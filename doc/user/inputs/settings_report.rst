@@ -21,7 +21,7 @@ through the :py:class:`armi.settings.caseSettings.Settings` object, which is typ
 
     for setting in sorted(cs.values(), key=lambda s: s.name):
         content += '   * - {}\n'.format(' '.join(wrapper.wrap(setting.name)))
-        content += '     - {}\n'.format(' '.join(wrapper.wrap(setting.description or '')))
+        content += '     - {}\n'.format(' '.join(wrapper.wrap(str(setting.description) or '')))
         content += '     - {}\n'.format(' '.join(['``{}``'.format(wrapped) for wrapped in wrapper2.wrap(str(getattr(setting, 'default', None)).split("/")[-1])]))
         content += '     - {}\n'.format(' '.join(['``{}``'.format(wrapped) for wrapped in wrapper.wrap(str(getattr(setting,'options','') or ''))]))
 
