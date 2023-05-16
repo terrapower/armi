@@ -675,7 +675,7 @@ class UraniumOxide_TestCase(_Material_Test, unittest.TestCase):
     def test_getTemperatureAtDensity(self):
         expectedTemperature = 100.0
         tAtTargetDensity = self.mat.getTemperatureAtDensity(
-            self.mat.pseudoDensity(Tc=expectedTemperature), 30.0
+            self.mat.density(Tc=expectedTemperature), 30.0
         )
         self.assertAlmostEqual(expectedTemperature, tAtTargetDensity)
 
