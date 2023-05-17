@@ -8,7 +8,6 @@ Release Date: TBD
 
 What's new in ARMI
 ------------------
-#. TBD
 
 Bug fixes
 ---------
