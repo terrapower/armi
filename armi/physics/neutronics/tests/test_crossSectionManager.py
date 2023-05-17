@@ -120,6 +120,7 @@ class TestBlockCollectionAverage(unittest.TestCase):
         # 0 + 1/4 + 2/4 + 3/4 + 4/4 =
         # (0 + 1 + 2 + 3 + 4 ) / 5 = 10/5 = 2.0
         self.assertAlmostEqual(avgB.getNumberDensity("U235"), 2.0)
+        self.assertEqual(avgB.p.percentBu, 50.0)
 
 
 class TestBlockCollectionComponentAverage(unittest.TestCase):
@@ -311,6 +312,7 @@ class TestBlockCollectionComponentAverage1DCylinder(unittest.TestCase):
         representativeBlockList.sort(key=lambda repB: repB.getMass() / repB.getVolume())
         reprBlock = xsgm.representativeBlocks["ZA"]
         self.assertEqual(reprBlock.name, "1D_CYL_AVG_ZA")
+        self.assertEqual(reprBlock.p.percentBu, 0.0)
 
         for c, compDensity, compArea in zip(
             reprBlock, self.expectedComponentDensities, self.expectedComponentAreas
@@ -345,6 +347,7 @@ class TestBlockCollectionFluxWeightedAverage(unittest.TestCase):
         avgB = self.bc.createRepresentativeBlock()
         self.assertNotIn(avgB, self.bc)
         self.assertAlmostEqual(avgB.getNumberDensity("U235"), 1.0)
+        self.assertEqual(avgB.p.percentBu, 25.0)
 
     def test_invalidWeights(self):
         self.bc[0].p.flux = 0.0
@@ -391,6 +394,22 @@ class Test_CrossSectionGroupManager(unittest.TestCase):
         )
         self.assertEqual(len(blockCollectionsByXsGroup), 4)
         self.assertIn("AB", blockCollectionsByXsGroup)
+
+    def test_calcWeightedBurnup(self):
+        self.blockList[1].p.percentBu = 3.1
+        self.blockList[2].p.percentBu = 10.0
+        self.blockList[3].p.percentBu = 1.5
+        for b in self.blockList[4:]:
+            b.p.percentBu = 0.0
+        self.csm._updateBurnupGroups(self.blockList)
+        blockCollectionsByXsGroup = {}
+        blockCollectionsByXsGroup = self.csm._addXsGroupsFromBlocks(
+            blockCollectionsByXsGroup, self.blockList
+        )
+        self.assertEqual(
+            blockCollectionsByXsGroup["AA"]._calcWeightedBurnup(), 1 / 12.0
+        )
+        self.assertEqual(blockCollectionsByXsGroup["AB"]._calcWeightedBurnup(), 6.55)
 
     def test_getNextAvailableXsType(self):
         blockCollectionsByXsGroup = {}
