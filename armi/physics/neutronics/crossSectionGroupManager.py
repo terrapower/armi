@@ -238,6 +238,23 @@ class BlockCollection(list):
         """
         return [b for b in self if b.hasFlags(self._validRepresentativeBlockTypes)]
 
+    def _calcWeightedBurnup(self):
+        """
+        For a blockCollection that represents fuel, calculate the weighted average burnup
+
+        Notes
+        -----
+        - Only used for logging purposes
+        - Burnup needs to be weighted by heavy metal mass instead of volume
+        """
+        weightedBurnup = 0.0
+        totalWeight = 0.0
+        for b in self:
+            weighting = b.p.massHmBOL * self.getWeight(b) / b.p.volume
+            totalWeight += weighting
+            weightedBurnup += weighting * b.p.percentBu
+        return 0.0 if totalWeight == 0.0 else weightedBurnup / totalWeight
+
 
 class MedianBlockCollection(BlockCollection):
     """
@@ -310,6 +327,7 @@ class AverageBlockCollection(BlockCollection):
         lfpCollection = self._getAverageFuelLFP()
         newBlock.setLumpedFissionProducts(lfpCollection)
         newBlock.setNumberDensities(self._getAverageNumberDensities())
+        newBlock.p.percentBu = self._calcWeightedBurnup()
         self.calcAvgNuclideTemperatures()
         return newBlock
 
@@ -421,6 +439,7 @@ class CylindricalComponentsAverageBlockCollection(BlockCollection):
         """Build a representative fuel block based on component number densities."""
         repBlock = self._getNewBlock()
         bWeights = [self.getWeight(b) for b in self.getCandidateBlocks()]
+        repBlock.p.percentBu = self._calcWeightedBurnup()
         componentsInOrder = self._orderComponentsInGroup(repBlock)
 
         for c, allSimilarComponents in zip(repBlock, componentsInOrder):
@@ -518,6 +537,7 @@ class SlabComponentsAverageBlockCollection(BlockCollection):
         """Build a representative fuel block based on component number densities."""
         repBlock = self._getNewBlock()
         bWeights = [self.getWeight(b) for b in self.getCandidateBlocks()]
+        repBlock.p.percentBu = self._calcWeightedBurnup()
         componentsInOrder = self._orderComponentsInGroup(repBlock)
 
         for c, allSimilarComponents in zip(repBlock, componentsInOrder):
