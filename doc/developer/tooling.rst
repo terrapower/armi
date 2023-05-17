@@ -120,7 +120,7 @@ might look like ``0.1.7``, ``1.0.0``, or ``12.3.123``. Each number has a specifi
 
 * ``major`` - Revved for DOE/NRC-sanctioned release or at the end of a long development cycle.
 * ``minor`` - Revved when we decide the code or our API has reached a stable point.
-* ``bump`` - Revved every time we modify the API, or at any time we want.
+* ``bump`` - Revved every time we modify the API, and any other time we want.
 
 **NOTE**: Changes to documenation or testing probably do not deserve a version bump.
 
