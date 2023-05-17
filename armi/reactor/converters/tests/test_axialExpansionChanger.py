@@ -877,7 +877,7 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
                     for cExp in bExp:
                         if not isinstance(cExp.material, custom.Custom):
                             matDens = cExp.material.density(Tc=cExp.temperatureInC)
-                            compDens = cExp.getMassDensity()
+                            compDens = cExp.density()
                             msg = (
                                 f"{cExp} {cExp.material} in {bExp} was not at correct density. \n"
                                 + f"expansion = {bExp.p.height / bStd.p.height} \n"
