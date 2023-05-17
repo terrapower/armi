@@ -21,6 +21,7 @@ Most temperatures may be specified in either K or C and the functions will conve
 import copy
 import warnings
 
+from math import exp
 from scipy.optimize import fsolve
 import numpy
 
@@ -217,7 +218,7 @@ class Material:
         dLLhot = self.linearExpansionPercent(Tc=Tc)
         dLLcold = self.linearExpansionPercent(Tc=T0)
 
-        return (dLLhot - dLLcold) / (100.0 + dLLcold)
+        return exp(dLLhot - dLLcold) - 1.0
 
     def getThermalExpansionDensityReduction(
         self, prevTempInC: float, newTempInC: float
