@@ -406,10 +406,16 @@ class Test_CrossSectionGroupManager(unittest.TestCase):
         blockCollectionsByXsGroup = self.csm._addXsGroupsFromBlocks(
             blockCollectionsByXsGroup, self.blockList
         )
+        ABcollection = blockCollectionsByXsGroup["AB"]
         self.assertEqual(
             blockCollectionsByXsGroup["AA"]._calcWeightedBurnup(), 1 / 12.0
         )
-        self.assertEqual(blockCollectionsByXsGroup["AB"]._calcWeightedBurnup(), 6.55)
+        self.assertEqual(
+            ABcollection.getWeight(self.blockList[1]),
+            ABcollection.getWeight(self.blockList[2]),
+            "The two blocks in AB do not have the same weighting!",
+        )
+        self.assertEqual(ABcollection._calcWeightedBurnup(), 6.55)
 
     def test_getNextAvailableXsType(self):
         blockCollectionsByXsGroup = {}
