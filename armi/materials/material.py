@@ -218,7 +218,7 @@ class Material:
         dLLhot = self.linearExpansionPercent(Tc=Tc)
         dLLcold = self.linearExpansionPercent(Tc=T0)
 
-        return exp(dLLhot - dLLcold) - 1.0
+        return exp(dLLhot / 100.0 - dLLcold / 100.0) - 1.0
 
     def getThermalExpansionDensityReduction(
         self, prevTempInC: float, newTempInC: float
