@@ -250,7 +250,7 @@ class BlockCollection(list):
         weightedBurnup = 0.0
         totalWeight = 0.0
         for b in self:
-            weighting = b.p.massHmBOL * self.getWeight(b) / b.p.volume
+            weighting = b.p.massHmBOL * self.getWeight(b) / b.getVolume()
             totalWeight += weighting
             weightedBurnup += weighting * b.p.percentBu
         return 0.0 if totalWeight == 0.0 else weightedBurnup / totalWeight
