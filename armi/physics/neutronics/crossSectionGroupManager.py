@@ -246,13 +246,11 @@ class BlockCollection(list):
         -----
         - Only used for logging purposes
         - Burnup needs to be weighted by heavy metal mass instead of volume
-          self.getWeight(b) incorporates the volume, so we divide that weight
-          by volume so that volume is not effectively double-counted through
-          both the the b.p.massHmBol and the self.getWeight(b)
         """
         weightedBurnup = 0.0
         totalWeight = 0.0
         for b in self:
+            # self.getWeight(b) incorporates the volume as does mass, so divide by volume not to double-count
             weighting = b.p.massHmBOL * self.getWeight(b) / b.getVolume()
             totalWeight += weighting
             weightedBurnup += weighting * b.p.percentBu
