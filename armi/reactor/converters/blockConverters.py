@@ -388,6 +388,7 @@ class BlockAvgToCylConverter(BlockConverter):
                 mult=1,
             )
             driverRing.setNumberDensities(blockToAdd.getNumberDensities())
+            # no flag set here since its block level, and its a block, not component...
             self.convertedBlock.add(driverRing)
             innerDiam = driverOuterDiam
 
@@ -602,10 +603,11 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
 
     def _buildFirstRing(self, pinComponents):
         """Add first ring of components to new block."""
-        newComps = copy.deepcopy(pinComponents)
-        for c in newComps:
+        for oldC in pinComponents:
+            c = copy.deepcopy(oldC)
             c.setName(c.name + " 1")
             c.setDimension("mult", 1.0)  # first ring will have dims of 1 pin
+            c.p.flags = oldC.p.flags
             self.convertedBlock.add(c)
 
     def _buildNthRing(self, pinComponents, ringNum):  # pylint: disable=too-many-locals
@@ -637,6 +639,7 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
             bigComponent = self._addSolidMaterialRing(
                 bcs, innerDiameter, outerDiameter, name
             )
+            bigComponent.p.flags = bcs.p.flags
             self.convertedBlock.add(bigComponent)
             innerDiameter = outerDiameter
 
@@ -664,6 +667,7 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
             circularHexagon = self._addSolidMaterialRing(
                 hexagon, innerDiameter, outerDiam, name
             )
+            circularHexagon.p.flags = hexagon.p.flags
             self.convertedBlock.add(circularHexagon)
             innerDiameter = outerDiam
 
@@ -694,6 +698,7 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
             mult=1,
         )
         interRing.setNumberDensities(irc.getNumberDensities())
+        interRing.p.flags = irc.p.flags
         self.convertedBlock.add(interRing)
         self._remainingCoolantFillArea -= interRing.getArea()
 
