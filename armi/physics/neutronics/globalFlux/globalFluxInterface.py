@@ -32,6 +32,7 @@ from armi.reactor.blocks import Block
 from armi.reactor.converters import geometryConverters
 from armi.reactor.converters import uniformMesh
 from armi.reactor.flags import Flags
+from armi.settings.caseSettings import Settings
 from armi.utils import units, codeTiming, getMaxBurnSteps
 from armi.physics.neutronics.settings import (
     CONF_BOUNDARIES,
@@ -345,49 +346,99 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
 
 
 class GlobalFluxOptions(executers.ExecutionOptions):
-    """Data structure representing common options in Global Flux Solvers"""
+    """Data structure representing common options in Global Flux Solvers
+
+    Attributes
+    ----------
+    adjoint : bool
+        True if the ``CONF_NEUTRONICS_TYPE`` setting is set to ``adjoint``.
+    calcReactionRatesOnMeshConversion : bool
+        This option is used to recalculate reaction rates after a mesh
+        conversion and remapping of neutron flux. This can be disabled
+        in certain global flux implementations if reaction rates are not
+        required, but by default it is enabled.
+    eigenvalueProblem : bool
+        Whether this is a eigenvalue problem or a fixed source problem
+    includeFixedSource : bool
+        This can happen in eig if Fredholm Alternative satisfied.
+    photons : bool
+        Run the photon/gamma uniform mesh converter?
+    real : bool
+        True if  ``CONF_NEUTRONICS_TYPE`` setting is set to ``real``.
+    aclpDoseLimit : float
+        Dose limit in dpa used to position the above-core load pad (if one exists)
+    boundaries : str
+        External Neutronic Boundary Conditions. Reflective does not include axial.
+    cs : Settings
+        Settings for this run
+    detailedAxialExpansion : bool
+        Turn on detailed axial expansion? from settings
+    dpaPerFluence : float
+        A quick and dirty conversion that is used to get dpaPeak by multiplying
+        the factor and fastFluencePeak
+    energyDepoCalcMethodStep : str
+        For gamma transport/normalization
+    epsEigenvalue : float
+        Convergence criteria for calculating the eigenvalue in the global flux solver
+    epsFissionSourceAvg : float
+        Convergence criteria for average fission source, from settings
+    epsFissionSourcePoint : float
+        Convergence criteria for point fission source, from settings
+    geomType : geometry.GeomType
+        Reactor Core geometry type (HEX, RZ, RZT, etc)
+    hasNonUniformAssems: bool
+        Has any non-uniform assembly flags, from settings
+    isRestart : bool
+        Restart global flux case using outputs from last time as a guess
+    kernelName : str
+        The neutronics / depletion solver for global flux solve.
+    loadPadElevation : float
+        The elevation of the bottom of the above-core load pad (ACLP) from
+        the bottom of the upper grid plate (in cm).
+    loadPadLength : float
+        The length of the load pad. Used to compute average and peak dose.
+    maxOuters : int
+        XY and Axial partial current sweep max outer iterations.
+    savePhysicsFilesList : bool
+        Is this timestamp in the list of savePhysicsFiles in the settings?
+    symmetry : str
+        Reactor symmetry: full core, third-core, etc
+    xsKernel : str
+        Lattice Physics Kernel, from settings
+    """
 
     def __init__(self, label: Optional[str] = None):
         executers.ExecutionOptions.__init__(self, label)
-        self.real = True
-        self.adjoint = False
-        self.neutrons = True
-        self.photons = False
-        self.boundaryConditions = {}
-        self.epsFissionSourceAvg = None
-        self.epsFissionSourcePoint = None
-        self.epsEigenvalue = None
-        self.maxOuters = None
-        # can happen in eig if Fredholm Alternative satisfied
-        self.includeFixedSource = False
-        self.eigenvalueProblem = True
-        self.kernelName: str
-        self.isRestart = None
-        self.energyDepoCalcMethodStep = None  # for gamma transport/normalization
-        self.detailedAxialExpansion = None
+        # have defaults
+        self.adjoint: bool = False
+        self.calcReactionRatesOnMeshConversion: bool = True
+        self.eigenvalueProblem: bool = True
+        self.includeFixedSource: bool = False
+        self.photons: bool = False
+        self.real: bool = True
 
-        self.boundaries = None
-        self.xsKernel = None
+        # no defaults
+        self.aclpDoseLimit: Optional[float] = None
+        self.boundaries: Optional[str] = None
+        self.cs: Optional[Settings] = None
+        self.detailedAxialExpansion: Optional[bool] = None
+        self.dpaPerFluence: Optional[float] = None
+        self.energyDepoCalcMethodStep: Optional[str] = None
+        self.epsEigenvalue: Optional[float] = None
+        self.epsFissionSourceAvg: Optional[float] = None
+        self.epsFissionSourcePoint: Optional[float] = None
+        self.geomType: Optional[geometry.GeomType] = None
+        self.hasNonUniformAssems: Optional[bool] = None
+        self.isRestart: Optional[bool] = None
+        self.kernelName: Optional[str] = None
+        self.loadPadElevation: Optional[float] = None
+        self.loadPadLength: Optional[float] = None
+        self.maxOuters: Optional[int] = None
+        self.savePhysicsFilesList: Optional[bool] = None
+        self.symmetry: Optional[str] = None
+        self.xsKernel: Optional[str] = None
 
-        self.dpaPerFluence = None
-        self.aclpDoseLimit = None
-        self.loadPadElevation = None
-        self.loadPadLength = None
-        self.cs = None
-        self.savePhysicsFilesList = None
-
-        self._geomType: geometry.GeomType
-        self.symmetry: str
-
-        # This option is used to recalculate reaction
-        # rates after a mesh conversion and remapping
-        # of neutron flux. This can be disabled
-        # in certain global flux implementations
-        # if reaction rates are not required, but
-        # by default it is enabled.
-        self.calcReactionRatesOnMeshConversion = True
-
-    def fromUserSettings(self, cs):
+    def fromUserSettings(self, cs: Settings):
         """
         Map user input settings from cs to a set of specific global flux options.
 
