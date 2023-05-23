@@ -351,7 +351,7 @@ class GlobalFluxOptions(executers.ExecutionOptions):
     Attributes
     ----------
     adjoint : bool
-        True if the ``CONF_NEUTRONICS_TYPE`` setting is set to ``adjoint``.
+        True if the ``CONF_NEUTRONICS_TYPE`` setting is set to ``adjoint`` or ``real``.
     calcReactionRatesOnMeshConversion : bool
         This option is used to recalculate reaction rates after a mesh
         conversion and remapping of neutron flux. This can be disabled
