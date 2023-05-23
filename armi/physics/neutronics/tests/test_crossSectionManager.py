@@ -658,58 +658,6 @@ class TestXSNumberConverters(unittest.TestCase):
         self.assertEqual(num, 9090)
 
 
-class MockBlock(HexBlock):
-    def __init__(self, name=None, cs=None):
-        self.density = {}
-        HexBlock.__init__(self, name or "MockBlock", cs or settings.Settings())
-        # self.r = MockReactor()
-
-    def addNucs(self, nucDens):
-        self.density.update(nucDens)
-
-
-# class MockReactor:
-#    def __init__(self):
-#        self.blueprints = MockBlueprints()
-#        self.spatialGrid = None
-#
-#
-# class MockBlueprints:
-#    # this is only needed for allNuclidesInProblem and attributes were acting funky, so this was made.
-#    def __getattribute__(self, *args, **kwargs):
-#        return ["U235", "U235", "FE", "NA23"]
-#
-#
-# class MockBlock(HexBlock):
-#    def __init__(self, name=None, cs=None):
-#        self.density = {}
-#        HexBlock.__init__(self, name or "MockBlock", cs or settings.Settings())
-#        self.r = MockReactor()
-#
-#    @property
-#    def r(self):
-#        return self._r
-#
-#    @r.setter
-#    def r(self, r):
-#        self._r = r
-#
-#    def getVolume(self, *args, **kwargs):
-#        return 1.0
-#
-#    def getNuclideNumberDensities(self, nucNames):
-#        return [self.density.get(nucName, 0.0) for nucName in nucNames]
-#
-#    def _getNdensHelper(self):
-#        return {nucName: density for nucName, density in self.density.items()}
-#
-#    def setNumberDensity(self, key, val, *args, **kwargs):
-#        self.density[key] = val
-#
-#    def getNuclides(self):
-#        return self.density.keys()
-
-
 def makeBlocks(howMany=20):
     _o, r = test_reactors.loadTestReactor(TEST_ROOT)
     return r.core.getBlocks(Flags.FUEL)[
