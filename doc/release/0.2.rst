@@ -8,6 +8,7 @@ Release Date: TBD
 
 What's new in ARMI
 ------------------
+#. Removed ``metadata`` setting section, and created ``versions``. (`PR#1179 <https://github.com/terrapower/armi/pull/1274>`_)
 #. Remove unused `HCFcoretype` setting. (`PR#1179 <https://github.com/terrapower/armi/pull/1179>`_)
 #. The method ``Material.density3`` is now called ``density``, and the old ``density`` is now called ``pseudoDensity``. (`PR#1163 <https://github.com/terrapower/armi/pull/1163>`_)
 #. Added documentation for the thermal expansion approach used in ARMI. (`PR#1204 <https://github.com/terrapower/armi/pull/1204>`_)
