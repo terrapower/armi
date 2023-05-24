@@ -26,7 +26,6 @@ What's new in ARMI
 #. When using non-uniform mesh, detailed fission/activation products have cross sections generated to avoid blocks without xs data. (`PR#1257 <https://github.com/terrapower/armi/pull/1257>`_)
 #. Fix a bug in database comparison. (`PR#1258 <https://github.com/terrapower/armi/pull/1258>`_)
 #. Introduce new LatticePhysicsFrequency setting to control lattice physics calculation. (`PR#1239 <https://github.com/terrapower/armi/pull/1239>`_)
-#. Sort components on representativeBlock for consistency check. (`PR#1275 <https://github.com/terrapower/armi/pull/1275>`_)
 #. TBD
 
 Bug fixes
@@ -35,6 +34,7 @@ Bug fixes
 #. Force GAMISO/PMATRX file path extensions to be lower case for linux support (`PR#1216 <https://github.com/terrapower/armi/pull/1216>`_)
 #. Fixed an invalid assumption on the lattice physics and cross section manager interfaces when using tight coupling for snapshot runs. (`PR#1206 <https://github.com/terrapower/armi/pull/1206>`_)
 #. Fixed a bug where the precision used to determine the axial submesh was too small. (`PR#1225 <https://github.com/terrapower/armi/pull/1225>`_)
+#. Sort components on representativeBlock for consistency check. (`PR#1275 <https://github.com/terrapower/armi/pull/1275>`_)
 #. Fixed TBD
 
 
