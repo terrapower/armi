@@ -2,40 +2,52 @@
 ARMI v0.2 Release Notes
 =======================
 
-ARMI v0.2.7
+ARMI v0.2.8
 ===========
 Release Date: TBD
 
 What's new in ARMI
 ------------------
-#. Removed ``metadata`` setting section, and created ``versions``. (`PR#1179 <https://github.com/terrapower/armi/pull/1274>`_)
-#. Remove unused `HCFcoretype` setting. (`PR#1179 <https://github.com/terrapower/armi/pull/1179>`_)
-#. The method ``Material.density3`` is now called ``density``, and the old ``density`` is now called ``pseudoDensity``. (`PR#1163 <https://github.com/terrapower/armi/pull/1163>`_)
-#. Added documentation for the thermal expansion approach used in ARMI. (`PR#1204 <https://github.com/terrapower/armi/pull/1204>`_)
-#. Use TemporaryDirectoryChanger for executer.run() so dirs are cleaned up during run. (`PR#1219 <https://github.com/terrapower/armi/pull/1219>`_)
-#. New option ``copyOutput`` for globalFluxInterface to not copy output back to working directory. (`PR#1218 <https://github.com/terrapower/armi/pull/1218>`_, `PR#1227 <https://github.com/terrapower/armi/pull/1227>`_)
-#. `Executer` class has a ``dcType`` attribute to define the type of ``DirectoryChanger`` it will use. (`PR#1228 <https://github.com/terrapower/armi/pull/1228>`_)
-#. Added new setting ``assemFlagsToSkipAxialExpansion`` to enable users to list flags of assemblies to skip axial expansion. (`PR#1235 <https://github.com/terrapower/armi/pull/1235>`_)
-#. Enabling one-way (upwards) axial expansion of control assemblies. (`PR#1226 <https://github.com/terrapower/armi/pull/1226>`_)
-#. Implement control rod decusping option for uniform mesh converter. (`PR#1229 <https://github.com/terrapower/armi/pull/1229>`_)
-#. createRepresentativeBlocksFromExistingBlocks() now returns the mapping of original to new XS IDs. (`PR#1217 <https://github.com/terrapower/armi/pull/1217>`_)
-#. Added a capability to prioritize mpi action execution and exclusivity.  (`PR#1237 <https://github.com/terrapower/armi/pull/1237>`_)
-#. Use ``minimumNuclideDensity`` setting when generating macroscopic XS.  (`PR#1248 <https://github.com/terrapower/armi/pull/1248>`_)
-#. Improve support for single component axial expansion and general cleanup of axial expansion unit tests. (`PR#1230 <https://github.com/terrapower/armi/pull/1230>`_)
-#. New cross section group representative block type for 1D cylindrical models. (`PR#1238 <https://github.com/terrapower/armi/pull/1238>`_)
-#. Store the axial expansion target component name as a block parameter. (`PR#1256 https://github.com/terrapower/armi/pull/1256`_) 
-#. When using non-uniform mesh, detailed fission/activation products have cross sections generated to avoid blocks without xs data. (`PR#1257 <https://github.com/terrapower/armi/pull/1257>`_)
-#. Fix a bug in database comparison. (`PR#1258 <https://github.com/terrapower/armi/pull/1258>`_)
-#. Introduce new LatticePhysicsFrequency setting to control lattice physics calculation. (`PR#1239 <https://github.com/terrapower/armi/pull/1239>`_)
 #. TBD
 
 Bug fixes
 ---------
+#. TBD
+
+
+ARMI v0.2.7
+===========
+Release Date: 2023-05-24
+
+What's new in ARMI
+------------------
+#. The method ``Material.density3`` is now called ``density``, and the old ``density`` is now called ``pseudoDensity``. (`PR#1163 <https://github.com/terrapower/armi/pull/1163>`_)
+#. Removed ``metadata`` setting section, and created ``versions``. (`PR#1274 <https://github.com/terrapower/armi/pull/1274>`_)
+#. Remove unused ``HCFcoretype`` setting. (`PR#1179 <https://github.com/terrapower/armi/pull/1179>`_)
+#. Use ``minimumNuclideDensity`` setting when generating macroscopic XS.  (`PR#1248 <https://github.com/terrapower/armi/pull/1248>`_)
+#. Introduce new ``LatticePhysicsFrequency`` setting to control lattice physics calculation. (`PR#1239 <https://github.com/terrapower/armi/pull/1239>`_)
+#. Added new setting ``assemFlagsToSkipAxialExpansion`` to enable users to list flags of assemblies to skip axial expansion. (`PR#1235 <https://github.com/terrapower/armi/pull/1235>`_)
+#. Added documentation for the thermal expansion approach used in ARMI. (`PR#1204 <https://github.com/terrapower/armi/pull/1204>`_)
+#. Use ``TemporaryDirectoryChanger`` for ``executer.run()`` so dirs are cleaned up during run. (`PR#1219 <https://github.com/terrapower/armi/pull/1219>`_)
+#. New option ``copyOutput`` for globalFluxInterface to not copy output back to working directory. (`PR#1218 <https://github.com/terrapower/armi/pull/1218>`_, `PR#1227 <https://github.com/terrapower/armi/pull/1227>`_)
+#. `Executer` class has a ``dcType`` attribute to define the type of ``DirectoryChanger`` it will use. (`PR#1228 <https://github.com/terrapower/armi/pull/1228>`_)
+#. Enabling one-way (upwards) axial expansion of control assemblies. (`PR#1226 <https://github.com/terrapower/armi/pull/1226>`_)
+#. Implement control rod decusping option for uniform mesh converter. (`PR#1229 <https://github.com/terrapower/armi/pull/1229>`_)
+#. ``createRepresentativeBlocksFromExistingBlocks`` now returns the mapping of original to new XS IDs. (`PR#1217 <https://github.com/terrapower/armi/pull/1217>`_)
+#. Added a capability to prioritize ``MpiAction`` execution and exclusivity.  (`PR#1237 <https://github.com/terrapower/armi/pull/1237>`_)
+#. Improve support for single component axial expansion and general cleanup of axial expansion unit tests. (`PR#1230 <https://github.com/terrapower/armi/pull/1230>`_)
+#. New cross section group representative block type for 1D cylindrical models. (`PR#1238 <https://github.com/terrapower/armi/pull/1238>`_)
+#. Store the axial expansion target component name as a block parameter. (`PR#1256 <https://github.com/terrapower/armi/pull/1256>`_) 
+#. When using non-uniform mesh, detailed fission/activation products have cross sections generated to avoid blocks without xs data. (`PR#1257 <https://github.com/terrapower/armi/pull/1257>`_)
+#. Made sure all material classes could be resolved via name. (`PR#1270 <https://github.com/terrapower/armi/pull/1270>`_)
 #. Read flux directly from output into Gamma uniform mesh instead of mapping it in from block params. (`PR#1213 <https://github.com/terrapower/armi/pull/1213>`_)
-#. Force GAMISO/PMATRX file path extensions to be lower case for linux support (`PR#1216 <https://github.com/terrapower/armi/pull/1216>`_)
+#. Forced GAMISO/PMATRX file path extensions to be lower case for linux support. (`PR#1216 <https://github.com/terrapower/armi/pull/1216>`_)
+
+Bug fixes
+---------
+#. Fixed a bug in database comparison. (`PR#1258 <https://github.com/terrapower/armi/pull/1258>`_)
 #. Fixed an invalid assumption on the lattice physics and cross section manager interfaces when using tight coupling for snapshot runs. (`PR#1206 <https://github.com/terrapower/armi/pull/1206>`_)
 #. Fixed a bug where the precision used to determine the axial submesh was too small. (`PR#1225 <https://github.com/terrapower/armi/pull/1225>`_)
-#. Made sure all material classes could be resolved via name (`PR#1270 <https://github.com/terrapower/armi/pull/1270>`)
 
 
 ARMI v0.2.6
