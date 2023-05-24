@@ -39,7 +39,7 @@ What's new in ARMI
 #. New cross section group representative block type for 1D cylindrical models. (`PR#1238 <https://github.com/terrapower/armi/pull/1238>`_)
 #. Store the axial expansion target component name as a block parameter. (`PR#1256 <https://github.com/terrapower/armi/pull/1256>`_) 
 #. When using non-uniform mesh, detailed fission/activation products have cross sections generated to avoid blocks without xs data. (`PR#1257 <https://github.com/terrapower/armi/pull/1257>`_)
-#. Made sure all material classes could be resolved via name. (`PR#1270 <https://github.com/terrapower/armi/pull/1270>`)
+#. Made sure all material classes could be resolved via name. (`PR#1270 <https://github.com/terrapower/armi/pull/1270>`_)
 #. Read flux directly from output into Gamma uniform mesh instead of mapping it in from block params. (`PR#1213 <https://github.com/terrapower/armi/pull/1213>`_)
 #. Forced GAMISO/PMATRX file path extensions to be lower case for linux support. (`PR#1216 <https://github.com/terrapower/armi/pull/1216>`_)
 
