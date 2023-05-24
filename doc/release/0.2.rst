@@ -22,7 +22,7 @@ Release Date: 2023-05-24
 What's new in ARMI
 ------------------
 #. The method ``Material.density3`` is now called ``density``, and the old ``density`` is now called ``pseudoDensity``. (`PR#1163 <https://github.com/terrapower/armi/pull/1163>`_)
-#. Removed ``metadata`` setting section, and created ``versions``. (`PR#1179 <https://github.com/terrapower/armi/pull/1274>`_)
+#. Removed ``metadata`` setting section, and created ``versions``. (`PR#1274 <https://github.com/terrapower/armi/pull/1274>`_)
 #. Remove unused ``HCFcoretype`` setting. (`PR#1179 <https://github.com/terrapower/armi/pull/1179>`_)
 #. Use ``minimumNuclideDensity`` setting when generating macroscopic XS.  (`PR#1248 <https://github.com/terrapower/armi/pull/1248>`_)
 #. Introduce new ``LatticePhysicsFrequency`` setting to control lattice physics calculation. (`PR#1239 <https://github.com/terrapower/armi/pull/1239>`_)
