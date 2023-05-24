@@ -1128,7 +1128,7 @@ class Operator:  # pylint: disable=too-many-public-methods
 
         isoFName = f"ISOTXS-c{cycle}n{node}"
         if not os.path.exists(isoFName):
-            isoFName = "ISOTXS-c{cycle}"
+            isoFName = f"ISOTXS-c{cycle}"
         pathTools.copyOrWarn(
             "ISOTXS for snapshot", isoFName, pathTools.armiAbsPath(newFolder, "ISOTXS")
         )
