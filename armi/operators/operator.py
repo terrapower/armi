@@ -1126,9 +1126,9 @@ class Operator:  # pylint: disable=too-many-public-methods
             if "rzmflx" in fileName:
                 pathTools.copyOrWarn("rzmflx for snapshot", fileName, newFolder)
 
-        isoFName = "ISOTXS-c{0}n{0}".format(cycle, node)
+        isoFName = f"ISOTXS-c{cycle}n{node}"
         if not os.path.exists(isoFName):
-            isoFName = "ISOTXS-c{0}".format(cycle)
+            isoFName = "ISOTXS-c{cycle}"
         pathTools.copyOrWarn(
             "ISOTXS for snapshot", isoFName, pathTools.armiAbsPath(newFolder, "ISOTXS")
         )
