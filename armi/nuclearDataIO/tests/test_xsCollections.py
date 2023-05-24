@@ -16,6 +16,8 @@
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import unittest
 
+from armi import settings
+from armi.reactor.blocks import HexBlock
 from armi.nuclearDataIO import isotxs
 from armi.nuclearDataIO import xsCollections
 from armi.tests import ISOAA_PATH
