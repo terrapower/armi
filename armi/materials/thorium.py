@@ -25,7 +25,7 @@ from armi.utils.units import getTk
 
 
 class Thorium(FuelMaterial):
-    name = "Thorium metal"
+    name = "Thorium"
     propertyValidTemperature = {"linear expansion": ((30, 600), "K")}
 
     def __init__(self):

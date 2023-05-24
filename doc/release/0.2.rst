@@ -35,6 +35,7 @@ Bug fixes
 #. Fixed an invalid assumption on the lattice physics and cross section manager interfaces when using tight coupling for snapshot runs. (`PR#1206 <https://github.com/terrapower/armi/pull/1206>`_)
 #. Fixed a bug where the precision used to determine the axial submesh was too small. (`PR#1225 <https://github.com/terrapower/armi/pull/1225>`_)
 #. Sort components on representativeBlock for consistency check. (`PR#1275 <https://github.com/terrapower/armi/pull/1275>`_)
+#. Made sure all material classes could be resolved via name (`PR#1270 <https://github.com/terrapower/armi/pull/1270>`)
 #. Fixed TBD
 
 
