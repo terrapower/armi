@@ -218,7 +218,7 @@ class Material:
         dLLhot = self.linearExpansionPercent(Tc=Tc) / 100.0
         dLLcold = self.linearExpansionPercent(Tc=T0) / 100.0
 
-        return exp(dLLhot - dLLcold)
+        return exp(dLLhot - dLLcold) - 1.0
 
     def getThermalExpansionDensityReduction(
         self, prevTempInC: float, newTempInC: float
@@ -227,7 +227,7 @@ class Material:
         Return the factor required to update thermal expansion going from prevTempInC to newTempInC in 2D.
         """
         dLL = self.linearExpansionFactor(Tc=newTempInC, T0=prevTempInC)
-        return 1.0 / (dLL ** 2)
+        return 1.0 / (1.0 + dLL) ** 2
 
     def setDefaultMassFracs(self):
         r"""mass fractions"""

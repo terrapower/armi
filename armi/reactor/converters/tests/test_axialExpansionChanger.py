@@ -546,7 +546,7 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
                 else:
                     self.assertEqual(
                         self.obj.expansionData.getExpansionFactor(c),
-                        1.0,
+                        0.0,
                         msg=f"Block {b}, Component {c}, thermExpCoeff not right.\n",
                     )
 

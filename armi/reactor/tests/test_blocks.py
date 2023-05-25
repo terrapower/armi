@@ -2350,7 +2350,7 @@ class MassConservationTests(unittest.TestCase):
         duct.setTemperature(100)
         pitchHot = duct.getDimension("op")
         dLL = duct.getProperties().linearExpansionFactor(100, 25)
-        correctHot = pitchCold * dLL
+        correctHot = pitchCold * (1 + dLL)
         self.assertAlmostEqual(
             correctHot,
             pitchHot,

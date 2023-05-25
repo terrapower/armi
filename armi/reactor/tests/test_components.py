@@ -383,9 +383,10 @@ class TestCircle(TestShapedComponent):
            :links: REQ_REACTOR_THERMAL_EXPANSION
         """
         hotTemp = 700.0
-        ref = self.component.material.linearExpansionFactor(
+        dLL = self.component.material.linearExpansionFactor(
             Tc=hotTemp, T0=self._coldTemp
         )
+        ref = 1.0 + dLL
         cur = self.component.getThermalExpansionFactor(Tc=hotTemp)
         self.assertAlmostEqual(cur, ref)
 
@@ -540,7 +541,7 @@ class TestComponentExpansion(unittest.TestCase):
         circle1 = Circle("circle", mat, self.tCold, self.tHot, self.coldOuterDiameter)
         # pick the input dimension to get the same hot component
         hotterDim = self.coldOuterDiameter * (
-            circle1.material.linearExpansionFactor(self.tCold + 200, self.tCold)
+            1.0 + circle1.material.linearExpansionFactor(self.tCold + 200, self.tCold)
         )
         circle2 = Circle("circle", mat, self.tCold + 200, self.tHot, hotterDim)
         self.assertAlmostEqual(circle1.getDimension("od"), circle2.getDimension("od"))

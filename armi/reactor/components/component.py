@@ -899,7 +899,7 @@ class Component(composites.Composite, metaclass=ComponentType):
                 "Linear expansion percent may not be implemented in the {} material "
                 "class.".format(self.material)
             )
-        return dLL
+        return 1.0 + dLL
 
     def printContents(self, includeNuclides=True):
         """Print a listing of the dimensions and composition of this component."""

@@ -219,7 +219,7 @@ class AxialExpansionChanger:
         the expansion factor applied during applyMaterialMassFracsToNumberDensities.
         """
         for c in self.linked.a.getComponents():
-            axialExpansionFactor = c.material.linearExpansionFactor(
+            axialExpansionFactor = 1.0 + c.material.linearExpansionFactor(
                 c.temperatureInC, c.inputTemperatureInC
             )
             c.changeNDensByFactor(axialExpansionFactor)
@@ -265,7 +265,7 @@ class AxialExpansionChanger:
                 for c in _getSolidComponents(b):
                     growFrac = self.expansionData.getExpansionFactor(c)
                     runLog.debug(msg=f"      Component {c}, growFrac = {growFrac:.4e}")
-                    c.height = growFrac * blockHeight
+                    c.height = (1.0 + growFrac) * blockHeight
                     # align linked components
                     if ib == 0:
                         c.zbottom = 0.0
@@ -348,7 +348,7 @@ class AxialExpansionChanger:
         for ic, c in enumerate(b):
             c.p.volume = oldVolume[ic] * b.getHeight() / oldHeight
             if c in solidComponents:
-                growFrac = self.expansionData.getExpansionFactor(c)
+                growFrac = 1.0 + self.expansionData.getExpansionFactor(c)
                 newNumberDensities = {
                     nuc: c.getNumberDensity(nuc) / growFrac for nuc in c.getNuclides()
                 }
@@ -643,7 +643,7 @@ class ExpansionData:
             )
             raise RuntimeError
         for c, p in zip(componentLst, percents):
-            self._expansionFactors[c] = exp(p)
+            self._expansionFactors[c] = exp(p) - 1.0
 
     def updateComponentTempsBy1DTempField(
         self, tempGrid, tempField, updateNDensForRadialExp: bool = True
@@ -746,16 +746,19 @@ class ExpansionData:
         for b in self._a:
             for c in b:
                 if c in self.componentReferenceTemperature:
-                    self._expansionFactors[c] = c.getThermalExpansionFactor(
-                        T0=self.componentReferenceTemperature[c]
+                    self._expansionFactors[c] = (
+                        c.getThermalExpansionFactor(
+                            T0=self.componentReferenceTemperature[c]
+                        )
+                        - 1.0
                     )
                 elif self.componentReferenceTemperature:
                     # we want expansion factors relative to componentReferenceTemperature not Tinput.
                     # But for this component there isn't a componentReferenceTemperature,
                     # so we'll assume that the expansion factor is 0.0.
-                    self._expansionFactors[c] = 1.0  # exp(0.0) = 1.0
+                    self._expansionFactors[c] = 0.0
                 else:
-                    self._expansionFactors[c] = c.getThermalExpansionFactor()
+                    self._expansionFactors[c] = c.getThermalExpansionFactor() - 1.0
 
     def getExpansionFactor(self, c):
         """retrieves expansion factor for c
@@ -769,7 +772,7 @@ class ExpansionData:
         if c in self._expansionFactors:
             value = self._expansionFactors[c]
         else:
-            value = 1.0
+            value = 0.0
         return value
 
     def _setTargetComponents(self, setFuel):
