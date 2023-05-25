@@ -17,7 +17,7 @@
 from statistics import mean
 import os
 import unittest
-
+from math import exp
 from numpy import linspace, array, vstack, zeros
 
 from armi.materials import material
@@ -252,10 +252,11 @@ class TestAxialExpansionHeight(AxialExpansionTestBase, unittest.TestCase):
                 if ib > 0:
                     b.p.zbottom = assem[ib - 1].p.ztop
                 if idt > 0:
-                    dll = (
-                        0.02 * aveBlockTemp[ib, idt] - 0.02 * aveBlockTemp[ib, idt - 1]
-                    ) / (100.0 + 0.02 * aveBlockTemp[ib, idt - 1])
-                    thermExpansionFactor = 1.0 + dll
+                    thermExpansionFactor = exp(
+                        0.02
+                        / 100.0
+                        * (aveBlockTemp[ib, idt] - aveBlockTemp[ib, idt - 1])
+                    )
                     b.p.ztop = thermExpansionFactor * b.p.height + b.p.zbottom
                 self.trueZtop[ib, idt] = b.p.ztop
             # get block heights
@@ -430,11 +431,12 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
             for old, new in zip(oldMasses, newMasses):
                 self.assertAlmostEqual(old, new)
 
-        self.assertEqual(
-            oldMesh,
-            a.getAxialMesh(),
-            msg="Axial mesh is not the same after the expansion and contraction!",
-        )
+        for orig, new in zip(oldMesh, a.getAxialMesh()):
+            self.assertAlmostEqual(
+                orig,
+                new,
+                msg="Axial mesh is not the same after the expansion and contraction!",
+            )
 
     def test_TargetComponentMassConservation(self):
         """tests mass conservation for target components"""
@@ -544,7 +546,7 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
                 else:
                     self.assertEqual(
                         self.obj.expansionData.getExpansionFactor(c),
-                        0.0,
+                        1.0,
                         msg=f"Block {b}, Component {c}, thermExpCoeff not right.\n",
                     )
 

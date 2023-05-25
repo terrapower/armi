@@ -2350,7 +2350,7 @@ class MassConservationTests(unittest.TestCase):
         duct.setTemperature(100)
         pitchHot = duct.getDimension("op")
         dLL = duct.getProperties().linearExpansionFactor(100, 25)
-        correctHot = pitchCold * (1 + dLL)
+        correctHot = pitchCold * dLL
         self.assertAlmostEqual(
             correctHot,
             pitchHot,
@@ -2381,22 +2381,21 @@ class MassConservationTests(unittest.TestCase):
         # change temp to cold
         fuel.setTemperature(Tcold)
         massCold = fuel.getMass()
-        fuelArea = fuel.getArea()
-        # we are at cold temp so cold and hot area are equal
+        fuelAreaCold = fuel.getArea()
+        # fuel component is set to cold temp so cold and "hot" area are now equal
         self.assertAlmostEqual(fuel.getArea(cold=True), fuel.getArea())
         height = self.b.getHeight()  # hot height.
-        rho = fuel.getProperties().density(Tc=Tcold)
-        # can't use getThermalExpansionFactor since hot=cold so it would be 0
-        dllHot = fuel.getProperties().linearExpansionFactor(Tc=Thot, T0=Tcold)
-        coldHeight = height / (1 + dllHot)
-        theoreticalMass = fuelArea * coldHeight * rho
+        rhoCold = fuel.getProperties().density(Tc=Tcold)
+        dllHot = fuel.getThermalExpansionFactor(Tc=Thot, T0=Tcold)
+        coldHeight = height / dllHot
+        theoreticalColdMass = fuelAreaCold * coldHeight * rhoCold
 
         self.assertAlmostEqual(
             massCold,
-            theoreticalMass,
+            theoreticalColdMass,
             7,
             msg="Cold mass of fuel ({0}) != theoretical mass {1}.  "
-            "Check calculation of cold mass".format(massCold, theoreticalMass),
+            "Check calculation of cold mass".format(massCold, theoreticalColdMass),
         )
 
     def test_massConsistency(self):

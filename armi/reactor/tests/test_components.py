@@ -383,10 +383,9 @@ class TestCircle(TestShapedComponent):
            :links: REQ_REACTOR_THERMAL_EXPANSION
         """
         hotTemp = 700.0
-        dLL = self.component.material.linearExpansionFactor(
+        ref = self.component.material.linearExpansionFactor(
             Tc=hotTemp, T0=self._coldTemp
         )
-        ref = 1.0 + dLL
         cur = self.component.getThermalExpansionFactor(Tc=hotTemp)
         self.assertAlmostEqual(cur, ref)
 
@@ -541,7 +540,7 @@ class TestComponentExpansion(unittest.TestCase):
         circle1 = Circle("circle", mat, self.tCold, self.tHot, self.coldOuterDiameter)
         # pick the input dimension to get the same hot component
         hotterDim = self.coldOuterDiameter * (
-            1 + circle1.material.linearExpansionFactor(self.tCold + 200, self.tCold)
+            circle1.material.linearExpansionFactor(self.tCold + 200, self.tCold)
         )
         circle2 = Circle("circle", mat, self.tCold + 200, self.tHot, hotterDim)
         self.assertAlmostEqual(circle1.getDimension("od"), circle2.getDimension("od"))
@@ -592,7 +591,7 @@ class TestComponentExpansion(unittest.TestCase):
             )
             # 2D density is off by the material thermal exp factor
             percent = circle.material.linearExpansionPercent(Tc=circle.temperatureInC)
-            thermalExpansionFactorFromColdMatTemp = 1 + percent / 100
+            thermalExpansionFactorFromColdMatTemp = math.exp(percent / 100)
             self.assertAlmostEqual(
                 circle.density() * thermalExpansionFactorFromColdMatTemp,
                 circle.material.pseudoDensity(Tc=circle.temperatureInC),

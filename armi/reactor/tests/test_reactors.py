@@ -926,9 +926,7 @@ class HexReactorTests(ReactorTests):
 
         coldHeightAssems = coldHeightR.core.getAssemblies()
         for a, coldHeightA in zip(originalAssems, coldHeightAssems):
-            if a.hasFlags(Flags.CONTROL) or any(
-                a.hasFlags(aFlags) for aFlags in aToSkip
-            ):
+            if any(a.hasFlags(aFlags) for aFlags in aToSkip):
                 continue
             for b, coldHeightB in zip(a[1:], coldHeightA[1:]):
                 for param in nonEqualParameters:
@@ -941,7 +939,7 @@ class HexReactorTests(ReactorTests):
                         self.assertAlmostEqual(p, coldHeightP)
                 for param in equalParameters:
                     p, coldHeightP = b.p[param], coldHeightB.p[param]
-                    self.assertAlmostEqual(p, coldHeightP)
+                    self.assertAlmostEqual(p, coldHeightP, msg=f"{a}, {b}, {param}")
 
     def test_updateBlockBOLHeights_DBLoad(self):
         """Test that blueprints assemblies are expanded in DB load.
@@ -954,23 +952,28 @@ class HexReactorTests(ReactorTests):
         nonEqualParameters = ["heightBOL", "molesHmBOL", "massHmBOL"]
         equalParameters = ["smearDensity", "nHMAtBOL", "enrichmentBOL"]
 
-        _o, coldHeightR = loadTestReactor(
+        o, coldHeightR = loadTestReactor(
             self.directoryChanger.destination,
             customSettings={"inputHeightsConsideredHot": False},
         )
+        aToSkip = list(
+            Flags.fromStringIgnoreErrors(t)
+            for t in o.cs[CONF_ASSEM_FLAGS_SKIP_AXIAL_EXP]
+        )
         coldHeightAssems = sorted(a for a in coldHeightR.blueprints.assemblies.values())
         for a, coldHeightA in zip(originalAssems, coldHeightAssems):
-            if not a.hasFlags(Flags.CONTROL):
-                for b, coldHeightB in zip(a[1:], coldHeightA[1:]):
-                    for param in nonEqualParameters:
-                        p, coldHeightP = b.p[param], coldHeightB.p[param]
-                        if p and coldHeightP:
-                            self.assertNotEqual(p, coldHeightP)
-                        else:
-                            self.assertAlmostEqual(p, coldHeightP)
-                    for param in equalParameters:
-                        p, coldHeightP = b.p[param], coldHeightB.p[param]
+            if any(a.hasFlags(aFlags) for aFlags in aToSkip):
+                continue
+            for b, coldHeightB in zip(a[1:], coldHeightA[1:]):
+                for param in nonEqualParameters:
+                    p, coldHeightP = b.p[param], coldHeightB.p[param]
+                    if p and coldHeightP:
+                        self.assertNotEqual(p, coldHeightP)
+                    else:
                         self.assertAlmostEqual(p, coldHeightP)
+                for param in equalParameters:
+                    p, coldHeightP = b.p[param], coldHeightB.p[param]
+                    self.assertAlmostEqual(p, coldHeightP)
 
     def test_buildManualZones(self):
         # define some manual zones in the settings
