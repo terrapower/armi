@@ -304,22 +304,13 @@ class UniformMeshGenerator:
         filteredTops : the top of fuel assemblies, filtered to a minimum separation of
             ``minimumMeshSize`` with preference for the top bounds
         """
-        assemblyTypeFlags = set(
-            [a.p.flags for a in self._sourceReactor.core.getAssemblies(Flags.FUEL)]
-        )
         fuelBottoms = [
-            min(
-                a.getFirstBlock(Flags.FUEL).p.zbottom
-                for a in self._sourceReactor.core.getAssemblies(assemFlags, exact=True)
-            )
-            for assemFlags in assemblyTypeFlags
+            a.getFirstBlock(Flags.FUEL).p.zbottom
+            for a in self._sourceReactor.core.getAssemblies(Flags.FUEL)
         ]
         fuelTops = [
-            max(
-                a.getBlocks(Flags.FUEL)[-1].p.ztop
-                for a in self._sourceReactor.core.getAssemblies(assemFlags, exact=True)
-            )
-            for assemFlags in assemblyTypeFlags
+            a.getBlocks(Flags.FUEL)[-1].p.ztop
+            for a in self._sourceReactor.core.getAssemblies(Flags.FUEL)
         ]
         filteredBottoms = self._filterMesh(
             fuelBottoms,
