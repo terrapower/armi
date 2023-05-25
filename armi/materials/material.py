@@ -215,19 +215,19 @@ class Material:
         --------
         linearExpansionPercent
         """
-        dLLhot = self.linearExpansionPercent(Tc=Tc)
-        dLLcold = self.linearExpansionPercent(Tc=T0)
+        dLLhot = self.linearExpansionPercent(Tc=Tc) / 100.0
+        dLLcold = self.linearExpansionPercent(Tc=T0) / 100.0
 
-        return exp(dLLhot / 100.0 - dLLcold / 100.0) - 1.0
+        return exp(dLLhot) / exp(dLLcold)
 
     def getThermalExpansionDensityReduction(
         self, prevTempInC: float, newTempInC: float
     ) -> float:
         """
-        Return the factor required to update thermal expansion going from temperatureInC to temperatureInCNew.
+        Return the factor required to update thermal expansion going from prevTempInC to newTempInC in 2D.
         """
         dLL = self.linearExpansionFactor(Tc=newTempInC, T0=prevTempInC)
-        return 1.0 / (1 + dLL) ** 2
+        return 1.0 / (dLL ** 2)
 
     def setDefaultMassFracs(self):
         r"""mass fractions"""
@@ -410,7 +410,7 @@ class Material:
             )
             self.refDens = 0.0
 
-        f = (1.0 + dLL / 100.0) ** 2
+        f = exp(dLL / 100.0) ** 2
         return self.refDens / f  # g/cm^3
 
     def pseudoDensityKgM3(self, Tk: float = None, Tc: float = None) -> float:
@@ -446,7 +446,7 @@ class Material:
                 label="No refD " + self.getName(),
             )
             return None
-        f = (1.0 + dLL / 100.0) ** 3
+        f = exp(dLL / 100.0) ** 3
         return refD / f
 
     def densityKgM3(self, Tk: float = None, Tc: float = None) -> float:

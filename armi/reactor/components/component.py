@@ -19,7 +19,7 @@ This module contains the abstract definition of a Component.
 """
 import copy
 import re
-
+from math import exp
 import numpy
 
 from armi.materials import material
@@ -352,7 +352,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         # Materials don't typically define the temperature for which their references
         # density is defined so linearExpansionPercent must be called
         coldMatAxialExpansionFactor = (
-            1.0 + self.material.linearExpansionPercent(Tc=self.temperatureInC) / 100
+            exp(self.material.linearExpansionPercent(Tc=self.temperatureInC) / 100)
         )
         self.changeNDensByFactor(1.0 / coldMatAxialExpansionFactor)
 
@@ -875,7 +875,7 @@ class Component(composites.Composite, metaclass=ComponentType):
 
         Returns
         -------
-        Thermal expansion factor as a percentage (1.0 + dLL), where dLL is the linear expansion factor.
+        Thermal expansion factor as a percentage exp(dLL), where dLL is the linear expansion factor.
         """
         if isinstance(self.material, (material.Fluid, custom.Custom)):
             return 1.0  # No thermal expansion of fluids or custom materials
@@ -899,7 +899,7 @@ class Component(composites.Composite, metaclass=ComponentType):
                 "Linear expansion percent may not be implemented in the {} material "
                 "class.".format(self.material)
             )
-        return 1.0 + dLL
+        return dLL
 
     def printContents(self, includeNuclides=True):
         """Print a listing of the dimensions and composition of this component."""
