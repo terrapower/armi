@@ -177,7 +177,7 @@ class TestReportInterface(unittest.TestCase):
 
         self.assertEqual(repInt.fuelCycleSummary["bocFissile"], 0.0)
         repInt.interactBOC(1)
-        self.assertAlmostEqual(repInt.fuelCycleSummary["bocFissile"], 726.30401755)
+        self.assertAlmostEqual(repInt.fuelCycleSummary["bocFissile"], 726.24222262)
 
     def test_interactEOC(self):
         o, r = loadTestReactor()

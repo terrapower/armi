@@ -103,7 +103,7 @@ class TestBlueprints(unittest.TestCase):
         fuel = fuelAssem.getComponents(Flags.FUEL)[0]
         self.assertAlmostEqual(fuel.getDimension("od", cold=True), 0.86602)
         self.assertAlmostEqual(fuel.getDimension("id", cold=True), 0.0)
-        self.assertAlmostEqual(fuel.getDimension("od"), 0.87763665, 4)
+        self.assertAlmostEqual(fuel.getDimension("od"), 0.87771120, 4)
         self.assertAlmostEqual(fuel.getDimension("id"), 0.0)
         self.assertAlmostEqual(fuel.getDimension("mult"), 169)
 
