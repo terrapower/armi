@@ -351,8 +351,8 @@ class Component(composites.Composite, metaclass=ComponentType):
         # component.getThermalExpansionFactor.
         # Materials don't typically define the temperature for which their references
         # density is defined so linearExpansionPercent must be called
-        coldMatAxialExpansionFactor = (
-            exp(self.material.linearExpansionPercent(Tc=self.temperatureInC) / 100)
+        coldMatAxialExpansionFactor = exp(
+            self.material.linearExpansionPercent(Tc=self.temperatureInC) / 100
         )
         self.changeNDensByFactor(1.0 / coldMatAxialExpansionFactor)
 

@@ -746,16 +746,14 @@ class ExpansionData:
         for b in self._a:
             for c in b:
                 if c in self.componentReferenceTemperature:
-                    self._expansionFactors[c] = (
-                        c.getThermalExpansionFactor(
-                            T0=self.componentReferenceTemperature[c]
-                        )
+                    self._expansionFactors[c] = c.getThermalExpansionFactor(
+                        T0=self.componentReferenceTemperature[c]
                     )
                 elif self.componentReferenceTemperature:
                     # we want expansion factors relative to componentReferenceTemperature not Tinput.
                     # But for this component there isn't a componentReferenceTemperature,
                     # so we'll assume that the expansion factor is 0.0.
-                    self._expansionFactors[c] = 1.0 # exp(0.0) = 1.0
+                    self._expansionFactors[c] = 1.0  # exp(0.0) = 1.0
                 else:
                     self._expansionFactors[c] = c.getThermalExpansionFactor()
 
