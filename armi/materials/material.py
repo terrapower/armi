@@ -381,7 +381,14 @@ class Material:
 
     def pseudoDensity(self, Tk: float = None, Tc: float = None) -> float:
         """
-        Return density that preserves mass when thermally expanded in 2D.
+        Return density that preserves mass when thermally expanded in 2D at given temperature in g/cc.
+
+        Parameters
+        ----------
+        Tk : float, optional
+            temperature in Kelvin
+        Tc : float, optional
+            temperature in degrees Celsius
 
         Warning
         -------
@@ -417,16 +424,25 @@ class Material:
         """
         Return density that preserves mass when thermally expanded in 2D in units of kg/m^3
 
-        See Also
-        --------
-        armi.materials.density:
-            Arguments are forwarded to the g/cc version
+        Parameters
+        ----------
+        Tk : float, optional
+            temperature in Kelvin
+        Tc : float, optional
+            temperature in degrees Celsius
         """
         return self.pseudoDensity(Tk, Tc) * 1000.0
 
     def density(self, Tk: float = None, Tc: float = None) -> float:
         """
         Return density that preserves mass when thermally expanded in 3D.
+
+        Parameters
+        ----------
+        Tk : float, optional
+            temperature in Kelvin
+        Tc : float, optional
+            temperature in degrees Celsius
 
         Notes
         -----
@@ -451,6 +467,13 @@ class Material:
 
     def densityKgM3(self, Tk: float = None, Tc: float = None) -> float:
         """Return density that preserves mass when thermally expanded in 3D in units of kg/m^3.
+
+        Parameters
+        ----------
+        Tk : float, optional
+            temperature in Kelvin
+        Tc : float, optional
+            temperature in degrees Celsius
 
         See Also
         --------
