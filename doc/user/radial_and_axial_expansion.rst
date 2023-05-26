@@ -8,62 +8,56 @@ ARMI natively supports linear expansion in both the radial and axial dimensions.
 
 Thermal Expansion
 -----------------
-ARMI treats thermal expansion as a linear phenomena using the standard linear expansion relationship,
-
-.. math::
-    \frac{\Delta L}{L_0} = \alpha(T) \Delta T,
-    :label: linearExp
-
-where, :math:`\Delta L` and :math:`\Delta T` are the change in length and temperature from the reference state, respectively, and :math:`\alpha` is the thermal expansion coefficient relative to :math:`T_0`. Expanding and rearranging Equation :eq:`linearExp`, we can obtain an expression for the new length, :math:`L_1`,
-
-.. math::
-    L_1 = L_0\left[1 + \alpha(T_1)\left(T_1 - T_0\right) \right].
-    :label: newLength
-
-Given Equation :eq:`linearExp`, we can create expressions for the change in length between our "hot" temperature (Equation :eq:`hotExp`)
+Consider the ordinary differential equation describing the change in length from :math:`L_0` to :math:`L_1` due to a change in temperature from :math:`T_0` to :math:`T_1`,
 
 .. math::
     \begin{align}
-        \frac{L_h - L_0}{L_0} &= \alpha(T_h)\left(T_h - T_0\right),\\
-        \frac{L_h}{L_0} &= 1 + \alpha(T_h)\left(T_h - T_0\right).
+        \frac{dL}{dT} &= \alpha(T) L,\\[10pt]
+        \int_{L_0}^{L_1} \frac{1}{L} dL &= \int_{T_0}^{T_1} \alpha(T) dT,
     \end{align}
+    :label: expODE
+
+where, :math:`\alpha(T)`, is the temperature dependent coefficient of thermal expansion (CTE). If the CTE is an instantaneous, or tanget, CTE, Equation :eq:`expODE` can be directly evaluated for the change in length. If the CTE is a mean, or secant CTE, Equation :eq:`expCTE` simplifies to, 
+
+.. math::
+    \begin{align}
+        \ln{\frac{L_1}{L_0}} &= \alpha(T_1) \left( T_1 - T_0 \right),\\[10pt]
+        \frac{L_1}{L_0} &= \exp\left[{\alpha(T_1) \left( T_1 - T_0 \right)}\right].
+    \end{align}
+    :label: secantThermExp
+
+Given Equation :eq:`secantThermExp`, we can derive an expression for the change in length due to a change in temperature not relative to the reference temperature, :math:`T_0`. By using expressions for the change in length between a "hot" temperature
+
+.. math::
+    \frac{L_h}{L_0} = \exp\left[{\alpha(T_h) \left( T_h - T_0 \right)}\right],
     :label: hotExp
 
-and "non-reference" temperature, :math:`T_c` (Equation :eq:`nonRefExp`),
+and "non-reference" temperature, :math:`T_c`,
 
 .. math::
-    \begin{align}
-        \frac{L_c - L_0}{L_0} &= \alpha(T_c)\left(T_c - T_0\right),\\
-        \frac{L_c}{L_0} &= 1 + \alpha(T_c)\left(T_c - T_0\right).
-    \end{align}
+    \frac{L_c}{L_0} = \exp\left[{\alpha(T_c) \left( T_c - T_0 \right)}\right].
     :label: nonRefExp
 
-These are used within ARMI to enable thermal expansion and contraction with a temperature not equal to the reference temperature, :math:`T_0`. By taking the difference between Equation :eq:`hotExp` and :eq:`nonRefExp`, we can obtain an expression relating the change in length, :math:`L_h - L_c`, to the reference length, :math:`L_0`,
+we can obtain an expression relating the change in length, :math:`L_h - L_c`, to the non-reference temperature, :math:`T_c`,
+
+.. math::
+    \frac{L_h - L_c}{L_c} = \left( \frac{L_h}{L_0} - \frac{L_c}{L_0} \right) \left( \frac{L_0}{L_c} \right).
+    :label: diffHotNonRef
+
+Using Equations :eq:`hotExp` and :eq:`nonRefExp`, we can simplify Equation :eq:`diffHotNonRef` to obtain the following,
 
 .. math::
     \begin{align}
-        \frac{L_h - L_0}{L_0} - \frac{L_c - L_0}{L_0} &= \frac{L_h}{L_0} - 1 - \frac{L_c}{L_0} + 1, \\
-        &= \frac{L_h - L_c}{L_0}.
+        &= \frac{\exp\left[{\alpha(T_h)\left( T_h - T_0 \right)}\right] - \exp\left[{\alpha(T_c)\left( T_c - T_0 \right)}\right]}{\exp\left[{\alpha(T_c)\left( T_c - T_0 \right)}\right]},\\[10pt]
+	    & = \frac{\exp\left[{\alpha(T_h)\left( T_h - T_0 \right)}\right]}{\exp\left[{\alpha(T_c)\left( T_c - T_0 \right)}\right]} - 1,\\[10pt]
+	    & = \exp\left[{\alpha(T_h)\left(T_h - T_0\right) - \alpha(T_c)\left( T_c - T_0 \right)}\right] - 1.
     \end{align}
-    :label: diffHotNonRef
-
-Using Equations :eq:`diffHotNonRef` and :eq:`nonRefExp`, we can obtain an expression for the change in length, :math:`L_h - L_c`, relative to the non-reference temperature,
-
-.. math::
-    \frac{L_h - L_c}{L_c} &= \frac{L_h - L_c}{L_0} \frac{L_0}{L_c}\\
-    &= \left( \frac{L_h}{L_0} - \frac{L_c}{L_0} \right) \left( 1 + \alpha(T_c)\left(T_c - T_0\right) \right)^{-1}.
     :label: expNewRelative
 
-Using Equations :eq:`hotExp` and :eq:`nonRefExp`, we can simplify Equation :eq:`expNewRelative` to find,
-
-.. math::
-    \frac{L_h - L_c}{L_c} = \frac{\alpha(T_h) \left(T_h - T_0\right) - \alpha(T_c)\left(T_c - T_0\right)}{1 + \alpha(T_c)\left(T_c - T_0\right)}.
-    :label: linearExpansionFactor
-
-Equation :eq:`linearExpansionFactor` is the expression used by ARMI in :py:meth:`linearExpansionFactor <armi.materials.material.Material.linearExpansionFactor>`.
+Equation :eq:`expNewRelative` is the expression used by ARMI in :py:meth:`linearExpansionFactor <armi.materials.material.Material.linearExpansionFactor>`.
 
 .. note::
-    :py:meth:`linearExpansionPercent <armi.materials.material.Material.linearExpansionPercent>` returns :math:`\frac{L - L_0}{L_0}` in %.
+    :py:meth:`linearExpansionPercent <armi.materials.material.Material.linearExpansionPercent>` returns :math:`\frac{L}{L_0}` in %.
 
 .. _radialExpansion:
 
