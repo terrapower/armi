@@ -47,10 +47,10 @@ from armi.reactor import geometry
 from armi.reactor import grids
 from armi.reactor import parameters
 from armi.reactor import reactorParameters
-from armi.reactor import systemLayoutInput
 from armi.reactor import zones
 from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
 from armi.reactor.flags import Flags
+from armi.reactor.systemLayoutInput import SystemLayoutInput
 from armi.settings.fwSettings.globalSettings import CONF_MATERIAL_NAMESPACE_ORDER
 from armi.utils import createFormattedStrWithDelimiter, units
 from armi.utils import directoryChangers
@@ -81,7 +81,7 @@ class Reactor(composites.Composite):
         self.blueprints = blueprints
 
     def __getstate__(self):
-        r"""applies a settings and parent to the reactor and components."""
+        """Applies a settings and parent to the reactor and components."""
         state = composites.Composite.__getstate__(self)
         state["o"] = None
         return state
@@ -110,9 +110,19 @@ class Reactor(composites.Composite):
             self.core = cores[0]
 
 
-def loadFromCs(cs):
+def loadFromCs(cs) -> Reactor:
     """
     Load a Reactor based on the input settings.
+
+    Parameters
+    ----------
+    cs: CaseSettings
+        A relevant settings object
+
+    Returns
+    -------
+    Reactor
+        Reactor loaded from settings file
     """
     from armi.reactor import blueprints
 
@@ -120,7 +130,7 @@ def loadFromCs(cs):
     return factory(cs, bp)
 
 
-def factory(cs, bp, geom: Optional[systemLayoutInput.SystemLayoutInput] = None):
+def factory(cs, bp, geom: Optional[SystemLayoutInput] = None) -> Reactor:
     """Build a reactor from input settings, blueprints and geometry."""
     from armi.reactor import blueprints
 
@@ -147,6 +157,8 @@ def factory(cs, bp, geom: Optional[systemLayoutInput.SystemLayoutInput] = None):
                 structure.construct(cs, bp, r)
 
     runLog.debug("Reactor: {}".format(r))
+
+    r.sort()
     return r
 
 

@@ -712,8 +712,8 @@ class Database3:
 
         Returns
         -------
-        root : ArmiObject
-            The top-level object stored in the database; usually a Reactor.
+        root : Reactor
+            The top-level object stored in the database; a Reactor.
         """
         runLog.info("Loading reactor state for time node ({}, {})".format(cycle, node))
 
@@ -756,7 +756,8 @@ class Database3:
         if updateGlobalAssemNum:
             updateGlobalAssemblyNum(root)
 
-        # usually a reactor object
+        # return a Reactor object
+        root.sort()
         return root
 
     @staticmethod

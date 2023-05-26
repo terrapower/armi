@@ -348,7 +348,6 @@ class ArmiObject(metaclass=CompositeModelType):
         sense to sort things across containers or scopes. If this ends up being too
         restrictive, it can probably be relaxed or overridden on specific classes.
         """
-
         if self.spatialLocator is None or other.spatialLocator is None:
             runLog.error("could not compare {} and {}".format(self, other))
             raise ValueError(
@@ -387,7 +386,6 @@ class ArmiObject(metaclass=CompositeModelType):
         Special treatment of ``parent`` is not enough, since the spatialGrid also
         contains a reference back to the armiObject. Consequently, the ``spatialGrid``
         needs to be reassigned in ``__setstate__``.
-
         """
         state = self.__dict__.copy()
         state["parent"] = None
@@ -2649,7 +2647,6 @@ class Composite(ArmiObject):
     mixed with siblings in a grid. This allows mixing grid-representation with
     explicit representation, often useful in advanced assemblies and thermal
     reactors.
-
     """
 
     def __init__(self, name):
@@ -2676,9 +2673,18 @@ class Composite(ArmiObject):
         This does not use quality checks for membership checking because equality
         operations can be fairly heavy. Rather, this only checks direct identity
         matches.
-
         """
         return id(item) in set(id(c) for c in self._children)
+
+    def sort(self):
+        """Sort the children of this object."""
+        # sort the top-level children of this Composite
+        self._children.sort()
+
+        # recursively sort the children below it.
+        for c in self._children:
+            if issubclass(Composite, c.__class__):
+                c.sort()
 
     def index(self, obj):
         """Obtain the list index of a particular child."""
