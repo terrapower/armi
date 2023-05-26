@@ -8,6 +8,7 @@ Release Date: TBD
 
 What's new in ARMI
 ------------------
+#. Update thermal expansion routines to use nonlinear form. (`PR#1279 <https://github.com/terrapower/armi/pull/1279>`_)
 #. TBD
 
 Bug fixes
