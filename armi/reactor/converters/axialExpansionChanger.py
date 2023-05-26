@@ -349,6 +349,11 @@ class AxialExpansionChanger:
             c.p.volume = oldVolume[ic] * b.getHeight() / oldHeight
             if c in solidComponents:
                 growFrac = 1.0 + self.expansionData.getExpansionFactor(c)
+                if growFrac == 1.0:
+                    # for cases when the expansion factor is 0.0 and there are solid
+                    # components in the top most block of an assembly. This can occur
+                    # with prescribed expansion when the top most block is not a dummy block.
+                    growFrac = c.p.volume / oldVolume[ic]
                 newNumberDensities = {
                     nuc: c.getNumberDensity(nuc) / growFrac for nuc in c.getNuclides()
                 }
