@@ -11,9 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-r"""
-testing for reactors.py
-"""
+"""Testing for reactors.py."""
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import copy
 import os
@@ -37,9 +35,9 @@ from armi.reactor.components import Hexagon, Rectangle
 from armi.reactor.converters import geometryConverters
 from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
 from armi.reactor.flags import Flags
+from armi.settings.fwSettings.globalSettings import CONF_ASSEM_FLAGS_SKIP_AXIAL_EXP
 from armi.tests import ARMI_RUN_PATH, mockRunLogs, TEST_ROOT
 from armi.utils import directoryChangers
-from armi.settings.fwSettings.globalSettings import CONF_ASSEM_FLAGS_SKIP_AXIAL_EXP
 
 TEST_REACTOR = None  # pickled string of test reactor (for fast caching)
 
@@ -81,6 +79,7 @@ def buildOperatorOfEmptyHexBlocks(customSettings=None):
     a.add(b)
     a.spatialLocator = r.core.spatialGrid[1, 0, 0]
     o.r.core.add(a)
+    o.r.sort()
     return o
 
 
@@ -129,6 +128,7 @@ def buildOperatorOfEmptyCartesianBlocks(customSettings=None):
     a.add(b)
     a.spatialLocator = r.core.spatialGrid[1, 0, 0]
     o.r.core.add(a)
+    o.r.sort()
     return o
 
 
@@ -179,6 +179,7 @@ def loadTestReactor(
         assemblies.setAssemNumCounter(assemNum)
         settings.setMasterCs(o.cs)
         o.reattach(r, o.cs)
+        r.sort()
         return o, r
 
     cs = settings.Settings(fName=fName)
@@ -211,6 +212,7 @@ def loadTestReactor(
         # protocol=2 allows for classes with __slots__ but not __getstate__ to be pickled
         TEST_REACTOR = cPickle.dumps((o, o.r, assemblies.getAssemNum()), protocol=2)
 
+    o.r.sort()
     return o, o.r
 
 
