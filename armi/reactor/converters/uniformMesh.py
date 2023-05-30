@@ -317,7 +317,6 @@ class UniformMeshGenerator:
             self.minimumMeshSize,
             [min(fuelBottoms)],
             preference="bottom",
-            warn=True,
         )
         filteredTops = self._filterMesh(
             fuelTops, self.minimumMeshSize, [max(fuelTops)], preference="top", warn=True
@@ -354,7 +353,6 @@ class UniformMeshGenerator:
             self.minimumMeshSize,
             fuelBottoms,
             preference="bottom",
-            warn=True,
         )
         filteredTopCtrl = self._filterMesh(
             topBoundList, self.minimumMeshSize, fuelTops, preference="top", warn=True
