@@ -26,6 +26,7 @@ from armi import runLog
 from armi.reactor import grids
 from armi.utils import units
 
+
 class MeshConverter:
     """
     Base class for the reactor mesh conversions.
@@ -286,7 +287,9 @@ class _RZThetaReactorMeshConverterByAxialFlags(RZThetaReactorMeshConverter):
 
                     # Neglect any zero mesh points as zero points are implicit
                     if b.p.zbottom != 0.0:
-                        meshes.append(round(b.p.zbottom, units.FLOAT_DIMENSION_DECIMALS))
+                        meshes.append(
+                            round(b.p.zbottom, units.FLOAT_DIMENSION_DECIMALS)
+                        )
                     if b.p.ztop != 0.0:
                         meshes.append(round(b.p.ztop, units.FLOAT_DIMENSION_DECIMALS))
                 axialMeshCoordinates[a].add(min(meshes))
