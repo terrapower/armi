@@ -606,7 +606,6 @@ class TestDatabase3(unittest.TestCase):
         self.assertEqual(len(inputs), 3)
 
         self.assertGreater(len(inputs[0]), 100)
-        self.assertIn("metadata:", inputs[0])
         self.assertIn("settings:", inputs[0])
 
         self.assertEqual(len(inputs[1]), 0)

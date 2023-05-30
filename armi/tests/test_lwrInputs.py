@@ -64,7 +64,7 @@ class C5G7ReactorTests(unittest.TestCase):
             streamVal = mock.getStdout()
             self.assertGreater(streamVal.count("[warn]"), 32, msg=streamVal)
             self.assertGreater(streamVal.count("custom isotopics"), 32, msg=streamVal)
-            self.assertIn("Uranium Oxide", streamVal, msg=streamVal)
+            self.assertIn("UraniumOxide", streamVal, msg=streamVal)
             self.assertIn("SaturatedWater", streamVal, msg=streamVal)
             self.assertIn("invalid settings: fakeBad", streamVal, msg=streamVal)
 
