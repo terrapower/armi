@@ -62,25 +62,19 @@ _testGrid = grids.CartesianGrid.fromRectangle(0.01, 0.01)
 class DummyComposite(composites.Composite):
     pDefs = getDummyParamDefs()
 
-    def __init__(self, name):
+    def __init__(self, name, i=0):
         composites.Composite.__init__(self, name)
         self.p.type = name
-        x = 1000 * random()
-        y = 1000 * random()
-        z = 1000 * random()
-        self.spatialLocator = grids.IndexLocation(x, y, z, _testGrid)
+        self.spatialLocator = grids.IndexLocation(i, i, i, _testGrid)
 
 
 class DummyLeaf(composites.Composite):
     pDefs = getDummyParamDefs()
 
-    def __init__(self, name):
+    def __init__(self, name, i=0):
         composites.Composite.__init__(self, name)
         self.p.type = name
-        x = 1000 * random()
-        y = 1000 * random()
-        z = 1000 * random()
-        self.spatialLocator = grids.IndexLocation(x, y, z, _testGrid)
+        self.spatialLocator = grids.IndexLocation(i, i, i, _testGrid)
 
     def getChildren(
         self, deep=False, generationNum=1, includeMaterials=False, predicate=None
@@ -104,15 +98,15 @@ class TestCompositePattern(unittest.TestCase):
     def setUp(self):
         self.cs = settings.Settings()
         runLog.setVerbosity("error")
-        container = DummyComposite("inner test fuel")
+        container = DummyComposite("inner test fuel", 99)
         for i in range(5):
-            leaf = DummyLeaf("duct {}".format(i))
+            leaf = DummyLeaf("duct {}".format(i), i + 100)
             leaf.setType("duct")
             container.add(leaf)
-        nested = DummyComposite("clad")
+        nested = DummyComposite("clad", 98)
         nested.setType("clad")
-        self.secondGen = DummyComposite("liner")
-        self.thirdGen = DummyLeaf("pin 77")
+        self.secondGen = DummyComposite("liner", 97)
+        self.thirdGen = DummyLeaf("pin 77", 33)
         self.secondGen.add(self.thirdGen)
         nested.add(self.secondGen)
         container.add(nested)
