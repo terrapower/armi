@@ -233,8 +233,10 @@ class TestUniformMeshGenerator(unittest.TestCase):
         cls.r.core.lib = isotxs.readBinary(ISOAA_PATH)
 
         # make the mesh a little non-uniform
-        a = cls.r.core[4]
-        a[2].setHeight(a[2].getHeight() * 1.05)
+        a4 = cls.r.core[4]
+        a4[2].setHeight(a4[2].getHeight() * 1.05)
+        a3 = cls.r.core[3]
+        a3[2].setHeight(a3[2].getHeight() * 1.20)
 
     def setUp(self):
         self.generator = uniformMesh.UniformMeshGenerator(
@@ -286,14 +288,15 @@ class TestUniformMeshGenerator(unittest.TestCase):
     def test_filteredTopAndBottom(self):
         fuelBottoms, fuelTops = self.generator._getFilteredFuelTopAndBottom()
         self.assertListEqual(fuelBottoms, [25.0])
-        self.assertListEqual(fuelTops, [101.25])
+        self.assertListEqual(fuelTops, [101.25, 105.0])
 
-        # ctrlBottoms and ctrlTops include the fuelBottoms and fuelTops, respectively
-        ctrlBottoms, ctrlTops = self.generator._getFilteredControlTopAndBottom(
-            fuelBottoms, fuelTops
-        )
-        self.assertListEqual(ctrlBottoms, [25.0, 50.0])
-        self.assertListEqual(ctrlTops, [75.0, 101.25])
+        # ctrlAndFuelBottoms and ctrlAndFuelTops include the fuelBottoms and fuelTops, respectively
+        (
+            ctrlAndFuelBottoms,
+            ctrlAndFuelTops,
+        ) = self.generator._getFilteredControlTopAndBottom(fuelBottoms, fuelTops)
+        self.assertListEqual(ctrlAndFuelBottoms, [25.0, 50.0])
+        self.assertListEqual(ctrlAndFuelTops, [75.0, 101.25, 105.0])
 
     def test_generateCommonMesh(self):
         """
