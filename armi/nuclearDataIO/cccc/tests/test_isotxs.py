@@ -124,6 +124,9 @@ class TestIsotxs(unittest.TestCase):
         self.assertEqual(nuclearDataIO.getExpectedISOTXSFileName(cycle=0), "ISOTXS-c0")
         self.assertEqual(nuclearDataIO.getExpectedISOTXSFileName(cycle=1), "ISOTXS-c1")
         self.assertEqual(
+            nuclearDataIO.getExpectedISOTXSFileName(cycle=0, node=1), "ISOTXS-c0n1"
+        )
+        self.assertEqual(
             nuclearDataIO.getExpectedISOTXSFileName(cycle=23), "ISOTXS-c23"
         )
         self.assertEqual(nuclearDataIO.getExpectedISOTXSFileName(xsID="AA"), "ISOAA")
@@ -142,6 +145,10 @@ class TestIsotxs(unittest.TestCase):
         )
         self.assertEqual(
             nuclearDataIO.getExpectedGAMISOFileName(cycle=1), "cycle1.gamiso"
+        )
+        self.assertEqual(
+            nuclearDataIO.getExpectedGAMISOFileName(cycle=1, node=3),
+            "cycle1node3.gamiso",
         )
         self.assertEqual(
             nuclearDataIO.getExpectedGAMISOFileName(cycle=23), "cycle23.gamiso"

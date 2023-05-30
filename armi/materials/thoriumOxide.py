@@ -26,7 +26,7 @@ from armi.materials.material import Material, FuelMaterial, SimpleSolid
 
 
 class ThoriumOxide(FuelMaterial, SimpleSolid):
-    name = "ThO2"
+    name = "ThoriumOxide"
     propertyValidTemperature = {"linear expansion": ((298, 1223), "K")}
 
     def __init__(self):

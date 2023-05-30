@@ -446,7 +446,6 @@ class TestUniformMesh(unittest.TestCase):
 
             # fluxPeak is mapped differently as a ParamLocation.MAX value
             # make sure that it's one of the two exact possible values
-            print(b.p.fluxPeak)
             self.assertIn(b.p.fluxPeak, [9.0, 11.0])
 
         for expectedPower, a in zip(assemblyPowers, self.r.core):
@@ -459,6 +458,12 @@ class TestUniformMesh(unittest.TestCase):
         self.assertAlmostEqual(
             self.r.core.calcTotalParam("power", generationNum=2), totalPower
         )
+
+        self.converter.updateReactionRates()
+        for a in self.r.core:
+            for b in a:
+                self.assertTrue(b.p.rateAbs)
+                self.assertTrue(b.p.rateCap)
 
 
 class TestGammaUniformMesh(unittest.TestCase):
@@ -697,6 +702,12 @@ class TestUniformMeshNonUniformAssemFlags(unittest.TestCase):
         for a in controlAssems:
             for b in a:
                 self.assertTrue(all(b.getMgFlux()))
+                self.assertTrue(b.p.rateAbs)
+
+        self.converter.updateReactionRates()
+        for a in controlAssems:
+            for b in a:
+                self.assertTrue(b.p.rateCap)
                 self.assertTrue(b.p.rateAbs)
 
 

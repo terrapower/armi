@@ -111,6 +111,17 @@ class LatticePhysicsWriter(interfaces.InputWriter):
         self.driverXsID = self.xsSettings.driverID
         self.numExternalRings = self.xsSettings.numExternalRings
         self.criticalBucklingSearchActive = self.xsSettings.criticalBuckling
+
+        self.executeExclusive = self.xsSettings.xsExecuteExclusive
+        self.priority = self.xsSettings.xsPriority
+        self.maxAtomNumberToModelInfDilute = (
+            self.xsSettings.xsMaxAtomNumber
+            if self.xsSettings.xsMaxAtomNumber is not None
+            else 999
+        )
+        # would prefer this in 1D but its used in 0D in _writeSourceComposition
+        self.minDriverDensity = self.xsSettings.minDriverDensity
+
         blockNeedsFPs = representativeBlock.getLumpedFissionProductCollection() != None
 
         self.modelFissionProducts = (
@@ -123,6 +134,7 @@ class LatticePhysicsWriter(interfaces.InputWriter):
             blockNeedsFPs and self.cs[CONF_FP_MODEL] == "infinitelyDilute"
         )
         self.minimumNuclideDensity = self.cs[CONF_MINIMUM_NUCLIDE_DENSITY]
+        self.infinitelyDiluteDensity = self.minimumNuclideDensity
         self._unusedNuclides = set()
         self._allNuclideObjects = None
 

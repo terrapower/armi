@@ -37,6 +37,8 @@ from armi.physics.neutronics.crossSectionGroupManager import BLOCK_COLLECTIONS
 from armi.settings import Setting
 from armi import context
 
+from armi.settings.fwSettings.globalSettings import CONF_RUN_TYPE
+
 CONF_BLOCK_REPRESENTATION = "blockRepresentation"
 CONF_BLOCKTYPES = "validBlockTypes"
 CONF_BUCKLING = "criticalBuckling"
@@ -54,6 +56,8 @@ CONF_REACTION_DRIVER = "nuclideReactionDriver"
 CONF_XSID = "xsID"
 CONF_XS_EXECUTE_EXCLUSIVE = "xsExecuteExclusive"
 CONF_XS_PRIORITY = "xsPriority"
+CONF_XS_MAX_ATOM_NUMBER = "xsMaxAtomNumber"
+CONF_MIN_DRIVER_DENSITY = "minDriverDensity"
 
 
 class XSGeometryTypes(Enum):
@@ -113,6 +117,7 @@ _VALID_INPUTS_BY_GEOMETRY_TYPE = {
         CONF_EXTERNAL_FLUX_FILE_LOCATION,
         CONF_XS_EXECUTE_EXCLUSIVE,
         CONF_XS_PRIORITY,
+        CONF_XS_MAX_ATOM_NUMBER,
     },
     XSGeometryTypes.getStr(XSGeometryTypes.ONE_DIMENSIONAL_SLAB): {
         CONF_XSID,
@@ -123,6 +128,8 @@ _VALID_INPUTS_BY_GEOMETRY_TYPE = {
         CONF_EXTERNAL_FLUX_FILE_LOCATION,
         CONF_XS_EXECUTE_EXCLUSIVE,
         CONF_XS_PRIORITY,
+        CONF_XS_MAX_ATOM_NUMBER,
+        CONF_MIN_DRIVER_DENSITY,
     },
     XSGeometryTypes.getStr(XSGeometryTypes.ONE_DIMENSIONAL_CYLINDER): {
         CONF_XSID,
@@ -138,6 +145,8 @@ _VALID_INPUTS_BY_GEOMETRY_TYPE = {
         CONF_EXTERNAL_FLUX_FILE_LOCATION,
         CONF_XS_EXECUTE_EXCLUSIVE,
         CONF_XS_PRIORITY,
+        CONF_XS_MAX_ATOM_NUMBER,
+        CONF_MIN_DRIVER_DENSITY,
     },
     XSGeometryTypes.getStr(XSGeometryTypes.TWO_DIMENSIONAL_HEX): {
         CONF_XSID,
@@ -151,6 +160,8 @@ _VALID_INPUTS_BY_GEOMETRY_TYPE = {
         CONF_EXTERNAL_FLUX_FILE_LOCATION,
         CONF_XS_EXECUTE_EXCLUSIVE,
         CONF_XS_PRIORITY,
+        CONF_XS_MAX_ATOM_NUMBER,
+        CONF_MIN_DRIVER_DENSITY,
     },
 }
 
@@ -177,6 +188,8 @@ _SINGLE_XS_SCHEMA = vol.Schema(
         vol.Optional(CONF_MESH_PER_CM): vol.Coerce(float),
         vol.Optional(CONF_XS_EXECUTE_EXCLUSIVE): bool,
         vol.Optional(CONF_XS_PRIORITY): vol.Coerce(float),
+        vol.Optional(CONF_XS_MAX_ATOM_NUMBER): vol.Coerce(int),
+        vol.Optional(CONF_MIN_DRIVER_DENSITY): vol.Coerce(float),
     }
 )
 
@@ -407,7 +420,16 @@ class XSModelingOptions:
         The priority of the mpi tasks that results from this xsID. Lower priority
         will execute first. starting longer jobs first is generally more efficient.
 
-    Notes
+    xsMaxAtomNumber : int
+        The maximum atom number to model for infinite dilute isotopes in lattice physics.
+        This is used to avoid modeling isotopes with a large atomic number
+        (e.g., fission products) as a depletion product of an isotope with a much
+        smaller atomic number.
+
+    minDriverDensity: float
+        The minimum number density for nuclides included in driver material for a 1D
+        lattice physics model.
+
     -----
     Not all default attributes may be useful for your specific application and you may
     require other types of configuration options. These are provided as examples since
@@ -435,6 +457,8 @@ class XSModelingOptions:
         meshSubdivisionsPerCm=None,
         xsExecuteExclusive=None,
         xsPriority=None,
+        xsMaxAtomNumber=None,
+        minDriverDensity=0.0,
     ):
         self.xsID = xsID
         self.geometry = geometry
@@ -454,7 +478,8 @@ class XSModelingOptions:
         self.numExternalRings = numExternalRings
         self.mergeIntoClad = mergeIntoClad
         self.meshSubdivisionsPerCm = meshSubdivisionsPerCm
-
+        self.xsMaxAtomNumber = xsMaxAtomNumber
+        self.minDriverDensity = minDriverDensity
         # these are related to execution
         self.xsExecuteExclusive = xsExecuteExclusive
         self.xsPriority = xsPriority
