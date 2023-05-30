@@ -1,5 +1,3 @@
-metadata:
-  version: uncontrolled
 settings:
   availabilityFactor: 1
   beta: 0.003454
@@ -70,3 +68,5 @@ settings:
   targetK: 1.002
   transientForSensitivity: ''
   verbosity: extra
+  versions:
+    armi: uncontrolled

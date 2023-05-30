@@ -381,12 +381,13 @@ class Settings:
             settingsSetByUser = []
         with open(self.path, "w") as stream:
             writer = self.writeToYamlStream(stream, style, settingsSetByUser)
+
         return writer
 
     def getSettingsSetByUser(self, fPath):
         """
         Grabs the list of settings in the user-defined input file so that the settings
-        can be tracked outside of a Settings Object
+        can be tracked outside of a Settings object.
 
         Parameters
         ----------
