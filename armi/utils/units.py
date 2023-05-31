@@ -80,7 +80,7 @@ TRACE_NUMBER_DENSITY = 1e-50
 MIN_FUEL_HM_MOLES_PER_CC = 1e-10
 
 # More than 10 decimals can create floating point comparison problems in MCNP and DIF3D
-FLOAT_DIMENSION_DECIMALS = 10
+FLOAT_DIMENSION_DECIMALS = 8
 EFFECTIVELY_ZERO = 10.0 ** (-1 * FLOAT_DIMENSION_DECIMALS)
 
 #

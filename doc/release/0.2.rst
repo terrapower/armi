@@ -12,6 +12,7 @@ What's new in ARMI
 
 Bug fixes
 ---------
+#. Changed units.FLOAT_DIMENSION_DECIMALS from 10 to 8 (`PR#1183 <https://github.com/terrapower/armi/pull/1183>`_)
 #. Fixed a bug in the ISOTXS file name used for snapshots. (`PR#1277 <https://github.com/terrapower/armi/pull/1277>`_)
 
 
