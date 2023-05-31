@@ -29,7 +29,7 @@ from armi.__main__ import main
 
 
 class TestPlugin1(plugins.ArmiPlugin):
-    """This should be fine on its own"""
+    """This should be fine on its own."""
 
     @staticmethod
     @plugins.HOOKIMPL
@@ -56,9 +56,7 @@ class TestPlugin3(plugins.ArmiPlugin):
 
 
 class TestPlugin4(plugins.ArmiPlugin):
-    """This should be fine on its own, and safe to merge with TestPlugin1. And would
-    make for a pretty good rename IRL.
-    """
+    """This should be fine on its own, and safe to merge with TestPlugin1."""
 
     @staticmethod
     @plugins.HOOKIMPL
