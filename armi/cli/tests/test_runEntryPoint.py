@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-Test for run cli entry point
+Test for run cli entry point.
 """
 # pylint: disable=protected-access,missing-function-docstring,missing-class-docstring
 from shutil import copyfile
@@ -330,7 +330,7 @@ class TestRunEntryPoint(unittest.TestCase):
 
     def test_executeCommand(self):
         """use executeCommand to call run,
-        But we expect it to fail because we provide a fictional settings YAML
+        But we expect it to fail because we provide a fictional settings YAML.
         """
         with self.assertRaises(SystemExit) as excinfo:
             # override the pytest args

@@ -152,7 +152,7 @@ class Material:
 
     def linearExpansion(self, Tk: float = None, Tc: float = None) -> float:
         r"""
-        the instantaneous linear expansion coefficient (dL/L)/dT
+        the instantaneous linear expansion coefficient (dL/L)/dT.
 
         This is used for reactivity coefficients, etc. but will not affect
         density or dimensions.
@@ -229,7 +229,7 @@ class Material:
         return 1.0 / (1 + dLL) ** 2
 
     def setDefaultMassFracs(self):
-        r"""mass fractions"""
+        r"""mass fractions."""
         pass
 
     def setMassFrac(self, nucName: str, massFrac: float) -> None:
@@ -414,7 +414,7 @@ class Material:
 
     def pseudoDensityKgM3(self, Tk: float = None, Tc: float = None) -> float:
         """
-        Return density that preserves mass when thermally expanded in 2D in units of kg/m^3
+        Return density that preserves mass when thermally expanded in 2D in units of kg/m^3.
 
         See Also
         --------
@@ -460,16 +460,16 @@ class Material:
 
     def getCorrosionRate(self, Tk: float = None, Tc: float = None) -> float:
         r"""
-        given a temperature, get the corrosion rate of the material
+        given a temperature, get the corrosion rate of the material.
         """
         return 0.0
 
     def yieldStrength(self, Tk: float = None, Tc: float = None) -> float:
-        r"""returns yield strength at given T in MPa"""
+        r"""returns yield strength at given T in MPa."""
         pass
 
     def thermalConductivity(self, Tk: float = None, Tc: float = None) -> float:
-        r"""thermal conductivity in given T in K"""
+        r"""thermal conductivity in given T in K."""
         pass
 
     def getProperty(
@@ -714,7 +714,7 @@ class Fluid(Material):
 
 class SimpleSolid(Material):
     """
-    Base material for a simple material that primarily defines density
+    Base material for a simple material that primarily defines density.
 
     See Also
     --------

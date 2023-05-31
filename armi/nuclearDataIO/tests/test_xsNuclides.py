@@ -103,7 +103,7 @@ class NuclideTests(unittest.TestCase):
         self.assertEqual(0.008091875669521187, sum(nuc.micros.nGamma))
 
     def test_nuclide_2dXsArrangementIsCorrect(self):
-        """manually compare some 2d XS data to ensure the correct coordinates"""
+        """manually compare some 2d XS data to ensure the correct coordinates."""
         u235 = self.lib["U235AA"]
         self.assertAlmostEqual(5.76494979858, u235.micros.total[0, 0])
         self.assertAlmostEqual(6.5928812027, u235.micros.total[1, 0])
@@ -124,7 +124,7 @@ class NuclideTests(unittest.TestCase):
         self.assertAlmostEqual(973.399902343, pu239.micros.total[32, 1])
 
     def test_nuclide_scatterXsArrangementIsCorrect(self):
-        """manually compare scatter XS data to ensure the correct coordinates"""
+        """manually compare scatter XS data to ensure the correct coordinates."""
         u235 = self.lib["U235AA"]
         elasticScatter = u235.micros.elasticScatter
         n2nScatter = u235.micros.n2nScatter

@@ -12,14 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Simple air material"""
+"""Simple air material."""
 from armi.materials import material
 from armi.utils.units import getTk, G_PER_CM3_TO_KG_PER_M3
 
 
 class Air(material.Fluid):
     """
-    Dry, Near Sea Level
+    Dry, Near Sea Level.
 
     Correlations based off of values in Incropera, Frank P., et al.
     Fundamentals of heat and mass transfer. Vol. 5. New York: Wiley, 2002.
@@ -41,7 +41,7 @@ class Air(material.Fluid):
 
     def setDefaultMassFracs(self):
         """
-        Set mass fractions
+        Set mass fractions.
 
         Notes
         -----

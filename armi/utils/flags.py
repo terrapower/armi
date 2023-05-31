@@ -46,7 +46,7 @@ class auto:
 
     def __iter__(self):
         """
-        Dummy __iter__ implementation
+        Dummy __iter__ implementation.
 
         This is only needed to make mypy happy when it type checks things that have
         FlagTypes in them, since these can normally be iterated over, but mypy doesn't

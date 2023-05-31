@@ -48,7 +48,7 @@ class Test_RZT_Reactor(unittest.TestCase):
 class Test_RZT_Reactor_modern(unittest.TestCase):
     def test_loadRZT_reactor(self):
         """
-        The Godiva benchmark model is a HEU sphere with a radius of 8.74 cm
+        The Godiva benchmark model is a HEU sphere with a radius of 8.74 cm.
 
         This unit tests loading and verifies the reactor is loaded correctly by
         comparing volumes against expected volumes for full core (including

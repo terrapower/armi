@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Really basic tests of the report Utils"""
+"""Really basic tests of the report Utils."""
 import logging
 import unittest
 
@@ -73,7 +73,7 @@ class TestReport(unittest.TestCase):
         self.assertIn("plain", data)
 
     def test_reactorSpecificReporting(self):
-        """Test a number of reporting utils that require reactor/core information"""
+        """Test a number of reporting utils that require reactor/core information."""
         o, r = loadTestReactor()
 
         with mockRunLogs.BufferLog() as mock:
@@ -134,7 +134,7 @@ class TestReport(unittest.TestCase):
 
 class TestReportInterface(unittest.TestCase):
     def test_printReports(self):
-        """testing printReports method"""
+        """testing printReports method."""
         repInt = reportInterface.ReportInterface(None, None)
         rep = repInt.printReports()
 

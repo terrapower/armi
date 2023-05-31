@@ -55,7 +55,7 @@ class CrossSectionTable(collections.OrderedDict):
 
     def add(self, nucName, nG=0.0, nF=0.0, n2n=0.0, nA=0.0, nP=0.0, n3n=0.0):
         """
-        Add one group cross secitons to the table
+        Add one group cross secitons to the table.
 
         Parameters
         ----------
@@ -116,7 +116,7 @@ class CrossSectionTable(collections.OrderedDict):
 
     def hasValues(self):
         """
-        determines if there are non-zero values in this cross section table
+        determines if there are non-zero values in this cross section table.
         """
         for nuclideCrossSectionSet in self.values():
             if any(nuclideCrossSectionSet.values()):
@@ -129,7 +129,7 @@ class CrossSectionTable(collections.OrderedDict):
         tableFormat="\n{{mcnpId}} {nG:.5e} {nF:.5e} {n2n:.5e} {n3n:.5e} {nA:.5e} {nP:.5e}",
     ):
         """
-        make a cross section table for external depletion physics code input decks
+        make a cross section table for external depletion physics code input decks.
 
         Parameters
         ----------

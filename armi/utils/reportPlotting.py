@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-Plotting Utils specific to reports
+Plotting Utils specific to reports.
 
 This module makes heavy use of matplotlib. Beware that plots generated with matplotlib
 may not free their memory, even after the plot is closed, and excessive use of
@@ -123,7 +123,7 @@ def plotReactorPerformance(reactor, dbi, buGroups, extension=None, history=None)
 
 def valueVsTime(name, x, y, key, yaxis, title, ymin=None, extension=None):
     r"""
-    Plots a value vs. time with a standard graph format
+    Plots a value vs. time with a standard graph format.
 
     Parameters
     ----------
@@ -168,7 +168,7 @@ def valueVsTime(name, x, y, key, yaxis, title, ymin=None, extension=None):
 
 def keffVsTime(name, time, keff, keffUnc=None, ymin=None, extension=None):
     r"""
-    Plots core keff vs. time
+    Plots core keff vs. time.
 
     Parameters
     ----------
@@ -217,7 +217,7 @@ def keffVsTime(name, time, keff, keffUnc=None, ymin=None, extension=None):
 
 def buVsTime(name, scalars, extension=None):
     r"""
-    produces a burnup and DPA vs. time plot for this case
+    produces a burnup and DPA vs. time plot for this case.
 
     Will add a second axis containing DPA if the scalar column maxDPA exists.
 
@@ -318,7 +318,7 @@ def xsHistoryVsTime(name, history, buGroups, extension=None):
 
 def movesVsCycle(name, scalars, extension=None):
     r"""
-    make a bar chart showing the number of moves per cycle in the full core
+    make a bar chart showing the number of moves per cycle in the full core.
 
     A move is defined as an assembly being picked up, moved, and put down. So if
     two assemblies are swapped, that is 2 moves. Note that it does not count
@@ -606,12 +606,12 @@ def _radarFactory(numVars, frame="circle"):
         draw_patch = staticmethod(patchDict[frame])
 
         def fill(self, *args, **kwargs):
-            """Override fill so that line is closed by default"""
+            """Override fill so that line is closed by default."""
             closed = kwargs.pop("closed", True)
             return super(_RadarAxes, self).fill(closed=closed, *args, **kwargs)
 
         def plot(self, *args, **kwargs):
-            """Override plot so that line is closed by default"""
+            """Override plot so that line is closed by default."""
             lines = super(_RadarAxes, self).plot(*args, **kwargs)
             for line in lines:
                 close_line(line)
@@ -660,7 +660,7 @@ def createPlotMetaData(
     title, xLabel, yLabel, xMajorTicks=None, yMajorTicks=None, legendLabels=None
 ):
     """
-    Create plot metadata (title, labels, ticks)
+    Create plot metadata (title, labels, ticks).
 
     Parameters
     ----------

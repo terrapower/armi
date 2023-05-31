@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""3-dimensional shapes
+"""3-dimensional shapes.
 
 
 .. impl:: ARMI supports a reasonable set of basic shapes.
@@ -72,7 +72,7 @@ class Sphere(ShapedComponent):
         return self.getDimension("od")
 
     def getComponentArea(self, cold=False):
-        """Compute an average area over the height"""
+        """Compute an average area over the height."""
         from armi.reactor.blocks import Block  # avoid circular import
 
         block = self.getAncestor(lambda c: isinstance(c, Block))
@@ -90,7 +90,7 @@ class Sphere(ShapedComponent):
 
 class Cube(ShapedComponent):
     """
-    More correctly, a rectangular cuboid
+    More correctly, a rectangular cuboid.
     """
 
     is3D = True
@@ -440,7 +440,7 @@ class DifferentialRadialSegment(RadialSegment):
     This component class represents a volume element with thicknesses in the
     azimuthal, radial and axial directions. Furthermore it has dependent
     dimensions: (outer theta, outer radius, outer axial) that can be updated
-    depending on the 'differential' in the corresponding directions
+    depending on the 'differential' in the corresponding directions.
 
     This component class is super useful for defining ThRZ reactors and
     perturbing its dimensions using the optimization modules

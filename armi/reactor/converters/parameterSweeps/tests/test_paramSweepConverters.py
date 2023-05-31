@@ -44,7 +44,7 @@ class TestParamSweepConverters(unittest.TestCase):
         self.cs = self.o.cs
 
     def test_paramSweepConverter(self):
-        """basic test of the param sweep converter"""
+        """basic test of the param sweep converter."""
         con = ParameterSweepConverter(self.cs, "FakeParam")
         self.assertEqual(con._parameter, "FakeParam")
 
@@ -52,7 +52,7 @@ class TestParamSweepConverters(unittest.TestCase):
         self.assertEqual(con._sourceReactor, self.r)
 
     def test_neutronicConvergenceModifier(self):
-        """super basic test of the Neutronic Convergence Modifier"""
+        """super basic test of the Neutronic Convergence Modifier."""
         custom = NeutronicConvergenceModifier(self.cs, 1000)
         self.assertEqual(custom._parameter, 1000)
 
@@ -60,7 +60,7 @@ class TestParamSweepConverters(unittest.TestCase):
         self.assertAlmostEqual(custom._cs[CONF_EPS_FSPOINT], 1, delta=1e-3)
 
     def test_settingsModifier(self):
-        """Super basic test of the Settings Modifier"""
+        """Super basic test of the Settings Modifier."""
         con = SettingsModifier(self.cs, "comment", "FakeParam")
         self.assertEqual(con._parameter, "FakeParam")
         val = self.cs["comment"]
@@ -73,7 +73,7 @@ class TestParamSweepConverters(unittest.TestCase):
         self.assertEqual(con._cs["comment"], "FakeParam")
 
     def test_customModifier(self):
-        """Super basic test of the Custom Modifier"""
+        """Super basic test of the Custom Modifier."""
         con = CustomModifier(self.cs, "FakeParam")
         self.assertEqual(con._parameter, "FakeParam")
 

@@ -80,7 +80,7 @@ class Block(composites.Composite):
 
     def __init__(self, name: str, height: float = 1.0):
         """
-        Builds a new ARMI block
+        Builds a new ARMI block.
 
         name : str
             The name of this block
@@ -159,7 +159,7 @@ class Block(composites.Composite):
 
     def _createHomogenizedCopy(self, pinSpatialLocators=False):
         """
-        Create a copy of a block
+        Create a copy of a block.
 
         Notes
         -----
@@ -347,7 +347,7 @@ class Block(composites.Composite):
 
     def getMgFlux(self, adjoint=False, average=False, volume=None, gamma=False):
         """
-        Returns the multigroup neutron flux in [n/cm^2/s]
+        Returns the multigroup neutron flux in [n/cm^2/s].
 
         The first entry is the first energy group (fastest neutrons). Each additional
         group is the next energy group, as set in the ISOTXS library.
@@ -385,7 +385,7 @@ class Block(composites.Composite):
 
     def setPinMgFluxes(self, fluxes, adjoint=False, gamma=False):
         """
-        Store the pin-detailed multi-group neutron flux
+        Store the pin-detailed multi-group neutron flux.
 
         The [g][i] indexing is transposed to be a list of lists, one for each pin. This makes it
         simple to do depletion for each pin, etc.
@@ -556,7 +556,7 @@ class Block(composites.Composite):
 
     def adjustUEnrich(self, newEnrich):
         """
-        Adjust U-235/U-238 mass ratio to a mass enrichment
+        Adjust U-235/U-238 mass ratio to a mass enrichment.
 
         Parameters
         ----------
@@ -1036,7 +1036,7 @@ class Block(composites.Composite):
 
     def mergeWithBlock(self, otherBlock, fraction):
         """
-        Turns this block into a mixture of this block and some other block
+        Turns this block into a mixture of this block and some other block.
 
         Parameters
         ----------
@@ -1356,7 +1356,7 @@ class Block(composites.Composite):
 
     def updateComponentDims(self):
         """
-        This method updates all the dimensions of the components
+        This method updates all the dimensions of the components.
 
         Notes
         -----
@@ -1493,7 +1493,7 @@ class Block(composites.Composite):
         raise NotImplementedError
 
     def setAxialExpTargetComp(self, targetComponent):
-        """sets the targetComponent for the axial expansion changer
+        """sets the targetComponent for the axial expansion changer.
 
         Parameter
         ---------

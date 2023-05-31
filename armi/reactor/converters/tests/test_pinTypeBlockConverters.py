@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-Unit tests for pin type block converters
+Unit tests for pin type block converters.
 """
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import copy
@@ -59,7 +59,7 @@ class TestPinTypeConverters(unittest.TestCase):
 
 class MassConservationTests(unittest.TestCase):
     r"""
-    Tests designed to verify mass conservation during thermal expansion
+    Tests designed to verify mass conservation during thermal expansion.
     """
 
     def setUp(self):
@@ -67,7 +67,7 @@ class MassConservationTests(unittest.TestCase):
 
     def test_adjustSmearDensity(self):
         r"""
-        Tests the getting, setting, and getting of smear density functions
+        Tests the getting, setting, and getting of smear density functions.
 
         """
         bolBlock = copy.deepcopy(self.b)

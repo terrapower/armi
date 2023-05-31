@@ -212,7 +212,7 @@ class Operator:  # pylint: disable=too-many-public-methods
     @staticmethod
     def _initFastPath():
         """
-        Create the FAST_PATH directory for fast local operations
+        Create the FAST_PATH directory for fast local operations.
 
         Notes
         -----
@@ -386,7 +386,7 @@ class Operator:  # pylint: disable=too-many-public-methods
         self._performTightCoupling(cycle, timeNode)
 
     def _performTightCoupling(self, cycle: int, timeNode: int, writeDB: bool = True):
-        """if requested, perform tight coupling and write out database
+        """if requested, perform tight coupling and write out database.
 
         Notes
         -----
@@ -687,7 +687,7 @@ class Operator:  # pylint: disable=too-many-public-methods
         return self._checkTightCouplingConvergence(activeInterfaces)
 
     def _checkTightCouplingConvergence(self, activeInterfaces: list):
-        """check if interfaces are converged
+        """check if interfaces are converged.
 
         Parameters
         ----------
@@ -866,7 +866,7 @@ class Operator:  # pylint: disable=too-many-public-methods
             raise RuntimeError("Interface dependency resolution did not converge.")
 
     def removeAllInterfaces(self):
-        """Removes all of the interfaces"""
+        """Removes all of the interfaces."""
         for interface in self.interfaces:
             interface.detachReactor()
         self.interfaces = []
@@ -1049,7 +1049,7 @@ class Operator:  # pylint: disable=too-many-public-methods
         self, cycle, timeNode, timeStepName="", fileName=None, updateMassFractions=None
     ):
         """
-        Convenience method reroute to the database interface state reload method
+        Convenience method reroute to the database interface state reload method.
 
         See also
         --------
@@ -1159,7 +1159,7 @@ class Operator:  # pylint: disable=too-many-public-methods
 
     @staticmethod
     def setStateToDefault(cs):
-        """Update the state of ARMI to fit the kind of run this operator manages"""
+        """Update the state of ARMI to fit the kind of run this operator manages."""
         return cs.modified(newSettings={"runType": RunTypes.STANDARD})
 
     def couplingIsActive(self):

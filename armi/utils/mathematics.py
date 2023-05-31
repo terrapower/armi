@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Various math utilities"""
+"""Various math utilities."""
 import math
 import operator  # the python package, not the ARMI module
 import re
@@ -328,7 +328,7 @@ def isMonotonic(inputIter, relation):
 
 def linearInterpolation(x0, y0, x1, y1, targetX=None, targetY=None):
     r"""
-    does a linear interpolation (or extrapolation) for y=f(x)
+    does a linear interpolation (or extrapolation) for y=f(x).
 
     Parameters
     ----------
@@ -483,7 +483,7 @@ def newtonsMethod(
 
 def parabolaFromPoints(p1, p2, p3):
     r"""
-    find the parabola that passes through three points
+    find the parabola that passes through three points.
 
     We solve a simultaneous equation with three points.
 
@@ -577,7 +577,7 @@ def parabolicInterpolation(ap, bp, cp, targetY):
 
 
 def relErr(v1: float, v2: float) -> float:
-    """find the relative error between to numbers"""
+    """find the relative error between to numbers."""
     if v1:
         return (v2 - v1) / v1
     else:
@@ -662,7 +662,7 @@ def resampleStepwise(xin, yin, xout, avg=True):
 
 def rotateXY(x, y, degreesCounterclockwise=None, radiansCounterclockwise=None):
     """
-    Rotates x, y coordinates
+    Rotates x, y coordinates.
 
     Parameters
     ----------

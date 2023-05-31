@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-Thorium Uranium metal
+Thorium Uranium metal.
 
 Data is from [#IAEA-TECDOCT-1450]_.
 
@@ -58,16 +58,16 @@ class ThU(FuelMaterial):
         self.setMassFrac("U233", 0.0)
 
     def linearExpansion(self, Tk=None, Tc=None):
-        r"""m/m/K from IAEA TE 1450"""
+        r"""m/m/K from IAEA TE 1450."""
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("linear expansion", Tk)
         return 11.9e-6
 
     def thermalConductivity(self, Tk=None, Tc=None):
-        r"""W/m-K from IAEA TE 1450"""
+        r"""W/m-K from IAEA TE 1450."""
         Tk = getTk(Tc, Tk)
         return 43.1
 
     def meltingPoint(self):
-        r"""melting point in K from IAEA TE 1450"""
+        r"""melting point in K from IAEA TE 1450."""
         return 2025.0

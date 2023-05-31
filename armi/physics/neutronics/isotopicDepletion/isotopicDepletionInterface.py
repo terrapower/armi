@@ -65,7 +65,7 @@ def isDepletable(obj: composites.ArmiObject):
 
 class AbstractIsotopicDepleter:
     r"""
-    Interact with a depletion code
+    Interact with a depletion code.
 
     This interface and subClasses deplete under a flux defined outside this
     interface
@@ -182,12 +182,12 @@ def makeXsecTable(
 
 class AbstractIsotopicDepletionReader(interfaces.OutputReader):
     r"""
-    Read number density output produced by the isotopic depletion
+    Read number density output produced by the isotopic depletion.
     """
 
     def read(self):
         r"""
-        read a isotopic depletion Output File and applies results to armi objects in the ToDepletion attribute
+        read a isotopic depletion Output File and applies results to armi objects in the ToDepletion attribute.
         """
         raise NotImplementedError
 
@@ -219,6 +219,6 @@ class Csrc:
 
     def write(self):
         """
-        return a list of lines to write for a csrc card
+        return a list of lines to write for a csrc card.
         """
         raise NotImplementedError

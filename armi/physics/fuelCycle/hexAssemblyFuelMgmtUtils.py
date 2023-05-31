@@ -302,7 +302,7 @@ def buildRingSchedule(
 
 def buildConvergentRingSchedule(chargeRing, dischargeRing=1, coarseFactor=0.0):
     r"""
-    Builds a ring schedule for convergent shuffling from chargeRing to dischargeRing
+    Builds a ring schedule for convergent shuffling from chargeRing to dischargeRing.
 
     Parameters
     ----------
@@ -349,7 +349,7 @@ def buildConvergentRingSchedule(chargeRing, dischargeRing=1, coarseFactor=0.0):
 
 def _buildEqRingScheduleHelper(ringSchedule, numRings):
     r"""
-    turns ringScheduler into explicit list of rings
+    turns ringScheduler into explicit list of rings.
 
     Pulled out of buildEqRingSchedule for testing.
 
@@ -456,7 +456,7 @@ def _assemAngle(a):
 
 def buildEqRingSchedule(core, ringSchedule, circularRingOrder):
     r"""
-    Expands simple ringSchedule input into full-on location schedule
+    Expands simple ringSchedule input into full-on location schedule.
 
     Parameters
     ----------

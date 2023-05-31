@@ -391,7 +391,7 @@ class TestCompositeTree(unittest.TestCase):
         """
         This test creates a dummy assembly and ensures that the assembly, block, and fuel component masses are
         consistent.
-        `getFuelMass` ensures that the fuel component is used to `getMass`
+        `getFuelMass` ensures that the fuel component is used to `getMass`.
         """
         cs = settings.Settings()
         assemDesign = assemblyBlueprint.AssemblyBlueprint.load(self.blueprintYaml)
@@ -406,13 +406,13 @@ class TestCompositeTree(unittest.TestCase):
         self.assertEqual(fuelMass, a.getFuelMass())
 
     def test_getNeutronEnergyDepositionConstants(self):
-        """Until we improve test architecture, this test can not be more interesting"""
+        """Until we improve test architecture, this test can not be more interesting."""
         with self.assertRaises(RuntimeError):
             # fails because this test reactor does not have a cross-section library
             _x = self.r.core.getNeutronEnergyDepositionConstants()
 
     def test_getGammaEnergyDepositionConstants(self):
-        """Until we improve test architecture, this test can not be more interesting"""
+        """Until we improve test architecture, this test can not be more interesting."""
         with self.assertRaises(RuntimeError):
             # fails because this test reactor does not have a cross-section library
             _x = self.r.core.getGammaEnergyDepositionConstants()

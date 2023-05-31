@@ -345,7 +345,7 @@ class ArmiPlugin:
     @HOOKSPEC
     def defineEntryPoints() -> List:
         """
-        Return new entry points for the ARMI CLI
+        Return new entry points for the ARMI CLI.
 
         This hook allows plugins to provide their own ARMI entry points, which each
         serve as a command in the command-line interface.
@@ -585,7 +585,7 @@ class ArmiPlugin:
     @HOOKSPEC
     def defineSystemBuilders() -> Dict[str, Callable[[str], "Composite"]]:
         """
-        Convert a user-string from the systems section into a valid composite builder
+        Convert a user-string from the systems section into a valid composite builder.
 
         Parameters
         ----------
@@ -728,7 +728,7 @@ def getNewPluginManager() -> pluginManager.ArmiPluginManager:
 
 def collectInterfaceDescriptions(mod, cs):
     """
-    Adapt old-style describeInterfaces to the new plugin interface
+    Adapt old-style describeInterfaces to the new plugin interface.
 
     Old describeInterfaces implementations would return an interface class and kwargs
     for adding to an operator. Now we expect an ORDER as well. This takes a module and

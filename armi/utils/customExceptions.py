@@ -13,27 +13,27 @@
 # limitations under the License.
 
 """
-Globally accessible exception definitions for better granularity on exception behavior and exception handling behavior
+Globally accessible exception definitions for better granularity on exception behavior and exception handling behavior.
 """
 from armi import runLog
 from inspect import stack, getframeinfo
 
 
 def info(func):
-    r"""Decorator to write to current log, using the info method"""
+    r"""Decorator to write to current log, using the info method."""
 
     def decorated(*args, **kwargs):
-        r"""decorated method"""
+        r"""decorated method."""
         runLog.info(func(*args, **kwargs))
 
     return decorated
 
 
 def important(func):
-    r"""Decorator to write to current log, using the inportant method"""
+    r"""Decorator to write to current log, using the inportant method."""
 
     def decorated(*args, **kwargs):
-        r"""decorated method"""
+        r"""decorated method."""
         runLog.important(func(*args, **kwargs))
 
     return decorated
@@ -43,7 +43,7 @@ def warn(func):
     r"""Decorates a method to produce a repeatable warning message."""
 
     def decorated(*args, **kwargs):
-        r"""decorated method"""
+        r"""decorated method."""
         runLog.warning(func(*args, **kwargs))
 
     return decorated
@@ -94,14 +94,14 @@ class InputError(Exception):
 
 
 class SettingException(Exception):
-    """Standardize behavior of setting-family errors"""
+    """Standardize behavior of setting-family errors."""
 
     def __init__(self, msg):
         Exception.__init__(self, msg)
 
 
 class InvalidSettingsStopProcess(SettingException):
-    """Exception raised when setting file contains invalid settings and user aborts or process is uninteractive"""
+    """Exception raised when setting file contains invalid settings and user aborts or process is uninteractive."""
 
     def __init__(self, reader):
         msg = "Input settings file {}".format(reader.inputPath)
@@ -123,7 +123,7 @@ class InvalidSettingsStopProcess(SettingException):
 
 
 class NonexistentSetting(SettingException):
-    """Exception raised when a non existent setting is asked for"""
+    """Exception raised when a non existent setting is asked for."""
 
     def __init__(self, setting):
         SettingException.__init__(
@@ -132,7 +132,7 @@ class NonexistentSetting(SettingException):
 
 
 class InvalidSettingsFileError(SettingException):
-    """Not a valid settings file"""
+    """Not a valid settings file."""
 
     def __init__(self, path, customMsgEnd=""):
         msg = "Attempted to load an invalid settings file from: {}. ".format(path)
@@ -142,7 +142,7 @@ class InvalidSettingsFileError(SettingException):
 
 
 class NonexistentSettingsFileError(SettingException):
-    """Settings file does not exist"""
+    """Settings file does not exist."""
 
     def __init__(self, path):
         SettingException.__init__(

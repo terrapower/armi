@@ -80,7 +80,7 @@ class GlobalFluxInterface(interfaces.Interface):
         self._setTightCouplingDefaults()
 
     def _setTightCouplingDefaults(self):
-        """enable tight coupling defaults for the interface
+        """enable tight coupling defaults for the interface.
 
         - allows users to set tightCoupling: true in settings without
           having to specify the specific tightCouplingSettings for this interface.
@@ -203,7 +203,7 @@ class GlobalFluxInterface(interfaces.Interface):
 
     def calculateKeff(self, label="keff"):
         """
-        Runs neutronics tool and returns keff without applying it to the reactor
+        Runs neutronics tool and returns keff without applying it to the reactor.
 
         Used for things like direct-eigenvalue reactivity coefficients and CR worth iterations.
         For anything more complicated than getting keff, clients should
@@ -251,7 +251,7 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
         GlobalFluxInterface.interactCoupled(self, iteration)
 
     def getTightCouplingValue(self):
-        """Return the parameter value"""
+        """Return the parameter value."""
         if self.coupler.parameter == "keff":
             return self.r.core.p.keff
         if self.coupler.parameter == "power":
@@ -296,7 +296,7 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
 
     def getExecuter(self, options=None, label=None):
         """
-        Get executer object for performing custom client calcs
+        Get executer object for performing custom client calcs.
 
         This allows plugins to update options in a somewhat generic
         way. For example, reactivity coefficients plugin may want to
@@ -326,7 +326,7 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
     @staticmethod
     def getLabel(caseTitle, cycle, node, iteration=None):
         """
-        Make a label (input/output file name) for the executer based on cycle, node, iteration
+        Make a label (input/output file name) for the executer based on cycle, node, iteration.
 
         Parameters
         ----------
@@ -346,7 +346,7 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
 
 
 class GlobalFluxOptions(executers.ExecutionOptions):
-    """Data structure representing common options in Global Flux Solvers
+    """Data structure representing common options in Global Flux Solvers.
 
     Attributes
     ----------
@@ -512,7 +512,7 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
     @codeTiming.timed
     def _performGeometryTransformations(self, makePlots=False):
         """
-        Apply geometry conversions to make reactor work in neutronics
+        Apply geometry conversions to make reactor work in neutronics.
 
         There are two conditions where things must happen:
 
@@ -603,7 +603,7 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
 
     def edgeAssembliesAreNeeded(self) -> bool:
         """
-        True if edge assemblies are needed in this calculation
+        True if edge assemblies are needed in this calculation.
 
         We only need them in finite difference cases that are not full core.
         """
@@ -725,7 +725,7 @@ class GlobalFluxResultMapper(interfaces.OutputReader):
 
     def getBurnupPeakingFactor(self, b: Block):
         """
-        Get the radial peaking factor to be applied to burnup and DPA for a Block
+        Get the radial peaking factor to be applied to burnup and DPA for a Block.
 
         This may be informed by previous runs which used
         detailed pin reconstruction and rotation. In that case,
@@ -755,7 +755,7 @@ class GlobalFluxResultMapper(interfaces.OutputReader):
 
     def updateDpaRate(self, blockList=None):
         """
-        Update state parameters that can be known right after the flux is computed
+        Update state parameters that can be known right after the flux is computed.
 
         See Also
         --------
@@ -870,7 +870,7 @@ class DoseResultsMapper(GlobalFluxResultMapper):
 
     def updateFluenceAndDpa(self, stepTimeInSeconds, blockList=None):
         r"""
-        Updates the fast fluence and the DPA of the blocklist
+        Updates the fast fluence and the DPA of the blocklist.
 
         The dpa rate from the previous timestep is used to compute the dpa here.
 
@@ -956,13 +956,14 @@ class DoseResultsMapper(GlobalFluxResultMapper):
         self.updateLoadpadDose()
 
     def updateCycleDoseParams(self):
-        r"""Updates reactor params based on the amount of dose (detailedDpa) accrued this cycle
+        r"""Updates reactor params based on the amount of dose (detailedDpa) accrued this cycle.
+
         Params updated include:
 
-        maxDetailedDpaThisCycle
-        dpaFullWidthHalfMax
-        elevationOfACLP3Cycles
-        elevationOfACLP7Cycles
+        * maxDetailedDpaThisCycle
+        * dpaFullWidthHalfMax
+        * elevationOfACLP3Cycles
+        * elevationOfACLP7Cycles
 
         These parameters are left as zeroes at BOC because no dose has been accumulated yet.
         """
@@ -1134,7 +1135,7 @@ class DoseResultsMapper(GlobalFluxResultMapper):
 
 def computeDpaRate(mgFlux, dpaXs):
     r"""
-    Compute the DPA rate incurred by exposure of a certain flux spectrum
+    Compute the DPA rate incurred by exposure of a certain flux spectrum.
 
     Parameters
     ----------
@@ -1213,7 +1214,7 @@ def computeDpaRate(mgFlux, dpaXs):
 
 def calcReactionRates(obj, keff, lib):
     r"""
-    Compute 1-group reaction rates for this object (usually a block.)
+    Compute 1-group reaction rates for this object (usually a block).
 
     Parameters
     ----------
@@ -1256,7 +1257,6 @@ def calcReactionRates(obj, keff, lib):
     .. math::
 
         \sigma_g = \frac{\int_{E g}^{E_{g+1}} \phi(E)  \sigma(E) dE}{\int_{E_g}^{E_{g+1}} \phi(E) dE}
-
     """
     rate = {}
     for simple in RX_PARAM_NAMES:

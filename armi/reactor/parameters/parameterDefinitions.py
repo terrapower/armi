@@ -100,14 +100,14 @@ class ParamLocation(enum.Flag):
 
 
 class NoDefault:
-    r"""Class used to allow distinction between not setting a default and setting a default of ``None``"""
+    r"""Class used to allow distinction between not setting a default and setting a default of ``None``."""
 
     def __init__(self):
         raise NotImplementedError("You cannot create an instance of NoDefault")
 
 
 class _Undefined:
-    r"""Class used to identify a parameter property as being in the undefined state"""
+    r"""Class used to identify a parameter property as being in the undefined state."""
 
     def __init__(self):
         raise NotImplementedError("You cannot create an instance of _Undefined.")
@@ -186,7 +186,7 @@ class Serializer:
 
 @functools.total_ordering
 class Parameter:
-    r"""Metadata about a specific parameter"""
+    r"""Metadata about a specific parameter."""
     _validName = re.compile("^[a-zA-Z0-9_]+$")
 
     # Using slots because Parameters are pretty static and mostly POD. __slots__ make
@@ -269,14 +269,14 @@ class Parameter:
         )
 
     def __eq__(self, other):
-        """Name defines equality"""
+        """Name defines equality."""
         return self.name == other.name
 
     def __ne__(self, other):
         return not (self == other)
 
     def __lt__(self, other):
-        """Sort alphabetically by name"""
+        """Sort alphabetically by name."""
         return self.name < other.name
 
     def __hash__(self):
@@ -440,7 +440,7 @@ class ParameterDefinitionCollection:
 
     def extend(self, other):
         """
-        Grow a parameter definition collection by another parameter definition collection
+        Grow a parameter definition collection by another parameter definition collection.
         """
         assert (
             not self._locked
@@ -523,7 +523,7 @@ class ParameterDefinitionCollection:
 
     @property
     def categories(self):
-        r"""Get the categories of all the :py:class:`~Parameter` instances within this collection"""
+        r"""Get the categories of all the :py:class:`~Parameter` instances within this collection."""
         categories = set()
         for paramDef in self:
             categories |= paramDef.categories
@@ -554,7 +554,7 @@ class ParameterDefinitionCollection:
 
     def createBuilder(self, *args, **kwargs):
         """
-        Create an associated object that can create definitions into this collection
+        Create an associated object that can create definitions into this collection.
 
         Using the returned ParameterBuilder will add all defined parameters to this
         ParameterDefinitionCollection, using the passed arguments as defaults. Arguments
@@ -566,7 +566,7 @@ class ParameterDefinitionCollection:
 
 
 class ParameterBuilder:
-    r"""Factory for creating Parameter and parameter properties"""
+    r"""Factory for creating Parameter and parameter properties."""
 
     def __init__(
         self,
@@ -575,7 +575,7 @@ class ParameterBuilder:
         categories=None,
         saveToDB=True,
     ):
-        r"""Create a :py:class:`ParameterBuilder`"""
+        r"""Create a :py:class:`ParameterBuilder`."""
         self._entered = False
         self._defaultLocation = location
         self._defaultCategories = set(categories or [])  # make sure it is always a set
@@ -607,7 +607,7 @@ class ParameterBuilder:
 
     def associateParameterDefinitionCollection(self, paramDefs):
         """
-        Associate this parameter factory with a specific ParameterDefinitionCollection
+        Associate this parameter factory with a specific ParameterDefinitionCollection.
 
         Subsequent calls to defParam will automatically add the created
         ParameterDefinitions to this ParameterDefinitionCollection. This results in a
@@ -627,7 +627,7 @@ class ParameterBuilder:
         categories=None,
         serializer: Optional[Type[Serializer]] = None,
     ):
-        r"""Create a parameter as a property (with get/set) on a class
+        r"""Create a parameter as a property (with get/set) on a class.
 
         Parameters
         ----------

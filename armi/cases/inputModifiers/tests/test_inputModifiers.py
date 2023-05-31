@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Unit tests for input modifiers"""
+"""Unit tests for input modifiers."""
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 from ruamel import yaml
 import io
@@ -174,7 +174,7 @@ class TestsuiteBuilderIntegrations(unittest.TestCase):
             self.assertTrue(os.path.exists("case-suite"))
 
     def test_bluePrintBlockModifier(self):
-        """test BluePrintBlockModifier with build suite naming function argument"""
+        """test BluePrintBlockModifier with build suite naming function argument."""
         case_nbr = 1
         builder = suiteBuilder.FullFactorialSuiteBuilder(self.baseCase)
 
@@ -244,7 +244,7 @@ class NeutronicsKernelOpts(inputModifiers.InputModifier):
 
 
 class TestFullCoreModifier(unittest.TestCase):
-    """Ensure full core conversion works"""
+    """Ensure full core conversion works."""
 
     def test_fullCoreConversion(self):
         cs = settings.Settings(os.path.join(test_reactors.TEST_ROOT, "armiRun.yaml"))

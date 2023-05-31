@@ -82,7 +82,7 @@ ORDER = 2 * interfaces.STACK_ORDER.BEFORE + interfaces.STACK_ORDER.BOOKKEEPING
 
 
 def describeInterfaces(cs):
-    """Function for exposing interface(s) to other code"""
+    """Function for exposing interface(s) to other code."""
     if cs["runType"] not in (operators.RunTypes.EQUILIBRIUM):
         klass = HistoryTrackerInterface
         return (klass, {})
@@ -193,7 +193,7 @@ class HistoryTrackerInterface(interfaces.Interface):
 
     def _writeDetailAssemblyHistories(self):
         """
-        Write data file with assembly histories
+        Write data file with assembly histories.
         """
         for a in self.getDetailAssemblies():
             self.writeAssemHistory(a)

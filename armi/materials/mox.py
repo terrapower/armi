@@ -167,7 +167,7 @@ class MOX(UraniumOxide):
 
     def meltingPoint(self):
         """
-        Melting point in K - ORNL/TM-2000/351
+        Melting point in K - ORNL/TM-2000/351.
 
         Melting point is a function of PuO2 mol fraction.
         The liquidus Tl and solidus Ts temperatures in K are given by:

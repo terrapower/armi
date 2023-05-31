@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Test the Lattice Physics Writer"""
+"""Test the Lattice Physics Writer."""
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import unittest
 
@@ -29,7 +29,7 @@ from armi.tests import TEST_ROOT
 
 
 class FakeLatticePhysicsWriter(LatticePhysicsWriter):
-    """LatticePhysicsWriter is abstract, so it must be subclassed to be tested"""
+    """LatticePhysicsWriter is abstract, so it must be subclassed to be tested."""
 
     def __init__(self, block, r, eci):
         self.testOut = ""
@@ -54,7 +54,7 @@ class TestLatticePhysicsWriter(unittest.TestCase):
     """Test Lattice Physics Writer."""
 
     def test_LatticePhysicsWriter(self):
-        """Super basic test of the LatticePhysicsWriter"""
+        """Super basic test of the LatticePhysicsWriter."""
         o, r = loadTestReactor(TEST_ROOT)
         cs = o.cs
         o.cs[CONF_CROSS_SECTION].setDefaults(

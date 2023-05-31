@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests of the runLog tooling"""
+"""Tests of the runLog tooling."""
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 from io import StringIO
 from shutil import rmtree
@@ -44,7 +44,7 @@ class TestRunLog(unittest.TestCase):
         self.assertEqual(verbosityRank, logging.ERROR)
 
     def test_verbosityOutOfRange(self):
-        """Test that the log verbosity setting resets to a canonical value when it is out of range"""
+        """Test that the log verbosity setting resets to a canonical value when it is out of range."""
         runLog.setVerbosity(-50)
         self.assertEqual(
             runLog.LOG.logger.level, min([v[0] for v in runLog.LOG.logLevels.values()])
@@ -64,7 +64,7 @@ class TestRunLog(unittest.TestCase):
             runLog.setVerbosity(["debug"])
 
     def test_parentRunLogging(self):
-        """A basic test of the logging of the parent runLog"""
+        """A basic test of the logging of the parent runLog."""
         # init the _RunLog object
         log = runLog.LOG = runLog._RunLog(0)
         log.startLog("test_parentRunLogging")
@@ -90,7 +90,7 @@ class TestRunLog(unittest.TestCase):
         self.assertIn("world", streamVal, msg=streamVal)
 
     def test_warningReport(self):
-        """A simple test of the warning tracking and reporting logic"""
+        """A simple test of the warning tracking and reporting logic."""
         # create the logger and do some logging
         log = runLog.LOG = runLog._RunLog(321)
         log.startLog("test_warningReport")
@@ -127,7 +127,7 @@ class TestRunLog(unittest.TestCase):
         self.assertEqual(streamVal.count("test_warningReport"), 2, msg=streamVal)
 
     def test_warningReportInvalid(self):
-        """A test of warningReport in an invalid situation"""
+        """A test of warningReport in an invalid situation."""
         # create the logger and do some logging
         testName = "test_warningReportInvalid"
         log = runLog.LOG = runLog._RunLog(323)
@@ -166,10 +166,10 @@ class TestRunLog(unittest.TestCase):
         self.assertEqual(streamVal.count(testName), 1, msg=streamVal)
 
     def test_closeLogging(self):
-        """A basic test of the close() functionality"""
+        """A basic test of the close() functionality."""
 
         def validate_loggers(log):
-            """little test helper, to make sure our loggers still look right"""
+            """little test helper, to make sure our loggers still look right."""
             handlers = [str(h) for h in log.logger.handlers]
             self.assertEqual(len(handlers), 1, msg=",".join(handlers))
 
@@ -193,7 +193,7 @@ class TestRunLog(unittest.TestCase):
         runLog.close(0)
 
     def test_setVerbosity(self):
-        """Let's test the setVerbosity() method carefully"""
+        """Let's test the setVerbosity() method carefully."""
         with mockRunLogs.BufferLog() as mock:
             # we should start with a clean slate
             self.assertEqual("", mock.getStdout())
@@ -236,7 +236,7 @@ class TestRunLog(unittest.TestCase):
             self.assertEqual(runLog.LOG.getVerbosity(), logging.WARNING)
 
     def test_setVerbosityBeforeStartLog(self):
-        """The user/dev my accidentally call setVerbosity() before startLog(), this should be mostly supportable"""
+        """The user/dev my accidentally call setVerbosity() before startLog(), this should be mostly supportable."""
         with mockRunLogs.BufferLog() as mock:
             # we should start with a clean slate
             self.assertEqual("", mock.getStdout())
@@ -250,7 +250,7 @@ class TestRunLog(unittest.TestCase):
             mock.emptyStdout()
 
     def test_callingStartLogMultipleTimes(self):
-        """calling startLog() multiple times will lead to multiple output files, but logging should still work"""
+        """calling startLog() multiple times will lead to multiple output files, but logging should still work."""
         with mockRunLogs.BufferLog() as mock:
             # we should start with a clean slate
             self.assertEqual("", mock.getStdout())
@@ -294,7 +294,7 @@ class TestRunLog(unittest.TestCase):
             mock.emptyStdout()
 
     def test_concatenateLogs(self):
-        """simple test of the concat logs function"""
+        """simple test of the concat logs function."""
         with TemporaryDirectoryChanger():
             # create the log dir
             logDir = "test_concatenateLogs"
@@ -338,7 +338,7 @@ class TestRunLog(unittest.TestCase):
             self.assertFalse(os.path.exists(stderrFile))
 
     def test_createLogDir(self):
-        """Test the createLogDir() method"""
+        """Test the createLogDir() method."""
         with TemporaryDirectoryChanger():
             logDir = "test_createLogDir"
             self.assertFalse(os.path.exists(logDir))

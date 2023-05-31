@@ -103,7 +103,7 @@ def getSuffixFromNuclideLabel(nucLabel):
 
 def getISOTXSLibrariesToMerge(xsLibrarySuffix, xsLibFileNames):
     """
-    Find ISOTXS libraries out of a list that should be merged based on the provided ``xsLibrarySuffix``
+    Find ISOTXS libraries out of a list that should be merged based on the provided ``xsLibrarySuffix``.
 
     Parameters
     ----------
@@ -412,7 +412,7 @@ class IsotxsLibrary(_XSLibrary):
 
     @property
     def numGroups(self):
-        """Get the number of neutron energy groups"""
+        """Get the number of neutron energy groups."""
         # This unlocks the immutable property so that it can be
         # read prior to not being set to check the number of groups
         # that are defined. If the property is not unlocked before
@@ -430,7 +430,7 @@ class IsotxsLibrary(_XSLibrary):
 
     @property
     def numGroupsGamma(self):
-        """get the number of gamma energy groups"""
+        """get the number of gamma energy groups."""
         # This unlocks the immutable property so that it can be
         # read prior to not being set to check the number of groups
         # that are defined. If the property is not unlocked before
@@ -521,7 +521,7 @@ class IsotxsLibrary(_XSLibrary):
         return [self[name] for name in self._orderedNuclideLabels]
 
     def getNuclides(self, suffix):
-        """Returns a list of the nuclide objects in the library"""
+        """Returns a list of the nuclide objects in the library."""
         nucs = []
         # nucName is U235IA, etc.. nuc.name is U235, etc
         for nucLabel, nuc in self.items():
@@ -533,7 +533,7 @@ class IsotxsLibrary(_XSLibrary):
         return nucs
 
     def merge(self, other):
-        """Merge two XSLibraries"""
+        """Merge two XSLibraries."""
         runLog.debug("Merging XS library {} into XS library {}".format(other, self))
         self._mergeProperties(other)
         # merging meta data may raise an exception before knowing anything about the contained nuclides
@@ -582,7 +582,7 @@ class IsotxsLibrary(_XSLibrary):
 
     def getScatterWeights(self, scatterMatrixKey="elasticScatter"):
         """
-        Build or retrieve pre-built scatter weight data
+        Build or retrieve pre-built scatter weight data.
 
         This acts like a cache for _buildScatterWeights
 

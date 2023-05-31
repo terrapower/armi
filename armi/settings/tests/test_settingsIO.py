@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License0.
-""" Testing the settingsIO """
+""" Testing the settingsIO. """
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 
 import datetime
@@ -128,7 +128,7 @@ class SettingsWriterTests(unittest.TestCase):
         self.td.__exit__(None, None, None)
 
     def test_writeShort(self):
-        """Setting output as a sparse file"""
+        """Setting output as a sparse file."""
         self.cs.writeToYamlFile(self.filepathYaml, style="short")
         self.cs.loadFromInputFile(self.filepathYaml)
         txt = open(self.filepathYaml, "r").read()
@@ -137,7 +137,7 @@ class SettingsWriterTests(unittest.TestCase):
 
     def test_writeMedium(self):
         """Setting output as a sparse file that only includes defaults if they are
-        user-specified"""
+        user-specified."""
         with open(self.filepathYaml, "w") as stream:
             # Specify a setting that is also a default
             self.cs.writeToYamlStream(stream, "medium", ["numProcessors"])
@@ -146,7 +146,7 @@ class SettingsWriterTests(unittest.TestCase):
         self.assertIn("numProcessors: 1", txt)
 
     def test_writeFull(self):
-        """Setting output as a full, all defaults included file"""
+        """Setting output as a full, all defaults included file."""
         self.cs.writeToYamlFile(self.filepathYaml, style="full")
         txt = open(self.filepathYaml, "r").read()
         self.assertIn("nCycles: 55", txt)

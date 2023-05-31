@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Enable component-wise axial expansion for assemblies and/or a reactor"""
+"""Enable component-wise axial expansion for assemblies and/or a reactor."""
 
 from statistics import mean
 from numpy import array
@@ -61,7 +61,7 @@ def expandColdDimsToHot(
     referenceAssembly=None,
 ):
     """
-    Expand BOL assemblies, resolve disjoint axial mesh (if needed), and update block BOL heights
+    Expand BOL assemblies, resolve disjoint axial mesh (if needed), and update block BOL heights.
 
     Parameters
     ----------
@@ -126,7 +126,7 @@ class AxialExpansionChanger:
     def performPrescribedAxialExpansion(
         self, a, componentLst: list, percents: list, setFuel=True
     ):
-        """Perform axial expansion of an assembly given prescribed expansion percentages
+        """Perform axial expansion of an assembly given prescribed expansion percentages.
 
         Parameters
         ----------
@@ -156,7 +156,7 @@ class AxialExpansionChanger:
         setFuel: bool = True,
         updateNDensForRadialExp: bool = True,
     ):
-        """Perform thermal expansion for an assembly given an axial temperature grid and field
+        """Perform thermal expansion for an assembly given an axial temperature grid and field.
 
         Parameters
         ----------
@@ -192,7 +192,7 @@ class AxialExpansionChanger:
         self.expansionData = None
 
     def setAssembly(self, a, setFuel=True):
-        """set the armi assembly to be changed and init expansion data class for assembly
+        """set the armi assembly to be changed and init expansion data class for assembly.
 
         Parameters
         ----------
@@ -208,7 +208,7 @@ class AxialExpansionChanger:
 
     def applyColdHeightMassIncrease(self):
         """
-        Increase component mass because they are declared at cold dims
+        Increase component mass because they are declared at cold dims.
 
         Notes
         -----
@@ -224,7 +224,7 @@ class AxialExpansionChanger:
             c.changeNDensByFactor(axialExpansionFactor)
 
     def _isTopDummyBlockPresent(self):
-        """determines if top most block of assembly is a dummy block
+        """determines if top most block of assembly is a dummy block.
 
         Notes
         -----
@@ -245,7 +245,7 @@ class AxialExpansionChanger:
                 raise RuntimeError(msg)
 
     def axiallyExpandAssembly(self):
-        """Utilizes assembly linkage to do axial expansion"""
+        """Utilizes assembly linkage to do axial expansion."""
         mesh = [0.0]
         numOfBlocks = self.linked.a.countBlocksWithFlags()
         runLog.debug(
@@ -306,7 +306,7 @@ class AxialExpansionChanger:
 
     def manageCoreMesh(self, r):
         """
-        manage core mesh post assembly-level expansion
+        manage core mesh post assembly-level expansion.
 
         Parameters
         ----------
@@ -333,7 +333,7 @@ class AxialExpansionChanger:
                 runLog.extra(f"{old:.6e}\t{new:.6e}")
 
     def _conserveComponentDensity(self, b, oldHeight, oldVolume):
-        """Update block height dependent component parameters
+        """Update block height dependent component parameters.
 
         1) update component volume for all materials (used to compute block volume)
         2) update number density for solid materials only (no fluid)
@@ -375,7 +375,7 @@ def _getSolidComponents(b):
 
 def _checkBlockHeight(b):
     """
-    Do some basic block height validation
+    Do some basic block height validation.
 
     Notes
     -----
@@ -397,7 +397,7 @@ def _checkBlockHeight(b):
 
 
 class AssemblyAxialLinkage:
-    """Determines and stores the block- and component-wise axial linkage for an assembly
+    """Determines and stores the block- and component-wise axial linkage for an assembly.
 
     Attributes
     ----------
@@ -427,14 +427,14 @@ class AssemblyAxialLinkage:
         self._determineAxialLinkage()
 
     def _determineAxialLinkage(self):
-        """gets the block and component based linkage"""
+        """gets the block and component based linkage."""
         for b in self.a:
             self._getLinkedBlocks(b)
             for c in b:
                 self._getLinkedComponents(b, c)
 
     def _getLinkedBlocks(self, b):
-        """retrieve the axial linkage for block b
+        """retrieve the axial linkage for block b.
 
         Parameters
         ----------
@@ -490,7 +490,7 @@ class AssemblyAxialLinkage:
             )
 
     def _getLinkedComponents(self, b, c):
-        """retrieve the axial linkage for component c
+        """retrieve the axial linkage for component c.
 
         Parameters
         ----------
@@ -549,7 +549,7 @@ class AssemblyAxialLinkage:
 
 
 def _determineLinked(componentA, componentB):
-    """determine axial component linkage for two components
+    """determine axial component linkage for two components.
 
     Parameters
     ----------
@@ -611,7 +611,7 @@ def _determineLinked(componentA, componentB):
 
 
 class ExpansionData:
-    """object containing data needed for axial expansion"""
+    """object containing data needed for axial expansion."""
 
     def __init__(self, a, setFuel):
         self._a = a
@@ -621,7 +621,7 @@ class ExpansionData:
         self._setTargetComponents(setFuel)
 
     def setExpansionFactors(self, componentLst, percents):
-        """sets user defined expansion factors
+        """sets user defined expansion factors.
 
         Parameters
         ----------
@@ -654,7 +654,7 @@ class ExpansionData:
     def updateComponentTempsBy1DTempField(
         self, tempGrid, tempField, updateNDensForRadialExp: bool = True
     ):
-        """assign a block-average axial temperature to components
+        """assign a block-average axial temperature to components.
 
         Parameters
         ----------
@@ -711,7 +711,7 @@ class ExpansionData:
     def updateComponentTemp(
         self, b, c, temp: float, updateNDensForRadialExp: bool = True
     ):
-        """update component temperatures with a provided temperature
+        """update component temperatures with a provided temperature.
 
         Parameters
         ----------
@@ -747,7 +747,7 @@ class ExpansionData:
             c.p.volume = c.getArea(cold=False) * b.getHeight()
 
     def computeThermalExpansionFactors(self):
-        """computes expansion factors for all components via thermal expansion"""
+        """computes expansion factors for all components via thermal expansion."""
 
         for b in self._a:
             for c in b:
@@ -767,7 +767,7 @@ class ExpansionData:
                     self._expansionFactors[c] = c.getThermalExpansionFactor() - 1.0
 
     def getExpansionFactor(self, c):
-        """retrieves expansion factor for c
+        """retrieves expansion factor for c.
 
         Parameters
         ----------
@@ -782,7 +782,7 @@ class ExpansionData:
         return value
 
     def _setTargetComponents(self, setFuel):
-        """sets target component for each block
+        """sets target component for each block.
 
         Parameters
         ----------
@@ -805,7 +805,7 @@ class ExpansionData:
                 self.determineTargetComponent(b)
 
     def determineTargetComponent(self, b, flagOfInterest=None):
-        """determines target component, stores it on the block, and appends it to self._componentDeterminesBlockHeight
+        """determines target component, stores it on the block, and appends it to self._componentDeterminesBlockHeight.
 
         Parameters
         ----------
@@ -857,7 +857,7 @@ class ExpansionData:
         b.p.axialExpTargetComponent = componentWFlag[0].name
 
     def _isFuelLocked(self, b):
-        """physical/realistic implementation reserved for ARMI plugin
+        """physical/realistic implementation reserved for ARMI plugin.
 
         Parameters
         ----------
@@ -881,7 +881,7 @@ class ExpansionData:
         b.p.axialExpTargetComponent = c.name
 
     def isTargetComponent(self, c):
-        """returns bool if c is a target component
+        """returns bool if c is a target component.
 
         Parameters
         ----------

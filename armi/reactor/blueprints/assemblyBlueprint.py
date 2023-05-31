@@ -118,7 +118,7 @@ class AssemblyBlueprint(yamlize.Object):
     @classmethod
     def getAssemClass(cls, blocks):
         """
-        Get the ARMI ``Assembly`` class for the specified blocks
+        Get the ARMI ``Assembly`` class for the specified blocks.
 
         Parameters
         ----------
@@ -271,5 +271,5 @@ class AssemblyKeyedList(yamlize.KeyedList):
 
     @property
     def bySpecifier(self):
-        """Used by the reactor to _loadAssembliesIntoCore later, specifiers are two character strings"""
+        """Used by the reactor to _loadAssembliesIntoCore later, specifiers are two character strings."""
         return {aDesign.specifier: aDesign for aDesign in self}

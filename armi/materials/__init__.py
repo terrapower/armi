@@ -53,7 +53,7 @@ def setMaterialNamespaceOrder(order):
 
 def importMaterialsIntoModuleNamespace(path, name, namespace, updateSource=None):
     """
-    Import all Material subclasses into the top subpackage
+    Import all Material subclasses into the top subpackage.
 
     This allows devs to use ``from armi.materials import HT9``
     Disadvantage: pylint can't tell if the module is available here.

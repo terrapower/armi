@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-Uranium metal
+Uranium metal.
 
 Much info is from [AAAFuels]_.
 
@@ -226,7 +226,7 @@ class Uranium(FuelMaterial):
         return kU
 
     def heatCapacity(self, Tk: float = None, Tc: float = None) -> float:
-        """Heat capacity in J/kg-K"""
+        """Heat capacity in J/kg-K."""
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("heat capacity", Tk)
 
@@ -270,29 +270,29 @@ class Uranium(FuelMaterial):
         FuelMaterial.applyInputParams(self, *args, **kwargs)
 
     def meltingPoint(self):
-        """Melting point in K"""
+        """Melting point in K."""
         return 1408
 
     def density(self, Tk: float = None, Tc: float = None) -> float:
-        """Density in g/cc"""
+        """Density in g/cc."""
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("density", Tk)
 
         return interp(Tk, self._densityTableK, self._densityTable) * self.getTD()
 
     def pseudoDensity(self, Tk: float = None, Tc: float = None) -> float:
-        """2D-expanded density in g/cc"""
+        """2D-expanded density in g/cc."""
         return super().pseudoDensity(Tk=Tk, Tc=Tc) * self.getTD()
 
     def linearExpansion(self, Tk: float = None, Tc: float = None) -> float:
-        """Linear expansion coefficient in 1/K"""
+        """Linear expansion coefficient in 1/K."""
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("linear expansion", Tk)
 
         return interp(Tk, self._densityTableK, self._linearExpansionTable) / 1e6
 
     def linearExpansionPercent(self, Tk: float = None, Tc: float = None) -> float:
-        """Linear expansion percent"""
+        """Linear expansion percent."""
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("linear expansion percent", Tk)
 

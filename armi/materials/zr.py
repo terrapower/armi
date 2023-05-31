@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-Zirconium metal
+Zirconium metal.
 """
 
 from numpy import interp
@@ -23,7 +23,7 @@ from armi.utils.units import getTk
 
 
 class Zr(Material):
-    """Metallic zirconium"""
+    """Metallic zirconium."""
 
     name = "Zr"
 
@@ -87,7 +87,7 @@ class Zr(Material):
         self.setMassFrac("ZR", 1.0)
 
     def _computeReferenceDensity(self, Tk=None, Tc=None):
-        r"""AAA Materials Handbook 45803"""
+        r"""AAA Materials Handbook 45803."""
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("density", Tk)
 
@@ -107,7 +107,7 @@ class Zr(Material):
         return 8.853 + (0.007082 * Tk) + (0.000002533 * Tk ** 2) + (2992.0 / Tk)
 
     def linearExpansion(self, Tk=None, Tc=None):
-        r"""linear expansion in m/mK
+        r"""linear expansion in m/mK.
 
         Reference: Y.S. Touloukian, R.K. Kirby, R.E. Taylor and P.D. Desai, Thermal Expansion,
                    Thermophysical Properties of Matter, Vol. 12, IFI/Plenum, New York-Washington (1975)
@@ -119,7 +119,7 @@ class Zr(Material):
         return interp(Tk, self.linearExpansionTableK, self.linearExpansionTable)
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
-        r"""linear expansion in dL/L
+        r"""linear expansion in dL/L.
 
         Reference: Y.S. Touloukian, R.K. Kirby, R.E. Taylor and P.D. Desai, Thermal Expansion,
                    Thermophysical Properties of Matter, Vol. 12, IFI/Plenum, New York-Washington (1975)

@@ -138,7 +138,7 @@ class HexHoledCircle(basicShapes.Circle):
 
     def getCircleInnerDiameter(self, Tc=None, cold=False):
         """
-        Returns the diameter of the hole equal to the hexagon outer pitch
+        Returns the diameter of the hole equal to the hexagon outer pitch.
         """
         return self.getDimension("holeOP", Tc, cold)
 
@@ -315,13 +315,13 @@ class Helix(ShapedComponent):
         )
 
     def getBoundingCircleOuterDiameter(self, Tc=None, cold=False):
-        """the diameter of a circle which is encompassed by the exterior of the wire-wrap"""
+        """the diameter of a circle which is encompassed by the exterior of the wire-wrap."""
         return self.getDimension("helixDiameter", Tc, cold=cold) + self.getDimension(
             "od", Tc, cold
         )
 
     def getCircleInnerDiameter(self, Tc=None, cold=False):
-        """the diameter of a circle which is encompassed by the interior of the wire-wrap
+        """the diameter of a circle which is encompassed by the interior of the wire-wrap.
 
         - should be equal to the outer diameter of the pin in which the wire is wrapped around
         """

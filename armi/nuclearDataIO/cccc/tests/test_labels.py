@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-Test the reading and writing of the DIF3D/VARIANT LABELS interface file
+Test the reading and writing of the DIF3D/VARIANT LABELS interface file.
 """
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import os

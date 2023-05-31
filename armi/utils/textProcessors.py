@@ -554,7 +554,7 @@ class TextProcessor:
             self.f = SmartList(f)
 
     def reset(self):
-        r"""rewinds the file so you can search through it again"""
+        r"""rewinds the file so you can search through it again."""
         self.f.seek(0)
 
     def __repr__(self):
@@ -570,7 +570,7 @@ class TextProcessor:
         r"""
         Searches file f for pattern and displays msg when found. Returns line in which
         pattern is found or FALSE if no pattern is found.
-        Stops searching if finds killOn first
+        Stops searching if finds killOn first.
 
         If you specify textFlag=True, the search won't use a regular expression (and
         can't). The basic result is you get less powerful matching capabilities at a

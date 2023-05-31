@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Unit tests for Case and CaseSuite objects"""
+"""Unit tests for Case and CaseSuite objects."""
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import copy
 import cProfile
@@ -84,7 +84,7 @@ assemblies: {}
 
 
 class TestArmiCase(unittest.TestCase):
-    """Class to tests armi.cases.Case methods"""
+    """Class to tests armi.cases.Case methods."""
 
     def test_summarizeDesign(self):
         """
@@ -257,7 +257,7 @@ class TestArmiCase(unittest.TestCase):
 
 
 class TestCaseSuiteDependencies(unittest.TestCase):
-    """CaseSuite tests"""
+    """CaseSuite tests."""
 
     def setUp(self):
         self.suite = cases.CaseSuite(settings.Settings())
@@ -275,7 +275,7 @@ class TestCaseSuiteDependencies(unittest.TestCase):
         self.suite.add(self.c2)
 
     def test_clone(self):
-        """if you pass an invalid path, the clone can't happen, but it won't do any damage either"""
+        """if you pass an invalid path, the clone can't happen, but it won't do any damage either."""
         with self.assertRaises(RuntimeError):
             _clone = self.suite.clone("test_clone")
 
@@ -478,7 +478,7 @@ class TestCopyInterfaceInputs(unittest.TestCase):
         self._backupApp = copy.deepcopy(getApp())
 
     def tearDown(self):
-        """Restore the App to its original state"""
+        """Restore the App to its original state."""
         import armi
 
         armi._app = self._backupApp

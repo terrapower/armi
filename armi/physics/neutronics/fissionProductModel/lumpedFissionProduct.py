@@ -56,7 +56,7 @@ class LumpedFissionProduct:
 
     def __init__(self, name=None):
         """
-        Make a LFP
+        Make a LFP.
 
         Parameters
         ----------
@@ -69,7 +69,7 @@ class LumpedFissionProduct:
 
     def duplicate(self):
         """
-        Make a copy of this w/o using deepcopy
+        Make a copy of this w/o using deepcopy.
         """
         new = self.__class__(self.name)
         for key, val in self.yld.items():
@@ -133,7 +133,7 @@ class LumpedFissionProduct:
 
     def getTotalYield(self):
         """
-        Get the fractional yield of all nuclides in this lumped fission product
+        Get the fractional yield of all nuclides in this lumped fission product.
 
         Accounts for any fission gas that may be removed.
 
@@ -202,7 +202,7 @@ class LumpedFissionProduct:
 
 class LumpedFissionProductCollection(dict):
     """
-    A set of lumped fission products
+    A set of lumped fission products.
 
     Typically there would be one of these on a block or on a global level.
     """
@@ -220,7 +220,7 @@ class LumpedFissionProductCollection(dict):
         return self.keys()
 
     def getAllFissionProductNames(self):
-        """Gets names of all fission products in this collection"""
+        """Gets names of all fission products in this collection."""
         fpNames = set()
         for lfp in self.values():
             for fp in lfp.keys():
@@ -228,7 +228,7 @@ class LumpedFissionProductCollection(dict):
         return sorted(fpNames)
 
     def getAllFissionProductNuclideBases(self):
-        """Gets names of all fission products in this collection"""
+        """Gets names of all fission products in this collection."""
         nucs = set()
         for _lfpName, lfp in self.items():
             for fp in lfp.keys():
@@ -237,7 +237,7 @@ class LumpedFissionProductCollection(dict):
 
     def getNumberDensities(self, objectWithParentDensities=None, densFunc=None):
         """
-        Gets all FP number densities in collection
+        Gets all FP number densities in collection.
 
         Parameters
         ----------
@@ -264,7 +264,7 @@ class LumpedFissionProductCollection(dict):
 
     def getMassFrac(self, oldMassFrac=None):
         """
-        returns the mass fraction vector of the collection of lumped fission products
+        returns the mass fraction vector of the collection of lumped fission products.
         """
         if not oldMassFrac:
             raise ValueError("You must define a massFrac vector")
@@ -284,7 +284,7 @@ class LumpedFissionProductCollection(dict):
 
 class FissionProductDefinitionFile:
     """
-    Reads a file that has definitions of one or more LFPs in it to produce LFPs
+    Reads a file that has definitions of one or more LFPs in it to produce LFPs.
 
     The format for this file is as follows::
 
@@ -308,7 +308,7 @@ class FissionProductDefinitionFile:
 
     def createLFPsFromFile(self):
         """
-        Read the file and create LFPs from the contents
+        Read the file and create LFPs from the contents.
 
         Returns
         -------
@@ -323,7 +323,7 @@ class FissionProductDefinitionFile:
 
     def createSingleLFPFromFile(self, name):
         """
-        Read one LFP from the file
+        Read one LFP from the file.
         """
         lfpLines = self._splitIntoIndividualLFPLines(name)
         lfp = self._readOneLFP(lfpLines[0])  # only one LFP expected. Use it.

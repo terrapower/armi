@@ -68,7 +68,7 @@ class DirectoryChanger:
         dumpOnException=True,
         outputPath=None,
     ):
-        """Establish the new and return directories"""
+        """Establish the new and return directories."""
         self.initial = pathTools.armiAbsPath(os.getcwd())
         self.destination = None
         self.outputPath = None
@@ -104,7 +104,7 @@ class DirectoryChanger:
         self.close()
 
     def __repr__(self):
-        """Print the initial and destination paths"""
+        """Print the initial and destination paths."""
         return "<{} {} to {}>".format(
             self.__class__.__name__, self.initial, self.destination
         )
@@ -316,7 +316,7 @@ class TemporaryDirectoryChanger(DirectoryChanger):
 
 
 class ForcedCreationDirectoryChanger(DirectoryChanger):
-    """Creates the directory tree necessary to reach your desired destination"""
+    """Creates the directory tree necessary to reach your desired destination."""
 
     def __init__(
         self,

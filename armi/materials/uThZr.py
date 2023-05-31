@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-Uranium Thorium Zirconium alloy metal
+Uranium Thorium Zirconium alloy metal.
 """
 from armi.utils.units import getTk
 from armi.materials.material import FuelMaterial
@@ -39,7 +39,7 @@ class UThZr(FuelMaterial):
         FuelMaterial.applyInputParams(self, *args, **kwargs)
 
     def setDefaultMassFracs(self):
-        r"""U-ZR mass fractions"""
+        r"""U-ZR mass fractions."""
         self.setMassFrac("U238", 0.8)
         self.setMassFrac("U235", 0.1)
         self.setMassFrac("ZR", 0.09999)
@@ -49,7 +49,7 @@ class UThZr(FuelMaterial):
         self.thFrac = 0.00001
 
     def pseudoDensity(self, Tk=None, Tc=None):
-        """Calculate the mass density in g/cc of U-Zr alloy with various percents"""
+        """Calculate the mass density in g/cc of U-Zr alloy with various percents."""
         zrFrac = self.zrFrac
         thFrac = self.thFrac
         uFrac = 1 - zrFrac - thFrac

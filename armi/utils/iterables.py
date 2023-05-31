@@ -127,10 +127,12 @@ class Sequence:
     """
     The Sequence class partially implements a list-like interface,
     supporting methods like append and extend and also operations like + and +=.
+
     It also provides some convenience methods such as drop and select to support
     filtering, as well as a transform function to modify the sequence. Note that
     these methods return a "cloned" version of the iterator to support chaining,
-    e.g.,
+    e.g.
+
     >>> s = Sequence(range(1000000))
     >>> tuple(s.drop(lambda i: i%2 == 0).select(lambda i: i < 20).transform(lambda i: i*10))
     (10, 30, 50, 70, 90, 110, 130, 150, 170, 190)

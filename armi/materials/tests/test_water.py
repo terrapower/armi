@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""unit tests for water materials"""
+"""unit tests for water materials."""
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import unittest
 from armi.materials.water import SaturatedWater, SaturatedSteam
@@ -20,12 +20,13 @@ from armi.materials.water import SaturatedWater, SaturatedSteam
 
 class Test_Water(unittest.TestCase):
     """
-    unit tests for water materials
+    Unit tests for water materials.
     """
 
     def test_water_at_freezing(self):
         """
-        Reproduce verification results from IAPWS-IF97 for water at 0C
+        Reproduce verification results from IAPWS-IF97 for water at 0C.
+
         http://www.iapws.org/relguide/supsat.pdf
         """
         water = SaturatedWater()
@@ -80,10 +81,10 @@ class Test_Water(unittest.TestCase):
 
     def test_water_at_boiling(self):
         """
-        Reproduce verification results from IAPWS-IF97 for water at 100C
+        Reproduce verification results from IAPWS-IF97 for water at 100C.
+
         http://www.iapws.org/relguide/supsat.pdf
         """
-
         water = SaturatedWater()
         steam = SaturatedSteam()
 
@@ -138,10 +139,10 @@ class Test_Water(unittest.TestCase):
 
     def test_water_at_critcalPoint(self):
         """
-        Reproduce verification results from IAPWS-IF97 for water at 647.096K
+        Reproduce verification results from IAPWS-IF97 for water at 647.096K.
+
         http://www.iapws.org/relguide/supsat.pdf
         """
-
         water = SaturatedWater()
         steam = SaturatedSteam()
 

@@ -49,7 +49,7 @@ class Inconel617(Inconel):
     """
     Note: historically the 'Inconel' material represented the high-nickel alloy
     Inconel 617. This material enables the user to know with certainty that
-    this material represents Inconel 617 and doesn't break any older models
+    this material represents Inconel 617 and doesn't break any older models.
     """
 
     name = "Inconel617"

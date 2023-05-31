@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-r""" Testing some utility functions
+r""" Testing some utility functions.
 """
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,too-many-public-methods,invalid-name
 from collections import defaultdict
@@ -139,7 +139,7 @@ class TestGeneralUtils(unittest.TestCase):
             utils.plotMatrix(matrix, fname, xticks=xtick, yticks=ytick)
 
     def test_classesInHierarchy(self):
-        """Tests the classesInHierarchy utility
+        """Tests the classesInHierarchy utility.
 
         .. test:: Tests that the Reactor is stored heirarchically
            :id: TEST_REACTOR_HIERARCHY_0

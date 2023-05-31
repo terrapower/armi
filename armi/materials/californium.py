@@ -31,6 +31,6 @@ class Californium(SimpleSolid):
 
     def density(self, Tk=None, Tc=None):
         """
-        https://en.wikipedia.org/wiki/Californium
+        https://en.wikipedia.org/wiki/Californium.
         """
         return 15.1  # g/cm3

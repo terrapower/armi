@@ -75,7 +75,7 @@ class TestApps(unittest.TestCase):
         self._backupApp = copy.deepcopy(getApp())
 
     def tearDown(self):
-        """Restore the App to its original state"""
+        """Restore the App to its original state."""
         import armi
 
         armi._app = self._backupApp

@@ -167,7 +167,7 @@ class Dlayxs(collections.OrderedDict):
 
     def generateAverageDelayedNeutronConstants(self):
         """
-        Use externally-computed nuclideContributionFractions to produce an average ``DelayedNeutronData`` obj
+        Use externally-computed nuclideContributionFractions to produce an average ``DelayedNeutronData`` obj.
 
         Solves typical averaging equation but weights already sum to 1.0 so we
         can skip normalization at the end.
@@ -267,7 +267,7 @@ class _DlayxsIO(cccc.Stream):
 
     def _rwSpectra(self, numNuclides):
         """
-        Read or write precursor decay constants and emission spectra, as well as energy group structure for each family
+        Read or write precursor decay constants and emission spectra, as well as energy group structure for each family.
 
         nkfam is the number of families to which fission in a given nuclide contributes delayed neutron precursors
         """
@@ -321,7 +321,7 @@ class _DlayxsIO(cccc.Stream):
 
     def _rwYield(self):
         """
-        Read or write delayed neutron precursor yield data (3D record)
+        Read or write delayed neutron precursor yield data (3D record).
 
         Also reads the family numbers, which represent the family number of the
         k-th yield vector in delayNeutronsPerFission

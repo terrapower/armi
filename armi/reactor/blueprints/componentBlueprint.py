@@ -158,7 +158,7 @@ class ComponentBlueprint(yamlize.Object):
     area = yamlize.Attribute(type=float, default=None)
 
     def construct(self, blueprint, matMods):
-        """Construct a component or group"""
+        """Construct a component or group."""
         runLog.debug("Constructing component {}".format(self.name))
         kwargs = self._conformKwargs(blueprint, matMods)
         shape = self.shape.lower().strip()
@@ -181,7 +181,7 @@ class ComponentBlueprint(yamlize.Object):
         return constructedObject
 
     def _conformKwargs(self, blueprint, matMods):
-        """This method gets the relevant kwargs to construct the component"""
+        """This method gets the relevant kwargs to construct the component."""
         kwargs = {"mergeWith": self.mergeWith or "", "isotopics": self.isotopics or ""}
 
         for attr in self.attributes:  # yamlize magic
@@ -332,7 +332,7 @@ class GroupedComponent(yamlize.Object):
 
 class ComponentGroup(yamlize.KeyedList):
     """
-    A single component group containing multiple GroupedComponents
+    A single component group containing multiple GroupedComponents.
 
     Example
     -------
@@ -379,7 +379,7 @@ for dimName in set(
 
 
 def _setComponentFlags(component, flags, blueprint):
-    """Update component flags based on user input in blueprint"""
+    """Update component flags based on user input in blueprint."""
     # the component __init__ calls setType(), which gives us our initial guess at
     # what the flags should be.
     if flags is not None:

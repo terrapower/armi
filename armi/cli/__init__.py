@@ -107,7 +107,7 @@ class ArmiCLI:
     ARMI CLI -- The main entry point into ARMI. There are various commands
     available, to get help for the individual commands, run again with
     `<command> --help`. Generically, the CLI implements functions that already
-    exists within ARMI
+    exists within ARMI.
     """
 
     def __init__(self):
@@ -148,7 +148,7 @@ class ArmiCLI:
 
     @staticmethod
     def showVersion():
-        """Print the App name and version on the command line"""
+        """Print the App name and version on the command line."""
         from armi import getApp  # pylint: disable=import-outside-toplevel
 
         prog = context.APP_NAME

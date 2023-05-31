@@ -315,7 +315,7 @@ def getBurnSteps(cs):
 
 
 def hasBurnup(cs):
-    """Is depletion being modeled?
+    """Test if depletion is being modeled.
 
     Parameters
     ----------
@@ -430,7 +430,7 @@ def getNodesPerCycle(cs):
 
 
 def getPreviousTimeNode(cycle, node, cs):
-    """Return the (cycle, node) before the specified (cycle, node)"""
+    """Return the (cycle, node) before the specified (cycle, node)."""
     if (cycle, node) == (0, 0):
         raise ValueError("There is no time step before (0, 0)")
     if node != 0:

@@ -34,7 +34,7 @@ class Cu(Material):
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
         """
-        Return the linear expansion percent for Copper
+        Return the linear expansion percent for Copper.
 
         Notes
         -----

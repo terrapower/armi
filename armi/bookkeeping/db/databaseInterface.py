@@ -45,7 +45,7 @@ ORDER = interfaces.STACK_ORDER.BOOKKEEPING
 
 
 def describeInterfaces(cs):
-    """Function for exposing interface(s) to other code"""
+    """Function for exposing interface(s) to other code."""
     return (DatabaseInterface, {"enabled": cs["db"]})
 
 
@@ -98,7 +98,7 @@ class DatabaseInterface(interfaces.Interface):
             )
 
     def interactBOL(self):
-        """Initialize the database if the main interface was not available. (Begining of Life)"""
+        """Initialize the database if the main interface was not available. (Begining of Life)."""
         if not self._db:
             self.initDB()
 
@@ -156,7 +156,7 @@ class DatabaseInterface(interfaces.Interface):
         self.writeDBEveryNode(cycle, node)
 
     def writeDBEveryNode(self, cycle, node):
-        """write the database at the end of the time node"""
+        """write the database at the end of the time node."""
         # skip writing for last burn step since it will be written at interact EOC
         if node < self.o.burnSteps[cycle]:
             self.r.core.p.minutesSinceStart = (
@@ -167,7 +167,7 @@ class DatabaseInterface(interfaces.Interface):
                 self._db.syncToSharedFolder()
 
     def interactEOC(self, cycle=None):
-        """In case anything changed since last cycle (e.g. rxSwing), update DB. (End of Cycle)"""
+        """In case anything changed since last cycle (e.g. rxSwing), update DB. (End of Cycle)."""
         # We cannot presume whether we are at EOL based on cycle and cs["nCycles"],
         # since cs["nCycles"] is not a difinitive indicator of EOL; ultimately the
         # Operator has the final say.
@@ -178,7 +178,7 @@ class DatabaseInterface(interfaces.Interface):
             self._db.writeToDB(self.r)
 
     def interactEOL(self):
-        """DB's should be closed at run's end. (End of Life)"""
+        """DB's should be closed at run's end. (End of Life)."""
         # minutesSinceStarts should include as much of the ARMI run as possible so EOL
         # is necessary, too.
         self.r.core.p.minutesSinceStart = (time.time() - self.r.core.timeOfStart) / 60.0
@@ -186,7 +186,7 @@ class DatabaseInterface(interfaces.Interface):
         self._db.close(True)
 
     def interactError(self):
-        r"""Get shutdown state information even if the run encounters an error"""
+        r"""Get shutdown state information even if the run encounters an error."""
         try:
             self.r.core.p.minutesSinceStart = (
                 time.time() - self.r.core.timeOfStart

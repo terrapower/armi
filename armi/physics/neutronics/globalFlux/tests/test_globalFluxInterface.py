@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for generic global flux interface"""
+"""Tests for generic global flux interface."""
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import unittest
 
@@ -83,7 +83,7 @@ class MockGlobalFluxWithExecuters(
 class MockGlobalFluxWithExecutersNonUniform(MockGlobalFluxWithExecuters):
     def getExecuterOptions(self, label=None):
         """
-        Return modified executerOptions
+        Return modified executerOptions.
         """
         opts = globalFluxInterface.GlobalFluxInterfaceUsingExecuters.getExecuterOptions(
             self, label=label
@@ -138,7 +138,7 @@ class TestGlobalFluxOptions(unittest.TestCase):
 class TestGlobalFluxInterface(unittest.TestCase):
     def test_interaction(self):
         """
-        Ensure the basic interaction hooks work
+        Ensure the basic interaction hooks work.
 
         Check that a 1000 pcm rx swing is observed due to the mock.
         """
@@ -197,14 +197,14 @@ class TestGlobalFluxInterfaceWithExecuters(unittest.TestCase):
         self.assertEqual(class0, globalFluxInterface.GlobalFluxExecuter)
 
     def test_setTightCouplingDefaults(self):
-        """assert that tight coupling defaults are only set if cs["tightCoupling"]=True"""
+        """assert that tight coupling defaults are only set if cs["tightCoupling"]=True."""
         self.assertIsNone(self.gfi.coupler)
         self._setTightCouplingTrue()
         self.assertEqual(self.gfi.coupler.parameter, "keff")
         self._setTightCouplingFalse()
 
     def test_getTightCouplingValue(self):
-        """test getTightCouplingValue returns the correct value for keff and type for power"""
+        """test getTightCouplingValue returns the correct value for keff and type for power."""
         self._setTightCouplingTrue()
         self.assertEqual(self.gfi.getTightCouplingValue(), 1.0)  # set in setUp
         self.gfi.coupler.parameter = "power"

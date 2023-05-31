@@ -255,7 +255,7 @@ class UnshapedVolumetricComponent(UnshapedComponent):
 class ZeroMassComponent(UnshapedVolumetricComponent):
     """
     A component that never has mass -- it always returns zero for getMass and
-    getNumberDensity
+    getNumberDensity.
 
     Useful for situations where you want to give a block integrated flux, but ensure
     mass is never added to it
@@ -266,17 +266,17 @@ class ZeroMassComponent(UnshapedVolumetricComponent):
     """
 
     def getNumberDensity(self, *args, **kwargs):
-        """Always return 0 because this component has not mass"""
+        """Always return 0 because this component has not mass."""
         return 0.0
 
     def setNumberDensity(self, *args, **kwargs):
-        """Never add mass"""
+        """Never add mass."""
         pass
 
 
 class PositiveOrNegativeVolumeComponent(UnshapedVolumetricComponent):
     """
-    A component that may have negative mass for removing mass from batches
+    A component that may have negative mass for removing mass from batches.
 
     See Also
     --------

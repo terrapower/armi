@@ -227,7 +227,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         )
 
     def test_findMany(self):
-        """Tests the findMany and type aspects of the fuel handler"""
+        """Tests the findMany and type aspects of the fuel handler."""
         fh = fuelHandlers.FuelHandler(self.o)
 
         igniters = fh.findAssembly(typeSpec=Flags.IGNITER | Flags.FUEL, findMany=True)
@@ -256,7 +256,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         )
 
     def test_findInSFP(self):
-        """Tests ability to pull from the spent fuel pool"""
+        """Tests ability to pull from the spent fuel pool."""
         fh = fuelHandlers.FuelHandler(self.o)
         spent = fh.findAssembly(
             findMany=True,
@@ -391,7 +391,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
 
     def test_readMoves(self):
         """
-        Depends on the shuffleLogic created by repeatShuffles
+        Depends on the shuffleLogic created by repeatShuffles.
 
         See Also
         --------

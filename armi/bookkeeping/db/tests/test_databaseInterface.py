@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-r""" Tests of the Database Interface"""
+"""Tests of the Database Interface."""
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-method-argument,import-outside-toplevel
 import os
 import types
@@ -82,7 +82,7 @@ class MockInterface(interfaces.Interface):
 
 
 class TestDatabaseInterface(unittest.TestCase):
-    r"""Tests for the DatabaseInterface class"""
+    """Tests for the DatabaseInterface class."""
 
     def setUp(self):
         self.td = directoryChangers.TemporaryDirectoryChanger()
@@ -100,7 +100,7 @@ class TestDatabaseInterface(unittest.TestCase):
         self.td.__exit__(None, None, None)
 
     def test_interactEveryNodeReturn(self):
-        """test that the DB is NOT written to if cs["tightCoupling"] = True"""
+        """test that the DB is NOT written to if cs["tightCoupling"] = True."""
         self.o.cs["tightCoupling"] = True
         self.dbi.interactEveryNode(0, 0)
         self.assertFalse(self.dbi.database.hasTimeStep(0, 0))
@@ -120,7 +120,7 @@ class TestDatabaseInterface(unittest.TestCase):
         self.assertEqual(self.dbi.distributable(), 4)
 
     def test_timeNodeLoop_tightCoupling(self):
-        """test that database is written out after the coupling loop has completed"""
+        """Test that database is written out after the coupling loop has completed."""
         # clear out interfaces (no need to run physics) but leave database
         self.o.interfaces = [self.dbi]
         self.o.cs["tightCoupling"] = True
@@ -294,7 +294,6 @@ class TestDatabaseReading(unittest.TestCase):
         cls.r = None
 
     def _fullCoreSizeChecker(self, r):
-        """TODO"""
         self.assertEqual(r.core.numRings, 3)
         self.assertEqual(r.p.cycle, 0)
         self.assertEqual(len(r.core.assembliesByName), 19)

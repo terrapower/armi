@@ -14,7 +14,7 @@
 
 r"""
 The ``CaseSuite`` object is responsible for running, and executing a set of user inputs.  Many
-entry points redirect into ``CaseSuite`` methods, such as ``clone``, ``compare``, and ``submit``
+entry points redirect into ``CaseSuite`` methods, such as ``clone``, ``compare``, and ``submit``.
 
 Used in conjunction with the :py:class:`~armi.cases.case.Case` object, ``CaseSuite`` can
 be used to collect a series of cases
@@ -57,7 +57,7 @@ class CaseSuite:
 
     def add(self, case):
         """
-        Add a Case object to the CaseSuite
+        Add a Case object to the CaseSuite.
 
         Case objects within a CaseSuite must have unique ``title`` attributes, a
         KeyError will be raised

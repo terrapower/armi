@@ -216,7 +216,7 @@ class DefaultExecuter(Executer):
 
     def _updateRunDir(self, directory):
         """
-        If a TemporaryDirectoryChanger is used, the runDir needs to be updated
+        If a TemporaryDirectoryChanger is used, the runDir needs to be updated.
 
         If a ForcedCreationDirectoryChanger is used instead, nothing needs to be done.
 
