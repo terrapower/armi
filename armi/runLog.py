@@ -13,8 +13,7 @@
 # limitations under the License.
 
 r"""
-This module handles logging of console output (e.g. warnings, information, errors)
-during an armi run.
+This module handles logging of console during a simulation.
 
 The default way of calling and the global armi logger is to just import it:
 
@@ -44,7 +43,6 @@ Or change the log level the same way:
 .. code::
 
     runLog.setVerbosity('debug')
-
 """
 from __future__ import print_function
 from glob import glob
@@ -84,7 +82,7 @@ class _RunLog:
 
     def __init__(self, mpiRank=0):
         """
-        Build a log object
+        Build a log object.
 
         Parameters
         ----------
@@ -92,7 +90,6 @@ class _RunLog:
             If this is zero, we are in the parent process, otherwise child process.
             The default of 0 means we assume the parent process.
             This should not be adjusted after instantiation.
-
         """
         self._mpiRank = mpiRank
         self._verbosity = logging.INFO
@@ -106,13 +103,13 @@ class _RunLog:
         self._setLogLevels()
 
     def setNullLoggers(self):
-        """Helper method to set both of our loggers to Null handlers"""
+        """Helper method to set both of our loggers to Null handlers."""
         self.logger = NullLogger("NULL")
         self.stderrLogger = NullLogger("NULL2", isStderr=True)
 
     def _setLogLevels(self):
-        """Here we fill the logLevels dict with custom strings that depend on the MPI rank"""
-        # NOTE: use ordereddict so we can get right order of options in GUI
+        """Here we fill the logLevels dict with custom strings that depend on the MPI rank."""
+        # NOTE: using ordereddict so we can get right order of options in GUI
         _rank = "" if self._mpiRank == 0 else "-{:>03d}".format(self._mpiRank)
         self.logLevels = collections.OrderedDict(
             [
@@ -249,7 +246,7 @@ class _RunLog:
             sys.stderr = self.initialErr
 
     def startLog(self, name):
-        """Initialize the streams when parallel processing"""
+        """Initialize the streams when parallel processing."""
         # open the main logger
         self.logger = logging.getLogger(
             STDOUT_LOGGER_NAME + SEP + name + SEP + str(self._mpiRank)
@@ -279,7 +276,7 @@ class _RunLog:
 
 
 def close(mpiRank=None):
-    """End use of the log. Concatenate if needed and restore defaults"""
+    """End use of the log. Concatenate if needed and restore defaults."""
     mpiRank = context.MPI_RANK if mpiRank is None else mpiRank
 
     if mpiRank == 0:
@@ -380,9 +377,7 @@ def concatenateLogs(logDir=None):
 # Here are all the module-level functions that should be used for most outputs.
 # They use the Log object behind the scenes.
 def raw(msg):
-    """
-    Print raw text without any special functionality.
-    """
+    """Print raw text without any special functionality."""
     LOG.log("header", msg, single=False)
 
 
@@ -426,12 +421,9 @@ def getVerbosity():
     return LOG.getVerbosity()
 
 
-# ---------------------------------------
-
-
 class DeduplicationFilter(logging.Filter):
     """
-    Important logging filter
+    Important logging filter.
 
     * allow users to turn off duplicate warnings
     * handles special indentation rules for our logs
@@ -475,7 +467,7 @@ class DeduplicationFilter(logging.Filter):
 
 
 class RunLogger(logging.Logger):
-    """Custom Logger to support:
+    """Custom Logger to support our specific desires.
 
     1. Giving users the option to de-duplicate warnings
     2. Piping stderr to a log file
@@ -513,11 +505,11 @@ class RunLogger(logging.Logger):
 
     def log(self, msgType, msg, single=False, label=None, **kwargs):
         """
-        This is a wrapper around logger.log() that does most of the work and is
-        used by all message passers (e.g. info, warning, etc.).
+        This is a wrapper around logger.log() that does most of the work.
 
-        In this situation, we do the mangling needed to get the log level to the correct number.
-        And we do some custom string manipulation so we can handle de-duplicating warnings.
+        This is used by all message passers (e.g. info, warning, etc.). In this situation,
+        we do the mangling needed to get the log level to the correct number. And we do
+        some custom string manipulation so we can handle de-duplicating warnings.
         """
         # Determine the log level: users can optionally pass in custom strings ("debug")
         msgLevel = msgType if isinstance(msgType, int) else LOG.logLevels[msgType][0]
@@ -529,7 +521,7 @@ class RunLogger(logging.Logger):
 
     def _log(self, *args, **kwargs):
         """
-        Wrapper around the standard library Logger._log() method
+        Wrapper around the standard library Logger._log() method.
 
         The primary goal here is to allow us to support the deduplication of warnings.
 
@@ -555,22 +547,22 @@ class RunLogger(logging.Logger):
         logging.Logger._log(self, *args, **kwargs)
 
     def allowStopDuplicates(self):
-        """helper method to allow us to safely add the deduplication filter at any time"""
+        """helper method to allow us to safely add the deduplication filter at any time."""
         for f in self.filters:
             if isinstance(f, DeduplicationFilter):
                 return
         self.addFilter(DeduplicationFilter())
 
     def write(self, msg, **kwargs):
-        """the redirect method that allows to do stderr piping"""
+        """the redirect method that allows to do stderr piping."""
         self.error(msg)
 
     def flush(self, *args, **kwargs):
-        """stub, purely to allow stderr piping"""
+        """stub, purely to allow stderr piping."""
         pass
 
     def close(self):
-        """helper method, to shutdown and delete a Logger"""
+        """helper method, to shutdown and delete a Logger."""
         self.handlers.clear()
         del self
 
@@ -602,12 +594,13 @@ class RunLogger(logging.Logger):
         self.info("------------------------------------")
 
     def setVerbosity(self, intLevel):
-        """A helper method to try to partially support the local, historical method of the same name"""
+        """A helper method to try to partially support the local, historical method of the same name."""
         self.setLevel(intLevel)
 
 
 class NullLogger(RunLogger):
     """This is really just a placeholder for logging before or after the span of a normal armi run.
+
     It will forward all logging to stdout/stderr, as you'd normally expect.
     But it will preserve the formatting and duplication tools of the armi library.
     """
@@ -620,7 +613,7 @@ class NullLogger(RunLogger):
             self.handlers = [logging.StreamHandler(sys.stdout)]
 
     def addHandler(self, *args, **kwargs):
-        """ensure this STAYS a null logger"""
+        """ensure this STAYS a null logger."""
         pass
 
 
@@ -629,11 +622,8 @@ logging.RunLogger = RunLogger
 logging.setLoggerClass(RunLogger)
 
 
-# ============ begin logging support ============
-
-
 def createLogDir(logDir: str = None) -> None:
-    """A helper method to create the log directory"""
+    """A helper method to create the log directory."""
     # the usual case is the user does not pass in a log dir path, so we use the global one
     if logDir is None:
         logDir = LOG_DIR
@@ -659,7 +649,6 @@ def createLogDir(logDir: str = None) -> None:
 
 if not os.path.exists(LOG_DIR):
     createLogDir(LOG_DIR)
-# ---------------------------------------
 
 
 def logFactory():
