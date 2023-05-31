@@ -126,7 +126,6 @@ def loadOperator(pathToDb, loadCycle, loadNode, allowMissing=False):
     """
     # `import armi` doesn't work if imported at top
     from armi import cases
-    from armi import settings
 
     if not os.path.exists(pathToDb):
         raise ValueError(
@@ -145,6 +144,7 @@ def loadOperator(pathToDb, loadCycle, loadNode, allowMissing=False):
         thisCase = cases.Case(cs)
 
         r = db.load(loadCycle, loadNode, allowMissing=allowMissing)
+
     settings.setMasterCs(cs)
 
     # Update the global assembly number because, if the user is loading a reactor from

@@ -39,7 +39,7 @@ HeatCapacityConstants = collections.namedtuple(
 
 
 class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
-    name = "Uranium Oxide"
+    name = "UraniumOxide"
 
     enrichedNuclide = "U235"
 

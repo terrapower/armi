@@ -252,7 +252,7 @@ class MOX_TestCase(_Material_Test, unittest.TestCase):
         ref = 0.209
         self.assertAlmostEqual(self.mat.getMolFracPuO2(), ref, delta=ref * 0.001)
 
-    def test_getMolFracPuO2(self):
+    def test_getMeltingPoint(self):
         ref = 2996.788765
         self.assertAlmostEqual(self.mat.meltingPoint(), ref, delta=ref * 0.001)
 
@@ -675,7 +675,7 @@ class UraniumOxide_TestCase(_Material_Test, unittest.TestCase):
     def test_getTemperatureAtDensity(self):
         expectedTemperature = 100.0
         tAtTargetDensity = self.mat.getTemperatureAtDensity(
-            self.mat.pseudoDensity(Tc=expectedTemperature), 30.0
+            self.mat.density(Tc=expectedTemperature), 30.0
         )
         self.assertAlmostEqual(expectedTemperature, tAtTargetDensity)
 
@@ -1611,13 +1611,10 @@ class Alloy200_TestCase(_Material_Test, unittest.TestCase):
         cur = 13.3e-6
         self.assertAlmostEqual(ref, cur, delta=abs(ref * 0.001))
 
-    def test_linearExpansion(self):
+    def test_linearExpansionHotter(self):
         ref = self.mat.linearExpansion(Tk=873.15)
         cur = 15.6e-6
         self.assertAlmostEqual(ref, cur, delta=abs(ref * 0.001))
-
-    def test_propertyValidTemperature(self):
-        self.assertGreater(len(self.mat.propertyValidTemperature), 0)
 
     def test_propertyValidTemperature(self):
         self.assertGreater(len(self.mat.propertyValidTemperature), 0)

@@ -54,19 +54,15 @@ The file structure is expectation is::
             # optionally extra settings (note this is probably going to be a removed feature)
             #    hotChannelFactors: TWRPclad
 
-
 Examples
 --------
 >>> design = blueprints.Blueprints.load(self.yamlString)
 >>> print(design.gridDesigns)
 
-
 Notes
 -----
 The blueprints system was built to enable round trip translations between
 text representations of input and objects in the code.
-
-
 """
 import copy
 import os
@@ -84,13 +80,13 @@ from armi import context
 from armi import getPluginManager, getPluginManagerOrFail
 from armi import plugins
 from armi import runLog
-from armi.utils.customExceptions import InputError
 from armi.nucDirectory import nuclideBases
 from armi.reactor import assemblies
 from armi.reactor import geometry
 from armi.reactor import systemLayoutInput
 from armi.reactor.flags import Flags
 from armi.scripts import migration
+from armi.utils.customExceptions import InputError
 
 from armi.utils import textProcessors
 from armi.settings.fwSettings.globalSettings import (
@@ -106,13 +102,13 @@ from armi.physics.neutronics.settings import CONF_LOADING_FILE
 # NOTE: using non-ARMI-standard imports because these are all a part of this package,
 # and using the module imports would make the attribute definitions extremely long
 # without adding detail
-from armi.reactor.blueprints.reactorBlueprint import Systems, SystemBlueprint
+from armi.reactor.blueprints import isotopicOptions
 from armi.reactor.blueprints.assemblyBlueprint import AssemblyKeyedList
 from armi.reactor.blueprints.blockBlueprint import BlockKeyedList
-from armi.reactor.blueprints.componentBlueprint import ComponentKeyedList
 from armi.reactor.blueprints.componentBlueprint import ComponentGroups
-from armi.reactor.blueprints import isotopicOptions
+from armi.reactor.blueprints.componentBlueprint import ComponentKeyedList
 from armi.reactor.blueprints.gridBlueprint import Grids, Triplet
+from armi.reactor.blueprints.reactorBlueprint import Systems, SystemBlueprint
 from armi.reactor.converters import axialExpansionChanger
 
 context.BLUEPRINTS_IMPORTED = True

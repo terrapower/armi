@@ -499,7 +499,7 @@ class TestMath(unittest.TestCase):
         self.assertEqual(yout[2], 0)
         self.assertEqual(yout[3], 0)
 
-    def test_resampleStepwiseAvgNpArray(self):
+    def test_resampleStepwiseAvgNpArrayAverage(self):
         """Test resampleStepwise() summing when some of the values are arrays"""
         xin = [0, 1, 2, 3, 4]
         yin = [11, np.array([1, 1]), np.array([2, 2]), 44]
