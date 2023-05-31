@@ -627,7 +627,6 @@ def createDimensionReport(comp):
 def insertCoreAndAssemblyMaps(
     r, cs, report, blueprint, generateFullCoreMap=False, showBlockAxMesh=True
 ):
-
     r"""Create core and assembly design plots
 
     Parameters
@@ -639,7 +638,6 @@ def insertCoreAndAssemblyMaps(
     generateFullCoreMap : bool, default False
     showBlockAxMesh : bool, default True
     """
-
     assemPrototypes = set()
     for aKey in blueprint.assemDesigns.keys():
         assemPrototypes.add(blueprint.constructAssem(cs, name=aKey))
