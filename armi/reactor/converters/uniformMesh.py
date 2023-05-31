@@ -185,11 +185,9 @@ class UniformMeshGenerator:
         # filter fuel material boundaries to mininum mesh size
         filteredBottomFuel, filteredTopFuel = self._getFilteredFuelTopAndBottom()
         (
-            filteredBottomControl,
-            filteredTopControl,
+            materialBottoms,
+            materialTops,
         ) = self._getFilteredControlTopAndBottom(filteredBottomFuel, filteredTopFuel)
-        materialBottoms = filteredBottomFuel + filteredBottomControl
-        materialTops = filteredTopFuel + filteredTopControl
 
         # combine the bottoms and tops into one list with bottom preference
         allMatBounds = materialBottoms + materialTops
