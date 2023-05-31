@@ -639,7 +639,6 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
             bigComponent = self._addSolidMaterialRing(
                 bcs, innerDiameter, outerDiameter, name
             )
-            bigComponent.p.flags = bcs.p.flags
             self.convertedBlock.add(bigComponent)
             innerDiameter = outerDiameter
 
@@ -667,7 +666,6 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
             circularHexagon = self._addSolidMaterialRing(
                 hexagon, innerDiameter, outerDiam, name
             )
-            circularHexagon.p.flags = hexagon.p.flags
             self.convertedBlock.add(circularHexagon)
             innerDiameter = outerDiam
 
@@ -683,6 +681,7 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
             mult=1,
         )
         circle.setNumberDensities(baseComponent.getNumberDensities())
+        circle.p.flags = baseComponent.p.flags
         return circle
 
     def _addCoolantRing(self, coolantOD, nameSuffix):
