@@ -1207,8 +1207,9 @@ class Assembly(composites.Composite):
 
         Parameters
         ----------
-        rad - float
-            number (in radians) specifying the angle of counter clockwise rotation"""
+        rad: float
+            number (in radians) specifying the angle of counter clockwise rotation
+        """
         for b in self.getBlocks():
             b.rotate(rad)
 
