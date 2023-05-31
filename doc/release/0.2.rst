@@ -12,8 +12,8 @@ What's new in ARMI
 
 Bug fixes
 ---------
+#. Fixed a bug in the ISOTXS file name used for snapshots. (`PR#1277 <https://github.com/terrapower/armi/pull/1277>`_)
 #. Fix a bug in uniform mesh decusping when assemblies of same type have drastically different height. (`PR#1282 <https://github.com/terrapower/armi/pull/1282>`_)
-#. TBD
 
 
 ARMI v0.2.7
