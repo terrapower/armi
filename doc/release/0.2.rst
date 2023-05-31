@@ -12,7 +12,7 @@ What's new in ARMI
 
 Bug fixes
 ---------
-#. TBD
+#. Fixed a bug in the ISOTXS file name used for snapshots. (`PR#1277 <https://github.com/terrapower/armi/pull/1277>`_)
 
 
 ARMI v0.2.7

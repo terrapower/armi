@@ -125,7 +125,15 @@ class OperatorTests(unittest.TestCase):
 
     def test_snapshotRequest(self):
         with TemporaryDirectoryChanger():
-            self.o.snapshotRequest(0, 1)
+            with mockRunLogs.BufferLog() as mock:
+                self.o.snapshotRequest(0, 1)
+                self.assertIn("ISOTXS-c0", mock.getStdout())
+                self.assertIn("DIF3D output for snapshot", mock.getStdout())
+                self.assertIn("Shuffle logic for snapshot", mock.getStdout())
+                self.assertIn("Geometry file for snapshot", mock.getStdout())
+                self.assertIn("Loading definition for snapshot", mock.getStdout())
+                self.assertIn("Flow history for snapshot", mock.getStdout())
+                self.assertIn("Pressure history for snapshot", mock.getStdout())
             self.assertTrue(os.path.exists("snapShot0_1"))
 
 
