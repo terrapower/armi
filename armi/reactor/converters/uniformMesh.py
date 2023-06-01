@@ -183,11 +183,12 @@ class UniformMeshGenerator:
         appropriate bottom and top boundaries of fuel and control assemblies are determined.
         """
         # filter fuel material boundaries to mininum mesh size
-        filteredBottomFuel, filteredTopFuel = self._getFilteredMeshTopAndBottom(Flags.FUEL)
-        (
-            materialBottoms,
-            materialTops,
-        ) = self._getFilteredMeshTopAndBottom(Flags.CONTROL, filteredBottomFuel, filteredTopFuel)
+        filteredBottomFuel, filteredTopFuel = self._getFilteredMeshTopAndBottom(
+            Flags.FUEL
+        )
+        (materialBottoms, materialTops,) = self._getFilteredMeshTopAndBottom(
+            Flags.CONTROL, filteredBottomFuel, filteredTopFuel
+        )
 
         # combine the bottoms and tops into one list with bottom preference
         allMatBounds = materialBottoms + materialTops
@@ -291,7 +292,7 @@ class UniformMeshGenerator:
                 return sorted(meshList)
             meshList.pop(removeIndex)
 
-    def _getFilteredMeshTopAndBottom(self, flags, bottoms=None, tops=None)
+    def _getFilteredMeshTopAndBottom(self, flags, bottoms=None, tops=None):
         """
         Get the bottom and top boundaries of fuel assemblies and filter them based on the ``minimumMeshSize``.
 
@@ -299,11 +300,10 @@ class UniformMeshGenerator:
         ----------
         flags : armi.reactor.flags.Flags
             The assembly and block flags for which to preserve material boundaries
-        bottoms : list[float], optional 
+        bottoms : list[float], optional
             Mesh "anchors" for material bottom boundaries
-        tops : set{float}, optional 
+        tops : list[float], optional
             Mesh "anchors" for material top boundaries
-        tops : set{float}, optional 
 
         Returns
         -------
@@ -329,8 +329,10 @@ class UniformMeshGenerator:
             for a in self._sourceReactor.core.getAssemblies(flags):
                 matBoundaries.add(meshGetter(a, flags))
             anchors = meshList if meshList is not None else [extreme(matBoundaries)]
-            filteredBoundaries[preference] = self._filterMesh(matBoundaries, self.minimumMeshSize, anchors, preference=preference)
-        
+            filteredBoundaries[preference] = self._filterMesh(
+                matBoundaries, self.minimumMeshSize, anchors, preference=preference
+            )
+
         return filteredBoundaries["bottom"], filteredBoundaries["top"]
 
 
