@@ -391,7 +391,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
 
     def test_readMoves(self):
         """
-        Depends on the shuffleLogic created by repeatShuffles.
+        Depends on the ``shuffleLogic`` created by ``repeatShuffles``.
 
         See Also
         --------
