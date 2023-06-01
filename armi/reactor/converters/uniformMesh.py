@@ -186,7 +186,7 @@ class UniformMeshGenerator:
         filteredBottomFuel, filteredTopFuel = self._getFilteredMeshTopAndBottom(
             Flags.FUEL
         )
-        (materialBottoms, materialTops,) = self._getFilteredMeshTopAndBottom(
+        materialBottoms, materialTops = self._getFilteredMeshTopAndBottom(
             Flags.CONTROL, filteredBottomFuel, filteredTopFuel
         )
 
