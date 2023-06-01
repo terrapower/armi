@@ -166,7 +166,7 @@ class TestTightCoupling(unittest.TestCase):
             self.assertEqual(self.o.r.core.p.coupledIteration, 0)
 
     def test_performTightCoupling_notConverged(self):
-        """Ensure that the appropriate runLog.warning is addressed in tight coupling reaches max num of iters."""
+        """Ensure that the appropriate ``runLog.warning`` is addressed in tight coupling reaches max num of iters."""
 
         class NoConverge(TightCoupler):
             def isConverged(self, _val: TightCoupler._SUPPORTED_TYPES) -> bool:
