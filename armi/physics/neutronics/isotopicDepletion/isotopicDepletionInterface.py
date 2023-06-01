@@ -187,7 +187,7 @@ class AbstractIsotopicDepletionReader(interfaces.OutputReader):
 
     def read(self):
         r"""
-        read a isotopic depletion Output File and applies results to armi objects in the ToDepletion attribute.
+        read a isotopic depletion Output File and applies results to armi objects in the ``ToDepletion`` attribute.
         """
         raise NotImplementedError
 
