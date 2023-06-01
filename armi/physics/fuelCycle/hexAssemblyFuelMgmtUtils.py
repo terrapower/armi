@@ -349,7 +349,7 @@ def buildConvergentRingSchedule(chargeRing, dischargeRing=1, coarseFactor=0.0):
 
 def _buildEqRingScheduleHelper(ringSchedule, numRings):
     r"""
-    turns ringScheduler into explicit list of rings.
+    turns ``ringScheduler`` into explicit list of rings.
 
     Pulled out of buildEqRingSchedule for testing.
 
