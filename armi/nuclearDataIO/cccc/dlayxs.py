@@ -167,7 +167,7 @@ class Dlayxs(collections.OrderedDict):
 
     def generateAverageDelayedNeutronConstants(self):
         """
-        Use externally-computed nuclideContributionFractions to produce an average ``DelayedNeutronData`` obj.
+        Use externally-computed ``nuclideContributionFractions`` to produce an average ``DelayedNeutronData`` obj.
 
         Solves typical averaging equation but weights already sum to 1.0 so we
         can skip normalization at the end.
