@@ -318,7 +318,7 @@ class UniformMeshGenerator:
             return a.getFirstBlock(flags).p.zbottom
 
         def lastBlockTop(a, flags):
-            return a.getBLocks(flags)[-1].p.ztop
+            return a.getBlocks(flags)[-1].p.ztop
 
         filteredBoundaries = dict()
         for meshList, preference, meshGetter, extreme in [
