@@ -158,7 +158,7 @@ class TestTightCoupling(unittest.TestCase):
         self.assertEqual(self.o.r.core.p.coupledIteration, 0)
 
     def test_performTightCoupling_skip(self):
-        """Ensure that cycles within cs[CONF_CYCLES_SKIP_TIGHT_COUPLING_INTERACTION] are skipped."""
+        """Ensure that cycles within ``cs[CONF_CYCLES_SKIP_TIGHT_COUPLING_INTERACTION]`` are skipped."""
         self.o.cs[CONF_CYCLES_SKIP_TIGHT_COUPLING_INTERACTION] = [1]
         with mockRunLogs.BufferLog() as mock:
             self.o._performTightCoupling(1, 0, writeDB=False)
