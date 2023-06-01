@@ -60,7 +60,7 @@ class LeadBismuth(material.Fluid):
         return 4.94e-4 * math.exp(754.1 / Tk)
 
     def heatCapacity(self, Tk=None, Tc=None):
-        r"""Heat ccapacity in J/kg/K from Sobolev. Expected acuracy 5%."""
+        r"""Heat ccapacity in J/kg/K from Sobolev. Expected accuracy 5%."""
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("heat capacity", Tk)
 
