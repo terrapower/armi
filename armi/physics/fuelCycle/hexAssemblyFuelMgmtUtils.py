@@ -302,7 +302,7 @@ def buildRingSchedule(
 
 def buildConvergentRingSchedule(chargeRing, dischargeRing=1, coarseFactor=0.0):
     r"""
-    Builds a ring schedule for convergent shuffling from chargeRing to dischargeRing.
+    Builds a ring schedule for convergent shuffling from ``chargeRing`` to ``dischargeRing``.
 
     Parameters
     ----------
