@@ -1835,10 +1835,10 @@ class Core(composites.Composite):
                     axisVal = float(base[axis])  # convert from numpy.float64
                     step = float(top[axis] - axisVal) / subdivisions
                     for _subdivision in range(subdivisions):
-                        collection.add(round(axisVal, 8))
+                        collection.add(round(axisVal, units.FLOAT_DIMENSION_DECIMALS))
                         axisVal += step
                     # add top too (only needed for last point)
-                    collection.add(round(axisVal, 8))
+                    collection.add(round(axisVal, units.FLOAT_DIMENSION_DECIMALS))
 
         iMesh, jMesh, kMesh = map(sorted, (iMesh, jMesh, kMesh))
 
