@@ -800,8 +800,15 @@ class Block(composites.Composite):
             bolBlock = self
 
         hmDens = bolBlock.getHMDens()  # total homogenized heavy metal number density
-        self.p.molesHmBOL = self.getHMMoles()
         self.p.nHMAtBOL = hmDens
+
+        self.p.molesHmBOL = self.getHMMoles()
+        self.p.puFrac = (
+            self.getPuMoles() / self.p.molesHmBOL
+            if self.p.molesHmBOL > 0.0
+            else 0.0
+        )
+
         try:
             # non-pinned reactors (or ones without cladding) will not use smear density
             self.p.smearDensity = self.getSmearDensity()
