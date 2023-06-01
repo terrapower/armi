@@ -728,7 +728,7 @@ def getNewPluginManager() -> pluginManager.ArmiPluginManager:
 
 def collectInterfaceDescriptions(mod, cs):
     """
-    Adapt old-style describeInterfaces to the new plugin interface.
+    Adapt old-style ``describeInterfaces`` to the new plugin interface.
 
     Old describeInterfaces implementations would return an interface class and kwargs
     for adding to an operator. Now we expect an ORDER as well. This takes a module and
