@@ -286,7 +286,7 @@ class TestUniformMeshGenerator(unittest.TestCase):
             )
 
     def test_filteredTopAndBottom(self):
-        fuelBottoms, fuelTops = self.generator._getFilteredFuelTopAndBottom()
+        fuelBottoms, fuelTops = self.generator._getFilteredMeshTopAndBottom(Flags.FUEL)
         self.assertListEqual(fuelBottoms, [25.0])
         self.assertListEqual(fuelTops, [101.25, 105.0])
 
@@ -294,7 +294,9 @@ class TestUniformMeshGenerator(unittest.TestCase):
         (
             ctrlAndFuelBottoms,
             ctrlAndFuelTops,
-        ) = self.generator._getFilteredControlTopAndBottom(fuelBottoms, fuelTops)
+        ) = self.generator._getFilteredMeshTopAndBottom(
+            Flags.CONTROL, fuelBottoms, fuelTops
+        )
         self.assertListEqual(ctrlAndFuelBottoms, [25.0, 50.0])
         self.assertListEqual(ctrlAndFuelTops, [75.0, 101.25, 105.0])
 
