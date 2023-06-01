@@ -146,7 +146,7 @@ class TestTightCoupling(unittest.TestCase):
         self.o.r.core = Core("empty")
 
     def test_couplingIsActive(self):
-        """Ensure that cs[CONF_TIGHT_COUPLING] controls couplingIsActive."""
+        """Ensure that ``cs[CONF_TIGHT_COUPLING]`` controls ``couplingIsActive``."""
         self.assertTrue(self.o.couplingIsActive())
         self.o.cs[CONF_TIGHT_COUPLING] = False
         self.assertFalse(self.o.couplingIsActive())
