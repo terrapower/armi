@@ -132,7 +132,7 @@ def getTk(Tc=None, Tk=None):
 
 def getTc(Tc=None, Tk=None):
     """
-    Return a temperature in Celcius, given a temperature in Celsius or Kelvin.
+    Return a temperature in Celsius, given a temperature in Celsius or Kelvin.
 
     Returns
     -------
