@@ -354,6 +354,9 @@ settings:
             getCycleNodeFromCumulativeNode(8, self.standaloneSimpleCS), (2, 0)
         )
 
+        with self.assertRaises(ValueError):
+            getCycleNodeFromCumulativeNode(-1, self.standaloneSimpleCS)
+
     def test_getPreviousTimeNode(self):
         with self.assertRaises(ValueError):
             getPreviousTimeNode(0, 0, "foo")
