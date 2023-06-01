@@ -804,9 +804,7 @@ class Block(composites.Composite):
 
         self.p.molesHmBOL = self.getHMMoles()
         self.p.puFrac = (
-            self.getPuMoles() / self.p.molesHmBOL
-            if self.p.molesHmBOL > 0.0
-            else 0.0
+            self.getPuMoles() / self.p.molesHmBOL if self.p.molesHmBOL > 0.0 else 0.0
         )
 
         try:
