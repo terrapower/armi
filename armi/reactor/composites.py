@@ -3260,7 +3260,7 @@ class StateRetainer:
         self._enterExitHelper(lambda obj: obj.restoreBackup(self.paramsToApply))
 
     def _enterExitHelper(self, func):
-        """Helper method for __enter__ and __exit__. func is a lambda to either backUp() or restoreBackup()."""
+        """Helper method for ``__enter__`` and ``__exit__``. ``func`` is a lambda to either ``backUp()`` or ``restoreBackup()``."""
         paramDefs = set()
         for child in [self.composite] + self.composite.getChildren(
             deep=True, includeMaterials=True
