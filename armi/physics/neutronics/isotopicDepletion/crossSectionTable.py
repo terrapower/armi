@@ -55,7 +55,7 @@ class CrossSectionTable(collections.OrderedDict):
 
     def add(self, nucName, nG=0.0, nF=0.0, n2n=0.0, nA=0.0, nP=0.0, n3n=0.0):
         """
-        Add one group cross secitons to the table.
+        Add one group cross sections to the table.
 
         Parameters
         ----------
