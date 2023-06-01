@@ -236,7 +236,7 @@ class TestRunLog(unittest.TestCase):
             self.assertEqual(runLog.LOG.getVerbosity(), logging.WARNING)
 
     def test_setVerbosityBeforeStartLog(self):
-        """The user/dev my accidentally call setVerbosity() before startLog(), this should be mostly supportable."""
+        """The user/dev may accidentally call ``setVerbosity()`` before ``startLog()``, this should be mostly supportable."""
         with mockRunLogs.BufferLog() as mock:
             # we should start with a clean slate
             self.assertEqual("", mock.getStdout())
