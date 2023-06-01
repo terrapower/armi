@@ -456,7 +456,7 @@ def _assemAngle(a):
 
 def buildEqRingSchedule(core, ringSchedule, circularRingOrder):
     r"""
-    Expands simple ringSchedule input into full-on location schedule.
+    Expands simple ``ringSchedule`` input into full-on location schedule.
 
     Parameters
     ----------
