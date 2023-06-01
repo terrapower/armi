@@ -124,7 +124,7 @@ class MainInterface(interfaces.Interface):
             raise InputError("Failed to process copyFilesTo/copyFilesFrom")
 
     def interactBOC(self, cycle=None):
-        r"""typically the first interface to interact beginning of cycle."""
+        """Typically the first interface to interact beginning of cycle."""
 
         runLog.important("Beginning of Cycle {0}".format(cycle))
         runLog.LOG.clearSingleWarnings()
@@ -195,8 +195,9 @@ class MainInterface(interfaces.Interface):
 
     # pylint: disable=no-self-use
     def cleanLastCycleFiles(self):
-        r"""Delete ARMI files from previous cycle that aren't necessary for the next cycle.
-        Unless you're doing reloads, of course."""
+        """Delete ARMI files from previous cycle that aren't necessary for the next cycle.
+        Unless you're doing reloads, of course.
+        """
         runLog.important("Cleaning ARMI files due to reallySmallRun option")
         for fileName in os.listdir(os.getcwd()):
             # clean MC**2 and REBUS inputs and outputs

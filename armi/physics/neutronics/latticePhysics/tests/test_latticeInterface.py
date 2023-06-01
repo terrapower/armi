@@ -50,7 +50,7 @@ class LatticeInterfaceTester(LatticePhysicsInterface):
 
 
 class LatticeInterfaceTesterLibFalse(LatticeInterfaceTester):
-    """subclass setting _newLibraryShouldBeCreated = False."""
+    """Subclass setting _newLibraryShouldBeCreated = False."""
 
     def _newLibraryShouldBeCreated(self, cycle, representativeBlockList, xsIDs):
         self.testVerification = True
@@ -202,7 +202,7 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
 
 
 class TestLatticePhysicsLibraryCreation(TestLatticePhysicsInterfaceBase):
-    """test variations of _newLibraryShouldBeCreated."""
+    """Test variations of _newLibraryShouldBeCreated."""
 
     @classmethod
     def setUpClass(cls):
@@ -213,7 +213,7 @@ class TestLatticePhysicsLibraryCreation(TestLatticePhysicsInterfaceBase):
         cls.b, cls.xsIDs = cls.latticeInterface._getBlocksAndXsIds()
 
     def setUp(self):
-        """reset representativeBlocks and CONF_GEN_XS."""
+        """Reset representativeBlocks and CONF_GEN_XS."""
         self.xsGroupInterface.representativeBlocks = OrderedDict(
             {"AA": self.assembly[0]}
         )
@@ -222,7 +222,7 @@ class TestLatticePhysicsLibraryCreation(TestLatticePhysicsInterfaceBase):
         self.o.r.core.lib = isotxs.readBinary(ISOAA_PATH)
 
     def test_libCreation_NoGenXS(self):
-        """no ISOTXS and xs gen not requested."""
+        """No ISOTXS and xs gen not requested."""
         self.o.r.core.lib = None
         with mockRunLogs.BufferLog() as mock:
             xsGen = self.latticeInterface._newLibraryShouldBeCreated(
@@ -234,7 +234,7 @@ class TestLatticePhysicsLibraryCreation(TestLatticePhysicsInterfaceBase):
             self.assertFalse(xsGen)
 
     def test_libCreation_GenXS(self):
-        """no ISOTXS and xs gen requested."""
+        """No ISOTXS and xs gen requested."""
         self.o.cs[CONF_GEN_XS] = "Neutron"
         self.o.r.core.lib = None
         with mockRunLogs.BufferLog() as mock:

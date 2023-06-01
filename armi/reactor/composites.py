@@ -1681,7 +1681,7 @@ class ArmiObject(metaclass=CompositeModelType):
             c.setLumpedFissionProducts(lfpCollection)
 
     def getFissileMassEnrich(self):
-        r"""returns the fissile mass enrichment."""
+        """Returns the fissile mass enrichment."""
         hm = self.getHMMass()
         if hm > 0:
             return self.getFissileMass() / hm
@@ -1698,7 +1698,7 @@ class ArmiObject(metaclass=CompositeModelType):
         return b10 / total
 
     def getUraniumMassEnrich(self):
-        """returns U-235 mass fraction assuming U-235 and U-238 only."""
+        """Returns U-235 mass fraction assuming U-235 and U-238 only."""
         u5 = self.getMass("U235")
         if u5 < 1e-10:
             return 0.0
@@ -1852,7 +1852,6 @@ class ArmiObject(metaclass=CompositeModelType):
         -------
         float
             The average parameter value.
-
         """
         total = 0.0
         weightSum = 0.0
@@ -2099,7 +2098,7 @@ class ArmiObject(metaclass=CompositeModelType):
             return pu / hm
 
     def getZrFrac(self):
-        """return the total zr/(hm+zr) fraction in this assembly."""
+        """Return the total zr/(hm+zr) fraction in this assembly."""
         hm = self.getHMMass()
         zrNucs = [nuc.name for nuc in elements.bySymbol["ZR"].nuclides]
         zr = self.getMass(zrNucs)
@@ -2126,7 +2125,7 @@ class ArmiObject(metaclass=CompositeModelType):
         return mass
 
     def getFuelMass(self):
-        """returns mass of fuel in grams."""
+        """Returns mass of fuel in grams."""
         return sum([fuel.getMass() for fuel in self.iterComponents(Flags.FUEL)], 0.0)
 
     def constituentReport(self):
@@ -2180,7 +2179,6 @@ class ArmiObject(metaclass=CompositeModelType):
         .. math::
 
             A =  \frac{\sum_i N_i A_i }{\sum_i N_i}
-
         """
         numerator = 0.0
         denominator = 0.0
@@ -2256,7 +2254,8 @@ class ArmiObject(metaclass=CompositeModelType):
         self.addMass(nucName, -mass)
 
     def addMass(self, nucName, mass):
-        """
+        """Add mass to a particular nuclide.
+
         Parameters
         ----------
         nucName : str

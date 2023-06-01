@@ -81,7 +81,7 @@ class Reactor(composites.Composite):
         self.blueprints = blueprints
 
     def __getstate__(self):
-        r"""applies a settings and parent to the reactor and components."""
+        """Applies a settings and parent to the reactor and components."""
         state = composites.Composite.__getstate__(self)
         state["o"] = None
         return state
@@ -1940,7 +1940,7 @@ class Core(composites.Composite):
 
     def findAllAziMeshPoints(self, extraAssems=None, applySubMesh=True):
         r"""
-        returns a list of all azimuthal (theta)-mesh positions in the core.
+        Returns a list of all azimuthal (theta)-mesh positions in the core.
 
         Parameters
         ----------
@@ -1993,7 +1993,7 @@ class Core(composites.Composite):
         return self.calcTotalParam(*args, **kwargs)
 
     def getMaxNumPins(self):
-        """find max number of pins of any block in the reactor."""
+        """Find max number of pins of any block in the reactor."""
         return max(b.getNumPins() for b in self.getBlocks())
 
     def getMinimumPercentFluxInFuel(self, target=0.005):
@@ -2133,14 +2133,12 @@ class Core(composites.Composite):
         return list(allNucNames)
 
     def growToFullCore(self, cs):
-        r"""copies symmetric assemblies to build a full core model out of a 1/3 core model.
+        r"""Copies symmetric assemblies to build a full core model out of a 1/3 core model.
 
         Returns
         -------
-
         converter : GeometryConverter
             Geometry converter used to do the conversion.
-
         """
         from armi.reactor.converters.geometryConverters import (
             ThirdCoreHexToFullCoreChanger,
@@ -2163,7 +2161,7 @@ class Core(composites.Composite):
 
     def calcBlockMaxes(self):
         r"""
-        searches all blocks for maximum values of key params.
+        Searches all blocks for maximum values of key params.
 
         See Also
         --------

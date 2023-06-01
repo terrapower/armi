@@ -86,7 +86,7 @@ CONF_LATTICE_PHYSICS_FREQUENCY = "latticePhysicsFrequency"
 
 
 def defineSettings():
-    """standard function to define settings - for neutronics."""
+    """Standard function to define settings - for neutronics."""
     settings = [
         setting.Setting(
             CONF_GROUP_STRUCTURE,
@@ -472,7 +472,7 @@ def getNeutronicsSettingValidators(inspector):
     )
 
     def migrateDpa(name0):
-        """migrating some common shortened names for dpa XS sets."""
+        """Migrating some common shortened names for dpa XS sets."""
         value = inspector.cs[name0]
         if value == "dpaHT9_33":
             value = "dpaHT9_ANL33_TwrBol"
@@ -482,11 +482,11 @@ def getNeutronicsSettingValidators(inspector):
         inspector.cs = inspector.cs.modified(newSettings={name0: value})
 
     def migrateDpaDpaXsSet():
-        """pass-through to migrateDpa(), because Query functions cannot take arguements."""
+        """Pass-through to migrateDpa(), because Query functions cannot take arguements."""
         migrateDpa(CONF_DPA_XS_SET)
 
     def migrateDpaGridPlate():
-        """pass-through to migrateDpa(), because Query functions cannot take arguements."""
+        """Pass-through to migrateDpa(), because Query functions cannot take arguements."""
         migrateDpa(CONF_GRID_PLATE_DPA_XS_SET)
 
     queries.append(

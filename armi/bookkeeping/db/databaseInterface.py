@@ -156,7 +156,7 @@ class DatabaseInterface(interfaces.Interface):
         self.writeDBEveryNode(cycle, node)
 
     def writeDBEveryNode(self, cycle, node):
-        """write the database at the end of the time node."""
+        """Write the database at the end of the time node."""
         # skip writing for last burn step since it will be written at interact EOC
         if node < self.o.burnSteps[cycle]:
             self.r.core.p.minutesSinceStart = (

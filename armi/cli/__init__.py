@@ -202,7 +202,7 @@ class ArmiCLI:
         return self.executeCommand(args.command, args.args)
 
     def executeCommand(self, command, args) -> Optional[int]:
-        r"""execute `command` with arguments `args`, return optional exit code."""
+        r"""Execute `command` with arguments `args`, return optional exit code."""
         command = command.lower()
         if command not in self._entryPoints:
             print(

@@ -11,9 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-r"""
-testing for reactors.py.
-"""
+"""Resting for reactors.py."""
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import copy
 import os
@@ -215,7 +213,8 @@ def loadTestReactor(
 
 
 def reduceTestReactorRings(r, cs, maxNumRings):
-    """Helper method for the test reactor above
+    """Helper method for the test reactor above.
+
     The goal is to reduce the size of the reactor for tests that don't neeed
     such a large reactor, and would run much faster with a smaller one.
     """
@@ -893,7 +892,7 @@ class HexReactorTests(ReactorTests):
         self.assertEqual(originalHeights, heights)
 
     def test_applyThermalExpansion_CoreConstruct(self):
-        """test that assemblies in core are correctly expanded.
+        """Test that assemblies in core are correctly expanded.
 
         Notes:
         ------

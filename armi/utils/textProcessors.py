@@ -45,7 +45,7 @@ Matches 1, 100, 1.0, -1.2, +12.234
 """
 
 DECIMAL_PATTERN = r"[+-]?\d*\.\d+"
-"""matches .1, 1.213423, -23.2342, +.023
+"""Matches .1, 1.213423, -23.2342, +.023
 """
 
 
@@ -526,7 +526,6 @@ class TextProcessor:
     A general text processing object that extends python's abilities to scan through huge files.
 
     Use this instead of a raw file object to read data out of output files, etc.
-
     """
 
     scipat = SCIENTIFIC_PATTERN
@@ -554,7 +553,7 @@ class TextProcessor:
             self.f = SmartList(f)
 
     def reset(self):
-        r"""rewinds the file so you can search through it again."""
+        r"""Rewinds the file so you can search through it again."""
         self.f.seek(0)
 
     def __repr__(self):

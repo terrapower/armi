@@ -192,7 +192,7 @@ class AxialExpansionChanger:
         self.expansionData = None
 
     def setAssembly(self, a, setFuel=True):
-        """set the armi assembly to be changed and init expansion data class for assembly.
+        """Set the armi assembly to be changed and init expansion data class for assembly.
 
         Parameters
         ----------
@@ -224,7 +224,7 @@ class AxialExpansionChanger:
             c.changeNDensByFactor(axialExpansionFactor)
 
     def _isTopDummyBlockPresent(self):
-        """determines if top most block of assembly is a dummy block.
+        """Determines if top most block of assembly is a dummy block.
 
         Notes
         -----
@@ -305,8 +305,7 @@ class AxialExpansionChanger:
         self.linked.a.spatialGrid._bounds = tuple(bounds)
 
     def manageCoreMesh(self, r):
-        """
-        manage core mesh post assembly-level expansion.
+        """Manage core mesh post assembly-level expansion.
 
         Parameters
         ----------
@@ -345,7 +344,6 @@ class AxialExpansionChanger:
         oldVolume : list of floats
             list containing component volumes pre-expansion
         """
-
         solidComponents = _getSolidComponents(b)
         for ic, c in enumerate(b):
             c.p.volume = oldVolume[ic] * b.getHeight() / oldHeight
@@ -417,7 +415,6 @@ class AssemblyAxialLinkage:
         values --> list of axially linked components; index 0 = lower linked component; index 1: upper linked component.
 
         see also: self._getLinkedComponents
-
     """
 
     def __init__(self, StdAssem):
@@ -427,14 +424,14 @@ class AssemblyAxialLinkage:
         self._determineAxialLinkage()
 
     def _determineAxialLinkage(self):
-        """gets the block and component based linkage."""
+        """Gets the block and component based linkage."""
         for b in self.a:
             self._getLinkedBlocks(b)
             for c in b:
                 self._getLinkedComponents(b, c)
 
     def _getLinkedBlocks(self, b):
-        """retrieve the axial linkage for block b.
+        """Retrieve the axial linkage for block b.
 
         Parameters
         ----------
@@ -490,7 +487,7 @@ class AssemblyAxialLinkage:
             )
 
     def _getLinkedComponents(self, b, c):
-        """retrieve the axial linkage for component c.
+        """Retrieve the axial linkage for component c.
 
         Parameters
         ----------
@@ -549,7 +546,7 @@ class AssemblyAxialLinkage:
 
 
 def _determineLinked(componentA, componentB):
-    """determine axial component linkage for two components.
+    """Determine axial component linkage for two components.
 
     Parameters
     ----------
@@ -611,7 +608,7 @@ def _determineLinked(componentA, componentB):
 
 
 class ExpansionData:
-    """object containing data needed for axial expansion."""
+    """Object containing data needed for axial expansion."""
 
     def __init__(self, a, setFuel):
         self._a = a
@@ -621,7 +618,7 @@ class ExpansionData:
         self._setTargetComponents(setFuel)
 
     def setExpansionFactors(self, componentLst, percents):
-        """sets user defined expansion factors.
+        """Sets user defined expansion factors.
 
         Parameters
         ----------
@@ -654,7 +651,7 @@ class ExpansionData:
     def updateComponentTempsBy1DTempField(
         self, tempGrid, tempField, updateNDensForRadialExp: bool = True
     ):
-        """assign a block-average axial temperature to components.
+        """Assign a block-average axial temperature to components.
 
         Parameters
         ----------
@@ -711,7 +708,7 @@ class ExpansionData:
     def updateComponentTemp(
         self, b, c, temp: float, updateNDensForRadialExp: bool = True
     ):
-        """update component temperatures with a provided temperature.
+        """Update component temperatures with a provided temperature.
 
         Parameters
         ----------
@@ -747,8 +744,7 @@ class ExpansionData:
             c.p.volume = c.getArea(cold=False) * b.getHeight()
 
     def computeThermalExpansionFactors(self):
-        """computes expansion factors for all components via thermal expansion."""
-
+        """Computes expansion factors for all components via thermal expansion."""
         for b in self._a:
             for c in b:
                 if c in self.componentReferenceTemperature:
@@ -767,13 +763,12 @@ class ExpansionData:
                     self._expansionFactors[c] = c.getThermalExpansionFactor() - 1.0
 
     def getExpansionFactor(self, c):
-        """retrieves expansion factor for c.
+        """Retrieves expansion factor for c.
 
         Parameters
         ----------
         c : :py:class:`Component <armi.reactor.components.component.Component>`
             Component to retrive expansion factor for
-
         """
         if c in self._expansionFactors:
             value = self._expansionFactors[c]
@@ -782,7 +777,7 @@ class ExpansionData:
         return value
 
     def _setTargetComponents(self, setFuel):
-        """sets target component for each block.
+        """Sets target component for each block.
 
         Parameters
         ----------
@@ -805,7 +800,7 @@ class ExpansionData:
                 self.determineTargetComponent(b)
 
     def determineTargetComponent(self, b, flagOfInterest=None):
-        """determines target component, stores it on the block, and appends it to self._componentDeterminesBlockHeight.
+        """Determines target component, stores it on the block, and appends it to self._componentDeterminesBlockHeight.
 
         Parameters
         ----------
@@ -827,7 +822,6 @@ class ExpansionData:
         RuntimeError
             multiple target components found
         """
-
         if flagOfInterest is None:
             # Follow expansion of most neutronically important component, fuel first then control/poison
             for targetFlag in TARGET_FLAGS_IN_PREFERRED_ORDER:
@@ -857,7 +851,7 @@ class ExpansionData:
         b.p.axialExpTargetComponent = componentWFlag[0].name
 
     def _isFuelLocked(self, b):
-        """physical/realistic implementation reserved for ARMI plugin.
+        """Physical/realistic implementation reserved for ARMI plugin.
 
         Parameters
         ----------
@@ -881,7 +875,7 @@ class ExpansionData:
         b.p.axialExpTargetComponent = c.name
 
     def isTargetComponent(self, c):
-        """returns bool if c is a target component.
+        """Returns bool if c is a target component.
 
         Parameters
         ----------

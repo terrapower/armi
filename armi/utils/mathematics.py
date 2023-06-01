@@ -109,7 +109,6 @@ def convertToSlice(x, increment=False):
 
     >>> a[utils.convertToSlice(slice(2, 3, None), increment=-1)]
     array([11])
-
     """
     if increment is False:
         increment = 0
@@ -202,7 +201,7 @@ def expandRepeatedFloats(repeatedList):
 
 def findClosest(listToSearch, val, indx=False):
     r"""
-    find closest item in a list.
+    Find closest item in a list.
 
     Parameters
     ----------
@@ -221,7 +220,6 @@ def findClosest(listToSearch, val, indx=False):
         The item in the listToSearch that is closest to val
     minI : int
         The index of the item in listToSearch that is closest to val. Returned if indx=True.
-
     """
     d = float("inf")
     minVal = None
@@ -245,7 +243,8 @@ def findNearestValue(searchList, searchValue):
 
 def findNearestValueAndIndex(searchList, searchValue):
     """Search a given list for the value that is closest to the given search value. Return a tuple
-    containing the value and its index in the list."""
+    containing the value and its index in the list.
+    """
     searchArray = np.array(searchList)
     closestValueIndex = (np.abs(searchArray - searchValue)).argmin()
     return searchArray[closestValueIndex], closestValueIndex
@@ -272,8 +271,9 @@ def fixThreeDigitExp(strToFloat: str) -> float:
 
 
 def getFloat(val):
-    r"""returns float version of val, or None if it's impossible. Useful for converting
-    user-input into floats when '' might be possible."""
+    r"""Returns float version of val, or None if it's impossible. Useful for converting
+    user-input into floats when '' might be possible.
+    """
     try:
         newVal = float(val)
         return newVal
@@ -328,7 +328,7 @@ def isMonotonic(inputIter, relation):
 
 def linearInterpolation(x0, y0, x1, y1, targetX=None, targetY=None):
     r"""
-    does a linear interpolation (or extrapolation) for y=f(x).
+    Does a linear interpolation (or extrapolation) for y=f(x).
 
     Parameters
     ----------
@@ -352,7 +352,6 @@ def linearInterpolation(x0, y0, x1, y1, targetX=None, targetY=None):
     y = m(x-x0) + b
 
     x = (y-b)/m
-
     """
     if x1 == x0:
         raise ZeroDivisionError("The x-values are identical. Cannot interpolate.")
@@ -393,12 +392,10 @@ def minimizeScalarFunc(
     maxIterations : int
         The maximum number of iterations that the Newton's method will be allowed to perform.
 
-
     Returns
     -------
     ans : float
         The guess that when input to the func returns the goal.
-
     """
 
     def goalFunc(guess, func, positiveGuesses):
@@ -483,7 +480,7 @@ def newtonsMethod(
 
 def parabolaFromPoints(p1, p2, p3):
     r"""
-    find the parabola that passes through three points.
+    Find the parabola that passes through three points.
 
     We solve a simultaneous equation with three points.
 
@@ -506,7 +503,6 @@ def parabolaFromPoints(p1, p2, p3):
     Returns
     -------
     a,b,c coefficients of y=ax^2+bx+c
-
     """
     A = np.array(
         [[p1[0] ** 2, p1[0], 1], [p2[0] ** 2, p2[0], 1], [p3[0] ** 2, p3[0], 1]]
@@ -554,7 +550,6 @@ def parabolicInterpolation(ap, bp, cp, targetY):
 
         slope : float
             The slope of the keff vs. time curve at t=newTime
-
     """
     roots = np.roots([ap, bp, cp - targetY])
     realRoots = []
@@ -577,7 +572,7 @@ def parabolicInterpolation(ap, bp, cp, targetY):
 
 
 def relErr(v1: float, v2: float) -> float:
-    """find the relative error between to numbers."""
+    """Find the relative error between to numbers."""
     if v1:
         return (v2 - v1) / v1
     else:

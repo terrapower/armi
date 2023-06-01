@@ -537,7 +537,6 @@ class Assembly(composites.Composite):
         -------
         heights : list
             z-coordinates where the specified param takes the specified value
-
         """
         heights = []
         # loop from bottom to top
@@ -566,7 +565,7 @@ class Assembly(composites.Composite):
         return heights
 
     def getAge(self):
-        """gets a height-averaged residence time of this assembly in days."""
+        """Gets a height-averaged residence time of this assembly in days."""
         at = 0.0
         for b in self:
             at += b.p.residence * b.getHeight()

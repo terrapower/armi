@@ -80,7 +80,7 @@ class GlobalFluxInterface(interfaces.Interface):
         self._setTightCouplingDefaults()
 
     def _setTightCouplingDefaults(self):
-        """enable tight coupling defaults for the interface.
+        """Enable tight coupling defaults for the interface.
 
         - allows users to set tightCoupling: true in settings without
           having to specify the specific tightCouplingSettings for this interface.

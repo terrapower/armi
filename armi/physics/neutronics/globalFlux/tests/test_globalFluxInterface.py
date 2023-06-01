@@ -197,14 +197,14 @@ class TestGlobalFluxInterfaceWithExecuters(unittest.TestCase):
         self.assertEqual(class0, globalFluxInterface.GlobalFluxExecuter)
 
     def test_setTightCouplingDefaults(self):
-        """assert that tight coupling defaults are only set if cs["tightCoupling"]=True."""
+        """Assert that tight coupling defaults are only set if cs["tightCoupling"]=True."""
         self.assertIsNone(self.gfi.coupler)
         self._setTightCouplingTrue()
         self.assertEqual(self.gfi.coupler.parameter, "keff")
         self._setTightCouplingFalse()
 
     def test_getTightCouplingValue(self):
-        """test getTightCouplingValue returns the correct value for keff and type for power."""
+        """Test getTightCouplingValue returns the correct value for keff and type for power."""
         self._setTightCouplingTrue()
         self.assertEqual(self.gfi.getTightCouplingValue(), 1.0)  # set in setUp
         self.gfi.coupler.parameter = "power"

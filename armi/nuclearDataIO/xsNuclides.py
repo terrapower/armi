@@ -229,7 +229,7 @@ def _mergeAttributes(this, other, attrName):
 
 
 def plotScatterMatrix(scatterMatrix, scatterTypeLabel="", fName=None):
-    r"""plots a matrix to show scattering."""
+    """Plots a matrix to show scattering."""
     from matplotlib import pyplot
 
     pyplot.imshow(scatterMatrix.todense(), interpolation="nearest")

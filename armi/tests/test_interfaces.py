@@ -76,7 +76,7 @@ class TestTextProcessor(unittest.TestCase):
 
 
 class TestTightCoupler(unittest.TestCase):
-    """test the tight coupler class."""
+    """Test the tight coupler class."""
 
     def setUp(self):
         cs = settings.Settings()
@@ -106,7 +106,7 @@ class TestTightCoupler(unittest.TestCase):
             self.assertEqual(the_exception.error_code, 3)
 
     def test_isConverged(self):
-        """ensure TightCoupler.isConverged() works with float, 1D list, and ragged 2D list.
+        """Ensure TightCoupler.isConverged() works with float, 1D list, and ragged 2D list.
 
         Notes
         -----
@@ -129,7 +129,7 @@ class TestTightCoupler(unittest.TestCase):
             self.assertFalse(self.interface.coupler.isConverged(current))
 
     def test_isConvergedRuntimeError(self):
-        """test to ensure 3D arrays do not work."""
+        """Test to ensure 3D arrays do not work."""
         previous = [[[1, 2, 3]], [[1, 2, 3]], [[1, 2, 3]]]
         updatedValues = [[[5, 6, 7]], [[5, 6, 7]], [[5, 6, 7]]]
         self.interface.coupler.storePreviousIterationValue(previous)

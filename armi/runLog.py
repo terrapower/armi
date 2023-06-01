@@ -547,22 +547,22 @@ class RunLogger(logging.Logger):
         logging.Logger._log(self, *args, **kwargs)
 
     def allowStopDuplicates(self):
-        """helper method to allow us to safely add the deduplication filter at any time."""
+        """Helper method to allow us to safely add the deduplication filter at any time."""
         for f in self.filters:
             if isinstance(f, DeduplicationFilter):
                 return
         self.addFilter(DeduplicationFilter())
 
     def write(self, msg, **kwargs):
-        """the redirect method that allows to do stderr piping."""
+        """The redirect method that allows to do stderr piping."""
         self.error(msg)
 
     def flush(self, *args, **kwargs):
-        """stub, purely to allow stderr piping."""
+        """Stub, purely to allow stderr piping."""
         pass
 
     def close(self):
-        """helper method, to shutdown and delete a Logger."""
+        """Helper method, to shutdown and delete a Logger."""
         self.handlers.clear()
         del self
 
@@ -613,7 +613,7 @@ class NullLogger(RunLogger):
             self.handlers = [logging.StreamHandler(sys.stdout)]
 
     def addHandler(self, *args, **kwargs):
-        """ensure this STAYS a null logger."""
+        """Ensure this STAYS a null logger."""
         pass
 
 

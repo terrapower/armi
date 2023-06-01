@@ -216,9 +216,7 @@ class HistoryTrackerInterface(interfaces.Interface):
         return "{0}-{1}-{2}Hist.txt".format(self.cs.caseTitle, label, letter)
 
     def getTrackedParams(self):
-        """
-        Give the list of block parameters that are being tracked.
-        """
+        """Give the list of block parameters that are being tracked."""
         trackedParams = {"residence", "ztop", "zbottom"}
 
         # loop through interfaces to allow them to add custom params.
@@ -235,7 +233,7 @@ class HistoryTrackerInterface(interfaces.Interface):
             self.detailAssemblyNames.append(aName)
 
     def getDetailAssemblies(self):
-        r"""returns the assemblies that have been signaled as detail assemblies."""
+        """Returns the assemblies that have been signaled as detail assemblies."""
         assems = []
         if not self.detailAssemblyNames:
             runLog.info("No detail assemblies HistoryTrackerInterface")
@@ -425,7 +423,7 @@ class HistoryTrackerInterface(interfaces.Interface):
 
     def getTimeSteps(self, a=None):
         r"""
-        return list of time steps values (in years) that are available.
+        Return list of time steps values (in years) that are available.
 
         Parameters
         ----------

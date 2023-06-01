@@ -134,7 +134,7 @@ class TestReport(unittest.TestCase):
 
 class TestReportInterface(unittest.TestCase):
     def test_printReports(self):
-        """testing printReports method."""
+        """Testing printReports method."""
         repInt = reportInterface.ReportInterface(None, None)
         rep = repInt.printReports()
 

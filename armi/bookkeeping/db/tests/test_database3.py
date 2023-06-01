@@ -31,7 +31,7 @@ from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
 class TestDatabase3(unittest.TestCase):
-    r"""Tests for the Database3 class."""
+    """Tests for the Database3 class."""
 
     def setUp(self):
         self.td = TemporaryDirectoryChanger()
@@ -542,7 +542,7 @@ class TestDatabase3(unittest.TestCase):
             )
 
     def test_grabLocalCommitHash(self):
-        """test of static method to grab a local commit hash with ARMI version."""
+        """Test of static method to grab a local commit hash with ARMI version."""
         # 1. test outside a Git repo
         localHash = database3.Database3.grabLocalCommitHash()
         self.assertEqual(localHash, "unknown")

@@ -107,7 +107,7 @@ class Settings:
 
     @property
     def inputDirectory(self):
-        """getter for settings file path."""
+        """Getter for settings file path."""
         if self.path is None:
             return os.getcwd()
         else:
@@ -115,7 +115,7 @@ class Settings:
 
     @property
     def caseTitle(self):
-        """getter for settings case title."""
+        """Getter for settings case title."""
         if not self.path:
             return self.defaultCaseTitle
         else:
@@ -123,12 +123,12 @@ class Settings:
 
     @caseTitle.setter
     def caseTitle(self, value):
-        """setter for the case title."""
+        """Setter for the case title."""
         self.path = os.path.join(self.inputDirectory, value + ".yaml")
 
     @property
     def environmentSettings(self):
-        """getter for environment settings."""
+        """Getter for environment settings."""
         return [
             setting.name
             for setting in self.__settings.values()
@@ -251,7 +251,7 @@ class Settings:
         return self.__settings.items()
 
     def duplicate(self):
-        """return a duplicate copy of this settings object."""
+        """Return a duplicate copy of this settings object."""
         cs = deepcopy(self)
         cs._failOnLoad = False  # pylint: disable=protected-access
         # it's not really protected access since it is a new Settings object.

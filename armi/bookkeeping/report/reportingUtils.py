@@ -547,7 +547,7 @@ def summarizePinDesign(core):
 
 
 def summarizePowerPeaking(core):
-    r"""prints reactor Fz, Fxy, Fq.
+    r"""Prints reactor Fz, Fxy, Fq.
 
     Parameters
     ----------
@@ -580,7 +580,7 @@ def summarizePowerPeaking(core):
 
 
 def summarizePower(core):
-    r"""provide an edit showing where the power is based on assembly types.
+    r"""Provide an edit showing where the power is based on assembly types.
 
     Parameters
     ----------

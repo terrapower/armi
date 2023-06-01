@@ -174,7 +174,7 @@ class TestsuiteBuilderIntegrations(unittest.TestCase):
             self.assertTrue(os.path.exists("case-suite"))
 
     def test_bluePrintBlockModifier(self):
-        """test BluePrintBlockModifier with build suite naming function argument."""
+        """Test BluePrintBlockModifier with build suite naming function argument."""
         case_nbr = 1
         builder = suiteBuilder.FullFactorialSuiteBuilder(self.baseCase)
 

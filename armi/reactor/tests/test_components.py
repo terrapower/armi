@@ -1252,7 +1252,7 @@ class TestHelix(TestShapedComponent):
             self.assertEqual(cur, ref[i])
 
     def test_validParameters(self):
-        """testing the Helix class performs as expected with various inputs."""
+        """Testing the Helix class performs as expected with various inputs."""
         # stupid/simple inputs
         h = Helix("thing", "Cu", 0, 0, 1, 1, 1)
         self.assertEqual(h.getDimension("axialPitch"), 1)

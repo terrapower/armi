@@ -35,12 +35,12 @@ from armi.utils import iterables
 @unittest.skipUnless(context.MPI_RANK == 0, "test only on root node")
 class MpiIterTests(unittest.TestCase):
     def setUp(self):
-        """save MPI size on entry."""
+        """Save MPI size on entry."""
         self._mpiSize = context.MPI_SIZE
         self.action = MpiAction()
 
     def tearDown(self):
-        """restore MPI rank and size on exit."""
+        """Restore MPI rank and size on exit."""
         context.MPI_SIZE = self._mpiSize
         context.MPI_RANK = 0
 
@@ -151,6 +151,7 @@ class MpiIterTests(unittest.TestCase):
 
     def test_diagnosePickleErrorTestReactor(self):
         """Run _diagnosePickleError() on the test reactor.
+
         We expect this to run all the way through the pickle diagnoser,
         because the test reactor should be easily picklable.
         """
@@ -236,7 +237,7 @@ class QueueActionsTests(unittest.TestCase):
 
 
 def passer():
-    """helper function, to do nothing, for unit tests."""
+    """Helper function, to do nothing, for unit tests."""
     pass
 
 

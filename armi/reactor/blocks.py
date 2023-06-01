@@ -1493,7 +1493,7 @@ class Block(composites.Composite):
         raise NotImplementedError
 
     def setAxialExpTargetComp(self, targetComponent):
-        """sets the targetComponent for the axial expansion changer.
+        """Sets the targetComponent for the axial expansion changer.
 
         Parameter
         ---------

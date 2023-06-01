@@ -100,7 +100,7 @@ class TestDatabaseInterface(unittest.TestCase):
         self.td.__exit__(None, None, None)
 
     def test_interactEveryNodeReturn(self):
-        """test that the DB is NOT written to if cs["tightCoupling"] = True."""
+        """Test that the DB is NOT written to if cs["tightCoupling"] = True."""
         self.o.cs["tightCoupling"] = True
         self.dbi.interactEveryNode(0, 0)
         self.assertFalse(self.dbi.database.hasTimeStep(0, 0))

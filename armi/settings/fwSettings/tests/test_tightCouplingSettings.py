@@ -121,7 +121,7 @@ class TestTightCouplingSettings(unittest.TestCase):
             tc = tightCouplingSettingsValidator(tc)
 
     def test_serializeSettingsException(self):
-        """ensure the TypeError in serializeTightCouplingSettings can be reached."""
+        """Ensure the TypeError in serializeTightCouplingSettings can be reached."""
         tc = ["globalFlux"]
         with self.assertRaises(TypeError) as cm:
             tc = tightCouplingSettingsValidator(tc)

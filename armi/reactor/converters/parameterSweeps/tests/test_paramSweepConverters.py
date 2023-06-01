@@ -44,7 +44,7 @@ class TestParamSweepConverters(unittest.TestCase):
         self.cs = self.o.cs
 
     def test_paramSweepConverter(self):
-        """basic test of the param sweep converter."""
+        """Basic test of the param sweep converter."""
         con = ParameterSweepConverter(self.cs, "FakeParam")
         self.assertEqual(con._parameter, "FakeParam")
 
@@ -52,7 +52,7 @@ class TestParamSweepConverters(unittest.TestCase):
         self.assertEqual(con._sourceReactor, self.r)
 
     def test_neutronicConvergenceModifier(self):
-        """super basic test of the Neutronic Convergence Modifier."""
+        """Super basic test of the Neutronic Convergence Modifier."""
         custom = NeutronicConvergenceModifier(self.cs, 1000)
         self.assertEqual(custom._parameter, 1000)
 

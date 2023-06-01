@@ -275,7 +275,7 @@ class TestCaseSuiteDependencies(unittest.TestCase):
         self.suite.add(self.c2)
 
     def test_clone(self):
-        """if you pass an invalid path, the clone can't happen, but it won't do any damage either."""
+        """If you pass an invalid path, the clone can't happen, but it won't do any damage either."""
         with self.assertRaises(RuntimeError):
             _clone = self.suite.clone("test_clone")
 

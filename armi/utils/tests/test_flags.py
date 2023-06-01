@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-r""" Testing flags.py."""
+r"""Testing flags.py."""
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-member,disallowed-name,invalid-name
 import unittest
 
@@ -29,7 +29,7 @@ class TestFlag(unittest.TestCase):
 
     def test_auto(self):
         """
-        make sure that auto() works right, and that mixing it with explicit values
+        Make sure that auto() works right, and that mixing it with explicit values
         doesnt lead to collision.
         """
 
@@ -108,7 +108,7 @@ class TestFlag(unittest.TestCase):
         self.assertEqual(f2 ^ f, ExampleFlag.BAR | ExampleFlag.BAZ)
 
     def test_iteration(self):
-        """we want to be able to iterate over set flags."""
+        """We want to be able to iterate over set flags."""
         f = ExampleFlag.FOO | ExampleFlag.BAZ
         flagsOn = [val for val in f]
         self.assertIn(ExampleFlag.FOO, flagsOn)

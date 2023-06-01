@@ -25,7 +25,6 @@ These objects hold the dimensions, temperatures, composition, and shape of react
     :width: 100%
 
     Class inheritance diagram for :py:mod:`armi.reactor.components`.
-
 """
 
 import math
@@ -91,17 +90,17 @@ def _removeDimensionNameSpaces(attrs):
 
 
 class NullComponent(Component):
-    r"""returns zero for all dimensions. is none."""
+    r"""Returns zero for all dimensions. is none."""
 
     def __cmp__(self, other):
-        r"""be smaller than everything."""
+        r"""Be smaller than everything."""
         return -1
 
     def __lt__(self, other):
         return True
 
     def __bool__(self):
-        r"""handles truth testing."""
+        r"""Handles truth testing."""
         return False
 
     __nonzero__ = __bool__  # Python2 compatibility

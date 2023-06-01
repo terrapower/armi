@@ -67,7 +67,7 @@ def getNuclideFromName(name):
 
 def getNaturalIsotopics(elementSymbol=None, z=None):
     r"""
-    determines the atom fractions of all natural isotopes.
+    Determines the atom fractions of all natural isotopes.
 
     Parameters
     ----------
@@ -90,7 +90,7 @@ def getNaturalIsotopics(elementSymbol=None, z=None):
 
 
 def getNaturalMassIsotopics(elementSymbol=None, z=None):
-    r"""return mass fractions of all natural isotopes.
+    r"""Return mass fractions of all natural isotopes.
     To convert number fractions to mass fractions, we multiply by A.
     """
     numIso = getNaturalIsotopics(elementSymbol, z)
@@ -224,7 +224,7 @@ def getNuclide(nucName):
 
 def getNuclides(nucName=None, elementSymbol=None):
     r"""
-    returns a list of nuclide names in a particular nuclide or element.
+    Returns a list of nuclide names in a particular nuclide or element.
 
     If no arguments, returns all nuclideBases in the directory
 
@@ -251,7 +251,7 @@ def getNuclides(nucName=None, elementSymbol=None):
 
 def getNuclideNames(nucName=None, elementSymbol=None):
     r"""
-    returns a list of nuclide names in a particular nuclide or element.
+    Returns a list of nuclide names in a particular nuclide or element.
 
     If no arguments, returns all nuclideBases in the directory.
 
@@ -270,7 +270,7 @@ def getNuclideNames(nucName=None, elementSymbol=None):
 
 def getAtomicWeight(lab=None, z=None, a=None):
     r"""
-    returns atomic weight in g/mole.
+    Returns atomic weight in g/mole.
 
     Parameters
     ----------
@@ -301,7 +301,6 @@ def getAtomicWeight(lab=None, z=None, a=None):
 
     >>> nucDir.getAtomicWeight(z=94,a=239)
     239.0521634
-
     """
     if lab:
         nuclide = None
@@ -342,7 +341,7 @@ def isFissile(name):
 
 def getThresholdDisplacementEnergy(nuc):
     r"""
-    return the Lindhard cutoff; the energy required to displace an atom.
+    Return the Lindhard cutoff; the energy required to displace an atom.
 
     From SPECTER.pdf Table II
     Greenwood, "SPECTER: Neutron Damage Calculations for Materials Irradiations",
@@ -358,7 +357,6 @@ def getThresholdDisplacementEnergy(nuc):
     Ed : float
         The cutoff energy in eV
     """
-
     nuc = getNuclide(nuc)
     el = elements.byZ[nuc.z]
     try:
@@ -369,4 +367,5 @@ def getThresholdDisplacementEnergy(nuc):
             "".format(el, nuc)
         )
         raise
+
     return ed

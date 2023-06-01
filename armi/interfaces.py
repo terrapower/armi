@@ -209,7 +209,7 @@ class TightCoupler:
 
     @staticmethod
     def getListDimension(listToCheck: list, dim: int = 1) -> int:
-        """return the dimension of a python list.
+        """Return the dimension of a python list.
 
         Parameters
         ----------

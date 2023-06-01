@@ -20,37 +20,37 @@ from inspect import stack, getframeinfo
 
 
 def info(func):
-    r"""Decorator to write to current log, using the info method."""
+    """Decorator to write to current log, using the info method."""
 
     def decorated(*args, **kwargs):
-        r"""decorated method."""
+        r"""Decorated method."""
         runLog.info(func(*args, **kwargs))
 
     return decorated
 
 
 def important(func):
-    r"""Decorator to write to current log, using the inportant method."""
+    """Decorator to write to current log, using the inportant method."""
 
     def decorated(*args, **kwargs):
-        r"""decorated method."""
+        """Decorated method."""
         runLog.important(func(*args, **kwargs))
 
     return decorated
 
 
 def warn(func):
-    r"""Decorates a method to produce a repeatable warning message."""
+    """Decorates a method to produce a repeatable warning message."""
 
     def decorated(*args, **kwargs):
-        r"""decorated method."""
+        """Decorated method."""
         runLog.warning(func(*args, **kwargs))
 
     return decorated
 
 
 def _message_when_root(func):
-    r"""Do not use this decorator."""
+    """Do not use this decorator."""
 
     def decorated(*args, **kwargs):
         from armi import MPI_RANK
@@ -70,7 +70,7 @@ def warn_when_root(func):
 
 
 class InputError(Exception):
-    """AN error found in an ARMI input file."""
+    """An error found in an ARMI input file."""
 
     def __init__(self, msg):
         self.msg = msg

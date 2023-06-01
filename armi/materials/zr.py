@@ -107,7 +107,7 @@ class Zr(Material):
         return 8.853 + (0.007082 * Tk) + (0.000002533 * Tk ** 2) + (2992.0 / Tk)
 
     def linearExpansion(self, Tk=None, Tc=None):
-        r"""linear expansion in m/mK.
+        r"""Linear expansion in m/mK.
 
         Reference: Y.S. Touloukian, R.K. Kirby, R.E. Taylor and P.D. Desai, Thermal Expansion,
                    Thermophysical Properties of Matter, Vol. 12, IFI/Plenum, New York-Washington (1975)
@@ -119,7 +119,7 @@ class Zr(Material):
         return interp(Tk, self.linearExpansionTableK, self.linearExpansionTable)
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
-        r"""linear expansion in dL/L.
+        r"""Linear expansion in dL/L.
 
         Reference: Y.S. Touloukian, R.K. Kirby, R.E. Taylor and P.D. Desai, Thermal Expansion,
                    Thermophysical Properties of Matter, Vol. 12, IFI/Plenum, New York-Washington (1975)

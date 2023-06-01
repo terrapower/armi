@@ -169,7 +169,7 @@ class TestRunLog(unittest.TestCase):
         """A basic test of the close() functionality."""
 
         def validate_loggers(log):
-            """little test helper, to make sure our loggers still look right."""
+            """Little test helper, to make sure our loggers still look right."""
             handlers = [str(h) for h in log.logger.handlers]
             self.assertEqual(len(handlers), 1, msg=",".join(handlers))
 
@@ -250,7 +250,7 @@ class TestRunLog(unittest.TestCase):
             mock.emptyStdout()
 
     def test_callingStartLogMultipleTimes(self):
-        """calling startLog() multiple times will lead to multiple output files, but logging should still work."""
+        """Calling startLog() multiple times will lead to multiple output files, but logging should still work."""
         with mockRunLogs.BufferLog() as mock:
             # we should start with a clean slate
             self.assertEqual("", mock.getStdout())
@@ -294,7 +294,7 @@ class TestRunLog(unittest.TestCase):
             mock.emptyStdout()
 
     def test_concatenateLogs(self):
-        """simple test of the concat logs function."""
+        """Simple test of the concat logs function."""
         with TemporaryDirectoryChanger():
             # create the log dir
             logDir = "test_concatenateLogs"

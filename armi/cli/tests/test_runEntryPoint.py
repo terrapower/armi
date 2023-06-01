@@ -329,7 +329,8 @@ class TestRunEntryPoint(unittest.TestCase):
         self.assertEqual(excinfo.exception.code, 0)
 
     def test_executeCommand(self):
-        """use executeCommand to call run,
+        """Use executeCommand to call run.
+
         But we expect it to fail because we provide a fictional settings YAML.
         """
         with self.assertRaises(SystemExit) as excinfo:

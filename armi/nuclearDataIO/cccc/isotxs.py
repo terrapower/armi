@@ -550,7 +550,7 @@ class _IsotxsNuclideIO:
                 micros.strpd = micros.getDefaultXs(numGroups)
 
     def _rw6DRecord(self):
-        """reads nuclide-level chi dist."""
+        """Reads nuclide-level chi dist."""
         raise NotImplementedError
 
     def _rw7DRecord(self, blockNumIndex, subBlock):

@@ -424,7 +424,7 @@ class ParameterDefinitionCollection:
         return matches[0]
 
     def add(self, paramDef):
-        r"""add a :py:class:`Parameter` to this collection."""
+        r"""Add a :py:class:`Parameter` to this collection."""
         assert not self._locked, "This ParameterDefinitionCollection has been locked."
         self._paramDefs.append(paramDef)
         self._paramDefDict[paramDef.name, paramDef.collectionType] = paramDef

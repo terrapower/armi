@@ -318,7 +318,7 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
             _ = cs["cycleLength"]
 
     def test_modified(self):
-        """prove that using the modified() method does not mutate the original object."""
+        """Prove that using the modified() method does not mutate the original object."""
         # init settings
         cs = caseSettings.Settings()
 

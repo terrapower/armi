@@ -430,7 +430,7 @@ class IsotxsLibrary(_XSLibrary):
 
     @property
     def numGroupsGamma(self):
-        """get the number of gamma energy groups."""
+        """Get the number of gamma energy groups."""
         # This unlocks the immutable property so that it can be
         # read prior to not being set to check the number of groups
         # that are defined. If the property is not unlocked before
