@@ -118,7 +118,7 @@ def unpackHexStrings(hexRow):
 def packHexStrings(valueDict):
     """Converts a dictionary of lists of floats into a dictionary of lists of hex values arrays."""
     hexes = {}
-    for entry in valueDict:  # uglier loop done for compatability with cython
+    for entry in valueDict:
         hexes[entry] = [" ".join(float.hex(float(value)) for value in valueDict[entry])]
     return hexes
 

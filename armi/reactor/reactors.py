@@ -1033,12 +1033,6 @@ class Core(composites.Composite):
 
         zones : iterable, optional
             Only include assemblies that are in this these zones
-
-        Notes
-        -----
-        Attempts have been made to make this a generator but there were some Cython
-        incompatibilities that we could not get around and so we are sticking with a
-        list.
         """
         if includeAll:
             includeBolAssems = includeSFP = True

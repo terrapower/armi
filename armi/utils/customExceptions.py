@@ -77,8 +77,8 @@ class InputError(Exception):
         self.caller = getframeinfo(stack()[1][0])
 
     def __str__(self):
-        # Check if the call site is sensible enough to warrant printing. For now making the wild assumption that cython
-        # will wrap the fake stack filename in <>
+        # Check if the call site is sensible enough to warrant printing.
+        # In the past, we assumed cython would wrap the fake stack filename in <>
         callSiteIsFake = self.caller.filename.startswith(
             "<"
         ) and self.caller.filename.endswith(">")
