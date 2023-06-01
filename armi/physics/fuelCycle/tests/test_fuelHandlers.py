@@ -227,7 +227,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         )
 
     def test_findMany(self):
-        """Tests the findMany and type aspects of the fuel handler."""
+        """Tests the ``findMany`` and type aspects of the fuel handler."""
         fh = fuelHandlers.FuelHandler(self.o)
 
         igniters = fh.findAssembly(typeSpec=Flags.IGNITER | Flags.FUEL, findMany=True)
