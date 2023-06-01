@@ -754,29 +754,11 @@ class Component(composites.Composite, metaclass=ComponentType):
         volume = self.getVolume() / (
             self.parent.getSymmetryFactor() if self.parent else 1.0
         )
-        return self.getMassDensity(nuclideNames) * volume
-
-    def getMassDensity(self, nuclideNames=None):
-        """
-        Return the mass density of the component, in g/cc.
-
-        Parameters
-        ----------
-        nuclideNames : str, optional
-            The nuclide/element specifier to get the partial density of in
-            the object. If omitted, total density is returned.
-
-        Returns
-        -------
-        density : float
-            The density in grams/cc.
-        """
         nuclideNames = self._getNuclidesFromSpecifier(nuclideNames)
         # densities comes from self.p.numberDensities
         densities = self.getNuclideNumberDensities(nuclideNames)
         nDens = {nuc: dens for nuc, dens in zip(nuclideNames, densities)}
-        massDensity = densityTools.calculateMassDensity(nDens)
-        return massDensity
+        return densityTools.calculateMassDensity(nDens) * volume
 
     def setDimension(self, key, val, retainLink=False, cold=True):
         """

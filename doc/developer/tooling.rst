@@ -115,15 +115,14 @@ only use third-party Python libraries that have MIT or BSD licenses.
 
 Releasing a New Version of ARMI
 -------------------------------
-In ARMI, we use the common ``major.minor.bump`` version scheme where a version string
-might look like ``0.1.7``, ``1.0.0``, or ``1.2.123``. Each number has a specific meaning:
+We use the common ``major.minor.bump`` version scheme where a version string
+might look like ``0.1.7``, ``1.0.0``, or ``12.3.123``. Each number has a specific meaning:
 
-* ``major`` - Revved for NRC-sanctioned release or at the end of a long development cycle.
-* ``minor`` - Revved when we decide the code or our API has reached a stable point;
-  this might happen once a year.
-* ``bump`` - Revved every time we modify the API, or at will; any time we want.
+* ``major`` - Revved for DOE/NRC-sanctioned release or at the end of a long development cycle.
+* ``minor`` - Revved when we decide the code or our API has reached a stable point.
+* ``bump`` - Revved every time we modify the API, and any other time we want.
 
-NOTE: Changes to documenation or testing probably do not deserve a version bump.
+**NOTE**: Changes to documenation or testing probably do not deserve a version bump.
 
 **Any change to a major or minor version is considered a release.**
 

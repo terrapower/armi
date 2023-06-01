@@ -1262,12 +1262,17 @@ class Core(composites.Composite):
             fuelNuclides = set()
             structureNuclides = set()
             for c in self.iterComponents():
+                # get only nuclides with non-zero number density
+                # nuclides could be present at 0.0 density just for XS generation
+                nuclides = [
+                    nuc for nuc, dens in c.getNumberDensities().items() if dens > 0.0
+                ]
                 if c.getName() == "coolant":
-                    coolantNuclides.update(c.getNuclides())
+                    coolantNuclides.update(nuclides)
                 elif "fuel" in c.getName():
-                    fuelNuclides.update(c.getNuclides())
+                    fuelNuclides.update(nuclides)
                 else:
-                    structureNuclides.update(c.getNuclides())
+                    structureNuclides.update(nuclides)
             structureNuclides -= coolantNuclides
             structureNuclides -= fuelNuclides
             remainingNuclides = (
@@ -1830,10 +1835,10 @@ class Core(composites.Composite):
                     axisVal = float(base[axis])  # convert from numpy.float64
                     step = float(top[axis] - axisVal) / subdivisions
                     for _subdivision in range(subdivisions):
-                        collection.add(round(axisVal, 8))
+                        collection.add(round(axisVal, units.FLOAT_DIMENSION_DECIMALS))
                         axisVal += step
                     # add top too (only needed for last point)
-                    collection.add(round(axisVal, 8))
+                    collection.add(round(axisVal, units.FLOAT_DIMENSION_DECIMALS))
 
         iMesh, jMesh, kMesh = map(sorted, (iMesh, jMesh, kMesh))
 

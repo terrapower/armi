@@ -30,9 +30,10 @@ from armi.physics.neutronics.settings import (
     CONF_CLEAR_XS,
     CONF_TOLERATE_BURNUP_CHANGE,
     CONF_XS_KERNEL,
+    CONF_LATTICE_PHYSICS_FREQUENCY,
 )
 from armi.utils.customExceptions import important
-from armi.settings.fwSettings.globalSettings import CONF_RUN_TYPE
+from armi.physics.neutronics import LatticePhysicsFrequency
 
 
 LATTICE_PHYSICS = "latticePhysics"
@@ -88,26 +89,42 @@ class LatticePhysicsInterface(interfaces.Interface):
         self.includeGammaXS = neutronics.gammaTransportIsRequested(
             cs
         ) or neutronics.gammaXsAreRequested(cs)
+        self._latticePhysicsFrequency = LatticePhysicsFrequency[
+            self.cs[CONF_LATTICE_PHYSICS_FREQUENCY]
+        ]
 
     def _getExecutablePath(self):
         raise NotImplementedError
+
+    @codeTiming.timed
+    def interactBOL(self, cycle=0):
+        """
+        Run the lattice physics code if ``genXS`` is set and update burnup groups.
+
+        Generate new cross sections based off the case settings and the current state
+        of the reactor if the lattice physics frequency is BOL.
+        """
+        if self._latticePhysicsFrequency == LatticePhysicsFrequency.BOL:
+            self.updateXSLibrary(cycle)
 
     @codeTiming.timed
     def interactBOC(self, cycle=0):
         """
         Run the lattice physics code if ``genXS`` is set and update burnup groups.
 
-        Generate new cross sections based off the case settings and the current state of the reactor.
+        Generate new cross sections based off the case settings and the current state
+        of the reactor if the lattice physics frequency is BOC.
 
         Notes
         -----
-        :py:meth:`armi.physics.fuelCycle.fuelHandlers.FuelHandler.interactBOC` also calls this if the
-        ``runLatticePhysicsBeforeShuffling``setting is True.
+        :py:meth:`armi.physics.fuelCycle.fuelHandlerInterface.FuelHandlerInterface.interactBOC`
+        also calls this if the ``runLatticePhysicsBeforeShuffling``setting is True.
         This happens because branch searches may need XS.
         """
-        self.updateXSLibrary(cycle)
+        if self._latticePhysicsFrequency == LatticePhysicsFrequency.BOC:
+            self.updateXSLibrary(cycle)
 
-    def updateXSLibrary(self, cycle):
+    def updateXSLibrary(self, cycle, node=None):
         """
         Update the current XS library, either by creating or reloading one.
 
@@ -115,6 +132,8 @@ class LatticePhysicsInterface(interfaces.Interface):
         ----------
         cycle : int
             The cycle that is being processed. Used to name the library.
+        node : int, optional
+            The node that is being processed. Used to name the library.
 
         See Also
         --------
@@ -128,36 +147,38 @@ class LatticePhysicsInterface(interfaces.Interface):
             self.computeCrossSections(
                 blockList=representativeBlocks, xsLibrarySuffix=self._getSuffix(cycle)
             )
-            self._renameExistingLibrariesForCycle(cycle)
+            self._renameExistingLibrariesForStatepoint(cycle, node)
         else:
-            self.readExistingXSLibraries(cycle)
+            self.readExistingXSLibraries(cycle, node)
 
         self._checkInputs()
 
-    def _renameExistingLibrariesForCycle(self, cycle):
+    def _renameExistingLibrariesForStatepoint(self, cycle, node):
         """Copy the existing neutron and/or gamma libraries into cycle-dependent files."""
-        shutil.copy(neutronics.ISOTXS, nuclearDataIO.getExpectedISOTXSFileName(cycle))
+        shutil.copy(
+            neutronics.ISOTXS, nuclearDataIO.getExpectedISOTXSFileName(cycle, node)
+        )
         if self.includeGammaXS:
             shutil.copy(
                 neutronics.GAMISO,
                 nuclearDataIO.getExpectedGAMISOFileName(
-                    cycle=cycle, suffix=self._getSuffix(cycle)
+                    cycle=cycle, node=node, suffix=self._getSuffix(cycle)
                 ),
             )
             shutil.copy(
                 neutronics.PMATRX,
                 nuclearDataIO.getExpectedPMATRXFileName(
-                    cycle=cycle, suffix=self._getSuffix(cycle)
+                    cycle=cycle, node=node, suffix=self._getSuffix(cycle)
                 ),
             )
 
     def _checkInputs(self):
         pass
 
-    def readExistingXSLibraries(self, cycle):
+    def readExistingXSLibraries(self, cycle, node):
         raise NotImplementedError
 
-    def makeCycleXSFilesAsBaseFiles(self, cycle):
+    def makeCycleXSFilesAsBaseFiles(self, cycle, node):
         raise NotImplementedError
 
     @staticmethod
@@ -195,6 +216,17 @@ class LatticePhysicsInterface(interfaces.Interface):
     def _getSuffix(self, cycle):  # pylint: disable=unused-argument, no-self-use
         return ""
 
+    def interactEveryNode(self, cycle=None, node=None):
+        """
+        Run the lattice physics code if ``genXS`` is set and update burnup groups.
+
+        Generate new cross sections based off the case settings and the current state
+        of the reactor if the lattice physics frequency is at least everyNode.
+        """
+        if self._latticePhysicsFrequency >= LatticePhysicsFrequency.everyNode:
+            self.r.core.lib = None
+            self.updateXSLibrary(self.r.p.cycle, self.r.p.timeNode)
+
     def interactCoupled(self, iteration):
         """
         Runs on coupled iterations to generate cross sections that are updated with the temperature state.
@@ -221,9 +253,14 @@ class LatticePhysicsInterface(interfaces.Interface):
             This is unused since cross sections are generated on a per-cycle basis.
         """
         # always run for snapshots to account for temp effect of different flow or power statepoint
-        if self.cs[CONF_RUN_TYPE] == "Snapshots" or self.r.p.timeNode == 0:
+        targetFrequency = (
+            LatticePhysicsFrequency.firstCoupledIteration
+            if iteration == 0
+            else LatticePhysicsFrequency.all
+        )
+        if self._latticePhysicsFrequency >= targetFrequency:
             self.r.core.lib = None
-            self.updateXSLibrary(self.r.p.cycle)
+            self.updateXSLibrary(self.r.p.cycle, self.r.p.timeNode)
 
     def clearXS(self):
         raise NotImplementedError

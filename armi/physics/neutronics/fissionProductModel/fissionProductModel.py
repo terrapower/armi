@@ -104,6 +104,7 @@ from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings imp
     CONF_FP_MODEL,
     CONF_MAKE_ALL_BLOCK_LFPS_INDEPENDENT,
 )
+from armi.settings.fwSettings.globalSettings import CONF_DETAILED_AXIAL_EXPANSION
 
 NUM_FISSION_PRODUCTS_PER_LFP = 2.0
 
@@ -124,6 +125,10 @@ class FissionProductModel(interfaces.Interface):
     def __init__(self, r, cs):
         interfaces.Interface.__init__(self, r, cs)
         self._globalLFPs = lumpedFissionProduct.lumpedFissionProductFactory(self.cs)
+        # If detailed axial expansion is active, mapping between blocks occurs on uniform mesh
+        # and this can cause blocks to have isotopes that they don't have cross sections for.
+        # Fix this by adding all isotopes to all blocks so they are present it lattice physics.
+        self.allBlocksNeedAllNucs = self.cs[CONF_DETAILED_AXIAL_EXPANSION]
 
     @property
     def _explicitFissionProducts(self):
@@ -151,7 +156,10 @@ class FissionProductModel(interfaces.Interface):
         products be consistent across all blocks, even if fission products are
         not generated when the block is depleted.
         """
-        return None if self.getInterface("mcnp") is not None else Flags.FUEL
+        if self.getInterface("mcnp") or self.allBlocksNeedAllNucs:
+            return None
+        else:
+            return Flags.FUEL
 
     def interactBOL(self):
         interfaces.Interface.interactBOL(self)
@@ -160,23 +168,40 @@ class FissionProductModel(interfaces.Interface):
         else:
             self.setAllBlockLFPs()
 
+    def _getComponentToInitDensities(self, b):
+        """Get the component to initialize ndens keys on."""
+        # add the isotopics to the smallest solid since that is usually the most "interesting"
+        # sorted() calls getBoundingCircleOuterDiameter under the hood
+        solidsOrderedBySize = sorted(c for c in b if c.containsSolidMaterial())
+        if solidsOrderedBySize:
+            return solidsOrderedBySize[0]
+        else:
+            # no solids, so just add to smallest component
+            return sorted(c for c in b)[0]
+
     def setAllComponentFissionProducts(self):
         """
-        Initialize all blueprint nuclides for each ``DEPLETABLE`` component in the core.
+        Initialize all nuclides for each ``DEPLETABLE`` component in the core, or all blocks if detailedAxialExpansion is enabled.
 
         Notes
         -----
         This should be called when explicit fission product modeling is enabled to
-        ensure that fission products are initialized on the depletable components within
-        the reactor data model.
+        ensure that all isotopes are initialized on the depletable components within
+        the reactor data model so that cross sections are created during depletion.
+
+        When detailedAxialExpansion is also enabled, all regions will have fission/activation
+        products added to avoid missing cross sections during mesh conversion (since converted
+        blocks only have one xsID but may have isotopes from multiple blocks with different IDs.)
+        Setting density to zero here enables small number densities is XS generation.
 
         When explicit fission products are enabled and the user has not already included
         all fission products in the blueprints (in ``nuclideFlags``), the ``fpModelLibrary`` setting is used
         to autofill all the nuclides in a given library into the ``blueprints.allNuclidesInProblem``
         list. All nuclides that were not manually initialized by the user are added to
-        the ``DEPLETABLE`` components throughout every block in the core. The ``DEPLETABLE``
-        flag is based on the user adding this explicitly in the blueprints, or is based on
-        the user setting a nuclide to ``burn: true`` in the blueprint ``nuclideFlags``.
+        the ``DEPLETABLE`` components throughout every block in the core.
+
+        The ``DEPLETABLE`` flag is based on the user adding this explicitly in the blueprints,
+        or is based on the user setting a nuclide to ``burn: true`` in the blueprint ``nuclideFlags``.
 
         See Also
         --------
@@ -185,13 +210,28 @@ class FissionProductModel(interfaces.Interface):
         """
         for b in self.r.core.getBlocks(includeAll=True):
             b.setLumpedFissionProducts(None)
-            for c in b.getComponents(Flags.DEPLETABLE):
-                updatedNDens = c.getNumberDensities()
-                for nuc in self.r.blueprints.allNuclidesInProblem:
-                    if nuc in updatedNDens:
-                        continue
-                    updatedNDens[nuc] = 0.0
-                c.updateNumberDensities(updatedNDens)
+            self._initializeIsoDensities(b)
+
+    def _initializeIsoDensities(self, b):
+        """
+        Initialize isotope densities to include all on depletable components.
+
+        Notes
+        -----
+        In non-uniform reactor cases all blocks will get all isotopes so that the
+        global flux solve does not have any missing cross sections.
+        """
+        compsToAddIso = b.getComponents(Flags.DEPLETABLE)
+        if self.allBlocksNeedAllNucs and not compsToAddIso:
+            compsToAddIso = [self._getComponentToInitDensities(b)]
+        for c in compsToAddIso:
+            # Add all isotopes in problem at 0.0 density
+            updatedNDens = c.getNumberDensities()
+            for nuc in self.r.blueprints.allNuclidesInProblem:
+                if nuc in updatedNDens:
+                    continue
+                updatedNDens[nuc] = 0.0
+            c.updateNumberDensities(updatedNDens)
 
     def setAllBlockLFPs(self):
         """
@@ -207,6 +247,8 @@ class FissionProductModel(interfaces.Interface):
             else:
                 independentLFPs = self.getGlobalLumpedFissionProducts().duplicate()
                 b.setLumpedFissionProducts(independentLFPs)
+            if self.allBlocksNeedAllNucs:
+                self._initializeIsoDensities(b)
 
     def getGlobalLumpedFissionProducts(self):
         r"""

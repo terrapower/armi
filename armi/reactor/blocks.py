@@ -97,7 +97,6 @@ class Block(composites.Composite):
 
         self.points = []
         self.macros = None
-        self.axialExpTargetComponent = None
 
         # flag to indicated when DerivedShape children must be updated.
         self.derivedMustUpdate = False
@@ -1503,7 +1502,7 @@ class Block(composites.Composite):
         --------
         armi.reactor.converters.axialExpansionChanger.py::ExpansionData::_setTargetComponents
         """
-        self.axialExpTargetComponent = targetComponent
+        self.p.axialExpTargetComponent = targetComponent.name
 
     def getPinCoordinates(self):
         """

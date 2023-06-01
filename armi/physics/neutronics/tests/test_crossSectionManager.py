@@ -39,7 +39,10 @@ from armi.physics.neutronics.crossSectionGroupManager import (
 )
 from armi.physics.neutronics.crossSectionGroupManager import CrossSectionGroupManager
 from armi.physics.neutronics.fissionProductModel.tests import test_lumpedFissionProduct
-from armi.physics.neutronics.settings import CONF_XS_BLOCK_REPRESENTATION
+from armi.physics.neutronics.settings import (
+    CONF_XS_BLOCK_REPRESENTATION,
+    CONF_LATTICE_PHYSICS_FREQUENCY,
+)
 from armi.reactor.blocks import HexBlock
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
@@ -468,23 +471,52 @@ class Test_CrossSectionGroupManager(unittest.TestCase):
         )
         self.assertEqual(origXSIDsFromNew["BA"], "AA")
 
-    def test_interactCoupled_UpdateTrue(self):
-        """ensure that representativeBlocks get populated if timeNode == 0"""
+    def test_interactBOL(self):
+        """Test `BOL` lattice physics update frequency"""
         self.blockList[0].r.p.timeNode = 0
+        self.csm.cs[CONF_LATTICE_PHYSICS_FREQUENCY] = "BOL"
+        self.csm.interactBOL()
+        self.assertTrue(self.csm.representativeBlocks)
+
+    def test_interactBOC(self):
+        """Test `BOC` lattice physics update frequency"""
+        self.blockList[0].r.p.timeNode = 0
+        self.csm.cs[CONF_LATTICE_PHYSICS_FREQUENCY] = "BOC"
+        self.csm.interactBOL()
+        self.csm.interactBOC()
+        self.assertTrue(self.csm.representativeBlocks)
+
+    def test_interactEveryNode(self):
+        """Test `everyNode` lattice physics update frequency"""
+        self.csm.cs[CONF_LATTICE_PHYSICS_FREQUENCY] = "BOC"
+        self.csm.interactBOL()
+        self.csm.interactEveryNode()
+        self.assertFalse(self.csm.representativeBlocks)
+        self.csm.cs[CONF_LATTICE_PHYSICS_FREQUENCY] = "everyNode"
+        self.csm.interactBOL()
+        self.csm.interactEveryNode()
+        self.assertTrue(self.csm.representativeBlocks)
+
+    def test_interactFirstCoupledIteration(self):
+        """Test `firstCoupledIteration` lattice physics update frequency"""
+        self.csm.cs[CONF_LATTICE_PHYSICS_FREQUENCY] = "everyNode"
+        self.csm.interactBOL()
+        self.csm.interactCoupled(iteration=0)
+        self.assertFalse(self.csm.representativeBlocks)
+        self.csm.cs[CONF_LATTICE_PHYSICS_FREQUENCY] = "firstCoupledIteration"
+        self.csm.interactBOL()
         self.csm.interactCoupled(iteration=0)
         self.assertTrue(self.csm.representativeBlocks)
 
-    def test_interactCoupled_UpdateFalse(self):
-        """ensure that representativeBlocks remains empty if timeNode == 1"""
-        self.blockList[0].r.p.timeNode = 1
-        self.csm.interactCoupled(iteration=0)
+    def test_interactAllCoupled(self):
+        """Test `all` lattice physics update frequency"""
+        self.csm.cs[CONF_LATTICE_PHYSICS_FREQUENCY] = "firstCoupledIteration"
+        self.csm.interactBOL()
+        self.csm.interactCoupled(iteration=1)
         self.assertFalse(self.csm.representativeBlocks)
-
-    def test_interactCoupled_Snapshots(self):
-        """ensure that representativeBlocks get populated if runtype is snapshots"""
-        self.csm.cs[CONF_RUN_TYPE] = "Snapshots"
-        self.blockList[0].r.p.timeNode = 2
-        self.csm.interactCoupled(iteration=0)
+        self.csm.cs[CONF_LATTICE_PHYSICS_FREQUENCY] = "all"
+        self.csm.interactBOL()
+        self.csm.interactCoupled(iteration=1)
         self.assertTrue(self.csm.representativeBlocks)
 
     def test_copyPregeneratedFiles(self):

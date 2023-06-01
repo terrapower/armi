@@ -630,7 +630,7 @@ class TestExceptions(AxialExpansionTestBase, unittest.TestCase):
     def test_AssemblyAxialExpansionException(self):
         """test that negative height exception is caught"""
         # manually set axial exp target component for code coverage
-        self.a[0].axialExpTargetComponent = self.a[0][0]
+        self.a[0].p.axialExpTargetComponent = self.a[0][0].name
         temp = Temperature(self.a.getTotalHeight(), numTempGridPts=11, tempSteps=10)
         with self.assertRaises(ArithmeticError) as cm:
             for idt in range(temp.tempSteps):
@@ -705,10 +705,17 @@ class TestDetermineTargetComponent(AxialExpansionTestBase, unittest.TestCase):
         b.add(fuel)
         b.add(clad)
         b.add(self.coolant)
+        # make sure that b.p.axialExpTargetComponent is empty initially
+        self.assertFalse(b.p.axialExpTargetComponent)
         # call method, and check that target component is correct
         self.expData.determineTargetComponent(b)
         self.assertTrue(
             self.expData.isTargetComponent(fuel),
+            msg=f"determineTargetComponent failed to recognize intended component: {fuel}",
+        )
+        self.assertEqual(
+            b.p.axialExpTargetComponent,
+            fuel.name,
             msg=f"determineTargetComponent failed to recognize intended component: {fuel}",
         )
 
@@ -800,12 +807,14 @@ class TestDetermineTargetComponent(AxialExpansionTestBase, unittest.TestCase):
         # manually set target component
         b.setAxialExpTargetComp(duct)
         self.assertEqual(
-            b.axialExpTargetComponent,
-            duct,
+            b.p.axialExpTargetComponent,
+            duct.name,
         )
 
         # check that target component is stored on expansionData object correctly
-        self.expData._componentDeterminesBlockHeight[b.axialExpTargetComponent] = True
+        self.expData._componentDeterminesBlockHeight[
+            b.getComponentByName(b.p.axialExpTargetComponent)
+        ] = True
         self.assertTrue(self.expData.isTargetComponent(duct))
 
 
@@ -868,7 +877,7 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
                     for cExp in bExp:
                         if not isinstance(cExp.material, custom.Custom):
                             matDens = cExp.material.density(Tc=cExp.temperatureInC)
-                            compDens = cExp.getMassDensity()
+                            compDens = cExp.density()
                             msg = (
                                 f"{cExp} {cExp.material} in {bExp} was not at correct density. \n"
                                 + f"expansion = {bExp.p.height / bStd.p.height} \n"
