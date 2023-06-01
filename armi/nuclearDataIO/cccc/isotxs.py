@@ -685,7 +685,7 @@ class _IsotxsNuclideIO:
 
     def _setScatterMatrix(self, blockNumIndex, scatterMatrix):
         """
-        Sets scatter matrix data to the proper scatterMatrix for this blockNum.
+        Sets scatter matrix data to the proper ``scatterMatrix`` for this ``blockNum``.
 
         blockNumIndex : int
             Index of a scattering block.
