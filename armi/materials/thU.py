@@ -64,7 +64,7 @@ class ThU(FuelMaterial):
         return 11.9e-6
 
     def thermalConductivity(self, Tk=None, Tc=None):
-        """Thermal conductivityW/m-K from IAEA TE 1450."""
+        """Thermal conductivity in W/m-K from IAEA TE 1450."""
         Tk = getTk(Tc, Tk)
         return 43.1
 
