@@ -106,7 +106,7 @@ class OperatorTests(unittest.TestCase):
         self.assertFalse(self.o.interfaceIsActive("Fake-o"))
 
     def test_loadStateError(self):
-        """The loadTestReactor() test tool does not have any history in the DB to load from."""
+        """The ``loadTestReactor()`` test tool does not have any history in the DB to load from."""
 
         # a first, simple test that this method fails correctly
         with self.assertRaises(RuntimeError):
