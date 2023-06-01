@@ -152,7 +152,7 @@ class TestTightCoupling(unittest.TestCase):
         self.assertFalse(self.o.couplingIsActive())
 
     def test_performTightCoupling_Inactive(self):
-        """Ensures no action by _performTightCoupling if cs[CONF_TIGHT_COUPLING] = false."""
+        """Ensures no action by ``_performTightCoupling`` if ``cs[CONF_TIGHT_COUPLING] = false``."""
         self.o.cs[CONF_TIGHT_COUPLING] = False
         self.o._performTightCoupling(0, 0, writeDB=False)
         self.assertEqual(self.o.r.core.p.coupledIteration, 0)
