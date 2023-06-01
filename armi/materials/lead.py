@@ -50,7 +50,7 @@ class Lead(material.Fluid):
         return 11.367 - 0.0011944 * Tk  # pre-converted from kg/m^3 to g/cc
 
     def heatCapacity(self, Tk=None, Tc=None):
-        r"""Heat ccapacity in J/kg/K from Sobolev."""
+        r"""Heat capacity in J/kg/K from Sobolev."""
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("heat capacity", Tk)
 
