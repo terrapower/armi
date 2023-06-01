@@ -56,7 +56,7 @@ class LumpedFissionProduct:
 
     def __init__(self, name=None):
         """
-        Make a LFP.
+        Make an LFP.
 
         Parameters
         ----------
