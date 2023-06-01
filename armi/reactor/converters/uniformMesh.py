@@ -312,7 +312,6 @@ class UniformMeshGenerator:
         filteredTops : the top of assembly materials, filtered to a minimum separation of
             ``minimumMeshSize`` with preference for the top bounds
         """
-        # initialize the list of material boundaries
 
         def firstBlockBottom(a, flags):
             return a.getFirstBlock(flags).p.zbottom
