@@ -263,7 +263,7 @@ class TestShapedComponent(TestGeneralComponents):
     """Abstract class for all shaped components."""
 
     def test_preserveMassDuringThermalExpansion(self):
-        """Test that when we thermally expand any arbirtray shape, mass is conserved.
+        """Test that when we thermally expand any arbitrary shape, mass is conserved.
 
         .. test:: Test that ARMI can thermally expand any arbitrary shape.
            :id: TEST_REACTOR_THERMAL_EXPANSION_0
