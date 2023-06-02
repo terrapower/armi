@@ -164,10 +164,11 @@ def factory(cs, bp, geom: Optional[SystemLayoutInput] = None) -> Reactor:
         r.sort()
     else:
         runLog.warning(
-            "DeprecationWarning: This Reactor is not being sorted on DB load. "
+            "DeprecationWarning: This Reactor is not being sorted on blueprint read. "
             f"Due to the setting {CONF_SORT_REACTOR}, this Reactor is unsorted. "
             "But this feature is temporary and will be removed by 2024."
         )
+
     return r
 
 
