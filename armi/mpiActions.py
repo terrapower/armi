@@ -540,7 +540,7 @@ class DistributeStateAction(MpiAction):
             # the operator/interface attachment may invalidate some of the cache, but since
             # all the underlying data is the same, ultimately all state should be (initially) the
             # same.
-            # XXX: this is an indication we need to revamp either how the operator attachment works
+            # TODO: this is an indication we need to revamp either how the operator attachment works
             # or how the interfaces are distributed.
             self.r._markSynchronized()  # pylint: disable=protected-access
 
