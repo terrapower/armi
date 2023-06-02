@@ -30,7 +30,7 @@ from armi.physics.fuelCycle.settings import CONF_ASSEM_ROTATION_STATIONARY
 
 def buReducingAssemblyRotation(fh):
     r"""
-    Rotates all detail assemblies to put the highest bu pin in the lowest power orientation
+    Rotates all detail assemblies to put the highest bu pin in the lowest power orientation.
 
     Parameters
     ----------
@@ -75,7 +75,7 @@ def buReducingAssemblyRotation(fh):
 
 def simpleAssemblyRotation(fh):
     """
-    Rotate all pin-detail assemblies that were just shuffled by 60 degrees
+    Rotate all pin-detail assemblies that were just shuffled by 60 degrees.
 
     Parameters
     ----------

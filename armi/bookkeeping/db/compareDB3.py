@@ -62,7 +62,7 @@ from armi.reactor.composites import ArmiObject
 
 
 class OutputWriter:
-    """Basically a tee to writeln to runLog and the output file"""
+    """Basically a tee to writeln to runLog and the output file."""
 
     def __init__(self, fname):
         self.fname = fname
@@ -138,7 +138,7 @@ class DiffResults:
         return [None] * (len(self._columns) - 1)
 
     def reportDiffs(self, stream: OutputWriter) -> None:
-        """Print out a well-formatted table of the non-zero diffs"""
+        """Print out a well-formatted table of the non-zero diffs."""
         # filter out empty rows
         diffsToPrint = {
             key: value

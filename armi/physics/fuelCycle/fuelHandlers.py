@@ -201,6 +201,7 @@ class FuelHandler:
 
     def prepCore(self):
         """Aux function to run before XS generation (do moderation, etc)."""
+        pass
 
     def prepSearch(self, *args, **kwargs):
         """
@@ -625,7 +626,7 @@ class FuelHandler:
         circularRingFlag=False,
     ):
         r"""
-        find assemblies in particular rings
+        find assemblies in particular rings.
 
         Parameters
         ----------
@@ -700,7 +701,7 @@ class FuelHandler:
 
     def swapAssemblies(self, a1, a2):
         r"""
-        Moves a whole assembly from one place to another
+        Moves a whole assembly from one place to another.
 
         Parameters
         ----------
@@ -731,7 +732,7 @@ class FuelHandler:
 
     def _transferStationaryBlocks(self, assembly1, assembly2):
         """
-        Exchange the stationary blocks (e.g. grid plate) between the moving assemblies
+        Exchange the stationary blocks (e.g. grid plate) between the moving assemblies.
 
         These blocks in effect are not moved at all.
         """
@@ -866,7 +867,7 @@ class FuelHandler:
 
     def repeatShufflePattern(self, explicitRepeatShuffles):
         r"""
-        Repeats the fuel management from a previous ARMI run
+        Repeats the fuel management from a previous ARMI run.
 
         Parameters
         ----------

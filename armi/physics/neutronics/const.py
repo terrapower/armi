@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-Constants and Enums
+Constants and Enums.
 
 In an independent file to minimize circular imports.
 """

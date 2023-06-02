@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-Cesium
+Cesium.
 """
 
 from armi.materials.material import Fluid
@@ -21,7 +21,7 @@ from armi.utils.units import getTk
 
 
 class Cs(Fluid):
-    """Cesium"""
+    """Cesium."""
 
     name = "Cs"
 

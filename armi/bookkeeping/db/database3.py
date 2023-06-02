@@ -378,7 +378,7 @@ class Database3:
         self._fileName = fName
 
     def loadCS(self):
-        """Attempt to load settings from the database file
+        """Attempt to load settings from the database file.
 
         Notes
         -----
@@ -403,7 +403,7 @@ class Database3:
         return cs
 
     def loadBlueprints(self):
-        """Attempt to load reactor blueprints from the database file
+        """Attempt to load reactor blueprints from the database file.
 
         Notes
         -----
@@ -529,7 +529,7 @@ class Database3:
                     destTs[key].attrs[attr] = "@{}".format(path)
 
     def __enter__(self):
-        """Context management support"""
+        """Context management support."""
         if self._openCount == 0:
             # open also increments _openCount
             self.open()
@@ -538,7 +538,7 @@ class Database3:
         return self
 
     def __exit__(self, type, value, traceback):
-        """Typically we don't care why it broke but we want the DB to close"""
+        """Typically we don't care why it broke but we want the DB to close."""
         self._openCount -= 1
         # always close if there is a traceback.
         if self._openCount == 0 or traceback:

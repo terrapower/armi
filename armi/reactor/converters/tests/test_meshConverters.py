@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""unit tests of RZ Mesh Converter"""
+"""unit tests of RZ Mesh Converter."""
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import math
 import unittest
@@ -24,7 +24,7 @@ from armi.tests import TEST_ROOT
 
 class TestRZReactorMeshConverter(unittest.TestCase):
     """
-    Loads a hex reactor and converts its mesh to RZTheta coordinates
+    Loads a hex reactor and converts its mesh to RZTheta coordinates.
     """
 
     def setUp(self):

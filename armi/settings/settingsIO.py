@@ -43,7 +43,7 @@ WRITE_FULL = "full"
 
 
 class Roots:
-    """XML tree root node common strings"""
+    """XML tree root node common strings."""
 
     CUSTOM = "settings"
     VERSION = "version"
@@ -420,7 +420,7 @@ def prompt(statement, question, *options):
 
 
 class RunLogPromptCancel(Exception):
-    """An error that occurs when the user submits a cancel on a runLog prompt which allows for cancellation"""
+    """An error that occurs when the user submits a cancel on a runLog prompt which allows for cancellation."""
 
     pass
 

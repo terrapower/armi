@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-Dynamic importing help
+Dynamic importing help.
 """
 
 
 def getEntireFamilyTree(cls):
-    """Returns a list of classes subclassing the input class
+    """Returns a list of classes subclassing the input class.
 
     One large caveat is it can only locate subclasses that had been imported somewhere
     Look to use importEntirePackage before searching for subclasses if not all children

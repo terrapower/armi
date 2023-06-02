@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Assembly Parameter Definitions"""
+"""Assembly Parameter Definitions."""
 import numpy
 
 from armi import runLog

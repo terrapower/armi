@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-Inconel X750
+Inconel X750.
 """
 import numpy
 
@@ -174,7 +174,7 @@ class InconelX750(Material):
     def polyfitLinearExpansionPercent(self, power=2):
         r"""
         Calculates the coefficients of a polynomial fit for linearExpansionPercent.
-        Based on data from http://www.specialmetals.com/documents/Inconel%20alloy%20X-750.pdf
+        Based on data from http://www.specialmetals.com/documents/Inconel%20alloy%20X-750.pdf.
 
         Uses mean CTE values to find percent thermal strain values. Fits a polynomial
         to the data set and returns the coefficients.
@@ -235,7 +235,7 @@ class InconelX750(Material):
 
     def linearExpansion(self, Tk=None, Tc=None):
         r"""
-        From http://www.specialmetals.com/documents/Inconel%20alloy%20X-750.pdf
+        From http://www.specialmetals.com/documents/Inconel%20alloy%20X-750.pdf.
 
         Using the correlation for linearExpansionPercent, the 2nd order polynomial is divided by 100 to convert
         from percent strain to strain, then differentiated with respect to temperature to find the correlation

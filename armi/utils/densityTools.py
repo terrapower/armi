@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Assorted utilities to help with basic density calculations"""
+"""Assorted utilities to help with basic density calculations."""
 from typing import Tuple, List, Dict
 
 from armi.nucDirectory import nucDir, nuclideBases, elements

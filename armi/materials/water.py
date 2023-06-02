@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+"""Basic water material."""
 import math
 
 from armi.materials.material import Fluid
@@ -24,7 +24,7 @@ from armi.utils.units import getTk
 
 class Water(Fluid):
     """
-    Water
+    Water.
 
     This is a good faith implementation of the Revised Supplementary Properties
     of Ordinary Water Substance (1992) by IAPWS -- International Association for
@@ -83,14 +83,12 @@ class Water(Fluid):
             self.setMassFrac(nucName, mfrac)
 
     def theta(self, Tk: float = None, Tc: float = None) -> float:
-        """
-        returns temperature normalized to the critical temperature
-        """
+        """Returns temperature normalized to the critical temperature."""
         return getTk(Tc=Tc, Tk=Tk) / self.TEMPERATURE_CRITICAL_K
 
     def tau(self, Tc: float = None, Tk: float = None) -> float:
         """
-        returns 1 - temperature normalized to the critical temperature
+        Returns 1 - temperature normalized to the critical temperature.
 
         Note
         ----
@@ -100,7 +98,7 @@ class Water(Fluid):
 
     def vaporPressure(self, Tk: float = None, Tc: float = None) -> float:
         """
-        Returns vapor pressure in (Pa)
+        Returns vapor pressure in (Pa).
 
         Parameters
         ----------
@@ -150,7 +148,7 @@ class Water(Fluid):
         self, Tk: float = None, Tc: float = None, dT: float = 1e-6
     ) -> float:
         """
-        approximation of derivative of vapor pressure wrt temperature
+        Approximation of derivative of vapor pressure wrt temperature.
 
         Parameters
         ----------
@@ -161,7 +159,7 @@ class Water(Fluid):
 
         Note
         ----
-        this uses a numerical approximation
+        This uses a numerical approximation
         """
         Tcold = getTk(Tc=Tc, Tk=Tk) - dT / 2.0
         Thot = Tcold + dT
@@ -173,7 +171,7 @@ class Water(Fluid):
         self, Tk: float = None, Tc: float = None
     ) -> float:
         """
-        Returns the auxiliary quantity for specific enthalpy
+        Returns the auxiliary quantity for specific enthalpy.
 
         Parameters
         ----------
@@ -215,7 +213,7 @@ class Water(Fluid):
         self, Tk: float = None, Tc: float = None
     ) -> float:
         """
-        Returns the auxiliary quantity for specific entropy
+        Returns the auxiliary quantity for specific entropy.
 
         Parameters
         ----------
@@ -255,7 +253,7 @@ class Water(Fluid):
 
     def enthalpy(self, Tk: float = None, Tc: float = None) -> float:
         """
-        Returns enthalpy of saturated water
+        Returns enthalpy of saturated water.
 
         Parameters
         ----------
@@ -285,7 +283,7 @@ class Water(Fluid):
 
     def entropy(self, Tk: float = None, Tc: float = None) -> float:
         """
-        Returns entropy of saturated water
+        Returns entropy of saturated water.
 
         Parameters
         ----------
@@ -327,7 +325,7 @@ class Water(Fluid):
 
 class SaturatedWater(Water):
     """
-    Saturated Water
+    Saturated Water.
 
     This is a good faith implementation of the Revised Supplementary Properties
     of Ordinary Water Substance (1992) by IAPWS -- International Association for
@@ -341,7 +339,7 @@ class SaturatedWater(Water):
 
     def pseudoDensity(self, Tk: float = None, Tc: float = None) -> float:
         """
-        returns density in g/cc
+        Returns density in g/cc.
 
         Parameters
         ----------
@@ -387,7 +385,7 @@ class SaturatedWater(Water):
 
 class SaturatedSteam(Water):
     """
-    Saturated Steam
+    Saturated Steam.
 
     This is a good faith implementation of the Revised Supplementary Properties
     of Ordinary Water Substance (1992) by IAPWS -- International Association for
@@ -401,7 +399,7 @@ class SaturatedSteam(Water):
 
     def pseudoDensity(self, Tk: float = None, Tc: float = None) -> float:
         """
-        returns density in g/cc
+        Returns density in g/cc.
 
         Parameters
         ----------

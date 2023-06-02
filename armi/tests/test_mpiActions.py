@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for MPI actions"""
+"""Tests for MPI actions."""
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 
 import unittest
@@ -35,12 +35,12 @@ from armi.utils import iterables
 @unittest.skipUnless(context.MPI_RANK == 0, "test only on root node")
 class MpiIterTests(unittest.TestCase):
     def setUp(self):
-        """save MPI size on entry"""
+        """Save MPI size on entry."""
         self._mpiSize = context.MPI_SIZE
         self.action = MpiAction()
 
     def tearDown(self):
-        """restore MPI rank and size on exit"""
+        """Restore MPI rank and size on exit."""
         context.MPI_SIZE = self._mpiSize
         context.MPI_RANK = 0
 
@@ -73,7 +73,7 @@ class MpiIterTests(unittest.TestCase):
         return objs
 
     def test_perfectBalancing(self):
-        """Test load balancing when numProcs divides numObjects
+        """Test load balancing when numProcs divides numObjects.
 
         In this case, all processes should get the same number of objects.
         """
@@ -90,7 +90,7 @@ class MpiIterTests(unittest.TestCase):
         self.assertEqual(imbalance, 0)
 
     def test_excessProcesses(self):
-        """Test load balancing when numProcs exceeds numObjects
+        """Test load balancing when numProcs exceeds numObjects.
 
         In this case, some processes should receive a single object and the
         rest should receive no objects
@@ -108,7 +108,7 @@ class MpiIterTests(unittest.TestCase):
         self.assertLessEqual(imbalance, 1)
 
     def test_typicalBalancing(self):
-        """Test load balancing for typical case (numProcs < numObjs)
+        """Test load balancing for typical case (numProcs < numObjs).
 
         In this case, the total imbalance should be 1 (except for the perfectly
         balanced case).
@@ -151,6 +151,7 @@ class MpiIterTests(unittest.TestCase):
 
     def test_diagnosePickleErrorTestReactor(self):
         """Run _diagnosePickleError() on the test reactor.
+
         We expect this to run all the way through the pickle diagnoser,
         because the test reactor should be easily picklable.
         """
@@ -236,7 +237,7 @@ class QueueActionsTests(unittest.TestCase):
 
 
 def passer():
-    """helper function, to do nothing, for unit tests"""
+    """Helper function, to do nothing, for unit tests."""
     pass
 
 

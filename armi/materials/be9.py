@@ -40,7 +40,7 @@ class Be9(Material):
         Finds the linear expansion coefficient of Be9. given T in C
         returns m/m-K
         Based on http://www-ferp.ucsd.edu/LIB/PROPS/PANOS/be.html
-        which is in turn based on Fusion Engineering and Design . FEDEEE 5(2), 141-234 (1987)
+        which is in turn based on Fusion Engineering and Design . FEDEEE 5(2), 141-234 (1987).
         """
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("linear expansion percent", Tk)

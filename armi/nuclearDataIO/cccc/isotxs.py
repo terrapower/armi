@@ -59,7 +59,7 @@ N2N_SCATTER = 300  # 300 + NN, (N,2N) SCATTERING
 
 def compareSet(fileNames, tolerance=0.0, verbose=False):
     """
-    takes a list of strings and reads all binaries with that name comparing them in all combinations
+    takes a list of strings and reads all binaries with that name comparing them in all combinations.
 
     Notes
     -----
@@ -550,12 +550,12 @@ class _IsotxsNuclideIO:
                 micros.strpd = micros.getDefaultXs(numGroups)
 
     def _rw6DRecord(self):
-        """reads nuclide-level chi dist"""
+        """Reads nuclide-level chi dist."""
         raise NotImplementedError
 
     def _rw7DRecord(self, blockNumIndex, subBlock):
         """
-        Read scatter matrix
+        Read scatter matrix.
 
         Parameters
         ----------
@@ -685,7 +685,7 @@ class _IsotxsNuclideIO:
 
     def _setScatterMatrix(self, blockNumIndex, scatterMatrix):
         """
-        Sets scatter matrix data to the proper scatterMatrix for this blockNum
+        Sets scatter matrix data to the proper ``scatterMatrix`` for this ``blockNum``.
 
         blockNumIndex : int
             Index of a scattering block.
@@ -705,7 +705,7 @@ class _IsotxsNuclideIO:
 
     def _getScatterMatrix(self, blockNumIndex):
         """
-        Get the scatter matrix for a particular blockNum
+        Get the scatter matrix for a particular blockNum.
 
         Note: This is stupid and the logic should be combined with _setScatterMatrix.
         Please recommend a better way to do it during code review.

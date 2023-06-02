@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Test block conversions"""
+"""Test block conversions."""
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import os
 import unittest
@@ -28,6 +28,9 @@ from armi.reactor.tests.test_reactors import loadTestReactor, TEST_ROOT
 from armi.utils import hexagon
 from armi.reactor import grids
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
+from armi.physics.neutronics.isotopicDepletion.isotopicDepletionInterface import (
+    isDepletable,
+)
 
 
 class TestBlockConverter(unittest.TestCase):
@@ -128,15 +131,27 @@ class TestBlockConverter(unittest.TestCase):
         )
 
         block = loadTestReactor(TEST_ROOT)[1].core.getFirstBlock(Flags.CONTROL)
+        control = block.getComponent(Flags.CONTROL)
+
+        # add depletable flag to see if it is carried
+        control.p.flags |= Flags.DEPLETABLE
 
         driverBlock.spatialGrid = None
         block.spatialGrid = grids.HexGrid.fromPitch(1.0)
 
-        self._testConvertWithDriverRings(
+        convertedWithoutDriver = self._testConvertWithDriverRings(
             block,
             driverBlock,
             blockConverters.HexComponentsToCylConverter,
             hexagon.numPositionsInRing,
+        )
+
+        self.assertEqual(5, len([c for c in convertedWithoutDriver if isDepletable(c)]))
+        self.assertEqual(
+            5, len([c for c in convertedWithoutDriver if c.hasFlags(Flags.CONTROL)])
+        )
+        self.assertEqual(
+            9, len([c for c in convertedWithoutDriver if c.hasFlags(Flags.CLAD)])
         )
 
         # This should fail because a spatial grid is required
@@ -157,12 +172,14 @@ class TestBlockConverter(unittest.TestCase):
         driverBlock.spatialGrid = None
         block.spatialGrid = None
 
-        self._testConvertWithDriverRings(
+        convertedWithoutDriver = self._testConvertWithDriverRings(
             block,
             driverBlock,
             blockConverters.BlockAvgToCylConverter,
             hexagon.numPositionsInRing,
         )
+        # block went to 1 component
+        self.assertEqual(1, len([c for c in convertedWithoutDriver]))
 
     def test_convertHexWithFuelDriverOnNegativeComponentAreaBlock(self):
         """
@@ -228,8 +245,10 @@ class TestBlockConverter(unittest.TestCase):
                 self.assertTrue(c.isFuel(), "c was {}".format(c.name))
                 # remove external driver rings in preperation to check composition
                 convertedBlock.remove(c)
+            convBlockWithoutDriver = convertedBlock
+            self._checkAreaAndComposition(block, convBlockWithoutDriver)
 
-            self._checkAreaAndComposition(block, convertedBlock)
+        return convBlockWithoutDriver
 
     def _checkAreaAndComposition(self, block, convertedBlock):
         self.assertAlmostEqual(block.getArea(), convertedBlock.getArea())

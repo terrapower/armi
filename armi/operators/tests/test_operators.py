@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for operators"""
+"""Tests for operators."""
 
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-method-argument,import-outside-toplevel
 import os
@@ -46,7 +46,7 @@ class InterfaceA(Interface):
 
 
 class InterfaceB(InterfaceA):
-    """Dummy Interface that extends A"""
+    """Dummy Interface that extends A."""
 
     function = "A"
     name = "Second"
@@ -106,7 +106,7 @@ class OperatorTests(unittest.TestCase):
         self.assertFalse(self.o.interfaceIsActive("Fake-o"))
 
     def test_loadStateError(self):
-        """The loadTestReactor() test tool does not have any history in the DB to load from"""
+        """The ``loadTestReactor()`` test tool does not have any history in the DB to load from."""
 
         # a first, simple test that this method fails correctly
         with self.assertRaises(RuntimeError):
@@ -125,7 +125,15 @@ class OperatorTests(unittest.TestCase):
 
     def test_snapshotRequest(self):
         with TemporaryDirectoryChanger():
-            self.o.snapshotRequest(0, 1)
+            with mockRunLogs.BufferLog() as mock:
+                self.o.snapshotRequest(0, 1)
+                self.assertIn("ISOTXS-c0", mock.getStdout())
+                self.assertIn("DIF3D output for snapshot", mock.getStdout())
+                self.assertIn("Shuffle logic for snapshot", mock.getStdout())
+                self.assertIn("Geometry file for snapshot", mock.getStdout())
+                self.assertIn("Loading definition for snapshot", mock.getStdout())
+                self.assertIn("Flow history for snapshot", mock.getStdout())
+                self.assertIn("Pressure history for snapshot", mock.getStdout())
             self.assertTrue(os.path.exists("snapShot0_1"))
 
 
@@ -138,19 +146,19 @@ class TestTightCoupling(unittest.TestCase):
         self.o.r.core = Core("empty")
 
     def test_couplingIsActive(self):
-        """ensure that cs[CONF_TIGHT_COUPLING] controls couplingIsActive"""
+        """Ensure that ``cs[CONF_TIGHT_COUPLING]`` controls ``couplingIsActive``."""
         self.assertTrue(self.o.couplingIsActive())
         self.o.cs[CONF_TIGHT_COUPLING] = False
         self.assertFalse(self.o.couplingIsActive())
 
     def test_performTightCoupling_Inactive(self):
-        """ensures no action by _performTightCoupling if cs[CONF_TIGHT_COUPLING] = false"""
+        """Ensures no action by ``_performTightCoupling`` if ``cs[CONF_TIGHT_COUPLING] = false``."""
         self.o.cs[CONF_TIGHT_COUPLING] = False
         self.o._performTightCoupling(0, 0, writeDB=False)
         self.assertEqual(self.o.r.core.p.coupledIteration, 0)
 
     def test_performTightCoupling_skip(self):
-        """ensure that cycles within cs[CONF_CYCLES_SKIP_TIGHT_COUPLING_INTERACTION] are skipped"""
+        """Ensure that cycles within ``cs[CONF_CYCLES_SKIP_TIGHT_COUPLING_INTERACTION]`` are skipped."""
         self.o.cs[CONF_CYCLES_SKIP_TIGHT_COUPLING_INTERACTION] = [1]
         with mockRunLogs.BufferLog() as mock:
             self.o._performTightCoupling(1, 0, writeDB=False)
@@ -158,7 +166,7 @@ class TestTightCoupling(unittest.TestCase):
             self.assertEqual(self.o.r.core.p.coupledIteration, 0)
 
     def test_performTightCoupling_notConverged(self):
-        """ensure that the appropriate runLog.warning is addressed in tight coupling reaches max num of iters"""
+        """Ensure that the appropriate ``runLog.warning`` is addressed in tight coupling reaches max num of iters."""
 
         class NoConverge(TightCoupler):
             def isConverged(self, _val: TightCoupler._SUPPORTED_TYPES) -> bool:
@@ -183,7 +191,7 @@ class TestTightCoupling(unittest.TestCase):
             )
 
     def test_performTightCoupling_WriteDB(self):
-        """ensure a tight coupling iteration accours and that a DB WILL be written if requested"""
+        """Ensure a tight coupling iteration accours and that a DB WILL be written if requested."""
         hasCouplingInteraction = 1
         with directoryChangers.TemporaryDirectoryChanger():
             with mockRunLogs.BufferLog() as mock:
@@ -194,7 +202,7 @@ class TestTightCoupling(unittest.TestCase):
                 )
 
     def test_performTightCoupling_NoWriteDB(self):
-        """ensure a tight coupling iteration accours and that a DB WILL NOT be written if requested"""
+        """Ensure a tight coupling iteration accours and that a DB WILL NOT be written if requested."""
         hasCouplingInteraction = 1
         with directoryChangers.TemporaryDirectoryChanger():
             with mockRunLogs.BufferLog() as mock:
@@ -220,7 +228,7 @@ class TestTightCoupling(unittest.TestCase):
         dbi.database.close()
 
     def test_computeTightCouplingConvergence(self):
-        """ensure that tight coupling convergence can be computed and checked
+        """Ensure that tight coupling convergence can be computed and checked.
 
         Notes
         -----
@@ -347,14 +355,14 @@ settings:
 
 class TestInterfaceAndEventHeaders(unittest.TestCase):
     def test_expandCycleAndTimeNodeArgs_Empty(self):
-        """when *args are empty, cycleNodeInfo should be an empty string"""
+        """When *args are empty, cycleNodeInfo should be an empty string."""
         for task in ["Init", "BOL", "EOL"]:
             self.assertEqual(
                 Operator._expandCycleAndTimeNodeArgs(interactionName=task), ""
             )
 
     def test_expandCycleAndTimeNodeArgs_OneArg(self):
-        """when *args is a single value, cycleNodeInfo should return the right string"""
+        """When *args is a single value, cycleNodeInfo should return the right string."""
         cycle = 0
         for task in ["BOC", "EOC"]:
             self.assertEqual(
@@ -367,7 +375,7 @@ class TestInterfaceAndEventHeaders(unittest.TestCase):
         )
 
     def test_expandCycleAndTimeNodeArgs_TwoArg(self):
-        """when *args is two values, cycleNodeInfo should return the right string"""
+        """When *args is two values, cycleNodeInfo should return the right string."""
         cycle, timeNode = 0, 0
         self.assertEqual(
             Operator._expandCycleAndTimeNodeArgs(

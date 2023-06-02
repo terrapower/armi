@@ -25,7 +25,7 @@ from armi.nuclearDataIO import xsLibraries
 
 class TestIsotxs(unittest.TestCase):
     r"""
-    Tests the ISOTXS class
+    Tests the ISOTXS class.
     """
 
     @classmethod

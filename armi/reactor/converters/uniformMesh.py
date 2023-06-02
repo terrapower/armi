@@ -236,7 +236,7 @@ class UniformMeshGenerator:
         self, meshList, minimumMeshSize, anchorPoints, preference="bottom", warn=False
     ):
         """
-        Check for mesh violating the minimum mesh size and remove them if necessary
+        Check for mesh violating the minimum mesh size and remove them if necessary.
 
         Parameters
         ----------
@@ -505,7 +505,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
     def _generateUniformMesh(self, minimumMeshSize):
         """
-        Generate a common axial mesh to use for uniform mesh conversion
+        Generate a common axial mesh to use for uniform mesh conversion.
 
         Parameters
         ----------
@@ -520,7 +520,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
     @staticmethod
     def initNewReactor(sourceReactor, cs):
-        """Build a new, yet empty, reactor with the same settings as sourceReactor
+        """Build a new, yet empty, reactor with the same settings as sourceReactor.
 
         Parameters
         ----------
@@ -669,7 +669,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
         def checkPriorityFlags(b):
             """
-            Check that a block has the flags that are prioritized for uniform mesh conversion
+            Check that a block has the flags that are prioritized for uniform mesh conversion.
 
             Also check that it's not different type of block that is a superset of the
             priority flags, like "Flags.FUEL | Flags.PLENUM"
@@ -1095,7 +1095,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
     def updateReactionRates(self):
         """
-        Update reaction rates on converted assemblies
+        Update reaction rates on converted assemblies.
 
         Notes
         -----
@@ -1317,7 +1317,7 @@ class ParamMapper:
 
     def __init__(self, reactorParamNames, blockParamNames, b):
         """
-        Initialize the list of parameter defaults
+        Initialize the list of parameter defaults.
 
         The ParameterDefinitionCollection lookup is very slow, so this we do it once
         and store it as a hashed list.
@@ -1405,7 +1405,7 @@ class ParamMapper:
 
 def setNumberDensitiesFromOverlaps(block, overlappingBlockInfo):
     r"""
-    Set number densities on a block based on overlapping blocks
+    Set number densities on a block based on overlapping blocks.
 
     A conservation of number of atoms technique is used to map the non-uniform number densities onto the uniform
     neutronics mesh. When the number density of a height :math:`H` neutronics mesh block :math:`N^{\prime}` is

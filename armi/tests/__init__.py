@@ -17,13 +17,13 @@ General framework-wide testing functions and files.
 This package contains some input files that can be used across
 a wide variety of unit tests in other lower-level subpackages.
 """
+from typing import Optional
 import datetime
 import itertools
 import os
 import re
 import shutil
 import unittest
-from typing import Optional
 
 from armi import context
 from armi import runLog

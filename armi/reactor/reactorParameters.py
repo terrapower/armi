@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-Reactor parameter definitions
+Reactor parameter definitions.
 """
 import numpy
 

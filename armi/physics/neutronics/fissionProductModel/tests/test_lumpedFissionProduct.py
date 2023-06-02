@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-Tests for lumpedFissionProduce module
+Tests for lumpedFissionProduce module.
 """
 import unittest
 import io
@@ -52,13 +52,13 @@ def getDummyLFPFile():
 
 
 class TestFissionProductDefinitionFile(unittest.TestCase):
-    """Test of the fission product model"""
+    """Test of the fission product model."""
 
     def setUp(self):
         self.fpd = getDummyLFPFile()
 
     def test_createLFPs(self):
-        """Test of the fission product model creation"""
+        """Test of the fission product model creation."""
         lfps = self.fpd.createLFPsFromFile()
         xe135 = nuclideBases.fromName("XE135")
         self.assertEqual(len(lfps), 3)
@@ -67,7 +67,7 @@ class TestFissionProductDefinitionFile(unittest.TestCase):
             self.assertIn(xe135, lfp)
 
     def test_createReferenceLFPs(self):
-        """Test of the reference fission product model creation"""
+        """Test of the reference fission product model creation."""
         with open(REFERENCE_LUMPED_FISSION_PRODUCT_FILE, "r") as LFP_FILE:
             LFP_TEXT = LFP_FILE.read()
         fpd = lumpedFissionProduct.FissionProductDefinitionFile(io.StringIO(LFP_TEXT))
@@ -98,7 +98,7 @@ class TestFissionProductDefinitionFile(unittest.TestCase):
 
 
 class TestLumpedFissionProduct(unittest.TestCase):
-    """Test of the lumped fission product yields"""
+    """Test of the lumped fission product yields."""
 
     def setUp(self):
         self.fpd = lumpedFissionProduct.FissionProductDefinitionFile(
@@ -106,7 +106,7 @@ class TestLumpedFissionProduct(unittest.TestCase):
         )
 
     def test_getYield(self):
-        """Test of the yield of a fission product"""
+        """Test of the yield of a fission product."""
         xe135 = nuclideBases.fromName("XE135")
         lfp = self.fpd.createSingleLFPFromFile("LFP39")
         lfp[xe135] = 1.2
@@ -145,20 +145,20 @@ class TestLumpedFissionProduct(unittest.TestCase):
 
 
 class TestLumpedFissionProductCollection(unittest.TestCase):
-    """Test of the fission product collection"""
+    """Test of the fission product collection."""
 
     def setUp(self):
         fpd = lumpedFissionProduct.FissionProductDefinitionFile(io.StringIO(LFP_TEXT))
         self.lfps = fpd.createLFPsFromFile()
 
     def test_getAllFissionProductNames(self):
-        """Test to ensure the fission product names are present"""
+        """Test to ensure the fission product names are present."""
         names = self.lfps.getAllFissionProductNames()
         self.assertIn("XE135", names)
         self.assertIn("KR85", names)
 
     def test_getAllFissionProductNuclideBases(self):
-        """Test to ensure the fission product nuclide bases are present"""
+        """Test to ensure the fission product nuclide bases are present."""
         clideBases = self.lfps.getAllFissionProductNuclideBases()
         xe135 = nuclideBases.fromName("XE135")
         kr85 = nuclideBases.fromName("KR85")
@@ -166,7 +166,7 @@ class TestLumpedFissionProductCollection(unittest.TestCase):
         self.assertIn(kr85, clideBases)
 
     def test_duplicate(self):
-        """Test to ensure that when we duplicate, we don't adjust the original file"""
+        """Test to ensure that when we duplicate, we don't adjust the original file."""
         newLfps = self.lfps.duplicate()
         ba = nuclideBases.fromName("XE135")
         lfp1 = self.lfps["LFP39"]
@@ -213,7 +213,7 @@ class TestLumpedFissionProductsFromReferenceFile(unittest.TestCase):
     """Tests loading from the `referenceFissionProducts.dat` file."""
 
     def test_fissionProductYields(self):
-        """Test that the fission product yields for the lumped fission products sums to 2.0"""
+        """Test that the fission product yields for the lumped fission products sums to 2.0."""
         cs = Settings()
         cs[CONF_FP_MODEL] = "infinitelyDilute"
         cs[CONF_LFP_COMPOSITION_FILE_PATH] = os.path.join(
@@ -236,7 +236,7 @@ class TestLumpedFissionProductsExplicit(unittest.TestCase):
 
 
 class TestMo99LFP(unittest.TestCase):
-    """Test of the fission product model from Mo99"""
+    """Test of the fission product model from Mo99."""
 
     def setUp(self):
         self.lfps = (
@@ -244,7 +244,7 @@ class TestMo99LFP(unittest.TestCase):
         )  # pylint: disable=protected-access
 
     def test_getAllFissionProductNames(self):
-        """Test to ensure that Mo99 is present, but other FP are not"""
+        """Test to ensure that Mo99 is present, but other FP are not."""
         names = self.lfps.getAllFissionProductNames()
         self.assertIn("MO99", names)
         self.assertNotIn("KR85", names)

@@ -12,10 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-TODO
-
-Tests some capabilities of the fuel handling tools,
-specific to hex-assembly reactors.
+Tests some fuel handling tools, specific to hex-assembly reactors.
 """
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import unittest

@@ -131,7 +131,7 @@ def recursivelyLoadSettingsFiles(
 
 def promptForSettingsFile(choice=None):
     """
-    Allows the user to select an ARMI input from the input files in the directory
+    Allows the user to select an ARMI input from the input files in the directory.
 
     Parameters
     ----------

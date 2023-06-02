@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-Sulfur
+Sulfur.
 """
 
 from armi import runLog
@@ -51,7 +51,7 @@ class Sulfur(material.Fluid):
         self.fullDensFrac = float(TD)
 
     def setDefaultMassFracs(self):
-        """Mass fractions"""
+        """Mass fractions."""
         self.fullDensFrac = 1.0
         self.setMassFrac("S32", 0.9493)
         self.setMassFrac("S33", 0.0076)

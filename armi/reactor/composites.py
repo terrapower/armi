@@ -121,7 +121,7 @@ class FlagSerializer(parameters.Serializer):
     @classmethod
     def unpack(cls, data, version, attrs):
         """
-        Reverse the pack operation
+        Reverse the pack operation.
 
         This will allow for some degree of conversion from old flags to a new set of
         flags, as long as all of the source flags still exist in the current set of
@@ -428,7 +428,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
     def __bool__(self):
         """
-        Flag that says this is non-zero in a boolean context
+        Flag that says this is non-zero in a boolean context.
 
         Notes
         -----
@@ -489,7 +489,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
     def copyParamsFrom(self, other):
         """
-        Overwrite this object's params with other object's
+        Overwrite this object's params with other object's.
 
         Parameters
         ----------
@@ -640,7 +640,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
     def nameContains(self, s):
         """
-        True if s is in this object's name (eg. nameContains('fuel')==True for 'testfuel'
+        True if s is in this object's name (eg. nameContains('fuel')==True for 'testfuel'.
 
         Notes
         -----
@@ -1679,7 +1679,7 @@ class ArmiObject(metaclass=CompositeModelType):
             c.setLumpedFissionProducts(lfpCollection)
 
     def getFissileMassEnrich(self):
-        r"""returns the fissile mass enrichment."""
+        """Returns the fissile mass enrichment."""
         hm = self.getHMMass()
         if hm > 0:
             return self.getFissileMass() / hm
@@ -1696,7 +1696,7 @@ class ArmiObject(metaclass=CompositeModelType):
         return b10 / total
 
     def getUraniumMassEnrich(self):
-        """returns U-235 mass fraction assuming U-235 and U-238 only."""
+        """Returns U-235 mass fraction assuming U-235 and U-238 only."""
         u5 = self.getMass("U235")
         if u5 < 1e-10:
             return 0.0
@@ -1712,12 +1712,12 @@ class ArmiObject(metaclass=CompositeModelType):
         return u5 / (u8 + u5)
 
     def getPuN(self):
-        """Returns total number density of Pu isotopes"""
+        """Returns total number density of Pu isotopes."""
         nucNames = [nuc.name for nuc in elements.byZ[94].nuclides]
         return sum(self.getNuclideNumberDensities(nucNames))
 
     def getPuMoles(self):
-        """Returns total number of moles of Pu isotopes"""
+        """Returns total number of moles of Pu isotopes."""
         return (
             self.getPuN()
             / units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
@@ -1850,7 +1850,6 @@ class ArmiObject(metaclass=CompositeModelType):
         -------
         float
             The average parameter value.
-
         """
         total = 0.0
         weightSum = 0.0
@@ -1893,7 +1892,7 @@ class ArmiObject(metaclass=CompositeModelType):
         returnObj=False,
     ):
         """
-        Find the maximum value for the parameter in this container
+        Find the maximum value for the parameter in this container.
 
         Parameters
         ----------
@@ -1995,7 +1994,7 @@ class ArmiObject(metaclass=CompositeModelType):
         return self.hasFlags(Flags.FUEL)
 
     def containsHeavyMetal(self):
-        """True if this has HM"""
+        """True if this has HM."""
         for nucName in self.getNuclides():
             # these already have non-zero density
             if nucDir.isHeavyMetal(nucName):
@@ -2021,7 +2020,7 @@ class ArmiObject(metaclass=CompositeModelType):
         return self.getMass(nuclideBases.NuclideBase.fissile)
 
     def getHMMass(self):
-        """Returns heavy metal mass in grams"""
+        """Returns heavy metal mass in grams."""
         nucs = []
         for nucName in self.getNuclides():
             if nucDir.isHeavyMetal(nucName):
@@ -2097,7 +2096,7 @@ class ArmiObject(metaclass=CompositeModelType):
             return pu / hm
 
     def getZrFrac(self):
-        """return the total zr/(hm+zr) fraction in this assembly"""
+        """Return the total zr/(hm+zr) fraction in this assembly."""
         hm = self.getHMMass()
         zrNucs = [nuc.name for nuc in elements.bySymbol["ZR"].nuclides]
         zr = self.getMass(zrNucs)
@@ -2115,7 +2114,7 @@ class ArmiObject(metaclass=CompositeModelType):
         return maxV
 
     def getFPMass(self):
-        """Returns mass of fission products in this block in grams"""
+        """Returns mass of fission products in this block in grams."""
         nucs = []
         for nucName in self.getNuclides():
             if "LFP" in nucName:
@@ -2124,11 +2123,11 @@ class ArmiObject(metaclass=CompositeModelType):
         return mass
 
     def getFuelMass(self):
-        """returns mass of fuel in grams."""
+        """Returns mass of fuel in grams."""
         return sum([fuel.getMass() for fuel in self.iterComponents(Flags.FUEL)], 0.0)
 
     def constituentReport(self):
-        """A print out of some pertinent constituent information"""
+        """A print out of some pertinent constituent information."""
         from armi.utils import iterables
 
         rows = [["Constituent", "HMFrac", "FuelFrac"]]
@@ -2178,7 +2177,6 @@ class ArmiObject(metaclass=CompositeModelType):
         .. math::
 
             A =  \frac{\sum_i N_i A_i }{\sum_i N_i}
-
         """
         numerator = 0.0
         denominator = 0.0
@@ -2212,7 +2210,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
     def getMgFlux(self, adjoint=False, average=False, volume=None, gamma=False):
         """
-        Return the multigroup neutron flux in [n/cm^2/s]
+        Return the multigroup neutron flux in [n/cm^2/s].
 
         The first entry is the first energy group (fastest neutrons). Each additional
         group is the next energy group, as set in the ISOTXS library.
@@ -2254,7 +2252,8 @@ class ArmiObject(metaclass=CompositeModelType):
         self.addMass(nucName, -mass)
 
     def addMass(self, nucName, mass):
-        """
+        """Add mass to a particular nuclide.
+
         Parameters
         ----------
         nucName : str
@@ -2379,7 +2378,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
     def getComponentsOfMaterial(self, material=None, materialName=None):
         """
-        Return list of components in this block that are made of a particular material
+        Return list of components in this block that are made of a particular material.
 
         Only one of the selectors may be used
 
@@ -2432,7 +2431,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
     def getComponentByName(self, name):
         """
-        Gets a particular component from this object, based on its name
+        Gets a particular component from this object, based on its name.
 
         Parameters
         ----------
@@ -2561,7 +2560,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
     def getAverageTempInC(self, typeSpec: TypeSpec = None, exact=False):
         """
-        Return the average temperature of the ArmiObject in C by averaging all components
+        Return the average temperature of the ArmiObject in C by averaging all components.
         """
         tempNumerator = 0.0
         totalVol = 0.0
@@ -3244,7 +3243,7 @@ class StateRetainer:
 
     def __init__(self, composite, paramsToApply=None):
         """
-        Create an instance of a StateRetainer
+        Create an instance of a StateRetainer.
 
         Parameters
         ----------
@@ -3267,7 +3266,7 @@ class StateRetainer:
         self._enterExitHelper(lambda obj: obj.restoreBackup(self.paramsToApply))
 
     def _enterExitHelper(self, func):
-        """Helper method for __enter__ and __exit__. func is a lambda to either backUp() or restoreBackup()"""
+        """Helper method for ``__enter__`` and ``__exit__``. ``func`` is a lambda to either ``backUp()`` or ``restoreBackup()``."""
         paramDefs = set()
         for child in [self.composite] + self.composite.getChildren(
             deep=True, includeMaterials=True
@@ -3325,7 +3324,7 @@ def getDominantMaterial(
     objects: List[ArmiObject], typeSpec: TypeSpec = None, exact=False
 ):
     """
-    Return the first sample of the most dominant material (by volume) in a set of objects
+    Return the first sample of the most dominant material (by volume) in a set of objects.
 
     .. warning:: This is a **composition** related helper method that will likely be filed into
         classes/modules that deal specifically with the composition of things in the data model.

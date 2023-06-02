@@ -41,7 +41,7 @@ def pytest_sessionstart(session):
 
 def bootstrapArmiTestEnv():
     """
-    Perform ARMI config appropriate for running unit tests
+    Perform ARMI config appropriate for running unit tests.
 
     .. tip:: This can be imported and run from other ARMI applications
         for test support.

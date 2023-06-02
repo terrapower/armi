@@ -22,7 +22,7 @@ from armi.utils.units import getTk, getTc
 
 class HastelloyN(Material):
     r"""
-    Hastelloy N alloy (UNS N10003)
+    Hastelloy N alloy (UNS N10003).
 
     .. [Haynes] Haynes International, H-2052D 2020
         (http://haynesintl.com/docs/default-source/pdfs/new-alloy-brochures/corrosion-resistant-alloys/brochures/n-brochure.pdf)
@@ -50,7 +50,7 @@ class HastelloyN(Material):
 
     def setDefaultMassFracs(self):
         r"""
-        Hastelloy N mass fractions
+        Hastelloy N mass fractions.
 
         From [Haynes]_.
         """
@@ -124,7 +124,7 @@ class HastelloyN(Material):
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
         r"""
-        average thermal expansion dL/L. Used for computing hot dimensions
+        average thermal expansion dL/L. Used for computing hot dimensions.
 
         Parameters
         ----------

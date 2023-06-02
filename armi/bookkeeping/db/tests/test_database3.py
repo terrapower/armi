@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-r""" Tests for the Database3 class"""
+r""" Tests for the Database3 class."""
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-member,disallowed-name,invalid-name
 import subprocess
 import unittest
@@ -32,7 +32,7 @@ from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
 class TestDatabase3(unittest.TestCase):
-    r"""Tests for the Database3 class"""
+    """Tests for the Database3 class."""
 
     def setUp(self):
         self.td = TemporaryDirectoryChanger()
@@ -443,7 +443,7 @@ class TestDatabase3(unittest.TestCase):
 
     # TODO: This should be expanded.
     def test_replaceNones(self):
-        """Super basic test that we handle Nones correctly in database read/writes"""
+        """Super basic test that we handle Nones correctly in database read/writes."""
         data3 = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
         data1 = numpy.array([1, 2, 3, 4, 5, 6, 7, 8])
         data1iNones = numpy.array([1, 2, None, 5, 6])
@@ -559,7 +559,7 @@ class TestDatabase3(unittest.TestCase):
             )
 
     def test_grabLocalCommitHash(self):
-        """test of static method to grab a local commit hash with ARMI version"""
+        """Test of static method to grab a local commit hash with ARMI version."""
         # 1. test outside a Git repo
         localHash = database3.Database3.grabLocalCommitHash()
         self.assertEqual(localHash, "unknown")

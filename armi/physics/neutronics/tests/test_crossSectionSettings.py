@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""XS Settings tests"""
+"""XS Settings tests."""
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,unused-variable
 import io
 import unittest
@@ -210,7 +210,7 @@ class TestCrossSectionSettings(unittest.TestCase):
 
 class Test_XSSettings(unittest.TestCase):
     def test_yamlIO(self):
-        """Ensure we can read/write this custom setting object to yaml"""
+        """Ensure we can read/write this custom setting object to yaml."""
         yaml = YAML()
         inp = yaml.load(io.StringIO(XS_EXAMPLE))
         xs = XSSettingDef("TestSetting")

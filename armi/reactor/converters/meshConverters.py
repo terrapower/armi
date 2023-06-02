@@ -24,6 +24,7 @@ import numpy
 
 from armi import runLog
 from armi.reactor import grids
+from armi.utils import units
 
 
 class MeshConverter:
@@ -286,9 +287,11 @@ class _RZThetaReactorMeshConverterByAxialFlags(RZThetaReactorMeshConverter):
 
                     # Neglect any zero mesh points as zero points are implicit
                     if b.p.zbottom != 0.0:
-                        meshes.append(round(b.p.zbottom, 8))
+                        meshes.append(
+                            round(b.p.zbottom, units.FLOAT_DIMENSION_DECIMALS)
+                        )
                     if b.p.ztop != 0.0:
-                        meshes.append(round(b.p.ztop, 8))
+                        meshes.append(round(b.p.ztop, units.FLOAT_DIMENSION_DECIMALS))
                 axialMeshCoordinates[a].add(min(meshes))
                 axialMeshCoordinates[a].add(max(meshes))
         self.axialMesh = sorted(set(itertools.chain(*axialMeshCoordinates.values())))
@@ -394,7 +397,7 @@ def checkLastValueInList(
     inputList, listName, expectedValue, eps=0.001, adjustLastValue=False
 ):
     """
-    Check that the last value in the list is equal to the expected value within +/- eps
+    Check that the last value in the list is equal to the expected value within +/- eps.
     """
     msg = "The last value in {} is {} and should be {}".format(
         listName, inputList[-1], expectedValue
@@ -414,7 +417,7 @@ def checkLastValueInList(
 
 def checkListBounds(inputList, listName, minVal, maxVal, eps=0.001):
     """
-    Ensure that each value in a list does not exceed the allowable bounds
+    Ensure that each value in a list does not exceed the allowable bounds.
     """
     for value in inputList:
         minDiff = value - minVal
@@ -429,7 +432,7 @@ def checkListBounds(inputList, listName, minVal, maxVal, eps=0.001):
 
 def generateBins(totalNumDataPoints, numPerBin, minNum):
     """
-    Fill in a list based on the total number of data points and the number of data points per bin
+    Fill in a list based on the total number of data points and the number of data points per bin.
     """
     listToFill = []
     if numPerBin >= totalNumDataPoints:

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for the compareDB3 module"""
+"""Tests for the compareDB3 module."""
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import unittest
 
@@ -35,7 +35,7 @@ from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
 class TestCompareDB3(unittest.TestCase):
-    """Tests for the compareDB3 module"""
+    """Tests for the compareDB3 module."""
 
     def setUp(self):
         self.td = TemporaryDirectoryChanger()
@@ -95,7 +95,7 @@ class TestCompareDB3(unittest.TestCase):
         self.assertEqual(dr.nDiffs(), 10)
 
     def test_compareDatabaseDuplicate(self):
-        """end-to-end test of compareDatabases() on a photocopy database"""
+        """end-to-end test of compareDatabases() on a photocopy database."""
         # build two super-simple H5 files for testing
         o, r = test_reactors.loadTestReactor(
             TEST_ROOT, customSettings={"reloadDBName": "reloadingDB.h5"}
@@ -126,7 +126,7 @@ class TestCompareDB3(unittest.TestCase):
         self.assertEqual(diffs.nDiffs(), 0)
 
     def test_compareDatabaseSim(self):
-        """end-to-end test of compareDatabases() on very simlar databases"""
+        """end-to-end test of compareDatabases() on very simlar databases."""
         # build two super-simple H5 files for testing
         o, r = test_reactors.loadTestReactor(
             TEST_ROOT, customSettings={"reloadDBName": "reloadingDB.h5"}

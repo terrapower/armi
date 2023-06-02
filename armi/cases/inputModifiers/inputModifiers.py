@@ -74,7 +74,7 @@ class SamplingInputModifier(InputModifier):
     def __init__(
         self, name: str, paramType: str, bounds: list, independentVariable=None
     ):
-        """[summary]
+        """Constructor for the Sampling input modifier.
 
         Parameters
         ----------
@@ -116,7 +116,7 @@ class FullCoreModifier(InputModifier):
     """
 
     def __call__(self, cs, bp, geom):
-        """Core might be on a geom object or a grid blueprint"""
+        """Core might be on a geom object or a grid blueprint."""
         if geom:
             geom.growToFullCore()
         else:
@@ -127,9 +127,7 @@ class FullCoreModifier(InputModifier):
 
 
 class SettingsModifier(InputModifier):
-    """
-    Adjust setting to specified value.
-    """
+    """Adjust setting to specified value."""
 
     def __init__(self, settingName, value):
         InputModifier.__init__(self, independentVariable={settingName: value})
