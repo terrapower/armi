@@ -14,7 +14,7 @@
 
 r"""
 The ``Case`` object is responsible for running, and executing a set of user inputs.  Many
-entry points redirect into ``Case`` methods, such as ``clone``, ``compare``, and ``run``
+entry points redirect into ``Case`` methods, such as ``clone``, ``compare``, and ``run``.
 
 The ``Case`` object provides an abstraction around ARMI inputs to allow for manipulation and
 collection of cases.
@@ -212,7 +212,7 @@ class Case:
 
     def addExplicitDependency(self, case):
         """
-        Register an explicit dependency
+        Register an explicit dependency.
 
         When evaluating the ``dependency`` property, dynamic dependencies are probed
         using the current case settings and plugin hooks. Sometimes, it is necessary to

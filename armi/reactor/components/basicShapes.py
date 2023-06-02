@@ -84,7 +84,7 @@ class Circle(ShapedComponent):
         return area
 
     def isEncapsulatedBy(self, other):
-        """Return True if this ring lies completely inside the argument component"""
+        """Return True if this ring lies completely inside the argument component."""
         otherID, otherOD = other.getDimension("id"), other.getDimension("od")
         myID, myOD = self.getDimension("id"), self.getDimension("od")
         return otherID <= myID < otherOD and otherID < myOD <= otherOD

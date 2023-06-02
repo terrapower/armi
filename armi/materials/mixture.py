@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-Homogenized mixture material
+Homogenized mixture material.
 """
 
 from armi import materials
@@ -21,7 +21,7 @@ from armi import materials
 
 class _Mixture(materials.Material):
     """
-    Homogenized mixture of materials
+    Homogenized mixture of materials.
 
     .. warning:: This class is meant to be used for homogenized block models for neutronics and other
        physics solvers.

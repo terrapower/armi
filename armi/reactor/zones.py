@@ -62,7 +62,7 @@ class Zone:
             yield loc
 
     def __len__(self) -> int:
-        """Return the number of locations"""
+        """Return the number of locations."""
         return len(self.locs)
 
     def __repr__(self) -> str:
@@ -144,7 +144,7 @@ class Zone:
 
     def addItem(self, item: Union[Assembly, Block]) -> None:
         """
-        Adds the location of an Assembly or Block to a zone
+        Adds the location of an Assembly or Block to a zone.
 
         Parameters
         ----------
@@ -158,7 +158,7 @@ class Zone:
 
     def removeItem(self, item: Union[Assembly, Block]) -> None:
         """
-        Removes the location of an Assembly or Block from a zone
+        Removes the location of an Assembly or Block from a zone.
 
         Parameters
         ----------
@@ -172,7 +172,7 @@ class Zone:
 
     def addItems(self, items: List) -> None:
         """
-        Adds the locations of a list of Assemblies or Blocks to a zone
+        Adds the locations of a list of Assemblies or Blocks to a zone.
 
         Parameters
         ----------
@@ -184,7 +184,7 @@ class Zone:
 
     def removeItems(self, items: List) -> None:
         """
-        Removes the locations of a list of Assemblies or Blocks from a zone
+        Removes the locations of a list of Assemblies or Blocks from a zone.
 
         Parameters
         ----------
@@ -229,7 +229,7 @@ class Zones:
             yield self._zones[nm]
 
     def __len__(self) -> int:
-        """Return the number of Zone objects"""
+        """Return the number of Zone objects."""
         return len(self._zones)
 
     def addZone(self, zone: Zone) -> None:
@@ -272,7 +272,7 @@ class Zones:
         self.checkDuplicates()
 
     def removeZone(self, name: str) -> None:
-        """Delete a zone by name
+        """Delete a zone by name.
 
         Parameters
         ----------
@@ -287,7 +287,7 @@ class Zones:
 
     def removeZones(self, names: List) -> None:
         """
-        Delete multiple zones by name
+        Delete multiple zones by name.
 
         Parameters
         ----------
@@ -359,7 +359,7 @@ class Zones:
         return zoneLocs
 
     def getAllLocations(self) -> Set:
-        """Return all locations across every Zone in this Zones object
+        """Return all locations across every Zone in this Zones object.
 
         Returns
         -------

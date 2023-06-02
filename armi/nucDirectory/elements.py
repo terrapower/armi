@@ -273,7 +273,7 @@ def getElementsByChemicalGroup(group: ChemicalGroup) -> List[Element]:
 
 def getName(z: int = None, symbol: str = None) -> str:
     r"""
-    Returns element name
+    Returns element name.
 
     Parameters
     ----------
@@ -299,7 +299,7 @@ def getName(z: int = None, symbol: str = None) -> str:
 
 def getSymbol(z: int = None, name: str = None) -> str:
     r"""
-    Returns element abbreviation given atomic number Z
+    Returns element abbreviation given atomic number Z.
 
     Parameters
     ----------

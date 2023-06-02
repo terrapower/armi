@@ -29,6 +29,6 @@ class Hafnium(SimpleSolid):
 
     def density(self, Tk=None, Tc=None):
         r"""
-        http://www.lenntech.com/periodic/elements/hf.htm
+        http://www.lenntech.com/periodic/elements/hf.htm.
         """
         return 13.07

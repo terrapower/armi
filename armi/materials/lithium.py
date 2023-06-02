@@ -74,7 +74,7 @@ class Lithium(material.Fluid):
         return 1615.0  # K
 
     def thermalConductivity(self, Tk=None, Tc=None):
-        r"""Wikipedia"""
+        r"""Wikipedia."""
         return 84.8  # W/m-K
 
     def heatCapacity(self, Tk=None, Tc=None):

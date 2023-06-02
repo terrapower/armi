@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-HTML-formatted reports
+HTML-formatted reports.
 """
 import base64
 import datetime
@@ -177,7 +177,7 @@ class Link(Tag):
 
 
 def encode64(file_path):
-    """Return the embedded HTML src attribute for an image in base64"""
+    """Return the embedded HTML src attribute for an image in base64."""
     xtn = os.path.splitext(file_path)[1][1:]  # [1:] to cut out the period
     if xtn == "pdf":
         from armi import runLog

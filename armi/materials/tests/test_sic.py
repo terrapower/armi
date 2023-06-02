@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Test for SiC"""
+"""Test for SiC."""
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import unittest
 
@@ -20,7 +20,7 @@ from armi.materials.tests import test_materials
 
 
 class Test_SiC(test_materials._Material_Test, unittest.TestCase):
-    """SiC tests"""
+    """SiC tests."""
 
     MAT_CLASS = SiC
 

@@ -47,7 +47,7 @@ class C5G7ReactorTests(unittest.TestCase):
     def test_loadC5G7(self):
         """
         Load the C5G7 case from input and check basic counts.
-        (Also, check that we are getting warnings when reading the YAML.)
+        (Also, check that we are getting warnings when reading the YAML).
         """
         with mockRunLogs.BufferLog() as mock:
             # we should start with a clean slate

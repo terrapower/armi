@@ -230,7 +230,7 @@ class NuclideXSMetadata(FileMetadata):
 
 
 class RegionXSMetadata(FileMetadata):
-    """Metadata for library files containing region cross sections, e.g. ``COMPXS``"""
+    """Metadata for library files containing region cross sections, e.g. ``COMPXS``."""
 
     def _mergeLibrarySpecificData(
         self, other, selfContainer, otherContainer, mergedData

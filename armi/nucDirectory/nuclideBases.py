@@ -146,7 +146,7 @@ class NuclideInterface:
     """An abstract nuclide implementation which defining various methods required for a nuclide object."""
 
     def getDatabaseName(self):
-        """Return the the nuclide label for the ARMI database (i.e. "nPu239")"""
+        """Return the the nuclide label for the ARMI database (i.e. "nPu239")."""
         raise NotImplementedError
 
     def getDecay(self, decayType):
@@ -190,7 +190,7 @@ class NuclideInterface:
 
 
 class NuclideWrapper(NuclideInterface):
-    """A nuclide wrapper class, used as a base class for nuclear data file nuclides"""
+    """A nuclide wrapper class, used as a base class for nuclear data file nuclides."""
 
     def __init__(self, container, key):
         self._base = None
@@ -474,7 +474,7 @@ class INuclide(NuclideInterface):
         raise NotImplementedError
 
     def getDatabaseName(self):
-        """Get the name of the nuclide used in the database (i.e. "nPu239")"""
+        """Get the name of the nuclide used in the database (i.e. "nPu239")."""
         return f"n{self.name.capitalize()}"
 
     def isHeavyMetal(self):
@@ -568,7 +568,7 @@ class NuclideBase(INuclide, IMcnpNuclide):
 
     def getMcnpId(self):
         """
-        Gets the MCNP label for this nuclide
+        Gets the MCNP label for this nuclide.
 
         Returns
         -------
@@ -617,7 +617,7 @@ class NuclideBase(INuclide, IMcnpNuclide):
 
     def getEndfMatNum(self):
         """
-        Gets the ENDF MAT number
+        Gets the ENDF MAT number.
 
         MAT numbers are defined as described in section 0.4.1 of the NJOY manual.
         Basically, it's Z * 100 + I where I is an isotope number. I=25 is defined
@@ -969,7 +969,7 @@ def fromName(name):
 
 
 def isMonoIsotopicElement(name):
-    """Return true if this is the only naturally occurring isotope of its element"""
+    """Return true if this is the only naturally occurring isotope of its element."""
     base = byName[name]
     return (
         base.abundance > 0

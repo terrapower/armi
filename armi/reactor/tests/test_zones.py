@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Test for Zones"""
+"""Test for Zones."""
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import logging
 import os

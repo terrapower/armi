@@ -92,7 +92,7 @@ class Query:
         return self.correction is not Inspector.NO_ACTION
 
     def resolve(self):
-        """Standard i/o prompt for resolution of an individual query"""
+        """Standard i/o prompt for resolution of an individual query."""
         if context.MPI_RANK != 0:
             return
 
@@ -242,7 +242,7 @@ class Inspector:
         return correctionsMade
 
     def addQuery(self, condition, statement, question, correction):
-        """Convenience method, query must be resolved, else run fails"""
+        """Convenience method, query must be resolved, else run fails."""
         if not callable(correction):
             raise ValueError(
                 'Query for "{}" malformed. Expecting callable.'.format(statement)
@@ -277,7 +277,7 @@ class Inspector:
         )
 
     def _assignCS(self, key, value):
-        """Lambda assignment workaround"""
+        """Lambda assignment workaround."""
         # this type of assignment works, but be mindful of
         # scoping when trying different methods
         runLog.extra(f"Updating setting `{key}` to `{value}`")

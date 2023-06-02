@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Some generic neutronics-related settings"""
+"""Some generic neutronics-related settings."""
 import os
 
 from armi import runLog
@@ -86,7 +86,7 @@ CONF_LATTICE_PHYSICS_FREQUENCY = "latticePhysicsFrequency"
 
 
 def defineSettings():
-    """standard function to define settings - for neutronics"""
+    """Standard function to define settings - for neutronics."""
     settings = [
         setting.Setting(
             CONF_GROUP_STRUCTURE,
@@ -372,7 +372,7 @@ def _blueprintsHasOldXSInput(inspector):
 
 
 def getNeutronicsSettingValidators(inspector):
-    """The standard helper method, to provide validators to neutronics settings"""
+    """The standard helper method, to provide validators to neutronics settings."""
     queries = []
 
     def migrateXSOption(name0):
@@ -389,11 +389,11 @@ def getNeutronicsSettingValidators(inspector):
         inspector.cs = inspector.cs.modified(newSettings={name0: value})
 
     def migrateXSOptionGenXS():
-        """pass-through to migrateXSOption(), because Query functions cannot take arguements"""
+        """pass-through to migrateXSOption(), because Query functions cannot take arguements."""
         migrateXSOption(CONF_GEN_XS)
 
     def migrateXSOptionGlobalFluxActive():
-        """pass-through to migrateXSOption(), because Query functions cannot take arguements"""
+        """pass-through to migrateXSOption(), because Query functions cannot take arguements."""
         migrateXSOption(CONF_GLOBAL_FLUX_ACTIVE)
 
     queries.append(
@@ -438,7 +438,7 @@ def getNeutronicsSettingValidators(inspector):
     )
 
     def updateXSGroupStructure():
-        """Trying to migrate to a valid XS group structure name"""
+        """Trying to migrate to a valid XS group structure name."""
         value = inspector.cs[CONF_GROUP_STRUCTURE]
         newValue = value.upper()
 
@@ -472,7 +472,7 @@ def getNeutronicsSettingValidators(inspector):
     )
 
     def migrateDpa(name0):
-        """migrating some common shortened names for dpa XS sets"""
+        """Migrating some common shortened names for dpa XS sets."""
         value = inspector.cs[name0]
         if value == "dpaHT9_33":
             value = "dpaHT9_ANL33_TwrBol"
@@ -482,11 +482,11 @@ def getNeutronicsSettingValidators(inspector):
         inspector.cs = inspector.cs.modified(newSettings={name0: value})
 
     def migrateDpaDpaXsSet():
-        """pass-through to migrateDpa(), because Query functions cannot take arguements"""
+        """Pass-through to migrateDpa(), because Query functions cannot take arguements."""
         migrateDpa(CONF_DPA_XS_SET)
 
     def migrateDpaGridPlate():
-        """pass-through to migrateDpa(), because Query functions cannot take arguements"""
+        """Pass-through to migrateDpa(), because Query functions cannot take arguements."""
         migrateDpa(CONF_GRID_PLATE_DPA_XS_SET)
 
     queries.append(

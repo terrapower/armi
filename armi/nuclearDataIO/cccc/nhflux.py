@@ -376,7 +376,7 @@ class NhfluxStream(cccc.StreamWithDataContainer):
 
     def _rwBasicFileData1D(self):
         """
-        Read basic data parameters (number of energy groups, assemblies, axial nodes, etc.)
+        Read basic data parameters (number of energy groups, assemblies, axial nodes, etc.).
         """
         # Dummy values are stored because sometimes they get assigned
         # unexpected values anyway, and so we still want to preserve those values anyway

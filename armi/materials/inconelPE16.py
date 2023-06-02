@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-Inconel PE16
+Inconel PE16.
 """
 
 from armi import runLog

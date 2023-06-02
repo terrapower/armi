@@ -391,7 +391,7 @@ class MacroscopicCrossSectionCreator:
         self, microLibrary, block, nucNames=None, libType="micros"
     ):
         """
-        Creates a macroscopic cross section set based on a microscopic XS library using a block object
+        Creates a macroscopic cross section set based on a microscopic XS library using a block object.
 
         Micro libraries have lots of nuclides, but macros only have 1.
 
@@ -527,7 +527,7 @@ class MacroscopicCrossSectionCreator:
 
     def _computeRemovalXS(self):
         """
-        Compute removal cross section (things that remove a neutron from this phase space)
+        Compute removal cross section (things that remove a neutron from this phase space).
 
         This includes all absorptions and outscattering.
         Outscattering is represented by columns of the total scatter matrix.
@@ -684,7 +684,7 @@ def computeGammaEnergyDepositionConstants(numberDensities, lib, microSuffix):
 
 def computeFissionEnergyGenerationConstants(numberDensities, lib, microSuffix):
     r"""
-    Get the fission energy generation group constant of a block
+    Get the fission energy generation group constant of a block.
 
     .. math::
 
@@ -724,7 +724,7 @@ def computeFissionEnergyGenerationConstants(numberDensities, lib, microSuffix):
 
 def computeCaptureEnergyGenerationConstants(numberDensities, lib, microSuffix):
     r"""
-    Get the energy generation group constant of a block
+    Get the energy generation group constant of a block.
 
     .. math::
 

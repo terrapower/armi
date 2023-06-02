@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-Test the cross section manager
+Test the cross section manager.
 
 :py:mod:`armi.physics.neutronics.crossSectionGroupManager`
 """
@@ -124,14 +124,14 @@ class TestBlockCollectionAverage(unittest.TestCase):
 
 class TestBlockCollectionComponentAverage(unittest.TestCase):
     r"""
-    tests for ZPPR 1D XS gen cases
+    tests for ZPPR 1D XS gen cases.
     """
 
     def setUp(self):
         r"""
         First part of setup same as test_Cartesian.
         Second part of setup builds lists/dictionaries of expected values to compare to.
-        has expected values for component isotopic atom density and component area
+        has expected values for component isotopic atom density and component area.
         """
         self.o, self.r = test_reactors.loadTestReactor(
             TEST_ROOT, inputFileName="zpprTest.yaml"
@@ -214,14 +214,14 @@ class TestBlockCollectionComponentAverage(unittest.TestCase):
 
 class TestBlockCollectionComponentAverage1DCylinder(unittest.TestCase):
     r"""
-    tests for 1D cylinder XS gen cases
+    tests for 1D cylinder XS gen cases.
     """
 
     def setUp(self):
         r"""
         First part of setup same as test_Cartesian.
         Second part of setup builds lists/dictionaries of expected values to compare to.
-        has expected values for component isotopic atom density and component area
+        has expected values for component isotopic atom density and component area.
         """
         self.o, self.r = test_reactors.loadTestReactor(TEST_ROOT)
 
@@ -472,14 +472,14 @@ class Test_CrossSectionGroupManager(unittest.TestCase):
         self.assertEqual(origXSIDsFromNew["BA"], "AA")
 
     def test_interactBOL(self):
-        """Test `BOL` lattice physics update frequency"""
+        """Test `BOL` lattice physics update frequency."""
         self.blockList[0].r.p.timeNode = 0
         self.csm.cs[CONF_LATTICE_PHYSICS_FREQUENCY] = "BOL"
         self.csm.interactBOL()
         self.assertTrue(self.csm.representativeBlocks)
 
     def test_interactBOC(self):
-        """Test `BOC` lattice physics update frequency"""
+        """Test `BOC` lattice physics update frequency."""
         self.blockList[0].r.p.timeNode = 0
         self.csm.cs[CONF_LATTICE_PHYSICS_FREQUENCY] = "BOC"
         self.csm.interactBOL()
@@ -487,7 +487,7 @@ class Test_CrossSectionGroupManager(unittest.TestCase):
         self.assertTrue(self.csm.representativeBlocks)
 
     def test_interactEveryNode(self):
-        """Test `everyNode` lattice physics update frequency"""
+        """Test `everyNode` lattice physics update frequency."""
         self.csm.cs[CONF_LATTICE_PHYSICS_FREQUENCY] = "BOC"
         self.csm.interactBOL()
         self.csm.interactEveryNode()
@@ -498,7 +498,7 @@ class Test_CrossSectionGroupManager(unittest.TestCase):
         self.assertTrue(self.csm.representativeBlocks)
 
     def test_interactFirstCoupledIteration(self):
-        """Test `firstCoupledIteration` lattice physics update frequency"""
+        """Test `firstCoupledIteration` lattice physics update frequency."""
         self.csm.cs[CONF_LATTICE_PHYSICS_FREQUENCY] = "everyNode"
         self.csm.interactBOL()
         self.csm.interactCoupled(iteration=0)
@@ -509,7 +509,7 @@ class Test_CrossSectionGroupManager(unittest.TestCase):
         self.assertTrue(self.csm.representativeBlocks)
 
     def test_interactAllCoupled(self):
-        """Test `all` lattice physics update frequency"""
+        """Test `all` lattice physics update frequency."""
         self.csm.cs[CONF_LATTICE_PHYSICS_FREQUENCY] = "firstCoupledIteration"
         self.csm.interactBOL()
         self.csm.interactCoupled(iteration=1)

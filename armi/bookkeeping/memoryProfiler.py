@@ -64,7 +64,7 @@ REPORT_COUNT = 100000
 
 
 def describeInterfaces(cs):
-    """Function for exposing interface(s) to other code"""
+    """Function for exposing interface(s) to other code."""
     return (MemoryProfiler, {})
 
 
@@ -101,7 +101,7 @@ class MemoryProfiler(interfaces.Interface):
             mpiAction.broadcast().invoke(self.o, self.r, self.cs)
 
     def interactEOL(self):
-        r"""End of life hook. Good place to wrap up or print out summary outputs"""
+        r"""End of life hook. Good place to wrap up or print out summary outputs."""
         if self.cs["debugMem"]:
             mpiAction = ProfileMemoryUsageAction("EOL")
             mpiAction.broadcast().invoke(self.o, self.r, self.cs)
@@ -144,7 +144,7 @@ class MemoryProfiler(interfaces.Interface):
         runLog.important("SFP has {:4d} ArmiObjects".format(len(self.r.core.sfp)))
 
     def checkForDuplicateObjectsOnArmiModel(self, attrName, refObject):
-        """Scans thorugh ARMI model for duplicate objects"""
+        """Scans thorugh ARMI model for duplicate objects."""
         if self.r is None:
             return
         uniqueIds = set()
@@ -188,7 +188,7 @@ class MemoryProfiler(interfaces.Interface):
 
     def _printFullMemoryBreakdown(self, reportSize=True, printReferrers=False):
         """
-        looks for any class from any module in the garbage collector and prints their count and size
+        looks for any class from any module in the garbage collector and prints their count and size.
 
         Parameters
         ----------
@@ -241,7 +241,7 @@ class MemoryProfiler(interfaces.Interface):
 
     @staticmethod
     def getReferrers(obj):
-        """Print referrers in a useful way (as opposed to gigabytes of text"""
+        """Print referrers in a useful way (as opposed to gigabytes of text."""
         runLog.info("Printing first 100 character of first 100 referrers")
         for ref in gc.get_referrers(obj)[:100]:
             runLog.important("ref for {}: {}".format(obj, repr(ref)[:100]))

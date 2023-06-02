@@ -54,7 +54,7 @@ MPI_COMM = context.MPI_COMM
 
 
 class FailingInterface1(Interface):
-    """utility classes to make sure the logging system fails properly"""
+    """utility classes to make sure the logging system fails properly."""
 
     name = "failer"
 
@@ -63,7 +63,7 @@ class FailingInterface1(Interface):
 
 
 class FailingInterface2(Interface):
-    """utility class to make sure the logging system fails properly"""
+    """utility class to make sure the logging system fails properly."""
 
     name = "failer"
 
@@ -72,7 +72,7 @@ class FailingInterface2(Interface):
 
 
 class FailingInterface3(Interface):
-    """fails on worker operate"""
+    """fails on worker operate."""
 
     name = "failer"
 
@@ -90,7 +90,7 @@ class FailingInterface3(Interface):
 
 
 class MpiOperatorTests(unittest.TestCase):
-    """Testing the MPI parallelization operator"""
+    """Testing the MPI parallelization operator."""
 
     def setUp(self):
         self.old_op, self.r = test_reactors.loadTestReactor(TEST_ROOT)

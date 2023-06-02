@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-Molybdenum
+Molybdenum.
 """
 
 from armi.materials.material import SimpleSolid

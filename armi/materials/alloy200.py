@@ -86,7 +86,7 @@ class Alloy200(Material):
 
     def linearExpansion(self, Tk=None, Tc=None):
         r"""
-        Returns instantaneous coefficient of thermal expansion of Alloy 200
+        Returns instantaneous coefficient of thermal expansion of Alloy 200.
 
         Parameters
         ----------

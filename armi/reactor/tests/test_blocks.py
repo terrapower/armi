@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-r"""Tests blocks.py"""
+r"""Tests blocks.py."""
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-member,invalid-name,consider-using-f-string
 import copy
 import math
@@ -747,7 +747,7 @@ class Block_TestCase(unittest.TestCase):
         self.assertAlmostEqual(cur, ref, places=places)
 
     def test_replaceBlockWithBlock(self):
-        r"""Tests conservation of mass flag in replaceBlockWithBlock"""
+        r"""Tests conservation of mass flag in replaceBlockWithBlock."""
         block = self.block
         ductBlock = block.__class__("duct")
         ductBlock.add(block.getComponent(Flags.COOLANT, exact=True))
@@ -1489,7 +1489,7 @@ class Block_TestCase(unittest.TestCase):
 
     def test_setPitch(self):
         r"""
-        Checks consistency after adjusting pitch
+        Checks consistency after adjusting pitch.
 
         Needed to verify fix to Issue #165.
         """
@@ -1688,7 +1688,7 @@ class Block_TestCase(unittest.TestCase):
 
 class Test_NegativeVolume(unittest.TestCase):
     def test_negativeVolume(self):
-        """Build a block with WAY too many fuel pins and show that the derived volume is negative"""
+        """Build a block with WAY too many fuel pins and show that the derived volume is negative."""
         block = blocks.HexBlock("TestHexBlock")
 
         coldTemp = 20
@@ -2099,7 +2099,7 @@ class ThRZBlock_TestCase(unittest.TestCase):
         self.ThRZBlock.verifyBlockDims()
 
     def test_getThetaRZGrid(self):
-        """Since not applicable to ThetaRZ Grids"""
+        """Since not applicable to ThetaRZ Grids."""
         b = self.ThRZBlock
         with self.assertRaises(NotImplementedError):
             b.autoCreateSpatialGrids()
@@ -2206,7 +2206,7 @@ class CartesianBlock_TestCase(unittest.TestCase):
         self.assertAlmostEqual(sum(c.getArea() for c in cartBlock), rectTotalArea)
 
     def test_getCartesianGrid(self):
-        """Since not applicable to Cartesian Grids"""
+        """Since not applicable to Cartesian Grids."""
         b = self.cartesianBlock
         with self.assertRaises(NotImplementedError):
             b.autoCreateSpatialGrids()
@@ -2222,7 +2222,7 @@ class CartesianBlock_TestCase(unittest.TestCase):
 
 class MassConservationTests(unittest.TestCase):
     r"""
-    Tests designed to verify mass conservation during thermal expansion
+    Tests designed to verify mass conservation during thermal expansion.
     """
 
     def setUp(self):

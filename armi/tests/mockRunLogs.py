@@ -23,7 +23,7 @@ from armi import runLog
 
 
 class BufferLog(runLog._RunLog):
-    r"""Log which captures the output in attributes instead of emitting them
+    r"""Log which captures the output in attributes instead of emitting them.
 
     Used mostly in testing to ensure certain things get output, or to prevent any output
     from showing.

@@ -27,11 +27,11 @@ class VisFileDumper(ABC):
     @abstractmethod
     def __enter__(self):
         """
-        Invoke initialize when entering a context manager
+        Invoke initialize when entering a context manager.
         """
 
     @abstractmethod
     def __exit__(self, type, value, traceback):
         """
-        Invoke initialize when entering a context manager
+        Invoke initialize when entering a context manager.
         """

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Test the Lattice Interface"""
+"""Test the Lattice Interface."""
 # pylint: disable=abstract-method,missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-method-argument,import-outside-toplevel
 import unittest
 from collections import OrderedDict
@@ -50,7 +50,7 @@ class LatticeInterfaceTester(LatticePhysicsInterface):
 
 
 class LatticeInterfaceTesterLibFalse(LatticeInterfaceTester):
-    """subclass setting _newLibraryShouldBeCreated = False"""
+    """Subclass setting _newLibraryShouldBeCreated = False."""
 
     def _newLibraryShouldBeCreated(self, cycle, representativeBlockList, xsIDs):
         self.testVerification = True
@@ -89,7 +89,7 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
         self.latticeInterface.testVerification = False
 
     def test_LatticePhysicsInterface(self):
-        """Super basic test of the LatticePhysicsInterface"""
+        """Super basic test of the LatticePhysicsInterface."""
         self.assertEqual(self.latticeInterface._updateBlockNeutronVelocities, True)
         self.assertEqual(self.latticeInterface.executablePath, "/tmp/fake_path")
         self.assertEqual(self.latticeInterface.executableRoot, "/tmp")
@@ -98,7 +98,7 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
 
     def test_interactBOL(self):
         """
-        Test interactBOL() with different update frequencies
+        Test interactBOL() with different update frequencies.
 
         Notes
         -----
@@ -120,7 +120,7 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
 
     def test_interactBOC(self):
         """
-        Test interactBOC() with different update frequencies
+        Test interactBOC() with different update frequencies.
 
         Notes
         -----
@@ -143,7 +143,7 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
 
     def test_interactEveryNode(self):
         """
-        Test interactEveryNode() with different update frequencies
+        Test interactEveryNode() with different update frequencies.
         """
         self.latticeInterface._latticePhysicsFrequency = LatticePhysicsFrequency.BOC
         self.latticeInterface.interactEveryNode()
@@ -156,7 +156,7 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
 
     def test_interactEveryNodeFirstCoupled(self):
         """
-        Test interactEveryNode() with LatticePhysicsFrequency.firstCoupledIteration
+        Test interactEveryNode() with LatticePhysicsFrequency.firstCoupledIteration.
         """
         self.latticeInterface._latticePhysicsFrequency = (
             LatticePhysicsFrequency.firstCoupledIteration
@@ -166,7 +166,7 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
 
     def test_interactEveryNodeAll(self):
         """
-        Test interactEveryNode() with LatticePhysicsFrequency.all
+        Test interactEveryNode() with LatticePhysicsFrequency.all.
         """
         self.latticeInterface._latticePhysicsFrequency = LatticePhysicsFrequency.all
         self.latticeInterface.interactEveryNode()
@@ -174,7 +174,7 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
 
     def test_interactFirstCoupledIteration(self):
         """
-        Test interactCoupled() with different update frequencies on first iteration
+        Test interactCoupled() with different update frequencies on first iteration.
         """
         self.latticeInterface._latticePhysicsFrequency = (
             LatticePhysicsFrequency.everyNode
@@ -189,7 +189,7 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
 
     def test_interactAll(self):
         """
-        Test interactCoupled() with different update frequencies on non-first iteration
+        Test interactCoupled() with different update frequencies on non-first iteration.
         """
         self.latticeInterface._latticePhysicsFrequency = (
             LatticePhysicsFrequency.firstCoupledIteration
@@ -202,7 +202,7 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
 
 
 class TestLatticePhysicsLibraryCreation(TestLatticePhysicsInterfaceBase):
-    """test variations of _newLibraryShouldBeCreated"""
+    """Test variations of _newLibraryShouldBeCreated."""
 
     @classmethod
     def setUpClass(cls):
@@ -213,7 +213,7 @@ class TestLatticePhysicsLibraryCreation(TestLatticePhysicsInterfaceBase):
         cls.b, cls.xsIDs = cls.latticeInterface._getBlocksAndXsIds()
 
     def setUp(self):
-        """reset representativeBlocks and CONF_GEN_XS"""
+        """Reset representativeBlocks and CONF_GEN_XS."""
         self.xsGroupInterface.representativeBlocks = OrderedDict(
             {"AA": self.assembly[0]}
         )
@@ -222,7 +222,7 @@ class TestLatticePhysicsLibraryCreation(TestLatticePhysicsInterfaceBase):
         self.o.r.core.lib = isotxs.readBinary(ISOAA_PATH)
 
     def test_libCreation_NoGenXS(self):
-        """no ISOTXS and xs gen not requested"""
+        """No ISOTXS and xs gen not requested."""
         self.o.r.core.lib = None
         with mockRunLogs.BufferLog() as mock:
             xsGen = self.latticeInterface._newLibraryShouldBeCreated(
@@ -234,7 +234,7 @@ class TestLatticePhysicsLibraryCreation(TestLatticePhysicsInterfaceBase):
             self.assertFalse(xsGen)
 
     def test_libCreation_GenXS(self):
-        """no ISOTXS and xs gen requested"""
+        """No ISOTXS and xs gen requested."""
         self.o.cs[CONF_GEN_XS] = "Neutron"
         self.o.r.core.lib = None
         with mockRunLogs.BufferLog() as mock:
@@ -248,7 +248,7 @@ class TestLatticePhysicsLibraryCreation(TestLatticePhysicsInterfaceBase):
             self.assertTrue(xsGen)
 
     def test_libCreation_NoGenXS_2(self):
-        """ISOTXS present and has all of the necessary information"""
+        """ISOTXS present and has all of the necessary information."""
         with mockRunLogs.BufferLog() as mock:
             xsGen = self.latticeInterface._newLibraryShouldBeCreated(
                 1, self.b, self.xsIDs
@@ -260,7 +260,7 @@ class TestLatticePhysicsLibraryCreation(TestLatticePhysicsInterfaceBase):
             self.assertFalse(xsGen)
 
     def test_libCreation_GenXS_2(self):
-        """ISOTXS present and does not have all of the necessary information"""
+        """ISOTXS present and does not have all of the necessary information."""
         self.xsGroupInterface.representativeBlocks = OrderedDict(
             {"BB": self.assembly[0]}
         )
@@ -274,7 +274,7 @@ class TestLatticePhysicsLibraryCreation(TestLatticePhysicsInterfaceBase):
             self.assertTrue(xsGen)
 
     def test_libCreation_GenXS_3(self):
-        """ISOTXS present and does not have all of the necessary information"""
+        """ISOTXS present and does not have all of the necessary information."""
         self.o.cs[CONF_GEN_XS] = "Neutron"
         b, xsIDs = self._modifyXSType()
         with mockRunLogs.BufferLog() as mock:

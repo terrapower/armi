@@ -13,8 +13,7 @@
 # limitations under the License.
 
 r"""
-The parameters system holds state information for everything within ARMI's composite
-structure:
+The parameters hold state info for everything in ARMI's composites structure.
 
 .. list-table:: Example Parameters
     :widths: 50 50

@@ -121,7 +121,7 @@ class TestDirectoryChangers(unittest.TestCase):
         """
 
         def f(name):
-            """Utility to avoid test clashes during cleanups"""
+            """Utility to avoid test clashes during cleanups."""
             return self._testMethodName + name
 
         with directoryChangers.TemporaryDirectoryChanger(
@@ -154,7 +154,7 @@ class TestDirectoryChangers(unittest.TestCase):
         """Tests that the directory changer still returns a subset of files even if all do not exist."""
 
         def f(name):
-            """Utility to avoid test clashes during cleanups"""
+            """Utility to avoid test clashes during cleanups."""
             return self._testMethodName + name
 
         with directoryChangers.TemporaryDirectoryChanger(

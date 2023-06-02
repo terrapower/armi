@@ -112,7 +112,7 @@ ORDER = interfaces.STACK_ORDER.AFTER + interfaces.STACK_ORDER.PREPROCESSING
 
 
 def describeInterfaces(_cs):
-    """Function for exposing interface(s) to other code"""
+    """Function for exposing interface(s) to other code."""
 
     return (FissionProductModel, {})
 

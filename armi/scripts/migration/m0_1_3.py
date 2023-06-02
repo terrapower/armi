@@ -22,7 +22,7 @@ from armi import runLog
 
 
 class RemoveCentersFromBlueprints(BlueprintsMigration):
-    """Removes now-invalid `centers:` lines from auto-generated component inputs"""
+    """Removes now-invalid `centers:` lines from auto-generated component inputs."""
 
     fromVersion = "0.1.2"
     toVersion = "0.1.3"
