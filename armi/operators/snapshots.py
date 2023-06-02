@@ -94,7 +94,7 @@ class OperatorSnapshots(operatorMPI.OperatorMPI):
 
     @staticmethod
     def setStateToDefault(cs):
-        """Update the state of ARMI to fit the kind of run this operator manages"""
+        """Update the state of ARMI to fit the kind of run this operator manages."""
         from armi.operators.runTypes import RunTypes
 
         return cs.modified(newSettings={"runType": RunTypes.STANDARD})

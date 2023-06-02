@@ -43,7 +43,7 @@ class HT9(materials.Material):
 
     def setDefaultMassFracs(self):
         """
-        HT9 mass fractions
+        HT9 mass fractions.
 
         From E.2-1 of [MFH]_.
         https://www.osti.gov/biblio/1506477-metallic-fuels-handbook
@@ -72,7 +72,7 @@ class HT9(materials.Material):
 
     def thermalConductivity(self, Tk=None, Tc=None):
         """
-        Thermal conductivity in W/m-K)
+        Thermal conductivity in W/m-K).
 
         From [MFH]_, E.2.2.3, eq 5.
 

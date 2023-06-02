@@ -236,7 +236,7 @@ class UniformMeshGenerator:
         self, meshList, minimumMeshSize, anchorPoints, preference="bottom", warn=False
     ):
         """
-        Check for mesh violating the minimum mesh size and remove them if necessary
+        Check for mesh violating the minimum mesh size and remove them if necessary.
 
         Parameters
         ----------
@@ -505,7 +505,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
     def _generateUniformMesh(self, minimumMeshSize):
         """
-        Generate a common axial mesh to use for uniform mesh conversion
+        Generate a common axial mesh to use for uniform mesh conversion.
 
         Parameters
         ----------
@@ -520,7 +520,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
     @staticmethod
     def initNewReactor(sourceReactor, cs):
-        """Build a new, yet empty, reactor with the same settings as sourceReactor
+        """Build a new, yet empty, reactor with the same settings as sourceReactor.
 
         Parameters
         ----------
@@ -539,6 +539,8 @@ class UniformMeshGeometryConverter(GeometryConverter):
         coreDesign = bp.systemDesigns["core"]
 
         coreDesign.construct(cs, bp, newReactor, loadAssems=False)
+        newReactor.p.cycle = sourceReactor.p.cycle
+        newReactor.p.timeNode = sourceReactor.p.timeNode
         newReactor.core.p.coupledIteration = sourceReactor.core.p.coupledIteration
         newReactor.core.lib = sourceReactor.core.lib
         newReactor.core.setPitchUniform(sourceReactor.core.getAssemblyPitch())
@@ -667,7 +669,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
         def checkPriorityFlags(b):
             """
-            Check that a block has the flags that are prioritized for uniform mesh conversion
+            Check that a block has the flags that are prioritized for uniform mesh conversion.
 
             Also check that it's not different type of block that is a superset of the
             priority flags, like "Flags.FUEL | Flags.PLENUM"
@@ -1091,6 +1093,28 @@ class UniformMeshGeometryConverter(GeometryConverter):
                 continue
             globalFluxInterface.calcReactionRates(b, keff, lib)
 
+    def updateReactionRates(self):
+        """
+        Update reaction rates on converted assemblies.
+
+        Notes
+        -----
+        In some cases, we may want to read flux into a converted reactor from a
+        pre-existing physics output instead of mapping it in from the pre-conversion
+        source reactor. This method can be called after reading that flux in to
+        calculate updated reaction rates derived from that flux.
+        """
+        if self._hasNonUniformAssems:
+            for assem in self.convReactor.core.getAssemblies(self._nonUniformMeshFlags):
+                self._calculateReactionRates(
+                    self.convReactor.core.lib, self.convReactor.core.p.keff, assem
+                )
+        else:
+            for assem in self.convReactor.core.getAssemblies():
+                self._calculateReactionRates(
+                    self.convReactor.core.lib, self.convReactor.core.p.keff, assem
+                )
+
 
 class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
     """
@@ -1224,7 +1248,6 @@ class GammaUniformMeshConverter(UniformMeshGeometryConverter):
     }
     blockParamMappingCategories = {
         "in": [
-            parameters.Category.detailedAxialExpansion,
             parameters.Category.multiGroupQuantities,
         ],
         "out": [
@@ -1294,7 +1317,7 @@ class ParamMapper:
 
     def __init__(self, reactorParamNames, blockParamNames, b):
         """
-        Initialize the list of parameter defaults
+        Initialize the list of parameter defaults.
 
         The ParameterDefinitionCollection lookup is very slow, so this we do it once
         and store it as a hashed list.
@@ -1382,7 +1405,7 @@ class ParamMapper:
 
 def setNumberDensitiesFromOverlaps(block, overlappingBlockInfo):
     r"""
-    Set number densities on a block based on overlapping blocks
+    Set number densities on a block based on overlapping blocks.
 
     A conservation of number of atoms technique is used to map the non-uniform number densities onto the uniform
     neutronics mesh. When the number density of a height :math:`H` neutronics mesh block :math:`N^{\prime}` is

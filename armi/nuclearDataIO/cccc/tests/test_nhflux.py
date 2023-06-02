@@ -182,7 +182,7 @@ class TestNhfluxVariant(unittest.TestCase):
         )
 
     def test_write(self):
-        """Verify binary equivalence of written binary file"""
+        """Verify binary equivalence of written binary file."""
         with TemporaryDirectoryChanger():
             nhflux.NhfluxStreamVariant.writeBinary(self.nhf, "NHFLUX2")
             with open(SIMPLE_HEXZ_NHFLUX_VARIANT, "rb") as f1, open(

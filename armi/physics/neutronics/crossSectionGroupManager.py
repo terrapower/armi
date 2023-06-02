@@ -72,7 +72,7 @@ ORDER = interfaces.STACK_ORDER.BEFORE + interfaces.STACK_ORDER.CROSS_SECTIONS
 
 
 def describeInterfaces(cs):
-    """Function for exposing interface(s) to other code"""
+    """Function for exposing interface(s) to other code."""
     # pylint: disable=import-outside-toplevel # avoid cyclic import
     from armi.physics.neutronics.settings import CONF_NEUTRONICS_KERNEL
 
@@ -117,7 +117,7 @@ def getXSTypeLabelFromNumber(xsTypeNumber: int) -> int:
 
 class BlockCollection(list):
     """
-    Controls which blocks are representative of a particular cross section type/BU group
+    Controls which blocks are representative of a particular cross section type/BU group.
 
     This is a list with special methods.
     """
@@ -213,7 +213,7 @@ class BlockCollection(list):
 
     def getWeight(self, block):
         """
-        Get value of weighting function for this block
+        Get value of weighting function for this block.
         """
         vol = block.getVolume() or 1.0
         if not self.weightingParam:
@@ -296,7 +296,7 @@ class MedianBlockCollection(BlockCollection):
 
 class AverageBlockCollection(BlockCollection):
     """
-    Block collection that builds a new block based on others in collection
+    Block collection that builds a new block based on others in collection.
 
     Averages number densities, fission product yields, and fission gas
     removal fractions.
@@ -442,7 +442,7 @@ class CylindricalComponentsAverageBlockCollection(BlockCollection):
     @staticmethod
     def _checkComponentConsistency(b, repBlock):
         """
-        Verify that all components being homogenized have same multiplicity and nuclides
+        Verify that all components being homogenized have same multiplicity and nuclides.
 
         Raises
         ------
@@ -663,7 +663,7 @@ class SlabComponentsAverageBlockCollection(BlockCollection):
 
 class FluxWeightedAverageBlockCollection(AverageBlockCollection):
     """
-    Flux-weighted AverageBlockCollection
+    Flux-weighted AverageBlockCollection.
     """
 
     def __init__(self, *args, **kwargs):
@@ -770,7 +770,7 @@ class CrossSectionGroupManager(interfaces.Interface):
 
     def _setBuGroupBounds(self, upperBuGroupBounds):
         """
-        Set the burnup group structure
+        Set the burnup group structure.
 
         Parameters
         ---------
@@ -795,7 +795,7 @@ class CrossSectionGroupManager(interfaces.Interface):
 
     def _updateBurnupGroups(self, blockList):
         """
-        Update the burnup group of each block based on its burnup
+        Update the burnup group of each block based on its burnup.
 
         If only one burnup group exists, then this is skipped so as to accomodate the possibility
         of 2-character xsGroup values (useful for detailed V&V models w/o depletion).
@@ -822,7 +822,7 @@ class CrossSectionGroupManager(interfaces.Interface):
 
     def _addXsGroupsFromBlocks(self, blockCollectionsByXsGroup, blockList):
         """
-        Build all the cross section groups based on their XS type and BU group
+        Build all the cross section groups based on their XS type and BU group.
 
         Also ensures that their BU group is up to date with their burnup.
         """
@@ -1141,7 +1141,7 @@ class CrossSectionGroupManager(interfaces.Interface):
 
     def _modifyUnrepresentedXSIDs(self, blockCollectionsByXsGroup):
         """
-        adjust the xsID of blocks in the groups that are not represented
+        adjust the xsID of blocks in the groups that are not represented.
 
         Try to just adjust the burnup group up to something that is represented
         (can happen to structure in AA when only AB, AC, AD still remain).
@@ -1214,7 +1214,7 @@ class CrossSectionGroupManager(interfaces.Interface):
 
     def disableBuGroupUpdates(self):
         """
-        Turn off updating bu groups based on burnup
+        Turn off updating bu groups based on burnup.
 
         Useful during reactivity coefficient calculations to be consistent with ref. run.
 
@@ -1229,7 +1229,7 @@ class CrossSectionGroupManager(interfaces.Interface):
 
     def enableBuGroupUpdates(self):
         """
-        Turn on updating bu groups based on burnup
+        Turn on updating bu groups based on burnup.
 
         See Also
         --------

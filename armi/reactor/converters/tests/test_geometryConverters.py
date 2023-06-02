@@ -42,7 +42,7 @@ class TestGeometryConverters(unittest.TestCase):
 
     def test_addRing(self):
         r"""
-        Tests that the addRing method adds the correct number of fuel assemblies to the test reactor
+        Tests that the addRing method adds the correct number of fuel assemblies to the test reactor.
         """
         converter = geometryConverters.FuelAssemNumModifier(self.cs)
         converter.numFuelAssems = 7
@@ -218,7 +218,7 @@ class TestHexToRZConverter(unittest.TestCase):
                 )
 
     def _checkNuclidesMatch(self, expectedNuclideList, newR):
-        """Check that the nuclide lists match before and after conversion"""
+        """Check that the nuclide lists match before and after conversion."""
         actualNuclideList = newR.blueprints.allNuclidesInProblem
         if set(expectedNuclideList) != set(actualNuclideList):
             diffList = sorted(set(expectedNuclideList).difference(actualNuclideList))
@@ -231,7 +231,7 @@ class TestHexToRZConverter(unittest.TestCase):
             )
 
     def _checkNuclideMasses(self, expectedMassDict, newR):
-        """Check that all nuclide masses in the new reactor are equivalent to before the conversion"""
+        """Check that all nuclide masses in the new reactor are equivalent to before the conversion."""
         massMismatchCount = 0
         for nuclide in expectedMassDict.keys():
             expectedMass = expectedMassDict[nuclide]
@@ -271,7 +271,7 @@ class TestHexToRZConverter(unittest.TestCase):
 
 class TestEdgeAssemblyChanger(unittest.TestCase):
     def setUp(self):
-        r"""Use the related setup in the testFuelHandlers module"""
+        r"""Use the related setup in the testFuelHandlers module."""
         self.o, self.r = loadTestReactor(TEST_ROOT)
         reduceTestReactorRings(self.r, self.o.cs, 3)
 

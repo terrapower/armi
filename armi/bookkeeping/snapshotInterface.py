@@ -37,12 +37,12 @@ ORDER = interfaces.STACK_ORDER.POSTPROCESSING
 
 
 def describeInterfaces(cs):
-    """Function for exposing interface(s) to other code"""
+    """Function for exposing interface(s) to other code."""
     return (SnapshotInterface, {})
 
 
 class SnapshotInterface(interfaces.Interface):
-    """Snapshot managerial interface"""
+    """Snapshot managerial interface."""
 
     name = "snapshot"
 
@@ -106,7 +106,7 @@ class SnapshotInterface(interfaces.Interface):
 
 def extractCycleNodeFromStamp(stamp):
     """
-    Returns cycle and node from a CCCNNN stamp
+    Returns cycle and node from a CCCNNN stamp.
 
     See Also
     --------

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-Thorium Uranium metal
+Thorium Uranium metal.
 
 Data is from [#IAEA-TECDOCT-1450]_.
 
@@ -21,9 +21,9 @@ Data is from [#IAEA-TECDOCT-1450]_.
     https://www-pub.iaea.org/mtcd/publications/pdf/te_1450_web.pdf
 """
 
-from armi.utils.units import getTk
-from armi.materials.material import FuelMaterial
 from armi import runLog
+from armi.materials.material import FuelMaterial
+from armi.utils.units import getTk
 
 
 class ThU(FuelMaterial):
@@ -33,7 +33,7 @@ class ThU(FuelMaterial):
 
     def __init__(self):
         FuelMaterial.__init__(self)
-        """g/cc from IAEA TE 1450"""
+        # density in g/cc from IAEA TE 1450
         self.refDens = 11.68
 
     def getEnrichment(self):
@@ -58,16 +58,16 @@ class ThU(FuelMaterial):
         self.setMassFrac("U233", 0.0)
 
     def linearExpansion(self, Tk=None, Tc=None):
-        r"""m/m/K from IAEA TE 1450"""
+        """Linear expansion in m/m/K from IAEA TE 1450."""
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("linear expansion", Tk)
         return 11.9e-6
 
     def thermalConductivity(self, Tk=None, Tc=None):
-        r"""W/m-K from IAEA TE 1450"""
+        """Thermal conductivity in W/m-K from IAEA TE 1450."""
         Tk = getTk(Tc, Tk)
         return 43.1
 
     def meltingPoint(self):
-        r"""melting point in K from IAEA TE 1450"""
+        """Melting point in K from IAEA TE 1450."""
         return 2025.0

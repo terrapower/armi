@@ -96,7 +96,7 @@ class AsciiMap:
         """Number of ascii lines chopped of corners"""
 
     def writeAscii(self, stream):
-        """Write out the ascii representation"""
+        """Write out the ascii representation."""
         if not self.asciiLines:
             raise ValueError("Cannot write ASCII map before ASCII lines are processed")
         if len(self.asciiOffsets) != len(self.asciiLines):
@@ -237,7 +237,7 @@ class AsciiMap:
         return newLine
 
     def _asciiLinesToIndices(self):
-        """Convert read in ASCII lines to a asciiLabelByIndices structure"""
+        """Convert read in ASCII lines to a asciiLabelByIndices structure."""
 
     def _getIJFromColRow(self, columnNum: int, lineNum: int) -> tuple:
         """
@@ -253,7 +253,7 @@ class AsciiMap:
         self.asciiLabelByIndices[ijKey] = item
 
     def _makeOffsets(self):
-        """Build offsets"""
+        """Build offsets."""
 
     def items(self):
         return self.asciiLabelByIndices.items()

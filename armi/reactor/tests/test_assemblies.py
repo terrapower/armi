@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests assemblies.py"""
+"""Tests assemblies.py."""
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,invalid-name
 import pathlib
 import random
@@ -864,7 +864,7 @@ class Assembly_TestCase(unittest.TestCase):
         self.assertEqual(self.assembly.getDominantMaterial().getName(), ref)
 
     def test_iteration(self):
-        r"""Tests the ability to doubly-loop over assemblies (under development)"""
+        r"""Tests the ability to doubly-loop over assemblies (under development)."""
         a = self.assembly
 
         for bi, b in enumerate(a):
@@ -1015,7 +1015,7 @@ class Assembly_TestCase(unittest.TestCase):
         self.assertEqual(averagePlenumTemp, self.assembly.getAveragePlenumTemperature())
 
     def test_rotate(self):
-        """Test rotation of an assembly spatial objects"""
+        """Test rotation of an assembly spatial objects."""
         a = makeTestAssembly(1, 1)
         b = blocks.HexBlock("TestBlock")
         b.p.THcornTemp = [400, 450, 500, 550, 600, 650]
@@ -1289,7 +1289,7 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
 
 
 class AnnularFuelTestCase(unittest.TestCase):
-    """Test fuel with a whole in the center"""
+    """Test fuel with a whole in the center."""
 
     # pylint: disable=locally-disabled,protected-access
     def setUp(self):

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for basic plotting tools"""
+"""Tests for basic plotting tools."""
 import os
 import unittest
 

@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Unit test for Beryllium"""
+"""Unit test for Beryllium."""
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import unittest
 
@@ -20,7 +20,7 @@ from armi.materials.tests import test_materials
 
 
 class Test_Be9(test_materials._Material_Test, unittest.TestCase):
-    """Be tests"""
+    """Be tests."""
 
     MAT_CLASS = Be9
 

@@ -266,13 +266,13 @@ class TestGriddedBlock(unittest.TestCase):
             self.blueprints._prepConstruction(self.cs)
 
     def test_constructSpatialGrid(self):
-        """Test intermediate grid construction function"""
+        """Test intermediate grid construction function."""
         bDesign = self.blueprints.blockDesigns["fuel"]
         gridDesign = bDesign._getGridDesign(self.blueprints)
         self.assertEqual(gridDesign.gridContents[0, 0], "2")
 
     def test_getLocatorsAtLatticePositions(self):
-        """Ensure extraction of specifiers results in locators"""
+        """Ensure extraction of specifiers results in locators."""
         bDesign = self.blueprints.blockDesigns["fuel"]
         gridDesign = bDesign._getGridDesign(self.blueprints)
         grid = gridDesign.construct()
@@ -294,7 +294,7 @@ class TestGriddedBlock(unittest.TestCase):
         self.assertTrue(seen)
 
     def test_nonLatticeComponentHasRightMult(self):
-        """Make sure non-grid components in blocks with grids get the right multiplicity"""
+        """Make sure non-grid components in blocks with grids get the right multiplicity."""
         aDesign = self.blueprints.assemDesigns.bySpecifier["IC"]
         a = aDesign.construct(self.cs, self.blueprints)
         fuelBlock = a.getFirstBlock(Flags.FUEL)
@@ -331,13 +331,13 @@ class TestGriddedBlock(unittest.TestCase):
         programmaticBlock = test_blocks.buildSimpleFuelBlock()
         programaticClad = programmaticBlock.getComponent(Flags.CLAD)
         self.assertAlmostEqual(
-            clad.getMassDensity(),
+            clad.density(),
             clad.material.density(Tc=clad.temperatureInC),
         )
 
         self.assertAlmostEqual(
-            clad.getMassDensity(),
-            programaticClad.getMassDensity(),
+            clad.density(),
+            programaticClad.density(),
         )
 
 

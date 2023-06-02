@@ -231,7 +231,7 @@ class OperatorMPI(Operator):
         context.MPI_COMM.bcast("finished", root=0)
 
     def collapseAllStderrs(self):
-        """Takes all the individual stderr files from each processor and arranges them nicely into one file"""
+        """Takes all the individual stderr files from each processor and arranges them nicely into one file."""
         stderrFiles = []
         for fName in os.listdir("."):
             match = re.search(r"_(\d\d\d\d)\.stderr", fName)

@@ -164,7 +164,7 @@ class LabelsStream(cccc.StreamWithDataContainer):
             self._metadata["dummy"] = record.rwList(self._metadata["dummy"], "int", 2)
 
     def _rw2DRecord(self):
-        """Read/write the label and area data"""
+        """Read/write the label and area data."""
         with self.createRecord() as record:
             self._data.zoneLabels = record.rwList(
                 self._data.zoneLabels, "string", self._metadata["numZones"], 8

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-Tests for DELAYXS
+Tests for DELAYXS.
 """
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import copy
@@ -36,7 +36,7 @@ class DlayxsTests(unittest.TestCase):
 
     def test_decayConstants(self):
         """
-        test that all emission spectrum delayEmissionSpectrum is normalized
+        test that all emission spectrum delayEmissionSpectrum is normalized.
         """
         delay = self.dlayxs3
         self.assertTrue(
@@ -54,7 +54,7 @@ class DlayxsTests(unittest.TestCase):
 
     def test_chi_delay(self):
         """
-        test that all emission spectrum delayEmissionSpectrum is normalized
+        test that all emission spectrum delayEmissionSpectrum is normalized.
         """
         delay = self.dlayxs3
         self.assertTrue(
@@ -312,7 +312,7 @@ class DlayxsTests(unittest.TestCase):
         "The TH232, U232, PU238 and PU242 numbers do not agree, likely because they are from ENDV/B VI.8."
     )
     def test_ENDFVII1DecayConstants(self):
-        """Test ENDF/B VII.1 decay constants. Retrieved from ENDF/B VII.1"""
+        """Test ENDF/B VII.1 decay constants. Retrieved from ENDF/B VII.1."""
         self._assertDC(
             "TH227  ",
             [

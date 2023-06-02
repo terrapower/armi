@@ -70,7 +70,7 @@ class UserPluginFlags4(plugins.UserPlugin):
 
 
 class UserPluginBadDefinesSettings(plugins.UserPlugin):
-    """This is invalid/bad because it implements defineSettings()"""
+    """This is invalid/bad because it implements defineSettings()."""
 
     @staticmethod
     @plugins.HOOKIMPL
@@ -79,7 +79,7 @@ class UserPluginBadDefinesSettings(plugins.UserPlugin):
 
 
 class UserPluginBadDefineParameterRenames(plugins.UserPlugin):
-    """This is invalid/bad because it implements defineParameterRenames()"""
+    """This is invalid/bad because it implements defineParameterRenames()."""
 
     @staticmethod
     @plugins.HOOKIMPL
@@ -105,7 +105,7 @@ class UserPluginOnProcessCoreLoading(plugins.UserPlugin):
 class UpInterface(interfaces.Interface):
     """
     A mostly meaningless little test interface, just to prove that we can affect
-    the reactor state from an interface inside a UserPlugin
+    the reactor state from an interface inside a UserPlugin.
     """
 
     name = "UpInterface"
@@ -115,7 +115,7 @@ class UpInterface(interfaces.Interface):
 
 
 class UserPluginWithInterface(plugins.UserPlugin):
-    """A little test UserPlugin, just to show how to add an Interface through a UserPlugin"""
+    """A little test UserPlugin, just to show how to add an Interface through a UserPlugin."""
 
     @staticmethod
     @plugins.HOOKIMPL
@@ -136,7 +136,7 @@ class TestUserPlugins(unittest.TestCase):
         self._backupApp = copy.deepcopy(getApp())
 
     def tearDown(self):
-        """Restore the App to its original state"""
+        """Restore the App to its original state."""
         import armi
 
         armi._app = self._backupApp
@@ -177,6 +177,7 @@ class TestUserPlugins(unittest.TestCase):
 
         pluginNames = [p[0] for p in app.pluginManager.list_name_plugin()]
         self.assertIn("UserPluginFlags2", pluginNames)
+        self.assertIn("FLAG2", dir(Flags))
 
     def test_registerUserPluginsAbsPath(self):
         app = getApp()
@@ -193,6 +194,7 @@ class TestUserPlugins(unittest.TestCase):
 
         pluginNames = [p[0] for p in app.pluginManager.list_name_plugin()]
         self.assertIn("UserPluginFlags4", pluginNames)
+        self.assertIn("FLAG4", dir(Flags))
 
     def test_registerUserPluginsFromSettings(self):
         app = getApp()
@@ -210,12 +212,13 @@ class TestUserPlugins(unittest.TestCase):
 
         pluginNames = [p[0] for p in app.pluginManager.list_name_plugin()]
         self.assertIn("UserPluginFlags3", pluginNames)
+        self.assertIn("FLAG3", dir(Flags))
 
     def test_userPluginOnProcessCoreLoading(self):
         """
         Test that a UserPlugin can affect the Reactor state,
         by implementing onProcessCoreLoading() to arbitrarily increase the
-        height of all the blocks by 1.0
+        height of all the blocks by 1.0.
         """
         # register the plugin
         app = getApp()
@@ -244,7 +247,7 @@ class TestUserPlugins(unittest.TestCase):
             self.assertEqual(fuels[i].p.height, height + 1.0)
 
     def test_userPluginWithInterfaces(self):
-        """Test that UserPlugins can correctly inject an interface into the stack"""
+        """Test that UserPlugins can correctly inject an interface into the stack."""
         # register the plugin
         app = getApp()
 

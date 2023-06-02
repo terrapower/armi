@@ -27,7 +27,7 @@ from armi import context
 
 
 class TestInspector(unittest.TestCase):
-    """Test case"""
+    """Test case."""
 
     def setUp(self):
         self.td = directoryChangers.TemporaryDirectoryChanger()

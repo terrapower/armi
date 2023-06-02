@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""factory for the FuelHandler"""
+"""factory for the FuelHandler."""
 from armi.physics.fuelCycle import fuelHandlers
 from armi.physics.fuelCycle.settings import CONF_FUEL_HANDLER_NAME
 from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC

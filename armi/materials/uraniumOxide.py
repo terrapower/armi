@@ -39,7 +39,7 @@ HeatCapacityConstants = collections.namedtuple(
 
 
 class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
-    name = "Uranium Oxide"
+    name = "UraniumOxide"
 
     enrichedNuclide = "U235"
 
@@ -132,7 +132,7 @@ class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
 
     def setDefaultMassFracs(self) -> None:
         r"""
-        UO2 mass fractions. Using Natural Uranium without U234
+        UO2 mass fractions. Using Natural Uranium without U234.
         """
         u235 = nb.byName["U235"]
         u238 = nb.byName["U238"]
@@ -153,7 +153,7 @@ class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
 
     def meltingPoint(self):
         """
-        Melting point in K
+        Melting point in K.
 
         From [#ornltm2000]_.
         """
@@ -161,7 +161,7 @@ class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
 
     def density(self, Tk: float = None, Tc: float = None) -> float:
         """
-        Density in (g/cc)
+        Density in (g/cc).
 
         Polynomial line fit to data from [#ornltm2000]_ on page 11.
         """
@@ -204,7 +204,7 @@ class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
 
     def linearExpansionPercent(self, Tk: float = None, Tc: float = None) -> float:
         """
-        Return dL/L
+        Return dL/L.
 
         From Section 3.3 of [#ornltm2000]_
         """
@@ -222,7 +222,7 @@ class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
 
     def thermalConductivity(self, Tk: float = None, Tc: float = None) -> float:
         """
-        Thermal conductivity
+        Thermal conductivity.
 
         Ref: Thermal conductivity of uranium dioxide by nonequilibrium molecular dynamics
         simulation. S. Motoyama. Physical Review B, Volume 60, Number 1, July 1999
@@ -234,5 +234,5 @@ class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
 
 
 class UO2(UraniumOxide):
-    r"""Another name for UraniumOxide"""
+    r"""Another name for UraniumOxide."""
     pass

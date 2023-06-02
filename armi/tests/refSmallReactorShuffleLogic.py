@@ -17,7 +17,7 @@ from armi.physics.fuelCycle.fuelHandlers import FuelHandler
 
 class EquilibriumShuffler(FuelHandler):
     r"""
-    Convergent divergent equilibrium shuffler
+    Convergent divergent equilibrium shuffler.
     """
 
     def chooseSwaps(self, factorList):

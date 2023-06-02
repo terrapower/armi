@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-MPI Directory changers
+MPI Directory changers.
 
 This is a separate module largely to minimize potential cyclic imports
 because the mpi action stuff requires an import of the reactor framework.
@@ -33,7 +33,7 @@ class MpiDirectoryChanger(directoryChangers.DirectoryChanger):
     """
 
     def __init__(self, destination, outputPath=None):
-        """Establish the new and return directories
+        """Establish the new and return directories.
 
         Parameters
         ----------

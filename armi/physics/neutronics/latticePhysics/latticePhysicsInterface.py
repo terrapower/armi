@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """"
-Lattice Physics Interface
+Lattice Physics Interface.
 
 Parent classes for codes responsible for generating broad-group cross sections
 """

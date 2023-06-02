@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-r"""
-Generic triangle math.
-"""
+"""Generic triangle math."""
 
 import math
 
@@ -44,7 +42,6 @@ def getTriangleArea(
     -----
     See `https://en.wikipedia.org/wiki/Heron%27s_formula` for more information.
     """
-
     a = math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
     b = math.sqrt((x2 - x3) ** 2 + (y2 - y3) ** 2)
     c = math.sqrt((x1 - x3) ** 2 + (y1 - y3) ** 2)
@@ -83,9 +80,7 @@ def getTriangleCentroid(x1, y1, x2, y2, x3, y3):
         x coordinate of triangle's centroid
     y : float
         y coordinate of a triangle's centroid
-
     """
-
     x = (x1 + x2 + x3) / 3.0
     y = (y1 + y2 + y3) / 3.0
 
@@ -122,7 +117,6 @@ def checkIfPointIsInTriangle(
     This method uses the barycentric method.
     See `http://totologic.blogspot.com/2014/01/accurate-point-in-triangle-test.html`
     """
-
     a = ((y2 - y3) * (x - x3) + (x3 - x2) * (y - y3)) / (
         (y2 - y3) * (x1 - x3) + (x3 - x2) * (y1 - y3)
     )

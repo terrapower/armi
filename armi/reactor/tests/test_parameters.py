@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-""" tests of the Parameters class """
+""" tests of the Parameters class. """
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import copy
 import traceback
@@ -377,7 +377,7 @@ class ParameterTests(unittest.TestCase):
         self.assertEqual(set(pc.paramDefs.inCategory("bacon")), set([p2, p3]))
 
     def test_parameterCollectionsHave__slots__(self):
-        """Make sure something is implemented to prevent accidental creation of attributes"""
+        """Make sure something is implemented to prevent accidental creation of attributes."""
         self.assertEqual(
             set(["_hist", "_backup", "assigned", "_p_serialNum", "serialNum"]),
             set(parameters.ParameterCollection._slots),
@@ -579,7 +579,7 @@ class SynchronizationTests:
             self.r.syncMpiState()
 
     def mpitest_rxCoeffsProcess(self):
-        """This test mimics the process for rxCoeffs when doing distributed doppler"""
+        """This test mimics the process for rxCoeffs when doing distributed doppler."""
 
         def do():
             # we will do this over 4 passes (there are 4 * MPI_SIZE assemblies)

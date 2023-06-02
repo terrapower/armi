@@ -51,7 +51,7 @@ class NeutronicsPlugin(plugins.ArmiPlugin):
     @plugins.HOOKIMPL
     def exposeInterfaces(cs):
         """
-        Collect and expose all of the interfaces that live under the built-in neutronics package
+        Collect and expose all of the interfaces that live under the built-in neutronics package.
         """
         from armi.physics.neutronics import crossSectionGroupManager
         from armi.physics.neutronics.fissionProductModel import fissionProductModel
@@ -118,7 +118,7 @@ class NeutronicsPlugin(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def getReportContents(r, cs, report, stage, blueprint):
-        """Generates the Report Content for the Neutronics Report"""
+        """Generates the Report Content for the Neutronics Report."""
         from armi.physics.neutronics import reports
 
         return reports.insertNeutronicsReport(r, cs, report, stage)

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Simple sodium material"""
+"""Simple sodium material."""
 
 from armi import runLog
 from armi.materials import material
@@ -42,7 +42,7 @@ class Sodium(material.Fluid):
     }
 
     def setDefaultMassFracs(self):
-        """It's just sodium"""
+        """It's just sodium."""
         self.setMassFrac("NA", 1.0)
         self.refDens = 0.968
 
@@ -111,7 +111,7 @@ class Sodium(material.Fluid):
 
     def thermalConductivity(self, Tk=None, Tc=None):
         """
-        Returns thermal conductivity of Sodium
+        Returns thermal conductivity of Sodium.
 
         From [ANL-RE-95-2]_, Table 2.1-2
 

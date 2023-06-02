@@ -30,7 +30,7 @@ from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
 class TestCompxs(unittest.TestCase):
-    """Test the compxs reader/writer"""
+    """Test the compxs reader/writer."""
 
     @property
     def binaryWritePath(self):
@@ -56,7 +56,7 @@ class TestCompxs(unittest.TestCase):
         self.assertAlmostEqual(0.41745778918, min(self.lib.neutronEnergyUpperBounds))
 
     def test_regionPrimaryXS(self):
-        """Test the primary cross sections for the second region - fissile"""
+        """Test the primary cross sections for the second region - fissile."""
         expectedMacros = {
             "absorption": [
                 0.00810444,

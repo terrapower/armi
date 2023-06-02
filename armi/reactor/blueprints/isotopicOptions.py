@@ -20,13 +20,13 @@ allow specification of arbitrary isotopic compositions.
 """
 import yamlize
 
-from armi.utils import units
 from armi import materials
 from armi import runLog
 from armi.nucDirectory import elements
 from armi.nucDirectory import nucDir
 from armi.nucDirectory import nuclideBases
 from armi.utils import densityTools
+from armi.utils import units
 from armi.utils.customExceptions import InputError
 from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import (
     CONF_FP_MODEL,

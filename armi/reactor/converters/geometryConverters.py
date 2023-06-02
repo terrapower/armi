@@ -256,7 +256,7 @@ class FuelAssemNumModifier(GeometryChanger):
 
     def addRing(self, assemType="big shield"):
         r"""
-        Add a ring of fuel assemblies around the outside of an existing core
+        Add a ring of fuel assemblies around the outside of an existing core.
 
         Works by first finding the assembly furthest from the center, then filling in
         all assemblies that are within one pitch further with the specified assembly type
@@ -401,7 +401,7 @@ class HexToRZThetaConverter(GeometryConverter):
         self._homogenizeAxiallyByFlags = False
 
     def _generateConvertedReactorMesh(self):
-        """Convert the source reactor using the converterSettings"""
+        """Convert the source reactor using the converterSettings."""
         runLog.info("Generating mesh coordinates for the reactor conversion")
         self._radialMeshConversionType = self.converterSettings["radialConversionType"]
         self._axialMeshConversionType = self.converterSettings["axialConversionType"]
@@ -596,7 +596,7 @@ class HexToRZThetaConverter(GeometryConverter):
 
     def _setAssemsInRadialZone(self, radialIndex, lowerRing, upperRing):
         """
-        Retrieve a list of assemblies in the reactor between (lowerRing, upperRing)
+        Retrieve a list of assemblies in the reactor between (lowerRing, upperRing).
 
         Notes
         -----
@@ -709,7 +709,7 @@ class HexToRZThetaConverter(GeometryConverter):
         self, innerDiameter, thetaIndex, radialIndex, lowerTheta, upperTheta, zoneAssems
     ):
         """
-        Add a new stack of circles to the TRZ reactor by homogenizing assems
+        Add a new stack of circles to the TRZ reactor by homogenizing assems.
 
         Parameters
         ----------
@@ -963,7 +963,7 @@ class HexToRZThetaConverter(GeometryConverter):
 
     def _createBlendedXSID(self, newBlock):
         """
-        Generate the blended XS id using the most common XS id in the hexIdList
+        Generate the blended XS id using the most common XS id in the hexIdList.
         """
         ids = [hexBlock.getMicroSuffix() for hexBlock in self.blockMap[newBlock]]
         xsTypeList, buGroupList = zip(*ids)
@@ -1008,7 +1008,7 @@ class HexToRZThetaConverter(GeometryConverter):
 
     def _writeRadialThetaZoneInfo(self, axIdx, axialSegmentHeight, blockObj):
         """
-        Create a summary of the mapping between the converted reactor block ids to the hex reactor block ids
+        Create a summary of the mapping between the converted reactor block ids to the hex reactor block ids.
         """
         self._newBlockNum += 1
         hexBlockXsIds = []
@@ -1028,7 +1028,7 @@ class HexToRZThetaConverter(GeometryConverter):
 
     def _expandSourceReactorGeometry(self):
         """
-        Expansion of the reactor geometry to build the R-Z-Theta core model
+        Expansion of the reactor geometry to build the R-Z-Theta core model.
         """
         runLog.info("Expanding source reactor core to a full core model")
         reactorExpander = ThirdCoreHexToFullCoreChanger(self._cs)
@@ -1204,7 +1204,7 @@ class HexToRZThetaConverter(GeometryConverter):
 
 class HexToRZConverter(HexToRZThetaConverter):
     r"""
-    Create a new reactor with R-Z coordinates from the Hexagonal-Z reactor
+    Create a new reactor with R-Z coordinates from the Hexagonal-Z reactor.
 
     This is a subclass of the HexToRZThetaConverter. See the HexToRZThetaConverter for explanation and setup of
     the converterSettings.
@@ -1215,7 +1215,7 @@ class HexToRZConverter(HexToRZThetaConverter):
 
 class ThirdCoreHexToFullCoreChanger(GeometryChanger):
     """
-    Change third-core models to full core in place
+    Change third-core models to full core in place.
 
     Does not generate a new reactor object.
 
@@ -1362,7 +1362,7 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
 
 class EdgeAssemblyChanger(GeometryChanger):
     """
-    Add/remove "edge assemblies" for Finite difference or MCNP cases
+    Add/remove "edge assemblies" for Finite difference or MCNP cases.
 
     Examples
     --------
@@ -1372,7 +1372,7 @@ class EdgeAssemblyChanger(GeometryChanger):
 
     def addEdgeAssemblies(self, core):
         """
-        Add the assemblies on the 120 degree symmetric line to 1/3 symmetric cases
+        Add the assemblies on the 120 degree symmetric line to 1/3 symmetric cases.
 
         Needs to be called before a finite difference (DIF3D, DIFNT) or MCNP calculation
 
@@ -1437,7 +1437,7 @@ class EdgeAssemblyChanger(GeometryChanger):
 
     def removeEdgeAssemblies(self, core):
         r"""
-        remove the edge assemblies in preparation for the nodal diffusion approximation
+        remove the edge assemblies in preparation for the nodal diffusion approximation.
 
         This makes use of the assemblies knowledge of if it is in a region that it
         needs to be removed.
@@ -1478,7 +1478,7 @@ class EdgeAssemblyChanger(GeometryChanger):
     @staticmethod
     def scaleParamsRelatedToSymmetry(reactor, paramsToScaleSubset=None):
         """
-        Scale volume-dependent params like power to account for cut-off edges
+        Scale volume-dependent params like power to account for cut-off edges.
 
         These params are at half their full hex value. Scale them right before deleting their
         symmetric identicals. The two operations (scaling them and then removing others) is

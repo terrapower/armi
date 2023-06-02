@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Potassium"""
+"""Potassium."""
 
 from armi.materials import material
 from armi.utils.units import getTc, getTk

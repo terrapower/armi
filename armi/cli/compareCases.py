@@ -121,7 +121,7 @@ class CompareCases(EntryPoint):
 
 
 class CompareSuites(CompareCases):
-    """Do a case-by-case comparison between two CaseSuites"""
+    """Do a case-by-case comparison between two CaseSuites."""
 
     name = "compare-suites"
 

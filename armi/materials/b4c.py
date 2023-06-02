@@ -122,7 +122,7 @@ class B4C(material.Material):
     def setDefaultMassFracs(self) -> None:
         r"""B4C mass fractions. Using Natural B4C. 19.9% B-10/ 80.1% B-11
         Boron: 10.811 g/mol
-        Carbon:  12.0107 g/mol
+        Carbon:  12.0107 g/mol.
 
         4 moles of boron/1 mole of carbon
 
@@ -184,7 +184,7 @@ class B4C(material.Material):
         return material.Material.density(self, Tk, Tc) * self.theoreticalDensityFrac
 
     def linearExpansionPercent(self, Tk: float = None, Tc: float = None) -> float:
-        """Boron carbide expansion. Very preliminary"""
+        """Boron carbide expansion. Very preliminary."""
         Tc = getTc(Tc, Tk)
         self.checkPropertyTempRange("linear expansion percent", Tc)
         deltaT = Tc - 25

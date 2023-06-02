@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests the blueprints (loading input) file"""
+"""Tests the blueprints (loading input) file."""
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import os
 import pathlib
@@ -66,7 +66,7 @@ class TestBlueprints(unittest.TestCase):
         cls.directoryChanger.close()
 
     def test_nuclides(self):
-        """Tests the available sets of nuclides work as expected
+        """Tests the available sets of nuclides work as expected.
 
         .. test:: Tests that users can define their nuclides of interest.
             :id: TEST_REACTOR_0
@@ -119,7 +119,7 @@ class TestBlueprints(unittest.TestCase):
 
 
 class TestBlueprintsSchema(unittest.TestCase):
-    """Test the blueprint schema checks"""
+    """Test the blueprint schema checks."""
 
     _yamlString = r"""blocks:
     fuel: &block_fuel

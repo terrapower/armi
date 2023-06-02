@@ -287,7 +287,7 @@ def cleanAllArmiTempDirs(olderThanDays: int) -> None:
 
 def disconnectAllHdfDBs() -> None:
     """
-    Forcibly disconnect all instances of HdfDB objects
+    Forcibly disconnect all instances of HdfDB objects.
 
     Notes
     -----

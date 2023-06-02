@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-Tests for the uniform mesh geometry converter
+Tests for the uniform mesh geometry converter.
 """
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import collections
@@ -58,7 +58,7 @@ class TestConverterFactory(unittest.TestCase):
 
 class TestAssemblyUniformMesh(unittest.TestCase):
     """
-    Tests individual operations of the uniform mesh converter
+    Tests individual operations of the uniform mesh converter.
 
     Uses the test reactor for detailedAxialExpansion
     """
@@ -115,7 +115,7 @@ class TestAssemblyUniformMesh(unittest.TestCase):
             )
 
     def test_makeAssemWithUniformMeshSubmesh(self):
-        """If sourceAssem has submesh, check that newAssem splits into separate blocks"""
+        """If sourceAssem has submesh, check that newAssem splits into separate blocks."""
 
         # assign axMesh to blocks randomly
         sourceAssem = self.r.core.refAssem
@@ -254,7 +254,7 @@ class TestUniformMeshGenerator(unittest.TestCase):
 
     def test_filterMesh(self):
         """
-        Test that the mesh can be correctly filtered
+        Test that the mesh can be correctly filtered.
         """
         meshList = [1.0, 3.0, 4.0, 7.0, 9.0, 12.0, 16.0, 19.0, 20.0]
         anchorPoints = [4.0, 16.0]
@@ -297,7 +297,7 @@ class TestUniformMeshGenerator(unittest.TestCase):
 
     def test_generateCommonMesh(self):
         """
-        Covers generateCommonmesh() and _decuspAxialMesh()
+        Covers generateCommonmesh() and _decuspAxialMesh().
         """
         self.generator.generateCommonMesh()
         expectedMesh = [
@@ -316,7 +316,7 @@ class TestUniformMeshGenerator(unittest.TestCase):
 
 class TestUniformMeshComponents(unittest.TestCase):
     """
-    Tests individual operations of the uniform mesh converter
+    Tests individual operations of the uniform mesh converter.
 
     Only loads reactor once per suite.
     """
@@ -338,7 +338,7 @@ class TestUniformMeshComponents(unittest.TestCase):
         self.converter._sourceReactor = self.r
 
     def test_blueprintCopy(self):
-        """Ensure that necessary blueprint attributes are set"""
+        """Ensure that necessary blueprint attributes are set."""
         convReactor = self.converter.initNewReactor(
             self.converter._sourceReactor, self.o.cs
         )
@@ -358,7 +358,7 @@ class TestUniformMeshComponents(unittest.TestCase):
 
 
 def applyNonUniformHeightDistribution(reactor):
-    """Modifies some assemblies to have non-uniform axial meshes"""
+    """Modifies some assemblies to have non-uniform axial meshes."""
     for a in reactor.core:
         delta = 0.0
         for b in a[:-1]:
@@ -372,7 +372,7 @@ def applyNonUniformHeightDistribution(reactor):
 
 class TestUniformMesh(unittest.TestCase):
     """
-    Tests full uniform mesh converter
+    Tests full uniform mesh converter.
 
     Loads reactor once per test
     """
@@ -446,7 +446,6 @@ class TestUniformMesh(unittest.TestCase):
 
             # fluxPeak is mapped differently as a ParamLocation.MAX value
             # make sure that it's one of the two exact possible values
-            print(b.p.fluxPeak)
             self.assertIn(b.p.fluxPeak, [9.0, 11.0])
 
         for expectedPower, a in zip(assemblyPowers, self.r.core):
@@ -460,10 +459,16 @@ class TestUniformMesh(unittest.TestCase):
             self.r.core.calcTotalParam("power", generationNum=2), totalPower
         )
 
+        self.converter.updateReactionRates()
+        for a in self.r.core:
+            for b in a:
+                self.assertTrue(b.p.rateAbs)
+                self.assertTrue(b.p.rateCap)
+
 
 class TestGammaUniformMesh(unittest.TestCase):
     """
-    Tests gamma uniform mesh converter
+    Tests gamma uniform mesh converter.
 
     Loads reactor once per test
     """
@@ -697,6 +702,12 @@ class TestUniformMeshNonUniformAssemFlags(unittest.TestCase):
         for a in controlAssems:
             for b in a:
                 self.assertTrue(all(b.getMgFlux()))
+                self.assertTrue(b.p.rateAbs)
+
+        self.converter.updateReactionRates()
+        for a in controlAssems:
+            for b in a:
+                self.assertTrue(b.p.rateCap)
                 self.assertTrue(b.p.rateAbs)
 
 

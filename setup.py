@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Setup.py script for the Advanced Reactor Modeling Interface (ARMI)"""
+"""Setup.py script for the Advanced Reactor Modeling Interface (ARMI)."""
 from setuptools import setup, find_packages
 import os
 import pathlib
@@ -59,45 +59,46 @@ setup(
         "coverage<=6.5.0",
         "future",
         "h5py>=3.0",
+        "htmltree",
         "matplotlib",
         "numpy>=1.21,<=1.23.5",
         "ordered-set",
         "pillow",
         "pluggy",
+        "pyDOE",
         "pyevtk",
+        "ruamel.yaml<=0.17.21",
+        "ruamel.yaml.clib<=0.2.7",
         "scipy",
         "tabulate",
         "voluptuous",
         "xlrd",
-        "yamlize",
-        "htmltree",
-        "pyDOE",
+        "yamlize==0.7.1",
     ],
     extras_require={
         "mpi": ["mpi4py==3.0.3"],
         "grids": ["wxpython<=4.1.1"],
         "memprof": ["psutil"],
         "dev": [
-            "mako",
-            "pytest",
-            "pytest-xdist",
-            "pytest-cov",
-            "pytest-html",
-            "pylint",
-            "docutils",
-            "sphinx",
-            "sphinx-rtd-theme",
-            "click==8.0.1",  # fixing click problem in black
             "black==20.8b1",
-            # for running jupyter dynamically in docs
-            "sphinxcontrib-apidoc",
-            "jupyter_client",
-            "jupyter-contrib-nbextensions",
+            "click==8.0.1",  # fixing click problem in black
+            "docutils",
             "ipykernel",
+            "jupyter-contrib-nbextensions",
+            "jupyter_client",
+            "mako",
             "nbsphinx",
             "nbsphinx-link",
-            "sphinxext-opengraph",
+            "pylint",
+            "pytest",
+            "pytest-cov",
+            "pytest-html",
+            "pytest-xdist",
+            "sphinx",
             "sphinx-gallery",
+            "sphinx-rtd-theme",
+            "sphinxcontrib-apidoc",  # for running Jupyter in docs
+            "sphinxext-opengraph",
         ],
     },
     tests_require=["nbconvert", "jupyter_client", "ipykernel"],

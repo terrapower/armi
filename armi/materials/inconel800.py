@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Incoloy 800"""
+"""Incoloy 800."""
 
 from armi.materials.material import Material
 from armi.utils.units import getTc
@@ -20,7 +20,7 @@ from armi.utils.units import getTc
 
 class Inconel800(Material):
     r"""
-    Incoloy 800/800H (UNS N08800/N08810)
+    Incoloy 800/800H (UNS N08800/N08810).
 
     .. [SM] Special Metals - Incoloy alloy 800
         (https://www.specialmetals.com/assets/smc/documents/alloys/incoloy/incoloy-alloy-800.pdf)
@@ -31,7 +31,7 @@ class Inconel800(Material):
 
     def setDefaultMassFracs(self):
         r"""
-        Incoloy 800H mass fractions
+        Incoloy 800H mass fractions.
 
         From [SM]_.
         """
@@ -50,7 +50,7 @@ class Inconel800(Material):
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
         r"""
-        average thermal expansion dL/L. Used for computing hot dimensions
+        average thermal expansion dL/L. Used for computing hot dimensions.
 
         Parameters
         ----------

@@ -56,7 +56,7 @@ def insertGeneralReportContent(cs, r, report, stage):
 
 
 def comprehensiveBOLContent(cs, r, report):
-    """Adds BOL content to the Comprehensive section of the report
+    """Adds BOL content to the Comprehensive section of the report.
 
     Parameters
     ----------
@@ -102,7 +102,7 @@ def insertDesignContent(r, report):
 
 
 def insertBlockDesignReport(blueprint, report, cs):
-    r"""Summarize the block designs from the loading file
+    r"""Summarize the block designs from the loading file.
 
     Parameters
     ----------
@@ -170,7 +170,7 @@ def insertBlockDesignReport(blueprint, report, cs):
 
 
 def insertCoreDesignReport(core, cs, report):
-    r"""Builds report to summarize core design inputs
+    r"""Builds report to summarize core design inputs.
 
     Parameters
     ----------
@@ -207,7 +207,7 @@ def _setGeneralCoreDesignData(cs, coreDesignTable):
 
 
 def _setGeneralCoreParametersData(core, cs, coreDesignTable):
-    """Sets the general Core Parameter Data
+    """Sets the general Core Parameter Data.
 
     Parameters
     ----------
@@ -316,7 +316,7 @@ def _setGeneralSimulationData(core, cs, coreDesignTable):
 
 def insertEndOfLifeContent(r, report):
     """
-    Generate End of Life Content for the report
+    Generate End of Life Content for the report.
 
     Parameters
     ----------
@@ -348,7 +348,7 @@ def insertEndOfLifeContent(r, report):
 
 
 def insertBlockDiagrams(cs, blueprint, report, cold):
-    """Adds Block Diagrams to the report
+    """Adds Block Diagrams to the report.
 
     Parameters
     ----------
@@ -389,7 +389,7 @@ def insertBlockDiagrams(cs, blueprint, report, cold):
 
 
 def insertMetaTable(cs, report):
-    """Generates part of the Settings table
+    """Generates part of the Settings table.
 
     Parameters
     ----------
@@ -409,7 +409,7 @@ def insertMetaTable(cs, report):
 
 
 def insertSettingsData(cs, report):
-    """Creates tableSections of Parameters (Case Parameters, Reactor Parameters, Case Controls and Snapshots of the run
+    """Creates tableSections of Parameters (Case Parameters, Reactor Parameters, Case Controls and Snapshots of the run.
 
     Parameters
     ----------
@@ -456,7 +456,7 @@ def insertSettingsData(cs, report):
 
 
 def getPinDesignTable(core):
-    """Summarizes Pin and Assembly Design for the input
+    """Summarizes Pin and Assembly Design for the input.
 
     Parameters
     ----------
@@ -521,7 +521,7 @@ def getPinDesignTable(core):
 
 def insertAreaFractionsReport(block, report):
     """
-    Adds to an Assembly Area Fractions
+    Adds to an Assembly Area Fractions.
 
     Adds to the table subsection of the Comprehensive Section
     of the report.
@@ -627,8 +627,7 @@ def createDimensionReport(comp):
 def insertCoreAndAssemblyMaps(
     r, cs, report, blueprint, generateFullCoreMap=False, showBlockAxMesh=True
 ):
-
-    r"""Create core and assembly design plots
+    r"""Create core and assembly design plots.
 
     Parameters
     ----------
@@ -639,7 +638,6 @@ def insertCoreAndAssemblyMaps(
     generateFullCoreMap : bool, default False
     showBlockAxMesh : bool, default True
     """
-
     assemPrototypes = set()
     for aKey in blueprint.assemDesigns.keys():
         assemPrototypes.add(blueprint.constructAssem(cs, name=aKey))

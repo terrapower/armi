@@ -50,7 +50,7 @@ def applyFuelDisplacement(block, displacementInCm):
 
 def gasConductivityCorrection(tempInC: float, porosity: float, morphology: int = 2):
     """
-    Calculate the correction to conductivity for a porous, gas-filled solid
+    Calculate the correction to conductivity for a porous, gas-filled solid.
 
     Parameters
     ----------

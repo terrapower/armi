@@ -47,7 +47,7 @@ class C5G7ReactorTests(unittest.TestCase):
     def test_loadC5G7(self):
         """
         Load the C5G7 case from input and check basic counts.
-        (Also, check that we are getting warnings when reading the YAML.)
+        (Also, check that we are getting warnings when reading the YAML).
         """
         with mockRunLogs.BufferLog() as mock:
             # we should start with a clean slate
@@ -64,7 +64,7 @@ class C5G7ReactorTests(unittest.TestCase):
             streamVal = mock.getStdout()
             self.assertGreater(streamVal.count("[warn]"), 32, msg=streamVal)
             self.assertGreater(streamVal.count("custom isotopics"), 32, msg=streamVal)
-            self.assertIn("Uranium Oxide", streamVal, msg=streamVal)
+            self.assertIn("UraniumOxide", streamVal, msg=streamVal)
             self.assertIn("SaturatedWater", streamVal, msg=streamVal)
             self.assertIn("invalid settings: fakeBad", streamVal, msg=streamVal)
 

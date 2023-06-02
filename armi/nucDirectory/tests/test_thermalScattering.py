@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for thermal scattering metadata"""
+"""Tests for thermal scattering metadata."""
 # pylint: disable=protected-access
 import unittest
 
@@ -41,7 +41,7 @@ def buildBlockWithTSL():
 
 
 class TestThermalScattering(unittest.TestCase):
-    """Tests for thermal scattering on the reactor model"""
+    """Tests for thermal scattering on the reactor model."""
 
     def test_graphiteOnReactor(self):
         b = buildBlockWithTSL()
@@ -94,7 +94,7 @@ class TestThermalScattering(unittest.TestCase):
         self.assertEqual(fe56tsl._genACELabel(), "fe-56")
 
     def test_failOnMultiple(self):
-        """HT9 has carbon in it with no TSL, while graphite has C with TSL. This should crash"""
+        """HT9 has carbon in it with no TSL, while graphite has C with TSL. This should crash."""
         b = buildBlockWithTSL()
         cladDims = {"Tinput": 25.0, "Thot": 450, "od": 0.80, "id": 0.79, "mult": 127.0}
         clad2 = components.Circle("clad", "HT9", **cladDims)
