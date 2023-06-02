@@ -52,6 +52,7 @@ from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
 from armi.reactor.flags import Flags
 from armi.reactor.systemLayoutInput import SystemLayoutInput
 from armi.settings.fwSettings.globalSettings import CONF_MATERIAL_NAMESPACE_ORDER
+from armi.settings.fwSettings.globalSettings import CONF_SORT_REACTOR
 from armi.utils import createFormattedStrWithDelimiter, units
 from armi.utils import directoryChangers
 from armi.utils.iterables import Sequence
@@ -158,7 +159,15 @@ def factory(cs, bp, geom: Optional[SystemLayoutInput] = None) -> Reactor:
 
     runLog.debug("Reactor: {}".format(r))
 
-    r.sort()
+    # return a Reactor object
+    if cs[CONF_SORT_REACTOR]:
+        r.sort()
+    else:
+        runLog.warning(
+            "DeprecationWarning: This Reactor is not being sorted on DB load. "
+            f"Due to the setting {CONF_SORT_REACTOR}, this Reactor is unsorted. "
+            "But this feature is temporary and will be removed by 2024."
+        )
     return r
 
 

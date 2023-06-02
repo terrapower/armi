@@ -25,6 +25,7 @@ from armi.bookkeeping.db import database3
 from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.reactor import parameters
 from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
+from armi.settings.fwSettings.globalSettings import CONF_SORT_REACTOR
 from armi.tests import TEST_ROOT
 from armi.utils import getPreviousTimeNode
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
@@ -332,6 +333,7 @@ class TestDatabase3(unittest.TestCase):
         with self.assertRaises(KeyError):
             _r = self.db.load(0, 0)
 
+        # default load, should pass without error
         _r = self.db.load(0, 0, allowMissing=True)
 
         # show that we can use negative indices to load
@@ -349,6 +351,21 @@ class TestDatabase3(unittest.TestCase):
         # we shouldn't be able to set the fileName if a file is open
         with self.assertRaises(RuntimeError):
             self.db.fileName = "whatever.h5"
+
+    def test_loadSortSetting(self):
+        self.makeShuffleHistory()
+
+        # default load, should pass without error
+        r0 = self.db.load(0, 0, allowMissing=True)
+
+        # test that the reactor loads differently, dependent on the setting
+        cs = self.db.loadCS()
+        cs = cs.modified(newSettings={CONF_SORT_REACTOR: False})
+        r1 = self.db.load(0, 0, cs=cs, allowMissing=True)
+
+        # the reactor / core should be the same size
+        self.assertEqual(len(r0), len(r1))
+        self.assertEqual(len(r0.core), len(r1.core))
 
     def test_load_updateGlobalAssemNum(self):
         from armi.reactor import assemblies

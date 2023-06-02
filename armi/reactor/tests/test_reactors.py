@@ -36,6 +36,7 @@ from armi.reactor.converters import geometryConverters
 from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
 from armi.reactor.flags import Flags
 from armi.settings.fwSettings.globalSettings import CONF_ASSEM_FLAGS_SKIP_AXIAL_EXP
+from armi.settings.fwSettings.globalSettings import CONF_SORT_REACTOR
 from armi.tests import ARMI_RUN_PATH, mockRunLogs, TEST_ROOT
 from armi.utils import directoryChangers
 
@@ -92,7 +93,7 @@ def buildOperatorOfEmptyCartesianBlocks(customSettings=None):
     Params
     ------
     customSettings : dict
-        Dictionary of off-default settings to update
+        Off-default settings to update
     """
     settings.setMasterCs(None)  # clear
     cs = settings.Settings()  # fetch new
@@ -251,6 +252,25 @@ class HexReactorTests(ReactorTests):
         self.o, self.r = loadTestReactor(
             self.directoryChanger.destination, customSettings={"trackAssems": True}
         )
+
+    def test_factorySortSetting(self):
+        # get a sorted Reactor (the default)
+        cs = settings.Settings(fName="armiRun.yaml")
+        r0 = reactors.loadFromCs(cs)
+
+        # get an unsorted Reactor (for whatever reason)
+        customSettings = {CONF_SORT_REACTOR: False}
+        cs = cs.modified(newSettings=customSettings)
+        r1 = reactors.loadFromCs(cs)
+
+        # the reactor / core should be the same size
+        self.assertEqual(len(r0), len(r1))
+        self.assertEqual(len(r0.core), len(r1.core))
+
+        # the reactor / core should be in a different order
+        a0 = [a.name for a in r0.core]
+        a1 = [a.name for a in r1.core]
+        self.assertNotEqual(a0, a1)
 
     def test_getTotalParam(self):
         # verify that the block params are being read.
