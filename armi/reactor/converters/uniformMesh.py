@@ -300,6 +300,7 @@ class UniformMeshGenerator:
         ----------
         flags : armi.reactor.flags.Flags
             The assembly and block flags for which to preserve material boundaries
+            ``getAssemblies()`` and ``getBlocks()`` are both called with the default, ``exact=False``
         bottoms : list[float], optional
             Mesh "anchors" for material bottom boundaries
         tops : list[float], optional
