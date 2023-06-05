@@ -54,7 +54,7 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "mgFlux",
-            setter=mgFlux,
+            setter=isNumpyArray("mgFlux"),
             units="n-cm/s",
             description="multigroup volume-integrated flux",
             location=ParamLocation.VOLUME_INTEGRATED,
