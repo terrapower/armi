@@ -45,13 +45,6 @@ def _getNeutronicsBlockParams():
             categories=[parameters.Category.retainOnReplacement],
         )
 
-        def mgFlux(self, value):
-            self._p_mgFlux = (
-                value
-                if value is None or isinstance(value, numpy.ndarray)
-                else numpy.array(value)
-            )
-
         pb.defParam(
             "mgFlux",
             setter=isNumpyArray("mgFlux"),
