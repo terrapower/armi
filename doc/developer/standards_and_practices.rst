@@ -303,4 +303,4 @@ do not use ``print``
     ARMI code should not use the ``print`` function; use one of the methods within ``armi.runLog``.
 
 Do not add new ``TODO`` statements in your commits and PRs.
-    If your new ``TODO`` statement is important, it should be a GitHub Issue. Yes, we have existing ``TODO`` statements in the code, those are relic and should be handled.
+    If your new ``TODO`` statement is important, it should be a GitHub Issue. Yes, we have existing ``TODO`` statements in the code, those are relic and need to be removed. Also, never mark the code with ``FIXME`` or ``XXX```; open a ticket.

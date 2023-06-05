@@ -183,13 +183,12 @@ class UniformMeshGenerator:
         appropriate bottom and top boundaries of fuel and control assemblies are determined.
         """
         # filter fuel material boundaries to mininum mesh size
-        filteredBottomFuel, filteredTopFuel = self._getFilteredFuelTopAndBottom()
-        (
-            filteredBottomControl,
-            filteredTopControl,
-        ) = self._getFilteredControlTopAndBottom(filteredBottomFuel, filteredTopFuel)
-        materialBottoms = filteredBottomFuel + filteredBottomControl
-        materialTops = filteredTopFuel + filteredTopControl
+        filteredBottomFuel, filteredTopFuel = self._getFilteredMeshTopAndBottom(
+            Flags.FUEL
+        )
+        materialBottoms, materialTops = self._getFilteredMeshTopAndBottom(
+            Flags.CONTROL, filteredBottomFuel, filteredTopFuel
+        )
 
         # combine the bottoms and tops into one list with bottom preference
         allMatBounds = materialBottoms + materialTops
@@ -293,82 +292,48 @@ class UniformMeshGenerator:
                 return sorted(meshList)
             meshList.pop(removeIndex)
 
-    def _getFilteredFuelTopAndBottom(self):
+    def _getFilteredMeshTopAndBottom(self, flags, bottoms=None, tops=None):
         """
         Get the bottom and top boundaries of fuel assemblies and filter them based on the ``minimumMeshSize``.
 
-        Returns
-        -------
-        filteredBottoms : the bottom of fuel assemblies, filtered to a minimum separation of
-            ``minimumMeshSize`` with preference for the lowest bounds
-        filteredTops : the top of fuel assemblies, filtered to a minimum separation of
-            ``minimumMeshSize`` with preference for the top bounds
-        """
-        assemblyTypeFlags = set(
-            [a.p.flags for a in self._sourceReactor.core.getAssemblies(Flags.FUEL)]
-        )
-        fuelBottoms = [
-            min(
-                a.getFirstBlock(Flags.FUEL).p.zbottom
-                for a in self._sourceReactor.core.getAssemblies(assemFlags, exact=True)
-            )
-            for assemFlags in assemblyTypeFlags
-        ]
-        fuelTops = [
-            max(
-                a.getBlocks(Flags.FUEL)[-1].p.ztop
-                for a in self._sourceReactor.core.getAssemblies(assemFlags, exact=True)
-            )
-            for assemFlags in assemblyTypeFlags
-        ]
-        filteredBottoms = self._filterMesh(
-            fuelBottoms,
-            self.minimumMeshSize,
-            [min(fuelBottoms)],
-            preference="bottom",
-            warn=True,
-        )
-        filteredTops = self._filterMesh(
-            fuelTops, self.minimumMeshSize, [max(fuelTops)], preference="top", warn=True
-        )
-
-        return filteredBottoms, filteredTops
-
-    def _getFilteredControlTopAndBottom(self, fuelBottoms, fuelTops):
-        """
-        Get the bottom and top boundaries of control assemblies filtered to the ``minimumMeshSize``.
+        Parameters
+        ----------
+        flags : armi.reactor.flags.Flags
+            The assembly and block flags for which to preserve material boundaries
+            ``getAssemblies()`` and ``getBlocks()`` are both called with the default, ``exact=False``
+        bottoms : list[float], optional
+            Mesh "anchors" for material bottom boundaries
+        tops : list[float], optional
+            Mesh "anchors" for material top boundaries
 
         Returns
         -------
-        filteredBottomCtrl : the bottom of control assemblies, filtered to a minimum separation of
+        filteredBottoms : the bottom of assembly materials, filtered to a minimum separation of
             ``minimumMeshSize`` with preference for the lowest bounds
-        filteredTopCtrl : the top of control assemblies, filtered to a minimum separation of
+        filteredTops : the top of assembly materials, filtered to a minimum separation of
             ``minimumMeshSize`` with preference for the top bounds
         """
-        bottomMatBoundaries = set(fuelBottoms)
-        topMatBoundaries = set(fuelTops)
 
-        # find all control assembly boundaries
-        for a in self._sourceReactor.core.getAssemblies(Flags.CONTROL):
-            firstBlock = a.getFirstBlock(Flags.CONTROL)
-            lastBlock = a.getBlocks(Flags.CONTROL)[-1]
-            bottomMatBoundaries.add(firstBlock.p.zbottom)
-            topMatBoundaries.add(lastBlock.p.ztop)
+        def firstBlockBottom(a, flags):
+            return a.getFirstBlock(flags).p.zbottom
 
-        bottomBoundList = sorted(list(bottomMatBoundaries))
-        topBoundList = sorted(list(topMatBoundaries))
-        # filter control boundaries to minimum mesh size
-        filteredBottomCtrl = self._filterMesh(
-            bottomBoundList,
-            self.minimumMeshSize,
-            fuelBottoms,
-            preference="bottom",
-            warn=True,
-        )
-        filteredTopCtrl = self._filterMesh(
-            topBoundList, self.minimumMeshSize, fuelTops, preference="top", warn=True
-        )
-        return filteredBottomCtrl, filteredTopCtrl
+        def lastBlockTop(a, flags):
+            return a.getBlocks(flags)[-1].p.ztop
+
+        filteredBoundaries = dict()
+        for meshList, preference, meshGetter, extreme in [
+            (bottoms, "bottom", firstBlockBottom, min),
+            (tops, "top", lastBlockTop, max),
+        ]:
+            matBoundaries = set(meshList) if meshList is not None else set()
+            for a in self._sourceReactor.core.getAssemblies(flags):
+                matBoundaries.add(meshGetter(a, flags))
+            anchors = meshList if meshList is not None else [extreme(matBoundaries)]
+            filteredBoundaries[preference] = self._filterMesh(
+                matBoundaries, self.minimumMeshSize, anchors, preference=preference
+            )
+
+        return filteredBoundaries["bottom"], filteredBoundaries["top"]
 
 
 class UniformMeshGeometryConverter(GeometryConverter):

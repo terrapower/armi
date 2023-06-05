@@ -878,8 +878,7 @@ class Database3:
                 if any(linkedDims):
                     attrs["linkedDims"] = numpy.array(linkedDims).astype("S")
             else:
-                # XXX: side effect is that after loading previously unset values will be
-                # the default
+                # NOTE: after loading, the previously unset values will be defaulted
                 temp = [c.p.get(paramDef.name, paramDef.default) for c in comps]
                 if paramDef.serializer is not None:
                     data, sAttrs = paramDef.serializer.pack(temp)
@@ -1536,7 +1535,7 @@ def packSpecialData(
     if len(nones) > 0:
         attrs["nones"] = True
 
-    # XXX: this whole if/then/elif/else can be optimized by looping once and then
+    # TODO: this whole if/then/elif/else can be optimized by looping once and then
     #      determining the correct action
     # A robust solution would need
     # to do this on a case-by-case basis, and re-do it any time we want to

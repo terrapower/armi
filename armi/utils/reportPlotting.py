@@ -561,7 +561,6 @@ def _radarFactory(numVars, frame="circle"):
         Number of variables for radar chart.
     frame : {'circle' | 'polygon'}
         Shape of frame surrounding axes.
-
     """
     # calculate evenly-spaced axis angles
     # rotate theta such that the first axis is at the top
@@ -581,8 +580,6 @@ def _radarFactory(numVars, frame="circle"):
     def close_line(line):
         """Closes the input line."""
         x, y = line.get_data()
-        # pylint: disable=fixme
-        # FIXME: markers at x[0], y[0] get doubled-up
         if x[0] != x[-1]:
             x = numpy.concatenate((x, [x[0]]))
             y = numpy.concatenate((y, [y[0]]))

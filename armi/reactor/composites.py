@@ -391,7 +391,7 @@ class ArmiObject(metaclass=CompositeModelType):
         state["parent"] = None
 
         if "r" in state:
-            # XXX: This should never happen, it might make sense to raise an exception.
+            # TODO: This should never happen, it might make sense to raise an exception.
             del state["r"]
 
         return state

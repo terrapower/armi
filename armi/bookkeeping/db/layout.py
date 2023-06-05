@@ -356,8 +356,7 @@ class Layout:
             elif issubclass(Klass, Core):
                 comp = Klass(name)
             elif issubclass(Klass, Component):
-                # XXX: initialize all dimensions to 0, they will be loaded and assigned
-                # after load
+                # TODO: init all dimensions to 0, they will be loaded and assigned after load
                 kwargs = dict.fromkeys(Klass.DIMENSION_NAMES, 0)
                 kwargs["material"] = material
                 kwargs["name"] = name
