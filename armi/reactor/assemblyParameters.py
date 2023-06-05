@@ -17,7 +17,7 @@ import numpy
 
 from armi import runLog
 from armi.reactor import parameters
-from armi.reactor.flags import Flags  # non-standard import to avoid name conflict below
+from armi.reactor.flags import Flags
 from armi.reactor.parameters import ParamLocation
 from armi.reactor.parameters.parameterDefinitions import isNumpyArray
 from armi.utils import units
