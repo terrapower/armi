@@ -184,7 +184,7 @@ class Serializer:
 
 
 def isNumpyArray(paramStr):
-    """Helper meta-method to return a method that sets a Parameter value to a NumPy array.
+    """Helper meta-function to create a method that sets a Parameter value to a NumPy array.
 
     Parameters
     ----------
