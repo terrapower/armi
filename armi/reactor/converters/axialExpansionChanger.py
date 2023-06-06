@@ -684,10 +684,8 @@ class ExpansionData:
 
             if len(tmpMapping) == 0:
                 raise ValueError(
-                    "Block {0:s} has no temperature points within it! \
-                        Likely need to increase the refinement of the temperature grid.".format(
-                        str(b.name)
-                    )
+                    f"{b} has no temperature points within it!"
+                    "Likely need to increase the refinement of the temperature grid."
                 )
 
             blockAveTemp = mean(tmpMapping)
