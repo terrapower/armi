@@ -265,9 +265,7 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
         for temp in isothermalTempList:
             # Set hot isothermal temp and expand
             tempField = array([temp] * len(tempGrid))
-            axialExpChngr.performThermalAxialExpansion(
-                a, tempGrid, tempField, updateNDensForRadialExp=False
-            )
+            axialExpChngr.performThermalAxialExpansion(a, tempGrid, tempField)
             if temp == 25.0:
                 for new, old in zip(
                     a.getAxialMesh()[:-1], originalMesh[:-1]
@@ -310,9 +308,7 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
         for temp in isothermalTempList:
             # Set hot isothermal temp and expand
             tempField = array([temp] * len(tempGrid))
-            axialExpChngr.performThermalAxialExpansion(
-                a, tempGrid, tempField, updateNDensForRadialExp=False
-            )
+            axialExpChngr.performThermalAxialExpansion(a, tempGrid, tempField)
             if temp == 250.0:
                 for new, old in zip(
                     a.getAxialMesh()[:-1], originalMesh[:-1]
@@ -464,7 +460,7 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
         for b in self.a:
             for c in b[0:2]:
                 stdThermExpFactor[c] = c.getThermalExpansionFactor() - 1.0
-                self.obj.expansionData.updateComponentTemp(b, c, newTemp)
+                self.obj.expansionData.updateComponentTemp(c, newTemp)
 
         self.obj.expansionData.computeThermalExpansionFactors()
 

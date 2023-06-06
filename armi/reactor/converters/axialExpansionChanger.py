@@ -155,7 +155,6 @@ class AxialExpansionChanger:
         tempGrid: list,
         tempField: list,
         setFuel: bool = True,
-        updateNDensForRadialExp: bool = True,
     ):
         """Perform thermal expansion for an assembly given an axial temperature grid and field.
 
@@ -182,9 +181,7 @@ class AxialExpansionChanger:
           effects associated with updating the component temperature.
         """
         self.setAssembly(a, setFuel)
-        self.expansionData.updateComponentTempsBy1DTempField(
-            tempGrid, tempField, updateNDensForRadialExp
-        )
+        self.expansionData.updateComponentTempsBy1DTempField(tempGrid, tempField)
         self.expansionData.computeThermalExpansionFactors()
         self.axiallyExpandAssembly()
 
@@ -649,9 +646,7 @@ class ExpansionData:
         for c, p in zip(componentLst, percents):
             self._expansionFactors[c] = p
 
-    def updateComponentTempsBy1DTempField(
-        self, tempGrid, tempField, updateNDensForRadialExp: bool = True
-    ):
+    def updateComponentTempsBy1DTempField(self, tempGrid, tempField):
         """Assign a block-average axial temperature to components.
 
         Parameters
@@ -660,19 +655,12 @@ class ExpansionData:
             1D axial temperature grid (i.e., physical locations where temp is stored)
         tempField : numpy array
             temperature values along grid
-        updateNDensForRadialExp: optional, bool
-            boolean to determine whether or not the component number densities should be updated
-            to account for radial expansion/contraction
 
         Notes
         -----
         - given a 1D axial temperature grid and distribution, searches for temperatures that fall
           within the bounds of a block, and averages them
         - this average temperature is then passed to self.updateComponentTemp()
-        - Setting updateNDensForRadialExp to False isolates the number density changes due to the
-          temp change to just the axial dim. This is useful for testing. However, in practical use
-          updateNDensForRadialExp should be set to True to capture radial expansion/contraction
-          effects associated with updating the component temperature.
 
         Raises
         ------
@@ -704,45 +692,26 @@ class ExpansionData:
 
             blockAveTemp = mean(tmpMapping)
             for c in b:
-                self.updateComponentTemp(b, c, blockAveTemp, updateNDensForRadialExp)
+                self.updateComponentTemp(c, blockAveTemp)
 
-    def updateComponentTemp(
-        self, b, c, temp: float, updateNDensForRadialExp: bool = True
-    ):
+    def updateComponentTemp(self, c, temp: float):
         """Update component temperatures with a provided temperature.
 
         Parameters
         ----------
-        b : :py:class:`Block <armi.reactor.blocks.Block>`
-            parent block for c
         c : :py:class:`Component <armi.reactor.components.component.Component>`
             component to which the temperature, temp, is to be applied
         temp : float
             new component temperature in C
-        updateNDensForRadialExp : bool
-            boolean to determine whether or not the component number densities should be updated
-            to account for the radial expansion/contraction associated with the new temperature
 
         Notes
         -----
         - "reference" height and temperature are the current states; i.e. before
            1) the new temperature, temp, is applied to the component, and
            2) the component is axially expanded
-        - Setting updateNDensForRadialExp to False isolates the number density changes due to the
-          temp change to just the axial dim. This is useful for testing. However, in practical use
-          updateNDensForRadialExp should be set to True to capture radial expansion/contraction
-          effects associated with updating the component temperature.
         """
         self.componentReferenceTemperature[c] = c.temperatureInC
-        if not updateNDensForRadialExp:
-            # Update component temp manually to avoid the call to changeNDensByFactor(f) within c.setTemperature().
-            # This isolates the number density changes due to the temp change to just the axial dim.
-            # This is useful for testing.
-            c.temperatureInC = temp
-            c.p.volume = c.getArea(cold=True) * b.getHeight()
-        else:
-            c.setTemperature(temp)
-            c.p.volume = c.getArea(cold=False) * b.getHeight()
+        c.setTemperature(temp)
 
     def computeThermalExpansionFactors(self):
         """Computes expansion factors for all components via thermal expansion."""
