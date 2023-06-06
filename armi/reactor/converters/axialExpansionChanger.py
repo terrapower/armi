@@ -262,7 +262,7 @@ class AxialExpansionChanger:
                 b.p.zbottom = self.linked.linkedBlocks[b][0].p.ztop
             isDummyBlock = ib == (numOfBlocks - 1)
             if not isDummyBlock:
-                for c in _getSolidComponents(b):
+                for c in getSolidComponents(b):
                     growFrac = self.expansionData.getExpansionFactor(c)
                     runLog.debug(msg=f"      Component {c}, growFrac = {growFrac:.4e}")
                     if growFrac >= 0.0:
@@ -360,7 +360,7 @@ class AxialExpansionChanger:
                 c.setNumberDensities(newNumberDensities)
 
 
-def _getSolidComponents(b):
+def getSolidComponents(b):
     """
     Return list of components in the block that have solid material.
 
