@@ -17,11 +17,9 @@ Test the cross section manager.
 
 :py:mod:`armi.physics.neutronics.crossSectionGroupManager`
 """
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
-
-import os
 from io import BytesIO
 import copy
+import os
 import unittest
 
 from six.moves import cPickle
@@ -46,10 +44,10 @@ from armi.physics.neutronics.settings import (
 from armi.reactor.blocks import HexBlock
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
+from armi.settings.fwSettings.globalSettings import CONF_RUN_TYPE
 from armi.tests import TEST_ROOT
 from armi.utils import units
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
-from armi.settings.fwSettings.globalSettings import CONF_RUN_TYPE
 
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))

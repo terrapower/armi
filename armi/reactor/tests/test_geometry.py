@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """Tests the geometry (loading input) file."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import io
 import os
 import unittest

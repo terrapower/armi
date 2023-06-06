@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """Test the Lattice Interface."""
-# pylint: disable=abstract-method,missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-method-argument,import-outside-toplevel
 import unittest
 from collections import OrderedDict
 

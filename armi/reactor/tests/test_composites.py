@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """Tests for the composite pattern."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 from copy import deepcopy
 import unittest
 

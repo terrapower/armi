@@ -11,15 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-""" tests of the Parameters class. """
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
+"""Tests of the Parameters class."""
 import copy
 import traceback
 import unittest
 
 from armi import context
-from armi.reactor import parameters
 from armi.reactor import composites
+from armi.reactor import parameters
 
 
 class MockComposite:

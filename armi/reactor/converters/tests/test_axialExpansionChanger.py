@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """Test axialExpansionChanger."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 from statistics import mean
 import os
 import unittest

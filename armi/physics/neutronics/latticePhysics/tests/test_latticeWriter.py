@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """Test the Lattice Physics Writer."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import unittest
 
 from armi.physics.neutronics.const import CONF_CROSS_SECTION

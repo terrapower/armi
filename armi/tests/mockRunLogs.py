@@ -15,7 +15,6 @@
 This module contains subclasses of the armi.runLog._RunLog class that can be used to determine whether or not
 one of the specific methods were called. These should only be used in testing.
 """
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import six
 import sys
 

@@ -12,15 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""unit test custom isotopics."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+"""Unit test custom isotopics."""
 import unittest
 
 import yamlize
 
-from armi.reactor import blueprints
 from armi import settings
 from armi.physics.neutronics.settings import CONF_XS_KERNEL
+from armi.reactor import blueprints
 from armi.reactor.blueprints import isotopicOptions
 from armi.reactor.flags import Flags
 

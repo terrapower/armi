@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for grid blueprints."""
-# pylint: disable=wrong-import-position
 import io
 import os
 import unittest
