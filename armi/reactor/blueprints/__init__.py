@@ -87,7 +87,6 @@ from armi.reactor import systemLayoutInput
 from armi.reactor.flags import Flags
 from armi.scripts import migration
 from armi.utils.customExceptions import InputError
-
 from armi.utils import textProcessors
 from armi.settings.fwSettings.globalSettings import (
     CONF_DETAILED_AXIAL_EXPANSION,
@@ -116,11 +115,8 @@ context.BLUEPRINTS_IMPORT_CONTEXT = "".join(traceback.format_stack())
 
 
 def loadFromCs(cs, roundTrip=False):
-    """
-    Function to load Blueprints based on supplied ``CaseSettings``.
-    """
-    # pylint: disable=import-outside-toplevel; circular import protection
-    from armi.utils import directoryChangers
+    r"""Function to load Blueprints based on supplied ``CaseSettings``."""
+    from armi.utils import directoryChangers  # noqa: E402
 
     with directoryChangers.DirectoryChanger(cs.inputDirectory, dumpOnException=False):
         with open(cs[CONF_LOADING_FILE], "r") as bpYaml:

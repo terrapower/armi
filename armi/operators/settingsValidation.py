@@ -19,7 +19,6 @@ This allows developers to specify a rich set of rules and suggestions for user s
 These then pop up during initialization of a run, either on the command line or as
 dialogues in the GUI. They say things like: "Your ___ setting has the value ___, which
 is impossible. Would you like to switch to ___?"
-
 """
 import re
 import os
@@ -288,8 +287,7 @@ class Inspector:
 
     def _inspectBlueprints(self):
         """Blueprints early error detection and old format conversions."""
-        # pylint: disable=import-outside-toplevel; avoid circular import
-        from armi.physics.neutronics.settings import CONF_LOADING_FILE
+        from armi.physics.neutronics.settings import CONF_LOADING_FILE  # noqa: E402
 
         # if there is a blueprints object, we don't need to check for a file
         if self.cs.filelessBP:
@@ -372,15 +370,13 @@ class Inspector:
 
     def _inspectSettings(self):
         """Check settings for inconsistencies."""
-        # import here to avoid cyclic issues
-        # pylint: disable=import-outside-toplevel;
-        from armi import operators
+        from armi import operators  # noqa: E402
         from armi.physics.neutronics.settings import (
             CONF_BC_COEFFICIENT,
             CONF_BOUNDARIES,
             CONF_XS_KERNEL,
             CONF_XS_SCATTERING_ORDER,
-        )
+        )  # noqa: E402
 
         self.addQueryBadLocationWillLikelyFail("operatorLocation")
 

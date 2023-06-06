@@ -189,8 +189,7 @@ def insertCoreDesignReport(core, cs, report):
 
 
 def _setGeneralCoreDesignData(cs, coreDesignTable):
-    # pylint: disable=import-outside-toplevel # avoid cyclic import
-    from armi.physics.neutronics.settings import CONF_LOADING_FILE
+    from armi.physics.neutronics.settings import CONF_LOADING_FILE  # noqa: E402
 
     coreDesignTable.addRow(["Case Title", "{}".format(cs.caseTitle)])
     coreDesignTable.addRow(["Run Type", "{}".format(cs["runType"])])
@@ -295,11 +294,8 @@ def _setGeneralCoreParametersData(core, cs, coreDesignTable):
 
 
 def _setGeneralSimulationData(core, cs, coreDesignTable):
-    # pylint: disable=import-outside-toplevel # avoid cyclic import
-    from armi.physics.neutronics.settings import (
-        CONF_GEN_XS,
-        CONF_GLOBAL_FLUX_ACTIVE,
-    )
+    from armi.physics.neutronics.settings import CONF_GEN_XS  # noqa: E402
+    from armi.physics.neutronics.settings import CONF_GLOBAL_FLUX_ACTIVE  # noqa: E402
 
     coreDesignTable.addRow(["  ", ""])
     coreDesignTable.addRow(["Full Core Model", "{}".format(core.isFullCore)])
@@ -324,7 +320,6 @@ def insertEndOfLifeContent(r, report):
         the reactor
     report : ReportContent
         The report to be added to.
-
     """
     fName2 = "powerMap.png"
     dataForTotalPower = [a.getMaxParam("power") / units.WATTS_PER_MW for a in r.core]
@@ -417,11 +412,8 @@ def insertSettingsData(cs, report):
     report: ReportContent
         The report to be added to
     """
-    # pylint: disable=import-outside-toplevel # avoid cyclic import
-    from armi.physics.neutronics.settings import (
-        CONF_GEN_XS,
-        CONF_NEUTRONICS_KERNEL,
-    )
+    from armi.physics.neutronics.settings import CONF_GEN_XS  # noqa: E402
+    from armi.physics.neutronics.settings import CONF_NEUTRONICS_KERNEL  # noqa: E402
 
     report[COMPREHENSIVE_REPORT][CASE_PARAMETERS] = newReports.Table("Case Parameters")
     report[COMPREHENSIVE_REPORT][REACTOR_PARAMS] = newReports.Table(

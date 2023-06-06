@@ -98,7 +98,7 @@ class TestPlotting(unittest.TestCase):
             self.assertTrue(os.path.exists("blockDiagram23.svg"))
 
     def test_plotCartesianBlock(self):
-        # pylint: disable=import-outside-toplevel
+        # noqa: E402
         from armi import settings
         from armi.reactor import blueprints, reactors
 

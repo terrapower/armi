@@ -95,7 +95,6 @@ class RzfluxStream(cccc.StreamWithDataContainer):
     fileMode: str
         string indicating if ``fileName`` is being read or written, and
         in ascii or binary format
-
     """
 
     @staticmethod
@@ -103,9 +102,7 @@ class RzfluxStream(cccc.StreamWithDataContainer):
         return RzfluxData()
 
     def readWrite(self):
-        """
-        Step through the structure of the file and read/write it.
-        """
+        """Step through the structure of the file and read/write it."""
         self._rwFileID()
         self._rw1DRecord()
         self._rw2DRecord()
@@ -124,9 +121,7 @@ class RzfluxStream(cccc.StreamWithDataContainer):
             self._metadata["label"] = record.rwString(self._metadata["label"], 28)
 
     def _rw1DRecord(self):
-        """
-        Read/write File specifications on 1D record.
-        """
+        """Read/write File specifications on 1D record."""
         with self.createRecord() as record:
             vals = record.rwImplicitlyTypedMap(FILE_SPEC_1D_KEYS, self._metadata)
             self._metadata.update(vals)
@@ -165,7 +160,7 @@ class RzfluxStream(cccc.StreamWithDataContainer):
                 )
 
 
-readBinary = RzfluxStream.readBinary  # pylint: disable=invalid-name
-readAscii = RzfluxStream.readAscii  # pylint: disable=invalid-name
-writeBinary = RzfluxStream.writeBinary  # pylint: disable=invalid-name
-writeAscii = RzfluxStream.writeAscii  # pylint: disable=invalid-name
+readBinary = RzfluxStream.readBinary
+readAscii = RzfluxStream.readAscii
+writeBinary = RzfluxStream.writeBinary
+writeAscii = RzfluxStream.writeAscii

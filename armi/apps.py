@@ -79,7 +79,7 @@ class App:
         self.__initNewPlugins()
 
     def __initNewPlugins(self):
-        # pylint: disable=import-outside-toplevel
+        # ruff: noqa: E402
         from armi import cli
         from armi import bookkeeping
         from armi.physics import fuelCycle
@@ -369,7 +369,7 @@ class App:
 
         # add the name/version of the current App, if it's not the default
         if context.APP_NAME != "armi":
-            # pylint: disable=import-outside-toplevel # avoid cyclic import
+            # noqa: E402
             from armi import getApp
 
             splash += r"""

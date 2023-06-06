@@ -26,18 +26,17 @@ and adds a valid one into the settings file.
 It manually reads the blueprints file rather than parsing it to ensure
 round-trippiness even with yaml-native links. 
 """
-
 import io
-import shutil
 import os
+import shutil
 
 from ruamel.yaml import YAML
 
 from armi import runLog
-from armi.settings import caseSettings
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.physics.neutronics.crossSectionSettings import *
 from armi.scripts.migration.base import SettingsMigration
+from armi.settings import caseSettings
 from armi.settings import settingsIO
 
 
@@ -73,8 +72,7 @@ class MoveCrossSectionsFromBlueprints(SettingsMigration):
 
 
 def migrateCrossSectionsFromBlueprints(settingsObj):
-    # pylint: disable=import-outside-toplevel # avoid cyclic import
-    from armi.physics.neutronics.settings import CONF_LOADING_FILE
+    from armi.physics.neutronics.settings import CONF_LOADING_FILE  # noqa: E402
 
     settingsPath = settingsObj.path
     runLog.info(

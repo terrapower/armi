@@ -23,7 +23,6 @@ A settings object can be saved as or loaded from an YAML file. The ARMI GUI is d
 create this settings file, which is then loaded by an ARMI process on the cluster.
 
 A primary case settings is created as ``masterCs``
-
 """
 import io
 import logging
@@ -92,7 +91,7 @@ class Settings:
         provided by the user on the command line.  Therefore, _failOnLoad is used to
         prevent this from happening.
         """
-        from armi import getApp  # pylint: disable=import-outside-toplevel
+        from armi import getApp  # noqa: E402
 
         self.path = ""
 
@@ -222,7 +221,7 @@ class Settings:
         --------
         armi.settings.setting.Setting.__getstate__ : removes schema
         """
-        from armi import getApp  # pylint: disable=import-outside-toplevel
+        from armi import getApp  # noqa: E402
 
         self.__settings = getApp().getSettings()
 
@@ -289,7 +288,7 @@ class Settings:
         """Add any ad-hoc 'user' plugins that are referenced in the settings file."""
         userPlugins = self["userPlugins"]
         if len(userPlugins):
-            from armi import getApp  # pylint: disable=import-outside-toplevel
+            from armi import getApp  # noqa: E402
 
             app = getApp()
             app.registerUserPlugins(userPlugins)

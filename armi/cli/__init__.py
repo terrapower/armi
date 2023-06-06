@@ -111,7 +111,7 @@ class ArmiCLI:
     """
 
     def __init__(self):
-        from armi import getPluginManager  # pylint: disable=import-outside-toplevel
+        from armi import getPluginManager  # noqa: E402
 
         self._entryPoints = dict()
         for pluginEntryPoints in getPluginManager().hook.defineEntryPoints():
@@ -149,7 +149,7 @@ class ArmiCLI:
     @staticmethod
     def showVersion():
         """Print the App name and version on the command line."""
-        from armi import getApp  # pylint: disable=import-outside-toplevel
+        from armi import getAp  # noqa: E402
 
         prog = context.APP_NAME
         app = getApp()
@@ -233,7 +233,7 @@ class ArmiCLI:
 
 def splash():
     """Emit a the active App's splash text to the runLog for the primary node."""
-    from armi import getApp  # pylint: disable=import-outside-toplevel
+    from armi import getApp  # noqa: E402
 
     app = getApp()
     assert app is not None

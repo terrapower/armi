@@ -24,14 +24,13 @@ the standard ``CaseSuite`` objects.
 This module contains a variety of ``InputModifier`` objects as well, which are examples
 of how you can modify inputs for parameter sweeping. Power-users will generally make
 their own ``Modifier``\ s that are design-specific.
-
 """
+from collections import Counter
+from pyDOE import lhs
+from typing import List
 import copy
 import os
 import random
-from pyDOE import lhs
-from typing import List
-from collections import Counter
 
 from armi.cases import suite
 from armi.cases.inputModifiers.inputModifiers import InputModifier
@@ -56,16 +55,17 @@ class SuiteBuilder:
         Contains a list of tuples of ``InputModifier`` instances. A single case is
         constructed by running a series (the tuple) of InputModifiers on the case.
 
-        NOTE: This is public such that someone could pop an item out of the list if it
-        is known to not work, or be unnecessary.
+    Notes
+    -----
+    This is public such that someone could pop an item out of the list if it
+    is known to not work, or be unnecessary.
     """
 
     def __init__(self, baseCase):
         self.baseCase = baseCase
         self.modifierSets = []
 
-        # pylint: disable=import-outside-toplevel; avoid circular import
-        from .inputModifiers import inputModifiers
+        from armi.cases.inputModifiers import inputModifiers  # noqa: E402
 
         # use an instance variable instead of global lookup. this could allow someone to add their own
         # modifiers, and also prevents it memory usage / discovery from simply loading the module.

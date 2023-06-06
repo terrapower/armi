@@ -325,7 +325,7 @@ def applyAsyncioWindowsWorkaround() -> None:
     his error showed up during jupyter notebook built-tests and documentation.
     See https://bugs.python.org/issue37373
     """
-    import asyncio  # pylint: disable=import-outside-toplevel; packed with workaround for easy removal
+    import asyncio  # noqa: E402
 
     if (
         sys.version_info[0] == 3

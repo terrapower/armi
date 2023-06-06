@@ -1030,7 +1030,7 @@ class CartesianReactorTests(ReactorTests):
         log = mockRunLogs.BufferLog()
 
         # this strange namespace-stomping is used to the test to set the logger in reactors.Core
-        from armi.reactor import reactors  # pylint: disable=import-outside-toplevel
+        from armi.reactor import reactors  # noqa: E402
 
         reactors.runLog = runLog
         runLog.LOG = log

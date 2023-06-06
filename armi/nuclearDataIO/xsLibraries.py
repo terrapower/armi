@@ -20,6 +20,7 @@ Cross section libraries, currently, contain neutron and/or gamma
 cross sections, but are not necessarily intended to be only neutron and gamma data.
 """
 
+# ruff: noqa: E402
 import glob
 import os
 import re
@@ -35,7 +36,6 @@ _ISOTXS_EXT = "ISO"
 
 def compare(lib1, lib2):
     """Compare two XSLibraries, and return True if equal, or False if not."""
-    # pylint: disable=import-outside-toplevel) ; avoid cyclic import with isotxs bringing this in for data structure
     from armi.nuclearDataIO.cccc import isotxs
     from armi.nuclearDataIO.cccc import gamiso
     from armi.nuclearDataIO.cccc import pmatrx
@@ -47,6 +47,7 @@ def compare(lib1, lib2):
     equal &= isotxs.compare(lib1, lib2)
     equal &= gamiso.compare(lib1, lib2)
     equal &= pmatrx.compare(lib1, lib2)
+
     return equal
 
 
@@ -181,7 +182,6 @@ def mergeXSLibrariesInWorkingDirectory(
         An alternate directory in which to search for files other than the working directory. The main purpose
         of this is for testing, but it could also be useful to users.
     """
-    # pylint: disable=import-outside-toplevel) ; avoid cyclic import with isotxs bringing this in for data structure
     from armi.nuclearDataIO.cccc import isotxs
     from armi.nuclearDataIO.cccc import gamiso
     from armi.nuclearDataIO.cccc import pmatrx

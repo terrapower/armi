@@ -226,9 +226,8 @@ def cleanTempDirs(olderThanDays=None):
         If provided, deletes other ARMI directories if they are older than the requested
         time.
     """
-    # pylint: disable=import-outside-toplevel # avoid cyclic import
-    from armi import runLog
-    from armi.utils.pathTools import cleanPath
+    from armi import runLog  # noqa: E402
+    from armi.utils.pathTools import cleanPath  # noqa: E402
 
     disconnectAllHdfDBs()
     printMsg = runLog.getVerbosity() <= DEBUG
@@ -262,8 +261,7 @@ def cleanAllArmiTempDirs(olderThanDays: int) -> None:
 
     This is a useful utility in HPC environments when some runs crash sometimes.
     """
-    # pylint: disable=import-outside-toplevel # avoid cyclic import
-    from armi.utils.pathTools import cleanPath
+    from armi.utils.pathTools import cleanPath  # noqa: E402
 
     gracePeriod = datetime.timedelta(days=olderThanDays)
     now = datetime.datetime.now()
@@ -301,7 +299,7 @@ def disconnectAllHdfDBs() -> None:
     objects.
     """
 
-    from armi.bookkeeping.db import Database3  # pylint: disable=import-outside-toplevel
+    from armi.bookkeeping.db import Database3  # noqa: E402
 
     h5dbs = [db for db in gc.get_objects() if isinstance(db, Database3)]
     for db in h5dbs:

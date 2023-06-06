@@ -80,9 +80,8 @@ class BookkeepingPlugin(plugins.ArmiPlugin):
         --------
         armi.operators.operatorMPI.OperatorMPI.workerOperate
         """
-        # pylint: disable=import-outside-toplevel ; avoid cyclic imports
-        from armi.bookkeeping import memoryProfiler
-        from armi import mpiActions
+        from armi.bookkeeping import memoryProfiler  # noqa: E402
+        from armi import mpiActions  # noqa: E402
 
         if isinstance(cmd, mpiActions.MpiAction):
             for donotReset in (
@@ -103,14 +102,12 @@ class BookkeepingPlugin(plugins.ArmiPlugin):
         Generate general report content. Where diagrams/tables
         not specific to additional plugins comes together.
 
-
         Currently only happening at End and Begin stage because no content gathered
         in these sections is used to create a graph across time.
-
         """
-        from armi.cli import reportsEntryPoint
-        from armi.bookkeeping.report import newReports as reports
-        from armi.bookkeeping.report import newReportUtils
+        from armi.cli import reportsEntryPoint  # noqa: E402
+        from armi.bookkeeping.report import newReports as reports  # noqa: E402
+        from armi.bookkeeping.report import newReportUtils  # noqa: E402
 
         if stage == reports.ReportStage.Begin:
             newReportUtils.insertGeneralReportContent(cs, r, report, stage)
@@ -118,4 +115,3 @@ class BookkeepingPlugin(plugins.ArmiPlugin):
                 newReportUtils.insertBlueprintContent(r, cs, report, blueprint)
         elif stage == reports.ReportStage.End:
             newReportUtils.insertEndOfLifeContent(r, report)
-        return

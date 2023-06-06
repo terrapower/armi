@@ -1086,8 +1086,7 @@ class Operator:  # pylint: disable=too-many-public-methods
         of snapshots has evolved with respect to the
         :py:class:`~armi.operators.snapshots.OperatorSnapshots`.
         """
-        # pylint: disable=import-outside-toplevel # avoid cyclic import
-        from armi.physics.neutronics.settings import CONF_LOADING_FILE
+        from armi.physics.neutronics.settings import CONF_LOADING_FILE  # noqa: E402
 
         runLog.info("Producing snapshot for cycle {0} node {1}".format(cycle, node))
         self.r.core.zones.summary()
