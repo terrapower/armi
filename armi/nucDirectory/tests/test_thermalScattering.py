@@ -12,13 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for thermal scattering metadata."""
-# pylint: disable=protected-access
 import unittest
 
+from armi.nucDirectory import nuclideBases as nb
+from armi.nucDirectory import thermalScattering as ts
 from armi.reactor import blocks
 from armi.reactor import components
-from armi.nucDirectory import thermalScattering as ts
-from armi.nucDirectory import nuclideBases as nb
 
 
 def buildBlockWithTSL():

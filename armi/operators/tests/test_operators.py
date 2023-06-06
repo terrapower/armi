@@ -13,8 +13,6 @@
 # limitations under the License.
 
 """Tests for operators."""
-
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-method-argument,import-outside-toplevel
 import os
 import unittest
 import collections

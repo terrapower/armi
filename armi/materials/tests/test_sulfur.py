@@ -11,14 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-Tests for sulfur.
-"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+"""Tests for sulfur."""
 import unittest
 
-from armi.materials.tests.test_materials import _Material_Test
 from armi.materials.sulfur import Sulfur
+from armi.materials.tests.test_materials import _Material_Test
 
 
 class Sulfur_TestCase(_Material_Test, unittest.TestCase):

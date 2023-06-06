@@ -13,15 +13,14 @@
 # limitations under the License.
 
 """Test for xs nuclides."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import unittest
 
-from armi.nuclearDataIO import xsNuclides
 from armi.nucDirectory import nuclideBases
-from armi.tests import mockRunLogs
-from armi.tests import ISOAA_PATH
-from armi.nuclearDataIO import xsLibraries
 from armi.nuclearDataIO import isotxs
+from armi.nuclearDataIO import xsLibraries
+from armi.nuclearDataIO import xsNuclides
+from armi.tests import ISOAA_PATH
+from armi.tests import mockRunLogs
 
 
 class NuclideTests(unittest.TestCase):

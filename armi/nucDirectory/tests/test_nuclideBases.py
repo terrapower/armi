@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """Tests for nuclideBases."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import math
 import os
 import random

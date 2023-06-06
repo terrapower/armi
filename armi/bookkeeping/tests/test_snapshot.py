@@ -13,11 +13,10 @@
 # limitations under the License.
 
 """Test Snapshots."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import unittest
 
-from armi.bookkeeping import snapshotInterface
 from armi import settings
+from armi.bookkeeping import snapshotInterface
 
 
 class TestSnapshotInterface(unittest.TestCase):

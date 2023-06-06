@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """Tests for the compareDB3 module."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import unittest
 
 import h5py
