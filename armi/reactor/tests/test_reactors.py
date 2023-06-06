@@ -49,8 +49,8 @@ def buildOperatorOfEmptyHexBlocks(customSettings=None):
 
     Doesn't depend on inputs and loads quickly.
 
-    Params
-    ------
+    Parameters
+    ----------
     customSettings : dict
         Dictionary of off-default settings to update
     """
@@ -90,8 +90,8 @@ def buildOperatorOfEmptyCartesianBlocks(customSettings=None):
 
     Doesn't depend on inputs and loads quickly.
 
-    Params
-    ------
+    Parameters
+    ----------
     customSettings : dict
         Off-default settings to update
     """
