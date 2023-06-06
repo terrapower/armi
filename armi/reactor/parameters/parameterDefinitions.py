@@ -190,6 +190,11 @@ def isNumpyArray(paramStr):
     ----------
     paramStr : str
         Name of the Parameter we want to set.
+
+    Returns
+    -------
+    function
+        A setter method on the Parameter class to force the value to be a NumPy array.
     """
 
     def setParameter(selfObj, value):
