@@ -260,11 +260,7 @@ class LatticePhysicsWriter(interfaces.InputWriter):
                 # Homogeneous number densities and temperatures
                 nucTemperatureInC = self._getAvgNuclideTemperatureInC(nucName)
 
-            # density = max(dens, self.minimumNuclideDensity)
-            if dens == 0:
-                density = self.minimumNuclideDensity
-            else:
-                density = dens
+            density = max(dens, self.minimumNuclideDensity)
             if nuc in nucDensities:
                 NuclideNameFoundMultipleTimes(nucName)
                 dens, nucTemperatureInC, nucCategory = nucDensities[nuc]
