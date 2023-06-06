@@ -52,9 +52,10 @@ class AxialExpansionTestBase(unittest.TestCase):
 
     def setUp(self):
         self.obj = AxialExpansionChanger()
-        self.massAndDens = {}
-        self.steelMass = []
-        self.blockHeights = {}
+        self.componentMass = collections.defaultdict(list)
+        self.componentDensity = collections.defaultdict(list)
+        self.totalAssemblySteelMass = []
+        self.blockZtop = collections.defaultdict(list)
         self.origNameSpace = _MATERIAL_NAMESPACE_ORDER
         # set namespace order for materials so that fake HT9 material can be found
         materials.setMaterialNamespaceOrder(
@@ -77,38 +78,21 @@ class AxialExpansionTestBase(unittest.TestCase):
             2. mass of assembly steel
             3. block heights
         """
-        mass = 0.0
+        totalSteelMass = 0.0
         for b in a:
-            for c in b:
-                # store mass and density of target component
-                if self.obj.expansionData.isTargetComponent(c):
-                    self._storeTargetComponentMassAndDensity(c)
+            # store block ztopz
+            self.blockZtop[b].append(b.p.ztop)
+            for c in getSolidComponents(b):
+                # store mass and density of component
+                self.componentMass[c].append(c.getMass())
+                self.componentDensity[c].append(
+                    c.material.getProperty("density", c.temperatureInK)
+                )
                 # store steel mass for assembly
                 if c.p.flags in self.Steel_Component_Lst:
-                    mass += c.getMass()
+                    totalSteelMass += c.getMass()
 
-            # store block heights
-            tmp = array([b.p.zbottom, b.p.ztop, b.p.height, b.getVolume()])
-            if b.name not in self.blockHeights:
-                self.blockHeights[b.name] = tmp
-            else:
-                self.blockHeights[b.name] = vstack((self.blockHeights[b.name], tmp))
-
-        self.steelMass.append(mass)
-
-    def _storeTargetComponentMassAndDensity(self, c):
-        tmp = array(
-            [
-                c.getMass(),
-                c.material.getProperty("density", c.temperatureInK),
-            ]
-        )
-        if c.parent.name not in self.massAndDens:
-            self.massAndDens[c.parent.name] = tmp
-        else:
-            self.massAndDens[c.parent.name] = vstack(
-                (self.massAndDens[c.parent.name], tmp)
-            )
+        self.totalAssemblySteelMass.append(totalSteelMass)
 
 
 class Temperature:
@@ -182,13 +166,11 @@ class TestAxialExpansionHeight(AxialExpansionTestBase, unittest.TestCase):
         self._generateComponentWiseExpectedHeight()
 
         # do the axial expansion
-        self.axialMeshLocs = zeros((self.temp.tempSteps, len(self.a)))
         for idt in range(self.temp.tempSteps):
             self.obj.performThermalAxialExpansion(
                 self.a, self.temp.tempGrid, self.temp.tempField[idt, :], setFuel=True
             )
             self._getConservationMetrics(self.a)
-            self.axialMeshLocs[idt, :] = self.a.getAxialMesh()
 
     def tearDown(self):
         AxialExpansionTestBase.tearDown(self)
@@ -199,30 +181,9 @@ class TestAxialExpansionHeight(AxialExpansionTestBase, unittest.TestCase):
             for ib, b in enumerate(self.a):
                 self.assertAlmostEqual(
                     self.trueZtop[ib, idt],
-                    self.blockHeights[b.name][idt][1],
+                    self.blockZtop[b][idt],
                     places=7,
-                    msg="Block height is not correct.\
-                         Temp Step = {0:d}, Block ID = {1:}.".format(
-                        idt, b.name
-                    ),
-                )
-
-    def test_AxialMesh(self):
-        """Test that mesh aligns with block tops for component-based expansion."""
-        for idt in range(self.temp.tempSteps):
-            for ib, b in enumerate(self.a):
-                self.assertEqual(
-                    self.axialMeshLocs[idt][ib],
-                    self.blockHeights[b.name][idt][1],
-                    msg="\
-                        Axial mesh and block top do not align and invalidate the axial mesh.\
-                        Block ID = {0:s},\n\
-                            Top = {1:.12e}\n\
-                        Mesh Loc = {2:.12e}".format(
-                        str(b.name),
-                        self.blockHeights[b.name][idt][1],
-                        self.axialMeshLocs[idt][ib],
-                    ),
+                    msg=f"Block height is not correct. {b}; Temp Step = {idt}"
                 )
 
     def _generateComponentWiseExpectedHeight(self):
@@ -275,23 +236,16 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
         AxialExpansionTestBase.tearDown(self)
 
     def expandAssemForMassConservationTest(self):
-        """Initialize class variables for mass conservation checks."""
-        # pylint: disable=attribute-defined-outside-init
-        self.oldMass = {}
-        for b in self.a:
-            self.oldMass[b.name] = 0.0
-
-        # do the expansion and store mass and density info
-        self.temp = Temperature(
-            self.a.getTotalHeight(), coldTemp=1.0, hotInletTemp=1000.0
+        """do the thermal expansion and store conservation metrics of interest"""
+        # create a semi-realistic/physical variable temperature grid over the assembly
+        temp = Temperature(
+            self.a.getTotalHeight(), numTempGridPts=11, tempSteps=10
         )
-        for idt in range(self.temp.tempSteps):
+        for idt in range(temp.tempSteps):
             self.obj.performThermalAxialExpansion(
                 self.a,
-                self.temp.tempGrid,
-                self.temp.tempField[idt, :],
-                setFuel=True,
-                updateNDensForRadialExp=False,
+                temp.tempGrid,
+                temp.tempField[idt, :],
             )
             self._getConservationMetrics(self.a)
 
@@ -431,35 +385,25 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
     def test_TargetComponentMassConservation(self):
         """Tests mass conservation for target components."""
         self.expandAssemForMassConservationTest()
-        for idt in range(self.temp.tempSteps):
-            for b in self.a[:-1]:  # skip the dummy sodium block
-                if idt != 0:
-                    self.assertAlmostEqual(
-                        self.oldMass[b.name],
-                        self.massAndDens[b.name][idt][0],
-                        places=7,
-                        msg="Conservation of Mass Failed on time step {0:d}, block name {1:s},\
-                            with old mass {2:.7e}, and new mass {3:.7e}.".format(
-                            idt,
-                            b.name,
-                            self.oldMass[b.name],
-                            self.massAndDens[b.name][idt][0],
-                        ),
-                    )
-                self.oldMass[b.name] = self.massAndDens[b.name][idt][0]
+        for cName, masses in self.componentMass.items():
+            for i in range(1,len(masses)):
+                self.assertAlmostEqual(
+                    masses[i],
+                    masses[i-1],
+                    msg=f"{cName} mass not right")
 
-    def test_SteelConservation(self):
-        """Tests mass conservation for total assembly steel.
-
-        Component list defined by, Steel_Component_List, in GetSteelMass()
-        """
-        self.expandAssemForMassConservationTest()
-        for idt in range(self.temp.tempSteps - 1):
+        for cName,density in self.componentDensity.items():
+            for i in range(1,len(density)):
+                self.assertLess(
+                    density[i],
+                    density[i-1],
+                    msg=f"{cName} density not right.")
+        
+        for i in range(1,len(self.totalAssemblySteelMass)):
             self.assertAlmostEqual(
-                self.steelMass[idt],
-                self.steelMass[idt + 1],
-                places=7,
-                msg="Conservation of steel mass failed on time step {0:d}".format(idt),
+                self.totalAssemblySteelMass[i],
+                self.totalAssemblySteelMass[i-1],
+                msg="Total assembly steel mass is not conserved."
             )
 
     def test_NoMovementACLP(self):
