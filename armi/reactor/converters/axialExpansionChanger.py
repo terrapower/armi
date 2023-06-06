@@ -14,11 +14,12 @@
 """Enable component-wise axial expansion for assemblies and/or a reactor."""
 
 from statistics import mean
-from numpy import array
+
 from armi import runLog
 from armi.materials import material
-from armi.reactor.flags import Flags
 from armi.reactor.components import UnshapedComponent
+from armi.reactor.flags import Flags
+from numpy import array
 
 TARGET_FLAGS_IN_PREFERRED_ORDER = [
     Flags.FUEL,

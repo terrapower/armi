@@ -14,35 +14,26 @@
 
 """Test axialExpansionChanger."""
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
-from statistics import mean
+import collections
 import os
 import unittest
+from statistics import mean
 
-from numpy import linspace, array, vstack, zeros
-
-from armi.materials import material
-from armi.reactor.assemblies import grids
-from armi.reactor.assemblies import HexAssembly
+from armi import materials
+from armi.materials import _MATERIAL_NAMESPACE_ORDER, custom, material
+from armi.reactor.assemblies import HexAssembly, grids
 from armi.reactor.blocks import HexBlock
 from armi.reactor.components import DerivedShape, UnshapedComponent
-from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
-from armi.tests import TEST_ROOT
-from armi.reactor.components.basicShapes import (
-    Circle,
-    Hexagon,
-    Rectangle,
-)
+from armi.reactor.components.basicShapes import Circle, Hexagon, Rectangle
 from armi.reactor.components.complexShapes import Helix
 from armi.reactor.converters.axialExpansionChanger import (
-    AxialExpansionChanger,
-    ExpansionData,
-    _determineLinked,
-)
-from armi import materials
-from armi.materials import custom, _MATERIAL_NAMESPACE_ORDER
+    AxialExpansionChanger, ExpansionData, _determineLinked, getSolidComponents)
 from armi.reactor.flags import Flags
-from armi.tests import mockRunLogs
+from armi.reactor.tests.test_reactors import (loadTestReactor,
+                                              reduceTestReactorRings)
+from armi.tests import TEST_ROOT
 from armi.utils import units
+from numpy import array, linspace, zeros
 
 
 class AxialExpansionTestBase(unittest.TestCase):
