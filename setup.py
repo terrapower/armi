@@ -89,7 +89,7 @@ setup(
             "mako",
             "nbsphinx",
             "nbsphinx-link",
-            "pylint",
+            "ruff==0.0.252",
             "pytest",
             "pytest-cov",
             "pytest-html",
