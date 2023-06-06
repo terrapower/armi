@@ -27,10 +27,13 @@ from armi.reactor.components import DerivedShape, UnshapedComponent
 from armi.reactor.components.basicShapes import Circle, Hexagon, Rectangle
 from armi.reactor.components.complexShapes import Helix
 from armi.reactor.converters.axialExpansionChanger import (
-    AxialExpansionChanger, ExpansionData, _determineLinked, getSolidComponents)
+    AxialExpansionChanger,
+    ExpansionData,
+    _determineLinked,
+    getSolidComponents,
+)
 from armi.reactor.flags import Flags
-from armi.reactor.tests.test_reactors import (loadTestReactor,
-                                              reduceTestReactorRings)
+from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
 from armi.tests import TEST_ROOT
 from armi.utils import units
 from numpy import array, linspace, zeros
@@ -183,7 +186,7 @@ class TestAxialExpansionHeight(AxialExpansionTestBase, unittest.TestCase):
                     self.trueZtop[ib, idt],
                     self.blockZtop[b][idt],
                     places=7,
-                    msg=f"Block height is not correct. {b}; Temp Step = {idt}"
+                    msg=f"Block height is not correct. {b}; Temp Step = {idt}",
                 )
 
     def _generateComponentWiseExpectedHeight(self):
@@ -238,9 +241,7 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
     def expandAssemForMassConservationTest(self):
         """do the thermal expansion and store conservation metrics of interest"""
         # create a semi-realistic/physical variable temperature grid over the assembly
-        temp = Temperature(
-            self.a.getTotalHeight(), numTempGridPts=11, tempSteps=10
-        )
+        temp = Temperature(self.a.getTotalHeight(), numTempGridPts=11, tempSteps=10)
         for idt in range(temp.tempSteps):
             self.obj.performThermalAxialExpansion(
                 self.a,
@@ -249,91 +250,41 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
             )
             self._getConservationMetrics(self.a)
 
-    def test_ColdThermalExpansionContractionConservation(self):
+    def test_ThermalExpansionContractionConservation(self):
         r"""Thermally expand and then contract to ensure original state is recovered.
 
         Notes
         -----
-        Temperature field is isothermal and initially at 25 C.
+        Temperature field is always isothermal and initially at 25 C.
         """
-        isothermalTempList = [20.0, 25.0, 30.0]
-        a = buildTestAssemblyWithFakeMaterial(name="FakeMat")
-        originalMesh = a.getAxialMesh()
+        isothermalTempList = [100.0, 350.0, 250.0, 25.0]
+        a = buildTestAssemblyWithFakeMaterial(name="HT9")
+        origMesh = a.getAxialMesh()[:-1]
+        origMasses, origNDens = self._getComponentMassAndNDens(a)
         axialExpChngr = AxialExpansionChanger(detailedAxialExpansion=True)
 
         tempGrid = linspace(0.0, a.getHeight())
         for temp in isothermalTempList:
-            # Set hot isothermal temp and expand
+            # compute expected change in number densities
+            c = a[0][0]
+            radialGrowthFrac = c.material.getThermalExpansionDensityReduction(
+                prevTempInC=c.temperatureInC, newTempInC=temp
+            )
+            axialGrowthFrac = c.getThermalExpansionFactor(T0=c.temperatureInC, Tc=temp)
+            totGrowthFrac = axialGrowthFrac / radialGrowthFrac
+            # Set new isothermal temp and expand
             tempField = array([temp] * len(tempGrid))
+            oldMasses, oldNDens = self._getComponentMassAndNDens(a)
             axialExpChngr.performThermalAxialExpansion(a, tempGrid, tempField)
-            if temp == 25.0:
-                for new, old in zip(
-                    a.getAxialMesh()[:-1], originalMesh[:-1]
-                ):  # skip dummy block
-                    self.assertAlmostEqual(
-                        new,
-                        old,
-                        msg="At original temp (250 C) block height is {0:.5f}. "
-                        "Current temp is {1:.5f} and block height is {2:.5f}".format(
-                            old, temp, new
-                        ),
-                        places=3,
-                    )
-            else:
-                for new, old in zip(
-                    a.getAxialMesh()[:-1], originalMesh[:-1]
-                ):  # skip dummy block
-                    self.assertNotEqual(
-                        new,
-                        old,
-                        msg="At original temp (250 C) block height is {0:.5f}. "
-                        "Current temp is {1:.5f} and block height is {2:.5f}".format(
-                            old, temp, new
-                        ),
-                    )
+            newMasses, newNDens = self._getComponentMassAndNDens(a)
+            self._checkMass(oldMasses, newMasses)
+            self._checkNDens(oldNDens, newNDens, totGrowthFrac)
 
-    def test_HotThermalExpansionContractionConservation(self):
-        r"""Thermally expand and then contract to ensure original state is recovered.
-
-        Notes
-        -----
-        Temperature field is isothermal and initially at 250 C.
-        """
-        isothermalTempList = [200.0, 250.0, 300.0]
-        a = buildTestAssemblyWithFakeMaterial(name="FakeMat", hot=True)
-        originalMesh = a.getAxialMesh()
-        axialExpChngr = AxialExpansionChanger(detailedAxialExpansion=True)
-
-        tempGrid = linspace(0.0, a.getHeight())
-        for temp in isothermalTempList:
-            # Set hot isothermal temp and expand
-            tempField = array([temp] * len(tempGrid))
-            axialExpChngr.performThermalAxialExpansion(a, tempGrid, tempField)
-            if temp == 250.0:
-                for new, old in zip(
-                    a.getAxialMesh()[:-1], originalMesh[:-1]
-                ):  # skip dummy block
-                    self.assertAlmostEqual(
-                        new,
-                        old,
-                        msg="At original temp (250 C) block height is {0:.5f}. "
-                        "Current temp is {1:.5f} and block height is {2:.5f}".format(
-                            old, temp, new
-                        ),
-                        places=1,
-                    )
-            else:
-                for new, old in zip(
-                    a.getAxialMesh()[:-1], originalMesh[:-1]
-                ):  # skip dummy block
-                    self.assertNotEqual(
-                        new,
-                        old,
-                        msg="At original temp (250 C) block height is {0:.5f}. "
-                        "Current temp is {1:.5f} and block height is {2:.5f}".format(
-                            old, temp, new
-                        ),
-                    )
+        # make sure that the assembly returned to the original state
+        for orig, new in zip(origMesh, a.getAxialMesh()):
+            self.assertAlmostEqual(orig, new, places=13)
+        self._checkMass(origMasses, newMasses)
+        self._checkNDens(origNDens, newNDens, 1.0)
 
     def test_PrescribedExpansionContractionConservation(self):
         """Expand all components and then contract back to original state.
@@ -341,65 +292,80 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
         Notes
         -----
         - uniform expansion over all components within the assembly
-        - 10 total expansion steps: 5 at +1%, and 5 at -1%
-        - assertion on if original axial mesh matches the final axial mesh
+        - 10 total expansion steps: 5 at +1.01 L1/L0, and 5 at -(1.01^-1) L1/L0
         """
         a = buildTestAssemblyWithFakeMaterial(name="FakeMat")
-        obj = AxialExpansionChanger()
-        oldMesh = a.getAxialMesh()
-        componentLst = [c for b in a for c in b]
+        axExpChngr = AxialExpansionChanger()
+        origMesh = a.getAxialMesh()
+        origMasses, origNDens = self._getComponentMassAndNDens(a)
+        componentLst = [c for b in a for c in getSolidComponents(b)]
+        expansionGrowthFrac = 1.01
+        contractionGrowthFrac = 1.0 / expansionGrowthFrac
         for i in range(0, 10):
-            # get the percentage change
             if i < 5:
-                percents = 0.01 + zeros(len(componentLst))
+                growthFrac = expansionGrowthFrac
+                fracLst = growthFrac + zeros(len(componentLst))
             else:
-                percents = -0.01 + zeros(len(componentLst))
-            # set the expansion factors
-            oldMasses = [
-                c.getMass()
-                for b in a
-                for c in b
-                if not isinstance(c.material, material.Fluid)
-            ]
+                growthFrac = contractionGrowthFrac
+                fracLst = growthFrac + zeros(len(componentLst))
+            oldMasses, oldNDens = self._getComponentMassAndNDens(a)
             # do the expansion
-            obj.performPrescribedAxialExpansion(a, componentLst, percents, setFuel=True)
-            newMasses = [
-                c.getMass()
-                for b in a
-                for c in b
-                if not isinstance(c.material, material.Fluid)
-            ]
-            for old, new in zip(oldMasses, newMasses):
-                self.assertAlmostEqual(old, new)
+            axExpChngr.performPrescribedAxialExpansion(
+                a, componentLst, fracLst, setFuel=True
+            )
+            newMasses, newNDens = self._getComponentMassAndNDens(a)
+            self._checkMass(oldMasses, newMasses)
+            self._checkNDens(oldNDens, newNDens, growthFrac)
 
-        self.assertEqual(
-            oldMesh,
-            a.getAxialMesh(),
-            msg="Axial mesh is not the same after the expansion and contraction!",
-        )
+        # make sure that the assembly returned to the original state
+        for orig, new in zip(origMesh, a.getAxialMesh()):
+            self.assertAlmostEqual(orig, new, places=13)
+        self._checkMass(origMasses, newMasses)
+        self._checkNDens(origNDens, newNDens, 1.0)
+
+    def _checkMass(self, prevMass, newMass):
+        for prev, new in zip(prevMass.values(), newMass.values()):
+            # scaling helps check the assertion closer to machine precision
+            ave = (new + prev) / 2.0
+            prevScaled = prev / ave
+            newScaled = new / ave
+            self.assertAlmostEqual(prevScaled, newScaled, places=14)
+
+    def _checkNDens(self, prevNDen, newNDens, ratio):
+        for prevComp, newComp in zip(prevNDen.values(), newNDens.values()):
+            for prev, new in zip(prevComp.values(), newComp.values()):
+                self.assertAlmostEqual(prev / new, ratio)
+
+    @staticmethod
+    def _getComponentMassAndNDens(a):
+        masses = {}
+        nDens = {}
+        for b in a:
+            for c in getSolidComponents(b):
+                masses[c] = c.getMass()
+                nDens[c] = c.getNumberDensities()
+        return masses, nDens
 
     def test_TargetComponentMassConservation(self):
         """Tests mass conservation for target components."""
         self.expandAssemForMassConservationTest()
         for cName, masses in self.componentMass.items():
-            for i in range(1,len(masses)):
+            for i in range(1, len(masses)):
                 self.assertAlmostEqual(
-                    masses[i],
-                    masses[i-1],
-                    msg=f"{cName} mass not right")
+                    masses[i], masses[i - 1], msg=f"{cName} mass not right"
+                )
 
-        for cName,density in self.componentDensity.items():
-            for i in range(1,len(density)):
+        for cName, density in self.componentDensity.items():
+            for i in range(1, len(density)):
                 self.assertLess(
-                    density[i],
-                    density[i-1],
-                    msg=f"{cName} density not right.")
-        
-        for i in range(1,len(self.totalAssemblySteelMass)):
+                    density[i], density[i - 1], msg=f"{cName} density not right."
+                )
+
+        for i in range(1, len(self.totalAssemblySteelMass)):
             self.assertAlmostEqual(
                 self.totalAssemblySteelMass[i],
-                self.totalAssemblySteelMass[i-1],
-                msg="Total assembly steel mass is not conserved."
+                self.totalAssemblySteelMass[i - 1],
+                msg="Total assembly steel mass is not conserved.",
             )
 
     def test_NoMovementACLP(self):
@@ -428,8 +394,8 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
         # expand fuel
         # get fuel components
         cList = [c for b in assembly for c in b if c.hasFlags(Flags.FUEL)]
-        # 10% growth of fuel components
-        pList = zeros(len(cList)) + 0.1
+        # 1.01 L1/L0 growth of fuel components
+        pList = zeros(len(cList)) + 1.01
         chngr = AxialExpansionChanger()
         chngr.performPrescribedAxialExpansion(assembly, cList, pList, setFuel=True)
 
@@ -459,7 +425,7 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
         # apply new temp to the pin and clad components of each block
         for b in self.a:
             for c in b[0:2]:
-                stdThermExpFactor[c] = c.getThermalExpansionFactor() - 1.0
+                stdThermExpFactor[c] = c.getThermalExpansionFactor()
                 self.obj.expansionData.updateComponentTemp(c, newTemp)
 
         self.obj.expansionData.computeThermalExpansionFactors()
@@ -476,7 +442,7 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
                 else:
                     self.assertEqual(
                         self.obj.expansionData.getExpansionFactor(c),
-                        0.0,
+                        1.0,
                         msg=f"Block {b}, Component {c}, thermExpCoeff not right.\n",
                     )
 
@@ -490,11 +456,11 @@ class TestManageCoreMesh(unittest.TestCase):
         reduceTestReactorRings(self.r, o.cs, 3)
 
         self.oldAxialMesh = self.r.core.p.axialMesh
-        # expand refAssem by 10%
+        # expand refAssem by 1.01 L1/L0
         componentLst = [c for b in self.r.core.refAssem for c in b]
-        percents = 0.01 + zeros(len(componentLst))
+        expansionGrowthFracs = 1.01 + zeros(len(componentLst))
         self.axialExpChngr.performPrescribedAxialExpansion(
-            self.r.core.refAssem, componentLst, percents, setFuel=True
+            self.r.core.refAssem, componentLst, expansionGrowthFracs, setFuel=True
         )
 
     def test_manageCoreMesh(self):
@@ -534,8 +500,8 @@ class TestExceptions(AxialExpansionTestBase, unittest.TestCase):
     def test_setExpansionFactors(self):
         with self.assertRaises(RuntimeError) as cm:
             cList = self.a[0].getChildren()
-            percents = range(len(cList) + 1)
-            self.obj.expansionData.setExpansionFactors(cList, percents)
+            expansionGrowthFracs = range(len(cList) + 1)
+            self.obj.expansionData.setExpansionFactors(cList, expansionGrowthFracs)
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
 
@@ -1060,7 +1026,7 @@ def _buildTestBlock(blockType: str, name: str, hotTemp: float, height: float):
     blockType : string
         determines which type of block you're building
     name : string
-        determines which fake material to use
+        determines which material to use
     """
     b = HexBlock(blockType, height=height)
 
@@ -1113,16 +1079,13 @@ class FakeMat(materials.ht9.HT9):
 
     Notes
     -----
-    - specifically used TestAxialExpansionHeight to verify axialExpansionChanger produces
+    - specifically used in TestAxialExpansionHeight to verify axialExpansionChanger produces
       expected heights from hand calculation
     - also used to verify mass and height conservation resulting from even amounts of expansion
       and contraction. See TestConservation.
     """
 
     name = "FakeMat"
-
-    def __init__(self):
-        materials.ht9.HT9.__init__(self)
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
         """A fake linear expansion percent."""
@@ -1140,9 +1103,6 @@ class FakeMatException(materials.ht9.HT9):
     """
 
     name = "FakeMatException"
-
-    def __init__(self):
-        materials.ht9.HT9.__init__(self)
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
         """A fake linear expansion percent."""
