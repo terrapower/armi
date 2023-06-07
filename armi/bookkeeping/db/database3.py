@@ -1314,6 +1314,7 @@ class Database3:
                     if d is not None:
                         indexInData.append(ii)
                         reorderedComps.append(d)
+
                 if not indexInData:
                     continue
 
@@ -1363,7 +1364,6 @@ class Database3:
 
                     # iterating of numpy is not fast..
                     for c, val in zip(reorderedComps, data.tolist()):
-
                         if isinstance(val, list):
                             val = numpy.array(val)
 
@@ -1376,7 +1376,7 @@ class Database3:
                 if cycleNode not in hist:
                     try:
                         hist[cycleNode] = c.p[paramName]
-                    except KeyError:
+                    except:  # noqa: bare-except
                         if paramName == "location":
                             hist[cycleNode] = c.spatialLocator.indices
 
