@@ -540,7 +540,7 @@ def summarizePinDesign(core):
         for component_ in sorted(first_fuel_block):
             runLog.info(component_.setDimensionReport())
 
-    except Exception as error:  # pylint: disable=broad-except
+    except Exception as error:
         runLog.warning("Pin summarization failed to work")
         runLog.warning(error)
 

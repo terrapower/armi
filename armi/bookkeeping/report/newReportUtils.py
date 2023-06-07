@@ -504,7 +504,7 @@ def getPinDesignTable(core):
         tableRows.addRow(
             ["Plenum Height (cm):", "{0:.2f}".format(a.getHeight(Flags.PLENUM))]
         )
-    except Exception as error:  # pylint: disable=broad-except
+    except Exception as error:
         runLog.warning("Pin summarization failed to work")
         runLog.warning(error)
 
@@ -524,7 +524,6 @@ def insertAreaFractionsReport(block, report):
         The block
     report : ReportContent
         The report
-
     """
     for c, frac in block.getVolumeFractions():
         report[COMPREHENSIVE_REPORT][ASSEMBLY_AREA].addRow(

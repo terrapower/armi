@@ -239,7 +239,7 @@ def cleanTempDirs(olderThanDays=None):
             )
         try:
             cleanPath(_FAST_PATH, mpiRank=MPI_RANK)
-        except Exception as error:  # pylint: disable=broad-except
+        except Exception as error:
             for outputStream in (sys.stderr, sys.stdout):
                 if printMsg:
                     print(
