@@ -79,7 +79,7 @@ class App:
         self.__initNewPlugins()
 
     def __initNewPlugins(self):
-        # ruff: noqa: E402
+        # ruff: noqa: module-import-not-at-top-of-file
         from armi import cli
         from armi import bookkeeping
         from armi.physics import fuelCycle
@@ -369,7 +369,7 @@ class App:
 
         # add the name/version of the current App, if it's not the default
         if context.APP_NAME != "armi":
-            # noqa: E402
+            # noqa: module-import-not-at-top-of-file
             from armi import getApp
 
             splash += r"""

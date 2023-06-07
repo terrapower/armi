@@ -30,7 +30,6 @@ armi.cli : Entry points that build Cases and/or CaseSuites and send them off to
 armi.operators : Operations that ARMI will perform on a reactor model.
     Generally these are made by an individual Case.
 
-
 Examples
 --------
 Create a Case and run it::
@@ -63,7 +62,6 @@ Create a ``burnStep`` sensitivity study from some base CS::
     suite.writeInputs()
     
 Then submit the inputs to your HPC cluster.
-
 """
 from armi.cases.case import Case
 from armi.cases.suite import CaseSuite

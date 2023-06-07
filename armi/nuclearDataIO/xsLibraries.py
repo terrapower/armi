@@ -20,7 +20,7 @@ Cross section libraries, currently, contain neutron and/or gamma
 cross sections, but are not necessarily intended to be only neutron and gamma data.
 """
 
-# ruff: noqa: E402
+# ruff: noqa: module-import-not-at-top-of-file
 import glob
 import os
 import re

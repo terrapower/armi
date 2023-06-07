@@ -60,7 +60,7 @@ class CustomExceptionTests(unittest.TestCase):
         return "warning from root".format()
 
     def test_warn_when_root_decorator(self):
-        import armi  # noqa: E402
+        import armi  # noqa: module-import-not-at-top-of-file
 
         with mockRunLogs.BufferLog() as mock:
             for ii in range(1, 4):

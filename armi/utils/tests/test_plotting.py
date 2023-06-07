@@ -98,7 +98,7 @@ class TestPlotting(unittest.TestCase):
             self.assertTrue(os.path.exists("blockDiagram23.svg"))
 
     def test_plotCartesianBlock(self):
-        # noqa: E402
+        # noqa: module-import-not-at-top-of-file
         from armi import settings
         from armi.reactor import blueprints, reactors
 

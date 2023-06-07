@@ -91,7 +91,7 @@ class Settings:
         provided by the user on the command line.  Therefore, _failOnLoad is used to
         prevent this from happening.
         """
-        from armi import getApp  # noqa: E402
+        from armi import getApp  # noqa: module-import-not-at-top-of-file
 
         self.path = ""
 
@@ -221,7 +221,7 @@ class Settings:
         --------
         armi.settings.setting.Setting.__getstate__ : removes schema
         """
-        from armi import getApp  # noqa: E402
+        from armi import getApp  # noqa: module-import-not-at-top-of-file
 
         self.__settings = getApp().getSettings()
 
@@ -288,7 +288,7 @@ class Settings:
         """Add any ad-hoc 'user' plugins that are referenced in the settings file."""
         userPlugins = self["userPlugins"]
         if len(userPlugins):
-            from armi import getApp  # noqa: E402
+            from armi import getApp  # noqa: module-import-not-at-top-of-file
 
             app = getApp()
             app.registerUserPlugins(userPlugins)
