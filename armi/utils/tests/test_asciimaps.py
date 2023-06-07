@@ -192,7 +192,7 @@ class TestAsciiMaps(unittest.TestCase):
         self.assertEqual(asciimap[2, 2], "3")
         self.assertEqual(asciimap[3, 3], "1")
         with self.assertRaises(KeyError):
-            asciimap[5, 2]  # pylint: disable=pointless-statement
+            asciimap[5, 2]
 
         outMap = asciimaps.AsciiMapCartesian()
         outMap.asciiLabelByIndices = asciimap.asciiLabelByIndices
@@ -223,7 +223,7 @@ class TestAsciiMaps(unittest.TestCase):
         self.assertEqual(asciimap[0, 8], "3")
         self.assertEqual(asciimap[0, 0], "1")
         with self.assertRaises(KeyError):
-            asciimap[10, 0]  # pylint: disable=pointless-statement
+            asciimap[10, 0]
 
     def test_hexWithHoles(self):
         """Read 1/3 core flats-up maps with holes."""
@@ -242,7 +242,7 @@ class TestAsciiMaps(unittest.TestCase):
         self.assertEqual(asciimap[1, 1], asciimaps.PLACEHOLDER)
         self.assertEqual(asciimap[5, 0], "TG")
         with self.assertRaises(KeyError):
-            asciimap[10, 0]  # pylint: disable=pointless-statement
+            asciimap[10, 0]
 
         # also test writing from pure data (vs. reading) gives the exact same map :o
         with io.StringIO() as stream:
@@ -272,7 +272,7 @@ class TestAsciiMaps(unittest.TestCase):
         self.assertEqual(asciimap[6, 0], asciimaps.PLACEHOLDER)
         self.assertEqual(asciimap[5, 0], "TG")
         with self.assertRaises(KeyError):
-            asciimap[10, 0]  # pylint: disable=pointless-statement
+            asciimap[10, 0]
 
     def test_troublesomeHexThird(self):
         asciimap = asciimaps.AsciiMapHexThirdFlatsUp()

@@ -812,8 +812,8 @@ class Case:
         ):
             # trick: these seemingly no-ops load the bp and geom via properties if
             # they are not yet initialized.
-            self.bp  # pylint: disable=pointless-statement
-            self.geom  # pylint: disable=pointless-statement
+            self.bp
+            self.geom
 
             newSettings = {}
             newSettings[CONF_LOADING_FILE] = self.title + "-blueprints.yaml"
