@@ -17,9 +17,10 @@ import numpy
 
 from armi import runLog
 from armi.reactor import parameters
+from armi.reactor.flags import Flags
 from armi.reactor.parameters import ParamLocation
+from armi.reactor.parameters.parameterDefinitions import isNumpyArray
 from armi.utils import units
-from armi.reactor.flags import Flags  # non-standard import to avoid name conflict below
 
 
 def getAssemblyParameterDefinitions():
@@ -27,15 +28,9 @@ def getAssemblyParameterDefinitions():
 
     with pDefs.createBuilder() as pb:
 
-        def powerDecay(self, value):
-            if value is None or isinstance(value, numpy.ndarray):
-                self._p_powerDecay = value
-            else:
-                self._p_powerDecay = numpy.array(value)
-
         pb.defParam(
             "powerDecay",
-            setter=powerDecay,
+            setter=isNumpyArray("powerDecay"),
             units="W",
             description="List of decay heats at each time step specified in "
             "decayHeatCalcTimesInSeconds setting.",
@@ -133,16 +128,9 @@ def getAssemblyParameterDefinitions():
 
     with pDefs.createBuilder(location=ParamLocation.AVERAGE) as pb:
 
-        def detailedNDens(self, value):
-            """Ensures that data is stored in an numpy array to save memory/space."""
-            if value is None or isinstance(value, numpy.ndarray):
-                self._p_detailedNDens = value
-            else:
-                self._p_detailedNDens = numpy.array(value)
-
         pb.defParam(
             "detailedNDens",
-            setter=detailedNDens,
+            setter=isNumpyArray("detailedNDens"),
             units="atoms/bn-cm",
             description=(
                 "High-fidelity number density vector with up to thousands of nuclides. "

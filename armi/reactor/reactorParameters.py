@@ -17,9 +17,10 @@ Reactor parameter definitions.
 """
 import numpy
 
-from armi.utils import units
 from armi.reactor import parameters
 from armi.reactor.parameters import ParamLocation
+from armi.reactor.parameters.parameterDefinitions import isNumpyArray
+from armi.utils import units
 
 
 def defineReactorParameters():
@@ -111,15 +112,9 @@ def defineCoreParameters():
 
     with pDefs.createBuilder() as pb:
 
-        def detailedNucKeys(self, value):
-            if value is None or isinstance(value, numpy.ndarray):
-                self._p_detailedNucKeys = value
-            else:
-                self._p_detailedNucKeys = numpy.array(value)
-
         pb.defParam(
             "detailedNucKeys",
-            setter=detailedNucKeys,
+            setter=isNumpyArray("detailedNucKeys"),
             units="ZZZAAA (ZZZ atomic number, AAA mass number, + 100 * m for metastable states",
             description="Nuclide vector keys, used to map densities in b.p.detailedNDens and a.p.detailedNDens",
             saveToDB=True,
