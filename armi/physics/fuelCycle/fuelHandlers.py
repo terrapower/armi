@@ -915,8 +915,7 @@ class FuelHandler:
 
     @staticmethod
     def readMoves(fname):
-        r"""
-        reads a shuffle output file and sets up the moves dictionary.
+        r"""Reads a shuffle output file and sets up the moves dictionary.
 
         Parameters
         ----------
@@ -940,7 +939,7 @@ class FuelHandler:
         """
         try:
             f = open(fname)
-        except:
+        except OSError:
             raise RuntimeError(
                 "Could not find/open repeat shuffle file {} in working directory {}"
                 "".format(fname, os.getcwd())

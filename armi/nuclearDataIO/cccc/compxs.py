@@ -40,7 +40,6 @@ The file structure is listed here ::
     *********
           POWER CONVERSION FACTORS              ALWAYS
 
-
 See Also
 --------
 :py:mod:`armi.nuclearDataIO.cccc.isotxs`
@@ -74,9 +73,8 @@ directional diffusion coefficient multipliers, respectively. Similary, the ``d<1
 values are the first, second, and third dimension directional diffusion coefficient
 additive terms, respectively.
 """
-
-from traceback import format_exc
 from scipy.sparse import csc_matrix
+from traceback import format_exc
 import numpy
 
 from armi import runLog
@@ -242,7 +240,7 @@ class _CompxsIO(cccc.Stream):
                 regionIO = _getRegionIO()(region, self, self._lib)
                 regionIO.rwRegionData()
             self._rw5DRecord()
-        except:
+        except:  # noqa: bare-except
             raise OSError(
                 "Failed to {} {} \n\n\n{}".format(
                     "read" if self._isReading else "write", self, format_exc()

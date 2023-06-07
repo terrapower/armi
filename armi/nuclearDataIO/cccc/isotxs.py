@@ -280,7 +280,7 @@ class _IsotxsIO(cccc.Stream):
                     self._lib[nucLabel] = nuc
                 nuclideIO = self._getNuclideIO()(nuc, self, self._lib)
                 nuclideIO.rwNuclide()
-        except:
+        except:  # noqa: bare-except
             raise OSError(
                 "Failed to read/write {} \n\n\n{}".format(self, traceback.format_exc())
             )
