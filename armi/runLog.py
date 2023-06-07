@@ -312,7 +312,7 @@ def concatenateLogs(logDir=None):
         # If the log dir is empty, we can delete it.
         try:
             os.rmdir(logDir)
-        except:
+        except:  # noqa: bare-except
             # low priority concern: it's an empty log dir.
             pass
 

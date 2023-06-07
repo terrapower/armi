@@ -368,7 +368,7 @@ class DerivedShape(UnshapedComponent):
             try:
                 if siblingArea is not None:
                     siblingArea += sibling.getArea()
-            except:
+            except:  # noqa: bare-except
                 siblingArea = None
 
         remainingVolume = self.parent.getMaxVolume() - siblingVolume

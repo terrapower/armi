@@ -378,7 +378,7 @@ class SequentialReader:
         if self._stream is not None:
             try:
                 self._stream.close()
-            except:  # pylint: disable=bare-except
+            except:  # noqa: bare-except
                 # We really don't care if anything fails here, plus an exception in exit is ignored anyway
                 pass
         self._stream = None

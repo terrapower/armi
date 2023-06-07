@@ -2020,10 +2020,9 @@ class HexBlock(Block):
 
         If this block is not in any grid at all, then there can be no symmetry so return 1.
         """
-
         try:
             symmetry = self.parent.spatialLocator.grid.symmetry
-        except:
+        except:  # noqa: bare-except
             return 1.0
         if (
             symmetry.domain == geometry.DomainType.THIRD_CORE

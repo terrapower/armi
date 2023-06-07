@@ -74,7 +74,7 @@ class PatchedPythonDomain(PythonDomain):
 
 
 def autodoc_skip_member_handler(app, what, name, obj, skip, options):
-    """Manually exclude certain methods/functions from docs"""
+    """Manually exclude certain methods/functions from docs."""
     # exclude special methods from unittest
     excludes = ["setUp", "setUpClass", "tearDown", "tearDownClass"]
 
@@ -83,14 +83,14 @@ def autodoc_skip_member_handler(app, what, name, obj, skip, options):
         s = str(obj).strip()
         if s.startswith("<Attribute") and "_yamlized_" in s:
             return True
-    except:
+    except AttributeError:
         pass
 
     return name.startswith("_") or name in excludes
 
 
 def setup(app):
-    """Method to make `python setup.py build_sphinx` generate api documentation"""
+    """Method to make `python setup.py build_sphinx` generate api documentation."""
     app.connect("autodoc-skip-member", autodoc_skip_member_handler)
 
     app.add_domain(PatchedPythonDomain, override=True)
@@ -224,7 +224,6 @@ pygments_style = "sphinx"
 # A list of ignored prefixes for module index sorting.
 modindex_common_prefix = ["armi."]
 
-
 # -- Options for HTML output ---------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
@@ -240,7 +239,6 @@ html_theme_options = {
     "style_external_links": True,
     "style_nav_header_background": "#233C5B",  # TP blue looks better than green
 }
-
 
 # Add any paths that contain custom themes here, relative to this directory.
 html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]

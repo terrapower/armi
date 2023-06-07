@@ -474,8 +474,9 @@ class SynchronizationTests:
                         self.write("*** printed exception")
                         try:
                             self.tearDown()
-                        except:
+                        except:  # noqa: bare-except
                             pass
+
             self.l.write("done.")
 
     def write(self, msg):

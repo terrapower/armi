@@ -617,7 +617,7 @@ class Inspector:
                     availabilities = expandRepeatedFloats(
                         self.cs["availabilityFactors"]
                     ) or ([self.cs["availabilityFactor"]] * self.cs["nCycles"])
-                except:  # pylint: disable=bare-except
+                except:  # noqa: bare-except
                     return True
 
                 for pf, af in zip(powerFracs, availabilities):

@@ -99,7 +99,6 @@ def convertToSlice(x, increment=False):
     >>> a[convertToSlice(None)]
     array([10, 11, 12, 13])
 
-
     >>> a[utils.convertToSlice([1, 3])]
     array([11, 13])
 
@@ -157,12 +156,13 @@ def convertToSlice(x, increment=False):
 
 
 def efmt(a: str) -> str:
-    r"""Converts string exponential number to another string with just 2 digits in the exponent."""
+    """Converts string exponential number to another string with just 2 digits in the exponent."""
     # this assumes that none of our numbers will be more than 1e100 or less than 1e-100...
     if len(a.split("E")) != 2:
         two = a.split("e")
     else:
         two = a.split("E")
+
     # print two
     exp = two[1]  # this is '+002' or '+02' or something
 
@@ -271,13 +271,13 @@ def fixThreeDigitExp(strToFloat: str) -> float:
 
 
 def getFloat(val):
-    r"""Returns float version of val, or None if it's impossible. Useful for converting
+    """Returns float version of val, or None if it's impossible. Useful for converting
     user-input into floats when '' might be possible.
     """
     try:
         newVal = float(val)
         return newVal
-    except:
+    except:  # noqa: bare-except
         return None
 
 
@@ -288,6 +288,7 @@ def getStepsFromValues(values, prevValue=0.0):
         currentVal = float(val)
         steps.append(currentVal - prevValue)
         prevValue = currentVal
+
     return steps
 
 

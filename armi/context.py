@@ -132,7 +132,7 @@ try:
     # trying a windows approach
     APP_DATA = os.path.join(os.environ["APPDATA"], "armi")
     APP_DATA = APP_DATA.replace("/", "\\")
-except:  # pylint: disable=bare-except
+except:  # noqa: bare-except
     # non-windows
     APP_DATA = os.path.expanduser("~/.armi")
 
@@ -279,7 +279,7 @@ def cleanAllArmiTempDirs(olderThanDays: int) -> None:
             if runIsOldAndLikleyComplete or fromThisRun:
                 # Delete old files
                 cleanPath(dirPath, mpiRank=MPI_RANK)
-        except:  # pylint: disable=bare-except
+        except:  # noqa: bare-except
             pass
 
 
