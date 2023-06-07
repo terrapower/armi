@@ -73,7 +73,7 @@ class TestFlag(unittest.TestCase):
         """Make sure that we catch value collisions."""
         with self.assertRaises(AssertionError):
 
-            class F(Flag):  # pylint: disable=unused-variable
+            class F(Flag):
                 foo = 1
                 bar = 1
 
