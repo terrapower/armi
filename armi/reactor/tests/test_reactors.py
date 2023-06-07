@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Resting for reactors.py."""
+"""Testing for reactors.py."""
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import copy
 import os
@@ -35,9 +35,10 @@ from armi.reactor.components import Hexagon, Rectangle
 from armi.reactor.converters import geometryConverters
 from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
 from armi.reactor.flags import Flags
+from armi.settings.fwSettings.globalSettings import CONF_ASSEM_FLAGS_SKIP_AXIAL_EXP
+from armi.settings.fwSettings.globalSettings import CONF_SORT_REACTOR
 from armi.tests import ARMI_RUN_PATH, mockRunLogs, TEST_ROOT
 from armi.utils import directoryChangers
-from armi.settings.fwSettings.globalSettings import CONF_ASSEM_FLAGS_SKIP_AXIAL_EXP
 
 TEST_REACTOR = None  # pickled string of test reactor (for fast caching)
 
@@ -48,8 +49,8 @@ def buildOperatorOfEmptyHexBlocks(customSettings=None):
 
     Doesn't depend on inputs and loads quickly.
 
-    Params
-    ------
+    Parameters
+    ----------
     customSettings : dict
         Dictionary of off-default settings to update
     """
@@ -79,6 +80,7 @@ def buildOperatorOfEmptyHexBlocks(customSettings=None):
     a.add(b)
     a.spatialLocator = r.core.spatialGrid[1, 0, 0]
     o.r.core.add(a)
+    o.r.sort()
     return o
 
 
@@ -88,10 +90,10 @@ def buildOperatorOfEmptyCartesianBlocks(customSettings=None):
 
     Doesn't depend on inputs and loads quickly.
 
-    Params
-    ------
+    Parameters
+    ----------
     customSettings : dict
-        Dictionary of off-default settings to update
+        Off-default settings to update
     """
     settings.setMasterCs(None)  # clear
     cs = settings.Settings()  # fetch new
@@ -127,6 +129,7 @@ def buildOperatorOfEmptyCartesianBlocks(customSettings=None):
     a.add(b)
     a.spatialLocator = r.core.spatialGrid[1, 0, 0]
     o.r.core.add(a)
+    o.r.sort()
     return o
 
 
@@ -177,6 +180,7 @@ def loadTestReactor(
         assemblies.setAssemNumCounter(assemNum)
         settings.setMasterCs(o.cs)
         o.reattach(r, o.cs)
+        r.sort()
         return o, r
 
     cs = settings.Settings(fName=fName)
@@ -209,6 +213,7 @@ def loadTestReactor(
         # protocol=2 allows for classes with __slots__ but not __getstate__ to be pickled
         TEST_REACTOR = cPickle.dumps((o, o.r, assemblies.getAssemNum()), protocol=2)
 
+    o.r.sort()
     return o, o.r
 
 
@@ -248,6 +253,25 @@ class HexReactorTests(ReactorTests):
         self.o, self.r = loadTestReactor(
             self.directoryChanger.destination, customSettings={"trackAssems": True}
         )
+
+    def test_factorySortSetting(self):
+        # get a sorted Reactor (the default)
+        cs = settings.Settings(fName="armiRun.yaml")
+        r0 = reactors.loadFromCs(cs)
+
+        # get an unsorted Reactor (for whatever reason)
+        customSettings = {CONF_SORT_REACTOR: False}
+        cs = cs.modified(newSettings=customSettings)
+        r1 = reactors.loadFromCs(cs)
+
+        # the reactor / core should be the same size
+        self.assertEqual(len(r0), len(r1))
+        self.assertEqual(len(r0.core), len(r1.core))
+
+        # the reactor / core should be in a different order
+        a0 = [a.name for a in r0.core]
+        a1 = [a.name for a in r1.core]
+        self.assertNotEqual(a0, a1)
 
     def test_getTotalParam(self):
         # verify that the block params are being read.

@@ -47,11 +47,12 @@ from armi.reactor import geometry
 from armi.reactor import grids
 from armi.reactor import parameters
 from armi.reactor import reactorParameters
-from armi.reactor import systemLayoutInput
 from armi.reactor import zones
 from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
 from armi.reactor.flags import Flags
+from armi.reactor.systemLayoutInput import SystemLayoutInput
 from armi.settings.fwSettings.globalSettings import CONF_MATERIAL_NAMESPACE_ORDER
+from armi.settings.fwSettings.globalSettings import CONF_SORT_REACTOR
 from armi.utils import createFormattedStrWithDelimiter, units
 from armi.utils import directoryChangers
 from armi.utils.iterables import Sequence
@@ -110,9 +111,19 @@ class Reactor(composites.Composite):
             self.core = cores[0]
 
 
-def loadFromCs(cs):
+def loadFromCs(cs) -> Reactor:
     """
     Load a Reactor based on the input settings.
+
+    Parameters
+    ----------
+    cs: CaseSettings
+        A relevant settings object
+
+    Returns
+    -------
+    Reactor
+        Reactor loaded from settings file
     """
     from armi.reactor import blueprints
 
@@ -120,7 +131,7 @@ def loadFromCs(cs):
     return factory(cs, bp)
 
 
-def factory(cs, bp, geom: Optional[systemLayoutInput.SystemLayoutInput] = None):
+def factory(cs, bp, geom: Optional[SystemLayoutInput] = None) -> Reactor:
     """Build a reactor from input settings, blueprints and geometry."""
     from armi.reactor import blueprints
 
@@ -147,6 +158,17 @@ def factory(cs, bp, geom: Optional[systemLayoutInput.SystemLayoutInput] = None):
                 structure.construct(cs, bp, r)
 
     runLog.debug("Reactor: {}".format(r))
+
+    # return a Reactor object
+    if cs[CONF_SORT_REACTOR]:
+        r.sort()
+    else:
+        runLog.warning(
+            "DeprecationWarning: This Reactor is not being sorted on blueprint read. "
+            f"Due to the setting {CONF_SORT_REACTOR}, this Reactor is unsorted. "
+            "But this feature is temporary and will be removed by 2024."
+        )
+
     return r
 
 
