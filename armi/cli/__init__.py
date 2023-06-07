@@ -34,7 +34,6 @@ armi.operators :  Operations that ARMI will perform on a reactor model.
     These may be created by ``Case`` objects created by certain entry points (e.g. ``run``).
 
 armi : Fundamental entry point that calls this package.
-
 """
 
 # importing each module causes the any EntryPoints defined in the module that
@@ -149,7 +148,7 @@ class ArmiCLI:
     @staticmethod
     def showVersion():
         """Print the App name and version on the command line."""
-        from armi import getAp  # noqa: module-import-not-at-top-of-file
+        from armi import getApp  # noqa: module-import-not-at-top-of-file
 
         prog = context.APP_NAME
         app = getApp()
