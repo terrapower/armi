@@ -37,7 +37,7 @@ import time
 import numpy
 import tabulate
 
-from armi import getPluginManagerOrFail, materials, nuclearDataIO, settings
+from armi import getPluginManagerOrFail, materials, nuclearDataIO
 from armi import runLog
 from armi.nuclearDataIO import xsLibraries
 from armi.reactor import assemblies
@@ -49,7 +49,6 @@ from armi.reactor import parameters
 from armi.reactor import reactorParameters
 from armi.reactor import systemLayoutInput
 from armi.reactor import zones
-from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
 from armi.reactor.flags import Flags
 from armi.settings.fwSettings.globalSettings import CONF_MATERIAL_NAMESPACE_ORDER
 from armi.utils import createFormattedStrWithDelimiter, units
@@ -338,7 +337,7 @@ class Core(composites.Composite):
         arbitrary nature for any particular client. The center-most fueled assembly is
         not particularly representative of the state of the core as a whole.
         """
-        key = lambda a: a.spatialLocator.getRingPos()
+        key = lambda a: a.spatialLocator.getRingPos()  # noqa: lambda-assignment
         assems = self.getAssemblies(Flags.FUEL, sortKey=key)
         if not assems:
             assems = self.getAssemblies(sortKey=key)
@@ -2328,7 +2327,7 @@ class Core(composites.Composite):
         runLog.debug(
             "Building Zones by manual definitions in `zoneDefinitions` setting"
         )
-        stripper = lambda s: s.strip()
+        stripper = lambda s: s.strip()  # noqa: lambda-assignment
         self.zones = zones.Zones()
 
         # parse the special input string for zone definitions
