@@ -20,11 +20,12 @@ which will enable modular construction of apps.
 """
 import numpy
 
-from armi.reactor import parameters
-from armi.reactor.parameters import ParamLocation
-from armi.reactor.blocks import Block
-from armi.reactor.reactors import Core
 from armi.physics.neutronics.settings import CONF_DPA_PER_FLUENCE
+from armi.reactor import parameters
+from armi.reactor.blocks import Block
+from armi.reactor.parameters import ParamLocation
+from armi.reactor.parameters.parameterDefinitions import isNumpyArray
+from armi.reactor.reactors import Core
 
 
 def getNeutronicsParameterDefinitions():
@@ -44,16 +45,9 @@ def _getNeutronicsBlockParams():
             categories=[parameters.Category.retainOnReplacement],
         )
 
-        def mgFlux(self, value):
-            self._p_mgFlux = (
-                value
-                if value is None or isinstance(value, numpy.ndarray)
-                else numpy.array(value)
-            )
-
         pb.defParam(
             "mgFlux",
-            setter=mgFlux,
+            setter=isNumpyArray("mgFlux"),
             units="n-cm/s",
             description="multigroup volume-integrated flux",
             location=ParamLocation.VOLUME_INTEGRATED,
@@ -270,15 +264,9 @@ def _getNeutronicsBlockParams():
             ],
         )
 
-        def linPowByPin(self, value):
-            if value is None or isinstance(value, numpy.ndarray):
-                self._p_linPowByPin = value
-            else:
-                self._p_linPowByPin = numpy.array(value)
-
         pb.defParam(
             "linPowByPin",
-            setter=linPowByPin,
+            setter=isNumpyArray("linPowByPin"),
             units="W/cm",
             description=(
                 "Pin linear linear heat rate, which is calculated through flux reconstruction and "
@@ -292,16 +280,10 @@ def _getNeutronicsBlockParams():
             default=None,
         )
 
-        def linPowByPinNeutron(self, value):
-            if value is None or isinstance(value, numpy.ndarray):
-                self._p_linPowByPinNeutron = value
-            else:
-                self._p_linPowByPinNeutron = numpy.array(value)
-
         # gamma category because linPowByPin is only split by neutron/gamma when gamma is activated
         pb.defParam(
             "linPowByPinNeutron",
-            setter=linPowByPinNeutron,
+            setter=isNumpyArray("linPowByPinNeutron"),
             units="W/cm",
             description="Pin linear neutron heat rate. This is the neutron heating component of `linPowByPin`",
             location=ParamLocation.CHILDREN,
@@ -309,15 +291,9 @@ def _getNeutronicsBlockParams():
             default=None,
         )
 
-        def linPowByPinGamma(self, value):
-            if value is None or isinstance(value, numpy.ndarray):
-                self._p_linPowByPinGamma = value
-            else:
-                self._p_linPowByPinGamma = numpy.array(value)
-
         pb.defParam(
             "linPowByPinGamma",
-            setter=linPowByPinGamma,
+            setter=isNumpyArray("linPowByPinGamma"),
             units="W/cm",
             description="Pin linear gamma heat rate. This is the gamma heating component of `linPowByPin`",
             location=ParamLocation.CHILDREN,
@@ -349,6 +325,7 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "pointsEdgeDpa",
+            setter=isNumpyArray("pointsEdgeDpa"),
             units="dpa",
             description="displacements per atom at edges of the block",
             categories=["cumulative", "detailedAxialExpansion", "depletion"],
@@ -356,6 +333,7 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "pointsEdgeDpaRate",
+            setter=isNumpyArray("pointsEdgeDpaRate"),
             units="dpa/s",
             description="Current time derivative of the displacement per atoms at edges of the block",
         )
@@ -383,6 +361,7 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "pointsCornerDpa",
+            setter=isNumpyArray("pointsCornerDpa"),
             units="dpa",
             description="displacements per atom at corners of the block",
             location=ParamLocation.CORNERS,
@@ -391,6 +370,7 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "pointsCornerDpaRate",
+            setter=isNumpyArray("pointsCornerDpaRate"),
             units="dpa/s",
             description="Current time derivative of the displacement per atoms at corners of the block",
         )

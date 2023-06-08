@@ -26,16 +26,15 @@ See Also
 --------
 armi.reactor.parameters
 """
-import enum
-import re
-import functools
 from typing import Any, Dict, Optional, Sequence, Tuple, Type
+import enum
+import functools
+import re
 
 import numpy
 
 from armi.reactor.flags import Flags
-
-from .exceptions import ParameterError, ParameterDefinitionError
+from armi.reactor.parameters.exceptions import ParameterError, ParameterDefinitionError
 
 # bitwise masks for high-speed operations on the `assigned` attribute
 # (see http://www.vipan.com/htdocs/bitwisehelp.html)
@@ -182,6 +181,29 @@ class Serializer:
     ) -> Sequence[any]:
         """Given packed data and attributes, return the unpacked data."""
         raise NotImplementedError()
+
+
+def isNumpyArray(paramStr):
+    """Helper meta-function to create a method that sets a Parameter value to a NumPy array.
+
+    Parameters
+    ----------
+    paramStr : str
+        Name of the Parameter we want to set.
+
+    Returns
+    -------
+    function
+        A setter method on the Parameter class to force the value to be a NumPy array.
+    """
+
+    def setParameter(selfObj, value):
+        if value is None or isinstance(value, numpy.ndarray):
+            setattr(selfObj, "_p_" + paramStr, value)
+        else:
+            setattr(selfObj, "_p_" + paramStr, numpy.array(value))
+
+    return setParameter
 
 
 @functools.total_ordering

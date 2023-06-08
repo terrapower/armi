@@ -161,7 +161,6 @@ class FuelHandler:
             numMoved = 0
 
         self.o.r.core.p.numMoves = numMoved
-
         self.o.r.core.setBlockMassParams()
 
         runLog.important(
@@ -201,7 +200,8 @@ class FuelHandler:
         return defaultFactorList, factorSearchFlags
 
     def prepCore(self):
-        """Aux. function to run before XS generation (do moderation, etc. here)."""
+        """Aux function to run before XS generation (do moderation, etc)."""
+        pass
 
     def prepSearch(self, *args, **kwargs):
         """
@@ -916,7 +916,7 @@ class FuelHandler:
     @staticmethod
     def readMoves(fname):
         r"""
-        reads a shuffle output file and sets up the moves dictionary.
+        Reads a shuffle output file and sets up the moves dictionary.
 
         Parameters
         ----------
@@ -1014,7 +1014,7 @@ class FuelHandler:
     @staticmethod
     def trackChain(moveList, startingAt, alreadyDone=None):
         r"""
-        builds a chain of locations based on starting location.
+        Builds a chain of locations based on starting location.
 
         Notes
         -----

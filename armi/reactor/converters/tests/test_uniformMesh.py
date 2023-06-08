@@ -233,8 +233,10 @@ class TestUniformMeshGenerator(unittest.TestCase):
         cls.r.core.lib = isotxs.readBinary(ISOAA_PATH)
 
         # make the mesh a little non-uniform
-        a = cls.r.core[4]
-        a[2].setHeight(a[2].getHeight() * 1.05)
+        a4 = cls.r.core[4]
+        a4[2].setHeight(a4[2].getHeight() * 1.05)
+        a3 = cls.r.core[3]
+        a3[2].setHeight(a3[2].getHeight() * 1.20)
 
     def setUp(self):
         self.generator = uniformMesh.UniformMeshGenerator(
@@ -284,16 +286,19 @@ class TestUniformMeshGenerator(unittest.TestCase):
             )
 
     def test_filteredTopAndBottom(self):
-        fuelBottoms, fuelTops = self.generator._getFilteredFuelTopAndBottom()
+        fuelBottoms, fuelTops = self.generator._getFilteredMeshTopAndBottom(Flags.FUEL)
         self.assertListEqual(fuelBottoms, [25.0])
-        self.assertListEqual(fuelTops, [101.25])
+        self.assertListEqual(fuelTops, [101.25, 105.0])
 
-        # ctrlBottoms and ctrlTops include the fuelBottoms and fuelTops, respectively
-        ctrlBottoms, ctrlTops = self.generator._getFilteredControlTopAndBottom(
-            fuelBottoms, fuelTops
+        # ctrlAndFuelBottoms and ctrlAndFuelTops include the fuelBottoms and fuelTops, respectively
+        (
+            ctrlAndFuelBottoms,
+            ctrlAndFuelTops,
+        ) = self.generator._getFilteredMeshTopAndBottom(
+            Flags.CONTROL, fuelBottoms, fuelTops
         )
-        self.assertListEqual(ctrlBottoms, [25.0, 50.0])
-        self.assertListEqual(ctrlTops, [75.0, 101.25])
+        self.assertListEqual(ctrlAndFuelBottoms, [25.0, 50.0])
+        self.assertListEqual(ctrlAndFuelTops, [75.0, 101.25, 105.0])
 
     def test_generateCommonMesh(self):
         """
@@ -305,12 +310,12 @@ class TestUniformMeshGenerator(unittest.TestCase):
             50.0,
             75.0,
             101.25,
-            118.80952380952381,
-            137.5595238095238,
-            156.3095238095238,
-            175.0595238095238,
+            105.0,
+            119.04761904761905,
+            137.79761904761904,
+            156.54761904761904,
+            175.29761904761904,
         ]
-
         self.assertListEqual(list(self.generator._commonMesh), expectedMesh)
 
 
