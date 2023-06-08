@@ -144,7 +144,7 @@ class Inspector:
     """
 
     @staticmethod
-    def NO_ACTION():  # pylint: disable=invalid-name
+    def NO_ACTION():
         """Convenience callable used to generate Queries that can't be easily auto-resolved."""
         return None
 
@@ -207,10 +207,7 @@ class Inspector:
             issues = [
                 query
                 for query in self.queries
-                if query
-                and (
-                    query.isCorrective() and not query._passed
-                )  # pylint: disable=protected-access
+                if query and (query.isCorrective() and not query._passed)
             ]
             if any(issues):
                 # something isn't resolved or was unresolved by changes
@@ -282,7 +279,7 @@ class Inspector:
         runLog.extra(f"Updating setting `{key}` to `{value}`")
         self.cs[key] = value
 
-    def _raise(self):  # pylint: disable=no-self-use
+    def _raise(self):
         raise KeyboardInterrupt("Input inspection has been interrupted.")
 
     def _inspectBlueprints(self):
@@ -599,7 +596,7 @@ class Inspector:
                     and (
                         (
                             len(self.cs["cycleLengths"]) > 1
-                            if self.cs["cycleLengths"] != None
+                            if self.cs["cycleLengths"] is not None
                             else False
                         )
                         or self.cs["nCycles"] > 1
@@ -714,7 +711,7 @@ class Inspector:
 
 
 def createQueryRevertBadPathToDefault(inspector, settingName, initialLambda=None):
-    """
+    r"""
     Return a query to revert a bad path to its default.
 
     Parameters
@@ -726,10 +723,9 @@ def createQueryRevertBadPathToDefault(inspector, settingName, initialLambda=None
     initialLambda: None or callable function
         If ``None``, the callable argument for :py:meth:`addQuery` is does the setting's path exist.
         If more complicated callable arguments are needed, they can be passed in as the ``initialLambda`` setting.
-
     """
     if initialLambda is None:
-        initialLambda = lambda: (
+        initialLambda = lambda: (  # noqa: lambda-assignment
             not os.path.exists(pathTools.armiAbsPath(inspector.cs[settingName]))
             and inspector.cs.getSetting(settingName).offDefault
         )  # solution is to revert to default

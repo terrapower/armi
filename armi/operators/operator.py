@@ -59,7 +59,7 @@ from armi.utils import (
 )
 
 
-class Operator:  # pylint: disable=too-many-public-methods
+class Operator:
     """
     Orchestrates an ARMI run, building all the pieces, looping through the interfaces, and manipulating the reactor.
 
@@ -591,7 +591,7 @@ class Operator:  # pylint: disable=too-many-public-methods
         activeInterfaces = [
             ii
             for ii in self.interfaces
-            if (ii.enabled() or ii.bolForce()) and not ii.name in excludedInterfaceNames
+            if (ii.enabled() or ii.bolForce()) and ii.name not in excludedInterfaceNames
         ]
         activeInterfaces = [
             ii

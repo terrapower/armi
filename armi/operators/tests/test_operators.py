@@ -170,7 +170,6 @@ class TestTightCoupling(unittest.TestCase):
             def isConverged(self, _val: TightCoupler._SUPPORTED_TYPES) -> bool:
                 return False
 
-        # pylint: disable=abstract-method
         class InterfaceNoConverge(Interface):
             name = "NoConverge"
 
