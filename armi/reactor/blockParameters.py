@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """Parameter definitions for Blocks."""
-import numpy
 import six
 
 from armi import runLog

@@ -34,7 +34,6 @@ from armi import configure
 # configure ARMI
 configure(permissive=True)
 
-# ruff: noqa: module-import-not-at-top-of-file
 from armi import cases
 from armi import settings
 from armi.reactor import blueprints

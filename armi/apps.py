@@ -28,6 +28,7 @@ customizing much of the Framework's behavior.
     object. We are planning to do this, but for now this App class is somewhat
     rudimentary.
 """
+# ruff: noqa: E402
 from typing import Dict, Optional, Tuple, List
 import collections
 import importlib
@@ -79,7 +80,6 @@ class App:
         self.__initNewPlugins()
 
     def __initNewPlugins(self):
-        # ruff: noqa: module-import-not-at-top-of-file
         from armi import cli
         from armi import bookkeeping
         from armi.physics import fuelCycle
