@@ -53,7 +53,7 @@ ORDER = interfaces.STACK_ORDER.FLUX
 RX_ABS_MICRO_LABELS = ["nGamma", "fission", "nalph", "np", "nd", "nt"]
 RX_PARAM_NAMES = ["rateCap", "rateFis", "rateProdN2n", "rateProdFis", "rateAbs"]
 
-# pylint: disable=too-many-public-methods
+
 class GlobalFluxInterface(interfaces.Interface):
     """
     A general abstract interface for global flux-calculating modules.
@@ -590,7 +590,7 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
         if meshConverter:
             if self.options.applyResultsToReactor or self.options.hasNonUniformAssems:
                 meshConverter.applyStateToOriginal()
-            self.r = meshConverter._sourceReactor  # pylint: disable=protected-access;
+            self.r = meshConverter._sourceReactor
 
             # Resets the stored attributes on the converter to
             # ensure that there is state data that is long-lived on the

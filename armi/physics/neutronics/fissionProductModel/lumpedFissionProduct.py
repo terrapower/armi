@@ -17,8 +17,6 @@ them from files.
 
 These are generally managed by the
 :py:mod:`~armi.physics.neutronics.fissionProductModel.fissionProductModel.FissionProductModel`
-
-
 """
 import os
 
@@ -152,7 +150,6 @@ class LumpedFissionProduct:
         massFracs : dict
             mass fractions (floats) of LFP masses
         """
-
         massFracs = {}
         for nuc in self.keys():
             massFracs[nuc] = self.getMassFrac(nuclideBase=nuc)

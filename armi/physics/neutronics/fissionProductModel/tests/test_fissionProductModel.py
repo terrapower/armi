@@ -17,21 +17,19 @@ Test the fission product module to ensure all FP are available.
 import unittest
 
 from armi import nuclideBases
-from armi.reactor.flags import Flags
-
 from armi.physics.neutronics.fissionProductModel import fissionProductModel
-from armi.reactor.tests.test_reactors import (
-    buildOperatorOfEmptyHexBlocks,
-    loadTestReactor,
-)
 from armi.physics.neutronics.fissionProductModel.tests import test_lumpedFissionProduct
 from armi.physics.neutronics.isotopicDepletion.isotopicDepletionInterface import (
     isDepletable,
 )
 from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import (
     CONF_FP_MODEL,
-    CONF_MAKE_ALL_BLOCK_LFPS_INDEPENDENT,
     CONF_FISSION_PRODUCT_LIBRARY_NAME,
+)
+from armi.reactor.flags import Flags
+from armi.reactor.tests.test_reactors import (
+    buildOperatorOfEmptyHexBlocks,
+    loadTestReactor,
 )
 
 

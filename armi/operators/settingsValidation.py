@@ -725,7 +725,7 @@ def createQueryRevertBadPathToDefault(inspector, settingName, initialLambda=None
         If more complicated callable arguments are needed, they can be passed in as the ``initialLambda`` setting.
     """
     if initialLambda is None:
-        initialLambda = lambda: (  # noqa: lambda-assignment
+        initialLambda = lambda: (
             not os.path.exists(pathTools.armiAbsPath(inspector.cs[settingName]))
             and inspector.cs.getSetting(settingName).offDefault
         )  # solution is to revert to default

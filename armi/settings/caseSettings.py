@@ -139,9 +139,7 @@ class Settings:
 
     def __repr__(self):
         total = len(self.__settings.keys())
-        isAltered = (  # noqa: lambda-assignment
-            lambda s: 1 if s.value != s.default else 0
-        )
+        isAltered = lambda s: 1 if s.value != s.default else 0
         altered = sum([isAltered(setting) for setting in self.__settings.values()])
 
         return "<{} name:{} total:{} altered:{}>".format(

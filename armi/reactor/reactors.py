@@ -337,7 +337,7 @@ class Core(composites.Composite):
         arbitrary nature for any particular client. The center-most fueled assembly is
         not particularly representative of the state of the core as a whole.
         """
-        key = lambda a: a.spatialLocator.getRingPos()  # noqa: lambda-assignment
+        key = lambda a: a.spatialLocator.getRingPos()
         assems = self.getAssemblies(Flags.FUEL, sortKey=key)
         if not assems:
             assems = self.getAssemblies(sortKey=key)
@@ -2327,7 +2327,7 @@ class Core(composites.Composite):
         runLog.debug(
             "Building Zones by manual definitions in `zoneDefinitions` setting"
         )
-        stripper = lambda s: s.strip()  # noqa: lambda-assignment
+        stripper = lambda s: s.strip()
         self.zones = zones.Zones()
 
         # parse the special input string for zone definitions

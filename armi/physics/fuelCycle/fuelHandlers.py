@@ -24,6 +24,7 @@ the particular shuffling of a case.
 
 This module also handles repeat shuffles when doing a restart.
 """
+# ruff: noqa: F401
 import os
 import re
 import warnings

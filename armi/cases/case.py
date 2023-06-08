@@ -681,9 +681,7 @@ class Case:
         clone.cs.writeToYamlFile(clone.cs.path, style=writeStyle, fromFile=self.cs.path)
         runLog.important("finished writing {}".format(clone.cs))
 
-        fromPath = lambda f: pathTools.armiAbsPath(  # noqa: lambda-assignment
-            self.cs.inputDirectory, f
-        )
+        fromPath = lambda f: pathTools.armiAbsPath(self.cs.inputDirectory, f)
 
         for inputFileSetting in [CONF_LOADING_FILE, "geomFile"]:
             fileName = self.cs[inputFileSetting]

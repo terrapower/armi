@@ -4,8 +4,9 @@
 # This is the exact version of Ruff we use.
 required-version = "0.0.252"
 
-# Never enforce `E501` (line length, because we use Black for that).
-ignore = ["E501"]
+# Never enforce `E501`: line length, because we use Black for that
+# Never enforce `E731`: we can use lambdas however we want
+ignore = ["E501", "E731"]
 
 # Exclude a variety of commonly ignored directories.
 exclude = [
