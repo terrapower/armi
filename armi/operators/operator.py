@@ -1120,7 +1120,7 @@ class Operator:  # pylint: disable=too-many-public-methods
                         base, cycle, node, ext, iteration
                     )
                 else:
-                    fileName = "{0}_{1:03d}_{2:d}{3}".format(base, cycle, node)
+                    fileName = "{0}_{1:03d}_{2:d}{3}".format(base, cycle, node, ext)
                 # add the cycle and timenode to the XS input file names so that a rx-coeff case that runs
                 # in here won't overwrite them.
                 shutil.copy(fileName, os.path.join(newFolder, fileName))
