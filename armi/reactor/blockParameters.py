@@ -20,6 +20,7 @@ from armi import runLog
 from armi.physics.neutronics import crossSectionGroupManager
 from armi.reactor import parameters
 from armi.reactor.parameters import ParamLocation, Parameter, NoDefault
+from armi.reactor.parameters.parameterDefinitions import isNumpyArray
 from armi.utils import units
 from armi.utils.units import ASCII_LETTER_A
 
@@ -48,16 +49,9 @@ def getBlockParameterDefinitions():
             location=ParamLocation.CHILDREN,
         )
 
-        def detailedNDens(self, value):
-            """Ensures that data is stored in an numpy array to save memory/space."""
-            if value is None or isinstance(value, numpy.ndarray):
-                self._p_detailedNDens = value
-            else:
-                self._p_detailedNDens = numpy.array(value)
-
         pb.defParam(
             "detailedNDens",
-            setter=detailedNDens,
+            setter=isNumpyArray("detailedNDens"),
             units="atoms/bn-cm",
             description=(
                 "High-fidelity number density vector with up to thousands of nuclides. "

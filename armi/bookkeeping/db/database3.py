@@ -67,22 +67,23 @@ from armi.bookkeeping.db.layout import (
     replaceNonesWithNonsense,
     replaceNonsenseWithNones,
 )
-from armi.reactor import parameters
-from armi.reactor.parameters import parameterCollections
-from armi.reactor.flags import Flags
-from armi.reactor.reactors import Core
+from armi.bookkeeping.db.typedefs import History, Histories
+from armi.nucDirectory import nuclideBases
+from armi.physics.neutronics.settings import CONF_LOADING_FILE
 from armi.reactor import assemblies
+from armi.reactor import grids
+from armi.reactor import parameters
+from armi.reactor import systemLayoutInput
 from armi.reactor.assemblies import Assembly
 from armi.reactor.blocks import Block
 from armi.reactor.components import Component
 from armi.reactor.composites import ArmiObject
-from armi.reactor import grids
-from armi.bookkeeping.db.typedefs import History, Histories
-from armi.reactor import systemLayoutInput
+from armi.reactor.flags import Flags
+from armi.reactor.parameters import parameterCollections
+from armi.reactor.reactors import Core
+from armi.settings.fwSettings.globalSettings import CONF_SORT_REACTOR
 from armi.utils import getNodesPerCycle
 from armi.utils.textProcessors import resolveMarkupInclusions
-from armi.nucDirectory import nuclideBases
-from armi.physics.neutronics.settings import CONF_LOADING_FILE
 
 # CONSTANTS
 _SERIALIZER_NAME = "serializerName"
@@ -710,8 +711,8 @@ class Database3:
 
         Returns
         -------
-        root : ArmiObject
-            The top-level object stored in the database; usually a Reactor.
+        root : Reactor
+            The top-level object stored in the database; a Reactor.
         """
         runLog.info("Loading reactor state for time node ({}, {})".format(cycle, node))
 
@@ -754,7 +755,15 @@ class Database3:
         if updateGlobalAssemNum:
             updateGlobalAssemblyNum(root)
 
-        # usually a reactor object
+        # return a Reactor object
+        if cs[CONF_SORT_REACTOR]:
+            root.sort()
+        else:
+            runLog.warning(
+                "DeprecationWarning: This Reactor is not being sorted on DB load. "
+                f"Due to the setting {CONF_SORT_REACTOR}, this Reactor is unsorted. "
+                "But this feature is temporary and will be removed by 2024."
+            )
         return root
 
     @staticmethod

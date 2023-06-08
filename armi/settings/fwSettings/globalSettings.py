@@ -99,6 +99,7 @@ CONF_REALLY_SMALL_RUN = "reallySmallRun"
 CONF_RUN_TYPE = "runType"
 CONF_SKIP_CYCLES = "skipCycles"
 CONF_SMALL_RUN = "smallRun"
+CONF_SORT_REACTOR = "sortReactor"
 CONF_START_CYCLE = "startCycle"
 CONF_START_NODE = "startNode"
 CONF_STATIONARY_BLOCK_FLAGS = "stationaryBlockFlags"
@@ -688,6 +689,12 @@ def defineSettings() -> List[setting.Setting]:
             default=False,
             label="Clean Up Files at EOL",
             description="Clean up intermediate files after the run completes (EOL)",
+        ),
+        setting.Setting(
+            CONF_SORT_REACTOR,
+            default=True,
+            label="Do we want to automatically sort the Reactor?",
+            description="Deprecation Warning! This setting will be remove by 2024.",
         ),
         setting.Setting(
             CONF_REALLY_SMALL_RUN,
