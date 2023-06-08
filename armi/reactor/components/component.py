@@ -428,7 +428,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         block.getVolumeFractions: component coolant is typically the "leftover" and is calculated and set here
         """
         area = self.getComponentArea(cold=cold)
-        if self.p.get("modArea", None):  # pylint: disable=no-member
+        if self.p.get("modArea", None):
             comp, arg = self.p.modArea
             if arg == "sub":
                 area -= comp.getComponentArea(cold=cold)
@@ -846,7 +846,7 @@ class Component(composites.Composite, metaclass=ComponentType):
     def clearLinkedCache(self):
         """Clear this cache and any other dependent volumes."""
         self.clearCache()
-        if self.parent:  # pylint: disable=no-member
+        if self.parent:
             # changes in dimensions can affect cached variables such as pitch
             self.parent.cached = {}
             for c in self.getLinkedComponents():
@@ -891,8 +891,9 @@ class Component(composites.Composite, metaclass=ComponentType):
                 "This method needs to be implemented on the material to allow thermal expansion."
                 ".\nReference temperature: {}, Adjusted temperature: {}, Temperature difference: {}, "
                 "Specified tolerance: {}".format(
-                    self.material, T0, Tc, (Tc - T0), self._TOLERANCE, single=True
-                )
+                    self.material, T0, Tc, (Tc - T0), self._TOLERANCE
+                ),
+                single=True,
             )
             raise RuntimeError(
                 "Linear expansion percent may not be implemented in the {} material "

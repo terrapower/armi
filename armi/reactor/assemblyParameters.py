@@ -19,7 +19,6 @@ from armi import runLog
 from armi.reactor import parameters
 from armi.reactor.parameters import ParamLocation
 from armi.utils import units
-from armi.reactor.flags import Flags  # non-standard import to avoid name conflict below
 
 
 def getAssemblyParameterDefinitions():

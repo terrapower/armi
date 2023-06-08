@@ -145,7 +145,6 @@ class _BlueprintsPluginCollector(yamlize.objects.ObjectType):
     """
 
     def __new__(mcs, name, bases, attrs):
-        # pylint: disable=no-member
         pm = getPluginManager()
         if pm is None:
             runLog.warning(
@@ -199,8 +198,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
         key="component groups", type=ComponentGroups, default=None
     )
 
-    # These are used to set up new attributes that come from plugins. Defining its
-    # initial state here to make pylint happy
+    # These are used to set up new attributes that come from plugins.
     _resolveFunctions = []
 
     def __new__(cls):
@@ -219,10 +217,9 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
         return self
 
     def __init__(self):
-        # again, yamlize does not call __init__, instead we use Blueprints.load which
+        # Yamlize does not call __init__, instead we use Blueprints.load which
         # creates and instance of a Blueprints object and initializes it with values
-        # using setattr. Since the method is never called, it serves the purpose of
-        # preventing pylint from issuing warnings about attributes not existing.
+        # using setattr.
         self._assembliesBySpecifier = {}
         self._prepped = False
         self.systemDesigns = Systems()
@@ -354,7 +351,6 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
                     cs[CONF_DETAILED_AXIAL_EXPANSION],
                 )
 
-            # pylint: disable=no-member
             getPluginManagerOrFail().hook.afterConstructionOfAssemblies(
                 assemblies=self.assemblies.values(), cs=cs
             )

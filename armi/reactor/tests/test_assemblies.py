@@ -150,7 +150,6 @@ def buildTestAssemblies():
 
 class MaterialInAssembly_TestCase(unittest.TestCase):
     def setUp(self):
-        # pylint: disable=unbalanced-tuple-unpacking
         (
             self.assembly,
             self.assembly2,
@@ -1290,7 +1289,6 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
 class AnnularFuelTestCase(unittest.TestCase):
     """Test fuel with a whole in the center."""
 
-    # pylint: disable=locally-disabled,protected-access
     def setUp(self):
         self.cs = settings.Settings()
         newSettings = {CONF_XS_KERNEL: "MC2v2"}  # don't try to expand elementals

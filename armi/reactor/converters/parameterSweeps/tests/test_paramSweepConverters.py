@@ -13,15 +13,9 @@
 # limitations under the License.
 
 """Module to test parameter sweep converters."""
-import math
 import os
 import unittest
 
-from armi import runLog
-from armi import settings
-from armi.reactor import blocks
-from armi.reactor import geometry
-from armi.reactor import grids
 from armi.tests import TEST_ROOT
 from armi.reactor.converters.parameterSweeps.generalParameterSweepConverters import (
     CustomModifier,
@@ -30,7 +24,6 @@ from armi.reactor.converters.parameterSweeps.generalParameterSweepConverters imp
     SettingsModifier,
 )
 from armi.reactor.tests.test_reactors import loadTestReactor
-from armi.reactor.flags import Flags
 from armi.physics.neutronics.settings import CONF_EPS_FSPOINT
 
 
@@ -62,7 +55,6 @@ class TestParamSweepConverters(unittest.TestCase):
         """Super basic test of the Settings Modifier."""
         con = SettingsModifier(self.cs, "comment", "FakeParam")
         self.assertEqual(con._parameter, "FakeParam")
-        val = self.cs["comment"]
 
         con.convert(self.r)
         self.assertEqual(con._sourceReactor, self.r)

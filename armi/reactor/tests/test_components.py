@@ -44,7 +44,6 @@ from armi.reactor.components import (
     ComponentType,
 )
 from armi.reactor.components import materials
-from armi.utils import units
 
 
 class TestComponentFactory(unittest.TestCase):
@@ -92,9 +91,7 @@ class TestComponentFactory(unittest.TestCase):
         del attrs["id"]
         del attrs["mult"]
 
-        for i, (name, klass) in enumerate(
-            ComponentType.TYPES.items()
-        ):  # pylint: disable=protected-access
+        for i, (name, klass) in enumerate(ComponentType.TYPES.items()):
             # hack together a dictionary input
             thisAttrs = {k: 1.0 for k in set(klass.INIT_SIGNATURE).difference(attrs)}
             del thisAttrs["components"]
@@ -121,9 +118,9 @@ class TestComponentFactory(unittest.TestCase):
 
     def test_invalidCoolantComponentAssignment(self):
         invalidComponentTypes = [Component, NullComponent]
-        for ComponentType in invalidComponentTypes:
+        for CompType in invalidComponentTypes:
             with self.assertRaises(ValueError):
-                _c = ComponentType("coolant", "Sodium", 0, 0)
+                _c = CompType("coolant", "Sodium", 0, 0)
 
 
 class TestGeneralComponents(unittest.TestCase):
@@ -155,7 +152,7 @@ class TestGeneralComponents(unittest.TestCase):
 
             derivedMustUpdate = False
 
-        if component == None:
+        if component is None:
             self.component = self.componentCls(
                 "TestComponent", self.componentMaterial, **self.componentDims
             )

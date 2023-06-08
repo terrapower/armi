@@ -40,7 +40,6 @@ from armi.reactor.converters.axialExpansionChanger import (
 from armi import materials
 from armi.materials import custom, _MATERIAL_NAMESPACE_ORDER
 from armi.reactor.flags import Flags
-from armi.tests import mockRunLogs
 from armi.utils import units
 
 
@@ -284,7 +283,6 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
 
     def expandAssemForMassConservationTest(self):
         """Initialize class variables for mass conservation checks."""
-        # pylint: disable=attribute-defined-outside-init
         self.oldMass = {}
         for b in self.a:
             self.oldMass[b.name] = 0.0
@@ -304,7 +302,7 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
             self._getConservationMetrics(self.a)
 
     def test_ColdThermalExpansionContractionConservation(self):
-        r"""Thermally expand and then contract to ensure original state is recovered.
+        """Thermally expand and then contract to ensure original state is recovered.
 
         Notes
         -----

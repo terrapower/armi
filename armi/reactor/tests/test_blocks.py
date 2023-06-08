@@ -240,7 +240,6 @@ def loadTestBlock(cold=True):
     return block
 
 
-# pylint: disable=protected-access
 def applyDummyData(block):
     """Add some dummy data to a block for physics-like tests."""
     # typical SFR-ish flux in 1/cm^2/s

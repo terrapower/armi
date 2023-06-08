@@ -2256,7 +2256,6 @@ class Core(composites.Composite):
             # reactor.blueprints.assemblies need to be populated
             # this normally happens during armi/reactor/blueprints/__init__.py::constructAssem
             # but for DB load, this is not called so it must be here.
-            # pylint: disable=protected-access
             self.parent.blueprints._prepConstruction(cs)
         else:
             # set reactor level meshing params

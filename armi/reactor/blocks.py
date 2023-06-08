@@ -464,7 +464,7 @@ class Block(composites.Composite):
             return xsType + bu
         elif len(xsType) == 2 and ord(bu) > ord("A"):
             raise ValueError(
-                f"Use of multiple burnup groups is not allowed with multi-character xs groups!"
+                "Use of multiple burnup groups is not allowed with multi-character xs groups!"
             )
         else:
             return xsType

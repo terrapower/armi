@@ -243,7 +243,7 @@ assemblies:
         Make sure that valid/invalid material modifications are searched up
         the MRO for a material class.
         """
-        a = self.loadUZrAssembly(
+        _a = self.loadUZrAssembly(
             """
         material modifications:
             ZR_wt_frac: [1]
@@ -265,7 +265,7 @@ custom isotopics:
         )
 
         with self.assertRaises(ValueError):
-            a = self.loadUZrAssembly(
+            _a = self.loadUZrAssembly(
                 """
         material modifications:
             ZR_wt_frac: [1]
@@ -285,7 +285,3 @@ custom isotopics:
         U: 1
 """
             )
-
-
-if __name__ == "__main__":
-    unittest.main()

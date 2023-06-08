@@ -18,11 +18,10 @@ import six
 
 from armi import runLog
 from armi.physics.neutronics import crossSectionGroupManager
-from armi.utils import units
-from armi.utils.units import ASCII_LETTER_A
-
 from armi.reactor import parameters
 from armi.reactor.parameters import ParamLocation, Parameter, NoDefault
+from armi.utils import units
+from armi.utils.units import ASCII_LETTER_A
 
 
 def getBlockParameterDefinitions():
@@ -197,7 +196,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam("bu", units="", description="?")
 
-        def buGroup(self, buGroupChar):  # pylint: disable=method-hidden
+        def buGroup(self, buGroupChar):
             if isinstance(buGroupChar, (int, float)):
                 intValue = int(buGroupChar)
                 runLog.warning(
@@ -217,12 +216,8 @@ def getBlockParameterDefinitions():
                 )
 
             buGroupNum = ord(buGroupChar) - ASCII_LETTER_A
-            self._p_buGroup = (
-                buGroupChar  # pylint: disable=attribute-defined-outside-init
-            )
-            self._p_buGroupNum = (
-                buGroupNum  # pylint: disable=attribute-defined-outside-init
-            )
+            self._p_buGroup = buGroupChar
+            self._p_buGroupNum = buGroupNum
             buGroupNumDef = parameters.ALL_DEFINITIONS["buGroupNum"]
             buGroupNumDef.assigned = parameters.SINCE_ANYTHING
 
@@ -234,19 +229,15 @@ def getBlockParameterDefinitions():
             setter=buGroup,
         )
 
-        def buGroupNum(self, buGroupNum):  # pylint: disable=method-hidden
+        def buGroupNum(self, buGroupNum):
             if buGroupNum > 26:
                 raise RuntimeError(
                     "Invalid bu group number ({}): too many groups. 26 is the max.".format(
                         buGroupNum
                     )
                 )
-            self._p_buGroupNum = (
-                buGroupNum  # pylint: disable=attribute-defined-outside-init
-            )
-            self._p_buGroup = chr(
-                buGroupNum + ASCII_LETTER_A
-            )  # pylint: disable=attribute-defined-outside-init
+            self._p_buGroupNum = buGroupNum
+            self._p_buGroup = chr(buGroupNum + ASCII_LETTER_A)
             buGroupDef = parameters.ALL_DEFINITIONS["buGroup"]
             buGroupDef.assigned = parameters.SINCE_ANYTHING
 
@@ -398,11 +389,9 @@ def getBlockParameterDefinitions():
             categories=[parameters.Category.retainOnReplacement],
         )
 
-        def xsType(self, value):  # pylint: disable=method-hidden
-            self._p_xsType = value  # pylint: disable=attribute-defined-outside-init
-            self._p_xsTypeNum = crossSectionGroupManager.getXSTypeNumberFromLabel(
-                value
-            )  # pylint: disable=attribute-defined-outside-init
+        def xsType(self, value):
+            self._p_xsType = value
+            self._p_xsTypeNum = crossSectionGroupManager.getXSTypeNumberFromLabel(value)
             xsTypeNumDef = parameters.ALL_DEFINITIONS["xsTypeNum"]
             xsTypeNumDef.assigned = parameters.SINCE_ANYTHING
 
@@ -414,11 +403,9 @@ def getBlockParameterDefinitions():
             setter=xsType,
         )
 
-        def xsTypeNum(self, value):  # pylint: disable=method-hidden
-            self._p_xsTypeNum = value  # pylint: disable=attribute-defined-outside-init
-            self._p_xsType = crossSectionGroupManager.getXSTypeLabelFromNumber(
-                value
-            )  # pylint: disable=attribute-defined-outside-init
+        def xsTypeNum(self, value):
+            self._p_xsTypeNum = value
+            self._p_xsType = crossSectionGroupManager.getXSTypeLabelFromNumber(value)
             xsTypeDef = parameters.ALL_DEFINITIONS["xsType"]
             xsTypeDef.assigned = parameters.SINCE_ANYTHING
 

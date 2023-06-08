@@ -134,7 +134,7 @@ class UnshapedComponent(Component):
         Thot,
         area=numpy.NaN,
         modArea=None,
-        isotopics=None,  # pylint: disable=too-many-arguments
+        isotopics=None,
         mergeWith=None,
         components=None,
     ):
@@ -219,7 +219,7 @@ class UnshapedVolumetricComponent(UnshapedComponent):
         Thot,
         area=numpy.NaN,
         op=None,
-        isotopics=None,  # pylint: disable=too-many-arguments
+        isotopics=None,
         mergeWith=None,
         components=None,
         volume=numpy.NaN,
