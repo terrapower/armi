@@ -1142,7 +1142,7 @@ class Operator:  # pylint: disable=too-many-public-methods
         pathTools.copyOrWarn(
             "ISOTXS for snapshot", isoFName, pathTools.armiAbsPath(newFolder, "ISOTXS")
         )
-        globalFluxLabel = GlobalFluxInterfaceUsingExecuters.getLabel(cycle, node, iteration)
+        globalFluxLabel = GlobalFluxInterfaceUsingExecuters.getLabel(self.cs.caseTitle, cycle, node, iteration)
         globalFluxInput = globalFluxLabel + ".inp"
         globalFluxOutput = globalFluxLabel + ".out"
         pathTools.copyOrWarn("DIF3D input for snapshot", globalFluxInput, newFolder)

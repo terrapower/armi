@@ -128,7 +128,15 @@ class OperatorTests(unittest.TestCase):
             with mockRunLogs.BufferLog() as mock:
                 self.o.snapshotRequest(0, 1)
                 self.assertIn("ISOTXS-c0", mock.getStdout())
-                self.assertIn("DIF3D output for snapshot", mock.getStdout())
+                self.assertIn(
+                    "DIF3D input for snapshot from armiRun-flux-c0n1.inp",
+                    mock.getStdout(),
+                )
+                self.assertIn(
+                    "DIF3D output for snapshot from armiRun-flux-c0n1.out",
+                    mock.getStdout(),
+                )
+                self.assertIn("DIF3D output for snapshot:", mock.getStdout())
                 self.assertIn("Shuffle logic for snapshot", mock.getStdout())
                 self.assertIn("Geometry file for snapshot", mock.getStdout())
                 self.assertIn("Loading definition for snapshot", mock.getStdout())
