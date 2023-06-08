@@ -79,7 +79,7 @@ class FailingInterface3(Interface):
     def fail(self):
         raise RuntimeError("Failing interface critical worker failure")
 
-    def interactEveryNode(self, c, n):  # pylint:disable=unused-argument
+    def interactEveryNode(self, c, n):
         context.MPI_COMM.bcast("fail", root=0)
 
     def workerOperate(self, cmd):

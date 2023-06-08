@@ -159,11 +159,11 @@ class TestUserPlugins(unittest.TestCase):
 
     def test_validateUserPluginLimitations(self):
         # this should NOT raise any errors
-        up = UserPluginFlags()
+        _up = UserPluginFlags()
 
         # this should raise an error because it has a defineSettings() method
         with self.assertRaises(AssertionError):
-            bad0 = UserPluginBadDefinesSettings()
+            _bad0 = UserPluginBadDefinesSettings()
 
     def test_registerUserPlugins(self):
         app = getApp()
@@ -262,7 +262,7 @@ class TestUserPlugins(unittest.TestCase):
 
         # load a reactor and grab the fuel assemblieapps
         o, r = test_reactors.loadTestReactor(TEST_ROOT)
-        fuels = r.core.getAssemblies(Flags.FUEL)
+        _fuels = r.core.getAssemblies(Flags.FUEL)
 
         # This is here because we have multiple tests altering the App()
         o.interfaces = []
