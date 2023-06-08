@@ -12,9 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# pylint: skip-file
-# -*- coding: utf-8 -*-
-#
 # ARMI documentation build configuration file, created by
 # sphinx-quickstart on Wed Apr 02 11:36:09 2014.
 #

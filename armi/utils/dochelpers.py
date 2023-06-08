@@ -147,7 +147,7 @@ class PyReverse(Directive):
             args.append(f"{args[0]}")
             args.append("-opng")
 
-            # cannot use "pylint.pyreverse.main.Run" because it calls `sys.exit`. why?
+            # NOTE: cannot use "pylint.pyreverse.main.Run" because it calls `sys.exit`.
             fig_name = self.options.get("filename", "classes_{}.png".format(args[0]))
             command = [sys.executable, "-m", "pylint.pyreverse.main"]
             print("Running {}".format(command + args))

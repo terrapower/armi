@@ -136,7 +136,6 @@ class Flag(metaclass=_FlagMeta):
         represent a Flag's values in smaller chunks.
     """
 
-    # for pylint. Set by metaclass
     _autoAt = None
     _nameToValue = dict()
     _valuesTaken = set()
