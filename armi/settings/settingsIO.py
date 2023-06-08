@@ -368,7 +368,7 @@ def prompt(statement, question, *options):
     """Prompt the user for some information."""
     if context.CURRENT_MODE == context.Mode.GUI:
         # avoid hard dependency on wx
-        import wx  # pylint: disable=import-error
+        import wx
 
         msg = statement + "\n\n\n" + question
         style = wx.CENTER

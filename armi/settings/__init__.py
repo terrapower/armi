@@ -20,20 +20,16 @@ modeling approximations to apply and how many cycles to run and at what power an
 availability fraction and things like that. The ARMI Framework itself has many settings
 of its own, and plugins typically register some of their own settings as well.
 """
+from typing import List
 import fnmatch
-import os
 import glob
-import shutil
-from typing import List, Union
+import os
 
 from ruamel import yaml
 
 from armi import runLog
 from armi.settings.caseSettings import Settings
 from armi.settings.setting import Setting
-from armi.settings.setting import Option
-from armi.settings.setting import Default
-from armi.utils import pathTools
 from armi.utils.customExceptions import InvalidSettingsFileError
 
 

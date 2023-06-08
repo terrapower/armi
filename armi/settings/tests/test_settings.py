@@ -272,8 +272,8 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         settingsList = cs.getSettingsSetByUser(ARMI_RUN_PATH)
         # This test is dependent on the current setup of armiRun.yaml, which includes
         # some default settings values
-        for setting in ["availabilityFactor", "economics"]:
-            self.assertIn(setting, settingsList)
+        for sett in ["availabilityFactor", "economics"]:
+            self.assertIn(sett, settingsList)
         self.assertNotIn("numProcessors", settingsList)
 
     def test_setModuleVerbosities(self):
