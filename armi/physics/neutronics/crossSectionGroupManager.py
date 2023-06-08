@@ -443,7 +443,7 @@ class CylindricalComponentsAverageBlockCollection(BlockCollection):
         repBlock.p.percentBu = self._calcWeightedBurnup()
         componentsInOrder = self._orderComponentsInGroup(repBlock)
 
-        for c, allSimilarComponents in zip(repBlock, componentsInOrder):
+        for c, allSimilarComponents in zip(sorted(repBlock), componentsInOrder):
             allNucsNames, densities = self._getAverageComponentNucs(
                 allSimilarComponents, bWeights
             )
