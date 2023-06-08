@@ -55,7 +55,6 @@ Retrieve U-235 by the AAAZZZS ID:
 
 .. _nuclide-bases-table:
 
-
 .. exec::
     import numpy
     from tabulate import tabulate
@@ -113,7 +112,7 @@ instances = []
 # The elements must be imported after the instances list is established
 # to allow for simutaneous initialization of the nuclides and elements
 # together to maintain self-consistency.
-from armi.nucDirectory import elements
+from armi.nucDirectory import elements  # noqa: E402
 
 
 # Dictionary of INuclides by the INuclide.name for fast indexing
@@ -518,7 +517,7 @@ class NuclideBase(INuclide, IMcnpNuclide):
         metaChar = ["", "M", "M2", "M3"]
         if state > len(metaChar):
             raise ValueError(
-                f"The state of {self} is not valid and must not be larger than {len(metaChar)}."
+                f"The state of NuclideBase is not valid and must not be larger than {len(metaChar)}."
             )
         return "{}{}{}".format(element.symbol, a, metaChar[state])
 
@@ -908,7 +907,7 @@ def initReachableActiveNuclidesThroughBurnChain(numberDensityDict, activeNuclide
         nuclide = difference.pop()
         memo.add(nuclide)
         # Skip the nuclide if it is not `active` in the burn-chain
-        if not nuclide in activeNuclides:
+        if nuclide not in activeNuclides:
             continue
 
         nuclideObj = byName[nuclide]
@@ -1075,7 +1074,7 @@ def imposeBurnChain(burnChainStream):
     --------
     armi.nucDirectory.transmutations : describes file format
     """
-    global burnChainImposed  # pylint: disable=global-statement
+    global burnChainImposed
     if burnChainImposed:
         # the only time this should happen is if in a unit test that has already
         # processed conftest.py and is now building a Case that also imposes this.
@@ -1088,7 +1087,7 @@ def imposeBurnChain(burnChainStream):
     for nucName, burnInfo in burnData.items():
         nuclide = byName[nucName]
         # think of this protected stuff as "module level protection" rather than class.
-        nuclide._processBurnData(burnInfo)  # pylint: disable=protected-access
+        nuclide._processBurnData(burnInfo)
 
 
 def factory():
