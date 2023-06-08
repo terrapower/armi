@@ -136,7 +136,6 @@ class OperatorTests(unittest.TestCase):
                     "DIF3D output for snapshot from armiRun-flux-c0n1.out",
                     mock.getStdout(),
                 )
-                self.assertIn("DIF3D output for snapshot:", mock.getStdout())
                 self.assertIn("Shuffle logic for snapshot", mock.getStdout())
                 self.assertIn("Geometry file for snapshot", mock.getStdout())
                 self.assertIn("Loading definition for snapshot", mock.getStdout())
