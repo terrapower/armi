@@ -78,12 +78,6 @@ class TestTriangle(unittest.TestCase):
         self.assertFalse(generalTriangleInOrOut)
 
         # Check a case that should cause failure since only two triangle can be drawn
-        x1 = 0.15
-        x2 = 0.0
-        x3 = 0.0
-        y1 = 0.17
-        y2 = 0.054
-        y3 = 0.376
         xP = 0.0
         yP = 0.17
         generalTriangleInOrOut = triangle.checkIfPointIsInTriangle(

@@ -26,9 +26,10 @@ programmatically (e.g. for parameter sweeps).
 This example shows how to make Blueprints objects programmatically completely
 from scratch.
 """
+# ruff: noqa: E402
 import matplotlib.pyplot as plt
 
-from armi import configure, runLog
+from armi import configure
 
 # configure ARMI
 configure(permissive=True)

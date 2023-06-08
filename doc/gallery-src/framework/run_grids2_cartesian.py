@@ -21,11 +21,11 @@ provided explicitly. It is also offset in 3D space to X, Y, Z = 10, 5, 5 cm.
 Learn more about :py:mod:`grids <armi.reactor.grids>`.
 """
 import itertools
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 
-from armi.reactor import grids
+import matplotlib.pyplot as plt
+
 from armi import configure
+from armi.reactor import grids
 
 configure(permissive=True)
 

@@ -120,12 +120,12 @@ class _RunLog:
                 ("prompt", (27, "[prmt{}] ".format(_rank))),
                 ("warning", (logging.WARNING, "[warn{}] ".format(_rank))),
                 ("error", (logging.ERROR, "[err {}] ".format(_rank))),
-                ("header", (100, "".format(_rank))),
+                ("header", (100, "{}".format(_rank))),
             ]
         )
-        self._logLevelNumbers = sorted([l[0] for l in self.logLevels.values()])
+        self._logLevelNumbers = sorted([ll[0] for ll in self.logLevels.values()])
         global _WHITE_SPACE
-        _WHITE_SPACE = " " * len(max([l[1] for l in self.logLevels.values()]))
+        _WHITE_SPACE = " " * len(max([ll[1] for ll in self.logLevels.values()]))
 
         # modify the logging module strings for printing
         for longLogString, (logValue, shortLogString) in self.logLevels.items():

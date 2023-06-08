@@ -41,6 +41,7 @@ loginctl list-sessions --no-legend | \
 ```
 If it outputs "x11", it should work (and if it outputs "wayland", it probably won't, for now).
 """
+# ruff: noqa: E402
 import asyncio
 import os
 import time

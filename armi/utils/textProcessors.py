@@ -221,7 +221,7 @@ def findYamlInclusions(
         if not path.is_absolute():
             try:
                 path = (mark.relativeTo / path).relative_to(root or os.getcwd())
-            except ValueError as _:
+            except ValueError:
                 # Can't make a relative path. IMO, pathlib gives up a little too early,
                 # but we still probably want to decay to absolute paths if the files
                 # arent in the same tree.

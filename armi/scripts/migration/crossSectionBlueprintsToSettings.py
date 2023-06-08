@@ -26,6 +26,7 @@ and adds a valid one into the settings file.
 It manually reads the blueprints file rather than parsing it to ensure
 round-trippiness even with yaml-native links. 
 """
+# ruff: noqa: F403,F405,F821
 import io
 import os
 import shutil

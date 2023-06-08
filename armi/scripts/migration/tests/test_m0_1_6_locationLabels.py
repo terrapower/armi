@@ -39,7 +39,3 @@ class TestMigration(unittest.TestCase):
         reader = SettingsReader(newCs)
         reader.readFromStream(converter.apply())
         self.assertEqual(newCs["detailAssemLocationsBOL"][0], "011-012")
-
-
-if __name__ == "__main__":
-    nittest.main()

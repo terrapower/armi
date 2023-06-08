@@ -14,9 +14,8 @@
 import webbrowser
 
 from armi import getPluginManagerOrFail
-from armi import settings
-from armi.bookkeeping.report import newReports as reports
 from armi.bookkeeping.db import databaseFactory
+from armi.bookkeeping.report import newReports as reports
 from armi.cli import entryPoint
 from armi.reactor import blueprints
 from armi.reactor import reactors
@@ -77,16 +76,14 @@ class ReportsEntryPoint(entryPoint.EntryPoint):
             action="store_true",
             default=False,
         )
-        # self.createOptionFromSetting("imperialunits", "-i")
 
     def invoke(self):
-
         nodes = self.args.nodes
 
         if self.args.h5db is None:
             # Just do begining stuff, no database is given...
             if self.cs is not None:
-                site = createReportFromSettings(cs)
+                site = createReportFromSettings(self.cs)
                 if self.args.view:
                     webbrowser.open(site)
             else:
@@ -139,11 +136,12 @@ class ReportsEntryPoint(entryPoint.EntryPoint):
                         r = db.load(cycle, node)
                         cs = db.loadCS()
 
-                        pluginContent = pm.hook.getReportContents(
+                        _pluginContent = pm.hook.getReportContents(
                             r=r, cs=cs, report=report, stage=stage, blueprint=blueprint
                         )
+
                     stage = reports.ReportStage.End
-                    pluginContent = pm.hook.getReportContents(
+                    _pluginContent = pm.hook.getReportContents(
                         r=r, cs=cs, report=report, stage=stage, blueprint=blueprint
                     )
                     site = report.writeReports()
