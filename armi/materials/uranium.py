@@ -22,6 +22,7 @@ Much info is from [AAAFuels]_.
 
 from numpy import interp
 
+from armi import runLog
 from armi.materials.material import FuelMaterial
 from armi.nucDirectory import nuclideBases as nb
 from armi.utils.units import getTk

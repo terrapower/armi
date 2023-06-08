@@ -17,7 +17,6 @@ Base Material classes.
 
 Most temperatures may be specified in either K or C and the functions will convert for you.
 """
-# pylint: disable=unused-argument
 import copy
 import warnings
 
@@ -365,7 +364,7 @@ class Material:
     ) -> float:
         """Get the temperature at which the perturbed density occurs."""
         # 0 at tempertature of targetDensity
-        densFunc = lambda temp: self.density(Tc=temp) - targetDensity
+        densFunc = lambda temp: self.density(Tc=temp) - targetDensity  # noqa: E731
         # is a numpy array if fsolve is called
         tAtTargetDensity = float(fsolve(densFunc, temperatureGuessInC))
         return tAtTargetDensity
