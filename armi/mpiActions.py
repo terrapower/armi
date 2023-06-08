@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-This module provides an abstract class to be used to implement "MPI actions."
+This module provides an abstract class to be used to implement "MPI actions.".
 
 MPI actions are tasks, activities, or work that can be executed on the worker nodes. The standard
 workflow is essentially that the primary node creates an :py:class:`~armi.mpiActions.MpiAction`,
@@ -133,7 +133,7 @@ class MpiAction:
 
     def _mpiOperationHelper(self, obj, mpiFunction):
         """
-        Strips off the operator, reactor, cs from the mpiAction before
+        Strips off the operator, reactor, cs from the mpiAction before.
         """
         if obj is None or obj is self:
             # prevent sending o, r, and cs, they should be handled appropriately by the other nodes
@@ -540,7 +540,7 @@ class DistributeStateAction(MpiAction):
             # the operator/interface attachment may invalidate some of the cache, but since
             # all the underlying data is the same, ultimately all state should be (initially) the
             # same.
-            # XXX: this is an indication we need to revamp either how the operator attachment works
+            # TODO: this is an indication we need to revamp either how the operator attachment works
             # or how the interfaces are distributed.
             self.r._markSynchronized()  # pylint: disable=protected-access
 

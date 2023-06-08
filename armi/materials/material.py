@@ -137,7 +137,7 @@ class Material:
         self.cached[name] = val
 
     def duplicate(self):
-        r"""copy without needing a deepcopy."""
+        """Copy without needing a deepcopy."""
         m = self.__class__()
 
         m.massFrac = {}
@@ -151,8 +151,8 @@ class Material:
         return m
 
     def linearExpansion(self, Tk: float = None, Tc: float = None) -> float:
-        r"""
-        the instantaneous linear expansion coefficient (dL/L)/dT
+        """
+        The instantaneous linear expansion coefficient (dL/L)/dT.
 
         This is used for reactivity coefficients, etc. but will not affect
         density or dimensions.
@@ -229,7 +229,7 @@ class Material:
         return 1.0 / (1 + dLL) ** 2
 
     def setDefaultMassFracs(self):
-        r"""mass fractions"""
+        r"""Mass fractions."""
         pass
 
     def setMassFrac(self, nucName: str, massFrac: float) -> None:
@@ -364,12 +364,10 @@ class Material:
         self, targetDensity: float, temperatureGuessInC: float
     ) -> float:
         """Get the temperature at which the perturbed density occurs."""
-        densFunc = (
-            lambda temp: self.pseudoDensity(Tc=temp) - targetDensity
-        )  # 0 at tempertature of targetDensity
-        tAtTargetDensity = float(
-            fsolve(densFunc, temperatureGuessInC)
-        )  # is a numpy array if fsolve is called
+        # 0 at tempertature of targetDensity
+        densFunc = lambda temp: self.density(Tc=temp) - targetDensity
+        # is a numpy array if fsolve is called
+        tAtTargetDensity = float(fsolve(densFunc, temperatureGuessInC))
         return tAtTargetDensity
 
     @property
@@ -416,7 +414,7 @@ class Material:
 
     def pseudoDensityKgM3(self, Tk: float = None, Tc: float = None) -> float:
         """
-        Return density that preserves mass when thermally expanded in 2D in units of kg/m^3
+        Return density that preserves mass when thermally expanded in 2D in units of kg/m^3.
 
         See Also
         --------
@@ -461,23 +459,21 @@ class Material:
         return self.density(Tk, Tc) * 1000.0
 
     def getCorrosionRate(self, Tk: float = None, Tc: float = None) -> float:
-        r"""
-        given a temperature, get the corrosion rate of the material
-        """
+        """Given a temperature, get the corrosion rate of the material."""
         return 0.0
 
     def yieldStrength(self, Tk: float = None, Tc: float = None) -> float:
-        r"""returns yield strength at given T in MPa"""
+        """Returns yield strength at given T in MPa."""
         pass
 
     def thermalConductivity(self, Tk: float = None, Tc: float = None) -> float:
-        r"""thermal conductivity in given T in K"""
+        """Thermal conductivity in given T in K."""
         pass
 
     def getProperty(
         self, propName: str, Tk: float = None, Tc: float = None, **kwargs
     ) -> float:
-        r"""gets properties in a way that caches them."""
+        """Gets properties in a way that caches them."""
         Tk = getTk(Tc, Tk)
 
         cached = self._getCached(propName)
@@ -527,7 +523,7 @@ class Material:
         return self.massFrac.get(nucName, 0.0)
 
     def clearMassFrac(self) -> None:
-        r"""zero out all nuclide mass fractions."""
+        r"""Zero out all nuclide mass fractions."""
         self.massFrac.clear()
 
     def removeNucMassFrac(self, nuc: str) -> None:
@@ -681,7 +677,7 @@ class Fluid(Material):
         return rho1 / rho0
 
     def linearExpansion(self, Tk=None, Tc=None):
-        """for void, lets just not allow temperature changes to change dimensions
+        """For void, lets just not allow temperature changes to change dimensions
         since it is a liquid it will fill its space."""
         return 0.0
 
@@ -716,7 +712,7 @@ class Fluid(Material):
 
 class SimpleSolid(Material):
     """
-    Base material for a simple material that primarily defines density
+    Base material for a simple material that primarily defines density.
 
     See Also
     --------
@@ -848,7 +844,7 @@ class FuelMaterial(Material):
         densityTools.applyIsotopicsMix(self, class1Isotopics, class2Isotopics)
 
     def duplicate(self):
-        r"""copy without needing a deepcopy."""
+        r"""Copy without needing a deepcopy."""
         m = self.__class__()
 
         m.massFrac = {}

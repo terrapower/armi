@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for reactor blueprints"""
+"""Tests for reactor blueprints."""
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import os
 import unittest
@@ -109,7 +109,7 @@ class TestReactorBlueprints(unittest.TestCase):
     def test_materialDataSummary(self):
         """Test that the material data summary for the core is valid as a printout to the stdout."""
         expectedMaterialData = [
-            ("Custom Material", "ARMI", False),
+            ("Custom", "ARMI", False),
             ("HT9", "ARMI", False),
             ("UZr", "ARMI", False),
         ]

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-Sodium Chloride salt
+Sodium Chloride salt.
 
 .. note:: This is a very simple description of this material.
 """

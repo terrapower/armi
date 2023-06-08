@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-Lead-Bismuth eutectic
+Lead-Bismuth eutectic.
 
 This is a great coolant for superfast neutron reactors. It's heavy though.
 """
@@ -25,8 +25,9 @@ from armi.utils.units import getTk
 
 
 class LeadBismuth(material.Fluid):
-    r"""Lead bismuth eutectic"""
-    name = "Lead Bismuth"
+    """Lead bismuth eutectic."""
+
+    name = "LeadBismuth"
     propertyValidTemperature = {
         "density": ((400, 1300), "K"),
         "dynamic visc": ((400, 1100), "K"),
@@ -36,44 +37,52 @@ class LeadBismuth(material.Fluid):
     }
 
     def setDefaultMassFracs(self):
-        r"""mass fractions"""
+        r"""Mass fractions."""
         self.setMassFrac("PB", 0.445)
         self.setMassFrac("BI209", 0.555)
 
     def pseudoDensity(self, Tk=None, Tc=None):
-        r"""density in g/cc from V. sobolev/ J Nucl Mat 362 (2007) 235-247"""
+        r"""Density in g/cc from V. sobolev/ J Nucl Mat 362 (2007) 235-247."""
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("density", Tk)
 
         return 11.096 - 0.0013236 * Tk  # pre-converted from kg/m^3 to g/cc
 
     def dynamicVisc(self, Tk=None, Tc=None):
-        r"""dynamic viscosity in Pa-s from Sobolev. Accessed online at
-        http://www.oecd-nea.org/science/reports/2007/nea6195-handbook.html on 11/9/12"""
+        r"""Dynamic viscosity in Pa-s from Sobolev.
+
+        Accessed online at:
+        http://www.oecd-nea.org/science/reports/2007/nea6195-handbook.html on 11/9/12
+        """
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("dynamic visc", Tk)
 
         return 4.94e-4 * math.exp(754.1 / Tk)
 
     def heatCapacity(self, Tk=None, Tc=None):
-        r"""heat ccapacity in J/kg/K from Sobolev. Expected acuracy 5%"""
+        r"""Heat ccapacity in J/kg/K from Sobolev. Expected accuracy 5%."""
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("heat capacity", Tk)
 
         return 159 - 2.72e-2 * Tk + 7.12e-6 * Tk ** 2
 
     def thermalConductivity(self, Tk=None, Tc=None):
-        r"""thermal conductivity in W/m/K from Sobolev. Accessed online at
-        http://www.oecd-nea.org/science/reports/2007/nea6195-handbook.html on 11/9/12"""
+        r"""Thermal conductivity in W/m/K from Sobolev.
+
+        Accessed online at:
+        http://www.oecd-nea.org/science/reports/2007/nea6195-handbook.html on 11/9/12
+        """
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("thermal conductivity", Tk)
 
         return 2.45 * Tk / (86.334 + 0.0511 * Tk)
 
     def volumetricExpansion(self, Tk=None, Tc=None):
-        r"""volumetric expansion inferred from density.
+        r"""Volumetric expansion inferred from density.
+
         NOT BASED ON MEASUREMENT.
-        Done by V. sobolev/ J Nucl Mat 362 (2007) 235-247"""
+        Done by V. sobolev/ J Nucl Mat 362 (2007) 235-247
+        """
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("volumetric expansion", Tk)
 

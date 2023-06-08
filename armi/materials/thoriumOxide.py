@@ -26,7 +26,7 @@ from armi.materials.material import Material, FuelMaterial, SimpleSolid
 
 
 class ThoriumOxide(FuelMaterial, SimpleSolid):
-    name = "ThO2"
+    name = "ThoriumOxide"
     propertyValidTemperature = {"linear expansion": ((298, 1223), "K")}
 
     def __init__(self):
@@ -58,7 +58,8 @@ class ThoriumOxide(FuelMaterial, SimpleSolid):
         FuelMaterial.applyInputParams(self, *args, **kwargs)
 
     def setDefaultMassFracs(self):
-        r"""ThO2 mass fractions. Using Pure Th-232. 100% 232
+        r"""ThO2 mass fractions. Using Pure Th-232. 100% 232.
+
         Thorium: 232.030806 g/mol
         Oxygen:  15.9994 g/mol
 
@@ -73,7 +74,7 @@ class ThoriumOxide(FuelMaterial, SimpleSolid):
         self.setMassFrac("O16", 0.1212)
 
     def linearExpansion(self, Tk=None, Tc=None):
-        r"""m/m/K from IAEA TE 1450"""
+        r"""Linear expansion in m/m/K from IAEA TE 1450."""
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("linear expansion", Tk)
 
@@ -90,11 +91,11 @@ class ThoriumOxide(FuelMaterial, SimpleSolid):
         return 100 * (linearExpansionCoef * (Tk - 298))
 
     def thermalConductivity(self, Tk=None, Tc=None):
-        r"""W/m-K from IAEA TE 1450"""
+        r"""Thermal conductivity in W/m-K from IAEA TE 1450."""
         return 6.20
 
     def meltingPoint(self):
-        r"""melting point in K from IAEA TE 1450"""
+        r"""Melting point in K from IAEA TE 1450."""
         return 3643.0
 
     def density(self, Tk=None, Tc=None):

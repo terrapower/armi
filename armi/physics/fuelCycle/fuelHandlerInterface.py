@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""A place for the FuelHandler's Interface"""
+"""A place for the FuelHandler's Interface."""
 
 from armi import interfaces
 from armi import runLog
@@ -96,7 +96,7 @@ class FuelHandlerInterface(interfaces.Interface):
         )
 
     def interactEOL(self):
-        """Make reports at EOL"""
+        """Make reports at EOL."""
         self.makeShuffleReport()
 
     def manageFuel(self, cycle):

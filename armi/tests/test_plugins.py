@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Provides functionality for testing implementations of plugins"""
+"""Provides functionality for testing implementations of plugins."""
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import unittest
 from typing import Optional
@@ -25,12 +25,12 @@ from armi import settings
 
 
 class TestPlugin(unittest.TestCase):
-    """This contains some sanity tests that can be used by implementing plugins"""
+    """This contains some sanity tests that can be used by implementing plugins."""
 
     plugin: Optional[plugins.ArmiPlugin] = None
 
     def test_defineBlueprintsSections(self):
-        """Make sure that the defineBlueprintsSections hook is properly implemented"""
+        """Make sure that the defineBlueprintsSections hook is properly implemented."""
         if self.plugin is None:
             return
         if not hasattr(self.plugin, "defineBlueprintsSections"):
@@ -51,7 +51,7 @@ class TestPlugin(unittest.TestCase):
             self.assertTrue(callable(result[2]))
 
     def test_exposeInterfaces(self):
-        """Make sure that the exposeInterfaces hook is properly implemented"""
+        """Make sure that the exposeInterfaces hook is properly implemented."""
         if self.plugin is None:
             return
 

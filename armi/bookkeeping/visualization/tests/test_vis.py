@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Test report visutalizaion"""
+"""Test report visualization."""
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import unittest
 
@@ -32,7 +32,7 @@ from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 class TestVtkMesh(unittest.TestCase):
     """
-    Test the VtkMesh utility class
+    Test the VtkMesh utility class.
     """
 
     def test_testVtkMesh(self):
@@ -66,7 +66,7 @@ class TestVtkMesh(unittest.TestCase):
 
 class TestVisDump(unittest.TestCase):
     """
-    Test dumping a whole reactor and some specific block types
+    Test dumping a whole reactor and some specific block types.
     """
 
     @classmethod

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Zinc Oxide"""
+"""Zinc Oxide."""
 
 from armi.materials.material import Material
 from armi.utils.units import getTk
@@ -32,7 +32,7 @@ class ZnO(Material):
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
         """
-        Return the linear expansion percent for Polycrystalline ZnO
+        Return the linear expansion percent for Polycrystalline ZnO.
 
         Notes
         -----

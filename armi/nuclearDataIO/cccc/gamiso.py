@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-Module for reading GAMISO files which contains gamma cross section data
+Module for reading GAMISO files which contains gamma cross section data.
 
 GAMISO is a binary file created by MC**2-v3 that contains multigroup microscopic gamma cross sections. GAMISO data is
 contained within a :py:class:`~armi.nuclearDataIO.xsLibraries.XSLibrary`.

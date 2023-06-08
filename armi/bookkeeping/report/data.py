@@ -27,7 +27,7 @@ from armi.bookkeeping.report import html
 #                REPORTS
 # --------------------------------------------
 class Report:
-    """Storage for data separated out for a particular kind of user"""
+    """Storage for data separated out for a particular kind of user."""
 
     # stubs for "further stylization" in the report package init
     groupsOrderFirst = []
@@ -40,7 +40,7 @@ class Report:
 
     @property
     def _groupRenderOrder(self):
-        """Helper method to the rendering methods on this class for rendering order of contained info"""
+        """Helper method to the rendering methods on this class for rendering order of contained info."""
         presentGroupsOrderFirst = [
             group for group in self.groupsOrderFirst if group in self.groups
         ]
@@ -65,7 +65,7 @@ class Report:
         return str_
 
     def addToReport(self, group, name, value):
-        """Inserts the datum into the correct group of the report"""
+        """Inserts the datum into the correct group of the report."""
         if group not in self.groups:
             self.groups[group] = copy.deepcopy(group)
         self.groups[group][name] = value
@@ -80,7 +80,7 @@ class Report:
             return None
 
     def writeHTML(self):
-        """Renders this report as a standalone HTML file"""
+        """Renders this report as a standalone HTML file."""
         filename = "{}.html".format(self.title)
         runLog.debug("Writing HTML document {}.".format(filename))
 
@@ -90,7 +90,7 @@ class Report:
         runLog.info("HTML document {} written".format(filename))
 
     def writeGroupsHTML(self, f):
-        """A helper method to the writeHTML method process
+        """A helper method to the writeHTML method process.
 
         Composes the group html content, intended for use in the midst of the html document generation
         """
@@ -149,7 +149,7 @@ class Report:
 #                GROUPS
 # --------------------------------------------
 class Group:
-    """Abstract class, when extended is used for storage for data within a report
+    """Abstract class, when extended is used for storage for data within a report.
 
     Only accepts things wrapped in the ReportDatum class
 
@@ -194,7 +194,7 @@ class Table(Group):
         self.header = header
 
     def __str__(self):
-        """Truer to content representation"""
+        """Truer to content representation."""
         # set up
         prototypical_data = list(self.data.values())[0]
         num_cols = len(prototypical_data) + 1
@@ -220,11 +220,7 @@ class Table(Group):
 
     @staticmethod
     def _lowerCaseSortForTuples(nameValPair):
-        """This unfortunate method is made so the sort in the __str__ method complies with cython and python,
-
-        previous attempts with lambdas have been unsuccessful in bridging the gap.
-
-        """
+        """Force the key in a key-value pair to lower case."""
         return nameValPair[0].lower()
 
     def __setitem__(self, name, value):
@@ -234,7 +230,6 @@ class Table(Group):
         Group.__setitem__(self, name, value)
 
     def writeHTML(self, f):
-
         with html.Table(f, attrs={"class": "table table-striped table-hover "}):
             with html.H4(f, attrs={"style": self.titleStyle}):
                 f.writeEscaped(self.title)
@@ -272,7 +267,6 @@ class Image(Group):
         if len(self.data.keys()) == 1:
 
             # single images don't get the standard Header as the same information is moved to it's Figure Caption
-
             with html.Img(
                 f,
                 attrs={

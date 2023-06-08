@@ -11,9 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-r"""
-testing for reactors.py
-"""
+"""Resting for reactors.py."""
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import copy
 import os
@@ -46,7 +44,7 @@ TEST_REACTOR = None  # pickled string of test reactor (for fast caching)
 
 def buildOperatorOfEmptyHexBlocks(customSettings=None):
     """
-    Builds a operator w/ a reactor object with some hex assemblies and blocks, but all are empty
+    Builds a operator w/ a reactor object with some hex assemblies and blocks, but all are empty.
 
     Doesn't depend on inputs and loads quickly.
 
@@ -86,7 +84,7 @@ def buildOperatorOfEmptyHexBlocks(customSettings=None):
 
 def buildOperatorOfEmptyCartesianBlocks(customSettings=None):
     """
-    Builds a operator w/ a reactor object with some Cartesian assemblies and blocks, but all are empty
+    Builds a operator w/ a reactor object with some Cartesian assemblies and blocks, but all are empty.
 
     Doesn't depend on inputs and loads quickly.
 
@@ -215,9 +213,10 @@ def loadTestReactor(
 
 
 def reduceTestReactorRings(r, cs, maxNumRings):
-    """Helper method for the test reactor above
+    """Helper method for the test reactor above.
+
     The goal is to reduce the size of the reactor for tests that don't neeed
-    such a large reactor, and would run much faster with a smaller one
+    such a large reactor, and would run much faster with a smaller one.
     """
     maxRings = r.core.getNumRings()
     if maxNumRings > maxRings:
@@ -893,7 +892,7 @@ class HexReactorTests(ReactorTests):
         self.assertEqual(originalHeights, heights)
 
     def test_applyThermalExpansion_CoreConstruct(self):
-        """test that assemblies in core are correctly expanded.
+        """Test that assemblies in core are correctly expanded.
 
         Notes:
         ------
@@ -1028,7 +1027,7 @@ class CartesianReactorTests(ReactorTests):
         self.assertSequenceEqual(actualAssemsInRing, expectedAssemsInRing)
 
     def test_getNuclideCategoriesLogging(self):
-        """Simplest possible test of the getNuclideCategories method and its logging"""
+        """Simplest possible test of the getNuclideCategories method and its logging."""
         log = mockRunLogs.BufferLog()
 
         # this strange namespace-stomping is used to the test to set the logger in reactors.Core

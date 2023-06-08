@@ -14,7 +14,7 @@
 
 r"""
 A collection of miscellaneous functions used by ReportInterface to generate
-various reports
+various reports.
 """
 from copy import copy
 import collections
@@ -387,7 +387,7 @@ def _makeTotalAssemblyMassSummary(massSum):
 
 
 def writeCycleSummary(core):
-    r"""Prints a cycle summary to the runLog
+    r"""Prints a cycle summary to the runLog.
 
     Parameters
     ----------
@@ -407,7 +407,7 @@ def writeCycleSummary(core):
 
 
 def setNeutronBalancesReport(core):
-    """Determines the various neutron balances over the full core
+    """Determines the various neutron balances over the full core.
 
     Parameters
     ----------
@@ -547,7 +547,7 @@ def summarizePinDesign(core):
 
 
 def summarizePowerPeaking(core):
-    r"""prints reactor Fz, Fxy, Fq
+    r"""Prints reactor Fz, Fxy, Fq.
 
     Parameters
     ----------
@@ -580,7 +580,7 @@ def summarizePowerPeaking(core):
 
 
 def summarizePower(core):
-    r"""provide an edit showing where the power is based on assembly types.
+    r"""Provide an edit showing where the power is based on assembly types.
 
     Parameters
     ----------
@@ -605,7 +605,7 @@ def summarizePower(core):
 
 
 def makeCoreDesignReport(core, cs):
-    r"""Builds report to summarize core design inputs
+    r"""Builds report to summarize core design inputs.
 
     Parameters
     ----------
@@ -808,7 +808,7 @@ def _setGeneralSimulationData(core, cs, coreDesignTable):
 
 
 def makeBlockDesignReport(r):
-    r"""Summarize the block designs from the loading file
+    r"""Summarize the block designs from the loading file.
 
     Parameters
     ----------
@@ -842,7 +842,7 @@ def makeBlockDesignReport(r):
 
 
 def _getComponentInputDimensions(cDesign):
-    """Get the input dimensions of a component and place them in a dictionary with labels and units"""
+    """Get the input dimensions of a component and place them in a dictionary with labels and units."""
     dims = collections.OrderedDict()
     dims["Shape"] = (cDesign.shape, "")
     dims["Material"] = (cDesign.material, "")
@@ -863,7 +863,7 @@ def _getComponentInputDimensions(cDesign):
 
 
 def makeCoreAndAssemblyMaps(r, cs, generateFullCoreMap=False, showBlockAxMesh=True):
-    r"""Create core and assembly design plots
+    r"""Create core and assembly design plots.
 
     Parameters
     ----------

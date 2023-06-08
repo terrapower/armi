@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-Test the cross section manager
+Test the cross section manager.
 
 :py:mod:`armi.physics.neutronics.crossSectionGroupManager`
 """
@@ -120,18 +120,19 @@ class TestBlockCollectionAverage(unittest.TestCase):
         # 0 + 1/4 + 2/4 + 3/4 + 4/4 =
         # (0 + 1 + 2 + 3 + 4 ) / 5 = 10/5 = 2.0
         self.assertAlmostEqual(avgB.getNumberDensity("U235"), 2.0)
+        self.assertEqual(avgB.p.percentBu, 50.0)
 
 
 class TestBlockCollectionComponentAverage(unittest.TestCase):
     r"""
-    tests for ZPPR 1D XS gen cases
+    tests for ZPPR 1D XS gen cases.
     """
 
     def setUp(self):
         r"""
         First part of setup same as test_Cartesian.
         Second part of setup builds lists/dictionaries of expected values to compare to.
-        has expected values for component isotopic atom density and component area
+        has expected values for component isotopic atom density and component area.
         """
         self.o, self.r = test_reactors.loadTestReactor(
             TEST_ROOT, inputFileName="zpprTest.yaml"
@@ -214,14 +215,14 @@ class TestBlockCollectionComponentAverage(unittest.TestCase):
 
 class TestBlockCollectionComponentAverage1DCylinder(unittest.TestCase):
     r"""
-    tests for 1D cylinder XS gen cases
+    tests for 1D cylinder XS gen cases.
     """
 
     def setUp(self):
         r"""
         First part of setup same as test_Cartesian.
         Second part of setup builds lists/dictionaries of expected values to compare to.
-        has expected values for component isotopic atom density and component area
+        has expected values for component isotopic atom density and component area.
         """
         self.o, self.r = test_reactors.loadTestReactor(TEST_ROOT)
 
@@ -311,6 +312,7 @@ class TestBlockCollectionComponentAverage1DCylinder(unittest.TestCase):
         representativeBlockList.sort(key=lambda repB: repB.getMass() / repB.getVolume())
         reprBlock = xsgm.representativeBlocks["ZA"]
         self.assertEqual(reprBlock.name, "1D_CYL_AVG_ZA")
+        self.assertEqual(reprBlock.p.percentBu, 0.0)
 
         for c, compDensity, compArea in zip(
             reprBlock, self.expectedComponentDensities, self.expectedComponentAreas
@@ -448,6 +450,7 @@ class TestBlockCollectionFluxWeightedAverage(unittest.TestCase):
         avgB = self.bc.createRepresentativeBlock()
         self.assertNotIn(avgB, self.bc)
         self.assertAlmostEqual(avgB.getNumberDensity("U235"), 1.0)
+        self.assertEqual(avgB.p.percentBu, 25.0)
 
     def test_invalidWeights(self):
         self.bc[0].p.flux = 0.0
@@ -494,6 +497,28 @@ class Test_CrossSectionGroupManager(unittest.TestCase):
         )
         self.assertEqual(len(blockCollectionsByXsGroup), 4)
         self.assertIn("AB", blockCollectionsByXsGroup)
+
+    def test_calcWeightedBurnup(self):
+        self.blockList[1].p.percentBu = 3.1
+        self.blockList[2].p.percentBu = 10.0
+        self.blockList[3].p.percentBu = 1.5
+        for b in self.blockList[4:]:
+            b.p.percentBu = 0.0
+        self.csm._updateBurnupGroups(self.blockList)
+        blockCollectionsByXsGroup = {}
+        blockCollectionsByXsGroup = self.csm._addXsGroupsFromBlocks(
+            blockCollectionsByXsGroup, self.blockList
+        )
+        ABcollection = blockCollectionsByXsGroup["AB"]
+        self.assertEqual(
+            blockCollectionsByXsGroup["AA"]._calcWeightedBurnup(), 1 / 12.0
+        )
+        self.assertEqual(
+            ABcollection.getWeight(self.blockList[1]),
+            ABcollection.getWeight(self.blockList[2]),
+            "The two blocks in AB do not have the same weighting!",
+        )
+        self.assertEqual(ABcollection._calcWeightedBurnup(), 6.55)
 
     def test_getNextAvailableXsType(self):
         blockCollectionsByXsGroup = {}
@@ -575,14 +600,14 @@ class Test_CrossSectionGroupManager(unittest.TestCase):
         self.assertEqual(origXSIDsFromNew["BA"], "AA")
 
     def test_interactBOL(self):
-        """Test `BOL` lattice physics update frequency"""
+        """Test `BOL` lattice physics update frequency."""
         self.blockList[0].r.p.timeNode = 0
         self.csm.cs[CONF_LATTICE_PHYSICS_FREQUENCY] = "BOL"
         self.csm.interactBOL()
         self.assertTrue(self.csm.representativeBlocks)
 
     def test_interactBOC(self):
-        """Test `BOC` lattice physics update frequency"""
+        """Test `BOC` lattice physics update frequency."""
         self.blockList[0].r.p.timeNode = 0
         self.csm.cs[CONF_LATTICE_PHYSICS_FREQUENCY] = "BOC"
         self.csm.interactBOL()
@@ -590,7 +615,7 @@ class Test_CrossSectionGroupManager(unittest.TestCase):
         self.assertTrue(self.csm.representativeBlocks)
 
     def test_interactEveryNode(self):
-        """Test `everyNode` lattice physics update frequency"""
+        """Test `everyNode` lattice physics update frequency."""
         self.csm.cs[CONF_LATTICE_PHYSICS_FREQUENCY] = "BOC"
         self.csm.interactBOL()
         self.csm.interactEveryNode()
@@ -601,7 +626,7 @@ class Test_CrossSectionGroupManager(unittest.TestCase):
         self.assertTrue(self.csm.representativeBlocks)
 
     def test_interactFirstCoupledIteration(self):
-        """Test `firstCoupledIteration` lattice physics update frequency"""
+        """Test `firstCoupledIteration` lattice physics update frequency."""
         self.csm.cs[CONF_LATTICE_PHYSICS_FREQUENCY] = "everyNode"
         self.csm.interactBOL()
         self.csm.interactCoupled(iteration=0)
@@ -612,7 +637,7 @@ class Test_CrossSectionGroupManager(unittest.TestCase):
         self.assertTrue(self.csm.representativeBlocks)
 
     def test_interactAllCoupled(self):
-        """Test `all` lattice physics update frequency"""
+        """Test `all` lattice physics update frequency."""
         self.csm.cs[CONF_LATTICE_PHYSICS_FREQUENCY] = "firstCoupledIteration"
         self.csm.interactBOL()
         self.csm.interactCoupled(iteration=1)

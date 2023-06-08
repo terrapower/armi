@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-Generic Fuel Performance Plugin
+Generic Fuel Performance Plugin.
 """
 
 from armi import plugins

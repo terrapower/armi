@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Test ASCII maps"""
+"""Test ASCII maps."""
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-member,disallowed-name,invalid-name
 import io
 import unittest
@@ -360,7 +360,7 @@ class TestAsciiMaps(unittest.TestCase):
             self.assertEqual(output, HEX_FULL_MAP_SMALL)
 
     def test_flatHexBases(self):
-        """For the full core with 2 lines chopped, get the first 3 bases"""
+        """For the full core with 2 lines chopped, get the first 3 bases."""
         asciimap = asciimaps.AsciiMapHexFullFlatsUp()
         with io.StringIO() as stream:
             stream.write(HEX_FULL_MAP_FLAT)

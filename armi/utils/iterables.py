@@ -13,40 +13,38 @@
 # limitations under the License.
 
 """
-Module of utilities to help dealing with iterable objects in python
+Module of utilities to help dealing with iterable objects in Python.
 """
-import struct
 from itertools import tee, chain
+import struct
 
-from builtins import object  # pylint: disable=redefined-builtin
 from six.moves import filterfalse, map, xrange, filter
 
 
-def flatten(l):
-    """Flattens an iterable of iterables by one level
+def flatten(lst):
+    """Flattens an iterable of iterables by one level.
 
     Examples
     --------
     >>> flatten([[1,2,3,4],[5,6,7,8],[9,10]])
     [1,2,3,4,5,6,7,8,9,10]
-
     """
-    return [item for sublist in l for item in sublist]
+    return [item for sublist in lst for item in sublist]
 
 
-def chunk(l, n):
-    r"""Returns a generator object that yields lenght-`n` chunks of `l`.
+def chunk(lst, n):
+    r"""Returns a generator object that yields lenght-`n` chunks of `lst`.
+
     The last chunk may have a length less than `n` if `n` doesn't divide
-    `len(l)`.
+    `len(lst)`.
 
     Examples
     --------
     >>> list(chunk([1,2,3,4,5,6,7,8,9,10], 4))
      [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10]]
-
     """
-    for i in xrange(0, len(l), n):
-        yield l[i : i + n]
+    for i in xrange(0, len(lst), n):
+        yield lst[i : i + n]
 
 
 def split(a, n, padWith=()):
@@ -79,7 +77,6 @@ def split(a, n, padWith=()):
     >>> split([0,1,2], 5, padWith=None)
      [[0], [1], [2], None, None]
     """
-
     a = list(a)  # in case `a` is not list-like
     N = len(a)
 
@@ -92,11 +89,8 @@ def split(a, n, padWith=()):
     return chunked
 
 
-# -------------------------------
-
-
 def unpackBinaryStrings(binaryRow):
-    """Unpacks a row of binary strings to a list of floats"""
+    """Unpacks a row of binary strings to a list of floats."""
     if len(binaryRow) % 8:
         raise ValueError(
             "Cannot unpack binary strings from misformatted row. Expected chunks of size 8."
@@ -105,7 +99,7 @@ def unpackBinaryStrings(binaryRow):
 
 
 def packBinaryStrings(valueDict):
-    """Converts a dictionary of lists of floats into a dictionary of lists of byte arrays"""
+    """Converts a dictionary of lists of floats into a dictionary of lists of byte arrays."""
     bytearrays = {}
     for entry in valueDict:
         bytearrays[entry] = [bytearray()]
@@ -117,29 +111,28 @@ def packBinaryStrings(valueDict):
 
 
 def unpackHexStrings(hexRow):
-    """Unpacks a row of binary strings to a list of floats"""
+    """Unpacks a row of binary strings to a list of floats."""
     return [float.fromhex(ss) for ss in hexRow.split() if ss != ""]
 
 
 def packHexStrings(valueDict):
-    """Converts a dictionary of lists of floats into a dictionary of lists of hex values arrays"""
+    """Converts a dictionary of lists of floats into a dictionary of lists of hex values arrays."""
     hexes = {}
-    for entry in valueDict:  # uglier loop done for compatability with cython
+    for entry in valueDict:
         hexes[entry] = [" ".join(float.hex(float(value)) for value in valueDict[entry])]
     return hexes
-
-
-# -------------------------------
 
 
 class Sequence:
     """
     The Sequence class partially implements a list-like interface,
     supporting methods like append and extend and also operations like + and +=.
+
     It also provides some convenience methods such as drop and select to support
     filtering, as well as a transform function to modify the sequence. Note that
     these methods return a "cloned" version of the iterator to support chaining,
-    e.g.,
+    e.g.
+
     >>> s = Sequence(range(1000000))
     >>> tuple(s.drop(lambda i: i%2 == 0).select(lambda i: i < 20).transform(lambda i: i*10))
     (10, 30, 50, 70, 90, 110, 130, 150, 170, 190)
@@ -206,7 +199,7 @@ class Sequence:
         return next(self._iter)
 
     def select(self, pred):
-        """Keep only items for which pred(item) evaluates to True
+        """Keep only items for which pred(item) evaluates to True.
 
         Note: returns self so it can be chained with other filters, e.g.,
 
@@ -237,7 +230,7 @@ class Sequence:
         self.extend([item])
 
     def __radd__(self, other):
-        """s1 += s2"""
+        """Basic sequence addition: s1 += s2."""
         new = Sequence(other)
         new += Sequence(self)
         return new

@@ -303,8 +303,9 @@ class App:
         return self._pm.has_plugin(pluginName)
 
     def __registerUserPluginsAbsPath(self, pluginPath):
-        """Helper method to register a single UserPlugin where
-        the given path is of the form: /path/to/why.py:MyPlugin
+        """Helper method to register a single UserPlugin via absolute path.
+
+        Here the given path is of the form: /path/to/why.py:MyPlugin
         """
         assert pluginPath.count(".py:") == 1, f"Invalid plugin path: {pluginPath}"
 
@@ -326,8 +327,9 @@ class App:
             Flags.extend(newFlags)
 
     def __registerUserPluginsInternalImport(self, pluginPath):
-        """Helper method to register a single UserPlugin where
-        the given path is of the form: armi.thing.what.MyPlugin
+        """Helper method to register a single UserPlugin via internal import.
+
+        Here the given path is of the form: armi.thing.what.MyPlugin
         """
         names = pluginPath.strip().split(".")
         modPath = ".".join(names[:-1])

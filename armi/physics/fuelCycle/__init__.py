@@ -51,7 +51,7 @@ class FuelHandlerPlugin(plugins.ArmiPlugin):
     @plugins.HOOKIMPL
     def exposeInterfaces(cs):
         """
-        Implementation of the exposeInterfaces plugin hookspec
+        Implementation of the exposeInterfaces plugin hookspec.
 
         Notes
         -----

@@ -196,7 +196,7 @@ class Assembly(composites.Composite):
         obj.spatialLocator = self.spatialGrid[0, 0, index]
 
     def getNum(self):
-        """Return unique integer for this assembly"""
+        """Return unique integer for this assembly."""
         return int(self.p.assemNum)
 
     def getLocation(self):
@@ -442,7 +442,7 @@ class Assembly(composites.Composite):
 
     def getTotalHeight(self, typeSpec=None):
         """
-        Determine the height of this assembly in cm
+        Determine the height of this assembly in cm.
 
         Parameters
         ----------
@@ -483,7 +483,7 @@ class Assembly(composites.Composite):
 
     def getElevationBoundariesByBlockType(self, blockType=None):
         """
-        Gets of list of elevations, ordered from bottom to top of all boundaries of the block of specified type
+        Gets of list of elevations, ordered from bottom to top of all boundaries of the block of specified type.
 
         Useful for determining location of the top of the upper grid plate or active
         fuel, etc by using [0] to get the lowest boundary and [-1] to get highest
@@ -537,7 +537,6 @@ class Assembly(composites.Composite):
         -------
         heights : list
             z-coordinates where the specified param takes the specified value
-
         """
         heights = []
         # loop from bottom to top
@@ -566,7 +565,7 @@ class Assembly(composites.Composite):
         return heights
 
     def getAge(self):
-        """gets a height-averaged residence time of this assembly in days"""
+        """Gets a height-averaged residence time of this assembly in days."""
         at = 0.0
         for b in self:
             at += b.p.residence * b.getHeight()
@@ -574,7 +573,7 @@ class Assembly(composites.Composite):
 
     def makeAxialSnapList(self, refAssem=None, refMesh=None, force=False):
         """
-        Creates a list of block indices that should track axially with refAssem's
+        Creates a list of block indices that should track axially with refAssem's.
 
         When axially expanding, the control rods, shields etc. need to maintain mesh
         lines with the rest of the core. To do this, we'll just keep track of which
@@ -617,7 +616,7 @@ class Assembly(composites.Composite):
 
     def _shouldMassBeConserved(self, belowFuelColumn, b):
         """
-        Determine from a rule set if the mass of a block should be conserved during axial expansion
+        Determine from a rule set if the mass of a block should be conserved during axial expansion.
 
         Parameters
         ----------
@@ -760,7 +759,7 @@ class Assembly(composites.Composite):
         self.setBlockMesh(mesh)
 
     def dump(self, fName=None):
-        """Pickle the assembly and write it to a file"""
+        """Pickle the assembly and write it to a file."""
         if not fName:
             fName = self.getName() + ".dump.pkl"
 
@@ -860,7 +859,7 @@ class Assembly(composites.Composite):
 
     def getBlockAtElevation(self, elevation):
         """
-        Returns the block at a specified axial dimension elevation (given in cm)
+        Returns the block at a specified axial dimension elevation (given in cm).
 
         If height matches the exact top of the block, the block is considered at that
         height.
@@ -914,7 +913,7 @@ class Assembly(composites.Composite):
 
     def getBlocksBetweenElevations(self, zLower, zUpper):
         """
-        Return block(s) between two axial elevations and their corresponding heights
+        Return block(s) between two axial elevations and their corresponding heights.
 
         Parameters
         ----------
@@ -1036,7 +1035,7 @@ class Assembly(composites.Composite):
 
     def getParamOfZFunction(self, param, interpType="linear", fillValue=numpy.NaN):
         """
-        Interpolates a param axially to find it at any value of elevation z
+        Interpolates a param axially to find it at any value of elevation z.
 
         By default, assumes that all parameters are for the center of a block. So for
         parameters such as THoutletTemperature that are defined on the top, this may be
@@ -1161,7 +1160,7 @@ class Assembly(composites.Composite):
 
     def countBlocksWithFlags(self, blockTypeSpec=None):
         """
-        Returns the number of blocks of a specified type
+        Returns the number of blocks of a specified type.
 
         blockTypeSpec : Flags or list
             Restrict to only these types of blocks. typeSpec is None, return all of the
@@ -1207,8 +1206,9 @@ class Assembly(composites.Composite):
 
         Parameters
         ----------
-        rad - float
-            number (in radians) specifying the angle of counter clockwise rotation"""
+        rad: float
+            number (in radians) specifying the angle of counter clockwise rotation
+        """
         for b in self.getBlocks():
             b.rotate(rad)
 
@@ -1225,7 +1225,7 @@ class RZAssembly(Assembly):
     """
     RZAssembly are assemblies in RZ geometry; they need to be different objects than
     HexAssembly because they use different locations and need to have Radial Meshes in
-    their setting
+    their setting.
 
     note ThRZAssemblies should be a subclass of Assemblies (similar to Hex-Z) because
     they should have a common place to put information about subdividing the global mesh
@@ -1238,7 +1238,7 @@ class RZAssembly(Assembly):
 
     def radialOuter(self):
         """
-        returns the outer radial boundary of this assembly
+        returns the outer radial boundary of this assembly.
 
         See Also
         --------

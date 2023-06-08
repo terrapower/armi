@@ -346,7 +346,7 @@ class SystemLayoutInput:
 
     def _getModifiedFileName(self, originalFileName, suffix):
         """
-        Generates the modified geometry file name based on the requested suffix
+        Generates the modified geometry file name based on the requested suffix.
         """
         originalFileName = originalFileName.split(self._GEOM_FILE_EXTENSION)[0]
         suffix = suffix.split(self._GEOM_FILE_EXTENSION)[0]
@@ -354,7 +354,7 @@ class SystemLayoutInput:
 
     def writeGeom(self, outputFileName, suffix=""):
         """
-        Write data out as a geometry xml file
+        Write data out as a geometry xml file.
 
         Parameters
         ----------

@@ -133,7 +133,7 @@ def _desaturate(c: Sequence[float]):
 
 def _getColorAndBrushFromFlags(f, bold=True):
     """
-    Given a set of Flags, return a wx.Pen and wx.Brush with which to draw a shape
+    Given a set of Flags, return a wx.Pen and wx.Brush with which to draw a shape.
     """
     c = numpy.array([0.0, 0.0, 0.0])
     nColors = 0
@@ -540,7 +540,7 @@ class _AssemblyPalette(wx.ScrolledWindow):
 
     def onToggle(self, event):
         """
-        Respond to toggle events
+        Respond to toggle events.
 
         This makes sure that the right selector button is activated, and switches the
         GUI mode into the proper one based on whether an assembly design is selected, or
@@ -574,7 +574,7 @@ class _AssemblyPalette(wx.ScrolledWindow):
 
     def getSelectedAssem(self) -> Optional[Union[AssemblyBlueprint, Tuple[int, int]]]:
         """
-        Return the currently-selected assembly design or fuel path indices
+        Return the currently-selected assembly design or fuel path indices.
         """
         if self.activeAssemID in self.assemDesignsById:
             # We have an assembly design activated. return it
@@ -970,7 +970,7 @@ class GridGui(wx.ScrolledWindow):
 
     def _getLabel(self, idx) -> Tuple[str, Optional[str], bool]:
         """
-        Given (i, j, k) indices, return information about the object at that location
+        Given (i, j, k) indices, return information about the object at that location.
 
         This will return a tuple containing:
          - The label to actually display in the GUI
@@ -1020,7 +1020,7 @@ class GridGui(wx.ScrolledWindow):
 
     def setNumRings(self, n: int):
         """
-        Change the number of rings that should be drawn
+        Change the number of rings that should be drawn.
         """
         self.numRings = n
         if self.grid.geomType == geometry.GeomType.HEX:
@@ -1710,7 +1710,7 @@ class NewGridBlueprintDialog(wx.Dialog):
 
     def _toggleControls(self):
         """
-        Make sure that the appropriate controls are enabled/disabled
+        Make sure that the appropriate controls are enabled/disabled.
         """
         geom = self._geomFromIdx[self.geomType.GetSelection()]
         full = self.domainFull.GetValue()

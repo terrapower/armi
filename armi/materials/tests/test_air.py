@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""unit tests for air materials"""
+"""unit tests for air materials."""
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 
 import math
@@ -180,7 +180,7 @@ REFERENCE_THERMAL_CONDUCTIVITY_mJ_PER_M_K = [
 
 class Test_Air(unittest.TestCase):
     """
-    unit tests for air materials
+    unit tests for air materials.
     """
 
     def test_pseudoDensity(self):

@@ -305,7 +305,7 @@ class _CompxsIO(cccc.Stream):
         )
 
     def _rw5DRecord(self):
-        """Write power conversion factors"""
+        """Write power conversion factors."""
         numComps = self._getFileMetadata()["numComps"]
         with self.createRecord() as record:
             for factor in COMPXS_POWER_CONVERSION_FACTORS:
@@ -355,7 +355,7 @@ class _CompxsRegionIO:
         self._rw4DRecord()
 
     def _rw3DRecord(self):
-        r"""Write the composition specifications block"""
+        r"""Write the composition specifications block."""
         with self._compxsIO.createRecord() as record:
             self._getRegionMetadata()["chiFlag"] = record.rwInt(
                 self._getRegionMetadata()["chiFlag"]
@@ -376,7 +376,7 @@ class _CompxsRegionIO:
                 )
 
     def _rw4DRecord(self):
-        r"""Write the composition macroscopic cross sections"""
+        r"""Write the composition macroscopic cross sections."""
         if self._isReading:
             self._region.allocateXS(self._getFileMetadata()["numGroups"])
 

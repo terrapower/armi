@@ -17,7 +17,7 @@ from armi.cli.entryPoint import EntryPoint
 
 
 class RunEntryPoint(EntryPoint):
-    """Run an ARMI case"""
+    """Run an ARMI case."""
 
     name = "run"
     settingsArgument = "required"

@@ -27,7 +27,7 @@ SIMPLE_RZFLUX = os.path.join(THIS_DIR, "fixtures", "simple_cartesian.rzflux")
 
 
 class TestRzflux(unittest.TestCase):
-    """Tests the rzflux class"""
+    """Tests the rzflux class."""
 
     def test_readRzflux(self):
         """Ensure we can read a RZFLUX file."""

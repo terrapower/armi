@@ -50,7 +50,7 @@ class UZr(material.FuelMaterial):
         material.Material.__init__(self)
 
     def setDefaultMassFracs(self):
-        r"""U-Pu-Zr mass fractions"""
+        r"""U-Pu-Zr mass fractions."""
         u235Enrichment = 0.1
         self.uFrac = self.uFracDefault
         self.zrFrac = self.zrFracDefault
@@ -75,7 +75,7 @@ class UZr(material.FuelMaterial):
 
     def _calculateReferenceDensity(self):
         """
-        Calculates the reference mass density in g/cc of a U-Pu-Zr alloy at 293K with Vergard's law
+        Calculates the reference mass density in g/cc of a U-Pu-Zr alloy at 293K with Vergard's law.
 
         .. warning:: the zrFrac, uFrac, etc. may seem redundant with massFrac data.
             But it's complicated to update material fractions one at a time when density

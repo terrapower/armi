@@ -32,14 +32,14 @@ ORDER = interfaces.STACK_ORDER.BEFORE + interfaces.STACK_ORDER.BOOKKEEPING
 
 
 def describeInterfaces(cs):
-    """Function for exposing interface(s) to other code"""
+    """Function for exposing interface(s) to other code."""
     if cs["genReports"]:
         return (ReportInterface, {})
     return None
 
 
 class ReportInterface(interfaces.Interface):
-    """An interface to manage the use of the report system"""
+    """An interface to manage the use of the report system."""
 
     name = "report"
 
@@ -116,7 +116,7 @@ class ReportInterface(interfaces.Interface):
         reportingUtils.makeBlockDesignReport(self.r)
 
     def interactEOL(self):
-        """Adds the data to the report, and generates it"""
+        """Adds the data to the report, and generates it."""
         b = self.r.core.getFirstBlock(Flags.FUEL)
         b.setAreaFractionsReport()
 
@@ -167,7 +167,7 @@ class ReportInterface(interfaces.Interface):
     #        Misc Summaries
     # --------------------------------------------
     def writeRunSummary(self):
-        """Make a summary of the run"""
+        """Make a summary of the run."""
         # spent fuel pool report
         self.r.core.sfp.report()
         self.r.core.sfp.count()

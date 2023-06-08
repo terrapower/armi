@@ -102,13 +102,13 @@ _ignoreConfigures = False
 
 
 def disableFutureConfigures():
-    """Exposed function to ensure armi.configure() isn't called more than once"""
+    """Exposed function to ensure armi.configure() isn't called more than once."""
     global _ignoreConfigures
     _ignoreConfigures = True
 
 
 def isStableReleaseVersion(version=None):
-    """Determine if the version should be considered a stable release"""
+    """Determine if the version should be considered a stable release."""
     version = version or __version__
     return "-" not in version
 

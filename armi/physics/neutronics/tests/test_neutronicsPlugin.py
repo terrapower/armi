@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""unit tests for the neutronics plugin"""
+"""unit tests for the neutronics plugin."""
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import io
 import unittest
@@ -90,7 +90,7 @@ class Test_NeutronicsPlugin(TestPlugin):
         self.assertIn("geometry: 1D", outText)
 
     def test_neutronicsSettingsLoaded(self):
-        """Check that various special neutronics-specifics settings are loaded"""
+        """Check that various special neutronics-specifics settings are loaded."""
         cs = caseSettings.Settings()
 
         self.assertIn(CONF_INNERS_, cs)
@@ -250,7 +250,7 @@ class NeutronicsReactorTests(unittest.TestCase):
 
     @staticmethod
     def __autoCorrectAllQueries(settingsValidator):
-        """Force-Correct (resolve() to "YES") all queries in a Settings Validator"""
+        """Force-Correct (resolve() to "YES") all queries in a Settings Validator."""
         for query in settingsValidator:
             try:
                 query.correction()

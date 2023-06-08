@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-Generic Thermal/Hydraulics Plugin
+Generic Thermal/Hydraulics Plugin.
 
 Thermal/hydraulics is concerned with temperatures, flows, pressures,
 and heat transfer.

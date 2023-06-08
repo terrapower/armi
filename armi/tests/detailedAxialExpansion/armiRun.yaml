@@ -1,5 +1,3 @@
-metadata:
-  version: uncontrolled
 settings:
   axialExpansion: true
   detailedAxialExpansion: true
@@ -42,3 +40,5 @@ settings:
   summarizeAssemDesign: false
   targetK: 1.002
   verbosity: extra
+  versions:
+    armi: uncontrolled

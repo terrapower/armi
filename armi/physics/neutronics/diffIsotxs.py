@@ -20,7 +20,7 @@ from armi.cli.entryPoint import EntryPoint
 
 
 class CompareIsotxsLibraries(EntryPoint):
-    """Compare two ISOTXS files"""
+    """Compare two ISOTXS files."""
 
     name = "diff-isotxs"
 

@@ -32,6 +32,7 @@ from armi.reactor.blocks import Block
 from armi.reactor.converters import geometryConverters
 from armi.reactor.converters import uniformMesh
 from armi.reactor.flags import Flags
+from armi.settings.caseSettings import Settings
 from armi.utils import units, codeTiming, getMaxBurnSteps
 from armi.physics.neutronics.settings import (
     CONF_BOUNDARIES,
@@ -79,7 +80,7 @@ class GlobalFluxInterface(interfaces.Interface):
         self._setTightCouplingDefaults()
 
     def _setTightCouplingDefaults(self):
-        """enable tight coupling defaults for the interface
+        """Enable tight coupling defaults for the interface.
 
         - allows users to set tightCoupling: true in settings without
           having to specify the specific tightCouplingSettings for this interface.
@@ -202,7 +203,7 @@ class GlobalFluxInterface(interfaces.Interface):
 
     def calculateKeff(self, label="keff"):
         """
-        Runs neutronics tool and returns keff without applying it to the reactor
+        Runs neutronics tool and returns keff without applying it to the reactor.
 
         Used for things like direct-eigenvalue reactivity coefficients and CR worth iterations.
         For anything more complicated than getting keff, clients should
@@ -250,7 +251,7 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
         GlobalFluxInterface.interactCoupled(self, iteration)
 
     def getTightCouplingValue(self):
-        """Return the parameter value"""
+        """Return the parameter value."""
         if self.coupler.parameter == "keff":
             return self.r.core.p.keff
         if self.coupler.parameter == "power":
@@ -295,7 +296,7 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
 
     def getExecuter(self, options=None, label=None):
         """
-        Get executer object for performing custom client calcs
+        Get executer object for performing custom client calcs.
 
         This allows plugins to update options in a somewhat generic
         way. For example, reactivity coefficients plugin may want to
@@ -325,7 +326,7 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
     @staticmethod
     def getLabel(caseTitle, cycle, node, iteration=None):
         """
-        Make a label (input/output file name) for the executer based on cycle, node, iteration
+        Make a label (input/output file name) for the executer based on cycle, node, iteration.
 
         Parameters
         ----------
@@ -345,49 +346,99 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
 
 
 class GlobalFluxOptions(executers.ExecutionOptions):
-    """Data structure representing common options in Global Flux Solvers"""
+    """Data structure representing common options in Global Flux Solvers.
+
+    Attributes
+    ----------
+    adjoint : bool
+        True if the ``CONF_NEUTRONICS_TYPE`` setting is set to ``adjoint`` or ``real``.
+    calcReactionRatesOnMeshConversion : bool
+        This option is used to recalculate reaction rates after a mesh
+        conversion and remapping of neutron flux. This can be disabled
+        in certain global flux implementations if reaction rates are not
+        required, but by default it is enabled.
+    eigenvalueProblem : bool
+        Whether this is a eigenvalue problem or a fixed source problem
+    includeFixedSource : bool
+        This can happen in eig if Fredholm Alternative satisfied.
+    photons : bool
+        Run the photon/gamma uniform mesh converter?
+    real : bool
+        True if  ``CONF_NEUTRONICS_TYPE`` setting is set to ``real``.
+    aclpDoseLimit : float
+        Dose limit in dpa used to position the above-core load pad (if one exists)
+    boundaries : str
+        External Neutronic Boundary Conditions. Reflective does not include axial.
+    cs : Settings
+        Settings for this run
+    detailedAxialExpansion : bool
+        Turn on detailed axial expansion? from settings
+    dpaPerFluence : float
+        A quick and dirty conversion that is used to get dpaPeak by multiplying
+        the factor and fastFluencePeak
+    energyDepoCalcMethodStep : str
+        For gamma transport/normalization
+    epsEigenvalue : float
+        Convergence criteria for calculating the eigenvalue in the global flux solver
+    epsFissionSourceAvg : float
+        Convergence criteria for average fission source, from settings
+    epsFissionSourcePoint : float
+        Convergence criteria for point fission source, from settings
+    geomType : geometry.GeomType
+        Reactor Core geometry type (HEX, RZ, RZT, etc)
+    hasNonUniformAssems: bool
+        Has any non-uniform assembly flags, from settings
+    isRestart : bool
+        Restart global flux case using outputs from last time as a guess
+    kernelName : str
+        The neutronics / depletion solver for global flux solve.
+    loadPadElevation : float
+        The elevation of the bottom of the above-core load pad (ACLP) from
+        the bottom of the upper grid plate (in cm).
+    loadPadLength : float
+        The length of the load pad. Used to compute average and peak dose.
+    maxOuters : int
+        XY and Axial partial current sweep max outer iterations.
+    savePhysicsFilesList : bool
+        Is this timestamp in the list of savePhysicsFiles in the settings?
+    symmetry : str
+        Reactor symmetry: full core, third-core, etc
+    xsKernel : str
+        Lattice Physics Kernel, from settings
+    """
 
     def __init__(self, label: Optional[str] = None):
         executers.ExecutionOptions.__init__(self, label)
-        self.real = True
-        self.adjoint = False
-        self.neutrons = True
-        self.photons = False
-        self.boundaryConditions = {}
-        self.epsFissionSourceAvg = None
-        self.epsFissionSourcePoint = None
-        self.epsEigenvalue = None
-        self.maxOuters = None
-        # can happen in eig if Fredholm Alternative satisfied
-        self.includeFixedSource = False
-        self.eigenvalueProblem = True
-        self.kernelName: str
-        self.isRestart = None
-        self.energyDepoCalcMethodStep = None  # for gamma transport/normalization
-        self.detailedAxialExpansion = None
+        # have defaults
+        self.adjoint: bool = False
+        self.calcReactionRatesOnMeshConversion: bool = True
+        self.eigenvalueProblem: bool = True
+        self.includeFixedSource: bool = False
+        self.photons: bool = False
+        self.real: bool = True
 
-        self.boundaries = None
-        self.xsKernel = None
+        # no defaults
+        self.aclpDoseLimit: Optional[float] = None
+        self.boundaries: Optional[str] = None
+        self.cs: Optional[Settings] = None
+        self.detailedAxialExpansion: Optional[bool] = None
+        self.dpaPerFluence: Optional[float] = None
+        self.energyDepoCalcMethodStep: Optional[str] = None
+        self.epsEigenvalue: Optional[float] = None
+        self.epsFissionSourceAvg: Optional[float] = None
+        self.epsFissionSourcePoint: Optional[float] = None
+        self.geomType: Optional[geometry.GeomType] = None
+        self.hasNonUniformAssems: Optional[bool] = None
+        self.isRestart: Optional[bool] = None
+        self.kernelName: Optional[str] = None
+        self.loadPadElevation: Optional[float] = None
+        self.loadPadLength: Optional[float] = None
+        self.maxOuters: Optional[int] = None
+        self.savePhysicsFilesList: Optional[bool] = None
+        self.symmetry: Optional[str] = None
+        self.xsKernel: Optional[str] = None
 
-        self.dpaPerFluence = None
-        self.aclpDoseLimit = None
-        self.loadPadElevation = None
-        self.loadPadLength = None
-        self.cs = None
-        self.savePhysicsFilesList = None
-
-        self._geomType: geometry.GeomType
-        self.symmetry: str
-
-        # This option is used to recalculate reaction
-        # rates after a mesh conversion and remapping
-        # of neutron flux. This can be disabled
-        # in certain global flux implementations
-        # if reaction rates are not required, but
-        # by default it is enabled.
-        self.calcReactionRatesOnMeshConversion = True
-
-    def fromUserSettings(self, cs):
+    def fromUserSettings(self, cs: Settings):
         """
         Map user input settings from cs to a set of specific global flux options.
 
@@ -461,7 +512,7 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
     @codeTiming.timed
     def _performGeometryTransformations(self, makePlots=False):
         """
-        Apply geometry conversions to make reactor work in neutronics
+        Apply geometry conversions to make reactor work in neutronics.
 
         There are two conditions where things must happen:
 
@@ -552,7 +603,7 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
 
     def edgeAssembliesAreNeeded(self) -> bool:
         """
-        True if edge assemblies are needed in this calculation
+        True if edge assemblies are needed in this calculation.
 
         We only need them in finite difference cases that are not full core.
         """
@@ -674,7 +725,7 @@ class GlobalFluxResultMapper(interfaces.OutputReader):
 
     def getBurnupPeakingFactor(self, b: Block):
         """
-        Get the radial peaking factor to be applied to burnup and DPA for a Block
+        Get the radial peaking factor to be applied to burnup and DPA for a Block.
 
         This may be informed by previous runs which used
         detailed pin reconstruction and rotation. In that case,
@@ -704,7 +755,7 @@ class GlobalFluxResultMapper(interfaces.OutputReader):
 
     def updateDpaRate(self, blockList=None):
         """
-        Update state parameters that can be known right after the flux is computed
+        Update state parameters that can be known right after the flux is computed.
 
         See Also
         --------
@@ -819,7 +870,7 @@ class DoseResultsMapper(GlobalFluxResultMapper):
 
     def updateFluenceAndDpa(self, stepTimeInSeconds, blockList=None):
         r"""
-        Updates the fast fluence and the DPA of the blocklist
+        Updates the fast fluence and the DPA of the blocklist.
 
         The dpa rate from the previous timestep is used to compute the dpa here.
 
@@ -905,13 +956,14 @@ class DoseResultsMapper(GlobalFluxResultMapper):
         self.updateLoadpadDose()
 
     def updateCycleDoseParams(self):
-        r"""Updates reactor params based on the amount of dose (detailedDpa) accrued this cycle
+        r"""Updates reactor params based on the amount of dose (detailedDpa) accrued this cycle.
+
         Params updated include:
 
-        maxDetailedDpaThisCycle
-        dpaFullWidthHalfMax
-        elevationOfACLP3Cycles
-        elevationOfACLP7Cycles
+        * maxDetailedDpaThisCycle
+        * dpaFullWidthHalfMax
+        * elevationOfACLP3Cycles
+        * elevationOfACLP7Cycles
 
         These parameters are left as zeroes at BOC because no dose has been accumulated yet.
         """
@@ -1083,7 +1135,7 @@ class DoseResultsMapper(GlobalFluxResultMapper):
 
 def computeDpaRate(mgFlux, dpaXs):
     r"""
-    Compute the DPA rate incurred by exposure of a certain flux spectrum
+    Compute the DPA rate incurred by exposure of a certain flux spectrum.
 
     Parameters
     ----------
@@ -1162,7 +1214,7 @@ def computeDpaRate(mgFlux, dpaXs):
 
 def calcReactionRates(obj, keff, lib):
     r"""
-    Compute 1-group reaction rates for this object (usually a block.)
+    Compute 1-group reaction rates for this object (usually a block).
 
     Parameters
     ----------
@@ -1205,7 +1257,6 @@ def calcReactionRates(obj, keff, lib):
     .. math::
 
         \sigma_g = \frac{\int_{E g}^{E_{g+1}} \phi(E)  \sigma(E) dE}{\int_{E_g}^{E_{g+1}} \phi(E) dE}
-
     """
     rate = {}
     for simple in RX_PARAM_NAMES:

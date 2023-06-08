@@ -96,7 +96,7 @@ class GeomType(enum.Enum):
 
     @property
     def label(self):
-        """Human-presentable label"""
+        """Human-presentable label."""
         if self == self.HEX:
             return "Hexagonal"
         elif self == self.CARTESIAN:
@@ -107,7 +107,7 @@ class GeomType(enum.Enum):
             return "R-Z"
 
     def __str__(self):
-        """Inverse of fromStr()"""
+        """Inverse of fromStr()."""
         if self == self.HEX:
             return HEX
         elif self == self.CARTESIAN:
@@ -164,7 +164,7 @@ class DomainType(enum.Enum):
 
     @property
     def label(self):
-        """Human-presentable label"""
+        """Human-presentable label."""
         if self == self.FULL_CORE:
             return "Full"
         elif self == self.THIRD_CORE:
@@ -180,7 +180,7 @@ class DomainType(enum.Enum):
             return ""
 
     def __str__(self):
-        """Inverse of fromStr()"""
+        """Inverse of fromStr()."""
         if self == self.FULL_CORE:
             return FULL_CORE
         elif self == self.THIRD_CORE:
@@ -253,7 +253,7 @@ class BoundaryType(enum.Enum):
 
     @property
     def label(self):
-        """Human-presentable label"""
+        """Human-presentable label."""
         if self == self.NO_SYMMETRY:
             return "No Symmetry"
         elif self == self.REFLECTIVE:
@@ -262,7 +262,7 @@ class BoundaryType(enum.Enum):
             return "Periodic"
 
     def __str__(self):
-        """Inverse of fromStr()"""
+        """Inverse of fromStr()."""
         if self == self.NO_SYMMETRY:
             return ""
         elif self == self.PERIODIC:
@@ -325,7 +325,7 @@ class SymmetryType:
 
     @classmethod
     def createValidSymmetryStrings(cls):
-        """Create a list of valid symmetry strings based on the set of tuples in VALID_SYMMETRY"""
+        """Create a list of valid symmetry strings based on the set of tuples in VALID_SYMMETRY."""
         return [
             cls(domain, boundary, isThroughCenter)
             for domain, boundary, isThroughCenter in cls.VALID_SYMMETRY
@@ -333,7 +333,7 @@ class SymmetryType:
 
     @classmethod
     def fromStr(cls, symmetryString: str) -> "SymmetryType":
-        """Construct a SymmetryType object from a valid string"""
+        """Construct a SymmetryType object from a valid string."""
         canonical = symmetryString.lower().strip()
         # ignore "assembly" since it is unnecessary and overly-verbose and too specific
         noAssembly = canonical.replace("assembly", "").strip()
@@ -372,7 +372,7 @@ class SymmetryType:
             raise TypeError("Expected str or SymmetryType; got {}".format(type(source)))
 
     def __str__(self):
-        """Combined string of domain and boundary symmetry type"""
+        """Combined string of domain and boundary symmetry type."""
         strList = [str(self.domain)]
         if self.boundary.hasSymmetry():
             strList.append(str(self.boundary))

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-Niobium Zirconium Alloy
+Niobium Zirconium Alloy.
 """
 
 from armi.materials.material import SimpleSolid

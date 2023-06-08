@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-Tests functionalities of components within ARMI
+Tests functionalities of components within ARMI.
 """
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-self-use,no-member,invalid-name
 import copy
@@ -260,10 +260,10 @@ class TestUnshapedComponent(TestGeneralComponents):
 
 
 class TestShapedComponent(TestGeneralComponents):
-    """Abstract class for all shaped components"""
+    """Abstract class for all shaped components."""
 
     def test_preserveMassDuringThermalExpansion(self):
-        """Test that when we thermally expand any arbirtray shape, mass is conserved
+        """Test that when we thermally expand any arbitrary shape, mass is conserved.
 
         .. test:: Test that ARMI can thermally expand any arbitrary shape.
            :id: TEST_REACTOR_THERMAL_EXPANSION_0
@@ -325,11 +325,11 @@ class TestShapedComponent(TestGeneralComponents):
                 self.component.getMass(),
             )
 
-    def test_densityD(self):
+    def test_density(self):
         """Testing the Component density gets the correct 3D material density."""
 
         class StrangeMaterial(Material):
-            """material designed to make the test easier to understand"""
+            """material designed to make the test easier to understand."""
 
             def pseduoDensity(self, Tk=None, Tc=None):
                 return 1.0
@@ -397,7 +397,7 @@ class TestCircle(TestShapedComponent):
         self.assertAlmostEqual(cur, ref)
 
     def test_thermallyExpands(self):
-        """Test that ARMI can thermally expands a circle
+        """Test that ARMI can thermally expands a circle.
 
         .. test:: Test that ARMI can thermally expands a circle
            :id: TEST_REACTOR_THERMAL_EXPANSION_2
@@ -453,7 +453,7 @@ class TestCircle(TestShapedComponent):
         self.assertAlmostEqual(cur, ref)
 
     def test_badComponentName(self):
-        """This shows that resolveLinkedDims cannot support names with periods in them"""
+        """This shows that resolveLinkedDims cannot support names with periods in them."""
         nPins = 12
         fuelDims = {"Tinput": 25.0, "Thot": 430.0, "od": 0.9, "id": 0.0, "mult": nPins}
         cladDims = {"Tinput": 25.0, "Thot": 430.0, "od": 1.1, "id": 1.0, "mult": nPins}
@@ -546,7 +546,7 @@ class TestComponentExpansion(unittest.TestCase):
         circle2 = Circle("circle", mat, self.tCold + 200, self.tHot, hotterDim)
         self.assertAlmostEqual(circle1.getDimension("od"), circle2.getDimension("od"))
         self.assertAlmostEqual(circle1.getArea(), circle2.getArea())
-        self.assertAlmostEqual(circle1.getMassDensity(), circle2.getMassDensity())
+        self.assertAlmostEqual(circle1.density(), circle2.density())
 
     def expansionConservationHotHeightDefined(self, mat: str, isotope: str):
         """
@@ -566,13 +566,13 @@ class TestComponentExpansion(unittest.TestCase):
         # all the number densities and atomic masses
         self.assertAlmostEqual(
             circle1.p.numberDensities[isotope] / circle2.p.numberDensities[isotope],
-            circle1.getMassDensity() / circle2.getMassDensity(),
+            circle1.density() / circle2.density(),
         )
 
         # the colder one has more because it is the same cold outer diameter
         # but it would be taller at the same temperature
-        mass1 = circle1.getMassDensity() * circle1.getArea() * hotHeight
-        mass2 = circle2.getMassDensity() * circle2.getArea() * hotHeight
+        mass1 = circle1.density() * circle1.getArea() * hotHeight
+        mass2 = circle2.density() * circle2.getArea() * hotHeight
         self.assertGreater(mass1, mass2)
 
         # they are off by factor of thermal exp
@@ -581,39 +581,39 @@ class TestComponentExpansion(unittest.TestCase):
             mass2 * circle2.getThermalExpansionFactor(),
         )
 
-        # material.density is the 2D density of a material
+        # material.pseudoDensity is the 2D density of a material
         # material.density is true density and not equal in this case
         for circle in [circle1, circle2]:
             # 2D density is not equal after application of coldMatAxialExpansionFactor
             # which happens during construction
             self.assertNotAlmostEqual(
-                circle.getMassDensity(),
+                circle.density(),
                 circle.material.pseudoDensity(Tc=circle.temperatureInC),
             )
             # 2D density is off by the material thermal exp factor
             percent = circle.material.linearExpansionPercent(Tc=circle.temperatureInC)
             thermalExpansionFactorFromColdMatTemp = 1 + percent / 100
             self.assertAlmostEqual(
-                circle.getMassDensity() * thermalExpansionFactorFromColdMatTemp,
+                circle.density() * thermalExpansionFactorFromColdMatTemp,
                 circle.material.pseudoDensity(Tc=circle.temperatureInC),
             )
             self.assertAlmostEqual(
-                circle.getMassDensity(),
+                circle.density(),
                 circle.material.density(Tc=circle.temperatureInC),
             )
 
         # brief 2D expansion with set temp to show mass is conserved
         # hot height would come from block value
-        warmMass = circle1.getMassDensity() * circle1.getArea() * hotHeight
+        warmMass = circle1.density() * circle1.getArea() * hotHeight
         circle1.setTemperature(self.tHot)
-        hotMass = circle1.getMassDensity() * circle1.getArea() * hotHeight
+        hotMass = circle1.density() * circle1.getArea() * hotHeight
         self.assertAlmostEqual(warmMass, hotMass)
         circle1.setTemperature(self.tWarm)
 
         # Change temp to circle 2 temp  to show equal to circle2
         # and then change back to show recoverable to original values
         oldArea = circle1.getArea()
-        initialDens = circle1.getMassDensity()
+        initialDens = circle1.density()
 
         # when block.setHeight is called (which effectively changes component height)
         # component.setNumberDensity is called (for solid isotopes) to adjust the number
@@ -625,18 +625,18 @@ class TestComponentExpansion(unittest.TestCase):
 
         # now its density is same as hot component
         self.assertAlmostEqual(
-            circle1.getMassDensity(),
-            circle2.getMassDensity(),
+            circle1.density(),
+            circle2.density(),
         )
 
         # show that mass is conserved after expansion
         circle1NewHotHeight = hotHeight * heightFactor
         self.assertAlmostEqual(
-            mass1, circle1.getMassDensity() * circle1.getArea() * circle1NewHotHeight
+            mass1, circle1.density() * circle1.getArea() * circle1NewHotHeight
         )
 
         self.assertAlmostEqual(
-            circle1.getMassDensity(),
+            circle1.density(),
             circle1.material.density(Tc=circle1.temperatureInC),
         )
         # change back to old temp
@@ -644,15 +644,13 @@ class TestComponentExpansion(unittest.TestCase):
         circle1.setTemperature(self.tWarm)
 
         # check for consistency
-        self.assertAlmostEqual(initialDens, circle1.getMassDensity())
+        self.assertAlmostEqual(initialDens, circle1.density())
         self.assertAlmostEqual(oldArea, circle1.getArea())
-        self.assertAlmostEqual(
-            mass1, circle1.getMassDensity() * circle1.getArea() * hotHeight
-        )
+        self.assertAlmostEqual(mass1, circle1.density() * circle1.getArea() * hotHeight)
 
     def expansionConservationColdHeightDefined(self, mat: str):
         """
-        Demonstrate that material is conserved at during expansion
+        Demonstrate that material is conserved at during expansion.
 
         Notes
         -----
@@ -671,15 +669,13 @@ class TestComponentExpansion(unittest.TestCase):
         circle1AdjustTo2.adjustDensityForHeightExpansion(self.tHot)
         circle1AdjustTo2.setTemperature(self.tHot)
         # check that its like 2
-        self.assertAlmostEqual(
-            circle2.getMassDensity(), circle1AdjustTo2.getMassDensity()
-        )
+        self.assertAlmostEqual(circle2.density(), circle1AdjustTo2.density())
         self.assertAlmostEqual(circle2.getArea(), circle1AdjustTo2.getArea())
 
         for circle in [circle1, circle2, circle1AdjustTo2]:
 
             self.assertAlmostEqual(
-                circle.getMassDensity(),
+                circle.density(),
                 circle.material.density(Tc=circle.temperatureInC),
             )
             # total mass consistent between hot and cold
@@ -689,7 +685,7 @@ class TestComponentExpansion(unittest.TestCase):
                 coldHeight
                 * circle.getArea(cold=True)
                 * circle.material.density(Tc=circle.inputTemperatureInC),
-                hotHeight * circle.getArea() * circle.getMassDensity(),
+                hotHeight * circle.getArea() * circle.density(),
             )
 
 
@@ -712,7 +708,7 @@ class TestTriangle(TestShapedComponent):
         self.assertAlmostEqual(cur, ref)
 
     def test_thermallyExpands(self):
-        """Test that ARMI can thermally expands a triangle
+        """Test that ARMI can thermally expands a triangle.
 
         .. test:: Test that ARMI can thermally expands a triangle
            :id: TEST_REACTOR_THERMAL_EXPANSION_3
@@ -780,7 +776,7 @@ class TestRectangle(TestShapedComponent):
         self.assertAlmostEqual(cur, ref)
 
     def test_thermallyExpands(self):
-        """Test that ARMI can thermally expands a rectangle
+        """Test that ARMI can thermally expands a rectangle.
 
         .. test:: Test that ARMI can thermally expands a rectangle
            :id: TEST_REACTOR_THERMAL_EXPANSION_4
@@ -826,7 +822,7 @@ class TestSolidRectangle(TestShapedComponent):
         self.assertAlmostEqual(cur, ref)
 
     def test_thermallyExpands(self):
-        """Test that ARMI can thermally expands a solid rectangle
+        """Test that ARMI can thermally expands a solid rectangle.
 
         .. test:: Test that ARMI can thermally expands a solid rectangle
            :id: TEST_REACTOR_THERMAL_EXPANSION_5
@@ -889,7 +885,7 @@ class TestSquare(TestShapedComponent):
         self.assertAlmostEqual(cur, ref)
 
     def test_thermallyExpands(self):
-        """Test that ARMI can thermally expands a square
+        """Test that ARMI can thermally expands a square.
 
         .. test:: Test that ARMI can thermally expands a square
            :id: TEST_REACTOR_THERMAL_EXPANSION_6
@@ -954,7 +950,7 @@ class TestCube(TestShapedComponent):
         self.assertAlmostEqual(cur, ref)
 
     def test_thermallyExpands(self):
-        """Test that ARMI can thermally expands a cube
+        """Test that ARMI can thermally expands a cube.
 
         .. test:: Test that ARMI can thermally expands a cube
            :id: TEST_REACTOR_THERMAL_EXPANSION_7
@@ -993,7 +989,7 @@ class TestHexagon(TestShapedComponent):
         self.assertAlmostEqual(cur, ref)
 
     def test_thermallyExpands(self):
-        """Test that ARMI can thermally expands a hexagon
+        """Test that ARMI can thermally expands a hexagon.
 
         .. test:: Test that ARMI can thermally expands a hexagon
            :id: TEST_REACTOR_THERMAL_EXPANSION_8
@@ -1057,7 +1053,7 @@ class TestHoledHexagon(TestShapedComponent):
         self.assertAlmostEqual(cur, ref)
 
     def test_thermallyExpands(self):
-        """Test that ARMI can thermally expands a holed hexagon
+        """Test that ARMI can thermally expands a holed hexagon.
 
         .. test:: Test that ARMI can thermally expands a holed hexagon
            :id: TEST_REACTOR_THERMAL_EXPANSION_9
@@ -1108,7 +1104,7 @@ class TestHexHoledCircle(TestShapedComponent):
         self.assertAlmostEqual(cur, ref)
 
     def test_thermallyExpands(self):
-        """Test that ARMI can thermally expands a holed hexagon
+        """Test that ARMI can thermally expands a holed hexagon.
 
         .. test:: Test that ARMI can thermally expands a holed hexagon
            :id: TEST_REACTOR_THERMAL_EXPANSION_10
@@ -1256,7 +1252,7 @@ class TestHelix(TestShapedComponent):
             self.assertEqual(cur, ref[i])
 
     def test_validParameters(self):
-        """testing the Helix class performs as expected with various inputs"""
+        """Testing the Helix class performs as expected with various inputs."""
         # stupid/simple inputs
         h = Helix("thing", "Cu", 0, 0, 1, 1, 1)
         self.assertEqual(h.getDimension("axialPitch"), 1)
