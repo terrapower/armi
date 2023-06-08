@@ -189,7 +189,7 @@ class Sequence:
         self._iter, copy = tee(self._iter, 2)
         return Sequence(copy)
 
-    def __iter__(self):  # pylint: disable=non-iterator-returned
+    def __iter__(self):
         return self
 
     def __repr__(self):

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Generic ARMI utilities."""
+# ruff: noqa: F405
 import collections
 import getpass
 import hashlib
@@ -28,8 +29,8 @@ import time
 
 from armi import runLog
 from armi.utils import iterables
-from armi.utils.flags import Flag
-from armi.utils.mathematics import *  # for backwards compatibility
+from armi.utils.flags import Flag  # noqa: unused-import
+from armi.utils.mathematics import *  # noqa: undefined-local-with-import-star
 
 # Read in file 1 MB at a time to reduce memory burden of reading entire file at once
 _HASH_BUFFER_SIZE = 1024 * 1024
@@ -741,7 +742,7 @@ def plotMatrix(
         plt.figure()
 
     if cmap is None:
-        cmap = plt.cm.jet  # @UndefinedVariable  #pylint: disable=no-member
+        cmap = plt.cm.jet
 
     cmap.set_bad("w")
     try:
