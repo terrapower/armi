@@ -27,6 +27,7 @@ from armi.nuclearDataIO.cccc import isotxs
 from armi.nuclearDataIO.cccc import pmatrx
 from armi.tests import mockRunLogs
 from armi.utils import properties
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 THIS_DIR = os.path.dirname(__file__)
 RUN_DIR = os.path.join(THIS_DIR, "library-file-generation")

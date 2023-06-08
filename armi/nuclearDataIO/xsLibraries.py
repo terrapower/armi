@@ -11,16 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from armi.utils.properties import ImmutablePropertyError
-
 """
 Cross section library objects. 
 
 Cross section libraries, currently, contain neutron and/or gamma
 cross sections, but are not necessarily intended to be only neutron and gamma data.
 """
-
-# ruff: noqa: module-import-not-at-top-of-file
 import glob
 import os
 import re
@@ -28,7 +24,6 @@ import re
 from armi import runLog
 from armi.nucDirectory import nuclideBases
 from armi.nuclearDataIO.nuclearFileMetadata import NuclideXSMetadata, RegionXSMetadata
-from armi.nuclearDataIO import xsNuclides
 from armi.utils import properties
 
 _ISOTXS_EXT = "ISO"

@@ -206,7 +206,7 @@ class TestProductionMatrix_FromWritten(TestPmatrx):
 
         fname = self._testMethodName + "temp-aa.pmatrx"
         pmatrx.writeBinary(origLib, fname)
-        lib = pmatrx.readBinary(fname)
+        _lib = pmatrx.readBinary(fname)
 
         self.assertTrue(filecmp.cmp(test_xsLibraries.PMATRX_AA, fname))
 

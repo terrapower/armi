@@ -212,7 +212,6 @@ class _IsotxsIO(cccc.Stream):
     def _getFileMetadata(self):
         return self._lib.isotxsMetadata
 
-    # pylint: disable=no-self-use
     def _getNuclideIO(self):
         return _IsotxsNuclideIO
 
@@ -375,7 +374,6 @@ class _IsotxsIO(cccc.Stream):
     def _computeNumIsotxsRecords(self, nuclide):
         """Compute the number of ISOTXS records for a specific nuclide."""
         numRecords = 2
-        # pylint: disable=protected-access
         metadata = self._getNuclideIO()(nuclide, self, self._lib)._getNuclideMetadata()
         if metadata["chiFlag"] > 1:
             numRecords += 1
@@ -383,10 +381,10 @@ class _IsotxsIO(cccc.Stream):
         return numRecords
 
 
-readBinary = _IsotxsIO.readBinary  # pylint: disable=invalid-name
-readAscii = _IsotxsIO.readAscii  # pylint: disable=invalid-name
-writeBinary = _IsotxsIO.writeBinary  # pylint: disable=invalid-name
-writeAscii = _IsotxsIO.writeAscii  # pylint: disable=invalid-name
+readBinary = _IsotxsIO.readBinary
+readAscii = _IsotxsIO.readAscii
+writeBinary = _IsotxsIO.writeBinary
+writeAscii = _IsotxsIO.writeAscii
 
 
 class _IsotxsNuclideIO:
