@@ -1116,14 +1116,14 @@ class Operator:  # pylint: disable=too-many-public-methods
             if "mcc" in fileName and re.search(r"[A-Z]AF?\d?.inp", fileName):
                 base, ext = os.path.splitext(fileName)
                 if iteration is not None:
-                    fileName = "{0}_{1:03d}_{2:d}_{4}{3}".format(
+                    newFile = "{0}_{1:03d}_{2:d}_{4}{3}".format(
                         base, cycle, node, ext, iteration
                     )
                 else:
-                    fileName = "{0}_{1:03d}_{2:d}{3}".format(base, cycle, node, ext)
+                    newFile = "{0}_{1:03d}_{2:d}{3}".format(base, cycle, node, ext)
                 # add the cycle and timenode to the XS input file names so that a rx-coeff case that runs
                 # in here won't overwrite them.
-                shutil.copy(fileName, os.path.join(newFolder, fileName))
+                shutil.copy(fileName, os.path.join(newFolder, newFile))
             if "rzmflx" in fileName:
                 pathTools.copyOrWarn("rzmflx for snapshot", fileName, newFolder)
 
