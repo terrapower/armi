@@ -56,6 +56,11 @@ class SnapshotInterface(interfaces.Interface):
         if self.cs["dumpSnapshot"] and snapText in self.cs["dumpSnapshot"]:
             self.o.snapshotRequest(cycle, node)
 
+    def interactCoupled(self, cycle, node, iteration):
+        snapText = getCycleNodeStamp(cycle, node)  # CCCNNN
+        if self.cs["dumpSnapshot"] and snapText in self.cs["dumpSnapshot"]:
+            self.o.snapshotRequest(cycle, node, iteration)
+
     def activateDefaultSnapshots(self):
         """Figure out and assign some default snapshots (BOL, MOL, EOL)."""
         if self.cs["runType"] == operators.RunTypes.EQUILIBRIUM:

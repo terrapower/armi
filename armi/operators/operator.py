@@ -41,6 +41,9 @@ from armi.bookkeeping.report import reportingUtils
 from armi.operators import settingsValidation
 from armi.operators.runTypes import RunTypes
 from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
+from armi.physics.neutronics.globalFlux.globalFluxInterface import (
+    GlobalFluxInterfaceUsingExecuters,
+)
 from armi.settings.fwSettings.globalSettings import (
     CONF_TIGHT_COUPLING,
     CONF_TIGHT_COUPLING_MAX_ITERS,
@@ -1072,7 +1075,7 @@ class Operator:  # pylint: disable=too-many-public-methods
 
         dbi.loadState(cycle, timeNode, timeStepName, fileName)
 
-    def snapshotRequest(self, cycle, node):
+    def snapshotRequest(self, cycle, node, iteration=None):
         """
         Process a snapshot request at this time.
 
@@ -1112,28 +1115,38 @@ class Operator:  # pylint: disable=too-many-public-methods
         for fileName in os.listdir("."):
             if "mcc" in fileName and re.search(r"[A-Z]AF?\d?.inp", fileName):
                 base, ext = os.path.splitext(fileName)
+                if iteration is not None:
+                    fileName = "{0}_{1:03d}_{2:d}_{4}{3}".format(
+                        base, cycle, node, ext, iteration
+                    )
+                else:
+                    fileName = "{0}_{1:03d}_{2:d}{3}".format(base, cycle, node)
                 # add the cycle and timenode to the XS input file names so that a rx-coeff case that runs
                 # in here won't overwrite them.
-                shutil.copy(
-                    fileName,
-                    os.path.join(
-                        newFolder, "{0}_{1:03d}_{2:d}{3}".format(base, cycle, node, ext)
-                    ),
-                )
+                shutil.copy(fileName, os.path.join(newFolder, fileName))
             if "rzmflx" in fileName:
                 pathTools.copyOrWarn("rzmflx for snapshot", fileName, newFolder)
 
-        isoFName = f"ISOTXS-c{cycle}n{node}"
-        if not os.path.exists(isoFName):
-            isoFName = f"ISOTXS-c{cycle}"
+        fileNamePossibilities = [
+            f"ISOTXS-c{cycle}n{node}",
+            f"ISOTXS-c{cycle}",
+        ]
+        if iteration is not None:
+            fileNamePossibilities = [
+                f"ISOTXS-c{cycle}n{node}i{iteration}"
+            ] + fileNamePossibilities
+
+        for isoFName in fileNamePossibilities:
+            if os.path.exists(isoFName):
+                break
         pathTools.copyOrWarn(
             "ISOTXS for snapshot", isoFName, pathTools.armiAbsPath(newFolder, "ISOTXS")
         )
-        pathTools.copyOrWarn(
-            "DIF3D output for snapshot",
-            self.cs.caseTitle + "{0:03d}.out".format(cycle),
-            newFolder,
-        )
+        globalFluxLabel = GlobalFluxInterfaceUsingExecuters.getLabel(cycle, node, iteration)
+        globalFluxInput = globalFluxLabel + ".inp"
+        globalFluxOutput = globalFluxLabel + ".out"
+        pathTools.copyOrWarn("DIF3D input for snapshot", globalFluxInput, newFolder)
+        pathTools.copyOrWarn("DIF3D output for snapshot", globalFluxOutput, newFolder)
         pathTools.copyOrWarn(
             "Shuffle logic for snapshot", self.cs[CONF_SHUFFLE_LOGIC], newFolder
         )
