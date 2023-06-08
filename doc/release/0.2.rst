@@ -9,6 +9,8 @@ Release Date: TBD
 What's new in ARMI
 ------------------
 #. Calculate weighted-average percent burnup of BlockCollections. (`PR#1265 <https://github.com/terrapower/armi/pull/1265>`_)
+#. Added ``Composite.sort()`` to allow the user to recursively sort any piece of the ``Reactor``. (`PR#1280 <https://github.com/terrapower/armi/pull/1280>`_)
+#. TBD
 
 Bug fixes
 ---------
