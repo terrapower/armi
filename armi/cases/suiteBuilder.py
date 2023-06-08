@@ -33,7 +33,6 @@ import os
 import random
 
 from armi.cases import suite
-from armi.cases.inputModifiers.inputModifiers import InputModifier
 
 
 def getInputModifiers(cls):
@@ -124,7 +123,6 @@ class SuiteBuilder:
             If not supplied the path will be ``./case-suite/<0000>/<title>-<0000>``, where
             ``<0000>`` is the four-digit case index, and ``<title>`` is the ``baseCase.title``.
 
-
         Raises
         ------
         RuntimeError
@@ -139,7 +137,7 @@ class SuiteBuilder:
 
         if namingFunc is None:
 
-            def namingFunc(index, _case, _mods):  # pylint: disable=function-redefined
+            def namingFunc(index, _case, _mods):
                 uniquePart = "{:0>4}".format(index)
                 return os.path.join(
                     ".",

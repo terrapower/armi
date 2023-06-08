@@ -452,7 +452,6 @@ class TestDatabase3(unittest.TestCase):
         self._compareRoundTrip(dataDict)
 
     def test_mergeHistory(self):
-        # pylint: disable=protected-access
         self.makeHistory()
 
         # put some big data in an HDF5 attribute. This will exercise the code that pulls

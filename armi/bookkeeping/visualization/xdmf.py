@@ -42,9 +42,7 @@ import math
 import pathlib
 from typing import Optional, Set, List, Tuple, Dict
 import xml.etree.ElementTree as ET
-
 import xml.dom.minidom
-
 
 import numpy
 import h5py
@@ -256,7 +254,7 @@ class XdmfDumper(dumper.VisFileDumper):
         _EPS = 1.0e-9
 
         # ...except when close enough to 0. Floating-point is a pain
-        mapZeroToOne = lambda x: x if x > _EPS else 1.0
+        mapZeroToOne = lambda x: x if x > _EPS else 1.0  # noqa: lambda-assignment
 
         dups = [0] * len(times)
 

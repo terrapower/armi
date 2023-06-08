@@ -325,8 +325,6 @@ class Case:
             return
         for dependency in self.dependencies:
             if dependency.enabled:
-                # pylint: disable=protected-access; dependency should
-                # also be a Case, so it's not really "protected"
                 self._tasks[0].add_parent(dependency._tasks[-1])
 
     def run(self):
@@ -459,7 +457,7 @@ class Case:
         covFile = os.path.join(covRcDir, ".coveragerc")
         if platform.system() == "Windows":
             covFileWin = os.path.join(covRcDir, "coveragerc")
-            if makeCopy == True:
+            if makeCopy is True:
                 # Make a copy of the file without the dot in the name
                 shutil.copy(covFile, covFileWin)
             return covFileWin
@@ -658,7 +656,6 @@ class Case:
         ------
         RuntimeError
             If the source and destination are the same
-
         """
         cloneCS = self.cs.duplicate()
 
@@ -684,7 +681,9 @@ class Case:
         clone.cs.writeToYamlFile(clone.cs.path, style=writeStyle, fromFile=self.cs.path)
         runLog.important("finished writing {}".format(clone.cs))
 
-        fromPath = lambda fname: pathTools.armiAbsPath(self.cs.inputDirectory, fname)
+        fromPath = lambda f: pathTools.armiAbsPath(  # noqa: lambda-assignment
+            self.cs.inputDirectory, f
+        )
 
         for inputFileSetting in [CONF_LOADING_FILE, "geomFile"]:
             fileName = self.cs[inputFileSetting]

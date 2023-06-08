@@ -69,12 +69,12 @@ class CaseSuite:
                 "Second case: {}".format(case.title, existing, case)
             )
         self._cases.append(case)
-        case._caseSuite = self  # pylint: disable=protected-access
+        case._caseSuite = self
 
     def remove(self, case):
         """Remove a case from a suite."""
         self._cases.remove(case)
-        case._caseSuite = None  # pylint: disable=protected-access
+        case._caseSuite = None
 
     def __iter__(self):
         return iter(self._cases)

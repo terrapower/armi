@@ -87,10 +87,9 @@ class TestDatabaseInterface(unittest.TestCase):
         self.td = directoryChangers.TemporaryDirectoryChanger()
         self.td.__enter__()
         self.o, self.r = loadTestReactor(TEST_ROOT)
-
         self.dbi = DatabaseInterface(self.r, self.o.cs)
         self.dbi.initDB(fName=self._testMethodName + ".h5")
-        self.db: db.Database3 = self.dbi.database
+        self.db: Database3 = self.dbi.database
         self.stateRetainer = self.r.retainState().__enter__()
 
     def tearDown(self):
@@ -140,7 +139,7 @@ class TestDatabaseWriter(unittest.TestCase):
         self.td.__exit__(None, None, None)
 
     def test_metaData_endSuccessfully(self):
-        def goodMethod(cycle, node):  # pylint: disable=unused-argument
+        def goodMethod(cycle, node):
             pass
 
         self.o.interfaces.append(MockInterface(self.o.r, self.o.cs, goodMethod))
@@ -447,7 +446,6 @@ class TestStandardFollowOn(unittest.TestCase):
 
         mock = MockInterface(o.r, o.cs, None)
 
-        # pylint: disable=unused-argument
         def interactEveryNode(self, cycle, node):
             # Could use just += 1 but this will show more errors since it is less
             # suseptable to cancelation of errors off by one.

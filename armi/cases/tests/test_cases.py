@@ -114,7 +114,7 @@ class TestArmiCase(unittest.TestCase):
         with directoryChangers.TemporaryDirectoryChanger():
             vals = {"cladThickness": 1, "control strat": "good", "enrich": 0.9}
             case = baseCase.clone()
-            case._independentVariables = vals  # pylint: disable=protected-access
+            case._independentVariables = vals
             case.writeInputs()
             newCs = settings.Settings(fName=case.title + ".yaml")
             newCase = cases.Case(newCs)

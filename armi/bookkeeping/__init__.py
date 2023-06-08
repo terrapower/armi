@@ -105,7 +105,6 @@ class BookkeepingPlugin(plugins.ArmiPlugin):
         Currently only happening at End and Begin stage because no content gathered
         in these sections is used to create a graph across time.
         """
-        from armi.cli import reportsEntryPoint  # noqa: E402
         from armi.bookkeeping.report import newReports as reports  # noqa: E402
         from armi.bookkeeping.report import newReportUtils  # noqa: E402
 

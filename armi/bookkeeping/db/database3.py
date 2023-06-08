@@ -1073,9 +1073,9 @@ class Database3:
         """
         if self.versionMinor < 4:
             raise ValueError(
-                f"Location-based histories are only supported for db "
+                "Location-based histories are only supported for db "
                 "version 3.4 and greater. This database is version "
-                "{self.versionMajor}, {self.versionMinor}."
+                f"{self.versionMajor}, {self.versionMinor}."
             )
 
         locations = [c.spatialLocator.getCompleteIndices() for c in comps]

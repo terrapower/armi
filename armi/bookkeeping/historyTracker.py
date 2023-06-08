@@ -69,6 +69,7 @@ See :ref:`detail-assems`.
 
 """
 from typing import Tuple
+import traceback
 
 import tabulate
 
@@ -354,8 +355,8 @@ class HistoryTrackerInterface(interfaces.Interface):
         except:  # noqa: bare-except
             # fails during the beginning of standard runs, but that's ok
             runLog.info(
-                f"Unable to pre-load block history values due to error:"
-                "\n{traceback.format_exc()}"
+                "Unable to pre-load block history values due to error:"
+                f"\n{traceback.format_exc()}"
             )
             self.unloadBlockHistoryVals()
 

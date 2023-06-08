@@ -17,20 +17,19 @@ This module performs some file manipulations, cleanups, state loads, etc.
 
 It's a bit of a catch-all interface, and it's name is admittedly not very descriptive.
 """
-
 import glob
+import itertools
 import os
 import re
-import itertools
 
+from armi import context
 from armi import interfaces
+from armi import operators
 from armi import runLog
 from armi import utils
-from armi.utils import pathTools
-from armi import operators
-from armi.utils.customExceptions import InputError
 from armi.bookkeeping.db.database3 import Database3
-from armi import context
+from armi.utils import pathTools
+from armi.utils.customExceptions import InputError
 
 
 ORDER = interfaces.STACK_ORDER.PREPROCESSING
@@ -193,7 +192,6 @@ class MainInterface(interfaces.Interface):
         if os.path.exists("failedRuns"):
             utils.pathTools.cleanPath("failedRuns")
 
-    # pylint: disable=no-self-use
     def cleanLastCycleFiles(self):
         """Delete ARMI files from previous cycle that aren't necessary for the next cycle.
         Unless you're doing reloads, of course.

@@ -356,11 +356,11 @@ def insertBlockDiagrams(cs, blueprint, report, cold):
     materialList = []
     for bDesign in blueprint.blockDesigns:
         block = bDesign.construct(cs, blueprint, 0, 1, 0, "A", dict())
-        for component in block:
-            if isinstance(component.material, custom.Custom):
-                materialName = component.p.customIsotopicsName
+        for comp in block:
+            if isinstance(comp.material, custom.Custom):
+                materialName = comp.p.customIsotopicsName
             else:
-                materialName = component.material.name
+                materialName = comp.material.name
             if materialName not in materialList:
                 materialList.append(materialName)
 
@@ -390,7 +390,6 @@ def insertMetaTable(cs, report):
     ----------
     cs: Case Settings
     report: ReportContent
-
     """
     section = report[COMPREHENSIVE_REPORT]
     tableList = section.get(
