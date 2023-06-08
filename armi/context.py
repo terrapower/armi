@@ -47,7 +47,7 @@ import time
 #
 # >>> atexit.register(willSegFault)
 
-import h5py
+import h5py  # noqa: unused-import
 
 
 BLUEPRINTS_IMPORTED = False
@@ -81,7 +81,7 @@ class Mode(enum.Enum):
     @classmethod
     def setMode(cls, mode):
         """Set the run mode of the current ARMI case."""
-        global CURRENT_MODE  # pylint: disable=global-statement
+        global CURRENT_MODE
         assert isinstance(mode, cls), "Invalid mode {}".format(mode)
         CURRENT_MODE = mode
 
@@ -140,7 +140,7 @@ if MPI_NODENAMES.index(MPI_NODENAME) == MPI_RANK:
     if not os.path.isdir(APP_DATA):
         try:
             os.makedirs(APP_DATA)
-        except OSError as e:
+        except OSError:
             pass
     if not os.path.isdir(APP_DATA):
         raise OSError("Directory doesn't exist {0}".format(APP_DATA))
@@ -177,7 +177,7 @@ def activateLocalFastPath() -> None:
     instantiate one operator after the other, the path will already exist the second time.
     The directory is created in the Operator constructor.
     """
-    global _FAST_PATH, _FAST_PATH_IS_TEMPORARY, APP_DATA  # pylint: disable=global-statement
+    global _FAST_PATH, _FAST_PATH_IS_TEMPORARY, APP_DATA
 
     # Try to fix pathing issues in Windows.
     if os.name == "nt":

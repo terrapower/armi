@@ -213,9 +213,7 @@ class App:
             currentNames = {pd.name for pd in parameters.ALL_DEFINITIONS}
 
             renames = dict()
-            for (
-                pluginRenames
-            ) in self._pm.hook.defineParameterRenames():  # pylint: disable=no-member
+            for pluginRenames in self._pm.hook.defineParameterRenames():
                 collisions = currentNames & pluginRenames.keys()
                 if collisions:
                     raise plugins.PluginError(
