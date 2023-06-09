@@ -324,6 +324,109 @@ class TestBlockCollectionComponentAverage1DCylinder(unittest.TestCase):
                     c.getNumberDensity(nuc), compDensity.get(nuc, 0.0)
                 )
 
+    def test_checkComponentConsistency(self):
+
+        xsgm = self.o.getInterface("xsGroups")
+        xsgm.interactBOL()
+        blockCollectionsByXsGroup = xsgm.makeCrossSectionGroups()
+
+        blockCollection = blockCollectionsByXsGroup["ZA"]
+        baseComponents = self.r.core.getFirstBlock(Flags.CONTROL).getComponents()
+        densities = {
+            "control": baseComponents[0].getNumberDensities(),
+            "clad": baseComponents[2].getNumberDensities(),
+            "coolant": baseComponents[4].getNumberDensities(),
+        }
+        controlComponent, cladComponent, coolantComponent = self._makeComponents(
+            7, densities
+        )
+
+        # reference block
+        refBlock = HexBlock("refBlock")
+        refBlock.add(controlComponent)
+        refBlock.add(cladComponent)
+        refBlock.add(coolantComponent)
+
+        # matching block
+        matchingBlock = HexBlock("matchBlock")
+        matchingBlock.add(controlComponent)
+        matchingBlock.add(cladComponent)
+        matchingBlock.add(coolantComponent)
+
+        # unsorted block
+        unsortedBlock = HexBlock("unsortedBlock")
+        unsortedBlock.add(cladComponent)
+        unsortedBlock.add(coolantComponent)
+        unsortedBlock.add(controlComponent)
+
+        # non-matching block length
+        nonMatchingLengthBlock = HexBlock("blockLengthDiff")
+        nonMatchingLengthBlock.add(controlComponent)
+        nonMatchingLengthBlock.add(coolantComponent)
+
+        # non-matching component multiplicity
+        nonMatchingMultBlock = HexBlock("blockComponentDiff")
+        control, clad, coolant = self._makeComponents(19, densities)
+        nonMatchingMultBlock.add(control)
+        nonMatchingMultBlock.add(clad)
+        nonMatchingMultBlock.add(coolant)
+
+        # different nuclides
+        nucDiffBlock = HexBlock("blockNucDiff")
+        mixedDensities = {
+            "clad": baseComponents[0].getNumberDensities(),
+            "coolant": baseComponents[2].getNumberDensities(),
+            "control": baseComponents[4].getNumberDensities(),
+        }
+        control, clad, coolant = self._makeComponents(7, mixedDensities)
+        nucDiffBlock.add(control)
+        nucDiffBlock.add(clad)
+        nucDiffBlock.add(coolant)
+
+        blockCollection._checkComponentConsistency(refBlock, matchingBlock)
+        blockCollection._checkComponentConsistency(refBlock, unsortedBlock)
+        for b in (nonMatchingMultBlock, nonMatchingLengthBlock, nucDiffBlock):
+            with self.assertRaises(ValueError):
+                blockCollection._checkComponentConsistency(refBlock, b)
+
+    def _makeComponents(self, multiplicity, densities):
+        from armi.reactor import components
+
+        baseComponents = self.r.core.getFirstBlock(Flags.CONTROL).getComponents()
+        controlComponent = components.Circle(
+            "control",
+            baseComponents[0].material,
+            20.0,
+            20.0,
+            id=0.0,
+            od=0.6,
+            mult=multiplicity,
+        )
+        cladComponent = components.Circle(
+            "clad",
+            baseComponents[2].material,
+            20.0,
+            20.0,
+            id=0.6,
+            od=0.7,
+            mult=multiplicity,
+        )
+        coolantComponent = components.Circle(
+            "coolant",
+            baseComponents[4].material,
+            20.0,
+            20.0,
+            id=0.7,
+            od=0.8,
+            mult=multiplicity,
+        )
+
+        controlComponent.setNumberDensities(densities["control"])
+        cladComponent.setNumberDensities(densities["clad"])
+        coolantComponent.setNumberDensities(densities["coolant"])
+
+        return controlComponent, cladComponent, coolantComponent
+
 
 class TestBlockCollectionFluxWeightedAverage(unittest.TestCase):
     def setUp(self):
@@ -578,48 +681,6 @@ class TestXSNumberConverters(unittest.TestCase):
         self.assertEqual(label, "AF")
         num = crossSectionGroupManager.getXSTypeNumberFromLabel("ZZ")
         self.assertEqual(num, 9090)
-
-
-class MockReactor:
-    def __init__(self):
-        self.blueprints = MockBlueprints()
-        self.spatialGrid = None
-
-
-class MockBlueprints:
-    # this is only needed for allNuclidesInProblem and attributes were acting funky, so this was made.
-    def __getattribute__(self, *args, **kwargs):
-        return ["U235", "U235", "FE", "NA23"]
-
-
-class MockBlock(HexBlock):
-    def __init__(self, name=None, cs=None):
-        self.density = {}
-        HexBlock.__init__(self, name or "MockBlock", cs or settings.Settings())
-        self.r = MockReactor()
-
-    @property
-    def r(self):
-        return self._r
-
-    @r.setter
-    def r(self, r):
-        self._r = r
-
-    def getVolume(self, *args, **kwargs):
-        return 1.0
-
-    def getNuclideNumberDensities(self, nucNames):
-        return [self.density.get(nucName, 0.0) for nucName in nucNames]
-
-    def _getNdensHelper(self):
-        return {nucName: density for nucName, density in self.density.items()}
-
-    def setNumberDensity(self, key, val, *args, **kwargs):
-        self.density[key] = val
-
-    def getNuclides(self):
-        return self.density.keys()
 
 
 def makeBlocks(howMany=20):
