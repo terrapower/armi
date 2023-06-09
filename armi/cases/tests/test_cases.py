@@ -121,6 +121,16 @@ class TestArmiCase(unittest.TestCase):
             for name, val in vals.items():
                 self.assertEqual(newCase.independentVariables[name], val)
 
+    def test_setUpTaskDependence(self):
+        case = cases.Case(settings.Settings())
+        case.enabled = False
+        case.setUpTaskDependence()
+        case.enabled = True
+        case.setUpTaskDependence()
+        self.assertTrue(case.enabled)
+        self.assertEqual(len(case._tasks), 0)
+        self.assertEqual(len(case.dependencies), 0)
+
     def test_getCoverageRcFile(self):
         case = cases.Case(settings.Settings())
         covRcDir = os.path.abspath(context.PROJECT_ROOT)

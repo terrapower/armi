@@ -315,7 +315,7 @@ class Case:
 
         This accounts for whether or not the dependency is enabled.
 
-        Note
+        TODO
         ----
         This is a leftover from before the release of the ARMI framework. The API of the
         proprietary cluster communication library is being used here. This should either

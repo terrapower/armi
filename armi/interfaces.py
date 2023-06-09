@@ -378,10 +378,8 @@ class Interface:
         -------
         Interface
             The deepcopy of this interface with detached reactor/operator/settings
-
         """
-
-        # temporarily remove references to the interface.  They will be reattached later
+        # temporarily remove references to the interface.  They will be reattached later.
         o = self.o
         self.o = None
 

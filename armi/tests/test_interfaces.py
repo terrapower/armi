@@ -54,6 +54,26 @@ class TestCodeInterface(unittest.TestCase):
         i.enabled(True)
         self.assertEqual(i.enabled(), True)
 
+    def test_nameContains(self):
+        i = DummyInterface(None, self.cs)
+        self.assertFalse(i.nameContains("nope"))
+        self.assertTrue(i.nameContains("Dum"))
+
+    def test_distributable(self):
+        i = DummyInterface(None, self.cs)
+        self.assertEqual(i.distributable(), 1)
+
+    def test_preDistributeState(self):
+        i = DummyInterface(None, self.cs)
+        self.assertEqual(i.preDistributeState(), {})
+
+    def test_duplicate(self):
+        i = DummyInterface(None, self.cs)
+        iDup = i.duplicate()
+
+        self.assertEqual(type(i), type(iDup))
+        self.assertEqual(i.enabled(), iDup.enabled())
+
 
 class TestTextProcessor(unittest.TestCase):
     """Test Text processor."""
