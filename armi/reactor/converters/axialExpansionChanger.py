@@ -14,6 +14,7 @@
 """Enable component-wise axial expansion for assemblies and/or a reactor."""
 
 from statistics import mean
+from typing import List
 
 from armi import runLog
 from armi.materials import material
@@ -590,14 +591,14 @@ class ExpansionData:
         self._componentDeterminesBlockHeight = {}
         self._setTargetComponents(setFuel)
 
-    def setExpansionFactors(self, componentLst, expFrac):
+    def setExpansionFactors(self, componentLst: List, expFrac: List):
         """Sets user defined expansion fractions.
 
         Parameters
         ----------
-        componentLst : list[:py:class:`Component <armi.reactor.components.component.Component>`]
+        componentLst : List[:py:class:`Component <armi.reactor.components.component.Component>`]
             list of Components to have their heights changed
-        expFrac : list[float]
+        expFrac : List[float]
             list of L1/L0 height changes that are to be applied to componentLst
 
         Raises
@@ -612,6 +613,10 @@ class ExpansionData:
                 f"        len(expFrac) = {len(expFrac)}"
             )
             raise RuntimeError
+        if 0.0 in expFrac:
+            msg = "An expansion fraction, L1/L0, equal to 0.0, is not physical! Should it be 1.0?"
+            runLog.error(msg)
+            raise RuntimeError(msg)
         for c, p in zip(componentLst, expFrac):
             self._expansionFactors[c] = p
 

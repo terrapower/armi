@@ -20,7 +20,7 @@ import unittest
 from statistics import mean
 
 from armi import materials
-from armi.materials import _MATERIAL_NAMESPACE_ORDER, custom, material
+from armi.materials import _MATERIAL_NAMESPACE_ORDER, custom
 from armi.reactor.assemblies import HexAssembly, grids
 from armi.reactor.blocks import HexBlock
 from armi.reactor.components import DerivedShape, UnshapedComponent
@@ -501,6 +501,13 @@ class TestExceptions(AxialExpansionTestBase, unittest.TestCase):
         with self.assertRaises(RuntimeError) as cm:
             cList = self.a[0].getChildren()
             expansionGrowthFracs = range(len(cList) + 1)
+            self.obj.expansionData.setExpansionFactors(cList, expansionGrowthFracs)
+            the_exception = cm.exception
+            self.assertEqual(the_exception.error_code, 3)
+
+        with self.assertRaises(RuntimeError) as cm:
+            cList = self.a[0].getChildren()
+            expansionGrowthFracs = zeros(len(cList))
             self.obj.expansionData.setExpansionFactors(cList, expansionGrowthFracs)
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
