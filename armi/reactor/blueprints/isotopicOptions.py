@@ -565,7 +565,7 @@ def genDefaultNucFlags():
     return flags
 
 
-def autoUpdateNuclideFlags(cs, nuclideFlags):
+def autoUpdateNuclideFlags(cs, nuclideFlags, inerts):
     """
     This function is responsible for examining the fission product model treatment
     that is selected by the user and adding a set of nuclides to the `nuclideFlags`
@@ -591,8 +591,9 @@ def autoUpdateNuclideFlags(cs, nuclideFlags):
             nuc = nb.name
             if nuc in nuclideFlags or elements.byZ[nb.z] in nuclideFlags:
                 continue
-            nuclideFlag = NuclideFlag(nuc, burn=False, xs=True, expandTo=[])
-            nuclideFlags[nuc] = nuclideFlag
+            nuclideFlags[nuc] = NuclideFlag(nuc, burn=False, xs=True, expandTo=[])
+            # inert since burn is False
+            inerts.add(nuc)
 
 
 def getAllNuclideBasesByLibrary(cs):
