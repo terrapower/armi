@@ -771,7 +771,25 @@ class Block_TestCase(unittest.TestCase):
 
     def test_getWettedPerimeter(self):
         cur = self.block.getWettedPerimeter()
-        self.assertAlmostEqual(cur, 910.1118990260776)
+
+        wire = self.block.getComponent(Flags.WIRE)
+        correctionFactor = numpy.hypot(
+            1.0,
+            math.pi
+            * wire.getDimension("helixDiameter")
+            / wire.getDimension("axialPitch"),
+        )
+        wireDiameter = wire.getDimension("od") * correctionFactor
+
+        ref = math.pi * (
+            self.block.getDim(Flags.CLAD, "od") + wireDiameter
+        ) * self.block.getDim(Flags.CLAD, "mult") + 6 * self.block.getDim(
+            Flags.DUCT, "ip"
+        ) / math.sqrt(
+            3
+        )
+
+        self.assertAlmostEqual(cur, ref)
 
     def test_getFlowAreaPerPin(self):
         area = self.block.getComponent(Flags.COOLANT).getArea()
