@@ -253,7 +253,7 @@ class LatticePhysicsWriter(interfaces.InputWriter):
         else:
             nuclides = self.r.blueprints.allNuclidesInProblem
 
-        nuclides = nuclides.union(self.r.core.blueprints.nucsToForceInXsGen)
+        nuclides = nuclides.union(self.r.blueprints.nucsToForceInXsGen)
 
         numDensities = subjectObject.getNuclideNumberDensities(nuclides)
 
