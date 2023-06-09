@@ -174,7 +174,7 @@ class FissionProductModel(interfaces.Interface):
 
     def setAllComponentFissionProducts(self):
         """
-        Initialize all nuclides for each ``DEPLETABLE`` component in the core, or all blocks if detailedAxialExpansion is enabled.
+        Initialize all nuclides for each ``DEPLETABLE`` component in the core.
 
         Notes
         -----

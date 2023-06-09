@@ -245,7 +245,7 @@ class LatticePhysicsWriter(interfaces.InputWriter):
         if self.explicitFissionProducts:
             # If detailed axial expansion is active, mapping between blocks occurs on uniform mesh
             # and this can cause blocks to have isotopes that they don't have cross sections for.
-            # Fix this by adding all isotopes so they are present it lattice physics.
+            # Fix this by adding all isotopes so they are present in lattice physics.
             if self.cs[CONF_DETAILED_AXIAL_EXPANSION]:
                 nuclides = self.r.blueprints.allNuclidesInProblem
             else:
@@ -280,7 +280,7 @@ class LatticePhysicsWriter(interfaces.InputWriter):
             nucCategory = ""
             # Remove nuclides from detailed fission product dictionary if they are a part of the core materials
             # (e.g., Zr in the U10Zr which is at fuel temperature and Mo in HT9 which is at structure temp)
-            if nuc in list(dfpDensities):
+            if nuc in dfpDensities:
                 density += dfpDensities[nuc]
                 nucCategory += self.FISSION_PRODUCT_CATEGORY + self._SEPARATOR
                 del dfpDensities[nuc]

@@ -440,20 +440,18 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
             elif elemental.name in inerts:
                 currentSet = inerts
             else:
-                # This was not specified in the nuclide flags at all.
+                # This was not specified in the nuclide flags at all as burn or xs.
                 # If a material with this in its composition is brought in
                 # it's nice from a user perspective to allow it.
                 # But current behavior is that all nuclides in problem
                 # must be declared up front.
-                if wasInOriginalFlags:
-                    nucsToForceInXsGen.add(elemental.name)
                 continue
 
             self.elementsToExpand.append(elemental.element)
 
             if (
                 elemental.name in self.nuclideFlags
-                and self.nuclideFlags[elemental.name.symbol].expandTo
+                and self.nuclideFlags[elemental.element.symbol].expandTo
             ):
                 # user-input expandTo has precedence
                 newNuclides = [
