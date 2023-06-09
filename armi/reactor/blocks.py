@@ -2211,12 +2211,27 @@ class HexBlock(Block):
                 6 * c.getDimension("ip") / math.sqrt(3) if c else 0.0
             )
 
+        # account for the wire warp in the wetted perimeter
+        try:
+            wire = self.getComponent(Flags.WIRE)
+            if wire is not None:
+                correctionFactor = numpy.hypot(
+                    1.0,
+                    math.pi
+                    * wire.getDimension("helixDiameter")
+                    / wire.getDimension("axialPitch"),
+                )
+            else:
+                correctionFactor = 1.0
+        except ValueError:
+            correctionFactor = 1.0
+
         # solid circle = od * pi
         # NOTE: since these are pin components, multiply by the number of pins
         wettedPinPerimeter = 0.0
         for c in wettedPinComponents:
             wettedPinPerimeter += c.getDimension("od") if c else 0.0
-        wettedPinPerimeter *= self.getNumPins() * math.pi
+        wettedPinPerimeter *= self.getNumPins() * math.pi * correctionFactor
 
         # hollow circle = (id + od) * pi
         wettedHollowCirclePerimeter = 0.0
