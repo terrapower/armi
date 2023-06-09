@@ -2221,17 +2221,20 @@ class HexBlock(Block):
                     * wire.getDimension("helixDiameter")
                     / wire.getDimension("axialPitch"),
                 )
+                wireDiameter = wire.getDimension("od") * correctionFactor
             else:
-                correctionFactor = 1.0
+                wireDiameter = 0.0
         except ValueError:
-            correctionFactor = 1.0
+            wireDiameter = 0.0
 
         # solid circle = od * pi
         # NOTE: since these are pin components, multiply by the number of pins
-        wettedPinPerimeter = 0.0
+        wettedPinDiameter = 0.0
         for c in wettedPinComponents:
-            wettedPinPerimeter += c.getDimension("od") if c else 0.0
-        wettedPinPerimeter *= self.getNumPins() * math.pi * correctionFactor
+            wettedPinDiameter += c.getDimension("od") if c else 0.0
+        wettedPinPerimeter = (
+            self.getNumPins() * math.pi * (wettedPinDiameter + wireDiameter)
+        )
 
         # hollow circle = (id + od) * pi
         wettedHollowCirclePerimeter = 0.0
