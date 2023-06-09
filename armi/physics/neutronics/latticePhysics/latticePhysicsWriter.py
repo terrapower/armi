@@ -42,6 +42,7 @@ from armi.physics.neutronics.settings import (
     CONF_MINIMUM_NUCLIDE_DENSITY,
 )
 from armi.physics.neutronics.settings import CONF_GEN_XS
+from armi.settings.fwSettings.globalSettings import CONF_DETAILED_AXIAL_EXPANSION
 
 
 # number of decimal places to round temperatures to in _groupNuclidesByTemperature
@@ -51,7 +52,7 @@ _NUCLIDE_VALUES_TEMPERATURE_INDEX = 1
 
 
 @warn_when_root
-def NuclideNameFoundMultipleTimes(nuclideName):
+def nuclideNameFoundMultipleTimes(nuclideName):
     return "Nuclide `{}' was found multiple times.".format(nuclideName)
 
 
@@ -241,11 +242,19 @@ class LatticePhysicsWriter(interfaces.InputWriter):
         # on the components will already contain all the nuclides required to be
         # modeled by the lattice physics writer. Otherwise, assume that `allNuclidesInProblem`
         # should be modeled.
-        nuclides = (
-            sorted(objNuclides)
-            if self.explicitFissionProducts
-            else self.r.blueprints.allNuclidesInProblem
-        )
+        if self.explicitFissionProducts:
+            # If detailed axial expansion is active, mapping between blocks occurs on uniform mesh
+            # and this can cause blocks to have isotopes that they don't have cross sections for.
+            # Fix this by adding all isotopes so they are present it lattice physics.
+            if self.cs[CONF_DETAILED_AXIAL_EXPANSION]:
+                nuclides = self.r.blueprints.allNuclidesInProblem
+            else:
+                nuclides = sorted(objNuclides)
+        else:
+            nuclides = self.r.blueprints.allNuclidesInProblem
+
+        nuclides = nuclides.union(self.r.core.blueprints.nucsToForceInXsGen)
+
         numDensities = subjectObject.getNuclideNumberDensities(nuclides)
 
         for nucName, dens in zip(nuclides, numDensities):
@@ -262,7 +271,7 @@ class LatticePhysicsWriter(interfaces.InputWriter):
 
             density = max(dens, self.minimumNuclideDensity)
             if nuc in nucDensities:
-                NuclideNameFoundMultipleTimes(nucName)
+                nuclideNameFoundMultipleTimes(nucName)
                 dens, nucTemperatureInC, nucCategory = nucDensities[nuc]
                 density = dens + density
                 nucDensities[nuc] = (density, nucTemperatureInC, nucCategory)
@@ -271,7 +280,7 @@ class LatticePhysicsWriter(interfaces.InputWriter):
             nucCategory = ""
             # Remove nuclides from detailed fission product dictionary if they are a part of the core materials
             # (e.g., Zr in the U10Zr which is at fuel temperature and Mo in HT9 which is at structure temp)
-            if nuc in dfpDensities:
+            if nuc in list(dfpDensities):
                 density += dfpDensities[nuc]
                 nucCategory += self.FISSION_PRODUCT_CATEGORY + self._SEPARATOR
                 del dfpDensities[nuc]
