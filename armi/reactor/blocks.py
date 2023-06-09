@@ -2243,22 +2243,6 @@ class HexBlock(Block):
             + wettedHollowCirclePerimeter
         )
 
-    def whatever(self):
-        wettedPinPerimeter = 0.0
-        for c in wettedPinComponents:
-            if c is None:
-                continue
-            correctionFactor = 1.0
-            if c.hasFlag(Flags.WIRE) and isinstance(Helix):
-                correctionFactor = numpy.hypot(
-                    1.0,
-                    math.pi
-                    * c.getDimension("helixDiameter")
-                    / c.getDimension("axialPitch"),
-                )
-            wettedPinPerimeter += c.getDimension("od") * correctionFactor
-        wettedPinPerimeter *= self.getNumPins() * math.pi
-
     def getFlowArea(self):
         """
         Return the total flowing coolant area of the block in cm^2.
