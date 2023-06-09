@@ -453,7 +453,7 @@ def getDefaultNuclideFlags():
     return nuclideFlags
 
 
-def expansionBasedOnCodeENDF(cs):
+def eleExpandInfoBasedOnCodeENDF(cs):
     """
     Intelligently choose elements to expand based on code and ENDF version.
 
