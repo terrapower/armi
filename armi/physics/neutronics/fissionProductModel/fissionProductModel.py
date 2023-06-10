@@ -161,17 +161,6 @@ class FissionProductModel(interfaces.Interface):
         else:
             self.setAllBlockLFPs()
 
-    def _getComponentToInitDensities(self, b):
-        """Get the component to initialize ndens keys on."""
-        # add the isotopics to the smallest solid since that is usually the most "interesting"
-        # sorted() calls getBoundingCircleOuterDiameter under the hood
-        solidsOrderedBySize = sorted(c for c in b if c.containsSolidMaterial())
-        if solidsOrderedBySize:
-            return solidsOrderedBySize[0]
-        else:
-            # no solids, so just add to smallest component
-            return sorted(c for c in b)[0]
-
     def setAllComponentFissionProducts(self):
         """
         Initialize all nuclides for each ``DEPLETABLE`` component in the core.
