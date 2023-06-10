@@ -25,6 +25,7 @@ import math
 import collections
 
 import numpy
+import ordered_set
 
 from armi import runLog
 from armi import interfaces
@@ -249,7 +250,7 @@ class LatticePhysicsWriter(interfaces.InputWriter):
             if self.cs[CONF_DETAILED_AXIAL_EXPANSION]:
                 nuclides = self.r.blueprints.allNuclidesInProblem
             else:
-                nuclides = sorted(objNuclides)
+                nuclides = ordered_set.OrderedSet(sorted(objNuclides))
         else:
             nuclides = self.r.blueprints.allNuclidesInProblem
 
