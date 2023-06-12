@@ -243,6 +243,8 @@ def plotScatterMatrix(scatterMatrix, scatterTypeLabel="", fName=None):
     else:
         pyplot.show()
 
+    pyplot.close()
+
 
 def plotCompareScatterMatrix(scatterMatrix1, scatterMatrix2, fName=None):
     """Compares scatter matrices graphically between libraries."""
@@ -260,3 +262,5 @@ def plotCompareScatterMatrix(scatterMatrix1, scatterMatrix2, fName=None):
         pyplot.savefig(fName)
     else:
         pyplot.show()
+
+    pyplot.close()

@@ -1090,6 +1090,7 @@ def plotBlockFlux(core, fName=None, bList=None, peak=False, adjoint=False, bList
 
     if fName:
         plt.savefig(fName)
+        plt.close()
         report.setData(
             "Flux Plot {}".format(os.path.split(fName)[1]),
             os.path.abspath(fName),
@@ -1440,6 +1441,7 @@ def plotBlockDiagram(block, fName, cold, cmapName="RdYlBu", materialList=None):
     ax.spines["bottom"].set_visible(False)
     ax.margins(0)
     plt.savefig(fName, format="svg", **pltKwargs)
+    plt.close()
 
     return os.path.abspath(fName)
 
@@ -1586,3 +1588,5 @@ def plotNucXs(
         plt.savefig(fName)
     elif not noShow:
         plt.show()
+
+    plt.close()

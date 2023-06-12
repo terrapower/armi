@@ -13,12 +13,17 @@
 # limitations under the License.
 
 """Module that tests methods within xsCollections."""
+# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+import os
 import unittest
 
+from armi import settings
+from armi.reactor.blocks import HexBlock
 from armi.nuclearDataIO import isotxs
 from armi.nuclearDataIO import xsCollections
-from armi.physics.neutronics.tests import test_crossSectionManager
 from armi.tests import ISOAA_PATH
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
+from armi.utils.plotting import plotNucXs
 
 
 class TestXsCollections(unittest.TestCase):
@@ -30,7 +35,7 @@ class TestXsCollections(unittest.TestCase):
         self.mc = xsCollections.MacroscopicCrossSectionCreator(
             minimumNuclideDensity=1e-13
         )
-        self.block = test_crossSectionManager.MockBlock()
+        self.block = MockBlock()
         self.block.setNumberDensity("U235", 0.02)
         self.block.setNumberDensity("FE", 0.01)
 
@@ -62,6 +67,16 @@ class TestXsCollections(unittest.TestCase):
             totalScatter[0, 0],
             (nuc.micros.elasticScatter[0, 0] + 2.0 * nuc.micros.n2nScatter[0, 0]),
         )
+
+    def test_plotNucXs(self):
+        """
+        Testing this plotting method here because we need a XS library
+        to run the test.
+        """
+        fName = "test_plotNucXs.png"
+        with TemporaryDirectoryChanger():
+            plotNucXs(self.microLib, "U235AA", "fission", fName=fName)
+            self.assertTrue(os.path.exists(fName))
 
     def test_createMacrosFromMicros(self):
         self.assertEqual(self.mc.minimumNuclideDensity, 1e-13)
@@ -95,6 +110,48 @@ class TestXsCollections(unittest.TestCase):
         self.assertAlmostEqual(
             micros.collapseCrossSection(micros.nGamma, flux), expected1gXs
         )
+
+
+class MockReactor:
+    def __init__(self):
+        self.blueprints = MockBlueprints()
+        self.spatialGrid = None
+
+
+class MockBlueprints:
+    # this is only needed for allNuclidesInProblem and attributes were acting funky, so this was made.
+    def __getattribute__(self, *args, **kwargs):
+        return ["U235", "U235", "FE", "NA23"]
+
+
+class MockBlock(HexBlock):
+    def __init__(self, name=None, cs=None):
+        self.density = {}
+        HexBlock.__init__(self, name or "MockBlock", cs or settings.Settings())
+        self.r = MockReactor()
+
+    @property
+    def r(self):
+        return self._r
+
+    @r.setter
+    def r(self, r):
+        self._r = r
+
+    def getVolume(self, *args, **kwargs):
+        return 1.0
+
+    def getNuclideNumberDensities(self, nucNames):
+        return [self.density.get(nucName, 0.0) for nucName in nucNames]
+
+    def _getNdensHelper(self):
+        return {nucName: density for nucName, density in self.density.items()}
+
+    def setNumberDensity(self, key, val, *args, **kwargs):
+        self.density[key] = val
+
+    def getNuclides(self):
+        return self.density.keys()
 
 
 if __name__ == "__main__":

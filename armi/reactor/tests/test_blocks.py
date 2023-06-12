@@ -744,7 +744,7 @@ class Block_TestCase(unittest.TestCase):
         self.assertAlmostEqual(cur, ref, places=places)
 
     def test_replaceBlockWithBlock(self):
-        r"""Tests conservation of mass flag in replaceBlockWithBlock."""
+        """Tests conservation of mass flag in replaceBlockWithBlock."""
         block = self.block
         ductBlock = block.__class__("duct")
         ductBlock.add(block.getComponent(Flags.COOLANT, exact=True))
@@ -768,13 +768,24 @@ class Block_TestCase(unittest.TestCase):
 
     def test_getWettedPerimeter(self):
         cur = self.block.getWettedPerimeter()
+
+        wire = self.block.getComponent(Flags.WIRE)
+        correctionFactor = numpy.hypot(
+            1.0,
+            math.pi
+            * wire.getDimension("helixDiameter")
+            / wire.getDimension("axialPitch"),
+        )
+        wireDiameter = wire.getDimension("od") * correctionFactor
+
         ref = math.pi * (
-            self.block.getDim(Flags.CLAD, "od") + self.block.getDim(Flags.WIRE, "od")
+            self.block.getDim(Flags.CLAD, "od") + wireDiameter
         ) * self.block.getDim(Flags.CLAD, "mult") + 6 * self.block.getDim(
             Flags.DUCT, "ip"
         ) / math.sqrt(
             3
         )
+
         self.assertAlmostEqual(cur, ref)
 
     def test_getFlowAreaPerPin(self):

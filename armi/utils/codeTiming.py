@@ -306,6 +306,7 @@ class MasterTimer:
         # done
         filename = base_file_name + ".code-timeline.png"
         plt.savefig(filename)
+        plt.close()
         return os.path.join(os.getcwd(), filename)
 
 

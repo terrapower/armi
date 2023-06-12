@@ -442,7 +442,7 @@ class CylindricalComponentsAverageBlockCollection(BlockCollection):
         repBlock.p.percentBu = self._calcWeightedBurnup()
         componentsInOrder = self._orderComponentsInGroup(repBlock)
 
-        for c, allSimilarComponents in zip(repBlock, componentsInOrder):
+        for c, allSimilarComponents in zip(sorted(repBlock), componentsInOrder):
             allNucsNames, densities = self._getAverageComponentNucs(
                 allSimilarComponents, bWeights
             )
@@ -475,7 +475,7 @@ class CylindricalComponentsAverageBlockCollection(BlockCollection):
                 f"Blocks {b} and {repBlock} have differing number "
                 f"of components and cannot be homogenized"
             )
-        for c, repC in zip(b, repBlock):
+        for c, repC in zip(sorted(b), sorted(repBlock)):
             compString = (
                 f"Component {repC} in block {repBlock} and component {c} in block {b}"
             )
@@ -509,7 +509,7 @@ class CylindricalComponentsAverageBlockCollection(BlockCollection):
         """Order the components based on dimension and material type within the representative block."""
         for b in self.getCandidateBlocks():
             self._checkComponentConsistency(b, repBlock)
-        componentLists = [list(b) for b in self.getCandidateBlocks()]
+        componentLists = [list(sorted(b)) for b in self.getCandidateBlocks()]
         return [list(comps) for comps in zip(*componentLists)]
 
 
@@ -561,7 +561,7 @@ class SlabComponentsAverageBlockCollection(BlockCollection):
         return sorted(list(nucs))
 
     @staticmethod
-    def _checkComponentConsisteny(b, repBlock, components=None):
+    def _checkComponentConsistency(b, repBlock, components=None):
         """
         Verify that all components being homogenized are rectangular and have consistent dimensions.
 
@@ -664,7 +664,7 @@ class SlabComponentsAverageBlockCollection(BlockCollection):
                     )
                 )
             try:
-                self._checkComponentConsisteny(b, repBlock)
+                self._checkComponentConsistency(b, repBlock)
                 componentsToAdd = [c for c in b]
             except ValueError:
                 runLog.extra(
@@ -672,7 +672,7 @@ class SlabComponentsAverageBlockCollection(BlockCollection):
                     "representative block {}".format(b, repBlock)
                 )
                 reversedComponentOrder = self._reverseComponentOrder(b)
-                self._checkComponentConsisteny(
+                self._checkComponentConsistency(
                     b, repBlock, components=reversedComponentOrder
                 )
                 componentsToAdd = [c for c in reversedComponentOrder]
