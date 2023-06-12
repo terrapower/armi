@@ -27,19 +27,20 @@ import math
 
 import numpy
 
+from armi import nuclideBases
 from armi import runLog
 from armi.bookkeeping import report
-from armi import nuclideBases
 from armi.physics.neutronics import GAMMA
 from armi.physics.neutronics import NEUTRON
-from armi.reactor.components import basicShapes
 from armi.reactor import blockParameters
 from armi.reactor import components
-from armi.reactor.components.basicShapes import Hexagon, Circle
 from armi.reactor import composites
 from armi.reactor import geometry
 from armi.reactor import grids
 from armi.reactor import parameters
+from armi.reactor.components import basicShapes
+from armi.reactor.components.basicShapes import Hexagon, Circle
+from armi.reactor.components.complexShapes import Helix
 from armi.reactor.flags import Flags
 from armi.reactor.parameters import ParamLocation
 from armi.utils import densityTools
@@ -2211,11 +2212,19 @@ class HexBlock(Block):
                 6 * c.getDimension("ip") / math.sqrt(3) if c else 0.0
             )
 
-        # solid circle = od * pi
-        # NOTE: since these are pin components, multiply by the number of pins
+        # solid circle = NumPins * pi * (Comp Diam + Wire Diam)
         wettedPinPerimeter = 0.0
         for c in wettedPinComponents:
-            wettedPinPerimeter += c.getDimension("od") if c else 0.0
+            correctionFactor = 1.0
+            if isinstance(c, Helix):
+                # account for the helical wire wrap
+                correctionFactor = numpy.hypot(
+                    1.0,
+                    math.pi
+                    * c.getDimension("helixDiameter")
+                    / c.getDimension("axialPitch"),
+                )
+            wettedPinPerimeter += c.getDimension("od") * correctionFactor
         wettedPinPerimeter *= self.getNumPins() * math.pi
 
         # hollow circle = (id + od) * pi

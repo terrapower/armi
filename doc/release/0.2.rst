@@ -15,6 +15,7 @@ What's new in ARMI
 Bug fixes
 ---------
 #. Changed units.FLOAT_DIMENSION_DECIMALS from 10 to 8 (`PR#1183 <https://github.com/terrapower/armi/pull/1183>`_)
+#. Improved ``HexBlock.getWettedPerimeter()`` to include wire. (`PR#1299 <https://github.com/terrapower/armi/pull/1299>`_)
 #. Fixed a bug in the ISOTXS file name used for snapshots. (`PR#1277 <https://github.com/terrapower/armi/pull/1277>`_)
 #. Fix a bug in uniform mesh decusping when assemblies of same type have drastically different height. (`PR#1282 <https://github.com/terrapower/armi/pull/1282>`_)
 #. Sort components on representativeBlock for consistency check. (`PR#1275 <https://github.com/terrapower/armi/pull/1275>`_)
