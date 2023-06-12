@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Yttrium Oxide"""
+"""Yttrium Oxide."""
 
 from armi.materials.material import Material
 from armi.utils.units import getTk

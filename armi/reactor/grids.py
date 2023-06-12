@@ -761,7 +761,7 @@ class Grid:
 
     def __getstate__(self):
         """
-        Pickling removes reference to ``armiObject``
+        Pickling removes reference to ``armiObject``.
 
         Removing the ``armiObject`` allows us to pickle an assembly without pickling the entire
         reactor. An ``Assembly.spatialLocator.grid.armiObject`` is the reactor, by removing the link
@@ -777,7 +777,7 @@ class Grid:
 
     def __setstate__(self, state):
         """
-        Pickling removes reference to ``armiObject``
+        Pickling removes reference to ``armiObject``.
 
         This relies on the ``ArmiObject.__setstate__`` to assign itself.
         """
@@ -849,14 +849,14 @@ class Grid:
         )
 
     def getCellBase(self, indices) -> numpy.ndarray:
-        """Get the mesh base (lower left) of this mesh cell in cm"""
+        """Get the mesh base (lower left) of this mesh cell in cm."""
         indices = numpy.array(indices)
         return self._evaluateMesh(
             indices, self._meshBaseBySteps, self._meshBaseByBounds
         )
 
     def getCellTop(self, indices) -> numpy.ndarray:
-        """Get the mesh top (upper right) of this mesh cell in cm"""
+        """Get the mesh top (upper right) of this mesh cell in cm."""
         indices = numpy.array(indices) + 1
         return self._evaluateMesh(
             indices, self._meshBaseBySteps, self._meshBaseByBounds
@@ -1724,7 +1724,7 @@ class HexGrid(Grid):
     #       in a ring, not the actual positions
     def allPositionsInThird(self, ring, includeEdgeAssems=False):
         """
-        Returns a list of all the positions in a ring (in the first third)
+        Returns a list of all the positions in a ring (in the first third).
 
         Parameters
         ----------

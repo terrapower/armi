@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-r"""Tests materials.py"""
+r"""Tests materials.py."""
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-member,invalid-name
 
 import math
@@ -47,7 +47,7 @@ class _Material_Test:
         )
 
     def test_density(self):
-        """Test that all materials produce a zero density from density"""
+        """Test that all materials produce a zero density from density."""
         self.assertNotEqual(self.mat.density(500), 0)
 
     def test_TD(self):
@@ -667,7 +667,7 @@ class UraniumOxide_TestCase(_Material_Test, unittest.TestCase):
         self.assertAlmostEqual(cur, ref, delta=abs(ref * 0.001))
 
     def test_heatCapacity(self):
-        """Check against Figure 4.2 from ORNL 2000-1723 EFG"""
+        """Check against Figure 4.2 from ORNL 2000-1723 EFG."""
         self.assertAlmostEqual(self.mat.heatCapacity(300), 230.0, delta=20)
         self.assertAlmostEqual(self.mat.heatCapacity(1000), 320.0, delta=20)
         self.assertAlmostEqual(self.mat.heatCapacity(2000), 380.0, delta=20)
@@ -820,7 +820,7 @@ class Void_TestCase(_Material_Test, unittest.TestCase):
 
     def test_density(self):
         """
-        this material has no density function
+        this material has no density function.
         """
         self.assertEqual(self.mat.density(500), 0)
 
@@ -842,7 +842,7 @@ class Mixture_TestCase(_Material_Test, unittest.TestCase):
 
     def test_density(self):
         """
-        this material has no density function
+        this material has no density function.
         """
         self.assertEqual(self.mat.density(500), 0)
 
@@ -1603,7 +1603,7 @@ class Alloy200_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.Alloy200
 
     def test_nickleContent(self):
-        """Assert alloy 200 has more than 99% nickle per its spec"""
+        """Assert alloy 200 has more than 99% nickle per its spec."""
         self.assertGreater(self.mat.massFrac["NI"], 0.99)
 
     def test_linearExpansion(self):

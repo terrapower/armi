@@ -31,7 +31,7 @@ from armi import runLog
 
 
 class ReportContent:
-    """Holds the report contents"""
+    """Holds the report contents."""
 
     def __init__(self, title):
         self.title = title
@@ -119,7 +119,7 @@ class ReportContent:
             self.sections[key] = item
 
     def tableOfContents(self):
-        """Creates a Table of Contents at the top of the document that links to later Sections
+        """Creates a Table of Contents at the top of the document that links to later Sections.
 
         Parameters
         ----------
@@ -191,7 +191,7 @@ class ReportNode(ABC):
 
     @abstractmethod
     def render(self, level, idPrefix):
-        """Renders the section to a htmltree element for inserting into HTML document tree
+        """Renders the section to a htmltree element for inserting into HTML document tree.
 
         Parameters
         ----------
@@ -268,7 +268,7 @@ class Section(ReportNode):
         return self.title
 
     def render(self, level, idPrefix="") -> htmltree.HtmlElement:
-        """Renders a Section into the appropriate html representation
+        """Renders a Section into the appropriate html representation.
 
         Parameters
         ----------
@@ -306,7 +306,7 @@ class Section(ReportNode):
 
 class Image(ReportNode):
     """For Images within the report (such as Hexplots premade and not time dependent)
-    (For time dependent images see TimeSeries)
+    (For time dependent images see TimeSeries).
 
     Parameters
     ----------
@@ -340,7 +340,7 @@ class Image(ReportNode):
         return self.caption
 
     def render(self, level, idPrefix="") -> htmltree.HtmlElement:
-        """Wraps an image file into an html Img tag. (With caption included in the figure)"""
+        """Wraps an image file into an html Img tag. (With caption included in the figure)."""
 
         figure = htmltree.Figure()
         if self.encode:
@@ -355,7 +355,7 @@ class Image(ReportNode):
 
 
 class Table(ReportNode):
-    """For Table Objects that are then later converted to htmltree tables
+    """For Table Objects that are then later converted to htmltree tables.
 
     Parameters
     ----------
@@ -586,7 +586,7 @@ class ReportStage(Enum):
 
 
 def encode64(file_path):
-    """Encodes the contents of the file indicated by the path
+    """Encodes the contents of the file indicated by the path.
 
     Return
     ------

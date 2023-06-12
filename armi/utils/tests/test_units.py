@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Test armi.utils.units.py"""
+"""Test armi.utils.units.py."""
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import unittest
 
@@ -73,7 +73,7 @@ class TestUnits(unittest.TestCase):
             units.getTf(Tc=0, Tk=200)
 
     def test_pressure_converter(self):
-        """Converter Pascals to Pascals should just be a pass-through"""
+        """Converter Pascals to Pascals should just be a pass-through."""
         for val in [0.0, -99.141, 123, 3.14159, -2.51212e-12]:
             self.assertEqual(val, units.PRESSURE_CONVERTERS["Pa"](val))
 

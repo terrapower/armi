@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-Database tests
+Database tests.
 """
 # Copyright 2009-2019 TerraPower, LLC
 #

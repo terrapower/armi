@@ -96,7 +96,7 @@ class TestExecuters(unittest.TestCase):
     def test_updateRunDir(self):
         """
         Verify that runDir is updated when TemporaryDirectoryChanger is used and
-        not updated when ForcedCreationDirectoryChanger is used
+        not updated when ForcedCreationDirectoryChanger is used.
         """
 
         self.assertEqual(

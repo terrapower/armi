@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests the geometry (loading input) file"""
+"""Tests the geometry (loading input) file."""
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import io
 import os
@@ -278,7 +278,7 @@ class TestSystemLayoutInput(unittest.TestCase):
             self.assertEqual(geom2.assemTypeByIndices[2, 2], "A2")
 
     def test_asciimap(self):  # pylint: disable=no-self-use
-        """Ensure this can write ascii maps"""
+        """Ensure this can write ascii maps."""
         geom = SystemLayoutInput()
         geom.readGeomFromStream(io.StringIO(GEOM_INPUT))
         geom._writeAsciiMap()

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for new settings system with plugin import"""
+"""Tests for new settings system with plugin import."""
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import copy
 import io
@@ -207,7 +207,7 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         self.assertEqual(listSetting.containedType, float)
 
     def test_csWorks(self):
-        """Ensure plugin settings become available and have defaults"""
+        """Ensure plugin settings become available and have defaults."""
         a = settings.Settings()
         self.assertEqual(a[CONF_CIRCULAR_RING_ORDER], "angle")
 
@@ -300,7 +300,7 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         self.assertEqual(logger.level, 40)
 
     def test_getFailures(self):
-        """Make sure the correct error is thrown when getting a nonexistent setting"""
+        """Make sure the correct error is thrown when getting a nonexistent setting."""
         cs = caseSettings.Settings()
 
         with self.assertRaises(NonexistentSetting):
@@ -318,7 +318,7 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
             _ = cs["cycleLength"]
 
     def test_modified(self):
-        """prove that using the modified() method does not mutate the original object"""
+        """Prove that using the modified() method does not mutate the original object."""
         # init settings
         cs = caseSettings.Settings()
 
@@ -390,7 +390,7 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
 
 
 class TestSettingsUtils(unittest.TestCase):
-    """Tests for utility functions"""
+    """Tests for utility functions."""
 
     def setUp(self):
         self.dc = directoryChangers.TemporaryDirectoryChanger()

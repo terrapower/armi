@@ -26,7 +26,7 @@ from armi.utils.textProcessors import resolveMarkupInclusions
 
 
 class ConvertDB(EntryPoint):
-    """Convert databases between different versions"""
+    """Convert databases between different versions."""
 
     name = "convert-db"
     mode = context.Mode.BATCH

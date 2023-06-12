@@ -209,7 +209,7 @@ class TightCoupler:
 
     @staticmethod
     def getListDimension(listToCheck: list, dim: int = 1) -> int:
-        """return the dimension of a python list
+        """Return the dimension of a python list.
 
         Parameters
         ----------
@@ -252,7 +252,7 @@ class Interface:
     @classmethod
     def getInputFiles(cls, cs):  # pylint: disable=unused-argument
         """
-        Return a MergeableDict containing files that should be considered "input"
+        Return a MergeableDict containing files that should be considered "input".
         """
         return utils.MergeableDict()
 
@@ -313,7 +313,7 @@ class Interface:
         return "<Interface {0}>".format(self.name)
 
     def _checkSettings(self):
-        """Raises an exception if interface settings requirements are not met"""
+        """Raises an exception if interface settings requirements are not met."""
         pass
 
     def nameContains(self, name):
@@ -333,7 +333,7 @@ class Interface:
 
     def preDistributeState(self):  # pylint: disable=no-self-use
         """
-        Prepare for distribute state by returning all non-distributable attributes
+        Prepare for distribute state by returning all non-distributable attributes.
 
         Examples
         --------
@@ -342,12 +342,12 @@ class Interface:
         return {}
 
     def postDistributeState(self, toRestore):  # pylint: disable=no-self-use
-        """Restore non-distributable attributes after a distributeState"""
+        """Restore non-distributable attributes after a distributeState."""
         pass
 
     def attachReactor(self, o, r):
         """
-        Set this interfaces' reactor to the reactor passed in and sets default settings
+        Set this interfaces' reactor to the reactor passed in and sets default settings.
 
         Parameters
         ----------

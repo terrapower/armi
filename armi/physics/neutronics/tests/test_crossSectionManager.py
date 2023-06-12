@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-Test the cross section manager
+Test the cross section manager.
 
 :py:mod:`armi.physics.neutronics.crossSectionGroupManager`
 """
@@ -120,18 +120,19 @@ class TestBlockCollectionAverage(unittest.TestCase):
         # 0 + 1/4 + 2/4 + 3/4 + 4/4 =
         # (0 + 1 + 2 + 3 + 4 ) / 5 = 10/5 = 2.0
         self.assertAlmostEqual(avgB.getNumberDensity("U235"), 2.0)
+        self.assertEqual(avgB.p.percentBu, 50.0)
 
 
 class TestBlockCollectionComponentAverage(unittest.TestCase):
     r"""
-    tests for ZPPR 1D XS gen cases
+    tests for ZPPR 1D XS gen cases.
     """
 
     def setUp(self):
         r"""
         First part of setup same as test_Cartesian.
         Second part of setup builds lists/dictionaries of expected values to compare to.
-        has expected values for component isotopic atom density and component area
+        has expected values for component isotopic atom density and component area.
         """
         self.o, self.r = test_reactors.loadTestReactor(
             TEST_ROOT, inputFileName="zpprTest.yaml"
@@ -214,14 +215,14 @@ class TestBlockCollectionComponentAverage(unittest.TestCase):
 
 class TestBlockCollectionComponentAverage1DCylinder(unittest.TestCase):
     r"""
-    tests for 1D cylinder XS gen cases
+    tests for 1D cylinder XS gen cases.
     """
 
     def setUp(self):
         r"""
         First part of setup same as test_Cartesian.
         Second part of setup builds lists/dictionaries of expected values to compare to.
-        has expected values for component isotopic atom density and component area
+        has expected values for component isotopic atom density and component area.
         """
         self.o, self.r = test_reactors.loadTestReactor(TEST_ROOT)
 
@@ -311,6 +312,7 @@ class TestBlockCollectionComponentAverage1DCylinder(unittest.TestCase):
         representativeBlockList.sort(key=lambda repB: repB.getMass() / repB.getVolume())
         reprBlock = xsgm.representativeBlocks["ZA"]
         self.assertEqual(reprBlock.name, "1D_CYL_AVG_ZA")
+        self.assertEqual(reprBlock.p.percentBu, 0.0)
 
         for c, compDensity, compArea in zip(
             reprBlock, self.expectedComponentDensities, self.expectedComponentAreas
@@ -321,6 +323,109 @@ class TestBlockCollectionComponentAverage1DCylinder(unittest.TestCase):
                 self.assertAlmostEqual(
                     c.getNumberDensity(nuc), compDensity.get(nuc, 0.0)
                 )
+
+    def test_checkComponentConsistency(self):
+
+        xsgm = self.o.getInterface("xsGroups")
+        xsgm.interactBOL()
+        blockCollectionsByXsGroup = xsgm.makeCrossSectionGroups()
+
+        blockCollection = blockCollectionsByXsGroup["ZA"]
+        baseComponents = self.r.core.getFirstBlock(Flags.CONTROL).getComponents()
+        densities = {
+            "control": baseComponents[0].getNumberDensities(),
+            "clad": baseComponents[2].getNumberDensities(),
+            "coolant": baseComponents[4].getNumberDensities(),
+        }
+        controlComponent, cladComponent, coolantComponent = self._makeComponents(
+            7, densities
+        )
+
+        # reference block
+        refBlock = HexBlock("refBlock")
+        refBlock.add(controlComponent)
+        refBlock.add(cladComponent)
+        refBlock.add(coolantComponent)
+
+        # matching block
+        matchingBlock = HexBlock("matchBlock")
+        matchingBlock.add(controlComponent)
+        matchingBlock.add(cladComponent)
+        matchingBlock.add(coolantComponent)
+
+        # unsorted block
+        unsortedBlock = HexBlock("unsortedBlock")
+        unsortedBlock.add(cladComponent)
+        unsortedBlock.add(coolantComponent)
+        unsortedBlock.add(controlComponent)
+
+        # non-matching block length
+        nonMatchingLengthBlock = HexBlock("blockLengthDiff")
+        nonMatchingLengthBlock.add(controlComponent)
+        nonMatchingLengthBlock.add(coolantComponent)
+
+        # non-matching component multiplicity
+        nonMatchingMultBlock = HexBlock("blockComponentDiff")
+        control, clad, coolant = self._makeComponents(19, densities)
+        nonMatchingMultBlock.add(control)
+        nonMatchingMultBlock.add(clad)
+        nonMatchingMultBlock.add(coolant)
+
+        # different nuclides
+        nucDiffBlock = HexBlock("blockNucDiff")
+        mixedDensities = {
+            "clad": baseComponents[0].getNumberDensities(),
+            "coolant": baseComponents[2].getNumberDensities(),
+            "control": baseComponents[4].getNumberDensities(),
+        }
+        control, clad, coolant = self._makeComponents(7, mixedDensities)
+        nucDiffBlock.add(control)
+        nucDiffBlock.add(clad)
+        nucDiffBlock.add(coolant)
+
+        blockCollection._checkComponentConsistency(refBlock, matchingBlock)
+        blockCollection._checkComponentConsistency(refBlock, unsortedBlock)
+        for b in (nonMatchingMultBlock, nonMatchingLengthBlock, nucDiffBlock):
+            with self.assertRaises(ValueError):
+                blockCollection._checkComponentConsistency(refBlock, b)
+
+    def _makeComponents(self, multiplicity, densities):
+        from armi.reactor import components
+
+        baseComponents = self.r.core.getFirstBlock(Flags.CONTROL).getComponents()
+        controlComponent = components.Circle(
+            "control",
+            baseComponents[0].material,
+            20.0,
+            20.0,
+            id=0.0,
+            od=0.6,
+            mult=multiplicity,
+        )
+        cladComponent = components.Circle(
+            "clad",
+            baseComponents[2].material,
+            20.0,
+            20.0,
+            id=0.6,
+            od=0.7,
+            mult=multiplicity,
+        )
+        coolantComponent = components.Circle(
+            "coolant",
+            baseComponents[4].material,
+            20.0,
+            20.0,
+            id=0.7,
+            od=0.8,
+            mult=multiplicity,
+        )
+
+        controlComponent.setNumberDensities(densities["control"])
+        cladComponent.setNumberDensities(densities["clad"])
+        coolantComponent.setNumberDensities(densities["coolant"])
+
+        return controlComponent, cladComponent, coolantComponent
 
 
 class TestBlockCollectionFluxWeightedAverage(unittest.TestCase):
@@ -345,6 +450,7 @@ class TestBlockCollectionFluxWeightedAverage(unittest.TestCase):
         avgB = self.bc.createRepresentativeBlock()
         self.assertNotIn(avgB, self.bc)
         self.assertAlmostEqual(avgB.getNumberDensity("U235"), 1.0)
+        self.assertEqual(avgB.p.percentBu, 25.0)
 
     def test_invalidWeights(self):
         self.bc[0].p.flux = 0.0
@@ -391,6 +497,28 @@ class Test_CrossSectionGroupManager(unittest.TestCase):
         )
         self.assertEqual(len(blockCollectionsByXsGroup), 4)
         self.assertIn("AB", blockCollectionsByXsGroup)
+
+    def test_calcWeightedBurnup(self):
+        self.blockList[1].p.percentBu = 3.1
+        self.blockList[2].p.percentBu = 10.0
+        self.blockList[3].p.percentBu = 1.5
+        for b in self.blockList[4:]:
+            b.p.percentBu = 0.0
+        self.csm._updateBurnupGroups(self.blockList)
+        blockCollectionsByXsGroup = {}
+        blockCollectionsByXsGroup = self.csm._addXsGroupsFromBlocks(
+            blockCollectionsByXsGroup, self.blockList
+        )
+        ABcollection = blockCollectionsByXsGroup["AB"]
+        self.assertEqual(
+            blockCollectionsByXsGroup["AA"]._calcWeightedBurnup(), 1 / 12.0
+        )
+        self.assertEqual(
+            ABcollection.getWeight(self.blockList[1]),
+            ABcollection.getWeight(self.blockList[2]),
+            "The two blocks in AB do not have the same weighting!",
+        )
+        self.assertEqual(ABcollection._calcWeightedBurnup(), 6.55)
 
     def test_getNextAvailableXsType(self):
         blockCollectionsByXsGroup = {}
@@ -472,14 +600,14 @@ class Test_CrossSectionGroupManager(unittest.TestCase):
         self.assertEqual(origXSIDsFromNew["BA"], "AA")
 
     def test_interactBOL(self):
-        """Test `BOL` lattice physics update frequency"""
+        """Test `BOL` lattice physics update frequency."""
         self.blockList[0].r.p.timeNode = 0
         self.csm.cs[CONF_LATTICE_PHYSICS_FREQUENCY] = "BOL"
         self.csm.interactBOL()
         self.assertTrue(self.csm.representativeBlocks)
 
     def test_interactBOC(self):
-        """Test `BOC` lattice physics update frequency"""
+        """Test `BOC` lattice physics update frequency."""
         self.blockList[0].r.p.timeNode = 0
         self.csm.cs[CONF_LATTICE_PHYSICS_FREQUENCY] = "BOC"
         self.csm.interactBOL()
@@ -487,7 +615,7 @@ class Test_CrossSectionGroupManager(unittest.TestCase):
         self.assertTrue(self.csm.representativeBlocks)
 
     def test_interactEveryNode(self):
-        """Test `everyNode` lattice physics update frequency"""
+        """Test `everyNode` lattice physics update frequency."""
         self.csm.cs[CONF_LATTICE_PHYSICS_FREQUENCY] = "BOC"
         self.csm.interactBOL()
         self.csm.interactEveryNode()
@@ -498,7 +626,7 @@ class Test_CrossSectionGroupManager(unittest.TestCase):
         self.assertTrue(self.csm.representativeBlocks)
 
     def test_interactFirstCoupledIteration(self):
-        """Test `firstCoupledIteration` lattice physics update frequency"""
+        """Test `firstCoupledIteration` lattice physics update frequency."""
         self.csm.cs[CONF_LATTICE_PHYSICS_FREQUENCY] = "everyNode"
         self.csm.interactBOL()
         self.csm.interactCoupled(iteration=0)
@@ -509,7 +637,7 @@ class Test_CrossSectionGroupManager(unittest.TestCase):
         self.assertTrue(self.csm.representativeBlocks)
 
     def test_interactAllCoupled(self):
-        """Test `all` lattice physics update frequency"""
+        """Test `all` lattice physics update frequency."""
         self.csm.cs[CONF_LATTICE_PHYSICS_FREQUENCY] = "firstCoupledIteration"
         self.csm.interactBOL()
         self.csm.interactCoupled(iteration=1)
@@ -553,48 +681,6 @@ class TestXSNumberConverters(unittest.TestCase):
         self.assertEqual(label, "AF")
         num = crossSectionGroupManager.getXSTypeNumberFromLabel("ZZ")
         self.assertEqual(num, 9090)
-
-
-class MockReactor:
-    def __init__(self):
-        self.blueprints = MockBlueprints()
-        self.spatialGrid = None
-
-
-class MockBlueprints:
-    # this is only needed for allNuclidesInProblem and attributes were acting funky, so this was made.
-    def __getattribute__(self, *args, **kwargs):
-        return ["U235", "U235", "FE", "NA23"]
-
-
-class MockBlock(HexBlock):
-    def __init__(self, name=None, cs=None):
-        self.density = {}
-        HexBlock.__init__(self, name or "MockBlock", cs or settings.Settings())
-        self.r = MockReactor()
-
-    @property
-    def r(self):
-        return self._r
-
-    @r.setter
-    def r(self, r):
-        self._r = r
-
-    def getVolume(self, *args, **kwargs):
-        return 1.0
-
-    def getNuclideNumberDensities(self, nucNames):
-        return [self.density.get(nucName, 0.0) for nucName in nucNames]
-
-    def _getNdensHelper(self):
-        return {nucName: density for nucName, density in self.density.items()}
-
-    def setNumberDensity(self, key, val, *args, **kwargs):
-        self.density[key] = val
-
-    def getNuclides(self):
-        return self.density.keys()
 
 
 def makeBlocks(howMany=20):

@@ -15,6 +15,7 @@
 """Tests for the composite pattern."""
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 from copy import deepcopy
+from random import random
 import unittest
 
 from armi import nuclearDataIO
@@ -34,6 +35,7 @@ from armi.reactor.blueprints import assemblyBlueprint
 from armi.reactor.components import basicShapes
 from armi.reactor.composites import getReactionRateDict
 from armi.reactor.flags import Flags, TypeSpec
+from armi.reactor import grids
 from armi.reactor.tests.test_blocks import loadTestBlock
 from armi.tests import ISOAA_PATH
 
@@ -54,20 +56,25 @@ def getDummyParamDefs():
     return dummyDefs
 
 
+_testGrid = grids.CartesianGrid.fromRectangle(0.01, 0.01)
+
+
 class DummyComposite(composites.Composite):
     pDefs = getDummyParamDefs()
 
-    def __init__(self, name):
+    def __init__(self, name, i=0):
         composites.Composite.__init__(self, name)
         self.p.type = name
+        self.spatialLocator = grids.IndexLocation(i, i, i, _testGrid)
 
 
 class DummyLeaf(composites.Composite):
     pDefs = getDummyParamDefs()
 
-    def __init__(self, name):
+    def __init__(self, name, i=0):
         composites.Composite.__init__(self, name)
         self.p.type = name
+        self.spatialLocator = grids.IndexLocation(i, i, i, _testGrid)
 
     def getChildren(
         self, deep=False, generationNum=1, includeMaterials=False, predicate=None
@@ -91,15 +98,15 @@ class TestCompositePattern(unittest.TestCase):
     def setUp(self):
         self.cs = settings.Settings()
         runLog.setVerbosity("error")
-        container = DummyComposite("inner test fuel")
+        container = DummyComposite("inner test fuel", 99)
         for i in range(5):
-            leaf = DummyLeaf("duct {}".format(i))
+            leaf = DummyLeaf("duct {}".format(i), i + 100)
             leaf.setType("duct")
             container.add(leaf)
-        nested = DummyComposite("clad")
+        nested = DummyComposite("clad", 98)
         nested.setType("clad")
-        self.secondGen = DummyComposite("liner")
-        self.thirdGen = DummyLeaf("pin 77")
+        self.secondGen = DummyComposite("liner", 97)
+        self.thirdGen = DummyLeaf("pin 77", 33)
         self.secondGen.add(self.thirdGen)
         nested.add(self.secondGen)
         container.add(nested)
@@ -135,6 +142,30 @@ class TestCompositePattern(unittest.TestCase):
             deep=True, predicate=lambda o: o.p.type == "liner"
         )
         self.assertEqual(len(onlyLiner), 1)
+
+    def test_sort(self):
+        # in this case, the children should start sorted
+        c0 = [c.name for c in self.container.getChildren()]
+        self.container.sort()
+        c1 = [c.name for c in self.container.getChildren()]
+        self.assertNotEqual(c0, c1)
+
+        # verify repeated sortings behave
+        for _ in range(3):
+            self.container.sort()
+            ci = [c.name for c in self.container.getChildren()]
+            self.assertEqual(c1, ci)
+
+        # break the order
+        children = self.container.getChildren()
+        self.container._children = children[2:] + children[:2]
+        c2 = [c.name for c in self.container.getChildren()]
+        self.assertNotEqual(c1, c2)
+
+        # verify the sort order
+        self.container.sort()
+        c3 = [c.name for c in self.container.getChildren()]
+        self.assertEqual(c1, c3)
 
     def test_areChildernOfType(self):
         expectedResults = [False, False, False, False, False, True]
@@ -380,7 +411,7 @@ class TestCompositeTree(unittest.TestCase):
         runLog.info(self.r.core.getFirstBlock().getComponents()[0].constituentReport())
 
     def test_getNuclides(self):
-        """getNuclides should return all keys that have ever been in this block, including values that are at trace."""
+        """The getNuclides should return all keys that have ever been in this block, including values that are at trace."""
         cur = self.Block.getNuclides()
         ref = self.refDict.keys()
         for key in ref:
@@ -391,7 +422,7 @@ class TestCompositeTree(unittest.TestCase):
         """
         This test creates a dummy assembly and ensures that the assembly, block, and fuel component masses are
         consistent.
-        `getFuelMass` ensures that the fuel component is used to `getMass`
+        `getFuelMass` ensures that the fuel component is used to `getMass`.
         """
         cs = settings.Settings()
         assemDesign = assemblyBlueprint.AssemblyBlueprint.load(self.blueprintYaml)
@@ -406,13 +437,13 @@ class TestCompositeTree(unittest.TestCase):
         self.assertEqual(fuelMass, a.getFuelMass())
 
     def test_getNeutronEnergyDepositionConstants(self):
-        """Until we improve test architecture, this test can not be more interesting"""
+        """Until we improve test architecture, this test can not be more interesting."""
         with self.assertRaises(RuntimeError):
             # fails because this test reactor does not have a cross-section library
             _x = self.r.core.getNeutronEnergyDepositionConstants()
 
     def test_getGammaEnergyDepositionConstants(self):
-        """Until we improve test architecture, this test can not be more interesting"""
+        """Until we improve test architecture, this test can not be more interesting."""
         with self.assertRaises(RuntimeError):
             # fails because this test reactor does not have a cross-section library
             _x = self.r.core.getGammaEnergyDepositionConstants()

@@ -47,11 +47,12 @@ from armi.reactor import geometry
 from armi.reactor import grids
 from armi.reactor import parameters
 from armi.reactor import reactorParameters
-from armi.reactor import systemLayoutInput
 from armi.reactor import zones
 from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
 from armi.reactor.flags import Flags
+from armi.reactor.systemLayoutInput import SystemLayoutInput
 from armi.settings.fwSettings.globalSettings import CONF_MATERIAL_NAMESPACE_ORDER
+from armi.settings.fwSettings.globalSettings import CONF_SORT_REACTOR
 from armi.utils import createFormattedStrWithDelimiter, units
 from armi.utils import directoryChangers
 from armi.utils.iterables import Sequence
@@ -81,7 +82,7 @@ class Reactor(composites.Composite):
         self.blueprints = blueprints
 
     def __getstate__(self):
-        r"""applies a settings and parent to the reactor and components."""
+        """Applies a settings and parent to the reactor and components."""
         state = composites.Composite.__getstate__(self)
         state["o"] = None
         return state
@@ -110,9 +111,19 @@ class Reactor(composites.Composite):
             self.core = cores[0]
 
 
-def loadFromCs(cs):
+def loadFromCs(cs) -> Reactor:
     """
     Load a Reactor based on the input settings.
+
+    Parameters
+    ----------
+    cs: CaseSettings
+        A relevant settings object
+
+    Returns
+    -------
+    Reactor
+        Reactor loaded from settings file
     """
     from armi.reactor import blueprints
 
@@ -120,7 +131,7 @@ def loadFromCs(cs):
     return factory(cs, bp)
 
 
-def factory(cs, bp, geom: Optional[systemLayoutInput.SystemLayoutInput] = None):
+def factory(cs, bp, geom: Optional[SystemLayoutInput] = None) -> Reactor:
     """Build a reactor from input settings, blueprints and geometry."""
     from armi.reactor import blueprints
 
@@ -147,6 +158,17 @@ def factory(cs, bp, geom: Optional[systemLayoutInput.SystemLayoutInput] = None):
                 structure.construct(cs, bp, r)
 
     runLog.debug("Reactor: {}".format(r))
+
+    # return a Reactor object
+    if cs[CONF_SORT_REACTOR]:
+        r.sort()
+    else:
+        runLog.warning(
+            "DeprecationWarning: This Reactor is not being sorted on blueprint read. "
+            f"Due to the setting {CONF_SORT_REACTOR}, this Reactor is unsorted. "
+            "But this feature is temporary and will be removed by 2024."
+        )
+
     return r
 
 
@@ -376,7 +398,7 @@ class Core(composites.Composite):
         )
 
     def setBlockMassParams(self):
-        """Set the parameters kgHM and kgFis for each block and calculate Pu fraction"""
+        """Set the parameters kgHM and kgFis for each block and calculate Pu fraction."""
         for b in self.getBlocks():
             b.p.kgHM = b.getHMMass() / units.G_PER_KG
             b.p.kgFis = b.getFissileMass() / units.G_PER_KG
@@ -446,7 +468,7 @@ class Core(composites.Composite):
 
     def removeAssembliesInRing(self, ringNum, cs, overrideCircularRingMode=False):
         """
-        Removes all of the assemblies in a given ring
+        Removes all of the assemblies in a given ring.
 
         Parameters
         ----------
@@ -471,7 +493,7 @@ class Core(composites.Composite):
 
     def _removeListFromAuxiliaries(self, assembly):
         """
-        Remove an assembly from all auxiliary reference tables and lists
+        Remove an assembly from all auxiliary reference tables and lists.
 
         Otherwise it will get added back into assembliesByName, etc.
 
@@ -664,7 +686,7 @@ class Core(composites.Composite):
 
     def getNumEnergyGroups(self):
         """
-        Return the number of energy groups used in the problem
+        Return the number of energy groups used in the problem.
 
         See Also
         --------
@@ -675,7 +697,7 @@ class Core(composites.Composite):
     def countBlocksWithFlags(self, blockTypeSpec, assemTypeSpec=None):
         """
         Return the total number of blocks in an assembly in the reactor that
-        meets the specified type
+        meets the specified type.
 
         Parameters
         ----------
@@ -702,7 +724,7 @@ class Core(composites.Composite):
     def countFuelAxialBlocks(self):
         r"""
         return the maximum number of fuel type blocks in any assembly in
-        the reactor
+        the reactor.
 
         See Also
         --------
@@ -818,7 +840,7 @@ class Core(composites.Composite):
     ):
         """
         Returns the assemblies in a specified ring.  Definitions of rings can change
-        with problem parameters
+        with problem parameters.
 
         Parameters
         ----------
@@ -1033,12 +1055,6 @@ class Core(composites.Composite):
 
         zones : iterable, optional
             Only include assemblies that are in this these zones
-
-        Notes
-        -----
-        Attempts have been made to make this a generator but there were some Cython
-        incompatibilities that we could not get around and so we are sticking with a
-        list.
         """
         if includeAll:
             includeBolAssems = includeSFP = True
@@ -1127,7 +1143,7 @@ class Core(composites.Composite):
     # wasn't working correctly
     def genBlocksByLocName(self):
         """
-        If self.blocksByLocName is deleted, then this will regenerate it or update it if things change
+        If self.blocksByLocName is deleted, then this will regenerate it or update it if things change.
         """
         self.blocksByLocName = {
             block.getLocation(): block for block in self.getBlocks(includeAll=True)
@@ -1135,7 +1151,7 @@ class Core(composites.Composite):
 
     def getBlocks(self, bType=None, **kwargs):
         """
-        Returns an iterator over all blocks in the reactor in order
+        Returns an iterator over all blocks in the reactor in order.
 
         Parameters
         ----------
@@ -1382,7 +1398,7 @@ class Core(composites.Composite):
         self, energyOrder=0, adjoint=False, extSrc=False, volumeIntegrated=True
     ):
         """
-        Return the multigroup real or adjoint flux of the entire reactor as a vector
+        Return the multigroup real or adjoint flux of the entire reactor as a vector.
 
         Order of meshes is based on getBlocks
 
@@ -1672,7 +1688,7 @@ class Core(composites.Composite):
 
     def createAssemblyOfType(self, assemType=None, enrichList=None, cs=None):
         """
-        Create an assembly of a specific type and apply enrichments if they are specified
+        Create an assembly of a specific type and apply enrichments if they are specified.
 
         Parameters
         ----------
@@ -1940,7 +1956,7 @@ class Core(composites.Composite):
 
     def findAllAziMeshPoints(self, extraAssems=None, applySubMesh=True):
         r"""
-        returns a list of all azimuthal (theta)-mesh positions in the core.
+        Returns a list of all azimuthal (theta)-mesh positions in the core.
 
         Parameters
         ----------
@@ -1975,7 +1991,7 @@ class Core(composites.Composite):
         return j
 
     def getMaxBlockParam(self, *args, **kwargs):
-        """Get max param over blocks"""
+        """Get max param over blocks."""
         if "generationNum" in kwargs:
             raise ValueError(
                 "Cannot getMaxBlockParam over anything but blocks. Prefer `getMaxParam`."
@@ -1993,7 +2009,7 @@ class Core(composites.Composite):
         return self.calcTotalParam(*args, **kwargs)
 
     def getMaxNumPins(self):
-        """find max number of pins of any block in the reactor"""
+        """Find max number of pins of any block in the reactor."""
         return max(b.getNumPins() for b in self.getBlocks())
 
     def getMinimumPercentFluxInFuel(self, target=0.005):
@@ -2056,7 +2072,7 @@ class Core(composites.Composite):
 
     def getAvgTemp(self, typeSpec, blockList=None, flux2Weight=False):
         r"""
-        get the volume-average fuel, cladding, coolant temperature in core
+        get the volume-average fuel, cladding, coolant temperature in core.
 
         Parameters
         ----------
@@ -2133,14 +2149,12 @@ class Core(composites.Composite):
         return list(allNucNames)
 
     def growToFullCore(self, cs):
-        r"""copies symmetric assemblies to build a full core model out of a 1/3 core model
+        r"""Copies symmetric assemblies to build a full core model out of a 1/3 core model.
 
         Returns
         -------
-
         converter : GeometryConverter
             Geometry converter used to do the conversion.
-
         """
         from armi.reactor.converters.geometryConverters import (
             ThirdCoreHexToFullCoreChanger,
@@ -2153,7 +2167,7 @@ class Core(composites.Composite):
 
     def setPitchUniform(self, pitchInCm):
         """
-        set the pitch in all blocks
+        set the pitch in all blocks.
         """
         for b in self.getBlocks():
             b.setPitch(pitchInCm)
@@ -2163,7 +2177,7 @@ class Core(composites.Composite):
 
     def calcBlockMaxes(self):
         r"""
-        searches all blocks for maximum values of key params
+        Searches all blocks for maximum values of key params.
 
         See Also
         --------

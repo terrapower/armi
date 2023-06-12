@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-Tests for graphite material
+Tests for graphite material.
 """
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import math
@@ -48,7 +48,7 @@ class Graphite_TestCase(unittest.TestCase):
     def test_density(self):
         """
         test to reproduce density measurements results in table 2 from
-        [INL-EXT-16-38241]
+        [INL-EXT-16-38241].
         """
         uncertainty = 0.01
 

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-Lattice Physics Writer
+Lattice Physics Writer.
 
 Parent class for lattice physics writers.
 
@@ -351,7 +351,7 @@ class LatticePhysicsWriter(interfaces.InputWriter):
         return fuelTemperatureInC
 
     def _getDetailedFissionProducts(self, dfpDensities):
-        """Return a dictionary of fission products not provided in the reactor blueprint nuclides
+        """Return a dictionary of fission products not provided in the reactor blueprint nuclides.
 
         Notes
         -----

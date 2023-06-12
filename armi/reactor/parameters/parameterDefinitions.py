@@ -26,16 +26,15 @@ See Also
 --------
 armi.reactor.parameters
 """
-import enum
-import re
-import functools
 from typing import Any, Dict, Optional, Sequence, Tuple, Type
+import enum
+import functools
+import re
 
 import numpy
 
 from armi.reactor.flags import Flags
-
-from .exceptions import ParameterError, ParameterDefinitionError
+from armi.reactor.parameters.exceptions import ParameterError, ParameterDefinitionError
 
 # bitwise masks for high-speed operations on the `assigned` attribute
 # (see http://www.vipan.com/htdocs/bitwisehelp.html)
@@ -100,14 +99,14 @@ class ParamLocation(enum.Flag):
 
 
 class NoDefault:
-    r"""Class used to allow distinction between not setting a default and setting a default of ``None``"""
+    r"""Class used to allow distinction between not setting a default and setting a default of ``None``."""
 
     def __init__(self):
         raise NotImplementedError("You cannot create an instance of NoDefault")
 
 
 class _Undefined:
-    r"""Class used to identify a parameter property as being in the undefined state"""
+    r"""Class used to identify a parameter property as being in the undefined state."""
 
     def __init__(self):
         raise NotImplementedError("You cannot create an instance of _Undefined.")
@@ -184,9 +183,32 @@ class Serializer:
         raise NotImplementedError()
 
 
+def isNumpyArray(paramStr):
+    """Helper meta-function to create a method that sets a Parameter value to a NumPy array.
+
+    Parameters
+    ----------
+    paramStr : str
+        Name of the Parameter we want to set.
+
+    Returns
+    -------
+    function
+        A setter method on the Parameter class to force the value to be a NumPy array.
+    """
+
+    def setParameter(selfObj, value):
+        if value is None or isinstance(value, numpy.ndarray):
+            setattr(selfObj, "_p_" + paramStr, value)
+        else:
+            setattr(selfObj, "_p_" + paramStr, numpy.array(value))
+
+    return setParameter
+
+
 @functools.total_ordering
 class Parameter:
-    r"""Metadata about a specific parameter"""
+    r"""Metadata about a specific parameter."""
     _validName = re.compile("^[a-zA-Z0-9_]+$")
 
     # Using slots because Parameters are pretty static and mostly POD. __slots__ make
@@ -269,14 +291,14 @@ class Parameter:
         )
 
     def __eq__(self, other):
-        """Name defines equality"""
+        """Name defines equality."""
         return self.name == other.name
 
     def __ne__(self, other):
         return not (self == other)
 
     def __lt__(self, other):
-        """Sort alphabetically by name"""
+        """Sort alphabetically by name."""
         return self.name < other.name
 
     def __hash__(self):
@@ -424,7 +446,7 @@ class ParameterDefinitionCollection:
         return matches[0]
 
     def add(self, paramDef):
-        r"""add a :py:class:`Parameter` to this collection."""
+        r"""Add a :py:class:`Parameter` to this collection."""
         assert not self._locked, "This ParameterDefinitionCollection has been locked."
         self._paramDefs.append(paramDef)
         self._paramDefDict[paramDef.name, paramDef.collectionType] = paramDef
@@ -440,7 +462,7 @@ class ParameterDefinitionCollection:
 
     def extend(self, other):
         """
-        Grow a parameter definition collection by another parameter definition collection
+        Grow a parameter definition collection by another parameter definition collection.
         """
         assert (
             not self._locked
@@ -523,7 +545,7 @@ class ParameterDefinitionCollection:
 
     @property
     def categories(self):
-        r"""Get the categories of all the :py:class:`~Parameter` instances within this collection"""
+        r"""Get the categories of all the :py:class:`~Parameter` instances within this collection."""
         categories = set()
         for paramDef in self:
             categories |= paramDef.categories
@@ -554,7 +576,7 @@ class ParameterDefinitionCollection:
 
     def createBuilder(self, *args, **kwargs):
         """
-        Create an associated object that can create definitions into this collection
+        Create an associated object that can create definitions into this collection.
 
         Using the returned ParameterBuilder will add all defined parameters to this
         ParameterDefinitionCollection, using the passed arguments as defaults. Arguments
@@ -566,7 +588,7 @@ class ParameterDefinitionCollection:
 
 
 class ParameterBuilder:
-    r"""Factory for creating Parameter and parameter properties"""
+    r"""Factory for creating Parameter and parameter properties."""
 
     def __init__(
         self,
@@ -575,7 +597,7 @@ class ParameterBuilder:
         categories=None,
         saveToDB=True,
     ):
-        r"""Create a :py:class:`ParameterBuilder`"""
+        r"""Create a :py:class:`ParameterBuilder`."""
         self._entered = False
         self._defaultLocation = location
         self._defaultCategories = set(categories or [])  # make sure it is always a set
@@ -607,7 +629,7 @@ class ParameterBuilder:
 
     def associateParameterDefinitionCollection(self, paramDefs):
         """
-        Associate this parameter factory with a specific ParameterDefinitionCollection
+        Associate this parameter factory with a specific ParameterDefinitionCollection.
 
         Subsequent calls to defParam will automatically add the created
         ParameterDefinitions to this ParameterDefinitionCollection. This results in a
@@ -627,7 +649,7 @@ class ParameterBuilder:
         categories=None,
         serializer: Optional[Type[Serializer]] = None,
     ):
-        r"""Create a parameter as a property (with get/set) on a class
+        r"""Create a parameter as a property (with get/set) on a class.
 
         Parameters
         ----------

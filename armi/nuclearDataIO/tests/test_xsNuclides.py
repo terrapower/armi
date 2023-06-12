@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-r"""
-"""
+"""Test for xs nuclides."""
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import unittest
 
@@ -103,7 +102,7 @@ class NuclideTests(unittest.TestCase):
         self.assertEqual(0.008091875669521187, sum(nuc.micros.nGamma))
 
     def test_nuclide_2dXsArrangementIsCorrect(self):
-        """manually compare some 2d XS data to ensure the correct coordinates"""
+        """Manually compare some 2d XS data to ensure the correct coordinates."""
         u235 = self.lib["U235AA"]
         self.assertAlmostEqual(5.76494979858, u235.micros.total[0, 0])
         self.assertAlmostEqual(6.5928812027, u235.micros.total[1, 0])
@@ -124,7 +123,7 @@ class NuclideTests(unittest.TestCase):
         self.assertAlmostEqual(973.399902343, pu239.micros.total[32, 1])
 
     def test_nuclide_scatterXsArrangementIsCorrect(self):
-        """manually compare scatter XS data to ensure the correct coordinates"""
+        """Manually compare scatter XS data to ensure the correct coordinates."""
         u235 = self.lib["U235AA"]
         elasticScatter = u235.micros.elasticScatter
         n2nScatter = u235.micros.n2nScatter

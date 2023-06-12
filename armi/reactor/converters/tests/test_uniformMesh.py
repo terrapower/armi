@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-Tests for the uniform mesh geometry converter
+Tests for the uniform mesh geometry converter.
 """
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import collections
@@ -58,7 +58,7 @@ class TestConverterFactory(unittest.TestCase):
 
 class TestAssemblyUniformMesh(unittest.TestCase):
     """
-    Tests individual operations of the uniform mesh converter
+    Tests individual operations of the uniform mesh converter.
 
     Uses the test reactor for detailedAxialExpansion
     """
@@ -115,7 +115,7 @@ class TestAssemblyUniformMesh(unittest.TestCase):
             )
 
     def test_makeAssemWithUniformMeshSubmesh(self):
-        """If sourceAssem has submesh, check that newAssem splits into separate blocks"""
+        """If sourceAssem has submesh, check that newAssem splits into separate blocks."""
 
         # assign axMesh to blocks randomly
         sourceAssem = self.r.core.refAssem
@@ -233,8 +233,10 @@ class TestUniformMeshGenerator(unittest.TestCase):
         cls.r.core.lib = isotxs.readBinary(ISOAA_PATH)
 
         # make the mesh a little non-uniform
-        a = cls.r.core[4]
-        a[2].setHeight(a[2].getHeight() * 1.05)
+        a4 = cls.r.core[4]
+        a4[2].setHeight(a4[2].getHeight() * 1.05)
+        a3 = cls.r.core[3]
+        a3[2].setHeight(a3[2].getHeight() * 1.20)
 
     def setUp(self):
         self.generator = uniformMesh.UniformMeshGenerator(
@@ -254,7 +256,7 @@ class TestUniformMeshGenerator(unittest.TestCase):
 
     def test_filterMesh(self):
         """
-        Test that the mesh can be correctly filtered
+        Test that the mesh can be correctly filtered.
         """
         meshList = [1.0, 3.0, 4.0, 7.0, 9.0, 12.0, 16.0, 19.0, 20.0]
         anchorPoints = [4.0, 16.0]
@@ -284,20 +286,23 @@ class TestUniformMeshGenerator(unittest.TestCase):
             )
 
     def test_filteredTopAndBottom(self):
-        fuelBottoms, fuelTops = self.generator._getFilteredFuelTopAndBottom()
+        fuelBottoms, fuelTops = self.generator._getFilteredMeshTopAndBottom(Flags.FUEL)
         self.assertListEqual(fuelBottoms, [25.0])
-        self.assertListEqual(fuelTops, [101.25])
+        self.assertListEqual(fuelTops, [101.25, 105.0])
 
-        # ctrlBottoms and ctrlTops include the fuelBottoms and fuelTops, respectively
-        ctrlBottoms, ctrlTops = self.generator._getFilteredControlTopAndBottom(
-            fuelBottoms, fuelTops
+        # ctrlAndFuelBottoms and ctrlAndFuelTops include the fuelBottoms and fuelTops, respectively
+        (
+            ctrlAndFuelBottoms,
+            ctrlAndFuelTops,
+        ) = self.generator._getFilteredMeshTopAndBottom(
+            Flags.CONTROL, fuelBottoms, fuelTops
         )
-        self.assertListEqual(ctrlBottoms, [25.0, 50.0])
-        self.assertListEqual(ctrlTops, [75.0, 101.25])
+        self.assertListEqual(ctrlAndFuelBottoms, [25.0, 50.0])
+        self.assertListEqual(ctrlAndFuelTops, [75.0, 101.25, 105.0])
 
     def test_generateCommonMesh(self):
         """
-        Covers generateCommonmesh() and _decuspAxialMesh()
+        Covers generateCommonmesh() and _decuspAxialMesh().
         """
         self.generator.generateCommonMesh()
         expectedMesh = [
@@ -305,18 +310,18 @@ class TestUniformMeshGenerator(unittest.TestCase):
             50.0,
             75.0,
             101.25,
-            118.80952380952381,
-            137.5595238095238,
-            156.3095238095238,
-            175.0595238095238,
+            105.0,
+            119.04761904761905,
+            137.79761904761904,
+            156.54761904761904,
+            175.29761904761904,
         ]
-
         self.assertListEqual(list(self.generator._commonMesh), expectedMesh)
 
 
 class TestUniformMeshComponents(unittest.TestCase):
     """
-    Tests individual operations of the uniform mesh converter
+    Tests individual operations of the uniform mesh converter.
 
     Only loads reactor once per suite.
     """
@@ -338,7 +343,7 @@ class TestUniformMeshComponents(unittest.TestCase):
         self.converter._sourceReactor = self.r
 
     def test_blueprintCopy(self):
-        """Ensure that necessary blueprint attributes are set"""
+        """Ensure that necessary blueprint attributes are set."""
         convReactor = self.converter.initNewReactor(
             self.converter._sourceReactor, self.o.cs
         )
@@ -358,7 +363,7 @@ class TestUniformMeshComponents(unittest.TestCase):
 
 
 def applyNonUniformHeightDistribution(reactor):
-    """Modifies some assemblies to have non-uniform axial meshes"""
+    """Modifies some assemblies to have non-uniform axial meshes."""
     for a in reactor.core:
         delta = 0.0
         for b in a[:-1]:
@@ -372,7 +377,7 @@ def applyNonUniformHeightDistribution(reactor):
 
 class TestUniformMesh(unittest.TestCase):
     """
-    Tests full uniform mesh converter
+    Tests full uniform mesh converter.
 
     Loads reactor once per test
     """
@@ -468,7 +473,7 @@ class TestUniformMesh(unittest.TestCase):
 
 class TestGammaUniformMesh(unittest.TestCase):
     """
-    Tests gamma uniform mesh converter
+    Tests gamma uniform mesh converter.
 
     Loads reactor once per test
     """

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-Module for general core parameter sweeps
+Module for general core parameter sweeps.
 """
 from armi.reactor.converters.geometryConverters import GeometryConverter
 from armi.physics.neutronics.settings import (

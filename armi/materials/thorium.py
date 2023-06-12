@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-Thorium Metal
+Thorium Metal.
 
 Data is from [#IAEA-TECDOCT-1450]_.
 
@@ -36,16 +36,16 @@ class Thorium(FuelMaterial):
         self.setMassFrac("TH232", 1.0)
 
     def linearExpansion(self, Tk=None, Tc=None):
-        r"""m/m/K from IAEA TECDOC 1450"""
+        r"""Linear Expansion in m/m/K from IAEA TECDOC 1450."""
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("linear expansion", Tk)
 
         return 11.9e-6
 
     def thermalConductivity(self, Tk=None, Tc=None):
-        r"""W/m-K from IAEA TE 1450"""
+        r"""W/m-K from IAEA TE 1450."""
         return 43.1
 
     def meltingPoint(self):
-        r"""melting point in K from IAEA TE 1450"""
+        r"""Melting point in K from IAEA TE 1450."""
         return 2025.0

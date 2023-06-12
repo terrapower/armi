@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-unittests for iterables.py
+unittests for iterables.py.
 """
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import time
@@ -26,7 +26,7 @@ _TEST_DATA = {"turtle": [float(vv) for vv in range(-2000, 2000)]}
 
 
 class TestIterables(unittest.TestCase):
-    """Testing our custom Iterables"""
+    """Testing our custom Iterables."""
 
     def test_flatten(self):
         self.assertEqual(

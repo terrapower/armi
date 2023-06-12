@@ -161,7 +161,6 @@ class FuelHandler:
             numMoved = 0
 
         self.o.r.core.p.numMoves = numMoved
-
         self.o.r.core.setBlockMassParams()
 
         runLog.important(
@@ -201,7 +200,8 @@ class FuelHandler:
         return defaultFactorList, factorSearchFlags
 
     def prepCore(self):
-        """Aux. function to run before XS generation (do moderation, etc. here)"""
+        """Aux function to run before XS generation (do moderation, etc)."""
+        pass
 
     def prepSearch(self, *args, **kwargs):
         """
@@ -626,7 +626,7 @@ class FuelHandler:
         circularRingFlag=False,
     ):
         r"""
-        find assemblies in particular rings
+        find assemblies in particular rings.
 
         Parameters
         ----------
@@ -701,7 +701,7 @@ class FuelHandler:
 
     def swapAssemblies(self, a1, a2):
         r"""
-        Moves a whole assembly from one place to another
+        Moves a whole assembly from one place to another.
 
         Parameters
         ----------
@@ -732,7 +732,7 @@ class FuelHandler:
 
     def _transferStationaryBlocks(self, assembly1, assembly2):
         """
-        Exchange the stationary blocks (e.g. grid plate) between the moving assemblies
+        Exchange the stationary blocks (e.g. grid plate) between the moving assemblies.
 
         These blocks in effect are not moved at all.
         """
@@ -867,7 +867,7 @@ class FuelHandler:
 
     def repeatShufflePattern(self, explicitRepeatShuffles):
         r"""
-        Repeats the fuel management from a previous ARMI run
+        Repeats the fuel management from a previous ARMI run.
 
         Parameters
         ----------
@@ -916,7 +916,7 @@ class FuelHandler:
     @staticmethod
     def readMoves(fname):
         r"""
-        reads a shuffle output file and sets up the moves dictionary
+        Reads a shuffle output file and sets up the moves dictionary.
 
         Parameters
         ----------
@@ -1014,7 +1014,7 @@ class FuelHandler:
     @staticmethod
     def trackChain(moveList, startingAt, alreadyDone=None):
         r"""
-        builds a chain of locations based on starting location
+        Builds a chain of locations based on starting location.
 
         Notes
         -----
@@ -1222,7 +1222,7 @@ class FuelHandler:
         self, loadChains, loopChains, enriches, loadChargeTypes, loadNames
     ):
         r"""
-        Actually does the fuel movements required to repeat a shuffle order
+        Actually does the fuel movements required to repeat a shuffle order.
 
         Parameters
         ----------

@@ -279,7 +279,7 @@ class Setting:
 
     def isDefault(self):
         """
-        Returns a boolean based on whether or not the setting equals its default value
+        Returns a boolean based on whether or not the setting equals its default value.
 
         It's possible for a setting to change and not be reported as such when it is changed back to its default.
         That behavior seems acceptable.

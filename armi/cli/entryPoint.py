@@ -300,7 +300,7 @@ def storeBool(boolDefault, ep):
 def setSetting(ep):
     class _SetSettingAction(argparse.Action):
         """This class loads the command line supplied setting values into the
-        :py:data:`armi.settings.cs`
+        :py:data:`armi.settings.cs`.
         """
 
         def __call__(self, parser, namespace, values, option_string=None):
@@ -318,7 +318,7 @@ def setSetting(ep):
 def setCaseTitle(cs):
     class _SetCaseTitleAction(argparse.Action):
         """This class sets the case title to the supplied value of the
-        :py:data:`armi.settings.cs`
+        :py:data:`armi.settings.cs`.
         """
 
         def __call__(self, parser, namespace, value, option_string=None):
@@ -331,7 +331,7 @@ def setCaseTitle(cs):
 def loadSettings(cs):
     class LoadSettingsAction(argparse.Action):
         """This class loads the command line supplied settings file into the
-        :py:data:`armi.settings.cs`
+        :py:data:`armi.settings.cs`.
         """
 
         def __call__(self, parser, namespace, values, option_string=None):

@@ -110,7 +110,7 @@ REYNOLDS_TURBULENT = 4000.0
 
 def getTk(Tc=None, Tk=None):
     """
-    Return a temperature in Kelvin, given a temperature in Celsius or Kelvin
+    Return a temperature in Kelvin, given a temperature in Celsius or Kelvin.
 
     Returns
     -------
@@ -132,7 +132,7 @@ def getTk(Tc=None, Tk=None):
 
 def getTc(Tc=None, Tk=None):
     """
-    Return a temperature in Celcius, given a temperature in Celsius or Kelvin
+    Return a temperature in Celsius, given a temperature in Celsius or Kelvin.
 
     Returns
     -------
@@ -154,7 +154,7 @@ def getTc(Tc=None, Tk=None):
 
 def getTf(Tc=None, Tk=None):
     """
-    Return a temperature in Fahrenheit, given a temperature in Celsius or Kelvin
+    Return a temperature in Fahrenheit, given a temperature in Celsius or Kelvin.
 
     Returns
     -------
@@ -171,7 +171,7 @@ def getTf(Tc=None, Tk=None):
 
 def getTemperature(Tc=None, Tk=None, tempUnits=None):
     """
-    Returns the temperature in the prescribed temperature units
+    Returns the temperature in the prescribed temperature units.
 
     Parameters
     ----------
@@ -286,7 +286,7 @@ def sanitizeAngle(theta):
 
 def getXYLineParameters(theta, x=0, y=0):
     """
-    returns parameters A B C D for a plane in the XY direction
+    returns parameters A B C D for a plane in the XY direction.
 
     Parameters
     ----------

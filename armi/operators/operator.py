@@ -212,7 +212,7 @@ class Operator:  # pylint: disable=too-many-public-methods
     @staticmethod
     def _initFastPath():
         """
-        Create the FAST_PATH directory for fast local operations
+        Create the FAST_PATH directory for fast local operations.
 
         Notes
         -----
@@ -386,7 +386,7 @@ class Operator:  # pylint: disable=too-many-public-methods
         self._performTightCoupling(cycle, timeNode)
 
     def _performTightCoupling(self, cycle: int, timeNode: int, writeDB: bool = True):
-        """if requested, perform tight coupling and write out database
+        """If requested, perform tight coupling and write out database.
 
         Notes
         -----
@@ -687,7 +687,7 @@ class Operator:  # pylint: disable=too-many-public-methods
         return self._checkTightCouplingConvergence(activeInterfaces)
 
     def _checkTightCouplingConvergence(self, activeInterfaces: list):
-        """check if interfaces are converged
+        """Check if interfaces are converged.
 
         Parameters
         ----------
@@ -785,7 +785,6 @@ class Operator:  # pylint: disable=too-many-public-methods
             If an interface of the same name or function is already attached to the
             Operator.
         """
-
         if self.getInterface(interface.name):
             raise RuntimeError(
                 "An interface with name {0} is already attached.".format(interface.name)
@@ -866,7 +865,7 @@ class Operator:  # pylint: disable=too-many-public-methods
             raise RuntimeError("Interface dependency resolution did not converge.")
 
     def removeAllInterfaces(self):
-        """Removes all of the interfaces"""
+        """Removes all of the interfaces."""
         for interface in self.interfaces:
             interface.detachReactor()
         self.interfaces = []
@@ -887,7 +886,6 @@ class Operator:  # pylint: disable=too-many-public-methods
         success : boolean
             True if the interface was removed
             False if it was not (because it wasn't there to be removed)
-
         """
         if interfaceName:
             interface = self.getInterface(interfaceName)
@@ -1007,7 +1005,6 @@ class Operator:  # pylint: disable=too-many-public-methods
         -----
         This allows the ARMI to do the same shuffles that it did last time, assuming fuel management logic
         has not changed. Note, it would be better if the moves were just read from a table in the database.
-
         """
         restartName = self.cs.caseTitle + ".restart.dat"
         if not os.path.exists(restartName):
@@ -1049,7 +1046,7 @@ class Operator:  # pylint: disable=too-many-public-methods
         self, cycle, timeNode, timeStepName="", fileName=None, updateMassFractions=None
     ):
         """
-        Convenience method reroute to the database interface state reload method
+        Convenience method reroute to the database interface state reload method.
 
         See also
         --------
@@ -1159,7 +1156,7 @@ class Operator:  # pylint: disable=too-many-public-methods
 
     @staticmethod
     def setStateToDefault(cs):
-        """Update the state of ARMI to fit the kind of run this operator manages"""
+        """Update the state of ARMI to fit the kind of run this operator manages."""
         return cs.modified(newSettings={"runType": RunTypes.STANDARD})
 
     def couplingIsActive(self):

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-r""" Tests for the db Layout and associated tools"""
+r""" Tests for the db Layout and associated tools."""
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-member,disallowed-name,invalid-name
 import os
 import unittest
@@ -25,7 +25,7 @@ from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
 class TestLocationPacking(unittest.TestCase):
-    r"""Tests for database location"""
+    r"""Tests for database location."""
 
     def setUp(self):
         self.td = TemporaryDirectoryChanger()

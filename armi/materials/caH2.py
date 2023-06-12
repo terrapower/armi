@@ -20,7 +20,7 @@ from armi.materials.material import SimpleSolid
 
 
 class CaH2(SimpleSolid):
-    """CalciumHydride"""
+    """CalciumHydride."""
 
     name = "CaH2"
 
@@ -51,7 +51,7 @@ class CaH2(SimpleSolid):
         self.setMassFrac("H", 0.047884869)
 
     def density(self, Tk=None, Tc=None):
-        """Mass density
+        """Mass density.
 
         http://en.wikipedia.org/wiki/Calcium_hydride
 

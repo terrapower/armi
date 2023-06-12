@@ -12,27 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Generic ARMI utilities"""
+"""Generic ARMI utilities."""
 import collections
-import datetime
 import getpass
 import hashlib
-import importlib
 import math
 import os
 import pickle
-import pkgutil
 import re
 import shutil
-import subprocess
 import sys
 import tempfile
 import threading
 import time
-import traceback
 
-from armi import __name__ as armi_name
-from armi import __path__ as armi_path
 from armi import runLog
 from armi.utils import iterables
 from armi.utils.flags import Flag
@@ -60,6 +53,7 @@ def getFileSHA1Hash(filePath, digits=40):
             if not data:
                 break
             sha1.update(data)
+
     return sha1.hexdigest()[:digits]
 
 
@@ -113,7 +107,7 @@ def getPowerFractions(cs):
         )
 
         return [
-            [value] * (cs["burnSteps"] if cs["burnSteps"] != None else 0)
+            [value] * (cs["burnSteps"] if cs["burnSteps"] is not None else 0)
             for value in valuePerCycle
         ]
 
@@ -179,18 +173,19 @@ def getAvailabilityFactors(cs):
             if cs["availabilityFactors"] not in [None, []]
             else (
                 [cs["availabilityFactor"]] * cs["nCycles"]
-                if cs["availabilityFactor"] != None
+                if cs["availabilityFactor"] is not None
                 else [1]
             )
         )
 
 
 def _getStepAndCycleLengths(cs):
-    """
-    These need to be gotten together because it is a chicken/egg depending on which
-    style of cycles input the user employs.
+    r"""
+    Get both steps and lengths together to prevent chicken/egg problem.
 
-    Note that using this method directly is more effecient than calling `getStepLengths`
+    Notes
+    -----
+    Using this method directly is more effecient than calling `getStepLengths`
     and `getCycleLengths` separately, but it is probably more clear to the user
     to call each of them separately.
     """
@@ -231,7 +226,7 @@ def _getStepAndCycleLengths(cs):
             if cs["cycleLengths"] not in [None, []]
             else (
                 [cs["cycleLength"]] * cs["nCycles"]
-                if cs["cycleLength"] != None
+                if cs["cycleLength"] is not None
                 else [0]
             )
         )
@@ -320,7 +315,7 @@ def getBurnSteps(cs):
 
 
 def hasBurnup(cs):
-    """Is depletion being modeled?
+    """Test if depletion is being modeled.
 
     Parameters
     ----------
@@ -381,7 +376,7 @@ def getCycleNodeFromCumulativeStep(timeStepNum, cs):
     stepsPerCycle = getBurnSteps(cs)
 
     if timeStepNum < 1:
-        raise ValueError(f"Cumulative time step cannot be less than 1.")
+        raise ValueError("Cumulative time step cannot be less than 1.")
 
     cSteps = 0  # cumulative steps
     for i in range(len(stepsPerCycle)):
@@ -417,7 +412,7 @@ def getCycleNodeFromCumulativeNode(timeNodeNum, cs):
     nodesPerCycle = getNodesPerCycle(cs)
 
     if timeNodeNum < 0:
-        raise ValueError(f"Cumulative time node cannot be less than 0.")
+        raise ValueError("Cumulative time node cannot be less than 0.")
 
     cNodes = 0  # cumulative nodes
     for i in range(len(nodesPerCycle)):
@@ -435,7 +430,7 @@ def getNodesPerCycle(cs):
 
 
 def getPreviousTimeNode(cycle, node, cs):
-    """Return the (cycle, node) before the specified (cycle, node)"""
+    """Return the (cycle, node) before the specified (cycle, node)."""
     if (cycle, node) == (0, 0):
         raise ValueError("There is no time step before (0, 0)")
     if node != 0:
@@ -482,7 +477,7 @@ def tryPickleOnAllContents(obj, ignore=None, verbose=False):
 
 def doTestPickleOnAllContents2(obj, ignore=None):
     r"""
-    Attempts to find one unpickleable object in a nested object
+    Attempts to find one unpickleable object in a nested object.
 
     Returns
     -------
@@ -530,7 +525,7 @@ class MyPickler(pickle.Pickler):
 
 def tryPickleOnAllContents3(obj):
     """
-    Definitely find pickle errors
+    Definitely find pickle errors.
 
     Notes
     -----
@@ -568,8 +563,9 @@ def classesInHierarchy(obj, classCounts, visited=None):
 
 
 def slantSplit(val, ratio, nodes, order="low first"):
-    r"""
+    """
     Returns a list of values whose sum is equal to the value specified.
+
     The ratio between the highest and lowest value is equal to the specified ratio,
     and the middle values trend linearly between them.
     """
@@ -603,7 +599,6 @@ def prependToList(originalList, listToPrepend):
     -------
     originalList : list
         The original list with the listToPrepend at it's beginning.
-
     """
     listToPrepend.reverse()
     originalList.reverse()
@@ -656,7 +651,6 @@ def list2str(strings, width=None, preStrings=None, fmt=None):
     fmt : str, optional
         The format to apply to each string, such as
         ' >4d', '^12.4E'.
-
     """
     if preStrings is None:
         preStrings = []
@@ -697,7 +691,6 @@ def createFormattedStrWithDelimiter(
         >>> createFormattedStrWithDelimiter(['hello', 'world', '1', '2', '3', '4'],
         ...     maxNumberOfValuesBeforeDelimiter=3, delimiter = '\n')
         "hello, world, 1, \n2, 3, \n4, 5\n"
-
     """
     formattedString = ""
     if not dataList:
@@ -738,7 +731,7 @@ def plotMatrix(
     cmap=None,
     figsize=None,
 ):
-    """Plots a matrix"""
+    """Plots a matrix."""
     import matplotlib
     import matplotlib.pyplot as plt
 

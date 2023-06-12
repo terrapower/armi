@@ -348,7 +348,7 @@ class BinaryRecordReader(IORecord):
 
 
 class BinaryRecordWriter(IORecord):
-    r"""a single record from a CCCC file
+    r"""a single record from a CCCC file.
 
     Reads binary information sequentially."""
 
@@ -577,12 +577,12 @@ class Stream:
 
     @classmethod
     def readBinary(cls, fileName: str):
-        """Read data from a binary file into a data structure"""
+        """Read data from a binary file into a data structure."""
         return cls._read(fileName, "rb")
 
     @classmethod
     def readAscii(cls, fileName: str):
-        """Read data from an ASCII file into a data structure"""
+        """Read data from an ASCII file into a data structure."""
         return cls._read(fileName, "r")
 
     @classmethod
@@ -591,12 +591,12 @@ class Stream:
 
     @classmethod
     def writeBinary(cls, data: DataContainer, fileName: str):
-        """Write the contents of a data container to a binary file"""
+        """Write the contents of a data container to a binary file."""
         return cls._write(data, fileName, "wb")
 
     @classmethod
     def writeAscii(cls, data: DataContainer, fileName: str):
-        """Write the contents of a data container to an ASCII file"""
+        """Write the contents of a data container to an ASCII file."""
         return cls._write(data, fileName, "w")
 
     @classmethod

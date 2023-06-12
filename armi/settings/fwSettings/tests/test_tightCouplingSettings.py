@@ -15,7 +15,7 @@
 Unit testing for tight coupling settings.
 - The settings example below shows the intended use for these settings in
   an ARMI yaml input file.
-- Note, for these to be recognized, they need to be prefixed with "tightCouplingSettings:"
+- Note, for these to be recognized, they need to be prefixed with "tightCouplingSettings:".
 """
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,unused-variable
 import unittest
@@ -121,7 +121,7 @@ class TestTightCouplingSettings(unittest.TestCase):
             tc = tightCouplingSettingsValidator(tc)
 
     def test_serializeSettingsException(self):
-        """ensure the TypeError in serializeTightCouplingSettings can be reached"""
+        """Ensure the TypeError in serializeTightCouplingSettings can be reached."""
         tc = ["globalFlux"]
         with self.assertRaises(TypeError) as cm:
             tc = tightCouplingSettingsValidator(tc)
@@ -129,7 +129,7 @@ class TestTightCouplingSettings(unittest.TestCase):
             self.assertEqual(the_exception.error_code, 3)
 
     def test_yamlIO(self):
-        """Ensure we can read/write this custom setting object to yaml"""
+        """Ensure we can read/write this custom setting object to yaml."""
         yaml = YAML()
         inp = yaml.load(io.StringIO(TIGHT_COUPLING_SETTINGS_EXAMPLE))
         tcd = TightCouplingSettingDef("TestSetting")

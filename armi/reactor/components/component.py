@@ -56,7 +56,7 @@ _NICE_DIM_NAMES = {
 
 def componentTypeIsValid(component, name):
     """
-    Checks that the component assigned component type is valid
+    Checks that the component assigned component type is valid.
 
     Notes
     -----
@@ -275,7 +275,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         self.material.parent = self
 
     def _linkAndStoreDimensions(self, components, **dims):
-        """Link dimensions to another component"""
+        """Link dimensions to another component."""
         for key, val in dims.items():
             self.setDimension(key, val)
 
@@ -413,7 +413,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         return newC
 
     def setLumpedFissionProducts(self, lfpCollection):
-        """Sets lumped fission product collection on a lfp compatible material if possible"""
+        """Sets lumped fission product collection on a lfp compatible material if possible."""
         try:
             self.getProperties().setLumpedFissionProducts(lfpCollection)
         except AttributeError:
@@ -520,7 +520,7 @@ class Component(composites.Composite, metaclass=ComponentType):
                 raise ArithmeticError(negAreaFailure)
 
     def _checkNegativeVolume(self, volume):
-        """Check for negative volume
+        """Check for negative volume.
 
         See Also
         --------
@@ -795,7 +795,7 @@ class Component(composites.Composite, metaclass=ComponentType):
 
     def getDimension(self, key, Tc=None, cold=False):
         """
-        Return a specific dimension at temperature as determined by key
+        Return a specific dimension at temperature as determined by key.
 
         Parameters
         ----------
@@ -1105,7 +1105,7 @@ class Component(composites.Composite, metaclass=ComponentType):
 
     def getIntegratedMgFlux(self, adjoint=False, gamma=False):
         """
-        Return the multigroup neutron tracklength in [n-cm/s]
+        Return the multigroup neutron tracklength in [n-cm/s].
 
         The first entry is the first energy group (fastest neutrons). Each additional
         group is the next energy group, as set in the ISOTXS library.
