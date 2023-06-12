@@ -28,6 +28,7 @@ from armi import runLog
 from armi.bookkeeping import report
 from armi.reactor import composites
 from armi.reactor import parameters
+from armi.reactor import flags
 from armi.reactor.components import componentParameters
 from armi.utils import densityTools
 from armi.utils.units import C_TO_K
@@ -1186,6 +1187,10 @@ class Component(composites.Composite, metaclass=ComponentType):
             f"Method not implemented on component {self}. "
             "Please implement if this component type can be a pitch defining component."
         )
+
+    def getFuelMass(self) -> float:
+        """Return the mass in grams if this is a fueled component"""
+        return self.getMass() if self.hasFlags(flags.Flags.FUEL) else 0.0
 
 
 class ShapedComponent(Component):
