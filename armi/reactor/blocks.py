@@ -2215,11 +2215,9 @@ class HexBlock(Block):
         # solid circle = NumPins * pi * (Comp Diam + Wire Diam)
         wettedPinPerimeter = 0.0
         for c in wettedPinComponents:
-            if c is None:
-                continue
             correctionFactor = 1.0
-            if c.hasFlags(Flags.WIRE) and isinstance(c, Helix):
-                # account for the wire
+            if isinstance(c, Helix):
+                # account for the helical wire wrap
                 correctionFactor = numpy.hypot(
                     1.0,
                     math.pi
