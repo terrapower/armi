@@ -335,7 +335,7 @@ class ArmiObject(metaclass=CompositeModelType):
         self.spatialLocator = grids.CoordinateLocation(0.0, 0.0, 0.0, None)
 
     def _validateComparingLocators(self, other):
-        """Validate that these are valid locataors to compare"""
+        """Validate that these are valid locators to compare"""
         if self.spatialLocator is None or other.spatialLocator is None:
             runLog.error("could not compare {} and {}".format(self, other))
             raise ValueError(

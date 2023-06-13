@@ -134,7 +134,9 @@ class Assembly(composites.Composite):
         """
         try:
             self._validateComparingLocators(other)
-            # this will return interior-most assemblies first which tend to be the most interesting
+            if self.spatialLocator.grid is None or other.spatialLocator.grid is None:
+                return False
+            # getRingPos will return interior-most assemblies first which tend to be the most interesting
             t1 = tuple(self.spatialLocator.getRingPos())
             t2 = tuple(other.spatialLocator.getRingPos())
             return t1 < t2

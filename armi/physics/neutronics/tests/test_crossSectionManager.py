@@ -511,7 +511,7 @@ class Test_CrossSectionGroupManager(unittest.TestCase):
         )
         ABcollection = blockCollectionsByXsGroup["AB"]
         self.assertEqual(
-            blockCollectionsByXsGroup["AA"]._calcWeightedBurnup(), 1 / 12.0
+            blockCollectionsByXsGroup["AA"]._calcWeightedBurnup(), 1.5 / 18
         )
         self.assertEqual(
             ABcollection.getWeight(self.blockList[1]),
@@ -685,9 +685,8 @@ class TestXSNumberConverters(unittest.TestCase):
 
 def makeBlocks(howMany=20):
     _o, r = test_reactors.loadTestReactor(TEST_ROOT)
-    return r.core.getBlocks(Flags.FUEL)[
-        3 : howMany + 3
-    ]  # shift y 3 to skip central assemblies 1/3 volume
+    # shift y 3 to skip central assemblies 1/3 volume
+    return r.core.getBlocks(Flags.FUEL)[3 : howMany + 3]
 
 
 if __name__ == "__main__":
