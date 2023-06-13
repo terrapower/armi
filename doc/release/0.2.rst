@@ -11,7 +11,7 @@ What's new in ARMI
 #. Calculate weighted-average percent burnup of BlockCollections. (`PR#1265 <https://github.com/terrapower/armi/pull/1265>`_)
 #. Added ``Composite.sort()`` to allow the user to recursively sort any piece of the ``Reactor``. (`PR#1280 <https://github.com/terrapower/armi/pull/1280>`_)
 #  Revert "when using non-uniform mesh, detailed fission/activation products have cross sections generated to avoid blocks without xs data" and move capability to lattice physics (`PR#1280 <https://github.com/terrapower/armi/pull/1298>`_)
-#. TBD
+#. Add interactCoupled method for snapshotInterface (`PR#1294 <https://github.com/terrapower/armi/pull/1294>`_)
 
 Bug fixes
 ---------

@@ -15,9 +15,23 @@
 """Test Snapshots."""
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import unittest
+from unittest.mock import patch
 
 from armi.bookkeeping import snapshotInterface
 from armi import settings
+from armi.operators.operator import Operator
+
+
+class MockReactor:
+    def __init__(self, cs):
+        self.p = MockReactorParams()
+        self.o = Operator(cs)
+
+
+class MockReactorParams:
+    def __init__(self):
+        self.cycle = 0
+        self.timeNode = 1
 
 
 class TestSnapshotInterface(unittest.TestCase):
@@ -27,7 +41,23 @@ class TestSnapshotInterface(unittest.TestCase):
 
     def setUp(self):
         self.cs.revertToDefaults()
-        self.si = snapshotInterface.SnapshotInterface(None, self.cs)
+        self.si = snapshotInterface.SnapshotInterface(MockReactor(self.cs), self.cs)
+
+    @patch("armi.operators.operator.Operator.snapshotRequest")
+    def test_interactEveryNode(self, mockSnapshotRequest):
+        newSettings = {}
+        newSettings["dumpSnapshot"] = ["000001"]
+        self.si.cs = self.si.cs.modified(newSettings=newSettings)
+        self.si.interactEveryNode(0, 1)
+        self.assertTrue(mockSnapshotRequest.called)
+
+    @patch("armi.operators.operator.Operator.snapshotRequest")
+    def test_interactCoupled(self, mockSnapshotRequest):
+        newSettings = {}
+        newSettings["dumpSnapshot"] = ["000001"]
+        self.si.cs = self.si.cs.modified(newSettings=newSettings)
+        self.si.interactCoupled(2)
+        self.assertTrue(mockSnapshotRequest.called)
 
     def test_activeateDefaultSnapshots_30cycles2BurnSteps(self):
         self.assertEqual([], self.cs["dumpSnapshot"])

@@ -47,14 +47,26 @@ class SnapshotInterface(interfaces.Interface):
     name = "snapshot"
 
     def interactBOL(self):
+        """Active the default snapshots at BOL"""
         interfaces.Interface.interactBOL(self)
         if self.cs["defaultSnapshots"]:
             self.activateDefaultSnapshots()
 
     def interactEveryNode(self, cycle, node):
+        """
+        Call the snapshot interface to copy files at each node, if requested
+        """
         snapText = getCycleNodeStamp(cycle, node)  # CCCNNN
         if self.cs["dumpSnapshot"] and snapText in self.cs["dumpSnapshot"]:
             self.o.snapshotRequest(cycle, node)
+
+    def interactCoupled(self, iteration):
+        """
+        Call the snapshot interface to copy files for coupled iterations, if requested
+        """
+        snapText = getCycleNodeStamp(self.r.p.cycle, self.r.p.timeNode)  # CCCNNN
+        if self.cs["dumpSnapshot"] and snapText in self.cs["dumpSnapshot"]:
+            self.o.snapshotRequest(self.r.p.cycle, self.r.p.timeNode, iteration)
 
     def activateDefaultSnapshots(self):
         """Figure out and assign some default snapshots (BOL, MOL, EOL)."""
