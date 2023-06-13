@@ -749,7 +749,7 @@ class GlobalFluxResultMapper(interfaces.OutputReader):
             burnupPeakingFactor = b.p.fluxPeak / b.p.flux
         elif not burnupPeakingFactor:
             # no peak available. Finite difference model?
-            burnupPeakingFactor = 1.0
+            burnupPeakingFactor = 0.0
 
         return burnupPeakingFactor
 
