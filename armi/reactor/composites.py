@@ -31,6 +31,7 @@ See Also: :doc:`/developer/index`.
 """
 import collections
 import itertools
+import operator
 import timeit
 from typing import Dict, Optional, Type, Tuple, List, Union
 
@@ -882,9 +883,7 @@ class ArmiObject(metaclass=CompositeModelType):
         mass : float
             The mass in grams.
         """
-        return sum(
-            [c.getMass(nuclideNames=nuclideNames) for c in self.iterComponents()]
-        )
+        return sum([c.getMass(nuclideNames=nuclideNames) for c in self])
 
     def getMassFrac(self, nucName):
         """
@@ -1235,7 +1234,7 @@ class ArmiObject(metaclass=CompositeModelType):
         volumes = numpy.array(
             [
                 c.getVolume() / (c.parent.getSymmetryFactor() if c.parent else 1.0)
-                for c in self.iterComponents()
+                for c in self
             ]
         )  # c x 1
         totalVol = volumes.sum()
@@ -1244,7 +1243,7 @@ class ArmiObject(metaclass=CompositeModelType):
             return [0.0] * len(nucNames)
 
         densListForEachComp = []
-        for c in self.iterComponents():
+        for c in self:
             numberDensityDict = c.getNumberDensities()
             densListForEachComp.append(
                 [numberDensityDict.get(nuc, 0.0) for nuc in nucNames]
@@ -2123,8 +2122,8 @@ class ArmiObject(metaclass=CompositeModelType):
         return mass
 
     def getFuelMass(self):
-        """Returns mass of fuel in grams."""
-        return sum([fuel.getMass() for fuel in self.iterComponents(Flags.FUEL)], 0.0)
+        """returns mass of fuel in grams."""
+        return sum((c.getFuelMass() for c in self))
 
     def constituentReport(self):
         """A print out of some pertinent constituent information."""
@@ -3213,12 +3212,8 @@ class Composite(ArmiObject):
 
         Used to roughly approximate relative size vs. other objects
         """
-        return sum(
-            [
-                comp.getBoundingCircleOuterDiameter(Tc, cold)
-                for comp in self.iterComponents()
-            ]
-        )
+        getter = operator.methodcaller("getBoundingCircleOuterDiameter", Tc, cold)
+        return sum(map(getter, self))
 
 
 class StateRetainer:

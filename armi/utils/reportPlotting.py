@@ -441,6 +441,7 @@ def plotCoreOverviewRadar(reactors, reactorNames=None):
         size="large",
     )
     plt.savefig("reactor_comparison.png")
+    plt.close()
 
 
 def _getNeutronicVals(r):

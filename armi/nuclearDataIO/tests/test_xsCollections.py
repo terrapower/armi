@@ -14,6 +14,7 @@
 
 """Module that tests methods within xsCollections."""
 # pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+import os
 import unittest
 
 from armi import settings
@@ -21,6 +22,8 @@ from armi.reactor.blocks import HexBlock
 from armi.nuclearDataIO import isotxs
 from armi.nuclearDataIO import xsCollections
 from armi.tests import ISOAA_PATH
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
+from armi.utils.plotting import plotNucXs
 
 
 class TestXsCollections(unittest.TestCase):
@@ -64,6 +67,16 @@ class TestXsCollections(unittest.TestCase):
             totalScatter[0, 0],
             (nuc.micros.elasticScatter[0, 0] + 2.0 * nuc.micros.n2nScatter[0, 0]),
         )
+
+    def test_plotNucXs(self):
+        """
+        Testing this plotting method here because we need a XS library
+        to run the test.
+        """
+        fName = "test_plotNucXs.png"
+        with TemporaryDirectoryChanger():
+            plotNucXs(self.microLib, "U235AA", "fission", fName=fName)
+            self.assertTrue(os.path.exists(fName))
 
     def test_createMacrosFromMicros(self):
         self.assertEqual(self.mc.minimumNuclideDensity, 1e-13)

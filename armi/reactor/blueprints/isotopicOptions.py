@@ -107,9 +107,7 @@ class NuclideFlag(yamlize.Object):
             self.nuclideName, self.burn, self.xs
         )
 
-    def fileAsActiveOrInert(
-        self, activeSet, inertSet, undefinedBurnChainActiveNuclides
-    ):
+    def fileAsActiveOrInert(self, activeSet, inertSet):
         """
         Given a nuclide or element name, file it as either active or inert.
 
@@ -117,6 +115,7 @@ class NuclideFlag(yamlize.Object):
         rather than the NaturalNuclideBase, as the NaturalNuclideBase will never
         occur in such a problem.
         """
+        undefBurnChainActiveNuclides = set()
         nb = nuclideBases.byName[self.nuclideName]
         if self.expandTo:
             nucBases = [nuclideBases.byName[nn] for nn in self.expandTo]
@@ -129,11 +128,11 @@ class NuclideFlag(yamlize.Object):
             if self.burn:
                 if not nuc.trans and not nuc.decays:
                     # DUMPs and LFPs usually
-                    undefinedBurnChainActiveNuclides.add(nuc.name)
+                    undefBurnChainActiveNuclides.add(nuc.name)
                 activeSet.add(nuc.name)
             if self.xs:
                 inertSet.add(nuc.name)
-        return expanded
+        return expanded, undefBurnChainActiveNuclides
 
 
 class NuclideFlags(yamlize.KeyedList):
@@ -454,9 +453,9 @@ def getDefaultNuclideFlags():
     return nuclideFlags
 
 
-def autoSelectElementsToKeepFromSettings(cs):
+def eleExpandInfoBasedOnCodeENDF(cs):
     """
-    Intelligently choose elements to expand based on settings.
+    Intelligently choose elements to expand based on code and ENDF version.
 
     If settings point to a particular code and library and we know
     that combo requires certain elementals to be expanded, we
@@ -566,7 +565,7 @@ def genDefaultNucFlags():
     return flags
 
 
-def autoUpdateNuclideFlags(cs, nuclideFlags):
+def autoUpdateNuclideFlags(cs, nuclideFlags, inerts):
     """
     This function is responsible for examining the fission product model treatment
     that is selected by the user and adding a set of nuclides to the `nuclideFlags`
@@ -592,8 +591,9 @@ def autoUpdateNuclideFlags(cs, nuclideFlags):
             nuc = nb.name
             if nuc in nuclideFlags or elements.byZ[nb.z] in nuclideFlags:
                 continue
-            nuclideFlag = NuclideFlag(nuc, burn=False, xs=True, expandTo=[])
-            nuclideFlags[nuc] = nuclideFlag
+            nuclideFlags[nuc] = NuclideFlag(nuc, burn=False, xs=True, expandTo=[])
+            # inert since burn is False
+            inerts.add(nuc)
 
 
 def getAllNuclideBasesByLibrary(cs):
