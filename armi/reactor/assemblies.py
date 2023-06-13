@@ -121,7 +121,7 @@ class Assembly(composites.Composite):
         -----
         As with other ArmiObjects, Assemblies are sorted based on location. Assemblies
         are more permissive in the grid consistency checks to accomodate situations
-        where assemblies might be children of the same Reactor, but not in the same grid as
+        where assemblies might be children of the same Core, but not in the same grid as
         each other (as can be the case in the spent fuel pool). In these situations,
         the operator returns ``False``.  This behavior may lead to some strange sorting
         behavior when two or more Assemblies are being compared that do not live in the
