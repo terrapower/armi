@@ -121,7 +121,7 @@ class Assembly(composites.Composite):
         -----
         As with other ArmiObjects, Assemblies are sorted based on location. Assemblies
         are more permissive in the grid consistency checks to accomodate situations
-        where assemblies might be children of the same Core, but not in the same grid as
+        where assemblies might be children of the same Reactor, but not in the same grid as
         each other (as can be the case in the spent fuel pool). In these situations,
         the operator returns ``False``.  This behavior may lead to some strange sorting
         behavior when two or more Assemblies are being compared that do not live in the
@@ -133,7 +133,11 @@ class Assembly(composites.Composite):
         armi.reactor.composites.ArmiObject.__lt__
         """
         try:
-            return composites.ArmiObject.__lt__(self, other)
+            self._validateComparingLocators(other)
+            # this will return interior-most assemblies first which tend to be the most interesting
+            t1 = tuple(self.spatialLocator.getRingPos())
+            t2 = tuple(other.spatialLocator.getRingPos())
+            return t1 < t2
         except ValueError:
             return False
 
