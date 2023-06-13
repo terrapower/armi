@@ -21,6 +21,11 @@ are called armiRun.yaml which is located in armi.tests
 import collections
 import copy
 import unittest
+from armi.tests import mockRunLogs
+from armi.physics.fuelCycle.settings import CONF_RUN_LATTICE_BEFORE_SHUFFLING
+from armi.physics.neutronics.latticePhysics.latticePhysicsInterface import (
+    LatticePhysicsInterface,
+)
 
 import numpy as np
 
@@ -122,7 +127,40 @@ class FuelHandlerTestHelper(ArmiTestHelper):
         self.directoryChanger.close()
 
 
+def getInterfaceMocked(self, name=None, function=None):
+    if name != "latticePhysics":
+        return self.getInterfaceBackup(name, function)
+
+    i = self.getInterfaceBackup("latticePhysics")
+    i.interactBOC = lambda: None
+    return i
+
+
+class MockLatticePhysicsInterface(LatticePhysicsInterface):
+    name = "MockLatticePhysicsInterface"
+
+    def _getExecutablePath(self):
+        return "/mock/"
+
+    def interactBOC(self, cycle=None):
+        pass
+
+
 class TestFuelHandler(FuelHandlerTestHelper):
+    def test_interactBOC(self):
+        # set up mock interface
+        latticePhysicsInterface = MockLatticePhysicsInterface(self.r, self.o.cs)
+        self.o.addInterface(latticePhysicsInterface)
+        # adjust case settings
+        self.o.cs[CONF_RUN_LATTICE_BEFORE_SHUFFLING] = True
+        # run fhi.interactBOC
+        fhi = self.o.getInterface("fuelHandler")
+        with mockRunLogs.BufferLog() as mock:
+            fhi.interactBOC()
+            self.assertIn(
+                "lattice physics before fuel management due to the", mock._outputStream
+            )
+
     def test_findHighBu(self):
         loc = self.r.core.spatialGrid.getLocatorFromRingAndPos(5, 4)
         a = self.r.core.childrenByLocator[loc]
