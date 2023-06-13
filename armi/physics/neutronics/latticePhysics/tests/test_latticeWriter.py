@@ -60,7 +60,7 @@ class TestLatticePhysicsWriter(unittest.TestCase):
     def setUp(self):
         self.o, self.r = loadTestReactor(TEST_ROOT)
         self.cs = self.o.cs
-        self.o.cs[CONF_CROSS_SECTION].setDefaults(
+        self.cs[CONF_CROSS_SECTION].setDefaults(
             self.cs[CONF_XS_BLOCK_REPRESENTATION],
             self.cs[CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION],
         )
@@ -159,7 +159,6 @@ class TestLatticePhysicsWriter(unittest.TestCase):
 
     def test_getDetailedFissionProductsPass(self):
         self.cs[CONF_FP_MODEL] = "noFissionProducts"
-        self.o.cs[CONF_FP_MODEL] = "noFissionProducts"
 
         prods = self.w._getDetailedFissionProducts({})
         self.assertEqual(len(prods), 0)
