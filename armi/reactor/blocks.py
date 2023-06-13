@@ -801,8 +801,13 @@ class Block(composites.Composite):
             bolBlock = self
 
         hmDens = bolBlock.getHMDens()  # total homogenized heavy metal number density
-        self.p.molesHmBOL = self.getHMMoles()
         self.p.nHMAtBOL = hmDens
+
+        self.p.molesHmBOL = self.getHMMoles()
+        self.p.puFrac = (
+            self.getPuMoles() / self.p.molesHmBOL if self.p.molesHmBOL > 0.0 else 0.0
+        )
+
         try:
             # non-pinned reactors (or ones without cladding) will not use smear density
             self.p.smearDensity = self.getSmearDensity()
@@ -811,14 +816,12 @@ class Block(composites.Composite):
         self.p.enrichmentBOL = self.getFissileMassEnrich()
         massHmBOL = 0.0
         sf = self.getSymmetryFactor()
-        for child in self.iterComponents():
-            child.p.massHmBOL = child.getHMMass() * sf  # scale to full block
-            massHmBOL += child.p.massHmBOL
-            self.p.puFrac = (
-                self.getPuMoles() / self.p.molesHmBOL
-                if self.p.molesHmBOL > 0.0
-                else 0.0
-            )
+        for child in self:
+            hmMass = child.getHMMass() * sf
+            massHmBOL += hmMass
+            # Components have a massHmBOL parameter but not every composite will
+            if isinstance(child, components.Component):
+                child.p.massHmBOL = hmMass
         self.p.massHmBOL = massHmBOL
         return hmDens
 
@@ -1250,7 +1253,7 @@ class Block(composites.Composite):
         """
         maxDim = -float("inf")
         largestComponent = None
-        for c in self.iterComponents():
+        for c in self:
             try:
                 dimVal = c.getDimension(dimension)
             except parameters.ParameterError:

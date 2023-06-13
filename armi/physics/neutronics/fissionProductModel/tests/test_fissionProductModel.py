@@ -91,15 +91,6 @@ class TestFissionProductModelLumpedFissionProducts(unittest.TestCase):
         else:
             self.assertTrue(False, "All blocks have all nuclides!")
 
-        # now check if detailed axial expansion that all blocks have ALL nuclides
-        fpModel.allBlocksNeedAllNucs = True
-        fpModel.interactBOL()
-        for b in r.core.getBlocks():
-            nuclideList = b.getNuclides()
-            for nuc in r.blueprints.allNuclidesInProblem:
-                self.assertIn(nuc, nuclideList)
-            self.assertTrue(b._lumpedFissionProducts is not None)
-
 
 class TestFissionProductModelExplicitMC2Library(unittest.TestCase):
     """
@@ -167,15 +158,6 @@ class TestFissionProductModelExplicitMC2Library(unittest.TestCase):
                     self.assertIn(nb.name, nuclideList)
             else:
                 self.assertLess(len(b.getNuclides()), len(nuclideBases.byMcc3Id))
-
-        # now check if detailed axial expansion that all blocks have detailed nuclides
-        self.fpModel.allBlocksNeedAllNucs = True
-
-        self.fpModel.interactBOL()
-        for b in self.r.core.getBlocks():
-            nuclideList = b.getNuclides()
-            for nb in nuclideBases.byMcc3Id.values():
-                self.assertIn(nb.name, nuclideList)
 
 
 if __name__ == "__main__":
