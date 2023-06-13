@@ -1,13 +1,10 @@
 ## What is the change?
 
-<!-- MANDATORY: Include a summary of your change -->
+<!-- MANDATORY: Describe the change -->
 
 ## Why is the change being made?
 
-<!-- MANDATORY: And Link to any related GitHub Issues -->
-
-
-
+<!-- MANDATORY: Explain why the change is necessary -->
 <!-- Optional: Link to any related GitHub Issues -->
 
 
