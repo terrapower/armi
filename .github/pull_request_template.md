@@ -1,6 +1,10 @@
 ## Description
 
-<!-- Mandatory: Include a summary of the change and link to any related GitHub Issues.-->
+<!-- MANDATORY: Include a summary of your change:
+1. What is your change?
+2. Why is your change being made?
+3. Link to any related GitHub Issues
+-->
 
 ---
 
