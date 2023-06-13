@@ -812,7 +812,10 @@ class HexReactorTests(ReactorTests):
         # basic creation
         aOld = self.r.core.getFirstAssembly(Flags.FUEL)
         aNew = self.r.core.createAssemblyOfType(aOld.getType(), cs=self.o.cs)
-        self.assertAlmostEqual(aOld.getMass(), aNew.getMass())
+        self.assertAlmostEqual(
+            aOld.getMass() * aOld.getSymmetryFactor(),
+            aNew.getMass() * aNew.getSymmetryFactor(),
+        )
 
         # test axial mesh alignment
         aNewMesh = aNew.getAxialMesh()

@@ -685,8 +685,8 @@ class TestXSNumberConverters(unittest.TestCase):
 
 def makeBlocks(howMany=20):
     _o, r = test_reactors.loadTestReactor(TEST_ROOT)
-    # shift y 3 to skip central assemblies 1/3 volume
-    return r.core.getBlocks(Flags.FUEL)[3 : howMany + 3]
+    # look at last x (potentialBlocks) assemblies to skip LTAs and center assemblies, which have less fissile mass
+    return = r.core.getBlocks(Flags.FUEL, exact=True)[-howMany:]
 
 
 if __name__ == "__main__":

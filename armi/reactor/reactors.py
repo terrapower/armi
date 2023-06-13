@@ -1149,7 +1149,7 @@ class Core(composites.Composite):
             block.getLocation(): block for block in self.getBlocks(includeAll=True)
         }
 
-    def getBlocks(self, bType=None, **kwargs):
+    def getBlocks(self, bType=None, exact=False, **kwargs):
         """
         Returns an iterator over all blocks in the reactor in order.
 
@@ -1177,7 +1177,7 @@ class Core(composites.Composite):
         """
         blocks = [b for a in self.getAssemblies(**kwargs) for b in a]
         if bType:
-            blocks = [b for b in blocks if b.hasFlags(bType)]
+            blocks = [b for b in blocks if b.hasFlags(bType, exact)]
         return blocks
 
     def getFirstBlock(self, blockType=None, exact=False):
