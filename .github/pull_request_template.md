@@ -1,6 +1,13 @@
-## Description
+## What is the change?
 
-<!-- Mandatory: Include a summary of the change and link to any related GitHub Issues.-->
+<!-- MANDATORY: Describe the change -->
+
+## Why is the change being made?
+
+<!-- MANDATORY: Explain why the change is necessary -->
+<!-- Optional: Link to any related GitHub Issues -->
+
+
 
 ---
 
@@ -9,7 +16,8 @@
 <!--
     You (the pull requester) should put an `x` in the boxes below you have completed.
     If you're unsure about any of them, don't hesitate to ask. We're here to help!
-    Learn what a "good PR" looks like here: https://terrapower.github.io/armi/developer/tooling.html#good-pull-requests
+    Learn what a "good PR" looks like here:
+    https://terrapower.github.io/armi/developer/tooling.html#good-pull-requests
 -->
 
 - [ ] This PR has only one purpose or idea.
