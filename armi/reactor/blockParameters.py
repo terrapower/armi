@@ -102,13 +102,13 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "b10CaptureDensity",
-            units="B10 capture rate per cold cubic centimeter",
+            units="Total B10 captures per cold cubic centimeter",
             description="B10 captures per CC. CC's are of un-irradiated, cold component. Includes n->gamma, n->alpha, etc",
         )
 
         pb.defParam(
             "b10PeakCaptureDensity",
-            units="Spatial peak B10 capture rate per cold cubic centimeter",
+            units="Spatial peak total B10 captures per cold cubic centimeter",
             description="Peak B10 captures per CC (including radial and axial peaking). CC's are of un-irradiated, cold component. Includes n->gamma, n->alpha, etc",
         )
 
