@@ -27,19 +27,20 @@ import math
 
 import numpy
 
+from armi import nuclideBases
 from armi import runLog
 from armi.bookkeeping import report
-from armi import nuclideBases
 from armi.physics.neutronics import GAMMA
 from armi.physics.neutronics import NEUTRON
-from armi.reactor.components import basicShapes
 from armi.reactor import blockParameters
 from armi.reactor import components
-from armi.reactor.components.basicShapes import Hexagon, Circle
 from armi.reactor import composites
 from armi.reactor import geometry
 from armi.reactor import grids
 from armi.reactor import parameters
+from armi.reactor.components import basicShapes
+from armi.reactor.components.basicShapes import Hexagon, Circle
+from armi.reactor.components.complexShapes import Helix
 from armi.reactor.flags import Flags
 from armi.reactor.parameters import ParamLocation
 from armi.utils import densityTools
@@ -800,8 +801,13 @@ class Block(composites.Composite):
             bolBlock = self
 
         hmDens = bolBlock.getHMDens()  # total homogenized heavy metal number density
-        self.p.molesHmBOL = self.getHMMoles()
         self.p.nHMAtBOL = hmDens
+
+        self.p.molesHmBOL = self.getHMMoles()
+        self.p.puFrac = (
+            self.getPuMoles() / self.p.molesHmBOL if self.p.molesHmBOL > 0.0 else 0.0
+        )
+
         try:
             # non-pinned reactors (or ones without cladding) will not use smear density
             self.p.smearDensity = self.getSmearDensity()
@@ -810,14 +816,12 @@ class Block(composites.Composite):
         self.p.enrichmentBOL = self.getFissileMassEnrich()
         massHmBOL = 0.0
         sf = self.getSymmetryFactor()
-        for child in self.iterComponents():
-            child.p.massHmBOL = child.getHMMass() * sf  # scale to full block
-            massHmBOL += child.p.massHmBOL
-            self.p.puFrac = (
-                self.getPuMoles() / self.p.molesHmBOL
-                if self.p.molesHmBOL > 0.0
-                else 0.0
-            )
+        for child in self:
+            hmMass = child.getHMMass() * sf
+            massHmBOL += hmMass
+            # Components have a massHmBOL parameter but not every composite will
+            if isinstance(child, components.Component):
+                child.p.massHmBOL = hmMass
         self.p.massHmBOL = massHmBOL
         return hmDens
 
@@ -1249,7 +1253,7 @@ class Block(composites.Composite):
         """
         maxDim = -float("inf")
         largestComponent = None
-        for c in self.iterComponents():
+        for c in self:
             try:
                 dimVal = c.getDimension(dimension)
             except parameters.ParameterError:
@@ -2211,11 +2215,19 @@ class HexBlock(Block):
                 6 * c.getDimension("ip") / math.sqrt(3) if c else 0.0
             )
 
-        # solid circle = od * pi
-        # NOTE: since these are pin components, multiply by the number of pins
+        # solid circle = NumPins * pi * (Comp Diam + Wire Diam)
         wettedPinPerimeter = 0.0
         for c in wettedPinComponents:
-            wettedPinPerimeter += c.getDimension("od") if c else 0.0
+            correctionFactor = 1.0
+            if isinstance(c, Helix):
+                # account for the helical wire wrap
+                correctionFactor = numpy.hypot(
+                    1.0,
+                    math.pi
+                    * c.getDimension("helixDiameter")
+                    / c.getDimension("axialPitch"),
+                )
+            wettedPinPerimeter += c.getDimension("od") * correctionFactor
         wettedPinPerimeter *= self.getNumPins() * math.pi
 
         # hollow circle = (id + od) * pi

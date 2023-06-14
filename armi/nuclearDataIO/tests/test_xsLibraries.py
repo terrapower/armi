@@ -287,7 +287,7 @@ class Test_GetISOTXSFilesInWorkingDirectory(unittest.TestCase):
         self.assertEqual(set(), container & set(shouldNotBeThere))
 
 
-# LOOK OUT, THIS GETS DELETED LATER ON SO IT DOESN'T RUN... IT IS AN ABSTRACT CLASS!!
+# NOTE: This is just a base class, so it isn't run directly.
 class TestXSlibraryMerging(unittest.TestCase, TempFileMixin):
     """A shared class that defines tests that should be true for all IsotxsLibrary merging."""
 

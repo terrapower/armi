@@ -215,11 +215,12 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
         self.assemblies = {}
         self._prepped = False
         self._assembliesBySpecifier = {}
-        self.allNuclidesInProblem = (
-            ordered_set.OrderedSet()
-        )  # Better for performance since these are used for lookups
+
+        # Better for performance since these are used for lookups
+        self.allNuclidesInProblem = ordered_set.OrderedSet()
         self.activeNuclides = ordered_set.OrderedSet()
         self.inertNuclides = ordered_set.OrderedSet()
+        self.nucsToForceInXsGen = ordered_set.OrderedSet()
         self.elementsToExpand = []
         return self
 
@@ -393,46 +394,47 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
 
         actives = set()
         inerts = set()
-        undefBurnChainActiveNuclides = set()
-        if self.nuclideFlags is None:
-            self.nuclideFlags = isotopicOptions.genDefaultNucFlags()
 
-        isotopicOptions.autoUpdateNuclideFlags(cs, self.nuclideFlags)
+        nuclideFlags = self.nuclideFlags or isotopicOptions.genDefaultNucFlags()
 
+        nucsToForceInXsGen = set()
+        # just expanding flags now. ndense gets expanded in comp blueprints
         self.elementsToExpand = []
-        for nucFlag in self.nuclideFlags:
+        for nucFlag in nuclideFlags:
             # this returns any nuclides that are flagged specifically for expansion by input
-            expandedElements = nucFlag.fileAsActiveOrInert(
-                actives, inerts, undefBurnChainActiveNuclides
+            (
+                expandedElements,
+                undefBurnChainActiveNuclides,
+            ) = nucFlag.fileAsActiveOrInert(
+                actives,
+                inerts,
             )
             self.elementsToExpand.extend(expandedElements)
 
         inerts -= actives
         self.customIsotopics = self.customIsotopics or isotopicOptions.CustomIsotopics()
-        (
-            elementalsToKeep,
-            expansions,
-        ) = isotopicOptions.autoSelectElementsToKeepFromSettings(cs)
+        eleKeep, eleExpand = isotopicOptions.eleExpandInfoBasedOnCodeENDF(cs)
 
         # Flag all elementals for expansion unless they've been flagged otherwise by
         # user input or automatic lattice/datalib rules.
-        for elemental in nuclideBases.instances:
-            if not isinstance(elemental, nuclideBases.NaturalNuclideBase):
+        for nucBase in nuclideBases.instances:
+            isAlreadyIsotopic = not isinstance(nucBase, nuclideBases.NaturalNuclideBase)
+            if isAlreadyIsotopic:
                 # `elemental` may be a NaturalNuclideBase or a NuclideBase
-                # skip all NuclideBases
+                # skip all NuclideBases (isotopics)
                 continue
 
-            if elemental in elementalsToKeep:
+            # we now know its an elemental
+            elemental = nucBase
+            if elemental in eleKeep:
                 continue
 
             if elemental.name in actives:
                 currentSet = actives
-                actives.remove(elemental.name)
             elif elemental.name in inerts:
                 currentSet = inerts
-                inerts.remove(elemental.name)
             else:
-                # This was not specified in the nuclide flags at all.
+                # This was not specified in the nuclide flags at all as burn or xs.
                 # If a material with this in its composition is brought in
                 # it's nice from a user perspective to allow it.
                 # But current behavior is that all nuclides in problem
@@ -442,20 +444,17 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
             self.elementsToExpand.append(elemental.element)
 
             if (
-                elemental.name in self.nuclideFlags
-                and self.nuclideFlags[elemental.name].expandTo
+                elemental.name in nuclideFlags
+                and nuclideFlags[elemental.element.symbol].expandTo
             ):
-                # user-input has precedence
+                # user-input expandTo has precedence
                 newNuclides = [
                     nuclideBases.byName[nn]
-                    for nn in self.nuclideFlags[elemental.element.symbol].expandTo
+                    for nn in nuclideFlags[elemental.element.symbol].expandTo
                 ]
-            elif (
-                elemental in expansions
-                and elemental.element.symbol in self.nuclideFlags
-            ):
-                # code-specific expansion required
-                newNuclides = expansions[elemental]
+            elif elemental in eleExpand and elemental.element.symbol in nuclideFlags:
+                # code-specific expansion required based on code and ENDF
+                newNuclides = eleExpand[elemental]
                 # overlay code details onto nuclideFlags for other parts of the code
                 # that will use them.
                 # TODO: would be better if nuclideFlags did this upon reading s.t.
@@ -465,15 +464,24 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
                 # This must be updated because the operative expansion code just uses the flags
                 #
                 # Also, if this element is not in nuclideFlags at all, we just don't add it
-                self.nuclideFlags[elemental.element.symbol].expandTo = [
+                nuclideFlags[elemental.element.symbol].expandTo = [
                     nb.name for nb in newNuclides
                 ]
             else:
                 # expand to all possible natural isotopics
                 newNuclides = elemental.element.getNaturalIsotopics()
 
+            # remove the elemental and add the isotopic
+            currentSet.remove(elemental.name)
             for nb in newNuclides:
                 currentSet.add(nb.name)
+
+        # force everything asked for in xsGen
+        nucsToForceInXsGen = ordered_set.OrderedSet(sorted(actives.union(inerts)))
+
+        # add all detailed isotopes in ENDF if requested
+        isotopicOptions.autoUpdateNuclideFlags(cs, nuclideFlags, inerts)
+        self.nuclideFlags = nuclideFlags
 
         if self.elementsToExpand:
             runLog.info(
@@ -487,6 +495,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
         self.allNuclidesInProblem = ordered_set.OrderedSet(
             sorted(actives.union(inerts))
         )
+        self.nucsToForceInXsGen = ordered_set.OrderedSet(sorted(nucsToForceInXsGen))
 
         # Inform user which nuclides are truncating the burn chain.
         if undefBurnChainActiveNuclides and nuclideBases.burnChainImposed:
