@@ -345,6 +345,7 @@ class TestGlobalFluxResultMapper(unittest.TestCase):
         factor = mapper.getBurnupPeakingFactor(b)
         self.assertEqual(factor, 0.0)
 
+
 class TestGlobalFluxUtils(unittest.TestCase):
     def test_calcReactionRates(self):
         """
