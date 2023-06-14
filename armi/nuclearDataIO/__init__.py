@@ -22,6 +22,7 @@ from armi.physics import neutronics
 # though prefer full imports in new code
 from .cccc import (
     compxs,
+    dif3d,
     dlayxs,
     fixsrc,
     gamiso,
