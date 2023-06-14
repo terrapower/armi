@@ -322,6 +322,32 @@ class HexReactorTests(ReactorTests):
         )
         self.assertEqual(numControlBlocks, 3)
 
+    def test_setB10VolOnCreation(self):
+        """test the setting of b.p.coldFreshB10Vol"""
+        for controlBlock in self.r.core.getBlocks(Flags.CONTROL):
+            controlComps = [c for c in controlBlock if c.getNumberDensity("B10") > 0]
+            self.assertEqual(len(controlComps), 1)
+            controlComp = controlComps[0]
+
+            startingVol = controlBlock.p.coldFreshB10Vol
+            self.assertGreater(startingVol, 0)
+            self.assertAlmostEqual(
+                controlComp.getArea(cold=True) * controlBlock.getHeight(), startingVol
+            )
+
+            # input temp is same as hot temp, so change input temp to test that behavior
+            controlComp.inputTemperatureInC = 30
+
+            # somewhat non-sensical since its hot, not cold but we just want to check the ratio
+            controlBlock.setB10VolParam(True)
+
+            self.assertGreater(startingVol, controlBlock.p.coldFreshB10Vol)
+
+            self.assertAlmostEqual(
+                startingVol / controlComp.getThermalExpansionFactor(),
+                controlBlock.p.coldFreshB10Vol,
+            )
+
     def test_countFuelAxialBlocks(self):
         """Tests that the users definition of fuel blocks is preserved.
 

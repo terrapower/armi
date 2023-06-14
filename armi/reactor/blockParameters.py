@@ -95,6 +95,30 @@ def getBlockParameterDefinitions():
         )
 
         pb.defParam(
+            "coldFreshB10Vol",
+            units="cubic centimeters",
+            description="CC's of un-irradiated, cold B10 component volume",
+        )
+
+        pb.defParam(
+            "b10CapturesPerCcCold",
+            units="B10 capture rate per cubic centimeter",
+            description="B10 captures per CC. CC's are of un-irradiated, cold component. Includes n->gamma, n->alpha, etc",
+        )
+
+        pb.defParam(
+            "b10PeakCapturesPerCcCold",
+            units="Peak B10 capture rate per cubic centimeter",
+            description="Peak B10 captures per CC. CC's are of un-irradiated, cold component. Includes n->gamma, n->alpha, etc",
+        )
+
+        pb.defParam(
+            "b10CaptureRatePerCcCold",
+            units="B10 capture rate per cubic centimeter per second",
+            description="B10 captures per CC per sec. CC's are of un-irradiated, cold component. Includes n->gamma, n->alpha, etc",
+        )
+
+        pb.defParam(
             "molesHmBOLByPin",
             units="mole",
             description="Total number of atoms of heavy metal at BOL",

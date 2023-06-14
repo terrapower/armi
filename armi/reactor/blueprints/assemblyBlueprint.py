@@ -31,6 +31,7 @@ from armi.reactor.flags import Flags
 from armi.reactor import parameters
 from armi.reactor.blueprints import blockBlueprint
 from armi.reactor import grids
+from armi.settings.fwSettings.globalSettings import CONF_INPUT_HEIGHTS_HOT
 
 
 def _configureAssemblyTypes():
@@ -177,10 +178,11 @@ class AssemblyBlueprint(yamlize.Object):
 
         # loop a second time because we needed all the blocks before choosing the
         # assembly class.
-        for axialIndex, block in enumerate(blocks):
-            b.p.assemNum = a.p.assemNum
+        for axialIndex, b in enumerate(blocks):
             b.name = b.makeName(a.p.assemNum, axialIndex)
-            a.add(block)
+            a.add(b)
+            # set b10 volume cc since its a cold dim param
+            b.setB10VolParam(cs[CONF_INPUT_HEIGHTS_HOT])
 
         # Assign values for the parameters if they are defined on the blueprints
         for paramDef in a.p.paramDefs.inCategory(

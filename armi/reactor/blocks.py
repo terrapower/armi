@@ -1650,6 +1650,41 @@ class HexBlock(Block):
         duct = self.getComponent(Flags.DUCT, exact=True)
         return duct.getDimension("op")
 
+    def setB10VolParam(self, heightHot):
+        """Set the b.p.coldFreshB10Vol param according to the volume of boron-10 containing components."""
+        b10Comps = []
+        potentialC = None
+        for c in self:
+            if c.getNumberDensity("B10"):
+                potentialC = c
+                b10Comps.append(potentialC)
+                tHot = potentialC.temperatureInC
+                tCold = potentialC.inputTemperatureInC
+                mat = potentialC.material
+        if potentialC is None:
+            return
+
+        # calc volume of boron components
+        area = 0.0
+        for c in b10Comps:
+            if (
+                tHot != c.temperatureInC
+                or tCold != c.inputTemperatureInC
+                or mat != c.material
+            ):
+                runLog.warning(
+                    f"More than 1 component found  in {b.name} with different B10 material"
+                    f" or temperature, using {potentialC} params",
+                    single=True,
+                )
+            area += c.getArea(cold=True)
+
+        volume = area * self.getHeight()
+        if heightHot:
+            self.p.coldFreshB10Vol = volume / potentialC.getThermalExpansionFactor()
+        else:
+            self.p.coldFreshB10Vol = volume
+
     def initializePinLocations(self):
         nPins = self.getNumPins()
         self.p.pinLocation = list(range(1, nPins + 1))
