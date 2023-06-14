@@ -23,17 +23,22 @@ import copy
 import unittest
 
 import numpy as np
-
 from armi.physics.fuelCycle import fuelHandlers, settings
-from armi.physics.fuelCycle.settings import CONF_ASSEM_ROTATION_STATIONARY
-from armi.physics.fuelCycle.settings import CONF_PLOT_SHUFFLE_ARROWS
+from armi.physics.fuelCycle.settings import (
+    CONF_ASSEM_ROTATION_STATIONARY,
+    CONF_PLOT_SHUFFLE_ARROWS,
+    CONF_RUN_LATTICE_BEFORE_SHUFFLING,
+)
+from armi.physics.neutronics.crossSectionGroupManager import CrossSectionGroupManager
+from armi.physics.neutronics.latticePhysics.latticePhysicsInterface import (
+    LatticePhysicsInterface,
+)
 from armi.reactor import assemblies, blocks, components, grids
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
 from armi.settings import caseSettings
-from armi.tests import ArmiTestHelper, TEST_ROOT
+from armi.tests import TEST_ROOT, ArmiTestHelper, mockRunLogs
 from armi.utils import directoryChangers
-from armi.tests import mockRunLogs
 
 
 class FuelHandlerTestHelper(ArmiTestHelper):
@@ -122,7 +127,41 @@ class FuelHandlerTestHelper(ArmiTestHelper):
         self.directoryChanger.close()
 
 
+class MockLatticePhysicsInterface(LatticePhysicsInterface):
+    """a mock lattice physics interface that does nothing for interactBOC"""
+
+    name = "MockLatticePhysicsInterface"
+
+    def _getExecutablePath(self):
+        return "/mock/"
+
+    def interactBOC(self, cycle=None):
+        pass
+
+
+class MockXSGM(CrossSectionGroupManager):
+    """a mock cross section group manager that does nothing for interactBOC"""
+
+    def interactBOC(self, cycle=None):
+        pass
+
+
 class TestFuelHandler(FuelHandlerTestHelper):
+    def test_interactBOC(self):
+        # set up mock interface
+        self.o.addInterface(MockLatticePhysicsInterface(self.r, self.o.cs))
+        self.o.removeInterface(interfaceName="xsGroups")
+        self.o.addInterface(MockXSGM(self.r, self.o.cs))
+        # adjust case settings
+        self.o.cs[CONF_RUN_LATTICE_BEFORE_SHUFFLING] = True
+        # run fhi.interactBOC
+        fhi = self.o.getInterface("fuelHandler")
+        with mockRunLogs.BufferLog() as mock:
+            fhi.interactBOC()
+            self.assertIn(
+                "lattice physics before fuel management due to the", mock._outputStream
+            )
+
     def test_findHighBu(self):
         loc = self.r.core.spatialGrid.getLocatorFromRingAndPos(5, 4)
         a = self.r.core.childrenByLocator[loc]
