@@ -21,24 +21,24 @@ are called armiRun.yaml which is located in armi.tests
 import collections
 import copy
 import unittest
-from armi.tests import mockRunLogs
-from armi.physics.fuelCycle.settings import CONF_RUN_LATTICE_BEFORE_SHUFFLING
+
+import numpy as np
+from armi.physics.fuelCycle import fuelHandlers, settings
+from armi.physics.fuelCycle.settings import (
+    CONF_ASSEM_ROTATION_STATIONARY,
+    CONF_PLOT_SHUFFLE_ARROWS,
+    CONF_RUN_LATTICE_BEFORE_SHUFFLING,
+)
+from armi.physics.neutronics.crossSectionGroupManager import CrossSectionGroupManager
 from armi.physics.neutronics.latticePhysics.latticePhysicsInterface import (
     LatticePhysicsInterface,
 )
-
-import numpy as np
-
-from armi.physics.fuelCycle import fuelHandlers, settings
-from armi.physics.fuelCycle.settings import CONF_ASSEM_ROTATION_STATIONARY
-from armi.physics.fuelCycle.settings import CONF_PLOT_SHUFFLE_ARROWS
 from armi.reactor import assemblies, blocks, components, grids
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
 from armi.settings import caseSettings
-from armi.tests import ArmiTestHelper, TEST_ROOT
+from armi.tests import TEST_ROOT, ArmiTestHelper, mockRunLogs
 from armi.utils import directoryChangers
-from armi.tests import mockRunLogs
 
 
 class FuelHandlerTestHelper(ArmiTestHelper):
@@ -139,11 +139,19 @@ class MockLatticePhysicsInterface(LatticePhysicsInterface):
         pass
 
 
+class MockXSGM(CrossSectionGroupManager):
+    """a mock cross section group manager that does nothing for interactBOC"""
+
+    def interactBOC(self, cycle=None):
+        pass
+
+
 class TestFuelHandler(FuelHandlerTestHelper):
     def test_interactBOC(self):
         # set up mock interface
-        latticePhysicsInterface = MockLatticePhysicsInterface(self.r, self.o.cs)
-        self.o.addInterface(latticePhysicsInterface)
+        self.o.addInterface(MockLatticePhysicsInterface(self.r, self.o.cs))
+        self.o.removeInterface(interfaceName="xsGroups")
+        self.o.addInterface(MockXSGM(self.r, self.o.cs))
         # adjust case settings
         self.o.cs[CONF_RUN_LATTICE_BEFORE_SHUFFLING] = True
         # run fhi.interactBOC
