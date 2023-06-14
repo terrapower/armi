@@ -12,6 +12,7 @@ What's new in ARMI
 #. Added ``Composite.sort()`` to allow the user to recursively sort any piece of the ``Reactor``. (`PR#1280 <https://github.com/terrapower/armi/pull/1280>`_)
 #  Revert "when using non-uniform mesh, detailed fission/activation products have cross sections generated to avoid blocks without xs data" and move capability to lattice physics (`PR#1280 <https://github.com/terrapower/armi/pull/1298>`_)
 #. Add interactCoupled method for snapshotInterface (`PR#1294 <https://github.com/terrapower/armi/pull/1294>`_)
+#. Move cross section group manager interface stack position to be just before lattice physics. (`PR#1288 <https://github.com/terrapower/armi/pull/1288>`_)
 
 Bug fixes
 ---------
