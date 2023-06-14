@@ -68,7 +68,7 @@ from armi.reactor.flags import Flags
 from armi.utils.units import TRACE_NUMBER_DENSITY
 from armi.physics.neutronics import LatticePhysicsFrequency
 
-ORDER = interfaces.STACK_ORDER.BEFORE + interfaces.STACK_ORDER.FUEL_MANAGEMENT
+ORDER = interfaces.STACK_ORDER.BEFORE + interfaces.STACK_ORDER.CROSS_SECTIONS
 
 
 def describeInterfaces(cs):
