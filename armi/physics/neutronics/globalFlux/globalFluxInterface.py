@@ -749,6 +749,8 @@ class GlobalFluxResultMapper(interfaces.OutputReader):
             burnupPeakingFactor = b.p.fluxPeak / b.p.flux
         elif not burnupPeakingFactor:
             # no peak available. Finite difference model?
+            # Use 0.0 for peaking so that there isn't misuse of peaking values that don't actually have peaking applied.
+            # Uet self.cs["burnupPeakingFactor"] or b.p.fluxPeak for different behavior
             burnupPeakingFactor = 0.0
 
         return burnupPeakingFactor
