@@ -323,13 +323,13 @@ class HexReactorTests(ReactorTests):
         self.assertEqual(numControlBlocks, 3)
 
     def test_setB10VolOnCreation(self):
-        """test the setting of b.p.coldFreshB10Vol"""
+        """test the setting of b.p.initialB10ComponentVol"""
         for controlBlock in self.r.core.getBlocks(Flags.CONTROL):
             controlComps = [c for c in controlBlock if c.getNumberDensity("B10") > 0]
             self.assertEqual(len(controlComps), 1)
             controlComp = controlComps[0]
 
-            startingVol = controlBlock.p.coldFreshB10Vol
+            startingVol = controlBlock.p.initialB10ComponentVol
             self.assertGreater(startingVol, 0)
             self.assertAlmostEqual(
                 controlComp.getArea(cold=True) * controlBlock.getHeight(), startingVol
@@ -341,11 +341,11 @@ class HexReactorTests(ReactorTests):
             # somewhat non-sensical since its hot, not cold but we just want to check the ratio
             controlBlock.setB10VolParam(True)
 
-            self.assertGreater(startingVol, controlBlock.p.coldFreshB10Vol)
+            self.assertGreater(startingVol, controlBlock.p.initialB10ComponentVol)
 
             self.assertAlmostEqual(
                 startingVol / controlComp.getThermalExpansionFactor(),
-                controlBlock.p.coldFreshB10Vol,
+                controlBlock.p.initialB10ComponentVol,
             )
 
     def test_countFuelAxialBlocks(self):

@@ -1651,7 +1651,7 @@ class HexBlock(Block):
         return duct.getDimension("op")
 
     def setB10VolParam(self, heightHot):
-        """Set the b.p.coldFreshB10Vol param according to the volume of boron-10 containing components."""
+        """Set the b.p.initialB10ComponentVol param according to the volume of boron-10 containing components."""
         b10Comps = []
         potentialC = None
         for c in self:
@@ -1681,9 +1681,11 @@ class HexBlock(Block):
 
         volume = area * self.getHeight()
         if heightHot:
-            self.p.coldFreshB10Vol = volume / potentialC.getThermalExpansionFactor()
+            self.p.initialB10ComponentVol = (
+                volume / potentialC.getThermalExpansionFactor()
+            )
         else:
-            self.p.coldFreshB10Vol = volume
+            self.p.initialB10ComponentVol = volume
 
     def initializePinLocations(self):
         nPins = self.getNumPins()
