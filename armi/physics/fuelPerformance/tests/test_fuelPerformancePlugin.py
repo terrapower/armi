@@ -21,7 +21,3 @@ from armi.tests.test_plugins import TestPlugin
 
 class TestFuelPerformancePlugin(TestPlugin):
     plugin = FuelPerformancePlugin
-
-
-if __name__ == "__main__":
-    unittest.main()

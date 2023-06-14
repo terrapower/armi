@@ -112,7 +112,3 @@ class TestHexAssemMgmtTools(ArmiTestHelper):
         )
         self.assertEqual(schedule, [9, 8, 7, 4, 5, 6, 3, 2, 1])
         self.assertEqual(widths, zeroWidths)
-
-
-if __name__ == "__main__":
-    unittest.main()

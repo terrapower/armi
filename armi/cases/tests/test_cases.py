@@ -619,7 +619,3 @@ class TestCopyInterfaceInputs(unittest.TestCase):
                 cs, destination=newDir.destination
             )
             self.assertEqual(str(newSettings[testSetting]), absFile)
-
-
-if __name__ == "__main__":
-    unittest.main()

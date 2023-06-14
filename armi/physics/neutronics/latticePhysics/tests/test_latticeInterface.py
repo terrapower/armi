@@ -288,7 +288,3 @@ class TestLatticePhysicsLibraryCreation(TestLatticePhysicsInterfaceBase):
         )
         self.assembly[0].p.xsType = "B"
         return self.latticeInterface._getBlocksAndXsIds()
-
-
-if __name__ == "__main__":
-    unittest.main()

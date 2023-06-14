@@ -181,7 +181,3 @@ class NuclideTests(unittest.TestCase):
             ref_FissionXS = u235Nuc.micros.fission[i]
             cur_FissionXS = u235Nuc.getMicroXS("fission", i)
             self.assertAlmostEqual(ref_FissionXS, cur_FissionXS)
-
-
-if __name__ == "__main__":
-    unittest.main()

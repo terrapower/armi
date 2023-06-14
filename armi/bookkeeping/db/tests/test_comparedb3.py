@@ -303,7 +303,3 @@ class TestCompareDB3(unittest.TestCase):
             # there should be no difference
             _compareAuxData(out, refData, srcData, dr)
             self.assertEqual(dr.nDiffs(), 0)
-
-
-if __name__ == "__main__":
-    unittest.main()

@@ -73,7 +73,3 @@ class TestPlugin(unittest.TestCase):
             self.assertIsInstance(order, (int, float))
             self.assertTrue(issubclass(interface, interfaces.Interface))
             self.assertIsInstance(kwargs, dict)
-
-
-if __name__ == "__main__":
-    unittest.main()

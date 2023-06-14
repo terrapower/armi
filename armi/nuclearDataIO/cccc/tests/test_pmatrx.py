@@ -239,7 +239,3 @@ class TestProductionMatrix_FromWrittenAscii(TestPmatrx):
 
     def tearDown(self):
         self.td.__exit__(None, None, None)
-
-
-if __name__ == "__main__":
-    unittest.main()

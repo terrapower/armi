@@ -263,7 +263,3 @@ class Test_Air(unittest.TestCase):
         tc0 = air.thermalConductivity(Tk=201)
         tcf = air.thermalConductivity(Tk=849)
         self.assertGreater(tcf, tc0)
-
-
-if __name__ == "__main__":
-    unittest.main()

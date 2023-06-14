@@ -99,8 +99,3 @@ class MassConservationTests(unittest.TestCase):
 
         adjustSmearDensity(self.b, 0.733, bolBlock=bolBlock)
         self.assertAlmostEqual(0.733, self.b.getSmearDensity(), 8)
-
-
-if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'Test.testName']
-    unittest.main()

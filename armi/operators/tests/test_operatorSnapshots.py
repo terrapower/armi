@@ -98,7 +98,3 @@ class TestOperatorSnapshotsSettings(unittest.TestCase):
         cs = cs.modified(newSettings={"runType": RunTypes.SNAPSHOTS})
         clazz = getOperatorClassFromSettings(cs)
         self.assertEqual(clazz, OperatorSnapshots)
-
-
-if __name__ == "__main__":
-    unittest.main()

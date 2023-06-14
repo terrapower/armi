@@ -253,7 +253,3 @@ class TestFullCoreModifier(unittest.TestCase):
         self.assertEqual(case.bp.gridDesigns["core"].symmetry, "third periodic")
         case, case.bp, _ = mod(case, case.bp, None)
         self.assertEqual(case.bp.gridDesigns["core"].symmetry, "full")
-
-
-if __name__ == "__main__":
-    unittest.main()

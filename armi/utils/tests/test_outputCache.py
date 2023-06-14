@@ -128,7 +128,3 @@ class TestOutputCache(unittest.TestCase):
                 fakeExe, inputPaths, cacheDir, newFolder
             )
             self.assertFalse(result)
-
-
-if __name__ == "__main__":
-    unittest.main()

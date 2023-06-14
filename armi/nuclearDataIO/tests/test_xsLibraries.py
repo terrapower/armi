@@ -541,7 +541,3 @@ class Combined_merge_Tests(unittest.TestCase):
 
 # Remove the abstract class, so that it does not run (all tests would fail)
 del TestXSlibraryMerging
-
-
-if __name__ == "__main__":
-    unittest.main()

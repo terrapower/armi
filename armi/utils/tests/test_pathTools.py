@@ -141,7 +141,3 @@ class PathToolsTests(unittest.TestCase):
                 f1.write("test")
 
             self.assertTrue(pathTools.isAccessible(path1))
-
-
-if __name__ == "__main__":
-    unittest.main()

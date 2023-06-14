@@ -60,7 +60,3 @@ class TestArmiTestHelper(ArmiTestHelper):
         self.compareFilesLineByLine(
             self.goodFilePath, self.badFilePath, falseNegList=["NEGATIVE"]
         )
-
-
-if __name__ == "_main__":
-    unittest.main()

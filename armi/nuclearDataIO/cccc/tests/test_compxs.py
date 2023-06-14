@@ -327,7 +327,3 @@ class TestCompxs(unittest.TestCase):
             nuclearDataIO.getExpectedCOMPXSFileName(cycle=23), "COMPXS-c23"
         )
         self.assertEqual(nuclearDataIO.getExpectedCOMPXSFileName(), "COMPXS")
-
-
-if __name__ == "__main__":
-    unittest.main()

@@ -50,7 +50,3 @@ class ImmutablePropertyTests(unittest.TestCase):
         with self.assertRaises(properties.ImmutablePropertyError):
             ic.initialize(3.4)
         self.assertEqual(ic.myNum, 7.7)
-
-
-if __name__ == "__main__":
-    unittest.main()

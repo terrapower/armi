@@ -235,8 +235,3 @@ class TestHistoryTrackerNoModel(unittest.TestCase):
             ),  # pylint:disable=protected-access
             "{}-blockName7-bHist.txt".format(self.history.cs.caseTitle),
         )
-
-
-if __name__ == "__main__":
-    # import sys;sys.argv = ["", "TestHistoryTracker.test_historyReport"]
-    unittest.main()

@@ -335,8 +335,3 @@ assemblies:
         expectedNuclides = ["TH232"]
         for nuc in expectedNuclides:
             self.assertIn(nuc, a[0][0].getNuclides())
-
-
-if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'TestComponentBlueprint.test_componentInitializationAmericiumCustomIsotopics']
-    unittest.main()

@@ -301,12 +301,3 @@ class MpiPathToolsTests(unittest.TestCase):
             pathTools.cleanPath(dir3, mpiRank=context.MPI_RANK)
             MPI_COMM.barrier()
             self.assertFalse(os.path.exists(dir3))
-
-
-if __name__ == "__main__":
-    # these tests must be run from the command line using MPI:
-    #
-    # mpiexec -n 2 python -m pytest armi/tests/test_mpiFeatures.py
-    # or
-    # mpiexec.exe -n 2 python -m pytest armi/tests/test_mpiFeatures.py
-    pass

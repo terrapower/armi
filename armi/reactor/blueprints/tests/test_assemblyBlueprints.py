@@ -202,7 +202,3 @@ assemblies:
 
         with self.assertRaises(ValueError):
             a = self.loadCustomAssembly(self.twoBlockInput_wrongMatMods)
-
-
-if __name__ == "__main__":
-    unittest.main()

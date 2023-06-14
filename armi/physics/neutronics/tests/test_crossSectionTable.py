@@ -57,7 +57,3 @@ class TestCrossSectionTable(unittest.TestCase):
 
         self.assertEqual(len(aid.getToDeplete()), 0)
         self.assertEqual(ORDER, 5.0)
-
-
-if __name__ == "__main__":
-    unittest.main()
