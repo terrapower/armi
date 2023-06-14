@@ -127,16 +127,9 @@ class FuelHandlerTestHelper(ArmiTestHelper):
         self.directoryChanger.close()
 
 
-def getInterfaceMocked(self, name=None, function=None):
-    if name != "latticePhysics":
-        return self.getInterfaceBackup(name, function)
-
-    i = self.getInterfaceBackup("latticePhysics")
-    i.interactBOC = lambda: None
-    return i
-
-
 class MockLatticePhysicsInterface(LatticePhysicsInterface):
+    """a mock lattice physics interface that does nothing for interactBOC"""
+
     name = "MockLatticePhysicsInterface"
 
     def _getExecutablePath(self):
