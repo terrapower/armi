@@ -1680,7 +1680,7 @@ class HexBlock(Block):
             coldArea += c.getArea(cold=True)
 
         coldFactor = potentialC.getThermalExpansionFactor() if heightHot else 1
-        coldHeight = b.getHeight() / coldFactor
+        coldHeight = self.getHeight() / coldFactor
         self.p.initialB10ComponentVol = coldArea * coldHeight
 
     def initializePinLocations(self):
