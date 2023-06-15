@@ -286,6 +286,13 @@ def getBlockParameterDefinitions():
         )
 
         pb.defParam(
+            "buRatePeak",
+            units="%FIMA/day spatial peak",
+            # This is very related to power, but normalized to %FIMA.
+            description=("Current rate of burnup accumulation at peak location"),
+        )
+
+        pb.defParam(
             "detailedDpa",
             units="dpa",
             description="displacements per atom",
