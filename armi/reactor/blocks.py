@@ -1197,7 +1197,7 @@ class Block(composites.Composite):
                 or mat != c.material
             ):
                 runLog.warning(
-                    f"More than 1 component found  in {b.name} with different B10 material"
+                    f"More than 1 component found  in {self.name} with different B10 material"
                     f" or temperature, using {potentialC} params",
                     single=True,
                 )
