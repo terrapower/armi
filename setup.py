@@ -93,7 +93,7 @@ setup(
             "pytest-cov",
             "pytest-html",
             "pytest-xdist",
-            "ruff==0.0.252",
+            "ruff==0.0.272",
             "sphinx",
             "sphinx-gallery",
             "sphinx-rtd-theme",
