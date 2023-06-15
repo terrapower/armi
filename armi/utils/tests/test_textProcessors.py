@@ -101,7 +101,3 @@ X  Y  0.0"""
         with textProcessors.SequentialReader(self._DUMMY_FILE_NAME) as sr:
             self.assertTrue(sr.searchForPattern("(X\s+Y\s+\d+\.\d+)"))
             self.assertEqual(float(sr.line.split()[2]), 3.5)
-
-
-if __name__ == "__main__":
-    unittest.main()

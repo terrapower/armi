@@ -47,7 +47,3 @@ class TestRunSuiteSuite(unittest.TestCase):
 
         self.assertIn("armi", out.getvalue())
         self.assertIn(meta.__version__, out.getvalue())
-
-
-if __name__ == "__main__":
-    unittest.main()

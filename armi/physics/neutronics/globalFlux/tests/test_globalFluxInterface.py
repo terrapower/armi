@@ -355,7 +355,3 @@ def applyDummyFlux(r, ng=33):
     for b in r.core.getBlocks():
         b.p.power = 1.0
         b.p.mgFlux = numpy.arange(ng, dtype=numpy.float64)
-
-
-if __name__ == "__main__":
-    unittest.main()

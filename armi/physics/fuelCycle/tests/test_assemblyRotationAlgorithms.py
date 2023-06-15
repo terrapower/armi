@@ -19,8 +19,6 @@ Notes
 These algorithms are defined in assemblyRotationAlgorithms.py, but they are used in:
 ``FuelHandler.outage()``.
 """
-import unittest
-
 from armi.physics.fuelCycle import assemblyRotationAlgorithms as rotAlgos
 from armi.physics.fuelCycle import fuelHandlers
 from armi.physics.fuelCycle.settings import CONF_ASSEM_ROTATION_STATIONARY
@@ -62,7 +60,3 @@ class TestFuelHandlerMgmtTools(FuelHandlerTestHelper):
         rotAlgos.simpleAssemblyRotation(fh)
         rotAlgos.simpleAssemblyRotation(fh)
         self.assertEqual(b.getRotationNum(), rotNum + 2)
-
-
-if __name__ == "__main__":
-    unittest.main()

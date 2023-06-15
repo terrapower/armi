@@ -14,9 +14,9 @@
 """Test densityTools."""
 import unittest
 
-from armi.utils import densityTools
-from armi.nucDirectory import elements, nuclideBases
 from armi.materials.uraniumOxide import UO2
+from armi.nucDirectory import elements, nuclideBases
+from armi.utils import densityTools
 
 
 class Test_densityTools(unittest.TestCase):
@@ -179,7 +179,3 @@ class Test_densityTools(unittest.TestCase):
         )
         refMatCard = []
         self.assertEqual(refMatCard, matCard)
-
-
-if __name__ == "__main__":
-    unittest.main()

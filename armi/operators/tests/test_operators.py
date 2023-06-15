@@ -410,7 +410,3 @@ class TestInterfaceAndEventHeaders(unittest.TestCase):
             ),
             f" - cycle {cycle}, node {timeNode}",
         )
-
-
-if __name__ == "__main__":
-    unittest.main()

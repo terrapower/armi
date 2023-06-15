@@ -206,7 +206,3 @@ class Test_Water(unittest.TestCase):
 
         steam = SaturatedSteam()
         self.assertEqual(len(steam.propertyValidTemperature), 0)
-
-
-if __name__ == "__main__":
-    unittest.main()

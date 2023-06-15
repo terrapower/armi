@@ -73,7 +73,3 @@ class TestDocHelpers(unittest.TestCase):
         self.assertIn("width: 250", table)
         self.assertIn("widths: [200, 300]", table)
         self.assertIn("thing", table)
-
-
-if __name__ == "__main__":
-    unittest.main()

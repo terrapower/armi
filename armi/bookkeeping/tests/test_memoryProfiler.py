@@ -160,7 +160,3 @@ class KlassCounterTests(unittest.TestCase):
         self.assertEqual(counter[dict].count, 2)
         self.assertEqual(counter[tuple].count, 2)
         self.assertEqual(counter[int].count, 7)
-
-
-if __name__ == "__main__":
-    unittest.main()

@@ -392,8 +392,3 @@ def buildControlBlockWithLinkedNegativeAreaComponent():
     b.getVolumeFractions()  # TODO: remove, should be no-op when removed self.cached
 
     return b
-
-
-if __name__ == "__main__":
-    #     import sys;sys.argv = ['', 'TestBlockConverter.test_convertHexWithFuelDriver']
-    unittest.main()

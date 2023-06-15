@@ -355,7 +355,3 @@ class TestVisFileEntryPointCommand(unittest.TestCase):
 
         self.assertEqual(vf.name, "vis-file")
         self.assertIsNone(vf.settingsArgument)
-
-
-if __name__ == "__main__":
-    unittest.main()

@@ -155,7 +155,3 @@ class TestReportContentCreation(unittest.TestCase):
             env.writeHTML()
             self.assertIn("Writing HTML document", mock.getStdout())
             self.assertIn("[info] HTML document", mock.getStdout())
-
-
-if __name__ == "__main__":
-    unittest.main()

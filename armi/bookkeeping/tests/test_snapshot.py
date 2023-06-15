@@ -83,7 +83,3 @@ class TestSnapshotInterface(unittest.TestCase):
 
         self.si.activateDefaultSnapshots()
         self.assertEqual(["000000", "008000", "016005"], self.si.cs["dumpSnapshot"])
-
-
-if __name__ == "__main__":
-    unittest.main()

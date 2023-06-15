@@ -711,7 +711,3 @@ class TestUniformMeshNonUniformAssemFlags(unittest.TestCase):
             for b in a:
                 self.assertTrue(b.p.rateCap)
                 self.assertTrue(b.p.rateAbs)
-
-
-if __name__ == "__main__":
-    unittest.main()

@@ -49,8 +49,3 @@ class CartesianReactorTests(unittest.TestCase):
         self.assertEqual(self.r.core.geomType, geometry.GeomType.CARTESIAN)
         # from blueprints input file
         self.assertAlmostEqual(custom.getNumberDensity("U238"), 0.0134125)
-
-
-if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'Test.testName']
-    unittest.main()

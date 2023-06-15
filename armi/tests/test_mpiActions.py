@@ -237,7 +237,3 @@ class QueueActionsTests(unittest.TestCase):
 def passer():
     """Helper function, to do nothing, for unit tests."""
     pass
-
-
-if __name__ == "__main__":
-    unittest.main()

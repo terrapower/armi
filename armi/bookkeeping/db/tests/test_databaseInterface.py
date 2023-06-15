@@ -496,7 +496,3 @@ class TestStandardFollowOn(unittest.TestCase):
                         firstEndTime, o.r.p.time
                     ),
                 )
-
-
-if __name__ == "__main__":
-    unittest.main()

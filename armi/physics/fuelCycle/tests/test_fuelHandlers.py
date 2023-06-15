@@ -806,7 +806,3 @@ class TestFuelPlugin(unittest.TestCase):
 def addSomeDetailAssemblies(hist, assems):
     for a in assems:
         hist.detailAssemblyNames.append(a.getName())
-
-
-if __name__ == "__main__":
-    unittest.main()

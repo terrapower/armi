@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests some fuel handling tools, specific to hex-assembly reactors."""
-import unittest
-
 from armi.physics.fuelCycle import hexAssemblyFuelMgmtUtils as hexUtils
 from armi.reactor.tests import test_reactors
 from armi.tests import ArmiTestHelper, TEST_ROOT
@@ -109,7 +107,3 @@ class TestHexAssemMgmtTools(ArmiTestHelper):
         )
         self.assertEqual(schedule, [9, 8, 7, 4, 5, 6, 3, 2, 1])
         self.assertEqual(widths, zeroWidths)
-
-
-if __name__ == "__main__":
-    unittest.main()

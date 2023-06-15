@@ -1917,7 +1917,3 @@ assemblies:
             class2_custom_isotopics: [fakeIsotopic]
         """
             )
-
-
-if __name__ == "__main__":
-    unittest.main()

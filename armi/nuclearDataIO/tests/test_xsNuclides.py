@@ -195,7 +195,3 @@ class NuclideTests(unittest.TestCase):
         self.assertAlmostEqual(len(refFission), len(curFission))
         self.assertAlmostEqual(refFission[0], curFission[0])
         self.assertAlmostEqual(refFission[1], curFission[1])
-
-
-if __name__ == "__main__":
-    unittest.main()

@@ -131,7 +131,3 @@ class TestBlueprintModifiers(unittest.TestCase):
         self.assertEqual(
             1.05, bp.blockDesigns["block 5"]["clad"].id
         )  # modifies all blocks
-
-
-if __name__ == "__main__":
-    unittest.main()

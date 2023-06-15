@@ -381,7 +381,3 @@ class Test_XSSettings(unittest.TestCase):
         self.assertEqual(
             cs[CONF_CROSS_SECTION]["AA"].validBlockTypes, ["control", "fuel", "plenum"]
         )
-
-
-if __name__ == "__main__":
-    unittest.main()

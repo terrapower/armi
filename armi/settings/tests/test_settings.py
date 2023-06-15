@@ -482,7 +482,3 @@ class TestSettingsValidationUtils(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             validateVersion("1.2.3", "zzz")
-
-
-if __name__ == "__main__":
-    unittest.main()

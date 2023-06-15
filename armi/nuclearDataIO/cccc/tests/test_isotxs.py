@@ -177,8 +177,3 @@ class Isotxs_merge_Tests(unittest.TestCase):
             del someIsotxs[key]
         someIsotxs.merge(isotxs.readBinary(ISOAA_PATH))
         self.assertEqual(None, someIsotxs.isotxsMetadata["chi"])
-
-
-if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'TestIsotxs.test_getNuclide']
-    unittest.main()  # verbosity=2)

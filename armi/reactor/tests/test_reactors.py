@@ -1065,7 +1065,3 @@ class CartesianReactorTests(ReactorTests):
 
         self.assertIn("Nuclide categorization", messages)
         self.assertIn("Structure", messages)
-
-
-if __name__ == "__main__":
-    unittest.main()

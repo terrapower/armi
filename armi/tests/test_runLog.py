@@ -382,7 +382,3 @@ class TestRunLogger(unittest.TestCase):
         # test what was logged
         streamVal = stream.getvalue()
         self.assertIn(testName, streamVal, msg=streamVal)
-
-
-if __name__ == "__main__":
-    unittest.main()

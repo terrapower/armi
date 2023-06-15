@@ -63,7 +63,3 @@ class TestNucDirectory(unittest.TestCase):
 
         with self.assertRaises(KeyError):
             nucDir.getThresholdDisplacementEnergy("fail")
-
-
-if __name__ == "__main__":
-    unittest.main()

@@ -146,7 +146,3 @@ class TestTriangle(unittest.TestCase):
             xT1, yT1, xT2, yT2, xT3, yT3, xP, yP
         )
         self.assertFalse(generalTriangleInOrOut)
-
-
-if __name__ == "__main__":
-    unittest.main()

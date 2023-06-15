@@ -647,7 +647,3 @@ class TestDatabase3(unittest.TestCase):
         bp = self.db.loadBlueprints()
         self.assertIsNone(bp.nuclideFlags)
         self.assertEqual(len(bp.assemblies), 0)
-
-
-if __name__ == "__main__":
-    unittest.main()

@@ -132,7 +132,3 @@ class CodeTimingTest(unittest.TestCase):
         self.assertIn(name, table)
         self.assertIn("CUMULATIVE", table)
         self.assertIn("ACTIVE", table)
-
-
-if __name__ == "__main__":
-    unittest.main()

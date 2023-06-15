@@ -14,7 +14,6 @@
 
 """Tests to demonstrate the test helper is functional."""
 import os
-import unittest
 
 from armi.tests import ArmiTestHelper
 
@@ -59,7 +58,3 @@ class TestArmiTestHelper(ArmiTestHelper):
         self.compareFilesLineByLine(
             self.goodFilePath, self.badFilePath, falseNegList=["NEGATIVE"]
         )
-
-
-if __name__ == "_main__":
-    unittest.main()

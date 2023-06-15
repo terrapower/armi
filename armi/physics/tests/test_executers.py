@@ -109,7 +109,3 @@ class TestExecuters(unittest.TestCase):
         self.executer.dcType = directoryChangers.ForcedCreationDirectoryChanger
         self.executer._updateRunDir("notThisString")
         self.assertEqual(self.executer.options.runDir, "runDir")
-
-
-if __name__ == "__main__":
-    unittest.main()

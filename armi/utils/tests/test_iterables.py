@@ -174,7 +174,3 @@ class TestIterables(unittest.TestCase):
         self.assertEqual(vals[0], 0)
         self.assertEqual(vals[-1], 5)
         self.assertEqual(len(vals), 6)
-
-
-if __name__ == "__main__":
-    unittest.main()

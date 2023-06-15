@@ -82,7 +82,3 @@ class Test_RZT_Reactor_modern(unittest.TestCase):
         """
         error = math.fabs((refFuelVolume - sum(fuelVolumes)) / refFuelVolume)
         self.assertLess(error, tolerance)
-
-
-if __name__ == "__main__":
-    unittest.main()

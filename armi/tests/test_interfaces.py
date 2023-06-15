@@ -164,7 +164,3 @@ class TestTightCoupler(unittest.TestCase):
         self.assertEqual(interfaces.TightCoupler.getListDimension(a), 2)
         a = [[[1, 2, 3]]]
         self.assertEqual(interfaces.TightCoupler.getListDimension(a), 3)
-
-
-if __name__ == "__main__":
-    unittest.main()

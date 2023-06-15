@@ -158,8 +158,3 @@ class TestFissionProductModelExplicitMC2Library(unittest.TestCase):
                     self.assertIn(nb.name, nuclideList)
             else:
                 self.assertLess(len(b.getNuclides()), len(nuclideBases.byMcc3Id))
-
-
-if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'Test.testName']
-    unittest.main()

@@ -72,7 +72,3 @@ class TestLatinHyperCubeSuiteBuilder(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             builder.addDegreeOfFreedom([powerMod, morePowerMod])
-
-
-if __name__ == "__main__":
-    unittest.main()

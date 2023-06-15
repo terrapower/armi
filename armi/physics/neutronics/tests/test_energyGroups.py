@@ -44,7 +44,3 @@ class TestEnergyGroups(unittest.TestCase):
                     energyGroups.getGroupStructure(groupStructureType)
                 ),
             )
-
-
-if __name__ == "__main__":
-    unittest.main()

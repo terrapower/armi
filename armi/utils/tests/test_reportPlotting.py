@@ -143,7 +143,3 @@ class TestRadar(unittest.TestCase):
         xsHistoryVsTime(name, history, [], "png")
         self.assertTrue(os.path.exists(figName))
         self.assertGreater(os.path.getsize(figName), 0)
-
-
-if __name__ == "__main__":
-    unittest.main()
