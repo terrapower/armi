@@ -14,9 +14,6 @@
 """Tests for generic fuel performance plugin."""
 from armi.physics.fuelPerformance.plugin import FuelPerformancePlugin
 from armi.tests.test_plugins import TestPlugin
-from armi.tests.test_plugins import TestPlugin
-from armi.tests.test_plugins import TestPlugin
-from armi.tests.test_plugins import TestPlugin
 
 
 class TestFuelPerformancePlugin(TestPlugin):
