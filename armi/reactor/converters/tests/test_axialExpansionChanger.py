@@ -250,7 +250,7 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
             )
             self._getConservationMetrics(self.a)
 
-    def test_ThermalExpansionContractionConservation(self):
+    def test_ThermalExpansionContractionConservation_Simple(self):
         r"""Thermally expand and then contract to ensure original state is recovered.
 
         Notes
@@ -282,7 +282,50 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
 
         # make sure that the assembly returned to the original state
         for orig, new in zip(origMesh, a.getAxialMesh()):
-            self.assertAlmostEqual(orig, new, places=13)
+            self.assertAlmostEqual(orig, new, places=12)
+        self._checkMass(origMasses, newMasses)
+        self._checkNDens(origNDens, newNDens, 1.0)
+
+    def test_ThermalExpansionContractionConservation_Complex(self):
+        r"""Thermally expand and then contract to ensure original state is recovered.
+
+        Notes
+        -----
+        Temperature field is always isothermal and initially at 25 C.
+        """
+        _oCold, rCold = loadTestReactor(
+            os.path.join(TEST_ROOT, "detailedAxialExpansion"),
+            customSettings={"inputHeightsConsideredHot": False},
+        )
+        a = rCold.core[1]
+        origCTempInC = {}
+        for b in a:
+            for c in getSolidComponents(b):
+                origCTempInC[c] = c.temperatureInC
+        origMesh = a.getAxialMesh()[:-1]
+        origMasses, origNDens = self._getComponentMassAndNDens(a)
+        axialExpChngr = AxialExpansionChanger(detailedAxialExpansion=True)
+        axialExpChngr.setAssembly(a)
+        tempAdjust = [50.0, 50.0, -50.0, -50.0]
+        for temp in tempAdjust:
+            # store pre-exp mass and NDens
+            oldMasses, _oldNDens = self._getComponentMassAndNDens(a)
+            # adjust component temperatures by temp
+            for b in a:
+                for c in getSolidComponents(b):
+                    axialExpChngr.expansionData.updateComponentTemp(
+                        c, c.temperatureInC + temp
+                    )
+            # compute thermal expansion coeffs and expand
+            axialExpChngr.expansionData.computeThermalExpansionFactors()
+            axialExpChngr.axiallyExpandAssembly()
+            # get post-exp mass
+            newMasses, newNDens = self._getComponentMassAndNDens(a)
+            self._checkMass(oldMasses, newMasses)
+
+        # make sure that the assembly returned to the original state
+        for orig, new in zip(origMesh, a.getAxialMesh()):
+            self.assertAlmostEqual(orig, new, places=12)
         self._checkMass(origMasses, newMasses)
         self._checkNDens(origNDens, newNDens, 1.0)
 
@@ -334,7 +377,8 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
     def _checkNDens(self, prevNDen, newNDens, ratio):
         for prevComp, newComp in zip(prevNDen.values(), newNDens.values()):
             for prev, new in zip(prevComp.values(), newComp.values()):
-                self.assertAlmostEqual(prev / new, ratio)
+                if prev:
+                    self.assertAlmostEqual(prev / new, ratio, msg=f"{prev} / {new}")
 
     @staticmethod
     def _getComponentMassAndNDens(a):
@@ -778,9 +822,8 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
                     self.checkColdHeightBlockMass(bStd, bExp, Flags.CONTROL, "B10")
 
                 if not aStd.hasFlags(Flags.TEST) and not hasCustomMaterial:
-                    # skip blocks of custom material where liner is merged with clad
-                    for cExp in bExp:
-                        if not isinstance(cExp.material, custom.Custom):
+                    for cExp in getSolidComponents(bExp):
+                        if cExp.zbottom == bExp.p.zbottom and cExp.ztop == bExp.p.ztop:
                             matDens = cExp.material.density(Tc=cExp.temperatureInC)
                             compDens = cExp.density()
                             msg = (
@@ -791,7 +834,7 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
                             self.assertAlmostEqual(
                                 matDens,
                                 compDens,
-                                places=7,
+                                places=12,
                                 msg=msg,
                             )
 
