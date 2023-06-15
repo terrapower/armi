@@ -940,20 +940,28 @@ class DoseResultsMapper(GlobalFluxResultMapper):
                     b.p.fastFluencePeak * self.options.dpaPerFluence
                 )
 
-            # also set the burnup peaking. Requires burnup to be up-to-date
+            # Set burnup peaking
+            # b.p.percentBu/buRatePeak is expected to have been updated elsewhere (depletion)
             # (this should run AFTER burnup has been updated)
-            # b.p.percentBu is expected to have been updated elsewhere
+            # try to find the peak rate first
             peakRate = None
             if b.p.buRatePeak:
                 # best case scenario, we have peak burnup rate
-                peakRate = b.p.percentBuPeak
+                peakRate = b.p.buRatePeak
             elif b.p.buRate:
-                # use whatever peaking factor we can find
+                # use whatever peaking factor we can find if just have rate
                 peakRate = b.p.buRate * self.getBurnupPeakingFactor(b)
+
+            # If peak rate found, use to calc peak burnup; otherwise scale burnup
             if peakRate:
                 b.p.percentBuPeak = b.p.percentBuPeak + peakRate * stepTimeInSeconds
             else:
-                # bad assumption.... assumes peaking is same at each position through shuffling/irradiation history...
+                # No rate, make bad assumption.... assumes peaking is same at each position through shuffling/irradiation history...
+                runLog.warning(
+                    "Scaling burnup by current peaking factor... This assumes peaking "
+                    "factor was constant through shuffling/irradiation history.",
+                    single=True,
+                )
                 b.p.percentBuPeak = b.p.percentBu * self.getBurnupPeakingFactor(b)
 
         for a in self.r.core.getAssemblies():

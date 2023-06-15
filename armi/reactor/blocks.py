@@ -825,6 +825,44 @@ class Block(composites.Composite):
         self.p.massHmBOL = massHmBOL
         return hmDens
 
+    def setB10VolParam(self, heightHot):
+        """
+        Set the b.p.initialB10ComponentVol param according to the volume of boron-10 containing components.
+
+        Parameters
+        ----------
+        heightHot : Boolean
+            True if self.height() is cold height
+        """
+        b10Comps = [c for c in self if c.getNumberDensity("B10")]
+        if not b10Comps:
+            return
+
+        potentialC = b10Comps[0]
+        tHot = potentialC.temperatureInC
+        tCold = potentialC.inputTemperatureInC
+        mat = potentialC.material
+
+        for c in b10Comps:
+            if (
+                tHot != c.temperatureInC
+                or tCold != c.inputTemperatureInC
+                or mat != c.material
+            ):
+                runLog.warning(
+                    f"More than 1 component found  in {self.name} with different B10 material "
+                    f" or temperature, using {potentialC} thermal expansion; because there are "
+                    "multiple components there may be mass flow of boron during axial expansion "
+                    "so fixed volume of initial boron may be less meaningful.",
+                    single=True,
+                )
+
+        # calc volume of boron components
+        coldArea = sum(c.getArea(cold=True) for c in b10Comps)
+        coldFactor = potentialC.getThermalExpansionFactor() if heightHot else 1
+        coldHeight = self.getHeight() / coldFactor
+        self.p.initialB10ComponentVol = coldArea * coldHeight
+
     def replaceBlockWithBlock(self, bReplacement):
         """
         Replace the current block with the replacementBlock.
@@ -1173,39 +1211,6 @@ class Block(composites.Composite):
         if self.hasFlags([Flags.PLENUM, Flags.ACLP]) and cIsCenterGapGap:
             return True
         return False
-
-    def setB10VolParam(self, heightHot):
-        """Set the b.p.initialB10ComponentVol param according to the volume of boron-10 containing components."""
-        b10Comps = []
-        potentialC = None
-        for c in self:
-            if c.getNumberDensity("B10"):
-                potentialC = c
-                b10Comps.append(potentialC)
-                tHot = potentialC.temperatureInC
-                tCold = potentialC.inputTemperatureInC
-                mat = potentialC.material
-        if potentialC is None:
-            return
-
-        # calc volume of boron components
-        coldArea = 0.0
-        for c in b10Comps:
-            if (
-                tHot != c.temperatureInC
-                or tCold != c.inputTemperatureInC
-                or mat != c.material
-            ):
-                runLog.warning(
-                    f"More than 1 component found  in {self.name} with different B10 material"
-                    f" or temperature, using {potentialC} params",
-                    single=True,
-                )
-            coldArea += c.getArea(cold=True)
-
-        coldFactor = potentialC.getThermalExpansionFactor() if heightHot else 1
-        coldHeight = self.getHeight() / coldFactor
-        self.p.initialB10ComponentVol = coldArea * coldHeight
 
     def getPitch(self, returnComp=False):
         """

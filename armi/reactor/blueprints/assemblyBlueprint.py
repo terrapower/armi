@@ -181,8 +181,6 @@ class AssemblyBlueprint(yamlize.Object):
         for axialIndex, b in enumerate(blocks):
             b.name = b.makeName(a.p.assemNum, axialIndex)
             a.add(b)
-            # set b10 volume cc since its a cold dim param
-            b.setB10VolParam(cs[CONF_INPUT_HEIGHTS_HOT])
 
         # Assign values for the parameters if they are defined on the blueprints
         for paramDef in a.p.paramDefs.inCategory(
@@ -218,6 +216,9 @@ class AssemblyBlueprint(yamlize.Object):
 
         # TODO: remove when the plugin system is fully set up?
         b.completeInitialLoading()
+
+        # set b10 volume cc since its a cold dim param
+        b.setB10VolParam(cs[CONF_INPUT_HEIGHTS_HOT])
         return b
 
     def _checkParamConsistency(self):
