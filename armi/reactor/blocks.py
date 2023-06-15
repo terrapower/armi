@@ -1665,7 +1665,7 @@ class HexBlock(Block):
             return
 
         # calc volume of boron components
-        area = 0.0
+        coldArea = 0.0
         for c in b10Comps:
             if (
                 tHot != c.temperatureInC
@@ -1677,15 +1677,11 @@ class HexBlock(Block):
                     f" or temperature, using {potentialC} params",
                     single=True,
                 )
-            area += c.getArea(cold=True)
+            coldArea += c.getArea(cold=True)
 
-        volume = area * self.getHeight()
-        if heightHot:
-            self.p.initialB10ComponentVol = (
-                volume / potentialC.getThermalExpansionFactor()
-            )
-        else:
-            self.p.initialB10ComponentVol = volume
+        coldFactor = potentialC.getThermalExpansionFactor() if hotHeight else 1
+        coldHeight = b.getHeight / coldFactor
+        self.p.initialB10ComponentVol = coldArea * coldHeight
 
     def initializePinLocations(self):
         nPins = self.getNumPins()
