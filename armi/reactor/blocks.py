@@ -1174,6 +1174,39 @@ class Block(composites.Composite):
             return True
         return False
 
+    def setB10VolParam(self, heightHot):
+        """Set the b.p.initialB10ComponentVol param according to the volume of boron-10 containing components."""
+        b10Comps = []
+        potentialC = None
+        for c in self:
+            if c.getNumberDensity("B10"):
+                potentialC = c
+                b10Comps.append(potentialC)
+                tHot = potentialC.temperatureInC
+                tCold = potentialC.inputTemperatureInC
+                mat = potentialC.material
+        if potentialC is None:
+            return
+
+        # calc volume of boron components
+        coldArea = 0.0
+        for c in b10Comps:
+            if (
+                tHot != c.temperatureInC
+                or tCold != c.inputTemperatureInC
+                or mat != c.material
+            ):
+                runLog.warning(
+                    f"More than 1 component found  in {b.name} with different B10 material"
+                    f" or temperature, using {potentialC} params",
+                    single=True,
+                )
+            coldArea += c.getArea(cold=True)
+
+        coldFactor = potentialC.getThermalExpansionFactor() if heightHot else 1
+        coldHeight = self.getHeight() / coldFactor
+        self.p.initialB10ComponentVol = coldArea * coldHeight
+
     def getPitch(self, returnComp=False):
         """
         Return the center-to-center hex pitch of this block.
@@ -1649,39 +1682,6 @@ class HexBlock(Block):
     def getDuctOP(self):
         duct = self.getComponent(Flags.DUCT, exact=True)
         return duct.getDimension("op")
-
-    def setB10VolParam(self, heightHot):
-        """Set the b.p.initialB10ComponentVol param according to the volume of boron-10 containing components."""
-        b10Comps = []
-        potentialC = None
-        for c in self:
-            if c.getNumberDensity("B10"):
-                potentialC = c
-                b10Comps.append(potentialC)
-                tHot = potentialC.temperatureInC
-                tCold = potentialC.inputTemperatureInC
-                mat = potentialC.material
-        if potentialC is None:
-            return
-
-        # calc volume of boron components
-        coldArea = 0.0
-        for c in b10Comps:
-            if (
-                tHot != c.temperatureInC
-                or tCold != c.inputTemperatureInC
-                or mat != c.material
-            ):
-                runLog.warning(
-                    f"More than 1 component found  in {b.name} with different B10 material"
-                    f" or temperature, using {potentialC} params",
-                    single=True,
-                )
-            coldArea += c.getArea(cold=True)
-
-        coldFactor = potentialC.getThermalExpansionFactor() if heightHot else 1
-        coldHeight = self.getHeight() / coldFactor
-        self.p.initialB10ComponentVol = coldArea * coldHeight
 
     def initializePinLocations(self):
         nPins = self.getNumPins()
