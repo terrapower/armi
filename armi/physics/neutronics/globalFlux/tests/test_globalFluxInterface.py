@@ -334,6 +334,14 @@ class TestGlobalFluxResultMapper(unittest.TestCase):
         factor = mapper.getBurnupPeakingFactor(b)
         self.assertEqual(factor, 2.5)
 
+    def test_getBurnupPeakingFactorZero(self):
+        mapper = globalFluxInterface.GlobalFluxResultMapper()
+
+        # test fuel block without any peaking factor set
+        b = HexBlock("fuel", height=10.0)
+        factor = mapper.getBurnupPeakingFactor(b)
+        self.assertEqual(factor, 0.0)
+
 
 class TestGlobalFluxUtils(unittest.TestCase):
     def test_calcReactionRates(self):
