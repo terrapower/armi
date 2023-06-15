@@ -252,12 +252,12 @@ class Dif3dStream(cccc.StreamWithDataContainer):
         self._rw5DRecord()
 
 
-readBinary = Dif3dStream.readBinary
-readAscii = Dif3dStream.readAscii
-writeBinary = Dif3dStream.writeBinary
-writeAscii = Dif3dStream.writeAscii
+readBinary = Dif3dStream.readBinary  # pylint: disable=invalid-name
+readAscii = Dif3dStream.readAscii  # pylint: disable=invalid-name
+writeBinary = Dif3dStream.writeBinary  # pylint: disable=invalid-name
+writeAscii = Dif3dStream.writeAscii  # pylint: disable=invalid-name
 
-#if __name__ == "__main__":
+# if __name__ == "__main__":
 #    x = Dif3dStream.readBinary("DIF3D")
 #    print("EFFK:", x.threeD["EFFK"])
 #    print("EFFKQ:", x.threeD["EFFKQ"])
