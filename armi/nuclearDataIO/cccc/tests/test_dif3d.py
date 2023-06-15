@@ -131,7 +131,7 @@ class TestDif3d(unittest.TestCase):
         """Verify the axial coarse-mesh rebalance boundaries"""
         self.assertEqual(self.df.fiveD, None)
 
-    def test_write(self):
+    def test_writeBinary(self):
         """Verify binary equivalence of written dif3d file."""
         with TemporaryDirectoryChanger():
             dif3d.Dif3dStream.writeBinary(self.df, "DIF3D2")

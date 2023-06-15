@@ -13,8 +13,8 @@
 # limitations under the License.
 
 """
-Module for reading from and writing to DIF3D files, which serve as the input 
-
+Module for reading from and writing to DIF3D files, which are module dependent
+binary inputs for the dif3d code.
 """
 
 from armi import runLog
@@ -101,7 +101,7 @@ class Dif3dStream(cccc.StreamWithDataContainer):
 
         The parameters are stored as a dictionary under the attribute `metadata`.
 
-        Paramaters
+        Parameters
         ----------
         None
 
@@ -120,7 +120,7 @@ class Dif3dStream(cccc.StreamWithDataContainer):
 
         The parameters are stored as a dictionary under the attribute `metadata`.
 
-        Paramaters
+        Parameters
         ----------
         None
 
@@ -142,7 +142,7 @@ class Dif3dStream(cccc.StreamWithDataContainer):
 
         The parameters are stored as a dictionary under the attribute `twoD`.
 
-        Paramaters
+        Parameters
         ----------
         None
 
@@ -161,7 +161,7 @@ class Dif3dStream(cccc.StreamWithDataContainer):
 
         The parameters are stored as a dictionary under the attribute `threeD`.
 
-        Paramaters
+        Parameters
         ----------
         None
 
@@ -182,7 +182,7 @@ class Dif3dStream(cccc.StreamWithDataContainer):
         could be changed into a list in the future since this record represents groupwise
         data.
 
-        Paramaters
+        Parameters
         ----------
         None
 
@@ -211,7 +211,7 @@ class Dif3dStream(cccc.StreamWithDataContainer):
 
         The parameters are stored as a dictionary under the attribute `fiveD`.
 
-        Paramaters
+        Parameters
         ----------
         None
 
@@ -252,7 +252,12 @@ class Dif3dStream(cccc.StreamWithDataContainer):
         self._rw5DRecord()
 
 
-if __name__ == "__main__":
-    x = Dif3dStream.readBinary("DIF3D")
-    print("EFFK:", x.threeD["EFFK"])
-    print("EFFKQ:", x.threeD["EFFKQ"])
+readBinary = Dif3dStream.readBinary
+readAscii = Dif3dStream.readAscii
+writeBinary = Dif3dStream.writeBinary
+writeAscii = Dif3dStream.writeAscii
+
+#if __name__ == "__main__":
+#    x = Dif3dStream.readBinary("DIF3D")
+#    print("EFFK:", x.threeD["EFFK"])
+#    print("EFFKQ:", x.threeD["EFFKQ"])
