@@ -954,7 +954,11 @@ class DoseResultsMapper(GlobalFluxResultMapper):
 
             # If peak rate found, use to calc peak burnup; otherwise scale burnup
             if peakRate:
-                b.p.percentBuPeak = b.p.percentBuPeak + peakRate * stepTimeInSeconds
+                # peakRate is in per day
+                peakRatePerSecond = peakRate / units.SECONDS_PER_DAY
+                b.p.percentBuPeak = (
+                    b.p.percentBuPeak + peakRatePerSecond * stepTimeInSeconds
+                )
             else:
                 # No rate, make bad assumption.... assumes peaking is same at each position through shuffling/irradiation history...
                 runLog.warning(
