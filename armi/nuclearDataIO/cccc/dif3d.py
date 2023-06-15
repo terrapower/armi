@@ -1,4 +1,4 @@
-# Copyright 2019 TerraPower, LLC
+# Copyright 2023 TerraPower, LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
 
 """
 Module for reading from and writing to DIF3D files, which are module dependent
-binary inputs for the dif3d code.
+binary inputs for the DIF3D code.
 """
 
 from armi import runLog
@@ -95,7 +95,7 @@ class Dif3dStream(cccc.StreamWithDataContainer):
     def _getDataContainer() -> Dif3dData:
         return Dif3dData()
 
-    def _rwFileID(self):
+    def _rwFileID(self) -> None:
         """
         Record for file identification information.
 
@@ -104,17 +104,13 @@ class Dif3dStream(cccc.StreamWithDataContainer):
         Parameters
         ----------
         None
-
-        Returns
-        -------
-        None
         """
         with self.createRecord() as record:
             for param in ["HNAME", "HUSE1", "HUSE2"]:
                 self._metadata[param] = record.rwString(self._metadata[param], 8)
             self._metadata["VERSION"] = record.rwInt(self._metadata["VERSION"])
 
-    def _rw1DRecord(self):
+    def _rw1DRecord(self) -> None:
         """
         Record for problem title, storage, and dump specifications.
 
@@ -122,10 +118,6 @@ class Dif3dStream(cccc.StreamWithDataContainer):
 
         Parameters
         ----------
-        None
-
-        Returns
-        -------
         None
         """
         with self.createRecord() as record:
@@ -136,7 +128,7 @@ class Dif3dStream(cccc.StreamWithDataContainer):
             self._metadata["MAXBLK"] = record.rwInt(self._metadata["MAXBLK"])
             self._metadata["IPRINT"] = record.rwInt(self._metadata["IPRINT"])
 
-    def _rw2DRecord(self):
+    def _rw2DRecord(self) -> None:
         """
         Record for DIF3D integer control parameters.
 
@@ -145,16 +137,12 @@ class Dif3dStream(cccc.StreamWithDataContainer):
         Parameters
         ----------
         None
-
-        Returns
-        -------
-        None
         """
         with self.createRecord() as record:
             for param in FILE_SPEC_2D_PARAMS:
                 self._data.twoD[param] = record.rwInt(self._data.twoD[param])
 
-    def _rw3DRecord(self):
+    def _rw3DRecord(self) -> None:
         """
         Record for convergence criteria and other sundry floating point data (such as
         k-effective).
@@ -164,19 +152,15 @@ class Dif3dStream(cccc.StreamWithDataContainer):
         Parameters
         ----------
         None
-
-        Returns
-        -------
-        None
         """
         with self.createRecord() as record:
             for param in FILE_SPEC_3D_PARAMS:
                 self._data.threeD[param] = record.rwDouble(self._data.threeD[param])
 
-    def _rw4DRecord(self):
+    def _rw4DRecord(self) -> None:
         """
-        Record for the optimum overrelaxation factors. This record is only present if `NUMORP`
-        is greater than 0.
+        Record for the optimsum overrelaxation factors. This record is only present when
+        using DIF3D-FD and if `NUMORP` is greater than 0.
 
         The parameters are stored as a dictionary under the attribute `fourD`. This
         could be changed into a list in the future since this record represents groupwise
@@ -184,10 +168,6 @@ class Dif3dStream(cccc.StreamWithDataContainer):
 
         Parameters
         ----------
-        None
-
-        Returns
-        -------
         None
         """
         if self._data.twoD["NUMORP"] != 0:
@@ -203,7 +183,7 @@ class Dif3dStream(cccc.StreamWithDataContainer):
                         self._data.fourD[omegaParam]
                     )
 
-    def _rw5DRecord(self):
+    def _rw5DRecord(self) -> None:
         """
         Record for the axial coarse-mesh rebalance boundaries. Coarse mesh balancing is
         disabled in DIF3D-VARIANT, so this record is only relevant for DIF3D-Nodal. This
@@ -213,10 +193,6 @@ class Dif3dStream(cccc.StreamWithDataContainer):
 
         Parameters
         ----------
-        None
-
-        Returns
-        -------
         None
         """
         if self._data.twoD["NCMRZS"] != 0:
@@ -241,6 +217,7 @@ class Dif3dStream(cccc.StreamWithDataContainer):
                     )
 
     def readWrite(self):
+        """"""
         msg = f"{'Reading' if 'r' in self._fileMode else 'Writing'} DIF3D binary data {self}"
         runLog.info(msg)
 
@@ -252,12 +229,7 @@ class Dif3dStream(cccc.StreamWithDataContainer):
         self._rw5DRecord()
 
 
-readBinary = Dif3dStream.readBinary  # pylint: disable=invalid-name
-readAscii = Dif3dStream.readAscii  # pylint: disable=invalid-name
-writeBinary = Dif3dStream.writeBinary  # pylint: disable=invalid-name
-writeAscii = Dif3dStream.writeAscii  # pylint: disable=invalid-name
-
-# if __name__ == "__main__":
-#    x = Dif3dStream.readBinary("DIF3D")
-#    print("EFFK:", x.threeD["EFFK"])
-#    print("EFFKQ:", x.threeD["EFFKQ"])
+readBinary = Dif3dStream.readBinary
+readAscii = Dif3dStream.readAscii
+writeBinary = Dif3dStream.writeBinary
+writeAscii = Dif3dStream.writeAscii
