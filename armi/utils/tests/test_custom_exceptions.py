@@ -73,7 +73,3 @@ class CustomExceptionTests(unittest.TestCase):
                 self.exampleWarnWhenRootMessage()
                 self.assertEqual(msg, mock.getStdout())
                 armi.MPI_RANK = 0
-
-
-if __name__ == "__main__":
-    unittest.main()

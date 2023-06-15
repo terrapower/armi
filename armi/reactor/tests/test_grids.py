@@ -658,8 +658,3 @@ class TestCartesianGrid(unittest.TestCase):
         )
         with self.assertRaises(NotImplementedError):
             grid.getSymmetricEquivalents((5, 6))
-
-
-if __name__ == "__main__":
-    # import sys;sys.argv = ["", "TestHexGrid.testPositions"]
-    unittest.main()

@@ -80,7 +80,3 @@ class DecayModeTests(unittest.TestCase):
             else:
                 with self.assertRaises(KeyError):
                     transmutations.DecayMode(nuclideBases.byName["AM242M"], data)
-
-
-if __name__ == "__main__":
-    unittest.main()

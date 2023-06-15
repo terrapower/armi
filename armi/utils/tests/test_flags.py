@@ -122,7 +122,3 @@ class TestFlag(unittest.TestCase):
 
     def test_getitem(self):
         self.assertEqual(ExampleFlag["FOO"], ExampleFlag.FOO)
-
-
-if __name__ == "__main__":
-    unittest.main()

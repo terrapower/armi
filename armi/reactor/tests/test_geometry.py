@@ -318,8 +318,3 @@ class TestSystemLayoutInputTRZ(unittest.TestCase):
                 geom2 = SystemLayoutInput()
                 geom2._readYaml(f)  # pylint: disable=protected-access
             self.assertEqual(geom2.assemTypeByIndices[2.0, 3.0, 0.0, 180.0, 1, 1], "MC")
-
-
-if __name__ == "__main__":
-    #  import sys; sys.argv = ['', 'TestLoadingReactorTRZ.test_loadTRZGeom']
-    unittest.main()

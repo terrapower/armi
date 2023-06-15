@@ -1380,7 +1380,3 @@ assemblies:
         actualAssemblyArea = math.sqrt(3) / 2.0 * intercoolant.p.op ** 2
 
         self.assertAlmostEqual(bpAssemblyArea, actualAssemblyArea)
-
-
-if __name__ == "__main__":
-    unittest.main()

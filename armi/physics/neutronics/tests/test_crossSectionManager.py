@@ -688,8 +688,3 @@ def makeBlocks(howMany=20):
     return r.core.getBlocks(Flags.FUEL)[
         3 : howMany + 3
     ]  # shift y 3 to skip central assemblies 1/3 volume
-
-
-if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'Test_CrossSectionGroupManager.test_createRepresentativeBlocksUsingExistingBlocks']
-    unittest.main()

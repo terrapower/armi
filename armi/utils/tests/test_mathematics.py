@@ -534,7 +534,3 @@ class TestMath(unittest.TestCase):
         self.assertAlmostEqual(yr[0], sqrt(2))
         self.assertAlmostEqual(xr[1], -sqrt(2))
         self.assertAlmostEqual(yr[1], 0.0)
-
-
-if __name__ == "__main__":
-    unittest.main()

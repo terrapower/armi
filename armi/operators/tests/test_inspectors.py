@@ -191,7 +191,3 @@ class TestInspector(unittest.TestCase):
         )
         self.inspector._assignCS("cycleLength", 666)
         self.assertTrue(self.inspector._checkForBothSimpleAndDetailedCyclesInputs())
-
-
-if __name__ == "__main__":
-    unittest.main()

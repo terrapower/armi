@@ -348,7 +348,3 @@ class NeutronicsReactorTests(unittest.TestCase):
         self.assertEqual(
             inspector.cs[CONF_LATTICE_PHYSICS_FREQUENCY], "firstCoupledIteration"
         )
-
-
-if __name__ == "__main__":
-    unittest.main()

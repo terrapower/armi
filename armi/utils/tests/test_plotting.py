@@ -117,7 +117,3 @@ class TestPlotting(unittest.TestCase):
 
     def _checkExists(self, fName):
         self.assertTrue(os.path.exists(fName))
-
-
-if __name__ == "__main__":
-    unittest.main()

@@ -39,7 +39,3 @@ class Materials__init__Tests(unittest.TestCase):
 
     def test_packageClassesEqualModuleClasses(self):
         self.assertEqual(materials.UraniumOxide, materials.uraniumOxide.UraniumOxide)
-
-
-if __name__ == "__main__":
-    unittest.main()

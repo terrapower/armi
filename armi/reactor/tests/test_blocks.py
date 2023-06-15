@@ -2422,7 +2422,3 @@ class MassConservationTests(unittest.TestCase):
             10,
             "Sum of component mass {0} != total block mass {1}. ".format(tMass, bMass),
         )
-
-
-if __name__ == "__main__":
-    unittest.main()

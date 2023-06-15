@@ -422,8 +422,3 @@ class test_getAAAZZZSId(unittest.TestCase):
             nb = nuclideBases.byName[nucName]
             if refAaazzzs:
                 self.assertEqual(refAaazzzs, nb.getAAAZZZSId())
-
-
-if __name__ == "__main__":
-    #     import sys;sys.argv = ['', 'TestNuclide.test_nucBases_factoryIsFast']
-    unittest.main()

@@ -469,7 +469,3 @@ class TestRZTGridBlueprint(unittest.TestCase):
         self.assertEqual(gridDesign.geom, "thetarz")
         self.assertEqual(gridDesign.symmetry, "eighth periodic")
         self.assertEqual(gridDesign.geom, "thetarz")
-
-
-if __name__ == "__main__":
-    unittest.main()

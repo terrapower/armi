@@ -659,10 +659,3 @@ class SynchronizationTests:
             del self.r
             self.r = context.MPI_COMM.bcast(None)
             do()
-
-
-if __name__ == "__main__":
-    if context.MPI_SIZE == 1:
-        unittest.main()
-    else:
-        SynchronizationTests().run()

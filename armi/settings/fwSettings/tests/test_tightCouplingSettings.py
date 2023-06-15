@@ -141,7 +141,3 @@ class TestTightCouplingSettings(unittest.TestCase):
         outBuf.seek(0)
         inp2 = yaml.load(outBuf)
         self.assertEqual(inp.keys(), inp2.keys())
-
-
-if __name__ == "__main__":
-    unittest.main()

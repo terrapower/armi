@@ -110,8 +110,3 @@ class TestElement(unittest.TestCase):
                 self.assertTrue(ee.isHeavyMetal())
             else:
                 self.assertFalse(ee.isHeavyMetal())
-
-
-if __name__ == "__main__":
-    #     import sys;sys.argv = ['', 'TestElement.test_abundancesAddToOne']
-    unittest.main()
