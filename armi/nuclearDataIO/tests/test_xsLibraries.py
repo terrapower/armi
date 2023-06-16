@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for xsLibraries.IsotxsLibrary."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,unused-variable
 import copy
 import filecmp
 import os
@@ -28,6 +27,7 @@ from armi.nuclearDataIO.cccc import isotxs
 from armi.nuclearDataIO.cccc import pmatrx
 from armi.tests import mockRunLogs
 from armi.utils import properties
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 THIS_DIR = os.path.dirname(__file__)
 RUN_DIR = os.path.join(THIS_DIR, "library-file-generation")
@@ -84,7 +84,7 @@ class TestXSLibrary(unittest.TestCase, TempFileMixin):
             cls.xsLib.merge(copy.deepcopy(cls.isotxsAA))
             cls.xsLib.merge(copy.deepcopy(cls.gamisoAA))
             cls.xsLib.merge(copy.deepcopy(cls.pmatrxAA))
-        except:
+        except:  # noqa: bare-except
             cls.xsLibGenerationErrorStack = traceback.format_exc()
 
     def test_canPickleAndUnpickleISOTXS(self):
@@ -541,7 +541,3 @@ class Combined_merge_Tests(unittest.TestCase):
 
 # Remove the abstract class, so that it does not run (all tests would fail)
 del TestXSlibraryMerging
-
-
-if __name__ == "__main__":
-    unittest.main()

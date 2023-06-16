@@ -19,7 +19,6 @@ These tests actually run a jupyter notebook that's in the documentation to build
 a valid HDF5 file to load from as a test fixtures. Thus they take a little longer
 than usual.
 """
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access
 import os
 import pathlib
 import shutil
@@ -43,7 +42,6 @@ TUTORIAL_DIR = os.path.join(ROOT, "tests", "tutorials")
 
 
 def runTutorialNotebook():
-    # pylint: disable=import-outside-toplevel
     import nbformat
     from nbconvert.preprocessors import ExecutePreprocessor
 
@@ -159,7 +157,6 @@ class TestHistoryTracker(ArmiTestHelper):
         history.interactEOL()
         testLoc = self.o.r.core.spatialGrid[0, 0, 0]
         testAssem = self.o.r.core.childrenByLocator[testLoc]
-        # pylint:disable=protected-access
         fileName = history._getAssemHistoryFileName(testAssem)
         actualFilePath = os.path.join(THIS_DIR, fileName)
         expectedFileName = os.path.join(THIS_DIR, fileName.replace(".txt", "-ref.txt"))
@@ -230,13 +227,6 @@ class TestHistoryTrackerNoModel(unittest.TestCase):
         block = blocks.HexBlock("blockName")
         block.spatialLocator = grids.IndexLocation(0, 0, 7, None)
         self.assertEqual(
-            self.history._getBlockHistoryFileName(
-                block
-            ),  # pylint:disable=protected-access
+            self.history._getBlockHistoryFileName(block),
             "{}-blockName7-bHist.txt".format(self.history.cs.caseTitle),
         )
-
-
-if __name__ == "__main__":
-    # import sys;sys.argv = ["", "TestHistoryTracker.test_historyReport"]
-    unittest.main()

@@ -275,7 +275,7 @@ class Database3:
             try:
                 commit_hash = subprocess.check_output(["git", "describe"])
                 return commit_hash.decode("utf-8").strip()
-            except:
+            except:  # noqa: bare-except
                 return unknown
         else:
             return unknown
@@ -413,9 +413,7 @@ class Database3:
         """
         # Blueprints use the yamlize package, which uses class attributes to define much of the class's behavior
         # through metaclassing. Therefore, we need to be able to import all plugins *before* importing blueprints.
-        from armi.reactor.blueprints import (
-            Blueprints,
-        )  # pylint: disable=import-outside-toplevel
+        from armi.reactor.blueprints import Blueprints  # noqa: E402
 
         bpString = None
 
@@ -1084,9 +1082,9 @@ class Database3:
         """
         if self.versionMinor < 4:
             raise ValueError(
-                f"Location-based histories are only supported for db "
+                "Location-based histories are only supported for db "
                 "version 3.4 and greater. This database is version "
-                "{self.versionMajor}, {self.versionMinor}."
+                f"{self.versionMajor}, {self.versionMinor}."
             )
 
         locations = [c.spatialLocator.getCompleteIndices() for c in comps]
@@ -1325,6 +1323,7 @@ class Database3:
                     if d is not None:
                         indexInData.append(ii)
                         reorderedComps.append(d)
+
                 if not indexInData:
                     continue
 
@@ -1374,7 +1373,6 @@ class Database3:
 
                     # iterating of numpy is not fast..
                     for c, val in zip(reorderedComps, data.tolist()):
-
                         if isinstance(val, list):
                             val = numpy.array(val)
 
@@ -1387,7 +1385,7 @@ class Database3:
                 if cycleNode not in hist:
                     try:
                         hist[cycleNode] = c.p[paramName]
-                    except:
+                    except:  # noqa: bare-except
                         if paramName == "location":
                             hist[cycleNode] = c.spatialLocator.indices
 

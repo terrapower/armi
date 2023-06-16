@@ -12,10 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Tests for memoryProfiler.
-"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
+"""Tests for memoryProfiler."""
 import logging
 import unittest
 
@@ -163,7 +160,3 @@ class KlassCounterTests(unittest.TestCase):
         self.assertEqual(counter[dict].count, 2)
         self.assertEqual(counter[tuple].count, 2)
         self.assertEqual(counter[int].count, 7)
-
-
-if __name__ == "__main__":
-    unittest.main()

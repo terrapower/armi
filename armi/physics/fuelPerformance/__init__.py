@@ -41,4 +41,4 @@ significant composition changes during irradiation can influence neutronics
 as well (e.g. sodium thermal bond being squeezed out of pins). Finally, 
 fuel temperatures impact the Doppler reactivity coefficient.
 """
-from .plugin import FuelPerformancePlugin
+from .plugin import FuelPerformancePlugin  # noqa: unused-import

@@ -19,7 +19,6 @@ This allows developers to specify a rich set of rules and suggestions for user s
 These then pop up during initialization of a run, either on the command line or as
 dialogues in the GUI. They say things like: "Your ___ setting has the value ___, which
 is impossible. Would you like to switch to ___?"
-
 """
 import re
 import os
@@ -145,7 +144,7 @@ class Inspector:
     """
 
     @staticmethod
-    def NO_ACTION():  # pylint: disable=invalid-name
+    def NO_ACTION():
         """Convenience callable used to generate Queries that can't be easily auto-resolved."""
         return None
 
@@ -208,10 +207,7 @@ class Inspector:
             issues = [
                 query
                 for query in self.queries
-                if query
-                and (
-                    query.isCorrective() and not query._passed
-                )  # pylint: disable=protected-access
+                if query and (query.isCorrective() and not query._passed)
             ]
             if any(issues):
                 # something isn't resolved or was unresolved by changes
@@ -283,13 +279,12 @@ class Inspector:
         runLog.extra(f"Updating setting `{key}` to `{value}`")
         self.cs[key] = value
 
-    def _raise(self):  # pylint: disable=no-self-use
+    def _raise(self):
         raise KeyboardInterrupt("Input inspection has been interrupted.")
 
     def _inspectBlueprints(self):
         """Blueprints early error detection and old format conversions."""
-        # pylint: disable=import-outside-toplevel; avoid circular import
-        from armi.physics.neutronics.settings import CONF_LOADING_FILE
+        from armi.physics.neutronics.settings import CONF_LOADING_FILE  # noqa: E402
 
         # if there is a blueprints object, we don't need to check for a file
         if self.cs.filelessBP:
@@ -372,15 +367,13 @@ class Inspector:
 
     def _inspectSettings(self):
         """Check settings for inconsistencies."""
-        # import here to avoid cyclic issues
-        # pylint: disable=import-outside-toplevel;
-        from armi import operators
+        from armi import operators  # noqa: E402
         from armi.physics.neutronics.settings import (
             CONF_BC_COEFFICIENT,
             CONF_BOUNDARIES,
             CONF_XS_KERNEL,
             CONF_XS_SCATTERING_ORDER,
-        )
+        )  # noqa: E402
 
         self.addQueryBadLocationWillLikelyFail("operatorLocation")
 
@@ -603,7 +596,7 @@ class Inspector:
                     and (
                         (
                             len(self.cs["cycleLengths"]) > 1
-                            if self.cs["cycleLengths"] != None
+                            if self.cs["cycleLengths"] is not None
                             else False
                         )
                         or self.cs["nCycles"] > 1
@@ -621,7 +614,7 @@ class Inspector:
                     availabilities = expandRepeatedFloats(
                         self.cs["availabilityFactors"]
                     ) or ([self.cs["availabilityFactor"]] * self.cs["nCycles"])
-                except:  # pylint: disable=bare-except
+                except:  # noqa: bare-except
                     return True
 
                 for pf, af in zip(powerFracs, availabilities):
@@ -718,7 +711,7 @@ class Inspector:
 
 
 def createQueryRevertBadPathToDefault(inspector, settingName, initialLambda=None):
-    """
+    r"""
     Return a query to revert a bad path to its default.
 
     Parameters
@@ -730,7 +723,6 @@ def createQueryRevertBadPathToDefault(inspector, settingName, initialLambda=None
     initialLambda: None or callable function
         If ``None``, the callable argument for :py:meth:`addQuery` is does the setting's path exist.
         If more complicated callable arguments are needed, they can be passed in as the ``initialLambda`` setting.
-
     """
     if initialLambda is None:
         initialLambda = lambda: (

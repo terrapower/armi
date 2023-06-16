@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """Unit tests for the SuiteBuilder."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import os
 import unittest
 
@@ -73,7 +72,3 @@ class TestLatinHyperCubeSuiteBuilder(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             builder.addDegreeOfFreedom([powerMod, morePowerMod])
-
-
-if __name__ == "__main__":
-    unittest.main()

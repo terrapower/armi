@@ -19,7 +19,6 @@ assumes each cell is a test. To prevent inadvertent breaking
 of the ipynbs, we imply run them here and show during unit
 testing that a failure was introduced.
 """
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import os
 import unittest
 

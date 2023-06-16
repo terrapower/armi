@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Test for SiC."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import unittest
 
 from armi.materials.siC import SiC
@@ -49,7 +48,3 @@ class Test_SiC(test_materials._Material_Test, unittest.TestCase):
 
     def test_propertyValidTemperature(self):
         self.assertGreater(len(self.mat.propertyValidTemperature), 0)
-
-
-if __name__ == "__main__":
-    unittest.main()

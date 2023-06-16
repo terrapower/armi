@@ -17,7 +17,6 @@ Tests some capabilities of the fuel handling machine.
 This test is high enough level that it requires input files to be present. The ones to use
 are called armiRun.yaml which is located in armi.tests
 """
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import collections
 import copy
 import unittest
@@ -25,15 +24,23 @@ import unittest
 import numpy as np
 
 from armi.physics.fuelCycle import fuelHandlers, settings
-from armi.physics.fuelCycle.settings import CONF_ASSEM_ROTATION_STATIONARY
-from armi.physics.fuelCycle.settings import CONF_PLOT_SHUFFLE_ARROWS
+from armi.physics.fuelCycle.settings import (
+    CONF_ASSEM_ROTATION_STATIONARY,
+    CONF_PLOT_SHUFFLE_ARROWS,
+    CONF_RUN_LATTICE_BEFORE_SHUFFLING,
+)
+from armi.physics.neutronics.crossSectionGroupManager import CrossSectionGroupManager
+from armi.physics.neutronics.latticePhysics.latticePhysicsInterface import (
+    LatticePhysicsInterface,
+)
 from armi.reactor import assemblies, blocks, components, grids
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
 from armi.settings import caseSettings
-from armi.tests import ArmiTestHelper, TEST_ROOT
-from armi.utils import directoryChangers
+from armi.tests import ArmiTestHelper
 from armi.tests import mockRunLogs
+from armi.tests import TEST_ROOT
+from armi.utils import directoryChangers
 
 
 class FuelHandlerTestHelper(ArmiTestHelper):
@@ -122,7 +129,41 @@ class FuelHandlerTestHelper(ArmiTestHelper):
         self.directoryChanger.close()
 
 
+class MockLatticePhysicsInterface(LatticePhysicsInterface):
+    """a mock lattice physics interface that does nothing for interactBOC"""
+
+    name = "MockLatticePhysicsInterface"
+
+    def _getExecutablePath(self):
+        return "/mock/"
+
+    def interactBOC(self, cycle=None):
+        pass
+
+
+class MockXSGM(CrossSectionGroupManager):
+    """a mock cross section group manager that does nothing for interactBOC"""
+
+    def interactBOC(self, cycle=None):
+        pass
+
+
 class TestFuelHandler(FuelHandlerTestHelper):
+    def test_interactBOC(self):
+        # set up mock interface
+        self.o.addInterface(MockLatticePhysicsInterface(self.r, self.o.cs))
+        self.o.removeInterface(interfaceName="xsGroups")
+        self.o.addInterface(MockXSGM(self.r, self.o.cs))
+        # adjust case settings
+        self.o.cs[CONF_RUN_LATTICE_BEFORE_SHUFFLING] = True
+        # run fhi.interactBOC
+        fhi = self.o.getInterface("fuelHandler")
+        with mockRunLogs.BufferLog() as mock:
+            fhi.interactBOC()
+            self.assertIn(
+                "lattice physics before fuel management due to the", mock._outputStream
+            )
+
     def test_findHighBu(self):
         loc = self.r.core.spatialGrid.getLocatorFromRingAndPos(5, 4)
         a = self.r.core.childrenByLocator[loc]
@@ -589,7 +630,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
                             for sbf in sBFList
                         )
                     )
-                except:
+                except:  # noqa: bare-except
                     a1[block.spatialLocator.k - 1].setType(
                         a1[block.spatialLocator.k - 1].p.type, sBFList[0]
                     )
@@ -733,7 +774,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
                             for sbf in sBFList
                         )
                     )
-                except:
+                except:  # noqa: bare-except
                     a1[block.spatialLocator.k - 1].setType(
                         a1[block.spatialLocator.k - 1].p.type, sBFList[0]
                     )
@@ -765,7 +806,3 @@ class TestFuelPlugin(unittest.TestCase):
 def addSomeDetailAssemblies(hist, assems):
     for a in assems:
         hist.detailAssemblyNames.append(a.getName())
-
-
-if __name__ == "__main__":
-    unittest.main()

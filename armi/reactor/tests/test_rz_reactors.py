@@ -12,10 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Test loading Theta-RZ reactor models.
-"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+"""Test loading Theta-RZ reactor models."""
 import math
 import os
 import unittest
@@ -85,7 +82,3 @@ class Test_RZT_Reactor_modern(unittest.TestCase):
         """
         error = math.fabs((refFuelVolume - sum(fuelVolumes)) / refFuelVolume)
         self.assertLess(error, tolerance)
-
-
-if __name__ == "__main__":
-    unittest.main()

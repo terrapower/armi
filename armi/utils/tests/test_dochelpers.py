@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for documentation helpers."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-member,disallowed-name,invalid-name
 import unittest
 
 from armi.reactor import reactors
@@ -74,7 +73,3 @@ class TestDocHelpers(unittest.TestCase):
         self.assertIn("width: 250", table)
         self.assertIn("widths: [200, 300]", table)
         self.assertIn("thing", table)
-
-
-if __name__ == "__main__":
-    unittest.main()

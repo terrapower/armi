@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for generic fuel performance executers."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import unittest
 
 from armi.physics.fuelPerformance.executers import (
@@ -30,7 +29,3 @@ class TestFuelPerformanceOptions(unittest.TestCase):
         cs = Settings()
         fpo.fromUserSettings(cs)
         self.assertEqual(fpo.bondRemoval, cs[CONF_BOND_REMOVAL])
-
-
-if __name__ == "__main__":
-    unittest.main()

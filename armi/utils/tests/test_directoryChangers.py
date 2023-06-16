@@ -13,10 +13,10 @@
 # limitations under the License.
 
 """Module for testing directoryChangers."""
-import os
-import unittest
 from pathlib import Path
+import os
 import shutil
+import unittest
 
 from armi.utils import directoryChangers
 from armi.utils import directoryChangersMpi
@@ -43,9 +43,7 @@ class TestDirectoryChangers(unittest.TestCase):
     def test_mpiAction(self):
         try:
             os.mkdir(self.temp_directory)
-            cdma = directoryChangersMpi._ChangeDirectoryMpiAction(
-                self.temp_directory
-            )  # pylint: disable=protected-access
+            cdma = directoryChangersMpi._ChangeDirectoryMpiAction(self.temp_directory)
             self.assertTrue(cdma.invoke(None, None, None))
         finally:
             os.chdir("..")
@@ -53,9 +51,7 @@ class TestDirectoryChangers(unittest.TestCase):
 
     def test_mpiActionFailsOnNonexistentPath(self):
         with self.assertRaises(IOError):
-            cdma = directoryChangersMpi._ChangeDirectoryMpiAction(
-                self.temp_directory
-            )  # pylint: disable=protected-access
+            cdma = directoryChangersMpi._ChangeDirectoryMpiAction(self.temp_directory)
             cdma.invoke(None, None, None)
 
     def test_exception(self):

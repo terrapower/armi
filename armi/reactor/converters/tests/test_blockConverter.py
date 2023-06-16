@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """Test block conversions."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import os
 import unittest
 
@@ -393,8 +392,3 @@ def buildControlBlockWithLinkedNegativeAreaComponent():
     b.getVolumeFractions()  # TODO: remove, should be no-op when removed self.cached
 
     return b
-
-
-if __name__ == "__main__":
-    #     import sys;sys.argv = ['', 'TestBlockConverter.test_convertHexWithFuelDriver']
-    unittest.main()

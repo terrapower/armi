@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """Tests the blueprints (loading input) file."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import os
 import pathlib
 import unittest
@@ -554,7 +553,3 @@ assemblies:
         componentGroup = design.componentGroups["group1"]
         self.assertEqual(componentGroup["freefuel"].name, "freefuel")
         self.assertEqual(componentGroup["freefuel"].mult, 1.0)
-
-
-if __name__ == "__main__":
-    unittest.main()

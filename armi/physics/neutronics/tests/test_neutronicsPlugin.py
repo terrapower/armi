@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""unit tests for the neutronics plugin."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+"""Unit tests for the neutronics plugin."""
 import io
 import unittest
 
@@ -348,7 +347,3 @@ class NeutronicsReactorTests(unittest.TestCase):
         self.assertEqual(
             inspector.cs[CONF_LATTICE_PHYSICS_FREQUENCY], "firstCoupledIteration"
         )
-
-
-if __name__ == "__main__":
-    unittest.main()

@@ -20,15 +20,15 @@ MCNP material cards.
 
 Normally, code-specific utility code would belong in a code-specific ARMI
 plugin. But in this case, the need for MCNP materials cards is so pervasive
-that it made it into the framework.
+that it made it into the framework
 """
 # sphinx_gallery_thumbnail_path = '.static/armi-logo.png'
 
-from armi.reactor.tests import test_reactors
-from armi.reactor.flags import Flags
-from armi.utils.densityTools import formatMaterialCard
+from armi import configure
 from armi.nucDirectory import nuclideBases as nb
-from armi import configure, runLog
+from armi.reactor.flags import Flags
+from armi.reactor.tests import test_reactors
+from armi.utils.densityTools import formatMaterialCard
 
 # configure ARMI
 configure(permissive=True)

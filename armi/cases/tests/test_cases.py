@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Unit tests for Case and CaseSuite objects."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import copy
 import cProfile
 import io
@@ -115,12 +114,22 @@ class TestArmiCase(unittest.TestCase):
         with directoryChangers.TemporaryDirectoryChanger():
             vals = {"cladThickness": 1, "control strat": "good", "enrich": 0.9}
             case = baseCase.clone()
-            case._independentVariables = vals  # pylint: disable=protected-access
+            case._independentVariables = vals
             case.writeInputs()
             newCs = settings.Settings(fName=case.title + ".yaml")
             newCase = cases.Case(newCs)
             for name, val in vals.items():
                 self.assertEqual(newCase.independentVariables[name], val)
+
+    def test_setUpTaskDependence(self):
+        case = cases.Case(settings.Settings())
+        case.enabled = False
+        case.setUpTaskDependence()
+        case.enabled = True
+        case.setUpTaskDependence()
+        self.assertTrue(case.enabled)
+        self.assertEqual(len(case._tasks), 0)
+        self.assertEqual(len(case.dependencies), 0)
 
     def test_getCoverageRcFile(self):
         case = cases.Case(settings.Settings())
@@ -619,7 +628,3 @@ class TestCopyInterfaceInputs(unittest.TestCase):
                 cs, destination=newDir.destination
             )
             self.assertEqual(str(newSettings[testSetting]), absFile)
-
-
-if __name__ == "__main__":
-    unittest.main()

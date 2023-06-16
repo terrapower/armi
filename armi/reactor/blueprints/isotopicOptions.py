@@ -83,7 +83,7 @@ class NuclideFlag(yamlize.Object):
     nuclideName = yamlize.Attribute(type=str)
 
     @nuclideName.validator
-    def nuclideName(self, value):  # pylint: disable=method-hidden
+    def nuclideName(self, value):
         if value not in ALLOWED_KEYS:
             raise ValueError(
                 "`{}` is not a valid nuclide name, must be one of: {}".format(
@@ -156,7 +156,7 @@ class CustomIsotopic(yamlize.Map):
     inputFormat = yamlize.Attribute(key="input format", type=str)
 
     @inputFormat.validator
-    def inputFormat(self, value):  # pylint: disable=method-hidden
+    def inputFormat(self, value):
         if value not in self._allowedFormats:
             raise ValueError(
                 "Cannot set `inputFormat` to `{}`, must be one of: {}".format(

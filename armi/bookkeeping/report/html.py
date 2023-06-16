@@ -21,7 +21,6 @@ import html
 import os
 
 from armi import context
-from armi import settings
 
 
 class HTMLFile:

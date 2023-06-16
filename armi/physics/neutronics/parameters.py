@@ -18,8 +18,6 @@ Parameter definitions for the Neutronics Plugin.
 We hope neutronics plugins that compute flux will use ``mgFlux``, etc.,
 which will enable modular construction of apps.
 """
-import numpy
-
 from armi.physics.neutronics.settings import CONF_DPA_PER_FLUENCE
 from armi.reactor import parameters
 from armi.reactor.blocks import Block

@@ -1806,7 +1806,7 @@ class ArmiObject(metaclass=CompositeModelType):
         param,
         typeSpec: TypeSpec = None,
         weightingParam=None,
-        volumeAveraged=True,  # pylint: disable=too-many-arguments
+        volumeAveraged=True,
         absolute=True,
         generationNum=1,
     ):
@@ -2914,9 +2914,7 @@ class Composite(ArmiObject):
                 # materials don't have Parameters to sync
                 continue
             data = (nodeSyncData[ci] for nodeSyncData in allSyncData)
-            syncCount += comp._syncParameters(  # pylint: disable=protected-access
-                data, errors
-            )
+            syncCount += comp._syncParameters(data, errors)
 
         if errors:
             errorData = sorted(

@@ -17,16 +17,14 @@ Test the cross section manager.
 
 :py:mod:`armi.physics.neutronics.crossSectionGroupManager`
 """
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
-
-import os
 from io import BytesIO
 import copy
+import os
 import unittest
 
 from six.moves import cPickle
 
-from armi import settings
+from armi import settings  # noqa: unused-import
 from armi.physics.neutronics import crossSectionGroupManager
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.physics.neutronics.crossSectionGroupManager import (
@@ -49,7 +47,6 @@ from armi.reactor.tests import test_reactors
 from armi.tests import TEST_ROOT
 from armi.utils import units
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
-from armi.settings.fwSettings.globalSettings import CONF_RUN_TYPE
 
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -687,8 +684,3 @@ def makeBlocks(howMany=20):
     _o, r = test_reactors.loadTestReactor(TEST_ROOT)
     # look at last x (potentialBlocks) assemblies to skip LTAs and center assemblies, which have less fissile mass
     return r.core.getBlocks(Flags.FUEL, exact=True)[-howMany:]
-
-
-if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'Test_CrossSectionGroupManager.test_createRepresentativeBlocksUsingExistingBlocks']
-    unittest.main()

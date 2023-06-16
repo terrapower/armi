@@ -137,7 +137,3 @@ class TestSchema(unittest.TestCase):
             expectedError = settingVal["error"]
             with self.assertRaises(expectedError):
                 self.cs = self.cs.modified(newSettings={settingName: invalidOption})
-
-
-if __name__ == "__main__":
-    unittest.main()

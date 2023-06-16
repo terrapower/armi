@@ -11,9 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-r"""Basic tests of the custom exceptions.
-"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-self-use,invalid-name
+"""Basic tests of the custom exceptions."""
 import unittest
 
 from armi.tests import mockRunLogs
@@ -62,7 +60,7 @@ class CustomExceptionTests(unittest.TestCase):
         return "warning from root".format()
 
     def test_warn_when_root_decorator(self):
-        import armi  # pylint: disable=import-outside-toplevel
+        import armi  # noqa: module-import-not-at-top-of-file
 
         with mockRunLogs.BufferLog() as mock:
             for ii in range(1, 4):
@@ -73,7 +71,3 @@ class CustomExceptionTests(unittest.TestCase):
                 self.exampleWarnWhenRootMessage()
                 self.assertEqual(msg, mock.getStdout())
                 armi.MPI_RANK = 0
-
-
-if __name__ == "__main__":
-    unittest.main()

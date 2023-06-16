@@ -11,10 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-Test GEODST reading and writing.
-"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+"""Test GEODST reading and writing."""
 import os
 import unittest
 
@@ -28,7 +25,7 @@ SIMPLE_GEODST = os.path.join(THIS_DIR, "fixtures", "simple_hexz.geodst")
 
 
 class TestGeodst(unittest.TestCase):
-    r"""
+    """
     Tests the GEODST class.
 
     This reads from a GEODST file that was created using DIF3D 11 on a small

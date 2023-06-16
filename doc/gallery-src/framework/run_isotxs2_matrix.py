@@ -24,11 +24,10 @@ See Also: :py:mod:`ISOTXS <armi.nuclearDataIO.isotxs>` format.
 """
 import matplotlib.pyplot as plt
 
-from armi.utils import units
-from armi.tests import ISOAA_PATH
-from armi.nuclearDataIO.cccc import isotxs
-from armi.nuclearDataIO import xsNuclides
 from armi import configure
+from armi.nuclearDataIO import xsNuclides
+from armi.nuclearDataIO.cccc import isotxs
+from armi.tests import ISOAA_PATH
 
 configure(permissive=True)
 

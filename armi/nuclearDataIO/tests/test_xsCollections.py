@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """Module that tests methods within xsCollections."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import os
 import unittest
 
@@ -152,8 +151,3 @@ class MockBlock(HexBlock):
 
     def getNuclides(self):
         return self.density.keys()
-
-
-if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'TestXsCollections.test_generateTotalScatteringMatrix']
-    unittest.main()

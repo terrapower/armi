@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """Tests the Interface."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import unittest
 import os
 
@@ -54,6 +53,26 @@ class TestCodeInterface(unittest.TestCase):
         self.assertEqual(i.enabled(), False)
         i.enabled(True)
         self.assertEqual(i.enabled(), True)
+
+    def test_nameContains(self):
+        i = DummyInterface(None, self.cs)
+        self.assertFalse(i.nameContains("nope"))
+        self.assertTrue(i.nameContains("Dum"))
+
+    def test_distributable(self):
+        i = DummyInterface(None, self.cs)
+        self.assertEqual(i.distributable(), 1)
+
+    def test_preDistributeState(self):
+        i = DummyInterface(None, self.cs)
+        self.assertEqual(i.preDistributeState(), {})
+
+    def test_duplicate(self):
+        i = DummyInterface(None, self.cs)
+        iDup = i.duplicate()
+
+        self.assertEqual(type(i), type(iDup))
+        self.assertEqual(i.enabled(), iDup.enabled())
 
 
 class TestTextProcessor(unittest.TestCase):
@@ -145,7 +164,3 @@ class TestTightCoupler(unittest.TestCase):
         self.assertEqual(interfaces.TightCoupler.getListDimension(a), 2)
         a = [[[1, 2, 3]]]
         self.assertEqual(interfaces.TightCoupler.getListDimension(a), 3)
-
-
-if __name__ == "__main__":
-    unittest.main()

@@ -650,9 +650,6 @@ def _unitPolyVerts(theta):
     verts = list(zip(r * numpy.cos(theta) + x0, r * numpy.sin(theta) + y0))
     return verts
 
-    # pylint: disable=differing-param-doc
-    # pylint: disable=differing-type-doc
-
 
 def createPlotMetaData(
     title, xLabel, yLabel, xMajorTicks=None, yMajorTicks=None, legendLabels=None

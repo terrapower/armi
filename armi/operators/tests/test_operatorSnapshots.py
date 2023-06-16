@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """Tests for operator snapshots."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-method-argument,import-outside-toplevel
 import unittest
 
 from armi import settings
@@ -98,7 +97,3 @@ class TestOperatorSnapshotsSettings(unittest.TestCase):
         cs = cs.modified(newSettings={"runType": RunTypes.SNAPSHOTS})
         clazz = getOperatorClassFromSettings(cs)
         self.assertEqual(clazz, OperatorSnapshots)
-
-
-if __name__ == "__main__":
-    unittest.main()

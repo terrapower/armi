@@ -13,15 +13,14 @@
 # limitations under the License.
 
 """Test for xs nuclides."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import unittest
 
-from armi.nuclearDataIO import xsNuclides
 from armi.nucDirectory import nuclideBases
-from armi.tests import mockRunLogs
-from armi.tests import ISOAA_PATH
-from armi.nuclearDataIO import xsLibraries
 from armi.nuclearDataIO import isotxs
+from armi.nuclearDataIO import xsLibraries
+from armi.nuclearDataIO import xsNuclides
+from armi.tests import ISOAA_PATH
+from armi.tests import mockRunLogs
 
 
 class NuclideTests(unittest.TestCase):
@@ -165,23 +164,34 @@ class NuclideTests(unittest.TestCase):
         self.assertAlmostEqual(0.457990020514, inelasticScatter[(2, 2)])
         self.assertAlmostEqual(1.16550609164e-07, n2nScatter[(19, 1)])
         self.assertAlmostEqual(5.22556074429e-05, inelasticScatter[(16, 2)])
-        ######
         # the code below is very useful for generating the above test information
-        ######
-        # for key, xs in pu239Scatter.items():
-        #    mk = max(key[1:])
-        #    if len(key)  == 5 and 1 in key and 2 in key and (mk <= 2 or mk > 15):
-        #        print ('self.assertAlmostEqual({}, pu239.micros[{}])'
-        #               .format(xs, key))
+        """
+        for key, xs in pu239Scatter.items():
+            mk = max(key[1:])
+            if len(key)  == 5 and 1 in key and 2 in key and (mk <= 2 or mk > 15):
+                print ('self.assertAlmostEqual({}, pu239.micros[{}])'
+                       .format(xs, key))
+        """
 
     def test_getMicroXS(self):
         """Check whether getMicroXS method returns the correct cross sections for the input nuclide."""
         u235Nuc = self.lib["U235AA"]
         for i in range(self.lib.numGroups):
-            ref_FissionXS = u235Nuc.micros.fission[i]
-            cur_FissionXS = u235Nuc.getMicroXS("fission", i)
-            self.assertAlmostEqual(ref_FissionXS, cur_FissionXS)
+            refFissionXS = u235Nuc.micros.fission[i]
+            curFissionXS = u235Nuc.getMicroXS("fission", i)
+            self.assertAlmostEqual(refFissionXS, curFissionXS)
 
+        # error raised if you attempt a bad group index
+        with self.assertRaises(IndexError):
+            u235Nuc.getMicroXS("fission", -999)
 
-if __name__ == "__main__":
-    unittest.main()
+        # zero returned if you try to grab a non-existant interaction
+        self.assertEqual(u235Nuc.getMicroXS("fake", 1), 0)
+
+    def test_getXS(self):
+        u235Nuc = self.lib["U235AA"]
+        refFission = u235Nuc.micros.fission
+        curFission = u235Nuc.getXS("fission")
+        self.assertAlmostEqual(len(refFission), len(curFission))
+        self.assertAlmostEqual(refFission[0], curFission[0])
+        self.assertAlmostEqual(refFission[1], curFission[1])

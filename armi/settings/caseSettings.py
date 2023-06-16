@@ -23,7 +23,6 @@ A settings object can be saved as or loaded from an YAML file. The ARMI GUI is d
 create this settings file, which is then loaded by an ARMI process on the cluster.
 
 A primary case settings is created as ``masterCs``
-
 """
 import io
 import logging
@@ -92,7 +91,7 @@ class Settings:
         provided by the user on the command line.  Therefore, _failOnLoad is used to
         prevent this from happening.
         """
-        from armi import getApp  # pylint: disable=import-outside-toplevel
+        from armi import getApp  # noqa: module-import-not-at-top-of-file
 
         self.path = ""
 
@@ -140,7 +139,7 @@ class Settings:
 
     def __repr__(self):
         total = len(self.__settings.keys())
-        isAltered = lambda setting: 1 if setting.value != setting.default else 0
+        isAltered = lambda s: 1 if s.value != s.default else 0
         altered = sum([isAltered(setting) for setting in self.__settings.values()])
 
         return "<{} name:{} total:{} altered:{}>".format(
@@ -222,7 +221,7 @@ class Settings:
         --------
         armi.settings.setting.Setting.__getstate__ : removes schema
         """
-        from armi import getApp  # pylint: disable=import-outside-toplevel
+        from armi import getApp  # noqa: module-import-not-at-top-of-file
 
         self.__settings = getApp().getSettings()
 
@@ -233,7 +232,6 @@ class Settings:
 
         # with schema restored, restore all setting values
         for name, settingState in state["_Settings__settings"].items():
-            # pylint: disable=protected-access
             if name in self.__settings:
                 self.__settings[name]._value = settingState.value
             elif isinstance(settingState, Setting):
@@ -253,7 +251,7 @@ class Settings:
     def duplicate(self):
         """Return a duplicate copy of this settings object."""
         cs = deepcopy(self)
-        cs._failOnLoad = False  # pylint: disable=protected-access
+        cs._failOnLoad = False
         # it's not really protected access since it is a new Settings object.
         # _failOnLoad is set to false, because this new settings object should be independent of the command line
         return cs
@@ -289,7 +287,7 @@ class Settings:
         """Add any ad-hoc 'user' plugins that are referenced in the settings file."""
         userPlugins = self["userPlugins"]
         if len(userPlugins):
-            from armi import getApp  # pylint: disable=import-outside-toplevel
+            from armi import getApp  # noqa: module-import-not-at-top-of-file
 
             app = getApp()
             app.registerUserPlugins(userPlugins)
@@ -449,7 +447,6 @@ class Settings:
 
     def modified(self, caseTitle=None, newSettings=None):
         """Return a new Settings object containing the provided modifications."""
-        # pylint: disable=protected-access
         settings = self.duplicate()
 
         if caseTitle:

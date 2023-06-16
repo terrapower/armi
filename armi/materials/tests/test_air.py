@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""unit tests for air materials."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+"""Unit tests for air materials."""
 
 import math
 import unittest
@@ -263,7 +262,3 @@ class Test_Air(unittest.TestCase):
         tc0 = air.thermalConductivity(Tk=201)
         tcf = air.thermalConductivity(Tk=849)
         self.assertGreater(tcf, tc0)
-
-
-if __name__ == "__main__":
-    unittest.main()

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Generic ARMI utilities."""
+# ruff: noqa: F405
 import collections
 import getpass
 import hashlib
@@ -28,8 +29,8 @@ import time
 
 from armi import runLog
 from armi.utils import iterables
-from armi.utils.flags import Flag
-from armi.utils.mathematics import *  # for backwards compatibility
+from armi.utils.flags import Flag  # noqa: unused-import
+from armi.utils.mathematics import *  # noqa: undefined-local-with-import-star
 
 # Read in file 1 MB at a time to reduce memory burden of reading entire file at once
 _HASH_BUFFER_SIZE = 1024 * 1024
@@ -469,7 +470,7 @@ def tryPickleOnAllContents(obj, ignore=None, verbose=False):
                 print("Checking {0}...".format(name))
             try:
                 pickle.dumps(ob)  # dump as a string
-            except:
+            except:  # noqa: bare-except
                 print(
                     "{0} in {1} cannot be pickled. It is: {2}. ".format(name, obj, ob)
                 )
@@ -496,7 +497,7 @@ def doTestPickleOnAllContents2(obj, ignore=None):
         if name not in ignore:
             try:
                 pickle.dumps(ob)  # dump as a string
-            except:
+            except:  # noqa: bare-except
                 unpickleable.append(name)
                 print("Cant pickle {0}".format(name))
                 # recursive call.
@@ -736,17 +737,17 @@ def plotMatrix(
     import matplotlib.pyplot as plt
 
     if figsize:
-        plt.figure(figsize=figsize)  # dpi=300)
+        plt.figure(figsize=figsize)
     else:
         plt.figure()
 
     if cmap is None:
-        cmap = plt.cm.jet  # @UndefinedVariable  #pylint: disable=no-member
+        cmap = plt.cm.jet
 
     cmap.set_bad("w")
     try:
         matrix = matrix.todense()
-    except:
+    except:  # noqa: bare-except
         pass
 
     if minV:

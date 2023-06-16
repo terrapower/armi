@@ -125,7 +125,7 @@ class ComponentBlueprint(yamlize.Object):
     flags = yamlize.Attribute(type=str, default=None)
 
     @name.validator
-    def name(self, name):  # pylint: disable=no-self-use; reason=yamlize requirement
+    def name(self, name):
         """Validate component names."""
         if name == "cladding":
             # many users were mixing cladding and clad and it caused issues downstream
@@ -137,7 +137,7 @@ class ComponentBlueprint(yamlize.Object):
     shape = yamlize.Attribute(type=str)
 
     @shape.validator
-    def shape(self, shape):  # pylint: disable=no-self-use; reason=yamlize requirement
+    def shape(self, shape):
         normalizedShape = shape.strip().lower()
         if (
             normalizedShape not in components.ComponentType.TYPES

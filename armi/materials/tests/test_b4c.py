@@ -11,10 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-Tests for boron carbide.
-"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+"""Tests for boron carbide."""
 import unittest
 
 from armi.materials.b4c import B4C, DEFAULT_THEORETICAL_DENSITY_FRAC
@@ -51,7 +48,3 @@ class B4C_TestCase(_Material_Test, unittest.TestCase):
 
     def test_propertyValidTemperature(self):
         self.assertGreater(len(self.mat.propertyValidTemperature), 0)
-
-
-if __name__ == "__main__":
-    unittest.main()

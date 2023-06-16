@@ -11,10 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-Tests for the uniform mesh geometry converter.
-"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+"""Tests for the uniform mesh geometry converter."""
 import collections
 import os
 import random
@@ -714,7 +711,3 @@ class TestUniformMeshNonUniformAssemFlags(unittest.TestCase):
             for b in a:
                 self.assertTrue(b.p.rateCap)
                 self.assertTrue(b.p.rateAbs)
-
-
-if __name__ == "__main__":
-    unittest.main()

@@ -46,7 +46,6 @@ import os
 import shutil
 import subprocess
 
-from armi import context
 from armi import runLog
 from armi.utils.pathTools import cleanPath
 

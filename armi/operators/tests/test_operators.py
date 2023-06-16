@@ -13,10 +13,9 @@
 # limitations under the License.
 
 """Tests for operators."""
-
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-method-argument,import-outside-toplevel
 import os
 import unittest
+from unittest.mock import patch
 import collections
 
 from armi import settings
@@ -123,18 +122,47 @@ class OperatorTests(unittest.TestCase):
         cs = self.o.setStateToDefault(self.o.cs)
         self.assertEqual(cs[CONF_RUN_TYPE], "Standard")
 
-    def test_snapshotRequest(self):
+    @patch("shutil.copy")
+    @patch("os.listdir")
+    def test_snapshotRequest(self, fakeDirList, fakeCopy):
+        fakeDirList.return_value = ["mccAA.inp"]
         with TemporaryDirectoryChanger():
             with mockRunLogs.BufferLog() as mock:
                 self.o.snapshotRequest(0, 1)
                 self.assertIn("ISOTXS-c0", mock.getStdout())
-                self.assertIn("DIF3D output for snapshot", mock.getStdout())
+                self.assertIn(
+                    "DIF3D input for snapshot: armiRun-flux-c0n1.inp",
+                    mock.getStdout(),
+                )
+                self.assertIn(
+                    "DIF3D output for snapshot: armiRun-flux-c0n1.out",
+                    mock.getStdout(),
+                )
                 self.assertIn("Shuffle logic for snapshot", mock.getStdout())
                 self.assertIn("Geometry file for snapshot", mock.getStdout())
                 self.assertIn("Loading definition for snapshot", mock.getStdout())
                 self.assertIn("Flow history for snapshot", mock.getStdout())
                 self.assertIn("Pressure history for snapshot", mock.getStdout())
             self.assertTrue(os.path.exists("snapShot0_1"))
+
+        with TemporaryDirectoryChanger():
+            with mockRunLogs.BufferLog() as mock:
+                self.o.snapshotRequest(0, 2, iteration=1)
+                self.assertIn("ISOTXS-c0", mock.getStdout())
+                self.assertIn(
+                    "DIF3D input for snapshot: armiRun-flux-c0n2i1.inp",
+                    mock.getStdout(),
+                )
+                self.assertIn(
+                    "DIF3D output for snapshot: armiRun-flux-c0n2i1.out",
+                    mock.getStdout(),
+                )
+                self.assertIn("Shuffle logic for snapshot", mock.getStdout())
+                self.assertIn("Geometry file for snapshot", mock.getStdout())
+                self.assertIn("Loading definition for snapshot", mock.getStdout())
+                self.assertIn("Flow history for snapshot", mock.getStdout())
+                self.assertIn("Pressure history for snapshot", mock.getStdout())
+            self.assertTrue(os.path.exists("snapShot0_2"))
 
 
 class TestTightCoupling(unittest.TestCase):
@@ -172,7 +200,6 @@ class TestTightCoupling(unittest.TestCase):
             def isConverged(self, _val: TightCoupler._SUPPORTED_TYPES) -> bool:
                 return False
 
-        # pylint: disable=abstract-method
         class InterfaceNoConverge(Interface):
             name = "NoConverge"
 
@@ -383,7 +410,3 @@ class TestInterfaceAndEventHeaders(unittest.TestCase):
             ),
             f" - cycle {cycle}, node {timeNode}",
         )
-
-
-if __name__ == "__main__":
-    unittest.main()

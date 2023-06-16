@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """Provides functionality for testing implementations of plugins."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import unittest
 from typing import Optional
 
@@ -73,7 +72,3 @@ class TestPlugin(unittest.TestCase):
             self.assertIsInstance(order, (int, float))
             self.assertTrue(issubclass(interface, interfaces.Interface))
             self.assertIsInstance(kwargs, dict)
-
-
-if __name__ == "__main__":
-    unittest.main()

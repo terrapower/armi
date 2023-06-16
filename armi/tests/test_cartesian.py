@@ -12,10 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Tests for Cartesian reactors.
-"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+"""Tests for Cartesian reactors."""
 import unittest
 
 from armi.reactor import geometry
@@ -52,8 +49,3 @@ class CartesianReactorTests(unittest.TestCase):
         self.assertEqual(self.r.core.geomType, geometry.GeomType.CARTESIAN)
         # from blueprints input file
         self.assertAlmostEqual(custom.getNumberDensity("U238"), 0.0134125)
-
-
-if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'Test.testName']
-    unittest.main()

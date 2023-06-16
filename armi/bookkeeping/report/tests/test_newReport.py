@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """Test new reports."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import collections
 import os
 import unittest
@@ -21,12 +20,12 @@ import unittest
 import htmltree
 
 from armi import getPluginManagerOrFail
-from armi.bookkeeping.report import newReports
 from armi.bookkeeping.report import data
+from armi.bookkeeping.report import newReports
 from armi.physics.neutronics.reports import neutronicsPlotting
 from armi.reactor.tests import test_reactors
-from armi.tests import TEST_ROOT
 from armi.tests import mockRunLogs
+from armi.tests import TEST_ROOT
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
@@ -156,7 +155,3 @@ class TestReportContentCreation(unittest.TestCase):
             env.writeHTML()
             self.assertIn("Writing HTML document", mock.getStdout())
             self.assertIn("[info] HTML document", mock.getStdout())
-
-
-if __name__ == "__main__":
-    unittest.main()

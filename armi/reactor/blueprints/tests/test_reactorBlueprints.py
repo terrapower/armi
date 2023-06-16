@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """Tests for reactor blueprints."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import os
 import unittest
 
@@ -117,7 +116,3 @@ class TestReactorBlueprints(unittest.TestCase):
         materialData = reactorBlueprint.summarizeMaterialData(core)
         for actual, expected in zip(materialData, expectedMaterialData):
             self.assertEqual(actual, expected)
-
-
-if __name__ == "__main__":
-    unittest.main()
