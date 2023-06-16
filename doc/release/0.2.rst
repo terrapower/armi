@@ -2,9 +2,21 @@
 ARMI v0.2 Release Notes
 =======================
 
-ARMI v0.2.8
+ARMI v0.2.9
 ===========
 Release Date: TBD
+
+What's new in ARMI
+------------------
+#. TBD
+
+Bug fixes
+---------
+#. TBD
+
+ARMI v0.2.8
+===========
+Release Date: 2023-06-16
 
 What's new in ARMI
 ------------------
