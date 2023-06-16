@@ -332,6 +332,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
                 axialExpansionChanger.makeAssemsAbleToSnapToUniformMesh(
                     self.assemblies.values(), cs[CONF_NON_UNIFORM_ASSEM_FLAGS]
                 )
+
             if not cs[CONF_INPUT_HEIGHTS_HOT]:
                 runLog.header(
                     "=========== Axially expanding all assemblies from Tinput to Thot ==========="
