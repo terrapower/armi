@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for C5G7 input files."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 from logging import WARNING
 import os
 import unittest

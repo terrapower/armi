@@ -115,7 +115,7 @@ class _FlagMeta(type):
         to ``type(klass).__getitem__(klass, key)``, which for an implementation of Flag
         is this metaclass.
         """
-        return cls(cls._nameToValue[key])  # pylint: disable=E1120
+        return cls(cls._nameToValue[key])
 
 
 class Flag(metaclass=_FlagMeta):
@@ -136,7 +136,6 @@ class Flag(metaclass=_FlagMeta):
         represent a Flag's values in smaller chunks.
     """
 
-    # for pylint. Set by metaclass
     _autoAt = None
     _nameToValue = dict()
     _valuesTaken = set()

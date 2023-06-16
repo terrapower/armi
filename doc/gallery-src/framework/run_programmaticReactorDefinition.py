@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-Build Reactor Inputs Programmatically
-=====================================
+Build Reactor Inputs Programmatically.
 
 Sometimes it's desirable to build input definitions for ARMI using
 code rather than by writing the textual input files directly.
@@ -26,26 +25,26 @@ programmatically (e.g. for parameter sweeps).
 
 This example shows how to make Blueprints objects programmatically completely
 from scratch.
-
 """
+# ruff: noqa: E402
 import matplotlib.pyplot as plt
-from armi import configure, runLog
+
+from armi import configure
 
 # configure ARMI
 configure(permissive=True)
 
-# pylint: disable=wrong-import-position
-from armi.reactor import blueprints
+from armi import cases
 from armi import settings
-from armi.settings import caseSettings
-from armi.reactor.blueprints import isotopicOptions
+from armi.reactor import blueprints
 from armi.reactor.blueprints import assemblyBlueprint
 from armi.reactor.blueprints import blockBlueprint
 from armi.reactor.blueprints import componentBlueprint
 from armi.reactor.blueprints import gridBlueprint
+from armi.reactor.blueprints import isotopicOptions
 from armi.reactor.blueprints import reactorBlueprint
+from armi.settings import caseSettings
 from armi.utils import plotting
-from armi import cases
 
 
 def buildCase():

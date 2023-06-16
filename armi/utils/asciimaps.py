@@ -126,7 +126,7 @@ class AsciiMap:
             self.asciiLines.append(columns)
             if len(columns) > self._asciiMaxCol:
                 self._asciiMaxCol = len(columns)
-        self._asciiMaxLine = li + 1  # pylint: disable=undefined-loop-variable
+        self._asciiMaxLine = li + 1
         self._updateDimensionsFromAsciiLines()
         self._asciiLinesToIndices()
         self._makeOffsets()
@@ -215,7 +215,7 @@ class AsciiMap:
                 # doing pure rows from data is made programmatically.
                 # newLines.append(line)
                 raise ValueError(
-                    f"Cannot write asciimaps with blank rows from pure data yet."
+                    "Cannot write asciimaps with blank rows from pure data yet."
                 )
         if not newLines:
             raise ValueError("No data found")
@@ -240,9 +240,7 @@ class AsciiMap:
         """Convert read in ASCII lines to a asciiLabelByIndices structure."""
 
     def _getIJFromColRow(self, columnNum: int, lineNum: int) -> tuple:
-        """
-        Get ij data indices from ascii map text coords.
-        """
+        """Get ij data indices from ascii map text coords."""
         raise NotImplementedError
 
     def __getitem__(self, ijKey):

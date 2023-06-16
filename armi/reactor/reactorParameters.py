@@ -12,11 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Reactor parameter definitions.
-"""
-import numpy
-
+"""Reactor parameter definitions."""
 from armi.reactor import parameters
 from armi.reactor.parameters import ParamLocation
 from armi.reactor.parameters.parameterDefinitions import isNumpyArray

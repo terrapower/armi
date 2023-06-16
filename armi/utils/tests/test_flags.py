@@ -11,8 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-r"""Testing flags.py."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-member,disallowed-name,invalid-name
+"""Testing flags.py."""
 import unittest
 
 from armi.utils.flags import Flag, auto
@@ -74,7 +73,7 @@ class TestFlag(unittest.TestCase):
         """Make sure that we catch value collisions."""
         with self.assertRaises(AssertionError):
 
-            class F(Flag):  # pylint: disable=unused-variable
+            class F(Flag):
                 foo = 1
                 bar = 1
 

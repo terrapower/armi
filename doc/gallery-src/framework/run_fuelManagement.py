@@ -26,18 +26,16 @@ Because the ARMI framework does not come with a LWR global flux/depletion solver
 flux/depletion results would need to be provided by a physics plugin before actually using
 ARMI to do fuel management. Thus, this example applies a dummy burnup distribution for
 demonstration purposes.
-
 """
 # Tell the gallery to feature the 2nd image
 # sphinx_gallery_thumbnail_number = 2
 import math
 
+from armi import configure
+from armi.physics.fuelCycle import fuelHandlers
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
-from armi.physics.fuelCycle import fuelHandlers
 from armi.utils import plotting
-
-from armi import configure, runLog
 
 # configure ARMI
 configure(permissive=True)

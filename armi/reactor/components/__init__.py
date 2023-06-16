@@ -26,16 +26,16 @@ These objects hold the dimensions, temperatures, composition, and shape of react
 
     Class inheritance diagram for :py:mod:`armi.reactor.components`.
 """
-
+# ruff: noqa: F405
 import math
 
 import numpy
 
 from armi import runLog
-from armi.reactor.components.component import *  # pylint: disable=wildcard-import
-from armi.reactor.components.basicShapes import *  # pylint: disable=wildcard-import
-from armi.reactor.components.complexShapes import *  # pylint: disable=wildcard-import
-from armi.reactor.components.volumetricShapes import *  # pylint: disable=wildcard-import
+from armi.reactor.components.component import *  # noqa: undefined-local-with-import-star
+from armi.reactor.components.basicShapes import *  # noqa: undefined-local-with-import-star
+from armi.reactor.components.complexShapes import *  # noqa: undefined-local-with-import-star
+from armi.reactor.components.volumetricShapes import *  # noqa: undefined-local-with-import-star
 
 
 def factory(shape, bcomps, kwargs):
@@ -46,11 +46,9 @@ def factory(shape, bcomps, kwargs):
     ---------
     shape : str
         lowercase string corresponding to the component type name
-
     bcomps : list(Component)
         list of "sibling" components. This list is used to find component links, which are of the form
         ``<name>.<dimension``.
-
     kwargs : dict
         dictionary of inputs for the Component subclass's ``__init__`` method.
     """
@@ -136,7 +134,7 @@ class UnshapedComponent(Component):
         Thot,
         area=numpy.NaN,
         modArea=None,
-        isotopics=None,  # pylint: disable=too-many-arguments
+        isotopics=None,
         mergeWith=None,
         components=None,
     ):
@@ -221,7 +219,7 @@ class UnshapedVolumetricComponent(UnshapedComponent):
         Thot,
         area=numpy.NaN,
         op=None,
-        isotopics=None,  # pylint: disable=too-many-arguments
+        isotopics=None,
         mergeWith=None,
         components=None,
         volume=numpy.NaN,
@@ -368,7 +366,7 @@ class DerivedShape(UnshapedComponent):
             try:
                 if siblingArea is not None:
                     siblingArea += sibling.getArea()
-            except:
+            except:  # noqa: bare-except
                 siblingArea = None
 
         remainingVolume = self.parent.getMaxVolume() - siblingVolume

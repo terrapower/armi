@@ -173,7 +173,7 @@ class MasterTimer:
             timer.over_start = 0  # deal with what recursion may have caused
             timer.stop()
 
-        _Timer._frozen = True  # pylint: disable=protected-access
+        _Timer._frozen = True
 
         master.end_time = time.time()
 

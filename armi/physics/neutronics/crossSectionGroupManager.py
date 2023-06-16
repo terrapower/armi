@@ -73,8 +73,7 @@ ORDER = interfaces.STACK_ORDER.BEFORE + interfaces.STACK_ORDER.CROSS_SECTIONS
 
 def describeInterfaces(cs):
     """Function for exposing interface(s) to other code."""
-    # pylint: disable=import-outside-toplevel # avoid cyclic import
-    from armi.physics.neutronics.settings import CONF_NEUTRONICS_KERNEL
+    from armi.physics.neutronics.settings import CONF_NEUTRONICS_KERNEL  # noqa: E402
 
     if "MCNP" not in cs[CONF_NEUTRONICS_KERNEL]:  # MCNP does not use CSGM
         return (CrossSectionGroupManager, {})
@@ -721,12 +720,15 @@ class CrossSectionGroupManager(interfaces.Interface):
 
     def interactBOL(self):
         # now that all cs settings are loaded, apply defaults to compound XS settings
-        # pylint: disable=import-outside-toplevel # avoid cyclic import
         from armi.physics.neutronics.settings import (
             CONF_XS_BLOCK_REPRESENTATION,
+        )  # noqa: E402
+        from armi.physics.neutronics.settings import (
             CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION,
+        )  # noqa: E402
+        from armi.physics.neutronics.settings import (
             CONF_LATTICE_PHYSICS_FREQUENCY,
-        )
+        )  # noqa: E402
 
         self.cs[CONF_CROSS_SECTION].setDefaults(
             self.cs[CONF_XS_BLOCK_REPRESENTATION],
@@ -942,9 +944,7 @@ class CrossSectionGroupManager(interfaces.Interface):
         return (filePath, fileName)
 
     def createRepresentativeBlocks(self):
-        """
-        Get a representative block from each cross section ID managed here.
-        """
+        """Get a representative block from each cross section ID managed here."""
         representativeBlocks = {}
         self.avgNucTemperatures = {}
         self._unrepresentedXSIDs = []
@@ -1191,8 +1191,9 @@ class CrossSectionGroupManager(interfaces.Interface):
 
     def _summarizeGroups(self, blockCollectionsByXsGroup):
         """Summarize current contents of the XS groups."""
-        # pylint: disable=import-outside-toplevel # avoid cyclic import
-        from armi.physics.neutronics.settings import CONF_XS_BLOCK_REPRESENTATION
+        from armi.physics.neutronics.settings import (
+            CONF_XS_BLOCK_REPRESENTATION,
+        )  # noqa: E402
 
         runLog.extra("Cross section group manager summary")
         runLog.extra(

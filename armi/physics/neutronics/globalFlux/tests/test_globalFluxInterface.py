@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for generic global flux interface."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import unittest
 
 import numpy
@@ -31,7 +30,7 @@ from armi.reactor.tests import test_blocks
 from armi.reactor.tests import test_reactors
 from armi.tests import ISOAA_PATH
 
-# pylint: disable=abstract-method
+
 class MockReactorParams:
     def __init__(self):
         self.cycle = 1
@@ -97,7 +96,7 @@ class MockGlobalFluxExecuter(globalFluxInterface.GlobalFluxExecuter):
 
     def _readOutput(self):
         class MockOutputReader:
-            def apply(self, r):  # pylint: disable=no-self-use
+            def apply(self, r):
                 r.core.p.keff += 0.01
 
             def getKeff(self):
@@ -215,7 +214,6 @@ class TestGlobalFluxInterfaceWithExecuters(unittest.TestCase):
         self._setTightCouplingFalse()
 
     def _setTightCouplingTrue(self):
-        # pylint: disable=no-member,protected-access
         self.cs["tightCoupling"] = True
         self.gfi._setTightCouplingDefaults()
 

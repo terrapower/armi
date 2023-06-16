@@ -106,7 +106,6 @@ def defineValidators(inspector):
             and not inspector.cs["doTH"],
             "A fuel performance behavior has been selected which may require thermal-hydraulics.",
             "Would you like to turn the TH option on?",
-            # pylint: disable=protected-access
             lambda: inspector._assignCS("doTH", True),
         ),
     ]

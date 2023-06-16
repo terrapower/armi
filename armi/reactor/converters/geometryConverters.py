@@ -245,9 +245,7 @@ class FuelAssemNumModifier(GeometryChanger):
             self.addRing(assemType=assemType)
 
         # Complete the reactor loading
-        self._sourceReactor.core.processLoading(
-            self._cs
-        )  # pylint: disable=protected-access
+        self._sourceReactor.core.processLoading(self._cs)
         self._sourceReactor.core.numRings = self._sourceReactor.core.getNumRings()
         self._sourceReactor.core.regenAssemblyLists()
         self._sourceReactor.core.circularRingList = (

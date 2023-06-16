@@ -11,9 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-r"""Tests materials.py."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-member,invalid-name
+"""Tests materials.py."""
 
 import math
 import pickle
@@ -493,7 +491,6 @@ class Uranium_TestCase(_Material_Test, unittest.TestCase):
     def test_applyInputParams(self):
         # check the defaults when applyInputParams is applied without arguments
         U235_wt_frac_default = 0.0071136523
-        TD_frac_default = 1.0
         self.mat.applyInputParams()
         self.assertAlmostEqual(self.mat.massFrac["U235"], U235_wt_frac_default)
         densityTemp = self.mat.density(Tk=materials.Uranium._densityTableK[0])
@@ -555,7 +552,6 @@ class Uranium_TestCase(_Material_Test, unittest.TestCase):
         ):
             lowerBound = self.mat.propertyValidTemperature[propName][0][0]
             upperBound = self.mat.propertyValidTemperature[propName][0][1]
-            unit = self.mat.propertyValidTemperature[propName][1]
             with mockRunLogs.BufferLog() as mock:
                 getattr(self.mat, methodName)(lowerBound - 1)
                 self.assertIn(
@@ -819,9 +815,7 @@ class Void_TestCase(_Material_Test, unittest.TestCase):
         self.assertEqual(cur, 0.0)
 
     def test_density(self):
-        """
-        this material has no density function.
-        """
+        """This material has no density function."""
         self.assertEqual(self.mat.density(500), 0)
 
         self.mat.setDefaultMassFracs()
@@ -841,20 +835,17 @@ class Mixture_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials._Mixture
 
     def test_density(self):
-        """
-        this material has no density function.
-        """
+        """This material has no density function."""
         self.assertEqual(self.mat.density(500), 0)
 
     def test_setDefaultMassFracs(self):
         self.mat.setDefaultMassFracs()
         cur = self.mat.pseudoDensity(500)
-        ref = 0.0
-        self.assertEqual(cur, ref)
+        self.assertEqual(cur, 0.0)
 
     def test_linearExpansion(self):
         with self.assertRaises(NotImplementedError):
-            cur = self.mat.linearExpansion(400)
+            _cur = self.mat.linearExpansion(400)
 
     def test_propertyValidTemperature(self):
         self.assertEqual(len(self.mat.propertyValidTemperature), 0)

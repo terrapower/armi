@@ -80,7 +80,6 @@ Then if you want to write that data to an ASCII file named ``rtflux.ascii``, you
 
 >>> rtflux.RtfluxStream.writeAscii(rtfluxData, "rtflux.ascii")
 
-
 Implementation details
 ----------------------
 We have come up with a powerful but somewhat confusing-at-first implementation that allows
@@ -115,6 +114,5 @@ has since been updated significantly to both read and write the files.
 
 This was originally inspired by Prof. James Paul Holloway's alpha
 release of ccccutils written in c++ from 2001.
-
 """
-from .cccc import *
+from .cccc import *  # noqa: unused-import

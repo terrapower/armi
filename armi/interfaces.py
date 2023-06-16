@@ -35,12 +35,12 @@ import numpy
 from numpy.linalg import norm
 
 from armi import getPluginManagerOrFail, settings, utils
-from armi.utils import textProcessors
-from armi.reactor import parameters
 from armi import runLog
+from armi.reactor import parameters
+from armi.utils import textProcessors
 
 
-class STACK_ORDER:  # pylint: disable=invalid-name, too-few-public-methods
+class STACK_ORDER:
     """
     Constants that help determine the order of modules in the interface stack.
 
@@ -242,15 +242,13 @@ class Interface:
     :py:meth:`armi.operators.operator.Operator.createInterfaces`.
     """
 
-    # pylint: disable=too-many-instance-attributes,too-many-public-methods
-
     # list containing interfaceClass
     @classmethod
-    def getDependencies(cls, cs):  # pylint: disable=unused-argument
+    def getDependencies(cls, cs):
         return []
 
     @classmethod
-    def getInputFiles(cls, cs):  # pylint: disable=unused-argument
+    def getInputFiles(cls, cs):
         """
         Return a MergeableDict containing files that should be considered "input".
         """
@@ -270,7 +268,7 @@ class Interface:
     interfaces.
     """
 
-    class Distribute:  # pylint: disable=too-few-public-methods
+    class Distribute:
         """Enum-like return flag for behavior on interface broadcasting with MPI."""
 
         DUPLICATE = 1
@@ -327,11 +325,10 @@ class Interface:
         -----
         Cases where this isn't possible include the database interface,
         where the SQL driver cannot be distributed.
-
         """
         return self.Distribute.DUPLICATE
 
-    def preDistributeState(self):  # pylint: disable=no-self-use
+    def preDistributeState(self):
         """
         Prepare for distribute state by returning all non-distributable attributes.
 
@@ -341,7 +338,7 @@ class Interface:
         """
         return {}
 
-    def postDistributeState(self, toRestore):  # pylint: disable=no-self-use
+    def postDistributeState(self, toRestore):
         """Restore non-distributable attributes after a distributeState."""
         pass
 
@@ -381,10 +378,8 @@ class Interface:
         -------
         Interface
             The deepcopy of this interface with detached reactor/operator/settings
-
         """
-
-        # temporarily remove references to the interface.  They will be reattached later
+        # temporarily remove references to the interface.  They will be reattached later.
         o = self.o
         self.o = None
 
@@ -405,7 +400,7 @@ class Interface:
 
         return newI
 
-    def getHistoryParams(self):  # pylint: disable=no-self-use
+    def getHistoryParams(self):
         """
         Add these params to the history tracker for designated assemblies.
 
@@ -521,7 +516,7 @@ class Interface:
 
         return False
 
-    def workerOperate(self, _cmd):  # pylint: disable=no-self-use
+    def workerOperate(self, _cmd):
         """
         Receive an MPI command and do MPI work on worker nodes.
 
@@ -532,13 +527,17 @@ class Interface:
         """
         return False
 
-    def enabled(self, flag=None):  # pylint: disable=inconsistent-return-statements
-        """
+    def enabled(self, flag=None):
+        r"""
         Mechanism to allow interfaces to be attached but not running at the interaction points.
 
         Must be implemented on the individual interface level hooks.
         If given no arguments, returns status of enabled
         If arguments, sets enabled to that flag. (True or False)
+
+        Notes
+        -----
+        These ``return`` statements are inconsistent, but not wrong.
         """
         if flag is None:
             return self._enabled
@@ -547,8 +546,8 @@ class Interface:
         else:
             raise ValueError("Non-bool passed to assign {}.enable().".format(self))
 
-    def bolForce(self, flag=None):  # pylint: disable=inconsistent-return-statements
-        """
+    def bolForce(self, flag=None):
+        r"""
         Run interactBOL even if this interface is disabled.
 
         Parameters
@@ -560,6 +559,10 @@ class Interface:
         -------
         bool
             true if should run at BOL. No return if you pass an input.
+
+        Notes
+        -----
+        These ``return`` statements are inconsistent, but not wrong.
         """
         if flag is None:
             return self._bolForce
@@ -608,7 +611,6 @@ class Interface:
         cs : CaseSettings
             The case settings for a particular Case
         """
-        # pylint: disable=unused-argument
         return {}
 
     def updatePhysicsCouplingControl(self):
@@ -650,7 +652,6 @@ class OutputReader:
     -----
     Should ideally not require r, eci, and fname arguments
     and would rather just have an apply(reactor) method.
-
     """
 
     def __init__(self, r=None, externalCodeInterface=None, fName=None):
@@ -733,7 +734,6 @@ def getActiveInterfaceInfo(cs):
         The case settings that activate relevant Interfaces
     """
     interfaceInfo = []
-    # pylint: disable = no-member
     for info in getPluginManagerOrFail().hook.exposeInterfaces(cs=cs):
         interfaceInfo += info
 

@@ -17,12 +17,12 @@ Tests some capabilities of the fuel handling machine.
 This test is high enough level that it requires input files to be present. The ones to use
 are called armiRun.yaml which is located in armi.tests
 """
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import collections
 import copy
 import unittest
 
 import numpy as np
+
 from armi.physics.fuelCycle import fuelHandlers, settings
 from armi.physics.fuelCycle.settings import (
     CONF_ASSEM_ROTATION_STATIONARY,
@@ -37,7 +37,9 @@ from armi.reactor import assemblies, blocks, components, grids
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
 from armi.settings import caseSettings
-from armi.tests import TEST_ROOT, ArmiTestHelper, mockRunLogs
+from armi.tests import ArmiTestHelper
+from armi.tests import mockRunLogs
+from armi.tests import TEST_ROOT
 from armi.utils import directoryChangers
 
 
@@ -628,7 +630,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
                             for sbf in sBFList
                         )
                     )
-                except:
+                except:  # noqa: bare-except
                     a1[block.spatialLocator.k - 1].setType(
                         a1[block.spatialLocator.k - 1].p.type, sBFList[0]
                     )
@@ -772,7 +774,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
                             for sbf in sBFList
                         )
                     )
-                except:
+                except:  # noqa: bare-except
                     a1[block.spatialLocator.k - 1].setType(
                         a1[block.spatialLocator.k - 1].p.type, sBFList[0]
                     )

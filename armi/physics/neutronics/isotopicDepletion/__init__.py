@@ -15,6 +15,7 @@
 """
 The depletion physics package contains utility/framework code related to the physics of transmutation and decay.
 """
+# ruff: noqa: F401
 import os
 
 from armi import RES

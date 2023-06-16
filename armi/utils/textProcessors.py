@@ -221,7 +221,7 @@ def findYamlInclusions(
         if not path.is_absolute():
             try:
                 path = (mark.relativeTo / path).relative_to(root or os.getcwd())
-            except ValueError as _:
+            except ValueError:
                 # Can't make a relative path. IMO, pathlib gives up a little too early,
                 # but we still probably want to decay to absolute paths if the files
                 # arent in the same tree.
@@ -378,7 +378,7 @@ class SequentialReader:
         if self._stream is not None:
             try:
                 self._stream.close()
-            except:  # pylint: disable=bare-except
+            except:  # noqa: bare-except
                 # We really don't care if anything fails here, plus an exception in exit is ignored anyway
                 pass
         self._stream = None

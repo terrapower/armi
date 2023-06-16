@@ -16,12 +16,11 @@
 This module contains commonly used functions relating to directories, files and path
 manipulations.
 """
-
-import os
-import shutil
-import importlib
-import pathlib
 from time import sleep
+import importlib
+import os
+import pathlib
+import shutil
 
 from armi import context
 from armi import runLog
@@ -41,7 +40,7 @@ def armiAbsPath(*pathParts):
         from ccl import common_operations
 
         return common_operations.convert_to_unc_path(result)
-    except:  # pylint: disable=broad-except;reason=avoid pywin32 p.load parallel issues
+    except:  # noqa: bare-except;reason=avoid pywin32 p.load parallel issues
         return result
 
 
@@ -75,7 +74,7 @@ def copyOrWarn(fileDescription, sourcePath, destinationPath):
 
 
 def isFilePathNewer(path1, path2):
-    r"""Returns true if path1 is newer than path2.
+    """Returns true if path1 is newer than path2.
 
     Returns true if path1 is newer than path2, or if path1 exists and path2 does not, otherwise
     raises an IOError.
@@ -158,7 +157,6 @@ def moduleAndAttributeExist(pathAttr):
     """
     Return True if the specified python module, and attribute of the module exist.
 
-
     Parameters
     ----------
     pathAttr : str
@@ -185,9 +183,11 @@ def moduleAndAttributeExist(pathAttr):
 
     try:
         userSpecifiedModule = importCustomPyModule(modulePath)
+
     # Blanket except is okay since we are checking to see if a custom import will work.
-    except:
+    except:  # noqa: bare-except
         return False
+
     return moduleAttributeName in userSpecifiedModule.__dict__
 
 

@@ -60,7 +60,6 @@ class FuelPerformanceOptions(executers.ExecutionOptions):
         """Load options from reactor."""
 
 
-# pylint: disable=abstract-method
 class FuelPerformanceExecuter(executers.DefaultExecuter):
     """
     Prep, execute, and process a fuel performance solve.

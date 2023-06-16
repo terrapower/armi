@@ -15,7 +15,6 @@
 """
 Package for generating reports as printable groups and HTML in ARMI.
 """
-from armi import settings, runLog
 from armi.bookkeeping.report import data
 
 

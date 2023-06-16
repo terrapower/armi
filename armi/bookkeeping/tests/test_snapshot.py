@@ -13,25 +13,24 @@
 # limitations under the License.
 
 """Test Snapshots."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import unittest
 from unittest.mock import patch
 
-from armi.bookkeeping import snapshotInterface
 from armi import settings
+from armi.bookkeeping import snapshotInterface
 from armi.operators.operator import Operator
-
-
-class MockReactor:
-    def __init__(self, cs):
-        self.p = MockReactorParams()
-        self.o = Operator(cs)
 
 
 class MockReactorParams:
     def __init__(self):
         self.cycle = 0
         self.timeNode = 1
+
+
+class MockReactor:
+    def __init__(self, cs):
+        self.p = MockReactorParams()
+        self.o = Operator(cs)
 
 
 class TestSnapshotInterface(unittest.TestCase):
