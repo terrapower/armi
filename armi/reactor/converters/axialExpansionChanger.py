@@ -277,25 +277,26 @@ class AxialExpansionChanger:
                             # the top of the block below it
                             c.zbottom = self.linked.linkedBlocks[b][0].p.ztop
                     c.ztop = c.zbottom + c.height
+                    # update component number densities
+                    newNumberDensities = {
+                        nuc: c.getNumberDensity(nuc) / growFrac
+                        for nuc in c.getNuclides()
+                    }
+                    c.setNumberDensities(newNumberDensities)
                     # redistribute block boundaries if on the target component
                     if self.expansionData.isTargetComponent(c):
                         b.p.ztop = c.ztop
+                        b.p.height = b.p.ztop - b.p.zbottom
                         b.p.z = b.p.zbottom + b.getHeight() / 2.0
             else:
+                b.p.height = b.p.ztop - b.p.zbottom
                 b.p.z = b.p.zbottom + b.getHeight() / 2.0
 
             # update block height, update component NDens, and call clearCache to update
             # masses of all solid components.
-            oldBlockHeight = b.p.height
-            b.p.height = b.p.ztop - b.p.zbottom
             _checkBlockHeight(b)
             for c in getSolidComponents(b):
                 c.clearCache()
-                growFrac = b.p.height / oldBlockHeight
-                newNumberDensities = {
-                    nuc: c.getNumberDensity(nuc) / growFrac for nuc in c.getNuclides()
-                }
-                c.setNumberDensities(newNumberDensities)
             # redo mesh -- functionality based on assembly.calculateZCoords()
             mesh.append(b.p.ztop)
             b.spatialLocator = self.linked.a.spatialGrid[0, 0, ib]

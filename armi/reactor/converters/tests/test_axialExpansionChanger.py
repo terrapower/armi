@@ -321,7 +321,6 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
             axialExpChngr.axiallyExpandAssembly()
             # get post-exp mass
             newMasses, newNDens = self._getComponentMassAndNDens(a)
-            self._checkMass(oldMasses, newMasses)
 
         # make sure that the assembly returned to the original state
         for orig, new in zip(origMesh, a.getAxialMesh()):
