@@ -90,7 +90,7 @@ class EntryPoint:
     def __init__(self):
         if self.name is None:
             raise AttributeError(
-                f"Subclasses of EntryPoint must define a `name` class attribute"
+                "Subclasses of EntryPoint must define a `name` class attribute"
             )
 
         self.cs = self._initSettings()
@@ -103,7 +103,7 @@ class EntryPoint:
         if self.settingsArgument is not None:
             if self.settingsArgument not in ["required", "optional"]:
                 raise AttributeError(
-                    f"Subclasses of EntryPoint must specify if the a case settings file is `required` or `optional`"
+                    "Subclasses of EntryPoint must specify if the a case settings file is `required` or `optional`"
                 )
             if self.settingsArgument == "optional":
                 self.parser.add_argument(

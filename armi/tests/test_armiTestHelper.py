@@ -13,9 +13,7 @@
 # limitations under the License.
 
 """Tests to demonstrate the test helper is functional."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import os
-import unittest
 
 from armi.tests import ArmiTestHelper
 
@@ -60,7 +58,3 @@ class TestArmiTestHelper(ArmiTestHelper):
         self.compareFilesLineByLine(
             self.goodFilePath, self.badFilePath, falseNegList=["NEGATIVE"]
         )
-
-
-if __name__ == "_main__":
-    unittest.main()

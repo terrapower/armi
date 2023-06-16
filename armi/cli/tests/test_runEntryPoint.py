@@ -11,22 +11,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-Test for run cli entry point.
-"""
-# pylint: disable=protected-access,missing-function-docstring,missing-class-docstring
+"""Test for run cli entry point."""
 from shutil import copyfile
 import os
 import sys
 import unittest
 
 from armi.__main__ import main
-from armi.cli.entryPoint import EntryPoint
 from armi.bookkeeping.visualization.entryPoint import VisFileEntryPoint
 from armi.cli.checkInputs import CheckInputEntryPoint, ExpandBlueprints
 from armi.cli.clone import CloneArmiRunCommandBatch, CloneSuiteCommand
 from armi.cli.compareCases import CompareCases, CompareSuites
 from armi.cli.database import ConvertDB, ExtractInputs, InjectInputs
+from armi.cli.entryPoint import EntryPoint
 from armi.cli.migrateInputs import MigrateInputs
 from armi.cli.modify import ModifyCaseSettingsCommand
 from armi.cli.reportsEntryPoint import ReportsEntryPoint
@@ -358,7 +355,3 @@ class TestVisFileEntryPointCommand(unittest.TestCase):
 
         self.assertEqual(vf.name, "vis-file")
         self.assertIsNone(vf.settingsArgument)
-
-
-if __name__ == "__main__":
-    unittest.main()

@@ -309,7 +309,8 @@ class InstanceCounter:
         if self.reportSize:
             try:
                 self.memSize += sys.getsizeof(item)
-            except:
+            except:  # noqa: bare-except
+                # TODO: Does this happen?
                 self.memSize = float("nan")
         self.count += 1
         return True

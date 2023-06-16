@@ -11,15 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-""" tests of the Parameters class. """
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
+"""Tests of the Parameters class."""
 import copy
 import traceback
 import unittest
 
 from armi import context
-from armi.reactor import parameters
 from armi.reactor import composites
+from armi.reactor import parameters
 
 
 class MockComposite:
@@ -475,8 +474,9 @@ class SynchronizationTests:
                         self.write("*** printed exception")
                         try:
                             self.tearDown()
-                        except:
+                        except:  # noqa: bare-except
                             pass
+
             self.l.write("done.")
 
     def write(self, msg):
@@ -659,10 +659,3 @@ class SynchronizationTests:
             del self.r
             self.r = context.MPI_COMM.bcast(None)
             do()
-
-
-if __name__ == "__main__":
-    if context.MPI_SIZE == 1:
-        unittest.main()
-    else:
-        SynchronizationTests().run()

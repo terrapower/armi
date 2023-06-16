@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """Tests nuclide directory."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import unittest
 
 from armi.nucDirectory import nucDir, elements, nuclideBases
@@ -64,7 +63,3 @@ class TestNucDirectory(unittest.TestCase):
 
         with self.assertRaises(KeyError):
             nucDir.getThresholdDisplacementEnergy("fail")
-
-
-if __name__ == "__main__":
-    unittest.main()

@@ -13,11 +13,10 @@
 # limitations under the License.
 
 """Tests for simplified UZr material."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import unittest
 
-from armi.materials.uZr import UZr
 from armi.materials.tests import test_materials
+from armi.materials.uZr import UZr
 
 
 class UZR_TestCase(test_materials._Material_Test, unittest.TestCase):
@@ -31,7 +30,3 @@ class UZR_TestCase(test_materials._Material_Test, unittest.TestCase):
 
     def test_propertyValidTemperature(self):
         self.assertEqual(len(self.mat.propertyValidTemperature), 0)
-
-
-if __name__ == "__main__":
-    unittest.main()

@@ -12,23 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Tests for settings validation system.
-"""
-import unittest
+"""Tests for settings validation system."""
 import os
+import unittest
 
-from armi import settings
-from armi import operators
-from armi.operators.settingsValidation import createQueryRevertBadPathToDefault
-from armi.operators import settingsValidation
-from armi.utils import directoryChangers
 from armi import context
+from armi import operators
+from armi import settings
+from armi.operators import settingsValidation
+from armi.operators.settingsValidation import createQueryRevertBadPathToDefault
+from armi.utils import directoryChangers
 
 
 class TestInspector(unittest.TestCase):
-    """Test case."""
-
     def setUp(self):
         self.td = directoryChangers.TemporaryDirectoryChanger()
         self.td.__enter__()
@@ -191,7 +187,3 @@ class TestInspector(unittest.TestCase):
         )
         self.inspector._assignCS("cycleLength", 666)
         self.assertTrue(self.inspector._checkForBothSimpleAndDetailedCyclesInputs())
-
-
-if __name__ == "__main__":
-    unittest.main()

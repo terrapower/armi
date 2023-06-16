@@ -90,15 +90,6 @@ def getFuelCycleSettings():
                 "Python script written to handle the fuel shuffling for this case.  "
                 "This is user-defined per run as a dynamic input."
             ),
-            # schema here could check if file exists, but this is a bit constraining in testing.
-            # For example, some tests have relative paths for this but aren't running in
-            # the right directory, and IsFile doesn't seem to work well with relative paths.
-            # This is left here as an FYI about how we could check existence of files if we get
-            # around these problem.
-            #                 schema=vol.All(
-            #                     vol.IsFile(),  # pylint: disable=no-value-for-parameter
-            #                     msg="Shuffle logic input must be an existing file",
-            #                 ),
         ),
         setting.Setting(
             CONF_FUEL_HANDLER_NAME,

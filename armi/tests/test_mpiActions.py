@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for MPI actions."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
-
 import unittest
 
 from armi.mpiActions import (
@@ -239,7 +237,3 @@ class QueueActionsTests(unittest.TestCase):
 def passer():
     """Helper function, to do nothing, for unit tests."""
     pass
-
-
-if __name__ == "__main__":
-    unittest.main()

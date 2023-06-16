@@ -11,8 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
-
+"""Tests for Assembly Blueprints."""
 import unittest
 
 from armi import settings
@@ -202,7 +201,3 @@ assemblies:
 
         with self.assertRaises(ValueError):
             a = self.loadCustomAssembly(self.twoBlockInput_wrongMatMods)
-
-
-if __name__ == "__main__":
-    unittest.main()

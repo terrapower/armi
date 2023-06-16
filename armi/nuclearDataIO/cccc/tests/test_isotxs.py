@@ -11,22 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-r"""Tests the workings of the library wrappers."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+"""Tests the workings of the library wrappers."""
 import unittest
 
 from armi import nuclearDataIO
-from armi.tests import ISOAA_PATH
 from armi.nucDirectory import nuclideBases
-from armi.nuclearDataIO.cccc import isotxs
 from armi.nuclearDataIO import xsLibraries
+from armi.nuclearDataIO.cccc import isotxs
+from armi.tests import ISOAA_PATH
 
 
 class TestIsotxs(unittest.TestCase):
-    r"""
-    Tests the ISOTXS class.
-    """
+    """Tests the ISOTXS class."""
 
     @classmethod
     def setUpClass(cls):
@@ -181,8 +177,3 @@ class Isotxs_merge_Tests(unittest.TestCase):
             del someIsotxs[key]
         someIsotxs.merge(isotxs.readBinary(ISOAA_PATH))
         self.assertEqual(None, someIsotxs.isotxsMetadata["chi"])
-
-
-if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'TestIsotxs.test_getNuclide']
-    unittest.main()  # verbosity=2)

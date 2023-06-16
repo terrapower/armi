@@ -47,7 +47,7 @@ import time
 #
 # >>> atexit.register(willSegFault)
 
-import h5py
+import h5py  # noqa: unused-import
 
 
 BLUEPRINTS_IMPORTED = False
@@ -81,7 +81,7 @@ class Mode(enum.Enum):
     @classmethod
     def setMode(cls, mode):
         """Set the run mode of the current ARMI case."""
-        global CURRENT_MODE  # pylint: disable=global-statement
+        global CURRENT_MODE
         assert isinstance(mode, cls), "Invalid mode {}".format(mode)
         CURRENT_MODE = mode
 
@@ -132,7 +132,7 @@ try:
     # trying a windows approach
     APP_DATA = os.path.join(os.environ["APPDATA"], "armi")
     APP_DATA = APP_DATA.replace("/", "\\")
-except:  # pylint: disable=bare-except
+except:  # noqa: bare-except
     # non-windows
     APP_DATA = os.path.expanduser("~/.armi")
 
@@ -140,7 +140,7 @@ if MPI_NODENAMES.index(MPI_NODENAME) == MPI_RANK:
     if not os.path.isdir(APP_DATA):
         try:
             os.makedirs(APP_DATA)
-        except OSError as e:
+        except OSError:
             pass
     if not os.path.isdir(APP_DATA):
         raise OSError("Directory doesn't exist {0}".format(APP_DATA))
@@ -177,7 +177,7 @@ def activateLocalFastPath() -> None:
     instantiate one operator after the other, the path will already exist the second time.
     The directory is created in the Operator constructor.
     """
-    global _FAST_PATH, _FAST_PATH_IS_TEMPORARY, APP_DATA  # pylint: disable=global-statement
+    global _FAST_PATH, _FAST_PATH_IS_TEMPORARY, APP_DATA
 
     # Try to fix pathing issues in Windows.
     if os.name == "nt":
@@ -226,9 +226,8 @@ def cleanTempDirs(olderThanDays=None):
         If provided, deletes other ARMI directories if they are older than the requested
         time.
     """
-    # pylint: disable=import-outside-toplevel # avoid cyclic import
-    from armi import runLog
-    from armi.utils.pathTools import cleanPath
+    from armi import runLog  # noqa: module-import-not-at-top-of-file
+    from armi.utils.pathTools import cleanPath  # noqa: module-import-not-at-top-of-file
 
     disconnectAllHdfDBs()
     printMsg = runLog.getVerbosity() <= DEBUG
@@ -240,7 +239,7 @@ def cleanTempDirs(olderThanDays=None):
             )
         try:
             cleanPath(_FAST_PATH, mpiRank=MPI_RANK)
-        except Exception as error:  # pylint: disable=broad-except
+        except Exception as error:
             for outputStream in (sys.stderr, sys.stdout):
                 if printMsg:
                     print(
@@ -262,8 +261,7 @@ def cleanAllArmiTempDirs(olderThanDays: int) -> None:
 
     This is a useful utility in HPC environments when some runs crash sometimes.
     """
-    # pylint: disable=import-outside-toplevel # avoid cyclic import
-    from armi.utils.pathTools import cleanPath
+    from armi.utils.pathTools import cleanPath  # noqa: module-import-not-at-top-of-file
 
     gracePeriod = datetime.timedelta(days=olderThanDays)
     now = datetime.datetime.now()
@@ -281,7 +279,7 @@ def cleanAllArmiTempDirs(olderThanDays: int) -> None:
             if runIsOldAndLikleyComplete or fromThisRun:
                 # Delete old files
                 cleanPath(dirPath, mpiRank=MPI_RANK)
-        except:  # pylint: disable=bare-except
+        except:  # noqa: bare-except
             pass
 
 
@@ -301,7 +299,7 @@ def disconnectAllHdfDBs() -> None:
     objects.
     """
 
-    from armi.bookkeeping.db import Database3  # pylint: disable=import-outside-toplevel
+    from armi.bookkeeping.db import Database3  # noqa: module-import-not-at-top-of-file
 
     h5dbs = [db for db in gc.get_objects() if isinstance(db, Database3)]
     for db in h5dbs:

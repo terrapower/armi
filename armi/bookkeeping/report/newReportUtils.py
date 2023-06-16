@@ -189,8 +189,7 @@ def insertCoreDesignReport(core, cs, report):
 
 
 def _setGeneralCoreDesignData(cs, coreDesignTable):
-    # pylint: disable=import-outside-toplevel # avoid cyclic import
-    from armi.physics.neutronics.settings import CONF_LOADING_FILE
+    from armi.physics.neutronics.settings import CONF_LOADING_FILE  # noqa: E402
 
     coreDesignTable.addRow(["Case Title", "{}".format(cs.caseTitle)])
     coreDesignTable.addRow(["Run Type", "{}".format(cs["runType"])])
@@ -295,11 +294,8 @@ def _setGeneralCoreParametersData(core, cs, coreDesignTable):
 
 
 def _setGeneralSimulationData(core, cs, coreDesignTable):
-    # pylint: disable=import-outside-toplevel # avoid cyclic import
-    from armi.physics.neutronics.settings import (
-        CONF_GEN_XS,
-        CONF_GLOBAL_FLUX_ACTIVE,
-    )
+    from armi.physics.neutronics.settings import CONF_GEN_XS  # noqa: E402
+    from armi.physics.neutronics.settings import CONF_GLOBAL_FLUX_ACTIVE  # noqa: E402
 
     coreDesignTable.addRow(["  ", ""])
     coreDesignTable.addRow(["Full Core Model", "{}".format(core.isFullCore)])
@@ -324,7 +320,6 @@ def insertEndOfLifeContent(r, report):
         the reactor
     report : ReportContent
         The report to be added to.
-
     """
     fName2 = "powerMap.png"
     dataForTotalPower = [a.getMaxParam("power") / units.WATTS_PER_MW for a in r.core]
@@ -361,11 +356,11 @@ def insertBlockDiagrams(cs, blueprint, report, cold):
     materialList = []
     for bDesign in blueprint.blockDesigns:
         block = bDesign.construct(cs, blueprint, 0, 1, 0, "A", dict())
-        for component in block:
-            if isinstance(component.material, custom.Custom):
-                materialName = component.p.customIsotopicsName
+        for comp in block:
+            if isinstance(comp.material, custom.Custom):
+                materialName = comp.p.customIsotopicsName
             else:
-                materialName = component.material.name
+                materialName = comp.material.name
             if materialName not in materialList:
                 materialList.append(materialName)
 
@@ -395,7 +390,6 @@ def insertMetaTable(cs, report):
     ----------
     cs: Case Settings
     report: ReportContent
-
     """
     section = report[COMPREHENSIVE_REPORT]
     tableList = section.get(
@@ -417,11 +411,8 @@ def insertSettingsData(cs, report):
     report: ReportContent
         The report to be added to
     """
-    # pylint: disable=import-outside-toplevel # avoid cyclic import
-    from armi.physics.neutronics.settings import (
-        CONF_GEN_XS,
-        CONF_NEUTRONICS_KERNEL,
-    )
+    from armi.physics.neutronics.settings import CONF_GEN_XS  # noqa: E402
+    from armi.physics.neutronics.settings import CONF_NEUTRONICS_KERNEL  # noqa: E402
 
     report[COMPREHENSIVE_REPORT][CASE_PARAMETERS] = newReports.Table("Case Parameters")
     report[COMPREHENSIVE_REPORT][REACTOR_PARAMS] = newReports.Table(
@@ -512,7 +503,7 @@ def getPinDesignTable(core):
         tableRows.addRow(
             ["Plenum Height (cm):", "{0:.2f}".format(a.getHeight(Flags.PLENUM))]
         )
-    except Exception as error:  # pylint: disable=broad-except
+    except Exception as error:
         runLog.warning("Pin summarization failed to work")
         runLog.warning(error)
 
@@ -532,7 +523,6 @@ def insertAreaFractionsReport(block, report):
         The block
     report : ReportContent
         The report
-
     """
     for c, frac in block.getVolumeFractions():
         report[COMPREHENSIVE_REPORT][ASSEMBLY_AREA].addRow(

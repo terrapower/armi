@@ -12,10 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-This module tests the __init__.py file since it has rather unique behavior.
-"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+"""This module tests the __init__.py file since it has rather unique behavior."""
 import unittest
 
 from armi import materials
@@ -39,7 +36,3 @@ class Materials__init__Tests(unittest.TestCase):
 
     def test_packageClassesEqualModuleClasses(self):
         self.assertEqual(materials.UraniumOxide, materials.uraniumOxide.UraniumOxide)
-
-
-if __name__ == "__main__":
-    unittest.main()

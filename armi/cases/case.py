@@ -315,7 +315,7 @@ class Case:
 
         This accounts for whether or not the dependency is enabled.
 
-        Note
+        TODO
         ----
         This is a leftover from before the release of the ARMI framework. The API of the
         proprietary cluster communication library is being used here. This should either
@@ -325,8 +325,6 @@ class Case:
             return
         for dependency in self.dependencies:
             if dependency.enabled:
-                # pylint: disable=protected-access; dependency should
-                # also be a Case, so it's not really "protected"
                 self._tasks[0].add_parent(dependency._tasks[-1])
 
     def run(self):
@@ -459,7 +457,7 @@ class Case:
         covFile = os.path.join(covRcDir, ".coveragerc")
         if platform.system() == "Windows":
             covFileWin = os.path.join(covRcDir, "coveragerc")
-            if makeCopy == True:
+            if makeCopy is True:
                 # Make a copy of the file without the dot in the name
                 shutil.copy(covFile, covFileWin)
             return covFileWin
@@ -658,7 +656,6 @@ class Case:
         ------
         RuntimeError
             If the source and destination are the same
-
         """
         cloneCS = self.cs.duplicate()
 
@@ -684,7 +681,7 @@ class Case:
         clone.cs.writeToYamlFile(clone.cs.path, style=writeStyle, fromFile=self.cs.path)
         runLog.important("finished writing {}".format(clone.cs))
 
-        fromPath = lambda fname: pathTools.armiAbsPath(self.cs.inputDirectory, fname)
+        fromPath = lambda f: pathTools.armiAbsPath(self.cs.inputDirectory, f)
 
         for inputFileSetting in [CONF_LOADING_FILE, "geomFile"]:
             fileName = self.cs[inputFileSetting]
@@ -812,8 +809,8 @@ class Case:
         ):
             # trick: these seemingly no-ops load the bp and geom via properties if
             # they are not yet initialized.
-            self.bp  # pylint: disable=pointless-statement
-            self.geom  # pylint: disable=pointless-statement
+            self.bp
+            self.geom
 
             newSettings = {}
             newSettings[CONF_LOADING_FILE] = self.title + "-blueprints.yaml"

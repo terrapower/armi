@@ -28,12 +28,12 @@ with open("README.rst") as f:
 
 def collectExtraFiles():
     extraFiles = []
-    with open("MANIFEST.in", "r") as f:
+    with open("MANIFEST.in", "r") as fin:
         # include everything from the MANIFEST.in. MANIFEST.in is somewhat unreliable,
         # in that it only shuffles files around when making an `sdist`; it doesn't
         # install files. `package_data` does though, which we want.
-        for l in f:
-            extraFiles.append(re.sub(r"^include\s+armi/", "", l).strip())
+        for f in fin:
+            extraFiles.append(re.sub(r"^include\s+armi/", "", f).strip())
 
     return extraFiles
 
@@ -43,7 +43,7 @@ EXTRA_FILES = collectExtraFiles()
 
 setup(
     name="armi",
-    version=__version__,
+    version=__version__,  # noqa: undefined-name
     description="The Advanced Reactor Modeling Interface",
     author="TerraPower, LLC",
     author_email="armi-devs@terrapower.com",
@@ -89,11 +89,11 @@ setup(
             "mako",
             "nbsphinx",
             "nbsphinx-link",
-            "pylint",
             "pytest",
             "pytest-cov",
             "pytest-html",
             "pytest-xdist",
+            "ruff==0.0.272",
             "sphinx",
             "sphinx-gallery",
             "sphinx-rtd-theme",

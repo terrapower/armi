@@ -25,7 +25,7 @@ the fuel and structure components are uniformly increased.
 Note: Thermal expansion is automatically considered with
 material data defined within :py:mod:`materials <armi.materials>`.
 """
-
+# ruff: noqa: E402
 import collections
 
 import tabulate

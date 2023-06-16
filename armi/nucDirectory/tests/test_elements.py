@@ -12,14 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for elements."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import os
 import unittest
 
 from armi import nuclideBases
+from armi.context import RES
 from armi.nucDirectory import elements
 from armi.tests import mockRunLogs
-from armi.context import RES
 
 
 class TestElement(unittest.TestCase):
@@ -110,8 +109,3 @@ class TestElement(unittest.TestCase):
                 self.assertTrue(ee.isHeavyMetal())
             else:
                 self.assertFalse(ee.isHeavyMetal())
-
-
-if __name__ == "__main__":
-    #     import sys;sys.argv = ['', 'TestElement.test_abundancesAddToOne']
-    unittest.main()

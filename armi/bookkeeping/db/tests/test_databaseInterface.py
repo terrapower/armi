@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests of the Database Interface."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-method-argument,import-outside-toplevel
 import os
 import types
 import unittest
@@ -28,13 +27,13 @@ from armi import settings
 from armi.bookkeeping.db.database3 import Database3
 from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.cases import case
+from armi.physics.neutronics.settings import CONF_LOADING_FILE
 from armi.reactor import grids
 from armi.reactor.flags import Flags
 from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
 from armi.settings.fwSettings.databaseSettings import CONF_FORCE_DB_PARAMS
 from armi.tests import TEST_ROOT
 from armi.utils import directoryChangers
-from armi.physics.neutronics.settings import CONF_LOADING_FILE
 
 
 def getSimpleDBOperator(cs):
@@ -88,10 +87,9 @@ class TestDatabaseInterface(unittest.TestCase):
         self.td = directoryChangers.TemporaryDirectoryChanger()
         self.td.__enter__()
         self.o, self.r = loadTestReactor(TEST_ROOT)
-
         self.dbi = DatabaseInterface(self.r, self.o.cs)
         self.dbi.initDB(fName=self._testMethodName + ".h5")
-        self.db: db.Database3 = self.dbi.database
+        self.db: Database3 = self.dbi.database
         self.stateRetainer = self.r.retainState().__enter__()
 
     def tearDown(self):
@@ -141,7 +139,7 @@ class TestDatabaseWriter(unittest.TestCase):
         self.td.__exit__(None, None, None)
 
     def test_metaData_endSuccessfully(self):
-        def goodMethod(cycle, node):  # pylint: disable=unused-argument
+        def goodMethod(cycle, node):
             pass
 
         self.o.interfaces.append(MockInterface(self.o.r, self.o.cs, goodMethod))
@@ -166,7 +164,7 @@ class TestDatabaseWriter(unittest.TestCase):
             self.assertIn("baseBu", h5["c00n02/HexBlock"])
 
     def test_metaDataEndFail(self):
-        def failMethod(cycle, node):  # pylint: disable=unused-argument
+        def failMethod(cycle, node):
             if cycle == 0 and node == 1:
                 raise Exception("forcing failure")
 
@@ -188,7 +186,7 @@ class TestDatabaseWriter(unittest.TestCase):
         expectedFluxes0 = {}
         expectedFluxes7 = {}
 
-        def setFluxAwesome(cycle, node):  # pylint: disable=unused-argument
+        def setFluxAwesome(cycle, node):
             for bi, b in enumerate(self.r.core.getBlocks()):
                 b.p.flux = 1e6 * bi + 1e3 * cycle + node
                 if bi == 0:
@@ -199,7 +197,7 @@ class TestDatabaseWriter(unittest.TestCase):
         # use as attribute so it is accessible within getFluxAwesome
         self.called = False
 
-        def getFluxAwesome(cycle, node):  # pylint: disable=unused-argument
+        def getFluxAwesome(cycle, node):
             if cycle != 0 or node != 2:
                 return
 
@@ -222,11 +220,11 @@ class TestDatabaseWriter(unittest.TestCase):
         self.assertTrue(self.called)
 
     def test_getHistoryByLocation(self):
-        def setFluxAwesome(cycle, node):  # pylint: disable=unused-argument
+        def setFluxAwesome(cycle, node):
             for bi, b in enumerate(self.r.core.getBlocks()):
                 b.p.flux = 1e6 * bi + 1e3 * cycle + node
 
-        def getFluxAwesome(cycle, node):  # pylint: disable=unused-argument
+        def getFluxAwesome(cycle, node):
             if cycle != 1 or node != 2:
                 return
 
@@ -448,7 +446,6 @@ class TestStandardFollowOn(unittest.TestCase):
 
         mock = MockInterface(o.r, o.cs, None)
 
-        # pylint: disable=unused-argument
         def interactEveryNode(self, cycle, node):
             # Could use just += 1 but this will show more errors since it is less
             # suseptable to cancelation of errors off by one.
@@ -499,7 +496,3 @@ class TestStandardFollowOn(unittest.TestCase):
                         firstEndTime, o.r.p.time
                     ),
                 )
-
-
-if __name__ == "__main__":
-    unittest.main()

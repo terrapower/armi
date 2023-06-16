@@ -11,12 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-Tests some fuel handling tools, specific to hex-assembly reactors.
-"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
-import unittest
-
+"""Tests some fuel handling tools, specific to hex-assembly reactors."""
 from armi.physics.fuelCycle import hexAssemblyFuelMgmtUtils as hexUtils
 from armi.reactor.tests import test_reactors
 from armi.tests import ArmiTestHelper, TEST_ROOT
@@ -112,7 +107,3 @@ class TestHexAssemMgmtTools(ArmiTestHelper):
         )
         self.assertEqual(schedule, [9, 8, 7, 4, 5, 6, 3, 2, 1])
         self.assertEqual(widths, zeroWidths)
-
-
-if __name__ == "__main__":
-    unittest.main()

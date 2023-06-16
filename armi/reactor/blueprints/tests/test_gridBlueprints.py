@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for grid blueprints."""
-# pylint: disable=wrong-import-position
 import io
 import os
 import unittest
@@ -469,7 +468,3 @@ class TestRZTGridBlueprint(unittest.TestCase):
         self.assertEqual(gridDesign.geom, "thetarz")
         self.assertEqual(gridDesign.symmetry, "eighth periodic")
         self.assertEqual(gridDesign.geom, "thetarz")
-
-
-if __name__ == "__main__":
-    unittest.main()

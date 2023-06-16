@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """Tests for the App class."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,import-outside-toplevel
 import copy
 import unittest
 

@@ -15,6 +15,7 @@
 """
 Read and/or write data files associated with nuclear data and reactor physics data.
 """
+# ruff: noqa: F401
 
 from armi.physics import neutronics
 
@@ -117,12 +118,13 @@ def getExpectedGAMISOFileName(cycle=None, node=None, suffix=None, xsID=None):
     """
     if any(i is not None for i in (cycle, suffix, xsID)):
         # file path extensions are lower case
-        gamiso = neutronics.GAMISO_EXT
+        gamiso0 = neutronics.GAMISO_EXT
     else:
         # GAMISO as a file is upper case
-        gamiso = neutronics.GAMISO
+        gamiso0 = neutronics.GAMISO
+
     return _findExpectedGammaFileName(
-        gamiso, _getGammaKeywords(cycle, node, suffix, xsID)
+        gamiso0, _getGammaKeywords(cycle, node, suffix, xsID)
     )
 
 
@@ -143,12 +145,13 @@ def getExpectedPMATRXFileName(cycle=None, node=None, suffix=None, xsID=None):
     """
     if any(i is not None for i in (cycle, suffix, xsID)):
         # file path extensions are lower case
-        pmatrx = neutronics.PMATRX_EXT
+        pmatrx0 = neutronics.PMATRX_EXT
     else:
         # PMATRX as a file is upper case
-        pmatrx = neutronics.PMATRX
+        pmatrx0 = neutronics.PMATRX
+
     return _findExpectedGammaFileName(
-        pmatrx, _getGammaKeywords(cycle, node, suffix, xsID)
+        pmatrx0, _getGammaKeywords(cycle, node, suffix, xsID)
     )
 
 

@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """Energy group tests."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import unittest
 
 from armi.physics.neutronics import energyGroups
@@ -45,7 +44,3 @@ class TestEnergyGroups(unittest.TestCase):
                     energyGroups.getGroupStructure(groupStructureType)
                 ),
             )
-
-
-if __name__ == "__main__":
-    unittest.main()

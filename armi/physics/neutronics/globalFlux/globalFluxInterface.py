@@ -34,26 +34,13 @@ from armi.reactor.converters import uniformMesh
 from armi.reactor.flags import Flags
 from armi.settings.caseSettings import Settings
 from armi.utils import units, codeTiming, getMaxBurnSteps
-from armi.physics.neutronics.settings import (
-    CONF_BOUNDARIES,
-    CONF_DPA_PER_FLUENCE,
-    CONF_EIGEN_PROB,
-    CONF_NEUTRONICS_KERNEL,
-    CONF_RESTART_NEUTRONICS,
-    CONF_ACLP_DOSE_LIMIT,
-    CONF_DPA_XS_SET,
-    CONF_GRID_PLATE_DPA_XS_SET,
-    CONF_LOAD_PAD_ELEVATION,
-    CONF_LOAD_PAD_LENGTH,
-    CONF_XS_KERNEL,
-)
 
 ORDER = interfaces.STACK_ORDER.FLUX
 
 RX_ABS_MICRO_LABELS = ["nGamma", "fission", "nalph", "np", "nd", "nt"]
 RX_PARAM_NAMES = ["rateCap", "rateFis", "rateProdN2n", "rateProdFis", "rateAbs"]
 
-# pylint: disable=too-many-public-methods
+
 class GlobalFluxInterface(interfaces.Interface):
     """
     A general abstract interface for global flux-calculating modules.
@@ -444,14 +431,31 @@ class GlobalFluxOptions(executers.ExecutionOptions):
 
         This is not required; these options can alternatively be set programmatically.
         """
+        from armi.physics.neutronics.settings import (
+            CONF_ACLP_DOSE_LIMIT,
+            CONF_BOUNDARIES,
+            CONF_DPA_PER_FLUENCE,
+            CONF_EIGEN_PROB,
+            CONF_LOAD_PAD_ELEVATION,
+            CONF_LOAD_PAD_LENGTH,
+            CONF_NEUTRONICS_KERNEL,
+            CONF_RESTART_NEUTRONICS,
+            CONF_XS_KERNEL,
+        )
+        from armi.settings.fwSettings.globalSettings import (
+            CONF_PHYSICS_FILES,
+            CONF_NON_UNIFORM_ASSEM_FLAGS,
+            CONF_DETAILED_AXIAL_EXPANSION,
+        )
+
         self.kernelName = cs[CONF_NEUTRONICS_KERNEL]
         self.setRunDirFromCaseTitle(cs.caseTitle)
         self.isRestart = cs[CONF_RESTART_NEUTRONICS]
         self.adjoint = neutronics.adjointCalculationRequested(cs)
         self.real = neutronics.realCalculationRequested(cs)
-        self.detailedAxialExpansion = cs["detailedAxialExpansion"]
+        self.detailedAxialExpansion = cs[CONF_DETAILED_AXIAL_EXPANSION]
         self.hasNonUniformAssems = any(
-            [Flags.fromStringIgnoreErrors(f) for f in cs["nonUniformAssemFlags"]]
+            [Flags.fromStringIgnoreErrors(f) for f in cs[CONF_NON_UNIFORM_ASSEM_FLAGS]]
         )
         self.eigenvalueProblem = cs[CONF_EIGEN_PROB]
 
@@ -463,7 +467,7 @@ class GlobalFluxOptions(executers.ExecutionOptions):
         self.boundaries = cs[CONF_BOUNDARIES]
         self.xsKernel = cs[CONF_XS_KERNEL]
         self.cs = cs
-        self.savePhysicsFilesList = cs["savePhysicsFiles"]
+        self.savePhysicsFilesList = cs[CONF_PHYSICS_FILES]
 
     def fromReactor(self, reactor: reactors.Reactor):
         self.geomType = reactor.core.geomType
@@ -590,7 +594,7 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
         if meshConverter:
             if self.options.applyResultsToReactor or self.options.hasNonUniformAssems:
                 meshConverter.applyStateToOriginal()
-            self.r = meshConverter._sourceReactor  # pylint: disable=protected-access;
+            self.r = meshConverter._sourceReactor
 
             # Resets the stored attributes on the converter to
             # ensure that there is state data that is long-lived on the
@@ -711,6 +715,11 @@ class GlobalFluxResultMapper(interfaces.OutputReader):
         -------
             list : cross section values
         """
+        from armi.physics.neutronics.settings import (
+            CONF_DPA_XS_SET,
+            CONF_GRID_PLATE_DPA_XS_SET,
+        )
+
         if self.cs[CONF_GRID_PLATE_DPA_XS_SET] and b.hasFlags(Flags.GRID_PLATE):
             dpaXsSetName = self.cs[CONF_GRID_PLATE_DPA_XS_SET]
         else:
@@ -749,7 +758,9 @@ class GlobalFluxResultMapper(interfaces.OutputReader):
             burnupPeakingFactor = b.p.fluxPeak / b.p.flux
         elif not burnupPeakingFactor:
             # no peak available. Finite difference model?
-            burnupPeakingFactor = 1.0
+            # Use 0.0 for peaking so that there isn't misuse of peaking values that don't actually have peaking applied.
+            # Uet self.cs["burnupPeakingFactor"] or b.p.fluxPeak for different behavior
+            burnupPeakingFactor = 0.0
 
         return burnupPeakingFactor
 

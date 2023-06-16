@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests of the runLog tooling."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 from io import StringIO
 from shutil import rmtree
 import logging
@@ -383,7 +382,3 @@ class TestRunLogger(unittest.TestCase):
         # test what was logged
         streamVal = stream.getvalue()
         self.assertIn(testName, streamVal, msg=streamVal)
-
-
-if __name__ == "__main__":
-    unittest.main()

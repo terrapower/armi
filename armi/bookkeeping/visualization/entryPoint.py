@@ -11,22 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-Entry point for producing visualization files.
-"""
-
+"""Entry point for producing visualization files."""
+import pathlib
 import re
 import sys
-import pathlib
 
 from armi import runLog
 from armi.cli import entryPoint
 
 
 class VisFileEntryPoint(entryPoint.EntryPoint):
-    """
-    Create visualization files from database files.
-    """
+    """Create visualization files from database files."""
 
     name = "vis-file"
     description = "Convert ARMI databases in to visualization files"
@@ -132,10 +127,9 @@ class VisFileEntryPoint(entryPoint.EntryPoint):
 
     def invoke(self):
         # late imports so that we dont have to import the world to do anything
-        # pylint: disable=import-outside-toplevel
-        from armi.bookkeeping.visualization import vtk
-        from armi.bookkeeping.visualization import xdmf
-        from armi.bookkeeping.db import databaseFactory
+        from armi.bookkeeping.visualization import vtk  # noqa: E402
+        from armi.bookkeeping.visualization import xdmf  # noqa: E402
+        from armi.bookkeeping.db import databaseFactory  # noqa: E402
 
         # a little baroque, but easy to extend with future formats
         formatMap = {

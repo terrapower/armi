@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """Test the Lattice Physics Writer."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 from collections import defaultdict
 import unittest
 
@@ -179,7 +178,3 @@ class TestLatticePhysicsWriter(unittest.TestCase):
     def test_getDriverBlock(self):
         b = self.w._getDriverBlock()
         self.assertIsNone(b)
-
-
-if __name__ == "__main__":
-    unittest.main()

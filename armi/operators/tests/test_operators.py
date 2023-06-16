@@ -13,8 +13,6 @@
 # limitations under the License.
 
 """Tests for operators."""
-
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-method-argument,import-outside-toplevel
 import os
 import unittest
 from unittest.mock import patch
@@ -202,7 +200,6 @@ class TestTightCoupling(unittest.TestCase):
             def isConverged(self, _val: TightCoupler._SUPPORTED_TYPES) -> bool:
                 return False
 
-        # pylint: disable=abstract-method
         class InterfaceNoConverge(Interface):
             name = "NoConverge"
 
@@ -413,7 +410,3 @@ class TestInterfaceAndEventHeaders(unittest.TestCase):
             ),
             f" - cycle {cycle}, node {timeNode}",
         )
-
-
-if __name__ == "__main__":
-    unittest.main()

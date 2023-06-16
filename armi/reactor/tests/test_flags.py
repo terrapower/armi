@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """Tests for flags."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import pickle
 import unittest
 
@@ -105,7 +104,3 @@ class TestFlags(unittest.TestCase):
         stream = pickle.dumps(flags.Flags.BOND | flags.Flags.A)
         flag = pickle.loads(stream)
         self.assertEqual(flag, flags.Flags.BOND | flags.Flags.A)
-
-
-if __name__ == "__main__":
-    unittest.main()

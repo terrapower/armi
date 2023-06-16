@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for block blueprints."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import io
 import unittest
 
@@ -339,8 +338,3 @@ class TestGriddedBlock(unittest.TestCase):
             clad.density(),
             programaticClad.density(),
         )
-
-
-if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'Test.testName']
-    unittest.main()

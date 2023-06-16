@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Testing for reactors.py."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import copy
 import os
 import unittest
@@ -1081,7 +1080,7 @@ class CartesianReactorTests(ReactorTests):
         log = mockRunLogs.BufferLog()
 
         # this strange namespace-stomping is used to the test to set the logger in reactors.Core
-        from armi.reactor import reactors  # pylint: disable=import-outside-toplevel
+        from armi.reactor import reactors  # noqa: module-import-not-at-top-of-file
 
         reactors.runLog = runLog
         runLog.LOG = log
@@ -1092,7 +1091,3 @@ class CartesianReactorTests(ReactorTests):
 
         self.assertIn("Nuclide categorization", messages)
         self.assertIn("Structure", messages)
-
-
-if __name__ == "__main__":
-    unittest.main()

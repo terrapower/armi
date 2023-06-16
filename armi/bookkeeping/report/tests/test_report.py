@@ -196,7 +196,3 @@ class TestReportInterface(unittest.TestCase):
             repInt.interactEOL()
             self.assertIn("Comprehensive Core Report", mock.getStdout())
             self.assertIn("Assembly Area Fractions", mock.getStdout())
-
-
-if __name__ == "__main__":
-    unittest.main()

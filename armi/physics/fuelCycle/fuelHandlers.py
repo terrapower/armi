@@ -24,6 +24,7 @@ the particular shuffling of a case.
 
 This module also handles repeat shuffles when doing a restart.
 """
+# ruff: noqa: F401
 import os
 import re
 import warnings
@@ -940,7 +941,7 @@ class FuelHandler:
         """
         try:
             f = open(fname)
-        except:
+        except OSError:
             raise RuntimeError(
                 "Could not find/open repeat shuffle file {} in working directory {}"
                 "".format(fname, os.getcwd())

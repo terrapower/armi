@@ -1,0 +1,37 @@
+# This is the ruff config file for ARMI.
+# We use Ruff along with Black to format/lint our code.
+
+# This is the exact version of Ruff we use.
+required-version = "0.0.272"
+
+# Never enforce `E501`: line length, because we use Black for that
+# Never enforce `E731`: we can use lambdas however we want
+ignore = ["E501", "E731"]
+
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "venv",
+]
+
+[per-file-ignores]
+"*/tests/*" = ["D101", "D102", "D103", "D104", "E741", "SLF001"]

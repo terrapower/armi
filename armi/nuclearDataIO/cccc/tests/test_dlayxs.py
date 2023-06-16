@@ -12,10 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Tests for DELAYXS.
-"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+"""Tests for DELAYXS."""
 import copy
 import filecmp
 import unittest
@@ -35,9 +32,7 @@ class DlayxsTests(unittest.TestCase):
         cls.dlayxs3 = dlayxs.readBinary(test_xsLibraries.DLAYXS_MCC3)
 
     def test_decayConstants(self):
-        """
-        test that all emission spectrum delayEmissionSpectrum is normalized.
-        """
+        """Test that all emission spectrum delayEmissionSpectrum is normalized."""
         delay = self.dlayxs3
         self.assertTrue(
             numpy.allclose(
@@ -53,9 +48,7 @@ class DlayxsTests(unittest.TestCase):
         )
 
     def test_chi_delay(self):
-        """
-        test that all emission spectrum delayEmissionSpectrum is normalized.
-        """
+        """Test that all emission spectrum delayEmissionSpectrum is normalized."""
         delay = self.dlayxs3
         self.assertTrue(
             numpy.allclose(

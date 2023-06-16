@@ -39,12 +39,11 @@ efficient analysis.
     currently only works on a constrained set of hex-based geometries. For your systems,
     consider these an example and starting point and build your own converters as
     appropriate.
-
 """
-from armi.reactor.tests import test_reactors
-from armi.reactor.flags import Flags
+from armi import configure
 from armi.reactor.converters import blockConverters
-from armi import configure, runLog
+from armi.reactor.flags import Flags
+from armi.reactor.tests import test_reactors
 
 # configure ARMI
 configure(permissive=True)

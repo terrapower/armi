@@ -104,7 +104,7 @@ class Fixture:
 
     def __call__(self):
         if self._error is not None:
-            raise self._error  # pylint: disable=E0702
+            raise self._error
         elif not self._success:
             missingDependencies = [
                 d for d in self.dependencies if not os.path.exists(d)
@@ -115,7 +115,8 @@ class Fixture:
                         "\n    ".join(missingDependencies)
                     )
                 )
-                raise self._error  # pylint: disable=E0702
+                raise self._error
+
             # at this point we need to update because
             # 1) there are missing targets that need to be generated, or
             # 2) targets are older than the dependencies.
