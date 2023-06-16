@@ -291,42 +291,65 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
 
         Notes
         -----
-        Temperature field is always isothermal and initially at 25 C.
+        Assemblies with liners are not supported and not considered for conservation testing.
         """
         _oCold, rCold = loadTestReactor(
             os.path.join(TEST_ROOT, "detailedAxialExpansion"),
             customSettings={"inputHeightsConsideredHot": False},
         )
-        a = rCold.core[1]
-        origCTempInC = {}
-        for b in a:
-            for c in getSolidComponents(b):
-                origCTempInC[c] = c.temperatureInC
+        assems = list(rCold.blueprints.assemblies.values())
+        for a in assems:
+            if a.hasFlags([Flags.MIDDLE, Flags.ANNULAR, Flags.TEST]):
+                # assemblies with the above flags have liners and conservation
+                # of such assemblies is not currently supported
+                continue
+            self.complexConservationTest(a)
+
+    def complexConservationTest(self, a):
         origMesh = a.getAxialMesh()[:-1]
         origMasses, origNDens = self._getComponentMassAndNDens(a)
         axialExpChngr = AxialExpansionChanger(detailedAxialExpansion=True)
         axialExpChngr.setAssembly(a)
         tempAdjust = [50.0, 50.0, -50.0, -50.0]
         for temp in tempAdjust:
-            # store pre-exp mass and NDens
-            oldMasses, _oldNDens = self._getComponentMassAndNDens(a)
             # adjust component temperatures by temp
             for b in a:
                 for c in getSolidComponents(b):
                     axialExpChngr.expansionData.updateComponentTemp(
                         c, c.temperatureInC + temp
                     )
+            # get U235/B10 and FE56 mass pre-expansion
+            prevFE56Mass = a.getMass("FE56")
+            prevMass = self._getMass(a)
             # compute thermal expansion coeffs and expand
             axialExpChngr.expansionData.computeThermalExpansionFactors()
             axialExpChngr.axiallyExpandAssembly()
-            # get post-exp mass
-            newMasses, newNDens = self._getComponentMassAndNDens(a)
+            # ensure that total U235/B10 and FE56 mass is conserved post-expansion
+            newFE56Mass = a.getMass("FE56")
+            newMass = self._getMass(a)
+            self.assertAlmostEqual(
+                newFE56Mass / prevFE56Mass, 1.0, places=14, msg=f"{a}"
+            )
+            if newMass:
+                self.assertAlmostEqual(newMass / prevMass, 1.0, places=14, msg=f"{a}")
 
+        newMasses, newNDens = self._getComponentMassAndNDens(a)
         # make sure that the assembly returned to the original state
         for orig, new in zip(origMesh, a.getAxialMesh()):
-            self.assertAlmostEqual(orig, new, places=12)
+            self.assertAlmostEqual(orig, new, places=12, msg=f"{a}")
         self._checkMass(origMasses, newMasses)
         self._checkNDens(origNDens, newNDens, 1.0)
+
+    @staticmethod
+    def _getMass(a):
+        """get the mass of an assembly. The conservation of HT9 pins in shield assems
+        are accounted for in FE56 conservation checks."""
+        newMass = None
+        if a.hasFlags(Flags.FUEL):
+            newMass = a.getMass("U235")
+        elif a.hasFlags(Flags.CONTROL):
+            newMass = a.getMass("B10")
+        return newMass
 
     def test_PrescribedExpansionContractionConservation(self):
         """Expand all components and then contract back to original state.
