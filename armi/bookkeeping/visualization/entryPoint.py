@@ -127,9 +127,9 @@ class VisFileEntryPoint(entryPoint.EntryPoint):
 
     def invoke(self):
         # late imports so that we dont have to import the world to do anything
-        from armi.bookkeeping.visualization import vtk  # noqa: E402
-        from armi.bookkeeping.visualization import xdmf  # noqa: E402
-        from armi.bookkeeping.db import databaseFactory  # noqa: E402
+        from armi.bookkeeping.visualization import vtk
+        from armi.bookkeeping.visualization import xdmf
+        from armi.bookkeeping.db import databaseFactory
 
         # a little baroque, but easy to extend with future formats
         formatMap = {

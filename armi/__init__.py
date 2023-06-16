@@ -326,7 +326,7 @@ def applyAsyncioWindowsWorkaround() -> None:
     his error showed up during jupyter notebook built-tests and documentation.
     See https://bugs.python.org/issue37373
     """
-    import asyncio  # noqa: module-import-not-at-top-of-file
+    import asyncio
 
     if (
         sys.version_info[0] == 3

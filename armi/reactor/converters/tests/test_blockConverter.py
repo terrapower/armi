@@ -55,7 +55,7 @@ class TestBlockConverter(unittest.TestCase):
         self._test_dissolve(hotBlock, "outer liner", "clad")
 
     def _perturbTemps(self, block, cName, tCold, tHot):
-        "Give the component different ref and hot temperatures than in test_Blocks."
+        """Give the component different ref and hot temperatures than in test_Blocks."""
         c = block.getComponent(Flags.fromString(cName))
         c.refTemp, c.refHot = tCold, tHot
         c.setTemperature(tHot)

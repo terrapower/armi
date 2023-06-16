@@ -284,7 +284,7 @@ class Inspector:
 
     def _inspectBlueprints(self):
         """Blueprints early error detection and old format conversions."""
-        from armi.physics.neutronics.settings import CONF_LOADING_FILE  # noqa: E402
+        from armi.physics.neutronics.settings import CONF_LOADING_FILE
 
         # if there is a blueprints object, we don't need to check for a file
         if self.cs.filelessBP:
@@ -367,13 +367,13 @@ class Inspector:
 
     def _inspectSettings(self):
         """Check settings for inconsistencies."""
-        from armi import operators  # noqa: E402
+        from armi import operators
         from armi.physics.neutronics.settings import (
             CONF_BC_COEFFICIENT,
             CONF_BOUNDARIES,
             CONF_XS_KERNEL,
             CONF_XS_SCATTERING_ORDER,
-        )  # noqa: E402
+        )
 
         self.addQueryBadLocationWillLikelyFail("operatorLocation")
 

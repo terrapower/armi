@@ -26,8 +26,7 @@ from typing import List
 import numpy
 
 from armi import runLog
-
-from .. import nuclearFileMetadata
+from armi.nuclearDataIO import nuclearFileMetadata
 
 IMPLICIT_INT = "IJKLMN"
 """Letters that trigger implicit integer types in old FORTRAN 77 codes"""

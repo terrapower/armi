@@ -189,7 +189,7 @@ def insertCoreDesignReport(core, cs, report):
 
 
 def _setGeneralCoreDesignData(cs, coreDesignTable):
-    from armi.physics.neutronics.settings import CONF_LOADING_FILE  # noqa: E402
+    from armi.physics.neutronics.settings import CONF_LOADING_FILE
 
     coreDesignTable.addRow(["Case Title", "{}".format(cs.caseTitle)])
     coreDesignTable.addRow(["Run Type", "{}".format(cs["runType"])])
@@ -294,8 +294,8 @@ def _setGeneralCoreParametersData(core, cs, coreDesignTable):
 
 
 def _setGeneralSimulationData(core, cs, coreDesignTable):
-    from armi.physics.neutronics.settings import CONF_GEN_XS  # noqa: E402
-    from armi.physics.neutronics.settings import CONF_GLOBAL_FLUX_ACTIVE  # noqa: E402
+    from armi.physics.neutronics.settings import CONF_GEN_XS
+    from armi.physics.neutronics.settings import CONF_GLOBAL_FLUX_ACTIVE
 
     coreDesignTable.addRow(["  ", ""])
     coreDesignTable.addRow(["Full Core Model", "{}".format(core.isFullCore)])
@@ -411,8 +411,8 @@ def insertSettingsData(cs, report):
     report: ReportContent
         The report to be added to
     """
-    from armi.physics.neutronics.settings import CONF_GEN_XS  # noqa: E402
-    from armi.physics.neutronics.settings import CONF_NEUTRONICS_KERNEL  # noqa: E402
+    from armi.physics.neutronics.settings import CONF_GEN_XS
+    from armi.physics.neutronics.settings import CONF_NEUTRONICS_KERNEL
 
     report[COMPREHENSIVE_REPORT][CASE_PARAMETERS] = newReports.Table("Case Parameters")
     report[COMPREHENSIVE_REPORT][REACTOR_PARAMS] = newReports.Table(
