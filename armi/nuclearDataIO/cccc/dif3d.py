@@ -79,6 +79,8 @@ FILE_SPEC_3D_PARAMS = [
     "EPSWP",
 ] + [f"DUM{e}" for e in range(1, 21)]
 
+TITLE_RANGE = 11
+
 
 class Dif3dData(cccc.DataContainer):
     def __init__(self):
@@ -100,10 +102,6 @@ class Dif3dStream(cccc.StreamWithDataContainer):
         Record for file identification information.
 
         The parameters are stored as a dictionary under the attribute `metadata`.
-
-        Parameters
-        ----------
-        None
         """
         with self.createRecord() as record:
             for param in ["HNAME", "HUSE1", "HUSE2"]:
@@ -115,13 +113,9 @@ class Dif3dStream(cccc.StreamWithDataContainer):
         Record for problem title, storage, and dump specifications.
 
         The parameters are stored as a dictionary under the attribute `metadata`.
-
-        Parameters
-        ----------
-        None
         """
         with self.createRecord() as record:
-            for i in range(11):
+            for i in range(TITLE_RANGE):
                 param = f"TITLE{i}"
                 self._metadata[param] = record.rwString(self._metadata[param], 8)
             self._metadata["MAXSIZ"] = record.rwInt(self._metadata["MAXSIZ"])
@@ -133,10 +127,6 @@ class Dif3dStream(cccc.StreamWithDataContainer):
         Record for DIF3D integer control parameters.
 
         The parameters are stored as a dictionary under the attribute `twoD`.
-
-        Parameters
-        ----------
-        None
         """
         with self.createRecord() as record:
             for param in FILE_SPEC_2D_PARAMS:
@@ -148,10 +138,6 @@ class Dif3dStream(cccc.StreamWithDataContainer):
         k-effective).
 
         The parameters are stored as a dictionary under the attribute `threeD`.
-
-        Parameters
-        ----------
-        None
         """
         with self.createRecord() as record:
             for param in FILE_SPEC_3D_PARAMS:
@@ -159,16 +145,12 @@ class Dif3dStream(cccc.StreamWithDataContainer):
 
     def _rw4DRecord(self) -> None:
         """
-        Record for the optimsum overrelaxation factors. This record is only present when
+        Record for the optimum overrelaxation factors. This record is only present when
         using DIF3D-FD and if `NUMORP` is greater than 0.
 
         The parameters are stored as a dictionary under the attribute `fourD`. This
         could be changed into a list in the future since this record represents groupwise
         data.
-
-        Parameters
-        ----------
-        None
         """
         if self._data.twoD["NUMORP"] != 0:
             omegaParams = [f"OMEGA{e}" for e in range(1, self._data.twoD["NUMORP"] + 1)]
@@ -190,10 +172,6 @@ class Dif3dStream(cccc.StreamWithDataContainer):
         record is only present if `NCMRZS` is greater than 0.
 
         The parameters are stored as a dictionary under the attribute `fiveD`.
-
-        Parameters
-        ----------
-        None
         """
         if self._data.twoD["NCMRZS"] != 0:
             zcmrcParams = [f"ZCMRC{e}" for e in range(1, self._data.twoD["NCMRZS"] + 1)]
@@ -219,7 +197,7 @@ class Dif3dStream(cccc.StreamWithDataContainer):
                     )
 
     def readWrite(self):
-        """"""
+        """Reads or writes metadata and data from 5 records"""
         msg = f"{'Reading' if 'r' in self._fileMode else 'Writing'} DIF3D binary data {self}"
         runLog.info(msg)
 

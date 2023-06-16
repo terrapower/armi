@@ -48,7 +48,7 @@ class TestDif3dSimpleHexz(unittest.TestCase):
         EXPECTED_TITLE = ["3D Hex", "-Z to", "genera", "te NHF", "LUX fi", "le"] + [
             "" for i in range(5)
         ]
-        for i in range(10):
+        for i in range(dif3d.TITLE_RANGE):
             self.assertEqual(self.df.metadata[f"TITLE{i}"], EXPECTED_TITLE[i])
         self.assertEqual(self.df.metadata["MAXSIZ"], 10000)
         self.assertEqual(self.df.metadata["MAXBLK"], 1800000)
