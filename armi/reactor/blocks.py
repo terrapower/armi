@@ -847,15 +847,15 @@ class Block(composites.Composite):
 
         if len(b10Comps) > 1:
             runLog.warning(
-                f"More than 1 component found  in {self.name}."
-                f"Only {b10Comp} will be considered for calculation of initialB10ComponentVol"
+                f"More than one boron10-containing component found  in {self.name}. "
+                f"Only {b10Comp} will be considered for calculation of initialB10ComponentVol "
                 f"Since adding multiple volumes is not conservative for captures/cc."
                 f"All compos found {b10Comps}",
                 single=True,
             )
         if self.isFuel():
             runLog.warning(
-                f"{self.name} has both fuel and initial b10."
+                f"{self.name} has both fuel and initial b10. "
                 "b10 volume may not be conserved with axial expansion.",
                 single=True,
             )
