@@ -838,28 +838,29 @@ class Block(composites.Composite):
         if not b10Comps:
             return
 
-        potentialC = b10Comps[0]
-        tHot = potentialC.temperatureInC
-        tCold = potentialC.inputTemperatureInC
-        mat = potentialC.material
+        # get the highest density comp dont want to sum all because some
+        # comps might have very small impurities of boron and adding this
+        # volume wont be conservative for captures per cc.
+        b10Comp = sorted(b10Comps, key=lambda x: x.getNumberDensity("B10"))[-1]
 
-        for c in b10Comps:
-            if (
-                tHot != c.temperatureInC
-                or tCold != c.inputTemperatureInC
-                or mat != c.material
-            ):
-                runLog.warning(
-                    f"More than 1 component found  in {self.name} with different B10 material "
-                    f" or temperature, using {potentialC} thermal expansion; because there are "
-                    "multiple components there may be mass flow of boron during axial expansion "
-                    "so fixed volume of initial boron may be less meaningful.",
-                    single=True,
-                )
+        if len(b10Comps) > 1:
+            runLog.warning(
+                f"More than 1 component found  in {self.name}."
+                f"Only {b10Comp} will be considered for calculation of initialB10ComponentVol"
+                f"Since adding multiple volumes is not conservative for captures/cc."
+                f"All compos found {b10Comps}",
+                single=True,
+            )
+        if self.isFuel():
+            runLog.warning(
+                f"{self.name} has both fuel and initial b10."
+                "b10 volume may not be conserved with axial expansion.",
+                single=True,
+            )
 
         # calc volume of boron components
-        coldArea = sum(c.getArea(cold=True) for c in b10Comps)
-        coldFactor = potentialC.getThermalExpansionFactor() if heightHot else 1
+        coldArea = b10Comp.getArea(cold=True)
+        coldFactor = b10Comp.getThermalExpansionFactor() if heightHot else 1
         coldHeight = self.getHeight() / coldFactor
         self.p.initialB10ComponentVol = coldArea * coldHeight
 
