@@ -96,8 +96,8 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "initialB10ComponentVol",
-            units="cubic centimeters",
-            description="CC's of un-irradiated, cold B10 containing component (includes full volume if any B10)",
+            units="cc",  # cubic centimeters
+            description="cc's of un-irradiated, cold B10 containing component (includes full volume if any B10)",
         )
 
         pb.defParam(
@@ -270,8 +270,8 @@ def getBlockParameterDefinitions():
         pb.defParam(
             "buRatePeak",
             units="%FIMA/day spatial peak",
-            # This is very related to power, but normalized to %FIMA.
             description="Current rate of burnup accumulation at peak location",
+            location=ParamLocation.MAX,
         )
 
         pb.defParam(
