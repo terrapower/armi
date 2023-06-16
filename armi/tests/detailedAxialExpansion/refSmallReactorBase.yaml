@@ -362,25 +362,25 @@ blocks:
             Tinput: 25.0
             Thot: 600.0
             id: 0.0
-            mult: 61.0
-            od: 1.286
-        gap:
+            mult: clad.mult
+            od: gap.id
+        gap: &component_control_gap
             shape: Circle
             material: Void
             Tinput: 25.0
             Thot: 450.0
-            id: control.od
-            mult: control.mult
+            id: 1.286
+            mult: clad.mult
             od: clad.id
-        clad:
+        clad: &component_control_clad
             shape: Circle
             material: HT9
             Tinput: 25.0
             Thot: 450.0
             id: 1.358
-            mult: control.mult
+            mult: 61.0
             od: 1.686
-        wire:
+        wire: &component_control_wire
             shape: Helix
             material: HT9
             Tinput: 25.0
@@ -388,9 +388,9 @@ blocks:
             axialPitch: 50.0
             helixDiameter: 1.771
             id: 0.0
-            mult: control.mult
-            od: 0.085
-        innerDuct:
+            mult: clad.mult
+            od: 0.085 
+        innerDuct: &component_control_innerDuct
             shape: Hexagon
             material: HT9
             Tinput: 25.0
@@ -403,33 +403,11 @@ blocks:
         intercoolant: *component_control_intercoolant
     
     moveable plenum: &block_control_plenum
-        gap:
-            shape: Circle
-            material: Void
-            Tinput: 25.0
-            Thot: 600.0
-            id: 0.0
-            mult: clad.mult
-            od: clad.id
-        clad:
-            shape: Circle
-            material: HT9
-            Tinput: 25.0
-            Thot: 450.0
-            id: 1.358
-            mult: 61.0
-            od: 1.686
-        wire:
-            shape: Helix
-            material: HT9
-            Tinput: 25.0
-            Thot: 450.0
-            axialPitch: 30.15
-            helixDiameter: 1.19056
-            id: 0.0
-            mult: clad.mult
-            od: 0.10056
+        gap: *component_control_gap
+        clad: *component_control_clad
+        wire: *component_control_wire
         coolant: *component_coolant
+        innderDuct: *component_control_innerDuct
         duct: *component_control_duct
         intercoolant: *component_control_intercoolant
 
