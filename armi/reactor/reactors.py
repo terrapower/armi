@@ -37,7 +37,7 @@ import time
 import numpy
 import tabulate
 
-from armi import getPluginManagerOrFail, materials, nuclearDataIO, settings
+from armi import getPluginManagerOrFail, materials, nuclearDataIO
 from armi import runLog
 from armi.nuclearDataIO import xsLibraries
 from armi.reactor import assemblies
@@ -48,7 +48,6 @@ from armi.reactor import grids
 from armi.reactor import parameters
 from armi.reactor import reactorParameters
 from armi.reactor import zones
-from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
 from armi.reactor.flags import Flags
 from armi.reactor.systemLayoutInput import SystemLayoutInput
 from armi.settings.fwSettings.globalSettings import CONF_MATERIAL_NAMESPACE_ORDER
@@ -2279,7 +2278,6 @@ class Core(composites.Composite):
             # reactor.blueprints.assemblies need to be populated
             # this normally happens during armi/reactor/blueprints/__init__.py::constructAssem
             # but for DB load, this is not called so it must be here.
-            # pylint: disable=protected-access
             self.parent.blueprints._prepConstruction(cs)
         else:
             # set reactor level meshing params

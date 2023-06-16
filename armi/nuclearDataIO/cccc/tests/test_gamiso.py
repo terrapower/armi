@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """Test GAMISO reading and writing."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 from copy import deepcopy
 import os
 import unittest

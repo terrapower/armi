@@ -49,7 +49,7 @@ class ThoriumOxide(FuelMaterial, SimpleSolid):
                 )
             elif TD_frac < 0:
                 runLog.error(
-                    f"TD_frac is entered as negative. This is not allowed!",
+                    "TD_frac is entered as negative. This is not allowed!",
                     single=True,
                     label="Negative TD_frac",
                 )

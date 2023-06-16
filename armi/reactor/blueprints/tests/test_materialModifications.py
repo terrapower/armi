@@ -11,8 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
-
+"""Tests for material modifications."""
 import unittest
 
 from numpy.testing import assert_allclose
@@ -244,7 +243,7 @@ assemblies:
         Make sure that valid/invalid material modifications are searched up
         the MRO for a material class.
         """
-        a = self.loadUZrAssembly(
+        _a = self.loadUZrAssembly(
             """
         material modifications:
             ZR_wt_frac: [1]
@@ -266,7 +265,7 @@ custom isotopics:
         )
 
         with self.assertRaises(ValueError):
-            a = self.loadUZrAssembly(
+            _a = self.loadUZrAssembly(
                 """
         material modifications:
             ZR_wt_frac: [1]

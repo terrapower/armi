@@ -42,6 +42,7 @@ If using the ``run`` entry point, additional work is done:
 * Wrap up
 * Quit
 """
+# ruff: noqa: F401
 import atexit
 import datetime
 import importlib
@@ -325,7 +326,7 @@ def applyAsyncioWindowsWorkaround() -> None:
     his error showed up during jupyter notebook built-tests and documentation.
     See https://bugs.python.org/issue37373
     """
-    import asyncio  # pylint: disable=import-outside-toplevel; packed with workaround for easy removal
+    import asyncio  # noqa: module-import-not-at-top-of-file
 
     if (
         sys.version_info[0] == 3
@@ -344,5 +345,5 @@ atexit.register(context.cleanTempDirs)
 # SIGBREAK doesn't exist on non-windows
 # This actually doesn't work in mpi runs because MSMPI's mpiexec does not pass signals.
 if os.name == "nt":
-    signal.signal(signal.SIGBREAK, _cleanupOnCancel)  # pylint: disable=no-member
+    signal.signal(signal.SIGBREAK, _cleanupOnCancel)
 signal.signal(signal.SIGINT, _cleanupOnCancel)

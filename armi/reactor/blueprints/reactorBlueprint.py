@@ -37,8 +37,8 @@ face-map xml files.
 import tabulate
 import yamlize
 
-from armi import getPluginManagerOrFail
 from armi import context
+from armi import getPluginManagerOrFail
 from armi import runLog
 from armi.reactor import geometry
 from armi.reactor import grids
@@ -52,7 +52,6 @@ class SystemBlueprint(yamlize.Object):
     .. note:: We use string keys to link grids to objects that use them. This differs
         from how blocks/assembies are specified, which use YAML anchors. YAML anchors
         have proven to be problematic and difficult to work with
-
     """
 
     name = yamlize.Attribute(key="name", type=str)
@@ -183,7 +182,6 @@ class SystemBlueprint(yamlize.Object):
                 system.processLoading(cs)
         return system
 
-    # pylint: disable=no-self-use
     def _loadAssemblies(self, cs, container, gridContents, bp):
         runLog.header(
             "=========== Adding Assemblies to {} ===========".format(container)

@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """This module provides tests for the generic Executers."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import os
 import unittest
 
@@ -21,7 +20,7 @@ from armi.reactor import geometry
 from armi.utils import directoryChangers
 from armi.physics import executers
 
-# pylint: disable=abstract-method
+
 class MockReactorParams:
     def __init__(self):
         self.cycle = 1

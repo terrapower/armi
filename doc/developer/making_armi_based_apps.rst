@@ -65,13 +65,12 @@ Python namespace containing hook implementations (e.g. module, class, object, fu
 etc.), we chose to make a base ``ArmiPlugin`` class for a couple of reasons:
 
  - Wrapping the specifications in a class allows you to implement them in a subclass,
-   which enables tools like ``pylint`` and ``mypy`` to check your work and complain
-   early if you do certain things wrong.
+   which enables tools like ``ruff`` to check your work and complain early if you do
+   certain things wrong.
 
  - While we assume all plugins are stateless (hence all ``@staticmethods``), we may
    introduce stateful/configurable plugins later on. Starting out with a base class will
    make this transition easier.
-
 
 Making your own Plugin
 ----------------------

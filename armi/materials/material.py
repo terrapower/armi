@@ -17,7 +17,6 @@ Base Material classes.
 
 Most temperatures may be specified in either K or C and the functions will convert for you.
 """
-# pylint: disable=unused-argument
 import copy
 import warnings
 

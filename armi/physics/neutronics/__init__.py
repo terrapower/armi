@@ -29,9 +29,8 @@ independent interfaces:
 .. warning:: There is also some legacy and question-raising code in this module that
     is here temporarily while we finish untangling some of the neutronics
     plugins outside of ARMI.
-
 """
-
+# ruff: noqa: F401, E402
 from enum import IntEnum
 
 import numpy

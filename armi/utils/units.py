@@ -11,11 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-# pylint: disable=too-many-lines, invalid-name
-"""
-The units module contains unit conversion functions and constants.
-"""
+"""The units module contains unit conversion functions and constants."""
 import math
 
 import scipy.constants

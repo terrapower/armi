@@ -28,6 +28,7 @@ customizing much of the Framework's behavior.
     object. We are planning to do this, but for now this App class is somewhat
     rudimentary.
 """
+# ruff: noqa: E402
 from typing import Dict, Optional, Tuple, List
 import collections
 import importlib
@@ -79,7 +80,6 @@ class App:
         self.__initNewPlugins()
 
     def __initNewPlugins(self):
-        # pylint: disable=import-outside-toplevel
         from armi import cli
         from armi import bookkeeping
         from armi.physics import fuelCycle
@@ -213,9 +213,7 @@ class App:
             currentNames = {pd.name for pd in parameters.ALL_DEFINITIONS}
 
             renames = dict()
-            for (
-                pluginRenames
-            ) in self._pm.hook.defineParameterRenames():  # pylint: disable=no-member
+            for pluginRenames in self._pm.hook.defineParameterRenames():
                 collisions = currentNames & pluginRenames.keys()
                 if collisions:
                     raise plugins.PluginError(
@@ -369,7 +367,7 @@ class App:
 
         # add the name/version of the current App, if it's not the default
         if context.APP_NAME != "armi":
-            # pylint: disable=import-outside-toplevel # avoid cyclic import
+            # noqa: module-import-not-at-top-of-file
             from armi import getApp
 
             splash += r"""

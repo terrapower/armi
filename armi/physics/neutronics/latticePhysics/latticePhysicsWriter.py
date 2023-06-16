@@ -124,7 +124,9 @@ class LatticePhysicsWriter(interfaces.InputWriter):
         # would prefer this in 1D but its used in 0D in _writeSourceComposition
         self.minDriverDensity = self.xsSettings.minDriverDensity
 
-        blockNeedsFPs = representativeBlock.getLumpedFissionProductCollection() != None
+        blockNeedsFPs = (
+            representativeBlock.getLumpedFissionProductCollection() is not None
+        )
 
         self.modelFissionProducts = (
             blockNeedsFPs and self.cs[CONF_FP_MODEL] != "noFissionProducts"
@@ -166,7 +168,7 @@ class LatticePhysicsWriter(interfaces.InputWriter):
             ),
         )
 
-    def write(self):  # pylint: disable=arguments-differ
+    def write(self):
         raise NotImplementedError
 
     @property

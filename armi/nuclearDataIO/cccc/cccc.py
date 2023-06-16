@@ -637,7 +637,6 @@ class StreamWithDataContainer(Stream):
             fileMode,
         )
 
-    # pylint: disable=arguments-differ
     @classmethod
     def _write(cls, data: DataContainer, fileName: str, fileMode: str):
         return cls._readWrite(data, fileName, fileMode)

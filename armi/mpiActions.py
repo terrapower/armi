@@ -310,7 +310,7 @@ def runActions(o, r, cs, actions, numPerNode=None, serial=False):
         return runActionsInSerial(o, r, cs, actions)
 
     useForComputation = [True] * context.MPI_SIZE
-    if numPerNode != None:
+    if numPerNode is not None:
         if numPerNode < 1:
             raise ValueError("numPerNode must be >= 1")
         numThisNode = {nodeName: 0 for nodeName in context.MPI_NODENAMES}
@@ -542,7 +542,7 @@ class DistributeStateAction(MpiAction):
             # same.
             # TODO: this is an indication we need to revamp either how the operator attachment works
             # or how the interfaces are distributed.
-            self.r._markSynchronized()  # pylint: disable=protected-access
+            self.r._markSynchronized()
 
         except (cPickle.PicklingError, TypeError) as error:
             runLog.error("Failed to transmit on distribute state root MPI bcast")
@@ -555,10 +555,10 @@ class DistributeStateAction(MpiAction):
             raise
 
         if context.MPI_RANK != 0:
-            self.r.core.regenAssemblyLists()  # pylint: disable=no-member
+            self.r.core.regenAssemblyLists()
 
         # check to make sure that everything has been properly reattached
-        if self.r.core.getFirstBlock().r is not self.r:  # pylint: disable=no-member
+        if self.r.core.getFirstBlock().r is not self.r:
             raise RuntimeError("Block.r is not self.r. Reattach the blocks!")
 
         beforeCollection = timeit.default_timer()
@@ -695,7 +695,7 @@ class DistributeStateAction(MpiAction):
                         return
                     self.o.removeInterface(iOld)
                     self.o.addInterface(iNew)
-                    iNew.interactDistributeState()  # pylint: disable=no-member
+                    iNew.interactDistributeState()
                 elif distributable == interfaces.Interface.Distribute.NEW:
                     runLog.debug("Initializing new interface {0}".format(iName))
                     # make a fresh instance of the non-transmittable interface.
@@ -742,19 +742,19 @@ def _diagnosePickleError(o):
     checker(o.r)
 
     runLog.info("Scanning all assemblies for pickle errors")
-    for a in o.r.core.getAssemblies(includeAll=True):  # pylint: disable=no-member
+    for a in o.r.core.getAssemblies(includeAll=True):
         checker(a)
 
     runLog.info("Scanning all blocks for pickle errors")
-    for b in o.r.core.getBlocks(includeAll=True):  # pylint: disable=no-member
+    for b in o.r.core.getBlocks(includeAll=True):
         checker(b)
 
     runLog.info("Scanning blocks by name for pickle errors")
-    for _bName, b in o.r.core.blocksByName.items():  # pylint: disable=no-member
+    for _bName, b in o.r.core.blocksByName.items():
         checker(b)
 
     runLog.info("Scanning the ISOTXS library for pickle errors")
-    checker(o.r.core.lib)  # pylint: disable=no-member
+    checker(o.r.core.lib)
 
     for interface in o.getInterfaces():
         runLog.info("Scanning {} for pickle errors".format(interface))

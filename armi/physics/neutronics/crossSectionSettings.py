@@ -31,13 +31,11 @@ from typing import Dict, Union
 
 import voluptuous as vol
 
+from armi import context
 from armi import runLog
 from armi.physics.neutronics import crossSectionGroupManager
 from armi.physics.neutronics.crossSectionGroupManager import BLOCK_COLLECTIONS
 from armi.settings import Setting
-from armi import context
-
-from armi.settings.fwSettings.globalSettings import CONF_RUN_TYPE
 
 CONF_BLOCK_REPRESENTATION = "blockRepresentation"
 CONF_BLOCKTYPES = "validBlockTypes"
