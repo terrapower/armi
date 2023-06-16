@@ -179,7 +179,3 @@ class TestLatticePhysicsWriter(unittest.TestCase):
     def test_getDriverBlock(self):
         b = self.w._getDriverBlock()
         self.assertIsNone(b)
-
-
-if __name__ == "__main__":
-    unittest.main()

@@ -364,7 +364,3 @@ assemblies:
         self.assertNotIn("FE56", nd)  # natural isotopic not requested
         self.assertNotIn("FE51", nd)  # un-natural
         self.assertNotIn("FE", nd)
-
-
-if __name__ == "__main__":
-    unittest.main()

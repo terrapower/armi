@@ -117,7 +117,3 @@ class TestReactorBlueprints(unittest.TestCase):
         materialData = reactorBlueprint.summarizeMaterialData(core)
         for actual, expected in zip(materialData, expectedMaterialData):
             self.assertEqual(actual, expected)
-
-
-if __name__ == "__main__":
-    unittest.main()

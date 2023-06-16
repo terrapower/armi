@@ -661,7 +661,3 @@ class TestGetReactionRateDict(unittest.TestCase):
             nucName="PU239", lib=lib, xsSuffix="AA", mgFlux=1, nDens=1
         )
         self.assertEqual(rxRatesDict["nG"], sum(lib["PU39AA"].micros.nGamma))
-
-
-if __name__ == "__main__":
-    unittest.main()

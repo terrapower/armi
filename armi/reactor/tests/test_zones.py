@@ -310,7 +310,3 @@ class TestZones(unittest.TestCase):
         self.assertEqual(list(zs._zones.keys())[0], "ring-1")
         self.assertEqual(list(zs._zones.keys())[1], "ring-2")
         self.assertEqual(list(zs._zones.keys())[2], "ring-3")
-
-
-if __name__ == "__main__":
-    unittest.main()

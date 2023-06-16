@@ -67,7 +67,3 @@ class Graphite_TestCase(unittest.TestCase):
             error = math.fabs((ref_rho - test_rho) / ref_rho)
 
             self.assertLess(error, uncertainty)
-
-
-if __name__ == "__main__":
-    unittest.main()

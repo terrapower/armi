@@ -1512,8 +1512,3 @@ class TestMaterialAdjustments(unittest.TestCase):
     def test_getEnrichment(self):
         self.fuel.adjustMassEnrichment(0.3)
         self.assertAlmostEqual(self.fuel.getEnrichment(), 0.3)
-
-
-if __name__ == "__main__":
-    # import sys; sys.argv = ['', 'TestMaterialAdjustments.test_adjustMassFrac_U235']
-    unittest.main()

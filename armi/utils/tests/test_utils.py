@@ -371,7 +371,3 @@ settings:
 
         self.assertEqual(getCumulativeNodeNum(2, 0, self.standaloneDetailedCS), 10)
         self.assertEqual(getCumulativeNodeNum(1, 0, self.standaloneDetailedCS), 4)
-
-
-if __name__ == "__main__":
-    unittest.main()

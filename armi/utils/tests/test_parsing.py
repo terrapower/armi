@@ -81,7 +81,3 @@ class LiteralEvalTest(unittest.TestCase):
             parsing.parseValue("5", str)
         with self.assertRaises(ValueError):
             parsing.parseValue("5", bool)
-
-
-if __name__ == "__main__":
-    unittest.main()

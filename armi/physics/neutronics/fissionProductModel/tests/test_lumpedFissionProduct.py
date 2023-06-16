@@ -249,8 +249,3 @@ class TestMo99LFP(unittest.TestCase):
         self.assertIn("MO99", names)
         self.assertNotIn("KR85", names)
         self.assertAlmostEqual(self.lfps["LFP35"].getTotalYield(), 2.0)
-
-
-if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'Test.testName']
-    unittest.main()

@@ -192,7 +192,3 @@ class TestNhfluxVariant(unittest.TestCase):
                 actualData = f2.read()
             for expected, actual in zip(expectedData, actualData):
                 self.assertEqual(expected, actual)
-
-
-if __name__ == "__main__":
-    unittest.main()

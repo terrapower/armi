@@ -59,8 +59,3 @@ class TestLabels(unittest.TestCase):
                 expectedData = f.read().splitlines()
             for expected, actual in zip(expectedData, actualData):
                 self.assertEqual(expected, actual)
-
-
-if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'TestLabels.test_writeLabelsAscii']
-    unittest.main()

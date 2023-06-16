@@ -63,7 +63,3 @@ class TestFuelHandlerMgmtTools(FuelHandlerTestHelper):
         rotAlgos.simpleAssemblyRotation(fh)
         rotAlgos.simpleAssemblyRotation(fh)
         self.assertEqual(b.getRotationNum(), rotNum + 2)
-
-
-if __name__ == "__main__":
-    unittest.main()
