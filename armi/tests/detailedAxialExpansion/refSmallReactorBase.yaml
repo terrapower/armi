@@ -444,23 +444,23 @@ blocks:
             id: 0.0
             mult: 169.0
             od: 0.90362
-        gap:
+        gap: &component_radial_shield_gap
             shape: Circle
             material: Void
             Tinput: 25.0
             Thot: 450.0
-            id: shield.od
-            mult: shield.mult
+            id: 0.90362
+            mult: 169.0
             od: clad.id
-        clad:
+        clad: &component_radial_shield_clad
             shape: Circle
             material: HT9
             Tinput: 25.0
             Thot: 450.0
             id: 0.90562
-            mult: shield.mult
+            mult: 169.0
             od: 1.05036
-        wire:
+        wire: &component_radial_shield_wire
             shape: Helix
             material: HT9
             Tinput: 25.0
@@ -475,49 +475,19 @@ blocks:
         coolant: *component_coolant
 
     radial shield plenum: &block_shield_plenum
-        gap: &component_radial_shield_plenum_gap
-            shape: Circle
-            material: Void
-            Tinput: 25.0
-            Thot: 600.0
-            id: 0.0
-            mult: clad.mult
-            od: clad.id
-        clad: &component_radial_shield_clad
-            shape: Circle
-            material: HT9
-            Tinput: 25.0
-            Thot: 450.0
-            id: 0.90562
-            mult: 169.0
-            od: 1.05036
-        wire: &component_radial_shield_plenum_wire
-            shape: Helix
-            material: HT9
-            Tinput: 25.0
-            Thot: 450.0
-            axialPitch: 30.15
-            helixDiameter: 1.19056
-            id: 0.0
-            mult: clad.mult
-            od: 0.10056
+        gap: *component_radial_shield_gap
+        clad: *component_radial_shield_clad
+        wire: *component_radial_shield_wire
         coolant: *component_coolant
         duct: *component_duct
         intercoolant: *component_intercoolant
-    
+
     radial shield aclp: &block_shield_aclp
-        gap: *component_radial_shield_plenum_gap
+        gap: *component_radial_shield_gap
         clad: *component_radial_shield_clad
-        wire: *component_radial_shield_plenum_wire
+        wire: *component_radial_shield_wire
         coolant: *component_coolant
-        duct:
-            shape: Hexagon
-            material: HT9
-            Tinput: 25.0
-            Thot: 450.0
-            ip: 16.0
-            mult: 1.0
-            op: 16.65
+        duct: *component_duct
         intercoolant: *component_intercoolant
 
 assemblies:
