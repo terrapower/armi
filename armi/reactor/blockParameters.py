@@ -94,6 +94,12 @@ def getBlockParameterDefinitions():
         )
 
         pb.defParam(
+            "initialB10ComponentVol",
+            units="cc",  # cubic centimeters
+            description="cc's of un-irradiated, cold B10 containing component (includes full volume if any B10)",
+        )
+
+        pb.defParam(
             "molesHmBOLByPin",
             units="mole",
             description="Total number of atoms of heavy metal at BOL",
@@ -250,6 +256,13 @@ def getBlockParameterDefinitions():
                 "Current rate of burnup accumulation. Useful for estimating times when "
                 "burnup limits may be exceeded."
             ),
+        )
+
+        pb.defParam(
+            "buRatePeak",
+            units="%FIMA/day spatial peak",
+            description="Current rate of burnup accumulation at peak location",
+            location=ParamLocation.MAX,
         )
 
         pb.defParam(
