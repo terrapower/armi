@@ -179,7 +179,6 @@ def loadTestReactor(
         assemblies.setAssemNumCounter(assemNum)
         settings.setMasterCs(o.cs)
         o.reattach(r, o.cs)
-        r.sort()
         return o, r
 
     cs = settings.Settings(fName=fName)
@@ -212,7 +211,6 @@ def loadTestReactor(
         # protocol=2 allows for classes with __slots__ but not __getstate__ to be pickled
         TEST_REACTOR = cPickle.dumps((o, o.r, assemblies.getAssemNum()), protocol=2)
 
-    o.r.sort()
     return o, o.r
 
 
