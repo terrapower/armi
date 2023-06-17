@@ -167,7 +167,7 @@ class Dif3dStream(cccc.StreamWithDataContainer):
 
     def _rw5DRecord(self) -> None:
         """
-        Record for the axial coarse-mesh rebalance boundaries. Coarse mesh balancing is
+        Record for the axial coarse mesh rebalancing boundaries. Coarse mesh balancing is
         disabled in DIF3D-VARIANT, so this record is only relevant for DIF3D-Nodal. This
         record is only present if `NCMRZS` is greater than 0.
 
