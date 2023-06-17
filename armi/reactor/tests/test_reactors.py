@@ -272,6 +272,21 @@ class HexReactorTests(ReactorTests):
         a1 = [a.name for a in r1.core]
         self.assertNotEqual(a0, a1)
 
+    def test_sortAssemByRing(self):
+        """Demonstrate ring/pos sorting"""
+        self.r.core.sortAssemsByRing()
+        self.assertEqual((1, 1), self.r.core[0].spatialLocator.getRingPos())
+        currentRing = -1
+        currentPos = -1
+        for a in self.r.core:
+            ring, pos = a.spatialLocator.getRingPos()
+            self.assertGreaterEqual(ring, currentRing)
+            if ring > currentRing:
+                ring = currentRing
+                currentPos = -1
+            self.assertGreater(pos, currentPos)
+            currentPos = pos
+
     def test_getTotalParam(self):
         # verify that the block params are being read.
         val = self.r.core.getTotalBlockParam("power")
