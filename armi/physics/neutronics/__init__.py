@@ -141,6 +141,7 @@ GAMISO = "GAMISO"
 PMATRX_EXT = "pmatrx"
 GAMISO_EXT = "gamiso"
 ISOTXS = "ISOTXS"
+DIF3D = "DIF3D"
 
 # Constants for neutronics calculation types
 ADJOINT_CALC = "adjoint"
