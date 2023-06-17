@@ -272,6 +272,10 @@ class HexReactorTests(ReactorTests):
         a1 = [a.name for a in r1.core]
         self.assertNotEqual(a0, a1)
 
+    def test_sortChildren(self):
+        self.assertEqual(next(self.r.core.__iter__()), self.r.core[0])
+        self.assertEqual(self.r.core._children, sorted(self.r.core._children))
+
     def test_sortAssemByRing(self):
         """Demonstrate ring/pos sorting"""
         self.r.core.sortAssemsByRing()
