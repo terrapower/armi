@@ -40,6 +40,7 @@ settings:
   numProcessors: 12
   outputFileExtension: pdf
   power: 75000000.0
+  sortReactor: false # zpprs dont sor the right way. need better component sorting for slab...
   Tin: 20.0
   Tout: 20.0
   verbosity: extra
