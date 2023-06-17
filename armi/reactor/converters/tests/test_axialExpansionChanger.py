@@ -83,7 +83,7 @@ class AxialExpansionTestBase(unittest.TestCase):
         """
         totalSteelMass = 0.0
         for b in a:
-            # store block ztopz
+            # store block ztop
             self.blockZtop[b].append(b.p.ztop)
             for c in getSolidComponents(b):
                 # store mass and density of component
@@ -574,6 +574,13 @@ class TestExceptions(AxialExpansionTestBase, unittest.TestCase):
         with self.assertRaises(RuntimeError) as cm:
             cList = self.a[0].getChildren()
             expansionGrowthFracs = zeros(len(cList))
+            self.obj.expansionData.setExpansionFactors(cList, expansionGrowthFracs)
+            the_exception = cm.exception
+            self.assertEqual(the_exception.error_code, 3)
+
+        with self.assertRaises(RuntimeError) as cm:
+            cList = self.a[0].getChildren()
+            expansionGrowthFracs = zeros(len(cList)) - 10.0
             self.obj.expansionData.setExpansionFactors(cList, expansionGrowthFracs)
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)

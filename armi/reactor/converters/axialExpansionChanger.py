@@ -287,14 +287,13 @@ class AxialExpansionChanger:
                     if self.expansionData.isTargetComponent(c):
                         b.p.ztop = c.ztop
                         b.p.height = b.p.ztop - b.p.zbottom
-                        b.p.z = b.p.zbottom + b.getHeight() / 2.0
             else:
                 b.p.height = b.p.ztop - b.p.zbottom
-                b.p.z = b.p.zbottom + b.getHeight() / 2.0
 
-            # update block height, update component NDens, and call clearCache to update
-            # masses of all solid components.
+            b.p.z = b.p.zbottom + b.getHeight() / 2.0
+
             _checkBlockHeight(b)
+            # call component.clearCache to update the component volume, and therefore the masses, of all solid components.
             for c in getSolidComponents(b):
                 c.clearCache()
             # redo mesh -- functionality based on assembly.calculateZCoords()
@@ -615,9 +614,14 @@ class ExpansionData:
             )
             raise RuntimeError
         if 0.0 in expFrac:
-            msg = "An expansion fraction, L1/L0, equal to 0.0, is not physical! Should it be 1.0?"
+            msg = "An expansion fraction, L1/L0, equal to 0.0, is not physical. Expansion fractions should be greater than 0.0."
             runLog.error(msg)
             raise RuntimeError(msg)
+        for exp in expFrac:
+            if exp < 0.0:
+                msg = "A negative expansion fraction, L1/L0, is not physical. Expansion fractions should be greater than 0.0."
+                runLog.error(msg)
+                raise RuntimeError(msg)
         for c, p in zip(componentLst, expFrac):
             self._expansionFactors[c] = p
 
