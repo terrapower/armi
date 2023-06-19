@@ -769,6 +769,8 @@ class HexReactorTests(ReactorTests):
             )
         )
         loc = loaded.core.spatialGrid[0, 0, 0]
+        loaded.core.sortAssemsByRing()
+        self.r.core.sortAssemsByRing()
         self.assertIs(loc.grid, loaded.core.spatialGrid)
         self.assertEqual(loaded.core.childrenByLocator[loc], loaded.core[0])
 
