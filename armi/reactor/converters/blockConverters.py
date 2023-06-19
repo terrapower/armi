@@ -610,7 +610,7 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
             c.p.flags = oldC.p.flags
             self.convertedBlock.add(c)
 
-    def _buildNthRing(self, pinComponents, ringNum):  # pylint: disable=too-many-locals
+    def _buildNthRing(self, pinComponents, ringNum):
         """
         Build nth ring of pins and add them to block.
 

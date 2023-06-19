@@ -11,9 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-r""" Tests for the Database3 class."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-member,disallowed-name,invalid-name
+""" Tests for the Database3 class."""
 import subprocess
 import unittest
 
@@ -471,7 +469,6 @@ class TestDatabase3(unittest.TestCase):
         self._compareRoundTrip(dataDict)
 
     def test_mergeHistory(self):
-        # pylint: disable=protected-access
         self.makeHistory()
 
         # put some big data in an HDF5 attribute. This will exercise the code that pulls

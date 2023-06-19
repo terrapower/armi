@@ -13,11 +13,8 @@
 # limitations under the License.
 
 """Assembly Parameter Definitions."""
-import numpy
-
 from armi import runLog
 from armi.reactor import parameters
-from armi.reactor.flags import Flags
 from armi.reactor.parameters import ParamLocation
 from armi.reactor.parameters.parameterDefinitions import isNumpyArray
 from armi.utils import units

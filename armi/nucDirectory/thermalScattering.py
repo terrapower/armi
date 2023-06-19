@@ -215,13 +215,11 @@ def factory():
     armi.nucDirectory.nuclideBases.factory
         Calls this during ARMI initialization.
 
-
     .. warning::
         This gets called automatically during init, so don't call it
         unless you know what you're doing.
     """
-    # pylint: disable=invalid-name)
-    global byNbAndCompound  # pylint: disable=global-statement
+    global byNbAndCompound
     byNbAndCompound.clear()
 
     al27 = nb.byName["AL27"]

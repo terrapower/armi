@@ -23,7 +23,7 @@ Naturally, we encourage other kinds of contributions as well.
 
 Any contribution must pass all included unit tests. The tests are built and run with the
 `pytest` system. Please add new tests if you add new functionality. You can generally just run
-`tox` to build the testing environment and execute all the tests and pylint checks.
+`tox` to build the testing environment and execute all the tests and ruff checks.
 
 ## Submitting changes
 

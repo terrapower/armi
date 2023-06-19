@@ -42,9 +42,7 @@ import math
 import pathlib
 from typing import Optional, Set, List, Tuple, Dict
 import xml.etree.ElementTree as ET
-
 import xml.dom.minidom
-
 
 import numpy
 import h5py

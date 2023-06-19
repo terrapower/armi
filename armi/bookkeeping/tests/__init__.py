@@ -20,4 +20,4 @@ of related files from this package is useful. Also, these are organized like thi
 prevent having to import the world just to get something like a list of strings.
 """
 
-from ._constants import *
+from ._constants import *  # noqa: unused-import

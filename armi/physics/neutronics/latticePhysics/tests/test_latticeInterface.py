@@ -13,27 +13,25 @@
 # limitations under the License.
 
 """Test the Lattice Interface."""
-# pylint: disable=abstract-method,missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-method-argument,import-outside-toplevel
-import unittest
 from collections import OrderedDict
+import unittest
 
 from armi.physics.neutronics.latticePhysics.latticePhysicsInterface import (
     LatticePhysicsInterface,
 )
-from armi.tests import mockRunLogs
 from armi import settings
-from armi.settings.fwSettings.globalSettings import CONF_RUN_TYPE
-from armi.physics.neutronics.settings import CONF_GEN_XS
 from armi.operators.operator import Operator
-from armi.reactor.reactors import Reactor, Core
 from armi.physics.neutronics.crossSectionGroupManager import CrossSectionGroupManager
+from armi.physics.neutronics.settings import CONF_GEN_XS
+from armi.reactor.reactors import Reactor, Core
 from armi.reactor.tests.test_blocks import buildSimpleFuelBlock
+from armi.tests import mockRunLogs
 from armi.reactor.assemblies import (
     HexAssembly,
     grids,
 )
-from armi.physics.neutronics import LatticePhysicsFrequency
 from armi.nuclearDataIO.cccc import isotxs
+from armi.physics.neutronics import LatticePhysicsFrequency
 from armi.tests import ISOAA_PATH
 
 # As an interface, LatticePhysicsInterface must be subclassed to be used

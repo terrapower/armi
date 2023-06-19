@@ -1172,7 +1172,7 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
                 [
                     name
                     for name in b.p.paramDefs.inCategory(category).names
-                    if not name in excludedParamNames
+                    if name not in excludedParamNames
                 ]
             )
         if direction == "in":
@@ -1262,7 +1262,7 @@ class GammaUniformMeshConverter(UniformMeshGeometryConverter):
                 [
                     name
                     for name in b.p.paramDefs.inCategory(category).names
-                    if not name in excludeList
+                    if name not in excludeList
                 ]
             )
 

@@ -42,7 +42,6 @@ The grid editor may be invoked with the :py:mod:`armi.cli.gridGui` entry point::
 * No proper zoom support, and object sizes are fixed and don't accommodate long
   specifiers. Adding zoom would make for a fun first task to a new developer interested
   in computer graphics.
-
 """
 import colorsys
 import enum
@@ -112,9 +111,7 @@ def _translationMatrix(x, y):
 
 
 def _boundingBox(points: Sequence[numpy.ndarray]) -> wx.Rect:
-    """
-    Return the smallest wx.Rect that contains all of the passed points.
-    """
+    """Return the smallest wx.Rect that contains all of the passed points."""
     xmin = numpy.amin([p[0] for p in points])
     xmax = numpy.amax([p[0] for p in points])
 
@@ -126,9 +123,9 @@ def _boundingBox(points: Sequence[numpy.ndarray]) -> wx.Rect:
 
 def _desaturate(c: Sequence[float]):
     r, g, b = tuple(c)
-    h, l, s = colorsys.rgb_to_hls(r, g, b)
-    l = l + (1.0 - l) * 0.5
-    return numpy.array(colorsys.hls_to_rgb(h, l, s))
+    hue, lig, sat = colorsys.rgb_to_hls(r, g, b)
+    lig = lig + (1.0 - lig) * 0.5
+    return numpy.array(colorsys.hls_to_rgb(hue, lig, sat))
 
 
 def _getColorAndBrushFromFlags(f, bold=True):
@@ -1764,8 +1761,6 @@ class NewGridBlueprintDialog(wx.Dialog):
 
 
 if __name__ == "__main__":
-    import sys
-
     app = wx.App()
     frame = wx.Frame(None, wx.ID_ANY, title="Grid Blueprints GUI", size=(1000, 1000))
 

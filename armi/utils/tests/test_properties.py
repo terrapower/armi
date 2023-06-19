@@ -11,8 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-""" tests of the propereties class. """
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,invalid-name
+"""Tests of the propereties class."""
 import unittest
 
 from armi.utils import properties

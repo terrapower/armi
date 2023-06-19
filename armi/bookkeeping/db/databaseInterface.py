@@ -186,7 +186,7 @@ class DatabaseInterface(interfaces.Interface):
         self._db.close(True)
 
     def interactError(self):
-        r"""Get shutdown state information even if the run encounters an error."""
+        """Get shutdown state information even if the run encounters an error."""
         try:
             self.r.core.p.minutesSinceStart = (
                 time.time() - self.r.core.timeOfStart
@@ -196,7 +196,7 @@ class DatabaseInterface(interfaces.Interface):
             # writing
             self._db.writeToDB(self.r, "error")
             self._db.close(False)
-        except:  # pylint: disable=bare-except; we're already responding to an error
+        except:  # noqa: bare-except; we're already responding to an error
             pass
 
     def interactDistributeState(self) -> None:

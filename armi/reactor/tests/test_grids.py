@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """Tests for grids."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-self-use,attribute-defined-outside-init
 from io import BytesIO
 import math
 import unittest

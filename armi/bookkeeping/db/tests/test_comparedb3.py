@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """Tests for the compareDB3 module."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import unittest
 
 import h5py
@@ -178,7 +177,7 @@ class TestCompareDB3(unittest.TestCase):
             dbs[1]._fullPath,
             timestepCompare=[(0, 0), (0, 1)],
         )
-        self.assertEqual(len(diffs.diffs), 465)
+        self.assertEqual(len(diffs.diffs), 468)
         # Cycle length is only diff (x3)
         self.assertEqual(diffs.nDiffs(), 3)
 

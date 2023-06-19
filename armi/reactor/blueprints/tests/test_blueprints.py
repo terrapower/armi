@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """Tests the blueprints (loading input) file."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import os
 import pathlib
 import unittest

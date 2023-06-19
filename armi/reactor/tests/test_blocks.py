@@ -11,9 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-r"""Tests blocks.py."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-member,invalid-name,consider-using-f-string
+"""Tests blocks.py."""
 import copy
 import math
 import os
@@ -242,7 +240,6 @@ def loadTestBlock(cold=True):
     return block
 
 
-# pylint: disable=protected-access
 def applyDummyData(block):
     """Add some dummy data to a block for physics-like tests."""
     # typical SFR-ish flux in 1/cm^2/s

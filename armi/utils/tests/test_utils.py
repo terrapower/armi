@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-r""" Testing some utility functions.
-"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,too-many-public-methods,invalid-name
+""" Testing some utility functions."""
 from collections import defaultdict
 import unittest
 

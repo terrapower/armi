@@ -71,7 +71,6 @@ of any such types. The type within a given array should be homogeneous. Examples
     >>> b.p.fuelTemp = numpy.array(range(217), dtype=float)
     >>> b.p.fuelTemp[58] = 600
 
-
 .. note::
 
     There have been many discussions on what the specific name of this module/system
@@ -186,7 +185,7 @@ Design Considerations
 .. _thefreedictionary: http://www.thefreedictionary.com/parameter
 .. _Meriam-Webster: http://www.merriam-webster.com/dictionary/parameter
 """
-
+# ruff: noqa: F401
 from armi.reactor.parameters.parameterCollections import (
     ParameterCollection,
     collectPluginParameters,

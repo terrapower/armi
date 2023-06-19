@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-r"""
+"""
 A collection of miscellaneous functions used by ReportInterface to generate
 various reports.
 """
@@ -94,8 +94,7 @@ def writeWelcomeHeaders(o, cs):
         inputInfo : list
             (label, fileName, shaHash) tuples
         """
-        # pylint: disable=import-outside-toplevel # avoid cyclic import
-        from armi.physics.neutronics.settings import CONF_LOADING_FILE
+        from armi.physics.neutronics.settings import CONF_LOADING_FILE  # noqa: E402
 
         pathToLoading = pathlib.Path(cs.inputDirectory) / cs[CONF_LOADING_FILE]
 
@@ -541,7 +540,7 @@ def summarizePinDesign(core):
         for component_ in sorted(first_fuel_block):
             runLog.info(component_.setDimensionReport())
 
-    except Exception as error:  # pylint: disable=broad-except
+    except Exception as error:
         runLog.warning("Pin summarization failed to work")
         runLog.warning(error)
 
@@ -627,9 +626,8 @@ def makeCoreDesignReport(core, cs):
 
 
 def _setGeneralCoreDesignData(cs, coreDesignTable):
-    # pylint: disable=import-outside-toplevel # avoid cyclic import
-    from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
-    from armi.physics.neutronics.settings import CONF_LOADING_FILE
+    from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC  # noqa: E402
+    from armi.physics.neutronics.settings import CONF_LOADING_FILE  # noqa: E402
 
     report.setData(
         "Case Title", "{}".format(cs.caseTitle), coreDesignTable, report.DESIGN
@@ -777,11 +775,8 @@ def _setGeneralCoreParametersData(core, cs, coreDesignTable):
 
 
 def _setGeneralSimulationData(core, cs, coreDesignTable):
-    # pylint: disable=import-outside-toplevel # avoid cyclic import
-    from armi.physics.neutronics.settings import (
-        CONF_GEN_XS,
-        CONF_GLOBAL_FLUX_ACTIVE,
-    )
+    from armi.physics.neutronics.settings import CONF_GEN_XS  # noqa: E402
+    from armi.physics.neutronics.settings import CONF_GLOBAL_FLUX_ACTIVE  # noqa: E402
 
     report.setData("  ", "", coreDesignTable, report.DESIGN)
     report.setData(

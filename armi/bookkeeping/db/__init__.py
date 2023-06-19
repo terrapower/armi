@@ -27,7 +27,6 @@ Repeat Yourself (DRY) practices in the same way as other code. Therefore, do not
 code between different major versions of the databases. Create a new module if you are
 creating a new major database version.
 
-
 Database revision changelog
 ---------------------------
  - 1: Originally, calculation results were stored in a SQL database.
@@ -64,9 +63,7 @@ import os
 from typing import Optional, List, Tuple
 
 from armi import settings
-from armi.utils import pathTools
 from armi import runLog
-from armi.reactor import reactors
 
 # re-export package components for easier import
 from .permissions import Permissions

@@ -465,7 +465,7 @@ class Block(composites.Composite):
             return xsType + bu
         elif len(xsType) == 2 and ord(bu) > ord("A"):
             raise ValueError(
-                f"Use of multiple burnup groups is not allowed with multi-character xs groups!"
+                "Use of multiple burnup groups is not allowed with multi-character xs groups!"
             )
         else:
             return xsType
@@ -824,6 +824,47 @@ class Block(composites.Composite):
                 child.p.massHmBOL = hmMass
         self.p.massHmBOL = massHmBOL
         return hmDens
+
+    def setB10VolParam(self, heightHot):
+        """
+        Set the b.p.initialB10ComponentVol param according to the volume of boron-10 containing components.
+
+        Parameters
+        ----------
+        heightHot : Boolean
+            True if self.height() is cold height
+        """
+        # exclude fuel components since they could have slight B10 impurity and
+        # this metric is not relevant for fuel.
+        b10Comps = [c for c in self if c.getNumberDensity("B10") and not c.isFuel()]
+        if not b10Comps:
+            return
+
+        # get the highest density comp dont want to sum all because some
+        # comps might have very small impurities of boron and adding this
+        # volume wont be conservative for captures per cc.
+        b10Comp = sorted(b10Comps, key=lambda x: x.getNumberDensity("B10"))[-1]
+
+        if len(b10Comps) > 1:
+            runLog.warning(
+                f"More than one boron10-containing component found  in {self.name}. "
+                f"Only {b10Comp} will be considered for calculation of initialB10ComponentVol "
+                f"Since adding multiple volumes is not conservative for captures/cc."
+                f"All compos found {b10Comps}",
+                single=True,
+            )
+        if self.isFuel():
+            runLog.warning(
+                f"{self.name} has both fuel and initial b10. "
+                "b10 volume may not be conserved with axial expansion.",
+                single=True,
+            )
+
+        # calc volume of boron components
+        coldArea = b10Comp.getArea(cold=True)
+        coldFactor = b10Comp.getThermalExpansionFactor() if heightHot else 1
+        coldHeight = self.getHeight() / coldFactor
+        self.p.initialB10ComponentVol = coldArea * coldHeight
 
     def replaceBlockWithBlock(self, bReplacement):
         """
@@ -2024,10 +2065,9 @@ class HexBlock(Block):
 
         If this block is not in any grid at all, then there can be no symmetry so return 1.
         """
-
         try:
             symmetry = self.parent.spatialLocator.grid.symmetry
-        except:
+        except:  # noqa: bare-except
             return 1.0
         if (
             symmetry.domain == geometry.DomainType.THIRD_CORE

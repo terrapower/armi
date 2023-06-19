@@ -29,9 +29,8 @@ independent interfaces:
 .. warning:: There is also some legacy and question-raising code in this module that
     is here temporarily while we finish untangling some of the neutronics
     plugins outside of ARMI.
-
 """
-
+# ruff: noqa: F401, E402
 from enum import IntEnum
 
 import numpy
@@ -142,6 +141,7 @@ GAMISO = "GAMISO"
 PMATRX_EXT = "pmatrx"
 GAMISO_EXT = "gamiso"
 ISOTXS = "ISOTXS"
+DIF3D = "DIF3D"
 
 # Constants for neutronics calculation types
 ADJOINT_CALC = "adjoint"

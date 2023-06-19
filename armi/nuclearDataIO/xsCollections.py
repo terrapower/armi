@@ -890,7 +890,7 @@ def _getXsMultiplier(libNuclide, multiplier, libType):
         try:
             microCollection = getattr(libNuclide, libType)
             multiplierVal = getattr(microCollection, multiplier)
-        except:
+        except:  # noqa: bare-except
             multiplierVal = libNuclide.isotxsMetadata[multiplier]
     else:
         multiplierVal = 1.0

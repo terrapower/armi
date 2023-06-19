@@ -12,19 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Component parameter definitions.
-"""
-
+"""Component parameter definitions."""
 from armi.reactor import parameters
 from armi.reactor.parameters import ParamLocation
 from armi.utils import units
-from armi.reactor.flags import Flags  # non-standard import to avoid name conflict below
 
 
 def getComponentParameterDefinitions():
     """Return the base Component parameters."""
-
     pDefs = parameters.ParameterDefinitionCollection()
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:
         pb.defParam("volume", units="cm^3", description="Volume of this object.")

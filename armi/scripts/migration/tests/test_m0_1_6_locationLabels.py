@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Test Locationlabel migration."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import io
 import unittest
 
@@ -40,7 +39,3 @@ class TestMigration(unittest.TestCase):
         reader = SettingsReader(newCs)
         reader.readFromStream(converter.apply())
         self.assertEqual(newCs["detailAssemLocationsBOL"][0], "011-012")
-
-
-if __name__ == "__main__":
-    nittest.main()

@@ -14,6 +14,7 @@
 
 """
 Tests for featurest that need MPI, and thus require special testing.
+
 These tests will be generally ignored by pytest if you are trying to run
 them in an environment without MPI installed.
 
@@ -23,7 +24,6 @@ mpiexec -n 2 python -m pytest armi/tests/test_mpiFeatures.py
 or
 mpiexec.exe -n 2 python -m pytest armi/tests/test_mpiFeatures.py
 """
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 from distutils.spawn import find_executable
 import os
 import unittest
@@ -79,7 +79,7 @@ class FailingInterface3(Interface):
     def fail(self):
         raise RuntimeError("Failing interface critical worker failure")
 
-    def interactEveryNode(self, c, n):  # pylint:disable=unused-argument
+    def interactEveryNode(self, c, n):
         context.MPI_COMM.bcast("fail", root=0)
 
     def workerOperate(self, cmd):

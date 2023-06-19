@@ -99,7 +99,7 @@ class XSNuclide(nuclideBases.NuclideWrapper):
         if interaction in self.micros.__dict__:
             try:
                 return self.micros[interaction][group]
-            except:
+            except IndexError:
                 raise IndexError(
                     "Group {0} not found in interaction {1} of nuclide {2}".format(
                         group, interaction, self.name

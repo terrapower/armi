@@ -1,0 +1,50 @@
+# This is the ruff config file for ARMI.
+# We use Ruff along with Black to format/lint our code.
+
+# This is the exact version of Ruff we use.
+required-version = "0.0.272"
+
+# Enable pycodestyle (`E`) and Pyflakes (`F`) codes by default.
+select = ["E", "F"]
+
+# Never enforce `E501`: line length, because we use Black for that
+# Never enforce `E731`: we can use lambdas however we want
+ignore = ["E501", "E731"]
+
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "venv",
+]
+
+# Assume Python 3.9
+target-version = "py39"
+
+# Setting line-length to 88 to match Black
+line-length = 88
+
+[per-file-ignores]
+"*/tests/*" = ["D101", "D102", "D103", "D104", "E741", "SLF001"]
+
+[pydocstyle]
+# Use numpy-style docstrings.
+convention = "numpy"

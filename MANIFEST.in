@@ -5,6 +5,7 @@ include armi/nuclearDataIO/cccc/tests/fixtures/mc2v3.dlayxs
 include armi/nuclearDataIO/cccc/tests/fixtures/simple_cartesian.pwdint
 include armi/nuclearDataIO/cccc/tests/fixtures/simple_cartesian.rtflux
 include armi/nuclearDataIO/cccc/tests/fixtures/simple_cartesian.rzflux
+include armi/nuclearDataIO/cccc/tests/fixtures/simple_hexz.dif3d
 include armi/nuclearDataIO/cccc/tests/fixtures/simple_hexz.geodst
 include armi/nuclearDataIO/cccc/tests/fixtures/simple_hexz.nhflux
 include armi/nuclearDataIO/tests/fixtures/AA.gamiso
