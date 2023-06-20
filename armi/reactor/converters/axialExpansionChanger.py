@@ -170,16 +170,6 @@ class AxialExpansionChanger:
         setFuel : boolean, optional
             Boolean to determine whether or not fuel blocks should have their target components set
             This is useful when target components within a fuel block need to be determined on-the-fly.
-        updateNDensForRadialExp: optional, bool
-            boolean to determine whether or not the component number densities should be updated
-            to account for radial expansion/contraction
-
-        Notes
-        -----
-        - Setting updateNDensForRadialExp to False isolates the number density changes due to the
-          temp change to just the axial dim. This is useful for testing. However, in practical use
-          updateNDensForRadialExp should be set to True to capture radial expansion/contraction
-          effects associated with updating the component temperature.
         """
         self.setAssembly(a, setFuel)
         self.expansionData.updateComponentTempsBy1DTempField(tempGrid, tempField)
