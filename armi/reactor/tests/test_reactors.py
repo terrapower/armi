@@ -179,7 +179,6 @@ def loadTestReactor(
         assemblies.setAssemNumCounter(assemNum)
         settings.setMasterCs(o.cs)
         o.reattach(r, o.cs)
-        r.sort()
         return o, r
 
     cs = settings.Settings(fName=fName)
@@ -212,7 +211,6 @@ def loadTestReactor(
         # protocol=2 allows for classes with __slots__ but not __getstate__ to be pickled
         TEST_REACTOR = cPickle.dumps((o, o.r, assemblies.getAssemNum()), protocol=2)
 
-    o.r.sort()
     return o, o.r
 
 
@@ -271,6 +269,25 @@ class HexReactorTests(ReactorTests):
         a0 = [a.name for a in r0.core]
         a1 = [a.name for a in r1.core]
         self.assertNotEqual(a0, a1)
+
+    def test_sortChildren(self):
+        self.assertEqual(next(self.r.core.__iter__()), self.r.core[0])
+        self.assertEqual(self.r.core._children, sorted(self.r.core._children))
+
+    def test_sortAssemByRing(self):
+        """Demonstrate ring/pos sorting"""
+        self.r.core.sortAssemsByRing()
+        self.assertEqual((1, 1), self.r.core[0].spatialLocator.getRingPos())
+        currentRing = -1
+        currentPos = -1
+        for a in self.r.core:
+            ring, pos = a.spatialLocator.getRingPos()
+            self.assertGreaterEqual(ring, currentRing)
+            if ring > currentRing:
+                ring = currentRing
+                currentPos = -1
+            self.assertGreater(pos, currentPos)
+            currentPos = pos
 
     def test_getTotalParam(self):
         # verify that the block params are being read.
@@ -752,6 +769,8 @@ class HexReactorTests(ReactorTests):
             )
         )
         loc = loaded.core.spatialGrid[0, 0, 0]
+        loaded.core.sortAssemsByRing()
+        self.r.core.sortAssemsByRing()
         self.assertIs(loc.grid, loaded.core.spatialGrid)
         self.assertEqual(loaded.core.childrenByLocator[loc], loaded.core[0])
 

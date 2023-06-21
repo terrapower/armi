@@ -11,9 +11,11 @@ What's new in ARMI
 #. Switching from ``pylint`` to the ``ruff`` linter. (`PR#1296 <https://github.com/terrapower/armi/pull/1296>`_)
 #. Calculate weighted-average percent burnup of BlockCollections. (`PR#1265 <https://github.com/terrapower/armi/pull/1265>`_)
 #. Added ``Composite.sort()`` to allow the user to recursively sort any piece of the ``Reactor``. (`PR#1280 <https://github.com/terrapower/armi/pull/1280>`_)
-#  Revert "when using non-uniform mesh, detailed fission/activation products have cross sections generated to avoid blocks without xs data" and move capability to lattice physics (`PR#1280 <https://github.com/terrapower/armi/pull/1298>`_)
+#  Revert "when using non-uniform mesh, detailed fission/activation products have cross sections generated to avoid blocks without xs data" and move capability to lattice physics (`PR#1298 <https://github.com/terrapower/armi/pull/1298>`_)
 #. Add interactCoupled method for snapshotInterface (`PR#1294 <https://github.com/terrapower/armi/pull/1294>`_)
 #. Move cross section group manager interface stack position to be just before lattice physics. (`PR#1288 <https://github.com/terrapower/armi/pull/1288>`_)
+#. Add method `sortAssemsByRing` to sort reactor assemblies by spatial location (interior first)  (`PR#1320 <https://github.com/terrapower/armi/pull/1320>`_)
+#. 
 
 Bug fixes
 ---------
@@ -22,6 +24,7 @@ Bug fixes
 #. Fixed a bug in the ISOTXS file name used for snapshots. (`PR#1277 <https://github.com/terrapower/armi/pull/1277>`_)
 #. Fix a bug in uniform mesh decusping when assemblies of same type have drastically different height. (`PR#1282 <https://github.com/terrapower/armi/pull/1282>`_)
 #. Sort components on representativeBlock for consistency check. (`PR#1275 <https://github.com/terrapower/armi/pull/1275>`_)
+#. 
 
 ARMI v0.2.7
 ===========
