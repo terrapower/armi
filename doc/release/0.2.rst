@@ -16,7 +16,7 @@ Bug fixes
 
 ARMI v0.2.8
 ===========
-Release Date: 2023-06-16
+Release Date: 2023-06-21
 
 What's new in ARMI
 ------------------
