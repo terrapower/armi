@@ -2681,7 +2681,7 @@ class Composite(ArmiObject):
 
         # recursively sort the children below it.
         for c in self._children:
-            if issubclass(Composite, c.__class__):
+            if issubclass(c.__class__, Composite):
                 c.sort()
 
     def index(self, obj):

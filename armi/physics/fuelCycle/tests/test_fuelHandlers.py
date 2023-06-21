@@ -325,6 +325,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
     def test_findByCoords(self):
         fh = fuelHandlers.FuelHandler(self.o)
         assem = fh.findAssembly(coords=(0, 0))
+        self.o.r.core.sortAssemsByRing()
         self.assertIs(assem, self.o.r.core[0])
 
     def test_findWithMinMax(self):

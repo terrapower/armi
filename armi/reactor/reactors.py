@@ -272,7 +272,7 @@ class Core(composites.Composite):
         --------
         getAssemblies()
         """
-        return iter(sorted(self._children))
+        return iter(self._children)
 
     @property
     def r(self):
@@ -365,6 +365,11 @@ class Core(composites.Composite):
             assems = self.getAssemblies(sortKey=key)
 
         return assems[0]
+
+    def sortAssemsByRing(self):
+        """Sorts the reactor assemblies by ring and position."""
+        sortKey = lambda a: a.spatialLocator.getRingPos()
+        self._children = sorted(self._children, key=sortKey)
 
     def summarizeReactorStats(self):
         """Writes a summary of the reactor to check the mass and volume of all of the blocks."""
@@ -1065,6 +1070,7 @@ class Core(composites.Composite):
             and self.parent.blueprints is not None
         ):
             assems.extend(self.parent.blueprints.assemblies.values())
+
         assems.extend(a for a in sorted(self, key=sortKey))
 
         if includeSFP:

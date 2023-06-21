@@ -25,6 +25,7 @@ What's new in ARMI
 #. Move cross section group manager Interface stack position to be just before lattice physics. (`PR#1288 <https://github.com/terrapower/armi/pull/1288>`_)
 #. Add ``interactCoupled`` method for ``SnapshotInterface``. (`PR#1294 <https://github.com/terrapower/armi/pull/1294>`_)
 #. Calculate weighted-average percent burnup of ``BlockCollections``. (`PR#1265 <https://github.com/terrapower/armi/pull/1265>`_)
+#. Add method ``sortAssemsByRing`` to sort ``Reactor`` assemblies by spatial location (interior first)  (`PR#1320 <https://github.com/terrapower/armi/pull/1320>`_)
 
 Bug fixes
 ---------
