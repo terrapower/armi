@@ -14,11 +14,13 @@
 """Enable component-wise axial expansion for assemblies and/or a reactor."""
 
 from statistics import mean
-from numpy import array
+from typing import List
+
 from armi import runLog
 from armi.materials import material
-from armi.reactor.flags import Flags
 from armi.reactor.components import UnshapedComponent
+from armi.reactor.flags import Flags
+from numpy import array
 
 TARGET_FLAGS_IN_PREFERRED_ORDER = [
     Flags.FUEL,
@@ -154,7 +156,6 @@ class AxialExpansionChanger:
         tempGrid: list,
         tempField: list,
         setFuel: bool = True,
-        updateNDensForRadialExp: bool = True,
     ):
         """Perform thermal expansion for an assembly given an axial temperature grid and field.
 
@@ -169,21 +170,9 @@ class AxialExpansionChanger:
         setFuel : boolean, optional
             Boolean to determine whether or not fuel blocks should have their target components set
             This is useful when target components within a fuel block need to be determined on-the-fly.
-        updateNDensForRadialExp: optional, bool
-            boolean to determine whether or not the component number densities should be updated
-            to account for radial expansion/contraction
-
-        Notes
-        -----
-        - Setting updateNDensForRadialExp to False isolates the number density changes due to the
-          temp change to just the axial dim. This is useful for testing. However, in practical use
-          updateNDensForRadialExp should be set to True to capture radial expansion/contraction
-          effects associated with updating the component temperature.
         """
         self.setAssembly(a, setFuel)
-        self.expansionData.updateComponentTempsBy1DTempField(
-            tempGrid, tempField, updateNDensForRadialExp
-        )
+        self.expansionData.updateComponentTempsBy1DTempField(tempGrid, tempField)
         self.expansionData.computeThermalExpansionFactors()
         self.axiallyExpandAssembly()
 
@@ -261,13 +250,10 @@ class AxialExpansionChanger:
                 b.p.zbottom = self.linked.linkedBlocks[b][0].p.ztop
             isDummyBlock = ib == (numOfBlocks - 1)
             if not isDummyBlock:
-                for c in _getSolidComponents(b):
+                for c in getSolidComponents(b):
                     growFrac = self.expansionData.getExpansionFactor(c)
                     runLog.debug(msg=f"      Component {c}, growFrac = {growFrac:.4e}")
-                    if growFrac >= 0.0:
-                        c.height = (1.0 + growFrac) * blockHeight
-                    else:
-                        c.height = (1.0 / (1.0 - growFrac)) * blockHeight
+                    c.height = growFrac * blockHeight
                     # align linked components
                     if ib == 0:
                         c.zbottom = 0.0
@@ -281,21 +267,26 @@ class AxialExpansionChanger:
                             # the top of the block below it
                             c.zbottom = self.linked.linkedBlocks[b][0].p.ztop
                     c.ztop = c.zbottom + c.height
+                    # update component number densities
+                    newNumberDensities = {
+                        nuc: c.getNumberDensity(nuc) / growFrac
+                        for nuc in c.getNuclides()
+                    }
+                    c.setNumberDensities(newNumberDensities)
                     # redistribute block boundaries if on the target component
                     if self.expansionData.isTargetComponent(c):
                         b.p.ztop = c.ztop
+                        b.p.height = b.p.ztop - b.p.zbottom
+            else:
+                b.p.height = b.p.ztop - b.p.zbottom
 
-            # see also b.setHeight()
-            # - the above not chosen due to call to calculateZCoords
-            oldComponentVolumes = [c.getVolume() for c in b]
-            oldHeight = b.getHeight()
-            b.p.height = b.p.ztop - b.p.zbottom
+            b.p.z = b.p.zbottom + b.getHeight() / 2.0
 
             _checkBlockHeight(b)
-            self._conserveComponentDensity(b, oldHeight, oldComponentVolumes)
-            # set block mid point and redo mesh
-            # - functionality based on assembly.calculateZCoords()
-            b.p.z = b.p.zbottom + b.getHeight() / 2.0
+            # call component.clearCache to update the component volume, and therefore the masses, of all solid components.
+            for c in getSolidComponents(b):
+                c.clearCache()
+            # redo mesh -- functionality based on assembly.calculateZCoords()
             mesh.append(b.p.ztop)
             b.spatialLocator = self.linked.a.spatialGrid[0, 0, ib]
 
@@ -330,35 +321,8 @@ class AxialExpansionChanger:
             for old, new in zip(oldMesh, r.core.p.axialMesh):
                 runLog.extra(f"{old:.6e}\t{new:.6e}")
 
-    def _conserveComponentDensity(self, b, oldHeight, oldVolume):
-        """Update block height dependent component parameters.
 
-        1) update component volume for all materials (used to compute block volume)
-        2) update number density for solid materials only (no fluid)
-
-        Parameters
-        ----------
-        oldHeight : list of floats
-            list containing block heights pre-expansion
-        oldVolume : list of floats
-            list containing component volumes pre-expansion
-        """
-        solidComponents = _getSolidComponents(b)
-        for ic, c in enumerate(b):
-            c.p.volume = oldVolume[ic] * b.getHeight() / oldHeight
-            if c in solidComponents:
-                growFrac = self.expansionData.getExpansionFactor(c)
-                if growFrac >= 0.0:
-                    growth = 1.0 + growFrac
-                else:
-                    growth = 1.0 / (1.0 - growFrac)
-                newNumberDensities = {
-                    nuc: c.getNumberDensity(nuc) / growth for nuc in c.getNuclides()
-                }
-                c.setNumberDensities(newNumberDensities)
-
-
-def _getSolidComponents(b):
+def getSolidComponents(b):
     """
     Return list of components in the block that have solid material.
 
@@ -616,40 +580,41 @@ class ExpansionData:
         self._componentDeterminesBlockHeight = {}
         self._setTargetComponents(setFuel)
 
-    def setExpansionFactors(self, componentLst, percents):
-        """Sets user defined expansion factors.
+    def setExpansionFactors(self, componentLst: List, expFrac: List):
+        """Sets user defined expansion fractions.
 
         Parameters
         ----------
-        componentLst : list[:py:class:`Component <armi.reactor.components.component.Component>`]
+        componentLst : List[:py:class:`Component <armi.reactor.components.component.Component>`]
             list of Components to have their heights changed
-        percents : list[float]
-            list of height changes in percent that are to be applied to componentLst
+        expFrac : List[float]
+            list of L1/L0 height changes that are to be applied to componentLst
 
         Raises
         ------
         RuntimeError
-            If componentLst and percents are different lengths
-
-        Notes
-        -----
-        - requires that the length of componentLst and percents be the same
+            If componentLst and expFrac are different lengths
         """
-        if len(componentLst) != len(percents):
+        if len(componentLst) != len(expFrac):
             runLog.error(
-                "Number of components and percent changes must be the same!\n\
-                    len(componentLst) = {0:d}\n\
-                        len(percents) = {1:d}".format(
-                    len(componentLst), len(percents)
-                )
+                f"Number of components and expansion fractions must be the same!\n"
+                f"    len(componentLst) = {len(componentLst)}\n"
+                f"        len(expFrac) = {len(expFrac)}"
             )
             raise RuntimeError
-        for c, p in zip(componentLst, percents):
+        if 0.0 in expFrac:
+            msg = "An expansion fraction, L1/L0, equal to 0.0, is not physical. Expansion fractions should be greater than 0.0."
+            runLog.error(msg)
+            raise RuntimeError(msg)
+        for exp in expFrac:
+            if exp < 0.0:
+                msg = "A negative expansion fraction, L1/L0, is not physical. Expansion fractions should be greater than 0.0."
+                runLog.error(msg)
+                raise RuntimeError(msg)
+        for c, p in zip(componentLst, expFrac):
             self._expansionFactors[c] = p
 
-    def updateComponentTempsBy1DTempField(
-        self, tempGrid, tempField, updateNDensForRadialExp: bool = True
-    ):
+    def updateComponentTempsBy1DTempField(self, tempGrid, tempField):
         """Assign a block-average axial temperature to components.
 
         Parameters
@@ -658,19 +623,12 @@ class ExpansionData:
             1D axial temperature grid (i.e., physical locations where temp is stored)
         tempField : numpy array
             temperature values along grid
-        updateNDensForRadialExp: optional, bool
-            boolean to determine whether or not the component number densities should be updated
-            to account for radial expansion/contraction
 
         Notes
         -----
         - given a 1D axial temperature grid and distribution, searches for temperatures that fall
           within the bounds of a block, and averages them
         - this average temperature is then passed to self.updateComponentTemp()
-        - Setting updateNDensForRadialExp to False isolates the number density changes due to the
-          temp change to just the axial dim. This is useful for testing. However, in practical use
-          updateNDensForRadialExp should be set to True to capture radial expansion/contraction
-          effects associated with updating the component temperature.
 
         Raises
         ------
@@ -694,72 +652,49 @@ class ExpansionData:
 
             if len(tmpMapping) == 0:
                 raise ValueError(
-                    "Block {0:s} has no temperature points within it! \
-                        Likely need to increase the refinement of the temperature grid.".format(
-                        str(b.name)
-                    )
+                    f"{b} has no temperature points within it!"
+                    "Likely need to increase the refinement of the temperature grid."
                 )
 
             blockAveTemp = mean(tmpMapping)
             for c in b:
-                self.updateComponentTemp(b, c, blockAveTemp, updateNDensForRadialExp)
+                self.updateComponentTemp(c, blockAveTemp)
 
-    def updateComponentTemp(
-        self, b, c, temp: float, updateNDensForRadialExp: bool = True
-    ):
+    def updateComponentTemp(self, c, temp: float):
         """Update component temperatures with a provided temperature.
 
         Parameters
         ----------
-        b : :py:class:`Block <armi.reactor.blocks.Block>`
-            parent block for c
         c : :py:class:`Component <armi.reactor.components.component.Component>`
             component to which the temperature, temp, is to be applied
         temp : float
             new component temperature in C
-        updateNDensForRadialExp : bool
-            boolean to determine whether or not the component number densities should be updated
-            to account for the radial expansion/contraction associated with the new temperature
 
         Notes
         -----
         - "reference" height and temperature are the current states; i.e. before
            1) the new temperature, temp, is applied to the component, and
            2) the component is axially expanded
-        - Setting updateNDensForRadialExp to False isolates the number density changes due to the
-          temp change to just the axial dim. This is useful for testing. However, in practical use
-          updateNDensForRadialExp should be set to True to capture radial expansion/contraction
-          effects associated with updating the component temperature.
         """
         self.componentReferenceTemperature[c] = c.temperatureInC
-        if not updateNDensForRadialExp:
-            # Update component temp manually to avoid the call to changeNDensByFactor(f) within c.setTemperature().
-            # This isolates the number density changes due to the temp change to just the axial dim.
-            # This is useful for testing.
-            c.temperatureInC = temp
-            c.p.volume = c.getArea(cold=True) * b.getHeight()
-        else:
-            c.setTemperature(temp)
-            c.p.volume = c.getArea(cold=False) * b.getHeight()
+        c.setTemperature(temp)
 
     def computeThermalExpansionFactors(self):
         """Computes expansion factors for all components via thermal expansion."""
         for b in self._a:
-            for c in b:
+            for c in getSolidComponents(b):
                 if c in self.componentReferenceTemperature:
-                    self._expansionFactors[c] = (
-                        c.getThermalExpansionFactor(
-                            T0=self.componentReferenceTemperature[c]
-                        )
-                        - 1.0
+                    growFrac = c.getThermalExpansionFactor(
+                        T0=self.componentReferenceTemperature[c]
                     )
+                    self._expansionFactors[c] = growFrac
                 elif self.componentReferenceTemperature:
                     # we want expansion factors relative to componentReferenceTemperature not Tinput.
                     # But for this component there isn't a componentReferenceTemperature,
-                    # so we'll assume that the expansion factor is 0.0.
-                    self._expansionFactors[c] = 0.0
+                    # so we'll assume that the expansion factor is 1.0.
+                    self._expansionFactors[c] = 1.0
                 else:
-                    self._expansionFactors[c] = c.getThermalExpansionFactor() - 1.0
+                    self._expansionFactors[c] = c.getThermalExpansionFactor()
 
     def getExpansionFactor(self, c):
         """Retrieves expansion factor for c.
@@ -772,7 +707,7 @@ class ExpansionData:
         if c in self._expansionFactors:
             value = self._expansionFactors[c]
         else:
-            value = 0.0
+            value = 1.0
         return value
 
     def _setTargetComponents(self, setFuel):
