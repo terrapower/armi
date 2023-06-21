@@ -1070,10 +1070,8 @@ class Core(composites.Composite):
             and self.parent.blueprints is not None
         ):
             assems.extend(self.parent.blueprints.assemblies.values())
-        if sortKey:
-            assems.extend(a for a in sorted(self, key=sortKey))
-        else:
-            assems.extend([a for a in self])
+
+        assems.extend(a for a in sorted(self, key=sortKey))
 
         if includeSFP:
             assems.extend(self.sfp.getChildren())
