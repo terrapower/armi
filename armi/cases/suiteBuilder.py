@@ -64,7 +64,7 @@ class SuiteBuilder:
         self.baseCase = baseCase
         self.modifierSets = []
 
-        from armi.cases.inputModifiers import inputModifiers  # noqa: E402
+        from armi.cases.inputModifiers import inputModifiers
 
         # use an instance variable instead of global lookup. this could allow someone to add their own
         # modifiers, and also prevents it memory usage / discovery from simply loading the module.

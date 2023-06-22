@@ -100,7 +100,7 @@ class BlueprintsMigration(Migration):
     """Migration for blueprints input."""
 
     def _loadStreamFromPath(self):
-        from armi.physics.neutronics.settings import CONF_LOADING_FILE  # noqa: E402
+        from armi.physics.neutronics.settings import CONF_LOADING_FILE
 
         Migration._loadStreamFromPath(self)
         cs = caseSettings.Settings(fName=self.path)

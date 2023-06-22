@@ -413,7 +413,7 @@ class Database3:
         """
         # Blueprints use the yamlize package, which uses class attributes to define much of the class's behavior
         # through metaclassing. Therefore, we need to be able to import all plugins *before* importing blueprints.
-        from armi.reactor.blueprints import Blueprints  # noqa: E402
+        from armi.reactor.blueprints import Blueprints
 
         bpString = None
 

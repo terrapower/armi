@@ -80,8 +80,8 @@ class BookkeepingPlugin(plugins.ArmiPlugin):
         --------
         armi.operators.operatorMPI.OperatorMPI.workerOperate
         """
-        from armi.bookkeeping import memoryProfiler  # noqa: E402
-        from armi import mpiActions  # noqa: E402
+        from armi.bookkeeping import memoryProfiler
+        from armi import mpiActions
 
         if isinstance(cmd, mpiActions.MpiAction):
             for donotReset in (
@@ -105,8 +105,8 @@ class BookkeepingPlugin(plugins.ArmiPlugin):
         Currently only happening at End and Begin stage because no content gathered
         in these sections is used to create a graph across time.
         """
-        from armi.bookkeeping.report import newReports as reports  # noqa: E402
-        from armi.bookkeeping.report import newReportUtils  # noqa: E402
+        from armi.bookkeeping.report import newReports as reports
+        from armi.bookkeeping.report import newReportUtils
 
         if stage == reports.ReportStage.Begin:
             newReportUtils.insertGeneralReportContent(cs, r, report, stage)

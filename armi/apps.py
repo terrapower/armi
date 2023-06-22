@@ -367,7 +367,6 @@ class App:
 
         # add the name/version of the current App, if it's not the default
         if context.APP_NAME != "armi":
-            # noqa: module-import-not-at-top-of-file
             from armi import getApp
 
             splash += r"""

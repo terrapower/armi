@@ -1124,7 +1124,7 @@ def factory():
     __deriveElementalWeightsByNaturalNuclideAbundances()
 
     # reload the thermal scattering library with the new nuclideBases too
-    from armi.nucDirectory import thermalScattering  # noqa: E402
+    from armi.nucDirectory import thermalScattering
 
     thermalScattering.factory()
 

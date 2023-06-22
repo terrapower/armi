@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Module for general core parameter sweeps.
-"""
+"""Module for general core parameter sweeps."""
 from armi.reactor.converters.geometryConverters import GeometryConverter
 from armi.physics.neutronics.settings import (
     CONF_EPS_EIG,

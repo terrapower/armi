@@ -73,7 +73,7 @@ class MoveCrossSectionsFromBlueprints(SettingsMigration):
 
 
 def migrateCrossSectionsFromBlueprints(settingsObj):
-    from armi.physics.neutronics.settings import CONF_LOADING_FILE  # noqa: E402
+    from armi.physics.neutronics.settings import CONF_LOADING_FILE
 
     settingsPath = settingsObj.path
     runLog.info(

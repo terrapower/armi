@@ -115,7 +115,7 @@ context.BLUEPRINTS_IMPORT_CONTEXT = "".join(traceback.format_stack())
 
 def loadFromCs(cs, roundTrip=False):
     r"""Function to load Blueprints based on supplied ``CaseSettings``."""
-    from armi.utils import directoryChangers  # noqa: module-import-not-at-top-of-file
+    from armi.utils import directoryChangers
 
     with directoryChangers.DirectoryChanger(cs.inputDirectory, dumpOnException=False):
         with open(cs[CONF_LOADING_FILE], "r") as bpYaml:

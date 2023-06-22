@@ -94,7 +94,7 @@ def writeWelcomeHeaders(o, cs):
         inputInfo : list
             (label, fileName, shaHash) tuples
         """
-        from armi.physics.neutronics.settings import CONF_LOADING_FILE  # noqa: E402
+        from armi.physics.neutronics.settings import CONF_LOADING_FILE
 
         pathToLoading = pathlib.Path(cs.inputDirectory) / cs[CONF_LOADING_FILE]
 
@@ -604,7 +604,7 @@ def summarizePower(core):
 
 
 def makeCoreDesignReport(core, cs):
-    r"""Builds report to summarize core design inputs.
+    """Builds report to summarize core design inputs.
 
     Parameters
     ----------
@@ -626,8 +626,8 @@ def makeCoreDesignReport(core, cs):
 
 
 def _setGeneralCoreDesignData(cs, coreDesignTable):
-    from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC  # noqa: E402
-    from armi.physics.neutronics.settings import CONF_LOADING_FILE  # noqa: E402
+    from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
+    from armi.physics.neutronics.settings import CONF_LOADING_FILE
 
     report.setData(
         "Case Title", "{}".format(cs.caseTitle), coreDesignTable, report.DESIGN
@@ -775,8 +775,8 @@ def _setGeneralCoreParametersData(core, cs, coreDesignTable):
 
 
 def _setGeneralSimulationData(core, cs, coreDesignTable):
-    from armi.physics.neutronics.settings import CONF_GEN_XS  # noqa: E402
-    from armi.physics.neutronics.settings import CONF_GLOBAL_FLUX_ACTIVE  # noqa: E402
+    from armi.physics.neutronics.settings import CONF_GEN_XS
+    from armi.physics.neutronics.settings import CONF_GLOBAL_FLUX_ACTIVE
 
     report.setData("  ", "", coreDesignTable, report.DESIGN)
     report.setData(
@@ -803,7 +803,7 @@ def _setGeneralSimulationData(core, cs, coreDesignTable):
 
 
 def makeBlockDesignReport(r):
-    r"""Summarize the block designs from the loading file.
+    """Summarize the block designs from the loading file.
 
     Parameters
     ----------
