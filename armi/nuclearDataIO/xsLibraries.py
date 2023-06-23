@@ -190,6 +190,35 @@ def mergeXSLibrariesInWorkingDirectory(
     librariesToMerge = []
     neutronVelocities = {}  # Dictionary of neutron velocities from each ISOTXS file
     referenceDummyNuclides = None
+
+    # get dummy nuclide data before starting the iteration
+    for xsLibFilePath in sorted(xsLibFiles):
+        try:
+            # get XS ID from the cross section library name
+            xsID = re.search("ISO([A-Z0-9]{2})", xsLibFilePath).group(1)
+        except AttributeError:
+            # if glob has matched something that is not actually an ISOXX file,
+            # the .group() call will fail
+            runLog.debug(f"Ignoring file {xsLibFilePath} in the merging of ISOXX files")
+            continue
+
+        if xsLibFilePath in lib.isotxsMetadata.fileNames:
+            runLog.extra(
+                "Skipping merge of {} because data already exists in the library".format(
+                    xsLibFilePath
+                )
+            )
+            continue
+        neutronLibrary = isotxs.readBinary(xsLibFilePath)
+        dummyNuclidesInNeutron = [
+            nuc
+            for nuc in neutronLibrary.nuclides
+            if isinstance(nuc._base, nuclideBases.DummyNuclideBase)
+        ]
+        if dummyNuclidesInNeutron:
+            referenceDummyNuclides = dummyNuclidesInNeutron
+            break
+
     for xsLibFilePath in sorted(xsLibFiles):
         try:
             # get XS ID from the cross section library name
