@@ -132,13 +132,10 @@ class FissionProductModel(interfaces.Interface):
 
     @property
     def _useGlobalLFPs(self):
-        if (
+        return not (
             self.cs[CONF_MAKE_ALL_BLOCK_LFPS_INDEPENDENT]
             or self._explicitFissionProducts
-        ):
-            return False
-        else:
-            return True
+        )
 
     @property
     def _fissionProductBlockType(self):
