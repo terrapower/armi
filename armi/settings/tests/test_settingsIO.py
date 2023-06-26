@@ -135,7 +135,8 @@ class SettingsWriterTests(unittest.TestCase):
 
     def test_writeMedium(self):
         """Setting output as a sparse file that only includes defaults if they are
-        user-specified."""
+        user-specified.
+        """
         with open(self.filepathYaml, "w") as stream:
             # Specify a setting that is also a default
             self.cs.writeToYamlStream(stream, "medium", ["numProcessors"])

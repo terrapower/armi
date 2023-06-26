@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Graphite is often used as a moderator in gas-cooled nuclear reactors.
-"""
+"""Graphite is often used as a moderator in gas-cooled nuclear reactors."""
 
 from armi.materials.material import Material
 from armi.utils import units

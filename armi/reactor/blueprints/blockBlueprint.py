@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-This module defines the ARMI input for a block definition, and code for constructing an ARMI ``Block``.
-"""
+"""This module defines the ARMI input for a block definition, and code for constructing an ARMI ``Block``."""
 import collections
 from inspect import signature
 
@@ -345,9 +343,7 @@ for paramDef in parameters.forType(blocks.Block).inCategory(
 
 
 def _setBlueprintNumberOfAxialMeshes(meshPoints, factor):
-    """
-    Set the blueprint number of axial mesh based on the axial mesh refinement factor.
-    """
+    """Set the blueprint number of axial mesh based on the axial mesh refinement factor."""
     if factor <= 0:
         raise ValueError(
             "A positive axial mesh refinement factor "

@@ -225,7 +225,6 @@ class _CompxsIO(cccc.Stream):
         --------
         armi.nuclearDataIO.cccc.isotxs._IsotxsIO.readWrite : reading/writing ISOTXS files
         """
-
         runLog.info(
             "{} macroscopic cross library {}".format(
                 "Reading" if self._isReading else "Writing", self

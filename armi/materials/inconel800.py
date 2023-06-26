@@ -25,6 +25,7 @@ class Inconel800(Material):
     .. [SM] Special Metals - Incoloy alloy 800
         (https://www.specialmetals.com/assets/smc/documents/alloys/incoloy/incoloy-alloy-800.pdf)
     """
+
     name = "Inconel800"
     propertyValidTemperature = {"thermal expansion": ((20.0, 800.0), "C")}
     refTempK = 294.15

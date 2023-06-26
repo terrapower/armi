@@ -121,9 +121,7 @@ class TestBlockCollectionAverage(unittest.TestCase):
 
 
 class TestBlockCollectionComponentAverage(unittest.TestCase):
-    r"""
-    tests for ZPPR 1D XS gen cases.
-    """
+    r"""tests for ZPPR 1D XS gen cases."""
 
     def setUp(self):
         r"""
@@ -211,9 +209,7 @@ class TestBlockCollectionComponentAverage(unittest.TestCase):
 
 
 class TestBlockCollectionComponentAverage1DCylinder(unittest.TestCase):
-    r"""
-    tests for 1D cylinder XS gen cases.
-    """
+    r"""tests for 1D cylinder XS gen cases."""
 
     def setUp(self):
         r"""

@@ -228,9 +228,7 @@ class IORecord:
         return self._rwMatrix(contents, self.rwDouble, *shape)
 
     def rwIntMatrix(self, contents, *shape):
-        """
-        Read or write a matrix of int values.
-        """
+        """Read or write a matrix of int values."""
         return self._rwMatrix(contents, self.rwInt, *shape)
 
     @staticmethod
@@ -349,7 +347,8 @@ class BinaryRecordReader(IORecord):
 class BinaryRecordWriter(IORecord):
     r"""a single record from a CCCC file.
 
-    Reads binary information sequentially."""
+    Reads binary information sequentially.
+    """
 
     def __init__(self, stream, hasRecordBoundaries=True):
         IORecord.__init__(self, stream, hasRecordBoundaries)
@@ -442,7 +441,7 @@ class AsciiRecordReader(BinaryRecordReader):
 
 
 class AsciiRecordWriter(IORecord):
-    """Writes a single CCCC record in ASCII format.
+    r"""Writes a single CCCC record in ASCII format.
 
     Since there is no specific format of an ASCII CCCC record, the format is roughly the same as
     the :py:class:`BinaryRecordWriter`, except that the :class:`AsciiRecordReader` puts a space in

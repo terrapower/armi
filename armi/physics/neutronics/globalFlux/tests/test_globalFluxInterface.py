@@ -81,9 +81,7 @@ class MockGlobalFluxWithExecuters(
 
 class MockGlobalFluxWithExecutersNonUniform(MockGlobalFluxWithExecuters):
     def getExecuterOptions(self, label=None):
-        """
-        Return modified executerOptions.
-        """
+        """Return modified executerOptions."""
         opts = globalFluxInterface.GlobalFluxInterfaceUsingExecuters.getExecuterOptions(
             self, label=label
         )

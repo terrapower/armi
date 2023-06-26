@@ -120,9 +120,7 @@ class App:
         return self._pm
 
     def getSettings(self) -> Dict[str, Setting]:
-        """
-        Return a dictionary containing all Settings defined by the framework and all plugins.
-        """
+        """Return a dictionary containing all Settings defined by the framework and all plugins."""
         # Start with framework settings
         settingDefs = {
             setting.name: setting for setting in fwSettings.getFrameworkSettings()
@@ -231,7 +229,7 @@ class App:
         return renames
 
     def registerUserPlugins(self, pluginPaths):
-        """
+        r"""
         Register additional plugins passed in by importable paths.
         These plugins may be provided e.g. by an application during startup
         based on user input.
@@ -269,7 +267,7 @@ class App:
                 self.__registerUserPluginsInternalImport(pluginPath)
 
     def _isPluginRegistered(self, pluginPath: str):
-        """
+        r"""
         Check if the plugin at the provided path is already registered.
 
         The expected path formats are:

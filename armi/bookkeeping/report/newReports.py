@@ -39,7 +39,6 @@ class ReportContent:
 
     def writeReports(self):
         """Renders each report into a document for viewing."""
-
         body = htmltree.Body()
         head = htmltree.Head()
 
@@ -341,7 +340,6 @@ class Image(ReportNode):
 
     def render(self, level, idPrefix="") -> htmltree.HtmlElement:
         """Wraps an image file into an html Img tag. (With caption included in the figure)."""
-
         figure = htmltree.Figure()
         if self.encode:
             self.imagePath = encode64(os.path.abspath(self.imagePath))
@@ -393,7 +391,6 @@ class Table(ReportNode):
         """Converts a TableSection object into a html table representation htmltree element with
         header as heading if not None.
         """
-
         table = htmltree.Table()
         table.C.append(htmltree.Caption(self.title, id=idPrefix))
         if self.header is not None:
@@ -558,7 +555,8 @@ class TimeSeries(ReportNode):
 
     def render(self, level, idPrefix="") -> htmltree.HtmlElement:
         """Renders the Timeseries into a graph and places that Image into an html Img tag and returns a div
-        containing that image and the images caption if it has one stored."""
+        containing that image and the images caption if it has one stored.
+        """
         figName = self.plot()
         if self.encode:
             img = htmltree.Img(
@@ -591,7 +589,6 @@ def encode64(file_path):
     ------
     String that is the embedded HTML src attribute for an image in base64
     """
-
     xtn = os.path.splitext(file_path)[1][1:]  # [1:] to cut out the period
     with open(file_path, "rb") as img_src:
         if xtn == "svg":

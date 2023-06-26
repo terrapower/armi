@@ -182,9 +182,7 @@ class Flag(metaclass=_FlagMeta):
 
     @classmethod
     def _resolveAutos(cls, fields: Sequence[str]) -> List[Tuple[str, int]]:
-        """
-        Assign values to autos, based on the current state of the class.
-        """
+        """Assign values to autos, based on the current state of the class."""
         # There is some opportunity for code re-use between this and the metaclass...
         resolved = []
         for field in fields:
@@ -197,23 +195,17 @@ class Flag(metaclass=_FlagMeta):
 
     @classmethod
     def width(cls):
-        """
-        Return the number of bytes needed to store all of the flags on this class.
-        """
+        """Return the number of bytes needed to store all of the flags on this class."""
         return cls._width
 
     @classmethod
     def fields(cls):
-        """
-        Return a dictionary containing a mapping from field name to integer value.
-        """
+        """Return a dictionary containing a mapping from field name to integer value."""
         return cls._nameToValue
 
     @classmethod
     def sortedFields(cls):
-        """
-        Return a list of all field names, sorted by increasing integer value.
-        """
+        """Return a list of all field names, sorted by increasing integer value."""
         return [
             i[0] for i in sorted(cls._nameToValue.items(), key=lambda item: item[1])
         ]
@@ -269,9 +261,7 @@ class Flag(metaclass=_FlagMeta):
 
     @classmethod
     def from_bytes(cls, bytes, byteorder="little"):
-        """
-        Return a Flags instance given a byte stream.
-        """
+        """Return a Flags instance given a byte stream."""
         return cls(int.from_bytes(bytes, byteorder=byteorder))
 
     def __int__(self):

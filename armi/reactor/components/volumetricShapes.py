@@ -89,9 +89,7 @@ class Sphere(ShapedComponent):
 
 
 class Cube(ShapedComponent):
-    """
-    More correctly, a rectangular cuboid.
-    """
+    """More correctly, a rectangular cuboid."""
 
     is3D = True
 
@@ -143,9 +141,7 @@ class Cube(ShapedComponent):
         raise NotImplementedError("Cannot compute area of a cube component.")
 
     def getComponentVolume(self):
-        r"""
-        Computes the volume of the cube in cm^3.
-        """
+        r"""Computes the volume of the cube in cm^3."""
         lengthO = self.getDimension("lengthOuter")
         widthO = self.getDimension("widthOuter")
         heightO = self.getDimension("heightOuter")
@@ -285,7 +281,6 @@ class Torus(ShapedComponent):
         Since area fractions are being used as a proxy for volume fractions, this method returns the reference
         area normalized to the volume ratio of the torus within reference volume
         """
-
         refPhi = self.getDimension("reference_phi", cold=cold)
         height = self.getDimension("height", cold=cold)
         if refArea is None:

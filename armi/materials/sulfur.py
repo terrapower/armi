@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Sulfur.
-"""
+"""Sulfur."""
 
 from armi import runLog
 from armi.materials import material
@@ -74,7 +72,8 @@ class Sulfur(material.Fluid):
 
     def volumetricExpansion(self, Tk=None, Tc=None):
         r"""P. Espeau, R. Ceolin "density of molten sulfur in the 334-508K range"
-        This is just a two-point interpolation."""
+        This is just a two-point interpolation.
+        """
         Tk = getTk(Tc, Tk)
         (Tmin, Tmax) = self.propertyValidTemperature["volumetric expansion"][0]
         self.checkPropertyTempRange("volumetric expansion", Tk)

@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Package for generating reports as printable groups and HTML in ARMI.
-"""
+"""Package for generating reports as printable groups and HTML in ARMI."""
 from armi.bookkeeping.report import data
 
 

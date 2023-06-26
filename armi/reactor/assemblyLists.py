@@ -43,9 +43,7 @@ class AutoFiller(abc.ABC):
     """
 
     def getNextLocation(self, a) -> grids.LocationBase:
-        """
-        Return the next automatic location.
-        """
+        """Return the next automatic location."""
 
     def assemblyAdded(self, a):
         """
@@ -141,7 +139,6 @@ class AssemblyList(composites.Composite):
             be automatically located in the grid using the associated ``AutoFiller``
             object.
         """
-
         if loc is not None and loc.grid is not self.spatialGrid:
             raise ValueError(
                 "An assembly cannot be added to {} using a spatial locator "

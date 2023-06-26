@@ -119,9 +119,7 @@ class GeomType(enum.Enum):
 
 
 class DomainType(enum.Enum):
-    """
-    Enumeration of shape types.
-    """
+    """Enumeration of shape types."""
 
     NULL = 0
     FULL_CORE = 1
@@ -215,9 +213,7 @@ class DomainType(enum.Enum):
 
 
 class BoundaryType(enum.Enum):
-    """
-    Enumeration of boundary types.
-    """
+    """Enumeration of boundary types."""
 
     NO_SYMMETRY = 0
     PERIODIC = 1

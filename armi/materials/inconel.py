@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Inconel is a austenitic nickel-chromium superalloy.
-"""
+"""Inconel is a austenitic nickel-chromium superalloy."""
 
 from armi.materials.material import SimpleSolid
 

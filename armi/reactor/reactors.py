@@ -631,7 +631,6 @@ class Core(composites.Composite):
         This uses the reactor's cycle parameter and the assemblies' chargeCycle
         parameters.
         """
-
         for a in self:
             if a.p.chargeCycle == self.r.p.cycle:
                 yield a
@@ -657,9 +656,7 @@ class Core(composites.Composite):
             return self.getNumHexRings()
 
     def getNumHexRings(self):
-        """
-        Returns the number of hex rings in this reactor. Based on location so indexing will start at 1.
-        """
+        """Returns the number of hex rings in this reactor. Based on location so indexing will start at 1."""
         maxRing = 0
         for a in self.getAssemblies():
             ring, _pos = self.spatialGrid.getRingPos(a.spatialLocator)
@@ -915,7 +912,6 @@ class Core(composites.Composite):
             A list of assemblies that match the criteria within the ring
 
         """
-
         if self.geomType == geometry.GeomType.CARTESIAN:
             # a ring in cartesian is basically a square.
             raise RuntimeError(
@@ -1147,9 +1143,7 @@ class Core(composites.Composite):
     # This will likely fail, but it will help diagnose why property approach
     # wasn't working correctly
     def genBlocksByLocName(self):
-        """
-        If self.blocksByLocName is deleted, then this will regenerate it or update it if things change.
-        """
+        """If self.blocksByLocName is deleted, then this will regenerate it or update it if things change."""
         self.blocksByLocName = {
             block.getLocation(): block for block in self.getBlocks(includeAll=True)
         }
@@ -1370,7 +1364,6 @@ class Core(composites.Composite):
         --------
         makeLocationLookup : allows caching to speed this up if you call it a lot.
         """
-
         # Why isn't locContents an attribute of reactor? It could be another
         # property that is generated on demand
         if not locContents:
@@ -1521,9 +1514,7 @@ class Core(composites.Composite):
         return self.getAssembly(assemNum=assemNum)
 
     def getAssemblyWithStringLocation(self, locationString):
-        """
-        Returns an assembly or none if given a location string like 'B0014'.
-        """
+        """Returns an assembly or none if given a location string like 'B0014'."""
         ring, pos, _ = grids.locatorLabelToIndices(locationString)
         loc = self.spatialGrid.getLocatorFromRingAndPos(ring, pos)
         assem = self.childrenByLocator.get(loc)
@@ -1782,9 +1773,7 @@ class Core(composites.Composite):
                     )
 
     def getAssembliesOnSymmetryLine(self, symmetryLineID):
-        """
-        Find assemblies that are on a symmetry line in a symmetric core.
-        """
+        """Find assemblies that are on a symmetry line in a symmetric core."""
         assembliesOnLine = []
         for a in self:
             if a.isOnWhichSymmetryLine() == symmetryLineID:
@@ -1934,9 +1923,7 @@ class Core(composites.Composite):
         )
 
     def addMoreNodes(self, meshList):
-        """
-        Add additional mesh points in the the meshList so that the ratio of mesh sizes does not vary too fast.
-        """
+        """Add additional mesh points in the the meshList so that the ratio of mesh sizes does not vary too fast."""
         ratio = self._minMeshSizeRatio
         for i, innerMeshVal in enumerate(meshList[1:-1], start=1):
             dP0 = innerMeshVal - meshList[i - 1]
@@ -2171,9 +2158,7 @@ class Core(composites.Composite):
         return converter
 
     def setPitchUniform(self, pitchInCm):
-        """
-        set the pitch in all blocks.
-        """
+        """set the pitch in all blocks."""
         for b in self.getBlocks():
             b.setPitch(pitchInCm)
 
@@ -2234,7 +2219,6 @@ class Core(composites.Composite):
             The height (cm) of the lowest fuel in this core model.
 
         """
-
         lowestFuelHeightInCm = self[0].getHeight()
         fuelBottoms = []
         for a in self.getAssemblies(Flags.FUEL):

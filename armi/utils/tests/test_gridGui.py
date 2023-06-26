@@ -107,7 +107,6 @@ class GuiTestCase(unittest.TestCase):
         Note: This method is called in self.run(), before super().run. We deliberately avoid naming this 'setUp',
         because super().run internally calls self.setUp, which would be too late.
         """
-
         self.app = wx.App()
         self.frame = wx.Frame(
             None, wx.ID_ANY, title="Grid Blueprints UI", pos=(0, 0), size=(1000, 1000)

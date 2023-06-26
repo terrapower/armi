@@ -555,9 +555,7 @@ class Database3:
     def genTimeStepGroups(
         self, timeSteps: Sequence[Tuple[int, int]] = None
     ) -> Generator[h5py._hl.group.Group, None, None]:
-        """
-        Returns a generator of HDF5 Groups for all time nodes, or for the passed selection.
-        """
+        """Returns a generator of HDF5 Groups for all time nodes, or for the passed selection."""
         assert (
             self.h5db is not None
         ), "Must open the database before calling genTimeStepGroups"
@@ -571,18 +569,14 @@ class Database3:
                 yield self.h5db[getH5GroupName(*step)]
 
     def getLayout(self, cycle, node):
-        """
-        Return a Layout object representing the requested cycle and time node.
-        """
+        """Return a Layout object representing the requested cycle and time node."""
         version = (self._versionMajor, self._versionMinor)
         timeGroupName = getH5GroupName(cycle, node)
 
         return Layout(version, self.h5db[timeGroupName])
 
     def genTimeSteps(self) -> Generator[Tuple[int, int], None, None]:
-        """
-        Returns a generator of (cycle, node) tuples that are present in the DB.
-        """
+        """Returns a generator of (cycle, node) tuples that are present in the DB."""
         assert (
             self.h5db is not None
         ), "Must open the database before calling genTimeSteps"
@@ -594,9 +588,7 @@ class Database3:
                 yield (cycle, node)
 
     def genAuxiliaryData(self, ts: Tuple[int, int]) -> Generator[str, None, None]:
-        """
-        Returns a generator of names of auxiliary data on the requested time point.
-        """
+        """Returns a generator of names of auxiliary data on the requested time point."""
         assert (
             self.h5db is not None
         ), "Must open the database before calling genAuxiliaryData"
@@ -631,9 +623,7 @@ class Database3:
             return group
 
     def hasTimeStep(self, cycle, timeNode, statePointName=""):
-        """
-        Returns True if (cycle, timeNode, statePointName) is contained in the database.
-        """
+        """Returns True if (cycle, timeNode, statePointName) is contained in the database."""
         return getH5GroupName(cycle, timeNode, statePointName) in self.h5db
 
     def writeToDB(self, reactor, statePointName=None):

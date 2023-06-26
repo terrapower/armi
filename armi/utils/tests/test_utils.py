@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-""" Testing some utility functions."""
+"""Testing some utility functions."""
 from collections import defaultdict
 import unittest
 

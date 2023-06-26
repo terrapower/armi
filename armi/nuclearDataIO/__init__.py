@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Read and/or write data files associated with nuclear data and reactor physics data.
-"""
+"""Read and/or write data files associated with nuclear data and reactor physics data."""
 # ruff: noqa: F401
 
 from armi.physics import neutronics

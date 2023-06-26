@@ -22,9 +22,7 @@ from armi.tests import TEST_ROOT
 
 
 class TestRZReactorMeshConverter(unittest.TestCase):
-    """
-    Loads a hex reactor and converts its mesh to RZTheta coordinates.
-    """
+    """Loads a hex reactor and converts its mesh to RZTheta coordinates."""
 
     def setUp(self):
         self.o, self.r = loadTestReactor(TEST_ROOT)

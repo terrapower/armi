@@ -55,18 +55,13 @@ class TestPinTypeConverters(unittest.TestCase):
 
 
 class MassConservationTests(unittest.TestCase):
-    r"""
-    Tests designed to verify mass conservation during thermal expansion.
-    """
+    r"""Tests designed to verify mass conservation during thermal expansion."""
 
     def setUp(self):
         self.b = buildSimpleFuelBlock()
 
     def test_adjustSmearDensity(self):
-        r"""
-        Tests the getting, setting, and getting of smear density functions.
-
-        """
+        r"""Tests the getting, setting, and getting of smear density functions."""
         bolBlock = copy.deepcopy(self.b)
 
         s = self.b.getSmearDensity(cold=False)

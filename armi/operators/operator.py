@@ -331,9 +331,7 @@ class Operator:
         self._mainOperate()
 
     def _mainOperate(self):
-        """
-        Main loop for a standard ARMI run. Steps through time interacting with the interfaces.
-        """
+        """Main loop for a standard ARMI run. Steps through time interacting with the interfaces."""
         self.interactAllBOL()
         startingCycle = self.r.p.cycle  # may be starting at t != 0 in restarts
         for cycle in range(startingCycle, self.cs["nCycles"]):
@@ -699,7 +697,8 @@ class Operator:
 
         Notes
         -----
-        This is split off from self.interactAllCoupled to accomodate testing"""
+        This is split off from self.interactAllCoupled to accomodate testing
+        """
         # Summarize the coupled results and the convergence status.
         converged = []
         for interface in activeInterfaces:

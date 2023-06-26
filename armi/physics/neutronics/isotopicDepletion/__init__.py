@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-The depletion physics package contains utility/framework code related to the physics of transmutation and decay.
-"""
+"""The depletion physics package contains utility/framework code related to the physics of transmutation and decay."""
 # ruff: noqa: F401
 import os
 

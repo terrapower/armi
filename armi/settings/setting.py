@@ -298,7 +298,8 @@ class Setting:
         """
         Additional hack, residual from when settings system could write settings definitions.
 
-        This is only needed here due to the unit tests in test_settings."""
+        This is only needed here due to the unit tests in test_settings.
+        """
         return {
             "value": self.value,
             "type": type(self.default),

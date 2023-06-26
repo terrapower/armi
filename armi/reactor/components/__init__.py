@@ -328,7 +328,7 @@ class DerivedShape(UnshapedComponent):
 
     def _deriveVolumeAndArea(self):
         """
-        Derive the volume and area of ``DerivedShape``\ s.
+        Derive the volume and area of a ``DerivedShape``.
 
         Notes
         -----
@@ -344,7 +344,6 @@ class DerivedShape(UnshapedComponent):
         with purely 2D components. Thus we track area and volume fractions here
         when possible.
         """
-
         if self.parent is None:
             raise ValueError(
                 f"Cannot compute volume/area of {self} without a parent object."
