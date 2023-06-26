@@ -726,7 +726,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
         """
         if not typeID:
-            return False if exact else True
+            return not exact
         if isinstance(typeID, six.string_types):
             raise TypeError(
                 "Must pass Flags, or an iterable of Flags; Strings are no longer "

@@ -630,7 +630,7 @@ class XSModelingOptions:
                 crossSectionGroupManager.AVERAGE_BLOCK_COLLECTION,
                 crossSectionGroupManager.FLUX_WEIGHTED_AVERAGE_BLOCK_COLLECTION,
             ]
-            bucklingSearch = False if self.fluxIsPregenerated else True
+            bucklingSearch = not self.fluxIsPregenerated
             defaults = {
                 CONF_GEOM: self.geometry,
                 CONF_BUCKLING: bucklingSearch,

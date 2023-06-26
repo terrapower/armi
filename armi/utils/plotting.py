@@ -778,7 +778,7 @@ def plotAssemblyTypes(
     # Setup figure
     fig, ax = plt.subplots(figsize=(15, 15), dpi=300)
     for index, assem in enumerate(assems):
-        isLastAssem = True if index == (numAssems - 1) else False
+        isLastAssem = index == numAssems - 1
         (xBlockLoc, yBlockHeights, yBlockAxMesh) = _plotBlocksInAssembly(
             ax,
             assem,
@@ -1005,7 +1005,7 @@ def plotBlockFlux(core, fName=None, bList=None, peak=False, adjoint=False, bList
                 _, self.peakHistogram = makeHistogram(self.E, self.peakFlux)
 
         def checkSize(self):
-            if not len(self.E) == len(self.avgFlux):
+            if len(self.E) != len(self.avgFlux):
                 runLog.error(self.avgFlux)
                 raise
 
