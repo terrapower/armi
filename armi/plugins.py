@@ -378,7 +378,7 @@ class ArmiPlugin:
         list
             A list of Settings, Options, or Defaults to be registered.
 
-        See also
+        See Also
         --------
         armi.physics.neutronics.NeutronicsPlugin.defineSettings
         armi.settings.setting.Setting

@@ -552,7 +552,7 @@ def _radarFactory(numVars, frame="circle"):
     This function creates a RadarAxes projection and registers it.
 
     Raises
-    -------
+    ------
     ValueError
         If value of the frame is unknown.
 

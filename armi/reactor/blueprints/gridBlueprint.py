@@ -36,7 +36,6 @@ armi.utils.asciimaps
 
 Examples
 --------
-
 ::
 
     grids:

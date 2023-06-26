@@ -288,7 +288,6 @@ def getAtomicWeight(lab=None, z=None, a=None):
 
     Examples
     --------
-
     >>> from armi.nucDirectory import nucDir
     >>> nucDir.getAtomicWeight('U235')
     235.0439299

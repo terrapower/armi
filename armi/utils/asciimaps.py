@@ -572,7 +572,7 @@ class AsciiMapHexFullTipsUp(AsciiMap):
         Map indices from ascii.
 
         Notes
-        ----
+        -----
         Not used in reading from file b/c inefficient/repeated base calc
         but required for writing from ij data
         """

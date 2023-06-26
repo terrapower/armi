@@ -32,7 +32,6 @@ Generally, the cross section manager is a attribute of the lattice physics code 
 
 Examples
 --------
-
     csm = CrossSectionGroupManager()
     csm._setBuGroupBounds(cs['buGroups'])
     csm._addXsGroupsFromBlocks(blockList)
@@ -792,7 +791,7 @@ class CrossSectionGroupManager(interfaces.Interface):
         Set the burnup group structure.
 
         Parameters
-        ---------
+        ----------
         upperBuGroupBounds : list
             List of upper burnup values in percent.
 

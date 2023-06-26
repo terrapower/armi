@@ -331,6 +331,7 @@ class FissionProductDefinitionFile:
         The lfp file can contain one or more LFPs. This splits them.
 
         Ignores DUMPs.
+
         Parameters
         ----------
         lfpName : str, optional

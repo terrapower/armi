@@ -260,7 +260,7 @@ class Block(composites.Composite):
         inner cladding area.
 
         Parameters
-        -----------
+        ----------
         cold : bool, optional
             If false, returns the smear density at hot temperatures
 
@@ -1124,7 +1124,7 @@ class Block(composites.Composite):
             Component types to look up
 
         Examples
-        ---------
+        --------
         >>> b.getComponentAreaFrac(Flags.CLAD)
         0.15
 

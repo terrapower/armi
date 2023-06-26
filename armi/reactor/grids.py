@@ -792,7 +792,6 @@ class Grid:
 
         Parameters
         ----------
-
         ijk : tuple of indices or list of the same
             If provided a tuple, an IndexLocation will be created (if necessary) and
             returned. If provided a list, each element will create a new IndexLocation
@@ -802,7 +801,6 @@ class Grid:
 
         Notes
         -----
-
         The method is defaultdict-like, in that it will create a new location on the fly. However,
         the class itself is not really a dictionary, it is just index-able. For example, there is no
         desire to have a ``__setitem__`` method, because the only way to create a location is by

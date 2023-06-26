@@ -128,7 +128,7 @@ class Assembly(composites.Composite):
         same grid. It may be beneficial in the future to maintain the more strict behavior
         of ArmiObject's ``__lt__`` implementation once the SFP situation is cleared up.
 
-        See also
+        See Also
         --------
         armi.reactor.composites.ArmiObject.__lt__
         """

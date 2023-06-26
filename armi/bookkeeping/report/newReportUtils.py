@@ -43,7 +43,8 @@ def insertGeneralReportContent(cs, r, report, stage):
     Creates Report content that is not plugin specific. Various things for the Design
     and Comprehensive sections of the report.
 
-    Parameters:
+    Parameters
+    ----------
         cs : case settings
         r : reactor
         report : ReportContents object
@@ -106,7 +107,6 @@ def insertBlockDesignReport(blueprint, report, cs):
 
     Parameters
     ----------
-
     blueprint : Blueprint
     report: ReportContent
     cs: Case Settings

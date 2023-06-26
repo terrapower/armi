@@ -962,8 +962,8 @@ class HexReactorTests(ReactorTests):
     def test_applyThermalExpansion_CoreConstruct(self):
         """Test that assemblies in core are correctly expanded.
 
-        Notes:
-        ------
+        Notes
+        -----
         - all assertions skip the first block as it has no $\Delta T$ and does not expand
         """
         originalAssems = self.r.core.getAssemblies()
@@ -1013,8 +1013,8 @@ class HexReactorTests(ReactorTests):
     def test_updateBlockBOLHeights_DBLoad(self):
         """Test that blueprints assemblies are expanded in DB load.
 
-        Notes:
-        ------
+        Notes
+        -----
         - all assertions skip the first block as it has no $\Delta T$ and does not expand
         """
         originalAssems = sorted(a for a in self.r.blueprints.assemblies.values())

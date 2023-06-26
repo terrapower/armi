@@ -202,7 +202,7 @@ class EntryPoint:
         This will override whatever is in the settings file.
 
         Parameters
-        ---------
+        ----------
         settingName : str
             the setting name
 

@@ -383,7 +383,7 @@ class LatticePhysicsWriter(interfaces.InputWriter):
         Expands the nuclides in the LFP based on their yields.
 
         Returns
-        --------
+        -------
         dfpDensities : dict
             Detailed Fission Product Densities. keys are FP names, values are block number densities in atoms/bn-cm.
 

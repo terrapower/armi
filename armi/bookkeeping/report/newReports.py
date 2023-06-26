@@ -487,7 +487,6 @@ class TimeSeries(ReportNode):
 
         Parameters
         ----------
-
         lineToAddTo: String
             Label associated with the line we are adding ths point to
         time: float

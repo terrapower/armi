@@ -624,7 +624,7 @@ class TestExceptions(AxialExpansionTestBase, unittest.TestCase):
         """Ensures that the RuntimeError statement in ExpansionData::_isFuelLocked is raised appropriately.
 
         Notes
-        ------
+        -----
         This is implemented by creating a fuel block that contains no fuel component
         and passing it to ExpansionData::_isFuelLocked.
         """

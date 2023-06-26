@@ -226,7 +226,6 @@ class XSSettings(dict):
 
         Notes
         -----
-
         1. If ``AA`` and ``AB`` exist, but ``AC`` is created, then the intended behavior
            is that ``AC`` settings will be set to the settings in ``AA``.
 
