@@ -25,7 +25,8 @@ select = ["E", "F", "D104", "D300", "SIM103", "SIM2", "SIM3", "SIM4", "SIM9", "T
 # N816 - mixed case in global, scripts can use mixed case
 # N999 - lowercase variable naming, we use camel case
 # RUF100 - no unused noqa statements (not consistent enough yet)
-ignore = ["D205", "E501", "E731", "N802", "N803", "N806", "N815", "N816", "N999", "RUF100"]
+# SIM118 - this does not work where we overload the .keys() method
+ignore = ["D205", "E501", "E731", "N802", "N803", "N806", "N815", "N816", "N999", "RUF100", "SIM118"]
 
 # Exclude a variety of commonly ignored directories.
 exclude = [
