@@ -188,7 +188,7 @@ def generateLinePlot(subsectionHeading, r, report, yaxis, name, caption=""):
     maxValue = defaultdict(float)
     # dictionary for a specific time step.
     for a in r.core.getAssemblies(Flags.FUEL):
-        if BURNUP_PLOT == subsectionHeading:
+        if subsectionHeading == BURNUP_PLOT:
             maxValue[a.p.type] = max(maxValue[a.p.type], a.p.maxPercentBu)
         else:
             maxValue[a.p.type] = max(maxValue[a.p.type], a.p.maxDpaPeak)

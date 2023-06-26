@@ -221,7 +221,7 @@ class Test_Air(unittest.TestCase):
         for Tk, thermalConductivity in zip(
             REFERENCE_Tk, REFERENCE_THERMAL_CONDUCTIVITY_mJ_PER_M_K
         ):
-            if 200 < Tk and Tk < 850:
+            if Tk > 200 and Tk < 850:
                 error = math.fabs(
                     (air.thermalConductivity(Tk=Tk) - thermalConductivity * 1e-3)
                     / (thermalConductivity * 1e-3)

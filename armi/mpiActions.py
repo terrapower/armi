@@ -271,7 +271,7 @@ class MpiAction:
         """
         ntasks = len(objectsForAllCoresToIter)
         numLocalObjects, deficit = divmod(ntasks, context.MPI_SIZE)
-        if context.MPI_RANK < deficit:
+        if deficit > context.MPI_RANK:
             numLocalObjects += 1
             first = context.MPI_RANK * numLocalObjects
         else:

@@ -704,10 +704,7 @@ class ExpansionData:
         c : :py:class:`Component <armi.reactor.components.component.Component>`
             Component to retrive expansion factor for
         """
-        if c in self._expansionFactors:
-            value = self._expansionFactors[c]
-        else:
-            value = 1.0
+        value = self._expansionFactors.get(c, 1.0)
         return value
 
     def _setTargetComponents(self, setFuel):

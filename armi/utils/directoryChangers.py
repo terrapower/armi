@@ -131,7 +131,7 @@ class DirectoryChanger:
         initialPath = self.initial
         destinationPath = self.destination
         self._transferFiles(initialPath, destinationPath, self._filesToMove)
-        if not self.outputPath == self.initial:
+        if self.outputPath != self.initial:
             destinationPath = self.outputPath
             self._transferFiles(initialPath, destinationPath, self._filesToMove)
 
@@ -142,7 +142,7 @@ class DirectoryChanger:
         initialPath = self.destination
         destinationPath = self.initial
         self._transferFiles(initialPath, destinationPath, self._filesToRetrieve)
-        if not self.outputPath == self.initial:
+        if self.outputPath != self.initial:
             destinationPath = self.outputPath
             self._transferFiles(initialPath, destinationPath, self._filesToRetrieve)
 
