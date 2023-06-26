@@ -1069,7 +1069,6 @@ class Database3:
 
         Parameters
         ----------
-        ==========
         comps : list of ArmiObject
             The components/composites that currently occupy the location that you want
             histories at. ArmiObjects are passed, rather than locations, because this
