@@ -165,12 +165,11 @@ class Fixture:
 
 
 def fixture(refDirectory=None, targets=None, dependencies=None):
-    r"""
+    """
     Decorator to run function based on targets and dependencies similar to GNU Make.
 
     Parameters
     ----------
-    ==========
     refDirectory : str
         String reference directory for all targets/dependencies. This makes it possible to simplify file paths.
         If ``os.path.abspath(<path>) == <path>``, then refDirectory is not used.
@@ -180,7 +179,6 @@ def fixture(refDirectory=None, targets=None, dependencies=None):
 
     dependencies : iterable(str)
         List of dependencies that the ``targets`` require.
-
     """
 
     def _decorator(makeFunction):
@@ -190,19 +188,17 @@ def fixture(refDirectory=None, targets=None, dependencies=None):
 
 
 def requires_fixture(fixtureFunction):
-    r"""
+    """
     Decorator to require a fixture to have been completed.
 
     Parameters
     ----------
-    ==========
     fixtureFunction : function without any parameters
-        Fixture function is a function that has been decorated with ``fixture`` and is called prior to running
+        Fixture function is a function that has been decorated with fixture and is called prior to running
         the decorated function.
 
     Notes
     -----
-    =====
     This cannot be used on classes.
     """
 

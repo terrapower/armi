@@ -1262,7 +1262,6 @@ class Database3:
 
         Parameters
         ----------
-        ==========
         comps
             Something that is iterable multiple times
         params
@@ -1272,7 +1271,6 @@ class Database3:
 
         Returns
         -------
-        =======
         dict
             Dictionary ArmiObject (input): dict of str/list pairs containing ((cycle,
             node), value).

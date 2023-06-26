@@ -104,7 +104,6 @@ class FlagSerializer(parameters.Serializer):
 
         Parameters
         ----------
-        ==========
         inp : int
             input bitfield
 

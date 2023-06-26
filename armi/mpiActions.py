@@ -457,7 +457,6 @@ class DistributionAction(MpiAction):
 
         Notes
         -----
-        =====
         Two things about this method make it non-recursive
         """
         canDistribute = context.MPI_DISTRIBUTABLE
