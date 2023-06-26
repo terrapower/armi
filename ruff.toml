@@ -9,9 +9,11 @@ required-version = "0.0.272"
 # D300 - docstrings need to use triple quotes
 # RUF100 - no unused noqa statements
 # TID252 - no relative imports
-select = ["E", "F", "D104", "D300", "RUF100", "TID252"]
-# Want: "SIM"
+# SIM103 - needless-bool
+# SIM9** - dict-get-with-none-default
+select = ["E", "F", "D104", "D300", "RUF100", "SIM103", "SIM9", "TID"]
 
+# D205 - 1 blank line required between summary line and description
 # E501 - line length, because we use Black for that
 # E731 - we can use lambdas however we want
 # N802 - lowercase function naming, we use camel case
@@ -20,7 +22,7 @@ select = ["E", "F", "D104", "D300", "RUF100", "TID252"]
 # N815 - mixed case in class header, we use camel case
 # N816 - mixed case in global, scripts can use mixed case
 # N999 - lowercase variable naming, we use camel case
-ignore = ["E501", "E731", "N802", "N803", "N806", "N815", "N816", "N999"]
+ignore = ["D205", "E501", "E731", "N802", "N803", "N806", "N815", "N816", "N999"]
 
 # Exclude a variety of commonly ignored directories.
 exclude = [
@@ -58,7 +60,7 @@ line-length = 88
 # D1XX - enforces writing docstrings
 # E741 - ambiguous variable name
 # SLF001 - private member access
-"*/tests/*" = ["D100", "D101", "D102", "D103", "D104", "E741", "SLF001"]
+"*/tests/*" = ["D1", "E741", "SLF001"]
 
 [pydocstyle]
 # Use numpy-style docstrings.

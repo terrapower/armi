@@ -321,10 +321,7 @@ def isMonotonic(inputIter, relation):
     except KeyError:
         raise ValueError(f"Valid relation not specified: {relation}")
 
-    if not all([op(x, y) for x, y in zip(inputIter, inputIter[1:])]):
-        return False
-    else:
-        return True
+    return all([op(x, y) for x, y in zip(inputIter, inputIter[1:])])
 
 
 def linearInterpolation(x0, y0, x1, y1, targetX=None, targetY=None):

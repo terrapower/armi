@@ -252,7 +252,4 @@ def cleanPath(path, mpiRank=0):
             break
         sleep(waitTime)
 
-    if os.path.exists(path):
-        return False
-    else:
-        return True
+    return not os.path.exists(path)
