@@ -17,6 +17,7 @@ required-version = "0.0.272"
 # SIM9** - simplify code: dict-get-with-none-default
 select = ["E", "F", "D104", "D300", "D405", "D406", "D407", "D408", "D409", "D41", "SIM103", "SIM2", "SIM3", "SIM4", "SIM9", "TID"]
 
+# D105 - we don't need to document well-known magic methods
 # D205 - 1 blank line required between summary line and description
 # E501 - line length, because we use Black for that
 # E731 - we can use lambdas however we want
@@ -28,7 +29,7 @@ select = ["E", "F", "D104", "D300", "D405", "D406", "D407", "D408", "D409", "D41
 # N999 - lowercase variable naming, we use camel case
 # RUF100 - no unused noqa statements (not consistent enough yet)
 # SIM118 - this does not work where we overload the .keys() method
-ignore = ["D205", "E501", "E731", "N802", "N803", "N806", "N815", "N816", "N999", "RUF100", "SIM118"]
+ignore = ["D105", "D205", "E501", "E731", "N802", "N803", "N806", "N815", "N816", "N999", "RUF100", "SIM118"]
 
 # Exclude a variety of commonly ignored directories.
 exclude = [
