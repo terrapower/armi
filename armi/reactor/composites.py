@@ -103,6 +103,7 @@ class FlagSerializer(parameters.Serializer):
         on the passed mapping.
 
         Parameters
+        ----------
         ==========
         inp : int
             input bitfield
@@ -965,7 +966,7 @@ class ArmiObject(metaclass=CompositeModelType):
         Adjust the composition of this object so the mass fraction of nucName is val.
 
         See Also
-        ---------
+        --------
         setMassFracs : efficiently set multiple mass fractions at the same time.
         """
         self.setMassFracs({nucName: val})
@@ -3125,7 +3126,7 @@ class Composite(ArmiObject):
             dictionary of reaction rates (rxn/s) for nG, nF, n2n, nA and nP
 
         Notes
-        ----
+        -----
         If you set nDensity to 1/CM2_PER_BARN this makes 1 group cross section generation easier
         """
         from armi.reactor.blocks import Block

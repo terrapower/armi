@@ -1051,7 +1051,7 @@ class Operator:
         """
         Convenience method reroute to the database interface state reload method.
 
-        See also
+        See Also
         --------
         armi.bookeeping.db.loadOperator:
             A method for loading an operator given a database. loadOperator does not

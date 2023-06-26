@@ -602,7 +602,7 @@ class Interface:
         This existed before the advent of ARMI plugins. Perhaps it can be better served
         as a plugin hook. Potential future work.
 
-        See also
+        See Also
         --------
         armi.cases.Case.clone() : Main user of this interface.
 

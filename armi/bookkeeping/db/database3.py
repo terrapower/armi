@@ -952,7 +952,7 @@ class Database3:
         """
         Create on-the-fly block homog. number density params for XTVIEW viewing.
 
-        See also
+        See Also
         --------
         collectBlockNumberDensities
         """
@@ -1068,6 +1068,7 @@ class Database3:
          - All requested objects must have the same type.
 
         Parameters
+        ----------
         ==========
         comps : list of ArmiObject
             The components/composites that currently occupy the location that you want
@@ -1261,6 +1262,7 @@ class Database3:
         DatabaseInterface may be more useful.
 
         Parameters
+        ----------
         ==========
         comps
             Something that is iterable multiple times
@@ -1270,6 +1272,7 @@ class Database3:
             Selection of time nodes to get data for. If omitted, return full history
 
         Returns
+        -------
         =======
         dict
             Dictionary ArmiObject (input): dict of str/list pairs containing ((cycle,

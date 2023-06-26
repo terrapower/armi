@@ -456,6 +456,7 @@ class DistributionAction(MpiAction):
         Overrides invokeHook to distribute work amongst available resources as requested.
 
         Notes
+        -----
         =====
         Two things about this method make it non-recursive
         """

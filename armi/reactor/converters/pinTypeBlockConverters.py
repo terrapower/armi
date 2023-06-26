@@ -45,7 +45,6 @@ def adjustSmearDensity(obj, value, bolBlock=None):
 
     Parameters
     ----------
-
     value : float
         new smear density as a fraction.  This fraction must
         evaluate between 0.0 and 1.0

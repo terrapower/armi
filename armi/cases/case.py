@@ -918,7 +918,6 @@ def copyInterfaceInputs(
 
     Notes
     -----
-
     Regarding the handling of relative file paths: In the future this could be
     simplified by adding a concept for a suite root directory, below which it is safe
     to copy files without needing to update settings that point with a relative path

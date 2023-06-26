@@ -448,7 +448,6 @@ class DifferentialRadialSegment(RadialSegment):
 
     See Also
     --------
-
     geometry purturbation:
     armi.physics.optimize.OptimizationInterface.modifyCase (ThRZReflectorThickness,ThRZActiveHeight,ThRZActiveRadius)
 

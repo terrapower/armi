@@ -74,7 +74,7 @@ class FuelHandler:
         Link to the current cycle number.
 
         Notes
-        ------
+        -----
         This retains backwards compatibility with previous fuel handler inputs.
         """
         return self.o.r.p.cycle

@@ -169,6 +169,7 @@ def fixture(refDirectory=None, targets=None, dependencies=None):
     Decorator to run function based on targets and dependencies similar to GNU Make.
 
     Parameters
+    ----------
     ==========
     refDirectory : str
         String reference directory for all targets/dependencies. This makes it possible to simplify file paths.
@@ -193,12 +194,14 @@ def requires_fixture(fixtureFunction):
     Decorator to require a fixture to have been completed.
 
     Parameters
+    ----------
     ==========
     fixtureFunction : function without any parameters
         Fixture function is a function that has been decorated with ``fixture`` and is called prior to running
         the decorated function.
 
     Notes
+    -----
     =====
     This cannot be used on classes.
     """

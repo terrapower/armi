@@ -43,7 +43,7 @@ def factory(shape, bcomps, kwargs):
     Build a new component object.
 
     Parameters
-    ---------
+    ----------
     shape : str
         lowercase string corresponding to the component type name
     bcomps : list(Component)
@@ -290,7 +290,7 @@ class DerivedShape(UnshapedComponent):
     This a component that does have specific dimensions, but they're complicated.
 
     Notes
-    ----
+    -----
     - This component type is "derived" through the addition or
       subtraction of other shaped components (e.g. Coolant)
     - Because its area and volume are defined by other components,
