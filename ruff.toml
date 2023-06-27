@@ -22,7 +22,6 @@ select = ["E", "F", "D", "SIM", "TID"]
 
 # Temporarily ignore ruff rules: TBD if we want to support them
 #
-# SIM101 - Multiple isinstance calls, merge into a single call
 # SIM102 - Use a single if statement instead of nested if statements
 # SIM105 - Use contextlib.suppress({exception}) instead of try-except-pass
 # SIM108 - Use ternary operator {contents} instead of if-else-block
@@ -31,6 +30,8 @@ select = ["E", "F", "D", "SIM", "TID"]
 # SIM115 - Use context handler for opening files
 # SIM117 - Use a single with statement with multiple contexts instead of nested with statements
 
+# Permanently ignored ruff rules
+#
 # D105 - we don't need to document well-known magic methods
 # D205 - 1 blank line required between summary line and description
 # E501 - line length, because we use Black for that
@@ -43,7 +44,7 @@ select = ["E", "F", "D", "SIM", "TID"]
 # N999 - lowercase variable naming, we use camel case
 # RUF100 - no unused noqa statements (not consistent enough yet)
 # SIM118 - this does not work where we overload the .keys() method
-ignore = ["D100", "D101", "D102", "D103", "D105", "D106", "D205", "D401", "D404", "E501", "E731", "N802", "N803", "N806", "N815", "N816", "N999", "RUF100", "SIM101", "SIM102", "SIM105", "SIM108", "SIM110", "SIM114", "SIM115", "SIM117", "SIM118"]
+ignore = ["D100", "D101", "D102", "D103", "D105", "D106", "D205", "D401", "D404", "E501", "E731", "N802", "N803", "N806", "N815", "N816", "N999", "RUF100", "SIM102", "SIM105", "SIM108", "SIM110", "SIM114", "SIM115", "SIM117", "SIM118"]
 
 # Exclude a variety of commonly ignored directories.
 exclude = [

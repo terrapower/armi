@@ -443,7 +443,7 @@ class FuelHandler:
             # separate it
             compareTo, mult = compareTo
 
-        if isinstance(compareTo, float) or isinstance(compareTo, int):
+        if isinstance(compareTo, (float, int)):
             # floating point or int.
             compVal = compareTo * mult
         elif param:

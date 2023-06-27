@@ -121,7 +121,7 @@ def convertToSlice(x, increment=False):
     if isinstance(x, list):
         x = np.array(x)
 
-    if isinstance(x, (int, np.integer)) or isinstance(x, (float, np.floating)):
+    if isinstance(x, (int, np.integer, float, np.floating)):
         x = slice(int(x), int(x) + 1, None)
 
     # Correct the slice indices to be group instead of index based.
