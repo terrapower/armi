@@ -10,7 +10,7 @@ required-version = "0.0.272"
 # TID - tidy imports
 select = ["E", "F", "D", "SIM", "TID"]
 
-# Temporarily ignore ruff rules: TBD if we want to support them (not 100% automatable)
+# Ruff rules we ignore because they are not 100% automatable
 #
 # D100 - Missing docstring in public module
 # D101 - Missing docstring in public class
@@ -19,9 +19,6 @@ select = ["E", "F", "D", "SIM", "TID"]
 # D106 - Missing docstring in public nested class
 # D401 - First line of docstring should be in imperative mood
 # D404 - First word of the docstring should not be "This"
-
-# Temporarily ignore ruff rules: TBD if we want to support them (not 100% automatable)
-#
 # SIM102 - Use a single if statement instead of nested if statements
 # SIM105 - Use contextlib.suppress({exception}) instead of try-except-pass
 # SIM108 - Use ternary operator {contents} instead of if-else-block
@@ -29,7 +26,7 @@ select = ["E", "F", "D", "SIM", "TID"]
 # SIM115 - Use context handler for opening files
 # SIM117 - Use a single with statement with multiple contexts instead of nested with statements
 
-# Permanently ignored ruff rules
+# Ruff rules we ignore because we don't want them
 #
 # D105 - we don't need to document well-known magic methods
 # D205 - 1 blank line required between summary line and description
