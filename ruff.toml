@@ -10,7 +10,7 @@ required-version = "0.0.272"
 # TID - tidy imports
 select = ["E", "F", "D", "SIM", "TID"]
 
-# Ruff rules we ignore because they are not 100% automatable
+# Ruff rules we ignore (for now) because they are not 100% automatable
 #
 # D100 - Missing docstring in public module
 # D101 - Missing docstring in public class
@@ -32,16 +32,11 @@ select = ["E", "F", "D", "SIM", "TID"]
 # D205 - 1 blank line required between summary line and description
 # E501 - line length, because we use Black for that
 # E731 - we can use lambdas however we want
-# N802 - lowercase function naming, we use camel case
-# N803 - lowercase argument naming, we use camel case
-# N806 - lowercase variable naming, we use camel case
-# N815 - mixed case in class header, we use camel case
-# N816 - mixed case in global, scripts can use mixed case
-# N999 - lowercase variable naming, we use camel case
+# N - PEP8 naming conventions (we use snake_case; too late to change)
 # RUF100 - no unused noqa statements (not consistent enough yet)
 # SIM118 - this does not work where we overload the .keys() method
 #
-ignore = ["D100", "D101", "D102", "D103", "D105", "D106", "D205", "D401", "D404", "E501", "E731", "N802", "N803", "N806", "N815", "N816", "N999", "RUF100", "SIM102", "SIM105", "SIM108", "SIM114", "SIM115", "SIM117", "SIM118"]
+ignore = ["D100", "D101", "D102", "D103", "D105", "D106", "D205", "D401", "D404", "E501", "E731", "N", "RUF100", "SIM102", "SIM105", "SIM108", "SIM114", "SIM115", "SIM117", "SIM118"]
 
 # Exclude a variety of commonly ignored directories.
 exclude = [
