@@ -44,7 +44,7 @@ class TestDif3dSimpleHexz(unittest.TestCase):
         self.assertEqual(self.df.metadata["VERSION"], 1)
 
     def test__rwFile1DRecord(self):
-        """Verify the rest of the metadata"""
+        """Verify the rest of the metadata."""
         TITLE_A6 = ["3D Hex", "-Z to", "genera", "te NHF", "LUX fi", "le"]
         EXPECTED_TITLE = TITLE_A6 + [""] * 5
         for i in range(dif3d.TITLE_RANGE):
@@ -54,7 +54,7 @@ class TestDif3dSimpleHexz(unittest.TestCase):
         self.assertEqual(self.df.metadata["IPRINT"], 0)
 
     def test__rw2DRecord(self):
-        """Verify the control parameters"""
+        """Verify the control parameters."""
         EXPECTED_2D = [
             0,
             0,
@@ -108,7 +108,7 @@ class TestDif3dSimpleHexz(unittest.TestCase):
             self.assertEqual(self.df.twoD[param], EXPECTED_2D[i])
 
     def test__rw3DRecord(self):
-        """Verify the convergence criteria and other floating point data"""
+        """Verify the convergence criteria and other floating point data."""
         EXPECTED_3D = [
             1e-7,
             1e-5,
@@ -125,11 +125,11 @@ class TestDif3dSimpleHexz(unittest.TestCase):
             self.assertEqual(self.df.threeD[param], EXPECTED_3D[i])
 
     def test__rw4DRecord(self):
-        """Verify the optimum overrelaxation factors"""
+        """Verify the optimum overrelaxation factors."""
         self.assertEqual(self.df.fourD, None)
 
     def test__rw5DRecord(self):
-        """Verify the axial coarse-mesh rebalance boundaries"""
+        """Verify the axial coarse-mesh rebalance boundaries."""
         self.assertEqual(self.df.fiveD, None)
 
     def test_writeBinary(self):
@@ -145,7 +145,7 @@ class TestDif3dSimpleHexz(unittest.TestCase):
 
 class TestDif3dEmptyRecords(unittest.TestCase):
     def test_empty4and5Records(self):
-        """Since the inputs results in these being None, get test coverage another way"""
+        """Since the inputs results in these being None, get test coverage another way."""
         df = dif3d.Dif3dStream.readBinary(SIMPLE_HEXZ_DIF3D)
         # Hack some values that allow 4 and 5 records to be populated \
         # and then populate them

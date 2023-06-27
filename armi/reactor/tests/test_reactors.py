@@ -275,7 +275,7 @@ class HexReactorTests(ReactorTests):
         self.assertEqual(self.r.core._children, sorted(self.r.core._children))
 
     def test_sortAssemByRing(self):
-        """Demonstrate ring/pos sorting"""
+        """Demonstrate ring/pos sorting."""
         self.r.core.sortAssemsByRing()
         self.assertEqual((1, 1), self.r.core[0].spatialLocator.getRingPos())
         currentRing = -1
@@ -339,7 +339,7 @@ class HexReactorTests(ReactorTests):
         self.assertEqual(numControlBlocks, 3)
 
     def test_setB10VolOnCreation(self):
-        """test the setting of b.p.initialB10ComponentVol"""
+        """test the setting of b.p.initialB10ComponentVol."""
         for controlBlock in self.r.core.getBlocks(Flags.CONTROL):
             controlComps = [c for c in controlBlock if c.getNumberDensity("B10") > 0]
             self.assertEqual(len(controlComps), 1)

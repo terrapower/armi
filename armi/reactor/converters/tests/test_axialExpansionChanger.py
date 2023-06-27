@@ -238,7 +238,7 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
         AxialExpansionTestBase.tearDown(self)
 
     def expandAssemForMassConservationTest(self):
-        """do the thermal expansion and store conservation metrics of interest"""
+        """do the thermal expansion and store conservation metrics of interest."""
         # create a semi-realistic/physical variable temperature grid over the assembly
         temp = Temperature(self.a.getTotalHeight(), numTempGridPts=11, tempSteps=10)
         for idt in range(temp.tempSteps):

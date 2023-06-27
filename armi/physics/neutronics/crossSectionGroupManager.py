@@ -236,7 +236,7 @@ class BlockCollection(list):
 
     def _calcWeightedBurnup(self):
         """
-        For a blockCollection that represents fuel, calculate the weighted average burnup
+        For a blockCollection that represents fuel, calculate the weighted average burnup.
 
         Notes
         -----

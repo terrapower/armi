@@ -130,7 +130,7 @@ class FuelHandlerTestHelper(ArmiTestHelper):
 
 
 class MockLatticePhysicsInterface(LatticePhysicsInterface):
-    """a mock lattice physics interface that does nothing for interactBOC"""
+    """a mock lattice physics interface that does nothing for interactBOC."""
 
     name = "MockLatticePhysicsInterface"
 
@@ -142,7 +142,7 @@ class MockLatticePhysicsInterface(LatticePhysicsInterface):
 
 
 class MockXSGM(CrossSectionGroupManager):
-    """a mock cross section group manager that does nothing for interactBOC"""
+    """a mock cross section group manager that does nothing for interactBOC."""
 
     def interactBOC(self, cycle=None):
         pass
