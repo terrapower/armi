@@ -795,6 +795,18 @@ class TestDetermineTargetComponent(AxialExpansionTestBase, unittest.TestCase):
         self.assertTrue(self.expData.isTargetComponent(duct))
 
 
+class TestGetSolidComponents(unittest.TestCase):
+    """verify that getSolidComponents returns just solid components"""
+
+    def setUp(self):
+        self.a = buildTestAssemblyWithFakeMaterial(name="HT9")
+
+    def test_getSolidComponents(self):
+        for b in self.a:
+            for c in getSolidComponents(b):
+                self.assertNotEqual(c.material.name, "Sodium")
+
+
 class TestInputHeightsConsideredHot(unittest.TestCase):
     """Verify thermal expansion for process loading of core."""
 
