@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Inconel PE16.
-"""
+"""Inconel PE16."""
 
 from armi import runLog
 from armi.materials.material import SimpleSolid

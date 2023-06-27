@@ -40,9 +40,7 @@ def writeBinary(fileName, fixSrcArray):
 
 
 class FIXSRC(cccc.Stream):
-    r"""
-    Read or write a binary FIXSRC file from DIF3D fixed source input.
-    """
+    r"""Read or write a binary FIXSRC file from DIF3D fixed source input."""
 
     def __init__(self, fileName, fileMode, fixSrc):
         r"""
@@ -64,7 +62,6 @@ class FIXSRC(cccc.Stream):
             from a neutron RTFLUX file (requires reactor geometry and settings).
 
         """
-
         cccc.Stream.__init__(self, fileName, fileMode)
 
         # copied from a sample FIXSRC output from "type 19" DIF3D input
@@ -93,11 +90,7 @@ class FIXSRC(cccc.Stream):
         )
 
     def readWrite(self):
-        r"""
-        Read or write a binary FIXSRC file for DIF3D fixed source input.
-
-        """
-
+        r"""Read or write a binary FIXSRC file for DIF3D fixed source input."""
         runLog.info(
             "{} gamma fixed source file {}".format(
                 "Reading" if "r" in self._fileMode else "Writing", self
@@ -114,17 +107,13 @@ class FIXSRC(cccc.Stream):
                 self._rw3DRecord(g, z)
 
     def _rwFileID(self):
-        r"""
-        Read file identification information.
-        """
+        r"""Read file identification information."""
         with self.createRecord() as fileIdRecord:
             self.label = fileIdRecord.rwString(self.label, 24)
             self.fileId = fileIdRecord.rwInt(self.fileId)
 
     def _rw1DRecord(self):
-        r"""
-        Read/write parameters from/to the FIXSRC 1D block (file control).
-        """
+        r"""Read/write parameters from/to the FIXSRC 1D block (file control)."""
         with self.createRecord() as record:
             for var in self.fc.keys():
                 self.fc[var] = record.rwInt(self.fc[var])
@@ -142,7 +131,6 @@ class FIXSRC(cccc.Stream):
             The DIF3D axial node index.
 
         """
-
         with self.createRecord() as record:
 
             ni = self.fc["ninti"]

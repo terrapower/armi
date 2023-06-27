@@ -79,7 +79,6 @@ class VtkDumper(dumper.VisFileDumper):
         excludeParams : list of str, optional
             A list of parameter names to exclude from the output. Defaults to no params.
         """
-
         cycle = r.p.cycle
         timeNode = r.p.timeNode
 

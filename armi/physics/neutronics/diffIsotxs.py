@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-This script is used to compare ISOTXS files.
-"""
+"""This script is used to compare ISOTXS files."""
 from armi import runLog
 from armi.cli.entryPoint import EntryPoint
 

@@ -20,6 +20,7 @@ from armi.utils.units import getTk
 
 class Lead(material.Fluid):
     r"""Natural lead."""
+
     name = "Lead"
     propertyValidTemperature = {
         "density": ((600, 1700), "K"),

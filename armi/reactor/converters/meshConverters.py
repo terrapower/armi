@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Mesh specifiers update the mesh structure of a reactor by increasing or decreasing the number of mesh coordinates.
-"""
+"""Mesh specifiers update the mesh structure of a reactor by increasing or decreasing the number of mesh coordinates."""
 
 import math
 import collections
@@ -259,9 +257,7 @@ class _RZThetaReactorMeshConverterByAxialBins(RZThetaReactorMeshConverter):
 
 
 class _RZThetaReactorMeshConverterByAxialFlags(RZThetaReactorMeshConverter):
-    """
-    Generate an axial mesh based on examining the block flags axially across the core.
-    """
+    """Generate an axial mesh based on examining the block flags axially across the core."""
 
     def setAxialMesh(self, core):
         """
@@ -396,9 +392,7 @@ class RZThetaReactorMeshConverterByRingCompositionAxialFlags(
 def checkLastValueInList(
     inputList, listName, expectedValue, eps=0.001, adjustLastValue=False
 ):
-    """
-    Check that the last value in the list is equal to the expected value within +/- eps.
-    """
+    """Check that the last value in the list is equal to the expected value within +/- eps."""
     msg = "The last value in {} is {} and should be {}".format(
         listName, inputList[-1], expectedValue
     )
@@ -416,9 +410,7 @@ def checkLastValueInList(
 
 
 def checkListBounds(inputList, listName, minVal, maxVal, eps=0.001):
-    """
-    Ensure that each value in a list does not exceed the allowable bounds.
-    """
+    """Ensure that each value in a list does not exceed the allowable bounds."""
     for value in inputList:
         minDiff = value - minVal
         maxDiff = value - maxVal
@@ -431,9 +423,7 @@ def checkListBounds(inputList, listName, minVal, maxVal, eps=0.001):
 
 
 def generateBins(totalNumDataPoints, numPerBin, minNum):
-    """
-    Fill in a list based on the total number of data points and the number of data points per bin.
-    """
+    """Fill in a list based on the total number of data points and the number of data points per bin."""
     listToFill = []
     if numPerBin >= totalNumDataPoints:
         listToFill.append(totalNumDataPoints)

@@ -199,7 +199,6 @@ def buildAssemblies(blockDesigns):
 
 def buildGrids():
     """Build the core map grid"""
-
     coreGrid = gridBlueprint.GridBlueprint("core")
     coreGrid.geom = "hex"
     coreGrid.symmetry = "third periodic"

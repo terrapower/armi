@@ -342,7 +342,8 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
     @staticmethod
     def _getMass(a):
         """get the mass of an assembly. The conservation of HT9 pins in shield assems
-        are accounted for in FE56 conservation checks."""
+        are accounted for in FE56 conservation checks.
+        """
         newMass = None
         if a.hasFlags(Flags.FUEL):
             newMass = a.getMass("U235")
@@ -800,7 +801,6 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
 
     def setUp(self):
         """This test uses a different armiRun.yaml than the default."""
-
         o, r = loadTestReactor(
             os.path.join(TEST_ROOT, "detailedAxialExpansion"),
             customSettings={"inputHeightsConsideredHot": True},

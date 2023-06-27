@@ -71,9 +71,7 @@ class TestExecuters(unittest.TestCase):
         self.executer = executers.DefaultExecuter(e, MockReactor())
 
     def test_collectInputsAndOutputs(self):
-        """
-        Verify that the executer can select to not copy back output.
-        """
+        """Verify that the executer can select to not copy back output."""
         self.executer.options.inputFile = "test.inp"
         self.executer.options.outputFile = "test.out"
         self.executer.options.copyOutput = False
@@ -97,7 +95,6 @@ class TestExecuters(unittest.TestCase):
         Verify that runDir is updated when TemporaryDirectoryChanger is used and
         not updated when ForcedCreationDirectoryChanger is used.
         """
-
         self.assertEqual(
             self.executer.dcType, directoryChangers.TemporaryDirectoryChanger
         )

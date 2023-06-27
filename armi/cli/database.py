@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Entry point into ARMI for manipulating output databases.
-"""
+"""Entry point into ARMI for manipulating output databases."""
 import os
 import pathlib
 import re

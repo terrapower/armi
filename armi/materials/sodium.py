@@ -86,9 +86,7 @@ class Sodium(material.Fluid):
         ) / 1000.0  # convert from kg/m^3 to g/cc.
 
     def specificVolumeLiquid(self, Tk=None, Tc=None):
-        """
-        Returns the liquid specific volume in m^3/kg of this material given Tk in K or Tc in C.
-        """
+        """Returns the liquid specific volume in m^3/kg of this material given Tk in K or Tc in C."""
         return 1 / (1000.0 * self.pseudoDensity(Tk, Tc))
 
     def enthalpy(self, Tk=None, Tc=None):

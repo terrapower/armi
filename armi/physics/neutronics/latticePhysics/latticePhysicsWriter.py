@@ -453,7 +453,6 @@ class LatticePhysicsWriter(interfaces.InputWriter):
             new = number density of Pu-239 after adjustment
 
         """
-
         minFrac = self.cs[CONF_MINIMUM_FISSILE_FRACTION]
         fiss = sum(dens[0] for nuc, dens in nucDensities.items() if nuc.isFissile())
         hm = sum(dens[0] for nuc, dens in nucDensities.items() if nuc.isHeavyMetal())

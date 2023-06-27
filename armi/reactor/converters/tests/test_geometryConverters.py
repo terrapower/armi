@@ -40,9 +40,7 @@ class TestGeometryConverters(unittest.TestCase):
         self.cs = self.o.cs
 
     def test_addRing(self):
-        r"""
-        Tests that the addRing method adds the correct number of fuel assemblies to the test reactor.
-        """
+        r"""Tests that the addRing method adds the correct number of fuel assemblies to the test reactor."""
         converter = geometryConverters.FuelAssemNumModifier(self.cs)
         converter.numFuelAssems = 7
         converter.ringsToAdd = 1 * ["radial shield"]
@@ -67,9 +65,7 @@ class TestGeometryConverters(unittest.TestCase):
         )  # should wind up with 11 reflector assemblies per 1/3rd core
 
     def test_setNumberOfFuelAssems(self):
-        r"""
-        Tests that the setNumberOfFuelAssems method properly changes the number of fuel assemblies.
-        """
+        r"""Tests that the setNumberOfFuelAssems method properly changes the number of fuel assemblies."""
         # tests ability to add fuel assemblies
         converter = geometryConverters.FuelAssemNumModifier(self.cs)
         converter.numFuelAssems = 60
@@ -279,9 +275,7 @@ class TestEdgeAssemblyChanger(unittest.TestCase):
         del self.r
 
     def test_edgeAssemblies(self):
-        r"""
-        Sanity check on adding edge assemblies.
-        """
+        r"""Sanity check on adding edge assemblies."""
         converter = geometryConverters.EdgeAssemblyChanger()
         converter.addEdgeAssemblies(self.r.core)
 

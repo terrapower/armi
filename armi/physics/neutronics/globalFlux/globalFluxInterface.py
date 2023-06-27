@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-The Global flux interface provide a base class for all neutronics tools that compute the neutron and/or photon flux.
-"""
+"""The Global flux interface provide a base class for all neutronics tools that compute the neutron and/or photon flux."""
 import math
 from typing import Dict, Optional
 
@@ -635,9 +633,7 @@ class GlobalFluxResultMapper(interfaces.OutputReader):
         raise NotImplementedError()
 
     def clearFlux(self):
-        """
-        Delete flux on all blocks. Needed to prevent stale flux when partially reloading.
-        """
+        """Delete flux on all blocks. Needed to prevent stale flux when partially reloading."""
         for b in self.r.core.getBlocks():
             b.p.mgFlux = []
             b.p.adjMgFlux = []

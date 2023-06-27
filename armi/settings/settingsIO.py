@@ -182,7 +182,6 @@ class SettingsReader:
 
     def readFromFile(self, path, handleInvalids=True):
         """Load file and read it."""
-
         with open(path, "r") as f:
             # make sure that we can actually open the file before trying to guess its
             # format. This will yield better error messages when things go awry.

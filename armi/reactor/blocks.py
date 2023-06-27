@@ -201,7 +201,6 @@ class Block(composites.Composite):
         ValueError
             If the parent of the block's ``core`` is not an ``armi.reactor.reactors.Reactor``.
         """
-
         from armi.reactor.reactors import Reactor
 
         core = self.core
@@ -1101,7 +1100,6 @@ class Block(composites.Composite):
         when a control rod is specified as a certain length but that length does not fit exactly
         into a full block.
         """
-
         numDensities = self.getNumberDensities()
         otherBlockDensities = otherBlock.getNumberDensities()
         newDensities = {}
@@ -1416,7 +1414,6 @@ class Block(composites.Composite):
         armi.reactor.components.Parameters
         armi.physics.optimize.OptimizationInterface.modifyCase (look up 'ThRZReflectorThickness')
         """
-
         for c in self.getComponentsInLinkedOrder():
             try:
                 c.updateDims()
@@ -1500,7 +1497,6 @@ class Block(composites.Composite):
         integratedFlux : numpy.array
             multigroup neutron tracklength in [n-cm/s]
         """
-
         if adjoint:
             if gamma:
                 raise ValueError("Adjoint gamma flux is currently unsupported.")
@@ -1626,7 +1622,6 @@ class HexBlock(Block):
         --------
         armi.reactor.converters.uniformMesh.UniformMeshGeometryConverter.makeAssemWithUniformMesh
         """
-
         b = self.__class__(self.getName(), height=self.getHeight())
         b.setType(self.getType(), self.p.flags)
 
@@ -2036,9 +2031,7 @@ class HexBlock(Block):
         return pinToDuctGap
 
     def getRotationNum(self):
-        """
-        Get index 0 through 5 indicating number of rotations counterclockwise around the z-axis.
-        """
+        """Get index 0 through 5 indicating number of rotations counterclockwise around the z-axis."""
         return (
             numpy.rint(self.p.orientation[2] / 360.0 * 6) % 6
         )  # assume rotation only in Z
@@ -2212,7 +2205,6 @@ class HexBlock(Block):
 
     def getWettedPerimeter(self):
         """Return the total wetted perimeter of the block in cm."""
-
         # flags pertaining to hexagon components where the interior of the hexagon is wetted
         wettedHollowHexagonComponentFlags = (
             Flags.DUCT,
@@ -2285,9 +2277,7 @@ class HexBlock(Block):
         )
 
     def getFlowArea(self):
-        """
-        Return the total flowing coolant area of the block in cm^2.
-        """
+        """Return the total flowing coolant area of the block in cm^2."""
         return self.getComponent(Flags.COOLANT, exact=True).getArea()
 
     def getHydraulicDiameter(self):
@@ -2340,9 +2330,7 @@ class CartesianBlock(Block):
         return 1.0
 
     def getPinCenterFlatToFlat(self, cold=False):
-        """
-        Return the flat-to-flat distance between the centers of opposing pins in the outermost ring.
-        """
+        """Return the flat-to-flat distance between the centers of opposing pins in the outermost ring."""
         clad = self.getComponent(Flags.CLAD)
         nRings = hexagon.numRingsToHoldNumCells(clad.getDimension("mult"))
         pinPitch = self.getPinPitch(cold=cold)

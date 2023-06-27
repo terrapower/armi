@@ -197,16 +197,12 @@ def getDefaultPluginManager() -> pluginManager.ArmiPluginManager:
 
 
 def isConfigured():
-    """
-    Returns whether ARMI has been configured with an App.
-    """
+    """Returns whether ARMI has been configured with an App."""
     return _app is not None
 
 
 def getPluginManager() -> Optional[pluginManager.ArmiPluginManager]:
-    """
-    Return the plugin manager, if there is one.
-    """
+    """Return the plugin manager, if there is one."""
     global _app
     if _app is None:
         return None
@@ -214,9 +210,7 @@ def getPluginManager() -> Optional[pluginManager.ArmiPluginManager]:
 
 
 def getPluginManagerOrFail() -> pluginManager.ArmiPluginManager:
-    """
-    Return the plugin manager. Raise an error if there is none.
-    """
+    """Return the plugin manager. Raise an error if there is none."""
     global _app
     assert _app is not None, (
         "The ARMI plugin manager was requested, no App has been configured. Ensure "
@@ -246,9 +240,7 @@ def _cleanupOnCancel(signum, _frame):
 
 
 def _liveInterpreter():
-    """
-    Return whether we are running within a live/interactive python interpreter.
-    """
+    """Return whether we are running within a live/interactive python interpreter."""
     return not hasattr(main, "__file__")
 
 

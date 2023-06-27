@@ -116,7 +116,8 @@ class AsciiMap:
         """
         Read ascii representation from a stream.
 
-        Update placeholder size according to largest thing read."""
+        Update placeholder size according to largest thing read.
+        """
         text = text.strip().splitlines()
 
         self.asciiLines = []
@@ -162,9 +163,7 @@ class AsciiMap:
 
     @staticmethod
     def fromReactor(reactor):
-        """
-        Populate mapping from a reactor in preparation of writing out to ascii.
-        """
+        """Populate mapping from a reactor in preparation of writing out to ascii."""
         raise NotImplementedError
 
     def _getLineNumsToWrite(self):
@@ -370,9 +369,7 @@ class AsciiMapHexThirdFlatsUp(AsciiMap):
             return 1 - indexOnRay, 2 * indexOnRay + 1
 
     def _getIJFromColAndBase(self, columnNum, iBase, jBase):
-        """
-        Map ascii column and base to i,j hex indices.
-        """
+        """Map ascii column and base to i,j hex indices."""
         # To move n columns right, i increases by 2n, j decreases by n
         return iBase + 2 * columnNum, jBase - columnNum
 
@@ -389,9 +386,7 @@ class AsciiMapHexThirdFlatsUp(AsciiMap):
         return self._getIJFromColAndBase(columnNum, iBase, jBase)
 
     def _makeOffsets(self):
-        """
-        One third hex grids have larger offsets at the bottom so the overhanging top fits.
-        """
+        """One third hex grids have larger offsets at the bottom so the overhanging top fits."""
         self.asciiOffsets = []
         for li, _line in enumerate(self.asciiLines):
             iBase, _ = self._getIJBaseByAsciiLine(li)
@@ -594,9 +589,7 @@ class AsciiMapHexFullTipsUp(AsciiMap):
         return iBase, jBase
 
     def _updateDimensionsFromAsciiLines(self):
-        """
-        Update dimension metadata when reading ascii.
-        """
+        """Update dimension metadata when reading ascii."""
         # ijmax here can be inferred directly from the max number of columns
         # in the asciimap text
         self._ijMax = (self._asciiMaxCol - 1) // 2

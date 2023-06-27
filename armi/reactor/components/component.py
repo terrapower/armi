@@ -402,9 +402,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         self.parent.p.gasPorosity = porosity
 
     def __copy__(self):
-        """
-        Duplicate a component, used for breaking fuel into separate components.
-        """
+        """Duplicate a component, used for breaking fuel into separate components."""
         linkedDims = self._getLinkedDimsAndValues()
         newC = copy.deepcopy(self)
         self._restoreLinkedDims(linkedDims)

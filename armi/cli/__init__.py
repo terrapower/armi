@@ -91,9 +91,7 @@ class EntryPointsPlugin(plugins.ArmiPlugin):
 
 
 class ArmiParser(argparse.ArgumentParser):
-    """
-    Subclass of default ArgumentParser to better handle application splash text.
-    """
+    """Subclass of default ArgumentParser to better handle application splash text."""
 
     def print_help(self, file=None):
         splash()

@@ -178,9 +178,7 @@ REFERENCE_THERMAL_CONDUCTIVITY_mJ_PER_M_K = [
 
 
 class Test_Air(unittest.TestCase):
-    """
-    unit tests for air materials.
-    """
+    """unit tests for air materials."""
 
     def test_pseudoDensity(self):
         """

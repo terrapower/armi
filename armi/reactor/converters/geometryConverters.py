@@ -960,9 +960,7 @@ class HexToRZThetaConverter(GeometryConverter):
         return assignedMixtureBlockType
 
     def _createBlendedXSID(self, newBlock):
-        """
-        Generate the blended XS id using the most common XS id in the hexIdList.
-        """
+        """Generate the blended XS id using the most common XS id in the hexIdList."""
         ids = [hexBlock.getMicroSuffix() for hexBlock in self.blockMap[newBlock]]
         xsTypeList, buGroupList = zip(*ids)
 
@@ -1005,9 +1003,7 @@ class HexToRZThetaConverter(GeometryConverter):
         )
 
     def _writeRadialThetaZoneInfo(self, axIdx, axialSegmentHeight, blockObj):
-        """
-        Create a summary of the mapping between the converted reactor block ids to the hex reactor block ids.
-        """
+        """Create a summary of the mapping between the converted reactor block ids to the hex reactor block ids."""
         self._newBlockNum += 1
         hexBlockXsIds = []
         for hexBlock in self.blockMap[blockObj]:
@@ -1025,9 +1021,7 @@ class HexToRZThetaConverter(GeometryConverter):
         )
 
     def _expandSourceReactorGeometry(self):
-        """
-        Expansion of the reactor geometry to build the R-Z-Theta core model.
-        """
+        """Expansion of the reactor geometry to build the R-Z-Theta core model."""
         runLog.info("Expanding source reactor core to a full core model")
         reactorExpander = ThirdCoreHexToFullCoreChanger(self._cs)
         reactorExpander.convert(self._sourceReactor)

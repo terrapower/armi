@@ -249,7 +249,6 @@ class ArmiTestHelper(unittest.TestCase):
             is in the value of something that can be parsed into a float, and the
             relative difference between the two floats is below the passed epsilon.
         """
-
         if falseNegList is None:
             falseNegList = []
         elif isinstance(falseNegList, str):

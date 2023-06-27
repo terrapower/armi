@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Globally accessible exception definitions for better granularity on exception behavior and exception handling behavior.
-"""
+"""Globally accessible exception definitions for better granularity on exception behavior and exception handling behavior."""
 from armi import runLog
 from inspect import stack, getframeinfo
 

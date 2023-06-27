@@ -209,6 +209,7 @@ def isNumpyArray(paramStr):
 @functools.total_ordering
 class Parameter:
     r"""Metadata about a specific parameter."""
+
     _validName = re.compile("^[a-zA-Z0-9_]+$")
 
     # Using slots because Parameters are pretty static and mostly POD. __slots__ make
@@ -461,9 +462,7 @@ class ParameterDefinitionCollection:
         return self._paramDefDict.items()
 
     def extend(self, other):
-        """
-        Grow a parameter definition collection by another parameter definition collection.
-        """
+        """Grow a parameter definition collection by another parameter definition collection."""
         assert (
             not self._locked
         ), "This ParameterDefinitionCollection ({}) has been locked.".format(

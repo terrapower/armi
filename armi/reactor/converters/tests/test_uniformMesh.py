@@ -113,7 +113,6 @@ class TestAssemblyUniformMesh(unittest.TestCase):
 
     def test_makeAssemWithUniformMeshSubmesh(self):
         """If sourceAssem has submesh, check that newAssem splits into separate blocks."""
-
         # assign axMesh to blocks randomly
         sourceAssem = self.r.core.refAssem
         for i, b in enumerate(sourceAssem):
@@ -252,9 +251,7 @@ class TestUniformMeshGenerator(unittest.TestCase):
         self.assertNotEqual(refMesh[4], avgMesh[4], "Not equal above the fuel.")
 
     def test_filterMesh(self):
-        """
-        Test that the mesh can be correctly filtered.
-        """
+        """Test that the mesh can be correctly filtered."""
         meshList = [1.0, 3.0, 4.0, 7.0, 9.0, 12.0, 16.0, 19.0, 20.0]
         anchorPoints = [4.0, 16.0]
         combinedMesh = self.generator._filterMesh(
@@ -298,9 +295,7 @@ class TestUniformMeshGenerator(unittest.TestCase):
         self.assertListEqual(ctrlAndFuelTops, [75.0, 101.25, 105.0])
 
     def test_generateCommonMesh(self):
-        """
-        Covers generateCommonmesh() and _decuspAxialMesh().
-        """
+        """Covers generateCommonmesh() and _decuspAxialMesh()."""
         self.generator.generateCommonMesh()
         expectedMesh = [
             25.0,

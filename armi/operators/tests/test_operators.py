@@ -106,7 +106,6 @@ class OperatorTests(unittest.TestCase):
 
     def test_loadStateError(self):
         """The ``loadTestReactor()`` test tool does not have any history in the DB to load from."""
-
         # a first, simple test that this method fails correctly
         with self.assertRaises(RuntimeError):
             self.o.loadState(0, 1)
@@ -281,9 +280,7 @@ class TestTightCoupling(unittest.TestCase):
 
 
 class CyclesSettingsTests(unittest.TestCase):
-    """
-    Check that we can correctly access the various cycle settings from the operator.
-    """
+    """Check that we can correctly access the various cycle settings from the operator."""
 
     detailedCyclesSettings = """
 metadata:

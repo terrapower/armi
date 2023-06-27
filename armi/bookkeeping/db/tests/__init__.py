@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Database tests.
-"""
+"""Database tests."""
 # Copyright 2009-2019 TerraPower, LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");

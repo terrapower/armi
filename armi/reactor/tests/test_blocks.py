@@ -2229,9 +2229,7 @@ class CartesianBlock_TestCase(unittest.TestCase):
 
 
 class MassConservationTests(unittest.TestCase):
-    r"""
-    Tests designed to verify mass conservation during thermal expansion.
-    """
+    r"""Tests designed to verify mass conservation during thermal expansion."""
 
     def setUp(self):
         self.b = buildSimpleFuelBlock()

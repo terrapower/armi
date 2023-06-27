@@ -254,7 +254,6 @@ class Case:
 
     def _getPotentialDependencies(self, dirName, title):
         """Get a parent case based on a directory and case title."""
-
         if dirName is None:
             dirName = self.directory
         elif not os.path.isabs(dirName):

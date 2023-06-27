@@ -86,7 +86,6 @@ class TestTightCouplingSettings(unittest.TestCase):
 
     def test_invalidArgumentTypes(self):
         """Tests failure when the values of the parameters do not match the expected schema."""
-
         # Fails because `parameter` value is required to be a string
         with self.assertRaises(vol.MultipleInvalid):
             tc = {}

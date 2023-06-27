@@ -249,9 +249,7 @@ class Interface:
 
     @classmethod
     def getInputFiles(cls, cs):
-        """
-        Return a MergeableDict containing files that should be considered "input".
-        """
+        """Return a MergeableDict containing files that should be considered "input"."""
         return utils.MergeableDict()
 
     name: Union[str, None] = None

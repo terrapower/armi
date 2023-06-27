@@ -210,9 +210,7 @@ class BlockCollection(list):
         raise NotImplementedError
 
     def getWeight(self, block):
-        """
-        Get value of weighting function for this block.
-        """
+        """Get value of weighting function for this block."""
         vol = block.getVolume() or 1.0
         if not self.weightingParam:
             weight = 1.0
@@ -256,9 +254,7 @@ class BlockCollection(list):
 
 
 class MedianBlockCollection(BlockCollection):
-    """
-    Returns the median burnup block. This is a simple and often accurate approximation.
-    """
+    """Returns the median burnup block. This is a simple and often accurate approximation."""
 
     def _makeRepresentativeBlock(self):
         """Get the median burnup block."""
@@ -319,9 +315,7 @@ class AverageBlockCollection(BlockCollection):
     """
 
     def _makeRepresentativeBlock(self):
-        """
-        Generate a block that best represents all blocks in group.
-        """
+        """Generate a block that best represents all blocks in group."""
         newBlock = self._getNewBlock()
         lfpCollection = self._getAverageFuelLFP()
         newBlock.setLumpedFissionProducts(lfpCollection)
@@ -681,9 +675,7 @@ class SlabComponentsAverageBlockCollection(BlockCollection):
 
 
 class FluxWeightedAverageBlockCollection(AverageBlockCollection):
-    """
-    Flux-weighted AverageBlockCollection.
-    """
+    """Flux-weighted AverageBlockCollection."""
 
     def __init__(self, *args, **kwargs):
         AverageBlockCollection.__init__(self, *args, **kwargs)
@@ -772,7 +764,6 @@ class CrossSectionGroupManager(interfaces.Interface):
         --------
         :py:meth:`Assembly <armi.physics.neutronics.latticePhysics.latticePhysics.LatticePhysicsInterface.interactCoupled>`
         """
-
         if (
             iteration == 0
             and self._latticePhysicsFrequency
@@ -1140,9 +1131,7 @@ class CrossSectionGroupManager(interfaces.Interface):
         return unrepresentedBlocks
 
     def makeCrossSectionGroups(self):
-        """
-        Make cross section groups for all blocks in reactor and unrepresented blocks from blueprints.
-        """
+        """Make cross section groups for all blocks in reactor and unrepresented blocks from blueprints."""
         bCollectXSGroup = {}  # clear old groups (in case some are no longer existent)
         bCollectXSGroup = self._addXsGroupsFromBlocks(
             bCollectXSGroup, self.r.core.getBlocks()
@@ -1316,9 +1305,7 @@ BLOCK_COLLECTIONS = {
 
 
 def blockCollectionFactory(xsSettings, allNuclidesInProblem):
-    """
-    Build a block collection based on user settings and input.
-    """
+    """Build a block collection based on user settings and input."""
     blockRepresentation = xsSettings.blockRepresentation
     validBlockTypes = xsSettings.validBlockTypes
     return BLOCK_COLLECTIONS[blockRepresentation](

@@ -42,16 +42,12 @@ from armi.physics.neutronics.const import CONF_CROSS_SECTION
 
 
 class NeutronicsPlugin(plugins.ArmiPlugin):
-    """
-    The built-in neutronics plugin with a few capabilities and a lot of state parameter definitions.
-    """
+    """The built-in neutronics plugin with a few capabilities and a lot of state parameter definitions."""
 
     @staticmethod
     @plugins.HOOKIMPL
     def exposeInterfaces(cs):
-        """
-        Collect and expose all of the interfaces that live under the built-in neutronics package.
-        """
+        """Collect and expose all of the interfaces that live under the built-in neutronics package."""
         from armi.physics.neutronics import crossSectionGroupManager
         from armi.physics.neutronics.fissionProductModel import fissionProductModel
 

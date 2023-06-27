@@ -397,7 +397,6 @@ class Settings:
         userSettingsNames : list
             The settings names read in from a yaml settings file
         """
-
         # We do not want to load these as settings, but just grab the dictionary straight
         # from the settings file to know which settings are user-defined
         with open(fPath, "r") as stream:

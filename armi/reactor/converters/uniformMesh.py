@@ -38,7 +38,6 @@ Requirements
     finer meshes will help. Always perform mesh sensitivity studies to ensure appropriate
     convergence for your needs.
 
-
 Examples
 --------
 converter = uniformMesh.NeutronicsUniformMeshConverter()
@@ -720,7 +719,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
         mapNumberDensities=False,
         calcReactionRates=False,
     ):
-        """
+        r"""
         Set state data (i.e., number densities and block-level parameters) on a assembly based on a source
         assembly with a different axial mesh.
 
@@ -764,7 +763,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
         --------
         setNumberDensitiesFromOverlaps : does this but does smarter caching for number densities.
         """
-
         for destBlock in destinationAssembly:
             zLower = destBlock.p.zbottom
             zUpper = destBlock.p.ztop
@@ -1004,7 +1002,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
         This is a basic parameter mapping routine that can be used by most sub-classes.
         If special mapping logic is required, this method can be defined on sub-classes as necessary.
         """
-
         # Map reactor core parameters
         for paramName in self.paramMapper.reactorParamNames:
             # Check if the source reactor has a value assigned for this

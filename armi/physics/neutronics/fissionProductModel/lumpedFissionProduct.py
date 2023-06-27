@@ -66,9 +66,7 @@ class LumpedFissionProduct:
         self.yld = {}
 
     def duplicate(self):
-        """
-        Make a copy of this w/o using deepcopy.
-        """
+        """Make a copy of this w/o using deepcopy."""
         new = self.__class__(self.name)
         for key, val in self.yld.items():
             new.yld[key] = val
@@ -260,9 +258,7 @@ class LumpedFissionProductCollection(dict):
         return fpDensities
 
     def getMassFrac(self, oldMassFrac=None):
-        """
-        returns the mass fraction vector of the collection of lumped fission products.
-        """
+        """returns the mass fraction vector of the collection of lumped fission products."""
         if not oldMassFrac:
             raise ValueError("You must define a massFrac vector")
 
@@ -319,9 +315,7 @@ class FissionProductDefinitionFile:
         return lfps
 
     def createSingleLFPFromFile(self, name):
-        """
-        Read one LFP from the file.
-        """
+        """Read one LFP from the file."""
         lfpLines = self._splitIntoIndividualLFPLines(name)
         lfp = self._readOneLFP(lfpLines[0])  # only one LFP expected. Use it.
         return lfp

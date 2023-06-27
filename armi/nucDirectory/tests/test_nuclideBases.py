@@ -146,9 +146,7 @@ class TestNuclide(unittest.TestCase):
         self.assertGreater(count, 10)
 
     def test_nucBases_imposeBurnChainDecayBulkStatistics(self):
-        """
-        Test must be updated manually when burn chain is modified.
-        """
+        """Test must be updated manually when burn chain is modified."""
         decayers = list(nuclideBases.where(lambda nn: len(nn.decays) > 0))
         self.assertTrue(decayers)
         for nuc in decayers:

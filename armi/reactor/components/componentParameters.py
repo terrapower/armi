@@ -121,7 +121,6 @@ def getComponentParameterDefinitions():
 
 def getCircleParameterDefinitions():
     """Return parameters for Circle."""
-
     pDefs = parameters.ParameterDefinitionCollection()
 
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:
@@ -136,7 +135,6 @@ def getCircleParameterDefinitions():
 
 def getHexagonParameterDefinitions():
     """Return parameters for Hexagon."""
-
     pDefs = parameters.ParameterDefinitionCollection()
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:
         pb.defParam("ip", units="cm", description="Inner pitch", default=0.0)
@@ -148,7 +146,6 @@ def getHexagonParameterDefinitions():
 
 def getHoledHexagonParameterDefinitions():
     """Return parameters for HoledHexagon."""
-
     pDefs = parameters.ParameterDefinitionCollection()
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:
         pb.defParam("holeOD", units="cm", description="Diameter of interior hole(s)")
@@ -162,7 +159,6 @@ def getHoledHexagonParameterDefinitions():
 
 def getHexHoledCircleParameterDefinitions():
     """Return parameters for HexHoledCircle."""
-
     pDefs = parameters.ParameterDefinitionCollection()
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:
         pb.defParam("holeOP", units="cm", description="Pitch of interior hole")
@@ -172,7 +168,6 @@ def getHexHoledCircleParameterDefinitions():
 
 def getHoledRectangleParameterDefinitions():
     """Return parameters for HoledRectangle."""
-
     pDefs = parameters.ParameterDefinitionCollection()
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:
         pb.defParam("holeOD", units="cm", description="Diameter of interior hole")
@@ -182,7 +177,6 @@ def getHoledRectangleParameterDefinitions():
 
 def getHelixParameterDefinitions():
     """Return parameters for Helix."""
-
     pDefs = parameters.ParameterDefinitionCollection()
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:
         pb.defParam("od", units="cm", description="Outer diameter")
@@ -204,7 +198,6 @@ def getHelixParameterDefinitions():
 
 def getRectangleParameterDefinitions():
     """Return parameters for Rectangle."""
-
     pDefs = parameters.ParameterDefinitionCollection()
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:
         pb.defParam("lengthInner", units="cm", description="Inner length")
@@ -220,7 +213,6 @@ def getRectangleParameterDefinitions():
 
 def getCubeParameterDefinitions():
     """Return parameters for Cube."""
-
     pDefs = parameters.ParameterDefinitionCollection()
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:
         pb.defParam("lengthInner", units="cm", description="Inner length")
@@ -240,7 +232,6 @@ def getCubeParameterDefinitions():
 
 def getTriangleParameterDefinitions():
     """Return parameters for Triangle."""
-
     pDefs = parameters.ParameterDefinitionCollection()
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:
         pb.defParam("base", units="?", description="?")
@@ -252,7 +243,6 @@ def getTriangleParameterDefinitions():
 
 def getUnshapedParameterDefinitions():
     """Return parameters for UnshapedComponent."""
-
     pDefs = parameters.ParameterDefinitionCollection()
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:
         pb.defParam("op", units="cm", description="Outer pitch")
@@ -266,7 +256,6 @@ def getUnshapedParameterDefinitions():
 
 def getRadialSegmentParameterDefinitions():
     """Return parameters for RadialSegment."""
-
     pDefs = parameters.ParameterDefinitionCollection()
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:
         pb.defParam("inner_theta", units="?", description="?")
@@ -292,7 +281,6 @@ def getRadialSegmentParameterDefinitions():
 
 def getTorusParameterDefinitions():
     """Return parameters for Torus."""
-
     pDefs = parameters.ParameterDefinitionCollection()
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:
         pb.defParam("inner_theta", units="?", description="?")
