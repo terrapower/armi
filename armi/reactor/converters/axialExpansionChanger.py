@@ -390,7 +390,7 @@ class AssemblyAxialLinkage:
         """Gets the block and component based linkage."""
         for b in self.a:
             self._getLinkedBlocks(b)
-            for c in b:
+            for c in getSolidComponents(b):
                 self._getLinkedComponents(b, c)
 
     def _getLinkedBlocks(self, b):
@@ -467,16 +467,14 @@ class AssemblyAxialLinkage:
         lstLinkedC = [None, None]
         for ib, linkdBlk in enumerate(self.linkedBlocks[b]):
             if linkdBlk is not None:
-                for otherC in linkdBlk.getChildren():
+                for otherC in getSolidComponents(linkdBlk.getChildren()):
                     if _determineLinked(c, otherC):
                         if lstLinkedC[ib] is not None:
                             errMsg = (
-                                "Multiple component axial linkages have been found for "
-                                "Component {0}; Block {1}; Assembly {2}."
-                                " This is indicative of an error in the blueprints! Linked components found are"
-                                "{3} and {4}".format(
-                                    c, b, b.parent, lstLinkedC[ib], otherC
-                                )
+                                f"Multiple component axial linkages have been found for "
+                                f"Component {c}; Block {b}; Assembly {b.parent}."
+                                f" This is indicative of an error in the blueprints! Linked components found are"
+                                f"{lstLinkedC[ib]} and {otherC}"
                             )
                             runLog.error(msg=errMsg)
                             raise RuntimeError(errMsg)
@@ -486,24 +484,12 @@ class AssemblyAxialLinkage:
 
         if lstLinkedC[0] is None:
             runLog.debug(
-                "Assembly {0:22s} at location {1:22s}, Block {2:22s}, Component {3:22s} "
-                "has nothing linked below it!".format(
-                    str(self.a.getName()),
-                    str(self.a.getLocation()),
-                    str(b.p.flags),
-                    str(c.p.flags),
-                ),
+                f"Assembly {self.a}, Block {b}, Component {c} has nothing linked below it!",
                 single=True,
             )
         if lstLinkedC[1] is None:
             runLog.debug(
-                "Assembly {0:22s} at location {1:22s}, Block {2:22s}, Component {3:22s} "
-                "has nothing linked above it!".format(
-                    str(self.a.getName()),
-                    str(self.a.getLocation()),
-                    str(b.p.flags),
-                    str(c.p.flags),
-                ),
+                f"Assembly {self.a}, Block {b}, Component {c} has nothing linked above it!",
                 single=True,
             )
 

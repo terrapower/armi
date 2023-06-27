@@ -855,7 +855,7 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
                             matDens = cExp.material.density(Tc=cExp.temperatureInC)
                             compDens = cExp.density()
                             msg = (
-                                f"{cExp} {cExp.material} in {bExp} was not at correct density. \n"
+                                f"{cExp} {cExp.material} in {bExp} in {aExp} was not at correct density. \n"
                                 + f"expansion = {bExp.p.height / bStd.p.height} \n"
                                 + f"density = {matDens}, component density = {compDens} \n"
                             )
