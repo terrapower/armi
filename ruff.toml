@@ -32,7 +32,7 @@ select = ["E", "F", "D", "SIM", "TID"]
 # D205 - 1 blank line required between summary line and description
 # E501 - line length, because we use Black for that
 # E731 - we can use lambdas however we want
-# N - PEP8 naming conventions (we use snake_case; too late to change)
+# N - PEP8 naming conventions (we use camelCase; too late to change)
 # RUF100 - no unused noqa statements (not consistent enough yet)
 # SIM118 - this does not work where we overload the .keys() method
 #
