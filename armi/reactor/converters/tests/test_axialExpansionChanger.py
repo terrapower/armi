@@ -238,7 +238,7 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
         AxialExpansionTestBase.tearDown(self)
 
     def expandAssemForMassConservationTest(self):
-        """do the thermal expansion and store conservation metrics of interest."""
+        """Do the thermal expansion and store conservation metrics of interest."""
         # create a semi-realistic/physical variable temperature grid over the assembly
         temp = Temperature(self.a.getTotalHeight(), numTempGridPts=11, tempSteps=10)
         for idt in range(temp.tempSteps):
@@ -341,7 +341,7 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
 
     @staticmethod
     def _getMass(a):
-        """get the mass of an assembly. The conservation of HT9 pins in shield assems
+        """Get the mass of an assembly. The conservation of HT9 pins in shield assems
         are accounted for in FE56 conservation checks.
         """
         newMass = None

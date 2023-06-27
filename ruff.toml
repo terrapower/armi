@@ -18,7 +18,6 @@ select = ["E", "F", "D", "SIM", "TID"]
 # D103 - Missing docstring in public function
 # D106 - Missing docstring in public nested class
 # D401 - First line of docstring should be in imperative mood
-# D403 - First word of the first line should be capitalized
 # D404 - First word of the docstring should not be "This"
 
 # Temporarily ignore ruff rules: TBD if we want to support them
@@ -44,7 +43,7 @@ select = ["E", "F", "D", "SIM", "TID"]
 # N999 - lowercase variable naming, we use camel case
 # RUF100 - no unused noqa statements (not consistent enough yet)
 # SIM118 - this does not work where we overload the .keys() method
-ignore = ["D100", "D101", "D102", "D103", "D105", "D106", "D205", "D401", "D403", "D404", "E501", "E731", "N802", "N803", "N806", "N815", "N816", "N999", "RUF100", "SIM101", "SIM102", "SIM105", "SIM108", "SIM110", "SIM114", "SIM115", "SIM117", "SIM118"]
+ignore = ["D100", "D101", "D102", "D103", "D105", "D106", "D205", "D401", "D404", "E501", "E731", "N802", "N803", "N806", "N815", "N816", "N999", "RUF100", "SIM101", "SIM102", "SIM105", "SIM108", "SIM110", "SIM114", "SIM115", "SIM117", "SIM118"]
 
 # Exclude a variety of commonly ignored directories.
 exclude = [

@@ -182,7 +182,7 @@ class AbstractIsotopicDepletionReader(interfaces.OutputReader):
     r"""Read number density output produced by the isotopic depletion."""
 
     def read(self):
-        r"""read a isotopic depletion Output File and applies results to armi objects in the ``ToDepletion`` attribute."""
+        r"""Read a isotopic depletion Output File and applies results to armi objects in the ``ToDepletion`` attribute."""
         raise NotImplementedError
 
 
@@ -212,5 +212,5 @@ class Csrc:
         return self._chemicalVector
 
     def write(self):
-        """return a list of lines to write for a csrc card."""
+        """Return a list of lines to write for a csrc card."""
         raise NotImplementedError

@@ -2158,7 +2158,7 @@ class Core(composites.Composite):
         return converter
 
     def setPitchUniform(self, pitchInCm):
-        """set the pitch in all blocks."""
+        """Set the pitch in all blocks."""
         for b in self.getBlocks():
             b.setPitch(pitchInCm)
 
