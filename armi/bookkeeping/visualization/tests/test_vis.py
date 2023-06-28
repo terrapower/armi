@@ -62,9 +62,7 @@ class TestVtkMesh(unittest.TestCase):
 
 
 class TestVisDump(unittest.TestCase):
-    """
-    Test dumping a whole reactor and some specific block types.
-    """
+    """Test dumping a whole reactor and some specific block types."""
 
     @classmethod
     def setUpClass(cls):

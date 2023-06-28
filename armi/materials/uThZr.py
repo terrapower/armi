@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Uranium Thorium Zirconium alloy metal.
-"""
+"""Uranium Thorium Zirconium alloy metal."""
 from armi.utils.units import getTk
 from armi.materials.material import FuelMaterial
 from armi import runLog

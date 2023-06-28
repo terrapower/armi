@@ -113,7 +113,6 @@ ORDER = interfaces.STACK_ORDER.AFTER + interfaces.STACK_ORDER.PREPROCESSING
 
 def describeInterfaces(_cs):
     """Function for exposing interface(s) to other code."""
-
     return (FissionProductModel, {})
 
 
@@ -132,13 +131,10 @@ class FissionProductModel(interfaces.Interface):
 
     @property
     def _useGlobalLFPs(self):
-        if (
+        return not (
             self.cs[CONF_MAKE_ALL_BLOCK_LFPS_INDEPENDENT]
             or self._explicitFissionProducts
-        ):
-            return False
-        else:
-            return True
+        )
 
     @property
     def _fissionProductBlockType(self):
@@ -231,7 +227,6 @@ class FissionProductModel(interfaces.Interface):
         --------
         armi.reactor.blocks.Block.getLumpedFissionProductCollection : same thing, but block-level compatible. Use this
         """
-
         self._globalLFPs = lfps
 
     def interactBOC(self, cycle=None):

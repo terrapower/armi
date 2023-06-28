@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Inconel X750.
-"""
+"""Inconel X750."""
 import numpy
 
 from armi.utils.units import getTc

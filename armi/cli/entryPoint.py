@@ -171,9 +171,7 @@ class EntryPoint:
         runLog.setVerbosity(self.cs["verbosity"])
 
     def parse(self, args):
-        """
-        Parse the command line arguments, with the command specific arguments.
-        """
+        """Parse the command line arguments, with the command specific arguments."""
         self.addOptions()
         self.parse_args(args)
 
@@ -202,7 +200,7 @@ class EntryPoint:
         This will override whatever is in the settings file.
 
         Parameters
-        ---------
+        ----------
         settingName : str
             the setting name
 

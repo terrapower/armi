@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Entry point into ARMI to check inputs of a case or a whole folder of cases.
-"""
+"""Entry point into ARMI to check inputs of a case or a whole folder of cases."""
 
 import pathlib
 import sys

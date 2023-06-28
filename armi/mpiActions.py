@@ -126,15 +126,12 @@ class MpiAction:
         r : :py:class:`armi.operators.Reactor`
             If a reactor is not necessary, supply :code:`None`.
         """
-
         instance = cls()
         instance.broadcast()
         return instance.invoke(o, r, cs)
 
     def _mpiOperationHelper(self, obj, mpiFunction):
-        """
-        Strips off the operator, reactor, cs from the mpiAction before.
-        """
+        """Strips off the operator, reactor, cs from the mpiAction before."""
         if obj is None or obj is self:
             # prevent sending o, r, and cs, they should be handled appropriately by the other nodes
             # reattach with finally
@@ -271,7 +268,7 @@ class MpiAction:
         """
         ntasks = len(objectsForAllCoresToIter)
         numLocalObjects, deficit = divmod(ntasks, context.MPI_SIZE)
-        if context.MPI_RANK < deficit:
+        if deficit > context.MPI_RANK:
             numLocalObjects += 1
             first = context.MPI_RANK * numLocalObjects
         else:
@@ -456,7 +453,7 @@ class DistributionAction(MpiAction):
         Overrides invokeHook to distribute work amongst available resources as requested.
 
         Notes
-        =====
+        -----
         Two things about this method make it non-recursive
         """
         canDistribute = context.MPI_DISTRIBUTABLE

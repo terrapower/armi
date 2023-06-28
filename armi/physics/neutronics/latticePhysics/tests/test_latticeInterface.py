@@ -140,9 +140,7 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
         self.assertTrue(self.latticeInterface.testVerification)
 
     def test_interactEveryNode(self):
-        """
-        Test interactEveryNode() with different update frequencies.
-        """
+        """Test interactEveryNode() with different update frequencies."""
         self.latticeInterface._latticePhysicsFrequency = LatticePhysicsFrequency.BOC
         self.latticeInterface.interactEveryNode()
         self.assertEqual(self.o.r.core.lib, "Nonsense")
@@ -153,9 +151,7 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
         self.assertIsNone(self.o.r.core.lib)
 
     def test_interactEveryNodeFirstCoupled(self):
-        """
-        Test interactEveryNode() with LatticePhysicsFrequency.firstCoupledIteration.
-        """
+        """Test interactEveryNode() with LatticePhysicsFrequency.firstCoupledIteration."""
         self.latticeInterface._latticePhysicsFrequency = (
             LatticePhysicsFrequency.firstCoupledIteration
         )
@@ -163,17 +159,13 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
         self.assertIsNone(self.o.r.core.lib)
 
     def test_interactEveryNodeAll(self):
-        """
-        Test interactEveryNode() with LatticePhysicsFrequency.all.
-        """
+        """Test interactEveryNode() with LatticePhysicsFrequency.all."""
         self.latticeInterface._latticePhysicsFrequency = LatticePhysicsFrequency.all
         self.latticeInterface.interactEveryNode()
         self.assertIsNone(self.o.r.core.lib)
 
     def test_interactFirstCoupledIteration(self):
-        """
-        Test interactCoupled() with different update frequencies on first iteration.
-        """
+        """Test interactCoupled() with different update frequencies on first iteration."""
         self.latticeInterface._latticePhysicsFrequency = (
             LatticePhysicsFrequency.everyNode
         )
@@ -186,9 +178,7 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
         self.assertIsNone(self.o.r.core.lib)
 
     def test_interactAll(self):
-        """
-        Test interactCoupled() with different update frequencies on non-first iteration.
-        """
+        """Test interactCoupled() with different update frequencies on non-first iteration."""
         self.latticeInterface._latticePhysicsFrequency = (
             LatticePhysicsFrequency.firstCoupledIteration
         )

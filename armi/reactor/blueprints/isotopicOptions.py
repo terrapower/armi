@@ -136,9 +136,7 @@ class NuclideFlag(yamlize.Object):
 
 
 class NuclideFlags(yamlize.KeyedList):
-    """
-    An OrderedDict of ``NuclideFlags``, keyed by their ``nuclideName``.
-    """
+    """An OrderedDict of ``NuclideFlags``, keyed by their ``nuclideName``."""
 
     item_type = NuclideFlag
     key_attr = NuclideFlag.nuclideName
@@ -372,9 +370,7 @@ class CustomIsotopic(yamlize.Map):
 
 
 class CustomIsotopics(yamlize.KeyedList):
-    """
-    OrderedDict of CustomIsotopic objects, keyed by their name.
-    """
+    """OrderedDict of CustomIsotopic objects, keyed by their name."""
 
     item_type = CustomIsotopic
 

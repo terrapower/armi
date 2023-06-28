@@ -24,9 +24,7 @@ SIMPLE_RTFLUX = os.path.join(THIS_DIR, "fixtures", "simple_cartesian.rtflux")
 
 
 class Testrtflux(unittest.TestCase):
-    r"""
-    Tests the rtflux class.
-    """
+    r"""Tests the rtflux class."""
 
     def test_readrtflux(self):
         """Ensure we can read a rtflux file."""

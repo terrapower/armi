@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-This module contains methods for adding properties with custom behaviors to classes.
-"""
+"""This module contains methods for adding properties with custom behaviors to classes."""
 
 import numpy
 
@@ -29,9 +27,7 @@ def areEqual(val1, val2, relativeTolerance=0.0):
 
 
 def numpyHackForEqual(val1, val2):
-    r"""
-    checks lots of types for equality like strings and dicts.
-    """
+    r"""checks lots of types for equality like strings and dicts."""
     # when doing this with numpy arrays you get an array of booleans which causes the value error
     notEqual = val1 != val2
 

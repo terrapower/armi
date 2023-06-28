@@ -128,7 +128,7 @@ class Assembly(composites.Composite):
         same grid. It may be beneficial in the future to maintain the more strict behavior
         of ArmiObject's ``__lt__`` implementation once the SFP situation is cleared up.
 
-        See also
+        See Also
         --------
         armi.reactor.composites.ArmiObject.__lt__
         """
@@ -220,9 +220,7 @@ class Assembly(composites.Composite):
         )
 
     def coords(self):
-        """
-        Return the location of the assembly in the plane using cartesian global coordinates.
-        """
+        """Return the location of the assembly in the plane using cartesian global coordinates."""
         x, y, _z = self.spatialLocator.getGlobalCoordinates()
         return (x, y)
 
@@ -315,9 +313,7 @@ class Assembly(composites.Composite):
         self.reestablishBlockOrder()
 
     def adjustResolution(self, refA):
-        """
-        Split the blocks in this assembly to have the same mesh structure as refA.
-        """
+        """Split the blocks in this assembly to have the same mesh structure as refA."""
         newBlockStack = []
 
         newBlocks = 0  # number of new blocks we've added so far.
@@ -643,7 +639,6 @@ class Assembly(composites.Composite):
         armi.assemblies.Assembly.setBlockMesh
 
         """
-
         if b.hasFlags(Flags.FUEL):
             # fuel block
             conserveMass = True
@@ -812,7 +807,6 @@ class Assembly(composites.Composite):
         for block, bottomZ in a.getBlocksAndZ(returnBottomZ=True):
             print({0}'s bottom mesh point is {1}'.format(block, bottomZ))
         """
-
         if returnBottomZ and returnTopZ:
             raise ValueError("Both returnTopZ and returnBottomZ are set to `True`")
 
@@ -903,7 +897,6 @@ class Assembly(composites.Composite):
             The axial index (beginning with 0) of the ARMI block containing the
             DIF3D node corresponding to zIndex.
         """
-
         zIndexTot = -1
         for bIndex, b in enumerate(self):
             zIndexTot += b.p.axMesh
@@ -1180,7 +1173,6 @@ class Assembly(composites.Composite):
 
         Example: getDim(Flags.WIRE, 'od') will return a wire's OD in cm.
         """
-
         # prefer fuel blocks.
         bList = self.getBlocks(Flags.FUEL)
         if not bList:
@@ -1286,7 +1278,8 @@ class ThRZAssembly(RZAssembly):
     Notes
     -----
     This is a subclass of RZAssemblies, which is its a subclass of the Generics Assembly
-    Object"""
+    Object
+    """
 
     def __init__(self, assemType, assemNum=None):
         RZAssembly.__init__(self, assemType, assemNum)

@@ -12,12 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-
-"""
-import re
-import copy
+"""Data formats for reports."""
 import collections
+import copy
+import re
 
 from armi import runLog
 from armi.bookkeeping.report import html

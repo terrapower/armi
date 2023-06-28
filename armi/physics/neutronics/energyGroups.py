@@ -11,9 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-Energy group structures for multigroup neutronics calculations.
-"""
+"""Energy group structures for multigroup neutronics calculations."""
 
 import copy
 import itertools
@@ -85,9 +83,7 @@ def getGroupStructure(name):
 
 
 def getGroupStructureType(neutronEnergyBoundsInEv):
-    """
-    Return neutron energy group structure name for a given set of neutron energy group bounds in eV.
-    """
+    """Return neutron energy group structure name for a given set of neutron energy group bounds in eV."""
     neutronEnergyBoundsInEv = numpy.array(neutronEnergyBoundsInEv)
     for groupStructureType in GROUP_STRUCTURE:
         refNeutronEnergyBoundsInEv = numpy.array(getGroupStructure(groupStructureType))

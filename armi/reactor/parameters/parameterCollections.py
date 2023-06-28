@@ -284,7 +284,6 @@ class ParameterCollection(metaclass=_ParameterCollectionType):
         ArmiObject to which it may belong. In this case, serialNum needs to be
         incremented so that the objects are unique. serialNum is special.
         """
-
         # Grabbing state first and passing it into __init__() as a performance
         # optimization. This avoids the extra work in __init__() of defaulting all of
         # the parameters, only to set them in __setstate__(). Instead we pass them in,

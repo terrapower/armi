@@ -190,9 +190,7 @@ def _toString(cls, typeSpec):
 
 
 class Flags(Flag):
-    """
-    Defines the valid flags used in the framework.
-    """
+    """Defines the valid flags used in the framework."""
 
     # basic classifiers
     PRIMARY = auto()

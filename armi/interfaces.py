@@ -249,9 +249,7 @@ class Interface:
 
     @classmethod
     def getInputFiles(cls, cs):
-        """
-        Return a MergeableDict containing files that should be considered "input".
-        """
+        """Return a MergeableDict containing files that should be considered "input"."""
         return utils.MergeableDict()
 
     name: Union[str, None] = None
@@ -602,7 +600,7 @@ class Interface:
         This existed before the advent of ARMI plugins. Perhaps it can be better served
         as a plugin hook. Potential future work.
 
-        See also
+        See Also
         --------
         armi.cases.Case.clone() : Main user of this interface.
 

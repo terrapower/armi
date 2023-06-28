@@ -221,9 +221,7 @@ class Material:
     def getThermalExpansionDensityReduction(
         self, prevTempInC: float, newTempInC: float
     ) -> float:
-        """
-        Return the factor required to update thermal expansion going from temperatureInC to temperatureInCNew.
-        """
+        """Return the factor required to update thermal expansion going from temperatureInC to temperatureInCNew."""
         dLL = self.linearExpansionFactor(Tc=newTempInC, T0=prevTempInC)
         return 1.0 / (1 + dLL) ** 2
 
@@ -666,9 +664,7 @@ class Fluid(Material):
     name = "Fluid"
 
     def getThermalExpansionDensityReduction(self, prevTempInC, newTempInC):
-        """
-        Return the factor required to update thermal expansion going from temperatureInC to temperatureInCNew.
-        """
+        """Return the factor required to update thermal expansion going from temperatureInC to temperatureInCNew."""
         rho0 = self.pseudoDensity(Tc=prevTempInC)
         if not rho0:
             return 1.0
@@ -677,7 +673,8 @@ class Fluid(Material):
 
     def linearExpansion(self, Tk=None, Tc=None):
         """For void, lets just not allow temperature changes to change dimensions
-        since it is a liquid it will fill its space."""
+        since it is a liquid it will fill its space.
+        """
         return 0.0
 
     def getTempChangeForDensityChange(

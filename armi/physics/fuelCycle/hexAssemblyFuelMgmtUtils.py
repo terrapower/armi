@@ -192,7 +192,7 @@ def buildRingSchedule(
         A list of integers corresponding to the ringSchedule determining the widths of each ring area
 
     Examples
-    -------
+    --------
     >>> f.buildRingSchedule(17,1,jumpRingFrom=14)
     ([13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 14, 15, 16, 17],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])

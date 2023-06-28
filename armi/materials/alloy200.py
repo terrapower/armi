@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Alloy-200 are wrought commercially pure nickel.
-"""
+"""Alloy-200 are wrought commercially pure nickel."""
 from numpy import interp
 
 from armi.materials.material import Material

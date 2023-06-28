@@ -496,7 +496,6 @@ class MacroscopicCrossSectionCreator:
             The block attribute containing the desired microscopic XS for this block:
             either "micros" for neutron XS or "gammaXS" for gamma XS.
         """
-
         if not self.buildScatterMatrix:
             return
 

@@ -96,9 +96,7 @@ class PwdintStream(cccc.StreamWithDataContainer):
             self._metadata["mult"] = record.rwInt(self._metadata["mult"])
 
     def _rw1DRecord(self):
-        """
-        Read/write File specifications on 1D record.
-        """
+        """Read/write File specifications on 1D record."""
         with self.createRecord() as record:
             self._metadata.update(
                 record.rwImplicitlyTypedMap(FILE_SPEC_1D_KEYS, self._metadata)

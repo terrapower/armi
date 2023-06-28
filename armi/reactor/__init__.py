@@ -44,9 +44,7 @@ if TYPE_CHECKING:  # pragma: no cover
 
 
 class ReactorPlugin(plugins.ArmiPlugin):
-    """
-    Plugin exposing built-in reactor components, blocks, assemblies, etc.
-    """
+    """Plugin exposing built-in reactor components, blocks, assemblies, etc."""
 
     @staticmethod
     @plugins.HOOKIMPL

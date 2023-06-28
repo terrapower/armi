@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Module of utilities to help dealing with iterable objects in Python.
-"""
+"""Module of utilities to help dealing with iterable objects in Python."""
 from itertools import tee, chain
 import struct
 

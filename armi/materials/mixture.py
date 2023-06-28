@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Homogenized mixture material.
-"""
+"""Homogenized mixture material."""
 
 from armi import materials
 

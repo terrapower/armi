@@ -375,9 +375,7 @@ class NhfluxStream(cccc.StreamWithDataContainer):
             self._metadata["label"] = record.rwString(self._metadata["label"], 28)
 
     def _rwBasicFileData1D(self):
-        """
-        Read basic data parameters (number of energy groups, assemblies, axial nodes, etc.).
-        """
+        """Read basic data parameters (number of energy groups, assemblies, axial nodes, etc.)."""
         # Dummy values are stored because sometimes they get assigned
         # unexpected values anyway, and so we still want to preserve those values anyway
         if self._metadata["variantFlag"]:
@@ -625,7 +623,6 @@ class NhfluxStream(cccc.StreamWithDataContainer):
         Real fluxes stored in NHFLUX have "normal" (or "forward") energy groups.
         Also see the subclass method NAFLUX.getEnergyGroupIndex().
         """
-
         return g
 
 
@@ -637,9 +634,7 @@ class NafluxStream(NhfluxStream):
     """
 
     def _getEnergyGroupIndex(self, g):
-        r"""
-        Adjoint fluxes stored in NAFLUX have "reversed" (or "backward") energy groups.
-        """
+        r"""Adjoint fluxes stored in NAFLUX have "reversed" (or "backward") energy groups."""
         ng = self._metadata["ngroup"]
         return ng - g - 1
 

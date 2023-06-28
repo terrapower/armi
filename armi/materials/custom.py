@@ -25,9 +25,7 @@ from armi.materials.material import Material
 
 
 class Custom(Material):
-    """
-    Custom Materials have user input properties.
-    """
+    """Custom Materials have user input properties."""
 
     name = "Custom"
     enrichedNuclide = "U235"

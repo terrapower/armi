@@ -127,9 +127,7 @@ class LocationBase:
         )
 
     def __getstate__(self):
-        """
-        Used in pickling and deepcopy, this detaches the grid.
-        """
+        """Used in pickling and deepcopy, this detaches the grid."""
         return (self._i, self._j, self._k, None)
 
     def __setstate__(self, state):
@@ -420,9 +418,7 @@ class MultiIndexLocation(IndexLocation):
         self._locations = []
 
     def __getstate__(self):
-        """
-        Used in pickling and deepcopy, this detaches the grid.
-        """
+        """Used in pickling and deepcopy, this detaches the grid."""
         return self._locations
 
     def __setstate__(self, state):
@@ -792,7 +788,6 @@ class Grid:
 
         Parameters
         ----------
-
         ijk : tuple of indices or list of the same
             If provided a tuple, an IndexLocation will be created (if necessary) and
             returned. If provided a list, each element will create a new IndexLocation
@@ -802,7 +797,6 @@ class Grid:
 
         Notes
         -----
-
         The method is defaultdict-like, in that it will create a new location on the fly. However,
         the class itself is not really a dictionary, it is just index-able. For example, there is no
         desire to have a ``__setitem__`` method, because the only way to create a location is by
@@ -996,9 +990,7 @@ class Grid:
     ) -> Tuple[
         Optional[Sequence[float]], Optional[Sequence[float]], Optional[Sequence[float]]
     ]:
-        """
-        Return the grid bounds for each dimension, if present.
-        """
+        """Return the grid bounds for each dimension, if present."""
         return self._bounds
 
     def getLocatorFromRingAndPos(self, ring, pos, k=0):
@@ -1051,9 +1043,7 @@ class Grid:
         raise NotImplementedError("Base grid does not know about rings")
 
     def getPositionsInRing(self, ring: int) -> int:
-        """
-        Return the number of positions within a ring.
-        """
+        """Return the number of positions within a ring."""
         raise NotImplementedError("Base grid does not know about rings")
 
     def getRingPos(self, indices) -> Tuple[int, int]:
@@ -1064,7 +1054,6 @@ class Grid:
 
         A tuple is returned so that it is easy to compare pairs of indices.
         """
-
         # Regular grids dont really know about ring and position. We can try to see if
         # their parent does!
         if (
@@ -1503,9 +1492,7 @@ class HexGrid(Grid):
         return hexagon.numRingsToHoldNumCells(n)
 
     def getPositionsInRing(self, ring):
-        """
-        Return the number of positions within a ring.
-        """
+        """Return the number of positions within a ring."""
         return hexagon.numPositionsInRing(ring)
 
     def getNeighboringCellIndices(self, i, j=0, k=0):

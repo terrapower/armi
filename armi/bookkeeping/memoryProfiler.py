@@ -31,8 +31,8 @@ NOTE: Psutil and sys.getsizeof will certainly report slightly different results.
 NOTE: In Windows, it seems that even if your garbage is collected, Windows does not de-allocate all the memory.
 So if you are a worker and you just got a 2GB reactor but then deleted it, Windows will keep you at 2GB for a while.
 
-See Also:
-
+See Also
+--------
 https://pythonhosted.org/psutil/
 https://docs.python.org/3/library/gc.html#gc.garbage
 """

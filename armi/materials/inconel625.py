@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Inconel625.
-"""
+"""Inconel625."""
 import numpy
 
 from armi.materials.material import Material

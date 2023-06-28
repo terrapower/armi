@@ -678,9 +678,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
             self.assertIn("top elevation of stationary", mock.getStdout())
 
     def test_dischargeSwap(self):
-        """
-        Test the dischargeSwap method.
-        """
+        """Test the dischargeSwap method."""
         # grab stationary block flags
         sBFList = self.r.core.stationaryBlockFlagsList
 

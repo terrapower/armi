@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Entry point into ARMI to migrate inputs to the latest version of ARMI.
-"""
+"""Entry point into ARMI to migrate inputs to the latest version of ARMI."""
 
 import os
 
@@ -43,9 +41,7 @@ class MigrateInputs(EntryPoint):
         )
 
     def invoke(self):
-        """
-        Run the entry point.
-        """
+        """Run the entry point."""
         if self.args.settings_path:
             path, _fname = os.path.split(self.args.settings_path)
             with directoryChangers.DirectoryChanger(path, dumpOnException=False):

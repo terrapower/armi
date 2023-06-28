@@ -137,9 +137,7 @@ class HexHoledCircle(basicShapes.Circle):
         return area
 
     def getCircleInnerDiameter(self, Tc=None, cold=False):
-        """
-        Returns the diameter of the hole equal to the hexagon outer pitch.
-        """
+        """Returns the diameter of the hole equal to the hexagon outer pitch."""
         return self.getDimension("holeOP", Tc, cold)
 
 
@@ -196,9 +194,7 @@ class HoledRectangle(basicShapes.Rectangle):
         return area
 
     def getCircleInnerDiameter(self, Tc=None, cold=False):
-        """
-        Returns the ``holeOD``.
-        """
+        """Returns the ``holeOD``."""
         return self.getDimension("holeOD", Tc, cold)
 
 
@@ -248,9 +244,7 @@ class HoledSquare(basicShapes.Square):
         return area
 
     def getCircleInnerDiameter(self, Tc=None, cold=False):
-        """
-        Returns the ``holeOD``.
-        """
+        """Returns the ``holeOD``."""
         return self.getDimension("holeOD", Tc, cold)
 
 

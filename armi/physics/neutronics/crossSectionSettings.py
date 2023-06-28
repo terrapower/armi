@@ -226,7 +226,6 @@ class XSSettings(dict):
 
         Notes
         -----
-
         1. If ``AA`` and ``AB`` exist, but ``AC`` is created, then the intended behavior
            is that ``AC`` settings will be set to the settings in ``AA``.
 
@@ -630,7 +629,7 @@ class XSModelingOptions:
                 crossSectionGroupManager.AVERAGE_BLOCK_COLLECTION,
                 crossSectionGroupManager.FLUX_WEIGHTED_AVERAGE_BLOCK_COLLECTION,
             ]
-            bucklingSearch = False if self.fluxIsPregenerated else True
+            bucklingSearch = not self.fluxIsPregenerated
             defaults = {
                 CONF_GEOM: self.geometry,
                 CONF_BUCKLING: bucklingSearch,

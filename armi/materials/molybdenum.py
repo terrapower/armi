@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Molybdenum.
-"""
+"""Molybdenum."""
 
 from armi.materials.material import SimpleSolid
 

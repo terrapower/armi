@@ -86,9 +86,7 @@ class DatabaseInterface(interfaces.Interface):
 
     @property
     def database(self):
-        """
-        Presents the internal database object, if it exists.
-        """
+        """Presents the internal database object, if it exists."""
         if self._db is not None:
             return self._db
         else:

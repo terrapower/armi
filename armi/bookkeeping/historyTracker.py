@@ -140,9 +140,7 @@ class HistoryTrackerInterface(interfaces.Interface):
         self._writeDetailAssemblyHistories()
 
     def addDetailAssembliesBOL(self):
-        """
-        Find and activate assemblies that the user requested detailed treatment of.
-        """
+        """Find and activate assemblies that the user requested detailed treatment of."""
         if self.cs["detailAssemLocationsBOL"]:
             for locLabel in self.cs["detailAssemLocationsBOL"]:
                 ring, pos, _axial = grids.locatorLabelToIndices(locLabel)
@@ -193,9 +191,7 @@ class HistoryTrackerInterface(interfaces.Interface):
                 self.addDetailAssembly(a)
 
     def _writeDetailAssemblyHistories(self):
-        """
-        Write data file with assembly histories.
-        """
+        """Write data file with assembly histories."""
         for a in self.getDetailAssemblies():
             self.writeAssemHistory(a)
 

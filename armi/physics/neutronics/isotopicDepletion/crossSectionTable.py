@@ -115,9 +115,7 @@ class CrossSectionTable(collections.OrderedDict):
         self.add(nucName, **oneGroupXSbyName)
 
     def hasValues(self):
-        """
-        determines if there are non-zero values in this cross section table.
-        """
+        """determines if there are non-zero values in this cross section table."""
         for nuclideCrossSectionSet in self.values():
             if any(nuclideCrossSectionSet.values()):
                 return True
@@ -180,7 +178,6 @@ def makeReactionRateTable(obj, nuclides: List = None):
     --------
     armi.physics.neutronics.isotopicDepletion.isotopicDepletionInterface.CrossSectionTable
     """
-
     if nuclides is None:
         nuclides = obj.getNuclides()
 

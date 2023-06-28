@@ -235,7 +235,7 @@ def cleanPath(path, mpiRank=0):
         )
 
     # delete the file/directory from only one process
-    if context.MPI_RANK == mpiRank:
+    if mpiRank == context.MPI_RANK:
         if os.path.exists(path) and os.path.isdir(path):
             shutil.rmtree(path)
         elif not os.path.isdir(path):
@@ -252,7 +252,4 @@ def cleanPath(path, mpiRank=0):
             break
         sleep(waitTime)
 
-    if os.path.exists(path):
-        return False
-    else:
-        return True
+    return not os.path.exists(path)

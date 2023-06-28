@@ -12,15 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Magnesium Oxide.
-"""
+"""Magnesium Oxide."""
 from armi.utils.units import getTc, getTk
 from armi.materials.material import Material
 
 
 class MgO(Material):
     r"""MagnesiumOxide."""
+
     name = "MgO"
     propertyValidTemperature = {
         "density": ((273, 1273), "K"),

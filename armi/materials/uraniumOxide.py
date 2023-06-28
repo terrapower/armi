@@ -131,9 +131,7 @@ class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
         material.FuelMaterial.applyInputParams(self, *args, **kwargs)
 
     def setDefaultMassFracs(self) -> None:
-        r"""
-        UO2 mass fractions. Using Natural Uranium without U234.
-        """
+        r"""UO2 mass fractions. Using Natural Uranium without U234."""
         u235 = nb.byName["U235"]
         u238 = nb.byName["U238"]
         oxygen = nb.byName["O"]
@@ -235,4 +233,5 @@ class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
 
 class UO2(UraniumOxide):
     r"""Another name for UraniumOxide."""
+
     pass

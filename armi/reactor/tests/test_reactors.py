@@ -960,10 +960,10 @@ class HexReactorTests(ReactorTests):
         self.assertEqual(originalHeights, heights)
 
     def test_applyThermalExpansion_CoreConstruct(self):
-        """Test that assemblies in core are correctly expanded.
+        r"""Test that assemblies in core are correctly expanded.
 
-        Notes:
-        ------
+        Notes
+        -----
         - all assertions skip the first block as it has no $\Delta T$ and does not expand
         """
         originalAssems = self.r.core.getAssemblies()
@@ -1011,11 +1011,11 @@ class HexReactorTests(ReactorTests):
                     self.assertAlmostEqual(p, coldHeightP)
 
     def test_updateBlockBOLHeights_DBLoad(self):
-        """Test that blueprints assemblies are expanded in DB load.
+        r"""Test that blueprints assemblies are expanded in DB load.
 
-        Notes:
-        ------
-        - all assertions skip the first block as it has no $\Delta T$ and does not expand
+        Notes
+        -----
+        All assertions skip the first block as it has no $\Delta T$ and does not expand.
         """
         originalAssems = sorted(a for a in self.r.blueprints.assemblies.values())
         nonEqualParameters = ["heightBOL", "molesHmBOL", "massHmBOL"]

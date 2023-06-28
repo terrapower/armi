@@ -405,7 +405,6 @@ class Zones:
         reverse : bool, optional
             Whether to sort in reverse order, by default False
         """
-
         self._zones = dict(sorted(self._zones.items(), reverse=reverse))
 
     def summary(self) -> None:

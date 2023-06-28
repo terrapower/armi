@@ -11,9 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-Slightly customized version of the stock pluggy ``PluginManager``.
-"""
+"""Slightly customized version of the stock pluggy ``PluginManager``."""
 
 import pluggy
 

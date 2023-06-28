@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Convert block geometry from one to another, etc.
-"""
+"""Convert block geometry from one to another, etc."""
 import copy
 import math
 
@@ -649,7 +647,6 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
         Also needs to add final coolant layer between the outer pins and the non-pins.
         Will crash if there are things that are not circles or hexes.
         """
-
         # fill in the last ring of coolant using the rest
         coolInnerDiam = self.convertedBlock[-1].getDimension("od")
         coolantOD = getOuterDiamFromIDAndArea(
