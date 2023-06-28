@@ -40,7 +40,7 @@ from armi.reactor import parameters
 from armi.utils import textProcessors
 
 
-class STACK_ORDER:
+class STACK_ORDER:  # noqa: invalid-class-name
     """
     Constants that help determine the order of modules in the interface stack.
 
