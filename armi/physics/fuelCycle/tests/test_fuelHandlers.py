@@ -58,9 +58,10 @@ class FuelHandlerTestHelper(ArmiTestHelper):
         cls.directoryChanger.close()
 
     def setUp(self):
-        r"""
-        Build a dummy reactor without using input files. There are some igniters and feeds
-        but none of these have any number densities.
+        """
+        Build a dummy reactor without using input files.
+
+        There are some igniters and feeds but none of these have any number densities.
         """
         self.o, self.r = test_reactors.loadTestReactor(
             self.directoryChanger.destination,
@@ -130,7 +131,7 @@ class FuelHandlerTestHelper(ArmiTestHelper):
 
 
 class MockLatticePhysicsInterface(LatticePhysicsInterface):
-    """a mock lattice physics interface that does nothing for interactBOC."""
+    """A mock lattice physics interface that does nothing for interactBOC."""
 
     name = "MockLatticePhysicsInterface"
 
@@ -142,7 +143,7 @@ class MockLatticePhysicsInterface(LatticePhysicsInterface):
 
 
 class MockXSGM(CrossSectionGroupManager):
-    """a mock cross section group manager that does nothing for interactBOC."""
+    """A mock cross section group manager that does nothing for interactBOC."""
 
     def interactBOC(self, cycle=None):
         pass
@@ -384,7 +385,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         fh.interactEOL()
 
     def test_repeatShuffles(self):
-        r"""
+        """
         Builds a dummy core. Does some shuffles. Repeats the shuffles. Checks that it was a perfect repeat.
 
         Checks some other things in the meantime
