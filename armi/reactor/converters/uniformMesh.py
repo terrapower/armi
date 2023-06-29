@@ -1317,7 +1317,7 @@ class ParamMapper:
             if val is None:
                 continue
 
-            if isinstance(val, list) or isinstance(val, numpy.ndarray):
+            if isinstance(val, (list, numpy.ndarray)):
                 ParamMapper._arrayParamSetter(block, [val], [paramName])
             else:
                 ParamMapper._scalarParamSetter(block, [val], [paramName])
@@ -1332,11 +1332,7 @@ class ParamMapper:
             # Array / list parameters can be have values that are `None`, lists, or numpy arrays. This first
             # checks if the value type is any of these and if so, the block-level parameter is treated as an
             # array.
-            if (
-                isinstance(None, valType)
-                or isinstance(valType, list)
-                or isinstance(valType, numpy.ndarray)
-            ):
+            if isinstance(valType, (list, numpy.ndarray)) or isinstance(None, valType):
                 if val is None or len(val) == 0:
                     paramVals.append(None)
                 else:

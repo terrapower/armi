@@ -649,10 +649,7 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         name = self.name.lower()
         if isinstance(s, list):
-            for n in s:
-                if n.lower() in name:
-                    return True
-            return False
+            return any(n.lower() in name for n in s)
         else:
             return s.lower() in name
 
@@ -1993,11 +1990,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
     def containsHeavyMetal(self):
         """True if this has HM."""
-        for nucName in self.getNuclides():
-            # these already have non-zero density
-            if nucDir.isHeavyMetal(nucName):
-                return True
-        return False
+        return any(nucDir.isHeavyMetal(nucName) for nucName in self.getNuclides())
 
     def getNuclides(self):
         """
@@ -2120,7 +2113,7 @@ class ArmiObject(metaclass=CompositeModelType):
         return mass
 
     def getFuelMass(self):
-        """returns mass of fuel in grams."""
+        """Returns mass of fuel in grams."""
         return sum((c.getFuelMass() for c in self))
 
     def constituentReport(self):
@@ -2419,11 +2412,7 @@ class ArmiObject(metaclass=CompositeModelType):
         except TypeError:
             typeSpec = (typeSpec,)
 
-        for t in typeSpec:
-            # loop b/c getComponents is a OR operation on the flags, but we need AND
-            if not self.getComponents(t, exact):
-                return False
-        return True
+        return all(self.getComponents(t, exact) for t in typeSpec)
 
     def getComponentByName(self, name):
         """

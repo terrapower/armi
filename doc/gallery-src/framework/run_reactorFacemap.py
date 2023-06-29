@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-Plot a reactor facemap
-======================
+Plot a reactor facemap.
 
 Load a test reactor from the test suite and plot a dummy
 power distribution from it. You can plot any block parameter.

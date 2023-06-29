@@ -1187,7 +1187,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         )
 
     def getFuelMass(self) -> float:
-        """Return the mass in grams if this is a fueled component"""
+        """Return the mass in grams if this is a fueled component."""
         return self.getMass() if self.hasFlags(flags.Flags.FUEL) else 0.0
 
 

@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-Computing Reaction Rates on a Block
-===================================
+Computing Reaction Rates on a Block.
 
 In this example, a set of 1-group reaction rates (in #/s) are evaluated
 for a dummy fuel block containing UZr fuel, HT9 structure, and
@@ -22,29 +21,25 @@ sodium coolant. A dummy multigroup flux is applied.
 This example also demonstrates how to build a reactor model from code alone
 rather than relying upon input files.
 """
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
 from armi import configure, nuclideBases, settings
-
-from armi.reactor.flags import Flags
-from armi.reactor import grids
-from armi.reactor import reactors
-from armi.reactor import blueprints
-from armi.reactor import geometry
-from armi.reactor import assemblies
-from armi.reactor import blocks
-
-from armi.nuclearDataIO.cccc import isotxs
-from armi.tests import ISOAA_PATH
-
-from armi.reactor.components import Hexagon
-from armi.reactor.components import Circle
-from armi.reactor.components import DerivedShape
-
-from armi.materials import uZr
 from armi.materials import ht9
 from armi.materials import sodium
+from armi.materials import uZr
+from armi.nuclearDataIO.cccc import isotxs
+from armi.reactor import assemblies
+from armi.reactor import blocks
+from armi.reactor import blueprints
+from armi.reactor import geometry
+from armi.reactor import grids
+from armi.reactor import reactors
+from armi.reactor.components import Circle
+from armi.reactor.components import DerivedShape
+from armi.reactor.components import Hexagon
+from armi.reactor.flags import Flags
+from armi.tests import ISOAA_PATH
 
 configure(permissive=True)
 

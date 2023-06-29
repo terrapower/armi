@@ -147,7 +147,7 @@ def buildComponents():
 
 
 def buildBlocks(components):
-    """Build block blueprints"""
+    """Build block blueprints."""
     blocks = blockBlueprint.BlockKeyedList()
     fuel = blockBlueprint.BlockBlueprint()
     fuel.name = "fuel"
@@ -165,7 +165,7 @@ def buildBlocks(components):
 
 
 def buildAssemblies(blockDesigns):
-    """Build assembly blueprints"""
+    """Build assembly blueprints."""
     fuelBock, reflectorBlock = blockDesigns["fuel"], blockDesigns["reflector"]
 
     assemblies = assemblyBlueprint.AssemblyKeyedList()
@@ -198,7 +198,7 @@ def buildAssemblies(blockDesigns):
 
 
 def buildGrids():
-    """Build the core map grid"""
+    """Build the core map grid."""
     coreGrid = gridBlueprint.GridBlueprint("core")
     coreGrid.geom = "hex"
     coreGrid.symmetry = "third periodic"
@@ -215,7 +215,7 @@ def buildGrids():
 
 
 def buildSystems():
-    """Build the core system"""
+    """Build the core system."""
     systems = reactorBlueprint.Systems()
     core = reactorBlueprint.SystemBlueprint("core", "core", gridBlueprint.Triplet())
     systems["core"] = core
