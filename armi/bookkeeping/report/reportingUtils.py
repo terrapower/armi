@@ -139,7 +139,7 @@ def writeWelcomeHeaders(o, cs):
         # bonus: grab the files stored in the crossSectionControl section
         for fluxSection, fluxData in cs["crossSectionControl"].items():
             if fluxData.xsFileLocation is not None:
-                label = f"crossSectionControl_{fluxSection}"
+                label = f"crossSectionControl-{fluxSection}"
                 fName = fluxData.xsFileLocation
                 if isinstance(fName, list):
                     fName = fName[0]

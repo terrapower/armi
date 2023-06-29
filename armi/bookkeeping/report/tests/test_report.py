@@ -156,7 +156,7 @@ class TestReport(unittest.TestCase):
             # assert our random file (and a lot of other stuff) is in the welcome
             self.assertIn("Case Info", mock.getStdout())
             self.assertIn("Input File Info", mock.getStdout())
-            self.assertIn("crossSectionControl_DA", mock.getStdout())
+            self.assertIn("crossSectionControl-DA", mock.getStdout())
             self.assertIn(randoFile, mock.getStdout())
 
 
