@@ -250,8 +250,8 @@ class TestNuclide(unittest.TestCase):
         for nb in nuclideBases.where(lambda nn: nn.z <= 89):
             self.assertFalse(nb.isHeavyMetal())
         for nb in nuclideBases.where(lambda nn: nn.z > 89):
-            if isinstance(nb, nuclideBases.DummyNuclideBase) or isinstance(
-                nb, nuclideBases.LumpNuclideBase
+            if isinstance(
+                nb, (nuclideBases.DummyNuclideBase, nuclideBases.LumpNuclideBase)
             ):
                 self.assertFalse(nb.isHeavyMetal())
             else:

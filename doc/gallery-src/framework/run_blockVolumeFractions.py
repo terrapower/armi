@@ -14,8 +14,7 @@
 
 # -*- coding: utf-8 -*-
 """
-Computing Component Volume Fractions on a Block with Automatic Thermal Expansion
-================================================================================
+Computing Component Volume Fractions on a Block with Automatic Thermal Expansion.
 
 Given an :py:mod:`Block <armi.reactor.blocks.Block>`, compute
 the component volume fractions. Assess the change in volume

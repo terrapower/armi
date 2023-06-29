@@ -197,7 +197,7 @@ class Dif3dStream(cccc.StreamWithDataContainer):
                     )
 
     def readWrite(self):
-        """Reads or writes metadata and data from 5 records"""
+        """Reads or writes metadata and data from 5 records."""
         msg = f"{'Reading' if 'r' in self._fileMode else 'Writing'} DIF3D binary data {self}"
         runLog.info(msg)
 

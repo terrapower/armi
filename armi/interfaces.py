@@ -40,7 +40,7 @@ from armi.reactor import parameters
 from armi.utils import textProcessors
 
 
-class STACK_ORDER:
+class STACK_ORDER:  # noqa: invalid-class-name
     """
     Constants that help determine the order of modules in the interface stack.
 
@@ -745,10 +745,7 @@ def getActiveInterfaceInfo(cs):
 
 def isInterfaceActive(klass, cs):
     """Return True if the Interface klass is active."""
-    for k, _kwargs in getActiveInterfaceInfo(cs):
-        if issubclass(k, klass):
-            return True
-    return False
+    return any(issubclass(k, klass) for k, _kwargs in getActiveInterfaceInfo(cs))
 
 
 class InterfaceInfo(NamedTuple):

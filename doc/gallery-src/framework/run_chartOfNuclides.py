@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-Plot a chart of the nuclides
-============================
+Plot a chart of the nuclides.
 
 Use the nuclide directory of ARMI to plot a chart of the nuclides
 coloring the squares with the natural abundance.

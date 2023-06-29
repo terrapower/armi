@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-Fuel management in a LWR
-========================
+Fuel management in a LWR.
 
 Demo of locating and swapping assemblies in a core with Cartesian geometry. Given a burnup
 distribution, this swaps high burnup assemblies with low ones.

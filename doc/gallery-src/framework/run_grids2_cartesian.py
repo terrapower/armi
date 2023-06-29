@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-Make a Cartesian grid
-=====================
+Make a Cartesian grid.
 
 This builds a Cartesian grid with squares 1 cm square, with the z-coordinates
 provided explicitly. It is also offset in 3D space to X, Y, Z = 10, 5, 5 cm.

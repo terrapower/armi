@@ -12,12 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-Plotting Multi-group XS from ISOTXS
-===================================
+Plotting Multi-group XS from ISOTXS.
 
 In this example, several cross sections are plotted from
 an existing binary cross section library file in :py:mod:`ISOTXS <armi.nuclearDataIO.isotxs>` format.
-
 """
 import matplotlib.pyplot as plt
 

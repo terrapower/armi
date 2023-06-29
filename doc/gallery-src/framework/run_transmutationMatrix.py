@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-Transmutation and decay reactions
-=================================
+Transmutation and decay reactions.
 
 This plots some of the transmutation and decay pathways for the actinides and some light
 nuclides using the burn chain definition that is included with ARMI. Note that many of
@@ -28,7 +27,6 @@ Users can input their own transmutation matrix or use this one.
 
 A Bateman equation/matrix exponential solver is required to actually *solve* transmutation and
 decay problems, which can be provided via a plugin.
-
 """
 import os
 import math

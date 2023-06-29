@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-Make a hex grid
-===============
+Make a hex grid.
 
 This uses a grid factory method to build an infinite 2-D grid of hexagons with pitch
 equal to 1.0 cm.

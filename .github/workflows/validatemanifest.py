@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-Validating the MANIFEST.in
+Validating the MANIFEST.in.
 
 Currently, the only validation we do of the MANIFEST.in file is to make sure
 that we are trying to include files that don't exist.
