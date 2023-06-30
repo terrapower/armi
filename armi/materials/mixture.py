@@ -35,5 +35,3 @@ class _Mixture(materials.Material):
     --------
     armi.reactor.blocks.HexBlock._createHomogenizedCopy
     """
-
-    name = "Mixture"

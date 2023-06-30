@@ -27,7 +27,6 @@ from armi.utils.units import getTk
 class LeadBismuth(material.Fluid):
     """Lead bismuth eutectic."""
 
-    name = "LeadBismuth"
     propertyValidTemperature = {
         "density": ((400, 1300), "K"),
         "dynamic visc": ((400, 1100), "K"),

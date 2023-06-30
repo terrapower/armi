@@ -29,7 +29,6 @@ class Graphite(Material):
         https://www.osti.gov/biblio/1330693
     """
 
-    name = "Graphite"
     thermalScatteringLaws = (tsl.byNbAndCompound[nb.byName["C"], tsl.GRAPHITE_10P],)
 
     def setDefaultMassFracs(self):

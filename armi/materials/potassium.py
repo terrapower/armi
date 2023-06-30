@@ -25,7 +25,6 @@ class Potassium(material.Fluid):
     From Foust, O.J. Sodium-NaK Engineering Handbook Vol. 1. New York: Gordon and Breach, 1972.
     """
 
-    name = "Potassium"
     propertyValidTemperature = {"density": ((63.2, 1250), "C")}
 
     def pseudoDensity(self, Tk=None, Tc=None):

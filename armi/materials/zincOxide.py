@@ -19,7 +19,6 @@ from armi.utils.units import getTk
 
 
 class ZnO(Material):
-    name = "ZnO"
 
     propertyValidTemperature = {"linear expansion percent": ((10.12, 1491.28), "K")}
 

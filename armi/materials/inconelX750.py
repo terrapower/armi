@@ -20,7 +20,6 @@ from armi.materials.material import Material
 
 
 class InconelX750(Material):
-    name = "InconelX750"
     propertyValidTemperature = {
         "heat capacity": ((-18.0, 1093.0), "C"),
         "linear expansion": ((21.1, 982.2), "C"),
