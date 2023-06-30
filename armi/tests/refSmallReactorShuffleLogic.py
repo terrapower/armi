@@ -16,7 +16,7 @@ from armi.physics.fuelCycle.fuelHandlers import FuelHandler
 
 
 class EquilibriumShuffler(FuelHandler):
-    r"""Convergent divergent equilibrium shuffler."""
+    """Convergent divergent equilibrium shuffler."""
 
     def chooseSwaps(self, factorList):
         cycleMoves = [
@@ -36,10 +36,10 @@ class EquilibriumShuffler(FuelHandler):
         self.dischargeSwap(fresh, cascade[0])
         if self.cycle > 0:
             # do a swap where the assembly comes from the sfp
-            incoming = self.r.core.sfp.getChildren().pop(0)
+            incoming = self.r.sfp.getChildren().pop(0)
             if not incoming:
                 raise RuntimeError(
-                    "No assembly in SFP {0}".format(self.r.core.sfp.getChildren())
+                    "No assembly in SFP {0}".format(self.r.sfp.getChildren())
                 )
             outLoc = self.r.core.spatialGrid.getLocatorFromRingAndPos(5, 2 + self.cycle)
             self.dischargeSwap(incoming, self.r.core.childrenByLocator[outLoc])

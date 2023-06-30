@@ -202,7 +202,7 @@ def loadTestReactor(
     # put some stuff in the SFP too.
     for a in range(10):
         a = o.r.blueprints.constructAssem(o.cs, name="feed fuel")
-        o.r.core.sfp.add(a)
+        o.r.sfp.add(a)
 
     o.r.core.regenAssemblyLists()
 
@@ -806,7 +806,7 @@ class HexReactorTests(ReactorTests):
         bLoc = b.spatialLocator
         self.r.core.removeAssembly(a)
         self.assertNotEqual(aLoc, a.spatialLocator)
-        self.assertEqual(a.spatialLocator.grid, self.r.core.sfp.spatialGrid)
+        self.assertEqual(a.spatialLocator.grid, self.r.sfp.spatialGrid)
 
         # confirm only attached to removed assem
         self.assertIs(bLoc, b.spatialLocator)  # block location does not change
@@ -826,7 +826,7 @@ class HexReactorTests(ReactorTests):
         self.r.core.removeAssembliesInRing(3, self.o.cs)
         for i, a in assems.items():
             self.assertNotEqual(aLoc[i], a.spatialLocator)
-            self.assertEqual(a.spatialLocator.grid, self.r.core.sfp.spatialGrid)
+            self.assertEqual(a.spatialLocator.grid, self.r.sfp.spatialGrid)
 
     def test_removeAssembliesInRingByCount(self):
         self.assertEqual(self.r.core.getNumRings(), 9)

@@ -90,9 +90,7 @@ class FuelHandlerInterface(interfaces.Interface):
         # keep track of the EOC time in years.
         self.cycleTime[cycle] = timeYears
         runLog.extra(
-            "There are {} assemblies in the Spent Fuel Pool".format(
-                len(self.r.core.sfp)
-            )
+            "There are {} assemblies in the Spent Fuel Pool".format(len(self.r.sfp))
         )
 
     def interactEOL(self):
