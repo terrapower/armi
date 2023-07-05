@@ -669,8 +669,6 @@ class Material:
 class Fluid(Material):
     """A material that fills its container. Could also be a gas."""
 
-    name = "Fluid"
-
     def getThermalExpansionDensityReduction(self, prevTempInC, newTempInC):
         """Return the factor required to update thermal expansion going from temperatureInC to temperatureInCNew."""
         rho0 = self.pseudoDensity(Tc=prevTempInC)
