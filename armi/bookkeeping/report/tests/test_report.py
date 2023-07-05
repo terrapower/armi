@@ -14,6 +14,7 @@
 
 """Really basic tests of the report Utils."""
 import logging
+import os
 import unittest
 
 from armi import runLog, settings
@@ -27,6 +28,7 @@ from armi.bookkeeping.report.reportingUtils import (
     summarizePowerPeaking,
     writeAssemblyMassSummary,
     writeCycleSummary,
+    writeWelcomeHeaders,
 )
 from armi.reactor.tests.test_reactors import loadTestReactor
 from armi.tests import mockRunLogs
@@ -130,6 +132,32 @@ class TestReport(unittest.TestCase):
             # this report won't do much for the test reactor - improve test reactor
             summarizePowerPeaking(r.core)
             self.assertEqual(len(mock.getStdout()), 0)
+
+    def test_writeWelcomeHeaders(self):
+        o, r = loadTestReactor()
+
+        # grab a random file (that exist in the working dir)
+        files = os.listdir(os.getcwd())
+        files = [f for f in files if f.endswith(".py") or f.endswith(".txt")]
+        self.assertGreater(len(files), 0)
+        randoFile = files[0]
+
+        # pass that random file into the settings
+        o.cs["crossSectionControl"]["DA"].xsFileLocation = randoFile
+
+        with mockRunLogs.BufferLog() as mock:
+            # we should start with a clean slate
+            self.assertEqual("", mock.getStdout())
+            runLog.LOG.startLog("test_writeWelcomeHeaders")
+            runLog.LOG.setVerbosity(logging.INFO)
+
+            writeWelcomeHeaders(o, o.cs)
+
+            # assert our random file (and a lot of other stuff) is in the welcome
+            self.assertIn("Case Info", mock.getStdout())
+            self.assertIn("Input File Info", mock.getStdout())
+            self.assertIn("crossSectionControl-DA", mock.getStdout())
+            self.assertIn(randoFile, mock.getStdout())
 
 
 class TestReportInterface(unittest.TestCase):

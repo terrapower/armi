@@ -427,6 +427,7 @@ class XSModelingOptions:
         The minimum number density for nuclides included in driver material for a 1D
         lattice physics model.
 
+    Notes
     -----
     Not all default attributes may be useful for your specific application and you may
     require other types of configuration options. These are provided as examples since
