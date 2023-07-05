@@ -243,7 +243,6 @@ class AxialExpansionChanger:
         )
         for ib, b in enumerate(self.linked.a):
             runLog.debug(msg=f"  Block {b}")
-            blockHeight = b.getHeight()
             # set bottom of block equal to top of block below it
             # if ib == 0, leave block bottom = 0.0
             if ib > 0:
@@ -252,8 +251,8 @@ class AxialExpansionChanger:
             if not isDummyBlock:
                 for c in getSolidComponents(b):
                     growFrac = self.expansionData.getExpansionFactor(c)
-                    runLog.debug(msg=f"      Component {c}, growFrac = {growFrac:.4e}")
-                    c.height = growFrac * blockHeight
+                    prevCompHeight = self._getCompHeight(c)
+                    c.height = growFrac * prevCompHeight
                     # align linked components
                     if ib == 0:
                         c.zbottom = 0.0
@@ -287,6 +286,15 @@ class AxialExpansionChanger:
         bounds = list(self.linked.a.spatialGrid._bounds)
         bounds[2] = array(mesh)
         self.linked.a.spatialGrid._bounds = tuple(bounds)
+
+    @staticmethod
+    def _getCompHeight(component) -> float:
+        """get the component height, if doesn't exist, get parent block height"""
+        try:
+            compHeight = component.height
+        except AttributeError:
+            compHeight = component.parent.getHeight()
+        return compHeight
 
     def manageCoreMesh(self, r):
         """Manage core mesh post assembly-level expansion.
