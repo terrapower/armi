@@ -8,6 +8,7 @@ Release Date: TBD
 
 What's new in ARMI
 ------------------
+#. The Spent Fuel Pool (``sfp``) was moved from the ``Core`` out to the ``Reactor``. (`PR#1336 <https://github.com/terrapower/armi/pull/1336>`_)
 #. TBD
 
 Bug fixes
