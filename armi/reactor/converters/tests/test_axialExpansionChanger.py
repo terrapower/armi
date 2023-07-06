@@ -437,9 +437,7 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
         assembly.add(_buildTestBlock("fuel", "FakeMat", 25.0, 10.0))
         assembly.add(_buildTestBlock("fuel", "FakeMat", 25.0, 10.0))
         assembly.add(_buildTestBlock("plenum", "FakeMat", 25.0, 10.0))
-        assembly.add(
-            _buildTestBlock("aclp", "FakeMat", 25.0, 10.0)
-        )  # "aclp plenum" also works
+        assembly.add(_buildTestBlock("aclp plenum", "FakeMat", 25.0, 10.0))
         assembly.add(_buildTestBlock("plenum", "FakeMat", 25.0, 10.0))
         assembly.add(_buildDummySodium(25.0, 10.0))
         assembly.calculateZCoords()

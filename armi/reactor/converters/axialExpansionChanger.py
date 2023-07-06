@@ -804,7 +804,7 @@ class ExpansionData:
                 self._componentDeterminesBlockHeight[
                     b.getComponentByName(b.p.axialExpTargetComponent)
                 ] = True
-            elif b.hasFlags(Flags.PLENUM) or b.hasFlags(Flags.ACLP):
+            elif b.hasFlags(Flags.PLENUM):
                 self.determineTargetComponent(b, Flags.CLAD)
             elif b.hasFlags(Flags.DUMMY):
                 self.determineTargetComponent(b, Flags.COOLANT)
