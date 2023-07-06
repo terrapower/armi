@@ -317,20 +317,25 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
                     axialExpChngr.expansionData.updateComponentTemp(
                         c, c.temperatureInC + temp
                     )
-            # get U235/B10 and FE56 mass pre-expansion
-            prevFE56Mass = a.getMass("FE56")
-            prevMass = self._getMass(a)
             # compute thermal expansion coeffs and expand
             axialExpChngr.expansionData.computeThermalExpansionFactors()
             axialExpChngr.axiallyExpandAssembly()
-            # ensure that total U235/B10 and FE56 mass is conserved post-expansion
-            newFE56Mass = a.getMass("FE56")
-            newMass = self._getMass(a)
-            self.assertAlmostEqual(
-                newFE56Mass / prevFE56Mass, 1.0, places=14, msg=f"{a}"
-            )
-            if newMass:
-                self.assertAlmostEqual(newMass / prevMass, 1.0, places=14, msg=f"{a}")
+            # check for mass conservation
+            for i, v in enumerate(axialExpChngr.massConservationReport[a]):
+                if v is None:
+                    continue
+                elif v == "HT9" or v == "duct":
+                    # HT9 and duct mass will have slight non-conservation
+                    # due to the mass transfer of the aclp duct.
+                    self.assertLess(
+                        axialExpChngr.massConservationReport["round(post - pre, 9)"][i],
+                        1.0e-2,
+                    )
+                else:
+                    self.assertEqual(
+                        axialExpChngr.massConservationReport["round(post - pre, 9)"][i],
+                        0.0,
+                    )
 
         newMasses, newNDens = self._getComponentMassAndNDens(a)
         # make sure that the assembly returned to the original state
@@ -338,18 +343,6 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
             self.assertAlmostEqual(orig, new, places=12, msg=f"{a}")
         self._checkMass(origMasses, newMasses)
         self._checkNDens(origNDens, newNDens, 1.0)
-
-    @staticmethod
-    def _getMass(a):
-        """Get the mass of an assembly. The conservation of HT9 pins in shield assems
-        are accounted for in FE56 conservation checks.
-        """
-        newMass = None
-        if a.hasFlags(Flags.FUEL):
-            newMass = a.getMass("U235")
-        elif a.hasFlags(Flags.CONTROL):
-            newMass = a.getMass("B10")
-        return newMass
 
     def test_PrescribedExpansionContractionConservation(self):
         """Expand all components and then contract back to original state.
@@ -797,7 +790,7 @@ class TestDetermineTargetComponent(AxialExpansionTestBase, unittest.TestCase):
 
 
 class TestGetSolidComponents(unittest.TestCase):
-    """verify that getSolidComponents returns just solid components"""
+    """Verify that getSolidComponents returns just solid components."""
 
     def setUp(self):
         self.a = buildTestAssemblyWithFakeMaterial(name="HT9")
