@@ -328,12 +328,16 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
                     # HT9 and duct mass will have slight non-conservation
                     # due to the mass transfer of the aclp duct.
                     self.assertLess(
-                        axialExpChngr.massConservationReport["round(post - pre, 9)"][i],
+                        axialExpChngr.massConservationReport["round(post - prev, 9)"][
+                            i
+                        ],
                         1.0e-2,
                     )
                 else:
                     self.assertEqual(
-                        axialExpChngr.massConservationReport["round(post - pre, 9)"][i],
+                        axialExpChngr.massConservationReport["round(post - prev, 9)"][
+                            i
+                        ],
                         0.0,
                     )
 

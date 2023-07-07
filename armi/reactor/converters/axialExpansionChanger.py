@@ -114,6 +114,22 @@ class AxialExpansionChanger:
     - Useful for fuel performance, thermal expansion, reactivity coefficients, etc.
     """
 
+    # set dictionary key order for mass conservation summary report
+    _KEY_ORDER = [
+        "Block",
+        "Component",
+        "GrowFrac",
+        "(prev) c.bottom",
+        "(prev) c.top",
+        "(prev) c.height",
+        "(post) c.bottom",
+        "(post) c.top",
+        "(post) c.height",
+        "(prev) mass",
+        "(post) mass",
+        "(post - prev) mass",
+    ]
+
     def __init__(self, detailedAxialExpansion: bool = False):
         """
         Build an axial expansion converter.
@@ -250,7 +266,7 @@ class AxialExpansionChanger:
         self.massConservationReport[self.linked.a] = (
             list(materialMasses.keys()) + [None] + list(componentMasses.keys())
         )
-        self.massConservationReport["pre-exp"] = (
+        self.massConservationReport["(prev) mass"] = (
             list(materialMasses.values()) + [None] + list(componentMasses.values())
         )
         self.detailedMassConservationReport = collections.defaultdict(list)
@@ -326,7 +342,7 @@ class AxialExpansionChanger:
                 materialMasses[c.material.name] += postExpMass
                 componentMasses[c.name] += postExpMass
                 self.detailedMassConservationReport["(post) mass"].append(postExpMass)
-                self.detailedMassConservationReport["(post - pre) mass"].append(
+                self.detailedMassConservationReport["(post - prev) mass"].append(
                     postExpMass - preMass[c]
                 )
             # redo mesh -- functionality based on assembly.calculateZCoords()
@@ -337,18 +353,18 @@ class AxialExpansionChanger:
         bounds[2] = array(mesh)
         self.linked.a.spatialGrid._bounds = tuple(bounds)
         # populate remaining post-expansion criteria for conservation reports
-        self.massConservationReport["post-exp"] = (
+        self.massConservationReport["(post) mass"] = (
             list(materialMasses.values()) + [None] + list(componentMasses.values())
         )
         # check for differences in pre and post expansion mass greater than 1e-9 grams
         diff = [
             round(new - orig, 9) if new else None
             for new, orig in zip(
-                self.massConservationReport["post-exp"],
-                self.massConservationReport["pre-exp"],
+                self.massConservationReport["(post) mass"],
+                self.massConservationReport["(prev) mass"],
             )
         ]
-        self.massConservationReport["round(post - pre, 9)"] = diff
+        self.massConservationReport["round(post - prev, 9)"] = diff
         if any(diff):
             # log the high level mass conservation report
             runLog.extra(
@@ -375,21 +391,7 @@ class AxialExpansionChanger:
 
     def _setOrderForDetailedMassConservationReport(self) -> dict:
         """Return the detailed mass conservation report dictionary in a useful order."""
-        keyOrder = [
-            "Block",
-            "Component",
-            "GrowFrac",
-            "(prev) c.bottom",
-            "(prev) c.top",
-            "(prev) c.height",
-            "(post) c.bottom",
-            "(post) c.top",
-            "(post) c.height",
-            "(prev) mass",
-            "(post) mass",
-            "(post - pre) mass",
-        ]
-        return {i: self.detailedMassConservationReport[i] for i in keyOrder}
+        return {i: self.detailedMassConservationReport[i] for i in self._KEY_ORDER}
 
     def manageCoreMesh(self, r):
         """Manage core mesh post assembly-level expansion.
