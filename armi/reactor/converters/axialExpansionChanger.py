@@ -811,6 +811,9 @@ class ExpansionData:
 class AxialExpMassConservationSummaryLogger:
     """Class to log and print axial expansion mass conservation."""
 
+    # do not do logging for verbosity levels greater than or equal to
+    _LOGGING_VERBOSITY_THRESHOLD = 20  # runLog.info
+
     # set dictionary key order for mass conservation summary report
     _KEY_ORDER = [
         "Block",
@@ -840,7 +843,7 @@ class AxialExpMassConservationSummaryLogger:
 
     def populatePreExpansionLogs(self, expData: ExpansionData):
         """Set up conservation report information (useful for debugging)."""
-        if self.runLogVerbosity > 20:
+        if self.runLogVerbosity >= self._LOGGING_VERBOSITY_THRESHOLD:
             return
         for b in self.a:
             self.detailedMassConservationReport["Block"].append(b)
@@ -878,7 +881,7 @@ class AxialExpMassConservationSummaryLogger:
         )
 
     def populatePostExpansionLogs(self, c):
-        if self.runLogVerbosity > 20:
+        if self.runLogVerbosity >= self._LOGGING_VERBOSITY_THRESHOLD:
             return
         # populate post-expansion component mass
         postExpMass = c.getMass()
@@ -894,7 +897,7 @@ class AxialExpMassConservationSummaryLogger:
         self.detailedMassConservationReport["(post) c.height"].append(c.height)
 
     def computeMassDiffsAndPrint(self):
-        if self.runLogVerbosity > 20:
+        if self.runLogVerbosity >= self._LOGGING_VERBOSITY_THRESHOLD:
             return
         # populate remaining post-expansion criteria for conservation reports
         self.massConservationReport["(post) mass"] = (
