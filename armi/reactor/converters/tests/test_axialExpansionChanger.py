@@ -294,7 +294,7 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
         """
         _oCold, rCold = loadTestReactor(
             os.path.join(TEST_ROOT, "detailedAxialExpansion"),
-            customSettings={"inputHeightsConsideredHot": False},
+            customSettings={"inputHeightsConsideredHot": False, "verbosity": "extra"},
         )
         assems = list(rCold.blueprints.assemblies.values())
         for a in assems:
@@ -321,23 +321,23 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
             axialExpChngr.expansionData.computeThermalExpansionFactors()
             axialExpChngr.axiallyExpandAssembly()
             # check for mass conservation
-            for i, v in enumerate(axialExpChngr.massConservationReport[a]):
+            for i, v in enumerate(axialExpChngr.logger.massConservationReport[a]):
                 if v is None:
                     continue
                 elif v == "HT9" or v == "duct":
                     # HT9 and duct mass will have slight non-conservation
                     # due to the mass transfer of the aclp duct.
                     self.assertLess(
-                        axialExpChngr.massConservationReport["round(post - prev, 9)"][
-                            i
-                        ],
+                        axialExpChngr.logger.massConservationReport[
+                            "round(post - prev, 9)"
+                        ][i],
                         1.0e-2,
                     )
                 else:
                     self.assertEqual(
-                        axialExpChngr.massConservationReport["round(post - prev, 9)"][
-                            i
-                        ],
+                        axialExpChngr.logger.massConservationReport[
+                            "round(post - prev, 9)"
+                        ][i],
                         0.0,
                     )
 
