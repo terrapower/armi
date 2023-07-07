@@ -294,7 +294,7 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
         """
         _oCold, rCold = loadTestReactor(
             os.path.join(TEST_ROOT, "detailedAxialExpansion"),
-            customSettings={"inputHeightsConsideredHot": False, "verbosity": "extra"},
+            customSettings={"inputHeightsConsideredHot": False},
         )
         assems = list(rCold.blueprints.assemblies.values())
         for a in assems:
@@ -518,7 +518,7 @@ class TestManageCoreMesh(unittest.TestCase):
 
         self.oldAxialMesh = self.r.core.p.axialMesh
         # expand refAssem by 1.01 L1/L0
-        componentLst = [c for b in self.r.core.refAssem for c in b]
+        componentLst = [c for b in self.r.core.refAssem for c in getSolidComponents(b)]
         expansionGrowthFracs = 1.01 + zeros(len(componentLst))
         self.axialExpChngr.performPrescribedAxialExpansion(
             self.r.core.refAssem, componentLst, expansionGrowthFracs, setFuel=True

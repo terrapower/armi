@@ -230,7 +230,7 @@ class AxialExpansionChanger:
             runLog.warning(
                 f"No dummy block present at the top of {self.linked.a}! "
                 "Top most block will be artificially chopped "
-                "to preserve assembly height"
+                "to preserve assembly height. Mass will not be conserved!"
             )
             if self._detailedAxialExpansion:
                 msg = "Cannot run detailedAxialExpansion without a dummy block at the top of the assembly!"
@@ -892,9 +892,20 @@ class AxialExpMassConservationSummaryLogger:
             postExpMass - self.preMass[c]
         )
         # populate post-expansion component geometry
-        self.detailedMassConservationReport["(post) c.bottom"].append(c.zbottom)
-        self.detailedMassConservationReport["(post) c.top"].append(c.ztop)
-        self.detailedMassConservationReport["(post) c.height"].append(c.height)
+        try:
+            self.detailedMassConservationReport["(post) c.bottom"].append(c.zbottom)
+            self.detailedMassConservationReport["(post) c.top"].append(c.ztop)
+            self.detailedMassConservationReport["(post) c.height"].append(c.height)
+        except AttributeError:
+            # occurs when no dummy block present. The solid component do not go through the expansion changer
+            # and therefore zbotton, ztop, and height are never set. Just use the chopped parent block instead.
+            self.detailedMassConservationReport["(post) c.bottom"].append(
+                c.parent.p.zbottom
+            )
+            self.detailedMassConservationReport["(post) c.top"].append(c.parent.p.ztop)
+            self.detailedMassConservationReport["(post) c.height"].append(
+                c.parent.getHeight()
+            )
 
     def computeMassDiffsAndPrint(self):
         if self.runLogVerbosity >= self._LOGGING_VERBOSITY_THRESHOLD:
