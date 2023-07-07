@@ -294,7 +294,7 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
         """
         _oCold, rCold = loadTestReactor(
             os.path.join(TEST_ROOT, "detailedAxialExpansion"),
-            customSettings={"inputHeightsConsideredHot": False},
+            customSettings={"inputHeightsConsideredHot": False, "verbosity": "extra"},
         )
         assems = list(rCold.blueprints.assemblies.values())
         for a in assems:
