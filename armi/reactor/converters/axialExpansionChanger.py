@@ -812,7 +812,7 @@ class AxialExpMassConservationSummaryLogger:
     """Class to log and print axial expansion mass conservation."""
 
     # do not do logging for verbosity levels greater than or equal to
-    _LOGGING_VERBOSITY_THRESHOLD = 20  # runLog.info
+    _LOGGING_VERBOSITY_THRESHOLD = runLog.LOG.logLevels["info"][0]
 
     # set dictionary key order for mass conservation summary report
     _KEY_ORDER = [
