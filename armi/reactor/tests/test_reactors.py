@@ -13,6 +13,7 @@
 # limitations under the License.
 """Testing for reactors.py."""
 import copy
+import logging
 import os
 import unittest
 
@@ -144,7 +145,7 @@ def loadTestReactor(
     customSettings=None,
     inputFileName="armiRun.yaml",
 ):
-    r"""
+    """
     Loads a test reactor. Can be used in other test modules.
 
     Parameters
@@ -812,6 +813,24 @@ class HexReactorTests(ReactorTests):
         self.assertIs(bLoc, b.spatialLocator)  # block location does not change
         self.assertIs(a, b.parent)
         self.assertIs(a, b.spatialLocator.grid.armiObject)
+
+    def test_removeAssemblyNoSfp(self):
+        with mockRunLogs.BufferLog() as mock:
+            # we should start with a clean slate
+            self.assertEqual("", mock.getStdout())
+            runLog.LOG.startLog("test_removeAssemblyNoSfp")
+            runLog.LOG.setVerbosity(logging.INFO)
+
+            a = self.r.core[-1]  # last assembly
+            b = a[-1]  # use the last block in case we ever figure out stationary blocks
+            aLoc = a.spatialLocator
+            self.assertIsNotNone(aLoc.grid)
+            bLoc = b.spatialLocator
+            core = self.r.core
+            del core.parent.sfp
+            core.removeAssembly(a)
+
+            self.assertIn("No Spent Fuel Pool", mock.getStdout())
 
     def test_removeAssembliesInRing(self):
         aLoc = [
