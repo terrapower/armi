@@ -465,6 +465,8 @@ class Core(composites.Composite):
         if discharge and self._trackAssems:
             if hasattr(self.parent, "sfp"):
                 self.parent.sfp.add(a1)
+            else:
+                runLog.info("No Spent Fuel Pool is found, can't track assemblies.")
         else:
             self._removeListFromAuxiliaries(a1)
 
@@ -950,7 +952,6 @@ class Core(composites.Composite):
         ----------
         ringPitch : float, optional
             The relative pitch that should be used to define the spacing between each ring.
-
         """
         runLog.extra(
             "Building a circular ring dictionary with ring pitch {}".format(ringPitch)
@@ -1010,7 +1011,6 @@ class Core(composites.Composite):
         See Also
         --------
         getAssembly : more general version of this method
-
         """
         return self.assembliesByName[name]
 

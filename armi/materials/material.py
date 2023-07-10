@@ -226,7 +226,7 @@ class Material:
         return 1.0 / (1 + dLL) ** 2
 
     def setDefaultMassFracs(self):
-        r"""Mass fractions."""
+        """Mass fractions."""
         pass
 
     def setMassFrac(self, nucName: str, massFrac: float) -> None:
@@ -520,7 +520,7 @@ class Material:
         return self.massFrac.get(nucName, 0.0)
 
     def clearMassFrac(self) -> None:
-        r"""Zero out all nuclide mass fractions."""
+        """Zero out all nuclide mass fractions."""
         self.massFrac.clear()
 
     def removeNucMassFrac(self, nuc: str) -> None:
@@ -535,7 +535,7 @@ class Material:
         return copy.deepcopy(self.massFrac)
 
     def checkPropertyTempRange(self, label, val):
-        r"""Checks if the given property / value combination fall between the min and max valid
+        """Checks if the given property / value combination fall between the min and max valid
         temperatures provided in the propertyValidTemperature object.
 
         Parameters
@@ -554,7 +554,7 @@ class Material:
         self.checkTempRange(minT, maxT, val, label)
 
     def checkTempRange(self, minT, maxT, val, label=""):
-        r"""
+        """
         Checks if the given temperature (val) is between the minT and maxT temperature limits supplied.
         Label identifies what material type or element is being evaluated in the check.
 
@@ -584,14 +584,15 @@ class Material:
                 )
 
     def densityTimesHeatCapacity(self, Tk: float = None, Tc: float = None) -> float:
-        r"""
-        Return heat capacity * density at a temperature
+        """
+        Return heat capacity * density at a temperature.
+
         Parameters
         ----------
         Tk : float, optional
             Temperature in Kelvin.
         Tc : float, optional
-            Temperature in degrees Celsius.
+            Temperature in degrees Celsius
 
         Returns
         -------
@@ -840,7 +841,7 @@ class FuelMaterial(Material):
         densityTools.applyIsotopicsMix(self, class1Isotopics, class2Isotopics)
 
     def duplicate(self):
-        r"""Copy without needing a deepcopy."""
+        """Copy without needing a deepcopy."""
         m = self.__class__()
 
         m.massFrac = {}
