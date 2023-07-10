@@ -12,9 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-r"""
-This interface serves the reporting needs of ARMI. If there is any information that a user desires
-to show in PDF form to others this is the place to do it.
+"""
+This interface serves the reporting needs of ARMI.
+
+If there is any information that a user desires to show in PDF form to
+others this is the place to do it.
 """
 import re
 
@@ -169,5 +171,5 @@ class ReportInterface(interfaces.Interface):
     def writeRunSummary(self):
         """Make a summary of the run."""
         # spent fuel pool report
-        self.r.core.sfp.report()
-        self.r.core.sfp.count()
+        self.r.sfp.report()
+        self.r.sfp.count()

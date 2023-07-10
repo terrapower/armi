@@ -141,7 +141,7 @@ class MemoryProfiler(interfaces.Interface):
                     "Dict {:30s} has {:4d} ArmiObjects".format(attrName, len(attrObj))
                 )
 
-        runLog.important("SFP has {:4d} ArmiObjects".format(len(self.r.core.sfp)))
+        runLog.important("SFP has {:4d} ArmiObjects".format(len(self.r.sfp)))
 
     def checkForDuplicateObjectsOnArmiModel(self, attrName, refObject):
         """Scans thorugh ARMI model for duplicate objects."""
