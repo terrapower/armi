@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""unit tests for water materials."""
+"""Unit tests for water materials."""
 import unittest
 
 from armi.materials.water import SaturatedWater, SaturatedSteam, Water

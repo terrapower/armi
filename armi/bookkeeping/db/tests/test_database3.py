@@ -375,7 +375,7 @@ class TestDatabase3(unittest.TestCase):
         self.assertEqual(assemblies._assemNum, 0)
 
         r = self.db.load(0, 0, allowMissing=True, updateGlobalAssemNum=False)
-        #  len(r.core.sfp) is zero but these nums are still reserved
+        #  len(r.sfp) is zero but these nums are still reserved
         numSFPBlueprints = 4
         expectedNum = len(r.core) + numSFPBlueprints
         self.assertEqual(assemblies._assemNum, expectedNum)

@@ -599,7 +599,7 @@ class Material:
         Tk : float, optional
             Temperature in Kelvin.
         Tc : float, optional
-            Temperature in degrees Celsius.
+            Temperature in degrees Celsius
 
         Returns
         -------
