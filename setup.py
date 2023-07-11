@@ -82,7 +82,7 @@ setup(
         "dev": [
             "black==20.8b1",
             "click==8.0.1",  # fixing click problem in black
-            "docutils",
+            "docutils==0.20.1",
             "ipykernel",
             "jupyter-contrib-nbextensions",
             "jupyter_client",
@@ -93,7 +93,7 @@ setup(
             "pytest-cov",
             "pytest-html",
             "pytest-xdist",
-            "ruff==0.0.272",
+            "ruff==0.0.277",
             "sphinx",
             "sphinx-gallery",
             "sphinx-rtd-theme",
