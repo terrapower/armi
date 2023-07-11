@@ -95,10 +95,22 @@ class Material:
 
     @property
     def name(self):
+        """Getter for the private name attribute of this Material."""
         return self._name
 
     @name.setter
     def name(self, nomen):
+        """Setter for the private name attribute of this Material.
+
+        Warning
+        -------
+        Some code in ARMI expects the "name" of a meterial matches its
+        class name. So you use this method at your own risk.
+
+        See Also
+        --------
+        armi.materials.resolveMaterialClassByName
+        """
         self._name = nomen
 
     def getName(self):
