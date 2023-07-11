@@ -40,7 +40,7 @@ class Custom(Material):
         self.customDensity = 1.0
 
     def pseudoDensity(self, Tk=None, Tc=None):
-        r"""
+        """
         The density value is set in the loading input.
 
         In some cases it needs to be set after full core assemblies are populated (e.g. for
