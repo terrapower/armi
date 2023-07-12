@@ -61,9 +61,6 @@ class Material:
     DATA_SOURCE = "ARMI"
     """Indication of where the material is loaded from (may be plugin name)"""
 
-    name = "Material"
-    """String identifying the material"""
-
     references = {}
     """The literature references {property : citation}"""
 
@@ -88,15 +85,37 @@ class Material:
         self.theoreticalDensityFrac = 1.0
         self.cached = {}
         self._backupCache = None
+        self._name = self.__class__.__name__
 
         # call subclass implementations
         self.setDefaultMassFracs()
 
     def __repr__(self):
-        return "<Material: {0}>".format(self.getName())
+        return f"<Material: {self._name}>"
+
+    @property
+    def name(self):
+        """Getter for the private name attribute of this Material."""
+        return self._name
+
+    @name.setter
+    def name(self, nomen):
+        """Setter for the private name attribute of this Material.
+
+        Warning
+        -------
+        Some code in ARMI expects the "name" of a meterial matches its
+        class name. So you use this method at your own risk.
+
+        See Also
+        --------
+        armi.materials.resolveMaterialClassByName
+        """
+        self._name = nomen
 
     def getName(self):
-        return self.name
+        """Duplicate of name property, kept for backwards compatibility."""
+        return self._name
 
     def getChildren(
         self, deep=False, generationNum=1, includeMaterials=False, predicate=None
@@ -226,7 +245,7 @@ class Material:
         return 1.0 / (1 + dLL) ** 2
 
     def setDefaultMassFracs(self):
-        r"""Mass fractions."""
+        """Mass fractions."""
         pass
 
     def setMassFrac(self, nucName: str, massFrac: float) -> None:
@@ -520,7 +539,7 @@ class Material:
         return self.massFrac.get(nucName, 0.0)
 
     def clearMassFrac(self) -> None:
-        r"""Zero out all nuclide mass fractions."""
+        """Zero out all nuclide mass fractions."""
         self.massFrac.clear()
 
     def removeNucMassFrac(self, nuc: str) -> None:
@@ -535,7 +554,7 @@ class Material:
         return copy.deepcopy(self.massFrac)
 
     def checkPropertyTempRange(self, label, val):
-        r"""Checks if the given property / value combination fall between the min and max valid
+        """Checks if the given property / value combination fall between the min and max valid
         temperatures provided in the propertyValidTemperature object.
 
         Parameters
@@ -554,7 +573,7 @@ class Material:
         self.checkTempRange(minT, maxT, val, label)
 
     def checkTempRange(self, minT, maxT, val, label=""):
-        r"""
+        """
         Checks if the given temperature (val) is between the minT and maxT temperature limits supplied.
         Label identifies what material type or element is being evaluated in the check.
 
@@ -584,14 +603,15 @@ class Material:
                 )
 
     def densityTimesHeatCapacity(self, Tk: float = None, Tc: float = None) -> float:
-        r"""
-        Return heat capacity * density at a temperature
+        """
+        Return heat capacity * density at a temperature.
+
         Parameters
         ----------
         Tk : float, optional
             Temperature in Kelvin.
         Tc : float, optional
-            Temperature in degrees Celsius.
+            Temperature in degrees Celsius
 
         Returns
         -------
@@ -660,8 +680,6 @@ class Material:
 
 class Fluid(Material):
     """A material that fills its container. Could also be a gas."""
-
-    name = "Fluid"
 
     def getThermalExpansionDensityReduction(self, prevTempInC, newTempInC):
         """Return the factor required to update thermal expansion going from temperatureInC to temperatureInCNew."""
@@ -840,7 +858,7 @@ class FuelMaterial(Material):
         densityTools.applyIsotopicsMix(self, class1Isotopics, class2Isotopics)
 
     def duplicate(self):
-        r"""Copy without needing a deepcopy."""
+        """Copy without needing a deepcopy."""
         m = self.__class__()
 
         m.massFrac = {}

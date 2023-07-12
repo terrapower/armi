@@ -797,7 +797,7 @@ class TestDetermineTargetComponent(AxialExpansionTestBase, unittest.TestCase):
 
 
 class TestGetSolidComponents(unittest.TestCase):
-    """verify that getSolidComponents returns just solid components"""
+    """Verify that getSolidComponents returns just solid components."""
 
     def setUp(self):
         self.a = buildTestAssemblyWithFakeMaterial(name="HT9")

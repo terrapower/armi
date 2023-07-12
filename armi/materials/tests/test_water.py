@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""unit tests for water materials."""
+"""Unit tests for water materials."""
 import unittest
 
-from armi.materials.water import SaturatedWater, SaturatedSteam
+from armi.materials.water import SaturatedWater, SaturatedSteam, Water
 
 
 class Test_Water(unittest.TestCase):
@@ -206,3 +206,13 @@ class Test_Water(unittest.TestCase):
 
         steam = SaturatedSteam()
         self.assertEqual(len(steam.propertyValidTemperature), 0)
+
+    def test_validateNames(self):
+        water = Water()
+        self.assertEqual(water.name, "Water")
+
+        sat = SaturatedWater()
+        self.assertEqual(sat.name, "SaturatedWater")
+
+        steam = SaturatedSteam()
+        self.assertEqual(steam.name, "SaturatedSteam")

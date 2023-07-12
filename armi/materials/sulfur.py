@@ -21,7 +21,6 @@ from armi.utils.units import getTk
 
 
 class Sulfur(material.Fluid):
-    name = "Sulfur"
 
     propertyValidTemperature = {
         "density": ((334, 430), "K"),
@@ -57,7 +56,7 @@ class Sulfur(material.Fluid):
         self.setMassFrac("S36", 0.002)
 
     def pseudoDensity(self, Tk=None, Tc=None):
-        r"""Density of Liquid Sulfur.
+        """Density of Liquid Sulfur.
 
         Ref: P. Espeau, R. Ceolin "density of molten sulfur in the 334-508K range"
 
@@ -71,8 +70,10 @@ class Sulfur(material.Fluid):
         return (2.18835 - 0.00098187 * Tk) * (self.fullDensFrac)
 
     def volumetricExpansion(self, Tk=None, Tc=None):
-        r"""P. Espeau, R. Ceolin "density of molten sulfur in the 334-508K range"
+        """
         This is just a two-point interpolation.
+
+        P. Espeau, R. Ceolin "density of molten sulfur in the 334-508K range"
         """
         Tk = getTk(Tc, Tk)
         (Tmin, Tmax) = self.propertyValidTemperature["volumetric expansion"][0]

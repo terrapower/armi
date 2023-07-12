@@ -20,7 +20,6 @@ from armi.utils.units import getTc
 
 
 class Inconel600(Material):
-    name = "Inconel600"
     propertyValidTemperature = {
         "heat capacity": ((20, 900), "C"),
         "linear expansion": ((21.0, 900.0), "C"),

@@ -302,10 +302,6 @@ def getAssemblyParameterDefinitions():
 
     with pDefs.createBuilder(default=0.0) as pb:
 
-        pb.defParam("Pos", units="?", description="?", location="?")
-
-        pb.defParam("Ring", units="?", description="?", location="?")
-
         pb.defParam("THcoolantInletT", units="?", description="?", location="?")
 
         pb.defParam("assemNum", units="?", description="?", location="?")

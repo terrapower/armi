@@ -20,7 +20,6 @@ from armi.utils.units import getTc
 
 
 class TZM(Material):
-    name = "TZM"
     propertyValidTemperature = {"linear expansion percent": ((21.11, 1382.22), "C")}
     references = {
         "linear expansion percent": "Report on the Mechanical and Thermal Properties of Tungsten and TZM Sheet Produced \
