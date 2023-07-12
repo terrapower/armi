@@ -37,8 +37,6 @@ class MOX(UraniumOxide):
     Specific MOX mixtures may be defined in blueprints under custom isotopics.
     """
 
-    name = "MOX"
-
     enrichedNuclide = "U235"
 
     def __init__(self):

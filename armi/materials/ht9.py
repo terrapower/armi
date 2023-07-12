@@ -37,8 +37,6 @@ class HT9(materials.Material):
             https://www.osti.gov/biblio/1506477-metallic-fuels-handbook
     """
 
-    name = "HT9"
-
     propertyValidTemperature = {"linear expansion": ((293, 1050), "K")}
 
     def setDefaultMassFracs(self):

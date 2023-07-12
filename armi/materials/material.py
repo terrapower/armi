@@ -61,9 +61,6 @@ class Material:
     DATA_SOURCE = "ARMI"
     """Indication of where the material is loaded from (may be plugin name)"""
 
-    name = "Material"
-    """String identifying the material"""
-
     references = {}
     """The literature references {property : citation}"""
 
@@ -88,15 +85,37 @@ class Material:
         self.theoreticalDensityFrac = 1.0
         self.cached = {}
         self._backupCache = None
+        self._name = self.__class__.__name__
 
         # call subclass implementations
         self.setDefaultMassFracs()
 
     def __repr__(self):
-        return "<Material: {0}>".format(self.getName())
+        return f"<Material: {self._name}>"
+
+    @property
+    def name(self):
+        """Getter for the private name attribute of this Material."""
+        return self._name
+
+    @name.setter
+    def name(self, nomen):
+        """Setter for the private name attribute of this Material.
+
+        Warning
+        -------
+        Some code in ARMI expects the "name" of a meterial matches its
+        class name. So you use this method at your own risk.
+
+        See Also
+        --------
+        armi.materials.resolveMaterialClassByName
+        """
+        self._name = nomen
 
     def getName(self):
-        return self.name
+        """Duplicate of name property, kept for backwards compatibility."""
+        return self._name
 
     def getChildren(
         self, deep=False, generationNum=1, includeMaterials=False, predicate=None
@@ -661,8 +680,6 @@ class Material:
 
 class Fluid(Material):
     """A material that fills its container. Could also be a gas."""
-
-    name = "Fluid"
 
     def getThermalExpansionDensityReduction(self, prevTempInC, newTempInC):
         """Return the factor required to update thermal expansion going from temperatureInC to temperatureInCNew."""

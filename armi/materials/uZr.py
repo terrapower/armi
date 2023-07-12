@@ -41,7 +41,6 @@ class UZr(material.FuelMaterial):
         https://doi.org/10.1016/j.jallcom.2009.02.077.
     """
 
-    name = "UZr"
     enrichedNuclide = "U235"
     zrFracDefault = 0.10
     uFracDefault = 1.0 - zrFracDefault
@@ -50,7 +49,7 @@ class UZr(material.FuelMaterial):
         material.Material.__init__(self)
 
     def setDefaultMassFracs(self):
-        r"""U-Pu-Zr mass fractions."""
+        """U-Pu-Zr mass fractions."""
         u235Enrichment = 0.1
         self.uFrac = self.uFracDefault
         self.zrFrac = self.zrFracDefault
