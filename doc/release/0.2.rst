@@ -120,6 +120,7 @@ Bug fixes
 #. Fixed Concrete density curve. (`PR#1131 <https://github.com/terrapower/armi/pull/1131>`_)
 #. Fixed Copper density curve. (`PR#1150 <https://github.com/terrapower/armi/pull/1150>`_)
 #. Fixed Component.density. (`PR#1149 <https://github.com/terrapower/armi/pull/1149>`_)
+#. Fixed error where a non-float value could be assigned to a material's mass fraction dictionary (`PR#1199 <https://github.com/terrapower/armi/pull/1199>`_)
 #. Fixed interface/event ``runLog.header`` for tight coupling. (`PR#1178 <https://github.com/terrapower/armi/pull/1178>`_)
 #. Fixed circular import bug in ``reactors.py`` caused by importing settings constants. (`PR#1185 <https://github.com/terrapower/armi/pull/1185>`_)
 

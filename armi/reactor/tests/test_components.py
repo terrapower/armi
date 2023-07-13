@@ -1429,6 +1429,32 @@ class TestMaterialAdjustments(unittest.TestCase):
         self.fuel.setMassFrac("U235", target35)
         self.assertAlmostEqual(self.fuel.getMassFrac("U235"), target35)
 
+    def test_setMassFracOnComponentMaterial(self):
+        """Checks for valid and invalid mass fraction assignments on a component's material."""
+        # Negative value is not acceptable.
+        with self.assertRaises(ValueError):
+            self.fuel.material.setMassFrac("U235", -0.1)
+
+        # Greater than 1.0 value is not acceptable.
+        with self.assertRaises(ValueError):
+            self.fuel.material.setMassFrac("U235", 1.1)
+
+        # String is not acceptable.
+        with self.assertRaises(TypeError):
+            self.fuel.material.setMassFrac("U235", "")
+
+        # `NoneType` is not acceptable.
+        with self.assertRaises(TypeError):
+            self.fuel.material.setMassFrac("U235", None)
+
+        # Zero is acceptable
+        self.fuel.material.setMassFrac("U235", 0.0)
+        self.assertAlmostEqual(self.fuel.material.getMassFrac("U235"), 0.0)
+
+        # One is acceptable
+        self.fuel.material.setMassFrac("U235", 1.0)
+        self.assertAlmostEqual(self.fuel.material.getMassFrac("U235"), 1.0)
+
     def test_adjustMassFrac_invalid(self):
         with self.assertRaises(ValueError):
             self.fuel.adjustMassFrac(nuclideToAdjust="ZR", val=-0.23)

@@ -249,6 +249,38 @@ class Material:
         pass
 
     def setMassFrac(self, nucName: str, massFrac: float) -> None:
+        """
+        Assigns the mass fraction of a nuclide within the material.
+
+        Notes
+        -----
+        This will try to convert the provided ``massFrac`` into a float
+        for assignment. If the conversion cannot occur then an error
+        will be thrown.
+        """
+        try:
+            massFrac = float(massFrac)
+        except Exception as ee:
+            raise TypeError(
+                f"Error in converting the mass fraction of {massFrac} "
+                f"for nuclide {nucName} in {self} to a float. "
+                f"Exception: {ee}"
+            )
+        if massFrac < 0.0:
+            raise ValueError(
+                f"Cannot assign a negative mass "
+                f"fraction of {massFrac} to {nucName} "
+                f"within {self}"
+            )
+
+        if massFrac > 1.0:
+            raise ValueError(
+                f"Cannot assign a mass "
+                f"fraction of {massFrac} to {nucName} "
+                f"within {self} because it is larger "
+                f"1.0"
+            )
+
         self.massFrac[nucName] = massFrac
 
     def applyInputParams(self):
