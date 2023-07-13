@@ -266,19 +266,10 @@ class Material:
                 f"for nuclide {nucName} in {self} to a float. "
                 f"Exception: {ee}"
             )
-        if massFrac < 0.0:
-            raise ValueError(
-                f"Cannot assign a negative mass "
-                f"fraction of {massFrac} to {nucName} "
-                f"within {self}"
-            )
 
-        if massFrac > 1.0:
+        if massFrac < 0.0 or massFrac > 1.0:
             raise ValueError(
-                f"Cannot assign a mass "
-                f"fraction of {massFrac} to {nucName} "
-                f"within {self} because it is larger "
-                f"1.0"
+                f"Mass fraction of {massFrac} for {nucName} is not between 0 and 1."
             )
 
         self.massFrac[nucName] = massFrac
