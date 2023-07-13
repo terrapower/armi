@@ -422,7 +422,7 @@ class ParameterDefinitionCollection:
         return len(self._paramDefs)
 
     def __getitem__(self, name):
-        r"""Get a parameter by name.
+        """Get a parameter by name.
 
         Notes
         -----
@@ -587,7 +587,7 @@ class ParameterDefinitionCollection:
 
 
 class ParameterBuilder:
-    r"""Factory for creating Parameter and parameter properties."""
+    """Factory for creating Parameter and parameter properties."""
 
     def __init__(
         self,

@@ -89,7 +89,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "massHmBOL",
-            units="grams",
+            units=units.GRAMS,
             description="Mass of heavy metal at BOL",
         )
 
@@ -116,7 +116,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "newDPA",
-            units="dpa",
+            units=units.DPA,
             description="Dose in DPA accrued during the current time step",
         )
 
@@ -168,7 +168,7 @@ def getBlockParameterDefinitions():
     pDefs.add(
         Parameter(
             name="depletionMatrix",
-            units="N/A",
+            units=units.UNITLESS,
             description="Full BurnMatrix objects containing transmutation and decay info about this block.",
             location=ParamLocation.AVERAGE,
             saveToDB=False,
@@ -181,7 +181,7 @@ def getBlockParameterDefinitions():
     pDefs.add(
         Parameter(
             name="cycleAverageBurnMatrix",
-            units="N/A",
+            units=units.UNITLESS,
             description="Integrated burn matrix mapping this block from its BOC to EOC number densities.",
             location=ParamLocation.AVERAGE,
             saveToDB=False,
@@ -267,14 +267,14 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "detailedDpa",
-            units="dpa",
+            units=units.DPA,
             description="displacements per atom",
             categories=["cumulative", "detailedAxialExpansion", "depletion"],
         )
 
         pb.defParam(
             "detailedDpaPeak",
-            units="dpa",
+            units=units.DPA,
             description="displacements per atom with peaking factor",
             categories=["cumulative", "detailedAxialExpansion", "depletion"],
             location=ParamLocation.MAX,
@@ -289,13 +289,13 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "displacementX",
-            units="m",
+            units=units.METERS,
             description="Assembly displacement in the x direction",
         )
 
         pb.defParam(
             "displacementY",
-            units="m",
+            units=units.METERS,
             description="Assembly displacement in the y direction",
         )
 
@@ -312,20 +312,20 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "timeToLimit",
-            units="days",
+            units=units.DAYS,
             description="Time unit block violates its burnup limit.",
         )
 
         pb.defParam(
             "zbottom",
-            units="cm",
+            units=units.CM,
             description="Axial position of the bottom of this block",
             categories=[parameters.Category.retainOnReplacement],
         )
 
         pb.defParam(
             "ztop",
-            units="cm",
+            units=units.CM,
             description="Axial position of the top of this block",
             categories=[parameters.Category.retainOnReplacement],
         )
@@ -336,14 +336,14 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "nHMAtBOL",
-            units="atoms/bn-cm.",
+            units="atoms/bn-cm",
             description="Ndens of heavy metal at BOL",
             saveToDB=False,
         )
 
         pb.defParam(
             "z",
-            units="cm",
+            units=units.CM,
             description="Center axial dimension of this block",
             categories=[parameters.Category.retainOnReplacement],
         )
@@ -389,7 +389,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "height",
-            units="cm",
+            units=units.CM,
             description="the block height",
             default=None,
             categories=[parameters.Category.retainOnReplacement],
@@ -425,7 +425,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "type",
-            units="N/A",
+            units=units.UNITLESS,
             description="string name of the input block",
             default="defaultType",
             saveToDB=True,
@@ -814,7 +814,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "axExtenNodeHeight",
-            units="meter",
+            units=units.METERS,
             description="Axial extension node height",
             location=ParamLocation.AVERAGE,
             default=0.0,
@@ -924,7 +924,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "heightBOL",
-            units="cm",
+            units=units.CM,
             description="As-fabricated height of this block (as input). Used in fuel performance. Should be constant.",
             location=ParamLocation.AVERAGE,
             categories=[parameters.Category.retainOnReplacement],
@@ -946,14 +946,14 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "kgFis",
-            units="kg",
+            units=units.KG,
             description="Mass of fissile material in block",
             location=ParamLocation.VOLUME_INTEGRATED,
         )
 
         pb.defParam(
             "kgHM",
-            units="kg",
+            units=units.KG,
             description="Mass of heavy metal in block",
             location=ParamLocation.VOLUME_INTEGRATED,
         )
@@ -976,7 +976,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "newDPAPeak",
-            units="dpa",
+            units=units.DPA,
             description="The peak DPA accumulated in the last burn step",
             location=ParamLocation.MAX,
         )
@@ -990,7 +990,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "powerShapeDelta",
-            units="W",
+            units=units.WATTS,
             description="Change in power shape when core temperature rises.",
             location=ParamLocation.VOLUME_INTEGRATED,
         )

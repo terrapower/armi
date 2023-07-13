@@ -18,11 +18,20 @@ import scipy.constants
 
 
 # Names
+CM = "cm"
+DAYS = "days"
 DEGC = chr(176) + "C"
+DPA = "dpa"
+GRAMS = "g"
+KG = "kg"
+METERS = "m"
 MICRONS = chr(181) + "m"
 NOT_APPLICABLE = "N/A"  # prefer UNITLESS
+PASCALS = "Pa"
 PERCENT = "%"
 UNITLESS = ""
+WATTS = "W"
+YEARS = "yr"
 
 # conversions
 C_TO_K = 273.15

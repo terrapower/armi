@@ -28,7 +28,7 @@ def getAssemblyParameterDefinitions():
         pb.defParam(
             "powerDecay",
             setter=isNumpyArray("powerDecay"),
-            units="W",
+            units=units.WATTS,
             description="List of decay heats at each time step specified in "
             "decayHeatCalcTimesInSeconds setting.",
             saveToDB=True,
@@ -81,7 +81,7 @@ def getAssemblyParameterDefinitions():
 
         pb.defParam(
             "chargeFis",
-            units="kg",
+            units=units.KG,
             description="Fissile mass in assembly when it most recently entered the core."
             " If the assembly was discharged and then re-charged, this value will only"
             " reflect the most recent charge.",
@@ -89,7 +89,7 @@ def getAssemblyParameterDefinitions():
 
         pb.defParam(
             "chargeTime",
-            units="years",
+            units=units.YEARS,
             description="Time at which this assembly most recently entered the core."
             " If the assembly was discharged and then re-charged, this value will only"
             " reflect the most recent charge.",
@@ -194,7 +194,7 @@ def getAssemblyParameterDefinitions():
 
         pb.defParam(
             "crCurrentElevation",
-            units="cm",
+            units=units.CM,
             description="The current elevation of the bottom of the moveable section of a control rod assembly.",
             categories=[parameters.Category.assignInBlueprints],
             saveToDB=True,
@@ -202,7 +202,7 @@ def getAssemblyParameterDefinitions():
 
         pb.defParam(
             "crInsertedElevation",
-            units="cm",
+            units=units.CM,
             description=(
                 "The elevation of the furthest-most insertion point of a control rod assembly. For a control rod assembly "
                 "inserted from the top, this will be the lower tip of the bottom-most moveable section in the assembly when "
@@ -214,14 +214,14 @@ def getAssemblyParameterDefinitions():
 
         pb.defParam(
             "crRodLength",
-            units="cm",
+            units=units.CM,
             description="length of the control material within the control rod",
             saveToDB=True,
         )
 
         pb.defParam(
             "crWithdrawnElevation",
-            units="cm",
+            units=units.CM,
             description=(
                 "The elevation of the tip of a control rod assembly when it is fully withdrawn. For a control rod assembly "
                 "inserted from the top, this will be the lower tip of the bottom-most moveable section in the assembly when "
@@ -235,18 +235,18 @@ def getAssemblyParameterDefinitions():
         location=ParamLocation.AVERAGE, default=0.0, categories=["thermal hydraulics"]
     ) as pb:
 
-        pb.defParam("THdeltaPNoGrav", units="Pa", description="?")
+        pb.defParam("THdeltaPNoGrav", units=units.PASCALS, description="?")
 
         pb.defParam(
             "THdeltaPPump",
-            units="Pa",
+            units=units.PASCALS,
             description="Pumping pressure rise required to pump the given mass flow rate through the rod bundle",
             categories=["broadcast"],
         )
 
         pb.defParam(
             "THdeltaPTotal",
-            units="Pa",
+            units=units.PASCALS,
             description="Total pressure difference across the assembly",
             categories=["broadcast"],
         )

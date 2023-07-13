@@ -325,7 +325,7 @@ def _getNeutronicsBlockParams():
         pb.defParam(
             "pointsEdgeDpa",
             setter=isNumpyArray("pointsEdgeDpa"),
-            units="dpa",
+            units=units.DPA,
             description="displacements per atom at edges of the block",
             categories=["cumulative", "detailedAxialExpansion", "depletion"],
         )
@@ -361,7 +361,7 @@ def _getNeutronicsBlockParams():
         pb.defParam(
             "pointsCornerDpa",
             setter=isNumpyArray("pointsCornerDpa"),
-            units="dpa",
+            units=units.DPA,
             description="displacements per atom at corners of the block",
             location=ParamLocation.CORNERS,
             categories=["cumulative", "detailedAxialExpansion", "depletion"],
@@ -625,23 +625,23 @@ def _getNeutronicsBlockParams():
     ) as pb:
         pb.defParam(
             "powerGenerated",
-            units=" W",
+            units=units.WATTS,
             description="Generated power. Different than b.p.power only when gamma transport is activated.",
             categories=[parameters.Category.gamma],
         )
 
         pb.defParam(
             "power",
-            units="W",
+            units=units.WATTS,
             description="Total power",
             categories=[parameters.Category.neutronics],
         )
 
-        pb.defParam("powerDecay", units="W", description="Total decay power")
+        pb.defParam("powerDecay", units=units.WATTS, description="Total decay power")
 
         pb.defParam(
             "powerGamma",
-            units="W",
+            units=units.WATTS,
             description="Total gamma power",
             categories=[parameters.Category.gamma],
         )
@@ -649,7 +649,7 @@ def _getNeutronicsBlockParams():
         # gamma category because power is only split by neutron/gamma when gamma is activated
         pb.defParam(
             "powerNeutron",
-            units="W",
+            units=units.WATTS,
             description="Total neutron power",
             categories=[parameters.Category.gamma],
         )
@@ -657,7 +657,7 @@ def _getNeutronicsBlockParams():
     with pDefs.createBuilder(default=0.0) as pb:
         pb.defParam(
             "detailedDpaThisCycle",
-            units="dpa",
+            units=units.DPA,
             location=ParamLocation.AVERAGE,
             description="Displacement per atom accumulated during this cycle. This accumulates over a cycle and resets to zero at BOC.",
             categories=[
@@ -676,7 +676,7 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "dpaPeakFromFluence",
-            units="dpa",
+            units=units.DPA,
             description=f"DPA approximation based on a fluence conversion factor set in the {CONF_DPA_PER_FLUENCE} setting",
             location=ParamLocation.MAX,
             categories=[

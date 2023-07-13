@@ -78,7 +78,7 @@ def getComponentParameterDefinitions():
 
         pb.defParam(
             "massHmBOL",
-            units="grams",
+            units=units.GRAMS,
             description="Mass of heavy metal at BOL",
             default=None,
         )
@@ -112,7 +112,7 @@ def getComponentParameterDefinitions():
 
         pb.defParam(
             "pinNum",
-            units="N/A",
+            units=units.UNITLESS,
             description="Pin number of this component in some mesh. Starts at 1.",
             default=None,
         )
@@ -124,11 +124,11 @@ def getCircleParameterDefinitions():
     pDefs = parameters.ParameterDefinitionCollection()
 
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:
-        pb.defParam("od", units="cm", description="Outer diameter")
+        pb.defParam("od", units=units.CM, description="Outer diameter")
 
-        pb.defParam("id", units="cm", description="Inner diameter", default=0.0)
+        pb.defParam("id", units=units.CM, description="Inner diameter", default=0.0)
 
-        pb.defParam("op", units="cm", description="Outer pitch")
+        pb.defParam("op", units=units.CM, description="Outer pitch")
 
     return pDefs
 
@@ -137,9 +137,9 @@ def getHexagonParameterDefinitions():
     """Return parameters for Hexagon."""
     pDefs = parameters.ParameterDefinitionCollection()
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:
-        pb.defParam("ip", units="cm", description="Inner pitch", default=0.0)
+        pb.defParam("ip", units=units.CM, description="Inner pitch", default=0.0)
 
-        pb.defParam("op", units="cm", description="Outer pitch")
+        pb.defParam("op", units=units.CM, description="Outer pitch")
 
     return pDefs
 
@@ -148,7 +148,9 @@ def getHoledHexagonParameterDefinitions():
     """Return parameters for HoledHexagon."""
     pDefs = parameters.ParameterDefinitionCollection()
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:
-        pb.defParam("holeOD", units="cm", description="Diameter of interior hole(s)")
+        pb.defParam(
+            "holeOD", units=units.CM, description="Diameter of interior hole(s)"
+        )
 
         pb.defParam(
             "nHoles", units=units.UNITLESS, description="Number of interior holes"
@@ -161,7 +163,7 @@ def getHexHoledCircleParameterDefinitions():
     """Return parameters for HexHoledCircle."""
     pDefs = parameters.ParameterDefinitionCollection()
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:
-        pb.defParam("holeOP", units="cm", description="Pitch of interior hole")
+        pb.defParam("holeOP", units=units.CM, description="Pitch of interior hole")
 
     return pDefs
 
@@ -170,7 +172,7 @@ def getHoledRectangleParameterDefinitions():
     """Return parameters for HoledRectangle."""
     pDefs = parameters.ParameterDefinitionCollection()
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:
-        pb.defParam("holeOD", units="cm", description="Diameter of interior hole")
+        pb.defParam("holeOD", units=units.CM, description="Diameter of interior hole")
 
     return pDefs
 
@@ -179,19 +181,19 @@ def getHelixParameterDefinitions():
     """Return parameters for Helix."""
     pDefs = parameters.ParameterDefinitionCollection()
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:
-        pb.defParam("od", units="cm", description="Outer diameter")
+        pb.defParam("od", units=units.CM, description="Outer diameter")
 
-        pb.defParam("id", units="cm", description="Inner diameter", default=0.0)
+        pb.defParam("id", units=units.CM, description="Inner diameter", default=0.0)
 
-        pb.defParam("op", units="cm", description="Outer pitch")
+        pb.defParam("op", units=units.CM, description="Outer pitch")
 
         pb.defParam(
             "axialPitch",
-            units="cm",
+            units=units.CM,
             description="Axial pitch of helix in helical shapes.",
         )
 
-        pb.defParam("helixDiameter", units="cm", description="Diameter of helix")
+        pb.defParam("helixDiameter", units=units.CM, description="Diameter of helix")
 
     return pDefs
 
@@ -200,13 +202,13 @@ def getRectangleParameterDefinitions():
     """Return parameters for Rectangle."""
     pDefs = parameters.ParameterDefinitionCollection()
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:
-        pb.defParam("lengthInner", units="cm", description="Inner length")
+        pb.defParam("lengthInner", units=units.CM, description="Inner length")
 
-        pb.defParam("lengthOuter", units="cm", description="Outer length")
+        pb.defParam("lengthOuter", units=units.CM, description="Outer length")
 
-        pb.defParam("widthInner", units="cm", description="Inner width")
+        pb.defParam("widthInner", units=units.CM, description="Inner width")
 
-        pb.defParam("widthOuter", units="cm", description="Outer width")
+        pb.defParam("widthOuter", units=units.CM, description="Outer width")
 
     return pDefs
 
@@ -215,13 +217,13 @@ def getCubeParameterDefinitions():
     """Return parameters for Cube."""
     pDefs = parameters.ParameterDefinitionCollection()
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:
-        pb.defParam("lengthInner", units="cm", description="Inner length")
+        pb.defParam("lengthInner", units=units.CM, description="Inner length")
 
-        pb.defParam("lengthOuter", units="cm", description="Outer length")
+        pb.defParam("lengthOuter", units=units.CM, description="Outer length")
 
-        pb.defParam("widthInner", units="cm", description="Inner width")
+        pb.defParam("widthInner", units=units.CM, description="Inner width")
 
-        pb.defParam("widthOuter", units="cm", description="Outer width")
+        pb.defParam("widthOuter", units=units.CM, description="Outer width")
 
         pb.defParam("heightOuter", units=units.UNITLESS, description="?")
 
@@ -245,7 +247,7 @@ def getUnshapedParameterDefinitions():
     """Return parameters for UnshapedComponent."""
     pDefs = parameters.ParameterDefinitionCollection()
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:
-        pb.defParam("op", units="cm", description="Outer pitch")
+        pb.defParam("op", units=units.CM, description="Outer pitch")
 
         pb.defParam(
             "userDefinedVolume", units="cm^3", description="Volume of this object."

@@ -45,11 +45,13 @@ def defineReactorParameters():
 
         pb.defParam(
             "cycleLength",
-            units="days",
+            units=units.DAYS,
             description="Length of the cycle, including outage time described by availabilityFactor",
         )
 
-        pb.defParam("stepLength", units="days", description="Length of current step")
+        pb.defParam(
+            "stepLength", units=units.DAYS, description="Length of current step"
+        )
 
         pb.defParam(
             "availabilityFactor",
@@ -71,7 +73,7 @@ def defineReactorParameters():
 
         pb.defParam(
             "time",
-            units="yr",
+            units=units.YEARS,
             description="Time of reactor life from BOL to current time node",
             categories=["depletion"],
         )
@@ -193,7 +195,7 @@ def defineCoreParameters():
 
         pb.defParam(
             "axialMesh",
-            units="cm",
+            units=units.CM,
             description="Global axial mesh of the reactor core from bottom to top.",
             default=None,
             location=ParamLocation.TOP,
@@ -203,7 +205,7 @@ def defineCoreParameters():
 
         pb.defParam(
             "referenceBlockAxialMesh",
-            units="cm",
+            units=units.CM,
             description="The axial block boundaries that assemblies should conform to in a uniform mesh case.",
             default=None,
         )
@@ -220,10 +222,14 @@ def defineCoreParameters():
             description="The time it takes to produce enough spent fuel to fuel a daughter reactor",
         )
 
-        pb.defParam("fissileMass", units="g", description="Fissile mass of the reactor")
+        pb.defParam(
+            "fissileMass", units=units.GRAMS, description="Fissile mass of the reactor"
+        )
 
         pb.defParam(
-            "heavyMetalMass", units="g", description="Heavy Metal mass of the reactor"
+            "heavyMetalMass",
+            units=units.GRAMS,
+            description="Heavy Metal mass of the reactor",
         )
 
         pb.defParam(
@@ -244,23 +250,25 @@ def defineCoreParameters():
 
         pb.defParam(
             "loadPadDpaAvg",
-            units="dpa",
+            units=units.DPA,
             description="The highest average dpa in any load pad",
         )
 
         pb.defParam(
-            "loadPadDpaPeak", units="dpa", description="The peak dpa in any load pad"
+            "loadPadDpaPeak",
+            units=units.DPA,
+            description="The peak dpa in any load pad",
         )
 
         pb.defParam("maxcladFCCI", units=units.UNITLESS, description="", default=0.0)
 
         pb.defParam(
             "maxDPA",
-            units="dpa",
+            units=units.DPA,
             description="Maximum DPA based on pin-level max if it exists, block level max otherwise",
         )
 
-        pb.defParam("maxGridDpa", units="dpa", description="Grid plate max dpa")
+        pb.defParam("maxGridDpa", units=units.DPA, description="Grid plate max dpa")
 
         pb.defParam(
             "maxProcessMemoryInMB",
@@ -294,7 +302,7 @@ def defineCoreParameters():
 
         pb.defParam(
             "peakGridDpaAt60Years",
-            units="dpa",
+            units=units.DPA,
             description="Grid plate peak dpa after 60 years irradiation",
         )
 
@@ -316,7 +324,7 @@ def defineCoreParameters():
 
         pb.defParam(
             "THmaxDeltaPPump",
-            units="Pa",
+            units=units.PASCALS,
             description="The maximum pumping pressure rise required to pump the given mass flow rate through the rod bundle",
         )
 
@@ -338,14 +346,14 @@ def defineCoreParameters():
 
         pb.defParam(
             "power",
-            units="W",
+            units=units.WATTS,
             description="Thermal power of the reactor core. Corresponds to the "
             "nuclear power generated in the core.",
         )
 
         pb.defParam(
             "powerDecay",
-            units="W",
+            units=units.WATTS,
             description="Decay power from decaying radionuclides",
         )
 
@@ -359,7 +367,7 @@ def defineCoreParameters():
 
         pb.defParam(
             "maxdetailedDpaPeak",
-            units="dpa",
+            units=units.DPA,
             description="Highest peak dpa of any block in the problem",
         )
 
@@ -375,25 +383,25 @@ def defineCoreParameters():
 
         pb.defParam(
             "maxDetailedDpaThisCycle",
-            units="dpa",
+            units=units.DPA,
             description="Max increase in dpa this cycle (only defined at EOC)",
         )
 
         pb.defParam(
             "dpaFullWidthHalfMax",
-            units="cm",
+            units=units.CM,
             description="Full width at half max of the detailedDpa distribution",
         )
 
         pb.defParam(
             "elevationOfACLP3Cycles",
-            units="cm",
+            units=units.CM,
             description="minimum axial location of the ACLP for 3 cycles at peak dose",
         )
 
         pb.defParam(
             "elevationOfACLP7Cycles",
-            units="cm",
+            units=units.CM,
             description="minimum axial location of the ACLP for 7 cycles at peak dose",
         )
 
@@ -407,13 +415,13 @@ def defineCoreParameters():
 
         pb.defParam(
             "maxBuF",
-            units="%",
+            units=units.PERCENT,
             description="Maximum burnup seen in any feed assemblies",
         )
 
         pb.defParam(
             "maxBuI",
-            units="%",
+            units=units.PERCENT,
             description="Maximum burnup seen in any igniter assemblies",
         )
 
@@ -744,7 +752,7 @@ def defineCoreParameters():
 
         pb.defParam(
             "breedingRatio",
-            units="N/A",
+            units=units.UNITLESS,
             description="Breeding ratio of the reactor",
             default=0.0,
         )
@@ -755,7 +763,7 @@ def defineCoreParameters():
 
         pb.defParam(
             "axialExpansionPercent",
-            units="%",
+            units=units.PERCENT,
             description="Percent of axial growth of fuel blocks",
             default=0.0,
         )

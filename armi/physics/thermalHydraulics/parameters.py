@@ -35,7 +35,7 @@ def _getBlockParams():
 
         pb.defParam(
             "pressureLossCoeffs",
-            units="",
+            units=units.UNITLESS,
             description="Pressure loss coefficients from form losses outside of bundle region of "
             "assembly, e.g. losses through pin attachment hardware, expansion in inlet "
             "nozzle.",
@@ -137,7 +137,7 @@ def _getBlockParams():
 
         pb.defParam(
             "THdilationPressure",
-            units="Pa",
+            units=units.PASCALS,
             description="Dilation pressure",
             categories=["thInterface"],
             default=0.0,
@@ -228,7 +228,7 @@ def _getBlockParams():
 
         pb.defParam(
             "THdeltaPTotal",
-            units="Pa",
+            units=units.PASCALS,
             description="Total pressure difference in a block",
             location=ParamLocation.AVERAGE,
         )

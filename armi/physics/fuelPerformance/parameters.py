@@ -78,28 +78,28 @@ def _getFuelPerformanceBlockParams():
 
         pb.defParam(
             "totalCladStrain",
-            units="%",
+            units=units.PERCENT,
             description="Total diametral clad strain.",
             categories=["eq cumulative shift"],
         )
 
         pb.defParam(
             "axialGrowthPct",
-            units="%",
+            units=units.PERCENT,
             description="Axial growth percentage",
             categories=["eq cumulative shift"],
         )
 
         pb.defParam(
             "fpPeakFuelTemp",
-            units="C",
+            units=units.DEGC,
             description="Fuel performance calculated peak fuel temperature.",
             location=ParamLocation.AVERAGE,
         )
 
         pb.defParam(
             "fpAveFuelTemp",
-            units="C",
+            units=units.DEGC,
             description="Fuel performance calculated average fuel temperature.",
             location=ParamLocation.AVERAGE,
         )
