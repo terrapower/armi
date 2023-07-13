@@ -19,8 +19,6 @@ from armi.materials.material import SimpleSolid
 
 
 class Hafnium(SimpleSolid):
-    name = "Hafnium"
-
     def setDefaultMassFracs(self):
         for a, abund in nucDir.getNaturalMassIsotopics("HF"):
             self.setMassFrac("HF{0}".format(a), abund)

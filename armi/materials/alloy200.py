@@ -21,7 +21,6 @@ from armi.utils.units import getTk
 
 class Alloy200(Material):
 
-    name = "Alloy200"
     references = {
         "linearExpansion": [
             "Alloy 200/201 Data Sheet http://www.jacquet.biz/JACQUET/USA/files/JCQusa-alloy-200-201.pdf"

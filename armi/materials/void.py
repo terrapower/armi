@@ -21,8 +21,6 @@ from armi.materials import material
 
 
 class Void(material.Fluid):
-    name = "Void"
-
     def pseudoDensity(self, Tk: float = None, Tc: float = None) -> float:
         return 0.0
 

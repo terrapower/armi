@@ -33,8 +33,6 @@ class Sodium(material.Fluid):
         https://www.osti.gov/biblio/94649-gXNdLI/webviewable/
     """
 
-    name = "Sodium"
-
     propertyValidTemperature = {
         "density": ((97.85, 2230.55), "C"),
         "enthalpy": ((371.0, 2000.0), "K"),

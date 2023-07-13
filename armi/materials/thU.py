@@ -27,7 +27,6 @@ from armi.utils.units import getTk
 
 
 class ThU(FuelMaterial):
-    name = "ThU"
     enrichedNuclide = "U233"
     propertyValidTemperature = {"linear expansion": ((30, 600), "K")}
 

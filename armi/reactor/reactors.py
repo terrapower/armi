@@ -78,6 +78,7 @@ class Reactor(composites.Composite):
         self.p.cycle = 0
         self.p.flags |= Flags.REACTOR
         self.core = None
+        self.sfp = assemblyLists.SpentFuelPool("Spent Fuel Pool", self)
         self.blueprints = blueprints
 
     def __getstate__(self):
@@ -88,6 +89,7 @@ class Reactor(composites.Composite):
 
     def __setstate__(self, state):
         composites.Composite.__setstate__(self, state)
+        self.sfp.parent = self
 
     def __deepcopy__(self, memo):
         memo[id(self)] = newR = self.__class__.__new__(self.__class__)
@@ -207,10 +209,6 @@ class Core(composites.Composite):
         self.spatialGrid = None
         self.xsIndex = {}
         self.p.numMoves = 0
-
-        # build a spent fuel pool for this reactor
-        runLog.debug("Building spent fuel pools")
-        self.sfp = assemblyLists.SpentFuelPool("Spent Fuel Pool", self)
         self._lib = None  # placeholder for ISOTXS object
         self.locParams = {}  # location-based parameters
         # overridden in case.py to include pre-reactor time.
@@ -252,7 +250,6 @@ class Core(composites.Composite):
 
     def __setstate__(self, state):
         composites.Composite.__setstate__(self, state)
-        self.sfp.parent = self
         self.regenAssemblyLists()
 
     def __deepcopy__(self, memo):
@@ -466,7 +463,10 @@ class Core(composites.Composite):
         self.remove(a1)
 
         if discharge and self._trackAssems:
-            self.sfp.add(a1)
+            if hasattr(self.parent, "sfp"):
+                self.parent.sfp.add(a1)
+            else:
+                runLog.info("No Spent Fuel Pool is found, can't track assemblies.")
         else:
             self._removeListFromAuxiliaries(a1)
 
@@ -527,7 +527,8 @@ class Core(composites.Composite):
         assems = set(self)
         for a in assems:
             self.removeAssembly(a, discharge)
-        self.sfp.removeAll()
+        if hasattr(self.parent, "sfp"):
+            self.parent.sfp.removeAll()
         self.blocksByName = {}
         self.assembliesByName = {}
 
@@ -951,7 +952,6 @@ class Core(composites.Composite):
         ----------
         ringPitch : float, optional
             The relative pitch that should be used to define the spacing between each ring.
-
         """
         runLog.extra(
             "Building a circular ring dictionary with ring pitch {}".format(ringPitch)
@@ -1011,7 +1011,6 @@ class Core(composites.Composite):
         See Also
         --------
         getAssembly : more general version of this method
-
         """
         return self.assembliesByName[name]
 
@@ -1069,8 +1068,8 @@ class Core(composites.Composite):
 
         assems.extend(a for a in sorted(self, key=sortKey))
 
-        if includeSFP:
-            assems.extend(self.sfp.getChildren())
+        if includeSFP and hasattr(self.parent, "sfp"):
+            assems.extend(self.parent.sfp.getChildren())
 
         if typeSpec:
             assems = [a for a in assems if a.hasFlags(typeSpec, exact=exact)]

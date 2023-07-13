@@ -23,9 +23,8 @@ from armi.utils.units import getTc
 
 
 class SiC(Material):
-    r"""Silicon Carbide."""
+    """Silicon Carbide."""
 
-    name = "SiC"
     thermalScatteringLaws = (
         tsl.byNbAndCompound[nb.byName["C"], tsl.SIC],
         tsl.byNbAndCompound[nb.byName["SI"], tsl.SIC],
