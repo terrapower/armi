@@ -285,7 +285,6 @@ def getAssemblyParameterDefinitions():
             "type",
             units="?",
             description="The name of the assembly input on the blueprints input",
-            location="?",
             default="defaultAssemType",
             saveToDB=True,
         )
@@ -294,7 +293,6 @@ def getAssemblyParameterDefinitions():
             "nozzleType",
             units="None",
             description="nozzle type for assembly",
-            location="?",
             default="Default",
             saveToDB=True,
             categories=[parameters.Category.assignInBlueprints],
@@ -302,9 +300,9 @@ def getAssemblyParameterDefinitions():
 
     with pDefs.createBuilder(default=0.0) as pb:
 
-        pb.defParam("THcoolantInletT", units="?", description="?", location="?")
+        pb.defParam("THcoolantInletT", units="?", description="?")
 
-        pb.defParam("assemNum", units="?", description="?", location="?")
+        pb.defParam("assemNum", units="?", description="?")
 
         pb.defParam(
             "axExpWorthPT",
@@ -327,7 +325,7 @@ def getAssemblyParameterDefinitions():
             location=ParamLocation.AVERAGE,
         )
 
-        pb.defParam("dischargeTime", units="?", description="?", location="?")
+        pb.defParam("dischargeTime", units="?", description="?")
 
         pb.defParam(
             "fuelWorthPT",
@@ -340,7 +338,6 @@ def getAssemblyParameterDefinitions():
             "hotChannelFactors",
             units="None",
             description="Definition of set of HCFs to be applied to assembly.",
-            location="?",
             default="Default",
             saveToDB=True,
             categories=[parameters.Category.assignInBlueprints],
@@ -366,7 +363,6 @@ def getAssemblyParameterDefinitions():
             "AziMesh",
             units="?",
             description="?",
-            location="?",
             saveToDB=False,
             default=1,
         )
@@ -375,7 +371,6 @@ def getAssemblyParameterDefinitions():
             "RadMesh",
             units="?",
             description="?",
-            location="?",
             saveToDB=False,
             default=1,
         )

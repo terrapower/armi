@@ -208,7 +208,7 @@ def isNumpyArray(paramStr):
 
 @functools.total_ordering
 class Parameter:
-    r"""Metadata about a specific parameter."""
+    """Metadata about a specific parameter."""
 
     _validName = re.compile("^[a-zA-Z0-9_]+$")
 
@@ -596,7 +596,7 @@ class ParameterBuilder:
         categories=None,
         saveToDB=True,
     ):
-        r"""Create a :py:class:`ParameterBuilder`."""
+        """Create a :py:class:`ParameterBuilder`."""
         self._entered = False
         self._defaultLocation = location
         self._defaultCategories = set(categories or [])  # make sure it is always a set
