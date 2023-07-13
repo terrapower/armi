@@ -153,7 +153,6 @@ autoclass_content = "both"
 
 apidoc_module_dir = SOURCE_DIR
 apidoc_output_dir = APIDOC_REL
-apidoc_excluded_paths = ["*/test_gridGui.py"]
 apidoc_separate_modules = True
 apidoc_module_first = True
 
