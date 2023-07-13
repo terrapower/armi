@@ -825,7 +825,6 @@ class HexReactorTests(ReactorTests):
             b = a[-1]  # use the last block in case we ever figure out stationary blocks
             aLoc = a.spatialLocator
             self.assertIsNotNone(aLoc.grid)
-            bLoc = b.spatialLocator
             core = self.r.core
             del core.parent.sfp
             core.removeAssembly(a)
