@@ -43,7 +43,7 @@ def getComponentParameterDefinitions():
 
         pb.defParam(
             "type",
-            units="",
+            units=units.UNITLESS,
             description="The name of this object as input on the blueprints",
         )
 
@@ -223,9 +223,9 @@ def getCubeParameterDefinitions():
 
         pb.defParam("widthOuter", units="cm", description="Outer width")
 
-        pb.defParam("heightOuter", units="?", description="?")
+        pb.defParam("heightOuter", units=units.UNITLESS, description="?")
 
-        pb.defParam("heightInner", units="?", description="?")
+        pb.defParam("heightInner", units=units.UNITLESS, description="?")
 
     return pDefs
 
@@ -234,9 +234,9 @@ def getTriangleParameterDefinitions():
     """Return parameters for Triangle."""
     pDefs = parameters.ParameterDefinitionCollection()
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:
-        pb.defParam("base", units="?", description="?")
+        pb.defParam("base", units=units.UNITLESS, description="?")
 
-        pb.defParam("height", units="?", description="?")
+        pb.defParam("height", units=units.UNITLESS, description="?")
 
     return pDefs
 
@@ -258,23 +258,23 @@ def getRadialSegmentParameterDefinitions():
     """Return parameters for RadialSegment."""
     pDefs = parameters.ParameterDefinitionCollection()
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:
-        pb.defParam("inner_theta", units="?", description="?")
+        pb.defParam("inner_theta", units=units.UNITLESS, description="?")
 
-        pb.defParam("outer_theta", units="?", description="?")
+        pb.defParam("outer_theta", units=units.UNITLESS, description="?")
 
-        pb.defParam("inner_radius", units="?", description="?")
+        pb.defParam("inner_radius", units=units.UNITLESS, description="?")
 
-        pb.defParam("outer_radius", units="?", description="?")
+        pb.defParam("outer_radius", units=units.UNITLESS, description="?")
 
-        pb.defParam("height", units="?", description="?")
+        pb.defParam("height", units=units.UNITLESS, description="?")
 
-        pb.defParam("azimuthal_differential", units="?", description="?")
+        pb.defParam("azimuthal_differential", units=units.UNITLESS, description="?")
 
-        pb.defParam("radius_differential", units="?", description="?")
+        pb.defParam("radius_differential", units=units.UNITLESS, description="?")
 
-        pb.defParam("inner_axial", units="?", description="?")
+        pb.defParam("inner_axial", units=units.UNITLESS, description="?")
 
-        pb.defParam("outer_axial", units="?", description="?")
+        pb.defParam("outer_axial", units=units.UNITLESS, description="?")
 
     return pDefs
 
@@ -283,34 +283,34 @@ def getTorusParameterDefinitions():
     """Return parameters for Torus."""
     pDefs = parameters.ParameterDefinitionCollection()
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:
-        pb.defParam("inner_theta", units="?", description="?")
+        pb.defParam("inner_theta", units=units.UNITLESS, description="?")
 
-        pb.defParam("outer_theta", units="?", description="?")
+        pb.defParam("outer_theta", units=units.UNITLESS, description="?")
 
-        pb.defParam("inner_radius", units="?", description="?")
+        pb.defParam("inner_radius", units=units.UNITLESS, description="?")
 
-        pb.defParam("outer_radius", units="?", description="?")
+        pb.defParam("outer_radius", units=units.UNITLESS, description="?")
 
-        pb.defParam("height", units="?", description="?")
+        pb.defParam("height", units=units.UNITLESS, description="?")
 
-        pb.defParam("azimuthal_differential", units="?", description="?")
+        pb.defParam("azimuthal_differential", units=units.UNITLESS, description="?")
 
-        pb.defParam("radius_differential", units="?", description="?")
+        pb.defParam("radius_differential", units=units.UNITLESS, description="?")
 
-        pb.defParam("inner_axial", units="?", description="?")
+        pb.defParam("inner_axial", units=units.UNITLESS, description="?")
 
-        pb.defParam("outer_axial", units="?", description="?")
+        pb.defParam("outer_axial", units=units.UNITLESS, description="?")
 
-        pb.defParam("inner_minor_radius", units="?", description="?")
+        pb.defParam("inner_minor_radius", units=units.UNITLESS, description="?")
 
-        pb.defParam("outer_minor_radius", units="?", description="?")
+        pb.defParam("outer_minor_radius", units=units.UNITLESS, description="?")
 
-        pb.defParam("major_radius", units="?", description="?")
+        pb.defParam("major_radius", units=units.UNITLESS, description="?")
 
-        pb.defParam("inner_phi", units="?", description="?")
+        pb.defParam("inner_phi", units=units.UNITLESS, description="?")
 
-        pb.defParam("outer_phi", units="?", description="?")
+        pb.defParam("outer_phi", units=units.UNITLESS, description="?")
 
-        pb.defParam("reference_volume", units="?", description="?")
+        pb.defParam("reference_volume", units=units.UNITLESS, description="?")
 
     return pDefs

@@ -146,8 +146,8 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "percentBuMaxPinLocation",
-            units="int",
-            description="Peak burnup pin location",
+            units=units.UNITLESS,
+            description="Peak burnup pin location (integer)",
             location=ParamLocation.MAX,
         )
 
@@ -330,9 +330,9 @@ def getBlockParameterDefinitions():
             categories=[parameters.Category.retainOnReplacement],
         )
 
-        pb.defParam("baseBu", units="?", description="?", saveToDB=False)
+        pb.defParam("baseBu", units=units.UNITLESS, description="?", saveToDB=False)
 
-        pb.defParam("basePBu", units="?", description="?", saveToDB=False)
+        pb.defParam("basePBu", units=units.UNITLESS, description="?", saveToDB=False)
 
         pb.defParam(
             "nHMAtBOL",
@@ -385,7 +385,7 @@ def getBlockParameterDefinitions():
             default=-1,
         )
 
-        pb.defParam("id", units="?", description="?", default=None)
+        pb.defParam("id", units=units.UNITLESS, description="?", default=None)
 
         pb.defParam(
             "height",
@@ -799,11 +799,17 @@ def getBlockParameterDefinitions():
         )
 
         pb.defParam(
-            "avgFuelTemp", units="?", description="?", location=ParamLocation.AVERAGE
+            "avgFuelTemp",
+            units=units.UNITLESS,
+            description="?",
+            location=ParamLocation.AVERAGE,
         )
 
         pb.defParam(
-            "avgTempRef", units="?", description="?", location=ParamLocation.AVERAGE
+            "avgTempRef",
+            units=units.UNITLESS,
+            description="?",
+            location=ParamLocation.AVERAGE,
         )
 
         pb.defParam(
@@ -816,7 +822,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "blockBeta",
-            units="unitless",
+            units=units.UNITLESS,
             description="Beta in each block",
             location=ParamLocation.AVERAGE,
         )
@@ -876,7 +882,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "coolRemFrac",
-            units="?",
+            units=units.UNITLESS,
             description="Fractional sodium density change for each block",
             location=ParamLocation.AVERAGE,
         )
@@ -926,14 +932,14 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "intrinsicSource",
-            units="?",
+            units=units.UNITLESS,
             description="Intrinsic neutron source from spontaneous fissions before a decay period",
             location=ParamLocation.AVERAGE,
         )
 
         pb.defParam(
             "intrinsicSourceDecayed",
-            units="?",
+            units=units.UNITLESS,
             description="Intrinsic source from spontaneous fissions after a decay period",
             location=ParamLocation.AVERAGE,
         )
@@ -998,7 +1004,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "smearDensity",
-            units="?",
+            units=units.UNITLESS,
             description="Smear density of fuel pins in this block. Defined as the ratio of fuel area to total space inside cladding.",
             location=ParamLocation.AVERAGE,
         )

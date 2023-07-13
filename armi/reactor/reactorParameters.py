@@ -25,8 +25,8 @@ def defineReactorParameters():
     pDefs.add(
         parameters.Parameter(
             "rdIterNum",
-            units="int",
-            description="Number of region-density equilibrium iterations",
+            units=units.UNITLESS,
+            description="Integer number of region-density equilibrium iterations",
             location=ParamLocation.AVERAGE,
             saveToDB=True,
             default=parameters.NoDefault,
@@ -38,8 +38,8 @@ def defineReactorParameters():
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, default=0.0) as pb:
         pb.defParam(
             "cycle",
-            units="int",
-            description="current cycle of the simulation",
+            units=units.UNITLESS,
+            description="current cycle of the simulation (interger)",
             default=0,
         )
 
@@ -53,7 +53,7 @@ def defineReactorParameters():
 
         pb.defParam(
             "availabilityFactor",
-            units="fraction",
+            units=units.UNITLESS,
             description="Availability factor of the plant. This is the fraction of the time that "
             "the plant is operating.",
             default=1.0,
@@ -61,7 +61,7 @@ def defineReactorParameters():
 
         pb.defParam(
             "capacityFactor",
-            units="fraction",
+            units=units.UNITLESS,
             description="The fraction of power produced by the plant this cycle over the "
             "full-power, 100% uptime potential of the plant.",
             default=1.0,
@@ -76,7 +76,9 @@ def defineReactorParameters():
             categories=["depletion"],
         )
 
-        pb.defParam("timeNode", units=units.UNITLESS, description="timeNode", default=0)
+        pb.defParam(
+            "timeNode", units=units.UNITLESS, description="integer timeNode", default=0
+        )
 
     with pDefs.createBuilder(
         location=ParamLocation.AVERAGE, default=0.0, categories=["economics"]
@@ -280,8 +282,8 @@ def defineCoreParameters():
 
         pb.defParam(
             "outsideFuelRing",
-            units="int",
-            description="The ring with the fraction of flux that best meets the target",
+            units=units.UNITLESS,
+            description="The ring (integer) with the fraction of flux that best meets the target",
         )
 
         pb.defParam(
@@ -347,13 +349,13 @@ def defineCoreParameters():
             description="Decay power from decaying radionuclides",
         )
 
-        pb.defParam("medAbsCore", units="?", description="?")
+        pb.defParam("medAbsCore", units=units.UNITLESS, description="?")
 
-        pb.defParam("medFluxCore", units="?", description="?")
+        pb.defParam("medFluxCore", units=units.UNITLESS, description="?")
 
-        pb.defParam("medSrcCore", units="?", description="?")
+        pb.defParam("medSrcCore", units=units.UNITLESS, description="?")
 
-        pb.defParam("pkFlux", units="?", description="?")
+        pb.defParam("pkFlux", units=units.UNITLESS, description="?")
 
         pb.defParam(
             "maxdetailedDpaPeak",
@@ -721,9 +723,9 @@ def defineCoreParameters():
 
         pb.defParam(
             "cyclics",
-            units="int",
+            units=units.UNITLESS,
             description=(
-                "The number of cyclic mode equilibrium-cycle "
+                "The integer number of cyclic mode equilibrium-cycle "
                 "iterations that have occurred so far"
             ),
             default=0,
@@ -747,9 +749,9 @@ def defineCoreParameters():
             default=0.0,
         )
 
-        pb.defParam("ConvRatioCore", units="?", description="?")
+        pb.defParam("ConvRatioCore", units=units.UNITLESS, description="?")
 
-        pb.defParam("absPerFisCore", units="?", description="?")
+        pb.defParam("absPerFisCore", units=units.UNITLESS, description="?")
 
         pb.defParam(
             "axialExpansionPercent",
@@ -758,15 +760,17 @@ def defineCoreParameters():
             default=0.0,
         )
 
-        pb.defParam("coupledIteration", units="?", description="?", default=0)
+        pb.defParam(
+            "coupledIteration", units=units.UNITLESS, description="?", default=0
+        )
 
-        pb.defParam("fisFrac", units="?", description="?")
+        pb.defParam("fisFrac", units=units.UNITLESS, description="?")
 
-        pb.defParam("fisRateCore", units="?", description="?")
+        pb.defParam("fisRateCore", units=units.UNITLESS, description="?")
 
         pb.defParam(
             "maxdilationTotal",
-            units="?",
+            units=units.UNITLESS,
             description="?",
             default=0.0,
             categories=["block-max"],
@@ -774,7 +778,7 @@ def defineCoreParameters():
 
         pb.defParam(
             "maxresidence",
-            units="?",
+            units=units.UNITLESS,
             description="?",
             default=0.0,
             categories=["block-max"],

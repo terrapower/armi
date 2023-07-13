@@ -57,7 +57,10 @@ def getAssemblyParameterDefinitions():
         )
 
         pb.defParam(
-            "buLimit", units="", description="buLimit", default=parameters.NoDefault
+            "buLimit",
+            units=units.UNITLESS,
+            description="buLimit",
+            default=parameters.NoDefault,
         )
 
         pb.defParam(
@@ -70,7 +73,7 @@ def getAssemblyParameterDefinitions():
 
         pb.defParam(
             "chargeCycle",
-            units="",
+            units=units.UNITLESS,
             description="Cycle number that this assembly most recently entered the core."
             " If the assembly was discharged and then re-charged, this value will only"
             " reflect the most recent charge.",
@@ -111,17 +114,21 @@ def getAssemblyParameterDefinitions():
             default=1,
         )
 
-        pb.defParam("daysSinceLastMove", units="", description="daysSinceLastMove")
+        pb.defParam(
+            "daysSinceLastMove", units=units.UNITLESS, description="daysSinceLastMove"
+        )
 
-        pb.defParam("kInf", units="", description="kInf")
+        pb.defParam("kInf", units=units.UNITLESS, description="kInf")
 
-        pb.defParam("maxDpaPeak", units="", description="maxDpaPeak")
+        pb.defParam("maxDpaPeak", units=units.UNITLESS, description="maxDpaPeak")
 
-        pb.defParam("maxPercentBu", units="", description="maxPercentBu")
+        pb.defParam("maxPercentBu", units=units.UNITLESS, description="maxPercentBu")
 
-        pb.defParam("numMoves", units="", description="numMoves")
+        pb.defParam("numMoves", units=units.UNITLESS, description="numMoves")
 
-        pb.defParam("timeToLimit", units="", description="timeToLimit", default=1e6)
+        pb.defParam(
+            "timeToLimit", units=units.UNITLESS, description="timeToLimit", default=1e6
+        )
 
     with pDefs.createBuilder(location=ParamLocation.AVERAGE) as pb:
 
@@ -176,7 +183,7 @@ def getAssemblyParameterDefinitions():
 
         pb.defParam(
             "crCriticalFraction",
-            units="",
+            units=units.UNITLESS,
             description=(
                 "The insertion fraction when the control rod assembly is in its critical configuration. "
                 "Note that the default of -1.0 is a trigger for this value not being set yet."
@@ -283,7 +290,7 @@ def getAssemblyParameterDefinitions():
 
         pb.defParam(
             "type",
-            units="?",
+            units=units.UNITLESS,
             description="The name of the assembly input on the blueprints input",
             default="defaultAssemType",
             saveToDB=True,
@@ -300,9 +307,9 @@ def getAssemblyParameterDefinitions():
 
     with pDefs.createBuilder(default=0.0) as pb:
 
-        pb.defParam("THcoolantInletT", units="?", description="?")
+        pb.defParam("THcoolantInletT", units=units.UNITLESS, description="?")
 
-        pb.defParam("assemNum", units="?", description="?")
+        pb.defParam("assemNum", units=units.UNITLESS, description="?")
 
         pb.defParam(
             "axExpWorthPT",
@@ -325,7 +332,7 @@ def getAssemblyParameterDefinitions():
             location=ParamLocation.AVERAGE,
         )
 
-        pb.defParam("dischargeTime", units="?", description="?")
+        pb.defParam("dischargeTime", units=units.UNITLESS, description="?")
 
         pb.defParam(
             "fuelWorthPT",
@@ -361,7 +368,7 @@ def getAssemblyParameterDefinitions():
 
         pb.defParam(
             "AziMesh",
-            units="?",
+            units=units.UNITLESS,
             description="?",
             saveToDB=False,
             default=1,
@@ -369,7 +376,7 @@ def getAssemblyParameterDefinitions():
 
         pb.defParam(
             "RadMesh",
-            units="?",
+            units=units.UNITLESS,
             description="?",
             saveToDB=False,
             default=1,
