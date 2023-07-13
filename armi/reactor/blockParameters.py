@@ -42,7 +42,7 @@ def getBlockParameterDefinitions():
         pb.defParam(
             "pinLocation",
             description="Location of fuel pins",
-            units=None,
+            units=units.UNITLESS,
             saveToDB=False,
             default=None,
             location=ParamLocation.CHILDREN,
@@ -77,7 +77,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "fissileFraction",
-            units=None,
+            units=units.UNITLESS,
             description="Ratio of fissile mass to heavy metal mass at block-level",
         )
 
@@ -193,7 +193,7 @@ def getBlockParameterDefinitions():
 
     with pDefs.createBuilder(default=0.0, location=ParamLocation.AVERAGE) as pb:
 
-        pb.defParam("bu", units="", description="?")
+        pb.defParam("bu", units=units.UNITLESS, description="?")
 
         def buGroup(self, buGroupChar):
             if isinstance(buGroupChar, (int, float)):
@@ -351,7 +351,7 @@ def getBlockParameterDefinitions():
     with pDefs.createBuilder() as pb:
         pb.defParam(
             "axialExpTargetComponent",
-            units="",
+            units=units.UNITLESS,
             description="The name of the target component used for axial expansion and contraction of solid components.",
             default="",
             saveToDB=True,
@@ -359,7 +359,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "topIndex",
-            units="",
+            units=units.UNITLESS,
             description=(
                 "the axial block index within its parent assembly (0 is bottom block). This index with"
                 "regard to the mesh of the reference assembly so it does not increase by 1 for each block."
@@ -373,14 +373,14 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "eqRegion",
-            units="",
+            units=units.UNITLESS,
             description="Equilibrium shuffling region. Corresponds to how many full cycles fuel here has gone through.",
             default=-1,
         )
 
         pb.defParam(
             "eqCascade",
-            units="",
+            units=units.UNITLESS,
             description="Cascade number in repetitive equilibrium shuffling fuel management.",
             default=-1,
         )
@@ -788,7 +788,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "assemNum",
-            units="None",
+            units=units.UNITLESS,
             description="Index that refers, nominally, to the assemNum parameter of "
             "the containing Assembly object. This is stored on the Block to aid in "
             "visualizing shuffle patterns and the like, and should not be used within "
@@ -830,7 +830,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "breedRatio",
-            units="None",
+            units=units.UNITLESS,
             description="Breeding ratio",
             categories=["detailedAxialExpansion"],
             location=ParamLocation.AVERAGE,
@@ -868,7 +868,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "convRatio",
-            units="None",
+            units=units.UNITLESS,
             description="Conversion ratio",
             categories=["detailedAxialExpansion"],
             location=ParamLocation.AVERAGE,
@@ -890,7 +890,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "cyclicNErr",
-            units="None",
+            units=units.UNITLESS,
             description="Relative error of the block number density",
             location=ParamLocation.AVERAGE,
         )
@@ -954,19 +954,19 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "mchan",
-            units="None",
+            units=units.UNITLESS,
             description="SASSYS/DIF3D-K (external) channel index assignment",
             location=ParamLocation.AVERAGE,
         )
 
         pb.defParam(
             "mreg",
-            units="None",
+            units=units.UNITLESS,
             description="SASSYS/DIF3D-K radial region index assignment",
             location=ParamLocation.AVERAGE,
         )
 
-        pb.defParam("nPins", units=None, description="Number of pins")
+        pb.defParam("nPins", units=units.UNITLESS, description="Number of pins")
 
         pb.defParam(
             "newDPAPeak",
@@ -991,7 +991,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "puFrac",
-            units="None",
+            units=units.UNITLESS,
             description="Current Pu number density relative to HM at BOL",
             location=ParamLocation.AVERAGE,
         )

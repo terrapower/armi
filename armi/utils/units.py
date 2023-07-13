@@ -20,7 +20,8 @@ import scipy.constants
 # Names
 DEGC = chr(176) + "C"
 MICRONS = chr(181) + "m"
-NOT_APPLICABLE = "N/A"
+NOT_APPLICABLE = "N/A"  # prefer UNITLESS
+PERCENT = "%"
 UNITLESS = ""
 
 # conversions

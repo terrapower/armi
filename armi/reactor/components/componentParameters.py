@@ -30,14 +30,14 @@ def getComponentParameterDefinitions():
 
         pb.defParam(
             "mult",
-            units=None,
+            units=units.UNITLESS,
             description="The multiplicity of this component, i.e. how many of them there are. ",
             default=1,
         )
 
         pb.defParam(
             "mergeWith",
-            units=None,
+            units=units.UNITLESS,
             description="Label of other component to merge with",
         )
 
@@ -93,7 +93,7 @@ def getComponentParameterDefinitions():
 
         pb.defParam(
             "customIsotopicsName",
-            units=None,
+            units=units.UNITLESS,
             description="Label of isotopics applied to this component. ",
         )
 
@@ -106,7 +106,7 @@ def getComponentParameterDefinitions():
 
         pb.defParam(
             "zrFrac",
-            units=None,
+            units=units.UNITLESS,
             description="Original Zr frac of this, used for material properties. ",
         )
 

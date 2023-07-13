@@ -24,6 +24,7 @@ from armi.reactor.blocks import Block
 from armi.reactor.parameters import ParamLocation
 from armi.reactor.parameters.parameterDefinitions import isNumpyArray
 from armi.reactor.reactors import Core
+from armi.utils import units
 
 
 def getNeutronicsParameterDefinitions():
@@ -37,7 +38,7 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "axMesh",
-            units="",
+            units=units.UNITLESS,
             description="number of neutronics axial mesh points in this block",
             default=None,
             categories=[parameters.Category.retainOnReplacement],
@@ -142,7 +143,7 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "mgFluxSK",
-            units="",
+            units=units.UNITLESS,
             description="multigroup volume-integrated flux stored for multiple time steps in spatial kinetics (2-D array)",
             location=ParamLocation.VOLUME_INTEGRATED,
             saveToDB=False,
@@ -170,7 +171,7 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "pinMgFluxesAdj",
-            units="",
+            units=units.UNITLESS,
             description="should be a blank 3-D array, but re-defined later (ng x nPins x nAxialSegments)",
             categories=[parameters.Category.pinQuantities],
             saveToDB=False,
@@ -188,7 +189,7 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "axialPowerProfile",
-            units="",
+            units=units.UNITLESS,
             description="""
                 For each reconstructed axial location, a tuple (z,power density) where with axial origin at the bottom
                 of assembly in which the blocks are located.
@@ -200,7 +201,7 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "axialPowerProfileNeutron",
-            units="",
+            units=units.UNITLESS,
             description="",
             location=ParamLocation.AVERAGE,
             saveToDB=True,
@@ -209,7 +210,7 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "axialPowerProfileGamma",
-            units="",
+            units=units.UNITLESS,
             description="",
             location=ParamLocation.AVERAGE,
             saveToDB=True,
@@ -218,7 +219,7 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "betad",
-            units="",
+            units=units.UNITLESS,
             description="Delayed neutron beta",
             location=ParamLocation.AVERAGE,
             saveToDB=True,
@@ -227,7 +228,7 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "chi",
-            units="",
+            units=units.UNITLESS,
             description="Energy distribution of fission neutrons",
             location=ParamLocation.AVERAGE,
             saveToDB=True,
@@ -236,7 +237,7 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "chid",
-            units="",
+            units=units.UNITLESS,
             description="Energy distribution of delayed fission neutrons",
             location=ParamLocation.AVERAGE,
             saveToDB=True,
@@ -317,7 +318,7 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "pointsEdgeFastFluxFr",
-            units=None,
+            units=units.UNITLESS,
             description="Fraction of flux above 100keV at edges of the block",
         )
 
@@ -353,7 +354,7 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "pointsCornerFastFluxFr",
-            units=None,
+            units=units.UNITLESS,
             description="Fraction of flux above 100keV at corners of the block",
         )
 
@@ -435,7 +436,7 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "capturePowerFrac",
-            units=None,
+            units=units.UNITLESS,
             description="Fraction of the power produced through capture in a block.",
             saveToDB="True",
         )
@@ -475,12 +476,10 @@ def _getNeutronicsBlockParams():
             ],
         )
 
-        pb.defParam(
-            "fluxAdj", units="", description="Adjoint flux"  # adjoint flux is unitless
-        )
+        pb.defParam("fluxAdj", units=units.UNITLESS, description="Adjoint flux")
         pb.defParam(
             "fluxAdjPeak",
-            units="",
+            units=units.UNITLESS,
             description="Adjoint flux",
             location=ParamLocation.MAX,
         )
@@ -500,7 +499,9 @@ def _getNeutronicsBlockParams():
 
         pb.defParam("arealPd", units="MW/m^2", description="Power divided by XY area")
 
-        pb.defParam("fertileBonus", units=None, description="The fertile bonus")
+        pb.defParam(
+            "fertileBonus", units=units.UNITLESS, description="The fertile bonus"
+        )
 
         pb.defParam(
             "fisDens",
@@ -531,7 +532,7 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "kInf",
-            units="None",
+            units=units.UNITLESS,
             description="Neutron production rate in this block/neutron absorption rate in this block. Not truly kinf but a reasonable approximation of reactivity.",
         )
 
@@ -700,7 +701,7 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "fastFluxFr",
-            units="",
+            units=units.UNITLESS,
             description="Fraction of flux above 100keV",
             location=ParamLocation.AVERAGE,
             categories=["detailedAxialExpansion"],
@@ -723,7 +724,7 @@ def _getNeutronicsCoreParams():
     with pDefs.createBuilder(categories=[parameters.Category.neutronics]) as pb:
         pb.defParam(
             "eigenvalues",
-            units=None,
+            units=units.UNITLESS,
             description="All available lambda-eigenvalues of reactor.",
             default=None,  # will be a list though, can't set default to mutable type.
             location=ParamLocation.AVERAGE,
@@ -731,7 +732,7 @@ def _getNeutronicsCoreParams():
 
         pb.defParam(
             "kInf",
-            units=None,
+            units=units.UNITLESS,
             description="k-infinity",
             default=0.0,
             location=ParamLocation.AVERAGE,
@@ -739,7 +740,7 @@ def _getNeutronicsCoreParams():
 
         pb.defParam(
             "refKeff",
-            units=None,
+            units=units.UNITLESS,
             description="Reference unperturbed keff",
             default=0.0,
             location=ParamLocation.AVERAGE,

@@ -95,7 +95,7 @@ def getAssemblyParameterDefinitions():
 
         pb.defParam(
             "multiplicity",
-            units=None,
+            units=units.UNITLESS,
             description="The number of physical assemblies that the associated object "
             "represents. This is typically 1, but may need to change when the assembly "
             "is moved between containers with different types of symmetry. For "
@@ -274,7 +274,7 @@ def getAssemblyParameterDefinitions():
 
         pb.defParam(
             "THorificeZone",
-            units=None,
+            units=units.UNITLESS,
             description="orifice zone for assembly; should be location specific",
             default=0,  # integer default
         )
@@ -291,7 +291,7 @@ def getAssemblyParameterDefinitions():
 
         pb.defParam(
             "nozzleType",
-            units="None",
+            units=units.UNITLESS,
             description="nozzle type for assembly",
             default="Default",
             saveToDB=True,
@@ -336,7 +336,7 @@ def getAssemblyParameterDefinitions():
 
         pb.defParam(
             "hotChannelFactors",
-            units="None",
+            units=units.UNITLESS,
             description="Definition of set of HCFs to be applied to assembly.",
             default="Default",
             saveToDB=True,

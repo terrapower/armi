@@ -76,7 +76,7 @@ def defineReactorParameters():
             categories=["depletion"],
         )
 
-        pb.defParam("timeNode", units="", description="timeNode", default=0)
+        pb.defParam("timeNode", units=units.UNITLESS, description="timeNode", default=0)
 
     with pDefs.createBuilder(
         location=ParamLocation.AVERAGE, default=0.0, categories=["economics"]
@@ -131,20 +131,23 @@ def defineCoreParameters():
 
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, default=0.0) as pb:
 
-        pb.defParam("currentPercentExpanded", units="", description="")
+        pb.defParam("currentPercentExpanded", units=units.UNITLESS, description="")
 
         pb.defParam(
-            "maxAssemNum", units=None, description="maximum assembly number", default=0
+            "maxAssemNum",
+            units=units.UNITLESS,
+            description="maximum assembly number",
+            default=0,
         )
 
-        pb.defParam("numMoves", units="", description="numMoves", default=0)
+        pb.defParam("numMoves", units=units.UNITLESS, description="numMoves", default=0)
 
     with pDefs.createBuilder(location="N/A", categories=["control rods"]) as pb:
 
         pb.defParam(
             "crMostValuablePrimaryRodLocation",
             default="",
-            units=None,
+            units=units.UNITLESS,
             saveToDB=True,
             description=(
                 "Core assembly location for the most valuable primary control rod."
@@ -153,7 +156,7 @@ def defineCoreParameters():
         pb.defParam(
             "crMostValuableSecondaryRodLocation",
             default="",
-            units=None,
+            units=units.UNITLESS,
             saveToDB=True,
             description=(
                 "Core assembly location for the most valuable secondary control rod."
@@ -204,7 +207,9 @@ def defineCoreParameters():
         )
 
         pb.defParam(
-            "critSearchSlope", units=None, description="Critical keff search slope"
+            "critSearchSlope",
+            units=units.UNITLESS,
+            description="Critical keff search slope",
         )
 
         pb.defParam(
@@ -221,7 +226,7 @@ def defineCoreParameters():
 
         pb.defParam(
             "keffUnc",
-            units=None,
+            units=units.UNITLESS,
             saveToDB=True,
             default=0.0,
             description=(
@@ -231,7 +236,7 @@ def defineCoreParameters():
 
         pb.defParam(
             "lastKeff",
-            units=None,
+            units=units.UNITLESS,
             description="Previously calculated Keff for potential keff convergence",
         )
 
@@ -245,7 +250,7 @@ def defineCoreParameters():
             "loadPadDpaPeak", units="dpa", description="The peak dpa in any load pad"
         )
 
-        pb.defParam("maxcladFCCI", units="", description="", default=0.0)
+        pb.defParam("maxcladFCCI", units=units.UNITLESS, description="", default=0.0)
 
         pb.defParam(
             "maxDPA",
@@ -281,7 +286,7 @@ def defineCoreParameters():
 
         pb.defParam(
             "outsideFuelRingFluxFr",
-            units=None,
+            units=units.UNITLESS,
             description="Ratio of the flux in a ring to the total reactor fuel flux",
         )
 
@@ -314,7 +319,9 @@ def defineCoreParameters():
         )
 
         pb.defParam(
-            "THmaxDilationPressure", units="", description="THmaxDilationPressure"
+            "THmaxDilationPressure",
+            units=units.UNITLESS,
+            description="THmaxDilationPressure",
         )
 
         pb.defParam(
@@ -408,27 +415,37 @@ def defineCoreParameters():
             description="Maximum burnup seen in any igniter assemblies",
         )
 
-        pb.defParam("keff", units=None, description="Global multiplication factor")
-
         pb.defParam(
-            "peakKeff", units=None, description="Maximum keff in the simulation"
+            "keff", units=units.UNITLESS, description="Global multiplication factor"
         )
 
         pb.defParam(
-            "fastFluxFrAvg", units=None, description="Fast flux fraction average"
+            "peakKeff",
+            units=units.UNITLESS,
+            description="Maximum keff in the simulation",
         )
 
         pb.defParam(
-            "leakageFracTotal", units=None, description="Total leakage fraction"
+            "fastFluxFrAvg",
+            units=units.UNITLESS,
+            description="Fast flux fraction average",
         )
 
         pb.defParam(
-            "leakageFracPlanar", units=None, description="Leakage fraction in planar"
+            "leakageFracTotal",
+            units=units.UNITLESS,
+            description="Total leakage fraction",
+        )
+
+        pb.defParam(
+            "leakageFracPlanar",
+            units=units.UNITLESS,
+            description="Leakage fraction in planar",
         )
 
         pb.defParam(
             "leakageFracAxial",
-            units=None,
+            units=units.UNITLESS,
             description="Leakage fraction in axial direction",
         )
 
@@ -446,7 +463,7 @@ def defineCoreParameters():
 
         pb.defParam(
             "jumpRing",
-            units=None,
+            units=units.UNITLESS,
             description=(
                 "Radial ring number where bred-up fuel assemblies shuffle jump from the low power to the "
                 "high power region."
@@ -495,7 +512,7 @@ def defineCoreParameters():
 
         pb.defParam("voidWorth", units="$", description="Coolant void worth")
 
-        pb.defParam("voidedKeff", units=None, description="Voided keff")
+        pb.defParam("voidedKeff", units=units.UNITLESS, description="Voided keff")
 
         pb.defParam(
             "radialHT9",
@@ -517,14 +534,14 @@ def defineCoreParameters():
 
         pb.defParam(
             "beta",
-            units=None,
+            units=units.UNITLESS,
             description="Effective delayed neutron fraction",
             default=None,
         )
 
         pb.defParam(
             "betaComponents",
-            units=None,
+            units=units.UNITLESS,
             description="Group-wise delayed neutron fractions.",
             default=None,
         )
@@ -698,7 +715,9 @@ def defineCoreParameters():
         location=ParamLocation.AVERAGE, categories=["equilibrium"]
     ) as pb:
 
-        pb.defParam("boecKeff", units=None, description="BOEC Keff", default=0.0)
+        pb.defParam(
+            "boecKeff", units=units.UNITLESS, description="BOEC Keff", default=0.0
+        )
 
         pb.defParam(
             "cyclics",
@@ -712,7 +731,7 @@ def defineCoreParameters():
 
         pb.defParam(
             "maxCyclicNErr",
-            units=None,
+            units=units.UNITLESS,
             description="Maximum relative number density error",
             default=0.0,
         )
