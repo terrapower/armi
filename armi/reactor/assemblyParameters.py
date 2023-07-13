@@ -309,7 +309,7 @@ def getAssemblyParameterDefinitions():
 
         pb.defParam("THcoolantInletT", units=units.UNITLESS, description="?")
 
-        pb.defParam("assemNum", units=units.UNITLESS, description="?")
+        pb.defParam("assemNum", units=units.UNITLESS, description="Assembly number")
 
         pb.defParam(
             "axExpWorthPT",

@@ -135,7 +135,7 @@ def defineCoreParameters():
 
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, default=0.0) as pb:
 
-        pb.defParam("currentPercentExpanded", units=units.UNITLESS, description="")
+        pb.defParam("currentPercentExpanded", units=units.UNITLESS, description="?")
 
         pb.defParam(
             "maxAssemNum",
@@ -260,7 +260,7 @@ def defineCoreParameters():
             description="The peak dpa in any load pad",
         )
 
-        pb.defParam("maxcladFCCI", units=units.UNITLESS, description="", default=0.0)
+        pb.defParam("maxcladFCCI", units=units.UNITLESS, description="?", default=0.0)
 
         pb.defParam(
             "maxDPA",
@@ -565,12 +565,14 @@ def defineCoreParameters():
 
         pb.defParam(
             "promptNeutronGenerationTime",
-            units="s",
+            units=units.SECONDS,
             description="Prompt neutron generation time",
         )
 
         pb.defParam(
-            "promptNeutronLifetime", units="s", description="Prompt neutron lifetime"
+            "promptNeutronLifetime",
+            units=units.SECONDS,
+            description="Prompt neutron lifetime",
         )
 
     with pDefs.createBuilder(

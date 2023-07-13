@@ -29,6 +29,7 @@ MICRONS = chr(181) + "m"
 NOT_APPLICABLE = "N/A"  # prefer UNITLESS
 PASCALS = "Pa"
 PERCENT = "%"
+SECONDS = "s"
 UNITLESS = ""
 WATTS = "W"
 YEARS = "yr"

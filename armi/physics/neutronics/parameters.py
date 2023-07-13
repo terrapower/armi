@@ -202,7 +202,7 @@ def _getNeutronicsBlockParams():
         pb.defParam(
             "axialPowerProfileNeutron",
             units=units.UNITLESS,
-            description="",
+            description="?",
             location=ParamLocation.AVERAGE,
             saveToDB=True,
             default=None,
@@ -211,7 +211,7 @@ def _getNeutronicsBlockParams():
         pb.defParam(
             "axialPowerProfileGamma",
             units=units.UNITLESS,
-            description="",
+            description="?",
             location=ParamLocation.AVERAGE,
             saveToDB=True,
             default=None,
@@ -668,7 +668,7 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "detailedDpaPeakRate",
-            units="DPA/s",
+            units="dpa/s",
             description="Peak DPA rate based on detailedDpaPeak",
             location=ParamLocation.MAX,
             categories=[parameters.Category.cumulative, parameters.Category.neutronics],
