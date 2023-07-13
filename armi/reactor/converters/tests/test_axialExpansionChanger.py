@@ -475,8 +475,12 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
     def test_reset(self):
         self.obj.setAssembly(self.a)
         self.obj.reset()
+        for b in self.a:
+            for c in getSolidComponents(b):
+                self.assertIsNone(c.height)
         self.assertIsNone(self.obj.linked)
         self.assertIsNone(self.obj.expansionData)
+        self.assertIsNone(self.obj.logger)
 
     def test_computeThermalExpansionFactors(self):
         """Ensure expansion factors are as expected."""

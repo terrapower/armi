@@ -180,6 +180,10 @@ class AxialExpansionChanger:
         self.axiallyExpandAssembly()
 
     def reset(self):
+        for b in self.linked.a:
+            for c in getSolidComponents(b):
+                c.height = None
+        self.logger = None
         self.linked = None
         self.expansionData = None
 
