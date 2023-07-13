@@ -190,10 +190,8 @@ def _getNeutronicsBlockParams():
         pb.defParam(
             "axialPowerProfile",
             units=units.UNITLESS,
-            description="""
-                For each reconstructed axial location, a tuple (z,power density) where with axial origin at the bottom
-                of assembly in which the blocks are located.
-            """,
+            description="""For each reconstructed axial location, a tuple (z,power density) where with
+            axial origin at the bottom of assembly in which the blocks are located.""",
             location=ParamLocation.AVERAGE,
             saveToDB=True,
             default=None,
