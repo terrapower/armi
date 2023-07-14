@@ -235,7 +235,11 @@ def getAssemblyParameterDefinitions():
         location=ParamLocation.AVERAGE, default=0.0, categories=["thermal hydraulics"]
     ) as pb:
 
-        pb.defParam("THdeltaPNoGrav", units=units.PASCALS, description="?")
+        pb.defParam(
+            "THdeltaPNoGrav",
+            units=units.PASCALS,
+            description="Total pressure difference minus gravity; it can be thought of as being 'total pressure loss'",
+        )
 
         pb.defParam(
             "THdeltaPPump",

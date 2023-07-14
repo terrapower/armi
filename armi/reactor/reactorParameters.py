@@ -777,7 +777,10 @@ def defineCoreParameters():
         )
 
         pb.defParam(
-            "coupledIteration", units=units.UNITLESS, description="?", default=0
+            "coupledIteration",
+            units=units.UNITLESS,
+            description="Pre-defined number of tightly coupled iterations.",
+            default=0,
         )
 
         pb.defParam("fisFrac", units=units.UNITLESS, description="?")

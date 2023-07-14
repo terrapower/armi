@@ -296,7 +296,7 @@ def getBlockParameterDefinitions():
         pb.defParam(
             "heliumInB4C",
             units="He/s/cm$^3$",
-            description="?",
+            description="Alpha particle production rate in B4C control and shield material.",
             location=ParamLocation.AVERAGE,
         )
 
