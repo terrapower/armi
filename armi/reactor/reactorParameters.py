@@ -792,12 +792,4 @@ def defineCoreParameters():
             categories=["block-max"],
         )
 
-        pb.defParam(
-            "maxresidence",
-            units=units.DAYS,
-            description="Maximum time in core of all asesmblies in days",
-            default=0.0,
-            categories=["block-max"],
-        )
-
     return pDefs

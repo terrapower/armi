@@ -513,7 +513,6 @@ def _getFuelVals(r):
     data = [
         ("Max FCCI", r.core.p.maxcladFCCI),
         ("Max BU", r.core.p.maxpercentBu),
-        ("Residence", r.core.p.maxresidence),
         (
             "Smear dens.",
             r.core.calcAvgParam("smearDensity", generationNum=2, typeSpec=Flags.FUEL),
