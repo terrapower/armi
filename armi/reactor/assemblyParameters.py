@@ -340,7 +340,11 @@ def getAssemblyParameterDefinitions():
             location=ParamLocation.AVERAGE,
         )
 
-        pb.defParam("dischargeTime", units=units.UNITLESS, description="?")
+        pb.defParam(
+            "dischargeTime",
+            units=units.UNITLESS,
+            description="Time the Assembly was removed from the Reactor.",
+        )
 
         pb.defParam(
             "fuelWorthPT",
@@ -377,7 +381,7 @@ def getAssemblyParameterDefinitions():
         pb.defParam(
             "AziMesh",
             units=units.UNITLESS,
-            description="?",
+            description="Number of points in the Azimuthal mesh.",
             saveToDB=False,
             default=1,
         )
@@ -385,7 +389,7 @@ def getAssemblyParameterDefinitions():
         pb.defParam(
             "RadMesh",
             units=units.UNITLESS,
-            description="?",
+            description="Number of points in the Radial mesh.",
             saveToDB=False,
             default=1,
         )
