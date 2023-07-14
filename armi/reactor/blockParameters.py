@@ -326,8 +326,6 @@ def getBlockParameterDefinitions():
             categories=[parameters.Category.retainOnReplacement],
         )
 
-        pb.defParam("baseBu", units=units.UNITLESS, description="?", saveToDB=False)
-
         pb.defParam("basePBu", units=units.UNITLESS, description="?", saveToDB=False)
 
         pb.defParam(
