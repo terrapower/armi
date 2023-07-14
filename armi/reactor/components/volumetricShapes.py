@@ -88,7 +88,10 @@ class Sphere(ShapedComponent):
 
 
 class Cube(ShapedComponent):
-    """More correctly, a rectangular cuboid."""
+    """More correctly, a rectangular cuboid.
+
+    Optionally, there may be a centric cuboid volume cut out of center of this shape.
+    """
 
     is3D = True
 
@@ -140,7 +143,7 @@ class Cube(ShapedComponent):
         raise NotImplementedError("Cannot compute area of a cube component.")
 
     def getComponentVolume(self):
-        r"""Computes the volume of the cube in cm^3."""
+        """Computes the volume of the cube in cm^3."""
         lengthO = self.getDimension("lengthOuter")
         widthO = self.getDimension("widthOuter")
         heightO = self.getDimension("heightOuter")
@@ -153,6 +156,26 @@ class Cube(ShapedComponent):
 
 
 class RadialSegment(ShapedComponent):
+    r"""A RadialSegement represents a volume element with thicknesses in the
+    azimuthal, radial and axial directions.
+
+    This a 3D projection of a 2D shape that is an angular slice of a ring or circle.
+
+    The 2D shape is like the one below, with an inner and outer position for the
+    theta and the radius:
+
+    Image::
+
+        Y
+        ^                      -
+        |                 -
+        |            -XXXX\
+        |       -  \XXXXXXX\
+        |  theta   |XXXXXXX|
+        |-----------------------> radius, X
+        |
+        |
+    """
 
     is3D = True
 
@@ -246,7 +269,6 @@ class DifferentialRadialSegment(RadialSegment):
 
     This component class is super useful for defining ThRZ reactors and
     perturbing its dimensions using the optimization modules
-
 
     See Also
     --------

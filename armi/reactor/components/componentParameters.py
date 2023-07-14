@@ -217,17 +217,38 @@ def getCubeParameterDefinitions():
     """Return parameters for Cube."""
     pDefs = parameters.ParameterDefinitionCollection()
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:
-        pb.defParam("lengthInner", units=units.CM, description="Inner length")
+        pb.defParam(
+            "lengthInner",
+            units=units.CM,
+            default=0.0,
+            description="Inner length dimension (if the cube is hollow).",
+        )
 
-        pb.defParam("lengthOuter", units=units.CM, description="Outer length")
+        pb.defParam(
+            "lengthOuter", units=units.CM, description="Outermost length dimension"
+        )
 
-        pb.defParam("widthInner", units=units.CM, description="Inner width")
+        pb.defParam(
+            "widthInner",
+            units=units.CM,
+            default=0.0,
+            description="Inner width dimension (if the cube is hollow).",
+        )
 
-        pb.defParam("widthOuter", units=units.CM, description="Outer width")
+        pb.defParam(
+            "widthOuter", units=units.CM, description="Outermost width dimension"
+        )
 
-        pb.defParam("heightOuter", units=units.CM, description="Outer height")
+        pb.defParam(
+            "heightInner",
+            units=units.CM,
+            default=0.0,
+            description="Inner height dimension (if the cube is hollow).",
+        )
 
-        pb.defParam("heightInner", units=units.CM, description="Inner height")
+        pb.defParam(
+            "heightOuter", units=units.CM, description="Outermost height dimension"
+        )
 
     return pDefs
 
@@ -262,22 +283,54 @@ def getRadialSegmentParameterDefinitions():
     """Return parameters for RadialSegment."""
     pDefs = parameters.ParameterDefinitionCollection()
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:
-        pb.defParam("inner_theta", units=units.UNITLESS, description="?")
+        pb.defParam(
+            "inner_theta",
+            units=units.UNITLESS,
+            description="Starting axial position, in radians.",
+        )
 
-        pb.defParam("outer_theta", units=units.UNITLESS, description="?")
+        pb.defParam(
+            "outer_theta",
+            units=units.UNITLESS,
+            description="Ending axial position, in radians.",
+        )
 
-        pb.defParam("inner_radius", units=units.CM, description="?")
+        pb.defParam(
+            "inner_radius",
+            units=units.CM,
+            description="Starting radial position; this can be zero.",
+        )
 
-        pb.defParam("outer_radius", units=units.CM, description="?")
+        pb.defParam(
+            "outer_radius", units=units.CM, description="Ending radial position."
+        )
 
-        pb.defParam("height", units=units.CM, description="?")
+        pb.defParam(
+            "height", units=units.CM, description="Height of the 3D radial segment."
+        )
 
-        pb.defParam("azimuthal_differential", units=units.UNITLESS, description="?")
+        pb.defParam(
+            "azimuthal_differential",
+            units=units.UNITLESS,
+            description="Perturbation in the azimuthal dimension (see inner_theta and outer_theta).",
+        )
 
-        pb.defParam("radius_differential", units=units.UNITLESS, description="?")
+        pb.defParam(
+            "radius_differential",
+            units=units.UNITLESS,
+            description="Perturbation in the radial dimension (see inner_radius and outer_radius).",
+        )
 
-        pb.defParam("inner_axial", units=units.UNITLESS, description="?")
+        pb.defParam(
+            "inner_axial",
+            units=units.UNITLESS,
+            description="Perturbation in the axial dimension (picture outer_axial = inner_axial + height).",
+        )
 
-        pb.defParam("outer_axial", units=units.UNITLESS, description="?")
+        pb.defParam(
+            "outer_axial",
+            units=units.UNITLESS,
+            description="Perturbation result in the axial dimension (picture outer_axial = inner_axial + height).",
+        )
 
     return pDefs
