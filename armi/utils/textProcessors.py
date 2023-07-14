@@ -140,7 +140,7 @@ def resolveMarkupInclusions(
 
     Parameters
     ----------
-    src : TextIOBase or Path
+    src : StringIO or TextIOBase/Path
         If a Path is provided, read text from there. If is stream is provided, consume
         text from the stream. If a stream is provided, ``root`` must also be provided.
     root : Optional Path
