@@ -193,12 +193,6 @@ def getBlockParameterDefinitions():
 
     with pDefs.createBuilder(default=0.0, location=ParamLocation.AVERAGE) as pb:
 
-        pb.defParam(
-            "bu",
-            units=units.UNITLESS,
-            description=r"Burnup: the ration of %FIMA to %FIFA",
-        )
-
         def buGroup(self, buGroupChar):
             if isinstance(buGroupChar, (int, float)):
                 intValue = int(buGroupChar)

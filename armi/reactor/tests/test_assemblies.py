@@ -213,7 +213,6 @@ class Assembly_TestCase(unittest.TestCase):
         self.blockParams = {
             "height": self.height,
             "bondRemoved": 0.0,
-            "bu": 15.1,
             "buGroupNum": 0,
             "buLimit": 35,
             "buRate": 0.0,
