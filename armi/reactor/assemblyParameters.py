@@ -307,7 +307,11 @@ def getAssemblyParameterDefinitions():
 
     with pDefs.createBuilder(default=0.0) as pb:
 
-        pb.defParam("THcoolantInletT", units=units.UNITLESS, description="?")
+        pb.defParam(
+            "THcoolantInletT",
+            units=units.DEGC,
+            description="Assembly inlet temperature in C (cold temperature)",
+        )
 
         pb.defParam("assemNum", units=units.UNITLESS, description="Assembly number")
 

@@ -260,7 +260,13 @@ def defineCoreParameters():
             description="The peak dpa in any load pad",
         )
 
-        pb.defParam("maxcladFCCI", units=units.UNITLESS, description="?", default=0.0)
+        pb.defParam(
+            "maxcladFCCI",
+            units=units.MICRONS,
+            description="The core wide maximum amount of cladding wastage due to fuel chemical clad interaction calculated "
+            + "at the 0-sigma TH HCF temperatures and using the conservative FCCI model",
+            default=0.0,
+        )
 
         pb.defParam(
             "maxDPA",
@@ -788,8 +794,8 @@ def defineCoreParameters():
 
         pb.defParam(
             "maxresidence",
-            units=units.UNITLESS,
-            description="?",
+            units=units.DAYS,
+            description="Maximum time in core of all asesmblies in days",
             default=0.0,
             categories=["block-max"],
         )

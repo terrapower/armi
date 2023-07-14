@@ -193,15 +193,17 @@ def getBlockParameterDefinitions():
 
     with pDefs.createBuilder(default=0.0, location=ParamLocation.AVERAGE) as pb:
 
-        pb.defParam("bu", units=units.UNITLESS, description="?")
+        pb.defParam(
+            "bu",
+            units=units.UNITLESS,
+            description=r"Burnup: the ration of %FIMA to %FIFA",
+        )
 
         def buGroup(self, buGroupChar):
             if isinstance(buGroupChar, (int, float)):
                 intValue = int(buGroupChar)
                 runLog.warning(
-                    "Attempting to set `b.p.buGroup` to int value ({}). Possibly loading from old database".format(
-                        buGroupChar
-                    ),
+                    f"Attempting to set `b.p.buGroup` to int value ({buGroupChar}). Possibly loading from old database",
                     single=True,
                     label="bu group as int " + str(intValue),
                 )
@@ -209,9 +211,7 @@ def getBlockParameterDefinitions():
                 return
             elif not isinstance(buGroupChar, six.string_types):
                 raise Exception(
-                    "Wrong type for buGroupChar {}: {}".format(
-                        buGroupChar, type(buGroupChar)
-                    )
+                    f"Wrong type for buGroupChar {buGroupChar}: {type(buGroupChar)}"
                 )
 
             buGroupNum = ord(buGroupChar) - ASCII_LETTER_A
@@ -300,10 +300,6 @@ def getBlockParameterDefinitions():
         )
 
         pb.defParam(
-            "powerRx", units="W/cm$^3$", description="?", location=ParamLocation.AVERAGE
-        )
-
-        pb.defParam(
             "heliumInB4C",
             units="He/s/cm$^3$",
             description="?",
@@ -385,7 +381,12 @@ def getBlockParameterDefinitions():
             default=-1,
         )
 
-        pb.defParam("id", units=units.UNITLESS, description="?", default=None)
+        pb.defParam(
+            "id",
+            units=units.UNITLESS,
+            description="Inner diameter of the Block.",
+            default=None,
+        )
 
         pb.defParam(
             "height",
@@ -801,7 +802,7 @@ def getBlockParameterDefinitions():
         pb.defParam(
             "avgFuelTemp",
             units=units.UNITLESS,
-            description="?",
+            description="Volume average temperature in fuel components withint this block.",
             location=ParamLocation.AVERAGE,
         )
 

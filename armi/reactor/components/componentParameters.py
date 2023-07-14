@@ -225,9 +225,9 @@ def getCubeParameterDefinitions():
 
         pb.defParam("widthOuter", units=units.CM, description="Outer width")
 
-        pb.defParam("heightOuter", units=units.UNITLESS, description="?")
+        pb.defParam("heightOuter", units=units.CM, description="Outer height")
 
-        pb.defParam("heightInner", units=units.UNITLESS, description="?")
+        pb.defParam("heightInner", units=units.CM, description="Inner height")
 
     return pDefs
 
@@ -236,9 +236,11 @@ def getTriangleParameterDefinitions():
     """Return parameters for Triangle."""
     pDefs = parameters.ParameterDefinitionCollection()
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:
-        pb.defParam("base", units=units.UNITLESS, description="?")
+        pb.defParam(
+            "base", units=units.CM, description="length of the base of the triangle"
+        )
 
-        pb.defParam("height", units=units.UNITLESS, description="?")
+        pb.defParam("height", units=units.CM, description="height of the triangle")
 
     return pDefs
 
@@ -264,11 +266,11 @@ def getRadialSegmentParameterDefinitions():
 
         pb.defParam("outer_theta", units=units.UNITLESS, description="?")
 
-        pb.defParam("inner_radius", units=units.UNITLESS, description="?")
+        pb.defParam("inner_radius", units=units.CM, description="?")
 
-        pb.defParam("outer_radius", units=units.UNITLESS, description="?")
+        pb.defParam("outer_radius", units=units.CM, description="?")
 
-        pb.defParam("height", units=units.UNITLESS, description="?")
+        pb.defParam("height", units=units.CM, description="?")
 
         pb.defParam("azimuthal_differential", units=units.UNITLESS, description="?")
 
@@ -289,11 +291,11 @@ def getTorusParameterDefinitions():
 
         pb.defParam("outer_theta", units=units.UNITLESS, description="?")
 
-        pb.defParam("inner_radius", units=units.UNITLESS, description="?")
+        pb.defParam("inner_radius", units=units.CM, description="?")
 
-        pb.defParam("outer_radius", units=units.UNITLESS, description="?")
+        pb.defParam("outer_radius", units=units.CM, description="?")
 
-        pb.defParam("height", units=units.UNITLESS, description="?")
+        pb.defParam("height", units=units.CM, description="?")
 
         pb.defParam("azimuthal_differential", units=units.UNITLESS, description="?")
 
@@ -303,16 +305,16 @@ def getTorusParameterDefinitions():
 
         pb.defParam("outer_axial", units=units.UNITLESS, description="?")
 
-        pb.defParam("inner_minor_radius", units=units.UNITLESS, description="?")
+        pb.defParam("inner_minor_radius", units=units.CM, description="?")
 
-        pb.defParam("outer_minor_radius", units=units.UNITLESS, description="?")
+        pb.defParam("outer_minor_radius", units=units.CM, description="?")
 
-        pb.defParam("major_radius", units=units.UNITLESS, description="?")
+        pb.defParam("major_radius", units=units.CM, description="?")
 
         pb.defParam("inner_phi", units=units.UNITLESS, description="?")
 
         pb.defParam("outer_phi", units=units.UNITLESS, description="?")
 
-        pb.defParam("reference_volume", units=units.UNITLESS, description="?")
+        pb.defParam("reference_volume", units="cm^3", description="?")
 
     return pDefs

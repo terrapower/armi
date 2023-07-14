@@ -200,7 +200,8 @@ def _getNeutronicsBlockParams():
         pb.defParam(
             "axialPowerProfileNeutron",
             units=units.UNITLESS,
-            description="?",
+            description="""For each reconstructed axial location, a tuple (z, neutron power density)
+            where with axial origin at the bottom of assembly in which the blocks are located.""",
             location=ParamLocation.AVERAGE,
             saveToDB=True,
             default=None,
@@ -209,7 +210,8 @@ def _getNeutronicsBlockParams():
         pb.defParam(
             "axialPowerProfileGamma",
             units=units.UNITLESS,
-            description="?",
+            description="""For each reconstructed axial location, a tuple (z, gamma power density)
+            where with axial origin at the bottom of assembly in which the blocks are located.""",
             location=ParamLocation.AVERAGE,
             saveToDB=True,
             default=None,
