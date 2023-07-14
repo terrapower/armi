@@ -212,7 +212,6 @@ class Assembly_TestCase(unittest.TestCase):
         # Use these if they are needed
         self.blockParams = {
             "height": self.height,
-            "avgFuelTemp": 873.0,
             "bondRemoved": 0.0,
             "bu": 15.1,
             "buGroupNum": 0,
@@ -918,27 +917,27 @@ class Assembly_TestCase(unittest.TestCase):
 
     def test_getParamValuesAtZ(self):
         # single value param
-        for b, temp in zip(self.assembly, [800, 850, 900]):
-            b.p.avgFuelTemp = temp
-        avgFuelTempDef = b.p.paramDefs["avgFuelTemp"]
-        originalLoc = avgFuelTempDef.location
+        for b, temp in zip(self.assembly, [80, 85, 90]):
+            b.p.percentBu = temp
+        percentBuDef = b.p.paramDefs["percentBu"]
+        originalLoc = percentBuDef.location
         try:
             self.assertAlmostEqual(
-                875, self.assembly.getParamValuesAtZ("avgFuelTemp", 20.0)
+                87.5, self.assembly.getParamValuesAtZ("percentBu", 20.0)
             )
-            avgFuelTempDef.location = parameters.ParamLocation.BOTTOM
+            percentBuDef.location = parameters.ParamLocation.BOTTOM
             self.assertAlmostEqual(
-                825,
-                self.assembly.getParamValuesAtZ("avgFuelTemp", 5.0, fillValue="extend"),
+                82.5,
+                self.assembly.getParamValuesAtZ("percentBu", 5.0, fillValue="extend"),
             )
-            avgFuelTempDef.location = parameters.ParamLocation.TOP
+            percentBuDef.location = parameters.ParamLocation.TOP
             self.assertAlmostEqual(
-                825, self.assembly.getParamValuesAtZ("avgFuelTemp", 15.0)
+                82.5, self.assembly.getParamValuesAtZ("percentBu", 15.0)
             )
             for b in self.assembly:
-                b.p.avgFuelTemp = None
+                b.p.percentBu = None
             self.assertTrue(
-                numpy.isnan(self.assembly.getParamValuesAtZ("avgFuelTemp", 25.0))
+                numpy.isnan(self.assembly.getParamValuesAtZ("percentBu", 25.0))
             )
 
             # multiDimensional param
@@ -968,7 +967,7 @@ class Assembly_TestCase(unittest.TestCase):
             value = self.assembly.getParamValuesAtZ("THcornTemp", 20.0)
             self.assertTrue(numpy.allclose([200, 201, 202, 203, 204, 205], value))
         finally:
-            avgFuelTempDef.location = originalLoc
+            percentBuDef.location = originalLoc
 
     def test_hasContinuousCoolantChannel(self):
         self.assertFalse(self.assembly.hasContinuousCoolantChannel())

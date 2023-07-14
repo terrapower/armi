@@ -796,13 +796,6 @@ def getBlockParameterDefinitions():
         )
 
         pb.defParam(
-            "avgFuelTemp",
-            units=units.UNITLESS,
-            description="Volume average temperature in fuel components withint this block.",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
             "avgTempRef",
             units=units.UNITLESS,
             description="?",
