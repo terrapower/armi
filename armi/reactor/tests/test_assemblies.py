@@ -233,7 +233,6 @@ class Assembly_TestCase(unittest.TestCase):
 
         self.blockSettings = {
             "axMesh": 1,
-            "basePBu": 0.0,
             "bondBOL": 0.0028698019026172574,
             "buGroup": "A",
             "height": 14.4507,
