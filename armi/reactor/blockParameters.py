@@ -790,13 +790,6 @@ def getBlockParameterDefinitions():
         )
 
         pb.defParam(
-            "avgTempRef",
-            units=units.UNITLESS,
-            description="?",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
             "axExtenNodeHeight",
             units=units.METERS,
             description="Axial extension node height",
