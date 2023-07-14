@@ -194,6 +194,9 @@ class AxialExpansionChanger:
         setFuel : boolean, optional
             Boolean to determine whether or not fuel blocks should have their target components set
             This is useful when target components within a fuel block need to be determined on-the-fly.
+        coldHeightsToHot: bool
+            determines if thermal expansion factors should be calculated from c.inputTemperatureInC
+            to c.temperatureInC or some other reference temperature and c.temepratureInC
         """
         self.linked = AssemblyAxialLinkage(a)
         self.expansionData = ExpansionData(
