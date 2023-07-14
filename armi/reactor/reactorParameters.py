@@ -135,8 +135,6 @@ def defineCoreParameters():
 
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, default=0.0) as pb:
 
-        pb.defParam("currentPercentExpanded", units=units.UNITLESS, description="?")
-
         pb.defParam(
             "maxAssemNum",
             units=units.UNITLESS,
@@ -786,13 +784,5 @@ def defineCoreParameters():
         pb.defParam("fisFrac", units=units.UNITLESS, description="?")
 
         pb.defParam("fisRateCore", units=units.UNITLESS, description="?")
-
-        pb.defParam(
-            "maxdilationTotal",
-            units=units.UNITLESS,
-            description="?",
-            default=0.0,
-            categories=["block-max"],
-        )
 
     return pDefs
