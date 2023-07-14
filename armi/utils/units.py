@@ -18,10 +18,13 @@ import scipy.constants
 
 
 # Names
+ANGLE_DEGREES = "degrees"
+ANGLE_RADIANS = "radians"
 CM = "cm"
 DAYS = "days"
 DEGC = chr(176) + "C"
 DPA = "dpa"
+EV = "eV"
 GRAMS = "g"
 KG = "kg"
 METERS = "m"

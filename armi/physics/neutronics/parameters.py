@@ -537,16 +537,16 @@ def _getNeutronicsBlockParams():
         )
 
         pb.defParam(
-            "medAbsE", units="eV", description="Median neutron absorption energy"
+            "medAbsE", units=units.EV, description="Median neutron absorption energy"
         )
 
         pb.defParam(
             "medFisE",
-            units="eV",
+            units=units.EV,
             description="Median energy of neutron causing fission",
         )
 
-        pb.defParam("medFlxE", units="eV", description="Median neutron flux energy")
+        pb.defParam("medFlxE", units=units.EV, description="Median neutron flux energy")
 
         pb.defParam(
             "pdensGamma",

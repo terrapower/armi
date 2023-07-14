@@ -31,7 +31,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "orientation",
-            units="degrees",
+            units=units.ANGLE_DEGREES,
             description=(
                 "Triple representing rotations counterclockwise around each spatial axis. For example, "
                 "a hex assembly rotated by 1/6th has orientation (0,0,60.0)"

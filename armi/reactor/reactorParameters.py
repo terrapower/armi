@@ -125,7 +125,7 @@ def defineCoreParameters():
 
         pb.defParam(
             "orientation",
-            units="degrees",
+            units=units.ANGLE_DEGREES,
             description=(
                 "Triple representing rotations counterclockwise around each spatial axis. For example, "
                 "a hex assembly rotated by 1/6th has orientation (0,0,60.0)"
@@ -361,13 +361,25 @@ def defineCoreParameters():
             description="Decay power from decaying radionuclides",
         )
 
-        pb.defParam("medAbsCore", units=units.UNITLESS, description="?")
+        pb.defParam(
+            "medAbsCore",
+            units=units.EV,
+            description="Median energy of neutrons absorbed in the core",
+        )
 
-        pb.defParam("medFluxCore", units=units.UNITLESS, description="?")
+        pb.defParam(
+            "medFluxCore",
+            units=units.EV,
+            description="Median energy neutron in the core",
+        )
 
-        pb.defParam("medSrcCore", units=units.UNITLESS, description="?")
+        pb.defParam(
+            "medSrcCore",
+            units=units.EV,
+            description="Median energy of source neutrons in the core?",
+        )
 
-        pb.defParam("pkFlux", units=units.UNITLESS, description="?")
+        pb.defParam("pkFlux", units="n/cm2-s", description="peak flux in the core")
 
         pb.defParam(
             "maxdetailedDpaPeak",
@@ -763,9 +775,17 @@ def defineCoreParameters():
             default=0.0,
         )
 
-        pb.defParam("ConvRatioCore", units=units.UNITLESS, description="?")
+        pb.defParam(
+            "ConvRatioCore",
+            units=units.UNITLESS,
+            description="Conversion ratio of the core",
+        )
 
-        pb.defParam("absPerFisCore", units=units.UNITLESS, description="?")
+        pb.defParam(
+            "absPerFisCore",
+            units=units.UNITLESS,
+            description="absorptions per fission in core",
+        )
 
         pb.defParam(
             "axialExpansionPercent",
@@ -781,8 +801,16 @@ def defineCoreParameters():
             default=0,
         )
 
-        pb.defParam("fisFrac", units=units.UNITLESS, description="?")
+        pb.defParam(
+            "fisFrac",
+            units=units.UNITLESS,
+            description="Percent of fissions in fertile nuclides",
+        )
 
-        pb.defParam("fisRateCore", units=units.UNITLESS, description="?")
+        pb.defParam(
+            "fisRateCore",
+            units=units.UNITLESS,
+            description="peak/average fission rate in core?",
+        )
 
     return pDefs

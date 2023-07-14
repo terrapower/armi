@@ -285,13 +285,13 @@ def getRadialSegmentParameterDefinitions():
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:
         pb.defParam(
             "inner_theta",
-            units=units.UNITLESS,
+            units=units.ANGLE_RADIANS,
             description="Starting axial position, in radians.",
         )
 
         pb.defParam(
             "outer_theta",
-            units=units.UNITLESS,
+            units=units.ANGLE_RADIANS,
             description="Ending axial position, in radians.",
         )
 
@@ -311,7 +311,7 @@ def getRadialSegmentParameterDefinitions():
 
         pb.defParam(
             "azimuthal_differential",
-            units=units.UNITLESS,
+            units=units.ANGLE_RADIANS,
             description="Perturbation in the azimuthal dimension (see inner_theta and outer_theta).",
         )
 

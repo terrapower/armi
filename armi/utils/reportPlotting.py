@@ -465,7 +465,6 @@ def _getMechanicalVals(r):
     labels, vals = list(
         zip(
             *[
-                ("Dilation", r.core.p.maxdilationTotal),
                 ("Hold down", 1.0),
                 ("Distortion", 3.0),
             ]
