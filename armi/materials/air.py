@@ -28,8 +28,6 @@ class Air(material.Fluid):
             https://www.pnnl.gov/main/publications/external/technical_reports/PNNL-15870Rev1.pdf
     """
 
-    name = "Air"
-
     """
     temperature ranges based on where values are more than 1% off of reference
     """

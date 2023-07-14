@@ -136,6 +136,17 @@ def writeWelcomeHeaders(o, cs):
             )
             inputInfo.append((label, fName, shaHash))
 
+        # bonus: grab the files stored in the crossSectionControl section
+        for fluxSection, fluxData in cs["crossSectionControl"].items():
+            if fluxData.xsFileLocation is not None:
+                label = f"crossSectionControl-{fluxSection}"
+                fName = fluxData.xsFileLocation
+                if isinstance(fName, list):
+                    fName = fName[0]
+                if fName and os.path.exists(fName):
+                    shaHash = getFileSHA1Hash(fName, digits=10)
+                    inputInfo.append((label, fName, shaHash))
+
         return inputInfo
 
     def _writeInputFileInformation(cs):
@@ -247,7 +258,7 @@ def writeTightCouplingConvergenceSummary(convergenceSummary):
 
 
 def writeAssemblyMassSummary(r):
-    r"""Print out things like Assembly weights to the runLog.
+    """Print out things like Assembly weights to the runLog.
 
     Parameters
     ----------
@@ -386,7 +397,7 @@ def _makeTotalAssemblyMassSummary(massSum):
 
 
 def writeCycleSummary(core):
-    r"""Prints a cycle summary to the runLog.
+    """Prints a cycle summary to the runLog.
 
     Parameters
     ----------
@@ -464,14 +475,13 @@ def setNeutronBalancesReport(core):
 
 
 def summarizePinDesign(core):
-    r"""Prints out some information about the pin assembly/duct design.
+    """Prints out some information about the pin assembly/duct design.
 
     Handles multiple types of dimensions simplistically by taking the average.
 
     Parameters
     ----------
     core : armi.reactor.reactors.Core
-
     """
     designInfo = collections.defaultdict(list)
 
@@ -546,7 +556,7 @@ def summarizePinDesign(core):
 
 
 def summarizePowerPeaking(core):
-    r"""Prints reactor Fz, Fxy, Fq.
+    """Prints reactor Fz, Fxy, Fq.
 
     Parameters
     ----------
@@ -579,7 +589,7 @@ def summarizePowerPeaking(core):
 
 
 def summarizePower(core):
-    r"""Provide an edit showing where the power is based on assembly types.
+    """Provide an edit showing where the power is based on assembly types.
 
     Parameters
     ----------
@@ -858,7 +868,7 @@ def _getComponentInputDimensions(cDesign):
 
 
 def makeCoreAndAssemblyMaps(r, cs, generateFullCoreMap=False, showBlockAxMesh=True):
-    r"""Create core and assembly design plots.
+    """Create core and assembly design plots.
 
     Parameters
     ----------

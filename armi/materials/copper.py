@@ -19,7 +19,6 @@ from armi.materials.material import Material
 
 
 class Cu(Material):
-    name = "Cu"
 
     propertyValidTemperature = {"linear expansion percent": ((40.43, 788.83), "K")}
 

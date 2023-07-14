@@ -58,9 +58,10 @@ class FuelHandlerTestHelper(ArmiTestHelper):
         cls.directoryChanger.close()
 
     def setUp(self):
-        r"""
-        Build a dummy reactor without using input files. There are some igniters and feeds
-        but none of these have any number densities.
+        """
+        Build a dummy reactor without using input files.
+
+        There are some igniters and feeds but none of these have any number densities.
         """
         self.o, self.r = test_reactors.loadTestReactor(
             self.directoryChanger.destination,
@@ -74,7 +75,7 @@ class FuelHandlerTestHelper(ArmiTestHelper):
                 b.p.percentBu = 30.0 * bi / len(blockList)
         self.nfeed = len(self.r.core.getAssemblies(Flags.FEED))
         self.nigniter = len(self.r.core.getAssemblies(Flags.IGNITER))
-        self.nSfp = len(self.r.core.sfp)
+        self.nSfp = len(self.r.sfp)
 
         # generate a reactor with assemblies
         # generate components with materials
@@ -130,7 +131,7 @@ class FuelHandlerTestHelper(ArmiTestHelper):
 
 
 class MockLatticePhysicsInterface(LatticePhysicsInterface):
-    """a mock lattice physics interface that does nothing for interactBOC"""
+    """A mock lattice physics interface that does nothing for interactBOC."""
 
     name = "MockLatticePhysicsInterface"
 
@@ -142,7 +143,7 @@ class MockLatticePhysicsInterface(LatticePhysicsInterface):
 
 
 class MockXSGM(CrossSectionGroupManager):
-    """a mock cross section group manager that does nothing for interactBOC"""
+    """A mock cross section group manager that does nothing for interactBOC."""
 
     def interactBOC(self, cycle=None):
         pass
@@ -375,7 +376,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
             self.r.p.cycle = cycle
             fh.cycle = cycle
             fh.manageFuel(cycle)
-            for a in self.r.core.sfp.getChildren():
+            for a in self.r.sfp.getChildren():
                 self.assertEqual(a.getLocation(), "SFP")
             for b in self.r.core.getBlocks(Flags.FUEL):
                 self.assertGreater(b.p.kgHM, 0.0, "b.p.kgHM not populated!")
@@ -384,7 +385,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         fh.interactEOL()
 
     def test_repeatShuffles(self):
-        r"""
+        """
         Builds a dummy core. Does some shuffles. Repeats the shuffles. Checks that it was a perfect repeat.
 
         Checks some other things in the meantime
@@ -394,7 +395,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         runShuffling : creates the shuffling file to be read in.
         """
         # check labels before shuffling:
-        for a in self.r.core.sfp.getChildren():
+        for a in self.r.sfp.getChildren():
             self.assertEqual(a.getLocation(), "SFP")
 
         # do some shuffles.
@@ -428,7 +429,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         # make sure the shuffle was repeated perfectly.
         for a in self.r.core.getAssemblies():
             self.assertEqual(a.getName(), firstPassResults[a.getLocation()])
-        for a in self.r.core.sfp.getChildren():
+        for a in self.r.sfp.getChildren():
             self.assertEqual(a.getLocation(), "SFP")
 
     def test_readMoves(self):
@@ -684,7 +685,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
 
         # grab an arbitrary fuel assembly from the core and from the SFP
         a1 = self.r.core.getAssemblies(Flags.FUEL)[0]
-        a2 = self.r.core.sfp.getChildren(Flags.FUEL)[0]
+        a2 = self.r.sfp.getChildren(Flags.FUEL)[0]
 
         # grab the stationary blocks pre swap
         a1PreSwapStationaryBlocks = [
@@ -733,7 +734,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
 
         # grab an arbitrary fuel assembly from the core and from the SFP
         a1 = self.r.core.getAssemblies(Flags.FUEL)[0]
-        a2 = self.r.core.sfp.getChildren(Flags.FUEL)[0]
+        a2 = self.r.sfp.getChildren(Flags.FUEL)[0]
 
         # change a block in assembly 1 to be flagged as a stationary block
         for block in a1:
@@ -752,7 +753,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         # re-initialize assemblies
         self.setUp()
         a1 = self.r.core.getAssemblies(Flags.FUEL)[0]
-        a2 = self.r.core.sfp.getChildren(Flags.FUEL)[0]
+        a2 = self.r.sfp.getChildren(Flags.FUEL)[0]
 
         # move location of a stationary flag in assembly 1
         for block in a1:

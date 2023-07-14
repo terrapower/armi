@@ -23,8 +23,6 @@ from armi.utils.units import getTk
 class Zr(Material):
     """Metallic zirconium."""
 
-    name = "Zr"
-
     propertyValidTemperature = {
         "density": ((293, 1800), "K"),
         "linear expansion": ((293, 1800), "K"),

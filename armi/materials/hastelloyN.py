@@ -31,8 +31,6 @@ class HastelloyN(Material):
 
     """
 
-    name = "HastelloyN"
-
     materialIntro = (
         "Hastelloy N alloy is a nickel-base alloy that was invented at Oak RIdge National Laboratories "
         "as a container material for molten fluoride salts. It has good oxidation resistance to hot fluoride "
@@ -48,7 +46,7 @@ class HastelloyN(Material):
     refTempK = 293.15
 
     def setDefaultMassFracs(self):
-        r"""
+        """
         Hastelloy N mass fractions.
 
         From [Haynes]_.

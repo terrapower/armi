@@ -29,7 +29,6 @@ from armi.utils.units import getTk
 
 
 class Uranium(FuelMaterial):
-    name = "Uranium"
 
     enrichedNuclide = "U235"
 

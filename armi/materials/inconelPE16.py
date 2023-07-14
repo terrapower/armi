@@ -20,7 +20,6 @@ from armi.nucDirectory import nuclideBases
 
 
 class InconelPE16(SimpleSolid):
-    name = "InconelPE16"
     references = {
         "mass fractions": r"http://www.specialmetals.com/assets/documents/alloys/nimonic/nimonic-alloy-pe16.pdf",
         "density": r"http://www.specialmetals.com/assets/documents/alloys/nimonic/nimonic-alloy-pe16.pdf",

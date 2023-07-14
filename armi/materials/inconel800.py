@@ -26,12 +26,11 @@ class Inconel800(Material):
         (https://www.specialmetals.com/assets/smc/documents/alloys/incoloy/incoloy-alloy-800.pdf)
     """
 
-    name = "Inconel800"
     propertyValidTemperature = {"thermal expansion": ((20.0, 800.0), "C")}
     refTempK = 294.15
 
     def setDefaultMassFracs(self):
-        r"""
+        """
         Incoloy 800H mass fractions.
 
         From [SM]_.
@@ -50,7 +49,7 @@ class Inconel800(Material):
         self.refDens = 7.94
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
-        r"""
+        """
         average thermal expansion dL/L. Used for computing hot dimensions.
 
         Parameters
@@ -69,7 +68,7 @@ class Inconel800(Material):
         return 100.0 * self.meanCoefficientThermalExpansion(Tc=Tc) * (Tc - refTempC)
 
     def meanCoefficientThermalExpansion(self, Tk=None, Tc=None):
-        r"""
+        """
         Mean coefficient of thermal expansion for Incoloy 800.
         Third order polynomial fit of table 5 from [SM]_.
 

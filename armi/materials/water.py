@@ -39,7 +39,6 @@ class Water(Fluid):
     power industry
     """
 
-    name = "Water"
     thermalScatteringLaws = (tsl.byNbAndCompound[nb.byName["H"], tsl.H2O],)
     references = {
         "vapor pressure": "IAPWS SR1-86 Revised Supplementary Release on Saturation Properties of Ordinary Water and Steam",
@@ -335,8 +334,6 @@ class SaturatedWater(Water):
     Saturated  Steam Material Class.
     """
 
-    name = "SaturatedWater"
-
     def pseudoDensity(self, Tk: float = None, Tc: float = None) -> float:
         """
         Returns density in g/cc.
@@ -394,8 +391,6 @@ class SaturatedSteam(Water):
     This is the Saturated Liquid Water Material Class. For steam look to the
     Saturated  Steam Material Class.
     """
-
-    name = "SaturatedSteam"
 
     def pseudoDensity(self, Tk: float = None, Tc: float = None) -> float:
         """

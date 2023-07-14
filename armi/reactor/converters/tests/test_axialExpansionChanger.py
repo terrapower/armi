@@ -238,7 +238,7 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
         AxialExpansionTestBase.tearDown(self)
 
     def expandAssemForMassConservationTest(self):
-        """do the thermal expansion and store conservation metrics of interest"""
+        """Do the thermal expansion and store conservation metrics of interest."""
         # create a semi-realistic/physical variable temperature grid over the assembly
         temp = Temperature(self.a.getTotalHeight(), numTempGridPts=11, tempSteps=10)
         for idt in range(temp.tempSteps):
@@ -341,7 +341,7 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
 
     @staticmethod
     def _getMass(a):
-        """get the mass of an assembly. The conservation of HT9 pins in shield assems
+        """Get the mass of an assembly. The conservation of HT9 pins in shield assems
         are accounted for in FE56 conservation checks.
         """
         newMass = None
@@ -796,6 +796,18 @@ class TestDetermineTargetComponent(AxialExpansionTestBase, unittest.TestCase):
         self.assertTrue(self.expData.isTargetComponent(duct))
 
 
+class TestGetSolidComponents(unittest.TestCase):
+    """Verify that getSolidComponents returns just solid components."""
+
+    def setUp(self):
+        self.a = buildTestAssemblyWithFakeMaterial(name="HT9")
+
+    def test_getSolidComponents(self):
+        for b in self.a:
+            for c in getSolidComponents(b):
+                self.assertNotEqual(c.material.name, "Sodium")
+
+
 class TestInputHeightsConsideredHot(unittest.TestCase):
     """Verify thermal expansion for process loading of core."""
 
@@ -855,7 +867,7 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
                             matDens = cExp.material.density(Tc=cExp.temperatureInC)
                             compDens = cExp.density()
                             msg = (
-                                f"{cExp} {cExp.material} in {bExp} was not at correct density. \n"
+                                f"{cExp} {cExp.material} in {bExp} in {aExp} was not at correct density. \n"
                                 + f"expansion = {bExp.p.height / bStd.p.height} \n"
                                 + f"density = {matDens}, component density = {compDens} \n"
                             )

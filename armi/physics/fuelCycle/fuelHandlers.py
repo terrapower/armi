@@ -443,7 +443,7 @@ class FuelHandler:
             # separate it
             compareTo, mult = compareTo
 
-        if isinstance(compareTo, float) or isinstance(compareTo, int):
+        if isinstance(compareTo, (float, int)):
             # floating point or int.
             compVal = compareTo * mult
         elif param:
@@ -662,7 +662,7 @@ class FuelHandler:
             assemListTmp2 = []
             if ringList[0] == "SFP":
                 # kind of a hack for now. Need the capability.
-                assemblyList = self.r.core.sfp.getChildren()
+                assemblyList = self.r.sfp.getChildren()
             else:
                 for i, ringNumber in enumerate(ringList):
                     assemListTmp = self.r.core.getAssembliesInCircularRing(
@@ -680,7 +680,7 @@ class FuelHandler:
         else:
             if ringList[0] == "SFP":
                 # kind of a hack for now. Need the capability.
-                assemList = self.r.core.sfp.getChildren()
+                assemList = self.r.sfp.getChildren()
             else:
                 assemList = self.r.core.getAssemblies()
 
@@ -826,10 +826,10 @@ class FuelHandler:
         # future, this mechanism may be used to handle symmetry in general.
         outgoing.p.multiplicity = len(loc.getSymmetricEquivalents()) + 1
 
-        if incoming in self.r.core.sfp.getChildren():
+        if incoming in self.r.sfp.getChildren():
             # pull it out of the sfp if it's in there.
             runLog.extra("removing {0} from the sfp".format(incoming))
-            self.r.core.sfp.remove(incoming)
+            self.r.sfp.remove(incoming)
 
         incoming.p.multiplicity = 1
         self.r.core.add(incoming, loc)
@@ -1279,11 +1279,11 @@ class FuelHandler:
             # not only use the proper assembly type but also adjust the enrichment.
             if assemblyName:
                 # get this assembly from the SFP
-                loadAssembly = self.r.core.sfp.getAssembly(assemblyName)
+                loadAssembly = self.r.sfp.getAssembly(assemblyName)
                 if not loadAssembly:
                     runLog.error(
                         "the required assembly {0} is not found in the SFP. It contains: {1}"
-                        "".format(assemblyName, self.r.core.sfp.getChildren())
+                        "".format(assemblyName, self.r.sfp.getChildren())
                     )
                     raise RuntimeError(
                         "the required assembly {0} is not found in the SFP.".format(

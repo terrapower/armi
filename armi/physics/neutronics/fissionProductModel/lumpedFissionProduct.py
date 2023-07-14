@@ -258,7 +258,7 @@ class LumpedFissionProductCollection(dict):
         return fpDensities
 
     def getMassFrac(self, oldMassFrac=None):
-        """returns the mass fraction vector of the collection of lumped fission products."""
+        """Returns the mass fraction vector of the collection of lumped fission products."""
         if not oldMassFrac:
             raise ValueError("You must define a massFrac vector")
 

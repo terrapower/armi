@@ -25,7 +25,6 @@ from armi.utils.mathematics import getFloat
 
 
 class Lithium(material.Fluid):
-    name = "Lithium"
     references = {"density": "Wikipedia"}
     enrichedNuclide = "LI6"
 

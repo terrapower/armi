@@ -13,6 +13,7 @@
 # limitations under the License.
 """Testing for reactors.py."""
 import copy
+import logging
 import os
 import unittest
 
@@ -144,7 +145,7 @@ def loadTestReactor(
     customSettings=None,
     inputFileName="armiRun.yaml",
 ):
-    r"""
+    """
     Loads a test reactor. Can be used in other test modules.
 
     Parameters
@@ -202,7 +203,7 @@ def loadTestReactor(
     # put some stuff in the SFP too.
     for a in range(10):
         a = o.r.blueprints.constructAssem(o.cs, name="feed fuel")
-        o.r.core.sfp.add(a)
+        o.r.sfp.add(a)
 
     o.r.core.regenAssemblyLists()
 
@@ -275,7 +276,7 @@ class HexReactorTests(ReactorTests):
         self.assertEqual(self.r.core._children, sorted(self.r.core._children))
 
     def test_sortAssemByRing(self):
-        """Demonstrate ring/pos sorting"""
+        """Demonstrate ring/pos sorting."""
         self.r.core.sortAssemsByRing()
         self.assertEqual((1, 1), self.r.core[0].spatialLocator.getRingPos())
         currentRing = -1
@@ -339,7 +340,7 @@ class HexReactorTests(ReactorTests):
         self.assertEqual(numControlBlocks, 3)
 
     def test_setB10VolOnCreation(self):
-        """test the setting of b.p.initialB10ComponentVol"""
+        """Test the setting of b.p.initialB10ComponentVol."""
         for controlBlock in self.r.core.getBlocks(Flags.CONTROL):
             controlComps = [c for c in controlBlock if c.getNumberDensity("B10") > 0]
             self.assertEqual(len(controlComps), 1)
@@ -806,12 +807,29 @@ class HexReactorTests(ReactorTests):
         bLoc = b.spatialLocator
         self.r.core.removeAssembly(a)
         self.assertNotEqual(aLoc, a.spatialLocator)
-        self.assertEqual(a.spatialLocator.grid, self.r.core.sfp.spatialGrid)
+        self.assertEqual(a.spatialLocator.grid, self.r.sfp.spatialGrid)
 
         # confirm only attached to removed assem
         self.assertIs(bLoc, b.spatialLocator)  # block location does not change
         self.assertIs(a, b.parent)
         self.assertIs(a, b.spatialLocator.grid.armiObject)
+
+    def test_removeAssemblyNoSfp(self):
+        with mockRunLogs.BufferLog() as mock:
+            # we should start with a clean slate
+            self.assertEqual("", mock.getStdout())
+            runLog.LOG.startLog("test_removeAssemblyNoSfp")
+            runLog.LOG.setVerbosity(logging.INFO)
+
+            a = self.r.core[-1]  # last assembly
+            b = a[-1]  # use the last block in case we ever figure out stationary blocks
+            aLoc = a.spatialLocator
+            self.assertIsNotNone(aLoc.grid)
+            core = self.r.core
+            del core.parent.sfp
+            core.removeAssembly(a)
+
+            self.assertIn("No Spent Fuel Pool", mock.getStdout())
 
     def test_removeAssembliesInRing(self):
         aLoc = [
@@ -826,7 +844,7 @@ class HexReactorTests(ReactorTests):
         self.r.core.removeAssembliesInRing(3, self.o.cs)
         for i, a in assems.items():
             self.assertNotEqual(aLoc[i], a.spatialLocator)
-            self.assertEqual(a.spatialLocator.grid, self.r.core.sfp.spatialGrid)
+            self.assertEqual(a.spatialLocator.grid, self.r.sfp.spatialGrid)
 
     def test_removeAssembliesInRingByCount(self):
         self.assertEqual(self.r.core.getNumRings(), 9)

@@ -12,15 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-Plotting a multi-group scatter matrix
-=====================================
+Plotting a multi-group scatter matrix.
 
 Here we plot scatter matrices from an ISOTXS microscopic cross section library.
 We plot the inelastic scatter cross section of U235 as well as the (n,2n) source
 matrix.
 
 See Also: :py:mod:`ISOTXS <armi.nuclearDataIO.isotxs>` format.
-
 """
 import matplotlib.pyplot as plt
 

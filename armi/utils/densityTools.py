@@ -315,7 +315,7 @@ def expandElementalMassFracsToNuclides(
 
 def expandElementalNuclideMassFracs(
     element: elements.Element,
-    massFrac: dict,
+    massFrac: float,
     isotopicSubset: List[nuclideBases.NuclideBase] = None,
 ):
     """

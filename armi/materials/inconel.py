@@ -18,7 +18,6 @@ from armi.materials.material import SimpleSolid
 
 
 class Inconel(SimpleSolid):
-    name = "Inconel"
     references = {
         "mass fractions": "https://www.specialmetals.com/documents/technical-bulletins/inconel/inconel-alloy-617.pdf",
         "density": "https://www.specialmetals.com/documents/technical-bulletins/inconel/inconel-alloy-617.pdf",
@@ -49,5 +48,3 @@ class Inconel617(Inconel):
     Inconel 617. This material enables the user to know with certainty that
     this material represents Inconel 617 and doesn't break any older models.
     """
-
-    name = "Inconel617"

@@ -20,7 +20,6 @@ from armi.utils.units import getTc
 
 
 class Inconel625(Material):
-    name = "Inconel625"
     propertyValidTemperature = {
         "heat capacity": ((221.0, 1093.0), "C"),
         "linear expansion": ((21.0, 927.0), "C"),
@@ -146,7 +145,7 @@ class Inconel625(Material):
         return numpy.polyfit(numpy.array(Tc), numpy.array(cp), power).tolist()
 
     def heatCapacity(self, Tk=None, Tc=None):
-        r"""
+        """
         Returns the specific heat capacity of Inconel625.
 
         Parameters
@@ -209,7 +208,7 @@ class Inconel625(Material):
         ).tolist()
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
-        r"""
+        """
         Returns percent linear expansion of Inconel625.
 
         Parameters

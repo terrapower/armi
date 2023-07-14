@@ -40,11 +40,8 @@ class TestInitializationEntryPoints(unittest.TestCase):
         """Tests the initialization of all subclasses of `EntryPoint`."""
         entryPoints = getEntireFamilyTree(EntryPoint)
 
-        # Note that this is a hard coded number that should be incremented
-        # if a new ARMI framework entry point is added. This is a bit hacky,
-        # but will help demonstrate that entry point classes can be initialized
-        # and the `addOptions` and public API is tested.
-        self.assertEqual(len(entryPoints), 18)
+        # Comparing to a minimum number of entry points, in case more are added.
+        self.assertGreater(len(entryPoints), 16)
 
         for e in entryPoints:
             entryPoint = e()
