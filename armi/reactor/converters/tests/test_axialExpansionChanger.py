@@ -668,7 +668,7 @@ class TestDetermineTargetComponent(AxialExpansionTestBase, unittest.TestCase):
 
     def setUp(self):
         AxialExpansionTestBase.setUp(self)
-        self.expData = ExpansionData([], True, True)
+        self.expData = ExpansionData([], setFuel=True, coldHeightsToHot=True)
         coolDims = {"Tinput": 25.0, "Thot": 25.0}
         self.coolant = DerivedShape("coolant", "Sodium", **coolDims)
 

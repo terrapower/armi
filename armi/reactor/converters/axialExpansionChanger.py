@@ -171,6 +171,9 @@ class AxialExpansionChanger:
         setFuel : boolean, optional
             Boolean to determine whether or not fuel blocks should have their target components set
             This is useful when target components within a fuel block need to be determined on-the-fly.
+        coldHeightsToHot: bool
+            determines if thermal expansion factors should be calculated from c.inputTemperatureInC
+            to c.temperatureInC or some other reference temperature and c.temepratureInC
         """
         self.setAssembly(a, setFuel, coldHeightsToHot)
         self.expansionData.updateComponentTempsBy1DTempField(tempGrid, tempField)
@@ -193,7 +196,9 @@ class AxialExpansionChanger:
             This is useful when target components within a fuel block need to be determined on-the-fly.
         """
         self.linked = AssemblyAxialLinkage(a)
-        self.expansionData = ExpansionData(a, setFuel, coldHeightsToHot)
+        self.expansionData = ExpansionData(
+            a, setFuel=setFuel, coldHeightsToHot=coldHeightsToHot
+        )
         self._isTopDummyBlockPresent()
 
     def applyColdHeightMassIncrease(self):
@@ -561,6 +566,21 @@ class ExpansionData:
     """Object containing data needed for axial expansion."""
 
     def __init__(self, a, setFuel: bool, coldHeightsToHot: bool):
+        """class constructor
+
+        Parameters
+        ----------
+        a: :py:class:`Assembly <armi.reactor.assemblies.Assembly>`
+            Assembly to assign component-wise expansion data too
+        setFuel: bool
+            used to determine if fuel component should be set as
+            axial expansion target component during initialization.
+            see self._isFuelLocked
+        coldHeightsToHot: bool
+            determines if thermal expansion factors should be calculated
+            from c.inputTemperatureInC to c.temperatureInC or some other
+            reference temperature and c.temepratureInC
+        """
         self._a = a
         self.componentReferenceTemperature = {}
         self._expansionFactors = {}
