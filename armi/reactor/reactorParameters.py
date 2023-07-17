@@ -210,7 +210,7 @@ def defineCoreParameters():
 
         pb.defParam(
             "critSearchSlope",
-            units=units.UNITLESS,
+            units="1/day",
             description="Critical keff search slope",
         )
 
