@@ -809,8 +809,8 @@ def defineCoreParameters():
 
         pb.defParam(
             "fisRateCore",
-            units="fissions/s",
-            description="peak/average fission rate in core?",
+            units=units.UNITLESS,
+            description="peak/average fission rate in core",
         )
 
     return pDefs
