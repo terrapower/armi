@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-r"""
+"""
 The ``Case`` object is responsible for running, and executing a set of user inputs.  Many
 entry points redirect into ``Case`` methods, such as ``clone``, ``compare``, and ``run``.
 
@@ -939,7 +939,7 @@ def copyInterfaceInputs(
                 except NonexistentSetting(key):
                     raise ValueError(
                         f"{key} is not a valid setting. Ensure the relevant specifyInputs "
-                        f"method uses a correct setting name."
+                        "method uses a correct setting name."
                     )
             label = key.name
 
@@ -961,6 +961,7 @@ def copyInterfaceInputs(
                             continue
                     except OSError:
                         pass
+
                 # Attempt to construct an absolute file path
                 sourceFullPath = os.path.join(sourceDirPath, f)
                 if WILDCARD:
@@ -982,11 +983,11 @@ def copyInterfaceInputs(
                         label, sourceFullPath, destination, f
                     )
                     newFiles.append(str(destFilePath))
+
                 if destFilePath == f:
-                    runLog.info(
+                    runLog.debug(
                         f"No input files for `{label}` setting could be resolved with "
-                        f"the following path: `{sourceFullPath}`. Will not update "
-                        f"`{label}`."
+                        f"the following path: `{sourceFullPath}`. Will not update `{label}`."
                     )
 
             # Some settings are a single filename. Others are lists of files. Make
@@ -995,4 +996,5 @@ def copyInterfaceInputs(
                 newSettings[label] = newFiles[0]
             else:
                 newSettings[label] = newFiles
+
     return newSettings
