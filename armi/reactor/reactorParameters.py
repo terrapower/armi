@@ -39,7 +39,7 @@ def defineReactorParameters():
         pb.defParam(
             "cycle",
             units=units.UNITLESS,
-            description="current cycle of the simulation (interger)",
+            description="Current cycle of the simulation (integer)",
             default=0,
         )
 
@@ -79,7 +79,7 @@ def defineReactorParameters():
         )
 
         pb.defParam(
-            "timeNode", units=units.UNITLESS, description="integer timeNode", default=0
+            "timeNode", units=units.UNITLESS, description="Integer timeNode", default=0
         )
 
     with pDefs.createBuilder(
@@ -138,7 +138,7 @@ def defineCoreParameters():
         pb.defParam(
             "maxAssemNum",
             units=units.UNITLESS,
-            description="maximum assembly number",
+            description="Maximum assembly number",
             default=0,
         )
 
@@ -370,7 +370,7 @@ def defineCoreParameters():
         pb.defParam(
             "medFluxCore",
             units=units.EV,
-            description="Median energy neutron in the core",
+            description="Median energy of neutrons in the core",
         )
 
         pb.defParam(
@@ -379,7 +379,7 @@ def defineCoreParameters():
             description="Median energy of source neutrons in the core?",
         )
 
-        pb.defParam("pkFlux", units="n/cm2-s", description="peak flux in the core")
+        pb.defParam("pkFlux", units="n/cm2-s", description="Peak flux in the core")
 
         pb.defParam(
             "maxdetailedDpaPeak",
