@@ -127,7 +127,7 @@ def getAssemblyParameterDefinitions():
         pb.defParam("numMoves", units=units.UNITLESS, description="numMoves")
 
         pb.defParam(
-            "timeToLimit", units=units.UNITLESS, description="timeToLimit", default=1e6
+            "timeToLimit", units=units.DAYS, description="timeToLimit", default=1e6
         )
 
     with pDefs.createBuilder(location=ParamLocation.AVERAGE) as pb:
@@ -342,7 +342,7 @@ def getAssemblyParameterDefinitions():
 
         pb.defParam(
             "dischargeTime",
-            units=units.UNITLESS,
+            units=units.YEARS,
             description="Time the Assembly was removed from the Reactor.",
         )
 

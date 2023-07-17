@@ -334,7 +334,7 @@ def defineCoreParameters():
 
         pb.defParam(
             "THmaxDilationPressure",
-            units=units.UNITLESS,
+            units=units.PASCALS,
             description="THmaxDilationPressure",
         )
 
@@ -809,7 +809,7 @@ def defineCoreParameters():
 
         pb.defParam(
             "fisRateCore",
-            units=units.UNITLESS,
+            units="fissions/s",
             description="peak/average fission rate in core?",
         )
 

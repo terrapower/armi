@@ -143,7 +143,7 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "mgFluxSK",
-            units=units.UNITLESS,
+            units="n-cm/s",
             description="multigroup volume-integrated flux stored for multiple time steps in spatial kinetics (2-D array)",
             location=ParamLocation.VOLUME_INTEGRATED,
             saveToDB=False,
@@ -189,7 +189,7 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "axialPowerProfile",
-            units=units.UNITLESS,
+            units="W/cm^3",
             description="""For each reconstructed axial location, a tuple (z,power density) where with
             axial origin at the bottom of assembly in which the blocks are located.""",
             location=ParamLocation.AVERAGE,
@@ -199,7 +199,7 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "axialPowerProfileNeutron",
-            units=units.UNITLESS,
+            units="W/cm^3",
             description="""For each reconstructed axial location, a tuple (z, neutron power density)
             where with axial origin at the bottom of assembly in which the blocks are located.""",
             location=ParamLocation.AVERAGE,
@@ -209,7 +209,7 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "axialPowerProfileGamma",
-            units=units.UNITLESS,
+            units="W/cm^3",
             description="""For each reconstructed axial location, a tuple (z, gamma power density)
             where with axial origin at the bottom of assembly in which the blocks are located.""",
             location=ParamLocation.AVERAGE,
