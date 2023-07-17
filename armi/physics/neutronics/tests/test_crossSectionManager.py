@@ -366,11 +366,10 @@ class TestBlockCollectionComponentAverage1DCylinder(unittest.TestCase):
 
         # different nuclides
         nucDiffBlock = HexBlock("blockNucDiff")
-        negligibleNuc = {"N14": 1.0e-5}
         mixedDensities = {
-            "clad": baseComponents[0].getNumberDensities().update(negligibleNuc),
-            "coolant": baseComponents[2].getNumberDensities(negligibleNuc),
-            "control": baseComponents[4].getNumberDensities(negligibleNuc),
+            "clad": baseComponents[0].getNumberDensities(),
+            "coolant": baseComponents[2].getNumberDensities(),
+            "control": baseComponents[4].getNumberDensities(),
         }
         control, clad, coolant = self._makeComponents(7, mixedDensities)
         nucDiffBlock.add(control)
@@ -379,10 +378,17 @@ class TestBlockCollectionComponentAverage1DCylinder(unittest.TestCase):
 
         # additional non-important nuclides
         negligibleNucDiffBlock = HexBlock("blockNegligibleNucDiff")
+        negligibleNuc = {"N14": 1.0e-5}
+        modControl = baseComponents[0].getNumberDensities()
+        modClad = baseComponents[2].getNumberDensities()
+        modCoolant = baseComponents[4].getNumberDensities()
+        modControl.update(negligibleNuc)
+        modClad.update(negligibleNuc)
+        modCoolant.update(negligibleNuc)
         mixedDensities = {
-            "control": baseComponents[0].getNumberDensities(),
-            "clad": baseComponents[2].getNumberDensities(),
-            "coolant": baseComponents[4].getNumberDensities(),
+            "control": modControl, 
+            "clad": modClad,
+            "coolant": modCoolant,
         }
         control, clad, coolant = self._makeComponents(7, mixedDensities)
         negligibleNucDiffBlock.add(control)
