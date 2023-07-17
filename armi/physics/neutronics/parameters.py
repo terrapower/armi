@@ -668,7 +668,7 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "detailedDpaPeakRate",
-            units="dpa/s",
+            units=f"{units.DPA}/s",
             description="Peak DPA rate based on detailedDpaPeak",
             location=ParamLocation.MAX,
             categories=[parameters.Category.cumulative, parameters.Category.neutronics],

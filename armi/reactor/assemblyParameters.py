@@ -120,9 +120,9 @@ def getAssemblyParameterDefinitions():
 
         pb.defParam("kInf", units=units.UNITLESS, description="kInf")
 
-        pb.defParam("maxDpaPeak", units=units.UNITLESS, description="maxDpaPeak")
+        pb.defParam("maxDpaPeak", units=units.DPA, description="maxDpaPeak")
 
-        pb.defParam("maxPercentBu", units=units.UNITLESS, description="maxPercentBu")
+        pb.defParam("maxPercentBu", units=units.PERCENT, description="maxPercentBu")
 
         pb.defParam("numMoves", units=units.UNITLESS, description="numMoves")
 

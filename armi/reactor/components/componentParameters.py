@@ -258,10 +258,10 @@ def getTriangleParameterDefinitions():
     pDefs = parameters.ParameterDefinitionCollection()
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:
         pb.defParam(
-            "base", units=units.CM, description="length of the base of the triangle"
+            "base", units=units.CM, description="Length of the base of the triangle"
         )
 
-        pb.defParam("height", units=units.CM, description="height of the triangle")
+        pb.defParam("height", units=units.CM, description="Height of the triangle")
 
     return pDefs
 
