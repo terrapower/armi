@@ -31,6 +31,7 @@ core:
     y: 10.1
     z: 1.1
 sfp:
+    type: sfp
     grid name: sfp
     origin:
         x: 0.0
