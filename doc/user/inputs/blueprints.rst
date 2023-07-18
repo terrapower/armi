@@ -521,6 +521,7 @@ A complete reactor structure with a core and a SFP may be seen below::
                     y: 10.1
                     z: 1.1
             sfp:
+                type: sfp
                 grid name: sfp
                 origin:
                     x: 1000.0
