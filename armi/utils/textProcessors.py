@@ -90,7 +90,7 @@ def _processIncludes(
     indentSpace = " " * indentation
     if hasattr(src, "getvalue"):
         # assume stringIO
-        lines = [l + "\n" for l in src.getvalue().split("\n")]
+        lines = [ln + "\n" for ln in src.getvalue().split("\n")]
     else:
         # assume file stream or TextIOBase, and it has a readlines attr
         lines = src.readlines()
