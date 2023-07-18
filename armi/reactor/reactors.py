@@ -113,6 +113,7 @@ class Reactor(composites.Composite):
         if isinstance(container, SpentFuelPool):
             self.sfp = container
 
+
 def loadFromCs(cs) -> Reactor:
     """
     Load a Reactor based on the input settings.
