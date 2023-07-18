@@ -33,6 +33,7 @@ import re
 
 import numpy
 
+from armi import runLog
 from armi.reactor.flags import Flags
 from armi.reactor.parameters.exceptions import ParameterError, ParameterDefinitionError
 
@@ -208,7 +209,7 @@ def isNumpyArray(paramStr):
 
 @functools.total_ordering
 class Parameter:
-    r"""Metadata about a specific parameter."""
+    """Metadata about a specific parameter."""
 
     _validName = re.compile("^[a-zA-Z0-9_]+$")
 
@@ -247,10 +248,14 @@ class Parameter:
         serializer: Optional[Type[Serializer]] = None,
     ):
         assert self._validName.match(name), "{} is not a valid param name".format(name)
+        # nonsensical to have a serializer with no intention of saving to DB
         assert not (serializer is not None and not saveToDB)
-        # nonsensical to have a serializer with no intention of saving to DB; probably
-        # in error
         assert serializer is None or saveToDB
+        # TODO: This warning is temporary. At some point, it will become an AssertionError.
+        if not len(description):
+            runLog.warning(
+                f"DeprecationWarning: Parameter {name} defined without description."
+            )
         self.collectionType = _Undefined
         self.name = name
         self.fieldName = "_p_" + name
@@ -422,7 +427,7 @@ class ParameterDefinitionCollection:
         return len(self._paramDefs)
 
     def __getitem__(self, name):
-        r"""Get a parameter by name.
+        """Get a parameter by name.
 
         Notes
         -----
@@ -587,7 +592,7 @@ class ParameterDefinitionCollection:
 
 
 class ParameterBuilder:
-    r"""Factory for creating Parameter and parameter properties."""
+    """Factory for creating Parameter and parameter properties."""
 
     def __init__(
         self,
@@ -596,7 +601,7 @@ class ParameterBuilder:
         categories=None,
         saveToDB=True,
     ):
-        r"""Create a :py:class:`ParameterBuilder`."""
+        """Create a :py:class:`ParameterBuilder`."""
         self._entered = False
         self._defaultLocation = location
         self._defaultCategories = set(categories or [])  # make sure it is always a set

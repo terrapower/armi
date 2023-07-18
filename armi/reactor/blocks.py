@@ -118,7 +118,6 @@ class Block(composites.Composite):
             "displacementX",
             "displacementY",
             "fluxAdj",
-            "bu",
             "buRate",
             "eqRegion",
             "fissileFraction",
