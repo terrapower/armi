@@ -386,7 +386,7 @@ class TestBlockCollectionComponentAverage1DCylinder(unittest.TestCase):
         modClad.update(negligibleNuc)
         modCoolant.update(negligibleNuc)
         mixedDensities = {
-            "control": modControl, 
+            "control": modControl,
             "clad": modClad,
             "coolant": modCoolant,
         }
