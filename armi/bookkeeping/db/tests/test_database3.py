@@ -76,6 +76,7 @@ class TestDatabase3(unittest.TestCase):
             "HexBlock",
             "Hexagon",
             "Reactor",
+            "SpentFuelPool",
             "layout",
         ]
         self.assertEqual(sorted(self.db.h5db["c00n00"].keys()), sorted(keys))
@@ -375,9 +376,7 @@ class TestDatabase3(unittest.TestCase):
         self.assertEqual(assemblies._assemNum, 0)
 
         r = self.db.load(0, 0, allowMissing=True, updateGlobalAssemNum=False)
-        #  len(r.sfp) is zero but these nums are still reserved
-        numSFPBlueprints = 4
-        expectedNum = len(r.core) + numSFPBlueprints
+        expectedNum = len(r.core) + len(r.sfp)
         self.assertEqual(assemblies._assemNum, expectedNum)
 
         # now do the same call again and show that the global _assemNum keeps going up.
