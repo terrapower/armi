@@ -33,6 +33,7 @@ import re
 
 import numpy
 
+from armi import runLog
 from armi.reactor.flags import Flags
 from armi.reactor.parameters.exceptions import ParameterError, ParameterDefinitionError
 
@@ -247,10 +248,14 @@ class Parameter:
         serializer: Optional[Type[Serializer]] = None,
     ):
         assert self._validName.match(name), "{} is not a valid param name".format(name)
+        # nonsensical to have a serializer with no intention of saving to DB
         assert not (serializer is not None and not saveToDB)
-        # nonsensical to have a serializer with no intention of saving to DB; probably
-        # in error
         assert serializer is None or saveToDB
+        # TODO: This warning is temporary. At some point, it will become an AssertionError.
+        if not len(description):
+            runLog.warning(
+                f"DeprecationWarning: Parameter {name} defined without description."
+            )
         self.collectionType = _Undefined
         self.name = name
         self.fieldName = "_p_" + name
