@@ -143,7 +143,7 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "mgFluxSK",
-            units="n-cm/s",
+            units=f"n-{units.CM}/{units.SECONDS}",
             description="multigroup volume-integrated flux stored for multiple time steps in spatial kinetics (2-D array)",
             location=ParamLocation.VOLUME_INTEGRATED,
             saveToDB=False,
@@ -189,7 +189,7 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "axialPowerProfile",
-            units="W/cm^3",
+            units=f"{units.WATTS}/{units.CM}^3",
             description="""For each reconstructed axial location, a tuple (z,power density) where with
             axial origin at the bottom of assembly in which the blocks are located.""",
             location=ParamLocation.AVERAGE,
@@ -199,7 +199,7 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "axialPowerProfileNeutron",
-            units="W/cm^3",
+            units=f"{units.WATTS}/{units.CM}^3",
             description="""For each reconstructed axial location, a tuple (z, neutron power density)
             where with axial origin at the bottom of assembly in which the blocks are located.""",
             location=ParamLocation.AVERAGE,
@@ -209,7 +209,7 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "axialPowerProfileGamma",
-            units="W/cm^3",
+            units=f"{units.WATTS}/{units.CM}^3",
             description="""For each reconstructed axial location, a tuple (z, gamma power density)
             where with axial origin at the bottom of assembly in which the blocks are located.""",
             location=ParamLocation.AVERAGE,
@@ -668,7 +668,7 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "detailedDpaPeakRate",
-            units=f"{units.DPA}/s",
+            units=f"{units.DPA}/{units.SECONDS}",
             description="Peak DPA rate based on detailedDpaPeak",
             location=ParamLocation.MAX,
             categories=[parameters.Category.cumulative, parameters.Category.neutronics],
