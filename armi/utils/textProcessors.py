@@ -58,10 +58,10 @@ class FileMark:
 
 
 def _processIncludes(
-    src,
+    src: Union[TextIO, pathlib.Path],
     out,
     includes: List[Tuple[pathlib.Path, FileMark]],
-    root,
+    root: pathlib.Path,
     indentation=0,
     currentFile="<stream>",
 ):
@@ -88,7 +88,13 @@ def _processIncludes(
             return 0
 
     indentSpace = " " * indentation
-    for i, line in enumerate(src.readlines()):
+    if hasattr(src, "getvalue"):
+        # assume stringIO
+        lines = [l + "\n" for l in src.getvalue().split("\n")]
+    else:
+        # assume file stream or TextIOBase, and it has a readlines attr
+        lines = src.readlines()
+    for i, line in enumerate(lines):
         leadingSpace = indentSpace if i > 0 else ""
         m = _INCLUDE_RE.match(line)
         if m:
@@ -134,7 +140,7 @@ def resolveMarkupInclusions(
 
     Parameters
     ----------
-    src : TextIOBase or Path
+    src : StringIO or TextIOBase/Path
         If a Path is provided, read text from there. If is stream is provided, consume
         text from the stream. If a stream is provided, ``root`` must also be provided.
     root : Optional Path

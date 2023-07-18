@@ -1,10 +1,10 @@
 # Behold, the Person family
 bobby: &bobby
-    full_name: Robert Person
+  full_name: Robert Person
 
 billy:
-    full_name: William Person
-    # comment
-    children:
-        - *bobby
-        - !include lower/includeA.yaml
+  full_name: William Person
+  # comment
+  children:
+  - *bobby
+  - !include lower/includeA.yaml
