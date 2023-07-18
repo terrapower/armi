@@ -11,6 +11,7 @@ What's new in ARMI
 #. The Spent Fuel Pool (``sfp``) was moved from the ``Core`` out to the ``Reactor``. (`PR#1336 <https://github.com/terrapower/armi/pull/1336>`_)
 #. Removed redundant ``Material.name`` variable. (`PR#1335 <https://github.com/terrapower/armi/pull/1335>`_)
 #. Added SHA1 hashes of XS control files to the welcome text. (`PR#1334 <https://github.com/terrapower/armi/pull/1334>`_)
+#. Make the SFP a child of the reactor so it is stored in database. (`PR#1349 <https://github.com/terrapower/armi/pull/1349>`_)
 #. TBD
 
 Bug fixes
