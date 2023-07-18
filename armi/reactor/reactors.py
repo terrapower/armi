@@ -464,7 +464,7 @@ class Core(composites.Composite):
         self.remove(a1)
 
         if discharge and self._trackAssems:
-            if hasattr(self.parent, "sfp"):
+            if self.parent.sfp is not None:
                 self.parent.sfp.add(a1)
             else:
                 runLog.info("No Spent Fuel Pool is found, can't track assemblies.")
