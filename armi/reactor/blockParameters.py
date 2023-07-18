@@ -216,7 +216,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "buGroup",
-            units=units.NOT_APPLICABLE,
+            units=units.UNITLESS,
             description="The burnup group letter of this block",
             default="A",
             setter=buGroup,
@@ -236,7 +236,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "buGroupNum",
-            units=units.NOT_APPLICABLE,
+            units=units.UNITLESS,
             description="An integer representation of the burnup group, linked to buGroup.",
             default=0,
             setter=buGroupNum,
@@ -401,7 +401,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "xsType",
-            units=units.NOT_APPLICABLE,
+            units=units.UNITLESS,
             description="The xs group letter of this block",
             default="A",
             setter=xsType,
@@ -415,7 +415,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "xsTypeNum",
-            units=units.NOT_APPLICABLE,
+            units=units.UNITLESS,
             description="An integer representation of the cross section type, linked to xsType.",
             default=65,  # NOTE: buGroupNum actually starts at 0
             setter=xsTypeNum,
