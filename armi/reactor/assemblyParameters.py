@@ -52,7 +52,7 @@ def getAssemblyParameterDefinitions():
 
         pb.defParam(
             "arealPd",
-            units="MW/m^2",
+            units=f"{units.MW}/{units.METERS}^2",
             description="Power in assembly divided by its XY cross-sectional area. Related to PCT.",
         )
 
@@ -135,7 +135,7 @@ def getAssemblyParameterDefinitions():
         pb.defParam(
             "detailedNDens",
             setter=isNumpyArray("detailedNDens"),
-            units="atoms/bn-cm",
+            units=f"atoms/(bn*{units.CM})",
             description=(
                 "High-fidelity number density vector with up to thousands of nuclides. "
                 "Used in high-fi depletion runs where low-fi depletion may also be occurring. "

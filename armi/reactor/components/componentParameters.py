@@ -22,10 +22,14 @@ def getComponentParameterDefinitions():
     """Return the base Component parameters."""
     pDefs = parameters.ParameterDefinitionCollection()
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:
-        pb.defParam("volume", units="cm^3", description="Volume of this object.")
+        pb.defParam(
+            "volume", units=f"{units.CM}^3", description="Volume of this object."
+        )
 
         pb.defParam(
-            "area", units="cm^2", description="Cross sectional area of this component."
+            "area",
+            units=f"{units.CM}^2",
+            description="Cross sectional area of this component.",
         )
 
         pb.defParam(
@@ -61,14 +65,14 @@ def getComponentParameterDefinitions():
 
         pb.defParam(
             "percentBu",
-            units="%FIMA",
+            units=f"{units.FIMA}",
             description="Burnup as a percentage of initial (heavy) metal atoms.",
             default=0.0,
         )
 
         pb.defParam(
             "buRate",
-            units="%FIMA/day",
+            units=f"{units.FIMA}/{units.DAYS}",
             # This is very related to power, but normalized to %FIMA.
             description=(
                 "Current rate of burnup accumulation. Useful for estimating times when "
@@ -85,7 +89,7 @@ def getComponentParameterDefinitions():
 
         pb.defParam(
             "burnupMWdPerKg",
-            units="MWd/kg",
+            units=f"{units.MW}*{units.DAYS}/{units.KG}",
             description="Burnup in MWd/Kg of heavy metal",
             default=0.0,
             categories=["cumulative"],
@@ -273,7 +277,9 @@ def getUnshapedParameterDefinitions():
         pb.defParam("op", units=units.CM, description="Outer pitch")
 
         pb.defParam(
-            "userDefinedVolume", units="cm^3", description="Volume of this object."
+            "userDefinedVolume",
+            units=f"{units.CM}^3",
+            description="Volume of this object.",
         )
 
     return pDefs

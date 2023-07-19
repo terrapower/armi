@@ -83,7 +83,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "molesHmBOL",
-            units="mole",
+            units=f"{units.MOLES}",
             description="Total number of atoms of heavy metal at BOL assuming a full assembly",
         )
 
@@ -95,13 +95,13 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "initialB10ComponentVol",
-            units="cc",  # cubic centimeters
+            units=f"{units.CM}^3",
             description="cc's of un-irradiated, cold B10 containing component (includes full volume if any B10)",
         )
 
         pb.defParam(
             "molesHmBOLByPin",
-            units="mole",
+            units=f"{units.MOLES}",
             description="Total number of atoms of heavy metal at BOL",
             default=None,
             saveToDB=False,
@@ -110,7 +110,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "molesHmNow",
-            units="mole",
+            units=f"{units.MOLES}",
             description="Total number of atoms of heavy metal",
         )
 
@@ -491,110 +491,110 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "rxAxialCentsPerK",
-            units="cents/K",
+            units=f"{units.CENTS}/{units.DEGK}",
             description="Axial temperature reactivity coefficient",
         )
 
         pb.defParam(
             "rxAxialCentsPerPow",
-            units="cents/K",
+            units=f"{units.CENTS}/{units.DEGK}",
             description="Axial power reactivity coefficient",
         )
 
         pb.defParam(
             "rxCoolantCentsPerK",
-            units="cents/K",
+            units=f"{units.CENTS}/{units.DEGK}",
             description="Coolant temperature reactivity coefficient",
         )
 
         pb.defParam(
             "rxCoolantCentsPerPow",
-            units="cents/K",
+            units=f"{units.CENTS}/{units.DEGK}",
             description="Coolant power reactivity coefficient",
         )
 
         pb.defParam(
             "rxDopplerCentsPerK",
-            units="cents/K",
+            units=f"{units.CENTS}/{units.DEGK}",
             description="Doppler temperature reactivity coefficient",
         )
 
         pb.defParam(
             "rxDopplerCentsPerPow",
-            units="cents/K",
+            units=f"{units.CENTS}/{units.DEGK}",
             description="Doppler power reactivity coefficient",
         )
 
         pb.defParam(
             "rxFuelCentsPerK",
-            units="cents/K",
+            units=f"{units.CENTS}/{units.DEGK}",
             description="Fuel temperature reactivity coefficient",
         )
 
         pb.defParam(
             "rxFuelCentsPerPow",
-            units="cents/K",
+            units=f"{units.CENTS}/{units.DEGK}",
             description="Fuel power reactivity coefficient",
         )
 
         pb.defParam(
             "rxNetCentsPerK",
-            units="cents/K",
+            units=f"{units.CENTS}/{units.DEGK}",
             description="Net temperature reactivity coefficient",
         )
 
         pb.defParam(
             "rxNetCentsPerPow",
-            units="cents/K",
+            units=f"{units.CENTS}/{units.DEGK}",
             description="Net power reactivity coefficient",
             location=ParamLocation.AVERAGE,
         )
 
         pb.defParam(
             "rxNetPosNeg",
-            units="cents/K",
+            units=f"{units.CENTS}/{units.DEGK}",
             description="Net temperature reactivity coefficient: positive or negative",
         )
 
         pb.defParam(
             "rxNetPosNegPow",
-            units="cents/K",
+            units=f"{units.CENTS}/{units.DEGK}",
             description="Net power reactivity coefficient: positive or negative",
         )
 
         pb.defParam(
             "rxRadialCentsPerK",
-            units="cents/K",
+            units=f"{units.CENTS}/{units.DEGK}",
             description="Radial temperature reactivity coefficient",
         )
 
         pb.defParam(
             "rxRadialCentsPerPow",
-            units="cents/K",
+            units=f"{units.CENTS}/{units.DEGK}",
             description="Radial power reactivity coefficient",
         )
 
         pb.defParam(
             "rxStructCentsPerK",
-            units="cents/K",
+            units=f"{units.CENTS}/{units.DEGK}",
             description="Structure temperature reactivity coefficient",
         )
 
         pb.defParam(
             "rxStructCentsPerPow",
-            units="cents/K",
+            units=f"{units.CENTS}/{units.DEGK}",
             description="Structure power reactivity coefficient",
         )
 
         pb.defParam(
             "rxVoidedDopplerCentsPerK",
-            units="cents/K",
+            units=f"{units.CENTS}/{units.DEGK}",
             description="Voided Doppler temperature reactivity coefficient",
         )
 
         pb.defParam(
             "rxVoidedDopplerCentsPerPow",
-            units="cents/K",
+            units=f"{units.CENTS}/{units.DEGK}",
             description="Voided Doppler power reactivity coefficient",
         )
 

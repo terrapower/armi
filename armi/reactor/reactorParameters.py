@@ -69,7 +69,11 @@ def defineReactorParameters():
             default=1.0,
         )
 
-        pb.defParam("lcoe", units="$/kWh", description="Levelised cost of electricity")
+        pb.defParam(
+            "lcoe",
+            units=f"{units.DOLLARS}/kWh",
+            description="Levelised cost of electricity",
+        )
 
         pb.defParam(
             "time",
@@ -100,7 +104,7 @@ def defineReactorParameters():
 
         pb.defParam(
             "eSWU",
-            units="kgSWU",
+            units=f"{units.KG}*SWU",
             description="Separative work units in reactor economics",
         )
 
@@ -393,12 +397,14 @@ def defineCoreParameters():
         )
 
         pb.defParam(
-            "maxFlux", units="n/cm^2/s", description="Max neutron flux in the core"
+            "maxFlux",
+            units=f"n/{units.CM}^2/{units.SECONDS}",
+            description="Max neutron flux in the core",
         )
 
         pb.defParam(
             "adjWeightedFisSrc",
-            units="1/cm^2/s^2",
+            units=f"1/{units.CM}^2/{units.SECONDS}^2",
             description="Volume-integrated adjoint flux weighted fission source",
         )
 
@@ -488,7 +494,7 @@ def defineCoreParameters():
 
         pb.defParam(
             "maxPD",
-            units="MW/m^2",
+            units=f"{units.MW}/{units.METERS}^2",
             description="Maximum areal power density of all assemblies",
         )
 
@@ -542,16 +548,20 @@ def defineCoreParameters():
         )
 
         pb.defParam(
-            "Voideddoppler", units="cents/K", description="Voided Doppler coefficient"
+            "Voideddoppler",
+            units=f"{units.CENTS}/{units.DEGK}",
+            description="Voided Doppler coefficient",
         )
 
         pb.defParam(
             "VoideddopplerConst",
-            units=f"cents*{units.DEGK}^(n-1)",
+            units=f"{units.CENTS}*{units.DEGK}^(n-1)",
             description="Voided Doppler constant",
         )
 
-        pb.defParam("voidWorth", units="$", description="Coolant void worth")
+        pb.defParam(
+            "voidWorth", units=f"{units.DOLLARS}", description="Coolant void worth"
+        )
 
         pb.defParam("voidedKeff", units=units.UNITLESS, description="Voided keff")
 
@@ -589,7 +599,7 @@ def defineCoreParameters():
 
         pb.defParam(
             "betaDecayConstants",
-            units="1/s",
+            units=f"1/{units.SECONDS}",
             description="Group-wise precursor decay constants",
             default=None,
         )
