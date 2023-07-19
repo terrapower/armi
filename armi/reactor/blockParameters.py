@@ -244,7 +244,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "buRate",
-            units="%FIMA/day",
+            units=f"{units.FIMA}/{units.DAYS}",
             # This is very related to power, but normalized to %FIMA.
             description=(
                 "Current rate of burnup accumulation. Useful for estimating times when "
@@ -276,7 +276,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "detailedDpaRate",
-            units="dpa/s",
+            units=f"{units.DPA}/{units.SECONDS}",
             description="Current time derivative of average detailed DPA",
             categories=["detailedAxialExpansion", "depletion"],
         )
@@ -295,14 +295,14 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "heliumInB4C",
-            units="He/s/cm$^3$",
+            units="He/s/cm^3",
             description="Alpha particle production rate in B4C control and shield material.",
             location=ParamLocation.AVERAGE,
         )
 
         pb.defParam(
             "powerRx",
-            units="W/cm$^3$",
+            units="W/cm^3",
             description="Power density of the reactor",
             location=ParamLocation.AVERAGE,
         )
