@@ -1327,24 +1327,11 @@ class ParamMapper:
         paramVals = []
         for paramName in paramNames:
             val = block.p[paramName]
-            valType = type(val)
-            if isinstance(None, valType):
-                defaultValue = self.paramDefaults[paramName]
-                valType = type(defaultValue)
-            # Array / list parameters can be have values that are `None`, lists, or numpy arrays. This first
-            # checks if the value type is any of these and if so, the block-level parameter is treated as an
-            # array.
-            if isinstance(valType, (list, numpy.ndarray)) or isinstance(None, valType):
-                if val is None or len(val) == 0:
-                    paramVals.append(None)
-                else:
-                    paramVals.append(numpy.array(val))
-            # Otherwise, the parameter is treated as a scalar, like a float/string/integer.
+            # list-like should be treated as a numpy array
+            if isinstance(val, (list, numpy.ndarray)):
+                paramVals.append(numpy.array(val) if len(val) > 0 else None)
             else:
-                if val == defaultValue:
-                    paramVals.append(defaultValue)
-                else:
-                    paramVals.append(val)
+                paramVals.append(val)
 
         return numpy.array(paramVals, dtype=object)
 
