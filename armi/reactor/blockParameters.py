@@ -70,7 +70,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "burnupMWdPerKg",
-            units="MWd/kg",
+            units=f"{units.MW}*{units.DAYS}/{units.KG}",
             description="Burnup in MWd/kg of initial heavy metal",
             categories=["cumulative"],
         )
@@ -160,7 +160,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "residence",
-            units="EFP days",
+            units=units.DAYS,
             description="Duration that a block has been in the core at full power.",
             categories=["cumulative"],
         )
@@ -254,7 +254,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "buRatePeak",
-            units="%FIMA/day spatial peak",
+            units=f"{units.FIMA}/{units.DAYS}",
             description="Current rate of burnup accumulation at peak location",
             location=ParamLocation.MAX,
         )
@@ -295,14 +295,14 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "heliumInB4C",
-            units="He/s/cm^3",
+            units=f"He/{units.SECONDS}/{units.CM}^3",
             description="Alpha particle production rate in B4C control and shield material.",
             location=ParamLocation.AVERAGE,
         )
 
         pb.defParam(
             "powerRx",
-            units="W/cm^3",
+            units=f"{units.WATTS}/{units.CM}^3",
             description="Power density of the reactor",
             location=ParamLocation.AVERAGE,
         )
@@ -453,28 +453,40 @@ def getBlockParameterDefinitions():
             description="Reactivity worth of fuel material per unit mass",
         )
 
-        pb.defParam("fuelWorthPT", units="pcm/%/cm^3", description="Fuel reactivity")
+        pb.defParam(
+            "fuelWorthPT",
+            units=f"{units.PCM}/{units.PERCENT}/{units.CM}^3",
+            description="Fuel reactivity",
+        )
 
         pb.defParam(
-            "structWorthPT", units="pcm/%/cm^3", description="Structure reactivity"
+            "structWorthPT",
+            units=f"{units.PCM}/{units.PERCENT}/{units.CM}^3",
+            description="Structure reactivity",
         )
 
         pb.defParam(
             "radExpWorthPT",
-            units="pcm/%/cm^3",
+            units=f"{units.PCM}/{units.PERCENT}/{units.CM}^3",
             description="Radial swelling reactivity",
         )
 
-        pb.defParam("coolWorthPT", units="pcm/%/cm^3", description="Coolant reactivity")
+        pb.defParam(
+            "coolWorthPT",
+            units=f"{units.PCM}/{units.PERCENT}/{units.CM}^3",
+            description="Coolant reactivity",
+        )
 
         pb.defParam(
             "coolFlowingWorthPT",
-            units="pcm/%/cm^3",
+            units=f"{units.PCM}/{units.PERCENT}/{units.CM}^3",
             description="Flowing coolant reactivity",
         )
 
         pb.defParam(
-            "axExpWorthPT", units="pcm/%/cm^3", description="Axial swelling reactivity"
+            "axExpWorthPT",
+            units=f"{units.PCM}/{units.PERCENT}/{units.CM}^3",
+            description="Axial swelling reactivity",
         )
 
         pb.defParam(

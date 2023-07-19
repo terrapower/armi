@@ -24,6 +24,7 @@ DPA = "dpa"
 EV = "eV"
 FIMA = r"%FIMA"
 MOLES = "mole"
+MB = "MB"
 MW = "MW"
 PASCALS = "Pa"
 PCM = "pcm"
@@ -38,6 +39,7 @@ MICRONS = chr(181) + "m"
 # Units (mass)
 GRAMS = "g"
 KG = "kg"
+MT = "MT"
 # Units (money)
 CENTS = "cents"  # pennies: $0.01
 DOLLARS = "$"
@@ -46,6 +48,7 @@ DEGC = chr(176) + "C"
 DEGK = "K"
 # Units (time)
 DAYS = "days"
+MINUTES = "min"
 SECONDS = "s"
 YEARS = "yr"
 

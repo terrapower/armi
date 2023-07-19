@@ -86,7 +86,7 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "mgFluxGamma",
-            units="g*cm/s",
+            units=f"{units.GRAMS}*{units.CM}/{units.SECONDS}",
             description="multigroup gamma flux",
             location=ParamLocation.VOLUME_INTEGRATED,
             saveToDB=True,
@@ -100,7 +100,7 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "mgNeutronVelocity",
-            units="cm/s",
+            units=f"{units.CM}/{units.SECONDS}",
             description="multigroup neutron velocity",
             location=ParamLocation.AVERAGE,
             saveToDB=True,
@@ -158,7 +158,7 @@ def _getNeutronicsBlockParams():
         # could lead to issues, depending on how the multiGroupQuantities category gets used
         pb.defParam(
             "pinMgFluxes",
-            units="n/s/cm^2",
+            units=f"n/{units.CM}^2/{units.SECONDS}",
             description="""
             The block-level pin multigroup fluxes. pinMgFluxes[g][i] represents the flux in group g for pin i.  Flux
             units are the standard n/cm^2/s.  The "ARMI pin ordering" is used, which is counter-clockwise from 3
@@ -500,7 +500,11 @@ def _getNeutronicsBlockParams():
             description="Decay power density from decaying radionuclides",
         )
 
-        pb.defParam("arealPd", units="MW/m^2", description="Power divided by XY area")
+        pb.defParam(
+            "arealPd",
+            units=f"{units.MW}/{units.METERS}^2",
+            description="Power divided by XY area",
+        )
 
         pb.defParam(
             "fertileBonus", units=units.UNITLESS, description="The fertile bonus"
@@ -508,7 +512,7 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "fisDens",
-            units="fissions/cm^3/s",
+            units=f"fissions/{units.CM}^3/{units.SECONDS}",
             description="Fission density in a pin (scaled up from homogeneous)",
         )
 
@@ -520,7 +524,7 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "fluxGamma",
-            units="g/cm^2/s",
+            units=f"{units.GRAMS}/{units.CM}^2/{units.SECONDS}",
             description="Gamma scalar flux",
             categories=[
                 parameters.Category.retainOnReplacement,
@@ -700,7 +704,7 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "fastFlux",
-            units="1/cm^2/s",
+            units=f"1/{units.CM}^2/{units.SECONDS}",
             description="Neutron flux above 100keV",
             location=ParamLocation.AVERAGE,
             categories=["detailedAxialExpansion"],

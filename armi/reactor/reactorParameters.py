@@ -92,13 +92,13 @@ def defineReactorParameters():
 
         pb.defParam(
             "eFeedMT",
-            units="MT",
+            units=units.MT,
             description="Total feed material required in reactor economics",
         )
 
         pb.defParam(
             "eFissile",
-            units="MT",
+            units=units.MT,
             description="Fissile mass required in reactor economics",
         )
 
@@ -221,7 +221,7 @@ def defineCoreParameters():
 
         pb.defParam(
             "doublingTime",
-            units="EFPY",
+            units=units.YEARS,
             description="The time it takes to produce enough spent fuel to fuel a daughter reactor",
         )
 
@@ -241,7 +241,7 @@ def defineCoreParameters():
             saveToDB=True,
             default=0.0,
             description=(
-                "Uncontrolled k-effective for the reactor core (with control rods fully removed).."
+                "Uncontrolled k-effective for the reactor core (with control rods fully removed)."
             ),
         )
 
@@ -281,19 +281,19 @@ def defineCoreParameters():
 
         pb.defParam(
             "maxProcessMemoryInMB",
-            units="MB",
+            units=units.MB,
             description="Maximum memory used by an ARMI process",
         )
 
         pb.defParam(
             "minProcessMemoryInMB",
-            units="MB",
+            units=units.MB,
             description="Minimum memory used by an ARMI process",
         )
 
         pb.defParam(
             "minutesSinceStart",
-            units="min",
+            units=units.MINUTES,
             description="Run time since the beginning of the calculation",
         )
 
@@ -515,35 +515,37 @@ def defineCoreParameters():
 
         pb.defParam(
             "axial",
-            units=f"cents/{units.DEGK}",
+            units=f"{units.CENTS}/{units.DEGK}",
             description="Axial expansion coefficient",
         )
 
         pb.defParam(
-            "doppler", units=f"cents/{units.DEGK}", description="Doppler coefficient"
+            "doppler",
+            units=f"{units.CENTS}/{units.DEGK}",
+            description="Doppler coefficient",
         )
 
         pb.defParam(
             "dopplerConst",
-            units=f"cents*{units.DEGK}^(n-1)",
+            units=f"{units.CENTS}*{units.DEGK}^(n-1)",
             description="Doppler constant",
         )
 
         pb.defParam(
             "fuelDensity",
-            units=f"cents/{units.DEGK}",
+            units=f"{units.CENTS}/{units.DEGK}",
             description="Fuel temperature coefficient",
         )
 
         pb.defParam(
             "coolantDensity",
-            units=f"cents/{units.DEGK}",
+            units=f"{units.CENTS}/{units.DEGK}",
             description="Coolant temperature coefficient",
         )
 
         pb.defParam(
             "totalCoolantDensity",
-            units=f"cents/{units.DEGK}",
+            units=f"{units.CENTS}/{units.DEGK}",
             description="Coolant temperature coefficient weighted to include bond and interstitial effects",
         )
 
@@ -567,13 +569,13 @@ def defineCoreParameters():
 
         pb.defParam(
             "radialHT9",
-            units=f"cents/{units.DEGK}",
+            units=f"{units.CENTS}/{units.DEGK}",
             description="Radial expansion coefficient when driven by thermal expansion of HT9.",
         )
 
         pb.defParam(
             "radialSS316",
-            units=f"cents/{units.DEGK}",
+            units=f"{units.CENTS}/{units.DEGK}",
             description="Radial expansion coefficient when driven by thermal expansion of SS316.",
         )
 
