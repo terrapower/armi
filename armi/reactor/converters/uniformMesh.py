@@ -1327,8 +1327,10 @@ class ParamMapper:
         paramVals = []
         for paramName in paramNames:
             val = block.p[paramName]
-            defaultValue = self.paramDefaults[paramName]
-            valType = type(defaultValue)
+            valType = type(val)
+            if isinstance(None, valType):
+                defaultValue = self.paramDefaults[paramName]
+                valType = type(defaultValue)
             # Array / list parameters can be have values that are `None`, lists, or numpy arrays. This first
             # checks if the value type is any of these and if so, the block-level parameter is treated as an
             # array.
