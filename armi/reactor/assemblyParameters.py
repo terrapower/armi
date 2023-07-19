@@ -40,7 +40,7 @@ def getAssemblyParameterDefinitions():
 
         pb.defParam(
             "orientation",
-            units=units.ANGLE_DEGREES,
+            units=units.DEGREES,
             description=(
                 "Triple representing rotations counterclockwise around each spatial axis. "
                 "For example, a hex assembly rotated by 1/6th has orientation (0,0,60.0)"

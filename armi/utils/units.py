@@ -18,19 +18,21 @@ import scipy.constants
 
 
 # Units (misc)
-ANGLE_DEGREES = "degrees"
-ANGLE_RADIANS = "radians"
 DPA = "dpa"
-EV = "eV"
 FIMA = r"%FIMA"
+MB = "MB"  # megabytes
 MOLES = "mole"
-MB = "MB"
-MW = "MW"
 PASCALS = "Pa"
 PCM = "pcm"
 PERCENT = "%"
 REACTIVITY = chr(916) + "k/k"
 UNITLESS = ""
+# Units (angles)
+DEGREES = "degrees"
+RADIANS = "radians"
+# Units (energy)
+EV = "eV"
+MW = "MW"
 WATTS = "W"
 # Units (length)
 CM = "cm"
