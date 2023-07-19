@@ -83,6 +83,7 @@ class Category:
     gamma = "gamma"
     detailedAxialExpansion = "detailedAxialExpansion"
     reactivityCoefficients = "reactivity coefficients"
+    thermalHydraulics = "thermal hydraulics"
 
 
 class ParamLocation(enum.Flag):
