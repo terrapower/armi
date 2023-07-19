@@ -86,7 +86,7 @@ class Category:
 
 
 class ParamLocation(enum.Flag):
-    """Represents point which a parameter is physically meaningful."""
+    """Represents the point on which a parameter is physically meaningful."""
 
     TOP = 1
     CENTROID = 2
@@ -100,14 +100,14 @@ class ParamLocation(enum.Flag):
 
 
 class NoDefault:
-    r"""Class used to allow distinction between not setting a default and setting a default of ``None``."""
+    """Class used to allow distinction between not setting a default and setting a default of ``None``."""
 
     def __init__(self):
         raise NotImplementedError("You cannot create an instance of NoDefault")
 
 
 class _Undefined:
-    r"""Class used to identify a parameter property as being in the undefined state."""
+    """Class used to identify a parameter property as being in the undefined state."""
 
     def __init__(self):
         raise NotImplementedError("You cannot create an instance of _Undefined.")
@@ -399,7 +399,7 @@ class Parameter:
 
 
 class ParameterDefinitionCollection:
-    r"""
+    """
     A very specialized container for managing parameter definitions.
 
     Notes
@@ -483,7 +483,7 @@ class ParameterDefinitionCollection:
             self.add(pd)
 
     def inCategory(self, categoryName):
-        r"""
+        """
         Create a :py:class:`ParameterDefinitionCollection` that contains definitions that are in a
         specific category.
         """

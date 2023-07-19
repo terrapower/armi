@@ -208,14 +208,14 @@ def _getBlockParams():
             "THcoolantInletT",
             units=units.DEGC,
             description="The nominal average bulk coolant inlet temperature into the block.",
-            location=ParamLocation.AVERAGE,
+            location=ParamLocation.BOTTOM,
         )
 
         pb.defParam(
             "THcoolantOutletT",
             units=units.DEGC,
             description="Coolant temperature at the outlet of this block",
-            location=ParamLocation.AVERAGE,
+            location=ParamLocation.TOP,
         )
 
         pb.defParam(
@@ -236,7 +236,7 @@ def _getBlockParams():
             "THhotChannelOutletT",
             units=units.DEGC,
             description="Nominal hot channel outlet temperature",
-            location=ParamLocation.AVERAGE,
+            location=ParamLocation.TOP,
         )
 
         pb.defParam(
