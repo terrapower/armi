@@ -17,26 +17,32 @@ import math
 import scipy.constants
 
 
-# Names
+# Units (misc)
 ANGLE_DEGREES = "degrees"
 ANGLE_RADIANS = "radians"
-CM = "cm"
-DAYS = "days"
 DEGC = chr(176) + "C"
 DPA = "dpa"
 EV = "eV"
-GRAMS = "g"
-KG = "kg"
-METERS = "m"
-MICRONS = chr(181) + "m"
+FIMA = r"%FIMA"
 PASCALS = "Pa"
+PCM = "pcm"
 PERCENT = "%"
-SECONDS = "s"
+REACTIVITY = chr(916) + "k/k"
 UNITLESS = ""
 WATTS = "W"
+# Units (length)
+CM = "cm"
+METERS = "m"
+MICRONS = chr(181) + "m"
+# Units (mass)
+GRAMS = "g"
+KG = "kg"
+# Units (time)
+DAYS = "days"
+SECONDS = "s"
 YEARS = "yr"
 
-# conversions
+# Unit conversions
 C_TO_K = 273.15
 BOLTZMAN_CONSTANT = 8.6173324e-11  # boltzmann constant in MeV/K
 AVOGADROS_NUMBER = 6.0221415e23
