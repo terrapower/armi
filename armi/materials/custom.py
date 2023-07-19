@@ -27,7 +27,6 @@ from armi.materials.material import Material
 class Custom(Material):
     """Custom Materials have user input properties."""
 
-    name = "Custom"
     enrichedNuclide = "U235"
 
     def __init__(self):
@@ -41,7 +40,7 @@ class Custom(Material):
         self.customDensity = 1.0
 
     def pseudoDensity(self, Tk=None, Tc=None):
-        r"""
+        """
         The density value is set in the loading input.
 
         In some cases it needs to be set after full core assemblies are populated (e.g. for

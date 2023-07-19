@@ -18,10 +18,23 @@ import scipy.constants
 
 
 # Names
+ANGLE_DEGREES = "degrees"
+ANGLE_RADIANS = "radians"
+CM = "cm"
+DAYS = "days"
 DEGC = chr(176) + "C"
+DPA = "dpa"
+EV = "eV"
+GRAMS = "g"
+KG = "kg"
+METERS = "m"
 MICRONS = chr(181) + "m"
-NOT_APPLICABLE = "N/A"
+PASCALS = "Pa"
+PERCENT = "%"
+SECONDS = "s"
 UNITLESS = ""
+WATTS = "W"
+YEARS = "yr"
 
 # conversions
 C_TO_K = 273.15

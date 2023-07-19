@@ -35,7 +35,7 @@ def _getBlockParams():
 
         pb.defParam(
             "pressureLossCoeffs",
-            units="",
+            units=units.UNITLESS,
             description="Pressure loss coefficients from form losses outside of bundle region of "
             "assembly, e.g. losses through pin attachment hardware, expansion in inlet "
             "nozzle.",
@@ -137,7 +137,7 @@ def _getBlockParams():
 
         pb.defParam(
             "THdilationPressure",
-            units="Pa",
+            units=units.PASCALS,
             description="Dilation pressure",
             categories=["thInterface"],
             default=0.0,
@@ -209,14 +209,14 @@ def _getBlockParams():
             "THcoolantInletT",
             units=units.DEGC,
             description="The nominal average bulk coolant inlet temperature into the block.",
-            location=ParamLocation.AVERAGE,
+            location=ParamLocation.BOTTOM,
         )
 
         pb.defParam(
             "THcoolantOutletT",
             units=units.DEGC,
             description="Coolant temperature at the outlet of this block",
-            location=ParamLocation.AVERAGE,
+            location=ParamLocation.TOP,
         )
 
         pb.defParam(
@@ -228,7 +228,7 @@ def _getBlockParams():
 
         pb.defParam(
             "THdeltaPTotal",
-            units="Pa",
+            units=units.PASCALS,
             description="Total pressure difference in a block",
             location=ParamLocation.AVERAGE,
         )
@@ -237,7 +237,7 @@ def _getBlockParams():
             "THhotChannelOutletT",
             units=units.DEGC,
             description="Nominal hot channel outlet temperature",
-            location=ParamLocation.AVERAGE,
+            location=ParamLocation.TOP,
         )
 
         pb.defParam(

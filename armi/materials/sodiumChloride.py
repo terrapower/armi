@@ -15,15 +15,15 @@
 """
 Sodium Chloride salt.
 
-.. note:: This is a very simple description of this material.
+Notes
+-----
+This is a very simple description of this material.
 """
 from armi.materials.material import SimpleSolid
 from armi.utils.units import getTk
 
 
 class NaCl(SimpleSolid):
-    name = "NaCl"
-
     def setDefaultMassFracs(self):
         self.setMassFrac("NA23", 0.3934)
         self.setMassFrac("CL35", 0.4596)

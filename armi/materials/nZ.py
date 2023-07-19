@@ -18,8 +18,6 @@ from armi.materials.material import SimpleSolid
 
 
 class NZ(SimpleSolid):
-    name = "NZ"
-
     def setDefaultMassFracs(self):
         self.setMassFrac("NB93", 0.99)
         self.setMassFrac("ZR", 0.01)

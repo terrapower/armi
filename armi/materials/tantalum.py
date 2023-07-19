@@ -18,8 +18,6 @@ from armi.materials.material import SimpleSolid
 
 
 class Tantalum(SimpleSolid):
-    name = "Tantalum"
-
     def setDefaultMassFracs(self):
         self.setMassFrac("TA181", 1)
 

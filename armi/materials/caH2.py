@@ -20,8 +20,6 @@ from armi.materials.material import SimpleSolid
 class CaH2(SimpleSolid):
     """CalciumHydride."""
 
-    name = "CaH2"
-
     def setDefaultMassFracs(self):
         """Default mass fractions.
 

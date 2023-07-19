@@ -39,7 +39,6 @@ HeatCapacityConstants = collections.namedtuple(
 
 
 class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
-    name = "UraniumOxide"
 
     enrichedNuclide = "U235"
 
@@ -131,7 +130,7 @@ class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
         material.FuelMaterial.applyInputParams(self, *args, **kwargs)
 
     def setDefaultMassFracs(self) -> None:
-        r"""UO2 mass fractions. Using Natural Uranium without U234."""
+        """UO2 mass fractions. Using Natural Uranium without U234."""
         u235 = nb.byName["U235"]
         u238 = nb.byName["U238"]
         oxygen = nb.byName["O"]
@@ -232,6 +231,8 @@ class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
 
 
 class UO2(UraniumOxide):
-    r"""Another name for UraniumOxide."""
+    """Another name for UraniumOxide."""
 
-    pass
+    def __init__(self):
+        UraniumOxide.__init__(self)
+        self._name = "UraniumOxide"

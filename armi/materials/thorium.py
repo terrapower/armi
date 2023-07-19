@@ -25,7 +25,6 @@ from armi.utils.units import getTk
 
 
 class Thorium(FuelMaterial):
-    name = "Thorium"
     propertyValidTemperature = {"linear expansion": ((30, 600), "K")}
 
     def __init__(self):
@@ -47,5 +46,5 @@ class Thorium(FuelMaterial):
         return 43.1
 
     def meltingPoint(self):
-        r"""Melting point in K from IAEA TE 1450."""
+        """Melting point in K from IAEA TE 1450."""
         return 2025.0

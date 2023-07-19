@@ -31,7 +31,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "orientation",
-            units="degrees",
+            units=units.ANGLE_DEGREES,
             description=(
                 "Triple representing rotations counterclockwise around each spatial axis. For example, "
                 "a hex assembly rotated by 1/6th has orientation (0,0,60.0)"
@@ -42,7 +42,7 @@ def getBlockParameterDefinitions():
         pb.defParam(
             "pinLocation",
             description="Location of fuel pins",
-            units=None,
+            units=units.UNITLESS,
             saveToDB=False,
             default=None,
             location=ParamLocation.CHILDREN,
@@ -77,7 +77,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "fissileFraction",
-            units=None,
+            units=units.UNITLESS,
             description="Ratio of fissile mass to heavy metal mass at block-level",
         )
 
@@ -89,7 +89,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "massHmBOL",
-            units="grams",
+            units=units.GRAMS,
             description="Mass of heavy metal at BOL",
         )
 
@@ -116,7 +116,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "newDPA",
-            units="dpa",
+            units=units.DPA,
             description="Dose in DPA accrued during the current time step",
         )
 
@@ -146,8 +146,8 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "percentBuMaxPinLocation",
-            units="int",
-            description="Peak burnup pin location",
+            units=units.UNITLESS,
+            description="Peak burnup pin location (integer)",
             location=ParamLocation.MAX,
         )
 
@@ -168,7 +168,7 @@ def getBlockParameterDefinitions():
     pDefs.add(
         Parameter(
             name="depletionMatrix",
-            units="N/A",
+            units=units.UNITLESS,
             description="Full BurnMatrix objects containing transmutation and decay info about this block.",
             location=ParamLocation.AVERAGE,
             saveToDB=False,
@@ -181,7 +181,7 @@ def getBlockParameterDefinitions():
     pDefs.add(
         Parameter(
             name="cycleAverageBurnMatrix",
-            units="N/A",
+            units=units.UNITLESS,
             description="Integrated burn matrix mapping this block from its BOC to EOC number densities.",
             location=ParamLocation.AVERAGE,
             saveToDB=False,
@@ -193,15 +193,11 @@ def getBlockParameterDefinitions():
 
     with pDefs.createBuilder(default=0.0, location=ParamLocation.AVERAGE) as pb:
 
-        pb.defParam("bu", units="", description="?")
-
         def buGroup(self, buGroupChar):
             if isinstance(buGroupChar, (int, float)):
                 intValue = int(buGroupChar)
                 runLog.warning(
-                    "Attempting to set `b.p.buGroup` to int value ({}). Possibly loading from old database".format(
-                        buGroupChar
-                    ),
+                    f"Attempting to set `b.p.buGroup` to int value ({buGroupChar}). Possibly loading from old database",
                     single=True,
                     label="bu group as int " + str(intValue),
                 )
@@ -209,9 +205,7 @@ def getBlockParameterDefinitions():
                 return
             elif not isinstance(buGroupChar, six.string_types):
                 raise Exception(
-                    "Wrong type for buGroupChar {}: {}".format(
-                        buGroupChar, type(buGroupChar)
-                    )
+                    f"Wrong type for buGroupChar {buGroupChar}: {type(buGroupChar)}"
                 )
 
             buGroupNum = ord(buGroupChar) - ASCII_LETTER_A
@@ -222,7 +216,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "buGroup",
-            units=units.NOT_APPLICABLE,
+            units=units.UNITLESS,
             description="The burnup group letter of this block",
             default="A",
             setter=buGroup,
@@ -242,7 +236,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "buGroupNum",
-            units=units.NOT_APPLICABLE,
+            units=units.UNITLESS,
             description="An integer representation of the burnup group, linked to buGroup.",
             default=0,
             setter=buGroupNum,
@@ -267,14 +261,14 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "detailedDpa",
-            units="dpa",
+            units=units.DPA,
             description="displacements per atom",
             categories=["cumulative", "detailedAxialExpansion", "depletion"],
         )
 
         pb.defParam(
             "detailedDpaPeak",
-            units="dpa",
+            units=units.DPA,
             description="displacements per atom with peaking factor",
             categories=["cumulative", "detailedAxialExpansion", "depletion"],
             location=ParamLocation.MAX,
@@ -289,61 +283,60 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "displacementX",
-            units="m",
+            units=units.METERS,
             description="Assembly displacement in the x direction",
         )
 
         pb.defParam(
             "displacementY",
-            units="m",
+            units=units.METERS,
             description="Assembly displacement in the y direction",
-        )
-
-        pb.defParam(
-            "powerRx", units="W/cm$^3$", description="?", location=ParamLocation.AVERAGE
         )
 
         pb.defParam(
             "heliumInB4C",
             units="He/s/cm$^3$",
-            description="?",
+            description="Alpha particle production rate in B4C control and shield material.",
+            location=ParamLocation.AVERAGE,
+        )
+
+        pb.defParam(
+            "powerRx",
+            units="W/cm$^3$",
+            description="Power density of the reactor",
             location=ParamLocation.AVERAGE,
         )
 
         pb.defParam(
             "timeToLimit",
-            units="days",
+            units=units.DAYS,
             description="Time unit block violates its burnup limit.",
         )
 
         pb.defParam(
             "zbottom",
-            units="cm",
+            units=units.CM,
             description="Axial position of the bottom of this block",
             categories=[parameters.Category.retainOnReplacement],
         )
 
         pb.defParam(
             "ztop",
-            units="cm",
+            units=units.CM,
             description="Axial position of the top of this block",
             categories=[parameters.Category.retainOnReplacement],
         )
 
-        pb.defParam("baseBu", units="?", description="?", saveToDB=False)
-
-        pb.defParam("basePBu", units="?", description="?", saveToDB=False)
-
         pb.defParam(
             "nHMAtBOL",
-            units="atoms/bn-cm.",
+            units="atoms/bn-cm",
             description="Ndens of heavy metal at BOL",
             saveToDB=False,
         )
 
         pb.defParam(
             "z",
-            units="cm",
+            units=units.CM,
             description="Center axial dimension of this block",
             categories=[parameters.Category.retainOnReplacement],
         )
@@ -351,7 +344,7 @@ def getBlockParameterDefinitions():
     with pDefs.createBuilder() as pb:
         pb.defParam(
             "axialExpTargetComponent",
-            units="",
+            units=units.UNITLESS,
             description="The name of the target component used for axial expansion and contraction of solid components.",
             default="",
             saveToDB=True,
@@ -359,7 +352,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "topIndex",
-            units="",
+            units=units.UNITLESS,
             description=(
                 "the axial block index within its parent assembly (0 is bottom block). This index with"
                 "regard to the mesh of the reference assembly so it does not increase by 1 for each block."
@@ -373,23 +366,28 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "eqRegion",
-            units="",
+            units=units.UNITLESS,
             description="Equilibrium shuffling region. Corresponds to how many full cycles fuel here has gone through.",
             default=-1,
         )
 
         pb.defParam(
             "eqCascade",
-            units="",
+            units=units.UNITLESS,
             description="Cascade number in repetitive equilibrium shuffling fuel management.",
             default=-1,
         )
 
-        pb.defParam("id", units="?", description="?", default=None)
+        pb.defParam(
+            "id",
+            units=units.UNITLESS,
+            description="Inner diameter of the Block.",
+            default=None,
+        )
 
         pb.defParam(
             "height",
-            units="cm",
+            units=units.CM,
             description="the block height",
             default=None,
             categories=[parameters.Category.retainOnReplacement],
@@ -403,7 +401,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "xsType",
-            units=units.NOT_APPLICABLE,
+            units=units.UNITLESS,
             description="The xs group letter of this block",
             default="A",
             setter=xsType,
@@ -417,7 +415,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "xsTypeNum",
-            units=units.NOT_APPLICABLE,
+            units=units.UNITLESS,
             description="An integer representation of the cross section type, linked to xsType.",
             default=65,  # NOTE: buGroupNum actually starts at 0
             setter=xsTypeNum,
@@ -425,7 +423,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "type",
-            units="N/A",
+            units=units.UNITLESS,
             description="string name of the input block",
             default="defaultType",
             saveToDB=True,
@@ -788,7 +786,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "assemNum",
-            units="None",
+            units=units.UNITLESS,
             description="Index that refers, nominally, to the assemNum parameter of "
             "the containing Assembly object. This is stored on the Block to aid in "
             "visualizing shuffle patterns and the like, and should not be used within "
@@ -799,16 +797,8 @@ def getBlockParameterDefinitions():
         )
 
         pb.defParam(
-            "avgFuelTemp", units="?", description="?", location=ParamLocation.AVERAGE
-        )
-
-        pb.defParam(
-            "avgTempRef", units="?", description="?", location=ParamLocation.AVERAGE
-        )
-
-        pb.defParam(
             "axExtenNodeHeight",
-            units="meter",
+            units=units.METERS,
             description="Axial extension node height",
             location=ParamLocation.AVERAGE,
             default=0.0,
@@ -816,7 +806,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "blockBeta",
-            units="unitless",
+            units=units.UNITLESS,
             description="Beta in each block",
             location=ParamLocation.AVERAGE,
         )
@@ -830,7 +820,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "breedRatio",
-            units="None",
+            units=units.UNITLESS,
             description="Breeding ratio",
             categories=["detailedAxialExpansion"],
             location=ParamLocation.AVERAGE,
@@ -868,7 +858,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "convRatio",
-            units="None",
+            units=units.UNITLESS,
             description="Conversion ratio",
             categories=["detailedAxialExpansion"],
             location=ParamLocation.AVERAGE,
@@ -876,7 +866,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "coolRemFrac",
-            units="?",
+            units=units.UNITLESS,
             description="Fractional sodium density change for each block",
             location=ParamLocation.AVERAGE,
         )
@@ -890,7 +880,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "cyclicNErr",
-            units="None",
+            units=units.UNITLESS,
             description="Relative error of the block number density",
             location=ParamLocation.AVERAGE,
         )
@@ -918,7 +908,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "heightBOL",
-            units="cm",
+            units=units.CM,
             description="As-fabricated height of this block (as input). Used in fuel performance. Should be constant.",
             location=ParamLocation.AVERAGE,
             categories=[parameters.Category.retainOnReplacement],
@@ -926,51 +916,51 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "intrinsicSource",
-            units="?",
+            units=units.UNITLESS,
             description="Intrinsic neutron source from spontaneous fissions before a decay period",
             location=ParamLocation.AVERAGE,
         )
 
         pb.defParam(
             "intrinsicSourceDecayed",
-            units="?",
+            units=units.UNITLESS,
             description="Intrinsic source from spontaneous fissions after a decay period",
             location=ParamLocation.AVERAGE,
         )
 
         pb.defParam(
             "kgFis",
-            units="kg",
+            units=units.KG,
             description="Mass of fissile material in block",
             location=ParamLocation.VOLUME_INTEGRATED,
         )
 
         pb.defParam(
             "kgHM",
-            units="kg",
+            units=units.KG,
             description="Mass of heavy metal in block",
             location=ParamLocation.VOLUME_INTEGRATED,
         )
 
         pb.defParam(
             "mchan",
-            units="None",
+            units=units.UNITLESS,
             description="SASSYS/DIF3D-K (external) channel index assignment",
             location=ParamLocation.AVERAGE,
         )
 
         pb.defParam(
             "mreg",
-            units="None",
+            units=units.UNITLESS,
             description="SASSYS/DIF3D-K radial region index assignment",
             location=ParamLocation.AVERAGE,
         )
 
-        pb.defParam("nPins", units=None, description="Number of pins")
+        pb.defParam("nPins", units=units.UNITLESS, description="Number of pins")
 
         pb.defParam(
             "newDPAPeak",
-            units="dpa",
+            units=units.DPA,
             description="The peak DPA accumulated in the last burn step",
             location=ParamLocation.MAX,
         )
@@ -984,21 +974,21 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "powerShapeDelta",
-            units="W",
+            units=units.WATTS,
             description="Change in power shape when core temperature rises.",
             location=ParamLocation.VOLUME_INTEGRATED,
         )
 
         pb.defParam(
             "puFrac",
-            units="None",
+            units=units.UNITLESS,
             description="Current Pu number density relative to HM at BOL",
             location=ParamLocation.AVERAGE,
         )
 
         pb.defParam(
             "smearDensity",
-            units="?",
+            units=units.UNITLESS,
             description="Smear density of fuel pins in this block. Defined as the ratio of fuel area to total space inside cladding.",
             location=ParamLocation.AVERAGE,
         )

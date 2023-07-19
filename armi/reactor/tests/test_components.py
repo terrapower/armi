@@ -37,7 +37,6 @@ from armi.reactor.components import (
     SolidRectangle,
     Square,
     Triangle,
-    Torus,
     RadialSegment,
     DifferentialRadialSegment,
     DerivedShape,
@@ -1317,24 +1316,6 @@ class TestSphere(TestShapedComponent):
         self.assertFalse(self.component.THERMAL_EXPANSION_DIMS)
 
 
-class TestTorus(TestShapedComponent):
-    componentCls = Torus
-    componentDims = {
-        "Tinput": 25.0,
-        "Thot": 430.0,
-        "inner_minor_radius": 28.73,
-        "outer_minor_radius": 30,
-        "major_radius": 140,
-    }
-
-    def test_thermallyExpands(self):
-        self.assertFalse(self.component.THERMAL_EXPANSION_DIMS)
-
-    def test_getVolume(self):
-        expectedVolume = 2.0 * 103060.323859
-        self.assertAlmostEqual(self.component.getVolume() / expectedVolume, 1.0)
-
-
 class TestRadialSegment(TestShapedComponent):
     componentCls = RadialSegment
     componentDims = {
@@ -1428,6 +1409,32 @@ class TestMaterialAdjustments(unittest.TestCase):
         target35 = 0.2
         self.fuel.setMassFrac("U235", target35)
         self.assertAlmostEqual(self.fuel.getMassFrac("U235"), target35)
+
+    def test_setMassFracOnComponentMaterial(self):
+        """Checks for valid and invalid mass fraction assignments on a component's material."""
+        # Negative value is not acceptable.
+        with self.assertRaises(ValueError):
+            self.fuel.material.setMassFrac("U235", -0.1)
+
+        # Greater than 1.0 value is not acceptable.
+        with self.assertRaises(ValueError):
+            self.fuel.material.setMassFrac("U235", 1.1)
+
+        # String is not acceptable.
+        with self.assertRaises(TypeError):
+            self.fuel.material.setMassFrac("U235", "")
+
+        # `NoneType` is not acceptable.
+        with self.assertRaises(TypeError):
+            self.fuel.material.setMassFrac("U235", None)
+
+        # Zero is acceptable
+        self.fuel.material.setMassFrac("U235", 0.0)
+        self.assertAlmostEqual(self.fuel.material.getMassFrac("U235"), 0.0)
+
+        # One is acceptable
+        self.fuel.material.setMassFrac("U235", 1.0)
+        self.assertAlmostEqual(self.fuel.material.getMassFrac("U235"), 1.0)
 
     def test_adjustMassFrac_invalid(self):
         with self.assertRaises(ValueError):

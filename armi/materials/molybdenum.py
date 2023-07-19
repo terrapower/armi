@@ -18,8 +18,6 @@ from armi.materials.material import SimpleSolid
 
 
 class Molybdenum(SimpleSolid):
-    name = "Molybdenum"
-
     def setDefaultMassFracs(self):
         """Moly mass fractions."""
         self.setMassFrac("MO", 1.0)
