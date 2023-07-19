@@ -20,7 +20,6 @@ import scipy.constants
 # Units (misc)
 ANGLE_DEGREES = "degrees"
 ANGLE_RADIANS = "radians"
-DEGC = chr(176) + "C"
 DPA = "dpa"
 EV = "eV"
 FIMA = r"%FIMA"
@@ -37,6 +36,12 @@ MICRONS = chr(181) + "m"
 # Units (mass)
 GRAMS = "g"
 KG = "kg"
+# Units (money)
+CENTS = "cents"  # pennies: $0.01
+DOLLARS = "$"
+# Units (temperature)
+DEGC = chr(176) + "C"
+DEGK = "K"
 # Units (time)
 DAYS = "days"
 SECONDS = "s"

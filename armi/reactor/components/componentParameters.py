@@ -55,7 +55,7 @@ def getComponentParameterDefinitions():
 
         pb.defParam(
             "numberDensities",
-            units="#/bn-cm",
+            units=f"#/(bn*{units.CM})",
             description="Number densities of each nuclide.",
         )
 

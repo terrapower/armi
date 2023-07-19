@@ -47,7 +47,7 @@ def _getNeutronicsBlockParams():
         pb.defParam(
             "mgFlux",
             setter=isNumpyArray("mgFlux"),
-            units="n-cm/s",
+            units=f"n*{units.CM}/{units.SECONDS}",
             description="multigroup volume-integrated flux",
             location=ParamLocation.VOLUME_INTEGRATED,
             saveToDB=True,
@@ -60,7 +60,7 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "adjMgFlux",
-            units="n-cm/s",
+            units=f"n*{units.CM}/{units.SECONDS}",
             description="multigroup adjoint neutron flux",
             location=ParamLocation.VOLUME_INTEGRATED,
             saveToDB=True,
@@ -73,7 +73,7 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "lastMgFlux",
-            units="n-cm/s",
+            units=f"n*{units.CM}/{units.SECONDS}",
             description="multigroup volume-integrated flux used for averaging the latest and previous depletion step",
             location=ParamLocation.VOLUME_INTEGRATED,
             saveToDB=False,
@@ -86,7 +86,7 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "mgFluxGamma",
-            units="g-cm/s",
+            units="g*cm/s",
             description="multigroup gamma flux",
             location=ParamLocation.VOLUME_INTEGRATED,
             saveToDB=True,
@@ -143,7 +143,7 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "mgFluxSK",
-            units=f"n-{units.CM}/{units.SECONDS}",
+            units=f"n*{units.CM}/{units.SECONDS}",
             description="multigroup volume-integrated flux stored for multiple time steps in spatial kinetics (2-D array)",
             location=ParamLocation.VOLUME_INTEGRATED,
             saveToDB=False,
@@ -158,11 +158,11 @@ def _getNeutronicsBlockParams():
         # could lead to issues, depending on how the multiGroupQuantities category gets used
         pb.defParam(
             "pinMgFluxes",
-            units="n/s/cm$^2$",
+            units="n/s/cm^2",
             description="""
-                The block-level pin multigroup fluxes. pinMgFluxes[g][i] represents the flux in group g for pin i.  Flux
-                units are the standard n/cm^2/s.  The "ARMI pin ordering" is used, which is counter-clockwise from 3
-                o'clock.
+            The block-level pin multigroup fluxes. pinMgFluxes[g][i] represents the flux in group g for pin i.  Flux
+            units are the standard n/cm^2/s.  The "ARMI pin ordering" is used, which is counter-clockwise from 3
+            o'clock.
             """,
             categories=[parameters.Category.pinQuantities],
             saveToDB=True,

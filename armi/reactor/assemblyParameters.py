@@ -65,7 +65,7 @@ def getAssemblyParameterDefinitions():
 
         pb.defParam(
             "chargeBu",
-            units="%FIMA",
+            units=units.FIMA,
             description="Max block-average burnup in this assembly when it most recently"
             " entered the core. If the assembly was discharged and then re-charged,"
             " this value will only reflect the most recent charge.",
@@ -264,7 +264,7 @@ def getAssemblyParameterDefinitions():
 
         pb.defParam(
             "THmassFlowRate",
-            units="kg/s",
+            units=f"{units.KG}/{units.SECONDS}",
             description="The nominal assembly flow rate",
             categories=["broadcast"],
         )
@@ -321,21 +321,21 @@ def getAssemblyParameterDefinitions():
 
         pb.defParam(
             "axExpWorthPT",
-            units="pcm/%/cm^3",
+            units=f"{units.PCM}/{units.PERCENT}/{units.CM}^3",
             description="Axial swelling reactivity",
             location=ParamLocation.AVERAGE,
         )
 
         pb.defParam(
             "coolFlowingWorthPT",
-            units="pcm/%/cm^3",
+            units=f"{units.PCM}/{units.PERCENT}/{units.CM}^3",
             description="Flowing coolant reactivity",
             location=ParamLocation.AVERAGE,
         )
 
         pb.defParam(
             "coolWorthPT",
-            units="pcm/%/cm^3",
+            units=f"{units.PCM}/{units.PERCENT}/{units.CM}^3",
             description="Coolant reactivity",
             location=ParamLocation.AVERAGE,
         )
@@ -348,7 +348,7 @@ def getAssemblyParameterDefinitions():
 
         pb.defParam(
             "fuelWorthPT",
-            units="pcm/%/cm^3",
+            units=f"{units.PCM}/{units.PERCENT}/{units.CM}^3",
             description="Fuel reactivity",
             location=ParamLocation.AVERAGE,
         )
@@ -364,14 +364,14 @@ def getAssemblyParameterDefinitions():
 
         pb.defParam(
             "radExpWorthPT",
-            units="pcm/%/cm^3",
+            units=f"{units.PCM}/{units.PERCENT}/{units.CM}^3",
             description="Radial swelling reactivity",
             location=ParamLocation.AVERAGE,
         )
 
         pb.defParam(
             "structWorthPT",
-            units="pcm/%/cm^3",
+            units=f"{units.PCM}/{units.PERCENT}/{units.CM}^3",
             description="Structure reactivity",
             location=ParamLocation.AVERAGE,
         )
