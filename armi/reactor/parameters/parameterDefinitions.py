@@ -82,6 +82,7 @@ class Category:
     neutronics = "neutronics"
     gamma = "gamma"
     detailedAxialExpansion = "detailedAxialExpansion"
+    reactivityCoefficients = "reactivity coefficients"
 
 
 class ParamLocation(enum.Flag):
