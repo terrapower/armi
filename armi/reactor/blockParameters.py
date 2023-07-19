@@ -437,7 +437,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "VoideddopplerWorth",
-            units="dk/kk' K**(n-1)",
+            units="dk/kk' K^(n-1)",
             description="Distributed Voided Doppler constant.",
         )
 
@@ -617,13 +617,13 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "rxFuelDopplerConstant",
-            units="dk/kk' K**(n-1)",
+            units="dk/kk' K^(n-1)",
             description="Fuel Doppler Constant",
         )
 
         pb.defParam(
             "rxFuelVoidedDopplerConstant",
-            units="dk/kk' K**(n-1)",
+            units="dk/kk' K^(n-1)",
             description="Fuel Voided-Coolant Constant",
         )
 
@@ -648,7 +648,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "rxCladDopplerConstant",
-            units="dk/kk' K**(n-1)",
+            units="dk/kk' K^(n-1)",
             description="Clad Doppler Constant",
         )
 
@@ -667,7 +667,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "rxStructureDopplerConstant",
-            units="dk/kk' K**(n-1)",
+            units="dk/kk' K^(n-1)",
             description="Structure Doppler Constant",
         )
 

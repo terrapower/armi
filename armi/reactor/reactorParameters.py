@@ -649,7 +649,7 @@ def defineCoreParameters():
 
         pb.defParam(
             "rxFuelDopplerConstant",
-            units="dk/kk' K**(n-1)",
+            units="dk/kk' K^(n-1)",
             description="Fuel Doppler Constant",
         )
 
@@ -661,7 +661,7 @@ def defineCoreParameters():
 
         pb.defParam(
             "rxFuelVoidedDopplerConstant",
-            units="dk/kk' K**(n-1)",
+            units="dk/kk' K^(n-1)",
             description="Fuel Voided-Coolant Doppler Constant",
         )
 
@@ -692,7 +692,7 @@ def defineCoreParameters():
 
         pb.defParam(
             "rxCladDopplerConstant",
-            units="dk/kk' K**(n-1)",
+            units="dk/kk' K^(n-1)",
             description="Clad Doppler Constant",
         )
 
@@ -717,7 +717,7 @@ def defineCoreParameters():
 
         pb.defParam(
             "rxStructureDopplerConstant",
-            units="dk/kk' K**(n-1)",
+            units="dk/kk' K^(n-1)",
             description="Structure Doppler Constant",
         )
 
