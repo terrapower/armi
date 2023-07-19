@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for functions in textProcessors.py."""
-from io import StringIO, TextIOWrapper, TextIOBase
+from io import StringIO
 import os
 import pathlib
 import ruamel
@@ -61,7 +61,7 @@ class YamlIncludeTest(unittest.TestCase):
         self.assertTrue(anchorFound)
 
     def test_resolveIncludes_StringIO(self):
-        """Tests that resolveMarkupInclusions handles StringIO input"""
+        """Tests that resolveMarkupInclusions handles StringIO input."""
         yaml = ruamel.yaml.YAML()
         with open(os.path.join(RES_DIR, "root.yaml")) as f:
             loadedYaml = yaml.load(f)

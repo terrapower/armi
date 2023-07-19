@@ -167,7 +167,7 @@ def getAssemblyParameterDefinitions():
 
         pb.defParam(
             "notes",
-            units=units.NOT_APPLICABLE,
+            units=units.UNITLESS,
             description="A string with notes about the assembly, limited to 1000 characters."
             " This parameter is not meant to store data. Needlessly storing large strings"
             " on this parameter for every assembly is potentially unwise from a memory"
