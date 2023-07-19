@@ -99,7 +99,7 @@ def getComponentParameterDefinitions():
 
         pb.defParam(
             "modArea",
-            units="Tuple referencing another component and operation",
+            units=units.UNITLESS,
             description="A (component, operation) tuple used to add/subtract area (in "
             "cm^2) from another components area. See c.getArea()",
         )

@@ -687,8 +687,8 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "enrichmentBOL",
-            units="mass fraction",
-            description="Enrichment during fabrication",
+            units=units.UNITLESS,
+            description="Enrichment during fabrication (mass fraction)",
         )
 
         pb.defParam(

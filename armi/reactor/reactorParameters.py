@@ -115,8 +115,9 @@ def defineCoreParameters():
         pb.defParam(
             "detailedNucKeys",
             setter=isNumpyArray("detailedNucKeys"),
-            units="ZZZAAA (ZZZ atomic number, AAA mass number, + 100 * m for metastable states",
-            description="Nuclide vector keys, used to map densities in b.p.detailedNDens and a.p.detailedNDens",
+            units=units.UNITLESS,
+            description="""Nuclide vector keys, used to map densities in b.p.detailedNDens and a.p.detailedNDens.
+            ZZZAAA (ZZZ atomic number, AAA mass number, + 100 * m for metastable states.""",
             saveToDB=True,
             default=None,
         )
