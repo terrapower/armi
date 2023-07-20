@@ -70,7 +70,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "burnupMWdPerKg",
-            units=f"{units.MW}*{units.DAYS}/{units.KG}",
+            units=f"{units.MWD}/{units.KG}",
             description="Burnup in MWd/kg of initial heavy metal",
             categories=["cumulative"],
         )

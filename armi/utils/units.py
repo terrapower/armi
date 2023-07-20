@@ -23,9 +23,11 @@ FIMA = "FIMA"
 PERCENT_FIMA = r"%FIMA"
 MB = "MB"  # megabytes
 MOLES = "mole"
+MWD = "MWd"
 PASCALS = "Pa"
 PERCENT = "%"
 UNITLESS = ""
+USD = "USD"  # US currency (the dollar)
 # Units (angles)
 DEGREES = "degrees"
 RADIANS = "radians"

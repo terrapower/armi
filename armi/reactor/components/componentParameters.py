@@ -89,7 +89,7 @@ def getComponentParameterDefinitions():
 
         pb.defParam(
             "burnupMWdPerKg",
-            units=f"{units.MW}*{units.DAYS}/{units.KG}",
+            units=f"{units.MWD}/{units.KG}",
             description="Burnup in MWd/Kg of heavy metal",
             default=0.0,
             categories=["cumulative"],

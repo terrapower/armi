@@ -71,7 +71,7 @@ def defineReactorParameters():
 
         pb.defParam(
             "lcoe",
-            units=f"{units.DOLLARS}/kWh",
+            units=f"{units.USD}/kWh",
             description="Levelised cost of electricity",
         )
 
