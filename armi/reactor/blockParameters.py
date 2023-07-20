@@ -899,22 +899,22 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "deltaTclad",
-            units=f"1/{units.CM}^5/{units.SECONDS}^2",
-            description="Change in fuel temperature due to 1% rise in power.",
+            units=f"{units.DEGK}/{units.PERCENT}",
+            description=r"Change in fuel temperature due to 1% rise in power.",
             location=ParamLocation.AVERAGE,
         )
 
         pb.defParam(
             "deltaTduct",
-            units=f"1/{units.CM}^5/{units.SECONDS}^2",
-            description="Change in fuel temperature due to 1% rise in power.",
+            units=f"{units.DEGK}/{units.PERCENT}",
+            description=r"Change in fuel temperature due to 1% rise in power.",
             location=ParamLocation.AVERAGE,
         )
 
         pb.defParam(
             "deltaTfuel",
-            units=f"1/{units.CM}^5/{units.SECONDS}^2",
-            description="Change in fuel temperature due to 1% rise in power.",
+            units=f"{units.DEGK}/{units.PERCENT}",
+            description=r"Change in fuel temperature due to 1% rise in power.",
             location=ParamLocation.AVERAGE,
         )
 
