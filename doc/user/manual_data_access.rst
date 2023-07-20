@@ -2,7 +2,7 @@
 Accessing Data in ARMI
 **********************
 
-A basic user only needs to know the GUI and can perform basic
+A basic user only needs to know the CLI or GUI and can perform basic
 analysis and design with just that. But a power user will be more interested
 in programmatically building and manipulating inputs and gathering detailed information
 out of ARMI results. Let's now go into a bit more detail for the power user.
@@ -15,9 +15,9 @@ and state parameters in use across ARMI.
 * :doc:`Table of all global settings </user/inputs/settings_report>`
 * :doc:`Reactor Parameters </user/reactor_parameters_report>`
 * :doc:`Core Parameters </user/core_parameters_report>`
+* :doc:`Component Parameters </user/component_parameters_report>`
 * :doc:`Assembly Parameters </user/assembly_parameters_report>`
 * :doc:`Block Parameters </user/block_parameters_report>`
-* :ref:`Component Parameters <componentTypes>`
 
 
 Accessing Some Interesting Info
