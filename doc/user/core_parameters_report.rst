@@ -1,7 +1,6 @@
 Core Parameters
 ===============
-This document lists all of the Core Parameters that are provided by the ARMI
-Framework and included plugins.
+This document lists all of the Core Parameters that are provided by the ARMI Framework.
 
 .. exec::
    from armi.reactor import reactors
