@@ -65,7 +65,7 @@ def getAssemblyParameterDefinitions():
 
         pb.defParam(
             "chargeBu",
-            units=units.FIMA,
+            units=units.PERCENT_FIMA,
             description="Max block-average burnup in this assembly when it most recently"
             " entered the core. If the assembly was discharged and then re-charged,"
             " this value will only reflect the most recent charge.",

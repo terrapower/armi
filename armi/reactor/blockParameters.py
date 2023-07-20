@@ -122,14 +122,14 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "percentBu",
-            units=units.FIMA,
+            units=units.PERCENT_FIMA,
             description="Percentage of the initial heavy metal atoms that have been fissioned",
             categories=["cumulative"],
         )
 
         pb.defParam(
             "percentBuByPin",
-            units=units.FIMA,
+            units=units.PERCENT_FIMA,
             description="Percent burnup of the initial heavy metal atoms that have been fissioned for each pin",
             default=None,
             saveToDB=False,
@@ -138,7 +138,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "percentBuMax",
-            units=units.FIMA,
+            units=units.PERCENT_FIMA,
             description="Maximum percentage in a single pin of the initial heavy metal "
             "atoms that have been fissioned",
             location=ParamLocation.MAX,
@@ -153,7 +153,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "percentBuMin",
-            units=units.FIMA,
+            units=units.PERCENT_FIMA,
             description="Minimum percentage of the initial heavy metal atoms that have been fissioned",
             location=ParamLocation.MAX,
         )
@@ -161,7 +161,7 @@ def getBlockParameterDefinitions():
         pb.defParam(
             "residence",
             units=units.DAYS,
-            description="Duration that a block has been in the core at full power.",
+            description="Duration that a block has been in the core multiplied by the fraction of full power generated in that time.",
             categories=["cumulative"],
         )
 
@@ -244,7 +244,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "buRate",
-            units=f"{units.FIMA}/{units.DAYS}",
+            units=f"{units.PERCENT_FIMA}/{units.DAYS}",
             # This is very related to power, but normalized to %FIMA.
             description=(
                 "Current rate of burnup accumulation. Useful for estimating times when "
@@ -254,7 +254,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "buRatePeak",
-            units=f"{units.FIMA}/{units.DAYS}",
+            units=f"{units.PERCENT_FIMA}/{units.DAYS}",
             description="Current rate of burnup accumulation at peak location",
             location=ParamLocation.MAX,
         )
@@ -859,7 +859,7 @@ def getBlockParameterDefinitions():
             location=ParamLocation.AVERAGE,
         )
 
-        pb.defParam("buLimit", units=units.FIMA, description="Burnup limit")
+        pb.defParam("buLimit", units=units.PERCENT_FIMA, description="Burnup limit")
 
         pb.defParam(
             "cladACCI",
@@ -979,7 +979,7 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "percentBuPeak",
-            units=units.FIMA,
+            units=units.PERCENT_FIMA,
             description="Peak percentage of the initial heavy metal atoms that have been fissioned",
             location=ParamLocation.MAX,
         )

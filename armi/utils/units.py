@@ -19,13 +19,12 @@ import scipy.constants
 
 # Units (misc)
 DPA = "dpa"
-FIMA = r"%FIMA"
+FIMA = "FIMA"
+PERCENT_FIMA = r"%FIMA"
 MB = "MB"  # megabytes
 MOLES = "mole"
 PASCALS = "Pa"
-PCM = "pcm"
 PERCENT = "%"
-REACTIVITY = chr(916) + "k/k"
 UNITLESS = ""
 # Units (angles)
 DEGREES = "degrees"
@@ -42,9 +41,11 @@ MICRONS = chr(181) + "m"
 GRAMS = "g"
 KG = "kg"
 MT = "MT"
-# Units (money)
-CENTS = "cents"  # pennies: $0.01
-DOLLARS = "$"
+# Units (reactivity)
+CENTS = "cents"  # 1/100th of a dollar
+DOLLARS = "$"  # (dk/k/k') / beta
+PCM = "pcm"
+REACTIVITY = chr(916) + "k/k/k'"
 # Units (temperature)
 DEGC = chr(176) + "C"
 DEGK = "K"

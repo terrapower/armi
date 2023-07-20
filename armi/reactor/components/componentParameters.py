@@ -65,14 +65,14 @@ def getComponentParameterDefinitions():
 
         pb.defParam(
             "percentBu",
-            units=f"{units.FIMA}",
+            units=f"{units.PERCENT_FIMA}",
             description="Burnup as a percentage of initial (heavy) metal atoms.",
             default=0.0,
         )
 
         pb.defParam(
             "buRate",
-            units=f"{units.FIMA}/{units.DAYS}",
+            units=f"{units.PERCENT_FIMA}/{units.DAYS}",
             # This is very related to power, but normalized to %FIMA.
             description=(
                 "Current rate of burnup accumulation. Useful for estimating times when "

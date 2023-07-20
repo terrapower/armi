@@ -222,7 +222,8 @@ def defineCoreParameters():
         pb.defParam(
             "doublingTime",
             units=units.YEARS,
-            description="The time it takes to produce enough spent fuel to fuel a daughter reactor",
+            description="""The time it takes to produce enough spent fuel to fuel a daughter reactor,
+            in effective number of years at full power.""",
         )
 
         pb.defParam(
@@ -240,9 +241,7 @@ def defineCoreParameters():
             units=units.UNITLESS,
             saveToDB=True,
             default=0.0,
-            description=(
-                "Uncontrolled k-effective for the reactor core (with control rods fully removed)."
-            ),
+            description="Uncontrolled k-effective for the reactor core (with control rods fully removed).",
         )
 
         pb.defParam(
@@ -434,7 +433,7 @@ def defineCoreParameters():
 
         pb.defParam(
             "maxpercentBu",
-            units=units.FIMA,
+            units=units.PERCENT_FIMA,
             description="Max percent burnup on any block in the problem",
         )
 
