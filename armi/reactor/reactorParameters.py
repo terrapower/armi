@@ -69,7 +69,11 @@ def defineReactorParameters():
             default=1.0,
         )
 
-        pb.defParam("lcoe", units="$/kWh", description="Levelised cost of electricity")
+        pb.defParam(
+            "lcoe",
+            units=f"{units.USD}/kWh",
+            description="Levelised cost of electricity",
+        )
 
         pb.defParam(
             "time",
@@ -88,19 +92,19 @@ def defineReactorParameters():
 
         pb.defParam(
             "eFeedMT",
-            units="MT",
+            units=units.MT,
             description="Total feed material required in reactor economics",
         )
 
         pb.defParam(
             "eFissile",
-            units="MT",
+            units=units.MT,
             description="Fissile mass required in reactor economics",
         )
 
         pb.defParam(
             "eSWU",
-            units="kgSWU",
+            units=f"{units.KG}*SWU",
             description="Separative work units in reactor economics",
         )
 
@@ -115,8 +119,9 @@ def defineCoreParameters():
         pb.defParam(
             "detailedNucKeys",
             setter=isNumpyArray("detailedNucKeys"),
-            units="ZZZAAA (ZZZ atomic number, AAA mass number, + 100 * m for metastable states",
-            description="Nuclide vector keys, used to map densities in b.p.detailedNDens and a.p.detailedNDens",
+            units=units.UNITLESS,
+            description="""Nuclide vector keys, used to map densities in b.p.detailedNDens and a.p.detailedNDens.
+            ZZZAAA (ZZZ atomic number, AAA mass number, + 100 * m for metastable states.""",
             saveToDB=True,
             default=None,
         )
@@ -125,7 +130,7 @@ def defineCoreParameters():
 
         pb.defParam(
             "orientation",
-            units=units.ANGLE_DEGREES,
+            units=units.DEGREES,
             description=(
                 "Triple representing rotations counterclockwise around each spatial axis. For example, "
                 "a hex assembly rotated by 1/6th has orientation (0,0,60.0)"
@@ -167,21 +172,21 @@ def defineCoreParameters():
         pb.defParam(
             "crWorthRequiredPrimary",
             default=0.0,
-            units="pcm",
+            units=units.PCM,
             saveToDB=True,
             description="Worth requirement for the primary control rods in the reactor core to achieve safe shutdown.",
         )
         pb.defParam(
             "crWorthRequiredSecondary",
             default=0.0,
-            units="pcm",
+            units=units.PCM,
             saveToDB=True,
             description="Worth requirement for the secondary control rods in the reactor core to achieve safe shutdown.",
         )
         pb.defParam(
             "crTransientOverpowerWorth",
             default=0.0,
-            units="pcm",
+            units=units.PCM,
             saveToDB=True,
             description=(
                 "Reactivity worth introduced by removal of the highest worth primary "
@@ -210,14 +215,15 @@ def defineCoreParameters():
 
         pb.defParam(
             "critSearchSlope",
-            units="1/day",
+            units=f"1/{units.DAYS}",
             description="Critical keff search slope",
         )
 
         pb.defParam(
             "doublingTime",
-            units="EFPY",
-            description="The time it takes to produce enough spent fuel to fuel a daughter reactor",
+            units=units.YEARS,
+            description="""The time it takes to produce enough spent fuel to fuel a daughter reactor,
+            in effective number of years at full power.""",
         )
 
         pb.defParam(
@@ -235,9 +241,7 @@ def defineCoreParameters():
             units=units.UNITLESS,
             saveToDB=True,
             default=0.0,
-            description=(
-                "Uncontrolled k-effective for the reactor core (with control rods fully removed).."
-            ),
+            description="Uncontrolled k-effective for the reactor core (with control rods fully removed).",
         )
 
         pb.defParam(
@@ -276,19 +280,19 @@ def defineCoreParameters():
 
         pb.defParam(
             "maxProcessMemoryInMB",
-            units="MB",
+            units=units.MB,
             description="Maximum memory used by an ARMI process",
         )
 
         pb.defParam(
             "minProcessMemoryInMB",
-            units="MB",
+            units=units.MB,
             description="Minimum memory used by an ARMI process",
         )
 
         pb.defParam(
             "minutesSinceStart",
-            units="min",
+            units=units.MINUTES,
             description="Run time since the beginning of the calculation",
         )
 
@@ -312,13 +316,13 @@ def defineCoreParameters():
 
         pb.defParam(
             "totalIntrinsicSource",
-            units="neutrons/s",
+            units=f"n/{units.SECONDS}",
             description="Full core intrinsic neutron source from spontaneous fissions before a decay period",
         )
 
         pb.defParam(
             "totalIntrinsicSourceDecayed",
-            units="neutrons/s",
+            units=f"n/{units.SECONDS}",
             description="Full core intrinsic source from spontaneous fissions after a decay period",
         )
 
@@ -379,7 +383,11 @@ def defineCoreParameters():
             description="Median energy of source neutrons in the core?",
         )
 
-        pb.defParam("pkFlux", units="n/cm2-s", description="Peak flux in the core")
+        pb.defParam(
+            "pkFlux",
+            units=f"n/{units.CM}^2/{units.SECONDS}",
+            description="Peak flux in the core",
+        )
 
         pb.defParam(
             "maxdetailedDpaPeak",
@@ -388,12 +396,14 @@ def defineCoreParameters():
         )
 
         pb.defParam(
-            "maxFlux", units="n/cm^2/s", description="Max neutron flux in the core"
+            "maxFlux",
+            units=f"n/{units.CM}^2/{units.SECONDS}",
+            description="Max neutron flux in the core",
         )
 
         pb.defParam(
             "adjWeightedFisSrc",
-            units="1/cm^2/s^2",
+            units=f"1/{units.CM}^2/{units.SECONDS}^2",
             description="Volume-integrated adjoint flux weighted fission source",
         )
 
@@ -423,11 +433,11 @@ def defineCoreParameters():
 
         pb.defParam(
             "maxpercentBu",
-            units="%FIMA",
+            units=units.PERCENT_FIMA,
             description="Max percent burnup on any block in the problem",
         )
 
-        pb.defParam("rxSwing", units="pcm", description="Reactivity swing")
+        pb.defParam("rxSwing", units=units.PCM, description="Reactivity swing")
 
         pb.defParam(
             "maxBuF",
@@ -477,13 +487,13 @@ def defineCoreParameters():
 
         pb.defParam(
             "maxpdens",
-            units="W/cm^3",
+            units=f"{units.WATTS}/{units.CM}^3",
             description="Maximum avg. volumetric power density of all blocks",
         )
 
         pb.defParam(
             "maxPD",
-            units="MW/m^2",
+            units=f"{units.MW}/{units.METERS}^2",
             description="Maximum areal power density of all assemblies",
         )
 
@@ -502,53 +512,69 @@ def defineCoreParameters():
         categories=["reactivity coefficients"],
     ) as pb:
 
-        pb.defParam("axial", units="cents/K", description="Axial expansion coefficient")
-
-        pb.defParam("doppler", units="cents/K", description="Doppler coefficient")
-
         pb.defParam(
-            "dopplerConst", units="cents * K^(n-1)", description="Doppler constant"
+            "axial",
+            units=f"{units.CENTS}/{units.DEGK}",
+            description="Axial expansion coefficient",
         )
 
         pb.defParam(
-            "fuelDensity", units="cents/K", description="Fuel temperature coefficient"
+            "doppler",
+            units=f"{units.CENTS}/{units.DEGK}",
+            description="Doppler coefficient",
+        )
+
+        pb.defParam(
+            "dopplerConst",
+            units=f"{units.CENTS}*{units.DEGK}^(n-1)",
+            description="Doppler constant",
+        )
+
+        pb.defParam(
+            "fuelDensity",
+            units=f"{units.CENTS}/{units.DEGK}",
+            description="Fuel temperature coefficient",
         )
 
         pb.defParam(
             "coolantDensity",
-            units="cents/K",
+            units=f"{units.CENTS}/{units.DEGK}",
             description="Coolant temperature coefficient",
         )
 
         pb.defParam(
             "totalCoolantDensity",
-            units="cents/K",
+            units=f"{units.CENTS}/{units.DEGK}",
             description="Coolant temperature coefficient weighted to include bond and interstitial effects",
         )
 
         pb.defParam(
-            "Voideddoppler", units="cents/K", description="Voided Doppler coefficient"
+            "Voideddoppler",
+            units=f"{units.CENTS}/{units.DEGK}",
+            description="Voided Doppler coefficient",
         )
 
         pb.defParam(
             "VoideddopplerConst",
-            units="cents * K^(n-1)",
+            units=f"{units.CENTS}*{units.DEGK}^(n-1)",
             description="Voided Doppler constant",
         )
 
-        pb.defParam("voidWorth", units="$", description="Coolant void worth")
+        pb.defParam(
+            "voidWorth", units=f"{units.DOLLARS}", description="Coolant void worth"
+        )
 
         pb.defParam("voidedKeff", units=units.UNITLESS, description="Voided keff")
 
         pb.defParam(
             "radialHT9",
-            units="cents/K",
+            units=f"{units.CENTS}/{units.DEGK}",
             description="Radial expansion coefficient when driven by thermal expansion of HT9.",
         )
 
         pb.defParam(
             "radialSS316",
-            units="cents/K",
+            units=f"{units.CENTS}/{units.DEGK}",
             description="Radial expansion coefficient when driven by thermal expansion of SS316.",
         )
 
@@ -574,7 +600,7 @@ def defineCoreParameters():
 
         pb.defParam(
             "betaDecayConstants",
-            units="1/s",
+            units=f"1/{units.SECONDS}",
             description="Group-wise precursor decay constants",
             default=None,
         )
@@ -599,143 +625,143 @@ def defineCoreParameters():
         # CORE WIDE REACTIVITY COEFFICIENTS
         pb.defParam(
             "rxFuelAxialExpansionCoeffPerTemp",
-            units="dk/kk'-K",
+            units=f"{units.REACTIVITY}/{units.DEGK}",
             description="Fuel Axial Expansion Coefficient",
         )
 
         pb.defParam(
             "rxGridPlateRadialExpansionCoeffPerTemp",
-            units="dk/kk'-K",
+            units=f"{units.REACTIVITY}/{units.DEGK}",
             description="Grid Plate Radial Expansion Coefficient",
         )
 
         pb.defParam(
             "rxAclpRadialExpansionCoeffPerTemp",
-            units="dk/kk'-K",
+            units=f"{units.REACTIVITY}/{units.DEGK}",
             description="ACLP Radial Expansion Coefficient",
         )
 
         pb.defParam(
             "rxControlRodDrivelineExpansionCoeffPerTemp",
-            units="dk/kk'-K",
+            units=f"{units.REACTIVITY}/{units.DEGK}",
             description="control rod driveline expansion coefficient",
         )
 
         pb.defParam(
             "rxCoreWideCoolantVoidWorth",
-            units="dk/kk'",
+            units=f"{units.REACTIVITY}",
             description="Core-Wide Coolant Void Worth",
         )
 
         pb.defParam(
             "rxSpatiallyDependentCoolantVoidWorth",
-            units="dk/kk'",
+            units=f"{units.REACTIVITY}",
             description="Spatially-Dependent Coolant Void Worth",
         )
 
         # FUEL COEFFICIENTS
         pb.defParam(
             "rxFuelDensityCoeffPerTemp",
-            units="dk/kk'-K",
+            units=f"{units.REACTIVITY}/{units.DEGK}",
             description="Fuel Density Coefficient",
         )
 
         pb.defParam(
             "rxFuelDopplerCoeffPerTemp",
-            units="dk/kk'-K",
+            units=f"{units.REACTIVITY}/{units.DEGK}",
             description="Fuel Doppler Coefficient",
         )
 
         pb.defParam(
             "rxFuelDopplerConstant",
-            units="dk/kk' K**(n-1)",
+            units=f"{units.REACTIVITY}*{units.DEGK}^(n-1)",
             description="Fuel Doppler Constant",
         )
 
         pb.defParam(
             "rxFuelVoidedDopplerCoeffPerTemp",
-            units="dk/kk'-K",
+            units=f"{units.REACTIVITY}/{units.DEGK}",
             description="Fuel Voided-Coolant Doppler Coefficient",
         )
 
         pb.defParam(
             "rxFuelVoidedDopplerConstant",
-            units="dk/kk' K**(n-1)",
+            units=f"{units.REACTIVITY}*{units.DEGK}^(n-1)",
             description="Fuel Voided-Coolant Doppler Constant",
         )
 
         pb.defParam(
             "rxFuelTemperatureCoeffPerTemp",
-            units="dk/kk'-K",
+            units=f"{units.REACTIVITY}/{units.DEGK}",
             description="Fuel Temperature Coefficient",
         )
 
         pb.defParam(
             "rxFuelVoidedTemperatureCoeffPerTemp",
-            units="dk/kk'-K",
+            units=f"{units.REACTIVITY}/{units.DEGK}",
             description="Fuel Voided-Coolant Temperature Coefficient",
         )
 
         # CLAD COEFFICIENTS
         pb.defParam(
             "rxCladDensityCoeffPerTemp",
-            units="dk/kk'-K",
+            units=f"{units.REACTIVITY}/{units.DEGK}",
             description="Clad Density Coefficient",
         )
 
         pb.defParam(
             "rxCladDopplerCoeffPerTemp",
-            units="dk/kk'-K",
+            units=f"{units.REACTIVITY}/{units.DEGK}",
             description="Clad Doppler Coefficient",
         )
 
         pb.defParam(
             "rxCladDopplerConstant",
-            units="dk/kk' K**(n-1)",
+            units=f"{units.REACTIVITY}*{units.DEGK}^(n-1)",
             description="Clad Doppler Constant",
         )
 
         pb.defParam(
             "rxCladTemperatureCoeffPerTemp",
-            units="dk/kk'-K",
+            units=f"{units.REACTIVITY}/{units.DEGK}",
             description="Clad Temperature Coefficient",
         )
 
         # STRUCTURE COEFFICIENTS
         pb.defParam(
             "rxStructureDensityCoeffPerTemp",
-            units="dk/kk'-K",
+            units=f"{units.REACTIVITY}/{units.DEGK}",
             description="Structure Density Coefficient",
         )
 
         pb.defParam(
             "rxStructureDopplerCoeffPerTemp",
-            units="dk/kk'-K",
+            units=f"{units.REACTIVITY}/{units.DEGK}",
             description="Structure Doppler Coefficient",
         )
 
         pb.defParam(
             "rxStructureDopplerConstant",
-            units="dk/kk' K**(n-1)",
+            units=f"{units.REACTIVITY}*{units.DEGK}^(n-1)",
             description="Structure Doppler Constant",
         )
 
         pb.defParam(
             "rxStructureTemperatureCoeffPerTemp",
-            units="dk/kk'-K",
+            units=f"{units.REACTIVITY}/{units.DEGK}",
             description="Structure Temperature Coefficient",
         )
 
         # COOLANT COEFFICIENTS
         pb.defParam(
             "rxCoolantDensityCoeffPerTemp",
-            units="dk/kk'-K",
+            units=f"{units.REACTIVITY}/{units.DEGK}",
             description="Coolant Density Coefficient",
         )
 
         pb.defParam(
             "rxCoolantTemperatureCoeffPerTemp",
-            units="dk/kk'-K",
+            units=f"{units.REACTIVITY}/{units.DEGK}",
             description="Coolant Temperature Coefficient",
         )
 

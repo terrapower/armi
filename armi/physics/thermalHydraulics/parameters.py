@@ -37,8 +37,7 @@ def _getBlockParams():
             "pressureLossCoeffs",
             units=units.UNITLESS,
             description="Pressure loss coefficients from form losses outside of bundle region of "
-            "assembly, e.g. losses through pin attachment hardware, expansion in inlet "
-            "nozzle.",
+            "assembly, e.g. losses through pin attachment hardware, expansion in inlet nozzle.",
             default=None,
             categories=[parameters.Category.assignInBlueprints],
         )
@@ -56,7 +55,7 @@ def _getBlockParams():
 
         pb.defParam(
             "THhotChannelHeatTransferCoeff",
-            units="W/m^2/K",
+            units=f"{units.WATTS}/{units.METERS}^2/{units.DEGK}",
             saveToDB=True,
             description="Film heat transfer coefficient for hot channel in the assembly.",
         )
@@ -256,7 +255,7 @@ def _getBlockParams():
 
         pb.defParam(
             "THmassFlowRate",
-            units="kg/s",
+            units=f"{units.KG}/{units.SECONDS}",
             description="Mass flow rate",
             location=ParamLocation.AVERAGE,
         )
