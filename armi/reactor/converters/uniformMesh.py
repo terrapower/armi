@@ -503,6 +503,9 @@ class UniformMeshGeometryConverter(GeometryConverter):
         coreDesign = bp.systemDesigns["core"]
 
         coreDesign.construct(cs, bp, newReactor, loadAssems=False)
+        for structure in bp.systemDesigns:
+            if structure.name.lower() != "core":
+                structure.construct(cs, bp, newReactor, loadAssems=False)
         newReactor.p.cycle = sourceReactor.p.cycle
         newReactor.p.timeNode = sourceReactor.p.timeNode
         newReactor.core.p.coupledIteration = sourceReactor.core.p.coupledIteration
