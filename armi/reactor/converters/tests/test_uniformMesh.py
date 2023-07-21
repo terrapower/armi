@@ -415,8 +415,8 @@ class TestUniformMesh(unittest.TestCase):
 
         self.converter.convert(self.r)
         for ib, b in enumerate(self.converter.convReactor.core.getBlocks()):
-            b.p.mgFlux = range(33)
-            b.p.adjMgFlux = range(33)
+            b.p.mgFlux = list(range(33))
+            b.p.adjMgFlux = list(range(33))
             b.p.fastFlux = 2.0
             b.p.flux = 5.0
             b.p.power = 5.0
@@ -507,8 +507,8 @@ class TestGammaUniformMesh(unittest.TestCase):
 
         # set original parameters on pre-mapped core with non-uniform assemblies
         for b in self.r.core.getBlocks():
-            b.p.mgFlux = range(33)
-            b.p.adjMgFlux = range(33)
+            b.p.mgFlux = list(range(33))
+            b.p.adjMgFlux = list(range(33))
             b.p.fastFlux = 2.0
             b.p.flux = 5.0
             b.p.power = 5.0
