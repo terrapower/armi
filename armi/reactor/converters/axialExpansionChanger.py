@@ -80,7 +80,7 @@ def expandColdDimsToHot(
         referenceAssembly = getDefaultReferenceAssem(assems)
     axialExpChanger = AxialExpansionChanger(isDetailedAxialExpansion)
     for a in assems:
-        axialExpChanger.setAssembly(a, coldHeightsToHot=True)
+        axialExpChanger.setAssembly(a, Tinput2Thot=True)
         axialExpChanger.applyColdHeightMassIncrease()
         axialExpChanger.expansionData.computeThermalExpansionFactors()
         axialExpChanger.axiallyExpandAssembly()
@@ -156,7 +156,7 @@ class AxialExpansionChanger:
         tempGrid: list,
         tempField: list,
         setFuel: bool = True,
-        coldHeightsToHot: bool = False,
+        Tinput2Thot: bool = False,
     ):
         """Perform thermal expansion for an assembly given an axial temperature grid and field.
 
@@ -171,11 +171,11 @@ class AxialExpansionChanger:
         setFuel : boolean, optional
             Boolean to determine whether or not fuel blocks should have their target components set
             This is useful when target components within a fuel block need to be determined on-the-fly.
-        coldHeightsToHot: bool
+        Tinput2Thot: bool
             determines if thermal expansion factors should be calculated from c.inputTemperatureInC
-            to c.temperatureInC or some other reference temperature and c.temepratureInC
+            to c.temperatureInC (True) or some other reference temperature and c.temepratureInC (False)
         """
-        self.setAssembly(a, setFuel, coldHeightsToHot)
+        self.setAssembly(a, setFuel, Tinput2Thot)
         self.expansionData.updateComponentTempsBy1DTempField(tempGrid, tempField)
         self.expansionData.computeThermalExpansionFactors()
         self.axiallyExpandAssembly()
@@ -184,7 +184,7 @@ class AxialExpansionChanger:
         self.linked = None
         self.expansionData = None
 
-    def setAssembly(self, a, setFuel=True, coldHeightsToHot=False):
+    def setAssembly(self, a, setFuel=True, Tinput2Thot=False):
         """Set the armi assembly to be changed and init expansion data class for assembly.
 
         Parameters
@@ -194,9 +194,9 @@ class AxialExpansionChanger:
         setFuel : boolean, optional
             Boolean to determine whether or not fuel blocks should have their target components set
             This is useful when target components within a fuel block need to be determined on-the-fly.
-        coldHeightsToHot: bool
+        Tinput2Thot: bool
             determines if thermal expansion factors should be calculated from c.inputTemperatureInC
-            to c.temperatureInC or some other reference temperature and c.temepratureInC
+            to c.temperatureInC (True) or some other reference temperature and c.temepratureInC (False)
 
         Notes
         -----
@@ -206,9 +206,7 @@ class AxialExpansionChanger:
         Additional details will be documented in :ref:`axialExpansion` of the documentation.
         """
         self.linked = AssemblyAxialLinkage(a)
-        self.expansionData = ExpansionData(
-            a, setFuel=setFuel, coldHeightsToHot=coldHeightsToHot
-        )
+        self.expansionData = ExpansionData(a, setFuel=setFuel, Tinput2Thot=Tinput2Thot)
         self._isTopDummyBlockPresent()
 
     def applyColdHeightMassIncrease(self):
@@ -575,7 +573,7 @@ def _determineLinked(componentA, componentB):
 class ExpansionData:
     """Object containing data needed for axial expansion."""
 
-    def __init__(self, a, setFuel: bool, coldHeightsToHot: bool):
+    def __init__(self, a, setFuel: bool, Tinput2Thot: bool):
         """class constructor
 
         Parameters
@@ -586,17 +584,17 @@ class ExpansionData:
             used to determine if fuel component should be set as
             axial expansion target component during initialization.
             see self._isFuelLocked
-        coldHeightsToHot: bool
+        Tinput2Thot: bool
             determines if thermal expansion factors should be calculated
-            from c.inputTemperatureInC to c.temperatureInC or some other
-            reference temperature and c.temepratureInC
+            from c.inputTemperatureInC to c.temperatureInC (True) or some other
+            reference temperature and c.temepratureInC (False)
         """
         self._a = a
         self.componentReferenceTemperature = {}
         self._expansionFactors = {}
         self._componentDeterminesBlockHeight = {}
         self._setTargetComponents(setFuel)
-        self.coldHeightsToHot = coldHeightsToHot
+        self.Tinput2Thot = Tinput2Thot
 
     def setExpansionFactors(self, componentLst: List, expFrac: List):
         """Sets user defined expansion fractions.
@@ -701,8 +699,8 @@ class ExpansionData:
         """Computes expansion factors for all components via thermal expansion."""
         for b in self._a:
             for c in getSolidComponents(b):
-                if self.coldHeightsToHot:
-                    # get expansion based on cold to hot exp factor
+                if self.Tinput2Thot:
+                    # get thermal expansion factor between c.inputTemperatureInC and c.temperatureInC
                     self._expansionFactors[c] = c.getThermalExpansionFactor()
                 elif c in self.componentReferenceTemperature:
                     growFrac = c.getThermalExpansionFactor(
