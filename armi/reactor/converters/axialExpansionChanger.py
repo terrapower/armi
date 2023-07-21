@@ -74,6 +74,14 @@ def expandColdDimsToHot(
     referenceAssembly: :py:class:`Assembly <armi.reactor.assemblies.Assembly>`, optional
         Assembly whose mesh other meshes will conform to if isDetailedAxialExpansion is False.
         If not provided, will assume the finest mesh assembly which is typically fuel.
+
+    Notes
+    -----
+    Calling this method will result in an increase in mass via applyColdHeightMassIncease!
+
+    See Also
+    --------
+    :py:meth:`armi.reactor.converters.axialExpansionChanger.AxialExpansionChanger.applyColdHeightMassIncrease`
     """
     assems = list(assems)
     if not referenceAssembly:
