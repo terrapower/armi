@@ -17,6 +17,7 @@ What's new in ARMI
 Bug fixes
 ---------
 #. Fix _processIncludes to handle StringIO input (`PR#1333 <https://github.com/terrapower/armi/pull/1333>`_)
+#. Logic improvements for computing thermal expansion factors for axial expansion. (`PR#1342 <https://github.com/terrapower/armi/pull/1342>`_)
 #. TBD
 
 ARMI v0.2.8
