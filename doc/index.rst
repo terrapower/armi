@@ -15,7 +15,6 @@ ARMI
    developer/index
    release/index
    glossary
-   requirements/index
    API Docs <.apidocs/modules>
 
 
