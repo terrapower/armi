@@ -425,20 +425,19 @@ class Material:
 
         Warning
         -------
-        This density will not agree with the component density since this method only expands in 2 dimensions.
-        The component has been manually expanded axially with the manually entered block hot height.
-        The density returned by this should be a factor of 1 + dLL higher than the density on the component.
-        density should be in agreement at both cold and hot temperatures as long as the block height is correct for
-        the specified temperature.
-        In the case of Fluids, density and density are the same as density is not driven by linear expansion, but
-        rather an explicit density function dependent on Temperature. linearExpansionPercent is zero for a fluid.
+        This will not typically agree with ``Material.density()`` or ``Component.density ()``
+        since this methods only expands in 2 dimensions. Depending on your use of
+        ``inputHeightsConsideredHot`` and ``Component.temperatureInC``, ``Material.psuedoDensity()``
+        may be a factor of (1+dLL) different than ``Material.density()`` or ``Component.density()``.
+
+        In the case of fluids, density and pseudoDensity are the same as density is not driven by
+        linear expansion, but  rather an explicit density function dependent on temperature.
+        ``Material.linearExpansionPercent()`` is zero for a fluid.
 
         See Also
         --------
-        armi.materials.density:
-            component density should be in agreement with this density
-        armi.reactor.blueprints._applyBlockDesign:
-            2D expansion and axial density reduction occurs here.
+        density
+        armi.reactor.components.component.Component.density
         """
         Tk = getTk(Tc, Tk)
         dLL = self.linearExpansionPercent(Tk=Tk)
@@ -459,7 +458,7 @@ class Material:
 
         See Also
         --------
-        armi.materials.density:
+        density:
             Arguments are forwarded to the g/cc version
         """
         return self.pseudoDensity(Tk, Tc) * 1000.0
@@ -494,7 +493,7 @@ class Material:
 
         See Also
         --------
-        armi.materials.density:
+        density:
             Arguments are forwarded to the g/cc version
         """
         return self.density(Tk, Tc) * 1000.0
