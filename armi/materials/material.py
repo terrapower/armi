@@ -425,8 +425,8 @@ class Material:
 
         Warning
         -------
-        This will not typically agree with ``Material.density()`` or ``Component.density ()``
-        since this methods only expands in 2 dimensions. Depending on your use of
+        This will not typically agree with ``Material.density()`` or ``Component.density()``
+        since this method only expands in 2 dimensions. Depending on your use of
         ``inputHeightsConsideredHot`` and ``Component.temperatureInC``, ``Material.psuedoDensity()``
         may be a factor of (1+dLL) different than ``Material.density()`` or ``Component.density()``.
 
