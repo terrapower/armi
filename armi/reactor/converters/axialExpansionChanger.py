@@ -197,6 +197,13 @@ class AxialExpansionChanger:
         coldHeightsToHot: bool
             determines if thermal expansion factors should be calculated from c.inputTemperatureInC
             to c.temperatureInC or some other reference temperature and c.temepratureInC
+
+        Notes
+        -----
+        When considering thermal expansion, if there is an axial temperature distribution on the assembly,
+        the axial expansion methodology will NOT perfectly preseve mass. The magnitude of the gradient of
+        the temperature distribution is the primary factor in determining the cumulative loss of mass conservation.
+        Additional details will be documented in :ref:`axialExpansion` of the documentation.
         """
         self.linked = AssemblyAxialLinkage(a)
         self.expansionData = ExpansionData(
