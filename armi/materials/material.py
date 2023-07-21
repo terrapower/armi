@@ -400,26 +400,28 @@ class Material:
         pass
 
     def getTemperatureAtDensity(
-        self, targetDensity: float, temperatureGuessInC: float
+        self, targetDensity: float, tempGuessInC: float
     ) -> float:
-        """Get the temperature at which the perturbed density occurs."""
+        """Get the temperature at which the perturbed density occurs (in Celcius)."""
         # 0 at tempertature of targetDensity
         densFunc = lambda temp: self.density(Tc=temp) - targetDensity
         # is a numpy array if fsolve is called
-        tAtTargetDensity = float(fsolve(densFunc, temperatureGuessInC))
+        tAtTargetDensity = float(fsolve(densFunc, tempGuessInC))
         return tAtTargetDensity
 
     @property
     def liquidPorosity(self) -> float:
+        """Fraction of the material that is liquid void (unitless)."""
         return 0.0 if self.parent is None else self.parent.liquidPorosity
 
     @property
     def gasPorosity(self) -> float:
+        """Fraction of the material that is gas void (unitless)."""
         return 0.0 if self.parent is None else self.parent.gasPorosity
 
     def pseudoDensity(self, Tk: float = None, Tc: float = None) -> float:
         """
-        Return density that preserves mass when thermally expanded in 2D.
+        Return density that preserves mass when thermally expanded in 2D (in g/cm^3).
 
         Warning
         -------
@@ -449,7 +451,7 @@ class Material:
             self.refDens = 0.0
 
         f = (1.0 + dLL / 100.0) ** 2
-        return self.refDens / f  # g/cm^3
+        return self.refDens / f
 
     def pseudoDensityKgM3(self, Tk: float = None, Tc: float = None) -> float:
         """
@@ -464,7 +466,7 @@ class Material:
 
     def density(self, Tk: float = None, Tc: float = None) -> float:
         """
-        Return density that preserves mass when thermally expanded in 3D.
+        Return density that preserves mass when thermally expanded in 3D (in g/cm^3).
 
         Notes
         -----
@@ -498,7 +500,7 @@ class Material:
         return self.density(Tk, Tc) * 1000.0
 
     def getCorrosionRate(self, Tk: float = None, Tc: float = None) -> float:
-        """Given a temperature, get the corrosion rate of the material."""
+        """Given a temperature, get the corrosion rate of the material (in microns/year)."""
         return 0.0
 
     def yieldStrength(self, Tk: float = None, Tc: float = None) -> float:
@@ -506,7 +508,7 @@ class Material:
         pass
 
     def thermalConductivity(self, Tk: float = None, Tc: float = None) -> float:
-        """Thermal conductivity in given T in K."""
+        """Thermal conductivity for given T (in units of W/m/K)."""
         pass
 
     def getProperty(
@@ -674,19 +676,14 @@ class Material:
         deltaT = linearChange / linearExpansion
         if not quiet:
             runLog.info(
-                "The linear expansion for {} at initial temperature of {} C is {}.\nA change in density of {} "
-                "percent at would require a change in temperature of {} C.".format(
-                    self.getName(),
-                    Tc,
-                    linearExpansion,
-                    (densityFrac - 1.0) * 100.0,
-                    deltaT,
-                ),
+                f"The linear expansion for {self.getName()} at initial temperature of {Tc} C is {linearExpansion}.\n"
+                f"A change in density of {(densityFrac - 1.0) * 100.0} percent at would require a change in temperature of {deltaT} C.",
                 single=True,
             )
         return deltaT
 
     def heatCapacity(self, Tk=None, Tc=None):
+        """Returns heat capacity in units of J/kg/C."""
         raise NotImplementedError(
             f"Material {type(self).__name__} does not implement heatCapacity"
         )
@@ -738,7 +735,7 @@ class Fluid(Material):
 
     def density(self, Tk=None, Tc=None):
         """
-        Return the density at the specified temperature for 3D expansion.
+        Return the density at the specified temperature for 3D expansion (in g/cm^3).
 
         Notes
         -----
@@ -795,12 +792,13 @@ class SimpleSolid(Material):
             return 100 * ((density1 / density2) ** (1.0 / 3.0) - 1)
 
     def density(self, Tk: float = None, Tc: float = None) -> float:
+        """Material density (in g/cm^3)."""
         return 0.0
 
     def pseudoDensity(self, Tk: float = None, Tc: float = None) -> float:
         """
         The same method as the parent class, but with the ability to apply a
-        non-unity theoretical density.
+        non-unity theoretical density (in g/cm^3).
         """
         return Material.pseudoDensity(self, Tk=Tk, Tc=Tc) * self.getTD()
 
