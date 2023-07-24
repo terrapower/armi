@@ -77,7 +77,7 @@ def expandColdDimsToHot(
 
     Notes
     -----
-    Calling this method will result in an increase in mass via applyColdHeightMassIncease!
+    Calling this method will result in an increase in mass via applyColdHeightMassIncrease!
 
     See Also
     --------
@@ -181,7 +181,7 @@ class AxialExpansionChanger:
             This is useful when target components within a fuel block need to be determined on-the-fly.
         Tinput2Thot: bool
             determines if thermal expansion factors should be calculated from c.inputTemperatureInC
-            to c.temperatureInC (True) or some other reference temperature and c.temepratureInC (False)
+            to c.temperatureInC (True) or some other reference temperature and c.temperatureInC (False)
         """
         self.setAssembly(a, setFuel, Tinput2Thot)
         self.expansionData.updateComponentTempsBy1DTempField(tempGrid, tempField)
@@ -204,7 +204,7 @@ class AxialExpansionChanger:
             This is useful when target components within a fuel block need to be determined on-the-fly.
         Tinput2Thot: bool
             determines if thermal expansion factors should be calculated from c.inputTemperatureInC
-            to c.temperatureInC (True) or some other reference temperature and c.temepratureInC (False)
+            to c.temperatureInC (True) or some other reference temperature and c.temperatureInC (False)
 
         Notes
         -----
@@ -595,7 +595,7 @@ class ExpansionData:
         Tinput2Thot: bool
             determines if thermal expansion factors should be calculated
             from c.inputTemperatureInC to c.temperatureInC (True) or some other
-            reference temperature and c.temepratureInC (False)
+            reference temperature and c.temperatureInC (False)
         """
         self._a = a
         self.componentReferenceTemperature = {}
