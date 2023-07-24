@@ -582,8 +582,7 @@ class ExpansionData:
     """Object containing data needed for axial expansion."""
 
     def __init__(self, a, setFuel: bool, Tinput2Thot: bool):
-        """class constructor
-
+        """
         Parameters
         ----------
         a: :py:class:`Assembly <armi.reactor.assemblies.Assembly>`
