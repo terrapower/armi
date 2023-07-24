@@ -587,7 +587,7 @@ class ExpansionData:
         Parameters
         ----------
         a: :py:class:`Assembly <armi.reactor.assemblies.Assembly>`
-            Assembly to assign component-wise expansion data too
+            Assembly to assign component-wise expansion data to
         setFuel: bool
             used to determine if fuel component should be set as
             axial expansion target component during initialization.
