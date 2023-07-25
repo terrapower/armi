@@ -583,7 +583,7 @@ def _determineLinked(componentA, componentB):
 class ExpansionData:
     """Object containing data needed for axial expansion."""
 
-    def __init__(self, a, setFuel: bool, Tinput2Thot: bool):
+    def __init__(self, a, setFuel: bool, expandFromTinputToThot: bool):
         """
         Parameters
         ----------
