@@ -15,12 +15,14 @@
 """This module defines the ARMI input for a block definition, and code for constructing an ARMI ``Block``."""
 import collections
 from inspect import signature
+from typing import Iterable, Set, Iterator
 
 import yamlize
 
 from armi import getPluginManagerOrFail, runLog
 from armi.materials.material import Material
 from armi.reactor import blocks
+from armi.reactor.composites import Composite
 from armi.reactor import parameters
 from armi.reactor.flags import Flags
 from armi.reactor.blueprints import componentBlueprint
@@ -127,16 +129,7 @@ class BlockBlueprint(yamlize.KeyedList):
             if isinstance(c, Component):
                 # there are other things like composite groups that don't get
                 # material modifications -- skip those
-                validMatModOptions = set()
-                for materialParentClass in c.material.__class__.__mro__:
-                    # we must loop over parents as well, since applyInputParams
-                    # could call to Parent.applyInputParams()
-                    if issubclass(materialParentClass, Material):
-                        validMatModOptions.update(
-                            signature(
-                                materialParentClass.applyInputParams
-                            ).parameters.keys()
-                        )
+                validMatModOptions = self._getCompositeMaterialModifiers(c)
                 for key in byComponentMatModKeys:
                     if key not in validMatModOptions:
                         raise ValueError(
@@ -166,20 +159,9 @@ class BlockBlueprint(yamlize.KeyedList):
 
         # check that the block level mat mods use valid options in the same way
         # as we did for the by-component mods above
-        validMatModOptions = set()
-        for c in components.values():
-            if isinstance(c, Component):
-                # there are other things like composite groups that don't get
-                # material modifications -- skip those
-                for materialParentClass in c.material.__class__.__mro__:
-                    # we must loop over parents as well, since applyInputParams
-                    # could call to Parent.applyInputParams()
-                    if issubclass(materialParentClass, Material):
-                        validMatModOptions.update(
-                            signature(
-                                materialParentClass.applyInputParams
-                            ).parameters.keys()
-                        )
+        validMatModOptions = self._getBlockwiseMaterialModifierOptions(
+            components.values()
+        )
 
         if "byBlock" in materialInput:
             for key in materialInput["byBlock"]:
@@ -240,6 +222,39 @@ class BlockBlueprint(yamlize.KeyedList):
             except (ValueError, NotImplementedError) as e:
                 runLog.warning(str(e), single=True)
         return b
+
+    def _getBlockwiseMaterialModifierOptions(
+        self, children: Iterable[Composite]
+    ) -> Set[str]:
+        validMatModOptions = set()
+        for c in children:
+            perChildModifiers = self._getCompositeMaterialModifiers(c)
+            validMatModOptions.update(perChildModifiers)
+        return validMatModOptions
+
+    def _getCompositeMaterialModifiers(self, c: Composite) -> Set[str]:
+        perChildModifiers = set()
+        for material in self._getMaterialsInComposite(c):
+            for materialParentClass in material.__class__.__mro__:
+                # we must loop over parents as well, since applyInputParams
+                # could call to Parent.applyInputParams()
+                if issubclass(materialParentClass, Material):
+                    perChildModifiers.update(
+                        signature(
+                            materialParentClass.applyInputParams
+                        ).parameters.keys()
+                    )
+
+        return perChildModifiers
+
+    def _getMaterialsInComposite(self, child: Composite) -> Iterator[Material]:
+        # Leaf node, no need to traverse further down
+        if isinstance(child, Component):
+            yield child.material
+            return
+        # Don't apply modifications to other things that could reside
+        # in a block e.g., component groups
+
 
     def _checkByComponentMaterialInput(self, materialInput):
         for component in materialInput:
