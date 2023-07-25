@@ -37,7 +37,6 @@ from armi.reactor.components import (
     SolidRectangle,
     Square,
     Triangle,
-    Torus,
     RadialSegment,
     DifferentialRadialSegment,
     DerivedShape,
@@ -1315,24 +1314,6 @@ class TestSphere(TestShapedComponent):
 
     def test_thermallyExpands(self):
         self.assertFalse(self.component.THERMAL_EXPANSION_DIMS)
-
-
-class TestTorus(TestShapedComponent):
-    componentCls = Torus
-    componentDims = {
-        "Tinput": 25.0,
-        "Thot": 430.0,
-        "inner_minor_radius": 28.73,
-        "outer_minor_radius": 30,
-        "major_radius": 140,
-    }
-
-    def test_thermallyExpands(self):
-        self.assertFalse(self.component.THERMAL_EXPANSION_DIMS)
-
-    def test_getVolume(self):
-        expectedVolume = 2.0 * 103060.323859
-        self.assertAlmostEqual(self.component.getVolume() / expectedVolume, 1.0)
 
 
 class TestRadialSegment(TestShapedComponent):

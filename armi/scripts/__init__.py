@@ -12,10 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-This package contains some peripheral scripts that do something useful using the ARMI system.
-
-* There are migration scripts to help with backward compatibility
-* There are analysis scripts that help prepare various physics prerequisites
-
-"""
+"""This package contains some migration scripts to help with backward compatibility."""
