@@ -13,6 +13,7 @@
 # limitations under the License.
 """Enable component-wise axial expansion for assemblies and/or a reactor."""
 
+import collections
 from statistics import mean
 from typing import List
 
@@ -20,6 +21,7 @@ from armi import runLog
 from armi.materials import material
 from armi.reactor.components import UnshapedComponent
 from armi.reactor.flags import Flags
+from armi.reactor.grids import MultiIndexLocation, HexGrid
 from numpy import array
 
 TARGET_FLAGS_IN_PREFERRED_ORDER = [
@@ -406,12 +408,48 @@ class AssemblyAxialLinkage:
 
     def __init__(self, StdAssem):
         self.a = StdAssem
+        self.pinnedBlocks = []
         self.linkedBlocks = {}
         self.linkedComponents = {}
         self._determineAxialLinkage()
 
     def _determineAxialLinkage(self):
         """Gets the block and component based linkage."""
+        # get the pinned blocks
+        self.pinnedBlocks = [b for b in self.a if b.spatialGrid]
+        # determine the index locations and max number of pin groupings in each pinned block
+        self.indexLocations = collections.defaultdict(list)
+        numOfPinGroupingsPerBlock = []
+        for b in self.pinnedBlocks:
+            for c in getSolidComponents(b):
+                if isinstance(c.spatialLocator, MultiIndexLocation):
+                    ringPosConfirm = []
+                    for index in c.spatialLocator.indices:
+                        try:
+                            ringPosConfirm.append(
+                                c.spatialLocator.grid.indicesToRingPos(
+                                    index[0], index[1]
+                                )
+                            )
+                        except AttributeError:
+                            # autogrids have None type for spatialLocator.grid
+                            ringPosConfirm.append(
+                                HexGrid.indicesToRingPos(index[0], index[1])
+                            )
+                    ringPosConfirmSorted = sorted(
+                        ringPosConfirm, key=lambda x: (x[0], x[1])
+                    )
+                    # need to determine number of pin groupings
+                    if ringPosConfirmSorted not in self.indexLocations[b]:
+                        self.indexLocations[b].append(ringPosConfirmSorted)
+            numOfPinGroupingsPerBlock.append(len(self.indexLocations[b]))
+        # throw an error is the len of indexLocations isn't all the same
+        # you need to have the same number of pin groupings throughout an assembly for the
+        # grid linking to work
+        if len(set(numOfPinGroupingsPerBlock)) != 1:
+            raise RuntimeError(
+                "There needs to be the same number of pin groupings throughout an assembly."
+            )
         for b in self.a:
             self._getLinkedBlocks(b)
             for c in getSolidComponents(b):
@@ -542,6 +580,9 @@ def _determineLinked(componentA, componentB):
     linked : bool
         status is componentA and componentB are axially linked to one another
     """
+    # if isinstance(componentA.spatialLocator, MultiIndexLocation) and isinstance(componentB.spatialLocator, MultiIndexLocation):
+    #     # do stuff!
+    #     print("")
     if (
         (componentA.containsSolidMaterial() and componentB.containsSolidMaterial())
         and isinstance(componentA, type(componentB))
