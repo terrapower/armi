@@ -1070,7 +1070,7 @@ class Core(composites.Composite):
 
         assems.extend(a for a in sorted(self, key=sortKey))
 
-        if includeSFP and self.parent.sfp is not None:
+        if includeSFP and self.parent is not None and self.parent.sfp is not None:
             assems.extend(self.parent.sfp.getChildren())
 
         if typeSpec:
