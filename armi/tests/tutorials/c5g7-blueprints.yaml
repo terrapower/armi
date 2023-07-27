@@ -294,15 +294,6 @@ systems:
           y: 0.0
           z: 0.0
 
-    Spent Fuel Pool:
-      type: sfp
-      grid name: sfp
-
-      origin:
-          x: 1000.0
-          y: 0.0
-          z: 0.0
-
 # end-systems
 grids:
     core:
