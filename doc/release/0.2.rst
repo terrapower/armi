@@ -12,12 +12,14 @@ What's new in ARMI
 #. Broad cleanup of ``Parameters``: filled in all empty units and descriptions, removed unused params. (`PR#1345 <https://github.com/terrapower/armi/pull/1345>`_)
 #. Removed redundant ``Material.name`` variable. (`PR#1335 <https://github.com/terrapower/armi/pull/1335>`_)
 #. Added SHA1 hashes of XS control files to the welcome text. (`PR#1334 <https://github.com/terrapower/armi/pull/1334>`_)
+#. Put back ``avgFuelTemp`` block parameter. (`PR#1362 <https://github.com/terrapower/armi/pull/1362>`_)
 #. Make the SFP a child of the reactor so it is stored in database. (`PR#1349 <https://github.com/terrapower/armi/pull/1349>`_)
 #. TBD
 
 Bug fixes
 ---------
 #. Fix _processIncludes to handle StringIO input (`PR#1333 <https://github.com/terrapower/armi/pull/1333>`_)
+#. Logic improvements for computing thermal expansion factors for axial expansion. (`PR#1342 <https://github.com/terrapower/armi/pull/1342>`_)
 #. TBD
 
 ARMI v0.2.8
