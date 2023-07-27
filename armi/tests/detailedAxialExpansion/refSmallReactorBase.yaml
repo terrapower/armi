@@ -40,7 +40,7 @@ blocks:
             Thot: 450.0
             ip: grid.op
             mult: 1.0
-            op: 16.75
+            op: 19.0
     
     duct: &block_duct
         coolant: *component_coolant
@@ -49,9 +49,9 @@ blocks:
             material: HT9
             Tinput: 25.0
             Thot: 450.0
-            ip: 16.0
+            ip: 18.0
             mult: 1.0
-            op: 16.6
+            op: 18.5
         intercoolant: &component_intercoolant
             shape: Hexagon
             material: Sodium
@@ -59,7 +59,7 @@ blocks:
             Thot: 450.0
             ip: duct.op
             mult: 1.0
-            op: 16.75
+            op: 19.0
 
     SodiumBlock : &block_dummy
         flags: dummy
@@ -70,7 +70,7 @@ blocks:
             Thot: 450.0
             ip: 0.0
             mult: 1.0
-            op: 16.75
+            op: 19.0
 
     ## ------------------------------------------------------------------------------------
     ## fuel blocks
@@ -113,31 +113,85 @@ blocks:
         duct: *component_duct
         intercoolant: *component_intercoolant
 
-    fuel: &block_fuel    
+    axial shield 2pin: &block_fuel_axial_shield_twopin
+        grid name: twoPin
+        shield1: &component_shield_shield
+            shape: Circle
+            material: HT9
+            Tinput: 25.0
+            Thot: 600.0
+            id: 0.0
+            od: 0.86602
+            latticeIDs: [1]
+        bond1: &component_shield_bond
+            shape: Circle
+            material: Sodium
+            Tinput: 25.0
+            Thot: 470.0
+            id: shield1.od
+            od: clad1.id
+            latticeIDs: [1]
+        clad1: &component_shield_clad
+            shape: Circle
+            material: HT9
+            Tinput: 25.0
+            Thot: 470.0
+            id: 1.0
+            od: 1.09
+            latticeIDs: [1]
+        wire1: &component_shield_wire
+            shape: Helix
+            material: HT9
+            Tinput: 25.0
+            Thot: 470.0
+            axialPitch: 30.15
+            helixDiameter: 1.19056
+            id: 0.0
+            od: 0.10056
+            latticeIDs: [1]
+        shield2:
+            <<: *component_shield_shield
+            latticeIDs: [2]
+        bond2:
+            <<: *component_shield_bond
+            latticeIDs: [2]
+        clad2:
+            <<: *component_shield_clad
+            latticeIDs: [2]
+        wire2:
+            <<: *component_shield_wire
+            latticeIDs: [2]
+        coolant: *component_coolant      
+        duct: *component_duct
+        intercoolant: *component_intercoolant
+        axial expansion target component: shield1
+
+    fuel: &block_fuel
+        grid name: twoPin
         fuel: &component_fuel_fuel
             shape: Circle
             material: UZr
             Tinput: 25.0
             Thot: 600.0
             id: 0.0
-            mult: 169.0
             od: 0.86602
+            latticeIDs: [1]
         bond: &component_fuel_bond
             shape: Circle
             material: Sodium
             Tinput: 25.0
             Thot: 470.0
             id: fuel.od
-            mult: fuel.mult
             od: clad.id
+            latticeIDs: [1]
         clad: &component_fuel_clad
             shape: Circle
             material: HT9
             Tinput: 25.0
             Thot: 470.0
             id: 1.0
-            mult: fuel.mult
             od: 1.09
+            latticeIDs: [1]
         wire: &component_fuel_wire
             shape: Helix
             material: HT9
@@ -146,12 +200,26 @@ blocks:
             axialPitch: 30.15
             helixDiameter: 1.19056
             id: 0.0
-            mult: fuel.mult
             od: 0.10056
+            latticeIDs: [1]
+        fuel2: 
+            <<: *component_fuel_fuel
+            latticeIDs: [2]
+        bond2:
+            <<: *component_fuel_bond
+            latticeIDs: [2]
+        clad2:
+            <<: *component_fuel_clad
+            latticeIDs: [2]
+        wire2:
+            <<: *component_fuel_wire
+            latticeIDs: [2]
+
         coolant: *component_coolant
         duct: *component_duct
         intercoolant: *component_intercoolant
-    
+        axial expansion target component: fuel
+
     plenum: &block_plenum
         gap: &component_plenum_gap
             shape: Circle
@@ -182,14 +250,71 @@ blocks:
         coolant: *component_coolant
         duct: *component_duct
         intercoolant: *component_intercoolant
+        axial expansion target component: clad
     
-    aclp plenum : &block_aclp
+    aclp plenum: &block_aclp
         gap: *component_plenum_gap
         clad: *component_plenum_clad
         wire: *component_plenum_wire
         coolant: *component_coolant
         duct: *component_duct
         intercoolant: *component_intercoolant
+        axial expansion target component: clad
+
+    plenum 2pin: &block_plenum_twopin
+        grid name: twoPin
+        gap: &component_plenum_gap1
+            shape: Circle
+            material: Void
+            Tinput: 25.0
+            Thot: 600.0
+            id: 0.0
+            od: clad.id
+            latticeIDs: [1]
+        clad: &component_plenum_clad1
+            shape: Circle
+            material: HT9
+            Tinput: 25.0
+            Thot: 470.0
+            id: 1.0
+            od: 1.09
+            latticeIDs: [1]
+        wire: &component_plenum_wire1
+            shape: Helix
+            material: HT9
+            Tinput: 25.0
+            Thot: 470.0
+            axialPitch: 30.15
+            helixDiameter: 1.19056
+            id: 0.0
+            od: 0.10056
+            latticeIDs: [1]
+        gap2: &component_plenum_gap2
+            <<: *component_plenum_gap1
+            latticeIDs: [2]
+        clad2: &component_plenum_clad2
+            <<: *component_plenum_clad1
+            latticeIDs: [2]
+        wire2: &component_plenum_wire2
+            <<: *component_plenum_wire1
+            latticeIDs: [2]
+        coolant: *component_coolant
+        duct: *component_duct
+        intercoolant: *component_intercoolant
+        axial expansion target component: clad
+    
+    aclp plenum 2pin: &block_aclp_twopin
+        grid name: twoPin
+        gap: *component_plenum_gap1
+        clad: *component_plenum_clad1
+        wire: *component_plenum_wire1
+        gap2: *component_plenum_gap2
+        clad2: *component_plenum_clad2
+        wire2: *component_plenum_wire2
+        coolant: *component_coolant
+        duct: *component_duct
+        intercoolant: *component_intercoolant
+        axial expansion target component: clad
 
     fuel2: &block_fuel2
         fuel:
@@ -353,7 +478,7 @@ blocks:
             Thot: 450.0
             ip: duct.op
             mult: 1.0
-            op: 16.75
+            op: 19.0
 
     moveable control: &block_control
         control:
@@ -474,7 +599,7 @@ assemblies:
     axial mesh points: &standard_axial_mesh_points [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
     igniter fuel:
         specifier: IC
-        blocks: &igniter_fuel_blocks [*block_grid_plate, *block_fuel_axial_shield, *block_fuel, *block_fuel, *block_fuel, *block_plenum, *block_aclp, *block_plenum, *block_duct, *block_dummy]
+        blocks: &igniter_fuel_blocks [*block_grid_plate, *block_fuel_axial_shield_twopin, *block_fuel, *block_fuel, *block_fuel, *block_plenum_twopin, *block_aclp_twopin, *block_plenum_twopin, *block_duct, *block_dummy]
         height: *highOffset_height
         axial mesh points: *standard_axial_mesh_points
         material modifications:

@@ -13,7 +13,6 @@
 # limitations under the License.
 """Enable component-wise axial expansion for assemblies and/or a reactor."""
 
-import collections
 from statistics import mean
 from typing import List
 
@@ -418,42 +417,50 @@ class AssemblyAxialLinkage:
         # get the pinned blocks
         self.pinnedBlocks = [b for b in self.a if b.spatialGrid]
         # determine the index locations and max number of pin groupings in each pinned block
-        self.indexLocations = collections.defaultdict(list)
+        self.indexLocations = {}
         numOfPinGroupingsPerBlock = []
         for b in self.pinnedBlocks:
-            for c in getSolidComponents(b):
-                if isinstance(c.spatialLocator, MultiIndexLocation):
-                    ringPosConfirm = []
-                    for index in c.spatialLocator.indices:
-                        try:
-                            ringPosConfirm.append(
-                                c.spatialLocator.grid.indicesToRingPos(
-                                    index[0], index[1]
-                                )
-                            )
-                        except AttributeError:
-                            # autogrids have None type for spatialLocator.grid
-                            ringPosConfirm.append(
-                                HexGrid.indicesToRingPos(index[0], index[1])
-                            )
-                    ringPosConfirmSorted = sorted(
-                        ringPosConfirm, key=lambda x: (x[0], x[1])
-                    )
-                    # need to determine number of pin groupings
-                    if ringPosConfirmSorted not in self.indexLocations[b]:
-                        self.indexLocations[b].append(ringPosConfirmSorted)
-            numOfPinGroupingsPerBlock.append(len(self.indexLocations[b]))
-        # throw an error is the len of indexLocations isn't all the same
-        # you need to have the same number of pin groupings throughout an assembly for the
-        # grid linking to work
-        if len(set(numOfPinGroupingsPerBlock)) != 1:
-            raise RuntimeError(
-                "There needs to be the same number of pin groupings throughout an assembly."
-            )
+            numPinGroups = self._getPinGroupings(b)
+            # store the length of pin groupings
+            numOfPinGroupingsPerBlock.append(numPinGroups)
+        self._checkProperPinGroupings(numOfPinGroupingsPerBlock)
         for b in self.a:
             self._getLinkedBlocks(b)
             for c in getSolidComponents(b):
                 self._getLinkedComponents(b, c)
+
+    def _getPinGroupings(self, b) -> float:
+        pinGroups = set()
+        for c in getSolidComponents(b):
+            if isinstance(c.spatialLocator, MultiIndexLocation):
+                ringPosConfirm = []
+                for index in c.spatialLocator.indices:
+                    try:
+                        ringPosConfirm.append(
+                            c.spatialLocator.grid.indicesToRingPos(index[0], index[1])
+                        )
+                    except AttributeError:
+                        # autogrids have None type for spatialLocator.grid
+                        ringPosConfirm.append(
+                            HexGrid.indicesToRingPos(index[0], index[1])
+                        )
+                ringPosConfirmSorted = tuple(
+                    sorted(ringPosConfirm, key=lambda x: (x[0], x[1]))
+                )
+                # store pin groupings
+                self.indexLocations[c] = ringPosConfirmSorted
+                pinGroups.add(ringPosConfirmSorted)
+        return len(pinGroups)
+
+    def _checkProperPinGroupings(self, pinGroups: List):
+        # throw an error is the len of indexLocations isn't all the same
+        # you need to have the same number of pin groupings throughout an assembly for the
+        # grid linking to work
+        if len(set(pinGroups)) != 1:
+            raise RuntimeError(
+                "There needs to be the same number of pin groupings throughout an assembly."
+                f"{self.a}, {self.pinnedBlocks}, {pinGroups}"
+            )
 
     def _getLinkedBlocks(self, b):
         """Retrieve the axial linkage for block b.
