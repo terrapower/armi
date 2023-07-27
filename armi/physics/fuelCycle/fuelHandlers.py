@@ -826,10 +826,11 @@ class FuelHandler:
         # future, this mechanism may be used to handle symmetry in general.
         outgoing.p.multiplicity = len(loc.getSymmetricEquivalents()) + 1
 
-        if incoming in self.r.sfp.getChildren():
-            # pull it out of the sfp if it's in there.
-            runLog.extra("removing {0} from the sfp".format(incoming))
-            self.r.sfp.remove(incoming)
+        if self.r.sfp is not None:
+            if incoming in self.r.sfp.getChildren():
+                # pull it out of the sfp if it's in there.
+                runLog.extra("removing {0} from the sfp".format(incoming))
+                self.r.sfp.remove(incoming)
 
         incoming.p.multiplicity = 1
         self.r.core.add(incoming, loc)
