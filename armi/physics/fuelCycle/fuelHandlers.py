@@ -652,6 +652,9 @@ class FuelHandler:
         assemblyList : list
             List of assemblies in each ring of the ringList. [[a1,a2,a3],[a4,a5,a6,a7],...]
         """
+        if "SFP" in ringList and self.r.sfp is not None:
+            raise ValueError(f"No SFP attached to the reactor {self.r}!")
+
         assemblyList = [[] for _i in range(len(ringList))]  # empty lists for each ring
         if exclusions is None:
             exclusions = []
