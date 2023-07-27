@@ -539,14 +539,10 @@ class AssemblyAxialLinkage:
                 for otherC in getSolidComponents(linkdBlk.getChildren()):
                     if _determineLinked(c, otherC):
                         if lstLinkedC[ib] is not None:
-                            errMsg = (
-                                "Multiple component axial linkages have been found for "
-                                f"Component {c}; Block {b}; Assembly {b.parent}."
-                                " This is indicative of an error in the blueprints! Linked components found are"
-                                f"{lstLinkedC[ib]} and {otherC}"
+                            lstLinkedC[ib] = _resolveMultipleLinkage(
+                                c, otherC, lstLinkedC[ib]
                             )
-                            runLog.error(msg=errMsg)
-                            raise RuntimeError(errMsg)
+                            continue
                         lstLinkedC[ib] = otherC
 
         self.linkedComponents[c] = lstLinkedC
@@ -561,6 +557,32 @@ class AssemblyAxialLinkage:
                 f"Assembly {self.a}, Block {b}, Component {c} has nothing linked above it!",
                 single=True,
             )
+
+
+def _resolveMultipleLinkage(primary, candidate1, candidate2):
+    """Use c.spatialLocator.indices to determine the proper linkage with primary."""
+    priIndices: List[int] = primary.spatialLocator.indices[0]
+    cand1Indices: List[int] = candidate1.spatialLocator.indices[0]
+    cand2Indices: List[int] = candidate2.spatialLocator.indices[0]
+    chooseC1: bool = False
+    chooseC2: bool = False
+    if (priIndices == cand1Indices).all():
+        chooseC1 = True
+    if (priIndices == cand2Indices).all():
+        chooseC2 = True
+    if (chooseC1 and chooseC2) or (chooseC1 is False and chooseC2 is False):
+        # if both True, candidate1 and candidate2 are in the same grid location (unphysical)
+        # if both false, candidate1 and candidate2 are not in the correct grid location (linking is impossible)
+        errMsg = (
+            "Multiple component axial linkages have been found for\n"
+            f"Component {primary}\nBlock {primary.parent}\nAssembly {primary.parent.parent}.\n"
+            "This is indicative of an error in the blueprints and the correct use of block "
+            "grids should resolve this issue. Candidate components for linking:\n"
+            f"Primary: {primary}\nCandidates: {candidate1}, {candidate2}"
+        )
+        runLog.error(msg=errMsg)
+        raise RuntimeError(errMsg)
+    return candidate1 if chooseC1 else candidate2
 
 
 def _determineLinked(componentA, componentB):
@@ -590,10 +612,8 @@ def _determineLinked(componentA, componentB):
     # if isinstance(componentA.spatialLocator, MultiIndexLocation) and isinstance(componentB.spatialLocator, MultiIndexLocation):
     #     # do stuff!
     #     print("")
-    if (
-        (componentA.containsSolidMaterial() and componentB.containsSolidMaterial())
-        and isinstance(componentA, type(componentB))
-        and (componentA.getDimension("mult") == componentB.getDimension("mult"))
+    if isinstance(componentA, type(componentB)) and (
+        componentA.getDimension("mult") == componentB.getDimension("mult")
     ):
         if isinstance(componentA, UnshapedComponent):
             runLog.warning(

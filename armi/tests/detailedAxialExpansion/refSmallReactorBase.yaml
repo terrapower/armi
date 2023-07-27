@@ -113,8 +113,8 @@ blocks:
         duct: *component_duct
         intercoolant: *component_intercoolant
 
-    axial shield 2pin: &block_fuel_axial_shield_twopin
-        grid name: twoPin
+    axial shield 4pin: &block_fuel_axial_shield_fourPin
+        grid name: fourPin
         shield1: &component_shield_shield
             shape: Circle
             material: HT9
@@ -161,13 +161,37 @@ blocks:
         wire2:
             <<: *component_shield_wire
             latticeIDs: [2]
+        shield3:
+            <<: *component_shield_shield
+            latticeIDs: [3]
+        bond3:
+            <<: *component_shield_bond
+            latticeIDs: [3]
+        clad3:
+            <<: *component_shield_clad
+            latticeIDs: [3]
+        wire3:
+            <<: *component_shield_wire
+            latticeIDs: [3]
+        shield4:
+            <<: *component_shield_shield
+            latticeIDs: [4]
+        bond4:
+            <<: *component_shield_bond
+            latticeIDs: [4]
+        clad4:
+            <<: *component_shield_clad
+            latticeIDs: [4]
+        wire4:
+            <<: *component_shield_wire
+            latticeIDs: [4]
         coolant: *component_coolant      
         duct: *component_duct
         intercoolant: *component_intercoolant
         axial expansion target component: shield1
 
     fuel: &block_fuel
-        grid name: twoPin
+        grid name: fourPin
         fuel: &component_fuel_fuel
             shape: Circle
             material: UZr
@@ -214,7 +238,30 @@ blocks:
         wire2:
             <<: *component_fuel_wire
             latticeIDs: [2]
-
+        fuel3: 
+            <<: *component_fuel_fuel
+            latticeIDs: [3]
+        bond3:
+            <<: *component_fuel_bond
+            latticeIDs: [3]
+        clad3:
+            <<: *component_fuel_clad
+            latticeIDs: [3]
+        wire3:
+            <<: *component_fuel_wire
+            latticeIDs: [3]
+        fuel4: 
+            <<: *component_fuel_fuel
+            latticeIDs: [4]
+        bond4:
+            <<: *component_fuel_bond
+            latticeIDs: [4]
+        clad4:
+            <<: *component_fuel_clad
+            latticeIDs: [4]
+        wire4:
+            <<: *component_fuel_wire
+            latticeIDs: [4]
         coolant: *component_coolant
         duct: *component_duct
         intercoolant: *component_intercoolant
@@ -261,8 +308,8 @@ blocks:
         intercoolant: *component_intercoolant
         axial expansion target component: clad
 
-    plenum 2pin: &block_plenum_twopin
-        grid name: twoPin
+    plenum 4pin: &block_plenum_fourPin
+        grid name: fourPin
         gap: &component_plenum_gap1
             shape: Circle
             material: Void
@@ -298,19 +345,43 @@ blocks:
         wire2: &component_plenum_wire2
             <<: *component_plenum_wire1
             latticeIDs: [2]
+        gap3: &component_plenum_gap3
+            <<: *component_plenum_gap1
+            latticeIDs: [3]
+        clad3: &component_plenum_clad3
+            <<: *component_plenum_clad1
+            latticeIDs: [3]
+        wire3: &component_plenum_wire3
+            <<: *component_plenum_wire1
+            latticeIDs: [3]
+        gap4: &component_plenum_gap4
+            <<: *component_plenum_gap1
+            latticeIDs: [4]
+        clad4: &component_plenum_clad4
+            <<: *component_plenum_clad1
+            latticeIDs: [4]
+        wire4: &component_plenum_wire4
+            <<: *component_plenum_wire1
+            latticeIDs: [4]
         coolant: *component_coolant
         duct: *component_duct
         intercoolant: *component_intercoolant
         axial expansion target component: clad
     
-    aclp plenum 2pin: &block_aclp_twopin
-        grid name: twoPin
+    aclp plenum 4pin: &block_aclp_fourPin
+        grid name: fourPin
         gap: *component_plenum_gap1
         clad: *component_plenum_clad1
         wire: *component_plenum_wire1
         gap2: *component_plenum_gap2
         clad2: *component_plenum_clad2
         wire2: *component_plenum_wire2
+        gap3: *component_plenum_gap3
+        clad3: *component_plenum_clad3
+        wire3: *component_plenum_wire3
+        gap4: *component_plenum_gap4
+        clad4: *component_plenum_clad4
+        wire4: *component_plenum_wire4
         coolant: *component_coolant
         duct: *component_duct
         intercoolant: *component_intercoolant
@@ -599,7 +670,7 @@ assemblies:
     axial mesh points: &standard_axial_mesh_points [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
     igniter fuel:
         specifier: IC
-        blocks: &igniter_fuel_blocks [*block_grid_plate, *block_fuel_axial_shield_twopin, *block_fuel, *block_fuel, *block_fuel, *block_plenum_twopin, *block_aclp_twopin, *block_plenum_twopin, *block_duct, *block_dummy]
+        blocks: &igniter_fuel_blocks [*block_grid_plate, *block_fuel_axial_shield_fourPin, *block_fuel, *block_fuel, *block_fuel, *block_plenum_fourPin, *block_aclp_fourPin, *block_plenum_fourPin, *block_duct, *block_dummy]
         height: *highOffset_height
         axial mesh points: *standard_axial_mesh_points
         material modifications:
