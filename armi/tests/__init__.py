@@ -30,7 +30,6 @@ from armi import runLog
 from armi.reactor import geometry
 from armi.reactor import grids
 from armi.reactor import reactors
-from armi.reactor import assemblyLists
 
 TEST_ROOT = os.path.dirname(os.path.abspath(__file__))
 ARMI_RUN_PATH = os.path.join(TEST_ROOT, "armiRun.yaml")
@@ -45,7 +44,6 @@ def getEmptyHexReactor():
     bp = blueprints.Blueprints()
     reactor = reactors.Reactor("Reactor", bp)
     reactor.add(reactors.Core("Core"))
-    reactor.add(assemblyLists.SpentFuelPool("SpentFuelPool"))
     reactor.core.spatialGrid = grids.HexGrid.fromPitch(1.0)
     reactor.core.spatialGrid.symmetry = geometry.SymmetryType(
         geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
@@ -62,7 +60,6 @@ def getEmptyCartesianReactor(pitch=(10.0, 16.0)):
     bp = blueprints.Blueprints()
     reactor = reactors.Reactor("Reactor", bp)
     reactor.add(reactors.Core("Core"))
-    reactor.add(assemblyLists.SpentFuelPool("SpentFuelPool"))
     reactor.core.spatialGrid = grids.CartesianGrid.fromRectangle(*pitch)
     reactor.core.spatialGrid.symmetry = geometry.SymmetryType(
         geometry.DomainType.QUARTER_CORE,
