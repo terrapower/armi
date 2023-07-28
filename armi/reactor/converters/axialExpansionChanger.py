@@ -414,16 +414,6 @@ class AssemblyAxialLinkage:
 
     def _determineAxialLinkage(self):
         """Gets the block and component based linkage."""
-        # get the pinned blocks
-        self.pinnedBlocks = [b for b in self.a if b.spatialGrid]
-        # determine the index locations and max number of pin groupings in each pinned block
-        self.indexLocations = {}
-        numOfPinGroupingsPerBlock = []
-        for b in self.pinnedBlocks:
-            numPinGroups = self._getPinGroupings(b)
-            # store the length of pin groupings
-            numOfPinGroupingsPerBlock.append(numPinGroups)
-        self._checkProperPinGroupings(numOfPinGroupingsPerBlock)
         for b in self.a:
             self._getLinkedBlocks(b)
             for c in getSolidComponents(b):
@@ -585,8 +575,8 @@ def _resolveMultipleLinkage(primary, candidate1, candidate2):
     return candidate1 if chooseC1 else candidate2
 
 
-def _determineLinked(componentA, componentB):
-    """Determine axial component linkage for two components.
+def _determineLinked(componentA, componentB) -> bool:
+    """Determine axial component linkage for two solid components.
 
     Parameters
     ----------
@@ -609,11 +599,10 @@ def _determineLinked(componentA, componentB):
     linked : bool
         status is componentA and componentB are axially linked to one another
     """
-    # if isinstance(componentA.spatialLocator, MultiIndexLocation) and isinstance(componentB.spatialLocator, MultiIndexLocation):
-    #     # do stuff!
-    #     print("")
-    if isinstance(componentA, type(componentB)) and (
-        componentA.getDimension("mult") == componentB.getDimension("mult")
+    if (
+        componentA.containsSolidMaterial()
+        and componentB.containsSolidMaterial()
+        and isinstance(componentA, type(componentB))
     ):
         if isinstance(componentA, UnshapedComponent):
             runLog.warning(
@@ -624,26 +613,54 @@ def _determineLinked(componentA, componentB):
                 single=True,
             )
             linked = False
-        else:
-            idA, odA = (
-                componentA.getCircleInnerDiameter(cold=True),
-                componentA.getBoundingCircleOuterDiameter(cold=True),
-            )
-            idB, odB = (
-                componentB.getCircleInnerDiameter(cold=True),
-                componentB.getBoundingCircleOuterDiameter(cold=True),
-            )
-
-            biggerID = max(idA, idB)
-            smallerOD = min(odA, odB)
-            if biggerID >= smallerOD:
-                # one object fits inside the other
-                linked = False
+        elif isinstance(componentA.spatialLocator, MultiIndexLocation) and isinstance(
+            componentB.spatialLocator, MultiIndexLocation
+        ):
+            componentAIndices = [
+                list(index) for index in componentA.spatialLocator.indices
+            ]
+            componentBIndices = [
+                list(index) for index in componentB.spatialLocator.indices
+            ]
+            # check for common indices between components. If either component has indices within its counterpart,
+            # then they are candidates to be linked and overlap should be checked.
+            if len(componentAIndices) < len(componentBIndices):
+                if all(index in componentBIndices for index in componentAIndices):
+                    linked = _checkOverlap(componentA, componentB)
+                else:
+                    linked = False
             else:
-                linked = True
+                if all(index in componentAIndices for index in componentBIndices):
+                    linked = _checkOverlap(componentA, componentB)
+                else:
+                    linked = False
+        elif componentA.getDimension("mult") == componentB.getDimension("mult"):
+            linked = _checkOverlap(componentA, componentB)
+        else:
+            linked = False
 
     else:
         linked = False
+
+    return linked
+
+
+def _checkOverlap(componentA, componentB) -> bool:
+    idA, odA = (
+        componentA.getCircleInnerDiameter(cold=True),
+        componentA.getBoundingCircleOuterDiameter(cold=True),
+    )
+    idB, odB = (
+        componentB.getCircleInnerDiameter(cold=True),
+        componentB.getBoundingCircleOuterDiameter(cold=True),
+    )
+    biggerID = max(idA, idB)
+    smallerOD = min(odA, odB)
+    if biggerID >= smallerOD:
+        # one object fits inside the other
+        linked = False
+    else:
+        linked = True
 
     return linked
 

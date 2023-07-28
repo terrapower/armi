@@ -893,8 +893,10 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
         are thermally expanded.
         """
         # custom materials don't expand
-        if not isinstance(bStd.getComponent(flagType).material, custom.Custom):
-            self.assertGreater(bExp.getMass(nuclide), bStd.getMass(nuclide))
+        compsOfInterest = bStd.getChildrenWithFlags(typeSpec=flagType)
+        for c in compsOfInterest:
+            if not isinstance(c.material, custom.Custom):
+                self.assertGreater(bExp.getMass(nuclide), bStd.getMass(nuclide))
 
 
 def checkColdBlockHeight(bStd, bExp, assertType, strForAssertion):

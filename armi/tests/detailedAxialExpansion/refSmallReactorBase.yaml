@@ -115,31 +115,31 @@ blocks:
 
     axial shield 4pin: &block_fuel_axial_shield_fourPin
         grid name: fourPin
-        shield1: &component_shield_shield
+        shield:
             shape: Circle
             material: HT9
             Tinput: 25.0
             Thot: 600.0
             id: 0.0
             od: 0.86602
-            latticeIDs: [1]
-        bond1: &component_shield_bond
+            latticeIDs: [1,2,3,4]
+        bond:
             shape: Circle
             material: Sodium
             Tinput: 25.0
             Thot: 470.0
-            id: shield1.od
-            od: clad1.id
-            latticeIDs: [1]
-        clad1: &component_shield_clad
+            id: shield.od
+            od: clad.id
+            latticeIDs: [1,2,3,4]
+        clad:
             shape: Circle
             material: HT9
             Tinput: 25.0
             Thot: 470.0
             id: 1.0
             od: 1.09
-            latticeIDs: [1]
-        wire1: &component_shield_wire
+            latticeIDs: [1,2,3,4]
+        wire:
             shape: Helix
             material: HT9
             Tinput: 25.0
@@ -148,51 +148,14 @@ blocks:
             helixDiameter: 1.19056
             id: 0.0
             od: 0.10056
-            latticeIDs: [1]
-        shield2:
-            <<: *component_shield_shield
-            latticeIDs: [2]
-        bond2:
-            <<: *component_shield_bond
-            latticeIDs: [2]
-        clad2:
-            <<: *component_shield_clad
-            latticeIDs: [2]
-        wire2:
-            <<: *component_shield_wire
-            latticeIDs: [2]
-        shield3:
-            <<: *component_shield_shield
-            latticeIDs: [3]
-        bond3:
-            <<: *component_shield_bond
-            latticeIDs: [3]
-        clad3:
-            <<: *component_shield_clad
-            latticeIDs: [3]
-        wire3:
-            <<: *component_shield_wire
-            latticeIDs: [3]
-        shield4:
-            <<: *component_shield_shield
-            latticeIDs: [4]
-        bond4:
-            <<: *component_shield_bond
-            latticeIDs: [4]
-        clad4:
-            <<: *component_shield_clad
-            latticeIDs: [4]
-        wire4:
-            <<: *component_shield_wire
-            latticeIDs: [4]
+            latticeIDs: [1,2,3,4]
         coolant: *component_coolant      
         duct: *component_duct
         intercoolant: *component_intercoolant
-        axial expansion target component: shield1
 
     fuel: &block_fuel
         grid name: fourPin
-        fuel: &component_fuel_fuel
+        fuel: &component_fuel4pin_fuel
             shape: Circle
             material: UZr
             Tinput: 25.0
@@ -200,7 +163,7 @@ blocks:
             id: 0.0
             od: 0.86602
             latticeIDs: [1]
-        bond: &component_fuel_bond
+        bond: &component_fuel4pin_bond
             shape: Circle
             material: Sodium
             Tinput: 25.0
@@ -208,7 +171,7 @@ blocks:
             id: fuel.od
             od: clad.id
             latticeIDs: [1]
-        clad: &component_fuel_clad
+        clad: &component_fuel4pin_clad
             shape: Circle
             material: HT9
             Tinput: 25.0
@@ -216,7 +179,7 @@ blocks:
             id: 1.0
             od: 1.09
             latticeIDs: [1]
-        wire: &component_fuel_wire
+        wire: &component_fuel4pin_wire
             shape: Helix
             material: HT9
             Tinput: 25.0
@@ -227,40 +190,40 @@ blocks:
             od: 0.10056
             latticeIDs: [1]
         fuel2: 
-            <<: *component_fuel_fuel
+            <<: *component_fuel4pin_fuel
             latticeIDs: [2]
         bond2:
-            <<: *component_fuel_bond
+            <<: *component_fuel4pin_bond
             latticeIDs: [2]
         clad2:
-            <<: *component_fuel_clad
+            <<: *component_fuel4pin_clad
             latticeIDs: [2]
         wire2:
-            <<: *component_fuel_wire
+            <<: *component_fuel4pin_wire
             latticeIDs: [2]
         fuel3: 
-            <<: *component_fuel_fuel
+            <<: *component_fuel4pin_fuel
             latticeIDs: [3]
         bond3:
-            <<: *component_fuel_bond
+            <<: *component_fuel4pin_bond
             latticeIDs: [3]
         clad3:
-            <<: *component_fuel_clad
+            <<: *component_fuel4pin_clad
             latticeIDs: [3]
         wire3:
-            <<: *component_fuel_wire
+            <<: *component_fuel4pin_wire
             latticeIDs: [3]
         fuel4: 
-            <<: *component_fuel_fuel
+            <<: *component_fuel4pin_fuel
             latticeIDs: [4]
         bond4:
-            <<: *component_fuel_bond
+            <<: *component_fuel4pin_bond
             latticeIDs: [4]
         clad4:
-            <<: *component_fuel_clad
+            <<: *component_fuel4pin_clad
             latticeIDs: [4]
         wire4:
-            <<: *component_fuel_wire
+            <<: *component_fuel4pin_wire
             latticeIDs: [4]
         coolant: *component_coolant
         duct: *component_duct
@@ -317,7 +280,7 @@ blocks:
             Thot: 600.0
             id: 0.0
             od: clad.id
-            latticeIDs: [1]
+            latticeIDs: [1,2,3,4]
         clad: &component_plenum_clad1
             shape: Circle
             material: HT9
@@ -325,7 +288,7 @@ blocks:
             Thot: 470.0
             id: 1.0
             od: 1.09
-            latticeIDs: [1]
+            latticeIDs: [1,2,3,4]
         wire: &component_plenum_wire1
             shape: Helix
             material: HT9
@@ -335,34 +298,7 @@ blocks:
             helixDiameter: 1.19056
             id: 0.0
             od: 0.10056
-            latticeIDs: [1]
-        gap2: &component_plenum_gap2
-            <<: *component_plenum_gap1
-            latticeIDs: [2]
-        clad2: &component_plenum_clad2
-            <<: *component_plenum_clad1
-            latticeIDs: [2]
-        wire2: &component_plenum_wire2
-            <<: *component_plenum_wire1
-            latticeIDs: [2]
-        gap3: &component_plenum_gap3
-            <<: *component_plenum_gap1
-            latticeIDs: [3]
-        clad3: &component_plenum_clad3
-            <<: *component_plenum_clad1
-            latticeIDs: [3]
-        wire3: &component_plenum_wire3
-            <<: *component_plenum_wire1
-            latticeIDs: [3]
-        gap4: &component_plenum_gap4
-            <<: *component_plenum_gap1
-            latticeIDs: [4]
-        clad4: &component_plenum_clad4
-            <<: *component_plenum_clad1
-            latticeIDs: [4]
-        wire4: &component_plenum_wire4
-            <<: *component_plenum_wire1
-            latticeIDs: [4]
+            latticeIDs: [1,2,3,4]
         coolant: *component_coolant
         duct: *component_duct
         intercoolant: *component_intercoolant
@@ -373,15 +309,6 @@ blocks:
         gap: *component_plenum_gap1
         clad: *component_plenum_clad1
         wire: *component_plenum_wire1
-        gap2: *component_plenum_gap2
-        clad2: *component_plenum_clad2
-        wire2: *component_plenum_wire2
-        gap3: *component_plenum_gap3
-        clad3: *component_plenum_clad3
-        wire3: *component_plenum_wire3
-        gap4: *component_plenum_gap4
-        clad4: *component_plenum_clad4
-        wire4: *component_plenum_wire4
         coolant: *component_coolant
         duct: *component_duct
         intercoolant: *component_intercoolant
@@ -423,15 +350,45 @@ blocks:
             mergeWith: clad
             mult: 169.0
             od: 1.0
-        clad: *component_fuel_clad
-        wire: *component_fuel_wire
+        clad: &component_fuel_clad
+            shape: Circle
+            material: HT9
+            Tinput: 25.0
+            Thot: 470.0
+            id: 1.0
+            od: 1.09
+            mult: fuel.mult
+        wire: &component_fuel_wire
+            shape: Helix
+            material: HT9
+            Tinput: 25.0
+            Thot: 470.0
+            axialPitch: 30.15
+            helixDiameter: 1.19056
+            id: 0.0
+            od: 0.10056
+            mult: fuel.mult
         coolant: *component_coolant
         duct: *component_duct
         intercoolant: *component_intercoolant
     
     lta fuel a: &block_lta1_fuel
-        fuel: *component_fuel_fuel
-        bond: *component_fuel_bond
+        fuel:
+            shape: Circle
+            material: UZr
+            Tinput: 25.0
+            Thot: 600.0
+            id: 0.0
+            od: 0.86602
+            mult: 169.0
+        bond: &component_fuel_bond
+            shape: Circle
+            material: Sodium
+            Tinput: 25.0
+            Thot: 470.0
+            id: fuel.od
+            od: clad.id
+            mult: fuel.mult
         liner2: *component_fuel2_liner2
         liner1: *component_fuel2_liner1
         clad: *component_fuel_clad        
