@@ -1317,7 +1317,7 @@ class ParamMapper:
             if val is None:
                 continue
 
-            if isinstance(val, (tuple, range, list, numpy.ndarray)):
+            if isinstance(val, (tuple, list, numpy.ndarray)):
                 ParamMapper._arrayParamSetter(block, [val], [paramName])
             else:
                 ParamMapper._scalarParamSetter(block, [val], [paramName])
