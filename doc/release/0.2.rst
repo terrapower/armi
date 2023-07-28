@@ -13,6 +13,7 @@ What's new in ARMI
 #. Removed redundant ``Material.name`` variable. (`PR#1335 <https://github.com/terrapower/armi/pull/1335>`_)
 #. Added SHA1 hashes of XS control files to the welcome text. (`PR#1334 <https://github.com/terrapower/armi/pull/1334>`_)
 #. Put back ``avgFuelTemp`` block parameter. (`PR#1362 <https://github.com/terrapower/armi/pull/1362>`_)
+#. Make cylindrical component block collection less strict about pre-homogenization checks. (`PR#1347 <https://github.com/terrapower/armi/pull/1347>`_)
 #. TBD
 
 Bug fixes
