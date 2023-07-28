@@ -227,7 +227,7 @@ def _defineBaseParameters():
     pDefs.add(
         parameters.Parameter(
             "flags",
-            units=None,
+            units=units.UNITLESS,
             description="The type specification of this object",
             location=parameters.ParamLocation.AVERAGE,
             saveToDB=True,

@@ -48,8 +48,7 @@ class MockBP:
 def getDummyParamDefs():
     dummyDefs = parameters.ParameterDefinitionCollection()
     with dummyDefs.createBuilder() as pb:
-
-        pb.defParam("type", units="none", description="Fake type")
+        pb.defParam("type", units=utils.units.UNITLESS, description="Fake type")
     return dummyDefs
 
 

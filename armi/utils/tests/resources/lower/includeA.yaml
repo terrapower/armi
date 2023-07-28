@@ -1,4 +1,4 @@
 full_name: Jennifer Person
 # some comment in includeA
-children:
-    !include includeB.yaml
+children: 
+  !include includeB.yaml
