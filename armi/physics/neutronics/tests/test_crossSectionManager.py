@@ -285,6 +285,7 @@ class TestBlockCollectionComponentAverage1DCylinder(unittest.TestCase):
             1.9717608091694139,
         ]
 
+
     def test_ComponentAverage1DCylinder(self):
         r"""
         tests that the XS group manager calculates the expected component atom density
@@ -294,6 +295,8 @@ class TestBlockCollectionComponentAverage1DCylinder(unittest.TestCase):
         xsgm = self.o.getInterface("xsGroups")
 
         xsgm.interactBOL()
+
+        xsgm.updateNuclideTemperatures()
 
         # Check that the correct defaults are propagated after the interactBOL
         # from the cross section group manager is called.
@@ -316,6 +319,7 @@ class TestBlockCollectionComponentAverage1DCylinder(unittest.TestCase):
                 self.assertAlmostEqual(
                     c.getNumberDensity(nuc), compDensity.get(nuc, 0.0)
                 )
+
 
     def test_checkComponentConsistency(self):
 
