@@ -18,6 +18,7 @@ analyzing ARMI output files, etc.
    manual_data_access
    reactor_parameters_report
    core_parameters_report
+   component_parameters_report
    assembly_parameters_report
    block_parameters_report
    physics_coupling

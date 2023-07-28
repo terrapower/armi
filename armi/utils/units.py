@@ -17,13 +17,47 @@ import math
 import scipy.constants
 
 
-# Names
-DEGC = chr(176) + "C"
-MICRONS = chr(181) + "m"
-NOT_APPLICABLE = "N/A"
+# Units (misc)
+DPA = "dpa"
+FIMA = "FIMA"
+PERCENT_FIMA = r"%FIMA"
+MB = "MB"  # megabytes
+MOLES = "mole"
+MWD = "MWd"
+PASCALS = "Pa"
+PERCENT = "%"
 UNITLESS = ""
+USD = "USD"  # US currency (the dollar)
+# Units (angles)
+DEGREES = "degrees"
+RADIANS = "radians"
+# Units (energy)
+EV = "eV"
+MW = "MW"
+WATTS = "W"
+# Units (length)
+CM = "cm"
+METERS = "m"
+MICRONS = chr(181) + "m"
+# Units (mass)
+GRAMS = "g"
+KG = "kg"
+MT = "MT"
+# Units (reactivity)
+CENTS = "cents"  # 1/100th of a dollar
+DOLLARS = "$"  # (dk/k/k') / beta
+PCM = "pcm"
+REACTIVITY = chr(916) + "k/k/k'"
+# Units (temperature)
+DEGC = chr(176) + "C"
+DEGK = "K"
+# Units (time)
+DAYS = "days"
+MINUTES = "min"
+SECONDS = "s"
+YEARS = "yr"
 
-# conversions
+# Unit conversions
 C_TO_K = 273.15
 BOLTZMAN_CONSTANT = 8.6173324e-11  # boltzmann constant in MeV/K
 AVOGADROS_NUMBER = 6.0221415e23
