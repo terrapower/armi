@@ -285,7 +285,6 @@ class TestBlockCollectionComponentAverage1DCylinder(unittest.TestCase):
             1.9717608091694139,
         ]
 
-
     def test_ComponentAverage1DCylinder(self):
         r"""
         tests that the XS group manager calculates the expected component atom density
@@ -319,7 +318,6 @@ class TestBlockCollectionComponentAverage1DCylinder(unittest.TestCase):
                 self.assertAlmostEqual(
                     c.getNumberDensity(nuc), compDensity.get(nuc, 0.0)
                 )
-
 
     def test_checkComponentConsistency(self):
 
