@@ -20,7 +20,7 @@ from armi import runLog
 from armi.materials import material
 from armi.reactor.components import UnshapedComponent
 from armi.reactor.flags import Flags
-from armi.reactor.grids import MultiIndexLocation, HexGrid
+from armi.reactor.grids import MultiIndexLocation, CoordinateLocation
 from numpy import array
 
 TARGET_FLAGS_IN_PREFERRED_ORDER = [
@@ -487,7 +487,7 @@ class AssemblyAxialLinkage:
                 for otherC in getSolidComponents(linkdBlk.getChildren()):
                     if _determineLinked(c, otherC):
                         if lstLinkedC[ib] is not None:
-                            lstLinkedC[ib] = _resolveMultipleLinkage(
+                            lstLinkedC[ib] = self._resolveMultipleLinkage(
                                 c, otherC, lstLinkedC[ib]
                             )
                             continue
@@ -506,31 +506,38 @@ class AssemblyAxialLinkage:
                 single=True,
             )
 
-
-def _resolveMultipleLinkage(primary, candidate1, candidate2):
-    """Use c.spatialLocator.indices to determine the proper linkage with primary."""
-    priIndices: List[int] = primary.spatialLocator.indices[0]
-    cand1Indices: List[int] = candidate1.spatialLocator.indices[0]
-    cand2Indices: List[int] = candidate2.spatialLocator.indices[0]
-    chooseC1: bool = False
-    chooseC2: bool = False
-    if (priIndices == cand1Indices).all():
-        chooseC1 = True
-    if (priIndices == cand2Indices).all():
-        chooseC2 = True
-    if (chooseC1 and chooseC2) or (chooseC1 is False and chooseC2 is False):
-        # if both True, candidate1 and candidate2 are in the same grid location (unphysical)
-        # if both false, candidate1 and candidate2 are not in the correct grid location (linking is impossible)
+    def _resolveMultipleLinkage(self, primary, candidate1, candidate2):
+        """Use c.spatialLocator.indices to determine the proper linkage with primary."""
         errMsg = (
             "Multiple component axial linkages have been found for\n"
-            f"Component {primary}\nBlock {primary.parent}\nAssembly {primary.parent.parent}.\n"
+            f"Component {primary}\nBlock {primary.parent}\nAssembly {self.a}.\n"
             "This is indicative of an error in the blueprints and the correct use of block "
             "grids should resolve this issue. Candidate components for linking:\n"
             f"Primary: {primary}\nCandidates: {candidate1}, {candidate2}"
         )
-        runLog.error(msg=errMsg)
-        raise RuntimeError(errMsg)
-    return candidate1 if chooseC1 else candidate2
+        if (
+            isinstance(primary.spatialLocator, CoordinateLocation)
+            and isinstance(candidate1.spatialLocator, CoordinateLocation)
+            and isinstance(candidate2.spatialLocator, CoordinateLocation)
+        ):
+            runLog.error(msg=errMsg)
+            raise RuntimeError(errMsg)
+
+        priIndices: List[int] = primary.spatialLocator.indices[0]
+        cand1Indices: List[int] = candidate1.spatialLocator.indices[0]
+        cand2Indices: List[int] = candidate2.spatialLocator.indices[0]
+        chooseC1: bool = False
+        chooseC2: bool = False
+        if (priIndices == cand1Indices).all():
+            chooseC1 = True
+        if (priIndices == cand2Indices).all():
+            chooseC2 = True
+        if (chooseC1 and chooseC2) or (chooseC1 is False and chooseC2 is False):
+            # if both True, candidate1 and candidate2 are in the same grid location (unphysical)
+            # if both false, candidate1 and candidate2 are not in the correct grid location (linking is impossible)
+            runLog.error(msg=errMsg)
+            raise RuntimeError(errMsg)
+        return candidate1 if chooseC1 else candidate2
 
 
 def _determineLinked(componentA, componentB) -> bool:
