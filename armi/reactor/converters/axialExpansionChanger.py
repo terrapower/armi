@@ -407,7 +407,6 @@ class AssemblyAxialLinkage:
 
     def __init__(self, StdAssem):
         self.a = StdAssem
-        self.pinnedBlocks = []
         self.linkedBlocks = {}
         self.linkedComponents = {}
         self._determineAxialLinkage()
