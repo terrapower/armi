@@ -250,7 +250,9 @@ class BlockBlueprint(yamlize.KeyedList):
                             materialParentClass.applyInputParams
                         ).parameters.keys()
                     )
-
+        # self is a parameter to class methods, so it gets picked up here
+        # but that's obviously not a real material modifier
+        perChildModifiers.discard("self")
         return perChildModifiers
 
     def _getMaterialsInComposite(self, child: Composite) -> Iterator[Material]:
