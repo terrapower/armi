@@ -419,39 +419,6 @@ class AssemblyAxialLinkage:
             for c in getSolidComponents(b):
                 self._getLinkedComponents(b, c)
 
-    def _getPinGroupings(self, b) -> float:
-        pinGroups = set()
-        for c in getSolidComponents(b):
-            if isinstance(c.spatialLocator, MultiIndexLocation):
-                ringPosConfirm = []
-                for index in c.spatialLocator.indices:
-                    try:
-                        ringPosConfirm.append(
-                            c.spatialLocator.grid.indicesToRingPos(index[0], index[1])
-                        )
-                    except AttributeError:
-                        # autogrids have None type for spatialLocator.grid
-                        ringPosConfirm.append(
-                            HexGrid.indicesToRingPos(index[0], index[1])
-                        )
-                ringPosConfirmSorted = tuple(
-                    sorted(ringPosConfirm, key=lambda x: (x[0], x[1]))
-                )
-                # store pin groupings
-                self.indexLocations[c] = ringPosConfirmSorted
-                pinGroups.add(ringPosConfirmSorted)
-        return len(pinGroups)
-
-    def _checkProperPinGroupings(self, numOfPinGroups: List):
-        # throw an error is the len of indexLocations isn't all the same
-        # you need to have the same number of pin groupings throughout an assembly for the
-        # grid linking to work
-        if numOfPinGroups and len(set(numOfPinGroups)) != 1:
-            raise RuntimeError(
-                "There needs to be the same number of pin groupings throughout an assembly."
-                f"{self.a}, {self.pinnedBlocks}, {numOfPinGroups}"
-            )
-
     def _getLinkedBlocks(self, b):
         """Retrieve the axial linkage for block b.
 
