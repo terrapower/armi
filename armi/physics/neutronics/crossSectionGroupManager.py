@@ -468,6 +468,9 @@ class CylindricalComponentsAverageBlockCollection(BlockCollection):
                 f"Blocks {b} and {repBlock} have differing number "
                 f"of components and cannot be homogenized"
             )
+        # Using Fe-56 as a proxy for structure and Na-23 as proxy for coolant is undesirably SFR-centric
+        # This should be generalized in the future, if possible
+        consistentNucs = {"PU239", "U238", "U235", "U234", "FE56", "NA23", "O16"}
         for c, repC in zip(sorted(b), sorted(repBlock)):
             compString = (
                 f"Component {repC} in block {repBlock} and component {c} in block {b}"
@@ -480,7 +483,10 @@ class CylindricalComponentsAverageBlockCollection(BlockCollection):
 
             theseNucs = set(c.getNuclides())
             thoseNucs = set(repC.getNuclides())
-            diffNucs = theseNucs.symmetric_difference(thoseNucs)
+            # check for any differences between which `consistentNucs` the components have
+            diffNucs = theseNucs.symmetric_difference(thoseNucs).intersection(
+                consistentNucs
+            )
             if diffNucs:
                 raise ValueError(
                     f"{compString} are in the same location, but nuclides "
