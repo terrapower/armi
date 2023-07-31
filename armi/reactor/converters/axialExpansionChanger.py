@@ -390,19 +390,11 @@ class AssemblyAxialLinkage:
     a : :py:class:`Assembly <armi.reactor.assemblies.Assembly>`
         reference to original assembly; is directly modified/changed during expansion.
 
-    linkedBlocks : dict
-        keys   --> :py:class:`Block <armi.reactor.blocks.Block>`
+    linkedBlocks : dict[Block, List[Blocks]]
+        Keys: blocks. Values: list of axially linked blocks; index 0 = lower linked block; index 1: upper linked block.
 
-        values --> list of axially linked blocks; index 0 = lower linked block; index 1: upper linked block.
-
-        see also: self._getLinkedBlocks()
-
-    linkedComponents : dict
-        keys -->   :py:class:`Component <armi.reactor.components.component.Component>`
-
-        values --> list of axially linked components; index 0 = lower linked component; index 1: upper linked component.
-
-        see also: self._getLinkedComponents
+    linkedComponents : dict[Component, List[Component]]
+        Keys: components. Values: list of axially linked components; index 0 = lower linked component; index 1: upper linked component.
     """
 
     def __init__(self, StdAssem):
