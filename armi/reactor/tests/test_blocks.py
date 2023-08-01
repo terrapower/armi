@@ -374,8 +374,8 @@ class Block_TestCase(unittest.TestCase):
         self.assertAlmostEqual(cur, ref, places=10)
 
     def test_timeNodeParams(self):
-        self.block.p["avgFuelTemp", 3] = 2.0
-        self.assertEqual(2.0, self.block.p[("avgFuelTemp", 3)])
+        self.block.p["buRate", 3] = 0.1
+        self.assertEqual(0.1, self.block.p[("buRate", 3)])
 
     def test_getType(self):
         ref = "plenum pin"
