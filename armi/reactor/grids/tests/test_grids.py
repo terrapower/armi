@@ -16,9 +16,9 @@
 from io import BytesIO
 import math
 import unittest
+import pickle
 
 from numpy.testing import assert_allclose
-from six.moves import cPickle
 import numpy
 
 from armi.reactor import geometry
@@ -348,11 +348,11 @@ class TestHexGrid(unittest.TestCase):
     def test_is_pickleable(self):
         grid = grids.HexGrid.fromPitch(1.0, numRings=3)
         loc = grid[1, 1, 0]
-        for protocol in range(cPickle.HIGHEST_PROTOCOL + 1):
+        for protocol in range(pickle.HIGHEST_PROTOCOL + 1):
             buf = BytesIO()
-            cPickle.dump(loc, buf, protocol=protocol)
+            pickle.dump(loc, buf, protocol=protocol)
             buf.seek(0)
-            newLoc = cPickle.load(buf)
+            newLoc = pickle.load(buf)
             assert_allclose(loc.indices, newLoc.indices)
 
     def test_adjustPitch(self):
