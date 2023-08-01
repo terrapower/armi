@@ -85,7 +85,7 @@ and then run::
 This runs the unit tests in parallel on 6 processes. Omit the ``-n 6`` argument
 to run on a single process.
 
-Though the tests can also be run directly, using ``pytest``::
+The tests can also be run directly, using ``pytest``::
 
     $ pip3 install -r requirements-testing.txt
     $ pytest -n 4 armi

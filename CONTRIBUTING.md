@@ -8,7 +8,7 @@ must comply with all applicable laws and regulations.
 
 ## Help Wanted
 
-There are a lot of places you can get started, to help the ARMI project and team:
+There are a lot of places you can get started to help the ARMI project and team:
 
 * Better [documentation](https://terrapower.github.io/armi/developer/documenting.html)
 * Better test coverage
@@ -16,7 +16,7 @@ There are a lot of places you can get started, to help the ARMI project and team
 * Targeted speedups (e.g. informed by a profiler)
 * Additional relevance to thermal reactors
 
-Naturally, you can also look at the open [ARMI issues](https://github.com/terrapower/armi/issues) to see what work needs to be done. In particular, check out the [help wanted tickets](https://github.com/terrapower/armi/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22).
+Naturally, you can also look at the open [ARMI issues](https://github.com/terrapower/armi/issues) to see what work needs to be done. In particular, check out the ["help wanted" tickets](https://github.com/terrapower/armi/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22) and ["good first issue" tickets](https://github.com/terrapower/armi/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22).
 
 ## Testing
 
