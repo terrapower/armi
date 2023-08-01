@@ -1,6 +1,6 @@
-# How to contribute
+# How to Contribute
 
-The ARMI framework project strongly encourages developers to help contribute to the codebase.
+The ARMI team strongly encourages developers to contribute to the codebase.
 
 The ARMI framework code is open source, and your contributions will become open source.
 Although fewer laws apply to open source materials because they are publicly-available, you still
@@ -8,16 +8,15 @@ must comply with all applicable laws and regulations.
 
 ## Help Wanted
 
-There are a lot of things we need help with right off the bat, to get your feet wet:
+There are a lot of places you can get started, to help the ARMI project and team:
 
-* Many more type annotations are desired. Type issues cause lots of bugs.
-* Fewer Pylint warnings
-* Better documentation
+* Better [documentation](https://terrapower.github.io/armi/developer/documenting.html)
 * Better test coverage
+* Many more type annotations are desired. Type issues cause lots of bugs.
 * Targeted speedups (e.g. informed by a profiler)
 * Additional relevance to thermal reactors
 
-Naturally, we encourage other kinds of contributions as well.
+Naturally, you can also look at the open [ARMI issues](https://github.com/terrapower/armi/issues) to see what work needs to be done. In particular, check out the [help wanted tickets](https://github.com/terrapower/armi/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22).
 
 ## Testing
 
@@ -25,44 +24,30 @@ Any contribution must pass all included unit tests. The tests are built and run 
 `pytest` system. Please add new tests if you add new functionality. You can generally just run
 `tox` to build the testing environment and execute all the tests and ruff checks.
 
-## Submitting changes
+## Submitting Changes
 
-Please send a [GitHub Pull Request to the ARMI main branch](https://github.com/terrapower/armi/pull/new/main) with a clear
-list of what you've done (read more about [pull requests](http://help.github.com/pull-requests/)).  Please follow our
-coding conventions (below) and make sure all of your commits are atomic (one feature per commit).
+To submit a change to ARMI, you will have to open a Pull Request (PR) on GitHub.com.
 
-Please write a clear log messages for your commits. One-liners are OK for small changes, but bigger changes should include more:
+The process for opening a PR against ARMI goes something like this:
 
-    $ git commit -m "A brief summary of the commit
-    >
-    > A paragraph describing what changed and its impact."
+1. [Fork the ARMI repo](https://docs.github.com/en/get-started/quickstart/fork-a-repo)
+2. [Create a new branch](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-and-deleting-branches-within-your-repository) in your repo
+3. Make your code changes to your new branch
+4. Submit a Pull Request against [ARMI's main branch](https://github.com/terrapower/armi/pull/new/main)
+    a. See [GitHub's general guidance on Pull Requests](http://help.github.com/pull-requests/)
+    b. See [ARMI's specific guidance](https://terrapower.github.io/armi/developer/tooling.html#good-pull-requests) on what makes a "good" Pull Request.
+5. Actively engage with your PR reviewer's questions and comments.
 
-Note that a bot will require that you sign [our Contributor License
-Agreement](https://gist.github.com/youngmit/8654abcf93f309771ae9296abebe9d4a)
+> Note that a bot will require that you sign [our Contributor License Agreement](https://gist.github.com/youngmit/8654abcf93f309771ae9296abebe9d4a)
 before we can accept a pull request from you.
 
-## Coding conventions
+See our published documentation for a complete guide to our [coding standards and practices](https://terrapower.github.io/armi/developer/standards_and_practices.html).
 
-We use the [Black](https://black.readthedocs.io/en/stable/) code formatter so we don't have to argue or worry about trivial
-whitespacing conventions during code review. You should always run `black` before submitting a pull request.
-
-We really like Robert C Martin's [Clean Code](https://www.amazon.com/Clean-Code-Handbook-Software-Craftsmanship/dp/0132350882) book
-and at least nominally try to follow some of the advice in there.
-
-  * Consider contacting some ARMI developers before embarking on a major new feature or development on the framework.
-    We may prefer to keep various physics or design-specific developments in modular plugins (which can also be
-    open source, of course!). The framework should be focused on frameworky stuff (broad, sharable stuff).
-    As the Framework matures, we hope it will stabilize, though we recognize we need work before then.
-  * We believe that comments can increase maintenance burdens and should only be used when one fails to explain
-    the entire situation with the code itself. In practice, we fail to do this all the time, and need comments
-    to help guide future readers of the code.
-  * Names //really// matter.
-  * Your PR will be reviewed and probably need some iteration. We aren't trying to be a pain or discourage you,
-    we just want to make sure the code is optimal.
+Also, please check out our (quick) synopsis on [good commit messages](https://terrapower.github.io/armi/developer/tooling.html#good-commit-messages).
 
 ## Licensing of Tools
 
-Be careful when including any dependency in ARMI (say in a requirements.txt file) not
+Be careful when including any dependency in ARMI (say in a `requirements.txt` file) not
 to include anything with a license that superceeds our Apache license. For instance,
 any third-party Python library included in ARMI with a GPL license will make the whole
 project fall under the GPL license. But a lot of potential users of ARMI will want to
@@ -70,8 +55,3 @@ keep some of their work private, so we can't allow any GPL tools.
 
 For that reason, it is generally considered best-practice in the ARMI ecosystem to
 only use third-party Python libraries that have MIT or BSD licenses.
-
-## Documentation
-
-We use Sphinx for our documentation, and numpydoc to parse docstrings into the API docs section of our documentation.
-Thus, all docstrings are officially part of the technical documentation and should be written as such.
