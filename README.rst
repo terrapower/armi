@@ -49,6 +49,8 @@ found in [#touranarmi]_.
      - https://github.com/terrapower/armi
    * - Documentation
      - https://terrapower.github.io/armi
+   * - First time contributor's guide
+     - https://github.com/terrapower/armi/blob/main/CONTRIBUTING.md
    * - Bug tracker
      - https://github.com/terrapower/armi/issues
    * - Plugin directory
