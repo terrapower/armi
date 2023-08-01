@@ -77,10 +77,7 @@ GridParameters = collections.namedtuple(
     ("unitSteps", "bounds", "unitStepLimits", "offset", "geomType", "symmetry"),
 )
 TAU = math.pi * 2.0
-BOUNDARY_0_DEGREES = 1
-BOUNDARY_60_DEGREES = 2
-BOUNDARY_120_DEGREES = 3
-BOUNDARY_CENTER = 4
+
 
 COS30 = math.sqrt(3) / 2.0
 SIN30 = 1.0 / 2.0
@@ -94,6 +91,13 @@ TRIANGLES_IN_HEXAGON = numpy.array(
         (+0, -1.0),
         (+COS30, -SIN30),
     ]
+)
+
+from .constants import (
+    BOUNDARY_CENTER,
+    BOUNDARY_0_DEGREES,
+    BOUNDARY_120_DEGREES,
+    BOUNDARY_60_DEGREES,
 )
 
 
