@@ -74,6 +74,7 @@ from .locations import (
     IndexLocation,
     MultiIndexLocation,
     CoordinateLocation,
+    addingIsValid,
 )
 
 from .grid import Grid, GridParameters, _tuplify
@@ -93,15 +94,3 @@ def locatorLabelToIndices(label: str) -> Tuple[int, int, Optional[int]]:
     if len(intVals) == 2:
         intVals = (intVals[0], intVals[1], None)
     return intVals
-
-
-def addingIsValid(myGrid, parentGrid):
-    """
-    True if adding a indices from one grid to another is considered valid.
-
-    In ARMI we allow the addition of a 1-D axial grid with a 2-D grid.
-    We do not allow any other kind of adding. This enables the 2D/1D
-    grid layout in Assemblies/Blocks but does not allow 2D indexing
-    in pins to become inconsistent.
-    """
-    return myGrid.isAxialOnly and not parentGrid.isAxialOnly
