@@ -1,23 +1,10 @@
-# Copyright 2023 TerraPower, LLC
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-import math
-from typing import Optional
+from math import sqrt
+from typing import Tuple, List, Optional
 
 import numpy
 
-from armi.utils import hexagon
 from armi.reactor import geometry
+from armi.utils import hexagon
 
 from .constants import (
     BOUNDARY_0_DEGREES,
@@ -25,10 +12,10 @@ from .constants import (
     BOUNDARY_60_DEGREES,
     BOUNDARY_CENTER,
 )
-from .locations import IndexLocation
-from .grid import Grid
+from .locations import IndexLocation, IJKType, IJType
+from .structuredgrid import StructuredGrid
 
-COS30 = math.sqrt(3) / 2.0
+COS30 = sqrt(3) / 2.0
 SIN30 = 1.0 / 2.0
 # going CCW from "position 1" (top right)
 TRIANGLES_IN_HEXAGON = numpy.array(
@@ -43,9 +30,14 @@ TRIANGLES_IN_HEXAGON = numpy.array(
 )
 
 
-class HexGrid(Grid):
+class HexGrid(StructuredGrid):
     """
     Has 6 neighbors in plane.
+
+    .. note::
+
+        It is recommended to use :meth:`fromPitch` rather than
+        calling the ``__init__`` constructor directly.
 
     Notes
     -----
@@ -97,7 +89,7 @@ class HexGrid(Grid):
         HexGrid
             A functional hexagonal grid object.
         """
-        side = pitch / math.sqrt(3.0)
+        side = hexagon.side(pitch)
         if pointedEndUp:
             # rotated 30 degrees CCW from normal
             # increases in i move you in x and y
@@ -120,7 +112,7 @@ class HexGrid(Grid):
         )
 
     @property
-    def pitch(self):
+    def pitch(self) -> float:
         """
         Get the hex-pitch of a regular hexagonal array.
 
@@ -131,7 +123,7 @@ class HexGrid(Grid):
         return self._unitSteps[1][1]
 
     @staticmethod
-    def indicesToRingPos(i, j):
+    def indicesToRingPos(i: int, j: int) -> Tuple[int, int]:
         """
         Convert spatialLocator indices to ring/position.
 
@@ -169,7 +161,7 @@ class HexGrid(Grid):
         positionBase = 1 + edge * (ring - 1)
         return ring, positionBase + offset
 
-    def getMinimumRings(self, n):
+    def getMinimumRings(self, n: int) -> int:
         """
         Return the minimum number of rings needed to fit ``n`` objects.
 
@@ -180,11 +172,15 @@ class HexGrid(Grid):
         """
         return hexagon.numRingsToHoldNumCells(n)
 
-    def getPositionsInRing(self, ring):
-        """Return the number of positions within a ring."""
+    def getPositionsInRing(self, ring: int) -> int:
+        """
+        Return the number of positions within a ring.
+        """
         return hexagon.numPositionsInRing(ring)
 
-    def getNeighboringCellIndices(self, i, j=0, k=0):
+    def getNeighboringCellIndices(
+        self, i: int, j: int = 0, k: int = 0
+    ) -> List[IJKType]:
         """
         Return the indices of the immediate neighbors of a mesh point in the plane.
 
@@ -210,9 +206,9 @@ class HexGrid(Grid):
         """
         ring, pos = self.getRingPos(indices)
         if len(indices) == 2:
-            return Grid.getLabel(self, (ring, pos))
+            return super().getLabel((ring, pos))
         else:
-            return Grid.getLabel(self, (ring, pos, indices[2]))
+            return super().getLabel((ring, pos, indices[2]))
 
     @staticmethod
     def _indicesAndEdgeFromRingAndPos(ring, position):
@@ -255,11 +251,11 @@ class HexGrid(Grid):
         return i, j, edge
 
     @staticmethod
-    def getIndicesFromRingAndPos(ring, pos):
+    def getIndicesFromRingAndPos(ring: int, pos: int) -> IJType:
         i, j, _edge = HexGrid._indicesAndEdgeFromRingAndPos(ring, pos)
         return i, j
 
-    def getRingPos(self, indices):
+    def getRingPos(self, indices: IJKType) -> Tuple[int, int]:
         """
         Get 1-based ring and position from normal indices.
 
@@ -268,17 +264,27 @@ class HexGrid(Grid):
         getIndicesFromRingAndPos : does the reverse
         """
         i, j = indices[:2]
-        return HexGrid.indicesToRingPos(i, j)
+        return self.indicesToRingPos(i, j)
 
-    def overlapsWhichSymmetryLine(self, indices):
+    def overlapsWhichSymmetryLine(self, indices: IJType) -> Optional[int]:
         """Return a list of which lines of symmetry this is on.
 
-        If none, returns []
-        If on a line of symmetry in 1/6 geometry, returns a list containing a 6.
-        If on a line of symmetry in 1/3 geometry, returns a list containing a 3.
-        Only the 1/3 core view geometry is actually coded in here right now.
+        Parameters
+        ----------
+        indices : tuple of [int, int]
+            Indices for the requested object
 
-        Being "on" a symmetry line means the line goes through the middle of you.
+        Returns
+        -------
+        None or int
+            None if not line of symmetry goes through the object at the
+            requested index. Otherwise, some grid constants like ``BOUNDARY_CENTER``
+            will be returned.
+
+        Notes
+        -----
+        - Only the 1/3 core view geometry is actually coded in here right now.
+        - Being "on" a symmetry line means the line goes through the middle of you.
 
         """
         i, j = indices[:2]
@@ -299,12 +305,12 @@ class HexGrid(Grid):
 
         return symmetryLine
 
-    def getSymmetricEquivalents(self, indices):
+    def getSymmetricEquivalents(self, indices: IJKType) -> List[IJType]:
         if (
             self.symmetry.domain == geometry.DomainType.THIRD_CORE
             and self.symmetry.boundary == geometry.BoundaryType.PERIODIC
         ):
-            return HexGrid._getSymmetricIdenticalsThird(indices)
+            return self._getSymmetricIdenticalsThird(indices)
         elif self.symmetry.domain == geometry.DomainType.FULL_CORE:
             return []
         else:
@@ -315,7 +321,7 @@ class HexGrid(Grid):
             )
 
     @staticmethod
-    def _getSymmetricIdenticalsThird(indices):
+    def _getSymmetricIdenticalsThird(indices) -> List[IJType]:
         """This works by rotating the indices by 120 degrees twice, counterclockwise."""
         i, j = indices[:2]
         if i == 0 and j == 0:
@@ -323,7 +329,7 @@ class HexGrid(Grid):
         identicals = [(-i - j, i), (j, -i - j)]
         return identicals
 
-    def triangleCoords(self, indices):
+    def triangleCoords(self, indices: IJKType) -> numpy.ndarray:
         """
         Return 6 coordinate pairs representing the centers of the 6 triangles in a hexagon centered here.
 
@@ -333,14 +339,14 @@ class HexGrid(Grid):
         scale = self.pitch / 3.0
         return xy + scale * TRIANGLES_IN_HEXAGON
 
-    def changePitch(self, newPitchCm):
+    def changePitch(self, newPitchCm: float):
         """Change the hex pitch."""
-        side = newPitchCm / math.sqrt(3.0)
+        side = hexagon.side(newPitchCm)
         self._unitSteps = numpy.array(
             ((1.5 * side, 0.0, 0.0), (newPitchCm / 2.0, newPitchCm, 0.0), (0, 0, 0))
         )[self._stepDims]
 
-    def locatorInDomain(self, locator, symmetryOverlap: Optional[bool] = False):
+    def locatorInDomain(self, locator, symmetryOverlap: Optional[bool] = False) -> bool:
         # This will include the "top" 120-degree symmetry lines. This is to support
         # adding of edge assemblies.
         if self.symmetry.domain == geometry.DomainType.THIRD_CORE:
@@ -348,7 +354,7 @@ class HexGrid(Grid):
         else:
             return True
 
-    def isInFirstThird(self, locator, includeTopEdge=False):
+    def isInFirstThird(self, locator, includeTopEdge=False) -> bool:
         """True if locator is in first third of hex grid."""
         ring, pos = self.getRingPos(locator.indices)
         if ring == 1:
@@ -367,7 +373,7 @@ class HexGrid(Grid):
             return True
         return False
 
-    def generateSortedHexLocationList(self, nLocs):
+    def generateSortedHexLocationList(self, nLocs: int):
         """
         Generate a list IndexLocations, sorted based on their distance from the center.
 
@@ -380,27 +386,27 @@ class HexGrid(Grid):
         nLocs = int(nLocs)  # need to make this an integer
 
         # next, generate a list of locations and corresponding distances
-        locs = []
+        locList = []
         for ring in range(1, hexagon.numRingsToHoldNumCells(nLocs) + 1):
             positions = self.getPositionsInRing(ring)
             for position in range(1, positions + 1):
                 i, j = self.getIndicesFromRingAndPos(ring, position)
-                locs.append(self[(i, j, 0)])
+                locList.append(self[(i, j, 0)])
         # round to avoid differences due to floating point math
-        locs.sort(
+        locList.sort(
             key=lambda loc: (
                 round(numpy.linalg.norm(loc.getGlobalCoordinates()), 6),
                 loc.i,  # loc.i=ring
                 loc.j,
             )
         )  # loc.j= pos
-        return locs[:nLocs]
+        return locList[:nLocs]
 
     # TODO: this is only used by testing and another method that just needs the count of assemblies
     #       in a ring, not the actual positions
     def allPositionsInThird(self, ring, includeEdgeAssems=False):
         """
-        Returns a list of all the positions in a ring (in the first third).
+        Returns a list of all the positions in a ring (in the first third)
 
         Parameters
         ----------

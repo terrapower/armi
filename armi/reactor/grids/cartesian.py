@@ -1,29 +1,22 @@
-# Copyright 2023 TerraPower, LLC
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
 import itertools
-from typing import Optional
+from typing import Optional, NoReturn, Tuple
 
 import numpy
 
 from armi.reactor import geometry
 
-from .grid import Grid
+from .locations import IJType
+from .structuredgrid import StructuredGrid
 
 
-class CartesianGrid(Grid):
+class CartesianGrid(StructuredGrid):
     """
-    Grid class representing a conformal Cartesian mesh.
+    Grid class representing a conformal Cartesian mesh
+
+    .. note::
+
+        It is recommended to call :meth:`fromRectangle` to construct,
+        rather than directly constructing with ``__init__``
 
     Notes
     -----
@@ -103,6 +96,17 @@ class CartesianGrid(Grid):
             symmetry=symmetry,
         )
 
+    def overlapsWhichSymmetryLine(self, indices: IJType) -> None:
+        """Return lines of symmetry position at a given index can be found
+
+        .. warning::
+
+            This is not really implemented, but parts of ARMI need it to
+            not fail, so it always returns None.
+
+        """
+        return None
+
     def getRingPos(self, indices):
         """
         Return ring and position from indices.
@@ -159,14 +163,14 @@ class CartesianGrid(Grid):
         return (int(ring) + 1, int(pos) + 1)
 
     @staticmethod
-    def getIndicesFromRingAndPos(ring, pos):
+    def getIndicesFromRingAndPos(ring: int, pos: int) -> NoReturn:
         """Not implemented for Cartesian-see getRingPos notes."""
         raise NotImplementedError(
             "Cartesian should not need need ring/pos, use i, j indices."
             "See getRingPos doc string notes for more information/example."
         )
 
-    def getMinimumRings(self, n):
+    def getMinimumRings(self, n: int) -> int:
         """Return the minimum number of rings needed to fit ``n`` objects."""
         numPositions = 0
         ring = 0
@@ -178,9 +182,14 @@ class CartesianGrid(Grid):
 
         return ring
 
-    def getPositionsInRing(self, ring):
+    def getPositionsInRing(self, ring: int) -> int:
         """
         Return the number of positions within a ring.
+
+        Parameters
+        ----------
+        ring : int
+            Ring in question
 
         Notes
         -----
@@ -204,7 +213,7 @@ class CartesianGrid(Grid):
         else:
             return True
 
-    def changePitch(self, xw, yw):
+    def changePitch(self, xw: float, yw: float):
         """
         Change the pitch of a Cartesian grid.
 
@@ -278,3 +287,20 @@ class CartesianGrid(Grid):
     def _isThroughCenter(self):
         """Return whether the central cells are split through the middle for symmetry."""
         return all(self._offset == [0, 0, 0])
+
+    @property
+    def pitch(self) -> Tuple[float, float]:
+        """Grid pitch in the x and y dimension
+
+        Returns
+        -------
+        float
+            x-pitch (cm)
+        float
+            y-pitch (cm)
+
+        """
+        pitch = (self._unitSteps[0][0], self._unitSteps[1][1])
+        if pitch[0] == 0:
+            raise ValueError(f"Grid {self} does not have a defined pitch.")
+        return pitch

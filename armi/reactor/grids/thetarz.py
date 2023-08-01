@@ -1,32 +1,29 @@
-# Copyright 2023 TerraPower, LLC
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
 import math
-from typing import Optional
+from typing import TYPE_CHECKING, Optional, NoReturn
 
 import numpy
 
-from .grid import Grid
+from .locations import IJType, IJKType
+from .structuredgrid import StructuredGrid
 
-TAU = math.pi * 2.0
+if TYPE_CHECKING:
+    # Avoid circular imports
+    from armi.reactor.composites import ArmiObject
+
+TAU = math.tau
 
 
-class ThetaRZGrid(Grid):
+class ThetaRZGrid(StructuredGrid):
     """
     A grid characterized by azimuthal, radial, and zeta indices.
 
     The angular meshes are limited to 0 to 2pi radians. R and Zeta are as in other
     meshes.
+
+    .. note::
+
+        It is recommended to call :meth:`fromGeom` to construct,
+        rather than directly constructing with ``__init__``
 
     See Figure 2.2 in Derstine 1984, ANL. [DIF3D]_.
 
@@ -35,8 +32,13 @@ class ThetaRZGrid(Grid):
        :links: REQ_REACTOR_MESH
     """
 
-    @staticmethod
-    def fromGeom(geom, armiObject=None):
+    def getSymmetricEquivalents(self, indices: IJType) -> NoReturn:
+        raise NotImplementedError(
+            f"{self.__class__.__name__} does not support symmetric equivalents"
+        )
+
+    @classmethod
+    def fromGeom(cls, geom, armiObject: Optional["ArmiObject"] = None) -> "ThetaRZGrid":
         """
         Build 2-D R-theta grid based on a Geometry object.
 
@@ -77,11 +79,13 @@ class ThetaRZGrid(Grid):
         return (indices[1] + 1, indices[0] + 1)
 
     @staticmethod
-    def getIndicesFromRingAndPos(ring, pos):
+    def getIndicesFromRingAndPos(ring: int, pos: int) -> IJType:
         return (pos - 1, ring - 1)
 
-    def getCoordinates(self, indices, nativeCoords=False):
-        meshCoords = theta, r, z = Grid.getCoordinates(self, indices)
+    def getCoordinates(self, indices, nativeCoords=False) -> numpy.ndarray:
+        meshCoords = theta, r, z = super().getCoordinates(
+            indices, nativeCoords=nativeCoords
+        )
         if not 0 <= theta <= TAU:
             raise ValueError("Invalid theta value: {}. Check mesh.".format(theta))
         if nativeCoords:
@@ -91,7 +95,14 @@ class ThetaRZGrid(Grid):
             # return x, y ,z
             return numpy.array((r * math.cos(theta), r * math.sin(theta), z))
 
-    def indicesOfBounds(self, rad0, rad1, theta0, theta1, sigma=1e-4):
+    def indicesOfBounds(
+        self,
+        rad0: float,
+        rad1: float,
+        theta0: float,
+        theta1: float,
+        sigma: float = 1e-4,
+    ) -> IJKType:
         """
         Return indices corresponding to upper and lower radial and theta bounds.
 
@@ -118,9 +129,26 @@ class ThetaRZGrid(Grid):
 
         return (i, j, 0)
 
-    def locatorInDomain(self, locator, symmetryOverlap: Optional[bool] = False):
+    @staticmethod
+    def locatorInDomain(*args, **kwargs) -> bool:
         """
         ThetaRZGrids do not check for bounds, though they could if that becomes a
         problem.
         """
         return True
+
+    @staticmethod
+    def getMinimumRings(n: int) -> NoReturn:
+        raise NotImplementedError
+
+    @staticmethod
+    def getPositionsInRing(ring: int) -> NoReturn:
+        raise NotImplementedError
+
+    @staticmethod
+    def overlapsWhichSymmetryLine(indices: IJType) -> None:
+        return None
+
+    @staticmethod
+    def pitch() -> NoReturn:
+        raise NotImplementedError()

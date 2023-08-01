@@ -1,14 +1,16 @@
-from typing import Optional, TYPE_CHECKING
+from typing import List, Optional, TYPE_CHECKING, NoReturn
+import warnings
 
 import numpy
 
-from .grid import Grid
+from .locations import IJType, LocationBase
+from .structuredgrid import StructuredGrid
 
 if TYPE_CHECKING:
     from armi.reactor.composites import ArmiObject
 
 
-class AxialGrid(Grid):
+class AxialGrid(StructuredGrid):
     """1-D grid in the k-direction (z)
 
     .. note:::
@@ -34,6 +36,43 @@ class AxialGrid(Grid):
             armiObject=armiObject,
         )
 
+    @staticmethod
+    def getSymmetricEquivalents(indices: IJType) -> List[IJType]:
+        return []
+
+    @staticmethod
+    def locatorInDomain(
+        locator: LocationBase, symmetryOverlap: Optional[bool] = False
+    ) -> NoReturn:
+        raise NotImplementedError
+
+    @staticmethod
+    def getIndicesFromRingAndPos(ring: int, pos: int) -> NoReturn:
+        raise NotImplementedError
+
+    @staticmethod
+    def getMinimumRings(n: int) -> NoReturn:
+        raise NotImplementedError
+
+    @staticmethod
+    def getPositionsInRing(ring: int) -> NoReturn:
+        raise NotImplementedError
+
+    @staticmethod
+    def overlapsWhichSymmetryLine(indices: IJType) -> None:
+        return None
+
+    @property
+    def pitch(self) -> float:
+        """Grid spacing in the z-direction
+
+        Returns
+        -------
+        float
+            Pitch in cm
+
+        """
+
 
 def axialUnitGrid(
     numCells: int, armiObject: Optional["ArmiObject"] = None
@@ -46,4 +85,9 @@ def axialUnitGrid(
         Use :class:`AxialUnitGrid` class instead
 
     """
+    warnings.warn(
+        "Use grids.AxialGrid class rather than function",
+        PendingDeprecationWarning,
+        stacklevel=2,
+    )
     return AxialGrid.fromNCells(numCells, armiObject)

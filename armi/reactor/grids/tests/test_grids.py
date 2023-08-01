@@ -1,4 +1,4 @@
-# Copyright 2019 TerraPower, LLC
+# Copyright 2023 TerraPower, LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,14 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for grids."""
+"""Tests for grids"""
+# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-self-use,attribute-defined-outside-init
 from io import BytesIO
 import math
 import unittest
 import pickle
 
-from numpy.testing import assert_allclose, assert_array_equal
 import numpy
+from numpy.testing import assert_allclose, assert_array_equal
 
 from armi.reactor import geometry
 from armi.reactor import grids
@@ -49,6 +50,25 @@ class MockArmiObject:
         self.parent = parent
 
 
+class MockStructuredGrid(grids.StructuredGrid):
+    """Need a concrete class to test a lot of inherited methods
+
+    Abstract methods from the parent now raise ``NotImplementedError``
+    """
+
+
+# De-abstract the mock structured grid to test some basic
+# properties, but let the abstract methods error
+def _throwsNotImplemented(*args, **kwargs):
+    raise NotImplementedError
+
+
+for f in MockStructuredGrid.__abstractmethods__:
+    setattr(MockStructuredGrid, f, _throwsNotImplemented)
+
+MockStructuredGrid.__abstractmethods__ = ()
+
+
 class TestSpatialLocator(unittest.TestCase):
     def test_add(self):
         loc1 = grids.IndexLocation(1, 2, 0, None)
@@ -68,13 +88,12 @@ class TestSpatialLocator(unittest.TestCase):
         block = MockArmiObject(assem)
 
         # build meshes just like how they're used on a regular system.
-        coreGrid = grids.CartesianGrid.fromRectangle(
-            1.0, 1.0, armiObject=core
-        )  # 2-D grid
+        # 2-D grid
+        coreGrid = grids.CartesianGrid.fromRectangle(1.0, 1.0, armiObject=core)
+
         # 1-D z-mesh
-        assemblyGrid = grids.Grid(
-            bounds=(None, None, numpy.arange(5)), armiObject=assem
-        )
+        assemblyGrid = grids.AxialGrid.fromNCells(5, armiObject=assem)
+
         # pins sit in this 2-D grid.
         blockGrid = grids.CartesianGrid.fromRectangle(0.1, 0.1, armiObject=block)
 
@@ -115,9 +134,7 @@ class TestSpatialLocator(unittest.TestCase):
         # 2-D grid
         coreGrid = grids.CartesianGrid.fromRectangle(1.0, 1.0, armiObject=core)
         # 1-D z-mesh
-        assemblyGrid = grids.Grid(
-            bounds=(None, None, numpy.arange(5)), armiObject=assem
-        )
+        assemblyGrid = grids.AxialGrid.fromNCells(5, armiObject=assem)
         # pins sit in this 2-D grid.
         blockGrid = grids.CartesianGrid.fromRectangle(0.1, 0.1, armiObject=block)
 
@@ -142,19 +159,25 @@ class TestGrid(unittest.TestCase):
 
         Full core Cartesian meshes will want to be shifted to bottom left of 0th cell.
         """
-        grid = grids.Grid(unitSteps=((1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0)))
+        grid = MockStructuredGrid(
+            unitSteps=((1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0))
+        )
         assert_allclose(grid.getCoordinates((1, 1, 1)), (1, 1, 1))
         assert_allclose(grid.getCoordinates((0, 0, 0)), (0.0, 0.0, 0.0))
         assert_allclose(grid.getCoordinates((0, 0, -1)), (0, 0, -1))
         assert_allclose(grid.getCoordinates((1, 0, 0)), (1, 0, 0))
 
     def test_neighbors(self):
-        grid = grids.Grid(unitSteps=((1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0)))
+        grid = MockStructuredGrid(
+            unitSteps=((1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0))
+        )
         neighbs = grid.getNeighboringCellIndices(0, 0, 0)
         self.assertEqual(len(neighbs), 4)
 
     def test_label(self):
-        grid = grids.Grid(unitSteps=((1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0)))
+        grid = MockStructuredGrid(
+            unitSteps=((1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0))
+        )
         self.assertEqual(grid.getLabel((1, 1, 2)), "001-001-002")
 
     def test_isAxialOnly(self):
@@ -190,7 +213,7 @@ class TestGrid(unittest.TestCase):
 
 
 class TestHexGrid(unittest.TestCase):
-    """A set of tests for the Hexagonal Grid.
+    """A set of tests for the Hexagonal Grid
 
     .. test: Tests of the Hexagonal grid.
        :id: TEST_REACTOR_MESH_0
@@ -431,27 +454,33 @@ class TestHexGrid(unittest.TestCase):
 
 class TestBoundsDefinedGrid(unittest.TestCase):
     def test_positions(self):
-        grid = grids.Grid(bounds=([0, 1, 2, 3, 4], [0, 10, 20, 50], [0, 20, 60, 90]))
+        grid = MockStructuredGrid(
+            bounds=([0, 1, 2, 3, 4], [0, 10, 20, 50], [0, 20, 60, 90])
+        )
         assert_allclose(grid.getCoordinates((1, 1, 1)), (1.5, 15.0, 40.0))
 
     def test_base(self):
-        grid = grids.Grid(bounds=([0, 1, 2, 3, 4], [0, 10, 20, 50], [0, 20, 60, 90]))
+        grid = MockStructuredGrid(
+            bounds=([0, 1, 2, 3, 4], [0, 10, 20, 50], [0, 20, 60, 90])
+        )
         assert_allclose(grid.getCellBase((1, 1, 1)), (1.0, 10.0, 20.0))
 
     def test_positionsMixedDefinition(self):
-        grid = grids.Grid(
+        grid = MockStructuredGrid(
             unitSteps=((1.0, 0.0), (0.0, 1.0)), bounds=(None, None, [0, 20, 60, 90])
         )
         assert_allclose(grid.getCoordinates((1, 1, 1)), (1, 1, 40.0))
 
     def test_getIndexBounds(self):
-        grid = grids.Grid(bounds=([0, 1, 2, 3, 4], [0, 10, 20, 50], [0, 20, 60, 90]))
+        grid = MockStructuredGrid(
+            bounds=([0, 1, 2, 3, 4], [0, 10, 20, 50], [0, 20, 60, 90])
+        )
         boundsIJK = grid.getIndexBounds()
         self.assertEqual(boundsIJK, ((0, 5), (0, 4), (0, 4)))
 
 
 class TestThetaRZGrid(unittest.TestCase):
-    """A set of tests for the RZTheta Grid.
+    """A set of tests for the RZTheta Grid
 
     .. test: Tests of the RZTheta grid.
        :id: TEST_REACTOR_MESH_1
@@ -474,7 +503,7 @@ class TestThetaRZGrid(unittest.TestCase):
 
 
 class TestCartesianGrid(unittest.TestCase):
-    """A set of tests for the Cartesian Grid.
+    """A set of tests for the Cartesian Grid
 
     .. test: Tests of the Cartesian grid.
        :id: TEST_REACTOR_MESH_2
@@ -677,3 +706,8 @@ class TestAxialGrid(unittest.TestCase):
             self.assertEqual(x, 0.0)
             self.assertEqual(y, 0.0)
             self.assertEqual(z, count + 0.5)
+
+
+if __name__ == "__main__":
+    # import sys;sys.argv = ["", "TestHexGrid.testPositions"]
+    unittest.main()

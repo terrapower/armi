@@ -77,7 +77,8 @@ from .locations import (
     addingIsValid,
 )
 
-from .grid import Grid, GridParameters, _tuplify
+from .grid import Grid
+from .structuredgrid import StructuredGrid, GridParameters, _tuplify
 from .axial import AxialGrid, axialUnitGrid
 from .cartesian import CartesianGrid
 from .hexagonal import HexGrid, COS30, SIN30, TRIANGLES_IN_HEXAGON
