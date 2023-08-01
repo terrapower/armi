@@ -88,6 +88,15 @@ class TestRunLog(unittest.TestCase):
         self.assertIn("Hello", streamVal, msg=streamVal)
         self.assertIn("world", streamVal, msg=streamVal)
 
+    def test_getWhiteSpace(self):
+        log = runLog._RunLog(0)
+        space0 = len(log.getWhiteSpace(0))
+        space1 = len(log.getWhiteSpace(1))
+        space9 = len(log.getWhiteSpace(9))
+
+        self.assertGreater(space1, space0)
+        self.assertEqual(space1, space9)
+
     def test_warningReport(self):
         """A simple test of the warning tracking and reporting logic."""
         # create the logger and do some logging
@@ -124,6 +133,10 @@ class TestRunLog(unittest.TestCase):
         self.assertIn("Final Warning Count", streamVal, msg=streamVal)
         self.assertNotIn("invisible", streamVal, msg=streamVal)
         self.assertEqual(streamVal.count("test_warningReport"), 2, msg=streamVal)
+
+        # bonus check: edge case in duplicates filter
+        log.logger = None
+        self.assertIsNone(log.getDuplicatesFilter())
 
     def test_warningReportInvalid(self):
         """A test of warningReport in an invalid situation."""
