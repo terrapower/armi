@@ -50,7 +50,7 @@ found in [#touranarmi]_.
    * - Documentation
      - https://terrapower.github.io/armi
    * - First time contributor's guide
-     - https://github.com/terrapower/armi/blob/main/CONTRIBUTING.md
+     - https://terrapower.github.io/armi/developer/first_time_contributors.html
    * - Bug tracker
      - https://github.com/terrapower/armi/issues
    * - Plugin directory
