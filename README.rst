@@ -60,7 +60,7 @@ found in [#touranarmi]_.
 
 Quick start
 -----------
-Before starting, you need to have `Python <https://www.python.org/downloads/>`_ 3.7+ on
+Before starting, you need to have `Python <https://www.python.org/downloads/>`_ 3.9+ on
 Windows or Linux.
 
 Get the ARMI code, install the prerequisites, and fire up the launcher with the following
@@ -84,6 +84,11 @@ and then run::
 
 This runs the unit tests in parallel on 6 processes. Omit the ``-n 6`` argument
 to run on a single process.
+
+Though the tests can also be run directly, using ``pytest``::
+
+    $ pip3 install -r requirements-testing.txt
+    $ pytest -n 4 armi
 
 From here, we recommend going through a few of our `gallery examples
 <https://terrapower.github.io/armi/gallery/index.html>`_ and
