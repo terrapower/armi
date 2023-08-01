@@ -18,7 +18,7 @@ import math
 import unittest
 import pickle
 
-from numpy.testing import assert_allclose
+from numpy.testing import assert_allclose, assert_array_equal
 import numpy
 
 from armi.reactor import geometry
@@ -161,7 +161,7 @@ class TestGrid(unittest.TestCase):
         grid = grids.HexGrid.fromPitch(1.0, numRings=3)
         self.assertEqual(grid.isAxialOnly, False)
 
-        grid2 = grids.axialUnitGrid(10)
+        grid2 = grids.AxialGrid.fromNCells(10)
         self.assertEqual(grid2.isAxialOnly, True)
 
     def test_lookupFactory(self):
@@ -368,7 +368,7 @@ class TestHexGrid(unittest.TestCase):
         # this is actually ok because step-defined grids are infinite
         self.assertEqual(grid.getCoordinates((-100, 2000, 5))[2], 0.0)
 
-        grid = grids.axialUnitGrid(10)
+        grid = grids.AxialGrid.fromNCells(10)
         with self.assertRaises(IndexError):
             grid.getCoordinates((0, 5, -1))
 
@@ -657,3 +657,23 @@ class TestCartesianGrid(unittest.TestCase):
         )
         with self.assertRaises(NotImplementedError):
             grid.getSymmetricEquivalents((5, 6))
+
+
+class TestAxialGrid(unittest.TestCase):
+    def test_simpleBounds(self):
+        N_CELLS = 5
+        g = grids.AxialGrid.fromNCells(N_CELLS)
+        _x, _y, z = g.getBounds()
+        self.assertEqual(len(z), N_CELLS + 1)
+        assert_array_equal(z, [0, 1, 2, 3, 4, 5])
+        self.assertTrue(g.isAxialOnly)
+
+    def test_getLocations(self):
+        N_CELLS = 10
+        g = grids.AxialGrid.fromNCells(N_CELLS)
+        for count in range(N_CELLS):
+            index = g[(0, 0, count)]
+            x, y, z = index.getLocalCoordinates()
+            self.assertEqual(x, 0.0)
+            self.assertEqual(y, 0.0)
+            self.assertEqual(z, count + 0.5)

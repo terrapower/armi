@@ -62,8 +62,6 @@ current grid.
 """
 from typing import Tuple, Optional
 
-import numpy
-
 from .constants import (
     BOUNDARY_CENTER,
     BOUNDARY_0_DEGREES,
@@ -79,23 +77,10 @@ from .locations import (
 )
 
 from .grid import Grid, GridParameters, _tuplify
+from .axial import AxialGrid, axialUnitGrid
 from .cartesian import CartesianGrid
 from .hexagonal import HexGrid, COS30, SIN30, TRIANGLES_IN_HEXAGON
 from .thetarz import ThetaRZGrid, TAU
-
-
-def axialUnitGrid(numCells, armiObject=None):
-    """
-    Build a 1-D unit grid in the k-direction based on a number of times. Each mesh is 1cm wide.
-
-    numCells + 1 mesh boundaries are added, since one block would require a bottom and a
-    top.
-    """
-    # need float bounds or else we truncate integers
-    return Grid(
-        bounds=(None, None, numpy.arange(numCells + 1, dtype=numpy.float64)),
-        armiObject=armiObject,
-    )
 
 
 def locatorLabelToIndices(label: str) -> Tuple[int, int, Optional[int]]:
