@@ -254,7 +254,8 @@ class Parameter:
         # TODO: This warning is temporary. At some point, it will become an AssertionError.
         if not len(description):
             runLog.warning(
-                f"DeprecationWarning: Parameter {name} defined without description."
+                f"DeprecationWarning: Parameter {name} defined without description.",
+                single=True,
             )
         self.collectionType = _Undefined
         self.name = name
