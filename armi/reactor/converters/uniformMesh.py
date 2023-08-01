@@ -1328,7 +1328,7 @@ class ParamMapper:
         for paramName in paramNames:
             val = block.p[paramName]
             # list-like should be treated as a numpy array
-            if isinstance(val, (tuple, range, list, numpy.ndarray)):
+            if isinstance(val, (tuple, list, numpy.ndarray)):
                 paramVals.append(numpy.array(val) if len(val) > 0 else None)
             else:
                 paramVals.append(val)

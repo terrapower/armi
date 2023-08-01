@@ -70,7 +70,7 @@ class Category:
     * `gamma` parameters are calculated in a fixed-source gamma solve
     * `detailedAxialExpansion` parameters are marked as such so that they are mapped from the uniform mesh back to the non-uniform mesh
     * `reactivity coefficients` parameters are related to reactivity coefficient or kinetics parameters for kinetics solutions
-    * `thermal hydarulics` parameters come from a thermal hydraulics phyiscs plugin (e.g., flow rates, temperatures, etc.)
+    * `thermal hydraulics` parameters come from a thermal hydraulics physics plugin (e.g., flow rates, temperatures, etc.)
     """
 
     depletion = "depletion"
