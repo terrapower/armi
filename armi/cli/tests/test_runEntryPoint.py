@@ -224,10 +224,16 @@ class TestExtractInputs(unittest.TestCase):
     def test_extractInputsBasics(self):
         ei = ExtractInputs()
         ei.addOptions()
-        ei.parse_args(["/path/to/fake.h5"])
+        ei.parse_args(["/path/to/fake"])
 
         self.assertEqual(ei.name, "extract-inputs")
         self.assertEqual(ei.args.output_base, "/path/to/fake")
+
+        with mockRunLogs.BufferLog() as mock:
+            self.assertEqual("", mock.getStdout())
+            with self.assertRaises(FileNotFoundError):
+                # The "fake" file doesn't exist, so this should fail.
+                ei.invoke()
 
 
 class TestInjectInputs(unittest.TestCase):
@@ -238,6 +244,32 @@ class TestInjectInputs(unittest.TestCase):
 
         self.assertEqual(ii.name, "inject-inputs")
         self.assertIsNone(ii.args.blueprints)
+
+    def test_injectInputsInvokeIgnore(self):
+        ii = InjectInputs()
+        ii.addOptions()
+        ii.parse_args(["/path/to/fake.h5"])
+
+        with mockRunLogs.BufferLog() as mock:
+            self.assertEqual("", mock.getStdout())
+            ii.invoke()
+            self.assertIn("No settings", mock.getStdout())
+
+    def test_injectInputsInvokeNoData(self):
+        with TemporaryDirectoryChanger():
+            # init CLI
+            ii = InjectInputs()
+            ii.addOptions()
+
+            bp = os.path.join(TEST_ROOT, "refSmallReactor.yaml")
+            ii.parse_args(["/path/to/fake.h5", "--blueprints", bp])
+
+            # invoke and check log
+            with mockRunLogs.BufferLog() as mock:
+                self.assertEqual("", mock.getStdout())
+                with self.assertRaises(FileNotFoundError):
+                    # The "fake.h5" doesn't exist, so this should fail.
+                    ii.invoke()
 
 
 class TestMigrateInputs(unittest.TestCase):
@@ -287,10 +319,16 @@ class TestReportsEntryPoint(unittest.TestCase):
     def test_reportsEntryPointBasics(self):
         rep = ReportsEntryPoint()
         rep.addOptions()
-        rep.parse_args(["-h5db", "/path/to/fake.yaml"])
+        rep.parse_args(["-h5db", "/path/to/fake.h5"])
 
         self.assertEqual(rep.name, "report")
         self.assertEqual(rep.settingsArgument, "optional")
+
+        with mockRunLogs.BufferLog() as mock:
+            self.assertEqual("", mock.getStdout())
+            with self.assertRaises(ValueError):
+                # The "fake.h5" doesn't exist, so this should fail.
+                rep.invoke()
 
 
 class TestCompareIsotxsLibsEntryPoint(unittest.TestCase):
