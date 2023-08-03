@@ -568,11 +568,7 @@ class AssemblyAxialLinkage:
         linked : bool
             status is componentA and componentB are axially linked to one another
         """
-        if (
-            componentA.containsSolidMaterial()
-            and componentB.containsSolidMaterial()
-            and isinstance(componentA, type(componentB))
-        ):
+        if isinstance(componentA, type(componentB)):
             if isinstance(componentA, UnshapedComponent):
                 ## Case 1 -- see docstring
                 runLog.warning(
