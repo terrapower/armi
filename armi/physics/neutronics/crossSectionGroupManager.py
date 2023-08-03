@@ -319,7 +319,17 @@ class AverageBlockCollection(BlockCollection):
         newBlock = self._getNewBlock()
         lfpCollection = self._getAverageFuelLFP()
         newBlock.setLumpedFissionProducts(lfpCollection)
-        newBlock.setNumberDensities(self._getAverageNumberDensities())
+        # check if components are similar
+        if self._checkBlockSimilarity():
+            # set number densities on a component basis
+            for compIndex, c in enumerate(sorted(newBlock.getComponents())):
+                c.setNumberDensities(
+                    self._getAverageComponentNumberDensities(compIndex)
+                )
+        else:
+            # components differ; need to smear densities over the block
+            newBlock.setNumberDensities(self._getAverageNumberDensities())
+
         newBlock.p.percentBu = self._calcWeightedBurnup()
         self.calcAvgNuclideTemperatures()
         return newBlock
@@ -358,6 +368,41 @@ class AverageBlockCollection(BlockCollection):
             nvt += nvtBlock * wt
             nv += nvBlock * wt
         return nvt, nv
+
+    def _getAverageComponentNumberDensities(self, compIndex):
+        """
+        Get weighted average number densities of a component the collection.
+
+        Returns
+        -------
+        numberDensities : dict
+            nucName, ndens data (atoms/bn-cm)
+        """
+        nuclides = self.allNuclidesInProblem
+        blocks = self.getCandidateBlocks()
+        weights = numpy.array([self.getWeight(b) for b in blocks])
+        weights /= weights.sum()  # normalize by total weight
+        components = [sorted(b.getComponents())[compIndex] for b in blocks]
+        ndens = weights.dot([c.getNuclideNumberDensities(nuclides) for c in components])
+        return dict(zip(nuclides, ndens))
+
+    def _checkBlockSimilarity(self):
+        cFlags = dict()
+        for b in self.getCandidateBlocks():
+            cFlags[b] = [c.p.flags for c in sorted(b.getComponents())]
+        refB = b
+        refFlags = cFlags[refB]
+        for b, compFlags in cFlags.items():
+            for c, refC in zip(compFlags, refFlags):
+                if c != refC:
+                    runLog.warning(
+                        "Non-matching block in verageBlockCollection!"
+                        f"{refC} component flags in {refB} does not match {c} in {b}."
+                        f"Number densities will be smeared in representative block."
+                    )
+                    return False
+        else:
+            return True
 
 
 def getBlockNuclideTemperatureAvgTerms(block, allNucNames):
