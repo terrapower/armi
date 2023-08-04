@@ -215,7 +215,6 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
         self.inertNuclides = ordered_set.OrderedSet()
         self.nucsToForceInXsGen = ordered_set.OrderedSet()
         self.elementsToExpand = []
-
         return self
 
     def __init__(self):
