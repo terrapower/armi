@@ -13,6 +13,7 @@
 # limitations under the License.
 """Enable component-wise axial expansion for assemblies and/or a reactor."""
 
+import collections
 from statistics import mean
 from typing import List
 
@@ -283,9 +284,13 @@ class AxialExpansionChanger:
                     if ib == 0:
                         c.zbottom = 0.0
                     else:
-                        if self.linked.linkedComponents[c][0] is not None:
+                        if self.linked.linkedComponents[c][0]:
                             # use linked components below
-                            c.zbottom = self.linked.linkedComponents[c][0].ztop
+                            linkedComponent = self.determineLinkedComponent(
+                                self.linked.a[ib - 1],
+                                self.linked.linkedComponents[c][0],
+                            )
+                            c.zbottom = linkedComponent.ztop
                         else:
                             # otherwise there aren't any linked components
                             # so just set the bottom of the component to
@@ -318,6 +323,32 @@ class AxialExpansionChanger:
         bounds = list(self.linked.a.spatialGrid._bounds)
         bounds[2] = array(mesh)
         self.linked.a.spatialGrid._bounds = tuple(bounds)
+
+    def determineLinkedComponent(self, bBelow, linkedComponents):
+        """Determine the linked component."""
+        linked = None
+        if len(linkedComponents) == 1:
+            # easy case, just pull the linked component
+            linked = linkedComponents[0]
+        else:
+            # get target component from block below
+            for cBelow in getSolidComponents(bBelow):
+                if self.expansionData.isTargetComponent(cBelow):
+                    targetIndices = [
+                        list(index) for index in cBelow.spatialLocator.indices
+                    ]
+                    break
+            # loop over the linked components and see which shares spatial locator indices with targetIndices
+            for c in linkedComponents:
+                componentIndices = [list(index) for index in c.spatialLocator.indices]
+                if all(index in targetIndices for index in componentIndices):
+                    linked = c
+                    break
+
+        if linked is None:
+            raise RuntimeError("Can't match with the target component!")
+
+        return linked
 
     def manageCoreMesh(self, r):
         """Manage core mesh post assembly-level expansion.
@@ -481,63 +512,23 @@ class AssemblyAxialLinkage:
         RuntimeError
             multiple candidate components are found to be axially linked to a component
         """
-        lstLinkedC = [None, None]
+        self.linkedComponents[c] = collections.defaultdict(list)
         for ib, linkdBlk in enumerate(self.linkedBlocks[b]):
             if linkdBlk is not None:
                 for otherC in getSolidComponents(linkdBlk.getChildren()):
                     if AssemblyAxialLinkage._determineLinked(c, otherC):
-                        if lstLinkedC[ib] is not None:
-                            lstLinkedC[ib] = self._resolveMultipleLinkage(
-                                c, otherC, lstLinkedC[ib]
-                            )
-                            continue
-                        lstLinkedC[ib] = otherC
+                        self.linkedComponents[c][ib].append(otherC)
 
-        self.linkedComponents[c] = lstLinkedC
-
-        if lstLinkedC[0] is None:
+        if not self.linkedComponents[c][0]:
             runLog.debug(
                 f"Assembly {self.a}, Block {b}, Component {c} has nothing linked below it!",
                 single=True,
             )
-        if lstLinkedC[1] is None:
+        if not self.linkedComponents[c][1]:
             runLog.debug(
                 f"Assembly {self.a}, Block {b}, Component {c} has nothing linked above it!",
                 single=True,
             )
-
-    def _resolveMultipleLinkage(self, primary, candidate1, candidate2):
-        """Use c.spatialLocator.indices to determine the proper linkage with primary."""
-        errMsg = (
-            "Multiple component axial linkages have been found for\n"
-            f"Component {primary}\nBlock {primary.parent}\nAssembly {self.a}.\n"
-            "This is indicative of an error in the blueprints and the correct use of block "
-            "grids should resolve this issue. Candidate components for linking:\n"
-            f"Primary: {primary}\nCandidates: {candidate1}, {candidate2}"
-        )
-        if (
-            isinstance(primary.spatialLocator, CoordinateLocation)
-            and isinstance(candidate1.spatialLocator, CoordinateLocation)
-            and isinstance(candidate2.spatialLocator, CoordinateLocation)
-        ):
-            runLog.error(msg=errMsg)
-            raise RuntimeError(errMsg)
-
-        priIndices: List[int] = primary.spatialLocator.indices[0]
-        cand1Indices: List[int] = candidate1.spatialLocator.indices[0]
-        cand2Indices: List[int] = candidate2.spatialLocator.indices[0]
-        chooseC1: bool = False
-        chooseC2: bool = False
-        if (priIndices == cand1Indices).all():
-            chooseC1 = True
-        if (priIndices == cand2Indices).all():
-            chooseC2 = True
-        if (chooseC1 and chooseC2) or (chooseC1 is False and chooseC2 is False):
-            # if both True, candidate1 and candidate2 are in the same grid location (unphysical)
-            # if both false, candidate1 and candidate2 are not in the correct grid location (linking is impossible)
-            runLog.error(msg=errMsg)
-            raise RuntimeError(errMsg)
-        return candidate1 if chooseC1 else candidate2
 
     @staticmethod
     def _determineLinked(componentA, componentB) -> bool:
