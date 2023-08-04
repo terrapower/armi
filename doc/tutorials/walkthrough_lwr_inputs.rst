@@ -104,12 +104,11 @@ to what we did in the SFR tutorial. There are three distinct assembly definition
 
 The Systems definition
 ----------------------
-This problem only considers a core and spent fuel pool. If pumps, heat exchangers, 
-etc. were to be modeled, they would be here alongside the core and SFP. We also 
-anchor the core at the global coordinates (0,0,0). If we wanted the core at some 
-other elevation, we could adjust that here. The spatial location of the Spent Fuel 
-Pool is not particularly important, but here it is set to be 1000 cm away from the 
-core along the x-axis.
+This problem only considers a core, so we will only have a core system in this
+problem. If pumps, heat exchangers, spent fuel pools, etc were to be modeled,
+they would be here alongside the core. We also anchor the core at the global
+coordinates (0,0,0). If we wanted the core at some other elevation, we could
+adjust that here.
 
 .. literalinclude:: ../../armi/tests/tutorials/c5g7-blueprints.yaml
     :language: yaml
