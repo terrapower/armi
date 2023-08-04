@@ -415,22 +415,27 @@ def getBlockNuclideTemperatureAvgTerms(block, allNucNames):
     as trace values at the proper component temperatures.
     """
 
-    def getNumberDensityWithTrace(component, nucName):
-        # needed to make sure temperature of 0-density nuclides in fuel get fuel temperature
-        try:
-            dens = component.p.numberDensities[nucName] or TRACE_NUMBER_DENSITY
-        except KeyError:
-            dens = 0.0
-        return dens
+    def getNumberDensitiesWithTrace(component, allNucNames):
+        """
+        Needed to make sure temperature of 0-density nuclides in fuel get fuel temperature
+        """
+        if component.hasFlags(Flags.DEPLETABLE):
+            traceDens = TRACE_NUMBER_DENSITY
+        else:
+            traceDens = 0.0
+
+        return [
+            component.p.numberDensities[nucName] or traceDens
+            if nucName in component.p.numberDensities
+            else 0.0
+            for nucName in allNucNames
+        ]
 
     vol = block.getVolume()
     components, volFracs = zip(*block.getVolumeFractions())
     # D = CxN matrix of number densities
     ndens = numpy.array(
-        [
-            [getNumberDensityWithTrace(c, nucName) for nucName in allNucNames]
-            for c in components
-        ]
+        [getNumberDensitiesWithTrace(c, allNucNames) for c in components]
     )
     temperatures = numpy.array(
         [c.temperatureInC for c in components]
