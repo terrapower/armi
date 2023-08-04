@@ -129,15 +129,12 @@ class AssemblyList(composites.Composite):
             The Assembly to add to the list
 
         loc : LocationBase, optional
-            If provided, the assembly is inserted at that location, similarly to how a
-            Core would function. If it is not provided, the locator on the Assembly
-            object will be used. If the Assembly's locator belongs to
-            ``self.spatialGrid``, the Assembly's existing locator will not be used.
-            This is unlike the Core, which would try to use the same indices, but move
-            the locator to the Core's grid. If no locator is passed, or if the
-            Assembly's locator is not in the AssemblyList's grid, then the Assembly will
-            be automatically located in the grid using the associated ``AutoFiller``
-            object.
+            If provided, the assembly is inserted at that location. If it is not
+            provided, the locator on the Assembly object will be used. If the
+            Assembly's locator belongs to ``self.spatialGrid``, the Assembly's
+            existing locator will not be used. This is unlike the Core, which would try
+            to use the same indices, but move the locator to the Core's grid. With a
+            locator, the associated ``AutoFiller`` will be used.
         """
         if loc is not None and loc.grid is not self.spatialGrid:
             raise ValueError(
@@ -170,6 +167,7 @@ class AssemblyList(composites.Composite):
     def count(self):
         if not self.getChildren():
             return
+
         runLog.important("Count:")
         totCount = 0
         thisTimeCount = 0
@@ -193,6 +191,30 @@ class AssemblyList(composites.Composite):
 
 class SpentFuelPool(AssemblyList):
     """A place to put assemblies when they've been discharged. Can tell you inventory stats, etc."""
+
+    def add(self, assem, loc=None):  # TODO: JOHN EXPLAIN IT
+        """
+        Add an Assembly to the list.
+
+        Parameters
+        ----------
+        assem : Assembly
+            The Assembly to add to the list
+
+        loc : LocationBase, optional
+            If provided, the assembly is inserted at that location. If it is not
+            provided, the locator on the Assembly object will be used. If the
+            Assembly's locator belongs to ``self.spatialGrid``, the Assembly's
+            existing locator will not be used. This is unlike the Core, which would try
+            to use the same indices, but move the locator to the Core's grid. With a
+            locator, the associated ``AutoFiller`` will be used.
+        """
+        # TODO: JOHN, explain
+        if assem.p.assemNum < 0:
+            assem.p.assemNum = self.r.incrementAssemNum()
+            assem.setName(assem.makeNameFromAssemNum(assem.p.assemNum))
+
+        super().add(assem, loc)
 
     def report(self):
         title = "{0} Report".format(self.name)

@@ -86,6 +86,13 @@ def defineReactorParameters():
             "timeNode", units=units.UNITLESS, description="Integer timeNode", default=0
         )
 
+        pb.defParam(
+            "assemNum",
+            units=units.UNITLESS,
+            description="Number of assemblies created so far in the simulation (integer)",
+            default=0,
+        )
+
     with pDefs.createBuilder(
         location=ParamLocation.AVERAGE, default=0.0, categories=["economics"]
     ) as pb:

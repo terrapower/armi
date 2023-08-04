@@ -75,6 +75,7 @@ class Reactor(composites.Composite):
         self.o = None
         self.spatialGrid = None
         self.spatialLocator = None
+        self.p.assemNum = 0
         self.p.cycle = 0
         self.p.flags |= Flags.REACTOR
         self.core = None
@@ -110,6 +111,12 @@ class Reactor(composites.Composite):
                     "Cores found: {}".format(cores)
                 )
             self.core = cores[0]
+
+    # TODO: This might be unnecessary.
+    def incrementAssemNum(self):
+        val = int(self.p.assemNum)
+        self.p.assemNum += 1
+        return val
 
 
 def loadFromCs(cs) -> Reactor:
@@ -154,6 +161,7 @@ def factory(cs, bp, geom: Optional[SystemLayoutInput] = None) -> Reactor:
             )
         coreDesign = bp.systemDesigns["core"]
         coreDesign.construct(cs, bp, r, geom=geom)
+
         for structure in bp.systemDesigns:
             if structure.name.lower() != "core":
                 structure.construct(cs, bp, r)
@@ -532,6 +540,7 @@ class Core(composites.Composite):
         self.blocksByName = {}
         self.assembliesByName = {}
 
+    # TODO: JOHN! Fix assembly number when adding to Core (and maybe SFP???)
     def add(self, a, spatialLocator=None):
         """
         Adds an assembly to the reactor.
@@ -552,6 +561,14 @@ class Core(composites.Composite):
         --------
         removeAssembly : removes an assembly
         """
+        # TODO: JOHN, explain
+        if a.p.assemNum < 0:
+            a.p.assemNum = self.r.incrementAssemNum()
+            a.setName(a.makeNameFromAssemNum(a.p.assemNum))
+            for b in a:
+                axialIndex = int(b.name.split("-")[-1])
+                b.name = b.makeName(int(a.p.assemNum), axialIndex)
+
         # resetting .assigned forces database to be rewritten for shuffled core
         paramDefs = set(parameters.ALL_DEFINITIONS)
         paramDefs.difference_update(set(parameters.forType(Core)))
@@ -595,9 +612,7 @@ class Core(composites.Composite):
             runLog.error(
                 "The assembly {1} in the reactor already has the name {0}.\nCannot add {2}. "
                 "Current assemNum is {3}"
-                "".format(
-                    aName, self.assembliesByName[aName], a, assemblies.getAssemNum()
-                )
+                "".format(aName, self.assembliesByName[aName], a, self.r.p.assemNum)
             )
             raise RuntimeError("Core already contains an assembly with the same name.")
         self.assembliesByName[aName] = a

@@ -20,6 +20,7 @@ Generally, blocks are stacked from bottom to top.
 import copy
 import math
 import pickle
+from random import randint
 
 import numpy
 from scipy import interpolate
@@ -32,31 +33,6 @@ from armi.reactor import composites
 from armi.reactor import grids
 from armi.reactor.flags import Flags
 from armi.reactor.parameters import ParamLocation
-
-# to count the blocks that we create and generate a block number
-_assemNum = 0
-
-
-def incrementAssemNum():
-    global _assemNum  # tracked on a  module level
-    val = _assemNum  # return value before incrementing.
-    _assemNum += 1
-    return val
-
-
-def getAssemNum():
-    global _assemNum
-    return _assemNum
-
-
-def resetAssemNumCounter():
-    setAssemNumCounter(0)
-
-
-def setAssemNumCounter(val):
-    runLog.extra("Resetting global assembly number to {0}".format(val))
-    global _assemNum
-    _assemNum = val
 
 
 class Assembly(composites.Composite):
@@ -80,8 +56,7 @@ class Assembly(composites.Composite):
     SPENT_FUEL_POOL = "SFP"
     # For assemblies coming in from the database, waiting to be loaded to their old
     # position. This is a necessary distinction, since we need to make sure that a bunch
-    # of fuel management stuff doesn't treat its re-placement into the core as a new
-    # move
+    # of fuel management stuff doesn't treat its re-placement into the core as a new move
     DATABASE = "database"
     NOT_IN_CORE = [LOAD_QUEUE, SPENT_FUEL_POOL]
 
@@ -96,8 +71,9 @@ class Assembly(composites.Composite):
             The unique ID number of this assembly. If none is passed, the class-level
             value will be taken and then incremented.
         """
+        # TODO: Make it negative... JOHN... words
         if assemNum is None:
-            assemNum = incrementAssemNum()
+            assemNum = randint(-9e12, -1)
         name = self.makeNameFromAssemNum(assemNum)
         composites.Composite.__init__(self, name)
         self.p.assemNum = assemNum
@@ -145,7 +121,8 @@ class Assembly(composites.Composite):
         ``deepcopy`` to get a unique ``assemNum`` since a deepcopy implies it would
         otherwise have been the same object.
         """
-        self.p.assemNum = incrementAssemNum()
+        # TODO: JOHN, explain it
+        self.p.assemNum = randint(-9e12, -1)
         self.name = self.makeNameFromAssemNum(self.p.assemNum)
         for bi, b in enumerate(self):
             b.setName(b.makeName(self.p.assemNum, bi))
@@ -157,8 +134,7 @@ class Assembly(composites.Composite):
 
         AssemNums are like serial numbers for assemblies.
         """
-        name = "A{0:04d}".format(int(assemNum))
-        return name
+        return "A{0:04d}".format(int(assemNum))
 
     def add(self, obj):
         """

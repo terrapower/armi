@@ -96,10 +96,6 @@ class GeometryChanger:
         runLog.info(
             f"Resetting the state of the converted reactor core model in {self}"
         )
-        currentAssemCounter = assemblies.getAssemNum()
-        assemblies.setAssemNumCounter(
-            currentAssemCounter - len(self._newAssembliesAdded)
-        )
         self._newAssembliesAdded = []
 
 
@@ -253,7 +249,7 @@ class FuelAssemNumModifier(GeometryChanger):
         )
 
     def addRing(self, assemType="big shield"):
-        r"""
+        """
         Add a ring of fuel assemblies around the outside of an existing core.
 
         Works by first finding the assembly furthest from the center, then filling in
