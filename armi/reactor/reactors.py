@@ -48,8 +48,6 @@ from armi.reactor import parameters
 from armi.reactor import reactorParameters
 from armi.reactor import zones
 from armi.reactor.assemblyLists import SpentFuelPool
-from armi.reactor.blueprints.reactorBlueprint import SystemBlueprint
-from armi.reactor.blueprints.gridBlueprint import Triplet
 from armi.reactor.flags import Flags
 from armi.reactor.systemLayoutInput import SystemLayoutInput
 from armi.settings.fwSettings.globalSettings import CONF_MATERIAL_NAMESPACE_ORDER
@@ -150,6 +148,9 @@ def factory(cs, bp, geom: Optional[SystemLayoutInput] = None) -> Reactor:
     if cs["geomFile"]:
         blueprints.migrate(bp, cs)
 
+    if not any(structure.typ == "sfp" for structure in bp.systemDesigns.values()):
+        bp.addDefaultSFP()
+
     with directoryChangers.DirectoryChanger(cs.inputDirectory, dumpOnException=False):
         # always construct the core first (for assembly serial number purposes)
         if not bp.systemDesigns:
@@ -161,12 +162,6 @@ def factory(cs, bp, geom: Optional[SystemLayoutInput] = None) -> Reactor:
         for structure in bp.systemDesigns:
             if structure.name.lower() != "core":
                 structure.construct(cs, bp, r, loadAssems=False)
-
-        if not any(structure.type == "sfp" for structure in bp.systemDesigns):
-            # create a default SFP if it's not in the blueprints
-            sfp = SystemBlueprint("Spent Fuel Pool", "sfp", Triplet())
-            sfp.typ = "sfp"
-            sfp.construct(cs, bp, r, loadAssems=False)
 
     runLog.debug("Reactor: {}".format(r))
 
