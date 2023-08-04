@@ -319,7 +319,7 @@ class HexReactorTests(ReactorTests):
         indices = [(1, 1, 1), (3, 2, 2)]
         actualBlocks = self.r.core.getBlocksByIndices(indices)
         actualNames = [b.getName() for b in actualBlocks]
-        expectedNames = ["B0022-001", "B0043-002"]
+        expectedNames = ["B0014-001", "B0035-002"]
         self.assertListEqual(expectedNames, actualNames)
 
     def test_getAllXsSuffixes(self):
@@ -632,10 +632,11 @@ class HexReactorTests(ReactorTests):
 
     def test_getAssembly(self):
         a1 = self.r.core.getAssemblyWithAssemNum(assemNum=10)
-        a2 = self.r.core.getAssembly(locationString="005-023")
+        a2 = self.r.core.getAssembly(locationString="003-001")
         a3 = self.r.core.getAssembly(assemblyName="A0010")
-        self.assertEqual(a1, a2)
+
         self.assertEqual(a1, a3)
+        self.assertEqual(a1, a2)
 
     def test_restoreReactor(self):
         aListLength = len(self.r.core.getAssemblies())
