@@ -40,7 +40,6 @@ import tabulate
 from armi import getPluginManagerOrFail, materials, nuclearDataIO
 from armi import runLog
 from armi.nuclearDataIO import xsLibraries
-from armi.reactor import assemblies
 from armi.reactor import assemblyLists
 from armi.reactor import composites
 from armi.reactor import geometry
@@ -1284,7 +1283,6 @@ class Core(composites.Composite):
 
         structureNuclides : set
             set of nuclide names
-
         """
         if not self._nuclideCategories:
             coolantNuclides = set()
@@ -1522,8 +1520,6 @@ class Core(composites.Composite):
         -------
         foundAssembly : Assembly object or None
             The assembly found, or None
-
-
         """
         return self.getAssembly(assemNum=assemNum)
 
@@ -1619,7 +1615,6 @@ class Core(composites.Composite):
         See Also
         --------
         grids.Grid.getSymmetricEquivalents
-
         """
         neighborIndices = self.spatialGrid.getNeighboringCellIndices(
             *a.spatialLocator.getCompleteIndices()
@@ -1662,6 +1657,7 @@ class Core(composites.Composite):
             duplicateAssem = self.childrenByLocator.get(neighborLocation2)
             if duplicateAssem is not None:
                 duplicates.append(duplicateAssem)
+
         # should always be 0 or 1
         nDuplicates = len(duplicates)
         if nDuplicates == 1:
@@ -1961,7 +1957,7 @@ class Core(composites.Composite):
         return meshList, True
 
     def findAllAziMeshPoints(self, extraAssems=None, applySubMesh=True):
-        r"""
+        """
         Returns a list of all azimuthal (theta)-mesh positions in the core.
 
         Parameters
@@ -1972,7 +1968,6 @@ class Core(composites.Composite):
 
         applySubMesh : bool
             generates submesh points to further discretize the theta reactor mesh
-
         """
         i, _, _ = self.findAllMeshPoints(extraAssems, applySubMesh)
         return i
@@ -1980,7 +1975,6 @@ class Core(composites.Composite):
     def findAllRadMeshPoints(self, extraAssems=None, applySubMesh=True):
         """
         Return a list of all radial-mesh positions in the core.
-
 
         Parameters
         ----------
@@ -1991,7 +1985,6 @@ class Core(composites.Composite):
         applySubMesh : bool
             (not implemented) generates submesh points to further discretize the radial
             reactor mesh
-
         """
         _, j, _ = self.findAllMeshPoints(extraAssems, applySubMesh)
         return j
@@ -2019,7 +2012,7 @@ class Core(composites.Composite):
         return max(b.getNumPins() for b in self.getBlocks())
 
     def getMinimumPercentFluxInFuel(self, target=0.005):
-        r"""
+        """
         Goes through the entire reactor to determine what percentage of flux occures at
         each ring.  Starting with the outer ring, this function helps determine the effective
         size of the core where additional assemblies will not help the breeding in the TWR.

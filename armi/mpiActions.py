@@ -68,7 +68,6 @@ from armi import runLog
 from armi import settings
 from armi import utils
 from armi.reactor import reactors
-from armi.reactor import assemblies
 from armi.reactor.parameters import parameterDefinitions
 from armi.utils import iterables
 

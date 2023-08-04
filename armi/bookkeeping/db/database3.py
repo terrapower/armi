@@ -70,7 +70,6 @@ from armi.bookkeeping.db.layout import (
 from armi.bookkeeping.db.typedefs import History, Histories
 from armi.nucDirectory import nuclideBases
 from armi.physics.neutronics.settings import CONF_LOADING_FILE
-from armi.reactor import assemblies
 from armi.reactor import grids
 from armi.reactor import parameters
 from armi.reactor import systemLayoutInput
