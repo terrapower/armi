@@ -651,12 +651,6 @@ class TestExceptions(AxialExpansionTestBase, unittest.TestCase):
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
 
-    def test_determineLinked(self):
-        compDims = {"Tinput": 25.0, "Thot": 25.0}
-        compA = UnshapedComponent("unshaped_1", "FakeMat", **compDims)
-        compB = UnshapedComponent("unshaped_2", "FakeMat", **compDims)
-        self.assertFalse(AssemblyAxialLinkage._determineLinked(compA, compB))
-
     def test_getLinkedComponents(self):
         """Test for multiple component axial linkage."""
         shieldBlock = self.obj.linked.a[0]
