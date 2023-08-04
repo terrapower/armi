@@ -32,6 +32,15 @@ blocks:
             id: 0.0
             od: 0.7
             latticeIDs: [1]
+        fuel2:
+            flags: SLUG
+            shape: Circle
+            material: UZr
+            Tinput: 25.0
+            Thot: 600.0
+            id: 0.0
+            od: 0.7
+            latticeIDs: [3]
         clad: # same args as test_blocks (except mult)
             shape: Circle
             material: HT9
@@ -39,7 +48,7 @@ blocks:
             Thot: 450.0
             id: .77
             od: .80
-            latticeIDs: [1,2]
+            latticeIDs: [1,2,3]
         coolant:
             shape: DerivedShape
             material: Sodium
@@ -72,6 +81,15 @@ blocks:
             id: 0.0
             od: 0.67
             latticeIDs: [1]
+        fuel2:
+            flags: SLUG
+            shape: Circle
+            material: UZr
+            Tinput: 25.0
+            Thot: 600.0
+            id: 0.0
+            od: 0.67
+            latticeIDs: [3]
         clad:
             shape: Circle
             material: HT9
@@ -79,7 +97,7 @@ blocks:
             Thot: 450.0
             id: .77
             od: .80
-            latticeIDs: [1,2]
+            latticeIDs: [1,2,3]
         coolant:
             shape: DerivedShape
             material: Sodium

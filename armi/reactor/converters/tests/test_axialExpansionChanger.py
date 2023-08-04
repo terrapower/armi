@@ -15,10 +15,12 @@
 """Test axialExpansionChanger."""
 import collections
 import os
+import io
 import unittest
 from statistics import mean
 
 from armi import materials
+from armi.settings import Settings
 from armi.materials import _MATERIAL_NAMESPACE_ORDER, custom
 from armi.reactor.assemblies import HexAssembly, grids
 from armi.reactor.blocks import HexBlock
@@ -33,6 +35,8 @@ from armi.reactor.converters.axialExpansionChanger import (
 )
 from armi.reactor.flags import Flags
 from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
+from armi.reactor.blueprints.tests.test_blockBlueprints import FULL_BP
+from armi.reactor import blueprints
 from armi.tests import TEST_ROOT, mockRunLogs
 from armi.utils import units
 from numpy import array, linspace, zeros
@@ -1101,6 +1105,44 @@ class TestDetermineLinked(AxialExpansionTestBase, unittest.TestCase):
             compA = method(*self.common, **dims[0])
             compB = method(*self.common, **dims[1])
             self.assertFalse(AssemblyAxialLinkage._determineLinked(compA, compB))
+
+    def test_Case2(self):
+        cs = Settings()
+        with io.StringIO(FULL_BP) as stream:
+            bps = blueprints.Blueprints.load(stream)
+            bps._prepConstruction(cs)
+            fuelBlockLower = bps.assemblies["fuel"][0]
+            fuelBlockUpper = bps.assemblies["fuel"][1]
+            fuelCompL = fuelBlockLower.getComponent(Flags.FUEL)
+            slugCompL = fuelBlockLower.getComponent(Flags.SLUG)
+            cladCompL = fuelBlockLower.getComponent(Flags.CLAD)
+            fuelCompU = fuelBlockUpper.getComponent(Flags.FUEL)
+            slugCompU = fuelBlockUpper.getComponent(Flags.SLUG)
+            cladCompU = fuelBlockUpper.getComponent(Flags.CLAD)
+            # test fuel component linking
+            self.assertFalse(
+                AssemblyAxialLinkage._determineLinked(fuelCompL, cladCompU)
+            )
+            self.assertFalse(
+                AssemblyAxialLinkage._determineLinked(fuelCompL, slugCompU)
+            )
+            self.assertTrue(AssemblyAxialLinkage._determineLinked(fuelCompL, fuelCompU))
+            # test slug component linking
+            self.assertFalse(
+                AssemblyAxialLinkage._determineLinked(slugCompL, cladCompU)
+            )
+            self.assertTrue(AssemblyAxialLinkage._determineLinked(slugCompL, slugCompU))
+            self.assertFalse(
+                AssemblyAxialLinkage._determineLinked(slugCompL, fuelCompU)
+            )
+            # test clad component linking
+            self.assertFalse(
+                AssemblyAxialLinkage._determineLinked(cladCompL, fuelCompU)
+            )
+            self.assertFalse(
+                AssemblyAxialLinkage._determineLinked(cladCompL, slugCompL)
+            )
+            self.assertTrue(AssemblyAxialLinkage._determineLinked(cladCompL, cladCompU))
 
 
 def buildTestAssemblyWithFakeMaterial(name: str, hot: bool = False):
