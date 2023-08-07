@@ -56,7 +56,8 @@ setup(
     entry_points={"console_scripts": ["armi = armi.__main__:main"]},
     install_requires=[
         "configparser",
-        "coverage",
+        'coverage; python_version>="3.11"',
+        'coverage==6.5.0; python_version<"3.11"',
         "future",
         "h5py>=3.0",
         "htmltree",
