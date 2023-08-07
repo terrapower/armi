@@ -326,6 +326,7 @@ class AverageBlockCollection(BlockCollection):
                 c.setNumberDensities(
                     self._getAverageComponentNumberDensities(compIndex)
                 )
+                c.temperatureInC = self._getAverageComponentTemperature(compIndex)
         else:
             # components differ; need to smear densities over the block
             newBlock.setNumberDensities(self._getAverageNumberDensities())
@@ -385,6 +386,21 @@ class AverageBlockCollection(BlockCollection):
         components = [sorted(b.getComponents())[compIndex] for b in blocks]
         ndens = weights.dot([c.getNuclideNumberDensities(nuclides) for c in components])
         return dict(zip(nuclides, ndens))
+
+    def _getAverageComponentTemperature(self, compIndex):
+        """
+        Get weighted average component temperature
+
+        Returns
+        -------
+        numberDensities : dict
+            nucName, ndens data (atoms/bn-cm)
+        """
+        blocks = self.getCandidateBlocks()
+        weights = numpy.array([self.getWeight(b) for b in blocks])
+        weights /= weights.sum()  # normalize by total weight
+        components = [sorted(b.getComponents())[compIndex] for b in blocks]
+        return weights.dot(numpy.array([c.temperatureInC for c in components]))
 
     def _checkBlockSimilarity(self):
         cFlags = dict()
