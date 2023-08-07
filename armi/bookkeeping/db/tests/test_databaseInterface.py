@@ -31,7 +31,6 @@ from armi.physics.neutronics.settings import CONF_LOADING_FILE
 from armi.reactor import grids
 from armi.reactor.flags import Flags
 from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
-from armi.settings.fwSettings.databaseSettings import CONF_FORCE_DB_PARAMS
 from armi.tests import TEST_ROOT
 from armi.utils import directoryChangers
 
@@ -52,7 +51,6 @@ def getSimpleDBOperator(cs):
     newSettings["runType"] = "Standard"
     newSettings["geomFile"] = "geom1Assem.xml"
     newSettings["nCycles"] = 1
-    newSettings[CONF_FORCE_DB_PARAMS] = ["baseBu"]
     cs = cs.modified(newSettings=newSettings)
     genDBCase = case.Case(cs)
     settings.setMasterCs(cs)
@@ -76,7 +74,6 @@ class MockInterface(interfaces.Interface):
         self.action = action
 
     def interactEveryNode(self, cycle, node):
-        self.r.core.getFirstBlock().p.baseBu = 5.0
         self.action(cycle, node)
 
 
@@ -161,7 +158,6 @@ class TestDatabaseWriter(unittest.TestCase):
             self.assertIn("geomFile", h5["inputs"])
             self.assertIn("settings", h5["inputs"])
             self.assertIn("blueprints", h5["inputs"])
-            self.assertIn("baseBu", h5["c00n02/HexBlock"])
 
     def test_metaDataEndFail(self):
         def failMethod(cycle, node):
