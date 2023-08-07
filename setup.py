@@ -56,7 +56,7 @@ setup(
     entry_points={"console_scripts": ["armi = armi.__main__:main"]},
     install_requires=[
         "configparser",
-        "coverage==7.2.1",
+        "coverage",
         "future",
         "h5py>=3.0",
         "htmltree",
@@ -76,7 +76,7 @@ setup(
         "yamlize==0.7.1",
     ],
     extras_require={
-        "mpi": ["mpi4py==3.1.4"],
+        "mpi": ["mpi4py"],
         "grids": ["wxpython==4.2.1"],
         "memprof": ["psutil"],
         "dev": [
@@ -93,7 +93,7 @@ setup(
             "pytest-cov",
             "pytest-html",
             "pytest-xdist",
-            "ruff==0.0.278",
+            "ruff==0.0.272",
             "sphinx",
             "sphinx-gallery",
             "sphinx-rtd-theme",
