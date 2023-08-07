@@ -358,7 +358,7 @@ class TestGriddedBlock(unittest.TestCase):
             self.cs, self.blueprints
         )
         fuelBlock = a1[0]
-        clad = fuelBlock.getComponent(Flags.CLAD)
+        clad = fuelBlock.getComponent(Flags.CLAD, exact=True)
 
         # now construct clad programmatically like in test_Blocks
         programmaticBlock = test_blocks.buildSimpleFuelBlock()
