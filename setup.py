@@ -57,7 +57,7 @@ setup(
     install_requires=[
         "configparser",
         'coverage; python_version>="3.11"',
-        'coverage==6.5.0; python_version<"3.11"',
+        'coverage<=6.5.0; python_version<"3.11"',
         "future",
         "h5py>=3.0",
         "htmltree",
