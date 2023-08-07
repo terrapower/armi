@@ -32,8 +32,15 @@ blocks:
             id: 0.0
             od: 0.7
             latticeIDs: [1]
-        fuel2:
-            flags: SLUG
+        feed:
+            shape: Circle
+            material: UZr
+            Tinput: 25.0
+            Thot: 600.0
+            id: 0.0
+            od: 0.7
+            latticeIDs: [2]
+        slug:
             shape: Circle
             material: UZr
             Tinput: 25.0
@@ -41,14 +48,23 @@ blocks:
             id: 0.0
             od: 0.7
             latticeIDs: [3]
-        clad: # same args as test_blocks (except mult)
+        clad: &component_clad
+            # same args as test_blocks (except mult)
             shape: Circle
             material: HT9
             Tinput: 25.0
             Thot: 450.0
             id: .77
             od: .80
-            latticeIDs: [1,2,3]
+            latticeIDs: [1]
+        clad_feed:
+            <<: *component_clad
+            flags: CLAD FEED
+            latticeIDs: [2]
+        clad_slug:
+            <<: *component_clad
+            flags: CLAD SLUG
+            latticeIDs: [3]
         coolant:
             shape: DerivedShape
             material: Sodium
@@ -81,23 +97,23 @@ blocks:
             id: 0.0
             od: 0.67
             latticeIDs: [1]
-        fuel2:
-            flags: SLUG
+        test:
             shape: Circle
             material: UZr
             Tinput: 25.0
             Thot: 600.0
             id: 0.0
             od: 0.67
-            latticeIDs: [3]
-        clad:
-            shape: Circle
-            material: HT9
-            Tinput: 25.0
-            Thot: 450.0
-            id: .77
-            od: .80
-            latticeIDs: [1,2,3]
+            latticeIDs: [2,3]
+        clad: *component_clad
+        clad_feed:
+            # should be clad_test with CLAD TEST
+            # flags, but for testing in 
+            # test_axialExpansionChanger.TestRetrieveAxialLinkage 
+            # we make it clad_feed.
+            <<: *component_clad
+            flags: CLAD FEED
+            latticeIDs: [2,3]
         coolant:
             shape: DerivedShape
             material: Sodium

@@ -21,7 +21,7 @@ from armi import runLog
 from armi.materials import material
 from armi.reactor.components import UnshapedComponent
 from armi.reactor.flags import Flags
-from armi.reactor.grids import MultiIndexLocation, CoordinateLocation
+from armi.reactor.grids import MultiIndexLocation
 from numpy import array
 
 TARGET_FLAGS_IN_PREFERRED_ORDER = [
@@ -286,10 +286,7 @@ class AxialExpansionChanger:
                     else:
                         if self.linked.linkedComponents[c][0]:
                             # use linked components below
-                            linkedComponent = self.determineLinkedComponent(
-                                self.linked.a[ib - 1],
-                                self.linked.linkedComponents[c][0],
-                            )
+                            linkedComponent = self.retrieveLinkedComponent(c)
                             c.zbottom = linkedComponent.ztop
                         else:
                             # otherwise there aren't any linked components
@@ -324,30 +321,29 @@ class AxialExpansionChanger:
         bounds[2] = array(mesh)
         self.linked.a.spatialGrid._bounds = tuple(bounds)
 
-    def determineLinkedComponent(self, bBelow, linkedComponents):
-        """Determine the linked component."""
-        linked = None
+    def retrieveLinkedComponent(self, c):
+        """Retrieve the linked component.
+
+        Notes
+        -----
+        3 cases are considered, see test_axialExpansionChanger.py::TestRetriveAxialLinkage for details.
+        """
+        linkedComponents = self.linked.linkedComponents[c][0]
+        # Case 1
         if len(linkedComponents) == 1:
-            # easy case, just pull the linked component
-            linked = linkedComponents[0]
-        else:
-            # get target component from block below
-            for cBelow in getSolidComponents(bBelow):
-                if self.expansionData.isTargetComponent(cBelow):
-                    targetIndices = [
-                        list(index) for index in cBelow.spatialLocator.indices
-                    ]
-                    break
-            # loop over the linked components and see which shares spatial locator indices with targetIndices
-            for c in linkedComponents:
-                componentIndices = [list(index) for index in c.spatialLocator.indices]
-                if all(index in targetIndices for index in componentIndices):
-                    linked = c
-                    break
+            return linkedComponents[0]
 
-        if linked is None:
-            raise RuntimeError("Can't match with the target component!")
+        ## Case 2
+        for otherC in linkedComponents:
+            if otherC.hasFlags(c.p.flags):
+                return otherC
 
+        # Case 3
+        maxCompZtop = 0.0
+        for otherC in linkedComponents:
+            if otherC.ztop > maxCompZtop:
+                linked = otherC
+                maxCompZtop = otherC.ztop
         return linked
 
     def manageCoreMesh(self, r):

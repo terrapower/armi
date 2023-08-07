@@ -1097,42 +1097,97 @@ class TestDetermineLinked(AxialExpansionTestBase, unittest.TestCase):
             self.assertFalse(AssemblyAxialLinkage._determineLinked(compA, compB))
 
     def test_Case2(self):
+        """Spot check the linkage for the Flag.TEST component."""
         cs = Settings()
         with io.StringIO(FULL_BP) as stream:
             bps = blueprints.Blueprints.load(stream)
             bps._prepConstruction(cs)
             fuelBlockLower = bps.assemblies["fuel"][0]
             fuelBlockUpper = bps.assemblies["fuel"][1]
-            fuelCompL = fuelBlockLower.getComponent(Flags.FUEL)
-            slugCompL = fuelBlockLower.getComponent(Flags.SLUG)
-            cladCompL = fuelBlockLower.getComponent(Flags.CLAD)
-            fuelCompU = fuelBlockUpper.getComponent(Flags.FUEL)
-            slugCompU = fuelBlockUpper.getComponent(Flags.SLUG)
-            cladCompU = fuelBlockUpper.getComponent(Flags.CLAD)
-            # test fuel component linking
-            self.assertFalse(
-                AssemblyAxialLinkage._determineLinked(fuelCompL, cladCompU)
+            self.assertTrue(
+                AssemblyAxialLinkage._determineLinked(
+                    fuelBlockUpper.getComponent(Flags.TEST),
+                    fuelBlockLower.getComponent(
+                        Flags.FEED | Flags.DEPLETABLE, exact=True
+                    ),
+                )
+            )
+            self.assertTrue(
+                AssemblyAxialLinkage._determineLinked(
+                    fuelBlockUpper.getComponent(Flags.TEST),
+                    fuelBlockLower.getComponent(Flags.SLUG | Flags.DEPLETABLE),
+                )
             )
             self.assertFalse(
-                AssemblyAxialLinkage._determineLinked(fuelCompL, slugCompU)
+                AssemblyAxialLinkage._determineLinked(
+                    fuelBlockUpper.getComponent(Flags.TEST),
+                    fuelBlockLower.getComponent(Flags.FUEL | Flags.DEPLETABLE),
+                )
             )
-            self.assertTrue(AssemblyAxialLinkage._determineLinked(fuelCompL, fuelCompU))
-            # test slug component linking
-            self.assertFalse(
-                AssemblyAxialLinkage._determineLinked(slugCompL, cladCompU)
-            )
-            self.assertTrue(AssemblyAxialLinkage._determineLinked(slugCompL, slugCompU))
-            self.assertFalse(
-                AssemblyAxialLinkage._determineLinked(slugCompL, fuelCompU)
-            )
-            # test clad component linking
-            self.assertFalse(
-                AssemblyAxialLinkage._determineLinked(cladCompL, fuelCompU)
-            )
-            self.assertFalse(
-                AssemblyAxialLinkage._determineLinked(cladCompL, slugCompL)
-            )
-            self.assertTrue(AssemblyAxialLinkage._determineLinked(cladCompL, cladCompU))
+
+
+class TestRetrieveAxialLinkage(unittest.TestCase):
+    """Ensure that axial linkage for components can be retrieved appropriately.
+
+    Notes
+    -----
+    Three cases here.
+    Case 1: easy case, just pull the linked component as there is an explicit 1-1 linking.
+    Case 2: c.p.FEED in block 1 has candidate links to [c.p.FEED and c.p.SLUG] in block 0.
+            Use the matching flags to determine linkage.
+    Case 3: c.p.TEST in block 1 has candidate links to [c.p.FEED, c.p.SLUG].
+            Determine which component in block 0 has the highest ztop. This is the
+            linked component.
+
+    Warning
+    -------
+    If c.p.CLAD in block 1 has candidate links to [c.p.CLAD, c.p.CLAD] in block 0,
+    the first component with the clad flags in block 0 will be the linked component.
+    If possible, use additional flags in the blueprints to be as explicit as possible.
+    """
+
+    def setUp(self):
+        self.axialExpChnger = AxialExpansionChanger()
+        self.axialExpChnger.reset()
+
+    def test_Case1(self):
+        a = buildTestAssemblyWithFakeMaterial("HT9")
+        self.axialExpChnger.setAssembly(a)
+        refLinkage = {
+            1: [Flags.SHIELD, Flags.CLAD, Flags.DUCT],
+            2: [Flags.FUEL, Flags.CLAD, Flags.DUCT],
+            3: [Flags.FUEL, Flags.CLAD, Flags.DUCT],
+        }
+        for ib, b in enumerate(self.axialExpChnger.linked.a[1:], start=1):
+            for ic, c in enumerate(getSolidComponents(b)):
+                linkedC = self.axialExpChnger.retrieveLinkedComponent(c)
+                self.assertTrue(linkedC.hasFlags(refLinkage[ib][ic]))
+
+    def test_Cases2And3(self):
+        cs = Settings()
+        with io.StringIO(FULL_BP) as stream:
+            bps = blueprints.Blueprints.load(stream)
+            bps._prepConstruction(cs)
+        a = bps.assemblies["fuel"]
+        self.axialExpChnger.setAssembly(a)
+        refLinkage = {
+            1: [
+                Flags.FUEL,
+                Flags.FEED,
+                Flags.CLAD,
+                [Flags.CLAD, Flags.FEED],
+                Flags.DUCT,
+            ],
+        }
+        for ib, b in enumerate(self.axialExpChnger.linked.a):
+            for ic, c in enumerate(getSolidComponents(b)):
+                if ib == 0:
+                    # c.ztop gets set during axial expansion, but since we aren't doing
+                    # actual expansion, we set it manually
+                    c.ztop = b.p.ztop
+                    continue
+                linkedC = self.axialExpChnger.retrieveLinkedComponent(c)
+                self.assertTrue(linkedC.hasFlags(refLinkage[ib][ic]))
 
 
 def buildTestAssemblyWithFakeMaterial(name: str, hot: bool = False):
