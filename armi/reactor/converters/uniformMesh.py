@@ -160,6 +160,7 @@ class UniformMeshGenerator:
             aMesh = src.core.findAllAxialMeshPoints([a])[1:]
             if len(aMesh) == refNumPoints:
                 allMeshes.append(aMesh)
+
         averageMesh = average1DWithinTolerance(numpy.array(allMeshes))
         self._commonMesh = numpy.array(averageMesh)
 
@@ -200,7 +201,7 @@ class UniformMeshGenerator:
         )
 
         runLog.extra(
-            f"Attempting to honor control and fuel material boundaries in uniform mesh "
+            "Attempting to honor control and fuel material boundaries in uniform mesh "
             f"for {self} while also keeping minimum mesh size of {self.minimumMeshSize}. "
             f"Material boundaries are: {allMatBounds}"
         )
@@ -420,10 +421,11 @@ class UniformMeshGeometryConverter(GeometryConverter):
         if self._hasNonUniformAssems:
             runLog.extra(
                 f"Replacing non-uniform assemblies in reactor {r}, "
-                f"with assemblies whose axial mesh is uniform with "
+                "with assemblies whose axial mesh is uniform with "
                 f"the core's reference assembly mesh: {r.core.refAssem.getAxialMesh()}"
             )
             self.convReactor = self._sourceReactor
+            # self.convReactor.core.normalizeAssemblyNames()  # TODO: JOHN!!!!!!!!!!! TESTING
             self.convReactor.core.updateAxialMesh()
             for assem in self.convReactor.core.getAssemblies(self._nonUniformMeshFlags):
                 homogAssem = self.makeAssemWithUniformMesh(
@@ -433,12 +435,12 @@ class UniformMeshGeometryConverter(GeometryConverter):
                     includePinCoordinates=self.includePinCoordinates,
                 )
                 homogAssem.spatialLocator = assem.spatialLocator
+                homogAssem.p.assemNum = assem.p.assemNum
 
-                # Remove this assembly from the core and add it to the
-                # temporary storage list so that it can be replaced with the homogenized assembly.
-                # Note that we do not call the `removeAssembly` method because
-                # this will delete the core assembly from existence rather than
-                # only stripping its spatialLocator away.
+                # Remove this assembly from the core and add it to the temporary storage
+                # so that it can be replaced with the homogenized assembly. Note that we
+                # do not call `removeAssembly()` because this will delete the core
+                # assembly from existence rather than only stripping its spatialLocator.
                 if assem.spatialLocator in self.convReactor.core.childrenByLocator:
                     self.convReactor.core.childrenByLocator.pop(assem.spatialLocator)
                 self.convReactor.core.remove(assem)
@@ -449,10 +451,10 @@ class UniformMeshGeometryConverter(GeometryConverter):
                 assem.setName(assem.getName() + self._TEMP_STORAGE_NAME_SUFFIX)
                 self._nonUniformAssemStorage.add(assem)
                 self.convReactor.core.add(homogAssem)
-
         else:
             runLog.extra(f"Building copy of {r} with a uniform axial mesh.")
             self.convReactor = self.initNewReactor(r, self._cs)
+            # TODO: Update JOHN normalize reactor-level assem numbers
             self._generateUniformMesh(minimumMeshSize=self._minimumMeshSize)
             self._buildAllUniformAssemblies()
             self._mapStateFromReactorToOther(
@@ -466,6 +468,8 @@ class UniformMeshGeometryConverter(GeometryConverter):
         runLog.extra(
             f"Reactor core conversion time: {completeEndTime-completeStartTime} seconds"
         )
+        # self._sourceReactor.core.normalizeAssemblyNames()  # TODO: JOHN!!!!!!!!!!! TESTING
+        # self.convReactor.core.normalizeAssemblyNames()  # TODO: JOHN!!!!!!!!!!! TESTING
 
     def _generateUniformMesh(self, minimumMeshSize):
         """
@@ -525,6 +529,9 @@ class UniformMeshGeometryConverter(GeometryConverter):
         )
         completeStartTime = timer()
 
+        # self._sourceReactor.core.normalizeAssemblyNames()  # TODO: JOHN TESTING
+        # self.convReactor.core.normalizeAssemblyNames()  # TODO: JOHN TESTING
+
         # map the block parameters back to the non-uniform assembly
         self._setParamsToUpdate("out")
 
@@ -535,6 +542,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
             for assem in self._sourceReactor.core.getAssemblies(
                 self._nonUniformMeshFlags
             ):
+                # TODO: JOHN: This doesn't need to be a loop......
                 for storedAssem in self._nonUniformAssemStorage:
                     if (
                         storedAssem.getName()
@@ -560,8 +568,8 @@ class UniformMeshGeometryConverter(GeometryConverter):
                     runLog.error(
                         f"No assembly matching name {assem.getName()} "
                         f"was found in the temporary storage list. {assem} "
-                        f"will persist as an axially unified assembly. "
-                        f"This is likely not intended."
+                        "will persist as an axially unified assembly. "
+                        "This is likely not intended."
                     )
 
             self._sourceReactor.core.updateAxialMesh()

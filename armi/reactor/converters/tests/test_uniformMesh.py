@@ -366,6 +366,8 @@ def applyNonUniformHeightDistribution(reactor):
         a[-1].setHeight(a[-1].getHeight() - delta)
         a.calculateZCoords()
 
+    reactor.core.normalizeAssemblyNames()  # TODO: JOHN! WAS I SUPPOSED TO REMOVE THIS???
+
 
 class TestUniformMesh(unittest.TestCase):
     """
@@ -411,7 +413,7 @@ class TestUniformMesh(unittest.TestCase):
         )  # conversion didn't change source reactor mass
 
     def test_applyStateToOriginal(self):
-        applyNonUniformHeightDistribution(self.r)  # note: this perturbs the ref. mass
+        applyNonUniformHeightDistribution(self.r)  # note: this perturbs the ref mass
 
         self.converter.convert(self.r)
         for ib, b in enumerate(self.converter.convReactor.core.getBlocks()):
@@ -666,6 +668,9 @@ class TestUniformMeshNonUniformAssemFlags(unittest.TestCase):
         self.converter = uniformMesh.NeutronicsUniformMeshConverter(
             cs=self.o.cs, calcReactionRates=True
         )
+        # self.r.core.normalizeAssemblyNames()  # TODO: JOHN!!!!!!!!!!! TESTING
+        # self.converter._sourceReactor.core.normalizeAssemblyNames()  # TODO: JOHN!!!!!!!!!!! TESTING
+        # self.converter.convReactor.core.normalizeAssemblyNames()  # TODO: JOHN!!!!!!!!!!! TESTING
 
     def test_reactorConversion(self):
         """Tests the reactor conversion to and from the original reactor."""
@@ -685,7 +690,6 @@ class TestUniformMeshNonUniformAssemFlags(unittest.TestCase):
                 self.assertFalse(b.p.rateAbs)
 
         self.converter.convert(self.r)
-
         self.assertEqual(
             len(controlAssems),
             len(self.converter._nonUniformAssemStorage),

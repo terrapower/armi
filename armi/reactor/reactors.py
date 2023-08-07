@@ -539,6 +539,38 @@ class Core(composites.Composite):
         self.blocksByName = {}
         self.assembliesByName = {}
 
+        self.parent.p.assemNum = 0
+
+    def normalizeAssemblyNames(self):
+        """TODO: JOHN."""
+        ind = 0
+        for a in self:
+            oldName = a.getName()
+            newName = a.makeNameFromAssemNum(ind)
+            if oldName == newName:
+                ind += 1
+                continue
+
+            a.p.assemNum = ind
+            a.setName(newName)
+
+            for b in a:
+                axialIndex = int(b.name.split("-")[-1])
+                b.name = b.makeName(ind, axialIndex)
+
+            ind += 1
+
+        # NOTE: eliminated unnecessary repeated lookups in self for self.assembliesByName
+        self.assembliesByName = {}
+        for (
+            assem
+        ) in (
+            self.getAssemblies()
+        ):  # TODO: JOHN! Put in REACTOR or something? includeSFP=True):
+            self.assembliesByName[assem.getName()] = assem
+
+        # TODO: JOHN update block mapping (since we changed the names)
+
     # TODO: JOHN! Fix assembly number when adding to Core (and maybe SFP???)
     def add(self, a, spatialLocator=None):
         """
@@ -561,6 +593,7 @@ class Core(composites.Composite):
         removeAssembly : removes an assembly
         """
         # TODO: JOHN, explain
+        # TODO: JOHN, perhaps create a method: Assembly.recursivelyRename(assemNum)
         if a.p.assemNum < 0:
             a.p.assemNum = self.r.incrementAssemNum()
             a.setName(a.makeNameFromAssemNum(a.p.assemNum))
@@ -1498,8 +1531,8 @@ class Core(composites.Composite):
         """
         if assemblyName:
             return self.getAssemblyByName(assemblyName)
-        for a in self.getAssemblies(*args, **kwargs):
 
+        for a in self.getAssemblies(*args, **kwargs):
             if a.getLocation() == locationString:
                 return a
             if a.getNum() == assemNum:
@@ -1543,7 +1576,6 @@ class Core(composites.Composite):
         -------
         pitch : float
             The assembly pitch.
-
         """
         return self.spatialGrid.pitch
 
