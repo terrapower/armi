@@ -20,7 +20,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.11'
+          python-version: '3.10'
       - name: Update package index
         run: sudo apt-get update
       - name: Install mpi libs
@@ -36,7 +36,7 @@ jobs:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
         run: |
           pip install click==8.1.3
-          pip install coverage==7.2.1
+          pip install coverage==6.5.0
           pip install coveragepy-lcov==0.1.2
           coveragepy-lcov --data_file_path coverage_results.cov --output_file_path lcov.txt
       - name: Publish to coveralls.io
