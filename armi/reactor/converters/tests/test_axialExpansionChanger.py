@@ -1073,6 +1073,11 @@ class TestDetermineLinked(AxialExpansionTestBase, unittest.TestCase):
                 mock.getStdout(),
             )
 
+    def test_Case3(self):
+        comp1 = Circle(*self.common, od=1.0, id=0.0, mult=7)
+        comp2 = Circle(*self.common, od=1.5, id=0.0, mult=7)
+        self.assertTrue(AssemblyAxialLinkage._determineLinked(comp1, comp2))
+
     def test_Case4(self):
         componentTypesToTest = {
             Circle: [{"od": 0.5, "mult": 10}, {"od": 0.5, "mult": 20}],
