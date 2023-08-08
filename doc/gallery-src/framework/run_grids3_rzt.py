@@ -14,6 +14,7 @@
 
 """
 Make a Theta-R-Z grid.
+======================
 
 This builds a 3-D grid in Theta-R-Z geometry by specifying the theta, r, and z
 dimension bounds explicitly.

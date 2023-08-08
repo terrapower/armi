@@ -13,6 +13,7 @@
 # limitations under the License.
 """
 Build Reactor Inputs Programmatically.
+======================================
 
 Sometimes it's desirable to build input definitions for ARMI using
 code rather than by writing the textual input files directly.
