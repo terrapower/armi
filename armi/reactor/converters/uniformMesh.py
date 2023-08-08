@@ -425,7 +425,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
                 f"the core's reference assembly mesh: {r.core.refAssem.getAxialMesh()}"
             )
             self.convReactor = self._sourceReactor
-            # self.convReactor.core.normalizeAssemblyNames()  # TODO: JOHN!!!!!!!!!!! TESTING
             self.convReactor.core.updateAxialMesh()
             for assem in self.convReactor.core.getAssemblies(self._nonUniformMeshFlags):
                 homogAssem = self.makeAssemWithUniformMesh(
@@ -468,8 +467,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
         runLog.extra(
             f"Reactor core conversion time: {completeEndTime-completeStartTime} seconds"
         )
-        # self._sourceReactor.core.normalizeAssemblyNames()  # TODO: JOHN!!!!!!!!!!! TESTING
-        # self.convReactor.core.normalizeAssemblyNames()  # TODO: JOHN!!!!!!!!!!! TESTING
 
     def _generateUniformMesh(self, minimumMeshSize):
         """
@@ -528,9 +525,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
             f"Applying uniform neutronics results from {self.convReactor} to {self._sourceReactor}"
         )
         completeStartTime = timer()
-
-        # self._sourceReactor.core.normalizeAssemblyNames()  # TODO: JOHN TESTING
-        # self.convReactor.core.normalizeAssemblyNames()  # TODO: JOHN TESTING
 
         # map the block parameters back to the non-uniform assembly
         self._setParamsToUpdate("out")

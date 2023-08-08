@@ -68,10 +68,11 @@ class Assembly(composites.Composite):
             Name of assembly design (e.g. the name from the blueprints input file).
 
         assemNum : int, optional
-            The unique ID number of this assembly. If none is passed, the class-level
-            value will be taken and then incremented.
+            The unique ID number of this assembly. If None is provided, we generate a
+            random int. This makes it clear that it is a placeholder. When an assembly with
+            a negative ID is placed into a Reactor, it will be given a new, positive ID.
         """
-        # TODO: Make it negative... JOHN... words
+        # If no assembly number is provided, generate a random number as a placeholder.
         if assemNum is None:
             assemNum = randint(-9e12, -1)
         name = self.makeNameFromAssemNum(assemNum)

@@ -87,9 +87,9 @@ def defineReactorParameters():
         )
 
         pb.defParam(
-            "assemNum",
+            "maxAssemNum",
             units=units.UNITLESS,
-            description="Number of assemblies created so far in the simulation (integer)",
+            description="Max number of assemblies created so far in the Reactor (integer)",
             default=0,
         )
 

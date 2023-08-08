@@ -81,7 +81,7 @@ class TestDatabase3(unittest.TestCase):
         self.assertEqual(sorted(self.db.h5db["c00n00"].keys()), sorted(keys))
 
         # validate availabilityFactor did not make it into the H5 file
-        rKeys = ["assemNum", "cycle", "cycleLength", "flags", "serialNum", "timeNode"]
+        rKeys = ["maxAssemNum", "cycle", "cycleLength", "flags", "serialNum", "timeNode"]
         self.assertEqual(
             sorted(self.db.h5db["c00n00"]["Reactor"].keys()), sorted(rKeys)
         )

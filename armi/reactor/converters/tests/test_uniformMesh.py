@@ -366,7 +366,7 @@ def applyNonUniformHeightDistribution(reactor):
         a[-1].setHeight(a[-1].getHeight() - delta)
         a.calculateZCoords()
 
-    reactor.core.normalizeAssemblyNames()  # TODO: JOHN! WAS I SUPPOSED TO REMOVE THIS???
+    reactor.core.normalizeAssemblyNames()
 
 
 class TestUniformMesh(unittest.TestCase):
@@ -668,9 +668,6 @@ class TestUniformMeshNonUniformAssemFlags(unittest.TestCase):
         self.converter = uniformMesh.NeutronicsUniformMeshConverter(
             cs=self.o.cs, calcReactionRates=True
         )
-        # self.r.core.normalizeAssemblyNames()  # TODO: JOHN!!!!!!!!!!! TESTING
-        # self.converter._sourceReactor.core.normalizeAssemblyNames()  # TODO: JOHN!!!!!!!!!!! TESTING
-        # self.converter.convReactor.core.normalizeAssemblyNames()  # TODO: JOHN!!!!!!!!!!! TESTING
 
     def test_reactorConversion(self):
         """Tests the reactor conversion to and from the original reactor."""

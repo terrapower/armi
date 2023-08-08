@@ -208,7 +208,7 @@ def loadTestReactor(
     if isPickeledReactor:
         # cache it for fast load for other future tests
         # protocol=2 allows for classes with __slots__ but not __getstate__ to be pickled
-        TEST_REACTOR = cPickle.dumps((o, o.r, o.r.p.assemNum), protocol=2)
+        TEST_REACTOR = cPickle.dumps((o, o.r, o.r.p.maxAssemNum), protocol=2)
 
     return o, o.r
 

@@ -74,7 +74,7 @@ class Reactor(composites.Composite):
         self.o = None
         self.spatialGrid = None
         self.spatialLocator = None
-        self.p.assemNum = 0
+        self.p.maxAssemNum = 0
         self.p.cycle = 0
         self.p.flags |= Flags.REACTOR
         self.core = None
@@ -113,8 +113,8 @@ class Reactor(composites.Composite):
 
     # TODO: This might be unnecessary.
     def incrementAssemNum(self):
-        val = int(self.p.assemNum)
-        self.p.assemNum += 1
+        val = int(self.p.maxAssemNum)
+        self.p.maxAssemNum += 1
         return val
 
 
@@ -539,7 +539,7 @@ class Core(composites.Composite):
         self.blocksByName = {}
         self.assembliesByName = {}
 
-        self.parent.p.assemNum = 0
+        self.parent.p.maxAssemNum = 0
 
     def normalizeAssemblyNames(self):
         """TODO: JOHN."""
@@ -644,7 +644,7 @@ class Core(composites.Composite):
             runLog.error(
                 "The assembly {1} in the reactor already has the name {0}.\nCannot add {2}. "
                 "Current assemNum is {3}"
-                "".format(aName, self.assembliesByName[aName], a, self.r.p.assemNum)
+                "".format(aName, self.assembliesByName[aName], a, self.r.p.maxAssemNum)
             )
             raise RuntimeError("Core already contains an assembly with the same name.")
         self.assembliesByName[aName] = a
