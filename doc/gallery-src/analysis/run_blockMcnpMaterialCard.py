@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-Write MCNP Material Cards.
+Write MCNP Material Cards
+=========================
 
 Here we load a test reactor and write each component of one fuel block out as
 MCNP material cards.
