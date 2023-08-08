@@ -30,8 +30,9 @@ pandoc
 # iPython kernel to run Jupyter notebooks
 ipykernel==6.7.0
 
-# helps us use RST files
-docutils<0.18
+# docutils 0.17 introduced a bug that prevents bullets from rendering
+# see https://github.com/terrapower/armi/issues/274
+docutils <0.17
 
 # used to generate UML diagrams
 pylint==2.7.4
