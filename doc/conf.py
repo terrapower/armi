@@ -137,7 +137,9 @@ extensions = [
     "sphinx_gallery.gen_gallery",
     "sphinx.ext.imgconverter",  # to convert GH Actions badge SVGs to PNG for LaTeX
     "sphinxcontrib.plantuml",
-    "sphinxcontrib.needs",
+    "sphinx_needs",
+    "sphinx_rtd_theme",  # needed here for loading jquery in sphinx 6
+    "sphinxcontrib.jquery",  # see https://github.com/readthedocs/sphinx_rtd_theme/issues/1452
 ]
 
 # Our API should make sense without documenting private/special members.
@@ -238,10 +240,23 @@ html_logo = os.path.join(".static", "armiicon_24x24.ico")
 html_theme_options = {
     "style_external_links": True,
     "style_nav_header_background": "#233C5B",  # TP blue looks better than green
+    "logo_only": False,
+    "display_version": True,
+    "prev_next_buttons_location": "bottom",
+    "vcs_pageview_mode": "",
+    # Toc options
+    "collapse_navigation": True,
+    "sticky_navigation": True,
+    "navigation_depth": 4,
+    "includehidden": True,
+    "titles_only": False,
 }
 
 # Add any paths that contain custom themes here, relative to this directory.
 html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+
+# as long as this file @import's the theme's main css it won't break anything
+html_style = "css/theme_fixes.css"
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
@@ -260,14 +275,7 @@ html_last_updated_fmt = "%Y-%m-%d"
 # Output file base name for HTML help builder.
 htmlhelp_basename = "ARMIdoc"
 
-# Need to manually add gallery css files or else the theme_fixes override them.
 html_context = {
-    "css_files": [
-        "_static/theme_fixes.css",  # overrides for wide tables in RTD theme
-        "_static/gallery.css",  # for the sphinx-gallery plugin
-        "_static/gallery-binder.css",
-        "_static/gallery-dataframe.css",
-    ],
     "display_github": True,  # Integrate GitHub
     "github_user": "terrapower",  # Username
     "github_repo": "armi",  # Repo name
