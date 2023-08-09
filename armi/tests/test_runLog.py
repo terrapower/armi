@@ -135,8 +135,9 @@ class TestRunLog(unittest.TestCase):
         self.assertEqual(streamVal.count("test_warningReport"), 2, msg=streamVal)
 
         # bonus check: edge case in duplicates filter
-        log.logger = None
+        backupLog, log.logger = log.logger, None
         self.assertIsNone(log.getDuplicatesFilter())
+        log.logger = backupLog
 
     def test_warningReportInvalid(self):
         """A test of warningReport in an invalid situation."""
