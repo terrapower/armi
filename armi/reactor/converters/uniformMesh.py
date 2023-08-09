@@ -453,7 +453,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
         else:
             runLog.extra(f"Building copy of {r} with a uniform axial mesh.")
             self.convReactor = self.initNewReactor(r, self._cs)
-            # TODO: Update JOHN normalize reactor-level assem numbers
             self._generateUniformMesh(minimumMeshSize=self._minimumMeshSize)
             self._buildAllUniformAssemblies()
             self._mapStateFromReactorToOther(
@@ -536,7 +535,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
             for assem in self._sourceReactor.core.getAssemblies(
                 self._nonUniformMeshFlags
             ):
-                # TODO: JOHN: This doesn't need to be a loop......
                 for storedAssem in self._nonUniformAssemStorage:
                     if (
                         storedAssem.getName()

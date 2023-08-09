@@ -114,18 +114,24 @@ class Assembly(composites.Composite):
         except ValueError:
             return False
 
-    def makeUnique(self):
+    def renameBlocksAccordingToAssemblyNum(self):
         """
-        Function to make an assembly unique by getting a new assembly number.
+        Updates the names of all blocks to comply with the assembly number.
 
-        This also adjusts the assembly's blocks IDs. This is necessary when using
-        ``deepcopy`` to get a unique ``assemNum`` since a deepcopy implies it would
-        otherwise have been the same object.
+        Useful after an assembly number/name has been loaded from a snapshot and you
+        want to update all block names to be consistent.
+
+        It may be better to store block numbers on each block as params. A database that
+        can hold strings would be even better.
+
+        Notes
+        -----
+        You must run armi.reactor.reactors.Reactor.regenAssemblyLists after calling
+        this.
         """
-        # TODO: JOHN, explain it
-        self.p.assemNum = randint(-9e12, -1)
-        self.name = self.makeNameFromAssemNum(self.p.assemNum)
-        self.renameBlocksAccordingToAssemblyNum()
+        assemNum = self.getNum()
+        for bi, b in enumerate(self):
+            b.setName(b.makeName(assemNum, bi))
 
     @staticmethod
     def makeNameFromAssemNum(assemNum):
@@ -135,6 +141,34 @@ class Assembly(composites.Composite):
         AssemNums are like serial numbers for assemblies.
         """
         return "A{0:04d}".format(int(assemNum))
+
+    def renumber(self, newNum):
+        """
+        Change the assembly number of this assembly.
+
+        And handle the downstream impacts of changing the name of this Assembly and all
+        of the Blocks within this Assembly.
+
+        Parameters
+        ----------
+        newNum : int
+            The new Assembly number.
+        """
+        self.p.assemNum = int(newNum)
+        self.name = self.makeNameFromAssemNum(self.p.assemNum)
+        self.renameBlocksAccordingToAssemblyNum()
+
+    def makeUnique(self):
+        """
+        Function to make an assembly unique by getting a new assembly number.
+
+        This also adjusts the assembly's blocks IDs. This is necessary when using
+        ``deepcopy`` to get a unique ``assemNum`` since a deepcopy implies it would
+        otherwise have been the same object.
+        """
+        # Default to a random negative assembly number (unique enough)
+        self.p.assemNum = randint(-9e12, -1)
+        self.renumber(self.p.assemNum)
 
     def add(self, obj):
         """
@@ -1106,25 +1140,6 @@ class Assembly(composites.Composite):
             b.spatialLocator = self.spatialGrid[0, 0, zi]
             # update the name too. NOTE: You must update the history tracker.
             b.setName(b.makeName(self.p.assemNum, zi))
-
-    def renameBlocksAccordingToAssemblyNum(self):
-        """
-        Updates the names of all blocks to comply with the assembly number.
-
-        Useful after an assembly number/name has been loaded from a snapshot and you
-        want to update all block names to be consistent.
-
-        It may be better to store block numbers on each block as params. A database that
-        can hold strings would be even better.
-
-        Notes
-        -----
-        You must run armi.reactor.reactors.Reactor.regenAssemblyLists after calling
-        this.
-        """
-        assemNum = self.getNum()
-        for bi, b in enumerate(self):
-            b.setName(b.makeName(assemNum, bi))
 
     def countBlocksWithFlags(self, blockTypeSpec=None):
         """

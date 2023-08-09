@@ -366,7 +366,7 @@ def applyNonUniformHeightDistribution(reactor):
         a[-1].setHeight(a[-1].getHeight() - delta)
         a.calculateZCoords()
 
-    reactor.core.normalizeAssemblyNames()
+    reactor.normalizeNames()
 
 
 class TestUniformMesh(unittest.TestCase):

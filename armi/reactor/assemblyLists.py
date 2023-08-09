@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-r"""
+"""
 Module containing :py:class:`AssemblyList` and related classes.
 
 Assembly Lists are core-like objects that store collections of Assemblies. They were
@@ -21,7 +21,8 @@ spatial location of Assemblies need not be quite as precise.
 
 Presently, the :py:class:`armi.reactor.reactors.Core` constructs a spent fuel pool
 `self.sfp`. We are in the process of removing these as instance attributes of the
-``Core``, and moving them into sibling systems on the root :py:class:`armi.reactor.reactors.Reactor` object.
+``Core``, and moving them into sibling systems on the root
+:py:class:`armi.reactor.reactors.Reactor` object.
 """
 import abc
 import itertools
@@ -192,7 +193,7 @@ class AssemblyList(composites.Composite):
 class SpentFuelPool(AssemblyList):
     """A place to put assemblies when they've been discharged. Can tell you inventory stats, etc."""
 
-    def add(self, assem, loc=None):  # TODO: JOHN EXPLAIN IT
+    def add(self, assem, loc=None):
         """
         Add an Assembly to the list.
 
@@ -209,10 +210,11 @@ class SpentFuelPool(AssemblyList):
             to use the same indices, but move the locator to the Core's grid. With a
             locator, the associated ``AutoFiller`` will be used.
         """
-        # TODO: JOHN, explain
+        # If the assembly added has a negative ID, that is a placeholder, fix it.
         if assem.p.assemNum < 0:
-            assem.p.assemNum = self.r.incrementAssemNum()
-            assem.setName(assem.makeNameFromAssemNum(assem.p.assemNum))
+            # update the assembly count in the Reactor
+            newNum = self.r.incrementAssemNum()
+            assem.renumber(newNum)
 
         super().add(assem, loc)
 
@@ -241,3 +243,37 @@ class SpentFuelPool(AssemblyList):
                 self, totFis / 1000.0
             )
         )
+
+    def normalizeNames(self, startIndex=0):
+        """
+        Renumber and rename all the Assemblies and Blocks.
+
+        Parameters
+        ----------
+        startIndex : int, optional
+            The default is to start counting at zero. But if you are renumbering assemblies
+            across the entire Reactor, you may want to start at a different number.
+
+        Returns
+        -------
+        int
+            The new max Assembly number.
+        """
+        ind = startIndex
+        for a in self.getChildren():
+            oldName = a.getName()
+            newName = a.makeNameFromAssemNum(ind)
+            if oldName == newName:
+                ind += 1
+                continue
+
+            a.p.assemNum = ind
+            a.setName(newName)
+
+            for b in a:
+                axialIndex = int(b.name.split("-")[-1])
+                b.name = b.makeName(ind, axialIndex)
+
+            ind += 1
+
+        return int

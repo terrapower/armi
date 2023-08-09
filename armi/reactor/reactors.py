@@ -111,11 +111,39 @@ class Reactor(composites.Composite):
                 )
             self.core = cores[0]
 
-    # TODO: This might be unnecessary.
     def incrementAssemNum(self):
+        """
+        Increase the max assembly number by one and return the current value.
+
+        Returns
+        -------
+        int
+            The new max Assembly number.
+        """
         val = int(self.p.maxAssemNum)
         self.p.maxAssemNum += 1
         return val
+
+    def normalizeNames(self):
+        """
+        Renumber and rename all the Assemblies and Blocks.
+
+        This method normalizes the names in the Core then the SFP.
+
+        Returns
+        -------
+        int
+            The new max Assembly number.
+        """
+        self.p.maxAssemNum = 0
+
+        ind = self.core.normalizeNames(self.p.maxAssemNum)
+        self.p.maxAssemNum = ind
+
+        ind = self.sfp.normalizeNames(self.p.maxAssemNum)
+        self.p.maxAssemNum = ind
+
+        return ind
 
 
 def loadFromCs(cs) -> Reactor:
@@ -538,12 +566,24 @@ class Core(composites.Composite):
             self.parent.sfp.removeAll()
         self.blocksByName = {}
         self.assembliesByName = {}
-
         self.parent.p.maxAssemNum = 0
 
-    def normalizeAssemblyNames(self):
-        """TODO: JOHN."""
-        ind = 0
+    def normalizeNames(self, startIndex=0):
+        """
+        Renumber and rename all the Assemblies and Blocks.
+
+        Parameters
+        ----------
+        startIndex : int, optional
+            The default is to start counting at zero. But if you are renumbering assemblies
+            across the entire Reactor, you may want to start at a different number.
+
+        Returns
+        -------
+        int
+            The new max Assembly number.
+        """
+        ind = startIndex
         for a in self:
             oldName = a.getName()
             newName = a.makeNameFromAssemNum(ind)
@@ -560,18 +600,16 @@ class Core(composites.Composite):
 
             ind += 1
 
-        # NOTE: eliminated unnecessary repeated lookups in self for self.assembliesByName
+        # Update some bookkeeping dictionaries of assembly and block names in this Core.
         self.assembliesByName = {}
-        for (
-            assem
-        ) in (
-            self.getAssemblies()
-        ):  # TODO: JOHN! Put in REACTOR or something? includeSFP=True):
+        self.blocksByName = {}
+        for assem in self:
             self.assembliesByName[assem.getName()] = assem
+            for b in assem:
+                self.blocksByName[b.getName()] = b
 
-        # TODO: JOHN update block mapping (since we changed the names)
+        return ind
 
-    # TODO: JOHN! Fix assembly number when adding to Core (and maybe SFP???)
     def add(self, a, spatialLocator=None):
         """
         Adds an assembly to the reactor.
@@ -595,11 +633,11 @@ class Core(composites.Composite):
         # TODO: JOHN, explain
         # TODO: JOHN, perhaps create a method: Assembly.recursivelyRename(assemNum)
         if a.p.assemNum < 0:
-            a.p.assemNum = self.r.incrementAssemNum()
-            a.setName(a.makeNameFromAssemNum(a.p.assemNum))
-            for b in a:
-                axialIndex = int(b.name.split("-")[-1])
-                b.name = b.makeName(int(a.p.assemNum), axialIndex)
+            a.renumber(self.r.incrementAssemNum())
+            # a.setName(a.makeNameFromAssemNum(a.p.assemNum))
+            # for b in a:
+            #    axialIndex = int(b.name.split("-")[-1])  # TODO: is THIS unnecessary? JOHN?
+            #    b.name = b.makeName(int(a.p.assemNum), axialIndex)
 
         # resetting .assigned forces database to be rewritten for shuffled core
         paramDefs = set(parameters.ALL_DEFINITIONS)
