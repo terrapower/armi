@@ -728,8 +728,9 @@ class Database3:
         root = comps[0][0]
 
         if updateGlobalAssemNum:
-            raise DeprecationWarning(
-                "The method input `updateGlobalAssemNum` is no longer used."
+            raise runLog.warning(
+                "The method input `updateGlobalAssemNum` is no longer used.",
+                single=True,
             )
 
         # return a Reactor object

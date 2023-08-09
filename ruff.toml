@@ -11,6 +11,8 @@ required-version = "0.0.272"
 # TID - tidy imports
 select = ["E", "F", "D", "N801", "SIM", "TID"]
 
+# TODO: We want to support PLW0603 - don't use the global keyword
+
 # Ruff rules we ignore (for now) because they are not 100% automatable
 #
 # D100 - Missing docstring in public module
