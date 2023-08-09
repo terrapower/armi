@@ -728,7 +728,7 @@ class Database3:
         root = comps[0][0]
 
         if updateGlobalAssemNum:
-            raise runLog.warning(
+            runLog.warning(
                 "The method input `updateGlobalAssemNum` is no longer used.",
                 single=True,
             )
