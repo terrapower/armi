@@ -125,8 +125,7 @@ class Assembly(composites.Composite):
         # TODO: JOHN, explain it
         self.p.assemNum = randint(-9e12, -1)
         self.name = self.makeNameFromAssemNum(self.p.assemNum)
-        for bi, b in enumerate(self):
-            b.setName(b.makeName(self.p.assemNum, bi))
+        self.renameBlocksAccordingToAssemblyNum()
 
     @staticmethod
     def makeNameFromAssemNum(assemNum):
@@ -146,8 +145,7 @@ class Assembly(composites.Composite):
         """
         composites.Composite.add(self, obj)
         obj.spatialLocator = self.spatialGrid[0, 0, len(self) - 1]
-        # assemblies have bounds-based 1-D spatial grids. Adjust it to have the right
-        # value.
+        # assemblies have bounds-based 1-D spatial grids. Adjust it to the right value.
         if len(self.spatialGrid._bounds[2]) < len(self):
             self.spatialGrid._bounds[2][len(self)] = (
                 self.spatialGrid._bounds[2][len(self) - 1] + obj.getHeight()
