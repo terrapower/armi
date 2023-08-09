@@ -337,6 +337,28 @@ class HexReactorTests(ReactorTests):
         )
         self.assertEqual(numControlBlocks, 3)
 
+    def test_normalizeNames(self):
+        # these are the correct, normalized names
+        numAssems = 73
+        a = self.r.core.getFirstAssembly()
+        correctNames = [a.makeNameFromAssemNum(n) for n in range(numAssems)]
+
+        # validate the reactor is what we think now
+        self.assertEqual(len(self.r.core), numAssems)
+        currentNames = [a.getName() for a in self.r.core]
+        self.assertNotEqual(correctNames, currentNames)
+
+        # validate that we can normalize the names correctly once
+        self.r.normalizeNames()
+        currentNames = [a.getName() for a in self.r.core]
+        self.assertEqual(correctNames, currentNames)
+
+        # validate that repeated applications of this method are stable
+        for _ in range(3):
+            self.r.normalizeNames()
+            currentNames = [a.getName() for a in self.r.core]
+            self.assertEqual(correctNames, currentNames)
+
     def test_setB10VolOnCreation(self):
         """Test the setting of b.p.initialB10ComponentVol."""
         for controlBlock in self.r.core.getBlocks(Flags.CONTROL):

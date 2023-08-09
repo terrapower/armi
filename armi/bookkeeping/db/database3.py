@@ -727,6 +727,11 @@ class Database3:
         )
         root = comps[0][0]
 
+        if updateGlobalAssemNum:
+            raise DeprecationWarning(
+                "The method input `updateGlobalAssemNum` is no longer used."
+            )
+
         # return a Reactor object
         if cs[CONF_SORT_REACTOR]:
             root.sort()

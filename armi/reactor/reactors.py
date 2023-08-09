@@ -630,14 +630,9 @@ class Core(composites.Composite):
         --------
         removeAssembly : removes an assembly
         """
-        # TODO: JOHN, explain
-        # TODO: JOHN, perhaps create a method: Assembly.recursivelyRename(assemNum)
+        # Negative assembly IDs are placeholders, and we need to renumber the assembly
         if a.p.assemNum < 0:
             a.renumber(self.r.incrementAssemNum())
-            # a.setName(a.makeNameFromAssemNum(a.p.assemNum))
-            # for b in a:
-            #    axialIndex = int(b.name.split("-")[-1])  # TODO: is THIS unnecessary? JOHN?
-            #    b.name = b.makeName(int(a.p.assemNum), axialIndex)
 
         # resetting .assigned forces database to be rewritten for shuffled core
         paramDefs = set(parameters.ALL_DEFINITIONS)
