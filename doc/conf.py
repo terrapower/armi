@@ -137,7 +137,7 @@ extensions = [
     "sphinx_gallery.gen_gallery",
     "sphinx.ext.imgconverter",  # to convert GH Actions badge SVGs to PNG for LaTeX
     "sphinxcontrib.plantuml",
-    # "sphinx_needs",
+    "sphinx_needs",
     "sphinx_rtd_theme",  # needed here for loading jquery in sphinx 6
     "sphinxcontrib.jquery",  # see https://github.com/readthedocs/sphinx_rtd_theme/issues/1452
 ]
