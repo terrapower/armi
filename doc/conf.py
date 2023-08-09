@@ -240,16 +240,16 @@ html_logo = os.path.join(".static", "armiicon_24x24.ico")
 html_theme_options = {
     "style_external_links": True,
     "style_nav_header_background": "#233C5B",  # TP blue looks better than green
-    'logo_only': False,
-    'display_version': True,
-    'prev_next_buttons_location': 'bottom',
-    'vcs_pageview_mode': '',
+    "logo_only": False,
+    "display_version": True,
+    "prev_next_buttons_location": "bottom",
+    "vcs_pageview_mode": "",
     # Toc options
-    'collapse_navigation': True,
-    'sticky_navigation': True,
-    'navigation_depth': 4,
-    'includehidden': True,
-    'titles_only': False
+    "collapse_navigation": True,
+    "sticky_navigation": True,
+    "navigation_depth": 4,
+    "includehidden": True,
+    "titles_only": False,
 }
 
 # Add any paths that contain custom themes here, relative to this directory.
