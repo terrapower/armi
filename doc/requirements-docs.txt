@@ -39,8 +39,8 @@ ipykernel==6.25.1
 # used to generate UML diagrams
 pylint==2.17.5
 
-# used in numpydoc
-Jinja2==3.1.2
+# used in numpydoc and nbconvert
+Jinja2==3.0.3
 
 # deal with missing jquery errors 
 sphinxcontrib-jquery==4.1
