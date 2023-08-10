@@ -376,8 +376,8 @@ class DerivedShape(UnshapedComponent):
         if remainingVolume < 0:
             msg = (
                 f"The component areas in {self.parent} exceed the maximum "
-                f"allowable volume based on the geometry. Check that the "
-                f"geometry is defined correctly.\n"
+                "allowable volume based on the geometry. Check that the "
+                "geometry is defined correctly.\n"
                 f"Maximum allowable volume: {self.parent.getMaxVolume()} cm^3\n"
                 f"Volume of all non-derived shape components: {siblingVolume} cm^3\n"
             )

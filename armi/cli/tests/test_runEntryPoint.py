@@ -56,8 +56,8 @@ class TestInitializationEntryPoints(unittest.TestCase):
                     settingsArg,
                     msg=(
                         f"A settings file argument was expected for {entryPoint}, "
-                        f"but does not exist. This is a error in the EntryPoint "
-                        f"implementation."
+                        "but does not exist. This is a error in the EntryPoint "
+                        "implementation."
                     ),
                 )
 
