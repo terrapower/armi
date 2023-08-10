@@ -13,6 +13,7 @@
 # limitations under the License.
 """
 Plotting a multi-group scatter matrix.
+======================================
 
 Here we plot scatter matrices from an ISOTXS microscopic cross section library.
 We plot the inelastic scatter cross section of U235 as well as the (n,2n) source

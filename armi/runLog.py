@@ -61,7 +61,6 @@ _ADD_LOG_METHOD_STR = """def {0}(self, message, *args, **kws):
     if self.isEnabledFor({1}):
         self._log({1}, message, args, **kws)
 logging.Logger.{0} = {0}"""
-_WHITE_SPACE = " " * 6
 LOG_DIR = os.path.join(os.getcwd(), "logs")
 OS_SECONDS_TIMEOUT = 2 * 60
 SEP = "|"
@@ -88,7 +87,6 @@ class _RunLog:
         ----------
         mpiRank : int
             If this is zero, we are in the parent process, otherwise child process.
-            The default of 0 means we assume the parent process.
             This should not be adjusted after instantiation.
         """
         self._mpiRank = mpiRank
@@ -107,25 +105,49 @@ class _RunLog:
         self.logger = NullLogger("NULL")
         self.stderrLogger = NullLogger("NULL2", isStderr=True)
 
-    def _setLogLevels(self):
-        """Here we fill the logLevels dict with custom strings that depend on the MPI rank."""
+    @staticmethod
+    def getLogLevels(mpiRank):
+        """Helper method to build an important data object this class needs.
+
+        Parameters
+        ----------
+        mpiRank : int
+            If this is zero, we are in the parent process, otherwise child process.
+            This should not be adjusted after instantiation.
+        """
+        rank = "" if mpiRank == 0 else "-{:>03d}".format(mpiRank)
+
         # NOTE: using ordereddict so we can get right order of options in GUI
-        _rank = "" if self._mpiRank == 0 else "-{:>03d}".format(self._mpiRank)
-        self.logLevels = collections.OrderedDict(
+        return collections.OrderedDict(
             [
-                ("debug", (logging.DEBUG, "[dbug{}] ".format(_rank))),
-                ("extra", (15, "[xtra{}] ".format(_rank))),
-                ("info", (logging.INFO, "[info{}] ".format(_rank))),
-                ("important", (25, "[impt{}] ".format(_rank))),
-                ("prompt", (27, "[prmt{}] ".format(_rank))),
-                ("warning", (logging.WARNING, "[warn{}] ".format(_rank))),
-                ("error", (logging.ERROR, "[err {}] ".format(_rank))),
-                ("header", (100, "{}".format(_rank))),
+                ("debug", (logging.DEBUG, f"[dbug{rank}] ")),
+                ("extra", (15, f"[xtra{rank}] ")),
+                ("info", (logging.INFO, f"[info{rank}] ")),
+                ("important", (25, f"[impt{rank}] ")),
+                ("prompt", (27, f"[prmt{rank}] ")),
+                ("warning", (logging.WARNING, f"[warn{rank}] ")),
+                ("error", (logging.ERROR, f"[err {rank}] ")),
+                ("header", (100, f"{rank}")),
             ]
         )
+
+    @staticmethod
+    def getWhiteSpace(mpiRank):
+        """Helper method to build the white space used to left-adjust the log lines.
+
+        Parameters
+        ----------
+        mpiRank : int
+            If this is zero, we are in the parent process, otherwise child process.
+            This should not be adjusted after instantiation.
+        """
+        logLevels = _RunLog.getLogLevels(mpiRank)
+        return " " * len(max([ll[1] for ll in logLevels.values()]))
+
+    def _setLogLevels(self):
+        """Here we fill the logLevels dict with custom strings that depend on the MPI rank."""
+        self.logLevels = self.getLogLevels(self._mpiRank)
         self._logLevelNumbers = sorted([ll[0] for ll in self.logLevels.values()])
-        global _WHITE_SPACE
-        _WHITE_SPACE = " " * len(max([ll[1] for ll in self.logLevels.values()]))
 
         # modify the logging module strings for printing
         for longLogString, (logValue, shortLogString) in self.logLevels.items():
@@ -462,7 +484,8 @@ class DeduplicationFilter(logging.Filter):
                     return False
 
         # Handle some special string-mangling we want to do, for multi-line messages
-        record.msg = msg.rstrip().replace("\n", "\n" + _WHITE_SPACE)
+        whiteSpace = _RunLog.getWhiteSpace(context.MPI_RANK)
+        record.msg = msg.rstrip().replace("\n", "\n" + whiteSpace)
         return True
 
 
