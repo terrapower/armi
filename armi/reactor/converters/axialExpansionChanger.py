@@ -13,8 +13,10 @@
 # limitations under the License.
 """Enable component-wise axial expansion for assemblies and/or a reactor."""
 
+import collections
 from statistics import mean
 from typing import List
+from tabulate import tabulate
 
 from armi import runLog
 from armi.materials import material
@@ -132,6 +134,7 @@ class AxialExpansionChanger:
         self._detailedAxialExpansion = detailedAxialExpansion
         self.linked = None
         self.expansionData = None
+        self.massConservationLogger = None
 
     def performPrescribedAxialExpansion(
         self, a, componentLst: list, percents: list, setFuel=True
@@ -189,6 +192,10 @@ class AxialExpansionChanger:
         self.axiallyExpandAssembly()
 
     def reset(self):
+        for b in self.linked.a:
+            for c in getSolidComponents(b):
+                c.height = None
+        self.logger = None
         self.linked = None
         self.expansionData = None
 
@@ -213,6 +220,7 @@ class AxialExpansionChanger:
         the temperature distribution is the primary factor in determining the cumulative loss of mass conservation.
         Additional details will be documented in :ref:`axialExpansion` of the documentation.
         """
+        self.logger = AxialExpMassConservationSummaryLogger(a)
         self.linked = AssemblyAxialLinkage(a)
         self.expansionData = ExpansionData(
             a, setFuel=setFuel, expandFromTinputToThot=expandFromTinputToThot
@@ -250,7 +258,7 @@ class AxialExpansionChanger:
             runLog.warning(
                 f"No dummy block present at the top of {self.linked.a}! "
                 "Top most block will be artificially chopped "
-                "to preserve assembly height"
+                "to preserve assembly height. Mass will not be conserved!"
             )
             if self._detailedAxialExpansion:
                 msg = "Cannot run detailedAxialExpansion without a dummy block at the top of the assembly!"
@@ -259,15 +267,10 @@ class AxialExpansionChanger:
 
     def axiallyExpandAssembly(self):
         """Utilizes assembly linkage to do axial expansion."""
+        self.logger.populatePreExpansionLogs(self.expansionData)
         mesh = [0.0]
         numOfBlocks = self.linked.a.countBlocksWithFlags()
-        runLog.debug(
-            "Printing component expansion information (growth percentage and 'target component')"
-            f"for each block in assembly {self.linked.a}."
-        )
         for ib, b in enumerate(self.linked.a):
-            runLog.debug(msg=f"  Block {b}")
-            blockHeight = b.getHeight()
             # set bottom of block equal to top of block below it
             # if ib == 0, leave block bottom = 0.0
             if ib > 0:
@@ -275,9 +278,11 @@ class AxialExpansionChanger:
             isDummyBlock = ib == (numOfBlocks - 1)
             if not isDummyBlock:
                 for c in getSolidComponents(b):
+                    # populate pre-expansion component geometry
                     growFrac = self.expansionData.getExpansionFactor(c)
-                    runLog.debug(msg=f"      Component {c}, growFrac = {growFrac:.4e}")
-                    c.height = growFrac * blockHeight
+                    prevCompHeight = self._getCompHeight(c)
+                    # perform axial expansion
+                    c.height = growFrac * prevCompHeight
                     # align linked components
                     if ib == 0:
                         c.zbottom = 0.0
@@ -292,24 +297,19 @@ class AxialExpansionChanger:
                             c.zbottom = self.linked.linkedBlocks[b][0].p.ztop
                     c.ztop = c.zbottom + c.height
                     # update component number densities
-                    newNumberDensities = {
-                        nuc: c.getNumberDensity(nuc) / growFrac
-                        for nuc in c.getNuclides()
-                    }
-                    c.setNumberDensities(newNumberDensities)
+                    c.changeNDensByFactor(1.0 / growFrac)
                     # redistribute block boundaries if on the target component
                     if self.expansionData.isTargetComponent(c):
                         b.p.ztop = c.ztop
-                        b.p.height = b.p.ztop - b.p.zbottom
-            else:
-                b.p.height = b.p.ztop - b.p.zbottom
 
+            b.p.height = b.p.ztop - b.p.zbottom
             b.p.z = b.p.zbottom + b.getHeight() / 2.0
 
             _checkBlockHeight(b)
             # call component.clearCache to update the component volume, and therefore the masses, of all solid components.
             for c in getSolidComponents(b):
                 c.clearCache()
+                self.logger.populatePostExpansionLogs(c)
             # redo mesh -- functionality based on assembly.calculateZCoords()
             mesh.append(b.p.ztop)
             b.spatialLocator = self.linked.a.spatialGrid[0, 0, ib]
@@ -317,6 +317,16 @@ class AxialExpansionChanger:
         bounds = list(self.linked.a.spatialGrid._bounds)
         bounds[2] = array(mesh)
         self.linked.a.spatialGrid._bounds = tuple(bounds)
+        self.logger.computeMassDiffsAndPrint()
+
+    @staticmethod
+    def _getCompHeight(component) -> float:
+        """Get the component height, if doesn't exist, get parent block height."""
+        try:
+            compHeight = component.height
+        except AttributeError:
+            compHeight = component.parent.getHeight()
+        return compHeight
 
     def manageCoreMesh(self, r):
         """Manage core mesh post assembly-level expansion.
@@ -747,7 +757,7 @@ class ExpansionData:
                 self._componentDeterminesBlockHeight[
                     b.getComponentByName(b.p.axialExpTargetComponent)
                 ] = True
-            elif b.hasFlags(Flags.PLENUM) or b.hasFlags(Flags.ACLP):
+            elif b.hasFlags(Flags.PLENUM):
                 self.determineTargetComponent(b, Flags.CLAD)
             elif b.hasFlags(Flags.DUMMY):
                 self.determineTargetComponent(b, Flags.COOLANT)
@@ -840,3 +850,140 @@ class ExpansionData:
             Component to check target component status
         """
         return bool(c in self._componentDeterminesBlockHeight)
+
+
+class AxialExpMassConservationSummaryLogger:
+    """Class to log and print axial expansion mass conservation."""
+
+    # do not do logging for verbosity levels greater than or equal to
+    _LOGGING_VERBOSITY_THRESHOLD = runLog.LOG.logLevels["info"][0]
+
+    # set dictionary key order for mass conservation summary report
+    _KEY_ORDER = [
+        "Block",
+        "Component",
+        "GrowFrac",
+        "(prev) c.bottom",
+        "(prev) c.top",
+        "(prev) c.height",
+        "(post) c.bottom",
+        "(post) c.top",
+        "(post) c.height",
+        "(prev) mass",
+        "(post) mass",
+        "(post - prev) mass",
+    ]
+
+    def __init__(self, assembly) -> None:
+        self.runLogVerbosity = runLog.getVerbosity()
+        self.massConservationReport = {}
+        self.detailedMassConservationReport = collections.defaultdict(list)
+        self.a = assembly
+        self.preMass = {}
+        self.prevMaterialMasses = collections.defaultdict(float)
+        self.prevComponentMasses = collections.defaultdict(float)
+        self.postMaterialMasses = collections.defaultdict(float)
+        self.postComponentMasses = collections.defaultdict(float)
+
+    def populatePreExpansionLogs(self, expData: ExpansionData):
+        """Set up conservation report information (useful for debugging)."""
+        if self.runLogVerbosity >= self._LOGGING_VERBOSITY_THRESHOLD:
+            return
+        for b in self.a:
+            self.detailedMassConservationReport["Block"].append(b)
+            for ic, c in enumerate(getSolidComponents(b)):
+                # populate pre-expansion mass values
+                self.detailedMassConservationReport["Component"].append(c)
+                if ic > 0:
+                    self.detailedMassConservationReport["Block"].append(" ")
+                self.preMass[c] = c.getMass()
+                self.prevMaterialMasses[c.material.name] += self.preMass[c]
+                self.prevComponentMasses[c.name] += self.preMass[c]
+                self.detailedMassConservationReport["(prev) mass"].append(
+                    self.preMass[c]
+                )
+                # populate pre-expansion component geometries
+                growFrac = expData.getExpansionFactor(c)
+                prevCompHeight = AxialExpansionChanger._getCompHeight(c)
+                self.detailedMassConservationReport["GrowFrac"].append(growFrac)
+                self.detailedMassConservationReport["(prev) c.bottom"].append(
+                    b.p.zbottom
+                )
+                self.detailedMassConservationReport["(prev) c.top"].append(b.p.ztop)
+                self.detailedMassConservationReport["(prev) c.height"].append(
+                    prevCompHeight
+                )
+        self.massConservationReport[self.a] = (
+            list(self.prevMaterialMasses.keys())
+            + [None]
+            + list(self.prevComponentMasses.keys())
+        )
+        self.massConservationReport["(prev) mass"] = (
+            list(self.prevMaterialMasses.values())
+            + [None]
+            + list(self.prevComponentMasses.values())
+        )
+
+    def populatePostExpansionLogs(self, c):
+        if self.runLogVerbosity >= self._LOGGING_VERBOSITY_THRESHOLD:
+            return
+        # populate post-expansion component mass
+        postExpMass = c.getMass()
+        self.postMaterialMasses[c.material.name] += postExpMass
+        self.postComponentMasses[c.name] += postExpMass
+        self.detailedMassConservationReport["(post) mass"].append(postExpMass)
+        self.detailedMassConservationReport["(post - prev) mass"].append(
+            postExpMass - self.preMass[c]
+        )
+        # populate post-expansion component geometry
+        try:
+            self.detailedMassConservationReport["(post) c.bottom"].append(c.zbottom)
+            self.detailedMassConservationReport["(post) c.top"].append(c.ztop)
+            self.detailedMassConservationReport["(post) c.height"].append(c.height)
+        except AttributeError:
+            # occurs when no dummy block present. The solid component do not go through the expansion changer
+            # and therefore zbotton, ztop, and height are never set. Just use the chopped parent block instead.
+            self.detailedMassConservationReport["(post) c.bottom"].append(
+                c.parent.p.zbottom
+            )
+            self.detailedMassConservationReport["(post) c.top"].append(c.parent.p.ztop)
+            self.detailedMassConservationReport["(post) c.height"].append(
+                c.parent.getHeight()
+            )
+
+    def computeMassDiffsAndPrint(self):
+        if self.runLogVerbosity >= self._LOGGING_VERBOSITY_THRESHOLD:
+            return
+        # populate remaining post-expansion criteria for conservation reports
+        self.massConservationReport["(post) mass"] = (
+            list(self.postMaterialMasses.values())
+            + [None]
+            + list(self.postComponentMasses.values())
+        )
+        # check for differences in pre and post expansion mass greater than 1e-9 grams
+        diff = [
+            round(new - orig, 9) if new else None
+            for new, orig in zip(
+                self.massConservationReport["(post) mass"],
+                self.massConservationReport["(prev) mass"],
+            )
+        ]
+        self.massConservationReport["round(post - prev, 9)"] = diff
+        if any(diff):
+            # log the high level mass conservation report
+            runLog.extra(
+                tabulate(self.massConservationReport, headers="keys", floatfmt="0.8e")
+            )
+            # log the detailed mass conservation report
+            self.detailedMassConservationReport = (
+                self._setOrderForDetailedMassConservationReport()
+            )
+            runLog.debug(
+                tabulate(
+                    self.detailedMassConservationReport, headers="keys", floatfmt="0.8e"
+                )
+            )
+
+    def _setOrderForDetailedMassConservationReport(self) -> dict:
+        """Return the detailed mass conservation report dictionary in a useful order."""
+        return {i: self.detailedMassConservationReport[i] for i in self._KEY_ORDER}

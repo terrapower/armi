@@ -40,7 +40,7 @@ blocks:
             Thot: 450.0
             ip: grid.op
             mult: 1.0
-            op: 16.75
+            op: 16.8
     
     duct: &block_duct
         coolant: *component_coolant
@@ -59,7 +59,7 @@ blocks:
             Thot: 450.0
             ip: duct.op
             mult: 1.0
-            op: 16.75
+            op: 16.8
 
     SodiumBlock : &block_dummy
         flags: dummy
@@ -70,7 +70,7 @@ blocks:
             Thot: 450.0
             ip: 0.0
             mult: 1.0
-            op: 16.75
+            op: 16.8
 
     ## ------------------------------------------------------------------------------------
     ## fuel blocks
@@ -188,7 +188,14 @@ blocks:
         clad: *component_plenum_clad
         wire: *component_plenum_wire
         coolant: *component_coolant
-        duct: *component_duct
+        duct: &component_aclp_duct
+            shape: Hexagon
+            material: HT9
+            Tinput: 25.0
+            Thot: 450.0
+            ip: 16.0
+            mult: 1.0
+            op: 16.7
         intercoolant: *component_intercoolant
 
     fuel2: &block_fuel2
@@ -353,7 +360,7 @@ blocks:
             Thot: 450.0
             ip: duct.op
             mult: 1.0
-            op: 16.75
+            op: 16.8
 
     moveable control: &block_control
         control:
@@ -407,7 +414,7 @@ blocks:
         clad: *component_control_clad
         wire: *component_control_wire
         coolant: *component_coolant
-        innderDuct: *component_control_innerDuct
+        innerDuct: *component_control_innerDuct
         duct: *component_control_duct
         intercoolant: *component_control_intercoolant
 
@@ -465,7 +472,7 @@ blocks:
         clad: *component_radial_shield_clad
         wire: *component_radial_shield_wire
         coolant: *component_coolant
-        duct: *component_duct
+        duct: *component_aclp_duct
         intercoolant: *component_intercoolant
         axial expansion target component: clad # not necessary, but useful for testing coverage
 

@@ -294,7 +294,7 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
         """
         _oCold, rCold = loadTestReactor(
             os.path.join(TEST_ROOT, "detailedAxialExpansion"),
-            customSettings={"inputHeightsConsideredHot": False},
+            customSettings={"inputHeightsConsideredHot": False, "verbosity": "extra"},
         )
         assems = list(rCold.blueprints.assemblies.values())
         for a in assems:
@@ -317,20 +317,29 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
                     axialExpChngr.expansionData.updateComponentTemp(
                         c, c.temperatureInC + temp
                     )
-            # get U235/B10 and FE56 mass pre-expansion
-            prevFE56Mass = a.getMass("FE56")
-            prevMass = self._getMass(a)
             # compute thermal expansion coeffs and expand
             axialExpChngr.expansionData.computeThermalExpansionFactors()
             axialExpChngr.axiallyExpandAssembly()
-            # ensure that total U235/B10 and FE56 mass is conserved post-expansion
-            newFE56Mass = a.getMass("FE56")
-            newMass = self._getMass(a)
-            self.assertAlmostEqual(
-                newFE56Mass / prevFE56Mass, 1.0, places=14, msg=f"{a}"
-            )
-            if newMass:
-                self.assertAlmostEqual(newMass / prevMass, 1.0, places=14, msg=f"{a}")
+            # check for mass conservation
+            for i, v in enumerate(axialExpChngr.logger.massConservationReport[a]):
+                if v is None:
+                    continue
+                elif v == "HT9" or v == "duct":
+                    # HT9 and duct mass will have slight non-conservation
+                    # due to the mass transfer of the aclp duct.
+                    self.assertLess(
+                        axialExpChngr.logger.massConservationReport[
+                            "round(post - prev, 9)"
+                        ][i],
+                        1.0e-2,
+                    )
+                else:
+                    self.assertEqual(
+                        axialExpChngr.logger.massConservationReport[
+                            "round(post - prev, 9)"
+                        ][i],
+                        0.0,
+                    )
 
         newMasses, newNDens = self._getComponentMassAndNDens(a)
         # make sure that the assembly returned to the original state
@@ -338,18 +347,6 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
             self.assertAlmostEqual(orig, new, places=12, msg=f"{a}")
         self._checkMass(origMasses, newMasses)
         self._checkNDens(origNDens, newNDens, 1.0)
-
-    @staticmethod
-    def _getMass(a):
-        """Get the mass of an assembly. The conservation of HT9 pins in shield assems
-        are accounted for in FE56 conservation checks.
-        """
-        newMass = None
-        if a.hasFlags(Flags.FUEL):
-            newMass = a.getMass("U235")
-        elif a.hasFlags(Flags.CONTROL):
-            newMass = a.getMass("B10")
-        return newMass
 
     def test_PrescribedExpansionContractionConservation(self):
         """Expand all components and then contract back to original state.
@@ -444,9 +441,7 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
         assembly.add(_buildTestBlock("fuel", "FakeMat", 25.0, 10.0))
         assembly.add(_buildTestBlock("fuel", "FakeMat", 25.0, 10.0))
         assembly.add(_buildTestBlock("plenum", "FakeMat", 25.0, 10.0))
-        assembly.add(
-            _buildTestBlock("aclp", "FakeMat", 25.0, 10.0)
-        )  # "aclp plenum" also works
+        assembly.add(_buildTestBlock("aclp plenum", "FakeMat", 25.0, 10.0))
         assembly.add(_buildTestBlock("plenum", "FakeMat", 25.0, 10.0))
         assembly.add(_buildDummySodium(25.0, 10.0))
         assembly.calculateZCoords()
@@ -480,8 +475,12 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
     def test_reset(self):
         self.obj.setAssembly(self.a)
         self.obj.reset()
+        for b in self.a:
+            for c in getSolidComponents(b):
+                self.assertIsNone(c.height)
         self.assertIsNone(self.obj.linked)
         self.assertIsNone(self.obj.expansionData)
+        self.assertIsNone(self.obj.logger)
 
     def test_computeThermalExpansionFactors(self):
         """Ensure expansion factors are as expected."""
@@ -523,7 +522,7 @@ class TestManageCoreMesh(unittest.TestCase):
 
         self.oldAxialMesh = self.r.core.p.axialMesh
         # expand refAssem by 1.01 L1/L0
-        componentLst = [c for b in self.r.core.refAssem for c in b]
+        componentLst = [c for b in self.r.core.refAssem for c in getSolidComponents(b)]
         expansionGrowthFracs = 1.01 + zeros(len(componentLst))
         self.axialExpChngr.performPrescribedAxialExpansion(
             self.r.core.refAssem, componentLst, expansionGrowthFracs, setFuel=True
