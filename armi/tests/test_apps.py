@@ -24,6 +24,8 @@ from armi import getDefaultPluginManager
 from armi import isStableReleaseVersion
 from armi import meta
 from armi import plugins
+from armi import utils
+from armi.reactor.flags import Flags
 from armi.__main__ import main
 
 
@@ -35,6 +37,11 @@ class TestPlugin1(plugins.ArmiPlugin):
     def defineParameterRenames():
         return {"oldType": "type"}
 
+    @staticmethod
+    @plugins.HOOKIMPL
+    def defineFlags():
+        return {"FLAG1": utils.flags.auto()}
+
 
 class TestPlugin2(plugins.ArmiPlugin):
     """This should lead to an error if it coexists with Plugin1."""
@@ -43,6 +50,11 @@ class TestPlugin2(plugins.ArmiPlugin):
     @plugins.HOOKIMPL
     def defineParameterRenames():
         return {"oldType": "type"}
+
+    @staticmethod
+    @plugins.HOOKIMPL
+    def defineFlags():
+        return {"FLAG2": utils.flags.auto()}
 
 
 class TestPlugin3(plugins.ArmiPlugin):
@@ -118,6 +130,25 @@ class TestApps(unittest.TestCase):
             plugins.PluginError, ".*currently-defined parameters.*"
         ):
             app.getParamRenames()
+
+    def test_registerPluginFlags(self):
+        # set up the app, pm, and register some plugins
+        app = getApp()
+        app.pluginManager.register(TestPlugin1)
+        app.pluginManager.register(TestPlugin2)
+        app.pluginManager.register(TestPlugin3)  # Test a plugin with no flags.
+
+        # call the method we want to test
+        app.pluginManager.registerPluginFlags()
+
+        # validate our flags have been registered
+        self.assertEqual(Flags.fromString("FLAG1"), Flags.FLAG1)
+        self.assertEqual(Flags.fromString("FLAG2"), Flags.FLAG2)
+
+        # validate we can only register the flags once
+        for _ in range(3):
+            with self.assertRaises(RuntimeError):
+                app.pluginManager.registerPluginFlags()
 
     def test_getParamRenamesInvalids(self):
         # a basic test of the method
