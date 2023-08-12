@@ -63,7 +63,7 @@ settings:
   percentNaReduction: 10.0
   power: 100000000.0
   shuffleLogic: refSmallReactorShuffleLogic.py
-  smallRun: true
+  rmExternalFilesAtEOL: true
   summarizeAssemDesign: false
   targetK: 1.002
   transientForSensitivity: ''

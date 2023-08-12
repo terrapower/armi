@@ -95,10 +95,10 @@ CONF_PLOTS = "plots"
 CONF_POWER = "power"
 CONF_POWER_FRACTIONS = "powerFractions"
 CONF_PROFILE = "profile"
-CONF_REALLY_SMALL_RUN = "reallySmallRun"
+CONF_RM_EXT_FILES_AT_BOC = "rmExternalFilesAtBOC"
 CONF_RUN_TYPE = "runType"
 CONF_SKIP_CYCLES = "skipCycles"
-CONF_SMALL_RUN = "smallRun"
+CONF_SMALL_RUN = "rmExternalFilesAtEOL"
 CONF_SORT_REACTOR = "sortReactor"
 CONF_START_CYCLE = "startCycle"
 CONF_START_NODE = "startNode"
@@ -697,7 +697,7 @@ def defineSettings() -> List[setting.Setting]:
             description="Deprecation Warning! This setting will be remove by 2024.",
         ),
         setting.Setting(
-            CONF_REALLY_SMALL_RUN,
+            CONF_RM_EXT_FILES_AT_BOC,
             default=False,
             label="Clean Up Files at BOC",
             description="Clean up files at the beginning of each cycle (BOC)",
