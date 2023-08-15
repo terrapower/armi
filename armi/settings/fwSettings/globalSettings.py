@@ -142,10 +142,10 @@ def defineSettings() -> List[setting.Setting]:
             label="Initialize Burn Chain",
             description=(
                 f"This setting is paired with the `{CONF_BURN_CHAIN_FILE_NAME}` setting. "
-                f"When enabled, this will initialize the burn-chain on initializing the case and "
-                f"is required for running depletion calculations where the transmutations and decays "
-                f"are controlled by the framework. If an external software, such as ORIGEN, contains "
-                f"data for the burn-chain already embedded then this may be disabled."
+                "When enabled, this will initialize the burn-chain on initializing the case and "
+                "is required for running depletion calculations where the transmutations and decays "
+                "are controlled by the framework. If an external software, such as ORIGEN, contains "
+                "data for the burn-chain already embedded then this may be disabled."
             ),
         ),
         setting.Setting(

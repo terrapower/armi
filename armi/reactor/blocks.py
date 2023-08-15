@@ -847,7 +847,7 @@ class Block(composites.Composite):
             runLog.warning(
                 f"More than one boron10-containing component found  in {self.name}. "
                 f"Only {b10Comp} will be considered for calculation of initialB10ComponentVol "
-                f"Since adding multiple volumes is not conservative for captures/cc."
+                "Since adding multiple volumes is not conservative for captures/cc."
                 f"All compos found {b10Comps}",
                 single=True,
             )

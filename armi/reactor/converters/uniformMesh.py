@@ -200,7 +200,7 @@ class UniformMeshGenerator:
         )
 
         runLog.extra(
-            f"Attempting to honor control and fuel material boundaries in uniform mesh "
+            "Attempting to honor control and fuel material boundaries in uniform mesh "
             f"for {self} while also keeping minimum mesh size of {self.minimumMeshSize}. "
             f"Material boundaries are: {allMatBounds}"
         )
@@ -420,7 +420,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
         if self._hasNonUniformAssems:
             runLog.extra(
                 f"Replacing non-uniform assemblies in reactor {r}, "
-                f"with assemblies whose axial mesh is uniform with "
+                "with assemblies whose axial mesh is uniform with "
                 f"the core's reference assembly mesh: {r.core.refAssem.getAxialMesh()}"
             )
             self.convReactor = self._sourceReactor
@@ -560,8 +560,8 @@ class UniformMeshGeometryConverter(GeometryConverter):
                     runLog.error(
                         f"No assembly matching name {assem.getName()} "
                         f"was found in the temporary storage list. {assem} "
-                        f"will persist as an axially unified assembly. "
-                        f"This is likely not intended."
+                        "will persist as an axially unified assembly. "
+                        "This is likely not intended."
                     )
 
             self._sourceReactor.core.updateAxialMesh()
@@ -775,12 +775,12 @@ class UniformMeshGeometryConverter(GeometryConverter):
                 continue
             elif not sourceBlocksInfo:
                 raise ValueError(
-                    f"An error occurred when attempting to map to the "
+                    "An error occurred when attempting to map to the "
                     f"results from {sourceAssembly} to {destinationAssembly}. "
                     f"No blocks in {sourceAssembly} exist between the axial "
                     f"elevations of {zLower:<12.5f} cm and {zUpper:<12.5f} cm. "
-                    f"This a major bug in the uniform mesh converter that should "
-                    f"be reported to the developers."
+                    "This a major bug in the uniform mesh converter that should "
+                    "be reported to the developers."
                 )
 
             if mapNumberDensities:
