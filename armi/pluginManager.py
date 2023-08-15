@@ -15,8 +15,6 @@
 
 import pluggy
 
-from armi.reactor.flags import Flags
-
 
 class ArmiPluginManager(pluggy.PluginManager):
     """
@@ -34,7 +32,6 @@ class ArmiPluginManager(pluggy.PluginManager):
         pluggy.PluginManager.__init__(self, *args, **kwargs)
 
         self._counter = 0
-        self._pluginFlagsRegistered = False
 
     @property
     def counter(self):
@@ -47,22 +44,3 @@ class ArmiPluginManager(pluggy.PluginManager):
     def unregister(self, *args, **kwargs):
         self._counter += 1
         pluggy.PluginManager.unregister(self, *args, **kwargs)
-
-    def registerPluginFlags(self):
-        """
-        Apply flags specified in the passed ``PluginManager`` to the ``Flags`` class.
-
-        See Also
-        --------
-        armi.plugins.ArmiPlugin.defineFlags
-        """
-        if self._pluginFlagsRegistered:
-            raise RuntimeError(
-                "Plugin flags have already been registered. Cannot do it twice!"
-            )
-
-        for pluginFlags in self.hook.defineFlags():
-            Flags.extend(pluginFlags)
-
-        self._pluginFlagsRegistered = True
-
