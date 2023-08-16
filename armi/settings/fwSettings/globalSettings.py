@@ -17,9 +17,6 @@ Framework-wide settings definitions and constants.
 
 This should contain Settings definitions for general-purpose "framework" settings. These
 should only include settings that are not related to any particular physics or plugins.
-
-TODO: There are lots of settings in here that violate the above rule, which still need
-to be migrated to their respective plugins: they are clearly separated for review.
 """
 import os
 from typing import List
