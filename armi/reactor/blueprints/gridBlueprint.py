@@ -574,7 +574,7 @@ def saveToStream(stream, bluep, full=False, tryMap=False):
                 aMap.gridContentsToAscii()
             except Exception as e:
                 runLog.warning(
-                    f"The `lattice map` for the current assembly arrangement cannot be written. "
+                    "The `lattice map` for the current assembly arrangement cannot be written. "
                     f"Defaulting to using the `grid contents` dictionary instead. Exception: {e}"
                 )
                 aMap = None
