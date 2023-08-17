@@ -1965,13 +1965,6 @@ class HexBlock(Block):
                     pinToDuctGap, self
                 )
             )
-            wire = self.getComponent(Flags.WIRE)
-            wireThicknesses = wire.getDimension("od", cold=False)
-            if pinToDuctGap < wireThicknesses:
-                raise ValueError(
-                    "Gap between pins and duct is {0:.4f} cm in {1} which does not allow room for the wire "
-                    "with diameter {2}".format(pinToDuctGap, self, wireThicknesses)
-                )
         elif pinToDuctGap is None:
             # only produce a warning if pin or clad are found, but not all of pin, clad and duct. We
             # may need to tune this logic a bit
