@@ -38,7 +38,7 @@ from armi.reactor.flags import Flags
 from armi.reactor.parameters.exceptions import ParameterError, ParameterDefinitionError
 
 # bitwise masks for high-speed operations on the `assigned` attribute
-# (see http://www.vipan.com/htdocs/bitwisehelp.html)
+# see: https://web.archive.org/web/20120225043338/http://www.vipan.com/htdocs/bitwisehelp.html
 # Note that the various operations are responsible for clearing the flags on the events.
 # These should be interpreted as:
 #   The Parameter or ParameterCollection has been modified SINCE_<time-description>
