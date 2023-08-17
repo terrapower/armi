@@ -407,7 +407,7 @@ class INuclide(NuclideInterface):
                         runLog.info(
                             f"nuSF provided for {self} will be updated from "
                             f"{self.nuSF:<8.6e} to {userSpontaneousFissionYield:<8.6e} based on "
-                            f"user provided burn-chain data."
+                            "user provided burn-chain data."
                         )
                         self.nuSF = userSpontaneousFissionYield
             else:

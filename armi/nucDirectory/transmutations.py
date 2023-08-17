@@ -229,7 +229,7 @@ class DecayMode(Transmutable):
                 runLog.info(
                     f"Half-life provided for {self} will be updated from "
                     f"{parent.halflife:<15.11e} to {userHalfLife:<15.11e} seconds based on "
-                    f"user provided burn-chain data."
+                    "user provided burn-chain data."
                 )
 
                 self.halfLifeInSeconds = userHalfLife
