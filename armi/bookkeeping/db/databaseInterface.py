@@ -281,7 +281,6 @@ class DatabaseInterface(interfaces.Interface):
                 "The cycle history up to the restart cycle/node must be equivalent."
             )
 
-    # TODO: The use of "yield" here is suspect.
     def _getLoadDB(self, fileName):
         """
         Return the database to load from in order of preference.
