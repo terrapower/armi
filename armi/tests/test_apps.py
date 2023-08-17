@@ -24,6 +24,8 @@ from armi import getDefaultPluginManager
 from armi import isStableReleaseVersion
 from armi import meta
 from armi import plugins
+from armi import utils
+from armi.reactor.flags import Flags
 from armi.__main__ import main
 
 
@@ -118,6 +120,19 @@ class TestApps(unittest.TestCase):
             plugins.PluginError, ".*currently-defined parameters.*"
         ):
             app.getParamRenames()
+
+    def test_registerPluginFlags(self):
+        # set up the app, pm, and register some plugins
+        app = getApp()
+
+        # validate our flags have been registered
+        self.assertEqual(Flags.fromString("FUEL"), Flags.FUEL)
+        self.assertEqual(Flags.fromString("PRIMARY"), Flags.PRIMARY)
+
+        # validate we can only register the flags once
+        for _ in range(3):
+            with self.assertRaises(RuntimeError):
+                app.registerPluginFlags()
 
     def test_getParamRenamesInvalids(self):
         # a basic test of the method
