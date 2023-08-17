@@ -69,6 +69,8 @@ class Category:
     * `neutronics` parameters are calculated in a neutronics global flux solve
     * `gamma` parameters are calculated in a fixed-source gamma solve
     * `detailedAxialExpansion` parameters are marked as such so that they are mapped from the uniform mesh back to the non-uniform mesh
+    * `reactivity coefficients` parameters are related to reactivity coefficient or kinetics parameters for kinetics solutions
+    * `thermal hydraulics` parameters come from a thermal hydraulics physics plugin (e.g., flow rates, temperatures, etc.)
     """
 
     depletion = "depletion"
@@ -82,6 +84,8 @@ class Category:
     neutronics = "neutronics"
     gamma = "gamma"
     detailedAxialExpansion = "detailedAxialExpansion"
+    reactivityCoefficients = "reactivity coefficients"
+    thermalHydraulics = "thermal hydraulics"
 
 
 class ParamLocation(enum.Flag):

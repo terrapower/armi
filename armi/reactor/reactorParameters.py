@@ -559,6 +559,12 @@ def defineCoreParameters():
         )
 
         pb.defParam(
+            "rxFuelAxialExpansionCoeffPerPercent",
+            units="dk/kk'-%",
+            description="Fuel Axial Expansion Coefficient",
+        )
+
+        pb.defParam(
             "rxGridPlateRadialExpansionCoeffPerTemp",
             units="dk/kk'-K",
             description="Grid Plate Radial Expansion Coefficient",
