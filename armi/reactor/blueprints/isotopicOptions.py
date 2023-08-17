@@ -580,7 +580,7 @@ def autoUpdateNuclideFlags(cs, nuclideFlags, inerts):
     nbs = getAllNuclideBasesByLibrary(cs)
     if nbs:
         runLog.info(
-            f"Adding explicit fission products to the nuclide flags based on the "
+            "Adding explicit fission products to the nuclide flags based on the "
             f"fission product model set to `{cs[CONF_FP_MODEL]}`."
         )
         for nb in nbs:
@@ -605,8 +605,8 @@ def getAllNuclideBasesByLibrary(cs):
             nbs = nuclideBases.byMcc3Id.values()
         else:
             raise ValueError(
-                f"An option to handle the `CONF_FISSION_PRODUCT_LIBRARY_NAME` "
+                "An option to handle the `CONF_FISSION_PRODUCT_LIBRARY_NAME` "
                 f"set to `{cs[CONF_FISSION_PRODUCT_LIBRARY_NAME]}` has not been "
-                f"implemented."
+                "implemented."
             )
     return nbs

@@ -39,7 +39,7 @@ def _getFuelPerformanceBlockParams():
         def gasReleaseFraction(self, value):
             if value < 0.0 or value > 1.0:
                 raise ValueError(
-                    f"Cannot set a gas release fraction "
+                    "Cannot set a gas release fraction "
                     f"of {value} outside of the bounds of [0.0, 1.0]"
                 )
             self._p_gasReleaseFraction = value
@@ -55,7 +55,7 @@ def _getFuelPerformanceBlockParams():
         def bondRemoved(self, value):
             if value < 0.0 or value > 1.0:
                 raise ValueError(
-                    f"Cannot set a bond removed "
+                    "Cannot set a bond removed "
                     f"of {value} outside of the bounds of [0.0, 1.0]"
                 )
             self._p_bondRemoved = value

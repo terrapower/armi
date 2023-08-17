@@ -307,7 +307,7 @@ def configure(app: Optional[apps.App] = None, permissive=False):
     pm = app.pluginManager
     parameters.collectPluginParameters(pm)
     parameters.applyAllParameters()
-    flags.registerPluginFlags(pm)
+    _app.registerPluginFlags()
 
 
 def applyAsyncioWindowsWorkaround() -> None:
