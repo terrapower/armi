@@ -71,6 +71,7 @@ CONF_EXPLICIT_REPEAT_SHUFFLES = "explicitRepeatShuffles"
 CONF_FLUX_RECON = "fluxRecon"  # strange coupling in fuel handlers
 CONF_FRESH_FEED_TYPE = "freshFeedType"
 CONF_GEOM_FILE = "geomFile"
+CONF_GROW_TO_FULL_CORE_AFTER_LOAD = "growToFullCoreAfterLoad"
 CONF_INDEPENDENT_VARIABLES = "independentVariables"
 CONF_INITIALIZE_BURN_CHAIN = "initializeBurnChain"
 CONF_INPUT_HEIGHTS_HOT = "inputHeightsConsideredHot"
@@ -93,6 +94,7 @@ CONF_POWER = "power"
 CONF_POWER_FRACTIONS = "powerFractions"
 CONF_PROFILE = "profile"
 CONF_REALLY_SMALL_RUN = "reallySmallRun"
+CONF_REMOVE_PER_CYCLE = "removePerCycle"
 CONF_RUN_TYPE = "runType"
 CONF_SKIP_CYCLES = "skipCycles"
 CONF_SMALL_RUN = "smallRun"
@@ -113,14 +115,6 @@ CONF_USER_PLUGINS = "userPlugins"
 CONF_VERBOSITY = "verbosity"
 CONF_VERSIONS = "versions"
 CONF_ZONE_DEFINITIONS = "zoneDefinitions"
-
-# TODO: Unused by ARMI, slated for removal
-CONF_CONDITIONAL_MODULE_NAME = "conditionalModuleName"  # mcfr
-CONF_GROW_TO_FULL_CORE_AFTER_LOAD = "growToFullCoreAfterLoad"  # mcnp & gui
-CONF_MEM_PER_NODE = "memPerNode"  # unused
-CONF_NUM_CONTROL_BLOCKS = "numControlBlocks"  # unused
-CONF_REMOVE_PER_CYCLE = "removePerCycle"  # crucible, equilibrium, gui
-CONF_USE_INPUT_TEMPERATURES_ON_DBLOAD = "useInputTemperaturesOnDBLoad"  # unused
 
 
 def defineSettings() -> List[setting.Setting]:
@@ -196,14 +190,6 @@ def defineSettings() -> List[setting.Setting]:
                 "This is a flag to determine if block heights, as provided in blueprints, are at hot dimensions. "
                 "If false, block heights are at cold/as-built dimensions and will be thermally expanded as appropriate."
             ),
-        ),
-        setting.Setting(
-            CONF_CONDITIONAL_MODULE_NAME,
-            default="",
-            label="Burn End Conditional",
-            description="File name (directory not included) of the Python "
-            "module that contains a conditional function to determine the end of burn "
-            "cycles",
         ),
         setting.Setting(
             CONF_AUTOMATIC_VARIABLE_MESH,
@@ -572,12 +558,6 @@ def defineSettings() -> List[setting.Setting]:
             schema=vol.All(vol.Coerce(float), vol.Range(min=0, max=1)),
         ),
         setting.Setting(
-            CONF_MEM_PER_NODE,
-            default=2000,
-            label="Memory per Node",
-            description="Memory requested per cluster node",
-        ),
-        setting.Setting(
             CONF_MPI_TASKS_PER_NODE,
             default=0,
             label="MPI Tasks per Node",
@@ -595,12 +575,6 @@ def defineSettings() -> List[setting.Setting]:
             "this value should include both cycles from the restart plus any additional "
             "cycles to be run after `startCycle`.",
             schema=vol.All(vol.Coerce(int), vol.Range(min=1)),
-        ),
-        setting.Setting(
-            CONF_NUM_CONTROL_BLOCKS,
-            default=6,
-            label="Number of Control Blocks",
-            description="Number of blocks with control for a REBUS poison search",
         ),
         setting.Setting(
             CONF_TIGHT_COUPLING,
@@ -776,14 +750,6 @@ def defineSettings() -> List[setting.Setting]:
             label="Outlet Temperature",
             description="The outlet temperature of the reactor in C",
             schema=vol.All(vol.Coerce(float), vol.Range(min=-273.15)),
-        ),
-        setting.Setting(
-            CONF_USE_INPUT_TEMPERATURES_ON_DBLOAD,
-            default=False,
-            label="Temperatures From Input on DB Load",
-            description="When loading from a database, first set all component "
-            "temperatures to the input temperatures. Required when a coupled TH "
-            "case is being derived from a case without any coupled TH.",
         ),
         setting.Setting(
             CONF_DEFERRED_INTERFACES_CYCLE,
