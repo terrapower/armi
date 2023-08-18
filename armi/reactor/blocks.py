@@ -561,6 +561,8 @@ class Block(composites.Composite):
         newEnrich : float
             New U-235 enrichment in mass fraction
 
+        Notes
+        -----
         completeInitialLoading must be run because adjusting the enrichment actually
         changes the mass slightly and you can get negative burnups, which you do not want.
         """
@@ -799,7 +801,6 @@ class Block(composites.Composite):
 
         hmDens = bolBlock.getHMDens()  # total homogenized heavy metal number density
         self.p.nHMAtBOL = hmDens
-
         self.p.molesHmBOL = self.getHMMoles()
         self.p.puFrac = (
             self.getPuMoles() / self.p.molesHmBOL if self.p.molesHmBOL > 0.0 else 0.0
@@ -810,6 +811,7 @@ class Block(composites.Composite):
             self.p.smearDensity = self.getSmearDensity()
         except ValueError:
             pass
+
         self.p.enrichmentBOL = self.getFissileMassEnrich()
         massHmBOL = 0.0
         sf = self.getSymmetryFactor()
@@ -819,7 +821,9 @@ class Block(composites.Composite):
             # Components have a massHmBOL parameter but not every composite will
             if isinstance(child, components.Component):
                 child.p.massHmBOL = hmMass
+
         self.p.massHmBOL = massHmBOL
+
         return hmDens
 
     def setB10VolParam(self, heightHot):
@@ -846,7 +850,7 @@ class Block(composites.Composite):
             runLog.warning(
                 f"More than one boron10-containing component found  in {self.name}. "
                 f"Only {b10Comp} will be considered for calculation of initialB10ComponentVol "
-                f"Since adding multiple volumes is not conservative for captures/cc."
+                "Since adding multiple volumes is not conservative for captures/cc."
                 f"All compos found {b10Comps}",
                 single=True,
             )
@@ -1964,13 +1968,6 @@ class HexBlock(Block):
                     pinToDuctGap, self
                 )
             )
-            wire = self.getComponent(Flags.WIRE)
-            wireThicknesses = wire.getDimension("od", cold=False)
-            if pinToDuctGap < wireThicknesses:
-                raise ValueError(
-                    "Gap between pins and duct is {0:.4f} cm in {1} which does not allow room for the wire "
-                    "with diameter {2}".format(pinToDuctGap, self, wireThicknesses)
-                )
         elif pinToDuctGap is None:
             # only produce a warning if pin or clad are found, but not all of pin, clad and duct. We
             # may need to tune this logic a bit

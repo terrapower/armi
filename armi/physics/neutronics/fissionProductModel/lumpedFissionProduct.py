@@ -92,7 +92,7 @@ class LumpedFissionProduct:
         if val < 0.0:
             raise ValueError(
                 f"Cannot set the yield of {key} in {self} to be "
-                f"less than zero as this is non-physical."
+                "less than zero as this is non-physical."
             )
         if val > NUM_FISSION_PRODUCTS_PER_LFP:
             raise ValueError(
@@ -387,7 +387,7 @@ def lumpedFissionProductFactory(cs):
     lfpPath = cs[CONF_LFP_COMPOSITION_FILE_PATH]
     if not lfpPath or not os.path.exists(lfpPath):
         raise ValueError(
-            f"The fission product reference file does "
+            "The fission product reference file does "
             f"not exist or is not a valid path. Path provided: {lfpPath}"
         )
 

@@ -775,12 +775,12 @@ class UniformMeshGeometryConverter(GeometryConverter):
                 continue
             elif not sourceBlocksInfo:
                 raise ValueError(
-                    f"An error occurred when attempting to map to the "
+                    "An error occurred when attempting to map to the "
                     f"results from {sourceAssembly} to {destinationAssembly}. "
                     f"No blocks in {sourceAssembly} exist between the axial "
                     f"elevations of {zLower:<12.5f} cm and {zUpper:<12.5f} cm. "
-                    f"This a major bug in the uniform mesh converter that should "
-                    f"be reported to the developers."
+                    "This a major bug in the uniform mesh converter that should "
+                    "be reported to the developers."
                 )
 
             if mapNumberDensities:
@@ -1317,7 +1317,7 @@ class ParamMapper:
             if val is None:
                 continue
 
-            if isinstance(val, (list, numpy.ndarray)):
+            if isinstance(val, (tuple, list, numpy.ndarray)):
                 ParamMapper._arrayParamSetter(block, [val], [paramName])
             else:
                 ParamMapper._scalarParamSetter(block, [val], [paramName])
@@ -1327,22 +1327,11 @@ class ParamMapper:
         paramVals = []
         for paramName in paramNames:
             val = block.p[paramName]
-            defaultValue = self.paramDefaults[paramName]
-            valType = type(defaultValue)
-            # Array / list parameters can be have values that are `None`, lists, or numpy arrays. This first
-            # checks if the value type is any of these and if so, the block-level parameter is treated as an
-            # array.
-            if isinstance(valType, (list, numpy.ndarray)) or isinstance(None, valType):
-                if val is None or len(val) == 0:
-                    paramVals.append(None)
-                else:
-                    paramVals.append(numpy.array(val))
-            # Otherwise, the parameter is treated as a scalar, like a float/string/integer.
+            # list-like should be treated as a numpy array
+            if isinstance(val, (tuple, list, numpy.ndarray)):
+                paramVals.append(numpy.array(val) if len(val) > 0 else None)
             else:
-                if val == defaultValue:
-                    paramVals.append(defaultValue)
-                else:
-                    paramVals.append(val)
+                paramVals.append(val)
 
         return numpy.array(paramVals, dtype=object)
 

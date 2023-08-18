@@ -704,7 +704,7 @@ def getBlockParameterDefinitions():
 
     with pDefs.createBuilder(
         default=0.0,
-        location=ParamLocation.AVERAGE,
+        location=ParamLocation.VOLUME_INTEGRATED,
         categories=[
             "reactivity coefficients",
             "spatially dependent",

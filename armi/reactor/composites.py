@@ -392,8 +392,7 @@ class ArmiObject(metaclass=CompositeModelType):
         state["parent"] = None
 
         if "r" in state:
-            # TODO: This should never happen, it might make sense to raise an exception.
-            del state["r"]
+            raise RuntimeError("An ArmiObject should never contain the entire Reactor.")
 
         return state
 

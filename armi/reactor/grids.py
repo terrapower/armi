@@ -1054,8 +1054,7 @@ class Grid:
 
         A tuple is returned so that it is easy to compare pairs of indices.
         """
-        # Regular grids dont really know about ring and position. We can try to see if
-        # their parent does!
+        # Regular grids don't know about ring and position. Check the parent.
         if (
             self.armiObject is not None
             and self.armiObject.parent is not None
@@ -1063,9 +1062,7 @@ class Grid:
         ):
             return self.armiObject.parent.spatialGrid.getRingPos(indices)
 
-        # For compatibility's sake, return __something__. TODO: We may want to just
-        # throw here, to be honest.
-        return tuple(i + 1 for i in indices[:2])
+        raise ValueError("No ring position found, because no spatial grid was found.")
 
     def getAllIndices(self):
         """Get all possible indices in this grid."""
