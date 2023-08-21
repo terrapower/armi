@@ -113,7 +113,14 @@ class Reactor(composites.Composite):
 
     def incrementAssemNum(self):
         """
-        Increase the max assembly number by one and return the current value.
+        Increase the max assembly number by one and returns the current value.
+
+        Notes
+        -----
+        The "max assembly number" is not currently used in the Reactor. So the idea
+        is that we return the current number, then iterate it for the next assembly.
+
+        Obviously, this method will be unused for non-assembly-based reactors.
 
         Returns
         -------
@@ -600,15 +607,18 @@ class Core(composites.Composite):
 
             ind += 1
 
-        # Update some bookkeeping dictionaries of assembly and block names in this Core.
+        self.normalizeInternalBookeeping()
+
+        return ind
+
+    def normalizeInternalBookeeping(self):
+        """Update some bookkeeping dictionaries of assembly and block names in this Core."""
         self.assembliesByName = {}
         self.blocksByName = {}
         for assem in self:
             self.assembliesByName[assem.getName()] = assem
             for b in assem:
                 self.blocksByName[b.getName()] = b
-
-        return ind
 
     def add(self, a, spatialLocator=None):
         """
