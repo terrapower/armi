@@ -629,7 +629,9 @@ class TestExceptions(AxialExpansionTestBase, unittest.TestCase):
         This is implemented by creating a fuel block that contains no fuel component
         and passing it to ExpansionData::_isFuelLocked.
         """
-        expdata = ExpansionData(HexAssembly("testAssemblyType"), setFuel=True)
+        expdata = ExpansionData(
+            HexAssembly("testAssemblyType"), setFuel=True, expandFromTinputToThot=False
+        )
         b_NoFuel = HexBlock("fuel", height=10.0)
         shieldDims = {
             "Tinput": 25.0,
@@ -666,7 +668,7 @@ class TestDetermineTargetComponent(AxialExpansionTestBase, unittest.TestCase):
 
     def setUp(self):
         AxialExpansionTestBase.setUp(self)
-        self.expData = ExpansionData([], None)
+        self.expData = ExpansionData([], setFuel=True, expandFromTinputToThot=True)
         coolDims = {"Tinput": 25.0, "Thot": 25.0}
         self.coolant = DerivedShape("coolant", "Sodium", **coolDims)
 

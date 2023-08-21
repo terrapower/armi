@@ -307,11 +307,7 @@ class InstanceCounter:
 
         self.ids.add(itemId)
         if self.reportSize:
-            try:
-                self.memSize += sys.getsizeof(item)
-            except:  # noqa: bare-except
-                # TODO: Does this happen?
-                self.memSize = float("nan")
+            self.memSize += sys.getsizeof(item)
         self.count += 1
         return True
 

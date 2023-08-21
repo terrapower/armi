@@ -704,7 +704,7 @@ def getBlockParameterDefinitions():
 
     with pDefs.createBuilder(
         default=0.0,
-        location=ParamLocation.AVERAGE,
+        location=ParamLocation.VOLUME_INTEGRATED,
         categories=[
             "reactivity coefficients",
             "spatially dependent",
@@ -795,6 +795,13 @@ def getBlockParameterDefinitions():
         )
 
     with pDefs.createBuilder(default=0.0) as pb:
+
+        pb.defParam(
+            "avgFuelTemp",
+            units=units.DEGC,
+            description="Average fuel temperature.",
+            location=ParamLocation.AVERAGE,
+        )
 
         pb.defParam(
             "assemNum",
