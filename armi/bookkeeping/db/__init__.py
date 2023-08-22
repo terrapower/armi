@@ -67,7 +67,7 @@ from armi import runLog
 
 # re-export package components for easier import
 from .permissions import Permissions
-from .database3 import Database3, updateGlobalAssemblyNum
+from .database3 import Database3
 from .databaseInterface import DatabaseInterface
 from .compareDB3 import compareDatabases
 from .factory import databaseFactory
@@ -143,12 +143,6 @@ def loadOperator(pathToDb, loadCycle, loadNode, allowMissing=False):
         r = db.load(loadCycle, loadNode, allowMissing=allowMissing)
 
     settings.setMasterCs(cs)
-
-    # Update the global assembly number because, if the user is loading a reactor from
-    # blueprints and does not have access to an operator, it is unlikely that there is
-    # another reactor that has alter the global assem num. Fresh cases typically want
-    # this updated.
-    updateGlobalAssemblyNum(r)
 
     o = thisCase.initializeOperator(r=r)
     runLog.important(

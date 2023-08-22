@@ -366,6 +366,8 @@ def applyNonUniformHeightDistribution(reactor):
         a[-1].setHeight(a[-1].getHeight() - delta)
         a.calculateZCoords()
 
+    reactor.normalizeNames()
+
 
 class TestUniformMesh(unittest.TestCase):
     """
@@ -411,7 +413,7 @@ class TestUniformMesh(unittest.TestCase):
         )  # conversion didn't change source reactor mass
 
     def test_applyStateToOriginal(self):
-        applyNonUniformHeightDistribution(self.r)  # note: this perturbs the ref. mass
+        applyNonUniformHeightDistribution(self.r)  # note: this perturbs the ref mass
 
         self.converter.convert(self.r)
         for ib, b in enumerate(self.converter.convReactor.core.getBlocks()):
@@ -685,7 +687,6 @@ class TestUniformMeshNonUniformAssemFlags(unittest.TestCase):
                 self.assertFalse(b.p.rateAbs)
 
         self.converter.convert(self.r)
-
         self.assertEqual(
             len(controlAssems),
             len(self.converter._nonUniformAssemStorage),
