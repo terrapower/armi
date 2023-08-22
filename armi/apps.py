@@ -75,6 +75,7 @@ class App:
         For a description of the things that an ARMI plugin can do, see the
         :py:mod:`armi.plugins` module.
         """
+        self._pluginFlagsRegistered: bool = False
         self._pm: Optional[pluginManager.ArmiPluginManager] = None
         self._paramRenames: Optional[Tuple[Dict[str, str], int]] = None
         self.__initNewPlugins()
@@ -227,6 +228,24 @@ class App:
                 renames.update(pluginRenames)
             self._paramRenames = renames, self._pm.counter
         return renames
+
+    def registerPluginFlags(self):
+        """
+        Apply flags specified in the passed ``PluginManager`` to the ``Flags`` class.
+
+        See Also
+        --------
+        armi.plugins.ArmiPlugin.defineFlags
+        """
+        if self._pluginFlagsRegistered:
+            raise RuntimeError(
+                "Plugin flags have already been registered. Cannot do it twice!"
+            )
+
+        for pluginFlags in self._pm.hook.defineFlags():
+            Flags.extend(pluginFlags)
+
+        self._pluginFlagsRegistered = True
 
     def registerUserPlugins(self, pluginPaths):
         r"""

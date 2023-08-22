@@ -562,6 +562,8 @@ class Block(composites.Composite):
         newEnrich : float
             New U-235 enrichment in mass fraction
 
+        Notes
+        -----
         completeInitialLoading must be run because adjusting the enrichment actually
         changes the mass slightly and you can get negative burnups, which you do not want.
         """
@@ -800,7 +802,6 @@ class Block(composites.Composite):
 
         hmDens = bolBlock.getHMDens()  # total homogenized heavy metal number density
         self.p.nHMAtBOL = hmDens
-
         self.p.molesHmBOL = self.getHMMoles()
         self.p.puFrac = (
             self.getPuMoles() / self.p.molesHmBOL if self.p.molesHmBOL > 0.0 else 0.0
@@ -811,6 +812,7 @@ class Block(composites.Composite):
             self.p.smearDensity = self.getSmearDensity()
         except ValueError:
             pass
+
         self.p.enrichmentBOL = self.getFissileMassEnrich()
         massHmBOL = 0.0
         sf = self.getSymmetryFactor()
@@ -820,7 +822,9 @@ class Block(composites.Composite):
             # Components have a massHmBOL parameter but not every composite will
             if isinstance(child, components.Component):
                 child.p.massHmBOL = hmMass
+
         self.p.massHmBOL = massHmBOL
+
         return hmDens
 
     def setB10VolParam(self, heightHot):
