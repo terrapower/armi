@@ -653,7 +653,14 @@ class FuelHandler:
             List of assemblies in each ring of the ringList. [[a1,a2,a3],[a4,a5,a6,a7],...]
         """
         if "SFP" in ringList and self.r.sfp is None:
-            raise ValueError(f"No SFP attached to the reactor {self.r}!")
+            sfpAssems = []
+        else:
+            sfpAssems = self.r.sfp.getChildren()
+            runLog.warning(
+                f"{self} can't pull from SFP; no SFP is attached to the reactor {self.r}."
+                "To get assemblies from an SFP, you must add an SFP system to the blueprints"
+                f"or otherwise instantiate a SpentFuelPool object as r.sfp"
+            )
 
         assemblyList = [[] for _i in range(len(ringList))]  # empty lists for each ring
         if exclusions is None:
@@ -665,7 +672,7 @@ class FuelHandler:
             assemListTmp2 = []
             if ringList[0] == "SFP":
                 # kind of a hack for now. Need the capability.
-                assemblyList = self.r.sfp.getChildren()
+                assemblyList = sfpAssems
             else:
                 for i, ringNumber in enumerate(ringList):
                     assemListTmp = self.r.core.getAssembliesInCircularRing(
@@ -683,7 +690,7 @@ class FuelHandler:
         else:
             if ringList[0] == "SFP":
                 # kind of a hack for now. Need the capability.
-                assemList = self.r.sfp.getChildren()
+                assemList = sfpAssems
             else:
                 assemList = self.r.core.getAssemblies()
 
