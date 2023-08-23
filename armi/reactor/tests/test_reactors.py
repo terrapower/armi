@@ -202,8 +202,7 @@ def loadTestReactor(
 
     # put some stuff in the SFP too.
     for a in range(10):
-        a = o.r.blueprints.constructAssem(o.cs, name="feed fuel")
-        o.r.sfp.add(a)
+        o.r.sfp.add(o.r.blueprints.constructAssem(o.cs, name="feed fuel"))
 
     o.r.core.regenAssemblyLists()
 

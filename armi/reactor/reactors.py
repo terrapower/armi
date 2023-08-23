@@ -161,7 +161,7 @@ def factory(cs, bp, geom: Optional[SystemLayoutInput] = None) -> Reactor:
         coreDesign.construct(cs, bp, r, geom=geom)
         for structure in bp.systemDesigns:
             if structure.name.lower() != "core":
-                structure.construct(cs, bp, r, loadAssems=False)
+                structure.construct(cs, bp, r)
 
     runLog.debug("Reactor: {}".format(r))
 
