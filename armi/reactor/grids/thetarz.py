@@ -33,10 +33,8 @@ class ThetaRZGrid(StructuredGrid):
     The angular meshes are limited to 0 to 2pi radians. R and Zeta are as in other
     meshes.
 
-    .. note::
-
-        It is recommended to call :meth:`fromGeom` to construct,
-        rather than directly constructing with ``__init__``
+    It is recommended to call :meth:`fromGeom` to construct,
+    rather than directly constructing with ``__init__``
 
     See Figure 2.2 in Derstine 1984, ANL. [DIF3D]_.
 

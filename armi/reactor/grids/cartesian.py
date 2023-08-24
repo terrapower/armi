@@ -13,10 +13,8 @@ class CartesianGrid(StructuredGrid):
     """
     Grid class representing a conformal Cartesian mesh
 
-    .. note::
-
-        It is recommended to call :meth:`fromRectangle` to construct,
-        rather than directly constructing with ``__init__``
+    It is recommended to call :meth:`fromRectangle` to construct,
+    rather than directly constructing with ``__init__``
 
     Notes
     -----

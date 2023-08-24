@@ -47,10 +47,8 @@ class HexGrid(StructuredGrid):
     """
     Has 6 neighbors in plane.
 
-    .. note::
-
-        It is recommended to use :meth:`fromPitch` rather than
-        calling the ``__init__`` constructor directly.
+    It is recommended to use :meth:`fromPitch` rather than
+    calling the ``__init__`` constructor directly.
 
     Notes
     -----
