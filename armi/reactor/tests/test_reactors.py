@@ -198,11 +198,6 @@ def loadTestReactor(
 
     o.initializeInterfaces(r)
 
-    # put some stuff in the SFP too.
-    for a in range(10):
-        a = o.r.blueprints.constructAssem(o.cs, name="feed fuel")
-        o.r.sfp.add(a)
-
     o.r.core.regenAssemblyLists()
 
     if isPickeledReactor:
@@ -845,9 +840,8 @@ class HexReactorTests(ReactorTests):
             a = self.r.core[-1]  # last assembly
             aLoc = a.spatialLocator
             self.assertIsNotNone(aLoc.grid)
-            core = self.r.core
-            del core.parent.sfp
-            core.removeAssembly(a)
+            self.r.sfp = None
+            self.r.core.removeAssembly(a)
 
             self.assertIn("No Spent Fuel Pool", mock.getStdout())
 

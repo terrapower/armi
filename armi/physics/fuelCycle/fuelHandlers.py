@@ -652,6 +652,16 @@ class FuelHandler:
         assemblyList : list
             List of assemblies in each ring of the ringList. [[a1,a2,a3],[a4,a5,a6,a7],...]
         """
+        if "SFP" in ringList and self.r.sfp is None:
+            sfpAssems = []
+            runLog.warning(
+                f"{self} can't pull from SFP; no SFP is attached to the reactor {self.r}."
+                "To get assemblies from an SFP, you must add an SFP system to the blueprints"
+                f"or otherwise instantiate a SpentFuelPool object as r.sfp"
+            )
+        else:
+            sfpAssems = self.r.sfp.getChildren()
+
         assemblyList = [[] for _i in range(len(ringList))]  # empty lists for each ring
         if exclusions is None:
             exclusions = []
@@ -662,7 +672,7 @@ class FuelHandler:
             assemListTmp2 = []
             if ringList[0] == "SFP":
                 # kind of a hack for now. Need the capability.
-                assemblyList = self.r.sfp.getChildren()
+                assemblyList = sfpAssems
             else:
                 for i, ringNumber in enumerate(ringList):
                     assemListTmp = self.r.core.getAssembliesInCircularRing(
@@ -680,7 +690,7 @@ class FuelHandler:
         else:
             if ringList[0] == "SFP":
                 # kind of a hack for now. Need the capability.
-                assemList = self.r.sfp.getChildren()
+                assemList = sfpAssems
             else:
                 assemList = self.r.core.getAssemblies()
 
@@ -826,10 +836,11 @@ class FuelHandler:
         # future, this mechanism may be used to handle symmetry in general.
         outgoing.p.multiplicity = len(loc.getSymmetricEquivalents()) + 1
 
-        if incoming in self.r.sfp.getChildren():
-            # pull it out of the sfp if it's in there.
-            runLog.extra("removing {0} from the sfp".format(incoming))
-            self.r.sfp.remove(incoming)
+        if self.r.sfp is not None:
+            if incoming in self.r.sfp.getChildren():
+                # pull it out of the sfp if it's in there.
+                runLog.extra("removing {0} from the sfp".format(incoming))
+                self.r.sfp.remove(incoming)
 
         incoming.p.multiplicity = 1
         self.r.core.add(incoming, loc)

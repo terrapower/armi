@@ -41,6 +41,7 @@ from armi.reactor.components import Component
 from armi.reactor.composites import ArmiObject
 from armi.reactor import grids
 from armi.reactor.reactors import Core
+from armi.reactor.assemblyLists import AssemblyList
 from armi.reactor.reactors import Reactor
 
 # Here we store the Database3 version information.
@@ -354,6 +355,8 @@ class Layout:
             if issubclass(Klass, Reactor):
                 comp = Klass(caseTitle, bp)
             elif issubclass(Klass, Core):
+                comp = Klass(name)
+            elif issubclass(Klass, AssemblyList):
                 comp = Klass(name)
             elif issubclass(Klass, Component):
                 # init all dimensions to 0, they will be loaded and assigned after load

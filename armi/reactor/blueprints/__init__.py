@@ -565,6 +565,18 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
         loader = RoundTripLoader if roundTrip else CLoader
         return super().load(stream, Loader=loader)
 
+    def addDefaultSFP(self):
+        """Create a default SFP if it's not in the blueprints"""
+        if self.systemDesigns is not None:
+            if not any(structure.typ == "sfp" for structure in self.systemDesigns):
+                sfp = SystemBlueprint("Spent Fuel Pool", "sfp", Triplet())
+                sfp.typ = "sfp"
+                self.systemDesigns["Spent Fuel Pool"] = sfp
+        else:
+            runLog.warning(
+                f"Can't add default SFP to {self}, there are no systemDesigns!"
+            )
+
 
 def migrate(bp: Blueprints, cs):
     """

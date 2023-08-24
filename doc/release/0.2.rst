@@ -17,6 +17,7 @@ What's new in ARMI
 #. Put back ``avgFuelTemp`` block parameter. (`PR#1362 <https://github.com/terrapower/armi/pull/1362>`_)
 #. Make cylindrical component block collection less strict about pre-homogenization checks. (`PR#1347 <https://github.com/terrapower/armi/pull/1347>`_)
 #. Updated some parameter definitions and defaults. (`PR#1355 <https://github.com/terrapower/armi/pull/1355>`_)
+#. Make the SFP a child of the reactor so it is stored in database. (`PR#1349 <https://github.com/terrapower/armi/pull/1349>`_)
 #. TBD
 
 Bug fixes

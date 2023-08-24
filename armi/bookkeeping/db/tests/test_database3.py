@@ -76,6 +76,7 @@ class TestDatabase3(unittest.TestCase):
             "HexBlock",
             "Hexagon",
             "Reactor",
+            "SpentFuelPool",
             "layout",
         ]
         self.assertEqual(sorted(self.db.h5db["c00n00"].keys()), sorted(keys))

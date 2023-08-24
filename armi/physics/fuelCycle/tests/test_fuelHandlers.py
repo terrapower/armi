@@ -455,7 +455,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         sfpMove = moves[2][-2]
         self.assertEqual(sfpMove[0], "SFP")
         self.assertEqual(sfpMove[1], "005-003")
-        self.assertEqual(sfpMove[4], "A0077")  # name of assem in SFP
+        self.assertEqual(sfpMove[4], "A0073")  # name of assem in SFP
 
     def test_processMoveList(self):
         fh = fuelHandlers.FuelHandler(self.o)
@@ -468,7 +468,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
             loadNames,
             _,
         ) = fh.processMoveList(moves[2])
-        self.assertIn("A0077", loadNames)
+        self.assertIn("A0073", loadNames)
         self.assertIn(None, loadNames)
         self.assertNotIn("SFP", loadChains)
         self.assertNotIn("LoadQueue", loadChains)

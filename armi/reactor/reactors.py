@@ -40,13 +40,13 @@ import tabulate
 from armi import getPluginManagerOrFail, materials, nuclearDataIO
 from armi import runLog
 from armi.nuclearDataIO import xsLibraries
-from armi.reactor import assemblyLists
 from armi.reactor import composites
 from armi.reactor import geometry
 from armi.reactor import grids
 from armi.reactor import parameters
 from armi.reactor import reactorParameters
 from armi.reactor import zones
+from armi.reactor.assemblyLists import SpentFuelPool
 from armi.reactor.flags import Flags
 from armi.reactor.systemLayoutInput import SystemLayoutInput
 from armi.settings.fwSettings.globalSettings import CONF_MATERIAL_NAMESPACE_ORDER
@@ -78,7 +78,7 @@ class Reactor(composites.Composite):
         self.p.cycle = 0
         self.p.flags |= Flags.REACTOR
         self.core = None
-        self.sfp = assemblyLists.SpentFuelPool("Spent Fuel Pool", self)
+        self.sfp = None
         self.blueprints = blueprints
 
     def __getstate__(self):
@@ -89,7 +89,6 @@ class Reactor(composites.Composite):
 
     def __setstate__(self, state):
         composites.Composite.__setstate__(self, state)
-        self.sfp.parent = self
 
     def __deepcopy__(self, memo):
         memo[id(self)] = newR = self.__class__.__new__(self.__class__)
@@ -110,6 +109,9 @@ class Reactor(composites.Composite):
                     "Cores found: {}".format(cores)
                 )
             self.core = cores[0]
+
+        if isinstance(container, SpentFuelPool):
+            self.sfp = container
 
     def incrementAssemNum(self):
         """
@@ -187,18 +189,19 @@ def factory(cs, bp, geom: Optional[SystemLayoutInput] = None) -> Reactor:
     if cs["geomFile"]:
         blueprints.migrate(bp, cs)
 
+    if not any(structure.typ == "sfp" for structure in bp.systemDesigns.values()):
+        bp.addDefaultSFP()
+
     with directoryChangers.DirectoryChanger(cs.inputDirectory, dumpOnException=False):
         # always construct the core first (for assembly serial number purposes)
         if not bp.systemDesigns:
             raise ValueError(
                 "The input must define a `core` system, but does not. Update inputs"
             )
-        coreDesign = bp.systemDesigns["core"]
-        coreDesign.construct(cs, bp, r, geom=geom)
 
         for structure in bp.systemDesigns:
-            if structure.name.lower() != "core":
-                structure.construct(cs, bp, r)
+            bpGeom = geom if structure.name.lower() == "core" else None
+            structure.construct(cs, bp, r, geom=bpGeom)
 
     runLog.debug("Reactor: {}".format(r))
 
@@ -505,7 +508,7 @@ class Core(composites.Composite):
         self.remove(a1)
 
         if discharge and self._trackAssems:
-            if hasattr(self.parent, "sfp"):
+            if self.parent.sfp is not None:
                 self.parent.sfp.add(a1)
             else:
                 runLog.info("No Spent Fuel Pool is found, can't track assemblies.")
@@ -1158,7 +1161,7 @@ class Core(composites.Composite):
 
         assems.extend(a for a in sorted(self, key=sortKey))
 
-        if includeSFP and hasattr(self.parent, "sfp"):
+        if includeSFP and self.parent is not None and self.parent.sfp is not None:
             assems.extend(self.parent.sfp.getChildren())
 
         if typeSpec:
