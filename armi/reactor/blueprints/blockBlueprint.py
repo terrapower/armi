@@ -164,13 +164,7 @@ class BlockBlueprint(yamlize.KeyedList):
         )
 
         if "byBlock" in materialInput:
-            for key, value in materialInput["byBlock"].items():
-                # Allow empty modifications - https://github.com/terrapower/armi/issues/1367
-                # Assembly with fueled block and non-fueled block should still support
-                # a modifier for the fuel (e.g., enrichment) even if no component in the
-                # non-fueled block supports that modifier
-                if value is None:
-                    continue
+            for key in materialInput["byBlock"]:
                 if key not in validMatModOptions:
                     raise ValueError(
                         f"Block {self.name} has invalid material modification key: {key}"
