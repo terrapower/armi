@@ -213,7 +213,9 @@ class TestGrid(unittest.TestCase):
 
     def test_ringPosFromIndicesIncorrect(self):
         """Test the getRingPos fails if there is no armiObect or parent."""
-        grid = grids.Grid(unitSteps=((1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0)))
+        grid = MockStructuredGrid(
+            unitSteps=((1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0))
+        )
 
         grid.armiObject = None
         with self.assertRaises(ValueError):
