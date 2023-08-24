@@ -157,11 +157,9 @@ def factory(cs, bp, geom: Optional[SystemLayoutInput] = None) -> Reactor:
             raise ValueError(
                 "The input must define a `core` system, but does not. Update inputs"
             )
-        coreDesign = bp.systemDesigns["core"]
-        coreDesign.construct(cs, bp, r, geom=geom)
         for structure in bp.systemDesigns:
-            if structure.name.lower() != "core":
-                structure.construct(cs, bp, r)
+            bpGeom = geom if structure.name.lower() == "core" else None
+            structure.construct(cs, bp, r, geom=bpGeom)
 
     runLog.debug("Reactor: {}".format(r))
 
