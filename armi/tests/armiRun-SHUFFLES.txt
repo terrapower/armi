@@ -13,7 +13,7 @@ Before cycle 2:
 005-004 moved to 004-001 with assembly type igniter fuel with enrich list: 0.00000000 0.11000000 0.11000000 0.11000000 0.00000000
 006-004 moved to 005-004 with assembly type igniter fuel with enrich list: 0.00000000 0.11000000 0.11000000 0.11000000 0.00000000
 LoadQueue moved to 006-004 with assembly type igniter fuel with enrich list: 0.00000000 0.11000000 0.11000000 0.11000000 0.00000000
-SFP moved to 005-003 with assembly type feed fuel ANAME=A0085 with enrich list: 0.00000000 0.11000000 0.11000000 0.11000000 0.00000000
+SFP moved to 005-003 with assembly type feed fuel ANAME=A0077 with enrich list: 0.00000000 0.11000000 0.11000000 0.11000000 0.00000000
 005-003 moved to SFP with assembly type igniter fuel with enrich list: 0.00000000 0.11000000 0.11000000 0.11000000 0.00000000
 
 Before cycle 3:
@@ -23,6 +23,6 @@ Before cycle 3:
 005-002 moved to 004-003 with assembly type igniter fuel with enrich list: 0.00000000 0.11000000 0.11000000 0.11000000 0.00000000
 006-007 moved to 005-002 with assembly type igniter fuel with enrich list: 0.00000000 0.11000000 0.11000000 0.11000000 0.00000000
 LoadQueue moved to 006-007 with assembly type igniter fuel with enrich list: 0.00000000 0.11000000 0.11000000 0.11000000 0.00000000
-SFP moved to 005-004 with assembly type feed fuel ANAME=A0086 with enrich list: 0.00000000 0.11000000 0.11000000 0.11000000 0.00000000
+SFP moved to 005-004 with assembly type feed fuel ANAME=A0078 with enrich list: 0.00000000 0.11000000 0.11000000 0.11000000 0.00000000
 005-004 moved to SFP with assembly type igniter fuel with enrich list: 0.00000000 0.11000000 0.11000000 0.11000000 0.00000000
 

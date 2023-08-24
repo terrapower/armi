@@ -466,7 +466,7 @@ class CylindricalComponentsAverageBlockCollection(BlockCollection):
         if len(b) != len(repBlock):
             raise ValueError(
                 f"Blocks {b} and {repBlock} have differing number "
-                f"of components and cannot be homogenized"
+                "of components and cannot be homogenized"
             )
         # Using Fe-56 as a proxy for structure and Na-23 as proxy for coolant is undesirably SFR-centric
         # This should be generalized in the future, if possible

@@ -13,6 +13,7 @@
 # limitations under the License.
 """
 Transmutation and decay reactions.
+==================================
 
 This plots some of the transmutation and decay pathways for the actinides and some light
 nuclides using the burn chain definition that is included with ARMI. Note that many of

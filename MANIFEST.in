@@ -1,4 +1,4 @@
-include armi/bookkeeping/tests/armiRun-A0039-aHist-ref.txt
+include armi/bookkeeping/tests/armiRun-A0032-aHist-ref.txt
 include armi/nuclearDataIO/cccc/tests/fixtures/labels.ascii
 include armi/nuclearDataIO/cccc/tests/fixtures/labels.binary
 include armi/nuclearDataIO/cccc/tests/fixtures/mc2v3.dlayxs

@@ -41,8 +41,6 @@ from armi.tests import TEST_ROOT, mockRunLogs
 from armi.utils import directoryChangers
 from armi.utils import textProcessors
 from armi.reactor.tests import test_reactors
-from armi.reactor.assemblies import getAssemNum
-from armi.reactor.assemblies import resetAssemNumCounter
 from armi.physics.neutronics.settings import (
     CONF_LOADING_FILE,
     CONF_XS_KERNEL,
@@ -287,12 +285,6 @@ class Assembly_TestCase(unittest.TestCase):
 
         self.assembly.p.notes = tooLongNote
         self.assertEqual(self.assembly.p.notes, tooLongNote[0:1000])
-
-    def test_resetAssemNumCounter(self):
-        resetAssemNumCounter()
-        cur = 0
-        ref = getAssemNum()
-        self.assertEqual(cur, ref)
 
     def test_iter(self):
         cur = []

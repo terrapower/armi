@@ -90,7 +90,7 @@ class FuelHandler:
         return self.o.r
 
     def outage(self, factor=1.0):
-        r"""
+        """
         Simulates a reactor reload outage. Moves and tracks fuel.
 
         This sets the moveList structure.

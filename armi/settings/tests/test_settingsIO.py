@@ -22,6 +22,7 @@ from armi import settings
 from armi.cli import entryPoint
 from armi.settings import setting
 from armi.settings import settingsIO
+from armi.tests import TEST_ROOT
 from armi.utils import directoryChangers
 from armi.utils.customExceptions import (
     InvalidSettingsFileError,
@@ -67,6 +68,20 @@ class SettingsReaderTests(unittest.TestCase):
 
         self.assertFalse(getattr(reader, "filelessBP"))
         self.assertEqual(getattr(reader, "path"), "")
+
+    def test_readFromFile(self):
+        with directoryChangers.TemporaryDirectoryChanger():
+            inPath = os.path.join(TEST_ROOT, "armiRun.yaml")
+            outPath = "test_readFromFile.yaml"
+
+            txt = open(inPath, "r").read()
+            verb = "branchVerbosity:"
+            txt0, txt1 = txt.split(verb)
+            newTxt = f"{txt0}{verb} fake\n  {verb}{txt1}"
+            open(outPath, "w").write(newTxt)
+
+            with self.assertRaises(InvalidSettingsFileError):
+                settings.caseSettings.Settings(outPath)
 
 
 class SettingsRenameTests(unittest.TestCase):

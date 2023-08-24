@@ -211,6 +211,14 @@ class TestGrid(unittest.TestCase):
         self.assertIsInstance(multiLoc, grids.MultiIndexLocation)
         self.assertIn((1, 0, 0), grid._locations)
 
+    def test_ringPosFromIndicesIncorrect(self):
+        """Test the getRingPos fails if there is no armiObect or parent."""
+        grid = grids.Grid(unitSteps=((1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0)))
+
+        grid.armiObject = None
+        with self.assertRaises(ValueError):
+            grid.getRingPos(((0, 0), (1, 1)))
+
 
 class TestHexGrid(unittest.TestCase):
     """A set of tests for the Hexagonal Grid

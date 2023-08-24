@@ -275,6 +275,7 @@ class SystemLayoutInput:
         consistent inputs.
         """
         yaml = YAML()
+        yaml.allow_duplicate_keys = False
         tree = yaml.load(stream)
         tree = INPUT_SCHEMA(tree)
         self.assemTypeByIndices.clear()

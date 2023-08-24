@@ -105,6 +105,7 @@ class FuelHandlerInterface(interfaces.Interface):
         self.r.core.locateAllAssemblies()
         shuffleFactors, _ = fh.getFactorList(cycle)
         fh.outage(shuffleFactors)  # move the assemblies around
+
         if self.cs[CONF_PLOT_SHUFFLE_ARROWS]:
             arrows = fh.makeShuffleArrows()
             plotting.plotFaceMap(
