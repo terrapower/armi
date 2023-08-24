@@ -129,7 +129,7 @@ class BlockBlueprint(yamlize.KeyedList):
             if isinstance(c, Component):
                 # there are other things like composite groups that don't get
                 # material modifications -- skip those
-                validMatModOptions = self._getCompositeMaterialModifiers(c)
+                validMatModOptions = self._getMaterialModsFromBlockChildren(c)
                 for key in byComponentMatModKeys:
                     if key not in validMatModOptions:
                         raise ValueError(
@@ -226,13 +226,15 @@ class BlockBlueprint(yamlize.KeyedList):
     def _getBlockwiseMaterialModifierOptions(
         self, children: Iterable[Composite]
     ) -> Set[str]:
+        """Collect all the material modifiers that exist on a block"""
         validMatModOptions = set()
         for c in children:
-            perChildModifiers = self._getCompositeMaterialModifiers(c)
+            perChildModifiers = self._getMaterialModsFromBlockChildren(c)
             validMatModOptions.update(perChildModifiers)
         return validMatModOptions
 
-    def _getCompositeMaterialModifiers(self, c: Composite) -> Set[str]:
+    def _getMaterialModsFromBlockChildren(self, c: Composite) -> Set[str]:
+        """Collect all the material modifiers from a child of a block"""
         perChildModifiers = set()
         for material in self._getMaterialsInComposite(c):
             for materialParentClass in material.__class__.__mro__:
@@ -250,13 +252,13 @@ class BlockBlueprint(yamlize.KeyedList):
         return perChildModifiers
 
     def _getMaterialsInComposite(self, child: Composite) -> Iterator[Material]:
+        """Collect all the materials in a composite"""
         # Leaf node, no need to traverse further down
         if isinstance(child, Component):
             yield child.material
             return
         # Don't apply modifications to other things that could reside
         # in a block e.g., component groups
-
 
     def _checkByComponentMaterialInput(self, materialInput):
         for component in materialInput:
