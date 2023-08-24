@@ -1082,6 +1082,7 @@ def imposeBurnChain(burnChainStream):
         return
     burnChainImposed = True
     yaml = YAML(typ="rt")
+    yaml.allow_duplicate_keys = False
     burnData = yaml.load(burnChainStream)
 
     for nucName, burnInfo in burnData.items():

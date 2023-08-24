@@ -266,7 +266,6 @@ class Block(composites.Composite):
         -------
         smearDensity : float
             The smear density as a fraction
-
         """
         fuels = self.getComponents(Flags.FUEL)
         if not fuels:

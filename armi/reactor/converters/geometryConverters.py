@@ -96,10 +96,6 @@ class GeometryChanger:
         runLog.info(
             f"Resetting the state of the converted reactor core model in {self}"
         )
-        currentAssemCounter = assemblies.getAssemNum()
-        assemblies.setAssemNumCounter(
-            currentAssemCounter - len(self._newAssembliesAdded)
-        )
         self._newAssembliesAdded = []
 
 
@@ -253,7 +249,7 @@ class FuelAssemNumModifier(GeometryChanger):
         )
 
     def addRing(self, assemType="big shield"):
-        r"""
+        """
         Add a ring of fuel assemblies around the outside of an existing core.
 
         Works by first finding the assembly furthest from the center, then filling in
@@ -1428,8 +1424,8 @@ class EdgeAssemblyChanger(GeometryChanger):
         )
 
     def removeEdgeAssemblies(self, core):
-        r"""
-        remove the edge assemblies in preparation for the nodal diffusion approximation.
+        """
+        Remove the edge assemblies in preparation for the nodal diffusion approximation.
 
         This makes use of the assemblies knowledge of if it is in a region that it
         needs to be removed.
@@ -1464,7 +1460,8 @@ class EdgeAssemblyChanger(GeometryChanger):
             pDefs = parameters.ALL_DEFINITIONS.unchanged_since(NEVER)
             pDefs.setAssignmentFlag(SINCE_LAST_GEOMETRY_TRANSFORMATION)
         else:
-            runLog.extra("No edge assemblies to remove")
+            runLog.debug("No edge assemblies to remove.")
+
         self.reset()
 
     @staticmethod

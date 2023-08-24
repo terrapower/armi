@@ -172,12 +172,10 @@ def loadTestReactor(
     fName = os.path.join(inputFilePath, inputFileName)
     customSettings = customSettings or {}
     isPickeledReactor = fName == ARMI_RUN_PATH and customSettings == {}
-    assemblies.resetAssemNumCounter()
 
     if isPickeledReactor and TEST_REACTOR:
         # return test reactor only if no custom settings are needed.
         o, r, assemNum = cPickle.loads(TEST_REACTOR)
-        assemblies.setAssemNumCounter(assemNum)
         settings.setMasterCs(o.cs)
         o.reattach(r, o.cs)
         return o, r
@@ -205,7 +203,7 @@ def loadTestReactor(
     if isPickeledReactor:
         # cache it for fast load for other future tests
         # protocol=2 allows for classes with __slots__ but not __getstate__ to be pickled
-        TEST_REACTOR = cPickle.dumps((o, o.r, assemblies.getAssemNum()), protocol=2)
+        TEST_REACTOR = cPickle.dumps((o, o.r, o.r.p.maxAssemNum), protocol=2)
 
     return o, o.r
 
@@ -316,7 +314,7 @@ class HexReactorTests(ReactorTests):
         indices = [(1, 1, 1), (3, 2, 2)]
         actualBlocks = self.r.core.getBlocksByIndices(indices)
         actualNames = [b.getName() for b in actualBlocks]
-        expectedNames = ["B0022-001", "B0043-002"]
+        expectedNames = ["B0014-001", "B0035-002"]
         self.assertListEqual(expectedNames, actualNames)
 
     def test_getAllXsSuffixes(self):
@@ -333,6 +331,28 @@ class HexReactorTests(ReactorTests):
             [Flags.DUCT, Flags.CONTROL, Flags.FUEL], Flags.CONTROL
         )
         self.assertEqual(numControlBlocks, 3)
+
+    def test_normalizeNames(self):
+        # these are the correct, normalized names
+        numAssems = 73
+        a = self.r.core.getFirstAssembly()
+        correctNames = [a.makeNameFromAssemNum(n) for n in range(numAssems)]
+
+        # validate the reactor is what we think now
+        self.assertEqual(len(self.r.core), numAssems)
+        currentNames = [a.getName() for a in self.r.core]
+        self.assertNotEqual(correctNames, currentNames)
+
+        # validate that we can normalize the names correctly once
+        self.r.normalizeNames()
+        currentNames = [a.getName() for a in self.r.core]
+        self.assertEqual(correctNames, currentNames)
+
+        # validate that repeated applications of this method are stable
+        for _ in range(3):
+            self.r.normalizeNames()
+            currentNames = [a.getName() for a in self.r.core]
+            self.assertEqual(correctNames, currentNames)
 
     def test_setB10VolOnCreation(self):
         """Test the setting of b.p.initialB10ComponentVol."""
@@ -629,10 +649,11 @@ class HexReactorTests(ReactorTests):
 
     def test_getAssembly(self):
         a1 = self.r.core.getAssemblyWithAssemNum(assemNum=10)
-        a2 = self.r.core.getAssembly(locationString="005-023")
+        a2 = self.r.core.getAssembly(locationString="003-001")
         a3 = self.r.core.getAssembly(assemblyName="A0010")
-        self.assertEqual(a1, a2)
+
         self.assertEqual(a1, a3)
+        self.assertEqual(a1, a2)
 
     def test_restoreReactor(self):
         aListLength = len(self.r.core.getAssemblies())

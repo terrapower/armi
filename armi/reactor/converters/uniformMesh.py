@@ -160,6 +160,7 @@ class UniformMeshGenerator:
             aMesh = src.core.findAllAxialMeshPoints([a])[1:]
             if len(aMesh) == refNumPoints:
                 allMeshes.append(aMesh)
+
         averageMesh = average1DWithinTolerance(numpy.array(allMeshes))
         self._commonMesh = numpy.array(averageMesh)
 
@@ -433,12 +434,12 @@ class UniformMeshGeometryConverter(GeometryConverter):
                     includePinCoordinates=self.includePinCoordinates,
                 )
                 homogAssem.spatialLocator = assem.spatialLocator
+                homogAssem.p.assemNum = assem.p.assemNum
 
-                # Remove this assembly from the core and add it to the
-                # temporary storage list so that it can be replaced with the homogenized assembly.
-                # Note that we do not call the `removeAssembly` method because
-                # this will delete the core assembly from existence rather than
-                # only stripping its spatialLocator away.
+                # Remove this assembly from the core and add it to the temporary storage
+                # so that it can be replaced with the homogenized assembly. Note that we
+                # do not call `removeAssembly()` because this will delete the core
+                # assembly from existence rather than only stripping its spatialLocator.
                 if assem.spatialLocator in self.convReactor.core.childrenByLocator:
                     self.convReactor.core.childrenByLocator.pop(assem.spatialLocator)
                 self.convReactor.core.remove(assem)
@@ -449,7 +450,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
                 assem.setName(assem.getName() + self._TEMP_STORAGE_NAME_SUFFIX)
                 self._nonUniformAssemStorage.add(assem)
                 self.convReactor.core.add(homogAssem)
-
         else:
             runLog.extra(f"Building copy of {r} with a uniform axial mesh.")
             self.convReactor = self.initNewReactor(r, self._cs)

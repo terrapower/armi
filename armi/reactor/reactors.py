@@ -40,7 +40,6 @@ import tabulate
 from armi import getPluginManagerOrFail, materials, nuclearDataIO
 from armi import runLog
 from armi.nuclearDataIO import xsLibraries
-from armi.reactor import assemblies
 from armi.reactor import composites
 from armi.reactor import geometry
 from armi.reactor import grids
@@ -75,6 +74,7 @@ class Reactor(composites.Composite):
         self.o = None
         self.spatialGrid = None
         self.spatialLocator = None
+        self.p.maxAssemNum = 0
         self.p.cycle = 0
         self.p.flags |= Flags.REACTOR
         self.core = None
@@ -112,6 +112,47 @@ class Reactor(composites.Composite):
 
         if isinstance(container, SpentFuelPool):
             self.sfp = container
+
+    def incrementAssemNum(self):
+        """
+        Increase the max assembly number by one and returns the current value.
+
+        Notes
+        -----
+        The "max assembly number" is not currently used in the Reactor. So the idea
+        is that we return the current number, then iterate it for the next assembly.
+
+        Obviously, this method will be unused for non-assembly-based reactors.
+
+        Returns
+        -------
+        int
+            The new max Assembly number.
+        """
+        val = int(self.p.maxAssemNum)
+        self.p.maxAssemNum += 1
+        return val
+
+    def normalizeNames(self):
+        """
+        Renumber and rename all the Assemblies and Blocks.
+
+        This method normalizes the names in the Core then the SFP.
+
+        Returns
+        -------
+        int
+            The new max Assembly number.
+        """
+        self.p.maxAssemNum = 0
+
+        ind = self.core.normalizeNames(self.p.maxAssemNum)
+        self.p.maxAssemNum = ind
+
+        ind = self.sfp.normalizeNames(self.p.maxAssemNum)
+        self.p.maxAssemNum = ind
+
+        return ind
 
 
 def loadFromCs(cs) -> Reactor:
@@ -157,6 +198,7 @@ def factory(cs, bp, geom: Optional[SystemLayoutInput] = None) -> Reactor:
             raise ValueError(
                 "The input must define a `core` system, but does not. Update inputs"
             )
+
         for structure in bp.systemDesigns:
             bpGeom = geom if structure.name.lower() == "core" else None
             structure.construct(cs, bp, r, geom=bpGeom)
@@ -534,6 +576,52 @@ class Core(composites.Composite):
             self.parent.sfp.removeAll()
         self.blocksByName = {}
         self.assembliesByName = {}
+        self.parent.p.maxAssemNum = 0
+
+    def normalizeNames(self, startIndex=0):
+        """
+        Renumber and rename all the Assemblies and Blocks.
+
+        Parameters
+        ----------
+        startIndex : int, optional
+            The default is to start counting at zero. But if you are renumbering assemblies
+            across the entire Reactor, you may want to start at a different number.
+
+        Returns
+        -------
+        int
+            The new max Assembly number.
+        """
+        ind = startIndex
+        for a in self:
+            oldName = a.getName()
+            newName = a.makeNameFromAssemNum(ind)
+            if oldName == newName:
+                ind += 1
+                continue
+
+            a.p.assemNum = ind
+            a.setName(newName)
+
+            for b in a:
+                axialIndex = int(b.name.split("-")[-1])
+                b.name = b.makeName(ind, axialIndex)
+
+            ind += 1
+
+        self.normalizeInternalBookeeping()
+
+        return ind
+
+    def normalizeInternalBookeeping(self):
+        """Update some bookkeeping dictionaries of assembly and block names in this Core."""
+        self.assembliesByName = {}
+        self.blocksByName = {}
+        for assem in self:
+            self.assembliesByName[assem.getName()] = assem
+            for b in assem:
+                self.blocksByName[b.getName()] = b
 
     def add(self, a, spatialLocator=None):
         """
@@ -555,6 +643,10 @@ class Core(composites.Composite):
         --------
         removeAssembly : removes an assembly
         """
+        # Negative assembly IDs are placeholders, and we need to renumber the assembly
+        if a.p.assemNum < 0:
+            a.renumber(self.r.incrementAssemNum())
+
         # resetting .assigned forces database to be rewritten for shuffled core
         paramDefs = set(parameters.ALL_DEFINITIONS)
         paramDefs.difference_update(set(parameters.forType(Core)))
@@ -598,9 +690,7 @@ class Core(composites.Composite):
             runLog.error(
                 "The assembly {1} in the reactor already has the name {0}.\nCannot add {2}. "
                 "Current assemNum is {3}"
-                "".format(
-                    aName, self.assembliesByName[aName], a, assemblies.getAssemNum()
-                )
+                "".format(aName, self.assembliesByName[aName], a, self.r.p.maxAssemNum)
             )
             raise RuntimeError("Core already contains an assembly with the same name.")
         self.assembliesByName[aName] = a
@@ -1272,7 +1362,6 @@ class Core(composites.Composite):
 
         structureNuclides : set
             set of nuclide names
-
         """
         if not self._nuclideCategories:
             coolantNuclides = set()
@@ -1488,8 +1577,8 @@ class Core(composites.Composite):
         """
         if assemblyName:
             return self.getAssemblyByName(assemblyName)
-        for a in self.getAssemblies(*args, **kwargs):
 
+        for a in self.getAssemblies(*args, **kwargs):
             if a.getLocation() == locationString:
                 return a
             if a.getNum() == assemNum:
@@ -1510,8 +1599,6 @@ class Core(composites.Composite):
         -------
         foundAssembly : Assembly object or None
             The assembly found, or None
-
-
         """
         return self.getAssembly(assemNum=assemNum)
 
@@ -1535,7 +1622,6 @@ class Core(composites.Composite):
         -------
         pitch : float
             The assembly pitch.
-
         """
         return self.spatialGrid.pitch
 
@@ -1607,7 +1693,6 @@ class Core(composites.Composite):
         See Also
         --------
         grids.Grid.getSymmetricEquivalents
-
         """
         neighborIndices = self.spatialGrid.getNeighboringCellIndices(
             *a.spatialLocator.getCompleteIndices()
@@ -1650,6 +1735,7 @@ class Core(composites.Composite):
             duplicateAssem = self.childrenByLocator.get(neighborLocation2)
             if duplicateAssem is not None:
                 duplicates.append(duplicateAssem)
+
         # should always be 0 or 1
         nDuplicates = len(duplicates)
         if nDuplicates == 1:
@@ -1949,7 +2035,7 @@ class Core(composites.Composite):
         return meshList, True
 
     def findAllAziMeshPoints(self, extraAssems=None, applySubMesh=True):
-        r"""
+        """
         Returns a list of all azimuthal (theta)-mesh positions in the core.
 
         Parameters
@@ -1960,7 +2046,6 @@ class Core(composites.Composite):
 
         applySubMesh : bool
             generates submesh points to further discretize the theta reactor mesh
-
         """
         i, _, _ = self.findAllMeshPoints(extraAssems, applySubMesh)
         return i
@@ -1968,7 +2053,6 @@ class Core(composites.Composite):
     def findAllRadMeshPoints(self, extraAssems=None, applySubMesh=True):
         """
         Return a list of all radial-mesh positions in the core.
-
 
         Parameters
         ----------
@@ -1979,7 +2063,6 @@ class Core(composites.Composite):
         applySubMesh : bool
             (not implemented) generates submesh points to further discretize the radial
             reactor mesh
-
         """
         _, j, _ = self.findAllMeshPoints(extraAssems, applySubMesh)
         return j
@@ -2007,7 +2090,7 @@ class Core(composites.Composite):
         return max(b.getNumPins() for b in self.getBlocks())
 
     def getMinimumPercentFluxInFuel(self, target=0.005):
-        r"""
+        """
         Goes through the entire reactor to determine what percentage of flux occures at
         each ring.  Starting with the outer ring, this function helps determine the effective
         size of the core where additional assemblies will not help the breeding in the TWR.

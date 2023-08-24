@@ -398,7 +398,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         for a in self.r.sfp.getChildren():
             self.assertEqual(a.getLocation(), "SFP")
 
-        # do some shuffles.
+        # do some shuffles
         fh = self.r.o.getInterface("fuelHandler")
         self.runShuffling(fh)  # changes caseTitle
 
