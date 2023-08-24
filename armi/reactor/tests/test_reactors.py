@@ -200,10 +200,6 @@ def loadTestReactor(
 
     o.initializeInterfaces(r)
 
-    # put some stuff in the SFP too.
-    for a in range(10):
-        o.r.sfp.add(o.r.blueprints.constructAssem(o.cs, name="feed fuel"))
-
     o.r.core.regenAssemblyLists()
 
     if isPickeledReactor:
