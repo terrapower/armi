@@ -31,7 +31,7 @@ configure(permissive=True)
 
 fig = plt.figure()
 zCoords = [1, 4, 8]
-cartesian_grid = grids.Grid(
+cartesian_grid = grids.CartesianGrid(
     unitSteps=((1, 0), (0, 1)),
     bounds=(None, None, zCoords),
     offset=(10, 5, 5),
