@@ -91,6 +91,7 @@ CONF_OUTPUT_FILE_EXTENSION = "outputFileExtension"
 CONF_PHYSICS_FILES = "savePhysicsFiles"
 CONF_PLOTS = "plots"
 CONF_POWER = "power"
+CONF_POWER_DENSITY = "powerDensity"
 CONF_POWER_FRACTIONS = "powerFractions"
 CONF_PROFILE = "profile"
 CONF_REALLY_SMALL_RUN = "reallySmallRun"
@@ -625,6 +626,14 @@ def defineSettings() -> List[setting.Setting]:
             label="Reactor Thermal Power (W)",
             description="Nameplate thermal power of the reactor. Can be varied by "
             "setting the powerFractions setting.",
+            schema=vol.All(vol.Coerce(float), vol.Range(min=0)),
+        ),
+        setting.Setting(
+            CONF_POWER_DENSITY,
+            default=0.0,
+            label="Reactor Thermal Power Densit (W/HMM)",
+            description="Thermal power of the Reactor, per gram of Heavy metal "
+            "mass. Ignore this setting if the `power` setting is non-zero.",
             schema=vol.All(vol.Coerce(float), vol.Range(min=0)),
         ),
         setting.Setting(

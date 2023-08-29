@@ -395,8 +395,8 @@ class Core(composites.Composite):
         The reference assembly is defined as the center-most assembly with a FUEL flag,
         if any are present, or the center-most of any assembly otherwise.
 
-        Warnings
-        ========
+        Warning
+        -------
         The convenience of this property should be weighed against it's somewhat
         arbitrary nature for any particular client. The center-most fueled assembly is
         not particularly representative of the state of the core as a whole.
@@ -442,6 +442,34 @@ class Core(composites.Composite):
                 tablefmt="armi",
             )
         )
+
+    def getHmm(self):
+        """Calculate the total heavy metal mass in the core, in grams.
+
+        Returns
+        -------
+        float
+            Total heavy metal mass in the core.
+        """
+        gramsHmm = 0.0
+        for b in self.getBlocks():
+            gramsHmm += b.getHMMass()
+
+        return gramsHmm
+
+    def setPowerFromDensity(self):
+        """Set the power from the powerDensity."""
+        self.p.power = self.p.powerDensity * self.getHmm()
+
+    def setPowerIsNecessary(self):
+        """Set the core power, from the power density.
+
+        If the power density is set, but the power isn't, we set the calculate the
+        total heavy metal mass of the reactor, and set the total power. Which will
+        then be the real source of truth again.
+        """
+        if self.p.power == 0 and self.p.powerDensity > 0:
+            self.setPowerFromDensity()
 
     def setBlockMassParams(self):
         """Set the parameters kgHM and kgFis for each block and calculate Pu fraction."""
@@ -733,7 +761,9 @@ class Core(composites.Composite):
         """
         Returns the number of rings in this reactor. Based on location so indexing will start at 1.
 
-        WARNING: If you loop through range(maxRing) then ring+1 is the one you want!!
+        Warning
+        -------
+        If you loop through range(maxRing) then ring+1 is the one you want!
 
         Parameters
         ----------
@@ -742,7 +772,6 @@ class Core(composites.Composite):
 
         When circular ring shuffling is activated, this changes interpretation.
         Developers plan on making this another method for the secondary interpretation.
-
         """
         if self.circularRingList and not indexBased:
             return max(self.circularRingList)
@@ -1299,8 +1328,8 @@ class Core(composites.Composite):
         """
         Gets the first assembly in the reactor.
 
-        Warnings
-        --------
+        Warning
+        -------
         This function should be used with great care. There are **very** few
         circumstances in which one wants the "first" of a given sort of assembly,
         `whichever that may happen to be`. Precisely which assembly is returned is
