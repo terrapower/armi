@@ -631,7 +631,7 @@ def defineSettings() -> List[setting.Setting]:
         setting.Setting(
             CONF_POWER_DENSITY,
             default=0.0,
-            label="Reactor Thermal Power Densit (W/HMM)",
+            label="Reactor Thermal Power Density (W/HMM)",
             description="Thermal power of the Reactor, per gram of Heavy metal "
             "mass. Ignore this setting if the `power` setting is non-zero.",
             schema=vol.All(vol.Coerce(float), vol.Range(min=0)),
