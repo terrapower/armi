@@ -443,23 +443,9 @@ class Core(composites.Composite):
             )
         )
 
-    def getHmm(self):
-        """Calculate the total heavy metal mass in the core, in grams.
-
-        Returns
-        -------
-        float
-            Total heavy metal mass in the core.
-        """
-        gramsHmm = 0.0
-        for b in self.getBlocks():
-            gramsHmm += b.getHMMass()
-
-        return gramsHmm
-
     def setPowerFromDensity(self):
         """Set the power from the powerDensity."""
-        self.p.power = self.p.powerDensity * self.getHmm()
+        self.p.power = self.p.powerDensity * self.getHMMass()
 
     def setPowerIsNecessary(self):
         """Set the core power, from the power density.

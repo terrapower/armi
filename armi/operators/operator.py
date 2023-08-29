@@ -356,7 +356,9 @@ class Operator:
             return False
 
         # read total core power from settings (power or powerDensity)
-        basicPower = self.cs["power"] or (self.cs["powerDensity"] * self.r.core.getHmm()
+        basicPower = self.cs["power"] or (
+            self.cs["powerDensity"] * self.r.core.getHMMass()
+        )
 
         for timeNode in range(startingNode, int(self.burnSteps[cycle])):
             self.r.core.p.power = self.powerFractions[cycle][timeNode] * basicPower
