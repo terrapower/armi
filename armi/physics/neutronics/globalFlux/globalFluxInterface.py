@@ -127,7 +127,7 @@ class GlobalFluxInterface(interfaces.Interface):
             )
             / units.WATTS_PER_MW
         )
-        self.r.core.setPowerIsNecessary()
+        self.r.core.setPowerIfNecessary()
         specifiedPower = (
             self.r.core.p.power / units.WATTS_PER_MW / self.r.core.powerMultiplier
         )

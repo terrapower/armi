@@ -447,7 +447,7 @@ class Core(composites.Composite):
         """Set the power from the powerDensity."""
         self.p.power = self.p.powerDensity * self.getHMMass()
 
-    def setPowerIsNecessary(self):
+    def setPowerIfNecessary(self):
         """Set the core power, from the power density.
 
         If the power density is set, but the power isn't, we set the calculate the
