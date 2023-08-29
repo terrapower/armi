@@ -20,25 +20,25 @@ These then pop up during initialization of a run, either on the command line or 
 dialogues in the GUI. They say things like: "Your ___ setting has the value ___, which
 is impossible. Would you like to switch to ___?"
 """
-import re
-import os
-import shutil
 import itertools
+import os
+import re
+import shutil
 
 from armi import context
 from armi import getPluginManagerOrFail
 from armi import runLog
-from armi.utils import pathTools
-from armi.utils.mathematics import expandRepeatedFloats
+from armi.physics import neutronics
 from armi.reactor import geometry
 from armi.reactor import systemLayoutInput
-from armi.physics import neutronics
-from armi.utils import directoryChangers
 from armi.settings.settingsIO import (
     prompt,
     RunLogPromptCancel,
     RunLogPromptUnresolvable,
 )
+from armi.utils import directoryChangers
+from armi.utils import pathTools
+from armi.utils.mathematics import expandRepeatedFloats
 
 
 class Query:
