@@ -468,8 +468,15 @@ class Inspector:
         )
 
         self.addQuery(
-            lambda: not self.cs["power"],
-            "No power level set. You must always start by importing a base settings file.",
+            lambda: not self.cs["power"] and not self.cs["powerDensity"],
+            "No power or powerDensity set. You must always start by importing a base settings file.",
+            "",
+            self.NO_ACTION,
+        )
+
+        self.addQuery(
+            lambda: self.cs["power"] > 0 and self.cs["powerDensity"] > 0,
+            "The power and powerDensity are both set, please note the power will be used as the truth.",
             "",
             self.NO_ACTION,
         )
