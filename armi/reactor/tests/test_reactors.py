@@ -1098,7 +1098,7 @@ class HexReactorTests(ReactorTests):
         self.assertEqual(len(list(self.r.core.zones)), 0)
 
     def test_getNuclideCategories(self):
-        # test that nuclides are categorized correctly
+        """Test that nuclides are categorized correctly."""
         self.r.core.getNuclideCategories()
         self.assertIn("coolant", self.r.core._nuclideCategories)
         self.assertIn("structure", self.r.core._nuclideCategories)
@@ -1106,6 +1106,27 @@ class HexReactorTests(ReactorTests):
         self.assertEqual(self.r.core._nuclideCategories["coolant"], set(["NA23"]))
         self.assertIn("FE56", self.r.core._nuclideCategories["structure"])
         self.assertIn("U235", self.r.core._nuclideCategories["fuel"])
+
+    def test_setPowerIfNecessary(self):
+        self.assertAlmostEqual(self.r.core.p.power, 0)
+        self.assertAlmostEqual(self.r.core.p.powerDensity, 0)
+
+        # to start, this method shouldn't do anything
+        self.r.core.setPowerIfNecessary()
+        self.assertAlmostEqual(self.r.core.p.power, 0)
+
+        # take the powerDensity when needed
+        self.r.core.p.power = 0
+        self.r.core.p.powerDensity = 1e9
+        mass = self.r.core.getHMMass()
+        self.r.core.setPowerIfNecessary()
+        self.assertAlmostEqual(self.r.core.p.power, 1e9 * mass)
+
+        # don't take the powerDensity when not needed
+        self.r.core.p.power = 3e9
+        self.r.core.p.powerDensity = 2e9
+        self.r.core.setPowerIfNecessary()
+        self.assertAlmostEqual(self.r.core.p.power, 3e9)
 
 
 class CartesianReactorTests(ReactorTests):
