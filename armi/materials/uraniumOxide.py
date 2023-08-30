@@ -165,7 +165,7 @@ class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("density", Tk)
 
-        return (-1.01147e-7 * Tk ** 2 - 1.29933e-4 * Tk + 1.09805e1) * self.getTD()
+        return (-1.01147e-7 * Tk**2 - 1.29933e-4 * Tk + 1.09805e1) * self.getTD()
 
     def heatCapacity(self, Tk: float = None, Tc: float = None) -> float:
         """
@@ -184,7 +184,7 @@ class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
             * math.exp(hcc.theta / Tk)
             / (math.exp(hcc.theta / Tk) - 1.0) ** 2
             + 2 * hcc.c2 * Tk
-            + hcc.c3 * hcc.Ea * math.exp(-hcc.Ea / Tk) / Tk ** 2
+            + hcc.c3 * hcc.Ea * math.exp(-hcc.Ea / Tk) / Tk**2
         )
         return specificHeatCapacity
 
@@ -197,7 +197,7 @@ class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("linear expansion", Tk)
 
-        return 1.06817e-12 * Tk ** 2 - 1.37322e-9 * Tk + 1.02863e-5
+        return 1.06817e-12 * Tk**2 - 1.37322e-9 * Tk + 1.02863e-5
 
     def linearExpansionPercent(self, Tk: float = None, Tc: float = None) -> float:
         """
@@ -210,11 +210,11 @@ class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
 
         if Tk >= 273.0 and Tk < 923.0:
             return (
-                -2.66e-03 + 9.802e-06 * Tk - 2.705e-10 * Tk ** 2 + 4.391e-13 * Tk ** 3
+                -2.66e-03 + 9.802e-06 * Tk - 2.705e-10 * Tk**2 + 4.391e-13 * Tk**3
             ) * 100.0
         else:
             return (
-                -3.28e-03 + 1.179e-05 * Tk - 2.429e-09 * Tk ** 2 + 1.219e-12 * Tk ** 3
+                -3.28e-03 + 1.179e-05 * Tk - 2.429e-09 * Tk**2 + 1.219e-12 * Tk**3
             ) * 100.0
 
     def thermalConductivity(self, Tk: float = None, Tc: float = None) -> float:

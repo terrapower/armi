@@ -179,6 +179,6 @@ class MOX(UraniumOxide):
         return (
             3120.0
             - 655.3 * molFracPuO2
-            + 336.4 * molFracPuO2 ** 2
-            - 99.9 * molFracPuO2 ** 3
+            + 336.4 * molFracPuO2**2
+            - 99.9 * molFracPuO2**3
         )

@@ -1362,6 +1362,6 @@ assemblies:
         intercoolant = fuelBlock.getComponent(Flags.INTERCOOLANT)
 
         bpAssemblyArea = assembly.getArea()
-        actualAssemblyArea = math.sqrt(3) / 2.0 * intercoolant.p.op ** 2
+        actualAssemblyArea = math.sqrt(3) / 2.0 * intercoolant.p.op**2
 
         self.assertAlmostEqual(bpAssemblyArea, actualAssemblyArea)

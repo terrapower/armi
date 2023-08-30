@@ -98,8 +98,8 @@ class Sodium(material.Fluid):
         enthalpy = (
             -365.77
             + 1.6582 * Tk
-            - 4.2395e-4 * Tk ** 2
-            + 1.4847e-7 * Tk ** 3
+            - 4.2395e-4 * Tk**2
+            + 1.4847e-7 * Tk**3
             + 2992.6 / Tk
         )
         enthalpy = enthalpy * 1000  # convert from kJ/kg to kJ/kg
@@ -126,6 +126,6 @@ class Sodium(material.Fluid):
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("thermal conductivity", Tk)
         thermalConductivity = (
-            124.67 - 0.11381 * Tk + 5.5226e-5 * Tk ** 2 - 1.1842e-8 * Tk ** 3
+            124.67 - 0.11381 * Tk + 5.5226e-5 * Tk**2 - 1.1842e-8 * Tk**3
         )
         return thermalConductivity
