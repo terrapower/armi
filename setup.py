@@ -80,8 +80,7 @@ setup(
         "grids": ["wxpython==4.2.1"],
         "memprof": ["psutil"],
         "dev": [
-            "black==22.6",
-            "click",
+            "black==22.6.0",
             "docutils",
             "ipykernel",
             "jupyter-contrib-nbextensions",

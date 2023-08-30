@@ -13,6 +13,6 @@ jobs:
               with:
                 python-version: '3.11'
             - name: Install Black
-              run: pip install 'black==22.6' 'click'
+              run: pip install 'black==22.6.0'
             - name: Run black --check .
               run: black --check .
