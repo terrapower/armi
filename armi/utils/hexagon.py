@@ -31,7 +31,7 @@ SQRT3 = math.sqrt(3.0)
 
 def area(pitch):
     """Area of a hex given the flat-to-flat pitch."""
-    return SQRT3 / 2.0 * pitch ** 2
+    return SQRT3 / 2.0 * pitch**2
 
 
 def side(pitch):

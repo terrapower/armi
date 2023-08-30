@@ -72,7 +72,7 @@ class HoledHexagon(basicShapes.Hexagon):
         holeOD = self.getDimension("holeOD", cold=cold)
         nHoles = self.getDimension("nHoles", cold=cold)
         mult = self.getDimension("mult")
-        hexArea = math.sqrt(3.0) / 2.0 * (op ** 2)
+        hexArea = math.sqrt(3.0) / 2.0 * (op**2)
         circularArea = nHoles * math.pi * ((holeOD / 2.0) ** 2)
         area = mult * (hexArea - circularArea)
         return area
@@ -131,7 +131,7 @@ class HexHoledCircle(basicShapes.Circle):
         od = self.getDimension("od", cold=cold)
         holeOP = self.getDimension("holeOP", cold=cold)
         mult = self.getDimension("mult")
-        hexArea = math.sqrt(3.0) / 2.0 * (holeOP ** 2)
+        hexArea = math.sqrt(3.0) / 2.0 * (holeOP**2)
         circularArea = math.pi * ((od / 2.0) ** 2)
         area = mult * (circularArea - hexArea)
         return area
@@ -236,7 +236,7 @@ class HoledSquare(basicShapes.Square):
     def getComponentArea(self, cold=False):
         r"""Computes the area (in cm^2) for the the square with one hole in it."""
         width = self.getDimension("widthOuter", cold=cold)
-        rectangleArea = width ** 2
+        rectangleArea = width**2
         holeOD = self.getDimension("holeOD", cold=cold)
         circularArea = math.pi * ((holeOD / 2.0) ** 2)
         mult = self.getDimension("mult")
@@ -331,6 +331,6 @@ class Helix(ShapedComponent):
         od = self.getDimension("od", cold=cold)
         mult = self.getDimension("mult")
         c = ap / (2.0 * math.pi)
-        helixFactor = math.sqrt((hd / 2.0) ** 2 + c ** 2) / c
+        helixFactor = math.sqrt((hd / 2.0) ** 2 + c**2) / c
         area = mult * math.pi * ((od / 2.0) ** 2 - (id / 2.0) ** 2) * helixFactor
         return area

@@ -80,8 +80,7 @@ setup(
         "grids": ["wxpython==4.2.1"],
         "memprof": ["psutil"],
         "dev": [
-            "black==20.8b1",
-            "click==8.0.1",  # fixing click problem in black
+            "black==22.6.0",
             "docutils",
             "ipykernel",
             "jupyter-contrib-nbextensions",
