@@ -220,10 +220,10 @@ class MemoryProfiler(interfaces.Interface):
                 "UNIQUE_INSTANCE_COUNT: {:60s} {:10d}     {:10.1f} MB".format(
                     counter.classType.__name__,
                     counter.count,
-                    counter.memSize / (1024 ** 2.0),
+                    counter.memSize / (1024**2.0),
                 )
             )
-            if printReferrers and counter.memSize / (1024 ** 2.0) > 100:
+            if printReferrers and counter.memSize / (1024**2.0) > 100:
                 referrers = gc.get_referrers(counter.first)
                 runLog.info("          Referrers of first one: ")
                 for referrer in referrers:
@@ -342,7 +342,7 @@ class SystemAndProcessMemoryUsage:
         self.processMemoryInMB: Optional[float] = None
         if _havePsutil:
             self.percentNodeRamUsed = psutil.virtual_memory().percent
-            self.processMemoryInMB = psutil.Process().memory_info().rss / (1012.0 ** 2)
+            self.processMemoryInMB = psutil.Process().memory_info().rss / (1012.0**2)
 
     def __isub__(self, other):
         if self.percentNodeRamUsed is not None and other.percentNodeRamUsed is not None:

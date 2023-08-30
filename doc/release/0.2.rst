@@ -18,6 +18,7 @@ What's new in ARMI
 #. Make cylindrical component block collection less strict about pre-homogenization checks. (`PR#1347 <https://github.com/terrapower/armi/pull/1347>`_)
 #. Updated some parameter definitions and defaults. (`PR#1355 <https://github.com/terrapower/armi/pull/1355>`_)
 #. Make the SFP a child of the reactor so it is stored in database. (`PR#1349 <https://github.com/terrapower/armi/pull/1349>`_)
+#. Update black to version 22.6 (`PR#1396 <https://github.com/terrapower/armi/pull/1396>`_)
 #. TBD
 
 Bug fixes
