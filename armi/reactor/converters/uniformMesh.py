@@ -413,6 +413,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
         completeStartTime = timer()
         self._sourceReactor = r
+        self._sourceReactor.normalizeNames()
         self._setParamsToUpdate("in")
 
         # Here we are taking a short cut to homogenizing the core by only focusing on the
@@ -461,7 +462,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
             self._newAssembliesAdded = self.convReactor.core.getAssemblies()
 
         self.convReactor.core.updateAxialMesh()
-        self.convReactor.normalizeNames()
         self._checkConversion()
         completeEndTime = timer()
         runLog.extra(
