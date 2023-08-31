@@ -600,7 +600,6 @@ class Core(composites.Composite):
             newName = a.makeNameFromAssemNum(ind)
             if oldName == newName:
                 ind += 1
-                continue
 
             a.p.assemNum = ind
             a.setName(newName)
