@@ -461,6 +461,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
             self._newAssembliesAdded = self.convReactor.core.getAssemblies()
 
         self.convReactor.core.updateAxialMesh()
+        self.convReactor.normalizeNames()
         self._checkConversion()
         completeEndTime = timer()
         runLog.extra(

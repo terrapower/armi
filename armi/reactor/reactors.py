@@ -149,8 +149,9 @@ class Reactor(composites.Composite):
         ind = self.core.normalizeNames(self.p.maxAssemNum)
         self.p.maxAssemNum = ind
 
-        ind = self.sfp.normalizeNames(self.p.maxAssemNum)
-        self.p.maxAssemNum = ind
+        if self.sfp:
+            ind = self.sfp.normalizeNames(self.p.maxAssemNum)
+            self.p.maxAssemNum = ind
 
         return ind
 
