@@ -434,7 +434,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
                     includePinCoordinates=self.includePinCoordinates,
                 )
                 homogAssem.spatialLocator = assem.spatialLocator
-                homogAssem.p.assemNum = assem.p.assemNum
 
                 # Remove this assembly from the core and add it to the temporary storage
                 # so that it can be replaced with the homogenized assembly. Note that we
@@ -505,6 +504,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
         coreDesign.construct(cs, bp, newReactor, loadAssems=False)
         newReactor.p.cycle = sourceReactor.p.cycle
         newReactor.p.timeNode = sourceReactor.p.timeNode
+        newReactor.p.maxAssemNum = sourceReactor.p.maxAssemNum
         newReactor.core.p.coupledIteration = sourceReactor.core.p.coupledIteration
         newReactor.core.lib = sourceReactor.core.lib
         newReactor.core.setPitchUniform(sourceReactor.core.getAssemblyPitch())
@@ -628,6 +628,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
             between two assemblies.
         """
         newAssem = UniformMeshGeometryConverter._createNewAssembly(sourceAssem)
+        newAssem.p.assemNum = sourceAssem.p.assemNum
         runLog.debug(f"Creating a uniform mesh of {newAssem}")
         bottom = 0.0
 
