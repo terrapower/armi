@@ -153,27 +153,6 @@ def promptForSettingsFile(choice=None):
     return files[choice]
 
 
-def getMasterCs():
-    """
-    Return the global case-settings object (cs).
-
-    This can be called at any time to create or obtain the primary Cs, a module-level CS
-    intended to be shared by many other objects.
-
-    It can have multiple instances in multiprocessing cases.
-
-    Returns
-    -------
-    cs : Settings
-        The loaded cs object
-    """
-    cs = Settings.instance
-    if cs is None:
-        cs = Settings()
-        setMasterCs(cs)
-    return cs
-
-
 def setMasterCs(cs):
     """
     Set the primary Cs to be the one that is passed in.

@@ -213,7 +213,7 @@ class OperatorMPI(Operator):
         xsGroups = self.getInterface("xsGroups")
         if xsGroups:
             xsGroups.clearRepresentativeBlocks()
-        cs = settings.getMasterCs()
+        cs = self.cs
         bp = self.r.blueprints
         spatialGrid = self.r.core.spatialGrid
         self.detach()
