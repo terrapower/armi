@@ -367,6 +367,14 @@ def defineCoreParameters():
         )
 
         pb.defParam(
+            "powerDensity",
+            units=f"{units.WATTS}/{units.GRAMS}",
+            description="BOL Power density of the reactor core, in units of Watts per"
+            "grams of Heavy Metal Mass. After the BOL, the power parameter will be set, "
+            "and this will entirely overridden by that.",
+        )
+
+        pb.defParam(
             "powerDecay",
             units=units.WATTS,
             description="Decay power from decaying radionuclides",
