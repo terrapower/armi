@@ -187,7 +187,8 @@ class TestHistoryTrackerNoModel(unittest.TestCase):
     """History tracker tests that do not require a Reactor Model."""
 
     def setUp(self):
-        self.history = historyTracker.HistoryTrackerInterface(None, None)
+        cs = settings.Settings()
+        self.history = historyTracker.HistoryTrackerInterface(None, cs=cs)
         self._origCaseTitle = (
             self.history.cs.caseTitle
         )  # to avoid parallel test interference.
