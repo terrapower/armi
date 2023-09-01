@@ -84,7 +84,6 @@ class TestHistoryTracker(ArmiTestHelper):
 
         c = case.Case(cs)
         case2 = c.clone(title="armiRun")
-        settings.setMasterCs(case2.cs)
         self.o = case2.initializeOperator()
         self.r = self.o.r
 

@@ -30,7 +30,6 @@ from armi import settings
 from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
 from armi.reactor import blueprints
 from armi.reactor import systemLayoutInput
-from armi.settings import setMasterCs
 from armi.tests import ARMI_RUN_PATH
 from armi.tests import mockRunLogs
 from armi.tests import TEST_ROOT
@@ -211,7 +210,6 @@ class TestArmiCase(unittest.TestCase):
                 "verbosity": "important",
             }
             cs = cs.modified(newSettings=newSettings)
-            setMasterCs(cs)
             case = cases.Case(cs)
 
             with mockRunLogs.BufferLog() as mock:
@@ -231,7 +229,6 @@ class TestArmiCase(unittest.TestCase):
         # test the short write style
         with directoryChangers.TemporaryDirectoryChanger():
             cs = settings.Settings(ARMI_RUN_PATH)
-            setMasterCs(cs)
             case = cases.Case(cs)
             shortCase = case.clone(
                 additionalFiles=["ISOAA"],
@@ -254,7 +251,6 @@ class TestArmiCase(unittest.TestCase):
         # test the medium write style
         with directoryChangers.TemporaryDirectoryChanger():
             cs = settings.Settings(ARMI_RUN_PATH)
-            setMasterCs(cs)
             case = cases.Case(cs)
             case.clone(writeStyle="medium")
             clonedYaml = "armiRun.yaml"

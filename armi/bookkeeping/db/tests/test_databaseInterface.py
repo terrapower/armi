@@ -53,7 +53,6 @@ def getSimpleDBOperator(cs):
     newSettings["nCycles"] = 1
     cs = cs.modified(newSettings=newSettings)
     genDBCase = case.Case(cs)
-    settings.setMasterCs(cs)
     runLog.setVerbosity("info")
 
     o = genDBCase.initializeOperator()
@@ -263,8 +262,6 @@ class TestDatabaseReading(unittest.TestCase):
         newSettings["burnSteps"] = 2
         o, r = loadTestReactor(customSettings=newSettings)
         reduceTestReactorRings(r, o.cs, 3)
-
-        settings.setMasterCs(o.cs)
 
         o.interfaces = [i for i in o.interfaces if isinstance(i, (DatabaseInterface))]
         dbi = o.getInterface("database")

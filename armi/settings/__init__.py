@@ -151,13 +151,3 @@ def promptForSettingsFile(choice=None):
         choice = int(input("Enter choice: "))
 
     return files[choice]
-
-
-def setMasterCs(cs):
-    """
-    Set the primary Cs to be the one that is passed in.
-
-    These are kept track of independently on a PID basis to allow independent multiprocessing.
-    """
-    Settings.instance = cs
-    runLog.debug("Primary cs set to {} with ID: {}".format(cs, id(cs)))

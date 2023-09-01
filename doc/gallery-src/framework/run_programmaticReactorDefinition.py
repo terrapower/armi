@@ -61,7 +61,6 @@ def buildCase():
     bp.systemDesigns = buildSystems()
 
     cs = caseSettings.Settings()
-    settings.setMasterCs(cs)  # remove once we eliminate masterCs
     cs.path = None
     cs.caseTitle = "scripted-case"
     case = cases.Case(cs=cs, bp=bp)

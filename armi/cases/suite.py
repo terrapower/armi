@@ -204,7 +204,6 @@ class CaseSuite:
         for ci, case in enumerate(self):
             runLog.important(f"Running case {ci+1}/{len(self)}: {case}")
             with directoryChangers.DirectoryChanger(case.directory):
-                settings.setMasterCs(case.cs)
                 try:
                     case.run()
                 except:  # noqa: bare-except

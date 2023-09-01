@@ -62,7 +62,6 @@ Database revision changelog
 import os
 from typing import Optional, List, Tuple
 
-from armi import settings
 from armi import runLog
 
 # re-export package components for easier import
@@ -141,8 +140,6 @@ def loadOperator(pathToDb, loadCycle, loadNode, allowMissing=False):
         thisCase = cases.Case(cs)
 
         r = db.load(loadCycle, loadNode, allowMissing=allowMissing)
-
-    settings.setMasterCs(cs)
 
     o = thisCase.initializeOperator(r=r)
     runLog.important(
