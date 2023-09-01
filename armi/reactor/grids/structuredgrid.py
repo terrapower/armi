@@ -186,7 +186,7 @@ class StructuredGrid(Grid):
         return self._isAxialOnly
 
     def reduce(self) -> GridParameters:
-        """Recreate the parameter necessary to create this grid"""
+        """Recreate the parameter necessary to create this grid."""
         offset = None if not self._offset.any() else tuple(self._offset)
 
         bounds = _tuplify(self._bounds)
@@ -219,7 +219,7 @@ class StructuredGrid(Grid):
 
     @property
     def offset(self) -> numpy.ndarray:
-        """Offset in cm for each axis"""
+        """Offset in cm for each axis."""
         return self._offset
 
     @offset.setter
@@ -296,14 +296,14 @@ class StructuredGrid(Grid):
         )
 
     def getCellBase(self, indices) -> numpy.ndarray:
-        """Get the mesh base (lower left) of this mesh cell in cm"""
+        """Get the mesh base (lower left) of this mesh cell in cm."""
         indices = numpy.array(indices)
         return self._evaluateMesh(
             indices, self._meshBaseBySteps, self._meshBaseByBounds
         )
 
     def getCellTop(self, indices) -> numpy.ndarray:
-        """Get the mesh top (upper right) of this mesh cell in cm"""
+        """Get the mesh top (upper right) of this mesh cell in cm."""
         indices = numpy.array(indices) + 1
         return self._evaluateMesh(
             indices, self._meshBaseBySteps, self._meshBaseByBounds
@@ -392,9 +392,7 @@ class StructuredGrid(Grid):
     ) -> Tuple[
         Optional[Sequence[float]], Optional[Sequence[float]], Optional[Sequence[float]]
     ]:
-        """
-        Return the grid bounds for each dimension, if present.
-        """
+        """Return the grid bounds for each dimension, if present."""
         return self._bounds
 
     def getLocatorFromRingAndPos(self, ring, pos, k=0):
@@ -458,7 +456,6 @@ class StructuredGrid(Grid):
 
         A tuple is returned so that it is easy to compare pairs of indices.
         """
-
         # Regular grids don't know about ring and position. Check the parent.
         if (
             self.armiObject is not None
@@ -486,7 +483,7 @@ class StructuredGrid(Grid):
     @property
     @abstractmethod
     def pitch(self) -> Union[float, Tuple[float, float]]:
-        """Grid pitch
+        """Grid pitch.
 
         Some implementations may rely on a single pitch, such
         as axial or hexagonal grids. Cartesian grids may use

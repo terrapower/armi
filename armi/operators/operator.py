@@ -35,7 +35,6 @@ import time
 from armi import context
 from armi import interfaces
 from armi import runLog
-from armi import settings
 from armi.bookkeeping import memoryProfiler
 from armi.bookkeeping.report import reportingUtils
 from armi.operators import settingsValidation

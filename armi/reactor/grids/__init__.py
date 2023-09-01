@@ -62,6 +62,7 @@ current grid.
 """
 from typing import Tuple, Optional
 
+# ruff: noqa: F401
 from .constants import (
     BOUNDARY_CENTER,
     BOUNDARY_0_DEGREES,

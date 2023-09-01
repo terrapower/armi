@@ -58,7 +58,7 @@ def buildTestAssemblies():
         * One with half UZr pins and half UTh pins
         * One with all UThZr pins
     """
-    caseSetting = settings.Settings()
+    settings.Settings()
 
     temperature = 273.0
     fuelID = 0.0

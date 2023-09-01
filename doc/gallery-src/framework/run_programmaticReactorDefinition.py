@@ -36,7 +36,6 @@ from armi import configure
 configure(permissive=True)
 
 from armi import cases
-from armi import settings
 from armi.reactor import blueprints
 from armi.reactor.blueprints import assemblyBlueprint
 from armi.reactor.blueprints import blockBlueprint

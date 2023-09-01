@@ -24,7 +24,7 @@ from .structuredgrid import StructuredGrid
 
 class CartesianGrid(StructuredGrid):
     """
-    Grid class representing a conformal Cartesian mesh
+    Grid class representing a conformal Cartesian mesh.
 
     It is recommended to call :meth:`fromRectangle` to construct,
     rather than directly constructing with ``__init__``
@@ -108,7 +108,7 @@ class CartesianGrid(StructuredGrid):
         )
 
     def overlapsWhichSymmetryLine(self, indices: IJType) -> None:
-        """Return lines of symmetry position at a given index can be found
+        """Return lines of symmetry position at a given index can be found.
 
         .. warning::
 
@@ -301,7 +301,7 @@ class CartesianGrid(StructuredGrid):
 
     @property
     def pitch(self) -> Tuple[float, float]:
-        """Grid pitch in the x and y dimension
+        """Grid pitch in the x and y dimension.
 
         Returns
         -------

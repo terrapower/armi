@@ -57,9 +57,7 @@ class LocationBase(ABC):
         )
 
     def __getstate__(self) -> Hashable:
-        """
-        Used in pickling and deepcopy, this detaches the grid.
-        """
+        """Used in pickling and deepcopy, this detaches the grid."""
         return (self._i, self._j, self._k, None)
 
     def __setstate__(self, state: Hashable):
@@ -375,9 +373,7 @@ class MultiIndexLocation(IndexLocation):
         self._locations = []
 
     def __getstate__(self) -> List[IndexLocation]:
-        """
-        Used in pickling and deepcopy, this detaches the grid.
-        """
+        """Used in pickling and deepcopy, this detaches the grid."""
         return self._locations
 
     def __setstate__(self, state: List[IndexLocation]):

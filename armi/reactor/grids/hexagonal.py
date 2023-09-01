@@ -184,9 +184,7 @@ class HexGrid(StructuredGrid):
         return hexagon.numRingsToHoldNumCells(n)
 
     def getPositionsInRing(self, ring: int) -> int:
-        """
-        Return the number of positions within a ring.
-        """
+        """Return the number of positions within a ring."""
         return hexagon.numPositionsInRing(ring)
 
     def getNeighboringCellIndices(
@@ -417,7 +415,7 @@ class HexGrid(StructuredGrid):
     #       in a ring, not the actual positions
     def allPositionsInThird(self, ring, includeEdgeAssems=False):
         """
-        Returns a list of all the positions in a ring (in the first third)
+        Returns a list of all the positions in a ring (in the first third).
 
         Parameters
         ----------
