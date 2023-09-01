@@ -64,10 +64,6 @@ class Settings:
     The actual settings in any instance of this class are immutable.
     """
 
-    # Settings is not a singleton, but there is a globally
-    # shared instance considered most germane to the current run
-    instance = None
-
     defaultCaseTitle = "armi"
 
     def __init__(self, fName=None):
@@ -98,8 +94,6 @@ class Settings:
         app = getApp()
         assert app is not None
         self.__settings = app.getSettings()
-        if not Settings.instance:
-            Settings.instance = self
 
         if fName:
             self.loadFromInputFile(fName)
