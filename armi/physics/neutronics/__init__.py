@@ -60,7 +60,7 @@ class NeutronicsPlugin(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineParameters():
-        from . import parameters as neutronicsParameters
+        from armi.physics.neutronics import parameters as neutronicsParameters
 
         return neutronicsParameters.getNeutronicsParameterDefinitions()
 
