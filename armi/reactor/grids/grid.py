@@ -18,14 +18,14 @@ import numpy
 
 from armi.reactor import geometry
 
-from .locations import LocationBase, IndexLocation, IJType, IJKType
+from armi.reactor.grids.locations import LocationBase, IndexLocation, IJType, IJKType
 
 if TYPE_CHECKING:
     from armi.reactor.composites import ArmiObject
 
 
 class Grid(ABC):
-    """Base class that defines the interface for grids
+    """Base class that defines the interface for grids.
 
     Most work will be done with structured grids, e.g., hexagonal grid, Cartesian grids,
     but some physics codes accept irregular or unstructured grids. Consider
@@ -69,7 +69,7 @@ class Grid(ABC):
 
     @property
     def geomType(self) -> geometry.GeomType:
-        """Geometric representation"""
+        """Geometric representation."""
         return geometry.GeomType.fromStr(self._geomType)
 
     @geomType.setter
@@ -81,7 +81,7 @@ class Grid(ABC):
 
     @property
     def symmetry(self) -> str:
-        """Symmetry applied to the grid"""
+        """Symmetry applied to the grid."""
         return geometry.SymmetryType.fromStr(self._symmetry)
 
     @symmetry.setter
@@ -93,7 +93,7 @@ class Grid(ABC):
 
     def __getstate__(self) -> Dict:
         """
-        Pickling removes reference to ``armiObject``
+        Pickling removes reference to ``armiObject``.
 
         Removing the ``armiObject`` allows us to pickle an assembly without pickling
         the entire reactor. An ``Assembly.spatialLocator.grid.armiObject`` is the
@@ -109,7 +109,7 @@ class Grid(ABC):
 
     def __setstate__(self, state: Dict):
         """
-        Pickling removes reference to ``armiObject``
+        Pickling removes reference to ``armiObject``.
 
         This relies on the ``ArmiObject.__setstate__`` to assign itself.
         """
@@ -121,11 +121,11 @@ class Grid(ABC):
     @property
     @abstractmethod
     def isAxialOnly(self) -> bool:
-        """Indicate to parts of ARMI if this Grid handles only axial cells"""
+        """Indicate to parts of ARMI if this Grid handles only axial cells."""
 
     @abstractmethod
     def __len__(self) -> int:
-        """Number of items in the grid"""
+        """Number of items in the grid."""
 
     @abstractmethod
     def items(self) -> Iterable[Tuple[IJKType, IndexLocation]]:
@@ -170,7 +170,7 @@ class Grid(ABC):
 
     @abstractmethod
     def overlapsWhichSymmetryLine(self, indices: IJType) -> Optional[int]:
-        """Return lines of symmetry position at a given index can be found
+        """Return lines of symmetry position at a given index can be found.
 
         Parameters
         ----------
@@ -196,19 +196,19 @@ class Grid(ABC):
 
     @abstractmethod
     def backUp(self):
-        """Subclasses should modify the internal backup variable"""
+        """Subclasses should modify the internal backup variable."""
 
     @abstractmethod
     def restoreBackup(self):
-        """Restore state from backup"""
+        """Restore state from backup."""
 
     @abstractmethod
     def getCellBase(self, indices: IJKType) -> numpy.ndarray:
-        """Return the lower left case of this cell in cm"""
+        """Return the lower left case of this cell in cm."""
 
     @abstractmethod
     def getCellTop(self, indices: IJKType) -> numpy.ndarray:
-        """Get the upper right of this cell in cm"""
+        """Get the upper right of this cell in cm."""
 
     @staticmethod
     def getLabel(indices):

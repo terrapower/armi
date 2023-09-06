@@ -16,15 +16,15 @@ import warnings
 
 import numpy
 
-from .locations import IJType, LocationBase
-from .structuredgrid import StructuredGrid
+from armi.reactor.grids.locations import IJType, LocationBase
+from armi.reactor.grids.structuredgrid import StructuredGrid
 
 if TYPE_CHECKING:
     from armi.reactor.composites import ArmiObject
 
 
 class AxialGrid(StructuredGrid):
-    """1-D grid in the k-direction (z)
+    """1-D grid in the k-direction (z).
 
     .. note:::
 
@@ -37,7 +37,7 @@ class AxialGrid(StructuredGrid):
     def fromNCells(
         cls, numCells: int, armiObject: Optional["ArmiObject"] = None
     ) -> "AxialGrid":
-        """Produces an unit grid where each bin is 1-cm tall
+        """Produces an unit grid where each bin is 1-cm tall.
 
         ``numCells + 1`` mesh boundaries are added, since one block would
         require a bottom and a top.
@@ -77,7 +77,7 @@ class AxialGrid(StructuredGrid):
 
     @property
     def pitch(self) -> float:
-        """Grid spacing in the z-direction
+        """Grid spacing in the z-direction.
 
         Returns
         -------

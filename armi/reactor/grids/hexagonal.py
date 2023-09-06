@@ -19,14 +19,14 @@ import numpy
 from armi.reactor import geometry
 from armi.utils import hexagon
 
-from .constants import (
+from armi.reactor.grids.constants import (
     BOUNDARY_0_DEGREES,
     BOUNDARY_120_DEGREES,
     BOUNDARY_60_DEGREES,
     BOUNDARY_CENTER,
 )
-from .locations import IndexLocation, IJKType, IJType
-from .structuredgrid import StructuredGrid
+from armi.reactor.grids.locations import IndexLocation, IJKType, IJType
+from armi.reactor.grids.structuredgrid import StructuredGrid
 
 COS30 = sqrt(3) / 2.0
 SIN30 = 1.0 / 2.0
@@ -184,9 +184,7 @@ class HexGrid(StructuredGrid):
         return hexagon.numRingsToHoldNumCells(n)
 
     def getPositionsInRing(self, ring: int) -> int:
-        """
-        Return the number of positions within a ring.
-        """
+        """Return the number of positions within a ring."""
         return hexagon.numPositionsInRing(ring)
 
     def getNeighboringCellIndices(
@@ -417,7 +415,7 @@ class HexGrid(StructuredGrid):
     #       in a ring, not the actual positions
     def allPositionsInThird(self, ring, includeEdgeAssems=False):
         """
-        Returns a list of all the positions in a ring (in the first third)
+        Returns a list of all the positions in a ring (in the first third).
 
         Parameters
         ----------

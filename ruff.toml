@@ -72,6 +72,10 @@ target-version = "py39"
 # Setting line-length to 88 to match Black
 line-length = 88
 
+[flake8-tidy-imports]
+# Disallow all relative imports.
+ban-relative-imports = "all"
+
 [per-file-ignores]
 # D1XX - enforces writing docstrings
 # E741 - ambiguous variable name

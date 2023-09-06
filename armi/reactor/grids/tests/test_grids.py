@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for grids"""
+"""Tests for grids."""
 # pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-self-use,attribute-defined-outside-init
 from io import BytesIO
 import math
@@ -51,7 +51,7 @@ class MockArmiObject:
 
 
 class MockStructuredGrid(grids.StructuredGrid):
-    """Need a concrete class to test a lot of inherited methods
+    """Need a concrete class to test a lot of inherited methods.
 
     Abstract methods from the parent now raise ``NotImplementedError``
     """
@@ -223,7 +223,7 @@ class TestGrid(unittest.TestCase):
 
 
 class TestHexGrid(unittest.TestCase):
-    """A set of tests for the Hexagonal Grid
+    """A set of tests for the Hexagonal Grid.
 
     .. test: Tests of the Hexagonal grid.
        :id: TEST_REACTOR_MESH_0
@@ -490,7 +490,7 @@ class TestBoundsDefinedGrid(unittest.TestCase):
 
 
 class TestThetaRZGrid(unittest.TestCase):
-    """A set of tests for the RZTheta Grid
+    """A set of tests for the RZTheta Grid.
 
     .. test: Tests of the RZTheta grid.
        :id: TEST_REACTOR_MESH_1
@@ -513,7 +513,7 @@ class TestThetaRZGrid(unittest.TestCase):
 
 
 class TestCartesianGrid(unittest.TestCase):
-    """A set of tests for the Cartesian Grid
+    """A set of tests for the Cartesian Grid.
 
     .. test: Tests of the Cartesian grid.
        :id: TEST_REACTOR_MESH_2
