@@ -18,8 +18,8 @@ import numpy
 
 from armi.reactor import geometry
 
-from .locations import IJType
-from .structuredgrid import StructuredGrid
+from armi.reactor.grids.locations import IJType
+from armi.reactor.grids.structuredgrid import StructuredGrid
 
 
 class CartesianGrid(StructuredGrid):

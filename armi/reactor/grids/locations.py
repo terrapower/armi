@@ -20,7 +20,7 @@ import numpy
 
 if TYPE_CHECKING:
     # Avoid some circular imports
-    from . import Grid
+    from armi.reactor.grids import Grid
 
 
 IJType = Tuple[int, int]

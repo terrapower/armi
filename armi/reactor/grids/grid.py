@@ -18,7 +18,7 @@ import numpy
 
 from armi.reactor import geometry
 
-from .locations import LocationBase, IndexLocation, IJType, IJKType
+from armi.reactor.grids.locations import LocationBase, IndexLocation, IJType, IJKType
 
 if TYPE_CHECKING:
     from armi.reactor.composites import ArmiObject
