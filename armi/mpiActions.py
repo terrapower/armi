@@ -68,7 +68,6 @@ from armi import runLog
 from armi import settings
 from armi import utils
 from armi.reactor import reactors
-from armi.reactor import assemblies
 from armi.reactor.parameters import parameterDefinitions
 from armi.utils import iterables
 
@@ -610,8 +609,6 @@ class DistributeStateAction(MpiAction):
         runLog.debug(
             "The reactor has {} assemblies".format(len(self.r.core.getAssemblies()))
         )
-        numAssemblies = self.broadcast(assemblies.getAssemNum())
-        assemblies.setAssemNumCounter(numAssemblies)
         # attach here so any interface actions use a properly-setup reactor.
         self.o.reattach(self.r, cs)  # sets r and cs
 

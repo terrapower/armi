@@ -13,6 +13,7 @@
 # limitations under the License.
 """
 Fuel management in a LWR.
+=========================
 
 Demo of locating and swapping assemblies in a core with Cartesian geometry. Given a burnup
 distribution, this swaps high burnup assemblies with low ones.
@@ -44,7 +45,7 @@ o, reactor = test_reactors.loadTestReactor(inputFileName="refTestCartesian.yaml"
 # Apply a dummy burnup distribution roughly in a cosine
 for b in reactor.core.getBlocks(Flags.FUEL):
     x, y, z = b.spatialLocator.getGlobalCoordinates()
-    d = math.sqrt(x ** 2 + y ** 2)
+    d = math.sqrt(x**2 + y**2)
     b.p.percentBu = 5 * math.cos(d * math.pi / 2 / 90)
 
 # show the initial burnup distribution

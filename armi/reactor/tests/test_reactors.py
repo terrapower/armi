@@ -172,12 +172,10 @@ def loadTestReactor(
     fName = os.path.join(inputFilePath, inputFileName)
     customSettings = customSettings or {}
     isPickeledReactor = fName == ARMI_RUN_PATH and customSettings == {}
-    assemblies.resetAssemNumCounter()
 
     if isPickeledReactor and TEST_REACTOR:
         # return test reactor only if no custom settings are needed.
         o, r, assemNum = cPickle.loads(TEST_REACTOR)
-        assemblies.setAssemNumCounter(assemNum)
         settings.setMasterCs(o.cs)
         o.reattach(r, o.cs)
         return o, r
@@ -200,17 +198,12 @@ def loadTestReactor(
 
     o.initializeInterfaces(r)
 
-    # put some stuff in the SFP too.
-    for a in range(10):
-        a = o.r.blueprints.constructAssem(o.cs, name="feed fuel")
-        o.r.sfp.add(a)
-
     o.r.core.regenAssemblyLists()
 
     if isPickeledReactor:
         # cache it for fast load for other future tests
         # protocol=2 allows for classes with __slots__ but not __getstate__ to be pickled
-        TEST_REACTOR = cPickle.dumps((o, o.r, assemblies.getAssemNum()), protocol=2)
+        TEST_REACTOR = cPickle.dumps((o, o.r, o.r.p.maxAssemNum), protocol=2)
 
     return o, o.r
 
@@ -321,7 +314,7 @@ class HexReactorTests(ReactorTests):
         indices = [(1, 1, 1), (3, 2, 2)]
         actualBlocks = self.r.core.getBlocksByIndices(indices)
         actualNames = [b.getName() for b in actualBlocks]
-        expectedNames = ["B0022-001", "B0043-002"]
+        expectedNames = ["B0014-001", "B0035-002"]
         self.assertListEqual(expectedNames, actualNames)
 
     def test_getAllXsSuffixes(self):
@@ -338,6 +331,28 @@ class HexReactorTests(ReactorTests):
             [Flags.DUCT, Flags.CONTROL, Flags.FUEL], Flags.CONTROL
         )
         self.assertEqual(numControlBlocks, 3)
+
+    def test_normalizeNames(self):
+        # these are the correct, normalized names
+        numAssems = 73
+        a = self.r.core.getFirstAssembly()
+        correctNames = [a.makeNameFromAssemNum(n) for n in range(numAssems)]
+
+        # validate the reactor is what we think now
+        self.assertEqual(len(self.r.core), numAssems)
+        currentNames = [a.getName() for a in self.r.core]
+        self.assertNotEqual(correctNames, currentNames)
+
+        # validate that we can normalize the names correctly once
+        self.r.normalizeNames()
+        currentNames = [a.getName() for a in self.r.core]
+        self.assertEqual(correctNames, currentNames)
+
+        # validate that repeated applications of this method are stable
+        for _ in range(3):
+            self.r.normalizeNames()
+            currentNames = [a.getName() for a in self.r.core]
+            self.assertEqual(correctNames, currentNames)
 
     def test_setB10VolOnCreation(self):
         """Test the setting of b.p.initialB10ComponentVol."""
@@ -634,10 +649,11 @@ class HexReactorTests(ReactorTests):
 
     def test_getAssembly(self):
         a1 = self.r.core.getAssemblyWithAssemNum(assemNum=10)
-        a2 = self.r.core.getAssembly(locationString="005-023")
+        a2 = self.r.core.getAssembly(locationString="003-001")
         a3 = self.r.core.getAssembly(assemblyName="A0010")
-        self.assertEqual(a1, a2)
+
         self.assertEqual(a1, a3)
+        self.assertEqual(a1, a2)
 
     def test_restoreReactor(self):
         aListLength = len(self.r.core.getAssemblies())
@@ -824,9 +840,8 @@ class HexReactorTests(ReactorTests):
             a = self.r.core[-1]  # last assembly
             aLoc = a.spatialLocator
             self.assertIsNotNone(aLoc.grid)
-            core = self.r.core
-            del core.parent.sfp
-            core.removeAssembly(a)
+            self.r.sfp = None
+            self.r.core.removeAssembly(a)
 
             self.assertIn("No Spent Fuel Pool", mock.getStdout())
 
@@ -1083,7 +1098,7 @@ class HexReactorTests(ReactorTests):
         self.assertEqual(len(list(self.r.core.zones)), 0)
 
     def test_getNuclideCategories(self):
-        # test that nuclides are categorized correctly
+        """Test that nuclides are categorized correctly."""
         self.r.core.getNuclideCategories()
         self.assertIn("coolant", self.r.core._nuclideCategories)
         self.assertIn("structure", self.r.core._nuclideCategories)
@@ -1091,6 +1106,27 @@ class HexReactorTests(ReactorTests):
         self.assertEqual(self.r.core._nuclideCategories["coolant"], set(["NA23"]))
         self.assertIn("FE56", self.r.core._nuclideCategories["structure"])
         self.assertIn("U235", self.r.core._nuclideCategories["fuel"])
+
+    def test_setPowerIfNecessary(self):
+        self.assertAlmostEqual(self.r.core.p.power, 0)
+        self.assertAlmostEqual(self.r.core.p.powerDensity, 0)
+
+        # to start, this method shouldn't do anything
+        self.r.core.setPowerIfNecessary()
+        self.assertAlmostEqual(self.r.core.p.power, 0)
+
+        # take the powerDensity when needed
+        self.r.core.p.power = 0
+        self.r.core.p.powerDensity = 1e9
+        mass = self.r.core.getHMMass()
+        self.r.core.setPowerIfNecessary()
+        self.assertAlmostEqual(self.r.core.p.power, 1e9 * mass)
+
+        # don't take the powerDensity when not needed
+        self.r.core.p.power = 3e9
+        self.r.core.p.powerDensity = 2e9
+        self.r.core.setPowerIfNecessary()
+        self.assertAlmostEqual(self.r.core.p.power, 3e9)
 
 
 class CartesianReactorTests(ReactorTests):

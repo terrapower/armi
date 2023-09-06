@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-r"""
+"""
 Blueprints describe the geometric and composition details of the objects in the reactor
 (e.g. fuel assemblies, control rods, etc.).
 
@@ -305,23 +305,11 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
             self._assembliesBySpecifier.clear()
             self.assemblies.clear()
 
-            # retrieve current count of assemblies to restore after
-            # creating blueprints assemblies. This is particularly useful for
-            # doing snapshot based runs and multiple database loads, and ensures
-            # that each database load/snapshot to not cumulative increase the assembly
-            # count during creation of blueprints assemblies. During initial
-            # constructions the first N numbers are reserved for blueprints, so this
-            # ensures consistency.
-            currentCount = assemblies.getAssemNum()
-            # reset the assembly counter so that blueprints assemblies are always
-            # numbered 0 to len(self.assemDesigns)
-            assemblies.resetAssemNumCounter()
             for aDesign in self.assemDesigns:
                 a = aDesign.construct(cs, self)
                 self._assembliesBySpecifier[aDesign.specifier] = a
                 self.assemblies[aDesign.name] = a
-            if currentCount != 0:
-                assemblies.setAssemNumCounter(currentCount)
+
             runLog.header("=========== Verifying Assembly Configurations ===========")
             self._checkAssemblyAreaConsistency(cs)
 
@@ -576,6 +564,18 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
         """
         loader = RoundTripLoader if roundTrip else CLoader
         return super().load(stream, Loader=loader)
+
+    def addDefaultSFP(self):
+        """Create a default SFP if it's not in the blueprints"""
+        if self.systemDesigns is not None:
+            if not any(structure.typ == "sfp" for structure in self.systemDesigns):
+                sfp = SystemBlueprint("Spent Fuel Pool", "sfp", Triplet())
+                sfp.typ = "sfp"
+                self.systemDesigns["Spent Fuel Pool"] = sfp
+        else:
+            runLog.warning(
+                f"Can't add default SFP to {self}, there are no systemDesigns!"
+            )
 
 
 def migrate(bp: Blueprints, cs):

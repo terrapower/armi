@@ -13,6 +13,7 @@
 # limitations under the License.
 """
 Computing Reaction Rates on a Block.
+====================================
 
 In this example, a set of 1-group reaction rates (in #/s) are evaluated
 for a dummy fuel block containing UZr fuel, HT9 structure, and

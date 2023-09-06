@@ -510,7 +510,7 @@ TODO: This is completed by the :doc:`Settings Report </user/inputs/settings_repo
    :id: REQ_LATTICE_OUTPUTS
    :status: needs implementation, needs test
 
-.. reg:: The reactor package shall check input for basic correctness.
+.. req:: The reactor package shall check input for basic correctness.
    :id: REQ_REACTOR_CORRECTNESS
    :status: needs implementation, needs test
 

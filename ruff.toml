@@ -11,6 +11,8 @@ required-version = "0.0.272"
 # TID - tidy imports
 select = ["E", "F", "D", "N801", "SIM", "TID"]
 
+# TODO: We want to support PLW0603 - don't use the global keyword
+
 # Ruff rules we ignore (for now) because they are not 100% automatable
 #
 # D100 - Missing docstring in public module
@@ -76,6 +78,7 @@ line-length = 88
 # N - We have our own naming conventions for unit tests.
 # SLF001 - private member access
 "*/tests/*" = ["D1", "E741", "N", "SLF001"]
+"doc/gallery-src/*" = ["D400"]
 
 [pydocstyle]
 # Use numpy-style docstrings.
