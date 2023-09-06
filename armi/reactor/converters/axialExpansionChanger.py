@@ -676,7 +676,7 @@ class ExpansionData:
         """
         if len(componentLst) != len(expFrac):
             runLog.error(
-                f"Number of components and expansion fractions must be the same!\n"
+                "Number of components and expansion fractions must be the same!\n"
                 f"    len(componentLst) = {len(componentLst)}\n"
                 f"        len(expFrac) = {len(expFrac)}"
             )
@@ -855,7 +855,7 @@ class ExpansionData:
             raise RuntimeError(f"No target component found!\n   Block {b}")
         if len(componentWFlag) > 1:
             raise RuntimeError(
-                f"Cannot have more than one component within a block that has the target flag!"
+                "Cannot have more than one component within a block that has the target flag!"
                 f"Block {b}\nflagOfInterest {flagOfInterest}\nComponents {componentWFlag}"
             )
         self._componentDeterminesBlockHeight[componentWFlag[0]] = True

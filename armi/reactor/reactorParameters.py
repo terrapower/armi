@@ -86,6 +86,13 @@ def defineReactorParameters():
             "timeNode", units=units.UNITLESS, description="Integer timeNode", default=0
         )
 
+        pb.defParam(
+            "maxAssemNum",
+            units=units.UNITLESS,
+            description="Max number of assemblies created so far in the Reactor (integer)",
+            default=0,
+        )
+
     with pDefs.createBuilder(
         location=ParamLocation.AVERAGE, default=0.0, categories=["economics"]
     ) as pb:
@@ -360,6 +367,14 @@ def defineCoreParameters():
         )
 
         pb.defParam(
+            "powerDensity",
+            units=f"{units.WATTS}/{units.GRAMS}",
+            description="BOL Power density of the reactor core, in units of Watts per"
+            "grams of Heavy Metal Mass. After the BOL, the power parameter will be set, "
+            "and this will entirely overridden by that.",
+        )
+
+        pb.defParam(
             "powerDecay",
             units=units.WATTS,
             description="Decay power from decaying radionuclides",
@@ -626,6 +641,12 @@ def defineCoreParameters():
         pb.defParam(
             "rxFuelAxialExpansionCoeffPerTemp",
             units=f"{units.REACTIVITY}/{units.DEGK}",
+            description="Fuel Axial Expansion Coefficient",
+        )
+
+        pb.defParam(
+            "rxFuelAxialExpansionCoeffPerPercent",
+            units="dk/kk'-%",
             description="Fuel Axial Expansion Coefficient",
         )
 

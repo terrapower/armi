@@ -63,7 +63,7 @@ class LeadBismuth(material.Fluid):
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("heat capacity", Tk)
 
-        return 159 - 2.72e-2 * Tk + 7.12e-6 * Tk ** 2
+        return 159 - 2.72e-2 * Tk + 7.12e-6 * Tk**2
 
     def thermalConductivity(self, Tk=None, Tc=None):
         r"""Thermal conductivity in W/m/K from Sobolev.

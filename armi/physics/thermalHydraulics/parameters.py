@@ -268,7 +268,7 @@ def _getBlockParams():
         )
 
     with pDefs.createBuilder(
-        default=0.0, categories=["thermal hydraulics", "mongoose"], saveToDB=True
+        default=None, categories=["thermal hydraulics", "mongoose"], saveToDB=True
     ) as pb:
 
         pb.defParam(
@@ -285,6 +285,9 @@ def _getBlockParams():
             location=ParamLocation.TOP | ParamLocation.EDGES,
         )
 
+    with pDefs.createBuilder(
+        default=0, categories=["thermal hydraulics", "mongoose"], saveToDB=True
+    ) as pb:
         pb.defParam(
             "THhotChannel",
             units=units.UNITLESS,

@@ -264,9 +264,9 @@ def mergeXSLibrariesInWorkingDirectory(
                 os.path.exists(gamisoLibraryPath) and os.path.exists(pmatrxLibraryPath)
             ):
                 runLog.warning(
-                    f"One of GAMISO or PMATRX data exist for "
+                    "One of GAMISO or PMATRX data exist for "
                     f"XS ID {xsID} with suffix {xsLibrarySuffix}. "
-                    f"Attempting to find GAMISO/PMATRX data with "
+                    "Attempting to find GAMISO/PMATRX data with "
                     f"only XS ID {xsID} instead."
                 )
                 gamisoLibraryPath = os.path.join(

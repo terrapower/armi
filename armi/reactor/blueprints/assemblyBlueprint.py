@@ -214,7 +214,6 @@ class AssemblyBlueprint(yamlize.Object):
             cs, blueprint, axialIndex, meshPoints, height, xsType, materialInput
         )
 
-        # TODO: remove when the plugin system is fully set up?
         b.completeInitialLoading()
 
         # set b10 volume cc since its a cold dim param

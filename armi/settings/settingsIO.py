@@ -208,6 +208,7 @@ class SettingsReader:
         from armi.settings.fwSettings.globalSettings import CONF_VERSIONS
 
         yaml = YAML(typ="rt")
+        yaml.allow_duplicate_keys = False
         tree = yaml.load(stream)
         if "settings" not in tree:
             raise InvalidSettingsFileError(

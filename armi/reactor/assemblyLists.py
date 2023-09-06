@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-r"""
+"""
 Module containing :py:class:`AssemblyList` and related classes.
 
 Assembly Lists are core-like objects that store collections of Assemblies. They were
@@ -21,7 +21,8 @@ spatial location of Assemblies need not be quite as precise.
 
 Presently, the :py:class:`armi.reactor.reactors.Core` constructs a spent fuel pool
 `self.sfp`. We are in the process of removing these as instance attributes of the
-``Core``, and moving them into sibling systems on the root :py:class:`armi.reactor.reactors.Reactor` object.
+``Core``, and moving them into sibling systems on the root
+:py:class:`armi.reactor.reactors.Reactor` object.
 """
 import abc
 import itertools
@@ -129,15 +130,12 @@ class AssemblyList(composites.Composite):
             The Assembly to add to the list
 
         loc : LocationBase, optional
-            If provided, the assembly is inserted at that location, similarly to how a
-            Core would function. If it is not provided, the locator on the Assembly
-            object will be used. If the Assembly's locator belongs to
-            ``self.spatialGrid``, the Assembly's existing locator will not be used.
-            This is unlike the Core, which would try to use the same indices, but move
-            the locator to the Core's grid. If no locator is passed, or if the
-            Assembly's locator is not in the AssemblyList's grid, then the Assembly will
-            be automatically located in the grid using the associated ``AutoFiller``
-            object.
+            If provided, the assembly is inserted at that location. If it is not
+            provided, the locator on the Assembly object will be used. If the
+            Assembly's locator belongs to ``self.spatialGrid``, the Assembly's
+            existing locator will not be used. This is unlike the Core, which would try
+            to use the same indices, but move the locator to the Core's grid. With a
+            locator, the associated ``AutoFiller`` will be used.
         """
         if loc is not None and loc.grid is not self.spatialGrid:
             raise ValueError(
@@ -170,6 +168,7 @@ class AssemblyList(composites.Composite):
     def count(self):
         if not self.getChildren():
             return
+
         runLog.important("Count:")
         totCount = 0
         thisTimeCount = 0
@@ -193,6 +192,31 @@ class AssemblyList(composites.Composite):
 
 class SpentFuelPool(AssemblyList):
     """A place to put assemblies when they've been discharged. Can tell you inventory stats, etc."""
+
+    def add(self, assem, loc=None):
+        """
+        Add an Assembly to the list.
+
+        Parameters
+        ----------
+        assem : Assembly
+            The Assembly to add to the list
+
+        loc : LocationBase, optional
+            If provided, the assembly is inserted at that location. If it is not
+            provided, the locator on the Assembly object will be used. If the
+            Assembly's locator belongs to ``self.spatialGrid``, the Assembly's
+            existing locator will not be used. This is unlike the Core, which would try
+            to use the same indices, but move the locator to the Core's grid. With a
+            locator, the associated ``AutoFiller`` will be used.
+        """
+        # If the assembly added has a negative ID, that is a placeholder, fix it.
+        if assem.p.assemNum < 0:
+            # update the assembly count in the Reactor
+            newNum = self.r.incrementAssemNum()
+            assem.renumber(newNum)
+
+        super().add(assem, loc)
 
     def report(self):
         title = "{0} Report".format(self.name)
@@ -219,3 +243,37 @@ class SpentFuelPool(AssemblyList):
                 self, totFis / 1000.0
             )
         )
+
+    def normalizeNames(self, startIndex=0):
+        """
+        Renumber and rename all the Assemblies and Blocks.
+
+        Parameters
+        ----------
+        startIndex : int, optional
+            The default is to start counting at zero. But if you are renumbering assemblies
+            across the entire Reactor, you may want to start at a different number.
+
+        Returns
+        -------
+        int
+            The new max Assembly number.
+        """
+        ind = startIndex
+        for a in self.getChildren():
+            oldName = a.getName()
+            newName = a.makeNameFromAssemNum(ind)
+            if oldName == newName:
+                ind += 1
+                continue
+
+            a.p.assemNum = ind
+            a.setName(newName)
+
+            for b in a:
+                axialIndex = int(b.name.split("-")[-1])
+                b.name = b.makeName(ind, axialIndex)
+
+            ind += 1
+
+        return int

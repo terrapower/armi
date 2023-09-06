@@ -88,9 +88,9 @@ class Zr(Material):
         self.checkPropertyTempRange("density", Tk)
 
         if Tk < 1135:
-            return -3.29256e-8 * Tk ** 2 - 9.67145e-5 * Tk + 6.60176
+            return -3.29256e-8 * Tk**2 - 9.67145e-5 * Tk + 6.60176
         else:
-            return -2.61683e-8 * Tk ** 2 - 1.11331e-4 * Tk + 6.63616
+            return -2.61683e-8 * Tk**2 - 1.11331e-4 * Tk + 6.63616
 
     def thermalConductivity(self, Tk=None, Tc=None):
         """
@@ -100,7 +100,7 @@ class Zr(Material):
         """
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("thermal conductivity", Tk)
-        return 8.853 + (0.007082 * Tk) + (0.000002533 * Tk ** 2) + (2992.0 / Tk)
+        return 8.853 + (0.007082 * Tk) + (0.000002533 * Tk**2) + (2992.0 / Tk)
 
     def linearExpansion(self, Tk=None, Tc=None):
         r"""Linear expansion in m/mK.
@@ -128,9 +128,9 @@ class Zr(Material):
         # NOTE: checkPropertyTempRange takes care of lower/upper limits
         if Tk < 1137:
             return (
-                -0.111 + (2.325e-4 * Tk) + (5.595e-7 * Tk ** 2) - (1.768e-10 * Tk ** 3)
+                -0.111 + (2.325e-4 * Tk) + (5.595e-7 * Tk**2) - (1.768e-10 * Tk**3)
             )
         else:
             return (
-                -0.759 + (1.474e-3 * Tk) - (5.140e-7 * Tk ** 2) + (1.559e-10 * Tk ** 3)
+                -0.759 + (1.474e-3 * Tk) - (5.140e-7 * Tk**2) + (1.559e-10 * Tk**3)
             )
