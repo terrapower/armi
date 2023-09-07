@@ -289,7 +289,7 @@ class Block(composites.Composite):
         # Compute component areas
         cladID = numpy.mean([clad.getDimension("id", cold=cold) for clad in clads])
         innerCladdingArea = (
-            math.pi * (cladID ** 2) / 4.0 * self.getNumComponents(Flags.FUEL)
+            math.pi * (cladID**2) / 4.0 * self.getNumComponents(Flags.FUEL)
         )
         fuelComponentArea = 0.0
         unmovableComponentArea = 0.0
@@ -734,7 +734,6 @@ class Block(composites.Composite):
         numDensities = self.getNuclideNumberDensities(adjustList)
 
         for nuclideName, dens in zip(adjustList, numDensities):
-
             if not dens:
                 # don't modify zeros.
                 continue
@@ -1577,7 +1576,6 @@ class Block(composites.Composite):
 
 
 class HexBlock(Block):
-
     PITCH_COMPONENT_TYPE: ClassVar[_PitchDefiningComponent] = (components.Hexagon,)
 
     def __init__(self, name, height=1.0):
@@ -2079,14 +2077,10 @@ class HexBlock(Block):
                 # seeing the first one is the easiest way to detect them.
                 # Check it last in the and statement so we don't waste time doing it.
                 upperEdgeLoc = self.core.spatialGrid[-1, 2, 0]
-                if (
-                    symmetryLine
-                    in [
-                        grids.BOUNDARY_0_DEGREES,
-                        grids.BOUNDARY_120_DEGREES,
-                    ]
-                    and bool(self.core.childrenByLocator.get(upperEdgeLoc))
-                ):
+                if symmetryLine in [
+                    grids.BOUNDARY_0_DEGREES,
+                    grids.BOUNDARY_120_DEGREES,
+                ] and bool(self.core.childrenByLocator.get(upperEdgeLoc)):
                     return 2.0
         return 1.0
 
@@ -2301,7 +2295,6 @@ class HexBlock(Block):
 
 
 class CartesianBlock(Block):
-
     PITCH_DIMENSION = "widthOuter"
     PITCH_COMPONENT_TYPE = components.Rectangle
 
