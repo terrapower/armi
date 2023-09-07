@@ -289,7 +289,7 @@ class Block(composites.Composite):
         # Compute component areas
         cladID = numpy.mean([clad.getDimension("id", cold=cold) for clad in clads])
         innerCladdingArea = (
-            math.pi * (cladID**2) / 4.0 * self.getNumComponents(Flags.FUEL)
+            math.pi * (cladID ** 2) / 4.0 * self.getNumComponents(Flags.FUEL)
         )
         fuelComponentArea = 0.0
         unmovableComponentArea = 0.0
@@ -1958,17 +1958,24 @@ class HexBlock(Block):
                     "".format(self, wwCladGap),
                     single=True,
                 )
-        # check clad duct overlap
+        # check gap between pins and duct
         pinToDuctGap = self.getPinToDuctGap(cold=True)
-        # Allow for some tolerance; user input precision may lead to slight negative
-        # gaps
-        if pinToDuctGap is not None and pinToDuctGap < -0.005:
-            raise ValueError(
-                "Gap between pins and duct is {0:.4f} cm in {1}. Make more room.".format(
-                    pinToDuctGap, self
+        if pinToDuctGap is not None:
+            # Allow for some tolerance; user input precision may lead to slight negative gaps
+            if pinToDuctGap < -0.005:
+                raise ValueError(
+                    "Gap between pins and duct is {0:.4f} cm in {1}. Make more room.".format(
+                        pinToDuctGap, self
+                    )
                 )
-            )
-        elif pinToDuctGap is None:
+            # make sure there's room for the pins in the duct
+            wireThicknesses = wireComp.getDimension("od", cold=False)
+            if pinToDuctGap < wireThicknesses:
+                raise ValueError(
+                    f"Gap between pins and duct is {pinToDuctGap:.4f} cm in {self} which does not allow room for the wire "
+                    f"with diameter {wireThicknesses}"
+                )
+        else:
             # only produce a warning if pin or clad are found, but not all of pin, clad and duct. We
             # may need to tune this logic a bit
             ductComp = next(iter(ductComps), None)
@@ -2072,10 +2079,14 @@ class HexBlock(Block):
                 # seeing the first one is the easiest way to detect them.
                 # Check it last in the and statement so we don't waste time doing it.
                 upperEdgeLoc = self.core.spatialGrid[-1, 2, 0]
-                if symmetryLine in [
-                    grids.BOUNDARY_0_DEGREES,
-                    grids.BOUNDARY_120_DEGREES,
-                ] and bool(self.core.childrenByLocator.get(upperEdgeLoc)):
+                if (
+                    symmetryLine
+                    in [
+                        grids.BOUNDARY_0_DEGREES,
+                        grids.BOUNDARY_120_DEGREES,
+                    ]
+                    and bool(self.core.childrenByLocator.get(upperEdgeLoc))
+                ):
                     return 2.0
         return 1.0
 
