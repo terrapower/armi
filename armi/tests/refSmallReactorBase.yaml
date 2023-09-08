@@ -87,7 +87,7 @@ blocks:
             material: HT9
             Tinput: 450.0
             Thot: 450.0
-            ip: 14.268
+            ip: 14.5
             mult: 1.0
             op: 14.582
         duct: &component_control_duct
@@ -184,7 +184,7 @@ blocks:
             id: shield.od
             mult: shield.mult
             od: clad.id
-        duct: *component_control_duct
+        duct: *component_fuel_duct
         intercoolant: *component_fuel_intercoolant
         coolant: *component_fuel_coolant
         wire:
