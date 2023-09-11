@@ -2349,6 +2349,7 @@ class Core(composites.Composite):
         --------
         updateAxialMesh : Perturbs the axial mesh originally set up here.
         """
+        self.setOptionsFromCs(cs)
         runLog.header(
             "=========== Initializing Mesh, Assembly Zones, and Nuclide Categories =========== "
         )

@@ -139,12 +139,6 @@ class SystemBlueprint(yamlize.Object):
 
         system = self._resolveSystemType(self.typ)(self.name)
 
-        # TODO: This could be somewhere better. If system blueprints could be
-        # subclassed, this could live in the CoreBlueprint. setOptionsFromCS() also isnt
-        # great to begin with, so ideally it could be removed entirely.
-        if isinstance(system, reactors.Core):
-            system.setOptionsFromCs(cs)
-
         # Some systems may not require a prescribed grid design. Only try to use one if
         # it was provided
         if gridDesign is not None:
