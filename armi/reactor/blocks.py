@@ -2023,7 +2023,7 @@ class HexBlock(Block):
         pinOuterFlatToFlat = (
             pinCenterFlatToFlat
             + clad.getDimension("od", cold=cold)
-            + wire.getDimension("od", cold=cold)
+            + 2.0 * wire.getDimension("od", cold=cold)
         )
         ductMarginToContact = duct.getDimension("ip", cold=cold) - pinOuterFlatToFlat
         pinToDuctGap = ductMarginToContact / 2.0
