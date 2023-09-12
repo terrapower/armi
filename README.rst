@@ -72,8 +72,7 @@ dependencies could conflict with your system dependencies.
 
     $ git clone https://github.com/terrapower/armi
     $ cd armi
-    $ pip3 install -r requirements.txt
-    $ python3 setup.py install
+    $ pip install -e .
     $ armi
 
 The easiest way to run the tests is to install `tox <https://tox.readthedocs.io/en/latest/>`_

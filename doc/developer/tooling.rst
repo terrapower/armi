@@ -80,27 +80,21 @@ out-of-date.
 Packaging and dependency management
 -----------------------------------
 The process of packaging Python projects and managing their dependencies is somewhat
-challenging and nuanced. The contents of our ``setup.py`` follow existing conventions as
-much as possible. In particular, we follow `this fantastic article
-<https://caremad.io/posts/2013/07/setup-vs-requirement/>`_ about dependecy management in
-Python projects.
+challenging and nuanced. The contents of our ``pyproject.toml`` follow existing conventions as
+much as possible. In particular, we follow `the official Python packaging guidance
+<https://packaging.python.org/en/latest/>`_.
 
-setup.py
-^^^^^^^^
+pyproject.toml
+^^^^^^^^^^^^^^
+As much as possible, the ARMI team will try to centralize our installation and build systems
+through the top-level ``pyproject.toml`` file. The only exception will be our documentation,
+which has much customization done through the Sphinx ``doc/conf.py`` file.
+
 The packages listed in the ``install_requires`` argument to ``setup()`` are meant to
 express, as abstractly as possible, the packages that need to be installed **somehow**
 for the package to work. In addition, ``extras_require`` are used to specify other
 packages that are not strictly required, but if installed enable extra functionality,
 like unit testing or building documentation.
-
-requirements.txt
-^^^^^^^^^^^^^^^^
-The ``requirements***.txt`` files exist to describe a complete environment more
-specifically. If specific versions of packages are required, they should be defined here.
-Any extra arguments to ``pip`` will also be placed here. For instance, there is a ``-e``
-that tells ``pip`` to install ARMI itself and defer to ``setup.py`` for a version-agnostic
-list of dependencies. We also have multiple requirements files for different needs, like
-testing.
 
 Third-Party Licensing
 ^^^^^^^^^^^^^^^^^^^^^
