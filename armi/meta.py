@@ -13,6 +13,9 @@
 # limitations under the License.
 
 """Metadata describing an ARMI distribution."""
-import importlib.metadata
+try:
+    from importlib import metadata
+except ImportError:
+    import importlib_metadata as metadata
 
-__version__ = importlib.metadata.version("armi")
+__version__ = metadata.version("armi")
