@@ -1,0 +1,164 @@
+[build-system]
+requires = ["setuptools>=61.2", "build"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "armi"
+version = "0.2.8"
+description = "An open-source nuclear reactor analysis automation framework that helps design teams increase efficiency and quality."
+license = {file = "LICENSE.md"}
+requires-python = ">3.6.16"
+readme = "README.rst"
+authors = [
+    { name="TerraPower, LLC", email="armi-devs@terrapower.com" },
+]
+dependencies = [
+    "configparser",
+    "coverage",
+    "future",
+    "h5py>=3.0",
+    "htmltree",
+    "matplotlib",
+    "numpy>=1.21,<=1.23.5",
+    "ordered-set",
+    "pillow",
+    "pluggy",
+    "pyDOE",
+    "pyevtk",
+    "ruamel.yaml<=0.17.21",
+    "ruamel.yaml.clib<=0.2.7",
+    "scipy",
+    "tabulate",
+    "voluptuous",
+    "xlrd",
+    "yamlize==0.7.1",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+]
+
+[project.urls]
+Homepage = "https://terrapower.github.io/armi/"
+Documentation = "https://terrapower.github.io/armi"
+Changelog = "https://github.com/terrapower/armi/releases"
+Repository = "https://github.com/terrapower/armi"
+"Bug Tracker" = "https://github.com/terrapower/armi/issues"
+
+[project.optional-dependencies]
+mpi = ["mpi4py"]
+grids = ["wxpython==4.2.1"]
+memprof = ["psutil"]
+dev = [
+    "black==22.6.0",
+    "docutils",
+    "ipykernel",
+    "jupyter-contrib-nbextensions",
+    "jupyter_client",
+    "nbconvert",
+    "nbsphinx",
+    "nbsphinx-link",
+    "pytest",
+    "pytest-cov",
+    "pytest-html",
+    "pytest-xdist",
+    "ruff==0.0.272",
+    "sphinx",
+    "sphinx-gallery",
+    "sphinx-rtd-theme",
+    "sphinxcontrib-apidoc",
+    "sphinxext-opengraph",
+]
+
+[project.scripts]
+armi = "armi.__main__:main"
+
+[tool.setuptools.packages]
+find = {}
+
+[tool.setuptools.package-data]
+armi = [
+    "bookkeeping/tests/armiRun-A0032-aHist-ref.txt",
+    "nuclearDataIO/cccc/tests/fixtures/labels.ascii",
+    "nuclearDataIO/cccc/tests/fixtures/labels.binary",
+    "nuclearDataIO/cccc/tests/fixtures/mc2v3.dlayxs",
+    "nuclearDataIO/cccc/tests/fixtures/simple_cartesian.pwdint",
+    "nuclearDataIO/cccc/tests/fixtures/simple_cartesian.rtflux",
+    "nuclearDataIO/cccc/tests/fixtures/simple_cartesian.rzflux",
+    "nuclearDataIO/cccc/tests/fixtures/simple_hexz.dif3d",
+    "nuclearDataIO/cccc/tests/fixtures/simple_hexz.geodst",
+    "nuclearDataIO/cccc/tests/fixtures/simple_hexz.nhflux",
+    "nuclearDataIO/tests/fixtures/AA.gamiso",
+    "nuclearDataIO/tests/fixtures/AA.pmatrx",
+    "nuclearDataIO/tests/fixtures/AB.gamiso",
+    "nuclearDataIO/tests/fixtures/AB.pmatrx",
+    "nuclearDataIO/tests/fixtures/combined-AA-AB.gamiso",
+    "nuclearDataIO/tests/fixtures/combined-AA-AB.isotxs",
+    "nuclearDataIO/tests/fixtures/combined-AA-AB.pmatrx",
+    "nuclearDataIO/tests/fixtures/combined-and-lumped-AA-AB.gamiso",
+    "nuclearDataIO/tests/fixtures/combined-and-lumped-AA-AB.isotxs",
+    "nuclearDataIO/tests/fixtures/combined-and-lumped-AA-AB.pmatrx",
+    "nuclearDataIO/tests/fixtures/ISOAA",
+    "nuclearDataIO/tests/fixtures/ISOAB",
+    "nuclearDataIO/tests/fixtures/mc2v3-AA.flux_ufg",
+    "nuclearDataIO/tests/fixtures/mc2v3-AA.gamiso",
+    "nuclearDataIO/tests/fixtures/mc2v3-AA.isotxs",
+    "nuclearDataIO/tests/fixtures/mc2v3-AA.pmatrx",
+    "nuclearDataIO/tests/fixtures/mc2v3-AB.gamiso",
+    "nuclearDataIO/tests/fixtures/mc2v3-AB.isotxs",
+    "nuclearDataIO/tests/fixtures/mc2v3-AB.pmatrx",
+    "nuclearDataIO/tests/library-file-generation",
+    "nuclearDataIO/tests/library-file-generation/combine-AA-AB.inp",
+    "nuclearDataIO/tests/library-file-generation/combine-and-lump-AA-AB.inp",
+    "nuclearDataIO/tests/library-file-generation/mc2v2-dlayxs.inp",
+    "nuclearDataIO/tests/library-file-generation/mc2v3-AA.inp",
+    "nuclearDataIO/tests/library-file-generation/mc2v3-AB.inp",
+    "nuclearDataIO/tests/library-file-generation/mc2v3-dlayxs.inp",
+    "nuclearDataIO/tests/simple_hexz.inp",
+    "physics/neutronics/tests/ISOXA",
+    "physics/neutronics/tests/rzmflxYA",
+    "resources/*",
+    "resources/**/*",
+    "tests/1DslabXSByCompTest.yaml",
+    "tests/armiRun-SHUFFLES.txt",
+    "tests/armiRun.yaml",
+    "tests/COMPXS.ascii",
+    "tests/detailedAxialExpansion/armiRun.yaml",
+    "tests/detailedAxialExpansion/refSmallCoreGrid.yaml",
+    "tests/detailedAxialExpansion/refSmallReactor.yaml",
+    "tests/detailedAxialExpansion/refSmallReactorBase.yaml",
+    "tests/geom.xml",
+    "tests/geom1Assem.xml",
+    "tests/ISOAA",
+    "tests/refOneBlockReactor.yaml",
+    "tests/refSmallCartesian.yaml",
+    "tests/refSmallCoreGrid.yaml",
+    "tests/refSmallReactor.yaml",
+    "tests/refSmallReactorBase.yaml",
+    "tests/refSmallSfpGrid.yaml",
+    "tests/refTestCartesian.yaml",
+    "tests/sfpGeom.yaml",
+    "tests/ThRZGeom.xml",
+    "tests/ThRZloading.yaml",
+    "tests/ThRZSettings.yaml",
+    "tests/trz_geom.xml",
+    "tests/tutorials",
+    "tests/tutorials/anl-afci-177-blueprints.yaml",
+    "tests/tutorials/anl-afci-177-coreMap.yaml",
+    "tests/tutorials/anl-afci-177-fuelManagement.py",
+    "tests/tutorials/anl-afci-177.yaml",
+    "tests/tutorials/data_model.ipynb",
+    "tests/zpprTest.yaml",
+    "tests/zpprTestGeom.xml",
+]

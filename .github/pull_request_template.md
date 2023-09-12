@@ -32,4 +32,4 @@
 
 - [ ] The [release notes](https://terrapower.github.io/armi/release/index.html) (location `doc/release/0.X.rst`) are up-to-date with any important changes.
 - [ ] The documentation is still up-to-date in the `doc` folder.
-- [ ] The dependencies are still up-to-date in `setup.py`.
+- [ ] The dependencies are still up-to-date in `pyproject.toml`.

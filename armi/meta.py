@@ -13,5 +13,6 @@
 # limitations under the License.
 
 """Metadata describing an ARMI distribution."""
+import importlib.metadata
 
-__version__ = "0.2.8"
+__version__ = importlib.metadata.version('armi')
