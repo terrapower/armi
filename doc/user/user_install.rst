@@ -82,14 +82,10 @@ the git repository with::
 .. tip:: If you plan to contribute to ARMI (please do!), you may want to use
 	SSH keys and use ``git clone git@github.com:terrapower/armi.git``.
 
-Now install the ARMI dependencies::
+Now install the ARMI with all its dependencies::
 
     (armi-venv) $ cd armi
-    (armi-venv) $ pip install -r requirements.txt
-
-Then, install ARMI into your venv with::
-
-	(armi-venv) $ pip install -e .
+    (armi-venv) $ pip install -e .[test]
 
 .. tip:: If you don't want to install ARMI into your venv, you will need to add the ARMI source
 	location to your system's ``PYTHONPATH`` environment variable so that

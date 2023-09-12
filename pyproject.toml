@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61.2", "build"]
+requires = ["setuptools>=61.2"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -57,10 +57,10 @@ Repository = "https://github.com/terrapower/armi"
 "Bug Tracker" = "https://github.com/terrapower/armi/issues"
 
 [project.optional-dependencies]
-mpi = ["mpi4py"]
 grids = ["wxpython==4.2.1"]
 memprof = ["psutil"]
-dev = [
+mpi = ["mpi4py"]
+test = [
     "black==22.6.0",
     "docutils",
     "ipykernel",

@@ -13,39 +13,45 @@
 # limitations under the License.
 
 """
-Validating the MANIFEST.in.
+Validating the package-data in the pyproject.toml.
 
-Currently, the only validation we do of the MANIFEST.in file is to make sure
+Currently, the only validation we do of this manifest is to make sure
 that we are trying to include files that don't exist.
 """
 
+from glob import glob
 import os
-
+import toml
 
 # CONSTANTS
-INCLUDE_STR = "include "
-MANIFEST_PATH = "MANIFEST.in"
+ARMI_DIR = "armi/"
+PRPROJECT = "pyproject.toml"
 
 
 def main():
-    # loop through each line in the manifest file and find all the file paths
-    errors = []
-    lines = open(MANIFEST_PATH, "r", encoding="utf-8")
-    for i, line in enumerate(lines):
-        # if this is anything but an include line, move on
-        if not line.startswith(INCLUDE_STR):
-            continue
+    # parse the data files out of the pyproject.toml
+    txt = open(PRPROJECT, "r").read()
+    data = toml.loads(txt)
+    fileChunks = data["tool"]["setuptools"]["package-data"]["armi"]
 
+    # loop through each line in the package-data and find all the file paths
+    errors = []
+    for i, line in enumerate(fileChunks):
         # make sure the file exists
-        path = line.strip()[len(INCLUDE_STR) :]
-        if not os.path.exists(path):
-            errors.append((i, path))
+        path = ARMI_DIR + line.strip()
+        if "*" in path:
+            paths = [f for f in glob(path) if len(f) > 3]
+            if not len(paths):
+                errors.append((i, path))
+        else:
+            if not os.path.exists(path):
+                errors.append((i, path))
 
     # If there were any missing files, raise an Error.
     if errors:
         for (i, line) in errors:
             print("Nonexistant file on line {}: {}".format(i, line))
-        raise ValueError("MANIFEST file is incorrect: includes non-existant files.")
+        raise ValueError("Package-data file is incorrect: includes non-existant files.")
 
 
 if __name__ == "__main__":

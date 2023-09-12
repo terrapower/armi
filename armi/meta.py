@@ -15,4 +15,4 @@
 """Metadata describing an ARMI distribution."""
 import importlib.metadata
 
-__version__ = importlib.metadata.version('armi')
+__version__ = importlib.metadata.version("armi")

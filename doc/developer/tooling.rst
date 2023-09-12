@@ -98,7 +98,7 @@ like unit testing or building documentation.
 
 Third-Party Licensing
 ^^^^^^^^^^^^^^^^^^^^^
-Be careful when including any dependency in ARMI (say in a requirements.txt file) not
+Be careful when including any dependency in ARMI (say in a ``pyproject.toml`` file) not
 to include anything with a license that superceeds our Apache license. For instance,
 any third-party Python library included in ARMI with a GPL license will make the whole
 project fall under the GPL license. But a lot of potential users of ARMI will want to
