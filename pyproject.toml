@@ -29,6 +29,7 @@ dependencies = [
     "ruamel.yaml.clib<=0.2.7",
     "scipy",
     "tabulate",
+    "toml>0.9.5",
     "voluptuous",
     "xlrd",
     "yamlize==0.7.1",
