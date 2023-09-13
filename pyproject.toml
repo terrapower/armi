@@ -32,7 +32,6 @@ authors = [
 dependencies = [
     "configparser",
     "coverage",
-    "future",
     "h5py>=3.0",
     "htmltree",
     "matplotlib",
