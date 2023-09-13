@@ -1545,7 +1545,7 @@ class Block(composites.Composite):
 
         See Also
         --------
-        armi.reactor.converters.axialExpansionChanger.py::ExpansionData::_setTargetComponents
+        armi.reactor.converters.axialExpansion.expansionData.py::ExpansionData::_setTargetComponents
         """
         self.p.axialExpTargetComponent = targetComponent.name
 
