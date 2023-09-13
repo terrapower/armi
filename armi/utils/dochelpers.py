@@ -31,7 +31,7 @@ APIDOC_DIR = ".apidocs"
 
 
 def create_figure(path, caption=None, align=None, alt=None, width=None):
-    r"""
+    """
     This method is available within ``.. exec::``. It allows someone to create a figure with a
     caption.
     """
@@ -50,7 +50,7 @@ def create_figure(path, caption=None, align=None, alt=None, width=None):
 
 
 def create_table(rst_table, caption=None, align=None, widths=None, width=None):
-    r"""
+    """
     This method is available within ``.. exec::``. It allows someone to create a table with a
     caption.
 
@@ -119,7 +119,7 @@ class ExecDirective(Directive):
 
 
 class PyReverse(Directive):
-    r"""Runs pyreverse to generate UML for specified module name and options.
+    """Runs pyreverse to generate UML for specified module name and options.
 
     The directive accepts the same arguments as pyreverse, except you should not specify
     ``--project`` or ``-o`` (output format). These are automatically specified.

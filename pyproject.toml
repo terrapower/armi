@@ -124,9 +124,8 @@ line-length = 88
 # N801 - Class name should use CapWords convention
 # SIM - code simplification rules
 # TID - tidy imports
-select = ["E", "F", "D", "N801", "SIM", "TID"]
-
 # TODO: We want to support PLW0603 - don't use the global keyword
+select = ["E", "F", "D", "N801", "SIM", "TID"]
 
 # Ruff rules we ignore (for now) because they are not 100% automatable
 #
