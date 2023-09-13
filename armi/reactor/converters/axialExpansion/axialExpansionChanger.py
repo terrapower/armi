@@ -275,7 +275,7 @@ class AxialExpansionChanger:
 
             b.p.z = b.p.zbottom + b.getHeight() / 2.0
 
-            _checkBlockHeight(b)
+            self._checkBlockHeight(b)
             # call component.clearCache to update the component volume, and therefore the masses, of all solid components.
             for c in getSolidComponents(b):
                 c.clearCache()
@@ -314,39 +314,25 @@ class AxialExpansionChanger:
             for old, new in zip(oldMesh, r.core.p.axialMesh):
                 runLog.extra(f"{old:.6e}\t{new:.6e}")
 
+    @staticmethod
+    def _checkBlockHeight(b):
+        """
+        Do some basic block height validation.
 
-def getSolidComponents(b):
-    """
-    Return list of components in the block that have solid material.
-
-    Notes
-    -----
-    Axial expansion only needs to be applied to solid materials. We should not update
-    number densities on fluid materials to account for changes in block height.
-    """
-    return [c for c in b if not isinstance(c.material, material.Fluid)]
-
-
-def _checkBlockHeight(b):
-    """
-    Do some basic block height validation.
-
-    Notes
-    -----
-    3cm is a presumptive lower threshhold for DIF3D
-    """
-    if b.getHeight() < 3.0:
-        runLog.debug(
-            "Block {0:s} ({1:s}) has a height less than 3.0 cm. ({2:.12e})".format(
-                b.name, str(b.p.flags), b.getHeight()
+        Notes
+        -----
+        3cm is a presumptive lower threshhold for DIF3D
+        """
+        if b.getHeight() < 3.0:
+            runLog.debug(
+                "Block {0:s} ({1:s}) has a height less than 3.0 cm. ({2:.12e})".format(
+                    b.name, str(b.p.flags), b.getHeight()
+                )
             )
-        )
 
-    if b.getHeight() < 0.0:
-        raise ArithmeticError(
-            "Block {0:s} ({1:s}) has a negative height! ({2:.12e})".format(
-                b.name, str(b.p.flags), b.getHeight()
+        if b.getHeight() < 0.0:
+            raise ArithmeticError(
+                "Block {0:s} ({1:s}) has a negative height! ({2:.12e})".format(
+                    b.name, str(b.p.flags), b.getHeight()
+                )
             )
-        )
-
-
