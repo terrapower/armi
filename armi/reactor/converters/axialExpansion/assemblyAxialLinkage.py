@@ -128,7 +128,7 @@ class AssemblyAxialLinkage:
         for ib, linkdBlk in enumerate(self.linkedBlocks[b]):
             if linkdBlk is not None:
                 for otherC in getSolidComponents(linkdBlk.getChildren()):
-                    if _determineLinked(c, otherC):
+                    if self._determineLinked(c, otherC):
                         if lstLinkedC[ib] is not None:
                             errMsg = (
                                 "Multiple component axial linkages have been found for "
@@ -153,64 +153,64 @@ class AssemblyAxialLinkage:
                 single=True,
             )
 
+    @staticmethod
+    def _determineLinked(componentA, componentB):
+        """Determine axial component linkage for two components.
 
-def _determineLinked(componentA, componentB):
-    """Determine axial component linkage for two components.
+        Parameters
+        ----------
+        componentA : :py:class:`Component <armi.reactor.components.component.Component>`
+            component of interest
+        componentB : :py:class:`Component <armi.reactor.components.component.Component>`
+            component to compare and see if is linked to componentA
 
-    Parameters
-    ----------
-    componentA : :py:class:`Component <armi.reactor.components.component.Component>`
-        component of interest
-    componentB : :py:class:`Component <armi.reactor.components.component.Component>`
-        component to compare and see if is linked to componentA
+        Notes
+        -----
+        - Requires that shapes have the getCircleInnerDiameter and getBoundingCircleOuterDiameter defined
+        - For axial linkage to be True, components MUST be solids, the same Component Class, multiplicity, and meet inner
+        and outer diameter requirements.
+        - When component dimensions are retrieved, cold=True to ensure that dimensions are evaluated
+        at cold/input temperatures. At temperature, solid-solid interfaces in ARMI may produce
+        slight overlaps due to thermal expansion. Handling these potential overlaps are out of scope.
 
-    Notes
-    -----
-    - Requires that shapes have the getCircleInnerDiameter and getBoundingCircleOuterDiameter defined
-    - For axial linkage to be True, components MUST be solids, the same Component Class, multiplicity, and meet inner
-      and outer diameter requirements.
-    - When component dimensions are retrieved, cold=True to ensure that dimensions are evaluated
-      at cold/input temperatures. At temperature, solid-solid interfaces in ARMI may produce
-      slight overlaps due to thermal expansion. Handling these potential overlaps are out of scope.
-
-    Returns
-    -------
-    linked : bool
-        status is componentA and componentB are axially linked to one another
-    """
-    if (
-        (componentA.containsSolidMaterial() and componentB.containsSolidMaterial())
-        and isinstance(componentA, type(componentB))
-        and (componentA.getDimension("mult") == componentB.getDimension("mult"))
-    ):
-        if isinstance(componentA, UnshapedComponent):
-            runLog.warning(
-                f"Components {componentA} and {componentB} are UnshapedComponents "
-                "and do not have 'getCircleInnerDiameter' or getBoundingCircleOuterDiameter methods; "
-                "nor is it physical to do so. Instead of crashing and raising an error, "
-                "they are going to be assumed to not be linked.",
-                single=True,
-            )
-            linked = False
-        else:
-            idA, odA = (
-                componentA.getCircleInnerDiameter(cold=True),
-                componentA.getBoundingCircleOuterDiameter(cold=True),
-            )
-            idB, odB = (
-                componentB.getCircleInnerDiameter(cold=True),
-                componentB.getBoundingCircleOuterDiameter(cold=True),
-            )
-
-            biggerID = max(idA, idB)
-            smallerOD = min(odA, odB)
-            if biggerID >= smallerOD:
-                # one object fits inside the other
+        Returns
+        -------
+        linked : bool
+            status is componentA and componentB are axially linked to one another
+        """
+        if (
+            (componentA.containsSolidMaterial() and componentB.containsSolidMaterial())
+            and isinstance(componentA, type(componentB))
+            and (componentA.getDimension("mult") == componentB.getDimension("mult"))
+        ):
+            if isinstance(componentA, UnshapedComponent):
+                runLog.warning(
+                    f"Components {componentA} and {componentB} are UnshapedComponents "
+                    "and do not have 'getCircleInnerDiameter' or getBoundingCircleOuterDiameter methods; "
+                    "nor is it physical to do so. Instead of crashing and raising an error, "
+                    "they are going to be assumed to not be linked.",
+                    single=True,
+                )
                 linked = False
             else:
-                linked = True
+                idA, odA = (
+                    componentA.getCircleInnerDiameter(cold=True),
+                    componentA.getBoundingCircleOuterDiameter(cold=True),
+                )
+                idB, odB = (
+                    componentB.getCircleInnerDiameter(cold=True),
+                    componentB.getBoundingCircleOuterDiameter(cold=True),
+                )
 
-    else:
-        linked = False
+                biggerID = max(idA, idB)
+                smallerOD = min(odA, odB)
+                if biggerID >= smallerOD:
+                    # one object fits inside the other
+                    linked = False
+                else:
+                    linked = True
 
-    return linked
+        else:
+            linked = False
+
+        return linked

@@ -1,4 +1,4 @@
-# Copyright 2019 TerraPower, LLC
+# Copyright 2023 TerraPower, LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,12 +25,10 @@ from armi.reactor.blocks import HexBlock
 from armi.reactor.components import DerivedShape, UnshapedComponent
 from armi.reactor.components.basicShapes import Circle, Hexagon, Rectangle
 from armi.reactor.components.complexShapes import Helix
-from armi.reactor.converters.axialExpansionChanger import (
-    AxialExpansionChanger,
-    ExpansionData,
-    _determineLinked,
-    getSolidComponents,
-)
+from armi.reactor.converters.axialExpansion import getSolidComponents
+from armi.reactor.converters.axialExpansion.axialExpansionChanger import AxialExpansionChanger
+from armi.reactor.converters.axialExpansion.expansionData import ExpansionData
+from armi.reactor.converters.axialExpansion.assemblyAxialLinkage import AssemblyAxialLinkage
 from armi.reactor.flags import Flags
 from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
 from armi.tests import TEST_ROOT
@@ -62,7 +60,7 @@ class AxialExpansionTestBase(unittest.TestCase):
         # set namespace order for materials so that fake HT9 material can be found
         materials.setMaterialNamespaceOrder(
             [
-                "armi.reactor.converters.tests.test_axialExpansionChanger",
+                "armi.reactor.converters.axialExpansion.tests.test_axialExpansionChanger",
                 "armi.materials",
             ]
         )
@@ -153,7 +151,7 @@ class Temperature:
                 self.tempField[i, :] = tmp[i]
 
 
-class TestAxialExpansionHeight(AxialExpansionTestBase, unittest.TestCase):
+class TestAxialExpansionHeight(AxialExpansionTestBase):
     """Verify that test assembly is expanded correctly."""
 
     def setUp(self):
@@ -227,7 +225,7 @@ class TestAxialExpansionHeight(AxialExpansionTestBase, unittest.TestCase):
         return mean(tmpMapping)
 
 
-class TestConservation(AxialExpansionTestBase, unittest.TestCase):
+class TestConservation(AxialExpansionTestBase):
     """Verify that conservation is maintained in assembly-level axial expansion."""
 
     def setUp(self):
@@ -537,7 +535,7 @@ class TestManageCoreMesh(unittest.TestCase):
             self.assertLess(old, new)
 
 
-class TestExceptions(AxialExpansionTestBase, unittest.TestCase):
+class TestExceptions(AxialExpansionTestBase):
     """Verify exceptions are caught."""
 
     def setUp(self):
@@ -651,7 +649,7 @@ class TestExceptions(AxialExpansionTestBase, unittest.TestCase):
         compDims = {"Tinput": 25.0, "Thot": 25.0}
         compA = UnshapedComponent("unshaped_1", "FakeMat", **compDims)
         compB = UnshapedComponent("unshaped_2", "FakeMat", **compDims)
-        self.assertFalse(_determineLinked(compA, compB))
+        self.assertFalse(AssemblyAxialLinkage._determineLinked(compA, compB))
 
     def test_getLinkedComponents(self):
         """Test for multiple component axial linkage."""
@@ -663,7 +661,7 @@ class TestExceptions(AxialExpansionTestBase, unittest.TestCase):
             self.assertEqual(cm.exception, 3)
 
 
-class TestDetermineTargetComponent(AxialExpansionTestBase, unittest.TestCase):
+class TestDetermineTargetComponent(AxialExpansionTestBase):
     """Verify determineTargetComponent method is properly updating _componentDeterminesBlockHeight."""
 
     def setUp(self):
@@ -912,7 +910,7 @@ def checkColdBlockHeight(bStd, bExp, assertType, strForAssertion):
     )
 
 
-class TestLinkage(AxialExpansionTestBase, unittest.TestCase):
+class TestLinkage(AxialExpansionTestBase):
     """Test axial linkage between components."""
 
     def setUp(self):
@@ -961,26 +959,26 @@ class TestLinkage(AxialExpansionTestBase, unittest.TestCase):
             typeB = method(*common, **dims[1])
             if assertionBool:
                 self.assertTrue(
-                    _determineLinked(typeA, typeB),
+                    AssemblyAxialLinkage._determineLinked(typeA, typeB),
                     msg="Test {0:s} failed for component type {1:s}!".format(
                         name, str(method)
                     ),
                 )
                 self.assertTrue(
-                    _determineLinked(typeB, typeA),
+                    AssemblyAxialLinkage._determineLinked(typeB, typeA),
                     msg="Test {0:s} failed for component type {1:s}!".format(
                         name, str(method)
                     ),
                 )
             else:
                 self.assertFalse(
-                    _determineLinked(typeA, typeB),
+                    AssemblyAxialLinkage._determineLinked(typeA, typeB),
                     msg="Test {0:s} failed for component type {1:s}!".format(
                         name, str(method)
                     ),
                 )
                 self.assertFalse(
-                    _determineLinked(typeB, typeA),
+                    AssemblyAxialLinkage._determineLinked(typeB, typeA),
                     msg="Test {0:s} failed for component type {1:s}!".format(
                         name, str(method)
                     ),
@@ -1079,7 +1077,7 @@ class TestLinkage(AxialExpansionTestBase, unittest.TestCase):
     def test_unshapedComponentAndCircle(self):
         comp1 = Circle(*self.common, od=1.0, id=0.0)
         comp2 = UnshapedComponent(*self.common, area=1.0)
-        self.assertFalse(_determineLinked(comp1, comp2))
+        self.assertFalse(AssemblyAxialLinkage._determineLinked(comp1, comp2))
 
 
 def buildTestAssemblyWithFakeMaterial(name: str, hot: bool = False):
