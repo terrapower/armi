@@ -15,8 +15,7 @@
 """
 Validating the package-data in the pyproject.toml.
 
-Currently, the only validation we do of this manifest is to make sure
-that we are trying to include files that don't exist.
+Validate that we aren't trying to include files that don't exist.
 """
 
 from glob import glob

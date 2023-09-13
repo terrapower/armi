@@ -419,7 +419,7 @@ The ARMI system is licensed as follows:
 	See the License for the specific language governing permissions and
 	limitations under the License.
 
-Be careful when including any dependency in ARMI (say in a ``pyproject.toml`` file) not
+Be careful when including any dependency in ARMI (say in the ``pyproject.toml`` file) not
 to include anything with a license that superceeds our Apache license. For instance,
 any third-party Python library included in ARMI with a GPL license will make the whole
 project fall under the GPL license. But a lot of potential users of ARMI will want to
