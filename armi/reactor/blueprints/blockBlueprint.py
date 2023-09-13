@@ -226,7 +226,7 @@ class BlockBlueprint(yamlize.KeyedList):
     def _getBlockwiseMaterialModifierOptions(
         self, children: Iterable[Composite]
     ) -> Set[str]:
-        """Collect all the material modifiers that exist on a block"""
+        """Collect all the material modifiers that exist on a block."""
         validMatModOptions = set()
         for c in children:
             perChildModifiers = self._getMaterialModsFromBlockChildren(c)
@@ -234,7 +234,7 @@ class BlockBlueprint(yamlize.KeyedList):
         return validMatModOptions
 
     def _getMaterialModsFromBlockChildren(self, c: Composite) -> Set[str]:
-        """Collect all the material modifiers from a child of a block"""
+        """Collect all the material modifiers from a child of a block."""
         perChildModifiers = set()
         for material in self._getMaterialsInComposite(c):
             for materialParentClass in material.__class__.__mro__:
@@ -252,7 +252,7 @@ class BlockBlueprint(yamlize.KeyedList):
         return perChildModifiers
 
     def _getMaterialsInComposite(self, child: Composite) -> Iterator[Material]:
-        """Collect all the materials in a composite"""
+        """Collect all the materials in a composite."""
         # Leaf node, no need to traverse further down
         if isinstance(child, Component):
             yield child.material

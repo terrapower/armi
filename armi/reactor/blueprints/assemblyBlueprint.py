@@ -194,7 +194,7 @@ class AssemblyBlueprint(yamlize.Object):
 
     @staticmethod
     def _shouldMaterialModiferBeApplied(value) -> bool:
-        """Determine if a material modifier entry is applicable
+        """Determine if a material modifier entry is applicable.
 
         Two exceptions:
 
