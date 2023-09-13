@@ -107,7 +107,8 @@ from armi.reactor.blueprints.componentBlueprint import ComponentGroups
 from armi.reactor.blueprints.componentBlueprint import ComponentKeyedList
 from armi.reactor.blueprints.gridBlueprint import Grids, Triplet
 from armi.reactor.blueprints.reactorBlueprint import Systems, SystemBlueprint
-from armi.reactor.converters import axialExpansionChanger
+from armi.reactor.converters.axialExpansion.axialExpansionChanger import expandColdDimsToHot
+from armi.reactor.converters.axialExpansion import makeAssemsAbleToSnapToUniformMesh
 
 context.BLUEPRINTS_IMPORTED = True
 context.BLUEPRINTS_IMPORT_CONTEXT = "".join(traceback.format_stack())
@@ -317,7 +318,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
                 # this is required to set up assemblies so they know how to snap
                 # to the reference mesh. They wont know the mesh to conform to
                 # otherwise....
-                axialExpansionChanger.makeAssemsAbleToSnapToUniformMesh(
+                makeAssemsAbleToSnapToUniformMesh(
                     self.assemblies.values(), cs[CONF_NON_UNIFORM_ASSEM_FLAGS]
                 )
 
@@ -336,7 +337,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
                     for a in list(self.assemblies.values())
                     if not any(a.hasFlags(f) for f in assemsToSkip)
                 )
-                axialExpansionChanger.expandColdDimsToHot(
+                expandColdDimsToHot(
                     assemsToExpand,
                     cs[CONF_DETAILED_AXIAL_EXPANSION],
                 )
