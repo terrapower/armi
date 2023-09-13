@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+#######################################################################
+#                        GENERAL PYTHON CONFIG                        #
+#######################################################################
 [build-system]
 requires = ["setuptools>=61.2"]
 build-backend = "setuptools.build_meta"
@@ -21,7 +24,7 @@ name = "armi"
 version = "0.2.8"
 description = "An open-source nuclear reactor analysis automation framework that helps design teams increase efficiency and quality."
 license = {file = "LICENSE.md"}
-requires-python = ">3.6.16"
+requires-python = ">3.6"
 readme = "README.rst"
 authors = [
     { name="TerraPower, LLC", email="armi-devs@terrapower.com" },
@@ -102,6 +105,10 @@ armi = "armi.__main__:main"
 [tool.setuptools.packages]
 find = {}
 
+
+#######################################################################
+#                             RUFF CONFIG                             #
+#######################################################################
 [tool.ruff]
 # This is the exact version of Ruff we use.
 required-version = "0.0.272"
@@ -183,12 +190,27 @@ exclude = [
 "doc/gallery-src/*" = ["D400"]
 
 [tool.ruff.flake8-tidy-imports]
-# Disallow all relative imports.
 ban-relative-imports = "all"
 
 [tool.ruff.pydocstyle]
 convention = "numpy"
 
+
+#######################################################################
+#                            PYTEST CONFIG                            #
+#######################################################################
+[tool.pytest.ini_options]
+python_files = "test_*.py"
+python_functions = "nothing matches this pattern"
+addopts = "--durations=30 --tb=native"
+filterwarnings = [
+    "ignore: the matrix subclass is not the recommended way:PendingDeprecationWarning",
+]
+
+
+#######################################################################
+#              DATA FILES TO BE INCLUDED WITH THE PROJECT             #
+#######################################################################
 [tool.setuptools.package-data]
 armi = [
     "bookkeeping/tests/armiRun-A0032-aHist-ref.txt",
