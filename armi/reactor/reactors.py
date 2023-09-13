@@ -787,7 +787,6 @@ class Core(composites.Composite):
         nAssmWithBlanks: int
             The number of assemblies that WOULD exist in this core if
             all outer assembly hex rings were "filled out".
-
         """
         if self.powerMultiplier == 1:
             return 3 * nRings * (nRings - 1) + 1
@@ -832,9 +831,8 @@ class Core(composites.Composite):
             return 0
 
     def countFuelAxialBlocks(self):
-        r"""
-        return the maximum number of fuel type blocks in any assembly in
-        the reactor.
+        """
+        Return the maximum number of fuel type blocks in any assembly in the core.
 
         See Also
         --------
@@ -931,7 +929,6 @@ class Core(composites.Composite):
         -----
         Assumes that odd rings do not have an edge assembly in third core geometry.
         These should be removed in: self._modifyGeometryAfterLoad during importGeom
-
         """
         numAssemsUpToOuterRing = self.getNumAssembliesWithAllRingsFilledOut(ring)
         numAssemsUpToInnerRing = self.getNumAssembliesWithAllRingsFilledOut(ring - 1)
@@ -1019,7 +1016,6 @@ class Core(composites.Composite):
         -------
         assems : list of assemblies
             A list of assemblies that match the criteria within the ring
-
         """
         if self.geomType == geometry.GeomType.CARTESIAN:
             # a ring in cartesian is basically a square.
@@ -2163,7 +2159,7 @@ class Core(composites.Composite):
         return targetRing, fluxFraction
 
     def getAvgTemp(self, typeSpec, blockList=None, flux2Weight=False):
-        r"""
+        """
         get the volume-average fuel, cladding, coolant temperature in core.
 
         Parameters
@@ -2183,7 +2179,6 @@ class Core(composites.Composite):
         -------
         avgTemp : float
             The average temperature in C.
-
         """
         num = 0.0
         denom = 0.0
@@ -2241,7 +2236,7 @@ class Core(composites.Composite):
         return list(allNucNames)
 
     def growToFullCore(self, cs):
-        r"""Copies symmetric assemblies to build a full core model out of a 1/3 core model.
+        """Copies symmetric assemblies to build a full core model out of a 1/3 core model.
 
         Returns
         -------
@@ -2266,7 +2261,7 @@ class Core(composites.Composite):
         self.spatialGrid.changePitch(pitchInCm)
 
     def calcBlockMaxes(self):
-        r"""
+        """
         Searches all blocks for maximum values of key params.
 
         See Also
@@ -2306,7 +2301,7 @@ class Core(composites.Composite):
         )
 
     def getFuelBottomHeight(self):
-        r"""
+        """
         Obtain the height of the lowest fuel in the core.
 
         This is the "axial coordinate shift" between ARMI and SASSYS.
@@ -2317,7 +2312,6 @@ class Core(composites.Composite):
         -------
         lowestFuelHeightInCm : float
             The height (cm) of the lowest fuel in this core model.
-
         """
         lowestFuelHeightInCm = self[0].getHeight()
         fuelBottoms = []
