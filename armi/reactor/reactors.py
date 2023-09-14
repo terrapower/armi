@@ -51,11 +51,17 @@ from armi.reactor.flags import Flags
 from armi.reactor.systemLayoutInput import SystemLayoutInput
 from armi.settings.fwSettings.globalSettings import (
     CONF_MATERIAL_NAMESPACE_ORDER,
+    CONF_FRESH_FEED_TYPE,
     CONF_SORT_REACTOR,
     CONF_GEOM_FILE,
     CONF_NON_UNIFORM_ASSEM_FLAGS,
     CONF_STATIONARY_BLOCK_FLAGS,
     CONF_ZONE_DEFINITIONS,
+    CONF_TRACK_ASSEMS,
+    CONF_CIRCULAR_RING_PITCH,
+    CONF_AUTOMATIC_VARIABLE_MESH,
+    CONF_MIN_MESH_SIZE_RATIO,
+    CONF_DETAILED_AXIAL_EXPANSION,
 )
 from armi.utils import createFormattedStrWithDelimiter, units
 from armi.utils import directoryChangers
@@ -283,13 +289,7 @@ class Core(composites.Composite):
     def setOptionsFromCs(self, cs):
         from armi.physics.fuelCycle.settings import (
             CONF_JUMP_RING_NUM,
-            CONF_FRESH_FEED_TYPE,
-            CONF_TRACK_ASSEMS,
             CONF_CIRCULAR_RING_MODE,
-            CONF_CIRCULAR_RING_PITCH,
-            CONF_AUTOMATIC_VARIABLE_MESH,
-            CONF_MIN_MESH_SIZE_RATIO,
-            CONF_DETAILED_AXIAL_EXPANSION,
         )
 
         # these are really "user modifiable modeling constants"
