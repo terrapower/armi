@@ -49,8 +49,20 @@ from armi.reactor import zones
 from armi.reactor.assemblyLists import SpentFuelPool
 from armi.reactor.flags import Flags
 from armi.reactor.systemLayoutInput import SystemLayoutInput
-from armi.settings.fwSettings.globalSettings import CONF_MATERIAL_NAMESPACE_ORDER
-from armi.settings.fwSettings.globalSettings import CONF_SORT_REACTOR
+from armi.settings.fwSettings.globalSettings import (
+    CONF_MATERIAL_NAMESPACE_ORDER,
+    CONF_FRESH_FEED_TYPE,
+    CONF_SORT_REACTOR,
+    CONF_GEOM_FILE,
+    CONF_NON_UNIFORM_ASSEM_FLAGS,
+    CONF_STATIONARY_BLOCK_FLAGS,
+    CONF_ZONE_DEFINITIONS,
+    CONF_TRACK_ASSEMS,
+    CONF_CIRCULAR_RING_PITCH,
+    CONF_AUTOMATIC_VARIABLE_MESH,
+    CONF_MIN_MESH_SIZE_RATIO,
+    CONF_DETAILED_AXIAL_EXPANSION,
+)
 from armi.utils import createFormattedStrWithDelimiter, units
 from armi.utils import directoryChangers
 from armi.utils.iterables import Sequence
@@ -186,7 +198,7 @@ def factory(cs, bp, geom: Optional[SystemLayoutInput] = None) -> Reactor:
         materials.setMaterialNamespaceOrder(cs[CONF_MATERIAL_NAMESPACE_ORDER])
     r = Reactor(cs.caseTitle, bp)
 
-    if cs["geomFile"]:
+    if cs[CONF_GEOM_FILE]:
         blueprints.migrate(bp, cs)
 
     if not any(structure.typ == "sfp" for structure in bp.systemDesigns.values()):
@@ -275,18 +287,20 @@ class Core(composites.Composite):
         self._detailedAxialExpansion = False
 
     def setOptionsFromCs(self, cs):
-        from armi.physics.fuelCycle.settings import CONF_CIRCULAR_RING_MODE
-        from armi.physics.fuelCycle.settings import CONF_JUMP_RING_NUM
+        from armi.physics.fuelCycle.settings import (
+            CONF_JUMP_RING_NUM,
+            CONF_CIRCULAR_RING_MODE,
+        )
 
         # these are really "user modifiable modeling constants"
         self.p.jumpRing = cs[CONF_JUMP_RING_NUM]
-        self._freshFeedType = cs["freshFeedType"]
-        self._trackAssems = cs["trackAssems"]
+        self._freshFeedType = cs[CONF_FRESH_FEED_TYPE]
+        self._trackAssems = cs[CONF_TRACK_ASSEMS]
         self._circularRingMode = cs[CONF_CIRCULAR_RING_MODE]
-        self._circularRingPitch = cs["circularRingPitch"]
-        self._automaticVariableMesh = cs["automaticVariableMesh"]
-        self._minMeshSizeRatio = cs["minMeshSizeRatio"]
-        self._detailedAxialExpansion = cs["detailedAxialExpansion"]
+        self._circularRingPitch = cs[CONF_CIRCULAR_RING_PITCH]
+        self._automaticVariableMesh = cs[CONF_AUTOMATIC_VARIABLE_MESH]
+        self._minMeshSizeRatio = cs[CONF_MIN_MESH_SIZE_RATIO]
+        self._detailedAxialExpansion = cs[CONF_DETAILED_AXIAL_EXPANSION]
 
     def __getstate__(self):
         """Applies a settings and parent to the core and components."""
@@ -2373,7 +2387,8 @@ class Core(composites.Composite):
         else:
             # set reactor level meshing params
             nonUniformAssems = [
-                Flags.fromStringIgnoreErrors(t) for t in cs["nonUniformAssemFlags"]
+                Flags.fromStringIgnoreErrors(t)
+                for t in cs[CONF_NON_UNIFORM_ASSEM_FLAGS]
             ]
             # some assemblies, like control assemblies, have a non-conforming mesh
             # and should not be included in self.p.referenceBlockAxialMesh and self.p.axialMesh
@@ -2398,7 +2413,7 @@ class Core(composites.Composite):
         # Generate list of flags that are to be stationary during assembly shuffling
         stationaryBlockFlags = []
 
-        for stationaryBlockFlagString in cs["stationaryBlockFlags"]:
+        for stationaryBlockFlagString in cs[CONF_STATIONARY_BLOCK_FLAGS]:
             stationaryBlockFlags.append(Flags.fromString(stationaryBlockFlagString))
 
         self.stationaryBlockFlagsList = stationaryBlockFlags
@@ -2443,7 +2458,7 @@ class Core(composites.Composite):
         self.zones = zones.Zones()
 
         # parse the special input string for zone definitions
-        for zoneString in cs["zoneDefinitions"]:
+        for zoneString in cs[CONF_ZONE_DEFINITIONS]:
             zoneName, zoneLocs = zoneString.split(":")
             zoneLocs = zoneLocs.split(",")
             zone = zones.Zone(zoneName.strip())
