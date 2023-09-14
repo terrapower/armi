@@ -52,12 +52,6 @@ from armi.reactor.systemLayoutInput import SystemLayoutInput
 from armi.settings.fwSettings.globalSettings import (
     CONF_MATERIAL_NAMESPACE_ORDER,
     CONF_SORT_REACTOR,
-    CONF_FRESH_FEED_TYPE,
-    CONF_TRACK_ASSEMS,
-    CONF_CIRCULAR_RING_PITCH,
-    CONF_AUTOMATIC_VARIABLE_MESH,
-    CONF_MIN_MESH_SIZE_RATIO,
-    CONF_DETAILED_AXIAL_EXPANSION,
     CONF_GEOM_FILE,
     CONF_NON_UNIFORM_ASSEM_FLAGS,
     CONF_STATIONARY_BLOCK_FLAGS,
@@ -287,8 +281,16 @@ class Core(composites.Composite):
         self._detailedAxialExpansion = False
 
     def setOptionsFromCs(self, cs):
-        from armi.physics.fuelCycle.settings import CONF_CIRCULAR_RING_MODE
-        from armi.physics.fuelCycle.settings import CONF_JUMP_RING_NUM
+        from armi.physics.fuelCycle.settings import (
+            CONF_JUMP_RING_NUM,
+            CONF_FRESH_FEED_TYPE,
+            CONF_TRACK_ASSEMS,
+            CONF_CIRCULAR_RING_MODE,
+            CONF_CIRCULAR_RING_PITCH,
+            CONF_AUTOMATIC_VARIABLE_MESH,
+            CONF_MIN_MESH_SIZE_RATIO,
+            CONF_DETAILED_AXIAL_EXPANSION,
+        )
 
         # these are really "user modifiable modeling constants"
         self.p.jumpRing = cs[CONF_JUMP_RING_NUM]
@@ -2204,7 +2206,7 @@ class Core(composites.Composite):
 
         for b in blockList:
             if flux2Weight:
-                weight = b.p.flux**2.0
+                weight = b.p.flux ** 2.0
             else:
                 weight = 1.0
             for c in b.iterComponents(typeSpec):
