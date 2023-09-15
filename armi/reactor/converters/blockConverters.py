@@ -445,7 +445,7 @@ class BlockAvgToCylConverter(BlockConverter):
                     circleComp, innerR, outerR
                 )
             )
-            circle = Wedge((0.0, 0.0), outerR, 0, 360.0, outerR - innerR)
+            circle = Wedge((0.0, 0.0), outerR, 0, 360.0, width=outerR - innerR)
             patches.append(circle)
             colors.append(circleComp.density())
         colorMap = matplotlib.cm
