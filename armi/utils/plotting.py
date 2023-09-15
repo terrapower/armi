@@ -539,7 +539,6 @@ def _createLegend(legendMap, collection, size=9, shape=Hexagon):
                     (x - height / 2, y - height / 2),
                     height * 2,
                     height * 2,
-                    radius=height,
                     facecolor=colorRgb,
                     transform=handlebox.get_transform(),
                 )
