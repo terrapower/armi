@@ -391,16 +391,29 @@ class AverageBlockCollection(BlockCollection):
         """
         Get weighted average component temperature
 
+        Notes
+        -----
+        Weighting is both by the block weight within the collection and the relative mass of the component.
+        The block weight is already scaled by the block volume, so we need to pull that out of the block
+        weighting because it will effectively be double-counted in the component mass. Component masses
+        should generally be similar across different blocks, but this accounts for small variations.
+
         Returns
         -------
         numberDensities : dict
             nucName, ndens data (atoms/bn-cm)
         """
         blocks = self.getCandidateBlocks()
-        weights = numpy.array([self.getWeight(b) for b in blocks])
+        weights = numpy.array([self.getWeight(b) / b.getHeight() for b in blocks])
         weights /= weights.sum()  # normalize by total weight
         components = [sorted(b.getComponents())[compIndex] for b in blocks]
-        return weights.dot(numpy.array([c.temperatureInC for c in components]))
+        avgComponentMass = sum(c.getMass() for c in components) / len(components)
+        return (
+            weights.dot(
+                numpy.array([c.temperatureInC * c.getMass() for c in components])
+            )
+            / avgComponentMass
+        )
 
     def _checkBlockSimilarity(self):
         cFlags = dict()
