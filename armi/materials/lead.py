@@ -54,4 +54,4 @@ class Lead(material.Fluid):
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("heat capacity", Tk)
 
-        return 162.9 - 3.022e-2 * Tk + 8.341e-6 * Tk ** 2
+        return 162.9 - 3.022e-2 * Tk + 8.341e-6 * Tk**2

@@ -355,10 +355,13 @@ class Operator:
         if halt:
             return False
 
+        # read total core power from settings (power or powerDensity)
+        basicPower = self.cs["power"] or (
+            self.cs["powerDensity"] * self.r.core.getHMMass()
+        )
+
         for timeNode in range(startingNode, int(self.burnSteps[cycle])):
-            self.r.core.p.power = (
-                self.powerFractions[cycle][timeNode] * self.cs["power"]
-            )
+            self.r.core.p.power = self.powerFractions[cycle][timeNode] * basicPower
             self.r.p.capacityFactor = (
                 self.r.p.availabilityFactor * self.powerFractions[cycle][timeNode]
             )
@@ -373,7 +376,7 @@ class Operator:
             else:
                 powFrac = self.powerFractions[cycle][timeNode - 1]
 
-            self.r.core.p.power = powFrac * self.cs["power"]
+            self.r.core.p.power = powFrac * basicPower
             self._timeNodeLoop(cycle, timeNode)
 
         self.interactAllEOC(self.r.p.cycle)

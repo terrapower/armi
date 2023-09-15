@@ -21,7 +21,7 @@ import numpy
 
 from armi import runLog
 from armi.utils.mathematics import findNearestValue
-from .const import (
+from armi.physics.neutronics.const import (
     FAST_FLUX_THRESHOLD_EV,
     MAXIMUM_XS_LIBRARY_ENERGY,
     ULTRA_FINE_GROUP_LETHARGY_WIDTH,

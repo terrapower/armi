@@ -520,7 +520,8 @@ A complete reactor structure with a core and a SFP may be seen below::
                     x: 0.0
                     y: 10.1
                     z: 1.1
-            sfp:
+            Spent Fuel Pool:
+                type: sfp
                 grid name: sfp
                 origin:
                     x: 1000.0
