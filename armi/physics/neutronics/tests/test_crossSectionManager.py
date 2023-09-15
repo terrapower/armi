@@ -45,6 +45,7 @@ from armi.reactor.blocks import HexBlock
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
 from armi.tests import TEST_ROOT
+from armi.tests import mockRunLogs
 from armi.utils import units
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
@@ -104,8 +105,23 @@ class TestBlockCollectionAverage(unittest.TestCase):
             b.setType("fuel")
             b.p.percentBu = bi / 4.0 * 100
             b.setLumpedFissionProducts(fpFactory.createLFPsFromFile())
+            # put some trace Fe-56 and Na-23 into the fuel
+            # zero out all fuel nuclides except U-235 (for mass-weighting of component temperature)
+            fuelComp = b.getComponent(Flags.FUEL)
+            for nuc in fuelComp.getNuclides():
+                b.setNumberDensity(nuc, 0.0)
             b.setNumberDensity("U235", bi)
+            fuelComp.setNumberDensity("FE56", 1e-15)
+            fuelComp.setNumberDensity("NA23", 1e-15)
             b.p.gasReleaseFraction = bi * 2 / 8.0
+            for c in b:
+                if c.hasFlags(Flags.FUEL):
+                    c.temperatureInC = 600.0 + bi
+                elif c.hasFlags([Flags.CLAD, Flags.DUCT, Flags.WIRE]):
+                    c.temperatureInC = 500.0 + bi
+                elif c.hasFlags([Flags.BOND, Flags.COOLANT, Flags.INTERCOOLANT]):
+                    c.temperatureInC = 400.0 + bi
+
         self.bc = AverageBlockCollection(
             self.blockList[0].r.blueprints.allNuclidesInProblem
         )
@@ -118,6 +134,79 @@ class TestBlockCollectionAverage(unittest.TestCase):
         # (0 + 1 + 2 + 3 + 4 ) / 5 = 10/5 = 2.0
         self.assertAlmostEqual(avgB.getNumberDensity("U235"), 2.0)
         self.assertEqual(avgB.p.percentBu, 50.0)
+
+        # check that a new block collection of the representative block has right temperatures
+        # this is required for Doppler coefficient calculations
+        newBc = AverageBlockCollection(
+            self.blockList[0].r.blueprints.allNuclidesInProblem
+        )
+        newBc.append(avgB)
+        newBc.calcAvgNuclideTemperatures()
+        self.assertAlmostEqual(newBc.avgNucTemperatures["U235"], 603.0)
+        self.assertAlmostEqual(newBc.avgNucTemperatures["FE56"], 502.0)
+        self.assertAlmostEqual(newBc.avgNucTemperatures["NA23"], 402.0)
+
+    def test_createRepresentativeBlockDissimilar(self):
+
+        # add a different type of block
+        _o, r = test_reactors.loadTestReactor(
+            os.path.join(TEST_ROOT, "detailedAxialExpansion"),
+            inputFileName="armiRun.yaml",
+        )
+        uniqueBlock = r.core.getBlocks(Flags.FUEL | Flags.ANNULAR)[0]
+        uniqueBlock.p.percentBu = 50.0
+        fpFactory = test_lumpedFissionProduct.getDummyLFPFile()
+        uniqueBlock.setLumpedFissionProducts(fpFactory.createLFPsFromFile())
+        uniqueBlock.setNumberDensity("U235", 2.0)
+        uniqueBlock.p.gasReleaseFraction = 1.0
+        for c in uniqueBlock:
+            if c.hasFlags(Flags.FUEL):
+                c.temperatureInC = 600.0
+            elif c.hasFlags([Flags.CLAD, Flags.DUCT, Flags.WIRE]):
+                c.temperatureInC = 500.0
+            elif c.hasFlags([Flags.BOND, Flags.COOLANT, Flags.INTERCOOLANT]):
+                c.temperatureInC = 400.0
+        self.bc.append(uniqueBlock)
+
+        with mockRunLogs.BufferLog() as mock:
+            avgB = self.bc.createRepresentativeBlock()
+            self.assertIn(
+                "Non-matching block in AverageBlockCollection", mock.getStdout()
+            )
+
+        self.assertNotIn(avgB, self.bc)
+        # 0 + 1/4 + 2/4 + 3/4 + 4/4 =
+        # (0 + 1 + 2 + 3 + 4 + 8) / 6 = 18/6 = 3.0
+        self.assertAlmostEqual(avgB.getNumberDensity("U235"), 2.0)
+        self.assertAlmostEqual(avgB.p.percentBu, 50.0)
+
+        # U35 has different average temperature because blocks have different U235 content
+        newBc = AverageBlockCollection(
+            self.blockList[0].r.blueprints.allNuclidesInProblem
+        )
+        newBc.append(avgB)
+        newBc.calcAvgNuclideTemperatures()
+        # temps expected to be proportional to volume-fraction weighted temperature
+        # this is a non-physical result, but it demonstrates a problem that exists in the code
+        # when dissimilar blocks are put together in a BlockCollection
+        structureVolume = sum(
+            c.getVolume()
+            for c in avgB.getComponents([Flags.CLAD, Flags.DUCT, Flags.WIRE])
+        )
+        fuelVolume = avgB.getComponent(Flags.FUEL).getVolume()
+        coolantVolume = sum(
+            c.getVolume()
+            for c in avgB.getComponents([Flags.BOND, Flags.COOLANT, Flags.INTERCOOLANT])
+        )
+        expectedIronTemp = (structureVolume * 500.0 + fuelVolume * 600.0) / (
+            structureVolume + fuelVolume
+        )
+        expectedSodiumTemp = (coolantVolume * 400.0 + fuelVolume * 600.0) / (
+            coolantVolume + fuelVolume
+        )
+        self.assertAlmostEqual(newBc.avgNucTemperatures["U235"], 600.0)
+        self.assertAlmostEqual(newBc.avgNucTemperatures["FE56"], expectedIronTemp)
+        self.assertAlmostEqual(newBc.avgNucTemperatures["NA23"], expectedSodiumTemp)
 
 
 class TestBlockCollectionComponentAverage(unittest.TestCase):
