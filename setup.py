@@ -60,7 +60,7 @@ setup(
         "future",
         "h5py>=3.0",
         "htmltree",
-        "matplotlib",
+        "matplotlib<3.8",
         "numpy>=1.21,<=1.23.5",
         "ordered-set",
         "pillow",
