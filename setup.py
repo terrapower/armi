@@ -85,7 +85,6 @@ setup(
             "ipykernel",
             "jupyter-contrib-nbextensions",
             "jupyter_client",
-            "mako",
             "nbsphinx",
             "nbsphinx-link",
             "pytest",
