@@ -426,8 +426,8 @@ class AverageBlockCollection(BlockCollection):
             for c, refC in zip(compFlags, refFlags):
                 if c != refC:
                     runLog.warning(
-                        "Non-matching block in AverageBlockCollection!"
-                        f"{refC} component flags in {refB} does not match {c} in {b}."
+                        "Non-matching block in AverageBlockCollection!\n"
+                        f"{refC} component flags in {refB} does not match {c} in {b}.\n"
                         f"Number densities will be smeared in representative block."
                     )
                     return False
