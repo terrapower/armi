@@ -872,8 +872,11 @@ def _copyInputsHelper(
     try:
         pathTools.copyOrWarn(fileDescription, sourcePath, destFilePath)
         if pathlib.Path(destFilePath).exists():
-            return destFilePath
+            # the basename gets written back to the settings file to protect against
+            # potential future dir structure changes
+            return os.path.basename(destFilePath)
         else:
+            # keep original filepath in the settings file if file copy was unsuccessful
             return origFile
     except Exception:
         return origFile
