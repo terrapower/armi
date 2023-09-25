@@ -41,6 +41,7 @@ from armi.reactor.components import Component
 from armi.reactor.composites import ArmiObject
 from armi.reactor import grids
 from armi.reactor.reactors import Core
+from armi.reactor.assemblyLists import AssemblyList
 from armi.reactor.reactors import Reactor
 
 # Here we store the Database3 version information.
@@ -355,8 +356,10 @@ class Layout:
                 comp = Klass(caseTitle, bp)
             elif issubclass(Klass, Core):
                 comp = Klass(name)
+            elif issubclass(Klass, AssemblyList):
+                comp = Klass(name)
             elif issubclass(Klass, Component):
-                # TODO: init all dimensions to 0, they will be loaded and assigned after load
+                # init all dimensions to 0, they will be loaded and assigned after load
                 kwargs = dict.fromkeys(Klass.DIMENSION_NAMES, 0)
                 kwargs["material"] = material
                 kwargs["name"] = name
@@ -851,18 +854,11 @@ def replaceNonsenseWithNones(data: numpy.ndarray, paramName: str) -> numpy.ndarr
             if isNone[i].all():
                 result[i] = None
             elif isNone[i].any():
-                # TODO: This is not symmetric with the replaceNonesWithNonsense impl.
-                # That one assumes that Nones apply only at the highest dimension, and
-                # that the lower dimensions will be filled with the magic None value.
-                # Non-none entries below the top level fail to coerce to a serializable
-                # numpy array and would raise an exception when trying to write. TL;DR:
-                # this is a dead branch until the replaceNonesWithNonsense impl is more
-                # sophisticated.
+                # This is the meat of the logic to replace "nonsense" with None.
                 result[i] = numpy.array(data[i], dtype=numpy.dtype("O"))
                 result[i][isNone[i]] = None
             else:
                 result[i] = data[i]
-
     else:
         result = numpy.ndarray(data.shape, dtype=numpy.dtype("O"))
         result[:] = data

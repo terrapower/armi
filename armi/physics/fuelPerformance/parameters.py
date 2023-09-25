@@ -29,7 +29,7 @@ def _getFuelPerformanceBlockParams():
 
         pb.defParam(
             "fuelCladLocked",
-            units="",
+            units=units.UNITLESS,
             default=False,
             description="Boolean to indicate if the fuel is locked with the clad."
             " This is used to determine the expansion constraints for the fuel during"
@@ -39,7 +39,7 @@ def _getFuelPerformanceBlockParams():
         def gasReleaseFraction(self, value):
             if value < 0.0 or value > 1.0:
                 raise ValueError(
-                    f"Cannot set a gas release fraction "
+                    "Cannot set a gas release fraction "
                     f"of {value} outside of the bounds of [0.0, 1.0]"
                 )
             self._p_gasReleaseFraction = value
@@ -47,7 +47,7 @@ def _getFuelPerformanceBlockParams():
         pb.defParam(
             "gasReleaseFraction",
             setter=gasReleaseFraction,
-            units="fraction",
+            units=units.UNITLESS,
             description="Fraction of generated fission gas that no longer exists in the block.",
             categories=["eq cumulative shift"],
         )
@@ -55,7 +55,7 @@ def _getFuelPerformanceBlockParams():
         def bondRemoved(self, value):
             if value < 0.0 or value > 1.0:
                 raise ValueError(
-                    f"Cannot set a bond removed "
+                    "Cannot set a bond removed "
                     f"of {value} outside of the bounds of [0.0, 1.0]"
                 )
             self._p_bondRemoved = value
@@ -63,7 +63,7 @@ def _getFuelPerformanceBlockParams():
         pb.defParam(
             "bondRemoved",
             setter=bondRemoved,
-            units="fraction",
+            units=units.UNITLESS,
             description="Fraction of thermal bond between fuel and clad that has been pushed out.",
             categories=["eq cumulative shift"],
         )
@@ -78,35 +78,35 @@ def _getFuelPerformanceBlockParams():
 
         pb.defParam(
             "totalCladStrain",
-            units="%",
+            units=units.PERCENT,
             description="Total diametral clad strain.",
             categories=["eq cumulative shift"],
         )
 
         pb.defParam(
             "axialGrowthPct",
-            units="%",
+            units=units.PERCENT,
             description="Axial growth percentage",
             categories=["eq cumulative shift"],
         )
 
         pb.defParam(
             "fpPeakFuelTemp",
-            units="C",
+            units=units.DEGC,
             description="Fuel performance calculated peak fuel temperature.",
             location=ParamLocation.AVERAGE,
         )
 
         pb.defParam(
             "fpAveFuelTemp",
-            units="C",
+            units=units.DEGC,
             description="Fuel performance calculated average fuel temperature.",
             location=ParamLocation.AVERAGE,
         )
 
         pb.defParam(
             "gasPorosity",
-            units="",
+            units=units.UNITLESS,
             description="Fraction of fuel volume that is occupied by gas pores",
             default=0.0,
             categories=["eq cumulative shift"],
@@ -114,7 +114,7 @@ def _getFuelPerformanceBlockParams():
 
         pb.defParam(
             "liquidPorosity",
-            units="",
+            units=units.UNITLESS,
             description="Fraction of fuel volume that is occupied by liquid filled pores",
             default=0.0,
         )

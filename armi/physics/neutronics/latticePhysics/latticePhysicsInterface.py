@@ -425,7 +425,7 @@ class LatticePhysicsInterface(interfaces.Interface):
                 runLog.info(
                     f"Although a XS library {self.r.core._lib} exists on {self.r.core}, "
                     f"there are missing XS IDs {missing} required. The XS generation on cycle {cycle} "
-                    f"is not enabled, but will be run to generate these missing cross sections."
+                    "is not enabled, but will be run to generate these missing cross sections."
                 )
                 executeXSGen = True
             elif missing:

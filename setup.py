@@ -56,7 +56,7 @@ setup(
     entry_points={"console_scripts": ["armi = armi.__main__:main"]},
     install_requires=[
         "configparser",
-        "coverage<=6.5.0",
+        "coverage",
         "future",
         "h5py>=3.0",
         "htmltree",
@@ -76,17 +76,15 @@ setup(
         "yamlize==0.7.1",
     ],
     extras_require={
-        "mpi": ["mpi4py==3.0.3"],
-        "grids": ["wxpython<=4.1.1"],
+        "mpi": ["mpi4py"],
+        "grids": ["wxpython==4.2.1"],
         "memprof": ["psutil"],
         "dev": [
-            "black==20.8b1",
-            "click==8.0.1",  # fixing click problem in black
+            "black==22.6.0",
             "docutils",
             "ipykernel",
             "jupyter-contrib-nbextensions",
             "jupyter_client",
-            "mako",
             "nbsphinx",
             "nbsphinx-link",
             "pytest",

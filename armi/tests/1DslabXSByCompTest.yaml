@@ -185,4 +185,3 @@ assemblies:
         height: *standard_heights
         axial mesh points: *standard_axial_mesh_points
         xs types: [AZ, AZ, AC, AC, AC, AC, AZ, AZ]
-

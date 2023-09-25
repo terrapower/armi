@@ -169,7 +169,7 @@ class TightCoupler:
         if self._previousIterationValue is None:
             raise ValueError(
                 f"Cannot check convergence of {self} with no previous iteration value set. "
-                f"Set using `storePreviousIterationValue` first."
+                "Set using `storePreviousIterationValue` first."
             )
 
         previous = self._previousIterationValue

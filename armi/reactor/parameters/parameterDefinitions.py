@@ -33,11 +33,12 @@ import re
 
 import numpy
 
+from armi import runLog
 from armi.reactor.flags import Flags
 from armi.reactor.parameters.exceptions import ParameterError, ParameterDefinitionError
 
 # bitwise masks for high-speed operations on the `assigned` attribute
-# (see http://www.vipan.com/htdocs/bitwisehelp.html)
+# see: https://web.archive.org/web/20120225043338/http://www.vipan.com/htdocs/bitwisehelp.html
 # Note that the various operations are responsible for clearing the flags on the events.
 # These should be interpreted as:
 #   The Parameter or ParameterCollection has been modified SINCE_<time-description>
@@ -69,6 +70,8 @@ class Category:
     * `neutronics` parameters are calculated in a neutronics global flux solve
     * `gamma` parameters are calculated in a fixed-source gamma solve
     * `detailedAxialExpansion` parameters are marked as such so that they are mapped from the uniform mesh back to the non-uniform mesh
+    * `reactivity coefficients` parameters are related to reactivity coefficient or kinetics parameters for kinetics solutions
+    * `thermal hydraulics` parameters come from a thermal hydraulics physics plugin (e.g., flow rates, temperatures, etc.)
     """
 
     depletion = "depletion"
@@ -82,10 +85,12 @@ class Category:
     neutronics = "neutronics"
     gamma = "gamma"
     detailedAxialExpansion = "detailedAxialExpansion"
+    reactivityCoefficients = "reactivity coefficients"
+    thermalHydraulics = "thermal hydraulics"
 
 
 class ParamLocation(enum.Flag):
-    """Represents point which a parameter is physically meaningful."""
+    """Represents the point on which a parameter is physically meaningful."""
 
     TOP = 1
     CENTROID = 2
@@ -99,14 +104,14 @@ class ParamLocation(enum.Flag):
 
 
 class NoDefault:
-    r"""Class used to allow distinction between not setting a default and setting a default of ``None``."""
+    """Class used to allow distinction between not setting a default and setting a default of ``None``."""
 
     def __init__(self):
         raise NotImplementedError("You cannot create an instance of NoDefault")
 
 
 class _Undefined:
-    r"""Class used to identify a parameter property as being in the undefined state."""
+    """Class used to identify a parameter property as being in the undefined state."""
 
     def __init__(self):
         raise NotImplementedError("You cannot create an instance of _Undefined.")
@@ -208,7 +213,7 @@ def isNumpyArray(paramStr):
 
 @functools.total_ordering
 class Parameter:
-    r"""Metadata about a specific parameter."""
+    """Metadata about a specific parameter."""
 
     _validName = re.compile("^[a-zA-Z0-9_]+$")
 
@@ -247,10 +252,15 @@ class Parameter:
         serializer: Optional[Type[Serializer]] = None,
     ):
         assert self._validName.match(name), "{} is not a valid param name".format(name)
+        # nonsensical to have a serializer with no intention of saving to DB
         assert not (serializer is not None and not saveToDB)
-        # nonsensical to have a serializer with no intention of saving to DB; probably
-        # in error
         assert serializer is None or saveToDB
+        # TODO: This warning is temporary. At some point, it will become an AssertionError.
+        if not len(description):
+            runLog.warning(
+                f"DeprecationWarning: Parameter {name} defined without description.",
+                single=True,
+            )
         self.collectionType = _Undefined
         self.name = name
         self.fieldName = "_p_" + name
@@ -394,7 +404,7 @@ class Parameter:
 
 
 class ParameterDefinitionCollection:
-    r"""
+    """
     A very specialized container for managing parameter definitions.
 
     Notes
@@ -422,7 +432,7 @@ class ParameterDefinitionCollection:
         return len(self._paramDefs)
 
     def __getitem__(self, name):
-        r"""Get a parameter by name.
+        """Get a parameter by name.
 
         Notes
         -----
@@ -478,7 +488,7 @@ class ParameterDefinitionCollection:
             self.add(pd)
 
     def inCategory(self, categoryName):
-        r"""
+        """
         Create a :py:class:`ParameterDefinitionCollection` that contains definitions that are in a
         specific category.
         """
@@ -587,7 +597,7 @@ class ParameterDefinitionCollection:
 
 
 class ParameterBuilder:
-    r"""Factory for creating Parameter and parameter properties."""
+    """Factory for creating Parameter and parameter properties."""
 
     def __init__(
         self,
@@ -596,7 +606,7 @@ class ParameterBuilder:
         categories=None,
         saveToDB=True,
     ):
-        r"""Create a :py:class:`ParameterBuilder`."""
+        """Create a :py:class:`ParameterBuilder`."""
         self._entered = False
         self._defaultLocation = location
         self._defaultCategories = set(categories or [])  # make sure it is always a set

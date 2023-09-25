@@ -186,7 +186,7 @@ code, consider pulling the repeated code out into it's own function, or using a 
 
 Public methods should have docstrings
 =====================================
-Always create the :doc:`proper docstrings </developer/code_practices/documentation_guidelines>` for all public
+Always create the `proper docstrings <https://numpydoc.readthedocs.io/en/latest/example.html>`_ for all public
 functions and public classes.
 
 Unit tests

@@ -545,8 +545,8 @@ class Case:
         if not os.path.exists(self.cs["burnChainFileName"]):
             raise ValueError(
                 f"The burn-chain file {self.cs['burnChainFileName']} does not exist. The "
-                f"data cannot be loaded. Fix this path or disable burn-chain initialization using "
-                f"the `initializeBurnChain` setting."
+                "data cannot be loaded. Fix this path or disable burn-chain initialization using "
+                "the `initializeBurnChain` setting."
             )
 
         with open(self.cs["burnChainFileName"]) as burnChainStream:

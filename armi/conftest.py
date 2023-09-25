@@ -21,7 +21,7 @@ when using the ARMI framework as a submodule in a larger project.
 
 Tests must be invoked via pytest for this to have any affect, for example::
 
-    $ pytest -n6 framework/armi
+    $ pytest -n 6 armi
 
 """
 import os

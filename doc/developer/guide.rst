@@ -16,15 +16,15 @@ package's code during runtime.
 
 An approximation of `Composite Design Pattern
 <http://en.wikipedia.org/wiki/Composite_pattern>`_ is used to represent the **Reactor**
-in ARMI. In this hierarchy the **Reactor** object is a **Core** object, and potentially
-many generic **Composite** objects representing ex-core structures. The **Core** is made
-of **Assembly** objects, which are in turn made up as a collection of **Block** objects.
-:term:`State <reactor state>` variables may be stored at any level of this hierarchy
-using the :py:mod:`armi.reactor.parameters` system to contain results (e.g., ``keff``, ``flow rates``,
-``power``, ``flux``, etc.). Within each block are **Components** that define the
-pin-level geometry.  Associated with each Component are **Material** objects that
-contain material properties (``density``, ``conductivity``, ``heat capacity``, etc.) and
-isotopic mass fractions.
+in ARMI. In this hierarchy the **Reactor** object has a child **Core** object, and 
+potentially many generic **Composite** child objects representing ex-core structures. 
+The **Core** is made of **Assembly** objects, which are in turn made up as a collection 
+of **Block** objects. :term:`State <reactor state>` variables may be stored at any level 
+of this hierarchy using the :py:mod:`armi.reactor.parameters` system to contain results 
+(e.g., ``keff``, ``flow rates``, ``power``, ``flux``, etc.). Within each block are
+ **Components** that define the pin-level geometry.  Associated with each Component are 
+**Material** objects that contain material properties (``density``, ``conductivity``, 
+``heat capacity``, etc.) and isotopic mass fractions.
 
 .. note:: Non-core structures (spent fuel pools, core restraint, heat exchangers, etc.)
    may be represented analogously to the **Core**, but this feature is new and under
@@ -49,7 +49,7 @@ Finding objects in a model
 Under most circumstances a :py:class:`armi.reactor.reactors.Reactor` instance will have a
 ``.core`` attribute, which is an instance of :py:class:`armi.reactor.reactors.Core`. While the
 Composite pattern discussed above can be used very generally, the ``Core`` class
-enforces a couple of constrains that can be very useful:
+enforces a couple of constraints that can be very useful:
 
 * A ``Core`` is a 2-D arrangement of :py:class:`armi.reactor.assemblies.Assembly`
   objects.

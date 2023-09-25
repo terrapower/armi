@@ -374,8 +374,8 @@ class Block_TestCase(unittest.TestCase):
         self.assertAlmostEqual(cur, ref, places=10)
 
     def test_timeNodeParams(self):
-        self.block.p["avgFuelTemp", 3] = 2.0
-        self.assertEqual(2.0, self.block.p[("avgFuelTemp", 3)])
+        self.block.p["buRate", 3] = 0.1
+        self.assertEqual(0.1, self.block.p[("buRate", 3)])
 
     def test_getType(self):
         ref = "plenum pin"
@@ -1583,7 +1583,7 @@ class Block_TestCase(unittest.TestCase):
         self.assertAlmostEqual(
             blockPitch, self.block.getComponent(Flags.INTERCOOLANT).getDimension("op")
         )
-        totalHexArea = blockPitch ** 2 * math.sqrt(3) / 2.0
+        totalHexArea = blockPitch**2 * math.sqrt(3) / 2.0
 
         clad = self.block.getComponent(Flags.CLAD)
         pinArea = (
@@ -1760,7 +1760,7 @@ class HexBlock_TestCase(unittest.TestCase):
 
     def test_getArea(self):
         cur = self.HexBlock.getArea()
-        ref = math.sqrt(3) / 2.0 * 70.6 ** 2
+        ref = math.sqrt(3) / 2.0 * 70.6**2
         places = 6
         self.assertAlmostEqual(cur, ref, places=places)
 
@@ -1839,7 +1839,7 @@ class HexBlock_TestCase(unittest.TestCase):
         self.assertGreater(min(x), -side)
 
         # center pin should be at 0
-        mags = [(xi ** 2 + yi ** 2, (xi, yi)) for xi, yi, zi in xyz]
+        mags = [(xi**2 + yi**2, (xi, yi)) for xi, yi, zi in xyz]
         _centerMag, (cx, cy) = min(mags)
         self.assertAlmostEqual(cx, 0.0)
         self.assertAlmostEqual(cy, 0.0)
