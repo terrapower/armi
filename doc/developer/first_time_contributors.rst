@@ -30,7 +30,7 @@ new your code does.
 
 The standard way to run the tests is to install and use `tox <https://tox.readthedocs.io/en/latest/>`_::
 
-    $ pip3 install tox
+    $ pip install tox
     $ tox -- -n 6
 
 This runs the unit tests in parallel on 6 processes. Omit the ``-n 6`` argument
@@ -38,7 +38,7 @@ to run on a single process.
 
 Or the tests can also be run using ``pytest`` directly::
 
-    $ pip3 install -r requirements-testing.txt
+    $ pip intall -e .[test]
     $ pytest -n 4 armi
 
 Submitting Changes
@@ -66,7 +66,7 @@ Also, please check out our (quick) synopsis on :doc:`good commit messages </deve
 Licensing of Tools
 ==================
 
-Be careful when including any dependency in ARMI (say in a ``requirements.txt`` file) not
+Be careful when including any dependency in ARMI (say in the ``pyproject.toml`` file) not
 to include anything with a license that superceeds our Apache license. For instance,
 any third-party Python library included in ARMI with a GPL license will make the whole
 project fall under the GPL license. But a lot of potential users of ARMI will want to
