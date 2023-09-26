@@ -14,6 +14,7 @@ What's new in ARMI
 #. Moved the ``Reactor`` assembly number from the global scope to a ``Parameter``. (`PR#1383 <https://github.com/terrapower/armi/pull/1383>`_)
 #. Added ``powerDensity`` as a high-level alternative to ``power`` to configure a Reactor. (`PR#1395 <https://github.com/terrapower/armi/pull/1395>`_)
 #. Added SHA1 hashes of XS control files to the welcome text. (`PR#1334 <https://github.com/terrapower/armi/pull/1334>`_)
+#. Moved from ``setup.py`` to ``pyproject.toml``. (`PR#1409 <https://github.com/terrapower/armi/pull/1409>`_)
 #. Add python 3.11 to ARMI's CI testing GH actions! (`PR#1341 <https://github.com/terrapower/armi/pull/1341>`_)
 #. Put back ``avgFuelTemp`` block parameter. (`PR#1362 <https://github.com/terrapower/armi/pull/1362>`_)
 #. Make cylindrical component block collection less strict about pre-homogenization checks. (`PR#1347 <https://github.com/terrapower/armi/pull/1347>`_)

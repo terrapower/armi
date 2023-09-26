@@ -51,7 +51,7 @@ files for us to fill in, like this::
             materials.py
             thermalSolver.py
         doc/
-        setup.py
+        pyproject.toml
         README.md
         LICENSE.md
 
@@ -82,8 +82,8 @@ These files are:
 
 * :file:`myapp/thermalSolver.py` contains the thermal/hydraulics solver
 
-* :file:`setup.py` the `python package installation file
-  <https://docs.python.org/3/distutils/setupscript.html>`_ to help users install your
+* :file:`pyproject.toml` the `python package installation file
+  <https://packaging.python.org/en/latest/flow/>`_ to help users install your
   application.
 
 * :file:`README.md` and :file:`LICENSE.md` are an optional description and license of your
