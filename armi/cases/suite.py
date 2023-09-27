@@ -103,7 +103,7 @@ class CaseSuite:
         """
         csFiles = settings.recursivelyLoadSettingsFiles(
             rootDir or os.path.abspath(os.getcwd()),
-            patterns or ["*.yaml", "*.xml"],  # xml temporary to transistion
+            patterns or ["*.yaml"],
             recursive=recursive,
             ignorePatterns=ignorePatterns,
             handleInvalids=False,
