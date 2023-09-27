@@ -2,33 +2,44 @@
 ARMI v0.2 Release Notes
 =======================
 
-ARMI v0.2.9
-===========
+ARMI v0.2.10
+============
 Release Date: TBD
 
 What's new in ARMI
 ------------------
-#. The Spent Fuel Pool (``sfp``) was moved from the ``Core`` out to the ``Reactor``. (`PR#1336 <https://github.com/terrapower/armi/pull/1336>`_)
-#. Removed ``getMasterCs()`` and ``setMasterCs()``. (`PR#1399 <https://github.com/terrapower/armi/pull/1399>`_)
-#. Broad cleanup of ``Parameters``: filled in all empty units and descriptions, removed unused params. (`PR#1345 <https://github.com/terrapower/armi/pull/1345>`_)
-#. Removed redundant ``Material.name`` variable. (`PR#1335 <https://github.com/terrapower/armi/pull/1335>`_)
-#. Moved the ``Reactor`` assembly number from the global scope to a ``Parameter``. (`PR#1383 <https://github.com/terrapower/armi/pull/1383>`_)
-#. Added ``powerDensity`` as a high-level alternative to ``power`` to configure a Reactor. (`PR#1395 <https://github.com/terrapower/armi/pull/1395>`_)
-#. Added SHA1 hashes of XS control files to the welcome text. (`PR#1334 <https://github.com/terrapower/armi/pull/1334>`_)
-#. Moved from ``setup.py`` to ``pyproject.toml``. (`PR#1409 <https://github.com/terrapower/armi/pull/1409>`_)
-#. Add python 3.11 to ARMI's CI testing GH actions! (`PR#1341 <https://github.com/terrapower/armi/pull/1341>`_)
-#. Put back ``avgFuelTemp`` block parameter. (`PR#1362 <https://github.com/terrapower/armi/pull/1362>`_)
-#. Make cylindrical component block collection less strict about pre-homogenization checks. (`PR#1347 <https://github.com/terrapower/armi/pull/1347>`_)
-#. Updated some parameter definitions and defaults. (`PR#1355 <https://github.com/terrapower/armi/pull/1355>`_)
-#. Make the SFP a child of the reactor so it is stored in database. (`PR#1349 <https://github.com/terrapower/armi/pull/1349>`_)
-#. Update black to version 22.6 (`PR#1396 <https://github.com/terrapower/armi/pull/1396>`_)
 #. TBD
 
 Bug fixes
 ---------
-#. Fix _processIncludes to handle StringIO input (`PR#1333 <https://github.com/terrapower/armi/pull/1333>`_)
-#. Logic improvements for computing thermal expansion factors for axial expansion. (`PR#1342 <https://github.com/terrapower/armi/pull/1342>`_)
 #. TBD
+
+ARMI v0.2.9
+===========
+Release Date: 2023-09-27
+
+What's new in ARMI
+------------------
+#. Moved the ``Reactor`` assembly number from the global scope to a ``Parameter``. (`PR#1383 <https://github.com/terrapower/armi/pull/1383>`_)
+#. Removed the global ``CaseSettings`` object, ``getMasterCs()``, and ``setMasterCs()``. (`PR#1399 <https://github.com/terrapower/armi/pull/1399>`_)
+#. Moved the Spent Fuel Pool (``sfp``) from the ``Core`` to the ``Reactor``. (`PR#1336 <https://github.com/terrapower/armi/pull/1336>`_)
+#. Made the ``sfp`` a child of the ``Reactor`` so it is stored in the database. (`PR#1349 <https://github.com/terrapower/armi/pull/1349>`_)
+#. Broad cleanup of ``Parameters``: filled in all empty units and descriptions, removed unused params. (`PR#1345 <https://github.com/terrapower/armi/pull/1345>`_)
+#. Updated some parameter definitions and defaults. (`PR#1355 <https://github.com/terrapower/armi/pull/1355>`_)
+#. Removed redundant ``Material.name`` variable. (`PR#1335 <https://github.com/terrapower/armi/pull/1335>`_)
+#. Added ``powerDensity`` as a high-level alternative to ``power`` to configure a ``Reactor``. (`PR#1395 <https://github.com/terrapower/armi/pull/1395>`_)
+#. Added SHA1 hashes of XS control files to the welcome text. (`PR#1334 <https://github.com/terrapower/armi/pull/1334>`_)
+
+Build changes
+-------------
+#. Moved from ``setup.py`` to ``pyproject.toml``. (`PR#1409 <https://github.com/terrapower/armi/pull/1409>`_)
+#. Added Python 3.11 to ARMI's CI on GH actions. (`PR#1341 <https://github.com/terrapower/armi/pull/1341>`_)
+#. Updated ``black`` to version 22.6. (`PR#1396 <https://github.com/terrapower/armi/pull/1396>`_)
+
+Bug fixes
+---------
+#. Fixed ``_processIncludes()`` to handle ``StringIO`` input. (`PR#1333 <https://github.com/terrapower/armi/pull/1333>`_)
+#. Fixed logic for computing thermal expansion factors for axial expansion. (`PR#1342 <https://github.com/terrapower/armi/pull/1342>`_)
 
 ARMI v0.2.8
 ===========
