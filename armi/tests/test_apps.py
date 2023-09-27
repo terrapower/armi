@@ -24,7 +24,6 @@ from armi import getDefaultPluginManager
 from armi import isStableReleaseVersion
 from armi import meta
 from armi import plugins
-from armi import utils
 from armi.reactor.flags import Flags
 from armi.__main__ import main
 

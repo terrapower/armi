@@ -40,18 +40,29 @@ import tabulate
 from armi import getPluginManagerOrFail, materials, nuclearDataIO
 from armi import runLog
 from armi.nuclearDataIO import xsLibraries
-from armi.reactor import assemblies
-from armi.reactor import assemblyLists
 from armi.reactor import composites
 from armi.reactor import geometry
 from armi.reactor import grids
 from armi.reactor import parameters
 from armi.reactor import reactorParameters
 from armi.reactor import zones
+from armi.reactor.assemblyLists import SpentFuelPool
 from armi.reactor.flags import Flags
 from armi.reactor.systemLayoutInput import SystemLayoutInput
-from armi.settings.fwSettings.globalSettings import CONF_MATERIAL_NAMESPACE_ORDER
-from armi.settings.fwSettings.globalSettings import CONF_SORT_REACTOR
+from armi.settings.fwSettings.globalSettings import (
+    CONF_MATERIAL_NAMESPACE_ORDER,
+    CONF_FRESH_FEED_TYPE,
+    CONF_SORT_REACTOR,
+    CONF_GEOM_FILE,
+    CONF_NON_UNIFORM_ASSEM_FLAGS,
+    CONF_STATIONARY_BLOCK_FLAGS,
+    CONF_ZONE_DEFINITIONS,
+    CONF_TRACK_ASSEMS,
+    CONF_CIRCULAR_RING_PITCH,
+    CONF_AUTOMATIC_VARIABLE_MESH,
+    CONF_MIN_MESH_SIZE_RATIO,
+    CONF_DETAILED_AXIAL_EXPANSION,
+)
 from armi.utils import createFormattedStrWithDelimiter, units
 from armi.utils import directoryChangers
 from armi.utils.iterables import Sequence
@@ -75,10 +86,11 @@ class Reactor(composites.Composite):
         self.o = None
         self.spatialGrid = None
         self.spatialLocator = None
+        self.p.maxAssemNum = 0
         self.p.cycle = 0
         self.p.flags |= Flags.REACTOR
         self.core = None
-        self.sfp = assemblyLists.SpentFuelPool("Spent Fuel Pool", self)
+        self.sfp = None
         self.blueprints = blueprints
 
     def __getstate__(self):
@@ -89,7 +101,6 @@ class Reactor(composites.Composite):
 
     def __setstate__(self, state):
         composites.Composite.__setstate__(self, state)
-        self.sfp.parent = self
 
     def __deepcopy__(self, memo):
         memo[id(self)] = newR = self.__class__.__new__(self.__class__)
@@ -110,6 +121,50 @@ class Reactor(composites.Composite):
                     "Cores found: {}".format(cores)
                 )
             self.core = cores[0]
+
+        if isinstance(container, SpentFuelPool):
+            self.sfp = container
+
+    def incrementAssemNum(self):
+        """
+        Increase the max assembly number by one and returns the current value.
+
+        Notes
+        -----
+        The "max assembly number" is not currently used in the Reactor. So the idea
+        is that we return the current number, then iterate it for the next assembly.
+
+        Obviously, this method will be unused for non-assembly-based reactors.
+
+        Returns
+        -------
+        int
+            The new max Assembly number.
+        """
+        val = int(self.p.maxAssemNum)
+        self.p.maxAssemNum += 1
+        return val
+
+    def normalizeNames(self):
+        """
+        Renumber and rename all the Assemblies and Blocks.
+
+        This method normalizes the names in the Core then the SFP.
+
+        Returns
+        -------
+        int
+            The new max Assembly number.
+        """
+        self.p.maxAssemNum = 0
+
+        ind = self.core.normalizeNames(self.p.maxAssemNum)
+        self.p.maxAssemNum = ind
+
+        ind = self.sfp.normalizeNames(self.p.maxAssemNum)
+        self.p.maxAssemNum = ind
+
+        return ind
 
 
 def loadFromCs(cs) -> Reactor:
@@ -143,8 +198,11 @@ def factory(cs, bp, geom: Optional[SystemLayoutInput] = None) -> Reactor:
         materials.setMaterialNamespaceOrder(cs[CONF_MATERIAL_NAMESPACE_ORDER])
     r = Reactor(cs.caseTitle, bp)
 
-    if cs["geomFile"]:
+    if cs[CONF_GEOM_FILE]:
         blueprints.migrate(bp, cs)
+
+    if not any(structure.typ == "sfp" for structure in bp.systemDesigns.values()):
+        bp.addDefaultSFP()
 
     with directoryChangers.DirectoryChanger(cs.inputDirectory, dumpOnException=False):
         # always construct the core first (for assembly serial number purposes)
@@ -152,11 +210,10 @@ def factory(cs, bp, geom: Optional[SystemLayoutInput] = None) -> Reactor:
             raise ValueError(
                 "The input must define a `core` system, but does not. Update inputs"
             )
-        coreDesign = bp.systemDesigns["core"]
-        coreDesign.construct(cs, bp, r, geom=geom)
+
         for structure in bp.systemDesigns:
-            if structure.name.lower() != "core":
-                structure.construct(cs, bp, r)
+            bpGeom = geom if structure.name.lower() == "core" else None
+            structure.construct(cs, bp, r, geom=bpGeom)
 
     runLog.debug("Reactor: {}".format(r))
 
@@ -230,18 +287,20 @@ class Core(composites.Composite):
         self._detailedAxialExpansion = False
 
     def setOptionsFromCs(self, cs):
-        from armi.physics.fuelCycle.settings import CONF_CIRCULAR_RING_MODE
-        from armi.physics.fuelCycle.settings import CONF_JUMP_RING_NUM
+        from armi.physics.fuelCycle.settings import (
+            CONF_JUMP_RING_NUM,
+            CONF_CIRCULAR_RING_MODE,
+        )
 
         # these are really "user modifiable modeling constants"
         self.p.jumpRing = cs[CONF_JUMP_RING_NUM]
-        self._freshFeedType = cs["freshFeedType"]
-        self._trackAssems = cs["trackAssems"]
+        self._freshFeedType = cs[CONF_FRESH_FEED_TYPE]
+        self._trackAssems = cs[CONF_TRACK_ASSEMS]
         self._circularRingMode = cs[CONF_CIRCULAR_RING_MODE]
-        self._circularRingPitch = cs["circularRingPitch"]
-        self._automaticVariableMesh = cs["automaticVariableMesh"]
-        self._minMeshSizeRatio = cs["minMeshSizeRatio"]
-        self._detailedAxialExpansion = cs["detailedAxialExpansion"]
+        self._circularRingPitch = cs[CONF_CIRCULAR_RING_PITCH]
+        self._automaticVariableMesh = cs[CONF_AUTOMATIC_VARIABLE_MESH]
+        self._minMeshSizeRatio = cs[CONF_MIN_MESH_SIZE_RATIO]
+        self._detailedAxialExpansion = cs[CONF_DETAILED_AXIAL_EXPANSION]
 
     def __getstate__(self):
         """Applies a settings and parent to the core and components."""
@@ -350,8 +409,8 @@ class Core(composites.Composite):
         The reference assembly is defined as the center-most assembly with a FUEL flag,
         if any are present, or the center-most of any assembly otherwise.
 
-        Warnings
-        ========
+        Warning
+        -------
         The convenience of this property should be weighed against it's somewhat
         arbitrary nature for any particular client. The center-most fueled assembly is
         not particularly representative of the state of the core as a whole.
@@ -397,6 +456,20 @@ class Core(composites.Composite):
                 tablefmt="armi",
             )
         )
+
+    def setPowerFromDensity(self):
+        """Set the power from the powerDensity."""
+        self.p.power = self.p.powerDensity * self.getHMMass()
+
+    def setPowerIfNecessary(self):
+        """Set the core power, from the power density.
+
+        If the power density is set, but the power isn't, we set the calculate the
+        total heavy metal mass of the reactor, and set the total power. Which will
+        then be the real source of truth again.
+        """
+        if self.p.power == 0 and self.p.powerDensity > 0:
+            self.setPowerFromDensity()
 
     def setBlockMassParams(self):
         """Set the parameters kgHM and kgFis for each block and calculate Pu fraction."""
@@ -463,7 +536,7 @@ class Core(composites.Composite):
         self.remove(a1)
 
         if discharge and self._trackAssems:
-            if hasattr(self.parent, "sfp"):
+            if self.parent.sfp is not None:
                 self.parent.sfp.add(a1)
             else:
                 runLog.info("No Spent Fuel Pool is found, can't track assemblies.")
@@ -531,6 +604,52 @@ class Core(composites.Composite):
             self.parent.sfp.removeAll()
         self.blocksByName = {}
         self.assembliesByName = {}
+        self.parent.p.maxAssemNum = 0
+
+    def normalizeNames(self, startIndex=0):
+        """
+        Renumber and rename all the Assemblies and Blocks.
+
+        Parameters
+        ----------
+        startIndex : int, optional
+            The default is to start counting at zero. But if you are renumbering assemblies
+            across the entire Reactor, you may want to start at a different number.
+
+        Returns
+        -------
+        int
+            The new max Assembly number.
+        """
+        ind = startIndex
+        for a in self:
+            oldName = a.getName()
+            newName = a.makeNameFromAssemNum(ind)
+            if oldName == newName:
+                ind += 1
+                continue
+
+            a.p.assemNum = ind
+            a.setName(newName)
+
+            for b in a:
+                axialIndex = int(b.name.split("-")[-1])
+                b.name = b.makeName(ind, axialIndex)
+
+            ind += 1
+
+        self.normalizeInternalBookeeping()
+
+        return ind
+
+    def normalizeInternalBookeeping(self):
+        """Update some bookkeeping dictionaries of assembly and block names in this Core."""
+        self.assembliesByName = {}
+        self.blocksByName = {}
+        for assem in self:
+            self.assembliesByName[assem.getName()] = assem
+            for b in assem:
+                self.blocksByName[b.getName()] = b
 
     def add(self, a, spatialLocator=None):
         """
@@ -552,6 +671,10 @@ class Core(composites.Composite):
         --------
         removeAssembly : removes an assembly
         """
+        # Negative assembly IDs are placeholders, and we need to renumber the assembly
+        if a.p.assemNum < 0:
+            a.renumber(self.r.incrementAssemNum())
+
         # resetting .assigned forces database to be rewritten for shuffled core
         paramDefs = set(parameters.ALL_DEFINITIONS)
         paramDefs.difference_update(set(parameters.forType(Core)))
@@ -595,9 +718,7 @@ class Core(composites.Composite):
             runLog.error(
                 "The assembly {1} in the reactor already has the name {0}.\nCannot add {2}. "
                 "Current assemNum is {3}"
-                "".format(
-                    aName, self.assembliesByName[aName], a, assemblies.getAssemNum()
-                )
+                "".format(aName, self.assembliesByName[aName], a, self.r.p.maxAssemNum)
             )
             raise RuntimeError("Core already contains an assembly with the same name.")
         self.assembliesByName[aName] = a
@@ -640,7 +761,9 @@ class Core(composites.Composite):
         """
         Returns the number of rings in this reactor. Based on location so indexing will start at 1.
 
-        WARNING: If you loop through range(maxRing) then ring+1 is the one you want!!
+        Warning
+        -------
+        If you loop through range(maxRing) then ring+1 is the one you want!
 
         Parameters
         ----------
@@ -649,7 +772,6 @@ class Core(composites.Composite):
 
         When circular ring shuffling is activated, this changes interpretation.
         Developers plan on making this another method for the secondary interpretation.
-
         """
         if self.circularRingList and not indexBased:
             return max(self.circularRingList)
@@ -679,7 +801,6 @@ class Core(composites.Composite):
         nAssmWithBlanks: int
             The number of assemblies that WOULD exist in this core if
             all outer assembly hex rings were "filled out".
-
         """
         if self.powerMultiplier == 1:
             return 3 * nRings * (nRings - 1) + 1
@@ -724,9 +845,8 @@ class Core(composites.Composite):
             return 0
 
     def countFuelAxialBlocks(self):
-        r"""
-        return the maximum number of fuel type blocks in any assembly in
-        the reactor.
+        """
+        Return the maximum number of fuel type blocks in any assembly in the core.
 
         See Also
         --------
@@ -823,7 +943,6 @@ class Core(composites.Composite):
         -----
         Assumes that odd rings do not have an edge assembly in third core geometry.
         These should be removed in: self._modifyGeometryAfterLoad during importGeom
-
         """
         numAssemsUpToOuterRing = self.getNumAssembliesWithAllRingsFilledOut(ring)
         numAssemsUpToInnerRing = self.getNumAssembliesWithAllRingsFilledOut(ring - 1)
@@ -911,7 +1030,6 @@ class Core(composites.Composite):
         -------
         assems : list of assemblies
             A list of assemblies that match the criteria within the ring
-
         """
         if self.geomType == geometry.GeomType.CARTESIAN:
             # a ring in cartesian is basically a square.
@@ -1068,7 +1186,7 @@ class Core(composites.Composite):
 
         assems.extend(a for a in sorted(self, key=sortKey))
 
-        if includeSFP and hasattr(self.parent, "sfp"):
+        if includeSFP and self.parent is not None and self.parent.sfp is not None:
             assems.extend(self.parent.sfp.getChildren())
 
         if typeSpec:
@@ -1206,8 +1324,8 @@ class Core(composites.Composite):
         """
         Gets the first assembly in the reactor.
 
-        Warnings
-        --------
+        Warning
+        -------
         This function should be used with great care. There are **very** few
         circumstances in which one wants the "first" of a given sort of assembly,
         `whichever that may happen to be`. Precisely which assembly is returned is
@@ -1269,7 +1387,6 @@ class Core(composites.Composite):
 
         structureNuclides : set
             set of nuclide names
-
         """
         if not self._nuclideCategories:
             coolantNuclides = set()
@@ -1485,8 +1602,8 @@ class Core(composites.Composite):
         """
         if assemblyName:
             return self.getAssemblyByName(assemblyName)
-        for a in self.getAssemblies(*args, **kwargs):
 
+        for a in self.getAssemblies(*args, **kwargs):
             if a.getLocation() == locationString:
                 return a
             if a.getNum() == assemNum:
@@ -1507,8 +1624,6 @@ class Core(composites.Composite):
         -------
         foundAssembly : Assembly object or None
             The assembly found, or None
-
-
         """
         return self.getAssembly(assemNum=assemNum)
 
@@ -1532,7 +1647,6 @@ class Core(composites.Composite):
         -------
         pitch : float
             The assembly pitch.
-
         """
         return self.spatialGrid.pitch
 
@@ -1604,7 +1718,6 @@ class Core(composites.Composite):
         See Also
         --------
         grids.Grid.getSymmetricEquivalents
-
         """
         neighborIndices = self.spatialGrid.getNeighboringCellIndices(
             *a.spatialLocator.getCompleteIndices()
@@ -1647,6 +1760,7 @@ class Core(composites.Composite):
             duplicateAssem = self.childrenByLocator.get(neighborLocation2)
             if duplicateAssem is not None:
                 duplicates.append(duplicateAssem)
+
         # should always be 0 or 1
         nDuplicates = len(duplicates)
         if nDuplicates == 1:
@@ -1946,7 +2060,7 @@ class Core(composites.Composite):
         return meshList, True
 
     def findAllAziMeshPoints(self, extraAssems=None, applySubMesh=True):
-        r"""
+        """
         Returns a list of all azimuthal (theta)-mesh positions in the core.
 
         Parameters
@@ -1957,7 +2071,6 @@ class Core(composites.Composite):
 
         applySubMesh : bool
             generates submesh points to further discretize the theta reactor mesh
-
         """
         i, _, _ = self.findAllMeshPoints(extraAssems, applySubMesh)
         return i
@@ -1965,7 +2078,6 @@ class Core(composites.Composite):
     def findAllRadMeshPoints(self, extraAssems=None, applySubMesh=True):
         """
         Return a list of all radial-mesh positions in the core.
-
 
         Parameters
         ----------
@@ -1976,7 +2088,6 @@ class Core(composites.Composite):
         applySubMesh : bool
             (not implemented) generates submesh points to further discretize the radial
             reactor mesh
-
         """
         _, j, _ = self.findAllMeshPoints(extraAssems, applySubMesh)
         return j
@@ -2004,7 +2115,7 @@ class Core(composites.Composite):
         return max(b.getNumPins() for b in self.getBlocks())
 
     def getMinimumPercentFluxInFuel(self, target=0.005):
-        r"""
+        """
         Goes through the entire reactor to determine what percentage of flux occures at
         each ring.  Starting with the outer ring, this function helps determine the effective
         size of the core where additional assemblies will not help the breeding in the TWR.
@@ -2062,7 +2173,7 @@ class Core(composites.Composite):
         return targetRing, fluxFraction
 
     def getAvgTemp(self, typeSpec, blockList=None, flux2Weight=False):
-        r"""
+        """
         get the volume-average fuel, cladding, coolant temperature in core.
 
         Parameters
@@ -2082,7 +2193,6 @@ class Core(composites.Composite):
         -------
         avgTemp : float
             The average temperature in C.
-
         """
         num = 0.0
         denom = 0.0
@@ -2091,7 +2201,7 @@ class Core(composites.Composite):
 
         for b in blockList:
             if flux2Weight:
-                weight = b.p.flux ** 2.0
+                weight = b.p.flux**2.0
             else:
                 weight = 1.0
             for c in b.iterComponents(typeSpec):
@@ -2140,7 +2250,7 @@ class Core(composites.Composite):
         return list(allNucNames)
 
     def growToFullCore(self, cs):
-        r"""Copies symmetric assemblies to build a full core model out of a 1/3 core model.
+        """Copies symmetric assemblies to build a full core model out of a 1/3 core model.
 
         Returns
         -------
@@ -2165,7 +2275,7 @@ class Core(composites.Composite):
         self.spatialGrid.changePitch(pitchInCm)
 
     def calcBlockMaxes(self):
-        r"""
+        """
         Searches all blocks for maximum values of key params.
 
         See Also
@@ -2205,7 +2315,7 @@ class Core(composites.Composite):
         )
 
     def getFuelBottomHeight(self):
-        r"""
+        """
         Obtain the height of the lowest fuel in the core.
 
         This is the "axial coordinate shift" between ARMI and SASSYS.
@@ -2216,7 +2326,6 @@ class Core(composites.Composite):
         -------
         lowestFuelHeightInCm : float
             The height (cm) of the lowest fuel in this core model.
-
         """
         lowestFuelHeightInCm = self[0].getHeight()
         fuelBottoms = []
@@ -2248,6 +2357,7 @@ class Core(composites.Composite):
         --------
         updateAxialMesh : Perturbs the axial mesh originally set up here.
         """
+        self.setOptionsFromCs(cs)
         runLog.header(
             "=========== Initializing Mesh, Assembly Zones, and Nuclide Categories =========== "
         )
@@ -2271,7 +2381,8 @@ class Core(composites.Composite):
         else:
             # set reactor level meshing params
             nonUniformAssems = [
-                Flags.fromStringIgnoreErrors(t) for t in cs["nonUniformAssemFlags"]
+                Flags.fromStringIgnoreErrors(t)
+                for t in cs[CONF_NON_UNIFORM_ASSEM_FLAGS]
             ]
             # some assemblies, like control assemblies, have a non-conforming mesh
             # and should not be included in self.p.referenceBlockAxialMesh and self.p.axialMesh
@@ -2296,7 +2407,7 @@ class Core(composites.Composite):
         # Generate list of flags that are to be stationary during assembly shuffling
         stationaryBlockFlags = []
 
-        for stationaryBlockFlagString in cs["stationaryBlockFlags"]:
+        for stationaryBlockFlagString in cs[CONF_STATIONARY_BLOCK_FLAGS]:
             stationaryBlockFlags.append(Flags.fromString(stationaryBlockFlagString))
 
         self.stationaryBlockFlagsList = stationaryBlockFlags
@@ -2341,7 +2452,7 @@ class Core(composites.Composite):
         self.zones = zones.Zones()
 
         # parse the special input string for zone definitions
-        for zoneString in cs["zoneDefinitions"]:
+        for zoneString in cs[CONF_ZONE_DEFINITIONS]:
             zoneName, zoneLocs = zoneString.split(":")
             zoneLocs = zoneLocs.split(",")
             zone = zones.Zone(zoneName.strip())

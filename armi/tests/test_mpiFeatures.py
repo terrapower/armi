@@ -159,7 +159,6 @@ class MpiDistributeStateTests(unittest.TestCase):
         self.cs = settings.Settings(fName=ARMI_RUN_PATH)
         bp = blueprints.loadFromCs(self.cs)
 
-        settings.setMasterCs(self.cs)
         self.o = OperatorMPI(self.cs)
         self.o.r = reactors.factory(self.cs, bp)
         self.action = DistributeStateAction()

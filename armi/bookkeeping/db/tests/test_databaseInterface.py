@@ -53,7 +53,6 @@ def getSimpleDBOperator(cs):
     newSettings["nCycles"] = 1
     cs = cs.modified(newSettings=newSettings)
     genDBCase = case.Case(cs)
-    settings.setMasterCs(cs)
     runLog.setVerbosity("info")
 
     o = genDBCase.initializeOperator()
@@ -129,6 +128,7 @@ class TestDatabaseWriter(unittest.TestCase):
         self.td = directoryChangers.TemporaryDirectoryChanger()
         self.td.__enter__()
         cs = settings.Settings(os.path.join(TEST_ROOT, "armiRun.yaml"))
+        cs = cs.modified(newSettings={"power": 0.0, "powerDensity": 9e4})
         self.o, cs = getSimpleDBOperator(cs)
         self.r = self.o.r
 
@@ -138,6 +138,9 @@ class TestDatabaseWriter(unittest.TestCase):
     def test_metaData_endSuccessfully(self):
         def goodMethod(cycle, node):
             pass
+
+        # the power should start at zero
+        self.assertEqual(self.r.core.p.power, 0)
 
         self.o.interfaces.append(MockInterface(self.o.r, self.o.cs, goodMethod))
         with self.o:
@@ -158,6 +161,9 @@ class TestDatabaseWriter(unittest.TestCase):
             self.assertIn("geomFile", h5["inputs"])
             self.assertIn("settings", h5["inputs"])
             self.assertIn("blueprints", h5["inputs"])
+
+        # after operating, the power will be greater than zero
+        self.assertGreater(self.r.core.p.power, 1e9)
 
     def test_metaDataEndFail(self):
         def failMethod(cycle, node):
@@ -256,8 +262,6 @@ class TestDatabaseReading(unittest.TestCase):
         newSettings["burnSteps"] = 2
         o, r = loadTestReactor(customSettings=newSettings)
         reduceTestReactorRings(r, o.cs, 3)
-
-        settings.setMasterCs(o.cs)
 
         o.interfaces = [i for i in o.interfaces if isinstance(i, (DatabaseInterface))]
         dbi = o.getInterface("database")

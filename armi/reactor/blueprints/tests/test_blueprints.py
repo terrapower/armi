@@ -199,6 +199,25 @@ grids:
             2 2 2 2 2
 """
 
+    def test_noDuplicateKeysInYamlBlueprints(self):
+        """
+        Prove that if you duplicate a section of a YAML blueprint file,
+        a hard error will be thrown.
+        """
+        # loop through a few different sections, to test blueprints broadly
+        sections = ["blocks:", "components:", "component groups:"]
+        for sectionName in sections:
+            # modify blueprint YAML to duplicate this section
+            yamlString = str(self._yamlString)
+            i = yamlString.find(sectionName)
+            lenSection = yamlString[i:].find("\n\n")
+            section = yamlString[i : i + lenSection]
+            yamlString = yamlString[:i] + section + yamlString[i : i + lenSection]
+
+            # validate that this is now an invalid YAML blueprint
+            with self.assertRaises(Exception):
+                _design = blueprints.Blueprints.load(yamlString)
+
     def test_assemblyParameters(self):
         cs = settings.Settings()
         design = blueprints.Blueprints.load(self._yamlString)

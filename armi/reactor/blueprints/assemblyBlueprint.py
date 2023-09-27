@@ -192,6 +192,29 @@ class AssemblyBlueprint(yamlize.Object):
 
         return a
 
+    @staticmethod
+    def _shouldMaterialModiferBeApplied(value) -> bool:
+        """Determine if a material modifier entry is applicable.
+
+        Two exceptions:
+
+        1. Modifiers that are empty strings are not applied.
+        2. Modifiers that are ``None`` are not applied
+
+        Parameters
+        ----------
+        value : object
+            Entry in a material modifications array
+
+        Returns
+        -------
+        bool
+            Result of the check
+        """
+        if value != "" and value is not None:
+            return True
+        return False
+
     def _createBlock(self, cs, blueprint, bDesign, axialIndex):
         """Create a block based on the block design and the axial index."""
         meshPoints = self.axialMeshPoints[axialIndex]
@@ -207,14 +230,13 @@ class AssemblyBlueprint(yamlize.Object):
             materialInput[key] = {
                 modName: modList[axialIndex]
                 for modName, modList in mod.items()
-                if modList[axialIndex] != ""
+                if self._shouldMaterialModiferBeApplied(modList[axialIndex])
             }
 
         b = bDesign.construct(
             cs, blueprint, axialIndex, meshPoints, height, xsType, materialInput
         )
 
-        # TODO: remove when the plugin system is fully set up?
         b.completeInitialLoading()
 
         # set b10 volume cc since its a cold dim param

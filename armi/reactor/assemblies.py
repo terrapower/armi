@@ -20,6 +20,7 @@ Generally, blocks are stacked from bottom to top.
 import copy
 import math
 import pickle
+from random import randint
 
 import numpy
 from scipy import interpolate
@@ -32,31 +33,6 @@ from armi.reactor import composites
 from armi.reactor import grids
 from armi.reactor.flags import Flags
 from armi.reactor.parameters import ParamLocation
-
-# to count the blocks that we create and generate a block number
-_assemNum = 0
-
-
-def incrementAssemNum():
-    global _assemNum  # tracked on a  module level
-    val = _assemNum  # return value before incrementing.
-    _assemNum += 1
-    return val
-
-
-def getAssemNum():
-    global _assemNum
-    return _assemNum
-
-
-def resetAssemNumCounter():
-    setAssemNumCounter(0)
-
-
-def setAssemNumCounter(val):
-    runLog.extra("Resetting global assembly number to {0}".format(val))
-    global _assemNum
-    _assemNum = val
 
 
 class Assembly(composites.Composite):
@@ -80,8 +56,7 @@ class Assembly(composites.Composite):
     SPENT_FUEL_POOL = "SFP"
     # For assemblies coming in from the database, waiting to be loaded to their old
     # position. This is a necessary distinction, since we need to make sure that a bunch
-    # of fuel management stuff doesn't treat its re-placement into the core as a new
-    # move
+    # of fuel management stuff doesn't treat its re-placement into the core as a new move
     DATABASE = "database"
     NOT_IN_CORE = [LOAD_QUEUE, SPENT_FUEL_POOL]
 
@@ -93,11 +68,13 @@ class Assembly(composites.Composite):
             Name of assembly design (e.g. the name from the blueprints input file).
 
         assemNum : int, optional
-            The unique ID number of this assembly. If none is passed, the class-level
-            value will be taken and then incremented.
+            The unique ID number of this assembly. If None is provided, we generate a
+            random int. This makes it clear that it is a placeholder. When an assembly with
+            a negative ID is placed into a Reactor, it will be given a new, positive ID.
         """
+        # If no assembly number is provided, generate a random number as a placeholder.
         if assemNum is None:
-            assemNum = incrementAssemNum()
+            assemNum = randint(-9e12, -1)
         name = self.makeNameFromAssemNum(assemNum)
         composites.Composite.__init__(self, name)
         self.p.assemNum = assemNum
@@ -137,18 +114,24 @@ class Assembly(composites.Composite):
         except ValueError:
             return False
 
-    def makeUnique(self):
+    def renameBlocksAccordingToAssemblyNum(self):
         """
-        Function to make an assembly unique by getting a new assembly number.
+        Updates the names of all blocks to comply with the assembly number.
 
-        This also adjusts the assembly's blocks IDs. This is necessary when using
-        ``deepcopy`` to get a unique ``assemNum`` since a deepcopy implies it would
-        otherwise have been the same object.
+        Useful after an assembly number/name has been loaded from a snapshot and you
+        want to update all block names to be consistent.
+
+        It may be better to store block numbers on each block as params. A database that
+        can hold strings would be even better.
+
+        Notes
+        -----
+        You must run armi.reactor.reactors.Reactor.regenAssemblyLists after calling
+        this.
         """
-        self.p.assemNum = incrementAssemNum()
-        self.name = self.makeNameFromAssemNum(self.p.assemNum)
+        assemNum = self.getNum()
         for bi, b in enumerate(self):
-            b.setName(b.makeName(self.p.assemNum, bi))
+            b.setName(b.makeName(assemNum, bi))
 
     @staticmethod
     def makeNameFromAssemNum(assemNum):
@@ -157,8 +140,35 @@ class Assembly(composites.Composite):
 
         AssemNums are like serial numbers for assemblies.
         """
-        name = "A{0:04d}".format(int(assemNum))
-        return name
+        return "A{0:04d}".format(int(assemNum))
+
+    def renumber(self, newNum):
+        """
+        Change the assembly number of this assembly.
+
+        And handle the downstream impacts of changing the name of this Assembly and all
+        of the Blocks within this Assembly.
+
+        Parameters
+        ----------
+        newNum : int
+            The new Assembly number.
+        """
+        self.p.assemNum = int(newNum)
+        self.name = self.makeNameFromAssemNum(self.p.assemNum)
+        self.renameBlocksAccordingToAssemblyNum()
+
+    def makeUnique(self):
+        """
+        Function to make an assembly unique by getting a new assembly number.
+
+        This also adjusts the assembly's blocks IDs. This is necessary when using
+        ``deepcopy`` to get a unique ``assemNum`` since a deepcopy implies it would
+        otherwise have been the same object.
+        """
+        # Default to a random negative assembly number (unique enough)
+        self.p.assemNum = randint(-9e12, -1)
+        self.renumber(self.p.assemNum)
 
     def add(self, obj):
         """
@@ -169,8 +179,7 @@ class Assembly(composites.Composite):
         """
         composites.Composite.add(self, obj)
         obj.spatialLocator = self.spatialGrid[0, 0, len(self) - 1]
-        # assemblies have bounds-based 1-D spatial grids. Adjust it to have the right
-        # value.
+        # assemblies have bounds-based 1-D spatial grids. Adjust it to the right value.
         if len(self.spatialGrid._bounds[2]) < len(self):
             self.spatialGrid._bounds[2][len(self)] = (
                 self.spatialGrid._bounds[2][len(self) - 1] + obj.getHeight()
@@ -1131,25 +1140,6 @@ class Assembly(composites.Composite):
             b.spatialLocator = self.spatialGrid[0, 0, zi]
             # update the name too. NOTE: You must update the history tracker.
             b.setName(b.makeName(self.p.assemNum, zi))
-
-    def renameBlocksAccordingToAssemblyNum(self):
-        """
-        Updates the names of all blocks to comply with the assembly number.
-
-        Useful after an assembly number/name has been loaded from a snapshot and you
-        want to update all block names to be consistent.
-
-        It may be better to store block numbers on each block as params. A database that
-        can hold strings would be even better.
-
-        Notes
-        -----
-        You must run armi.reactor.reactors.Reactor.regenAssemblyLists after calling
-        this.
-        """
-        assemNum = self.getNum()
-        for bi, b in enumerate(self):
-            b.setName(b.makeName(assemNum, bi))
 
     def countBlocksWithFlags(self, blockTypeSpec=None):
         """

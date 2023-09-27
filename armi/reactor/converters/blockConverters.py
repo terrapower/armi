@@ -445,7 +445,7 @@ class BlockAvgToCylConverter(BlockConverter):
                     circleComp, innerR, outerR
                 )
             )
-            circle = Wedge((0.0, 0.0), outerR, 0, 360.0, outerR - innerR)
+            circle = Wedge((0.0, 0.0), outerR, 0, 360.0, width=outerR - innerR)
             patches.append(circle)
             colors.append(circleComp.density())
         colorMap = matplotlib.cm
@@ -701,7 +701,7 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
 
 def getOuterDiamFromIDAndArea(ID, area):
     """Return the outer diameter of an annulus with given inner diameter (ID) and area."""
-    return math.sqrt(ID ** 2.0 + 4.0 * area / math.pi)  # from A = pi *(d ** 2)/4.0
+    return math.sqrt(ID**2.0 + 4.0 * area / math.pi)  # from A = pi *(d ** 2)/4.0
 
 
 def radiiFromHexPitches(pitches):
@@ -761,7 +761,7 @@ def radiiFromRingOfRods(distToRodCenter, numRods, rodRadii, layout="hexagon"):
     radiiFromRodCenter = []
     rLast = bigRLast = 0.0
     for rodRadius in rodRadii:
-        area = math.pi * (rodRadius ** 2.0 - rLast ** 2.0) * float(numRods)
+        area = math.pi * (rodRadius**2.0 - rLast**2.0) * float(numRods)
         thicknessOnEachSide = area / (4 * math.pi * radToRodCenter)
         distFromCenterComp = bigRLast + thicknessOnEachSide
         radiiFromRodCenter.append(radToRodCenter + distFromCenterComp)

@@ -86,6 +86,13 @@ def defineReactorParameters():
             "timeNode", units=units.UNITLESS, description="Integer timeNode", default=0
         )
 
+        pb.defParam(
+            "maxAssemNum",
+            units=units.UNITLESS,
+            description="Max number of assemblies created so far in the Reactor (integer)",
+            default=0,
+        )
+
     with pDefs.createBuilder(
         location=ParamLocation.AVERAGE, default=0.0, categories=["economics"]
     ) as pb:
@@ -357,6 +364,14 @@ def defineCoreParameters():
             units=units.WATTS,
             description="Thermal power of the reactor core. Corresponds to the "
             "nuclear power generated in the core.",
+        )
+
+        pb.defParam(
+            "powerDensity",
+            units=f"{units.WATTS}/{units.GRAMS}",
+            description="BOL Power density of the reactor core, in units of Watts per"
+            "grams of Heavy Metal Mass. After the BOL, the power parameter will be set, "
+            "and this will entirely overridden by that.",
         )
 
         pb.defParam(

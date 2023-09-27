@@ -13,10 +13,10 @@
 # limitations under the License.
 
 """Tests assemblies.py."""
+import numpy as np
 import pathlib
 import random
 import unittest
-import numpy as np
 from numpy.testing import assert_allclose
 
 from armi import settings
@@ -41,8 +41,6 @@ from armi.tests import TEST_ROOT, mockRunLogs
 from armi.utils import directoryChangers
 from armi.utils import textProcessors
 from armi.reactor.tests import test_reactors
-from armi.reactor.assemblies import getAssemNum
-from armi.reactor.assemblies import resetAssemNumCounter
 from armi.physics.neutronics.settings import (
     CONF_LOADING_FILE,
     CONF_XS_KERNEL,
@@ -60,8 +58,7 @@ def buildTestAssemblies():
         * One with half UZr pins and half UTh pins
         * One with all UThZr pins
     """
-    caseSetting = settings.Settings()
-    settings.setMasterCs(caseSetting)
+    settings.Settings()
 
     temperature = 273.0
     fuelID = 0.0
@@ -287,12 +284,6 @@ class Assembly_TestCase(unittest.TestCase):
 
         self.assembly.p.notes = tooLongNote
         self.assertEqual(self.assembly.p.notes, tooLongNote[0:1000])
-
-    def test_resetAssemNumCounter(self):
-        resetAssemNumCounter()
-        cur = 0
-        ref = getAssemNum()
-        self.assertEqual(cur, ref)
 
     def test_iter(self):
         cur = []
@@ -1290,7 +1281,6 @@ class AnnularFuelTestCase(unittest.TestCase):
         newSettings = {CONF_XS_KERNEL: "MC2v2"}  # don't try to expand elementals
         self.cs = self.cs.modified(newSettings=newSettings)
 
-        settings.setMasterCs(self.cs)
         bp = blueprints.Blueprints()
         self.r = reactors.Reactor("test", bp)
         self.r.add(reactors.Core("Core"))
@@ -1370,6 +1360,6 @@ assemblies:
         intercoolant = fuelBlock.getComponent(Flags.INTERCOOLANT)
 
         bpAssemblyArea = assembly.getArea()
-        actualAssemblyArea = math.sqrt(3) / 2.0 * intercoolant.p.op ** 2
+        actualAssemblyArea = math.sqrt(3) / 2.0 * intercoolant.p.op**2
 
         self.assertAlmostEqual(bpAssemblyArea, actualAssemblyArea)

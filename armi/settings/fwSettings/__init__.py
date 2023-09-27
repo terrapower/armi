@@ -16,9 +16,9 @@
 from typing import List
 
 from armi.settings import setting
-from . import globalSettings
-from . import databaseSettings
-from . import reportSettings
+from armi.settings.fwSettings import globalSettings
+from armi.settings.fwSettings import databaseSettings
+from armi.settings.fwSettings import reportSettings
 
 
 def getFrameworkSettings() -> List[setting.Setting]:

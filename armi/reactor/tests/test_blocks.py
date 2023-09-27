@@ -75,7 +75,6 @@ def buildSimpleFuelBlock():
 def loadTestBlock(cold=True):
     """Build an annular test block for evaluating unit tests."""
     caseSetting = settings.Settings()
-    settings.setMasterCs(caseSetting)
     caseSetting[CONF_XS_KERNEL] = "MC2v2"
     runLog.setVerbosity("error")
     caseSetting["nCycles"] = 1
@@ -1583,7 +1582,7 @@ class Block_TestCase(unittest.TestCase):
         self.assertAlmostEqual(
             blockPitch, self.block.getComponent(Flags.INTERCOOLANT).getDimension("op")
         )
-        totalHexArea = blockPitch ** 2 * math.sqrt(3) / 2.0
+        totalHexArea = blockPitch**2 * math.sqrt(3) / 2.0
 
         clad = self.block.getComponent(Flags.CLAD)
         pinArea = (
@@ -1760,7 +1759,7 @@ class HexBlock_TestCase(unittest.TestCase):
 
     def test_getArea(self):
         cur = self.HexBlock.getArea()
-        ref = math.sqrt(3) / 2.0 * 70.6 ** 2
+        ref = math.sqrt(3) / 2.0 * 70.6**2
         places = 6
         self.assertAlmostEqual(cur, ref, places=places)
 
@@ -1839,7 +1838,7 @@ class HexBlock_TestCase(unittest.TestCase):
         self.assertGreater(min(x), -side)
 
         # center pin should be at 0
-        mags = [(xi ** 2 + yi ** 2, (xi, yi)) for xi, yi, zi in xyz]
+        mags = [(xi**2 + yi**2, (xi, yi)) for xi, yi, zi in xyz]
         _centerMag, (cx, cy) = min(mags)
         self.assertAlmostEqual(cx, 0.0)
         self.assertAlmostEqual(cy, 0.0)

@@ -91,7 +91,7 @@ def autodoc_skip_member_handler(app, what, name, obj, skip, options):
 
 
 def setup(app):
-    """Method to make `python setup.py build_sphinx` generate api documentation."""
+    """Method to make `make html` generate api documentation."""
     app.connect("autodoc-skip-member", autodoc_skip_member_handler)
 
     app.add_domain(PatchedPythonDomain, override=True)
