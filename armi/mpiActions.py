@@ -52,12 +52,11 @@ sends it to the workers, and then both the primary and the workers
 
 In order to create a new, custom MPI Action, inherit from :py:class:`~armi.mpiActions.MpiAction`,
 and override the :py:meth:`~armi.mpiActions.MpiAction.invokeHook` method.
-
 """
 import collections
 import gc
-import timeit
 import math
+import timeit
 
 from six.moves import cPickle
 import tabulate
@@ -583,7 +582,6 @@ class DistributeStateAction(MpiAction):
             raise RuntimeError("Failed to transmit settings, received: {}".format(cs))
 
         if context.MPI_RANK != 0:
-            settings.setMasterCs(cs)
             self.o.cs = cs
         return cs
 

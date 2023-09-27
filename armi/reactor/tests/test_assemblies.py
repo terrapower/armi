@@ -13,10 +13,10 @@
 # limitations under the License.
 
 """Tests assemblies.py."""
+import numpy as np
 import pathlib
 import random
 import unittest
-import numpy as np
 from numpy.testing import assert_allclose
 
 from armi import settings
@@ -58,8 +58,7 @@ def buildTestAssemblies():
         * One with half UZr pins and half UTh pins
         * One with all UThZr pins
     """
-    caseSetting = settings.Settings()
-    settings.setMasterCs(caseSetting)
+    settings.Settings()
 
     temperature = 273.0
     fuelID = 0.0
@@ -1282,7 +1281,6 @@ class AnnularFuelTestCase(unittest.TestCase):
         newSettings = {CONF_XS_KERNEL: "MC2v2"}  # don't try to expand elementals
         self.cs = self.cs.modified(newSettings=newSettings)
 
-        settings.setMasterCs(self.cs)
         bp = blueprints.Blueprints()
         self.r = reactors.Reactor("test", bp)
         self.r.add(reactors.Core("Core"))
