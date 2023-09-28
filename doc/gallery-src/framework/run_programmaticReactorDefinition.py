@@ -36,7 +36,6 @@ from armi import configure
 configure(permissive=True)
 
 from armi import cases
-from armi import settings
 from armi.reactor import blueprints
 from armi.reactor.blueprints import assemblyBlueprint
 from armi.reactor.blueprints import blockBlueprint
@@ -61,7 +60,6 @@ def buildCase():
     bp.systemDesigns = buildSystems()
 
     cs = caseSettings.Settings()
-    settings.setMasterCs(cs)  # remove once we eliminate masterCs
     cs.path = None
     cs.caseTitle = "scripted-case"
     case = cases.Case(cs=cs, bp=bp)

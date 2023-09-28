@@ -75,7 +75,6 @@ def buildSimpleFuelBlock():
 def loadTestBlock(cold=True):
     """Build an annular test block for evaluating unit tests."""
     caseSetting = settings.Settings()
-    settings.setMasterCs(caseSetting)
     caseSetting[CONF_XS_KERNEL] = "MC2v2"
     runLog.setVerbosity("error")
     caseSetting["nCycles"] = 1

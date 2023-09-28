@@ -94,7 +94,6 @@ class EntryPoint:
             )
 
         self.cs = self._initSettings()
-        settings.setMasterCs(self.cs)
 
         self.parser = argparse.ArgumentParser(
             prog="{} {}".format(context.APP_NAME, self.name),
