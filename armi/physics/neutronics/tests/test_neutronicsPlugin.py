@@ -264,8 +264,8 @@ class NeutronicsReactorTests(unittest.TestCase):
         sv = getNeutronicsSettingValidators(inspector)
         self.assertEqual(len(sv), 9)
 
-        # Test the Query: boundaries are now "Extrapolated", not "Normal"
-        cs = cs.modified(newSettings={CONF_BOUNDARIES: "Normal"})
+        # Test the Query: boundaries are now "Extrapolated", not "Generalized"
+        cs = cs.modified(newSettings={CONF_BOUNDARIES: "Generalized"})
         inspector = settingsValidation.Inspector(cs)
         sv = getNeutronicsSettingValidators(inspector)
 

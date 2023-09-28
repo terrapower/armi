@@ -155,6 +155,7 @@ def defineSettings():
                 "ZeroInwardCurrent",
                 "Generalized",
             ],
+            enforcedOptions=True,
         ),
         setting.Setting(
             CONF_NEUTRONICS_KERNEL,
