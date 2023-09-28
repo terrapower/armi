@@ -142,8 +142,6 @@ def init(choice=None, fName=None, cs=None):
         if fName is None:
             fName = settings.promptForSettingsFile(choice)
         cs = settings.Settings(fName)
-    # clear out any old masterCs objects
-    settings.setMasterCs(cs)
 
     armiCase = cases.Case(cs=cs)
     armiCase.checkInputs()
