@@ -128,7 +128,7 @@ repos on GitHub.
 Every release should follow this process:
 
 1. Ensure all unit tests pass and the documentation is building correctly.
-2. Bump the ``__version__`` string in ``armi/meta.py``.
+2. Bump the ``version`` string in ``pyproject.toml``.
 3. Add release notes to the documentation:
    `here <https://github.com/terrapower/armi/tree/main/doc/release>`__.
 4. Tag the commit after it goes into the repo:
