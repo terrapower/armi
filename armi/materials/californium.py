@@ -23,14 +23,9 @@ from armi.materials.material import SimpleSolid
 
 
 class Californium(SimpleSolid):
-
-    name = "Californium"
-
     def setDefaultMassFracs(self):
         self.setMassFrac("CF252", 1.0)
 
     def density(self, Tk=None, Tc=None):
-        """
-        https://en.wikipedia.org/wiki/Californium.
-        """
+        """https://en.wikipedia.org/wiki/Californium."""
         return 15.1  # g/cm3

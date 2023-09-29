@@ -31,13 +31,11 @@ from typing import Dict, Union
 
 import voluptuous as vol
 
+from armi import context
 from armi import runLog
 from armi.physics.neutronics import crossSectionGroupManager
 from armi.physics.neutronics.crossSectionGroupManager import BLOCK_COLLECTIONS
 from armi.settings import Setting
-from armi import context
-
-from armi.settings.fwSettings.globalSettings import CONF_RUN_TYPE
 
 CONF_BLOCK_REPRESENTATION = "blockRepresentation"
 CONF_BLOCKTYPES = "validBlockTypes"
@@ -228,7 +226,6 @@ class XSSettings(dict):
 
         Notes
         -----
-
         1. If ``AA`` and ``AB`` exist, but ``AC`` is created, then the intended behavior
            is that ``AC`` settings will be set to the settings in ``AA``.
 
@@ -430,6 +427,7 @@ class XSModelingOptions:
         The minimum number density for nuclides included in driver material for a 1D
         lattice physics model.
 
+    Notes
     -----
     Not all default attributes may be useful for your specific application and you may
     require other types of configuration options. These are provided as examples since
@@ -632,7 +630,7 @@ class XSModelingOptions:
                 crossSectionGroupManager.AVERAGE_BLOCK_COLLECTION,
                 crossSectionGroupManager.FLUX_WEIGHTED_AVERAGE_BLOCK_COLLECTION,
             ]
-            bucklingSearch = False if self.fluxIsPregenerated else True
+            bucklingSearch = not self.fluxIsPregenerated
             defaults = {
                 CONF_GEOM: self.geometry,
                 CONF_BUCKLING: bucklingSearch,

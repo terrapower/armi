@@ -105,9 +105,7 @@ class SmearDensityModifier(_PinTypeAssemblyModifier):
 
 
 class CladThicknessByODModifier(_PinTypeAssemblyModifier):
-    """
-    Adjust the cladding thickness by adjusting the inner diameter of all cladding components.
-    """
+    """Adjust the cladding thickness by adjusting the inner diameter of all cladding components."""
 
     FAIL_IF_AFTER = (SmearDensityModifier,)
 
@@ -120,9 +118,7 @@ class CladThicknessByODModifier(_PinTypeAssemblyModifier):
 
 
 class CladThicknessByIDModifier(_PinTypeAssemblyModifier):
-    """
-    Adjust the cladding thickness by adjusting the outer diameter of the cladding component.
-    """
+    """Adjust the cladding thickness by adjusting the outer diameter of the cladding component."""
 
     FAIL_IF_AFTER = (SmearDensityModifier,)
 

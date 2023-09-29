@@ -17,15 +17,15 @@ Helpers for sphinx documentation.
 Can be used by armi docs or docs of anything else that
 can import armi.
 """
-import sys
-import inspect
 import datetime
+import inspect
 import os
-import subprocess
 import shutil
+import subprocess
+import sys
 
-from docutils.parsers.rst import Directive, directives
 from docutils import nodes, statemachine
+from docutils.parsers.rst import Directive, directives
 
 APIDOC_DIR = ".apidocs"
 
@@ -147,7 +147,7 @@ class PyReverse(Directive):
             args.append(f"{args[0]}")
             args.append("-opng")
 
-            # cannot use "pylint.pyreverse.main.Run" because it calls `sys.exit`. why?
+            # NOTE: cannot use "pylint.pyreverse.main.Run" because it calls `sys.exit`.
             fig_name = self.options.get("filename", "classes_{}.png".format(args[0]))
             command = [sys.executable, "-m", "pylint.pyreverse.main"]
             print("Running {}".format(command + args))
@@ -159,7 +159,7 @@ class PyReverse(Directive):
 
             try:
                 os.remove(os.path.join(APIDOC_DIR, fig_name))
-            except:
+            except OSError:
                 pass
 
             shutil.move(fig_name, APIDOC_DIR)
@@ -173,7 +173,7 @@ class PyReverse(Directive):
             # assume we don't need the packages_, and delete.
             try:
                 os.remove("packages_{}.png".format(args[0]))
-            except:
+            except OSError:
                 pass
 
             # pass the other args through (figure args like align)

@@ -118,7 +118,6 @@ class Block(composites.Composite):
             "displacementX",
             "displacementY",
             "fluxAdj",
-            "bu",
             "buRate",
             "eqRegion",
             "fissileFraction",
@@ -201,7 +200,6 @@ class Block(composites.Composite):
         ValueError
             If the parent of the block's ``core`` is not an ``armi.reactor.reactors.Reactor``.
         """
-
         from armi.reactor.reactors import Reactor
 
         core = self.core
@@ -260,7 +258,7 @@ class Block(composites.Composite):
         inner cladding area.
 
         Parameters
-        -----------
+        ----------
         cold : bool, optional
             If false, returns the smear density at hot temperatures
 
@@ -268,7 +266,6 @@ class Block(composites.Composite):
         -------
         smearDensity : float
             The smear density as a fraction
-
         """
         fuels = self.getComponents(Flags.FUEL)
         if not fuels:
@@ -292,7 +289,7 @@ class Block(composites.Composite):
         # Compute component areas
         cladID = numpy.mean([clad.getDimension("id", cold=cold) for clad in clads])
         innerCladdingArea = (
-            math.pi * (cladID ** 2) / 4.0 * self.getNumComponents(Flags.FUEL)
+            math.pi * (cladID**2) / 4.0 * self.getNumComponents(Flags.FUEL)
         )
         fuelComponentArea = 0.0
         unmovableComponentArea = 0.0
@@ -465,7 +462,7 @@ class Block(composites.Composite):
             return xsType + bu
         elif len(xsType) == 2 and ord(bu) > ord("A"):
             raise ValueError(
-                f"Use of multiple burnup groups is not allowed with multi-character xs groups!"
+                "Use of multiple burnup groups is not allowed with multi-character xs groups!"
             )
         else:
             return xsType
@@ -564,6 +561,8 @@ class Block(composites.Composite):
         newEnrich : float
             New U-235 enrichment in mass fraction
 
+        Notes
+        -----
         completeInitialLoading must be run because adjusting the enrichment actually
         changes the mass slightly and you can get negative burnups, which you do not want.
         """
@@ -802,7 +801,6 @@ class Block(composites.Composite):
 
         hmDens = bolBlock.getHMDens()  # total homogenized heavy metal number density
         self.p.nHMAtBOL = hmDens
-
         self.p.molesHmBOL = self.getHMMoles()
         self.p.puFrac = (
             self.getPuMoles() / self.p.molesHmBOL if self.p.molesHmBOL > 0.0 else 0.0
@@ -813,6 +811,7 @@ class Block(composites.Composite):
             self.p.smearDensity = self.getSmearDensity()
         except ValueError:
             pass
+
         self.p.enrichmentBOL = self.getFissileMassEnrich()
         massHmBOL = 0.0
         sf = self.getSymmetryFactor()
@@ -822,8 +821,51 @@ class Block(composites.Composite):
             # Components have a massHmBOL parameter but not every composite will
             if isinstance(child, components.Component):
                 child.p.massHmBOL = hmMass
+
         self.p.massHmBOL = massHmBOL
+
         return hmDens
+
+    def setB10VolParam(self, heightHot):
+        """
+        Set the b.p.initialB10ComponentVol param according to the volume of boron-10 containing components.
+
+        Parameters
+        ----------
+        heightHot : Boolean
+            True if self.height() is cold height
+        """
+        # exclude fuel components since they could have slight B10 impurity and
+        # this metric is not relevant for fuel.
+        b10Comps = [c for c in self if c.getNumberDensity("B10") and not c.isFuel()]
+        if not b10Comps:
+            return
+
+        # get the highest density comp dont want to sum all because some
+        # comps might have very small impurities of boron and adding this
+        # volume wont be conservative for captures per cc.
+        b10Comp = sorted(b10Comps, key=lambda x: x.getNumberDensity("B10"))[-1]
+
+        if len(b10Comps) > 1:
+            runLog.warning(
+                f"More than one boron10-containing component found  in {self.name}. "
+                f"Only {b10Comp} will be considered for calculation of initialB10ComponentVol "
+                "Since adding multiple volumes is not conservative for captures/cc."
+                f"All compos found {b10Comps}",
+                single=True,
+            )
+        if self.isFuel():
+            runLog.warning(
+                f"{self.name} has both fuel and initial b10. "
+                "b10 volume may not be conserved with axial expansion.",
+                single=True,
+            )
+
+        # calc volume of boron components
+        coldArea = b10Comp.getArea(cold=True)
+        coldFactor = b10Comp.getThermalExpansionFactor() if heightHot else 1
+        coldHeight = self.getHeight() / coldFactor
+        self.p.initialB10ComponentVol = coldArea * coldHeight
 
     def replaceBlockWithBlock(self, bReplacement):
         """
@@ -1060,7 +1102,6 @@ class Block(composites.Composite):
         when a control rod is specified as a certain length but that length does not fit exactly
         into a full block.
         """
-
         numDensities = self.getNumberDensities()
         otherBlockDensities = otherBlock.getNumberDensities()
         newDensities = {}
@@ -1083,7 +1124,7 @@ class Block(composites.Composite):
             Component types to look up
 
         Examples
-        ---------
+        --------
         >>> b.getComponentAreaFrac(Flags.CLAD)
         0.15
 
@@ -1375,7 +1416,6 @@ class Block(composites.Composite):
         armi.reactor.components.Parameters
         armi.physics.optimize.OptimizationInterface.modifyCase (look up 'ThRZReflectorThickness')
         """
-
         for c in self.getComponentsInLinkedOrder():
             try:
                 c.updateDims()
@@ -1459,7 +1499,6 @@ class Block(composites.Composite):
         integratedFlux : numpy.array
             multigroup neutron tracklength in [n-cm/s]
         """
-
         if adjoint:
             if gamma:
                 raise ValueError("Adjoint gamma flux is currently unsupported.")
@@ -1585,7 +1624,6 @@ class HexBlock(Block):
         --------
         armi.reactor.converters.uniformMesh.UniformMeshGeometryConverter.makeAssemWithUniformMesh
         """
-
         b = self.__class__(self.getName(), height=self.getHeight())
         b.setType(self.getType(), self.p.flags)
 
@@ -1930,13 +1968,6 @@ class HexBlock(Block):
                     pinToDuctGap, self
                 )
             )
-            wire = self.getComponent(Flags.WIRE)
-            wireThicknesses = wire.getDimension("od", cold=False)
-            if pinToDuctGap < wireThicknesses:
-                raise ValueError(
-                    "Gap between pins and duct is {0:.4f} cm in {1} which does not allow room for the wire "
-                    "with diameter {2}".format(pinToDuctGap, self, wireThicknesses)
-                )
         elif pinToDuctGap is None:
             # only produce a warning if pin or clad are found, but not all of pin, clad and duct. We
             # may need to tune this logic a bit
@@ -1995,9 +2026,7 @@ class HexBlock(Block):
         return pinToDuctGap
 
     def getRotationNum(self):
-        """
-        Get index 0 through 5 indicating number of rotations counterclockwise around the z-axis.
-        """
+        """Get index 0 through 5 indicating number of rotations counterclockwise around the z-axis."""
         return (
             numpy.rint(self.p.orientation[2] / 360.0 * 6) % 6
         )  # assume rotation only in Z
@@ -2024,10 +2053,9 @@ class HexBlock(Block):
 
         If this block is not in any grid at all, then there can be no symmetry so return 1.
         """
-
         try:
             symmetry = self.parent.spatialLocator.grid.symmetry
-        except:
+        except:  # noqa: bare-except
             return 1.0
         if (
             symmetry.domain == geometry.DomainType.THIRD_CORE
@@ -2044,14 +2072,10 @@ class HexBlock(Block):
                 # seeing the first one is the easiest way to detect them.
                 # Check it last in the and statement so we don't waste time doing it.
                 upperEdgeLoc = self.core.spatialGrid[-1, 2, 0]
-                if (
-                    symmetryLine
-                    in [
-                        grids.BOUNDARY_0_DEGREES,
-                        grids.BOUNDARY_120_DEGREES,
-                    ]
-                    and bool(self.core.childrenByLocator.get(upperEdgeLoc))
-                ):
+                if symmetryLine in [
+                    grids.BOUNDARY_0_DEGREES,
+                    grids.BOUNDARY_120_DEGREES,
+                ] and bool(self.core.childrenByLocator.get(upperEdgeLoc)):
                     return 2.0
         return 1.0
 
@@ -2172,7 +2196,6 @@ class HexBlock(Block):
 
     def getWettedPerimeter(self):
         """Return the total wetted perimeter of the block in cm."""
-
         # flags pertaining to hexagon components where the interior of the hexagon is wetted
         wettedHollowHexagonComponentFlags = (
             Flags.DUCT,
@@ -2245,9 +2268,7 @@ class HexBlock(Block):
         )
 
     def getFlowArea(self):
-        """
-        Return the total flowing coolant area of the block in cm^2.
-        """
+        """Return the total flowing coolant area of the block in cm^2."""
         return self.getComponent(Flags.COOLANT, exact=True).getArea()
 
     def getHydraulicDiameter(self):
@@ -2300,9 +2321,7 @@ class CartesianBlock(Block):
         return 1.0
 
     def getPinCenterFlatToFlat(self, cold=False):
-        """
-        Return the flat-to-flat distance between the centers of opposing pins in the outermost ring.
-        """
+        """Return the flat-to-flat distance between the centers of opposing pins in the outermost ring."""
         clad = self.getComponent(Flags.CLAD)
         nRings = hexagon.numRingsToHoldNumCells(clad.getDimension("mult"))
         pinPitch = self.getPinPitch(cold=cold)

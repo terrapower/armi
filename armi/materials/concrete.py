@@ -24,8 +24,10 @@ from armi.materials.material import Material
 
 
 class Concrete(Material):
-    name = "Concrete"
-    """ http://jolissrch-inter.tokai-sc.jaea.go.jp/pdfdata/JAERI-Data-Code-98-004.pdf """
+    """Simple concreate material.
+
+    http://jolissrch-inter.tokai-sc.jaea.go.jp/pdfdata/JAERI-Data-Code-98-004.pdf
+    """
 
     def setDefaultMassFracs(self):
         self.setMassFrac("H", 0.023 / 2.302)

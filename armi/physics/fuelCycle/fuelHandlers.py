@@ -24,6 +24,7 @@ the particular shuffling of a case.
 
 This module also handles repeat shuffles when doing a restart.
 """
+# ruff: noqa: F401
 import os
 import re
 import warnings
@@ -73,7 +74,7 @@ class FuelHandler:
         Link to the current cycle number.
 
         Notes
-        ------
+        -----
         This retains backwards compatibility with previous fuel handler inputs.
         """
         return self.o.r.p.cycle
@@ -89,7 +90,7 @@ class FuelHandler:
         return self.o.r
 
     def outage(self, factor=1.0):
-        r"""
+        """
         Simulates a reactor reload outage. Moves and tracks fuel.
 
         This sets the moveList structure.
@@ -442,7 +443,7 @@ class FuelHandler:
             # separate it
             compareTo, mult = compareTo
 
-        if isinstance(compareTo, float) or isinstance(compareTo, int):
+        if isinstance(compareTo, (float, int)):
             # floating point or int.
             compVal = compareTo * mult
         elif param:
@@ -651,6 +652,16 @@ class FuelHandler:
         assemblyList : list
             List of assemblies in each ring of the ringList. [[a1,a2,a3],[a4,a5,a6,a7],...]
         """
+        if "SFP" in ringList and self.r.sfp is None:
+            sfpAssems = []
+            runLog.warning(
+                f"{self} can't pull from SFP; no SFP is attached to the reactor {self.r}."
+                "To get assemblies from an SFP, you must add an SFP system to the blueprints"
+                f"or otherwise instantiate a SpentFuelPool object as r.sfp"
+            )
+        else:
+            sfpAssems = self.r.sfp.getChildren()
+
         assemblyList = [[] for _i in range(len(ringList))]  # empty lists for each ring
         if exclusions is None:
             exclusions = []
@@ -661,7 +672,7 @@ class FuelHandler:
             assemListTmp2 = []
             if ringList[0] == "SFP":
                 # kind of a hack for now. Need the capability.
-                assemblyList = self.r.core.sfp.getChildren()
+                assemblyList = sfpAssems
             else:
                 for i, ringNumber in enumerate(ringList):
                     assemListTmp = self.r.core.getAssembliesInCircularRing(
@@ -679,7 +690,7 @@ class FuelHandler:
         else:
             if ringList[0] == "SFP":
                 # kind of a hack for now. Need the capability.
-                assemList = self.r.core.sfp.getChildren()
+                assemList = sfpAssems
             else:
                 assemList = self.r.core.getAssemblies()
 
@@ -825,10 +836,11 @@ class FuelHandler:
         # future, this mechanism may be used to handle symmetry in general.
         outgoing.p.multiplicity = len(loc.getSymmetricEquivalents()) + 1
 
-        if incoming in self.r.core.sfp.getChildren():
-            # pull it out of the sfp if it's in there.
-            runLog.extra("removing {0} from the sfp".format(incoming))
-            self.r.core.sfp.remove(incoming)
+        if self.r.sfp is not None:
+            if incoming in self.r.sfp.getChildren():
+                # pull it out of the sfp if it's in there.
+                runLog.extra("removing {0} from the sfp".format(incoming))
+                self.r.sfp.remove(incoming)
 
         incoming.p.multiplicity = 1
         self.r.core.add(incoming, loc)
@@ -940,7 +952,7 @@ class FuelHandler:
         """
         try:
             f = open(fname)
-        except:
+        except OSError:
             raise RuntimeError(
                 "Could not find/open repeat shuffle file {} in working directory {}"
                 "".format(fname, os.getcwd())
@@ -1278,11 +1290,11 @@ class FuelHandler:
             # not only use the proper assembly type but also adjust the enrichment.
             if assemblyName:
                 # get this assembly from the SFP
-                loadAssembly = self.r.core.sfp.getAssembly(assemblyName)
+                loadAssembly = self.r.sfp.getAssembly(assemblyName)
                 if not loadAssembly:
                     runLog.error(
                         "the required assembly {0} is not found in the SFP. It contains: {1}"
-                        "".format(assemblyName, self.r.core.sfp.getChildren())
+                        "".format(assemblyName, self.r.sfp.getChildren())
                     )
                     raise RuntimeError(
                         "the required assembly {0} is not found in the SFP.".format(

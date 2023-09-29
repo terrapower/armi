@@ -29,7 +29,6 @@ DEFAULT_MASS_DENSITY = 2.52
 
 
 class B4C(material.Material):
-    name = "B4C"
     enrichedNuclide = "B10"
     propertyValidTemperature = {"linear expansion percent": ((25, 500), "C")}
 

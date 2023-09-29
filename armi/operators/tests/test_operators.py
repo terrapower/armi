@@ -13,8 +13,6 @@
 # limitations under the License.
 
 """Tests for operators."""
-
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-method-argument,import-outside-toplevel
 import os
 import unittest
 from unittest.mock import patch
@@ -94,13 +92,6 @@ class OperatorTests(unittest.TestCase):
         self.assertEqual(self.o.getInterface("Second"), interfaceB)
         self.assertEqual(self.o.getInterface("Third"), interfaceC)
 
-    def test_checkCsConsistency(self):
-        self.o._checkCsConsistency()  # passes without error
-
-        self.o.cs = self.o.cs.modified(newSettings={"nCycles": 66})
-        with self.assertRaises(RuntimeError):
-            self.o._checkCsConsistency()
-
     def test_interfaceIsActive(self):
         self.o, _r = test_reactors.loadTestReactor()
         self.assertTrue(self.o.interfaceIsActive("main"))
@@ -108,13 +99,11 @@ class OperatorTests(unittest.TestCase):
 
     def test_loadStateError(self):
         """The ``loadTestReactor()`` test tool does not have any history in the DB to load from."""
-
         # a first, simple test that this method fails correctly
         with self.assertRaises(RuntimeError):
             self.o.loadState(0, 1)
 
     def test_setStateToDefault(self):
-
         # reset the runType for testing
         self.assertEqual(self.o.cs[CONF_RUN_TYPE], "Standard")
         self.o.cs = self.o.cs.modified(newSettings={"runType": "fake"})
@@ -169,7 +158,7 @@ class OperatorTests(unittest.TestCase):
 
 class TestTightCoupling(unittest.TestCase):
     def setUp(self):
-        self.cs = settings.getMasterCs()
+        self.cs = settings.Settings()
         self.cs[CONF_TIGHT_COUPLING] = True
         self.o = Operator(self.cs)
         self.o.r = Reactor("empty", None)
@@ -202,7 +191,6 @@ class TestTightCoupling(unittest.TestCase):
             def isConverged(self, _val: TightCoupler._SUPPORTED_TYPES) -> bool:
                 return False
 
-        # pylint: disable=abstract-method
         class InterfaceNoConverge(Interface):
             name = "NoConverge"
 
@@ -284,9 +272,7 @@ class TestTightCoupling(unittest.TestCase):
 
 
 class CyclesSettingsTests(unittest.TestCase):
-    """
-    Check that we can correctly access the various cycle settings from the operator.
-    """
+    """Check that we can correctly access the various cycle settings from the operator."""
 
     detailedCyclesSettings = """
 metadata:

@@ -17,11 +17,9 @@ Test the cross section manager.
 
 :py:mod:`armi.physics.neutronics.crossSectionGroupManager`
 """
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
-
-import os
 from io import BytesIO
 import copy
+import os
 import unittest
 
 from six.moves import cPickle
@@ -49,7 +47,6 @@ from armi.reactor.tests import test_reactors
 from armi.tests import TEST_ROOT
 from armi.utils import units
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
-from armi.settings.fwSettings.globalSettings import CONF_RUN_TYPE
 
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -124,9 +121,7 @@ class TestBlockCollectionAverage(unittest.TestCase):
 
 
 class TestBlockCollectionComponentAverage(unittest.TestCase):
-    r"""
-    tests for ZPPR 1D XS gen cases.
-    """
+    r"""tests for ZPPR 1D XS gen cases."""
 
     def setUp(self):
         r"""
@@ -214,9 +209,7 @@ class TestBlockCollectionComponentAverage(unittest.TestCase):
 
 
 class TestBlockCollectionComponentAverage1DCylinder(unittest.TestCase):
-    r"""
-    tests for 1D cylinder XS gen cases.
-    """
+    r"""tests for 1D cylinder XS gen cases."""
 
     def setUp(self):
         r"""
@@ -383,8 +376,28 @@ class TestBlockCollectionComponentAverage1DCylinder(unittest.TestCase):
         nucDiffBlock.add(clad)
         nucDiffBlock.add(coolant)
 
+        # additional non-important nuclides
+        negligibleNucDiffBlock = HexBlock("blockNegligibleNucDiff")
+        negligibleNuc = {"N14": 1.0e-5}
+        modControl = baseComponents[0].getNumberDensities()
+        modClad = baseComponents[2].getNumberDensities()
+        modCoolant = baseComponents[4].getNumberDensities()
+        modControl.update(negligibleNuc)
+        modClad.update(negligibleNuc)
+        modCoolant.update(negligibleNuc)
+        mixedDensities = {
+            "control": modControl,
+            "clad": modClad,
+            "coolant": modCoolant,
+        }
+        control, clad, coolant = self._makeComponents(7, mixedDensities)
+        negligibleNucDiffBlock.add(control)
+        negligibleNucDiffBlock.add(clad)
+        negligibleNucDiffBlock.add(coolant)
+
         blockCollection._checkComponentConsistency(refBlock, matchingBlock)
         blockCollection._checkComponentConsistency(refBlock, unsortedBlock)
+        blockCollection._checkComponentConsistency(refBlock, negligibleNucDiffBlock)
         for b in (nonMatchingMultBlock, nonMatchingLengthBlock, nucDiffBlock):
             with self.assertRaises(ValueError):
                 blockCollection._checkComponentConsistency(refBlock, b)
@@ -460,8 +473,9 @@ class TestBlockCollectionFluxWeightedAverage(unittest.TestCase):
 
 class Test_CrossSectionGroupManager(unittest.TestCase):
     def setUp(self):
+        cs = settings.Settings()
         self.blockList = makeBlocks(20)
-        self.csm = CrossSectionGroupManager(self.blockList[0].r, None)
+        self.csm = CrossSectionGroupManager(self.blockList[0].r, cs)
         for bi, b in enumerate(self.blockList):
             b.p.percentBu = bi / 19.0 * 100
         self.csm._setBuGroupBounds([3, 10, 30, 100])

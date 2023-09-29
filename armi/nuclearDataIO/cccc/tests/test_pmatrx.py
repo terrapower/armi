@@ -11,11 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-r"""
-Tests the workings of the library wrappers.
-"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+"""Tests the workings of the library wrappers."""
 import filecmp
 import unittest
 
@@ -210,7 +206,7 @@ class TestProductionMatrix_FromWritten(TestPmatrx):
 
         fname = self._testMethodName + "temp-aa.pmatrx"
         pmatrx.writeBinary(origLib, fname)
-        lib = pmatrx.readBinary(fname)
+        _lib = pmatrx.readBinary(fname)
 
         self.assertTrue(filecmp.cmp(test_xsLibraries.PMATRX_AA, fname))
 

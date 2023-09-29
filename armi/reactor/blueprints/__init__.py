@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-r"""
+"""
 Blueprints describe the geometric and composition details of the objects in the reactor
 (e.g. fuel assemblies, control rods, etc.).
 
@@ -31,7 +31,6 @@ The file structure is expectation is::
         ...
 
     custom isotopics: {} # optional
-
 
     blocks:
         name:
@@ -87,7 +86,6 @@ from armi.reactor import systemLayoutInput
 from armi.reactor.flags import Flags
 from armi.scripts import migration
 from armi.utils.customExceptions import InputError
-
 from armi.utils import textProcessors
 from armi.settings.fwSettings.globalSettings import (
     CONF_DETAILED_AXIAL_EXPANSION,
@@ -116,10 +114,7 @@ context.BLUEPRINTS_IMPORT_CONTEXT = "".join(traceback.format_stack())
 
 
 def loadFromCs(cs, roundTrip=False):
-    """
-    Function to load Blueprints based on supplied ``CaseSettings``.
-    """
-    # pylint: disable=import-outside-toplevel; circular import protection
+    r"""Function to load Blueprints based on supplied ``CaseSettings``."""
     from armi.utils import directoryChangers
 
     with directoryChangers.DirectoryChanger(cs.inputDirectory, dumpOnException=False):
@@ -150,7 +145,6 @@ class _BlueprintsPluginCollector(yamlize.objects.ObjectType):
     """
 
     def __new__(mcs, name, bases, attrs):
-        # pylint: disable=no-member
         pm = getPluginManager()
         if pm is None:
             runLog.warning(
@@ -204,8 +198,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
         key="component groups", type=ComponentGroups, default=None
     )
 
-    # These are used to set up new attributes that come from plugins. Defining its
-    # initial state here to make pylint happy
+    # These are used to set up new attributes that come from plugins.
     _resolveFunctions = []
 
     def __new__(cls):
@@ -225,10 +218,9 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
         return self
 
     def __init__(self):
-        # again, yamlize does not call __init__, instead we use Blueprints.load which
+        # Yamlize does not call __init__, instead we use Blueprints.load which
         # creates and instance of a Blueprints object and initializes it with values
-        # using setattr. Since the method is never called, it serves the purpose of
-        # preventing pylint from issuing warnings about attributes not existing.
+        # using setattr.
         self._assembliesBySpecifier = {}
         self._prepped = False
         self.systemDesigns = Systems()
@@ -313,23 +305,11 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
             self._assembliesBySpecifier.clear()
             self.assemblies.clear()
 
-            # retrieve current count of assemblies to restore after
-            # creating blueprints assemblies. This is particularly useful for
-            # doing snapshot based runs and multiple database loads, and ensures
-            # that each database load/snapshot to not cumulative increase the assembly
-            # count during creation of blueprints assemblies. During initial
-            # constructions the first N numbers are reserved for blueprints, so this
-            # ensures consistency.
-            currentCount = assemblies.getAssemNum()
-            # reset the assembly counter so that blueprints assemblies are always
-            # numbered 0 to len(self.assemDesigns)
-            assemblies.resetAssemNumCounter()
             for aDesign in self.assemDesigns:
                 a = aDesign.construct(cs, self)
                 self._assembliesBySpecifier[aDesign.specifier] = a
                 self.assemblies[aDesign.name] = a
-            if currentCount != 0:
-                assemblies.setAssemNumCounter(currentCount)
+
             runLog.header("=========== Verifying Assembly Configurations ===========")
             self._checkAssemblyAreaConsistency(cs)
 
@@ -340,6 +320,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
                 axialExpansionChanger.makeAssemsAbleToSnapToUniformMesh(
                     self.assemblies.values(), cs[CONF_NON_UNIFORM_ASSEM_FLAGS]
                 )
+
             if not cs[CONF_INPUT_HEIGHTS_HOT]:
                 runLog.header(
                     "=========== Axially expanding all assemblies from Tinput to Thot ==========="
@@ -360,7 +341,6 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
                     cs[CONF_DETAILED_AXIAL_EXPANSION],
                 )
 
-            # pylint: disable=no-member
             getPluginManagerOrFail().hook.afterConstructionOfAssemblies(
                 assemblies=self.assemblies.values(), cs=cs
             )
@@ -584,6 +564,18 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
         """
         loader = RoundTripLoader if roundTrip else CLoader
         return super().load(stream, Loader=loader)
+
+    def addDefaultSFP(self):
+        """Create a default SFP if it's not in the blueprints."""
+        if self.systemDesigns is not None:
+            if not any(structure.typ == "sfp" for structure in self.systemDesigns):
+                sfp = SystemBlueprint("Spent Fuel Pool", "sfp", Triplet())
+                sfp.typ = "sfp"
+                self.systemDesigns["Spent Fuel Pool"] = sfp
+        else:
+            runLog.warning(
+                f"Can't add default SFP to {self}, there are no systemDesigns!"
+            )
 
 
 def migrate(bp: Blueprints, cs):

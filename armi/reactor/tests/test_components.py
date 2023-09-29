@@ -12,10 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Tests functionalities of components within ARMI.
-"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-self-use,no-member,invalid-name
+"""Tests functionalities of components within ARMI."""
 import copy
 import math
 import unittest
@@ -40,7 +37,6 @@ from armi.reactor.components import (
     SolidRectangle,
     Square,
     Triangle,
-    Torus,
     RadialSegment,
     DifferentialRadialSegment,
     DerivedShape,
@@ -48,7 +44,6 @@ from armi.reactor.components import (
     ComponentType,
 )
 from armi.reactor.components import materials
-from armi.utils import units
 
 
 class TestComponentFactory(unittest.TestCase):
@@ -96,9 +91,7 @@ class TestComponentFactory(unittest.TestCase):
         del attrs["id"]
         del attrs["mult"]
 
-        for i, (name, klass) in enumerate(
-            ComponentType.TYPES.items()
-        ):  # pylint: disable=protected-access
+        for i, (name, klass) in enumerate(ComponentType.TYPES.items()):
             # hack together a dictionary input
             thisAttrs = {k: 1.0 for k in set(klass.INIT_SIGNATURE).difference(attrs)}
             del thisAttrs["components"]
@@ -125,9 +118,9 @@ class TestComponentFactory(unittest.TestCase):
 
     def test_invalidCoolantComponentAssignment(self):
         invalidComponentTypes = [Component, NullComponent]
-        for ComponentType in invalidComponentTypes:
+        for CompType in invalidComponentTypes:
             with self.assertRaises(ValueError):
-                _c = ComponentType("coolant", "Sodium", 0, 0)
+                _c = CompType("coolant", "Sodium", 0, 0)
 
 
 class TestGeneralComponents(unittest.TestCase):
@@ -159,7 +152,7 @@ class TestGeneralComponents(unittest.TestCase):
 
             derivedMustUpdate = False
 
-        if component == None:
+        if component is None:
             self.component = self.componentCls(
                 "TestComponent", self.componentMaterial, **self.componentDims
             )
@@ -993,7 +986,7 @@ class TestHexagon(TestShapedComponent):
         mult = self.component.getDimension("mult")
         op = self.component.getDimension("op")
         ip = self.component.getDimension("ip")
-        ref = math.sqrt(3.0) / 2.0 * (op ** 2 - ip ** 2) * mult
+        ref = math.sqrt(3.0) / 2.0 * (op**2 - ip**2) * mult
         self.assertAlmostEqual(cur, ref)
 
     def test_thermallyExpands(self):
@@ -1054,7 +1047,7 @@ class TestHoledHexagon(TestShapedComponent):
         odHole = self.component.getDimension("holeOD")
         nHoles = self.component.getDimension("nHoles")
         mult = self.component.getDimension("mult")
-        hexarea = math.sqrt(3.0) / 2.0 * (op ** 2)
+        hexarea = math.sqrt(3.0) / 2.0 * (op**2)
         holeArea = nHoles * math.pi * ((odHole / 2.0) ** 2)
         ref = mult * (hexarea - holeArea)
         cur = self.component.getArea()
@@ -1105,7 +1098,7 @@ class TestHexHoledCircle(TestShapedComponent):
         od = self.component.getDimension("od")
         holeOP = self.component.getDimension("holeOP")
         mult = self.component.getDimension("mult")
-        hexarea = math.sqrt(3.0) / 2.0 * (holeOP ** 2)
+        hexarea = math.sqrt(3.0) / 2.0 * (holeOP**2)
         holeArea = math.pi * ((od / 2.0) ** 2)
         ref = mult * (holeArea - hexarea)
         cur = self.component.getArea()
@@ -1154,7 +1147,7 @@ class TestHoledRectangle(TestShapedComponent):
 
     def test_getBoundingCircleOuterDiameter(self):
         # hypotenuse
-        ref = (self.length ** 2 + self.width ** 2) ** 0.5
+        ref = (self.length**2 + self.width**2) ** 0.5
         cur = self.component.getBoundingCircleOuterDiameter()
         self.assertAlmostEqual(ref, cur)
 
@@ -1240,11 +1233,11 @@ class TestHelix(TestShapedComponent):
         outerDiameter = self.component.getDimension("od")
         mult = self.component.getDimension("mult")
         c = axialPitch / (2.0 * math.pi)
-        helixFactor = math.sqrt((helixDiameter / 2.0) ** 2 + c ** 2) / c
+        helixFactor = math.sqrt((helixDiameter / 2.0) ** 2 + c**2) / c
         ref = (
             mult
             * math.pi
-            * (outerDiameter ** 2 / 4.0 - innerDiameter ** 2 / 4.0)
+            * (outerDiameter**2 / 4.0 - innerDiameter**2 / 4.0)
             * helixFactor
         )
         self.assertAlmostEqual(cur, ref)
@@ -1323,24 +1316,6 @@ class TestSphere(TestShapedComponent):
         self.assertFalse(self.component.THERMAL_EXPANSION_DIMS)
 
 
-class TestTorus(TestShapedComponent):
-    componentCls = Torus
-    componentDims = {
-        "Tinput": 25.0,
-        "Thot": 430.0,
-        "inner_minor_radius": 28.73,
-        "outer_minor_radius": 30,
-        "major_radius": 140,
-    }
-
-    def test_thermallyExpands(self):
-        self.assertFalse(self.component.THERMAL_EXPANSION_DIMS)
-
-    def test_getVolume(self):
-        expectedVolume = 2.0 * 103060.323859
-        self.assertAlmostEqual(self.component.getVolume() / expectedVolume, 1.0)
-
-
 class TestRadialSegment(TestShapedComponent):
     componentCls = RadialSegment
     componentDims = {
@@ -1359,7 +1334,7 @@ class TestRadialSegment(TestShapedComponent):
         outerTheta = self.component.getDimension("outer_theta")
         innerTheta = self.component.getDimension("inner_theta")
         height = self.component.getDimension("height")
-        radialArea = math.pi * (outerRad ** 2 - innerRad ** 2)
+        radialArea = math.pi * (outerRad**2 - innerRad**2)
         aziFraction = (outerTheta - innerTheta) / (math.pi * 2.0)
         ref = mult * radialArea * aziFraction * height
         cur = self.component.getVolume()
@@ -1392,7 +1367,7 @@ class TestDifferentialRadialSegment(TestShapedComponent):
         outerTheta = self.component.getDimension("outer_theta")
         innerTheta = self.component.getDimension("inner_theta")
         height = self.component.getDimension("height")
-        radialArea = math.pi * (outerRad ** 2 - innerRad ** 2)
+        radialArea = math.pi * (outerRad**2 - innerRad**2)
         aziFraction = (outerTheta - innerTheta) / (math.pi * 2.0)
         ref = mult * radialArea * aziFraction * height
         cur = self.component.getVolume()
@@ -1434,6 +1409,32 @@ class TestMaterialAdjustments(unittest.TestCase):
         target35 = 0.2
         self.fuel.setMassFrac("U235", target35)
         self.assertAlmostEqual(self.fuel.getMassFrac("U235"), target35)
+
+    def test_setMassFracOnComponentMaterial(self):
+        """Checks for valid and invalid mass fraction assignments on a component's material."""
+        # Negative value is not acceptable.
+        with self.assertRaises(ValueError):
+            self.fuel.material.setMassFrac("U235", -0.1)
+
+        # Greater than 1.0 value is not acceptable.
+        with self.assertRaises(ValueError):
+            self.fuel.material.setMassFrac("U235", 1.1)
+
+        # String is not acceptable.
+        with self.assertRaises(TypeError):
+            self.fuel.material.setMassFrac("U235", "")
+
+        # `NoneType` is not acceptable.
+        with self.assertRaises(TypeError):
+            self.fuel.material.setMassFrac("U235", None)
+
+        # Zero is acceptable
+        self.fuel.material.setMassFrac("U235", 0.0)
+        self.assertAlmostEqual(self.fuel.material.getMassFrac("U235"), 0.0)
+
+        # One is acceptable
+        self.fuel.material.setMassFrac("U235", 1.0)
+        self.assertAlmostEqual(self.fuel.material.getMassFrac("U235"), 1.0)
 
     def test_adjustMassFrac_invalid(self):
         with self.assertRaises(ValueError):

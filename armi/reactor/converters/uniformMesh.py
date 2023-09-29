@@ -38,7 +38,6 @@ Requirements
     finer meshes will help. Always perform mesh sensitivity studies to ensure appropriate
     convergence for your needs.
 
-
 Examples
 --------
 converter = uniformMesh.NeutronicsUniformMeshConverter()
@@ -161,6 +160,7 @@ class UniformMeshGenerator:
             aMesh = src.core.findAllAxialMeshPoints([a])[1:]
             if len(aMesh) == refNumPoints:
                 allMeshes.append(aMesh)
+
         averageMesh = average1DWithinTolerance(numpy.array(allMeshes))
         self._commonMesh = numpy.array(averageMesh)
 
@@ -201,7 +201,7 @@ class UniformMeshGenerator:
         )
 
         runLog.extra(
-            f"Attempting to honor control and fuel material boundaries in uniform mesh "
+            "Attempting to honor control and fuel material boundaries in uniform mesh "
             f"for {self} while also keeping minimum mesh size of {self.minimumMeshSize}. "
             f"Material boundaries are: {allMatBounds}"
         )
@@ -421,7 +421,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
         if self._hasNonUniformAssems:
             runLog.extra(
                 f"Replacing non-uniform assemblies in reactor {r}, "
-                f"with assemblies whose axial mesh is uniform with "
+                "with assemblies whose axial mesh is uniform with "
                 f"the core's reference assembly mesh: {r.core.refAssem.getAxialMesh()}"
             )
             self.convReactor = self._sourceReactor
@@ -435,11 +435,10 @@ class UniformMeshGeometryConverter(GeometryConverter):
                 )
                 homogAssem.spatialLocator = assem.spatialLocator
 
-                # Remove this assembly from the core and add it to the
-                # temporary storage list so that it can be replaced with the homogenized assembly.
-                # Note that we do not call the `removeAssembly` method because
-                # this will delete the core assembly from existence rather than
-                # only stripping its spatialLocator away.
+                # Remove this assembly from the core and add it to the temporary storage
+                # so that it can be replaced with the homogenized assembly. Note that we
+                # do not call `removeAssembly()` because this will delete the core
+                # assembly from existence rather than only stripping its spatialLocator.
                 if assem.spatialLocator in self.convReactor.core.childrenByLocator:
                     self.convReactor.core.childrenByLocator.pop(assem.spatialLocator)
                 self.convReactor.core.remove(assem)
@@ -450,7 +449,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
                 assem.setName(assem.getName() + self._TEMP_STORAGE_NAME_SUFFIX)
                 self._nonUniformAssemStorage.add(assem)
                 self.convReactor.core.add(homogAssem)
-
         else:
             runLog.extra(f"Building copy of {r} with a uniform axial mesh.")
             self.convReactor = self.initNewReactor(r, self._cs)
@@ -506,6 +504,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
         coreDesign.construct(cs, bp, newReactor, loadAssems=False)
         newReactor.p.cycle = sourceReactor.p.cycle
         newReactor.p.timeNode = sourceReactor.p.timeNode
+        newReactor.p.maxAssemNum = sourceReactor.p.maxAssemNum
         newReactor.core.p.coupledIteration = sourceReactor.core.p.coupledIteration
         newReactor.core.lib = sourceReactor.core.lib
         newReactor.core.setPitchUniform(sourceReactor.core.getAssemblyPitch())
@@ -561,8 +560,8 @@ class UniformMeshGeometryConverter(GeometryConverter):
                     runLog.error(
                         f"No assembly matching name {assem.getName()} "
                         f"was found in the temporary storage list. {assem} "
-                        f"will persist as an axially unified assembly. "
-                        f"This is likely not intended."
+                        "will persist as an axially unified assembly. "
+                        "This is likely not intended."
                     )
 
             self._sourceReactor.core.updateAxialMesh()
@@ -629,6 +628,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
             between two assemblies.
         """
         newAssem = UniformMeshGeometryConverter._createNewAssembly(sourceAssem)
+        newAssem.p.assemNum = sourceAssem.p.assemNum
         runLog.debug(f"Creating a uniform mesh of {newAssem}")
         bottom = 0.0
 
@@ -720,7 +720,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
         mapNumberDensities=False,
         calcReactionRates=False,
     ):
-        """
+        r"""
         Set state data (i.e., number densities and block-level parameters) on a assembly based on a source
         assembly with a different axial mesh.
 
@@ -764,7 +764,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
         --------
         setNumberDensitiesFromOverlaps : does this but does smarter caching for number densities.
         """
-
         for destBlock in destinationAssembly:
             zLower = destBlock.p.zbottom
             zUpper = destBlock.p.ztop
@@ -777,12 +776,12 @@ class UniformMeshGeometryConverter(GeometryConverter):
                 continue
             elif not sourceBlocksInfo:
                 raise ValueError(
-                    f"An error occurred when attempting to map to the "
+                    "An error occurred when attempting to map to the "
                     f"results from {sourceAssembly} to {destinationAssembly}. "
                     f"No blocks in {sourceAssembly} exist between the axial "
                     f"elevations of {zLower:<12.5f} cm and {zUpper:<12.5f} cm. "
-                    f"This a major bug in the uniform mesh converter that should "
-                    f"be reported to the developers."
+                    "This a major bug in the uniform mesh converter that should "
+                    "be reported to the developers."
                 )
 
             if mapNumberDensities:
@@ -1004,7 +1003,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
         This is a basic parameter mapping routine that can be used by most sub-classes.
         If special mapping logic is required, this method can be defined on sub-classes as necessary.
         """
-
         # Map reactor core parameters
         for paramName in self.paramMapper.reactorParamNames:
             # Check if the source reactor has a value assigned for this
@@ -1172,7 +1170,7 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
                 [
                     name
                     for name in b.p.paramDefs.inCategory(category).names
-                    if not name in excludedParamNames
+                    if name not in excludedParamNames
                 ]
             )
         if direction == "in":
@@ -1262,7 +1260,7 @@ class GammaUniformMeshConverter(UniformMeshGeometryConverter):
                 [
                     name
                     for name in b.p.paramDefs.inCategory(category).names
-                    if not name in excludeList
+                    if name not in excludeList
                 ]
             )
 
@@ -1320,7 +1318,7 @@ class ParamMapper:
             if val is None:
                 continue
 
-            if isinstance(val, list) or isinstance(val, numpy.ndarray):
+            if isinstance(val, (tuple, list, numpy.ndarray)):
                 ParamMapper._arrayParamSetter(block, [val], [paramName])
             else:
                 ParamMapper._scalarParamSetter(block, [val], [paramName])
@@ -1330,26 +1328,11 @@ class ParamMapper:
         paramVals = []
         for paramName in paramNames:
             val = block.p[paramName]
-            defaultValue = self.paramDefaults[paramName]
-            valType = type(defaultValue)
-            # Array / list parameters can be have values that are `None`, lists, or numpy arrays. This first
-            # checks if the value type is any of these and if so, the block-level parameter is treated as an
-            # array.
-            if (
-                isinstance(None, valType)
-                or isinstance(valType, list)
-                or isinstance(valType, numpy.ndarray)
-            ):
-                if val is None or len(val) == 0:
-                    paramVals.append(None)
-                else:
-                    paramVals.append(numpy.array(val))
-            # Otherwise, the parameter is treated as a scalar, like a float/string/integer.
+            # list-like should be treated as a numpy array
+            if isinstance(val, (tuple, list, numpy.ndarray)):
+                paramVals.append(numpy.array(val) if len(val) > 0 else None)
             else:
-                if val == defaultValue:
-                    paramVals.append(defaultValue)
-                else:
-                    paramVals.append(val)
+                paramVals.append(val)
 
         return numpy.array(paramVals, dtype=object)
 

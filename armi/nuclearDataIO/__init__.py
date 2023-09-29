@@ -12,16 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Read and/or write data files associated with nuclear data and reactor physics data.
-"""
+"""Read and/or write data files associated with nuclear data and reactor physics data."""
+# ruff: noqa: F401
 
 from armi.physics import neutronics
 
 # export the cccc modules here to keep external clients happy,
 # though prefer full imports in new code
-from .cccc import (
+from armi.nuclearDataIO.cccc import (
     compxs,
+    dif3d,
     dlayxs,
     fixsrc,
     gamiso,
@@ -117,12 +117,13 @@ def getExpectedGAMISOFileName(cycle=None, node=None, suffix=None, xsID=None):
     """
     if any(i is not None for i in (cycle, suffix, xsID)):
         # file path extensions are lower case
-        gamiso = neutronics.GAMISO_EXT
+        gamiso0 = neutronics.GAMISO_EXT
     else:
         # GAMISO as a file is upper case
-        gamiso = neutronics.GAMISO
+        gamiso0 = neutronics.GAMISO
+
     return _findExpectedGammaFileName(
-        gamiso, _getGammaKeywords(cycle, node, suffix, xsID)
+        gamiso0, _getGammaKeywords(cycle, node, suffix, xsID)
     )
 
 
@@ -143,12 +144,13 @@ def getExpectedPMATRXFileName(cycle=None, node=None, suffix=None, xsID=None):
     """
     if any(i is not None for i in (cycle, suffix, xsID)):
         # file path extensions are lower case
-        pmatrx = neutronics.PMATRX_EXT
+        pmatrx0 = neutronics.PMATRX_EXT
     else:
         # PMATRX as a file is upper case
-        pmatrx = neutronics.PMATRX
+        pmatrx0 = neutronics.PMATRX
+
     return _findExpectedGammaFileName(
-        pmatrx, _getGammaKeywords(cycle, node, suffix, xsID)
+        pmatrx0, _getGammaKeywords(cycle, node, suffix, xsID)
     )
 
 

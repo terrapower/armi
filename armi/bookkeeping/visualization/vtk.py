@@ -43,7 +43,7 @@ from armi.reactor import reactors
 from armi.reactor import parameters
 from armi.bookkeeping.db import database3
 from armi.bookkeeping.visualization import dumper
-from . import utils
+from armi.bookkeeping.visualization import utils
 
 
 class VtkDumper(dumper.VisFileDumper):
@@ -79,7 +79,6 @@ class VtkDumper(dumper.VisFileDumper):
         excludeParams : list of str, optional
             A list of parameter names to exclude from the output. Defaults to no params.
         """
-
         cycle = r.p.cycle
         timeNode = r.p.timeNode
 

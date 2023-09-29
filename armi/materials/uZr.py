@@ -41,7 +41,6 @@ class UZr(material.FuelMaterial):
         https://doi.org/10.1016/j.jallcom.2009.02.077.
     """
 
-    name = "UZr"
     enrichedNuclide = "U235"
     zrFracDefault = 0.10
     uFracDefault = 1.0 - zrFracDefault
@@ -50,7 +49,7 @@ class UZr(material.FuelMaterial):
         material.Material.__init__(self)
 
     def setDefaultMassFracs(self):
-        r"""U-Pu-Zr mass fractions."""
+        """U-Pu-Zr mass fractions."""
         u235Enrichment = 0.1
         self.uFrac = self.uFracDefault
         self.zrFrac = self.zrFracDefault
@@ -59,9 +58,7 @@ class UZr(material.FuelMaterial):
         self.setMassFrac("U238", (1.0 - u235Enrichment) * self.uFrac)
         self._calculateReferenceDensity()
 
-    def applyInputParams(
-        self, U235_wt_frac=None, ZR_wt_frac=None, *args, **kwargs
-    ):  # pylint: disable=arguments-differ
+    def applyInputParams(self, U235_wt_frac=None, ZR_wt_frac=None, *args, **kwargs):
         """Apply user input."""
         ZR_wt_frac = self.zrFracDefault if ZR_wt_frac is None else ZR_wt_frac
         U235_wt_frac = 0.1 if U235_wt_frac is None else U235_wt_frac
@@ -90,9 +87,7 @@ class UZr(material.FuelMaterial):
         self.refDens = 1.0 / specificVolume
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
-        """
-        Gets the linear expansion from eq. 3 in [Chandrabhanu]_ for U-10Zr.
-        """
+        """Gets the linear expansion from eq. 3 in [Chandrabhanu]_ for U-10Zr."""
         tk = units.getTk(Tc, Tk)
         tk2 = tk * tk
         tk3 = tk2 * tk

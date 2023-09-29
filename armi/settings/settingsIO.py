@@ -182,7 +182,6 @@ class SettingsReader:
 
     def readFromFile(self, path, handleInvalids=True):
         """Load file and read it."""
-
         with open(path, "r") as f:
             # make sure that we can actually open the file before trying to guess its
             # format. This will yield better error messages when things go awry.
@@ -209,6 +208,7 @@ class SettingsReader:
         from armi.settings.fwSettings.globalSettings import CONF_VERSIONS
 
         yaml = YAML(typ="rt")
+        yaml.allow_duplicate_keys = False
         tree = yaml.load(stream)
         if "settings" not in tree:
             raise InvalidSettingsFileError(
@@ -368,7 +368,7 @@ def prompt(statement, question, *options):
     """Prompt the user for some information."""
     if context.CURRENT_MODE == context.Mode.GUI:
         # avoid hard dependency on wx
-        import wx  # pylint: disable=import-error
+        import wx
 
         msg = statement + "\n\n\n" + question
         style = wx.CENTER

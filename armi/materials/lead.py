@@ -19,8 +19,8 @@ from armi.utils.units import getTk
 
 
 class Lead(material.Fluid):
-    r"""Natural lead."""
-    name = "Lead"
+    """Natural lead."""
+
     propertyValidTemperature = {
         "density": ((600, 1700), "K"),
         "heat capacity": ((600, 1500), "K"),
@@ -39,19 +39,19 @@ class Lead(material.Fluid):
         return 1.0 / (9516.9 - Tk)
 
     def setDefaultMassFracs(self):
-        r"""Mass fractions."""
+        """Mass fractions."""
         self.setMassFrac("PB", 1)
 
     def pseudoDensity(self, Tk=None, Tc=None):
-        r"""Density in g/cc from V. sobolev/ J Nucl Mat 362 (2007) 235-247."""
+        """Density in g/cc from V. sobolev/ J Nucl Mat 362 (2007) 235-247."""
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("density", Tk)
 
         return 11.367 - 0.0011944 * Tk  # pre-converted from kg/m^3 to g/cc
 
     def heatCapacity(self, Tk=None, Tc=None):
-        r"""Heat capacity in J/kg/K from Sobolev."""
+        """Heat capacity in J/kg/K from Sobolev."""
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("heat capacity", Tk)
 
-        return 162.9 - 3.022e-2 * Tk + 8.341e-6 * Tk ** 2
+        return 162.9 - 3.022e-2 * Tk + 8.341e-6 * Tk**2

@@ -12,17 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Calcium Hydride.
-"""
+"""Calcium Hydride."""
 
 from armi.materials.material import SimpleSolid
 
 
 class CaH2(SimpleSolid):
     """CalciumHydride."""
-
-    name = "CaH2"
 
     def setDefaultMassFracs(self):
         """Default mass fractions.

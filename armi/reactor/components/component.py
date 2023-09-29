@@ -22,19 +22,19 @@ import re
 
 import numpy
 
-from armi.materials import material
-from armi.materials import custom
+from armi import materials
 from armi import runLog
 from armi.bookkeeping import report
+from armi.materials import custom
+from armi.materials import material
+from armi.materials import void
+from armi.nucDirectory import nuclideBases
 from armi.reactor import composites
 from armi.reactor import parameters
 from armi.reactor import flags
 from armi.reactor.components import componentParameters
 from armi.utils import densityTools
 from armi.utils.units import C_TO_K
-from armi.materials import void
-from armi.nucDirectory import nuclideBases
-from armi import materials
 
 COMPONENT_LINK_REGEX = re.compile(r"^\s*(.+?)\s*\.\s*(.+?)\s*$")
 
@@ -62,7 +62,6 @@ def componentTypeIsValid(component, name):
     -----
     - `Coolant` components are can no longer be defined as a general `Component` and should be specfied as a
       `DerivedShape` if the coolant dimensions are not provided.
-
     """
     from armi.reactor.components import NullComponent
 
@@ -262,7 +261,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         thatOD = other.getBoundingCircleOuterDiameter(cold=True)
         try:
             return thisOD < thatOD
-        except:
+        except:  # noqa: bare-except
             raise ValueError(
                 "Components 1 ({} with OD {}) and 2 ({} and OD {}) cannot be ordered because their "
                 "bounding circle outer diameters are not comparable.".format(
@@ -297,7 +296,7 @@ class Component(composites.Composite, metaclass=ComponentType):
                     comp = components[name]
                     linkedKey = match.group(2)
                     self.p[dimName] = _DimensionLink((comp, linkedKey))
-                except:
+                except:  # noqa: bare-except
                     if value.count(".") > 1:
                         raise ValueError(
                             "Component names should not have periods in them: `{}`".format(
@@ -403,9 +402,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         self.parent.p.gasPorosity = porosity
 
     def __copy__(self):
-        """
-        Duplicate a component, used for breaking fuel into separate components.
-        """
+        """Duplicate a component, used for breaking fuel into separate components."""
         linkedDims = self._getLinkedDimsAndValues()
         newC = copy.deepcopy(self)
         self._restoreLinkedDims(linkedDims)
@@ -430,7 +427,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         block.getVolumeFractions: component coolant is typically the "leftover" and is calculated and set here
         """
         area = self.getComponentArea(cold=cold)
-        if self.p.get("modArea", None):  # pylint: disable=no-member
+        if self.p.get("modArea", None):
             comp, arg = self.p.modArea
             if arg == "sub":
                 area -= comp.getComponentArea(cold=cold)
@@ -848,7 +845,7 @@ class Component(composites.Composite, metaclass=ComponentType):
     def clearLinkedCache(self):
         """Clear this cache and any other dependent volumes."""
         self.clearCache()
-        if self.parent:  # pylint: disable=no-member
+        if self.parent:
             # changes in dimensions can affect cached variables such as pitch
             self.parent.cached = {}
             for c in self.getLinkedComponents():
@@ -893,8 +890,9 @@ class Component(composites.Composite, metaclass=ComponentType):
                 "This method needs to be implemented on the material to allow thermal expansion."
                 ".\nReference temperature: {}, Adjusted temperature: {}, Temperature difference: {}, "
                 "Specified tolerance: {}".format(
-                    self.material, T0, Tc, (Tc - T0), self._TOLERANCE, single=True
-                )
+                    self.material, T0, Tc, (Tc - T0), self._TOLERANCE
+                ),
+                single=True,
             )
             raise RuntimeError(
                 "Linear expansion percent may not be implemented in the {} material "
@@ -1036,7 +1034,7 @@ class Component(composites.Composite, metaclass=ComponentType):
             # requires and extra p.__getitem__
             try:
                 val = self.p[dimName]
-            except:
+            except:  # noqa: bare-except
                 raise RuntimeError(
                     "Could not find parameter {} defined for {}. Is the desired "
                     "Component class?".format(dimName, self)
@@ -1189,7 +1187,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         )
 
     def getFuelMass(self) -> float:
-        """Return the mass in grams if this is a fueled component"""
+        """Return the mass in grams if this is a fueled component."""
         return self.getMass() if self.hasFlags(flags.Flags.FUEL) else 0.0
 
 

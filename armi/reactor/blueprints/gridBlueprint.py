@@ -36,7 +36,6 @@ armi.utils.asciimaps
 
 Examples
 --------
-
 ::
 
     grids:
@@ -190,7 +189,7 @@ class GridBlueprint(yamlize.Object):
     gridContents = yamlize.Attribute(key="grid contents", type=dict, default=None)
 
     @gridContents.validator
-    def gridContents(self, value):  # pylint: disable=method-hidden
+    def gridContents(self, value):
         if value is None:
             return True
         if not all(isinstance(key, tuple) for key in value.keys()):
@@ -285,8 +284,8 @@ class GridBlueprint(yamlize.Object):
             # convert to list, otherwise it is a CommentedSeq
             theta = numpy.array(self.gridBounds["theta"])
             radii = numpy.array(self.gridBounds["r"])
-            for l, name in ((theta, "theta"), (radii, "radii")):
-                if not isMonotonic(l, "<"):
+            for lst, name in ((theta, "theta"), (radii, "radii")):
+                if not isMonotonic(lst, "<"):
                     raise InputError(
                         "Grid bounds for {}:{} is not sorted or contains "
                         "duplicates. Check blueprints.".format(self.name, name)
@@ -575,7 +574,7 @@ def saveToStream(stream, bluep, full=False, tryMap=False):
                 aMap.gridContentsToAscii()
             except Exception as e:
                 runLog.warning(
-                    f"The `lattice map` for the current assembly arrangement cannot be written. "
+                    "The `lattice map` for the current assembly arrangement cannot be written. "
                     f"Defaulting to using the `grid contents` dictionary instead. Exception: {e}"
                 )
                 aMap = None

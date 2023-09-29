@@ -83,7 +83,7 @@ class NuclideFlag(yamlize.Object):
     nuclideName = yamlize.Attribute(type=str)
 
     @nuclideName.validator
-    def nuclideName(self, value):  # pylint: disable=method-hidden
+    def nuclideName(self, value):
         if value not in ALLOWED_KEYS:
             raise ValueError(
                 "`{}` is not a valid nuclide name, must be one of: {}".format(
@@ -136,9 +136,7 @@ class NuclideFlag(yamlize.Object):
 
 
 class NuclideFlags(yamlize.KeyedList):
-    """
-    An OrderedDict of ``NuclideFlags``, keyed by their ``nuclideName``.
-    """
+    """An OrderedDict of ``NuclideFlags``, keyed by their ``nuclideName``."""
 
     item_type = NuclideFlag
     key_attr = NuclideFlag.nuclideName
@@ -156,7 +154,7 @@ class CustomIsotopic(yamlize.Map):
     inputFormat = yamlize.Attribute(key="input format", type=str)
 
     @inputFormat.validator
-    def inputFormat(self, value):  # pylint: disable=method-hidden
+    def inputFormat(self, value):
         if value not in self._allowedFormats:
             raise ValueError(
                 "Cannot set `inputFormat` to `{}`, must be one of: {}".format(
@@ -372,9 +370,7 @@ class CustomIsotopic(yamlize.Map):
 
 
 class CustomIsotopics(yamlize.KeyedList):
-    """
-    OrderedDict of CustomIsotopic objects, keyed by their name.
-    """
+    """OrderedDict of CustomIsotopic objects, keyed by their name."""
 
     item_type = CustomIsotopic
 
@@ -584,7 +580,7 @@ def autoUpdateNuclideFlags(cs, nuclideFlags, inerts):
     nbs = getAllNuclideBasesByLibrary(cs)
     if nbs:
         runLog.info(
-            f"Adding explicit fission products to the nuclide flags based on the "
+            "Adding explicit fission products to the nuclide flags based on the "
             f"fission product model set to `{cs[CONF_FP_MODEL]}`."
         )
         for nb in nbs:
@@ -609,8 +605,8 @@ def getAllNuclideBasesByLibrary(cs):
             nbs = nuclideBases.byMcc3Id.values()
         else:
             raise ValueError(
-                f"An option to handle the `CONF_FISSION_PRODUCT_LIBRARY_NAME` "
+                "An option to handle the `CONF_FISSION_PRODUCT_LIBRARY_NAME` "
                 f"set to `{cs[CONF_FISSION_PRODUCT_LIBRARY_NAME]}` has not been "
-                f"implemented."
+                "implemented."
             )
     return nbs

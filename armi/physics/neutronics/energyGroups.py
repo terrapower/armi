@@ -11,9 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-Energy group structures for multigroup neutronics calculations.
-"""
+"""Energy group structures for multigroup neutronics calculations."""
 
 import copy
 import itertools
@@ -23,7 +21,7 @@ import numpy
 
 from armi import runLog
 from armi.utils.mathematics import findNearestValue
-from .const import (
+from armi.physics.neutronics.const import (
     FAST_FLUX_THRESHOLD_EV,
     MAXIMUM_XS_LIBRARY_ENERGY,
     ULTRA_FINE_GROUP_LETHARGY_WIDTH,
@@ -85,9 +83,7 @@ def getGroupStructure(name):
 
 
 def getGroupStructureType(neutronEnergyBoundsInEv):
-    """
-    Return neutron energy group structure name for a given set of neutron energy group bounds in eV.
-    """
+    """Return neutron energy group structure name for a given set of neutron energy group bounds in eV."""
     neutronEnergyBoundsInEv = numpy.array(neutronEnergyBoundsInEv)
     for groupStructureType in GROUP_STRUCTURE:
         refNeutronEnergyBoundsInEv = numpy.array(getGroupStructure(groupStructureType))

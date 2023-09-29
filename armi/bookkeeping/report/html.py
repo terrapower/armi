@@ -12,16 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-HTML-formatted reports.
-"""
+"""HTML-formatted reports."""
 import base64
 import datetime
 import html
 import os
 
 from armi import context
-from armi import settings
 
 
 class HTMLFile:

@@ -41,6 +41,7 @@ from armi.reactor.components import Component
 from armi.reactor.composites import ArmiObject
 from armi.reactor import grids
 from armi.reactor.reactors import Core
+from armi.reactor.assemblyLists import AssemblyList
 from armi.reactor.reactors import Reactor
 
 # Here we store the Database3 version information.
@@ -230,7 +231,7 @@ class Layout:
         try:
             self.temperatures.append((comp.inputTemperatureInC, comp.temperatureInC))
             self.material.append(comp.material.__class__.__name__)
-        except:
+        except:  # noqa: bare-except
             self.temperatures.append((-900, -900))  # an impossible temperature
             self.material.append("")
 
@@ -355,8 +356,10 @@ class Layout:
                 comp = Klass(caseTitle, bp)
             elif issubclass(Klass, Core):
                 comp = Klass(name)
+            elif issubclass(Klass, AssemblyList):
+                comp = Klass(name)
             elif issubclass(Klass, Component):
-                # TODO: init all dimensions to 0, they will be loaded and assigned after load
+                # init all dimensions to 0, they will be loaded and assigned after load
                 kwargs = dict.fromkeys(Klass.DIMENSION_NAMES, 0)
                 kwargs["material"] = material
                 kwargs["name"] = name
@@ -584,9 +587,7 @@ def _packLocationsV1(
 def _packLocationsV2(
     locations: List[grids.LocationBase],
 ) -> Tuple[List[str], List[Tuple[int, int, int]]]:
-    """
-    Location packing implementation for minor version 3. See release notes above.
-    """
+    """Location packing implementation for minor version 3. See release notes above."""
     locTypes = []
     locData: List[Tuple[int, int, int]] = []
     for loc in locations:
@@ -613,9 +614,7 @@ def _packLocationsV2(
 def _packLocationsV3(
     locations: List[grids.LocationBase],
 ) -> Tuple[List[str], List[Tuple[int, int, int]]]:
-    """
-    Location packing implementation for minor version 4. See release notes above.
-    """
+    """Location packing implementation for minor version 4. See release notes above."""
     locTypes = []
     locData: List[Tuple[int, int, int]] = []
 
@@ -674,9 +673,7 @@ def _unpackLocationsV1(locationTypes, locData):
 
 
 def _unpackLocationsV2(locationTypes, locData):
-    """
-    Location unpacking implementation for minor version 3+. See release notes above.
-    """
+    """Location unpacking implementation for minor version 3+. See release notes above."""
     locsIter = iter(locData)
     unpackedLocs = []
     for lt in locationTypes:
@@ -803,7 +800,7 @@ def replaceNonesWithNonsense(
 
     try:
         data = data.astype(realType)
-    except:
+    except:  # noqa: bare-except
         raise ValueError(
             "Could not coerce data for {} to {}, data:\n{}".format(
                 paramName, realType, data
@@ -857,18 +854,11 @@ def replaceNonsenseWithNones(data: numpy.ndarray, paramName: str) -> numpy.ndarr
             if isNone[i].all():
                 result[i] = None
             elif isNone[i].any():
-                # TODO: This is not symmetric with the replaceNonesWithNonsense impl.
-                # That one assumes that Nones apply only at the highest dimension, and
-                # that the lower dimensions will be filled with the magic None value.
-                # Non-none entries below the top level fail to coerce to a serializable
-                # numpy array and would raise an exception when trying to write. TL;DR:
-                # this is a dead branch until the replaceNonesWithNonsense impl is more
-                # sophisticated.
+                # This is the meat of the logic to replace "nonsense" with None.
                 result[i] = numpy.array(data[i], dtype=numpy.dtype("O"))
                 result[i][isNone[i]] = None
             else:
                 result[i] = data[i]
-
     else:
         result = numpy.ndarray(data.shape, dtype=numpy.dtype("O"))
         result[:] = data

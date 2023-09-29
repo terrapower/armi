@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """Tests for operator snapshots."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-method-argument,import-outside-toplevel
 import unittest
 
 from armi import settings
@@ -22,7 +21,6 @@ from armi.operators import getOperatorClassFromSettings
 from armi.operators.runTypes import RunTypes
 from armi.operators.snapshots import OperatorSnapshots
 from armi.reactor.tests import test_reactors
-from armi.settings.fwSettings.databaseSettings import CONF_FORCE_DB_PARAMS
 
 
 class TestOperatorSnapshots(unittest.TestCase):
@@ -33,7 +31,6 @@ class TestOperatorSnapshots(unittest.TestCase):
         newSettings["verbosity"] = "important"
         newSettings["branchVerbosity"] = "important"
         newSettings["nCycles"] = 1
-        newSettings[CONF_FORCE_DB_PARAMS] = ["baseBu"]
         newSettings["dumpSnapshot"] = ["000000", "008000", "016005"]
         o1, self.r = test_reactors.loadTestReactor(customSettings=newSettings)
         self.o = OperatorSnapshots(o1.cs)

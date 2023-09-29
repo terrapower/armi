@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-r"""
+"""
 The ``Case`` object is responsible for running, and executing a set of user inputs.  Many
 entry points redirect into ``Case`` methods, such as ``clone``, ``compare``, and ``run``.
 
@@ -254,7 +254,6 @@ class Case:
 
     def _getPotentialDependencies(self, dirName, title):
         """Get a parent case based on a directory and case title."""
-
         if dirName is None:
             dirName = self.directory
         elif not os.path.isabs(dirName):
@@ -315,7 +314,7 @@ class Case:
 
         This accounts for whether or not the dependency is enabled.
 
-        Note
+        TODO
         ----
         This is a leftover from before the release of the ARMI framework. The API of the
         proprietary cluster communication library is being used here. This should either
@@ -325,8 +324,6 @@ class Case:
             return
         for dependency in self.dependencies:
             if dependency.enabled:
-                # pylint: disable=protected-access; dependency should
-                # also be a Case, so it's not really "protected"
                 self._tasks[0].add_parent(dependency._tasks[-1])
 
     def run(self):
@@ -459,7 +456,7 @@ class Case:
         covFile = os.path.join(covRcDir, ".coveragerc")
         if platform.system() == "Windows":
             covFileWin = os.path.join(covRcDir, "coveragerc")
-            if makeCopy == True:
+            if makeCopy is True:
                 # Make a copy of the file without the dot in the name
                 shutil.copy(covFile, covFileWin)
             return covFileWin
@@ -548,8 +545,8 @@ class Case:
         if not os.path.exists(self.cs["burnChainFileName"]):
             raise ValueError(
                 f"The burn-chain file {self.cs['burnChainFileName']} does not exist. The "
-                f"data cannot be loaded. Fix this path or disable burn-chain initialization using "
-                f"the `initializeBurnChain` setting."
+                "data cannot be loaded. Fix this path or disable burn-chain initialization using "
+                "the `initializeBurnChain` setting."
             )
 
         with open(self.cs["burnChainFileName"]) as burnChainStream:
@@ -658,7 +655,6 @@ class Case:
         ------
         RuntimeError
             If the source and destination are the same
-
         """
         cloneCS = self.cs.duplicate()
 
@@ -684,7 +680,7 @@ class Case:
         clone.cs.writeToYamlFile(clone.cs.path, style=writeStyle, fromFile=self.cs.path)
         runLog.important("finished writing {}".format(clone.cs))
 
-        fromPath = lambda fname: pathTools.armiAbsPath(self.cs.inputDirectory, fname)
+        fromPath = lambda f: pathTools.armiAbsPath(self.cs.inputDirectory, f)
 
         for inputFileSetting in [CONF_LOADING_FILE, "geomFile"]:
             fileName = self.cs[inputFileSetting]
@@ -812,8 +808,8 @@ class Case:
         ):
             # trick: these seemingly no-ops load the bp and geom via properties if
             # they are not yet initialized.
-            self.bp  # pylint: disable=pointless-statement
-            self.geom  # pylint: disable=pointless-statement
+            self.bp
+            self.geom
 
             newSettings = {}
             newSettings[CONF_LOADING_FILE] = self.title + "-blueprints.yaml"
@@ -876,8 +872,11 @@ def _copyInputsHelper(
     try:
         pathTools.copyOrWarn(fileDescription, sourcePath, destFilePath)
         if pathlib.Path(destFilePath).exists():
-            return destFilePath
+            # the basename gets written back to the settings file to protect against
+            # potential future dir structure changes
+            return os.path.basename(destFilePath)
         else:
+            # keep original filepath in the settings file if file copy was unsuccessful
             return origFile
     except Exception:
         return origFile
@@ -921,7 +920,6 @@ def copyInterfaceInputs(
 
     Notes
     -----
-
     Regarding the handling of relative file paths: In the future this could be
     simplified by adding a concept for a suite root directory, below which it is safe
     to copy files without needing to update settings that point with a relative path
@@ -944,7 +942,7 @@ def copyInterfaceInputs(
                 except NonexistentSetting(key):
                     raise ValueError(
                         f"{key} is not a valid setting. Ensure the relevant specifyInputs "
-                        f"method uses a correct setting name."
+                        "method uses a correct setting name."
                     )
             label = key.name
 
@@ -966,6 +964,7 @@ def copyInterfaceInputs(
                             continue
                     except OSError:
                         pass
+
                 # Attempt to construct an absolute file path
                 sourceFullPath = os.path.join(sourceDirPath, f)
                 if WILDCARD:
@@ -987,11 +986,11 @@ def copyInterfaceInputs(
                         label, sourceFullPath, destination, f
                     )
                     newFiles.append(str(destFilePath))
+
                 if destFilePath == f:
-                    runLog.info(
+                    runLog.debug(
                         f"No input files for `{label}` setting could be resolved with "
-                        f"the following path: `{sourceFullPath}`. Will not update "
-                        f"`{label}`."
+                        f"the following path: `{sourceFullPath}`. Will not update `{label}`."
                     )
 
             # Some settings are a single filename. Others are lists of files. Make
@@ -1000,4 +999,5 @@ def copyInterfaceInputs(
                 newSettings[label] = newFiles[0]
             else:
                 newSettings[label] = newFiles
+
     return newSettings

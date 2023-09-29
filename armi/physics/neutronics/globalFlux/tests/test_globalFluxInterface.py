@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for generic global flux interface."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import unittest
 
 import numpy
@@ -31,7 +30,7 @@ from armi.reactor.tests import test_blocks
 from armi.reactor.tests import test_reactors
 from armi.tests import ISOAA_PATH
 
-# pylint: disable=abstract-method
+
 class MockReactorParams:
     def __init__(self):
         self.cycle = 1
@@ -82,9 +81,7 @@ class MockGlobalFluxWithExecuters(
 
 class MockGlobalFluxWithExecutersNonUniform(MockGlobalFluxWithExecuters):
     def getExecuterOptions(self, label=None):
-        """
-        Return modified executerOptions.
-        """
+        """Return modified executerOptions."""
         opts = globalFluxInterface.GlobalFluxInterfaceUsingExecuters.getExecuterOptions(
             self, label=label
         )
@@ -97,7 +94,7 @@ class MockGlobalFluxExecuter(globalFluxInterface.GlobalFluxExecuter):
 
     def _readOutput(self):
         class MockOutputReader:
-            def apply(self, r):  # pylint: disable=no-self-use
+            def apply(self, r):
                 r.core.p.keff += 0.01
 
             def getKeff(self):
@@ -215,7 +212,6 @@ class TestGlobalFluxInterfaceWithExecuters(unittest.TestCase):
         self._setTightCouplingFalse()
 
     def _setTightCouplingTrue(self):
-        # pylint: disable=no-member,protected-access
         self.cs["tightCoupling"] = True
         self.gfi._setTightCouplingDefaults()
 
@@ -266,7 +262,7 @@ class TestGlobalFluxResultMapper(unittest.TestCase):
         o, r = test_reactors.loadTestReactor(customSettings={CONF_XS_KERNEL: "MC2v2"})
         applyDummyFlux(r)
         r.core.lib = isotxs.readBinary(ISOAA_PATH)
-        mapper = globalFluxInterface.GlobalFluxResultMapper()
+        mapper = globalFluxInterface.GlobalFluxResultMapper(cs=o.cs)
         mapper.r = r
         mapper._renormalizeNeutronFluxByBlock(100)
         self.assertAlmostEqual(r.core.calcTotalParam("power", generationNum=2), 100)
@@ -299,7 +295,8 @@ class TestGlobalFluxResultMapper(unittest.TestCase):
         self.assertEqual(len(block.p.mgFlux), 0)
 
     def test_getDpaXs(self):
-        mapper = globalFluxInterface.GlobalFluxResultMapper()
+        cs = settings.Settings()
+        mapper = globalFluxInterface.GlobalFluxResultMapper(cs=cs)
 
         # test fuel block
         b = HexBlock("fuel", height=10.0)
@@ -324,7 +321,8 @@ class TestGlobalFluxResultMapper(unittest.TestCase):
             mapper.getDpaXs(b)
 
     def test_getBurnupPeakingFactor(self):
-        mapper = globalFluxInterface.GlobalFluxResultMapper()
+        cs = settings.Settings()
+        mapper = globalFluxInterface.GlobalFluxResultMapper(cs=cs)
 
         # test fuel block
         mapper.cs["burnupPeakingFactor"] = 0.0
@@ -335,7 +333,8 @@ class TestGlobalFluxResultMapper(unittest.TestCase):
         self.assertEqual(factor, 2.5)
 
     def test_getBurnupPeakingFactorZero(self):
-        mapper = globalFluxInterface.GlobalFluxResultMapper()
+        cs = settings.Settings()
+        mapper = globalFluxInterface.GlobalFluxResultMapper(cs=cs)
 
         # test fuel block without any peaking factor set
         b = HexBlock("fuel", height=10.0)

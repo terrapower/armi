@@ -37,8 +37,8 @@ face-map xml files.
 import tabulate
 import yamlize
 
-from armi import getPluginManagerOrFail
 from armi import context
+from armi import getPluginManagerOrFail
 from armi import runLog
 from armi.reactor import geometry
 from armi.reactor import grids
@@ -52,7 +52,6 @@ class SystemBlueprint(yamlize.Object):
     .. note:: We use string keys to link grids to objects that use them. This differs
         from how blocks/assembies are specified, which use YAML anchors. YAML anchors
         have proven to be problematic and difficult to work with
-
     """
 
     name = yamlize.Attribute(key="name", type=str)
@@ -127,7 +126,6 @@ class SystemBlueprint(yamlize.Object):
 
         runLog.info("Constructing the `{}`".format(self.name))
 
-        # TODO: We should consider removing automatic geom file migration.
         if geom is not None and self.name == "core":
             gridDesign = geom.toGridBlueprints("core")[0]
         else:
@@ -139,12 +137,6 @@ class SystemBlueprint(yamlize.Object):
             gridDesign = bp.gridDesigns.get(self.gridName, None)
 
         system = self._resolveSystemType(self.typ)(self.name)
-
-        # TODO: This could be somewhere better. If system blueprints could be
-        # subclassed, this could live in the CoreBlueprint. setOptionsFromCS() also isnt
-        # great to begin with, so ideally it could be removed entirely.
-        if isinstance(system, reactors.Core):
-            system.setOptionsFromCs(cs)
 
         # Some systems may not require a prescribed grid design. Only try to use one if
         # it was provided
@@ -166,7 +158,7 @@ class SystemBlueprint(yamlize.Object):
         # TODO: This is also pretty specific to Core-like things. We envision systems
         # with non-Core-like structure. Again, probably only doable with subclassing of
         # Blueprints
-        if loadAssems:
+        if loadAssems and gridDesign is not None:
             self._loadAssemblies(cs, system, gridDesign.gridContents, bp)
 
             # TODO: This post-construction work is specific to Cores for now. We need to
@@ -183,7 +175,6 @@ class SystemBlueprint(yamlize.Object):
                 system.processLoading(cs)
         return system
 
-    # pylint: disable=no-self-use
     def _loadAssemblies(self, cs, container, gridContents, bp):
         runLog.header(
             "=========== Adding Assemblies to {} ===========".format(container)

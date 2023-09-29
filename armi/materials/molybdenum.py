@@ -12,16 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Molybdenum.
-"""
+"""Molybdenum."""
 
 from armi.materials.material import SimpleSolid
 
 
 class Molybdenum(SimpleSolid):
-    name = "Molybdenum"
-
     def setDefaultMassFracs(self):
         """Moly mass fractions."""
         self.setMassFrac("MO", 1.0)

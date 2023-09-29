@@ -69,6 +69,7 @@ See :ref:`detail-assems`.
 
 """
 from typing import Tuple
+import traceback
 
 import tabulate
 
@@ -139,9 +140,7 @@ class HistoryTrackerInterface(interfaces.Interface):
         self._writeDetailAssemblyHistories()
 
     def addDetailAssembliesBOL(self):
-        """
-        Find and activate assemblies that the user requested detailed treatment of.
-        """
+        """Find and activate assemblies that the user requested detailed treatment of."""
         if self.cs["detailAssemLocationsBOL"]:
             for locLabel in self.cs["detailAssemLocationsBOL"]:
                 ring, pos, _axial = grids.locatorLabelToIndices(locLabel)
@@ -192,9 +191,7 @@ class HistoryTrackerInterface(interfaces.Interface):
                 self.addDetailAssembly(a)
 
     def _writeDetailAssemblyHistories(self):
-        """
-        Write data file with assembly histories.
-        """
+        """Write data file with assembly histories."""
         for a in self.getDetailAssemblies():
             self.writeAssemHistory(a)
 
@@ -351,11 +348,11 @@ class HistoryTrackerInterface(interfaces.Interface):
             keys = [key for key in keys if key != "loc"]
             data = dbi.getHistories(blocks, keys, timesteps)
             self._preloadedBlockHistory = data
-        except:  # pylint: disable=bare-except
+        except:  # noqa: bare-except
             # fails during the beginning of standard runs, but that's ok
             runLog.info(
-                f"Unable to pre-load block history values due to error:"
-                "\n{traceback.format_exc()}"
+                "Unable to pre-load block history values due to error:"
+                f"\n{traceback.format_exc()}"
             )
             self.unloadBlockHistoryVals()
 

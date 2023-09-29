@@ -213,7 +213,7 @@ class LatticePhysicsInterface(interfaces.Interface):
             "Gamma cross sections not implemented in {}".format(self.cs[CONF_XS_KERNEL])
         )
 
-    def _getSuffix(self, cycle):  # pylint: disable=unused-argument, no-self-use
+    def _getSuffix(self, cycle):
         return ""
 
     def interactEveryNode(self, cycle=None, node=None):
@@ -409,14 +409,13 @@ class LatticePhysicsInterface(interfaces.Interface):
         #. The blocks have changed burnup beyond the burnup threshold
         #. Lattice physics kernel (e.g. MC2) hasn't already been executed for this cycle
            (possible if it runs during fuel handling)
-
         """
         executeXSGen = bool(self.cs[CONF_GEN_XS] and cycle >= self.cs["skipCycles"])
         idsChangedBurnup = self._checkBurnupThresholds(representativeBlockList)
         if executeXSGen and not idsChangedBurnup:
             executeXSGen = False
 
-        if self.r.core._lib is not None:  # pylint: disable=protected-access
+        if self.r.core._lib is not None:
             # justification=r.core.lib property can raise exception or load pre-generated
             # ISOTXS, but the interface should have responsibilty of loading
             # XS's have already generated for this cycle (maybe during fuel management). Should we update due to
@@ -426,7 +425,7 @@ class LatticePhysicsInterface(interfaces.Interface):
                 runLog.info(
                     f"Although a XS library {self.r.core._lib} exists on {self.r.core}, "
                     f"there are missing XS IDs {missing} required. The XS generation on cycle {cycle} "
-                    f"is not enabled, but will be run to generate these missing cross sections."
+                    "is not enabled, but will be run to generate these missing cross sections."
                 )
                 executeXSGen = True
             elif missing:
@@ -477,7 +476,6 @@ class LatticePhysicsInterface(interfaces.Interface):
         -------
         idsChangedBurnup: bool
             flag regarding whether or not burnup changed substantially
-
         """
         idsChangedBurnup = True
         if self._burnupTolerance > 0:

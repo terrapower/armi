@@ -13,13 +13,13 @@
 # limitations under the License.
 """
 Unit testing for tight coupling settings.
+
 - The settings example below shows the intended use for these settings in
   an ARMI yaml input file.
 - Note, for these to be recognized, they need to be prefixed with "tightCouplingSettings:".
 """
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,unused-variable
-import unittest
 import io
+import unittest
 
 from ruamel.yaml import YAML
 import voluptuous as vol
@@ -86,7 +86,6 @@ class TestTightCouplingSettings(unittest.TestCase):
 
     def test_invalidArgumentTypes(self):
         """Tests failure when the values of the parameters do not match the expected schema."""
-
         # Fails because `parameter` value is required to be a string
         with self.assertRaises(vol.MultipleInvalid):
             tc = {}

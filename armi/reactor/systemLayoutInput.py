@@ -275,6 +275,7 @@ class SystemLayoutInput:
         consistent inputs.
         """
         yaml = YAML()
+        yaml.allow_duplicate_keys = False
         tree = yaml.load(stream)
         tree = INPUT_SCHEMA(tree)
         self.assemTypeByIndices.clear()
@@ -345,9 +346,7 @@ class SystemLayoutInput:
         self.eqPathInput.update(modifiedPaths)
 
     def _getModifiedFileName(self, originalFileName, suffix):
-        """
-        Generates the modified geometry file name based on the requested suffix.
-        """
+        """Generates the modified geometry file name based on the requested suffix."""
         originalFileName = originalFileName.split(self._GEOM_FILE_EXTENSION)[0]
         suffix = suffix.split(self._GEOM_FILE_EXTENSION)[0]
         self.modifiedFileName = originalFileName + suffix + self._GEOM_FILE_EXTENSION

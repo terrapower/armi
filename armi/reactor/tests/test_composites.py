@@ -13,9 +13,7 @@
 # limitations under the License.
 
 """Tests for the composite pattern."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 from copy import deepcopy
-from random import random
 import unittest
 
 from armi import nuclearDataIO
@@ -35,7 +33,6 @@ from armi.reactor.blueprints import assemblyBlueprint
 from armi.reactor.components import basicShapes
 from armi.reactor.composites import getReactionRateDict
 from armi.reactor.flags import Flags, TypeSpec
-from armi.reactor import grids
 from armi.reactor.tests.test_blocks import loadTestBlock
 from armi.tests import ISOAA_PATH
 
@@ -51,8 +48,7 @@ class MockBP:
 def getDummyParamDefs():
     dummyDefs = parameters.ParameterDefinitionCollection()
     with dummyDefs.createBuilder() as pb:
-
-        pb.defParam("type", units="none", description="Fake type")
+        pb.defParam("type", units=utils.units.UNITLESS, description="Fake type")
     return dummyDefs
 
 

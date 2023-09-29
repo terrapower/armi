@@ -44,16 +44,14 @@ if TYPE_CHECKING:  # pragma: no cover
 
 
 class ReactorPlugin(plugins.ArmiPlugin):
-    """
-    Plugin exposing built-in reactor components, blocks, assemblies, etc.
-    """
+    """Plugin exposing built-in reactor components, blocks, assemblies, etc."""
 
     @staticmethod
     @plugins.HOOKIMPL
     def defineBlockTypes():
-        from .components.basicShapes import Rectangle, Hexagon
-        from .components.volumetricShapes import RadialSegment
-        from . import blocks
+        from armi.reactor.components.basicShapes import Rectangle, Hexagon
+        from armi.reactor.components.volumetricShapes import RadialSegment
+        from armi.reactor import blocks
 
         return [
             (Rectangle, blocks.CartesianBlock),
@@ -64,12 +62,8 @@ class ReactorPlugin(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineAssemblyTypes():
-        from .blocks import HexBlock, CartesianBlock, ThRZBlock
-        from .assemblies import (
-            HexAssembly,
-            CartesianAssembly,
-            ThRZAssembly,
-        )
+        from armi.reactor.blocks import HexBlock, CartesianBlock, ThRZBlock
+        from armi.reactor.assemblies import HexAssembly, CartesianAssembly, ThRZAssembly
 
         return [
             (HexBlock, HexAssembly),

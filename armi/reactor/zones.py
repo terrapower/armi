@@ -393,7 +393,7 @@ class Zones:
                 return zone
 
         if not zoneFound:
-            runLog.warning("Was not able to find which zone {} is in".format(a))
+            runLog.debug(f"Was not able to find which zone {a} is in", single=True)
 
         return None
 
@@ -405,7 +405,6 @@ class Zones:
         reverse : bool, optional
             Whether to sort in reverse order, by default False
         """
-
         self._zones = dict(sorted(self._zones.items(), reverse=reverse))
 
     def summary(self) -> None:

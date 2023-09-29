@@ -11,15 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-Tests for functions in textProcessors.py.
-"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+"""Tests for functions in textProcessors.py."""
+from io import StringIO
 import os
 import pathlib
-import unittest
-
 import ruamel
+import unittest
 
 from armi.utils import textProcessors
 
@@ -62,6 +59,23 @@ class YamlIncludeTest(unittest.TestCase):
 
         self.assertTrue(commentFound)
         self.assertTrue(anchorFound)
+
+    def test_resolveIncludes_StringIO(self):
+        """Tests that resolveMarkupInclusions handles StringIO input."""
+        yaml = ruamel.yaml.YAML()
+        with open(os.path.join(RES_DIR, "root.yaml")) as f:
+            loadedYaml = yaml.load(f)
+        stringIO = StringIO()
+        yaml.dump(loadedYaml, stringIO)
+        resolved = textProcessors.resolveMarkupInclusions(
+            src=stringIO, root=pathlib.Path(RES_DIR)
+        )
+        with open(os.path.join(RES_DIR, "root.yaml")) as f:
+            expected = textProcessors.resolveMarkupInclusions(
+                f, root=pathlib.Path(RES_DIR)
+            )
+        # strip it because one method gives an extra newline we don't care about
+        self.assertEqual(resolved.getvalue().strip(), expected.getvalue().strip())
 
     def test_findIncludes(self):
         includes = textProcessors.findYamlInclusions(

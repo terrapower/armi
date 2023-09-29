@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """XS Settings tests."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,unused-variable
 import io
 import unittest
 

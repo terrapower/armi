@@ -34,7 +34,7 @@ def _changeDirectory(destination):
 
 
 class DirectoryChanger:
-    """
+    r"""
     Utility to change directory.
 
     Use with 'with' statements to execute code in a different dir, guaranteeing a clean
@@ -125,24 +125,20 @@ class DirectoryChanger:
             _changeDirectory(self.initial)
 
     def moveFiles(self):
-        """
-        Copy ``filesToMove`` into the destination directory on entry.
-        """
+        """Copy ``filesToMove`` into the destination directory on entry."""
         initialPath = self.initial
         destinationPath = self.destination
         self._transferFiles(initialPath, destinationPath, self._filesToMove)
-        if not self.outputPath == self.initial:
+        if self.outputPath != self.initial:
             destinationPath = self.outputPath
             self._transferFiles(initialPath, destinationPath, self._filesToMove)
 
     def retrieveFiles(self):
-        """
-        Copy ``filesToRetrieve`` back into the initial directory on exit.
-        """
+        """Copy ``filesToRetrieve`` back into the initial directory on exit."""
         initialPath = self.destination
         destinationPath = self.initial
         self._transferFiles(initialPath, destinationPath, self._filesToRetrieve)
-        if not self.outputPath == self.initial:
+        if self.outputPath != self.initial:
             destinationPath = self.outputPath
             self._transferFiles(initialPath, destinationPath, self._filesToRetrieve)
 
@@ -359,7 +355,7 @@ class ForcedCreationDirectoryChanger(DirectoryChanger):
 
 def directoryChangerFactory():
     if context.MPI_SIZE > 1:
-        from .directoryChangersMpi import MpiDirectoryChanger
+        from armi.utils.directoryChangersMpi import MpiDirectoryChanger
 
         return MpiDirectoryChanger
     else:

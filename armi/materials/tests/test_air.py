@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""unit tests for air materials."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+"""Unit tests for air materials."""
 
 import math
 import unittest
@@ -179,9 +178,7 @@ REFERENCE_THERMAL_CONDUCTIVITY_mJ_PER_M_K = [
 
 
 class Test_Air(unittest.TestCase):
-    """
-    unit tests for air materials.
-    """
+    """unit tests for air materials."""
 
     def test_pseudoDensity(self):
         """
@@ -222,7 +219,7 @@ class Test_Air(unittest.TestCase):
         for Tk, thermalConductivity in zip(
             REFERENCE_Tk, REFERENCE_THERMAL_CONDUCTIVITY_mJ_PER_M_K
         ):
-            if 200 < Tk and Tk < 850:
+            if Tk > 200 and Tk < 850:
                 error = math.fabs(
                     (air.thermalConductivity(Tk=Tk) - thermalConductivity * 1e-3)
                     / (thermalConductivity * 1e-3)

@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Tests for lumpedFissionProduce module.
-"""
+"""Tests for lumpedFissionProduce module."""
 import unittest
 import io
 import math
@@ -239,9 +237,7 @@ class TestMo99LFP(unittest.TestCase):
     """Test of the fission product model from Mo99."""
 
     def setUp(self):
-        self.lfps = (
-            lumpedFissionProduct._buildMo99LumpedFissionProduct()
-        )  # pylint: disable=protected-access
+        self.lfps = lumpedFissionProduct._buildMo99LumpedFissionProduct()
 
     def test_getAllFissionProductNames(self):
         """Test to ensure that Mo99 is present, but other FP are not."""

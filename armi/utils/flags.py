@@ -32,7 +32,7 @@ import math
 from typing import Dict, Union, Sequence, List, Tuple
 
 
-class auto:
+class auto:  # noqa: invalid-class-name
     """
     Empty class for requesting a lazily-evaluated automatic field value.
 
@@ -115,7 +115,7 @@ class _FlagMeta(type):
         to ``type(klass).__getitem__(klass, key)``, which for an implementation of Flag
         is this metaclass.
         """
-        return cls(cls._nameToValue[key])  # pylint: disable=E1120
+        return cls(cls._nameToValue[key])
 
 
 class Flag(metaclass=_FlagMeta):
@@ -136,7 +136,6 @@ class Flag(metaclass=_FlagMeta):
         represent a Flag's values in smaller chunks.
     """
 
-    # for pylint. Set by metaclass
     _autoAt = None
     _nameToValue = dict()
     _valuesTaken = set()
@@ -183,9 +182,7 @@ class Flag(metaclass=_FlagMeta):
 
     @classmethod
     def _resolveAutos(cls, fields: Sequence[str]) -> List[Tuple[str, int]]:
-        """
-        Assign values to autos, based on the current state of the class.
-        """
+        """Assign values to autos, based on the current state of the class."""
         # There is some opportunity for code re-use between this and the metaclass...
         resolved = []
         for field in fields:
@@ -198,23 +195,17 @@ class Flag(metaclass=_FlagMeta):
 
     @classmethod
     def width(cls):
-        """
-        Return the number of bytes needed to store all of the flags on this class.
-        """
+        """Return the number of bytes needed to store all of the flags on this class."""
         return cls._width
 
     @classmethod
     def fields(cls):
-        """
-        Return a dictionary containing a mapping from field name to integer value.
-        """
+        """Return a dictionary containing a mapping from field name to integer value."""
         return cls._nameToValue
 
     @classmethod
     def sortedFields(cls):
-        """
-        Return a list of all field names, sorted by increasing integer value.
-        """
+        """Return a list of all field names, sorted by increasing integer value."""
         return [
             i[0] for i in sorted(cls._nameToValue.items(), key=lambda item: item[1])
         ]
@@ -270,9 +261,7 @@ class Flag(metaclass=_FlagMeta):
 
     @classmethod
     def from_bytes(cls, bytes, byteorder="little"):
-        """
-        Return a Flags instance given a byte stream.
-        """
+        """Return a Flags instance given a byte stream."""
         return cls(int.from_bytes(bytes, byteorder=byteorder))
 
     def __int__(self):

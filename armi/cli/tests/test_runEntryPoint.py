@@ -11,22 +11,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-Test for run cli entry point.
-"""
-# pylint: disable=protected-access,missing-function-docstring,missing-class-docstring
+"""Test for run cli entry point."""
 from shutil import copyfile
 import os
 import sys
 import unittest
 
 from armi.__main__ import main
-from armi.cli.entryPoint import EntryPoint
 from armi.bookkeeping.visualization.entryPoint import VisFileEntryPoint
 from armi.cli.checkInputs import CheckInputEntryPoint, ExpandBlueprints
 from armi.cli.clone import CloneArmiRunCommandBatch, CloneSuiteCommand
 from armi.cli.compareCases import CompareCases, CompareSuites
 from armi.cli.database import ConvertDB, ExtractInputs, InjectInputs
+from armi.cli.entryPoint import EntryPoint
 from armi.cli.migrateInputs import MigrateInputs
 from armi.cli.modify import ModifyCaseSettingsCommand
 from armi.cli.reportsEntryPoint import ReportsEntryPoint
@@ -43,11 +40,8 @@ class TestInitializationEntryPoints(unittest.TestCase):
         """Tests the initialization of all subclasses of `EntryPoint`."""
         entryPoints = getEntireFamilyTree(EntryPoint)
 
-        # Note that this is a hard coded number that should be incremented
-        # if a new ARMI framework entry point is added. This is a bit hacky,
-        # but will help demonstrate that entry point classes can be initialized
-        # and the `addOptions` and public API is tested.
-        self.assertEqual(len(entryPoints), 18)
+        # Comparing to a minimum number of entry points, in case more are added.
+        self.assertGreater(len(entryPoints), 16)
 
         for e in entryPoints:
             entryPoint = e()
@@ -62,8 +56,8 @@ class TestInitializationEntryPoints(unittest.TestCase):
                     settingsArg,
                     msg=(
                         f"A settings file argument was expected for {entryPoint}, "
-                        f"but does not exist. This is a error in the EntryPoint "
-                        f"implementation."
+                        "but does not exist. This is a error in the EntryPoint "
+                        "implementation."
                     ),
                 )
 
@@ -230,10 +224,16 @@ class TestExtractInputs(unittest.TestCase):
     def test_extractInputsBasics(self):
         ei = ExtractInputs()
         ei.addOptions()
-        ei.parse_args(["/path/to/fake.h5"])
+        ei.parse_args(["/path/to/fake"])
 
         self.assertEqual(ei.name, "extract-inputs")
         self.assertEqual(ei.args.output_base, "/path/to/fake")
+
+        with mockRunLogs.BufferLog() as mock:
+            self.assertEqual("", mock.getStdout())
+            with self.assertRaises(FileNotFoundError):
+                # The "fake" file doesn't exist, so this should fail.
+                ei.invoke()
 
 
 class TestInjectInputs(unittest.TestCase):
@@ -244,6 +244,32 @@ class TestInjectInputs(unittest.TestCase):
 
         self.assertEqual(ii.name, "inject-inputs")
         self.assertIsNone(ii.args.blueprints)
+
+    def test_injectInputsInvokeIgnore(self):
+        ii = InjectInputs()
+        ii.addOptions()
+        ii.parse_args(["/path/to/fake.h5"])
+
+        with mockRunLogs.BufferLog() as mock:
+            self.assertEqual("", mock.getStdout())
+            ii.invoke()
+            self.assertIn("No settings", mock.getStdout())
+
+    def test_injectInputsInvokeNoData(self):
+        with TemporaryDirectoryChanger():
+            # init CLI
+            ii = InjectInputs()
+            ii.addOptions()
+
+            bp = os.path.join(TEST_ROOT, "refSmallReactor.yaml")
+            ii.parse_args(["/path/to/fake.h5", "--blueprints", bp])
+
+            # invoke and check log
+            with mockRunLogs.BufferLog() as mock:
+                self.assertEqual("", mock.getStdout())
+                with self.assertRaises(FileNotFoundError):
+                    # The "fake.h5" doesn't exist, so this should fail.
+                    ii.invoke()
 
 
 class TestMigrateInputs(unittest.TestCase):
@@ -293,10 +319,16 @@ class TestReportsEntryPoint(unittest.TestCase):
     def test_reportsEntryPointBasics(self):
         rep = ReportsEntryPoint()
         rep.addOptions()
-        rep.parse_args(["-h5db", "/path/to/fake.yaml"])
+        rep.parse_args(["-h5db", "/path/to/fake.h5"])
 
         self.assertEqual(rep.name, "report")
         self.assertEqual(rep.settingsArgument, "optional")
+
+        with mockRunLogs.BufferLog() as mock:
+            self.assertEqual("", mock.getStdout())
+            with self.assertRaises(ValueError):
+                # The "fake.h5" doesn't exist, so this should fail.
+                rep.invoke()
 
 
 class TestCompareIsotxsLibsEntryPoint(unittest.TestCase):

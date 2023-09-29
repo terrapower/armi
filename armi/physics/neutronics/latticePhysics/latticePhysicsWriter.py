@@ -124,7 +124,9 @@ class LatticePhysicsWriter(interfaces.InputWriter):
         # would prefer this in 1D but its used in 0D in _writeSourceComposition
         self.minDriverDensity = self.xsSettings.minDriverDensity
 
-        blockNeedsFPs = representativeBlock.getLumpedFissionProductCollection() != None
+        blockNeedsFPs = (
+            representativeBlock.getLumpedFissionProductCollection() is not None
+        )
 
         self.modelFissionProducts = (
             blockNeedsFPs and self.cs[CONF_FP_MODEL] != "noFissionProducts"
@@ -166,7 +168,7 @@ class LatticePhysicsWriter(interfaces.InputWriter):
             ),
         )
 
-    def write(self):  # pylint: disable=arguments-differ
+    def write(self):
         raise NotImplementedError
 
     @property
@@ -381,7 +383,7 @@ class LatticePhysicsWriter(interfaces.InputWriter):
         Expands the nuclides in the LFP based on their yields.
 
         Returns
-        --------
+        -------
         dfpDensities : dict
             Detailed Fission Product Densities. keys are FP names, values are block number densities in atoms/bn-cm.
 
@@ -451,7 +453,6 @@ class LatticePhysicsWriter(interfaces.InputWriter):
             new = number density of Pu-239 after adjustment
 
         """
-
         minFrac = self.cs[CONF_MINIMUM_FISSILE_FRACTION]
         fiss = sum(dens[0] for nuc, dens in nucDensities.items() if nuc.isFissile())
         hm = sum(dens[0] for nuc, dens in nucDensities.items() if nuc.isHeavyMetal())

@@ -32,7 +32,6 @@ Generally, the cross section manager is a attribute of the lattice physics code 
 
 Examples
 --------
-
     csm = CrossSectionGroupManager()
     csm._setBuGroupBounds(cs['buGroups'])
     csm._addXsGroupsFromBlocks(blockList)
@@ -73,7 +72,6 @@ ORDER = interfaces.STACK_ORDER.BEFORE + interfaces.STACK_ORDER.CROSS_SECTIONS
 
 def describeInterfaces(cs):
     """Function for exposing interface(s) to other code."""
-    # pylint: disable=import-outside-toplevel # avoid cyclic import
     from armi.physics.neutronics.settings import CONF_NEUTRONICS_KERNEL
 
     if "MCNP" not in cs[CONF_NEUTRONICS_KERNEL]:  # MCNP does not use CSGM
@@ -212,9 +210,7 @@ class BlockCollection(list):
         raise NotImplementedError
 
     def getWeight(self, block):
-        """
-        Get value of weighting function for this block.
-        """
+        """Get value of weighting function for this block."""
         vol = block.getVolume() or 1.0
         if not self.weightingParam:
             weight = 1.0
@@ -240,7 +236,7 @@ class BlockCollection(list):
 
     def _calcWeightedBurnup(self):
         """
-        For a blockCollection that represents fuel, calculate the weighted average burnup
+        For a blockCollection that represents fuel, calculate the weighted average burnup.
 
         Notes
         -----
@@ -258,9 +254,7 @@ class BlockCollection(list):
 
 
 class MedianBlockCollection(BlockCollection):
-    """
-    Returns the median burnup block. This is a simple and often accurate approximation.
-    """
+    """Returns the median burnup block. This is a simple and often accurate approximation."""
 
     def _makeRepresentativeBlock(self):
         """Get the median burnup block."""
@@ -321,9 +315,7 @@ class AverageBlockCollection(BlockCollection):
     """
 
     def _makeRepresentativeBlock(self):
-        """
-        Generate a block that best represents all blocks in group.
-        """
+        """Generate a block that best represents all blocks in group."""
         newBlock = self._getNewBlock()
         lfpCollection = self._getAverageFuelLFP()
         newBlock.setLumpedFissionProducts(lfpCollection)
@@ -474,8 +466,11 @@ class CylindricalComponentsAverageBlockCollection(BlockCollection):
         if len(b) != len(repBlock):
             raise ValueError(
                 f"Blocks {b} and {repBlock} have differing number "
-                f"of components and cannot be homogenized"
+                "of components and cannot be homogenized"
             )
+        # Using Fe-56 as a proxy for structure and Na-23 as proxy for coolant is undesirably SFR-centric
+        # This should be generalized in the future, if possible
+        consistentNucs = {"PU239", "U238", "U235", "U234", "FE56", "NA23", "O16"}
         for c, repC in zip(sorted(b), sorted(repBlock)):
             compString = (
                 f"Component {repC} in block {repBlock} and component {c} in block {b}"
@@ -488,7 +483,10 @@ class CylindricalComponentsAverageBlockCollection(BlockCollection):
 
             theseNucs = set(c.getNuclides())
             thoseNucs = set(repC.getNuclides())
-            diffNucs = theseNucs.symmetric_difference(thoseNucs)
+            # check for any differences between which `consistentNucs` the components have
+            diffNucs = theseNucs.symmetric_difference(thoseNucs).intersection(
+                consistentNucs
+            )
             if diffNucs:
                 raise ValueError(
                     f"{compString} are in the same location, but nuclides "
@@ -683,9 +681,7 @@ class SlabComponentsAverageBlockCollection(BlockCollection):
 
 
 class FluxWeightedAverageBlockCollection(AverageBlockCollection):
-    """
-    Flux-weighted AverageBlockCollection.
-    """
+    """Flux-weighted AverageBlockCollection."""
 
     def __init__(self, *args, **kwargs):
         AverageBlockCollection.__init__(self, *args, **kwargs)
@@ -721,12 +717,11 @@ class CrossSectionGroupManager(interfaces.Interface):
 
     def interactBOL(self):
         # now that all cs settings are loaded, apply defaults to compound XS settings
-        # pylint: disable=import-outside-toplevel # avoid cyclic import
+        from armi.physics.neutronics.settings import CONF_XS_BLOCK_REPRESENTATION
         from armi.physics.neutronics.settings import (
-            CONF_XS_BLOCK_REPRESENTATION,
             CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION,
-            CONF_LATTICE_PHYSICS_FREQUENCY,
         )
+        from armi.physics.neutronics.settings import CONF_LATTICE_PHYSICS_FREQUENCY
 
         self.cs[CONF_CROSS_SECTION].setDefaults(
             self.cs[CONF_XS_BLOCK_REPRESENTATION],
@@ -775,7 +770,6 @@ class CrossSectionGroupManager(interfaces.Interface):
         --------
         :py:meth:`Assembly <armi.physics.neutronics.latticePhysics.latticePhysics.LatticePhysicsInterface.interactCoupled>`
         """
-
         if (
             iteration == 0
             and self._latticePhysicsFrequency
@@ -794,7 +788,7 @@ class CrossSectionGroupManager(interfaces.Interface):
         Set the burnup group structure.
 
         Parameters
-        ---------
+        ----------
         upperBuGroupBounds : list
             List of upper burnup values in percent.
 
@@ -942,9 +936,7 @@ class CrossSectionGroupManager(interfaces.Interface):
         return (filePath, fileName)
 
     def createRepresentativeBlocks(self):
-        """
-        Get a representative block from each cross section ID managed here.
-        """
+        """Get a representative block from each cross section ID managed here."""
         representativeBlocks = {}
         self.avgNucTemperatures = {}
         self._unrepresentedXSIDs = []
@@ -1145,9 +1137,7 @@ class CrossSectionGroupManager(interfaces.Interface):
         return unrepresentedBlocks
 
     def makeCrossSectionGroups(self):
-        """
-        Make cross section groups for all blocks in reactor and unrepresented blocks from blueprints.
-        """
+        """Make cross section groups for all blocks in reactor and unrepresented blocks from blueprints."""
         bCollectXSGroup = {}  # clear old groups (in case some are no longer existent)
         bCollectXSGroup = self._addXsGroupsFromBlocks(
             bCollectXSGroup, self.r.core.getBlocks()
@@ -1191,7 +1181,6 @@ class CrossSectionGroupManager(interfaces.Interface):
 
     def _summarizeGroups(self, blockCollectionsByXsGroup):
         """Summarize current contents of the XS groups."""
-        # pylint: disable=import-outside-toplevel # avoid cyclic import
         from armi.physics.neutronics.settings import CONF_XS_BLOCK_REPRESENTATION
 
         runLog.extra("Cross section group manager summary")
@@ -1322,9 +1311,7 @@ BLOCK_COLLECTIONS = {
 
 
 def blockCollectionFactory(xsSettings, allNuclidesInProblem):
-    """
-    Build a block collection based on user settings and input.
-    """
+    """Build a block collection based on user settings and input."""
     blockRepresentation = xsSettings.blockRepresentation
     validBlockTypes = xsSettings.validBlockTypes
     return BLOCK_COLLECTIONS[blockRepresentation](

@@ -12,10 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Unit tests for parsing.
-"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+"""Unit tests for parsing."""
 import unittest
 
 from armi.utils import parsing
@@ -46,8 +43,8 @@ class LiteralEvalTest(unittest.TestCase):
         )
         self.assertEqual(parsing.tryLiteralEval("(1,2)"), (1, 2))
         self.assertEqual(parsing.tryLiteralEval((1, 2)), (1, 2))
-        self.assertEqual(parsing.tryLiteralEval("u'apple'"), u"apple")
-        self.assertEqual(parsing.tryLiteralEval(u"apple"), u"apple")
+        self.assertEqual(parsing.tryLiteralEval("u'apple'"), "apple")
+        self.assertEqual(parsing.tryLiteralEval("apple"), "apple")
         self.assertEqual(parsing.tryLiteralEval("apple"), "apple")
         self.assertEqual(parsing.tryLiteralEval(tuple), tuple)
 

@@ -12,23 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Hafnium is an element that has high capture cross section across multiple isotopes.
-"""
+"""Hafnium is an element that has high capture cross section across multiple isotopes."""
 
 from armi.nucDirectory import nucDir
 from armi.materials.material import SimpleSolid
 
 
 class Hafnium(SimpleSolid):
-    name = "Hafnium"
-
     def setDefaultMassFracs(self):
         for a, abund in nucDir.getNaturalMassIsotopics("HF"):
             self.setMassFrac("HF{0}".format(a), abund)
 
     def density(self, Tk=None, Tc=None):
-        r"""
-        http://www.lenntech.com/periodic/elements/hf.htm.
-        """
+        r"""http://www.lenntech.com/periodic/elements/hf.htm."""
         return 13.07

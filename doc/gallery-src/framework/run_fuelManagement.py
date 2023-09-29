@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-Fuel management in a LWR
-========================
+Fuel management in a LWR.
+=========================
 
 Demo of locating and swapping assemblies in a core with Cartesian geometry. Given a burnup
 distribution, this swaps high burnup assemblies with low ones.
@@ -26,18 +26,16 @@ Because the ARMI framework does not come with a LWR global flux/depletion solver
 flux/depletion results would need to be provided by a physics plugin before actually using
 ARMI to do fuel management. Thus, this example applies a dummy burnup distribution for
 demonstration purposes.
-
 """
 # Tell the gallery to feature the 2nd image
 # sphinx_gallery_thumbnail_number = 2
 import math
 
+from armi import configure
+from armi.physics.fuelCycle import fuelHandlers
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
-from armi.physics.fuelCycle import fuelHandlers
 from armi.utils import plotting
-
-from armi import configure, runLog
 
 # configure ARMI
 configure(permissive=True)
@@ -47,7 +45,7 @@ o, reactor = test_reactors.loadTestReactor(inputFileName="refTestCartesian.yaml"
 # Apply a dummy burnup distribution roughly in a cosine
 for b in reactor.core.getBlocks(Flags.FUEL):
     x, y, z = b.spatialLocator.getGlobalCoordinates()
-    d = math.sqrt(x ** 2 + y ** 2)
+    d = math.sqrt(x**2 + y**2)
     b.p.percentBu = 5 * math.cos(d * math.pi / 2 / 90)
 
 # show the initial burnup distribution

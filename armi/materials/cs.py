@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Cesium.
-"""
+"""Cesium."""
 
 from armi.materials.material import Fluid
 from armi.utils.units import getTk
@@ -22,8 +20,6 @@ from armi.utils.units import getTk
 
 class Cs(Fluid):
     """Cesium."""
-
-    name = "Cs"
 
     def setDefaultMassFracs(self):
         self.setMassFrac("CS133", 1.0)

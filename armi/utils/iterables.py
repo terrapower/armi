@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Module of utilities to help dealing with iterable objects in Python.
-"""
+"""Module of utilities to help dealing with iterable objects in Python."""
 from itertools import tee, chain
 import struct
 
@@ -189,7 +187,7 @@ class Sequence:
         self._iter, copy = tee(self._iter, 2)
         return Sequence(copy)
 
-    def __iter__(self):  # pylint: disable=non-iterator-returned
+    def __iter__(self):
         return self
 
     def __repr__(self):

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-r"""
+"""
 A collection of miscellaneous functions used by ReportInterface to generate
 various reports.
 """
@@ -94,7 +94,6 @@ def writeWelcomeHeaders(o, cs):
         inputInfo : list
             (label, fileName, shaHash) tuples
         """
-        # pylint: disable=import-outside-toplevel # avoid cyclic import
         from armi.physics.neutronics.settings import CONF_LOADING_FILE
 
         pathToLoading = pathlib.Path(cs.inputDirectory) / cs[CONF_LOADING_FILE]
@@ -136,6 +135,17 @@ def writeWelcomeHeaders(o, cs):
                 else getFileSHA1Hash(fName, digits=10)
             )
             inputInfo.append((label, fName, shaHash))
+
+        # bonus: grab the files stored in the crossSectionControl section
+        for fluxSection, fluxData in cs["crossSectionControl"].items():
+            if fluxData.xsFileLocation is not None:
+                label = f"crossSectionControl-{fluxSection}"
+                fName = fluxData.xsFileLocation
+                if isinstance(fName, list):
+                    fName = fName[0]
+                if fName and os.path.exists(fName):
+                    shaHash = getFileSHA1Hash(fName, digits=10)
+                    inputInfo.append((label, fName, shaHash))
 
         return inputInfo
 
@@ -248,7 +258,7 @@ def writeTightCouplingConvergenceSummary(convergenceSummary):
 
 
 def writeAssemblyMassSummary(r):
-    r"""Print out things like Assembly weights to the runLog.
+    """Print out things like Assembly weights to the runLog.
 
     Parameters
     ----------
@@ -387,7 +397,7 @@ def _makeTotalAssemblyMassSummary(massSum):
 
 
 def writeCycleSummary(core):
-    r"""Prints a cycle summary to the runLog.
+    """Prints a cycle summary to the runLog.
 
     Parameters
     ----------
@@ -465,14 +475,13 @@ def setNeutronBalancesReport(core):
 
 
 def summarizePinDesign(core):
-    r"""Prints out some information about the pin assembly/duct design.
+    """Prints out some information about the pin assembly/duct design.
 
     Handles multiple types of dimensions simplistically by taking the average.
 
     Parameters
     ----------
     core : armi.reactor.reactors.Core
-
     """
     designInfo = collections.defaultdict(list)
 
@@ -541,13 +550,13 @@ def summarizePinDesign(core):
         for component_ in sorted(first_fuel_block):
             runLog.info(component_.setDimensionReport())
 
-    except Exception as error:  # pylint: disable=broad-except
+    except Exception as error:
         runLog.warning("Pin summarization failed to work")
         runLog.warning(error)
 
 
 def summarizePowerPeaking(core):
-    r"""Prints reactor Fz, Fxy, Fq.
+    """Prints reactor Fz, Fxy, Fq.
 
     Parameters
     ----------
@@ -580,7 +589,7 @@ def summarizePowerPeaking(core):
 
 
 def summarizePower(core):
-    r"""Provide an edit showing where the power is based on assembly types.
+    """Provide an edit showing where the power is based on assembly types.
 
     Parameters
     ----------
@@ -605,7 +614,7 @@ def summarizePower(core):
 
 
 def makeCoreDesignReport(core, cs):
-    r"""Builds report to summarize core design inputs.
+    """Builds report to summarize core design inputs.
 
     Parameters
     ----------
@@ -627,7 +636,6 @@ def makeCoreDesignReport(core, cs):
 
 
 def _setGeneralCoreDesignData(cs, coreDesignTable):
-    # pylint: disable=import-outside-toplevel # avoid cyclic import
     from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
     from armi.physics.neutronics.settings import CONF_LOADING_FILE
 
@@ -777,11 +785,8 @@ def _setGeneralCoreParametersData(core, cs, coreDesignTable):
 
 
 def _setGeneralSimulationData(core, cs, coreDesignTable):
-    # pylint: disable=import-outside-toplevel # avoid cyclic import
-    from armi.physics.neutronics.settings import (
-        CONF_GEN_XS,
-        CONF_GLOBAL_FLUX_ACTIVE,
-    )
+    from armi.physics.neutronics.settings import CONF_GEN_XS
+    from armi.physics.neutronics.settings import CONF_GLOBAL_FLUX_ACTIVE
 
     report.setData("  ", "", coreDesignTable, report.DESIGN)
     report.setData(
@@ -808,7 +813,7 @@ def _setGeneralSimulationData(core, cs, coreDesignTable):
 
 
 def makeBlockDesignReport(r):
-    r"""Summarize the block designs from the loading file.
+    """Summarize the block designs from the loading file.
 
     Parameters
     ----------
@@ -863,7 +868,7 @@ def _getComponentInputDimensions(cDesign):
 
 
 def makeCoreAndAssemblyMaps(r, cs, generateFullCoreMap=False, showBlockAxMesh=True):
-    r"""Create core and assembly design plots.
+    """Create core and assembly design plots.
 
     Parameters
     ----------

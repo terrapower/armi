@@ -11,8 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-""" Test the basic triangle math."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,unused-variable
+"""Test the basic triangle math."""
 import unittest
 from armi.utils import triangle
 
@@ -79,12 +78,6 @@ class TestTriangle(unittest.TestCase):
         self.assertFalse(generalTriangleInOrOut)
 
         # Check a case that should cause failure since only two triangle can be drawn
-        x1 = 0.15
-        x2 = 0.0
-        x3 = 0.0
-        y1 = 0.17
-        y2 = 0.054
-        y3 = 0.376
         xP = 0.0
         yP = 0.17
         generalTriangleInOrOut = triangle.checkIfPointIsInTriangle(
@@ -94,7 +87,6 @@ class TestTriangle(unittest.TestCase):
 
     def test_checkIfPointIsInTriangle2(self):
         """Test that barycentricCheckIfPointIsInTriangle can identify if a point is inside or outside of a triangle."""
-
         # First check the right triangle case
         xT1 = 0.0
         yT1 = 0.0

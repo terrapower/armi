@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """This module provides tests for the generic Executers."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import os
 import unittest
 
@@ -21,7 +20,7 @@ from armi.reactor import geometry
 from armi.utils import directoryChangers
 from armi.physics import executers
 
-# pylint: disable=abstract-method
+
 class MockReactorParams:
     def __init__(self):
         self.cycle = 1
@@ -72,9 +71,7 @@ class TestExecuters(unittest.TestCase):
         self.executer = executers.DefaultExecuter(e, MockReactor())
 
     def test_collectInputsAndOutputs(self):
-        """
-        Verify that the executer can select to not copy back output.
-        """
+        """Verify that the executer can select to not copy back output."""
         self.executer.options.inputFile = "test.inp"
         self.executer.options.outputFile = "test.out"
         self.executer.options.copyOutput = False
@@ -98,7 +95,6 @@ class TestExecuters(unittest.TestCase):
         Verify that runDir is updated when TemporaryDirectoryChanger is used and
         not updated when ForcedCreationDirectoryChanger is used.
         """
-
         self.assertEqual(
             self.executer.dcType, directoryChangers.TemporaryDirectoryChanger
         )

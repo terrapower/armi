@@ -11,9 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-Utilities related to profiling code.
-"""
+"""Utilities related to profiling code."""
 
 import copy
 import os
@@ -173,7 +171,7 @@ class MasterTimer:
             timer.over_start = 0  # deal with what recursion may have caused
             timer.stop()
 
-        _Timer._frozen = True  # pylint: disable=protected-access
+        _Timer._frozen = True
 
         master.end_time = time.time()
 

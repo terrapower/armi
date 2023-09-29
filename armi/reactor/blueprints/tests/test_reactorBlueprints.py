@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """Tests for reactor blueprints."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import os
 import unittest
 
@@ -32,6 +31,7 @@ core:
     y: 10.1
     z: 1.1
 sfp:
+    type: sfp
     grid name: sfp
     origin:
         x: 0.0

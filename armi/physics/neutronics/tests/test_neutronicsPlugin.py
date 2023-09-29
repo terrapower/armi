@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""unit tests for the neutronics plugin."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+"""Unit tests for the neutronics plugin."""
 import io
 import unittest
 
@@ -265,8 +264,8 @@ class NeutronicsReactorTests(unittest.TestCase):
         sv = getNeutronicsSettingValidators(inspector)
         self.assertEqual(len(sv), 9)
 
-        # Test the Query: boundaries are now "Extrapolated", not "Normal"
-        cs = cs.modified(newSettings={CONF_BOUNDARIES: "Normal"})
+        # Test the Query: boundaries are now "Extrapolated", not "Generalized"
+        cs = cs.modified(newSettings={CONF_BOUNDARIES: "Generalized"})
         inspector = settingsValidation.Inspector(cs)
         sv = getNeutronicsSettingValidators(inspector)
 

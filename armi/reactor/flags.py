@@ -151,7 +151,6 @@ def _fromStringIgnoreErrors(cls, typeSpec):
     a. multiple-word flags are used such as *grid plate* or
        *inlet nozzle* so we use lookups.
     b. Some flags have digits in them. We just strip those off.
-
     """
 
     def updateMethodIgnoreErrors(typeSpec):
@@ -190,9 +189,7 @@ def _toString(cls, typeSpec):
 
 
 class Flags(Flag):
-    """
-    Defines the valid flags used in the framework.
-    """
+    """Defines the valid flags used in the framework."""
 
     # basic classifiers
     PRIMARY = auto()
@@ -298,28 +295,6 @@ class InvalidFlagsError(KeyError):
     """Raised when code attempts to look for an undefined flag."""
 
     pass
-
-
-_PLUGIN_FLAGS_REGISTERED = False
-
-
-def registerPluginFlags(pm):
-    """
-    Apply flags specified in the passed ``PluginManager`` to the ``Flags`` class.
-
-    See Also
-    --------
-    armi.plugins.ArmiPlugin.defineFlags
-    """
-    global _PLUGIN_FLAGS_REGISTERED
-    if _PLUGIN_FLAGS_REGISTERED:
-        raise RuntimeError(
-            "Plugin flags have already been registered. Cannot do it twice!"
-        )
-
-    for pluginFlags in pm.hook.defineFlags():
-        Flags.extend(pluginFlags)
-    _PLUGIN_FLAGS_REGISTERED = True
 
 
 # string conversions for multiple-word flags

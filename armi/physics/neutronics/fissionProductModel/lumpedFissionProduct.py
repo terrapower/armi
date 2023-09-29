@@ -17,8 +17,6 @@ them from files.
 
 These are generally managed by the
 :py:mod:`~armi.physics.neutronics.fissionProductModel.fissionProductModel.FissionProductModel`
-
-
 """
 import os
 
@@ -26,7 +24,10 @@ from armi.nucDirectory import nuclideBases
 from armi import runLog
 from armi.nucDirectory import elements
 
-from .fissionProductModelSettings import CONF_LFP_COMPOSITION_FILE_PATH, CONF_FP_MODEL
+from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import (
+    CONF_LFP_COMPOSITION_FILE_PATH,
+    CONF_FP_MODEL,
+)
 
 
 class LumpedFissionProduct:
@@ -68,9 +69,7 @@ class LumpedFissionProduct:
         self.yld = {}
 
     def duplicate(self):
-        """
-        Make a copy of this w/o using deepcopy.
-        """
+        """Make a copy of this w/o using deepcopy."""
         new = self.__class__(self.name)
         for key, val in self.yld.items():
             new.yld[key] = val
@@ -96,7 +95,7 @@ class LumpedFissionProduct:
         if val < 0.0:
             raise ValueError(
                 f"Cannot set the yield of {key} in {self} to be "
-                f"less than zero as this is non-physical."
+                "less than zero as this is non-physical."
             )
         if val > NUM_FISSION_PRODUCTS_PER_LFP:
             raise ValueError(
@@ -152,7 +151,6 @@ class LumpedFissionProduct:
         massFracs : dict
             mass fractions (floats) of LFP masses
         """
-
         massFracs = {}
         for nuc in self.keys():
             massFracs[nuc] = self.getMassFrac(nuclideBase=nuc)
@@ -263,9 +261,7 @@ class LumpedFissionProductCollection(dict):
         return fpDensities
 
     def getMassFrac(self, oldMassFrac=None):
-        """
-        returns the mass fraction vector of the collection of lumped fission products.
-        """
+        """Returns the mass fraction vector of the collection of lumped fission products."""
         if not oldMassFrac:
             raise ValueError("You must define a massFrac vector")
 
@@ -322,9 +318,7 @@ class FissionProductDefinitionFile:
         return lfps
 
     def createSingleLFPFromFile(self, name):
-        """
-        Read one LFP from the file.
-        """
+        """Read one LFP from the file."""
         lfpLines = self._splitIntoIndividualLFPLines(name)
         lfp = self._readOneLFP(lfpLines[0])  # only one LFP expected. Use it.
         return lfp
@@ -334,6 +328,7 @@ class FissionProductDefinitionFile:
         The lfp file can contain one or more LFPs. This splits them.
 
         Ignores DUMPs.
+
         Parameters
         ----------
         lfpName : str, optional
@@ -395,7 +390,7 @@ def lumpedFissionProductFactory(cs):
     lfpPath = cs[CONF_LFP_COMPOSITION_FILE_PATH]
     if not lfpPath or not os.path.exists(lfpPath):
         raise ValueError(
-            f"The fission product reference file does "
+            "The fission product reference file does "
             f"not exist or is not a valid path. Path provided: {lfpPath}"
         )
 

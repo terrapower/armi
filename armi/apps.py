@@ -28,6 +28,7 @@ customizing much of the Framework's behavior.
     object. We are planning to do this, but for now this App class is somewhat
     rudimentary.
 """
+# ruff: noqa: E402
 from typing import Dict, Optional, Tuple, List
 import collections
 import importlib
@@ -74,12 +75,12 @@ class App:
         For a description of the things that an ARMI plugin can do, see the
         :py:mod:`armi.plugins` module.
         """
+        self._pluginFlagsRegistered: bool = False
         self._pm: Optional[pluginManager.ArmiPluginManager] = None
         self._paramRenames: Optional[Tuple[Dict[str, str], int]] = None
         self.__initNewPlugins()
 
     def __initNewPlugins(self):
-        # pylint: disable=import-outside-toplevel
         from armi import cli
         from armi import bookkeeping
         from armi.physics import fuelCycle
@@ -120,9 +121,7 @@ class App:
         return self._pm
 
     def getSettings(self) -> Dict[str, Setting]:
-        """
-        Return a dictionary containing all Settings defined by the framework and all plugins.
-        """
+        """Return a dictionary containing all Settings defined by the framework and all plugins."""
         # Start with framework settings
         settingDefs = {
             setting.name: setting for setting in fwSettings.getFrameworkSettings()
@@ -213,9 +212,7 @@ class App:
             currentNames = {pd.name for pd in parameters.ALL_DEFINITIONS}
 
             renames = dict()
-            for (
-                pluginRenames
-            ) in self._pm.hook.defineParameterRenames():  # pylint: disable=no-member
+            for pluginRenames in self._pm.hook.defineParameterRenames():
                 collisions = currentNames & pluginRenames.keys()
                 if collisions:
                     raise plugins.PluginError(
@@ -232,8 +229,26 @@ class App:
             self._paramRenames = renames, self._pm.counter
         return renames
 
-    def registerUserPlugins(self, pluginPaths):
+    def registerPluginFlags(self):
         """
+        Apply flags specified in the passed ``PluginManager`` to the ``Flags`` class.
+
+        See Also
+        --------
+        armi.plugins.ArmiPlugin.defineFlags
+        """
+        if self._pluginFlagsRegistered:
+            raise RuntimeError(
+                "Plugin flags have already been registered. Cannot do it twice!"
+            )
+
+        for pluginFlags in self._pm.hook.defineFlags():
+            Flags.extend(pluginFlags)
+
+        self._pluginFlagsRegistered = True
+
+    def registerUserPlugins(self, pluginPaths):
+        r"""
         Register additional plugins passed in by importable paths.
         These plugins may be provided e.g. by an application during startup
         based on user input.
@@ -271,7 +286,7 @@ class App:
                 self.__registerUserPluginsInternalImport(pluginPath)
 
     def _isPluginRegistered(self, pluginPath: str):
-        """
+        r"""
         Check if the plugin at the provided path is already registered.
 
         The expected path formats are:
@@ -286,12 +301,12 @@ class App:
         ``C:\\path\\to\\pluginMod.py:pluginCls``
 
         Parameters
-        -----------
+        ----------
         pluginPath : str
             String path to a userPlugin.
 
         Returns
-        --------
+        -------
         bool
             Whether or not the plugin name is already registered with the manager.
         """
@@ -369,7 +384,6 @@ class App:
 
         # add the name/version of the current App, if it's not the default
         if context.APP_NAME != "armi":
-            # pylint: disable=import-outside-toplevel # avoid cyclic import
             from armi import getApp
 
             splash += r"""

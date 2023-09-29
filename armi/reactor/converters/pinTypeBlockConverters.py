@@ -45,7 +45,6 @@ def adjustSmearDensity(obj, value, bolBlock=None):
 
     Parameters
     ----------
-
     value : float
         new smear density as a fraction.  This fraction must
         evaluate between 0.0 and 1.0
@@ -54,7 +53,7 @@ def adjustSmearDensity(obj, value, bolBlock=None):
         See completeInitialLoading. Required for ECPT cases
 
     """
-    if 0.0 >= value or value > 1.0:
+    if value <= 0.0 or value > 1.0:
         raise ValueError(
             "Cannot modify smear density of {0} to {1}. Must be a positive fraction"
             "".format(obj, value)
@@ -77,7 +76,7 @@ def adjustSmearDensity(obj, value, bolBlock=None):
         newID = fuelOD * math.sqrt(1.0 - value)
         fuel.setDimension("id", newID)
     else:  # Slug fuel (Adjust fuel OD to get new smear density)
-        newOD = math.sqrt(value * cladID ** 2)
+        newOD = math.sqrt(value * cladID**2)
         fuel.setDimension("od", newOD)
 
     # update things like hm at BOC and smear density parameters.

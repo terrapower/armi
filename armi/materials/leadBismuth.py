@@ -27,7 +27,6 @@ from armi.utils.units import getTk
 class LeadBismuth(material.Fluid):
     """Lead bismuth eutectic."""
 
-    name = "LeadBismuth"
     propertyValidTemperature = {
         "density": ((400, 1300), "K"),
         "dynamic visc": ((400, 1100), "K"),
@@ -64,7 +63,7 @@ class LeadBismuth(material.Fluid):
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("heat capacity", Tk)
 
-        return 159 - 2.72e-2 * Tk + 7.12e-6 * Tk ** 2
+        return 159 - 2.72e-2 * Tk + 7.12e-6 * Tk**2
 
     def thermalConductivity(self, Tk=None, Tc=None):
         r"""Thermal conductivity in W/m/K from Sobolev.

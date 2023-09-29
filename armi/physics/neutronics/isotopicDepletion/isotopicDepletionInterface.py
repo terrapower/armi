@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-An abstract class for interfaces between ARMI and programs that simulate transmutation and decay.
-"""
+"""An abstract class for interfaces between ARMI and programs that simulate transmutation and decay."""
 import collections
 
 from armi import interfaces
@@ -57,7 +55,6 @@ def isDepletable(obj: composites.ArmiObject):
     --------
     armi.reactor.blueprints.componentBlueprint.insertDepletableNuclideKeys
     """
-
     return obj.hasFlags(Flags.DEPLETABLE) or obj.containsAtLeastOneChildWithFlags(
         Flags.DEPLETABLE
     )
@@ -78,6 +75,7 @@ class AbstractIsotopicDepleter:
 
     _depleteByName contains a ARMI objects to deplete keyed by name.
     """
+
     name = None
     function = "depletion"
 
@@ -181,14 +179,10 @@ def makeXsecTable(
 
 
 class AbstractIsotopicDepletionReader(interfaces.OutputReader):
-    r"""
-    Read number density output produced by the isotopic depletion.
-    """
+    r"""Read number density output produced by the isotopic depletion."""
 
     def read(self):
-        r"""
-        read a isotopic depletion Output File and applies results to armi objects in the ``ToDepletion`` attribute.
-        """
+        r"""Read a isotopic depletion Output File and applies results to armi objects in the ``ToDepletion`` attribute."""
         raise NotImplementedError
 
 
@@ -218,7 +212,5 @@ class Csrc:
         return self._chemicalVector
 
     def write(self):
-        """
-        return a list of lines to write for a csrc card.
-        """
+        """Return a list of lines to write for a csrc card."""
         raise NotImplementedError

@@ -12,16 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Copper metal.
-"""
+"""Copper metal."""
 
 from armi.utils.units import getTk
 from armi.materials.material import Material
 
 
 class Cu(Material):
-    name = "Cu"
 
     propertyValidTemperature = {"linear expansion percent": ((40.43, 788.83), "K")}
 
@@ -44,4 +41,4 @@ class Cu(Material):
         """
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("linear expansion percent", Tk)
-        return 5.0298e-07 * Tk ** 2 + 1.3042e-03 * Tk - 4.3097e-01
+        return 5.0298e-07 * Tk**2 + 1.3042e-03 * Tk - 4.3097e-01

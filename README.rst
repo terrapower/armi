@@ -49,6 +49,8 @@ found in [#touranarmi]_.
      - https://github.com/terrapower/armi
    * - Documentation
      - https://terrapower.github.io/armi
+   * - First time contributor's guide
+     - https://terrapower.github.io/armi/developer/first_time_contributors.html
    * - Bug tracker
      - https://github.com/terrapower/armi/issues
    * - Plugin directory
@@ -58,7 +60,7 @@ found in [#touranarmi]_.
 
 Quick start
 -----------
-Before starting, you need to have `Python <https://www.python.org/downloads/>`_ 3.7+ on
+Before starting, you need to have `Python <https://www.python.org/downloads/>`_ 3.9+ on
 Windows or Linux.
 
 Get the ARMI code, install the prerequisites, and fire up the launcher with the following
@@ -70,18 +72,22 @@ dependencies could conflict with your system dependencies.
 
     $ git clone https://github.com/terrapower/armi
     $ cd armi
-    $ pip3 install -r requirements.txt
-    $ python3 setup.py install
+    $ pip install -e .
     $ armi
 
 The easiest way to run the tests is to install `tox <https://tox.readthedocs.io/en/latest/>`_
 and then run::
 
-    $ pip3 install -r requirements-testing.txt
+    $ pip install -e .[test]
     $ tox -- -n 6
 
 This runs the unit tests in parallel on 6 processes. Omit the ``-n 6`` argument
 to run on a single process.
+
+The tests can also be run directly, using ``pytest``::
+
+    $ pip install -e .[test]
+    $ pytest -n 4 armi
 
 From here, we recommend going through a few of our `gallery examples
 <https://terrapower.github.io/armi/gallery/index.html>`_ and
@@ -306,7 +312,6 @@ see if their idea has wings, and if it does, they can then find a way to bring
 it to engineering and commercial reality.
 
 
-
 History of ARMI
 ---------------
 ARMI was originally created by TerraPower, LLC near Seattle WA starting in 2009. Its
@@ -390,7 +395,6 @@ Most of our code is in the ``camelCase`` style, which is not the normal style fo
 Python. This started in 2009 and we have stuck with the convention.
 
 
-
 License
 -------
 TerraPower and ARMI are registered trademarks of TerraPower, LLC.
@@ -415,7 +419,7 @@ The ARMI system is licensed as follows:
 	See the License for the specific language governing permissions and
 	limitations under the License.
 
-Be careful when including any dependency in ARMI (say in a requirements.txt file) not
+Be careful when including any dependency in ARMI (say in the ``pyproject.toml`` file) not
 to include anything with a license that superceeds our Apache license. For instance,
 any third-party Python library included in ARMI with a GPL license will make the whole
 project fall under the GPL license. But a lot of potential users of ARMI will want to

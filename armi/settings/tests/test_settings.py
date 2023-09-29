@@ -11,9 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Tests for new settings system with plugin import."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import copy
 import io
 import logging
@@ -274,8 +272,8 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         settingsList = cs.getSettingsSetByUser(ARMI_RUN_PATH)
         # This test is dependent on the current setup of armiRun.yaml, which includes
         # some default settings values
-        for setting in ["availabilityFactor", "economics"]:
-            self.assertIn(setting, settingsList)
+        for sett in ["availabilityFactor", "economics"]:
+            self.assertIn(sett, settingsList)
         self.assertNotIn("numProcessors", settingsList)
 
     def test_setModuleVerbosities(self):

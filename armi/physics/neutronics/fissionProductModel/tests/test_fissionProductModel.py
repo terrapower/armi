@@ -11,27 +11,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-Test the fission product module to ensure all FP are available.
-"""
+"""Test the fission product module to ensure all FP are available."""
 import unittest
 
 from armi import nuclideBases
-from armi.reactor.flags import Flags
-
 from armi.physics.neutronics.fissionProductModel import fissionProductModel
-from armi.reactor.tests.test_reactors import (
-    buildOperatorOfEmptyHexBlocks,
-    loadTestReactor,
-)
 from armi.physics.neutronics.fissionProductModel.tests import test_lumpedFissionProduct
 from armi.physics.neutronics.isotopicDepletion.isotopicDepletionInterface import (
     isDepletable,
 )
 from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import (
     CONF_FP_MODEL,
-    CONF_MAKE_ALL_BLOCK_LFPS_INDEPENDENT,
     CONF_FISSION_PRODUCT_LIBRARY_NAME,
+)
+from armi.reactor.flags import Flags
+from armi.reactor.tests.test_reactors import (
+    buildOperatorOfEmptyHexBlocks,
+    loadTestReactor,
 )
 
 
@@ -95,9 +91,7 @@ class TestFissionProductModelLumpedFissionProducts(unittest.TestCase):
 
 
 class TestFissionProductModelExplicitMC2Library(unittest.TestCase):
-    """
-    Tests the fission product model interface behavior when explicit fission products are enabled.
-    """
+    """Tests the fission product model interface behavior when explicit fission products are enabled."""
 
     def setUp(self):
         o, r = loadTestReactor(
@@ -133,7 +127,6 @@ class TestFissionProductModelExplicitMC2Library(unittest.TestCase):
 
     def test_nuclidesInModelAllDepletableBlocks(self):
         """Test that the depletable blocks contain all the MC2-3 modeled nuclides."""
-
         # Check that there are some fuel and control blocks in the core model.
         fuelBlocks = self.r.core.getBlocks(Flags.FUEL)
         controlBlocks = self.r.core.getBlocks(Flags.CONTROL)

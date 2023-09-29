@@ -69,12 +69,12 @@ class CaseSuite:
                 "Second case: {}".format(case.title, existing, case)
             )
         self._cases.append(case)
-        case._caseSuite = self  # pylint: disable=protected-access
+        case._caseSuite = self
 
     def remove(self, case):
         """Remove a case from a suite."""
         self._cases.remove(case)
-        case._caseSuite = None  # pylint: disable=protected-access
+        case._caseSuite = None
 
     def __iter__(self):
         return iter(self._cases)
@@ -103,7 +103,7 @@ class CaseSuite:
         """
         csFiles = settings.recursivelyLoadSettingsFiles(
             rootDir or os.path.abspath(os.getcwd()),
-            patterns or ["*.yaml", "*.xml"],  # xml temporary to transistion
+            patterns or ["*.yaml"],
             recursive=recursive,
             ignorePatterns=ignorePatterns,
             handleInvalids=False,
@@ -200,15 +200,13 @@ class CaseSuite:
         .. warning: Suite running may not work yet if the cases have interdependencies.
                     We typically run on a HPC but are still working on a platform
                     independent way of handling HPCs.
-
         """
         for ci, case in enumerate(self):
             runLog.important(f"Running case {ci+1}/{len(self)}: {case}")
             with directoryChangers.DirectoryChanger(case.directory):
-                settings.setMasterCs(case.cs)
                 try:
                     case.run()
-                except:  # pylint: disable=bare-except; allow it at this level to run all cases
+                except:  # noqa: bare-except
                     # allow all errors and continue to next run
                     runLog.error(f"{case} failed during execution.")
                     traceback.print_exc()
@@ -228,7 +226,6 @@ class CaseSuite:
         -------
         The number of problem differences encountered.
         """
-
         runLog.important("Comparing case suites.")
 
         nIssues = 0

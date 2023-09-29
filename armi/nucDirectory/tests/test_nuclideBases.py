@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """Tests for nuclideBases."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import math
 import os
 import random
@@ -147,9 +146,7 @@ class TestNuclide(unittest.TestCase):
         self.assertGreater(count, 10)
 
     def test_nucBases_imposeBurnChainDecayBulkStatistics(self):
-        """
-        Test must be updated manually when burn chain is modified.
-        """
+        """Test must be updated manually when burn chain is modified."""
         decayers = list(nuclideBases.where(lambda nn: len(nn.decays) > 0))
         self.assertTrue(decayers)
         for nuc in decayers:
@@ -216,14 +213,8 @@ class TestNuclide(unittest.TestCase):
             "TH232": 1.5,
             "NP237": 2.05,
             "PA231": 1.710000,
-            "PU236": 2.120000,
-            "PU238": 2.210000,
-            "PU239": 2.320000,
-            "PU240": 2.151000,
             "PU241": 2.25,
-            "PU242": 2.141000,
             "PU244": 2.290000,
-            "U232": 1.71,
             "U233": 1.76,
             "AM241": 2.5,
             "AM242M": 2.56,
@@ -259,8 +250,8 @@ class TestNuclide(unittest.TestCase):
         for nb in nuclideBases.where(lambda nn: nn.z <= 89):
             self.assertFalse(nb.isHeavyMetal())
         for nb in nuclideBases.where(lambda nn: nn.z > 89):
-            if isinstance(nb, nuclideBases.DummyNuclideBase) or isinstance(
-                nb, nuclideBases.LumpNuclideBase
+            if isinstance(
+                nb, (nuclideBases.DummyNuclideBase, nuclideBases.LumpNuclideBase)
             ):
                 self.assertFalse(nb.isHeavyMetal())
             else:

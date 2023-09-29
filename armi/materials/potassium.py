@@ -25,7 +25,6 @@ class Potassium(material.Fluid):
     From Foust, O.J. Sodium-NaK Engineering Handbook Vol. 1. New York: Gordon and Breach, 1972.
     """
 
-    name = "Potassium"
     propertyValidTemperature = {"density": ((63.2, 1250), "C")}
 
     def pseudoDensity(self, Tk=None, Tc=None):
@@ -42,4 +41,4 @@ class Potassium(material.Fluid):
         Tc = getTc(Tc, Tk)
         Tk = getTk(Tc=Tc)
         self.checkPropertyTempRange("density", Tc)
-        return 0.8415 - 2.172e-4 * Tc - 2.70e-8 * Tc ** 2 + 4.77e-12 * Tc ** 3
+        return 0.8415 - 2.172e-4 * Tc - 2.70e-8 * Tc**2 + 4.77e-12 * Tc**3

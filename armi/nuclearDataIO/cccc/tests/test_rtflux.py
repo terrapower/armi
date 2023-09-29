@@ -11,10 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-Test rtflux reading and writing.
-"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+"""Test rtflux reading and writing."""
 import os
 import unittest
 
@@ -27,9 +24,7 @@ SIMPLE_RTFLUX = os.path.join(THIS_DIR, "fixtures", "simple_cartesian.rtflux")
 
 
 class Testrtflux(unittest.TestCase):
-    r"""
-    Tests the rtflux class.
-    """
+    r"""Tests the rtflux class."""
 
     def test_readrtflux(self):
         """Ensure we can read a rtflux file."""

@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Testing for reactors.py."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import copy
+import logging
 import os
 import unittest
 
@@ -54,16 +54,12 @@ def buildOperatorOfEmptyHexBlocks(customSettings=None):
     customSettings : dict
         Dictionary of off-default settings to update
     """
-    settings.setMasterCs(None)  # clear
     cs = settings.Settings()  # fetch new
-    settings.setMasterCs(cs)  # reset
-
     if customSettings is None:
         customSettings = {}
 
     customSettings["db"] = False  # stop use of database
     cs = cs.modified(newSettings=customSettings)
-    settings.setMasterCs(cs)  # reset so everything matches the primary Cs
 
     r = tests.getEmptyHexReactor()
     r.core.setOptionsFromCs(cs)
@@ -95,16 +91,12 @@ def buildOperatorOfEmptyCartesianBlocks(customSettings=None):
     customSettings : dict
         Off-default settings to update
     """
-    settings.setMasterCs(None)  # clear
     cs = settings.Settings()  # fetch new
-    settings.setMasterCs(cs)  # reset
-
     if customSettings is None:
         customSettings = {}
 
     customSettings["db"] = False  # stop use of database
     cs = cs.modified(newSettings=customSettings)
-    settings.setMasterCs(cs)  # reset
 
     r = tests.getEmptyCartesianReactor()
     r.core.setOptionsFromCs(cs)
@@ -145,7 +137,7 @@ def loadTestReactor(
     customSettings=None,
     inputFileName="armiRun.yaml",
 ):
-    r"""
+    """
     Loads a test reactor. Can be used in other test modules.
 
     Parameters
@@ -172,15 +164,11 @@ def loadTestReactor(
     fName = os.path.join(inputFilePath, inputFileName)
     customSettings = customSettings or {}
     isPickeledReactor = fName == ARMI_RUN_PATH and customSettings == {}
-    assemblies.resetAssemNumCounter()
 
     if isPickeledReactor and TEST_REACTOR:
         # return test reactor only if no custom settings are needed.
         o, r, assemNum = cPickle.loads(TEST_REACTOR)
-        assemblies.setAssemNumCounter(assemNum)
-        settings.setMasterCs(o.cs)
         o.reattach(r, o.cs)
-        r.sort()
         return o, r
 
     cs = settings.Settings(fName=fName)
@@ -194,26 +182,19 @@ def loadTestReactor(
 
     newSettings = {}
     cs = cs.modified(newSettings=newSettings)
-    settings.setMasterCs(cs)
 
     o = operators.factory(cs)
     r = reactors.loadFromCs(cs)
 
     o.initializeInterfaces(r)
 
-    # put some stuff in the SFP too.
-    for a in range(10):
-        a = o.r.blueprints.constructAssem(o.cs, name="feed fuel")
-        o.r.core.sfp.add(a)
-
     o.r.core.regenAssemblyLists()
 
     if isPickeledReactor:
         # cache it for fast load for other future tests
         # protocol=2 allows for classes with __slots__ but not __getstate__ to be pickled
-        TEST_REACTOR = cPickle.dumps((o, o.r, assemblies.getAssemNum()), protocol=2)
+        TEST_REACTOR = cPickle.dumps((o, o.r, o.r.p.maxAssemNum), protocol=2)
 
-    o.r.sort()
     return o, o.r
 
 
@@ -273,6 +254,25 @@ class HexReactorTests(ReactorTests):
         a1 = [a.name for a in r1.core]
         self.assertNotEqual(a0, a1)
 
+    def test_sortChildren(self):
+        self.assertEqual(next(self.r.core.__iter__()), self.r.core[0])
+        self.assertEqual(self.r.core._children, sorted(self.r.core._children))
+
+    def test_sortAssemByRing(self):
+        """Demonstrate ring/pos sorting."""
+        self.r.core.sortAssemsByRing()
+        self.assertEqual((1, 1), self.r.core[0].spatialLocator.getRingPos())
+        currentRing = -1
+        currentPos = -1
+        for a in self.r.core:
+            ring, pos = a.spatialLocator.getRingPos()
+            self.assertGreaterEqual(ring, currentRing)
+            if ring > currentRing:
+                ring = currentRing
+                currentPos = -1
+            self.assertGreater(pos, currentPos)
+            currentPos = pos
+
     def test_getTotalParam(self):
         # verify that the block params are being read.
         val = self.r.core.getTotalBlockParam("power")
@@ -304,7 +304,7 @@ class HexReactorTests(ReactorTests):
         indices = [(1, 1, 1), (3, 2, 2)]
         actualBlocks = self.r.core.getBlocksByIndices(indices)
         actualNames = [b.getName() for b in actualBlocks]
-        expectedNames = ["B0022-001", "B0043-002"]
+        expectedNames = ["B0014-001", "B0035-002"]
         self.assertListEqual(expectedNames, actualNames)
 
     def test_getAllXsSuffixes(self):
@@ -321,6 +321,54 @@ class HexReactorTests(ReactorTests):
             [Flags.DUCT, Flags.CONTROL, Flags.FUEL], Flags.CONTROL
         )
         self.assertEqual(numControlBlocks, 3)
+
+    def test_normalizeNames(self):
+        # these are the correct, normalized names
+        numAssems = 73
+        a = self.r.core.getFirstAssembly()
+        correctNames = [a.makeNameFromAssemNum(n) for n in range(numAssems)]
+
+        # validate the reactor is what we think now
+        self.assertEqual(len(self.r.core), numAssems)
+        currentNames = [a.getName() for a in self.r.core]
+        self.assertNotEqual(correctNames, currentNames)
+
+        # validate that we can normalize the names correctly once
+        self.r.normalizeNames()
+        currentNames = [a.getName() for a in self.r.core]
+        self.assertEqual(correctNames, currentNames)
+
+        # validate that repeated applications of this method are stable
+        for _ in range(3):
+            self.r.normalizeNames()
+            currentNames = [a.getName() for a in self.r.core]
+            self.assertEqual(correctNames, currentNames)
+
+    def test_setB10VolOnCreation(self):
+        """Test the setting of b.p.initialB10ComponentVol."""
+        for controlBlock in self.r.core.getBlocks(Flags.CONTROL):
+            controlComps = [c for c in controlBlock if c.getNumberDensity("B10") > 0]
+            self.assertEqual(len(controlComps), 1)
+            controlComp = controlComps[0]
+
+            startingVol = controlBlock.p.initialB10ComponentVol
+            self.assertGreater(startingVol, 0)
+            self.assertAlmostEqual(
+                controlComp.getArea(cold=True) * controlBlock.getHeight(), startingVol
+            )
+
+            # input temp is same as hot temp, so change input temp to test that behavior
+            controlComp.inputTemperatureInC = 30
+
+            # somewhat non-sensical since its hot, not cold but we just want to check the ratio
+            controlBlock.setB10VolParam(True)
+
+            self.assertGreater(startingVol, controlBlock.p.initialB10ComponentVol)
+
+            self.assertAlmostEqual(
+                startingVol / controlComp.getThermalExpansionFactor(),
+                controlBlock.p.initialB10ComponentVol,
+            )
 
     def test_countFuelAxialBlocks(self):
         """Tests that the users definition of fuel blocks is preserved.
@@ -591,10 +639,11 @@ class HexReactorTests(ReactorTests):
 
     def test_getAssembly(self):
         a1 = self.r.core.getAssemblyWithAssemNum(assemNum=10)
-        a2 = self.r.core.getAssembly(locationString="005-023")
+        a2 = self.r.core.getAssembly(locationString="003-001")
         a3 = self.r.core.getAssembly(assemblyName="A0010")
-        self.assertEqual(a1, a2)
+
         self.assertEqual(a1, a3)
+        self.assertEqual(a1, a2)
 
     def test_restoreReactor(self):
         aListLength = len(self.r.core.getAssemblies())
@@ -727,6 +776,8 @@ class HexReactorTests(ReactorTests):
             )
         )
         loc = loaded.core.spatialGrid[0, 0, 0]
+        loaded.core.sortAssemsByRing()
+        self.r.core.sortAssemsByRing()
         self.assertIs(loc.grid, loaded.core.spatialGrid)
         self.assertEqual(loaded.core.childrenByLocator[loc], loaded.core[0])
 
@@ -762,12 +813,27 @@ class HexReactorTests(ReactorTests):
         bLoc = b.spatialLocator
         self.r.core.removeAssembly(a)
         self.assertNotEqual(aLoc, a.spatialLocator)
-        self.assertEqual(a.spatialLocator.grid, self.r.core.sfp.spatialGrid)
+        self.assertEqual(a.spatialLocator.grid, self.r.sfp.spatialGrid)
 
         # confirm only attached to removed assem
         self.assertIs(bLoc, b.spatialLocator)  # block location does not change
         self.assertIs(a, b.parent)
         self.assertIs(a, b.spatialLocator.grid.armiObject)
+
+    def test_removeAssemblyNoSfp(self):
+        with mockRunLogs.BufferLog() as mock:
+            # we should start with a clean slate
+            self.assertEqual("", mock.getStdout())
+            runLog.LOG.startLog("test_removeAssemblyNoSfp")
+            runLog.LOG.setVerbosity(logging.INFO)
+
+            a = self.r.core[-1]  # last assembly
+            aLoc = a.spatialLocator
+            self.assertIsNotNone(aLoc.grid)
+            self.r.sfp = None
+            self.r.core.removeAssembly(a)
+
+            self.assertIn("No Spent Fuel Pool", mock.getStdout())
 
     def test_removeAssembliesInRing(self):
         aLoc = [
@@ -782,7 +848,7 @@ class HexReactorTests(ReactorTests):
         self.r.core.removeAssembliesInRing(3, self.o.cs)
         for i, a in assems.items():
             self.assertNotEqual(aLoc[i], a.spatialLocator)
-            self.assertEqual(a.spatialLocator.grid, self.r.core.sfp.spatialGrid)
+            self.assertEqual(a.spatialLocator.grid, self.r.sfp.spatialGrid)
 
     def test_removeAssembliesInRingByCount(self):
         self.assertEqual(self.r.core.getNumRings(), 9)
@@ -916,10 +982,10 @@ class HexReactorTests(ReactorTests):
         self.assertEqual(originalHeights, heights)
 
     def test_applyThermalExpansion_CoreConstruct(self):
-        """Test that assemblies in core are correctly expanded.
+        r"""Test that assemblies in core are correctly expanded.
 
-        Notes:
-        ------
+        Notes
+        -----
         - all assertions skip the first block as it has no $\Delta T$ and does not expand
         """
         originalAssems = self.r.core.getAssemblies()
@@ -967,11 +1033,11 @@ class HexReactorTests(ReactorTests):
                     self.assertAlmostEqual(p, coldHeightP)
 
     def test_updateBlockBOLHeights_DBLoad(self):
-        """Test that blueprints assemblies are expanded in DB load.
+        r"""Test that blueprints assemblies are expanded in DB load.
 
-        Notes:
-        ------
-        - all assertions skip the first block as it has no $\Delta T$ and does not expand
+        Notes
+        -----
+        All assertions skip the first block as it has no $\Delta T$ and does not expand.
         """
         originalAssems = sorted(a for a in self.r.blueprints.assemblies.values())
         nonEqualParameters = ["heightBOL", "molesHmBOL", "massHmBOL"]
@@ -1022,7 +1088,7 @@ class HexReactorTests(ReactorTests):
         self.assertEqual(len(list(self.r.core.zones)), 0)
 
     def test_getNuclideCategories(self):
-        # test that nuclides are categorized correctly
+        """Test that nuclides are categorized correctly."""
         self.r.core.getNuclideCategories()
         self.assertIn("coolant", self.r.core._nuclideCategories)
         self.assertIn("structure", self.r.core._nuclideCategories)
@@ -1030,6 +1096,27 @@ class HexReactorTests(ReactorTests):
         self.assertEqual(self.r.core._nuclideCategories["coolant"], set(["NA23"]))
         self.assertIn("FE56", self.r.core._nuclideCategories["structure"])
         self.assertIn("U235", self.r.core._nuclideCategories["fuel"])
+
+    def test_setPowerIfNecessary(self):
+        self.assertAlmostEqual(self.r.core.p.power, 0)
+        self.assertAlmostEqual(self.r.core.p.powerDensity, 0)
+
+        # to start, this method shouldn't do anything
+        self.r.core.setPowerIfNecessary()
+        self.assertAlmostEqual(self.r.core.p.power, 0)
+
+        # take the powerDensity when needed
+        self.r.core.p.power = 0
+        self.r.core.p.powerDensity = 1e9
+        mass = self.r.core.getHMMass()
+        self.r.core.setPowerIfNecessary()
+        self.assertAlmostEqual(self.r.core.p.power, 1e9 * mass)
+
+        # don't take the powerDensity when not needed
+        self.r.core.p.power = 3e9
+        self.r.core.p.powerDensity = 2e9
+        self.r.core.setPowerIfNecessary()
+        self.assertAlmostEqual(self.r.core.p.power, 3e9)
 
 
 class CartesianReactorTests(ReactorTests):
@@ -1055,7 +1142,7 @@ class CartesianReactorTests(ReactorTests):
         log = mockRunLogs.BufferLog()
 
         # this strange namespace-stomping is used to the test to set the logger in reactors.Core
-        from armi.reactor import reactors  # pylint: disable=import-outside-toplevel
+        from armi.reactor import reactors
 
         reactors.runLog = runLog
         runLog.LOG = log

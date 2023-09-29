@@ -20,10 +20,9 @@ on a stream. For example, if an old/invalid input file is being read
 in from an old database. The migration class defined here
 chooses this behavior based on whether the ``stream`` or ``path``
 variables are given in the constructor.
-
 """
-import shutil
 import os
+import shutil
 
 from armi import runLog
 from armi.settings import caseSettings
@@ -101,7 +100,6 @@ class BlueprintsMigration(Migration):
     """Migration for blueprints input."""
 
     def _loadStreamFromPath(self):
-        # pylint: disable=import-outside-toplevel # avoid cyclic import
         from armi.physics.neutronics.settings import CONF_LOADING_FILE
 
         Migration._loadStreamFromPath(self)

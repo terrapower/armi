@@ -29,9 +29,8 @@ independent interfaces:
 .. warning:: There is also some legacy and question-raising code in this module that
     is here temporarily while we finish untangling some of the neutronics
     plugins outside of ARMI.
-
 """
-
+# ruff: noqa: F401, E402
 from enum import IntEnum
 
 import numpy
@@ -43,16 +42,12 @@ from armi.physics.neutronics.const import CONF_CROSS_SECTION
 
 
 class NeutronicsPlugin(plugins.ArmiPlugin):
-    """
-    The built-in neutronics plugin with a few capabilities and a lot of state parameter definitions.
-    """
+    """The built-in neutronics plugin with a few capabilities and a lot of state parameter definitions."""
 
     @staticmethod
     @plugins.HOOKIMPL
     def exposeInterfaces(cs):
-        """
-        Collect and expose all of the interfaces that live under the built-in neutronics package.
-        """
+        """Collect and expose all of the interfaces that live under the built-in neutronics package."""
         from armi.physics.neutronics import crossSectionGroupManager
         from armi.physics.neutronics.fissionProductModel import fissionProductModel
 
@@ -65,7 +60,7 @@ class NeutronicsPlugin(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineParameters():
-        from . import parameters as neutronicsParameters
+        from armi.physics.neutronics import parameters as neutronicsParameters
 
         return neutronicsParameters.getNeutronicsParameterDefinitions()
 
@@ -142,6 +137,7 @@ GAMISO = "GAMISO"
 PMATRX_EXT = "pmatrx"
 GAMISO_EXT = "gamiso"
 ISOTXS = "ISOTXS"
+DIF3D = "DIF3D"
 
 # Constants for neutronics calculation types
 ADJOINT_CALC = "adjoint"

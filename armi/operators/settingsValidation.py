@@ -19,27 +19,26 @@ This allows developers to specify a rich set of rules and suggestions for user s
 These then pop up during initialization of a run, either on the command line or as
 dialogues in the GUI. They say things like: "Your ___ setting has the value ___, which
 is impossible. Would you like to switch to ___?"
-
 """
-import re
-import os
-import shutil
 import itertools
+import os
+import re
+import shutil
 
 from armi import context
 from armi import getPluginManagerOrFail
 from armi import runLog
-from armi.utils import pathTools
-from armi.utils.mathematics import expandRepeatedFloats
+from armi.physics import neutronics
 from armi.reactor import geometry
 from armi.reactor import systemLayoutInput
-from armi.physics import neutronics
-from armi.utils import directoryChangers
 from armi.settings.settingsIO import (
     prompt,
     RunLogPromptCancel,
     RunLogPromptUnresolvable,
 )
+from armi.utils import directoryChangers
+from armi.utils import pathTools
+from armi.utils.mathematics import expandRepeatedFloats
 
 
 class Query:
@@ -145,7 +144,7 @@ class Inspector:
     """
 
     @staticmethod
-    def NO_ACTION():  # pylint: disable=invalid-name
+    def NO_ACTION():
         """Convenience callable used to generate Queries that can't be easily auto-resolved."""
         return None
 
@@ -208,10 +207,7 @@ class Inspector:
             issues = [
                 query
                 for query in self.queries
-                if query
-                and (
-                    query.isCorrective() and not query._passed
-                )  # pylint: disable=protected-access
+                if query and (query.isCorrective() and not query._passed)
             ]
             if any(issues):
                 # something isn't resolved or was unresolved by changes
@@ -283,12 +279,11 @@ class Inspector:
         runLog.extra(f"Updating setting `{key}` to `{value}`")
         self.cs[key] = value
 
-    def _raise(self):  # pylint: disable=no-self-use
+    def _raise(self):
         raise KeyboardInterrupt("Input inspection has been interrupted.")
 
     def _inspectBlueprints(self):
         """Blueprints early error detection and old format conversions."""
-        # pylint: disable=import-outside-toplevel; avoid circular import
         from armi.physics.neutronics.settings import CONF_LOADING_FILE
 
         # if there is a blueprints object, we don't need to check for a file
@@ -343,7 +338,7 @@ class Inspector:
         against the default, if the user specifies all the simple cycle settings
         _exactly_ as the defaults, this won't be caught. But, it would be very
         coincidental for the user to _specify_ all the default values when
-        performing any real analysis, so whatever.
+        performing any real analysis.
 
         Also, we must bypass the `Settings` getter and reach directly
         into the underlying `__settings` dict to avoid triggering an error
@@ -372,8 +367,6 @@ class Inspector:
 
     def _inspectSettings(self):
         """Check settings for inconsistencies."""
-        # import here to avoid cyclic issues
-        # pylint: disable=import-outside-toplevel;
         from armi import operators
         from armi.physics.neutronics.settings import (
             CONF_BC_COEFFICIENT,
@@ -475,8 +468,15 @@ class Inspector:
         )
 
         self.addQuery(
-            lambda: not self.cs["power"],
-            "No power level set. You must always start by importing a base settings file.",
+            lambda: not self.cs["power"] and not self.cs["powerDensity"],
+            "No power or powerDensity set. You must always start by importing a base settings file.",
+            "",
+            self.NO_ACTION,
+        )
+
+        self.addQuery(
+            lambda: self.cs["power"] > 0 and self.cs["powerDensity"] > 0,
+            "The power and powerDensity are both set, please note the power will be used as the truth.",
             "",
             self.NO_ACTION,
         )
@@ -603,7 +603,7 @@ class Inspector:
                     and (
                         (
                             len(self.cs["cycleLengths"]) > 1
-                            if self.cs["cycleLengths"] != None
+                            if self.cs["cycleLengths"] is not None
                             else False
                         )
                         or self.cs["nCycles"] > 1
@@ -621,7 +621,7 @@ class Inspector:
                     availabilities = expandRepeatedFloats(
                         self.cs["availabilityFactors"]
                     ) or ([self.cs["availabilityFactor"]] * self.cs["nCycles"])
-                except:  # pylint: disable=bare-except
+                except:  # noqa: bare-except
                     return True
 
                 for pf, af in zip(powerFracs, availabilities):
@@ -730,7 +730,6 @@ def createQueryRevertBadPathToDefault(inspector, settingName, initialLambda=None
     initialLambda: None or callable function
         If ``None``, the callable argument for :py:meth:`addQuery` is does the setting's path exist.
         If more complicated callable arguments are needed, they can be passed in as the ``initialLambda`` setting.
-
     """
     if initialLambda is None:
         initialLambda = lambda: (

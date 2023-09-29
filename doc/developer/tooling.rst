@@ -80,31 +80,25 @@ out-of-date.
 Packaging and dependency management
 -----------------------------------
 The process of packaging Python projects and managing their dependencies is somewhat
-challenging and nuanced. The contents of our ``setup.py`` follow existing conventions as
-much as possible. In particular, we follow `this fantastic article
-<https://caremad.io/posts/2013/07/setup-vs-requirement/>`_ about dependecy management in
-Python projects.
+challenging and nuanced. The contents of our ``pyproject.toml`` follow existing conventions as
+much as possible. In particular, we follow `the official Python packaging guidance
+<https://packaging.python.org/en/latest/>`_.
 
-setup.py
-^^^^^^^^
+pyproject.toml
+^^^^^^^^^^^^^^
+As much as possible, the ARMI team will try to centralize our installation and build systems
+through the top-level ``pyproject.toml`` file. The only exception will be our documentation,
+which has much customization done through the Sphinx ``doc/conf.py`` file.
+
 The packages listed in the ``install_requires`` argument to ``setup()`` are meant to
 express, as abstractly as possible, the packages that need to be installed **somehow**
 for the package to work. In addition, ``extras_require`` are used to specify other
 packages that are not strictly required, but if installed enable extra functionality,
 like unit testing or building documentation.
 
-requirements.txt
-^^^^^^^^^^^^^^^^
-The ``requirements***.txt`` files exist to describe a complete environment more
-specifically. If specific versions of packages are required, they should be defined here.
-Any extra arguments to ``pip`` will also be placed here. For instance, there is a ``-e``
-that tells ``pip`` to install ARMI itself and defer to ``setup.py`` for a version-agnostic
-list of dependencies. We also have multiple requirements files for different needs, like
-testing.
-
 Third-Party Licensing
 ^^^^^^^^^^^^^^^^^^^^^
-Be careful when including any dependency in ARMI (say in a requirements.txt file) not
+Be careful when including any dependency in ARMI (say in the ``pyproject.toml`` file) not
 to include anything with a license that superceeds our Apache license. For instance,
 any third-party Python library included in ARMI with a GPL license will make the whole
 project fall under the GPL license. But a lot of potential users of ARMI will want to
@@ -134,7 +128,7 @@ repos on GitHub.
 Every release should follow this process:
 
 1. Ensure all unit tests pass and the documentation is building correctly.
-2. Bump the ``__version__`` string in ``armi/meta.py``.
+2. Bump the ``version`` string in ``pyproject.toml``.
 3. Add release notes to the documentation:
    `here <https://github.com/terrapower/armi/tree/main/doc/release>`__.
 4. Tag the commit after it goes into the repo:

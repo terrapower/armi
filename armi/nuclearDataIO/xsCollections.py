@@ -496,7 +496,6 @@ class MacroscopicCrossSectionCreator:
             The block attribute containing the desired microscopic XS for this block:
             either "micros" for neutron XS or "gammaXS" for gamma XS.
         """
-
         if not self.buildScatterMatrix:
             return
 
@@ -890,7 +889,7 @@ def _getXsMultiplier(libNuclide, multiplier, libType):
         try:
             microCollection = getattr(libNuclide, libType)
             multiplierVal = getattr(microCollection, multiplier)
-        except:
+        except:  # noqa: bare-except
             multiplierVal = libNuclide.isotxsMetadata[multiplier]
     else:
         multiplierVal = 1.0

@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Silicon Carbide.
-"""
+"""Silicon Carbide."""
 
 import math
 
@@ -25,8 +23,8 @@ from armi.utils.units import getTc
 
 
 class SiC(Material):
-    r"""Silicon Carbide."""
-    name = "SiC"
+    """Silicon Carbide."""
+
     thermalScatteringLaws = (
         tsl.byNbAndCompound[nb.byName["C"], tsl.SIC],
         tsl.byNbAndCompound[nb.byName["SI"], tsl.SIC],

@@ -12,15 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-This package contains the settings that control the base/framework-level ARMI functionality.
-"""
+"""This package contains the settings that control the base/framework-level ARMI functionality."""
 from typing import List
 
 from armi.settings import setting
-from . import globalSettings
-from . import databaseSettings
-from . import reportSettings
+from armi.settings.fwSettings import globalSettings
+from armi.settings.fwSettings import databaseSettings
+from armi.settings.fwSettings import reportSettings
 
 
 def getFrameworkSettings() -> List[setting.Setting]:

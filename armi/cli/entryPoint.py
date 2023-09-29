@@ -90,11 +90,10 @@ class EntryPoint:
     def __init__(self):
         if self.name is None:
             raise AttributeError(
-                f"Subclasses of EntryPoint must define a `name` class attribute"
+                "Subclasses of EntryPoint must define a `name` class attribute"
             )
 
         self.cs = self._initSettings()
-        settings.setMasterCs(self.cs)
 
         self.parser = argparse.ArgumentParser(
             prog="{} {}".format(context.APP_NAME, self.name),
@@ -103,7 +102,7 @@ class EntryPoint:
         if self.settingsArgument is not None:
             if self.settingsArgument not in ["required", "optional"]:
                 raise AttributeError(
-                    f"Subclasses of EntryPoint must specify if the a case settings file is `required` or `optional`"
+                    "Subclasses of EntryPoint must specify if the a case settings file is `required` or `optional`"
                 )
             if self.settingsArgument == "optional":
                 self.parser.add_argument(
@@ -171,9 +170,7 @@ class EntryPoint:
         runLog.setVerbosity(self.cs["verbosity"])
 
     def parse(self, args):
-        """
-        Parse the command line arguments, with the command specific arguments.
-        """
+        """Parse the command line arguments, with the command specific arguments."""
         self.addOptions()
         self.parse_args(args)
 
@@ -202,7 +199,7 @@ class EntryPoint:
         This will override whatever is in the settings file.
 
         Parameters
-        ---------
+        ----------
         settingName : str
             the setting name
 

@@ -11,9 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-Fuel performance utilities.
-"""
+"""Fuel performance utilities."""
 
 from armi.reactor.flags import Flags
 
@@ -45,7 +43,7 @@ def applyFuelDisplacement(block, displacementInCm):
     newHotODInCm = min(cladID * 0.995, originalHotODInCm + displacementInCm * 2)
     fuel.setDimension("od", newHotODInCm, retainLink=True, cold=False)
     # reduce number density of fuel to conserve number of atoms (and mass)
-    fuel.changeNDensByFactor(originalHotODInCm ** 2 / newHotODInCm ** 2)
+    fuel.changeNDensByFactor(originalHotODInCm**2 / newHotODInCm**2)
 
 
 def gasConductivityCorrection(tempInC: float, porosity: float, morphology: int = 2):

@@ -15,7 +15,7 @@
 """Safety package for generic safety-related code."""
 from armi import plugins
 
-from . import settings
+from armi.physics.safety import settings
 
 
 class SafetyPlugin(plugins.ArmiPlugin):

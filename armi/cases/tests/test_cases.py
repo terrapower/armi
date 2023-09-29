@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Unit tests for Case and CaseSuite objects."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import copy
 import cProfile
 import io
@@ -31,7 +30,6 @@ from armi import settings
 from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
 from armi.reactor import blueprints
 from armi.reactor import systemLayoutInput
-from armi.settings import setMasterCs
 from armi.tests import ARMI_RUN_PATH
 from armi.tests import mockRunLogs
 from armi.tests import TEST_ROOT
@@ -115,12 +113,22 @@ class TestArmiCase(unittest.TestCase):
         with directoryChangers.TemporaryDirectoryChanger():
             vals = {"cladThickness": 1, "control strat": "good", "enrich": 0.9}
             case = baseCase.clone()
-            case._independentVariables = vals  # pylint: disable=protected-access
+            case._independentVariables = vals
             case.writeInputs()
             newCs = settings.Settings(fName=case.title + ".yaml")
             newCase = cases.Case(newCs)
             for name, val in vals.items():
                 self.assertEqual(newCase.independentVariables[name], val)
+
+    def test_setUpTaskDependence(self):
+        case = cases.Case(settings.Settings())
+        case.enabled = False
+        case.setUpTaskDependence()
+        case.enabled = True
+        case.setUpTaskDependence()
+        self.assertTrue(case.enabled)
+        self.assertEqual(len(case._tasks), 0)
+        self.assertEqual(len(case.dependencies), 0)
 
     def test_getCoverageRcFile(self):
         case = cases.Case(settings.Settings())
@@ -202,7 +210,6 @@ class TestArmiCase(unittest.TestCase):
                 "verbosity": "important",
             }
             cs = cs.modified(newSettings=newSettings)
-            setMasterCs(cs)
             case = cases.Case(cs)
 
             with mockRunLogs.BufferLog() as mock:
@@ -222,7 +229,6 @@ class TestArmiCase(unittest.TestCase):
         # test the short write style
         with directoryChangers.TemporaryDirectoryChanger():
             cs = settings.Settings(ARMI_RUN_PATH)
-            setMasterCs(cs)
             case = cases.Case(cs)
             shortCase = case.clone(
                 additionalFiles=["ISOAA"],
@@ -245,7 +251,6 @@ class TestArmiCase(unittest.TestCase):
         # test the medium write style
         with directoryChangers.TemporaryDirectoryChanger():
             cs = settings.Settings(ARMI_RUN_PATH)
-            setMasterCs(cs)
             case = cases.Case(cs)
             case.clone(writeStyle="medium")
             clonedYaml = "armiRun.yaml"
@@ -500,8 +505,9 @@ class TestCopyInterfaceInputs(unittest.TestCase):
                 destPath=newDir.destination,
                 origFile=shuffleFile,
             )
-            newFilepath = os.path.join(newDir.destination, shuffleFile)
-            self.assertEqual(destFilePath, str(newFilepath))
+            newFilePath = os.path.join(newDir.destination, shuffleFile)
+            self.assertTrue(os.path.exists(newFilePath))
+            self.assertEqual(destFilePath, os.path.basename(newFilePath))
 
         # test with bad file path, should return original file
         # ensure we are not in TEST_ROOT
@@ -509,9 +515,10 @@ class TestCopyInterfaceInputs(unittest.TestCase):
             destFilePath = cases.case._copyInputsHelper(
                 testSetting,
                 sourcePath=sourceFullPath,
-                destPath="",
+                destPath="fakeDest",
                 origFile=shuffleFile,
             )
+            self.assertFalse(os.path.exists(destFilePath))
             self.assertEqual(destFilePath, shuffleFile)
 
     def test_copyInterfaceInputs_singleFile(self):
@@ -524,8 +531,9 @@ class TestCopyInterfaceInputs(unittest.TestCase):
             newSettings = cases.case.copyInterfaceInputs(
                 cs, destination=newDir.destination
             )
-            newFilepath = os.path.join(newDir.destination, shuffleFile)
-            self.assertEqual(newSettings[testSetting], str(newFilepath))
+            newFilePath = os.path.join(newDir.destination, shuffleFile)
+            self.assertTrue(os.path.exists(newFilePath))
+            self.assertEqual(newSettings[testSetting], os.path.basename(newFilePath))
 
     def test_copyInterfaceInputs_nonFilePath(self):
         testSetting = CONF_SHUFFLE_LOGIC
@@ -538,6 +546,7 @@ class TestCopyInterfaceInputs(unittest.TestCase):
             newSettings = cases.case.copyInterfaceInputs(
                 cs, destination=newDir.destination
             )
+            self.assertFalse(os.path.exists(newSettings[testSetting]))
             self.assertEqual(newSettings[testSetting], fakeShuffle)
 
     def test_copyInterfaceInputs_multipleFiles(self):
@@ -564,8 +573,10 @@ class TestCopyInterfaceInputs(unittest.TestCase):
             newSettings = cases.case.copyInterfaceInputs(
                 cs, destination=newDir.destination
             )
-            newFilepaths = [os.path.join(newDir.destination, f) for f in settingFiles]
-            self.assertEqual(newSettings[testSetting], newFilepaths)
+            newFilePaths = [os.path.join(newDir.destination, f) for f in settingFiles]
+            for newFilePath in newFilePaths:
+                self.assertTrue(os.path.exists(newFilePath))
+            self.assertEqual(newSettings[testSetting], settingFiles)
 
     def test_copyInterfaceInputs_wildcardFile(self):
         testSetting = CONF_SHUFFLE_LOGIC
@@ -579,8 +590,11 @@ class TestCopyInterfaceInputs(unittest.TestCase):
             newSettings = cases.case.copyInterfaceInputs(
                 cs, destination=newDir.destination
             )
-            newFilepath = [os.path.join(newDir.destination, "ISOAA")]
-            self.assertEqual(newSettings[testSetting], newFilepath)
+            newFilePath = [os.path.join(newDir.destination, "ISOAA")]
+            self.assertTrue(os.path.exists(newFilePath[0]))
+            self.assertEqual(
+                newSettings[testSetting], [os.path.basename(newFilePath[0])]
+            )
 
         # Check on a file that doesn't exist (so globFilePaths len is 0)
         wcFile = "fakeFile*"
@@ -589,6 +603,7 @@ class TestCopyInterfaceInputs(unittest.TestCase):
             newSettings = cases.case.copyInterfaceInputs(
                 cs, destination=newDir.destination
             )
+            self.assertFalse(os.path.exists(newSettings[testSetting][0]))
             self.assertEqual(newSettings[testSetting], [wcFile])
 
     def test_copyInterfaceInputs_relPath(self):
@@ -603,8 +618,9 @@ class TestCopyInterfaceInputs(unittest.TestCase):
             newSettings = cases.case.copyInterfaceInputs(
                 cs, destination=newDir.destination
             )
-            newFilepath = os.path.join(newDir.destination, shuffleFile)
-            self.assertEqual(newSettings[testSetting], newFilepath)
+            newFilePath = os.path.join(newDir.destination, shuffleFile)
+            self.assertTrue(os.path.exists(newFilePath))
+            self.assertEqual(newSettings[testSetting], os.path.basename(newFilePath))
 
     def test_copyInterfaceInputs_absPath(self):
         testSetting = CONF_SHUFFLE_LOGIC
@@ -618,4 +634,8 @@ class TestCopyInterfaceInputs(unittest.TestCase):
             newSettings = cases.case.copyInterfaceInputs(
                 cs, destination=newDir.destination
             )
+            # file exists
+            self.assertTrue(os.path.exists(newSettings[testSetting]))
+            # but not copied to this dir
+            self.assertFalse(os.path.exists(os.path.basename(newSettings[testSetting])))
             self.assertEqual(str(newSettings[testSetting]), absFile)

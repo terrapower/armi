@@ -70,7 +70,6 @@ from armi.bookkeeping.db.layout import (
 from armi.bookkeeping.db.typedefs import History, Histories
 from armi.nucDirectory import nuclideBases
 from armi.physics.neutronics.settings import CONF_LOADING_FILE
-from armi.reactor import assemblies
 from armi.reactor import grids
 from armi.reactor import parameters
 from armi.reactor import systemLayoutInput
@@ -99,18 +98,6 @@ def getH5GroupName(cycle: int, timeNode: int, statePointName: str = None) -> str
     simulated run.
     """
     return "c{:0>2}n{:0>2}{}".format(cycle, timeNode, statePointName or "")
-
-
-def updateGlobalAssemblyNum(r) -> None:
-    """
-    Updated the global assembly number counter in ARMI, using the assemblies
-    read from a database.
-    """
-    assemNum = r.core.p.maxAssemNum
-    if assemNum is not None:
-        assemblies.setAssemNumCounter(int(assemNum + 1))
-    else:
-        raise ValueError("Could not load maxAssemNum from the database")
 
 
 class Database3:
@@ -275,7 +262,7 @@ class Database3:
             try:
                 commit_hash = subprocess.check_output(["git", "describe"])
                 return commit_hash.decode("utf-8").strip()
-            except:
+            except:  # noqa: bare-except
                 return unknown
         else:
             return unknown
@@ -413,9 +400,7 @@ class Database3:
         """
         # Blueprints use the yamlize package, which uses class attributes to define much of the class's behavior
         # through metaclassing. Therefore, we need to be able to import all plugins *before* importing blueprints.
-        from armi.reactor.blueprints import (
-            Blueprints,
-        )  # pylint: disable=import-outside-toplevel
+        from armi.reactor.blueprints import Blueprints
 
         bpString = None
 
@@ -557,9 +542,7 @@ class Database3:
     def genTimeStepGroups(
         self, timeSteps: Sequence[Tuple[int, int]] = None
     ) -> Generator[h5py._hl.group.Group, None, None]:
-        """
-        Returns a generator of HDF5 Groups for all time nodes, or for the passed selection.
-        """
+        """Returns a generator of HDF5 Groups for all time nodes, or for the passed selection."""
         assert (
             self.h5db is not None
         ), "Must open the database before calling genTimeStepGroups"
@@ -573,18 +556,14 @@ class Database3:
                 yield self.h5db[getH5GroupName(*step)]
 
     def getLayout(self, cycle, node):
-        """
-        Return a Layout object representing the requested cycle and time node.
-        """
+        """Return a Layout object representing the requested cycle and time node."""
         version = (self._versionMajor, self._versionMinor)
         timeGroupName = getH5GroupName(cycle, node)
 
         return Layout(version, self.h5db[timeGroupName])
 
     def genTimeSteps(self) -> Generator[Tuple[int, int], None, None]:
-        """
-        Returns a generator of (cycle, node) tuples that are present in the DB.
-        """
+        """Returns a generator of (cycle, node) tuples that are present in the DB."""
         assert (
             self.h5db is not None
         ), "Must open the database before calling genTimeSteps"
@@ -596,9 +575,7 @@ class Database3:
                 yield (cycle, node)
 
     def genAuxiliaryData(self, ts: Tuple[int, int]) -> Generator[str, None, None]:
-        """
-        Returns a generator of names of auxiliary data on the requested time point.
-        """
+        """Returns a generator of names of auxiliary data on the requested time point."""
         assert (
             self.h5db is not None
         ), "Must open the database before calling genAuxiliaryData"
@@ -633,9 +610,7 @@ class Database3:
             return group
 
     def hasTimeStep(self, cycle, timeNode, statePointName=""):
-        """
-        Returns True if (cycle, timeNode, statePointName) is contained in the database.
-        """
+        """Returns True if (cycle, timeNode, statePointName) is contained in the database."""
         return getH5GroupName(cycle, timeNode, statePointName) in self.h5db
 
     def writeToDB(self, reactor, statePointName=None):
@@ -703,13 +678,9 @@ class Database3:
             Whether to emit a warning, rather than crash if reading a database
             with undefined parameters. Default False.
         updateGlobalAssemNum : bool, optional
-            Whether to update the global assembly number to the value stored in
-            r.core.p.maxAssemNum. Default True.
+            DeprecationWarning: This is unused.
         updateMasterCs : bool, optional
-            Whether to apply the cs (whether provided as an argument or read from
-            the database) as the primary for the case. Default True. Can be useful
-            if you don't intend to use the loaded reactor as the basis for further
-            computations in the current operator.
+            TODO: Deprecated. Slated for removal.
 
         Returns
         -------
@@ -719,8 +690,6 @@ class Database3:
         runLog.info("Loading reactor state for time node ({}, {})".format(cycle, node))
 
         cs = cs or self.loadCS()
-        if updateMasterCs:
-            settings.setMasterCs(cs)
         bp = bp or self.loadBlueprints()
 
         if node < 0:
@@ -753,9 +722,11 @@ class Database3:
         )
         root = comps[0][0]
 
-        # ensure the max assembly number is correct, unless the user says no
         if updateGlobalAssemNum:
-            updateGlobalAssemblyNum(root)
+            runLog.warning(
+                "The method input `updateGlobalAssemNum` is no longer used.",
+                single=True,
+            )
 
         # return a Reactor object
         if cs[CONF_SORT_REACTOR]:
@@ -954,7 +925,7 @@ class Database3:
         """
         Create on-the-fly block homog. number density params for XTVIEW viewing.
 
-        See also
+        See Also
         --------
         collectBlockNumberDensities
         """
@@ -1070,7 +1041,7 @@ class Database3:
          - All requested objects must have the same type.
 
         Parameters
-        ==========
+        ----------
         comps : list of ArmiObject
             The components/composites that currently occupy the location that you want
             histories at. ArmiObjects are passed, rather than locations, because this
@@ -1084,9 +1055,9 @@ class Database3:
         """
         if self.versionMinor < 4:
             raise ValueError(
-                f"Location-based histories are only supported for db "
+                "Location-based histories are only supported for db "
                 "version 3.4 and greater. This database is version "
-                "{self.versionMajor}, {self.versionMinor}."
+                f"{self.versionMajor}, {self.versionMinor}."
             )
 
         locations = [c.spatialLocator.getCompleteIndices() for c in comps]
@@ -1263,7 +1234,7 @@ class Database3:
         DatabaseInterface may be more useful.
 
         Parameters
-        ==========
+        ----------
         comps
             Something that is iterable multiple times
         params
@@ -1272,7 +1243,7 @@ class Database3:
             Selection of time nodes to get data for. If omitted, return full history
 
         Returns
-        =======
+        -------
         dict
             Dictionary ArmiObject (input): dict of str/list pairs containing ((cycle,
             node), value).
@@ -1325,6 +1296,7 @@ class Database3:
                     if d is not None:
                         indexInData.append(ii)
                         reorderedComps.append(d)
+
                 if not indexInData:
                     continue
 
@@ -1374,7 +1346,6 @@ class Database3:
 
                     # iterating of numpy is not fast..
                     for c, val in zip(reorderedComps, data.tolist()):
-
                         if isinstance(val, list):
                             val = numpy.array(val)
 
@@ -1387,7 +1358,7 @@ class Database3:
                 if cycleNode not in hist:
                     try:
                         hist[cycleNode] = c.p[paramName]
-                    except:
+                    except:  # noqa: bare-except
                         if paramName == "location":
                             hist[cycleNode] = c.spatialLocator.indices
 

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-r"""
+"""
 This defines a Settings object that acts mostly like a dictionary. It
 is meant to be treated mostly like a singleton, where each custom ARMI
 object has access to it. It contains global user settings like the core
@@ -22,8 +22,7 @@ the environment setup, and hundreds of other things.
 A settings object can be saved as or loaded from an YAML file. The ARMI GUI is designed to
 create this settings file, which is then loaded by an ARMI process on the cluster.
 
-A primary case settings is created as ``masterCs``
-
+A primary case settings is created as ``masterCs``.
 """
 import io
 import logging
@@ -65,10 +64,6 @@ class Settings:
     The actual settings in any instance of this class are immutable.
     """
 
-    # Settings is not a singleton, but there is a globally
-    # shared instance considered most germane to the current run
-    instance = None
-
     defaultCaseTitle = "armi"
 
     def __init__(self, fName=None):
@@ -92,15 +87,13 @@ class Settings:
         provided by the user on the command line.  Therefore, _failOnLoad is used to
         prevent this from happening.
         """
-        from armi import getApp  # pylint: disable=import-outside-toplevel
+        from armi import getApp
 
         self.path = ""
 
         app = getApp()
         assert app is not None
         self.__settings = app.getSettings()
-        if not Settings.instance:
-            Settings.instance = self
 
         if fName:
             self.loadFromInputFile(fName)
@@ -140,7 +133,7 @@ class Settings:
 
     def __repr__(self):
         total = len(self.__settings.keys())
-        isAltered = lambda setting: 1 if setting.value != setting.default else 0
+        isAltered = lambda s: 1 if s.value != s.default else 0
         altered = sum([isAltered(setting) for setting in self.__settings.values()])
 
         return "<{} name:{} total:{} altered:{}>".format(
@@ -222,7 +215,7 @@ class Settings:
         --------
         armi.settings.setting.Setting.__getstate__ : removes schema
         """
-        from armi import getApp  # pylint: disable=import-outside-toplevel
+        from armi import getApp
 
         self.__settings = getApp().getSettings()
 
@@ -233,7 +226,6 @@ class Settings:
 
         # with schema restored, restore all setting values
         for name, settingState in state["_Settings__settings"].items():
-            # pylint: disable=protected-access
             if name in self.__settings:
                 self.__settings[name]._value = settingState.value
             elif isinstance(settingState, Setting):
@@ -253,7 +245,7 @@ class Settings:
     def duplicate(self):
         """Return a duplicate copy of this settings object."""
         cs = deepcopy(self)
-        cs._failOnLoad = False  # pylint: disable=protected-access
+        cs._failOnLoad = False
         # it's not really protected access since it is a new Settings object.
         # _failOnLoad is set to false, because this new settings object should be independent of the command line
         return cs
@@ -289,7 +281,7 @@ class Settings:
         """Add any ad-hoc 'user' plugins that are referenced in the settings file."""
         userPlugins = self["userPlugins"]
         if len(userPlugins):
-            from armi import getApp  # pylint: disable=import-outside-toplevel
+            from armi import getApp
 
             app = getApp()
             app.registerUserPlugins(userPlugins)
@@ -399,11 +391,11 @@ class Settings:
         userSettingsNames : list
             The settings names read in from a yaml settings file
         """
-
         # We do not want to load these as settings, but just grab the dictionary straight
         # from the settings file to know which settings are user-defined
         with open(fPath, "r") as stream:
             yaml = YAML()
+            yaml.allow_duplicate_keys = False
             tree = yaml.load(stream)
             userSettings = tree[settingsIO.Roots.CUSTOM]
 
@@ -449,7 +441,6 @@ class Settings:
 
     def modified(self, caseTitle=None, newSettings=None):
         """Return a new Settings object containing the provided modifications."""
-        # pylint: disable=protected-access
         settings = self.duplicate()
 
         if caseTitle:

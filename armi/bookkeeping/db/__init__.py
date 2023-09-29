@@ -27,7 +27,6 @@ Repeat Yourself (DRY) practices in the same way as other code. Therefore, do not
 code between different major versions of the databases. Create a new module if you are
 creating a new major database version.
 
-
 Database revision changelog
 ---------------------------
  - 1: Originally, calculation results were stored in a SQL database.
@@ -63,17 +62,14 @@ Database revision changelog
 import os
 from typing import Optional, List, Tuple
 
-from armi import settings
-from armi.utils import pathTools
 from armi import runLog
-from armi.reactor import reactors
 
 # re-export package components for easier import
-from .permissions import Permissions
-from .database3 import Database3, updateGlobalAssemblyNum
-from .databaseInterface import DatabaseInterface
-from .compareDB3 import compareDatabases
-from .factory import databaseFactory
+from armi.bookkeeping.db.permissions import Permissions
+from armi.bookkeeping.db.database3 import Database3
+from armi.bookkeeping.db.databaseInterface import DatabaseInterface
+from armi.bookkeeping.db.compareDB3 import compareDatabases
+from armi.bookkeeping.db.factory import databaseFactory
 
 
 __all__ = [
@@ -144,14 +140,6 @@ def loadOperator(pathToDb, loadCycle, loadNode, allowMissing=False):
         thisCase = cases.Case(cs)
 
         r = db.load(loadCycle, loadNode, allowMissing=allowMissing)
-
-    settings.setMasterCs(cs)
-
-    # Update the global assembly number because, if the user is loading a reactor from
-    # blueprints and does not have access to an operator, it is unlikely that there is
-    # another reactor that has alter the global assem num. Fresh cases typically want
-    # this updated.
-    updateGlobalAssemblyNum(r)
 
     o = thisCase.initializeOperator(r=r)
     runLog.important(

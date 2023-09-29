@@ -26,16 +26,15 @@ the end of plant life.
    :id: IMPL_EVOLVING_STATE_0
    :links: REQ_EVOLVING_STATE
 """
+import collections
 import os
 import re
 import shutil
 import time
-import collections
 
 from armi import context
 from armi import interfaces
 from armi import runLog
-from armi import settings
 from armi.bookkeeping import memoryProfiler
 from armi.bookkeeping.report import reportingUtils
 from armi.operators import settingsValidation
@@ -62,7 +61,7 @@ from armi.utils import (
 )
 
 
-class Operator:  # pylint: disable=too-many-public-methods
+class Operator:
     """
     Orchestrates an ARMI run, building all the pieces, looping through the interfaces, and manipulating the reactor.
 
@@ -331,9 +330,7 @@ class Operator:  # pylint: disable=too-many-public-methods
         self._mainOperate()
 
     def _mainOperate(self):
-        """
-        Main loop for a standard ARMI run. Steps through time interacting with the interfaces.
-        """
+        """Main loop for a standard ARMI run. Steps through time interacting with the interfaces."""
         self.interactAllBOL()
         startingCycle = self.r.p.cycle  # may be starting at t != 0 in restarts
         for cycle in range(startingCycle, self.cs["nCycles"]):
@@ -357,10 +354,13 @@ class Operator:  # pylint: disable=too-many-public-methods
         if halt:
             return False
 
+        # read total core power from settings (power or powerDensity)
+        basicPower = self.cs["power"] or (
+            self.cs["powerDensity"] * self.r.core.getHMMass()
+        )
+
         for timeNode in range(startingNode, int(self.burnSteps[cycle])):
-            self.r.core.p.power = (
-                self.powerFractions[cycle][timeNode] * self.cs["power"]
-            )
+            self.r.core.p.power = self.powerFractions[cycle][timeNode] * basicPower
             self.r.p.capacityFactor = (
                 self.r.p.availabilityFactor * self.powerFractions[cycle][timeNode]
             )
@@ -375,7 +375,7 @@ class Operator:  # pylint: disable=too-many-public-methods
             else:
                 powFrac = self.powerFractions[cycle][timeNode - 1]
 
-            self.r.core.p.power = powFrac * self.cs["power"]
+            self.r.core.p.power = powFrac * basicPower
             self._timeNodeLoop(cycle, timeNode)
 
         self.interactAllEOC(self.r.p.cycle)
@@ -483,8 +483,6 @@ class Operator:  # pylint: disable=too-many-public-methods
                     )
                 )
 
-            self._checkCsConsistency()
-
         runLog.header(
             "===========  Completed {} Event ===========\n".format(
                 interactionName + cycleNodeTag
@@ -563,23 +561,6 @@ class Operator:  # pylint: disable=too-many-public-methods
 
             db.writeToDB(self.r, statePointName=statePointName)
 
-    def _checkCsConsistency(self):
-        """Debugging check to verify that CS objects are not unexpectedly multiplying."""
-        cs = settings.getMasterCs()
-        wrong = (self.cs is not cs) or any((i.cs is not cs) for i in self.interfaces)
-        if wrong:
-            msg = ["Primary cs ID is {}".format(id(cs))]
-            for i in self.interfaces:
-                msg.append("{:30s} has cs ID: {:12d}".format(str(i), id(i.cs)))
-            msg.append("{:30s} has cs ID: {:12d}".format(str(self), id(self.cs)))
-            raise RuntimeError("\n".join(msg))
-
-        runLog.debug(
-            "Reactors, operators, and interfaces all share primary cs: {}".format(
-                id(cs)
-            )
-        )
-
     def interactAllInit(self):
         """Call interactInit on all interfaces in the stack after they are initialized."""
         allInterfaces = self.interfaces[:]  # copy just in case
@@ -594,7 +575,7 @@ class Operator:  # pylint: disable=too-many-public-methods
         activeInterfaces = [
             ii
             for ii in self.interfaces
-            if (ii.enabled() or ii.bolForce()) and not ii.name in excludedInterfaceNames
+            if (ii.enabled() or ii.bolForce()) and ii.name not in excludedInterfaceNames
         ]
         activeInterfaces = [
             ii
@@ -699,7 +680,8 @@ class Operator:  # pylint: disable=too-many-public-methods
 
         Notes
         -----
-        This is split off from self.interactAllCoupled to accomodate testing"""
+        This is split off from self.interactAllCoupled to accomodate testing
+        """
         # Summarize the coupled results and the convergence status.
         converged = []
         for interface in activeInterfaces:
@@ -1051,7 +1033,7 @@ class Operator:  # pylint: disable=too-many-public-methods
         """
         Convenience method reroute to the database interface state reload method.
 
-        See also
+        See Also
         --------
         armi.bookeeping.db.loadOperator:
             A method for loading an operator given a database. loadOperator does not
@@ -1089,7 +1071,6 @@ class Operator:  # pylint: disable=too-many-public-methods
         of snapshots has evolved with respect to the
         :py:class:`~armi.operators.snapshots.OperatorSnapshots`.
         """
-        # pylint: disable=import-outside-toplevel # avoid cyclic import
         from armi.physics.neutronics.settings import CONF_LOADING_FILE
 
         runLog.info("Producing snapshot for cycle {0} node {1}".format(cycle, node))

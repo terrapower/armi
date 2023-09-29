@@ -186,7 +186,7 @@ code, consider pulling the repeated code out into it's own function, or using a 
 
 Public methods should have docstrings
 =====================================
-Always create the :doc:`proper docstrings </developer/code_practices/documentation_guidelines>` for all public
+Always create the `proper docstrings <https://numpydoc.readthedocs.io/en/latest/example.html>`_ for all public
 functions and public classes.
 
 Unit tests
@@ -291,10 +291,10 @@ ARMI developers **shall** use one of the following well-defined, Python-supporte
 .yaml
     YAML files are like JSON files but can have comments in them.
 
-Address the pylint warnings
-===========================
-Our pull request system integrates with the automatic code checker, pylint. Any new code you add must have
-zero pylint warnings or errors.
+Address the ruff warnings
+=========================
+Our pull request system integrates with the automatic code checker, ruff. Any new code you add must have
+zero ruff warnings or errors.
 
 General do's and don'ts
 =======================

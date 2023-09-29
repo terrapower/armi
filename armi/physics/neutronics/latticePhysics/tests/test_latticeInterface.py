@@ -13,27 +13,25 @@
 # limitations under the License.
 
 """Test the Lattice Interface."""
-# pylint: disable=abstract-method,missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-method-argument,import-outside-toplevel
-import unittest
 from collections import OrderedDict
+import unittest
 
 from armi.physics.neutronics.latticePhysics.latticePhysicsInterface import (
     LatticePhysicsInterface,
 )
-from armi.tests import mockRunLogs
 from armi import settings
-from armi.settings.fwSettings.globalSettings import CONF_RUN_TYPE
-from armi.physics.neutronics.settings import CONF_GEN_XS
 from armi.operators.operator import Operator
-from armi.reactor.reactors import Reactor, Core
 from armi.physics.neutronics.crossSectionGroupManager import CrossSectionGroupManager
+from armi.physics.neutronics.settings import CONF_GEN_XS
+from armi.reactor.reactors import Reactor, Core
 from armi.reactor.tests.test_blocks import buildSimpleFuelBlock
+from armi.tests import mockRunLogs
 from armi.reactor.assemblies import (
     HexAssembly,
     grids,
 )
-from armi.physics.neutronics import LatticePhysicsFrequency
 from armi.nuclearDataIO.cccc import isotxs
+from armi.physics.neutronics import LatticePhysicsFrequency
 from armi.tests import ISOAA_PATH
 
 # As an interface, LatticePhysicsInterface must be subclassed to be used
@@ -142,9 +140,7 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
         self.assertTrue(self.latticeInterface.testVerification)
 
     def test_interactEveryNode(self):
-        """
-        Test interactEveryNode() with different update frequencies.
-        """
+        """Test interactEveryNode() with different update frequencies."""
         self.latticeInterface._latticePhysicsFrequency = LatticePhysicsFrequency.BOC
         self.latticeInterface.interactEveryNode()
         self.assertEqual(self.o.r.core.lib, "Nonsense")
@@ -155,9 +151,7 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
         self.assertIsNone(self.o.r.core.lib)
 
     def test_interactEveryNodeFirstCoupled(self):
-        """
-        Test interactEveryNode() with LatticePhysicsFrequency.firstCoupledIteration.
-        """
+        """Test interactEveryNode() with LatticePhysicsFrequency.firstCoupledIteration."""
         self.latticeInterface._latticePhysicsFrequency = (
             LatticePhysicsFrequency.firstCoupledIteration
         )
@@ -165,17 +159,13 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
         self.assertIsNone(self.o.r.core.lib)
 
     def test_interactEveryNodeAll(self):
-        """
-        Test interactEveryNode() with LatticePhysicsFrequency.all.
-        """
+        """Test interactEveryNode() with LatticePhysicsFrequency.all."""
         self.latticeInterface._latticePhysicsFrequency = LatticePhysicsFrequency.all
         self.latticeInterface.interactEveryNode()
         self.assertIsNone(self.o.r.core.lib)
 
     def test_interactFirstCoupledIteration(self):
-        """
-        Test interactCoupled() with different update frequencies on first iteration.
-        """
+        """Test interactCoupled() with different update frequencies on first iteration."""
         self.latticeInterface._latticePhysicsFrequency = (
             LatticePhysicsFrequency.everyNode
         )
@@ -188,9 +178,7 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
         self.assertIsNone(self.o.r.core.lib)
 
     def test_interactAll(self):
-        """
-        Test interactCoupled() with different update frequencies on non-first iteration.
-        """
+        """Test interactCoupled() with different update frequencies on non-first iteration."""
         self.latticeInterface._latticePhysicsFrequency = (
             LatticePhysicsFrequency.firstCoupledIteration
         )

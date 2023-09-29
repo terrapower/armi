@@ -25,11 +25,10 @@ for settings that are more complex dictionaries (e.g. XS, rx coeffs, etc.).
 One reason for complexity of the previous settings implementation was
 good interoperability with the GUI widgets.
 """
-
-import copy
 from collections import namedtuple
-import datetime
 from typing import List, Optional, Tuple
+import copy
+import datetime
 
 import voluptuous as vol
 
@@ -299,7 +298,8 @@ class Setting:
         """
         Additional hack, residual from when settings system could write settings definitions.
 
-        This is only needed here due to the unit tests in test_settings."""
+        This is only needed here due to the unit tests in test_settings.
+        """
         return {
             "value": self.value,
             "type": type(self.default),
@@ -370,7 +370,7 @@ class FlagListSetting(Setting):
             elif isinstance(v, Flags):
                 flagVals.append(v)
             else:
-                raise ValueError(f"Invalid flag input `{v}` in `{self}`")
+                raise ValueError(f"Invalid flag input `{v}` in `FlagListSetting`")
         return flagVals
 
     def dump(self) -> List[str]:

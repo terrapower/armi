@@ -2,25 +2,66 @@
 ARMI v0.2 Release Notes
 =======================
 
-ARMI v0.2.8
-===========
+ARMI v0.2.10
+============
 Release Date: TBD
 
 What's new in ARMI
 ------------------
-#. Calculate weighted-average percent burnup of BlockCollections. (`PR#1265 <https://github.com/terrapower/armi/pull/1265>`_)
-#. Added ``Composite.sort()`` to allow the user to recursively sort any piece of the ``Reactor``. (`PR#1280 <https://github.com/terrapower/armi/pull/1280>`_)
-#  Revert "when using non-uniform mesh, detailed fission/activation products have cross sections generated to avoid blocks without xs data" and move capability to lattice physics (`PR#1280 <https://github.com/terrapower/armi/pull/1298>`_)
-#. Add interactCoupled method for snapshotInterface (`PR#1294 <https://github.com/terrapower/armi/pull/1294>`_)
-#. Move cross section group manager interface stack position to be just before lattice physics. (`PR#1288 <https://github.com/terrapower/armi/pull/1288>`_)
+#. The ``_copyInputsHelper()`` gives relative path and not absolute after copy. (`PR#1416 <https://github.com/terrapower/armi/pull/1416>`_)
+#. TBD
 
 Bug fixes
 ---------
-#. Changed units.FLOAT_DIMENSION_DECIMALS from 10 to 8 (`PR#1183 <https://github.com/terrapower/armi/pull/1183>`_)
+#. TBD
+
+ARMI v0.2.9
+===========
+Release Date: 2023-09-27
+
+What's new in ARMI
+------------------
+#. Moved the ``Reactor`` assembly number from the global scope to a ``Parameter``. (`PR#1383 <https://github.com/terrapower/armi/pull/1383>`_)
+#. Removed the global ``CaseSettings`` object, ``getMasterCs()``, and ``setMasterCs()``. (`PR#1399 <https://github.com/terrapower/armi/pull/1399>`_)
+#. Moved the Spent Fuel Pool (``sfp``) from the ``Core`` to the ``Reactor``. (`PR#1336 <https://github.com/terrapower/armi/pull/1336>`_)
+#. Made the ``sfp`` a child of the ``Reactor`` so it is stored in the database. (`PR#1349 <https://github.com/terrapower/armi/pull/1349>`_)
+#. Broad cleanup of ``Parameters``: filled in all empty units and descriptions, removed unused params. (`PR#1345 <https://github.com/terrapower/armi/pull/1345>`_)
+#. Updated some parameter definitions and defaults. (`PR#1355 <https://github.com/terrapower/armi/pull/1355>`_)
+#. Removed redundant ``Material.name`` variable. (`PR#1335 <https://github.com/terrapower/armi/pull/1335>`_)
+#. Added ``powerDensity`` as a high-level alternative to ``power`` to configure a ``Reactor``. (`PR#1395 <https://github.com/terrapower/armi/pull/1395>`_)
+#. Added SHA1 hashes of XS control files to the welcome text. (`PR#1334 <https://github.com/terrapower/armi/pull/1334>`_)
+
+Build changes
+-------------
+#. Moved from ``setup.py`` to ``pyproject.toml``. (`PR#1409 <https://github.com/terrapower/armi/pull/1409>`_)
+#. Added Python 3.11 to ARMI's CI on GH actions. (`PR#1341 <https://github.com/terrapower/armi/pull/1341>`_)
+#. Updated ``black`` to version 22.6. (`PR#1396 <https://github.com/terrapower/armi/pull/1396>`_)
+
+Bug fixes
+---------
+#. Fixed ``_processIncludes()`` to handle ``StringIO`` input. (`PR#1333 <https://github.com/terrapower/armi/pull/1333>`_)
+#. Fixed logic for computing thermal expansion factors for axial expansion. (`PR#1342 <https://github.com/terrapower/armi/pull/1342>`_)
+
+ARMI v0.2.8
+===========
+Release Date: 2023-06-21
+
+What's new in ARMI
+------------------
+#. Added ``Composite.sort()`` to allow the user to recursively sort any part of the ``Reactor``. (`PR#1280 <https://github.com/terrapower/armi/pull/1280>`_)
+#. Switching from ``pylint`` to the ``ruff`` linter. (`PR#1296 <https://github.com/terrapower/armi/pull/1296>`_)
+#. Move cross section group manager Interface stack position to be just before lattice physics. (`PR#1288 <https://github.com/terrapower/armi/pull/1288>`_)
+#. Add ``interactCoupled`` method for ``SnapshotInterface``. (`PR#1294 <https://github.com/terrapower/armi/pull/1294>`_)
+#. Calculate weighted-average percent burnup of ``BlockCollections``. (`PR#1265 <https://github.com/terrapower/armi/pull/1265>`_)
+#. Add method ``sortAssemsByRing`` to sort ``Reactor`` assemblies by spatial location (interior first)  (`PR#1320 <https://github.com/terrapower/armi/pull/1320>`_)
+
+Bug fixes
+---------
+#. Changed ``units.FLOAT_DIMENSION_DECIMALS`` from 10 to 8. (`PR#1183 <https://github.com/terrapower/armi/pull/1183>`_)
 #. Improved ``HexBlock.getWettedPerimeter()`` to include wire. (`PR#1299 <https://github.com/terrapower/armi/pull/1299>`_)
 #. Fixed a bug in the ISOTXS file name used for snapshots. (`PR#1277 <https://github.com/terrapower/armi/pull/1277>`_)
 #. Fix a bug in uniform mesh decusping when assemblies of same type have drastically different height. (`PR#1282 <https://github.com/terrapower/armi/pull/1282>`_)
-#. Sort components on representativeBlock for consistency check. (`PR#1275 <https://github.com/terrapower/armi/pull/1275>`_)
+#. Sort ``Components`` on ``representativeBlock`` for consistency check. (`PR#1275 <https://github.com/terrapower/armi/pull/1275>`_)
 
 ARMI v0.2.7
 ===========
@@ -104,6 +145,7 @@ Bug fixes
 #. Fixed Concrete density curve. (`PR#1131 <https://github.com/terrapower/armi/pull/1131>`_)
 #. Fixed Copper density curve. (`PR#1150 <https://github.com/terrapower/armi/pull/1150>`_)
 #. Fixed Component.density. (`PR#1149 <https://github.com/terrapower/armi/pull/1149>`_)
+#. Fixed error where a non-float value could be assigned to a material's mass fraction dictionary (`PR#1199 <https://github.com/terrapower/armi/pull/1199>`_)
 #. Fixed interface/event ``runLog.header`` for tight coupling. (`PR#1178 <https://github.com/terrapower/armi/pull/1178>`_)
 #. Fixed circular import bug in ``reactors.py`` caused by importing settings constants. (`PR#1185 <https://github.com/terrapower/armi/pull/1185>`_)
 

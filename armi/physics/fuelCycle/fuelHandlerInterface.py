@@ -89,11 +89,10 @@ class FuelHandlerInterface(interfaces.Interface):
         timeYears = self.r.p.time
         # keep track of the EOC time in years.
         self.cycleTime[cycle] = timeYears
-        runLog.extra(
-            "There are {} assemblies in the Spent Fuel Pool".format(
-                len(self.r.core.sfp)
+        if self.r.sfp is not None:
+            runLog.extra(
+                f"There are {len(self.r.sfp)} assemblies in the Spent Fuel Pool"
             )
-        )
 
     def interactEOL(self):
         """Make reports at EOL."""
@@ -109,6 +108,7 @@ class FuelHandlerInterface(interfaces.Interface):
         self.r.core.locateAllAssemblies()
         shuffleFactors, _ = fh.getFactorList(cycle)
         fh.outage(shuffleFactors)  # move the assemblies around
+
         if self.cs[CONF_PLOT_SHUFFLE_ARROWS]:
             arrows = fh.makeShuffleArrows()
             plotting.plotFaceMap(

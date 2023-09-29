@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Uranium Thorium Zirconium alloy metal.
-"""
+"""Uranium Thorium Zirconium alloy metal."""
 from armi.utils.units import getTk
 from armi.materials.material import FuelMaterial
 from armi import runLog
@@ -27,7 +25,6 @@ class UThZr(FuelMaterial):
     This gives the combined fuel cycle of U-235, U-238, U-233, Pu-239 etc.
     """
 
-    name = "UThZr"
     enrichedNuclide = "U235"
 
     def applyInputParams(self, U235_wt_frac=None, ZR_wt_frac=None, *args, **kwargs):
@@ -39,7 +36,7 @@ class UThZr(FuelMaterial):
         FuelMaterial.applyInputParams(self, *args, **kwargs)
 
     def setDefaultMassFracs(self):
-        r"""U-ZR mass fractions."""
+        """U-ZR mass fractions."""
         self.setMassFrac("U238", 0.8)
         self.setMassFrac("U235", 0.1)
         self.setMassFrac("ZR", 0.09999)

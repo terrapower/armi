@@ -86,9 +86,7 @@ class DatabaseInterface(interfaces.Interface):
 
     @property
     def database(self):
-        """
-        Presents the internal database object, if it exists.
-        """
+        """Presents the internal database object, if it exists."""
         if self._db is not None:
             return self._db
         else:
@@ -186,7 +184,7 @@ class DatabaseInterface(interfaces.Interface):
         self._db.close(True)
 
     def interactError(self):
-        r"""Get shutdown state information even if the run encounters an error."""
+        """Get shutdown state information even if the run encounters an error."""
         try:
             self.r.core.p.minutesSinceStart = (
                 time.time() - self.r.core.timeOfStart
@@ -196,7 +194,7 @@ class DatabaseInterface(interfaces.Interface):
             # writing
             self._db.writeToDB(self.r, "error")
             self._db.close(False)
-        except:  # pylint: disable=bare-except; we're already responding to an error
+        except:  # noqa: bare-except; we're already responding to an error
             pass
 
     def interactDistributeState(self) -> None:
@@ -283,7 +281,6 @@ class DatabaseInterface(interfaces.Interface):
                 "The cycle history up to the restart cycle/node must be equivalent."
             )
 
-    # TODO: The use of "yield" here is suspect.
     def _getLoadDB(self, fileName):
         """
         Return the database to load from in order of preference.

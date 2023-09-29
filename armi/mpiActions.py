@@ -52,12 +52,11 @@ sends it to the workers, and then both the primary and the workers
 
 In order to create a new, custom MPI Action, inherit from :py:class:`~armi.mpiActions.MpiAction`,
 and override the :py:meth:`~armi.mpiActions.MpiAction.invokeHook` method.
-
 """
 import collections
 import gc
-import timeit
 import math
+import timeit
 
 from six.moves import cPickle
 import tabulate
@@ -68,7 +67,6 @@ from armi import runLog
 from armi import settings
 from armi import utils
 from armi.reactor import reactors
-from armi.reactor import assemblies
 from armi.reactor.parameters import parameterDefinitions
 from armi.utils import iterables
 
@@ -126,15 +124,12 @@ class MpiAction:
         r : :py:class:`armi.operators.Reactor`
             If a reactor is not necessary, supply :code:`None`.
         """
-
         instance = cls()
         instance.broadcast()
         return instance.invoke(o, r, cs)
 
     def _mpiOperationHelper(self, obj, mpiFunction):
-        """
-        Strips off the operator, reactor, cs from the mpiAction before.
-        """
+        """Strips off the operator, reactor, cs from the mpiAction before."""
         if obj is None or obj is self:
             # prevent sending o, r, and cs, they should be handled appropriately by the other nodes
             # reattach with finally
@@ -271,7 +266,7 @@ class MpiAction:
         """
         ntasks = len(objectsForAllCoresToIter)
         numLocalObjects, deficit = divmod(ntasks, context.MPI_SIZE)
-        if context.MPI_RANK < deficit:
+        if deficit > context.MPI_RANK:
             numLocalObjects += 1
             first = context.MPI_RANK * numLocalObjects
         else:
@@ -310,7 +305,7 @@ def runActions(o, r, cs, actions, numPerNode=None, serial=False):
         return runActionsInSerial(o, r, cs, actions)
 
     useForComputation = [True] * context.MPI_SIZE
-    if numPerNode != None:
+    if numPerNode is not None:
         if numPerNode < 1:
             raise ValueError("numPerNode must be >= 1")
         numThisNode = {nodeName: 0 for nodeName in context.MPI_NODENAMES}
@@ -456,7 +451,7 @@ class DistributionAction(MpiAction):
         Overrides invokeHook to distribute work amongst available resources as requested.
 
         Notes
-        =====
+        -----
         Two things about this method make it non-recursive
         """
         canDistribute = context.MPI_DISTRIBUTABLE
@@ -542,7 +537,7 @@ class DistributeStateAction(MpiAction):
             # same.
             # TODO: this is an indication we need to revamp either how the operator attachment works
             # or how the interfaces are distributed.
-            self.r._markSynchronized()  # pylint: disable=protected-access
+            self.r._markSynchronized()
 
         except (cPickle.PicklingError, TypeError) as error:
             runLog.error("Failed to transmit on distribute state root MPI bcast")
@@ -555,10 +550,10 @@ class DistributeStateAction(MpiAction):
             raise
 
         if context.MPI_RANK != 0:
-            self.r.core.regenAssemblyLists()  # pylint: disable=no-member
+            self.r.core.regenAssemblyLists()
 
         # check to make sure that everything has been properly reattached
-        if self.r.core.getFirstBlock().r is not self.r:  # pylint: disable=no-member
+        if self.r.core.getFirstBlock().r is not self.r:
             raise RuntimeError("Block.r is not self.r. Reattach the blocks!")
 
         beforeCollection = timeit.default_timer()
@@ -587,7 +582,6 @@ class DistributeStateAction(MpiAction):
             raise RuntimeError("Failed to transmit settings, received: {}".format(cs))
 
         if context.MPI_RANK != 0:
-            settings.setMasterCs(cs)
             self.o.cs = cs
         return cs
 
@@ -613,8 +607,6 @@ class DistributeStateAction(MpiAction):
         runLog.debug(
             "The reactor has {} assemblies".format(len(self.r.core.getAssemblies()))
         )
-        numAssemblies = self.broadcast(assemblies.getAssemNum())
-        assemblies.setAssemNumCounter(numAssemblies)
         # attach here so any interface actions use a properly-setup reactor.
         self.o.reattach(self.r, cs)  # sets r and cs
 
@@ -695,7 +687,7 @@ class DistributeStateAction(MpiAction):
                         return
                     self.o.removeInterface(iOld)
                     self.o.addInterface(iNew)
-                    iNew.interactDistributeState()  # pylint: disable=no-member
+                    iNew.interactDistributeState()
                 elif distributable == interfaces.Interface.Distribute.NEW:
                     runLog.debug("Initializing new interface {0}".format(iName))
                     # make a fresh instance of the non-transmittable interface.
@@ -742,19 +734,19 @@ def _diagnosePickleError(o):
     checker(o.r)
 
     runLog.info("Scanning all assemblies for pickle errors")
-    for a in o.r.core.getAssemblies(includeAll=True):  # pylint: disable=no-member
+    for a in o.r.core.getAssemblies(includeAll=True):
         checker(a)
 
     runLog.info("Scanning all blocks for pickle errors")
-    for b in o.r.core.getBlocks(includeAll=True):  # pylint: disable=no-member
+    for b in o.r.core.getBlocks(includeAll=True):
         checker(b)
 
     runLog.info("Scanning blocks by name for pickle errors")
-    for _bName, b in o.r.core.blocksByName.items():  # pylint: disable=no-member
+    for _bName, b in o.r.core.blocksByName.items():
         checker(b)
 
     runLog.info("Scanning the ISOTXS library for pickle errors")
-    checker(o.r.core.lib)  # pylint: disable=no-member
+    checker(o.r.core.lib)
 
     for interface in o.getInterfaces():
         runLog.info("Scanning {} for pickle errors".format(interface))

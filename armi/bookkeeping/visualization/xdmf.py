@@ -42,9 +42,7 @@ import math
 import pathlib
 from typing import Optional, Set, List, Tuple, Dict
 import xml.etree.ElementTree as ET
-
 import xml.dom.minidom
-
 
 import numpy
 import h5py
@@ -280,9 +278,7 @@ class XdmfDumper(dumper.VisFileDumper):
         includeParams: Optional[Set[str]] = None,
         excludeParams: Optional[Set[str]] = None,
     ):
-        """
-        Produce a ``<Grid>`` for a single timestep, as well as supporting HDF5 datasets.
-        """
+        """Produce a ``<Grid>`` for a single timestep, as well as supporting HDF5 datasets."""
         cycle = r.p.cycle
         node = r.p.timeNode
 

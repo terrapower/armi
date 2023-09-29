@@ -12,16 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Magnesium Oxide.
-"""
-from armi.utils.units import getTc, getTk
+"""Magnesium Oxide."""
 from armi.materials.material import Material
+from armi.utils.units import getTc, getTk
 
 
 class MgO(Material):
-    r"""MagnesiumOxide."""
-    name = "MgO"
+    """MagnesiumOxide."""
+
     propertyValidTemperature = {
         "density": ((273, 1273), "K"),
         "linear expansion percent": ((273.15, 1273.15), "K"),
@@ -36,7 +34,7 @@ class MgO(Material):
         self.refDens = 3.58
 
     def setDefaultMassFracs(self):
-        r"""Mass fractions."""
+        """Mass fractions."""
         self.setMassFrac("MG", 0.603035897)
         self.setMassFrac("O16", 0.396964103)
 
@@ -51,4 +49,4 @@ class MgO(Material):
         Tc = getTc(Tc, Tk)
         Tk = getTk(Tc=Tc)
         self.checkPropertyTempRange("linear expansion percent", Tk)
-        return 1.0489e-5 * Tc + 6.0458e-9 * Tc ** 2 - 2.6875e-12 * Tc ** 3
+        return 1.0489e-5 * Tc + 6.0458e-9 * Tc**2 - 2.6875e-12 * Tc**3

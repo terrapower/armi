@@ -22,13 +22,13 @@ Much info is from [AAAFuels]_.
 
 from numpy import interp
 
+from armi import runLog
 from armi.materials.material import FuelMaterial
 from armi.nucDirectory import nuclideBases as nb
 from armi.utils.units import getTk
 
 
 class Uranium(FuelMaterial):
-    name = "Uranium"
 
     enrichedNuclide = "U235"
 
@@ -222,7 +222,7 @@ class Uranium(FuelMaterial):
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("thermal conductivity", Tk)
 
-        kU = 21.73 + (0.01591 * Tk) + (0.000005907 * Tk ** 2)
+        kU = 21.73 + (0.01591 * Tk) + (0.000005907 * Tk**2)
         return kU
 
     def heatCapacity(self, Tk: float = None, Tc: float = None) -> float:

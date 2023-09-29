@@ -33,8 +33,6 @@ class Sodium(material.Fluid):
         https://www.osti.gov/biblio/94649-gXNdLI/webviewable/
     """
 
-    name = "Sodium"
-
     propertyValidTemperature = {
         "density": ((97.85, 2230.55), "C"),
         "enthalpy": ((371.0, 2000.0), "K"),
@@ -86,9 +84,7 @@ class Sodium(material.Fluid):
         ) / 1000.0  # convert from kg/m^3 to g/cc.
 
     def specificVolumeLiquid(self, Tk=None, Tc=None):
-        """
-        Returns the liquid specific volume in m^3/kg of this material given Tk in K or Tc in C.
-        """
+        """Returns the liquid specific volume in m^3/kg of this material given Tk in K or Tc in C."""
         return 1 / (1000.0 * self.pseudoDensity(Tk, Tc))
 
     def enthalpy(self, Tk=None, Tc=None):
@@ -102,8 +98,8 @@ class Sodium(material.Fluid):
         enthalpy = (
             -365.77
             + 1.6582 * Tk
-            - 4.2395e-4 * Tk ** 2
-            + 1.4847e-7 * Tk ** 3
+            - 4.2395e-4 * Tk**2
+            + 1.4847e-7 * Tk**3
             + 2992.6 / Tk
         )
         enthalpy = enthalpy * 1000  # convert from kJ/kg to kJ/kg
@@ -130,6 +126,6 @@ class Sodium(material.Fluid):
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("thermal conductivity", Tk)
         thermalConductivity = (
-            124.67 - 0.11381 * Tk + 5.5226e-5 * Tk ** 2 - 1.1842e-8 * Tk ** 3
+            124.67 - 0.11381 * Tk + 5.5226e-5 * Tk**2 - 1.1842e-8 * Tk**3
         )
         return thermalConductivity

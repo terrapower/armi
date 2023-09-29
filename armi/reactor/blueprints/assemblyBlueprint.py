@@ -31,6 +31,7 @@ from armi.reactor.flags import Flags
 from armi.reactor import parameters
 from armi.reactor.blueprints import blockBlueprint
 from armi.reactor import grids
+from armi.settings.fwSettings.globalSettings import CONF_INPUT_HEIGHTS_HOT
 
 
 def _configureAssemblyTypes():
@@ -177,10 +178,9 @@ class AssemblyBlueprint(yamlize.Object):
 
         # loop a second time because we needed all the blocks before choosing the
         # assembly class.
-        for axialIndex, block in enumerate(blocks):
-            b.p.assemNum = a.p.assemNum
+        for axialIndex, b in enumerate(blocks):
             b.name = b.makeName(a.p.assemNum, axialIndex)
-            a.add(block)
+            a.add(b)
 
         # Assign values for the parameters if they are defined on the blueprints
         for paramDef in a.p.paramDefs.inCategory(
@@ -191,6 +191,29 @@ class AssemblyBlueprint(yamlize.Object):
                 a.p[paramDef.name] = val
 
         return a
+
+    @staticmethod
+    def _shouldMaterialModiferBeApplied(value) -> bool:
+        """Determine if a material modifier entry is applicable.
+
+        Two exceptions:
+
+        1. Modifiers that are empty strings are not applied.
+        2. Modifiers that are ``None`` are not applied
+
+        Parameters
+        ----------
+        value : object
+            Entry in a material modifications array
+
+        Returns
+        -------
+        bool
+            Result of the check
+        """
+        if value != "" and value is not None:
+            return True
+        return False
 
     def _createBlock(self, cs, blueprint, bDesign, axialIndex):
         """Create a block based on the block design and the axial index."""
@@ -207,15 +230,17 @@ class AssemblyBlueprint(yamlize.Object):
             materialInput[key] = {
                 modName: modList[axialIndex]
                 for modName, modList in mod.items()
-                if modList[axialIndex] != ""
+                if self._shouldMaterialModiferBeApplied(modList[axialIndex])
             }
 
         b = bDesign.construct(
             cs, blueprint, axialIndex, meshPoints, height, xsType, materialInput
         )
 
-        # TODO: remove when the plugin system is fully set up?
         b.completeInitialLoading()
+
+        # set b10 volume cc since its a cold dim param
+        b.setB10VolParam(cs[CONF_INPUT_HEIGHTS_HOT])
         return b
 
     def _checkParamConsistency(self):

@@ -11,9 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-r""" Tests for the Database3 class."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-member,disallowed-name,invalid-name
+"""Tests for the Database3 class."""
 import subprocess
 import unittest
 
@@ -78,12 +76,20 @@ class TestDatabase3(unittest.TestCase):
             "HexBlock",
             "Hexagon",
             "Reactor",
+            "SpentFuelPool",
             "layout",
         ]
         self.assertEqual(sorted(self.db.h5db["c00n00"].keys()), sorted(keys))
 
         # validate availabilityFactor did not make it into the H5 file
-        rKeys = ["cycle", "cycleLength", "flags", "serialNum", "timeNode"]
+        rKeys = [
+            "maxAssemNum",
+            "cycle",
+            "cycleLength",
+            "flags",
+            "serialNum",
+            "timeNode",
+        ]
         self.assertEqual(
             sorted(self.db.h5db["c00n00"]["Reactor"].keys()), sorted(rKeys)
         )
@@ -111,8 +117,7 @@ class TestDatabase3(unittest.TestCase):
         # Serial numbers *are not stable* (i.e., they can be different between test runs
         # due to parallelism and test run order). However, they are the simplest way to
         # check correctness of location-based history tracking. So we stash the serial
-        # numbers at the location of interest so that we can use them later to check our
-        # work.
+        # numbers at the location of interest so we can use them later to check our work.
         self.centralAssemSerialNums = []
         self.centralTopBlockSerialNums = []
 
@@ -367,39 +372,6 @@ class TestDatabase3(unittest.TestCase):
         self.assertEqual(len(r0), len(r1))
         self.assertEqual(len(r0.core), len(r1.core))
 
-    def test_load_updateGlobalAssemNum(self):
-        from armi.reactor import assemblies
-        from armi.reactor.assemblies import resetAssemNumCounter
-
-        self.makeHistory()
-
-        resetAssemNumCounter()
-        self.assertEqual(assemblies._assemNum, 0)
-
-        r = self.db.load(0, 0, allowMissing=True, updateGlobalAssemNum=False)
-        #  len(r.core.sfp) is zero but these nums are still reserved
-        numSFPBlueprints = 4
-        expectedNum = len(r.core) + numSFPBlueprints
-        self.assertEqual(assemblies._assemNum, expectedNum)
-
-        # now do the same call again and show that the global _assemNum keeps going up.
-        # in db.load, rector objects are built in layout._initComps() so the global assem num
-        # will continue to grow (in this case, double).
-        self.db.load(0, 0, allowMissing=True, updateGlobalAssemNum=False)
-        self.assertEqual(assemblies._assemNum, expectedNum * 2)
-
-        # now load but set updateGlobalAssemNum=True and show that the global assem num
-        # is updated and equal to self.r.p.maxAssemNum + 1 which is equal to the number of
-        # assemblies in blueprints/core.
-        r = self.db.load(0, 0, allowMissing=True, updateGlobalAssemNum=True)
-        expected = len(self.r.core) + len(self.r.blueprints.assemblies.values())
-        self.assertEqual(15, expected)
-
-        # repeat the test above to show that subsequent db loads (with updateGlobalAssemNum=True)
-        # do not continue to increase the global assem num.
-        self.db.load(0, 0, allowMissing=True, updateGlobalAssemNum=True)
-        self.assertEqual(15, expected)
-
     def test_history(self):
         self.makeShuffleHistory()
 
@@ -471,7 +443,6 @@ class TestDatabase3(unittest.TestCase):
         self._compareRoundTrip(dataDict)
 
     def test_mergeHistory(self):
-        # pylint: disable=protected-access
         self.makeHistory()
 
         # put some big data in an HDF5 attribute. This will exercise the code that pulls

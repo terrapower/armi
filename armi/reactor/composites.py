@@ -103,7 +103,7 @@ class FlagSerializer(parameters.Serializer):
         on the passed mapping.
 
         Parameters
-        ==========
+        ----------
         inp : int
             input bitfield
 
@@ -227,7 +227,7 @@ def _defineBaseParameters():
     pDefs.add(
         parameters.Parameter(
             "flags",
-            units=None,
+            units=units.UNITLESS,
             description="The type specification of this object",
             location=parameters.ParamLocation.AVERAGE,
             saveToDB=True,
@@ -392,8 +392,7 @@ class ArmiObject(metaclass=CompositeModelType):
         state["parent"] = None
 
         if "r" in state:
-            # TODO: This should never happen, it might make sense to raise an exception.
-            del state["r"]
+            raise RuntimeError("An ArmiObject should never contain the entire Reactor.")
 
         return state
 
@@ -649,10 +648,7 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         name = self.name.lower()
         if isinstance(s, list):
-            for n in s:
-                if n.lower() in name:
-                    return True
-            return False
+            return any(n.lower() in name for n in s)
         else:
             return s.lower() in name
 
@@ -726,7 +722,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
         """
         if not typeID:
-            return False if exact else True
+            return not exact
         if isinstance(typeID, six.string_types):
             raise TypeError(
                 "Must pass Flags, or an iterable of Flags; Strings are no longer "
@@ -824,7 +820,6 @@ class ArmiObject(metaclass=CompositeModelType):
         negative areas are intended to account for overlapping positive areas to insure
         the total area of components inside the clad is accurate. See
         test_block.Block_TestCase.test_consistentAreaWithOverlappingComponents
-
         """
         children = self.getChildren()
         numerator = [c.getVolume() for c in children]
@@ -848,7 +843,7 @@ class ArmiObject(metaclass=CompositeModelType):
         )
 
     def getMaxArea(self):
-        """ "
+        """
         The maximum area of this object if it were totally full.
 
         See Also
@@ -965,7 +960,7 @@ class ArmiObject(metaclass=CompositeModelType):
         Adjust the composition of this object so the mass fraction of nucName is val.
 
         See Also
-        ---------
+        --------
         setMassFracs : efficiently set multiple mass fractions at the same time.
         """
         self.setMassFracs({nucName: val})
@@ -1802,7 +1797,7 @@ class ArmiObject(metaclass=CompositeModelType):
         param,
         typeSpec: TypeSpec = None,
         weightingParam=None,
-        volumeAveraged=True,  # pylint: disable=too-many-arguments
+        volumeAveraged=True,
         absolute=True,
         generationNum=1,
     ):
@@ -1994,11 +1989,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
     def containsHeavyMetal(self):
         """True if this has HM."""
-        for nucName in self.getNuclides():
-            # these already have non-zero density
-            if nucDir.isHeavyMetal(nucName):
-                return True
-        return False
+        return any(nucDir.isHeavyMetal(nucName) for nucName in self.getNuclides())
 
     def getNuclides(self):
         """
@@ -2047,7 +2038,6 @@ class ArmiObject(metaclass=CompositeModelType):
         This was needed so that HM moles mass did not change based on if the
         block/assembly was on a symmetry line or not.
         """
-
         return (
             self.getHMDens()
             / units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
@@ -2122,7 +2112,7 @@ class ArmiObject(metaclass=CompositeModelType):
         return mass
 
     def getFuelMass(self):
-        """returns mass of fuel in grams."""
+        """Returns mass of fuel in grams."""
         return sum((c.getFuelMass() for c in self))
 
     def constituentReport(self):
@@ -2393,7 +2383,6 @@ class ArmiObject(metaclass=CompositeModelType):
         componentsWithThisMat : list
 
         """
-
         if materialName is None:
             materialName = material.getName()
         else:
@@ -2422,11 +2411,7 @@ class ArmiObject(metaclass=CompositeModelType):
         except TypeError:
             typeSpec = (typeSpec,)
 
-        for t in typeSpec:
-            # loop b/c getComponents is a OR operation on the flags, but we need AND
-            if not self.getComponents(t, exact):
-                return False
-        return True
+        return all(self.getComponents(t, exact) for t in typeSpec)
 
     def getComponentByName(self, name):
         """
@@ -2558,9 +2543,7 @@ class ArmiObject(metaclass=CompositeModelType):
                 )
 
     def getAverageTempInC(self, typeSpec: TypeSpec = None, exact=False):
-        """
-        Return the average temperature of the ArmiObject in C by averaging all components.
-        """
+        """Return the average temperature of the ArmiObject in C by averaging all components."""
         tempNumerator = 0.0
         totalVol = 0.0
         for component in self.iterComponents(typeSpec, exact):
@@ -2681,7 +2664,7 @@ class Composite(ArmiObject):
 
         # recursively sort the children below it.
         for c in self._children:
-            if issubclass(Composite, c.__class__):
+            if issubclass(c.__class__, Composite):
                 c.sort()
 
     def index(self, obj):
@@ -2910,9 +2893,7 @@ class Composite(ArmiObject):
                 # materials don't have Parameters to sync
                 continue
             data = (nodeSyncData[ci] for nodeSyncData in allSyncData)
-            syncCount += comp._syncParameters(  # pylint: disable=protected-access
-                data, errors
-            )
+            syncCount += comp._syncParameters(data, errors)
 
         if errors:
             errorData = sorted(
@@ -3127,7 +3108,7 @@ class Composite(ArmiObject):
             dictionary of reaction rates (rxn/s) for nG, nF, n2n, nA and nP
 
         Notes
-        ----
+        -----
         If you set nDensity to 1/CM2_PER_BARN this makes 1 group cross section generation easier
         """
         from armi.reactor.blocks import Block

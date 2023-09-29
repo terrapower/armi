@@ -465,7 +465,6 @@ def _getMechanicalVals(r):
     labels, vals = list(
         zip(
             *[
-                ("Dilation", r.core.p.maxdilationTotal),
                 ("Hold down", 1.0),
                 ("Distortion", 3.0),
             ]
@@ -513,7 +512,6 @@ def _getFuelVals(r):
     data = [
         ("Max FCCI", r.core.p.maxcladFCCI),
         ("Max BU", r.core.p.maxpercentBu),
-        ("Residence", r.core.p.maxresidence),
         (
             "Smear dens.",
             r.core.calcAvgParam("smearDensity", generationNum=2, typeSpec=Flags.FUEL),
@@ -552,7 +550,7 @@ def _radarFactory(numVars, frame="circle"):
     This function creates a RadarAxes projection and registers it.
 
     Raises
-    -------
+    ------
     ValueError
         If value of the frame is unknown.
 
@@ -649,9 +647,6 @@ def _unitPolyVerts(theta):
     x0 = y0 = r = 0.5
     verts = list(zip(r * numpy.cos(theta) + x0, r * numpy.sin(theta) + y0))
     return verts
-
-    # pylint: disable=differing-param-doc
-    # pylint: disable=differing-type-doc
 
 
 def createPlotMetaData(

@@ -42,6 +42,7 @@ If using the ``run`` entry point, additional work is done:
 * Wrap up
 * Quit
 """
+# ruff: noqa: F401
 import atexit
 import datetime
 import importlib
@@ -141,8 +142,6 @@ def init(choice=None, fName=None, cs=None):
         if fName is None:
             fName = settings.promptForSettingsFile(choice)
         cs = settings.Settings(fName)
-    # clear out any old masterCs objects
-    settings.setMasterCs(cs)
 
     armiCase = cases.Case(cs=cs)
     armiCase.checkInputs()
@@ -196,16 +195,12 @@ def getDefaultPluginManager() -> pluginManager.ArmiPluginManager:
 
 
 def isConfigured():
-    """
-    Returns whether ARMI has been configured with an App.
-    """
+    """Returns whether ARMI has been configured with an App."""
     return _app is not None
 
 
 def getPluginManager() -> Optional[pluginManager.ArmiPluginManager]:
-    """
-    Return the plugin manager, if there is one.
-    """
+    """Return the plugin manager, if there is one."""
     global _app
     if _app is None:
         return None
@@ -213,9 +208,7 @@ def getPluginManager() -> Optional[pluginManager.ArmiPluginManager]:
 
 
 def getPluginManagerOrFail() -> pluginManager.ArmiPluginManager:
-    """
-    Return the plugin manager. Raise an error if there is none.
-    """
+    """Return the plugin manager. Raise an error if there is none."""
     global _app
     assert _app is not None, (
         "The ARMI plugin manager was requested, no App has been configured. Ensure "
@@ -245,9 +238,7 @@ def _cleanupOnCancel(signum, _frame):
 
 
 def _liveInterpreter():
-    """
-    Return whether we are running within a live/interactive python interpreter.
-    """
+    """Return whether we are running within a live/interactive python interpreter."""
     return not hasattr(main, "__file__")
 
 
@@ -314,7 +305,7 @@ def configure(app: Optional[apps.App] = None, permissive=False):
     pm = app.pluginManager
     parameters.collectPluginParameters(pm)
     parameters.applyAllParameters()
-    flags.registerPluginFlags(pm)
+    _app.registerPluginFlags()
 
 
 def applyAsyncioWindowsWorkaround() -> None:
@@ -325,7 +316,7 @@ def applyAsyncioWindowsWorkaround() -> None:
     his error showed up during jupyter notebook built-tests and documentation.
     See https://bugs.python.org/issue37373
     """
-    import asyncio  # pylint: disable=import-outside-toplevel; packed with workaround for easy removal
+    import asyncio
 
     if (
         sys.version_info[0] == 3
@@ -344,5 +335,5 @@ atexit.register(context.cleanTempDirs)
 # SIGBREAK doesn't exist on non-windows
 # This actually doesn't work in mpi runs because MSMPI's mpiexec does not pass signals.
 if os.name == "nt":
-    signal.signal(signal.SIGBREAK, _cleanupOnCancel)  # pylint: disable=no-member
+    signal.signal(signal.SIGBREAK, _cleanupOnCancel)
 signal.signal(signal.SIGINT, _cleanupOnCancel)

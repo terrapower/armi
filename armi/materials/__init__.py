@@ -47,7 +47,7 @@ _MATERIAL_NAMESPACE_ORDER = ["armi.materials"]
 
 
 def setMaterialNamespaceOrder(order):
-    global _MATERIAL_NAMESPACE_ORDER  # pylint: disable=global-statement
+    global _MATERIAL_NAMESPACE_ORDER
     _MATERIAL_NAMESPACE_ORDER = order
 
 
@@ -56,7 +56,6 @@ def importMaterialsIntoModuleNamespace(path, name, namespace, updateSource=None)
     Import all Material subclasses into the top subpackage.
 
     This allows devs to use ``from armi.materials import HT9``
-    Disadvantage: pylint can't tell if the module is available here.
 
     This can be used in plugins for similar purposes.
 
@@ -120,7 +119,6 @@ def iterAllMaterialClassesInNamespace(namespace):
                 yield obj
 
 
-# pylint: disable=redefined-outer-name
 def resolveMaterialClassByName(name: str, namespaceOrder: List[str] = None):
     """
     Find the first material class that matches a name in an ordered namespace.

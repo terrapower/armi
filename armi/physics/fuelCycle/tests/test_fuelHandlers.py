@@ -17,12 +17,12 @@ Tests some capabilities of the fuel handling machine.
 This test is high enough level that it requires input files to be present. The ones to use
 are called armiRun.yaml which is located in armi.tests
 """
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import collections
 import copy
 import unittest
 
 import numpy as np
+
 from armi.physics.fuelCycle import fuelHandlers, settings
 from armi.physics.fuelCycle.settings import (
     CONF_ASSEM_ROTATION_STATIONARY,
@@ -37,7 +37,9 @@ from armi.reactor import assemblies, blocks, components, grids
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
 from armi.settings import caseSettings
-from armi.tests import TEST_ROOT, ArmiTestHelper, mockRunLogs
+from armi.tests import ArmiTestHelper
+from armi.tests import mockRunLogs
+from armi.tests import TEST_ROOT
 from armi.utils import directoryChangers
 
 
@@ -56,9 +58,10 @@ class FuelHandlerTestHelper(ArmiTestHelper):
         cls.directoryChanger.close()
 
     def setUp(self):
-        r"""
-        Build a dummy reactor without using input files. There are some igniters and feeds
-        but none of these have any number densities.
+        """
+        Build a dummy reactor without using input files.
+
+        There are some igniters and feeds but none of these have any number densities.
         """
         self.o, self.r = test_reactors.loadTestReactor(
             self.directoryChanger.destination,
@@ -72,7 +75,7 @@ class FuelHandlerTestHelper(ArmiTestHelper):
                 b.p.percentBu = 30.0 * bi / len(blockList)
         self.nfeed = len(self.r.core.getAssemblies(Flags.FEED))
         self.nigniter = len(self.r.core.getAssemblies(Flags.IGNITER))
-        self.nSfp = len(self.r.core.sfp)
+        self.nSfp = len(self.r.sfp)
 
         # generate a reactor with assemblies
         # generate components with materials
@@ -128,7 +131,7 @@ class FuelHandlerTestHelper(ArmiTestHelper):
 
 
 class MockLatticePhysicsInterface(LatticePhysicsInterface):
-    """a mock lattice physics interface that does nothing for interactBOC"""
+    """A mock lattice physics interface that does nothing for interactBOC."""
 
     name = "MockLatticePhysicsInterface"
 
@@ -140,7 +143,7 @@ class MockLatticePhysicsInterface(LatticePhysicsInterface):
 
 
 class MockXSGM(CrossSectionGroupManager):
-    """a mock cross section group manager that does nothing for interactBOC"""
+    """A mock cross section group manager that does nothing for interactBOC."""
 
     def interactBOC(self, cycle=None):
         pass
@@ -323,6 +326,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
     def test_findByCoords(self):
         fh = fuelHandlers.FuelHandler(self.o)
         assem = fh.findAssembly(coords=(0, 0))
+        self.o.r.core.sortAssemsByRing()
         self.assertIs(assem, self.o.r.core[0])
 
     def test_findWithMinMax(self):
@@ -372,7 +376,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
             self.r.p.cycle = cycle
             fh.cycle = cycle
             fh.manageFuel(cycle)
-            for a in self.r.core.sfp.getChildren():
+            for a in self.r.sfp.getChildren():
                 self.assertEqual(a.getLocation(), "SFP")
             for b in self.r.core.getBlocks(Flags.FUEL):
                 self.assertGreater(b.p.kgHM, 0.0, "b.p.kgHM not populated!")
@@ -381,7 +385,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         fh.interactEOL()
 
     def test_repeatShuffles(self):
-        r"""
+        """
         Builds a dummy core. Does some shuffles. Repeats the shuffles. Checks that it was a perfect repeat.
 
         Checks some other things in the meantime
@@ -391,10 +395,10 @@ class TestFuelHandler(FuelHandlerTestHelper):
         runShuffling : creates the shuffling file to be read in.
         """
         # check labels before shuffling:
-        for a in self.r.core.sfp.getChildren():
+        for a in self.r.sfp.getChildren():
             self.assertEqual(a.getLocation(), "SFP")
 
-        # do some shuffles.
+        # do some shuffles
         fh = self.r.o.getInterface("fuelHandler")
         self.runShuffling(fh)  # changes caseTitle
 
@@ -425,7 +429,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         # make sure the shuffle was repeated perfectly.
         for a in self.r.core.getAssemblies():
             self.assertEqual(a.getName(), firstPassResults[a.getLocation()])
-        for a in self.r.core.sfp.getChildren():
+        for a in self.r.sfp.getChildren():
             self.assertEqual(a.getLocation(), "SFP")
 
     def test_readMoves(self):
@@ -451,7 +455,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         sfpMove = moves[2][-2]
         self.assertEqual(sfpMove[0], "SFP")
         self.assertEqual(sfpMove[1], "005-003")
-        self.assertEqual(sfpMove[4], "A0085")  # name of assem in SFP
+        self.assertEqual(sfpMove[4], "A0073")  # name of assem in SFP
 
     def test_processMoveList(self):
         fh = fuelHandlers.FuelHandler(self.o)
@@ -464,7 +468,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
             loadNames,
             _,
         ) = fh.processMoveList(moves[2])
-        self.assertIn("A0085", loadNames)
+        self.assertIn("A0073", loadNames)
         self.assertIn(None, loadNames)
         self.assertNotIn("SFP", loadChains)
         self.assertNotIn("LoadQueue", loadChains)
@@ -628,7 +632,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
                             for sbf in sBFList
                         )
                     )
-                except:
+                except:  # noqa: bare-except
                     a1[block.spatialLocator.k - 1].setType(
                         a1[block.spatialLocator.k - 1].p.type, sBFList[0]
                     )
@@ -675,15 +679,13 @@ class TestFuelHandler(FuelHandlerTestHelper):
             self.assertIn("top elevation of stationary", mock.getStdout())
 
     def test_dischargeSwap(self):
-        """
-        Test the dischargeSwap method.
-        """
+        """Test the dischargeSwap method."""
         # grab stationary block flags
         sBFList = self.r.core.stationaryBlockFlagsList
 
         # grab an arbitrary fuel assembly from the core and from the SFP
         a1 = self.r.core.getAssemblies(Flags.FUEL)[0]
-        a2 = self.r.core.sfp.getChildren(Flags.FUEL)[0]
+        a2 = self.r.sfp.getChildren(Flags.FUEL)[0]
 
         # grab the stationary blocks pre swap
         a1PreSwapStationaryBlocks = [
@@ -732,7 +734,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
 
         # grab an arbitrary fuel assembly from the core and from the SFP
         a1 = self.r.core.getAssemblies(Flags.FUEL)[0]
-        a2 = self.r.core.sfp.getChildren(Flags.FUEL)[0]
+        a2 = self.r.sfp.getChildren(Flags.FUEL)[0]
 
         # change a block in assembly 1 to be flagged as a stationary block
         for block in a1:
@@ -751,7 +753,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         # re-initialize assemblies
         self.setUp()
         a1 = self.r.core.getAssemblies(Flags.FUEL)[0]
-        a2 = self.r.core.sfp.getChildren(Flags.FUEL)[0]
+        a2 = self.r.sfp.getChildren(Flags.FUEL)[0]
 
         # move location of a stationary flag in assembly 1
         for block in a1:
@@ -772,7 +774,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
                             for sbf in sBFList
                         )
                     )
-                except:
+                except:  # noqa: bare-except
                     a1[block.spatialLocator.k - 1].setType(
                         a1[block.spatialLocator.k - 1].p.type, sBFList[0]
                     )

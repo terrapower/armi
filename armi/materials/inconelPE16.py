@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Inconel PE16.
-"""
+"""Inconel PE16."""
 
 from armi import runLog
 from armi.materials.material import SimpleSolid
@@ -22,7 +20,6 @@ from armi.nucDirectory import nuclideBases
 
 
 class InconelPE16(SimpleSolid):
-    name = "InconelPE16"
     references = {
         "mass fractions": r"http://www.specialmetals.com/assets/documents/alloys/nimonic/nimonic-alloy-pe16.pdf",
         "density": r"http://www.specialmetals.com/assets/documents/alloys/nimonic/nimonic-alloy-pe16.pdf",

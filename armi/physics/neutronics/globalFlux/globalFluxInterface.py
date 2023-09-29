@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-The Global flux interface provide a base class for all neutronics tools that compute the neutron and/or photon flux.
-"""
+"""The Global flux interface provide a base class for all neutronics tools that compute the neutron and/or photon flux."""
 import math
 from typing import Dict, Optional
 
@@ -40,7 +38,7 @@ ORDER = interfaces.STACK_ORDER.FLUX
 RX_ABS_MICRO_LABELS = ["nGamma", "fission", "nalph", "np", "nd", "nt"]
 RX_PARAM_NAMES = ["rateCap", "rateFis", "rateProdN2n", "rateProdFis", "rateAbs"]
 
-# pylint: disable=too-many-public-methods
+
 class GlobalFluxInterface(interfaces.Interface):
     """
     A general abstract interface for global flux-calculating modules.
@@ -129,6 +127,7 @@ class GlobalFluxInterface(interfaces.Interface):
             )
             / units.WATTS_PER_MW
         )
+        self.r.core.setPowerIfNecessary()
         specifiedPower = (
             self.r.core.p.power / units.WATTS_PER_MW / self.r.core.powerMultiplier
         )
@@ -594,7 +593,7 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
         if meshConverter:
             if self.options.applyResultsToReactor or self.options.hasNonUniformAssems:
                 meshConverter.applyStateToOriginal()
-            self.r = meshConverter._sourceReactor  # pylint: disable=protected-access;
+            self.r = meshConverter._sourceReactor
 
             # Resets the stored attributes on the converter to
             # ensure that there is state data that is long-lived on the
@@ -635,9 +634,7 @@ class GlobalFluxResultMapper(interfaces.OutputReader):
         raise NotImplementedError()
 
     def clearFlux(self):
-        """
-        Delete flux on all blocks. Needed to prevent stale flux when partially reloading.
-        """
+        """Delete flux on all blocks. Needed to prevent stale flux when partially reloading."""
         for b in self.r.core.getBlocks():
             b.p.mgFlux = []
             b.p.adjMgFlux = []
@@ -914,24 +911,20 @@ class DoseResultsMapper(GlobalFluxResultMapper):
             )
 
         for b in blockList:
-            burnupPeakingFactor = self.getBurnupPeakingFactor(b)
             b.p.residence += stepTimeInSeconds / units.SECONDS_PER_DAY
             b.p.fluence += b.p.flux * stepTimeInSeconds
             b.p.fastFluence += b.p.flux * stepTimeInSeconds * b.p.fastFluxFr
             b.p.fastFluencePeak += b.p.fluxPeak * stepTimeInSeconds * b.p.fastFluxFr
 
             # update detailed DPA based on dpa rate computed at LAST timestep.
-            dpaRateThisStep = b.p.detailedDpaRate
-            newDpaThisStep = dpaRateThisStep * stepTimeInSeconds
-            newDPAPeak = newDpaThisStep * burnupPeakingFactor
-            # track incremental increase for duct distortion interface (and eq)
-            b.p.newDPA = newDpaThisStep
-            b.p.newDPAPeak = newDPAPeak
+            # new incremental DPA increase for duct distortion interface (and eq)
+            b.p.newDPA = b.p.detailedDpaRate * stepTimeInSeconds
+            b.p.newDPAPeak = b.p.detailedDpaPeakRate * stepTimeInSeconds
+
             # use = here instead of += because we need the param system to notice the change for syncronization.
-            b.p.detailedDpa = b.p.detailedDpa + newDpaThisStep
-            # add assembly peaking
-            b.p.detailedDpaPeak = b.p.detailedDpaPeak + newDPAPeak
-            b.p.detailedDpaThisCycle = b.p.detailedDpaThisCycle + newDpaThisStep
+            b.p.detailedDpa = b.p.detailedDpa + b.p.newDPA
+            b.p.detailedDpaPeak = b.p.detailedDpaPeak + b.p.newDPAPeak
+            b.p.detailedDpaThisCycle = b.p.detailedDpaThisCycle + b.p.newDPA
 
             # increment point dpas
             # this is specific to hex geometry, but they are general neutronics block parameters
@@ -955,9 +948,33 @@ class DoseResultsMapper(GlobalFluxResultMapper):
                     b.p.fastFluencePeak * self.options.dpaPerFluence
                 )
 
-            # also set the burnup peaking. Requires burnup to be up-to-date
+            # Set burnup peaking
+            # b.p.percentBu/buRatePeak is expected to have been updated elsewhere (depletion)
             # (this should run AFTER burnup has been updated)
-            b.p.percentBuPeak = b.p.percentBu * burnupPeakingFactor
+            # try to find the peak rate first
+            peakRate = None
+            if b.p.buRatePeak:
+                # best case scenario, we have peak burnup rate
+                peakRate = b.p.buRatePeak
+            elif b.p.buRate:
+                # use whatever peaking factor we can find if just have rate
+                peakRate = b.p.buRate * self.getBurnupPeakingFactor(b)
+
+            # If peak rate found, use to calc peak burnup; otherwise scale burnup
+            if peakRate:
+                # peakRate is in per day
+                peakRatePerSecond = peakRate / units.SECONDS_PER_DAY
+                b.p.percentBuPeak = (
+                    b.p.percentBuPeak + peakRatePerSecond * stepTimeInSeconds
+                )
+            else:
+                # No rate, make bad assumption.... assumes peaking is same at each position through shuffling/irradiation history...
+                runLog.warning(
+                    "Scaling burnup by current peaking factor... This assumes peaking "
+                    "factor was constant through shuffling/irradiation history.",
+                    single=True,
+                )
+                b.p.percentBuPeak = b.p.percentBu * self.getBurnupPeakingFactor(b)
 
         for a in self.r.core.getAssemblies():
             a.p.daysSinceLastMove += stepTimeInSeconds / units.SECONDS_PER_DAY

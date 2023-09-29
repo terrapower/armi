@@ -445,7 +445,7 @@ def _makeAssemPatches(core):
         x, y, _ = a.spatialLocator.getLocalCoordinates()
         if nSides == 6:
             assemPatch = matplotlib.patches.RegularPolygon(
-                (x, y), nSides, pitch / math.sqrt(3), orientation=math.pi / 2.0
+                (x, y), nSides, radius=pitch / math.sqrt(3), orientation=math.pi / 2.0
             )
         elif nSides == 4:
             # for rectangle x, y is defined as sides instead of center
@@ -529,7 +529,7 @@ def _createLegend(legendMap, collection, size=9, shape=Hexagon):
                 patch = matplotlib.patches.RegularPolygon(
                     (x, y),
                     6,
-                    height,
+                    radius=height,
                     orientation=math.pi / 2.0,
                     facecolor=colorRgb,
                     transform=handlebox.get_transform(),
@@ -538,14 +538,14 @@ def _createLegend(legendMap, collection, size=9, shape=Hexagon):
                 patch = matplotlib.patches.Rectangle(
                     (x - height / 2, y - height / 2),
                     height * 2,
-                    height,
+                    height * 2,
                     facecolor=colorRgb,
                     transform=handlebox.get_transform(),
                 )
             else:
                 patch = matplotlib.patches.Circle(
                     (x, y),
-                    height,
+                    radius=height,
                     facecolor=colorRgb,
                     transform=handlebox.get_transform(),
                 )
@@ -778,7 +778,7 @@ def plotAssemblyTypes(
     # Setup figure
     fig, ax = plt.subplots(figsize=(15, 15), dpi=300)
     for index, assem in enumerate(assems):
-        isLastAssem = True if index == (numAssems - 1) else False
+        isLastAssem = index == numAssems - 1
         (xBlockLoc, yBlockHeights, yBlockAxMesh) = _plotBlocksInAssembly(
             ax,
             assem,
@@ -1005,7 +1005,7 @@ def plotBlockFlux(core, fName=None, bList=None, peak=False, adjoint=False, bList
                 _, self.peakHistogram = makeHistogram(self.E, self.peakFlux)
 
         def checkSize(self):
-            if not len(self.E) == len(self.avgFlux):
+            if len(self.E) != len(self.avgFlux):
                 runLog.error(self.avgFlux)
                 raise
 
@@ -1020,9 +1020,10 @@ def plotBlockFlux(core, fName=None, bList=None, peak=False, adjoint=False, bList
         return
     elif adjoint:
         bList2 = bList
+
     try:
         G = len(core.lib.neutronEnergyUpperBounds)
-    except:
+    except:  # noqa: bare-except
         runLog.warning("No ISOTXS library attached so no flux plots.")
         return
 
@@ -1184,7 +1185,7 @@ def _makeBlockPinPatches(block, cold):
         x, y, _ = location.getLocalCoordinates()
         if isinstance(comp, Hexagon):
             derivedPatch = matplotlib.patches.RegularPolygon(
-                (x, y), 6, largestPitch / math.sqrt(3)
+                (x, y), 6, radius=largestPitch / math.sqrt(3)
             )
         elif isinstance(comp, Square):
             derivedPatch = matplotlib.patches.Rectangle(
@@ -1300,7 +1301,7 @@ def _makeComponentPatch(component, position, cold):
         else:
             # Just make it a hexagon...
             blockPatch = matplotlib.patches.RegularPolygon(
-                (x, y), 6, component.getDimension("op", cold=cold) / math.sqrt(3)
+                (x, y), 6, radius=component.getDimension("op", cold=cold) / math.sqrt(3)
             )
 
     elif isinstance(component, Rectangle):
@@ -1503,7 +1504,7 @@ def plotTriangleFlux(
                 triangle = patches.mpatches.RegularPolygon(
                     (xInCm, yInCm),
                     3,
-                    sideLengthInCm / math.sqrt(3),
+                    radius=sideLengthInCm / math.sqrt(3),
                     orientation=math.pi * flipped,
                     linewidth=0.0,
                 )

@@ -26,8 +26,7 @@ from typing import List
 import numpy
 
 from armi import runLog
-
-from .. import nuclearFileMetadata
+from armi.nuclearDataIO import nuclearFileMetadata
 
 IMPLICIT_INT = "IJKLMN"
 """Letters that trigger implicit integer types in old FORTRAN 77 codes"""
@@ -60,7 +59,7 @@ class IORecord:
     _intSize = struct.calcsize("i")
     _longSize = struct.calcsize("q")
     maxsize = len(
-        str(2 ** 31 - 1)
+        str(2**31 - 1)
     )  # limit to max short even though Python3 can go bigger.
     _intFormat = " {{:>+{}}}".format(maxsize)
     _intLength = maxsize + 1
@@ -229,9 +228,7 @@ class IORecord:
         return self._rwMatrix(contents, self.rwDouble, *shape)
 
     def rwIntMatrix(self, contents, *shape):
-        """
-        Read or write a matrix of int values.
-        """
+        """Read or write a matrix of int values."""
         return self._rwMatrix(contents, self.rwInt, *shape)
 
     @staticmethod
@@ -350,7 +347,8 @@ class BinaryRecordReader(IORecord):
 class BinaryRecordWriter(IORecord):
     r"""a single record from a CCCC file.
 
-    Reads binary information sequentially."""
+    Reads binary information sequentially.
+    """
 
     def __init__(self, stream, hasRecordBoundaries=True):
         IORecord.__init__(self, stream, hasRecordBoundaries)
@@ -443,7 +441,7 @@ class AsciiRecordReader(BinaryRecordReader):
 
 
 class AsciiRecordWriter(IORecord):
-    """Writes a single CCCC record in ASCII format.
+    r"""Writes a single CCCC record in ASCII format.
 
     Since there is no specific format of an ASCII CCCC record, the format is roughly the same as
     the :py:class:`BinaryRecordWriter`, except that the :class:`AsciiRecordReader` puts a space in
@@ -637,7 +635,6 @@ class StreamWithDataContainer(Stream):
             fileMode,
         )
 
-    # pylint: disable=arguments-differ
     @classmethod
     def _write(cls, data: DataContainer, fileName: str, fileMode: str):
         return cls._readWrite(data, fileName, fileMode)

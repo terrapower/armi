@@ -11,9 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-r"""Tests blocks.py."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-member,invalid-name,consider-using-f-string
+"""Tests blocks.py."""
 import copy
 import math
 import os
@@ -77,7 +75,6 @@ def buildSimpleFuelBlock():
 def loadTestBlock(cold=True):
     """Build an annular test block for evaluating unit tests."""
     caseSetting = settings.Settings()
-    settings.setMasterCs(caseSetting)
     caseSetting[CONF_XS_KERNEL] = "MC2v2"
     runLog.setVerbosity("error")
     caseSetting["nCycles"] = 1
@@ -242,7 +239,6 @@ def loadTestBlock(cold=True):
     return block
 
 
-# pylint: disable=protected-access
 def applyDummyData(block):
     """Add some dummy data to a block for physics-like tests."""
     # typical SFR-ish flux in 1/cm^2/s
@@ -377,8 +373,8 @@ class Block_TestCase(unittest.TestCase):
         self.assertAlmostEqual(cur, ref, places=10)
 
     def test_timeNodeParams(self):
-        self.block.p["avgFuelTemp", 3] = 2.0
-        self.assertEqual(2.0, self.block.p[("avgFuelTemp", 3)])
+        self.block.p["buRate", 3] = 0.1
+        self.assertEqual(0.1, self.block.p[("buRate", 3)])
 
     def test_getType(self):
         ref = "plenum pin"
@@ -1586,7 +1582,7 @@ class Block_TestCase(unittest.TestCase):
         self.assertAlmostEqual(
             blockPitch, self.block.getComponent(Flags.INTERCOOLANT).getDimension("op")
         )
-        totalHexArea = blockPitch ** 2 * math.sqrt(3) / 2.0
+        totalHexArea = blockPitch**2 * math.sqrt(3) / 2.0
 
         clad = self.block.getComponent(Flags.CLAD)
         pinArea = (
@@ -1763,7 +1759,7 @@ class HexBlock_TestCase(unittest.TestCase):
 
     def test_getArea(self):
         cur = self.HexBlock.getArea()
-        ref = math.sqrt(3) / 2.0 * 70.6 ** 2
+        ref = math.sqrt(3) / 2.0 * 70.6**2
         places = 6
         self.assertAlmostEqual(cur, ref, places=places)
 
@@ -1842,7 +1838,7 @@ class HexBlock_TestCase(unittest.TestCase):
         self.assertGreater(min(x), -side)
 
         # center pin should be at 0
-        mags = [(xi ** 2 + yi ** 2, (xi, yi)) for xi, yi, zi in xyz]
+        mags = [(xi**2 + yi**2, (xi, yi)) for xi, yi, zi in xyz]
         _centerMag, (cx, cy) = min(mags)
         self.assertAlmostEqual(cx, 0.0)
         self.assertAlmostEqual(cy, 0.0)
@@ -2232,9 +2228,7 @@ class CartesianBlock_TestCase(unittest.TestCase):
 
 
 class MassConservationTests(unittest.TestCase):
-    r"""
-    Tests designed to verify mass conservation during thermal expansion.
-    """
+    r"""Tests designed to verify mass conservation during thermal expansion."""
 
     def setUp(self):
         self.b = buildSimpleFuelBlock()

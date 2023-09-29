@@ -47,7 +47,7 @@ EOL        bottom         top      center
 
 
 Assembly info
-A0039 outer core fuel
+A0032 outer core fuel
 "reflector" C A
 "fuel" C A
 "fuel" C A

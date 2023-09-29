@@ -116,7 +116,8 @@ class AsciiMap:
         """
         Read ascii representation from a stream.
 
-        Update placeholder size according to largest thing read."""
+        Update placeholder size according to largest thing read.
+        """
         text = text.strip().splitlines()
 
         self.asciiLines = []
@@ -126,7 +127,7 @@ class AsciiMap:
             self.asciiLines.append(columns)
             if len(columns) > self._asciiMaxCol:
                 self._asciiMaxCol = len(columns)
-        self._asciiMaxLine = li + 1  # pylint: disable=undefined-loop-variable
+        self._asciiMaxLine = li + 1
         self._updateDimensionsFromAsciiLines()
         self._asciiLinesToIndices()
         self._makeOffsets()
@@ -162,9 +163,7 @@ class AsciiMap:
 
     @staticmethod
     def fromReactor(reactor):
-        """
-        Populate mapping from a reactor in preparation of writing out to ascii.
-        """
+        """Populate mapping from a reactor in preparation of writing out to ascii."""
         raise NotImplementedError
 
     def _getLineNumsToWrite(self):
@@ -215,7 +214,7 @@ class AsciiMap:
                 # doing pure rows from data is made programmatically.
                 # newLines.append(line)
                 raise ValueError(
-                    f"Cannot write asciimaps with blank rows from pure data yet."
+                    "Cannot write asciimaps with blank rows from pure data yet."
                 )
         if not newLines:
             raise ValueError("No data found")
@@ -240,9 +239,7 @@ class AsciiMap:
         """Convert read in ASCII lines to a asciiLabelByIndices structure."""
 
     def _getIJFromColRow(self, columnNum: int, lineNum: int) -> tuple:
-        """
-        Get ij data indices from ascii map text coords.
-        """
+        """Get ij data indices from ascii map text coords."""
         raise NotImplementedError
 
     def __getitem__(self, ijKey):
@@ -372,9 +369,7 @@ class AsciiMapHexThirdFlatsUp(AsciiMap):
             return 1 - indexOnRay, 2 * indexOnRay + 1
 
     def _getIJFromColAndBase(self, columnNum, iBase, jBase):
-        """
-        Map ascii column and base to i,j hex indices.
-        """
+        """Map ascii column and base to i,j hex indices."""
         # To move n columns right, i increases by 2n, j decreases by n
         return iBase + 2 * columnNum, jBase - columnNum
 
@@ -391,9 +386,7 @@ class AsciiMapHexThirdFlatsUp(AsciiMap):
         return self._getIJFromColAndBase(columnNum, iBase, jBase)
 
     def _makeOffsets(self):
-        """
-        One third hex grids have larger offsets at the bottom so the overhanging top fits.
-        """
+        """One third hex grids have larger offsets at the bottom so the overhanging top fits."""
         self.asciiOffsets = []
         for li, _line in enumerate(self.asciiLines):
             iBase, _ = self._getIJBaseByAsciiLine(li)
@@ -574,7 +567,7 @@ class AsciiMapHexFullTipsUp(AsciiMap):
         Map indices from ascii.
 
         Notes
-        ----
+        -----
         Not used in reading from file b/c inefficient/repeated base calc
         but required for writing from ij data
         """
@@ -596,9 +589,7 @@ class AsciiMapHexFullTipsUp(AsciiMap):
         return iBase, jBase
 
     def _updateDimensionsFromAsciiLines(self):
-        """
-        Update dimension metadata when reading ascii.
-        """
+        """Update dimension metadata when reading ascii."""
         # ijmax here can be inferred directly from the max number of columns
         # in the asciimap text
         self._ijMax = (self._asciiMaxCol - 1) // 2

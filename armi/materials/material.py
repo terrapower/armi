@@ -17,7 +17,6 @@ Base Material classes.
 
 Most temperatures may be specified in either K or C and the functions will convert for you.
 """
-# pylint: disable=unused-argument
 import copy
 import warnings
 
@@ -62,9 +61,6 @@ class Material:
     DATA_SOURCE = "ARMI"
     """Indication of where the material is loaded from (may be plugin name)"""
 
-    name = "Material"
-    """String identifying the material"""
-
     references = {}
     """The literature references {property : citation}"""
 
@@ -89,15 +85,37 @@ class Material:
         self.theoreticalDensityFrac = 1.0
         self.cached = {}
         self._backupCache = None
+        self._name = self.__class__.__name__
 
         # call subclass implementations
         self.setDefaultMassFracs()
 
     def __repr__(self):
-        return "<Material: {0}>".format(self.getName())
+        return f"<Material: {self._name}>"
+
+    @property
+    def name(self):
+        """Getter for the private name attribute of this Material."""
+        return self._name
+
+    @name.setter
+    def name(self, nomen):
+        """Setter for the private name attribute of this Material.
+
+        Warning
+        -------
+        Some code in ARMI expects the "name" of a meterial matches its
+        class name. So you use this method at your own risk.
+
+        See Also
+        --------
+        armi.materials.resolveMaterialClassByName
+        """
+        self._name = nomen
 
     def getName(self):
-        return self.name
+        """Duplicate of name property, kept for backwards compatibility."""
+        return self._name
 
     def getChildren(
         self, deep=False, generationNum=1, includeMaterials=False, predicate=None
@@ -222,17 +240,38 @@ class Material:
     def getThermalExpansionDensityReduction(
         self, prevTempInC: float, newTempInC: float
     ) -> float:
-        """
-        Return the factor required to update thermal expansion going from temperatureInC to temperatureInCNew.
-        """
+        """Return the factor required to update thermal expansion going from temperatureInC to temperatureInCNew."""
         dLL = self.linearExpansionFactor(Tc=newTempInC, T0=prevTempInC)
         return 1.0 / (1 + dLL) ** 2
 
     def setDefaultMassFracs(self):
-        r"""Mass fractions."""
+        """Mass fractions."""
         pass
 
     def setMassFrac(self, nucName: str, massFrac: float) -> None:
+        """
+        Assigns the mass fraction of a nuclide within the material.
+
+        Notes
+        -----
+        This will try to convert the provided ``massFrac`` into a float
+        for assignment. If the conversion cannot occur then an error
+        will be thrown.
+        """
+        try:
+            massFrac = float(massFrac)
+        except Exception as ee:
+            raise TypeError(
+                f"Error in converting the mass fraction of {massFrac} "
+                f"for nuclide {nucName} in {self} to a float. "
+                f"Exception: {ee}"
+            )
+
+        if massFrac < 0.0 or massFrac > 1.0:
+            raise ValueError(
+                f"Mass fraction of {massFrac} for {nucName} is not between 0 and 1."
+            )
+
         self.massFrac[nucName] = massFrac
 
     def applyInputParams(self):
@@ -361,43 +400,44 @@ class Material:
         pass
 
     def getTemperatureAtDensity(
-        self, targetDensity: float, temperatureGuessInC: float
+        self, targetDensity: float, tempGuessInC: float
     ) -> float:
-        """Get the temperature at which the perturbed density occurs."""
+        """Get the temperature at which the perturbed density occurs (in Celcius)."""
         # 0 at tempertature of targetDensity
         densFunc = lambda temp: self.density(Tc=temp) - targetDensity
         # is a numpy array if fsolve is called
-        tAtTargetDensity = float(fsolve(densFunc, temperatureGuessInC))
+        tAtTargetDensity = float(fsolve(densFunc, tempGuessInC))
         return tAtTargetDensity
 
     @property
     def liquidPorosity(self) -> float:
+        """Fraction of the material that is liquid void (unitless)."""
         return 0.0 if self.parent is None else self.parent.liquidPorosity
 
     @property
     def gasPorosity(self) -> float:
+        """Fraction of the material that is gas void (unitless)."""
         return 0.0 if self.parent is None else self.parent.gasPorosity
 
     def pseudoDensity(self, Tk: float = None, Tc: float = None) -> float:
         """
-        Return density that preserves mass when thermally expanded in 2D.
+        Return density that preserves mass when thermally expanded in 2D (in g/cm^3).
 
         Warning
         -------
-        This density will not agree with the component density since this method only expands in 2 dimensions.
-        The component has been manually expanded axially with the manually entered block hot height.
-        The density returned by this should be a factor of 1 + dLL higher than the density on the component.
-        density should be in agreement at both cold and hot temperatures as long as the block height is correct for
-        the specified temperature.
-        In the case of Fluids, density and density are the same as density is not driven by linear expansion, but
-        rather an explicit density function dependent on Temperature. linearExpansionPercent is zero for a fluid.
+        This will not typically agree with ``Material.density()`` or ``Component.density()``
+        since this method only expands in 2 dimensions. Depending on your use of
+        ``inputHeightsConsideredHot`` and ``Component.temperatureInC``, ``Material.psuedoDensity()``
+        may be a factor of (1+dLL) different than ``Material.density()`` or ``Component.density()``.
+
+        In the case of fluids, density and pseudoDensity are the same as density is not driven by
+        linear expansion, but  rather an explicit density function dependent on temperature.
+        ``Material.linearExpansionPercent()`` is zero for a fluid.
 
         See Also
         --------
-        armi.materials.density:
-            component density should be in agreement with this density
-        armi.reactor.blueprints._applyBlockDesign:
-            2D expansion and axial density reduction occurs here.
+        density
+        armi.reactor.components.component.Component.density
         """
         Tk = getTk(Tc, Tk)
         dLL = self.linearExpansionPercent(Tk=Tk)
@@ -410,7 +450,7 @@ class Material:
             self.refDens = 0.0
 
         f = (1.0 + dLL / 100.0) ** 2
-        return self.refDens / f  # g/cm^3
+        return self.refDens / f
 
     def pseudoDensityKgM3(self, Tk: float = None, Tc: float = None) -> float:
         """
@@ -418,14 +458,14 @@ class Material:
 
         See Also
         --------
-        armi.materials.density:
+        density:
             Arguments are forwarded to the g/cc version
         """
         return self.pseudoDensity(Tk, Tc) * 1000.0
 
     def density(self, Tk: float = None, Tc: float = None) -> float:
         """
-        Return density that preserves mass when thermally expanded in 3D.
+        Return density that preserves mass when thermally expanded in 3D (in g/cm^3).
 
         Notes
         -----
@@ -453,13 +493,13 @@ class Material:
 
         See Also
         --------
-        armi.materials.density:
+        density:
             Arguments are forwarded to the g/cc version
         """
         return self.density(Tk, Tc) * 1000.0
 
     def getCorrosionRate(self, Tk: float = None, Tc: float = None) -> float:
-        """Given a temperature, get the corrosion rate of the material."""
+        """Given a temperature, get the corrosion rate of the material (in microns/year)."""
         return 0.0
 
     def yieldStrength(self, Tk: float = None, Tc: float = None) -> float:
@@ -467,7 +507,7 @@ class Material:
         pass
 
     def thermalConductivity(self, Tk: float = None, Tc: float = None) -> float:
-        """Thermal conductivity in given T in K."""
+        """Thermal conductivity for given T (in units of W/m/K)."""
         pass
 
     def getProperty(
@@ -523,7 +563,7 @@ class Material:
         return self.massFrac.get(nucName, 0.0)
 
     def clearMassFrac(self) -> None:
-        r"""Zero out all nuclide mass fractions."""
+        """Zero out all nuclide mass fractions."""
         self.massFrac.clear()
 
     def removeNucMassFrac(self, nuc: str) -> None:
@@ -538,7 +578,7 @@ class Material:
         return copy.deepcopy(self.massFrac)
 
     def checkPropertyTempRange(self, label, val):
-        r"""Checks if the given property / value combination fall between the min and max valid
+        """Checks if the given property / value combination fall between the min and max valid
         temperatures provided in the propertyValidTemperature object.
 
         Parameters
@@ -557,7 +597,7 @@ class Material:
         self.checkTempRange(minT, maxT, val, label)
 
     def checkTempRange(self, minT, maxT, val, label=""):
-        r"""
+        """
         Checks if the given temperature (val) is between the minT and maxT temperature limits supplied.
         Label identifies what material type or element is being evaluated in the check.
 
@@ -587,14 +627,15 @@ class Material:
                 )
 
     def densityTimesHeatCapacity(self, Tk: float = None, Tc: float = None) -> float:
-        r"""
-        Return heat capacity * density at a temperature
+        """
+        Return heat capacity * density at a temperature.
+
         Parameters
         ----------
         Tk : float, optional
             Temperature in Kelvin.
         Tc : float, optional
-            Temperature in degrees Celsius.
+            Temperature in degrees Celsius
 
         Returns
         -------
@@ -634,19 +675,14 @@ class Material:
         deltaT = linearChange / linearExpansion
         if not quiet:
             runLog.info(
-                "The linear expansion for {} at initial temperature of {} C is {}.\nA change in density of {} "
-                "percent at would require a change in temperature of {} C.".format(
-                    self.getName(),
-                    Tc,
-                    linearExpansion,
-                    (densityFrac - 1.0) * 100.0,
-                    deltaT,
-                ),
+                f"The linear expansion for {self.getName()} at initial temperature of {Tc} C is {linearExpansion}.\n"
+                f"A change in density of {(densityFrac - 1.0) * 100.0} percent at would require a change in temperature of {deltaT} C.",
                 single=True,
             )
         return deltaT
 
     def heatCapacity(self, Tk=None, Tc=None):
+        """Returns heat capacity in units of J/kg/C."""
         raise NotImplementedError(
             f"Material {type(self).__name__} does not implement heatCapacity"
         )
@@ -664,12 +700,8 @@ class Material:
 class Fluid(Material):
     """A material that fills its container. Could also be a gas."""
 
-    name = "Fluid"
-
     def getThermalExpansionDensityReduction(self, prevTempInC, newTempInC):
-        """
-        Return the factor required to update thermal expansion going from temperatureInC to temperatureInCNew.
-        """
+        """Return the factor required to update thermal expansion going from temperatureInC to temperatureInCNew."""
         rho0 = self.pseudoDensity(Tc=prevTempInC)
         if not rho0:
             return 1.0
@@ -678,7 +710,8 @@ class Fluid(Material):
 
     def linearExpansion(self, Tk=None, Tc=None):
         """For void, lets just not allow temperature changes to change dimensions
-        since it is a liquid it will fill its space."""
+        since it is a liquid it will fill its space.
+        """
         return 0.0
 
     def getTempChangeForDensityChange(
@@ -701,7 +734,7 @@ class Fluid(Material):
 
     def density(self, Tk=None, Tc=None):
         """
-        Return the density at the specified temperature for 3D expansion.
+        Return the density at the specified temperature for 3D expansion (in g/cm^3).
 
         Notes
         -----
@@ -758,12 +791,13 @@ class SimpleSolid(Material):
             return 100 * ((density1 / density2) ** (1.0 / 3.0) - 1)
 
     def density(self, Tk: float = None, Tc: float = None) -> float:
+        """Material density (in g/cm^3)."""
         return 0.0
 
     def pseudoDensity(self, Tk: float = None, Tc: float = None) -> float:
         """
         The same method as the parent class, but with the ability to apply a
-        non-unity theoretical density.
+        non-unity theoretical density (in g/cm^3).
         """
         return Material.pseudoDensity(self, Tk=Tk, Tc=Tc) * self.getTD()
 
@@ -844,7 +878,7 @@ class FuelMaterial(Material):
         densityTools.applyIsotopicsMix(self, class1Isotopics, class2Isotopics)
 
     def duplicate(self):
-        r"""Copy without needing a deepcopy."""
+        """Copy without needing a deepcopy."""
         m = self.__class__()
 
         m.massFrac = {}

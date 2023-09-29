@@ -13,11 +13,10 @@
 # limitations under the License.
 
 """Tests assemblies.py."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,invalid-name
+import numpy as np
 import pathlib
 import random
 import unittest
-import numpy as np
 from numpy.testing import assert_allclose
 
 from armi import settings
@@ -42,8 +41,6 @@ from armi.tests import TEST_ROOT, mockRunLogs
 from armi.utils import directoryChangers
 from armi.utils import textProcessors
 from armi.reactor.tests import test_reactors
-from armi.reactor.assemblies import getAssemNum
-from armi.reactor.assemblies import resetAssemNumCounter
 from armi.physics.neutronics.settings import (
     CONF_LOADING_FILE,
     CONF_XS_KERNEL,
@@ -61,8 +58,7 @@ def buildTestAssemblies():
         * One with half UZr pins and half UTh pins
         * One with all UThZr pins
     """
-    caseSetting = settings.Settings()
-    settings.setMasterCs(caseSetting)
+    settings.Settings()
 
     temperature = 273.0
     fuelID = 0.0
@@ -151,7 +147,6 @@ def buildTestAssemblies():
 
 class MaterialInAssembly_TestCase(unittest.TestCase):
     def setUp(self):
-        # pylint: disable=unbalanced-tuple-unpacking
         (
             self.assembly,
             self.assembly2,
@@ -214,9 +209,7 @@ class Assembly_TestCase(unittest.TestCase):
         # Use these if they are needed
         self.blockParams = {
             "height": self.height,
-            "avgFuelTemp": 873.0,
             "bondRemoved": 0.0,
-            "bu": 15.1,
             "buGroupNum": 0,
             "buLimit": 35,
             "buRate": 0.0,
@@ -235,8 +228,6 @@ class Assembly_TestCase(unittest.TestCase):
 
         self.blockSettings = {
             "axMesh": 1,
-            "baseBu": 0.0,
-            "basePBu": 0.0,
             "bondBOL": 0.0028698019026172574,
             "buGroup": "A",
             "height": 14.4507,
@@ -293,12 +284,6 @@ class Assembly_TestCase(unittest.TestCase):
 
         self.assembly.p.notes = tooLongNote
         self.assertEqual(self.assembly.p.notes, tooLongNote[0:1000])
-
-    def test_resetAssemNumCounter(self):
-        resetAssemNumCounter()
-        cur = 0
-        ref = getAssemNum()
-        self.assertEqual(cur, ref)
 
     def test_iter(self):
         cur = []
@@ -922,27 +907,27 @@ class Assembly_TestCase(unittest.TestCase):
 
     def test_getParamValuesAtZ(self):
         # single value param
-        for b, temp in zip(self.assembly, [800, 850, 900]):
-            b.p.avgFuelTemp = temp
-        avgFuelTempDef = b.p.paramDefs["avgFuelTemp"]
-        originalLoc = avgFuelTempDef.location
+        for b, temp in zip(self.assembly, [80, 85, 90]):
+            b.p.percentBu = temp
+        percentBuDef = b.p.paramDefs["percentBu"]
+        originalLoc = percentBuDef.location
         try:
             self.assertAlmostEqual(
-                875, self.assembly.getParamValuesAtZ("avgFuelTemp", 20.0)
+                87.5, self.assembly.getParamValuesAtZ("percentBu", 20.0)
             )
-            avgFuelTempDef.location = parameters.ParamLocation.BOTTOM
+            percentBuDef.location = parameters.ParamLocation.BOTTOM
             self.assertAlmostEqual(
-                825,
-                self.assembly.getParamValuesAtZ("avgFuelTemp", 5.0, fillValue="extend"),
+                82.5,
+                self.assembly.getParamValuesAtZ("percentBu", 5.0, fillValue="extend"),
             )
-            avgFuelTempDef.location = parameters.ParamLocation.TOP
+            percentBuDef.location = parameters.ParamLocation.TOP
             self.assertAlmostEqual(
-                825, self.assembly.getParamValuesAtZ("avgFuelTemp", 15.0)
+                82.5, self.assembly.getParamValuesAtZ("percentBu", 15.0)
             )
             for b in self.assembly:
-                b.p.avgFuelTemp = None
+                b.p.percentBu = None
             self.assertTrue(
-                numpy.isnan(self.assembly.getParamValuesAtZ("avgFuelTemp", 25.0))
+                numpy.isnan(self.assembly.getParamValuesAtZ("percentBu", 25.0))
             )
 
             # multiDimensional param
@@ -972,7 +957,7 @@ class Assembly_TestCase(unittest.TestCase):
             value = self.assembly.getParamValuesAtZ("THcornTemp", 20.0)
             self.assertTrue(numpy.allclose([200, 201, 202, 203, 204, 205], value))
         finally:
-            avgFuelTempDef.location = originalLoc
+            percentBuDef.location = originalLoc
 
     def test_hasContinuousCoolantChannel(self):
         self.assertFalse(self.assembly.hasContinuousCoolantChannel())
@@ -1291,13 +1276,11 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
 class AnnularFuelTestCase(unittest.TestCase):
     """Test fuel with a whole in the center."""
 
-    # pylint: disable=locally-disabled,protected-access
     def setUp(self):
         self.cs = settings.Settings()
         newSettings = {CONF_XS_KERNEL: "MC2v2"}  # don't try to expand elementals
         self.cs = self.cs.modified(newSettings=newSettings)
 
-        settings.setMasterCs(self.cs)
         bp = blueprints.Blueprints()
         self.r = reactors.Reactor("test", bp)
         self.r.add(reactors.Core("Core"))
@@ -1377,6 +1360,6 @@ assemblies:
         intercoolant = fuelBlock.getComponent(Flags.INTERCOOLANT)
 
         bpAssemblyArea = assembly.getArea()
-        actualAssemblyArea = math.sqrt(3) / 2.0 * intercoolant.p.op ** 2
+        actualAssemblyArea = math.sqrt(3) / 2.0 * intercoolant.p.op**2
 
         self.assertAlmostEqual(bpAssemblyArea, actualAssemblyArea)

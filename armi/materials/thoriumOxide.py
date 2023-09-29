@@ -26,7 +26,6 @@ from armi.materials.material import Material, FuelMaterial, SimpleSolid
 
 
 class ThoriumOxide(FuelMaterial, SimpleSolid):
-    name = "ThoriumOxide"
     propertyValidTemperature = {"linear expansion": ((298, 1223), "K")}
 
     def __init__(self):
@@ -49,7 +48,7 @@ class ThoriumOxide(FuelMaterial, SimpleSolid):
                 )
             elif TD_frac < 0:
                 runLog.error(
-                    f"TD_frac is entered as negative. This is not allowed!",
+                    "TD_frac is entered as negative. This is not allowed!",
                     single=True,
                     label="Negative TD_frac",
                 )

@@ -22,7 +22,6 @@ See [GAMSOR]_.
 
 .. [GAMSOR] Smith, M. A., Lee, C. H., and Hill, R. N. GAMSOR: Gamma Source Preparation and DIF3D Flux Solution. United States: 
             N. p., 2016. Web. doi:10.2172/1343095. `On OSTI <https://www.osti.gov/biblio/1343095-gamsor-gamma-source-preparation-dif3d-flux-solution>`_
-            
 """
 
 from armi import runLog
@@ -111,7 +110,7 @@ def addDummyNuclidesToLibrary(lib, dummyNuclides):
     return any(dummyNuclideKeysAddedToLibrary)
 
 
-class _GamisoIO(isotxs._IsotxsIO):  # pylint: disable=protected-access,abstract-method
+class _GamisoIO(isotxs._IsotxsIO):
     """
     A reader/writer for GAMISO data files.
 
@@ -151,9 +150,7 @@ writeBinary = _GamisoIO.writeBinary
 writeAscii = _GamisoIO.writeAscii
 
 
-class _GamisoNuclideIO(
-    isotxs._IsotxsNuclideIO
-):  # pylint: disable=protected-access,abstract-method
+class _GamisoNuclideIO(isotxs._IsotxsNuclideIO):
     """
     A reader/writer for GAMISO nuclides.
 
@@ -162,7 +159,7 @@ class _GamisoNuclideIO(
     The GAMISO file format is identical to ISOTXS.
     """
 
-    _FILE_LABEL = u"GAMISO"
+    _FILE_LABEL = "GAMISO"
 
     def _getFileMetadata(self):
         return self._lib.gamisoMetadata
