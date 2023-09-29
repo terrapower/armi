@@ -338,7 +338,7 @@ class Inspector:
         against the default, if the user specifies all the simple cycle settings
         _exactly_ as the defaults, this won't be caught. But, it would be very
         coincidental for the user to _specify_ all the default values when
-        performing any real analysis, so whatever.
+        performing any real analysis.
 
         Also, we must bypass the `Settings` getter and reach directly
         into the underlying `__settings` dict to avoid triggering an error
@@ -718,7 +718,7 @@ class Inspector:
 
 
 def createQueryRevertBadPathToDefault(inspector, settingName, initialLambda=None):
-    r"""
+    """
     Return a query to revert a bad path to its default.
 
     Parameters

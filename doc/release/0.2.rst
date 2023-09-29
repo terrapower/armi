@@ -8,6 +8,7 @@ Release Date: TBD
 
 What's new in ARMI
 ------------------
+#. The ``_copyInputsHelper()`` gives relative path and not absolute after copy. (`PR#1416 <https://github.com/terrapower/armi/pull/1416>`_)
 #. TBD
 
 Bug fixes
