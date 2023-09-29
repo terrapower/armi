@@ -68,8 +68,8 @@ class TestBlueprints(unittest.TestCase):
         """Tests the available sets of nuclides work as expected.
 
         .. test:: Tests that users can define their nuclides of interest.
-            :id: TEST_REACTOR_0
-            :links: REQ_REACTOR
+            :id: T_REACTOR_0
+            :links: R_REACTOR
         """
         actives = set(self.blueprints.activeNuclides)
         inerts = set(self.blueprints.inertNuclides)
@@ -95,8 +95,8 @@ class TestBlueprints(unittest.TestCase):
         """Tests that the user can specifiy the dimensions of a component with arbitray fidelity.
 
         .. test:: Tests that the user can specify the dimensions of a component with arbitrary fidelity.
-            :id: TEST_REACTOR_1
-            :links: REQ_REACTOR
+            :id: T_REACTOR_1
+            :links: R_REACTOR
         """
         fuelAssem = self.blueprints.constructAssem(self.cs, name="igniter fuel")
         fuel = fuelAssem.getComponents(Flags.FUEL)[0]

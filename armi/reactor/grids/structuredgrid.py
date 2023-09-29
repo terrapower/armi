@@ -138,8 +138,8 @@ class StructuredGrid(Grid):
       indices. Thus we reduce the size of the unitSteps tuple accordingly.
 
     .. impl:: ARMI supports a number of structured mesh options.
-       :id: IMPL_REACTOR_MESH_0
-       :links: REQ_REACTOR_MESH
+       :id: I_REACTOR_MESH_0
+       :links: R_REACTOR_MESH
     """
 
     def __init__(

@@ -15,8 +15,8 @@
 """3-dimensional shapes.
 
 .. impl:: ARMI supports a reasonable set of basic shapes.
-   :id: IMPL_REACTOR_SHAPES_2
-   :links: REQ_REACTOR_SHAPES
+   :id: I_REACTOR_SHAPES_2
+   :links: R_REACTOR_SHAPES
 
    Here ARMI implements its support for: Cubes, Spheres, RadialSegments, and more.
 """

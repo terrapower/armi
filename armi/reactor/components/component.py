@@ -181,8 +181,8 @@ class Component(composites.Composite, metaclass=ComponentType):
         The material object that makes up this component and give it its thermo-mechanical properties.
 
     .. impl:: ARMI allows for thermal expansion of all components by user-defined custom curves.
-       :id: IMPL_REACTOR_THERMAL_EXPANSION_0
-       :links: REQ_REACTOR_THERMAL_EXPANSION
+       :id: I_REACTOR_THERMAL_EXPANSION_0
+       :links: R_REACTOR_THERMAL_EXPANSION
     """
 
     DIMENSION_NAMES = tuple()  # will be assigned by ComponentType
