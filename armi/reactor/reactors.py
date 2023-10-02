@@ -21,8 +21,8 @@ more refinement in representing the physical reactor. The reactor is the owner o
 plant-wide state variables such as keff, cycle, and node.
 
 .. impl:: ARMI represents the Reactor heirarchically.
-   :id: IMPL_REACTOR_HIERARCHY_0
-   :links: REQ_REACTOR_HIERARCHY
+   :id: I_REACTOR_HIERARCHY_0
+   :links: R_REACTOR_HIERARCHY
 
    The Reactor contains a Core, which contains a heirachical collection of Assemblies, which in turn
    each contain a collection of Blocks.

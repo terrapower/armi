@@ -39,8 +39,8 @@ class ThetaRZGrid(StructuredGrid):
     See Figure 2.2 in Derstine 1984, ANL. [DIF3D]_.
 
     .. impl:: ARMI supports an RZTheta mesh.
-       :id: IMPL_REACTOR_MESH_3
-       :links: REQ_REACTOR_MESH
+       :id: I_REACTOR_MESH_3
+       :links: R_REACTOR_MESH
     """
 
     def getSymmetricEquivalents(self, indices: IJType) -> NoReturn:

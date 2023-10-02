@@ -16,8 +16,8 @@
 Components represented by complex shapes, and typically less widely used.
 
 .. impl:: ARMI supports a reasonable set of basic shapes.
-   :id: IMPL_REACTOR_SHAPES_1
-   :links: REQ_REACTOR_SHAPES
+   :id: I_REACTOR_SHAPES_1
+   :links: R_REACTOR_SHAPES
 
    Here ARMI implements its support for: Holed Hexagons, Holed Rectangles,
    Holed Squares, and Helixes.
