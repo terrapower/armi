@@ -180,7 +180,7 @@ TODO: This may be tested by unit tests loading and checking settings that have a
       ARMI shall allow for the modeling of a reactor over multiple cycles.
 
 .. req:: ARMI shall represent and reflect the evolving state of a reactor.
-   :id: R_1
+   :id: R_EVOLVE
    :status: needs implementation, needs test
 
    The reactor state shale be made available to users and plugins, which may in turn modify the state. ARMI shall fully define how all aspects of state may be accessed and modified and shall reflect any new state after it is applied.
