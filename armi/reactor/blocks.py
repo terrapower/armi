@@ -722,7 +722,7 @@ class Block(composites.Composite):
             # BOL assems get expanded to a reference so the first check is needed so it
             # won't call .blueprints on None since BOL assems don't have a core/r
             return
-        if any(nuc in self.r.blueprints.activeNuclides for nuc in adjustList):
+        if any(nuc in self.core.r.blueprints.activeNuclides for nuc in adjustList):
             self.p.detailedNDens *= frac
             # Other power densities do not need to be updated as they are calculated in
             # the global flux interface, which occurs after axial expansion from crucible
