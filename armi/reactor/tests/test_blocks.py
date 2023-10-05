@@ -286,7 +286,7 @@ def applyDummyData(block):
     xslib._nuclides["WAA"] = xslib._nuclides["W184AA"]
     xslib._nuclides["MNAA"] = xslib._nuclides["MN55AA"]
     block.p.mgFlux = flux
-    block.r.core.lib = xslib
+    block.core.lib = xslib
 
 
 def getComponentData(component):
@@ -306,7 +306,6 @@ class Block_TestCase(unittest.TestCase):
     def setUp(self):
         self.block = loadTestBlock()
         self._hotBlock = loadTestBlock(cold=False)
-        self.r = self.block.r
 
     def test_getSmearDensity(self):
         cur = self.block.getSmearDensity()
@@ -840,7 +839,7 @@ class Block_TestCase(unittest.TestCase):
                 3,
             ),
         ):
-            self.r.core.symmetry = geometry.SymmetryType.fromAny(symmetry)
+            self.block.core.symmetry = geometry.SymmetryType.fromAny(symmetry)
             i, j = grids.HexGrid.getIndicesFromRingAndPos(1, 1)
             b.spatialLocator = b.core.spatialGrid[i, j, 0]
             self.assertEqual(0, b.spatialLocator.k)
@@ -1089,7 +1088,6 @@ class Block_TestCase(unittest.TestCase):
         self.assertAlmostEqual(cur, ref, places=places)
 
     def test_add(self):
-
         numComps = len(self.block.getComponents())
 
         fuelDims = {"Tinput": 25.0, "Thot": 600, "od": 0.76, "id": 0.00, "mult": 127.0}
@@ -1109,7 +1107,6 @@ class Block_TestCase(unittest.TestCase):
         )
 
     def test_getComponentNames(self):
-
         cur = self.block.getComponentNames()
         ref = set(
             [
@@ -1393,7 +1390,7 @@ class Block_TestCase(unittest.TestCase):
             fracs[c.getName()] = a / tot
 
         places = 6
-        for (c, a) in cur:
+        for c, a in cur:
             self.assertAlmostEqual(a, fracs[c.getName()], places=places)
 
         self.assertAlmostEqual(sum(fracs.values()), sum([a for c, a in cur]))
@@ -1764,12 +1761,12 @@ class HexBlock_TestCase(unittest.TestCase):
         self.assertAlmostEqual(cur, ref, places=places)
 
     def test_coords(self):
-        r = self.HexBlock.r
+        core = self.HexBlock.core
         a = self.HexBlock.parent
-        loc1 = r.core.spatialGrid[0, 1, 0]
+        loc1 = core.spatialGrid[0, 1, 0]
         a.spatialLocator = loc1
         x0, y0 = self.HexBlock.coords()
-        a.spatialLocator = r.core.spatialGrid[0, -1, 0]  # symmetric
+        a.spatialLocator = core.spatialGrid[0, -1, 0]  # symmetric
         x2, y2 = self.HexBlock.coords()
         a.spatialLocator = loc1
         self.HexBlock.p.displacementX = 0.01
@@ -1789,7 +1786,7 @@ class HexBlock_TestCase(unittest.TestCase):
 
     def test_symmetryFactor(self):
         # full hex
-        self.HexBlock.spatialLocator = self.HexBlock.r.core.spatialGrid[2, 0, 0]
+        self.HexBlock.spatialLocator = self.HexBlock.core.spatialGrid[2, 0, 0]
         self.HexBlock.clearCache()
         self.assertEqual(1.0, self.HexBlock.getSymmetryFactor())
         a0 = self.HexBlock.getArea()
@@ -1797,7 +1794,7 @@ class HexBlock_TestCase(unittest.TestCase):
         m0 = self.HexBlock.getMass()
 
         # 1/3 symmetric
-        self.HexBlock.spatialLocator = self.HexBlock.r.core.spatialGrid[0, 0, 0]
+        self.HexBlock.spatialLocator = self.HexBlock.core.spatialGrid[0, 0, 0]
         self.HexBlock.clearCache()
         self.assertEqual(3.0, self.HexBlock.getSymmetryFactor())
         self.assertEqual(a0 / 3.0, self.HexBlock.getArea())

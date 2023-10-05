@@ -179,42 +179,6 @@ class Block(composites.Composite):
         c = self.getAncestor(lambda c: isinstance(c, Core))
         return c
 
-    @property
-    def r(self):
-        """
-        Look through the ancestors of the Block to find a Reactor, and return it.
-
-        Notes
-        -----
-        Typical hierarchy: Reactor <- Core <- Assembly <- Block
-        A block should only have a reactor through a parent assembly.
-        It may make sense to try to factor out usage of ``b.r``.
-
-        Returns
-        -------
-        core.parent : armi.reactor.reactors.Reactor
-            ARMI reactor object that is an ancestor of the block.
-
-        Raises
-        ------
-        ValueError
-            If the parent of the block's ``core`` is not an ``armi.reactor.reactors.Reactor``.
-        """
-        from armi.reactor.reactors import Reactor
-
-        core = self.core
-        if core is None:
-            return self.getAncestor(lambda o: isinstance(o, Reactor))
-
-        if not isinstance(core.parent, Reactor):
-            raise TypeError(
-                "Parent of Block ({}) core is not a Reactor. Got {} instead".format(
-                    core.parent, type(core.parent)
-                )
-            )
-
-        return core.parent
-
     def makeName(self, assemNum, axialIndex):
         """
         Generate a standard block from assembly number.
@@ -734,7 +698,6 @@ class Block(composites.Composite):
         numDensities = self.getNuclideNumberDensities(adjustList)
 
         for nuclideName, dens in zip(adjustList, numDensities):
-
             if not dens:
                 # don't modify zeros.
                 continue
@@ -1577,7 +1540,6 @@ class Block(composites.Composite):
 
 
 class HexBlock(Block):
-
     PITCH_COMPONENT_TYPE: ClassVar[_PitchDefiningComponent] = (components.Hexagon,)
 
     def __init__(self, name, height=1.0):
@@ -2290,7 +2252,6 @@ class HexBlock(Block):
 
 
 class CartesianBlock(Block):
-
     PITCH_DIMENSION = "widthOuter"
     PITCH_COMPONENT_TYPE = components.Rectangle
 
