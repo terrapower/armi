@@ -294,7 +294,6 @@ class TestCompositePattern(unittest.TestCase):
 
 
 class TestCompositeTree(unittest.TestCase):
-
     blueprintYaml = """
     name: test assembly
     height: [1, 1]  # 2 blocks
@@ -359,7 +358,7 @@ class TestCompositeTree(unittest.TestCase):
 
     def setUp(self):
         self.Block = loadTestBlock()
-        self.r = self.Block.r
+        self.r = self.Block.core.r
         self.Block.setHeight(100.0)
         self.refDict = {
             "U235": 0.00275173784234,

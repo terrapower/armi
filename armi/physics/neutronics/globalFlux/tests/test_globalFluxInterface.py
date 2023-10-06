@@ -352,7 +352,7 @@ class TestGlobalFluxUtils(unittest.TestCase):
         b = test_blocks.loadTestBlock()
         test_blocks.applyDummyData(b)
         self.assertAlmostEqual(b.p.rateAbs, 0.0)
-        globalFluxInterface.calcReactionRates(b, 1.01, b.r.core.lib)
+        globalFluxInterface.calcReactionRates(b, 1.01, b.core.r.lib)
         self.assertGreater(b.p.rateAbs, 0.0)
         vfrac = b.getComponentAreaFrac(Flags.FUEL)
         self.assertEqual(b.p.fisDens, b.p.rateFis / vfrac)
