@@ -431,18 +431,6 @@ class TestCompositeTree(unittest.TestCase):
 
         self.assertEqual(fuelMass, a.getFuelMass())
 
-    def test_getNeutronEnergyDepositionConstants(self):
-        """Until we improve test architecture, this test can not be more interesting."""
-        with self.assertRaises(RuntimeError):
-            # fails because this test reactor does not have a cross-section library
-            _x = self.r.core.getNeutronEnergyDepositionConstants()
-
-    def test_getGammaEnergyDepositionConstants(self):
-        """Until we improve test architecture, this test can not be more interesting."""
-        with self.assertRaises(RuntimeError):
-            # fails because this test reactor does not have a cross-section library
-            _x = self.r.core.getGammaEnergyDepositionConstants()
-
     def test_getChildrenIncludeMaterials(self):
         """Test that the ``StateRetainer`` retains material properties when they are modified."""
         cs = settings.Settings()

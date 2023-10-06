@@ -1689,6 +1689,18 @@ class Block_TestCase(unittest.TestCase):
             {"nG": 0, "nF": 0, "n2n": 0, "nA": 0, "nP": 0, "n3n": 0},
         )
 
+    def test_getNeutronEnergyDepositionConstants(self):
+        """Until we improve test architecture, this test can not be more interesting."""
+        with self.assertRaises(RuntimeError):
+            # fails because this test reactor does not have a cross-section library
+            _x = self.block.getNeutronEnergyDepositionConstants()
+
+    def test_getGammaEnergyDepositionConstants(self):
+        """Until we improve test architecture, this test can not be more interesting."""
+        with self.assertRaises(RuntimeError):
+            # fails because this test reactor does not have a cross-section library
+            _x = self.block.getGammaEnergyDepositionConstants()
+
 
 class Test_NegativeVolume(unittest.TestCase):
     def test_negativeVolume(self):

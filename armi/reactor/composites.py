@@ -44,7 +44,6 @@ from armi import runLog
 from armi import utils
 from armi.nucDirectory import elements
 from armi.nucDirectory import nucDir, nuclideBases
-from armi.nuclearDataIO import xsCollections
 from armi.physics.neutronics.fissionProductModel import fissionProductModel
 from armi.reactor import grids
 from armi.reactor import parameters
@@ -1276,124 +1275,6 @@ class ArmiObject(metaclass=CompositeModelType):
         if expandFissionProducts:
             return self._expandLFPs(numberDensities)
         return numberDensities
-
-    def getNeutronEnergyDepositionConstants(self):
-        """
-        Get the neutron energy deposition group constants for a composite.
-
-        Returns
-        -------
-        energyDepConstants: numpy.array
-            Neutron energy generation group constants (in Joules/cm)
-
-        Raises
-        ------
-        RuntimeError:
-            Reports if a cross section library is not assigned to a reactor.
-        """
-        if not self.r.core.lib:
-            raise RuntimeError(
-                "Cannot get neutron energy deposition group constants without "
-                "a library. Please ensure a library exists."
-            )
-
-        return xsCollections.computeNeutronEnergyDepositionConstants(
-            self.getNumberDensities(), self.r.core.lib, self.getMicroSuffix()
-        )
-
-    def getGammaEnergyDepositionConstants(self):
-        """
-        Get the gamma energy deposition group constants for a composite.
-
-        Returns
-        -------
-        energyDepConstants: numpy.array
-            Energy generation group constants (in Joules/cm)
-
-        Raises
-        ------
-        RuntimeError:
-            Reports if a cross section library is not assigned to a reactor.
-        """
-        if not self.r.core.lib:
-            raise RuntimeError(
-                "Cannot get gamma energy deposition group constants without "
-                "a library. Please ensure a library exists."
-            )
-
-        return xsCollections.computeGammaEnergyDepositionConstants(
-            self.getNumberDensities(), self.r.core.lib, self.getMicroSuffix()
-        )
-
-    def getTotalEnergyGenerationConstants(self):
-        """
-        Get the total energy generation group constants for a composite.
-
-        Gives the total energy generation rates when multiplied by the multigroup flux.
-
-        Returns
-        -------
-        totalEnergyGenConstant: numpy.array
-            Total (fission + capture) energy generation group constants (Joules/cm)
-        """
-        return (
-            self.getFissionEnergyGenerationConstants()
-            + self.getCaptureEnergyGenerationConstants()
-        )
-
-    def getFissionEnergyGenerationConstants(self):
-        """
-        Get the fission energy generation group constants for a composite.
-
-        Gives the fission energy generation rates when multiplied by the multigroup
-        flux.
-
-        Returns
-        -------
-        fissionEnergyGenConstant: numpy.array
-            Energy generation group constants (Joules/cm)
-
-        Raises
-        ------
-        RuntimeError:
-            Reports if a cross section library is not assigned to a reactor.
-        """
-        if not self.r.core.lib:
-            raise RuntimeError(
-                "Cannot compute energy generation group constants without a library"
-                ". Please ensure a library exists."
-            )
-
-        return xsCollections.computeFissionEnergyGenerationConstants(
-            self.getNumberDensities(), self.r.core.lib, self.getMicroSuffix()
-        )
-
-    def getCaptureEnergyGenerationConstants(self):
-        """
-        Get the capture energy generation group constants for a composite.
-
-        Gives the capture energy generation rates when multiplied by the multigroup
-        flux.
-
-        Returns
-        -------
-        fissionEnergyGenConstant: numpy.array
-            Energy generation group constants (Joules/cm)
-
-        Raises
-        ------
-        RuntimeError:
-            Reports if a cross section library is not assigned to a reactor.
-        """
-        if not self.r.core.lib:
-            raise RuntimeError(
-                "Cannot compute energy generation group constants without a library"
-                ". Please ensure a library exists."
-            )
-
-        return xsCollections.computeCaptureEnergyGenerationConstants(
-            self.getNumberDensities(), self.r.core.lib, self.getMicroSuffix()
-        )
 
     def _expandLFPs(self, numberDensities):
         """
