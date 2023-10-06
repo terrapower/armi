@@ -55,7 +55,9 @@ THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 class TestBlockCollection(unittest.TestCase):
     def setUp(self):
         self.blockList = makeBlocks()
-        self.bc = BlockCollection(self.blockList[0].r.blueprints.allNuclidesInProblem)
+        self.bc = BlockCollection(
+            self.blockList[0].core.r.blueprints.allNuclidesInProblem
+        )
         self.bc.extend(self.blockList)
 
     def test_add(self):
@@ -86,12 +88,11 @@ class TestBlockCollectionMedian(unittest.TestCase):
             b.p.percentBu = bi / 4.0 * 100
         self.blockList[0], self.blockList[2] = self.blockList[2], self.blockList[0]
         self.bc = MedianBlockCollection(
-            self.blockList[0].r.blueprints.allNuclidesInProblem
+            self.blockList[0].core.r.blueprints.allNuclidesInProblem
         )
         self.bc.extend(self.blockList)
 
     def test_createRepresentativeBlock(self):
-
         avgB = self.bc.createRepresentativeBlock()
         self.assertAlmostEqual(avgB.p.percentBu, 50.0)
 
@@ -107,7 +108,7 @@ class TestBlockCollectionAverage(unittest.TestCase):
             b.setNumberDensity("U235", bi)
             b.p.gasReleaseFraction = bi * 2 / 8.0
         self.bc = AverageBlockCollection(
-            self.blockList[0].r.blueprints.allNuclidesInProblem
+            self.blockList[0].core.r.blueprints.allNuclidesInProblem
         )
         self.bc.extend(self.blockList)
 
@@ -318,7 +319,6 @@ class TestBlockCollectionComponentAverage1DCylinder(unittest.TestCase):
                 )
 
     def test_checkComponentConsistency(self):
-
         xsgm = self.o.getInterface("xsGroups")
         xsgm.interactBOL()
         blockCollectionsByXsGroup = xsgm.makeCrossSectionGroups()
@@ -454,7 +454,7 @@ class TestBlockCollectionFluxWeightedAverage(unittest.TestCase):
             b.p.flux = bi + 1
 
         self.bc = FluxWeightedAverageBlockCollection(
-            self.blockList[0].r.blueprints.allNuclidesInProblem
+            self.blockList[0].core.r.blueprints.allNuclidesInProblem
         )
         self.bc.extend(self.blockList)
 
@@ -475,7 +475,7 @@ class Test_CrossSectionGroupManager(unittest.TestCase):
     def setUp(self):
         cs = settings.Settings()
         self.blockList = makeBlocks(20)
-        self.csm = CrossSectionGroupManager(self.blockList[0].r, cs)
+        self.csm = CrossSectionGroupManager(self.blockList[0].core.r, cs)
         for bi, b in enumerate(self.blockList):
             b.p.percentBu = bi / 19.0 * 100
         self.csm._setBuGroupBounds([3, 10, 30, 100])
@@ -615,14 +615,14 @@ class Test_CrossSectionGroupManager(unittest.TestCase):
 
     def test_interactBOL(self):
         """Test `BOL` lattice physics update frequency."""
-        self.blockList[0].r.p.timeNode = 0
+        self.blockList[0].core.r.p.timeNode = 0
         self.csm.cs[CONF_LATTICE_PHYSICS_FREQUENCY] = "BOL"
         self.csm.interactBOL()
         self.assertTrue(self.csm.representativeBlocks)
 
     def test_interactBOC(self):
         """Test `BOC` lattice physics update frequency."""
-        self.blockList[0].r.p.timeNode = 0
+        self.blockList[0].core.r.p.timeNode = 0
         self.csm.cs[CONF_LATTICE_PHYSICS_FREQUENCY] = "BOC"
         self.csm.interactBOL()
         self.csm.interactBOC()
