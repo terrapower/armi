@@ -1706,8 +1706,16 @@ class BlockEnergyDepositionConstants(unittest.TestCase):
         self.block.core.lib = MagicMock()
 
     @patch.object(xsCollections, "computeFissionEnergyGenerationConstants")
+    @patch.object(xsCollections, "computeCaptureEnergyGenerationConstants")
+    def test_getTotalEnergyGenerationConstants(self, mock_capture, mock_fission):
+        """Mock both xsCollections methods so you get complete coverage"""
+        _x = self.block.getTotalEnergyGenerationConstants()
+        self.assertEqual(mock_fission.call_count, 1)
+        self.assertEqual(mock_capture.call_count, 1)
+
+    @patch.object(xsCollections, "computeFissionEnergyGenerationConstants")
     def test_getFissionEnergyDepositionConstants(self, mock_method):
-        """Test RuntimeError and that it returns the right deposition constant"""
+        """Test RuntimeError and that it gets to the deposition constant call"""
         # make sure xsCollections.compute* gets hit
         _x = self.block.getFissionEnergyGenerationConstants()
         self.assertEqual(mock_method.call_count, 1)
@@ -1719,7 +1727,7 @@ class BlockEnergyDepositionConstants(unittest.TestCase):
 
     @patch.object(xsCollections, "computeCaptureEnergyGenerationConstants")
     def test_getCaptureEnergyGenerationConstants(self, mock_method):
-        """Test RuntimeError and that it returns the right deposition constant"""
+        """Test RuntimeError and that it gets to the deposition constant call"""
         # make sure xsCollections.compute* gets hit
         _x = self.block.getCaptureEnergyGenerationConstants()
         self.assertEqual(mock_method.call_count, 1)
@@ -1731,6 +1739,7 @@ class BlockEnergyDepositionConstants(unittest.TestCase):
 
     @patch.object(xsCollections, "computeNeutronEnergyDepositionConstants")
     def test_getNeutronEnergyDepositionConstants(self, mock_method):
+        """Test RuntimeError and that it gets to the deposition constant call"""
         # make sure xsCollections.compute* gets hit
         _x = self.block.getNeutronEnergyDepositionConstants()
         self.assertEqual(mock_method.call_count, 1)
@@ -1741,7 +1750,7 @@ class BlockEnergyDepositionConstants(unittest.TestCase):
 
     @patch.object(xsCollections, "computeGammaEnergyDepositionConstants")
     def test_getGammaEnergyDepositionConstants(self, mock_method):
-        """Test RuntimeError and that it returns the right deposition constant"""
+        """Test RuntimeError and that it gets to the deposition constant call"""
         # make sure xsCollections.compute* gets hit
         _x = self.block.getGammaEnergyDepositionConstants()
         self.assertEqual(mock_method.call_count, 1)
