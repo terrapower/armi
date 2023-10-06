@@ -16,6 +16,7 @@ import copy
 import math
 import os
 import unittest
+from unittest.mock import MagicMock, patch
 
 import numpy
 from numpy.testing import assert_allclose
@@ -35,6 +36,7 @@ from armi.reactor.tests.test_assemblies import makeTestAssembly
 from armi.tests import ISOAA_PATH, TEST_ROOT
 from armi.utils import hexagon, units
 from armi.utils.units import MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
+from armi.nuclearDataIO import xsCollections
 
 NUM_PINS_IN_TEST_BLOCK = 217
 
@@ -1689,14 +1691,62 @@ class Block_TestCase(unittest.TestCase):
             {"nG": 0, "nF": 0, "n2n": 0, "nA": 0, "nP": 0, "n3n": 0},
         )
 
-    def test_getNeutronEnergyDepositionConstants(self):
-        """Until we improve test architecture, this test can not be more interesting."""
+
+class BlockEnergyDepositionConstants(unittest.TestCase):
+    """Tests the energy deposition methods.
+
+    MagicMocks xsCollections.compute*Constants() -- we're not testing those methods specifically so just make sure they're hit
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        cls.block = loadTestBlock()
+
+    def setUp(self):
+        self.block.core.lib = MagicMock()
+
+    @patch.object(xsCollections, "computeFissionEnergyGenerationConstants")
+    def test_getFissionEnergyDepositionConstants(self, mock_method):
+        """Test RuntimeError and that it returns the right deposition constant"""
+        # make sure xsCollections.compute* gets hit
+        _x = self.block.getFissionEnergyGenerationConstants()
+        self.assertEqual(mock_method.call_count, 1)
+        # set core.lib to None and get RuntimeError
+        self.block.core.lib = None
         with self.assertRaises(RuntimeError):
             # fails because this test reactor does not have a cross-section library
+            _x = self.block.getFissionEnergyGenerationConstants()
+
+    @patch.object(xsCollections, "computeCaptureEnergyGenerationConstants")
+    def test_getCaptureEnergyGenerationConstants(self, mock_method):
+        """Test RuntimeError and that it returns the right deposition constant"""
+        # make sure xsCollections.compute* gets hit
+        _x = self.block.getCaptureEnergyGenerationConstants()
+        self.assertEqual(mock_method.call_count, 1)
+        # set core.lib to None and get RuntimeError
+        self.block.core.lib = None
+        with self.assertRaises(RuntimeError):
+            # fails because this test reactor does not have a cross-section library
+            _x = self.block.getCaptureEnergyGenerationConstants()
+
+    @patch.object(xsCollections, "computeNeutronEnergyDepositionConstants")
+    def test_getNeutronEnergyDepositionConstants(self, mock_method):
+        # make sure xsCollections.compute* gets hit
+        _x = self.block.getNeutronEnergyDepositionConstants()
+        self.assertEqual(mock_method.call_count, 1)
+        # set core.lib to None and get RuntimeError
+        self.block.core.lib = None
+        with self.assertRaises(RuntimeError):
             _x = self.block.getNeutronEnergyDepositionConstants()
 
-    def test_getGammaEnergyDepositionConstants(self):
-        """Until we improve test architecture, this test can not be more interesting."""
+    @patch.object(xsCollections, "computeGammaEnergyDepositionConstants")
+    def test_getGammaEnergyDepositionConstants(self, mock_method):
+        """Test RuntimeError and that it returns the right deposition constant"""
+        # make sure xsCollections.compute* gets hit
+        _x = self.block.getGammaEnergyDepositionConstants()
+        self.assertEqual(mock_method.call_count, 1)
+        # set core.lib to None and get RuntimeError
+        self.block.core.lib = None
         with self.assertRaises(RuntimeError):
             # fails because this test reactor does not have a cross-section library
             _x = self.block.getGammaEnergyDepositionConstants()
