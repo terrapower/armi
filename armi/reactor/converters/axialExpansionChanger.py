@@ -454,22 +454,14 @@ class AssemblyAxialLinkage:
 
         if lowerLinkedBlock is None:
             runLog.debug(
-                "Assembly {0:22s} at location {1:22s}, Block {2:22s}"
-                "is not linked to a block below!".format(
-                    str(self.a.getName()),
-                    str(self.a.getLocation()),
-                    str(b.p.flags),
-                ),
+                f"Assembly {self.a.getName()} at location {self.a.getLocation()}, Block {b}"
+                "is not linked to a block below!",
                 single=True,
             )
         if upperLinkedBlock is None:
             runLog.debug(
-                "Assembly {0:22s} at location {1:22s}, Block {2:22s}"
-                "is not linked to a block above!".format(
-                    str(self.a.getName()),
-                    str(self.a.getLocation()),
-                    str(b.p.flags),
-                ),
+                f"Assembly {self.a.getName()} at location {self.a.getLocation()}, Block {b}"
+                "is not linked to a block above!",
                 single=True,
             )
 
