@@ -443,22 +443,26 @@ class AssemblyAxialLinkage:
         lowerLinkedBlock = None
         upperLinkedBlock = None
         block_list = self.a.getChildren()
-        for otherBlk in block_list:
+        for idx, otherBlk in enumerate(block_list):
             if b.name != otherBlk.name:
                 if b.p.zbottom == otherBlk.p.ztop:
                     lowerLinkedBlock = otherBlk
                 elif b.p.ztop == otherBlk.p.zbottom:
                     upperLinkedBlock = otherBlk
+            else:
+                bIdx = idx
 
         self.linkedBlocks[b] = [lowerLinkedBlock, upperLinkedBlock]
 
-        if lowerLinkedBlock is None:
+        if lowerLinkedBlock is None and bIdx != 0:
+            # only print if this isn't the bottom block
             runLog.debug(
                 f"Assembly {self.a.getName()} at location {self.a.getLocation()}, Block {b}"
                 "is not linked to a block below!",
                 single=True,
             )
-        if upperLinkedBlock is None:
+        if upperLinkedBlock is None and bIdx != idx:
+            # only print if this isn't the topmost block
             runLog.debug(
                 f"Assembly {self.a.getName()} at location {self.a.getLocation()}, Block {b}"
                 "is not linked to a block above!",
