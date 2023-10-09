@@ -276,7 +276,8 @@ class AxialExpansionChanger:
                 b.p.zbottom = self.linked.linkedBlocks[b][0].p.ztop
             isDummyBlock = ib == (numOfBlocks - 1)
             if not isDummyBlock:
-                if (solidComponents := getSolidComponents(b)) :
+                solidComponents = getSolidComponents(b)
+                if solidComponents:
                     for c in solidComponents:
                         growFrac = self.expansionData.getExpansionFactor(c)
                         runLog.debug(
