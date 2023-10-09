@@ -502,12 +502,12 @@ class AssemblyAxialLinkage:
 
         self.linkedComponents[c] = lstLinkedC
 
-        if lstLinkedC[0] is None:
+        if lstLinkedC[0] is None and self.linkedBlocks[b][0] is not None:
             runLog.debug(
                 f"Assembly {self.a}, Block {b}, Component {c} has nothing linked below it!",
                 single=True,
             )
-        if lstLinkedC[1] is None:
+        if lstLinkedC[1] is None and self.linkedBlocks[b][1] is not None:
             runLog.debug(
                 f"Assembly {self.a}, Block {b}, Component {c} has nothing linked above it!",
                 single=True,
