@@ -61,8 +61,19 @@ blocks:
             mult: 1.0
             op: 19.0
 
-    SodiumBlock : &block_dummy
+    DummyBlock: &block_dummy
         flags: dummy
+        coolant:
+            shape: Hexagon
+            material: Sodium
+            Tinput: 25.0
+            Thot: 450.0
+            ip: 0.0
+            mult: 1.0
+            op: 19.0
+
+    SodiumBlock: &block_sodium
+        axial expansion target component: coolant
         coolant:
             shape: Hexagon
             material: Sodium
@@ -691,3 +702,13 @@ assemblies:
         height: [25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 17.5]
         axial mesh points: *standard_axial_mesh_points
         xs types: *igniter_fuel_xs_types
+    fuel with fluid block:
+        specifier: FB
+        # blocks: [*block_grid_plate, *block_fuel_axial_shield_fourPin, *block_fuel, *block_fuel, *block_fuel, *block_plenum_fourPin, *block_aclp_fourPin, *block_plenum_fourPin, *block_duct, *block_sodium, *block_dummy]
+        # height: [25.0, 27.5, 27.5, 27.5, 27.5, 15.0, 25.0, 25.0, 24.0, 1.0, 17.5]
+        # axial mesh points: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+        # xs types: [A, A, B, C, C, D, A, A, A, A, A]
+        blocks: [*block_grid_plate, *block_radial_shield, *block_radial_shield, *block_radial_shield, *block_radial_shield, *block_shield_plenum, *block_shield_aclp, *block_shield_plenum, *block_duct, *block_sodium, *block_dummy]
+        height: [25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 24.0, 1.0, 17.5]
+        axial mesh points: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+        xs types: [A, A, B, C, C, D, A, A, A, A, A]
