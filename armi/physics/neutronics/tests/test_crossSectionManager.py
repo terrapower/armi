@@ -127,13 +127,13 @@ class TestBlockCollectionAverage(unittest.TestCase):
         )
         self.bc.extend(self.blockList)
 
-    #def test_checkBlockSimilarity(self):
-    #    """
-    #    Check the block similarity test
-    #    """
-    #    self.assertTrue(self.bc._checkBlockSimilarity())
-    #    self.bc.append(test_blocks.loadTestBlock())
-    #    self.assertFalse(self.bc._checkBlockSimilarity())
+    def test_checkBlockSimilarity(self):
+        """
+        Check the block similarity test
+        """
+        self.assertTrue(self.bc._checkBlockSimilarity())
+        self.bc.append(test_blocks.loadTestBlock())
+        self.assertFalse(self.bc._checkBlockSimilarity())
 
     def test_createRepresentativeBlock(self):
         avgB = self.bc.createRepresentativeBlock()
