@@ -43,7 +43,7 @@ from armi.physics.neutronics.settings import (
 )
 from armi.reactor.blocks import HexBlock
 from armi.reactor.flags import Flags
-from armi.reactor.tests import test_reactors
+from armi.reactor.tests import test_reactors, test_blocks
 from armi.tests import TEST_ROOT
 from armi.tests import mockRunLogs
 from armi.utils import units
@@ -127,12 +127,20 @@ class TestBlockCollectionAverage(unittest.TestCase):
         )
         self.bc.extend(self.blockList)
 
+    #def test_checkBlockSimilarity(self):
+    #    """
+    #    Check the block similarity test
+    #    """
+    #    self.assertTrue(self.bc._checkBlockSimilarity())
+    #    self.bc.append(test_blocks.loadTestBlock())
+    #    self.assertFalse(self.bc._checkBlockSimilarity())
+
     def test_createRepresentativeBlock(self):
         avgB = self.bc.createRepresentativeBlock()
         self.assertNotIn(avgB, self.bc)
-        # 0 + 1/4 + 2/4 + 3/4 + 4/4 =
-        # (0 + 1 + 2 + 3 + 4 ) / 5 = 10/5 = 2.0
+        # (0 + 1 + 2 + 3 + 4) / 5 = 10/5 = 2.0
         self.assertAlmostEqual(avgB.getNumberDensity("U235"), 2.0)
+        # (0 + 1/4 + 2/4 + 3/4 + 4/4) / 5 * 100.0 = 50.0
         self.assertEqual(avgB.p.percentBu, 50.0)
 
         # check that a new block collection of the representative block has right temperatures
@@ -148,12 +156,7 @@ class TestBlockCollectionAverage(unittest.TestCase):
 
     def test_createRepresentativeBlockDissimilar(self):
 
-        # add a different type of block
-        _o, r = test_reactors.loadTestReactor(
-            os.path.join(TEST_ROOT, "detailedAxialExpansion"),
-            inputFileName="armiRun.yaml",
-        )
-        uniqueBlock = r.core.getBlocks(Flags.FUEL | Flags.ANNULAR)[0]
+        uniqueBlock = test_blocks.loadTestBlock()
         uniqueBlock.p.percentBu = 50.0
         fpFactory = test_lumpedFissionProduct.getDummyLFPFile()
         uniqueBlock.setLumpedFissionProducts(fpFactory.createLFPsFromFile())
@@ -175,9 +178,9 @@ class TestBlockCollectionAverage(unittest.TestCase):
             )
 
         self.assertNotIn(avgB, self.bc)
-        # 0 + 1/4 + 2/4 + 3/4 + 4/4 =
-        # (0 + 1 + 2 + 3 + 4 + 8) / 6 = 18/6 = 3.0
+        # (0 + 1 + 2 + 3 + 4 + 2) / 6.0 = 12/6 = 2.0
         self.assertAlmostEqual(avgB.getNumberDensity("U235"), 2.0)
+        # (0 + 1/4 + 2/4 + 3/4 + 4/4) / 5 * 100.0 = 50.0
         self.assertAlmostEqual(avgB.p.percentBu, 50.0)
 
         # U35 has different average temperature because blocks have different U235 content
@@ -207,6 +210,86 @@ class TestBlockCollectionAverage(unittest.TestCase):
         self.assertAlmostEqual(newBc.avgNucTemperatures["U235"], 600.0)
         self.assertAlmostEqual(newBc.avgNucTemperatures["FE56"], expectedIronTemp)
         self.assertAlmostEqual(newBc.avgNucTemperatures["NA23"], expectedSodiumTemp)
+
+
+class TestComponentAveraging(unittest.TestCase):
+
+    def setUp(self):
+        fpFactory = test_lumpedFissionProduct.getDummyLFPFile()
+        self.blockList = makeBlocks(3)
+        for bi, b in enumerate(self.blockList):
+            b.setType("fuel")
+            b.setLumpedFissionProducts(fpFactory.createLFPsFromFile())
+            # put some trace Fe-56 and Na-23 into the fuel
+            # zero out all fuel nuclides except U-235 (for mass-weighting of component temperature)
+            for nuc in b.getNuclides():
+                b.setNumberDensity(nuc, 0.0)
+            b.setNumberDensity("U235", bi)
+            b.setNumberDensity("FE56", bi / 2.0)
+            b.setNumberDensity("NA23", bi / 3.0)
+            for c in b:
+                if c.hasFlags(Flags.FUEL):
+                    c.temperatureInC = 600.0 + bi
+                elif c.hasFlags([Flags.CLAD, Flags.DUCT, Flags.WIRE]):
+                    c.temperatureInC = 500.0 + bi
+                elif c.hasFlags([Flags.BOND, Flags.COOLANT, Flags.INTERCOOLANT]):
+                    c.temperatureInC = 400.0 + bi
+
+        self.bc = AverageBlockCollection(
+            self.blockList[0].r.blueprints.allNuclidesInProblem
+        )
+        self.bc.extend(self.blockList)
+
+    def test_getAverageComponentNumberDensities(self):
+        """
+        Test component number density averaging
+        """
+        # becaue of the way densities are set up, the middle block (index 1 of 0-2) component densities are equivalent to the average
+        b = self.bc[1]
+        for compIndex, c in enumerate(b.getComponents()):
+            avgDensities = self.bc._getAverageComponentNumberDensities(compIndex)
+            compDensities = c.getNumberDensities()
+            for nuc in c.getNuclides():
+                self.assertAlmostEqual(
+                    compDensities[nuc],
+                    avgDensities[nuc],
+                    msg=f"{nuc} density {compDensities[nuc]} not equal to {avgDensities[nuc]}!",
+                )
+
+    def test_getAverageComponentTemperature(self):
+        """
+        Test mass-weighted component temperature averaging
+        """
+        b = self.bc[0]
+        massWeightedIncrease = 5.0 / 3.0
+        baseTemps = [600, 400, 500, 500, 400, 500, 400]
+        expectedTemps = [t + massWeightedIncrease for t in baseTemps]
+        for compIndex, c in enumerate(b.getComponents()):
+            avgTemp = self.bc._getAverageComponentTemperature(compIndex)
+            self.assertAlmostEqual(
+                expectedTemps[compIndex],
+                avgTemp,
+                msg=f"{c} avg temperature {avgTemp} not equal to expected {expectedTemps[compIndex]}!",
+            )
+
+    def test_getAverageComponentTemperatureNoMass(self):
+        """
+        Test component temperature averaging when the components have no mass
+        """
+        for b in self.bc:
+            for nuc in b.getNuclides():
+                b.setNumberDensity(nuc, 0.0)
+
+        unweightedIncrease = 1.0
+        baseTemps = [600, 400, 500, 500, 400, 500, 400]
+        expectedTemps = [t + unweightedIncrease for t in baseTemps]
+        for compIndex, c in enumerate(b.getComponents()):
+            avgTemp = self.bc._getAverageComponentTemperature(compIndex)
+            self.assertAlmostEqual(
+                expectedTemps[compIndex],
+                avgTemp,
+                msg=f"{c} avg temperature {avgTemp} not equal to expected {expectedTemps[compIndex]}!",
+            )
 
 
 class TestBlockCollectionComponentAverage(unittest.TestCase):
