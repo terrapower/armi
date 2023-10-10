@@ -22,6 +22,8 @@ from armi.materials import material
 from armi.reactor.components import UnshapedComponent
 from armi.reactor.flags import Flags
 from armi.reactor.grids import MultiIndexLocation
+from armi.utils.customExceptions import InputError
+
 from numpy import array
 
 TARGET_FLAGS_IN_PREFERRED_ORDER = [
@@ -219,7 +221,7 @@ class AxialExpansionChanger:
         self.expansionData = ExpansionData(
             a, setFuel=setFuel, expandFromTinputToThot=expandFromTinputToThot
         )
-        self._isTopDummyBlockPresent()
+        self._checkAssemblyConstructionIsValid()
 
     def applyColdHeightMassIncrease(self):
         """
@@ -237,6 +239,10 @@ class AxialExpansionChanger:
                 c.temperatureInC, c.inputTemperatureInC
             )
             c.changeNDensByFactor(axialExpansionFactor)
+
+    def _checkAssemblyConstructionIsValid(self):
+        self._isTopDummyBlockPresent()
+        self._checkForBlocksWithoutSolids()
 
     def _isTopDummyBlockPresent(self):
         """Determines if top most block of assembly is a dummy block.
@@ -258,6 +264,33 @@ class AxialExpansionChanger:
                 msg = "Cannot run detailedAxialExpansion without a dummy block at the top of the assembly!"
                 runLog.error(msg)
                 raise RuntimeError(msg)
+
+    def _checkForBlocksWithoutSolids(self):
+        """
+        Makes sure that there aren't any blocks (other than the top-most dummy block)
+        that are entirely fluid filled, unless all blocks in the assembly are only
+        fluids. The expansion changer doesn't know what to do with such mixed assemblies.
+        """
+        solidCompsInAssem = [
+            c
+            for c in self.linked.a.iterComponents()
+            if not isinstance(c.material, material.Fluid)
+        ]
+        if len(solidCompsInAssem) == 0:
+            return
+
+        for b in self.linked.a[:-1]:
+            # the topmost block has already been confirmed as the dummy block
+            solidCompsInBlock = [
+                c
+                for c in b.iterComponents()
+                if not isinstance(c.material, material.Fluid)
+            ]
+            if len(solidCompsInBlock) == 0:
+                raise InputError(
+                    f"Assembly {self.linked.a} is constructed improperly for use with the axial expansion changer.\n"
+                    "Consider using the assemFlagsToSkipAxialExpansion case setting."
+                )
 
     def axiallyExpandAssembly(self):
         """Utilizes assembly linkage to do axial expansion."""
