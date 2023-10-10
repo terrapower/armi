@@ -21,7 +21,7 @@ from statistics import mean
 
 from armi import materials
 from armi.settings import Settings
-from armi.materials import _MATERIAL_NAMESPACE_ORDER, custom
+from armi.materials import _MATERIAL_NAMESPACE_ORDER, custom, ht9
 from armi.reactor.assemblies import HexAssembly, grids
 from armi.reactor.blocks import HexBlock
 from armi.reactor.components import DerivedShape, UnshapedComponent
@@ -38,6 +38,7 @@ from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorR
 from armi.reactor.blueprints.tests.test_blockBlueprints import FULL_BP
 from armi.reactor import blueprints
 from armi.tests import TEST_ROOT, mockRunLogs
+from armi.utils.customExceptions import InputError
 from armi.utils import units
 from numpy import array, linspace, zeros
 
@@ -354,6 +355,17 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
         elif a.hasFlags(Flags.CONTROL):
             newMass = a.getMass("B10")
         return newMass
+
+    def test_checkForBlocksWithoutSolids(self):
+        a = buildTestAssemblyWithFakeMaterial(
+            name="Sodium"
+        )  # every component is sodium
+        changer = AxialExpansionChanger(detailedAxialExpansion=True)
+        changer.setAssembly(a)  # no error because _everything_ is sodium
+
+        a[0][1].material = ht9.HT9()
+        with self.assertRaises(InputError):
+            changer.setAssembly(a)
 
     def test_PrescribedExpansionContractionConservation(self):
         """Expand all components and then contract back to original state.
