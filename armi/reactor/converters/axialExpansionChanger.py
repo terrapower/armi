@@ -276,43 +276,35 @@ class AxialExpansionChanger:
                 b.p.zbottom = self.linked.linkedBlocks[b][0].p.ztop
             isDummyBlock = ib == (numOfBlocks - 1)
             if not isDummyBlock:
-                if (solidComponents := getSolidComponents(b)) :
-                    for c in solidComponents:
-                        growFrac = self.expansionData.getExpansionFactor(c)
-                        runLog.debug(
-                            msg=f"      Component {c}, growFrac = {growFrac:.4e}"
-                        )
-                        c.height = growFrac * blockHeight
-                        # align linked components
-                        if ib == 0:
-                            c.zbottom = 0.0
+                for c in getSolidComponents(b):
+                    growFrac = self.expansionData.getExpansionFactor(c)
+                    runLog.debug(msg=f"      Component {c}, growFrac = {growFrac:.4e}")
+                    c.height = growFrac * blockHeight
+                    # align linked components
+                    if ib == 0:
+                        c.zbottom = 0.0
+                    else:
+                        if self.linked.linkedComponents[c][0]:
+                            # use linked components below
+                            linkedComponent = self.retrieveLinkedComponent(c)
+                            c.zbottom = linkedComponent.ztop
                         else:
-                            if self.linked.linkedComponents[c][0]:
-                                # use linked components below
-                                linkedComponent = self.retrieveLinkedComponent(c)
-                                c.zbottom = linkedComponent.ztop
-                            else:
-                                # otherwise there aren't any linked components
-                                # so just set the bottom of the component to
-                                # the top of the block below it
-                                c.zbottom = self.linked.linkedBlocks[b][0].p.ztop
-                        c.ztop = c.zbottom + c.height
-                        # update component number densities
-                        newNumberDensities = {
-                            nuc: c.getNumberDensity(nuc) / growFrac
-                            for nuc in c.getNuclides()
-                        }
-                        c.setNumberDensities(newNumberDensities)
-                        # redistribute block boundaries if on the target component
-                        if self.expansionData.isTargetComponent(c):
-                            b.p.ztop = c.ztop
-                            b.p.height = b.p.ztop - b.p.zbottom
-                else:
-                    # the block has only fluids but is not the dummy block,
-                    # just shift it upwards
-                    b.p.ztop = b.p.zbottom + b.p.height
+                            # otherwise there aren't any linked components
+                            # so just set the bottom of the component to
+                            # the top of the block below it
+                            c.zbottom = self.linked.linkedBlocks[b][0].p.ztop
+                    c.ztop = c.zbottom + c.height
+                    # update component number densities
+                    newNumberDensities = {
+                        nuc: c.getNumberDensity(nuc) / growFrac
+                        for nuc in c.getNuclides()
+                    }
+                    c.setNumberDensities(newNumberDensities)
+                    # redistribute block boundaries if on the target component
+                    if self.expansionData.isTargetComponent(c):
+                        b.p.ztop = c.ztop
+                        b.p.height = b.p.ztop - b.p.zbottom
             else:
-                # this block is the dummy block
                 b.p.height = b.p.ztop - b.p.zbottom
 
             b.p.z = b.p.zbottom + b.getHeight() / 2.0
