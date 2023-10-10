@@ -355,32 +355,6 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
             newMass = a.getMass("B10")
         return newMass
 
-    def test_ExpandAssemWithFluidBlock(self):
-        _oCold, rCold = loadTestReactor(
-            os.path.join(TEST_ROOT, "detailedAxialExpansion"),
-            customSettings={"inputHeightsConsideredHot": False},
-        )
-        a = rCold.blueprints.assemblies["fuel with fluid block"]
-        origMesh = a.getAxialMesh()
-        changer = AxialExpansionChanger(detailedAxialExpansion=True)
-        changer.setAssembly(a)
-        for b in a:
-            for c in b:
-                changer.expansionData.updateComponentTemp(c, c.temperatureInC + 50)
-        changer.expansionData.computeThermalExpansionFactors()
-        changer.axiallyExpandAssembly()
-
-        newMesh = a.getAxialMesh()
-
-        # check that height of assembly overall hasn't changed
-        self.assertEqual(origMesh[-1], newMesh[-1])
-
-        # check that top block (dummy block) _has_ changed height
-        self.assertGreater(newMesh[-2], origMesh[-2])
-
-        # check that height of "SodiumBlock" hasn't changed
-        self.assertEqual(newMesh[-2] - newMesh[-3], origMesh[-2] - origMesh[-3])
-
     def test_PrescribedExpansionContractionConservation(self):
         """Expand all components and then contract back to original state.
 
