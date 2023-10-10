@@ -136,6 +136,9 @@ class TestBlockCollectionAverage(unittest.TestCase):
         self.assertFalse(self.bc._checkBlockSimilarity())
 
     def test_createRepresentativeBlock(self):
+        """
+        Test creation of a representative block
+        """
         avgB = self.bc.createRepresentativeBlock()
         self.assertNotIn(avgB, self.bc)
         # (0 + 1 + 2 + 3 + 4) / 5 = 10/5 = 2.0
@@ -155,6 +158,9 @@ class TestBlockCollectionAverage(unittest.TestCase):
         self.assertAlmostEqual(newBc.avgNucTemperatures["NA23"], 402.0)
 
     def test_createRepresentativeBlockDissimilar(self):
+        """
+        Test creation of a representative block from a collection with dissimilar blocks
+        """
 
         uniqueBlock = test_blocks.loadTestBlock()
         uniqueBlock.p.percentBu = 50.0
