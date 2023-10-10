@@ -396,7 +396,7 @@ class AverageBlockCollection(BlockCollection):
         Weighting is both by the block weight within the collection and the relative mass of the component.
         The block weight is already scaled by the block volume, so we need to pull that out of the block
         weighting because it would effectively be double-counted in the component mass. b.getHeight()
-        is proportional to block volume, so it is used here as a computationally chepaer proxy for scaling
+        is proportional to block volume, so it is used here as a computationally cheaper proxy for scaling
         by block volume.
 
         Returns
