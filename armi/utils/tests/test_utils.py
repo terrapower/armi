@@ -140,8 +140,8 @@ class TestGeneralUtils(unittest.TestCase):
         """Tests the classesInHierarchy utility.
 
         .. test:: Tests that the Reactor is stored heirarchically
-           :id: TEST_REACTOR_HIERARCHY_0
-           :links: REQ_REACTOR_HIERARCHY
+           :id: T_REACTOR_HIERARCHY_0
+           :links: R_REACTOR_HIERARCHY
 
            This test shows that the Blocks and Assemblies are stored
            heirarchically inside the Core, which is inside the Reactor object.

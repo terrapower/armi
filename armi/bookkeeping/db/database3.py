@@ -680,10 +680,7 @@ class Database3:
         updateGlobalAssemNum : bool, optional
             DeprecationWarning: This is unused.
         updateMasterCs : bool, optional
-            Whether to apply the cs (whether provided as an argument or read from
-            the database) as the primary for the case. Default True. Can be useful
-            if you don't intend to use the loaded reactor as the basis for further
-            computations in the current operator.
+            TODO: Deprecated. Slated for removal.
 
         Returns
         -------
@@ -693,8 +690,6 @@ class Database3:
         runLog.info("Loading reactor state for time node ({}, {})".format(cycle, node))
 
         cs = cs or self.loadCS()
-        if updateMasterCs:
-            settings.setMasterCs(cs)
         bp = bp or self.loadBlueprints()
 
         if node < 0:

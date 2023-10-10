@@ -54,16 +54,12 @@ def buildOperatorOfEmptyHexBlocks(customSettings=None):
     customSettings : dict
         Dictionary of off-default settings to update
     """
-    settings.setMasterCs(None)  # clear
     cs = settings.Settings()  # fetch new
-    settings.setMasterCs(cs)  # reset
-
     if customSettings is None:
         customSettings = {}
 
     customSettings["db"] = False  # stop use of database
     cs = cs.modified(newSettings=customSettings)
-    settings.setMasterCs(cs)  # reset so everything matches the primary Cs
 
     r = tests.getEmptyHexReactor()
     r.core.setOptionsFromCs(cs)
@@ -95,16 +91,12 @@ def buildOperatorOfEmptyCartesianBlocks(customSettings=None):
     customSettings : dict
         Off-default settings to update
     """
-    settings.setMasterCs(None)  # clear
     cs = settings.Settings()  # fetch new
-    settings.setMasterCs(cs)  # reset
-
     if customSettings is None:
         customSettings = {}
 
     customSettings["db"] = False  # stop use of database
     cs = cs.modified(newSettings=customSettings)
-    settings.setMasterCs(cs)  # reset
 
     r = tests.getEmptyCartesianReactor()
     r.core.setOptionsFromCs(cs)
@@ -176,7 +168,6 @@ def loadTestReactor(
     if isPickeledReactor and TEST_REACTOR:
         # return test reactor only if no custom settings are needed.
         o, r, assemNum = cPickle.loads(TEST_REACTOR)
-        settings.setMasterCs(o.cs)
         o.reattach(r, o.cs)
         return o, r
 
@@ -191,7 +182,6 @@ def loadTestReactor(
 
     newSettings = {}
     cs = cs.modified(newSettings=newSettings)
-    settings.setMasterCs(cs)
 
     o = operators.factory(cs)
     r = reactors.loadFromCs(cs)
@@ -384,8 +374,8 @@ class HexReactorTests(ReactorTests):
         """Tests that the users definition of fuel blocks is preserved.
 
         .. test:: Tests that the users definition of fuel blocks is preserved.
-            :id: TEST_REACTOR_2
-            :links: REQ_REACTOR
+            :id: T_REACTOR_2
+            :links: R_REACTOR
         """
         numFuelBlocks = self.r.core.countFuelAxialBlocks()
         self.assertEqual(numFuelBlocks, 3)

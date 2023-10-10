@@ -69,8 +69,8 @@ class CartesianGrid(StructuredGrid):
         location is offset from the origin.
 
     .. impl:: ARMI supports a Cartesian mesh.
-       :id: IMPL_REACTOR_MESH_1
-       :links: REQ_REACTOR_MESH
+       :id: I_REACTOR_MESH_1
+       :links: R_REACTOR_MESH
     """
 
     @classmethod

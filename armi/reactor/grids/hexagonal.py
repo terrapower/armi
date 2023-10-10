@@ -69,8 +69,8 @@ class HexGrid(StructuredGrid):
                 (-1, 0) ( 0,-1)
 
     .. impl:: ARMI supports a Hexagonal mesh.
-       :id: IMPL_REACTOR_MESH_2
-       :links: REQ_REACTOR_MESH
+       :id: I_REACTOR_MESH_2
+       :links: R_REACTOR_MESH
     """
 
     @staticmethod

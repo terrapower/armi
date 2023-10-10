@@ -262,7 +262,7 @@ class TestGlobalFluxResultMapper(unittest.TestCase):
         o, r = test_reactors.loadTestReactor(customSettings={CONF_XS_KERNEL: "MC2v2"})
         applyDummyFlux(r)
         r.core.lib = isotxs.readBinary(ISOAA_PATH)
-        mapper = globalFluxInterface.GlobalFluxResultMapper()
+        mapper = globalFluxInterface.GlobalFluxResultMapper(cs=o.cs)
         mapper.r = r
         mapper._renormalizeNeutronFluxByBlock(100)
         self.assertAlmostEqual(r.core.calcTotalParam("power", generationNum=2), 100)
@@ -295,7 +295,8 @@ class TestGlobalFluxResultMapper(unittest.TestCase):
         self.assertEqual(len(block.p.mgFlux), 0)
 
     def test_getDpaXs(self):
-        mapper = globalFluxInterface.GlobalFluxResultMapper()
+        cs = settings.Settings()
+        mapper = globalFluxInterface.GlobalFluxResultMapper(cs=cs)
 
         # test fuel block
         b = HexBlock("fuel", height=10.0)
@@ -320,7 +321,8 @@ class TestGlobalFluxResultMapper(unittest.TestCase):
             mapper.getDpaXs(b)
 
     def test_getBurnupPeakingFactor(self):
-        mapper = globalFluxInterface.GlobalFluxResultMapper()
+        cs = settings.Settings()
+        mapper = globalFluxInterface.GlobalFluxResultMapper(cs=cs)
 
         # test fuel block
         mapper.cs["burnupPeakingFactor"] = 0.0
@@ -331,7 +333,8 @@ class TestGlobalFluxResultMapper(unittest.TestCase):
         self.assertEqual(factor, 2.5)
 
     def test_getBurnupPeakingFactorZero(self):
-        mapper = globalFluxInterface.GlobalFluxResultMapper()
+        cs = settings.Settings()
+        mapper = globalFluxInterface.GlobalFluxResultMapper(cs=cs)
 
         # test fuel block without any peaking factor set
         b = HexBlock("fuel", height=10.0)

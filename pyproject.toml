@@ -1,0 +1,305 @@
+# Copyright 2023 TerraPower, LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+#######################################################################
+#                        GENERAL PYTHON CONFIG                        #
+#######################################################################
+[build-system]
+requires = ["setuptools>=61.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "armi"
+version = "0.2.9"
+description = "An open-source nuclear reactor analysis automation framework that helps design teams increase efficiency and quality."
+license = {file = "LICENSE.md"}
+requires-python = ">3.6"
+readme = "README.rst"
+authors = [
+    { name="TerraPower, LLC", email="armi-devs@terrapower.com" },
+]
+dependencies = [
+    "configparser",
+    "coverage",
+    "h5py>=3.0,<=3.9",
+    "htmltree",
+    "matplotlib",
+    "numpy>=1.21,<=1.23.5",
+    "ordered-set",
+    "pillow",
+    "pluggy",
+    "pyDOE",
+    "pyevtk",
+    "ruamel.yaml<=0.17.21",
+    "ruamel.yaml.clib<=0.2.7",
+    "scipy",
+    "tabulate",
+    "toml>0.9.5",
+    "voluptuous",
+    "xlrd",
+    "yamlize==0.7.1",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+]
+
+[project.urls]
+Homepage = "https://terrapower.github.io/armi/"
+Documentation = "https://terrapower.github.io/armi"
+Changelog = "https://github.com/terrapower/armi/releases"
+Repository = "https://github.com/terrapower/armi"
+"Bug Tracker" = "https://github.com/terrapower/armi/issues"
+
+[project.optional-dependencies]
+grids = ["wxpython==4.2.1"]
+memprof = ["psutil"]
+mpi = ["mpi4py"]
+test = [
+    "black==22.6.0",
+    "docutils",
+    "ipykernel",
+    "jupyter-contrib-nbextensions",
+    "jupyter_client",
+    "nbconvert",
+    "pytest",
+    "pytest-cov",
+    "pytest-html",
+    "pytest-xdist",
+    "ruff==0.0.272",
+]
+docs = [
+#######################################################################
+# These are most specified that usual, because Sphinx docs seem to be
+# quite fragile limited <7 by sphinx-rtd-theme at the moment.
+#
+# sphinx-rtd-theme requires docutils <0.19 but sphinx dropped support
+# for 0.18 in 6.0.0 so we're stuck at these versions.
+#
+# We are only building our docs with Python 3.9.
+#######################################################################
+    "Sphinx==5.3.0",
+    "docutils==0.18.1",
+    "sphinx-rtd-theme==1.2.2", # Read-The-Docs theme for Sphinx
+    "nbsphinx==0.9.2", # Parses Jupyter notebooks
+    "nbsphinx-link==1.3.0", # Adds Jupyter NBs to Sphinx source root
+    "sphinx-gallery==0.13.0", # Builds an HTML version of a Python script and puts it into a gallery
+    "sphinxcontrib-apidoc==0.3.0", # More easily document our API
+    "sphinxext-opengraph==0.8.2", # Generates OpenGraph metadata to make good-looking cards on social media
+    "sphinx-needs==1.2.2", # Requirements traceability matrices for QA
+    "sphinxcontrib-plantuml==0.25", # UML support in sphinx-needs
+    "pandoc", # Must be in the path (to convert file formats)
+    "ipykernel==6.25.1", # iPython kernel to run Jupyter notebooks
+    "pylint==2.17.5", # Generates UML diagrams
+    "Jinja2==3.0.3", # Used in numpydoc and nbconvert
+    "sphinxcontrib-jquery==4.1", # Handle missing jquery errors 
+]
+
+[project.scripts]
+armi = "armi.__main__:main"
+
+[tool.setuptools.packages]
+find = {}
+
+
+#######################################################################
+#                             RUFF CONFIG                             #
+#######################################################################
+[tool.ruff]
+# This is the exact version of Ruff we use.
+required-version = "0.0.272"
+
+# Assume Python 3.9
+target-version = "py39"
+
+# Setting line-length to 88 to match Black
+line-length = 88
+
+# Enable pycodestyle (E) and Pyflakes (F) codes by default.
+# D - NumPy docstring rules
+# N801 - Class name should use CapWords convention
+# SIM - code simplification rules
+# TID - tidy imports
+# TODO: We want to support PLW0603 - don't use the global keyword
+select = ["E", "F", "D", "N801", "SIM", "TID"]
+
+# Ruff rules we ignore (for now) because they are not 100% automatable
+#
+# D100 - Missing docstring in public module
+# D101 - Missing docstring in public class
+# D102 - Missing docstring in public method
+# D103 - Missing docstring in public function
+# D106 - Missing docstring in public nested class
+# D401 - First line of docstring should be in imperative mood
+# D404 - First word of the docstring should not be "This"
+# SIM102 - Use a single if statement instead of nested if statements
+# SIM105 - Use contextlib.suppress({exception}) instead of try-except-pass
+# SIM108 - Use ternary operator {contents} instead of if-else-block
+# SIM114 - Combine if branches using logical or operator
+# SIM115 - Use context handler for opening files
+# SIM117 - Use a single with statement with multiple contexts instead of nested with statements
+
+# Ruff rules we ignore because we don't want them
+#
+# D105 - we don't need to document well-known magic methods
+# D205 - 1 blank line required between summary line and description
+# E501 - line length, because we use Black for that
+# E731 - we can use lambdas however we want
+# RUF100 - no unused noqa statements (not consistent enough yet)
+# SIM118 - this does not work where we overload the .keys() method
+#
+ignore = ["D100", "D101", "D102", "D103", "D105", "D106", "D205", "D401", "D404", "E501", "E731", "RUF100", "SIM102", "SIM105", "SIM108", "SIM114", "SIM115", "SIM117", "SIM118"]
+
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pycache__",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "venv",
+]
+
+[tool.ruff.per-file-ignores]
+# D1XX - enforces writing docstrings
+# E741 - ambiguous variable name
+# N - We have our own naming conventions for unit tests.
+# SLF001 - private member access
+"*/tests/*" = ["D1", "E741", "N", "SLF001"]
+"doc/gallery-src/*" = ["D400"]
+
+[tool.ruff.flake8-tidy-imports]
+ban-relative-imports = "all"
+
+[tool.ruff.pydocstyle]
+convention = "numpy"
+
+
+#######################################################################
+#                            PYTEST CONFIG                            #
+#######################################################################
+[tool.pytest.ini_options]
+python_files = "test_*.py"
+python_functions = "nothing matches this pattern"
+addopts = "--durations=30 --tb=native"
+filterwarnings = [
+    "ignore: the matrix subclass is not the recommended way:PendingDeprecationWarning",
+]
+
+
+#######################################################################
+#              DATA FILES TO BE INCLUDED WITH THE PROJECT             #
+#######################################################################
+[tool.setuptools.package-data]
+armi = [
+    "bookkeeping/tests/armiRun-A0032-aHist-ref.txt",
+    "nuclearDataIO/cccc/tests/fixtures/labels.ascii",
+    "nuclearDataIO/cccc/tests/fixtures/labels.binary",
+    "nuclearDataIO/cccc/tests/fixtures/mc2v3.dlayxs",
+    "nuclearDataIO/cccc/tests/fixtures/simple_cartesian.pwdint",
+    "nuclearDataIO/cccc/tests/fixtures/simple_cartesian.rtflux",
+    "nuclearDataIO/cccc/tests/fixtures/simple_cartesian.rzflux",
+    "nuclearDataIO/cccc/tests/fixtures/simple_hexz.dif3d",
+    "nuclearDataIO/cccc/tests/fixtures/simple_hexz.geodst",
+    "nuclearDataIO/cccc/tests/fixtures/simple_hexz.nhflux",
+    "nuclearDataIO/tests/fixtures/AA.gamiso",
+    "nuclearDataIO/tests/fixtures/AA.pmatrx",
+    "nuclearDataIO/tests/fixtures/AB.gamiso",
+    "nuclearDataIO/tests/fixtures/AB.pmatrx",
+    "nuclearDataIO/tests/fixtures/combined-AA-AB.gamiso",
+    "nuclearDataIO/tests/fixtures/combined-AA-AB.isotxs",
+    "nuclearDataIO/tests/fixtures/combined-AA-AB.pmatrx",
+    "nuclearDataIO/tests/fixtures/combined-and-lumped-AA-AB.gamiso",
+    "nuclearDataIO/tests/fixtures/combined-and-lumped-AA-AB.isotxs",
+    "nuclearDataIO/tests/fixtures/combined-and-lumped-AA-AB.pmatrx",
+    "nuclearDataIO/tests/fixtures/ISOAA",
+    "nuclearDataIO/tests/fixtures/ISOAB",
+    "nuclearDataIO/tests/fixtures/mc2v3-AA.flux_ufg",
+    "nuclearDataIO/tests/fixtures/mc2v3-AA.gamiso",
+    "nuclearDataIO/tests/fixtures/mc2v3-AA.isotxs",
+    "nuclearDataIO/tests/fixtures/mc2v3-AA.pmatrx",
+    "nuclearDataIO/tests/fixtures/mc2v3-AB.gamiso",
+    "nuclearDataIO/tests/fixtures/mc2v3-AB.isotxs",
+    "nuclearDataIO/tests/fixtures/mc2v3-AB.pmatrx",
+    "nuclearDataIO/tests/library-file-generation",
+    "nuclearDataIO/tests/library-file-generation/combine-AA-AB.inp",
+    "nuclearDataIO/tests/library-file-generation/combine-and-lump-AA-AB.inp",
+    "nuclearDataIO/tests/library-file-generation/mc2v2-dlayxs.inp",
+    "nuclearDataIO/tests/library-file-generation/mc2v3-AA.inp",
+    "nuclearDataIO/tests/library-file-generation/mc2v3-AB.inp",
+    "nuclearDataIO/tests/library-file-generation/mc2v3-dlayxs.inp",
+    "nuclearDataIO/tests/simple_hexz.inp",
+    "physics/neutronics/tests/ISOXA",
+    "physics/neutronics/tests/rzmflxYA",
+    "resources/*",
+    "resources/**/*",
+    "tests/1DslabXSByCompTest.yaml",
+    "tests/armiRun-SHUFFLES.txt",
+    "tests/armiRun.yaml",
+    "tests/COMPXS.ascii",
+    "tests/detailedAxialExpansion/armiRun.yaml",
+    "tests/detailedAxialExpansion/refSmallCoreGrid.yaml",
+    "tests/detailedAxialExpansion/refSmallReactor.yaml",
+    "tests/detailedAxialExpansion/refSmallReactorBase.yaml",
+    "tests/geom.xml",
+    "tests/geom1Assem.xml",
+    "tests/ISOAA",
+    "tests/refOneBlockReactor.yaml",
+    "tests/refSmallCartesian.yaml",
+    "tests/refSmallCoreGrid.yaml",
+    "tests/refSmallReactor.yaml",
+    "tests/refSmallReactorBase.yaml",
+    "tests/refSmallSfpGrid.yaml",
+    "tests/refTestCartesian.yaml",
+    "tests/sfpGeom.yaml",
+    "tests/ThRZGeom.xml",
+    "tests/ThRZloading.yaml",
+    "tests/ThRZSettings.yaml",
+    "tests/trz_geom.xml",
+    "tests/tutorials",
+    "tests/tutorials/anl-afci-177-blueprints.yaml",
+    "tests/tutorials/anl-afci-177-coreMap.yaml",
+    "tests/tutorials/anl-afci-177-fuelManagement.py",
+    "tests/tutorials/anl-afci-177.yaml",
+    "tests/tutorials/data_model.ipynb",
+    "tests/zpprTest.yaml",
+    "tests/zpprTestGeom.xml",
+]

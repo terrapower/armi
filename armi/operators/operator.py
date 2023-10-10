@@ -23,19 +23,18 @@ often from initial startup, through the various cycles, and out to
 the end of plant life.
 
 .. impl:: ARMI controls the time flow of the reactor, by running a sequence of Interfaces at each time step.
-   :id: IMPL_EVOLVING_STATE_0
-   :links: REQ_EVOLVING_STATE
+   :id: I_EVOLVING_STATE_0
+   :links: R_EVOLVING_STATE
 """
+import collections
 import os
 import re
 import shutil
 import time
-import collections
 
 from armi import context
 from armi import interfaces
 from armi import runLog
-from armi import settings
 from armi.bookkeeping import memoryProfiler
 from armi.bookkeeping.report import reportingUtils
 from armi.operators import settingsValidation
@@ -484,8 +483,6 @@ class Operator:
                     )
                 )
 
-            self._checkCsConsistency()
-
         runLog.header(
             "===========  Completed {} Event ===========\n".format(
                 interactionName + cycleNodeTag
@@ -563,23 +560,6 @@ class Operator:
             )
 
             db.writeToDB(self.r, statePointName=statePointName)
-
-    def _checkCsConsistency(self):
-        """Debugging check to verify that CS objects are not unexpectedly multiplying."""
-        cs = settings.getMasterCs()
-        wrong = (self.cs is not cs) or any((i.cs is not cs) for i in self.interfaces)
-        if wrong:
-            msg = ["Primary cs ID is {}".format(id(cs))]
-            for i in self.interfaces:
-                msg.append("{:30s} has cs ID: {:12d}".format(str(i), id(i.cs)))
-            msg.append("{:30s} has cs ID: {:12d}".format(str(self), id(self.cs)))
-            raise RuntimeError("\n".join(msg))
-
-        runLog.debug(
-            "Reactors, operators, and interfaces all share primary cs: {}".format(
-                id(cs)
-            )
-        )
 
     def interactAllInit(self):
         """Call interactInit on all interfaces in the stack after they are initialized."""

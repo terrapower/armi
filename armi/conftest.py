@@ -28,7 +28,7 @@ import os
 
 import matplotlib
 
-from armi import apps, configure, context, settings
+from armi import apps, configure, context
 from armi.settings import caseSettings
 from armi.tests import TEST_ROOT
 
@@ -51,7 +51,6 @@ def bootstrapArmiTestEnv():
     cs = caseSettings.Settings()
 
     context.Mode.setMode(context.Mode.BATCH)
-    settings.setMasterCs(cs)
     # Need to init burnChain.
     # see armi.cases.case.Case._initBurnChain
     with open(cs["burnChainFileName"]) as burnChainStream:
