@@ -1372,7 +1372,9 @@ def _makeComponentPatch(component, position, cold):
     return [blockPatch]
 
 
-def plotBlockDiagram(block, fName, cold, cmapName="RdYlBu", materialList=None):
+def plotBlockDiagram(
+    block, fName, cold, cmapName="RdYlBu", materialList=None, fileFormat="svg"
+):
     """Given a Block with a spatial Grid, plot the diagram of
     it with all of its components. (wire, duct, coolant, etc...).
 
@@ -1380,14 +1382,16 @@ def plotBlockDiagram(block, fName, cold, cmapName="RdYlBu", materialList=None):
     ----------
     block : block object
     fName : String
-        name of the file to save to
+        Name of the file to save to
     cold : boolean
-        true is for cold temps, hot is false.
+        True is for cold temps, False is hot
     cmapName : String
         name of a colorMap to use for block colors
-    materialList: List
-        a list of material names across all blocks to be plotted
-        so that same material on all diagrams will have the same color.
+    materialList : List
+        A list of material names across all blocks to be plotted
+        so that same material on all diagrams will have the same color
+    fileFormat : str
+        The format to save the picture as, e.g. svg, png, jpg, etc.
     """
     _, ax = plt.subplots(figsize=(20, 20), dpi=200)
 
@@ -1440,7 +1444,7 @@ def plotBlockDiagram(block, fName, cold, cmapName="RdYlBu", materialList=None):
     ax.spines["left"].set_visible(False)
     ax.spines["bottom"].set_visible(False)
     ax.margins(0)
-    plt.savefig(fName, format="svg", **pltKwargs)
+    plt.savefig(fName, format=fileFormat, **pltKwargs)
     plt.close()
 
     return os.path.abspath(fName)
