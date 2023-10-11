@@ -410,7 +410,7 @@ class AverageBlockCollection(BlockCollection):
         components = [sorted(b.getComponents())[compIndex] for b in blocks]
         avgComponentMass = sum(c.getMass() for c in components) / len(components)
         if avgComponentMass == 0.0:
-            # if there is no compponent mass (e.g., gap), do a regular average
+            # if there is no component mass (e.g., gap), do a regular average
             return numpy.mean(numpy.array([c.temperatureInC for c in components]))
         else:
             return (
