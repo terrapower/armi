@@ -10,6 +10,7 @@ What's new in ARMI
 ------------------
 #. The ``_copyInputsHelper()`` gives relative path and not absolute after copy. (`PR#1416 <https://github.com/terrapower/armi/pull/1416>`_)
 #. ARMI now mandates ``ruff`` linting. (`PR#1419 <https://github.com/terrapower/armi/pull/1419>`_)
+#. Removal of the Block.reactor property. (`PR#1425 <https://github.com/terrapower/armi/pull/1425>`_)
 #. TBD
 
 Bug fixes
