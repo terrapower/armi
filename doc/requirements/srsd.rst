@@ -444,7 +444,7 @@ Software Attributes
 -------------------
 
 .. req:: ARMI shall generally support at least one modern Windows and one modern CentOS operating system version.
-    :id: R_OS
+    :id: R_OSS
     :status: needs implementation, needs test
 
 .. req:: The database produced shall be easily accessible in a variety of programming environments beyond Python.
