@@ -219,10 +219,11 @@ class TestBlockCollectionAverage(unittest.TestCase):
 
 
 class TestComponentAveraging(unittest.TestCase):
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         fpFactory = test_lumpedFissionProduct.getDummyLFPFile()
-        self.blockList = makeBlocks(3)
-        for bi, b in enumerate(self.blockList):
+        cls.blockList = makeBlocks(3)
+        for bi, b in enumerate(cls.blockList):
             b.setType("fuel")
             b.setLumpedFissionProducts(fpFactory.createLFPsFromFile())
             # put some trace Fe-56 and Na-23 into the fuel
@@ -240,6 +241,7 @@ class TestComponentAveraging(unittest.TestCase):
                 elif c.hasFlags([Flags.BOND, Flags.COOLANT, Flags.INTERCOOLANT]):
                     c.temperatureInC = 400.0 + bi
 
+    def setUp(self):
         self.bc = AverageBlockCollection(
             self.blockList[0].r.blueprints.allNuclidesInProblem
         )
