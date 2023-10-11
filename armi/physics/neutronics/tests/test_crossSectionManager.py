@@ -219,7 +219,6 @@ class TestBlockCollectionAverage(unittest.TestCase):
 
 
 class TestComponentAveraging(unittest.TestCase):
-
     def setUp(self):
         fpFactory = test_lumpedFissionProduct.getDummyLFPFile()
         self.blockList = makeBlocks(3)
