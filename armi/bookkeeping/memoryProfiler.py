@@ -141,7 +141,8 @@ class MemoryProfiler(interfaces.Interface):
                     "Dict {:30s} has {:4d} ArmiObjects".format(attrName, len(attrObj))
                 )
 
-        runLog.important("SFP has {:4d} ArmiObjects".format(len(self.r.sfp)))
+        if self.r.sfp is not None:
+            runLog.important("SFP has {:4d} ArmiObjects".format(len(self.r.sfp)))
 
     def checkForDuplicateObjectsOnArmiModel(self, attrName, refObject):
         """Scans thorugh ARMI model for duplicate objects."""
@@ -219,10 +220,10 @@ class MemoryProfiler(interfaces.Interface):
                 "UNIQUE_INSTANCE_COUNT: {:60s} {:10d}     {:10.1f} MB".format(
                     counter.classType.__name__,
                     counter.count,
-                    counter.memSize / (1024 ** 2.0),
+                    counter.memSize / (1024**2.0),
                 )
             )
-            if printReferrers and counter.memSize / (1024 ** 2.0) > 100:
+            if printReferrers and counter.memSize / (1024**2.0) > 100:
                 referrers = gc.get_referrers(counter.first)
                 runLog.info("          Referrers of first one: ")
                 for referrer in referrers:
@@ -307,11 +308,7 @@ class InstanceCounter:
 
         self.ids.add(itemId)
         if self.reportSize:
-            try:
-                self.memSize += sys.getsizeof(item)
-            except:  # noqa: bare-except
-                # TODO: Does this happen?
-                self.memSize = float("nan")
+            self.memSize += sys.getsizeof(item)
         self.count += 1
         return True
 
@@ -345,7 +342,7 @@ class SystemAndProcessMemoryUsage:
         self.processMemoryInMB: Optional[float] = None
         if _havePsutil:
             self.percentNodeRamUsed = psutil.virtual_memory().percent
-            self.processMemoryInMB = psutil.Process().memory_info().rss / (1012.0 ** 2)
+            self.processMemoryInMB = psutil.Process().memory_info().rss / (1012.0**2)
 
     def __isub__(self, other):
         if self.percentNodeRamUsed is not None and other.percentNodeRamUsed is not None:

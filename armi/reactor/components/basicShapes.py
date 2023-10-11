@@ -19,8 +19,8 @@ Many reactor components can be described in 2D by circles, hexagons, rectangles,
 are defined in this subpackage.
 
 .. impl:: ARMI supports a reasonable set of basic shapes.
-   :id: IMPL_REACTOR_SHAPES_0
-   :links: REQ_REACTOR_SHAPES
+   :id: I_REACTOR_SHAPES_0
+   :links: R_REACTOR_SHAPES
 
    Here ARMI implements its support for: Circles, Hexagons, Rectangles, Solid Rectangles,
    Squares, and Triangles.
@@ -79,7 +79,7 @@ class Circle(ShapedComponent):
         idiam = self.getDimension("id", cold=cold)
         od = self.getDimension("od", cold=cold)
         mult = self.getDimension("mult", cold=cold)
-        area = math.pi * (od ** 2 - idiam ** 2) / 4.0
+        area = math.pi * (od**2 - idiam**2) / 4.0
         area *= mult
         return area
 
@@ -146,7 +146,7 @@ class Hexagon(ShapedComponent):
         op = self.getDimension("op", cold=cold)
         ip = self.getDimension("ip", cold=cold)
         mult = self.getDimension("mult")
-        area = math.sqrt(3.0) / 2.0 * (op ** 2 - ip ** 2)
+        area = math.sqrt(3.0) / 2.0 * (op**2 - ip**2)
         area *= mult
         return area
 
@@ -218,12 +218,12 @@ class Rectangle(ShapedComponent):
     def getBoundingCircleOuterDiameter(self, Tc=None, cold=False):
         lengthO = self.getDimension("lengthOuter", Tc, cold=cold)
         widthO = self.getDimension("widthOuter", Tc, cold=cold)
-        return math.sqrt(widthO ** 2 + lengthO ** 2)
+        return math.sqrt(widthO**2 + lengthO**2)
 
     def getCircleInnerDiameter(self, Tc=None, cold=False):
         lengthI = self.getDimension("lengthInner", Tc, cold=cold)
         widthI = self.getDimension("widthInner", Tc, cold=cold)
-        return math.sqrt(widthI ** 2 + lengthI ** 2)
+        return math.sqrt(widthI**2 + lengthI**2)
 
     def getComponentArea(self, cold=False):
         """Computes the area of the rectangle in cm^2."""
@@ -359,11 +359,11 @@ class Square(Rectangle):
 
     def getBoundingCircleOuterDiameter(self, Tc=None, cold=False):
         widthO = self.getDimension("widthOuter", Tc, cold=cold)
-        return math.sqrt(widthO ** 2 + widthO ** 2)
+        return math.sqrt(widthO**2 + widthO**2)
 
     def getCircleInnerDiameter(self, Tc=None, cold=False):
         widthI = self.getDimension("widthInner", Tc, cold=cold)
-        return math.sqrt(widthI ** 2 + widthI ** 2)
+        return math.sqrt(widthI**2 + widthI**2)
 
     def getPitchData(self):
         """

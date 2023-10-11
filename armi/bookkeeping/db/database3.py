@@ -70,7 +70,6 @@ from armi.bookkeeping.db.layout import (
 from armi.bookkeeping.db.typedefs import History, Histories
 from armi.nucDirectory import nuclideBases
 from armi.physics.neutronics.settings import CONF_LOADING_FILE
-from armi.reactor import assemblies
 from armi.reactor import grids
 from armi.reactor import parameters
 from armi.reactor import systemLayoutInput
@@ -99,18 +98,6 @@ def getH5GroupName(cycle: int, timeNode: int, statePointName: str = None) -> str
     simulated run.
     """
     return "c{:0>2}n{:0>2}{}".format(cycle, timeNode, statePointName or "")
-
-
-def updateGlobalAssemblyNum(r) -> None:
-    """
-    Updated the global assembly number counter in ARMI, using the assemblies
-    read from a database.
-    """
-    assemNum = r.core.p.maxAssemNum
-    if assemNum is not None:
-        assemblies.setAssemNumCounter(int(assemNum + 1))
-    else:
-        raise ValueError("Could not load maxAssemNum from the database")
 
 
 class Database3:
@@ -691,13 +678,9 @@ class Database3:
             Whether to emit a warning, rather than crash if reading a database
             with undefined parameters. Default False.
         updateGlobalAssemNum : bool, optional
-            Whether to update the global assembly number to the value stored in
-            r.core.p.maxAssemNum. Default True.
+            DeprecationWarning: This is unused.
         updateMasterCs : bool, optional
-            Whether to apply the cs (whether provided as an argument or read from
-            the database) as the primary for the case. Default True. Can be useful
-            if you don't intend to use the loaded reactor as the basis for further
-            computations in the current operator.
+            TODO: Deprecated. Slated for removal.
 
         Returns
         -------
@@ -707,8 +690,6 @@ class Database3:
         runLog.info("Loading reactor state for time node ({}, {})".format(cycle, node))
 
         cs = cs or self.loadCS()
-        if updateMasterCs:
-            settings.setMasterCs(cs)
         bp = bp or self.loadBlueprints()
 
         if node < 0:
@@ -741,9 +722,11 @@ class Database3:
         )
         root = comps[0][0]
 
-        # ensure the max assembly number is correct, unless the user says no
         if updateGlobalAssemNum:
-            updateGlobalAssemblyNum(root)
+            runLog.warning(
+                "The method input `updateGlobalAssemNum` is no longer used.",
+                single=True,
+            )
 
         # return a Reactor object
         if cs[CONF_SORT_REACTOR]:

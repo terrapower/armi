@@ -169,7 +169,7 @@ class TightCoupler:
         if self._previousIterationValue is None:
             raise ValueError(
                 f"Cannot check convergence of {self} with no previous iteration value set. "
-                f"Set using `storePreviousIterationValue` first."
+                "Set using `storePreviousIterationValue` first."
             )
 
         previous = self._previousIterationValue
@@ -274,7 +274,7 @@ class Interface:
         SKIP = 4
 
     def __init__(self, r, cs):
-        r"""
+        """
         Construct an interface.
 
         The ``r`` and ``cs`` arguments are required, but may be ``None``, where
@@ -300,7 +300,7 @@ class Interface:
         self._enabled = True
         self.reverseAtEOL = False
         self._bolForce = False  # override disabled flag in interactBOL if true.
-        self.cs = settings.getMasterCs() if cs is None else cs
+        self.cs = cs
         self.r = r
         self.o = r.o if r else None
         self.coupler = _setTightCouplerByInterfaceFunction(self, cs)
@@ -623,7 +623,7 @@ class InputWriter:
         self.externalCodeInterface = externalCodeInterface
         self.eci = externalCodeInterface
         self.r = r
-        self.cs = cs or settings.getMasterCs()
+        self.cs = cs
 
     def getInterface(self, name):
         """Get another interface by name."""
@@ -652,11 +652,11 @@ class OutputReader:
     and would rather just have an apply(reactor) method.
     """
 
-    def __init__(self, r=None, externalCodeInterface=None, fName=None):
+    def __init__(self, r=None, externalCodeInterface=None, fName=None, cs=None):
         self.externalCodeInterface = externalCodeInterface
         self.eci = self.externalCodeInterface
         self.r = r
-        self.cs = settings.getMasterCs()
+        self.cs = cs
         if fName:
             self.output = textProcessors.TextProcessor(fName)
         else:

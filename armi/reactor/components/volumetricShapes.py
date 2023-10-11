@@ -15,8 +15,8 @@
 """3-dimensional shapes.
 
 .. impl:: ARMI supports a reasonable set of basic shapes.
-   :id: IMPL_REACTOR_SHAPES_2
-   :links: REQ_REACTOR_SHAPES
+   :id: I_REACTOR_SHAPES_2
+   :links: R_REACTOR_SHAPES
 
    Here ARMI implements its support for: Cubes, Spheres, RadialSegments, and more.
 """
@@ -251,7 +251,7 @@ class RadialSegment(ShapedComponent):
         outerTheta = self.getDimension("outer_theta")
         innerTheta = self.getDimension("inner_theta")
         height = self.getDimension("height")
-        radialArea = math.pi * (outerRad ** 2 - innerRad ** 2)
+        radialArea = math.pi * (outerRad**2 - innerRad**2)
         aziFraction = (outerTheta - innerTheta) / (math.pi * 2.0)
         vol = mult * radialArea * aziFraction * height
         return vol

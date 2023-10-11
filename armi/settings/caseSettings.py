@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-r"""
+"""
 This defines a Settings object that acts mostly like a dictionary. It
 is meant to be treated mostly like a singleton, where each custom ARMI
 object has access to it. It contains global user settings like the core
@@ -22,7 +22,7 @@ the environment setup, and hundreds of other things.
 A settings object can be saved as or loaded from an YAML file. The ARMI GUI is designed to
 create this settings file, which is then loaded by an ARMI process on the cluster.
 
-A primary case settings is created as ``masterCs``
+A primary case settings is created as ``masterCs``.
 """
 import io
 import logging
@@ -64,10 +64,6 @@ class Settings:
     The actual settings in any instance of this class are immutable.
     """
 
-    # Settings is not a singleton, but there is a globally
-    # shared instance considered most germane to the current run
-    instance = None
-
     defaultCaseTitle = "armi"
 
     def __init__(self, fName=None):
@@ -98,8 +94,6 @@ class Settings:
         app = getApp()
         assert app is not None
         self.__settings = app.getSettings()
-        if not Settings.instance:
-            Settings.instance = self
 
         if fName:
             self.loadFromInputFile(fName)
@@ -401,6 +395,7 @@ class Settings:
         # from the settings file to know which settings are user-defined
         with open(fPath, "r") as stream:
             yaml = YAML()
+            yaml.allow_duplicate_keys = False
             tree = yaml.load(stream)
             userSettings = tree[settingsIO.Roots.CUSTOM]
 

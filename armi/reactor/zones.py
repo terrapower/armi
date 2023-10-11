@@ -393,7 +393,7 @@ class Zones:
                 return zone
 
         if not zoneFound:
-            runLog.warning("Was not able to find which zone {} is in".format(a))
+            runLog.debug(f"Was not able to find which zone {a} is in", single=True)
 
         return None
 

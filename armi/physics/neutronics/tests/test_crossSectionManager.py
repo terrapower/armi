@@ -24,7 +24,7 @@ import unittest
 
 from six.moves import cPickle
 
-from armi import settings  # noqa: unused-import
+from armi import settings
 from armi.physics.neutronics import crossSectionGroupManager
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.physics.neutronics.crossSectionGroupManager import (
@@ -473,8 +473,9 @@ class TestBlockCollectionFluxWeightedAverage(unittest.TestCase):
 
 class Test_CrossSectionGroupManager(unittest.TestCase):
     def setUp(self):
+        cs = settings.Settings()
         self.blockList = makeBlocks(20)
-        self.csm = CrossSectionGroupManager(self.blockList[0].r, None)
+        self.csm = CrossSectionGroupManager(self.blockList[0].r, cs)
         for bi, b in enumerate(self.blockList):
             b.p.percentBu = bi / 19.0 * 100
         self.csm._setBuGroupBounds([3, 10, 30, 100])

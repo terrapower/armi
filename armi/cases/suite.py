@@ -103,7 +103,7 @@ class CaseSuite:
         """
         csFiles = settings.recursivelyLoadSettingsFiles(
             rootDir or os.path.abspath(os.getcwd()),
-            patterns or ["*.yaml", "*.xml"],  # xml temporary to transistion
+            patterns or ["*.yaml"],
             recursive=recursive,
             ignorePatterns=ignorePatterns,
             handleInvalids=False,
@@ -204,7 +204,6 @@ class CaseSuite:
         for ci, case in enumerate(self):
             runLog.important(f"Running case {ci+1}/{len(self)}: {case}")
             with directoryChangers.DirectoryChanger(case.directory):
-                settings.setMasterCs(case.cs)
                 try:
                     case.run()
                 except:  # noqa: bare-except

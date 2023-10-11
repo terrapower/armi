@@ -68,8 +68,8 @@ class TestBlueprints(unittest.TestCase):
         """Tests the available sets of nuclides work as expected.
 
         .. test:: Tests that users can define their nuclides of interest.
-            :id: TEST_REACTOR_0
-            :links: REQ_REACTOR
+            :id: T_REACTOR_0
+            :links: R_REACTOR
         """
         actives = set(self.blueprints.activeNuclides)
         inerts = set(self.blueprints.inertNuclides)
@@ -95,8 +95,8 @@ class TestBlueprints(unittest.TestCase):
         """Tests that the user can specifiy the dimensions of a component with arbitray fidelity.
 
         .. test:: Tests that the user can specify the dimensions of a component with arbitrary fidelity.
-            :id: TEST_REACTOR_1
-            :links: REQ_REACTOR
+            :id: T_REACTOR_1
+            :links: R_REACTOR
         """
         fuelAssem = self.blueprints.constructAssem(self.cs, name="igniter fuel")
         fuel = fuelAssem.getComponents(Flags.FUEL)[0]
@@ -198,6 +198,25 @@ grids:
             2 3 1 1 2
             2 2 2 2 2
 """
+
+    def test_noDuplicateKeysInYamlBlueprints(self):
+        """
+        Prove that if you duplicate a section of a YAML blueprint file,
+        a hard error will be thrown.
+        """
+        # loop through a few different sections, to test blueprints broadly
+        sections = ["blocks:", "components:", "component groups:"]
+        for sectionName in sections:
+            # modify blueprint YAML to duplicate this section
+            yamlString = str(self._yamlString)
+            i = yamlString.find(sectionName)
+            lenSection = yamlString[i:].find("\n\n")
+            section = yamlString[i : i + lenSection]
+            yamlString = yamlString[:i] + section + yamlString[i : i + lenSection]
+
+            # validate that this is now an invalid YAML blueprint
+            with self.assertRaises(Exception):
+                _design = blueprints.Blueprints.load(yamlString)
 
     def test_assemblyParameters(self):
         cs = settings.Settings()

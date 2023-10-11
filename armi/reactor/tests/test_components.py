@@ -260,8 +260,8 @@ class TestShapedComponent(TestGeneralComponents):
         """Test that when we thermally expand any arbitrary shape, mass is conserved.
 
         .. test:: Test that ARMI can thermally expand any arbitrary shape.
-           :id: TEST_REACTOR_THERMAL_EXPANSION_0
-           :links: REQ_REACTOR_THERMAL_EXPANSION
+           :id: T_REACTOR_THERMAL_EXPANSION_0
+           :links: R_REACTOR_THERMAL_EXPANSION
         """
         if not self.component.THERMAL_EXPANSION_DIMS:
             return
@@ -373,8 +373,8 @@ class TestCircle(TestShapedComponent):
         """Test that when ARMI thermally expands a circle, mass is conserved.
 
         .. test:: Test that ARMI correctly thermally expands objects with circular shape.
-           :id: TEST_REACTOR_THERMAL_EXPANSION_1
-           :links: REQ_REACTOR_THERMAL_EXPANSION
+           :id: T_REACTOR_THERMAL_EXPANSION_1
+           :links: R_REACTOR_THERMAL_EXPANSION
         """
         hotTemp = 700.0
         dLL = self.component.material.linearExpansionFactor(
@@ -394,8 +394,8 @@ class TestCircle(TestShapedComponent):
         """Test that ARMI can thermally expands a circle.
 
         .. test:: Test that ARMI can thermally expands a circle
-           :id: TEST_REACTOR_THERMAL_EXPANSION_2
-           :links: REQ_REACTOR_THERMAL_EXPANSION
+           :id: T_REACTOR_THERMAL_EXPANSION_2
+           :links: R_REACTOR_THERMAL_EXPANSION
         """
         self.assertTrue(self.component.THERMAL_EXPANSION_DIMS)
 
@@ -712,8 +712,8 @@ class TestTriangle(TestShapedComponent):
         """Test that ARMI can thermally expands a triangle.
 
         .. test:: Test that ARMI can thermally expands a triangle
-           :id: TEST_REACTOR_THERMAL_EXPANSION_3
-           :links: REQ_REACTOR_THERMAL_EXPANSION
+           :id: T_REACTOR_THERMAL_EXPANSION_3
+           :links: R_REACTOR_THERMAL_EXPANSION
         """
         self.assertTrue(self.component.THERMAL_EXPANSION_DIMS)
 
@@ -780,8 +780,8 @@ class TestRectangle(TestShapedComponent):
         """Test that ARMI can thermally expands a rectangle.
 
         .. test:: Test that ARMI can thermally expands a rectangle
-           :id: TEST_REACTOR_THERMAL_EXPANSION_4
-           :links: REQ_REACTOR_THERMAL_EXPANSION
+           :id: T_REACTOR_THERMAL_EXPANSION_4
+           :links: R_REACTOR_THERMAL_EXPANSION
         """
         self.assertTrue(self.component.THERMAL_EXPANSION_DIMS)
 
@@ -826,8 +826,8 @@ class TestSolidRectangle(TestShapedComponent):
         """Test that ARMI can thermally expands a solid rectangle.
 
         .. test:: Test that ARMI can thermally expands a solid rectangle
-           :id: TEST_REACTOR_THERMAL_EXPANSION_5
-           :links: REQ_REACTOR_THERMAL_EXPANSION
+           :id: T_REACTOR_THERMAL_EXPANSION_5
+           :links: R_REACTOR_THERMAL_EXPANSION
         """
         self.assertTrue(self.component.THERMAL_EXPANSION_DIMS)
 
@@ -889,8 +889,8 @@ class TestSquare(TestShapedComponent):
         """Test that ARMI can thermally expands a square.
 
         .. test:: Test that ARMI can thermally expands a square
-           :id: TEST_REACTOR_THERMAL_EXPANSION_6
-           :links: REQ_REACTOR_THERMAL_EXPANSION
+           :id: T_REACTOR_THERMAL_EXPANSION_6
+           :links: R_REACTOR_THERMAL_EXPANSION
         """
         self.assertTrue(self.component.THERMAL_EXPANSION_DIMS)
 
@@ -954,8 +954,8 @@ class TestCube(TestShapedComponent):
         """Test that ARMI can thermally expands a cube.
 
         .. test:: Test that ARMI can thermally expands a cube
-           :id: TEST_REACTOR_THERMAL_EXPANSION_7
-           :links: REQ_REACTOR_THERMAL_EXPANSION
+           :id: T_REACTOR_THERMAL_EXPANSION_7
+           :links: R_REACTOR_THERMAL_EXPANSION
         """
         self.assertFalse(self.component.THERMAL_EXPANSION_DIMS)
 
@@ -986,15 +986,15 @@ class TestHexagon(TestShapedComponent):
         mult = self.component.getDimension("mult")
         op = self.component.getDimension("op")
         ip = self.component.getDimension("ip")
-        ref = math.sqrt(3.0) / 2.0 * (op ** 2 - ip ** 2) * mult
+        ref = math.sqrt(3.0) / 2.0 * (op**2 - ip**2) * mult
         self.assertAlmostEqual(cur, ref)
 
     def test_thermallyExpands(self):
         """Test that ARMI can thermally expands a hexagon.
 
         .. test:: Test that ARMI can thermally expands a hexagon
-           :id: TEST_REACTOR_THERMAL_EXPANSION_8
-           :links: REQ_REACTOR_THERMAL_EXPANSION
+           :id: T_REACTOR_THERMAL_EXPANSION_8
+           :links: R_REACTOR_THERMAL_EXPANSION
         """
         self.assertTrue(self.component.THERMAL_EXPANSION_DIMS)
 
@@ -1047,7 +1047,7 @@ class TestHoledHexagon(TestShapedComponent):
         odHole = self.component.getDimension("holeOD")
         nHoles = self.component.getDimension("nHoles")
         mult = self.component.getDimension("mult")
-        hexarea = math.sqrt(3.0) / 2.0 * (op ** 2)
+        hexarea = math.sqrt(3.0) / 2.0 * (op**2)
         holeArea = nHoles * math.pi * ((odHole / 2.0) ** 2)
         ref = mult * (hexarea - holeArea)
         cur = self.component.getArea()
@@ -1057,8 +1057,8 @@ class TestHoledHexagon(TestShapedComponent):
         """Test that ARMI can thermally expands a holed hexagon.
 
         .. test:: Test that ARMI can thermally expands a holed hexagon
-           :id: TEST_REACTOR_THERMAL_EXPANSION_9
-           :links: REQ_REACTOR_THERMAL_EXPANSION
+           :id: T_REACTOR_THERMAL_EXPANSION_9
+           :links: R_REACTOR_THERMAL_EXPANSION
         """
         self.assertTrue(self.component.THERMAL_EXPANSION_DIMS)
 
@@ -1098,7 +1098,7 @@ class TestHexHoledCircle(TestShapedComponent):
         od = self.component.getDimension("od")
         holeOP = self.component.getDimension("holeOP")
         mult = self.component.getDimension("mult")
-        hexarea = math.sqrt(3.0) / 2.0 * (holeOP ** 2)
+        hexarea = math.sqrt(3.0) / 2.0 * (holeOP**2)
         holeArea = math.pi * ((od / 2.0) ** 2)
         ref = mult * (holeArea - hexarea)
         cur = self.component.getArea()
@@ -1108,8 +1108,8 @@ class TestHexHoledCircle(TestShapedComponent):
         """Test that ARMI can thermally expands a holed hexagon.
 
         .. test:: Test that ARMI can thermally expands a holed hexagon
-           :id: TEST_REACTOR_THERMAL_EXPANSION_10
-           :links: REQ_REACTOR_THERMAL_EXPANSION
+           :id: T_REACTOR_THERMAL_EXPANSION_10
+           :links: R_REACTOR_THERMAL_EXPANSION
         """
         self.assertTrue(self.component.THERMAL_EXPANSION_DIMS)
 
@@ -1147,7 +1147,7 @@ class TestHoledRectangle(TestShapedComponent):
 
     def test_getBoundingCircleOuterDiameter(self):
         # hypotenuse
-        ref = (self.length ** 2 + self.width ** 2) ** 0.5
+        ref = (self.length**2 + self.width**2) ** 0.5
         cur = self.component.getBoundingCircleOuterDiameter()
         self.assertAlmostEqual(ref, cur)
 
@@ -1233,11 +1233,11 @@ class TestHelix(TestShapedComponent):
         outerDiameter = self.component.getDimension("od")
         mult = self.component.getDimension("mult")
         c = axialPitch / (2.0 * math.pi)
-        helixFactor = math.sqrt((helixDiameter / 2.0) ** 2 + c ** 2) / c
+        helixFactor = math.sqrt((helixDiameter / 2.0) ** 2 + c**2) / c
         ref = (
             mult
             * math.pi
-            * (outerDiameter ** 2 / 4.0 - innerDiameter ** 2 / 4.0)
+            * (outerDiameter**2 / 4.0 - innerDiameter**2 / 4.0)
             * helixFactor
         )
         self.assertAlmostEqual(cur, ref)
@@ -1334,7 +1334,7 @@ class TestRadialSegment(TestShapedComponent):
         outerTheta = self.component.getDimension("outer_theta")
         innerTheta = self.component.getDimension("inner_theta")
         height = self.component.getDimension("height")
-        radialArea = math.pi * (outerRad ** 2 - innerRad ** 2)
+        radialArea = math.pi * (outerRad**2 - innerRad**2)
         aziFraction = (outerTheta - innerTheta) / (math.pi * 2.0)
         ref = mult * radialArea * aziFraction * height
         cur = self.component.getVolume()
@@ -1367,7 +1367,7 @@ class TestDifferentialRadialSegment(TestShapedComponent):
         outerTheta = self.component.getDimension("outer_theta")
         innerTheta = self.component.getDimension("inner_theta")
         height = self.component.getDimension("height")
-        radialArea = math.pi * (outerRad ** 2 - innerRad ** 2)
+        radialArea = math.pi * (outerRad**2 - innerRad**2)
         aziFraction = (outerTheta - innerTheta) / (math.pi * 2.0)
         ref = mult * radialArea * aziFraction * height
         cur = self.component.getVolume()

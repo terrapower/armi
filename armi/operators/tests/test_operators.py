@@ -56,7 +56,7 @@ class InterfaceC(Interface):
     name = "Third"
 
 
-# TODO: Add a test that shows time evolution of Reactor (REQ_EVOLVING_STATE)
+# TODO: Add a test that shows time evolution of Reactor (R_EVOLVING_STATE)
 class OperatorTests(unittest.TestCase):
     def setUp(self):
         self.o, self.r = test_reactors.loadTestReactor()
@@ -92,13 +92,6 @@ class OperatorTests(unittest.TestCase):
         self.assertEqual(self.o.getInterface("Second"), interfaceB)
         self.assertEqual(self.o.getInterface("Third"), interfaceC)
 
-    def test_checkCsConsistency(self):
-        self.o._checkCsConsistency()  # passes without error
-
-        self.o.cs = self.o.cs.modified(newSettings={"nCycles": 66})
-        with self.assertRaises(RuntimeError):
-            self.o._checkCsConsistency()
-
     def test_interfaceIsActive(self):
         self.o, _r = test_reactors.loadTestReactor()
         self.assertTrue(self.o.interfaceIsActive("main"))
@@ -111,7 +104,6 @@ class OperatorTests(unittest.TestCase):
             self.o.loadState(0, 1)
 
     def test_setStateToDefault(self):
-
         # reset the runType for testing
         self.assertEqual(self.o.cs[CONF_RUN_TYPE], "Standard")
         self.o.cs = self.o.cs.modified(newSettings={"runType": "fake"})
@@ -166,7 +158,7 @@ class OperatorTests(unittest.TestCase):
 
 class TestTightCoupling(unittest.TestCase):
     def setUp(self):
-        self.cs = settings.getMasterCs()
+        self.cs = settings.Settings()
         self.cs[CONF_TIGHT_COUPLING] = True
         self.o = Operator(self.cs)
         self.o.r = Reactor("empty", None)

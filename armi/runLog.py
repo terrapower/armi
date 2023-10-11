@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-r"""
+"""
 This module handles logging of console during a simulation.
 
 The default way of calling and the global armi logger is to just import it:
@@ -44,7 +44,6 @@ Or change the log level the same way:
 
     runLog.setVerbosity('debug')
 """
-from __future__ import print_function
 from glob import glob
 import collections
 import logging
@@ -70,7 +69,8 @@ STDOUT_LOGGER_NAME = "ARMI"
 
 class _RunLog:
     """
-    Handles all the logging
+    Handles all the logging.
+
     For the parent process, things are allowed to print to stdout and stderr,
     but the stdout prints are formatted like log statements.
     For the child processes, everything is piped to log files.

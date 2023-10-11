@@ -52,12 +52,11 @@ sends it to the workers, and then both the primary and the workers
 
 In order to create a new, custom MPI Action, inherit from :py:class:`~armi.mpiActions.MpiAction`,
 and override the :py:meth:`~armi.mpiActions.MpiAction.invokeHook` method.
-
 """
 import collections
 import gc
-import timeit
 import math
+import timeit
 
 from six.moves import cPickle
 import tabulate
@@ -68,7 +67,6 @@ from armi import runLog
 from armi import settings
 from armi import utils
 from armi.reactor import reactors
-from armi.reactor import assemblies
 from armi.reactor.parameters import parameterDefinitions
 from armi.utils import iterables
 
@@ -584,7 +582,6 @@ class DistributeStateAction(MpiAction):
             raise RuntimeError("Failed to transmit settings, received: {}".format(cs))
 
         if context.MPI_RANK != 0:
-            settings.setMasterCs(cs)
             self.o.cs = cs
         return cs
 
@@ -610,8 +607,6 @@ class DistributeStateAction(MpiAction):
         runLog.debug(
             "The reactor has {} assemblies".format(len(self.r.core.getAssemblies()))
         )
-        numAssemblies = self.broadcast(assemblies.getAssemNum())
-        assemblies.setAssemNumCounter(numAssemblies)
         # attach here so any interface actions use a properly-setup reactor.
         self.o.reattach(self.r, cs)  # sets r and cs
 

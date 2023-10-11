@@ -19,7 +19,7 @@ from armi.physics import neutronics
 
 # export the cccc modules here to keep external clients happy,
 # though prefer full imports in new code
-from .cccc import (
+from armi.nuclearDataIO.cccc import (
     compxs,
     dif3d,
     dlayxs,

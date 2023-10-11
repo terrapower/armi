@@ -130,11 +130,11 @@ class Water(Fluid):
 
         sum_coefficients = (
             a1 * tau
-            + a2 * tau ** 1.5
-            + a3 * tau ** 3
-            + a4 * tau ** 3.5
-            + a5 * tau ** 4
-            + a6 * tau ** 7.5
+            + a2 * tau**1.5
+            + a3 * tau**3
+            + a4 * tau**3.5
+            + a5 * tau**4
+            + a6 * tau**7.5
         )
         log_vapor_pressure = T_ratio * sum_coefficients
         vapor_pressure = self.VAPOR_PRESSURE_CRITICAL_PA * math.e ** (
@@ -198,11 +198,11 @@ class Water(Fluid):
 
         normalized_alpha = (
             self.d["alpha"]
-            + self.d[1] * theta ** -19
+            + self.d[1] * theta**-19
             + self.d[2] * theta
-            + self.d[3] * theta ** 4.5
-            + self.d[4] * theta ** 5.0
-            + self.d[5] * theta ** 54.5
+            + self.d[3] * theta**4.5
+            + self.d[4] * theta**5.0
+            + self.d[5] * theta**54.5
         )
 
         # past the supercritical point tau's raised to .5 cause complex #'s
@@ -240,11 +240,11 @@ class Water(Fluid):
 
         normalized_phi = (
             self.d["phi"]
-            + 19.0 / 20.0 * self.d[1] * theta ** -20.0
+            + 19.0 / 20.0 * self.d[1] * theta**-20.0
             + self.d[2] * math.log(theta)
-            + 9.0 / 7.0 * self.d[3] * theta ** 3.5
-            + 5.0 / 4.0 * self.d[4] * theta ** 4.0
-            + 109.0 / 107.0 * self.d[5] * theta ** 53.5
+            + 9.0 / 7.0 * self.d[3] * theta**3.5
+            + 5.0 / 4.0 * self.d[4] * theta**4.0
+            + 109.0 / 107.0 * self.d[5] * theta**53.5
         )
 
         # past the supercritical point tau's raised to .5 cause complex #'s
@@ -435,6 +435,6 @@ class SaturatedSteam(Water):
 
         # past the supercritical point tau's raised to .5 cause complex #'s
         return (
-            math.e ** log_normalized_rho.real
+            math.e**log_normalized_rho.real
             * self.DENSITY_CRITICAL_GPERCUBICCENTIMETER
         )

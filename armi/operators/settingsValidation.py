@@ -20,25 +20,25 @@ These then pop up during initialization of a run, either on the command line or 
 dialogues in the GUI. They say things like: "Your ___ setting has the value ___, which
 is impossible. Would you like to switch to ___?"
 """
-import re
-import os
-import shutil
 import itertools
+import os
+import re
+import shutil
 
 from armi import context
 from armi import getPluginManagerOrFail
 from armi import runLog
-from armi.utils import pathTools
-from armi.utils.mathematics import expandRepeatedFloats
+from armi.physics import neutronics
 from armi.reactor import geometry
 from armi.reactor import systemLayoutInput
-from armi.physics import neutronics
-from armi.utils import directoryChangers
 from armi.settings.settingsIO import (
     prompt,
     RunLogPromptCancel,
     RunLogPromptUnresolvable,
 )
+from armi.utils import directoryChangers
+from armi.utils import pathTools
+from armi.utils.mathematics import expandRepeatedFloats
 
 
 class Query:
@@ -338,7 +338,7 @@ class Inspector:
         against the default, if the user specifies all the simple cycle settings
         _exactly_ as the defaults, this won't be caught. But, it would be very
         coincidental for the user to _specify_ all the default values when
-        performing any real analysis, so whatever.
+        performing any real analysis.
 
         Also, we must bypass the `Settings` getter and reach directly
         into the underlying `__settings` dict to avoid triggering an error
@@ -468,8 +468,15 @@ class Inspector:
         )
 
         self.addQuery(
-            lambda: not self.cs["power"],
-            "No power level set. You must always start by importing a base settings file.",
+            lambda: not self.cs["power"] and not self.cs["powerDensity"],
+            "No power or powerDensity set. You must always start by importing a base settings file.",
+            "",
+            self.NO_ACTION,
+        )
+
+        self.addQuery(
+            lambda: self.cs["power"] > 0 and self.cs["powerDensity"] > 0,
+            "The power and powerDensity are both set, please note the power will be used as the truth.",
             "",
             self.NO_ACTION,
         )
@@ -711,7 +718,7 @@ class Inspector:
 
 
 def createQueryRevertBadPathToDefault(inspector, settingName, initialLambda=None):
-    r"""
+    """
     Return a query to revert a bad path to its default.
 
     Parameters

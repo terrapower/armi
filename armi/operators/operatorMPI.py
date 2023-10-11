@@ -41,7 +41,6 @@ from armi import context
 from armi import getPluginManager
 from armi import mpiActions
 from armi import runLog
-from armi import settings
 from armi.operators.operator import Operator
 from armi.reactor import reactors
 
@@ -213,7 +212,7 @@ class OperatorMPI(Operator):
         xsGroups = self.getInterface("xsGroups")
         if xsGroups:
             xsGroups.clearRepresentativeBlocks()
-        cs = settings.getMasterCs()
+        cs = self.cs
         bp = self.r.blueprints
         spatialGrid = self.r.core.spatialGrid
         self.detach()

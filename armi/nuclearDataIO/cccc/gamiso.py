@@ -159,7 +159,7 @@ class _GamisoNuclideIO(isotxs._IsotxsNuclideIO):
     The GAMISO file format is identical to ISOTXS.
     """
 
-    _FILE_LABEL = u"GAMISO"
+    _FILE_LABEL = "GAMISO"
 
     def _getFileMetadata(self):
         return self._lib.gamisoMetadata
