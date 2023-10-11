@@ -98,10 +98,11 @@ class TestBlockCollectionMedian(unittest.TestCase):
 
 
 class TestBlockCollectionAverage(unittest.TestCase):
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         fpFactory = test_lumpedFissionProduct.getDummyLFPFile()
-        self.blockList = makeBlocks(5)
-        for bi, b in enumerate(self.blockList):
+        cls.blockList = makeBlocks(5)
+        for bi, b in enumerate(cls.blockList):
             b.setType("fuel")
             b.p.percentBu = bi / 4.0 * 100
             b.setLumpedFissionProducts(fpFactory.createLFPsFromFile())
@@ -122,6 +123,7 @@ class TestBlockCollectionAverage(unittest.TestCase):
                 elif c.hasFlags([Flags.BOND, Flags.COOLANT, Flags.INTERCOOLANT]):
                     c.temperatureInC = 400.0 + bi
 
+    def setUp(self):
         self.bc = AverageBlockCollection(
             self.blockList[0].r.blueprints.allNuclidesInProblem
         )
@@ -621,10 +623,11 @@ class TestBlockCollectionComponentAverage1DCylinder(unittest.TestCase):
 
 
 class TestBlockCollectionFluxWeightedAverage(unittest.TestCase):
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         fpFactory = test_lumpedFissionProduct.getDummyLFPFile()
-        self.blockList = makeBlocks(5)
-        for bi, b in enumerate(self.blockList):
+        cls.blockList = makeBlocks(5)
+        for bi, b in enumerate(cls.blockList):
             b.setType("fuel")
             b.p.percentBu = bi / 4.0 * 100
             b.setLumpedFissionProducts(fpFactory.createLFPsFromFile())
@@ -632,6 +635,7 @@ class TestBlockCollectionFluxWeightedAverage(unittest.TestCase):
             b.p.gasReleaseFraction = bi * 2 / 8.0
             b.p.flux = bi + 1
 
+    def setUp(self):
         self.bc = FluxWeightedAverageBlockCollection(
             self.blockList[0].r.blueprints.allNuclidesInProblem
         )
