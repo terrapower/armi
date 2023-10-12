@@ -408,8 +408,11 @@ class AverageBlockCollection(BlockCollection):
         weights = numpy.array([self.getWeight(b) / b.getHeight() for b in blocks])
         weights /= weights.sum()  # normalize by total weight
         components = [sorted(b.getComponents())[compIndex] for b in blocks]
-        avgComponentMass = sum(c.getMass() for c in components) / len(components)
-        if avgComponentMass == 0.0:
+        weightedComponentMass = sum(
+            w * c.getMass() for w, c in zip(weights, components)
+        )
+        if weightedComponentMass == 0.0:
+            print("Covering this block")
             # if there is no component mass (e.g., gap), do a regular average
             return numpy.mean(numpy.array([c.temperatureInC for c in components]))
         else:
@@ -417,7 +420,7 @@ class AverageBlockCollection(BlockCollection):
                 weights.dot(
                     numpy.array([c.temperatureInC * c.getMass() for c in components])
                 )
-                / avgComponentMass
+                / weightedComponentMass
             )
 
     def _checkBlockSimilarity(self):
