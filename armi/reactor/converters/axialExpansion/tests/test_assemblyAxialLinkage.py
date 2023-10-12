@@ -21,8 +21,11 @@ from armi.reactor.converters.axialExpansion.assemblyAxialLinkage import (
 from armi.reactor.converters.axialExpansion.tests import AxialExpansionTestBase
 
 
-class TestLinkage(AxialExpansionTestBase):
-    """Test axial linkage between components."""
+class TestDetermineLinked(AxialExpansionTestBase):
+    """Test assemblyAxialLinkage.py::AssemblyAxialLinkage::_determineLinked
+
+    This is the primary method used to determined if two components are linked axial linkage between components.
+    """
 
     def setUp(self):
         """Contains common dimensions for all component class types."""
