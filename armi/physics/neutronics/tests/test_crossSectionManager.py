@@ -281,6 +281,25 @@ class TestComponentAveraging(unittest.TestCase):
                 msg=f"{c} avg temperature {avgTemp} not equal to expected {expectedTemps[compIndex]}!",
             )
 
+    def test_getAverageComponentTemperatureVariedWeights(self):
+        """
+        Test mass-weighted component temperature averaging with variable weights
+        """
+        # make up a fake weighting with power param
+        self.bc.weightingParam = "power"
+        for i, b in enumerate(self.bc):
+            b.p.power = i
+        weightedIncrease = 1.8
+        baseTemps = [600, 400, 500, 500, 400, 500, 400]
+        expectedTemps = [t + weightedIncrease for t in baseTemps]
+        for compIndex, c in enumerate(b.getComponents()):
+            avgTemp = self.bc._getAverageComponentTemperature(compIndex)
+            self.assertAlmostEqual(
+                expectedTemps[compIndex],
+                avgTemp,
+                msg=f"{c} avg temperature {avgTemp} not equal to expected {expectedTemps[compIndex]}!",
+            )
+
     def test_getAverageComponentTemperatureNoMass(self):
         """
         Test component temperature averaging when the components have no mass
