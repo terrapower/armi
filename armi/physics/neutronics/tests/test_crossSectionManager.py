@@ -247,7 +247,8 @@ class TestComponentAveraging(unittest.TestCase):
         self.bc = AverageBlockCollection(
             self.blockList[0].r.blueprints.allNuclidesInProblem
         )
-        self.bc.extend(self.blockList)
+        blockCopies = [copy.deepcopy(b) for b in self.blockList]
+        self.bc.extend(blockCopies)
 
     def test_getAverageComponentNumberDensities(self):
         """
@@ -289,6 +290,7 @@ class TestComponentAveraging(unittest.TestCase):
         self.bc.weightingParam = "power"
         for i, b in enumerate(self.bc):
             b.p.power = i
+            print(b.getMass())
         weightedIncrease = 1.8
         baseTemps = [600, 400, 500, 500, 400, 500, 400]
         expectedTemps = [t + weightedIncrease for t in baseTemps]
