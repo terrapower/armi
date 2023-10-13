@@ -19,13 +19,15 @@ from armi.reactor.components.basicShapes import Circle, Hexagon
 from armi.reactor.components import DerivedShape
 
 
-def buildTestAssembly(name: str, hot: bool = False):
-    """Create test assembly consisting of list of fake material.
+def buildTestAssembly(materialName: str, hot: bool = False):
+    """Create test assembly
 
     Parameters
     ----------
-    name : string
-        determines which fake material to use
+    materialName: string
+        determines which material to use
+    hot: boolean
+        determines if assembly should be at hot temperatures
     """
     if not hot:
         hotTemp = 25.0
@@ -37,24 +39,24 @@ def buildTestAssembly(name: str, hot: bool = False):
     assembly = HexAssembly("testAssemblyType")
     assembly.spatialGrid = grids.axialUnitGrid(numCells=1)
     assembly.spatialGrid.armiObject = assembly
-    assembly.add(buildTestBlock("shield", name, hotTemp, height))
-    assembly.add(buildTestBlock("fuel", name, hotTemp, height))
-    assembly.add(buildTestBlock("fuel", name, hotTemp, height))
-    assembly.add(buildTestBlock("plenum", name, hotTemp, height))
+    assembly.add(buildTestBlock("shield", materialName, hotTemp, height))
+    assembly.add(buildTestBlock("fuel", materialName, hotTemp, height))
+    assembly.add(buildTestBlock("fuel", materialName, hotTemp, height))
+    assembly.add(buildTestBlock("plenum", materialName, hotTemp, height))
     assembly.add(buildDummySodium(hotTemp, height))
     assembly.calculateZCoords()
     assembly.reestablishBlockOrder()
     return assembly
 
 
-def buildTestBlock(blockType: str, name: str, hotTemp: float, height: float):
+def buildTestBlock(blockType: str, materialName: str, hotTemp: float, height: float):
     """Return a simple pin type block filled with coolant and surrounded by duct.
 
     Parameters
     ----------
     blockType : string
         determines which type of block you're building
-    name : string
+    materialName : string
         determines which material to use
     """
     b = HexBlock(blockType, height=height)
@@ -70,9 +72,9 @@ def buildTestBlock(blockType: str, name: str, hotTemp: float, height: float):
         "mult": 1.0,
     }
     coolDims = {"Tinput": 25.0, "Thot": hotTemp}
-    mainType = Circle(blockType, name, **fuelDims)
-    clad = Circle("clad", name, **cladDims)
-    duct = Hexagon("duct", name, **ductDims)
+    mainType = Circle(blockType, materialName, **fuelDims)
+    clad = Circle("clad", materialName, **cladDims)
+    duct = Hexagon("duct", materialName, **ductDims)
 
     coolant = DerivedShape("coolant", "Sodium", **coolDims)
     intercoolant = Hexagon("intercoolant", "Sodium", **intercoolantDims)
