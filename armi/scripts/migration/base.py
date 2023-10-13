@@ -88,8 +88,7 @@ class Migration:
         while os.path.exists(self.path):
             # don't overwrite files (could be blueprints)
             name, ext = os.path.splitext(self.path)
-            name += f"{i}"
-            self.path = name + ext
+            self.path = name + f"{i}" + ext
             i += 1
 
         with open(self.path, "w") as f:
