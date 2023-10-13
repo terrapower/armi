@@ -77,6 +77,7 @@ import yamlize.objects
 
 from armi import context
 from armi import getPluginManager, getPluginManagerOrFail
+from armi import migration
 from armi import plugins
 from armi import runLog
 from armi.nucDirectory import nuclideBases
@@ -84,7 +85,6 @@ from armi.reactor import assemblies
 from armi.reactor import geometry
 from armi.reactor import systemLayoutInput
 from armi.reactor.flags import Flags
-from armi.scripts import migration
 from armi.utils.customExceptions import InputError
 from armi.utils import textProcessors
 from armi.settings.fwSettings.globalSettings import (

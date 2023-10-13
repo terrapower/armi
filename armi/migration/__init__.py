@@ -32,7 +32,7 @@ Migrations should generally happen in the background from the user's perspective
 like happens in mainstream applications like word processors and spreadsheets.
 """
 
-from armi.scripts.migration import (
+from armi.migration import (
     m0_1_3,
     m0_1_6,
 )
