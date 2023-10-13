@@ -15,10 +15,8 @@
 import io
 import unittest
 
+from armi.scripts.migration.m0_1_6 import ConvertAlphanumLocationSettingsToNum
 from armi.settings import caseSettings
-from armi.scripts.migration.m0_1_6_locationLabels import (
-    ConvertAlphanumLocationSettingsToNum,
-)
 from armi.settings.settingsIO import SettingsWriter, SettingsReader
 
 
