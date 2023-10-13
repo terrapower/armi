@@ -116,16 +116,6 @@ class SettingsMigration(Migration):
         self.stream = open(self.path)
 
 
-class GeomMigration(Migration):
-    """Migration for non-blueprints geometry input."""
-
-    def _loadStreamFromPath(self):
-        Migration._loadStreamFromPath(self)
-        cs = caseSettings.Settings(fName=self.path)
-        self.path = cs["geomFile"]
-        self.stream = open(self.path)
-
-
 class DatabaseMigration(Migration):
     """Migration for db output."""
 
