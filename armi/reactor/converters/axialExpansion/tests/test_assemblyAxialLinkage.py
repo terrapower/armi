@@ -11,29 +11,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import unittest
 from armi.reactor.components import UnshapedComponent
 from armi.reactor.components.basicShapes import Circle, Hexagon, Rectangle
 from armi.reactor.components.complexShapes import Helix
 from armi.reactor.converters.axialExpansion.assemblyAxialLinkage import (
     AssemblyAxialLinkage,
 )
-from armi.reactor.converters.axialExpansion.tests import AxialExpansionTestBase
-
-
-class TestDetermineLinked(AxialExpansionTestBase):
-    """Test assemblyAxialLinkage.py::AssemblyAxialLinkage::_determineLinked
+class TestDetermineLinked(unittest.TestCase):
+    """Test assemblyAxialLinkage.py::AssemblyAxialLinkage::_determineLinked for anticipated configrations
 
     This is the primary method used to determined if two components are linked axial linkage between components.
     """
 
     def setUp(self):
         """Contains common dimensions for all component class types."""
-        AxialExpansionTestBase.setUp(self)
-        self.common = ("test", "FakeMat", 25.0, 25.0)  # name, material, Tinput, Thot
-
-    def tearDown(self):
-        AxialExpansionTestBase.tearDown(self)
+        self.common = ("test", "HT9", 25.0, 25.0)  # name, material, Tinput, Thot
 
     def runTest(
         self,
