@@ -35,7 +35,6 @@ like happens in mainstream applications like word processors and spreadsheets.
 from armi.scripts.migration import (
     m0_1_3,
     m0_1_0_newDbFormat,
-    crossSectionBlueprintsToSettings,
     m0_1_6_locationLabels,
 )
 
@@ -43,6 +42,5 @@ ACTIVE_MIGRATIONS = [
     m0_1_0_newDbFormat.ConvertDB2toDB3,
     m0_1_3.RemoveCentersFromBlueprints,
     m0_1_3.UpdateElementalNuclides,
-    crossSectionBlueprintsToSettings.MoveCrossSectionsFromBlueprints,
     m0_1_6_locationLabels.ConvertAlphanumLocationSettingsToNum,
 ]
