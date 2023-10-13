@@ -639,10 +639,5 @@ def migrate(bp: Blueprints, cs):
             aDesign.radialMeshPoints = radMesh
             aDesign.azimuthalMeshPoints = aziMesh
 
-    # Someday: write out the migrated file. At the moment this messes up the case
+    # TODO: write out the migrated file. At the moment this messes up the case
     # title and doesn't yet have the other systems in place so this isn't the right place.
-
-
-#     cs.writeToXMLFile(cs.caseTitle + '.migrated.xml')
-#     with open(os.path.split(cs['loadingFile'])[0] + '.migrated.' + '.yaml', 'w') as loadingFile:
-#         blueprints.Blueprints.dump(bp, loadingFile)
