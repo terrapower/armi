@@ -72,7 +72,7 @@ class Migration:
         The operative subclasses implementing this method are below.
         """
         if not os.path.exists(self.path):
-            raise ValueError("File {} does not exist".format(self.path))
+            raise ValueError(f"File {self.path} does not exist")
 
     def _applyToStream(self):
         """Add actual migration code here in a subclass."""

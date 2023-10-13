@@ -64,18 +64,16 @@ def _migrateDatabase(databasePath, preCollector, visitor):
         When database is not found.
     """
     if not os.path.exists(databasePath):
-        raise OSError("Database file {} does not exist".format(databasePath))
+        raise OSError(f"Database file {databasePath} does not exist")
 
-    runLog.info("Migrating database file: {}".format(databasePath))
-    runLog.info("Generating SHA-1 hash for original database: {}".format(databasePath))
+    runLog.info(f"Migrating database file: {databasePath}")
     shaHash = utils.getFileSHA1Hash(databasePath)
-    runLog.info("    Database: {}\n" "    SHA-1: {}".format(databasePath, shaHash))
+    runLog.info(f"    Database: {databasePath}\n    SHA-1: {shaHash}")
     _remoteFolder, remoteDbName = os.path.split(databasePath)  # make new DB locally
     root, ext = os.path.splitext(remoteDbName)
     newDBName = root + "_migrated" + ext
-    runLog.info("Copying database from {} to {}".format(databasePath, newDBName))
+    runLog.info(f"Copying database from {databasePath} to {newDBName}")
     with h5py.File(newDBName, "w") as newDB, h5py.File(databasePath, "r") as oldDB:
-
         preCollection = preCollector(oldDB)
 
         def closure(name, dataset):
@@ -92,13 +90,11 @@ def _migrateDatabase(databasePath, preCollector, visitor):
         newDB.attrs["original-databaseVersion"] = oldDB.attrs["databaseVersion"]
         newDB.attrs["version"] = version
 
-    runLog.info("Successfully generated migrated database file: {}".format(newDBName))
+    runLog.info(f"Successfully generated migrated database file: {newDBName}")
 
 
 def _visit(newDB, preCollection, name, dataset):
-
     updated = False
-    # runLog.important(f"Visiting Dataset {name}")
     path = name.split("/")
     if path[0] == "inputs":
         pass
@@ -107,6 +103,7 @@ def _visit(newDB, preCollection, name, dataset):
     elif len(path) == 3:
         updated = _updateParams(newDB, preCollection, name, dataset)
 
+    msg = "Updated"
     if not updated:
         if isinstance(dataset, h5py.Group):
             # Skip groups because they come along with copied datasets
@@ -114,8 +111,6 @@ def _visit(newDB, preCollection, name, dataset):
         else:
             newDB.copy(dataset, dataset.name)
             msg = "Copied"
-    else:
-        msg = "Updated"
 
     runLog.important(f"{msg} Dataset {name}")
 
@@ -172,8 +167,8 @@ def _collectSymmetry(oldDB):
 def _applyRenames(newDB, renames, name, dataset):
     node, paramType, paramName = name.split("/")
     if paramName in renames:
-        runLog.important("Renaming `{}` -> `{}`.".format(paramName, renames[paramName]))
+        runLog.important(f"Renaming `{paramName}` -> `{renames[paramName]}`.")
         paramName = renames[paramName]
-        newDB.copy(dataset, "{}/{}/{}".format(node, paramType, paramName))
+        newDB.copy(dataset, f"{node}/{paramType}/{paramName}")
         return True
     return False
