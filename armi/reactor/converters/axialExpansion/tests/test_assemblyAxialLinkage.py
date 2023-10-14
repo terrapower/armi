@@ -265,3 +265,14 @@ class TestDetermineLinked(unittest.TestCase):
         comp1 = Circle(*self.common, od=1.0, id=0.0)
         comp2 = UnshapedComponent(*self.common, area=1.0)
         self.assertFalse(AssemblyAxialLinkage._determineLinked(comp1, comp2))
+
+    def test_determineLinked(self):
+        comp1 = UnshapedComponent(*self.common, area=1.0)
+        comp2 = UnshapedComponent(*self.common, area=1.0)
+        with mockRunLogs.BufferLog() as mock:
+            linked = AssemblyAxialLinkage._determineLinked(comp1, comp2)
+            self.assertFalse(linked)
+            self.assertIn(
+                "nor is it physical to do so. Instead of crashing and raising an error, ",
+                mock.getStdout(),
+            )
