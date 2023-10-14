@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from armi import runLog
+from armi.reactor.flags import Flags
 from armi.reactor.components import UnshapedComponent
 from armi.reactor.converters.axialExpansion import getSolidComponents
 
@@ -88,27 +89,6 @@ class AssemblyAxialLinkage:
 
         self.linkedBlocks[b] = [lowerLinkedBlock, upperLinkedBlock]
 
-        if lowerLinkedBlock is None:
-            runLog.debug(
-                "Assembly {0:22s} at location {1:22s}, Block {2:22s}"
-                "is not linked to a block below!".format(
-                    str(self.a.getName()),
-                    str(self.a.getLocation()),
-                    str(b.p.flags),
-                ),
-                single=True,
-            )
-        if upperLinkedBlock is None:
-            runLog.debug(
-                "Assembly {0:22s} at location {1:22s}, Block {2:22s}"
-                "is not linked to a block above!".format(
-                    str(self.a.getName()),
-                    str(self.a.getLocation()),
-                    str(b.p.flags),
-                ),
-                single=True,
-            )
-
     def _getLinkedComponents(self, b, c):
         """Retrieve the axial linkage for component c.
 
@@ -142,12 +122,19 @@ class AssemblyAxialLinkage:
 
         self.linkedComponents[c] = lstLinkedC
 
-        if lstLinkedC[0] is None:
+        if lstLinkedC[0] is None and self.linkedBlocks[b][0] is not None:
+            # only print debug if there is a linked block below in the first place
             runLog.debug(
                 f"Assembly {self.a}, Block {b}, Component {c} has nothing linked below it!",
                 single=True,
             )
-        if lstLinkedC[1] is None:
+        if (
+            lstLinkedC[1] is None
+            and self.linkedBlocks[b][1] is not None
+            and not self.linkedBlocks[b][1].hasFlags(Flags.DUMMY)
+        ):
+            # only print debug is there is a linked block above in the first place,
+            # and if that linked block is not the DUMMY block
             runLog.debug(
                 f"Assembly {self.a}, Block {b}, Component {c} has nothing linked above it!",
                 single=True,

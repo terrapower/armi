@@ -12,12 +12,92 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import unittest
+from armi.tests import mockRunLogs
+from armi.reactor.flags import Flags
 from armi.reactor.components import UnshapedComponent
 from armi.reactor.components.basicShapes import Circle, Hexagon, Rectangle
 from armi.reactor.components.complexShapes import Helix
 from armi.reactor.converters.axialExpansion.assemblyAxialLinkage import (
     AssemblyAxialLinkage,
 )
+from armi.reactor.converters.axialExpansion.tests import buildAxialExpAssembly
+
+
+class TestGetLinkedComponents(unittest.TestCase):
+    """Runs through AssemblyAxialLinkage::_determineAxialLinkage() and does full linkage
+
+    The individual methods, _getLinkedBlocks, _getLinkedComponents, and _determineLinked are then
+    tested in individual tests by asserting that the linkage is as expected.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        cls.a = buildAxialExpAssembly.buildTestAssembly("HT9")
+        cls.assemblyLinkage = AssemblyAxialLinkage(cls.a)
+
+    def test_getLinkedBlocks(self):
+        for ib, b in enumerate(self.a):
+            if ib == 0:
+                self.assertIsNone(self.assemblyLinkage.linkedBlocks[b][0])
+                self.assertEqual(
+                    self.assemblyLinkage.linkedBlocks[b][1], self.a[ib + 1]
+                )
+            elif ib == len(self.a) - 1:
+                self.assertEqual(
+                    self.assemblyLinkage.linkedBlocks[b][0], self.a[ib - 1]
+                )
+                self.assertIsNone(self.assemblyLinkage.linkedBlocks[b][1])
+            else:
+                self.assemblyLinkage._getLinkedBlocks(b)
+                self.assertEqual(
+                    self.assemblyLinkage.linkedBlocks[b][0], self.a[ib - 1]
+                )
+                self.assertEqual(
+                    self.assemblyLinkage.linkedBlocks[b][1], self.a[ib + 1]
+                )
+
+    def test_getLinkedComponents(self):
+        """spot check to ensure component linkage is as expected"""
+        ## Test 1: check for shield -- fuel -- fuel linkage
+        shieldBlock = self.a[0]
+        shieldComp = shieldBlock.getComponent(Flags.SHIELD)
+        firstFuelBlock = self.a[1]
+        fuelComp1 = firstFuelBlock.getComponent(Flags.FUEL)
+        secondFuelBlock = self.a[2]
+        fuelComp2 = secondFuelBlock.getComponent(Flags.FUEL)
+        self.assertEqual(
+            self.assemblyLinkage.linkedComponents[fuelComp1], [shieldComp, fuelComp2]
+        )
+        ### Test 2: check for clad -- clad -- None linkage
+        fuelCladComp = secondFuelBlock.getComponent(Flags.CLAD)
+        plenumBlock = self.a[3]
+        plenumCladComp = plenumBlock.getComponent(Flags.CLAD)
+        self.assertEqual(
+            self.assemblyLinkage.linkedComponents[plenumCladComp], [fuelCladComp, None]
+        )
+
+    def test_getLinkedComponent_runLogs(self):
+        """check runLogs get hit right"""
+        a = buildAxialExpAssembly.buildTestAssembly("HT9")
+        a[0].remove(a[0][1])  # remove clad from shield block
+        a[3].remove(a[3][1])  # remove clad from plenum block
+        with mockRunLogs.BufferLog() as mock:
+            _assemblyLinkage = AssemblyAxialLinkage(a)
+            self.assertIn("has nothing linked below it!", mock.getStdout())
+            self.assertIn("has nothing linked above it!", mock.getStdout())
+
+    def test_getLinkedComponent_RuntimeError(self):
+        """Test for multiple component axial linkage."""
+        # check the
+        a = buildAxialExpAssembly.buildTestAssembly("HT9")
+        shieldBlock = a[0]
+        shieldComp = shieldBlock[0]
+        shieldComp.setDimension("od", 0.785, cold=True)
+        with self.assertRaises(RuntimeError) as cm:
+            _assemblyLinkage = AssemblyAxialLinkage(a)
+            self.assertEqual(cm.exception, 3)
+
+
 class TestDetermineLinked(unittest.TestCase):
     """Test assemblyAxialLinkage.py::AssemblyAxialLinkage::_determineLinked for anticipated configrations
 

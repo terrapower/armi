@@ -592,21 +592,6 @@ class TestExceptions(AxialExpansionTestBase):
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
 
-    def test_determineLinked(self):
-        compDims = {"Tinput": 25.0, "Thot": 25.0}
-        compA = UnshapedComponent("unshaped_1", "FakeMat", **compDims)
-        compB = UnshapedComponent("unshaped_2", "FakeMat", **compDims)
-        self.assertFalse(AssemblyAxialLinkage._determineLinked(compA, compB))
-
-    def test_getLinkedComponents(self):
-        """Test for multiple component axial linkage."""
-        shieldBlock = self.obj.linked.a[0]
-        shieldComp = shieldBlock[0]
-        shieldComp.setDimension("od", 0.785, cold=True)
-        with self.assertRaises(RuntimeError) as cm:
-            self.obj.linked._getLinkedComponents(shieldBlock, shieldComp)
-            self.assertEqual(cm.exception, 3)
-
 
 class TestGetSolidComponents(unittest.TestCase):
     """Verify that getSolidComponents returns just solid components."""
