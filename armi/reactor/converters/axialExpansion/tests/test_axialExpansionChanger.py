@@ -508,28 +508,6 @@ class TestExceptions(AxialExpansionTestBase):
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
 
-    def test_setExpansionFactors(self):
-        with self.assertRaises(RuntimeError) as cm:
-            cList = self.a[0].getChildren()
-            expansionGrowthFracs = range(len(cList) + 1)
-            self.obj.expansionData.setExpansionFactors(cList, expansionGrowthFracs)
-            the_exception = cm.exception
-            self.assertEqual(the_exception.error_code, 3)
-
-        with self.assertRaises(RuntimeError) as cm:
-            cList = self.a[0].getChildren()
-            expansionGrowthFracs = zeros(len(cList))
-            self.obj.expansionData.setExpansionFactors(cList, expansionGrowthFracs)
-            the_exception = cm.exception
-            self.assertEqual(the_exception.error_code, 3)
-
-        with self.assertRaises(RuntimeError) as cm:
-            cList = self.a[0].getChildren()
-            expansionGrowthFracs = zeros(len(cList)) - 10.0
-            self.obj.expansionData.setExpansionFactors(cList, expansionGrowthFracs)
-            the_exception = cm.exception
-            self.assertEqual(the_exception.error_code, 3)
-
     def test_updateComponentTempsBy1DTempFieldValueError(self):
         tempGrid = [5.0, 15.0, 35.0]
         tempField = linspace(25.0, 310.0, 3)

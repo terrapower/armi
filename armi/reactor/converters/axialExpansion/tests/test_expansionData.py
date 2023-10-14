@@ -1,9 +1,50 @@
 import unittest
+from numpy import zeros
+
 from armi.reactor.flags import Flags
 from armi.reactor.blocks import HexBlock
 from armi.reactor.components import DerivedShape
 from armi.reactor.components.basicShapes import Circle, Hexagon
 from armi.reactor.converters.axialExpansion.expansionData import ExpansionData
+from armi.reactor.converters.axialExpansion.tests.buildAxialExpAssembly import (
+    buildTestAssembly,
+)
+
+
+class TestSetExpansionFactors(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.a = buildTestAssembly("HT9")
+        cls.expData = ExpansionData(cls.a, False, False)
+
+    def test_setExpansionFactors(self):
+        cList = self.a[0].getChildren()
+        expansionGrowthFracs = range(1, len(cList) + 1)
+        self.expData.setExpansionFactors(cList, expansionGrowthFracs)
+        for c, expFrac in zip(cList, expansionGrowthFracs):
+            self.assertEqual(self.expData._expansionFactors[c], expFrac)
+
+    def test_setExpansionFactors_Exceptions(self):
+        with self.assertRaises(RuntimeError) as cm:
+            cList = self.a[0].getChildren()
+            expansionGrowthFracs = range(len(cList) + 1)
+            self.expData.setExpansionFactors(cList, expansionGrowthFracs)
+            the_exception = cm.exception
+            self.assertEqual(the_exception.error_code, 3)
+
+        with self.assertRaises(RuntimeError) as cm:
+            cList = self.a[0].getChildren()
+            expansionGrowthFracs = zeros(len(cList))
+            self.expData.setExpansionFactors(cList, expansionGrowthFracs)
+            the_exception = cm.exception
+            self.assertEqual(the_exception.error_code, 3)
+
+        with self.assertRaises(RuntimeError) as cm:
+            cList = self.a[0].getChildren()
+            expansionGrowthFracs = zeros(len(cList)) - 10.0
+            self.expData.setExpansionFactors(cList, expansionGrowthFracs)
+            the_exception = cm.exception
+            self.assertEqual(the_exception.error_code, 3)
 
 
 class TestDetermineTargetComponent(unittest.TestCase):
