@@ -651,7 +651,6 @@ class Database3:
         statePointName=None,
         allowMissing=False,
         updateGlobalAssemNum=True,
-        updateMasterCs=True,
     ):
         """Load a new reactor from (cycle, node).
 
@@ -679,8 +678,6 @@ class Database3:
             with undefined parameters. Default False.
         updateGlobalAssemNum : bool, optional
             DeprecationWarning: This is unused.
-        updateMasterCs : bool, optional
-            TODO: Deprecated. Slated for removal.
 
         Returns
         -------

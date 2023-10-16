@@ -113,9 +113,6 @@ sys.path.insert(0, os.path.abspath(".."))
 
 # -- General configuration -----------------------------------------------------
 
-# If your documentation needs a minimal Sphinx version, state it here.
-needs_sphinx = "4.4.0"
-
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = [
@@ -137,7 +134,6 @@ extensions = [
     "sphinx_gallery.gen_gallery",
     "sphinx.ext.imgconverter",  # to convert GH Actions badge SVGs to PNG for LaTeX
     "sphinxcontrib.plantuml",
-    "sphinx_needs",
     "sphinx_rtd_theme",  # needed here for loading jquery in sphinx 6
     "sphinxcontrib.jquery",  # see https://github.com/readthedocs/sphinx_rtd_theme/issues/1452
 ]
