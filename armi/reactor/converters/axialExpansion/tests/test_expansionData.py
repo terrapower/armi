@@ -1,5 +1,5 @@
 import unittest
-from numpy import zeros
+from numpy import zeros, linspace, ones
 
 from armi.reactor.flags import Flags
 from armi.reactor.blocks import HexBlock
@@ -43,6 +43,51 @@ class TestSetExpansionFactors(unittest.TestCase):
             cList = self.a[0].getChildren()
             expansionGrowthFracs = zeros(len(cList)) - 10.0
             self.expData.setExpansionFactors(cList, expansionGrowthFracs)
+            the_exception = cm.exception
+            self.assertEqual(the_exception.error_code, 3)
+
+
+class TestUpdateComponentTemps(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        a = buildTestAssembly("HT9")
+        cls.expData = ExpansionData(a, False, False)
+
+    def test_updateComponentTemp(self):
+        newTemp = 250.0
+        shieldB = self.expData._a[0]
+        shieldComp = shieldB.getComponent(Flags.SHIELD)
+        self.expData.updateComponentTemp(shieldComp, newTemp)
+        self.assertEqual(
+            self.expData.componentReferenceTemperature[shieldComp],
+            shieldComp.inputTemperatureInC,
+        )
+        self.assertEqual(shieldComp.temperatureInC, newTemp)
+
+    def test_updateComponentTempsBy1DTempField(self):
+        newTemp = 125.0
+        bottom = self.expData._a[0].p.zbottom
+        top = self.expData._a[-1].p.ztop
+        tempGrid = linspace(bottom, top, 11)
+        tempField = ones(11) * newTemp
+        self.expData.updateComponentTempsBy1DTempField(tempGrid, tempField)
+        for b in self.expData._a:
+            for c in b:
+                self.assertEqual(c.temperatureInC, newTemp)
+
+    def test_updateComponentTempsBy1DTempFieldValueError(self):
+        tempGrid = [5.0, 15.0, 35.0]
+        tempField = linspace(25.0, 310.0, 3)
+        with self.assertRaises(ValueError) as cm:
+            self.expData.updateComponentTempsBy1DTempField(tempGrid, tempField)
+            the_exception = cm.exception
+            self.assertEqual(the_exception.error_code, 3)
+
+    def test_updateComponentTempsBy1DTempFieldRuntimeError(self):
+        tempGrid = [5.0, 15.0, 35.0]
+        tempField = linspace(25.0, 310.0, 10)
+        with self.assertRaises(RuntimeError) as cm:
+            self.expData.updateComponentTempsBy1DTempField(tempGrid, tempField)
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
 

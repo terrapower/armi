@@ -20,16 +20,12 @@ from statistics import mean
 from armi.materials import custom
 from armi.reactor.assemblies import HexAssembly, grids
 from armi.reactor.blocks import HexBlock
-from armi.reactor.components import UnshapedComponent
 from armi.reactor.components.basicShapes import Circle
 from armi.reactor.converters.axialExpansion import getSolidComponents
 from armi.reactor.converters.axialExpansion.axialExpansionChanger import (
     AxialExpansionChanger,
 )
 from armi.reactor.converters.axialExpansion.expansionData import ExpansionData
-from armi.reactor.converters.axialExpansion.assemblyAxialLinkage import (
-    AssemblyAxialLinkage,
-)
 from armi.reactor.converters.axialExpansion.tests import AxialExpansionTestBase
 from armi.reactor.converters.axialExpansion.tests.buildAxialExpAssembly import (
     buildTestAssembly,
@@ -505,26 +501,6 @@ class TestExceptions(AxialExpansionTestBase):
         obj = AxialExpansionChanger(detailedAxialExpansion=True)
         with self.assertRaises(RuntimeError) as cm:
             obj.setAssembly(assembly)
-            the_exception = cm.exception
-            self.assertEqual(the_exception.error_code, 3)
-
-    def test_updateComponentTempsBy1DTempFieldValueError(self):
-        tempGrid = [5.0, 15.0, 35.0]
-        tempField = linspace(25.0, 310.0, 3)
-        with self.assertRaises(ValueError) as cm:
-            self.obj.expansionData.updateComponentTempsBy1DTempField(
-                tempGrid, tempField
-            )
-            the_exception = cm.exception
-            self.assertEqual(the_exception.error_code, 3)
-
-    def test_updateComponentTempsBy1DTempFieldRuntimeError(self):
-        tempGrid = [5.0, 15.0, 35.0]
-        tempField = linspace(25.0, 310.0, 10)
-        with self.assertRaises(RuntimeError) as cm:
-            self.obj.expansionData.updateComponentTempsBy1DTempField(
-                tempGrid, tempField
-            )
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
 
