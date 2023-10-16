@@ -144,6 +144,52 @@ class TestUpdateComponentTemps(unittest.TestCase):
             self.assertEqual(the_exception.error_code, 3)
 
 
+class TestSetTargetComponents(unittest.TestCase):
+    """Runs through _setTargetComponents in the init and checks to make sure they're all set right
+
+    Coverage for isTargetComponent is provided when querying each component for their target component
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        cls.a = buildTestAssembly("HT9")
+
+    def test_checkTargetComponents(self):
+        """make sure target components are set right. Skip the dummy block."""
+        expData = ExpansionData(self.a, False, False)
+        for b in self.a[-1]:
+            for c in b:
+                if b.hasFlags(Flags.PLENUM):
+                    if c.hasFlags(Flags.CLAD):
+                        self.assertTrue(expData.isTargetComponent(c))
+                    else:
+                        self.assertFalse(expData.isTargetComponent(c))
+                else:
+                    if c.p.flags == b.p.flags:
+                        self.assertTrue(expData.isTargetComponent(c))
+                    else:
+                        self.assertFalse(expData.isTargetComponent(c))
+
+    def test_isFuelLocked(self):
+        """Ensures that the RuntimeError statement in ExpansionData::_isFuelLocked is raised appropriately.
+
+        Notes
+        -----
+        This is implemented by modifying the fuel block to contain no fuel component
+        and passing it to ExpansionData::_isFuelLocked.
+        """
+        expData = ExpansionData(self.a, False, False)
+        fuelBlock = self.a[1]
+        fuelComp = fuelBlock.getComponent(Flags.FUEL)
+        self.assertEqual(fuelBlock.p.axialExpTargetComponent, fuelComp.name)
+        ## Delete fuel comp and throw the error
+        fuelBlock.remove(fuelComp)
+        with self.assertRaises(RuntimeError) as cm:
+            expData._isFuelLocked(fuelBlock)
+            the_exception = cm.exception
+            self.assertEqual(the_exception.error_code, 3)
+
+
 class TestDetermineTargetComponent(unittest.TestCase):
     """Verify determineTargetComponent method is properly updating _componentDeterminesBlockHeight."""
 
