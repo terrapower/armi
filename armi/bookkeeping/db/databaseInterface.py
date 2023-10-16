@@ -302,9 +302,7 @@ class DatabaseInterface(interfaces.Interface):
             if os.path.exists(self.cs["reloadDBName"]):
                 yield Database3(self.cs["reloadDBName"], "r")
 
-    def loadState(
-        self, cycle, timeNode, timeStepName="", fileName=None, updateGlobalAssemNum=True
-    ):
+    def loadState(self, cycle, timeNode, timeStepName="", fileName=None):
         """
         Loads a fresh reactor and applies it to the Operator.
 
@@ -329,7 +327,6 @@ class DatabaseInterface(interfaces.Interface):
                         statePointName=timeStepName,
                         cs=self.cs,
                         allowMissing=True,
-                        updateGlobalAssemNum=updateGlobalAssemNum,
                     )
                     self.o.reattach(newR, self.cs)
                     break
