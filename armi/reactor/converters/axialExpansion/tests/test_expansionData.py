@@ -5,7 +5,11 @@ from armi.reactor.flags import Flags
 from armi.reactor.blocks import HexBlock
 from armi.reactor.components import DerivedShape
 from armi.reactor.components.basicShapes import Circle, Hexagon
-from armi.reactor.converters.axialExpansion.expansionData import ExpansionData
+from armi.reactor.converters.axialExpansion.tests import AxialExpansionTestBase
+from armi.reactor.converters.axialExpansion.expansionData import (
+    ExpansionData,
+    getSolidComponents,
+)
 from armi.reactor.converters.axialExpansion.tests.buildAxialExpAssembly import (
     buildTestAssembly,
 )
@@ -16,6 +20,14 @@ class TestSetExpansionFactors(unittest.TestCase):
     def setUpClass(cls):
         cls.a = buildTestAssembly("HT9")
         cls.expData = ExpansionData(cls.a, False, False)
+
+    def test_getExpansionFactor(self):
+        expansionFactor = 1.15
+        shieldComp = self.a[0].getComponent(Flags.SHIELD)
+        cladComp = self.a[0].getComponent(Flags.CLAD)
+        self.expData.setExpansionFactors([shieldComp], [expansionFactor])
+        self.assertEqual(self.expData.getExpansionFactor(shieldComp), expansionFactor)
+        self.assertEqual(self.expData.getExpansionFactor(cladComp), 1.0)
 
     def test_setExpansionFactors(self):
         cList = self.a[0].getChildren()
@@ -45,6 +57,46 @@ class TestSetExpansionFactors(unittest.TestCase):
             self.expData.setExpansionFactors(cList, expansionGrowthFracs)
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
+
+
+class TestComputeThermalExpansionFactors(AxialExpansionTestBase):
+    @classmethod
+    def setUpClass(cls):
+        AxialExpansionTestBase.setUp(cls)
+
+    @classmethod
+    def tearDownClass(cls):
+        return AxialExpansionTestBase.tearDown(cls)
+
+    def setUp(self):
+        self.a = buildTestAssembly("FakeMat", hot=True)
+
+    def test_computeThermalExpansionFactors_FromTinput2Thot(self):
+        """expand from Tinput to Thot"""
+        self.expData = ExpansionData(self.a, False, True)
+        self.expData.computeThermalExpansionFactors()
+        for b in self.a:
+            for c in getSolidComponents(b):
+                self.assertEqual(self.expData._expansionFactors[c], 1.044776119402985)
+
+    def test_computeThermalExpansionFactors_NoRefTemp(self):
+        """occurs when not expanding from Tinput to Thot and no new temperature prescribed"""
+        self.expData = ExpansionData(self.a, False, False)
+        self.expData.computeThermalExpansionFactors()
+        for b in self.a:
+            for c in getSolidComponents(b):
+                self.assertEqual(self.expData._expansionFactors[c], 1.0)
+
+    def test_computeThermalExpansionFactors_withRefTemp(self):
+        """occurs when expanding from some reference temp (not equal to Tinput) to Thot"""
+        self.expData = ExpansionData(self.a, False, False)
+        for b in self.a:
+            for c in getSolidComponents(b):
+                self.expData.updateComponentTemp(c, 175.0)
+        self.expData.computeThermalExpansionFactors()
+        for b in self.a:
+            for c in getSolidComponents(b):
+                self.assertEqual(self.expData._expansionFactors[c], 0.9857142857142858)
 
 
 class TestUpdateComponentTemps(unittest.TestCase):
