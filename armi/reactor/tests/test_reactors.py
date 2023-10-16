@@ -33,7 +33,9 @@ from armi.reactor import grids
 from armi.reactor import reactors
 from armi.reactor.components import Hexagon, Rectangle
 from armi.reactor.converters import geometryConverters
-from armi.reactor.converters.axialExpansion.axialExpansionChanger import AxialExpansionChanger
+from armi.reactor.converters.axialExpansion.axialExpansionChanger import (
+    AxialExpansionChanger,
+)
 from armi.reactor.flags import Flags
 from armi.settings.fwSettings.globalSettings import CONF_ASSEM_FLAGS_SKIP_AXIAL_EXP
 from armi.settings.fwSettings.globalSettings import CONF_SORT_REACTOR

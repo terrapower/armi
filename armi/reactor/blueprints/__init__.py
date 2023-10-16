@@ -107,7 +107,9 @@ from armi.reactor.blueprints.componentBlueprint import ComponentGroups
 from armi.reactor.blueprints.componentBlueprint import ComponentKeyedList
 from armi.reactor.blueprints.gridBlueprint import Grids, Triplet
 from armi.reactor.blueprints.reactorBlueprint import Systems, SystemBlueprint
-from armi.reactor.converters.axialExpansion.axialExpansionChanger import expandColdDimsToHot
+from armi.reactor.converters.axialExpansion.axialExpansionChanger import (
+    expandColdDimsToHot,
+)
 from armi.reactor.converters.axialExpansion import makeAssemsAbleToSnapToUniformMesh
 
 context.BLUEPRINTS_IMPORTED = True
