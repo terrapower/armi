@@ -7,8 +7,6 @@
 <!-- MANDATORY: Explain why the change is necessary -->
 <!-- Optional: Link to any related GitHub Issues -->
 
-
-
 ---
 
 ## Checklist
@@ -20,8 +18,8 @@
     https://terrapower.github.io/armi/developer/tooling.html#good-pull-requests
 -->
 
-- [ ] This PR has only one purpose or idea.
-- [ ] Tests have been added/updated to verify that the new/changed code works.
+- [ ] This PR has only [one purpose or idea](https://terrapower.github.io/armi/developer/tooling.html#one-idea-one-pr).
+- [ ] [Tests](https://terrapower.github.io/armi/developer/tooling.html#test-it) have been added/updated to verify that the new/changed code works.
 
 <!-- Check the code quality -->
 
@@ -31,5 +29,5 @@
 <!-- Check the project-level cruft -->
 
 - [ ] The [release notes](https://terrapower.github.io/armi/release/index.html) (location `doc/release/0.X.rst`) are up-to-date with any important changes.
-- [ ] The documentation is still up-to-date in the `doc` folder.
+- [ ] The [documentation](https://terrapower.github.io/armi/developer/tooling.html#document-it) is still up-to-date in the `doc` folder.
 - [ ] The dependencies are still up-to-date in `pyproject.toml`.
