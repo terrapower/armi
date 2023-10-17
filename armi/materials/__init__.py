@@ -94,16 +94,6 @@ def importMaterialsIntoModuleNamespace(path, name, namespace, updateSource=None)
 
 importMaterialsIntoModuleNamespace(__path__, __name__, globals())
 
-# the co_varnames attribute contains arguments and then locals so we must restrict it to just the arguments.
-AVAILABLE_MODIFICATION_NAMES = {
-    name
-    for subclass in dynamicImporter.getEntireFamilyTree(Material)
-    for name in subclass.applyInputParams.__code__.co_varnames[
-        : subclass.applyInputParams.__code__.co_argcount
-    ]
-}
-AVAILABLE_MODIFICATION_NAMES.remove("self")
-
 
 def iterAllMaterialClassesInNamespace(namespace):
     """
