@@ -137,15 +137,7 @@ class TestGeneralUtils(unittest.TestCase):
             utils.plotMatrix(matrix, fname, xticks=xtick, yticks=ytick)
 
     def test_classesInHierarchy(self):
-        """Tests the classesInHierarchy utility.
-
-        .. test:: Tests that the Reactor is stored heirarchically
-           :id: T_REACTOR_HIERARCHY_0
-           :links: R_REACTOR_HIERARCHY
-
-           This test shows that the Blocks and Assemblies are stored
-           heirarchically inside the Core, which is inside the Reactor object.
-        """
+        """Tests the classesInHierarchy utility."""
         # load the test reactor
         _o, r = loadTestReactor()
 
