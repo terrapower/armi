@@ -99,7 +99,7 @@ class TestAxialExpansionHeight(AxialExpansionTestBase):
 
     def setUp(self):
         AxialExpansionTestBase.setUp(self)
-        self.a = buildTestAssembly(name="FakeMat")
+        self.a = buildTestAssembly(materialName="FakeMat")
 
         self.temp = Temperature(
             self.a.getTotalHeight(), numTempGridPts=11, tempSteps=10
@@ -131,7 +131,7 @@ class TestAxialExpansionHeight(AxialExpansionTestBase):
 
     def _generateComponentWiseExpectedHeight(self):
         """Calculate the expected height, external of AssemblyAxialExpansion()."""
-        assem = buildTestAssembly(name="FakeMat")
+        assem = buildTestAssembly(materialName="FakeMat")
         aveBlockTemp = zeros((len(assem), self.temp.tempSteps))
         self.trueZtop = zeros((len(assem), self.temp.tempSteps))
         self.trueHeight = zeros((len(assem), self.temp.tempSteps))
@@ -173,7 +173,7 @@ class TestConservation(AxialExpansionTestBase):
 
     def setUp(self):
         AxialExpansionTestBase.setUp(self)
-        self.a = buildTestAssembly(name="FakeMat")
+        self.a = buildTestAssembly(materialName="FakeMat")
 
     def tearDown(self):
         AxialExpansionTestBase.tearDown(self)
@@ -198,7 +198,7 @@ class TestConservation(AxialExpansionTestBase):
         Temperature field is always isothermal and initially at 25 C.
         """
         isothermalTempList = [100.0, 350.0, 250.0, 25.0]
-        a = buildTestAssembly(name="HT9")
+        a = buildTestAssembly(materialName="HT9")
         origMesh = a.getAxialMesh()[:-1]
         origMasses, origNDens = self._getComponentMassAndNDens(a)
         axialExpChngr = AxialExpansionChanger(detailedAxialExpansion=True)
@@ -300,7 +300,7 @@ class TestConservation(AxialExpansionTestBase):
         - uniform expansion over all components within the assembly
         - 10 total expansion steps: 5 at +1.01 L1/L0, and 5 at -(1.01^-1) L1/L0
         """
-        a = buildTestAssembly(name="FakeMat")
+        a = buildTestAssembly(materialName="FakeMat")
         axExpChngr = AxialExpansionChanger()
         origMesh = a.getAxialMesh()
         origMasses, origNDens = self._getComponentMassAndNDens(a)
@@ -483,7 +483,7 @@ class TestExceptions(AxialExpansionTestBase):
 
     def setUp(self):
         AxialExpansionTestBase.setUp(self)
-        self.a = buildTestAssembly(name="FakeMatException")
+        self.a = buildTestAssembly(materialName="FakeMatException")
         self.obj.setAssembly(self.a)
 
     def tearDown(self):
@@ -525,7 +525,7 @@ class TestGetSolidComponents(unittest.TestCase):
     """Verify that getSolidComponents returns just solid components."""
 
     def setUp(self):
-        self.a = buildTestAssembly(name="HT9")
+        self.a = buildTestAssembly(materialName="HT9")
 
     def test_getSolidComponents(self):
         for b in self.a:

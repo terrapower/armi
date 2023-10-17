@@ -74,16 +74,12 @@ class TestSetExpansionFactors(unittest.TestCase):
 
 
 class TestComputeThermalExpansionFactors(AxialExpansionTestBase):
-    @classmethod
-    def setUpClass(cls):
-        AxialExpansionTestBase.setUp(cls)
-
-    @classmethod
-    def tearDownClass(cls):
-        return AxialExpansionTestBase.tearDown(cls)
-
     def setUp(self):
+        AxialExpansionTestBase.setUp(self)
         self.a = buildTestAssembly("FakeMat", hot=True)
+
+    def tearDown(self):
+        AxialExpansionTestBase.tearDown(self)
 
     def test_computeThermalExpansionFactors_FromTinput2Thot(self):
         """expand from Tinput to Thot"""
