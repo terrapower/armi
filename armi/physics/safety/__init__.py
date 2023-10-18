@@ -15,11 +15,9 @@
 """Safety package for generic safety-related code."""
 from armi import plugins
 
-from armi.physics.safety import settings
-
 
 class SafetyPlugin(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineSettings():
-        return settings.defineSettings()
+        return []

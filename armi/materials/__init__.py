@@ -38,7 +38,6 @@ from typing import List
 import inspect
 
 from armi.materials.material import Material
-from armi.utils import dynamicImporter
 
 # this will frequently be updated by the CONF_MATERIAL_NAMESPACE_ORDER setting
 # during reactor construction (see armi.reactor.reactors.factory)
