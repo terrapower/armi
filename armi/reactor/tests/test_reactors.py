@@ -279,6 +279,9 @@ class HexReactorTests(ReactorTests):
         val2 = self.r.core.getTotalBlockParam("power", addSymmetricPositions=True)
         self.assertEqual(val2 / self.r.core.powerMultiplier, val)
 
+        with self.assertRaises(ValueError):
+            self.r.core.getTotalBlockParam(generationNum=1)
+
     def test_geomType(self):
         self.assertEqual(self.r.core.geomType, geometry.GeomType.HEX)
 
@@ -621,6 +624,11 @@ class HexReactorTests(ReactorTests):
         nRings = self.r.core.getNumRings(indexBased=True)
         nAssmWithBlanks = self.r.core.getNumAssembliesWithAllRingsFilledOut(nRings)
         self.assertEqual(77, nAssmWithBlanks)
+
+    @unittest.mock.patch("armi.reactor.reactors.Core.powerMultiplier", 1)
+    def test_getNumAssembliesWithAllRingsFilledOutBipass(self):
+        nAssems = self.r.core.getNumAssembliesWithAllRingsFilledOut(3)
+        self.assertEqual(19, nAssems)
 
     def test_getNumEnergyGroups(self):
         # this Core doesn't have a loaded ISOTXS library, so this test is minimally useful
