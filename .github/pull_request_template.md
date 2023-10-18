@@ -14,8 +14,7 @@
 <!--
     You (the pull requester) should put an `x` in the boxes below you have completed.
     If you're unsure about any of them, don't hesitate to ask. We're here to help!
-    Learn what a "good PR" looks like here:
-    https://terrapower.github.io/armi/developer/tooling.html#good-pull-requests
+    (If a checkbox requires no action for this PR, put an `x` in the box.)
 -->
 
 - [ ] This PR has only [one purpose or idea](https://terrapower.github.io/armi/developer/tooling.html#one-idea-one-pr).
@@ -30,4 +29,5 @@
 
 - [ ] The [release notes](https://terrapower.github.io/armi/release/index.html) (location `doc/release/0.X.rst`) are up-to-date with any important changes.
 - [ ] The [documentation](https://terrapower.github.io/armi/developer/tooling.html#document-it) is still up-to-date in the `doc` folder.
+- [ ] No [requirements](https://terrapower.github.io/armi/developer/tooling.html#watch-for-requirements) were altered.
 - [ ] The dependencies are still up-to-date in `pyproject.toml`.
