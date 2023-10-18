@@ -371,12 +371,7 @@ class HexReactorTests(ReactorTests):
             )
 
     def test_countFuelAxialBlocks(self):
-        """Tests that the users definition of fuel blocks is preserved.
-
-        .. test:: Tests that the users definition of fuel blocks is preserved.
-            :id: T_REACTOR_2
-            :links: R_REACTOR
-        """
+        """Tests that the users definition of fuel blocks is preserved."""
         numFuelBlocks = self.r.core.countFuelAxialBlocks()
         self.assertEqual(numFuelBlocks, 3)
 
