@@ -16,6 +16,7 @@ import copy
 import logging
 import os
 import unittest
+from unittest.mock import patch
 
 from numpy.testing import assert_allclose, assert_equal
 from six.moves import cPickle
@@ -625,7 +626,7 @@ class HexReactorTests(ReactorTests):
         nAssmWithBlanks = self.r.core.getNumAssembliesWithAllRingsFilledOut(nRings)
         self.assertEqual(77, nAssmWithBlanks)
 
-    @unittest.mock.patch("armi.reactor.reactors.Core.powerMultiplier", 1)
+    @patch("armi.reactor.reactors.Core.powerMultiplier", 1)
     def test_getNumAssembliesWithAllRingsFilledOutBipass(self):
         nAssems = self.r.core.getNumAssembliesWithAllRingsFilledOut(3)
         self.assertEqual(19, nAssems)
