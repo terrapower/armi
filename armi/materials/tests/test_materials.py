@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests materials.py."""
-
+from copy import deepcopy
 import math
 import pickle
 import unittest
@@ -710,7 +710,7 @@ class UraniumOxide_TestCase(_Material_Test, unittest.TestCase):
         for key in self.mat.massFrac:
             self.assertEqual(duplicateU.massFrac[key], self.mat.massFrac[key])
 
-        duplicateMassFrac = self.mat.getMassFracCopy()
+        duplicateMassFrac = deepcopy(self.mat.massFrac)
         for key in self.mat.massFrac.keys():
             self.assertEqual(duplicateMassFrac[key], self.mat.massFrac[key])
 
