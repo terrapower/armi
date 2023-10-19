@@ -77,6 +77,7 @@ import yamlize.objects
 
 from armi import context
 from armi import getPluginManager, getPluginManagerOrFail
+from armi import migration
 from armi import plugins
 from armi import runLog
 from armi.nucDirectory import nuclideBases
@@ -84,7 +85,6 @@ from armi.reactor import assemblies
 from armi.reactor import geometry
 from armi.reactor import systemLayoutInput
 from armi.reactor.flags import Flags
-from armi.scripts import migration
 from armi.utils.customExceptions import InputError
 from armi.utils import textProcessors
 from armi.settings.fwSettings.globalSettings import (
@@ -633,10 +633,5 @@ def migrate(bp: Blueprints, cs):
             aDesign.radialMeshPoints = radMesh
             aDesign.azimuthalMeshPoints = aziMesh
 
-    # Someday: write out the migrated file. At the moment this messes up the case
+    # TODO: write out the migrated file. At the moment this messes up the case
     # title and doesn't yet have the other systems in place so this isn't the right place.
-
-
-#     cs.writeToXMLFile(cs.caseTitle + '.migrated.xml')
-#     with open(os.path.split(cs['loadingFile'])[0] + '.migrated.' + '.yaml', 'w') as loadingFile:
-#         blueprints.Blueprints.dump(bp, loadingFile)
