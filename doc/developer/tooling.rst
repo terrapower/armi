@@ -77,6 +77,27 @@ nitty-gritty detail to fix a bug without you. Think about variable names, commen
 Also consider (if you are making a major change) that you might be making something in the docs
 out-of-date.
 
+Watch for Requirements
+^^^^^^^^^^^^^^^^^^^^^^
+When you are touching code in ARMI, watch out for the docstrings in the methods, classes, or
+modules you are editing. These docstrings might have bread crumbs that link back to requirements.
+Such breadcrumbs will look like:
+
+.. code-block::
+
+    """
+    .. req: This is a requirement breadcrumb.
+
+    .. test: This is a test breadcrumb.
+
+    .. impl: This is an implementation breadcrumb.
+
+    """
+
+If you touch any code that has such a docstring, even in a file, you are going to be
+responsible for not breaking that code/functionality. And you will be required to explicitly
+call out that you touch such a code in your PR.
+
 Packaging and dependency management
 -----------------------------------
 The process of packaging Python projects and managing their dependencies is somewhat
