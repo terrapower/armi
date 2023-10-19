@@ -11,6 +11,7 @@ What's new in ARMI
 #. The ``_copyInputsHelper()`` gives relative path and not absolute after copy. (`PR#1416 <https://github.com/terrapower/armi/pull/1416>`_)
 #. ARMI now mandates ``ruff`` linting. (`PR#1419 <https://github.com/terrapower/armi/pull/1419>`_)
 #. Removed all old ARMI requirements, to start the work fresh. (`PR#1438 <https://github.com/terrapower/armi/pull/1438>`_)
+#. Downgrading Draft PRs as policy. (`PR#1444 <https://github.com/terrapower/armi/pull/1444>`_)
 #. TBD
 
 Bug fixes
