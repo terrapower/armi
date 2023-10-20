@@ -46,10 +46,11 @@ Don't open until it is ready
 
 Your PR isn't complete when the code works, it is complete when the code is polished and all the
 tests are written and working. The idea here is: as soon as you open a PR, people will start
-spending their time looking at it. And their time is valuable. An exception to this rule is that
-GitHub allows you to `open a Draft PR <https://github.blog/2019-02-14-introducing-draft-pull-requests/>`_
-which is a nice option if you need to open your PR early for some reason (usually testing). You
-can also convert any open PR to Draft if you decide it needs more work.
+spending their time looking at it. And their time is valuable. Even though GitHub allows you to
+`open a Draft PR <https://github.blog/2019-02-14-introducing-draft-pull-requests/>`_, this is
+not the default option in ARMI. It should not be your workflow to open a Draft PR by default. We
+prefer to keep the PR list as short as possible. A good rule of thumb is: don't open a PR until
+you think it is ready for final review.
 
 Test It
 ^^^^^^^
