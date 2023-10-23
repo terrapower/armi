@@ -120,10 +120,13 @@ class BlockCollection(list):
     This is a list with special methods.
     """
 
-    def __init__(self, allNuclidesInProblem, validBlockTypes=None):
+    def __init__(
+        self, allNuclidesInProblem, validBlockTypes=None, averageByComponent=False
+    ):
         list.__init__(self)
         self.allNuclidesInProblem = allNuclidesInProblem
         self.weightingParam = None
+        self.averageByComponent = averageByComponent
 
         # allowed to be independent of fuel component temperatures b/c Doppler
         self.avgNucTemperatures = {}
@@ -320,7 +323,7 @@ class AverageBlockCollection(BlockCollection):
         lfpCollection = self._getAverageFuelLFP()
         newBlock.setLumpedFissionProducts(lfpCollection)
         # check if components are similar
-        if self._checkBlockSimilarity():
+        if self._averageByComponent():
             # set number densities on a component basis
             for compIndex, c in enumerate(sorted(newBlock.getComponents())):
                 c.setNumberDensities(
@@ -422,7 +425,16 @@ class AverageBlockCollection(BlockCollection):
                 / weightedAvgComponentMass
             )
 
-    def _checkBlockSimilarity(self):
+    def _averageByComponent(self):
+        """
+        Check whether the blocks in the collection have similar components
+
+        If the components are similar and the user has requested component-level averaging, return True.
+        Otherwise, return False.
+        """
+        if not self.averageByComponent:
+            return False
+
         cFlags = dict()
         for b in self.getCandidateBlocks():
             cFlags[b] = [c.p.flags for c in sorted(b.getComponents())]
@@ -455,13 +467,8 @@ def getBlockNuclideTemperatureAvgTerms(block, allNucNames):
         """
         Needed to make sure temperature of 0-density nuclides in fuel get fuel temperature
         """
-        if component.hasFlags(Flags.DEPLETABLE):
-            traceDens = TRACE_NUMBER_DENSITY
-        else:
-            traceDens = 0.0
-
         return [
-            component.p.numberDensities[nucName] or traceDens
+            component.p.numberDensities[nucName] or TRACE_NUMBER_DENSITY
             if nucName in component.p.numberDensities
             else 0.0
             for nucName in allNucNames
@@ -1400,6 +1407,9 @@ def blockCollectionFactory(xsSettings, allNuclidesInProblem):
     """Build a block collection based on user settings and input."""
     blockRepresentation = xsSettings.blockRepresentation
     validBlockTypes = xsSettings.validBlockTypes
+    averageByComponent = xsSettings.averageByComponent
     return BLOCK_COLLECTIONS[blockRepresentation](
-        allNuclidesInProblem, validBlockTypes=validBlockTypes
+        allNuclidesInProblem,
+        validBlockTypes=validBlockTypes,
+        averageByComponent=averageByComponent,
     )
