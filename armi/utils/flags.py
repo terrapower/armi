@@ -23,9 +23,6 @@ support extension. We also considered the ``aenum`` package, which permits exten
 ``Enum`` classes, but unfortunately does not support extension of ``Flags``. So, we had to
 make our own. This is a much simplified version of what comes with ``aenum``, but still
 provides most of the safety and functionality.
-
-There is an `issue <https://bitbucket.org/stoneleaf/aenum/issues/27/>`_ on the ``aenum``
-bitbucket site to track ``Flag`` extension.
 """
 import math
 

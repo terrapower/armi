@@ -650,8 +650,6 @@ class Database3:
         bp=None,
         statePointName=None,
         allowMissing=False,
-        updateGlobalAssemNum=True,
-        updateMasterCs=True,
     ):
         """Load a new reactor from (cycle, node).
 
@@ -677,10 +675,6 @@ class Database3:
         allowMissing : bool, optional
             Whether to emit a warning, rather than crash if reading a database
             with undefined parameters. Default False.
-        updateGlobalAssemNum : bool, optional
-            DeprecationWarning: This is unused.
-        updateMasterCs : bool, optional
-            TODO: Deprecated. Slated for removal.
 
         Returns
         -------
@@ -721,12 +715,6 @@ class Database3:
             parameterCollections.GLOBAL_SERIAL_NUM, layout.serialNum.max()
         )
         root = comps[0][0]
-
-        if updateGlobalAssemNum:
-            runLog.warning(
-                "The method input `updateGlobalAssemNum` is no longer used.",
-                single=True,
-            )
 
         # return a Reactor object
         if cs[CONF_SORT_REACTOR]:

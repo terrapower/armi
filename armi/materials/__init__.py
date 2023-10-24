@@ -38,7 +38,6 @@ from typing import List
 import inspect
 
 from armi.materials.material import Material
-from armi.utils import dynamicImporter
 
 # this will frequently be updated by the CONF_MATERIAL_NAMESPACE_ORDER setting
 # during reactor construction (see armi.reactor.reactors.factory)
@@ -93,16 +92,6 @@ def importMaterialsIntoModuleNamespace(path, name, namespace, updateSource=None)
 
 
 importMaterialsIntoModuleNamespace(__path__, __name__, globals())
-
-# the co_varnames attribute contains arguments and then locals so we must restrict it to just the arguments.
-AVAILABLE_MODIFICATION_NAMES = {
-    name
-    for subclass in dynamicImporter.getEntireFamilyTree(Material)
-    for name in subclass.applyInputParams.__code__.co_varnames[
-        : subclass.applyInputParams.__code__.co_argcount
-    ]
-}
-AVAILABLE_MODIFICATION_NAMES.remove("self")
 
 
 def iterAllMaterialClassesInNamespace(namespace):

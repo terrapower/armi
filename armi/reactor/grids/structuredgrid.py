@@ -136,10 +136,6 @@ class StructuredGrid(Grid):
 
     * Unit step calculations use dot products and must not be polluted by the bound
       indices. Thus we reduce the size of the unitSteps tuple accordingly.
-
-    .. impl:: ARMI supports a number of structured mesh options.
-       :id: I_REACTOR_MESH_0
-       :links: R_REACTOR_MESH
     """
 
     def __init__(

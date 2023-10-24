@@ -127,23 +127,24 @@ class TestXSLibrary(unittest.TestCase, TempFileMixin):
         finally:
             os.remove(dummyFileName)
 
-        dummyFileName = "ISOtopics.txt"
-        with open(dummyFileName, "w") as file:
-            file.write(
-                "This is a file that starts with the letters 'ISO' but will"
-                " break the regular expression search."
-            )
-
-        try:
-            with mockRunLogs.BufferLog() as log:
-                lib = xsLibraries.IsotxsLibrary()
-                xsLibraries.mergeXSLibrariesInWorkingDirectory(lib)
-                self.assertIn(
-                    f"{dummyFileName} in the merging of ISOXX files",
-                    log.getStdout(),
+        with TemporaryDirectoryChanger():
+            dummyFileName = "ISOtopics.txt"
+            with open(dummyFileName, "w") as file:
+                file.write(
+                    "This is a file that starts with the letters 'ISO' but will"
+                    " break the regular expression search."
                 )
-        finally:
-            pass
+
+            try:
+                with mockRunLogs.BufferLog() as log:
+                    lib = xsLibraries.IsotxsLibrary()
+                    xsLibraries.mergeXSLibrariesInWorkingDirectory(lib)
+                    self.assertIn(
+                        f"{dummyFileName} in the merging of ISOXX files",
+                        log.getStdout(),
+                    )
+            finally:
+                pass
 
     def _xsLibraryAttributeHelper(
         self,
