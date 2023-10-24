@@ -67,7 +67,7 @@ def plotReactorPerformance(reactor, dbi, buGroups, extension=None, history=None)
     """
     try:
         data = dbi.getHistory(
-            reactor, params=["cycle", "time", "eFeedMT", "eSWU", "eFuelCycleCost"]
+            reactor, params=["cycle", "time", "eFeedMT", "eSWU"]
         )
         data.update(
             dbi.getHistory(
@@ -114,7 +114,7 @@ def plotReactorPerformance(reactor, dbi, buGroups, extension=None, history=None)
         extension=extension,
     )
     buVsTime(reactor.name, scalars, extension=extension)
-    xsHistoryVsTime(reactor.name, history, buGroups, extension=extension)
+    xsHistoryVsTime(reactor.name, buGroups, history=history, extension=extension)
     movesVsCycle(reactor.name, scalars, extension=extension)
 
 
@@ -267,7 +267,7 @@ def buVsTime(name, scalars, extension=None):
     report.setData("Burnup Plot", os.path.abspath(figName), report.BURNUP_PLOT)
 
 
-def xsHistoryVsTime(name, history, buGroups, extension=None):
+def xsHistoryVsTime(name, buGroups, history=None, extension=None):
     r"""
     Plot cross section history vs. time.
 
@@ -275,16 +275,16 @@ def xsHistoryVsTime(name, history, buGroups, extension=None):
     ----------
     name : str
         reactor.name
-    history : armi.bookkeeping.historyTracker.HistoryTrackerInterface object
-        The history interface.
     buGroups : list of float
         The burnup groups in the problem
+    history : armi.bookkeeping.historyTracker.HistoryTrackerInterface object
+        The history interface.
     extension : str, optional
         The file extention for saving the figure
     """
     extension = extension or settings.Settings()["outputFileExtension"]
 
-    if not history.xsHistory:
+    if history is None or not history.xsHistory:
         return
 
     colors = itertools.cycle(["b", "g", "r", "c", "m", "y", "k"])
