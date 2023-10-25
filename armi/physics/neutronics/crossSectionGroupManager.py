@@ -121,10 +121,13 @@ class BlockCollection(list):
     This is a list with special methods.
     """
 
-    def __init__(self, allNuclidesInProblem, validBlockTypes=None):
+    def __init__(
+        self, allNuclidesInProblem, validBlockTypes=None, averageByComponent=False
+    ):
         list.__init__(self)
         self.allNuclidesInProblem = allNuclidesInProblem
         self.weightingParam = None
+        self.averageByComponent = averageByComponent
 
         # allowed to be independent of fuel component temperatures b/c Doppler
         self.avgNucTemperatures = {}
@@ -326,7 +329,17 @@ class AverageBlockCollection(BlockCollection):
         newBlock = self._getNewBlock()
         lfpCollection = self._getAverageFuelLFP()
         newBlock.setLumpedFissionProducts(lfpCollection)
-        newBlock.setNumberDensities(self._getAverageNumberDensities())
+        # check if components are similar
+        if self._performAverageByComponent():
+            # set number densities and temperatures on a component basis
+            for compIndex, c in enumerate(sorted(newBlock.getComponents())):
+                c.setNumberDensities(
+                    self._getAverageComponentNumberDensities(compIndex)
+                )
+                c.temperatureInC = self._getAverageComponentTemperature(compIndex)
+        else:
+            newBlock.setNumberDensities(self._getAverageNumberDensities())
+
         newBlock.p.percentBu = self._calcWeightedBurnup()
         self.calcAvgNuclideTemperatures()
         return newBlock
@@ -366,6 +379,96 @@ class AverageBlockCollection(BlockCollection):
             nv += nvBlock * wt
         return nvt, nv
 
+    def _getAverageComponentNumberDensities(self, compIndex):
+        """
+        Get weighted average number densities of a component in the collection.
+
+        Returns
+        -------
+        numberDensities : dict
+            nucName, ndens data (atoms/bn-cm)
+        """
+        nuclides = self.allNuclidesInProblem
+        blocks = self.getCandidateBlocks()
+        weights = numpy.array([self.getWeight(b) for b in blocks])
+        weights /= weights.sum()  # normalize by total weight
+        components = [sorted(b.getComponents())[compIndex] for b in blocks]
+        ndens = weights.dot([c.getNuclideNumberDensities(nuclides) for c in components])
+        return dict(zip(nuclides, ndens))
+
+    def _getAverageComponentTemperature(self, compIndex):
+        """
+        Get weighted average component temperature for the collection
+
+        Notes
+        -----
+        Weighting is both by the block weight within the collection and the relative mass of the component.
+        The block weight is already scaled by the block volume, so we need to pull that out of the block
+        weighting because it would effectively be double-counted in the component mass. b.getHeight()
+        is proportional to block volume, so it is used here as a computationally cheaper proxy for scaling
+        by block volume.
+
+        Returns
+        -------
+        numberDensities : dict
+            nucName, ndens data (atoms/bn-cm)
+        """
+        blocks = self.getCandidateBlocks()
+        weights = numpy.array([self.getWeight(b) / b.getHeight() for b in blocks])
+        weights /= weights.sum()  # normalize by total weight
+        components = [sorted(b.getComponents())[compIndex] for b in blocks]
+        weightedAvgComponentMass = sum(
+            w * c.getMass() for w, c in zip(weights, components)
+        )
+        if weightedAvgComponentMass == 0.0:
+            # if there is no component mass (e.g., gap), do a regular average
+            return numpy.mean(numpy.array([c.temperatureInC for c in components]))
+        else:
+            return (
+                weights.dot(
+                    numpy.array([c.temperatureInC * c.getMass() for c in components])
+                )
+                / weightedAvgComponentMass
+            )
+
+    def _performAverageByComponent(self):
+        """
+        Check if block collection averaging can/should be performed by component
+
+        If the components of blocks in the collection are similar and the user
+        has requested component-level averaging, return True.
+        Otherwise, return False.
+        """
+        if not self.averageByComponent:
+            return False
+        else:
+            return self._checkBlockSimilarity()
+
+    def _checkBlockSimilarity(self):
+        """
+        Check if blocks in the collection have similar components
+
+        If the components of blocks in the collection are similar and the user
+        has requested component-level averaging, return True.
+        Otherwise, return False.
+        """
+        cFlags = dict()
+        for b in self.getCandidateBlocks():
+            cFlags[b] = [c.p.flags for c in sorted(b.getComponents())]
+        refB = b
+        refFlags = cFlags[refB]
+        for b, compFlags in cFlags.items():
+            for c, refC in zip(compFlags, refFlags):
+                if c != refC:
+                    runLog.warning(
+                        "Non-matching block in AverageBlockCollection!\n"
+                        f"{refC} component flags in {refB} does not match {c} in {b}.\n"
+                        f"Number densities will be smeared in representative block."
+                    )
+                    return False
+        else:
+            return True
+
 
 def getBlockNuclideTemperatureAvgTerms(block, allNucNames):
     """
@@ -377,22 +480,22 @@ def getBlockNuclideTemperatureAvgTerms(block, allNucNames):
     as trace values at the proper component temperatures.
     """
 
-    def getNumberDensityWithTrace(component, nucName):
-        # needed to make sure temperature of 0-density nuclides in fuel get fuel temperature
-        try:
-            dens = component.p.numberDensities[nucName] or TRACE_NUMBER_DENSITY
-        except KeyError:
-            dens = 0.0
-        return dens
+    def getNumberDensitiesWithTrace(component, allNucNames):
+        """
+        Needed to make sure temperature of 0-density nuclides in fuel get fuel temperature
+        """
+        return [
+            component.p.numberDensities[nucName] or TRACE_NUMBER_DENSITY
+            if nucName in component.p.numberDensities
+            else 0.0
+            for nucName in allNucNames
+        ]
 
     vol = block.getVolume()
     components, volFracs = zip(*block.getVolumeFractions())
     # D = CxN matrix of number densities
     ndens = numpy.array(
-        [
-            [getNumberDensityWithTrace(c, nucName) for nucName in allNucNames]
-            for c in components
-        ]
+        [getNumberDensitiesWithTrace(c, allNucNames) for c in components]
     )
     temperatures = numpy.array(
         [c.temperatureInC for c in components]
@@ -1322,6 +1425,9 @@ def blockCollectionFactory(xsSettings, allNuclidesInProblem):
     """
     blockRepresentation = xsSettings.blockRepresentation
     validBlockTypes = xsSettings.validBlockTypes
+    averageByComponent = xsSettings.averageByComponent
     return BLOCK_COLLECTIONS[blockRepresentation](
-        allNuclidesInProblem, validBlockTypes=validBlockTypes
+        allNuclidesInProblem,
+        validBlockTypes=validBlockTypes,
+        averageByComponent=averageByComponent,
     )
