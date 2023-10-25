@@ -427,8 +427,8 @@ class AverageBlockCollection(BlockCollection):
     def _performAverageByComponent(self):
         """
         Check if block collection averaging can/should be performed by component
-        
-        If the components of blocks in the collection are similar and the user 
+
+        If the components of blocks in the collection are similar and the user
         has requested component-level averaging, return True.
         Otherwise, return False.
         """
@@ -440,8 +440,8 @@ class AverageBlockCollection(BlockCollection):
     def _checkBlockSimilarity(self):
         """
         Check if blocks in the collection have similar components
-        
-        If the components of blocks in the collection are similar and the user 
+
+        If the components of blocks in the collection are similar and the user
         has requested component-level averaging, return True.
         Otherwise, return False.
         """
