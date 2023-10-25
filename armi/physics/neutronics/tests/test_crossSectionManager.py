@@ -21,6 +21,7 @@ from io import BytesIO
 import copy
 import os
 import unittest
+from unittest.mock import MagicMock
 
 from six.moves import cPickle
 
@@ -128,6 +129,16 @@ class TestBlockCollectionAverage(unittest.TestCase):
             self.blockList[0].r.blueprints.allNuclidesInProblem
         )
         self.bc.extend(self.blockList)
+        self.bc.averageByComponent = True
+
+    def test_performAverageByComponent(self):
+        """
+        Check the averageByComponent attribute
+        """
+        self.bc._checkBlockSimilarity = MagicMock(return_value=True)
+        self.assertTrue(self.bc._performAverageByComponent())
+        self.bc.averageByComponent = False
+        self.assertFalse(self.bc._performAverageByComponent())
 
     def test_checkBlockSimilarity(self):
         """

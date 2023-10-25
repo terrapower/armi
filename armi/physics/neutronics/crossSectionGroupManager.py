@@ -323,15 +323,14 @@ class AverageBlockCollection(BlockCollection):
         lfpCollection = self._getAverageFuelLFP()
         newBlock.setLumpedFissionProducts(lfpCollection)
         # check if components are similar
-        if self._averageByComponent():
-            # set number densities on a component basis
+        if self._performAverageByComponent():
+            # set number densities and temperatures on a component basis
             for compIndex, c in enumerate(sorted(newBlock.getComponents())):
                 c.setNumberDensities(
                     self._getAverageComponentNumberDensities(compIndex)
                 )
                 c.temperatureInC = self._getAverageComponentTemperature(compIndex)
         else:
-            # components differ; need to smear densities over the block
             newBlock.setNumberDensities(self._getAverageNumberDensities())
 
         newBlock.p.percentBu = self._calcWeightedBurnup()
@@ -425,16 +424,27 @@ class AverageBlockCollection(BlockCollection):
                 / weightedAvgComponentMass
             )
 
-    def _averageByComponent(self):
+    def _performAverageByComponent(self):
         """
-        Check whether the blocks in the collection have similar components
-
-        If the components are similar and the user has requested component-level averaging, return True.
+        Check if block collection averaging can/should be performed by component
+        
+        If the components of blocks in the collection are similar and the user 
+        has requested component-level averaging, return True.
         Otherwise, return False.
         """
         if not self.averageByComponent:
             return False
+        else:
+            return self._checkBlockSimilarity()
 
+    def _checkBlockSimilarity(self):
+        """
+        Check if blocks in the collection have similar components
+        
+        If the components of blocks in the collection are similar and the user 
+        has requested component-level averaging, return True.
+        Otherwise, return False.
+        """
         cFlags = dict()
         for b in self.getCandidateBlocks():
             cFlags[b] = [c.p.flags for c in sorted(b.getComponents())]
