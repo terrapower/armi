@@ -615,6 +615,19 @@ class CylindricalComponentsAverageBlockCollection(BlockCollection):
         componentLists = [list(sorted(b)) for b in self.getCandidateBlocks()]
         return [list(comps) for comps in zip(*componentLists)]
 
+    def _getNucTempHelper(self):
+        """All candidate blocks are used in the average."""
+        nvt = numpy.zeros(len(self.allNuclidesInProblem))
+        nv = numpy.zeros(len(self.allNuclidesInProblem))
+        for block in self.getCandidateBlocks():
+            wt = self.getWeight(block)
+            nvtBlock, nvBlock = getBlockNuclideTemperatureAvgTerms(
+                block, self.allNuclidesInProblem
+            )
+            nvt += nvtBlock * wt
+            nv += nvBlock * wt
+        return nvt, nv
+
 
 class SlabComponentsAverageBlockCollection(BlockCollection):
     """

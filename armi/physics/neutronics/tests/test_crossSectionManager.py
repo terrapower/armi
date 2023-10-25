@@ -517,11 +517,15 @@ class TestBlockCollectionComponentAverage1DCylinder(unittest.TestCase):
         self.assertEqual(xsOpt.blockRepresentation, "ComponentAverage1DCylinder")
 
         xsgm.createRepresentativeBlocks()
+        xsgm.updateNuclideTemperatures()
+
         representativeBlockList = list(xsgm.representativeBlocks.values())
         representativeBlockList.sort(key=lambda repB: repB.getMass() / repB.getVolume())
         reprBlock = xsgm.representativeBlocks["ZA"]
         self.assertEqual(reprBlock.name, "1D_CYL_AVG_ZA")
         self.assertEqual(reprBlock.p.percentBu, 0.0)
+
+        refTemps = {"fuel": 600.0, "coolant": 450.0, "structure": 462.4565}
 
         for c, compDensity, compArea in zip(
             reprBlock, self.expectedComponentDensities, self.expectedComponentAreas
@@ -531,6 +535,18 @@ class TestBlockCollectionComponentAverage1DCylinder(unittest.TestCase):
             for nuc in cNucs:
                 self.assertAlmostEqual(
                     c.getNumberDensity(nuc), compDensity.get(nuc, 0.0)
+                )
+                if "fuel" in c.getType():
+                    compTemp = refTemps["fuel"]
+                elif any(sodium in c.getType() for sodium in ["bond", "coolant"]):
+                    compTemp = refTemps["coolant"]
+                else:
+                    compTemp = refTemps["structure"]
+                self.assertAlmostEqual(
+                    compTemp,
+                    xsgm.avgNucTemperatures["ZA"][nuc],
+                    2,
+                    f"{nuc} temperature does not match expected value of {compTemp}",
                 )
 
     def test_checkComponentConsistency(self):
