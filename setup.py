@@ -58,7 +58,7 @@ setup(
         "configparser",
         "coverage<=6.5.0",
         "future",
-        "h5py>=3.0",
+        "h5py>=3.0,<=3.9",
         "htmltree",
         "matplotlib",
         "numpy>=1.21,<=1.23.5",
