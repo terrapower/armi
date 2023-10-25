@@ -19,13 +19,6 @@ to be modeled. Core objects represent collections of assemblies.
 Core is a high-level object in the data model in ARMI. They contain assemblies which in turn contain
 more refinement in representing the physical reactor. The reactor is the owner of many of the
 plant-wide state variables such as keff, cycle, and node.
-
-.. impl:: ARMI represents the Reactor heirarchically.
-   :id: IMPL_REACTOR_HIERARCHY_0
-   :links: REQ_REACTOR_HIERARCHY
-
-   The Reactor contains a Core, which contains a heirachical collection of Assemblies, which in turn
-   each contain a collection of Blocks.
 """
 from typing import Optional
 import collections

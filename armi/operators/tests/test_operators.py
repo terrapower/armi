@@ -56,7 +56,7 @@ class InterfaceC(Interface):
     name = "Third"
 
 
-# TODO: Add a test that shows time evolution of Reactor (REQ_EVOLVING_STATE)
+# TODO: Add a test that shows time evolution of Reactor (R_EVOLVING_STATE)
 class OperatorTests(unittest.TestCase):
     def setUp(self):
         self.o, self.r = test_reactors.loadTestReactor()

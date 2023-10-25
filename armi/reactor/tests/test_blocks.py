@@ -16,11 +16,14 @@ import copy
 import math
 import os
 import unittest
+import io
 
 import numpy
 from numpy.testing import assert_allclose
 
 from armi import materials, runLog, settings, tests
+from armi.reactor import blueprints
+from armi.reactor.blueprints.tests.test_blockBlueprints import FULL_BP
 from armi.reactor.components import basicShapes, complexShapes
 from armi.nucDirectory import nucDir, nuclideBases
 from armi.nuclearDataIO.cccc import isotxs
@@ -300,6 +303,30 @@ def getComponentData(component):
     volume = component.getVolume()
     mass = component.getMass()
     return component, density, volume, mass
+
+
+class TestDetailedNDensUpdate(unittest.TestCase):
+    def setUp(self):
+        cs = settings.Settings()
+        with io.StringIO(FULL_BP) as stream:
+            bps = blueprints.Blueprints.load(stream)
+            bps._prepConstruction(cs)
+            self.r = tests.getEmptyHexReactor()
+            self.r.blueprints = bps
+            a = makeTestAssembly(numBlocks=1, assemNum=0)
+            a.add(buildSimpleFuelBlock())
+            self.r.core.add(a)
+
+    def test_updateDetailedNdens(self):
+        # get first block in assembly with 'fuel' key
+        block = self.r.core[0][0]
+        # get nuclides in first component in block
+        adjList = block[0].getNuclides()
+        block.p.detailedNDens = numpy.array([1.0])
+        block.p.pdensDecay = 1.0
+        block._updateDetailedNdens(frac=0.5, adjustList=adjList)
+        self.assertEqual(block.p.pdensDecay, 0.5)
+        self.assertEqual(block.p.detailedNDens, numpy.array([0.5]))
 
 
 class Block_TestCase(unittest.TestCase):
@@ -1089,7 +1116,6 @@ class Block_TestCase(unittest.TestCase):
         self.assertAlmostEqual(cur, ref, places=places)
 
     def test_add(self):
-
         numComps = len(self.block.getComponents())
 
         fuelDims = {"Tinput": 25.0, "Thot": 600, "od": 0.76, "id": 0.00, "mult": 127.0}
@@ -1109,7 +1135,6 @@ class Block_TestCase(unittest.TestCase):
         )
 
     def test_getComponentNames(self):
-
         cur = self.block.getComponentNames()
         ref = set(
             [
@@ -1393,7 +1418,7 @@ class Block_TestCase(unittest.TestCase):
             fracs[c.getName()] = a / tot
 
         places = 6
-        for (c, a) in cur:
+        for c, a in cur:
             self.assertAlmostEqual(a, fracs[c.getName()], places=places)
 
         self.assertAlmostEqual(sum(fracs.values()), sum([a for c, a in cur]))

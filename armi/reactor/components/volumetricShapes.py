@@ -12,14 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""3-dimensional shapes.
-
-.. impl:: ARMI supports a reasonable set of basic shapes.
-   :id: IMPL_REACTOR_SHAPES_2
-   :links: REQ_REACTOR_SHAPES
-
-   Here ARMI implements its support for: Cubes, Spheres, RadialSegments, and more.
-"""
+"""Three-dimensional shapes."""
 
 import math
 

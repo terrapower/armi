@@ -46,10 +46,11 @@ Don't open until it is ready
 
 Your PR isn't complete when the code works, it is complete when the code is polished and all the
 tests are written and working. The idea here is: as soon as you open a PR, people will start
-spending their time looking at it. And their time is valuable. An exception to this rule is that
-GitHub allows you to `open a Draft PR <https://github.blog/2019-02-14-introducing-draft-pull-requests/>`_
-which is a nice option if you need to open your PR early for some reason (usually testing). You
-can also convert any open PR to Draft if you decide it needs more work.
+spending their time looking at it. And their time is valuable. Even though GitHub allows you to
+`open a Draft PR <https://github.blog/2019-02-14-introducing-draft-pull-requests/>`_, this is
+not the default option in ARMI. It should not be your workflow to open a Draft PR by default. We
+prefer to keep the PR list as short as possible. A good rule of thumb is: don't open a PR until
+you think it is ready for final review.
 
 Test It
 ^^^^^^^
@@ -76,6 +77,27 @@ it for somebody who is new to the code base 3 years from now, who needs to under
 nitty-gritty detail to fix a bug without you. Think about variable names, comments, and docstrings.
 Also consider (if you are making a major change) that you might be making something in the docs
 out-of-date.
+
+Watch for Requirements
+^^^^^^^^^^^^^^^^^^^^^^
+When you are touching code in ARMI, watch out for the docstrings in the methods, classes, or
+modules you are editing. These docstrings might have bread crumbs that link back to requirements.
+Such breadcrumbs will look like:
+
+.. code-block::
+
+    """
+    .. req: This is a requirement breadcrumb.
+
+    .. test: This is a test breadcrumb.
+
+    .. impl: This is an implementation breadcrumb.
+
+    """
+
+If you touch any code that has such a docstring, even in a file, you are going to be
+responsible for not breaking that code/functionality. And you will be required to explicitly
+call out that you touch such a code in your PR.
 
 Packaging and dependency management
 -----------------------------------
@@ -128,7 +150,7 @@ repos on GitHub.
 Every release should follow this process:
 
 1. Ensure all unit tests pass and the documentation is building correctly.
-2. Bump the ``__version__`` string in ``armi/meta.py``.
+2. Bump the ``version`` string in ``pyproject.toml``.
 3. Add release notes to the documentation:
    `here <https://github.com/terrapower/armi/tree/main/doc/release>`__.
 4. Tag the commit after it goes into the repo:
