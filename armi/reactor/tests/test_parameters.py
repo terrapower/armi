@@ -72,6 +72,10 @@ class ParameterTests(unittest.TestCase):
         written to the database. It assumes that the list returned by
         ParameterDefinitionCollection.toWriteToDB() is used to filter for which
         parameters to include in the database.
+
+        .. test:: Test to restrict some parameters from being written to the database.
+            :id: T_ARMI_RESTRICT_DATABASE_WRITE
+            :links: R_ARMI_RESTRICT_DATABASE_WRITE
         """
 
         class Mock(parameters.ParameterCollection):
@@ -87,7 +91,6 @@ class ParameterTests(unittest.TestCase):
             db_params = pDefs.toWriteToDB(32)
         mock = Mock()
         self.assertListEqual(['write_me', 'and_me'], [p.name for p in mock.db_params])
-
 
     def test_paramPropertyDoesNotConflict(self):
         class Mock(parameters.ParameterCollection):
