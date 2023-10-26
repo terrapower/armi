@@ -66,6 +66,29 @@ class ParameterTests(unittest.TestCase):
             with self.assertRaises(AssertionError):
                 fail = pDefs.createBuilder(default={})
 
+    def test_writeSomeParamsToDB(self):
+        """
+        This test tests the ability to specify which parameters should be
+        written to the database. It assumes that the list returned by
+        ParameterDefinitionCollection.toWriteToDB() is used to filter for which
+        parameters to include in the database.
+        """
+
+        class Mock(parameters.ParameterCollection):
+            pDefs = parameters.ParameterDefinitionCollection()
+            with pDefs.createBuilder() as pb:
+                pb.defParam(
+                    "write_me", "units", "description", "location", default=42)
+                pb.defParam(
+                    "and_me", "units", "description", "location", default=42)
+                pb.defParam(
+                    "dont_write_me", "units", "description", "location", default=42,
+                    saveToDB=False)
+            db_params = pDefs.toWriteToDB(32)
+        mock = Mock()
+        self.assertListEqual(['write_me', 'and_me'], [p.name for p in mock.db_params])
+
+
     def test_paramPropertyDoesNotConflict(self):
         class Mock(parameters.ParameterCollection):
             pDefs = parameters.ParameterDefinitionCollection()
