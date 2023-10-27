@@ -605,7 +605,6 @@ class Operator:
             The time node that is currently being run (0 for BOC, etc.)
         excludedInterfaceNames : list, optional
             Names of interface names that will not be interacted with.
-
         """
         excludedInterfaceNames = excludedInterfaceNames or ()
         activeInterfaces = [
