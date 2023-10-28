@@ -66,9 +66,7 @@ def plotReactorPerformance(reactor, dbi, buGroups, extension=None, history=None)
         The history tracker interface
     """
     try:
-        data = dbi.getHistory(
-            reactor, params=["cycle", "time", "eFeedMT", "eSWU"]
-        )
+        data = dbi.getHistory(reactor, params=["cycle", "time", "eFeedMT", "eSWU"])
         data.update(
             dbi.getHistory(
                 reactor.core,
