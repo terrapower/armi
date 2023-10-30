@@ -147,8 +147,8 @@ class Serializer:
         Defining a Serializer for a Parameter in part defines the underlying
         representation of the data within a database file; the data stored in a database
         are sensitive to the code that wrote them. Changing the method that a Serializer
-        uses to pack or unpack data may break compatibility with old databse files.
-        Therefore, Serializers should be dilligent about signalling changes by updating
+        uses to pack or unpack data may break compatibility with old database files.
+        Therefore, Serializers should be diligent about signalling changes by updating
         their version. It is also good practice, whenever possible, to support reading
         old versions so that database files written by old versions can still be read.
 
