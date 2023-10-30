@@ -20,9 +20,6 @@ import h5py
 import numpy
 from numpy.testing import assert_allclose, assert_equal
 
-import armi
-armi.configure()
-
 from armi import __version__ as version
 from armi import interfaces
 from armi import runLog

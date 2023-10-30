@@ -170,7 +170,7 @@ class Serializer:
         Given unpacked data, return packed data and a dictionary of attributes needed to
         unpack it.
 
-        The should perform the fundamental packing operation, returning the packed data
+        This should perform the fundamental packing operation, returning the packed data
         and any metadata ("attributes") that would be necessary to unpack the data. The
         class's version is always stored, so no need to provide it as an attribute.
 
