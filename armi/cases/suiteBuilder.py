@@ -246,7 +246,6 @@ class FullFactorialSuiteBuilderNoisy(FullFactorialSuiteBuilder):
         self.noiseFraction = noiseFraction
 
     def addDegreeOfFreedom(self, inputModifiers):
-
         new = []
         for newMod in inputModifiers:
             for existingModSet in self.modifierSets:
