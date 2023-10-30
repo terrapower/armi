@@ -78,19 +78,17 @@ class ParameterTests(unittest.TestCase):
             :links: R_ARMI_RESTRICT_DATABASE_WRITE
         """
 
-        class Mock(parameters.ParameterCollection):
-            pDefs = parameters.ParameterDefinitionCollection()
-            with pDefs.createBuilder() as pb:
-                pb.defParam(
-                    "write_me", "units", "description", "location", default=42)
-                pb.defParam(
-                    "and_me", "units", "description", "location", default=42)
-                pb.defParam(
-                    "dont_write_me", "units", "description", "location", default=42,
-                    saveToDB=False)
-            db_params = pDefs.toWriteToDB(32)
-        mock = Mock()
-        self.assertListEqual(['write_me', 'and_me'], [p.name for p in mock.db_params])
+        pDefs = parameters.ParameterDefinitionCollection()
+        with pDefs.createBuilder() as pb:
+            pb.defParam(
+                "write_me", "units", "description", "location", default=42)
+            pb.defParam(
+                "and_me", "units", "description", "location", default=42)
+            pb.defParam(
+                "dont_write_me", "units", "description", "location", default=42,
+                saveToDB=False)
+        db_params = pDefs.toWriteToDB(32)
+        self.assertListEqual(['write_me', 'and_me'], [p.name for p in db_params])
 
     def test_paramPropertyDoesNotConflict(self):
         class Mock(parameters.ParameterCollection):
