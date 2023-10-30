@@ -90,6 +90,47 @@ class ParameterTests(unittest.TestCase):
         db_params = pDefs.toWriteToDB(32)
         self.assertListEqual(['write_me', 'and_me'], [p.name for p in db_params])
 
+    def test_serializer_pack_unpack(self):
+        """
+        This tests the ability to add a serializer to a parameter instantiation line.
+        It assumes that if this parameter is not None, that the pack and unpack methods
+        will be called during storage to and reading from the database. See
+        database3._writeParams for an example use of this functionality.
+
+        .. test:: Tests for ability to serialize data to database in a custom manner.
+            :id: T_ARMI_PARAM_SERIALIZE
+            :links: R_ARMI_PARAM_SERIALIZE
+        """
+
+        class TestSerializer(parameters.Serializer):
+            @staticmethod
+            def pack(data):
+                array = [d + 1 for d in data]
+                return array
+
+            @staticmethod
+            def unpack(data):
+                array = [d - 1 for d in data]
+                return array
+
+        param = parameters.Parameter(
+            name='myparam',
+            units='kg',
+            description='a param',
+            location=None,
+            saveToDB=True,
+            default=[1],
+            setter=None,
+            categories=None,
+            serializer=TestSerializer())
+        param.assigned = [1]
+
+        packed = param.serializer.pack(param.assigned)
+        unpacked = param.serializer.unpack(packed)
+
+        self.assertEqual(packed, [2])
+        self.assertEqual(unpacked, [1])
+
     def test_paramPropertyDoesNotConflict(self):
         class Mock(parameters.ParameterCollection):
             pDefs = parameters.ParameterDefinitionCollection()
