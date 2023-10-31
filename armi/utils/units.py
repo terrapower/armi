@@ -316,7 +316,7 @@ def sanitizeAngle(theta):
 
 def getXYLineParameters(theta, x=0, y=0):
     """
-    returns parameters A B C D for a plane in the XY direction.
+    Returns parameters A B C D for a plane in the XY direction.
 
     Parameters
     ----------

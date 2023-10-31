@@ -719,10 +719,9 @@ class Block(composites.Composite):
 
         Returns
         -------
-             mass : float
+        mass : float
             Mass difference in grams. If you subtract mass, mass will be negative.
             If returnMass is False (default), this will always be zero.
-
         """
         self._updateDetailedNdens(frac, adjustList)
 

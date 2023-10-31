@@ -19,7 +19,6 @@ Hexagons are fundamental to advanced reactors.
 
 .. image:: /.static/hexagon.png
     :width: 100%
-
 """
 
 import math
@@ -83,7 +82,7 @@ def pitch(side):
 
 
 def numRingsToHoldNumCells(numCells):
-    r"""
+    """
     Determine the number of rings in a hexagonal grid with this many hex cells.
     If the number of pins don't fit exactly into any ring, returns the ring just large
     enough to fit them.

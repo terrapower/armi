@@ -59,7 +59,6 @@ Some things you may want to bring in via a plugin includes:
 
 Warning
 -------
-
 The plugin system was developed to support improved collaboration.  It is new and should
 be considered under development. The API is subject to change as the version of the ARMI
 framework approaches 1.0.
