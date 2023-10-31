@@ -575,10 +575,6 @@ class ParameterDefinitionCollection:
         """
         Get a list of acceptable parameters to store to the database for a level of the data model.
 
-        .. impl:: Implementation for restricting some parameters from being written to the database.
-            :id: I_ARMI_RESTRICT_DB_WRITE
-            :links: R_ARMI_RESTRICT_DB_WRITE
-
         Parameters
         ----------
         assignedMask : int
