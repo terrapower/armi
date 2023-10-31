@@ -66,6 +66,75 @@ class ParameterTests(unittest.TestCase):
             with self.assertRaises(AssertionError):
                 fail = pDefs.createBuilder(default={})
 
+    def test_writeSomeParamsToDB(self):
+        """
+        This test tests the ability to specify which parameters should be
+        written to the database. It assumes that the list returned by
+        ParameterDefinitionCollection.toWriteToDB() is used to filter for which
+        parameters to include in the database.
+
+        .. test:: Test to restrict some parameters from being written to the database.
+            :id: T_ARMI_RESTRICT_DB_WRITE
+            :links: R_ARMI_RESTRICT_DB_WRITE
+        """
+
+        pDefs = parameters.ParameterDefinitionCollection()
+        with pDefs.createBuilder() as pb:
+            pb.defParam("write_me", "units", "description", "location", default=42)
+            pb.defParam("and_me", "units", "description", "location", default=42)
+            pb.defParam(
+                "dont_write_me",
+                "units",
+                "description",
+                "location",
+                default=42,
+                saveToDB=False,
+            )
+        db_params = pDefs.toWriteToDB(32)
+        self.assertListEqual(["write_me", "and_me"], [p.name for p in db_params])
+
+    def test_serializer_pack_unpack(self):
+        """
+        This tests the ability to add a serializer to a parameter instantiation line.
+        It assumes that if this parameter is not None, that the pack and unpack methods
+        will be called during storage to and reading from the database. See
+        database3._writeParams for an example use of this functionality.
+
+        .. test:: Tests for ability to serialize data to database in a custom manner.
+            :id: T_ARMI_PARAM_SERIALIZE
+            :links: R_ARMI_PARAM_SERIALIZER
+        """
+
+        class TestSerializer(parameters.Serializer):
+            @staticmethod
+            def pack(data):
+                array = [d + 1 for d in data]
+                return array
+
+            @staticmethod
+            def unpack(data):
+                array = [d - 1 for d in data]
+                return array
+
+        param = parameters.Parameter(
+            name="myparam",
+            units="kg",
+            description="a param",
+            location=None,
+            saveToDB=True,
+            default=[1],
+            setter=None,
+            categories=None,
+            serializer=TestSerializer(),
+        )
+        param.assigned = [1]
+
+        packed = param.serializer.pack(param.assigned)
+        unpacked = param.serializer.unpack(packed)
+
+        self.assertEqual(packed, [2])
+        self.assertEqual(unpacked, [1])
+
     def test_paramPropertyDoesNotConflict(self):
         class Mock(parameters.ParameterCollection):
             pDefs = parameters.ParameterDefinitionCollection()
