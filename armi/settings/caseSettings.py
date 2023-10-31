@@ -14,7 +14,7 @@
 
 """
 This defines a Settings object that acts mostly like a dictionary. It
-is meant so that each ARMI run has one-and-only-one Settings object. It global
+is meant so that each ARMI run has one-and-only-one Settings object. It records
 user settings like the core power level, the input file names, the number of cycles to
 run, the run type, the environment setup, and hundreds of other things.
 
