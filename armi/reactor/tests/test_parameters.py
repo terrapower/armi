@@ -80,15 +80,18 @@ class ParameterTests(unittest.TestCase):
 
         pDefs = parameters.ParameterDefinitionCollection()
         with pDefs.createBuilder() as pb:
+            pb.defParam("write_me", "units", "description", "location", default=42)
+            pb.defParam("and_me", "units", "description", "location", default=42)
             pb.defParam(
-                "write_me", "units", "description", "location", default=42)
-            pb.defParam(
-                "and_me", "units", "description", "location", default=42)
-            pb.defParam(
-                "dont_write_me", "units", "description", "location", default=42,
-                saveToDB=False)
+                "dont_write_me",
+                "units",
+                "description",
+                "location",
+                default=42,
+                saveToDB=False,
+            )
         db_params = pDefs.toWriteToDB(32)
-        self.assertListEqual(['write_me', 'and_me'], [p.name for p in db_params])
+        self.assertListEqual(["write_me", "and_me"], [p.name for p in db_params])
 
     def test_serializer_pack_unpack(self):
         """
@@ -114,15 +117,16 @@ class ParameterTests(unittest.TestCase):
                 return array
 
         param = parameters.Parameter(
-            name='myparam',
-            units='kg',
-            description='a param',
+            name="myparam",
+            units="kg",
+            description="a param",
             location=None,
             saveToDB=True,
             default=[1],
             setter=None,
             categories=None,
-            serializer=TestSerializer())
+            serializer=TestSerializer(),
+        )
         param.assigned = [1]
 
         packed = param.serializer.pack(param.assigned)
