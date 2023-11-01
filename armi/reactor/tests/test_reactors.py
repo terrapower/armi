@@ -255,6 +255,36 @@ class HexReactorTests(ReactorTests):
         a1 = [a.name for a in r1.core]
         self.assertNotEqual(a0, a1)
 
+    def test_getSetParameters(self):
+        """
+        This test works through multiple levels of the hierarchy to test ability to
+        modify parameters at different levels.
+
+        .. test:: Test ability to modify parameters on particular part of the reactor.
+            :id: T_ARMI_PARAM_MODIFY_PART
+            :links: R_ARMI_PARAM_MODIFY_PART
+        """
+        # Test at core level
+        core = self.r.core
+        self.assertGreater(core.p.power, -1)
+
+        core.p.power = 123
+        self.assertEqual(core.p.power, 123)
+
+        # Test at assembly level
+        assembly = core.getFirstAssembly()
+        self.assertGreater(assembly.p.crRodLength, -1)
+
+        assembly.p.crRodLength = 234
+        self.assertEqual(assembly.p.crRodLength, 234)
+
+        # Test at block level
+        block = core.getFirstBlock()
+        self.assertGreater(block.p.THTfuelCL, -1)
+
+        block.p.THTfuelCL = 57
+        self.assertEqual(block.p.THTfuelCL, 57)
+
     def test_sortChildren(self):
         self.assertEqual(next(self.r.core.__iter__()), self.r.core[0])
         self.assertEqual(self.r.core._children, sorted(self.r.core._children))
