@@ -1372,7 +1372,7 @@ class Database3:
         for key, value in attrs.items():
             try:
                 obj.attrs[key] = value
-            except OSError as err:
+            except RuntimeError as err:
                 if "object header message is too large" not in err.args[0]:
                     raise
 
