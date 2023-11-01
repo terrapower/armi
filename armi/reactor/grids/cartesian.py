@@ -67,10 +67,6 @@ class CartesianGrid(StructuredGrid):
         Grid example where the axes lie between the "center assemblies" (even-by-even).
         Note that ring 1 has four locations, and that the center of the (0, 0)-index
         location is offset from the origin.
-
-    .. impl:: ARMI supports a Cartesian mesh.
-       :id: I_REACTOR_MESH_1
-       :links: R_REACTOR_MESH
     """
 
     @classmethod

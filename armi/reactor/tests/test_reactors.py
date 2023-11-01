@@ -16,6 +16,7 @@ import copy
 import logging
 import os
 import unittest
+from unittest.mock import patch
 
 from numpy.testing import assert_allclose, assert_equal
 from six.moves import cPickle
@@ -281,6 +282,9 @@ class HexReactorTests(ReactorTests):
         val2 = self.r.core.getTotalBlockParam("power", addSymmetricPositions=True)
         self.assertEqual(val2 / self.r.core.powerMultiplier, val)
 
+        with self.assertRaises(ValueError):
+            self.r.core.getTotalBlockParam(generationNum=1)
+
     def test_geomType(self):
         self.assertEqual(self.r.core.geomType, geometry.GeomType.HEX)
 
@@ -373,12 +377,7 @@ class HexReactorTests(ReactorTests):
             )
 
     def test_countFuelAxialBlocks(self):
-        """Tests that the users definition of fuel blocks is preserved.
-
-        .. test:: Tests that the users definition of fuel blocks is preserved.
-            :id: T_REACTOR_2
-            :links: R_REACTOR
-        """
+        """Tests that the users definition of fuel blocks is preserved."""
         numFuelBlocks = self.r.core.countFuelAxialBlocks()
         self.assertEqual(numFuelBlocks, 3)
 
@@ -628,6 +627,11 @@ class HexReactorTests(ReactorTests):
         nRings = self.r.core.getNumRings(indexBased=True)
         nAssmWithBlanks = self.r.core.getNumAssembliesWithAllRingsFilledOut(nRings)
         self.assertEqual(77, nAssmWithBlanks)
+
+    @patch("armi.reactor.reactors.Core.powerMultiplier", 1)
+    def test_getNumAssembliesWithAllRingsFilledOutBipass(self):
+        nAssems = self.r.core.getNumAssembliesWithAllRingsFilledOut(3)
+        self.assertEqual(19, nAssems)
 
     def test_getNumEnergyGroups(self):
         # this Core doesn't have a loaded ISOTXS library, so this test is minimally useful

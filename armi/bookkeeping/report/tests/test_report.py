@@ -136,11 +136,8 @@ class TestReport(unittest.TestCase):
     def test_writeWelcomeHeaders(self):
         o, r = loadTestReactor()
 
-        # grab a random file (that exist in the working dir)
-        files = os.listdir(os.getcwd())
-        files = [f for f in files if f.endswith(".py") or f.endswith(".txt")]
-        self.assertGreater(len(files), 0)
-        randoFile = files[0]
+        # grab this file path
+        randoFile = os.path.abspath(__file__)
 
         # pass that random file into the settings
         o.cs["crossSectionControl"]["DA"].xsFileLocation = randoFile

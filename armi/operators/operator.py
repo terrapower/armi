@@ -21,10 +21,6 @@ certain number of cycles with a certain number of timenodes per cycle.
 This is analogous to a real reactor operating over some period of time,
 often from initial startup, through the various cycles, and out to
 the end of plant life.
-
-.. impl:: ARMI controls the time flow of the reactor, by running a sequence of Interfaces at each time step.
-   :id: I_EVOLVING_STATE_0
-   :links: R_EVOLVING_STATE
 """
 import collections
 import os
@@ -609,7 +605,6 @@ class Operator:
             The time node that is currently being run (0 for BOC, etc.)
         excludedInterfaceNames : list, optional
             Names of interface names that will not be interacted with.
-
         """
         excludedInterfaceNames = excludedInterfaceNames or ()
         activeInterfaces = [

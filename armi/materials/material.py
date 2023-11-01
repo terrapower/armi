@@ -17,7 +17,6 @@ Base Material classes.
 
 Most temperatures may be specified in either K or C and the functions will convert for you.
 """
-import copy
 import warnings
 
 from scipy.optimize import fsolve
@@ -573,9 +572,6 @@ class Material:
         except KeyError:
             # the nuc isn't in the mass Frac vector
             pass
-
-    def getMassFracCopy(self):
-        return copy.deepcopy(self.massFrac)
 
     def checkPropertyTempRange(self, label, val):
         """Checks if the given property / value combination fall between the min and max valid

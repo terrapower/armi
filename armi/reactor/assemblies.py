@@ -785,7 +785,6 @@ class Assembly(composites.Composite):
         -------
         blocks : list
             List of blocks.
-
         """
         if typeSpec is None:
             return self.getChildren()

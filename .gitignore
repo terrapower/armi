@@ -52,6 +52,7 @@ pytestdebug.log
 dump-temp-*
 dump-tests*
 .vim-bookmarks
+armi-venv/*
 venv*/
 .mypy_cache/
 **/__pycache__
