@@ -73,7 +73,7 @@ class ParameterTests(unittest.TestCase):
         ParameterDefinitionCollection.toWriteToDB() is used to filter for which
         parameters to include in the database.
 
-        .. test:: Test to restrict some parameters from being written to the database.
+        .. test:: Restrict parameters from DB write
             :id: T_ARMI_RESTRICT_DB_WRITE
             :tests: R_ARMI_RESTRICT_DB_WRITE
         """
@@ -99,7 +99,7 @@ class ParameterTests(unittest.TestCase):
         will be called during storage to and reading from the database. See
         database3._writeParams for an example use of this functionality.
 
-        .. test:: Tests for ability to serialize data to database in a custom manner.
+        .. test:: Custom parameter serializer
             :id: T_ARMI_PARAM_SERIALIZE
             :tests: R_ARMI_PARAM_SERIALIZE
         """

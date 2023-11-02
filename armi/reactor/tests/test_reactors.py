@@ -260,7 +260,7 @@ class HexReactorTests(ReactorTests):
         This test works through multiple levels of the hierarchy to test ability to
         modify parameters at different levels.
 
-        .. test:: Test ability to modify parameters on particular part of the reactor.
+        .. test:: Parameters accessible throughout the armi tree
             :id: T_ARMI_PARAM_MODIFY_PART
             :tests: R_ARMI_PARAM_MODIFY_PART
         """
