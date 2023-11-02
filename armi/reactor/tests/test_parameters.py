@@ -74,8 +74,8 @@ class ParameterTests(unittest.TestCase):
         parameters to include in the database.
 
         .. test:: Restrict parameters from DB write
-            :id: T_ARMI_RESTRICT_DB_WRITE
-            :tests: R_ARMI_RESTRICT_DB_WRITE
+            :id: T_ARMI_PARAM_DB
+            :tests: R_ARMI_PARAM_DB
         """
         pDefs = parameters.ParameterDefinitionCollection()
         with pDefs.createBuilder() as pb:

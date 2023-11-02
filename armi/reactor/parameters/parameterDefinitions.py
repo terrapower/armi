@@ -580,8 +580,8 @@ class ParameterDefinitionCollection:
         Get a list of acceptable parameters to store to the database for a level of the data model.
 
         .. impl:: Filter parameters to write to DB
-            :id: I_ARMI_RESTRICT_DB_WRITE
-            :implements: R_ARMI_RESTRICT_DB_WRITE
+            :id: I_ARMI_PARAM_DB
+            :implements: R_ARMI_PARAM_DB
 
         Parameters
         ----------

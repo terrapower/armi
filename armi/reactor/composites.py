@@ -297,8 +297,8 @@ class ArmiObject(metaclass=CompositeModelType):
         As a result, the public API on this method should be considered unstable.
 
     .. impl:: Parameters accessible throughout the armi tree
-        :id: I_ARMI_PARAM_MODIFY_PART
-        :implements: R_ARMI_PARAM_MODIFY_PART
+        :id: I_ARMI_PARAM_PART
+        :implements: R_ARMI_PARAM_PART
 
     Attributes
     ----------

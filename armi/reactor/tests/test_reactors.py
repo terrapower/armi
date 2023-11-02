@@ -261,8 +261,8 @@ class HexReactorTests(ReactorTests):
         modify parameters at different levels.
 
         .. test:: Parameters accessible throughout the armi tree
-            :id: T_ARMI_PARAM_MODIFY_PART
-            :tests: R_ARMI_PARAM_MODIFY_PART
+            :id: T_ARMI_PARAM_PART
+            :tests: R_ARMI_PARAM_PART
         """
         # Test at core level
         core = self.r.core
