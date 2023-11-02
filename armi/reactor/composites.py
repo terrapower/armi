@@ -296,6 +296,10 @@ class ArmiObject(metaclass=CompositeModelType):
         specialized subclasses (Block, Assembly) in preparation for this next step.
         As a result, the public API on this method should be considered unstable.
 
+    .. impl:: Implements ability to have parameters accessible throughout armi tree.
+        :id: I_ARMI_PARAM_MODIFY_PART
+        :implements: R_ARMI_PARAM_MODIFY_PART
+
     Attributes
     ----------
     name : str
