@@ -473,6 +473,11 @@ class Block_TestCase(unittest.TestCase):
         self.assertEqual(self.block.p.flags, Block2.p.flags)
 
     def test_homogenizedMixture(self):
+        """
+        .. test:: Test ability to homogenize the compositions of a block.
+            :id: T_ARMI_BLOCK_HOMOG
+            :links: R_ARMI_BLOCK_HOMOG
+        """
         args = [False, True]  # pinSpatialLocator argument
         expectedShapes = [
             [basicShapes.Hexagon],
