@@ -1539,6 +1539,29 @@ class Block_TestCase(unittest.TestCase):
         moles3 = b.p.molesHmBOL
         self.assertAlmostEqual(moles2, moles3)
 
+    def test_setImportantParams(self):
+        """
+        .. test:: Test to store, get, and set important block parameters.
+            :id: T_ARMI_BLOCK_PARAMS
+            :tests: R_ARMI_BLOCK_PARAMS
+        """
+
+        # Test ability to set and get flux
+        applyDummyData(self.block)
+        self.assertEqual(self.block.p.mgFlux[0], 161720716762.12997)
+        self.assertEqual(self.block.p.mgFlux[-1], 601494405.293505)
+
+        # Test ability to set and get number density
+        fuel = self.block.getComponent(Flags.FUEL)
+
+        u235_dens = fuel.getNumberDensity('U235')
+        self.assertEqual(u235_dens, 0.003695461770836022)
+
+        fuel.setNumberDensity('U235', 0.5)
+        u235_dens = fuel.getNumberDensity('U235')
+        self.assertEqual(u235_dens, 0.5)
+
+
     def test_getMfp(self):
         """Test mean free path."""
         applyDummyData(self.block)
