@@ -75,7 +75,7 @@ class ParameterTests(unittest.TestCase):
 
         .. test:: Test to restrict some parameters from being written to the database.
             :id: T_ARMI_RESTRICT_DB_WRITE
-            :links: R_ARMI_RESTRICT_DB_WRITE
+            :tests: R_ARMI_RESTRICT_DB_WRITE
         """
         pDefs = parameters.ParameterDefinitionCollection()
         with pDefs.createBuilder() as pb:
@@ -101,7 +101,7 @@ class ParameterTests(unittest.TestCase):
 
         .. test:: Tests for ability to serialize data to database in a custom manner.
             :id: T_ARMI_PARAM_SERIALIZE
-            :links: R_ARMI_PARAM_SERIALIZER
+            :tests: R_ARMI_PARAM_SERIALIZE
         """
 
         class TestSerializer(parameters.Serializer):

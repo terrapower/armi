@@ -262,7 +262,7 @@ class HexReactorTests(ReactorTests):
 
         .. test:: Test ability to modify parameters on particular part of the reactor.
             :id: T_ARMI_PARAM_MODIFY_PART
-            :links: R_ARMI_PARAM_MODIFY_PART
+            :tests: R_ARMI_PARAM_MODIFY_PART
         """
         # Test at core level
         core = self.r.core
