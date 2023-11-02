@@ -1788,7 +1788,21 @@ class HexBlock_TestCase(unittest.TestCase):
         places = 6
         self.assertAlmostEqual(cur, ref, places=places)
 
+    def test_component_type(self):
+        """
+        .. test: Test that a Hexagon block is created with correct pitch component type.
+            :id: T_ARMI_BLOCK_HEX
+            :links: R_ARMI_BLOCK_HEX
+        """
+        pitch_comp_type = self.HexBlock.PITCH_COMPONENT_TYPE[0]
+        self.assertEqual(pitch_comp_type.__name__, 'Hexagon')
+
     def test_coords(self):
+        """
+        .. test: Test ability to retrieve coordinates using coords() method.
+            :id: T_ARMI_BLOCK_COORDS
+            :links: R_ARMI_BLOCK_COORDS
+        """
         r = self.HexBlock.r
         a = self.HexBlock.parent
         loc1 = r.core.spatialGrid[0, 1, 0]
