@@ -68,16 +68,15 @@ class ParameterTests(unittest.TestCase):
 
     def test_writeSomeParamsToDB(self):
         """
-        This test tests the ability to specify which parameters should be
+        This tests the ability to specify which parameters should be
         written to the database. It assumes that the list returned by
         ParameterDefinitionCollection.toWriteToDB() is used to filter for which
         parameters to include in the database.
 
-        .. test:: Test to restrict some parameters from being written to the database.
-            :id: T_ARMI_RESTRICT_DB_WRITE
-            :links: R_ARMI_RESTRICT_DB_WRITE
+        .. test:: Restrict parameters from DB write
+            :id: T_ARMI_PARAM_DB
+            :tests: R_ARMI_PARAM_DB
         """
-
         pDefs = parameters.ParameterDefinitionCollection()
         with pDefs.createBuilder() as pb:
             pb.defParam("write_me", "units", "description", "location", default=42)
@@ -100,9 +99,9 @@ class ParameterTests(unittest.TestCase):
         will be called during storage to and reading from the database. See
         database3._writeParams for an example use of this functionality.
 
-        .. test:: Tests for ability to serialize data to database in a custom manner.
+        .. test:: Custom parameter serializer
             :id: T_ARMI_PARAM_SERIALIZE
-            :links: R_ARMI_PARAM_SERIALIZER
+            :tests: R_ARMI_PARAM_SERIALIZE
         """
 
         class TestSerializer(parameters.Serializer):
@@ -373,7 +372,8 @@ class ParameterTests(unittest.TestCase):
 
             _ = MockPCChild()
 
-        # same name along a different branch from the base ParameterCollection should be fine
+        # same name along a different branch from the base ParameterCollection should
+        # be fine
         class MockPCUncle(parameters.ParameterCollection):
             pDefs = parameters.ParameterDefinitionCollection()
             with pDefs.createBuilder() as pb:
@@ -445,7 +445,9 @@ class ParameterTests(unittest.TestCase):
         self.assertEqual(set(pc.paramDefs.inCategory("bacon")), set([p2, p3]))
 
     def test_parameterCollectionsHave__slots__(self):
-        """Make sure something is implemented to prevent accidental creation of attributes."""
+        """Make sure something is implemented to prevent accidental creation of
+        attributes.
+        """
         self.assertEqual(
             set(["_hist", "_backup", "assigned", "_p_serialNum", "serialNum"]),
             set(parameters.ParameterCollection._slots),
@@ -511,7 +513,9 @@ def makeComp(name):
 
 
 class SynchronizationTests:
-    """Some unit tests that must be run with mpirun instead of the standard unittest system."""
+    """Some unit tests that must be run with mpirun instead of the standard unittest
+    system.
+    """
 
     def setUp(self):
         self.r = makeComp("reactor")
@@ -633,7 +637,8 @@ class SynchronizationTests:
         # confirm outside state retainer
         self.assertEqual(assigned, [c.p.assigned for ci, c in enumerate(self.comps)])
 
-        # this rank's "assigned" components are not assigned on the workers, and so will be updated
+        # this rank's "assigned" components are not assigned on the workers, and so will
+        # be updated
         self.assertEqual(len(self.comps), self.r.syncMpiState())
 
         for ci, comp in enumerate(self.comps):
@@ -707,7 +712,8 @@ class SynchronizationTests:
         param3 = self.r.p.paramDefs["param3"]
 
         def do_assert(passNum):
-            # ensure all assemblies and blocks set values for param2, but param1 is empty
+            # ensure all assemblies and blocks set values for param2, but param1 is
+            # empty
             for rank in range(context.MPI_SIZE):
                 a = self.r.core[passNum * context.MPI_SIZE + rank]
                 assert "param1" not in a.p

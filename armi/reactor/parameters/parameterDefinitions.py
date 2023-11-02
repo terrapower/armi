@@ -152,6 +152,10 @@ class Serializer:
         their version. It is also good practice, whenever possible, to support reading
         old versions so that database files written by old versions can still be read.
 
+    .. impl:: Custom parameter serializer
+        :id: I_ARMI_PARAM_SERIALIZE
+        :implements: R_ARMI_PARAM_SERIALIZE
+
     See Also
     --------
     armi.bookkeeping.db.database3.packSpecialData
@@ -574,6 +578,10 @@ class ParameterDefinitionCollection:
     def toWriteToDB(self, assignedMask: Optional[int] = None):
         """
         Get a list of acceptable parameters to store to the database for a level of the data model.
+
+        .. impl:: Filter parameters to write to DB
+            :id: I_ARMI_PARAM_DB
+            :implements: R_ARMI_PARAM_DB
 
         Parameters
         ----------
