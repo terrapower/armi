@@ -590,6 +590,11 @@ class Block(composites.Composite):
             return "ExCore"
 
     def coords(self, rotationDegreesCCW=0.0):
+        """
+        .. impl:: Allow for coordinates of a block to be queryable.
+            :id: I_ARMI_BLOCK_COORDS
+            :links: R_ARMI_BLOCK_COORDS
+        """
         if rotationDegreesCCW:
             raise NotImplementedError("Cannot get coordinates with rotation.")
         return self.spatialLocator.getGlobalCoordinates()
@@ -1576,6 +1581,11 @@ class Block(composites.Composite):
 
 
 class HexBlock(Block):
+    """
+    .. impl:: Implementation of a hex-shaped block.
+        :id: I_ARMI_BLOCK_HEX
+        :links: R_ARMI_BLOCK_HEX
+    """
 
     PITCH_COMPONENT_TYPE: ClassVar[_PitchDefiningComponent] = (components.Hexagon,)
 
@@ -1594,6 +1604,10 @@ class HexBlock(Block):
     def _createHomogenizedCopy(self, pinSpatialLocators=False):
         """
         Create a new homogenized copy of a block that is less expensive than a full deepcopy.
+
+        .. impl:: Ability to homogenize the compositions of a block.
+            :id: I_ARMI_BLOCK_HOMOG
+            :links: R_ARMI_BLOCK_HOMOG
 
         Notes
         -----
