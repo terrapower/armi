@@ -474,9 +474,9 @@ class Block_TestCase(unittest.TestCase):
 
     def test_homogenizedMixture(self):
         """
-        .. test:: Test ability to homogenize the compositions of a block.
+        .. test:: Homogenize the compositions of a block
             :id: T_ARMI_BLOCK_HOMOG
-            :links: R_ARMI_BLOCK_HOMOG
+            :tests: R_ARMI_BLOCK_HOMOG
         """
         args = [False, True]  # pinSpatialLocator argument
         expectedShapes = [
@@ -1541,7 +1541,7 @@ class Block_TestCase(unittest.TestCase):
 
     def test_setImportantParams(self):
         """
-        .. test:: Test to store, get, and set important block parameters.
+        .. test:: Store, get, and set important block parameters.
             :id: T_ARMI_BLOCK_PARAMS
             :tests: R_ARMI_BLOCK_PARAMS
         """
@@ -1560,6 +1560,11 @@ class Block_TestCase(unittest.TestCase):
         fuel.setNumberDensity('U235', 0.5)
         u235_dens = fuel.getNumberDensity('U235')
         self.assertEqual(u235_dens, 0.5)
+
+        # TH parameter test
+        self.assertEqual(0, self.block.p.THmassFlowRate)
+        self.block.p.THmassFlowRate = 10
+        self.assertEqual(10, self.block.p.THmassFlowRate)
 
 
     def test_getMfp(self):
@@ -1818,18 +1823,18 @@ class HexBlock_TestCase(unittest.TestCase):
 
     def test_component_type(self):
         """
-        .. test: Test that a Hexagon block is created with correct pitch component type.
+        .. test: Blocks module can create hex shaped blocks
             :id: T_ARMI_BLOCK_HEX
-            :links: R_ARMI_BLOCK_HEX
+            :tests: R_ARMI_BLOCK_HEX
         """
         pitch_comp_type = self.HexBlock.PITCH_COMPONENT_TYPE[0]
         self.assertEqual(pitch_comp_type.__name__, 'Hexagon')
 
     def test_coords(self):
         """
-        .. test: Test ability to retrieve coordinates using coords() method.
+        .. test: Retrieve coordinates using coords() method
             :id: T_ARMI_BLOCK_COORDS
-            :links: R_ARMI_BLOCK_COORDS
+            :tests: R_ARMI_BLOCK_COORDS
         """
         r = self.HexBlock.r
         a = self.HexBlock.parent
@@ -1853,6 +1858,32 @@ class HexBlock_TestCase(unittest.TestCase):
 
     def test_getNumPins(self):
         self.assertEqual(self.HexBlock.getNumPins(), 169)
+
+    def test_block_dims(self):
+        """
+        Tests that the block class can provide basic dimensionality information about itself.
+
+        .. test: Retrieve block dimensions
+            :id: T_ARMI_BLOCK_DIMS
+            :tests: R_ARMI_BLOCK_DIMS
+
+        .. impl:: Volume of block is retrievable
+            :id: I_ARMI_BLOCK_DIMS
+            :implements: R_ARMI_BLOCK_DIMS
+        """
+
+        self.assertAlmostEqual(4316.582, self.HexBlock.getVolume(), 3)
+        self.assertAlmostEqual(70.6, self.HexBlock.getPitch(), 1)
+        self.assertAlmostEqual(4316.582, self.HexBlock.getMaxArea(), 3)
+
+        self.assertEqual(70, self.HexBlock.getDuctIP())
+        self.assertEqual(70.6, self.HexBlock.getDuctOP())
+
+        self.assertAlmostEqual(34.273, self.HexBlock.getPinToDuctGap(), 3)
+        self.assertEqual(0.11, self.HexBlock.getPinPitch())
+        self.assertAlmostEqual(300.889, self.HexBlock.getWettedPerimeter(), 3)
+        self.assertAlmostEqual(4242.184, self.HexBlock.getFlowArea(), 3)
+        self.assertAlmostEqual(56.395, self.HexBlock.getHydraulicDiameter(), 3)
 
     def test_symmetryFactor(self):
         # full hex
