@@ -474,6 +474,8 @@ class Block_TestCase(unittest.TestCase):
 
     def test_homogenizedMixture(self):
         """
+        Confirms homogenized blocks have correct properties.
+
         .. test:: Homogenize the compositions of a block
             :id: T_ARMI_BLOCK_HOMOG
             :tests: R_ARMI_BLOCK_HOMOG
@@ -1541,11 +1543,12 @@ class Block_TestCase(unittest.TestCase):
 
     def test_setImportantParams(self):
         """
-        .. test:: Store, get, and set important block parameters.
+        Confirm that important block parameters can be set and get.
+
+        .. test:: Store, get, and set important block parameters
             :id: T_ARMI_BLOCK_PARAMS
             :tests: R_ARMI_BLOCK_PARAMS
         """
-
         # Test ability to set and get flux
         applyDummyData(self.block)
         self.assertEqual(self.block.p.mgFlux[0], 161720716762.12997)
@@ -1554,18 +1557,17 @@ class Block_TestCase(unittest.TestCase):
         # Test ability to set and get number density
         fuel = self.block.getComponent(Flags.FUEL)
 
-        u235_dens = fuel.getNumberDensity('U235')
+        u235_dens = fuel.getNumberDensity("U235")
         self.assertEqual(u235_dens, 0.003695461770836022)
 
-        fuel.setNumberDensity('U235', 0.5)
-        u235_dens = fuel.getNumberDensity('U235')
+        fuel.setNumberDensity("U235", 0.5)
+        u235_dens = fuel.getNumberDensity("U235")
         self.assertEqual(u235_dens, 0.5)
 
         # TH parameter test
         self.assertEqual(0, self.block.p.THmassFlowRate)
         self.block.p.THmassFlowRate = 10
         self.assertEqual(10, self.block.p.THmassFlowRate)
-
 
     def test_getMfp(self):
         """Test mean free path."""
@@ -1823,15 +1825,19 @@ class HexBlock_TestCase(unittest.TestCase):
 
     def test_component_type(self):
         """
+        Test that a hex block has the proper "hexagon" __name__.
+
         .. test: Blocks module can create hex shaped blocks
             :id: T_ARMI_BLOCK_HEX
             :tests: R_ARMI_BLOCK_HEX
         """
         pitch_comp_type = self.HexBlock.PITCH_COMPONENT_TYPE[0]
-        self.assertEqual(pitch_comp_type.__name__, 'Hexagon')
+        self.assertEqual(pitch_comp_type.__name__, "Hexagon")
 
     def test_coords(self):
         """
+        Test that coordinates are retrievable from a block.
+
         .. test: Retrieve coordinates using coords() method
             :id: T_ARMI_BLOCK_COORDS
             :tests: R_ARMI_BLOCK_COORDS
@@ -1861,7 +1867,8 @@ class HexBlock_TestCase(unittest.TestCase):
 
     def test_block_dims(self):
         """
-        Tests that the block class can provide basic dimensionality information about itself.
+        Tests that the block class can provide basic dimensionality information about
+        itself.
 
         .. test: Retrieve block dimensions
             :id: T_ARMI_BLOCK_DIMS
@@ -1871,7 +1878,6 @@ class HexBlock_TestCase(unittest.TestCase):
             :id: I_ARMI_BLOCK_DIMS
             :implements: R_ARMI_BLOCK_DIMS
         """
-
         self.assertAlmostEqual(4316.582, self.HexBlock.getVolume(), 3)
         self.assertAlmostEqual(70.6, self.HexBlock.getPitch(), 1)
         self.assertAlmostEqual(4316.582, self.HexBlock.getMaxArea(), 3)

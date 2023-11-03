@@ -595,6 +595,8 @@ class Block(composites.Composite):
 
     def coords(self, rotationDegreesCCW=0.0):
         """
+        Returns the coordinates of the block.
+
         .. impl:: Coordinates of a block are queryable
             :id: I_ARMI_BLOCK_COORDS
             :implements: R_ARMI_BLOCK_COORDS
@@ -1594,6 +1596,8 @@ class Block(composites.Composite):
 
 class HexBlock(Block):
     """
+    Defines a HexBlock.
+
     .. impl:: Hex shaped block
         :id: I_ARMI_BLOCK_HEX
         :implements: R_ARMI_BLOCK_HEX
@@ -1713,6 +1717,8 @@ class HexBlock(Block):
 
     def getDuctIP(self):
         """
+        Returns the duct IP dimension.
+
         .. impl:: IP dimension is retrievable
             :id: I_ARMI_BLOCK_DIMS
             :implements: R_ARMI_BLOCK_DIMS
@@ -1722,6 +1728,8 @@ class HexBlock(Block):
 
     def getDuctOP(self):
         """
+        Returns the duct OP dimension.
+
         .. impl:: OP dimension is retrievable
             :id: I_ARMI_BLOCK_DIMS
             :implements: R_ARMI_BLOCK_DIMS
