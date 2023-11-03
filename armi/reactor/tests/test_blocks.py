@@ -1873,10 +1873,6 @@ class HexBlock_TestCase(unittest.TestCase):
         .. test: Retrieve block dimensions
             :id: T_ARMI_BLOCK_DIMS
             :tests: R_ARMI_BLOCK_DIMS
-
-        .. impl:: Volume of block is retrievable
-            :id: I_ARMI_BLOCK_DIMS
-            :implements: R_ARMI_BLOCK_DIMS
         """
         self.assertAlmostEqual(4316.582, self.HexBlock.getVolume(), 3)
         self.assertAlmostEqual(70.6, self.HexBlock.getPitch(), 1)
