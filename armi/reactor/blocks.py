@@ -68,7 +68,7 @@ class Block(composites.Composite):
 
     Blocks are stacked together to form assemblies.
 
-    .. impl:: Store important block parameters
+    .. impl:: Store, get, and set important block parameters
         :id: I_ARMI_BLOCK_PARAMS
         :implements: R_ARMI_BLOCK_PARAMS
     """
@@ -1598,7 +1598,7 @@ class HexBlock(Block):
     """
     Defines a HexBlock.
 
-    .. impl:: Hex shaped block
+    .. impl:: Ability to create hex shaped blocks
         :id: I_ARMI_BLOCK_HEX
         :implements: R_ARMI_BLOCK_HEX
     """

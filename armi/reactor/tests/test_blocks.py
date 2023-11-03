@@ -1827,7 +1827,7 @@ class HexBlock_TestCase(unittest.TestCase):
         """
         Test that a hex block has the proper "hexagon" __name__.
 
-        .. test: Blocks module can create hex shaped blocks
+        .. test: Ability to create hex shaped blocks
             :id: T_ARMI_BLOCK_HEX
             :tests: R_ARMI_BLOCK_HEX
         """
@@ -1838,7 +1838,7 @@ class HexBlock_TestCase(unittest.TestCase):
         """
         Test that coordinates are retrievable from a block.
 
-        .. test: Retrieve coordinates using coords() method
+        .. test: Coordinates of a block are queryable
             :id: T_ARMI_BLOCK_COORDS
             :tests: R_ARMI_BLOCK_COORDS
         """
@@ -1870,7 +1870,7 @@ class HexBlock_TestCase(unittest.TestCase):
         Tests that the block class can provide basic dimensionality information about
         itself.
 
-        .. test: Retrieve block dimensions
+        .. test: Retrieve important block dimensions
             :id: T_ARMI_BLOCK_DIMS
             :tests: R_ARMI_BLOCK_DIMS
         """
