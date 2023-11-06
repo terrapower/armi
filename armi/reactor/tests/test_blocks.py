@@ -850,6 +850,13 @@ class Block_TestCase(unittest.TestCase):
         self.assertAlmostEqual(cur, ref, places=places)
 
     def test_setLocation(self):
+        """
+        Retrieve a blocks location
+
+        .. test:: Location of a block is retrievable
+            :id: T_ARMI_BLOCK_POSI
+            :tests: R_ARMI_BLOCK_POSI
+        """
         b = self.block
         # a bit obvious, but location is a property now...
         i, j = grids.HexGrid.getIndicesFromRingAndPos(2, 3)
@@ -1544,10 +1551,6 @@ class Block_TestCase(unittest.TestCase):
     def test_setImportantParams(self):
         """
         Confirm that important block parameters can be set and get.
-
-        .. test:: Store, get, and set important block parameters
-            :id: T_ARMI_BLOCK_PARAMS
-            :tests: R_ARMI_BLOCK_PARAMS
         """
         # Test ability to set and get flux
         applyDummyData(self.block)
@@ -1839,8 +1842,8 @@ class HexBlock_TestCase(unittest.TestCase):
         Test that coordinates are retrievable from a block.
 
         .. test: Coordinates of a block are queryable
-            :id: T_ARMI_BLOCK_COORDS
-            :tests: R_ARMI_BLOCK_COORDS
+            :id: T_ARMI_BLOCK_POSI
+            :tests: R_ARMI_BLOCK_POSI
         """
         r = self.HexBlock.r
         a = self.HexBlock.parent

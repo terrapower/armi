@@ -67,10 +67,6 @@ class Block(composites.Composite):
     A homogenized axial slab of material.
 
     Blocks are stacked together to form assemblies.
-
-    .. impl:: Store, get, and set important block parameters
-        :id: I_ARMI_BLOCK_PARAMS
-        :implements: R_ARMI_BLOCK_PARAMS
     """
 
     uniqID = 0
@@ -585,7 +581,12 @@ class Block(composites.Composite):
         self.completeInitialLoading()
 
     def getLocation(self):
-        """Return a string representation of the location."""
+        """Return a string representation of the location.
+
+        .. impl:: Location of a block is retrievable
+            :id: I_ARMI_BLOCK_POSI
+            :implements: R_ARMI_BLOCK_POSI
+        """
         if self.core and self.parent.spatialGrid and self.spatialLocator:
             return self.core.spatialGrid.getLabel(
                 self.spatialLocator.getCompleteIndices()
@@ -598,8 +599,8 @@ class Block(composites.Composite):
         Returns the coordinates of the block.
 
         .. impl:: Coordinates of a block are queryable
-            :id: I_ARMI_BLOCK_COORDS
-            :implements: R_ARMI_BLOCK_COORDS
+            :id: I_ARMI_BLOCK_POSI
+            :implements: R_ARMI_BLOCK_POSI
         """
         if rotationDegreesCCW:
             raise NotImplementedError("Cannot get coordinates with rotation.")
