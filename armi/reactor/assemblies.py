@@ -170,12 +170,17 @@ class Assembly(composites.Composite):
         self.p.assemNum = randint(-9e12, -1)
         self.renumber(self.p.assemNum)
 
-    def add(self, obj):
+    def add(self, obj: blocks.Block):
         """
         Add an object to this assembly.
 
         The simple act of adding a block to an assembly fully defines the location of
         the block in 3-D.
+
+        .. impl: Assemblies are made up of type Block
+            :id: I_ARMI_ASSEM_BLOCK
+            :implements: R_ARMI_ASSEM_BLOCK
+
         """
         composites.Composite.add(self, obj)
         obj.spatialLocator = self.spatialGrid[0, 0, len(self) - 1]

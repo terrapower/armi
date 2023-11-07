@@ -23,6 +23,7 @@ from armi import settings
 from armi import tests
 from armi.reactor import assemblies
 from armi.reactor import blueprints
+from armi.reactor import blocks
 from armi.reactor import components
 from armi.reactor import parameters
 from armi.reactor import reactors
@@ -1061,6 +1062,17 @@ class Assembly_TestCase(unittest.TestCase):
             self.assertEqual("", mock.getStdout())
             a.rotate(math.radians(120))
             self.assertIn("No rotation method defined", mock.getStdout())
+
+    def test_assem_blocks(self):
+        """Test that all children of an assembly are blocks.
+
+        .. test: Validate child types of assembly
+            :id: T_ARMI_ASSEM_BLOCKS
+            :tests: R_ARMI_ASSEM_BLOCK
+        """
+
+        for b in self.assembly.getBlocks():
+            self.assertIsInstance(b, blocks.Block)
 
 
 class AssemblyInReactor_TestCase(unittest.TestCase):
