@@ -584,7 +584,7 @@ class Block(composites.Composite):
         """Return a string representation of the location.
 
         .. impl:: Location of a block is retrievable
-            :id: I_ARMI_BLOCK_POSI
+            :id: I_ARMI_BLOCK_POSI0
             :implements: R_ARMI_BLOCK_POSI
         """
         if self.core and self.parent.spatialGrid and self.spatialLocator:
@@ -599,7 +599,7 @@ class Block(composites.Composite):
         Returns the coordinates of the block.
 
         .. impl:: Coordinates of a block are queryable
-            :id: I_ARMI_BLOCK_POSI
+            :id: I_ARMI_BLOCK_POSI1
             :implements: R_ARMI_BLOCK_POSI
         """
         if rotationDegreesCCW:
@@ -607,7 +607,7 @@ class Block(composites.Composite):
         return self.spatialLocator.getGlobalCoordinates()
 
     def setBuLimitInfo(self):
-        r"""Sets burnup limit based on igniter, feed, etc."""
+        """Sets burnup limit based on igniter, feed, etc."""
         if self.p.buRate == 0:
             # might be cycle 1 or a non-burning block
             self.p.timeToLimit = 0.0
@@ -683,7 +683,7 @@ class Block(composites.Composite):
         Return the volume of a block.
 
         .. impl:: Volume of block is retrievable
-            :id: I_ARMI_BLOCK_DIMS
+            :id: I_ARMI_BLOCK_DIMS0
             :implements: R_ARMI_BLOCK_DIMS
 
         Returns
@@ -1248,7 +1248,7 @@ class Block(composites.Composite):
             define the pitch, returns None
 
         .. impl:: Pitch of block is retrievable
-            :id: I_ARMI_BLOCK_DIMS
+            :id: I_ARMI_BLOCK_DIMS1
             :implements: R_ARMI_BLOCK_DIMS
 
         Notes
@@ -1262,7 +1262,6 @@ class Block(composites.Composite):
         See Also
         --------
         setPitch : sets pitch
-
         """
         c, _p = self._pitchDefiningComponent
         if c is None:
@@ -1549,8 +1548,8 @@ class Block(composites.Composite):
 
         Parameters
         ----------
-        rad - float
-            number (in radians) specifying the angle of counter clockwise rotation
+        rad: float
+            Number (in radians) specifying the angle of counter clockwise rotation.
         """
         raise NotImplementedError
 
@@ -1708,7 +1707,7 @@ class HexBlock(Block):
         Compute the max area of this block if it was totally full.
 
         .. impl:: Area of block is retrievable
-            :id: I_ARMI_BLOCK_DIMS
+            :id: I_ARMI_BLOCK_DIMS2
             :implements: R_ARMI_BLOCK_DIMS
         """
         pitch = self.getPitch()
@@ -1721,7 +1720,7 @@ class HexBlock(Block):
         Returns the duct IP dimension.
 
         .. impl:: IP dimension is retrievable
-            :id: I_ARMI_BLOCK_DIMS
+            :id: I_ARMI_BLOCK_DIMS3
             :implements: R_ARMI_BLOCK_DIMS
         """
         duct = self.getComponent(Flags.DUCT, exact=True)
@@ -1732,7 +1731,7 @@ class HexBlock(Block):
         Returns the duct OP dimension.
 
         .. impl:: OP dimension is retrievable
-            :id: I_ARMI_BLOCK_DIMS
+            :id: I_ARMI_BLOCK_DIMS4
             :implements: R_ARMI_BLOCK_DIMS
         """
         duct = self.getComponent(Flags.DUCT, exact=True)
@@ -2035,7 +2034,7 @@ class HexBlock(Block):
         Returns the distance in cm between the outer most pin and the duct in a block.
 
         .. impl:: Pin to duct gap of block is retrievable
-            :id: I_ARMI_BLOCK_DIMS
+            :id: I_ARMI_BLOCK_DIMS5
             :implements: R_ARMI_BLOCK_DIMS
 
         Parameters
@@ -2219,7 +2218,7 @@ class HexBlock(Block):
         and wire wraps. Grid spacers not yet supported.
 
         .. impl:: Pin pitch within block is retrievable
-            :id: I_ARMI_BLOCK_DIMS
+            :id: I_ARMI_BLOCK_DIMS6
             :implements: R_ARMI_BLOCK_DIMS
 
         Parameters
@@ -2256,7 +2255,7 @@ class HexBlock(Block):
         """Return the total wetted perimeter of the block in cm.
 
         .. impl:: Wetted perimeter of block is retrievable
-            :id: I_ARMI_BLOCK_DIMS
+            :id: I_ARMI_BLOCK_DIMS7
             :implements: R_ARMI_BLOCK_DIMS
         """
         # flags pertaining to hexagon components where the interior of the hexagon is wetted
@@ -2334,7 +2333,7 @@ class HexBlock(Block):
         """Return the total flowing coolant area of the block in cm^2.
 
         .. impl:: Flow area of block is retrievable
-            :id: I_ARMI_BLOCK_DIMS
+            :id: I_ARMI_BLOCK_DIMS8
             :implements: R_ARMI_BLOCK_DIMS
         """
         return self.getComponent(Flags.COOLANT, exact=True).getArea()
@@ -2355,7 +2354,7 @@ class HexBlock(Block):
         l = 6*p/sqrt(3)
 
         .. impl:: Hydraulic diameter of block is retrievable
-            :id: I_ARMI_BLOCK_DIMS
+            :id: I_ARMI_BLOCK_DIMS9
             :implements: R_ARMI_BLOCK_DIMS
         """
         return 4.0 * self.getFlowArea() / self.getWettedPerimeter()
