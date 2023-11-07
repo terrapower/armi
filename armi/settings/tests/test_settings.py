@@ -45,6 +45,7 @@ class DummyPlugin1(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineSettings():
+        """Define settings for the plugin."""
         return [
             setting.Setting(
                 "extendableOption",
@@ -61,6 +62,7 @@ class DummyPlugin2(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineSettings():
+        """Define settings for the plugin."""
         return [
             setting.Option("PLUGIN", "extendableOption"),
             setting.Default("PLUGIN", "extendableOption"),
@@ -71,6 +73,7 @@ class PluginAddsOptions(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineSettings():
+        """Define settings for the plugin."""
         return [
             setting.Option("MCNP", CONF_NEUTRONICS_KERNEL),
             setting.Option("MCNP_Slab", CONF_NEUTRONICS_KERNEL),

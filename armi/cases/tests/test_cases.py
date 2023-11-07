@@ -451,6 +451,7 @@ class TestPluginForCopyInterfacesMultipleFiles(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineSettings():
+        """Define settings for the plugin."""
         return [
             settings.setting.Setting(
                 "multipleFilesSetting",
@@ -463,6 +464,7 @@ class TestPluginForCopyInterfacesMultipleFiles(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def exposeInterfaces(cs):
+        """A plugin is mostly just a vehicle to add Interfaces to an Appliation."""
         return [
             interfaces.InterfaceInfo(
                 interfaces.STACK_ORDER.PREPROCESSING,

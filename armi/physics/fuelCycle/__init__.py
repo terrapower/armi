@@ -71,6 +71,7 @@ class FuelHandlerPlugin(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineSettings():
+        """Define settings for the plugin."""
         return settings.getFuelCycleSettings()
 
     @staticmethod
