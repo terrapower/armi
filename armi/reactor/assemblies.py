@@ -177,9 +177,9 @@ class Assembly(composites.Composite):
         The simple act of adding a block to an assembly fully defines the location of
         the block in 3-D.
 
-        .. impl: Assemblies are made up of type Block
-            :id: I_ARMI_ASSEM_BLOCK
-            :implements: R_ARMI_ASSEM_BLOCK
+        .. impl:: Assemblies are made up of type Block
+            :id: I_ARMI_ASSEM_BLOCKS
+            :implements: R_ARMI_ASSEM_BLOCKS
 
         """
         composites.Composite.add(self, obj)
@@ -224,7 +224,7 @@ class Assembly(composites.Composite):
         siblings of a Core. In future, this will likely be re-implemented in terms of
         just spatialLocator objects.
 
-        .. impl: Assembly location is retrievable
+        .. impl:: Assembly location is retrievable
             :id: I_ARMI_ASSEM_POSI0
             :implements: R_ARMI_ASSEM_POSI
 
@@ -242,7 +242,7 @@ class Assembly(composites.Composite):
         """Return the location of the assembly in the plane using cartesian global
         coordinates.
 
-        .. impl: Assembly coordinates are retrievable
+        .. impl:: Assembly coordinates are retrievable
             :id: I_ARMI_ASSEM_POSI1
             :implements: R_ARMI_ASSEM_POSI
         """
@@ -256,7 +256,7 @@ class Assembly(composites.Composite):
         The assumption is that all blocks in an assembly have the same area.
         Calculate the total assembly volume in cm^3.
 
-        .. impl: Assembly area is retrievable
+        .. impl:: Assembly area is retrievable
             :id: I_ARMI_ASSEM_DIMS0
             :implements: R_ARMI_ASSEM_DIMS
         """
@@ -271,7 +271,7 @@ class Assembly(composites.Composite):
     def getVolume(self):
         """Calculate the total assembly volume in cm^3.
 
-        .. impl: Assembly volume is retrievable
+        .. impl:: Assembly volume is retrievable
             :id: I_ARMI_ASSEM_DIMS1
             :implements: R_ARMI_ASSEM_DIMS
         """
@@ -475,7 +475,7 @@ class Assembly(composites.Composite):
         """
         Determine the height of this assembly in cm.
 
-        .. impl: Assembly height is retrievable
+        .. impl:: Assembly height is retrievable
             :id: I_ARMI_ASSEM_DIMS2
             :implements: R_ARMI_ASSEM_DIMS
 
@@ -1192,7 +1192,7 @@ class Assembly(composites.Composite):
 
         Example: getDim(Flags.WIRE, 'od') will return a wire's OD in cm.
 
-        .. impl: Assembly dimensions are retrievable
+        .. impl:: Assembly dimensions are retrievable
             :id: I_ARMI_ASSEM_DIMS3
             :implements: R_ARMI_ASSEM_DIMS
         """

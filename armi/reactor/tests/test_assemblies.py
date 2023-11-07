@@ -348,8 +348,8 @@ class Assembly_TestCase(unittest.TestCase):
         """
         Test for getting string location of assembly.
 
-        .. test: Assembly location is retrievable
-            :id: T_ARMI_ASSEM_POSI
+        .. test:: Assembly location is retrievable
+            :id: T_ARMI_ASSEM_POSI0
             :tests: R_ARMI_ASSEM_POSI
         """
         cur = self.assembly.getLocation()
@@ -359,7 +359,7 @@ class Assembly_TestCase(unittest.TestCase):
     def test_getArea(self):
         """Tests area calculation for hex assembly
 
-        .. test: Assembly area is retrievable
+        .. test:: Assembly area is retrievable
             :id: T_ARMI_ASSEM_DIMS0
             :tests: R_ARMI_ASSEM_DIMS
         """
@@ -371,7 +371,7 @@ class Assembly_TestCase(unittest.TestCase):
     def test_getVolume(self):
         """Tests volume calculation for hex assembly
 
-        .. test: Assembly volume is retrievable
+        .. test:: Assembly volume is retrievable
             :id: T_ARMI_ASSEM_DIMS1
             :tests: R_ARMI_ASSEM_DIMS
         """
@@ -455,7 +455,7 @@ class Assembly_TestCase(unittest.TestCase):
         """
         Test height of assembly calculation
 
-        .. test: Assembly height is retrievable
+        .. test:: Assembly height is retrievable
             :id: T_ARMI_ASSEM_DIMS2
             :tests: R_ARMI_ASSEM_DIMS
 
@@ -866,7 +866,7 @@ class Assembly_TestCase(unittest.TestCase):
     def test_getDim(self):
         """Tests dimensions are retrievable
 
-        .. test: Assembly dimensions are retrievable
+        .. test:: Assembly dimensions are retrievable
             :id: T_ARMI_ASSEM_DIMS3
             :tests: R_ARMI_ASSEM_DIMS
         """
@@ -1006,8 +1006,8 @@ class Assembly_TestCase(unittest.TestCase):
     def test_carestianCoordinates(self):
         """Check the coordinates of the assembly within the core with a CarestianGrid.
 
-        .. test: Cartesian coordinates are retrievable
-            :id: T_ARMI_ASSEM_POSI
+        .. test:: Cartesian coordinates are retrievable
+            :id: T_ARMI_ASSEM_POSI1
             :test: R_ARMI_ASSEM_POSI
         """
         a = makeTestAssembly(
@@ -1105,9 +1105,9 @@ class Assembly_TestCase(unittest.TestCase):
     def test_assem_block_types(self):
         """Test that all children of an assembly are blocks.
 
-        .. test: Validate child types of assembly are blocks
-            :id: T_ARMI_ASSEM_BLOCK
-            :tests: R_ARMI_ASSEM_BLOCK
+        .. test:: Validate child types of assembly are blocks
+            :id: T_ARMI_ASSEM_BLOCKS
+            :tests: R_ARMI_ASSEM_BLOCKS
         """
         for b in self.assembly.getBlocks():
 
@@ -1117,7 +1117,7 @@ class Assembly_TestCase(unittest.TestCase):
     def test_assem_hex_type(self):
         """Test that all children of a hex assembly are hexagons.
 
-        .. test: Validate child types of assembly are Hex type
+        .. test:: Validate child types of assembly are Hex type
             :id: T_ARMI_ASSEM_HEX
             :tests: R_ARMI_ASSEM_HEX
         """
