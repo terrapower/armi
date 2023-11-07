@@ -27,9 +27,6 @@ from typing import (
     MutableSequence,
 )
 
-import armi
-armi.configure()
-
 from armi import context
 from armi import interfaces
 from armi import runLog

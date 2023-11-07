@@ -1193,7 +1193,7 @@ class Assembly(composites.Composite):
         Example: getDim(Flags.WIRE, 'od') will return a wire's OD in cm.
 
         .. impl: Assembly dimensions are retrievable
-            :id: T_ARMI_ASSEM_DIMS3
+            :id: I_ARMI_ASSEM_DIMS3
             :implements: R_ARMI_ASSEM_DIMS
         """
         # prefer fuel blocks.
