@@ -46,6 +46,13 @@ _MATERIAL_NAMESPACE_ORDER = ["armi.materials"]
 
 
 def setMaterialNamespaceOrder(order):
+    """
+    Set the material namespace order at the Python interpretter, global level.
+
+    .. impl:: Materials can be searched across packages in a defined namespace.
+        :id: I_ARMI_MAT_NAMESPACE
+        :implements: R_ARMI_MAT_NAMESPACE
+    """
     global _MATERIAL_NAMESPACE_ORDER
     _MATERIAL_NAMESPACE_ORDER = order
 
@@ -120,6 +127,10 @@ def resolveMaterialClassByName(name: str, namespaceOrder: List[str] = None):
     Input files usually specify a material like UO2. Which particular implementation
     gets used (Framework's UO2 vs. a user plugins UO2 vs. the Kentucky Transportation
     Cabinet's UO2) is up to the user at runtime.
+
+    .. impl:: Material collections are defined with an order of precedence in the case of duplicates.
+        :id: I_ARMI_MAT_ORDER
+        :implements: R_ARMI_MAT_ORDER
 
     Parameters
     ----------
