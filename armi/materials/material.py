@@ -36,6 +36,14 @@ class Material:
     """
     A material is made up of elements or isotopes. It has bulk properties like mass density.
 
+    .. impl:: The abstract material class.
+        :id: I_ARMI_MAT_PROPERTIES
+        :implements: R_ARMI_MAT_PROPERTIES
+
+    .. impl:: Materials generate nuclide mass fractions at instantiation.
+        :id: I_ARMI_MAT_FRACS
+        :implements: R_ARMI_MAT_FRACS
+
     Attributes
     ----------
     parent : Component
@@ -94,7 +102,13 @@ class Material:
 
     @property
     def name(self):
-        """Getter for the private name attribute of this Material."""
+        """
+        Getter for the private name attribute of this Material.
+
+        .. impl:: The name of a material is accessible.
+            :id: I_ARMI_MAT_NAME
+            :implements: R_ARMI_MAT_NAME
+        """
         return self._name
 
     @name.setter
@@ -707,6 +721,10 @@ class Fluid(Material):
     def linearExpansion(self, Tk=None, Tc=None):
         """For void, lets just not allow temperature changes to change dimensions
         since it is a liquid it will fill its space.
+
+        .. impl:: Fluid materials are not thermally expandable.
+            :id: I_ARMI_MAT_FLUID
+            :implements: R_ARMI_MAT_FLUID
         """
         return 0.0
 

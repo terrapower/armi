@@ -47,6 +47,10 @@ class STACK_ORDER:  # noqa: invalid-class-name
     Each module specifies an ``ORDER`` constant that specifies where in this order it
     should be placed in the Interface Stack.
 
+    .. impl:: Define an ordered list of interfaces.
+        :id: I_ARMI_OPERATOR_INTERFACES0
+        :implements: R_ARMI_OPERATOR_INTERFACES
+
     Notes
     -----
     Originally, the ordering was accomplished with a very large if/else construct in ``createInterfaces``.
@@ -84,7 +88,11 @@ class STACK_ORDER:  # noqa: invalid-class-name
 class TightCoupler:
     """
     Data structure that defines tight coupling attributes that are implemented
-    within an Interface and called upon when ``interactCoupled`` is called.
+    within an Interface and called upon when ``interactAllCoupled`` is called.
+
+    .. impl:: The TightCoupler defines the convergence criteria for physics coupling.
+        :id: I_ARMI_OPERATOR_PHYSICS0
+        :implements: R_ARMI_OPERATOR_PHYSICS
 
     Parameters
     ----------
@@ -240,6 +248,10 @@ class Interface:
 
     Interface instances are gathered into an interface stack in
     :py:meth:`armi.operators.operator.Operator.createInterfaces`.
+
+    .. impl:: The interface shall allow code execution at important operational points in time.
+        :id: I_ARMI_INTERFACE
+        :implements: R_ARMI_INTERFACE
     """
 
     # list containing interfaceClass

@@ -169,6 +169,10 @@ class ArmiPlugin:
         """
         Function for defining additional parameters.
 
+        .. impl:: Plugins can add parameters to the reactor data model.
+            :id: I_ARMI_PLUGIN_PARAMS
+            :implements: R_ARMI_PLUGIN_PARAMS
+
         Returns
         -------
         dict
@@ -371,6 +375,10 @@ class ArmiPlugin:
         kernel is among the available options. If a plugin were to provide a new
         neutronics kernel (let's say MCNP), it should also define a new option to tell
         the settings system that ``"MCNP"`` is a valid option.
+
+        .. impl:: Plugins can add settings to the run.
+            :id: I_ARMI_PLUGIN_SETTINGS
+            :implements: R_ARMI_PLUGIN_SETTINGS
 
         Returns
         -------
