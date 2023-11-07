@@ -138,6 +138,13 @@ class MockBlock(HexBlock):
         self._r = r
 
     def getVolume(self, *args, **kwargs):
+        """
+        Return the volume of a block.
+
+        .. impl:: Volume of block is retrievable
+            :id: I_ARMI_BLOCK_DIMS10
+            :implements: R_ARMI_BLOCK_DIMS
+        """
         return 1.0
 
     def getNuclideNumberDensities(self, nucNames):

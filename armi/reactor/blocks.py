@@ -1609,6 +1609,13 @@ class HexBlock(Block):
         Block.__init__(self, name, height)
 
     def coords(self, rotationDegreesCCW=0.0):
+        """
+        Returns the coordinates of the block.
+
+        .. impl:: Coordinates of a block are queryable
+            :id: I_ARMI_BLOCK_POSI2
+            :implements: R_ARMI_BLOCK_POSI
+        """
         x, y, _z = self.spatialLocator.getGlobalCoordinates()
         x += self.p.displacementX * 100.0
         y += self.p.displacementY * 100.0
