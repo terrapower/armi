@@ -1066,13 +1066,23 @@ class Assembly_TestCase(unittest.TestCase):
     def test_assem_blocks(self):
         """Test that all children of an assembly are blocks.
 
-        .. test: Validate child types of assembly
-            :id: T_ARMI_ASSEM_BLOCKS
+        .. test: Validate child types of assembly are blocks
+            :id: T_ARMI_ASSEM_BLOCK
             :tests: R_ARMI_ASSEM_BLOCK
+
+        .. test: Validate child types of assembly are Hex type
+            :id: T_ARMI_ASSEM_HEX
+            :tests: R_ARMI_ASSEM_HEX
         """
 
         for b in self.assembly.getBlocks():
+
+            # Confirm children are blocks
             self.assertIsInstance(b, blocks.Block)
+
+            # For a hex assem, confirm they are of type "Hexagon"
+            pitch_comp_type = b.PITCH_COMPONENT_TYPE[0]
+            self.assertEqual(pitch_comp_type.__name__, "Hexagon")
 
 
 class AssemblyInReactor_TestCase(unittest.TestCase):
