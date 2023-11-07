@@ -254,6 +254,11 @@ class Assembly(composites.Composite):
         Return the area of the assembly by looking at its first block.
 
         The assumption is that all blocks in an assembly have the same area.
+        Calculate the total assembly volume in cm^3.
+
+        .. impl: Assembly area is retrievable
+            :id: I_ARMI_ASSEM_DIMS0
+            :implements: R_ARMI_ASSEM_DIMS
         """
         try:
             return self[0].getArea()
@@ -264,7 +269,12 @@ class Assembly(composites.Composite):
             return 1.0
 
     def getVolume(self):
-        """Calculate the total assembly volume in cm^3."""
+        """Calculate the total assembly volume in cm^3.
+
+        .. impl: Assembly volume is retrievable
+            :id: I_ARMI_ASSEM_DIMS1
+            :implements: R_ARMI_ASSEM_DIMS
+        """
         return self.getArea() * self.getTotalHeight()
 
     def getPinPlenumVolumeInCubicMeters(self):
@@ -464,6 +474,10 @@ class Assembly(composites.Composite):
     def getTotalHeight(self, typeSpec=None):
         """
         Determine the height of this assembly in cm.
+
+        .. impl: Assembly height is retrievable
+            :id: I_ARMI_ASSEM_DIMS2
+            :implements: R_ARMI_ASSEM_DIMS
 
         Parameters
         ----------
@@ -1177,6 +1191,10 @@ class Assembly(composites.Composite):
         Then, look on that component for dimName.
 
         Example: getDim(Flags.WIRE, 'od') will return a wire's OD in cm.
+
+        .. impl: Assembly dimensions are retrievable
+            :id: T_ARMI_ASSEM_DIMS3
+            :implements: R_ARMI_ASSEM_DIMS
         """
         # prefer fuel blocks.
         bList = self.getBlocks(Flags.FUEL)

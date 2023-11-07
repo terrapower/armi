@@ -349,7 +349,7 @@ class Assembly_TestCase(unittest.TestCase):
         Test for getting string location of assembly.
 
         .. test: Assembly location is retrievable
-            :id: T_ARMI_ASSEM_POSI0
+            :id: T_ARMI_ASSEM_POSI
             :tests: R_ARMI_ASSEM_POSI
         """
         cur = self.assembly.getLocation()
@@ -357,12 +357,24 @@ class Assembly_TestCase(unittest.TestCase):
         self.assertEqual(cur, ref)
 
     def test_getArea(self):
+        """Tests area calculation for hex assembly
+
+        .. test: Assembly area is retrievable
+            :id: T_ARMI_ASSEM_DIMS0
+            :tests: R_ARMI_ASSEM_DIMS
+        """
         cur = self.assembly.getArea()
         ref = math.sqrt(3) / 2.0 * self.hexDims["op"] ** 2
         places = 6
         self.assertAlmostEqual(cur, ref, places=places)
 
     def test_getVolume(self):
+        """Tests volume calculation for hex assembly
+
+        .. test: Assembly volume is retrievable
+            :id: T_ARMI_ASSEM_DIMS1
+            :tests: R_ARMI_ASSEM_DIMS
+        """
         cur = self.assembly.getVolume()
         ref = math.sqrt(3) / 2.0 * self.hexDims["op"] ** 2 * self.height * NUM_BLOCKS
         places = 6
@@ -440,6 +452,14 @@ class Assembly_TestCase(unittest.TestCase):
         self.assertAlmostEqual(cur, ref, places=places)
 
     def test_getHeight(self):
+        """
+        Test height of assembly calculation
+
+        .. test: Assembly height is retrievable
+            :id: T_ARMI_ASSEM_DIMS2
+            :tests: R_ARMI_ASSEM_DIMS
+
+        """
         cur = self.assembly.getHeight()
         ref = self.height * NUM_BLOCKS
         places = 6
@@ -844,6 +864,13 @@ class Assembly_TestCase(unittest.TestCase):
         self.assertEqual(cur, 3)
 
     def test_getDim(self):
+        """Tests dimensions are retrievable
+
+        .. test: Assembly dimensions are retrievable
+            :id: T_ARMI_ASSEM_DIMS3
+            :tests: R_ARMI_ASSEM_DIMS
+        """
+
         cur = self.assembly.getDim(Flags.FUEL, "op")
         ref = self.hexDims["op"]
         places = 6
@@ -980,7 +1007,7 @@ class Assembly_TestCase(unittest.TestCase):
         """Check the coordinates of the assembly within the core with a CarestianGrid.
 
         .. test: Cartesian coordinates are retrievable
-            :id: T_ARMI_ASSEM_POSI1
+            :id: T_ARMI_ASSEM_POSI
             :test: R_ARMI_ASSEM_POSI
         """
         a = makeTestAssembly(
