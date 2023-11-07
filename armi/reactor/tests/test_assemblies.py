@@ -345,6 +345,13 @@ class Assembly_TestCase(unittest.TestCase):
         self.assertEqual(cur, ref)
 
     def test_getLocation(self):
+        """
+        Test for getting string location of assembly.
+
+        .. test: Assembly location is retrievable
+            :id: T_ARMI_ASSEM_POSI0
+            :tests: R_ARMI_ASSEM_POSI
+        """
         cur = self.assembly.getLocation()
         ref = str("005-003")
         self.assertEqual(cur, ref)
@@ -970,7 +977,12 @@ class Assembly_TestCase(unittest.TestCase):
         self.assertTrue(modifiedAssem.hasContinuousCoolantChannel())
 
     def test_carestianCoordinates(self):
-        """Check the coordinates of the assembly within the core with a CarestianGrid."""
+        """Check the coordinates of the assembly within the core with a CarestianGrid.
+
+        .. test: Cartesian coordinates are retrievable
+            :id: T_ARMI_ASSEM_POSI1
+            :test: R_ARMI_ASSEM_POSI
+        """
         a = makeTestAssembly(
             numBlocks=1,
             assemNum=1,
@@ -1063,22 +1075,26 @@ class Assembly_TestCase(unittest.TestCase):
             a.rotate(math.radians(120))
             self.assertIn("No rotation method defined", mock.getStdout())
 
-    def test_assem_blocks(self):
+    def test_assem_block_types(self):
         """Test that all children of an assembly are blocks.
 
         .. test: Validate child types of assembly are blocks
             :id: T_ARMI_ASSEM_BLOCK
             :tests: R_ARMI_ASSEM_BLOCK
+        """
+        for b in self.assembly.getBlocks():
+
+            # Confirm children are blocks
+            self.assertIsInstance(b, blocks.Block)
+
+    def test_assem_hex_type(self):
+        """Test that all children of a hex assembly are hexagons.
 
         .. test: Validate child types of assembly are Hex type
             :id: T_ARMI_ASSEM_HEX
             :tests: R_ARMI_ASSEM_HEX
         """
-
         for b in self.assembly.getBlocks():
-
-            # Confirm children are blocks
-            self.assertIsInstance(b, blocks.Block)
 
             # For a hex assem, confirm they are of type "Hexagon"
             pitch_comp_type = b.PITCH_COMPONENT_TYPE[0]

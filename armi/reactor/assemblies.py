@@ -223,6 +223,11 @@ class Assembly(composites.Composite):
         grid/spatialLocator system and the ability to represent things like the SFP as
         siblings of a Core. In future, this will likely be re-implemented in terms of
         just spatialLocator objects.
+
+        .. impl: Assembly location is retrievable
+            :id: I_ARMI_ASSEM_POSI0
+            :implements: R_ARMI_ASSEM_POSI
+
         """
         # just use ring and position, not axial (which is 0)
         if not self.parent:
@@ -234,7 +239,13 @@ class Assembly(composites.Composite):
         )
 
     def coords(self):
-        """Return the location of the assembly in the plane using cartesian global coordinates."""
+        """Return the location of the assembly in the plane using cartesian global
+        coordinates.
+
+        .. impl: Assembly coordinates are retrievable
+            :id: I_ARMI_ASSEM_POSI1
+            :implements: R_ARMI_ASSEM_POSI
+        """
         x, y, _z = self.spatialLocator.getGlobalCoordinates()
         return (x, y)
 
