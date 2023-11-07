@@ -1745,6 +1745,7 @@ class HexBlock(Block):
         return duct.getDimension("op")
 
     def initializePinLocations(self):
+        """Initialize pin locations."""
         nPins = self.getNumPins()
         self.p.pinLocation = list(range(1, nPins + 1))
 
