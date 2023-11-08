@@ -851,7 +851,7 @@ class Block_TestCase(unittest.TestCase):
 
     def test_setLocation(self):
         """
-        Retrieve a blocks location
+        Retrieve a blocks location.
 
         .. test:: Location of a block is retrievable
             :id: T_ARMI_BLOCK_POSI
@@ -1549,9 +1549,7 @@ class Block_TestCase(unittest.TestCase):
         self.assertAlmostEqual(moles2, moles3)
 
     def test_setImportantParams(self):
-        """
-        Confirm that important block parameters can be set and get.
-        """
+        """Confirm that important block parameters can be set and get."""
         # Test ability to set and get flux
         applyDummyData(self.block)
         self.assertEqual(self.block.p.mgFlux[0], 161720716762.12997)
