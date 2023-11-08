@@ -66,6 +66,10 @@ class TestInspector(unittest.TestCase):
         """
         Tests the case where a corrective query is resolved.
         Checks to make sure the settings file is overwritten with the resolved setting.
+
+        .. test:: Settings have validation and correction tools.
+            :id: T_ARMI_SETTINGS_RULES0
+            :tests: R_ARMI_SETTINGS_RULES
         """
         # load settings from test settings file
         self.cs["cycleLength"] = 300.0

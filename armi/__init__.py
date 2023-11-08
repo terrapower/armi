@@ -118,6 +118,10 @@ def init(choice=None, fName=None, cs=None):
     """
     Scan a directory for armi inputs and load one to interact with.
 
+    .. impl:: Settings are used to define an ARMI run.
+        :id: I_ARMI_SETTING1
+        :implements: R_ARMI_SETTING
+
     Parameters
     ----------
     choice : int, optional
@@ -133,7 +137,6 @@ def init(choice=None, fName=None, cs=None):
     Examples
     --------
     >>> o = armi.init()
-
     """
     from armi import cases
     from armi import settings

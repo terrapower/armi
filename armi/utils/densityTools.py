@@ -196,6 +196,7 @@ def formatMaterialCard(
         mCard = ["m{matNum}\n".format(matNum=matNum)]
     else:
         mCard = ["m{}\n"]
+
     for nuc, dens in sorted(densities.items()):
         # skip LFPs and Dummies.
         if isinstance(nuc, (nuclideBases.LumpNuclideBase)):
@@ -214,6 +215,7 @@ def formatMaterialCard(
 
     if mcnp6Compatible:
         mCard.append("      nlib={lib}c\n".format(lib=mcnpLibrary))
+
     return mCard
 
 
@@ -250,7 +252,7 @@ def filterNuclideList(nuclideVector, nuclides):
 
 def normalizeNuclideList(nuclideVector, normalization=1.0):
     """
-    normalize the nuclide vector.
+    Normalize the nuclide vector.
 
     Parameters
     ----------
