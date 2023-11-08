@@ -170,12 +170,17 @@ class Assembly(composites.Composite):
         self.p.assemNum = randint(-9e12, -1)
         self.renumber(self.p.assemNum)
 
-    def add(self, obj):
+    def add(self, obj: blocks.Block):
         """
         Add an object to this assembly.
 
         The simple act of adding a block to an assembly fully defines the location of
         the block in 3-D.
+
+        .. impl:: Assemblies are made up of type Block
+            :id: I_ARMI_ASSEM_BLOCKS
+            :implements: R_ARMI_ASSEM_BLOCKS
+
         """
         composites.Composite.add(self, obj)
         obj.spatialLocator = self.spatialGrid[0, 0, len(self) - 1]
@@ -218,6 +223,11 @@ class Assembly(composites.Composite):
         grid/spatialLocator system and the ability to represent things like the SFP as
         siblings of a Core. In future, this will likely be re-implemented in terms of
         just spatialLocator objects.
+
+        .. impl:: Assembly location is retrievable
+            :id: I_ARMI_ASSEM_POSI0
+            :implements: R_ARMI_ASSEM_POSI
+
         """
         # just use ring and position, not axial (which is 0)
         if not self.parent:
@@ -229,7 +239,13 @@ class Assembly(composites.Composite):
         )
 
     def coords(self):
-        """Return the location of the assembly in the plane using cartesian global coordinates."""
+        """Return the location of the assembly in the plane using cartesian global
+        coordinates.
+
+        .. impl:: Assembly coordinates are retrievable
+            :id: I_ARMI_ASSEM_POSI1
+            :implements: R_ARMI_ASSEM_POSI
+        """
         x, y, _z = self.spatialLocator.getGlobalCoordinates()
         return (x, y)
 
@@ -238,6 +254,11 @@ class Assembly(composites.Composite):
         Return the area of the assembly by looking at its first block.
 
         The assumption is that all blocks in an assembly have the same area.
+        Calculate the total assembly volume in cm^3.
+
+        .. impl:: Assembly area is retrievable
+            :id: I_ARMI_ASSEM_DIMS0
+            :implements: R_ARMI_ASSEM_DIMS
         """
         try:
             return self[0].getArea()
@@ -248,7 +269,12 @@ class Assembly(composites.Composite):
             return 1.0
 
     def getVolume(self):
-        """Calculate the total assembly volume in cm^3."""
+        """Calculate the total assembly volume in cm^3.
+
+        .. impl:: Assembly volume is retrievable
+            :id: I_ARMI_ASSEM_DIMS1
+            :implements: R_ARMI_ASSEM_DIMS
+        """
         return self.getArea() * self.getTotalHeight()
 
     def getPinPlenumVolumeInCubicMeters(self):
@@ -448,6 +474,10 @@ class Assembly(composites.Composite):
     def getTotalHeight(self, typeSpec=None):
         """
         Determine the height of this assembly in cm.
+
+        .. impl:: Assembly height is retrievable
+            :id: I_ARMI_ASSEM_DIMS2
+            :implements: R_ARMI_ASSEM_DIMS
 
         Parameters
         ----------
@@ -1161,6 +1191,10 @@ class Assembly(composites.Composite):
         Then, look on that component for dimName.
 
         Example: getDim(Flags.WIRE, 'od') will return a wire's OD in cm.
+
+        .. impl:: Assembly dimensions are retrievable
+            :id: I_ARMI_ASSEM_DIMS3
+            :implements: R_ARMI_ASSEM_DIMS
         """
         # prefer fuel blocks.
         bList = self.getBlocks(Flags.FUEL)

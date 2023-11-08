@@ -851,10 +851,10 @@ class Block_TestCase(unittest.TestCase):
 
     def test_setLocation(self):
         """
-        Retrieve a blocks location
+        Retrieve a blocks location.
 
         .. test:: Location of a block is retrievable
-            :id: T_ARMI_BLOCK_POSI
+            :id: T_ARMI_BLOCK_POSI0
             :tests: R_ARMI_BLOCK_POSI
         """
         b = self.block
@@ -1549,9 +1549,7 @@ class Block_TestCase(unittest.TestCase):
         self.assertAlmostEqual(moles2, moles3)
 
     def test_setImportantParams(self):
-        """
-        Confirm that important block parameters can be set and get.
-        """
+        """Confirm that important block parameters can be set and get."""
         # Test ability to set and get flux
         applyDummyData(self.block)
         self.assertEqual(self.block.p.mgFlux[0], 161720716762.12997)
@@ -1830,7 +1828,7 @@ class HexBlock_TestCase(unittest.TestCase):
         """
         Test that a hex block has the proper "hexagon" __name__.
 
-        .. test: Ability to create hex shaped blocks
+        .. test:: Ability to create hex shaped blocks
             :id: T_ARMI_BLOCK_HEX
             :tests: R_ARMI_BLOCK_HEX
         """
@@ -1841,8 +1839,8 @@ class HexBlock_TestCase(unittest.TestCase):
         """
         Test that coordinates are retrievable from a block.
 
-        .. test: Coordinates of a block are queryable
-            :id: T_ARMI_BLOCK_POSI
+        .. test:: Coordinates of a block are queryable
+            :id: T_ARMI_BLOCK_POSI1
             :tests: R_ARMI_BLOCK_POSI
         """
         r = self.HexBlock.r
@@ -1873,7 +1871,7 @@ class HexBlock_TestCase(unittest.TestCase):
         Tests that the block class can provide basic dimensionality information about
         itself.
 
-        .. test: Retrieve important block dimensions
+        .. test:: Retrieve important block dimensions
             :id: T_ARMI_BLOCK_DIMS
             :tests: R_ARMI_BLOCK_DIMS
         """
