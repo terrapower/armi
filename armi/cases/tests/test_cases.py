@@ -576,7 +576,7 @@ class TestCopyInterfaceInputs(unittest.TestCase):
         """
         # register the new Plugin
         app = getApp()
-        app.pluginManager.register(TestPluginWithDupicateSetting)
+        app.pluginManager.register(TestPluginWithDuplicateSetting)
 
         with self.assertRaises(ValueError):
             cs = settings.Settings(ARMI_RUN_PATH)
