@@ -36,6 +36,7 @@ from armi.utils import (
     getPreviousTimeNode,
     getCumulativeNodeNum,
     hasBurnup,
+    codeTiming,
 )
 
 
@@ -153,6 +154,19 @@ class TestGeneralUtils(unittest.TestCase):
         # further validate the Reactor heirarchy is in place
         self.assertGreater(len(r.core.getAssemblies()), 50)
         self.assertGreater(len(r.core.getBlocks()), 200)
+
+    def test_codeTiming(self):
+        """
+        Test that codeTiming preserves function attributes when it wraps a function
+        """
+
+        @codeTiming.timed
+        def testFunc():
+            """Test function docstring"""
+            pass
+
+        self.assertEqual(getattr(testFunc, "__doc__"), "Test function docstring")
+        self.assertEqual(getattr(testFunc, "__name__"), "testFunc")
 
 
 class CyclesSettingsTests(unittest.TestCase):
