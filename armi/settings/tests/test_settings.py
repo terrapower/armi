@@ -264,7 +264,13 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         self.assertEqual(cs["extendableOption"], "PLUGIN")
 
     def test_default(self):
-        """Make sure default updating mechanism works."""
+        """
+        Make sure default updating mechanism works.
+
+        .. test:: The setting default is mandatory.
+            :id: T_ARMI_SETTINGS_DEFAULTS
+            :tests: R_ARMI_SETTINGS_DEFAULTS
+        """
         a = setting.Setting("testsetting", 0)
         newDefault = setting.Default(5, "testsetting")
         a.changeDefault(newDefault)

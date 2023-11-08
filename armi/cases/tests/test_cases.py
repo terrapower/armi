@@ -447,6 +447,21 @@ class MultiFilesInterfaces(interfaces.Interface):
         return {settingName: cs[settingName]}
 
 
+class TestPluginWithDupicateSetting(plugins.ArmiPlugin):
+    @staticmethod
+    @plugins.HOOKIMPL
+    def defineSettings():
+        """Define a duplicate setting."""
+        return [
+            settings.setting.Setting(
+                "power",
+                default=123,
+                label="power",
+                description="duplicate power",
+            )
+        ]
+
+
 class TestPluginForCopyInterfacesMultipleFiles(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
@@ -550,6 +565,21 @@ class TestCopyInterfaceInputs(unittest.TestCase):
             )
             self.assertFalse(os.path.exists(newSettings[testSetting]))
             self.assertEqual(newSettings[testSetting], fakeShuffle)
+
+    def test_failOnDuplicateSetting(self):
+        """
+        That that if a plugin attempts to add a duplicate setting, it raises an error.
+
+        .. test:: Plugins cannot register duplicate settings.
+            :id: T_ARMI_SETTINGS_UNIQUE
+            :tests: R_ARMI_SETTINGS_UNIQUE
+        """
+        # register the new Plugin
+        app = getApp()
+        app.pluginManager.register(TestPluginWithDupicateSetting)
+
+        with self.assertRaises(ValueError):
+            cs = settings.Settings(ARMI_RUN_PATH)
 
     def test_copyInterfaceInputs_multipleFiles(self):
         # register the new Plugin
