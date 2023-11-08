@@ -74,7 +74,7 @@ class TestZone(unittest.TestCase):
     def test_addItem(self):
         """
         .. test:: Add item to a zone
-            :id: T_ARMI_ZONE
+            :id: T_ARMI_ZONE0
             :tests: R_ARMI_ZONE
         """
         zone = zones.Zone("test_addItem")
@@ -93,7 +93,7 @@ class TestZone(unittest.TestCase):
     def test_addItems(self):
         """
         .. test:: Add multiple items to a zone
-            :id: T_ARMI_ZONE
+            :id: T_ARMI_ZONE1
             :tests: R_ARMI_ZONE
         """
         zone = zones.Zone("test_addItems")
@@ -110,7 +110,7 @@ class TestZone(unittest.TestCase):
     def test_addLoc(self):
         """
         .. test:: Add location to a zone
-            :id: T_ARMI_ZONE
+            :id: T_ARMI_ZONE2
             :tests: R_ARMI_ZONE
         """
         zone = zones.Zone("test_addLoc")
@@ -129,7 +129,7 @@ class TestZone(unittest.TestCase):
     def test_addLocs(self):
         """
         .. test:: Add multiple locations to a zone
-            :id: T_ARMI_ZONE
+            :id: T_ARMI_ZONE3
             :tests: R_ARMI_ZONE
         """
         zone = zones.Zone("test_addLocs")
@@ -199,6 +199,11 @@ class TestZones(unittest.TestCase):
         self.zonez = self.r.core.zones
 
     def test_dictionaryInterface(self):
+        """
+        .. test:: Create collection of Zones
+            :id: T_ARMI_ZONES
+            :tests: R_ARMI_ZONES
+        """
         zs = zones.Zones()
 
         # validate the addZone() and __len__() work

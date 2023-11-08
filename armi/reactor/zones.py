@@ -202,6 +202,9 @@ class Zone:
 class Zones:
     """Collection of Zone objects.
 
+    .. impl:: A collection of armi zones
+        :id: I_ARMI_ZONES
+        :implements: R_ARMI_ZONES
     """
 
     def __init__(self):
