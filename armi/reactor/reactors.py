@@ -763,6 +763,10 @@ class Core(composites.Composite):
         indexBased : bool, optional
             If true, will force location-index interpretation, even if "circular shuffling" is enabled.
 
+        .. impl:: Retrieve number of rings in core
+            :id: I_ARMI_R_NUM_RINGS
+            :implements: R_ARMI_R_NUM_RINGS
+
         When circular ring shuffling is activated, this changes interpretation.
         Developers plan on making this another method for the secondary interpretation.
         """
@@ -1122,6 +1126,11 @@ class Core(composites.Composite):
         See Also
         --------
         getAssembly : more general version of this method
+
+        .. impl:: Get assembly by name
+            :id: I_ARMI_R_GET_ASSEM_NAME
+            :implements: R_ARMI_R_GET_ASSEM_NAME
+        
         """
         return self.assembliesByName[name]
 
