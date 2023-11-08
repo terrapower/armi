@@ -72,6 +72,11 @@ class TestZone(unittest.TestCase):
             self.bList.append(b)
 
     def test_addItem(self):
+        """
+        .. test:: Add item to a zone
+            :id: T_ARMI_ZONE
+            :tests: R_ARMI_ZONE
+        """
         zone = zones.Zone("test_addItem")
         zone.addItem(self.aList[0])
         self.assertIn(self.aList[0].getLocation(), zone)
@@ -86,6 +91,11 @@ class TestZone(unittest.TestCase):
         self.assertRaises(AssertionError, zone.removeItem, "also nope")
 
     def test_addItems(self):
+        """
+        .. test:: Add multiple items to a zone
+            :id: T_ARMI_ZONE
+            :tests: R_ARMI_ZONE
+        """
         zone = zones.Zone("test_addItems")
         zone.addItems(self.aList)
         for a in self.aList:
@@ -98,6 +108,11 @@ class TestZone(unittest.TestCase):
             self.assertNotIn(a.getLocation(), zone)
 
     def test_addLoc(self):
+        """
+        .. test:: Add location to a zone
+            :id: T_ARMI_ZONE
+            :tests: R_ARMI_ZONE
+        """
         zone = zones.Zone("test_addLoc")
         zone.addLoc(self.aList[0].getLocation())
         self.assertIn(self.aList[0].getLocation(), zone)
@@ -112,6 +127,11 @@ class TestZone(unittest.TestCase):
         self.assertRaises(AssertionError, zone.removeLoc, 1234)
 
     def test_addLocs(self):
+        """
+        .. test:: Add multiple locations to a zone
+            :id: T_ARMI_ZONE
+            :tests: R_ARMI_ZONE
+        """
         zone = zones.Zone("test_addLocs")
         zone.addLocs([a.getLocation() for a in self.aList])
         for a in self.aList:
