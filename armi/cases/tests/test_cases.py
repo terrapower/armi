@@ -447,7 +447,7 @@ class MultiFilesInterfaces(interfaces.Interface):
         return {settingName: cs[settingName]}
 
 
-class TestPluginWithDupicateSetting(plugins.ArmiPlugin):
+class TestPluginWithDuplicateSetting(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineSettings():
@@ -479,7 +479,7 @@ class TestPluginForCopyInterfacesMultipleFiles(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def exposeInterfaces(cs):
-        """A plugin is mostly just a vehicle to add Interfaces to an Appliation."""
+        """A plugin is mostly just a vehicle to add Interfaces to an Application."""
         return [
             interfaces.InterfaceInfo(
                 interfaces.STACK_ORDER.PREPROCESSING,

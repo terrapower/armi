@@ -34,7 +34,7 @@ def area(pitch):
 
     Notes
     -----
-    The pitch is the distance between the center of the hexagaons, in the lattice.
+    The pitch is the distance between the center of the hexagons in the lattice.
     """
     return SQRT3 / 2.0 * pitch**2
 
@@ -53,7 +53,7 @@ def side(pitch):
 
     Notes
     -----
-    The pitch is the distance between the center of the hexagaons, in the lattice.
+    The pitch is the distance between the center of the hexagons in the lattice.
     """
     return pitch / SQRT3
 
@@ -93,7 +93,7 @@ def pitch(side):
 
     Notes
     -----
-    The pitch is the distance between the center of the hexagaons, in the lattice.
+    The pitch is the distance between the center of the hexagons in the lattice.
     """
     return side * SQRT3
 

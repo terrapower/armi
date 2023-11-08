@@ -116,7 +116,7 @@ class UpInterface(interfaces.Interface):
     name = "UpInterface"
 
     def interactEveryNode(self, cycle, node):
-        """Logic to be caried out at every time node in the simulation."""
+        """Logic to be carried out at every time node in the simulation."""
         self.r.core.p.power += 100
 
 
