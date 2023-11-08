@@ -237,6 +237,13 @@ class HexReactorTests(ReactorTests):
         )
 
     def test_factorySortSetting(self):
+        """
+        Create a core object from an input yaml
+
+        .. test:: Create core object from input yaml
+            :id: T_ARMI_R_CORE
+            :tests: R_ARMI_R_CORE
+        """
         # get a sorted Reactor (the default)
         cs = settings.Settings(fName="armiRun.yaml")
         r0 = reactors.loadFromCs(cs)
@@ -886,7 +893,7 @@ class HexReactorTests(ReactorTests):
 
     def test_removeAssembliesInRingByCount(self):
         """Tests retrieving ring numbers and removing a ring.
-        
+
         .. test:: Retrieve number of rings in core.
             :id: T_ARMI_R_NUM_RINGS
             :tests: R_ARMI_R_NUM_RINGS
@@ -1159,8 +1166,14 @@ class HexReactorTests(ReactorTests):
         self.assertAlmostEqual(self.r.core.p.power, 3e9)
 
     def test_getAssemblyByName(self):
+        """
+        Get an assembly by its name.
 
-        self.r.core.getAssemblyByName('A00001')
+        .. test:: Get assembly from core by name
+            :id: T_ARMI_R_GET_ASSEM_NAME
+        """
+        assem = self.r.core.getAssemblyByName('A0004')
+        self.assertEqual('A0004', assem.name)
 
 class CartesianReactorTests(ReactorTests):
     def setUp(self):

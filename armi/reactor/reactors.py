@@ -173,6 +173,10 @@ def loadFromCs(cs) -> Reactor:
     -------
     Reactor
         Reactor loaded from settings file
+
+    .. impl:: Create reactor from input yaml file
+        :id: I_ARMI_R_CORE
+        :implements: R_ARMI_R_CORE
     """
     from armi.reactor import blueprints
 
@@ -1130,7 +1134,6 @@ class Core(composites.Composite):
         .. impl:: Get assembly by name
             :id: I_ARMI_R_GET_ASSEM_NAME
             :implements: R_ARMI_R_GET_ASSEM_NAME
-        
         """
         return self.assembliesByName[name]
 
