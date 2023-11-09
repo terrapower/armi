@@ -54,6 +54,10 @@ class Settings:
     The Settings object has a 1-to-1 correspondence with the ARMI settings input file.
     This file may be created by hand or by the GUI in submitter.py.
 
+    .. impl:: Settings are used to define an ARMI run.
+        :id: I_ARMI_SETTING0
+        :implements: R_ARMI_SETTING
+
     Notes
     -----
     The actual settings in any instance of this class are immutable.

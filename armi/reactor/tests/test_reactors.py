@@ -270,6 +270,10 @@ class HexReactorTests(ReactorTests):
         .. test:: Parameters accessible throughout the armi tree
             :id: T_ARMI_PARAM_PART
             :tests: R_ARMI_PARAM_PART
+
+        .. impl:: Prove there is a setting for total core power.
+            :id: T_ARMI_SETTINGS_POWER
+            :implements: R_ARMI_SETTINGS_POWER
         """
         # Test at core level
         core = self.r.core

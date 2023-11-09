@@ -23,12 +23,12 @@ from armi import settings
 from armi import tests
 from armi.reactor import assemblies
 from armi.reactor import blueprints
+from armi.reactor import blocks
 from armi.reactor import components
 from armi.reactor import parameters
 from armi.reactor import reactors
 from armi.reactor import geometry
 from armi.reactor.assemblies import (
-    blocks,
     copy,
     Flags,
     grids,
@@ -344,17 +344,36 @@ class Assembly_TestCase(unittest.TestCase):
         self.assertEqual(cur, ref)
 
     def test_getLocation(self):
+        """
+        Test for getting string location of assembly.
+
+        .. test:: Assembly location is retrievable
+            :id: T_ARMI_ASSEM_POSI0
+            :tests: R_ARMI_ASSEM_POSI
+        """
         cur = self.assembly.getLocation()
         ref = str("005-003")
         self.assertEqual(cur, ref)
 
     def test_getArea(self):
+        """Tests area calculation for hex assembly.
+
+        .. test:: Assembly area is retrievable
+            :id: T_ARMI_ASSEM_DIMS0
+            :tests: R_ARMI_ASSEM_DIMS
+        """
         cur = self.assembly.getArea()
         ref = math.sqrt(3) / 2.0 * self.hexDims["op"] ** 2
         places = 6
         self.assertAlmostEqual(cur, ref, places=places)
 
     def test_getVolume(self):
+        """Tests volume calculation for hex assembly.
+
+        .. test:: Assembly volume is retrievable
+            :id: T_ARMI_ASSEM_DIMS1
+            :tests: R_ARMI_ASSEM_DIMS
+        """
         cur = self.assembly.getVolume()
         ref = math.sqrt(3) / 2.0 * self.hexDims["op"] ** 2 * self.height * NUM_BLOCKS
         places = 6
@@ -432,6 +451,14 @@ class Assembly_TestCase(unittest.TestCase):
         self.assertAlmostEqual(cur, ref, places=places)
 
     def test_getHeight(self):
+        """
+        Test height of assembly calculation.
+
+        .. test:: Assembly height is retrievable
+            :id: T_ARMI_ASSEM_DIMS2
+            :tests: R_ARMI_ASSEM_DIMS
+
+        """
         cur = self.assembly.getHeight()
         ref = self.height * NUM_BLOCKS
         places = 6
@@ -836,6 +863,12 @@ class Assembly_TestCase(unittest.TestCase):
         self.assertEqual(cur, 3)
 
     def test_getDim(self):
+        """Tests dimensions are retrievable.
+
+        .. test:: Assembly dimensions are retrievable
+            :id: T_ARMI_ASSEM_DIMS3
+            :tests: R_ARMI_ASSEM_DIMS
+        """
         cur = self.assembly.getDim(Flags.FUEL, "op")
         ref = self.hexDims["op"]
         places = 6
@@ -969,7 +1002,12 @@ class Assembly_TestCase(unittest.TestCase):
         self.assertTrue(modifiedAssem.hasContinuousCoolantChannel())
 
     def test_carestianCoordinates(self):
-        """Check the coordinates of the assembly within the core with a CarestianGrid."""
+        """Check the coordinates of the assembly within the core with a CarestianGrid.
+
+        .. test:: Cartesian coordinates are retrievable
+            :id: T_ARMI_ASSEM_POSI1
+            :test: R_ARMI_ASSEM_POSI
+        """
         a = makeTestAssembly(
             numBlocks=1,
             assemNum=1,
@@ -1061,6 +1099,31 @@ class Assembly_TestCase(unittest.TestCase):
             self.assertEqual("", mock.getStdout())
             a.rotate(math.radians(120))
             self.assertIn("No rotation method defined", mock.getStdout())
+
+    def test_assem_block_types(self):
+        """Test that all children of an assembly are blocks.
+
+        .. test:: Validate child types of assembly are blocks
+            :id: T_ARMI_ASSEM_BLOCKS
+            :tests: R_ARMI_ASSEM_BLOCKS
+        """
+        for b in self.assembly.getBlocks():
+
+            # Confirm children are blocks
+            self.assertIsInstance(b, blocks.Block)
+
+    def test_assem_hex_type(self):
+        """Test that all children of a hex assembly are hexagons.
+
+        .. test:: Validate child types of assembly are Hex type
+            :id: T_ARMI_ASSEM_HEX
+            :tests: R_ARMI_ASSEM_HEX
+        """
+        for b in self.assembly.getBlocks():
+
+            # For a hex assem, confirm they are of type "Hexagon"
+            pitch_comp_type = b.PITCH_COMPONENT_TYPE[0]
+            self.assertEqual(pitch_comp_type.__name__, "Hexagon")
 
 
 class AssemblyInReactor_TestCase(unittest.TestCase):

@@ -167,7 +167,7 @@ class ArmiPlugin:
     @HOOKSPEC
     def defineParameters() -> Dict:
         """
-        Function for defining additional parameters.
+        Define additional parameters for the reactor data model.
 
         .. impl:: Plugins can add parameters to the reactor data model.
             :id: I_ARMI_PLUGIN_PARAMS

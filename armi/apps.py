@@ -120,7 +120,13 @@ class App:
         return self._pm
 
     def getSettings(self) -> Dict[str, Setting]:
-        """Return a dictionary containing all Settings defined by the framework and all plugins."""
+        """
+        Return a dictionary containing all Settings defined by the framework and all plugins.
+
+        .. impl:: Applications will not allow duplicate settings.
+            :id: I_ARMI_SETTINGS_UNIQUE
+            :implements: R_ARMI_SETTINGS_UNIQUE
+        """
         # Start with framework settings
         settingDefs = {
             setting.name: setting for setting in fwSettings.getFrameworkSettings()
