@@ -163,7 +163,12 @@ def _fromStringIgnoreErrors(cls, typeSpec):
 
 
 def _fromString(cls, typeSpec):
-    """Make flag from string and fail if any unknown words are encountered."""
+    """Make flag from string and fail if any unknown words are encountered.
+
+    .. impl:: Retrieve flag from a string
+        :id: I_ARMI_FLAG_TO_STR0
+        :implements: R_ARMI_FLAG_TO_STR
+    """
 
     def updateMethod(typeSpec):
         try:
@@ -180,6 +185,10 @@ def _fromString(cls, typeSpec):
 def _toString(cls, typeSpec):
     """
     Make flag from string and fail if any unknown words are encountered.
+
+    .. impl:: Convert a flag to string
+        :id: I_ARMI_FLAG_TO_STR1
+        :implements: R_ARMI_FLAG_TO_STR
 
     Notes
     -----

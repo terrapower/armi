@@ -84,8 +84,8 @@ class TestFlag(unittest.TestCase):
             bar = 1
             baz = auto()
 
-        F.extend({'a': auto()})
-        F.extend({'b': 1})
+        F.extend({"a": auto()})
+        F.extend({"b": 1})
 
     def test_collision_creation(self):
         """Make sure that we catch value collisions upon creation.
@@ -95,6 +95,7 @@ class TestFlag(unittest.TestCase):
             :tests: R_ARMI_FLAG_DEFINE
         """
         with self.assertRaises(AssertionError):
+
             class F(Flag):
                 foo = 1
                 bar = 1
