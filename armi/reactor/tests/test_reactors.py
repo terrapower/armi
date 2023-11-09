@@ -238,7 +238,7 @@ class HexReactorTests(ReactorTests):
 
     def test_factorySortSetting(self):
         """
-        Create a core object from an input yaml
+        Create a core object from an input yaml.
 
         .. test:: Create core object from input yaml
             :id: T_ARMI_R_CORE
@@ -554,7 +554,7 @@ class HexReactorTests(ReactorTests):
 
     def test_findNeighbors(self):
         """
-        Find neighbors of a given assembly
+        Find neighbors of a given assembly.
 
         .. test:: Retrieve neighboring assemblies of a given assembly
             :id: T_ARMI_R_FIND_NEIGHBORS
@@ -691,7 +691,7 @@ class HexReactorTests(ReactorTests):
 
     def test_getAssemblyWithLoc(self):
         """
-        Get assembly by location 
+        Get assembly by location.
 
         .. test:: Get assembly by location
             :id: T_ARMI_R_GET_ASSEM_LOC
@@ -704,7 +704,7 @@ class HexReactorTests(ReactorTests):
 
     def test_getAssemblyWithName(self):
         """
-        Get assembly by name
+        Get assembly by name.
 
         .. test:: Get assembly by name
             :id: T_ARMI_R_GET_ASSEM_NAME
@@ -1193,6 +1193,7 @@ class HexReactorTests(ReactorTests):
         self.r.core.p.powerDensity = 2e9
         self.r.core.setPowerIfNecessary()
         self.assertAlmostEqual(self.r.core.p.power, 3e9)
+
 
 class CartesianReactorTests(ReactorTests):
     def setUp(self):

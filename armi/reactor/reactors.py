@@ -1638,9 +1638,7 @@ class Core(composites.Composite):
         .. impl:: Get assembly by location
             :id: I_ARMI_R_GET_ASSEM_LOC
             :implements: R_ARMI_R_GET_ASSEM_LOC
-
         """
-
         ring, pos, _ = grids.locatorLabelToIndices(locationString)
         loc = self.spatialGrid.getLocatorFromRingAndPos(ring, pos)
         assem = self.childrenByLocator.get(loc)
