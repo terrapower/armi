@@ -123,6 +123,10 @@ class Flag(metaclass=_FlagMeta):
     after the class has been defined. Most docs for ``enum.Flag`` should be relevant here,
     but there are sure to be occasional differences.
 
+    .. impl:: No two flags have equivalence
+        :id: I_ARMI_FLAG_DEFINE
+        :implements: R_ARMI_FLAG_DEFINE
+
     .. warning::
         Python features arbitrary-width integers, allowing one to represent an
         practically unlimited number of fields. *However*, including more flags than can
@@ -169,10 +173,6 @@ class Flag(metaclass=_FlagMeta):
 
         This makes sure everything is consistent and does error/collision checks. Mostly
         useful for extending an existing class with more fields.
-
-        .. impl:: No two flags have equivalence
-            :id: I_ARMI_FLAG_DEFINE
-            :implements: R_ARMI_FLAG_DEFINE
         """
         assert value not in cls._nameToValue
         cls._valuesTaken.add(value)
@@ -183,12 +183,7 @@ class Flag(metaclass=_FlagMeta):
 
     @classmethod
     def _resolveAutos(cls, fields: Sequence[str]) -> List[Tuple[str, int]]:
-        """Assign values to autos, based on the current state of the class.
-
-        .. impl:: No two flags have equivalence
-            :id: I_ARMI_FLAG_EXTEND1
-            :implements: R_ARMI_FLAG_EXTEND
-        """
+        """Assign values to autos, based on the current state of the class."""
         # There is some opportunity for code re-use between this and the metaclass...
         resolved = []
         for field in fields:
@@ -226,7 +221,7 @@ class Flag(metaclass=_FlagMeta):
             the new data, since classes are mutable.
 
         .. impl:: Set of flags are extensible without loss of uniqueness
-            :id: I_ARMI_FLAG_EXTEND0
+            :id: I_ARMI_FLAG_EXTEND
             :implements: R_ARMI_FLAG_EXTEND
 
         Parameters
