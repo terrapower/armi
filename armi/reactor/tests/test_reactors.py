@@ -689,23 +689,30 @@ class HexReactorTests(ReactorTests):
         with self.assertRaises(ZeroDivisionError):
             _targetRing, _fluxFraction = self.r.core.getMinimumPercentFluxInFuel()
 
-    def test_getAssembly(self):
+    def test_getAssemblyWithLoc(self):
         """
-        Get assembly by location and name
+        Get assembly by location 
 
         .. test:: Get assembly by location
             :id: T_ARMI_R_GET_ASSEM_LOC
-            :tests: R_ARMI_GET_ASSEM_LOC
-
-        .. test:: Get assembly by name
-            :id: T_ARMI_R_GET_ASSEM_NAME
-            :tests: R_ARMI_GET_ASSEM_NAME
+            :tests: R_ARMI_R_GET_ASSEM_LOC
         """
         a1 = self.r.core.getAssemblyWithAssemNum(assemNum=10)
         a2 = self.r.core.getAssembly(locationString="003-001")
-        a3 = self.r.core.getAssembly(assemblyName="A0010")
 
-        self.assertEqual(a1, a3)
+        self.assertEqual(a1, a2)
+
+    def test_getAssemblyWithName(self):
+        """
+        Get assembly by name
+
+        .. test:: Get assembly by name
+            :id: T_ARMI_R_GET_ASSEM_NAME
+            :tests: R_ARMI_R_GET_ASSEM_NAME
+        """
+        a1 = self.r.core.getAssemblyWithAssemNum(assemNum=10)
+        a2 = self.r.core.getAssembly(assemblyName="A0010")
+
         self.assertEqual(a1, a2)
 
     def test_restoreReactor(self):
