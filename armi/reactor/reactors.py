@@ -1633,7 +1633,14 @@ class Core(composites.Composite):
         return self.getAssembly(assemNum=assemNum)
 
     def getAssemblyWithStringLocation(self, locationString):
-        """Returns an assembly or none if given a location string like 'B0014'."""
+        """Returns an assembly or none if given a location string like 'B0014'.
+
+        .. impl:: Get assembly by location
+            :id: I_ARMI_R_GET_ASSEM_LOC
+            :implements: R_ARMI_R_GET_ASSEM_LOC
+
+        """
+
         ring, pos, _ = grids.locatorLabelToIndices(locationString)
         loc = self.spatialGrid.getLocatorFromRingAndPos(ring, pos)
         assem = self.childrenByLocator.get(loc)
@@ -1659,7 +1666,7 @@ class Core(composites.Composite):
         self, a, showBlanks=True, duplicateAssembliesOnReflectiveBoundary=False
     ):
         """
-        Find assemblies that are next this assembly.
+        Find assemblies that are next to this assembly.
 
         Return a list of neighboring assemblies from the 30 degree point (point 1) then
         counterclockwise around.
@@ -1723,6 +1730,10 @@ class Core(composites.Composite):
         See Also
         --------
         grids.Grid.getSymmetricEquivalents
+
+        .. impl:: Retrieve neighboring assemblies of a given assembly
+            :id: I_ARMI_R_FIND_NEIGHBORS
+            implements: R_ARMI_R_FIND_NEIGHBORS
         """
         neighborIndices = self.spatialGrid.getNeighboringCellIndices(
             *a.spatialLocator.getCompleteIndices()

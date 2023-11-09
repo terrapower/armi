@@ -553,6 +553,13 @@ class HexReactorTests(ReactorTests):
         assert_allclose(expectedPoints, radPoints)
 
     def test_findNeighbors(self):
+        """
+        Find neighbors of a given assembly
+
+        .. test:: Retrieve neighboring assemblies of a given assembly
+            :id: T_ARMI_R_FIND_NEIGHBORS
+            :tests: R_ARMI_R_FIND_NEIGHBORS
+        """
         loc = self.r.core.spatialGrid.getLocatorFromRingAndPos(1, 1)
         a = self.r.core.childrenByLocator[loc]
         neighbs = self.r.core.findNeighbors(
@@ -683,6 +690,17 @@ class HexReactorTests(ReactorTests):
             _targetRing, _fluxFraction = self.r.core.getMinimumPercentFluxInFuel()
 
     def test_getAssembly(self):
+        """
+        Get assembly by location and name
+
+        .. test:: Get assembly by location
+            :id: T_ARMI_R_GET_ASSEM_LOC
+            :tests: R_ARMI_GET_ASSEM_LOC
+
+        .. test:: Get assembly by name
+            :id: T_ARMI_R_GET_ASSEM_NAME
+            :tests: R_ARMI_GET_ASSEM_NAME
+        """
         a1 = self.r.core.getAssemblyWithAssemNum(assemNum=10)
         a2 = self.r.core.getAssembly(locationString="003-001")
         a3 = self.r.core.getAssembly(assemblyName="A0010")
@@ -1168,16 +1186,6 @@ class HexReactorTests(ReactorTests):
         self.r.core.p.powerDensity = 2e9
         self.r.core.setPowerIfNecessary()
         self.assertAlmostEqual(self.r.core.p.power, 3e9)
-
-    def test_getAssemblyByName(self):
-        """
-        Get an assembly by its name.
-
-        .. test:: Get assembly from core by name
-            :id: T_ARMI_R_GET_ASSEM_NAME
-        """
-        assem = self.r.core.getAssemblyByName('A0004')
-        self.assertEqual('A0004', assem.name)
 
 class CartesianReactorTests(ReactorTests):
     def setUp(self):
