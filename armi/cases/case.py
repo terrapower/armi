@@ -780,6 +780,10 @@ class Case:
         for a parameter sweep or migration) to be written out as input
         for a forthcoming case.
 
+        .. impl:: Write blueprints settings to disk
+            :id: I_ARMI_BP_TO_DB
+            :implements: R_ARMI_BP_TO_DB
+
         Parameters
         ----------
         sourceDir : str (optional)
