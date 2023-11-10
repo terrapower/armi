@@ -156,9 +156,7 @@ class TestGeneralUtils(unittest.TestCase):
         self.assertGreater(len(r.core.getBlocks()), 200)
 
     def test_codeTiming(self):
-        """
-        Test that codeTiming preserves function attributes when it wraps a function
-        """
+        """Test that codeTiming preserves function attributes when it wraps a function."""
 
         @codeTiming.timed
         def testFunc():
