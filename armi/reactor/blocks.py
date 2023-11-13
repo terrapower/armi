@@ -781,6 +781,43 @@ class Block(composites.Composite):
             # on the interface stack.
             self.p.pdensDecay *= frac
 
+    def updateComponentGroupMults(self):
+        """
+        Update component group mults.
+
+        This applies only to block child components that themselves have child components.
+
+        They were temporarily set to the desired blend fraction during component
+        construction. This derives the actual multiplicity based on the target
+        blend fraction.
+
+        Note that the blend fractions are applied to the hot thermally-expanded
+        dimensions.
+
+        In order to account properly for the mass of the background material
+        in addition to the materials of the children, we must also shrink
+        the background component's mult.
+
+        See Also
+        --------
+        reactor.blueprints.componentBlueprint.ComponentBlueprint : sets the mults
+        reactor.blurprints.blockBlueprint.BlockBlueprint.construct : calls this
+        """
+        for c in self.getChildren():
+            if len(c) > 1:
+                backgroundVol = c.getVolume()
+                # expect all mults to be temporarily set to blend frac from blueprints
+                blendFrac = c[0].p.mult
+                # remove scaling by mult=blendFrac here
+                childVol = sum(subchild.getVolume() / blendFrac for subchild in c)
+                # mult should be such that childVol/backgroundVol = blendFrac
+                # so: childVol * newMult = blendFrac * backgroundVol
+                newMult = blendFrac * backgroundVol / childVol
+                for subchild in c:
+                    subchild.setDimension("mult", newMult)
+                # shrink background component to fit
+                c.setDimension("mult", c.p.mult * (1 - blendFrac))
+
     def completeInitialLoading(self, bolBlock=None):
         """
         Does some BOL bookkeeping to track things like BOL HM density for burnup tracking.
@@ -2174,11 +2211,15 @@ class HexBlock(Block):
 
         ringNumber = hexagon.numRingsToHoldNumCells(self.getNumPins())
         # For the below to work, there must not be multiple wire or multiple clad types.
+        pitch = self.getPinPitch(cold=True)
+        if pitch is None:
+            raise ValueError(
+                f"Could not create spatialGrid for block {self.p.type} "
+                "because the pin pitch was not detected."
+            )
         # note that it's the pointed end of the cell hexes that are up (but the
         # macro shape of the pins forms a hex with a flat top fitting in the assembly)
-        grid = grids.HexGrid.fromPitch(
-            self.getPinPitch(cold=True), numRings=0, pointedEndUp=True
-        )
+        grid = grids.HexGrid.fromPitch(pitch, numRings=0, pointedEndUp=True)
         spatialLocators = grids.MultiIndexLocation(grid=self.spatialGrid)
         numLocations = 0
         for ring in range(ringNumber):

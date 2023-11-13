@@ -153,6 +153,8 @@ class ComponentBlueprint(yamlize.Object):
     isotopics = yamlize.Attribute(type=str, default=None)
     latticeIDs = yamlize.Attribute(type=list, default=None)
     origin = yamlize.Attribute(type=list, default=None)
+    blends = yamlize.Attribute(type=list, default=None)
+    blendFracs = yamlize.Attribute(type=list, default=None)
     orientation = yamlize.Attribute(type=str, default=None)
     mergeWith = yamlize.Attribute(type=str, default=None)
     area = yamlize.Attribute(type=float, default=None)
@@ -175,9 +177,49 @@ class ComponentBlueprint(yamlize.Object):
                 constructedObject.add(component)
 
         else:
-            constructedObject = components.factory(shape, [], kwargs)
-            _setComponentFlags(constructedObject, self.flags, blueprint)
-            insertDepletableNuclideKeys(constructedObject, blueprint)
+            if self.blends:
+                # build a blended object
+                for groupName, blendFrac in zip(self.blends, self.blendFracs):
+                    # blendFrac is a volume fraction, and so we need to adjust the multiplicities
+                    # so that the background component and the child group match up
+                    # The area of the background component will be fully determined by its dims and mult.
+                    # but internally, its number densities and volumes need to be set to match
+                    # the blendFrac
+                    group = blueprint.componentGroups[groupName]
+                    # strip off the blend/blendFrac args since they aren't valid on any
+                    # specific shape's constructor
+                    del kwargs["blends"]
+                    del kwargs["blendFracs"]
+                    # build the background object
+                    constructedObject = components.factory(shape, [], kwargs)
+                    # build the child objects
+                    # all grouped components have to be input with the same mult for now
+                    inputMult = None
+                    for groupedComponent in group:
+                        componentDesign = blueprint.componentDesigns[
+                            groupedComponent.name
+                        ]
+                        if inputMult is None:
+                            inputMult = componentDesign.mult 
+                        if componentDesign.mult != inputMult:
+                            raise ValueError(
+                                f"Grouped components must all have the same input mult of {inputMult}"
+                            )
+                        component = componentDesign.construct(blueprint, matMods=dict())
+                        # temporarily set grouped component mults to the blend fraction
+                        # these will be updated based on parent component volume
+                        # during block construction
+                        component.setDimension("mult", blendFrac)
+                        _setComponentFlags(component, self.flags, blueprint)
+                        insertDepletableNuclideKeys(component, blueprint)
+                        constructedObject.add(component)
+                    children = {c.name: c for c in constructedObject.getChildren()}
+                    for child in children.values():
+                        child.resolveLinkedDims(children)
+            else:
+                constructedObject = components.factory(shape, [], kwargs)
+                _setComponentFlags(constructedObject, self.flags, blueprint)
+                insertDepletableNuclideKeys(constructedObject, blueprint)
         return constructedObject
 
     def _conformKwargs(self, blueprint, matMods):
