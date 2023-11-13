@@ -32,6 +32,10 @@ def area(pitch):
     """
     Area of a hex given the flat-to-flat pitch.
 
+    .. impl:: Compute hexagonal area
+        :id: I_ARMI_UTIL_HEXAGON0
+        :implements: R_ARMI_UTIL_HEXAGON
+
     Notes
     -----
     The pitch is the distance between the center of the hexagons in the lattice.
@@ -129,5 +133,10 @@ def numRingsToHoldNumCells(numCells):
 
 
 def numPositionsInRing(ring):
-    """Number of positions in ring (starting at 1) of a hex lattice."""
+    """Number of positions in ring (starting at 1) of a hex lattice.
+
+    .. impl:: Compute hexagonal area
+        :id: I_ARMI_UTIL_HEXAGON1
+        :implements: R_ARMI_UTIL_HEXAGON
+    """
     return (ring - 1) * 6 if ring != 1 else 1
