@@ -32,6 +32,7 @@ from armi.reactor import blocks
 from armi.reactor import geometry
 from armi.reactor import grids
 from armi.reactor import reactors
+from armi.reactor.composites import Composite
 from armi.reactor.components import Hexagon, Rectangle
 from armi.reactor.converters import geometryConverters
 from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
@@ -261,6 +262,9 @@ class HexReactorTests(ReactorTests):
         a0 = [a.name for a in r0.core]
         a1 = [a.name for a in r1.core]
         self.assertNotEqual(a0, a1)
+
+        # The reactor object is a Composite
+        self.assertTrue(isinstance(r0.core, Composite))
 
     def test_getSetParameters(self):
         """
