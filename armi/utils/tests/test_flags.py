@@ -72,8 +72,6 @@ class TestFlag(unittest.TestCase):
     def test_collision_extension(self):
         """Ensure the set of flags cannot be programmatically extended if duplicate created.
 
-        TODO: This test should fail when extend bug is fixed.
-
         .. test:: Set of flags are extensible without loss of uniqueness
             :id: T_ARMI_FLAG_EXTEND
             :tests: R_ARMI_FLAG_EXTEND

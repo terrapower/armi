@@ -26,7 +26,7 @@ class TestFlags(unittest.TestCase):
         self._help_fromString(flags.Flags.fromStringIgnoreErrors)
         self.assertEqual(flags.Flags.fromStringIgnoreErrors("invalid"), flags.Flags(0))
 
-    def test_toString(self):
+    def test_flagsToAndFromString(self):
         """
         Convert flag to and from string for serialization.
 
