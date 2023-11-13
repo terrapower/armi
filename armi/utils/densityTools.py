@@ -25,7 +25,7 @@ def getNDensFromMasses(rho, massFracs, normalize=False):
     Convert density (g/cc) and massFracs vector into a number densities vector (#/bn-cm).
 
     .. impl:: Get number densities
-        :id: I_ARMI_UTIL_MASS2N_DENS0
+        :id: I_ARMI_UTIL_MASS2N_DENS
         :implements: R_ARMI_UTIL_MASS2N_DENS
 
     Parameters
@@ -55,10 +55,6 @@ def getNDensFromMasses(rho, massFracs, normalize=False):
 def getMassFractions(numberDensities):
     """
     Convert number densities (#/bn-cm) into mass fractions.
-
-    .. impl:: Get number densities
-        :id: I_ARMI_UTIL_MASS2N_DENS1
-        :implements: R_ARMI_UTIL_MASS2N_DENS
 
     Parameters
     ----------

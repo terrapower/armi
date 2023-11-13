@@ -1,4 +1,4 @@
-# Copyright 2019 TerraPower, LLC
+# Copyright 2023 TerraPower, LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Test hexagon tools."""
+import math
 import unittest
 
 from armi.utils import hexagon
-import math
 
 
 class Test_hexagon(unittest.TestCase):

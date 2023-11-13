@@ -106,14 +106,21 @@ class Test_densityTools(unittest.TestCase):
         )  # HM blended
         self.assertAlmostEqual(uo2.massFrac["O"], massFracO)  # non-HM stays unchanged
 
-    def test_getMassFractions(self):
+    def test_getNDensFromMasses(self):
         """
-        Number densities to mass fraction.
+        Number densities from masses.
 
-        .. test:: Number densities to mass fractions
-            :id: T_ARMI_UTIL_MASS2N_DENS0
+        .. test:: Get number densities
+            :id: T_ARMI_UTIL_MASS2N_DENS
             :tests: R_ARMI_UTIL_MASS2N_DENS
         """
+        nDens = densityTools.getNDensFromMasses(1, {"O": 1, "H": 2})
+
+        self.assertAlmostEqual(nDens["O"], 0.03764, 5)
+        self.assertAlmostEqual(nDens["H"], 1.19490, 5)
+
+    def test_getMassFractions(self):
+        """Number densities to mass fraction."""
         numDens = {"O17": 0.1512, "PU239": 1.5223, "U234": 0.135}
         massFracs = densityTools.getMassFractions(numDens)
 
@@ -122,13 +129,7 @@ class Test_densityTools(unittest.TestCase):
         self.assertAlmostEqual(massFracs["U234"], 0.07937081219437897)
 
     def test_calculateNumberDensity(self):
-        """
-        Mass fraction to number density.
-
-        .. test:: Number densities from mass fraction
-            :id: T_ARMI_UTIL_MASS2N_DENS1
-            :tests: R_ARMI_UTIL_MASS2N_DENS
-        """
+        """Mass fraction to number density."""
         nDens = densityTools.calculateNumberDensity("U235", 1, 1)
         self.assertAlmostEqual(nDens, 0.0025621344549254283)
 
