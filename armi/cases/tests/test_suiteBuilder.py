@@ -46,7 +46,13 @@ class LatinHyperCubeModifier(SamplingInputModifier):
 
 
 class TestLatinHyperCubeSuiteBuilder(unittest.TestCase):
-    """Class to test LatinHyperCubeSuiteBuilder."""
+    """
+    Class to test LatinHyperCubeSuiteBuilder.
+
+    .. test:: The run log has configurable verbosity.
+        :id: T_ARMI_CASE_MOD0
+        :tests: R_ARMI_CASE_MOD
+    """
 
     def test_initialize(self):
         builder = LatinHyperCubeSuiteBuilder(case, size=20)

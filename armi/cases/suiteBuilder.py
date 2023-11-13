@@ -45,6 +45,10 @@ class SuiteBuilder:
     """
     Class for constructing a CaseSuite from combinations of modifications on base inputs.
 
+    .. impl:: A generic tool to modify user inputs on multiple cases.
+        :id: T_ARMI_CASE_MOD0
+        :implements: R_ARMI_CASE_MOD
+
     Attributes
     ----------
     baseCase : armi.cases.case.Case
