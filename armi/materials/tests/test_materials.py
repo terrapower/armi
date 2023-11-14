@@ -784,7 +784,7 @@ class Thorium_TestCase(_Material_Test, unittest.TestCase):
 
     def test_setDefaultMassFracs(self):
         """
-        Test test default mass fracitons.
+        Test default mass fractions.
 
         .. test:: The materials generate nuclide mass fractions.
             :id: T_ARMI_MAT_FRACS0
@@ -887,7 +887,7 @@ class Void_TestCase(_Material_Test, unittest.TestCase):
         self.assertEqual(cur, 0.0)
 
     def test_linearExpansion(self):
-        """This material does not expand linerally.
+        """This material does not expand linearly.
 
         .. test:: There is a void material.
             :id: T_ARMI_MAT_VOID2
@@ -916,7 +916,7 @@ class Mixture_TestCase(_Material_Test, unittest.TestCase):
 
     def test_setDefaultMassFracs(self):
         """
-        Test test default mass fracitons.
+        Test default mass fractions.
 
         .. test:: The materials generate nuclide mass fractions.
             :id: T_ARMI_MAT_FRACS1
@@ -969,7 +969,7 @@ class Lead_TestCase(_Material_Test, unittest.TestCase):
 
     def test_setDefaultMassFracs(self):
         """
-        Test test default mass fracitons.
+        Test default mass fractions.
 
         .. test:: The materials generate nuclide mass fractions.
             :id: T_ARMI_MAT_FRACS2
