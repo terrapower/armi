@@ -95,6 +95,13 @@ class TestDatabase3(unittest.TestCase):
         )
 
     def test_getH5File(self):
+        """
+        Get the h5 file for the database, because that file format is language-agnostic.
+
+        .. test:: Show the database is H5-formatted.
+            :id: T_ARMI_DB_H5
+            :tests: R_ARMI_DB_H5
+        """
         with self.assertRaises(TypeError):
             _getH5File(None)
 
@@ -185,6 +192,10 @@ class TestDatabase3(unittest.TestCase):
         above. In that cs, `reloadDBName` is set to 'reloadingDB.h5', `startCycle` = 1,
         and `startNode` = 2. The nonexistent 'reloadingDB.h5' must first be
         created here for this test.
+
+        .. test:: Runs can be restarted from a snapshot.
+            :id: T_ARMI_SNAPSHOT_RESTART
+            :tests: R_ARMI_SNAPSHOT_RESTART
         """
         # first successfully call to prepRestartRun
         o, r = loadTestReactor(

@@ -262,7 +262,12 @@ class TestArmiCase(unittest.TestCase):
 
 
 class TestCaseSuiteDependencies(unittest.TestCase):
-    """CaseSuite tests."""
+    """CaseSuite tests.
+
+    .. test:: Dependence allows for one case to start after the completion of another.
+        :id: T_ARMI_CASE_SUITE0
+        :tests: R_ARMI_CASE_SUITE
+    """
 
     def setUp(self):
         self.suite = cases.CaseSuite(settings.Settings())
@@ -283,6 +288,17 @@ class TestCaseSuiteDependencies(unittest.TestCase):
         """If you pass an invalid path, the clone can't happen, but it won't do any damage either."""
         with self.assertRaises(RuntimeError):
             _clone = self.suite.clone("test_clone")
+
+    def test_checkInputs(self):
+        """
+        Test the checkInputs() method on a couple of cases.
+
+        .. test:: Test the checkInputs method.
+            :id: T_ARMI_CASE_CHECK
+            :tests: R_ARMI_CASE_CHECK
+        """
+        self.c1.checkInputs()
+        self.c2.checkInputs()
 
     def test_dependenciesWithObscurePaths(self):
         """

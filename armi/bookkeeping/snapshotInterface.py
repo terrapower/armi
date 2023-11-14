@@ -42,7 +42,13 @@ def describeInterfaces(cs):
 
 
 class SnapshotInterface(interfaces.Interface):
-    """Snapshot managerial interface."""
+    """
+    Snapshot managerial interface.
+
+    .. impl:: Save extra data to be saved from a run, at specified time nodes.
+        :id: I_ARMI_SNAPSHOT0
+        :implements: R_ARMI_SNAPSHOT
+    """
 
     name = "snapshot"
 
