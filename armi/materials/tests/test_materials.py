@@ -1006,7 +1006,7 @@ class LeadBismuth_TestCase(_Material_Test, unittest.TestCase):
 
     def test_setDefaultMassFracs(self):
         """
-        Test test default mass fracitons.
+        Test default mass fractions.
 
         .. test:: The materials generate nuclide mass fractions.
             :id: T_ARMI_MAT_FRACS3
