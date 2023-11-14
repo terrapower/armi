@@ -109,10 +109,6 @@ class Database3:
     handles the packing and unpacking of the structure of the objects, their
     relationships, and their non-parameter attributes.
 
-    .. impl:: The ARMI output file has a language-agnostic format.
-        :id: I_ARMI_DB_H5
-        :implements: R_ARMI_DB_H5
-
     See Also
     --------
     `doc/user/outputs/database` for more details.
