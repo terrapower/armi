@@ -146,10 +146,6 @@ class AxialExpansionChanger:
             :id: I_ARMI_AXIAL_EXP_PRESC
             :implements: R_ARMI_AXIAL_EXP_PRESC
 
-        .. impl:: Perform thermal expansion/contraction, given an axial temp distribution over an assembly.
-            :id: I_ARMI_AXIAL_EXP_THERM
-            :implements: R_ARMI_AXIAL_EXP_THERM
-
         Parameters
         ----------
         a : :py:class:`Assembly <armi.reactor.assemblies.Assembly>`
@@ -179,6 +175,10 @@ class AxialExpansionChanger:
         expandFromTinputToThot: bool = False,
     ):
         """Perform thermal expansion for an assembly given an axial temperature grid and field.
+
+        .. impl:: Perform thermal expansion/contraction, given an axial temp distribution over an assembly.
+            :id: I_ARMI_AXIAL_EXP_THERM
+            :implements: R_ARMI_AXIAL_EXP_THERM
 
         Parameters
         ----------
