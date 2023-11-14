@@ -109,6 +109,10 @@ class Database3:
     handles the packing and unpacking of the structure of the objects, their
     relationships, and their non-parameter attributes.
 
+    .. impl:: The ARMI output file has a language-agnostic format.
+        :id: I_ARMI_DB_H5
+        :implements: R_ARMI_DB_H5
+
     See Also
     --------
     `doc/user/outputs/database` for more details.
@@ -1458,7 +1462,6 @@ def packSpecialData(
       ``None`` with a magical value that shouldn't be encountered in realistic
       scenarios.
 
-
     Parameters
     ----------
     data
@@ -1609,7 +1612,6 @@ def unpackSpecialData(data: numpy.ndarray, attrs, paramName: str) -> numpy.ndarr
     numpy.ndarray
         An ndarray containing the closest possible representation of the data that was
         originally written to the database.
-
 
     See Also
     --------

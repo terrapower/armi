@@ -24,6 +24,10 @@ class OperatorSnapshots(operatorMPI.OperatorMPI):
 
     These may add CR worth curves, rx coefficients, transient runs etc at these snapshots.
     This operator can be run as a restart, adding new physics to a previous run.
+
+    .. impl:: Save extra data to be saved from a run, at specified time nodes.
+        :id: I_ARMI_SNAPSHOT1
+        :implements: R_ARMI_SNAPSHOT
     """
 
     def __init__(self, cs):
