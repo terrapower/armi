@@ -284,10 +284,24 @@ class Flags(Flag):
 
     @classmethod
     def fromString(cls, typeSpec):
+        """
+        Retrieve flag from a string.
+
+        .. impl:: Retrieve flag from a string
+            :id: I_ARMI_FLAG_TO_STR0
+            :implements: R_ARMI_FLAG_TO_STR
+        """
         return _fromString(cls, typeSpec)
 
     @classmethod
     def toString(cls, typeSpec):
+        """
+        Convert a flag to a string.
+
+        .. impl:: Convert a flag to string
+            :id: I_ARMI_FLAG_TO_STR1
+            :implements: R_ARMI_FLAG_TO_STR
+        """
         return _toString(cls, typeSpec)
 
 

@@ -589,7 +589,7 @@ class TestCopyInterfaceInputs(unittest.TestCase):
         app.pluginManager.register(TestPluginWithDuplicateSetting)
 
         with self.assertRaises(ValueError):
-            cs = settings.Settings(ARMI_RUN_PATH)
+            _ = settings.Settings(ARMI_RUN_PATH)
 
     def test_copyInterfaceInputs_multipleFiles(self):
         # register the new Plugin

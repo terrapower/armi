@@ -32,6 +32,7 @@ from armi.reactor import blocks
 from armi.reactor import geometry
 from armi.reactor import grids
 from armi.reactor import reactors
+from armi.reactor.composites import Composite
 from armi.reactor.components import Hexagon, Rectangle
 from armi.reactor.converters import geometryConverters
 from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
@@ -237,6 +238,13 @@ class HexReactorTests(ReactorTests):
         )
 
     def test_factorySortSetting(self):
+        """
+        Create a core object from an input yaml.
+
+        .. test:: Create core object from input yaml
+            :id: T_ARMI_R_CORE
+            :tests: R_ARMI_R_CORE
+        """
         # get a sorted Reactor (the default)
         cs = settings.Settings(fName="armiRun.yaml")
         r0 = reactors.loadFromCs(cs)
@@ -254,6 +262,9 @@ class HexReactorTests(ReactorTests):
         a0 = [a.name for a in r0.core]
         a1 = [a.name for a in r1.core]
         self.assertNotEqual(a0, a1)
+
+        # The reactor object is a Composite
+        self.assertTrue(isinstance(r0.core, Composite))
 
     def test_getSetParameters(self):
         """
@@ -546,6 +557,13 @@ class HexReactorTests(ReactorTests):
         assert_allclose(expectedPoints, radPoints)
 
     def test_findNeighbors(self):
+        """
+        Find neighbors of a given assembly.
+
+        .. test:: Retrieve neighboring assemblies of a given assembly
+            :id: T_ARMI_R_FIND_NEIGHBORS
+            :tests: R_ARMI_R_FIND_NEIGHBORS
+        """
         loc = self.r.core.spatialGrid.getLocatorFromRingAndPos(1, 1)
         a = self.r.core.childrenByLocator[loc]
         neighbs = self.r.core.findNeighbors(
@@ -675,12 +693,30 @@ class HexReactorTests(ReactorTests):
         with self.assertRaises(ZeroDivisionError):
             _targetRing, _fluxFraction = self.r.core.getMinimumPercentFluxInFuel()
 
-    def test_getAssembly(self):
+    def test_getAssemblyWithLoc(self):
+        """
+        Get assembly by location.
+
+        .. test:: Get assembly by location
+            :id: T_ARMI_R_GET_ASSEM_LOC
+            :tests: R_ARMI_R_GET_ASSEM_LOC
+        """
         a1 = self.r.core.getAssemblyWithAssemNum(assemNum=10)
         a2 = self.r.core.getAssembly(locationString="003-001")
-        a3 = self.r.core.getAssembly(assemblyName="A0010")
 
-        self.assertEqual(a1, a3)
+        self.assertEqual(a1, a2)
+
+    def test_getAssemblyWithName(self):
+        """
+        Get assembly by name.
+
+        .. test:: Get assembly by name
+            :id: T_ARMI_R_GET_ASSEM_NAME
+            :tests: R_ARMI_R_GET_ASSEM_NAME
+        """
+        a1 = self.r.core.getAssemblyWithAssemNum(assemNum=10)
+        a2 = self.r.core.getAssembly(assemblyName="A0010")
+
         self.assertEqual(a1, a2)
 
     def test_restoreReactor(self):
@@ -889,6 +925,12 @@ class HexReactorTests(ReactorTests):
             self.assertEqual(a.spatialLocator.grid, self.r.sfp.spatialGrid)
 
     def test_removeAssembliesInRingByCount(self):
+        """Tests retrieving ring numbers and removing a ring.
+
+        .. test:: Retrieve number of rings in core.
+            :id: T_ARMI_R_NUM_RINGS
+            :tests: R_ARMI_R_NUM_RINGS
+        """
         self.assertEqual(self.r.core.getNumRings(), 9)
         self.r.core.removeAssembliesInRing(9, self.o.cs)
         self.assertEqual(self.r.core.getNumRings(), 8)

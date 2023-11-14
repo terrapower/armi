@@ -156,16 +156,14 @@ class TestGeneralUtils(unittest.TestCase):
         self.assertGreater(len(r.core.getBlocks()), 200)
 
     def test_codeTiming(self):
-        """
-        Test that codeTiming preserves function attributes when it wraps a function
-        """
+        """Test that codeTiming preserves function attributes when it wraps a function."""
 
         @codeTiming.timed
         def testFunc():
-            """Test function docstring"""
+            """Test function docstring."""
             pass
 
-        self.assertEqual(getattr(testFunc, "__doc__"), "Test function docstring")
+        self.assertEqual(getattr(testFunc, "__doc__"), "Test function docstring.")
         self.assertEqual(getattr(testFunc, "__name__"), "testFunc")
 
 
