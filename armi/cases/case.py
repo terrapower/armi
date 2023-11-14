@@ -337,7 +337,7 @@ class Case:
         or tracing, if requested by users during debugging.
 
         .. impl:: The case class allows for a generic ARMI simulation.
-            :id: T_ARMI_CASE
+            :id: I_ARMI_CASE
             :implements: R_ARMI_CASE
 
         Notes
@@ -561,7 +561,7 @@ class Case:
         Checks ARMI inputs for consistency.
 
         .. impl:: Perform validity checks on case inputs.
-            :id: T_ARMI_CASE_CHECK
+            :id: I_ARMI_CASE_CHECK
             :implements: R_ARMI_CASE_CHECK
 
         Returns

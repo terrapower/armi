@@ -32,7 +32,7 @@ class InputModifier:
     modifiers in most cases.
 
     .. impl:: A generic tool to modify user inputs on multiple cases.
-        :id: T_ARMI_CASE_MOD1
+        :id: I_ARMI_CASE_MOD1
         :implements: R_ARMI_CASE_MOD
     """
 
