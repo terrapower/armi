@@ -49,7 +49,7 @@ class TestLatinHyperCubeSuiteBuilder(unittest.TestCase):
     """
     Class to test LatinHyperCubeSuiteBuilder.
 
-    .. test:: The run log has configurable verbosity.
+    .. test:: A generic mechanism to allow users to modify user inputs in cases.
         :id: T_ARMI_CASE_MOD0
         :tests: R_ARMI_CASE_MOD
     """
