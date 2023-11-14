@@ -108,7 +108,7 @@ class _Material_Test:
         self.assertEqual(val, "Noether")
 
     def test_densityKgM3(self):
-        """Test the density for gk/m^3.
+        """Test the density for kg/m^3.
 
         .. test:: Test the material base class.
             :id: T_ARMI_MAT_PROPERTIES5
@@ -119,7 +119,7 @@ class _Material_Test:
         self.assertEqual(dens * 1000.0, densKgM3)
 
     def test_pseudoDensityKgM3(self):
-        """Test the pseudo density for gk/m^3.
+        """Test the pseudo density for kg/m^3.
 
         .. test:: Test the material base class.
             :id: T_ARMI_MAT_PROPERTIES6
