@@ -246,7 +246,12 @@ class GridBlueprint(yamlize.Object):
         self._readFromLatticeMap = value
 
     def construct(self):
-        """Build a Grid from a grid definition."""
+        """Build a Grid from a grid definition.
+
+        .. impl:: Define a lattice map in reactor core
+            :id: I_ARMI_BP_GRID
+            :implements: R_ARMI_BP_GRID
+        """
         self._readGridContents()
         grid = self._constructSpatialGrid()
         return grid

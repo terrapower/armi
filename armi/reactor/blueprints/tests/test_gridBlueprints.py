@@ -381,6 +381,12 @@ class TestGridBlueprintsSection(unittest.TestCase):
             self.assertEqual(gridDesign4.gridContents[-4, -3], "1")
 
     def test_simpleReadLatticeMap(self):
+        """Read lattice map and create a grid.
+
+        .. test:: Define a lattice map in reactor core
+            :id: T_ARMI_BP_GRID
+            :tests: R_ARMI_BP_GRID
+        """
         # Cartesian full, even/odd hybrid
         gridDesign4 = self.grids["sfp even"]
         _grid = gridDesign4.construct()
