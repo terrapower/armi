@@ -126,6 +126,9 @@ class Dlayxs(collections.OrderedDict):
     If you want an average over all nuclides, then you need to produce it using the properly-computed
     average contributions of each nuclide.
 
+    .. impl:: Tool to read and write DLAYXS files.
+        :id: I_ARMI_NUCDATA_DLAYXS
+        :implements: R_ARMI_NUCDATA_DLAYXS
 
     Attributes
     ----------

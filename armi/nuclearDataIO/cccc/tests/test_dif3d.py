@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """Test reading/writing of DIF3D binary input."""
-
 import os
 import unittest
 

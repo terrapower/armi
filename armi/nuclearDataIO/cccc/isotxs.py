@@ -191,6 +191,10 @@ class _IsotxsIO(cccc.Stream):
     """
     A semi-abstract stream for reading and writing to a :py:class:`~armi.nuclearDataIO.isotxs.Isotxs`.
 
+    .. impl:: Tool to read and write ISOTXS files.
+        :id: I_ARMI_NUCDATA_ISOTXS
+        :implements: R_ARMI_NUCDATA_ISOTXS
+
     Notes
     -----
     This is a bit of a special case compared to most other CCCC files because of the special

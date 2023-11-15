@@ -111,6 +111,10 @@ class GeodstStream(cccc.StreamWithDataContainer):
     """
     Stream for reading to/writing from with GEODST data.
 
+    .. impl:: Tool to read and write GEODST files.
+        :id: I_ARMI_NUCDATA_GEODST
+        :implements: R_ARMI_NUCDATA_GEODST
+
     Parameters
     ----------
     geom : GeodstData
@@ -120,7 +124,6 @@ class GeodstStream(cccc.StreamWithDataContainer):
     fileMode: str
         string indicating if ``fileName`` is being read or written, and
         in ascii or binary format
-
     """
 
     @staticmethod
