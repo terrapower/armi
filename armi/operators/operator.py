@@ -73,10 +73,6 @@ class Operator:
 
     .. note:: The :doc:`/developer/guide` has some additional narrative on this topic.
 
-    .. impl:: The operator package shall expose an ordered list of interfaces, and loop over them in order.
-        :id: I_ARMI_OPERATOR_INTERFACES1
-        :implements: R_ARMI_OPERATOR_INTERFACES
-
     .. impl:: An operator will have a reactor object, to communicate between plugins.
         :id: I_ARMI_OPERATOR_COMM
         :implements: R_ARMI_OPERATOR_COMM

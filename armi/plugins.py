@@ -89,7 +89,6 @@ and only have access to the state passed into them to perform their function. Th
 deliberate design choice to keep the plugin system simple and to preclude a large class
 of potential bugs. At some point it may make sense to revisit this.
 
-
 Other customization points
 --------------------------
 While the Plugin API is the main place for ARMI framework customization, there are
@@ -141,6 +140,10 @@ class ArmiPlugin:
     """
     An ArmiPlugin provides a namespace to collect hook implementations provided by a
     single "plugin". This API is incomplete, unstable, and expected to change.
+
+    .. impl:: Plugins have interfaces, to add code to the application.
+        :id: I_ARMI_PLUGIN
+        :implements: R_ARMI_PLUGIN
     """
 
     @staticmethod
@@ -148,6 +151,10 @@ class ArmiPlugin:
     def exposeInterfaces(cs) -> List:
         """
         Function for exposing interface(s) to other code.
+
+        .. impl:: Plugins have interfaces to the operator.
+            :id: I_ARMI_PLUGIN_INTERFACES
+            :implements: R_ARMI_PLUGIN_INTERFACES
 
         Returns
         -------
