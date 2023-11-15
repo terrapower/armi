@@ -539,6 +539,10 @@ def saveToStream(stream, bluep, full=False, tryMap=False):
     full: bool ~ Is this a full output file, or just a partial/grids?
     tryMap: regardless of input form, attempt to output as a lattice map. let's face it;
     they're prettier.
+
+    .. impl:: Write a blueprint file from a blueprint object
+        :id: I_ARMI_BP_TO_DB
+        :implements: R_ARMI_BP_TO_DB
     """
     # To save, we want to try our best to output our grid blueprints in the lattice
     # map style. However, we do not want to wreck the state that the current

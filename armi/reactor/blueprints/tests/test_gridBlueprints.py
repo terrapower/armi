@@ -314,6 +314,13 @@ class TestRoundTrip(unittest.TestCase):
         self.assertIn("core", self.grids)
 
     def test_roundTrip(self):
+        """
+        Test saving blueprint data to a stream.
+
+        .. test:: Write blueprints settings to disk
+            :id: T_ARMI_BP_TO_DB
+            :tests: R_ARMI_BP_TO_DB
+        """
         stream = io.StringIO()
         saveToStream(stream, self.grids, False, True)
         stream.seek(0)
@@ -321,6 +328,13 @@ class TestRoundTrip(unittest.TestCase):
         self.assertIn("third", gridBp["core"].symmetry)
 
     def test_tiny_map(self):
+        """
+        Test that a lattice map can be defined, written, and read in from blueprint file.
+
+        .. test:: Define a lattice map in reactor core
+            :id: T_ARMI_BP_GRID1
+            :tests: R_ARMI_BP_GRID
+        """
         grid = Grids.load(TINY_GRID)
         stream = io.StringIO()
         saveToStream(stream, grid, full=True, tryMap=True)
@@ -384,7 +398,7 @@ class TestGridBlueprintsSection(unittest.TestCase):
         """Read lattice map and create a grid.
 
         .. test:: Define a lattice map in reactor core
-            :id: T_ARMI_BP_GRID
+            :id: T_ARMI_BP_GRID0
             :tests: R_ARMI_BP_GRID
         """
         # Cartesian full, even/odd hybrid

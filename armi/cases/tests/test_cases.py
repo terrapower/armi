@@ -103,12 +103,7 @@ class TestArmiCase(unittest.TestCase):
             )
 
     def test_independentVariables(self):
-        """Ensure that independentVariables added to a case move with it.
-
-        .. test:: Write blueprints settings to disk
-            :id: T_ARMI_BP_TO_DB0
-            :tests: R_ARMI_BP_TO_DB
-        """
+        """Ensure that independentVariables added to a case move with it."""
         geom = systemLayoutInput.SystemLayoutInput()
         geom.readGeomFromStream(io.StringIO(GEOM_INPUT))
         bp = blueprints.Blueprints.load(BLUEPRINT_INPUT)
@@ -413,12 +408,7 @@ class TestCaseSuiteDependencies(unittest.TestCase):
 
 
 class TestExtraInputWriting(unittest.TestCase):
-    """Make sure extra inputs from interfaces are written.
-
-    .. test:: Write blueprints settings to disk
-        :id: T_ARMI_BP_TO_DB1
-        :tests: R_ARMI_BP_TO_DB
-    """
+    """Make sure extra inputs from interfaces are written."""
 
     def test_writeInput(self):
         fName = os.path.join(TEST_ROOT, "armiRun.yaml")
