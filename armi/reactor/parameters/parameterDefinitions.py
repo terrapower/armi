@@ -217,13 +217,7 @@ def isNumpyArray(paramStr):
 
 @functools.total_ordering
 class Parameter:
-    """
-    Metadata about a specific parameter.
-
-    .. impl:: Define an arbitrary physical parameter.
-        :id: I_ARMI_PARAM
-        :implements: R_ARMI_PARAM
-    """
+    """Metadata about a specific parameter."""
 
     _validName = re.compile("^[a-zA-Z0-9_]+$")
 

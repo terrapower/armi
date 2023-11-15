@@ -156,6 +156,10 @@ class ArmiPlugin:
             :id: I_ARMI_PLUGIN_INTERFACES
             :implements: R_ARMI_PLUGIN_INTERFACES
 
+        .. impl:: Define an arbitrary physical parameter.
+            :id: I_ARMI_PARAM
+            :implements: R_ARMI_PARAM
+
         Returns
         -------
         list
