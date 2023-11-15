@@ -70,6 +70,14 @@ class Reactor(composites.Composite):
     model. Historically, the `Reactor` contained only the core. To support better representation of
     ex-core structures, the old `Reactor` functionality was moved to the newer `Core` class, which
     has a `Reactor` parent.
+
+    .. impl:: The user-specified reactor.
+        :id: I_ARMI_R
+        :implements: R_ARMI_R
+
+    .. impl:: The reactor includes a core and a spent fuel pool.
+        :id: I_ARMI_R_CHILDREN
+        :implements: R_ARMI_R_CHILDREN
     """
 
     pDefs = reactorParameters.defineReactorParameters()
@@ -336,12 +344,24 @@ class Core(composites.Composite):
 
     @property
     def symmetry(self) -> geometry.SymmetryType:
+        """Getter for symmetry type.
+
+        .. impl:: Get core symmetry.
+            :id: I_ARMI_R_SYMM0
+            :implements: R_ARMI_R_SYMM
+        """
         if not self.spatialGrid:
             raise ValueError("Cannot access symmetry before a spatialGrid is attached.")
         return self.spatialGrid.symmetry
 
     @symmetry.setter
     def symmetry(self, val: str):
+        """Setter for symmetry type.
+
+        .. impl:: Set core symmetry.
+            :id: I_ARMI_R_SYMM1
+            :implements: R_ARMI_R_SYMM
+        """
         self.spatialGrid.symmetry = str(val)
         self.clearCache()
 
@@ -1918,13 +1938,16 @@ class Core(composites.Composite):
         """
         Return all mesh positions in core including both endpoints.
 
+        .. impl:: Construct a mesh based on core blocks.
+            :id: I_ARMI_R_MESH
+            :implements: R_ARMI_R_MESH
+
         Parameters
         ----------
         assems : list, optional
             assemblies to consider when determining the mesh points. If not given, all in-core assemblies are used.
         applySubMesh : bool, optional
             Apply submeshing parameters to make mesh points smaller than blocks. Default=True.
-
 
         Returns
         -------

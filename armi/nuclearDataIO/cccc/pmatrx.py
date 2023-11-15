@@ -168,6 +168,13 @@ def _readWrite(lib, fileName, fileMode, getNuclideFunc):
 
 
 class _PmatrxIO(cccc.Stream):
+    """Tool to read and write PMATRX files.
+
+    .. impl:: Tool to read and write PMATRX files.
+        :id: I_ARMI_NUCDATA_PMATRX
+        :implements: R_ARMI_NUCDATA_PMATRX
+    """
+
     def __init__(self, fileName, xsLib, fileMode, getNuclideFunc):
         cccc.Stream.__init__(self, fileName, fileMode)
         self._lib = xsLib

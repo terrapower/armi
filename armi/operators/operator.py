@@ -73,9 +73,13 @@ class Operator:
 
     .. note:: The :doc:`/developer/guide` has some additional narrative on this topic.
 
-    .. impl:: The operator package shall expose an ordered list of interfaces, and loop over them in order.
-        :id: I_ARMI_OPERATOR_INTERFACES1
-        :implements: R_ARMI_OPERATOR_INTERFACES
+    .. impl:: An operator will have a reactor object, to communicate between plugins.
+        :id: I_ARMI_OPERATOR_COMM
+        :implements: R_ARMI_OPERATOR_COMM
+
+    .. impl:: An operator is build from user settings.
+        :id: I_ARMI_OPERATOR_SETTINGS
+        :implements: R_ARMI_OPERATOR_SETTINGS
 
     Attributes
     ----------
@@ -169,6 +173,13 @@ class Operator:
 
     @property
     def stepLengths(self):
+        """
+        Calculate step lengths.
+
+        .. impl:: Calculate step lengths from cycles and burn steps.
+            :id: I_ARMI_FW_HISTORY
+            :implements: R_ARMI_FW_HISTORY
+        """
         if not self._stepLengths:
             self._stepLengths = getStepLengths(self.cs)
             if self._stepLengths == [] and self.cs["nCycles"] == 1:
@@ -390,6 +401,10 @@ class Operator:
 
     def _performTightCoupling(self, cycle: int, timeNode: int, writeDB: bool = True):
         """If requested, perform tight coupling and write out database.
+
+        .. impl:: The operator shall allow coupling between physics systems.
+            :id: I_ARMI_OPERATOR_PHYSICS
+            :implements: R_ARMI_OPERATOR_PHYSICS
 
         Notes
         -----
@@ -930,6 +945,10 @@ class Operator:
     def getInterfaces(self):
         """
         Get list of interfaces in interface stack.
+
+        .. impl:: An operator will expose an ordered list of interfaces.
+            :id: I_ARMI_OPERATOR_INTERFACES
+            :implements: R_ARMI_OPERATOR_INTERFACES
 
         Notes
         -----

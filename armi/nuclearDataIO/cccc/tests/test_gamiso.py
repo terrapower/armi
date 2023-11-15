@@ -31,6 +31,12 @@ class TestGamiso(unittest.TestCase):
         self.xsLib = xsLibraries.IsotxsLibrary()
 
     def test_compare(self):
+        """Compare the input binary GAMISO file.
+
+        .. test:: Test reading GAMISO files.
+            :id: T_ARMI_NUCDATA_GAMISO
+            :tests: R_ARMI_NUCDATA_GAMISO
+        """
         gamisoAA = gamiso.readBinary(GAMISO_AA)
         self.xsLib.merge(deepcopy(gamisoAA))
         self.assertTrue(gamiso.compare(self.xsLib, gamisoAA))

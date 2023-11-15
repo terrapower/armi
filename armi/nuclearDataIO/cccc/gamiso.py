@@ -114,6 +114,10 @@ class _GamisoIO(isotxs._IsotxsIO):
     """
     A reader/writer for GAMISO data files.
 
+    .. impl:: Tool to read and write GAMISO files.
+        :id: I_ARMI_NUCDATA_GAMISO
+        :implements: R_ARMI_NUCDATA_GAMISO
+
     Notes
     -----
     The GAMISO file format is identical to ISOTXS.

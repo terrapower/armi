@@ -32,8 +32,9 @@ from armi.reactor import blocks
 from armi.reactor import geometry
 from armi.reactor import grids
 from armi.reactor import reactors
-from armi.reactor.composites import Composite
+from armi.reactor.assemblyLists import SpentFuelPool
 from armi.reactor.components import Hexagon, Rectangle
+from armi.reactor.composites import Composite
 from armi.reactor.converters import geometryConverters
 from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
 from armi.reactor.flags import Flags
@@ -236,6 +237,24 @@ class HexReactorTests(ReactorTests):
         self.o, self.r = loadTestReactor(
             self.directoryChanger.destination, customSettings={"trackAssems": True}
         )
+
+    def test_coreSfp(self):
+        """The reactor object includes a core and an SFP.
+
+        .. test:: The reactor object is a composite.
+            :id: T_ARMI_R
+            :tests: R_ARMI_R
+
+        .. test:: The reactor object includes a core and an SFP.
+            :id: T_ARMI_R_CHILDREN
+            :tests: R_ARMI_R_CHILDREN
+        """
+        self.assertTrue(isinstance(self.r.core, reactors.Core))
+        self.assertTrue(isinstance(self.r.sfp, SpentFuelPool))
+
+        self.assertTrue(isinstance(self.r, Composite))
+        self.assertTrue(isinstance(self.r.core, Composite))
+        self.assertTrue(isinstance(self.r.sfp, Composite))
 
     def test_factorySortSetting(self):
         """
@@ -756,6 +775,13 @@ class HexReactorTests(ReactorTests):
         self.assertEqual(list(dominantCool.getNuclides()), ["NA23"])
 
     def test_getSymmetryFactor(self):
+        """
+        Test getSymmetryFactor().
+
+        .. test:: Get the core symmetry.
+            :id: T_ARMI_R_SYMM
+            :tests: R_ARMI_R_SYMM
+        """
         for b in self.r.core.getBlocks():
             sym = b.getSymmetryFactor()
             i, j, _ = b.spatialLocator.getCompleteIndices()

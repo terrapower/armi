@@ -46,7 +46,13 @@ from armi.reactor import reactors
 
 
 class OperatorMPI(Operator):
-    """MPI-aware Operator."""
+    """
+    MPI-aware Operator.
+
+    .. impl:: There is an MPI-aware operator.
+        :id: I_ARMI_OPERATOR_MPI
+        :implements: R_ARMI_OPERATOR_MPI
+    """
 
     def __init__(self, cs):
         try:
