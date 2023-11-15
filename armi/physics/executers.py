@@ -172,6 +172,10 @@ class DefaultExecuter(Executer):
         """
         Run the executer steps.
 
+        .. impl:: Reactor model is appropriate for neutronics solver execution
+            :id: I_ARMI_FLUX_GEOM_TRANSFORM
+            :implements: R_ARMI_FLUX_GEOM_TRANSFORM
+
         .. warning::
                 If a calculation requires anything different from what this method does,
                 do not update this method with new complexity! Instead, simply make your own
