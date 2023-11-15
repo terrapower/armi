@@ -1365,7 +1365,11 @@ class EdgeAssemblyChanger(GeometryChanger):
         """
         Add the assemblies on the 120 degree symmetric line to 1/3 symmetric cases.
 
-        Needs to be called before a finite difference (DIF3D, DIFNT) or MCNP calculation
+        Needs to be called before a finite difference (DIF3D, DIFNT) or MCNP calculation.
+
+        .. impl:: Add assemblies along the 120-degree line to a reactor.
+            :id: I_ARMI_ADD_EDGE_ASSEMS0
+            :implements: R_ARMI_ADD_EDGE_ASSEMS
 
         Parameters
         ----------
@@ -1432,6 +1436,10 @@ class EdgeAssemblyChanger(GeometryChanger):
 
         This makes use of the assemblies knowledge of if it is in a region that it
         needs to be removed.
+
+        .. impl:: Remove assemblies along the 120-degree line from a reactor.
+            :id: I_ARMI_ADD_EDGE_ASSEMS1
+            :implements: R_ARMI_ADD_EDGE_ASSEMS
 
         See Also
         --------
