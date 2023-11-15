@@ -217,7 +217,13 @@ def isNumpyArray(paramStr):
 
 @functools.total_ordering
 class Parameter:
-    """Metadata about a specific parameter."""
+    """
+    Metadata about a specific parameter.
+
+    .. impl:: Define an arbitrary physical parameter.
+        :id: I_ARMI_PARAM
+        :implements: R_ARMI_PARAM
+    """
 
     _validName = re.compile("^[a-zA-Z0-9_]+$")
 
@@ -339,6 +345,10 @@ class Parameter:
 
     def setter(self, setter):
         """Decorator method for assigning setter.
+
+        .. impl:: Provide a way to signal if a parameter needs updated across processes.
+            :id: I_ARMI_PARAM_PARALLEL
+            :implements: R_ARMI_PARAM_PARALLEL
 
         Notes
         -----
