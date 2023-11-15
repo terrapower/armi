@@ -211,7 +211,12 @@ class BlockConverter:
 
 
 class ComponentMerger(BlockConverter):
-    """For a provided block, merged the solute component into the solvent component."""
+    """For a provided block, merged the solute component into the solvent component.
+    
+    .. impl:: Homogenize one component into another
+        :id: I_ARMI_BLOCKCONV
+        :implements: R_ARMI_BLOCKCONV
+    """
 
     def __init__(self, sourceBlock, soluteName, solventName):
         """
@@ -330,7 +335,12 @@ class BlockAvgToCylConverter(BlockConverter):
         self._numInternalRings = numInternalRings
 
     def convert(self):
-        """Return a block converted into cylindrical geometry, possibly with other block types surrounding it."""
+        """Return a block converted into cylindrical geometry, possibly with other block types surrounding it.
+
+        .. impl:: Convert hex blocks to cylindrical blocks
+            :id:  I_ARMI_BLOCKCONV_HEX_TO_CYL1
+            :implements: R_ARMI_BLOCKCONV_HEX_TO_CYL
+        """
         self._addBlockRings(
             self._sourceBlock, self._sourceBlock.getType(), self._numInternalRings, 1
         )
@@ -526,7 +536,12 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
             )
 
     def convert(self):
-        """Perform the conversion."""
+        """Perform the conversion.
+        
+        .. impl:: Convert hex blocks to cylindrical blocks
+            :id:  I_ARMI_BLOCKCONV_HEX_TO_CYL0
+            :implements: R_ARMI_BLOCKCONV_HEX_TO_CYL
+        """
         runLog.info(
             "Converting representative block {} to its equivalent cylindrical model".format(
                 self._sourceBlock
