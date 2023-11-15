@@ -199,6 +199,13 @@ class TestArmiCase(unittest.TestCase):
             self.assertTrue(isinstance(prof, cProfile.Profile))
 
     def test_run(self):
+        """
+        Test running a case.
+
+        .. test:: Generic mechanism to allow simulation runs
+            :id: T_ARMI_CASE
+            :tests: R_ARMI_CASE
+        """
         with directoryChangers.TemporaryDirectoryChanger():
             cs = settings.Settings(ARMI_RUN_PATH)
             newSettings = {
@@ -265,7 +272,7 @@ class TestCaseSuiteDependencies(unittest.TestCase):
     """CaseSuite tests.
 
     .. test:: Dependence allows for one case to start after the completion of another.
-        :id: T_ARMI_CASE_SUITE0
+        :id: T_ARMI_CASE_SUITE
         :tests: R_ARMI_CASE_SUITE
     """
 

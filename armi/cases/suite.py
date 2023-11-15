@@ -49,6 +49,12 @@ class CaseSuite:
     subclass a CaseSuite to meet the needs of a specific calculation.
 
     A CaseSuite is a collection that is keyed off Case titles.
+
+
+    .. impl:: Dependence allows for one case to start after the completion of another.
+        :id: I_ARMI_CASE_SUITE
+        :implements: R_ARMI_CASE_SUITE
+
     """
 
     def __init__(self, cs):

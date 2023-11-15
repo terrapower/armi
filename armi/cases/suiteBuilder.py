@@ -323,6 +323,10 @@ class LatinHyperCubeSuiteBuilder(SuiteBuilder):
     quasi-randomly into nonoverlapping partitions. It is recommended to use a surrogate
     model with the sampled data to get the full benefit.
 
+    .. test:: A generic mechanism to allow users to modify user inputs in cases.
+        :id: I_ARMI_CASE_MOD2
+        :tests: R_ARMI_CASE_MOD
+
     Attributes
     ----------
     modifierSets: An array of InputModifiers specifying input parameters.
