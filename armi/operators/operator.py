@@ -173,6 +173,13 @@ class Operator:
 
     @property
     def stepLengths(self):
+        """
+        Calculate step lengths.
+
+        .. impl:: Calculate step lengths from cycles and burn steps.
+            :id: I_ARMI_FW_HISTORY
+            :implements: R_ARMI_FW_HISTORY
+        """
         if not self._stepLengths:
             self._stepLengths = getStepLengths(self.cs)
             if self._stepLengths == [] and self.cs["nCycles"] == 1:
