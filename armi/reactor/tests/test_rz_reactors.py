@@ -38,6 +38,13 @@ class Test_RZT_Reactor(unittest.TestCase):
         self.assertTrue(all(aziMesh == 8 for aziMesh in aziMeshes))
 
     def test_findAllMeshPoints(self):
+        """
+        Test findAllMeshPoints().
+
+        .. test:: Test that the reactor can calculate its core block mesh.
+            :id: T_ARMI_R_MESH
+            :tests: R_ARMI_R_MESH
+        """
         i, _, _ = self.r.core.findAllMeshPoints()
         self.assertLess(i[-1], 2 * math.pi)
 
