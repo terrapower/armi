@@ -169,6 +169,10 @@ class Component(composites.Composite, metaclass=ComponentType):
     Could be fuel pins, cladding, duct, wire wrap, etc. One component object may represent
     multiple physical components via the ``multiplicity`` mechanism.
 
+    .. impl:: Define a physical piece of a reactor
+        :id: I_ARMI_COMP_DEF
+        :implements: R_ARMI_COMP_DEF
+
     Attributes
     ----------
     temperatureInC : float
@@ -461,6 +465,10 @@ class Component(composites.Composite, metaclass=ComponentType):
         If there is a parent container and that container contains a DerivedShape, then that must be
         updated as well since its volume may be changing.
 
+        .. impl:: Clear cache after a dimenions updated
+            :id: I_ARMI_COMP_VOL1
+            :implements: R_ARMI_COMP_VOL
+
         See Also
         --------
         clearLinkedCache: Clears cache of components that depend on this component's dimensions.
@@ -636,6 +644,10 @@ class Component(composites.Composite, metaclass=ComponentType):
         """
         Set heterogeneous number density.
 
+        .. impl:: Set number density of nuclide
+            :id: I_ARMI_COMP_NUCLIDE_FRACS0
+            :implements R_ARMI_COMP_NUCLIDE_FRACS
+
         Parameters
         ----------
         nucName : str
@@ -653,6 +665,10 @@ class Component(composites.Composite, metaclass=ComponentType):
     def setNumberDensities(self, numberDensities):
         """
         Set one or more multiple number densities. Clears out any number density not listed.
+
+        .. impl:: Set number densities of nuclides
+            :id: I_ARMI_COMP_NUCLIDE_FRACS1
+            :implements R_ARMI_COMP_NUCLIDE_FRACS
 
         Parameters
         ----------
@@ -757,6 +773,10 @@ class Component(composites.Composite, metaclass=ComponentType):
         """
         Set a single dimension on the component.
 
+        .. impl:: Set a dimension of a component
+            :id: I_ARMI_COMP_VOL0
+            :implements: R_ARMI_COMP_VOL
+
         Parameters
         ----------
         key : str
@@ -789,6 +809,10 @@ class Component(composites.Composite, metaclass=ComponentType):
     def getDimension(self, key, Tc=None, cold=False):
         """
         Return a specific dimension at temperature as determined by key.
+
+        .. impl:: Retrieve a dimension at a specified temperature
+            :id: I_ARMI_COMP_DIMS
+            :implements: R_ARMI_COMP_DIMS
 
         Parameters
         ----------

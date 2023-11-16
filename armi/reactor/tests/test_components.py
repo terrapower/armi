@@ -190,6 +190,12 @@ class TestNullComponent(TestGeneralComponents):
         self.assertEqual(cur, ref)
 
     def test_getDimension(self):
+        """Test getting empty component.
+        
+        .. test:: Retrieve a null dimension
+            :id: T_ARMI_COMP_DIMS0
+            :tests: R_ARMI_COMP_DIMS
+        """
         self.assertEqual(self.component.getDimension(""), 0.0)
 
 
@@ -285,6 +291,13 @@ class TestShapedComponent(TestGeneralComponents):
             )
 
     def test_volumeAfterClearCache(self):
+        """
+        Test volume after cache has been cleared.
+
+        .. test:: Clear cache after a dimenions updated
+            :id: T_ARMI_COMP_VOL1
+            :tests: R_ARMI_COMP_VOL
+        """
         c = UnshapedVolumetricComponent("testComponent", "Custom", 0, 0, volume=1)
         self.assertAlmostEqual(c.getVolume(), 1, 6)
         c.clearCache()
@@ -375,6 +388,12 @@ class TestCircle(TestShapedComponent):
         self.assertAlmostEqual(cur, ref)
 
     def test_getDimension(self):
+        """Test getting component dimension at specific temperature.
+        
+        .. test:: Retrieve a dimension at a temperature
+            :id: T_ARMI_COMP_DIMS1
+            :tests: R_ARMI_COMP_DIMS
+        """
         hotTemp = 700.0
         ref = self._od * self.component.getThermalExpansionFactor(Tc=hotTemp)
         cur = self.component.getDimension("od", Tc=hotTemp)
@@ -1319,6 +1338,13 @@ class TestDifferentialRadialSegment(TestShapedComponent):
         self.assertAlmostEqual(cur, ref)
 
     def test_updateDims(self):
+        """
+        Test Update dimensions.
+
+        .. test:: Dimensions can be updated
+            :id: T_ARMI_COMP_VOL0
+            :tests: R_ARMI_COMP_VOL
+        """
         self.assertEqual(self.component.getDimension("inner_radius"), 110)
         self.assertEqual(self.component.getDimension("radius_differential"), 60)
         self.component.updateDims()
