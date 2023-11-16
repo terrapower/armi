@@ -1006,7 +1006,7 @@ class Assembly_TestCase(unittest.TestCase):
 
         .. test:: Cartesian coordinates are retrievable
             :id: T_ARMI_ASSEM_POSI1
-            :test: R_ARMI_ASSEM_POSI
+            :tests: R_ARMI_ASSEM_POSI
         """
         a = makeTestAssembly(
             numBlocks=1,

@@ -219,7 +219,7 @@ class TestGlobalFluxInterfaceWithExecuters(unittest.TestCase):
         """Test getTightCouplingValue returns the correct value for keff and type for power.
         
         .. test:: Get k-eff or assembly-wise power for coupling interactions
-            :id: T_ARMI_FLUX_COUPLING_VALUE1
+            :id: T_ARMI_FLUX_COUPLING_VALUE
             :tests: R_ARMI_FLUX_COUPLING_VALUE
         """
         self._setTightCouplingTrue()

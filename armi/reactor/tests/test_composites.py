@@ -617,7 +617,7 @@ class TestMiscMethods(unittest.TestCase):
         """Test setting and retrieving mass.
 
         .. test:: Get mass of composite
-            :id: T_ARMI_CMP_GET_MASS0
+            :id: T_ARMI_CMP_GET_MASS
             :tests: R_ARMI_CMP_GET_MASS
         """
         masses = {"U235": 5.0, "U238": 3.0}
@@ -640,7 +640,7 @@ class TestMiscMethods(unittest.TestCase):
         """Get number densities from composite.
 
         .. test:: Number density of composite is retrievable
-            :id: T_ARMI_CMP_GET_NDENS1
+            :id: T_ARMI_CMP_GET_NDENS0
             :tests: R_ARMI_CMP_GET_NDENS
         """
         ndens = self.obj.getNumberDensities()

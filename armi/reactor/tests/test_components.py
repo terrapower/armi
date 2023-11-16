@@ -172,7 +172,7 @@ class TestComponent(TestGeneralComponents):
         """Creating component with single material.
 
         .. test:: Components are made of one material
-            :id: T_ARMI_COMP_1MAT
+            :id: T_ARMI_COMP_1MAT0
             :tests: R_ARMI_COMP_1MAT
         """
         expectedMaterialName = "HT9"
@@ -183,7 +183,7 @@ class TestComponent(TestGeneralComponents):
         """Creating component and retrieving the name.
 
         .. test:: Composite name is accessible
-            :id: T_ARMI_COMP_1MAT
+            :id: T_ARMI_COMP_1MAT1
             :tests: R_ARMI_COMP_1MAT
         """
         expectedName = "TestComponent"
