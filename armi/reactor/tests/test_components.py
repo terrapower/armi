@@ -44,6 +44,7 @@ from armi.reactor.components import (
     ComponentType,
 )
 from armi.reactor.components import materials
+from armi.materials import air, alloy200
 
 
 class TestComponentFactory(unittest.TestCase):
@@ -169,7 +170,7 @@ class TestComponent(TestGeneralComponents):
 
     def test_initializeComponent(self):
         """Creating component with single material.
-        
+
         .. test:: Components are made of one material
             :id: T_ARMI_COMP_1MAT
             :tests: R_ARMI_COMP_1MAT
@@ -205,6 +206,19 @@ class TestComponent(TestGeneralComponents):
         component.setNumberDensities({'C': 1, 'MN': 0.58})
         self.assertEqual(component.getNumberDensity('C'), 1.0)
         self.assertEqual(component.getNumberDensity('MN'), 0.58)
+
+    def test_solid_material(self):
+        """Determine if material is solid.
+
+        .. test:: Determine if material is solid
+            :id: T_ARMI_COMP_SOLID
+            :tests: R_ARMI_COMP_SOLID
+        """
+        self.component.material = air.Air()
+        self.assertFalse(self.component.containsSolidMaterial())
+
+        self.component.material = alloy200.Alloy200()
+        self.assertTrue(self.component.containsSolidMaterial())
 
 
 class TestNullComponent(TestGeneralComponents):
@@ -336,7 +350,7 @@ class TestShapedComponent(TestGeneralComponents):
 
     def test_densityConsistent(self):
         """Testing the Component matches quick hand calc.
-        
+
         .. test:: Component density is retrievable
             :id: T_ARMI_COMP_MAT1
             :tests: R_ARMI_COMP_MAT
@@ -366,7 +380,7 @@ class TestShapedComponent(TestGeneralComponents):
 
     def test_density(self):
         """Testing the Component density gets the correct 3D material density.
-        
+
         .. test:: Component density is retrievable
             :id: T_ARMI_COMP_MAT0
             :tests: R_ARMI_COMP_MAT
@@ -407,6 +421,12 @@ class TestDerivedShape(TestShapedComponent):
 
 
 class TestCircle(TestShapedComponent):
+    """Test circle shaped component.
+
+    .. test:: Circle shaped component
+        :id: T_ARMI_COMP_SHAPES0
+        :tests: R_ARMI_COMP_SHAPES
+    """
     componentCls = Circle
     _id = 5.0
     _od = 10
@@ -982,6 +1002,12 @@ class TestCube(TestShapedComponent):
 
 
 class TestHexagon(TestShapedComponent):
+    """Test hexagon shaped component.
+
+    .. test:: Hexagon shaped component
+        :id: T_ARMI_COMP_SHAPES1
+        :tests: R_ARMI_COMP_SHAPES
+    """
     componentCls = Hexagon
     componentDims = {"Tinput": 25.0, "Thot": 430.0, "op": 10.0, "ip": 5.0, "mult": 1}
 

@@ -383,7 +383,7 @@ class Component(composites.Composite, metaclass=ComponentType):
 
     def getProperties(self):
         """Return the active Material object defining thermo-mechanical properties.
-        
+
         .. impl:: Material properties are retrievable
             :id: I_ARMI_COMP_MAT0
             :implements: R_ARMI_COMP_MAT
@@ -550,7 +550,12 @@ class Component(composites.Composite, metaclass=ComponentType):
         return isinstance(self.material, void.Void)
 
     def containsSolidMaterial(self):
-        """Returns True if the component material is a solid."""
+        """Returns True if the component material is a solid.
+
+        .. impl:: Determine if material is solid
+            :id: I_ARMI_COMP_SOLID
+            :implements: R_ARMI_COMP_SOLID
+        """
         return not isinstance(self.material, material.Fluid)
 
     def getComponentArea(self, cold=False):
@@ -1167,7 +1172,7 @@ class Component(composites.Composite, metaclass=ComponentType):
 
     def density(self):
         """Returns the mass density of the object in g/cc.
-        
+
         .. impl:: Material densitiy is retrievable
             :id: I_ARMI_COMP_MAT1
             :implements: R_ARMI_COMP_MAT
