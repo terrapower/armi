@@ -168,6 +168,10 @@ class RadialSegment(ShapedComponent):
         |-----------------------> radius, X
         |
         |
+
+    .. impl:: Compute properties of radial segment
+        :id: I_ARMI_COMP_FLUID0
+        :implements: R_ARMI_COMP_FLUID
     """
 
     is3D = True
@@ -262,6 +266,10 @@ class DifferentialRadialSegment(RadialSegment):
 
     This component class is super useful for defining ThRZ reactors and
     perturbing its dimensions using the optimization modules
+
+    .. impl:: Compute properties of radial segment that can be updated
+        :id: I_ARMI_COMP_FLUID1
+        :implements: R_ARMI_COMP_FLUID
 
     See Also
     --------

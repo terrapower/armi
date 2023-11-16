@@ -1385,6 +1385,12 @@ class TestSphere(TestShapedComponent):
 
 
 class TestRadialSegment(TestShapedComponent):
+    """Test radial segment.
+
+    .. test:: Compute properties of radial segment
+        :id: T_ARMI_COMP_FLUID0
+        :tests: R_ARMI_COMP_FLUID
+    """
     componentCls = RadialSegment
     componentDims = {
         "Tinput": 25.0,
@@ -1418,6 +1424,12 @@ class TestRadialSegment(TestShapedComponent):
 
 
 class TestDifferentialRadialSegment(TestShapedComponent):
+    """Test differential radial segment.
+
+    .. test:: Compute properties of radial segment that can be updated
+        :id: T_ARMI_COMP_FLUID1
+        :tests: R_ARMI_COMP_FLUID
+    """
     componentCls = DifferentialRadialSegment
     componentDims = {
         "Tinput": 25.0,
