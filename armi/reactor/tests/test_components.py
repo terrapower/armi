@@ -175,6 +175,31 @@ class TestComponent(TestGeneralComponents):
         self.assertEqual(expectedName, actualName)
         self.assertEqual(expectedMaterialName, actualMaterialName)
 
+    def test_setNumberDensity(self):
+        """Test setting a single number density.
+
+        .. test:: Set Component number density
+            :id: T_ARMI_COMP_NUCLIDE_FRASCS0
+            :tests: R_ARMI_COMP_NUCLIDE_FRACS
+        """
+        component = self.component
+        self.assertAlmostEqual(component.getNumberDensity('C'), 0.000780, 6)
+        component.setNumberDensity('C', 0.57)
+        self.assertEqual(component.getNumberDensity('C'), 0.57)
+
+    def test_setNumberDensities(self):
+        """Test setting multiple number densities.
+
+        .. test:: Set Component number density
+            :id: T_ARMI_COMP_NUCLIDE_FRASCS1
+            :tests: R_ARMI_COMP_NUCLIDE_FRACS
+        """
+        component = self.component
+        self.assertAlmostEqual(component.getNumberDensity('MN'), 0.000426, 6)
+        component.setNumberDensities({'C': 1, 'MN': 0.58})
+        self.assertEqual(component.getNumberDensity('C'), 1.0)
+        self.assertEqual(component.getNumberDensity('MN'), 0.58)
+
 
 class TestNullComponent(TestGeneralComponents):
     componentCls = NullComponent
@@ -191,7 +216,7 @@ class TestNullComponent(TestGeneralComponents):
 
     def test_getDimension(self):
         """Test getting empty component.
-        
+
         .. test:: Retrieve a null dimension
             :id: T_ARMI_COMP_DIMS0
             :tests: R_ARMI_COMP_DIMS
@@ -389,7 +414,7 @@ class TestCircle(TestShapedComponent):
 
     def test_getDimension(self):
         """Test getting component dimension at specific temperature.
-        
+
         .. test:: Retrieve a dimension at a temperature
             :id: T_ARMI_COMP_DIMS1
             :tests: R_ARMI_COMP_DIMS
