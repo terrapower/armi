@@ -198,9 +198,9 @@ class TestComponent(TestGeneralComponents):
             :tests: R_ARMI_COMP_NUCLIDE_FRACS
         """
         component = self.component
-        self.assertAlmostEqual(component.getNumberDensity('C'), 0.000780, 6)
-        component.setNumberDensity('C', 0.57)
-        self.assertEqual(component.getNumberDensity('C'), 0.57)
+        self.assertAlmostEqual(component.getNumberDensity("C"), 0.000780, 6)
+        component.setNumberDensity("C", 0.57)
+        self.assertEqual(component.getNumberDensity("C"), 0.57)
 
     def test_setNumberDensities(self):
         """Test setting multiple number densities.
@@ -210,10 +210,10 @@ class TestComponent(TestGeneralComponents):
             :tests: R_ARMI_COMP_NUCLIDE_FRACS
         """
         component = self.component
-        self.assertAlmostEqual(component.getNumberDensity('MN'), 0.000426, 6)
-        component.setNumberDensities({'C': 1, 'MN': 0.58})
-        self.assertEqual(component.getNumberDensity('C'), 1.0)
-        self.assertEqual(component.getNumberDensity('MN'), 0.58)
+        self.assertAlmostEqual(component.getNumberDensity("MN"), 0.000426, 6)
+        component.setNumberDensities({"C": 1, "MN": 0.58})
+        self.assertEqual(component.getNumberDensity("C"), 1.0)
+        self.assertEqual(component.getNumberDensity("MN"), 0.58)
 
     def test_solid_material(self):
         """Determine if material is solid.
@@ -435,6 +435,7 @@ class TestCircle(TestShapedComponent):
         :id: T_ARMI_COMP_SHAPES0
         :tests: R_ARMI_COMP_SHAPES
     """
+
     componentCls = Circle
     _id = 5.0
     _od = 10
@@ -771,6 +772,7 @@ class TestTriangle(TestShapedComponent):
         :id: T_ARMI_COMP_SHAPES4
         :tests: R_ARMI_COMP_SHAPES
     """
+
     componentCls = Triangle
     componentDims = {
         "Tinput": 25.0,
@@ -807,6 +809,7 @@ class TestRectangle(TestShapedComponent):
         :id: T_ARMI_COMP_SHAPES2
         :tests: R_ARMI_COMP_SHAPES
     """
+
     componentCls = Rectangle
     componentDims = {
         "Tinput": 25.0,
@@ -917,6 +920,7 @@ class TestSquare(TestShapedComponent):
         :id: T_ARMI_COMP_SHAPES3
         :tests: R_ARMI_COMP_SHAPES
     """
+
     componentCls = Square
     componentDims = {
         "Tinput": 25.0,
@@ -1034,6 +1038,7 @@ class TestHexagon(TestShapedComponent):
         :id: T_ARMI_COMP_SHAPES1
         :tests: R_ARMI_COMP_SHAPES
     """
+
     componentCls = Hexagon
     componentDims = {"Tinput": 25.0, "Thot": 430.0, "op": 10.0, "ip": 5.0, "mult": 1}
 
@@ -1081,6 +1086,7 @@ class TestHoledHexagon(TestShapedComponent):
         :id: T_ARMI_COMP_SHAPES5
         :tests: R_ARMI_COMP_SHAPES
     """
+
     componentCls = HoledHexagon
     componentDims = {
         "Tinput": 25.0,
@@ -1280,6 +1286,7 @@ class TestHelix(TestShapedComponent):
         :id: T_ARMI_COMP_SHAPES7
         :tests: R_ARMI_COMP_SHAPES
     """
+
     componentCls = Helix
     componentDims = {
         "Tinput": 25.0,
@@ -1399,6 +1406,7 @@ class TestRadialSegment(TestShapedComponent):
         :id: T_ARMI_COMP_FLUID0
         :tests: R_ARMI_COMP_FLUID
     """
+
     componentCls = RadialSegment
     componentDims = {
         "Tinput": 25.0,
@@ -1438,6 +1446,7 @@ class TestDifferentialRadialSegment(TestShapedComponent):
         :id: T_ARMI_COMP_FLUID1
         :tests: R_ARMI_COMP_FLUID
     """
+
     componentCls = DifferentialRadialSegment
     componentDims = {
         "Tinput": 25.0,

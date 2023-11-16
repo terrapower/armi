@@ -653,7 +653,7 @@ class ArmiObject(metaclass=CompositeModelType):
             return s.lower() in name
 
     def getName(self):
-        """Get composite name
+        """Get composite name.
 
         .. impl:: Composite name is accessible
             :id: I_ARMI_CMP_GET_NAME

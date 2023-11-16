@@ -180,6 +180,7 @@ class Rectangle(ShapedComponent):
         :id: I_ARMI_COMP_SHAPES2
         :implements: R_ARMI_COMP_SHAPES
     """
+
     is3D = False
 
     THERMAL_EXPANSION_DIMS = {"lengthInner", "lengthOuter", "widthInner", "widthOuter"}

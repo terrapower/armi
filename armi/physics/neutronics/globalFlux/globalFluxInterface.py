@@ -238,7 +238,7 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
 
     def getTightCouplingValue(self):
         """Return the parameter value.
-        
+
         .. impl:: Get k-eff or assembly-wise power for coupling interactions
             :id: I_ARMI_FLUX_COUPLING_VALUE
             :implements: R_ARMI_FLUX_COUPLING_VALUE

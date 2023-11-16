@@ -644,8 +644,8 @@ class TestMiscMethods(unittest.TestCase):
             :tests: R_ARMI_CMP_GET_NDENS
         """
         ndens = self.obj.getNumberDensities()
-        self.assertAlmostEqual(0.0001096, ndens['SI'], 7)
-        self.assertAlmostEqual(0.0000368, ndens['W'], 7)
+        self.assertAlmostEqual(0.0001096, ndens["SI"], 7)
+        self.assertAlmostEqual(0.0000368, ndens["W"], 7)
 
     def test_dimensionReport(self):
         report = self.obj.setComponentDimensionsReport()

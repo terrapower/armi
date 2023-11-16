@@ -212,7 +212,7 @@ class BlockConverter:
 
 class ComponentMerger(BlockConverter):
     """For a provided block, merged the solute component into the solvent component.
-    
+
     .. impl:: Homogenize one component into another
         :id: I_ARMI_BLOCKCONV
         :implements: R_ARMI_BLOCKCONV
@@ -537,7 +537,7 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
 
     def convert(self):
         """Perform the conversion.
-        
+
         .. impl:: Convert hex blocks to cylindrical blocks
             :id:  I_ARMI_BLOCKCONV_HEX_TO_CYL0
             :implements: R_ARMI_BLOCKCONV_HEX_TO_CYL
