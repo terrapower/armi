@@ -25,7 +25,12 @@ from armi.reactor.components import componentParameters
 
 
 class Circle(ShapedComponent):
-    """A Circle."""
+    """A Circle.
+
+    .. impl:: Circle shaped component
+        :id: I_ARMI_COMP_SHAPES0
+        :implements: R_ARMI_COMP_SHAPES
+    """
 
     is3D = False
 
@@ -84,7 +89,12 @@ class Circle(ShapedComponent):
 
 
 class Hexagon(ShapedComponent):
-    """A Hexagon."""
+    """A Hexagon.
+
+    .. impl:: Hexagon shaped component
+        :id: I_ARMI_COMP_SHAPES1
+        :implements: R_ARMI_COMP_SHAPES
+    """
 
     is3D = False
 
@@ -164,8 +174,12 @@ class Hexagon(ShapedComponent):
 
 
 class Rectangle(ShapedComponent):
-    """A rectangle component."""
+    """A Rectangle.
 
+    .. impl:: Rectangle shaped component
+        :id: I_ARMI_COMP_SHAPES2
+        :implements: R_ARMI_COMP_SHAPES
+    """
     is3D = False
 
     THERMAL_EXPANSION_DIMS = {"lengthInner", "lengthOuter", "widthInner", "widthOuter"}
@@ -304,7 +318,12 @@ class SolidRectangle(Rectangle):
 
 
 class Square(Rectangle):
-    """Square component that can be solid or hollow."""
+    """Square component that can be solid or hollow.
+
+    .. impl:: Square shaped component
+        :id: I_ARMI_COMP_SHAPES3
+        :implements: R_ARMI_COMP_SHAPES
+    """
 
     is3D = False
 
@@ -376,6 +395,10 @@ class Square(Rectangle):
 class Triangle(ShapedComponent):
     """
     Triangle with defined base and height.
+
+    .. impl:: Triangle shaped component
+        :id: I_ARMI_COMP_SHAPES4
+        :implements: R_ARMI_COMP_SHAPES
 
     Notes
     -----

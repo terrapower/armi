@@ -757,6 +757,12 @@ class TestComponentExpansion(unittest.TestCase):
 
 
 class TestTriangle(TestShapedComponent):
+    """Test triangle shaped component.
+
+    .. test:: Triangle shaped component
+        :id: T_ARMI_COMP_SHAPES4
+        :tests: R_ARMI_COMP_SHAPES
+    """
     componentCls = Triangle
     componentDims = {
         "Tinput": 25.0,
@@ -787,6 +793,12 @@ class TestTriangle(TestShapedComponent):
 
 
 class TestRectangle(TestShapedComponent):
+    """Test rectangle shaped component.
+
+    .. test:: Rectangle shaped component
+        :id: T_ARMI_COMP_SHAPES2
+        :tests: R_ARMI_COMP_SHAPES
+    """
     componentCls = Rectangle
     componentDims = {
         "Tinput": 25.0,
@@ -891,6 +903,12 @@ class TestSolidRectangle(TestShapedComponent):
 
 
 class TestSquare(TestShapedComponent):
+    """Test square shaped component.
+
+    .. test:: Square shaped component
+        :id: T_ARMI_COMP_SHAPES3
+        :tests: R_ARMI_COMP_SHAPES
+    """
     componentCls = Square
     componentDims = {
         "Tinput": 25.0,
@@ -1049,6 +1067,12 @@ class TestHexagon(TestShapedComponent):
 
 
 class TestHoledHexagon(TestShapedComponent):
+    """Test holed hexagon shaped component.
+
+    .. test:: Holed hexagon shaped component
+        :id: T_ARMI_COMP_SHAPES5
+        :tests: R_ARMI_COMP_SHAPES
+    """
     componentCls = HoledHexagon
     componentDims = {
         "Tinput": 25.0,
@@ -1209,6 +1233,12 @@ class TestHoledRectangle(TestShapedComponent):
 
 
 class TestHoledSquare(TestHoledRectangle):
+    """Test holed square shaped component.
+
+    .. test:: Holed hexagon shaped component
+        :id: T_ARMI_COMP_SHAPES6
+        :tests: R_ARMI_COMP_SHAPES
+    """
 
     componentCls = HoledSquare
 
@@ -1236,6 +1266,12 @@ class TestHoledSquare(TestHoledRectangle):
 
 
 class TestHelix(TestShapedComponent):
+    """Test helix shaped component.
+
+    .. test:: Helix shaped component
+        :id: T_ARMI_COMP_SHAPES7
+        :tests: R_ARMI_COMP_SHAPES
+    """
     componentCls = Helix
     componentDims = {
         "Tinput": 25.0,

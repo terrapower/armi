@@ -22,7 +22,12 @@ from armi.reactor.components import basicShapes
 
 
 class HoledHexagon(basicShapes.Hexagon):
-    """Hexagon with n uniform circular holes hollowed out of it."""
+    """Hexagon with n uniform circular holes hollowed out of it.
+
+    .. impl:: Holed hexagon shaped component
+        :id: I_ARMI_COMP_SHAPES5
+        :implements: R_ARMI_COMP_SHAPES
+    """
 
     THERMAL_EXPANSION_DIMS = {"op", "holeOD"}
 
@@ -190,7 +195,12 @@ class HoledRectangle(basicShapes.Rectangle):
 
 
 class HoledSquare(basicShapes.Square):
-    """Square with one circular hole in it."""
+    """Square with one circular hole in it.
+
+    .. impl:: Holed square shaped component
+        :id: I_ARMI_COMP_SHAPES6
+        :implements: R_ARMI_COMP_SHAPES
+    """
 
     THERMAL_EXPANSION_DIMS = {"widthOuter", "holeOD"}
 
@@ -241,6 +251,10 @@ class HoledSquare(basicShapes.Square):
 
 class Helix(ShapedComponent):
     """A spiral wire component used to model a pin wire-wrap.
+
+    .. impl:: Helix shaped component
+        :id: I_ARMI_COMP_SHAPES7
+        :implements: R_ARMI_COMP_SHAPES
 
     Notes
     -----
