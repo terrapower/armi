@@ -759,6 +759,10 @@ class Component(composites.Composite, metaclass=ComponentType):
 
             :math:`A_i` is the atomic weight of of nuclide i in grams/mole
 
+        .. impl:: Get mass of composite
+            :id: I_ARMI_CMP_GET_MASS1
+            :implements: R_ARMI_CMP_GET_MASS
+
         Parameters
         ----------
         nuclideNames : str, optional

@@ -302,6 +302,12 @@ class TestHexGrid(unittest.TestCase):
         )
 
     def test_getSymmetricIdenticalsThird(self):
+        """Retrieve equivalent contents based on 3rd symmetry.
+
+        .. test:: Equivalent contents in 3rd geometry are retrievable
+            :id: T_ARMI_GRID_EQUIVALENTS0
+            :tests: R_ARMI_GRID_EQUIVALENTS
+        """
         grid = grids.HexGrid.fromPitch(1.0)
         grid.symmetry = str(
             geometry.SymmetryType(
@@ -401,6 +407,12 @@ class TestHexGrid(unittest.TestCase):
             grid.getCoordinates((0, 5, -1))
 
     def test_isInFirstThird(self):
+        """Determine if grid is in first third.
+
+        .. test:: Determine if grid in first third
+            :id: T_ARMI_GRID_SYMMETRY_LOC
+            :tests: R_ARMI_GRID_SYMMETRY_LOC
+        """
         grid = grids.HexGrid.fromPitch(1.0, numRings=10)
         self.assertTrue(grid.isInFirstThird(grid[0, 0, 0]))
         self.assertTrue(grid.isInFirstThird(grid[1, 0, 0]))
@@ -568,6 +580,12 @@ class TestCartesianGrid(unittest.TestCase):
                 self.assertEqual(pos, expectedPos[j + 3][i + 3])
 
     def test_symmetry(self):
+        """Retrieve equivalent contents based on symmetry.
+
+        .. test:: Equivalent contents in geometry are retrievable
+            :id: T_ARMI_GRID_EQUIVALENTS1
+            :tests: R_ARMI_GRID_EQUIVALENTS
+        """
         # PERIODIC, no split
         grid = grids.CartesianGrid.fromRectangle(
             1.0,

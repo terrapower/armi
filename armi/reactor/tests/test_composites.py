@@ -218,6 +218,12 @@ class TestCompositePattern(unittest.TestCase):
         )
 
     def test_hasFlags(self):
+        """Ensure flags are queryable.
+
+        .. test:: Flags can be queried
+            :id: T_ARMI_CMP_HAS_FLAGS
+            :tests: R_ARMI_CMP_HAS_FLAGS
+        """
         self.container.setType("fuel")
         self.assertFalse(self.container.hasFlags(Flags.SHIELD | Flags.FUEL, exact=True))
         self.assertTrue(self.container.hasFlags(Flags.FUEL))
@@ -608,6 +614,12 @@ class TestMiscMethods(unittest.TestCase):
         self.obj = loadTestBlock()
 
     def test_setMass(self):
+        """Test setting and retrieving mass.
+
+        .. test:: Get mass of composite
+            :id: T_ARMI_CMP_GET_MASS0
+            :tests: R_ARMI_CMP_GET_MASS
+        """
         masses = {"U235": 5.0, "U238": 3.0}
         self.obj.setMasses(masses)
         self.assertAlmostEqual(self.obj.getMass("U235"), 5.0)
@@ -623,6 +635,17 @@ class TestMiscMethods(unittest.TestCase):
         group.add(loadTestBlock())
         group.setMass("U235", 5)
         self.assertAlmostEqual(group.getMass("U235"), 5)
+
+    def test_getNumberDensities(self):
+        """Get number densities from composite.
+
+        .. test:: Number density of composite is retrievable
+            :id: T_ARMI_CMP_GET_NDENS1
+            :tests: R_ARMI_CMP_GET_NDENS
+        """
+        ndens = self.obj.getNumberDensities()
+        self.assertAlmostEqual(0.0001096, ndens['SI'], 7)
+        self.assertAlmostEqual(0.0000368, ndens['W'], 7)
 
     def test_dimensionReport(self):
         report = self.obj.setComponentDimensionsReport()

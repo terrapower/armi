@@ -168,19 +168,27 @@ class TestComponent(TestGeneralComponents):
 
     componentCls = Component
 
-    def test_initializeComponent(self):
+    def test_initializeComponentMaterial(self):
         """Creating component with single material.
 
         .. test:: Components are made of one material
             :id: T_ARMI_COMP_1MAT
             :tests: R_ARMI_COMP_1MAT
         """
-        expectedName = "TestComponent"
-        actualName = self.component.getName()
         expectedMaterialName = "HT9"
         actualMaterialName = self.component.material.getName()
-        self.assertEqual(expectedName, actualName)
         self.assertEqual(expectedMaterialName, actualMaterialName)
+
+    def test_initializeComponentName(self):
+        """Creating component and retrieving the name.
+
+        .. test:: Composite name is accessible
+            :id: T_ARMI_COMP_1MAT
+            :tests: R_ARMI_COMP_1MAT
+        """
+        expectedName = "TestComponent"
+        actualName = self.component.getName()
+        self.assertEqual(expectedName, actualName)
 
     def test_setNumberDensity(self):
         """Test setting a single number density.
