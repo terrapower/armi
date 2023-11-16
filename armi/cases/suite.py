@@ -51,7 +51,7 @@ class CaseSuite:
     A CaseSuite is a collection that is keyed off Case titles.
 
 
-    .. impl:: Dependence allows for one case to start after the completion of another.
+    .. impl:: Dependence allows for one case to start after the completion of another
         :id: I_ARMI_CASE_SUITE
         :implements: R_ARMI_CASE_SUITE
 
