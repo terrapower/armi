@@ -382,7 +382,12 @@ class Component(composites.Composite, metaclass=ComponentType):
         return self.getThermalExpansionFactor(Tc=newHot, T0=self.temperatureInC)
 
     def getProperties(self):
-        """Return the active Material object defining thermo-mechanical properties."""
+        """Return the active Material object defining thermo-mechanical properties.
+        
+        .. impl:: Material properties are retrievable
+            :id: I_ARMI_COMP_MAT0
+            :implements: R_ARMI_COMP_MAT
+        """
         return self.material
 
     @property
@@ -1161,7 +1166,12 @@ class Component(composites.Composite, metaclass=ComponentType):
         return pinFluxes[self.p.pinNum - 1] * self.getVolume()
 
     def density(self):
-        """Returns the mass density of the object in g/cc."""
+        """Returns the mass density of the object in g/cc.
+        
+        .. impl:: Material densitiy is retrievable
+            :id: I_ARMI_COMP_MAT1
+            :implements: R_ARMI_COMP_MAT
+        """
         density = composites.Composite.density(self)
 
         if not density:

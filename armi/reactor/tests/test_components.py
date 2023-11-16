@@ -168,6 +168,12 @@ class TestComponent(TestGeneralComponents):
     componentCls = Component
 
     def test_initializeComponent(self):
+        """Creating component with single material.
+        
+        .. test:: Components are made of one material
+            :id: T_ARMI_COMP_1MAT
+            :tests: R_ARMI_COMP_1MAT
+        """
         expectedName = "TestComponent"
         actualName = self.component.getName()
         expectedMaterialName = "HT9"
@@ -329,6 +335,12 @@ class TestShapedComponent(TestGeneralComponents):
         self.assertAlmostEqual(c.getVolume(), 1, 6)
 
     def test_densityConsistent(self):
+        """Testing the Component matches quick hand calc.
+        
+        .. test:: Component density is retrievable
+            :id: T_ARMI_COMP_MAT1
+            :tests: R_ARMI_COMP_MAT
+        """
         c = self.component
 
         # no volume defined
@@ -353,7 +365,12 @@ class TestShapedComponent(TestGeneralComponents):
             )
 
     def test_density(self):
-        """Testing the Component density gets the correct 3D material density."""
+        """Testing the Component density gets the correct 3D material density.
+        
+        .. test:: Component density is retrievable
+            :id: T_ARMI_COMP_MAT0
+            :tests: R_ARMI_COMP_MAT
+        """
 
         class StrangeMaterial(Material):
             """material designed to make the test easier to understand."""
