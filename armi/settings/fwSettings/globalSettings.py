@@ -119,13 +119,7 @@ CONF_ZONE_DEFINITIONS = "zoneDefinitions"
 
 
 def defineSettings() -> List[setting.Setting]:
-    """
-    Return a list of global framework settings.
-
-    .. impl:: There is a setting for total core power.
-        :id: I_ARMI_SETTINGS_POWER
-        :implements: R_ARMI_SETTINGS_POWER
-    """
+    """Return a list of global framework settings."""
     settings = [
         setting.Setting(
             CONF_NUM_PROCESSORS,

@@ -141,10 +141,6 @@ class SettingRenamer:
 class SettingsReader:
     """Abstract class for processing settings files.
 
-    .. impl:: The setting use a human-readable, plain text file as input.
-        :id: I_ARMI_SETTINGS_IO_TXT
-        :implements: R_ARMI_SETTINGS_IO_TXT
-
     Parameters
     ----------
     cs : CaseSettings

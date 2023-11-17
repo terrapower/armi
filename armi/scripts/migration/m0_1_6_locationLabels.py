@@ -18,7 +18,7 @@ import re
 
 from armi import runLog
 from armi.settings import caseSettings
-from armi.migration.base import SettingsMigration
+from armi.scripts.migration.base import SettingsMigration
 from armi.settings import settingsIO
 from armi.utils.units import ASCII_LETTER_A, ASCII_ZERO
 

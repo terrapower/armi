@@ -251,13 +251,7 @@ class TestUniformMeshGenerator(unittest.TestCase):
         self.assertNotEqual(refMesh[4], avgMesh[4], "Not equal above the fuel.")
 
     def test_filterMesh(self):
-        """
-        Test that the mesh can be correctly filtered.
-
-        .. test:: Try to preserve the boundaries of fuel and control material.
-            :id: T_ARMI_UMC_NON_UNIFORM1
-            :tests: R_ARMI_UMC_NON_UNIFORM
-        """
+        """Test that the mesh can be correctly filtered."""
         meshList = [1.0, 3.0, 4.0, 7.0, 9.0, 12.0, 16.0, 19.0, 20.0]
         anchorPoints = [4.0, 16.0]
         combinedMesh = self.generator._filterMesh(
@@ -301,17 +295,7 @@ class TestUniformMeshGenerator(unittest.TestCase):
         self.assertListEqual(ctrlAndFuelTops, [75.0, 101.25, 105.0])
 
     def test_generateCommonMesh(self):
-        """
-        Covers generateCommonmesh() and _decuspAxialMesh().
-
-        .. test:: Produce a uniform mesh with a size no smaller than a user-specified value.
-            :id: T_ARMI_UMC_MIN_MESH
-            :tests: R_ARMI_UMC_MIN_MESH
-
-        .. test:: Try to preserve the boundaries of fuel and control material.
-            :id: T_ARMI_UMC_NON_UNIFORM0
-            :tests: R_ARMI_UMC_NON_UNIFORM
-        """
+        """Covers generateCommonmesh() and _decuspAxialMesh()."""
         self.generator.generateCommonMesh()
         expectedMesh = [
             25.0,
@@ -362,7 +346,7 @@ class TestUniformMeshComponents(unittest.TestCase):
             "allNuclidesInProblem",
             "elementsToExpand",
             "inertNuclides",
-        ]  # Note: items within toCompare must be list or "list-like", like an ordered set
+        ]  # note, items within toCompare must be list or "list-like", like an ordered set
         for attr in toCompare:
             for c, o in zip(getattr(converted, attr), getattr(original, attr)):
                 self.assertEqual(c, o)
@@ -410,13 +394,6 @@ class TestUniformMesh(unittest.TestCase):
         )
 
     def test_convertNumberDensities(self):
-        """
-        Test the reactor mass before and after conversion.
-
-        .. test:: Make a copy of the reactor where the new reactor core has a uniform axial mesh.
-            :id: T_ARMI_UMC
-            :tests: R_ARMI_UMC
-        """
         refMass = self.r.core.getMass("U235")
         applyNonUniformHeightDistribution(
             self.r
@@ -436,13 +413,6 @@ class TestUniformMesh(unittest.TestCase):
         )  # conversion didn't change source reactor mass
 
     def test_applyStateToOriginal(self):
-        """
-        Test applyStateToOriginal() to revert mesh conversion.
-
-        .. test:: Map select parameters from composites on the new mesh to the original mesh.
-            :id: T_ARMI_UMC_PARAM_BACKWARD0
-            :tests: R_ARMI_UMC_PARAM_BACKWARD
-        """
         applyNonUniformHeightDistribution(self.r)  # note: this perturbs the ref mass
 
         self.converter.convert(self.r)
@@ -535,13 +505,6 @@ class TestGammaUniformMesh(unittest.TestCase):
         )  # conversion didn't change source reactor mass
 
     def test_applyStateToOriginal(self):
-        """
-        Test applyStateToOriginal() to revert mesh conversion.
-
-        .. test:: Map select parameters from composites on the new mesh to the original mesh.
-            :id: T_ARMI_UMC_PARAM_BACKWARD1
-            :tests: R_ARMI_UMC_PARAM_BACKWARD
-        """
         applyNonUniformHeightDistribution(self.r)  # note: this perturbs the ref. mass
 
         # set original parameters on pre-mapped core with non-uniform assemblies
@@ -649,10 +612,6 @@ class TestParamConversion(unittest.TestCase):
         Test that state is translated correctly from source to dest assems.
 
         Here we set flux and pdens to 3 on the source blocks.
-
-        .. test:: Map select parameters from composites on the original mesh to the new mesh.
-            :id: T_ARMI_UMC_PARAM_FORWARD
-            :tests: R_ARMI_UMC_PARAM_FORWARD
         """
         paramList = ["flux", "pdens"]
         for pName in paramList:

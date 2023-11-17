@@ -101,14 +101,6 @@ class SystemBlueprint(yamlize.Object):
     def construct(self, cs, bp, reactor, geom=None, loadAssems=True):
         """Build a core/IVS/EVST/whatever and fill it with children.
 
-        .. impl:: Build core and spent fuel pool from blueprint
-            :id: I_ARMI_BP_SYSTEMS
-            :implements: R_ARMI_BP_SYSTEMS
-
-        .. impl:: Create core object with blueprint
-            :id: I_ARMI_BP_CORE
-            :implements: R_ARMI_BP_CORE
-
         Parameters
         ----------
         cs : :py:class:`Settings <armi.settings.Settings>` object.

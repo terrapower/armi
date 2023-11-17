@@ -1,12 +1,6 @@
 name: ARMI unit tests
 
-on:
-  push:
-    paths-ignore:
-      - 'doc/**'
-  pull_request:
-    paths-ignore:
-      - 'doc/**'
+on: [push, pull_request]
 
 jobs:
   build:

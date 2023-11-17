@@ -12,17 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Void material.
 
-Use this to fill empty spaces while maintaining proper volume fractions.
-"""
-from armi.materials import material
-
-
-class Void(material.Fluid):
-    def pseudoDensity(self, Tk: float = None, Tc: float = None) -> float:
-        return 0.0
-
-    def density(self, Tk: float = None, Tc: float = None) -> float:
-        return 0.0
+def defineSettings():
+    settings = []
+    return settings

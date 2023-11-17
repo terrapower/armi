@@ -16,7 +16,6 @@ import copy
 import logging
 import os
 import unittest
-from unittest.mock import patch
 
 from numpy.testing import assert_allclose, assert_equal
 from six.moves import cPickle
@@ -32,7 +31,6 @@ from armi.reactor import blocks
 from armi.reactor import geometry
 from armi.reactor import grids
 from armi.reactor import reactors
-from armi.reactor.composites import Composite
 from armi.reactor.components import Hexagon, Rectangle
 from armi.reactor.converters import geometryConverters
 from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
@@ -238,13 +236,6 @@ class HexReactorTests(ReactorTests):
         )
 
     def test_factorySortSetting(self):
-        """
-        Create a core object from an input yaml.
-
-        .. test:: Create core object from input yaml
-            :id: T_ARMI_R_CORE
-            :tests: R_ARMI_R_CORE
-        """
         # get a sorted Reactor (the default)
         cs = settings.Settings(fName="armiRun.yaml")
         r0 = reactors.loadFromCs(cs)
@@ -262,43 +253,6 @@ class HexReactorTests(ReactorTests):
         a0 = [a.name for a in r0.core]
         a1 = [a.name for a in r1.core]
         self.assertNotEqual(a0, a1)
-
-        # The reactor object is a Composite
-        self.assertTrue(isinstance(r0.core, Composite))
-
-    def test_getSetParameters(self):
-        """
-        This test works through multiple levels of the hierarchy to test ability to
-        modify parameters at different levels.
-
-        .. test:: Parameters accessible throughout the armi tree
-            :id: T_ARMI_PARAM_PART
-            :tests: R_ARMI_PARAM_PART
-
-        .. impl:: Prove there is a setting for total core power.
-            :id: T_ARMI_SETTINGS_POWER
-            :implements: R_ARMI_SETTINGS_POWER
-        """
-        # Test at core level
-        core = self.r.core
-        self.assertGreater(core.p.power, -1)
-
-        core.p.power = 123
-        self.assertEqual(core.p.power, 123)
-
-        # Test at assembly level
-        assembly = core.getFirstAssembly()
-        self.assertGreater(assembly.p.crRodLength, -1)
-
-        assembly.p.crRodLength = 234
-        self.assertEqual(assembly.p.crRodLength, 234)
-
-        # Test at block level
-        block = core.getFirstBlock()
-        self.assertGreater(block.p.THTfuelCL, -1)
-
-        block.p.THTfuelCL = 57
-        self.assertEqual(block.p.THTfuelCL, 57)
 
     def test_sortChildren(self):
         self.assertEqual(next(self.r.core.__iter__()), self.r.core[0])
@@ -324,9 +278,6 @@ class HexReactorTests(ReactorTests):
         val = self.r.core.getTotalBlockParam("power")
         val2 = self.r.core.getTotalBlockParam("power", addSymmetricPositions=True)
         self.assertEqual(val2 / self.r.core.powerMultiplier, val)
-
-        with self.assertRaises(ValueError):
-            self.r.core.getTotalBlockParam(generationNum=1)
 
     def test_geomType(self):
         self.assertEqual(self.r.core.geomType, geometry.GeomType.HEX)
@@ -557,13 +508,6 @@ class HexReactorTests(ReactorTests):
         assert_allclose(expectedPoints, radPoints)
 
     def test_findNeighbors(self):
-        """
-        Find neighbors of a given assembly.
-
-        .. test:: Retrieve neighboring assemblies of a given assembly
-            :id: T_ARMI_R_FIND_NEIGHBORS
-            :tests: R_ARMI_R_FIND_NEIGHBORS
-        """
         loc = self.r.core.spatialGrid.getLocatorFromRingAndPos(1, 1)
         a = self.r.core.childrenByLocator[loc]
         neighbs = self.r.core.findNeighbors(
@@ -678,11 +622,6 @@ class HexReactorTests(ReactorTests):
         nAssmWithBlanks = self.r.core.getNumAssembliesWithAllRingsFilledOut(nRings)
         self.assertEqual(77, nAssmWithBlanks)
 
-    @patch("armi.reactor.reactors.Core.powerMultiplier", 1)
-    def test_getNumAssembliesWithAllRingsFilledOutBipass(self):
-        nAssems = self.r.core.getNumAssembliesWithAllRingsFilledOut(3)
-        self.assertEqual(19, nAssems)
-
     def test_getNumEnergyGroups(self):
         # this Core doesn't have a loaded ISOTXS library, so this test is minimally useful
         with self.assertRaises(AttributeError):
@@ -693,30 +632,12 @@ class HexReactorTests(ReactorTests):
         with self.assertRaises(ZeroDivisionError):
             _targetRing, _fluxFraction = self.r.core.getMinimumPercentFluxInFuel()
 
-    def test_getAssemblyWithLoc(self):
-        """
-        Get assembly by location.
-
-        .. test:: Get assembly by location
-            :id: T_ARMI_R_GET_ASSEM_LOC
-            :tests: R_ARMI_R_GET_ASSEM_LOC
-        """
+    def test_getAssembly(self):
         a1 = self.r.core.getAssemblyWithAssemNum(assemNum=10)
         a2 = self.r.core.getAssembly(locationString="003-001")
+        a3 = self.r.core.getAssembly(assemblyName="A0010")
 
-        self.assertEqual(a1, a2)
-
-    def test_getAssemblyWithName(self):
-        """
-        Get assembly by name.
-
-        .. test:: Get assembly by name
-            :id: T_ARMI_R_GET_ASSEM_NAME
-            :tests: R_ARMI_R_GET_ASSEM_NAME
-        """
-        a1 = self.r.core.getAssemblyWithAssemNum(assemNum=10)
-        a2 = self.r.core.getAssembly(assemblyName="A0010")
-
+        self.assertEqual(a1, a3)
         self.assertEqual(a1, a2)
 
     def test_restoreReactor(self):
@@ -925,12 +846,6 @@ class HexReactorTests(ReactorTests):
             self.assertEqual(a.spatialLocator.grid, self.r.sfp.spatialGrid)
 
     def test_removeAssembliesInRingByCount(self):
-        """Tests retrieving ring numbers and removing a ring.
-
-        .. test:: Retrieve number of rings in core.
-            :id: T_ARMI_R_NUM_RINGS
-            :tests: R_ARMI_R_NUM_RINGS
-        """
         self.assertEqual(self.r.core.getNumRings(), 9)
         self.r.core.removeAssembliesInRing(9, self.o.cs)
         self.assertEqual(self.r.core.getNumRings(), 8)

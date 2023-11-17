@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Cleans up blueprints."""
-import io
 import re
+import io
 
-from armi.migration.base import BlueprintsMigration
+from armi.scripts.migration.base import BlueprintsMigration
 from armi import runLog
 
 

@@ -42,12 +42,7 @@ def _configureGeomOptions():
 
 
 class BlockBlueprint(yamlize.KeyedList):
-    """Input definition for Block.
-
-    .. impl:: Create a Block from blueprint file
-        :id: I_ARMI_BP_BLOCK
-        :implements: R_ARMI_BP_BLOCK
-    """
+    """Input definition for Block."""
 
     item_type = componentBlueprint.ComponentBlueprint
     key_attr = componentBlueprint.ComponentBlueprint.name

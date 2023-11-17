@@ -255,7 +255,7 @@ def _createCartesianBlockMesh(b: blocks.CartesianBlock) -> VtkMesh:
 
 
 def _createTRZBlockMesh(b: blocks.ThRZBlock) -> VtkMesh:
-    # This could be improved.
+    # There's no sugar-coating this one. It sucks.
     rIn = b.radialInner()
     rOut = b.radialOuter()
     thIn = b.thetaInner()

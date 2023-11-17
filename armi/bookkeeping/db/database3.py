@@ -1458,6 +1458,7 @@ def packSpecialData(
       ``None`` with a magical value that shouldn't be encountered in realistic
       scenarios.
 
+
     Parameters
     ----------
     data
@@ -1608,6 +1609,7 @@ def unpackSpecialData(data: numpy.ndarray, attrs, paramName: str) -> numpy.ndarr
     numpy.ndarray
         An ndarray containing the closest possible representation of the data that was
         originally written to the database.
+
 
     See Also
     --------

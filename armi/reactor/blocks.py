@@ -581,12 +581,7 @@ class Block(composites.Composite):
         self.completeInitialLoading()
 
     def getLocation(self):
-        """Return a string representation of the location.
-
-        .. impl:: Location of a block is retrievable
-            :id: I_ARMI_BLOCK_POSI0
-            :implements: R_ARMI_BLOCK_POSI
-        """
+        """Return a string representation of the location."""
         if self.core and self.parent.spatialGrid and self.spatialLocator:
             return self.core.spatialGrid.getLabel(
                 self.spatialLocator.getCompleteIndices()
@@ -595,19 +590,12 @@ class Block(composites.Composite):
             return "ExCore"
 
     def coords(self, rotationDegreesCCW=0.0):
-        """
-        Returns the coordinates of the block.
-
-        .. impl:: Coordinates of a block are queryable
-            :id: I_ARMI_BLOCK_POSI1
-            :implements: R_ARMI_BLOCK_POSI
-        """
         if rotationDegreesCCW:
             raise NotImplementedError("Cannot get coordinates with rotation.")
         return self.spatialLocator.getGlobalCoordinates()
 
     def setBuLimitInfo(self):
-        """Sets burnup limit based on igniter, feed, etc."""
+        r"""Sets burnup limit based on igniter, feed, etc."""
         if self.p.buRate == 0:
             # might be cycle 1 or a non-burning block
             self.p.timeToLimit = 0.0
@@ -682,10 +670,6 @@ class Block(composites.Composite):
         """
         Return the volume of a block.
 
-        .. impl:: Volume of block is retrievable
-            :id: I_ARMI_BLOCK_DIMS0
-            :implements: R_ARMI_BLOCK_DIMS
-
         Returns
         -------
         volume : float
@@ -735,9 +719,10 @@ class Block(composites.Composite):
 
         Returns
         -------
-        mass : float
+             mass : float
             Mass difference in grams. If you subtract mass, mass will be negative.
             If returnMass is False (default), this will always be zero.
+
         """
         self._updateDetailedNdens(frac, adjustList)
 
@@ -1247,10 +1232,6 @@ class Block(composites.Composite):
             Component that has the max pitch, if returnComp == True. If no component is found to
             define the pitch, returns None
 
-        .. impl:: Pitch of block is retrievable
-            :id: I_ARMI_BLOCK_DIMS1
-            :implements: R_ARMI_BLOCK_DIMS
-
         Notes
         -----
         The block stores a reference to the component that defines the pitch, making the assumption
@@ -1262,6 +1243,7 @@ class Block(composites.Composite):
         See Also
         --------
         setPitch : sets pitch
+
         """
         c, _p = self._pitchDefiningComponent
         if c is None:
@@ -1548,8 +1530,8 @@ class Block(composites.Composite):
 
         Parameters
         ----------
-        rad: float
-            Number (in radians) specifying the angle of counter clockwise rotation.
+        rad - float
+            number (in radians) specifying the angle of counter clockwise rotation
         """
         raise NotImplementedError
 
@@ -1595,13 +1577,6 @@ class Block(composites.Composite):
 
 
 class HexBlock(Block):
-    """
-    Defines a HexBlock.
-
-    .. impl:: Ability to create hex shaped blocks
-        :id: I_ARMI_BLOCK_HEX
-        :implements: R_ARMI_BLOCK_HEX
-    """
 
     PITCH_COMPONENT_TYPE: ClassVar[_PitchDefiningComponent] = (components.Hexagon,)
 
@@ -1609,13 +1584,6 @@ class HexBlock(Block):
         Block.__init__(self, name, height)
 
     def coords(self, rotationDegreesCCW=0.0):
-        """
-        Returns the coordinates of the block.
-
-        .. impl:: Coordinates of a block are queryable
-            :id: I_ARMI_BLOCK_POSI2
-            :implements: R_ARMI_BLOCK_POSI
-        """
         x, y, _z = self.spatialLocator.getGlobalCoordinates()
         x += self.p.displacementX * 100.0
         y += self.p.displacementY * 100.0
@@ -1627,10 +1595,6 @@ class HexBlock(Block):
     def _createHomogenizedCopy(self, pinSpatialLocators=False):
         """
         Create a new homogenized copy of a block that is less expensive than a full deepcopy.
-
-        .. impl:: Homogenize the compositions of a block
-            :id: I_ARMI_BLOCK_HOMOG
-            :implements: R_ARMI_BLOCK_HOMOG
 
         Notes
         -----
@@ -1710,42 +1674,21 @@ class HexBlock(Block):
         return b
 
     def getMaxArea(self):
-        """
-        Compute the max area of this block if it was totally full.
-
-        .. impl:: Area of block is retrievable
-            :id: I_ARMI_BLOCK_DIMS2
-            :implements: R_ARMI_BLOCK_DIMS
-        """
+        """Compute the max area of this block if it was totally full."""
         pitch = self.getPitch()
         if not pitch:
             return 0.0
         return hexagon.area(pitch)
 
     def getDuctIP(self):
-        """
-        Returns the duct IP dimension.
-
-        .. impl:: IP dimension is retrievable
-            :id: I_ARMI_BLOCK_DIMS3
-            :implements: R_ARMI_BLOCK_DIMS
-        """
         duct = self.getComponent(Flags.DUCT, exact=True)
         return duct.getDimension("ip")
 
     def getDuctOP(self):
-        """
-        Returns the duct OP dimension.
-
-        .. impl:: OP dimension is retrievable
-            :id: I_ARMI_BLOCK_DIMS4
-            :implements: R_ARMI_BLOCK_DIMS
-        """
         duct = self.getComponent(Flags.DUCT, exact=True)
         return duct.getDimension("op")
 
     def initializePinLocations(self):
-        """Initialize pin locations."""
         nPins = self.getNumPins()
         self.p.pinLocation = list(range(1, nPins + 1))
 
@@ -2041,10 +1984,6 @@ class HexBlock(Block):
         """
         Returns the distance in cm between the outer most pin and the duct in a block.
 
-        .. impl:: Pin to duct gap of block is retrievable
-            :id: I_ARMI_BLOCK_DIMS5
-            :implements: R_ARMI_BLOCK_DIMS
-
         Parameters
         ----------
         cold : boolean
@@ -2225,10 +2164,6 @@ class HexBlock(Block):
         Assumes that the pin pitch is defined entirely by contacting cladding tubes
         and wire wraps. Grid spacers not yet supported.
 
-        .. impl:: Pin pitch within block is retrievable
-            :id: I_ARMI_BLOCK_DIMS6
-            :implements: R_ARMI_BLOCK_DIMS
-
         Parameters
         ----------
         cold : boolean
@@ -2260,12 +2195,7 @@ class HexBlock(Block):
             )
 
     def getWettedPerimeter(self):
-        """Return the total wetted perimeter of the block in cm.
-
-        .. impl:: Wetted perimeter of block is retrievable
-            :id: I_ARMI_BLOCK_DIMS7
-            :implements: R_ARMI_BLOCK_DIMS
-        """
+        """Return the total wetted perimeter of the block in cm."""
         # flags pertaining to hexagon components where the interior of the hexagon is wetted
         wettedHollowHexagonComponentFlags = (
             Flags.DUCT,
@@ -2338,12 +2268,7 @@ class HexBlock(Block):
         )
 
     def getFlowArea(self):
-        """Return the total flowing coolant area of the block in cm^2.
-
-        .. impl:: Flow area of block is retrievable
-            :id: I_ARMI_BLOCK_DIMS8
-            :implements: R_ARMI_BLOCK_DIMS
-        """
+        """Return the total flowing coolant area of the block in cm^2."""
         return self.getComponent(Flags.COOLANT, exact=True).getArea()
 
     def getHydraulicDiameter(self):
@@ -2360,10 +2285,6 @@ class HexBlock(Block):
 
         p = sqrt(3)*s
         l = 6*p/sqrt(3)
-
-        .. impl:: Hydraulic diameter of block is retrievable
-            :id: I_ARMI_BLOCK_DIMS9
-            :implements: R_ARMI_BLOCK_DIMS
         """
         return 4.0 * self.getFlowArea() / self.getWettedPerimeter()
 

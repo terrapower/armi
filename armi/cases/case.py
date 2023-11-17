@@ -336,10 +336,6 @@ class Case:
         It also activates supervisory things like code coverage checking, profiling,
         or tracing, if requested by users during debugging.
 
-        .. impl:: The case class allows for a generic ARMI simulation.
-            :id: I_ARMI_CASE
-            :implements: R_ARMI_CASE
-
         Notes
         -----
         Room for improvement: The coverage, profiling, etc. stuff can probably be moved
@@ -559,10 +555,6 @@ class Case:
     def checkInputs(self):
         """
         Checks ARMI inputs for consistency.
-
-        .. impl:: Perform validity checks on case inputs.
-            :id: I_ARMI_CASE_CHECK
-            :implements: R_ARMI_CASE_CHECK
 
         Returns
         -------

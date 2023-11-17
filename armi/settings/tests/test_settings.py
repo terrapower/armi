@@ -45,7 +45,6 @@ class DummyPlugin1(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineSettings():
-        """Define settings for the plugin."""
         return [
             setting.Setting(
                 "extendableOption",
@@ -62,7 +61,6 @@ class DummyPlugin2(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineSettings():
-        """Define settings for the plugin."""
         return [
             setting.Option("PLUGIN", "extendableOption"),
             setting.Default("PLUGIN", "extendableOption"),
@@ -73,7 +71,6 @@ class PluginAddsOptions(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineSettings():
-        """Define settings for the plugin."""
         return [
             setting.Option("MCNP", CONF_NEUTRONICS_KERNEL),
             setting.Option("MCNP_Slab", CONF_NEUTRONICS_KERNEL),
@@ -264,13 +261,7 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         self.assertEqual(cs["extendableOption"], "PLUGIN")
 
     def test_default(self):
-        """
-        Make sure default updating mechanism works.
-
-        .. test:: The setting default is mandatory.
-            :id: T_ARMI_SETTINGS_DEFAULTS
-            :tests: R_ARMI_SETTINGS_DEFAULTS
-        """
+        """Make sure default updating mechanism works."""
         a = setting.Setting("testsetting", 0)
         newDefault = setting.Default(5, "testsetting")
         a.changeDefault(newDefault)

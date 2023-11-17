@@ -24,7 +24,6 @@ CONF_FISSION_PRODUCT_LIBRARY_NAME = "fpModelLibrary"
 
 
 def defineSettings():
-    """Define settings for the plugin."""
     settings = [
         setting.Setting(
             CONF_FP_MODEL,

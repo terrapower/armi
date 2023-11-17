@@ -26,17 +26,9 @@ class TestFlags(unittest.TestCase):
         self._help_fromString(flags.Flags.fromStringIgnoreErrors)
         self.assertEqual(flags.Flags.fromStringIgnoreErrors("invalid"), flags.Flags(0))
 
-    def test_flagsToAndFromString(self):
-        """
-        Convert flag to and from string for serialization.
-
-        .. test:: Convert flag to a string
-            :id: T_ARMI_FLAG_TO_STR
-            :tests: R_ARMI_FLAG_TO_STR
-        """
+    def test_toString(self):
         f = flags.Flags.FUEL
         self.assertEqual(flags.Flags.toString(f), "FUEL")
-        self.assertEqual(f, flags.Flags.fromString("FUEL"))
 
     def test_fromStringStrict(self):
         self._help_fromString(flags.Flags.fromString)

@@ -70,12 +70,6 @@ class SettingsReaderTests(unittest.TestCase):
         self.assertEqual(getattr(reader, "path"), "")
 
     def test_readFromFile(self):
-        """Read settings from a (human-readable) YAML file.
-
-        .. test:: The setting file is in a human-readable plain text file.
-            :id: T_ARMI_SETTINGS_IO_TXT
-            :tests: R_ARMI_SETTINGS_IO_TXT
-        """
         with directoryChangers.TemporaryDirectoryChanger():
             inPath = os.path.join(TEST_ROOT, "armiRun.yaml")
             outPath = "test_readFromFile.yaml"

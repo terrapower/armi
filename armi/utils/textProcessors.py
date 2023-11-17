@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Utility classes and functions for manipulating text files."""
-import io
 import os
 import re
+import io
 import pathlib
 from typing import List, Tuple, Union, Optional, TextIO
 
@@ -554,7 +554,7 @@ class TextProcessor:
             self.f = SmartList(f)
 
     def reset(self):
-        """Rewinds the file so you can search through it again."""
+        r"""Rewinds the file so you can search through it again."""
         self.f.seek(0)
 
     def __repr__(self):
@@ -567,7 +567,7 @@ class TextProcessor:
         pass
 
     def fsearch(self, pattern, msg=None, killOn=None, textFlag=False):
-        """
+        r"""
         Searches file f for pattern and displays msg when found. Returns line in which
         pattern is found or FALSE if no pattern is found.
         Stops searching if finds killOn first.
@@ -619,7 +619,7 @@ class TextProcessor:
 
 
 class SmartList:
-    """A list that does stuff like files do i.e. remembers where it was, can seek, etc.
+    r"""A list that does stuff like files do i.e. remembers where it was, can seek, etc.
     Actually this is pretty slow. so much for being smart. nice idea though.
     """
 

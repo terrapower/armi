@@ -59,6 +59,7 @@ Some things you may want to bring in via a plugin includes:
 
 Warning
 -------
+
 The plugin system was developed to support improved collaboration.  It is new and should
 be considered under development. The API is subject to change as the version of the ARMI
 framework approaches 1.0.
@@ -167,11 +168,7 @@ class ArmiPlugin:
     @HOOKSPEC
     def defineParameters() -> Dict:
         """
-        Define additional parameters for the reactor data model.
-
-        .. impl:: Plugins can add parameters to the reactor data model.
-            :id: I_ARMI_PLUGIN_PARAMS
-            :implements: R_ARMI_PLUGIN_PARAMS
+        Function for defining additional parameters.
 
         Returns
         -------
@@ -375,10 +372,6 @@ class ArmiPlugin:
         kernel is among the available options. If a plugin were to provide a new
         neutronics kernel (let's say MCNP), it should also define a new option to tell
         the settings system that ``"MCNP"`` is a valid option.
-
-        .. impl:: Plugins can add settings to the run.
-            :id: I_ARMI_PLUGIN_SETTINGS
-            :implements: R_ARMI_PLUGIN_SETTINGS
 
         Returns
         -------

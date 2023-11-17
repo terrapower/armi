@@ -34,7 +34,6 @@ class UserPluginFlags(plugins.UserPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineFlags():
-        """Function to provide new Flags definitions."""
         return {"SPECIAL": utils.flags.auto()}
 
 
@@ -44,7 +43,6 @@ class UserPluginFlags2(plugins.UserPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineFlags():
-        """Function to provide new Flags definitions."""
         return {"FLAG2": utils.flags.auto()}
 
 
@@ -54,7 +52,6 @@ class UserPluginFlags3(plugins.UserPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineFlags():
-        """Function to provide new Flags definitions."""
         return {"FLAG3": utils.flags.auto()}
 
 
@@ -77,7 +74,6 @@ class UserPluginBadDefinesSettings(plugins.UserPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineSettings():
-        """Define settings for the plugin."""
         return [1, 2, 3]
 
 
@@ -87,7 +83,6 @@ class UserPluginBadDefineParameterRenames(plugins.UserPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineParameterRenames():
-        """Return a mapping from old parameter names to new parameter names."""
         return {"oldType": "type"}
 
 
@@ -101,7 +96,6 @@ class UserPluginOnProcessCoreLoading(plugins.UserPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def onProcessCoreLoading(core, cs, dbLoad):
-        """Function to call whenever a Core object is newly built."""
         blocks = core.getBlocks(Flags.FUEL)
         for b in blocks:
             b.p.height += 1.0
@@ -116,7 +110,6 @@ class UpInterface(interfaces.Interface):
     name = "UpInterface"
 
     def interactEveryNode(self, cycle, node):
-        """Logic to be carried out at every time node in the simulation."""
         self.r.core.p.power += 100
 
 
@@ -126,7 +119,6 @@ class UserPluginWithInterface(plugins.UserPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def exposeInterfaces(cs):
-        """Function for exposing interface(s) to other code."""
         return [
             interfaces.InterfaceInfo(
                 interfaces.STACK_ORDER.PREPROCESSING, UpInterface, {"enabled": True}

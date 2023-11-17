@@ -34,13 +34,7 @@ class TestRunLog(unittest.TestCase):
         self.assertEqual(verbosityRank, logging.DEBUG)
 
     def test_setVerbosityFromString(self):
-        """
-        Test that the log verbosity can be set with a string.
-
-        .. test:: The run log has configurable verbosity.
-            :id: T_ARMI_LOG0
-            :tests: R_ARMI_LOG
-        """
+        """Test that the log verbosity can be set with a string."""
         log = runLog._RunLog(1)
         expectedStrVerbosity = "error"
         verbosityRank = log.getLogVerbosityRank(expectedStrVerbosity)
@@ -85,7 +79,6 @@ class TestRunLog(unittest.TestCase):
         log.log("debug", "You shouldn't see this.", single=False, label=None)
         log.log("warning", "Hello, ", single=False, label=None)
         log.log("error", "world!", single=False, label=None)
-
         log.logger.flush()
         log.logger.close()
         runLog.close(99)
@@ -213,16 +206,7 @@ class TestRunLog(unittest.TestCase):
         runLog.close(0)
 
     def test_setVerbosity(self):
-        """Let's test the setVerbosity() method carefully.
-
-        .. test:: The run log has configurable verbosity.
-            :id: T_ARMI_LOG1
-            :tests: R_ARMI_LOG
-
-        .. test:: The run log can log to stream.
-            :id: T_ARMI_LOG_IO0
-            :tests: R_ARMI_LOG_IO
-        """
+        """Let's test the setVerbosity() method carefully."""
         with mockRunLogs.BufferLog() as mock:
             # we should start with a clean slate
             self.assertEqual("", mock.getStdout())
@@ -323,17 +307,7 @@ class TestRunLog(unittest.TestCase):
             mock.emptyStdout()
 
     def test_concatenateLogs(self):
-        """
-        Simple test of the concat logs function.
-
-        .. test:: The run log combines logs from different processes.
-            :id: T_ARMI_LOG_MPI
-            :tests: R_ARMI_LOG_MPI
-
-        .. test:: The run log can log to file.
-            :id: T_ARMI_LOG_IO1
-            :tests: R_ARMI_LOG_IO
-        """
+        """Simple test of the concat logs function."""
         with TemporaryDirectoryChanger():
             # create the log dir
             logDir = "test_concatenateLogs"

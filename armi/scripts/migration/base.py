@@ -72,7 +72,7 @@ class Migration:
         The operative subclasses implementing this method are below.
         """
         if not os.path.exists(self.path):
-            raise ValueError(f"File {self.path} does not exist")
+            raise ValueError("File {} does not exist".format(self.path))
 
     def _applyToStream(self):
         """Add actual migration code here in a subclass."""
@@ -88,7 +88,8 @@ class Migration:
         while os.path.exists(self.path):
             # don't overwrite files (could be blueprints)
             name, ext = os.path.splitext(self.path)
-            self.path = name + f"{i}" + ext
+            name += f"{i}"
+            self.path = name + ext
             i += 1
 
         with open(self.path, "w") as f:
@@ -112,6 +113,16 @@ class SettingsMigration(Migration):
 
     def _loadStreamFromPath(self):
         Migration._loadStreamFromPath(self)
+        self.stream = open(self.path)
+
+
+class GeomMigration(Migration):
+    """Migration for non-blueprints geometry input."""
+
+    def _loadStreamFromPath(self):
+        Migration._loadStreamFromPath(self)
+        cs = caseSettings.Settings(fName=self.path)
+        self.path = cs["geomFile"]
         self.stream = open(self.path)
 
 

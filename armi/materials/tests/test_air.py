@@ -178,12 +178,7 @@ REFERENCE_THERMAL_CONDUCTIVITY_mJ_PER_M_K = [
 
 
 class Test_Air(unittest.TestCase):
-    """unit tests for air materials.
-
-    .. test:: There is a base class for fluid materials.
-        :id: T_ARMI_MAT_FLUID1
-        :tests: R_ARMI_MAT_FLUID
-    """
+    """unit tests for air materials."""
 
     def test_pseudoDensity(self):
         """

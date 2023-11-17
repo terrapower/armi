@@ -87,12 +87,7 @@ class TestBlueprints(unittest.TestCase):
         self.assertAlmostEqual(mox["PU239"], 0.00286038)
 
     def test_componentDimensions(self):
-        """Tests that the user can specify the dimensions of a component with arbitrary fidelity.
-
-        .. test:: Test that a component can be correctly created from a blueprint file
-            :id: T_ARMI_BP_COMP
-            :tests: R_ARMI_BP_COMP
-        """
+        """Tests that the user can specifiy the dimensions of a component with arbitray fidelity."""
         fuelAssem = self.blueprints.constructAssem(self.cs, name="igniter fuel")
         fuel = fuelAssem.getComponents(Flags.FUEL)[0]
         self.assertAlmostEqual(fuel.getDimension("od", cold=True), 0.86602)

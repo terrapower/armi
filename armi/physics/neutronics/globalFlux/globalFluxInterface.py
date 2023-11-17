@@ -334,10 +334,6 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
 class GlobalFluxOptions(executers.ExecutionOptions):
     """Data structure representing common options in Global Flux Solvers.
 
-    .. impl:: Options for neutronics solvers.
-        :id: I_ARMI_FLUX_OPTIONS
-        :implements: R_ARMI_FLUX_OPTIONS
-
     Attributes
     ----------
     adjoint : bool
@@ -531,10 +527,6 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
 
         In both cases, we need to undo the modifications between reading the output
         and applying the result to the data model.
-
-        .. impl:: Ensure the mesh in the reactor model is appropriate for neutronics solver execution.
-            :id: I_ARMI_FLUX_RX_RATES
-            :implements: R_ARMI_FLUX_RX_RATES
 
         See Also
         --------
@@ -1251,10 +1243,6 @@ def computeDpaRate(mgFlux, dpaXs):
 def calcReactionRates(obj, keff, lib):
     r"""
     Compute 1-group reaction rates for this object (usually a block).
-
-    .. impl:: Return the reaction rates for a given ArmiObject.
-        :id: I_ARMI_FLUX_RX_RATES
-        :implements: R_ARMI_FLUX_RX_RATES
 
     Parameters
     ----------

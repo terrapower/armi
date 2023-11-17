@@ -138,20 +138,16 @@ class MockBlock(HexBlock):
         self._r = r
 
     def getVolume(self, *args, **kwargs):
-        """Return the volume of a block."""
         return 1.0
 
     def getNuclideNumberDensities(self, nucNames):
-        """Return a list of number densities in atoms/barn-cm for the nuc names requested."""
         return [self.density.get(nucName, 0.0) for nucName in nucNames]
 
     def _getNdensHelper(self):
         return {nucName: density for nucName, density in self.density.items()}
 
     def setNumberDensity(self, key, val, *args, **kwargs):
-        """Set the number density of this nuclide to this value."""
         self.density[key] = val
 
     def getNuclides(self):
-        """Determine which nuclides are present in this armi block."""
         return self.density.keys()

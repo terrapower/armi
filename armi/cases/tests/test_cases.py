@@ -262,12 +262,7 @@ class TestArmiCase(unittest.TestCase):
 
 
 class TestCaseSuiteDependencies(unittest.TestCase):
-    """CaseSuite tests.
-
-    .. test:: Dependence allows for one case to start after the completion of another.
-        :id: T_ARMI_CASE_SUITE0
-        :tests: R_ARMI_CASE_SUITE
-    """
+    """CaseSuite tests."""
 
     def setUp(self):
         self.suite = cases.CaseSuite(settings.Settings())
@@ -288,17 +283,6 @@ class TestCaseSuiteDependencies(unittest.TestCase):
         """If you pass an invalid path, the clone can't happen, but it won't do any damage either."""
         with self.assertRaises(RuntimeError):
             _clone = self.suite.clone("test_clone")
-
-    def test_checkInputs(self):
-        """
-        Test the checkInputs() method on a couple of cases.
-
-        .. test:: Test the checkInputs method.
-            :id: T_ARMI_CASE_CHECK
-            :tests: R_ARMI_CASE_CHECK
-        """
-        self.c1.checkInputs()
-        self.c2.checkInputs()
 
     def test_dependenciesWithObscurePaths(self):
         """
@@ -463,26 +447,10 @@ class MultiFilesInterfaces(interfaces.Interface):
         return {settingName: cs[settingName]}
 
 
-class TestPluginWithDuplicateSetting(plugins.ArmiPlugin):
-    @staticmethod
-    @plugins.HOOKIMPL
-    def defineSettings():
-        """Define a duplicate setting."""
-        return [
-            settings.setting.Setting(
-                "power",
-                default=123,
-                label="power",
-                description="duplicate power",
-            )
-        ]
-
-
 class TestPluginForCopyInterfacesMultipleFiles(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineSettings():
-        """Define settings for the plugin."""
         return [
             settings.setting.Setting(
                 "multipleFilesSetting",
@@ -495,7 +463,6 @@ class TestPluginForCopyInterfacesMultipleFiles(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def exposeInterfaces(cs):
-        """A plugin is mostly just a vehicle to add Interfaces to an Application."""
         return [
             interfaces.InterfaceInfo(
                 interfaces.STACK_ORDER.PREPROCESSING,
@@ -581,21 +548,6 @@ class TestCopyInterfaceInputs(unittest.TestCase):
             )
             self.assertFalse(os.path.exists(newSettings[testSetting]))
             self.assertEqual(newSettings[testSetting], fakeShuffle)
-
-    def test_failOnDuplicateSetting(self):
-        """
-        That that if a plugin attempts to add a duplicate setting, it raises an error.
-
-        .. test:: Plugins cannot register duplicate settings.
-            :id: T_ARMI_SETTINGS_UNIQUE
-            :tests: R_ARMI_SETTINGS_UNIQUE
-        """
-        # register the new Plugin
-        app = getApp()
-        app.pluginManager.register(TestPluginWithDuplicateSetting)
-
-        with self.assertRaises(ValueError):
-            _ = settings.Settings(ARMI_RUN_PATH)
 
     def test_copyInterfaceInputs_multipleFiles(self):
         # register the new Plugin

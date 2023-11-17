@@ -19,6 +19,9 @@ from armi import runLog
 from armi.operators import settingsValidation
 from armi.physics.neutronics.const import NEUTRON
 from armi.physics.neutronics.energyGroups import GROUP_STRUCTURE
+from armi.scripts.migration.crossSectionBlueprintsToSettings import (
+    migrateCrossSectionsFromBlueprints,
+)
 from armi.physics.neutronics import LatticePhysicsFrequency
 from armi.settings import setting
 from armi.utils import directoryChangers
@@ -507,6 +510,20 @@ def getNeutronicsSettingValidators(inspector):
             ),
             "Would you like to auto-correct this to the full name?",
             migrateDpaGridPlate,
+        )
+    )
+
+    queries.append(
+        settingsValidation.Query(
+            lambda: inspector.cs[CONF_LOADING_FILE]
+            and _blueprintsHasOldXSInput(inspector),
+            "The specified blueprints input file '{0}' contains compound cross section settings. "
+            "".format(inspector.cs[CONF_LOADING_FILE]),
+            "Automatically move them to the settings file, {}? WARNING: if multiple settings files point "
+            "to this blueprints input you must manually update the others.".format(
+                inspector.cs.path
+            ),
+            lambda: migrateCrossSectionsFromBlueprints(inspector.cs),
         )
     )
 

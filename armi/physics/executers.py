@@ -17,12 +17,13 @@ Executors are useful for having a standard way to run physics calculations.
 They may involve external codes (with inputs/execution/output) or in-memory
 data pathways.
 """
-import hashlib
-import os
 
+import os
+import hashlib
+
+from armi.utils import directoryChangers, pathTools
 from armi import runLog
 from armi.context import getFastPath, MPI_RANK
-from armi.utils import directoryChangers, pathTools
 
 
 class ExecutionOptions:

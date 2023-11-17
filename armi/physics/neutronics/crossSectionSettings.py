@@ -54,7 +54,6 @@ CONF_REACTION_DRIVER = "nuclideReactionDriver"
 CONF_XSID = "xsID"
 CONF_XS_EXECUTE_EXCLUSIVE = "xsExecuteExclusive"
 CONF_XS_PRIORITY = "xsPriority"
-CONF_COMPONENT_AVERAGING = "averageByComponent"
 CONF_XS_MAX_ATOM_NUMBER = "xsMaxAtomNumber"
 CONF_MIN_DRIVER_DENSITY = "minDriverDensity"
 
@@ -114,7 +113,6 @@ _VALID_INPUTS_BY_GEOMETRY_TYPE = {
         CONF_BLOCKTYPES,
         CONF_BLOCK_REPRESENTATION,
         CONF_EXTERNAL_FLUX_FILE_LOCATION,
-        CONF_COMPONENT_AVERAGING,
         CONF_XS_EXECUTE_EXCLUSIVE,
         CONF_XS_PRIORITY,
         CONF_XS_MAX_ATOM_NUMBER,
@@ -126,7 +124,6 @@ _VALID_INPUTS_BY_GEOMETRY_TYPE = {
         CONF_BLOCKTYPES,
         CONF_BLOCK_REPRESENTATION,
         CONF_EXTERNAL_FLUX_FILE_LOCATION,
-        CONF_COMPONENT_AVERAGING,
         CONF_XS_EXECUTE_EXCLUSIVE,
         CONF_XS_PRIORITY,
         CONF_XS_MAX_ATOM_NUMBER,
@@ -144,7 +141,6 @@ _VALID_INPUTS_BY_GEOMETRY_TYPE = {
         CONF_BLOCKTYPES,
         CONF_BLOCK_REPRESENTATION,
         CONF_EXTERNAL_FLUX_FILE_LOCATION,
-        CONF_COMPONENT_AVERAGING,
         CONF_XS_EXECUTE_EXCLUSIVE,
         CONF_XS_PRIORITY,
         CONF_XS_MAX_ATOM_NUMBER,
@@ -160,7 +156,6 @@ _VALID_INPUTS_BY_GEOMETRY_TYPE = {
         CONF_EXTERNAL_RINGS,
         CONF_BLOCK_REPRESENTATION,
         CONF_EXTERNAL_FLUX_FILE_LOCATION,
-        CONF_COMPONENT_AVERAGING,
         CONF_XS_EXECUTE_EXCLUSIVE,
         CONF_XS_PRIORITY,
         CONF_XS_MAX_ATOM_NUMBER,
@@ -193,7 +188,6 @@ _SINGLE_XS_SCHEMA = vol.Schema(
         vol.Optional(CONF_XS_PRIORITY): vol.Coerce(float),
         vol.Optional(CONF_XS_MAX_ATOM_NUMBER): vol.Coerce(int),
         vol.Optional(CONF_MIN_DRIVER_DENSITY): vol.Coerce(float),
-        vol.Optional(CONF_COMPONENT_AVERAGING): bool,
     }
 )
 
@@ -462,7 +456,6 @@ class XSModelingOptions:
         xsExecuteExclusive=None,
         xsPriority=None,
         xsMaxAtomNumber=None,
-        averageByComponent=False,
         minDriverDensity=0.0,
     ):
         self.xsID = xsID
@@ -485,7 +478,6 @@ class XSModelingOptions:
         self.meshSubdivisionsPerCm = meshSubdivisionsPerCm
         self.xsMaxAtomNumber = xsMaxAtomNumber
         self.minDriverDensity = minDriverDensity
-        self.averageByComponent = averageByComponent
         # these are related to execution
         self.xsExecuteExclusive = xsExecuteExclusive
         self.xsPriority = xsPriority
@@ -696,7 +688,6 @@ class XSModelingOptions:
 
         defaults[CONF_XS_EXECUTE_EXCLUSIVE] = False
         defaults[CONF_XS_PRIORITY] = 5
-        defaults[CONF_COMPONENT_AVERAGING] = False
 
         for attrName, defaultValue in defaults.items():
             currentValue = getattr(self, attrName)

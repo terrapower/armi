@@ -222,10 +222,6 @@ class DatabaseInterface(interfaces.Interface):
         `startCycle` and `startNode`, having loaded the state from all cycles prior
         to that in the requested database.
 
-        .. impl:: Runs at a particular timenode can be re-instantiated for a snapshot.
-            :id: I_ARMI_SNAPSHOT_RESTART
-            :implements: R_ARMI_SNAPSHOT_RESTART
-
         Notes
         -----
         Mixing the use of simple vs detailed cycles settings is allowed, provided
