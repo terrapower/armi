@@ -24,6 +24,10 @@ def getNDensFromMasses(rho, massFracs, normalize=False):
     """
     Convert density (g/cc) and massFracs vector into a number densities vector (#/bn-cm).
 
+    .. impl:: Get number densities
+        :id: I_ARMI_UTIL_MASS2N_DENS
+        :implements: R_ARMI_UTIL_MASS2N_DENS
+
     Parameters
     ----------
     rho : float
@@ -168,6 +172,10 @@ def formatMaterialCard(
     """
     Formats nuclides and densities into a MCNP material card.
 
+    .. impl:: Create MCNP material card
+        :id: I_ARMI_UTIL_MCNP_MAT_CARD
+        :implements: R_ARMI_UTIL_MCNP_MAT_CARD
+
     Parameters
     ----------
     densities : dict
@@ -196,6 +204,7 @@ def formatMaterialCard(
         mCard = ["m{matNum}\n".format(matNum=matNum)]
     else:
         mCard = ["m{}\n"]
+
     for nuc, dens in sorted(densities.items()):
         # skip LFPs and Dummies.
         if isinstance(nuc, (nuclideBases.LumpNuclideBase)):
@@ -214,6 +223,7 @@ def formatMaterialCard(
 
     if mcnp6Compatible:
         mCard.append("      nlib={lib}c\n".format(lib=mcnpLibrary))
+
     return mCard
 
 
@@ -250,7 +260,11 @@ def filterNuclideList(nuclideVector, nuclides):
 
 def normalizeNuclideList(nuclideVector, normalization=1.0):
     """
-    normalize the nuclide vector.
+    Normalize the nuclide vector.
+
+    .. impl:: Normalize nuclide vector
+        :id: I_ARMI_UTIL_DENS_TOOLS
+        :implements: R_ARMI_UTIL_DENS_TOOLS
 
     Parameters
     ----------
@@ -284,6 +298,10 @@ def expandElementalMassFracsToNuclides(
     Notes
     -----
     This indirectly updates number densities through mass fractions.
+
+    .. impl:: Expand mass fractions to nuclides
+        :id: I_ARMI_UTIL_EXP_MASS_FRACS
+        :implements: R_ARMI_UTIL_EXP_MASS_FRACS
 
     Parameters
     ----------

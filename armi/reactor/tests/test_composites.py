@@ -39,7 +39,9 @@ from armi.tests import ISOAA_PATH
 
 class MockBP:
     allNuclidesInProblem = set(nuclideBases.byName.keys())
+    """:meta hide-value:"""
     activeNuclides = allNuclidesInProblem
+    """:meta hide-value:"""
     inactiveNuclides = set()
     elementsToExpand = set()
     customIsotopics = {}

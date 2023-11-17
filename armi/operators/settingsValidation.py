@@ -42,7 +42,13 @@ from armi.utils.mathematics import expandRepeatedFloats
 
 
 class Query:
-    """An individual query."""
+    """
+    An individual setting validator.
+
+    .. impl:: Rules to validate and customize a setting's behavior.
+        :id: I_ARMI_SETTINGS_RULES
+        :implements: R_ARMI_SETTINGS_RULES
+    """
 
     def __init__(self, condition, statement, question, correction):
         """

@@ -59,6 +59,9 @@ class Setting:
     the custom object and when you call ``dump``, it will be serialized.
     Just accessing the value will return the actual object in this case.
 
+    .. impl:: The setting default is mandatory.
+        :id: I_ARMI_SETTINGS_DEFAULTS
+        :implements: R_ARMI_SETTINGS_DEFAULTS
     """
 
     def __init__(

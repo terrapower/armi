@@ -775,7 +775,13 @@ class TestDetermineTargetComponent(AxialExpansionTestBase, unittest.TestCase):
             self.assertEqual(the_exception.error_code, 3)
 
     def test_manuallySetTargetComponent(self):
-        """Ensures that target components can be manually set (is done in practice via blueprints)."""
+        """
+        Ensures that target components can be manually set (is done in practice via blueprints).
+
+        .. test:: Allow user-specified target axial expansion components on a given block.
+            :id: T_ARMI_MANUAL_TARG_COMP
+            :tests: R_ARMI_MANUAL_TARG_COMP
+        """
         b = HexBlock("dummy", height=10.0)
         ductDims = {"Tinput": 25.0, "Thot": 25.0, "op": 17, "ip": 0.0, "mult": 1.0}
         duct = Hexagon("duct", "FakeMat", **ductDims)
@@ -833,6 +839,10 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
 
     def test_coldAssemblyExpansion(self):
         """Block heights are cold and should be expanded.
+
+        .. test:: Preserve the total height of a compatible ARMI assembly.
+            :id: T_ARMI_ASSEM_HEIGHT_PRES
+            :tests: R_ARMI_ASSEM_HEIGHT_PRES
 
         Notes
         -----

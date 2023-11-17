@@ -61,9 +61,11 @@ CPUs, you can either pass the first 10 values out of the list and keep sending g
 are all sent (multiple sets of transmitions) or you can split the data up into 10 evenly-populated groups (single
 transmition to each CPU). This is called *load balancing*. 
 
-ARMI has utilities that can help called :py:func:`armi.utils.chunks` and :py:func:`armi.iterables.flatten`. 
-Given an arbitrary list, ``chunks`` breaks it up into a certain number of chunks and ``unchunk`` does the 
+ARMI has utilities that can help called :py:func:`armi.utils.iterables.chunk` and :py:func:`armi.utils.iterables.flatten`.
+Given an arbitrary list, ``chunk`` breaks it up into a certain number of chunks and ``unchunk`` does the
 opposite to reassemble the original list after processing. Check it out::
+
+    from armi.utils import iterables
 
     if rank == 0:
         # primary. Make data and send it.
@@ -130,7 +132,7 @@ MPI transmit the results, they will not survive on the primary node. For instanc
 a block parameter (e.g. ``b.p.paramName = 10.0)``, these **will not** be set on the primary! There are a few
 mechanisms that can help you get the data back to the primary reactor.
 
-.. note:: If you want similar capabilities for objects that are not blocks, take another look at :py:func:`armi.utils.chunks`.
+.. note:: If you want similar capabilities for objects that are not blocks, take another look at :py:func:`armi.utils.iterables.chunk`.
 
 
 Example using ``bcast``

@@ -26,6 +26,7 @@ CONF_TIMELINE_INCLUSION_CUTOFF = "timelineInclusionCutoff"
 
 
 def defineSettings():
+    """Define settings for the interface."""
     settings = [
         setting.Setting(
             CONF_GEN_REPORTS,

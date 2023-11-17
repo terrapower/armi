@@ -25,8 +25,7 @@ customizing much of the Framework's behavior.
     otherwise be global state. The ARMI Framework has historically made heavy use of
     global state (e.g., :py:mod:`armi.nucDirectory.nuclideBases`), and it will take
     quite a bit of effort to refactor the code to access such things through an App
-    object. We are planning to do this, but for now this App class is somewhat
-    rudimentary.
+    object.
 """
 # ruff: noqa: E402
 from typing import Dict, Optional, Tuple, List
@@ -121,7 +120,13 @@ class App:
         return self._pm
 
     def getSettings(self) -> Dict[str, Setting]:
-        """Return a dictionary containing all Settings defined by the framework and all plugins."""
+        """
+        Return a dictionary containing all Settings defined by the framework and all plugins.
+
+        .. impl:: Applications will not allow duplicate settings.
+            :id: I_ARMI_SETTINGS_UNIQUE
+            :implements: R_ARMI_SETTINGS_UNIQUE
+        """
         # Start with framework settings
         settingDefs = {
             setting.name: setting for setting in fwSettings.getFrameworkSettings()

@@ -12,25 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Collection of code that needs to be executed before most ARMI components are safe to
-import.
-"""
+"""Code that needs to be executed before most ARMI components are safe to import."""
 
 import sys
 import tabulate
 
-# This needs to happen pretty darn early, as one of it's purposes is to provide a better
-# python version warning than "invalid syntax". Maybe this is enough of a crutch that we
-# should get rid of it...
+# This is a courtesy, to help people who accidently run ARMI with an old version of Python.
 if (
     sys.version_info.major < 3
     or sys.version_info.major == 3
-    and sys.version_info.minor < 6
+    and sys.version_info.minor < 7
 ):
     raise RuntimeError(
-        "ARMI highly recommends using Python 3.7. Are you sure you are using the correct "
-        "interpreter?\nUsing: {}".format(sys.executable)
+        "ARMI highly recommends using Python 3.9 or 3.11. Are you sure you are using the "
+        f"correct interpreter?\nYou are using: {sys.executable}"
     )
 
 

@@ -322,6 +322,10 @@ def concatenateLogs(logDir=None):
     Concatenate the armi run logs and delete them.
 
     Should only ever be called by parent.
+
+    .. impl:: Log files from different processes are combined.
+        :id: I_ARMI_LOG_MPI
+        :implements: R_ARMI_LOG_MPI
     """
     if logDir is None:
         logDir = LOG_DIR
@@ -494,6 +498,14 @@ class RunLogger(logging.Logger):
 
     1. Giving users the option to de-duplicate warnings
     2. Piping stderr to a log file
+
+    .. impl:: A simulation-wide log, with user-specified verbosity.
+        :id: I_ARMI_LOG
+        :implements: R_ARMI_LOG
+
+    .. impl:: Logging is done to the screen and to file.
+        :id: I_ARMI_LOG_IO
+        :implements: R_ARMI_LOG_IO
     """
 
     FMT = "%(levelname)s%(message)s"

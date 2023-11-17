@@ -19,7 +19,6 @@ Hexagons are fundamental to advanced reactors.
 
 .. image:: /.static/hexagon.png
     :width: 100%
-
 """
 
 import math
@@ -30,7 +29,17 @@ SQRT3 = math.sqrt(3.0)
 
 
 def area(pitch):
-    """Area of a hex given the flat-to-flat pitch."""
+    """
+    Area of a hex given the flat-to-flat pitch.
+
+    .. impl:: Compute hexagonal area
+        :id: I_ARMI_UTIL_HEXAGON0
+        :implements: R_ARMI_UTIL_HEXAGON
+
+    Notes
+    -----
+    The pitch is the distance between the center of the hexagons in the lattice.
+    """
     return SQRT3 / 2.0 * pitch**2
 
 
@@ -45,6 +54,10 @@ def side(pitch):
         \frac{s}{2}^2 + \frac{p}{2}^2 = s^2
 
     which you can solve to find p = sqrt(3)*s
+
+    Notes
+    -----
+    The pitch is the distance between the center of the hexagons in the lattice.
     """
     return pitch / SQRT3
 
@@ -79,11 +92,18 @@ def corners(rotation=0):
 
 
 def pitch(side):
+    """
+    Calculate the pitch from the length of a hexagon side.
+
+    Notes
+    -----
+    The pitch is the distance between the center of the hexagons in the lattice.
+    """
     return side * SQRT3
 
 
 def numRingsToHoldNumCells(numCells):
-    r"""
+    """
     Determine the number of rings in a hexagonal grid with this many hex cells.
     If the number of pins don't fit exactly into any ring, returns the ring just large
     enough to fit them.
@@ -113,5 +133,10 @@ def numRingsToHoldNumCells(numCells):
 
 
 def numPositionsInRing(ring):
-    """Number of positions in ring (starting at 1) of a hex lattice."""
+    """Number of positions in ring (starting at 1) of a hex lattice.
+
+    .. impl:: Compute hexagonal area
+        :id: I_ARMI_UTIL_HEXAGON1
+        :implements: R_ARMI_UTIL_HEXAGON
+    """
     return (ring - 1) * 6 if ring != 1 else 1

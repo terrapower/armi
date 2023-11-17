@@ -14,15 +14,12 @@
 
 """
 This defines a Settings object that acts mostly like a dictionary. It
-is meant to be treated mostly like a singleton, where each custom ARMI
-object has access to it. It contains global user settings like the core
-power level, the input file names, the number of cycles to run, the run type,
-the environment setup, and hundreds of other things.
+is meant so that each ARMI run has one-and-only-one Settings object. It records
+user settings like the core power level, the input file names, the number of cycles to
+run, the run type, the environment setup, and hundreds of other things.
 
-A settings object can be saved as or loaded from an YAML file. The ARMI GUI is designed to
+A Settings object can be saved as or loaded from an YAML file. The ARMI GUI is designed to
 create this settings file, which is then loaded by an ARMI process on the cluster.
-
-A primary case settings is created as ``masterCs``.
 """
 import io
 import logging
@@ -37,8 +34,6 @@ from armi.settings.setting import Setting
 from armi.utils import pathTools
 from armi.utils.customExceptions import NonexistentSetting
 
-DEP_WARNING = "Deprecation Warning: Settings will not be mutable mid-run: {}"
-
 SIMPLE_CYCLES_INPUTS = {
     "availabilityFactor",
     "availabilityFactors",
@@ -51,13 +46,17 @@ SIMPLE_CYCLES_INPUTS = {
 
 class Settings:
     """
-    A container for global settings, such as case title, power level, and many run options.
+    A container for run settings, such as case title, power level, and many more.
 
     It is accessible to most ARMI objects through self.cs (for 'Case Settings').
     It acts largely as a dictionary, and setting values are accessed by keys.
 
-    The settings object has a 1-to-1 correspondence with the ARMI settings input file.
+    The Settings object has a 1-to-1 correspondence with the ARMI settings input file.
     This file may be created by hand or by the GUI in submitter.py.
+
+    .. impl:: Settings are used to define an ARMI run.
+        :id: I_ARMI_SETTING0
+        :implements: R_ARMI_SETTING
 
     Notes
     -----
@@ -68,7 +67,7 @@ class Settings:
 
     def __init__(self, fName=None):
         """
-        Instantiate a settings object.
+        Instantiate a Settings object.
 
         Parameters
         ----------
@@ -426,7 +425,7 @@ class Settings:
         return writer
 
     def updateEnvironmentSettingsFrom(self, otherCs):
-        r"""Updates the environment settings in this object based on some other cs
+        """Updates the environment settings in this object based on some other cs
         (from the GUI, most likely).
 
         Parameters

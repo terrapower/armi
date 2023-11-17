@@ -63,7 +63,7 @@ blocks:
             op: 16.75
     other fuel: &block_fuel_other
         grid name: fuelgrid
-        flags: fuel test
+        flags: fuel test depletable
         fuel:
             shape: Circle
             material: UZr
@@ -255,7 +255,12 @@ FULL_BP_GRID = (
 
 
 class TestGriddedBlock(unittest.TestCase):
-    """Tests for a block that has components in a lattice."""
+    """Tests for a block that has components in a lattice.
+
+    .. test:: Create block with blueprint file
+        :id: T_ARMI_BP_BLOCK
+        :tests: R_ARMI_BP_BLOCK
+    """
 
     def setUp(self):
         self.cs = settings.Settings()
@@ -301,6 +306,13 @@ class TestGriddedBlock(unittest.TestCase):
         self.assertEqual(duct.getDimension("mult"), 1.0)
 
     def test_explicitFlags(self):
+        """
+        Test flags are created from blueprint file.
+
+        .. test:: Test depletable nuc flags
+            :id: T_ARMI_BP_NUC_FLAGS
+            :tests: R_ARMI_BP_NUC_FLAGS
+        """
         a1 = self.blueprints.assemDesigns.bySpecifier["IC"].construct(
             self.cs, self.blueprints
         )
@@ -312,7 +324,9 @@ class TestGriddedBlock(unittest.TestCase):
         )
 
         self.assertTrue(b1.hasFlags(Flags.FUEL, exact=True))
-        self.assertTrue(b2.hasFlags(Flags.FUEL | Flags.TEST, exact=True))
+        self.assertTrue(
+            b2.hasFlags(Flags.FUEL | Flags.TEST | Flags.DEPLETABLE, exact=True)
+        )
 
         self.assertEqual(a1.p.flags, Flags.FUEL)
         self.assertTrue(a1.hasFlags(Flags.FUEL, exact=True))

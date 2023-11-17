@@ -66,6 +66,74 @@ class ParameterTests(unittest.TestCase):
             with self.assertRaises(AssertionError):
                 fail = pDefs.createBuilder(default={})
 
+    def test_writeSomeParamsToDB(self):
+        """
+        This tests the ability to specify which parameters should be
+        written to the database. It assumes that the list returned by
+        ParameterDefinitionCollection.toWriteToDB() is used to filter for which
+        parameters to include in the database.
+
+        .. test:: Restrict parameters from DB write
+            :id: T_ARMI_PARAM_DB
+            :tests: R_ARMI_PARAM_DB
+        """
+        pDefs = parameters.ParameterDefinitionCollection()
+        with pDefs.createBuilder() as pb:
+            pb.defParam("write_me", "units", "description", "location", default=42)
+            pb.defParam("and_me", "units", "description", "location", default=42)
+            pb.defParam(
+                "dont_write_me",
+                "units",
+                "description",
+                "location",
+                default=42,
+                saveToDB=False,
+            )
+        db_params = pDefs.toWriteToDB(32)
+        self.assertListEqual(["write_me", "and_me"], [p.name for p in db_params])
+
+    def test_serializer_pack_unpack(self):
+        """
+        This tests the ability to add a serializer to a parameter instantiation line.
+        It assumes that if this parameter is not None, that the pack and unpack methods
+        will be called during storage to and reading from the database. See
+        database3._writeParams for an example use of this functionality.
+
+        .. test:: Custom parameter serializer
+            :id: T_ARMI_PARAM_SERIALIZE
+            :tests: R_ARMI_PARAM_SERIALIZE
+        """
+
+        class TestSerializer(parameters.Serializer):
+            @staticmethod
+            def pack(data):
+                array = [d + 1 for d in data]
+                return array
+
+            @staticmethod
+            def unpack(data):
+                array = [d - 1 for d in data]
+                return array
+
+        param = parameters.Parameter(
+            name="myparam",
+            units="kg",
+            description="a param",
+            location=None,
+            saveToDB=True,
+            default=[1],
+            setter=None,
+            categories=None,
+            serializer=TestSerializer(),
+        )
+        param.assigned = [1]
+
+        packed = param.serializer.pack(param.assigned)
+        unpacked = param.serializer.unpack(packed)
+
+        self.assertEqual(packed, [2])
+        self.assertEqual(unpacked, [1])
+
     def test_paramPropertyDoesNotConflict(self):
         class Mock(parameters.ParameterCollection):
             pDefs = parameters.ParameterDefinitionCollection()
@@ -304,7 +372,8 @@ class ParameterTests(unittest.TestCase):
 
             _ = MockPCChild()
 
-        # same name along a different branch from the base ParameterCollection should be fine
+        # same name along a different branch from the base ParameterCollection should
+        # be fine
         class MockPCUncle(parameters.ParameterCollection):
             pDefs = parameters.ParameterDefinitionCollection()
             with pDefs.createBuilder() as pb:
@@ -376,7 +445,9 @@ class ParameterTests(unittest.TestCase):
         self.assertEqual(set(pc.paramDefs.inCategory("bacon")), set([p2, p3]))
 
     def test_parameterCollectionsHave__slots__(self):
-        """Make sure something is implemented to prevent accidental creation of attributes."""
+        """Make sure something is implemented to prevent accidental creation of
+        attributes.
+        """
         self.assertEqual(
             set(["_hist", "_backup", "assigned", "_p_serialNum", "serialNum"]),
             set(parameters.ParameterCollection._slots),
@@ -442,7 +513,9 @@ def makeComp(name):
 
 
 class SynchronizationTests:
-    """Some unit tests that must be run with mpirun instead of the standard unittest system."""
+    """Some unit tests that must be run with mpirun instead of the standard unittest
+    system.
+    """
 
     def setUp(self):
         self.r = makeComp("reactor")
@@ -564,7 +637,8 @@ class SynchronizationTests:
         # confirm outside state retainer
         self.assertEqual(assigned, [c.p.assigned for ci, c in enumerate(self.comps)])
 
-        # this rank's "assigned" components are not assigned on the workers, and so will be updated
+        # this rank's "assigned" components are not assigned on the workers, and so will
+        # be updated
         self.assertEqual(len(self.comps), self.r.syncMpiState())
 
         for ci, comp in enumerate(self.comps):
@@ -638,7 +712,8 @@ class SynchronizationTests:
         param3 = self.r.p.paramDefs["param3"]
 
         def do_assert(passNum):
-            # ensure all assemblies and blocks set values for param2, but param1 is empty
+            # ensure all assemblies and blocks set values for param2, but param1 is
+            # empty
             for rank in range(context.MPI_SIZE):
                 a = self.r.core[passNum * context.MPI_SIZE + rank]
                 assert "param1" not in a.p

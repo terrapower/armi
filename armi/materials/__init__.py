@@ -38,7 +38,6 @@ from typing import List
 import inspect
 
 from armi.materials.material import Material
-from armi.utils import dynamicImporter
 
 # this will frequently be updated by the CONF_MATERIAL_NAMESPACE_ORDER setting
 # during reactor construction (see armi.reactor.reactors.factory)
@@ -47,6 +46,13 @@ _MATERIAL_NAMESPACE_ORDER = ["armi.materials"]
 
 
 def setMaterialNamespaceOrder(order):
+    """
+    Set the material namespace order at the Python interpretter, global level.
+
+    .. impl:: Materials can be searched across packages in a defined namespace.
+        :id: I_ARMI_MAT_NAMESPACE
+        :implements: R_ARMI_MAT_NAMESPACE
+    """
     global _MATERIAL_NAMESPACE_ORDER
     _MATERIAL_NAMESPACE_ORDER = order
 
@@ -94,16 +100,6 @@ def importMaterialsIntoModuleNamespace(path, name, namespace, updateSource=None)
 
 importMaterialsIntoModuleNamespace(__path__, __name__, globals())
 
-# the co_varnames attribute contains arguments and then locals so we must restrict it to just the arguments.
-AVAILABLE_MODIFICATION_NAMES = {
-    name
-    for subclass in dynamicImporter.getEntireFamilyTree(Material)
-    for name in subclass.applyInputParams.__code__.co_varnames[
-        : subclass.applyInputParams.__code__.co_argcount
-    ]
-}
-AVAILABLE_MODIFICATION_NAMES.remove("self")
-
 
 def iterAllMaterialClassesInNamespace(namespace):
     """
@@ -131,6 +127,10 @@ def resolveMaterialClassByName(name: str, namespaceOrder: List[str] = None):
     Input files usually specify a material like UO2. Which particular implementation
     gets used (Framework's UO2 vs. a user plugins UO2 vs. the Kentucky Transportation
     Cabinet's UO2) is up to the user at runtime.
+
+    .. impl:: Material collections are defined with an order of precedence in the case of duplicates.
+        :id: I_ARMI_MAT_ORDER
+        :implements: R_ARMI_MAT_ORDER
 
     Parameters
     ----------

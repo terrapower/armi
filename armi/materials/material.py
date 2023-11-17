@@ -17,7 +17,6 @@ Base Material classes.
 
 Most temperatures may be specified in either K or C and the functions will convert for you.
 """
-import copy
 import warnings
 
 from scipy.optimize import fsolve
@@ -36,6 +35,14 @@ FAIL_ON_RANGE = False
 class Material:
     """
     A material is made up of elements or isotopes. It has bulk properties like mass density.
+
+    .. impl:: The abstract material class.
+        :id: I_ARMI_MAT_PROPERTIES
+        :implements: R_ARMI_MAT_PROPERTIES
+
+    .. impl:: Materials generate nuclide mass fractions at instantiation.
+        :id: I_ARMI_MAT_FRACS
+        :implements: R_ARMI_MAT_FRACS
 
     Attributes
     ----------
@@ -95,7 +102,13 @@ class Material:
 
     @property
     def name(self):
-        """Getter for the private name attribute of this Material."""
+        """
+        Getter for the private name attribute of this Material.
+
+        .. impl:: The name of a material is accessible.
+            :id: I_ARMI_MAT_NAME
+            :implements: R_ARMI_MAT_NAME
+        """
         return self._name
 
     @name.setter
@@ -574,9 +587,6 @@ class Material:
             # the nuc isn't in the mass Frac vector
             pass
 
-    def getMassFracCopy(self):
-        return copy.deepcopy(self.massFrac)
-
     def checkPropertyTempRange(self, label, val):
         """Checks if the given property / value combination fall between the min and max valid
         temperatures provided in the propertyValidTemperature object.
@@ -711,6 +721,10 @@ class Fluid(Material):
     def linearExpansion(self, Tk=None, Tc=None):
         """For void, lets just not allow temperature changes to change dimensions
         since it is a liquid it will fill its space.
+
+        .. impl:: Fluid materials are not thermally expandable.
+            :id: I_ARMI_MAT_FLUID
+            :implements: R_ARMI_MAT_FLUID
         """
         return 0.0
 

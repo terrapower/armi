@@ -63,7 +63,6 @@ class FlagSerializer(parameters.Serializer):
     sequence of enough uint8 elements to represent all flags. These constitute a
     dimension of a 2-D numpy array containing all Flags for all objects provided to the
     ``pack()`` function.
-
     """
 
     version = "1"
@@ -297,6 +296,10 @@ class ArmiObject(metaclass=CompositeModelType):
         specialized subclasses (Block, Assembly) in preparation for this next step.
         As a result, the public API on this method should be considered unstable.
 
+    .. impl:: Parameters accessible throughout the armi tree
+        :id: I_ARMI_PARAM_PART
+        :implements: R_ARMI_PARAM_PART
+
     Attributes
     ----------
     name : str
@@ -437,11 +440,8 @@ class ArmiObject(metaclass=CompositeModelType):
         to be considered non-zero even if they don't have any blocks. This is important
         for parent resolution, etc. If one of these objects exists, it is non-zero,
         regardless of its contents.
-
         """
         return True
-
-    __nonzero__ = __bool__  # Python 2 compatibility
 
     def __add__(self, other):
         """Return a list of all children in this and another object."""

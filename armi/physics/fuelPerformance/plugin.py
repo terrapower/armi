@@ -46,6 +46,7 @@ class FuelPerformancePlugin(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineParameters():
+        """Define parameters for the plugin."""
         from armi.physics.fuelPerformance import parameters
 
         return parameters.getFuelPerformanceParameterDefinitions()
