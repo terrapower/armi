@@ -65,6 +65,10 @@ def expandColdDimsToHot(
     """
     Expand BOL assemblies, resolve disjoint axial mesh (if needed), and update block BOL heights.
 
+    .. impl:: Perform expansion during core construction based on block heights at a specified temperature.
+        :id: I_ARMI_INP_COLD_HEIGHT
+        :implements: R_ARMI_INP_COLD_HEIGHT
+
     Parameters
     ----------
     assems: list[:py:class:`Assembly <armi.reactor.assemblies.Assembly>`]
@@ -138,6 +142,10 @@ class AxialExpansionChanger:
     ):
         """Perform axial expansion of an assembly given prescribed expansion percentages.
 
+        .. impl:: Perform expansion/contraction, given a list of components and expansion coefficients.
+            :id: I_ARMI_AXIAL_EXP_PRESC
+            :implements: R_ARMI_AXIAL_EXP_PRESC
+
         Parameters
         ----------
         a : :py:class:`Assembly <armi.reactor.assemblies.Assembly>`
@@ -167,6 +175,10 @@ class AxialExpansionChanger:
         expandFromTinputToThot: bool = False,
     ):
         """Perform thermal expansion for an assembly given an axial temperature grid and field.
+
+        .. impl:: Perform thermal expansion/contraction, given an axial temp distribution over an assembly.
+            :id: I_ARMI_AXIAL_EXP_THERM
+            :implements: R_ARMI_AXIAL_EXP_THERM
 
         Parameters
         ----------

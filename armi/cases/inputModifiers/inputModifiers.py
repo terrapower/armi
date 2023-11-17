@@ -30,6 +30,10 @@ class InputModifier:
 
     Some subclasses are provided, but you are expected to make your own design-specific
     modifiers in most cases.
+
+    .. impl:: A generic tool to modify user inputs on multiple cases.
+        :id: I_ARMI_CASE_MOD1
+        :implements: R_ARMI_CASE_MOD
     """
 
     FAIL_IF_AFTER = ()

@@ -23,9 +23,6 @@ support extension. We also considered the ``aenum`` package, which permits exten
 ``Enum`` classes, but unfortunately does not support extension of ``Flags``. So, we had to
 make our own. This is a much simplified version of what comes with ``aenum``, but still
 provides most of the safety and functionality.
-
-There is an `issue <https://bitbucket.org/stoneleaf/aenum/issues/27/>`_ on the ``aenum``
-bitbucket site to track ``Flag`` extension.
 """
 import math
 
@@ -126,6 +123,10 @@ class Flag(metaclass=_FlagMeta):
     after the class has been defined. Most docs for ``enum.Flag`` should be relevant here,
     but there are sure to be occasional differences.
 
+    .. impl:: No two flags have equivalence
+        :id: I_ARMI_FLAG_DEFINE
+        :implements: R_ARMI_FLAG_DEFINE
+
     .. warning::
         Python features arbitrary-width integers, allowing one to represent an
         practically unlimited number of fields. *However*, including more flags than can
@@ -219,6 +220,10 @@ class Flag(metaclass=_FlagMeta):
             This alters the class that it is called upon! Existing instances should see
             the new data, since classes are mutable.
 
+        .. impl:: Set of flags are extensible without loss of uniqueness
+            :id: I_ARMI_FLAG_EXTEND
+            :implements: R_ARMI_FLAG_EXTEND
+
         Parameters
         ----------
         fields : dict
@@ -251,8 +256,8 @@ class Flag(metaclass=_FlagMeta):
 
         This is useful when storing Flags in a data type of limited size. Python ints
         can be of arbitrary size, while most other systems can only represent integers
-        of 32 or 64 bits. For compatibiliy, this function allows to convert the flags to
-        a sequence of single-byte elements.
+        of 32 or 64 bits. For compatibility, this function allows to convert the flags
+        to a sequence of single-byte elements.
 
         Note that this uses snake_case to mimic the method on the Python-native int
         type.

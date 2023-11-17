@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests materials.py."""
-
+from copy import deepcopy
 import math
 import pickle
 import unittest
@@ -35,7 +35,12 @@ class _Material_Test:
         self.mat = self.MAT_CLASS()
 
     def test_isPicklable(self):
-        """Test that all materials are picklable so we can do MPI communication of state."""
+        """Test that all materials are picklable so we can do MPI communication of state.
+
+        .. test:: Test the material base class.
+            :id: T_ARMI_MAT_PROPERTIES0
+            :tests: R_ARMI_MAT_PROPERTIES
+        """
         stream = pickle.dumps(self.mat)
         mat = pickle.loads(stream)
 
@@ -45,10 +50,21 @@ class _Material_Test:
         )
 
     def test_density(self):
-        """Test that all materials produce a zero density from density."""
+        """Test that all materials produce a zero density from density.
+
+        .. test:: Test the material base class.
+            :id: T_ARMI_MAT_PROPERTIES1
+            :tests: R_ARMI_MAT_PROPERTIES
+        """
         self.assertNotEqual(self.mat.density(500), 0)
 
     def test_TD(self):
+        """Test the material density.
+
+        .. test:: Test the material base class.
+            :id: T_ARMI_MAT_PROPERTIES2
+            :tests: R_ARMI_MAT_PROPERTIES
+        """
         self.assertEqual(self.mat.getTD(), self.mat.theoreticalDensityFrac)
 
         self.mat.clearCache()
@@ -59,6 +75,12 @@ class _Material_Test:
         self.assertEqual(self.mat.cached, {})
 
     def test_duplicate(self):
+        """Test the material duplication.
+
+        .. test:: Test the material base class.
+            :id: T_ARMI_MAT_PROPERTIES3
+            :tests: R_ARMI_MAT_PROPERTIES
+        """
         mat = self.mat.duplicate()
 
         self.assertEqual(len(mat.massFrac), len(self.mat.massFrac))
@@ -70,6 +92,12 @@ class _Material_Test:
         self.assertEqual(mat.theoreticalDensityFrac, self.mat.theoreticalDensityFrac)
 
     def test_cache(self):
+        """Test the material cache.
+
+        .. test:: Test the material base class.
+            :id: T_ARMI_MAT_PROPERTIES4
+            :tests: R_ARMI_MAT_PROPERTIES
+        """
         self.mat.clearCache()
         self.assertEqual(len(self.mat.cached), 0)
 
@@ -80,11 +108,23 @@ class _Material_Test:
         self.assertEqual(val, "Noether")
 
     def test_densityKgM3(self):
+        """Test the density for kg/m^3.
+
+        .. test:: Test the material base class.
+            :id: T_ARMI_MAT_PROPERTIES5
+            :tests: R_ARMI_MAT_PROPERTIES
+        """
         dens = self.mat.density(500)
         densKgM3 = self.mat.densityKgM3(500)
         self.assertEqual(dens * 1000.0, densKgM3)
 
     def test_pseudoDensityKgM3(self):
+        """Test the pseudo density for kg/m^3.
+
+        .. test:: Test the material base class.
+            :id: T_ARMI_MAT_PROPERTIES6
+            :tests: R_ARMI_MAT_PROPERTIES
+        """
         dens = self.mat.pseudoDensity(500)
         densKgM3 = self.mat.pseudoDensityKgM3(500)
         self.assertEqual(dens * 1000.0, densKgM3)
@@ -101,6 +141,12 @@ class MaterialFindingTests(unittest.TestCase):
     """Make sure materials are discoverable as designed."""
 
     def test_findMaterial(self):
+        """Test resolveMaterialClassByName() function.
+
+        .. test:: You can find a meterial by name.
+            :id: T_ARMI_MAT_NAME
+            :tests: R_ARMI_MAT_NAME
+        """
         self.assertIs(
             materials.resolveMaterialClassByName(
                 "Void", namespaceOrder=["armi.materials"]
@@ -710,7 +756,7 @@ class UraniumOxide_TestCase(_Material_Test, unittest.TestCase):
         for key in self.mat.massFrac:
             self.assertEqual(duplicateU.massFrac[key], self.mat.massFrac[key])
 
-        duplicateMassFrac = self.mat.getMassFracCopy()
+        duplicateMassFrac = deepcopy(self.mat.massFrac)
         for key in self.mat.massFrac.keys():
             self.assertEqual(duplicateMassFrac[key], self.mat.massFrac[key])
 
@@ -737,6 +783,13 @@ class Thorium_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.Thorium
 
     def test_setDefaultMassFracs(self):
+        """
+        Test default mass fractions.
+
+        .. test:: The materials generate nuclide mass fractions.
+            :id: T_ARMI_MAT_FRACS0
+            :tests: R_ARMI_LOG
+        """
         self.mat.setDefaultMassFracs()
         cur = self.mat.massFrac
         ref = {"TH232": 1.0}
@@ -810,12 +863,23 @@ class Void_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.Void
 
     def test_pseudoDensity(self):
+        """This material has a no pseudo-density.
+
+        .. test:: There is a void material.
+            :id: T_ARMI_MAT_VOID0
+            :tests: R_ARMI_MAT_VOID
+        """
         self.mat.setDefaultMassFracs()
         cur = self.mat.pseudoDensity()
         self.assertEqual(cur, 0.0)
 
     def test_density(self):
-        """This material has no density function."""
+        """This material has no density.
+
+        .. test:: There is a void material.
+            :id: T_ARMI_MAT_VOID1
+            :tests: R_ARMI_MAT_VOID
+        """
         self.assertEqual(self.mat.density(500), 0)
 
         self.mat.setDefaultMassFracs()
@@ -823,11 +887,23 @@ class Void_TestCase(_Material_Test, unittest.TestCase):
         self.assertEqual(cur, 0.0)
 
     def test_linearExpansion(self):
+        """This material does not expand linearly.
+
+        .. test:: There is a void material.
+            :id: T_ARMI_MAT_VOID2
+            :tests: R_ARMI_MAT_VOID
+        """
         cur = self.mat.linearExpansion(400)
         ref = 0.0
         self.assertEqual(cur, ref)
 
     def test_propertyValidTemperature(self):
+        """This material has no valid temperatures.
+
+        .. test:: There is a void material.
+            :id: T_ARMI_MAT_VOID3
+            :tests: R_ARMI_MAT_VOID
+        """
         self.assertEqual(len(self.mat.propertyValidTemperature), 0)
 
 
@@ -839,6 +915,13 @@ class Mixture_TestCase(_Material_Test, unittest.TestCase):
         self.assertEqual(self.mat.density(500), 0)
 
     def test_setDefaultMassFracs(self):
+        """
+        Test default mass fractions.
+
+        .. test:: The materials generate nuclide mass fractions.
+            :id: T_ARMI_MAT_FRACS1
+            :tests: R_ARMI_LOG
+        """
         self.mat.setDefaultMassFracs()
         cur = self.mat.pseudoDensity(500)
         self.assertEqual(cur, 0.0)
@@ -852,6 +935,13 @@ class Mixture_TestCase(_Material_Test, unittest.TestCase):
 
 
 class Lead_TestCase(_Material_Test, unittest.TestCase):
+    """Unit tests for lead materials.
+
+    .. test:: There is a base class for fluid materials.
+        :id: T_ARMI_MAT_FLUID2
+        :tests: R_ARMI_MAT_FLUID
+    """
+
     MAT_CLASS = materials.Lead
 
     def test_volumetricExpansion(self):
@@ -878,6 +968,13 @@ class Lead_TestCase(_Material_Test, unittest.TestCase):
         self.assertEqual(cur, ref)
 
     def test_setDefaultMassFracs(self):
+        """
+        Test default mass fractions.
+
+        .. test:: The materials generate nuclide mass fractions.
+            :id: T_ARMI_MAT_FRACS2
+            :tests: R_ARMI_LOG
+        """
         self.mat.setDefaultMassFracs()
         cur = self.mat.massFrac
         ref = {"PB": 1}
@@ -908,6 +1005,13 @@ class LeadBismuth_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.LeadBismuth
 
     def test_setDefaultMassFracs(self):
+        """
+        Test default mass fractions.
+
+        .. test:: The materials generate nuclide mass fractions.
+            :id: T_ARMI_MAT_FRACS3
+            :tests: R_ARMI_LOG
+        """
         self.mat.setDefaultMassFracs()
         cur = self.mat.massFrac
         ref = {"BI209": 0.555, "PB": 0.445}

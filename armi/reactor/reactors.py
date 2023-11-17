@@ -164,6 +164,10 @@ def loadFromCs(cs) -> Reactor:
     """
     Load a Reactor based on the input settings.
 
+    .. impl:: Create reactor from input yaml file
+        :id: I_ARMI_R_CORE
+        :implements: R_ARMI_R_CORE
+
     Parameters
     ----------
     cs: CaseSettings
@@ -754,6 +758,10 @@ class Core(composites.Composite):
         """
         Returns the number of rings in this reactor. Based on location so indexing will start at 1.
 
+        .. impl:: Retrieve number of rings in core
+            :id: I_ARMI_R_NUM_RINGS
+            :implements: R_ARMI_R_NUM_RINGS
+
         Warning
         -------
         If you loop through range(maxRing) then ring+1 is the one you want!
@@ -1109,6 +1117,10 @@ class Core(composites.Composite):
     def getAssemblyByName(self, name):
         """
         Find the assembly that has this name.
+
+        .. impl:: Get assembly by name
+            :id: I_ARMI_R_GET_ASSEM_NAME
+            :implements: R_ARMI_R_GET_ASSEM_NAME
 
         Parameters
         ----------
@@ -1621,7 +1633,12 @@ class Core(composites.Composite):
         return self.getAssembly(assemNum=assemNum)
 
     def getAssemblyWithStringLocation(self, locationString):
-        """Returns an assembly or none if given a location string like 'B0014'."""
+        """Returns an assembly or none if given a location string like 'B0014'.
+
+        .. impl:: Get assembly by location
+            :id: I_ARMI_R_GET_ASSEM_LOC
+            :implements: R_ARMI_R_GET_ASSEM_LOC
+        """
         ring, pos, _ = grids.locatorLabelToIndices(locationString)
         loc = self.spatialGrid.getLocatorFromRingAndPos(ring, pos)
         assem = self.childrenByLocator.get(loc)
@@ -1647,10 +1664,14 @@ class Core(composites.Composite):
         self, a, showBlanks=True, duplicateAssembliesOnReflectiveBoundary=False
     ):
         """
-        Find assemblies that are next this assembly.
+        Find assemblies that are next to this assembly.
 
         Return a list of neighboring assemblies from the 30 degree point (point 1) then
         counterclockwise around.
+
+        .. impl:: Retrieve neighboring assemblies of a given assembly
+            :id: I_ARMI_R_FIND_NEIGHBORS
+            :implements: R_ARMI_R_FIND_NEIGHBORS
 
         Parameters
         ----------

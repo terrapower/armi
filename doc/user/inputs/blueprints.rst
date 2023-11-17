@@ -395,22 +395,35 @@ material modifications
       from tabulate import tabulate
 
       data = []
-
       for m in Material.__subclasses__():
           numArgs = m.applyInputParams.__code__.co_argcount
           if numArgs > 1:
               modNames = m.applyInputParams.__code__.co_varnames[1:numArgs]
-              data.append((m.__name__, ', '.join(modNames)))
+              data.append((m.__name__, ", ".join(modNames)))
 
           for subM in m.__subclasses__():
               num = subM.applyInputParams.__code__.co_argcount
               if num > 1:
                   mods = subM.applyInputParams.__code__.co_varnames[1:num]
-                  data.append((subM.__name__, ', '.join(mods)))
+                  if numArgs > 1:
+                      mods += modNames
+                  data.append((subM.__name__, ", ".join(mods)))
 
+      d = {}
+      for k, v in data:
+          if k not in d:
+              d[k] = v
+          else:
+              d[k] = d[k].split(",") + v.split(",")
+              d[k] = sorted(set([vv.strip() for vv in d[k]]))
+              d[k] = ", ".join(d[k])
+      data = [(k, v) for k, v in d.items()]
       data.sort(key=lambda t: t[0])
-      return tabulate(headers=('Material Name', 'Available Modifications'),
-                      tabular_data=data, tablefmt='rst')
+      return tabulate(
+          headers=("Material Name", "Available Modifications"),
+          tabular_data=data,
+          tablefmt="rst",
+      )
 
   The class 1/class 2 modifications in fuel materials are used to identify mixtures of
   custom isotopics labels for input scenarios where a varying blend of a high-reactivity

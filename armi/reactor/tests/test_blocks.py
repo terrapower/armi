@@ -473,6 +473,13 @@ class Block_TestCase(unittest.TestCase):
         self.assertEqual(self.block.p.flags, Block2.p.flags)
 
     def test_homogenizedMixture(self):
+        """
+        Confirms homogenized blocks have correct properties.
+
+        .. test:: Homogenize the compositions of a block
+            :id: T_ARMI_BLOCK_HOMOG
+            :tests: R_ARMI_BLOCK_HOMOG
+        """
         args = [False, True]  # pinSpatialLocator argument
         expectedShapes = [
             [basicShapes.Hexagon],
@@ -843,6 +850,13 @@ class Block_TestCase(unittest.TestCase):
         self.assertAlmostEqual(cur, ref, places=places)
 
     def test_setLocation(self):
+        """
+        Retrieve a blocks location.
+
+        .. test:: Location of a block is retrievable
+            :id: T_ARMI_BLOCK_POSI0
+            :tests: R_ARMI_BLOCK_POSI
+        """
         b = self.block
         # a bit obvious, but location is a property now...
         i, j = grids.HexGrid.getIndicesFromRingAndPos(2, 3)
@@ -1534,6 +1548,28 @@ class Block_TestCase(unittest.TestCase):
         moles3 = b.p.molesHmBOL
         self.assertAlmostEqual(moles2, moles3)
 
+    def test_setImportantParams(self):
+        """Confirm that important block parameters can be set and get."""
+        # Test ability to set and get flux
+        applyDummyData(self.block)
+        self.assertEqual(self.block.p.mgFlux[0], 161720716762.12997)
+        self.assertEqual(self.block.p.mgFlux[-1], 601494405.293505)
+
+        # Test ability to set and get number density
+        fuel = self.block.getComponent(Flags.FUEL)
+
+        u235_dens = fuel.getNumberDensity("U235")
+        self.assertEqual(u235_dens, 0.003695461770836022)
+
+        fuel.setNumberDensity("U235", 0.5)
+        u235_dens = fuel.getNumberDensity("U235")
+        self.assertEqual(u235_dens, 0.5)
+
+        # TH parameter test
+        self.assertEqual(0, self.block.p.THmassFlowRate)
+        self.block.p.THmassFlowRate = 10
+        self.assertEqual(10, self.block.p.THmassFlowRate)
+
     def test_getMfp(self):
         """Test mean free path."""
         applyDummyData(self.block)
@@ -1788,7 +1824,25 @@ class HexBlock_TestCase(unittest.TestCase):
         places = 6
         self.assertAlmostEqual(cur, ref, places=places)
 
+    def test_component_type(self):
+        """
+        Test that a hex block has the proper "hexagon" __name__.
+
+        .. test:: Ability to create hex shaped blocks
+            :id: T_ARMI_BLOCK_HEX
+            :tests: R_ARMI_BLOCK_HEX
+        """
+        pitch_comp_type = self.HexBlock.PITCH_COMPONENT_TYPE[0]
+        self.assertEqual(pitch_comp_type.__name__, "Hexagon")
+
     def test_coords(self):
+        """
+        Test that coordinates are retrievable from a block.
+
+        .. test:: Coordinates of a block are queryable
+            :id: T_ARMI_BLOCK_POSI1
+            :tests: R_ARMI_BLOCK_POSI
+        """
         r = self.HexBlock.r
         a = self.HexBlock.parent
         loc1 = r.core.spatialGrid[0, 1, 0]
@@ -1811,6 +1865,28 @@ class HexBlock_TestCase(unittest.TestCase):
 
     def test_getNumPins(self):
         self.assertEqual(self.HexBlock.getNumPins(), 169)
+
+    def test_block_dims(self):
+        """
+        Tests that the block class can provide basic dimensionality information about
+        itself.
+
+        .. test:: Retrieve important block dimensions
+            :id: T_ARMI_BLOCK_DIMS
+            :tests: R_ARMI_BLOCK_DIMS
+        """
+        self.assertAlmostEqual(4316.582, self.HexBlock.getVolume(), 3)
+        self.assertAlmostEqual(70.6, self.HexBlock.getPitch(), 1)
+        self.assertAlmostEqual(4316.582, self.HexBlock.getMaxArea(), 3)
+
+        self.assertEqual(70, self.HexBlock.getDuctIP())
+        self.assertEqual(70.6, self.HexBlock.getDuctOP())
+
+        self.assertAlmostEqual(34.273, self.HexBlock.getPinToDuctGap(), 3)
+        self.assertEqual(0.11, self.HexBlock.getPinPitch())
+        self.assertAlmostEqual(300.889, self.HexBlock.getWettedPerimeter(), 3)
+        self.assertAlmostEqual(4242.184, self.HexBlock.getFlowArea(), 3)
+        self.assertAlmostEqual(56.395, self.HexBlock.getHydraulicDiameter(), 3)
 
     def test_symmetryFactor(self):
         # full hex

@@ -118,6 +118,14 @@ class UniformMeshGenerator:
         """
         Generate a common axial mesh to use.
 
+        .. impl:: Try to preserve the boundaries of fuel and control material.
+            :id: I_ARMI_UMC_NON_UNIFORM
+            :implements: R_ARMI_UMC_NON_UNIFORM
+
+        .. impl:: Produce a mesh with a size no smaller than a user-specified value.
+            :id: I_ARMI_UMC_MIN_MESH
+            :implements: R_ARMI_UMC_MIN_MESH
+
         Notes
         -----
         Attempts to reduce the effect of fuel and control rod absorber smearing
@@ -407,7 +415,17 @@ class UniformMeshGeometryConverter(GeometryConverter):
             self._minimumMeshSize = cs[CONF_UNIFORM_MESH_MINIMUM_SIZE]
 
     def convert(self, r=None):
-        """Create a new reactor core with a uniform mesh."""
+        """
+        Create a new reactor core with a uniform mesh.
+
+        .. impl:: Make a copy of the reactor where the new core has a uniform axial mesh.
+            :id: I_ARMI_UMC
+            :implements: R_ARMI_UMC
+
+        .. impl:: Map select parameters from composites on the original mesh to the new mesh.
+            :id: I_ARMI_UMC_PARAM_FORWARD
+            :implements: R_ARMI_UMC_PARAM_FORWARD
+        """
         if r is None:
             raise ValueError(f"No reactor provided in {self}")
 
@@ -519,7 +537,14 @@ class UniformMeshGeometryConverter(GeometryConverter):
         return newReactor
 
     def applyStateToOriginal(self):
-        """Apply the state of the converted reactor back to the original reactor, mapping number densities and block parameters."""
+        """
+        Apply the state of the converted reactor back to the original reactor,
+        mapping number densities and block parameters.
+
+        .. impl:: Map select parameters from composites on the new mesh to the original mesh.
+            :id: I_ARMI_UMC_PARAM_BACKWARD
+            :implements: R_ARMI_UMC_PARAM_BACKWARD
+        """
         runLog.extra(
             f"Applying uniform neutronics results from {self.convReactor} to {self._sourceReactor}"
         )

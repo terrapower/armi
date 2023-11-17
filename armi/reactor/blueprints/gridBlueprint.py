@@ -246,7 +246,12 @@ class GridBlueprint(yamlize.Object):
         self._readFromLatticeMap = value
 
     def construct(self):
-        """Build a Grid from a grid definition."""
+        """Build a Grid from a grid definition.
+
+        .. impl:: Define a lattice map in reactor core
+            :id: I_ARMI_BP_GRID
+            :implements: R_ARMI_BP_GRID
+        """
         self._readGridContents()
         grid = self._constructSpatialGrid()
         return grid
@@ -534,6 +539,10 @@ def saveToStream(stream, bluep, full=False, tryMap=False):
     full: bool ~ Is this a full output file, or just a partial/grids?
     tryMap: regardless of input form, attempt to output as a lattice map. let's face it;
     they're prettier.
+
+    .. impl:: Write a blueprint file from a blueprint object
+        :id: I_ARMI_BP_TO_DB
+        :implements: R_ARMI_BP_TO_DB
     """
     # To save, we want to try our best to output our grid blueprints in the lattice
     # map style. However, we do not want to wreck the state that the current

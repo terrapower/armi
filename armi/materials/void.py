@@ -21,6 +21,13 @@ from armi.materials import material
 
 
 class Void(material.Fluid):
+    """A Void material is a bookkeeping material with zero density.
+
+    .. impl:: Define a void material with zero density.
+        :id: I_ARMI_MAT_VOID
+        :implements: R_ARMI_MAT_VOID
+    """
+
     def pseudoDensity(self, Tk: float = None, Tc: float = None) -> float:
         return 0.0
 

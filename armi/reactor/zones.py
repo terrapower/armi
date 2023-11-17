@@ -28,6 +28,10 @@ class Zone:
     """
     A group of locations in the Core, used to divide it up for analysis.
     Each location represents an Assembly or a Block.
+
+    .. impl:: A collection of armi locations
+        :id: I_ARMI_ZONE
+        :implements: R_ARMI_ZONE
     """
 
     VALID_TYPES = (Assembly, Block)
@@ -196,7 +200,12 @@ class Zone:
 
 
 class Zones:
-    """Collection of Zone objects."""
+    """Collection of Zone objects.
+
+    .. impl:: A collection of armi zones
+        :id: I_ARMI_ZONES
+        :implements: R_ARMI_ZONES
+    """
 
     def __init__(self):
         """Build a Zones object."""

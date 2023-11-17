@@ -17,7 +17,7 @@
 import os
 
 from armi.cli.entryPoint import EntryPoint
-from armi.scripts.migration import ACTIVE_MIGRATIONS, base
+from armi.migration import ACTIVE_MIGRATIONS, base
 from armi.utils import directoryChangers
 
 
