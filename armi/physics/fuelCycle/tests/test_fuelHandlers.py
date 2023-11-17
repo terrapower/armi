@@ -23,6 +23,7 @@ import unittest
 
 import numpy as np
 
+from armi import interfaces
 from armi.physics.fuelCycle import fuelHandlers, settings
 from armi.physics.fuelCycle.settings import (
     CONF_ASSEM_ROTATION_STATIONARY,
@@ -30,9 +31,6 @@ from armi.physics.fuelCycle.settings import (
     CONF_RUN_LATTICE_BEFORE_SHUFFLING,
 )
 from armi.physics.neutronics.crossSectionGroupManager import CrossSectionGroupManager
-from armi.physics.neutronics.latticePhysics.latticePhysicsInterface import (
-    LatticePhysicsInterface,
-)
 from armi.reactor import assemblies, blocks, components, grids
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
@@ -130,16 +128,11 @@ class FuelHandlerTestHelper(ArmiTestHelper):
         self.directoryChanger.close()
 
 
-class MockLatticePhysicsInterface(LatticePhysicsInterface):
+class MockLatticePhysicsInterface(interfaces.Interface):
     """A mock lattice physics interface that does nothing for interactBOC."""
 
     name = "MockLatticePhysicsInterface"
-
-    def _getExecutablePath(self):
-        return "/mock/"
-
-    def interactBOC(self, cycle=None):
-        pass
+    function = "latticePhysics"
 
 
 class MockXSGM(CrossSectionGroupManager):
