@@ -273,10 +273,10 @@ def xsHistoryVsTime(name, history, buGroups, extension=None):
     ----------
     name : str
         reactor.name
-    buGroups : list of float
-        The burnup groups in the problem
     history : armi.bookkeeping.historyTracker.HistoryTrackerInterface object
         The history interface.
+    buGroups : list of float
+        The burnup groups in the problem
     extension : str, optional
         The file extension for saving the figure
     """
@@ -463,7 +463,6 @@ def _getMechanicalVals(r):
     labels, vals = list(
         zip(
             *[
-                ("Dilation", r.core.p.maxdilationTotal),
                 ("Hold down", 1.0),
                 ("Distortion", 3.0),
             ]
@@ -511,7 +510,6 @@ def _getFuelVals(r):
     data = [
         ("Max FCCI", r.core.p.maxcladFCCI),
         ("Max BU", r.core.p.maxpercentBu),
-        ("Residence", r.core.p.maxresidence),
         (
             "Smear dens.",
             r.core.calcAvgParam("smearDensity", generationNum=2, typeSpec=Flags.FUEL),
@@ -550,7 +548,7 @@ def _radarFactory(numVars, frame="circle"):
     This function creates a RadarAxes projection and registers it.
 
     Raises
-    -------
+    ------
     ValueError
         If value of the frame is unknown.
 
