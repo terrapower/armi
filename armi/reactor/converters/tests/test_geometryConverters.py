@@ -266,7 +266,7 @@ class TestHexToRZConverter(unittest.TestCase):
 
 class TestEdgeAssemblyChanger(unittest.TestCase):
     def setUp(self):
-        r"""Use the related setup in the testFuelHandlers module."""
+        """Use the related setup in the testFuelHandlers module."""
         self.o, self.r = loadTestReactor(TEST_ROOT)
         reduceTestReactorRings(self.r, self.o.cs, 3)
 
@@ -275,7 +275,12 @@ class TestEdgeAssemblyChanger(unittest.TestCase):
         del self.r
 
     def test_edgeAssemblies(self):
-        r"""Sanity check on adding edge assemblies."""
+        """Sanity check on adding edge assemblies.
+
+        .. test:: Test adding/removing assemblies from a reactor.
+            :id: T_ARMI_ADD_EDGE_ASSEMS
+            :tests: R_ARMI_ADD_EDGE_ASSEMS
+        """
         converter = geometryConverters.EdgeAssemblyChanger()
         converter.addEdgeAssemblies(self.r.core)
 

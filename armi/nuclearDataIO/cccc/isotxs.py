@@ -187,7 +187,7 @@ def addDummyNuclidesToLibrary(lib, dummyNuclides):
     return any(dummyNuclideKeysAddedToLibrary)
 
 
-class _IsotxsIO(cccc.Stream):
+class IsotxsIO(cccc.Stream):
     """
     A semi-abstract stream for reading and writing to a :py:class:`~armi.nuclearDataIO.isotxs.Isotxs`.
 
@@ -263,6 +263,12 @@ class _IsotxsIO(cccc.Stream):
             self._metadata["label"] = self._FILE_LABEL
 
     def readWrite(self):
+        """Read and write ISOTSX file.
+
+        .. impl:: Tool to read and write ISOTXS files.
+            :id: I_ARMI_NUCDATA_ISOTXS
+            :implements: R_ARMI_NUCDATA_ISOTXS
+        """
         self._rwMessage()
         properties.unlockImmutableProperties(self._lib)
         try:
@@ -381,10 +387,10 @@ class _IsotxsIO(cccc.Stream):
         return numRecords
 
 
-readBinary = _IsotxsIO.readBinary
-readAscii = _IsotxsIO.readAscii
-writeBinary = _IsotxsIO.writeBinary
-writeAscii = _IsotxsIO.writeAscii
+readBinary = IsotxsIO.readBinary
+readAscii = IsotxsIO.readAscii
+writeBinary = IsotxsIO.writeBinary
+writeAscii = IsotxsIO.writeAscii
 
 
 class _IsotxsNuclideIO:
@@ -393,7 +399,7 @@ class _IsotxsNuclideIO:
 
     Notes
     -----
-    This is to be used in conjunction with an _IsotxsIO object.
+    This is to be used in conjunction with an IsotxsIO object.
     """
 
     def __init__(self, nuclide, isotxsIO, lib):

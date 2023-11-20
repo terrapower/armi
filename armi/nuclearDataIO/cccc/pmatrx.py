@@ -162,12 +162,12 @@ def _write(lib, fileName, fileMode):
 
 
 def _readWrite(lib, fileName, fileMode, getNuclideFunc):
-    with _PmatrxIO(fileName, lib, fileMode, getNuclideFunc) as rw:
+    with PmatrxIO(fileName, lib, fileMode, getNuclideFunc) as rw:
         rw.readWrite()
     return lib
 
 
-class _PmatrxIO(cccc.Stream):
+class PmatrxIO(cccc.Stream):
     def __init__(self, fileName, xsLib, fileMode, getNuclideFunc):
         cccc.Stream.__init__(self, fileName, fileMode)
         self._lib = xsLib
@@ -184,6 +184,12 @@ class _PmatrxIO(cccc.Stream):
         )
 
     def readWrite(self):
+        """Read and write PMATRX files.
+
+        .. impl:: Tool to read and write PMATRX files.
+            :id: I_ARMI_NUCDATA_PMATRX
+            :implements: R_ARMI_NUCDATA_PMATRX
+        """
         self._rwMessage()
         properties.unlockImmutableProperties(self._lib)
         try:

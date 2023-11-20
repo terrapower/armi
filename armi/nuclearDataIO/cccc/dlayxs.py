@@ -108,7 +108,7 @@ def _write(delay, fileName, fileMode):
 
 
 def _readWrite(delay, fileName, fileMode):
-    with _DlayxsIO(fileName, fileMode, delay) as rw:
+    with DlayxsIO(fileName, fileMode, delay) as rw:
         rw.readWrite()
     return delay
 
@@ -125,7 +125,6 @@ class Dlayxs(collections.OrderedDict):
     Module that use delayed neutron data should expect a ``DelayedNeutronData`` object as input.
     If you want an average over all nuclides, then you need to produce it using the properly-computed
     average contributions of each nuclide.
-
 
     Attributes
     ----------
@@ -216,13 +215,21 @@ class Dlayxs(collections.OrderedDict):
             )
 
 
-class _DlayxsIO(cccc.Stream):
+class DlayxsIO(cccc.Stream):
+    """Contains DLAYXS read/writers."""
+
     def __init__(self, fileName, fileMode, dlayxs):
         cccc.Stream.__init__(self, fileName, fileMode)
         self.dlayxs = dlayxs
         self.metadata = dlayxs.metadata
 
     def readWrite(self):
+        """Read and write DLAYXS files.
+
+        .. impl:: Tool to read and write DLAYXS files.
+            :id: I_ARMI_NUCDATA_DLAYXS
+            :implements: R_ARMI_NUCDATA_DLAYXS
+        """
         runLog.info(
             "{} DLAYXS library {}".format(
                 "Reading" if "r" in self._fileMode else "Writing", self

@@ -33,7 +33,12 @@ class TestGeodst(unittest.TestCase):
     """
 
     def test_readGeodst(self):
-        """Ensure we can read a GEODST file."""
+        """Ensure we can read a GEODST file.
+
+        .. test:: Test reading GEODST files.
+            :id: T_ARMI_NUCDATA_GEODST0
+            :tests: R_ARMI_NUCDATA_GEODST
+        """
         geo = geodst.readBinary(SIMPLE_GEODST)
         self.assertEqual(geo.metadata["IGOM"], 18)
         self.assertAlmostEqual(geo.xmesh[1], 16.79, places=5)  # hex pitch
@@ -43,7 +48,12 @@ class TestGeodst(unittest.TestCase):
         self.assertEqual(geo.coarseMeshRegions.max(), geo.metadata["NREG"])
 
     def test_writeGeodst(self):
-        """Ensure that we can write a modified GEODST."""
+        """Ensure that we can write a modified GEODST.
+
+        .. test:: Test writing GEODST files.
+            :id: T_ARMI_NUCDATA_GEODST1
+            :tests: R_ARMI_NUCDATA_GEODST
+        """
         with TemporaryDirectoryChanger():
             geo = geodst.readBinary(SIMPLE_GEODST)
             geo.zmesh[-1] *= 2

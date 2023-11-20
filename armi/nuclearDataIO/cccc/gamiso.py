@@ -18,6 +18,10 @@ Module for reading GAMISO files which contains gamma cross section data.
 GAMISO is a binary file created by MC**2-v3 that contains multigroup microscopic gamma cross sections. GAMISO data is
 contained within a :py:class:`~armi.nuclearDataIO.xsLibraries.XSLibrary`.
 
+.. impl:: Tool to read and write GAMISO files.
+    :id: I_ARMI_NUCDATA_GAMISO
+    :implements: R_ARMI_NUCDATA_GAMISO
+
 See [GAMSOR]_. 
 
 .. [GAMSOR] Smith, M. A., Lee, C. H., and Hill, R. N. GAMSOR: Gamma Source Preparation and DIF3D Flux Solution. United States: 
@@ -110,7 +114,7 @@ def addDummyNuclidesToLibrary(lib, dummyNuclides):
     return any(dummyNuclideKeysAddedToLibrary)
 
 
-class _GamisoIO(isotxs._IsotxsIO):
+class _GamisoIO(isotxs.IsotxsIO):
     """
     A reader/writer for GAMISO data files.
 

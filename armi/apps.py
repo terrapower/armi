@@ -55,6 +55,10 @@ class App:
     pain, as the results returned by the individual plugins may need to be merged and/or
     checked for errors. Adding that logic here reduces boilerplate throughout the rest
     of the code.
+
+    .. impl:: An App has a plugin manager.
+        :id: I_ARMI_APP_PLUGINS
+        :implements: R_ARMI_APP_PLUGINS
     """
 
     name = "armi"
