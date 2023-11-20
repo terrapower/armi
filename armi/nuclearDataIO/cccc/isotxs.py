@@ -24,6 +24,10 @@ used as input to a global flux solver such as DIF3D.
 This module implements reading and writing of the
 ISOTXS file format, consistent with [CCCC-IV]_.
 
+.. impl:: Tool to read and write ISOTXS files.
+    :id: I_ARMI_NUCDATA_ISOTXS
+    :implements: R_ARMI_NUCDATA_ISOTXS
+
 Examples
 --------
 >>> from armi.nuclearDataIO.cccc import isotxs
@@ -191,10 +195,6 @@ class _IsotxsIO(cccc.Stream):
     """
     A semi-abstract stream for reading and writing to a :py:class:`~armi.nuclearDataIO.isotxs.Isotxs`.
 
-    .. impl:: Tool to read and write ISOTXS files.
-        :id: I_ARMI_NUCDATA_ISOTXS
-        :implements: R_ARMI_NUCDATA_ISOTXS
-
     Notes
     -----
     This is a bit of a special case compared to most other CCCC files because of the special
@@ -267,6 +267,7 @@ class _IsotxsIO(cccc.Stream):
             self._metadata["label"] = self._FILE_LABEL
 
     def readWrite(self):
+        """Read and write ISOTSX file."""
         self._rwMessage()
         properties.unlockImmutableProperties(self._lib)
         try:

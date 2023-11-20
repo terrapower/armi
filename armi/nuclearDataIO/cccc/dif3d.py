@@ -93,12 +93,7 @@ class Dif3dData(cccc.DataContainer):
 
 
 class Dif3dStream(cccc.StreamWithDataContainer):
-    """Tool to read and write DIF3D files.
-
-    .. impl:: Tool to read and write DIF3D files.
-        :id: I_ARMI_NUCDATA_DIF3D
-        :implements: R_ARMI_NUCDATA_DIF3D
-    """
+    """Tool to read and write DIF3D files."""
 
     @staticmethod
     def _getDataContainer() -> Dif3dData:
@@ -204,7 +199,12 @@ class Dif3dStream(cccc.StreamWithDataContainer):
                     )
 
     def readWrite(self):
-        """Reads or writes metadata and data from 5 records."""
+        """Reads or writes metadata and data from 5 records.
+
+        .. impl:: Tool to read and write DIF3D files.
+            :id: I_ARMI_NUCDATA_DIF3D
+            :implements: R_ARMI_NUCDATA_DIF3D
+        """
         msg = f"{'Reading' if 'r' in self._fileMode else 'Writing'} DIF3D binary data {self}"
         runLog.info(msg)
 
