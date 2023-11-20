@@ -140,6 +140,6 @@ class TestRadar(unittest.TestCase):
 
         history = HistTester()
         figName = name + ".bugroups.png"
-        xsHistoryVsTime(name, [], history, "png")
+        xsHistoryVsTime(name, history, [], "png")
         self.assertTrue(os.path.exists(figName))
         self.assertGreater(os.path.getsize(figName), 0)
