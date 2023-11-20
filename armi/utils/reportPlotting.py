@@ -60,7 +60,7 @@ def plotReactorPerformance(reactor, dbi, buGroups, extension=None, history=None)
         The burnup groups in the problem
 
     extension : str, optional
-        The file extention for saving plots
+        The file extension for saving plots
 
     history: armi.bookkeeping.historyTracker.HistoryTrackerInterface object
         The history tracker interface
@@ -112,7 +112,7 @@ def plotReactorPerformance(reactor, dbi, buGroups, extension=None, history=None)
         extension=extension,
     )
     buVsTime(reactor.name, scalars, extension=extension)
-    xsHistoryVsTime(reactor.name, buGroups, history=history, extension=extension)
+    xsHistoryVsTime(reactor.name, history, buGroups, extension=extension)
     movesVsCycle(reactor.name, scalars, extension=extension)
 
 
@@ -141,7 +141,7 @@ def valueVsTime(name, x, y, key, yaxis, title, ymin=None, extension=None):
         The minimum y-axis value. If any ordinates are less than this value,
         it will be ignored.
     extension : str, optional
-        The file extention for saving the figure
+        The file extension for saving the figure
     """
     extension = extension or settings.Settings()["outputFileExtension"]
 
@@ -181,7 +181,7 @@ def keffVsTime(name, time, keff, keffUnc=None, ymin=None, extension=None):
     ymin : float, optional
         Minimum y-axis value to target.
     extension : str, optional
-        The file extention for saving the figure
+        The file extension for saving the figure
     """
     extension = extension or settings.Settings()["outputFileExtension"]
 
@@ -226,7 +226,7 @@ def buVsTime(name, scalars, extension=None):
     scalars : dict
         Scalar values for this case
     extension : str, optional
-        The file extention for saving the figure
+        The file extension for saving the figure
     """
     extension = extension or settings.Settings()["outputFileExtension"]
 
@@ -265,7 +265,7 @@ def buVsTime(name, scalars, extension=None):
     report.setData("Burnup Plot", os.path.abspath(figName), report.BURNUP_PLOT)
 
 
-def xsHistoryVsTime(name, buGroups, history=None, extension=None):
+def xsHistoryVsTime(name, history, buGroups, extension=None):
     r"""
     Plot cross section history vs. time.
 
@@ -278,7 +278,7 @@ def xsHistoryVsTime(name, buGroups, history=None, extension=None):
     history : armi.bookkeeping.historyTracker.HistoryTrackerInterface object
         The history interface.
     extension : str, optional
-        The file extention for saving the figure
+        The file extension for saving the figure
     """
     extension = extension or settings.Settings()["outputFileExtension"]
 
@@ -329,7 +329,7 @@ def movesVsCycle(name, scalars, extension=None):
     name : str
         reactor.name
     extension : str, optional
-        The file extention for saving the figure
+        The file extension for saving the figure
 
     See Also
     --------
@@ -463,6 +463,7 @@ def _getMechanicalVals(r):
     labels, vals = list(
         zip(
             *[
+                ("Dilation", r.core.p.maxdilationTotal),
                 ("Hold down", 1.0),
                 ("Distortion", 3.0),
             ]
@@ -510,6 +511,7 @@ def _getFuelVals(r):
     data = [
         ("Max FCCI", r.core.p.maxcladFCCI),
         ("Max BU", r.core.p.maxpercentBu),
+        ("Residence", r.core.p.maxresidence),
         (
             "Smear dens.",
             r.core.calcAvgParam("smearDensity", generationNum=2, typeSpec=Flags.FUEL),
@@ -548,7 +550,7 @@ def _radarFactory(numVars, frame="circle"):
     This function creates a RadarAxes projection and registers it.
 
     Raises
-    ------
+    -------
     ValueError
         If value of the frame is unknown.
 
