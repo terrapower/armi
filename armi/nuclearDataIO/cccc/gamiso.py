@@ -114,7 +114,7 @@ def addDummyNuclidesToLibrary(lib, dummyNuclides):
     return any(dummyNuclideKeysAddedToLibrary)
 
 
-class _GamisoIO(isotxs._IsotxsIO):
+class _GamisoIO(isotxs.IsotxsIO):
     """
     A reader/writer for GAMISO data files.
 
