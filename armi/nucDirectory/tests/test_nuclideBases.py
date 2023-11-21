@@ -185,6 +185,12 @@ class TestNuclide(unittest.TestCase):
             )  # ternary fission
 
     def test_nucBases_imposeBurn_nuSF(self):
+        """Test the natural abundance values.
+
+        .. test:: Test the natural abundance that was read from file instead of code.
+            :id: I_ARMI_ND_DATA0
+            :tests: R_ARMI_ND_DATA
+        """
         actual = {
             nn.name: nn.nuSF for nn in nuclideBases.where(lambda nn: nn.nuSF > 0.0)
         }
@@ -381,7 +387,12 @@ class TestNuclide(unittest.TestCase):
         self.assertEqual(len(nuclideBases.byMcc2Id), len(expectedNuclides))
 
     def test_loadMcc3Data(self):
-        """Tests consistency with the `mcc-nuclides.yaml` input and the nuclides in the data model."""
+        """Tests consistency with the `mcc-nuclides.yaml` input and the nuclides in the data model.
+
+        .. test:: Test the MCC nuclide data that was read from file instead of code.
+            :id: I_ARMI_ND_DATA1
+            :tests: R_ARMI_ND_DATA
+        """
         with open(os.path.join(RES, "mcc-nuclides.yaml")) as f:
             yaml = YAML(typ="rt")
             data = yaml.load(f)
@@ -400,7 +411,6 @@ class TestNuclide(unittest.TestCase):
 
 class test_getAAAZZZSId(unittest.TestCase):
     def test_AAAZZZSNameGenerator(self):
-
         referenceNucNames = [
             ("C", "120060"),
             ("U235", "2350920"),
