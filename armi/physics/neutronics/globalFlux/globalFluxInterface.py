@@ -239,7 +239,7 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
     def getTightCouplingValue(self):
         """Return the parameter value.
 
-        .. impl:: Get k-eff or assembly-wise power for coupling interactions
+        .. impl:: Return k-eff or assembly-wise power distribution for coupled interactions.
             :id: I_ARMI_FLUX_COUPLING_VALUE
             :implements: R_ARMI_FLUX_COUPLING_VALUE
         """
@@ -1203,14 +1203,14 @@ def computeDpaRate(mgFlux, dpaXs):
 
         DPA rate = displacement density rate / (number of atoms/cc)
                  = dr [#/cm^3/s] / (nHT9)  [1/cm^3]
-                 = flux * barn * 1e-24 
+                 = flux * barn * 1e-24
 
 
     .. math::
 
         \frac{\text{dpa}}{s}  = \frac{\phi N \sigma}{N} = \phi * \sigma
 
-    the Number density of the structural material cancels out. It's in the macroscopic 
+    the Number density of the structural material cancels out. It's in the macroscopic
     XS and in the original number of atoms.
 
     Raises

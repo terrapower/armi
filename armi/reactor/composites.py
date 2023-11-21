@@ -878,7 +878,7 @@ class ArmiObject(metaclass=CompositeModelType):
         Determine the mass in grams of nuclide(s) and/or elements in this object.
 
         .. impl:: Get mass of composite
-            :id: I_ARMI_CMP_GET_MASS0
+            :id: I_ARMI_CMP_GET_MASS
             :implements: R_ARMI_CMP_GET_MASS
 
         Parameters

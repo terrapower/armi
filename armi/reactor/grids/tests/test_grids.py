@@ -305,7 +305,7 @@ class TestHexGrid(unittest.TestCase):
         """Retrieve equivalent contents based on 3rd symmetry.
 
         .. test:: Equivalent contents in 3rd geometry are retrievable
-            :id: T_ARMI_GRID_EQUIVALENTS0
+            :id: T_ARMI_GRID_EQUIVALENTS
             :tests: R_ARMI_GRID_EQUIVALENTS
         """
         grid = grids.HexGrid.fromPitch(1.0)
@@ -580,12 +580,6 @@ class TestCartesianGrid(unittest.TestCase):
                 self.assertEqual(pos, expectedPos[j + 3][i + 3])
 
     def test_symmetry(self):
-        """Retrieve equivalent contents based on symmetry.
-
-        .. test:: Equivalent contents in geometry are retrievable
-            :id: T_ARMI_GRID_EQUIVALENTS1
-            :tests: R_ARMI_GRID_EQUIVALENTS
-        """
         # PERIODIC, no split
         grid = grids.CartesianGrid.fromRectangle(
             1.0,

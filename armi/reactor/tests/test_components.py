@@ -175,20 +175,13 @@ class TestComponent(TestGeneralComponents):
             :id: T_ARMI_COMP_1MAT0
             :tests: R_ARMI_COMP_1MAT
         """
-        expectedMaterialName = "HT9"
-        actualMaterialName = self.component.material.getName()
-        self.assertEqual(expectedMaterialName, actualMaterialName)
-
-    def test_initializeComponentName(self):
-        """Creating component and retrieving the name.
-
-        .. test:: Composite name is accessible
-            :id: T_ARMI_COMP_1MAT1
-            :tests: R_ARMI_COMP_1MAT
-        """
         expectedName = "TestComponent"
         actualName = self.component.getName()
+        expectedMaterialName = "HT9"
+        actualMaterialName = self.component.material.getName()
         self.assertEqual(expectedName, actualName)
+        self.assertEqual(expectedMaterialName, actualMaterialName)
+
 
     def test_setNumberDensity(self):
         """Test setting a single number density.
@@ -348,7 +341,7 @@ class TestShapedComponent(TestGeneralComponents):
         Test volume after cache has been cleared.
 
         .. test:: Clear cache after a dimensions updated
-            :id: T_ARMI_COMP_VOL1
+            :id: T_ARMI_COMP_VOL0
             :tests: R_ARMI_COMP_VOL
         """
         c = UnshapedVolumetricComponent("testComponent", "Custom", 0, 0, volume=1)
@@ -387,12 +380,7 @@ class TestShapedComponent(TestGeneralComponents):
             )
 
     def test_density(self):
-        """Testing the Component density gets the correct 3D material density.
-
-        .. test:: Component density is retrievable
-            :id: T_ARMI_COMP_MAT0
-            :tests: R_ARMI_COMP_MAT
-        """
+        """Testing the Component density gets the correct 3D material density."""
 
         class StrangeMaterial(Material):
             """material designed to make the test easier to understand."""
@@ -429,12 +417,7 @@ class TestDerivedShape(TestShapedComponent):
 
 
 class TestCircle(TestShapedComponent):
-    """Test circle shaped component.
-
-    .. test:: Circle shaped component
-        :id: T_ARMI_COMP_SHAPES0
-        :tests: R_ARMI_COMP_SHAPES
-    """
+    """Test circle shaped component."""
 
     componentCls = Circle
     _id = 5.0
@@ -449,7 +432,12 @@ class TestCircle(TestShapedComponent):
     }
 
     def test_getThermalExpansionFactorConservedMassByLinearExpansionPercent(self):
-        """Test that when ARMI thermally expands a circle, mass is conserved."""
+        """Test that when ARMI thermally expands a circle, mass is conserved.
+
+        .. test:: Circle shaped component
+            :id: T_ARMI_COMP_SHAPES0
+            :tests: R_ARMI_COMP_SHAPES
+        """
         hotTemp = 700.0
         dLL = self.component.material.linearExpansionFactor(
             Tc=hotTemp, T0=self._coldTemp
@@ -491,6 +479,11 @@ class TestCircle(TestShapedComponent):
             self.assertEqual(cur, ref[i])
 
     def test_getArea(self):
+        """Calculate area of circle.
+        .. test:: Calculate area of circle.
+            :id: T_ARMI_COMP_VOL1
+            :tests: R_ARMI_COMP_VOL
+        """
         od = self.component.getDimension("od")
         idd = self.component.getDimension("id")
         mult = self.component.getDimension("mult")
@@ -766,12 +759,7 @@ class TestComponentExpansion(unittest.TestCase):
 
 
 class TestTriangle(TestShapedComponent):
-    """Test triangle shaped component.
-
-    .. test:: Triangle shaped component
-        :id: T_ARMI_COMP_SHAPES4
-        :tests: R_ARMI_COMP_SHAPES
-    """
+    """Test triangle shaped component."""
 
     componentCls = Triangle
     componentDims = {
@@ -783,6 +771,15 @@ class TestTriangle(TestShapedComponent):
     }
 
     def test_getArea(self):
+        """Calculate area of triangle.
+        .. test:: Calculate area of triangle
+            :id: T_ARMI_COMP_VOL2
+            :tests: R_ARMI_COMP_VOL
+
+        .. test:: Triangle shaped component
+            :id: T_ARMI_COMP_SHAPES1
+            :tests: R_ARMI_COMP_SHAPES
+        """
         b = self.component.getDimension("base")
         h = self.component.getDimension("height")
         mult = self.component.getDimension("mult")
@@ -803,12 +800,7 @@ class TestTriangle(TestShapedComponent):
 
 
 class TestRectangle(TestShapedComponent):
-    """Test rectangle shaped component.
-
-    .. test:: Rectangle shaped component
-        :id: T_ARMI_COMP_SHAPES2
-        :tests: R_ARMI_COMP_SHAPES
-    """
+    """Test rectangle shaped component."""
 
     componentCls = Rectangle
     componentDims = {
@@ -842,6 +834,11 @@ class TestRectangle(TestShapedComponent):
             negativeRectangle.getArea()
 
     def test_getBoundingCircleOuterDiameter(self):
+        """Get outer diameter bounding circle.
+        .. test:: Rectangle shaped component
+            :id: T_ARMI_COMP_SHAPES2
+            :tests: R_ARMI_COMP_SHAPES
+        """
         ref = math.sqrt(61.0)
         cur = self.component.getBoundingCircleOuterDiameter(cold=True)
         self.assertAlmostEqual(ref, cur)
@@ -851,6 +848,11 @@ class TestRectangle(TestShapedComponent):
         self.assertAlmostEqual(math.sqrt(25.0), cur)
 
     def test_getArea(self):
+        """Calculate area of rectangle.
+        .. test:: Calculate area of rectangle
+            :id: T_ARMI_COMP_VOL3
+            :tests: R_ARMI_COMP_VOL
+        """
         outerL = self.component.getDimension("lengthOuter")
         innerL = self.component.getDimension("lengthInner")
         outerW = self.component.getDimension("widthOuter")
@@ -894,6 +896,11 @@ class TestSolidRectangle(TestShapedComponent):
         self.assertAlmostEqual(ref, cur)
 
     def test_getArea(self):
+        """Calculate area of solid rectangle.
+        .. test:: Calculate area of solid rectangle.
+            :id: T_ARMI_COMP_VOL4
+            :tests: R_ARMI_COMP_VOL
+        """
         outerL = self.component.getDimension("lengthOuter")
         outerW = self.component.getDimension("widthOuter")
         mult = self.component.getDimension("mult")
@@ -914,12 +921,7 @@ class TestSolidRectangle(TestShapedComponent):
 
 
 class TestSquare(TestShapedComponent):
-    """Test square shaped component.
-
-    .. test:: Square shaped component
-        :id: T_ARMI_COMP_SHAPES3
-        :tests: R_ARMI_COMP_SHAPES
-    """
+    """Test square shaped component."""
 
     componentCls = Square
     componentDims = {
@@ -949,6 +951,12 @@ class TestSquare(TestShapedComponent):
             negativeRectangle.getArea()
 
     def test_getBoundingCircleOuterDiameter(self):
+        """Get bounding circle outer diameter.
+
+        .. test:: Square shaped component
+            :id: T_ARMI_COMP_SHAPES3
+            :tests: R_ARMI_COMP_SHAPES
+        """
         ref = math.sqrt(18.0)
         cur = self.component.getBoundingCircleOuterDiameter(cold=True)
         self.assertAlmostEqual(ref, cur)
@@ -959,6 +967,12 @@ class TestSquare(TestShapedComponent):
         self.assertAlmostEqual(ref, cur)
 
     def test_getArea(self):
+        """Calculate area of square.
+
+        .. test:: Calculate area of square.
+            :id: T_ARMI_COMP_VOL5
+            :tests: R_ARMI_COMP_VOL
+        """
         outerW = self.component.getDimension("widthOuter")
         innerW = self.component.getDimension("widthInner")
         mult = self.component.getDimension("mult")
@@ -1015,6 +1029,11 @@ class TestCube(TestShapedComponent):
             negativeCube.getVolume()
 
     def test_getVolume(self):
+        """Calculate area of cube.
+        .. test:: Calculate area of cube.
+            :id: T_ARMI_COMP_VOL6
+            :tests: R_ARMI_COMP_VOL
+        """
         lengthO = self.component.getDimension("lengthOuter")
         widthO = self.component.getDimension("widthOuter")
         heightO = self.component.getDimension("heightOuter")
@@ -1032,17 +1051,18 @@ class TestCube(TestShapedComponent):
 
 
 class TestHexagon(TestShapedComponent):
-    """Test hexagon shaped component.
-
-    .. test:: Hexagon shaped component
-        :id: T_ARMI_COMP_SHAPES1
-        :tests: R_ARMI_COMP_SHAPES
-    """
+    """Test hexagon shaped component."""
 
     componentCls = Hexagon
     componentDims = {"Tinput": 25.0, "Thot": 430.0, "op": 10.0, "ip": 5.0, "mult": 1}
 
     def test_getPerimeter(self):
+        """Get perimeter of hexagon.
+
+        .. test:: Hexagon shaped component
+            :id: T_ARMI_COMP_SHAPES4
+            :tests: R_ARMI_COMP_SHAPES
+        """
         ip = self.component.getDimension("ip")
         mult = self.component.getDimension("mult")
         ref = 6 * (ip / math.sqrt(3)) * mult
@@ -1060,6 +1080,11 @@ class TestHexagon(TestShapedComponent):
         self.assertAlmostEqual(ref, cur)
 
     def test_getArea(self):
+        """Calculate area of hexagon.
+        .. test:: Calculate area of hexagon.
+            :id: T_ARMI_COMP_VOL7
+            :tests: R_ARMI_COMP_VOL
+        """
         cur = self.component.getArea()
         mult = self.component.getDimension("mult")
         op = self.component.getDimension("op")
@@ -1080,12 +1105,7 @@ class TestHexagon(TestShapedComponent):
 
 
 class TestHoledHexagon(TestShapedComponent):
-    """Test holed hexagon shaped component.
-
-    .. test:: Holed hexagon shaped component
-        :id: T_ARMI_COMP_SHAPES5
-        :tests: R_ARMI_COMP_SHAPES
-    """
+    """Test holed hexagon shaped component."""
 
     componentCls = HoledHexagon
     componentDims = {
@@ -1123,6 +1143,11 @@ class TestHoledHexagon(TestShapedComponent):
         )
 
     def test_getArea(self):
+        """Calculate area of holed hexagon.
+        .. test:: Calculate area of holed hexagon.
+            :id: T_ARMI_COMP_VOL8
+            :tests: R_ARMI_COMP_VOL
+        """
         op = self.component.getDimension("op")
         odHole = self.component.getDimension("holeOD")
         nHoles = self.component.getDimension("nHoles")
@@ -1170,6 +1195,11 @@ class TestHexHoledCircle(TestShapedComponent):
         )
 
     def test_getArea(self):
+        """Calculate area of hex holed circle.
+        .. test:: Calculate area of hex holed circle.
+            :id: T_ARMI_COMP_VOL9
+            :tests: R_ARMI_COMP_VOL
+        """
         od = self.component.getDimension("od")
         holeOP = self.component.getDimension("holeOP")
         mult = self.component.getDimension("mult")
@@ -1227,6 +1257,11 @@ class TestHoledRectangle(TestShapedComponent):
         self.assertEqual(ref, cur)
 
     def test_getArea(self):
+        """Calculate area of holed rectangle.
+        .. test:: Calculate area of holed rectangle.
+            :id: T_ARMI_COMP_VOL10
+            :tests: R_ARMI_COMP_VOL
+        """
         rectArea = self.length * self.width
         odHole = self.component.getDimension("holeOD")
         mult = self.component.getDimension("mult")
@@ -1247,12 +1282,7 @@ class TestHoledRectangle(TestShapedComponent):
 
 
 class TestHoledSquare(TestHoledRectangle):
-    """Test holed square shaped component.
-
-    .. test:: Holed hexagon shaped component
-        :id: T_ARMI_COMP_SHAPES6
-        :tests: R_ARMI_COMP_SHAPES
-    """
+    """Test holed square shaped component."""
 
     componentCls = HoledSquare
 
@@ -1280,12 +1310,7 @@ class TestHoledSquare(TestHoledRectangle):
 
 
 class TestHelix(TestShapedComponent):
-    """Test helix shaped component.
-
-    .. test:: Helix shaped component
-        :id: T_ARMI_COMP_SHAPES7
-        :tests: R_ARMI_COMP_SHAPES
-    """
+    """Test helix shaped component."""
 
     componentCls = Helix
     componentDims = {
@@ -1309,6 +1334,11 @@ class TestHelix(TestShapedComponent):
         self.assertAlmostEqual(ref, cur)
 
     def test_getArea(self):
+        """Calculate area of helix.
+        .. test:: Calculate area of helix.
+            :id: T_ARMI_COMP_VOL11
+            :tests: R_ARMI_COMP_VOL
+        """
         cur = self.component.getArea()
         axialPitch = self.component.getDimension("axialPitch")
         helixDiameter = self.component.getDimension("helixDiameter")
@@ -1388,6 +1418,11 @@ class TestSphere(TestShapedComponent):
     componentDims = {"Tinput": 25.0, "Thot": 430.0, "od": 1.0, "id": 0.0, "mult": 3}
 
     def test_getVolume(self):
+        """Calculate area of sphere.
+        .. test:: Calculate area of sphere.
+            :id: T_ARMI_COMP_VOL12
+            :tests: R_ARMI_COMP_VOL
+        """
         od = self.component.getDimension("od")
         idd = self.component.getDimension("id")
         mult = self.component.getDimension("mult")
@@ -1400,13 +1435,6 @@ class TestSphere(TestShapedComponent):
 
 
 class TestRadialSegment(TestShapedComponent):
-    """Test radial segment.
-
-    .. test:: Compute properties of radial segment
-        :id: T_ARMI_COMP_FLUID0
-        :tests: R_ARMI_COMP_FLUID
-    """
-
     componentCls = RadialSegment
     componentDims = {
         "Tinput": 25.0,
@@ -1440,13 +1468,6 @@ class TestRadialSegment(TestShapedComponent):
 
 
 class TestDifferentialRadialSegment(TestShapedComponent):
-    """Test differential radial segment.
-
-    .. test:: Compute properties of radial segment that can be updated
-        :id: T_ARMI_COMP_FLUID1
-        :tests: R_ARMI_COMP_FLUID
-    """
-
     componentCls = DifferentialRadialSegment
     componentDims = {
         "Tinput": 25.0,
@@ -1475,7 +1496,7 @@ class TestDifferentialRadialSegment(TestShapedComponent):
         Test Update dimensions.
 
         .. test:: Dimensions can be updated
-            :id: T_ARMI_COMP_VOL0
+            :id: T_ARMI_COMP_VOL13
             :tests: R_ARMI_COMP_VOL
         """
         self.assertEqual(self.component.getDimension("inner_radius"), 110)

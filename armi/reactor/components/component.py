@@ -427,6 +427,10 @@ class Component(composites.Composite, metaclass=ComponentType):
         """
         Get the area of a component in cm^2.
 
+        .. impl:: Set a dimension of a component
+            :id: I_ARMI_COMP_VOL0
+            :implements: R_ARMI_COMP_VOL
+
         See Also
         --------
         block.getVolumeFractions: component coolant is typically the "leftover" and is calculated and set here
@@ -447,6 +451,10 @@ class Component(composites.Composite, metaclass=ComponentType):
     def getVolume(self):
         """
         Return the volume [cm^3] of the component.
+
+        .. impl:: Set a dimension of a component
+            :id: I_ARMI_COMP_VOL1
+            :implements: R_ARMI_COMP_VOL
 
         Notes
         -----
@@ -469,10 +477,6 @@ class Component(composites.Composite, metaclass=ComponentType):
         The updated value will be based on its shape and current dimensions.
         If there is a parent container and that container contains a DerivedShape, then that must be
         updated as well since its volume may be changing.
-
-        .. impl:: Clear cache after a dimenions updated
-            :id: I_ARMI_COMP_VOL1
-            :implements: R_ARMI_COMP_VOL
 
         See Also
         --------
@@ -654,10 +658,6 @@ class Component(composites.Composite, metaclass=ComponentType):
         """
         Set heterogeneous number density.
 
-        .. impl:: Set number density of nuclide
-            :id: I_ARMI_COMP_NUCLIDE_FRACS0
-            :implements R_ARMI_COMP_NUCLIDE_FRACS
-
         Parameters
         ----------
         nucName : str
@@ -675,10 +675,6 @@ class Component(composites.Composite, metaclass=ComponentType):
     def setNumberDensities(self, numberDensities):
         """
         Set one or more multiple number densities. Clears out any number density not listed.
-
-        .. impl:: Set number densities of nuclides
-            :id: I_ARMI_COMP_NUCLIDE_FRACS1
-            :implements R_ARMI_COMP_NUCLIDE_FRACS
 
         Parameters
         ----------
@@ -759,10 +755,6 @@ class Component(composites.Composite, metaclass=ComponentType):
 
             :math:`A_i` is the atomic weight of of nuclide i in grams/mole
 
-        .. impl:: Get mass of composite
-            :id: I_ARMI_CMP_GET_MASS1
-            :implements: R_ARMI_CMP_GET_MASS
-
         Parameters
         ----------
         nuclideNames : str, optional
@@ -786,10 +778,6 @@ class Component(composites.Composite, metaclass=ComponentType):
     def setDimension(self, key, val, retainLink=False, cold=True):
         """
         Set a single dimension on the component.
-
-        .. impl:: Set a dimension of a component
-            :id: I_ARMI_COMP_VOL0
-            :implements: R_ARMI_COMP_VOL
 
         Parameters
         ----------
@@ -1175,12 +1163,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         return pinFluxes[self.p.pinNum - 1] * self.getVolume()
 
     def density(self):
-        """Returns the mass density of the object in g/cc.
-
-        .. impl:: Material density is retrievable
-            :id: I_ARMI_COMP_MAT1
-            :implements: R_ARMI_COMP_MAT
-        """
+        """Returns the mass density of the object in g/cc."""
         density = composites.Composite.density(self)
 
         if not density:
