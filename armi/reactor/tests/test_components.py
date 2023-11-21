@@ -182,7 +182,6 @@ class TestComponent(TestGeneralComponents):
         self.assertEqual(expectedName, actualName)
         self.assertEqual(expectedMaterialName, actualMaterialName)
 
-
     def test_setNumberDensity(self):
         """Test setting a single number density.
 
@@ -480,6 +479,7 @@ class TestCircle(TestShapedComponent):
 
     def test_getArea(self):
         """Calculate area of circle.
+
         .. test:: Calculate area of circle.
             :id: T_ARMI_COMP_VOL1
             :tests: R_ARMI_COMP_VOL
@@ -772,6 +772,7 @@ class TestTriangle(TestShapedComponent):
 
     def test_getArea(self):
         """Calculate area of triangle.
+
         .. test:: Calculate area of triangle
             :id: T_ARMI_COMP_VOL2
             :tests: R_ARMI_COMP_VOL
@@ -835,6 +836,7 @@ class TestRectangle(TestShapedComponent):
 
     def test_getBoundingCircleOuterDiameter(self):
         """Get outer diameter bounding circle.
+
         .. test:: Rectangle shaped component
             :id: T_ARMI_COMP_SHAPES2
             :tests: R_ARMI_COMP_SHAPES
@@ -849,6 +851,7 @@ class TestRectangle(TestShapedComponent):
 
     def test_getArea(self):
         """Calculate area of rectangle.
+
         .. test:: Calculate area of rectangle
             :id: T_ARMI_COMP_VOL3
             :tests: R_ARMI_COMP_VOL
@@ -897,6 +900,7 @@ class TestSolidRectangle(TestShapedComponent):
 
     def test_getArea(self):
         """Calculate area of solid rectangle.
+
         .. test:: Calculate area of solid rectangle.
             :id: T_ARMI_COMP_VOL4
             :tests: R_ARMI_COMP_VOL
@@ -1030,6 +1034,7 @@ class TestCube(TestShapedComponent):
 
     def test_getVolume(self):
         """Calculate area of cube.
+
         .. test:: Calculate area of cube.
             :id: T_ARMI_COMP_VOL6
             :tests: R_ARMI_COMP_VOL
@@ -1081,6 +1086,7 @@ class TestHexagon(TestShapedComponent):
 
     def test_getArea(self):
         """Calculate area of hexagon.
+
         .. test:: Calculate area of hexagon.
             :id: T_ARMI_COMP_VOL7
             :tests: R_ARMI_COMP_VOL
@@ -1144,6 +1150,7 @@ class TestHoledHexagon(TestShapedComponent):
 
     def test_getArea(self):
         """Calculate area of holed hexagon.
+
         .. test:: Calculate area of holed hexagon.
             :id: T_ARMI_COMP_VOL8
             :tests: R_ARMI_COMP_VOL
@@ -1196,6 +1203,7 @@ class TestHexHoledCircle(TestShapedComponent):
 
     def test_getArea(self):
         """Calculate area of hex holed circle.
+
         .. test:: Calculate area of hex holed circle.
             :id: T_ARMI_COMP_VOL9
             :tests: R_ARMI_COMP_VOL
@@ -1258,6 +1266,7 @@ class TestHoledRectangle(TestShapedComponent):
 
     def test_getArea(self):
         """Calculate area of holed rectangle.
+
         .. test:: Calculate area of holed rectangle.
             :id: T_ARMI_COMP_VOL10
             :tests: R_ARMI_COMP_VOL
@@ -1335,6 +1344,7 @@ class TestHelix(TestShapedComponent):
 
     def test_getArea(self):
         """Calculate area of helix.
+
         .. test:: Calculate area of helix.
             :id: T_ARMI_COMP_VOL11
             :tests: R_ARMI_COMP_VOL
@@ -1419,6 +1429,7 @@ class TestSphere(TestShapedComponent):
 
     def test_getVolume(self):
         """Calculate area of sphere.
+
         .. test:: Calculate area of sphere.
             :id: T_ARMI_COMP_VOL12
             :tests: R_ARMI_COMP_VOL
