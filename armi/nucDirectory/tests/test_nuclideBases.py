@@ -191,7 +191,7 @@ class TestNuclide(unittest.TestCase):
             )  # ternary fission
 
     def test_nucBases_imposeBurn_nuSF(self):
-        """Test the natural abundance values.
+        """Test the nuclide data from file (specifically neutrons / sponaneous fission).
 
         .. test:: Test that nuclide data was read from file instead of code.
             :id: I_ARMI_ND_DATA0
