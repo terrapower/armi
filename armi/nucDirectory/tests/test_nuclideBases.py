@@ -140,7 +140,7 @@ class TestNuclide(unittest.TestCase):
         """The name and labels for correct for nuclides.
 
         .. test:: Validate the name, label, and DB name are accessible for nuclides.
-            :id: I_ARMI_ND_ISOTOPES0
+            :id: T_ARMI_ND_ISOTOPES0
             :tests: R_ARMI_ND_ISOTOPES
         """
         count = 0
@@ -194,7 +194,7 @@ class TestNuclide(unittest.TestCase):
         """Test the nuclide data from file (specifically neutrons / sponaneous fission).
 
         .. test:: Test that nuclide data was read from file instead of code.
-            :id: I_ARMI_ND_DATA0
+            :id: T_ARMI_ND_DATA0
             :tests: R_ARMI_ND_DATA
         """
         actual = {
@@ -250,7 +250,7 @@ class TestNuclide(unittest.TestCase):
         """Test the correct am242g and am242m abbreviations are supported.
 
         .. test:: Specifically test for Am242 and Am242g because it is a special case.
-            :id: I_ARMI_ND_ISOTOPES1
+            :id: T_ARMI_ND_ISOTOPES1
             :tests: R_ARMI_ND_ISOTOPES
         """
         am242m = nuclideBases.byName["AM242"]
@@ -284,7 +284,7 @@ class TestNuclide(unittest.TestCase):
         """Test get nuclides by name.
 
         .. test:: Test get nuclides by name.
-            :id: I_ARMI_ND_ISOTOPES2
+            :id: T_ARMI_ND_ISOTOPES2
             :tests: R_ARMI_ND_ISOTOPES
         """
         self.assertEqual(nuclideBases.byName["U235"].getEndfMatNum(), "9228")
@@ -392,7 +392,7 @@ class TestNuclide(unittest.TestCase):
         """Tests consistency with the `mcc-nuclides.yaml` input and the nuclides in the data model.
 
         .. test:: Test that MCC v2 IDs can be queried by nuclides.
-            :id: I_ARMI_ND_ISOTOPES3
+            :id: T_ARMI_ND_ISOTOPES3
             :tests: R_ARMI_ND_ISOTOPES
         """
         with open(os.path.join(RES, "mcc-nuclides.yaml")) as f:
@@ -413,11 +413,11 @@ class TestNuclide(unittest.TestCase):
         """Tests consistency with the `mcc-nuclides.yaml` input and the nuclides in the data model.
 
         .. test:: Test that MCC v3 IDs can be queried by nuclides.
-            :id: I_ARMI_ND_ISOTOPES4
+            :id: T_ARMI_ND_ISOTOPES4
             :tests: R_ARMI_ND_ISOTOPES
 
         .. test:: Test the MCC nuclide data that was read from file instead of code.
-            :id: I_ARMI_ND_DATA1
+            :id: T_ARMI_ND_DATA1
             :tests: R_ARMI_ND_DATA
         """
         with open(os.path.join(RES, "mcc-nuclides.yaml")) as f:
@@ -441,7 +441,7 @@ class TestAAAZZZSId(unittest.TestCase):
         """Test that AAAZZS ID name generator.
 
         .. test:: Query the AAAZZS IDs can be retrieved for nuclides.
-            :id: I_ARMI_ND_ISOTOPES5
+            :id: T_ARMI_ND_ISOTOPES5
             :tests: R_ARMI_ND_ISOTOPES
         """
         referenceNucNames = [
