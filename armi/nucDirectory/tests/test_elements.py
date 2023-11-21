@@ -35,14 +35,32 @@ class TestElement(unittest.TestCase):
             self.assertIsNotNone(ee.standardWeight)
 
     def test_element_elementByNameReturnsElement(self):
+        """Get elements by name.
+
+        .. test:: Get elements by name.
+            :id: I_ARMI_ND_ELEMENTS0
+            :tests: R_ARMI_ND_ELEMENTS
+        """
         for ee in elements.byZ.values():
             self.assertIs(ee, elements.byName[ee.name])
 
     def test_element_elementByZReturnsElement(self):
+        """Get elements by Z.
+
+        .. test:: Get elements by Z.
+            :id: I_ARMI_ND_ELEMENTS1
+            :tests: R_ARMI_ND_ELEMENTS
+        """
         for ee in elements.byZ.values():
             self.assertIs(ee, elements.byZ[ee.z])
 
     def test_element_elementBySymbolReturnsElement(self):
+        """Get elements by symbol.
+
+        .. test:: Get elements by symbol.
+            :id: I_ARMI_ND_ELEMENTS2
+            :tests: R_ARMI_ND_ELEMENTS
+        """
         for ee in elements.byZ.values():
             self.assertIs(ee, elements.bySymbol[ee.symbol])
 
