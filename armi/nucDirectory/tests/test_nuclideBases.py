@@ -137,6 +137,12 @@ class TestNuclide(unittest.TestCase):
             )
 
     def test_nucBases_labelAndNameCollsionsAreForSameNuclide(self):
+        """The name and labels for correct for nuclides.
+
+        .. test:: Validate the name, label, and DB name are accessible for nuclides.
+            :id: I_ARMI_ND_ISOTOPES0
+            :tests: R_ARMI_ND_ISOTOPES
+        """
         count = 0
         for nuc in nuclideBases.where(lambda nn: nn.name == nn.label):
             count += 1
@@ -241,6 +247,12 @@ class TestNuclide(unittest.TestCase):
         )
 
     def test_nucBases_Am242m(self):
+        """Test the correct am242g and am242m abbreviations are supported.
+
+        .. test:: Specifically test for Am242 and Am242g because it is a special case.
+            :id: I_ARMI_ND_ISOTOPES1
+            :tests: R_ARMI_ND_ISOTOPES
+        """
         am242m = nuclideBases.byName["AM242"]
         self.assertEqual(am242m, nuclideBases.byName["AM242M"])
         self.assertEqual("nAm242m", am242m.getDatabaseName())
@@ -269,6 +281,12 @@ class TestNuclide(unittest.TestCase):
         self.assertIsNone(nb.getDecay("sf"))
 
     def test_getEndfMatNum(self):
+        """Test get nuclides by name.
+
+        .. test:: Test get nuclides by name.
+            :id: I_ARMI_ND_ISOTOPES2
+            :tests: R_ARMI_ND_ISOTOPES
+        """
         self.assertEqual(nuclideBases.byName["U235"].getEndfMatNum(), "9228")
         self.assertEqual(nuclideBases.byName["U238"].getEndfMatNum(), "9237")
         self.assertEqual(nuclideBases.byName["PU239"].getEndfMatNum(), "9437")
@@ -371,7 +389,12 @@ class TestNuclide(unittest.TestCase):
         self.assertAlmostEqual(activity, 0.9885593, places=6)
 
     def test_loadMcc2Data(self):
-        """Tests consistency with the `mcc-nuclides.yaml` input and the nuclides in the data model."""
+        """Tests consistency with the `mcc-nuclides.yaml` input and the nuclides in the data model.
+
+        .. test:: Test that MCC v2 IDs can be queried by nuclides.
+            :id: I_ARMI_ND_ISOTOPES3
+            :tests: R_ARMI_ND_ISOTOPES
+        """
         with open(os.path.join(RES, "mcc-nuclides.yaml")) as f:
             yaml = YAML(typ="rt")
             data = yaml.load(f)
@@ -388,6 +411,10 @@ class TestNuclide(unittest.TestCase):
 
     def test_loadMcc3Data(self):
         """Tests consistency with the `mcc-nuclides.yaml` input and the nuclides in the data model.
+
+        .. test:: Test that MCC v3 IDs can be queried by nuclides.
+            :id: I_ARMI_ND_ISOTOPES4
+            :tests: R_ARMI_ND_ISOTOPES
 
         .. test:: Test the MCC nuclide data that was read from file instead of code.
             :id: I_ARMI_ND_DATA1
@@ -409,8 +436,14 @@ class TestNuclide(unittest.TestCase):
         self.assertEqual(len(nuclideBases.byMcc3Id), len(expectedNuclides) - 1)
 
 
-class test_getAAAZZZSId(unittest.TestCase):
+class TestAAAZZZSId(unittest.TestCase):
     def test_AAAZZZSNameGenerator(self):
+        """Test that AAAZZS ID name generator.
+
+        .. test:: Query the AAAZZS IDs can be retrieved for nuclides.
+            :id: I_ARMI_ND_ISOTOPES5
+            :tests: R_ARMI_ND_ISOTOPES
+        """
         referenceNucNames = [
             ("C", "120060"),
             ("U235", "2350920"),
