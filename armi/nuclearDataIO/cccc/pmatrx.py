@@ -167,7 +167,7 @@ def _readWrite(lib, fileName, fileMode, getNuclideFunc):
     return lib
 
 
-class _PmatrxIO(cccc.Stream):
+class PmatrxIO(cccc.Stream):
     """Tool to read and write PMATRX files.
 
     .. impl:: Tool to read and write PMATRX files.
