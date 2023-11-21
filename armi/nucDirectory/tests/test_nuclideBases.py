@@ -193,7 +193,7 @@ class TestNuclide(unittest.TestCase):
     def test_nucBases_imposeBurn_nuSF(self):
         """Test the natural abundance values.
 
-        .. test:: Test the natural abundance that was read from file instead of code.
+        .. test:: Test that nuclide data was read from file instead of code.
             :id: I_ARMI_ND_DATA0
             :tests: R_ARMI_ND_DATA
         """

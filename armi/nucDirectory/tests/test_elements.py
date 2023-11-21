@@ -102,6 +102,10 @@ class TestElement(unittest.TestCase):
 
         Uses RIPL definitions of naturally occurring. Protactinium is debated as naturally
         occurring. Yeah it exists as a U235 decay product but it's kind of pseudo-natural.
+
+        .. test:: Get elements by Z, to show if they are naturally occurring.
+            :id: I_ARMI_ND_ELEMENTS3
+            :tests: R_ARMI_ND_ELEMENTS
         """
         for ee in elements.byZ.values():
             if ee.z == 43 or ee.z == 61 or 84 <= ee.z <= 89 or ee.z >= 93:
@@ -122,6 +126,12 @@ class TestElement(unittest.TestCase):
             )
 
     def test_isHeavyMetal(self):
+        """Get elements by Z.
+
+        .. test:: Get elements by Z, to show if they are heavy metals.
+            :id: I_ARMI_ND_ELEMENTS4
+            :tests: R_ARMI_ND_ELEMENTS
+        """
         for ee in elements.byZ.values():
             if ee.z > 89:
                 self.assertTrue(ee.isHeavyMetal())
