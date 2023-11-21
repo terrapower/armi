@@ -38,7 +38,7 @@ class TestElement(unittest.TestCase):
         """Get elements by name.
 
         .. test:: Get elements by name.
-            :id: I_ARMI_ND_ELEMENTS0
+            :id: T_ARMI_ND_ELEMENTS0
             :tests: R_ARMI_ND_ELEMENTS
         """
         for ee in elements.byZ.values():
@@ -48,7 +48,7 @@ class TestElement(unittest.TestCase):
         """Get elements by Z.
 
         .. test:: Get elements by Z.
-            :id: I_ARMI_ND_ELEMENTS1
+            :id: T_ARMI_ND_ELEMENTS1
             :tests: R_ARMI_ND_ELEMENTS
         """
         for ee in elements.byZ.values():
@@ -58,7 +58,7 @@ class TestElement(unittest.TestCase):
         """Get elements by symbol.
 
         .. test:: Get elements by symbol.
-            :id: I_ARMI_ND_ELEMENTS2
+            :id: T_ARMI_ND_ELEMENTS2
             :tests: R_ARMI_ND_ELEMENTS
         """
         for ee in elements.byZ.values():
@@ -104,7 +104,7 @@ class TestElement(unittest.TestCase):
         occurring. Yeah it exists as a U235 decay product but it's kind of pseudo-natural.
 
         .. test:: Get elements by Z, to show if they are naturally occurring.
-            :id: I_ARMI_ND_ELEMENTS3
+            :id: T_ARMI_ND_ELEMENTS3
             :tests: R_ARMI_ND_ELEMENTS
         """
         for ee in elements.byZ.values():
@@ -129,7 +129,7 @@ class TestElement(unittest.TestCase):
         """Get elements by Z.
 
         .. test:: Get elements by Z, to show if they are heavy metals.
-            :id: I_ARMI_ND_ELEMENTS4
+            :id: T_ARMI_ND_ELEMENTS4
             :tests: R_ARMI_ND_ELEMENTS
         """
         for ee in elements.byZ.values():
