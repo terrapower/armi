@@ -55,10 +55,7 @@ modeling option, the blocks/components will have these ``LFP`` nuclides in the n
 density dictionaries. The key thing here is that these lumped nuclides do not exist
 in nature and therefore do not have nuclear data directly available in cross section
 evaluations, like ENDF/B. If the user wishes to consider these nuclides in the flux/depletion
-evaluations, then cross sections for these ``LFP`` nuclides will need to be prepared. Generally
-speaking, the the ``crossSectionGroupManager`` and the  ``latticePhysicsInterface`` could be
-used to implement this for cross section generation codes, like NJOY, CASMO, MC2-3, Serpent,
-etc.
+evaluations, then cross sections for these ``LFP`` nuclides will need to be prepared.
 
 .. warning::
     

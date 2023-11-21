@@ -23,22 +23,17 @@ independent interfaces:
 :py:mod:`~armi.physics.neutronics.fissionProductModel`
     Handles fission product modeling
 
-:py:mod:`~armi.physics.neutronics.crossSectionGroupManager`
-    Handles the management of different cross section "groups"
-
 .. warning:: There is also some legacy and question-raising code in this module that
     is here temporarily while we finish untangling some of the neutronics
     plugins outside of ARMI.
 """
 # ruff: noqa: F401, E402
-from enum import IntEnum
 
 import numpy
 import tabulate
 
 from armi import plugins
 from armi import runLog
-from armi.physics.neutronics.const import CONF_CROSS_SECTION
 
 
 class NeutronicsPlugin(plugins.ArmiPlugin):
@@ -48,14 +43,9 @@ class NeutronicsPlugin(plugins.ArmiPlugin):
     @plugins.HOOKIMPL
     def exposeInterfaces(cs):
         """Collect and expose all of the interfaces that live under the built-in neutronics package."""
-        from armi.physics.neutronics import crossSectionGroupManager
         from armi.physics.neutronics.fissionProductModel import fissionProductModel
 
-        interfaceInfo = []
-        for mod in (crossSectionGroupManager, fissionProductModel):
-            interfaceInfo += plugins.collectInterfaceDescriptions(mod, cs)
-
-        return interfaceInfo
+        return plugins.collectInterfaceDescriptions(fissionProductModel, cs)
 
     @staticmethod
     @plugins.HOOKIMPL
@@ -80,16 +70,11 @@ class NeutronicsPlugin(plugins.ArmiPlugin):
     def defineSettings():
         """Define settings for the plugin."""
         from armi.physics.neutronics import settings as neutronicsSettings
-        from armi.physics.neutronics import crossSectionSettings
         from armi.physics.neutronics.fissionProductModel import (
             fissionProductModelSettings,
         )
 
-        settings = [
-            crossSectionSettings.XSSettingDef(
-                CONF_CROSS_SECTION,
-            )
-        ]
+        settings = []
         settings += neutronicsSettings.defineSettings()
         settings += fissionProductModelSettings.defineSettings()
 
@@ -275,30 +260,31 @@ def applyEffectiveDelayedNeutronFractionToCore(core, cs):
         )
 
 
-class LatticePhysicsFrequency(IntEnum):
+def getXSTypeNumberFromLabel(xsTypeLabel: str) -> int:
     """
-    Enumeration for lattice physics update frequency options.
+    Convert a XSID label (e.g. 'AA') to an integer.
 
-    NEVER = never automatically trigger lattice physics (a custom script could still trigger it)
-    BOL = Beginning-of-life (c0n0)
-    BOC = Beginning-of-cycle (c*n0)
-    everyNode = Every interaction node (c*n*)
-    firstCoupledIteration = every node + the first coupled iteration at each node
-    all = every node + every coupled iteration
+    Useful for visualizing XS type in XTVIEW.
 
-    Notes
-    -----
-    firstCoupledIteration only updates the cross sections during the first coupled iteration,
-    but not on any subsequent iterations. This may be an appropriate approximation in some cases
-    to save compute time, but each individual user should give careful consideration to whether
-    this is the behavior they want for a particular application. The main purpose of this setting
-    is to capture a large change in temperature distribution when running a snapshot at a different
-    power/flow condition than the original state being loaded from the database.
+    2-digit labels are supported when there is only one burnup group.
     """
+    return int("".join(["{:02d}".format(ord(si)) for si in xsTypeLabel]))
 
-    never = 0
-    BOL = 1
-    BOC = 2
-    everyNode = 3
-    firstCoupledIteration = 4
-    all = 5
+
+def getXSTypeLabelFromNumber(xsTypeNumber: int) -> int:
+    """
+    Convert a XSID label (e.g. 65) to an XS label (e.g. 'A').
+
+    Useful for visualizing XS type in XTVIEW.
+
+    2-digit labels are supported when there is only one burnup group.
+    """
+    try:
+        if xsTypeNumber > ord("Z"):
+            # two digit. Parse
+            return chr(int(str(xsTypeNumber)[:2])) + chr(int(str(xsTypeNumber)[2:]))
+        else:
+            return chr(xsTypeNumber)
+    except ValueError:
+        runLog.error("Error converting {} to label.".format(xsTypeNumber))
+        raise

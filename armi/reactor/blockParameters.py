@@ -16,7 +16,7 @@
 import six
 
 from armi import runLog
-from armi.physics.neutronics import crossSectionGroupManager
+from armi.physics.neutronics import getXSTypeNumberFromLabel, getXSTypeLabelFromNumber
 from armi.reactor import parameters
 from armi.reactor.parameters import ParamLocation, Parameter, NoDefault
 from armi.reactor.parameters.parameterDefinitions import isNumpyArray
@@ -395,7 +395,7 @@ def getBlockParameterDefinitions():
 
         def xsType(self, value):
             self._p_xsType = value
-            self._p_xsTypeNum = crossSectionGroupManager.getXSTypeNumberFromLabel(value)
+            self._p_xsTypeNum = getXSTypeNumberFromLabel(value)
             xsTypeNumDef = parameters.ALL_DEFINITIONS["xsTypeNum"]
             xsTypeNumDef.assigned = parameters.SINCE_ANYTHING
 
@@ -409,7 +409,7 @@ def getBlockParameterDefinitions():
 
         def xsTypeNum(self, value):
             self._p_xsTypeNum = value
-            self._p_xsType = crossSectionGroupManager.getXSTypeLabelFromNumber(value)
+            self._p_xsType = getXSTypeLabelFromNumber(value)
             xsTypeDef = parameters.ALL_DEFINITIONS["xsType"]
             xsTypeDef.assigned = parameters.SINCE_ANYTHING
 

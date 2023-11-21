@@ -18,7 +18,6 @@ Constants and Enums.
 In an independent file to minimize circular imports.
 """
 
-CONF_CROSS_SECTION = "crossSectionControl"
 #
 # FAST_FLUX_THRESHOLD_EV is the energy threshold above which neutrons are considered "fast" [eV]
 #

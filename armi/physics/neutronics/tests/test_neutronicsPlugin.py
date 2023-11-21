@@ -21,7 +21,6 @@ from ruamel.yaml import YAML
 from armi import getPluginManagerOrFail, settings, tests
 from armi.operators import settingsValidation
 from armi.physics import neutronics
-from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.physics.neutronics.settings import (
     CONF_GEN_XS,
     CONF_GLOBAL_FLUX_ACTIVE,
@@ -30,7 +29,6 @@ from armi.physics.neutronics.settings import (
     CONF_OUTERS_,
     CONF_INNERS_,
     CONF_NEUTRONICS_KERNEL,
-    CONF_LATTICE_PHYSICS_FREQUENCY,
     getNeutronicsSettingValidators,
 )
 from armi.settings.fwSettings.globalSettings import CONF_RUN_TYPE
@@ -54,40 +52,6 @@ BA:
 
 
 class Test_NeutronicsPlugin(TestPlugin):
-    plugin = neutronics.NeutronicsPlugin
-
-    def setUp(self):
-        self.td = directoryChangers.TemporaryDirectoryChanger()
-        self.td.__enter__()
-
-    def tearDown(self):
-        self.td.__exit__(None, None, None)
-
-    def test_customSettingObjectIO(self):
-        """Check specialized settings can build objects as values and write."""
-        cs = caseSettings.Settings()
-        yaml = YAML()
-        inp = yaml.load(io.StringIO(XS_EXAMPLE))
-        cs[CONF_CROSS_SECTION] = inp
-        self.assertEqual(cs[CONF_CROSS_SECTION]["AA"].geometry, "0D")
-        fname = "test_setting_obj_io_.yaml"
-        cs.writeToYamlFile(fname)
-        outText = open(fname, "r").read()
-        self.assertIn("geometry: 0D", outText)
-
-    def test_customSettingRoundTrip(self):
-        """Check specialized settings can go back and forth."""
-        cs = caseSettings.Settings()
-        yaml = YAML()
-        inp = yaml.load(io.StringIO(XS_EXAMPLE))
-        cs[CONF_CROSS_SECTION] = inp
-        cs[CONF_CROSS_SECTION] = cs[CONF_CROSS_SECTION]
-        fname = "test_setting_obj_io_round.yaml"
-        cs.writeToYamlFile(fname)
-        outText = open(fname, "r").read()
-        self.assertIn("geometry: 0D", outText)
-        self.assertIn("geometry: 1D", outText)
-
     def test_neutronicsSettingsLoaded(self):
         """Check that various special neutronics-specifics settings are loaded."""
         cs = caseSettings.Settings()
@@ -332,18 +296,4 @@ class NeutronicsReactorTests(unittest.TestCase):
         self.__autoCorrectAllQueries(sv)
         self.assertEqual(
             inspector.cs[CONF_GRID_PLATE_DPA_XS_SET], "dpaSS316_ANL33_TwrBol"
-        )
-
-        cs = cs.modified(
-            newSettings={
-                CONF_RUN_TYPE: "Snapshots",
-                CONF_LATTICE_PHYSICS_FREQUENCY: "BOC",
-            }
-        )
-        inspector = settingsValidation.Inspector(cs)
-        sv = getNeutronicsSettingValidators(inspector)
-
-        self.__autoCorrectAllQueries(sv)
-        self.assertEqual(
-            inspector.cs[CONF_LATTICE_PHYSICS_FREQUENCY], "firstCoupledIteration"
         )

@@ -40,7 +40,7 @@ import numpy
 from armi import runLog
 from armi import settings
 from armi.bookkeeping import report
-from armi.physics.neutronics import crossSectionGroupManager
+from armi.physics.neutronics import getXSTypeLabelFromNumber
 from armi.reactor.flags import Flags
 
 
@@ -296,7 +296,7 @@ def xsHistoryVsTime(name, history, buGroups, extension=None):
         maxb = max(burnups)
         if maxb > maxbu:
             maxbu = maxb
-        xsType = crossSectionGroupManager.getXSTypeLabelFromNumber(typeNum)
+        xsType = getXSTypeLabelFromNumber(typeNum)
         color = next(colors)
         plt.plot(times, burnups, color + ".", label="Type {0} XS".format(xsType))
 

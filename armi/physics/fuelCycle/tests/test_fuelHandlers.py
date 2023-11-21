@@ -30,7 +30,6 @@ from armi.physics.fuelCycle.settings import (
     CONF_PLOT_SHUFFLE_ARROWS,
     CONF_RUN_LATTICE_BEFORE_SHUFFLING,
 )
-from armi.physics.neutronics.crossSectionGroupManager import CrossSectionGroupManager
 from armi.reactor import assemblies, blocks, components, grids
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
@@ -135,11 +134,11 @@ class MockLatticePhysicsInterface(interfaces.Interface):
     function = "latticePhysics"
 
 
-class MockXSGM(CrossSectionGroupManager):
+class MockXSGM(interfaces.Interface):
     """A mock cross section group manager that does nothing for interactBOC."""
 
-    def interactBOC(self, cycle=None):
-        pass
+    name = "xsGroups"
+    function = "xsGroups"
 
 
 class TestFuelHandler(FuelHandlerTestHelper):
