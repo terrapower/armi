@@ -136,6 +136,10 @@ class GeodstStream(cccc.StreamWithDataContainer):
 
         Logic to control which records will be present is here, which
         comes directly off the File specification.
+
+        .. impl:: Read and write GEODST files.
+            :id: I_ARMI_NUCDATA_GEODST
+            :implements: R_ARMI_NUCDATA_GEODST
         """
         self._rwFileID()
         self._rw1DRecord()

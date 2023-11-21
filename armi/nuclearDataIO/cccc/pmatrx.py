@@ -17,8 +17,8 @@ Module for reading PMATRX files which contain gamma productions from fission rea
 
 See  [GAMSOR]_ and [MC23]_.
 
-.. [MC23] Lee, Changho, Jung, Yeon Sang, and Yang, Won Sik. MC2-3: Multigroup Cross Section Generation Code for Fast Reactor 
-          Analysis Nuclear. United States: N. p., 2018. Web. doi:10.2172/1483949. 
+.. [MC23] Lee, Changho, Jung, Yeon Sang, and Yang, Won Sik. MC2-3: Multigroup Cross Section Generation Code for Fast Reactor
+          Analysis Nuclear. United States: N. p., 2018. Web. doi:10.2172/1483949.
           (`OSTI <https://www.osti.gov/biblio/1483949-mc2-multigroup-cross-section-generation-code-fast-reactor-analysis-nuclear>`_)
 """
 
@@ -162,7 +162,7 @@ def _write(lib, fileName, fileMode):
 
 
 def _readWrite(lib, fileName, fileMode, getNuclideFunc):
-    with _PmatrxIO(fileName, lib, fileMode, getNuclideFunc) as rw:
+    with PmatrxIO(fileName, lib, fileMode, getNuclideFunc) as rw:
         rw.readWrite()
     return lib
 
@@ -191,6 +191,12 @@ class _PmatrxIO(cccc.Stream):
         )
 
     def readWrite(self):
+        """Read and write PMATRX files.
+
+        .. impl:: Tool to read and write PMATRX files.
+            :id: I_ARMI_NUCDATA_PMATRX
+            :implements: R_ARMI_NUCDATA_PMATRX
+        """
         self._rwMessage()
         properties.unlockImmutableProperties(self._lib)
         try:

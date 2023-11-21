@@ -144,6 +144,10 @@ class ArmiPlugin:
     .. impl:: Plugins have interfaces, to add code to the application.
         :id: I_ARMI_PLUGIN
         :implements: R_ARMI_PLUGIN
+
+    .. impl:: Plugins have interfaces, to add code to the application.
+        :id: I_ARMI_PLUGIN
+        :implements: R_ARMI_PLUGIN
     """
 
     @staticmethod
@@ -159,6 +163,10 @@ class ArmiPlugin:
         .. impl:: Define an arbitrary physical parameter.
             :id: I_ARMI_PARAM
             :implements: R_ARMI_PARAM
+
+        .. impl:: Plugins have interfaces to the operator.
+            :id: I_ARMI_PLUGIN_INTERFACES
+            :implements: R_ARMI_PLUGIN_INTERFACES
 
         Returns
         -------
@@ -183,6 +191,10 @@ class ArmiPlugin:
         .. impl:: Plugins can add parameters to the reactor data model.
             :id: I_ARMI_PLUGIN_PARAMS
             :implements: R_ARMI_PLUGIN_PARAMS
+
+        .. impl:: Define an arbitrary physical parameter.
+            :id: I_ARMI_PARAM
+            :implements: R_ARMI_PARAM
 
         Returns
         -------
