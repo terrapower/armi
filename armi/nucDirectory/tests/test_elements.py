@@ -35,14 +35,32 @@ class TestElement(unittest.TestCase):
             self.assertIsNotNone(ee.standardWeight)
 
     def test_element_elementByNameReturnsElement(self):
+        """Get elements by name.
+
+        .. test:: Get elements by name.
+            :id: I_ARMI_ND_ELEMENTS0
+            :tests: R_ARMI_ND_ELEMENTS
+        """
         for ee in elements.byZ.values():
             self.assertIs(ee, elements.byName[ee.name])
 
     def test_element_elementByZReturnsElement(self):
+        """Get elements by Z.
+
+        .. test:: Get elements by Z.
+            :id: I_ARMI_ND_ELEMENTS1
+            :tests: R_ARMI_ND_ELEMENTS
+        """
         for ee in elements.byZ.values():
             self.assertIs(ee, elements.byZ[ee.z])
 
     def test_element_elementBySymbolReturnsElement(self):
+        """Get elements by symbol.
+
+        .. test:: Get elements by symbol.
+            :id: I_ARMI_ND_ELEMENTS2
+            :tests: R_ARMI_ND_ELEMENTS
+        """
         for ee in elements.byZ.values():
             self.assertIs(ee, elements.bySymbol[ee.symbol])
 
@@ -84,6 +102,10 @@ class TestElement(unittest.TestCase):
 
         Uses RIPL definitions of naturally occurring. Protactinium is debated as naturally
         occurring. Yeah it exists as a U235 decay product but it's kind of pseudo-natural.
+
+        .. test:: Get elements by Z, to show if they are naturally occurring.
+            :id: I_ARMI_ND_ELEMENTS3
+            :tests: R_ARMI_ND_ELEMENTS
         """
         for ee in elements.byZ.values():
             if ee.z == 43 or ee.z == 61 or 84 <= ee.z <= 89 or ee.z >= 93:
@@ -104,6 +126,12 @@ class TestElement(unittest.TestCase):
             )
 
     def test_isHeavyMetal(self):
+        """Get elements by Z.
+
+        .. test:: Get elements by Z, to show if they are heavy metals.
+            :id: I_ARMI_ND_ELEMENTS4
+            :tests: R_ARMI_ND_ELEMENTS
+        """
         for ee in elements.byZ.values():
             if ee.z > 89:
                 self.assertTrue(ee.isHeavyMetal())

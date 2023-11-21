@@ -16,6 +16,10 @@
 This module provides fundamental element information to be used throughout the framework
 and applications.
 
+.. impl:: A tool for querying basic data for elements of the periodic table.
+    :id: I_ARMI_ND_ELEMENTS0
+    :implements: R_ARMI_ND_ELEMENTS
+
 The element class structure is outlined :ref:`here <elements-class-diagram>`.
 
 .. _elements-class-diagram:
@@ -148,6 +152,10 @@ class Element:
     def __init__(self, z, symbol, name, phase="UNKNOWN", group="UNKNOWN"):
         """
         Creates an instance of an Element.
+
+        .. impl:: An element of the periodic table.
+            :id: I_ARMI_ND_ELEMENTS1
+            :implements: R_ARMI_ND_ELEMENTS
 
         Parameters
         ----------

@@ -15,6 +15,10 @@
 This module provides fundamental nuclide information to be used throughout the framework
 and applications.
 
+.. impl:: Isotopes and isomers can be queried by name, label, MC2-3 ID, MCNP ID, and AAAZZZS ID.
+    :id: I_ARMI_ND_ISOTOPES0
+    :implements: R_ARMI_ND_ISOTOPES
+
 The nuclide class structure is outlined :ref:`here <nuclide-bases-class-diagram>`.
 
 .. _nuclide-bases-class-diagram:
@@ -423,7 +427,7 @@ class INuclide(NuclideInterface):
                 )
 
     def getDecay(self, decayType):
-        r"""Get a :py:class:`~armi.nucDirectory.transmutations.DecayMode`.
+        """Get a :py:class:`~armi.nucDirectory.transmutations.DecayMode`.
 
         Retrieve the first :py:class:`~armi.nucDirectory.transmutations.DecayMode`
         matching the specified decType.
@@ -493,7 +497,12 @@ class IMcnpNuclide:
 
 
 class NuclideBase(INuclide, IMcnpNuclide):
-    """Represents an individual nuclide/isotope."""
+    """Represents an individual nuclide/isotope.
+
+    .. impl:: Isotopes and isomers can be queried by name and label.
+        :id: I_ARMI_ND_ISOTOPES1
+        :implements: R_ARMI_ND_ISOTOPES
+    """
 
     def __init__(self, element, a, weight, abundance, state, halflife):
         IMcnpNuclide.__init__(self)
@@ -558,22 +567,35 @@ class NuclideBase(INuclide, IMcnpNuclide):
         return self.element.getNaturalIsotopics()
 
     def getMcc2Id(self):
-        """Return the MC2-2 nuclide identification label based on the ENDF/B-V.2 cross section library."""
+        """Return the MC2-2 nuclide identification label based on the ENDF/B-V.2 cross section library.
+
+        .. impl:: Isotopes and isomers can be queried by MC2-2 ID.
+            :id: I_ARMI_ND_ISOTOPES2
+            :implements: R_ARMI_ND_ISOTOPES
+        """
         return self.mcc2id
 
     def getMcc3Id(self):
-        """Return the MC2-3 nuclide identification label based on the ENDF/B-VII.0 cross section library."""
+        """Return the MC2-3 nuclide identification label based on the ENDF/B-VII.0 cross section library.
+
+        .. impl:: Isotopes and isomers can be queried by MC2-3 ID.
+            :id: I_ARMI_ND_ISOTOPES3
+            :implements: R_ARMI_ND_ISOTOPES
+        """
         return self.mcc3id
 
     def getMcnpId(self):
         """
         Gets the MCNP label for this nuclide.
 
+        .. impl:: Isotopes and isomers can be queried by MCNP ID.
+            :id: I_ARMI_ND_ISOTOPES4
+            :implements: R_ARMI_ND_ISOTOPES
+
         Returns
         -------
         id : str
             The MCNP ID e.g. ``92235``, ``94239``, ``6000``
-
         """
         z, a = self.z, self.a
 
@@ -594,6 +616,10 @@ class NuclideBase(INuclide, IMcnpNuclide):
     def getAAAZZZSId(self):
         """
         Return a string that is ordered by the mass number, A, the atomic number, Z, and the isomeric state, S.
+
+        .. impl:: Isotopes and isomers can be queried by AAAZZZS ID.
+            :id: I_ARMI_ND_ISOTOPES5
+            :implements: R_ARMI_ND_ISOTOPES
 
         Notes
         -----
@@ -629,7 +655,6 @@ class NuclideBase(INuclide, IMcnpNuclide):
         -------
         id : str
             The MAT number e.g. ``9237`` for U238
-
         """
         z, a = self.z, self.a
         if self.element.symbol in BASE_ENDFB7_MAT_NUM:
@@ -679,7 +704,7 @@ class NaturalNuclideBase(INuclide, IMcnpNuclide):
         return f"<{self.__class__.__name__} {self.name}:  Z:{self.z}, W:{self.weight:<12.6e}, Label:{self.label}>"
 
     def getNaturalIsotopics(self):
-        r"""Gets the natural isotopics root :py:class:`~elements.Element`.
+        """Gets the natural isotopics root :py:class:`~elements.Element`.
 
         Gets the naturally occurring nuclides for this nuclide.
 
@@ -789,7 +814,7 @@ class DummyNuclideBase(INuclide):
         )
 
     def getNaturalIsotopics(self):
-        r"""Gets the natural isotopics, an empty iterator.
+        """Gets the natural isotopics, an empty iterator.
 
         Gets the naturally occurring nuclides for this nuclide.
 
@@ -855,7 +880,7 @@ class LumpNuclideBase(INuclide):
         )
 
     def getNaturalIsotopics(self):
-        r"""Gets the natural isotopics, an empty iterator.
+        """Gets the natural isotopics, an empty iterator.
 
         Gets the naturally occurring nuclides for this nuclide.
 
@@ -1115,12 +1140,12 @@ def factory():
             "Nuclides are already initialized and cannot be re-initialized unless "
             "`nuclideBases.destroyGlobalNuclides` is called first."
         )
-    __addNuclideBases()
+    addNuclideBases()
     __addNaturalNuclideBases()
     __addDummyNuclideBases()
     __addLumpedFissionProductNuclideBases()
-    __updateNuclideBasesForSpecialCases()
-    __readMCCNuclideData()
+    updateNuclideBasesForSpecialCases()
+    readMCCNuclideData()
     __renormalizeNuclideToElementRelationship()
     __deriveElementalWeightsByNaturalNuclideAbundances()
 
@@ -1130,11 +1155,15 @@ def factory():
     thermalScattering.factory()
 
 
-def __addNuclideBases():
+def addNuclideBases():
     """
     Read natural abundances of any natural nuclides.
 
     This adjusts already-existing NuclideBases and Elements with the new information.
+
+    .. impl:: Separating natural abundance data from code.
+        :id: I_ARMI_ND_DATA0
+        :implements: R_ARMI_ND_DATA
     """
     with open(os.path.join(context.RES, "nuclides.dat")) as f:
         for line in f:
@@ -1190,8 +1219,13 @@ def __addLumpedFissionProductNuclideBases():
     LumpNuclideBase(name="LREGN", weight=1.0)
 
 
-def __readMCCNuclideData():
-    """Read in the label data for the MC2-2 and MC2-3 cross section codes to the nuclide bases."""
+def readMCCNuclideData():
+    """Read in the label data for the MC2-2 and MC2-3 cross section codes to the nuclide bases.
+
+    .. impl:: Separating MCC data from code.
+        :id: I_ARMI_ND_DATA1
+        :implements: R_ARMI_ND_DATA
+    """
     with open(os.path.join(context.RES, "mcc-nuclides.yaml"), "r") as f:
         yaml = YAML(typ="rt")
         nuclides = yaml.load(f)
@@ -1208,9 +1242,13 @@ def __readMCCNuclideData():
             byMcc3Id[nb.getMcc3Id()] = nb
 
 
-def __updateNuclideBasesForSpecialCases():
+def updateNuclideBasesForSpecialCases():
     """
     Update the nuclide bases for special case name changes.
+
+    .. impl:: The special case name Am242g is supported.
+        :id: I_ARMI_ND_ISOTOPES6
+        :implements: R_ARMI_ND_ISOTOPES
 
     Notes
     -----
