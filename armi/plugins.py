@@ -141,11 +141,7 @@ class ArmiPlugin:
     An ArmiPlugin provides a namespace to collect hook implementations provided by a
     single "plugin". This API is incomplete, unstable, and expected to change.
 
-    .. impl:: Plugins have interfaces, to add code to the application.
-        :id: I_ARMI_PLUGIN
-        :implements: R_ARMI_PLUGIN
-
-    .. impl:: Plugins have interfaces, to add code to the application.
+    .. impl:: Plugins have interfaces to add code to the application.
         :id: I_ARMI_PLUGIN
         :implements: R_ARMI_PLUGIN
     """
@@ -155,14 +151,6 @@ class ArmiPlugin:
     def exposeInterfaces(cs) -> List:
         """
         Function for exposing interface(s) to other code.
-
-        .. impl:: Plugins have interfaces to the operator.
-            :id: I_ARMI_PLUGIN_INTERFACES
-            :implements: R_ARMI_PLUGIN_INTERFACES
-
-        .. impl:: Define an arbitrary physical parameter.
-            :id: I_ARMI_PARAM
-            :implements: R_ARMI_PARAM
 
         .. impl:: Plugins have interfaces to the operator.
             :id: I_ARMI_PLUGIN_INTERFACES

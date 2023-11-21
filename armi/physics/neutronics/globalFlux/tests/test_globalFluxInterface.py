@@ -370,6 +370,7 @@ class TestGlobalFluxUtils(unittest.TestCase):
         .. test:: Return the reaction rates for a given ArmiObject
             :id: T_ARMI_FLUX_RX_RATES
             :tests: R_ARMI_FLUX_RX_RATES
+
         .. warning: This does not validate the reaction rate calculation.
         """
         b = test_blocks.loadTestBlock()

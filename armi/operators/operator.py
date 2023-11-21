@@ -77,7 +77,7 @@ class Operator:
         :id: I_ARMI_OPERATOR_COMM
         :implements: R_ARMI_OPERATOR_COMM
 
-    .. impl:: An operator is build from user settings.
+    .. impl:: An operator is built from user settings.
         :id: I_ARMI_OPERATOR_SETTINGS
         :implements: R_ARMI_OPERATOR_SETTINGS
 
@@ -402,7 +402,7 @@ class Operator:
     def _performTightCoupling(self, cycle: int, timeNode: int, writeDB: bool = True):
         """If requested, perform tight coupling and write out database.
 
-        .. impl:: The operator shall allow coupling between physics systems.
+        .. impl:: The operator shall allow tight coupling between physics systems.
             :id: I_ARMI_OPERATOR_PHYSICS
             :implements: R_ARMI_OPERATOR_PHYSICS
 

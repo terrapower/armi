@@ -340,7 +340,7 @@ class Parameter:
     def setter(self, setter):
         """Decorator method for assigning setter.
 
-        .. impl:: Provide a way to signal if a parameter needs updated across processes.
+        .. impl:: Provide a way to signal if a parameter needs updating across processes.
             :id: I_ARMI_PARAM_PARALLEL
             :implements: R_ARMI_PARAM_PARALLEL
 

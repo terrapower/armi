@@ -1177,7 +1177,7 @@ class Component(composites.Composite, metaclass=ComponentType):
     def density(self):
         """Returns the mass density of the object in g/cc.
 
-        .. impl:: Material densitiy is retrievable
+        .. impl:: Material density is retrievable
             :id: I_ARMI_COMP_MAT1
             :implements: R_ARMI_COMP_MAT
         """

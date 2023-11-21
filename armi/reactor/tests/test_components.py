@@ -347,7 +347,7 @@ class TestShapedComponent(TestGeneralComponents):
         """
         Test volume after cache has been cleared.
 
-        .. test:: Clear cache after a dimenions updated
+        .. test:: Clear cache after a dimensions updated
             :id: T_ARMI_COMP_VOL1
             :tests: R_ARMI_COMP_VOL
         """

@@ -35,12 +35,6 @@ class TestGamiso(unittest.TestCase):
         """Compare the input binary GAMISO file.
 
         .. test:: Test reading GAMISO files.
-            :id: T_ARMI_NUCDATA_GAMISO
-            :tests: R_ARMI_NUCDATA_GAMISO
-        """
-        """Compare the input binary GAMISO file.
-
-        .. test:: Test reading GAMISO files.
             :id: T_ARMI_NUCDATA_GAMISO0
             :tests: R_ARMI_NUCDATA_GAMISO
         """

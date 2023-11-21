@@ -18,7 +18,7 @@ This module reads and writes ISOTXS files.
 ISOTXS is a binary file that contains multigroup microscopic cross sections.
 ISOTXS stands for  *Isotope Cross Sections*.
 
-ISOTXS files are often created by a lattice physics code such as MC2 or DRAGON and 
+ISOTXS files are often created by a lattice physics code such as MC2 or DRAGON and
 used as input to a global flux solver such as DIF3D.
 
 This module implements reading and writing of the
@@ -190,10 +190,6 @@ def addDummyNuclidesToLibrary(lib, dummyNuclides):
 class IsotxsIO(cccc.Stream):
     """
     A semi-abstract stream for reading and writing to a :py:class:`~armi.nuclearDataIO.isotxs.Isotxs`.
-
-    .. impl:: Tool to read and write ISOTXS files.
-        :id: I_ARMI_NUCDATA_ISOTXS
-        :implements: R_ARMI_NUCDATA_ISOTXS
 
     Notes
     -----
