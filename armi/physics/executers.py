@@ -29,6 +29,10 @@ class ExecutionOptions:
     """
     A data structure representing all options needed for a physics kernel.
 
+    .. impl:: TODO
+        :id: I_ARMI_EX0
+        :implements: R_ARMI_EX
+
     Attributes
     ----------
     inputFile : str
