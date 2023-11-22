@@ -624,6 +624,10 @@ class ArmiObject(metaclass=CompositeModelType):
         created and associated. So, we use this top-level class method to dig
         dynamically down to the underlying parameter collection type.
 
+        .. impl:: Composites (and all ARMI objects) have parameter collections.
+            :id: I_ARMI_CMP_PARAMS
+            :implements: R_ARMI_CMP_PARAMS
+
         See Also
         --------
         :py:meth:`armi.reactor.parameters.parameterCollections.ParameterCollection.__reduce__`
@@ -671,6 +675,10 @@ class ArmiObject(metaclass=CompositeModelType):
         .. impl:: Flags can be queried
             :id: I_ARMI_CMP_HAS_FLAGS
             :implements: R_ARMI_CMP_HAS_FLAGS
+
+        .. impl:: Composites have flags
+            :id: I_ARMI_CMP_FLAG
+            :implements: R_ARMI_CMP_FLAG
 
         Parameters
         ----------
@@ -1224,6 +1232,10 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         Return the number density of a nuclide in atoms/barn-cm.
 
+        .. impl:: Get number density for a specific nuclide
+            :id: I_ARMI_CMP_NUC0
+            :implements: R_ARMI_CMP_NUC
+
         Notes
         -----
         This can get called very frequently and has to do volume computations so should
@@ -1239,7 +1251,12 @@ class ArmiObject(metaclass=CompositeModelType):
         return self.getNuclideNumberDensities([nucName])[0]
 
     def getNuclideNumberDensities(self, nucNames):
-        """Return a list of number densities in atoms/barn-cm for the nuc names requested."""
+        """Return a list of number densities in atoms/barn-cm for the nuc names requested.
+
+        .. impl:: Get number densities for specific nuclides.
+            :id: I_ARMI_CMP_NUC1
+            :implements: R_ARMI_CMP_NUC
+        """
         volumes = numpy.array(
             [
                 c.getVolume() / (c.parent.getSymmetryFactor() if c.parent else 1.0)
@@ -2435,6 +2452,10 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         Gets a particular component from this object, based on its name.
 
+        .. impl:: Get child component by name.
+            :id: I_ARMI_CMP_BY_NAME
+            :implements: R_ARMI_CMP_BY_NAME
+
         Parameters
         ----------
         name : str
@@ -2646,6 +2667,10 @@ class Composite(ArmiObject):
     mixed with siblings in a grid. This allows mixing grid-representation with
     explicit representation, often useful in advanced assemblies and thermal
     reactors.
+
+    .. impl:: Composites are a physical part of the reactor in a hierarchical data model.
+        :id: I_ARMI_CMP
+        :implements: R_ARMI_CMP
     """
 
     def __init__(self, name):
@@ -2750,6 +2775,10 @@ class Composite(ArmiObject):
     ):
         """
         Return the children objects of this composite.
+
+        .. impl:: Composites have children, in the hierarchical data model.
+            :id: I_ARMI_CMP_CHILDREN
+            :implements: R_ARMI_CMP_CHILDREN
 
         Parameters
         ----------
@@ -2864,6 +2893,10 @@ class Composite(ArmiObject):
 
         In parallelized runs, if each process has its own copy of the entire reactor
         hierarchy, this method synchronizes the state of all parameters on all objects.
+
+        .. impl:: Composites can be synchronized across MPI threads.
+            :id: I_ARMI_CMP_MPI
+            :implements: R_ARMI_CMP_MPI
 
         Returns
         -------
