@@ -141,7 +141,7 @@ class ArmiPlugin:
     An ArmiPlugin provides a namespace to collect hook implementations provided by a
     single "plugin". This API is incomplete, unstable, and expected to change.
 
-    .. impl:: Plugins have interfaces, to add code to the application.
+    .. impl:: Plugins have interfaces to add code to the application.
         :id: I_ARMI_PLUGIN
         :implements: R_ARMI_PLUGIN
     """

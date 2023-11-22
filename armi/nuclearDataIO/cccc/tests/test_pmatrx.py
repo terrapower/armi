@@ -117,7 +117,7 @@ class TestPmatrx(unittest.TestCase):
         ]
         self.assertTrue((energies == self.lib.gammaEnergyUpperBounds).all())
 
-    def test_pmatrxNeutronEneries(self):
+    def test_pmatrxNeutronEnergies(self):
         energies = [
             14190675.0,
             10000000.0,

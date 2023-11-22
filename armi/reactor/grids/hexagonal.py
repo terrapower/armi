@@ -311,6 +311,12 @@ class HexGrid(StructuredGrid):
         return symmetryLine
 
     def getSymmetricEquivalents(self, indices: IJKType) -> List[IJType]:
+        """Retrieve e quivalent contents based on 3rd symmetry.
+
+        .. impl:: Equivalent contents in 3rd geometry are retrievable
+            :id: I_ARMI_GRID_EQUIVALENTS
+            :implements: R_ARMI_GRID_EQUIVALENTS
+        """
         if (
             self.symmetry.domain == geometry.DomainType.THIRD_CORE
             and self.symmetry.boundary == geometry.BoundaryType.PERIODIC
@@ -360,7 +366,12 @@ class HexGrid(StructuredGrid):
             return True
 
     def isInFirstThird(self, locator, includeTopEdge=False) -> bool:
-        """True if locator is in first third of hex grid."""
+        """True if locator is in first third of hex grid.
+
+        .. impl:: Determine if grid in first third
+            :id: I_ARMI_GRID_SYMMETRY_LOC
+            :implements: R_ARMI_GRID_SYMMETRY_LOC
+        """
         ring, pos = self.getRingPos(locator.indices)
         if ring == 1:
             return True

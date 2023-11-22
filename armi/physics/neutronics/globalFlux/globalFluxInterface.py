@@ -237,7 +237,12 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
         GlobalFluxInterface.interactCoupled(self, iteration)
 
     def getTightCouplingValue(self):
-        """Return the parameter value."""
+        """Return the parameter value.
+
+        .. impl:: Return k-eff or assembly-wise power distribution for coupled interactions.
+            :id: I_ARMI_FLUX_COUPLING_VALUE
+            :implements: R_ARMI_FLUX_COUPLING_VALUE
+        """
         if self.coupler.parameter == "keff":
             return self.r.core.p.keff
         if self.coupler.parameter == "power":
@@ -531,10 +536,6 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
 
         In both cases, we need to undo the modifications between reading the output
         and applying the result to the data model.
-
-        .. impl:: Ensure the mesh in the reactor model is appropriate for neutronics solver execution.
-            :id: I_ARMI_FLUX_RX_RATES
-            :implements: R_ARMI_FLUX_RX_RATES
 
         See Also
         --------
@@ -1202,14 +1203,14 @@ def computeDpaRate(mgFlux, dpaXs):
 
         DPA rate = displacement density rate / (number of atoms/cc)
                  = dr [#/cm^3/s] / (nHT9)  [1/cm^3]
-                 = flux * barn * 1e-24 
+                 = flux * barn * 1e-24
 
 
     .. math::
 
         \frac{\text{dpa}}{s}  = \frac{\phi N \sigma}{N} = \phi * \sigma
 
-    the Number density of the structural material cancels out. It's in the macroscopic 
+    the Number density of the structural material cancels out. It's in the macroscopic
     XS and in the original number of atoms.
 
     Raises
@@ -1252,7 +1253,7 @@ def calcReactionRates(obj, keff, lib):
     r"""
     Compute 1-group reaction rates for this object (usually a block).
 
-    .. impl:: Return the reaction rates for a given ArmiObject.
+    .. impl:: Return the reaction rates for a given ArmiObject
         :id: I_ARMI_FLUX_RX_RATES
         :implements: R_ARMI_FLUX_RX_RATES
 

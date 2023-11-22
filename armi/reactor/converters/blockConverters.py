@@ -211,7 +211,12 @@ class BlockConverter:
 
 
 class ComponentMerger(BlockConverter):
-    """For a provided block, merged the solute component into the solvent component."""
+    """For a provided block, merged the solute component into the solvent component.
+
+    .. impl:: Homogenize one component into another
+        :id: I_ARMI_BLOCKCONV0
+        :implements: R_ARMI_BLOCKCONV
+    """
 
     def __init__(self, sourceBlock, soluteName, solventName):
         """
@@ -248,6 +253,10 @@ class MultipleComponentMerger(BlockConverter):
     This could be implemented on the regular ComponentMerger, as the Flags system has enough power
     in the type specification arguments to things like ``getComponents()``, ``hasFlags()``, etc., to
     do single and multiple components with the same code.
+
+    .. impl:: Homogenize one component into another
+        :id: I_ARMI_BLOCKCONV1
+        :implements: R_ARMI_BLOCKCONV
     """
 
     def __init__(self, sourceBlock, soluteNames, solventName, specifiedMinID=0.0):
@@ -526,7 +535,12 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
             )
 
     def convert(self):
-        """Perform the conversion."""
+        """Perform the conversion.
+
+        .. impl:: Convert hex blocks to cylindrical blocks
+            :id:  I_ARMI_BLOCKCONV_HEX_TO_CYL
+            :implements: R_ARMI_BLOCKCONV_HEX_TO_CYL
+        """
         runLog.info(
             "Converting representative block {} to its equivalent cylindrical model".format(
                 self._sourceBlock

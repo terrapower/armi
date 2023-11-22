@@ -167,6 +167,13 @@ class TestGlobalFluxInterface(unittest.TestCase):
         self.assertIn("detailedDpa", params)
 
     def test_checkEnergyBalance(self):
+        """
+        Test energy balance check.
+
+        .. test:: Block-wise power is consistent with reactor data model power
+            :id: T_ARMI_FLUX_CHECK_POWER
+            :tests: R_ARMI_FLUX_CHECK_POWER
+        """
         cs = settings.Settings()
         _o, r = test_reactors.loadTestReactor()
         gfi = MockGlobalFluxInterface(r, cs)
@@ -209,7 +216,12 @@ class TestGlobalFluxInterfaceWithExecuters(unittest.TestCase):
         self._setTightCouplingFalse()
 
     def test_getTightCouplingValue(self):
-        """Test getTightCouplingValue returns the correct value for keff and type for power."""
+        """Test getTightCouplingValue returns the correct value for keff and type for power.
+
+        .. test:: Get k-eff or assembly-wise power for coupling interactions
+            :id: T_ARMI_FLUX_COUPLING_VALUE
+            :tests: R_ARMI_FLUX_COUPLING_VALUE
+        """
         self._setTightCouplingTrue()
         self.assertEqual(self.gfi.getTightCouplingValue(), 1.0)  # set in setUp
         self.gfi.coupler.parameter = "power"
@@ -354,6 +366,10 @@ class TestGlobalFluxUtils(unittest.TestCase):
     def test_calcReactionRates(self):
         """
         Test that the reaction rate code executes and sets a param > 0.0.
+
+        .. test:: Return the reaction rates for a given ArmiObject
+            :id: T_ARMI_FLUX_RX_RATES
+            :tests: R_ARMI_FLUX_RX_RATES
 
         .. warning: This does not validate the reaction rate calculation.
         """

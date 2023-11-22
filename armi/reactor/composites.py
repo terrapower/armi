@@ -653,6 +653,12 @@ class ArmiObject(metaclass=CompositeModelType):
             return s.lower() in name
 
     def getName(self):
+        """Get composite name.
+
+        .. impl:: Composite name is accessible
+            :id: I_ARMI_CMP_GET_NAME
+            :implements: R_ARMI_CMP_GET_NAME
+        """
         return self.name
 
     def setName(self, name):
@@ -661,6 +667,10 @@ class ArmiObject(metaclass=CompositeModelType):
     def hasFlags(self, typeID: TypeSpec, exact=False):
         """
         Determine if this object is of a certain type.
+
+        .. impl:: Flags can be queried
+            :id: I_ARMI_CMP_HAS_FLAGS
+            :implements: R_ARMI_CMP_HAS_FLAGS
 
         Parameters
         ----------
@@ -866,6 +876,10 @@ class ArmiObject(metaclass=CompositeModelType):
     def getMass(self, nuclideNames=None):
         """
         Determine the mass in grams of nuclide(s) and/or elements in this object.
+
+        .. impl:: Get mass of composite
+            :id: I_ARMI_CMP_GET_MASS
+            :implements: R_ARMI_CMP_GET_MASS
 
         Parameters
         ----------
@@ -1261,6 +1275,10 @@ class ArmiObject(metaclass=CompositeModelType):
     def getNumberDensities(self, expandFissionProducts=False):
         """
         Retrieve the number densities in atoms/barn-cm of all nuclides (or those requested) in the object.
+
+        .. impl:: Number density of composite is retrievable
+            :id: I_ARMI_CMP_GET_NDENS
+            :implements: R_ARMI_CMP_GET_NDENS
 
         Parameters
         ----------
