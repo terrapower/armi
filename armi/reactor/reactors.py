@@ -172,7 +172,7 @@ def loadFromCs(cs) -> Reactor:
     """
     Load a Reactor based on the input settings.
 
-    .. impl:: User can create a reactor from an input yaml file.
+    .. impl:: Users can create a reactor from an input yaml file.
         :id: I_ARMI_R_CORE
         :implements: R_ARMI_R_CORE
 

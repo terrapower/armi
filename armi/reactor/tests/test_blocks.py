@@ -1828,7 +1828,7 @@ class HexBlock_TestCase(unittest.TestCase):
         """
         Test that a hex block has the proper "hexagon" __name__.
 
-        .. test:: User can create hex shaped blocks.
+        .. test:: Ability to create hex shaped blocks
             :id: T_ARMI_BLOCK_HEX
             :tests: R_ARMI_BLOCK_HEX
         """
