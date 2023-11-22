@@ -248,7 +248,7 @@ class GridBlueprint(yamlize.Object):
     def construct(self):
         """Build a Grid from a grid definition.
 
-        .. impl:: Define a lattice map in reactor core
+        .. impl:: Define a lattice map in reactor core.
             :id: I_ARMI_BP_GRID
             :implements: R_ARMI_BP_GRID
         """
@@ -540,7 +540,7 @@ def saveToStream(stream, bluep, full=False, tryMap=False):
     tryMap: regardless of input form, attempt to output as a lattice map. let's face it;
     they're prettier.
 
-    .. impl:: Write a blueprint file from a blueprint object
+    .. impl:: Write a blueprint file from a blueprint object.
         :id: I_ARMI_BP_TO_DB
         :implements: R_ARMI_BP_TO_DB
     """

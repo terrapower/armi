@@ -105,7 +105,7 @@ class SystemBlueprint(yamlize.Object):
             :id: I_ARMI_BP_SYSTEMS
             :implements: R_ARMI_BP_SYSTEMS
 
-        .. impl:: Create core object with blueprint
+        .. impl:: Create core object from blueprint.
             :id: I_ARMI_BP_CORE
             :implements: R_ARMI_BP_CORE
 

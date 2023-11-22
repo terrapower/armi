@@ -123,7 +123,7 @@ class Flag(metaclass=_FlagMeta):
     after the class has been defined. Most docs for ``enum.Flag`` should be relevant here,
     but there are sure to be occasional differences.
 
-    .. impl:: No two flags have equivalence
+    .. impl:: No two flags have equivalence.
         :id: I_ARMI_FLAG_DEFINE
         :implements: R_ARMI_FLAG_DEFINE
 
@@ -220,7 +220,7 @@ class Flag(metaclass=_FlagMeta):
             This alters the class that it is called upon! Existing instances should see
             the new data, since classes are mutable.
 
-        .. impl:: Set of flags are extensible without loss of uniqueness
+        .. impl:: Set of flags are extensible without loss of uniqueness.
             :id: I_ARMI_FLAG_EXTEND
             :implements: R_ARMI_FLAG_EXTEND
 

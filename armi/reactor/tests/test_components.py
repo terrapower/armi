@@ -171,7 +171,7 @@ class TestComponent(TestGeneralComponents):
     def test_initializeComponentMaterial(self):
         """Creating component with single material.
 
-        .. test:: Components are made of one material
+        .. test:: Components are made of one material.
             :id: T_ARMI_COMP_1MAT0
             :tests: R_ARMI_COMP_1MAT
         """
@@ -185,7 +185,7 @@ class TestComponent(TestGeneralComponents):
     def test_setNumberDensity(self):
         """Test setting a single number density.
 
-        .. test:: Set Component number density
+        .. test:: Users can set Component number density.
             :id: T_ARMI_COMP_NUCLIDE_FRASCS0
             :tests: R_ARMI_COMP_NUCLIDE_FRACS
         """
@@ -197,7 +197,7 @@ class TestComponent(TestGeneralComponents):
     def test_setNumberDensities(self):
         """Test setting multiple number densities.
 
-        .. test:: Set Component number density
+        .. test:: Users can set Component number densities.
             :id: T_ARMI_COMP_NUCLIDE_FRASCS1
             :tests: R_ARMI_COMP_NUCLIDE_FRACS
         """
@@ -210,7 +210,7 @@ class TestComponent(TestGeneralComponents):
     def test_solid_material(self):
         """Determine if material is solid.
 
-        .. test:: Determine if material is solid
+        .. test:: Determine if material is solid.
             :id: T_ARMI_COMP_SOLID
             :tests: R_ARMI_COMP_SOLID
         """
@@ -237,7 +237,7 @@ class TestNullComponent(TestGeneralComponents):
     def test_getDimension(self):
         """Test getting empty component.
 
-        .. test:: Retrieve a null dimension
+        .. test:: Retrieve a null dimension.
             :id: T_ARMI_COMP_DIMS0
             :tests: R_ARMI_COMP_DIMS
         """
@@ -339,7 +339,7 @@ class TestShapedComponent(TestGeneralComponents):
         """
         Test volume after cache has been cleared.
 
-        .. test:: Clear cache after a dimensions updated
+        .. test:: Clear cache after a dimensions updated.
             :id: T_ARMI_COMP_VOL0
             :tests: R_ARMI_COMP_VOL
         """
@@ -443,7 +443,7 @@ class TestCircle(TestShapedComponent):
     def test_getDimension(self):
         """Test getting component dimension at specific temperature.
 
-        .. test:: Retrieve a dimension at a temperature
+        .. test:: Retrieve a dimension at a temperature.
             :id: T_ARMI_COMP_DIMS1
             :tests: R_ARMI_COMP_DIMS
         """
@@ -768,7 +768,7 @@ class TestTriangle(TestShapedComponent):
     def test_getArea(self):
         """Calculate area of triangle.
 
-        .. test:: Calculate area of triangle
+        .. test:: Calculate area of triangle.
             :id: T_ARMI_COMP_VOL2
             :tests: R_ARMI_COMP_VOL
 
@@ -847,7 +847,7 @@ class TestRectangle(TestShapedComponent):
     def test_getArea(self):
         """Calculate area of rectangle.
 
-        .. test:: Calculate area of rectangle
+        .. test:: Calculate area of rectangle.
             :id: T_ARMI_COMP_VOL3
             :tests: R_ARMI_COMP_VOL
         """
@@ -1501,7 +1501,7 @@ class TestDifferentialRadialSegment(TestShapedComponent):
         """
         Test Update dimensions.
 
-        .. test:: Dimensions can be updated
+        .. test:: Dimensions can be updated.
             :id: T_ARMI_COMP_VOL13
             :tests: R_ARMI_COMP_VOL
         """

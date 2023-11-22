@@ -287,7 +287,7 @@ class Flags(Flag):
         """
         Retrieve flag from a string.
 
-        .. impl:: Retrieve flag from a string
+        .. impl:: Retrieve flag from a string.
             :id: I_ARMI_FLAG_TO_STR0
             :implements: R_ARMI_FLAG_TO_STR
         """
@@ -298,7 +298,7 @@ class Flags(Flag):
         """
         Convert a flag to a string.
 
-        .. impl:: Convert a flag to string
+        .. impl:: Convert a flag to string.
             :id: I_ARMI_FLAG_TO_STR1
             :implements: R_ARMI_FLAG_TO_STR
         """

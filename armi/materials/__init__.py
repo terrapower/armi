@@ -15,9 +15,9 @@
 """
 The material package defines compositions and material-specific properties.
 
-Properties in scope include temperature dependent thermo/mechanical properties 
+Properties in scope include temperature dependent thermo/mechanical properties
 (like heat capacity, linear expansion coefficients, viscosity, density),
-and material-specific nuclear properties that can't exist at the nuclide level 
+and material-specific nuclear properties that can't exist at the nuclide level
 alone (like :py:mod:`thermal scattering laws <armi.nucDirectory.thermalScattering>`).
 
 As the fundamental macroscopic building blocks of any physical object,
@@ -47,7 +47,7 @@ _MATERIAL_NAMESPACE_ORDER = ["armi.materials"]
 
 def setMaterialNamespaceOrder(order):
     """
-    Set the material namespace order at the Python interpretter, global level.
+    Set the material namespace order at the Python interpreter, global level.
 
     .. impl:: Materials can be searched across packages in a defined namespace.
         :id: I_ARMI_MAT_NAMESPACE

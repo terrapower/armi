@@ -257,7 +257,7 @@ FULL_BP_GRID = (
 class TestGriddedBlock(unittest.TestCase):
     """Tests for a block that has components in a lattice.
 
-    .. test:: Create block with blueprint file
+    .. test:: Create block with blueprint file.
         :id: T_ARMI_BP_BLOCK
         :tests: R_ARMI_BP_BLOCK
     """
@@ -309,7 +309,7 @@ class TestGriddedBlock(unittest.TestCase):
         """
         Test flags are created from blueprint file.
 
-        .. test:: Test depletable nuc flags
+        .. test:: Nuc flags can define depletable objects.
             :id: T_ARMI_BP_NUC_FLAGS
             :tests: R_ARMI_BP_NUC_FLAGS
         """

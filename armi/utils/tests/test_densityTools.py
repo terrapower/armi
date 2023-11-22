@@ -24,7 +24,7 @@ class Test_densityTools(unittest.TestCase):
         """
         Expand mass fraction to nuclides.
 
-        .. test:: Expand mass fractions to nuclides
+        .. test:: Expand mass fractions to nuclides.
             :id: T_ARMI_UTIL_EXP_MASS_FRACS
             :tests: R_ARMI_UTIL_EXP_MASS_FRACS
         """
@@ -110,7 +110,7 @@ class Test_densityTools(unittest.TestCase):
         """
         Number densities from masses.
 
-        .. test:: Get number densities
+        .. test:: Number densities are retrievable from masses.
             :id: T_ARMI_UTIL_MASS2N_DENS
             :tests: R_ARMI_UTIL_MASS2N_DENS
         """

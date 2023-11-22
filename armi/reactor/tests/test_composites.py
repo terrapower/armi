@@ -220,7 +220,7 @@ class TestCompositePattern(unittest.TestCase):
     def test_hasFlags(self):
         """Ensure flags are queryable.
 
-        .. test:: Flags can be queried
+        .. test:: Flags can be queried.
             :id: T_ARMI_CMP_HAS_FLAGS
             :tests: R_ARMI_CMP_HAS_FLAGS
         """
@@ -616,7 +616,7 @@ class TestMiscMethods(unittest.TestCase):
     def test_setMass(self):
         """Test setting and retrieving mass.
 
-        .. test:: Get mass of composite
+        .. test:: Mass of a composite is retrievable.
             :id: T_ARMI_CMP_GET_MASS
             :tests: R_ARMI_CMP_GET_MASS
         """
@@ -639,7 +639,7 @@ class TestMiscMethods(unittest.TestCase):
     def test_getNumberDensities(self):
         """Get number densities from composite.
 
-        .. test:: Number density of composite is retrievable
+        .. test:: Number density of composite is retrievable.
             :id: T_ARMI_CMP_GET_NDENS0
             :tests: R_ARMI_CMP_GET_NDENS
         """
