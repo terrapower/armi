@@ -294,7 +294,6 @@ class HexGrid(StructuredGrid):
         -----
         - Only the 1/3 core view geometry is actually coded in here right now.
         - Being "on" a symmetry line means the line goes through the middle of you.
-
         """
         i, j = indices[:2]
 

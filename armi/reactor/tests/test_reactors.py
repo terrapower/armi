@@ -842,9 +842,20 @@ class HexReactorTests(ReactorTests):
         self.assertEqual(fuelBottomHeightInCm, fuelBottomHeightRef)
 
     def test_getGridBounds(self):
-        (_minI, maxI), (_minJ, maxJ), (minK, maxK) = self.r.core.getBoundingIndices()
-        self.assertEqual((maxI, maxJ), (8, 8))
-        self.assertEqual((minK, maxK), (0, 0))
+        """Test getGridBounds() works on different scales.
+
+        .. test:: Test that assembly grids nest inside core grids.
+            :id: T_ARMI_GRID_NEST
+            :tests: R_ARMI_GRID_NEST
+        """
+        (minI, maxI), (minJ, maxJ), (_minK, _maxK) = self.r.core.getBoundingIndices()
+        self.assertEqual((minI, maxI), (-3, 8))
+        self.assertEqual((minJ, maxJ), (-4, 8))
+
+        randomBlock = self.r.core.getFirstAssembly()
+        (minI, maxI), (minJ, maxJ), (_minK, _maxK) = randomBlock.getBoundingIndices()
+        self.assertEqual((minI, maxI), (8, 8))
+        self.assertEqual((minJ, maxJ), (-4, -4))
 
     def test_locations(self):
         loc = self.r.core.spatialGrid.getLocatorFromRingAndPos(3, 2)

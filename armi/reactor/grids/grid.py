@@ -35,6 +35,10 @@ class Grid(ABC):
     So here, we define an interface so things that rely on grids can worry less
     about how the location data are stored.
 
+    .. impl:: Grids can nest.
+        :id: I_ARMI_GRID_NEST
+        :implements: R_ARMI_GRID_NEST
+
     Parameters
     ----------
     geomType : str or armi.reactor.geometry.GeomType
