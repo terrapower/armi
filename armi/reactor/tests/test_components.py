@@ -349,12 +349,7 @@ class TestShapedComponent(TestGeneralComponents):
         self.assertAlmostEqual(c.getVolume(), 1, 6)
 
     def test_densityConsistent(self):
-        """Testing the Component matches quick hand calc.
-
-        .. test:: Component density is retrievable
-            :id: T_ARMI_COMP_MAT1
-            :tests: R_ARMI_COMP_MAT
-        """
+        """Testing the Component matches quick hand calc."""
         c = self.component
 
         # no volume defined
