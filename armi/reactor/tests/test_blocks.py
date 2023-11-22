@@ -1241,7 +1241,7 @@ class Block_TestCase(unittest.TestCase):
         """Test children by name.
 
         .. test:: Get children by name.
-            :id: I_ARMI_CMP_BY_NAME0
+            :id: T_ARMI_CMP_BY_NAME0
             :tests: R_ARMI_CMP_BY_NAME
         """
         self.assertIsNone(
@@ -1253,7 +1253,7 @@ class Block_TestCase(unittest.TestCase):
         """Test that components can be sorted within a block and returned in the correct order.
 
         .. test:: Get children by name.
-            :id: I_ARMI_CMP_BY_NAME1
+            :id: T_ARMI_CMP_BY_NAME1
             :tests: R_ARMI_CMP_BY_NAME
         """
         expected = [
@@ -1277,7 +1277,7 @@ class Block_TestCase(unittest.TestCase):
         """Test that components can be sorted within a block and returned in the correct order.
 
         .. test:: Get children by name.
-            :id: I_ARMI_CMP_BY_NAME2
+            :id: T_ARMI_CMP_BY_NAME2
             :tests: R_ARMI_CMP_BY_NAME
         """
         expected = [
