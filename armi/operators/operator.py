@@ -73,7 +73,7 @@ class Operator:
 
     .. note:: The :doc:`/developer/guide` has some additional narrative on this topic.
 
-    .. impl:: An operator will have a reactor object, to communicate between plugins.
+    .. impl:: An operator will have a reactor object to communicate between plugins.
         :id: I_ARMI_OPERATOR_COMM
         :implements: R_ARMI_OPERATOR_COMM
 

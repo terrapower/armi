@@ -89,7 +89,7 @@ class TestBlueprints(unittest.TestCase):
     def test_componentDimensions(self):
         """Tests that the user can specify the dimensions of a component with arbitrary fidelity.
 
-        .. test:: Test that a component can be correctly created from a blueprint file
+        .. test:: A component can be correctly created from a blueprint file.
             :id: T_ARMI_BP_COMP
             :tests: R_ARMI_BP_COMP
         """

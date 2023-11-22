@@ -172,7 +172,7 @@ def loadFromCs(cs) -> Reactor:
     """
     Load a Reactor based on the input settings.
 
-    .. impl:: Create reactor from input yaml file
+    .. impl:: Users can create a reactor from an input yaml file.
         :id: I_ARMI_R_CORE
         :implements: R_ARMI_R_CORE
 
@@ -778,7 +778,7 @@ class Core(composites.Composite):
         """
         Returns the number of rings in this reactor. Based on location so indexing will start at 1.
 
-        .. impl:: Retrieve number of rings in core
+        .. impl:: Retrieve number of rings in core.
             :id: I_ARMI_R_NUM_RINGS
             :implements: R_ARMI_R_NUM_RINGS
 
@@ -1138,7 +1138,7 @@ class Core(composites.Composite):
         """
         Find the assembly that has this name.
 
-        .. impl:: Get assembly by name
+        .. impl:: Get assembly by name.
             :id: I_ARMI_R_GET_ASSEM_NAME
             :implements: R_ARMI_R_GET_ASSEM_NAME
 
@@ -1655,7 +1655,7 @@ class Core(composites.Composite):
     def getAssemblyWithStringLocation(self, locationString):
         """Returns an assembly or none if given a location string like 'B0014'.
 
-        .. impl:: Get assembly by location
+        .. impl:: Get assembly by location.
             :id: I_ARMI_R_GET_ASSEM_LOC
             :implements: R_ARMI_R_GET_ASSEM_LOC
         """
@@ -1689,7 +1689,7 @@ class Core(composites.Composite):
         Return a list of neighboring assemblies from the 30 degree point (point 1) then
         counterclockwise around.
 
-        .. impl:: Retrieve neighboring assemblies of a given assembly
+        .. impl:: Retrieve neighboring assemblies of a given assembly.
             :id: I_ARMI_R_FIND_NEIGHBORS
             :implements: R_ARMI_R_FIND_NEIGHBORS
 

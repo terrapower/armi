@@ -317,7 +317,7 @@ class TestRoundTrip(unittest.TestCase):
         """
         Test saving blueprint data to a stream.
 
-        .. test:: Write blueprints settings to disk
+        .. test:: Blueprints settings can be written to disk.
             :id: T_ARMI_BP_TO_DB
             :tests: R_ARMI_BP_TO_DB
         """
@@ -331,7 +331,7 @@ class TestRoundTrip(unittest.TestCase):
         """
         Test that a lattice map can be defined, written, and read in from blueprint file.
 
-        .. test:: Define a lattice map in reactor core
+        .. test:: Define a lattice map in reactor core.
             :id: T_ARMI_BP_GRID1
             :tests: R_ARMI_BP_GRID
         """
@@ -397,7 +397,7 @@ class TestGridBlueprintsSection(unittest.TestCase):
     def test_simpleReadLatticeMap(self):
         """Read lattice map and create a grid.
 
-        .. test:: Define a lattice map in reactor core
+        .. test:: Define a lattice map in reactor core.
             :id: T_ARMI_BP_GRID0
             :tests: R_ARMI_BP_GRID
         """

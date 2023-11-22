@@ -72,7 +72,7 @@ class TestFlag(unittest.TestCase):
     def test_collision_extension(self):
         """Ensure the set of flags cannot be programmatically extended if duplicate created.
 
-        .. test:: Set of flags are extensible without loss of uniqueness
+        .. test:: Set of flags are extensible without loss of uniqueness.
             :id: T_ARMI_FLAG_EXTEND
             :tests: R_ARMI_FLAG_EXTEND
         """
@@ -88,7 +88,7 @@ class TestFlag(unittest.TestCase):
     def test_collision_creation(self):
         """Make sure that we catch value collisions upon creation.
 
-        .. test:: No two flags have equivalence
+        .. test:: No two flags have equivalence.
             :id: T_ARMI_FLAG_DEFINE
             :tests: R_ARMI_FLAG_DEFINE
         """

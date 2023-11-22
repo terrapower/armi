@@ -75,7 +75,7 @@ class TestZone(unittest.TestCase):
         """
         Test adding an item.
 
-        .. test:: Add item to a zone
+        .. test:: Add item to a zone.
             :id: T_ARMI_ZONE0
             :tests: R_ARMI_ZONE
         """
@@ -96,7 +96,7 @@ class TestZone(unittest.TestCase):
         """
         Test adding items.
 
-        .. test:: Add multiple items to a zone
+        .. test:: Add multiple items to a zone.
             :id: T_ARMI_ZONE1
             :tests: R_ARMI_ZONE
         """
@@ -115,7 +115,7 @@ class TestZone(unittest.TestCase):
         """
         Test adding a location.
 
-        .. test:: Add location to a zone
+        .. test:: Add location to a zone.
             :id: T_ARMI_ZONE2
             :tests: R_ARMI_ZONE
         """
@@ -136,7 +136,7 @@ class TestZone(unittest.TestCase):
         """
         Test adding locations.
 
-        .. test:: Add multiple locations to a zone
+        .. test:: Add multiple locations to a zone.
             :id: T_ARMI_ZONE3
             :tests: R_ARMI_ZONE
         """
@@ -210,7 +210,7 @@ class TestZones(unittest.TestCase):
         """
         Test creating and interacting with the Zones object.
 
-        .. test:: Create collection of Zones
+        .. test:: Create collection of Zones.
             :id: T_ARMI_ZONES
             :tests: R_ARMI_ZONES
         """

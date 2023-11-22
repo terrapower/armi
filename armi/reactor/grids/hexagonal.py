@@ -313,7 +313,7 @@ class HexGrid(StructuredGrid):
     def getSymmetricEquivalents(self, indices: IJKType) -> List[IJType]:
         """Retrieve e quivalent contents based on 3rd symmetry.
 
-        .. impl:: Equivalent contents in 3rd geometry are retrievable
+        .. impl:: Equivalent contents in 3rd geometry are retrievable.
             :id: I_ARMI_GRID_EQUIVALENTS
             :implements: R_ARMI_GRID_EQUIVALENTS
         """
@@ -368,7 +368,7 @@ class HexGrid(StructuredGrid):
     def isInFirstThird(self, locator, includeTopEdge=False) -> bool:
         """True if locator is in first third of hex grid.
 
-        .. impl:: Determine if grid in first third
+        .. impl:: Determine if grid is in first third.
             :id: I_ARMI_GRID_SYMMETRY_LOC
             :implements: R_ARMI_GRID_SYMMETRY_LOC
         """

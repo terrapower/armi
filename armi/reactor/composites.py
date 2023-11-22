@@ -296,7 +296,7 @@ class ArmiObject(metaclass=CompositeModelType):
         specialized subclasses (Block, Assembly) in preparation for this next step.
         As a result, the public API on this method should be considered unstable.
 
-    .. impl:: Parameters accessible throughout the armi tree
+    .. impl:: Parameters are accessible throughout the armi tree.
         :id: I_ARMI_PARAM_PART
         :implements: R_ARMI_PARAM_PART
 
@@ -659,7 +659,7 @@ class ArmiObject(metaclass=CompositeModelType):
     def getName(self):
         """Get composite name.
 
-        .. impl:: Composite name is accessible
+        .. impl:: Composite name is accessible.
             :id: I_ARMI_CMP_GET_NAME
             :implements: R_ARMI_CMP_GET_NAME
         """
@@ -672,7 +672,7 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         Determine if this object is of a certain type.
 
-        .. impl:: Composites have queriable flags.
+        .. impl:: Flags can be queried.
             :id: I_ARMI_CMP_FLAG
             :implements: R_ARMI_CMP_FLAG
 
@@ -881,7 +881,7 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         Determine the mass in grams of nuclide(s) and/or elements in this object.
 
-        .. impl:: Get mass of composite
+        .. impl:: Return mass of composite.
             :id: I_ARMI_CMP_GET_MASS
             :implements: R_ARMI_CMP_GET_MASS
 
@@ -1289,7 +1289,7 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         Retrieve the number densities in atoms/barn-cm of all nuclides (or those requested) in the object.
 
-        .. impl:: Number density of composite is retrievable
+        .. impl:: Number density of composite is retrievable.
             :id: I_ARMI_CMP_GET_NDENS
             :implements: R_ARMI_CMP_GET_NDENS
 

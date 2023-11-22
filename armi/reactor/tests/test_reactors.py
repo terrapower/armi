@@ -264,7 +264,7 @@ class HexReactorTests(ReactorTests):
         """
         Create a core object from an input yaml.
 
-        .. test:: Create core object from input yaml
+        .. test:: Create core object from input yaml.
             :id: T_ARMI_R_CORE
             :tests: R_ARMI_R_CORE
         """
@@ -294,11 +294,11 @@ class HexReactorTests(ReactorTests):
         This test works through multiple levels of the hierarchy to test ability to
         modify parameters at different levels.
 
-        .. test:: Parameters accessible throughout the armi tree
+        .. test:: Parameters are accessible throughout the armi tree.
             :id: T_ARMI_PARAM_PART
             :tests: R_ARMI_PARAM_PART
 
-        .. impl:: Prove there is a setting for total core power.
+        .. impl:: Ensure there is a setting for total core power.
             :id: T_ARMI_SETTINGS_POWER
             :implements: R_ARMI_SETTINGS_POWER
         """
@@ -583,7 +583,7 @@ class HexReactorTests(ReactorTests):
         """
         Find neighbors of a given assembly.
 
-        .. test:: Retrieve neighboring assemblies of a given assembly
+        .. test:: Retrieve neighboring assemblies of a given assembly.
             :id: T_ARMI_R_FIND_NEIGHBORS
             :tests: R_ARMI_R_FIND_NEIGHBORS
         """
@@ -720,7 +720,7 @@ class HexReactorTests(ReactorTests):
         """
         Get assembly by location.
 
-        .. test:: Get assembly by location
+        .. test:: Get assembly by location.
             :id: T_ARMI_R_GET_ASSEM_LOC
             :tests: R_ARMI_R_GET_ASSEM_LOC
         """
@@ -733,7 +733,7 @@ class HexReactorTests(ReactorTests):
         """
         Get assembly by name.
 
-        .. test:: Get assembly by name
+        .. test:: Get assembly by name.
             :id: T_ARMI_R_GET_ASSEM_NAME
             :tests: R_ARMI_R_GET_ASSEM_NAME
         """

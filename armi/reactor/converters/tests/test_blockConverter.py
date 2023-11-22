@@ -44,7 +44,7 @@ class TestBlockConverter(unittest.TestCase):
         """
         Test dissolving wire into coolant.
 
-        .. test:: Homogenize one component into another
+        .. test:: Homogenize one component into another.
             :id: T_ARMI_BLOCKCONV0
             :tests: R_ARMI_BLOCKCONV
         """
@@ -58,7 +58,7 @@ class TestBlockConverter(unittest.TestCase):
         """
         Test dissolving liner into clad.
 
-        .. test:: Homogenize one component into another
+        .. test:: Homogenize one component into another.
             :id: T_ARMI_BLOCKCONV1
             :tests: R_ARMI_BLOCKCONV
         """
@@ -107,7 +107,7 @@ class TestBlockConverter(unittest.TestCase):
     def test_convert(self):
         """Test conversion with no fuel driver.
 
-        .. test:: Convert hex blocks to cylindrical blocks
+        .. test:: Convert hex blocks to cylindrical blocks.
             :id:  T_ARMI_BLOCKCONV_HEX_TO_CYL1
             :tests: R_ARMI_BLOCKCONV_HEX_TO_CYL
         """
@@ -143,7 +143,7 @@ class TestBlockConverter(unittest.TestCase):
     def test_convertHexWithFuelDriver(self):
         """Test conversion with fuel driver.
 
-        .. test:: Convert hex blocks to cylindrical blocks
+        .. test:: Convert hex blocks to cylindrical blocks.
             :id:  T_ARMI_BLOCKCONV_HEX_TO_CYL0
             :tests: R_ARMI_BLOCKCONV_HEX_TO_CYL
         """

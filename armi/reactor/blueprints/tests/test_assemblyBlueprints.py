@@ -186,7 +186,7 @@ assemblies:
         """
         Load assembly from a blueprint file.
 
-        .. test:: Create assembly from blueprint file
+        .. test:: Create assembly from blueprint file.
             :id: T_ARMI_BP_ASSEM
             :tests: R_ARMI_BP_ASSEM
         """

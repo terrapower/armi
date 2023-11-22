@@ -23,7 +23,7 @@ class Test_hexagon(unittest.TestCase):
         """
         Area of a hexagon.
 
-        .. test:: Compute hexagonal area
+        .. test:: Hexagonal area is retrievable.
             :id: T_ARMI_UTIL_HEXAGON0
             :test: R_ARMI_UTIL_HEXAGON
         """
@@ -35,7 +35,7 @@ class Test_hexagon(unittest.TestCase):
         """
         Calculate number of positions in a ring of hexagons.
 
-        .. test:: Compute number of positions in ring
+        .. test:: Compute number of positions in ring.
             :id: T_ARMI_UTIL_HEXAGON1
             :tests: R_ARMI_UTIL_HEXAGON
         """
