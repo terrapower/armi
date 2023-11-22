@@ -46,7 +46,7 @@ Create a case suite from existing files, and run the suite::
     suite.discover('my-cases*.yaml', recursive=True)
     suite.run()
     
-.. warning: Suite running may not work yet if the cases have interdependencies.
+.. warning:: Suite running may not work yet if the cases have interdependencies.
 
 Create a ``burnStep`` sensitivity study from some base CS::
 

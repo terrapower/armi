@@ -371,7 +371,7 @@ class TestGlobalFluxUtils(unittest.TestCase):
             :id: T_ARMI_FLUX_RX_RATES
             :tests: R_ARMI_FLUX_RX_RATES
 
-        .. warning: This does not validate the reaction rate calculation.
+        .. warning:: This does not validate the reaction rate calculation.
         """
         b = test_blocks.loadTestBlock()
         test_blocks.applyDummyData(b)
