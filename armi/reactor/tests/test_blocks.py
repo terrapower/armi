@@ -305,7 +305,7 @@ def getComponentData(component):
 
 
 class TestDetailedNDensUpdate(unittest.TestCase):
-    def setUp(self):
+    def test_updateDetailedNdens(self):
         from armi.reactor.blueprints.tests.test_blockBlueprints import FULL_BP
 
         cs = settings.Settings()
@@ -318,7 +318,6 @@ class TestDetailedNDensUpdate(unittest.TestCase):
             a.add(buildSimpleFuelBlock())
             self.r.core.add(a)
 
-    def test_updateDetailedNdens(self):
         # get first block in assembly with 'fuel' key
         block = self.r.core[0][0]
         # get nuclides in first component in block
