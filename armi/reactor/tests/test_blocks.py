@@ -1871,7 +1871,7 @@ class HexBlock_TestCase(unittest.TestCase):
         Tests that the block class can provide basic dimensionality information about
         itself.
 
-        .. test:: Important block dimensions are retrievable.
+        .. test:: Users can create hex shaped blocks.
             :id: T_ARMI_BLOCK_DIMS
             :tests: R_ARMI_BLOCK_DIMS
         """
