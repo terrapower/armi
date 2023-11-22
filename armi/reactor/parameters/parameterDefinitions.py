@@ -152,7 +152,7 @@ class Serializer:
         their version. It is also good practice, whenever possible, to support reading
         old versions so that database files written by old versions can still be read.
 
-    .. impl:: User can define custom parameter serializers.
+    .. impl:: Users can define custom parameter serializers.
         :id: I_ARMI_PARAM_SERIALIZE
         :implements: R_ARMI_PARAM_SERIALIZE
 

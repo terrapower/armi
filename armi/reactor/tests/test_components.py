@@ -185,7 +185,7 @@ class TestComponent(TestGeneralComponents):
     def test_setNumberDensity(self):
         """Test setting a single number density.
 
-        .. test:: User can set Component number density.
+        .. test:: Users can set Component number density.
             :id: T_ARMI_COMP_NUCLIDE_FRASCS0
             :tests: R_ARMI_COMP_NUCLIDE_FRACS
         """
@@ -197,7 +197,7 @@ class TestComponent(TestGeneralComponents):
     def test_setNumberDensities(self):
         """Test setting multiple number densities.
 
-        .. test:: User can set Component number densities.
+        .. test:: Users can set Component number densities.
             :id: T_ARMI_COMP_NUCLIDE_FRASCS1
             :tests: R_ARMI_COMP_NUCLIDE_FRACS
         """
