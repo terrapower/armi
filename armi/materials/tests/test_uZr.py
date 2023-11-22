@@ -14,6 +14,7 @@
 
 """Tests for simplified UZr material."""
 from unittest import TestCase
+import pickle
 
 from armi.materials.uZr import UZr
 
