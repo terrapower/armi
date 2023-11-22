@@ -113,11 +113,11 @@ class TestCompositePattern(unittest.TestCase):
     def test_composite(self):
         """Test basic Composite things.
 
-        .. test:: Components are a physical part of the reactor.
+        .. test:: Composites are a physical part of the reactor.
             :id: T_ARMI_CMP0
             :tests: R_ARMI_CMP
 
-        .. test:: Components are part of a hierarchical model.
+        .. test:: Composites are part of a hierarchical model.
             :id: T_ARMI_CMP_CHILDREN0
             :tests: R_ARMI_CMP_CHILDREN
         """
@@ -136,11 +136,11 @@ class TestCompositePattern(unittest.TestCase):
     def test_getChildren(self):
         """Test the get children method.
 
-        .. test:: Components are a physical part of the reactor.
+        .. test:: Composites are a physical part of the reactor.
             :id: T_ARMI_CMP1
             :tests: R_ARMI_CMP
 
-        .. test:: Components are part of a hierarchical model.
+        .. test:: Composites are part of a hierarchical model.
             :id: T_ARMI_CMP_CHILDREN1
             :tests: R_ARMI_CMP_CHILDREN
         """

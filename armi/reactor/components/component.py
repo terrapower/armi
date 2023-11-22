@@ -173,6 +173,10 @@ class Component(composites.Composite, metaclass=ComponentType):
         :id: I_ARMI_COMP_DEF
         :implements: R_ARMI_COMP_DEF
 
+        .. impl:: Order components by there outermost diameter (using the < operator).
+            :id: I_ARMI_COMP_ORDER
+            :implements: R_ARMI_COMP_ORDER
+
     Attributes
     ----------
     temperatureInC : float
@@ -256,10 +260,6 @@ class Component(composites.Composite, metaclass=ComponentType):
         True if a circle encompassing this object has a smaller diameter than one encompassing another component.
 
         This allows sorting because the Python sort functions only use this method.
-
-        .. impl:: Order components by there outermost diameter.
-            :id: I_ARMI_COMP_ORDER
-            :implements: R_ARMI_COMP_ORDER
         """
         thisOD = self.getBoundingCircleOuterDiameter(cold=True)
         thatOD = other.getBoundingCircleOuterDiameter(cold=True)
