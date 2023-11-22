@@ -23,7 +23,6 @@ from numpy.testing import assert_allclose
 
 from armi import materials, runLog, settings, tests
 from armi.reactor import blueprints
-from armi.reactor.blueprints.tests.test_blockBlueprints import FULL_BP
 from armi.reactor.components import basicShapes, complexShapes
 from armi.nucDirectory import nucDir, nuclideBases
 from armi.nuclearDataIO.cccc import isotxs
@@ -307,6 +306,8 @@ def getComponentData(component):
 
 class TestDetailedNDensUpdate(unittest.TestCase):
     def setUp(self):
+        from armi.reactor.blueprints.tests.test_blockBlueprints import FULL_BP
+
         cs = settings.Settings()
         with io.StringIO(FULL_BP) as stream:
             bps = blueprints.Blueprints.load(stream)
