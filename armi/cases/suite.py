@@ -201,7 +201,7 @@ class CaseSuite:
         """
         Run each case, one after the other.
 
-        .. warning: Suite running may not work yet if the cases have interdependencies.
+        .. warning:: Suite running may not work yet if the cases have interdependencies.
                     We typically run on a HPC but are still working on a platform
                     independent way of handling HPCs.
         """
