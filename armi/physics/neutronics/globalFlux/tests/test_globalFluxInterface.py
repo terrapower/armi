@@ -107,7 +107,7 @@ class TestGlobalFluxOptions(unittest.TestCase):
     """
     Tests for GlobalFluxOptions.
 
-    .. test:: Tests GlobalFluxOptions
+    .. test:: Tests GlobalFluxOptions.
         :id: T_ARMI_FLUX_OPTIONS
         :tests: R_ARMI_FLUX_OPTIONS
     """
@@ -170,7 +170,7 @@ class TestGlobalFluxInterface(unittest.TestCase):
         """
         Test energy balance check.
 
-        .. test:: Block-wise power is consistent with reactor data model power
+        .. test:: Block-wise power is consistent with reactor data model power.
             :id: T_ARMI_FLUX_CHECK_POWER
             :tests: R_ARMI_FLUX_CHECK_POWER
         """
@@ -218,7 +218,7 @@ class TestGlobalFluxInterfaceWithExecuters(unittest.TestCase):
     def test_getTightCouplingValue(self):
         """Test getTightCouplingValue returns the correct value for keff and type for power.
 
-        .. test:: Get k-eff or assembly-wise power for coupling interactions
+        .. test:: Return k-eff or assembly-wise power for coupling interactions.
             :id: T_ARMI_FLUX_COUPLING_VALUE
             :tests: R_ARMI_FLUX_COUPLING_VALUE
         """
@@ -367,7 +367,7 @@ class TestGlobalFluxUtils(unittest.TestCase):
         """
         Test that the reaction rate code executes and sets a param > 0.0.
 
-        .. test:: Return the reaction rates for a given ArmiObject
+        .. test:: Return the reaction rates for a given ArmiObject.
             :id: T_ARMI_FLUX_RX_RATES
             :tests: R_ARMI_FLUX_RX_RATES
 

@@ -93,7 +93,7 @@ class AssemblyBlueprint(yamlize.Object):
     This class utilizes ``yamlize`` to enable serialization to and from the
     blueprints YAML file.
 
-    .. impl:: Create assembly from blueprint file
+    .. impl:: Create assembly from blueprint file.
         :id: I_ARMI_BP_ASSEM
         :implements: R_ARMI_BP_ASSEM
     """

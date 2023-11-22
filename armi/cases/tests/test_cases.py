@@ -202,7 +202,7 @@ class TestArmiCase(unittest.TestCase):
         """
         Test running a case.
 
-        .. test:: Generic mechanism to allow simulation runs
+        .. test:: There is a generic mechanism to allow simulation runs.
             :id: T_ARMI_CASE
             :tests: R_ARMI_CASE
         """
@@ -300,7 +300,7 @@ class TestCaseSuiteDependencies(unittest.TestCase):
         """
         Test the checkInputs() method on a couple of cases.
 
-        .. test:: Test the checkInputs method.
+        .. test:: Check the ARMI inputs for consistency and validity.
             :id: T_ARMI_CASE_CHECK
             :tests: R_ARMI_CASE_CHECK
         """

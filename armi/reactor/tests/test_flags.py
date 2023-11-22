@@ -30,7 +30,7 @@ class TestFlags(unittest.TestCase):
         """
         Convert flag to and from string for serialization.
 
-        .. test:: Convert flag to a string
+        .. test:: Convert flag to a string.
             :id: T_ARMI_FLAG_TO_STR
             :tests: R_ARMI_FLAG_TO_STR
         """

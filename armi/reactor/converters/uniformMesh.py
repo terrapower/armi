@@ -31,9 +31,9 @@ Requirements
    well as the multigroup real and adjoint flux.
 
 
-.. warning: This procedure can cause numerical diffusion in some cases. For example, 
+.. warning: This procedure can cause numerical diffusion in some cases. For example,
     if a control rod tip block has a large coolant block below it, things like peak
-    absorption rate can get lost into it. We recalculate some but not all 
+    absorption rate can get lost into it. We recalculate some but not all
     reaction rates in the re-mapping process based on a flux remapping. To avoid this,
     finer meshes will help. Always perform mesh sensitivity studies to ensure appropriate
     convergence for your needs.
@@ -108,7 +108,7 @@ class UniformMeshGenerator:
             Reactor for which a common mesh is generated
         minimumMeshSize : float, optional
             Minimum allowed separation between axial mesh points in cm
-            If no miminmum mesh size is provided, no "decusping" is performed
+            If no minimum mesh size is provided, no "decusping" is performed
         """
         self._sourceReactor = r
         self.minimumMeshSize = minimumMeshSize

@@ -120,7 +120,7 @@ class ComponentBlueprint(yamlize.Object):
     This class defines the inputs necessary to build ARMI component objects. It uses ``yamlize`` to enable serialization
     to and from YAML.
 
-    .. impl:: Construct component from blueprint file
+    .. impl:: Construct component from blueprint file.
         :id: I_ARMI_BP_COMP
         :implements: R_ARMI_BP_COMP
     """
