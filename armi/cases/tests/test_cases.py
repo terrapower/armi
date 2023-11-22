@@ -269,12 +269,7 @@ class TestArmiCase(unittest.TestCase):
 
 
 class TestCaseSuiteDependencies(unittest.TestCase):
-    """CaseSuite tests.
-
-    .. test:: Dependence allows for one case to start after the completion of another.
-        :id: T_ARMI_CASE_SUITE
-        :tests: R_ARMI_CASE_SUITE
-    """
+    """CaseSuite tests."""
 
     def setUp(self):
         self.suite = cases.CaseSuite(settings.Settings())

@@ -46,19 +46,20 @@ class LatinHyperCubeModifier(SamplingInputModifier):
 
 
 class TestLatinHyperCubeSuiteBuilder(unittest.TestCase):
-    """
-    Class to test LatinHyperCubeSuiteBuilder.
-
-    .. test:: A generic mechanism to allow users to modify user inputs in cases.
-        :id: T_ARMI_CASE_MOD0
-        :tests: R_ARMI_CASE_MOD
-    """
+    """Class to test LatinHyperCubeSuiteBuilder."""
 
     def test_initialize(self):
         builder = LatinHyperCubeSuiteBuilder(case, size=20)
         assert builder.modifierSets == []
 
     def test_buildSuite(self):
+        """
+        Initialize an LHC suite.
+
+        .. test:: A generic mechanism to allow users to modify user inputs in cases.
+            :id: T_ARMI_CASE_MOD0
+            :tests: R_ARMI_CASE_MOD
+        """
         builder = LatinHyperCubeSuiteBuilder(case, size=20)
         powerMod = LatinHyperCubeModifier("power", "continuous", [0, 1e6])
         availabilityMod = LatinHyperCubeModifier(
