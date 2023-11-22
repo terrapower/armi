@@ -256,6 +256,10 @@ class Component(composites.Composite, metaclass=ComponentType):
         True if a circle encompassing this object has a smaller diameter than one encompassing another component.
 
         This allows sorting because the Python sort functions only use this method.
+
+        .. impl:: Order components by there outermost diameter.
+            :id: I_ARMI_COMP_ORDER
+            :implements: R_ARMI_COMP_ORDER
         """
         thisOD = self.getBoundingCircleOuterDiameter(cold=True)
         thatOD = other.getBoundingCircleOuterDiameter(cold=True)
@@ -387,6 +391,10 @@ class Component(composites.Composite, metaclass=ComponentType):
         .. impl:: Material properties are retrievable
             :id: I_ARMI_COMP_MAT0
             :implements: R_ARMI_COMP_MAT
+
+        .. impl:: Components have one-and-only-one material.
+            :id: I_ARMI_COMP_1MAT
+            :implements: R_ARMI_COMP_1MAT
         """
         return self.material
 
@@ -658,6 +666,10 @@ class Component(composites.Composite, metaclass=ComponentType):
         """
         Set heterogeneous number density.
 
+        .. impl:: Setting nuclide fractions.
+            :id: I_ARMI_COMP_NUCLIDE_FRACS0
+            :implements: R_ARMI_COMP_NUCLIDE_FRACS
+
         Parameters
         ----------
         nucName : str
@@ -675,6 +687,10 @@ class Component(composites.Composite, metaclass=ComponentType):
     def setNumberDensities(self, numberDensities):
         """
         Set one or more multiple number densities. Clears out any number density not listed.
+
+        .. impl:: Setting nuclide fractions.
+            :id: I_ARMI_COMP_NUCLIDE_FRACS1
+            :implements: R_ARMI_COMP_NUCLIDE_FRACS
 
         Parameters
         ----------
@@ -887,6 +903,10 @@ class Component(composites.Composite, metaclass=ComponentType):
     def getThermalExpansionFactor(self, Tc=None, T0=None):
         """
         Retrieves the material thermal expansion fraction.
+
+        .. impl:: Calculates radial thermal expansion factor.
+            :id: I_ARMI_COMP_EXPANSION
+            :implements: R_ARMI_COMP_EXPANSION
 
         Parameters
         ----------
