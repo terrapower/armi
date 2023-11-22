@@ -252,11 +252,7 @@ class TestCompositePattern(unittest.TestCase):
     def test_hasFlags(self):
         """Ensure flags are queryable.
 
-        .. test:: Flags can be queried
-            :id: T_ARMI_CMP_HAS_FLAGS
-            :tests: R_ARMI_CMP_HAS_FLAGS
-
-        .. test:: Composites have flags
+        .. test:: Composites have queriable flags.
             :id: T_ARMI_CMP_FLAG
             :tests: R_ARMI_CMP_FLAG
         """
