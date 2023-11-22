@@ -23,7 +23,6 @@ from numpy.testing import assert_allclose
 
 from armi import materials, runLog, settings, tests
 from armi.reactor import blueprints
-from armi.reactor.blueprints.tests.test_blockBlueprints import FULL_BP
 from armi.reactor.components import basicShapes, complexShapes
 from armi.nucDirectory import nucDir, nuclideBases
 from armi.nuclearDataIO.cccc import isotxs
@@ -306,7 +305,9 @@ def getComponentData(component):
 
 
 class TestDetailedNDensUpdate(unittest.TestCase):
-    def setUp(self):
+    def test_updateDetailedNdens(self):
+        from armi.reactor.blueprints.tests.test_blockBlueprints import FULL_BP
+
         cs = settings.Settings()
         with io.StringIO(FULL_BP) as stream:
             bps = blueprints.Blueprints.load(stream)
@@ -317,7 +318,6 @@ class TestDetailedNDensUpdate(unittest.TestCase):
             a.add(buildSimpleFuelBlock())
             self.r.core.add(a)
 
-    def test_updateDetailedNdens(self):
         # get first block in assembly with 'fuel' key
         block = self.r.core[0][0]
         # get nuclides in first component in block
@@ -1237,13 +1237,24 @@ class Block_TestCase(unittest.TestCase):
         )
 
     def test_getComponentByName(self):
+        """Test children by name.
+
+        .. test:: Get children by name.
+            :id: I_ARMI_CMP_BY_NAME0
+            :tests: R_ARMI_CMP_BY_NAME
+        """
         self.assertIsNone(
             self.block.getComponentByName("not the droid youre looking for")
         )
         self.assertIsNotNone(self.block.getComponentByName("annular void"))
 
     def test_getSortedComponentsInsideOfComponent(self):
-        """Test that components can be sorted within a block and returned in the correct order."""
+        """Test that components can be sorted within a block and returned in the correct order.
+
+        .. test:: Get children by name.
+            :id: I_ARMI_CMP_BY_NAME1
+            :tests: R_ARMI_CMP_BY_NAME
+        """
         expected = [
             self.block.getComponentByName(c)
             for c in [
@@ -1262,6 +1273,12 @@ class Block_TestCase(unittest.TestCase):
         self.assertListEqual(actual, expected)
 
     def test_getSortedComponentsInsideOfComponentSpecifiedTypes(self):
+        """Test that components can be sorted within a block and returned in the correct order.
+
+        .. test:: Get children by name.
+            :id: I_ARMI_CMP_BY_NAME2
+            :tests: R_ARMI_CMP_BY_NAME
+        """
         expected = [
             self.block.getComponentByName(c)
             for c in [

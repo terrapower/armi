@@ -183,7 +183,6 @@ class Grid(ABC):
             None if not line of symmetry goes through the object at the
             requested index. Otherwise, some grid constants like ``BOUNDARY_CENTER``
             will be returned.
-
         """
 
     @abstractmethod
@@ -244,5 +243,4 @@ class Grid(ABC):
         Notes
         -----
         For consistency, the second to last argument **must** be the geomType
-
         """

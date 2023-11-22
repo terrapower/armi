@@ -110,7 +110,17 @@ class TestCompositePattern(unittest.TestCase):
         container.add(nested)
         self.container = container
 
-    def test_Composite(self):
+    def test_composite(self):
+        """Test basic Composite things.
+
+        .. test:: Composites are a physical item.
+            :id: T_ARMI_CMP0
+            :tests: R_ARMI_CMP
+
+        .. test:: Composites are part of a hierarchical model.
+            :id: T_ARMI_CMP_CHILDREN0
+            :tests: R_ARMI_CMP_CHILDREN
+        """
         container = self.container
 
         children = container.getChildren()
@@ -124,6 +134,16 @@ class TestCompositePattern(unittest.TestCase):
         self.assertIn(self.thirdGen, list(self.container.iterComponents()))
 
     def test_getChildren(self):
+        """Test the get children method.
+
+        .. test:: Composites are a physical part of the reactor.
+            :id: T_ARMI_CMP1
+            :tests: R_ARMI_CMP
+
+        .. test:: Composites are part of a hierarchical model.
+            :id: T_ARMI_CMP_CHILDREN1
+            :tests: R_ARMI_CMP_CHILDREN
+        """
         # There are 5 leaves and 1 composite in container. The composite has one leaf.
         firstGen = self.container.getChildren()
         self.assertEqual(len(firstGen), 6)
@@ -140,6 +160,18 @@ class TestCompositePattern(unittest.TestCase):
             deep=True, predicate=lambda o: o.p.type == "liner"
         )
         self.assertEqual(len(onlyLiner), 1)
+
+    def test_getName(self):
+        """Test the getName method.
+
+        .. test:: Composites names should be accessible.
+            :id: T_ARMI_CMP_GET_NAME
+            :tests: R_ARMI_CMP_GET_NAME
+        """
+        self.assertEqual(self.secondGen.getName(), "liner")
+        self.assertEqual(self.thirdGen.getName(), "pin 77")
+        self.assertEqual(self.secondGen.getName(), "liner")
+        self.assertEqual(self.container.getName(), "inner test fuel")
 
     def test_sort(self):
         # in this case, the children should start sorted
@@ -221,8 +253,8 @@ class TestCompositePattern(unittest.TestCase):
         """Ensure flags are queryable.
 
         .. test:: Flags can be queried.
-            :id: T_ARMI_CMP_HAS_FLAGS
-            :tests: R_ARMI_CMP_HAS_FLAGS
+            :id: T_ARMI_CMP_FLAG
+            :tests: R_ARMI_CMP_FLAG
         """
         self.container.setType("fuel")
         self.assertFalse(self.container.hasFlags(Flags.SHIELD | Flags.FUEL, exact=True))
@@ -522,6 +554,12 @@ class TestCompositeTree(unittest.TestCase):
         self.assertAlmostEqual(cur, ref, places=places)
 
     def test_getMaxParam(self):
+        """Test getMaxParam().
+
+        .. test:: Composites have parameter collections.
+            :id: T_ARMI_CMP_PARAMS0
+            :tests: R_ARMI_CMP_PARAMS
+        """
         for ci, c in enumerate(self.Block):
             if isinstance(c, basicShapes.Circle):
                 c.p.id = ci
@@ -532,6 +570,12 @@ class TestCompositeTree(unittest.TestCase):
         self.assertIs(comp, lastSeen)
 
     def test_getMinParam(self):
+        """Test getMinParam().
+
+        .. test:: Composites have parameter collections.
+            :id: T_ARMI_CMP_PARAMS1
+            :tests: R_ARMI_CMP_PARAMS
+        """
         for ci, c in reversed(list(enumerate(self.Block))):
             if isinstance(c, basicShapes.Circle):
                 c.p.id = ci
@@ -642,10 +686,17 @@ class TestMiscMethods(unittest.TestCase):
         .. test:: Number density of composite is retrievable.
             :id: T_ARMI_CMP_GET_NDENS0
             :tests: R_ARMI_CMP_GET_NDENS
+
+        .. test:: Get number densities.
+            :id: T_ARMI_CMP_NUC
+            :tests: R_ARMI_CMP_NUC
         """
         ndens = self.obj.getNumberDensities()
         self.assertAlmostEqual(0.0001096, ndens["SI"], 7)
         self.assertAlmostEqual(0.0000368, ndens["W"], 7)
+
+        ndens = self.obj.getNumberDensity("SI")
+        self.assertAlmostEqual(0.0001096, ndens, 7)
 
     def test_dimensionReport(self):
         report = self.obj.setComponentDimensionsReport()

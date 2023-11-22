@@ -174,6 +174,10 @@ class TestComponent(TestGeneralComponents):
         .. test:: Components are made of one material.
             :id: T_ARMI_COMP_1MAT0
             :tests: R_ARMI_COMP_1MAT
+
+        .. test:: Define a component.
+            :id: T_ARMI_COMP_DEF0
+            :tests: R_ARMI_COMP_DEF
         """
         expectedName = "TestComponent"
         actualName = self.component.getName()
@@ -225,6 +229,12 @@ class TestNullComponent(TestGeneralComponents):
     componentCls = NullComponent
 
     def test_cmp(self):
+        """Test null component.
+
+        .. test:: Define a component.
+            :id: T_ARMI_COMP_DEF1
+            :tests: R_ARMI_COMP_DEF
+        """
         cur = self.component
         ref = DerivedShape("DerivedShape", "Material", 0, 0)
         self.assertLess(cur, ref)
@@ -431,6 +441,10 @@ class TestCircle(TestShapedComponent):
         .. test:: Circle shaped component
             :id: T_ARMI_COMP_SHAPES0
             :tests: R_ARMI_COMP_SHAPES
+
+        .. test:: Calculate thermal expansion.
+            :id: I_ARMI_COMP_EXPANSION0
+            :tests: R_ARMI_COMP_EXPANSION
         """
         hotTemp = 700.0
         dLL = self.component.material.linearExpansionFactor(
@@ -446,6 +460,10 @@ class TestCircle(TestShapedComponent):
         .. test:: Retrieve a dimension at a temperature.
             :id: T_ARMI_COMP_DIMS1
             :tests: R_ARMI_COMP_DIMS
+
+        .. test:: Calculate thermal expansion.
+            :id: I_ARMI_COMP_EXPANSION1
+            :tests: R_ARMI_COMP_EXPANSION
         """
         hotTemp = 700.0
         ref = self._od * self.component.getThermalExpansionFactor(Tc=hotTemp)
@@ -528,7 +546,7 @@ class TestCircle(TestShapedComponent):
             _gap = Circle("gap", "Void", **gapDims)
 
     def test_componentInteractionsLinkingBySubtraction(self):
-        r"""Tests linking of components by subtraction."""
+        """Tests linking of components by subtraction."""
         nPins = 217
         gapDims = {"Tinput": 25.0, "Thot": 430.0, "od": 1.0, "id": 0.9, "mult": nPins}
         gap = Circle("gap", "Void", **gapDims)
@@ -889,6 +907,12 @@ class TestSolidRectangle(TestShapedComponent):
     }
 
     def test_getBoundingCircleOuterDiameter(self):
+        """Test get bounding circle of the outer diameter.
+
+        .. test:: Define a component.
+            :id: T_ARMI_COMP_DEF2
+            :tests: R_ARMI_COMP_DEF
+        """
         ref = math.sqrt(50)
         cur = self.component.getBoundingCircleOuterDiameter(cold=True)
         self.assertAlmostEqual(ref, cur)
