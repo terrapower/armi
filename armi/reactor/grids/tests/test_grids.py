@@ -436,6 +436,10 @@ class TestHexGrid(unittest.TestCase):
         .. test:: Construct a hexagonal lattice with three rings.
             :id: T_ARMI_GRID_HEX
             :tests: R_ARMI_GRID_HEX
+
+        .. test:: Return the grid coordinates of different locations.
+            :id: T_ARMI_GRID_GLOBAL_POS0
+            :tests: R_ARMI_GRID_GLOBAL_POS
         """
         grid = grids.HexGrid.fromPitch(1.0, numRings=3)
         v1 = grid.getCoordinates((1, 0, 0))
