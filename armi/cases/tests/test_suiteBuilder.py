@@ -17,8 +17,15 @@ import os
 import unittest
 
 from armi import cases, settings
-from armi.cases.inputModifiers.inputModifiers import SamplingInputModifier
-from armi.cases.suiteBuilder import LatinHyperCubeSuiteBuilder
+from armi.cases.inputModifiers.inputModifiers import (
+    SamplingInputModifier,
+    InputModifier,
+)
+from armi.cases.suiteBuilder import (
+    LatinHyperCubeSuiteBuilder,
+    FullFactorialSuiteBuilder,
+    SeparateEffectsSuiteBuilder,
+)
 
 cs = settings.Settings(
     os.path.join(
@@ -42,6 +49,16 @@ class LatinHyperCubeModifier(SamplingInputModifier):
 
     def __call__(self, cs, bp, geom):
         cs = cs.modified(newSettings={self.name: self.value})
+        return cs, bp, geom
+
+
+class SettingModifier(InputModifier):
+    def __init__(self, settingName, value):
+        self.settingName = settingName
+        self.value = value
+
+    def __call__(self, cs, bp, geom):
+        cs = cs.modified(newSettings={self.settingName: self.value})
         return cs, bp, geom
 
 
@@ -79,3 +96,78 @@ class TestLatinHyperCubeSuiteBuilder(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             builder.addDegreeOfFreedom([powerMod, morePowerMod])
+
+
+class TestFullFactorialSuiteBuilder(unittest.TestCase):
+    """Class to test FullFactorialSuiteBuilder."""
+
+    def test_buildSuite(self):
+        """Initialize a full factorial suite of cases.
+
+        .. test:: A generic mechanism to allow users to modify user inputs in cases.
+            :id: T_ARMI_CASE_MOD1
+            :tests: R_ARMI_CASE_MOD
+        """
+        builder = FullFactorialSuiteBuilder(case)
+        builder.addDegreeOfFreedom(
+            SettingModifier("settingName1", value) for value in (1, 2)
+        )
+        builder.addDegreeOfFreedom(
+            SettingModifier("settingName2", value) for value in (3, 4, 5)
+        )
+
+        assert builder.modifierSets[0][0].value == 1
+        assert builder.modifierSets[0][1].value == 3
+
+        assert builder.modifierSets[1][0].value == 2
+        assert builder.modifierSets[1][1].value == 3
+
+        assert builder.modifierSets[2][0].value == 1
+        assert builder.modifierSets[2][1].value == 4
+
+        assert builder.modifierSets[3][0].value == 2
+        assert builder.modifierSets[3][1].value == 4
+
+        assert builder.modifierSets[4][0].value == 1
+        assert builder.modifierSets[4][1].value == 5
+
+        assert builder.modifierSets[5][0].value == 2
+        assert builder.modifierSets[5][1].value == 5
+
+        assert len(builder.modifierSets) == 6
+
+
+class TestSeparateEffectsBuilder(unittest.TestCase):
+    """Class to test separate effects builder."""
+
+    def test_buildSuite(self):
+        """Initialize a full factorial suite of cases.
+
+        .. test:: A generic mechanism to allow users to modify user inputs in cases.
+            :id: T_ARMI_CASE_MOD2
+            :tests: R_ARMI_CASE_MOD
+        """
+        builder = SeparateEffectsSuiteBuilder(case)
+        builder.addDegreeOfFreedom(
+            SettingModifier("settingName1", value) for value in (1, 2)
+        )
+        builder.addDegreeOfFreedom(
+            SettingModifier("settingName2", value) for value in (3, 4, 5)
+        )
+
+        assert builder.modifierSets[0][0].value == 1
+        assert builder.modifierSets[0][0].settingName == "settingName1"
+
+        assert builder.modifierSets[1][0].value == 2
+        assert builder.modifierSets[1][0].settingName == "settingName1"
+
+        assert builder.modifierSets[2][0].value == 3
+        assert builder.modifierSets[2][0].settingName == "settingName2"
+
+        assert builder.modifierSets[3][0].value == 4
+        assert builder.modifierSets[3][0].settingName == "settingName2"
+
+        assert builder.modifierSets[4][0].value == 5
+        assert builder.modifierSets[4][0].settingName == "settingName2"
+
+        assert len(builder.modifierSets) == 5

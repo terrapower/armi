@@ -107,7 +107,7 @@ class TestGlobalFluxOptions(unittest.TestCase):
     """Tests for GlobalFluxOptions."""
 
     def test_readFromSettings(self):
-        """Test reading global flux options
+        """Test reading global flux options.
 
         .. test:: Tests GlobalFluxOptions.
             :id: T_ARMI_FLUX_OPTIONS

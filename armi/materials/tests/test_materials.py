@@ -939,12 +939,6 @@ class Lead_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.Lead
 
     def test_volumetricExpansion(self):
-        """Unit tests for lead materials.
-
-        .. test:: There is a base class for fluid materials.
-            :id: T_ARMI_MAT_FLUID2
-            :tests: R_ARMI_MAT_FLUID
-        """
         self.assertAlmostEqual(
             self.mat.volumetricExpansion(800),
             1.1472e-4,
@@ -963,6 +957,12 @@ class Lead_TestCase(_Material_Test, unittest.TestCase):
         )
 
     def test_linearExpansion(self):
+        """Unit tests for lead materials linear expansion.
+
+        .. test:: There is a base class for fluid materials.
+            :id: T_ARMI_MAT_FLUID2
+            :tests: R_ARMI_MAT_FLUID
+        """
         cur = self.mat.linearExpansion(400)
         ref = 0.0
         self.assertEqual(cur, ref)
