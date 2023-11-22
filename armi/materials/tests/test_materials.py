@@ -80,6 +80,10 @@ class _Material_Test:
         .. test:: Test the material base class.
             :id: T_ARMI_MAT_PROPERTIES3
             :tests: R_ARMI_MAT_PROPERTIES
+
+        .. test:: Materials shall calc mass fracs at init.
+            :id: T_ARMI_MAT_FRACS
+            :tests: R_ARMI_MAT_FRACS
         """
         mat = self.mat.duplicate()
 
