@@ -477,7 +477,7 @@ class Block_TestCase(unittest.TestCase):
         """
         Confirms homogenized blocks have correct properties.
 
-        .. test:: Homogenize the compositions of a block
+        .. test:: Homogenize the compositions of a block.
             :id: T_ARMI_BLOCK_HOMOG
             :tests: R_ARMI_BLOCK_HOMOG
         """
@@ -854,7 +854,7 @@ class Block_TestCase(unittest.TestCase):
         """
         Retrieve a blocks location.
 
-        .. test:: Location of a block is retrievable
+        .. test:: Location of a block is retrievable.
             :id: T_ARMI_BLOCK_POSI0
             :tests: R_ARMI_BLOCK_POSI
         """
@@ -1846,7 +1846,7 @@ class HexBlock_TestCase(unittest.TestCase):
         """
         Test that a hex block has the proper "hexagon" __name__.
 
-        .. test:: Ability to create hex shaped blocks
+        .. test:: Users can create hex shaped blocks.
             :id: T_ARMI_BLOCK_HEX
             :tests: R_ARMI_BLOCK_HEX
         """
@@ -1857,7 +1857,7 @@ class HexBlock_TestCase(unittest.TestCase):
         """
         Test that coordinates are retrievable from a block.
 
-        .. test:: Coordinates of a block are queryable
+        .. test:: Coordinates of a block are queryable.
             :id: T_ARMI_BLOCK_POSI1
             :tests: R_ARMI_BLOCK_POSI
         """
@@ -1889,7 +1889,7 @@ class HexBlock_TestCase(unittest.TestCase):
         Tests that the block class can provide basic dimensionality information about
         itself.
 
-        .. test:: Retrieve important block dimensions
+        .. test:: Important block dimensions are retrievable.
             :id: T_ARMI_BLOCK_DIMS
             :tests: R_ARMI_BLOCK_DIMS
         """

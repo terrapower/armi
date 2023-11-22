@@ -29,7 +29,7 @@ class Zone:
     A group of locations in the Core, used to divide it up for analysis.
     Each location represents an Assembly or a Block.
 
-    .. impl:: A collection of armi locations
+    .. impl:: A user can define a collection of armi locations.
         :id: I_ARMI_ZONE
         :implements: R_ARMI_ZONE
     """
@@ -202,7 +202,7 @@ class Zone:
 class Zones:
     """Collection of Zone objects.
 
-    .. impl:: A collection of armi zones
+    .. impl:: A user can define a collection of armi zones.
         :id: I_ARMI_ZONES
         :implements: R_ARMI_ZONES
     """

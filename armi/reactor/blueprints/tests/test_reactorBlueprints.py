@@ -105,11 +105,11 @@ class TestReactorBlueprints(unittest.TestCase):
     def test_construct(self):
         """Actually construct some reactor systems.
 
-        .. test:: Create core and spent fuel pool with blueprint
+        .. test:: Create core and spent fuel pool with blueprint.
             :id: T_ARMI_BP_SYSTEMS
             :tests: R_ARMI_BP_SYSTEMS
 
-        .. test:: Create core object with blueprint
+        .. test:: Create core object with blueprint.
             :id: T_ARMI_BP_CORE
             :tests: R_ARMI_BP_CORE
         """

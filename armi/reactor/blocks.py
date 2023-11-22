@@ -583,7 +583,7 @@ class Block(composites.Composite):
     def getLocation(self):
         """Return a string representation of the location.
 
-        .. impl:: Location of a block is retrievable
+        .. impl:: Location of a block is retrievable.
             :id: I_ARMI_BLOCK_POSI0
             :implements: R_ARMI_BLOCK_POSI
         """
@@ -598,7 +598,7 @@ class Block(composites.Composite):
         """
         Returns the coordinates of the block.
 
-        .. impl:: Coordinates of a block are queryable
+        .. impl:: Coordinates of a block are queryable.
             :id: I_ARMI_BLOCK_POSI1
             :implements: R_ARMI_BLOCK_POSI
         """
@@ -682,7 +682,7 @@ class Block(composites.Composite):
         """
         Return the volume of a block.
 
-        .. impl:: Volume of block is retrievable
+        .. impl:: Volume of block is retrievable.
             :id: I_ARMI_BLOCK_DIMS0
             :implements: R_ARMI_BLOCK_DIMS
 
@@ -1247,7 +1247,7 @@ class Block(composites.Composite):
             Component that has the max pitch, if returnComp == True. If no component is found to
             define the pitch, returns None
 
-        .. impl:: Pitch of block is retrievable
+        .. impl:: Pitch of block is retrievable.
             :id: I_ARMI_BLOCK_DIMS1
             :implements: R_ARMI_BLOCK_DIMS
 
@@ -1598,7 +1598,7 @@ class HexBlock(Block):
     """
     Defines a HexBlock.
 
-    .. impl:: Ability to create hex shaped blocks
+    .. impl:: ARMI has the ability to create hex shaped blocks.
         :id: I_ARMI_BLOCK_HEX
         :implements: R_ARMI_BLOCK_HEX
     """
@@ -1612,7 +1612,7 @@ class HexBlock(Block):
         """
         Returns the coordinates of the block.
 
-        .. impl:: Coordinates of a block are queryable
+        .. impl:: Coordinates of a block are queryable.
             :id: I_ARMI_BLOCK_POSI2
             :implements: R_ARMI_BLOCK_POSI
         """
@@ -1628,7 +1628,7 @@ class HexBlock(Block):
         """
         Create a new homogenized copy of a block that is less expensive than a full deepcopy.
 
-        .. impl:: Homogenize the compositions of a block
+        .. impl:: Block compositions can be homogenized.
             :id: I_ARMI_BLOCK_HOMOG
             :implements: R_ARMI_BLOCK_HOMOG
 
@@ -1713,7 +1713,7 @@ class HexBlock(Block):
         """
         Compute the max area of this block if it was totally full.
 
-        .. impl:: Area of block is retrievable
+        .. impl:: Area of block is retrievable.
             :id: I_ARMI_BLOCK_DIMS2
             :implements: R_ARMI_BLOCK_DIMS
         """
@@ -1726,7 +1726,7 @@ class HexBlock(Block):
         """
         Returns the duct IP dimension.
 
-        .. impl:: IP dimension is retrievable
+        .. impl:: IP dimension is retrievable.
             :id: I_ARMI_BLOCK_DIMS3
             :implements: R_ARMI_BLOCK_DIMS
         """
@@ -1737,7 +1737,7 @@ class HexBlock(Block):
         """
         Returns the duct OP dimension.
 
-        .. impl:: OP dimension is retrievable
+        .. impl:: OP dimension is retrievable.
             :id: I_ARMI_BLOCK_DIMS4
             :implements: R_ARMI_BLOCK_DIMS
         """
@@ -2041,7 +2041,7 @@ class HexBlock(Block):
         """
         Returns the distance in cm between the outer most pin and the duct in a block.
 
-        .. impl:: Pin to duct gap of block is retrievable
+        .. impl:: Pin to duct gap of block is retrievable.
             :id: I_ARMI_BLOCK_DIMS5
             :implements: R_ARMI_BLOCK_DIMS
 
@@ -2225,7 +2225,7 @@ class HexBlock(Block):
         Assumes that the pin pitch is defined entirely by contacting cladding tubes
         and wire wraps. Grid spacers not yet supported.
 
-        .. impl:: Pin pitch within block is retrievable
+        .. impl:: Pin pitch within block is retrievable.
             :id: I_ARMI_BLOCK_DIMS6
             :implements: R_ARMI_BLOCK_DIMS
 
@@ -2262,7 +2262,7 @@ class HexBlock(Block):
     def getWettedPerimeter(self):
         """Return the total wetted perimeter of the block in cm.
 
-        .. impl:: Wetted perimeter of block is retrievable
+        .. impl:: Wetted perimeter of block is retrievable.
             :id: I_ARMI_BLOCK_DIMS7
             :implements: R_ARMI_BLOCK_DIMS
         """
@@ -2340,7 +2340,7 @@ class HexBlock(Block):
     def getFlowArea(self):
         """Return the total flowing coolant area of the block in cm^2.
 
-        .. impl:: Flow area of block is retrievable
+        .. impl:: Flow area of block is retrievable.
             :id: I_ARMI_BLOCK_DIMS8
             :implements: R_ARMI_BLOCK_DIMS
         """
@@ -2361,7 +2361,7 @@ class HexBlock(Block):
         p = sqrt(3)*s
         l = 6*p/sqrt(3)
 
-        .. impl:: Hydraulic diameter of block is retrievable
+        .. impl:: Hydraulic diameter of block is retrievable.
             :id: I_ARMI_BLOCK_DIMS9
             :implements: R_ARMI_BLOCK_DIMS
         """

@@ -147,7 +147,7 @@ class MaterialFindingTests(unittest.TestCase):
     def test_findMaterial(self):
         """Test resolveMaterialClassByName() function.
 
-        .. test:: You can find a meterial by name.
+        .. test:: You can find a material by name.
             :id: T_ARMI_MAT_NAME
             :tests: R_ARMI_MAT_NAME
         """

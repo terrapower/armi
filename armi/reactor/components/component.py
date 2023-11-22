@@ -169,7 +169,7 @@ class Component(composites.Composite, metaclass=ComponentType):
     Could be fuel pins, cladding, duct, wire wrap, etc. One component object may represent
     multiple physical components via the ``multiplicity`` mechanism.
 
-    .. impl:: Define a physical piece of a reactor
+    .. impl:: Define a physical piece of a reactor.
         :id: I_ARMI_COMP_DEF
         :implements: R_ARMI_COMP_DEF
 
@@ -388,7 +388,7 @@ class Component(composites.Composite, metaclass=ComponentType):
     def getProperties(self):
         """Return the active Material object defining thermo-mechanical properties.
 
-        .. impl:: Material properties are retrievable
+        .. impl:: Material properties are retrievable.
             :id: I_ARMI_COMP_MAT0
             :implements: R_ARMI_COMP_MAT
 
@@ -435,7 +435,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         """
         Get the area of a component in cm^2.
 
-        .. impl:: Set a dimension of a component
+        .. impl:: Set a dimension of a component.
             :id: I_ARMI_COMP_VOL0
             :implements: R_ARMI_COMP_VOL
 
@@ -460,7 +460,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         """
         Return the volume [cm^3] of the component.
 
-        .. impl:: Set a dimension of a component
+        .. impl:: Set a dimension of a component.
             :id: I_ARMI_COMP_VOL1
             :implements: R_ARMI_COMP_VOL
 
@@ -564,7 +564,7 @@ class Component(composites.Composite, metaclass=ComponentType):
     def containsSolidMaterial(self):
         """Returns True if the component material is a solid.
 
-        .. impl:: Determine if material is solid
+        .. impl:: Determine if a material is solid.
             :id: I_ARMI_COMP_SOLID
             :implements: R_ARMI_COMP_SOLID
         """
@@ -828,7 +828,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         """
         Return a specific dimension at temperature as determined by key.
 
-        .. impl:: Retrieve a dimension at a specified temperature
+        .. impl:: Retrieve a dimension at a specified temperature.
             :id: I_ARMI_COMP_DIMS
             :implements: R_ARMI_COMP_DIMS
 

@@ -254,7 +254,7 @@ class TestUniformMeshGenerator(unittest.TestCase):
         """
         Test that the mesh can be correctly filtered.
 
-        .. test:: Try to preserve the boundaries of fuel and control material.
+        .. test:: Preserve the boundaries of fuel and control material.
             :id: T_ARMI_UMC_NON_UNIFORM1
             :tests: R_ARMI_UMC_NON_UNIFORM
         """
@@ -308,7 +308,7 @@ class TestUniformMeshGenerator(unittest.TestCase):
             :id: T_ARMI_UMC_MIN_MESH
             :tests: R_ARMI_UMC_MIN_MESH
 
-        .. test:: Try to preserve the boundaries of fuel and control material.
+        .. test:: Preserve the boundaries of fuel and control material.
             :id: T_ARMI_UMC_NON_UNIFORM0
             :tests: R_ARMI_UMC_NON_UNIFORM
         """
