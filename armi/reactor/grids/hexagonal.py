@@ -74,6 +74,10 @@ class HexGrid(StructuredGrid):
         """
         Build a finite step-based 2-D hex grid from a hex pitch in cm.
 
+        .. impl:: Construct a hexagonal lattice.
+            :id: I_ARMI_GRID_HEX
+            :implements: R_ARMI_GRID_HEX
+
         Parameters
         ----------
         pitch : float

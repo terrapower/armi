@@ -81,7 +81,12 @@ class Grid(ABC):
 
     @property
     def symmetry(self) -> str:
-        """Symmetry applied to the grid."""
+        """Symmetry applied to the grid.
+
+        .. impl:: Grids shall be able to repesent 1/3 and full core symmetries.
+            :id: I_ARMI_GRID_SYMMETRY
+            :implements: R_ARMI_GRID_SYMMETRY
+        """
         return geometry.SymmetryType.fromStr(self._symmetry)
 
     @symmetry.setter

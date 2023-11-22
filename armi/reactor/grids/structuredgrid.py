@@ -495,7 +495,6 @@ class StructuredGrid(Grid):
         -------
         float or tuple of (float, float)
             Grid spacing in cm
-
         """
 
 

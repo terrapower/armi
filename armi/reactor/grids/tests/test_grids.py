@@ -308,26 +308,54 @@ class TestHexGrid(unittest.TestCase):
             :id: T_ARMI_GRID_EQUIVALENTS
             :tests: R_ARMI_GRID_EQUIVALENTS
         """
-        grid = grids.HexGrid.fromPitch(1.0)
-        grid.symmetry = str(
+        g = grids.HexGrid.fromPitch(1.0)
+        g.symmetry = str(
             geometry.SymmetryType(
                 geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
             )
         )
-        self.assertEqual(grid.getSymmetricEquivalents((3, -2)), [(-1, 3), (-2, -1)])
-        self.assertEqual(grid.getSymmetricEquivalents((2, 1)), [(-3, 2), (1, -3)])
+        self.assertEqual(g.getSymmetricEquivalents((3, -2)), [(-1, 3), (-2, -1)])
+        self.assertEqual(g.getSymmetricEquivalents((2, 1)), [(-3, 2), (1, -3)])
 
-        symmetrics = grid.getSymmetricEquivalents(grid.getIndicesFromRingAndPos(5, 3))
+        symmetrics = g.getSymmetricEquivalents(g.getIndicesFromRingAndPos(5, 3))
         self.assertEqual(
-            [(5, 11), (5, 19)], [grid.getRingPos(indices) for indices in symmetrics]
+            [(5, 11), (5, 19)], [g.getRingPos(indices) for indices in symmetrics]
         )
 
+    def test_thirdAndFullSymmetry(self):
+        """Test that we can construct a full and a 1/3 core grid.
+
+        .. test:: Test 1/3 and full cores have the correct positions and rings.
+            :id: T_ARMI_GRID_SYMMETRY
+            :tests: R_ARMI_GRID_SYMMETRY
+        """
+        full = grids.HexGrid.fromPitch(1.0)
+        third = grids.HexGrid.fromPitch(1.0)
+        third.symmetry = str(
+            geometry.SymmetryType(
+                geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
+            )
+        )
+
+        # check full core
+        self.assertEqual(full.getMinimumRings(2), 2)
+        self.assertEqual(full.getIndicesFromRingAndPos(2, 2), (0, 1))
+        self.assertEqual(full.getPositionsInRing(3), 12)
+        with self.assertRaises(IndexError):
+            full.getSymmetricEquivalents((3, -2))
+
+        # check 1/3 core
+        self.assertEqual(third.getMinimumRings(2), 2)
+        self.assertEqual(third.getIndicesFromRingAndPos(2, 2), (0, 1))
+        self.assertEqual(third.getPositionsInRing(3), 12)
+        self.assertEqual(third.getSymmetricEquivalents((3, -2)), [(-1, 3), (-2, -1)])
+
     def test_triangleCoords(self):
-        grid = grids.HexGrid.fromPitch(8.15)
-        indices1 = grid.getIndicesFromRingAndPos(5, 3) + (0,)
-        indices2 = grid.getIndicesFromRingAndPos(5, 23) + (0,)
-        indices3 = grid.getIndicesFromRingAndPos(3, 4) + (0,)
-        cur = grid.triangleCoords(indices1)
+        g = grids.HexGrid.fromPitch(8.15)
+        indices1 = g.getIndicesFromRingAndPos(5, 3) + (0,)
+        indices2 = g.getIndicesFromRingAndPos(5, 23) + (0,)
+        indices3 = g.getIndicesFromRingAndPos(3, 4) + (0,)
+        cur = g.triangleCoords(indices1)
         ref = [
             (16.468_916_428_634_078, 25.808_333_333_333_337),
             (14.116_214_081_686_351, 27.166_666_666_666_67),
@@ -362,8 +390,8 @@ class TestHexGrid(unittest.TestCase):
 
     def test_getIndexBounds(self):
         numRings = 5
-        grid = grids.HexGrid.fromPitch(1.0, numRings=numRings)
-        boundsIJK = grid.getIndexBounds()
+        g = grids.HexGrid.fromPitch(1.0, numRings=numRings)
+        boundsIJK = g.getIndexBounds()
         self.assertEqual(
             boundsIJK, ((-numRings, numRings), (-numRings, numRings), (0, 1))
         )
@@ -390,11 +418,22 @@ class TestHexGrid(unittest.TestCase):
             assert_allclose(loc.indices, newLoc.indices)
 
     def test_adjustPitch(self):
+        """Adjust the pich of a hexagonal lattice.
+
+        .. test:: Construct a hexagonal lattice with three rings.
+            :id: T_ARMI_GRID_HEX
+            :tests: R_ARMI_GRID_HEX
+        """
         grid = grids.HexGrid.fromPitch(1.0, numRings=3)
         v1 = grid.getCoordinates((1, 0, 0))
         grid.changePitch(2.0)
         v2 = grid.getCoordinates((1, 0, 0))
         assert_allclose(2 * v1, v2)
+        self.assertEqual(grid.pitch, 2.0)
+
+        # test number of rings
+        numRings = 3
+        self.assertEqual(grid._unitStepLimits[0][1], numRings)
 
     def test_badIndices(self):
         grid = grids.HexGrid.fromPitch(1.0, numRings=3)
