@@ -29,7 +29,7 @@ class UZR_TestCase(TestCase):
     def test_isPicklable(self):
         """Test that materials are picklable so we can do MPI communication of state.
 
-        .. test:: Test the material base class.
+        .. test:: Test the material base class has temp-dependent thermal conductivity curves.
             :id: T_ARMI_MAT_PROPERTIES0
             :tests: R_ARMI_MAT_PROPERTIES
         """
@@ -42,9 +42,9 @@ class UZR_TestCase(TestCase):
         )
 
     def test_TD(self):
-        """Test the material density.
+        """Test the material theoretical density.
 
-        .. test:: Test the material base class.
+        .. test:: Test the material base class has temp-dependent TD curves.
             :id: T_ARMI_MAT_PROPERTIES2
             :tests: R_ARMI_MAT_PROPERTIES
         """
@@ -59,10 +59,6 @@ class UZR_TestCase(TestCase):
 
     def test_duplicate(self):
         """Test the material duplication.
-
-        .. test:: Test the material base class.
-            :id: T_ARMI_MAT_PROPERTIES3
-            :tests: R_ARMI_MAT_PROPERTIES
 
         .. test:: Materials shall calc mass fracs at init.
             :id: T_ARMI_MAT_FRACS
@@ -79,12 +75,7 @@ class UZR_TestCase(TestCase):
         self.assertEqual(mat.theoreticalDensityFrac, self.mat.theoreticalDensityFrac)
 
     def test_cache(self):
-        """Test the material cache.
-
-        .. test:: Test the material base class.
-            :id: T_ARMI_MAT_PROPERTIES4
-            :tests: R_ARMI_MAT_PROPERTIES
-        """
+        """Test the material cache."""
         self.mat.clearCache()
         self.assertEqual(len(self.mat.cached), 0)
 
@@ -97,7 +88,7 @@ class UZR_TestCase(TestCase):
     def test_densityKgM3(self):
         """Test the density for kg/m^3.
 
-        .. test:: Test the material base class.
+        .. test:: Test the material base class has temp-dependent density.
             :id: T_ARMI_MAT_PROPERTIES5
             :tests: R_ARMI_MAT_PROPERTIES
         """
@@ -108,7 +99,7 @@ class UZR_TestCase(TestCase):
     def test_pseudoDensityKgM3(self):
         """Test the pseudo density for kg/m^3.
 
-        .. test:: Test the material base class.
+        .. test:: Test the material base class has temp-dependent 2D density.
             :id: T_ARMI_MAT_PROPERTIES6
             :tests: R_ARMI_MAT_PROPERTIES
         """
@@ -119,7 +110,7 @@ class UZR_TestCase(TestCase):
     def test_density(self):
         """Test that all materials produce a zero density from density.
 
-        .. test:: Test the material base class.
+        .. test:: Test the material base class has temp-dependent density.
             :id: T_ARMI_MAT_PROPERTIES1
             :tests: R_ARMI_MAT_PROPERTIES
         """
