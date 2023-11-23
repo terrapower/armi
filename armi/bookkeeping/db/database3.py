@@ -110,7 +110,7 @@ class Database3:
     relationships, and their non-parameter attributes.
 
     .. impl:: The database files are H5, and thus language agnostic.
-        :id: I_ARMI_DB_H5
+        :id: I_ARMI_DB_H51
         :implements: R_ARMI_DB_H5
 
     See Also

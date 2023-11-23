@@ -251,7 +251,7 @@ def _getH5File(db):
     but we have to start somewhere.
 
     .. impl:: The ARMI output file has a language-agnostic format.
-        :id: I_ARMI_DB_H5
+        :id: I_ARMI_DB_H50
         :implements: R_ARMI_DB_H5
     """
     if isinstance(db, Database3):

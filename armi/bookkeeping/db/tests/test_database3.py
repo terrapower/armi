@@ -55,6 +55,12 @@ class TestDatabase3(unittest.TestCase):
         self.td.__exit__(None, None, None)
 
     def test_writeToDB(self):
+        """Test writing to the database.
+
+        .. test:: Write a single time step of data to the database.
+            :id: T_ARMI_DB_TIME
+            :tests: R_ARMI_DB_TIME
+        """
         self.r.p.cycle = 0
         self.r.p.timeNode = 0
         self.r.p.cycleLength = 0
@@ -67,6 +73,7 @@ class TestDatabase3(unittest.TestCase):
         self.db.writeToDB(self.r)
         self.assertEqual(sorted(self.db.h5db.keys()), ["c00n00", "inputs"])
 
+        # check the keys for a single time step
         keys = [
             "Circle",
             "Core",
@@ -345,6 +352,12 @@ class TestDatabase3(unittest.TestCase):
         )
 
     def test_load(self):
+        """Load a reactor at different time steps, from the database.
+
+        .. test:: Load the reactor from the database.
+            :id: T_ARMI_DB_R_LOAD
+            :tests: R_ARMI_DB_R_LOAD
+        """
         self.makeShuffleHistory()
         with self.assertRaises(KeyError):
             _r = self.db.load(0, 0)
@@ -601,14 +614,26 @@ class TestDatabase3(unittest.TestCase):
         self.assertEqual(str(self.db.fileName), "thing.h5")
 
     def test_readInputsFromDB(self):
+        """Test that we can read inputs from the database.
+
+        .. test:: Save and retrieve settings from the database.
+            :id: T_ARMI_DB_CS
+            :tests: R_ARMI_DB_CS
+
+        .. test:: Save and retrieve blueprints from the database.
+            :id: T_ARMI_DB_BP
+            :tests: R_ARMI_DB_BP
+        """
         inputs = self.db.readInputsFromDB()
         self.assertEqual(len(inputs), 3)
 
+        # settings
         self.assertGreater(len(inputs[0]), 100)
         self.assertIn("settings:", inputs[0])
 
         self.assertEqual(len(inputs[1]), 0)
 
+        # blueprints
         self.assertGreater(len(inputs[2]), 100)
         self.assertIn("custom isotopics:", inputs[2])
         self.assertIn("blocks:", inputs[2])
