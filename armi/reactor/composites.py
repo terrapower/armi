@@ -673,8 +673,8 @@ class ArmiObject(metaclass=CompositeModelType):
         Determine if this object is of a certain type.
 
         .. impl:: Flags can be queried.
-            :id: I_ARMI_CMP_HAS_FLAGS
-            :implements: R_ARMI_CMP_HAS_FLAGS
+            :id: I_ARMI_CMP_FLAG
+            :implements: R_ARMI_CMP_FLAG
 
         .. impl:: Composites have flags
             :id: I_ARMI_CMP_FLAG

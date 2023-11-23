@@ -35,12 +35,7 @@ class _Material_Test:
         self.mat = self.MAT_CLASS()
 
     def test_isPicklable(self):
-        """Test that all materials are picklable so we can do MPI communication of state.
-
-        .. test:: Test the material base class.
-            :id: T_ARMI_MAT_PROPERTIES0
-            :tests: R_ARMI_MAT_PROPERTIES
-        """
+        """Test that all materials are picklable so we can do MPI communication of state."""
         stream = pickle.dumps(self.mat)
         mat = pickle.loads(stream)
 
@@ -50,21 +45,11 @@ class _Material_Test:
         )
 
     def test_density(self):
-        """Test that all materials produce a zero density from density.
-
-        .. test:: Test the material base class.
-            :id: T_ARMI_MAT_PROPERTIES1
-            :tests: R_ARMI_MAT_PROPERTIES
-        """
+        """Test that all materials produce a zero density from density."""
         self.assertNotEqual(self.mat.density(500), 0)
 
     def test_TD(self):
-        """Test the material density.
-
-        .. test:: Test the material base class.
-            :id: T_ARMI_MAT_PROPERTIES2
-            :tests: R_ARMI_MAT_PROPERTIES
-        """
+        """Test the material density."""
         self.assertEqual(self.mat.getTD(), self.mat.theoreticalDensityFrac)
 
         self.mat.clearCache()
@@ -96,12 +81,7 @@ class _Material_Test:
         self.assertEqual(mat.theoreticalDensityFrac, self.mat.theoreticalDensityFrac)
 
     def test_cache(self):
-        """Test the material cache.
-
-        .. test:: Test the material base class.
-            :id: T_ARMI_MAT_PROPERTIES4
-            :tests: R_ARMI_MAT_PROPERTIES
-        """
+        """Test the material cache."""
         self.mat.clearCache()
         self.assertEqual(len(self.mat.cached), 0)
 
@@ -112,23 +92,13 @@ class _Material_Test:
         self.assertEqual(val, "Noether")
 
     def test_densityKgM3(self):
-        """Test the density for kg/m^3.
-
-        .. test:: Test the material base class.
-            :id: T_ARMI_MAT_PROPERTIES5
-            :tests: R_ARMI_MAT_PROPERTIES
-        """
+        """Test the density for kg/m^3."""
         dens = self.mat.density(500)
         densKgM3 = self.mat.densityKgM3(500)
         self.assertEqual(dens * 1000.0, densKgM3)
 
     def test_pseudoDensityKgM3(self):
-        """Test the pseudo density for kg/m^3.
-
-        .. test:: Test the material base class.
-            :id: T_ARMI_MAT_PROPERTIES6
-            :tests: R_ARMI_MAT_PROPERTIES
-        """
+        """Test the pseudo density for kg/m^3."""
         dens = self.mat.pseudoDensity(500)
         densKgM3 = self.mat.pseudoDensityKgM3(500)
         self.assertEqual(dens * 1000.0, densKgM3)

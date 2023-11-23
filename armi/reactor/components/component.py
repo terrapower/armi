@@ -173,6 +173,10 @@ class Component(composites.Composite, metaclass=ComponentType):
         :id: I_ARMI_COMP_DEF
         :implements: R_ARMI_COMP_DEF
 
+        .. impl:: Order components by there outermost diameter (using the < operator).
+            :id: I_ARMI_COMP_ORDER
+            :implements: R_ARMI_COMP_ORDER
+
     Attributes
     ----------
     temperatureInC : float
