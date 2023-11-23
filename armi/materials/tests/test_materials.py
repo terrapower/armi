@@ -900,12 +900,6 @@ class Mixture_TestCase(_Material_Test, unittest.TestCase):
 
 
 class Lead_TestCase(_Material_Test, unittest.TestCase):
-    """Unit tests for lead materials.
-
-    .. test:: There is a base class for fluid materials.
-        :id: T_ARMI_MAT_FLUID2
-        :tests: R_ARMI_MAT_FLUID
-    """
 
     MAT_CLASS = materials.Lead
 
@@ -928,6 +922,12 @@ class Lead_TestCase(_Material_Test, unittest.TestCase):
         )
 
     def test_linearExpansion(self):
+        """Unit tests for lead materials linear expansion.
+
+        .. test:: There is a base class for fluid materials.
+            :id: T_ARMI_MAT_FLUID2
+            :tests: R_ARMI_MAT_FLUID
+        """
         cur = self.mat.linearExpansion(400)
         ref = 0.0
         self.assertEqual(cur, ref)

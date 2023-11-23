@@ -104,15 +104,15 @@ class MockGlobalFluxExecuter(globalFluxInterface.GlobalFluxExecuter):
 
 
 class TestGlobalFluxOptions(unittest.TestCase):
-    """
-    Tests for GlobalFluxOptions.
-
-    .. test:: Tests GlobalFluxOptions.
-        :id: T_ARMI_FLUX_OPTIONS
-        :tests: R_ARMI_FLUX_OPTIONS
-    """
+    """Tests for GlobalFluxOptions."""
 
     def test_readFromSettings(self):
+        """Test reading global flux options.
+
+        .. test:: Tests GlobalFluxOptions.
+            :id: T_ARMI_FLUX_OPTIONS
+            :tests: R_ARMI_FLUX_OPTIONS
+        """
         cs = settings.Settings()
         opts = globalFluxInterface.GlobalFluxOptions("neutronics-run")
         opts.fromUserSettings(cs)
