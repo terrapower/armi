@@ -104,6 +104,10 @@ class ArmiCLI:
     available, to get help for the individual commands, run again with
     `<command> --help`. Generically, the CLI implements functions that already
     exists within ARMI.
+
+    .. impl:: The basic ARMI CLI, for running a simulation.
+        :id: I_ARMI_CLI_CS
+        :implements: R_ARMI_CLI_CS
     """
 
     def __init__(self):
@@ -198,7 +202,7 @@ class ArmiCLI:
         return self.executeCommand(args.command, args.args)
 
     def executeCommand(self, command, args) -> Optional[int]:
-        r"""Execute `command` with arguments `args`, return optional exit code."""
+        """Execute `command` with arguments `args`, return optional exit code."""
         command = command.lower()
         if command not in self._entryPoints:
             print(
