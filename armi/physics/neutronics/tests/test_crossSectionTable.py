@@ -57,7 +57,7 @@ class TestCrossSectionTable(unittest.TestCase):
         Test isotopic depletion interface.
 
         .. test:: ARMI provides a base class to deplete isotopes.
-            :id: I_ARMI_DEPL_ABC
+            :id: T_ARMI_DEPL_ABC
             :tests: R_ARMI_DEPL_ABC
         """
         _o, r = loadTestReactor()
