@@ -330,6 +330,11 @@ class TestHexGrid(unittest.TestCase):
             :tests: R_ARMI_GRID_SYMMETRY
         """
         full = grids.HexGrid.fromPitch(1.0)
+        full.symmetry = str(
+            geometry.SymmetryType(
+                geometry.DomainType.FULL_CORE, geometry.BoundaryType.NO_SYMMETRY
+            )
+        )
         third = grids.HexGrid.fromPitch(1.0)
         third.symmetry = str(
             geometry.SymmetryType(
@@ -341,8 +346,7 @@ class TestHexGrid(unittest.TestCase):
         self.assertEqual(full.getMinimumRings(2), 2)
         self.assertEqual(full.getIndicesFromRingAndPos(2, 2), (0, 1))
         self.assertEqual(full.getPositionsInRing(3), 12)
-        with self.assertRaises(IndexError):
-            full.getSymmetricEquivalents((3, -2))
+        self.assertEqual(full.getSymmetricEquivalents((3, -2)), [])
 
         # check 1/3 core
         self.assertEqual(third.getMinimumRings(2), 2)
