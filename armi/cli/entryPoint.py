@@ -53,6 +53,10 @@ class EntryPoint:
 
     A valid subclass must provide at least a ``name`` class attribute, and may also
     specify the other class attributes described below.
+
+    .. impl:: Generic CLI base class for developers to use.
+        :id: I_ARMI_CLI_GEN
+        :implements: R_ARMI_CLI_GEN
     """
 
     #: The <command-name> that is used to call the command from the command line
