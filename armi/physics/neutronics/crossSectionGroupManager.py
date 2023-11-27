@@ -840,8 +840,8 @@ class CrossSectionGroupManager(interfaces.Interface):
     def interactBOL(self):
         """Called at the Beginning-of-Life of a run, before any cycles start.
 
-        .. impl:: The lattice physics interface and XSGM are connected in when they run.
-            :id: I_ARMI_XSGM_FREQ
+        .. impl:: The lattice physics interface and XSGM are connected at BOL.
+            :id: I_ARMI_XSGM_FREQ0
             :implements: R_ARMI_XSGM_FREQ
         """
         # now that all cs settings are loaded, apply defaults to compound XS settings
@@ -865,6 +865,10 @@ class CrossSectionGroupManager(interfaces.Interface):
         """
         Update representative blocks and block burnup groups.
 
+        .. impl:: The lattice physics interface and XSGM are connected at BOC.
+            :id: I_ARMI_XSGM_FREQ1
+            :implements: R_ARMI_XSGM_FREQ
+
         Notes
         -----
         The block list each each block collection cannot be emptied since it is used to derive nuclide temperatures.
@@ -873,19 +877,28 @@ class CrossSectionGroupManager(interfaces.Interface):
             self.createRepresentativeBlocks()
 
     def interactEOC(self, cycle=None):
-        """
-        EOC interaction.
+        """EOC interaction.
 
         Clear out big dictionary of all blocks to avoid memory issues and out-of-date representers.
         """
         self.clearRepresentativeBlocks()
 
     def interactEveryNode(self, cycle=None, tn=None):
+        """Interactino at every time now.
+
+        .. impl:: The lattice physics interface and XSGM are connected at every time node.
+            :id: I_ARMI_XSGM_FREQ2
+            :implements: R_ARMI_XSGM_FREQ
+        """
         if self._latticePhysicsFrequency >= LatticePhysicsFrequency.everyNode:
             self.createRepresentativeBlocks()
 
     def interactCoupled(self, iteration):
         """Update XS groups on each physics coupling iteration to get latest temperatures.
+
+        .. impl:: The lattice physics interface and XSGM are connected during coupling.
+            :id: I_ARMI_XSGM_FREQ3
+            :implements: R_ARMI_XSGM_FREQ
 
         Notes
         -----
