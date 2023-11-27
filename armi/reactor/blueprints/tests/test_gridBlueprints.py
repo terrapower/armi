@@ -23,7 +23,6 @@ if not isConfigured():
 from armi.reactor import systemLayoutInput
 from armi.reactor.blueprints import Blueprints
 from armi.reactor.blueprints.gridBlueprint import Grids, saveToStream
-from armi.reactor.blueprints.tests.test_blockBlueprints import FULL_BP, FULL_BP_GRID
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
@@ -401,6 +400,8 @@ class TestGridBlueprintsSection(unittest.TestCase):
             :id: T_ARMI_BP_GRID0
             :tests: R_ARMI_BP_GRID
         """
+        from armi.reactor.blueprints.tests.test_blockBlueprints import FULL_BP
+
         # Cartesian full, even/odd hybrid
         gridDesign4 = self.grids["sfp even"]
         _grid = gridDesign4.construct()
@@ -432,6 +433,8 @@ class TestGridBlueprintsSection(unittest.TestCase):
         self.assertTrue(os.path.exists(filePath))
 
     def test_simpleReadNoLatticeMap(self):
+        from armi.reactor.blueprints.tests.test_blockBlueprints import FULL_BP_GRID
+
         # Cartesian full, even/odd hybrid
         gridDesign4 = self.grids["sfp even"]
         _grid = gridDesign4.construct()

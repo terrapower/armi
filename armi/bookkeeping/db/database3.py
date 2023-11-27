@@ -109,6 +109,10 @@ class Database3:
     handles the packing and unpacking of the structure of the objects, their
     relationships, and their non-parameter attributes.
 
+    .. impl:: The database files are H5, and thus language agnostic.
+        :id: I_ARMI_DB_H51
+        :implements: R_ARMI_DB_H5
+
     See Also
     --------
     `doc/user/outputs/database` for more details.
@@ -423,6 +427,7 @@ class Database3:
     def loadGeometry(self):
         """
         This is primarily just used for migrations.
+
         The "geometry files" were replaced by ``systems:`` and ``grids:`` sections of ``Blueprints``.
         """
         geom = systemLayoutInput.SystemLayoutInput()
@@ -436,6 +441,14 @@ class Database3:
         This is not DRY on purpose. The goal is that any particular Database
         implementation should be very stable, so we dont want it to be easy to change
         one Database implementation's behavior when trying to change another's.
+
+        .. impl:: The run settings are saved the settings file.
+            :id: I_ARMI_DB_CS
+            :implements: R_ARMI_DB_CS
+
+        .. impl:: The reactor blueprints are saved the settings file.
+            :id: I_ARMI_DB_BP
+            :implements: R_ARMI_DB_BP
 
         Notes
         -----
@@ -658,6 +671,10 @@ class Database3:
         or where it is expected to use results from a run using different settings and
         continue with new settings (or if blueprints are not on the database).
         Geometry is read from the database itself.
+
+        .. test:: Users can load a reactor from a DB.
+            :id: I_ARMI_DB_R_LOAD
+            :tests: R_ARMI_DB_R_LOAD
 
         Parameters
         ----------

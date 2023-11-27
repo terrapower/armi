@@ -25,7 +25,7 @@ class Test_hexagon(unittest.TestCase):
 
         .. test:: Hexagonal area is retrievable.
             :id: T_ARMI_UTIL_HEXAGON0
-            :test: R_ARMI_UTIL_HEXAGON
+            :tests: R_ARMI_UTIL_HEXAGON
         """
         # Calculate area given a pitch
         self.assertEqual(hexagon.area(1), math.sqrt(3.0) / 2)

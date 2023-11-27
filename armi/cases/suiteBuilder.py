@@ -204,7 +204,7 @@ class FullFactorialSuiteBuilder(SuiteBuilder):
                     self.value = value
 
                 def __call__(self, cs, bp, geom):
-                    cs = cs.modified(newSettings={settignName: value})
+                    cs = cs.modified(newSettings={self.settingName: self.value})
                     return cs, bp, geom
 
             builder = FullFactorialSuiteBuilder(someCase)
@@ -290,7 +290,7 @@ class SeparateEffectsSuiteBuilder(SuiteBuilder):
                     self.value = value
 
                 def __call__(self, cs, bp, geom):
-                    cs = cs.modified(newSettings={settignName: value})
+                    cs = cs.modified(newSettings={self.settignName: self.value})
                     return cs, bp, geom
 
             builder = SeparateEffectsSuiteBuilder(someCase)

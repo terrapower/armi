@@ -255,12 +255,7 @@ FULL_BP_GRID = (
 
 
 class TestGriddedBlock(unittest.TestCase):
-    """Tests for a block that has components in a lattice.
-
-    .. test:: Create block with blueprint file.
-        :id: T_ARMI_BP_BLOCK
-        :tests: R_ARMI_BP_BLOCK
-    """
+    """Tests for a block that has components in a lattice."""
 
     def setUp(self):
         self.cs = settings.Settings()
@@ -285,7 +280,12 @@ class TestGriddedBlock(unittest.TestCase):
         self.assertIs(grid[locators[0].getCompleteIndices()], locators[0])
 
     def test_blockLattice(self):
-        """Make sure constructing a block with grid specifiers works as a whole."""
+        """Make sure constructing a block with grid specifiers works as a whole.
+
+        .. test:: Create block with blueprint file.
+            :id: T_ARMI_BP_BLOCK
+            :tests: R_ARMI_BP_BLOCK
+        """
         aDesign = self.blueprints.assemDesigns.bySpecifier["IC"]
         a = aDesign.construct(self.cs, self.blueprints)
         fuelBlock = a.getFirstBlock(Flags.FUEL)
