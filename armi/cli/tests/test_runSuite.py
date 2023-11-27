@@ -69,15 +69,6 @@ class TestRunSuiteSuite(unittest.TestCase):
         """
         correct = 0
         acli = ArmiCLI()
-
         mockExeCmd.return_value = correct
-
-        origout = sys.stdout
-        try:
-            out = io.StringIO()
-            sys.stdout = out
-            ret = acli.run()
-        finally:
-            sys.stdout = origout
-
+        ret = acli.run()
         self.assertEqual(ret, correct)
