@@ -31,6 +31,11 @@ class FuelHandlerInterface(interfaces.Interface):
     power or temperatures have been updated. This allows pre-run fuel management
     steps for highly customized fuel loadings. In typical runs, no fuel management
     occurs at the beginning of the first cycle and the as-input state is left as is.
+
+    .. impl:: There is a user friendly shuffle logic interface.
+        :id: I_ARMI_SHUFFLE
+        :implements: R_ARMI_SHUFFLE
+
     """
 
     name = "fuelHandler"

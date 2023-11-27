@@ -365,7 +365,12 @@ class TestFuelHandler(FuelHandlerTestHelper):
         self.assertIsNone(assem)
 
     def runShuffling(self, fh):
-        """Shuffle fuel and write out a SHUFFLES.txt file."""
+        """Shuffle fuel and write out a SHUFFLES.txt file.
+        
+        .. test:: There is a user friendly shuffle logic interface.
+            :id: T_ARMI_SHUFFLE0
+            :tests: R_ARMI_SHUFFLE
+        """
         fh.attachReactor(self.o, self.r)
 
         # so we don't overwrite the version-controlled armiRun-SHUFFLES.txt
@@ -389,6 +394,10 @@ class TestFuelHandler(FuelHandlerTestHelper):
         Builds a dummy core. Does some shuffles. Repeats the shuffles. Checks that it was a perfect repeat.
 
         Checks some other things in the meantime
+        
+        .. test:: There is a user friendly shuffle logic interface.
+            :id: T_ARMI_SHUFFLE1
+            :tests: R_ARMI_SHUFFLE
 
         See Also
         --------
@@ -522,7 +531,14 @@ class TestFuelHandler(FuelHandlerTestHelper):
         self.assertEqual(type(b.p.linPowByPinGamma), np.ndarray)
 
     def test_transferStationaryBlocks(self):
-        """Test the _transferStationaryBlocks method."""
+        """Test the _transferStationaryBlocks method.
+
+        .. test:: User-specified blocks can remain in place during shuffling
+            :id: T_ARMI_SHUFFLE_STATIONARY
+            :tests: R_ARMI_SHUFFLE_STATIONARY
+        """
+
+
         # grab stationary block flags
         sBFList = self.r.core.stationaryBlockFlagsList
 
