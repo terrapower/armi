@@ -443,7 +443,7 @@ class TestCircle(TestShapedComponent):
             :tests: R_ARMI_COMP_SHAPES
 
         .. test:: Calculate thermal expansion.
-            :id: I_ARMI_COMP_EXPANSION0
+            :id: T_ARMI_COMP_EXPANSION0
             :tests: R_ARMI_COMP_EXPANSION
         """
         hotTemp = 700.0
@@ -462,7 +462,7 @@ class TestCircle(TestShapedComponent):
             :tests: R_ARMI_COMP_DIMS
 
         .. test:: Calculate thermal expansion.
-            :id: I_ARMI_COMP_EXPANSION1
+            :id: T_ARMI_COMP_EXPANSION1
             :tests: R_ARMI_COMP_EXPANSION
         """
         hotTemp = 700.0

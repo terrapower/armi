@@ -29,6 +29,10 @@ class ExecutionOptions:
     """
     A data structure representing all options needed for a physics kernel.
 
+    .. impl:: Options for executing external calculations.
+        :id: I_ARMI_EX0
+        :implements: R_ARMI_EX
+
     Attributes
     ----------
     inputFile : str
@@ -123,6 +127,10 @@ class Executer:
     """
     Short-lived object that coordinates a calculation step and updates a reactor.
 
+    .. impl:: Tool for executing external calculations.
+        :id: I_ARMI_EX1
+        :implements: R_ARMI_EX
+
     Notes
     -----
     This is deliberately **not** a :py:class:`~mpiActions.MpiAction`. Thus, Executers can run as
@@ -153,6 +161,10 @@ class DefaultExecuter(Executer):
     This sequence has been found to be relatively common in many
     externally-executed physics codes. It is here for convenience
     but is not required. The sequence look like:
+
+    .. impl:: Default tool for executing external calculations.
+        :id: I_ARMI_EX2
+        :implements: R_ARMI_EX
 
     * Choose modeling options (either from the global run settings input or dictated programmatically)
     * Apply geometry transformations to the ARMI Reactor as needed

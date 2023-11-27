@@ -290,7 +290,12 @@ class StructuredGrid(Grid):
         self._unitSteps, self._bounds, self._offset = self._backup
 
     def getCoordinates(self, indices, nativeCoords=False) -> numpy.ndarray:
-        """Return the coordinates of the center of the mesh cell at the given given indices in cm."""
+        """Return the coordinates of the center of the mesh cell at the given indices in cm.
+
+        .. test:: Get the coordinates from a location in a grid.
+            :id: I_ARMI_GRID_GLOBAL_POS
+            :tests: R_ARMI_GRID_GLOBAL_POS
+        """
         indices = numpy.array(indices)
         return self._evaluateMesh(
             indices, self._centroidBySteps, self._centroidByBounds
@@ -495,7 +500,6 @@ class StructuredGrid(Grid):
         -------
         float or tuple of (float, float)
             Grid spacing in cm
-
         """
 
 

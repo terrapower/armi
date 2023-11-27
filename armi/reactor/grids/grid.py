@@ -35,6 +35,10 @@ class Grid(ABC):
     So here, we define an interface so things that rely on grids can worry less
     about how the location data are stored.
 
+    .. impl:: Grids can nest.
+        :id: I_ARMI_GRID_NEST
+        :implements: R_ARMI_GRID_NEST
+
     Parameters
     ----------
     geomType : str or armi.reactor.geometry.GeomType
@@ -81,7 +85,12 @@ class Grid(ABC):
 
     @property
     def symmetry(self) -> str:
-        """Symmetry applied to the grid."""
+        """Symmetry applied to the grid.
+
+        .. impl:: Grids shall be able to repesent 1/3 and full core symmetries.
+            :id: I_ARMI_GRID_SYMMETRY
+            :implements: R_ARMI_GRID_SYMMETRY
+        """
         return geometry.SymmetryType.fromStr(self._symmetry)
 
     @symmetry.setter

@@ -113,7 +113,7 @@ class TestCompositePattern(unittest.TestCase):
     def test_composite(self):
         """Test basic Composite things.
 
-        .. test:: Composites are a physical item.
+        .. test:: Composites are a physical part of the reactor.
             :id: T_ARMI_CMP0
             :tests: R_ARMI_CMP
 

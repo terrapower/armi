@@ -716,6 +716,16 @@ class UraniumOxide_TestCase(_Material_Test, unittest.TestCase):
         self.assertAlmostEqual(expectedDeltaT, actualDeltaT)
 
     def test_duplicate(self):
+        """Test the material duplication.
+
+        .. test:: Test the material base class is usable.
+            :id: T_ARMI_MAT_PROPERTIES3
+            :tests: R_ARMI_MAT_PROPERTIES
+
+        .. test:: Materials shall calc mass fracs at init.
+            :id: T_ARMI_MAT_FRACS4
+            :tests: R_ARMI_MAT_FRACS
+        """
         duplicateU = self.mat.duplicate()
 
         for key in self.mat.massFrac:
