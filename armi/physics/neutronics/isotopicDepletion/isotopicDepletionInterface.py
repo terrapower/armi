@@ -41,6 +41,10 @@ def isDepletable(obj: composites.ArmiObject):
     to figure out how often to replace them. But in conceptual design, they may want to just
     leave them as they are as an approximation.
 
+    .. impl:: Determine if any component is depletable.
+        :id: I_ARMI_DEPL_DEPLETABLE
+        :implements: R_ARMI_DEPL_DEPLETABLE
+
     .. warning:: The ``DEPLETABLE`` flag is automatically added to compositions that have
         active nuclides. If you explicitly define any flags at all, you must also
         manually include ``DEPLETABLE`` or else the objects will silently not deplete.
@@ -68,12 +72,16 @@ class AbstractIsotopicDepleter:
     interface
 
     The depletion in this analysis only depends on the flux, material vectors,
-    nuclear data and countinuous source and loss objects.
+    nuclear data and continuous source and loss objects.
 
     The depleters derived from this abstract class use all the fission products
     armi can handle -- i.e. do not form lumped fission products.
 
     _depleteByName contains a ARMI objects to deplete keyed by name.
+
+    .. impl:: ARMI provides a base class to deplete isotopes.
+        :id: I_ARMI_DEPL_ABC
+        :implements: R_ARMI_DEPL_ABC
     """
 
     name = None

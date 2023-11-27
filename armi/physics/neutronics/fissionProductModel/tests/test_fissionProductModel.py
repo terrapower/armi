@@ -126,7 +126,12 @@ class TestFissionProductModelExplicitMC2Library(unittest.TestCase):
             self.assertIn(nb.name, nuclideList)
 
     def test_nuclidesInModelAllDepletableBlocks(self):
-        """Test that the depletable blocks contain all the MC2-3 modeled nuclides."""
+        """Test that the depletable blocks contain all the MC2-3 modeled nuclides.
+
+        .. test:: Determine if any component is depletable.
+            :id: T_ARMI_DEPL_DEPLETABLE
+            :tests: R_ARMI_DEPL_DEPLETABLE
+        """
         # Check that there are some fuel and control blocks in the core model.
         fuelBlocks = self.r.core.getBlocks(Flags.FUEL)
         controlBlocks = self.r.core.getBlocks(Flags.CONTROL)

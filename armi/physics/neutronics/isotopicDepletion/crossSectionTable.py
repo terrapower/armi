@@ -39,6 +39,10 @@ class CrossSectionTable(collections.OrderedDict):
     XStable is indexed by nucNames
     (nG), (nF), (n2n), (nA), (nP) and (n3n) are expected
     the cross sections are returned in barns
+
+    .. impl:: Generate cross section table.
+        :id: I_ARMI_DEPL_TABLES
+        :implements: R_ARMI_DEPL_TABLES
     """
 
     rateTypes = ("nG", "nF", "n2n", "nA", "nP", "n3n")
