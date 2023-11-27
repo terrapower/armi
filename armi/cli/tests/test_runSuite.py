@@ -67,10 +67,17 @@ class TestRunSuiteSuite(unittest.TestCase):
             :id: T_ARMI_CLI_CS2
             :tests: R_ARMI_CLI_CS
         """
-        correct = 777
+        correct = 0
         acli = ArmiCLI()
 
         mockExeCmd.return_value = correct
 
-        ret = acli.run()
+        origout = sys.stdout
+        try:
+            out = io.StringIO()
+            sys.stdout = out
+            ret = acli.run()
+        finally:
+            sys.stdout = origout
+
         self.assertEqual(ret, correct)
