@@ -723,7 +723,7 @@ class UraniumOxide_TestCase(_Material_Test, unittest.TestCase):
             :tests: R_ARMI_MAT_PROPERTIES
 
         .. test:: Materials shall calc mass fracs at init.
-            :id: T_ARMI_MAT_FRACS
+            :id: T_ARMI_MAT_FRACS4
             :tests: R_ARMI_MAT_FRACS
         """
         duplicateU = self.mat.duplicate()

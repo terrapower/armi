@@ -61,7 +61,7 @@ class UZR_TestCase(TestCase):
         """Test the material duplication.
 
         .. test:: Materials shall calc mass fracs at init.
-            :id: T_ARMI_MAT_FRACS
+            :id: T_ARMI_MAT_FRACS5
             :tests: R_ARMI_MAT_FRACS
         """
         mat = self.mat.duplicate()
