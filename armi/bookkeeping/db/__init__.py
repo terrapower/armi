@@ -249,10 +249,6 @@ def _getH5File(db):
 
     All this being said, we are probably violating this already with genAuxiliaryData,
     but we have to start somewhere.
-
-    .. impl:: The ARMI output file has a language-agnostic format.
-        :id: I_ARMI_DB_H50
-        :implements: R_ARMI_DB_H5
     """
     if isinstance(db, Database3):
         return db.h5db
