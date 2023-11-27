@@ -78,7 +78,7 @@ class HexGrid(StructuredGrid):
             :id: I_ARMI_GRID_HEX
             :implements: R_ARMI_GRID_HEX
 
-        .. impl:: Hexagonal grids can be tips-up or flats-up.
+        .. impl:: Hexagonal grids can be points-up or flats-up.
             :id: I_ARMI_GRID_HEX_TYPE
             :implements: R_ARMI_GRID_HEX_TYPE
 

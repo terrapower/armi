@@ -350,10 +350,10 @@ class TestHexGrid(unittest.TestCase):
         self.assertEqual(third.getPositionsInRing(3), 12)
         self.assertEqual(third.getSymmetricEquivalents((3, -2)), [(-1, 3), (-2, -1)])
 
-    def test_tipsUpFlatsUp(self):
+    def test_pointsUpFlatsUp(self):
         """Test the pointedEndUp attribute of the fromPitch method.
 
-        .. test:: Build a tips-up and a flats-up hexagonal grids.
+        .. test:: Build a points-up and a flats-up hexagonal grids.
             :id: T_ARMI_GRID_HEX_TYPE
             :tests: R_ARMI_GRID_HEX_TYPE
         """
