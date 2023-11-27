@@ -230,7 +230,7 @@ class TestBlockCollectionAverage(unittest.TestCase):
 
     def test_createRepresentativeBlockDissimilar(self):
         """
-        Test creation of a representative block from a collection with dissimilar blocks/
+        Test creation of a representative block from a collection with dissimilar blocks
         """
         uniqueBlock = test_blocks.loadTestBlock()
         uniqueBlock.p.percentBu = 50.0
@@ -831,7 +831,7 @@ class Test_CrossSectionGroupManager(unittest.TestCase):
         self.assertEqual("D", xsType3)
 
     def test_getRepresentativeBlocks(self):
-        """Test that we can get the representative blocks for a reactor.
+        """Test that we can create the representative blocks for a reactor.
 
         .. test:: Build representative blocks for a reactor.
             :id: T_ARMI_XSGM_CREATE_XS_GROUPS
