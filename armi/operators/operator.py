@@ -402,10 +402,6 @@ class Operator:
     def _performTightCoupling(self, cycle: int, timeNode: int, writeDB: bool = True):
         """If requested, perform tight coupling and write out database.
 
-        .. impl:: The operator shall allow tight coupling between physics systems.
-            :id: I_ARMI_OPERATOR_PHYSICS
-            :implements: R_ARMI_OPERATOR_PHYSICS
-
         Notes
         -----
         writeDB is False for OperatorSnapshots as the DB gets written at EOL.

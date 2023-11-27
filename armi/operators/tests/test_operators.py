@@ -56,11 +56,23 @@ class InterfaceC(Interface):
     name = "Third"
 
 
-# TODO: Add a test that shows time evolution of Reactor (R_EVOLVING_STATE)
 class OperatorTests(unittest.TestCase):
     def setUp(self):
         self.o, self.r = test_reactors.loadTestReactor()
         self.activeInterfaces = [ii for ii in self.o.interfaces if ii.enabled()]
+
+    def test_operatorData(self):
+        """Test that the operator has input data, a reactor model, and a list of interfaces.
+
+        .. test:: The Operator includes input data and the reactor data model.
+            :id: T_ARMI_OPERATOR_COMM
+            :tests: R_ARMI_OPERATOR_COMM
+        """
+        self.assertEqual(self.o.r, self.r)
+        self.assertEqual(type(self.o.cs), settings.Settings)
+        self.assertGreater(len(self.o.interfaces), 0)
+        for i in self.o.interfaces:
+            self.assertTrue(isinstance(i, Interface))
 
     def test_addInterfaceSubclassCollision(self):
         cs = settings.Settings()
@@ -185,7 +197,12 @@ class TestTightCoupling(unittest.TestCase):
             self.assertEqual(self.o.r.core.p.coupledIteration, 0)
 
     def test_performTightCoupling_notConverged(self):
-        """Ensure that the appropriate ``runLog.warning`` is addressed in tight coupling reaches max num of iters."""
+        """Ensure that the appropriate ``runLog.warning`` is addressed in tight coupling reaches max num of iters.
+
+        .. test:: The tight coupling logic can fail if there is no convergence.
+            :id: T_ARMI_OPERATOR_PHYSICS0
+            :tests: R_ARMI_OPERATOR_PHYSICS
+        """
 
         class NoConverge(TightCoupler):
             def isConverged(self, _val: TightCoupler._SUPPORTED_TYPES) -> bool:
