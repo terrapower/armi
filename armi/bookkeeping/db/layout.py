@@ -383,7 +383,7 @@ class Layout:
     def writeToDB(self, h5group):
         """Write a chunk of data to the database.
 
-        .. test:: Write data at temp-steps to the DB.
+        .. test:: Write data to the DB for a given time step.
             :id: I_ARMI_DB_TIME
             :tests: R_ARMI_DB_TIME
         """
