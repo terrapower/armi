@@ -366,7 +366,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
 
     def runShuffling(self, fh):
         """Shuffle fuel and write out a SHUFFLES.txt file.
-        
+
         .. test:: There is a user friendly shuffle logic interface.
             :id: T_ARMI_SHUFFLE0
             :tests: R_ARMI_SHUFFLE
@@ -394,7 +394,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         Builds a dummy core. Does some shuffles. Repeats the shuffles. Checks that it was a perfect repeat.
 
         Checks some other things in the meantime
-        
+
         .. test:: There is a user friendly shuffle logic interface.
             :id: T_ARMI_SHUFFLE1
             :tests: R_ARMI_SHUFFLE
@@ -537,8 +537,6 @@ class TestFuelHandler(FuelHandlerTestHelper):
             :id: T_ARMI_SHUFFLE_STATIONARY
             :tests: R_ARMI_SHUFFLE_STATIONARY
         """
-
-
         # grab stationary block flags
         sBFList = self.r.core.stationaryBlockFlagsList
 
