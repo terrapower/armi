@@ -315,6 +315,10 @@ class AverageBlockCollection(BlockCollection):
 
     Averages number densities, fission product yields, and fission gas
     removal fractions.
+
+    .. impl:: Create representative blocks using volume-weighted averaging.
+        :id: I_ARMI_XSGM_CREATE_REPR_BLOCKS0
+        :implements: R_ARMI_XSGM_CREATE_REPR_BLOCKS
     """
 
     def _makeRepresentativeBlock(self):
@@ -474,9 +478,7 @@ def getBlockNuclideTemperatureAvgTerms(block, allNucNames):
     """
 
     def getNumberDensitiesWithTrace(component, allNucNames):
-        """
-        Needed to make sure temperature of 0-density nuclides in fuel get fuel temperature
-        """
+        """Needed to make sure temperature of 0-density nuclides in fuel get fuel temperature."""
         return [
             component.p.numberDensities[nucName] or TRACE_NUMBER_DENSITY
             if nucName in component.p.numberDensities
@@ -505,6 +507,10 @@ class CylindricalComponentsAverageBlockCollection(BlockCollection):
     """
     Creates a representative block for the purpose of cross section generation with a one-dimensional
     cylindrical model.
+
+    .. impl:: Create representative blocks using custom cylindrical averaging.
+        :id: I_ARMI_XSGM_CREATE_REPR_BLOCKS1
+        :implements: R_ARMI_XSGM_CREATE_REPR_BLOCKS
 
     Notes
     -----
@@ -832,6 +838,12 @@ class CrossSectionGroupManager(interfaces.Interface):
         self._unrepresentedXSIDs = []
 
     def interactBOL(self):
+        """Called at the Beginning-of-Life of a run, before any cycles start.
+
+        .. impl:: The lattice physics interface and XSGM are connected at BOL.
+            :id: I_ARMI_XSGM_FREQ0
+            :implements: R_ARMI_XSGM_FREQ
+        """
         # now that all cs settings are loaded, apply defaults to compound XS settings
         from armi.physics.neutronics.settings import CONF_XS_BLOCK_REPRESENTATION
         from armi.physics.neutronics.settings import (
@@ -853,6 +865,10 @@ class CrossSectionGroupManager(interfaces.Interface):
         """
         Update representative blocks and block burnup groups.
 
+        .. impl:: The lattice physics interface and XSGM are connected at BOC.
+            :id: I_ARMI_XSGM_FREQ1
+            :implements: R_ARMI_XSGM_FREQ
+
         Notes
         -----
         The block list each each block collection cannot be emptied since it is used to derive nuclide temperatures.
@@ -861,19 +877,28 @@ class CrossSectionGroupManager(interfaces.Interface):
             self.createRepresentativeBlocks()
 
     def interactEOC(self, cycle=None):
-        """
-        EOC interaction.
+        """EOC interaction.
 
         Clear out big dictionary of all blocks to avoid memory issues and out-of-date representers.
         """
         self.clearRepresentativeBlocks()
 
     def interactEveryNode(self, cycle=None, tn=None):
+        """Interactino at every time now.
+
+        .. impl:: The lattice physics interface and XSGM are connected at every time node.
+            :id: I_ARMI_XSGM_FREQ2
+            :implements: R_ARMI_XSGM_FREQ
+        """
         if self._latticePhysicsFrequency >= LatticePhysicsFrequency.everyNode:
             self.createRepresentativeBlocks()
 
     def interactCoupled(self, iteration):
         """Update XS groups on each physics coupling iteration to get latest temperatures.
+
+        .. impl:: The lattice physics interface and XSGM are connected during coupling.
+            :id: I_ARMI_XSGM_FREQ3
+            :implements: R_ARMI_XSGM_FREQ
 
         Notes
         -----
@@ -1052,7 +1077,12 @@ class CrossSectionGroupManager(interfaces.Interface):
         return (filePath, fileName)
 
     def createRepresentativeBlocks(self):
-        """Get a representative block from each cross section ID managed here."""
+        """Get a representative block from each cross section ID managed here.
+
+        .. impl:: Create collections of blocks based on XS type and burn-up group.
+            :id: I_ARMI_XSGM_CREATE_XS_GROUPS
+            :implements: R_ARMI_XSGM_CREATE_XS_GROUPS
+        """
         representativeBlocks = {}
         self.avgNucTemperatures = {}
         self._unrepresentedXSIDs = []
