@@ -436,7 +436,7 @@ class Block_TestCase(unittest.TestCase):
         self.assertFalse(self.block.hasFlags(Flags.IGNITER | Flags.FUEL))
 
     def test_duplicate(self):
-        Block2 = blocks.Block._createHomogenizedCopy(self.block)
+        Block2 = blocks.Block.createHomogenizedCopy(self.block)
         originalComponents = self.block.getComponents()
         newComponents = Block2.getComponents()
         for c1, c2 in zip(originalComponents, newComponents):
@@ -487,7 +487,7 @@ class Block_TestCase(unittest.TestCase):
         ]
 
         for arg, shapes in zip(args, expectedShapes):
-            homogBlock = self.block._createHomogenizedCopy(pinSpatialLocators=arg)
+            homogBlock = self.block.createHomogenizedCopy(pinSpatialLocators=arg)
             for shapeType in shapes:
                 for c in homogBlock.getComponents():
                     if isinstance(c, shapeType):

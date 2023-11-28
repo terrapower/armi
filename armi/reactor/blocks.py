@@ -157,7 +157,7 @@ class Block(composites.Composite):
 
         return b
 
-    def _createHomogenizedCopy(self, pinSpatialLocators=False):
+    def createHomogenizedCopy(self, pinSpatialLocators=False):
         """
         Create a copy of a block.
 
@@ -1629,7 +1629,7 @@ class HexBlock(Block):
             round(y, units.FLOAT_DIMENSION_DECIMALS),
         )
 
-    def _createHomogenizedCopy(self, pinSpatialLocators=False):
+    def createHomogenizedCopy(self, pinSpatialLocators=False):
         """
         Create a new homogenized copy of a block that is less expensive than a full deepcopy.
 
