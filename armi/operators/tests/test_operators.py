@@ -231,8 +231,22 @@ class TestCreateOperator(unittest.TestCase):
         """
         cs = settings.Settings()
         o = Operator(cs)
+        # high-level items
         self.assertTrue(isinstance(o, Operator))
         self.assertTrue(isinstance(o.cs, settings.Settings))
+
+        # validate some more nitty-gritty operator details come from settings
+        burnStepsSetting = cs["burnSteps"]
+        if not type(burnStepsSetting) == list:
+            burnStepsSetting = [burnStepsSetting]
+        self.assertEqual(o.burnSteps, burnStepsSetting)
+        self.assertEqual(o.maxBurnSteps, max(burnStepsSetting))
+
+        powerFracsSetting = cs["powerFractions"]
+        if powerFracsSetting:
+            self.assertEqual(o.powerFractions, powerFracsSetting)
+        else:
+            self.assertEqual(o.powerFractions, [[1] * cs["burnSteps"]])
 
 
 class TestTightCoupling(unittest.TestCase):
