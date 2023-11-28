@@ -53,7 +53,7 @@ class TestPluginBasics(unittest.TestCase):
 
         # Check the default values of parameters defined by the fuel peformance plugin
         self.assertEqual(b.p.gasPorosity, 0)
-        self.assertEqual(b.p.gasPorosity, 0)
+        self.assertEqual(b.p.liquidPorosity, 0)
 
     def test_exposeInterfaces(self):
         """Make sure that the exposeInterfaces hook is properly implemented.
