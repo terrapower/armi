@@ -365,12 +365,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         self.assertIsNone(assem)
 
     def runShuffling(self, fh):
-        """Shuffle fuel and write out a SHUFFLES.txt file.
-
-        .. test:: There is a user friendly shuffle logic interface.
-            :id: T_ARMI_SHUFFLE0
-            :tests: R_ARMI_SHUFFLE
-        """
+        """Shuffle fuel and write out a SHUFFLES.txt file."""
         fh.attachReactor(self.o, self.r)
 
         # so we don't overwrite the version-controlled armiRun-SHUFFLES.txt
@@ -396,7 +391,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         Checks some other things in the meantime
 
         .. test:: There is a user friendly shuffle logic interface.
-            :id: T_ARMI_SHUFFLE1
+            :id: T_ARMI_SHUFFLE
             :tests: R_ARMI_SHUFFLE
 
         See Also

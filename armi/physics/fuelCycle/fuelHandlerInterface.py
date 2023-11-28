@@ -32,7 +32,7 @@ class FuelHandlerInterface(interfaces.Interface):
     steps for highly customized fuel loadings. In typical runs, no fuel management
     occurs at the beginning of the first cycle and the as-input state is left as is.
 
-    .. impl:: There is a user friendly shuffle logic interface.
+    .. impl:: ARMI provides a shuffle logic interface.
         :id: I_ARMI_SHUFFLE
         :implements: R_ARMI_SHUFFLE
 
