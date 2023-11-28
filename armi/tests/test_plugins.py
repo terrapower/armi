@@ -62,8 +62,7 @@ class TestPlugin(unittest.TestCase):
         # each plugin should return a list
         self.assertIsInstance(results, list)
         for result in results:
-            # Make sure that all elements in the list satisfy the constraints of the
-            # hookspec
+            # Make sure all elements in the list satisfy the constraints of the hookspec
             self.assertIsInstance(result, tuple)
             self.assertEqual(len(result), 3)
 

@@ -207,7 +207,7 @@ class TestCrossSectionSettings(unittest.TestCase):
             xsSettingsValidator({"AAA": {CONF_BLOCK_REPRESENTATION: "Average"}})
 
 
-class Test_XSSettings(unittest.TestCase):
+class TestXSSettings(unittest.TestCase):
     def test_yamlIO(self):
         """Ensure we can read/write this custom setting object to yaml."""
         yaml = YAML()
