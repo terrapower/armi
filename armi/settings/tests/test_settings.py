@@ -234,6 +234,12 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         )
 
     def test_pluginSettings(self):
+        """Test settings change depending on what plugins are registered.
+
+        .. test:: Registering a plugin can change what settings exist.
+            :id: T_ARMI_PLUGIN_SETTINGS
+            :tests: R_ARMI_PLUGIN_SETTINGS
+        """
         pm = getPluginManagerOrFail()
         pm.register(DummyPlugin1)
         # We have a setting; this should be fine

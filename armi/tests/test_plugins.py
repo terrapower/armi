@@ -21,6 +21,38 @@ import yamlize
 from armi import interfaces
 from armi import plugins
 from armi import settings
+from armi.reactor import parameters
+from armi.reactor.blocks import Block, HexBlock
+from armi import getPluginManagerOrFail
+from armi.reactor.parameters.parameterCollections import collectPluginParameters
+from armi.reactor.parameters import ParamLocation
+from armi.utils import units
+
+
+class TestPluginParameters(unittest.TestCase):
+    def test_defineParameters(self):
+        """Test that the default ARMI plugins are correctly defining parameters.
+
+        .. test:: ARMI plugins define parameters, which appear on a new Block.
+            :id: T_ARMI_PLUGIN_PARAMS
+            :tests: R_ARMI_PLUGIN_PARAMS
+        """
+        # create a block
+        b = Block("fuel", height=10.0)
+
+        # unless a plugin has registerd a param, it doesn't exist
+        with self.assertRaises(AttributeError):
+            b.p.fakeParam
+
+        # Check the default values of parameters defined by the neutronics plugin
+        self.assertIsNone(b.p.axMesh)
+        self.assertEqual(b.p.flux, 0)
+        self.assertEqual(b.p.power, 0)
+        self.assertEqual(b.p.pdens, 0)
+
+        # Check the default values of parameters defined by the fuel peformance plugin
+        self.assertEqual(b.p.gasPorosity, 0)
+        self.assertEqual(b.p.gasPorosity, 0)
 
 
 class TestPlugin(unittest.TestCase):
