@@ -168,6 +168,20 @@ class OperatorTests(unittest.TestCase):
             self.assertTrue(os.path.exists("snapShot0_2"))
 
 
+class TestCreateOperator(unittest.TestCase):
+    def test_createOperator(self):
+        """Test that an operator can be created from settings.
+
+        .. test:: Create an operator from settings.
+            :id: T_ARMI_OPERATOR_SETTINGS
+            :tests: R_ARMI_OPERATOR_SETTINGS
+        """
+        cs = settings.Settings()
+        o = Operator(cs)
+        self.assertTrue(isinstance(o, Operator))
+        self.assertTrue(isinstance(o.cs, settings.Settings))
+
+
 class TestTightCoupling(unittest.TestCase):
     def setUp(self):
         self.cs = settings.Settings()
