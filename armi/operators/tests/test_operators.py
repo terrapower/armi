@@ -21,24 +21,24 @@ import sys
 import unittest
 
 from armi import settings
+from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.interfaces import Interface, TightCoupler
 from armi.operators.operator import Operator
-from armi.reactor.tests import test_reactors
-from armi.settings.caseSettings import Settings
-from armi.utils.directoryChangers import TemporaryDirectoryChanger
 from armi.physics.neutronics.globalFlux.globalFluxInterface import (
     GlobalFluxInterfaceUsingExecuters,
 )
-from armi.utils import directoryChangers
-from armi.bookkeeping.db.databaseInterface import DatabaseInterface
-from armi.tests import mockRunLogs
 from armi.reactor.reactors import Reactor, Core
+from armi.reactor.tests import test_reactors
+from armi.settings.caseSettings import Settings
 from armi.settings.fwSettings.globalSettings import (
     CONF_RUN_TYPE,
     CONF_TIGHT_COUPLING,
     CONF_CYCLES_SKIP_TIGHT_COUPLING_INTERACTION,
     CONF_TIGHT_COUPLING_SETTINGS,
 )
+from armi.tests import mockRunLogs
+from armi.utils import directoryChangers
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
 class InterfaceA(Interface):
@@ -80,6 +80,10 @@ class OperatorTests(unittest.TestCase):
         .. test:: An ordered list of interfaces are run at each time step.
             :id: T_ARMI_OPERATOR_INTERFACES
             :tests: R_ARMI_OPERATOR_INTERFACES
+
+        .. test:: Interfaces are run at BOC, EOC, and at time points between.
+            :id: T_ARMI_INTERFACE
+            :tests: R_ARMI_INTERFACE
         """
         # an ordered list of interfaces
         self.assertGreater(len(self.o.interfaces), 0)
