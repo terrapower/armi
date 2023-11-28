@@ -1306,6 +1306,12 @@ class Block_TestCase(unittest.TestCase):
         self.assertEqual(1, self.block.getNumComponents(Flags.DUCT))
 
     def test_getNumPins(self):
+        """Test that we can get the number of pins from various blocks.
+
+        .. test:: Retrieve the number of pins from various blocks.
+            :id: T_ARMI_BLOCK_NPINS
+            :tests: R_ARMI_BLOCK_NPINS
+        """
         cur = self.block.getNumPins()
         ref = self.block.getDim(Flags.FUEL, "mult")
         self.assertEqual(cur, ref)

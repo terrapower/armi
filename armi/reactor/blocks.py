@@ -1081,7 +1081,12 @@ class Block(composites.Composite):
         return sortedComponents
 
     def getNumPins(self):
-        """Return the number of pins in this block."""
+        """Return the number of pins in this block.
+
+        .. impl:: Get the number of pins in a block; potentially zero.
+            :id: I_ARMI_BLOCK_NPINS
+            :implements: R_ARMI_BLOCK_NPINS
+        """
         nPins = [
             sum(
                 [
