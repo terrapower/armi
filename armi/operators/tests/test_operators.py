@@ -13,10 +13,12 @@
 # limitations under the License.
 
 """Tests for operators."""
-import os
-import unittest
 from unittest.mock import patch
 import collections
+import io
+import os
+import sys
+import unittest
 
 from armi import settings
 from armi.interfaces import Interface, TightCoupler
@@ -62,7 +64,7 @@ class OperatorTests(unittest.TestCase):
         self.activeInterfaces = [ii for ii in self.o.interfaces if ii.enabled()]
 
     def test_operatorData(self):
-        """Test that the operator has input data, a reactor model, and a list of interfaces.
+        """Test that the operator has input data, a reactor model.
 
         .. test:: The Operator includes input data and the reactor data model.
             :id: T_ARMI_OPERATOR_COMM
@@ -70,9 +72,56 @@ class OperatorTests(unittest.TestCase):
         """
         self.assertEqual(self.o.r, self.r)
         self.assertEqual(type(self.o.cs), settings.Settings)
+
+    @patch("armi.operators.Operator._interactAll")
+    def test_orderedInterfaces(self, interactAll):
+        """Test the default interfaces are in an ordered list, looped over at each time step.
+
+        .. test:: An ordered list of interfaces are run at each time step.
+            :id: T_ARMI_OPERATOR_INTERFACES
+            :tests: R_ARMI_OPERATOR_INTERFACES
+        """
+        # an ordered list of interfaces
         self.assertGreater(len(self.o.interfaces), 0)
         for i in self.o.interfaces:
             self.assertTrue(isinstance(i, Interface))
+
+        # make sure we only iterate one time step
+        self.o.cs = self.o.cs.modified(newSettings={"nCycles": 1})
+        self.r.p.cycle = 1
+
+        # mock some stdout logging of what's happening when
+        def sideEffect(node, activeInts):
+            print(node)
+            print(activeInts)
+
+        interactAll.side_effect = sideEffect
+
+        # run the operator through one cycle
+        origout = sys.stdout
+        try:
+            out = io.StringIO()
+            sys.stdout = out
+            self.o.operate()
+        finally:
+            sys.stdout = origout
+
+        # check the outputs
+        log = out.getvalue()
+        # the BOL timestep comes before the EOL
+        self.assertIn("BOL", log)
+        self.assertIn("EOL", log.split("BOL")[-1])
+        # we have some common interfaces listed
+        self.assertIn("main", log)
+        self.assertIn("fuelHandler", log)
+        self.assertIn("fissionProducts", log)
+        self.assertIn("history", log)
+        self.assertIn("snapshot", log)
+        # At the first time step, we get one ordered list of interfaces
+        interfaces = log.split("BOL")[1].split("EOL")[0].split(",")
+        self.assertGreater(len(interfaces), 0)
+        for i in interfaces:
+            self.assertIn("Interface", i)
 
     def test_addInterfaceSubclassCollision(self):
         cs = settings.Settings()
