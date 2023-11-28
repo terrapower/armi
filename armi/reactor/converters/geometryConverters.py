@@ -1243,6 +1243,10 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
         """
         Run the conversion.
 
+        .. impl:: Convert a one-third-core geometry to a full-core geometry.
+            :id: I_ARMI_THIRD_TO_FULL_CORE0
+            :implements: R_ARMI_THIRD_TO_FULL_CORE
+
         Parameters
         ----------
         sourceReactor : Reactor object
