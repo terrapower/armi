@@ -41,7 +41,7 @@ class CrossSectionTable(collections.OrderedDict):
     the cross sections are returned in barns
 
     .. impl:: Generate cross section table.
-        :id: I_ARMI_DEPL_TABLES
+        :id: I_ARMI_DEPL_TABLES0
         :implements: R_ARMI_DEPL_TABLES
     """
 
@@ -166,6 +166,10 @@ def makeReactionRateTable(obj, nuclides: List = None):
     Generate a reaction rate table for given nuclides.
 
     Often useful in support of depletion.
+
+    .. impl:: Generate cross section table.
+        :id: I_ARMI_DEPL_TABLES1
+        :implements: R_ARMI_DEPL_TABLES
 
     Parameters
     ----------

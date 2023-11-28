@@ -136,6 +136,10 @@ def makeXsecTable(
     """
     Make a cross section table for depletion physics input decks.
 
+    .. impl:: Generate cross section table.
+        :id: I_ARMI_DEPL_TABLES2
+        :implements: R_ARMI_DEPL_TABLES
+
     Parameters
     ----------
     armiObject: armiObject
