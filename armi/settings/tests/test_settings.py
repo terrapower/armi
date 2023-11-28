@@ -54,7 +54,13 @@ class DummySettingPlugin1(plugins.ArmiPlugin):
                 description="The neutronics / depletion solver for global flux solve.",
                 enforcedOptions=True,
                 options=["DEFAULT", "OTHER"],
-            )
+            ),
+            setting.Setting(
+                "avocado",
+                default=0,
+                label="Avocados",
+                description="Avocados are delicious.",
+            ),
         ]
 
 
@@ -246,6 +252,7 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         cs = caseSettings.Settings()
 
         self.assertEqual(cs["extendableOption"], "DEFAULT")
+        self.assertEqual(cs["avocado"], 0)
         # We shouldn't have any settings from the other plugin, so this should be an
         # error.
         with self.assertRaises(vol.error.MultipleInvalid):
@@ -268,6 +275,7 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         pm.register(DummySettingPlugin1)
         cs = caseSettings.Settings()
         self.assertEqual(cs["extendableOption"], "PLUGIN")
+        self.assertEqual(cs["avocado"], 0)
 
     def test_default(self):
         """

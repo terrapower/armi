@@ -69,7 +69,7 @@ class TestPluginBasics(unittest.TestCase):
 
         # each plugin should return a list
         self.assertIsInstance(results, list)
-        self.assertGreater(len(results))
+        self.assertGreater(len(results), 0)
         for result in results:
             # Make sure all elements in the list satisfy the constraints of the hookspec
             self.assertIsInstance(result, tuple)
