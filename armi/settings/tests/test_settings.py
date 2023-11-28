@@ -41,7 +41,7 @@ from armi.utils.customExceptions import NonexistentSetting
 THIS_DIR = os.path.dirname(__file__)
 
 
-class DummyPlugin1(plugins.ArmiPlugin):
+class DummyParamPlugin1(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineSettings():
@@ -58,7 +58,7 @@ class DummyPlugin1(plugins.ArmiPlugin):
         ]
 
 
-class DummyPlugin2(plugins.ArmiPlugin):
+class DummyParamPlugin2(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineSettings():
@@ -241,7 +241,7 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
             :tests: R_ARMI_PLUGIN_SETTINGS
         """
         pm = getPluginManagerOrFail()
-        pm.register(DummyPlugin1)
+        pm.register(DummyParamPlugin1)
         # We have a setting; this should be fine
         cs = caseSettings.Settings()
 
@@ -252,20 +252,20 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
             newSettings = {"extendableOption": "PLUGIN"}
             cs = cs.modified(newSettings=newSettings)
 
-        pm.register(DummyPlugin2)
+        pm.register(DummyParamPlugin2)
         cs = caseSettings.Settings()
         self.assertEqual(cs["extendableOption"], "PLUGIN")
         # Now we should have the option from plugin 2; make sure that works
         cs = cs.modified(newSettings=newSettings)
         cs["extendableOption"] = "PLUGIN"
         self.assertIn("extendableOption", cs.keys())
-        pm.unregister(DummyPlugin2)
-        pm.unregister(DummyPlugin1)
+        pm.unregister(DummyParamPlugin2)
+        pm.unregister(DummyParamPlugin1)
 
         # Now try the same, but adding the plugins in a different order. This is to make
         # sure that it doesnt matter if the Setting or its Options come first
-        pm.register(DummyPlugin2)
-        pm.register(DummyPlugin1)
+        pm.register(DummyParamPlugin2)
+        pm.register(DummyParamPlugin1)
         cs = caseSettings.Settings()
         self.assertEqual(cs["extendableOption"], "PLUGIN")
 
