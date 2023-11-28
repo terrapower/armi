@@ -1174,6 +1174,10 @@ def computeDpaRate(mgFlux, dpaXs):
     r"""
     Compute the DPA rate incurred by exposure of a certain flux spectrum.
 
+    .. impl:: Compute DPA and DPA rates.
+        :id: I_ARMI_FLUX_DPA
+        :implements: R_ARMI_FLUX_DPA
+
     Parameters
     ----------
     mgFlux : list
