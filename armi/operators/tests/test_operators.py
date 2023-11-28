@@ -176,6 +176,20 @@ class TestTightCoupling(unittest.TestCase):
         self.o.r = Reactor("empty", None)
         self.o.r.core = Core("empty")
 
+    def test_getStepLengths(self):
+        """Test the step lengths are correctly calculated, based on settings.
+
+        .. test:: Users can control time discretization of the simulation through settings.
+            :id: T_ARMI_FW_HISTORY0
+            :tests: R_ARMI_FW_HISTORY
+        """
+        self.assertEqual(self.cs["nCycles"], 1)
+        self.assertAlmostEqual(self.cs["cycleLength"], 365.242199)
+        self.assertEqual(self.cs["burnSteps"], 4)
+
+        self.assertEqual(len(self.o.stepLengths), 1)
+        self.assertEqual(len(self.o.stepLengths[0]), 4)
+
     def test_couplingIsActive(self):
         """Ensure that ``cs[CONF_TIGHT_COUPLING]`` controls ``couplingIsActive``."""
         self.assertTrue(self.o.couplingIsActive())
@@ -362,10 +376,24 @@ settings:
         )
 
     def test_getStepLengths(self):
-        self.assertEqual(self.detailedOperator.stepLengths, self.stepLengthsSolution)
+        """Test that the manually-set, detailed time steps are retrievable.
 
+        .. test:: Users can manually control time discretization of the simulation.
+            :id: T_ARMI_FW_HISTORY1
+            :tests: R_ARMI_FW_HISTORY
+        """
+        # detailed step lengths can be set manually
+        self.assertEqual(self.detailedOperator.stepLengths, self.stepLengthsSolution)
         self.detailedOperator._stepLength = None
         self.assertEqual(self.detailedOperator.stepLengths, self.stepLengthsSolution)
+
+        # when doing detailed step information, we don't get step information from settings
+        cs = self.detailedOperator.cs
+        self.assertEqual(cs["nCycles"], 3)
+        with self.assertRaises(ValueError):
+            cs["cycleLength"]
+        with self.assertRaises(ValueError):
+            cs["burnSteps"]
 
     def test_getCycleLengths(self):
         self.assertEqual(self.detailedOperator.cycleLengths, self.cycleLengthsSolution)
