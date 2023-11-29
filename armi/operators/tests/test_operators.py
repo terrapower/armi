@@ -13,30 +13,32 @@
 # limitations under the License.
 
 """Tests for operators."""
-import os
-import unittest
 from unittest.mock import patch
 import collections
+import io
+import os
+import sys
+import unittest
 
 from armi import settings
+from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.interfaces import Interface, TightCoupler
 from armi.operators.operator import Operator
-from armi.reactor.tests import test_reactors
-from armi.settings.caseSettings import Settings
-from armi.utils.directoryChangers import TemporaryDirectoryChanger
 from armi.physics.neutronics.globalFlux.globalFluxInterface import (
     GlobalFluxInterfaceUsingExecuters,
 )
-from armi.utils import directoryChangers
-from armi.bookkeeping.db.databaseInterface import DatabaseInterface
-from armi.tests import mockRunLogs
 from armi.reactor.reactors import Reactor, Core
+from armi.reactor.tests import test_reactors
+from armi.settings.caseSettings import Settings
 from armi.settings.fwSettings.globalSettings import (
     CONF_RUN_TYPE,
     CONF_TIGHT_COUPLING,
     CONF_CYCLES_SKIP_TIGHT_COUPLING_INTERACTION,
     CONF_TIGHT_COUPLING_SETTINGS,
 )
+from armi.tests import mockRunLogs
+from armi.utils import directoryChangers
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
 class InterfaceA(Interface):
@@ -56,11 +58,74 @@ class InterfaceC(Interface):
     name = "Third"
 
 
-# TODO: Add a test that shows time evolution of Reactor (R_EVOLVING_STATE)
 class OperatorTests(unittest.TestCase):
     def setUp(self):
         self.o, self.r = test_reactors.loadTestReactor()
         self.activeInterfaces = [ii for ii in self.o.interfaces if ii.enabled()]
+
+    def test_operatorData(self):
+        """Test that the operator has input data, a reactor model.
+
+        .. test:: The Operator includes input data and the reactor data model.
+            :id: T_ARMI_OPERATOR_COMM
+            :tests: R_ARMI_OPERATOR_COMM
+        """
+        self.assertEqual(self.o.r, self.r)
+        self.assertEqual(type(self.o.cs), settings.Settings)
+
+    @patch("armi.operators.Operator._interactAll")
+    def test_orderedInterfaces(self, interactAll):
+        """Test the default interfaces are in an ordered list, looped over at each time step.
+
+        .. test:: An ordered list of interfaces are run at each time step.
+            :id: T_ARMI_OPERATOR_INTERFACES
+            :tests: R_ARMI_OPERATOR_INTERFACES
+
+        .. test:: Interfaces are run at BOC, EOC, and at time points between.
+            :id: T_ARMI_INTERFACE
+            :tests: R_ARMI_INTERFACE
+        """
+        # an ordered list of interfaces
+        self.assertGreater(len(self.o.interfaces), 0)
+        for i in self.o.interfaces:
+            self.assertTrue(isinstance(i, Interface))
+
+        # make sure we only iterate one time step
+        self.o.cs = self.o.cs.modified(newSettings={"nCycles": 1})
+        self.r.p.cycle = 1
+
+        # mock some stdout logging of what's happening when
+        def sideEffect(node, activeInts):
+            print(node)
+            print(activeInts)
+
+        interactAll.side_effect = sideEffect
+
+        # run the operator through one cycle
+        origout = sys.stdout
+        try:
+            out = io.StringIO()
+            sys.stdout = out
+            self.o.operate()
+        finally:
+            sys.stdout = origout
+
+        # check the outputs
+        log = out.getvalue()
+        # the BOL timestep comes before the EOL
+        self.assertIn("BOL", log)
+        self.assertIn("EOL", log.split("BOL")[-1])
+        # we have some common interfaces listed
+        self.assertIn("main", log)
+        self.assertIn("fuelHandler", log)
+        self.assertIn("fissionProducts", log)
+        self.assertIn("history", log)
+        self.assertIn("snapshot", log)
+        # At the first time step, we get one ordered list of interfaces
+        interfaces = log.split("BOL")[1].split("EOL")[0].split(",")
+        self.assertGreater(len(interfaces), 0)
+        for i in interfaces:
+            self.assertIn("Interface", i)
 
     def test_addInterfaceSubclassCollision(self):
         cs = settings.Settings()
@@ -156,6 +221,34 @@ class OperatorTests(unittest.TestCase):
             self.assertTrue(os.path.exists("snapShot0_2"))
 
 
+class TestCreateOperator(unittest.TestCase):
+    def test_createOperator(self):
+        """Test that an operator can be created from settings.
+
+        .. test:: Create an operator from settings.
+            :id: T_ARMI_OPERATOR_SETTINGS
+            :tests: R_ARMI_OPERATOR_SETTINGS
+        """
+        cs = settings.Settings()
+        o = Operator(cs)
+        # high-level items
+        self.assertTrue(isinstance(o, Operator))
+        self.assertTrue(isinstance(o.cs, settings.Settings))
+
+        # validate some more nitty-gritty operator details come from settings
+        burnStepsSetting = cs["burnSteps"]
+        if not type(burnStepsSetting) == list:
+            burnStepsSetting = [burnStepsSetting]
+        self.assertEqual(o.burnSteps, burnStepsSetting)
+        self.assertEqual(o.maxBurnSteps, max(burnStepsSetting))
+
+        powerFracsSetting = cs["powerFractions"]
+        if powerFracsSetting:
+            self.assertEqual(o.powerFractions, powerFracsSetting)
+        else:
+            self.assertEqual(o.powerFractions, [[1] * cs["burnSteps"]])
+
+
 class TestTightCoupling(unittest.TestCase):
     def setUp(self):
         self.cs = settings.Settings()
@@ -163,6 +256,20 @@ class TestTightCoupling(unittest.TestCase):
         self.o = Operator(self.cs)
         self.o.r = Reactor("empty", None)
         self.o.r.core = Core("empty")
+
+    def test_getStepLengths(self):
+        """Test the step lengths are correctly calculated, based on settings.
+
+        .. test:: Users can control time discretization of the simulation through settings.
+            :id: T_ARMI_FW_HISTORY0
+            :tests: R_ARMI_FW_HISTORY
+        """
+        self.assertEqual(self.cs["nCycles"], 1)
+        self.assertAlmostEqual(self.cs["cycleLength"], 365.242199)
+        self.assertEqual(self.cs["burnSteps"], 4)
+
+        self.assertEqual(len(self.o.stepLengths), 1)
+        self.assertEqual(len(self.o.stepLengths[0]), 4)
 
     def test_couplingIsActive(self):
         """Ensure that ``cs[CONF_TIGHT_COUPLING]`` controls ``couplingIsActive``."""
@@ -185,7 +292,12 @@ class TestTightCoupling(unittest.TestCase):
             self.assertEqual(self.o.r.core.p.coupledIteration, 0)
 
     def test_performTightCoupling_notConverged(self):
-        """Ensure that the appropriate ``runLog.warning`` is addressed in tight coupling reaches max num of iters."""
+        """Ensure that the appropriate ``runLog.warning`` is addressed in tight coupling reaches max num of iters.
+
+        .. test:: The tight coupling logic can fail if there is no convergence.
+            :id: T_ARMI_OPERATOR_PHYSICS0
+            :tests: R_ARMI_OPERATOR_PHYSICS
+        """
 
         class NoConverge(TightCoupler):
             def isConverged(self, _val: TightCoupler._SUPPORTED_TYPES) -> bool:
@@ -345,10 +457,24 @@ settings:
         )
 
     def test_getStepLengths(self):
-        self.assertEqual(self.detailedOperator.stepLengths, self.stepLengthsSolution)
+        """Test that the manually-set, detailed time steps are retrievable.
 
+        .. test:: Users can manually control time discretization of the simulation.
+            :id: T_ARMI_FW_HISTORY1
+            :tests: R_ARMI_FW_HISTORY
+        """
+        # detailed step lengths can be set manually
+        self.assertEqual(self.detailedOperator.stepLengths, self.stepLengthsSolution)
         self.detailedOperator._stepLength = None
         self.assertEqual(self.detailedOperator.stepLengths, self.stepLengthsSolution)
+
+        # when doing detailed step information, we don't get step information from settings
+        cs = self.detailedOperator.cs
+        self.assertEqual(cs["nCycles"], 3)
+        with self.assertRaises(ValueError):
+            cs["cycleLength"]
+        with self.assertRaises(ValueError):
+            cs["burnSteps"]
 
     def test_getCycleLengths(self):
         self.assertEqual(self.detailedOperator.cycleLengths, self.cycleLengthsSolution)

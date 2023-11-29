@@ -93,7 +93,6 @@ class TestBlockCollectionMedian(unittest.TestCase):
         self.bc.extend(self.blockList)
 
     def test_createRepresentativeBlock(self):
-
         avgB = self.bc.createRepresentativeBlock()
         self.assertAlmostEqual(avgB.p.percentBu, 50.0)
 
@@ -132,25 +131,24 @@ class TestBlockCollectionAverage(unittest.TestCase):
         self.bc.averageByComponent = True
 
     def test_performAverageByComponent(self):
-        """
-        Check the averageByComponent attribute
-        """
+        """Check the averageByComponent attribute."""
         self.bc._checkBlockSimilarity = MagicMock(return_value=True)
         self.assertTrue(self.bc._performAverageByComponent())
         self.bc.averageByComponent = False
         self.assertFalse(self.bc._performAverageByComponent())
 
     def test_checkBlockSimilarity(self):
-        """
-        Check the block similarity test
-        """
+        """Check the block similarity test."""
         self.assertTrue(self.bc._checkBlockSimilarity())
         self.bc.append(test_blocks.loadTestBlock())
         self.assertFalse(self.bc._checkBlockSimilarity())
 
     def test_createRepresentativeBlock(self):
-        """
-        Test creation of a representative block
+        """Test creation of a representative block.
+
+        .. test:: Create representative blocks using a volume-weighted averaging.
+            :id: T_ARMI_XSGM_CREATE_REPR_BLOCKS0
+            :tests: R_ARMI_XSGM_CREATE_REPR_BLOCKS
         """
         avgB = self.bc.createRepresentativeBlock()
         self.assertNotIn(avgB, self.bc)
@@ -174,7 +172,6 @@ class TestBlockCollectionAverage(unittest.TestCase):
         """
         Test creation of a representative block from a collection with dissimilar blocks
         """
-
         uniqueBlock = test_blocks.loadTestBlock()
         uniqueBlock.p.percentBu = 50.0
         fpFactory = test_lumpedFissionProduct.getDummyLFPFile()
@@ -379,10 +376,10 @@ class TestBlockCollectionComponentAverage(unittest.TestCase):
         self.expectedAreas = [[1, 6, 1], [1, 2, 1, 4]]
 
     def test_ComponentAverageRepBlock(self):
-        r"""
-        tests that the XS group manager calculates the expected component atom density
-        and component area correctly. Order of components is also checked since in
-        1D cases the order of the components matters.
+        """Tests that the XS group manager calculates the expected component atom density
+        and component area correctly.
+
+        Order of components is also checked since in 1D cases the order of the components matters.
         """
         xsgm = self.o.getInterface("xsGroups")
 
@@ -421,11 +418,11 @@ class TestBlockCollectionComponentAverage(unittest.TestCase):
 
 
 class TestBlockCollectionComponentAverage1DCylinder(unittest.TestCase):
-    r"""tests for 1D cylinder XS gen cases."""
+    """tests for 1D cylinder XS gen cases."""
 
     def setUp(self):
-        r"""
-        First part of setup same as test_Cartesian.
+        """First part of setup same as test_Cartesian.
+
         Second part of setup builds lists/dictionaries of expected values to compare to.
         has expected values for component isotopic atom density and component area.
         """
@@ -498,10 +495,14 @@ class TestBlockCollectionComponentAverage1DCylinder(unittest.TestCase):
         ]
 
     def test_ComponentAverage1DCylinder(self):
-        r"""
-        tests that the XS group manager calculates the expected component atom density
-        and component area correctly. Order of components is also checked since in
-        1D cases the order of the components matters.
+        """Tests that the XS group manager calculates the expected component atom density
+        and component area correctly.
+
+        Order of components is also checked since in 1D cases the order of the components matters.
+
+        .. test:: Create representative blocks using custom cylindrical averaging.
+            :id: T_ARMI_XSGM_CREATE_REPR_BLOCKS1
+            :tests: R_ARMI_XSGM_CREATE_REPR_BLOCKS
         """
         xsgm = self.o.getInterface("xsGroups")
 
@@ -546,7 +547,6 @@ class TestBlockCollectionComponentAverage1DCylinder(unittest.TestCase):
                 )
 
     def test_checkComponentConsistency(self):
-
         xsgm = self.o.getInterface("xsGroups")
         xsgm.interactBOL()
         blockCollectionsByXsGroup = xsgm.makeCrossSectionGroups()
@@ -701,7 +701,7 @@ class TestBlockCollectionFluxWeightedAverage(unittest.TestCase):
             self.bc.createRepresentativeBlock()
 
 
-class Test_CrossSectionGroupManager(unittest.TestCase):
+class TestCrossSectionGroupManager(unittest.TestCase):
     def setUp(self):
         cs = settings.Settings()
         self.blockList = makeBlocks(20)
@@ -775,6 +775,12 @@ class Test_CrossSectionGroupManager(unittest.TestCase):
         self.assertEqual("D", xsType3)
 
     def test_getRepresentativeBlocks(self):
+        """Test that we can create the representative blocks for a reactor.
+
+        .. test:: Build representative blocks for a reactor.
+            :id: T_ARMI_XSGM_CREATE_XS_GROUPS
+            :tests: R_ARMI_XSGM_CREATE_XS_GROUPS
+        """
         _o, r = test_reactors.loadTestReactor(TEST_ROOT)
         self.csm.r = r
 
@@ -844,14 +850,24 @@ class Test_CrossSectionGroupManager(unittest.TestCase):
         self.assertEqual(origXSIDsFromNew["BA"], "AA")
 
     def test_interactBOL(self):
-        """Test `BOL` lattice physics update frequency."""
+        """Test `BOL` lattice physics update frequency.
+
+        .. test:: The XSGM frequency depends on the LPI frequency at BOL.
+            :id: T_ARMI_XSGM_FREQ0
+            :tests: R_ARMI_XSGM_FREQ
+        """
         self.blockList[0].r.p.timeNode = 0
         self.csm.cs[CONF_LATTICE_PHYSICS_FREQUENCY] = "BOL"
         self.csm.interactBOL()
         self.assertTrue(self.csm.representativeBlocks)
 
     def test_interactBOC(self):
-        """Test `BOC` lattice physics update frequency."""
+        """Test `BOC` lattice physics update frequency.
+
+        .. test:: The XSGM frequency depends on the LPI frequency at BOC.
+            :id: T_ARMI_XSGM_FREQ1
+            :tests: R_ARMI_XSGM_FREQ
+        """
         self.blockList[0].r.p.timeNode = 0
         self.csm.cs[CONF_LATTICE_PHYSICS_FREQUENCY] = "BOC"
         self.csm.interactBOL()
@@ -859,7 +875,12 @@ class Test_CrossSectionGroupManager(unittest.TestCase):
         self.assertTrue(self.csm.representativeBlocks)
 
     def test_interactEveryNode(self):
-        """Test `everyNode` lattice physics update frequency."""
+        """Test `everyNode` lattice physics update frequency.
+
+        .. test:: The XSGM frequency depends on the LPI frequency at every time node.
+            :id: T_ARMI_XSGM_FREQ2
+            :tests: R_ARMI_XSGM_FREQ
+        """
         self.csm.cs[CONF_LATTICE_PHYSICS_FREQUENCY] = "BOC"
         self.csm.interactBOL()
         self.csm.interactEveryNode()
@@ -870,7 +891,12 @@ class Test_CrossSectionGroupManager(unittest.TestCase):
         self.assertTrue(self.csm.representativeBlocks)
 
     def test_interactFirstCoupledIteration(self):
-        """Test `firstCoupledIteration` lattice physics update frequency."""
+        """Test `firstCoupledIteration` lattice physics update frequency.
+
+        .. test:: The XSGM frequency depends on the LPI frequency during first coupled iteration.
+            :id: T_ARMI_XSGM_FREQ3
+            :tests: R_ARMI_XSGM_FREQ
+        """
         self.csm.cs[CONF_LATTICE_PHYSICS_FREQUENCY] = "everyNode"
         self.csm.interactBOL()
         self.csm.interactCoupled(iteration=0)
@@ -881,7 +907,12 @@ class Test_CrossSectionGroupManager(unittest.TestCase):
         self.assertTrue(self.csm.representativeBlocks)
 
     def test_interactAllCoupled(self):
-        """Test `all` lattice physics update frequency."""
+        """Test `all` lattice physics update frequency.
+
+        .. test:: The XSGM frequency depends on the LPI frequency during coupling.
+            :id: T_ARMI_XSGM_FREQ4
+            :tests: R_ARMI_XSGM_FREQ
+        """
         self.csm.cs[CONF_LATTICE_PHYSICS_FREQUENCY] = "firstCoupledIteration"
         self.csm.interactBOL()
         self.csm.interactCoupled(iteration=1)

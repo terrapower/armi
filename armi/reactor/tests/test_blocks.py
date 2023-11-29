@@ -1777,7 +1777,7 @@ class Block_TestCase(unittest.TestCase):
         )
 
 
-class Test_NegativeVolume(unittest.TestCase):
+class TestNegativeVolume(unittest.TestCase):
     def test_negativeVolume(self):
         """Build a block with WAY too many fuel pins and show that the derived volume is negative."""
         block = blocks.HexBlock("TestHexBlock")
