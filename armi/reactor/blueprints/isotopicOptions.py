@@ -61,6 +61,10 @@ class NuclideFlag(yamlize.Object):
     physics option. However, restarting from that case with different
     cross section needs is challenging.
 
+    .. impl:: The blueprint object that represents a nuclide flag.
+        :id: I_ARMI_BP_NUC_FLAGS1
+        :implements: R_ARMI_BP_NUC_FLAGS
+
     Attributes
     ----------
     nuclideName : str

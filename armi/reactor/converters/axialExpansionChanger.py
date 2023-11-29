@@ -114,6 +114,10 @@ class AxialExpansionChanger:
         :id: I_ARMI_AXIAL_EXP
         :implements: R_ARMI_AXIAL_EXP
 
+    .. impl:: Preserve the total height of an ARMI assembly, during expansion.
+        :id: I_ARMI_ASSEM_HEIGHT_PRES
+        :implements: R_ARMI_ASSEM_HEIGHT_PRES
+
     Attributes
     ----------
     linked : :py:class:`AssemblyAxialLinkage`

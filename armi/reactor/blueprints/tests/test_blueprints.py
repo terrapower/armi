@@ -102,7 +102,12 @@ class TestBlueprints(unittest.TestCase):
         self.assertAlmostEqual(fuel.getDimension("mult"), 169)
 
     def test_traceNuclides(self):
-        """Ensure that armi.reactor.blueprints.componentBlueprint.insertDepletableNuclideKeys runs."""
+        """Ensure that armi.reactor.blueprints.componentBlueprint.insertDepletableNuclideKeys runs.
+
+        .. test:: Users marking components as depletable will affect number densities.
+            :id: T_ARMI_BP_NUC_FLAGS1
+            :tests: R_ARMI_BP_NUC_FLAGS
+        """
         fuel = (
             self.blueprints.constructAssem(self.cs, "igniter fuel")
             .getFirstBlock(Flags.FUEL)

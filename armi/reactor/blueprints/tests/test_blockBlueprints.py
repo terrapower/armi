@@ -310,7 +310,7 @@ class TestGriddedBlock(unittest.TestCase):
         Test flags are created from blueprint file.
 
         .. test:: Nuc flags can define depletable objects.
-            :id: T_ARMI_BP_NUC_FLAGS
+            :id: T_ARMI_BP_NUC_FLAGS0
             :tests: R_ARMI_BP_NUC_FLAGS
         """
         a1 = self.blueprints.assemDesigns.bySpecifier["IC"].construct(

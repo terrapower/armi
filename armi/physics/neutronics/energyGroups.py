@@ -30,7 +30,12 @@ from armi.physics.neutronics.const import (
 
 
 def getFastFluxGroupCutoff(eGrpStruc):
-    """Given a constant "fast" energy threshold, return which ARMI energy group index contains this threshold."""
+    """Given a constant "fast" energy threshold, return which ARMI energy group index contains this threshold.
+
+    .. impl:: Return the energy group index which contains a given energy threshold.
+        :id: I_ARMI_EG_FE
+        :implements: R_ARMI_EG_FE
+    """
     gThres = -1
     for g, eV in enumerate(eGrpStruc):
         if eV < FAST_FLUX_THRESHOLD_EV:
@@ -66,6 +71,10 @@ def _create_anl_energies_with_group_lethargies(*group_lethargies):
 def getGroupStructure(name):
     """
     Return descending neutron energy group upper bounds in eV for a given structure name.
+
+    .. impl:: Provide the neutron energy group bounds for a given group structure.
+        :id: I_ARMI_EG_NE
+        :implements: R_ARMI_EG_NE
 
     Notes
     -----

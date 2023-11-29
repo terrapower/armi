@@ -119,8 +119,13 @@ class GlobalFluxInterface(interfaces.Interface):
                 * units.ABS_REACTIVITY_TO_PCM
             )
 
-    def _checkEnergyBalance(self):
-        """Check that there is energy balance between the power generated and the specified power is the system."""
+    def checkEnergyBalance(self):
+        """Check that there is energy balance between the power generated and the specified power.
+
+        .. impl:: Validate the energy generate matches user specifications.
+            :id: I_ARMI_FLUX_CHECK_POWER
+            :implements: R_ARMI_FLUX_CHECK_POWER
+        """
         powerGenerated = (
             self.r.core.calcTotalParam(
                 "power", calcBasedOnFullObj=False, generationNum=2
