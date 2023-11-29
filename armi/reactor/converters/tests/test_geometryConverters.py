@@ -332,7 +332,12 @@ class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
         del self.r
 
     def test_growToFullCoreFromThirdCore(self):
-        """Test that a hex core can be converted from a third core to a full core geometry."""
+        """Test that a hex core can be converted from a third core to a full core geometry.
+
+        .. test:: Convert a third-core to a full-core geometry and then restore it.
+            :id: T_ARMI_THIRD_TO_FULL_CORE0
+            :tests: R_ARMI_THIRD_TO_FULL_CORE
+        """
         # Check the initialization of the third core model
         self.assertFalse(self.r.core.isFullCore)
         self.assertEqual(

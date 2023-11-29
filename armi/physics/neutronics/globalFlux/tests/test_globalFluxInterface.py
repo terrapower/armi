@@ -141,6 +141,19 @@ class TestGlobalFluxOptions(unittest.TestCase):
 
 
 class TestGlobalFluxInterface(unittest.TestCase):
+    def test_computeDpaRate(self):
+        """
+        Compute DPA and DPA rates from multi-group neutron flux and cross sections.
+
+        .. test:: Compute DPA and DPA rates.
+            :id: T_ARMI_FLUX_DPA
+            :tests: R_ARMI_FLUX_DPA
+        """
+        xs = [1, 2, 3]
+        flx = [0.5, 0.75, 2]
+        res = globalFluxInterface.computeDpaRate(flx, xs)
+        self.assertEqual(res, 10**-24 * (0.5 + 1.5 + 6))
+
     def test_interaction(self):
         """
         Ensure the basic interaction hooks work.
