@@ -20,7 +20,12 @@ from armi.physics.neutronics import energyGroups
 
 class TestEnergyGroups(unittest.TestCase):
     def test_invalidGroupStructureType(self):
-        """Test that the reverse lookup fails on non-existent energy group bounds."""
+        """Test that the reverse lookup fails on non-existent energy group bounds.
+
+        .. test:: Check the neutron energy group bounds logic fails correctly for the wrong structure.
+            :id: T_ARMI_EG_NE0
+            :tests: R_ARMI_EG_NE
+        """
         modifier = 1e-5
         for groupStructureType in energyGroups.GROUP_STRUCTURE:
             energyBounds = energyGroups.getGroupStructure(groupStructureType)
@@ -31,6 +36,10 @@ class TestEnergyGroups(unittest.TestCase):
     def test_consistenciesBetweenGroupStructureAndGroupStructureType(self):
         """
         Test that the reverse lookup of the energy group structures work.
+
+        .. test:: Check the neutron energy group bounds for a given group structure.
+            :id: T_ARMI_EG_NE1
+            :tests: R_ARMI_EG_NE
 
         Notes
         -----
