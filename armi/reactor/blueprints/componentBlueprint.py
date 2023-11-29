@@ -291,8 +291,8 @@ def insertDepletableNuclideKeys(c, blueprint):
     """
     Auto update number density keys on all DEPLETABLE components.
 
-    .. impl:: Any depletable component will be adjusted.
-        :id: I_ARMI_BP_NUC_FLAGS
+    .. impl:: Insert any depletable blueprint flags onto this component.
+        :id: I_ARMI_BP_NUC_FLAGS0
         :implements: R_ARMI_BP_NUC_FLAGS
 
     Notes
