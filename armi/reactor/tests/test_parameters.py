@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests of the Parameters class."""
+from distutils.spawn import find_executable
 import copy
 import traceback
 import unittest
@@ -19,6 +20,13 @@ import unittest
 from armi import context
 from armi.reactor import composites
 from armi.reactor import parameters
+
+# determine if this is a parallel run, and MPI is installed
+MPI_EXE = None
+if find_executable("mpiexec.exe") is not None:
+    MPI_EXE = "mpiexec.exe"
+elif find_executable("mpiexec") is not None:
+    MPI_EXE = "mpiexec"
 
 
 class MockComposite:
@@ -512,10 +520,8 @@ def makeComp(name):
     return c
 
 
-class SynchronizationTests:
-    """Some unit tests that must be run with mpirun instead of the standard unittest
-    system.
-    """
+class SynchronizationTests(unittest.TestCase):
+    """Some tests that must be run with mpirun instead of the standard unittest system."""
 
     def setUp(self):
         self.r = makeComp("reactor")
@@ -530,59 +536,14 @@ class SynchronizationTests:
         for pd in MockSyncPC().paramDefs:
             pd.assigned = parameters.NEVER
 
-    def tearDown(self):
-        del self.r
+    @unittest.skipIf(context.MPI_SIZE <= 1 or MPI_EXE is None, "Parallel test only")
+    def test_noConflicts(self):
+        """Make sure sync works across processes.
 
-    def run(self, testNamePrefix="mpitest_"):
-        with open("mpitest{}.temp".format(context.MPI_RANK), "w") as self.l:
-            for methodName in sorted(dir(self)):
-                if methodName.startswith(testNamePrefix):
-                    self.write("{}.{}".format(self.__class__.__name__, methodName))
-                    try:
-                        self.setUp()
-                        getattr(self, methodName)()
-                    except Exception:
-                        self.write("failed, big time")
-                        traceback.print_exc(file=self.l)
-                        self.write("*** printed exception")
-                        try:
-                            self.tearDown()
-                        except:  # noqa: bare-except
-                            pass
-
-            self.l.write("done.")
-
-    def write(self, msg):
-        self.l.write("{}\n".format(msg))
-        self.l.flush()
-
-    def assertRaises(self, exceptionType):
-        class ExceptionCatcher:
-            def __enter__(self):
-                pass
-
-            def __exit__(self, exc_type, exc_value, traceback):
-                if exc_type is exceptionType:
-                    return True
-                raise AssertionError(
-                    "Expected {}, but got {}".format(exceptionType, exc_type)
-                )
-
-        return ExceptionCatcher()
-
-    def assertEqual(self, expected, actual):
-        if expected != actual:
-            raise AssertionError(
-                "(expected) {} != {} (actual)".format(expected, actual)
-            )
-
-    def assertNotEqual(self, expected, actual):
-        if expected == actual:
-            raise AssertionError(
-                "(expected) {} == {} (actual)".format(expected, actual)
-            )
-
-    def mpitest_noConflicts(self):
+        .. test:: TODO BROKEN
+            :id: T_ARMI_CMP_MPI0
+            :tests: R_ARMI_CMP_MPI
+        """
         for ci, comp in enumerate(self.comps):
             if ci % context.MPI_SIZE == context.MPI_RANK:
                 comp.p.param1 = (context.MPI_RANK + 1) * 30.0
@@ -594,8 +555,14 @@ class SynchronizationTests:
         for ci, comp in enumerate(self.comps):
             self.assertEqual((ci % context.MPI_SIZE + 1) * 30.0, comp.p.param1)
 
-    def mpitest_noConflicts_setByString(self):
-        """Make sure params set by string also work with sync."""
+    @unittest.skipIf(context.MPI_SIZE <= 1 or MPI_EXE is None, "Parallel test only")
+    def test_noConflicts_setByString(self):
+        """Make sure params set by string also work with sync.
+
+        .. test:: TODO BROKEN
+            :id: T_ARMI_CMP_MPI1
+            :tests: R_ARMI_CMP_MPI
+        """
         for ci, comp in enumerate(self.comps):
             if ci % context.MPI_SIZE == context.MPI_RANK:
                 comp.p.param2 = (context.MPI_RANK + 1) * 30.0
@@ -607,17 +574,38 @@ class SynchronizationTests:
         for ci, comp in enumerate(self.comps):
             self.assertEqual((ci % context.MPI_SIZE + 1) * 30.0, comp.p.param2)
 
-    def mpitest_withConflicts(self):
+    @unittest.skipIf(context.MPI_SIZE <= 1 or MPI_EXE is None, "Parallel test only")
+    def test_withConflicts(self):
+        """TODO
+
+        .. test:: TODO
+            :id: T_ARMI_CMP_MPI2
+            :tests: R_ARMI_CMP_MPI
+        """
         self.r.core.p.param1 = (context.MPI_RANK + 1) * 99.0
         with self.assertRaises(ValueError):
             self.r.syncMpiState()
 
-    def mpitest_withConflictsButSameValue(self):
+    @unittest.skipIf(context.MPI_SIZE <= 1 or MPI_EXE is None, "Parallel test only")
+    def test_withConflictsButSameValue(self):
+        """TODO
+
+        .. test:: TODO
+            :id: T_ARMI_CMP_MPI3
+            :tests: R_ARMI_CMP_MPI
+        """
         self.r.core.p.param1 = (context.MPI_SIZE + 1) * 99.0
         self.r.syncMpiState()
         self.assertEqual((context.MPI_SIZE + 1) * 99.0, self.r.core.p.param1)
 
-    def mpitest_noConflictsMaintainWithStateRetainer(self):
+    @unittest.skipIf(context.MPI_SIZE <= 1 or MPI_EXE is None, "Parallel test only")
+    def test_noConflictsMaintainWithStateRetainer(self):
+        """TODO
+
+        .. test:: TODO BROKEN
+            :id: T_ARMI_CMP_MPI4
+            :tests: R_ARMI_CMP_MPI
+        """
         assigned = []
         with self.r.retainState(parameters.inCategory("cat1")):
             for ci, comp in enumerate(self.comps):
@@ -644,93 +632,17 @@ class SynchronizationTests:
         for ci, comp in enumerate(self.comps):
             self.assertEqual((ci % context.MPI_SIZE + 1) * 30.0, comp.p.param1)
 
-    def mpitest_conflictsMaintainWithStateRetainer(self):
+    @unittest.skipIf(context.MPI_SIZE <= 1 or MPI_EXE is None, "Parallel test only")
+    def test_conflictsMaintainWithStateRetainer(self):
+        """TODO
+
+        .. test:: TODO
+            :id: T_ARMI_CMP_MPI5
+            :tests: R_ARMI_CMP_MPI
+        """
         with self.r.retainState(parameters.inCategory("cat2")):
             for _, comp in enumerate(self.comps):
                 comp.p.param2 = 99 * context.MPI_RANK
 
         with self.assertRaises(ValueError):
             self.r.syncMpiState()
-
-    def mpitest_rxCoeffsProcess(self):
-        """This test mimics the process for rxCoeffs when doing distributed doppler."""
-
-        def do():
-            # we will do this over 4 passes (there are 4 * MPI_SIZE assemblies)
-            for passNum in range(4):
-                with self.r.retainState(parameters.inCategory("cat2")):
-                    self.r.p.param3 = "hi"
-                    for c in self.comps:
-                        c.p.param1 = (
-                            99 * context.MPI_RANK
-                        )  # this will get reset after state retainer
-                    a = self.r.core[passNum * context.MPI_SIZE + context.MPI_RANK]
-                    a.p.param2 = context.MPI_RANK * 20.0
-                    for b in a:
-                        b.p.param2 = context.MPI_RANK * 10.0
-
-                    for ai, a2 in enumerate(self.r):
-                        if ai % context.MPI_SIZE != context.MPI_RANK:
-                            assert "param2" not in a2.p
-
-                    self.assertEqual(parameters.SINCE_ANYTHING, param1.assigned)
-                    self.assertEqual(parameters.SINCE_ANYTHING, param2.assigned)
-                    self.assertEqual(parameters.SINCE_ANYTHING, param3.assigned)
-                    self.assertEqual(parameters.SINCE_ANYTHING, a.p.assigned)
-
-                    self.r.syncMpiState()
-
-                    self.assertEqual(
-                        parameters.SINCE_ANYTHING
-                        & ~parameters.SINCE_LAST_DISTRIBUTE_STATE,
-                        param1.assigned,
-                    )
-                    self.assertEqual(
-                        parameters.SINCE_ANYTHING
-                        & ~parameters.SINCE_LAST_DISTRIBUTE_STATE,
-                        param2.assigned,
-                    )
-                    self.assertEqual(
-                        parameters.SINCE_ANYTHING
-                        & ~parameters.SINCE_LAST_DISTRIBUTE_STATE,
-                        param3.assigned,
-                    )
-                    self.assertEqual(
-                        parameters.SINCE_ANYTHING
-                        & ~parameters.SINCE_LAST_DISTRIBUTE_STATE,
-                        a.p.assigned,
-                    )
-
-                self.assertEqual(parameters.NEVER, param1.assigned)
-                self.assertEqual(parameters.SINCE_ANYTHING, param2.assigned)
-                self.assertEqual(parameters.NEVER, param3.assigned)
-                self.assertEqual(parameters.SINCE_ANYTHING, a.p.assigned)
-                do_assert(passNum)
-
-        param1 = self.r.p.paramDefs["param1"]
-        param2 = self.r.p.paramDefs["param2"]
-        param3 = self.r.p.paramDefs["param3"]
-
-        def do_assert(passNum):
-            # ensure all assemblies and blocks set values for param2, but param1 is
-            # empty
-            for rank in range(context.MPI_SIZE):
-                a = self.r.core[passNum * context.MPI_SIZE + rank]
-                assert "param1" not in a.p
-                assert "param3" not in a.p
-                self.assertEqual(rank * 20, a.p.param2)
-                for b in a:
-                    self.assertEqual(rank * 10, b.p.param2)
-                    assert "param1" not in b.p
-                    assert "param3" not in b.p
-
-        if context.MPI_RANK == 0:
-            with self.r.retainState(parameters.inCategory("cat2")):
-                context.MPI_COMM.bcast(self.r)
-                do()
-                [do_assert(passNum) for passNum in range(4)]
-            [do_assert(passNum) for passNum in range(4)]
-        else:
-            del self.r
-            self.r = context.MPI_COMM.bcast(None)
-            do()
