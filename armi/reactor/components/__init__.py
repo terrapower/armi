@@ -323,7 +323,12 @@ class DerivedShape(UnshapedComponent):
             return math.sqrt(4.0 * self.getComponentArea() / math.pi)
 
     def computeVolume(self):
-        """Cannot compute volume until it is derived."""
+        """Cannot compute volume until it is derived.
+
+        .. impl:: The volume of a DerivedShape depends on the solid shapes surrounding them.
+            :id: I_ARMI_COMP_FLUID
+            :implements: R_ARMI_COMP_FLUID
+        """
         return self._deriveVolumeAndArea()
 
     def _deriveVolumeAndArea(self):
@@ -412,7 +417,6 @@ class DerivedShape(UnshapedComponent):
         -------
         float
             volume of component in cm^3.
-
         """
         if self.parent.derivedMustUpdate:
             # tell _updateVolume to update it during the below getVolume call

@@ -519,7 +519,6 @@ class Component(composites.Composite, metaclass=ComponentType):
         Overlapping is allowed to maintain conservation of atoms while sticking close
         to the as-built geometry. Modules that need true geometries will have to
         handle this themselves.
-
         """
         if numpy.isnan(area):
             return

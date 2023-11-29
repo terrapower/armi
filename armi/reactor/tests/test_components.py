@@ -217,12 +217,24 @@ class TestComponent(TestGeneralComponents):
         .. test:: Determine if material is solid.
             :id: T_ARMI_COMP_SOLID
             :tests: R_ARMI_COMP_SOLID
+
+        .. test:: Components have material properties.
+            :id: T_ARMI_COMP_MAT
+            :tests: R_ARMI_COMP_MAT
         """
+        self.assertTrue(isinstance(self.component.getProperties(), Material))
+        self.assertTrue(hasattr(self.component.material, "density"))
+        self.assertIn("HT9", str(self.component.getProperties()))
+
         self.component.material = air.Air()
         self.assertFalse(self.component.containsSolidMaterial())
 
         self.component.material = alloy200.Alloy200()
         self.assertTrue(self.component.containsSolidMaterial())
+
+        self.assertTrue(isinstance(self.component.getProperties(), Material))
+        self.assertTrue(hasattr(self.component.material, "density"))
+        self.assertIn("Alloy200", str(self.component.getProperties()))
 
 
 class TestNullComponent(TestGeneralComponents):
@@ -418,6 +430,30 @@ class TestDerivedShape(TestShapedComponent):
         self.assertGreater(
             self.component.getBoundingCircleOuterDiameter(cold=True), 0.0
         )
+
+    def test_computeVolume(self):
+        """Test the computeVolume method on a number of components in a block.
+
+        .. test:: Compute the volume of a DerivedShape inside solid shapes.
+            :id: T_ARMI_COMP_FLUID
+            :tests: R_ARMI_COMP_FLUID
+        """
+        from armi.reactor.tests.test_blocks import buildSimpleFuelBlock
+
+        # Calculate the total volume of the block
+        b = buildSimpleFuelBlock()
+        totalVolume = b.getVolume()
+
+        # calculate the total volume by adding up all the components
+        c = b.getComponent(flags.Flags.COOLANT)
+        totalByParts = 0
+        for co in b.getComponents():
+            totalByParts += co.computeVolume()
+
+        self.assertAlmostEqual(totalByParts, totalVolume)
+
+        # test the computeVolume method on the one DerivedShape in thi block
+        self.assertAlmostEqual(c.computeVolume(), 1386.5232044586771)
 
 
 class TestCircle(TestShapedComponent):

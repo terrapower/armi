@@ -157,7 +157,7 @@ class Block(composites.Composite):
 
         return b
 
-    def _createHomogenizedCopy(self, pinSpatialLocators=False):
+    def createHomogenizedCopy(self, pinSpatialLocators=False):
         """
         Create a copy of a block.
 
@@ -1081,7 +1081,12 @@ class Block(composites.Composite):
         return sortedComponents
 
     def getNumPins(self):
-        """Return the number of pins in this block."""
+        """Return the number of pins in this block.
+
+        .. impl:: Get the number of pins in a block; potentially zero.
+            :id: I_ARMI_BLOCK_NPINS
+            :implements: R_ARMI_BLOCK_NPINS
+        """
         nPins = [
             sum(
                 [
@@ -1624,7 +1629,7 @@ class HexBlock(Block):
             round(y, units.FLOAT_DIMENSION_DECIMALS),
         )
 
-    def _createHomogenizedCopy(self, pinSpatialLocators=False):
+    def createHomogenizedCopy(self, pinSpatialLocators=False):
         """
         Create a new homogenized copy of a block that is less expensive than a full deepcopy.
 

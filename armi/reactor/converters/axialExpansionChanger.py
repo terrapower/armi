@@ -110,6 +110,10 @@ class AxialExpansionChanger:
     """
     Axially expand or contract assemblies or an entire core.
 
+    .. impl:: Performing axial expansion on solid components within a compatible ARMI assembly.
+        :id: I_ARMI_AXIAL_EXP
+        :implements: R_ARMI_AXIAL_EXP
+
     Attributes
     ----------
     linked : :py:class:`AssemblyAxialLinkage`

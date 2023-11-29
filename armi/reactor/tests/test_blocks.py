@@ -436,7 +436,7 @@ class Block_TestCase(unittest.TestCase):
         self.assertFalse(self.block.hasFlags(Flags.IGNITER | Flags.FUEL))
 
     def test_duplicate(self):
-        Block2 = blocks.Block._createHomogenizedCopy(self.block)
+        Block2 = blocks.Block.createHomogenizedCopy(self.block)
         originalComponents = self.block.getComponents()
         newComponents = Block2.getComponents()
         for c1, c2 in zip(originalComponents, newComponents):
@@ -487,7 +487,7 @@ class Block_TestCase(unittest.TestCase):
         ]
 
         for arg, shapes in zip(args, expectedShapes):
-            homogBlock = self.block._createHomogenizedCopy(pinSpatialLocators=arg)
+            homogBlock = self.block.createHomogenizedCopy(pinSpatialLocators=arg)
             for shapeType in shapes:
                 for c in homogBlock.getComponents():
                     if isinstance(c, shapeType):
@@ -1306,6 +1306,12 @@ class Block_TestCase(unittest.TestCase):
         self.assertEqual(1, self.block.getNumComponents(Flags.DUCT))
 
     def test_getNumPins(self):
+        """Test that we can get the number of pins from various blocks.
+
+        .. test:: Retrieve the number of pins from various blocks.
+            :id: T_ARMI_BLOCK_NPINS
+            :tests: R_ARMI_BLOCK_NPINS
+        """
         cur = self.block.getNumPins()
         ref = self.block.getDim(Flags.FUEL, "mult")
         self.assertEqual(cur, ref)
