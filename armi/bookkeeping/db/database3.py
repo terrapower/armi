@@ -672,9 +672,9 @@ class Database3:
         continue with new settings (or if blueprints are not on the database).
         Geometry is read from the database itself.
 
-        .. test:: Users can load a reactor from a DB.
+        .. impl:: Users can load a reactor from a DB.
             :id: I_ARMI_DB_R_LOAD
-            :tests: R_ARMI_DB_R_LOAD
+            :implements: R_ARMI_DB_R_LOAD
 
         Parameters
         ----------
