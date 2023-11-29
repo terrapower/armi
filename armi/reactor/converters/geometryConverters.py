@@ -1194,11 +1194,15 @@ class HexToRZThetaConverter(GeometryConverter):
 
 
 class HexToRZConverter(HexToRZThetaConverter):
-    r"""
+    """
     Create a new reactor with R-Z coordinates from the Hexagonal-Z reactor.
 
-    This is a subclass of the HexToRZThetaConverter. See the HexToRZThetaConverter for explanation and setup of
-    the converterSettings.
+    This is a subclass of the HexToRZThetaConverter. See the HexToRZThetaConverter for
+    explanation and setup of the converterSettings.
+
+    .. impl:: Tool to convert a hex core to an RZTheta core.
+        :id: I_ARMI_CONV_3DHEX_TO_2DRZ
+        :implements: R_ARMI_CONV_3DHEX_TO_2DRZ
     """
 
     _GEOMETRY_TYPE = geometry.GeomType.RZ
