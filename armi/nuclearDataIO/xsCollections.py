@@ -381,12 +381,7 @@ class MacroscopicCrossSectionCreator:
     def createMacrosOnBlocklist(
         self, microLibrary, blockList, nucNames=None, libType="micros"
     ):
-        """Create macroscopic cross sections for a list of blocks.
-
-        .. impl:: Build macroscopic cross sections for blocks.
-            :id: I_ARMI_MACRO_XS
-            :implements: R_ARMI_MACRO_XS
-        """
+        """Create macroscopic cross sections for a list of blocks."""
         for block in blockList:
             block.macros = self.createMacrosFromMicros(
                 microLibrary, block, nucNames, libType=libType
