@@ -390,6 +390,10 @@ class TestFuelHandler(FuelHandlerTestHelper):
 
         Checks some other things in the meantime
 
+        .. test:: There is a user friendly shuffle logic interface.
+            :id: T_ARMI_SHUFFLE
+            :tests: R_ARMI_SHUFFLE
+
         See Also
         --------
         runShuffling : creates the shuffling file to be read in.
@@ -522,7 +526,12 @@ class TestFuelHandler(FuelHandlerTestHelper):
         self.assertEqual(type(b.p.linPowByPinGamma), np.ndarray)
 
     def test_transferStationaryBlocks(self):
-        """Test the _transferStationaryBlocks method."""
+        """Test the _transferStationaryBlocks method.
+
+        .. test:: User-specified blocks can remain in place during shuffling
+            :id: T_ARMI_SHUFFLE_STATIONARY
+            :tests: R_ARMI_SHUFFLE_STATIONARY
+        """
         # grab stationary block flags
         sBFList = self.r.core.stationaryBlockFlagsList
 
