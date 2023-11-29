@@ -222,6 +222,8 @@ class TestComponent(TestGeneralComponents):
             :id: T_ARMI_COMP_MAT
             :tests: R_ARMI_COMP_MAT
         """
+        self.assertTrue(isinstance(self.component.getProperties(), Material))
+        self.assertTrue(hasattr(self.component.material, "density"))
         self.assertIn("HT9", str(self.component.getProperties()))
 
         self.component.material = air.Air()
@@ -230,6 +232,8 @@ class TestComponent(TestGeneralComponents):
         self.component.material = alloy200.Alloy200()
         self.assertTrue(self.component.containsSolidMaterial())
 
+        self.assertTrue(isinstance(self.component.getProperties(), Material))
+        self.assertTrue(hasattr(self.component.material, "density"))
         self.assertIn("Alloy200", str(self.component.getProperties()))
 
 
