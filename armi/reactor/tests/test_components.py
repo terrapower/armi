@@ -419,6 +419,30 @@ class TestDerivedShape(TestShapedComponent):
             self.component.getBoundingCircleOuterDiameter(cold=True), 0.0
         )
 
+    def test_computeVolume(self):
+        """Test the computeVolume method on a number of components in a block.
+
+        .. test:: Compute the volume of a DerivedShape inside solid shapes.
+            :id: T_ARMI_COMP_FLUID
+            :tests: R_ARMI_COMP_FLUID
+        """
+        from armi.reactor.tests.test_blocks import buildSimpleFuelBlock
+
+        # Calculate the total volume of the block
+        b = buildSimpleFuelBlock()
+        totalVolume = b.getVolume()
+
+        # calculate the total volume by adding up all the components
+        c = b.getComponent(flags.Flags.COOLANT)
+        totalByParts = 0
+        for co in b.getComponents():
+            totalByParts += co.computeVolume()
+
+        self.assertAlmostEqual(totalByParts, totalVolume)
+
+        # test the computeVolume method on the one DerivedShape in thi block
+        self.assertAlmostEqual(c.computeVolume(), 1386.5232044586771)
+
 
 class TestCircle(TestShapedComponent):
     """Test circle shaped component."""
