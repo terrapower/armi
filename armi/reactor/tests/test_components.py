@@ -217,12 +217,20 @@ class TestComponent(TestGeneralComponents):
         .. test:: Determine if material is solid.
             :id: T_ARMI_COMP_SOLID
             :tests: R_ARMI_COMP_SOLID
+
+        .. test:: Components have material properties.
+            :id: T_ARMI_COMP_MAT
+            :tests: R_ARMI_COMP_MAT
         """
+        self.assertIn("HT9", str(self.component.getProperties()))
+
         self.component.material = air.Air()
         self.assertFalse(self.component.containsSolidMaterial())
 
         self.component.material = alloy200.Alloy200()
         self.assertTrue(self.component.containsSolidMaterial())
+
+        self.assertIn("Alloy200", str(self.component.getProperties()))
 
 
 class TestNullComponent(TestGeneralComponents):
