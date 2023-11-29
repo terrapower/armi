@@ -788,6 +788,10 @@ def computeMacroscopicGroupConstants(
     """
     Compute any macroscopic group constants given number densities and a microscopic library.
 
+    .. impl:: Compute macroscopic cross sections from microscopic cross sections and number densities.
+        :id: I_ARMI_NUCDATA_MACRO
+        :implements: R_ARMI_NUCDATA_MACRO
+
     Parameters
     ----------
     constantName : str
