@@ -180,8 +180,7 @@ class TestGlobalFluxInterface(unittest.TestCase):
         self.assertIn("detailedDpa", params)
 
     def test_checkEnergyBalance(self):
-        """
-        Test energy balance check.
+        """Test energy balance check.
 
         .. test:: Block-wise power is consistent with reactor data model power.
             :id: T_ARMI_FLUX_CHECK_POWER
@@ -190,7 +189,7 @@ class TestGlobalFluxInterface(unittest.TestCase):
         cs = settings.Settings()
         _o, r = test_reactors.loadTestReactor()
         gfi = MockGlobalFluxInterface(r, cs)
-        gfi._checkEnergyBalance()
+        gfi.checkEnergyBalance()
 
 
 class TestGlobalFluxInterfaceWithExecuters(unittest.TestCase):
