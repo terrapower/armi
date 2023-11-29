@@ -18,7 +18,7 @@ import unittest
 from armi.utils import hexagon
 
 
-class Test_hexagon(unittest.TestCase):
+class TestHexagon(unittest.TestCase):
     def test_hexagon_area(self):
         """
         Area of a hexagon.

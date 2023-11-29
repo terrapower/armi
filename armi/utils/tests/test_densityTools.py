@@ -19,7 +19,7 @@ from armi.nucDirectory import elements, nuclideBases
 from armi.utils import densityTools
 
 
-class Test_densityTools(unittest.TestCase):
+class TestDensityTools(unittest.TestCase):
     def test_expandElementalMassFracsToNuclides(self):
         """
         Expand mass fraction to nuclides.

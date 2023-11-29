@@ -465,7 +465,7 @@ class ParameterDefinitionCollection:
         return matches[0]
 
     def add(self, paramDef):
-        r"""Add a :py:class:`Parameter` to this collection."""
+        """Add a :py:class:`Parameter` to this collection."""
         assert not self._locked, "This ParameterDefinitionCollection has been locked."
         self._paramDefs.append(paramDef)
         self._paramDefDict[paramDef.name, paramDef.collectionType] = paramDef
@@ -527,7 +527,7 @@ class ParameterDefinitionCollection:
         return self._filter(lambda pd: not (pd.assigned & mask))
 
     def forType(self, compositeType):
-        r"""
+        """
         Create a :py:class:`ParameterDefinitionCollection` that contains definitions for a
         specific composite type.
         """
@@ -553,16 +553,16 @@ class ParameterDefinitionCollection:
             pd.assigned |= mask
 
     def byNameAndType(self, name, compositeType):
-        r"""Get a :py:class:`Parameter` by compositeType and name."""
+        """Get a :py:class:`Parameter` by compositeType and name."""
         return self._paramDefDict[name, compositeType.paramCollectionType]
 
     def byNameAndCollectionType(self, name, collectionType):
-        r"""Get a :py:class:`Parameter` by collectionType and name."""
+        """Get a :py:class:`Parameter` by collectionType and name."""
         return self._paramDefDict[name, collectionType]
 
     @property
     def categories(self):
-        r"""Get the categories of all the :py:class:`~Parameter` instances within this collection."""
+        """Get the categories of all the :py:class:`~Parameter` instances within this collection."""
         categories = set()
         for paramDef in self:
             categories |= paramDef.categories

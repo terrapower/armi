@@ -18,9 +18,68 @@ from typing import Optional
 
 import yamlize
 
+from armi import getPluginManagerOrFail
 from armi import interfaces
 from armi import plugins
 from armi import settings
+from armi.physics.neutronics import NeutronicsPlugin
+from armi.reactor import parameters
+from armi.reactor.blocks import Block, HexBlock
+from armi.reactor.parameters import ParamLocation
+from armi.reactor.parameters.parameterCollections import collectPluginParameters
+from armi.utils import units
+
+
+class TestPluginBasics(unittest.TestCase):
+    def test_defineParameters(self):
+        """Test that the default ARMI plugins are correctly defining parameters.
+
+        .. test:: ARMI plugins define parameters, which appear on a new Block.
+            :id: T_ARMI_PLUGIN_PARAMS
+            :tests: R_ARMI_PLUGIN_PARAMS
+        """
+        # create a block
+        b = Block("fuel", height=10.0)
+
+        # unless a plugin has registerd a param, it doesn't exist
+        with self.assertRaises(AttributeError):
+            b.p.fakeParam
+
+        # Check the default values of parameters defined by the neutronics plugin
+        self.assertIsNone(b.p.axMesh)
+        self.assertEqual(b.p.flux, 0)
+        self.assertEqual(b.p.power, 0)
+        self.assertEqual(b.p.pdens, 0)
+
+        # Check the default values of parameters defined by the fuel peformance plugin
+        self.assertEqual(b.p.gasPorosity, 0)
+        self.assertEqual(b.p.liquidPorosity, 0)
+
+    def test_exposeInterfaces(self):
+        """Make sure that the exposeInterfaces hook is properly implemented.
+
+        .. test:: Plugins can add interfaces to the interface stack.
+            :id: T_ARMI_PLUGIN_INTERFACES
+            :tests: R_ARMI_PLUGIN_INTERFACES
+        """
+        plugin = NeutronicsPlugin()
+
+        cs = settings.Settings()
+        results = plugin.exposeInterfaces(cs)
+
+        # each plugin should return a list
+        self.assertIsInstance(results, list)
+        self.assertGreater(len(results), 0)
+        for result in results:
+            # Make sure all elements in the list satisfy the constraints of the hookspec
+            self.assertIsInstance(result, tuple)
+            self.assertEqual(len(result), 3)
+
+            order, interface, kwargs = result
+
+            self.assertIsInstance(order, (int, float))
+            self.assertTrue(issubclass(interface, interfaces.Interface))
+            self.assertIsInstance(kwargs, dict)
 
 
 class TestPlugin(unittest.TestCase):
@@ -62,8 +121,7 @@ class TestPlugin(unittest.TestCase):
         # each plugin should return a list
         self.assertIsInstance(results, list)
         for result in results:
-            # Make sure that all elements in the list satisfy the constraints of the
-            # hookspec
+            # Make sure all elements in the list satisfy the constraints of the hookspec
             self.assertIsInstance(result, tuple)
             self.assertEqual(len(result), 3)
 

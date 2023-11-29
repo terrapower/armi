@@ -235,7 +235,7 @@ class TestXSLibrary(unittest.TestCase, TempFileMixin):
         self.assertTrue(filecmp.cmp(refFile, self.testFileName))
 
 
-class Test_GetISOTXSFilesInWorkingDirectory(unittest.TestCase):
+class TestGetISOTXSFilesInWorkingDirectory(unittest.TestCase):
     def test_getISOTXSFilesWithoutLibrarySuffix(self):
         shouldBeThere = ["ISOAA", "ISOBA", os.path.join("file-path", "ISOCA")]
         shouldNotBeThere = [

@@ -701,7 +701,7 @@ class TestBlockCollectionFluxWeightedAverage(unittest.TestCase):
             self.bc.createRepresentativeBlock()
 
 
-class Test_CrossSectionGroupManager(unittest.TestCase):
+class TestCrossSectionGroupManager(unittest.TestCase):
     def setUp(self):
         cs = settings.Settings()
         self.blockList = makeBlocks(20)

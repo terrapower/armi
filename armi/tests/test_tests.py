@@ -18,7 +18,7 @@ import unittest
 from armi import tests
 
 
-class Test_CompareFiles(unittest.TestCase):
+class TestCompareFiles(unittest.TestCase):
     def test_compareFileLine(self):
         expected = "oh look, a number! 3.14 and some text and another number 1.5"
 

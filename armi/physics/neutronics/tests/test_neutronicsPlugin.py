@@ -53,7 +53,7 @@ BA:
 """
 
 
-class Test_NeutronicsPlugin(TestPlugin):
+class TestNeutronicsPlugin(TestPlugin):
     plugin = neutronics.NeutronicsPlugin
 
     def setUp(self):
