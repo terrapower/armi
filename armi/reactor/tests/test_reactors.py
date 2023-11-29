@@ -743,6 +743,12 @@ class HexReactorTests(ReactorTests):
         self.assertEqual(a1, a2)
 
     def test_restoreReactor(self):
+        """Restore a reactor after growing it from third to full core.
+
+        .. test:: Convert a third-core to a full-core geometry and then restore it.
+            :id: T_ARMI_THIRD_TO_FULL_CORE1
+            :tests: R_ARMI_THIRD_TO_FULL_CORE
+        """
         aListLength = len(self.r.core.getAssemblies())
         converter = self.r.core.growToFullCore(self.o.cs)
         converter.restorePreviousGeometry(self.r)
