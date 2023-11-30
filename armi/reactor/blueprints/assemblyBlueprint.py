@@ -77,7 +77,7 @@ class MaterialModifications(yamlize.Map):
     the keys/values underneath the name of a specific component in the block.
 
     .. impl:: User-impact on material definitions.
-        :id: I_ARMI_MAT_USER_INPUT
+        :id: I_ARMI_MAT_USER_INPUT0
         :implements: R_ARMI_MAT_USER_INPUT
     """
 

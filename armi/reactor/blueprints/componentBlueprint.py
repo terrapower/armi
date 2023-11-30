@@ -165,7 +165,7 @@ class ComponentBlueprint(yamlize.Object):
         """Construct a component or group.
 
         .. impl:: User-defined on material alterations are applied here.
-            :id: I_ARMI_MAT_USER_INPUT
+            :id: I_ARMI_MAT_USER_INPUT1
             :implements: R_ARMI_MAT_USER_INPUT
         """
         runLog.debug("Constructing component {}".format(self.name))
