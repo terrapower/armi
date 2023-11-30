@@ -83,7 +83,12 @@ CONF_LATTICE_PHYSICS_FREQUENCY = "latticePhysicsFrequency"
 
 
 def defineSettings():
-    """Standard function to define settings - for neutronics."""
+    """Standard function to define settings - for neutronics.
+
+    .. impl:: Users to select if gamma cross sections are generated.
+        :id: I_ARMI_GAMMA_XS
+        :implements: R_ARMI_GAMMA_XS
+    """
     settings = [
         setting.Setting(
             CONF_GROUP_STRUCTURE,

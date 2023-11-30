@@ -162,7 +162,12 @@ class ComponentBlueprint(yamlize.Object):
     area = yamlize.Attribute(type=float, default=None)
 
     def construct(self, blueprint, matMods):
-        """Construct a component or group."""
+        """Construct a component or group.
+
+        .. impl:: User-defined on material alterations are applied here.
+            :id: I_ARMI_MAT_USER_INPUT
+            :implements: R_ARMI_MAT_USER_INPUT
+        """
         runLog.debug("Constructing component {}".format(self.name))
         kwargs = self._conformKwargs(blueprint, matMods)
         shape = self.shape.lower().strip()

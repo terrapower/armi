@@ -44,6 +44,10 @@ class GlobalFluxInterface(interfaces.Interface):
     A general abstract interface for global flux-calculating modules.
 
     Should be subclassed by more specific implementations.
+
+    .. impl:: Ensure the mesh in the reactor model is appropriate for neutronics solver execution.
+        :id: I_ARMI_FLUX_GEOM_TRANSFORM
+        :implements: R_ARMI_FLUX_GEOM_TRANSFORM
     """
 
     name = "GlobalFlux"  # make sure to set this in subclasses

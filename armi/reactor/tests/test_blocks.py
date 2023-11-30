@@ -2060,6 +2060,13 @@ class HexBlock_TestCase(unittest.TestCase):
         self.assertAlmostEqual(pinCenterFlatToFlat, f2f)
 
     def test_gridCreation(self):
+        """Create a grid for a block, and show that it can handle components with
+        multiplicity > 1.
+
+        .. test:: Grids can handle components with multiplicity > 1.
+            :id: T_ARMI_GRID_MULT
+            :tests: R_ARMI_GRID_MULT
+        """
         b = self.HexBlock
         # The block should have a spatial grid at construction,
         # since it has mults = 1 or 169 from setup
