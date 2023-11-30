@@ -14,21 +14,23 @@
 """Test densityTools."""
 import unittest
 
+from armi.materials.material import Material
 from armi.materials.uraniumOxide import UO2
 from armi.nucDirectory import elements, nuclideBases
 from armi.utils import densityTools
 
 
-# A test material that needs to be stored in a different namespace, for tests in:
-#     armi.materials.tests.test_materials.py
-def testFakeDensity(self, Tk=None, Tc=None):
-    return 0.0
+class TestMaterialIgnoreFake(Material):
+    """A test material that needs to be stored in a different namespace.
 
+    For tests in: armi.materials.tests.test_materials.py
+    """
 
-TestMaterialIgnoreFake = UO2
-TestMaterialIgnoreFake.density = testFakeDensity
-TestMaterialIgnoreFake.pseudoDensity = testFakeDensity
-TestMaterialIgnoreFake._name = "TestMaterialIgnoreFake"
+    def pseudoDensity(self, Tk=None, Tc=None):
+        return 0.0
+
+    def density(self, Tk=None, Tc=None):
+        return 0.0
 
 
 class TestDensityTools(unittest.TestCase):

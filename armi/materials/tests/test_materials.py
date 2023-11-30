@@ -163,10 +163,12 @@ class MaterialFindingTests(unittest.TestCase):
             :id: T_ARMI_MAT_ORDER
             :tests: R_ARMI_MAT_ORDER
         """
-        newMats = "armi.utils.tests.test_densityTools"
         # let's do a quick test of getting a material from the default namespace
+        setMaterialNamespaceOrder(["armi.materials"])
         uo2 = materials.resolveMaterialClassByName(
-            "UO2", namespaceOrder=["armi.materials"]
+            # "Hafnium", namespaceOrder=["armi.materials"]
+            "UO2",
+            namespaceOrder=["armi.materials"],
         )
         self.assertGreater(uo2().density(500), 0)
 
@@ -174,8 +176,8 @@ class MaterialFindingTests(unittest.TestCase):
         self.__validateMaterialNamespace()
 
         # show you can add a material namespace
-        originalOrder = _MATERIAL_NAMESPACE_ORDER.copy()
-        setMaterialNamespaceOrder(originalOrder + [newMats])
+        newMats = "armi.utils.tests.test_densityTools"
+        setMaterialNamespaceOrder(["armi.materials", newMats])
         self.__validateMaterialNamespace()
 
         # show that adding a name material namespace provides access to new materials
@@ -191,10 +193,10 @@ class MaterialFindingTests(unittest.TestCase):
         uo2 = materials.resolveMaterialClassByName(
             "UO2", namespaceOrder=["armi.materials", newMats]
         )
-        self.assertEqual(uo2().density(500), 0)
+        self.assertGreater(uo2().density(500), 0)
 
         # for safety, reset the material namespace list and order
-        setMaterialNamespaceOrder(originalOrder)
+        setMaterialNamespaceOrder(["armi.materials"])
 
 
 class Californium_TestCase(_Material_Test, unittest.TestCase):
