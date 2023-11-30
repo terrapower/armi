@@ -519,6 +519,10 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
     and copying certain user-defined files back to the working directory on error
     or completion. Given all these options and possible needs for information from
     global flux, this class provides a unified interface to everything.
+
+    .. impl:: Ensure the mesh in the reactor model is appropriate for neutronics solver execution.
+        :id: I_ARMI_FLUX_GEOM_TRANSFORM
+        :implements: R_ARMI_FLUX_GEOM_TRANSFORM
     """
 
     def __init__(self, options: GlobalFluxOptions, reactor):

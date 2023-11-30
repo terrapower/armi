@@ -201,6 +201,10 @@ class TestGrid(unittest.TestCase):
         """
         Test that locations are created on demand, and the multi-index locations are
         returned when necessary.
+
+        .. test:: Return the locations of grid items with multiplicity greater than one.
+            :id: T_ARMI_GRID_ELEM_LOC
+            :tests: R_ARMI_GRID_ELEM_LOC
         """
         grid = grids.HexGrid.fromPitch(1.0, numRings=0)
         self.assertNotIn((0, 0, 0), grid._locations)
@@ -210,6 +214,10 @@ class TestGrid(unittest.TestCase):
         multiLoc = grid[[(0, 0, 0), (1, 0, 0), (0, 1, 0)]]
         self.assertIsInstance(multiLoc, grids.MultiIndexLocation)
         self.assertIn((1, 0, 0), grid._locations)
+
+        i = multiLoc.indices
+        i = [ii.tolist() for ii in i]
+        self.assertEqual(i, [[0, 0, 0], [1, 0, 0], [0, 1, 0]])
 
     def test_ringPosFromIndicesIncorrect(self):
         """Test the getRingPos fails if there is no armiObect or parent."""

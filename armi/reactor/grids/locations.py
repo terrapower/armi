@@ -359,6 +359,10 @@ class MultiIndexLocation(IndexLocation):
     This class contains an implementation that allows a multi-index
     location to be used in the ARMI data model similar to a
     individual IndexLocation.
+
+    .. impl:: Store components with multiplicity greater than 1
+        :id: I_ARMI_GRID_MULT
+        :implements: R_ARMI_GRID_MULT
     """
 
     # MIL's cannot be hashed, so we need to scrape off the implementation from
@@ -427,6 +431,10 @@ class MultiIndexLocation(IndexLocation):
     def indices(self) -> List[numpy.ndarray]:
         """
         Return indices for all locations.
+
+        .. impl:: Return the location of all instances of grid components with multiplicity greater than 1.
+            :id: I_ARMI_GRID_ELEM_LOC
+            :implements: R_ARMI_GRID_ELEM_LOC
 
         Notes
         -----

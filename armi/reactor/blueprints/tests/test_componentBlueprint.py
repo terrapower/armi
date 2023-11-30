@@ -68,7 +68,7 @@ assemblies:
     def test_componentInitializationControlCustomIsotopics(self):
         nuclideFlags = (
             inspect.cleandoc(
-                r"""
+                """
             nuclide flags:
                 U234: {burn: true, xs: true}
                 U235: {burn: true, xs: true}
@@ -99,7 +99,7 @@ assemblies:
     def test_autoDepletable(self):
         nuclideFlags = (
             inspect.cleandoc(
-                r"""
+                """
             nuclide flags:
                 U234: {burn: true, xs: true}
                 U235: {burn: true, xs: true}
