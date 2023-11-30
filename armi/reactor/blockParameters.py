@@ -442,7 +442,7 @@ def getBlockParameterDefinitions():
         # FUEL COEFFICIENTS
         pb.defParam(
             "rxFuelDensityCoeffPerMass",
-            units=f"{units.REACTIVITY}/{units.KG})",
+            units=f"{units.REACTIVITY}/{units.KG}",
             description="Fuel Density Coefficient",
         )
 
@@ -460,20 +460,20 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "rxFuelTemperatureCoeffPerMass",
-            units=f"{units.REACTIVITY}/{units.KG})",
+            units=f"{units.REACTIVITY}/{units.KG}",
             description="Fuel Temperature Coefficient",
         )
 
         pb.defParam(
             "rxFuelVoidedTemperatureCoeffPerMass",
-            units=f"{units.REACTIVITY}/{units.KG})",
+            units=f"{units.REACTIVITY}/{units.KG}",
             description="Fuel Voided-Coolant Temperature Coefficient",
         )
 
         # CLAD COEFFICIENTS
         pb.defParam(
             "rxCladDensityCoeffPerMass",
-            units=f"{units.REACTIVITY}/{units.KG})",
+            units=f"{units.REACTIVITY}/{units.KG}",
             description="Clad Density Coefficient",
         )
 
@@ -485,14 +485,14 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "rxCladTemperatureCoeffPerMass",
-            units=f"{units.REACTIVITY}/{units.KG})",
+            units=f"{units.REACTIVITY}/{units.KG}",
             description="Clad Temperature Coefficient",
         )
 
         # STRUCTURE COEFFICIENTS
         pb.defParam(
             "rxStructureDensityCoeffPerMass",
-            units=f"{units.REACTIVITY}/{units.KG})",
+            units=f"{units.REACTIVITY}/{units.KG}",
             description="Structure Density Coefficient",
         )
 
@@ -504,20 +504,20 @@ def getBlockParameterDefinitions():
 
         pb.defParam(
             "rxStructureTemperatureCoeffPerMass",
-            units=f"{units.REACTIVITY}/{units.KG})",
+            units=f"{units.REACTIVITY}/{units.KG}",
             description="Structure Temperature Coefficient",
         )
 
         # COOLANT COEFFICIENTS
         pb.defParam(
             "rxCoolantDensityCoeffPerMass",
-            units=f"{units.REACTIVITY}/{units.KG})",
+            units=f"{units.REACTIVITY}/{units.KG}",
             description="Coolant Density Coefficient",
         )
 
         pb.defParam(
             "rxCoolantTemperatureCoeffPerMass",
-            units=f"{units.REACTIVITY}/{units.KG})",
+            units=f"{units.REACTIVITY}/{units.KG}",
             description="Coolant Temperature Coefficient",
         )
 
