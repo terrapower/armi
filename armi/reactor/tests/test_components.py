@@ -320,6 +320,28 @@ class TestUnshapedComponent(TestGeneralComponents):
             * self.component.getThermalExpansionFactor(self.component.temperatureInC),
         )
 
+    def test_component_less_than(self):
+        """Ensure that comparisons between components properly reference bounding circle outer diameter.
+
+        .. test:: Order components by their outermost diameter
+            :id: T_ARMI_COMP_ORDER
+            :tests: R_ARMI_COMP_ORDER
+        """
+        componentCls = UnshapedComponent
+        componentMaterial = "HT9"
+
+        smallDims = {"Tinput": 25.0, "Thot": 430.0, "area": 0.5 * math.pi}
+        sameDims = {"Tinput": 25.0, "Thot": 430.0, "area": 1.0 * math.pi}
+        bigDims = {"Tinput": 25.0, "Thot": 430.0, "area": 2.0 * math.pi}
+
+        smallComponent = componentCls("TestComponent", componentMaterial, **smallDims)
+        sameComponent = componentCls("TestComponent", componentMaterial, **sameDims)
+        bigComponent = componentCls("TestComponent", componentMaterial, **bigDims)
+
+        self.assertTrue(smallComponent < self.component)
+        self.assertFalse(bigComponent < self.component)
+        self.assertFalse(sameComponent < self.component)
+
     def test_fromComponent(self):
         circle = components.Circle("testCircle", "HT9", 25, 500, 1.0)
         unshaped = components.UnshapedComponent.fromComponent(circle)
