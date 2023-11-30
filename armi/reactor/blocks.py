@@ -1561,6 +1561,10 @@ class Block(composites.Composite):
     def setAxialExpTargetComp(self, targetComponent):
         """Sets the targetComponent for the axial expansion changer.
 
+        .. impl:: Set the target axial expansion components on a given block.
+            :id: I_ARMI_MANUAL_TARG_COMP
+            :implements: R_ARMI_MANUAL_TARG_COMP
+
         Parameter
         ---------
         targetComponent: :py:class:`Component <armi.reactor.components.component.Component>` object
