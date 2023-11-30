@@ -19,6 +19,18 @@ from armi.nucDirectory import elements, nuclideBases
 from armi.utils import densityTools
 
 
+# A test material that needs to be stored in a different namespace, for tests in:
+#     armi.materials.tests.test_materials.py
+def testFakeDensity(self, Tk=None, Tc=None):
+    return 0.0
+
+
+TestMaterialIgnoreFake = UO2
+TestMaterialIgnoreFake.density = testFakeDensity
+TestMaterialIgnoreFake.pseudoDensity = testFakeDensity
+TestMaterialIgnoreFake._name = "TestMaterialIgnoreFake"
+
+
 class TestDensityTools(unittest.TestCase):
     def test_expandElementalMassFracsToNuclides(self):
         """
@@ -50,7 +62,6 @@ class TestDensityTools(unittest.TestCase):
         self.assertAlmostEqual(sum(mass.values()), 1.0)
 
     def test_getChemicals(self):
-
         u235 = nuclideBases.byName["U235"]
         u238 = nuclideBases.byName["U238"]
         o16 = nuclideBases.byName["O16"]
