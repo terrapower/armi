@@ -13,6 +13,7 @@
 # limitations under the License.
 """MacroXSGenerationInterface tests."""
 import unittest
+from unittest.mock import patch
 
 from armi.physics.neutronics.macroXSGenerationInterface import (
     MacroXSGenerationInterface,
@@ -20,9 +21,18 @@ from armi.physics.neutronics.macroXSGenerationInterface import (
 from armi.reactor.tests.test_reactors import loadTestReactor
 from armi.settings import Settings
 
+from armi.nucDirectory import nuclideBases
+
 
 class TestMacroXSGenerationInterface(unittest.TestCase):
-    def test_macroXSGenerationInterface(self):
+    @patch("armi.physics.neutronics.macroXSGenerationInterface.MacroXSGenerator.invoke")
+    def test_macroXSGenerationInterfaceBasics(self, invokeHook):
+        """Test the macroscopic XS generating interfaces.
+
+        .. test::Build macroscopic cross sections for all blocks in the reactor.
+            :id: T_ARMI_MACRO_XS
+            :tests: R_ARMI_MACRO_XS
+        """
         cs = Settings()
         _o, r = loadTestReactor()
         i = MacroXSGenerationInterface(r, cs)
@@ -30,3 +40,15 @@ class TestMacroXSGenerationInterface(unittest.TestCase):
         self.assertIsNone(i.macrosLastBuiltAt)
         self.assertEqual(i.minimumNuclideDensity, 1e-15)
         self.assertEqual(i.name, "macroXsGen")
+
+        class MockLib:
+            numGroups = 1
+            numGroupsGamma = 1
+
+            def getNuclide(self, nucName, suffix):
+                try:
+                    return nuclideBases.byName.get(nucName, None)
+                except AttributeError:
+                    return None
+
+        i.buildMacros(MockLib(), buildScatterMatrix=False)

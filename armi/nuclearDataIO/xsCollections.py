@@ -415,7 +415,6 @@ class MacroscopicCrossSectionCreator:
         -------
         macros : xsCollection.XSCollection
             A new XSCollection full of macroscopic cross sections
-
         """
         runLog.debug("Building macroscopic cross sections for {0}".format(block))
         if nucNames is None:
