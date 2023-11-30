@@ -61,6 +61,8 @@ class TestEnergyGroups(unittest.TestCase):
             :id: T_ARMI_EG_FE
             :tests: R_ARMI_EG_FE
         """
-        group, frac = energyGroups.getFastFluxGroupCutoff([100002, 100001, 100000, 99999, 0])
+        group, frac = energyGroups.getFastFluxGroupCutoff(
+            [100002, 100001, 100000, 99999, 0]
+        )
 
         self.assertListEqual([group, frac], [2, 0])
