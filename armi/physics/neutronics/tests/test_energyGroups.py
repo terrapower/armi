@@ -53,3 +53,14 @@ class TestEnergyGroups(unittest.TestCase):
                     energyGroups.getGroupStructure(groupStructureType)
                 ),
             )
+
+    def test_getFastFluxGroupCutoff(self):
+        """Test ability to get the ARMI energy group index contained in energy threshold.
+
+        .. test:: Return the energy group index which contains a given energy threshold.
+            :id: T_ARMI_EG_FE
+            :tests: R_ARMI_EG_FE
+        """
+        group, frac = energyGroups.getFastFluxGroupCutoff([100002, 100001, 100000, 99999, 0])
+
+        self.assertListEqual([group, frac], [2, 0])
