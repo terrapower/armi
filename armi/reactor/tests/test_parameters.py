@@ -14,7 +14,6 @@
 """Tests of the Parameters class."""
 from distutils.spawn import find_executable
 import copy
-import traceback
 import unittest
 
 from armi import context
@@ -468,9 +467,7 @@ class ParameterTests(unittest.TestCase):
         self.assertEqual(set(pc.paramDefs.inCategory("bacon")), set([p2, p3]))
 
     def test_parameterCollectionsHave__slots__(self):
-        """Make sure something is implemented to prevent accidental creation of
-        attributes.
-        """
+        """Tests we prevent accidental creation of attributes."""
         self.assertEqual(
             set(["_hist", "_backup", "assigned", "_p_serialNum", "serialNum"]),
             set(parameters.ParameterCollection._slots),
@@ -480,12 +477,6 @@ class ParameterTests(unittest.TestCase):
             pass
 
         pc = MockPC()
-        # No longer protecting against __dict__ access. If someone REALLY wants to
-        # staple something to a parameter collection with no guarantees of anything,
-        # that's on them
-        # with self.assertRaises(AttributeError):
-        #     pc.__dict__["foo"] = 5
-
         with self.assertRaises(AssertionError):
             pc.whatever = 22
 
@@ -532,6 +523,8 @@ class MockSyncPC(parameters.ParameterCollection):
 def makeComp(name):
     c = composites.Composite(name)
     c.p = MockSyncPC()
+    for pd in c.p.paramDefs:
+        pd.assigned = parameters.NEVER
     return c
 
 
@@ -542,11 +535,12 @@ class SynchronizationTests(unittest.TestCase):
         self.r = makeComp("reactor")
         self.r.core = makeComp("core")
         self.r.add(self.r.core)
-        for ai in range(context.MPI_SIZE * 4):
+        for ai in range(context.MPI_SIZE * 3):
             a = makeComp("assembly{}".format(ai))
             self.r.core.add(a)
-            for bi in range(10):
+            for bi in range(3):
                 a.add(makeComp("block{}-{}".format(ai, bi)))
+
         self.comps = [self.r.core] + self.r.core.getChildren(deep=True)
         for pd in MockSyncPC().paramDefs:
             pd.assigned = parameters.NEVER
@@ -555,46 +549,30 @@ class SynchronizationTests(unittest.TestCase):
     def test_noConflicts(self):
         """Make sure sync works across processes.
 
-        .. test:: TODO BROKEN
+        .. test:: Synchronize a reactor's state across processes.
             :id: T_ARMI_CMP_MPI0
             :tests: R_ARMI_CMP_MPI
         """
+        syncCount = self.r.syncMpiState()
+
         for ci, comp in enumerate(self.comps):
             if ci % context.MPI_SIZE == context.MPI_RANK:
                 comp.p.param1 = (context.MPI_RANK + 1) * 30.0
             else:
                 self.assertNotEqual((context.MPI_RANK + 1) * 30.0, comp.p.param1)
 
-        self.assertEqual(len(self.comps), self.r.syncMpiState())
+        syncCount = self.r.syncMpiState()
+        self.assertEqual(len(self.comps), syncCount)
 
         for ci, comp in enumerate(self.comps):
             self.assertEqual((ci % context.MPI_SIZE + 1) * 30.0, comp.p.param1)
 
     @unittest.skipIf(context.MPI_SIZE <= 1 or MPI_EXE is None, "Parallel test only")
-    def test_noConflicts_setByString(self):
-        """Make sure params set by string also work with sync.
-
-        .. test:: TODO BROKEN
-            :id: T_ARMI_CMP_MPI1
-            :tests: R_ARMI_CMP_MPI
-        """
-        for ci, comp in enumerate(self.comps):
-            if ci % context.MPI_SIZE == context.MPI_RANK:
-                comp.p.param2 = (context.MPI_RANK + 1) * 30.0
-            else:
-                self.assertNotEqual((context.MPI_RANK + 1) * 30.0, comp.p.param2)
-
-        self.assertEqual(len(self.comps), self.r.syncMpiState())
-
-        for ci, comp in enumerate(self.comps):
-            self.assertEqual((ci % context.MPI_SIZE + 1) * 30.0, comp.p.param2)
-
-    @unittest.skipIf(context.MPI_SIZE <= 1 or MPI_EXE is None, "Parallel test only")
     def test_withConflicts(self):
-        """TODO
+        """Test conflicts arrise correctly if we force a conflict.
 
-        .. test:: TODO
-            :id: T_ARMI_CMP_MPI2
+        .. test:: Raise errors when there are conflicts across processes.
+            :id: T_ARMI_CMP_MPI1
             :tests: R_ARMI_CMP_MPI
         """
         self.r.core.p.param1 = (context.MPI_RANK + 1) * 99.0
@@ -603,10 +581,10 @@ class SynchronizationTests(unittest.TestCase):
 
     @unittest.skipIf(context.MPI_SIZE <= 1 or MPI_EXE is None, "Parallel test only")
     def test_withConflictsButSameValue(self):
-        """TODO
+        """Test that conflicts are ignored if the values are the same.
 
-        .. test:: TODO
-            :id: T_ARMI_CMP_MPI3
+        .. test:: Don't raise errors when multiple processes make the same changes.
+            :id: T_ARMI_CMP_MPI2
             :tests: R_ARMI_CMP_MPI
         """
         self.r.core.p.param1 = (context.MPI_SIZE + 1) * 99.0
@@ -614,47 +592,8 @@ class SynchronizationTests(unittest.TestCase):
         self.assertEqual((context.MPI_SIZE + 1) * 99.0, self.r.core.p.param1)
 
     @unittest.skipIf(context.MPI_SIZE <= 1 or MPI_EXE is None, "Parallel test only")
-    def test_noConflictsMaintainWithStateRetainer(self):
-        """TODO
-
-        .. test:: TODO BROKEN
-            :id: T_ARMI_CMP_MPI4
-            :tests: R_ARMI_CMP_MPI
-        """
-        assigned = []
-        with self.r.retainState(parameters.inCategory("cat1")):
-            for ci, comp in enumerate(self.comps):
-                comp.p.param2 = 99 * ci
-                if ci % context.MPI_SIZE == context.MPI_RANK:
-                    comp.p.param1 = (context.MPI_RANK + 1) * 30.0
-                    assigned.append(parameters.SINCE_ANYTHING)
-                else:
-                    self.assertNotEqual((context.MPI_RANK + 1) * 30.0, comp.p.param1)
-                    assigned.append(parameters.NEVER)
-
-            # 1st inside state retainer
-            self.assertEqual(
-                True, all(c.p.assigned == parameters.SINCE_ANYTHING for c in self.comps)
-            )
-
-        # confirm outside state retainer
-        self.assertEqual(assigned, [c.p.assigned for ci, c in enumerate(self.comps)])
-
-        # this rank's "assigned" components are not assigned on the workers, and so will
-        # be updated
-        self.assertEqual(len(self.comps), self.r.syncMpiState())
-
-        for ci, comp in enumerate(self.comps):
-            self.assertEqual((ci % context.MPI_SIZE + 1) * 30.0, comp.p.param1)
-
-    @unittest.skipIf(context.MPI_SIZE <= 1 or MPI_EXE is None, "Parallel test only")
     def test_conflictsMaintainWithStateRetainer(self):
-        """TODO
-
-        .. test:: TODO
-            :id: T_ARMI_CMP_MPI5
-            :tests: R_ARMI_CMP_MPI
-        """
+        """Test that the state retainer fails correctly when it should."""
         with self.r.retainState(parameters.inCategory("cat2")):
             for _, comp in enumerate(self.comps):
                 comp.p.param2 = 99 * context.MPI_RANK

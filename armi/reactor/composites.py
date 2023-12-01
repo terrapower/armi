@@ -2922,9 +2922,8 @@ class Composite(ArmiObject):
             runLog.error("\n".join(msg))
             raise
 
-        errors = collections.defaultdict(
-            list
-        )  # key is (comp, paramName) value is conflicting nodes
+        # key is (comp, paramName) value is conflicting nodes
+        errors = collections.defaultdict(list)
         syncCount = 0
         compsPerNode = {len(nodeSyncData) for nodeSyncData in allSyncData}
 
