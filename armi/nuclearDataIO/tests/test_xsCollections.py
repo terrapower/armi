@@ -78,6 +78,12 @@ class TestXsCollections(unittest.TestCase):
             self.assertTrue(os.path.exists(fName))
 
     def test_createMacrosFromMicros(self):
+        """Test calculating macroscopic cross sections from microscopic cross sections.
+
+        .. test:: Compute macroscopic cross sections from microscopic cross sections and number densities.
+            :id: T_ARMI_NUCDATA_MACRO
+            :tests: R_ARMI_NUCDATA_MACRO
+        """
         self.assertEqual(self.mc.minimumNuclideDensity, 1e-13)
         self.mc.createMacrosFromMicros(self.microLib, self.block)
         totalMacroFissionXs = 0.0
