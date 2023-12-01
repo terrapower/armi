@@ -33,10 +33,14 @@ class TestIsotxs(unittest.TestCase):
         cls.lib = isotxs.readBinary(ISOAA_PATH)
 
     def test_writeBinary(self):
-        """Test that when you write a binary ISOTXS file.
+        """Test reading in an ISOTXS file, and then writing it back out again.
+
+        Now, the library here can't guarantee the output will be the same as the
+        input. But we can guarantee the  written file is still valid, by reading
+        it again.
 
         .. test:: Write ISOTSX binary files.
-            :id: T_ARMI_NUCDATA_ISOTXSo
+            :id: T_ARMI_NUCDATA_ISOTXS0
             :tests: R_ARMI_NUCDATA_ISOTXS
         """
         with TemporaryDirectoryChanger():
