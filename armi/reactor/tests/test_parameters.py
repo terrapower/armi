@@ -221,6 +221,13 @@ class ParameterTests(unittest.TestCase):
         self.assertEqual("encapsulated", mock.noSetter)
 
     def test_setter(self):
+        """Test the Parameter setter() tooling, that signifies if a Parameter has been updated.
+
+        .. test:: Tooling that allows a Parameter to signal it needs to be updated across processes.
+            :id: T_ARMI_PARAM_PARALLEL0
+            :tests: R_ARMI_PARAM_PARALLEL
+        """
+
         class Mock(parameters.ParameterCollection):
             pDefs = parameters.ParameterDefinitionCollection()
             with pDefs.createBuilder() as pb:
@@ -249,6 +256,7 @@ class ParameterTests(unittest.TestCase):
             print(mock.n)
         with self.assertRaises(parameters.ParameterError):
             print(mock.nPlus1)
+
         mock.n = 15
         self.assertEqual(15, mock.n)
         self.assertEqual(16, mock.nPlus1)
@@ -259,6 +267,13 @@ class ParameterTests(unittest.TestCase):
         self.assertTrue(all(pd.assigned for pd in mock.paramDefs))
 
     def test_setterGetterBasics(self):
+        """Test the Parameter setter/getter tooling, through the lifecycle of a Parameter being updated.
+
+        .. test:: Tooling that allows a Parameter to signal it needs to be updated across processes.
+            :id: T_ARMI_PARAM_PARALLEL1
+            :tests: R_ARMI_PARAM_PARALLEL
+        """
+
         class Mock(parameters.ParameterCollection):
             pDefs = parameters.ParameterDefinitionCollection()
             with pDefs.createBuilder() as pb:
