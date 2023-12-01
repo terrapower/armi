@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests the workings of the library wrappers."""
+import filecmp
 import unittest
 
 from armi import nuclearDataIO
@@ -19,6 +20,7 @@ from armi.nucDirectory import nuclideBases
 from armi.nuclearDataIO import xsLibraries
 from armi.nuclearDataIO.cccc import isotxs
 from armi.tests import ISOAA_PATH
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
 class TestIsotxs(unittest.TestCase):
@@ -29,6 +31,29 @@ class TestIsotxs(unittest.TestCase):
         # load a library that is in the ARMI tree. This should
         # be a small library with LFPs, Actinides, structure, and coolant
         cls.lib = isotxs.readBinary(ISOAA_PATH)
+
+    def test_writeBinary(self):
+        """Test that when you write a binary ISOTXS file.
+
+        .. test:: Write ISOTSX binary files.
+            :id: T_ARMI_NUCDATA_ISOTXSo
+            :tests: R_ARMI_NUCDATA_ISOTXS
+        """
+        with TemporaryDirectoryChanger():
+            origLib = isotxs.readBinary(ISOAA_PATH)
+
+            fname = self._testMethodName + "temp-aa.isotxs"
+            isotxs.writeBinary(origLib, fname)
+            lib = isotxs.readBinary(fname)
+
+            # validate the written file is still valid
+            nucs = lib.nuclides
+            self.assertTrue(nucs)
+            self.assertIn("AA", lib.xsIDs)
+            nuc = lib["U235AA"]
+            self.assertIsNotNone(nuc)
+            with self.assertRaises(KeyError):
+                lib.getNuclide("nonexistent", "zz")
 
     def test_isotxsGeneralData(self):
         nucs = self.lib.nuclides
@@ -164,6 +189,12 @@ class TestIsotxs(unittest.TestCase):
 
 class Isotxs_merge_Tests(unittest.TestCase):
     def test_mergeMccV2FilesRemovesTheFileWideChi(self):
+        """Test merging ISOTXS files.
+
+        .. test:: Read ISOTXS files.
+            :id: T_ARMI_NUCDATA_ISOTXS1
+            :tests: R_ARMI_NUCDATA_ISOTXS
+        """
         isoaa = isotxs.readBinary(ISOAA_PATH)
         self.assertAlmostEqual(1.0, sum(isoaa.isotxsMetadata["chi"]), 5)
         self.assertAlmostEqual(1, isoaa.isotxsMetadata["fileWideChiFlag"])
