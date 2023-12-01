@@ -141,6 +141,19 @@ class TestGlobalFluxOptions(unittest.TestCase):
 
 
 class TestGlobalFluxInterface(unittest.TestCase):
+    def test_computeDpaRate(self):
+        """
+        Compute DPA and DPA rates from multi-group neutron flux and cross sections.
+
+        .. test:: Compute DPA and DPA rates.
+            :id: T_ARMI_FLUX_DPA
+            :tests: R_ARMI_FLUX_DPA
+        """
+        xs = [1, 2, 3]
+        flx = [0.5, 0.75, 2]
+        res = globalFluxInterface.computeDpaRate(flx, xs)
+        self.assertEqual(res, 10**-24 * (0.5 + 1.5 + 6))
+
     def test_interaction(self):
         """
         Ensure the basic interaction hooks work.
@@ -167,8 +180,7 @@ class TestGlobalFluxInterface(unittest.TestCase):
         self.assertIn("detailedDpa", params)
 
     def test_checkEnergyBalance(self):
-        """
-        Test energy balance check.
+        """Test energy balance check.
 
         .. test:: Block-wise power is consistent with reactor data model power.
             :id: T_ARMI_FLUX_CHECK_POWER
@@ -177,7 +189,7 @@ class TestGlobalFluxInterface(unittest.TestCase):
         cs = settings.Settings()
         _o, r = test_reactors.loadTestReactor()
         gfi = MockGlobalFluxInterface(r, cs)
-        gfi._checkEnergyBalance()
+        gfi.checkEnergyBalance()
 
 
 class TestGlobalFluxInterfaceWithExecuters(unittest.TestCase):
@@ -193,6 +205,12 @@ class TestGlobalFluxInterfaceWithExecuters(unittest.TestCase):
         self.gfi = MockGlobalFluxWithExecuters(self.r, self.cs)
 
     def test_executerInteraction(self):
+        """Run the global flux interface and executer though one time now.
+
+        .. test:: Run the global flux interface to prove the mesh in the reactor is suffience for the neutronics solver.
+            :id: T_ARMI_FLUX_GEOM_TRANSFORM1
+            :tests: R_ARMI_FLUX_GEOM_TRANSFORM
+        """
         gfi, r = self.gfi, self.r
         gfi.interactBOC()
         gfi.interactEveryNode(0, 0)
@@ -250,6 +268,15 @@ class TestGlobalFluxInterfaceWithExecutersNonUniform(unittest.TestCase):
         cls.gfi = MockGlobalFluxWithExecutersNonUniform(cls.r, cs)
 
     def test_executerInteractionNonUniformAssems(self):
+        """Run the global flux interface with non-uniform assemblies.
+
+        This will serve as a broad end-to-end test of the interface, and also
+        stress test the mesh issues with non-uniform assemblies.
+
+        .. test:: Run the global flux interface to prove the mesh in the reactor is suffience for the neutronics solver.
+            :id: T_ARMI_FLUX_GEOM_TRANSFORM0
+            :tests: R_ARMI_FLUX_GEOM_TRANSFORM
+        """
         gfi, r = self.gfi, self.r
         gfi.interactBOC()
         gfi.interactEveryNode(0, 0)

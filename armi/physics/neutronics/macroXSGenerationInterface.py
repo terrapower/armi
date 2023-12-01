@@ -144,6 +144,10 @@ class MacroXSGenerationInterface(interfaces.Interface):
         Builds G-vectors of the basic XS ('nGamma','fission','nalph','np','n2n','nd','nt')
         Builds GxG matrices for scatter matrices
 
+        .. impl:: Build macroscopic cross sections for blocks.
+            :id: I_ARMI_MACRO_XS
+            :implements: R_ARMI_MACRO_XS
+
         Parameters
         ----------
         lib : library object , optional

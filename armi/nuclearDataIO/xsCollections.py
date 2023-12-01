@@ -381,6 +381,7 @@ class MacroscopicCrossSectionCreator:
     def createMacrosOnBlocklist(
         self, microLibrary, blockList, nucNames=None, libType="micros"
     ):
+        """Create macroscopic cross sections for a list of blocks."""
         for block in blockList:
             block.macros = self.createMacrosFromMicros(
                 microLibrary, block, nucNames, libType=libType
@@ -414,7 +415,6 @@ class MacroscopicCrossSectionCreator:
         -------
         macros : xsCollection.XSCollection
             A new XSCollection full of macroscopic cross sections
-
         """
         runLog.debug("Building macroscopic cross sections for {0}".format(block))
         if nucNames is None:
@@ -787,6 +787,10 @@ def computeMacroscopicGroupConstants(
 ):
     """
     Compute any macroscopic group constants given number densities and a microscopic library.
+
+    .. impl:: Compute macroscopic cross sections from microscopic cross sections and number densities.
+        :id: I_ARMI_NUCDATA_MACRO
+        :implements: R_ARMI_NUCDATA_MACRO
 
     Parameters
     ----------

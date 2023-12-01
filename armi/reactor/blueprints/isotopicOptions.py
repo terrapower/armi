@@ -61,6 +61,10 @@ class NuclideFlag(yamlize.Object):
     physics option. However, restarting from that case with different
     cross section needs is challenging.
 
+    .. impl:: The blueprint object that represents a nuclide flag.
+        :id: I_ARMI_BP_NUC_FLAGS1
+        :implements: R_ARMI_BP_NUC_FLAGS
+
     Attributes
     ----------
     nuclideName : str
@@ -146,6 +150,10 @@ class CustomIsotopic(yamlize.Map):
     """
     User specified, custom isotopics input defined by a name (such as MOX), and key/pairs of nuclide names and numeric
     values consistent with the ``input format``.
+
+    .. impl:: Certain material modifications will be applied using this code.
+        :id: I_ARMI_MAT_USER_INPUT2
+        :implements: R_ARMI_MAT_USER_INPUT
     """
 
     key_type = yamlize.Typed(str)

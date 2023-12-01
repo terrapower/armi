@@ -119,8 +119,13 @@ class GlobalFluxInterface(interfaces.Interface):
                 * units.ABS_REACTIVITY_TO_PCM
             )
 
-    def _checkEnergyBalance(self):
-        """Check that there is energy balance between the power generated and the specified power is the system."""
+    def checkEnergyBalance(self):
+        """Check that there is energy balance between the power generated and the specified power.
+
+        .. impl:: Validate the energy generate matches user specifications.
+            :id: I_ARMI_FLUX_CHECK_POWER
+            :implements: R_ARMI_FLUX_CHECK_POWER
+        """
         powerGenerated = (
             self.r.core.calcTotalParam(
                 "power", calcBasedOnFullObj=False, generationNum=2
@@ -514,6 +519,10 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
     and copying certain user-defined files back to the working directory on error
     or completion. Given all these options and possible needs for information from
     global flux, this class provides a unified interface to everything.
+
+    .. impl:: Ensure the mesh in the reactor model is appropriate for neutronics solver execution.
+        :id: I_ARMI_FLUX_GEOM_TRANSFORM
+        :implements: R_ARMI_FLUX_GEOM_TRANSFORM
     """
 
     def __init__(self, options: GlobalFluxOptions, reactor):
@@ -1173,6 +1182,10 @@ class DoseResultsMapper(GlobalFluxResultMapper):
 def computeDpaRate(mgFlux, dpaXs):
     r"""
     Compute the DPA rate incurred by exposure of a certain flux spectrum.
+
+    .. impl:: Compute DPA and DPA rates.
+        :id: I_ARMI_FLUX_DPA
+        :implements: R_ARMI_FLUX_DPA
 
     Parameters
     ----------

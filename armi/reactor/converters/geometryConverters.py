@@ -1194,11 +1194,15 @@ class HexToRZThetaConverter(GeometryConverter):
 
 
 class HexToRZConverter(HexToRZThetaConverter):
-    r"""
+    """
     Create a new reactor with R-Z coordinates from the Hexagonal-Z reactor.
 
-    This is a subclass of the HexToRZThetaConverter. See the HexToRZThetaConverter for explanation and setup of
-    the converterSettings.
+    This is a subclass of the HexToRZThetaConverter. See the HexToRZThetaConverter for
+    explanation and setup of the converterSettings.
+
+    .. impl:: Tool to convert a hex core to an RZTheta core.
+        :id: I_ARMI_CONV_3DHEX_TO_2DRZ
+        :implements: R_ARMI_CONV_3DHEX_TO_2DRZ
     """
 
     _GEOMETRY_TYPE = geometry.GeomType.RZ
@@ -1242,6 +1246,10 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
     def convert(self, r):
         """
         Run the conversion.
+
+        .. impl:: Convert a one-third-core geometry to a full-core geometry.
+            :id: I_ARMI_THIRD_TO_FULL_CORE0
+            :implements: R_ARMI_THIRD_TO_FULL_CORE
 
         Parameters
         ----------
@@ -1329,7 +1337,12 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
         )
 
     def restorePreviousGeometry(self, r=None):
-        """Undo the changes made by convert by going back to 1/3 core."""
+        """Undo the changes made by convert by going back to 1/3 core.
+
+        .. impl:: Restore a one-third-core geometry to a full-core geometry.
+            :id: I_ARMI_THIRD_TO_FULL_CORE1
+            :implements: R_ARMI_THIRD_TO_FULL_CORE
+        """
         r = r or self._sourceReactor
 
         # remove the assemblies that were added when the conversion happened.

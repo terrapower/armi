@@ -292,9 +292,9 @@ class StructuredGrid(Grid):
     def getCoordinates(self, indices, nativeCoords=False) -> numpy.ndarray:
         """Return the coordinates of the center of the mesh cell at the given indices in cm.
 
-        .. test:: Get the coordinates from a location in a grid.
+        .. impl:: Get the coordinates from a location in a grid.
             :id: I_ARMI_GRID_GLOBAL_POS
-            :tests: R_ARMI_GRID_GLOBAL_POS
+            :implements: R_ARMI_GRID_GLOBAL_POS
         """
         indices = numpy.array(indices)
         return self._evaluateMesh(

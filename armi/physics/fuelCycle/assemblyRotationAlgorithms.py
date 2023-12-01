@@ -77,6 +77,10 @@ def simpleAssemblyRotation(fh):
     """
     Rotate all pin-detail assemblies that were just shuffled by 60 degrees.
 
+    .. impl:: An assembly can be rotated about its z-axis.
+        :id: I_ARMI_SHUFFLE_ROTATE
+        :implements: R_ARMI_SHUFFLE_ROTATE
+
     Parameters
     ----------
     fh : FuelHandler object

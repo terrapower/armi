@@ -29,6 +29,12 @@ from armi.tests import ISOAA_PATH
 
 class TestCrossSectionTable(unittest.TestCase):
     def test_makeTable(self):
+        """Test making a cross section table.
+
+        .. test:: Generate cross section table.
+            :id: T_ARMI_DEPL_TABLES
+            :tests: R_ARMI_DEPL_TABLES
+        """
         obj = loadTestBlock()
         obj.p.mgFlux = range(33)
         core = obj.getAncestorWithFlags(Flags.CORE)
@@ -47,6 +53,13 @@ class TestCrossSectionTable(unittest.TestCase):
         self.assertIn("mcnpId", xSecTable[-1])
 
     def test_isotopicDepletionInterface(self):
+        """
+        Test isotopic depletion interface.
+
+        .. test:: ARMI provides a base class to deplete isotopes.
+            :id: T_ARMI_DEPL_ABC
+            :tests: R_ARMI_DEPL_ABC
+        """
         _o, r = loadTestReactor()
         cs = Settings()
 

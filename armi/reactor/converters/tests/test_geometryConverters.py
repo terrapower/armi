@@ -40,7 +40,7 @@ class TestGeometryConverters(unittest.TestCase):
         self.cs = self.o.cs
 
     def test_addRing(self):
-        r"""Tests that the addRing method adds the correct number of fuel assemblies to the test reactor."""
+        """Tests that the addRing method adds the correct number of fuel assemblies to the test reactor."""
         converter = geometryConverters.FuelAssemNumModifier(self.cs)
         converter.numFuelAssems = 7
         converter.ringsToAdd = 1 * ["radial shield"]
@@ -65,7 +65,7 @@ class TestGeometryConverters(unittest.TestCase):
         )  # should wind up with 11 reflector assemblies per 1/3rd core
 
     def test_setNumberOfFuelAssems(self):
-        r"""Tests that the setNumberOfFuelAssems method properly changes the number of fuel assemblies."""
+        """Tests that the setNumberOfFuelAssems method properly changes the number of fuel assemblies."""
         # tests ability to add fuel assemblies
         converter = geometryConverters.FuelAssemNumModifier(self.cs)
         converter.numFuelAssems = 60
@@ -142,6 +142,12 @@ class TestHexToRZConverter(unittest.TestCase):
         del self.r
 
     def test_convert(self):
+        """Test the HexToRZConverter.
+
+        .. test:: Convert a 3D hex reactor core to an RZ-Theta core.
+            :id: T_ARMI_CONV_3DHEX_TO_2DRZ
+            :tests: R_ARMI_CONV_3DHEX_TO_2DRZ
+        """
         # make the reactor smaller, because of a test parallelization edge case
         for ring in [9, 8, 7, 6, 5, 4, 3]:
             self.r.core.removeAssembliesInRing(ring, self.o.cs)
@@ -332,7 +338,12 @@ class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
         del self.r
 
     def test_growToFullCoreFromThirdCore(self):
-        """Test that a hex core can be converted from a third core to a full core geometry."""
+        """Test that a hex core can be converted from a third core to a full core geometry.
+
+        .. test:: Convert a third-core to a full-core geometry and then restore it.
+            :id: T_ARMI_THIRD_TO_FULL_CORE0
+            :tests: R_ARMI_THIRD_TO_FULL_CORE
+        """
         # Check the initialization of the third core model
         self.assertFalse(self.r.core.isFullCore)
         self.assertEqual(

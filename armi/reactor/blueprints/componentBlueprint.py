@@ -162,7 +162,12 @@ class ComponentBlueprint(yamlize.Object):
     area = yamlize.Attribute(type=float, default=None)
 
     def construct(self, blueprint, matMods):
-        """Construct a component or group."""
+        """Construct a component or group.
+
+        .. impl:: User-defined on material alterations are applied here.
+            :id: I_ARMI_MAT_USER_INPUT1
+            :implements: R_ARMI_MAT_USER_INPUT
+        """
         runLog.debug("Constructing component {}".format(self.name))
         kwargs = self._conformKwargs(blueprint, matMods)
         shape = self.shape.lower().strip()
@@ -290,6 +295,10 @@ def expandElementals(mat, blueprint):
 def insertDepletableNuclideKeys(c, blueprint):
     """
     Auto update number density keys on all DEPLETABLE components.
+
+    .. impl:: Insert any depletable blueprint flags onto this component.
+        :id: I_ARMI_BP_NUC_FLAGS0
+        :implements: R_ARMI_BP_NUC_FLAGS
 
     Notes
     -----

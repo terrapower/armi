@@ -49,6 +49,12 @@ class TestFuelHandlerMgmtTools(FuelHandlerTestHelper):
         self.assertNotEqual(b.getRotationNum(), rotNum)
 
     def test_simpleAssemblyRotation(self):
+        """Test rotating an assembly.
+
+        .. test:: An assembly can be rotated about its z-axis.
+            :id: T_ARMI_SHUFFLE_ROTATE
+            :tests: R_ARMI_SHUFFLE_ROTATE
+        """
         fh = fuelHandlers.FuelHandler(self.o)
         newSettings = {CONF_ASSEM_ROTATION_STATIONARY: True}
         self.o.cs = self.o.cs.modified(newSettings=newSettings)

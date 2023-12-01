@@ -75,6 +75,10 @@ class MaterialModifications(yamlize.Map):
     If the user wishes to specify material modifications specific to a component
     within the block, they should use the `by component` attribute, specifying
     the keys/values underneath the name of a specific component in the block.
+
+    .. impl:: User-impact on material definitions.
+        :id: I_ARMI_MAT_USER_INPUT0
+        :implements: R_ARMI_MAT_USER_INPUT
     """
 
     key_type = yamlize.Typed(str)

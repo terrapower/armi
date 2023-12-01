@@ -714,6 +714,14 @@ class FuelHandler:
         r"""
         Moves a whole assembly from one place to another.
 
+        .. impl:: Assemblies can be moved from one place to another.
+            :id: I_ARMI_SHUFFLE_MOVE
+            :implements: R_ARMI_SHUFFLE_MOVE
+
+        .. impl:: User-specified blocks can be left in place and not moved.
+            :id: I_ARMI_SHUFFLE_STATIONARY0
+            :implements: R_ARMI_SHUFFLE_STATIONARY
+
         Parameters
         ----------
         a1 : Assembly
@@ -802,6 +810,10 @@ class FuelHandler:
     def dischargeSwap(self, incoming, outgoing):
         r"""
         Removes one assembly from the core and replace it with another assembly.
+
+        .. impl:: User-specified blocks can be left in place and not moved.
+            :id: I_ARMI_SHUFFLE_STATIONARY1
+            :implements: R_ARMI_SHUFFLE_STATIONARY
 
         See Also
         --------

@@ -180,7 +180,6 @@ class Assembly(composites.Composite):
         .. impl:: Assemblies are made up of type Block.
             :id: I_ARMI_ASSEM_BLOCKS
             :implements: R_ARMI_ASSEM_BLOCKS
-
         """
         composites.Composite.add(self, obj)
         obj.spatialLocator = self.spatialGrid[0, 0, len(self) - 1]
@@ -227,7 +226,6 @@ class Assembly(composites.Composite):
         .. impl:: Assembly location is retrievable.
             :id: I_ARMI_ASSEM_POSI0
             :implements: R_ARMI_ASSEM_POSI
-
         """
         # just use ring and position, not axial (which is 0)
         if not self.parent:
@@ -1229,6 +1227,13 @@ class Assembly(composites.Composite):
 
 
 class HexAssembly(Assembly):
+    """Placeholder, so users can explicitly define a hex-based assembly.
+
+    .. impl:: Assembly of hex blocks.
+        :id: I_ARMI_ASSEM_HEX
+        :implements: R_ARMI_ASSEM_HEX
+    """
+
     pass
 
 
