@@ -18,16 +18,11 @@ from typing import Optional
 
 import yamlize
 
-from armi import getPluginManagerOrFail
 from armi import interfaces
 from armi import plugins
 from armi import settings
 from armi.physics.neutronics import NeutronicsPlugin
-from armi.reactor import parameters
-from armi.reactor.blocks import Block, HexBlock
-from armi.reactor.parameters import ParamLocation
-from armi.reactor.parameters.parameterCollections import collectPluginParameters
-from armi.utils import units
+from armi.reactor.blocks import Block
 
 
 class TestPluginBasics(unittest.TestCase):

@@ -13,20 +13,20 @@
 # limitations under the License.
 """MacroXSGenerationInterface tests."""
 import unittest
-from unittest.mock import patch
+from collections import defaultdict
 
+from armi.nuclearDataIO import isotxs
+from armi.nuclearDataIO.xsCollections import XSCollection
 from armi.physics.neutronics.macroXSGenerationInterface import (
     MacroXSGenerationInterface,
 )
-from armi.reactor.tests.test_reactors import loadTestReactor
+from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
 from armi.settings import Settings
-
-from armi.nucDirectory import nuclideBases
+from armi.tests import ISOAA_PATH
 
 
 class TestMacroXSGenerationInterface(unittest.TestCase):
-    @patch("armi.physics.neutronics.macroXSGenerationInterface.MacroXSGenerator.invoke")
-    def test_macroXSGenerationInterfaceBasics(self, invokeHook):
+    def test_macroXSGenerationInterfaceBasics(self):
         """Test the macroscopic XS generating interfaces.
 
         .. test::Build macroscopic cross sections for all blocks in the reactor.
@@ -35,20 +35,29 @@ class TestMacroXSGenerationInterface(unittest.TestCase):
         """
         cs = Settings()
         _o, r = loadTestReactor()
-        i = MacroXSGenerationInterface(r, cs)
+        reduceTestReactorRings(r, cs, 2)
 
-        self.assertIsNone(i.macrosLastBuiltAt)
+        # Before: verify there are no macro XS in the reactor
+        for b in r.core.getBlocks():
+            self.assertIsNone(b.macros)
+
+        # create the macro XS interface
+        i = MacroXSGenerationInterface(r, cs)
         self.assertEqual(i.minimumNuclideDensity, 1e-15)
         self.assertEqual(i.name, "macroXsGen")
 
-        class MockLib:
-            numGroups = 1
-            numGroupsGamma = 1
+        # Moock up a nuclide library
+        mockLib = isotxs.readBinary(ISOAA_PATH)
+        mockLib.__dict__["_nuclides"] = defaultdict(
+            lambda: mockLib.__dict__["_nuclides"]["CAA"], mockLib.__dict__["_nuclides"]
+        )
 
-            def getNuclide(self, nucName, suffix):
-                try:
-                    return nuclideBases.byName.get(nucName, None)
-                except AttributeError:
-                    return None
+        # This is the meat of it: build the macro XS
+        self.assertIsNone(i.macrosLastBuiltAt)
+        i.buildMacros(mockLib, buildScatterMatrix=False)
+        self.assertEqual(i.macrosLastBuiltAt, 0)
 
-        i.buildMacros(MockLib(), buildScatterMatrix=False)
+        # After: verify there are no macro XS in the reactor
+        for b in r.core.getBlocks():
+            self.assertIsNotNone(b.macros)
+            self.assertTrue(isinstance(b.macros, XSCollection))

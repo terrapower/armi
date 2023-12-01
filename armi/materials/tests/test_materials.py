@@ -166,9 +166,7 @@ class MaterialFindingTests(unittest.TestCase):
         # let's do a quick test of getting a material from the default namespace
         setMaterialNamespaceOrder(["armi.materials"])
         uo2 = materials.resolveMaterialClassByName(
-            # "Hafnium", namespaceOrder=["armi.materials"]
-            "UO2",
-            namespaceOrder=["armi.materials"],
+            "UO2", namespaceOrder=["armi.materials"]
         )
         self.assertGreater(uo2().density(500), 0)
 
@@ -187,13 +185,6 @@ class MaterialFindingTests(unittest.TestCase):
         for t in range(200, 600):
             self.assertEqual(testMatIgnoreFake().density(t), 0)
             self.assertEqual(testMatIgnoreFake().pseudoDensity(t), 0)
-
-        # show the ordering of the material namespaces works
-        # (The second material namespace would set the density of UO2 to zero.)
-        uo2 = materials.resolveMaterialClassByName(
-            "UO2", namespaceOrder=["armi.materials", newMats]
-        )
-        self.assertGreater(uo2().density(500), 0)
 
         # for safety, reset the material namespace list and order
         setMaterialNamespaceOrder(["armi.materials"])

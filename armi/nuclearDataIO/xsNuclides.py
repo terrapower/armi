@@ -95,7 +95,7 @@ class XSNuclide(nuclideBases.NuclideWrapper):
         self._base = nuclideBase
 
     def getMicroXS(self, interaction, group):
-        r"""Returns the microscopic xs as the ISOTXS value if it exists or a 0 since it doesn't."""
+        """Returns the microscopic xs as the ISOTXS value if it exists or a 0 since it doesn't."""
         if interaction in self.micros.__dict__:
             try:
                 return self.micros[interaction][group]
@@ -109,7 +109,7 @@ class XSNuclide(nuclideBases.NuclideWrapper):
             return 0
 
     def getXS(self, interaction):
-        r"""Get the cross section of a particular interaction.
+        """Get the cross section of a particular interaction.
 
         See Also
         --------
