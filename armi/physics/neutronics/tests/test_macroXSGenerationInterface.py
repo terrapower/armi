@@ -37,7 +37,7 @@ class TestMacroXSGenerationInterface(unittest.TestCase):
         _o, r = loadTestReactor()
         reduceTestReactorRings(r, cs, 2)
 
-        # Before: verify there are no macro XS in the reactor
+        # Before: verify there are no macro XS on each block
         for b in r.core.getBlocks():
             self.assertIsNone(b.macros)
 
@@ -46,7 +46,7 @@ class TestMacroXSGenerationInterface(unittest.TestCase):
         self.assertEqual(i.minimumNuclideDensity, 1e-15)
         self.assertEqual(i.name, "macroXsGen")
 
-        # Moock up a nuclide library
+        # Mock up a nuclide library
         mockLib = isotxs.readBinary(ISOAA_PATH)
         mockLib.__dict__["_nuclides"] = defaultdict(
             lambda: mockLib.__dict__["_nuclides"]["CAA"], mockLib.__dict__["_nuclides"]
@@ -57,7 +57,7 @@ class TestMacroXSGenerationInterface(unittest.TestCase):
         i.buildMacros(mockLib, buildScatterMatrix=False)
         self.assertEqual(i.macrosLastBuiltAt, 0)
 
-        # After: verify there are no macro XS in the reactor
+        # After: verify there are macro XS on each block
         for b in r.core.getBlocks():
             self.assertIsNotNone(b.macros)
             self.assertTrue(isinstance(b.macros, XSCollection))
