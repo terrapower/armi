@@ -16,7 +16,6 @@
 import copy
 import unittest
 
-from armi import cli
 from armi import configure
 from armi import context
 from armi import getApp

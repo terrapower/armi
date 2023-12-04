@@ -67,7 +67,6 @@ class MacroXSGenerator(mpiActions.MpiAction):
         )
 
     def invokeHook(self):
-
         # logic here gets messy due to all the default arguments in the calling
         # method. There exists a large number of permutations to be handled.
 
@@ -169,7 +168,6 @@ class MacroXSGenerationInterface(interfaces.Interface):
         libType : str, optional
             The block attribute containing the desired microscopic XS for this block:
             either "micros" for neutron XS or "gammaXS" for gamma XS.
-
         """
         cycle = self.r.p.cycle
         self.macrosLastBuiltAt = (

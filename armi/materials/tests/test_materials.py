@@ -19,7 +19,8 @@ import unittest
 
 from numpy import testing
 
-from armi import materials, settings
+from armi import context, materials, settings
+from armi.materials import _MATERIAL_NAMESPACE_ORDER, setMaterialNamespaceOrder
 from armi.nucDirectory import nuclideBases
 from armi.reactor import blueprints
 from armi.tests import mockRunLogs
@@ -108,6 +109,10 @@ class MaterialFindingTests(unittest.TestCase):
     def test_findMaterial(self):
         """Test resolveMaterialClassByName() function.
 
+        .. test:: Materials can be grabbed from a list of namespaces.
+            :id: T_ARMI_MAT_NAMESPACE0
+            :tests: R_ARMI_MAT_NAMESPACE
+
         .. test:: You can find a material by name.
             :id: T_ARMI_MAT_NAME
             :tests: R_ARMI_MAT_NAME
@@ -138,6 +143,51 @@ class MaterialFindingTests(unittest.TestCase):
             materials.resolveMaterialClassByName(
                 "Unobtanium", namespaceOrder=["armi.materials"]
             )
+
+    def __validateMaterialNamespace(self):
+        """Helper method to validate the material namespace a little."""
+        self.assertTrue(isinstance(_MATERIAL_NAMESPACE_ORDER, list))
+        self.assertGreater(len(_MATERIAL_NAMESPACE_ORDER), 0)
+        for nameSpace in _MATERIAL_NAMESPACE_ORDER:
+            self.assertTrue(isinstance(nameSpace, str))
+
+    @unittest.skipUnless(context.MPI_RANK == 0, "test only on root node")
+    def test_namespacing(self):
+        """Test loading materials with different material namespaces, to cover how they work.
+
+        .. test:: Material can be found in defined packages.
+            :id: T_ARMI_MAT_NAMESPACE1
+            :tests: R_ARMI_MAT_NAMESPACE
+
+        .. test:: Material namespaces register materials with an order of priority.
+            :id: T_ARMI_MAT_ORDER
+            :tests: R_ARMI_MAT_ORDER
+        """
+        # let's do a quick test of getting a material from the default namespace
+        setMaterialNamespaceOrder(["armi.materials"])
+        uo2 = materials.resolveMaterialClassByName(
+            "UO2", namespaceOrder=["armi.materials"]
+        )
+        self.assertGreater(uo2().density(500), 0)
+
+        # validate the default namespace in ARMI
+        self.__validateMaterialNamespace()
+
+        # show you can add a material namespace
+        newMats = "armi.utils.tests.test_densityTools"
+        setMaterialNamespaceOrder(["armi.materials", newMats])
+        self.__validateMaterialNamespace()
+
+        # show that adding a name material namespace provides access to new materials
+        testMatIgnoreFake = materials.resolveMaterialClassByName(
+            "TestMaterialIgnoreFake", namespaceOrder=["armi.materials", newMats]
+        )
+        for t in range(200, 600):
+            self.assertEqual(testMatIgnoreFake().density(t), 0)
+            self.assertEqual(testMatIgnoreFake().pseudoDensity(t), 0)
+
+        # for safety, reset the material namespace list and order
+        setMaterialNamespaceOrder(["armi.materials"])
 
 
 class Californium_TestCase(_Material_Test, unittest.TestCase):

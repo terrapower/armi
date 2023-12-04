@@ -14,9 +14,23 @@
 """Test densityTools."""
 import unittest
 
+from armi.materials.material import Material
 from armi.materials.uraniumOxide import UO2
 from armi.nucDirectory import elements, nuclideBases
 from armi.utils import densityTools
+
+
+class TestMaterialIgnoreFake(Material):
+    """A test material that needs to be stored in a different namespace.
+
+    For tests in: armi.materials.tests.test_materials.py
+    """
+
+    def pseudoDensity(self, Tk=None, Tc=None):
+        return 0.0
+
+    def density(self, Tk=None, Tc=None):
+        return 0.0
 
 
 class TestDensityTools(unittest.TestCase):
@@ -50,7 +64,6 @@ class TestDensityTools(unittest.TestCase):
         self.assertAlmostEqual(sum(mass.values()), 1.0)
 
     def test_getChemicals(self):
-
         u235 = nuclideBases.byName["U235"]
         u238 = nuclideBases.byName["U238"]
         o16 = nuclideBases.byName["O16"]
