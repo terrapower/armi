@@ -521,10 +521,9 @@ class MockSyncPC(parameters.ParameterCollection):
 
 
 def makeComp(name):
+    """Helper method for MPI sync tests: mock up a Composite with a minimal param collections."""
     c = composites.Composite(name)
     c.p = MockSyncPC()
-    for pd in c.p.paramDefs:
-        pd.assigned = parameters.NEVER
     return c
 
 
