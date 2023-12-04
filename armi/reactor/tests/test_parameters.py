@@ -542,8 +542,6 @@ class SynchronizationTests(unittest.TestCase):
                 a.add(makeComp("block{}-{}".format(ai, bi)))
 
         self.comps = [self.r.core] + self.r.core.getChildren(deep=True)
-        for pd in MockSyncPC().paramDefs:
-            pd.assigned = parameters.NEVER
 
     @unittest.skipIf(context.MPI_SIZE <= 1 or MPI_EXE is None, "Parallel test only")
     def test_noConflicts(self):
@@ -553,7 +551,7 @@ class SynchronizationTests(unittest.TestCase):
             :id: T_ARMI_CMP_MPI0
             :tests: R_ARMI_CMP_MPI
         """
-        syncCount = self.r.syncMpiState()
+        _syncCount = self.r.syncMpiState()
 
         for ci, comp in enumerate(self.comps):
             if ci % context.MPI_SIZE == context.MPI_RANK:
@@ -569,7 +567,7 @@ class SynchronizationTests(unittest.TestCase):
 
     @unittest.skipIf(context.MPI_SIZE <= 1 or MPI_EXE is None, "Parallel test only")
     def test_withConflicts(self):
-        """Test conflicts arrise correctly if we force a conflict.
+        """Test conflicts arise correctly if we force a conflict.
 
         .. test:: Raise errors when there are conflicts across processes.
             :id: T_ARMI_CMP_MPI1
