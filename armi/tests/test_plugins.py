@@ -14,15 +14,77 @@
 
 """Provides functionality for testing implementations of plugins."""
 import unittest
+from copy import deepcopy
 from typing import Optional
 
 import yamlize
 
+from armi import context
+from armi import getApp
 from armi import interfaces
 from armi import plugins
 from armi import settings
+from armi import utils
 from armi.physics.neutronics import NeutronicsPlugin
 from armi.reactor.blocks import Block
+from armi.reactor.flags import Flags
+
+
+class PluginFlags1(plugins.ArmiPlugin):
+    """Simple Plugin that defines a single, new flag."""
+
+    @staticmethod
+    @plugins.HOOKIMPL
+    def defineFlags():
+        """Function to provide new Flags definitions."""
+        return {"SUPER_FLAG": utils.flags.auto()}
+
+
+class TestPluginRegistration(unittest.TestCase):
+    def setUp(self):
+        """
+        Manipulate the standard App. We can't just configure our own, since the
+        pytest environment bleeds between tests.
+        """
+        self._backupApp = deepcopy(getApp())
+
+    def tearDown(self):
+        """Restore the App to its original state."""
+        import armi
+
+        armi._app = self._backupApp
+        context.APP_NAME = "armi"
+
+    def test_defineFlags(self):
+        """Define a new flag using the plugin defineFlags() method.
+
+        .. test:: Define a new, unique flag through the plugin pathway.
+            :id: T_ARMI_FLAG_EXTEND1
+            :tests: R_ARMI_FLAG_EXTEND
+        """
+        app = getApp()
+
+        # show the new plugin isn't loaded yet
+        pluginNames = [p[0] for p in app.pluginManager.list_name_plugin()]
+        self.assertNotIn("PluginFlags1", pluginNames)
+
+        # show the flag doesn't exist yet
+        with self.assertRaises(AttributeError):
+            Flags.SUPER_FLAG
+
+        # load the plugin
+        app.pluginManager.register(PluginFlags1)
+
+        # show the new plugin is loaded now
+        pluginNames = [p[0] for p in app.pluginManager.list_name_plugin()]
+        self.assertIn("PluginFlags1", pluginNames)
+
+        # force-register new flags from the new plugin
+        app._pluginFlagsRegistered = False
+        app.registerPluginFlags()
+
+        # show the flag exists now
+        self.assertEqual(type(Flags.SUPER_FLAG._value), int)
 
 
 class TestPluginBasics(unittest.TestCase):
