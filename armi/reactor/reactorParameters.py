@@ -537,7 +537,7 @@ def defineCoreParameters():
         pb.defParam(
             "betaComponents",
             units=units.UNITLESS,
-            description="Group-wise delayed neutron fractions.",
+            description="Group-wise delayed neutron fractions",
             default=None,
         )
 
