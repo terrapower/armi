@@ -84,6 +84,10 @@ class OperatorTests(unittest.TestCase):
         .. test:: Interfaces are run at BOC, EOC, and at time points between.
             :id: T_ARMI_INTERFACE
             :tests: R_ARMI_INTERFACE
+
+        .. test:: When users set the time discretization, it is enforced.
+            :id: T_ARMI_FW_HISTORY2
+            :tests: R_ARMI_FW_HISTORY
         """
         # an ordered list of interfaces
         self.assertGreater(len(self.o.interfaces), 0)
@@ -91,11 +95,11 @@ class OperatorTests(unittest.TestCase):
             self.assertTrue(isinstance(i, Interface))
 
         # make sure we only iterate one time step
-        self.o.cs = self.o.cs.modified(newSettings={"nCycles": 1})
+        self.o.cs = self.o.cs.modified(newSettings={"nCycles": 2})
         self.r.p.cycle = 1
 
         # mock some stdout logging of what's happening when
-        def sideEffect(node, activeInts):
+        def sideEffect(node, activeInts, *args, **kwargs):
             print(node)
             print(activeInts)
 
@@ -110,22 +114,27 @@ class OperatorTests(unittest.TestCase):
         finally:
             sys.stdout = origout
 
-        # check the outputs
+        # grab the log data
         log = out.getvalue()
-        # the BOL timestep comes before the EOL
-        self.assertIn("BOL", log)
-        self.assertIn("EOL", log.split("BOL")[-1])
-        # we have some common interfaces listed
+
+        # verify we have some common interfaces listed
         self.assertIn("main", log)
         self.assertIn("fuelHandler", log)
         self.assertIn("fissionProducts", log)
         self.assertIn("history", log)
         self.assertIn("snapshot", log)
+
         # At the first time step, we get one ordered list of interfaces
         interfaces = log.split("BOL")[1].split("EOL")[0].split(",")
         self.assertGreater(len(interfaces), 0)
         for i in interfaces:
             self.assertIn("Interface", i)
+
+        # verify the various time nodes are hit in order
+        timeNodes = ["BOL", "BOC"] + ["EveryNode"] * 3 + ["EOC", "EOL"]
+        for node in timeNodes:
+            self.assertIn(node, log)
+            log = node.join(log.split(node)[1:])
 
     def test_addInterfaceSubclassCollision(self):
         cs = settings.Settings()
