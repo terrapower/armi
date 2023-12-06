@@ -34,17 +34,11 @@ class TestEnergyGroups(unittest.TestCase):
                 energyGroups.getGroupStructureType(energyBounds)
 
     def test_consistenciesBetweenGroupStructureAndGroupStructureType(self):
-        """
-        Test that the reverse lookup of the energy group structures work.
+        """Test that the reverse lookup of the energy group structures work.
 
         .. test:: Check the neutron energy group bounds for a given group structure.
             :id: T_ARMI_EG_NE1
             :tests: R_ARMI_EG_NE
-
-        Notes
-        -----
-        Several group structures point to the same energy group structure so the reverse lookup will fail to
-        get the correct group structure type.
         """
         for groupStructureType in energyGroups.GROUP_STRUCTURE:
             self.assertEqual(
