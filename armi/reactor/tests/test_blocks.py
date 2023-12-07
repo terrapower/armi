@@ -2077,9 +2077,18 @@ class HexBlock_TestCase(unittest.TestCase):
                 # Then it's spatialLocator must be of size 169
                 locations = c.spatialLocator
                 self.assertEqual(type(locations), grids.MultiIndexLocation)
+
                 mult = 0
-                for _ in locations:
+                uniqueLocations = set()
+                for loc in locations:
                     mult = mult + 1
+
+                    # test for the uniqueness of the locations (since mult > 1)
+                    if loc not in uniqueLocations:
+                        uniqueLocations.add(loc)
+                    else:
+                        self.assertTrue(False, msg="Duplicate location found!")
+
                 self.assertEqual(mult, 169)
 
     def test_gridNumPinsAndLocations(self):
