@@ -1123,12 +1123,7 @@ class Assembly_TestCase(unittest.TestCase):
             self.assertGreater(zCoords[i], zCoords[i - 1])
 
     def test_assem_hex_type(self):
-        """Test that all children of a hex assembly are hexagons.
-
-        .. test:: Validate child types of assembly are Hex type.
-            :id: T_ARMI_ASSEM_HEX
-            :tests: R_ARMI_ASSEM_HEX
-        """
+        """Test that all children of a hex assembly are hexagons."""
         for b in self.assembly.getBlocks():
 
             # For a hex assem, confirm they are of type "Hexagon"

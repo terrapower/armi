@@ -1227,12 +1227,7 @@ class Assembly(composites.Composite):
 
 
 class HexAssembly(Assembly):
-    """Placeholder, so users can explicitly define a hex-based assembly.
-
-    .. impl:: Assembly of hex blocks.
-        :id: I_ARMI_ASSEM_HEX
-        :implements: R_ARMI_ASSEM_HEX
-    """
+    """Placeholder, so users can explicitly define a hex-based assembly."""
 
     pass
 
