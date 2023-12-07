@@ -42,12 +42,7 @@ class UZR_TestCase(TestCase):
         )
 
     def test_TD(self):
-        """Test the material theoretical density.
-
-        .. test:: Test the material base class has temp-dependent TD curves.
-            :id: T_ARMI_MAT_PROPERTIES2
-            :tests: R_ARMI_MAT_PROPERTIES
-        """
+        """Test the material theoretical density."""
         self.assertEqual(self.mat.getTD(), self.mat.theoreticalDensityFrac)
 
         self.mat.clearCache()
@@ -89,7 +84,7 @@ class UZR_TestCase(TestCase):
         """Test the density for kg/m^3.
 
         .. test:: Test the material base class has temp-dependent density.
-            :id: T_ARMI_MAT_PROPERTIES5
+            :id: T_ARMI_MAT_PROPERTIES2
             :tests: R_ARMI_MAT_PROPERTIES
         """
         dens = self.mat.density(500)
@@ -100,7 +95,7 @@ class UZR_TestCase(TestCase):
         """Test the pseudo density for kg/m^3.
 
         .. test:: Test the material base class has temp-dependent 2D density.
-            :id: T_ARMI_MAT_PROPERTIES6
+            :id: T_ARMI_MAT_PROPERTIES3
             :tests: R_ARMI_MAT_PROPERTIES
         """
         dens = self.mat.pseudoDensity(500)
