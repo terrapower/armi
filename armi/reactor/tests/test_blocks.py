@@ -1842,17 +1842,39 @@ class HexBlock_TestCase(unittest.TestCase):
         r.core.add(a, loc1)
 
     def test_getArea(self):
-        cur = self.HexBlock.getArea()
-        ref = math.sqrt(3) / 2.0 * 70.6**2
-        places = 6
-        self.assertAlmostEqual(cur, ref, places=places)
+        """Test that we can correctly calculate the area of a hexagonal block.
+
+        .. test:: Users can create blocks that have the correct hexagonal area.
+            :id: T_ARMI_BLOCK_HEX0
+            :tests: R_ARMI_BLOCK_HEX
+        """
+        # Test for various outer and inner pitches for HexBlocks with hex holes
+        for op in (20.0, 20.4, 20.1234, 25.001):
+            for ip in (0.0, 5.0001, 7.123, 10.0):
+                # generate a block with a different outer pitch
+                hBlock = blocks.HexBlock("TestAreaHexBlock")
+                hexDims = {
+                    "Tinput": 273.0,
+                    "Thot": 273.0,
+                    "op": op,
+                    "ip": ip,
+                    "mult": 1.0,
+                }
+                hComponent = components.Hexagon("duct", "UZr", **hexDims)
+                hBlock.add(hComponent)
+
+                # verify the area of the hexagon (with a hex hole) is correct
+                cur = hBlock.getArea()
+                ref = math.sqrt(3) / 2.0 * op**2
+                ref -= math.sqrt(3) / 2.0 * ip**2
+                self.assertAlmostEqual(cur, ref, places=6, msg=str(op))
 
     def test_component_type(self):
         """
         Test that a hex block has the proper "hexagon" __name__.
 
-        .. test:: Users can create hex shaped blocks.
-            :id: T_ARMI_BLOCK_HEX
+        .. test:: Users can create blocks with a hexagonal shape.
+            :id: T_ARMI_BLOCK_HEX1
             :tests: R_ARMI_BLOCK_HEX
         """
         pitch_comp_type = self.HexBlock.PITCH_COMPONENT_TYPE[0]
