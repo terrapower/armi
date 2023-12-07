@@ -443,16 +443,31 @@ class TestHexGrid(unittest.TestCase):
             :id: T_ARMI_GRID_GLOBAL_POS0
             :tests: R_ARMI_GRID_GLOBAL_POS
         """
-        grid = grids.HexGrid.fromPitch(1.0, numRings=3)
+        # build a hex gridis just is justthis, plus an offset:
+        #    grid = grids.HexGrid.fromPitch(1.0, numRings=3)
+        offset = 1.123
+        grid = grids.HexGrid(
+            unitSteps=((1.5 / math.sqrt(3), 0.0, 0.0), (0.5, 1, 0.0), (0, 0, 0)),
+            unitStepLimits=((-3, 3), (-3, 3), (0, 1)),
+            offset=numpy.array([offset, offset, offset]),
+            armiObject=None,
+            symmetry="",
+        )
+
+        # test that we CAN change the pitch, and it scales the grid (but not the offset)
         v1 = grid.getCoordinates((1, 0, 0))
         grid.changePitch(2.0)
         v2 = grid.getCoordinates((1, 0, 0))
-        assert_allclose(2 * v1, v2)
+        assert_allclose(2 * v1 - offset, v2)
         self.assertEqual(grid.pitch, 2.0)
 
         # test number of rings
         numRings = 3
         self.assertEqual(grid._unitStepLimits[0][1], numRings)
+
+        # check the offset exists and is correct
+        for i in range(3):
+            self.assertEqual(grid.offset[i], offset)
 
     def test_badIndices(self):
         grid = grids.HexGrid.fromPitch(1.0, numRings=3)
