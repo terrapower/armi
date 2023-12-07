@@ -82,6 +82,10 @@ class HexGrid(StructuredGrid):
             :id: I_ARMI_GRID_HEX_TYPE
             :implements: R_ARMI_GRID_HEX_TYPE
 
+        .. impl:: The user can specify the symmetry of a hexagonal grid when creating one.
+            :id: I_ARMI_GRID_SYMMETRY1
+            :implements: R_ARMI_GRID_SYMMETRY
+
         Parameters
         ----------
         pitch : float

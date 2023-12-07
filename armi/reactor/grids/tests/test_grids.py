@@ -337,18 +337,8 @@ class TestHexGrid(unittest.TestCase):
             :id: T_ARMI_GRID_SYMMETRY
             :tests: R_ARMI_GRID_SYMMETRY
         """
-        full = grids.HexGrid.fromPitch(1.0)
-        full.symmetry = str(
-            geometry.SymmetryType(
-                geometry.DomainType.FULL_CORE, geometry.BoundaryType.NO_SYMMETRY
-            )
-        )
-        third = grids.HexGrid.fromPitch(1.0)
-        third.symmetry = str(
-            geometry.SymmetryType(
-                geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
-            )
-        )
+        full = grids.HexGrid.fromPitch(1.0, symmetry="full core")
+        third = grids.HexGrid.fromPitch(1.0, symmetry="third core periodic")
 
         # check full core
         self.assertEqual(full.getMinimumRings(2), 2)
