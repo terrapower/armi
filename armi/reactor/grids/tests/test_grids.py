@@ -337,18 +337,8 @@ class TestHexGrid(unittest.TestCase):
             :id: T_ARMI_GRID_SYMMETRY
             :tests: R_ARMI_GRID_SYMMETRY
         """
-        full = grids.HexGrid.fromPitch(1.0)
-        full.symmetry = str(
-            geometry.SymmetryType(
-                geometry.DomainType.FULL_CORE, geometry.BoundaryType.NO_SYMMETRY
-            )
-        )
-        third = grids.HexGrid.fromPitch(1.0)
-        third.symmetry = str(
-            geometry.SymmetryType(
-                geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
-            )
-        )
+        full = grids.HexGrid.fromPitch(1.0, symmetry="full core")
+        third = grids.HexGrid.fromPitch(1.0, symmetry="third core periodic")
 
         # check full core
         self.assertEqual(full.getMinimumRings(2), 2)
@@ -453,16 +443,28 @@ class TestHexGrid(unittest.TestCase):
             :id: T_ARMI_GRID_GLOBAL_POS0
             :tests: R_ARMI_GRID_GLOBAL_POS
         """
-        grid = grids.HexGrid.fromPitch(1.0, numRings=3)
-        v1 = grid.getCoordinates((1, 0, 0))
-        grid.changePitch(2.0)
-        v2 = grid.getCoordinates((1, 0, 0))
-        assert_allclose(2 * v1, v2)
-        self.assertEqual(grid.pitch, 2.0)
+        # run this test for a grid with no offset, and then a few random offset values
+        for offset in [0, 1, 1.123, 3.14]:
+            # build a hex grid with pitch=1, 3 rings, and the above offset
+            grid = grids.HexGrid(
+                unitSteps=((1.5 / math.sqrt(3), 0.0, 0.0), (0.5, 1, 0.0), (0, 0, 0)),
+                unitStepLimits=((-3, 3), (-3, 3), (0, 1)),
+                offset=numpy.array([offset, offset, offset]),
+            )
 
-        # test number of rings
-        numRings = 3
-        self.assertEqual(grid._unitStepLimits[0][1], numRings)
+            # test that we CAN change the pitch, and it scales the grid (but not the offset)
+            v1 = grid.getCoordinates((1, 0, 0))
+            grid.changePitch(2.0)
+            v2 = grid.getCoordinates((1, 0, 0))
+            assert_allclose(2 * v1 - offset, v2)
+            self.assertEqual(grid.pitch, 2.0)
+
+            # basic sanity: test number of rings has changed
+            self.assertEqual(grid._unitStepLimits[0][1], 3)
+
+            # basic sanity: check the offset exists and is correct
+            for i in range(3):
+                self.assertEqual(grid.offset[i], offset)
 
     def test_badIndices(self):
         grid = grids.HexGrid.fromPitch(1.0, numRings=3)
