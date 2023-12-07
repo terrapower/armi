@@ -73,7 +73,7 @@ class TestFlag(unittest.TestCase):
         """Ensure the set of flags cannot be programmatically extended if duplicate created.
 
         .. test:: Set of flags are extensible without loss of uniqueness.
-            :id: T_ARMI_FLAG_EXTEND
+            :id: T_ARMI_FLAG_EXTEND0
             :tests: R_ARMI_FLAG_EXTEND
         """
 
