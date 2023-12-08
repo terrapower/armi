@@ -326,6 +326,7 @@ class TestGlobalFluxInterfaceWithExecutersNonUniform(unittest.TestCase):
         gfi, r = self.gfi, self.r
         gfi.interactBOC()
         gfi.interactEveryNode(0, 0)
+        self.assertTrue(gfi.getExecuterOptions().hasNonUniformAssems)
         mockConverterFactory.assert_called()
 
     def test_calculateKeff(self):
