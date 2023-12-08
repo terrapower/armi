@@ -711,8 +711,7 @@ class FuelHandler:
         return assemblyList
 
     def swapAssemblies(self, a1, a2):
-        r"""
-        Moves a whole assembly from one place to another.
+        """Moves a whole assembly from one place to another.
 
         .. impl:: Assemblies can be moved from one place to another.
             :id: I_ARMI_SHUFFLE_MOVE
@@ -724,10 +723,15 @@ class FuelHandler:
 
         Parameters
         ----------
-        a1 : Assembly
+        a1 : :py:class:`Assembly <armi.reactor.assemblies.Assembly>`
             The first assembly
-        a2 : Assembly
+        a2 : :py:class:`Assembly <armi.reactor.assemblies.Assembly>`
             The second assembly
+
+        Notes
+        -----
+        The implementation for ``R_ARMI_SHUFFLE_STATIONARY`` occurs within
+        :py:meth:`<armi.physics.fuelCyle.fuelHandlers.FuelHandler._transferStationaryBlocks`.
 
         See Also
         --------
@@ -808,12 +812,23 @@ class FuelHandler:
             assembly2.insert(assem2BlockIndex, assem1Block)
 
     def dischargeSwap(self, incoming, outgoing):
-        r"""
-        Removes one assembly from the core and replace it with another assembly.
+        """Removes one assembly from the core and replace it with another assembly.
+
+        Parameters
+        ----------
+        incoming : :py:class:`Assembly <armi.reactor.assemblies.Assembly>`
+            The assembly getting swapped into the core.
+        outgoing : :py:class:`Assembly <armi.reactor.assemblies.Assembly>`
+            The assembly getting discharged out the core.
 
         .. impl:: User-specified blocks can be left in place and not moved.
             :id: I_ARMI_SHUFFLE_STATIONARY1
             :implements: R_ARMI_SHUFFLE_STATIONARY
+
+        Notes
+        -----
+        The implementation for ``R_ARMI_SHUFFLE_STATIONARY`` occurs within
+        :py:meth:`<armi.physics.fuelCyle.fuelHandlers.FuelHandler._transferStationaryBlocks`.
 
         See Also
         --------

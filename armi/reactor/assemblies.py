@@ -1213,14 +1213,22 @@ class Assembly(composites.Composite):
         return self[0].getSymmetryFactor()
 
     def rotate(self, rad):
-        """Rotates the spatial variables on an assembly the specified angle.
+        """Rotates the spatial variables on an assembly by the specified angle.
 
         Each block on the assembly is rotated in turn.
+
+        .. impl:: An assembly can be rotated about its z-axis.
+            :id: I_ARMI_SHUFFLE_ROTATE
+            :implements: R_ARMI_SHUFFLE_ROTATE
 
         Parameters
         ----------
         rad: float
             number (in radians) specifying the angle of counter clockwise rotation
+
+        Warning
+        -------
+        rad must be in 60-degree increments! (i.e., PI/6, PI/3, PI, 2 * PI/3, 5 * PI/6, etc)
         """
         for b in self.getBlocks():
             b.rotate(rad)
