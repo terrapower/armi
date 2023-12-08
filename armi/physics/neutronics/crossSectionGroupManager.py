@@ -1214,6 +1214,7 @@ class CrossSectionGroupManager(interfaces.Interface):
                     modifiedBlockXSTypes[origXSType] + origXSID[1]
                 )  # New XS Type + Old Burnup Group
                 origXSIDsFromNew[newXSID] = origXSID
+
         # Create new representative blocks based on the original XS IDs
         for newXSID, origXSID in origXSIDsFromNew.items():
             runLog.extra(
@@ -1230,6 +1231,7 @@ class CrossSectionGroupManager(interfaces.Interface):
             for b in blockList:
                 if b.getMicroSuffix() == origXSID:
                     b.p.xsType = newXSType
+
         return modifiedReprBlocks, origXSIDsFromNew
 
     def getNextAvailableXsTypes(self, howMany=1, excludedXSTypes=None):
@@ -1266,8 +1268,8 @@ class CrossSectionGroupManager(interfaces.Interface):
         return availableXsTypes[:howMany]
 
     def _getUnrepresentedBlocks(self, blockCollectionsByXsGroup):
-        r"""
-        gets all blocks with suffixes not yet represented (for blocks in assemblies in the blueprints but not the core).
+        """
+        Gets all blocks with suffixes not yet represented (for blocks in assemblies in the blueprints but not the core).
 
         Notes
         -----
@@ -1298,11 +1300,10 @@ class CrossSectionGroupManager(interfaces.Interface):
 
     def _modifyUnrepresentedXSIDs(self, blockCollectionsByXsGroup):
         """
-        adjust the xsID of blocks in the groups that are not represented.
+        Adjust the xsID of blocks in the groups that are not represented.
 
         Try to just adjust the burnup group up to something that is represented
         (can happen to structure in AA when only AB, AC, AD still remain).
-
         """
         for xsID in self._unrepresentedXSIDs:
             missingXsType, _missingBuGroup = xsID
