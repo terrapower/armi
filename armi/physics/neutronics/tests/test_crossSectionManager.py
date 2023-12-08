@@ -856,6 +856,7 @@ class TestCrossSectionGroupManager(unittest.TestCase):
             :id: T_ARMI_XSGM_FREQ0
             :tests: R_ARMI_XSGM_FREQ
         """
+        self.assertFalse(self.csm.representativeBlocks)
         self.blockList[0].r.p.timeNode = 0
         self.csm.cs[CONF_LATTICE_PHYSICS_FREQUENCY] = "BOL"
         self.csm.interactBOL()
@@ -868,6 +869,7 @@ class TestCrossSectionGroupManager(unittest.TestCase):
             :id: T_ARMI_XSGM_FREQ1
             :tests: R_ARMI_XSGM_FREQ
         """
+        self.assertFalse(self.csm.representativeBlocks)
         self.blockList[0].r.p.timeNode = 0
         self.csm.cs[CONF_LATTICE_PHYSICS_FREQUENCY] = "BOC"
         self.csm.interactBOL()

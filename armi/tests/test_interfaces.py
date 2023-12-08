@@ -137,6 +137,7 @@ class TestTightCoupler(unittest.TestCase):
         Ragged lists are easier to manage with lists as opposed to numpy.arrays,
         namely, their dimension is preserved.
         """
+        # show a situation where it doesn't converge
         previousValues = {
             "float": 1.0,
             "list1D": [1.0, 2.0],
@@ -150,6 +151,12 @@ class TestTightCoupler(unittest.TestCase):
         for previous, current in zip(previousValues.values(), updatedValues.values()):
             self.interface.coupler.storePreviousIterationValue(previous)
             self.assertFalse(self.interface.coupler.isConverged(current))
+
+        # show a situation where it DOES converge
+        previousValues = updatedValues
+        for previous, current in zip(previousValues.values(), updatedValues.values()):
+            self.interface.coupler.storePreviousIterationValue(previous)
+            self.assertTrue(self.interface.coupler.isConverged(current))
 
     def test_isConvergedRuntimeError(self):
         """Test to ensure 3D arrays do not work."""

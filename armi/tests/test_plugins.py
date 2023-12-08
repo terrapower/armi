@@ -21,6 +21,7 @@ import yamlize
 
 from armi import context
 from armi import getApp
+from armi import getPluginManagerOrFail
 from armi import interfaces
 from armi import plugins
 from armi import settings
@@ -28,6 +29,7 @@ from armi import utils
 from armi.physics.neutronics import NeutronicsPlugin
 from armi.reactor.blocks import Block
 from armi.reactor.flags import Flags
+from armi.reactor.tests.test_reactors import loadTestReactor, TEST_ROOT
 
 
 class PluginFlags1(plugins.ArmiPlugin):
@@ -116,7 +118,7 @@ class TestPluginBasics(unittest.TestCase):
         """Make sure that the exposeInterfaces hook is properly implemented.
 
         .. test:: Plugins can add interfaces to the interface stack.
-            :id: T_ARMI_PLUGIN_INTERFACES
+            :id: T_ARMI_PLUGIN_INTERFACES0
             :tests: R_ARMI_PLUGIN_INTERFACES
         """
         plugin = NeutronicsPlugin()
@@ -137,6 +139,46 @@ class TestPluginBasics(unittest.TestCase):
             self.assertIsInstance(order, (int, float))
             self.assertTrue(issubclass(interface, interfaces.Interface))
             self.assertIsInstance(kwargs, dict)
+
+    def test_pluginsExposeInterfaces(self):
+        """Make sure that plugins properly expose their interfaces, by checking some
+        known examples.
+
+        .. test:: Check that some known plugins correctly add interfaces to the stack.
+            :id: T_ARMI_PLUGIN_INTERFACES1
+            :tests: R_ARMI_PLUGIN_INTERFACES
+        """
+        # generate a test operator, with a full set of interfaces from plugsin
+        o = loadTestReactor(TEST_ROOT)[0]
+        pm = getPluginManagerOrFail()
+
+        # test the plugins were generated
+        plugins = pm.get_plugins()
+        self.assertGreater(len(plugins), 0)
+
+        # test interfaces were generated from those plugins
+        ints = o.interfaces
+        self.assertGreater(len(ints), 0)
+
+        # test that certain plugins exist and correctly registered their interfaces
+        pluginStrings = " ".join([str(p) for p in plugins])
+        interfaceStrings = " ".join([str(i) for i in ints])
+
+        # Test that the BookkeepingPlugin registered the DatabaseInterface
+        self.assertIn("BookkeepingPlugin", pluginStrings)
+        self.assertIn("DatabaseInterface", interfaceStrings)
+
+        # Test that the BookkeepingPlugin registered the history interface
+        self.assertIn("BookkeepingPlugin", pluginStrings)
+        self.assertIn("history", interfaceStrings)
+
+        # Test that the EntryPointsPlugin registered the main interface
+        self.assertIn("EntryPointsPlugin", pluginStrings)
+        self.assertIn("main", interfaceStrings)
+
+        # Test that the FuelHandlerPlugin registered the fuelHandler interface
+        self.assertIn("FuelHandlerPlugin", pluginStrings)
+        self.assertIn("fuelHandler", interfaceStrings)
 
 
 class TestPlugin(unittest.TestCase):
