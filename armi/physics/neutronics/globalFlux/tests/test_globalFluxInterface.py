@@ -13,6 +13,7 @@
 # limitations under the License.
 """Tests for generic global flux interface."""
 import unittest
+from unittest.mock import patch
 
 import numpy
 
@@ -107,11 +108,14 @@ class TestGlobalFluxOptions(unittest.TestCase):
     """Tests for GlobalFluxOptions."""
 
     def test_readFromSettings(self):
-        """Test reading global flux options.
+        """Test reading global flux options from case settings.
 
         .. test:: Tests GlobalFluxOptions.
-            :id: T_ARMI_FLUX_OPTIONS
+            :id: T_ARMI_FLUX_OPTIONS_FROM_CASE_SETTINGS
             :tests: R_ARMI_FLUX_OPTIONS
+            :acceptance_criteria: This test is satisfied when it demonstrates
+            the ability of the globalFluxInterface to read options from a case
+            settings object.
         """
         cs = settings.Settings()
         opts = globalFluxInterface.GlobalFluxOptions("neutronics-run")
@@ -119,6 +123,15 @@ class TestGlobalFluxOptions(unittest.TestCase):
         self.assertFalse(opts.adjoint)
 
     def test_readFromReactors(self):
+        """Test reading global flux options from reactor objects.
+
+        .. test:: Tests GlobalFluxOptions.
+            :id: T_ARMI_FLUX_OPTIONS_FROM_REACTOR
+            :tests: R_ARMI_FLUX_OPTIONS
+            :acceptance_criteria: This test is satisfied when it demonstrates
+            the ability of the globalFluxInterface to read options from a
+            reactor object.
+        """
         reactor = MockReactor()
         opts = globalFluxInterface.GlobalFluxOptions("neutronics-run")
         opts.fromReactor(reactor)
@@ -145,7 +158,7 @@ class TestGlobalFluxInterface(unittest.TestCase):
         """
         Compute DPA and DPA rates from multi-group neutron flux and cross sections.
 
-        .. test:: Compute DPA and DPA rates.
+        .. test:: Compute DPA rates.
             :id: T_ARMI_FLUX_DPA
             :tests: R_ARMI_FLUX_DPA
         """
@@ -189,7 +202,12 @@ class TestGlobalFluxInterface(unittest.TestCase):
         cs = settings.Settings()
         _o, r = test_reactors.loadTestReactor()
         gfi = MockGlobalFluxInterface(r, cs)
-        gfi.checkEnergyBalance()
+        self.assertEqual(gfi.checkEnergyBalance(), None)
+
+        # Test when nameplate power doesn't equal sum of block power
+        r.core.p.power = 1e-10
+        with self.assertRaises(ValueError):
+            gfi.checkEnergyBalance()
 
 
 class TestGlobalFluxInterfaceWithExecuters(unittest.TestCase):
@@ -204,20 +222,31 @@ class TestGlobalFluxInterfaceWithExecuters(unittest.TestCase):
         self.r.core.p.keff = 1.0
         self.gfi = MockGlobalFluxWithExecuters(self.r, self.cs)
 
-    def test_executerInteraction(self):
+    @patch(
+        "armi.physics.neutronics.globalFlux.globalFluxInterface.GlobalFluxExecuter._execute"
+    )
+    @patch(
+        "armi.physics.neutronics.globalFlux.globalFluxInterface.GlobalFluxExecuter._performGeometryTransformations"
+    )
+    def test_executerInteraction(self, mockGeometryTransform, mockExecute):
         """Run the global flux interface and executer though one time now.
 
-        .. test:: Run the global flux interface to prove the mesh in the reactor is suffience for the neutronics solver.
-            :id: T_ARMI_FLUX_GEOM_TRANSFORM1
+        .. test:: Run the global flux interface to check that the mesh
+        converter is called before the neutronics solver.
+            :id: T_ARMI_FLUX_GEOM_TRANSFORM_CHECK_CALL_ORDER
             :tests: R_ARMI_FLUX_GEOM_TRANSFORM
+            :acceptance_criteria: The test is considered passing when the mesh
+            converter is verified to be called before the neutronics solver.
         """
+        call_order = []
+        mockGeometryTransform.side_effect = lambda *a, **kw: call_order.append(
+            mockGeometryTransform
+        )
+        mockExecute.side_effect = lambda *a, **kw: call_order.append(mockExecute)
         gfi, r = self.gfi, self.r
         gfi.interactBOC()
         gfi.interactEveryNode(0, 0)
-        r.p.timeNode += 1
-        gfi.interactEveryNode(0, 1)
-        gfi.interactEOC()
-        self.assertAlmostEqual(r.core.p.rxSwing, (1.02 - 1.01) / 1.01 * 1e5)
+        self.assertEqual([mockGeometryTransform, mockExecute], call_order)
 
     def test_calculateKeff(self):
         self.assertEqual(self.gfi.calculateKeff(), 1.05)  # set in mock
@@ -246,8 +275,20 @@ class TestGlobalFluxInterfaceWithExecuters(unittest.TestCase):
         for a in self.r.core.getChildren():
             for b in a:
                 b.p.power = 10.0
-        self.assertIsInstance(self.gfi.getTightCouplingValue(), list)
+        self.assertEqual(
+            self.gfi.getTightCouplingValue(),
+            self._getCouplingPowerDistributions(self.r.core),
+        )
         self._setTightCouplingFalse()
+
+    @staticmethod
+    def _getCouplingPowerDistributions(core):
+        scaledPowers = []
+        for a in core:
+            assemblyPower = sum(b.p.power for b in a)
+            scaledPowers.append([b.p.power / assemblyPower for b in a])
+
+        return scaledPowers
 
     def _setTightCouplingTrue(self):
         self.cs["tightCoupling"] = True
@@ -267,23 +308,25 @@ class TestGlobalFluxInterfaceWithExecutersNonUniform(unittest.TestCase):
         cls.r.core.p.keff = 1.0
         cls.gfi = MockGlobalFluxWithExecutersNonUniform(cls.r, cs)
 
-    def test_executerInteractionNonUniformAssems(self):
+    @patch("armi.reactor.converters.uniformMesh.converterFactory")
+    def test_executerInteractionNonUniformAssems(self, mockConverterFactory):
         """Run the global flux interface with non-uniform assemblies.
 
         This will serve as a broad end-to-end test of the interface, and also
         stress test the mesh issues with non-uniform assemblies.
 
-        .. test:: Run the global flux interface to prove the mesh in the reactor is suffience for the neutronics solver.
-            :id: T_ARMI_FLUX_GEOM_TRANSFORM0
+        .. test:: Run the global flux interface to show the geometry converter
+        is called when the nonuniform mesh option is used.
+            :id: T_ARMI_FLUX_GEOM_TRANSFORM_CHECK_CONVERTER_CALL
             :tests: R_ARMI_FLUX_GEOM_TRANSFORM
+            :acceptance_criteria: The test is satisfied when the geometry
+            converter is shown to have been called when a nonuniform flag is
+            used.
         """
         gfi, r = self.gfi, self.r
         gfi.interactBOC()
         gfi.interactEveryNode(0, 0)
-        r.p.timeNode += 1
-        gfi.interactEveryNode(0, 1)
-        gfi.interactEOC()
-        self.assertAlmostEqual(r.core.p.rxSwing, (1.02 - 1.01) / 1.01 * 1e5)
+        mockConverterFactory.assert_called()
 
     def test_calculateKeff(self):
         self.assertEqual(self.gfi.calculateKeff(), 1.05)  # set in mock
@@ -402,7 +445,7 @@ class TestGlobalFluxUtils(unittest.TestCase):
         """
         b = test_blocks.loadTestBlock()
         test_blocks.applyDummyData(b)
-        self.assertAlmostEqual(b.p.rateAbs, 0.0)
+        self.assertEqual(b.p.rateAbs, 0.0)
         globalFluxInterface.calcReactionRates(b, 1.01, b.r.core.lib)
         self.assertGreater(b.p.rateAbs, 0.0)
         vfrac = b.getComponentAreaFrac(Flags.FUEL)
