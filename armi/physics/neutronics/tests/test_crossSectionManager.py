@@ -169,9 +169,7 @@ class TestBlockCollectionAverage(unittest.TestCase):
         self.assertAlmostEqual(newBc.avgNucTemperatures["NA23"], 402.0)
 
     def test_createRepresentativeBlockDissimilar(self):
-        """
-        Test creation of a representative block from a collection with dissimilar blocks
-        """
+        """Test creation of a representative block from a collection with dissimilar blocks."""
         uniqueBlock = test_blocks.loadTestBlock()
         uniqueBlock.p.percentBu = 50.0
         fpFactory = test_lumpedFissionProduct.getDummyLFPFile()
@@ -259,9 +257,7 @@ class TestComponentAveraging(unittest.TestCase):
         self.bc.extend(blockCopies)
 
     def test_getAverageComponentNumberDensities(self):
-        """
-        Test component number density averaging
-        """
+        """Test component number density averaging."""
         # becaue of the way densities are set up, the middle block (index 1 of 0-2) component densities are equivalent to the average
         b = self.bc[1]
         for compIndex, c in enumerate(b.getComponents()):
@@ -275,9 +271,7 @@ class TestComponentAveraging(unittest.TestCase):
                 )
 
     def test_getAverageComponentTemperature(self):
-        """
-        Test mass-weighted component temperature averaging
-        """
+        """Test mass-weighted component temperature averaging."""
         b = self.bc[0]
         massWeightedIncrease = 5.0 / 3.0
         baseTemps = [600, 400, 500, 500, 400, 500, 400]
@@ -291,9 +285,7 @@ class TestComponentAveraging(unittest.TestCase):
             )
 
     def test_getAverageComponentTemperatureVariedWeights(self):
-        """
-        Test mass-weighted component temperature averaging with variable weights
-        """
+        """Test mass-weighted component temperature averaging with variable weights."""
         # make up a fake weighting with power param
         self.bc.weightingParam = "power"
         for i, b in enumerate(self.bc):
@@ -310,9 +302,7 @@ class TestComponentAveraging(unittest.TestCase):
             )
 
     def test_getAverageComponentTemperatureNoMass(self):
-        """
-        Test component temperature averaging when the components have no mass
-        """
+        """Test component temperature averaging when the components have no mass."""
         for b in self.bc:
             for nuc in b.getNuclides():
                 b.setNumberDensity(nuc, 0.0)

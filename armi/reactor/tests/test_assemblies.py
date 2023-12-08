@@ -1101,24 +1101,29 @@ class Assembly_TestCase(unittest.TestCase):
             self.assertIn("No rotation method defined", mock.getStdout())
 
     def test_assem_block_types(self):
-        """Test that all children of an assembly are blocks.
+        """Test that all children of an assembly are blocks, ordered from top to bottom.
 
-        .. test:: Validate child types of assembly are blocks.
+        .. test:: Validate child types of assembly are blocks, ordered from top to bottom.
             :id: T_ARMI_ASSEM_BLOCKS
             :tests: R_ARMI_ASSEM_BLOCKS
         """
+        coords = []
         for b in self.assembly.getBlocks():
-
             # Confirm children are blocks
             self.assertIsInstance(b, blocks.Block)
 
-    def test_assem_hex_type(self):
-        """Test that all children of a hex assembly are hexagons.
+            # get coords from the child blocks
+            coords.append(b.getLocation())
 
-        .. test:: Validate child types of assembly are Hex type.
-            :id: T_ARMI_ASSEM_HEX
-            :tests: R_ARMI_ASSEM_HEX
-        """
+        # get the Z-coords for each block
+        zCoords = [int(c.split("-")[-1]) for c in coords]
+
+        # verify the blocks are ordered top-to-bottom, vertically
+        for i in range(1, len(zCoords)):
+            self.assertGreater(zCoords[i], zCoords[i - 1])
+
+    def test_assem_hex_type(self):
+        """Test that all children of a hex assembly are hexagons."""
         for b in self.assembly.getBlocks():
 
             # For a hex assem, confirm they are of type "Hexagon"
