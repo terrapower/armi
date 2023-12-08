@@ -395,7 +395,7 @@ class AverageBlockCollection(BlockCollection):
 
     def _getAverageComponentTemperature(self, compIndex):
         """
-        Get weighted average component temperature for the collection
+        Get weighted average component temperature for the collection.
 
         Notes
         -----
@@ -430,7 +430,7 @@ class AverageBlockCollection(BlockCollection):
 
     def _performAverageByComponent(self):
         """
-        Check if block collection averaging can/should be performed by component
+        Check if block collection averaging can/should be performed by component.
 
         If the components of blocks in the collection are similar and the user
         has requested component-level averaging, return True.
@@ -443,7 +443,7 @@ class AverageBlockCollection(BlockCollection):
 
     def _checkBlockSimilarity(self):
         """
-        Check if blocks in the collection have similar components
+        Check if blocks in the collection have similar components.
 
         If the components of blocks in the collection are similar and the user
         has requested component-level averaging, return True.
