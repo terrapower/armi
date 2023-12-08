@@ -12,18 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests of the Parameters class."""
-from distutils.spawn import find_executable
 import copy
 import unittest
 
 from armi.reactor import parameters
-
-# determine if this is a parallel run, and MPI is installed
-MPI_EXE = None
-if find_executable("mpiexec.exe") is not None:
-    MPI_EXE = "mpiexec.exe"
-elif find_executable("mpiexec") is not None:
-    MPI_EXE = "mpiexec"
 
 
 class MockComposite:
