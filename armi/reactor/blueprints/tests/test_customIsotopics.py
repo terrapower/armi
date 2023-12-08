@@ -235,14 +235,14 @@ assemblies:
             :id: T_ARMI_MAT_USER_INPUT4
             :tests: R_ARMI_MAT_USER_INPUT
         """
-        # fuel blocks 2 and 3 should be the same, one is defined as mass fractions, and the other as number fractions
+        # fuel blocks 2 and 4 should be the same, one is defined as mass fractions, and the other as number fractions
         fuel2 = self.a[1].getComponent(Flags.FUEL)
-        fuel3 = self.a[2].getComponent(Flags.FUEL)
-        self.assertAlmostEqual(fuel2.density(), fuel3.density())
+        fuel4 = self.a[3].getComponent(Flags.FUEL)
+        self.assertAlmostEqual(fuel2.density(), fuel4.density())
 
         for nuc in fuel2.p.numberDensities.keys():
             self.assertAlmostEqual(
-                fuel2.p.numberDensities[nuc], fuel3.p.numberDensities[nuc]
+                fuel2.p.numberDensities[nuc], fuel4.p.numberDensities[nuc]
             )
 
     def test_numberDensities(self):
