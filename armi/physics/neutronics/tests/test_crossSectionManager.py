@@ -922,6 +922,17 @@ class TestCrossSectionGroupManager(unittest.TestCase):
         self.csm.interactCoupled(iteration=1)
         self.assertTrue(self.csm.representativeBlocks)
 
+    def test_xsgmIsRunBeforeXS(self):
+        """Test that the XSGM is run before the cross sections are calculated.
+
+        .. test:: Test that the XSGM is run before the cross sections are calculated.
+            :id: T_ARMI_XSGM_FREQ5
+            :tests: R_ARMI_XSGM_FREQ
+        """
+        from armi.interfaces import STACK_ORDER
+
+        self.assertLess(crossSectionGroupManager.ORDER, STACK_ORDER.CROSS_SECTIONS)
+
     def test_copyPregeneratedFiles(self):
         """
         Tests copying pre-generated cross section and flux files
