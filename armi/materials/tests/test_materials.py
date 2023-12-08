@@ -165,10 +165,10 @@ class MaterialFindingTests(unittest.TestCase):
         """
         # let's do a quick test of getting a material from the default namespace
         setMaterialNamespaceOrder(["armi.materials"])
-        uo2 = materials.resolveMaterialClassByName(
-            "UO2", namespaceOrder=["armi.materials"]
+        uraniumOxide = materials.resolveMaterialClassByName(
+            "UraniumOxide", namespaceOrder=["armi.materials"]
         )
-        self.assertGreater(uo2().density(500), 0)
+        self.assertGreater(uraniumOxide().density(500), 0)
 
         # validate the default namespace in ARMI
         self.__validateMaterialNamespace()
@@ -178,13 +178,14 @@ class MaterialFindingTests(unittest.TestCase):
         setMaterialNamespaceOrder(["armi.materials", newMats])
         self.__validateMaterialNamespace()
 
-        # show that adding a name material namespace provides access to new materials
-        testMatIgnoreFake = materials.resolveMaterialClassByName(
-            "TestMaterialIgnoreFake", namespaceOrder=["armi.materials", newMats]
+        # in the case of duplicate materials, show that the material namespace determines
+        # which material is chosen
+        uraniumOxideTest = materials.resolveMaterialClassByName(
+            "UraniumOxide", namespaceOrder=[newMats, "armi.materials"]
         )
         for t in range(200, 600):
-            self.assertEqual(testMatIgnoreFake().density(t), 0)
-            self.assertEqual(testMatIgnoreFake().pseudoDensity(t), 0)
+            self.assertEqual(uraniumOxideTest().density(t), 0)
+            self.assertEqual(uraniumOxideTest().pseudoDensity(t), 0)
 
         # for safety, reset the material namespace list and order
         setMaterialNamespaceOrder(["armi.materials"])
