@@ -243,7 +243,7 @@ class TestGlobalFluxInterfaceWithExecuters(unittest.TestCase):
             mockGeometryTransform
         )
         mockExecute.side_effect = lambda *a, **kw: call_order.append(mockExecute)
-        gfi, r = self.gfi, self.r
+        gfi = self.gfi
         gfi.interactBOC()
         gfi.interactEveryNode(0, 0)
         self.assertEqual([mockGeometryTransform, mockExecute], call_order)
@@ -323,7 +323,7 @@ class TestGlobalFluxInterfaceWithExecutersNonUniform(unittest.TestCase):
             converter is shown to have been called when a nonuniform flag is
             used.
         """
-        gfi, r = self.gfi, self.r
+        gfi = self.gfi
         gfi.interactBOC()
         gfi.interactEveryNode(0, 0)
         self.assertTrue(gfi.getExecuterOptions().hasNonUniformAssems)
