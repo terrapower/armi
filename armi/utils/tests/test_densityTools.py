@@ -20,10 +20,11 @@ from armi.nucDirectory import elements, nuclideBases
 from armi.utils import densityTools
 
 
-class TestMaterialIgnoreFake(Material):
+class UraniumOxide(Material):
     """A test material that needs to be stored in a different namespace.
 
-    For tests in: armi.materials.tests.test_materials.py
+    This is a duplicate (by name only) of :py:class:`armi.materials.uraniumOxide.UraniumOxide`
+    and is used for testing in :py:meth:`armi.materials.tests.test_materials.MaterialFindingTests.test_namespacing`
     """
 
     def pseudoDensity(self, Tk=None, Tc=None):
