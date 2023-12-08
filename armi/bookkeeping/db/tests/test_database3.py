@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for the Database3 class."""
+from distutils.spawn import find_executable
 import subprocess
 import unittest
 
@@ -27,6 +28,13 @@ from armi.settings.fwSettings.globalSettings import CONF_SORT_REACTOR
 from armi.tests import TEST_ROOT
 from armi.utils import getPreviousTimeNode
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
+
+# determine if this is a parallel run, and git is installed
+GIT_EXE = None
+if find_executable("git") is not None:
+    GIT_EXE = "git"
+elif find_executable("git.exe") is not None:
+    GIT_EXE = "git.exe"
 
 
 class TestDatabase3(unittest.TestCase):
@@ -553,6 +561,7 @@ class TestDatabase3(unittest.TestCase):
                 [(c, n) for c in (0, 1) for n in range(2)], "-all-iterations"
             )
 
+    @unittest.skipIf(GIT_EXE is None, "This test needs Git.")
     def test_grabLocalCommitHash(self):
         """Test of static method to grab a local commit hash with ARMI version."""
         # 1. test outside a Git repo
@@ -560,11 +569,16 @@ class TestDatabase3(unittest.TestCase):
         self.assertEqual(localHash, "unknown")
 
         # 2. test inside an empty git repo
-        code = subprocess.run(
-            ["git", "init", "."],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        ).returncode
+        try:
+            code = subprocess.run(
+                ["git", "init", "."],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            ).returncode
+        except FileNotFoundError:
+            print("Skipping this test because it is being run outside a git repo.")
+            return
+
         self.assertEqual(code, 0)
         localHash = database3.Database3.grabLocalCommitHash()
         self.assertEqual(localHash, "unknown")
