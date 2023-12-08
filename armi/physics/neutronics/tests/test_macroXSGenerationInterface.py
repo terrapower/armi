@@ -29,7 +29,7 @@ class TestMacroXSGenerationInterface(unittest.TestCase):
     def test_macroXSGenerationInterfaceBasics(self):
         """Test the macroscopic XS generating interfaces.
 
-        .. test::Build macroscopic cross sections for all blocks in the reactor.
+        .. test:: Build macroscopic cross sections for all blocks in the reactor.
             :id: T_ARMI_MACRO_XS
             :tests: R_ARMI_MACRO_XS
         """

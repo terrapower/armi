@@ -50,6 +50,10 @@ class HexGrid(StructuredGrid):
     It is recommended to use :meth:`fromPitch` rather than
     calling the ``__init__`` constructor directly.
 
+    .. impl:: Construct a hexagonal lattice.
+        :id: I_ARMI_GRID_HEX
+        :implements: R_ARMI_GRID_HEX
+
     Notes
     -----
     In an axial plane (i, j) are as follows (second one is pointedEndUp)::
@@ -74,13 +78,13 @@ class HexGrid(StructuredGrid):
         """
         Build a finite step-based 2-D hex grid from a hex pitch in cm.
 
-        .. impl:: Construct a hexagonal lattice.
-            :id: I_ARMI_GRID_HEX
-            :implements: R_ARMI_GRID_HEX
-
         .. impl:: Hexagonal grids can be points-up or flats-up.
             :id: I_ARMI_GRID_HEX_TYPE
             :implements: R_ARMI_GRID_HEX_TYPE
+
+        .. impl:: The user can specify the symmetry of a hexagonal grid when creating one.
+            :id: I_ARMI_GRID_SYMMETRY1
+            :implements: R_ARMI_GRID_SYMMETRY
 
         Parameters
         ----------

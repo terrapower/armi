@@ -221,7 +221,7 @@ class Flag(metaclass=_FlagMeta):
             the new data, since classes are mutable.
 
         .. impl:: Set of flags are extensible without loss of uniqueness.
-            :id: I_ARMI_FLAG_EXTEND
+            :id: I_ARMI_FLAG_EXTEND0
             :implements: R_ARMI_FLAG_EXTEND
 
         Parameters

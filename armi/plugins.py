@@ -256,6 +256,10 @@ class ArmiPlugin:
         of flags (see :py:mod:`armi.reactor.flags`), new flags should probably refer to
         novel design elements, rather than novel behaviors.
 
+        .. impl:: Plugins can define new, unique flags to the system.
+            :id: I_ARMI_FLAG_EXTEND1
+            :implements: R_ARMI_FLAG_EXTEND
+
         See Also
         --------
         armi.reactor.flags

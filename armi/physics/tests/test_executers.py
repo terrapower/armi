@@ -113,10 +113,17 @@ class TestExecuters(unittest.TestCase):
         """
         filePath = "test_runExternalExecutable.py"
         outFile = "tmp.txt"
+        label = "printExtraStuff"
 
-        class TestSillyExecuter(executers.Executer):
+        class MockExecutionOptions(executers.ExecutionOptions):
+            pass
+
+        class MockExecuter(executers.Executer):
             def run(self, args):
-                subprocess.run(["python", filePath, args])
+                if self.options.label == label:
+                    subprocess.run(["python", filePath, "extra stuff"])
+                else:
+                    subprocess.run(["python", filePath, args])
 
         with directoryChangers.TemporaryDirectoryChanger():
             # build a mock external program (a little Python script)
@@ -126,7 +133,8 @@ class TestExecuters(unittest.TestCase):
             self.assertFalse(os.path.exists(outFile))
 
             # set up an executer for our little test program
-            exe = TestSillyExecuter(None, None)
+            opts = MockExecutionOptions()
+            exe = MockExecuter(opts, None)
             exe.run("")
 
             # make sure the output file exists now
@@ -140,6 +148,12 @@ class TestExecuters(unittest.TestCase):
             self.assertTrue(os.path.exists(outFile))
             newTxt = open(outFile, "r").read()
             self.assertIn(testString, newTxt)
+
+            # now prove the options object can affect the execution
+            exe.options.label = label
+            exe.run("")
+            newerTxt = open(outFile, "r").read()
+            self.assertIn("extra stuff", newerTxt)
 
     @staticmethod
     def __makeALittleTestProgram(filePath, outFile):

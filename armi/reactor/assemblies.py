@@ -216,16 +216,16 @@ class Assembly(composites.Composite):
         """
         Get string label representing this object's location.
 
+        .. impl:: Assembly location is retrievable.
+            :id: I_ARMI_ASSEM_POSI0
+            :implements: R_ARMI_ASSEM_POSI
+
         Notes
         -----
         This function (and its friends) were created before the advent of both the
         grid/spatialLocator system and the ability to represent things like the SFP as
         siblings of a Core. In future, this will likely be re-implemented in terms of
         just spatialLocator objects.
-
-        .. impl:: Assembly location is retrievable.
-            :id: I_ARMI_ASSEM_POSI0
-            :implements: R_ARMI_ASSEM_POSI
         """
         # just use ring and position, not axial (which is 0)
         if not self.parent:
@@ -1227,12 +1227,7 @@ class Assembly(composites.Composite):
 
 
 class HexAssembly(Assembly):
-    """Placeholder, so users can explicitly define a hex-based assembly.
-
-    .. impl:: Assembly of hex blocks.
-        :id: I_ARMI_ASSEM_HEX
-        :implements: R_ARMI_ASSEM_HEX
-    """
+    """Placeholder, so users can explicitly define a hex-based assembly."""
 
     pass
 
