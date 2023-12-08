@@ -1038,7 +1038,12 @@ class Assembly_TestCase(unittest.TestCase):
         self.assertEqual(averagePlenumTemp, self.assembly.getAveragePlenumTemperature())
 
     def test_rotate(self):
-        """Test rotation of an assembly spatial objects."""
+        """Test rotation of an assembly spatial objects.
+
+        .. test:: An assembly can be rotated about its z-axis.
+            :id: T_ARMI_SHUFFLE_ROTATE
+            :tests: R_ARMI_SHUFFLE_ROTATE
+        """
         a = makeTestAssembly(1, 1)
         b = blocks.HexBlock("TestBlock")
         b.p.THcornTemp = [400, 450, 500, 550, 600, 650]
