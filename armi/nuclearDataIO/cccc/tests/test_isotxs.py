@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests the workings of the library wrappers."""
-import filecmp
 import unittest
 
 from armi import nuclearDataIO
