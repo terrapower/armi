@@ -810,7 +810,7 @@ class Thorium_TestCase(_Material_Test, unittest.TestCase):
 
         .. test:: The materials generate nuclide mass fractions.
             :id: T_ARMI_MAT_FRACS0
-            :tests: R_ARMI_LOG
+            :tests: R_ARMI_MAT_FRACS
         """
         self.mat.setDefaultMassFracs()
         cur = self.mat.massFrac
@@ -942,7 +942,7 @@ class Mixture_TestCase(_Material_Test, unittest.TestCase):
 
         .. test:: The materials generate nuclide mass fractions.
             :id: T_ARMI_MAT_FRACS1
-            :tests: R_ARMI_LOG
+            :tests: R_ARMI_MAT_FRACS
         """
         self.mat.setDefaultMassFracs()
         cur = self.mat.pseudoDensity(500)
@@ -995,7 +995,7 @@ class Lead_TestCase(_Material_Test, unittest.TestCase):
 
         .. test:: The materials generate nuclide mass fractions.
             :id: T_ARMI_MAT_FRACS2
-            :tests: R_ARMI_LOG
+            :tests: R_ARMI_MAT_FRACS
         """
         self.mat.setDefaultMassFracs()
         cur = self.mat.massFrac
@@ -1032,7 +1032,7 @@ class LeadBismuth_TestCase(_Material_Test, unittest.TestCase):
 
         .. test:: The materials generate nuclide mass fractions.
             :id: T_ARMI_MAT_FRACS3
-            :tests: R_ARMI_LOG
+            :tests: R_ARMI_MAT_FRACS
         """
         self.mat.setDefaultMassFracs()
         cur = self.mat.massFrac

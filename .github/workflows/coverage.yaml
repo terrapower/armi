@@ -29,9 +29,9 @@ jobs:
       - name: Install Tox and any other packages
         run: pip install tox
       - name: Run Coverage Part 1
-        run: tox -e cov1 || true
+        run: tox -e cov1
       - name: Run Coverage Part 2
-        run: tox -e cov2
+        run: tox -e cov2 || true
       - name: Publish to coveralls.io
         uses: coverallsapp/github-action@v1.1.2
         with:

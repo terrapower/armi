@@ -789,7 +789,7 @@ class TestCrossSectionGroupManager(unittest.TestCase):
         intercoolant.setNumberDensity("NA23", units.TRACE_NUMBER_DENSITY)
 
         self.csm.createRepresentativeBlocks()
-        blocks = self.csm.representativeBlocks
+        blocks = list(self.csm.representativeBlocks.values())
         self.assertGreater(len(blocks), 0)
 
         # Test ability to get average nuclide temperature in block.
@@ -806,6 +806,16 @@ class TestCrossSectionGroupManager(unittest.TestCase):
 
         # Test that retrieving temperatures fails if a representative block for a given XS ID does not exist
         self.assertEqual(self.csm.getNucTemperature("Z", "U235"), None)
+
+        # Test dimensions
+        self.assertEqual(blocks[0].getHeight(), 25.0)
+        self.assertEqual(blocks[1].getHeight(), 25.0)
+        self.assertAlmostEqual(blocks[0].getVolume(), 6074.356308731789)
+        self.assertAlmostEqual(blocks[1].getVolume(), 6074.356308731789)
+
+        # Number densities haven't been calculated yet
+        self.assertIsNone(blocks[0].p.detailedNDens)
+        self.assertIsNone(blocks[1].p.detailedNDens)
 
     def test_createRepresentativeBlocksUsingExistingBlocks(self):
         """
@@ -911,6 +921,17 @@ class TestCrossSectionGroupManager(unittest.TestCase):
         self.csm.interactBOL()
         self.csm.interactCoupled(iteration=1)
         self.assertTrue(self.csm.representativeBlocks)
+
+    def test_xsgmIsRunBeforeXS(self):
+        """Test that the XSGM is run before the cross sections are calculated.
+
+        .. test:: Test that the XSGM is run before the cross sections are calculated.
+            :id: T_ARMI_XSGM_FREQ5
+            :tests: R_ARMI_XSGM_FREQ
+        """
+        from armi.interfaces import STACK_ORDER
+
+        self.assertLess(crossSectionGroupManager.ORDER, STACK_ORDER.CROSS_SECTIONS)
 
     def test_copyPregeneratedFiles(self):
         """
