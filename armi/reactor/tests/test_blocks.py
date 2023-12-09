@@ -1251,7 +1251,9 @@ class Block_TestCase(unittest.TestCase):
     def test_getSortedComponentsInsideOfComponentClad(self):
         """Test that components can be sorted within a block and returned in the correct order.
 
-        .. test:: Get children by name, for a clad example.
+        For an arbitrary example: a clad component.
+
+        .. test:: Get children by name.
             :id: T_ARMI_CMP_BY_NAME1
             :tests: R_ARMI_CMP_BY_NAME
         """
@@ -1275,9 +1277,7 @@ class Block_TestCase(unittest.TestCase):
     def test_getSortedComponentsInsideOfComponentDuct(self):
         """Test that components can be sorted within a block and returned in the correct order.
 
-        .. test:: Get children by name, for a duct example.
-            :id: T_ARMI_CMP_BY_NAME2
-            :tests: R_ARMI_CMP_BY_NAME
+        For an arbitrary example: a duct.
         """
         expected = [
             self.block.getComponentByName(c)
