@@ -683,10 +683,6 @@ class TestMiscMethods(unittest.TestCase):
         .. test:: Number density of composite is retrievable.
             :id: T_ARMI_CMP_GET_NDENS0
             :tests: R_ARMI_CMP_GET_NDENS
-
-        .. test:: Get number densities.
-            :id: T_ARMI_CMP_NUC
-            :tests: R_ARMI_CMP_NUC
         """
         # verify the number densities from the composite
         ndens = self.obj.getNumberDensities()
@@ -702,6 +698,39 @@ class TestMiscMethods(unittest.TestCase):
         for o in self.obj.getChildren():
             m = o.getVolume()
             d = o.getNumberDensities()
+            for nuc, val in d.items():
+                if nuc not in childDensities:
+                    childDensities[nuc] = val * (m / totalVolume)
+                else:
+                    childDensities[nuc] += val * (m / totalVolume)
+
+        # verify the children match this composite
+        for nuc in ["FE", "SI"]:
+            self.assertAlmostEqual(
+                self.obj.getNumberDensity(nuc), childDensities[nuc], 4, msg=nuc
+            )
+
+    def test_getNumberDensitiesWithExpandedFissionProducts(self):
+        """Get number densities from composite.
+
+        .. test:: Get number densities.
+            :id: T_ARMI_CMP_NUC
+            :tests: R_ARMI_CMP_NUC
+        """
+        # verify the number densities from the composite
+        ndens = self.obj.getNumberDensities(expandFissionProducts=True)
+        self.assertAlmostEqual(0.0001096, ndens["SI"], 7)
+        self.assertAlmostEqual(0.0000368, ndens["W"], 7)
+
+        ndens = self.obj.getNumberDensity("SI")
+        self.assertAlmostEqual(0.0001096, ndens, 7)
+
+        # sum nuc densities from children components
+        totalVolume = self.obj.getVolume()
+        childDensities = {}
+        for o in self.obj.getChildren():
+            m = o.getVolume()
+            d = o.getNumberDensities(expandFissionProducts=True)
             for nuc, val in d.items():
                 if nuc not in childDensities:
                     childDensities[nuc] = val * (m / totalVolume)
