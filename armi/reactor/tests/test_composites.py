@@ -672,6 +672,11 @@ class TestMiscMethods(unittest.TestCase):
         group.setMass("U235", 5)
         self.assertAlmostEqual(group.getMass("U235"), 5)
 
+        # ad a second block, and confirm it works
+        group.add(loadTestBlock())
+        self.assertGreater(group.getMass("U235"), 5)
+        self.assertAlmostEqual(group.getMass("U235"), 1364.28376185)
+
     def test_getNumberDensities(self):
         """Get number densities from composite.
 
