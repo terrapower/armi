@@ -297,7 +297,7 @@ class HexReactorTests(ReactorTests):
             :tests: R_ARMI_PARAM_PART
 
         .. test:: Ensure there is a setting for total core power.
-            :id: T_ARMI_SETTINGS_POWER
+            :id: T_ARMI_SETTINGS_POWER0
             :tests: R_ARMI_SETTINGS_POWER
         """
         # Test at core level
