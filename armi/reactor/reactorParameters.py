@@ -574,7 +574,7 @@ def defineCoreParameters():
 
         pb.defParam(
             "rxFuelAxialExpansionCoeffPerPercent",
-            units="dk/kk'-%",
+            units=f"{units.REACTIVITY}/{units.PERCENT}",
             description="Fuel Axial Expansion Coefficient",
         )
 
