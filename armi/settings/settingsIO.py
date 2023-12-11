@@ -284,7 +284,6 @@ class SettingsWriter:
         preserves all settings originally in file even if they match the default value
     full
         all setting values regardless of default status
-
     """
 
     def __init__(self, settings_instance, style="short", settingsSetByUser=[]):
