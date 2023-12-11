@@ -1653,7 +1653,7 @@ class Core(composites.Composite):
         return self.getAssembly(assemNum=assemNum)
 
     def getAssemblyWithStringLocation(self, locationString):
-        """Returns an assembly or none if given a location string like 'B0014'.
+        """Returns an assembly or none if given a location string like '001-001'.
 
         .. impl:: Get assembly by location.
             :id: I_ARMI_R_GET_ASSEM_LOC
