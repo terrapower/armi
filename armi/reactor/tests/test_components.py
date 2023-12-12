@@ -547,6 +547,7 @@ class TestCircle(TestShapedComponent):
             :id: T_ARMI_COMP_VOL1
             :tests: R_ARMI_COMP_VOL
         """
+        # show we can calculate the area once
         od = self.component.getDimension("od")
         idd = self.component.getDimension("id")
         mult = self.component.getDimension("mult")
@@ -554,8 +555,20 @@ class TestCircle(TestShapedComponent):
         cur = self.component.getArea()
         self.assertAlmostEqual(cur, ref)
 
+        # show we can clear the cache, change the temp, and correctly re-calc the area
+        for newTemp in range(500, 690, 19):
+            self.component.clearCache()
+
+            # re-calc area
+            self.component.temperatureInC = newTemp
+            od = self.component.getDimension("od", Tc=newTemp)
+            idd = self.component.getDimension("id", Tc=newTemp)
+            ref = math.pi * ((od / 2) ** 2 - (idd / 2) ** 2) * mult
+            cur = self.component.getArea()
+            self.assertAlmostEqual(cur, ref)
+
     def test_componentInteractionsLinkingByDimensions(self):
-        r"""Tests linking of components by dimensions."""
+        """Tests linking of components by dimensions."""
         nPins = 217
         fuelDims = {"Tinput": 25.0, "Thot": 430.0, "od": 0.9, "id": 0.0, "mult": nPins}
         cladDims = {"Tinput": 25.0, "Thot": 430.0, "od": 1.1, "id": 1.0, "mult": nPins}
