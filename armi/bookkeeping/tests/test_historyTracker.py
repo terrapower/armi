@@ -157,7 +157,7 @@ class TestHistoryTracker(ArmiTestHelper):
         b = o.r.core.childrenByLocator[o.r.core.spatialGrid[0, 0, 0]].getFirstBlock(
             Flags.FUEL
         )
-        bVolume = b.getVolume()
+        b.getVolume()
         bName = b.name
 
         # duration is None in this DB
