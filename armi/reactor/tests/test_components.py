@@ -254,7 +254,8 @@ class TestNullComponent(TestGeneralComponents):
             :id: T_ARMI_COMP_DIMS0
             :tests: R_ARMI_COMP_DIMS
         """
-        self.assertEqual(self.component.getDimension(""), 0.0)
+        for temp in range(400, 901, 25):
+            self.assertEqual(self.component.getDimension("", Tc=temp), 0.0)
 
 
 class TestUnshapedComponent(TestGeneralComponents):
@@ -514,10 +515,10 @@ class TestCircle(TestShapedComponent):
             :id: T_ARMI_COMP_EXPANSION1
             :tests: R_ARMI_COMP_EXPANSION
         """
-        hotTemp = 700.0
-        ref = self._od * self.component.getThermalExpansionFactor(Tc=hotTemp)
-        cur = self.component.getDimension("od", Tc=hotTemp)
-        self.assertAlmostEqual(cur, ref)
+        for hotTemp in range(600, 901, 25):
+            ref = self._od * self.component.getThermalExpansionFactor(Tc=hotTemp)
+            cur = self.component.getDimension("od", Tc=hotTemp)
+            self.assertAlmostEqual(cur, ref)
 
     def test_thermallyExpands(self):
         """Test that ARMI can thermally expands a circle."""

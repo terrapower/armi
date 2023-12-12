@@ -88,17 +88,17 @@ def _removeDimensionNameSpaces(attrs):
 
 
 class NullComponent(Component):
-    r"""Returns zero for all dimensions. is none."""
+    """Returns zero for all dimensions."""
 
     def __cmp__(self, other):
-        r"""Be smaller than everything."""
+        """Be smaller than everything."""
         return -1
 
     def __lt__(self, other):
         return True
 
     def __bool__(self):
-        r"""Handles truth testing."""
+        """Handles truth testing."""
         return False
 
     __nonzero__ = __bool__  # Python2 compatibility
