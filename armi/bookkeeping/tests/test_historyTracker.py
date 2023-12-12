@@ -107,6 +107,10 @@ class TestHistoryTracker(ArmiTestHelper):
         armi.bookeeping.db.hdf.hdfDB.readBlocksHistory requires
         historical_values[historical_indices] to be cast as a list to read more than the
         first energy group. This test shows that this behavior is preserved.
+
+        .. test:: Demonstrate that a parameter stored at differing time nodes can be recovered.
+            :id: T_ARMI_HIST_TRACK0
+            :tests: R_ARMI_HIST_TRACK
         """
         o = self.o
         b = o.r.core.childrenByLocator[o.r.core.spatialGrid[0, 0, 0]].getFirstBlock(
@@ -115,9 +119,8 @@ class TestHistoryTracker(ArmiTestHelper):
         bVolume = b.getVolume()
         bName = b.name
 
-        hti = o.getInterface("history")
-
         # duration is None in this DB
+        hti = o.getInterface("history")
         timesInYears = [duration or 1.0 for duration in hti.getTimeSteps()]
         timeStepsToRead = [
             utils.getCycleNodeFromCumulativeNode(i, self.o.cs)
@@ -128,7 +131,7 @@ class TestHistoryTracker(ArmiTestHelper):
         mgFluence = None
         for ts, years in enumerate(timesInYears):
             cycle, node = utils.getCycleNodeFromCumulativeNode(ts, self.o.cs)
-            #  b.p.mgFlux is vol integrated
+            # b.p.mgFlux is vol integrated
             mgFlux = hti.getBlockHistoryVal(bName, "mgFlux", (cycle, node)) / bVolume
             timeInSec = years * 365 * 24 * 3600
             if mgFluence is None:
@@ -137,6 +140,58 @@ class TestHistoryTracker(ArmiTestHelper):
                 mgFluence += timeInSec * mgFlux
 
         self.assertTrue(len(mgFluence) > 1, "mgFluence should have more than 1 group")
+
+        # test that unloadBlockHistoryVals() is working
+        self.assertIsNotNone(hti._preloadedBlockHistory)
+        hti.unloadBlockHistoryVals()
+        self.assertIsNone(hti._preloadedBlockHistory)
+
+    def test_historyParameters(self):
+        """Retrieve various paramaters from the history.
+
+        .. test:: Demonstrate that various parameters stored at differing time nodes can be recovered.
+            :id: T_ARMI_HIST_TRACK1
+            :tests: R_ARMI_HIST_TRACK
+        """
+        o = self.o
+        b = o.r.core.childrenByLocator[o.r.core.spatialGrid[0, 0, 0]].getFirstBlock(
+            Flags.FUEL
+        )
+        bVolume = b.getVolume()
+        bName = b.name
+
+        # duration is None in this DB
+        hti = o.getInterface("history")
+        timesInYears = [duration or 1.0 for duration in hti.getTimeSteps()]
+        timeStepsToRead = [
+            utils.getCycleNodeFromCumulativeNode(i, self.o.cs)
+            for i in range(len(timesInYears))
+        ]
+        hti.preloadBlockHistoryVals([bName], ["power"], timeStepsToRead)
+
+        # read some parameters
+        params = {}
+        for param in ["height", "pdens", "power"]:
+            params[param] = []
+            for ts, years in enumerate(timesInYears):
+                cycle, node = utils.getCycleNodeFromCumulativeNode(ts, self.o.cs)
+
+                params[param].append(
+                    hti.getBlockHistoryVal(bName, param, (cycle, node))
+                )
+
+        # verify the height parameter doesn't change over time
+        self.assertGreater(params["height"][0], 0)
+        self.assertEqual(params["height"][0], params["height"][1])
+
+        # verify the power parameter is retrievable from the history
+        self.assertEqual(o.cs["power"], 1000000000.0)
+        self.assertAlmostEqual(params["power"][0], 360, delta=0.1)
+        self.assertEqual(params["power"][0], params["power"][1])
+
+        # verify the power density parameter is retrievable from the history
+        self.assertAlmostEqual(params["pdens"][0], 0.0785, delta=0.001)
+        self.assertEqual(params["pdens"][0], params["pdens"][1])
 
         # test that unloadBlockHistoryVals() is working
         self.assertIsNotNone(hti._preloadedBlockHistory)
