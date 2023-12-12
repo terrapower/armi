@@ -177,6 +177,9 @@ class Component(composites.Composite, metaclass=ComponentType):
         :id: I_ARMI_COMP_ORDER
         :implements: R_ARMI_COMP_ORDER
 
+        This is done via the __lt__() method, which is used to control sort() as the
+        standard approach in Python. However, __lt__() does not show up in the API.
+
     Attributes
     ----------
     temperatureInC : float
