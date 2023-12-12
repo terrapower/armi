@@ -305,33 +305,19 @@ TINY_GRID = """core:
 """
 
 
-class TestRoundTrip(unittest.TestCase):
+class TestGridBPRoundTrip(unittest.TestCase):
     def setUp(self):
         self.grids = Grids.load(SMALL_HEX)
 
     def test_contents(self):
         self.assertIn("core", self.grids)
 
-    def test_roundTripGrid(self):
+    def test_roundTrip(self):
         """
         Test saving blueprint data to a stream.
 
         .. test:: Grid blueprints can be written to disk.
             :id: T_ARMI_BP_TO_DB0
-            :tests: R_ARMI_BP_TO_DB
-        """
-        stream = io.StringIO()
-        saveToStream(stream, self.grids, False, True)
-        stream.seek(0)
-        gridBp = Grids.load(stream)
-        self.assertIn("third", gridBp["core"].symmetry)
-
-    def test_roundTripBP(self):
-        """
-        Test saving blueprint data to a stream.  TODO
-
-        .. test:: Blueprints can be written to disk.  TODO
-            :id: T_ARMI_BP_TO_DB
             :tests: R_ARMI_BP_TO_DB
         """
         stream = io.StringIO()
