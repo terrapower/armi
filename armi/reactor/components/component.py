@@ -289,7 +289,12 @@ class Component(composites.Composite, metaclass=ComponentType):
             self.resolveLinkedDims(components)
 
     def resolveLinkedDims(self, components):
-        """Convert dimension link strings to actual links."""
+        """Convert dimension link strings to actual links.
+
+        .. impl:: The volume of some defined shapes depend on the solid components surrounding them.
+            :id: I_ARMI_COMP_FLUID1
+            :implements: R_ARMI_COMP_FLUID
+        """
         for dimName in self.DIMENSION_NAMES:
             value = self.p[dimName]
             if not isinstance(value, str):

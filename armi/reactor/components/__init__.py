@@ -326,7 +326,7 @@ class DerivedShape(UnshapedComponent):
         """Cannot compute volume until it is derived.
 
         .. impl:: The volume of a DerivedShape depends on the solid shapes surrounding them.
-            :id: I_ARMI_COMP_FLUID
+            :id: I_ARMI_COMP_FLUID0
             :implements: R_ARMI_COMP_FLUID
         """
         return self._deriveVolumeAndArea()
