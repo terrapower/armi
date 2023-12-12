@@ -300,6 +300,10 @@ class HexReactorTests(ReactorTests):
             :id: T_ARMI_SETTINGS_POWER
             :tests: R_ARMI_SETTINGS_POWER
         """
+        # Test at reactor level
+        self.assertEqual(self.r.p.cycle, 0)
+        self.assertEqual(self.r.p.availabilityFactor, 1.0)
+
         # Test at core level
         core = self.r.core
         self.assertGreater(core.p.power, -1)
@@ -320,6 +324,10 @@ class HexReactorTests(ReactorTests):
 
         block.p.THTfuelCL = 57
         self.assertEqual(block.p.THTfuelCL, 57)
+
+        # Test at component level
+        component = block[0]
+        self.assertEqual(component.p.temperatureInC, 450.0)
 
     def test_sortChildren(self):
         self.assertEqual(next(self.r.core.__iter__()), self.r.core[0])
