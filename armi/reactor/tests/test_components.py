@@ -488,10 +488,6 @@ class TestCircle(TestShapedComponent):
     def test_getThermalExpansionFactorConservedMassByLinearExpansionPercent(self):
         """Test that when ARMI thermally expands a circle, mass is conserved.
 
-        .. test:: Circle shaped component
-            :id: T_ARMI_COMP_SHAPES0
-            :tests: R_ARMI_COMP_SHAPES
-
         .. test:: Calculate thermal expansion.
             :id: T_ARMI_COMP_EXPANSION0
             :tests: R_ARMI_COMP_EXPANSION
@@ -921,6 +917,13 @@ class TestRectangle(TestShapedComponent):
         cur = self.component.getBoundingCircleOuterDiameter(cold=True)
         self.assertAlmostEqual(ref, cur)
 
+        # verify the area of the rectangle is correct
+        ref = self.componentDims["lengthOuter"] * self.componentDims["widthOuter"]
+        ref -= self.componentDims["lengthInner"] * self.componentDims["widthInner"]
+        ref *= self.componentDims["mult"]
+        cur = self.component.getArea(cold=True)
+        self.assertAlmostEqual(cur, ref)
+
     def test_getCircleInnerDiameter(self):
         cur = self.component.getCircleInnerDiameter(cold=True)
         self.assertAlmostEqual(math.sqrt(25.0), cur)
@@ -1041,6 +1044,14 @@ class TestSquare(TestShapedComponent):
         ref = math.sqrt(18.0)
         cur = self.component.getBoundingCircleOuterDiameter(cold=True)
         self.assertAlmostEqual(ref, cur)
+
+        # verify the area of the circle is correct
+        ref = (
+            self.componentDims["widthOuter"] ** 2
+            - self.componentDims["widthInner"] ** 2
+        )
+        cur = self.component.getComponentArea(cold=True)
+        self.assertAlmostEqual(cur, ref)
 
     def test_getCircleInnerDiameter(self):
         ref = math.sqrt(8.0)
