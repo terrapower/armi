@@ -253,7 +253,7 @@ class ParameterTests(unittest.TestCase):
         mock.nPlus1 = 22
         self.assertEqual(21, mock.n)
         self.assertEqual(22, mock.nPlus1)
-        self.assertTrue(all(pd.assigned for pd in mock.paramDefs))
+        self.assertTrue(all(pd.assigned != parameters.NEVER for pd in mock.paramDefs))
 
     def test_setterGetterBasics(self):
         """Test the Parameter setter/getter tooling, through the lifecycle of a Parameter being updated.
