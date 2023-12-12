@@ -725,12 +725,25 @@ class TestMiscMethods(unittest.TestCase):
         ndens = self.obj.getNumberDensity("SI")
         self.assertAlmostEqual(0.0001096, ndens, 7)
 
+        # set the lumped fission product mapping
+        fpd = getDummyLFPFile()
+        lfps = fpd.createLFPsFromFile()
+        self.obj.setLumpedFissionProducts(lfps)
+
         # sum nuc densities from children components
         totalVolume = self.obj.getVolume()
         childDensities = {}
         for o in self.obj.getChildren():
-            m = o.getVolume()
+            # get the number densities with and without fission products
+            d0 = o.getNumberDensities(expandFissionProducts=False)
             d = o.getNumberDensities(expandFissionProducts=True)
+
+            # prove that the expanded fission products have more isotopes
+            if len(d0) > 0:
+                self.assertGreater(len(d), len(d0))
+
+            # sum the child nuclide densites (weighted by mass fraction)
+            m = o.getVolume()
             for nuc, val in d.items():
                 if nuc not in childDensities:
                     childDensities[nuc] = val * (m / totalVolume)
