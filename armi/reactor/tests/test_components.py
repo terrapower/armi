@@ -1494,7 +1494,7 @@ class TestSphere(TestShapedComponent):
     def test_getVolume(self):
         """Calculate area of sphere.
 
-        .. test:: Calculate area of sphere.
+        .. test:: Calculate volume of sphere.
             :id: T_ARMI_COMP_VOL12
             :tests: R_ARMI_COMP_VOL
         """
