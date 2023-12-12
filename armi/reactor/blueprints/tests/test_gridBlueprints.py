@@ -312,11 +312,25 @@ class TestRoundTrip(unittest.TestCase):
     def test_contents(self):
         self.assertIn("core", self.grids)
 
-    def test_roundTrip(self):
+    def test_roundTripGrid(self):
         """
         Test saving blueprint data to a stream.
 
-        .. test:: Blueprints can be written to disk.
+        .. test:: Grid blueprints can be written to disk.
+            :id: T_ARMI_BP_TO_DB0
+            :tests: R_ARMI_BP_TO_DB
+        """
+        stream = io.StringIO()
+        saveToStream(stream, self.grids, False, True)
+        stream.seek(0)
+        gridBp = Grids.load(stream)
+        self.assertIn("third", gridBp["core"].symmetry)
+
+    def test_roundTripBP(self):
+        """
+        Test saving blueprint data to a stream.  TODO
+
+        .. test:: Blueprints can be written to disk.  TODO
             :id: T_ARMI_BP_TO_DB
             :tests: R_ARMI_BP_TO_DB
         """
@@ -326,7 +340,7 @@ class TestRoundTrip(unittest.TestCase):
         gridBp = Grids.load(stream)
         self.assertIn("third", gridBp["core"].symmetry)
 
-    def test_tiny_map(self):
+    def test_tinyMap(self):
         """
         Test that a lattice map can be defined, written, and read in from blueprint file.
 
