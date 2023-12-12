@@ -316,7 +316,7 @@ class TestRoundTrip(unittest.TestCase):
         """
         Test saving blueprint data to a stream.
 
-        .. test:: Blueprints settings can be written to disk.
+        .. test:: Blueprints can be written to disk.
             :id: T_ARMI_BP_TO_DB
             :tests: R_ARMI_BP_TO_DB
         """

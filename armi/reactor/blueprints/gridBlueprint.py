@@ -144,6 +144,10 @@ class GridBlueprint(yamlize.Object):
     The grids get origins either from a parent block (for pin lattices)
     or from a System (for Cores, SFPs, and other components).
 
+    .. impl:: Define a lattice map in reactor core.
+        :id: I_ARMI_BP_GRID
+        :implements: R_ARMI_BP_GRID
+
     Attributes
     ----------
     name : str
@@ -163,7 +167,6 @@ class GridBlueprint(yamlize.Object):
     gridContents : dict
         A {(i,j): str} dictionary mapping spatialGrid indices
         in 2-D to string specifiers of what's supposed to be in the grid.
-
     """
 
     name = yamlize.Attribute(key="name", type=str)
@@ -246,12 +249,7 @@ class GridBlueprint(yamlize.Object):
         self._readFromLatticeMap = value
 
     def construct(self):
-        """Build a Grid from a grid definition.
-
-        .. impl:: Define a lattice map in reactor core.
-            :id: I_ARMI_BP_GRID
-            :implements: R_ARMI_BP_GRID
-        """
+        """Build a Grid from a grid definition."""
         self._readGridContents()
         grid = self._constructSpatialGrid()
         return grid
