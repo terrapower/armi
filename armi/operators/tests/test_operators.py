@@ -438,6 +438,12 @@ settings:
         self.detailedOperator = Operator(self.standaloneDetailedCS)
 
     def test_getPowerFractions(self):
+        """Test that the power fractions are calculated correctly.
+
+        .. test:: Test the powerFractions are retrieved correctly for multiple cycles.
+            :id: T_ARMI_SETTINGS_POWER1
+            :tests: R_ARMI_SETTINGS_POWER
+        """
         self.assertEqual(
             self.detailedOperator.powerFractions, self.powerFractionsSolution
         )

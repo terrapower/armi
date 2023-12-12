@@ -135,12 +135,40 @@ class TestDatabaseWriter(unittest.TestCase):
     def tearDown(self):
         self.td.__exit__(None, None, None)
 
-    def test_metaData_endSuccessfully(self):
-        def goodMethod(cycle, node):
-            pass
+    def test_writeSystemAttributes(self):
+        """Test the writeSystemAttributes method.
 
+        .. test:: Validate that we can directly write system attributes to a database file.
+            :id: T_ARMI_DB_QA0
+            :tests: R_ARMI_DB_QA
+        """
+        with h5py.File("test_writeSystemAttributes.h5", "w") as h5:
+            Database3.writeSystemAttributes(h5)
+
+        with h5py.File("test_writeSystemAttributes.h5", "r") as h5:
+            self.assertIn("user", h5.attrs)
+            self.assertIn("python", h5.attrs)
+            self.assertIn("armiLocation", h5.attrs)
+            self.assertIn("startTime", h5.attrs)
+            self.assertIn("machines", h5.attrs)
+            self.assertIn("platform", h5.attrs)
+            self.assertIn("hostname", h5.attrs)
+            self.assertIn("platformRelease", h5.attrs)
+            self.assertIn("platformVersion", h5.attrs)
+            self.assertIn("platformArch", h5.attrs)
+
+    def test_metaData_endSuccessfully(self):
+        """Test databases have the correct metadata in them.
+
+        .. test:: Validate that databases have system attributes written to them during the usual workflow.
+            :id: T_ARMI_DB_QA1
+            :tests: R_ARMI_DB_QA
+        """
         # the power should start at zero
         self.assertEqual(self.r.core.p.power, 0)
+
+        def goodMethod(cycle, node):
+            pass
 
         self.o.interfaces.append(MockInterface(self.o.r, self.o.cs, goodMethod))
         with self.o:
@@ -152,15 +180,23 @@ class TestDatabaseWriter(unittest.TestCase):
         with h5py.File(self.o.cs.caseTitle + ".h5", "r") as h5:
             self.assertTrue(h5.attrs["successfulCompletion"])
             self.assertEqual(h5.attrs["version"], version)
+
+            self.assertIn("caseTitle", h5.attrs)
+            self.assertIn("geomFile", h5["inputs"])
+            self.assertIn("settings", h5["inputs"])
+            self.assertIn("blueprints", h5["inputs"])
+
+            # validate system attributes
             self.assertIn("user", h5.attrs)
             self.assertIn("python", h5.attrs)
             self.assertIn("armiLocation", h5.attrs)
             self.assertIn("startTime", h5.attrs)
             self.assertIn("machines", h5.attrs)
-            self.assertIn("caseTitle", h5.attrs)
-            self.assertIn("geomFile", h5["inputs"])
-            self.assertIn("settings", h5["inputs"])
-            self.assertIn("blueprints", h5["inputs"])
+            self.assertIn("platform", h5.attrs)
+            self.assertIn("hostname", h5.attrs)
+            self.assertIn("platformRelease", h5.attrs)
+            self.assertIn("platformVersion", h5.attrs)
+            self.assertIn("platformArch", h5.attrs)
 
         # after operating, the power will be greater than zero
         self.assertGreater(self.r.core.p.power, 1e9)

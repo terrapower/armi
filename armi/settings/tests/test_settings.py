@@ -107,6 +107,33 @@ class TestCaseSettings(unittest.TestCase):
         self.cs.updateEnvironmentSettingsFrom(newEnv)
         self.assertEqual(self.cs["verbosity"], "9")
 
+    def test_metaData(self):
+        """Test we can get and set the important settings metadata.
+
+        .. test:: Test getting and setting import settings metadata.
+            :id: T_ARMI_SETTINGS_META
+            :tests: R_ARMI_SETTINGS_META
+        """
+        # test get/set on caseTitle
+        self.assertEqual(self.cs.caseTitle, "armi")
+        testTitle = "test_metaData"
+        self.cs.caseTitle = testTitle
+        self.assertEqual(self.cs.caseTitle, testTitle)
+
+        # test get/set on comment
+        self.assertEqual(self.cs["comment"], "")
+        testComment = "Comment: test_metaData"
+        self.cs = self.cs.modified(newSettings={"comment": testComment})
+        self.assertEqual(self.cs["comment"], testComment)
+
+        # test get/set on version
+        self.assertEqual(len(self.cs["versions"]), 0)
+        self.cs = self.cs.modified(newSettings={"versions": {"something": 1.234}})
+
+        d = self.cs["versions"]
+        self.assertEqual(len(d), 1)
+        self.assertEqual(d["something"], 1.234)
+
 
 class TestAddingOptions(unittest.TestCase):
     def setUp(self):
