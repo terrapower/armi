@@ -1248,8 +1248,10 @@ class Block_TestCase(unittest.TestCase):
         )
         self.assertIsNotNone(self.block.getComponentByName("annular void"))
 
-    def test_getSortedComponentsInsideOfComponent(self):
+    def test_getSortedComponentsInsideOfComponentClad(self):
         """Test that components can be sorted within a block and returned in the correct order.
+
+        For an arbitrary example: a clad component.
 
         .. test:: Get children by name.
             :id: T_ARMI_CMP_BY_NAME1
@@ -1272,12 +1274,10 @@ class Block_TestCase(unittest.TestCase):
         actual = self.block.getSortedComponentsInsideOfComponent(clad)
         self.assertListEqual(actual, expected)
 
-    def test_getSortedComponentsInsideOfComponentSpecifiedTypes(self):
+    def test_getSortedComponentsInsideOfComponentDuct(self):
         """Test that components can be sorted within a block and returned in the correct order.
 
-        .. test:: Get children by name.
-            :id: T_ARMI_CMP_BY_NAME2
-            :tests: R_ARMI_CMP_BY_NAME
+        For an arbitrary example: a duct.
         """
         expected = [
             self.block.getComponentByName(c)
@@ -1290,9 +1290,12 @@ class Block_TestCase(unittest.TestCase):
                 "gap2",
                 "outer liner",
                 "gap3",
+                "clad",
+                "wire",
+                "coolant",
             ]
         ]
-        clad = self.block.getComponent(Flags.CLAD)
+        clad = self.block.getComponent(Flags.DUCT)
         actual = self.block.getSortedComponentsInsideOfComponent(clad)
         self.assertListEqual(actual, expected)
 

@@ -673,7 +673,7 @@ class ArmiObject(metaclass=CompositeModelType):
         Determine if this object is of a certain type.
 
         .. impl:: Composites have queriable flags.
-            :id: I_ARMI_CMP_FLAG
+            :id: I_ARMI_CMP_FLAG0
             :implements: R_ARMI_CMP_FLAG
 
         Parameters
@@ -766,6 +766,10 @@ class ArmiObject(metaclass=CompositeModelType):
     def setType(self, typ, flags: Optional[Flags] = None):
         """
         Set the object type.
+
+        .. impl:: Composites have modifiable flags.
+            :id: I_ARMI_CMP_FLAG1
+            :implements: R_ARMI_CMP_FLAG
 
         Parameters
         ----------

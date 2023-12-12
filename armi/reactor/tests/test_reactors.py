@@ -246,10 +246,6 @@ class HexReactorTests(ReactorTests):
         .. test:: The reactor object includes a core and an SFP.
             :id: T_ARMI_R_CHILDREN1
             :tests: R_ARMI_R_CHILDREN
-
-        .. test:: Components are a physical part of the reactor.
-            :id: T_ARMI_CMP2
-            :tests: R_ARMI_CMP
         """
         self.assertTrue(isinstance(self.r.core, reactors.Core))
         self.assertTrue(isinstance(self.r.sfp, SpentFuelPool))

@@ -113,10 +113,6 @@ class TestCompositePattern(unittest.TestCase):
     def test_composite(self):
         """Test basic Composite things.
 
-        .. test:: Composites are a physical part of the reactor.
-            :id: T_ARMI_CMP0
-            :tests: R_ARMI_CMP
-
         .. test:: Composites are part of a hierarchical model.
             :id: T_ARMI_CMP_CHILDREN0
             :tests: R_ARMI_CMP_CHILDREN
@@ -135,10 +131,6 @@ class TestCompositePattern(unittest.TestCase):
 
     def test_getChildren(self):
         """Test the get children method.
-
-        .. test:: Composites are a physical part of the reactor.
-            :id: T_ARMI_CMP1
-            :tests: R_ARMI_CMP
 
         .. test:: Composites are part of a hierarchical model.
             :id: T_ARMI_CMP_CHILDREN1
@@ -680,23 +672,89 @@ class TestMiscMethods(unittest.TestCase):
         group.setMass("U235", 5)
         self.assertAlmostEqual(group.getMass("U235"), 5)
 
+        # ad a second block, and confirm it works
+        group.add(loadTestBlock())
+        self.assertGreater(group.getMass("U235"), 5)
+        self.assertAlmostEqual(group.getMass("U235"), 1364.28376185)
+
     def test_getNumberDensities(self):
         """Get number densities from composite.
 
         .. test:: Number density of composite is retrievable.
             :id: T_ARMI_CMP_GET_NDENS0
             :tests: R_ARMI_CMP_GET_NDENS
-
-        .. test:: Get number densities.
-            :id: T_ARMI_CMP_NUC
-            :tests: R_ARMI_CMP_NUC
         """
+        # verify the number densities from the composite
         ndens = self.obj.getNumberDensities()
         self.assertAlmostEqual(0.0001096, ndens["SI"], 7)
         self.assertAlmostEqual(0.0000368, ndens["W"], 7)
 
         ndens = self.obj.getNumberDensity("SI")
         self.assertAlmostEqual(0.0001096, ndens, 7)
+
+        # sum nuc densities from children components
+        totalVolume = self.obj.getVolume()
+        childDensities = {}
+        for o in self.obj.getChildren():
+            m = o.getVolume()
+            d = o.getNumberDensities()
+            for nuc, val in d.items():
+                if nuc not in childDensities:
+                    childDensities[nuc] = val * (m / totalVolume)
+                else:
+                    childDensities[nuc] += val * (m / totalVolume)
+
+        # verify the children match this composite
+        for nuc in ["FE", "SI"]:
+            self.assertAlmostEqual(
+                self.obj.getNumberDensity(nuc), childDensities[nuc], 4, msg=nuc
+            )
+
+    def test_getNumberDensitiesWithExpandedFissionProducts(self):
+        """Get number densities from composite.
+
+        .. test:: Get number densities.
+            :id: T_ARMI_CMP_NUC
+            :tests: R_ARMI_CMP_NUC
+        """
+        # verify the number densities from the composite
+        ndens = self.obj.getNumberDensities(expandFissionProducts=True)
+        self.assertAlmostEqual(0.0001096, ndens["SI"], 7)
+        self.assertAlmostEqual(0.0000368, ndens["W"], 7)
+
+        ndens = self.obj.getNumberDensity("SI")
+        self.assertAlmostEqual(0.0001096, ndens, 7)
+
+        # set the lumped fission product mapping
+        fpd = getDummyLFPFile()
+        lfps = fpd.createLFPsFromFile()
+        self.obj.setLumpedFissionProducts(lfps)
+
+        # sum nuc densities from children components
+        totalVolume = self.obj.getVolume()
+        childDensities = {}
+        for o in self.obj.getChildren():
+            # get the number densities with and without fission products
+            d0 = o.getNumberDensities(expandFissionProducts=False)
+            d = o.getNumberDensities(expandFissionProducts=True)
+
+            # prove that the expanded fission products have more isotopes
+            if len(d0) > 0:
+                self.assertGreater(len(d), len(d0))
+
+            # sum the child nuclide densites (weighted by mass fraction)
+            m = o.getVolume()
+            for nuc, val in d.items():
+                if nuc not in childDensities:
+                    childDensities[nuc] = val * (m / totalVolume)
+                else:
+                    childDensities[nuc] += val * (m / totalVolume)
+
+        # verify the children match this composite
+        for nuc in ["FE", "SI"]:
+            self.assertAlmostEqual(
+                self.obj.getNumberDensity(nuc), childDensities[nuc], 4, msg=nuc
+            )
 
     def test_dimensionReport(self):
         report = self.obj.setComponentDimensionsReport()
