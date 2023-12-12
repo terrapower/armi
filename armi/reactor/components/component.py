@@ -797,6 +797,10 @@ class Component(composites.Composite, metaclass=ComponentType):
         """
         Set a single dimension on the component.
 
+        .. impl:: Set a component dimension, considering thermal expansion.
+            :id: I_ARMI_COMP_EXPANSION1
+            :implements: R_ARMI_COMP_EXPANSION
+
         Parameters
         ----------
         key : str
@@ -907,7 +911,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         Retrieves the material thermal expansion fraction.
 
         .. impl:: Calculates radial thermal expansion factor.
-            :id: I_ARMI_COMP_EXPANSION
+            :id: I_ARMI_COMP_EXPANSION0
             :implements: R_ARMI_COMP_EXPANSION
 
         Parameters
