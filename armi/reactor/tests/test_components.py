@@ -174,10 +174,6 @@ class TestComponent(TestGeneralComponents):
         .. test:: Components are made of one material.
             :id: T_ARMI_COMP_1MAT0
             :tests: R_ARMI_COMP_1MAT
-
-        .. test:: Define a component.
-            :id: T_ARMI_COMP_DEF0
-            :tests: R_ARMI_COMP_DEF
         """
         expectedName = "TestComponent"
         actualName = self.component.getName()
@@ -241,12 +237,7 @@ class TestNullComponent(TestGeneralComponents):
     componentCls = NullComponent
 
     def test_cmp(self):
-        """Test null component.
-
-        .. test:: Define a component.
-            :id: T_ARMI_COMP_DEF1
-            :tests: R_ARMI_COMP_DEF
-        """
+        """Test null component."""
         cur = self.component
         ref = DerivedShape("DerivedShape", "Material", 0, 0)
         self.assertLess(cur, ref)
@@ -965,12 +956,7 @@ class TestSolidRectangle(TestShapedComponent):
     }
 
     def test_getBoundingCircleOuterDiameter(self):
-        """Test get bounding circle of the outer diameter.
-
-        .. test:: Define a component.
-            :id: T_ARMI_COMP_DEF2
-            :tests: R_ARMI_COMP_DEF
-        """
+        """Test get bounding circle of the outer diameter."""
         ref = math.sqrt(50)
         cur = self.component.getBoundingCircleOuterDiameter(cold=True)
         self.assertAlmostEqual(ref, cur)
