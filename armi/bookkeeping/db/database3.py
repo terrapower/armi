@@ -201,23 +201,14 @@ class Database3:
                 "Cannot open database with permission `{}`".format(self._permission)
             )
 
+        # open the database, and write a bunch of metadata to it
         runLog.info("Opening database file at {}".format(os.path.abspath(filePath)))
         self.h5db = h5py.File(filePath, self._permission)
         self.h5db.attrs["successfulCompletion"] = False
         self.h5db.attrs["version"] = meta.__version__
         self.h5db.attrs["databaseVersion"] = self.version
-        self.h5db.attrs["user"] = context.USER
-        self.h5db.attrs["python"] = sys.version
-        self.h5db.attrs["armiLocation"] = os.path.dirname(context.ROOT)
-        self.h5db.attrs["startTime"] = context.START_TIME
-        self.h5db.attrs["machines"] = numpy.array(context.MPI_NODENAMES).astype("S")
-        # store platform data
-        platform_data = uname()
-        self.h5db.attrs["platform"] = platform_data.system
-        self.h5db.attrs["hostname"] = platform_data.node
-        self.h5db.attrs["platformRelease"] = platform_data.release
-        self.h5db.attrs["platformVersion"] = platform_data.version
-        self.h5db.attrs["platformArch"] = platform_data.processor
+        self.writeSystemAttributes(self.h5db)
+
         # store app and plugin data
         app = getApp()
         self.h5db.attrs["appName"] = app.name
@@ -228,8 +219,24 @@ class Database3:
         ]
         ps = numpy.array([str(p[0]) + ":" + str(p[1]) for p in ps]).astype("S")
         self.h5db.attrs["pluginPaths"] = ps
-        # store the commit hash of the local repo
         self.h5db.attrs["localCommitHash"] = Database3.grabLocalCommitHash()
+
+    @staticmethod
+    def writeSystemAttributes(h5db):
+        """Write system attributes to the database."""
+        h5db.attrs["user"] = context.USER
+        h5db.attrs["python"] = sys.version
+        h5db.attrs["armiLocation"] = os.path.dirname(context.ROOT)
+        h5db.attrs["startTime"] = context.START_TIME
+        h5db.attrs["machines"] = numpy.array(context.MPI_NODENAMES).astype("S")
+
+        # store platform data
+        platform_data = uname()
+        h5db.attrs["platform"] = platform_data.system
+        h5db.attrs["hostname"] = platform_data.node
+        h5db.attrs["platformRelease"] = platform_data.release
+        h5db.attrs["platformVersion"] = platform_data.version
+        h5db.attrs["platformArch"] = platform_data.processor
 
     @staticmethod
     def grabLocalCommitHash():
