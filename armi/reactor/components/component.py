@@ -177,6 +177,9 @@ class Component(composites.Composite, metaclass=ComponentType):
         :id: I_ARMI_COMP_ORDER
         :implements: R_ARMI_COMP_ORDER
 
+        This is done via the __lt__() method, which is used to control sort() as the
+        standard approach in Python. However, __lt__() does not show up in the API.
+
     Attributes
     ----------
     temperatureInC : float
@@ -286,7 +289,12 @@ class Component(composites.Composite, metaclass=ComponentType):
             self.resolveLinkedDims(components)
 
     def resolveLinkedDims(self, components):
-        """Convert dimension link strings to actual links."""
+        """Convert dimension link strings to actual links.
+
+        .. impl:: The volume of some defined shapes depend on the solid components surrounding them.
+            :id: I_ARMI_COMP_FLUID1
+            :implements: R_ARMI_COMP_FLUID
+        """
         for dimName in self.DIMENSION_NAMES:
             value = self.p[dimName]
             if not isinstance(value, str):
@@ -794,6 +802,10 @@ class Component(composites.Composite, metaclass=ComponentType):
         """
         Set a single dimension on the component.
 
+        .. impl:: Set a component dimension, considering thermal expansion.
+            :id: I_ARMI_COMP_EXPANSION1
+            :implements: R_ARMI_COMP_EXPANSION
+
         Parameters
         ----------
         key : str
@@ -904,7 +916,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         Retrieves the material thermal expansion fraction.
 
         .. impl:: Calculates radial thermal expansion factor.
-            :id: I_ARMI_COMP_EXPANSION
+            :id: I_ARMI_COMP_EXPANSION0
             :implements: R_ARMI_COMP_EXPANSION
 
         Parameters

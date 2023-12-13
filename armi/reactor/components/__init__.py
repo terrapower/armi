@@ -88,17 +88,17 @@ def _removeDimensionNameSpaces(attrs):
 
 
 class NullComponent(Component):
-    r"""Returns zero for all dimensions. is none."""
+    """Returns zero for all dimensions."""
 
     def __cmp__(self, other):
-        r"""Be smaller than everything."""
+        """Be smaller than everything."""
         return -1
 
     def __lt__(self, other):
         return True
 
     def __bool__(self):
-        r"""Handles truth testing."""
+        """Handles truth testing."""
         return False
 
     __nonzero__ = __bool__  # Python2 compatibility
@@ -326,7 +326,7 @@ class DerivedShape(UnshapedComponent):
         """Cannot compute volume until it is derived.
 
         .. impl:: The volume of a DerivedShape depends on the solid shapes surrounding them.
-            :id: I_ARMI_COMP_FLUID
+            :id: I_ARMI_COMP_FLUID0
             :implements: R_ARMI_COMP_FLUID
         """
         return self._deriveVolumeAndArea()

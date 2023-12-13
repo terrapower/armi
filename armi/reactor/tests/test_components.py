@@ -174,10 +174,6 @@ class TestComponent(TestGeneralComponents):
         .. test:: Components are made of one material.
             :id: T_ARMI_COMP_1MAT0
             :tests: R_ARMI_COMP_1MAT
-
-        .. test:: Define a component.
-            :id: T_ARMI_COMP_DEF0
-            :tests: R_ARMI_COMP_DEF
         """
         expectedName = "TestComponent"
         actualName = self.component.getName()
@@ -241,12 +237,7 @@ class TestNullComponent(TestGeneralComponents):
     componentCls = NullComponent
 
     def test_cmp(self):
-        """Test null component.
-
-        .. test:: Define a component.
-            :id: T_ARMI_COMP_DEF1
-            :tests: R_ARMI_COMP_DEF
-        """
+        """Test null component."""
         cur = self.component
         ref = DerivedShape("DerivedShape", "Material", 0, 0)
         self.assertLess(cur, ref)
@@ -263,7 +254,8 @@ class TestNullComponent(TestGeneralComponents):
             :id: T_ARMI_COMP_DIMS0
             :tests: R_ARMI_COMP_DIMS
         """
-        self.assertEqual(self.component.getDimension(""), 0.0)
+        for temp in range(400, 901, 25):
+            self.assertEqual(self.component.getDimension("", Tc=temp), 0.0)
 
 
 class TestUnshapedComponent(TestGeneralComponents):
@@ -496,10 +488,6 @@ class TestCircle(TestShapedComponent):
     def test_getThermalExpansionFactorConservedMassByLinearExpansionPercent(self):
         """Test that when ARMI thermally expands a circle, mass is conserved.
 
-        .. test:: Circle shaped component
-            :id: T_ARMI_COMP_SHAPES0
-            :tests: R_ARMI_COMP_SHAPES
-
         .. test:: Calculate thermal expansion.
             :id: T_ARMI_COMP_EXPANSION0
             :tests: R_ARMI_COMP_EXPANSION
@@ -523,10 +511,10 @@ class TestCircle(TestShapedComponent):
             :id: T_ARMI_COMP_EXPANSION1
             :tests: R_ARMI_COMP_EXPANSION
         """
-        hotTemp = 700.0
-        ref = self._od * self.component.getThermalExpansionFactor(Tc=hotTemp)
-        cur = self.component.getDimension("od", Tc=hotTemp)
-        self.assertAlmostEqual(cur, ref)
+        for hotTemp in range(600, 901, 25):
+            ref = self._od * self.component.getThermalExpansionFactor(Tc=hotTemp)
+            cur = self.component.getDimension("od", Tc=hotTemp)
+            self.assertAlmostEqual(cur, ref)
 
     def test_thermallyExpands(self):
         """Test that ARMI can thermally expands a circle."""
@@ -555,6 +543,7 @@ class TestCircle(TestShapedComponent):
             :id: T_ARMI_COMP_VOL1
             :tests: R_ARMI_COMP_VOL
         """
+        # show we can calculate the area once
         od = self.component.getDimension("od")
         idd = self.component.getDimension("id")
         mult = self.component.getDimension("mult")
@@ -562,8 +551,20 @@ class TestCircle(TestShapedComponent):
         cur = self.component.getArea()
         self.assertAlmostEqual(cur, ref)
 
+        # show we can clear the cache, change the temp, and correctly re-calc the area
+        for newTemp in range(500, 690, 19):
+            self.component.clearCache()
+
+            # re-calc area
+            self.component.temperatureInC = newTemp
+            od = self.component.getDimension("od", Tc=newTemp)
+            idd = self.component.getDimension("id", Tc=newTemp)
+            ref = math.pi * ((od / 2) ** 2 - (idd / 2) ** 2) * mult
+            cur = self.component.getArea()
+            self.assertAlmostEqual(cur, ref)
+
     def test_componentInteractionsLinkingByDimensions(self):
-        r"""Tests linking of components by dimensions."""
+        """Tests linking of components by dimensions."""
         nPins = 217
         fuelDims = {"Tinput": 25.0, "Thot": 430.0, "od": 0.9, "id": 0.0, "mult": nPins}
         cladDims = {"Tinput": 25.0, "Thot": 430.0, "od": 1.1, "id": 1.0, "mult": nPins}
@@ -916,6 +917,13 @@ class TestRectangle(TestShapedComponent):
         cur = self.component.getBoundingCircleOuterDiameter(cold=True)
         self.assertAlmostEqual(ref, cur)
 
+        # verify the area of the rectangle is correct
+        ref = self.componentDims["lengthOuter"] * self.componentDims["widthOuter"]
+        ref -= self.componentDims["lengthInner"] * self.componentDims["widthInner"]
+        ref *= self.componentDims["mult"]
+        cur = self.component.getArea(cold=True)
+        self.assertAlmostEqual(cur, ref)
+
     def test_getCircleInnerDiameter(self):
         cur = self.component.getCircleInnerDiameter(cold=True)
         self.assertAlmostEqual(math.sqrt(25.0), cur)
@@ -965,12 +973,7 @@ class TestSolidRectangle(TestShapedComponent):
     }
 
     def test_getBoundingCircleOuterDiameter(self):
-        """Test get bounding circle of the outer diameter.
-
-        .. test:: Define a component.
-            :id: T_ARMI_COMP_DEF2
-            :tests: R_ARMI_COMP_DEF
-        """
+        """Test get bounding circle of the outer diameter."""
         ref = math.sqrt(50)
         cur = self.component.getBoundingCircleOuterDiameter(cold=True)
         self.assertAlmostEqual(ref, cur)
@@ -1041,6 +1044,14 @@ class TestSquare(TestShapedComponent):
         ref = math.sqrt(18.0)
         cur = self.component.getBoundingCircleOuterDiameter(cold=True)
         self.assertAlmostEqual(ref, cur)
+
+        # verify the area of the circle is correct
+        ref = (
+            self.componentDims["widthOuter"] ** 2
+            - self.componentDims["widthInner"] ** 2
+        )
+        cur = self.component.getComponentArea(cold=True)
+        self.assertAlmostEqual(cur, ref)
 
     def test_getCircleInnerDiameter(self):
         ref = math.sqrt(8.0)
@@ -1507,7 +1518,7 @@ class TestSphere(TestShapedComponent):
     def test_getVolume(self):
         """Calculate area of sphere.
 
-        .. test:: Calculate area of sphere.
+        .. test:: Calculate volume of sphere.
             :id: T_ARMI_COMP_VOL12
             :tests: R_ARMI_COMP_VOL
         """
