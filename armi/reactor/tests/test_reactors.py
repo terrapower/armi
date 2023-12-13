@@ -720,7 +720,7 @@ class HexReactorTests(ReactorTests):
 
     def test_getAssemblyWithLoc(self):
         """
-        Get assembly by location.
+        Get assembly by location, in a couple different ways to ensure they all work.
 
         .. test:: Get assembly by location.
             :id: T_ARMI_R_GET_ASSEM_LOC
@@ -746,6 +746,7 @@ class HexReactorTests(ReactorTests):
         a2 = self.r.core.getAssembly(assemblyName="A0010")
 
         self.assertEqual(a1, a2)
+        self.assertEqual(a1.name, "A0010")
 
     def test_restoreReactor(self):
         """Restore a reactor after growing it from third to full core.
