@@ -111,11 +111,8 @@ class TestGlobalFluxOptions(unittest.TestCase):
         """Test reading global flux options from case settings.
 
         .. test:: Tests GlobalFluxOptions.
-            :id: T_ARMI_FLUX_OPTIONS_FROM_CASE_SETTINGS
+            :id: T_ARMI_FLUX_OPTIONS_CS
             :tests: R_ARMI_FLUX_OPTIONS
-            :acceptance_criteria: This test is satisfied when it demonstrates
-            the ability of the globalFluxInterface to read options from a case
-            settings object.
         """
         cs = settings.Settings()
         opts = globalFluxInterface.GlobalFluxOptions("neutronics-run")
@@ -126,11 +123,8 @@ class TestGlobalFluxOptions(unittest.TestCase):
         """Test reading global flux options from reactor objects.
 
         .. test:: Tests GlobalFluxOptions.
-            :id: T_ARMI_FLUX_OPTIONS_FROM_REACTOR
+            :id: T_ARMI_FLUX_OPTIONS_R
             :tests: R_ARMI_FLUX_OPTIONS
-            :acceptance_criteria: This test is satisfied when it demonstrates
-            the ability of the globalFluxInterface to read options from a
-            reactor object.
         """
         reactor = MockReactor()
         opts = globalFluxInterface.GlobalFluxOptions("neutronics-run")
