@@ -726,10 +726,13 @@ class HexReactorTests(ReactorTests):
             :id: T_ARMI_R_GET_ASSEM_LOC
             :tests: R_ARMI_R_GET_ASSEM_LOC
         """
+        a0 = self.r.core.getAssemblyWithStringLocation("003-001")
         a1 = self.r.core.getAssemblyWithAssemNum(assemNum=10)
         a2 = self.r.core.getAssembly(locationString="003-001")
 
+        self.assertEqual(a0, a2)
         self.assertEqual(a1, a2)
+        self.assertEqual(a1.getLocation(), "003-001")
 
     def test_getAssemblyWithName(self):
         """
