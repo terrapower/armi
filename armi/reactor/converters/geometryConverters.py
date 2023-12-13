@@ -435,8 +435,16 @@ class HexToRZThetaConverter(GeometryConverter):
         r : Reactor object
             The reactor to convert.
 
+        .. impl:: Tool to convert a hex core to an RZTheta core.
+            :id: I_ARMI_CONV_3DHEX_TO_2DRZ
+            :implements: R_ARMI_CONV_3DHEX_TO_2DRZ
+
         Notes
         -----
+        The linked requirement technically points to a child class of this class,
+        HexToRZConverter. However, this is the method where the conversion actually happens
+        and thus the implementation tag is noted here.
+
         As a part of the RZT mesh converters it is possible to obtain a radial mesh that
         has repeated ring numbers.  For instance, if there are fuel assemblies and control
         assemblies within the same radial hex ring then it's possible that a radial mesh
@@ -1199,10 +1207,6 @@ class HexToRZConverter(HexToRZThetaConverter):
 
     This is a subclass of the HexToRZThetaConverter. See the HexToRZThetaConverter for
     explanation and setup of the converterSettings.
-
-    .. impl:: Tool to convert a hex core to an RZTheta core.
-        :id: I_ARMI_CONV_3DHEX_TO_2DRZ
-        :implements: R_ARMI_CONV_3DHEX_TO_2DRZ
     """
 
     _GEOMETRY_TYPE = geometry.GeomType.RZ
