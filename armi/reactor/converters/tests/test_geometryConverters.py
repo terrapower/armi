@@ -141,7 +141,14 @@ class TestHexToRZConverter(unittest.TestCase):
         del self.r
 
     def test_convert(self):
-        """Test the HexToRZConverter.
+        """Test HexToRZConverter.convert().
+
+        Notes
+        -----
+        Ensure the converted reactor has 1) nuclides and nuclide masses that match the
+        original reactor, 2) for a given (r,z,theta) location the expected block type exists,
+        3) the converted reactor has the right (r,z,theta) coordinates, and 4) the converted
+        reactor blocks all have a single (homogenized) component.
 
         .. test:: Convert a 3D hex reactor core to an RZ-Theta core.
             :id: T_ARMI_CONV_3DHEX_TO_2DRZ
