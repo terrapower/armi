@@ -244,7 +244,7 @@ class HexReactorTests(ReactorTests):
             :tests: R_ARMI_R
 
         .. test:: The reactor object includes a core and an SFP.
-            :id: T_ARMI_R_CHILDREN1
+            :id: T_ARMI_R_CHILDREN
             :tests: R_ARMI_R_CHILDREN
         """
         self.assertTrue(isinstance(self.r.core, reactors.Core))
