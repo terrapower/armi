@@ -410,7 +410,13 @@ class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
         self.assertEqual(newR.core.symmetry.domain, geometry.DomainType.FULL_CORE)
 
     def test_skipGrowToFullCoreWhenAlreadyFullCore(self):
-        """Test that hex core is not modified when third core to full core changer is called on an already full core geometry."""
+        """Test that hex core is not modified when third core to full core changer is called on an already full core geometry.
+
+        .. test: Convert a one-third core to full core and restore back to one-third core.
+            :id: T_ARMI_THIRD_TO_FULL_CORE2
+            :tests: R_ARMI_THIRD_TO_FULL_CORE
+
+        """
         # Check the initialization of the third core model and convert to a full core
         self.assertFalse(self.r.core.isFullCore)
         self.assertEqual(
