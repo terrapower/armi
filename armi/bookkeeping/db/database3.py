@@ -223,7 +223,12 @@ class Database3:
 
     @staticmethod
     def writeSystemAttributes(h5db):
-        """Write system attributes to the database."""
+        """Write system attributes to the database.
+
+        .. impl:: Add system attributes to the database.
+            :id: I_ARMI_DB_QA
+            :implements: R_ARMI_DB_QA
+        """
         h5db.attrs["user"] = context.USER
         h5db.attrs["python"] = sys.version
         h5db.attrs["armiLocation"] = os.path.dirname(context.ROOT)

@@ -107,7 +107,12 @@ class Settings:
 
     @property
     def caseTitle(self):
-        """Getter for settings case title."""
+        """Getter for settings case title.
+
+        .. impl:: Define a case title to go with the settings.
+            :id: I_ARMI_SETTINGS_META0
+            :implements: R_ARMI_SETTINGS_META
+        """
         if not self.path:
             return self.defaultCaseTitle
         else:
