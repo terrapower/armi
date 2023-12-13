@@ -225,8 +225,7 @@ class TestGlobalFluxInterfaceWithExecuters(unittest.TestCase):
     def test_executerInteraction(self, mockGeometryTransform, mockExecute):
         """Run the global flux interface and executer though one time now.
 
-        .. test:: Run the global flux interface to check that the mesh
-        converter is called before the neutronics solver.
+        .. test:: Run the global flux interface to check that the mesh converter is called before the neutronics solver.
             :id: T_ARMI_FLUX_GEOM_TRANSFORM_ORDER
             :tests: R_ARMI_FLUX_GEOM_TRANSFORM
         """
@@ -307,8 +306,7 @@ class TestGlobalFluxInterfaceWithExecutersNonUniform(unittest.TestCase):
         This will serve as a broad end-to-end test of the interface, and also
         stress test the mesh issues with non-uniform assemblies.
 
-        .. test:: Run the global flux interface to show the geometry converter
-        is called when the nonuniform mesh option is used.
+        .. test:: Run the global flux interface to show the geometry converter is called when the nonuniform mesh option is used.
             :id: T_ARMI_FLUX_GEOM_TRANSFORM_CONV
             :tests: R_ARMI_FLUX_GEOM_TRANSFORM
         """
