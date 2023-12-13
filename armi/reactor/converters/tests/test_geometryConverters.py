@@ -312,7 +312,7 @@ class TestEdgeAssemblyChanger(unittest.TestCase):
 class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
     def setUp(self):
         self.o, self.r = loadTestReactor(TEST_ROOT)
-        reduceTestReactorRings(self.r, self.o.cs, 2)
+        reduceTestReactorRings(self.r, self.o.cs, 3)
 
         # initialize the block powers to a uniform power profile, accounting for
         # the loaded reactor being 1/3 core
@@ -344,6 +344,14 @@ class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
             :id: T_ARMI_THIRD_TO_FULL_CORE0
             :tests: R_ARMI_THIRD_TO_FULL_CORE
         """
+
+        def getLTAAssems():
+            aList = []
+            for a in self.r.core.getAssemblies():
+                if a.getType == "lta fuel":
+                    aList.append(a)
+            return aList
+
         # Check the initialization of the third core model
         self.assertFalse(self.r.core.isFullCore)
         self.assertEqual(
@@ -353,7 +361,10 @@ class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
             ),
         )
         initialNumBlocks = len(self.r.core.getBlocks())
-
+        assems = getLTAAssems()
+        expectedLoc = [(3, 2)]
+        for i, a in enumerate(assems):
+            self.assertEqual(a.spatialLocator.getRingPos(), expectedLoc[i])
         self.assertAlmostEqual(
             self.r.core.getTotalBlockParam("power"), self.o.cs["power"] / 3, places=5
         )
@@ -370,6 +381,10 @@ class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
         self.assertTrue(self.r.core.isFullCore)
         self.assertGreater(len(self.r.core.getBlocks()), initialNumBlocks)
         self.assertEqual(self.r.core.symmetry.domain, geometry.DomainType.FULL_CORE)
+        assems = getLTAAssems()
+        expectedLoc = [(3, 2), (3, 6), (3, 10)]
+        for i, a in enumerate(assems):
+            self.assertEqual(a.spatialLocator.getRingPos(), expectedLoc[i])
 
         # ensure that block power is handled correctly
         self.assertAlmostEqual(
@@ -394,6 +409,10 @@ class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
         self.assertAlmostEqual(
             self.r.core.getTotalBlockParam("power"), self.o.cs["power"] / 3, places=5
         )
+        assems = getLTAAssems()
+        expectedLoc = [(3, 2)]
+        for i, a in enumerate(assems):
+            self.assertEqual(a.spatialLocator.getRingPos(), expectedLoc[i])
 
     def test_initNewFullReactor(self):
         """Test that initNewReactor will growToFullCore if necessary."""
