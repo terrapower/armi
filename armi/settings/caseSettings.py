@@ -58,6 +58,10 @@ class Settings:
         :id: I_ARMI_SETTING0
         :implements: R_ARMI_SETTING
 
+    .. impl:: Define a case title to go with the settings.
+        :id: I_ARMI_SETTINGS_META0
+        :implements: R_ARMI_SETTINGS_META
+
     Notes
     -----
     The actual settings in any instance of this class are immutable.
