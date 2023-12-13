@@ -27,7 +27,7 @@ from armi.reactor.converters import geometryConverters
 from armi.reactor.converters import uniformMesh
 from armi.reactor.flags import Flags
 from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
-from armi.tests import TEST_ROOT
+from armi.tests import TEST_ROOT, mockRunLogs
 from armi.utils import directoryChangers
 
 
@@ -419,15 +419,31 @@ class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
                 geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
             ),
         )
+        numBlocksThirdCore = len(self.r.core.getBlocks())
+        # convert the third core to full core
         changer = geometryConverters.ThirdCoreHexToFullCoreChanger(self.o.cs)
-        changer.convert(self.r)
-        # Check that the changer does not affect the full core model on converting and restoring
-        initialNumBlocks = len(self.r.core.getBlocks())
+        with mockRunLogs.BufferLog() as mock:
+            changer.convert(self.r)
+            self.assertIn("Expanding to full core geometry", mock.getStdout())
+        numBlocksFullCore = len(self.r.core.getBlocks())
         self.assertEqual(self.r.core.symmetry.domain, geometry.DomainType.FULL_CORE)
-        changer = geometryConverters.ThirdCoreHexToFullCoreChanger(self.o.cs)
-        changer.convert(self.r)
+        # try to convert to full core again (it shouldn't do anything)
+        with mockRunLogs.BufferLog() as mock:
+            changer.convert(self.r)
+            self.assertIn(
+                "Detected that full core reactor already exists. Cannot expand.",
+                mock.getStdout(),
+            )
         self.assertEqual(self.r.core.symmetry.domain, geometry.DomainType.FULL_CORE)
-        self.assertEqual(initialNumBlocks, len(self.r.core.getBlocks()))
-        changer.restorePreviousGeometry(self.r)
-        self.assertEqual(initialNumBlocks, len(self.r.core.getBlocks()))
-        self.assertEqual(self.r.core.symmetry.domain, geometry.DomainType.FULL_CORE)
+        self.assertEqual(numBlocksFullCore, len(self.r.core.getBlocks()))
+        # restore back to 1/3 core
+        with mockRunLogs.BufferLog() as mock:
+            changer.restorePreviousGeometry(self.r)
+            self.assertIn("revert from full to 1/3 core", mock.getStdout())
+        self.assertEqual(numBlocksThirdCore, len(self.r.core.getBlocks()))
+        self.assertEqual(
+            self.r.core.symmetry,
+            geometry.SymmetryType(
+                geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
+            ),
+        )
