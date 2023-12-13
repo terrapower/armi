@@ -16,7 +16,6 @@
 import math
 import os
 import unittest
-
 from numpy.testing import assert_allclose
 
 from armi import runLog
@@ -287,26 +286,41 @@ class TestEdgeAssemblyChanger(unittest.TestCase):
             :id: T_ARMI_ADD_EDGE_ASSEMS
             :tests: R_ARMI_ADD_EDGE_ASSEMS
         """
+
+        def getAssemByRingPos(ringPos: tuple):
+            for a in self.r.core.getAssemblies():
+                if a.spatialLocator.getRingPos() == ringPos:
+                    return a
+            return None
+
+        numAssemsOrig = len(self.r.core.getAssemblies())
+        # assert that there is no assembly in the (3, 4) (ring, position).
+        self.assertIsNone(getAssemByRingPos((3, 4)))
+        # add the assembly
         converter = geometryConverters.EdgeAssemblyChanger()
         converter.addEdgeAssemblies(self.r.core)
+        numAssemsWithEdgeAssem = len(self.r.core.getAssemblies())
+        # assert that there is an assembly in the (3, 4) (ring, position).
+        self.assertIsNotNone(getAssemByRingPos((3, 4)))
+        self.assertTrue(numAssemsWithEdgeAssem > numAssemsOrig)
+
+        # try to add the assembly again (you can't)
+        with mockRunLogs.BufferLog() as mock:
+            converter.addEdgeAssemblies(self.r.core)
+            self.assertIn("Skipping addition of edge assemblies", mock.getStdout())
+            self.assertTrue(numAssemsWithEdgeAssem, len(self.r.core.getAssemblies()))
 
         # must be added after geom transform
         for b in self.o.r.core.getBlocks():
             b.p.power = 1.0
-
-        numAssems = len(self.r.core.getAssemblies())
         converter.scaleParamsRelatedToSymmetry(self.r)
-
         a = self.r.core.getAssembliesOnSymmetryLine(grids.BOUNDARY_0_DEGREES)[0]
         self.assertTrue(all(b.p.power == 2.0 for b in a), "Powers were not scaled")
 
+        # remove the assembly that was added
         converter.removeEdgeAssemblies(self.r.core)
-        self.assertTrue(numAssems > len(self.r.core.getAssemblies()))
-        converter.addEdgeAssemblies(self.r.core)
-        self.assertEqual(numAssems, len(self.r.core.getAssemblies()))
-        # make sure it can be called twice.
-        converter.addEdgeAssemblies(self.r.core)
-        self.assertEqual(numAssems, len(self.r.core.getAssemblies()))
+        self.assertIsNone(getAssemByRingPos((3, 4)))
+        self.assertEqual(numAssemsOrig, len(self.r.core.getAssemblies()))
 
 
 class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
