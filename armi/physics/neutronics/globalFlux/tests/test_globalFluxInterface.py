@@ -233,10 +233,8 @@ class TestGlobalFluxInterfaceWithExecuters(unittest.TestCase):
 
         .. test:: Run the global flux interface to check that the mesh
         converter is called before the neutronics solver.
-            :id: T_ARMI_FLUX_GEOM_TRANSFORM_CHECK_CALL_ORDER
+            :id: T_ARMI_FLUX_GEOM_TRANSFORM_ORDER
             :tests: R_ARMI_FLUX_GEOM_TRANSFORM
-            :acceptance_criteria: The test is considered passing when the mesh
-            converter is verified to be called before the neutronics solver.
         """
         call_order = []
         mockGeometryTransform.side_effect = lambda *a, **kw: call_order.append(
@@ -317,11 +315,8 @@ class TestGlobalFluxInterfaceWithExecutersNonUniform(unittest.TestCase):
 
         .. test:: Run the global flux interface to show the geometry converter
         is called when the nonuniform mesh option is used.
-            :id: T_ARMI_FLUX_GEOM_TRANSFORM_CHECK_CONVERTER_CALL
+            :id: T_ARMI_FLUX_GEOM_TRANSFORM_CONV
             :tests: R_ARMI_FLUX_GEOM_TRANSFORM
-            :acceptance_criteria: The test is satisfied when the geometry
-            converter is shown to have been called when a nonuniform flag is
-            used.
         """
         gfi = self.gfi
         gfi.interactBOC()
