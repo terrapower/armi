@@ -755,10 +755,36 @@ class HexReactorTests(ReactorTests):
             :id: T_ARMI_THIRD_TO_FULL_CORE1
             :tests: R_ARMI_THIRD_TO_FULL_CORE
         """
-        aListLength = len(self.r.core.getAssemblies())
+        numOfAssembliesOneThird = len(self.r.core.getAssemblies())
+        self.assertFalse(self.r.core.isFullCore)
+        self.assertEqual(
+            self.r.core.symmetry,
+            geometry.SymmetryType(
+                geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
+            ),
+        )
+        # grow to full core
         converter = self.r.core.growToFullCore(self.o.cs)
+        self.assertTrue(self.r.core.isFullCore)
+        self.assertGreater(len(self.r.core.getAssemblies()), numOfAssembliesOneThird)
+        self.assertEqual(self.r.core.symmetry.domain, geometry.DomainType.FULL_CORE)
+        # restore back to 1/3 core
         converter.restorePreviousGeometry(self.r)
-        self.assertEqual(aListLength, len(self.r.core.getAssemblies()))
+        self.assertEqual(numOfAssembliesOneThird, len(self.r.core.getAssemblies()))
+        self.assertEqual(
+            self.r.core.symmetry,
+            geometry.SymmetryType(
+                geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
+            ),
+        )
+        self.assertFalse(self.r.core.isFullCore)
+        self.assertEqual(numOfAssembliesOneThird, len(self.r.core.getAssemblies()))
+        self.assertEqual(
+            self.r.core.symmetry,
+            geometry.SymmetryType(
+                geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
+            ),
+        )
 
     def test_differentNuclideModels(self):
         self.assertEqual(self.o.cs[CONF_XS_KERNEL], "MC2v3")
