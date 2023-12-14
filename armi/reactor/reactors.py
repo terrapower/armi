@@ -172,10 +172,6 @@ def loadFromCs(cs) -> Reactor:
     """
     Load a Reactor based on the input settings.
 
-    .. impl:: Users can create a reactor from an input yaml file.
-        :id: I_ARMI_R_CORE
-        :implements: R_ARMI_R_CORE
-
     Parameters
     ----------
     cs: CaseSettings
@@ -240,6 +236,10 @@ class Core(composites.Composite):
     Reactor structure made up of assemblies. Could be a Core, spent fuel pool, reactor head, etc.
 
     This has the bulk of the data management operations.
+
+    .. impl:: Represent a reactor core as a composite object.
+        :id: I_ARMI_R_CORE
+        :implements: R_ARMI_R_CORE
 
     Attributes
     ----------
@@ -347,7 +347,7 @@ class Core(composites.Composite):
         """Getter for symmetry type.
 
         .. impl:: Get core symmetry.
-            :id: I_ARMI_R_SYMM0
+            :id: I_ARMI_R_SYMM
             :implements: R_ARMI_R_SYMM
         """
         if not self.spatialGrid:
@@ -356,12 +356,7 @@ class Core(composites.Composite):
 
     @symmetry.setter
     def symmetry(self, val: str):
-        """Setter for symmetry type.
-
-        .. impl:: Set core symmetry.
-            :id: I_ARMI_R_SYMM1
-            :implements: R_ARMI_R_SYMM
-        """
+        """Setter for symmetry type."""
         self.spatialGrid.symmetry = str(val)
         self.clearCache()
 
