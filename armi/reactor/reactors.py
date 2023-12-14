@@ -773,6 +773,8 @@ class Core(composites.Composite):
         """
         Returns the number of rings in this reactor. Based on location so indexing will start at 1.
 
+        Circular ring shuffling changes the interpretation of this result.
+
         .. impl:: Retrieve number of rings in core.
             :id: I_ARMI_R_NUM_RINGS
             :implements: R_ARMI_R_NUM_RINGS
@@ -785,9 +787,6 @@ class Core(composites.Composite):
         ----------
         indexBased : bool, optional
             If true, will force location-index interpretation, even if "circular shuffling" is enabled.
-
-        When circular ring shuffling is activated, this changes interpretation.
-        Developers plan on making this another method for the secondary interpretation.
         """
         if self.circularRingList and not indexBased:
             return max(self.circularRingList)
