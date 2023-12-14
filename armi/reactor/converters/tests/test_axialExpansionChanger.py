@@ -863,6 +863,9 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
 
         Notes
         -----
+        For R_ARMI_INP_COLD_HEIGHT, the action of axial expansion occurs in setUp() during core
+        construction, specifically in :py:meth:`constructAssem <armi.reactor.blueprints.Blueprints.constructAssem>`
+
         Two assertions here:
             1. total assembly height should be preserved (through use of top dummy block)
             2. in armi.tests.detailedAxialExpansion.refSmallReactorBase.yaml,
