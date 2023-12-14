@@ -16,6 +16,7 @@ import copy
 import logging
 import os
 import unittest
+from math import sqrt
 from unittest.mock import patch
 
 from numpy.testing import assert_allclose, assert_equal
@@ -1250,6 +1251,40 @@ class HexReactorTests(ReactorTests):
         self.r.core.p.powerDensity = 2e9
         self.r.core.setPowerIfNecessary()
         self.assertAlmostEqual(self.r.core.p.power, 3e9)
+
+    def test_findAllMeshPoints(self):
+        """Test findAllMeshPoints().
+
+        .. test:: Test that the reactor can calculate its core block mesh.
+            :id: T_ARMI_R_MESH
+            :tests: R_ARMI_R_MESH
+        """
+        # lets do some basic sanity checking of the meshpoints
+        x, y, z = self.r.core.findAllMeshPoints()
+
+        # no two meshpoints should be the same, and they should all be monotopically increasing
+        for xx in range(1, len(x)):
+            self.assertGreater(x[xx], x[xx - 1], msg=f"x={xx}")
+
+        for yy in range(1, len(y)):
+            self.assertGreater(y[yy], y[yy - 1], msg=f"y={yy}")
+
+        for zz in range(1, len(z)):
+            self.assertGreater(z[zz], z[zz - 1], msg=f"z={zz}")
+
+        # the z-index should start at zero (the bottom)
+        self.assertEqual(z[0], 0)
+
+        # ensure the X and Y mesh spacing is correct (for a hex core)
+        pitch = self.r.core.spatialGrid.pitch
+
+        xPitch = sqrt(3) * pitch / 2
+        for xx in range(1, len(x)):
+            self.assertAlmostEqual(x[xx] - x[xx - 1], xPitch, delta=0.0001)
+
+        yPitch = pitch / 2
+        for yy in range(1, len(y)):
+            self.assertAlmostEqual(y[yy] - y[yy - 1], yPitch, delta=0.001)
 
 
 class CartesianReactorTests(ReactorTests):
