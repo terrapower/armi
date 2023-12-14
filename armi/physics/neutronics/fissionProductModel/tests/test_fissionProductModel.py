@@ -138,12 +138,34 @@ class TestFissionProductModelExplicitMC2Library(unittest.TestCase):
         self.assertGreater(len(fuelBlocks), 0)
         self.assertGreater(len(controlBlocks), 0)
 
+        # prove that the control blocks are not depletable
+        for b in controlBlocks:
+            self.assertFalse(isDepletable(b))
+
+        # as a corrolary of the above, prove that no components in the control blocks are depletable
+        for b in controlBlocks:
+            for c in b.getComponents():
+                self.assertFalse(isDepletable(c))
+
         # Force the the first component in the control blocks
         # to be labeled as depletable for checking that explicit
         # fission products can be assigned.
         for b in controlBlocks:
             c = b.getComponents()[0]
             c.p.flags |= Flags.DEPLETABLE
+
+        # now each control block should be depletable
+        for b in controlBlocks:
+            self.assertTrue(isDepletable(b))
+
+        # as a corrolary of the above, prove that only the first component in each control block is depletable
+        for b in controlBlocks:
+            comps = list(b.getComponents())
+            for i, c in enumerate(comps):
+                if i == 0:
+                    self.assertTrue(isDepletable(c))
+                else:
+                    self.assertFalse(isDepletable(c))
 
         # Run the ``interactBOL`` here to trigger setting up the fission
         # products in the reactor data model.
