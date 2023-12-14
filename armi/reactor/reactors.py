@@ -347,7 +347,7 @@ class Core(composites.Composite):
         """Getter for symmetry type.
 
         .. impl:: Get core symmetry.
-            :id: I_ARMI_R_SYMM0
+            :id: I_ARMI_R_SYMM
             :implements: R_ARMI_R_SYMM
         """
         if not self.spatialGrid:
@@ -356,12 +356,7 @@ class Core(composites.Composite):
 
     @symmetry.setter
     def symmetry(self, val: str):
-        """Setter for symmetry type.
-
-        .. impl:: Set core symmetry.
-            :id: I_ARMI_R_SYMM1
-            :implements: R_ARMI_R_SYMM
-        """
+        """Setter for symmetry type."""
         self.spatialGrid.symmetry = str(val)
         self.clearCache()
 
