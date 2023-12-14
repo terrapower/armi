@@ -1262,7 +1262,7 @@ class HexReactorTests(ReactorTests):
         # lets do some basic sanity checking of the meshpoints
         x, y, z = self.r.core.findAllMeshPoints()
 
-        # no two meshpoints should be the same, and they should all be monotopically increasing
+        # no two meshpoints should be the same, and they should all be monotonically increasing
         for xx in range(1, len(x)):
             self.assertGreater(x[xx], x[xx - 1], msg=f"x={xx}")
 
