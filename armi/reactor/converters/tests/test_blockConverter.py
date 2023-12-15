@@ -116,14 +116,10 @@ class TestBlockConverter(unittest.TestCase):
             .core.getAssemblies(Flags.FUEL)[2]
             .getFirstBlock(Flags.FUEL)
         )
-
         block.spatialGrid = grids.HexGrid.fromPitch(1.0)
 
-        area = block.getArea()
         converter = blockConverters.HexComponentsToCylConverter(block)
         converter.convert()
-        self.assertAlmostEqual(area, converter.convertedBlock.getArea())
-        self.assertAlmostEqual(area, block.getArea())
 
         for compType in [Flags.FUEL, Flags.CLAD, Flags.DUCT]:
             self.assertAlmostEqual(
@@ -136,7 +132,12 @@ class TestBlockConverter(unittest.TestCase):
                     ]
                 ),
             )
+            for c in converter.convertedBlock.getComponents(compType):
+                self.assertEqual(
+                    block.getComponent(compType).temperatureInC, c.temperatureInC
+                )
 
+        self.assertEqual(block.getHeight(), converter.convertedBlock.getHeight())
         self._checkAreaAndComposition(block, converter.convertedBlock)
         self._checkCiclesAreInContact(converter.convertedBlock)
 

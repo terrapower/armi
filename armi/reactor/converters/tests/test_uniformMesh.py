@@ -254,9 +254,9 @@ class TestUniformMeshGenerator(unittest.TestCase):
         """
         Test that the mesh can be correctly filtered.
 
-        .. test:: Preserve the boundaries of fuel and control material.
-            :id: T_ARMI_UMC_NON_UNIFORM1
-            :tests: R_ARMI_UMC_NON_UNIFORM
+        .. test:: Produce a uniform mesh with a size no smaller than a user-specified value.
+            :id: T_ARMI_UMC_MIN_MESH1
+            :tests: R_ARMI_UMC_MIN_MESH
         """
         meshList = [1.0, 3.0, 4.0, 7.0, 9.0, 12.0, 16.0, 19.0, 20.0]
         anchorPoints = [4.0, 16.0]
@@ -305,7 +305,7 @@ class TestUniformMeshGenerator(unittest.TestCase):
         Covers generateCommonmesh() and _decuspAxialMesh().
 
         .. test:: Produce a uniform mesh with a size no smaller than a user-specified value.
-            :id: T_ARMI_UMC_MIN_MESH
+            :id: T_ARMI_UMC_MIN_MESH0
             :tests: R_ARMI_UMC_MIN_MESH
 
         .. test:: Preserve the boundaries of fuel and control material.
@@ -418,9 +418,8 @@ class TestUniformMesh(unittest.TestCase):
             :tests: R_ARMI_UMC
         """
         refMass = self.r.core.getMass("U235")
-        applyNonUniformHeightDistribution(
-            self.r
-        )  # this changes the mass of everything in the core
+        # perturb the heights of the assemblies -> changes the mass of everything in the core
+        applyNonUniformHeightDistribution(self.r)
         perturbedCoreMass = self.r.core.getMass("U235")
         self.assertNotEqual(refMass, perturbedCoreMass)
         self.converter.convert(self.r)
@@ -428,12 +427,16 @@ class TestUniformMesh(unittest.TestCase):
         uniformReactor = self.converter.convReactor
         uniformMass = uniformReactor.core.getMass("U235")
 
-        self.assertAlmostEqual(
-            perturbedCoreMass, uniformMass
-        )  # conversion conserved mass
-        self.assertAlmostEqual(
-            self.r.core.getMass("U235"), perturbedCoreMass
-        )  # conversion didn't change source reactor mass
+        # conversion conserved mass
+        self.assertAlmostEqual(perturbedCoreMass, uniformMass)
+        # conversion didn't change source reactor mass
+        self.assertAlmostEqual(self.r.core.getMass("U235"), perturbedCoreMass)
+        # conversion results in uniform axial mesh
+        refAssemMesh = self.converter.convReactor.core.refAssem.getAxialMesh()
+        for a in self.converter.convReactor.core:
+            mesh = a.getAxialMesh()
+            for ref, check in zip(refAssemMesh, mesh):
+                self.assertEqual(ref, check)
 
     def test_applyStateToOriginal(self):
         """
