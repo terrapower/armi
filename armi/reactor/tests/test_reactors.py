@@ -1027,6 +1027,16 @@ class HexReactorTests(ReactorTests):
         self.r.core.removeAssembliesInRing(9, self.o.cs)
         self.assertEqual(self.r.core.getNumRings(), 8)
 
+    def test_getNumRings(self):
+        self.assertEqual(len(self.r.core.circularRingList), 0)
+        self.assertEqual(self.r.core.getNumRings(indexBased=True), 9)
+        self.assertEqual(self.r.core.getNumRings(indexBased=False), 9)
+
+        self.r.core.circularRingList = {1, 2, 3}
+        self.assertEqual(len(self.r.core.circularRingList), 3)
+        self.assertEqual(self.r.core.getNumRings(indexBased=True), 9)
+        self.assertEqual(self.r.core.getNumRings(indexBased=False), 3)
+
     def test_removeAssembliesInRingHex(self):
         """
         Since the test reactor is hex, we need to use the overrideCircularRingMode option
