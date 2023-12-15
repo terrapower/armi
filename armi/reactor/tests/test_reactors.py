@@ -462,6 +462,11 @@ class HexReactorTests(ReactorTests):
         numPins = self.r.core.getMaxNumPins()
         self.assertEqual(169, numPins)
 
+    def test_addMultipleCores(self):
+        """Test the catch that a reactor can only have one core."""
+        with self.assertRaises(RuntimeError):
+            self.r.add(self.r.core)
+
     def test_addMoreNodes(self):
         originalMesh = self.r.core.p.axialMesh
         bigMesh = list(originalMesh)
