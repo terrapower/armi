@@ -20,12 +20,14 @@ are called armiRun.yaml which is located in armi.tests
 import collections
 import copy
 import unittest
+from unittest.mock import patch
 
 import numpy as np
 
 from armi.physics.fuelCycle import fuelHandlers, settings
 from armi.physics.fuelCycle.settings import (
     CONF_ASSEM_ROTATION_STATIONARY,
+    CONF_ASSEMBLY_ROTATION_ALG,
     CONF_PLOT_SHUFFLE_ARROWS,
     CONF_RUN_LATTICE_BEFORE_SHUFFLING,
 )
@@ -176,6 +178,37 @@ class TestFuelHandler(FuelHandlerTestHelper):
             param="percentBu", compareTo=100, blockLevelMax=True, typeSpec=None
         )
         self.assertIs(a, a1)
+
+    @patch("armi.physics.fuelCycle.fuelHandlers.FuelHandler.chooseSwaps")
+    def test_outage(self, mockChooseSwaps):
+        # mock up a fuel handler
+        fh = fuelHandlers.FuelHandler(self.o)
+        mockChooseSwaps.return_value = list(self.r.core.getAssemblies())
+
+        # edge case: cannot perform two outages on the same FuelHandler
+        fh.moved = [self.r.core.getFirstAssembly()]
+        with self.assertRaises(ValueError):
+            fh.outage(factor=1.0)
+
+        # edge case: fail if the shuffle file is missing
+        fh.moved = []
+        self.o.cs = self.o.cs.modified(
+            newSettings={"explicitRepeatShuffles": "fakePath"}
+        )
+        with self.assertRaises(RuntimeError):
+            fh.outage(factor=1.0)
+
+        # a successful run
+        fh.moved = []
+        self.o.cs = self.o.cs.modified(
+            newSettings={
+                "explicitRepeatShuffles": "",
+                "fluxRecon": True,
+                CONF_ASSEMBLY_ROTATION_ALG: "simpleAssemblyRotation",
+            }
+        )
+        fh.outage(factor=1.0)
+        self.assertEqual(len(fh.moved), 0)
 
     def test_width(self):
         """Tests the width capability of findAssembly."""

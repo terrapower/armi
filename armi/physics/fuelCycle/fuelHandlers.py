@@ -124,7 +124,10 @@ class FuelHandler:
             # The user can choose the algorithm method name directly in the settings
             if hasattr(rotAlgos, self.cs[CONF_ASSEMBLY_ROTATION_ALG]):
                 rotationMethod = getattr(rotAlgos, self.cs[CONF_ASSEMBLY_ROTATION_ALG])
-                rotationMethod()
+                try:
+                    rotationMethod()
+                except TypeError:
+                    rotationMethod(self)
             else:
                 raise RuntimeError(
                     "FuelHandler {0} does not have a rotation algorithm called {1}.\n"
