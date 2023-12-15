@@ -467,6 +467,13 @@ class HexReactorTests(ReactorTests):
         with self.assertRaises(RuntimeError):
             self.r.add(self.r.core)
 
+    def test_getReactor(self):
+        """The Core object can return its Reactor parent; test that getter."""
+        self.assertTrue(isinstance(self.r.core.r, reactors.Reactor))
+
+        self.r.core.parent = None
+        self.assertIsNone(self.r.core.r)
+
     def test_addMoreNodes(self):
         originalMesh = self.r.core.p.axialMesh
         bigMesh = list(originalMesh)
