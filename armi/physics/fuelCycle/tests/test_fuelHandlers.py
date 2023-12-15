@@ -38,6 +38,7 @@ from armi.physics.neutronics.latticePhysics.latticePhysicsInterface import (
 from armi.reactor import assemblies, blocks, components, grids
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
+from armi.reactor.zones import Zone
 from armi.settings import caseSettings
 from armi.tests import ArmiTestHelper
 from armi.tests import mockRunLogs
@@ -209,6 +210,22 @@ class TestFuelHandler(FuelHandlerTestHelper):
         )
         fh.outage(factor=1.0)
         self.assertEqual(len(fh.moved), 0)
+
+    def test_isAssemblyInAZone(self):
+        # build a fuel handler
+        fh = fuelHandlers.FuelHandler(self.o)
+
+        # test the default value if there are no zones
+        a = self.r.core.getFirstAssembly()
+        self.assertTrue(fh.isAssemblyInAZone(None, a))
+
+        # If our assembly isn't in one of the supplied zones
+        z = Zone("test_isAssemblyInAZone")
+        self.assertFalse(fh.isAssemblyInAZone([z], a))
+
+        # If our assembly IS in one of the supplied zones
+        z.addLoc(a.getLocation())
+        self.assertTrue(fh.isAssemblyInAZone([z], a))
 
     def test_width(self):
         """Tests the width capability of findAssembly."""
