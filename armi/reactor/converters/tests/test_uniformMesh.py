@@ -254,6 +254,10 @@ class TestUniformMeshGenerator(unittest.TestCase):
         """
         Test that the mesh can be correctly filtered.
 
+        .. test:: Produce a uniform mesh with a size no smaller than a user-specified value.
+            :id: T_ARMI_UMC_MIN_MESH1
+            :tests: R_ARMI_UMC_MIN_MESH
+
         .. test:: Preserve the boundaries of fuel and control material.
             :id: T_ARMI_UMC_NON_UNIFORM1
             :tests: R_ARMI_UMC_NON_UNIFORM
@@ -305,7 +309,7 @@ class TestUniformMeshGenerator(unittest.TestCase):
         Covers generateCommonmesh() and _decuspAxialMesh().
 
         .. test:: Produce a uniform mesh with a size no smaller than a user-specified value.
-            :id: T_ARMI_UMC_MIN_MESH
+            :id: T_ARMI_UMC_MIN_MESH0
             :tests: R_ARMI_UMC_MIN_MESH
 
         .. test:: Preserve the boundaries of fuel and control material.
