@@ -430,14 +430,14 @@ class HexToRZThetaConverter(GeometryConverter):
         """
         Run the conversion to 3 dimensional R-Z-Theta.
 
+        .. impl:: Tool to convert a hex core to an RZTheta core.
+            :id: I_ARMI_CONV_3DHEX_TO_2DRZ
+            :implements: R_ARMI_CONV_3DHEX_TO_2DRZ
+
         Attributes
         ----------
         r : Reactor object
             The reactor to convert.
-
-        .. impl:: Tool to convert a hex core to an RZTheta core.
-            :id: I_ARMI_CONV_3DHEX_TO_2DRZ
-            :implements: R_ARMI_CONV_3DHEX_TO_2DRZ
 
         Notes
         -----
