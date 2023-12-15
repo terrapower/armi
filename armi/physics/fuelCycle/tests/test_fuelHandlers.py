@@ -515,6 +515,10 @@ class TestFuelHandler(FuelHandlerTestHelper):
         self.assertEqual(sfpMove[1], "005-003")
         self.assertEqual(sfpMove[4], "A0073")  # name of assem in SFP
 
+        # make sure we fail hard if the file doesn't exist
+        with self.assertRaises(RuntimeError):
+            fh.readMoves("totall_fictional_file.txt")
+
     def test_processMoveList(self):
         fh = fuelHandlers.FuelHandler(self.o)
         moves = fh.readMoves("armiRun-SHUFFLES.txt")
