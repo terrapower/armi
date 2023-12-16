@@ -1037,6 +1037,15 @@ class HexReactorTests(ReactorTests):
         self.assertEqual(self.r.core.getNumRings(indexBased=True), 9)
         self.assertEqual(self.r.core.getNumRings(indexBased=False), 3)
 
+    @patch("armi.reactor.reactors.Core.getAssemblies")
+    def test_whenNoAssemblies(self, mockGetAssemblies):
+        """Test various edge cases when there are no assemblies."""
+        mockGetAssemblies.return_value = []
+
+        self.assertEqual(self.r.core.countBlocksWithFlags(Flags.FUEL), 0)
+        self.assertEqual(self.r.core.countFuelAxialBlocks(), 0)
+        self.assertGreater(self.r.core.getFirstFuelBlockAxialNode(), 9e9)
+
     def test_removeAssembliesInRingHex(self):
         """
         Since the test reactor is hex, we need to use the overrideCircularRingMode option
