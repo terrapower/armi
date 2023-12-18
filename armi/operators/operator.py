@@ -27,6 +27,7 @@ import os
 import re
 import shutil
 import time
+from typing import Union
 
 from armi import context
 from armi import interfaces
@@ -43,6 +44,8 @@ from armi.settings.fwSettings.globalSettings import (
     CONF_TIGHT_COUPLING,
     CONF_TIGHT_COUPLING_MAX_ITERS,
     CONF_CYCLES_SKIP_TIGHT_COUPLING_INTERACTION,
+    CONF_DEFERRED_INTERFACE_NAMES,
+    CONF_DEFERRED_INTERFACES_CYCLE,
 )
 from armi.utils import codeTiming
 from armi.utils import (
@@ -574,8 +577,7 @@ class Operator:
 
     def interactAllInit(self):
         """Call interactInit on all interfaces in the stack after they are initialized."""
-        allInterfaces = self.interfaces[:]  # copy just in case
-        self._interactAll("Init", allInterfaces)
+        self._interactAll("Init", self.getInterfaces())
 
     def interactAllBOL(self, excludedInterfaceNames=()):
         """
@@ -583,27 +585,12 @@ class Operator:
 
         All enabled or bolForce interfaces will be called excluding interfaces with excludedInterfaceNames.
         """
-        activeInterfaces = [
-            ii
-            for ii in self.interfaces
-            if (ii.enabled() or ii.bolForce()) and ii.name not in excludedInterfaceNames
-        ]
-        activeInterfaces = [
-            ii
-            for ii in activeInterfaces
-            if ii.name not in self.cs["deferredInterfaceNames"]
-        ]
+        activeInterfaces = self.getActiveInterfaces("BOL", excludedInterfaceNames)
         self._interactAll("BOL", activeInterfaces)
 
     def interactAllBOC(self, cycle):
         """Interact at beginning of cycle of all enabled interfaces."""
-        activeInterfaces = [ii for ii in self.interfaces if ii.enabled()]
-        if cycle < self.cs["deferredInterfacesCycle"]:
-            activeInterfaces = [
-                ii
-                for ii in activeInterfaces
-                if ii.name not in self.cs["deferredInterfaceNames"]
-            ]
+        activeInterfaces = self.getActiveInterfaces("BOC", cycle)
         return self._interactAll("BOC", activeInterfaces, cycle)
 
     def interactAllEveryNode(self, cycle, tn, excludedInterfaceNames=None):
@@ -621,22 +608,12 @@ class Operator:
         excludedInterfaceNames : list, optional
             Names of interface names that will not be interacted with.
         """
-        excludedInterfaceNames = excludedInterfaceNames or ()
-        activeInterfaces = [
-            ii
-            for ii in self.interfaces
-            if ii.enabled() and ii.name not in excludedInterfaceNames
-        ]
+        activeInterfaces = self.getActiveInterfaces("EveryNode")
         self._interactAll("EveryNode", activeInterfaces, cycle, tn)
 
     def interactAllEOC(self, cycle, excludedInterfaceNames=None):
         """Interact end of cycle for all enabled interfaces."""
-        excludedInterfaceNames = excludedInterfaceNames or ()
-        activeInterfaces = [
-            ii
-            for ii in self.interfaces
-            if ii.enabled() and ii.name not in excludedInterfaceNames
-        ]
+        activeInterfaces = self.getActiveInterfaces("EOC")
         self._interactAll("EOC", activeInterfaces, cycle)
 
     def interactAllEOL(self):
@@ -648,11 +625,8 @@ class Operator:
         If the interfaces are flagged to be reversed at EOL, they are separated from the main stack and appended
         at the end in reverse order. This allows, for example, an interface that must run first to also run last.
         """
-        activeInterfaces = [ii for ii in self.interfaces if ii.enabled()]
-        interfacesAtEOL = [ii for ii in activeInterfaces if not ii.reverseAtEOL]
-        activeReverseInterfaces = [ii for ii in activeInterfaces if ii.reverseAtEOL]
-        interfacesAtEOL.extend(reversed(activeReverseInterfaces))
-        self._interactAll("EOL", interfacesAtEOL)
+        activeInterfaces = self.getActiveInterfaces("EOL")
+        self._interactAll("EOL", activeInterfaces)
 
     def interactAllCoupled(self, coupledIteration):
         """
@@ -670,8 +644,7 @@ class Operator:
             :id: I_ARMI_OPERATOR_PHYSICS1
             :implements: R_ARMI_OPERATOR_PHYSICS
         """
-        activeInterfaces = [ii for ii in self.interfaces if ii.enabled()]
-
+        activeInterfaces = self.getActiveInterfaces("Coupled")
         # Store the previous iteration values before calling interactAllCoupled
         # for each interface.
         for interface in activeInterfaces:
@@ -679,7 +652,6 @@ class Operator:
                 interface.coupler.storePreviousIterationValue(
                     interface.getTightCouplingValue()
                 )
-
         self._interactAll("Coupled", activeInterfaces, coupledIteration)
 
         return self._checkTightCouplingConvergence(activeInterfaces)
@@ -951,6 +923,71 @@ class Operator:
         Returns a copy so you can manipulate the list in an interface, like dependencies.
         """
         return self.interfaces[:]
+
+    def getActiveInterfaces(
+        self,
+        interactState: str,
+        excludedInterfaceNames: tuple(str) = (),
+        cycle: int = Union[int, None],
+    ):
+        """Retrieve the interfaces which are active for a given interaction state.
+
+        Parameters
+        ----------
+        interactState: str
+            A string dictating which interaction state the interfaces should be pulled for.
+        excludedInterfaceNames: tuple(str)
+            A tuple of strings dictating which interfaces should be manually skipped.
+        cycle: int
+            The given cycle. None by default.
+
+        Returns
+        -------
+        activeInterfaces: List[Interfaces]
+            The interfaces deemed active for the given interactState.
+        """
+        activeInterfaces = []
+        if interactState == "BOL":
+            activeInterfaces = [
+                ii
+                for ii in self.interfaces
+                if (ii.enabled() or ii.bolForce())
+                and ii.name not in excludedInterfaceNames
+            ]
+            activeInterfaces = [
+                ii
+                for ii in activeInterfaces
+                if ii.name not in self.cs[CONF_DEFERRED_INTERFACE_NAMES]
+            ]
+        elif interactState == "BOC":
+            activeInterfaces = [ii for ii in self.interfaces if ii.enabled()]
+            if cycle < self.cs[CONF_DEFERRED_INTERFACES_CYCLE]:
+                activeInterfaces = [
+                    ii
+                    for ii in activeInterfaces
+                    if ii.name not in self.cs[CONF_DEFERRED_INTERFACE_NAMES]
+                ]
+        elif interactState == "EveryNode" or interactState == "EOC":
+            activeInterfaces = [
+                ii
+                for ii in self.interfaces
+                if ii.enabled() and ii.name not in excludedInterfaceNames
+            ]
+        elif interactState == "EOL":
+            enabledInterfaces = [ii for ii in self.interfaces if ii.enabled()]
+            activeInterfaces = [ii for ii in enabledInterfaces if not ii.reverseAtEOL]
+            activeReverseInterfaces = [
+                ii for ii in enabledInterfaces if ii.reverseAtEOL
+            ]
+            activeInterfaces.extend(reversed(activeReverseInterfaces))
+        elif interactState == "Coupled":
+            activeInterfaces = [ii for ii in self.interfaces if ii.enabled()]
+        else:
+            raise ValueError(
+                f"{interactState} is an unknown interaction state for the Operator!"
+            )
+
+        return activeInterfaces
 
     def reattach(self, r, cs=None):
         """Add links to globally-shared objects to this operator and all interfaces.
