@@ -182,11 +182,13 @@ def writeWelcomeHeaders(o, cs):
                 nodeMappingData.append(
                     (uniqueName, numProcessors, ", ".join(matchingProcs))
                 )
-                # Run sys info on each unique node too
+                # If this is on Windows: run sys info on each unique node too
                 if "win" in sys.platform:
                     sysInfoCmd = 'systeminfo | findstr /B /C:"OS Name" /B /C:"OS Version" /B /C:"Processor" && systeminfo | findstr /E /C:"Mhz"'
-                    out = subprocess.run(sysInfoCmd, capture_output=True, shell=True)
-                    sysInfo += out.stdout.decode("utf-8")
+                    out = subprocess.run(
+                        sysInfoCmd, capture_output=True, text=True, shell=True
+                    )
+                    sysInfo += out.stdout
             runLog.header("=========== Machine Information ===========")
             runLog.info(
                 tabulate.tabulate(
@@ -195,8 +197,9 @@ def writeWelcomeHeaders(o, cs):
                     tablefmt="armi",
                 )
             )
-            runLog.header("=========== System Information ===========")
-            runLog.info(sysInfo)
+            if sysInfo:
+                runLog.header("=========== System Information ===========")
+                runLog.info(sysInfo)
 
     def _writeReactorCycleInformation(o, cs):
         """Verify that all the operating parameters are defined for the same number of cycles."""
