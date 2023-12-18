@@ -124,7 +124,10 @@ class FuelHandler:
             # The user can choose the algorithm method name directly in the settings
             if hasattr(rotAlgos, self.cs[CONF_ASSEMBLY_ROTATION_ALG]):
                 rotationMethod = getattr(rotAlgos, self.cs[CONF_ASSEMBLY_ROTATION_ALG])
-                rotationMethod()
+                try:
+                    rotationMethod()
+                except TypeError:
+                    rotationMethod(self)
             else:
                 raise RuntimeError(
                     "FuelHandler {0} does not have a rotation algorithm called {1}.\n"
@@ -541,17 +544,9 @@ class FuelHandler:
                         # this assembly is in the excluded location list. skip it.
                         continue
 
-                # only continue of the Assembly is in a Zone
-                if zoneList:
-                    found = False  # guilty until proven innocent
-                    for zone in zoneList:
-                        if a.getLocation() in zone:
-                            # great! it's in there, so we'll accept this assembly
-                            found = True  # innocent
-                            break
-                    if not found:
-                        # this assembly is not in any of the zones in the zone list. skip it.
-                        continue
+                # only process of the Assembly is in a Zone
+                if not self.isAssemblyInAZone(zoneList, a):
+                    continue
 
                 # Now find the assembly with the param closest to the target val.
                 if param:
@@ -618,6 +613,21 @@ class FuelHandler:
         else:
             return minDiff[1]
 
+    @staticmethod
+    def isAssemblyInAZone(zoneList, a):
+        """Does the given assembly in one of these zones."""
+        if zoneList:
+            # ruff: noqa: SIM110
+            for zone in zoneList:
+                if a.getLocation() in zone:
+                    # Success!
+                    return True
+
+            return False
+        else:
+            # A little counter-intuitively, if there are no zones, we return True.
+            return True
+
     def _getAssembliesInRings(
         self,
         ringList,
@@ -626,7 +636,7 @@ class FuelHandler:
         exclusions=None,
         circularRingFlag=False,
     ):
-        r"""
+        """
         find assemblies in particular rings.
 
         Parameters

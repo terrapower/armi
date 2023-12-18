@@ -462,6 +462,18 @@ class HexReactorTests(ReactorTests):
         numPins = self.r.core.getMaxNumPins()
         self.assertEqual(169, numPins)
 
+    def test_addMultipleCores(self):
+        """Test the catch that a reactor can only have one core."""
+        with self.assertRaises(RuntimeError):
+            self.r.add(self.r.core)
+
+    def test_getReactor(self):
+        """The Core object can return its Reactor parent; test that getter."""
+        self.assertTrue(isinstance(self.r.core.r, reactors.Reactor))
+
+        self.r.core.parent = None
+        self.assertIsNone(self.r.core.r)
+
     def test_addMoreNodes(self):
         originalMesh = self.r.core.p.axialMesh
         bigMesh = list(originalMesh)
@@ -1014,6 +1026,25 @@ class HexReactorTests(ReactorTests):
         self.assertEqual(self.r.core.getNumRings(), 9)
         self.r.core.removeAssembliesInRing(9, self.o.cs)
         self.assertEqual(self.r.core.getNumRings(), 8)
+
+    def test_getNumRings(self):
+        self.assertEqual(len(self.r.core.circularRingList), 0)
+        self.assertEqual(self.r.core.getNumRings(indexBased=True), 9)
+        self.assertEqual(self.r.core.getNumRings(indexBased=False), 9)
+
+        self.r.core.circularRingList = {1, 2, 3}
+        self.assertEqual(len(self.r.core.circularRingList), 3)
+        self.assertEqual(self.r.core.getNumRings(indexBased=True), 9)
+        self.assertEqual(self.r.core.getNumRings(indexBased=False), 3)
+
+    @patch("armi.reactor.reactors.Core.getAssemblies")
+    def test_whenNoAssemblies(self, mockGetAssemblies):
+        """Test various edge cases when there are no assemblies."""
+        mockGetAssemblies.return_value = []
+
+        self.assertEqual(self.r.core.countBlocksWithFlags(Flags.FUEL), 0)
+        self.assertEqual(self.r.core.countFuelAxialBlocks(), 0)
+        self.assertGreater(self.r.core.getFirstFuelBlockAxialNode(), 9e9)
 
     def test_removeAssembliesInRingHex(self):
         """
