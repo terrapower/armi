@@ -21,6 +21,7 @@ import collections
 import os
 import pathlib
 import re
+import subprocess
 import sys
 import tabulate
 import textwrap
@@ -170,6 +171,7 @@ def writeWelcomeHeaders(o, cs):
             processorNames = context.MPI_NODENAMES
             uniqueNames = set(processorNames)
             nodeMappingData = []
+            sysInfo = ""
             for uniqueName in uniqueNames:
                 matchingProcs = [
                     str(rank)
@@ -180,6 +182,11 @@ def writeWelcomeHeaders(o, cs):
                 nodeMappingData.append(
                     (uniqueName, numProcessors, ", ".join(matchingProcs))
                 )
+                # Run sys info on each unique node too
+                if "win" in sys.platform:
+                    sysInfoCmd = 'systeminfo | findstr /B /C:"OS Name" /B /C:"OS Version" /B /C:"Processor" && systeminfo | findstr /E /C:"Mhz"'
+                    out = subprocess.run(sysInfoCmd, capture_output=True, shell=True)
+                    sysInfo += out.stdout.decode("utf-8")
             runLog.header("=========== Machine Information ===========")
             runLog.info(
                 tabulate.tabulate(
@@ -188,6 +195,8 @@ def writeWelcomeHeaders(o, cs):
                     tablefmt="armi",
                 )
             )
+            runLog.header("=========== System Information ===========")
+            runLog.info(sysInfo)
 
     def _writeReactorCycleInformation(o, cs):
         """Verify that all the operating parameters are defined for the same number of cycles."""
