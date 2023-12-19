@@ -29,11 +29,11 @@ Here is an example::
 
     from armi import context
 
-    # cmd = "something different in each process"
+    cmd = f"val{context.MPI_RANK}"
 
-    if rank == 0:
+    if context.MPI_RANK == 0:
         # The primary node will send the string 'bob' to all others
-        cmd = 'bob'
+        cmd = "bob"
         context.MPI_COMM.bcast(cmd, root=0)
     else:
         # these are the workers. They receive a value and set it to the variable cmd
@@ -42,13 +42,13 @@ Here is an example::
 Note that the ``comm`` object is from the ``mpi4py`` module that deals with the MPI drivers. The value of cmd on
 the worker before and after the ``bcast`` command are shown in the table.
 
-+--------------+-------+-------+-------+-------+
-|              | Proc1 | Proc2 | Proc3 | Proc4 |
-+--------------+-------+-------+-------+-------+
-| Before bcast | 'bob' | 4     | 'sam' | 3.14  |
-+--------------+-------+-------+-------+-------+
-| After bcast  | 'bob' | 'bob' | 'bob' | 'bob' |
-+--------------+-------+-------+-------+-------+
++--------------+-------+--------+--------+--------+
+|              | Proc0 | Proc1  | Proc2  | Proc3  |
++--------------+-------+--------+--------+--------+
+| Before bcast | "bob" | "val1" | "val2" | "val3" |
++--------------+-------+--------+--------+--------+
+| After bcast  | "bob" | "bob"  | "bob"  | "bob"  |
++--------------+-------+--------+--------+--------+
 
 The second important type of communication is the ``scatter``/``gather`` combo. These are used when you have a
 big list of work you'd like to get done in parallel and you want to farm it off to a bunch of processors. To do
