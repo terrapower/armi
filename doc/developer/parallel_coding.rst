@@ -38,12 +38,13 @@ Here is an example::
 Note that the ``comm`` object is from the ``mpi4py`` module that deals with the MPI drivers. The value of cmd on
 the worker before and after the ``bcast`` command are shown in the table.
 
-============ ===== ===== ===== =====
-             Proc1 Proc2 Proc3 Proc4
-============ ===== ===== ===== =====
-Before bcast 'bob'   4   'sam' 3.14
-After bcast  'bob' 'bob' 'bob' 'bob'
-============ ===== ===== ===== =====
++--------------+-------+-------+-------+-------+
+|              | Proc1 | Proc2 | Proc3 | Proc4 |
++--------------+-------+-------+-------+-------+
+| Before bcast | 'bob' | 4     | 'sam' | 3.14  |
++--------------+-------+-------+-------+-------+
+| After bcast  | 'bob' | 'bob' | 'bob' | 'bob' |
++--------------+-------+-------+-------+-------+
 
 The second important type of communication is the ``scatter``/``gather`` combo. These are used when you have a
 big list of work you'd like to get done in parallel and you want to farm it off to a bunch of processors. To do
