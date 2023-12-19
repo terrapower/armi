@@ -175,16 +175,19 @@ class OperatorTests(unittest.TestCase):
 
     def test_getInterfaces(self):
         """Ensure that the right interfaces are returned for a given interaction state."""
+        self.o.cs[CONF_DEFERRED_INTERFACES_CYCLE] = 1
+        self.o.cs[CONF_DEFERRED_INTERFACE_NAMES] = ["history"]
         # test assertion
         with self.assertRaises(ValueError):
             self.o.getActiveInterfaces("notAnInterface")
         # test BOL
-        interfaces = self.o.getActiveInterfaces("BOL")
-        for test, ref in zip(interfaces, self.activeInterfaces):
-            self.assertEqual(test.name, ref.name)
+        interfaces = self.o.getActiveInterfaces(
+            "BOL", excludedInterfaceNames="xsGroups"
+        )
+        interfaceNames = [interface.name for interface in interfaces]
+        self.assertNotIn("xsGroups", interfaceNames)
+        self.assertNotIn("history", interfaceNames)
         # test BOC
-        self.o.cs[CONF_DEFERRED_INTERFACES_CYCLE] = 1
-        self.o.cs[CONF_DEFERRED_INTERFACE_NAMES] = ["history"]
         interfaces = self.o.getActiveInterfaces("BOC", cycle=0)
         interfaceNames = [interface.name for interface in interfaces]
         self.assertNotIn("history", interfaceNames)
