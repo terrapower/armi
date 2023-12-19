@@ -611,7 +611,7 @@ class Operator:
         activeInterfaces = self.getActiveInterfaces("EveryNode", excludedInterfaceNames)
         self._interactAll("EveryNode", activeInterfaces, cycle, tn)
 
-    def interactAllEOC(self, cycle, excludedInterfaceNames=None):
+    def interactAllEOC(self, cycle, excludedInterfaceNames=()):
         """Interact end of cycle for all enabled interfaces."""
         activeInterfaces = self.getActiveInterfaces("EOC", excludedInterfaceNames)
         self._interactAll("EOC", activeInterfaces, cycle)
