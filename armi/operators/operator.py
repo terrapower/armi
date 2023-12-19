@@ -27,7 +27,7 @@ import os
 import re
 import shutil
 import time
-from typing import Union
+from typing import Tuple
 
 from armi import context
 from armi import interfaces
@@ -927,8 +927,8 @@ class Operator:
     def getActiveInterfaces(
         self,
         interactState: str,
-        excludedInterfaceNames: tuple(str) = (),
-        cycle: int = Union[int, None],
+        excludedInterfaceNames: Tuple[str] = (),
+        cycle: int = 0,
     ):
         """Retrieve the interfaces which are active for a given interaction state.
 
@@ -936,10 +936,10 @@ class Operator:
         ----------
         interactState: str
             A string dictating which interaction state the interfaces should be pulled for.
-        excludedInterfaceNames: tuple(str)
+        excludedInterfaceNames: Tuple[str]
             A tuple of strings dictating which interfaces should be manually skipped.
         cycle: int
-            The given cycle. None by default.
+            The given cycle. 0 by default.
 
         Returns
         -------
