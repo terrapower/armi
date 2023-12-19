@@ -537,7 +537,7 @@ def defineCoreParameters():
         pb.defParam(
             "betaComponents",
             units=units.UNITLESS,
-            description="Group-wise delayed neutron fractions.",
+            description="Group-wise delayed neutron fractions",
             default=None,
         )
 
@@ -574,7 +574,7 @@ def defineCoreParameters():
 
         pb.defParam(
             "rxFuelAxialExpansionCoeffPerPercent",
-            units="dk/kk'-%",
+            units=f"{units.REACTIVITY}/{units.PERCENT}",
             description="Fuel Axial Expansion Coefficient",
         )
 
