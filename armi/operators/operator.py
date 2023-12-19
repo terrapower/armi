@@ -906,7 +906,13 @@ class Operator:
         return candidateI
 
     def interfaceIsActive(self, name):
-        """True if named interface exists and is active."""
+        """True if named interface exists and is enabled.
+
+        Notes
+        -----
+        This logic is significantly simpler that getActiveInterfaces. This logic only
+        touches the enabled() flag, but doesn't take into account the case settings.
+        """
         i = self.getInterface(name)
         return i and i.enabled()
 
