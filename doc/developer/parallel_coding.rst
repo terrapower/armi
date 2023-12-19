@@ -27,13 +27,17 @@ are expected to do next.
 
 Here is an example::
 
+    from armi import context
+
+    # cmd = "something different in each process"
+
     if rank == 0:
         # The primary node will send the string 'bob' to all others
         cmd = 'bob'
-        comm.bcast(cmd, root=0)
+        context.MPI_COMM.bcast(cmd, root=0)
     else:
         # these are the workers. They receive a value and set it to the variable cmd
-        cmd = comm.bcast(None, root=0)
+        context.MPI_COMM = comm.bcast(None, root=0)
 
 Note that the ``comm`` object is from the ``mpi4py`` module that deals with the MPI drivers. The value of cmd on
 the worker before and after the ``bcast`` command are shown in the table.
@@ -100,8 +104,7 @@ opposite to reassemble the original list after processing. Let's look at an exam
         # Sum the final list, and print the result
         print("The total sum is: {0:10.5f}".format(sum(allResults)))
 
-    Remember that this code is running on all processors. So it's just the ``if rank == 0`` statements that differentiate
-    between the primary and the workers. To really understand what this script is doing, try to run it in parallel and see what it prints out:
+Remember that this code is running on all processors. So it's just the ``if rank == 0`` statements that differentiate between the primary and the workers. To really understand what this script is doing, try to run it in parallel and see what it prints out::
 
         mpiexec -n 4 python mpi_example.py
 
@@ -138,11 +141,13 @@ Some actions that perform the same task are best distributed through a broadcast
 parallelizing code that is a function of an individual assembly, or block. In the following example, the interface simply
 creates an ``Action`` and broadcasts it as appropriate::
 
+    from armi import context
+
     class SomeInterface(interfaces.Interface):
 
         def interactEverNode(self, cycle, node):
             action = BcastAction()
-            armi.MPI_COMM.bcast(action)
+            context.MPI_COMM.bcast(action)
             results = action.invoke(self.o, self.r, self.cs)
 
             # allResults is a list of len(self.r)
