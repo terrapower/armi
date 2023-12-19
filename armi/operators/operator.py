@@ -590,10 +590,10 @@ class Operator:
 
     def interactAllBOC(self, cycle):
         """Interact at beginning of cycle of all enabled interfaces."""
-        activeInterfaces = self.getActiveInterfaces("BOC", cycle)
+        activeInterfaces = self.getActiveInterfaces("BOC", cycle=cycle)
         return self._interactAll("BOC", activeInterfaces, cycle)
 
-    def interactAllEveryNode(self, cycle, tn, excludedInterfaceNames=None):
+    def interactAllEveryNode(self, cycle, tn, excludedInterfaceNames=()):
         """
         Call the interactEveryNode hook for all enabled interfaces.
 
@@ -608,12 +608,12 @@ class Operator:
         excludedInterfaceNames : list, optional
             Names of interface names that will not be interacted with.
         """
-        activeInterfaces = self.getActiveInterfaces("EveryNode")
+        activeInterfaces = self.getActiveInterfaces("EveryNode", excludedInterfaceNames)
         self._interactAll("EveryNode", activeInterfaces, cycle, tn)
 
     def interactAllEOC(self, cycle, excludedInterfaceNames=None):
         """Interact end of cycle for all enabled interfaces."""
-        activeInterfaces = self.getActiveInterfaces("EOC")
+        activeInterfaces = self.getActiveInterfaces("EOC", excludedInterfaceNames)
         self._interactAll("EOC", activeInterfaces, cycle)
 
     def interactAllEOL(self):
