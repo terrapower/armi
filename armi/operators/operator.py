@@ -953,6 +953,9 @@ class Operator:
             The interfaces deemed active for the given interactState.
         """
         # Validate the inputs
+        if excludedInterfaceNames is None:
+            excludedInterfaceNames = ()
+
         if interactState not in ("BOL", "BOC", "EveryNode", "EOC", "EOL", "Coupled"):
             raise ValueError(f"{interactState} is an unknown interaction state!")
 
