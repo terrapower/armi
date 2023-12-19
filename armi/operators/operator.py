@@ -946,46 +946,35 @@ class Operator:
         activeInterfaces: List[Interfaces]
             The interfaces deemed active for the given interactState.
         """
-        activeInterfaces = []
+        # Validate the inputs
+        if interactState not in ("BOL", "BOC", "EveryNode", "EOC", "EOL", "Coupled"):
+            raise ValueError(f"{interactState} is an unknown interaction state!")
+
+        # Ensure the interface is enabled.
+        enabled = lambda i: i.enabled()
         if interactState == "BOL":
-            activeInterfaces = [
-                ii
-                for ii in self.interfaces
-                if (ii.enabled() or ii.bolForce())
-                and ii.name not in excludedInterfaceNames
-            ]
-            activeInterfaces = [
-                ii
-                for ii in activeInterfaces
-                if ii.name not in self.cs[CONF_DEFERRED_INTERFACE_NAMES]
-            ]
-        elif interactState == "BOC":
-            activeInterfaces = [ii for ii in self.interfaces if ii.enabled()]
-            if cycle < self.cs[CONF_DEFERRED_INTERFACES_CYCLE]:
-                activeInterfaces = [
-                    ii
-                    for ii in activeInterfaces
-                    if ii.name not in self.cs[CONF_DEFERRED_INTERFACE_NAMES]
-                ]
-        elif interactState == "EveryNode" or interactState == "EOC":
-            activeInterfaces = [
-                ii
-                for ii in self.interfaces
-                if ii.enabled() and ii.name not in excludedInterfaceNames
-            ]
-        elif interactState == "EOL":
-            enabledInterfaces = [ii for ii in self.interfaces if ii.enabled()]
-            activeInterfaces = [ii for ii in enabledInterfaces if not ii.reverseAtEOL]
-            activeReverseInterfaces = [
-                ii for ii in enabledInterfaces if ii.reverseAtEOL
-            ]
-            activeInterfaces.extend(reversed(activeReverseInterfaces))
-        elif interactState == "Coupled":
-            activeInterfaces = [ii for ii in self.interfaces if ii.enabled()]
-        else:
-            raise ValueError(
-                f"{interactState} is an unknown interaction state for the Operator!"
+            enabled = lambda i: i.enabled() or i.bolForce()
+
+        # Ensure the name of the interface isn't in some exclusion list.
+        nameCheck = lambda i: True
+        if interactState == "EveryNode" or interactState == "EOC":
+            nameCheck = lambda i: i.name not in excludedInterfaceNames
+        elif interactState == "BOC" and cycle < self.cs[CONF_DEFERRED_INTERFACES_CYCLE]:
+            nameCheck = lambda i: i.name not in self.cs[CONF_DEFERRED_INTERFACE_NAMES]
+        elif interactState == "BOL":
+            nameCheck = (
+                lambda i: i.name not in self.cs[CONF_DEFERRED_INTERFACE_NAMES]
+                and i.name not in excludedInterfaceNames
             )
+
+        # Finally, find the active interfaces.
+        activeInterfaces = [i for i in self.interfaces if enabled(i) and nameCheck(i)]
+
+        # Special Case: At EOL we reverse the order of some interfaces.
+        if interactState == "EOL":
+            actInts = [ii for ii in activeInterfaces if not ii.reverseAtEOL]
+            actInts.extend(reversed([ii for ii in activeInterfaces if ii.reverseAtEOL]))
+            activeInterfaces = actInts
 
         return activeInterfaces
 

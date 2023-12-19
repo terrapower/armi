@@ -173,35 +173,41 @@ class OperatorTests(unittest.TestCase):
         self.assertTrue(self.o.interfaceIsActive("main"))
         self.assertFalse(self.o.interfaceIsActive("Fake-o"))
 
-    def test_getInterfaces(self):
+    def test_getActiveInterfaces(self):
         """Ensure that the right interfaces are returned for a given interaction state."""
         self.o.cs[CONF_DEFERRED_INTERFACES_CYCLE] = 1
         self.o.cs[CONF_DEFERRED_INTERFACE_NAMES] = ["history"]
-        # test assertion
+
+        # Test invalid inputs.
         with self.assertRaises(ValueError):
             self.o.getActiveInterfaces("notAnInterface")
-        # test BOL
+
+        # Test BOL
         interfaces = self.o.getActiveInterfaces(
-            "BOL", excludedInterfaceNames="xsGroups"
+            "BOL", excludedInterfaceNames=("xsGroups")
         )
         interfaceNames = [interface.name for interface in interfaces]
         self.assertNotIn("xsGroups", interfaceNames)
         self.assertNotIn("history", interfaceNames)
-        # test BOC
+
+        # Test BOC
         interfaces = self.o.getActiveInterfaces("BOC", cycle=0)
         interfaceNames = [interface.name for interface in interfaces]
         self.assertNotIn("history", interfaceNames)
-        # test EveryNode and EOC
+
+        # Test EveryNode and EOC
         interfaces = self.o.getActiveInterfaces(
             "EveryNode", excludedInterfaceNames=("xsGroups")
         )
         interfaceNames = [interface.name for interface in interfaces]
         self.assertIn("history", interfaceNames)
         self.assertNotIn("xsGroups", interfaceNames)
-        # test EOL
+
+        # Test EOL
         interfaces = self.o.getActiveInterfaces("EOL")
         self.assertEqual(interfaces[-1].name, "main")
-        # test Coupled
+
+        # Test Coupled
         interfaces = self.o.getActiveInterfaces("Coupled")
         for test, ref in zip(interfaces, self.activeInterfaces):
             self.assertEqual(test.name, ref.name)
