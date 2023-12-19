@@ -29,7 +29,6 @@ The Hook: getReportContents()
 +---------------+--------------------------------------------------------------------------------------------------------------------------+
 
 
-
 ReportContent, at its core, is a transient represention of the report itself (until it is fully collected and converted to an html page), so in the call to getReportContents() additions are made to this object. 
 Generally, you would want to break up the added contents into stages within the function getReportContents() as so::
 

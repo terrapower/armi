@@ -27,23 +27,28 @@ are expected to do next.
 
 Here is an example::
 
-    if rank == 0:
+    from armi import context
+
+    cmd = f"val{context.MPI_RANK}"
+
+    if context.MPI_RANK == 0:
         # The primary node will send the string 'bob' to all others
-        cmd = 'bob'
-        comm.bcast(cmd, root=0)
+        cmd = "bob"
+        context.MPI_COMM.bcast(cmd, root=0)
     else:
         # these are the workers. They receive a value and set it to the variable cmd
-        cmd = comm.bcast(None, root=0)
+        context.MPI_COMM = comm.bcast(None, root=0)
 
 Note that the ``comm`` object is from the ``mpi4py`` module that deals with the MPI drivers. The value of cmd on
 the worker before and after the ``bcast`` command are shown in the table.
 
-============ ===== ===== ===== =====
-             Proc1 Proc2 Proc3 Proc4
-============ ===== ===== ===== =====
-Before bcast 'bob'   4   'sam' 3.14
-After bcast  'bob' 'bob' 'bob' 'bob'
-============ ===== ===== ===== =====
++--------------+-------+--------+--------+--------+
+|              | Proc0 | Proc1  | Proc2  | Proc3  |
++--------------+-------+--------+--------+--------+
+| Before bcast | "bob" | "val1" | "val2" | "val3" |
++--------------+-------+--------+--------+--------+
+| After bcast  | "bob" | "bob"  | "bob"  | "bob"  |
++--------------+-------+--------+--------+--------+
 
 The second important type of communication is the ``scatter``/``gather`` combo. These are used when you have a
 big list of work you'd like to get done in parallel and you want to farm it off to a bunch of processors. To do
@@ -63,51 +68,45 @@ transmition to each CPU). This is called *load balancing*.
 
 ARMI has utilities that can help called :py:func:`armi.utils.iterables.chunk` and :py:func:`armi.utils.iterables.flatten`.
 Given an arbitrary list, ``chunk`` breaks it up into a certain number of chunks and ``unchunk`` does the
-opposite to reassemble the original list after processing. Check it out::
+opposite to reassemble the original list after processing. Let's look at an example script::
 
+    """mpi_example.py"""
+    import random
+
+    from armi import context
     from armi.utils import iterables
 
-    if rank == 0:
-        # primary. Make data and send it.
-        workListLoadBalanced = iterables.split(workList, nCpu, padWith=())
-        # this list looks like:
-        # [[v1,v2,v3,v4...], [v5,v6,v7,v8,...], ...]
-        # And there's one set of values for each processor
-        myValsToAdd = comm.scatter(workListLoadBalanced, root=0)
-        # now myValsToAdd is the first entry from the work list, or [v1,v2,v3,v4,...].
+    # Generate a list of random number pairs: [[(v1,v2),(v3,v4),...]]
+    workList = [(random.random(), random.random()) for _i in range(1000)]
+
+    if context.MPI_RANK == 0:
+        # Primary Process: Split the data and send it to the workers
+        workListLoadBalanced = iterables.split(workList, context.MPI_SIZE, padWith=())
+        myValsToAdd = context.MPI_COMM.scatter(workListLoadBalanced, root=0)
     else:
-        # workers. Receive data. Pass a dummy variable to scatter (None)
-        myValsToAdd = comm.scatter(None, root=0)
-        # now for the first worker, myValsToAdd==[v5,v6,v7,v8,...]
-        # and for the second worker, it is [v9,v10,v11,v12,...] and so on.
-        # Recall that in this example, each vn is a tuple like (randomnum, randomnum)
+        # Worker Process: Receive data, pass a dummy value to scatter (None)
+        myValsToAdd = context.MPI_COMM.scatter(None, root=0)
 
 
-    # all processors do their bit of the work
+    # All processes do their bit of this work (adding)
     results = []
     for num1, num2 in myValsToAdd:
         results.append(num1 + num2)
 
-    # now results is a list of results with one entry per myValsToAdd, or
-    # [r1,r2,r3,r4,...]
+    # All processes call gather to send their results back to the root process.
+    #    (The result lists above are simply added to make one list with MPI_SIZE sub-lists.)
+    allResultsLoadBalanced = context.MPI_COMM.gather(results, root=0)
 
-    # all processors call gather to send their results back. it all assembles on the primary processor.
-    allResultsLoadBalanced = comm.gather(results, root=0)
-    # So we now have a list of lists of results, like this:
-    # [[r1,r2,r3,r4,...], [r5,r6,r7,r8,...], ...]
-
-    # primary processor does stuff with the results, like print them out.
-    if rank == 0:
-        # first take the individual result lists and reassemble them back into the big list.
-        # These results correspond exactly to workList from above. All ordering has been preserved.
+    # Primary Process: Flatten the multiple lists (from each process), and sum them.
+    if context.MPI_RANK == 0:
+        # Flatten the MPI_SIZE number of sub lists into one list
         allResults = iterables.flatten(allResultsLoadBalanced)
-        # allResults now looks like: [r1,r2,r3,r4,r5,r6,r7,...]
-        print('The total sum is: {0:10.5f}'.format(sum(allResults)))
+        # Sum the final list, and print the result
+        print("The total sum is: {0:10.5f}".format(sum(allResults)))
 
-Remember that this code is running on all processors. So it's just the ``if rank == 0`` statements that differentiate
-between the primary and the workers. Try writing this program as a script and submitting it to a cluster via the command
-line to see if you really understand what's going on. You will have to add some MPI imports before you can do that
-(see :py:mod:`twr_shuffle.py <armi.twr_shuffle>` in the ARMI code for a major hint!).
+Remember that this code is running on all processors. So it's just the ``if rank == 0`` statements that differentiate between the primary and the workers. To really understand what this script is doing, try to run it in parallel and see what it prints out::
+
+        mpiexec -n 4 python mpi_example.py
 
 
 MPI Communication within ARMI
@@ -140,13 +139,15 @@ Example using ``bcast``
 
 Some actions that perform the same task are best distributed through a broadcast. This makes sense for if your are
 parallelizing code that is a function of an individual assembly, or block. In the following example, the interface simply
-creates an ``Action`` and broadcasts it as appropriate.::
+creates an ``Action`` and broadcasts it as appropriate::
+
+    from armi import context
 
     class SomeInterface(interfaces.Interface):
 
         def interactEverNode(self, cycle, node):
             action = BcastAction()
-            armi.MPI_COMM.bcast(action)
+            context.MPI_COMM.bcast(action)
             results = action.invoke(self.o, self.r, self.cs)
 
             # allResults is a list of len(self.r)
@@ -183,7 +184,7 @@ Example using ``scatter``
 *************************
 
 When trying two independent actions at the same time, you can use ``scatter`` to distribute the work. The following example
-shows how different operations can be performed in parallel.::
+shows how different operations can be performed in parallel::
 
     class SomeInterface(interfaces.Interface):
 
@@ -223,7 +224,7 @@ A simplified approach
 *********************
 
 Transferring state to and from a Reactor can be complicated and add a lot of code. An alternative approachis to ensure
-that the reactor state is synchronized across all nodes, and then use the reactor instead of raw data.::
+that the reactor state is synchronized across all nodes, and then use the reactor instead of raw data::
 
     class SomeInterface(interfaces.Interface):
 
