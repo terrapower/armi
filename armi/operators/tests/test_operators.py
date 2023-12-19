@@ -35,6 +35,8 @@ from armi.settings.fwSettings.globalSettings import (
     CONF_TIGHT_COUPLING,
     CONF_CYCLES_SKIP_TIGHT_COUPLING_INTERACTION,
     CONF_TIGHT_COUPLING_SETTINGS,
+    CONF_DEFERRED_INTERFACE_NAMES,
+    CONF_DEFERRED_INTERFACES_CYCLE,
 )
 from armi.tests import mockRunLogs
 from armi.utils import directoryChangers
@@ -170,6 +172,45 @@ class OperatorTests(unittest.TestCase):
         self.o, _r = test_reactors.loadTestReactor()
         self.assertTrue(self.o.interfaceIsActive("main"))
         self.assertFalse(self.o.interfaceIsActive("Fake-o"))
+
+    def test_getActiveInterfaces(self):
+        """Ensure that the right interfaces are returned for a given interaction state."""
+        self.o.cs[CONF_DEFERRED_INTERFACES_CYCLE] = 1
+        self.o.cs[CONF_DEFERRED_INTERFACE_NAMES] = ["history"]
+
+        # Test invalid inputs.
+        with self.assertRaises(ValueError):
+            self.o.getActiveInterfaces("notAnInterface")
+
+        # Test BOL
+        interfaces = self.o.getActiveInterfaces(
+            "BOL", excludedInterfaceNames=("xsGroups")
+        )
+        interfaceNames = [interface.name for interface in interfaces]
+        self.assertNotIn("xsGroups", interfaceNames)
+        self.assertNotIn("history", interfaceNames)
+
+        # Test BOC
+        interfaces = self.o.getActiveInterfaces("BOC", cycle=0)
+        interfaceNames = [interface.name for interface in interfaces]
+        self.assertNotIn("history", interfaceNames)
+
+        # Test EveryNode and EOC
+        interfaces = self.o.getActiveInterfaces(
+            "EveryNode", excludedInterfaceNames=("xsGroups")
+        )
+        interfaceNames = [interface.name for interface in interfaces]
+        self.assertIn("history", interfaceNames)
+        self.assertNotIn("xsGroups", interfaceNames)
+
+        # Test EOL
+        interfaces = self.o.getActiveInterfaces("EOL")
+        self.assertEqual(interfaces[-1].name, "main")
+
+        # Test Coupled
+        interfaces = self.o.getActiveInterfaces("Coupled")
+        for test, ref in zip(interfaces, self.activeInterfaces):
+            self.assertEqual(test.name, ref.name)
 
     def test_loadStateError(self):
         """The ``loadTestReactor()`` test tool does not have any history in the DB to load from."""
