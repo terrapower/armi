@@ -99,7 +99,7 @@ responsible for not breaking that code/functionality. And you will be required t
 call out that you touch such a code in your PR.
 
 Your PR reviewer will take an extra look at any PR that touches a requirement test or implementation.
-And you will need to add a special release note under the "Software Change Requests" section header.
+And you will need to add a special release note under the "Changes that Affect Requirements" section header.
 
 Packaging and dependency management
 -----------------------------------

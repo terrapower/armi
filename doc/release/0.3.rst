@@ -14,9 +14,8 @@ Bug Fixes
 ---------
 #. TBD
 
-Software Change Requests
-------------------------
-(Here we list the changes that affect ARMI requirements.)
+Changes that Affect Requirements
+--------------------------------
 
 #. TBD
 
