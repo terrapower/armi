@@ -1,6 +1,6 @@
-*******************************************
+******************************************
 Radial and Axial Expansion and Contraction
-*******************************************
+******************************************
 
 ARMI natively supports linear expansion in both the radial and axial dimensions. These expansion types function independently of one another and each have their own set of underlying assumptions and use-cases. The remainder of this section is described as follows: in Section :ref:`thermalExpansion` the methodology used for thermal expansion within ARMI is described; in Sections :ref:`radialExpansion` and :ref:`axialExpansion`, we describe the design, limitations, and intended functionality of radial and axial expansion, respectively.
 

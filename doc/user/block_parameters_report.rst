@@ -1,5 +1,7 @@
+****************
 Block Parameters
-================
+****************
+
 This document lists all of the Block Parameters that are provided by the ARMI Framework.
 
 .. exec::

@@ -1,5 +1,7 @@
+*******************
 Assembly Parameters
-===================
+*******************
+
 This document lists all of the Assembly Parameters that are provided by the ARMI Framework.
 
 .. exec::
