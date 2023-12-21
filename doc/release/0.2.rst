@@ -2,27 +2,6 @@
 ARMI v0.2 Release Notes
 =======================
 
-ARMI v0.2.10
-============
-Release Date: TBD
-
-What's new in ARMI
-------------------
-#. Many new references to requirement tests and implementations were added to docstrings.
-#. The ``ruff`` linter is now mandatory on all ARMI PRs.
-#. The ``_copyInputsHelper()`` gives relative path and not absolute after copy. (`PR#1416 <https://github.com/terrapower/armi/pull/1416>`_)
-#. ARMI now mandates ``ruff`` linting. (`PR#1419 <https://github.com/terrapower/armi/pull/1419>`_)
-#. Removed all old ARMI requirements, to start the work fresh. (`PR#1438 <https://github.com/terrapower/armi/pull/1438>`_)
-#. Downgrading Draft PRs as policy. (`PR#1444 <https://github.com/terrapower/armi/pull/1444>`_)
-#. Attempt to set representative block number densities by component if possible. (`PR#1412 <https://github.com/terrapower/armi/pull/1412>`_)
-#. Use functools to preserve function attributes when wrapping with codeTiming.timed (`PR#1466 <https://github.com/terrapower/armi/pull/1466>`_)
-#. Remove a number of deprecated block, assembly, and core parameters related to a defunct internal plugin
-#. TBD
-
-Bug fixes
----------
-#. TBD
-
 ARMI v0.2.9
 ===========
 Release Date: 2023-09-27
