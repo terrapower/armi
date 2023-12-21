@@ -1,5 +1,7 @@
+***************
 Reports in ARMI
-================
+***************
+
 .. note::  The resulting report itself is an HTML page with table of contents on the left.
 
 ARMI provides the ability to make a variety of plots and tables describing the state of the reactor.

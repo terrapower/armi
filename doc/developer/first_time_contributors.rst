@@ -9,7 +9,7 @@ Although fewer laws apply to open source materials because they are publicly-ava
 must comply with all applicable laws and regulations.
 
 Help Wanted
-===========
+-----------
 
 There are a lot of places you can get started to help the ARMI project and team:
 
@@ -22,7 +22,7 @@ There are a lot of places you can get started to help the ARMI project and team:
 Naturally, you can also look at the open `ARMI issues <https://github.com/terrapower/armi/issues>`_ to see what work needs to be done. In particular, check out the `help wanted tickets <https://github.com/terrapower/armi/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22>`_ and `good first issue tickets <https://github.com/terrapower/armi/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22>`_.
 
 Testing
-=======
+-------
 
 Any contribution must pass all included unit tests. You will frequently have to fix
 tests your code changes break. And you should definitely add tests to cover anything
@@ -42,7 +42,7 @@ Or the tests can also be run using ``pytest`` directly::
     $ pytest -n 4 armi
 
 Submitting Changes
-==================
+------------------
 
 To submit a change to ARMI, you will have to open a Pull Request (PR) on GitHub.com.
 
@@ -64,7 +64,7 @@ See our published documentation for a complete guide to our :doc:`coding standar
 Also, please check out our (quick) synopsis on :doc:`good commit messages </developer/tooling>`.
 
 Licensing of Tools
-==================
+------------------
 
 Be careful when including any dependency in ARMI (say in the ``pyproject.toml`` file) not
 to include anything with a license that superceeds our Apache license. For instance,
