@@ -29,5 +29,5 @@
 
 - [ ] The [release notes](https://terrapower.github.io/armi/release/index.html) (location `doc/release/0.X.rst`) are up-to-date with any important changes.
 - [ ] The [documentation](https://terrapower.github.io/armi/developer/tooling.html#document-it) is still up-to-date in the `doc` folder.
-- [ ] No [requirements](https://terrapower.github.io/armi/developer/tooling.html#watch-for-requirements) were altered.
+- [ ] If any [requirements](https://terrapower.github.io/armi/developer/tooling.html#watch-for-requirements) were affected, mention it in the [release notes](https://terrapower.github.io/armi/release/index.html).
 - [ ] The dependencies are still up-to-date in `pyproject.toml`.

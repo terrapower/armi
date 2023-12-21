@@ -2,12 +2,30 @@
 ARMI v0.3 Release Notes
 =======================
 
+ARMI v0.3.1
+============
+Release Date: TBD
+
+What's new in ARMI?
+-------------------
+#. TBD
+
+Bug Fixes
+---------
+#. TBD
+
+Changes that Affect Requirements
+--------------------------------
+
+#. TBD
+
+
 ARMI v0.3.0
 ============
 Release Date: 2023-12-21
 
-What's new in ARMI
-------------------
+What's new in ARMI?
+-------------------
 #. The ``_copyInputsHelper()`` gives relative path and not absolute after copy. (`PR#1416 <https://github.com/terrapower/armi/pull/1416>`_)
 #. Attempt to set representative block number densities by component if possible. (`PR#1412 <https://github.com/terrapower/armi/pull/1412>`_)
 #. Use ``functools`` to preserve function attributes when wrapping with ``codeTiming.timed`` (`PR#1466 <https://github.com/terrapower/armi/pull/1466>`_)

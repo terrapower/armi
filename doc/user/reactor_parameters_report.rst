@@ -1,5 +1,7 @@
+******************
 Reactor Parameters
-==================
+******************
+
 This document lists all of the Reactor Parameters that are provided by the ARMI Framework.
 
 .. exec::

@@ -1,5 +1,7 @@
+****************
 Documenting ARMI
-================
+****************
+
 ARMI uses the `Sphinx <https://www.sphinx-doc.org/en/master/>`_ documentation system to compile the 
 web-based documentation from in-code docstrings and hand-created 
 `ReStructedText files <https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html>`_.

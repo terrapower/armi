@@ -1,6 +1,7 @@
 **************
 Profiling ARMI
 **************
+
 Python in slow, so it's important to profile code to keep it running reasonbly quickly. Using the 
 basic `Python profiler <https://docs.python.org/3/library/profile.html>`_ is the best way to get started. 
 Once you have a ``.stats`` file, however, we highly recommend using a visualizer.  

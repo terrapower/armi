@@ -1,6 +1,7 @@
 ************
 Installation
 ************
+
 This section will guide you through installing the ARMI Framework on your machine.
 
 Prerequisites

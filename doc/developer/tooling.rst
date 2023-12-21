@@ -1,5 +1,6 @@
+**************************
 Tooling and Infrastructure
-==========================
+**************************
 
 Good Commit Messages
 --------------------
@@ -87,17 +88,18 @@ Such breadcrumbs will look like:
 .. code-block::
 
     """
-    .. req: This is a requirement breadcrumb.
+    .. test: This is a requirement test breadcrumb.
 
-    .. test: This is a test breadcrumb.
-
-    .. impl: This is an implementation breadcrumb.
+    .. impl: This is an requirement implementation breadcrumb.
 
     """
 
-If you touch any code that has such a docstring, even in a file, you are going to be
+If you touch any code that has such a docstring, even at the top of the file, you are going to be
 responsible for not breaking that code/functionality. And you will be required to explicitly
 call out that you touch such a code in your PR.
+
+Your PR reviewer will take an extra look at any PR that touches a requirement test or implementation.
+And you will need to add a special release note under the "Changes that Affect Requirements" section header.
 
 Packaging and dependency management
 -----------------------------------
