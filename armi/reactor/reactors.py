@@ -74,10 +74,6 @@ class Reactor(composites.Composite):
     .. impl:: The user-specified reactor.
         :id: I_ARMI_R
         :implements: R_ARMI_R
-
-    .. impl:: The reactor includes a core and a spent fuel pool.
-        :id: I_ARMI_R_CHILDREN
-        :implements: R_ARMI_R_CHILDREN
     """
 
     pDefs = reactorParameters.defineReactorParameters()

@@ -243,10 +243,6 @@ class HexReactorTests(ReactorTests):
         .. test:: The reactor object is a composite.
             :id: T_ARMI_R
             :tests: R_ARMI_R
-
-        .. test:: The reactor object includes a core and an SFP.
-            :id: T_ARMI_R_CHILDREN
-            :tests: R_ARMI_R_CHILDREN
         """
         self.assertTrue(isinstance(self.r.core, reactors.Core))
         self.assertTrue(isinstance(self.r.sfp, SpentFuelPool))
