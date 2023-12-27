@@ -205,6 +205,10 @@ class TestArmiCase(unittest.TestCase):
         .. test:: There is a generic mechanism to allow simulation runs.
             :id: T_ARMI_CASE
             :tests: R_ARMI_CASE
+
+        .. test:: Test case settings object is created, settings can be edited, and case can run.
+            :id: T_ARMI_SETTING
+            :tests: R_ARMI_SETTING
         """
         with directoryChangers.TemporaryDirectoryChanger():
             cs = settings.Settings(ARMI_RUN_PATH)
