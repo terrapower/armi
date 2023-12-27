@@ -103,7 +103,7 @@ class ArmiCLI:
     ARMI CLI -- The main entry point into ARMI. There are various commands
     available. To get help for the individual commands, run again with
     `<command> --help`. Typically, the CLI implements functions that already
-    exists within ARMI.
+    exist within ARMI.
 
     .. impl:: The basic ARMI CLI, for running a simulation.
         :id: I_ARMI_CLI_CS
