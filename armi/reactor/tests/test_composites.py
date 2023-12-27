@@ -114,6 +114,10 @@ class TestCompositePattern(unittest.TestCase):
         """Test basic Composite things.
 
         .. test:: Composites are part of a hierarchical model.
+            :id: T_ARMI_CMP
+            :tests: R_ARMI_CMP
+
+        .. test:: Composites are part of a hierarchical model.
             :id: T_ARMI_CMP_CHILDREN0
             :tests: R_ARMI_CMP_CHILDREN
         """
