@@ -2669,7 +2669,7 @@ class Composite(ArmiObject):
     reactors.
 
     .. impl:: Composites are a physical part of the reactor in a hierarchical data model.
-        :id: I_ARMI_CMP
+        :id: I_ARMI_CMP0
         :implements: R_ARMI_CMP
     """
 
@@ -2776,9 +2776,9 @@ class Composite(ArmiObject):
         """
         Return the children objects of this composite.
 
-        .. impl:: Composites have children, in the hierarchical data model.
-            :id: I_ARMI_CMP_CHILDREN
-            :implements: R_ARMI_CMP_CHILDREN
+        .. impl:: Composites have children in the hierarchical data model.
+            :id: I_ARMI_CMP1
+            :implements: R_ARMI_CMP
 
         Parameters
         ----------

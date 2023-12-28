@@ -114,12 +114,8 @@ class TestCompositePattern(unittest.TestCase):
         """Test basic Composite things.
 
         .. test:: Composites are part of a hierarchical model.
-            :id: T_ARMI_CMP
+            :id: T_ARMI_CMP0
             :tests: R_ARMI_CMP
-
-        .. test:: Composites are part of a hierarchical model.
-            :id: T_ARMI_CMP_CHILDREN0
-            :tests: R_ARMI_CMP_CHILDREN
         """
         container = self.container
 
@@ -137,8 +133,8 @@ class TestCompositePattern(unittest.TestCase):
         """Test the get children method.
 
         .. test:: Composites are part of a hierarchical model.
-            :id: T_ARMI_CMP_CHILDREN1
-            :tests: R_ARMI_CMP_CHILDREN
+            :id: T_ARMI_CMP1
+            :tests: R_ARMI_CMP
         """
         # There are 5 leaves and 1 composite in container. The composite has one leaf.
         firstGen = self.container.getChildren()
