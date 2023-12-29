@@ -93,9 +93,11 @@ class TestDatabaseInterface(unittest.TestCase):
         self.db.close()
         self.stateRetainer.__exit__()
         self.td.__exit__(None, None, None)
-        # interactBOL leaves behind some dirt (accessible after db close) that the
+        # test_interactBOL leaves behind some dirt (accessible after db close) that the
         # TempDirChanger is not catching
-        os.remove(os.path.join(PROJECT_ROOT, "armiRun.h5"))
+        bolDirt = os.path.join(PROJECT_ROOT, "armiRun.h5")
+        if os.path.exists(bolDirt):
+            os.remove(bolDirt)
 
     def test_interactEveryNodeReturn(self):
         """Test that the DB is NOT written to if cs["tightCoupling"] = True."""
