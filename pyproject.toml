@@ -81,7 +81,6 @@ test = [
     "black==22.6.0",
     "docutils",
     "ipykernel",
-    "jupyter-contrib-nbextensions",
     "jupyter_client",
     "nbconvert",
     "pytest",
