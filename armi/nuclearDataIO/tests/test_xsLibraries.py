@@ -233,6 +233,9 @@ class TestXSLibrary(unittest.TestCase, TempFileMixin):
         # check to make sure they labels overlap... or are actually the same
         writer.writeBinary(self.xsLib, self.testFileName)
         self.assertTrue(filecmp.cmp(refFile, self.testFileName))
+        # These files get around the TempDirChanger for some reason,
+        # and the bug is not obvious
+        os.remove(self.testFileName)
 
 
 class TestGetISOTXSFilesInWorkingDirectory(unittest.TestCase):
@@ -366,6 +369,9 @@ class TestXSlibraryMerging(unittest.TestCase, TempFileMixin):
         self.__class__.libAA = None
         self.getWriteFunc()(emptyXSLib, self.testFileName)
         self.assertTrue(filecmp.cmp(self.getLibAAPath(), self.testFileName))
+        # These files get around the TempDirChanger for some reason,
+        # and the bug is not obvious
+        os.remove(self.testFileName)
 
     def test_mergeTwoXSLibFiles(self):
         emptyXSLib = xsLibraries.IsotxsLibrary()
@@ -379,6 +385,9 @@ class TestXSlibraryMerging(unittest.TestCase, TempFileMixin):
         self.assertTrue(xsLibraries.compare(emptyXSLib, self.libCombined))
         self.getWriteFunc()(emptyXSLib, self.testFileName)
         self.assertTrue(filecmp.cmp(self.getLibAA_ABPath(), self.testFileName))
+        # These files get around the TempDirChanger for some reason,
+        # and the bug is not obvious
+        os.remove(self.testFileName)
 
     def test_canRemoveIsotopes(self):
         emptyXSLib = xsLibraries.IsotxsLibrary()
@@ -407,6 +416,9 @@ class TestXSlibraryMerging(unittest.TestCase, TempFileMixin):
         )
         self.getWriteFunc()(emptyXSLib, self.testFileName)
         self.assertTrue(filecmp.cmp(self.getLibLumpedPath(), self.testFileName))
+        # These files get around the TempDirChanger for some reason,
+        # and the bug is not obvious
+        os.remove(self.testFileName)
 
 
 class Pmatrx_merge_Tests(TestXSlibraryMerging):
