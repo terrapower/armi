@@ -311,7 +311,7 @@ class TestXSlibraryMerging(TempFileMixin):
         del cls.libLumped
 
     def setUp(self):
-        super().setUp()
+        TempFileMixin.setUp(self)
         # load a library that is in the ARMI tree. This should
         # be a small library with LFPs, Actinides, structure, and coolant
         for attrName, path in [
