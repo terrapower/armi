@@ -54,7 +54,7 @@ Here is an excerpt from a settings file:
     :language: yaml
     :lines: 3-15
 
-A full listing of settings available in the framework may be found in the :doc:`Table of all global settings </user/inputs/settings_report>`.
+A full listing of settings available in the framework may be found in the :doc:`Table of all global settings </user/inputs>`.
 
 Many settings are provided by the ARMI Framework, and others are defined by various plugins.
 
@@ -75,7 +75,7 @@ Blueprints, Core Map, and Fuel Management inputs.
 The assembly clicker
 --------------------
 The assembly clicker (in the ``grids`` editor) allows users to define the 2-D layout of the assemblies defined in the
-:doc:`/user/inputs/blueprints`. This can be done in hexagon or cartesian. The results of this arrangement get written to
+:doc:`/user/inputs`. This can be done in hexagon or cartesian. The results of this arrangement get written to
 grids in blueprints. Click on the assembly palette on the right and click on the locations where you want to put the
 assembly. By default, the input assumes a 1/3 core model, but you can create a full core model through the menu.
 
@@ -1536,7 +1536,7 @@ with *keff* closest to the setting, while still being above 1.0 is chosen.
 Settings Report
 ---------------
 
-This document lists all the :doc:`settings </user/inputs/settings>` in ARMI.  
+This document lists all the :doc:`settings </user/inputs>` in ARMI.  
 
 They are all accessible to developers
 through the :py:class:`armi.settings.caseSettings.Settings` object, which is typically stored in a variable named
