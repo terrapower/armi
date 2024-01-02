@@ -81,7 +81,6 @@ test = [
     "black==22.6.0",
     "docutils",
     "ipykernel",
-    "jupyter-contrib-nbextensions",
     "jupyter_client",
     "nbconvert",
     "pytest",
@@ -114,7 +113,9 @@ docs = [
     "ipykernel==6.25.1", # iPython kernel to run Jupyter notebooks
     "pylint==2.17.5", # Generates UML diagrams
     "Jinja2==3.0.3", # Used in numpydoc and nbconvert
-    "sphinxcontrib-jquery==4.1", # Handle missing jquery errors 
+    "sphinxcontrib-jquery==4.1", # Handle missing jquery errors
+    "jupyter-contrib-nbextensions",
+    "lxml<5.0.0", # Needed because the dep above is no longer an active project
 ]
 
 [project.scripts]

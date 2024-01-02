@@ -44,6 +44,7 @@ from armi.settings.fwSettings.globalSettings import CONF_SORT_REACTOR
 from armi.tests import ARMI_RUN_PATH, mockRunLogs, TEST_ROOT
 from armi.utils import directoryChangers
 
+THIS_DIR = os.path.dirname(__file__)
 TEST_REACTOR = None  # pickled string of test reactor (for fast caching)
 
 
@@ -858,7 +859,8 @@ class HexReactorTests(ReactorTests):
         for b in self.r.core.getBlocks():
             b.p.mgFlux = range(5)
             b.p.adjMgFlux = range(5)
-        self.r.core.saveAllFlux()
+        with directoryChangers.TemporaryDirectoryChanger(root=THIS_DIR):
+            self.r.core.saveAllFlux()
 
     def test_getFluxVector(self):
         class MockLib:
