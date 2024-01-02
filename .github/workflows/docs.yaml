@@ -1,6 +1,6 @@
 name: Documentation
 
-on: [push, pull request]
+on: [push, pull_request]
   # push:
   #   branches:
   #     - main
