@@ -75,6 +75,12 @@ class TestComponentFactory(unittest.TestCase):
         )
 
     def test_factory(self):
+        """Creating and verifying void and fuel components.
+
+        .. test:: Example void and fuel components are initialized.
+            :id: T_ARMI_COMP_DEF0
+            :tests: R_ARMI_COMP_DEF
+        """
         voidAttrs = self.getCircleVoidDict()
         voidComp = components.factory(voidAttrs.pop("shape"), [], voidAttrs)
         fuelAttrs = self.getCircleFuelDict()
@@ -85,6 +91,12 @@ class TestComponentFactory(unittest.TestCase):
         self.assertIsInstance(fuelComp.material, materials.UZr)
 
     def test_componentInitializationAndDuplication(self):
+        """Initialize and duplicate a component, veifying the parameters.
+
+        .. test:: Verify the parameters of an initialized component.
+            :id: T_ARMI_COMP_DEF1
+            :tests: R_ARMI_COMP_DEF
+        """
         # populate the class/signature dict, and create a basis attrs
         attrs = self.getCircleVoidDict()
         del attrs["shape"]
@@ -186,7 +198,7 @@ class TestComponent(TestGeneralComponents):
         """Test setting a single number density.
 
         .. test:: Users can set Component number density.
-            :id: T_ARMI_COMP_NUCLIDE_FRASCS0
+            :id: T_ARMI_COMP_NUCLIDE_FRACS0
             :tests: R_ARMI_COMP_NUCLIDE_FRACS
         """
         component = self.component
@@ -198,7 +210,7 @@ class TestComponent(TestGeneralComponents):
         """Test setting multiple number densities.
 
         .. test:: Users can set Component number densities.
-            :id: T_ARMI_COMP_NUCLIDE_FRASCS1
+            :id: T_ARMI_COMP_NUCLIDE_FRACS1
             :tests: R_ARMI_COMP_NUCLIDE_FRACS
         """
         component = self.component

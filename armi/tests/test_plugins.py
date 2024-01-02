@@ -63,6 +63,10 @@ class TestPluginRegistration(unittest.TestCase):
         .. test:: Define a new, unique flag through the plugin pathway.
             :id: T_ARMI_FLAG_EXTEND1
             :tests: R_ARMI_FLAG_EXTEND
+
+        .. test:: Load a plugin into an app and show it is loaded.
+            :id: T_ARMI_PLUGIN_REGISTER
+            :tests: R_ARMI_PLUGIN
         """
         app = getApp()
 
