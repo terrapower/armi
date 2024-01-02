@@ -19,6 +19,7 @@ are called armiRun.yaml which is located in armi.tests
 """
 import collections
 import copy
+import os
 import unittest
 from unittest.mock import patch
 
@@ -489,6 +490,13 @@ class TestFuelHandler(FuelHandlerTestHelper):
             self.assertEqual(a.getName(), firstPassResults[a.getLocation()])
         for a in self.r.sfp.getChildren():
             self.assertEqual(a.getLocation(), "SFP")
+
+        # Do some cleanup, since the fuelHandler Interface has code that gets
+        # around the TempDirectoryChanger
+        os.remove("armiRun2-SHUFFLES.txt")
+        os.remove("armiRun2.shuffles_0.png")
+        os.remove("armiRun2.shuffles_1.png")
+        os.remove("armiRun2.shuffles_2.png")
 
     def test_readMoves(self):
         """

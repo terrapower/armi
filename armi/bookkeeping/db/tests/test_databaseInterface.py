@@ -27,6 +27,7 @@ from armi import settings
 from armi.bookkeeping.db.database3 import Database3
 from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.cases import case
+from armi.context import PROJECT_ROOT
 from armi.physics.neutronics.settings import CONF_LOADING_FILE
 from armi.reactor import grids
 from armi.reactor.flags import Flags
@@ -92,6 +93,11 @@ class TestDatabaseInterface(unittest.TestCase):
         self.db.close()
         self.stateRetainer.__exit__()
         self.td.__exit__(None, None, None)
+        # test_interactBOL leaves behind some dirt (accessible after db close) that the
+        # TempDirChanger is not catching
+        bolDirt = os.path.join(PROJECT_ROOT, "armiRun.h5")
+        if os.path.exists(bolDirt):
+            os.remove(bolDirt)
 
     def test_interactEveryNodeReturn(self):
         """Test that the DB is NOT written to if cs["tightCoupling"] = True."""
