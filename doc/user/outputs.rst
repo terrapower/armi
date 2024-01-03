@@ -1,7 +1,71 @@
-*****************
-The Database File
-*****************
+*******
+Outputs
+*******
 
+ARMI output files are described in this section. Many outputs may be generated during an ARMI run. They fall into
+various categories:
+
+Framework outputs
+    Files like the **stdout** and the **database** are produced in nearly all runs.
+
+Interface outputs
+    Certain plugins/interfaces produce intermediate output files.
+
+Physics kernel outputs
+    If ARMI executes an external physics kernel during a run, its associated output files are often available in the
+    working directory. These files are typically read by ARMI during the run, and relevant data is transferred onto the
+    reactor model (and ends up in the ARMI **database**). If the user desires to retain all of the inputs and outputs
+    associated with the physics kernel runs for a given time step, this can be specified with the ``savePhysicsIO`` setting.
+    For any time step specified in the list under ``savePhysicsIO``, a ``cXnY/`` folder will be created, and ARMI will store all
+    inputs and outputs associated with each physics kernel executed at this time step in a folder inside of ``cXnY/``.
+    The format for specifying a state point is 00X00Y for cycle X, step Y.
+
+Together the output fully define the analyzed ARMI case.
+
+
+The Standard Output
+===================
+The Standard Output (or **stdout**) is a running log of things an ARMI run prints out as it executes a case. It shows
+what happened during a run, which inputs were used, which warnings were issued, and in some cases, what the summary
+results are.  Here is an excerpt::
+
+        ===========  Completed BOL Event ===========
+
+        ===========  Triggering BOC - cycle 0 Event ===========
+        =========== 01 - main                           BOC - cycle 0   ===========
+        [impt] Beginning of Cycle 0
+        =========== 02 - fissionProducts                BOC - cycle 0   ===========
+        =========== 03 - xsGroups                       BOC - cycle 0   ===========
+        [xtra] Generating representative blocks for XS
+        [xtra] Cross section group manager summary
+
+In a standard run, the various interfaces will loop through and print out messages according to the `verbosity`
+setting. In multi-processing runs, the **stdout** shows messages from the primary node first and then shows information
+from all other nodes below (with verbosity set by the `branchVerbosity` setting). Sometimes a user will want to set the
+verbosity of just one module (.py file) in the code higher than the rest of ARMI, to do so they can set up a custom
+logger by placing this line at the top of the file::
+
+    runLog = logging.getLogger(__name__)
+
+These single-module (file) loggers can be controlled using a the `moduleVerbosity` setting. All of these logger
+verbosities can be controlled from the settings file, for example::
+
+    branchVerbosity: debug
+    moduleVerbosity:
+        armi.reactor.reactors: info
+    verbosity: extra
+
+If there is an error, a useful message may be printed in the **stdout**, and a full traceback will be provided in the
+associated **stderr** file.
+
+Some Linux users tend to use the **tail** command to monitor the progress of an ARMI run::
+
+    tail -f myRun.stdout
+
+This provides live information on the progress.
+
+The Database File
+=================
 The **database** file is a self-contained complete (or nearly complete) binary
 representation of the ARMI composite model state during a case. The database contains
 the text of the input files that were used to create the case, and for each time node,
@@ -9,7 +73,7 @@ the values of all composite parameters as well as layout information to help ful
 reconstruct the structure of the reactor model.
 
 Loading Reactor State
-=====================
+---------------------
 Among other things, the database file can be used to recover an ARMI reactor model from
 any of the time nodes that it contains. This can be useful for performing restart runs,
 or for doing custom post-processing tasks. To load a reactor state, you will need to
@@ -28,7 +92,7 @@ load the reactor state at cycle 5, time node 2 with the following::
        r = db.load(5, 2)
 
 Extracting Reactor History
-==========================
+--------------------------
 Not only can the database reproduce reactor state for a given time node, it can also
 extract a history of specific parameters for specific objects through the
 :py:meth:`armi.bookkeeping.db.Database3.getHistory()` and
@@ -48,15 +112,14 @@ following::
 
 
 Extracting Settings and Blueprints
-==================================
+----------------------------------
 As well as the reactor states for each time node, the database file also stores the
 input files (blueprints and settings files) used to run the case that generated it.
 These can be recovered using the `extract-inputs` ARMI entry point. Use `python -m armi
 extract-inputs --help` for more information.
 
 File format
-===========
-
+-----------
 The database file format is built on top of the HDF5 format. There are many tools
 available for viewing, editing, and scripting HDF5 files. The ARMI database uses the
 `h5py` package for interacting with the underlying data and metadata.
@@ -80,7 +143,7 @@ There are many other features of HDF5, but from a usability standpoint that is e
 information to get started.
 
 Database Structure
-==================
+------------------
 The database structure is outlined below. This shows the broad strokes of how the
 database is put together, but many more details may be gleaned from the in-line
 documentation of the database modules.
@@ -167,7 +230,6 @@ documentation of the database modules.
      - Values for all parameters for a specific component type, in the order defined by
        the ``/c{CC}n{NN}/layout/``. See the next table to see a description of the
        attributes.
-
 
 Python supports a rich and dynamic type system, which is sometimes difficult to
 represent with the HDF5 format. Namely, HDF5 only supports dense, homogeneous

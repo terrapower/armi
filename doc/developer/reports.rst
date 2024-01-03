@@ -14,7 +14,7 @@ from a specific plugin.
 Currently it is implemented in the bookkeeping and neutronics plugin.
 
 The Hook: getReportContents()
------------------------------
+=============================
  getReportContents takes in 5 arguments (r, cs, report, stage, blueprint)
 
 
@@ -53,7 +53,7 @@ so one can imagine the functionality of the below to allow for ``Standard`` addi
 ReportContent acts as a dicionary of ``Section``'s behind the scenes and the further description of these objects will be found in the following topics. 
 
 What is ReportContent?
-----------------------
+======================
 At the start of any report creation, creation of the ReportContent object is key.
 ReportContent when created, needs the name of the reactor for the title of the report.
 
@@ -83,7 +83,7 @@ A major component of the ReportContent class is the function to ``writeReports()
 Overall, the important functionality examples for ``ReportContent`` additions are summarized below.
 
 Sections
---------
+========
 The first level of ``ReportContent``'s is made up of ``Section``'s. ``Section``'s have a ``title``, and themselves a dictionary of contents (``.childContents``),
 but again the ability to just directly access a sections children like ``report[Comprehensive][Setting]`` exists, as long as the section already exists,
 (if not, a key error persists, and so it is safer to do ``report[Comprehensive].get(Setting, Table(...)))``, where ``Table`` would be the default.
@@ -117,7 +117,7 @@ It is also possible to do the following through dictionary access for the same r
 
 
 Tables
-------
+======
 Making sure a ``Table`` isn't already created is important. Due to the repeated call to ``getReportContents()`` at different cycles/nodes of the 
 reactor life cycle, some sections may have already been called before, and we want to be careful about not overwriting a ``Table``/``TimeSeries``.
 (most ``Image``'s may only be called at a single time and not dependent on multiple plugins, so those cases have less to worry about at this time)
@@ -147,7 +147,6 @@ Suppose in Bookkeeping a ``Table`` is accessed with the following code::
     >>> if not cs["cycleLengths"]:
     >>>     tableList.addRow(["Cycle Length", "%8.5f days" % cs["cycleLength"]])
     >>> tableList.addRow(["BU Groups", str(cs["buGroups"])])
-
 
 
 
@@ -182,9 +181,8 @@ The result (with some additional Bookkeeping additions) is outlined in this imag
         :align: center
 
 
-
 Images
-------
+======
 Images may generally be things to add at stage = Beg, or stage = End. (For example, a core map at BOL would be inserted at stage = Beg)
 Images require a ``caption`` and a ``filename`` and have an optional ``title`` argument. (They would also have a call to another function before hand to create the image file (for example))
 
@@ -210,10 +208,9 @@ In this case, Block Diagrams is the Section Title, and it is expandable, for eas
 
 
 TimeSeries
-----------
+==========
+
 This is where information for later graphing is collected. The TimeSeries contains many elements. A ``title`` a ``rname`` (reactor name), ``labels`` list, ``yaxis`` title, and ``filename``.
-
-
 
 Like ``Table``, these objects need to have a check on whether they already exist. In this case, you could just check and create the object when ``stage`` is set to Begin (and then when ``stage`` is Standard always know it exists to add content to),
 but for good measure, you may also just check if the Plot already exists in the Section, and if not, add it.
@@ -237,22 +234,20 @@ Here is code for adding to a K-effective plot::
         labels[0], r.p.time, r.core.p.keff, r.core.p.keffUnc
     >>> )
 
-
 Here, only one label exists, so we only add one line for ``label[0]``. There are further examples of this in the docstring of ``TimeSeries`` for information on adding multiple lines.
 In summary, to add multiple lines (say, for different assembly types on a Peak DPA plot), the label would be the assembly type and the data would be the dpa at the time for that type.
 The ``uncertainty`` value --> which in general denotes an error bar on the graph---> would be None or 0, for each point if there is no uncertainty.
 
 HTML Elements
--------------
+=============
 One may also want to add just plain prose. To do this, Sections also allow for the addition of htmltree elements so you can add paragraphs,
 divs, etc, as outlined in htmltree. These parts however will not be titled unless wrapped within a Section, and similarily will not have a direct link
 in the table of contents without a Section wrap as well (due to their inherent lack of title). However, thier addition may add beneficial information to reports in between Tables and Images that
 could prove useful to the user and any readers.
 
-
-
 Summary
--------
+=======
+
 ``ReportContent`` is made up of many different types of elements (``Sections``, ``Tables``, ``Images``, ``HtmlElements``, ``TimeSeries``), that when
 ``writeReports()`` is called on the ``ReportContent`` object, have the ability to be rendered through their ``render()`` method in order to be translated
 to html for the resulting document. This document is saved in a new folder titled reportsOutputFiles.

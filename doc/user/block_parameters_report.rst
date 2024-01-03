@@ -1,3 +1,5 @@
+.. _block-parameters-report:
+
 ****************
 Block Parameters
 ****************

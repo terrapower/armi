@@ -1,9 +1,11 @@
+.. _armi-tooling:
+
 **************************
 Tooling and Infrastructure
 **************************
 
 Good Commit Messages
---------------------
+====================
 The ARMI project follows a few basic rules for "good" commit messages:
 
 * The purpose of the message is to explain to the changes you made to a stranger 5 years from now.
@@ -24,14 +26,14 @@ The ARMI project follows a few basic rules for "good" commit messages:
     * optional.
 
 Good Pull Requests
-------------------
+==================
 A good commit is like a sentence; it expresses one complete thought. In that context, a good
 Pull Request (PR) is like a paragraph; it contains a few sentences that contain one larger
 thought. A good PR is *not* a chapter or an entire book! It should not contain multiple
 independent ideas.
 
 One Idea = One PR
-^^^^^^^^^^^^^^^^^
+-----------------
 .. important ::
     If you *can* break a PR into smaller PRs, containing unrelated changes, please do.
 
@@ -41,7 +43,8 @@ They are busy people, and it will save them time and effort if your PR only has 
 If your PRs are smaller, you will notice a great increase in the quality of the reviews you get.
 
 Don't open until it is ready
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+----------------------------
+
 .. important ::
     Wait until your PR is complete to open it.
 
@@ -54,7 +57,7 @@ prefer to keep the PR list as short as possible. A good rule of thumb is: don't 
 you think it is ready for final review.
 
 Test It
-^^^^^^^
+-------
 .. important ::
     If a PR doesn't have any changes to testing, it probably isn't complete.
 
@@ -69,7 +72,8 @@ If the changes in the PR are worth the time to make, they are worth the time to 
 reviewer by proving your code works.
 
 Document It
-^^^^^^^^^^^
+-----------
+
 .. important ::
     If it isn't documented, it doesn't exist.
 
@@ -80,7 +84,7 @@ Also consider (if you are making a major change) that you might be making someth
 out-of-date.
 
 Watch for Requirements
-^^^^^^^^^^^^^^^^^^^^^^
+----------------------
 When you are touching code in ARMI, watch out for the docstrings in the methods, classes, or
 modules you are editing. These docstrings might have bread crumbs that link back to requirements.
 Such breadcrumbs will look like:
@@ -102,14 +106,14 @@ Your PR reviewer will take an extra look at any PR that touches a requirement te
 And you will need to add a special release note under the "Changes that Affect Requirements" section header.
 
 Packaging and dependency management
------------------------------------
+===================================
 The process of packaging Python projects and managing their dependencies is somewhat
 challenging and nuanced. The contents of our ``pyproject.toml`` follow existing conventions as
 much as possible. In particular, we follow `the official Python packaging guidance
 <https://packaging.python.org/en/latest/>`_.
 
 pyproject.toml
-^^^^^^^^^^^^^^
+--------------
 As much as possible, the ARMI team will try to centralize our installation and build systems
 through the top-level ``pyproject.toml`` file. The only exception will be our documentation,
 which has much customization done through the Sphinx ``doc/conf.py`` file.
@@ -121,7 +125,7 @@ packages that are not strictly required, but if installed enable extra functiona
 like unit testing or building documentation.
 
 Third-Party Licensing
-^^^^^^^^^^^^^^^^^^^^^
+---------------------
 Be careful when including any dependency in ARMI (say in the ``pyproject.toml`` file) not
 to include anything with a license that superceeds our Apache license. For instance,
 any third-party Python library included in ARMI with a GPL license will make the whole
@@ -132,7 +136,7 @@ For that reason, it is generally considered best-practice in the ARMI ecosystem 
 only use third-party Python libraries that have MIT or BSD licenses.
 
 Releasing a New Version of ARMI
--------------------------------
+===============================
 We use the common ``major.minor.bump`` version scheme where a version string
 might look like ``0.1.7``, ``1.0.0``, or ``12.3.123``. Each number has a specific meaning:
 
@@ -166,7 +170,7 @@ Every release should follow this process:
 7. Tell everyone!
 
 Module-Level Logging
---------------------
+====================
 In most of the modules in ``armi``, you will see logging using the ``runLog`` module.
 This is a custom, global logging object provided by the import:
 

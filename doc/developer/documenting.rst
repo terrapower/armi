@@ -1,3 +1,5 @@
+.. _armi-docing:
+
 ****************
 Documenting ARMI
 ****************
@@ -19,7 +21,7 @@ We use some special Sphinx plugins that run the tutorial jupyter notebooks durin
 build with the most up-to-date code. 
 
 Building the documentation
---------------------------
+==========================
 Before building documentation, ensure that you have installed the test requirements into
 your ARMI virtual environment with::
 
@@ -58,11 +60,11 @@ files to a clone of the `documentation repository
     rsync -ahv --delete _build/html/ path/to/terrapower.github.io/armi
 
 Documentation for ARMI plugins
-------------------------------
+==============================
 The following subsections apply to documentation for ARMI plugins.
 
 Linking to ARMI documentation from plugins
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+------------------------------------------
 ARMI plugin documentation can feature rich hyperlinks to the ARMI API
 documentation with the help of the `intersphinx Sphinx plugin
 <http://www.sphinx-doc.org/en/master/usage/extensions/intersphinx.html>`_.  The
@@ -81,7 +83,7 @@ Now you can link to the ARMI documentation with links like::
 
 
 Automatically building apidocs of namespace packages
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+----------------------------------------------------
 Activating the ``"sphinxcontrib.apidoc",`` 
 `Sphinx plugin <https://github.com/sphinx-contrib/apidoc>`_
 enables plugin API documentation to be built with the standard ``make html`` Sphinx workflow. If 
@@ -90,15 +92,15 @@ your ARMI plugin is a namespace package, the following extra config is required:
     apidoc_extra_args = ["--implicit-namespaces"]
 
 Updating the Gallery
---------------------
-The :doc:`ARMI example gallery </gallery/index>` is a great way to quickly
+====================
+The :ref:`sphx_glr_gallery` is a great way to quickly
 highlight neat features and uses of ARMI. To add a new item to the gallery, add
 your example code (including the required docstring) to the ``doc/gallery-src``
 folder in the ARMI source tree. The example will be added to the gallery during
 the next documentation build.
 
 Using Jupyter notebooks
------------------------
+=======================
 For interactive tutorials, it's convenient to build actual Jupyter notebooks and 
 commit them to the documentation to be rendered by Sphinx using the nbsphinx plugin.
 When this is done, notebooks without any output should be committed to the repository

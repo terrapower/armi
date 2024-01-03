@@ -17,7 +17,7 @@ these instructions, you can have your code working in parallel in no time. In AR
 you need them to in parallel.
 
 MPI communication crash course
-------------------------------
+==============================
 First, let's do a crash course in MPI communications. We'll only discuss a few important ideas, you can read
 about more on the ``mpi4py`` web page. The first method of communication is called the ``broadcast``, which
 happens when the primary processor sends information to all others. An example of this would be when you want to
@@ -110,8 +110,8 @@ Remember that this code is running on all processors. So it's just the ``if rank
 
 
 MPI Communication within ARMI
------------------------------
-Now that you understand the basics, here's how you should get your :doc:`code interfaces </developer/dev_task_support/interfaces>`
+=============================
+Now that you understand the basics, here's how you should get your :py:class:`armi.interfaces.Interface`
 to run things in parallel in ARMI.
 
 You don't have to worry too much about the ranks, etc. because ARMI will set that up for you. Basically,
@@ -135,7 +135,7 @@ mechanisms that can help you get the data back to the primary reactor.
 
 
 Example using ``bcast``
-***********************
+-----------------------
 
 Some actions that perform the same task are best distributed through a broadcast. This makes sense for if your are
 parallelizing code that is a function of an individual assembly, or block. In the following example, the interface simply
@@ -181,7 +181,7 @@ creates an ``Action`` and broadcasts it as appropriate::
 
 
 Example using ``scatter``
-*************************
+-------------------------
 
 When trying two independent actions at the same time, you can use ``scatter`` to distribute the work. The following example
 shows how different operations can be performed in parallel::
@@ -221,7 +221,7 @@ shows how different operations can be performed in parallel::
 
 
 A simplified approach
-*********************
+---------------------
 
 Transferring state to and from a Reactor can be complicated and add a lot of code. An alternative approachis to ensure
 that the reactor state is synchronized across all nodes, and then use the reactor instead of raw data::

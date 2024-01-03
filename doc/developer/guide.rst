@@ -5,9 +5,8 @@ Framework Architecture
 Here we will discuss some big-picture elements of the ARMI architecture. Throughout,
 links to the API docs will lead to additional details.
 
------------------
 The Reactor Model
------------------
+=================
 
 The :py:mod:`~armi.reactor` package is the central representation of a nuclear reactor
 in ARMI.  All modules can be expected to want access to some element of the state data
@@ -41,7 +40,7 @@ collection of parameters detailing considerations of how the reactor has progres
 through time to any given point. This information also constitutes the majority of what
 gets written to the database for evaluation and/or follow-on analysis.
 
-Review the :doc:`/tutorials/data_model` section for examples
+Review the data model :ref:`armi-tutorials` section for examples
 exploring a populated instance of the **Reactor** model.
 
 Finding objects in a model
@@ -113,9 +112,8 @@ defined. During a run, they can be used to create new instances of reactor model
 such as when a new assembly is fabricated during a fuel management operation in a later
 cycle.
 
----------
 Operators
----------
+=========
 
 Operators conduct the execution sequence of an ARMI run. They basically contain the main
 loop. When any operator is instantiated, several actions occur:
@@ -265,13 +263,12 @@ as deemed necessary to have the interfaces work properly.
 To use interfaces in parallel, please refer to :py:mod:`armi.mpiActions`.
 
 
--------
 Plugins
--------
+=======
 
 Plugins are higher-level objects that can bring in one or more Interfaces, settings
 definitions, parameters, validations, etc. They are documented in
-:doc:`/developer/making_armi_based_apps` and :py:mod:`armi.plugins`.
+:ref:`armi-app-making` and :py:mod:`armi.plugins`.
 
 
 Entry Points

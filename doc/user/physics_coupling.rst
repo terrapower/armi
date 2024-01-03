@@ -3,18 +3,18 @@ Physics Coupling
 ****************
 
 Loose Coupling
-----------------
+==============
 ARMI supports loose and tight coupling. Loose coupling is interpreted as one-way coupling between physics for a single time node. For example, a power distribution in cycle 0 node 0 is used to calculate a temperature distribution in cycle 0 node 0. This temperature is then used in cycle 0 node 1 to compute new cross sections and a new power distribution. This process repeats itself for the lifetime of the simulation. 
 
-.. graphviz:: inputs/looseCouplingIllustration.dot
+.. graphviz:: looseCouplingIllustration.dot
 
 Loose coupling is enabled by default in ARMI simulations.
 
 Tight Coupling
------------------
+==============
 Tight coupling is interpreted as two-way communication between physics within a given time node. Revisiting our previous example, enabling tight coupling results in the temperature distribution being used to generate updated cross sections (new temperatures induce changes such as Doppler broadening feedback) and ultimately an updated power distribution. This process is repeated iteratively until a numerical convergence criteria is met.
 
-.. graphviz:: inputs/tightCouplingIllustration.dot
+.. graphviz:: tightCouplingIllustration.dot
 
 The following settings are involved with enabling tight coupling in ARMI:
 
@@ -41,14 +41,14 @@ The ``tightCouplingSettings`` settings interact with the interfaces available in
 In the global flux interface, the following norms are used to compute the convergence of :math:`k_{\text{eff}}` and block-wise power.
 
 Eigenvalue
-^^^^^^^^^^
+----------
 The convergence of the eigenvalue is measured through an L2-norm.
 
 .. math::
     \epsilon = \| k_\text{eff} \|_2 = \left( \left( k_\text{eff,old} - k_\text{eff,new} \right)^2 \right) ^ \frac{1}{2}
 
 Block-wise Power
-^^^^^^^^^^^^^^^^
+----------------
 The block-wise power can be used as a convergence mechanism to avoid the integral effects of :math:`k_{\text{eff}}` (i.e., over and under predictions cancelling each other out) and in turn, can have a different convergence rate. To measure the convergence of the power distribution with the prescribed tolerances (e.g., 1e-4), the power is scaled in the following manner (otherwise the calculation struggles to converge). 
 
 For an assembly, :math:`a`, we compute the total power of the assembly,
