@@ -1,6 +1,6 @@
-=======================================
+***************************************
 Building input files for a fast reactor
-=======================================
+***************************************
 
 The true power of ARMI comes when you have a reactor at your fingertips. To get this,
 you must describe the reactor via input files.

@@ -2,9 +2,9 @@
     Note that this file makes use of Python files in a ``armi-example-app`` folder
     so that they can be put under testing.
 
-================================
+********************************
 Making your first ARMI-based App
-================================
+********************************
 
 In this tutorial we will build a nuclear analysis application that runs (dummy) neutron
 flux and thermal/hydraulics calculations. Applications that do real analysis can be

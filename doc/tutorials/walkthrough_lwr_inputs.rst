@@ -1,6 +1,6 @@
-==========================================
+******************************************
 Building input files for a thermal reactor
-==========================================
+******************************************
 
 In the :doc:`previous tutorial </tutorials/walkthrough_inputs>`,
 we introduced the basic input files and made a full
