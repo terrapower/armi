@@ -1,3 +1,5 @@
+.. _armi-tooling:
+
 **************************
 Tooling and Infrastructure
 **************************

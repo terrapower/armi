@@ -1,3 +1,5 @@
+.. _armi-docing:
+
 ****************
 Documenting ARMI
 ****************

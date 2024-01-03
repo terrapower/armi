@@ -1,3 +1,5 @@
+.. _armi-stds:
+
 **********************************
 Standards and Practices for Coding
 **********************************
