@@ -2,6 +2,8 @@
     Note that this file makes use of Python files in a ``armi-example-app`` folder
     so that they can be put under testing.
 
+.. _armi-make-first-app:
+
 ********************************
 Making your first ARMI-based App
 ********************************

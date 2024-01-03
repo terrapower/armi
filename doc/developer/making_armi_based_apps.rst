@@ -10,8 +10,7 @@ interfaces to automate your work is the next step to unlocking ARMI's potential.
 
 .. admonition:: Heads up
 
-    A full :doc:`tutorial on making an ARMI-based app is here
-    </tutorials/making_your_first_app>`.
+    A full tutorial on :ref:`armi-make-first-app` is here.
 
 To really make ARMI your own, you will need to understand a couple of concepts that
 enable developers to adapt and extend ARMI to their liking:
