@@ -32,9 +32,8 @@ enable developers to adapt and extend ARMI to their liking:
 
 Both of these concepts are discussed in depth below.
 
-------------
 ARMI Plugins
-------------
+============
 
 An ARMI Plugin is the primary means by which a developer or qualified analyst can go
 about building specific capability on top of the ARMI Framework. Even some of the
@@ -45,6 +44,7 @@ getting started to get an idea of what is available.
 
 Some implementation details
 ---------------------------
+
 One can just monkey-see-monkey-do their own plugins without fully understanding the
 following. However, having a deeper understanding of what is going on may be useful.
 Feel free to skip this section.
@@ -101,9 +101,9 @@ some guidance.
 Once you have a plugin together, continue reading to see how to plug it into the ARMI
 Framework as part of an Application.
 
------------------------
 ARMI-Based Applications
------------------------
+=======================
+
 On its own, ARMI doesn't *do* much. Plugins provide more functionality, but even they
 aren't particularly useful on their own either. The magic really happens when you
 collect a handful of Plugins and plug them into the ARMI Framework. Such a collection is
