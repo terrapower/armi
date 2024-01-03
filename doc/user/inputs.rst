@@ -1,6 +1,6 @@
-******
+======
 Inputs
-******
+======
 
 ARMI input files define the initial state of the reactor model and tell ARMI what kind of analysis should be
 performed on it.
@@ -29,9 +29,8 @@ The core map input files can be graphically manipulated with the
 :py:mod:`Grid editor <armi.utils.gridEditor>`.
 
 
------------------------
 The Settings Input File
------------------------
+***********************
 
 The **settings** input file defines a series of key/value pairs the define various information about the system you are
 modeling as well as which modules to run and various modeling/approximation settings. For example, it includes:
@@ -418,9 +417,8 @@ A few examples of restart cases:
 .. note:: Restarting a calculation with an different version of ARMI than what was used to produce the restarting database may result in undefined behavior.
 
 
--------------------------
 The Blueprints Input File
--------------------------
+*************************
 
 The **blueprints** input defines the dimensions of structures in the reactor, as well as their material makeup. In
 a typical case, pin dimensions, isotopic composition, control definitions, coolant type, etc. are
@@ -1336,9 +1334,8 @@ The code will crash if materials used in :ref:`blocks-and-components` contain nu
 .. |Thot| replace:: T\ :sub:`hot`
 
 
----------------------
 Fuel Management Input
----------------------
+*********************
 
 Fuel management in ARMI is specified through custom Python scripts that often reside
 in the working directory of a run (but can be anywhere if you use full paths). During a normal run,
@@ -1532,9 +1529,8 @@ with the ``targetK`` setting, which is available for setting in the GUI. The bra
 with *keff* closest to the setting, while still being above 1.0 is chosen.
 
 
----------------
 Settings Report
----------------
+***************
 
 This document lists all the :doc:`settings </user/inputs>` in ARMI.  
 

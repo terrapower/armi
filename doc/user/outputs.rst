@@ -23,9 +23,8 @@ Physics kernel outputs
 Together the output fully define the analyzed ARMI case.
 
 
--------------------
 The Standard Output
--------------------
+===================
 
 The Standard Output (or **stdout**) is a running log of things an ARMI run prints out as it executes a case. It shows
 what happened during a run, which inputs were used, which warnings were issued, and in some cases, what the summary
@@ -66,9 +65,8 @@ Some Linux users tend to use the **tail** command to monitor the progress of an 
 
 This provides live information on the progress.
 
------------------
 The Database File
------------------
+=================
 
 The **database** file is a self-contained complete (or nearly complete) binary
 representation of the ARMI composite model state during a case. The database contains
@@ -77,7 +75,7 @@ the values of all composite parameters as well as layout information to help ful
 reconstruct the structure of the reactor model.
 
 Loading Reactor State
-=====================
+---------------------
 Among other things, the database file can be used to recover an ARMI reactor model from
 any of the time nodes that it contains. This can be useful for performing restart runs,
 or for doing custom post-processing tasks. To load a reactor state, you will need to
@@ -96,7 +94,7 @@ load the reactor state at cycle 5, time node 2 with the following::
        r = db.load(5, 2)
 
 Extracting Reactor History
-==========================
+--------------------------
 Not only can the database reproduce reactor state for a given time node, it can also
 extract a history of specific parameters for specific objects through the
 :py:meth:`armi.bookkeeping.db.Database3.getHistory()` and
@@ -116,14 +114,15 @@ following::
 
 
 Extracting Settings and Blueprints
-==================================
+----------------------------------
+
 As well as the reactor states for each time node, the database file also stores the
 input files (blueprints and settings files) used to run the case that generated it.
 These can be recovered using the `extract-inputs` ARMI entry point. Use `python -m armi
 extract-inputs --help` for more information.
 
 File format
-===========
+-----------
 
 The database file format is built on top of the HDF5 format. There are many tools
 available for viewing, editing, and scripting HDF5 files. The ARMI database uses the
@@ -149,6 +148,7 @@ information to get started.
 
 Database Structure
 ==================
+
 The database structure is outlined below. This shows the broad strokes of how the
 database is put together, but many more details may be gleaned from the in-line
 documentation of the database modules.
