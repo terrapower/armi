@@ -52,7 +52,7 @@ Here is an excerpt from a settings file:
     :language: yaml
     :lines: 3-15
 
-A full listing of settings available in the framework may be found in the :doc:`Table of all global settings </user/inputs>`.
+A full listing of settings available in the framework may be found in the `Table of all global settings <#settings-report>`_ .
 
 Many settings are provided by the ARMI Framework, and others are defined by various plugins.
 

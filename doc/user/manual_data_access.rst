@@ -12,12 +12,12 @@ Settings and State Variables
 The following links contain large tables describing the various global settings
 and state parameters in use across ARMI.
 
-* :doc:`Table of all global settings <../user/inputs>`
-* :doc:`Reactor Parameters <../user/reactor_parameters_report>`
-* :doc:`Core Parameters <../user/core_parameters_report>`
-* :doc:`Component Parameters <../user/component_parameters_report>`
-* :doc:`Assembly Parameters <../user/assembly_parameters_report>`
-* :doc:`Block Parameters <../user/block_parameters_report>`
+* :doc:`Table of all global settings <inputs>`
+* :doc:`Reactor Parameters <reactor_parameters_report>`
+* :doc:`Core Parameters <core_parameters_report>`
+* :doc:`Component Parameters <component_parameters_report>`
+* :doc:`Assembly Parameters <assembly_parameters_report>`
+* :doc:`Block Parameters <block_parameters_report>`
 
 
 Accessing Some Interesting Info
