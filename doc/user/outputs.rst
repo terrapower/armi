@@ -25,7 +25,6 @@ Together the output fully define the analyzed ARMI case.
 
 The Standard Output
 ===================
-
 The Standard Output (or **stdout**) is a running log of things an ARMI run prints out as it executes a case. It shows
 what happened during a run, which inputs were used, which warnings were issued, and in some cases, what the summary
 results are.  Here is an excerpt::
@@ -67,7 +66,6 @@ This provides live information on the progress.
 
 The Database File
 =================
-
 The **database** file is a self-contained complete (or nearly complete) binary
 representation of the ARMI composite model state during a case. The database contains
 the text of the input files that were used to create the case, and for each time node,
@@ -115,7 +113,6 @@ following::
 
 Extracting Settings and Blueprints
 ----------------------------------
-
 As well as the reactor states for each time node, the database file also stores the
 input files (blueprints and settings files) used to run the case that generated it.
 These can be recovered using the `extract-inputs` ARMI entry point. Use `python -m armi
@@ -123,7 +120,6 @@ extract-inputs --help` for more information.
 
 File format
 -----------
-
 The database file format is built on top of the HDF5 format. There are many tools
 available for viewing, editing, and scripting HDF5 files. The ARMI database uses the
 `h5py` package for interacting with the underlying data and metadata.
@@ -147,8 +143,7 @@ There are many other features of HDF5, but from a usability standpoint that is e
 information to get started.
 
 Database Structure
-==================
-
+------------------
 The database structure is outlined below. This shows the broad strokes of how the
 database is put together, but many more details may be gleaned from the in-line
 documentation of the database modules.
@@ -235,7 +230,6 @@ documentation of the database modules.
      - Values for all parameters for a specific component type, in the order defined by
        the ``/c{CC}n{NN}/layout/``. See the next table to see a description of the
        attributes.
-
 
 Python supports a rich and dynamic type system, which is sometimes difficult to
 represent with the HDF5 format. Namely, HDF5 only supports dense, homogeneous

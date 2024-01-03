@@ -1,6 +1,6 @@
-======
+******
 Inputs
-======
+******
 
 ARMI input files define the initial state of the reactor model and tell ARMI what kind of analysis should be
 performed on it.
@@ -29,10 +29,8 @@ The core map input files can be graphically manipulated with the
 :py:mod:`Grid editor <armi.utils.gridEditor>`.
 
 
-***********************
 The Settings Input File
-***********************
-
+=======================
 The **settings** input file defines a series of key/value pairs the define various information about the system you are
 modeling as well as which modules to run and various modeling/approximation settings. For example, it includes:
 
@@ -61,7 +59,7 @@ Many settings are provided by the ARMI Framework, and others are defined by vari
 .. _armi-gui:
 
 The ARMI GUI
-============
+------------
 The ARMI GUI may be used to manipulate many common settings (though the GUI can't change all of the settings).  The GUI
 also enables the graphical manipulation of a reactor core map, and convenient automation of commands required to submit to a
 cluster.  The GUI is a front-end to
@@ -73,7 +71,7 @@ Blueprints, Core Map, and Fuel Management inputs.
 .. tip:: The ARMI GUI is not yet included in the open-source ARMI framework
 
 The assembly clicker
---------------------
+^^^^^^^^^^^^^^^^^^^^
 The assembly clicker (in the ``grids`` editor) allows users to define the 2-D layout of the assemblies defined in the
 :doc:`/user/inputs`. This can be done in hexagon or cartesian. The results of this arrangement get written to
 grids in blueprints. Click on the assembly palette on the right and click on the locations where you want to put the
@@ -84,7 +82,7 @@ like this hex``. Once you submit the job or save the settings file (File -> Save
 of the geometry file before the settings file is saved. The geometry setting in the main tab will also be updated.
 
 The ARMI Environment Tab
-------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^
 The environment tab contains important settings about which version of ARMI you will run
 and with which version of Python, etc. Most important is the ``ARMI location`` setting. This
 points to the codebase that will run. If you want to run the released version of ARMI,
@@ -95,13 +93,13 @@ Other settings on this tab may need to be updated depending on your computationa
 Talk to your system admins to determine which settings are best.
 
 Some special settings
-=====================
+---------------------
 A few settings warrant additional discussion.
 
 .. _detail-assems:
 
 Detail assemblies
------------------
+^^^^^^^^^^^^^^^^^
 Many plugins perform more detailed analysis on certain regions of the reactor. Since the analyses
 often take longer, ARMI has a feature, called *detail assemblies* to help. Different plugins
 may treat detail assemblies differently, so it's important to read the plugin documentation
@@ -133,7 +131,7 @@ Detail all assemblies
 .. _kinetics-settings:
 
 Kinetics settings
------------------
+^^^^^^^^^^^^^^^^^
 In reactor physics analyses it is standard practice to represent reactivity
 in either absolute units (i.e., dk/kk' or pcm) or in dollars or cents. To
 support this functionality, the framework supplies the ``beta`` and
@@ -167,7 +165,7 @@ These settings come with a few caveats:
 .. _cycle-history:
 
 Cycle history
--------------
+^^^^^^^^^^^^^
 For all cases, ``nCycles`` and ``power`` must be specified by the user.
 In the case that only a single state is to be examined (i.e. no burnup), the user need only additionally specify ``nCycles = 1``.
 
@@ -266,8 +264,7 @@ As can be seen, the detailed cycle history option provides much greated flexibil
 .. _restart-cases:
 
 Restart cases
--------------
-
+^^^^^^^^^^^^^
 Oftentimes the user is interested in re-examining just a specific set of time nodes from an existing run.
 In these cases, it is sometimes not necessary to rerun an entire reactor history, and one may instead use one of the following options:
     
@@ -414,9 +411,8 @@ A few examples of restart cases:
 .. note:: Restarting a calculation with an different version of ARMI than what was used to produce the restarting database may result in undefined behavior.
 
 
-*************************
 The Blueprints Input File
-*************************
+=========================
 
 The **blueprints** input defines the dimensions of structures in the reactor, as well as their material makeup. In
 a typical case, pin dimensions, isotopic composition, control definitions, coolant type, etc. are
@@ -449,8 +445,7 @@ ARMI models are built hierarchically, first by defining components, and then by 
 collections of the levels of the reactor.
 
 Blueprint sections
-==================
-
+------------------
 The **blueprints** input file has several sections that corresponds to different levels of the reactor
 hierarchy. You will generally build inputs "bottoms up", first by defining elementary pieces (like pins)
 and then collecting them into the core and reactor.
@@ -495,7 +490,7 @@ The ARMI data model is represented schematically below, and the blueprints are d
 .. _blocks-and-components:
 
 Blocks and Components
-=====================
+---------------------
 Blocks and components are defined together in the **blueprints** input.
 
 We will start with a component, and then define the whole ``blocks:``
@@ -522,7 +517,7 @@ input. The structure will be something like::
     is not fully implemented yet.
 
 Defining a Component
---------------------
+^^^^^^^^^^^^^^^^^^^^
 The **Components** section defines the pin (if modeling a pin-type reactor) and assembly in-plane
 dimensions (axial dimensions are defined in the :ref:`assemblies` input) and the material makeups of
 each :py:mod:`Component <armi.reactor.components>`. :py:mod:`Blocks <armi.reactor.blocks>` are
@@ -584,7 +579,7 @@ od
 .. _componentTypes:
 
 Component Types
----------------
+^^^^^^^^^^^^^^^
 Each component has a variety of dimensions to define the shape and composition. All dimensions are
 in cm.  The following is a list of included component shapes and their dimension inputs. Again,
 additional/custom components with arbitrary dimensions may be provided by the user via plugins.
@@ -605,7 +600,7 @@ a lattice of pins.
 .. _componentLinks:
 
 Component Links
----------------
+^^^^^^^^^^^^^^^
 Dimensions of a component may depend on the dimensions of a previously-defined component in the same
 block. For instance, the sodium bond between fuel and cladding. The format is simply
 ``<componentName>.<dimensionName>``. The dimension names are available in the table above.
@@ -649,7 +644,7 @@ reduced. This is physical since, in reality, the fluid would be displaced as dim
 change.
 
 Pin lattices
-------------
+^^^^^^^^^^^^
 Pin lattices may be explicitly defined in the block/component input in conjunction with the ``grids`` input
 section. A block may assigned a grid name, and then each component may be assigned one or more
 grid specifiers.
@@ -688,7 +683,7 @@ cladding as the fuel pins. ::
 .. _naming-flags:
 
 Flags and naming
-================
+----------------
 
 All objects in the ARMI Reactor Model possess a set of
 :py:class:`armi.reactor.flags.Flags`, which can be used to affect the way that the
@@ -726,7 +721,7 @@ will get the ``CLAD`` flag from its name.
 .. _assemblies:
 
 Assemblies
-==========
+----------
 Once components and blocks are defined, Assemblies can be created as extruded stacks of blocks from
 bottom to top. The assemblies use YAML anchors to refer to the blocks defined in the previous section.
 
@@ -937,7 +932,7 @@ other structure.
 .. _systems:
 
 Systems
-=======
+-------
 Once assemblies are defined they can be grouped together into the Core, the spent fuel pool (SFP), etc.
 
 A complete reactor structure with a core and a SFP may be seen below::
@@ -962,7 +957,7 @@ in units of cm. This allows you to define the relative position of the various s
 The ``grid name`` inputs are string mappings to the grid definitions described below.
 
 Plugin Behavior
----------------
+^^^^^^^^^^^^^^^
 
 The :meth:`armi.plugins.ArmiPlugin.defineSystemBuilders` method can be provided
 by plugins to control how ARMI converts the ``systems`` section into ``Composite``\ s
@@ -982,7 +977,7 @@ and new mappings of values to builders.
 .. _grids:
 
 Grids
-=====
+-----
 Grids are described inside a blueprint file using ``lattice map`` or ``grid contents`` fields to
 define arrangements in Hex, Cartesian, or R-Z-Theta. The optional ``lattice pitch`` entry allows
 you to specify spacing between objects that is different from tight packing. This input is required
@@ -1038,7 +1033,7 @@ Example grid definitions are shown below::
 .. _custom-isotopics:
 
 Custom Isotopics
-================
+----------------
 In some cases (such as benchmarking a previous reactor), the default mass fractions from the
 material library are not what you want to model. In these cases, you may override the isotopic
 composition provided by the material library in this section. There are three ways to specify
@@ -1065,10 +1060,10 @@ nuclear data library).
 The (mass) ``density`` input is invalid when specifying ``number densities``; the code will present an error message.
 
 Advanced topics
-===============
+---------------
 
 Overlapping shapes
-------------------
+^^^^^^^^^^^^^^^^^^
 Solids of different compositions in contact with each other present complications during thermal
 expansion. The ARMI Framework does not perform calculations to see exactly how such
 scenarios will behave mechanically; it instead focuses on conserving mass. To do this, users should
@@ -1091,7 +1086,7 @@ component and get the siblings ``mult``. If you are concerned about performance 
 with a YAML anchor and alias.
 
 Component area modifications
-----------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 In some scenarios, it is desired to have one component's area be subtracted or added to another. For
 example, the area of the skids in a skid duct design needs to be subtracted from the interstitial
 coolant. The mechanism to handle this involves adding a parameter to the component to be
@@ -1120,7 +1115,7 @@ without explicitly defining new components.
                 modArea: holes.sub      # "holes" is the name of the other component
 
 Putting it all together to make a Block
----------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Here is a complete fuel block definition::
 
@@ -1185,7 +1180,7 @@ Here is a complete fuel block definition::
 
 
 Making blocks with unshaped components
---------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Sometimes you will want to make a homogenous block,  which is a mixture of multiple
 materials, and will not want to define an exact shape for each of the components in
@@ -1264,15 +1259,13 @@ are now four components, but only three that have actual area and composition::
 
 This can similarly be done for hex geometry and and a hexagon with Outer Pitch (``op``).
 
----------
-
 .. warning:: The rest of the input described below are scheduled to be moved into the
    settings input file, since their nature is that of a setting.
 
 .. _nuclide-flags:
 
 Nuclide Flags
-=============
+-------------
 The ``nuclide flags`` setting allows the user to choose which nuclides they
 would like to consider in the problem, and whether or not each nuclide should
 transmute and decay. For example, sometimes you may not want to deplete trace
@@ -1332,9 +1325,8 @@ The code will crash if materials used in :ref:`blocks-and-components` contain nu
 .. |Thot| replace:: T\ :sub:`hot`
 
 
-*********************
 Fuel Management Input
-*********************
+=====================
 
 Fuel management in ARMI is specified through custom Python scripts that often reside
 in the working directory of a run (but can be anywhere if you use full paths). During a normal run,
@@ -1371,19 +1363,19 @@ shuffling routines get called and at which time.
     See the :py:mod:`fuelHandlers module <armi.physics.fuelCycle.fuelHandlers>` for more details.
 
 Fuel Management Operations
-==========================
+--------------------------
 In the ARMI, the assemblies can be moved as units around the reactor with swapAssemblies,
 dischargeSwap, and swapCascade of a ``FuelHandler`` interface.
 
 swapAssemblies
---------------
+^^^^^^^^^^^^^^
 swapAssemblies is the simplest fuel management operation. Given two assembly objects, this method will switch
 their locations. ::
 
     self.swapAssemblies(a1,a2)
 
 dischargeSwap
--------------
+^^^^^^^^^^^^^
 A discharge swap is a simple operation that puts a new assembly into the reactor while discharging an
 outgoing one. ::
 
@@ -1392,7 +1384,7 @@ outgoing one. ::
 This operation keeps track of the outgoing assembly in a AssemblyList object that the Reactor object has access to so you can see how much of what you discharged.
 
 swapCascade
------------
+^^^^^^^^^^^
 SwapCascade is a more powerful swapping function that can swap a list of assemblies in a "daisy-chain" type
 of operation. These are useful for doing the main overtone shuffling operations such as convergent shuffling
 and/or convergent-divergent shuffling. If we load up the list of assemblies, the first one will be put in the
@@ -1418,8 +1410,7 @@ Assembly    Position Before Swap Cascade    Position After Swap Cascade
 Arbitrarily complex cascades can thusly be assembled by choosing the order of the assemblies passed into swapCascade.
 
 Choosing Assemblies to Move
-===========================
-
+---------------------------
 The methods described in the previous section require known assemblies to shuffle. Choosing these assemblies is
 the essence of fuel shuffling design. The single method used for these purposes is the FuelHandler's ``findAssembly``
 method. This method is very general purpose, and ranks in the top 3 most important
@@ -1435,11 +1426,10 @@ inputs to findAssembly are summarized in the API docs of
 
 
 Fuel Management Examples
-========================
+------------------------
 
 Convergent-Divergent
---------------------
-
+^^^^^^^^^^^^^^^^^^^^
 Convergent-divergent shuffling is when fresh assemblies march in from the outside until they approach the jump ring,
 at which point they jump to the center and diverge until they reach the jump ring again, where they now jump to the
 outer periphery of the core, or become discharged.
@@ -1457,7 +1447,7 @@ The convergent rings in this case are 7 through 13 and the divergent ones are 1 
 
 
 Fuel Management Tips
-====================
+--------------------
 Some mistakes are common. Follow these tips.
 
     * Always make sure your assembly-level types in the settings file are up to date with the grids in your bluepints file. Otherwise you'll be moving feeds when you want to move igniters, or something.
@@ -1466,7 +1456,7 @@ Some mistakes are common. Follow these tips.
     * Watch ``typeNum`` in the database. You can get good intuition about what is getting moved by viewing this parameter.
 
 Running a branch search
-=======================
+-----------------------
 ARMI can perform a branch search where a number of fuel management operations
 are performed in parallel and the preferred one is chosen and proceeded with.
 The key to any branch search is writing a fuel handler that can interpret
@@ -1528,10 +1518,8 @@ with the ``targetK`` setting, which is available for setting in the GUI. The bra
 with *keff* closest to the setting, while still being above 1.0 is chosen.
 
 
-***************
 Settings Report
-***************
-
+===============
 This document lists all the :doc:`settings </user/inputs>` in ARMI.  
 
 They are all accessible to developers
