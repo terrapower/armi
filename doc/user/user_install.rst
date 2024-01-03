@@ -5,7 +5,7 @@ Installation
 This section will guide you through installing the ARMI Framework on your machine.
 
 Prerequisites
--------------
+=============
 These instructions target users with some software development knowledge. In
 particular, we assume familiarity with `Python <https://www.python.org/>`__,
 `virtual environments <https://docs.python.org/3/tutorial/venv.html>`_, and `Git <https://git-scm.com/>`_.
@@ -28,7 +28,7 @@ You also likely need the following for interacting with the source code reposito
 * `Git <https://git-scm.com/>`_
 
 Preparing a Virtual Environment
--------------------------------
+===============================
 While not *technically* required, we highly recommend installing ARMI into a `virtual
 environment <https://docs.python.org/3/library/venv.html>`_  to assist in dependency
 management.  In short, virtual environments are a mechanism by which a Python user can
@@ -60,11 +60,11 @@ library. On Linux, doing so will require some MPI development libraries
 (e.g. ``sudo apt install libopenmpi-dev``).
 
 Getting the code
-----------------
+================
 Choose one of the following two installation methods depending on your needs.
 
 Option 1: Install as a library
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+------------------------------
 If you plan on running ARMI without viewing or modifying source code, you may
 install it with ``pip``, which will automatically discover and install the
 dependencies. This is useful for quick evaluations or to use it as a dependency
@@ -73,7 +73,7 @@ in another project::
    	(armi-venv) $ pip install https://github.com/terrapower/armi/archive/main.zip
 
 Option 2: Install as a repository (for developers)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+--------------------------------------------------
 If you'd like to view or change the ARMI source code (common!), you need to
 clone the ARMI source and then install its dependencies. Clone the ARMI source code from
 the git repository with::
@@ -97,7 +97,7 @@ Now install ARMI with all its dependencies::
 
 
 Verifying installation
-^^^^^^^^^^^^^^^^^^^^^^
+----------------------
 Check the installation status by running::
 
     (armi-venv) $ armi
@@ -122,11 +122,11 @@ If it works, congrats! So far so good.
 
 
 Optional Setup
---------------
+==============
 This subsection provides setup for optional items.
 
 GUI input
-^^^^^^^^^
+---------
 To use the :py:mod:`graphical core-map editor <armi.utils.gridEditor>` you will need to also install
 `wxPython <https://wxpython.org/pages/downloads/index.html>`_. This is not installed
 by default during armi installation because it can cause installation complexities on some platforms.
@@ -135,7 +135,7 @@ In any case, all GUI dependencies can be installed by::
     (armi-venv) $ pip install armi[grids]
 
 GUI output
-^^^^^^^^^^
+----------
 ARMI can write VTK and XDMF output files which can be viewed in tools such as
 `ParaView <https://www.paraview.org/>`_ and
 `VisIT <https://wci.llnl.gov/simulation/computer-codes/visit>`_. Download and install those
