@@ -7,7 +7,7 @@ ARMI natively supports linear expansion in both the radial and axial dimensions.
 .. _thermalExpansion:
 
 Thermal Expansion
------------------
+=================
 ARMI treats thermal expansion as a linear phenomena using the standard linear expansion relationship,
 
 .. math::
@@ -68,9 +68,9 @@ Equation :eq:`linearExpansionFactor` is the expression used by ARMI in :py:meth:
 .. _radialExpansion:
 
 Radial Expansion
-----------------
+================
 
 .. _axialExpansion:
 
 Axial Expansion
----------------
+===============

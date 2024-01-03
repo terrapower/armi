@@ -8,7 +8,7 @@ in programmatically building and manipulating inputs and gathering detailed info
 out of ARMI results. Let's now go into a bit more detail for the power user.
 
 Settings and State Variables
-----------------------------
+============================
 The following links contain large tables describing the various global settings
 and state parameters in use across ARMI.
 
@@ -21,7 +21,7 @@ and state parameters in use across ARMI.
 
 
 Accessing Some Interesting Info
--------------------------------
+===============================
 Often times, you may be interested in the geometric dimensions of various blocks. These are stored on the
 :py:mod:`components <armi.reactor.components>`, and may be accessed as follows::
 
