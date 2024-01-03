@@ -111,7 +111,7 @@ Remember that this code is running on all processors. So it's just the ``if rank
 
 MPI Communication within ARMI
 =============================
-Now that you understand the basics, here's how you should get your :doc:`code interfaces </developer/dev_task_support/interfaces>`
+Now that you understand the basics, here's how you should get your :py:class:`armi.interfaces.Interface`
 to run things in parallel in ARMI.
 
 You don't have to worry too much about the ranks, etc. because ARMI will set that up for you. Basically,
