@@ -268,7 +268,7 @@ Plugins
 
 Plugins are higher-level objects that can bring in one or more Interfaces, settings
 definitions, parameters, validations, etc. They are documented in
-:doc:`/developer/making_armi_based_apps` and :py:mod:`armi.plugins`.
+:ref:`armi-app-making` and :py:mod:`armi.plugins`.
 
 
 Entry Points

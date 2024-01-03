@@ -1,3 +1,5 @@
+.. _armi-app-making:
+
 **********************
 Making ARMI-based Apps
 **********************
