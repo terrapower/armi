@@ -1,4 +1,4 @@
-.. _component-parameters-report
+.. _component-parameters-report:
 
 ********************
 Component Parameters

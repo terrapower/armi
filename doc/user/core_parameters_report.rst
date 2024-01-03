@@ -1,4 +1,4 @@
-.. _core-parameters-report
+.. _core-parameters-report:
 
 ***************
 Core Parameters

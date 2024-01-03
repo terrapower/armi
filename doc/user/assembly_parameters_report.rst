@@ -1,4 +1,4 @@
-.. _assembly-parameters-report
+.. _assembly-parameters-report:
 
 *******************
 Assembly Parameters

@@ -1,4 +1,4 @@
-.. _reactor-parameters-report
+.. _reactor-parameters-report:
 
 ******************
 Reactor Parameters

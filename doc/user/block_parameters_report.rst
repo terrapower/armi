@@ -1,4 +1,4 @@
-.. _block-parameters-report
+.. _block-parameters-report:
 
 ****************
 Block Parameters
