@@ -29,6 +29,7 @@ The core map input files can be graphically manipulated with the
 :py:mod:`Grid editor <armi.utils.gridEditor>`.
 
 
+***********************
 The Settings Input File
 ***********************
 
@@ -297,13 +298,9 @@ To run a restart, the following settings must be added to your case settings:
 
     * Set ``runType`` to ``Standard``
     * Set ``loadStyle`` to ``fromDB``
-    * Set ``startCycle`` and ``startNode`` to the cycle/node that you would like to continue the calculation from (inclusive). 
-    ``startNode`` may use negative indexing.
+    * Set ``startCycle`` and ``startNode`` to the cycle/node that you would like to continue the calculation from (inclusive). ``startNode`` may use negative indexing.
     * Set ``reloadDBName`` to the existing database file from which you would like to load the reactor history up to the restart point
-    * If you would like to change the specified reactor history (see :ref:`restart-cases`), keep the history up to the restarting cycle/node
-    unchanged, and just alter the history after that point. This means that the cycle history specified in your restart run should include
-    all cycles/nodes up to the end of the simulation. For complicated restarts, it
-    may be necessary to use the detailed ``cycles`` setting, even if the original case only used the simple history option.
+    * If you would like to change the specified reactor history (see :ref:`restart-cases`), keep the history up to the restarting cycle/node unchanged, and just alter the history after that point. This means that the cycle history specified in your restart run should include all cycles/nodes up to the end of the simulation. For complicated restarts, it may be necessary to use the detailed ``cycles`` setting, even if the original case only used the simple history option.
 
 A few examples of restart cases:
     
@@ -406,17 +403,18 @@ A few examples of restart cases:
 
 .. note:: The ``skipCycles`` setting is related to skipping the lattice physics calculation specifically, it is not required to do a restart run.
 
-.. note:: The *-SHUFFLES.txt file is required to do explicit repeated fuel management.
+.. note:: The X-SHUFFLES.txt file is required to do explicit repeated fuel management.
 
 .. note:: The restart.dat file is required to repeat the exact fuel management methods during a branch search. These can potentially modify the reactor state in ways that cannot be captures with the SHUFFLES.txt file.
 
-.. note:: The ISO* binary cross section libraries are required to run cases that skip the lattice physics calculation (e.g. MC**2)
+.. note:: The ISO binary cross section libraries are required to run cases that skip the lattice physics calculation (e.g. MC^2)
 
 .. note:: The multigroup flux is not yet stored on the output databases. If you need to do a restart with these values (e.g. for depletion), then you need to reload from neutronics outputs.
 
 .. note:: Restarting a calculation with an different version of ARMI than what was used to produce the restarting database may result in undefined behavior.
 
 
+*************************
 The Blueprints Input File
 *************************
 
@@ -1334,6 +1332,7 @@ The code will crash if materials used in :ref:`blocks-and-components` contain nu
 .. |Thot| replace:: T\ :sub:`hot`
 
 
+*********************
 Fuel Management Input
 *********************
 
@@ -1529,6 +1528,7 @@ with the ``targetK`` setting, which is available for setting in the GUI. The bra
 with *keff* closest to the setting, while still being above 1.0 is chosen.
 
 
+***************
 Settings Report
 ***************
 
