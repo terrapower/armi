@@ -1,3 +1,5 @@
+.. _walkthrough-inputs:
+
 ***************************************
 Building input files for a fast reactor
 ***************************************

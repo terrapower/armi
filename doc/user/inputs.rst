@@ -5,7 +5,7 @@ Inputs
 ARMI input files define the initial state of the reactor model and tell ARMI what kind of analysis should be
 performed on it.
 
-.. note:: We have an :doc:`input walkthrough </tutorials/walkthrough_inputs>` tutorial for a quick 
+.. note:: We have a :ref:`walkthrough-inputs` tutorial for a quick 
     overview of the inputs.
 
 There are several input files:
@@ -73,7 +73,7 @@ Blueprints, Core Map, and Fuel Management inputs.
 The assembly clicker
 ^^^^^^^^^^^^^^^^^^^^
 The assembly clicker (in the ``grids`` editor) allows users to define the 2-D layout of the assemblies defined in the
-:doc:`/user/inputs`. This can be done in hexagon or cartesian. The results of this arrangement get written to
+:ref:`bp-input-file`. This can be done in hexagon or cartesian. The results of this arrangement get written to
 grids in blueprints. Click on the assembly palette on the right and click on the locations where you want to put the
 assembly. By default, the input assumes a 1/3 core model, but you can create a full core model through the menu.
 
@@ -410,6 +410,7 @@ A few examples of restart cases:
 
 .. note:: Restarting a calculation with an different version of ARMI than what was used to produce the restarting database may result in undefined behavior.
 
+.. _bp-input-file:
 
 The Blueprints Input File
 =========================
@@ -1521,7 +1522,7 @@ with *keff* closest to the setting, while still being above 1.0 is chosen.
 
 Settings Report
 ===============
-This document lists all the :doc:`settings </user/inputs>` in ARMI.  
+This document lists all the `settings <#the-settings-input-file>`_ in ARMI.  
 
 They are all accessible to developers
 through the :py:class:`armi.settings.caseSettings.Settings` object, which is typically stored in a variable named
