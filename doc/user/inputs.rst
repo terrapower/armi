@@ -1517,6 +1517,7 @@ The **best** result from the branch search is determined by comparing the *keff*
 with the ``targetK`` setting, which is available for setting in the GUI. The branch
 with *keff* closest to the setting, while still being above 1.0 is chosen.
 
+.. _settings-report
 
 Settings Report
 ===============
