@@ -12,7 +12,7 @@ particular, we assume familiarity with `Python <https://www.python.org/>`__,
 
 You must have the following installed before proceeding:
 
-* `Python <https://www.python.org/downloads/>`__ version 3.6 or later (preferably 64-bit)
+* `Python <https://www.python.org/downloads/>`__ version 3.7 or newer (preferably 64-bit).
 
   .. admonition:: The right Python command
 
