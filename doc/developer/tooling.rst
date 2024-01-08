@@ -164,6 +164,7 @@ Every release should follow this process:
   - Or from another commit: ``git tag <commit-hash> 1.0.0 -m "Release v1.0.0"``
   - Pushing to the repo: ``git push origin 1.0.0``
   - **NOTE** - The ONLY tags in the ARMI repo are for official version releases.
+
 5. Also add the release notes on `the GitHub UI <https://github.com/terrapower/armi/releases>`__.
 6. Follow the instructions `here <https://github.com/terrapower/terrapower.github.io>`_ to
    archive the new documentation.

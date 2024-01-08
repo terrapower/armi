@@ -15,14 +15,14 @@ package's code during runtime.
 
 An approximation of `Composite Design Pattern
 <http://en.wikipedia.org/wiki/Composite_pattern>`_ is used to represent the **Reactor**
-in ARMI. In this hierarchy the **Reactor** object has a child **Core** object, and 
-potentially many generic **Composite** child objects representing ex-core structures. 
-The **Core** is made of **Assembly** objects, which are in turn made up as a collection 
-of **Block** objects. :term:`State <reactor state>` variables may be stored at any level 
-of this hierarchy using the :py:mod:`armi.reactor.parameters` system to contain results 
+in ARMI. In this hierarchy the **Reactor** object has a child **Core** object, and
+potentially many generic **Composite** child objects representing ex-core structures.
+The **Core** is made of **Assembly** objects, which are in turn made up as a collection
+of **Block** objects. :term:`State <reactor state>` variables may be stored at any level
+of this hierarchy using the :py:mod:`armi.reactor.parameters` system to contain results
 (e.g., ``keff``, ``flow rates``, ``power``, ``flux``, etc.). Within each block are
- **Components** that define the pin-level geometry.  Associated with each Component are 
-**Material** objects that contain material properties (``density``, ``conductivity``, 
+**Components** that define the pin-level geometry.  Associated with each Component are
+**Material** objects that contain material properties (``density``, ``conductivity``,
 ``heat capacity``, etc.) and isotopic mass fractions.
 
 .. note:: Non-core structures (spent fuel pools, core restraint, heat exchangers, etc.)
