@@ -222,7 +222,7 @@ This should show a simple representation of the block.
 .. figure:: https://terrapower.github.io/armi/_static/c5g7-mox.png
    :figclass: align-center
 
-   **Figure 1.** A representation of a C5G7 fuel assembly. 
+   A representation of a C5G7 fuel assembly.
 
 
 Here are the full files used in this example:
