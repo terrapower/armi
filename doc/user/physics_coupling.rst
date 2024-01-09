@@ -75,4 +75,4 @@ These assembly-wise convergence parameters are then stored in an array of conver
 The total convergence of the power distribution is finally measured through the infinity norm (i.e, the max) of :math:`\xi`,
 
 .. math::
-    \epsilon = \| \xi \|_\inf = \max \xi.
+    \epsilon = \| \xi \|_{\inf} = \max \xi.
