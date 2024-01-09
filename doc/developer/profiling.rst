@@ -19,4 +19,4 @@ This produces images like this:
 .. figure:: /.static/buildMacros.png
     :align: center
 
-    **Figure 1.** An example of the profiler output rendered to a png.
+    An example of the profiler output rendered to a png.

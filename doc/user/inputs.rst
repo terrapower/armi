@@ -456,7 +456,7 @@ The ARMI data model is represented schematically below, and the blueprints are d
 .. figure:: /.static/armi_reactor_objects.png
     :align: center
 
-    **Figure 1.** The primary data containers in ARMI
+    The primary data containers in ARMI
 
 :ref:`blocks <blocks-and-components>`:
     Defines :py:class:`~armi.reactor.components.component.Component` inputs for a

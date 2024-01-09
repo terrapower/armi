@@ -33,7 +33,7 @@ of this hierarchy using the :py:mod:`armi.reactor.parameters` system to contain 
 .. figure:: /.static/armi_reactor_objects.png
     :align: center
 
-    **Figure 1.** The primary data containers in ARMI
+    The primary data containers in ARMI
 
 Each level of the composite pattern hierarchy contains most of its state data in a
 collection of parameters detailing considerations of how the reactor has progressed
@@ -206,7 +206,7 @@ interface stack is traversed in order.
 .. figure:: /.static/armi_general_flowchart.png
     :align: center
 
-    **Figure 1.** The computational flow of the interface hooks
+    The computational flow of the interface hooks
 
 For example, input checking routines would run at beginning-of-life (BOL), calculation
 modules might run at every time node, etc. To accommodate these various needs, interface
