@@ -150,6 +150,7 @@ documentation of the database modules.
 
 .. list-table:: Database structure
    :header-rows: 1
+   :class: longtable
 
    * - Name
      - Type
