@@ -68,7 +68,9 @@ def create_table(rst_table, caption=None, align=None, widths=None, width=None):
     return "\n".join(rst)
 
 
-def createListTable(rows, caption=None, align=None, widths=None, width=None):
+def createListTable(
+    rows, caption=None, align=None, widths=None, width=None, klass=None
+):
     """Take a list of data, and produce an RST-type string for a list-table.
 
     Parameters
@@ -81,6 +83,9 @@ def createListTable(rows, caption=None, align=None, widths=None, width=None):
         “auto”, “grid”, or a list of integers
     width: str
         `length`_ or `percentage`_ of the current line width
+    klass: str
+        Should be "class", but that is a reserved keyword.
+        "longtable", "special", or something custom
 
     Returns
     -------
@@ -95,6 +100,8 @@ def createListTable(rows, caption=None, align=None, widths=None, width=None):
     # build the list-table header block
     rst = [".. list-table:: {}".format(caption or "")]
     rst += ["    :header-rows: 1"]
+    if klass:
+        rst += ["    :class: {}".format(klass)]
     if align:
         rst += ["    :align: {}".format(align)]
     if width:

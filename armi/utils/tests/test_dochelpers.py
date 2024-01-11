@@ -78,12 +78,18 @@ class TestDocHelpers(unittest.TestCase):
     def test_createListTable(self):
         rows = [["h1", "h2"], ["a1", "a2"], ["b1", "b2"]]
         table = createListTable(
-            rows, caption="awesomeTable", align="left", widths=[10, 30], width=100
+            rows,
+            caption="awesomeTable",
+            align="left",
+            widths=[10, 30],
+            width=100,
+            klass="longtable",
         )
 
         self.assertEqual(len(table), 167)
         self.assertIn("awesomeTable", table)
         self.assertIn("list-table", table)
+        self.assertIn("longtable", table)
         self.assertIn("width: 100", table)
         self.assertIn("widths: 10 30", table)
 
