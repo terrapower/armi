@@ -78,9 +78,9 @@ def createListTable(
     rows: list
         List of input data (first row is the header).
     align: str
-        “left”, “center”, or “right”
+        "left", "center", or "right"
     widths: str
-        “auto”, “grid”, or a list of integers
+        "auto", "grid", or a list of integers
     width: str
         `length`_ or `percentage`_ of the current line width
     klass: str
