@@ -585,13 +585,27 @@ Each component has a variety of dimensions to define the shape and composition. 
 in cm.  The following is a list of included component shapes and their dimension inputs. Again,
 additional/custom components with arbitrary dimensions may be provided by the user via plugins.
 
-.. exec::
-    from tabulate import tabulate
-    from armi.reactor.components import ComponentType
+.. only:: html
 
-    return create_table(tabulate(headers=('Component Name', 'Dimensions'),
+    .. exec::
+        from tabulate import tabulate
+        from armi.reactor.components import ComponentType
+
+        return create_table(tabulate(headers=('Component Name', 'Dimensions'),
+                       tabular_data=[(c.__name__, ', '.join(c.DIMENSION_NAMES)) for c in ComponentType.TYPES.values()],
+                       tablefmt='rst'), caption="Component list")
+
+.. only:: latex
+
+    .. raw:: latex
+
+        .. exec::
+            from tabulate import tabulate
+            from armi.reactor.components import ComponentType
+
+            return tabulate(headers=('Component Name', 'Dimensions'),
                    tabular_data=[(c.__name__, ', '.join(c.DIMENSION_NAMES)) for c in ComponentType.TYPES.values()],
-                   tablefmt='rst'), caption="Component list")
+                   tablefmt='latex_longtable')
 
 When a ``DerivedShape`` is specified as the final component in a block, its area is inferred from
 the difference between the area of the block and the sum of the areas
