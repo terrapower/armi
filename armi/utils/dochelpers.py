@@ -82,7 +82,7 @@ def createListTable(
     widths: str
         "auto", "grid", or a list of integers
     width: str
-        `length`_ or `percentage`_ of the current line width
+        length or percentage of the line, surrounded by backticks
     klass: str
         Should be "class", but that is a reserved keyword.
         "longtable", "special", or something custom
