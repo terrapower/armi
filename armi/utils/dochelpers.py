@@ -89,8 +89,8 @@ def createListTable(rows, caption=None, align=None, widths=None, width=None):
     # we need valid input data
     assert len(rows) > 1, "Not enough input data."
     len0 = len(rows[0])
-    for row in rows[1]:
-        assert len(row) == len0, "Rows aren't all the same length"
+    for row in rows[1:]:
+        assert len(row) == len0, "Rows aren't all the same length."
 
     # build the list-table header block
     rst = [".. list-table:: {}".format(caption or "")]
