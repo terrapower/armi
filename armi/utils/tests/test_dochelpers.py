@@ -19,6 +19,7 @@ from armi.reactor import reactorParameters
 from armi.utils.dochelpers import (
     create_figure,
     create_table,
+    createListTable,
     generateParamTable,
     generatePluginSettingsTable,
 )
@@ -73,3 +74,24 @@ class TestDocHelpers(unittest.TestCase):
         self.assertIn("width: 250", table)
         self.assertIn("widths: [200, 300]", table)
         self.assertIn("thing", table)
+
+    def test_createListTable(self):
+        rows = [["h1", "h2"], ["a1", "a2"], ["b1", "b2"]]
+        table = createListTable(
+            rows, caption="awesomeTable", align="left", widths=[10, 30], width=100
+        )
+
+        self.assertEqual(len(table), 167)
+        self.assertIn("awesomeTable", table)
+        self.assertIn("list-table", table)
+        self.assertIn("width: 100", table)
+        self.assertIn("widths: 10 30", table)
+
+        with self.assertRaises(AssertionError):
+            createListTable([])
+
+        with self.assertRaises(AssertionError):
+            createListTable([["h1", "h2"]])
+
+        with self.assertRaises(AssertionError):
+            createListTable([["h1", "h2"], ["a1", "b2", "c3"]])
