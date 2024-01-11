@@ -586,12 +586,14 @@ in cm.  The following is a list of included component shapes and their dimension
 additional/custom components with arbitrary dimensions may be provided by the user via plugins.
 
 .. exec::
-    from tabulate import tabulate
     from armi.reactor.components import ComponentType
+    from armi.utils.dochelpers import createListTable
 
-    return create_table(tabulate(headers=('Component Name', 'Dimensions'),
-                   tabular_data=[(c.__name__, ', '.join(c.DIMENSION_NAMES)) for c in ComponentType.TYPES.values()],
-                   tablefmt='rst'), caption="Component list")
+    rows = [['Component Name', 'Dimensions']]
+    for c in ComponentType.TYPES.values():
+        rows.append([c.__name__, ', '.join(c.DIMENSION_NAMES)])
+
+    return createListTable(rows, widths=[25, 65], klass="longtable")
 
 When a ``DerivedShape`` is specified as the final component in a block, its area is inferred from
 the difference between the area of the block and the sum of the areas
