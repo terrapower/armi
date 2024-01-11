@@ -86,7 +86,7 @@ class TestDocHelpers(unittest.TestCase):
             klass="longtable",
         )
 
-        self.assertEqual(len(table), 167)
+        self.assertEqual(len(table), 189)
         self.assertIn("awesomeTable", table)
         self.assertIn("list-table", table)
         self.assertIn("longtable", table)
