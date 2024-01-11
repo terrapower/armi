@@ -46,8 +46,8 @@ getting started to get an idea of what is available.
 Some implementation details
 ---------------------------
 
-One can just monkey-see-monkey-do their own plugins without fully understanding the
-following. However, having a deeper understanding of what is going on may be useful.
+Plugins are designed to make it easy to build a plugin by copy/pasting from an existing
+plugin. However, having a deeper understanding of what is going on may be useful.
 Feel free to skip this section.
 
 The plugin system is built on top of a Python library called `pluggy
