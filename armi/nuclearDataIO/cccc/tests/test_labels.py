@@ -31,7 +31,7 @@ class TestLabels(unittest.TestCase):
     def test_readLabelsBinary(self):
         """
         Tests reading a LABELS binary file and comparing expected metadata results.
-        
+
         .. test:: Test reading LABELS files.
             :id: T_ARMI_NUCDATA_LABELS0
             :tests: R_ARMI_NUCDATA_LABELS
@@ -56,7 +56,7 @@ class TestLabels(unittest.TestCase):
     def test_writeLabelsAscii(self):
         """
         Tests writing a LABELS file in ASCII format.
-        
+
         .. test:: Test writing LABELS files.
             :id: T_ARMI_NUCDATA_LABELS1
             :tests: R_ARMI_NUCDATA_LABELS

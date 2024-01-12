@@ -137,7 +137,7 @@ class TestNhfluxVariant(unittest.TestCase):
     def setUpClass(cls):
         """
         Load NHFLUX data from binary file. This file was produced using VARIANT v11.0.
-        
+
         .. test:: Test reading NHFLUX files from VARIANT transport solver.
             :id: T_ARMI_NUCDATA_NHFLUX_VARIANT0
             :tests: R_ARMI_NUCDATA_NHFLUX_VARIANT
@@ -146,7 +146,7 @@ class TestNhfluxVariant(unittest.TestCase):
 
     def test_fc(self):
         """Verify the file control info.
-        
+
         .. test:: Tests expected metadata from the NHFLUX file.
             :id: T_ARMI_NUCDATA_NHFLUX_VARIANT1
             :tests: R_ARMI_NUCDATA_NHFLUX_VARIANT
@@ -167,7 +167,7 @@ class TestNhfluxVariant(unittest.TestCase):
     def test_fluxMoments(self):
         """
         Test the comparison between the expected and loaded flux moments from an NHFLUX binary file.
-        
+
         .. test:: Tests expected flux moment data from the NHFLUX file.
             :id: T_ARMI_NUCDATA_NHFLUX_VARIANT2
             :tests: R_ARMI_NUCDATA_NHFLUX_VARIANT
@@ -201,7 +201,7 @@ class TestNhfluxVariant(unittest.TestCase):
     def test_write(self):
         """
         Verify binary equivalence of written binary file.
-        
+
         .. test:: Tests writing the NHFLUX file as a binary data format.
             :id: T_ARMI_NUCDATA_NHFLUX_VARIANT3
             :tests: R_ARMI_NUCDATA_NHFLUX_VARIANT
