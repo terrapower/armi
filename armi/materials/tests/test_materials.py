@@ -981,13 +981,13 @@ class Lead_TestCase(_Material_Test, unittest.TestCase):
     def test_linearExpansion(self):
         """Unit tests for lead materials linear expansion.
 
-        .. test:: There is a base class for fluid materials.
+        .. test:: Fluid materials do not linearly expand, at any temperature.
             :id: T_ARMI_MAT_FLUID2
             :tests: R_ARMI_MAT_FLUID
         """
-        cur = self.mat.linearExpansion(400)
-        ref = 0.0
-        self.assertEqual(cur, ref)
+        for t in range(300, 901, 25):
+            cur = self.mat.linearExpansion(t)
+            self.assertEqual(cur, 0)
 
     def test_setDefaultMassFracs(self):
         """
