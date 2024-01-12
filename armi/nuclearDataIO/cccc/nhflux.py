@@ -237,6 +237,10 @@ class NhfluxStream(cccc.StreamWithDataContainer):
             overwrites the previous one on the NHFLUX class object, which will contain only the
             numDataSetsToRead-th data set. The first numDataSetsToRead-1 data sets are essentially
             skipped over.
+        
+        .. impl:: Tool to read and write NHFLUX files.
+            :id: I_ARMI_NUCDATA_NHFLUX
+            :implements: R_ARMI_NUCDATA_NHFLUX_VARIANT
         """
         self._rwFileID()
         self._rwBasicFileData1D()

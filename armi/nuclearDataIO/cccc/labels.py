@@ -122,6 +122,13 @@ class LabelsStream(cccc.StreamWithDataContainer):
         return LabelsData()
 
     def readWrite(self):
+        """
+        Performs a read/write of a LABELS data file.
+        
+        .. impl:: Tool to read and write LABELS files.
+            :id: I_ARMI_NUCDATA_LABELS
+            :implements: R_ARMI_NUCDATA_LABELS
+        """
         runLog.info(
             "{} LABELS data {}".format(
                 "Reading" if "r" in self._fileMode else "Writing", self

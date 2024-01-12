@@ -135,11 +135,22 @@ class TestNhflux(unittest.TestCase):
 class TestNhfluxVariant(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        """Load NHFLUX data from binary file. This file was produced using VARIANT v11.0."""
+        """
+        Load NHFLUX data from binary file. This file was produced using VARIANT v11.0.
+        
+        .. test:: Test reading NHFLUX files from VARIANT transport solver.
+            :id: T_ARMI_NUCDATA_NHFLUX_VARIANT0
+            :tests: R_ARMI_NUCDATA_NHFLUX_VARIANT
+        """
         cls.nhf = nhflux.NhfluxStreamVariant.readBinary(SIMPLE_HEXZ_NHFLUX_VARIANT)
 
     def test_fc(self):
-        """Verify the file control info."""
+        """Verify the file control info.
+        
+        .. test:: Tests expected metadata from the NHFLUX file.
+            :id: T_ARMI_NUCDATA_NHFLUX_VARIANT1
+            :tests: R_ARMI_NUCDATA_NHFLUX_VARIANT
+        """
         # These entries exist for both Nodal and VARIANT, but have different values
         # for the same model
         print(self.nhf.metadata.items())
@@ -154,6 +165,13 @@ class TestNhfluxVariant(unittest.TestCase):
         self.assertEqual(self.nhf.metadata["nMoms"], 0)
 
     def test_fluxMoments(self):
+        """
+        Test the comparison between the expected and loaded flux moments from an NHFLUX binary file.
+        
+        .. test:: Tests expected flux moment data from the NHFLUX file.
+            :id: T_ARMI_NUCDATA_NHFLUX_VARIANT2
+            :tests: R_ARMI_NUCDATA_NHFLUX_VARIANT
+        """
         # node 1 (ring=1, position=1), axial=3, group=2
         i = 0
         self.assertEqual(self.nhf.geodstCoordMap[i], 13)
@@ -181,7 +199,13 @@ class TestNhfluxVariant(unittest.TestCase):
         )
 
     def test_write(self):
-        """Verify binary equivalence of written binary file."""
+        """
+        Verify binary equivalence of written binary file.
+        
+        .. test:: Tests writing the NHFLUX file as a binary data format.
+            :id: T_ARMI_NUCDATA_NHFLUX_VARIANT3
+            :tests: R_ARMI_NUCDATA_NHFLUX_VARIANT
+        """
         with TemporaryDirectoryChanger():
             nhflux.NhfluxStreamVariant.writeBinary(self.nhf, "NHFLUX2")
             with open(SIMPLE_HEXZ_NHFLUX_VARIANT, "rb") as f1, open(

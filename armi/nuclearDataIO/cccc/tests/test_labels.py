@@ -29,6 +29,13 @@ class TestLabels(unittest.TestCase):
     """Tests for labels."""
 
     def test_readLabelsBinary(self):
+        """
+        Tests reading a LABELS binary file and comparing expected metadata results.
+        
+        .. test:: Test reading LABELS files.
+            :id: T_ARMI_NUCDATA_LABELS0
+            :tests: R_ARMI_NUCDATA_LABELS
+        """
         expectedName = "LABELS"
         expectedTrianglesPerHex = 6
         expectedNumZones = 5800
@@ -47,6 +54,13 @@ class TestLabels(unittest.TestCase):
         self.assertEqual(len(labelsData.regionLabels), expectedNumRegions)
 
     def test_writeLabelsAscii(self):
+        """
+        Tests writing a LABELS file in ASCII format.
+        
+        .. test:: Test writing LABELS files.
+            :id: T_ARMI_NUCDATA_LABELS1
+            :tests: R_ARMI_NUCDATA_LABELS
+        """
         with TemporaryDirectoryChanger():
             labelsData = labels.readBinary(LABELS_FILE_BIN)
             labels.writeAscii(labelsData, self._testMethodName + "labels.ascii")
