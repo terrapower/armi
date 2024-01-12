@@ -223,7 +223,7 @@ shows how different operations can be performed in parallel::
 A simplified approach
 ---------------------
 
-Transferring state to and from a Reactor can be complicated and add a lot of code. An alternative approachis to ensure
+Transferring state to and from a Reactor can be complicated and add a lot of code. An alternative approach is to ensure
 that the reactor state is synchronized across all nodes, and then use the reactor instead of raw data::
 
     class SomeInterface(interfaces.Interface):
