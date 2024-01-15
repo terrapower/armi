@@ -221,8 +221,8 @@ hooks include:
 * :py:meth:`interactBOC <armi.interfaces.Interface.interactBOC>` -- Beginning of cycle.
   Happens once per cycle.
 
-* :py:meth:`interactEveryNode <armi.interfaces.Interface.interactEveryNode>` -- happens
-  after every node step/flux calculation
+* :py:meth:`interactEveryNode <armi.interfaces.Interface.interactEveryNode>` -- Happens
+  after every node step/flux calculation.
 
 * :py:meth:`interactEOC <armi.interfaces.Interface.interactEOC>` -- End of cycle.
 
@@ -230,6 +230,9 @@ hooks include:
 
 * :py:meth:`interactError <armi.interfaces.Interface.interactError>` -- When an error
   occurs, this can run to clean up or print debugging info.
+
+* :py:meth:`interactCoupled <armi.interfaces.Interface.interactCoupled>` -- Happens
+  after every node step/flux calculation, if tight physics coupling is active.
 
 These interaction points are optional in every interface, and you may override one or
 more of them to suit your needs.  You should not change the arguments to the hooks,
