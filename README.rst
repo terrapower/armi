@@ -405,7 +405,7 @@ The ARMI system is licensed as follows:
 
 .. code-block:: none
 
-	Copyright 2009-2023 TerraPower, LLC
+	Copyright 2009-2024 TerraPower, LLC
 
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
