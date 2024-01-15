@@ -25,3 +25,5 @@ jobs:
         run: python -m pip install tox tox-gh-actions
       - name: Run Tox
         run: tox -e test
+      - name: Find Test Crumbs
+        run: python .github/workflows/find_test_crumbs.py
