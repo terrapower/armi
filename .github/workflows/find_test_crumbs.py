@@ -21,6 +21,7 @@ IGNORED_OBJECTS = [
     ".pytest_cache",
     ".tox",
     "__pycache__",
+    "armi.egg-info",
     "armi/logs/ARMI.armiRun.",
     "armi/logs/armiRun.mpi.log",
     "armi/tests/tutorials/case-suite/",
