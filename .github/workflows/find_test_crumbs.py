@@ -34,11 +34,11 @@ def main():
     lines = proc.communicate()[0].decode("utf-8").split("\n")
 
     # clean up the whitespace
-    lines = [l.strip() for l in lines if len(l.strip())]
+    lines = [ln.strip() for ln in lines if len(ln.strip())]
 
     # ignore certain untracked object, like __pycache__ dirs
     for ignore in IGNORED_OBJECTS:
-        lines = [l for l in lines if ignore not in l]
+        lines = [ln for ln in lines if ignore not in ln]
 
     # fail hard if there are still untracked files
     if len(lines):
