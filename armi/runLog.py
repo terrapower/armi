@@ -326,6 +326,18 @@ def concatenateLogs(logDir=None):
     .. impl:: Log files from different processes are combined.
         :id: I_ARMI_LOG_MPI
         :implements: R_ARMI_LOG_MPI
+
+        The log files are plain text files. Since ARMI is
+        frequently run in parallel, the situation arises where
+        each ARMI process generates its own plain text log file.
+        This function combines the separate log files, per
+        process into one log file.
+
+        The files are written in numerical order, with the lead
+        process stdout first then the lead process stderr. Then
+        each other process is written to the combined file, in
+        order, stdout then stderr. Finally, the original stdout
+        and stderr files are deleted.
     """
     if logDir is None:
         logDir = LOG_DIR
@@ -503,9 +515,41 @@ class RunLogger(logging.Logger):
         :id: I_ARMI_LOG
         :implements: R_ARMI_LOG
 
+        This logger makes it easy for users to add log statements to
+        and ARMI application, and ARMI will control the flow of
+        those log statements. In particular, ARMI overrides the normal
+        Python logging tooling, to allow developers to pipe their log
+        statements to both screen and file. This works for stdout and
+        stderr.
+
+        The log statements themselves can be any text a user wants to
+        record during a run. For instance, basic notifications of what
+        is happening in the run, or basic warnings about something that
+        could be an issue, so you want people to know about. Likewise,
+        full errors can be recorded with this tool. These different
+        types of log statements are easily identified by specifying the
+        "verbosity" of the log statement, in the code where you do the
+        logging. The most important verbosities are: error, warning,
+        info (which is just to add information to the log), and debug
+        (which is meant to be extremely detailed and not always
+        desired).
+
+        And at the end of the ARMI-based simulation, the analyst doing
+        the simulation will have a full record of potentially intersting
+        information they can use to understand their run.
+
     .. impl:: Logging is done to the screen and to file.
         :id: I_ARMI_LOG_IO
         :implements: R_ARMI_LOG_IO
+
+        By default, this logger prints all log messages during an ARMI
+        simulation to screen and to a plain text file. That is, at any
+        place in the ARMI application, developers can interject a plain
+        text logging message, and when that code is hit during an ARMI
+        simulation, the text will be piped to screen and to a log file.
+        This helpful for analysts who want to watch their simulation in
+        real time, and for everyone that want a record of anything
+        interesting that happened during the run.
     """
 
     FMT = "%(levelname)s%(message)s"
