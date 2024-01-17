@@ -381,7 +381,7 @@ class ArmiPlugin:
         Define configuration settings for this plugin.
 
         This hook allows plugins to provide their own configuration settings, which can
-        participate in the :py:class:`armi.settings.caseSettings.CaseSettings`. Plugins
+        participate in the :py:class:`armi.settings.caseSettings.Settings`. Plugins
         may provide entirely new settings to what are already provided by ARMI, as well
         as new options or default values for existing settings. For instance, the
         framework provides a ``neutronicsKernel`` setting for selecting which global

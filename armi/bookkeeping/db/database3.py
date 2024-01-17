@@ -448,7 +448,7 @@ class Database3:
 
     def writeInputsToDB(self, cs, csString=None, geomString=None, bpString=None):
         """
-        Write inputs into the database based the CaseSettings.
+        Write inputs into the database based the Settings.
 
         This is not DRY on purpose. The goal is that any particular Database
         implementation should be very stable, so we dont want it to be easy to change
