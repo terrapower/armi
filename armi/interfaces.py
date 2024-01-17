@@ -255,17 +255,23 @@ class TightCoupler:
 
 class Interface:
     """
-    The eponymous Interface between the ARMI Reactor model and modules that operate upon it.
-
-    This defines the operator's contract for interacting with the ARMI reactor model.
-    It is expected that interact* methods are defined as appropriate for the physics modeling.
-
-    Interface instances are gathered into an interface stack in
-    :py:meth:`armi.operators.operator.Operator.createInterfaces`.
+    The eponymous Interface between the ARMI reactor data model and the Plugins.
 
     .. impl:: The interface shall allow code execution at important operational points in time.
         :id: I_ARMI_INTERFACE
         :implements: R_ARMI_INTERFACE
+
+        The Interface class defines a number methods with names like ``interact***``.
+        These methods are called in order at each time node. This allows for an
+        individual Plugin defining multiple interfaces to insert code at the start
+        or end of a particular time node or cylce during reactor simulation. In this
+        fashion, the Plugins and thus the Operator control when their code is run.
+
+        The end goal of all this work is to allow the Plugins to carefully tune
+        when and how they interact with the reactor data model.
+
+        Interface instances are gathered into an interface stack in
+        :py:meth:`armi.operators.operator.Operator.createInterfaces`.
     """
 
     # list containing interfaceClass
@@ -284,7 +290,7 @@ class Interface:
     overridden by any concrete class that extends this one.
     """
 
-    # TODO: This is a terrible variable name.
+    # TODO: This is a terrible name.
     function = None
     """
     The function performed by an Interface. This is not required be be defined
