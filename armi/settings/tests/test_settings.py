@@ -86,7 +86,7 @@ class PluginAddsOptions(plugins.ArmiPlugin):
         ]
 
 
-class TestCaseSettings(unittest.TestCase):
+class TestSettings(unittest.TestCase):
     def setUp(self):
         self.cs = caseSettings.Settings()
 

@@ -110,7 +110,7 @@ context.BLUEPRINTS_IMPORT_CONTEXT = "".join(traceback.format_stack())
 
 
 def loadFromCs(cs, roundTrip=False):
-    """Function to load Blueprints based on supplied ``CaseSettings``."""
+    """Function to load Blueprints based on supplied ``Settings``."""
     from armi.utils import directoryChangers
 
     with directoryChangers.DirectoryChanger(cs.inputDirectory, dumpOnException=False):
@@ -231,7 +231,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
 
         Parameters
         ----------
-        cs : CaseSettings object
+        cs : Settings
             Used to apply various modeling options when constructing an assembly.
 
         name : str (optional, and should be exclusive with specifier)

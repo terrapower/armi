@@ -13,12 +13,15 @@
 # limitations under the License.
 
 """
-Reactor objects represent the highest level in the hierarchy of structures that compose the system
-to be modeled. Core objects represent collections of assemblies.
+Reactor objects represent the highest level in the hierarchy of
+structures that compose the system to be modeled. Core objects
+represent collections of assemblies.
 
-Core is a high-level object in the data model in ARMI. They contain assemblies which in turn contain
-more refinement in representing the physical reactor. The reactor is the owner of many of the
-plant-wide state variables such as keff, cycle, and node.
+Core is a high-level object in the data model in ARMI. They
+contain assemblies which in turn contain more refinement in
+representing the physical reactor. The reactor is the owner of
+many of the plant-wide state variables such as keff, cycle,
+and node.
 """
 from typing import Optional
 import collections
@@ -170,7 +173,7 @@ def loadFromCs(cs) -> Reactor:
 
     Parameters
     ----------
-    cs: CaseSettings
+    cs: Settings
         A relevant settings object
 
     Returns
@@ -559,7 +562,7 @@ class Core(composites.Composite):
         ----------
         ringNum : int
             The ring to remove
-        cs: CaseSettings
+        cs: Settings
             A relevant settings object
         overrideCircularRingMode : bool, optional
             False ~ default: use circular/square/hex rings, just as the reactor defines them
@@ -1810,7 +1813,7 @@ class Core(composites.Composite):
 
         Parameters
         ----------
-        cs : CaseSettings object
+        cs : Settings
             Global settings for the case
 
         See Also
@@ -1829,7 +1832,7 @@ class Core(composites.Composite):
             The assembly type to create
         enrichList : list
             weight percent enrichments of each block
-        cs : CaseSettings object
+        cs : Settings
             Global settings for the case
 
         Returns
@@ -2449,12 +2452,12 @@ class Core(composites.Composite):
 
     def buildManualZones(self, cs):
         """
-        Build the Zones that are defined manually in the given CaseSettings file,
+        Build the Zones that are defined manually in the given Settings file,
         in the `zoneDefinitions` setting.
 
         Parameters
         ----------
-        cs : CaseSettings
+        cs : Settings
             The standard ARMI settings object
 
         Examples

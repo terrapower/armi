@@ -601,7 +601,7 @@ class Interface:
         relative to the input directory. Absolute paths will not be copied anywhere.
 
 
-        The returned dictionary will enable the source CaseSettings object to
+        The returned dictionary will enable the source Settings object to
         be updated to the new file location. While the dictionary keys are
         recommended to be Setting objects, the name of the setting as a string,
         e.g., "shuffleLogic", is still interpreted. If the string name does not
@@ -618,7 +618,7 @@ class Interface:
 
         Parameters
         ----------
-        cs : CaseSettings
+        cs : Settings
             The case settings for a particular Case
         """
         return {}
@@ -740,7 +740,7 @@ def getActiveInterfaceInfo(cs):
 
     Parameters
     ----------
-    cs : CaseSettings
+    cs : Settings
         The case settings that activate relevant Interfaces
     """
     interfaceInfo = []

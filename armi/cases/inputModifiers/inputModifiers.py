@@ -20,7 +20,7 @@ class InputModifier:
 
     (This class is abstract.)
 
-    Subclasses must implement a ``__call__`` method accepting a ``CaseSettings``,
+    Subclasses must implement a ``__call__`` method accepting a ``Settings``,
     ``Blueprints``, and ``SystemLayoutInput``.
 
     The class attribute ``FAIL_IF_AFTER`` should be a tuple defining what, if any,
@@ -64,7 +64,7 @@ class SamplingInputModifier(InputModifier):
 
     (This class is abstract.)
 
-    Subclasses must implement a ``__call__`` method accepting a ``CaseSettings``,
+    Subclasses must implement a ``__call__`` method accepting a ``Settings``,
     ``Blueprints``, and ``SystemLayoutInput``.
 
     This is a modified version of the InputModifier abstract class that imposes
@@ -110,7 +110,7 @@ class FullCoreModifier(InputModifier):
 
     Notes
     -----
-    Besides the core, other grids may also be of interest for expansion, like
+    Besides the Core, other grids may also be of interest for expansion, like
     a grid that defines fuel management. However, the expansion of a fuel
     management schedule to full core is less trivial than just expanding
     the core itself. Thus, this modifier currently does not attempt

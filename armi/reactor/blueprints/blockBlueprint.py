@@ -86,8 +86,8 @@ class BlockBlueprint(yamlize.KeyedList):
 
         Parameters
         ----------
-        cs : CaseSettings
-            CaseSettings object for the appropriate simulation.
+        cs : Settings
+            Settings object for the appropriate simulation.
 
         blueprint : Blueprints
             Blueprints object containing various detailed information, such as nuclides to model

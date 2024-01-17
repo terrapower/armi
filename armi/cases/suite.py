@@ -92,7 +92,7 @@ class CaseSuite:
         """
         Finds case objects by searching for a pattern of inputs, and adds them to the suite.
 
-        This searches for CaseSettings input files and loads them to create Case objects.
+        This searches for Settings input files and loads them to create Case objects.
 
         Parameters
         ----------

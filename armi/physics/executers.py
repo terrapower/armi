@@ -89,7 +89,7 @@ class ExecutionOptions:
         return f"<{self.__class__.__name__}: {self.label}>"
 
     def fromUserSettings(self, cs):
-        """Set options from a particular CaseSettings object."""
+        """Set options from a particular Settings object."""
         raise NotImplementedError()
 
     def fromReactor(self, reactor):

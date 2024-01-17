@@ -281,7 +281,7 @@ cases, launch the GUI, and perform various testing and utility operations. When 
 invoke ARMI with ``python -m armi run``, the ``__main__.py`` file is loaded and all
 valid Entry Points are dynamically loaded. The proper entry point (in this case,
 :py:class:`armi.cli.run.RunEntryPoint`) is invoked. As ARMI initializes itself, settings
-are loaded into a :py:class:`CaseSettings <armi.settings.caseSettings.CaseSettings>`
+are loaded into a :py:class:`Settings <armi.settings.caseSettings.Settings>`
 object.  From those settings, an :py:class:`Operator <armi.operators.operator.Operator>`
 subclass is built by a factory and its ``operate`` method is called. This fires up the
 main ARMI analysis loop and its interface stack is looped over as indicated by user
