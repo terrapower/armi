@@ -17,13 +17,11 @@ System to handle basic configuration settings.
 
 Notes
 -----
-Rather than having subclases for each setting type, we simply derive
-the type based on the type of the default, and we enforce it with
-schema validation. This also allows for more complex schema validation
-for settings that are more complex dictionaries (e.g. XS, rx coeffs, etc.).
-
-One reason for complexity of the previous settings implementation was
-good interoperability with the GUI widgets.
+The type of each setting is derived from the type of the default
+value. When users set values to their settings, ARMI enforces
+these types with schema validation. This also allows for more
+complex schema validation for settings that are more complex
+dictionaries (e.g. XS, rx coeffs).
 """
 from collections import namedtuple
 from typing import List, Optional, Tuple
@@ -48,20 +46,19 @@ class Setting:
     """
     A particular setting.
 
-    Setting objects hold all associated information of a setting in ARMI and should
-    typically be accessed through the Settings class methods rather than directly. The
-    exception being the SettingAdapter class designed for additional GUI related
-    functionality.
-
-    Setting subclasses can implement custom ``load`` and ``dump`` methods
-    that can enable serialization (to/from dicts) of custom objects. When
-    you set a setting's value, the value will be unserialized into
-    the custom object and when you call ``dump``, it will be serialized.
-    Just accessing the value will return the actual object in this case.
-
     .. impl:: The setting default is mandatory.
         :id: I_ARMI_SETTINGS_DEFAULTS
         :implements: R_ARMI_SETTINGS_DEFAULTS
+
+        A Setting object holds all associated information of a setting in ARMI
+        and should typically be accessed through the Settings class methods
+        rather than directly.
+
+        Setting subclasses can implement custom ``load`` and ``dump`` methods
+        that can enable serialization (to/from dicts) of custom objects. When
+        you set a setting's value, the value will be unserialized into
+        the custom object and when you call ``dump``, it will be serialized.
+        Just accessing the value will return the actual object in this case.
     """
 
     def __init__(
