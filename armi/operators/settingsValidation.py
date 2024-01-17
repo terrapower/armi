@@ -48,6 +48,16 @@ class Query:
     .. impl:: Rules to validate and customize a setting's behavior.
         :id: I_ARMI_SETTINGS_RULES
         :implements: R_ARMI_SETTINGS_RULES
+
+        This class is meant to represent a generic validateion test
+        against a setting. The goal is clear: developers create new
+        settings and they want to make sure those settings are used
+        correctly. As an implementation, there is a ``condition``
+        attribute in this class that is a function that returns
+        ``True`` or ``False`` based on the setting name and value.
+        Optionally, this class also contains a ``correction``
+        function that allows users to automatically correct a bad
+        setting, if the developers can find a clear path forward.
     """
 
     def __init__(self, condition, statement, question, correction):
