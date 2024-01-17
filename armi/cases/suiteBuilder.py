@@ -90,9 +90,9 @@ class SuiteBuilder:
 
         Parameters
         ----------
-        inputModifiers : list(callable(CaseSettings, Blueprints, SystemLayoutInput))
+        inputModifiers : list(callable(Settings, Blueprints, SystemLayoutInput))
             A list of callable objects with the signature
-            ``(CaseSettings, Blueprints, SystemLayoutInput)``. When these objects are called
+            ``(Settings, Blueprints, SystemLayoutInput)``. When these objects are called
             they should perturb the settings, blueprints, and/or geometry by some amount determined
             by their construction.
         """
@@ -121,7 +121,7 @@ class SuiteBuilder:
             and a tuple of InputModifiers used to edit the case. This should be enough information
             for someone to derive a meaningful name.
 
-            The function should return a string specifying the path of the ``CaseSettings``, this
+            The function should return a string specifying the path of the ``Settings``, this
             allows the user to specify the directories where each case will be run.
 
             If not supplied the path will be ``./case-suite/<0000>/<title>-<0000>``, where
@@ -396,7 +396,7 @@ class LatinHyperCubeSuiteBuilder(SuiteBuilder):
             and a tuple of InputModifiers used to edit the case. This should be enough information
             for someone to derive a meaningful name.
 
-            The function should return a string specifying the path of the ``CaseSettings``, this
+            The function should return a string specifying the path of the ``Settings``, this
             allows the user to specify the directories where each case will be run.
 
             If not supplied the path will be ``./case-suite/<0000>/<title>-<0000>``, where

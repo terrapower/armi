@@ -147,7 +147,7 @@ class SettingsReader:
 
     Parameters
     ----------
-    cs : CaseSettings
+    cs : Settings
         The settings object to read into
     """
 

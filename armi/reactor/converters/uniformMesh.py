@@ -508,7 +508,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
         ----------
         sourceReactor : :py:class:`Reactor <armi.reactor.reactors.Reactor>` object.
             original reactor to be copied
-        cs: CaseSetting object
+        cs: Setting
             Complete settings object
         """
         # developer note: deepcopy on the blueprint object ensures that all relevant blueprints

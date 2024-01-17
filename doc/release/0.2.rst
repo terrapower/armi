@@ -9,7 +9,7 @@ Release Date: 2023-09-27
 What's new in ARMI
 ------------------
 #. Moved the ``Reactor`` assembly number from the global scope to a ``Parameter``. (`PR#1383 <https://github.com/terrapower/armi/pull/1383>`_)
-#. Removed the global ``CaseSettings`` object, ``getMasterCs()``, and ``setMasterCs()``. (`PR#1399 <https://github.com/terrapower/armi/pull/1399>`_)
+#. Removed the global ``Settings`` object, ``getMasterCs()``, and ``setMasterCs()``. (`PR#1399 <https://github.com/terrapower/armi/pull/1399>`_)
 #. Moved the Spent Fuel Pool (``sfp``) from the ``Core`` to the ``Reactor``. (`PR#1336 <https://github.com/terrapower/armi/pull/1336>`_)
 #. Made the ``sfp`` a child of the ``Reactor`` so it is stored in the database. (`PR#1349 <https://github.com/terrapower/armi/pull/1349>`_)
 #. Broad cleanup of ``Parameters``: filled in all empty units and descriptions, removed unused params. (`PR#1345 <https://github.com/terrapower/armi/pull/1345>`_)
