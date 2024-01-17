@@ -421,7 +421,7 @@ class Settings:
 
         Returns
         -------
-        writer : SettingsWriter object
+        writer : SettingsWriter
         """
         writer = settingsIO.SettingsWriter(
             self, style=style, settingsSetByUser=settingsSetByUser
@@ -435,7 +435,7 @@ class Settings:
 
         Parameters
         ----------
-        otherCs : Settings object
+        otherCs : Settings
             A cs object that environment settings will be inherited from.
 
         This enables users to run tests with their environment rather than the reference environment
