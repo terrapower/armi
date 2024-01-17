@@ -44,24 +44,23 @@ class STACK_ORDER:  # noqa: invalid-class-name
     """
     Constants that help determine the order of modules in the interface stack.
 
-    Each module specifies an ``ORDER`` constant that specifies where in this order it
+    Each module defines an ``ORDER`` constant that specifies where in this order it
     should be placed in the Interface Stack.
 
     .. impl:: Define an ordered list of interfaces.
         :id: I_ARMI_OPERATOR_INTERFACES0
         :implements: R_ARMI_OPERATOR_INTERFACES
 
-    Notes
-    -----
-    Originally, the ordering was accomplished with a very large if/else construct in ``createInterfaces``.
-    This made more modular by moving the add/activate logic into each module and replacing the if/else with
-    just a large hard-coded list of modules in order that could possibly be added. That hard-coded
-    list presented ``ImportError`` problems when building various subset distributions of ARMI so this ordering
-    mechanism was created to replace it, allowing the modules to define their required order internally.
+        At each time node during a simulation, an ordered colletion of Interfaces
+        are run (the stack).. But ARMI does not force the order upon the analyst.
+        Instead, each Interface registers where in that ordered list it belongs by
+        giving itself an order number (which can be an integer or a decimal).
+        This class defines a set of constants which can be imported and used
+        by Interface developers to define that Interface's position in the stack.
 
-    Future improvements may include simply defining what information is required to perform a calculation
-    and figuring out the ordering from that. It's complex because in coupled simulations, everything
-    depends on everything.
+        The constants defined are given names, based on common stack orderings
+        in the ARMI ecosystem. But in the end, these are just constant values,
+        and the names they are given are merely suggestions.
 
     See Also
     --------
@@ -93,6 +92,21 @@ class TightCoupler:
     .. impl:: The TightCoupler defines the convergence criteria for physics coupling.
         :id: I_ARMI_OPERATOR_PHYSICS0
         :implements: R_ARMI_OPERATOR_PHYSICS
+
+        During a simulation, the developers of an ARMI application frequently
+        want to iterate on some physical calculation until that calculation has
+        converged to within some small tolerance. This is typically done to solve
+        the nonlinear dependence of different physical properties of the
+        reactor, like fuel performance. However, what parameter is being
+        tightly coupled is configurable by the developer.
+
+        This class provides an easy, basic way to calculate if a single parameter
+        has converged, based on some convergence tolerance. If not, the number
+        of iterations the convergence has been tested is incremented, and
+        this class will wait, presuming another iteration is forthcoming. But
+        the general idea is that we need only provide a paramter, a tolerance,
+        and a number of iterations to define a basic convergence calculation,
+        which this class carries out in the ``isConverged`` method.
 
     Parameters
     ----------
