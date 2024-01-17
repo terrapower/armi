@@ -122,17 +122,29 @@ def init(choice=None, fName=None, cs=None):
         :id: I_ARMI_SETTING1
         :implements: R_ARMI_SETTING
 
+        This method initializes an ARMI run, and if successful returns
+        an Operator. That operator is designed to drive the reactor
+        simulation through time steps to simulate its operator. This
+        method takes in a settings file or object to initialize the
+        operator. Whether a settings file or object is supplied, the
+        operator will be built based on the those settings. Because
+        the total collection of settings can be modified by developers
+        of ARMI applications, providing these settings allow ARMI
+        end-users to define their simulation as granularly as they
+        need to.
+
     Parameters
     ----------
     choice : int, optional
         Automatically run with this item out of the menu
-        that would be produced of existing xml files.
+        that would be produced of existing YAML files.
 
     fName : str, optional
-        An actual case name to load. e.g. ntTwr1.xml
+        The path to a settings file to load: my_case.yaml
 
-    cs : object, optional
-        If supplied, supercede the other case input methods and use the object directly
+    cs : CaseSettings, optional
+        If supplied, this CS object will supercede the other case
+        input methods and use the object directly
 
     Examples
     --------
