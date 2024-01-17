@@ -48,15 +48,16 @@ class Settings:
     """
     A container for run settings, such as case title, power level, and many more.
 
-    It is accessible to most ARMI objects through self.cs (for 'Case Settings').
-    It acts largely as a dictionary, and setting values are accessed by keys.
-
-    The Settings object has a 1-to-1 correspondence with the ARMI settings input file.
-    This file may be created by hand or by the GUI in submitter.py.
-
     .. impl:: Settings are used to define an ARMI run.
         :id: I_ARMI_SETTING0
         :implements: R_ARMI_SETTING
+
+        The Settings object is accessible to most ARMI objects through self.cs
+        (for 'case settings'). It acts largely as a dictionary, and setting values
+        are accessed by keys.
+
+        The Settings object has a 1-to-1 correspondence with the ARMI settings
+        input file. This file may be created by hand or by a GUI.
 
     Notes
     -----
@@ -112,6 +113,15 @@ class Settings:
         .. impl:: Define a case title to go with the settings.
             :id: I_ARMI_SETTINGS_META0
             :implements: R_ARMI_SETTINGS_META
+
+            Every Settings object has a "case title"; a string for users to
+            help identify their run. This case title is used in log file
+            names, it is printed during a run, it is frequently used to
+            name the settings file. It is designed to be an easy-to-use
+            and easy-to-understand way to keep track of simulations. The
+            general idea here is that the average analyst that is using
+            ARMI will run many ARMI-based simulations, and there needs
+            to be an easy to identify them all.
         """
         if not self.path:
             return self.defaultCaseTitle

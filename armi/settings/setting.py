@@ -50,9 +50,10 @@ class Setting:
         :id: I_ARMI_SETTINGS_DEFAULTS
         :implements: R_ARMI_SETTINGS_DEFAULTS
 
-        A Setting object holds all associated information of a setting in ARMI
+        Setting objects hold all associated information of a setting in ARMI
         and should typically be accessed through the Settings class methods
-        rather than directly.
+        rather than directly. The exception being the SettingAdapter class
+        designed for additional GUI related functionality.
 
         Setting subclasses can implement custom ``load`` and ``dump`` methods
         that can enable serialization (to/from dicts) of custom objects. When
