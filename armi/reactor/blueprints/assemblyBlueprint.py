@@ -148,8 +148,8 @@ class AssemblyBlueprint(yamlize.Object):
 
         Parameters
         ----------
-        cs : CaseSettings
-            CaseSettings object which containing relevant modeling options.
+        cs : Settings
+            Settings object which containing relevant modeling options.
         blueprint : Blueprint
             Root blueprint object containing relevant modeling options.
         """

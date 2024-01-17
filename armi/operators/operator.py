@@ -107,7 +107,7 @@ class Operator:
 
     Attributes
     ----------
-    cs : CaseSettings object
+    cs : Settings
             Global settings that define the run.
 
     cycleNames : list of str
@@ -148,7 +148,7 @@ class Operator:
 
         Parameters
         ----------
-        cs : CaseSettings object
+        cs : Settings
             Global settings that define the run.
 
         Raises

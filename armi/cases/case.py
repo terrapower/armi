@@ -13,11 +13,12 @@
 # limitations under the License.
 
 """
-The ``Case`` object is responsible for running, and executing a set of user inputs.  Many
-entry points redirect into ``Case`` methods, such as ``clone``, ``compare``, and ``run``.
+The ``Case`` object is responsible for running, and executing a set of
+user inputs.  Many entry points redirect into ``Case`` methods, such as
+``clone``, ``compare``, and ``run``.
 
-The ``Case`` object provides an abstraction around ARMI inputs to allow for manipulation and
-collection of cases.
+The ``Case`` object provides an abstraction around ARMI inputs to allow
+for manipulation and collection of cases.
 
 See Also
 --------
@@ -81,8 +82,8 @@ class Case:
 
         Parameters
         ----------
-        cs : CaseSettings
-            CaseSettings for this Case
+        cs : Settings
+            Settings for this Case
 
         caseSuite : CaseSuite, optional
             CaseSuite this particular case belongs. Passing this in allows dependency
@@ -96,8 +97,8 @@ class Case:
             ``cs`` as needed.
 
         geom : SystemLayoutInput, optional
-            SystemLayoutInput for this case. If not supplied, it will be loaded from the ``cs`` as
-            needed.
+            SystemLayoutInput for this case. If not supplied, it will be loaded from the
+            ``cs`` as needed.
         """
         self._startTime = time.time()
         self._caseSuite = caseSuite
@@ -374,7 +375,7 @@ class Case:
 
     def _startCoverage(self):
         """Helper to the Case.run(): spin up the code coverage tooling,
-        if the CaseSettings file says to.
+        if the Settings file says to.
 
         Returns
         -------
@@ -402,7 +403,7 @@ class Case:
     @staticmethod
     def _endCoverage(userCovFile, cov=None):
         """Helper to the Case.run(): stop and report code coverage,
-        if the CaseSettings file says to.
+        if the Settings file says to.
 
         Parameters
         ----------
@@ -468,7 +469,7 @@ class Case:
 
     def _startProfiling(self):
         """Helper to the Case.run(): start the Python profiling,
-        if the CaseSettings file says to.
+        if the Settings file says to.
 
         Returns
         -------
@@ -485,7 +486,7 @@ class Case:
     @staticmethod
     def _endProfiling(profiler=None):
         """Helper to the Case.run(): stop and report python profiling,
-        if the CaseSettings file says to.
+        if the Settings file says to.
 
         Parameters
         ----------
@@ -912,7 +913,7 @@ def copyInterfaceInputs(
 
     Parameters
     ----------
-    cs : CaseSettings
+    cs : Settings
         The source case settings to find input files
     destination : str
         The target directory to copy input files to
