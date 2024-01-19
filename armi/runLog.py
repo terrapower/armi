@@ -331,7 +331,7 @@ def concatenateLogs(logDir=None):
         frequently run in parallel, the situation arises where
         each ARMI process generates its own plain text log file.
         This function combines the separate log files, per
-        process into one log file.
+        process, into one log file.
 
         The files are written in numerical order, with the lead
         process stdout first then the lead process stderr. Then
@@ -534,8 +534,8 @@ class RunLogger(logging.Logger):
         (which is meant to be extremely detailed and not always
         desired).
 
-        And at the end of the ARMI-based simulation, the analyst doing
-        the simulation will have a full record of potentially intersting
+        At the end of the ARMI-based simulation, the analyst doing
+        the simulation will have a full record of potentially interesting
         information they can use to understand their run.
 
     .. impl:: Logging is done to the screen and to file.
