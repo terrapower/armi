@@ -261,9 +261,11 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
             <armi.interfaces.TightCoupler>` ``parameter`` member is ``"keff"``,
             then this method returns the computed k-eff from the global flux
             evaluation. If the ``parameter`` value is ``"power"``, then it
-            returns a list a values representing the power in each assembly. If
-            the value is neither ``"keff"`` or ``"power"``, then this method
-            returns ``None``.
+            returns a list of power distributions in each assembly. The assembly
+            power distributions are lists of values representing the block
+            powers that are normalized to unity based on the assembly total
+            power. If the value is neither ``"keff"`` or ``"power"``, then this
+            method returns ``None``.
         """
         if self.coupler.parameter == "keff":
             return self.r.core.p.keff
@@ -560,9 +562,9 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
         transformations on the reactor model to ensure a flux evaluation can
         properly perform. This includes:
 
-        * Applying an axial mesh for the 3D flux solve
+        * Applying a uniform axial mesh for the 3D flux solve
         * Expanding symmetrical geometries to full-core if necessary
-        * Adding edge assemblies if necessary
+        * Adding/removing edge assemblies if necessary
         * Undoing any transformations that might affect downstream calculations
     """
 
