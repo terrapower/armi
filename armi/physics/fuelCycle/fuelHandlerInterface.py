@@ -36,6 +36,23 @@ class FuelHandlerInterface(interfaces.Interface):
         :id: I_ARMI_SHUFFLE
         :implements: R_ARMI_SHUFFLE
 
+        This interface allows for a user to define custom shuffle logic that
+        modifies to the core model. Being based on the :py:class:`~armi.interfaces.Interface`
+        class, it has direct access to the current core model.
+
+        User logic is able to be executed from within the
+        :py:meth:`~armi.physics.fuelCycle.fuelHandlerInterface.FuelHandlerInterface.manageFuel` method,
+        which will use the :py:meth:`~armi.physics.fuelCycle.fuelHandlerFactory.fuelHandlerFactory`
+        to search for a Python file specified by the case settings
+        ``fuelHandlerName`` and ``shuffleLogic``. If it exists, the user-specified
+        fuel handler will be imported, and any actions in its ``outage`` method
+        will be executed at the :py:meth:`~armi.physics.fuelCycle.fuelHandlerInterface.FuelHandlerInterface.interactBOC`
+        hook.
+
+        If no class with the name specified by the ``fuelHandlerName`` setting is found
+        in the file with path ``shuffleLogic``, an error is returned.
+
+        See the user manual for how the custom shuffle logic file should be constructed.
     """
 
     name = "fuelHandler"

@@ -727,9 +727,30 @@ class FuelHandler:
             :id: I_ARMI_SHUFFLE_MOVE
             :implements: R_ARMI_SHUFFLE_MOVE
 
+            For the two assemblies that are passed in, call to their :py:meth:`~armi.reactor.assemblies.Assembly.moveTo`
+            methods to transfer their underlying ``spatialLocator`` attributes to
+            each other. This will also update the ``childrenByLocator`` list on the
+            core as well as the assembly parameters ``numMoves`` and ``daysSinceLastMove``.
+
         .. impl:: User-specified blocks can be left in place and not moved.
             :id: I_ARMI_SHUFFLE_STATIONARY0
             :implements: R_ARMI_SHUFFLE_STATIONARY
+
+            Before assemblies are moved,
+            calls to the ``_transferStationaryBlocks`` class method to
+            check if there are any block types specified by the user as stationary
+            via the ``stationaryBlockFlags`` case setting. Using these flags, gather
+            blocks from each assembly which should remain stationary and check
+            to make sure that both assemblies have the same number and same
+            height of stationary blocks. If not, return an error.
+
+            If all checks pass, use the :py:meth:`~armi.reactor.assemblies.Assembly.remove`
+            and :py:meth:`~armi.reactor.assemblies.Assembly.insert``
+            methods to swap the stationary blocks between the two assemblies.
+
+            Once this process is complete, the actual assembly movement can take
+            place. Through this process, the stationary blocks remain in the same
+            core location.
 
         Parameters
         ----------
@@ -737,11 +758,6 @@ class FuelHandler:
             The first assembly
         a2 : :py:class:`Assembly <armi.reactor.assemblies.Assembly>`
             The second assembly
-
-        Notes
-        -----
-        The implementation for ``R_ARMI_SHUFFLE_STATIONARY`` occurs within
-        :py:meth:`<armi.physics.fuelCyle.fuelHandlers.FuelHandler._transferStationaryBlocks`.
 
         See Also
         --------
@@ -835,10 +851,22 @@ class FuelHandler:
             :id: I_ARMI_SHUFFLE_STATIONARY1
             :implements: R_ARMI_SHUFFLE_STATIONARY
 
-        Notes
-        -----
-        The implementation for ``R_ARMI_SHUFFLE_STATIONARY`` occurs within
-        :py:meth:`<armi.physics.fuelCyle.fuelHandlers.FuelHandler._transferStationaryBlocks`.
+            Before assemblies are moved,
+            calls to the ``_transferStationaryBlocks`` class method to
+            check if there are any block types specified by the user as stationary
+            via the ``stationaryBlockFlags`` case setting. Using these flags, gather
+            blocks from each assembly which should remain stationary and check
+            to make sure that both assemblies have the same number and same
+            height of stationary blocks. If not, return an error.
+
+            If all checks pass, use the :py:meth`~armi.reactor.assemblies.Assembly.remove`
+            and :py:meth:`~armi.reactor.assemblies.Assembly.insert``
+            methods to swap the stationary blocks between the two assemblies.
+
+            Once this process is complete, the actual assembly movement can take
+            place. Through this process, the stationary blocks from the outgoing
+            assembly remain in the original core position, while the stationary
+            blocks from the incoming assembly are discharged with the outgoing assembly.
 
         See Also
         --------
