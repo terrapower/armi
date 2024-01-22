@@ -27,6 +27,12 @@ class HoledHexagon(basicShapes.Hexagon):
     .. impl:: Holed hexagon shaped component
         :id: I_ARMI_COMP_SHAPES5
         :implements: R_ARMI_COMP_SHAPES
+
+        This class provides the interface for defining a holed hexagonal component. This
+        includes setting key parameters such as its material, temperature, and
+        dimensions. It also includes providing an interface for retrieving geometric
+        dimension information unique to holed hexagons, including the inner hole
+        diameter.
     """
 
     THERMAL_EXPANSION_DIMS = {"op", "holeOD"}
@@ -200,6 +206,12 @@ class HoledSquare(basicShapes.Square):
     .. impl:: Holed square shaped component
         :id: I_ARMI_COMP_SHAPES6
         :implements: R_ARMI_COMP_SHAPES
+
+        This class provides the interface for defining a holed square component. This
+        includes setting key parameters such as its material, temperature, and
+        dimensions. It also includes providing an interface for retrieving geometric
+        dimension information unique to holed squares, including the inner hole
+        diameter.
     """
 
     THERMAL_EXPANSION_DIMS = {"widthOuter", "holeOD"}
@@ -255,6 +267,12 @@ class Helix(ShapedComponent):
     .. impl:: Helix shaped component
         :id: I_ARMI_COMP_SHAPES7
         :implements: R_ARMI_COMP_SHAPES
+
+        This class provides the interface for defining a helical component. This
+        includes setting key parameters such as its material, temperature, and
+        dimensions. It also includes providing an interface for retrieving geometric
+        dimension information unique to helixes. Helixes are used for the wire
+        wrapping around each fuel element.
 
     Notes
     -----

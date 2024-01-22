@@ -30,6 +30,11 @@ class Circle(ShapedComponent):
     .. impl:: Circle shaped component
         :id: I_ARMI_COMP_SHAPES0
         :implements: R_ARMI_COMP_SHAPES
+
+        This class provides the interface for defining a Circle component. This includes
+        setting key parameters such as its material, temperature, and dimensions. It
+        also includes providing an interface for retrieving geometric dimension
+        information unique to circles.
     """
 
     is3D = False
@@ -94,6 +99,11 @@ class Hexagon(ShapedComponent):
     .. impl:: Hexagon shaped component
         :id: I_ARMI_COMP_SHAPES1
         :implements: R_ARMI_COMP_SHAPES
+
+        This class provides the interface for defining a hexagonal component. This
+        includes setting key parameters such as its material, temperature, and
+        dimensions. It also includes providing an interface for retrieving geometric
+        dimension information unique to hexagons.
     """
 
     is3D = False
@@ -179,6 +189,11 @@ class Rectangle(ShapedComponent):
     .. impl:: Rectangle shaped component
         :id: I_ARMI_COMP_SHAPES2
         :implements: R_ARMI_COMP_SHAPES
+
+        This class provides the interface for defining a rectangular component. This
+        includes setting key parameters such as its material, temperature, and
+        dimensions. It also includes providing an interface for retrieving geometric
+        dimension information unique to rectangles.
     """
 
     is3D = False
@@ -324,6 +339,11 @@ class Square(Rectangle):
     .. impl:: Square shaped component
         :id: I_ARMI_COMP_SHAPES3
         :implements: R_ARMI_COMP_SHAPES
+
+        This class provides the interface for defining a square component. This class
+        subclasses the ``Rectangle`` class because a square is a subset of a rectangle.
+        This includes setting key parameters such as its material, temperature, and
+        dimensions.
     """
 
     is3D = False
@@ -400,6 +420,11 @@ class Triangle(ShapedComponent):
     .. impl:: Triangle shaped component
         :id: I_ARMI_COMP_SHAPES4
         :implements: R_ARMI_COMP_SHAPES
+
+        This class provides the interface for defining a triangular component. This
+        includes setting key parameters such as its material, temperature, and
+        dimensions. It also includes providing an interface for retrieving geometric
+        dimension information unique to triangles.
 
     Notes
     -----
