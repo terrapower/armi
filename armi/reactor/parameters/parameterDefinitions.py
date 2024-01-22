@@ -156,6 +156,17 @@ class Serializer:
         :id: I_ARMI_PARAM_SERIALIZE
         :implements: R_ARMI_PARAM_SERIALIZE
 
+        Many important core parameters are stored throughout the ARMI object on various
+        spatial bases. These parameters represent the plant's state during execution
+        of the model. Currently, this requires that the parameters be serializable to a
+        numpy array of a datatype supported by the ``h5py`` package so that the data can
+        be written to, and subsequently read from, an h5 file.
+
+        This class allows for these parameters to be serialized in a custom manner by
+        providing interfaces for packing and unpacking parameter data. The user or
+        downstream plugin is able to specify how data is serialized if that data is not
+        naturally serializable.
+
     See Also
     --------
     armi.bookkeeping.db.database3.packSpecialData
@@ -343,6 +354,13 @@ class Parameter:
         .. impl:: Provide a way to signal if a parameter needs updating across processes.
             :id: I_ARMI_PARAM_PARALLEL
             :implements: R_ARMI_PARAM_PARALLEL
+
+            Parameters need to be handled properly during parallel code execution. This
+            includes notifying processes if a parameter has been updated by
+            another process. This method allows for setting a parameter's value as well
+            as an attribute that signals whether this parameter has been updated. Future
+            processes will be able to query this attribute so that the parameter's
+            status is properly communicated.
 
         Notes
         -----
@@ -586,6 +604,11 @@ class ParameterDefinitionCollection:
         .. impl:: Filter parameters to write to DB.
             :id: I_ARMI_PARAM_DB
             :implements: R_ARMI_PARAM_DB
+
+            This method is called when writing the parameters to the database file. It
+            queries the parameter's ``saveToDB`` attribute to ensure that this parameter
+            is desired for saving to the database file. It returns a list of parameters
+            that should be included in the database write operation.
 
         Parameters
         ----------
