@@ -274,7 +274,8 @@ class IORecord:
 
 
 class BinaryRecordReader(IORecord):
-    """Writes a single CCCC record in binary format.
+    """
+    Writes a single CCCC record in binary format.
 
     Notes
     -----
@@ -345,7 +346,8 @@ class BinaryRecordReader(IORecord):
 
 
 class BinaryRecordWriter(IORecord):
-    r"""a single record from a CCCC file.
+    r"""
+    Reads a single CCCC record in binary format.
 
     Reads binary information sequentially.
     """
@@ -406,7 +408,8 @@ class BinaryRecordWriter(IORecord):
 
 
 class AsciiRecordReader(BinaryRecordReader):
-    """Reads a single CCCC record in ASCII format.
+    """
+    Reads a single CCCC record in ASCII format.
 
     See Also
     --------
@@ -441,7 +444,8 @@ class AsciiRecordReader(BinaryRecordReader):
 
 
 class AsciiRecordWriter(IORecord):
-    r"""Writes a single CCCC record in ASCII format.
+    r"""
+    Writes a single CCCC record in ASCII format.
 
     Since there is no specific format of an ASCII CCCC record, the format is roughly the same as
     the :py:class:`BinaryRecordWriter`, except that the :class:`AsciiRecordReader` puts a space in
