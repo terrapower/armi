@@ -30,11 +30,21 @@ from armi.physics.neutronics.const import (
 
 
 def getFastFluxGroupCutoff(eGrpStruc):
-    """Given a constant "fast" energy threshold, return which ARMI energy group index contains this threshold.
+    """
+    Given a constant "fast" energy threshold, return which ARMI energy group 
+    index contains this threshold.
 
     .. impl:: Return the energy group index which contains a given energy threshold.
         :id: I_ARMI_EG_FE
         :implements: R_ARMI_EG_FE
+
+        This function returns the energy group within a given group structure
+        that contains the fast flux threshold energy. The threshold energy is
+        imported from the :py:mod:`constants <armi.physics.neutronics.const>` in
+        the neutronics module, where it is defined as 100 keV. This is a
+        standard definition for fast flux. This function also calculates and
+        returns the fraction of the threshold energy group that is above the 100
+        keV threshold.
     """
     gThres = -1
     for g, eV in enumerate(eGrpStruc):
@@ -70,16 +80,24 @@ def _create_anl_energies_with_group_lethargies(*group_lethargies):
 
 def getGroupStructure(name):
     """
-    Return descending neutron energy group upper bounds in eV for a given structure name.
+    Return descending neutron energy group upper bounds in eV for a given
+    structure name.
 
     .. impl:: Provide the neutron energy group bounds for a given group structure.
         :id: I_ARMI_EG_NE
         :implements: R_ARMI_EG_NE
 
+        There are several built-in group structures that are defined in this
+        module, which are stored in a dictionary. This function takes a group
+        structure name as an input parameter, which it uses as a key for the
+        group structure dictionary. If the group structure name is valid, it
+        returns a copy of the energy group structure resulting from the
+        dictionary lookup. Otherwise, it throws and error.
+
     Notes
     -----
-    Copy of the group structure is return so that modifications of the energy bounds does
-    not propagate back to the `GROUP_STRUCTURE` dictionary.
+    Copy of the group structure is return so that modifications of the energy
+    bounds does not propagate back to the `GROUP_STRUCTURE` dictionary.
     """
     try:
         return copy.copy(GROUP_STRUCTURE[name])
