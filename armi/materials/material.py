@@ -34,15 +34,28 @@ FAIL_ON_RANGE = False
 
 class Material:
     """
-    A material is made up of elements or isotopes. It has bulk properties like mass density.
+    A material is made up of elements or isotopes. It has bulk properties like density.
 
     .. impl:: The abstract material class.
         :id: I_ARMI_MAT_PROPERTIES
         :implements: R_ARMI_MAT_PROPERTIES
 
+        The ARMI Materials library is based on the Object-Oriented Programming design
+        approach, and uses this generic ``Material`` base class. In this class we
+        define a large number of material properties like density, heat capacity, or
+        linear expansion coefficient. Specific materials then subclass this base class to
+        assign particular values to those properties.
+
     .. impl:: Materials generate nuclide mass fractions at instantiation.
         :id: I_ARMI_MAT_FRACS
         :implements: R_ARMI_MAT_FRACS
+
+        An ARMI material is meant to be able to represent real world materials that
+        might be used in the construction of a nuclear reactor. As such, they are
+        not just individual nuclides, but practical materials like a particular
+        concrete, steel, or water. One of the main things that will be needed to
+        describe such a material is the exact nuclide fractions. As such, the
+        constructor of every Material subclass attempts to set these mass fractions.
 
     Attributes
     ----------
@@ -108,6 +121,11 @@ class Material:
         .. impl:: The name of a material is accessible.
             :id: I_ARMI_MAT_NAME
             :implements: R_ARMI_MAT_NAME
+
+            Every instance of an ARMI material must have a simple, human-readable
+            string name. And, if possible, we want this string to match the class
+            name. (This, of course, puts some limits on both the string and the
+            class name.) These names are easily retrievable as a class property.
         """
         return self._name
 
@@ -725,6 +743,11 @@ class Fluid(Material):
         .. impl:: Fluid materials are not thermally expandable.
             :id: I_ARMI_MAT_FLUID
             :implements: R_ARMI_MAT_FLUID
+
+            ARMI does not model thermal expansion of fluids. The ``Fluid`` superclass
+            therefore sets the thermal expansion coefficient to zero. All fluids
+            subclassing  the ``Fluid`` material will inherit this method which sets the
+            linear expansion coefficient to zero at all temperatures.
         """
         return 0.0
 
