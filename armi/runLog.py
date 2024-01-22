@@ -513,19 +513,21 @@ class RunLogger(logging.Logger):
         :id: I_ARMI_LOG
         :implements: R_ARMI_LOG
 
-        Log statements can be any text a user wants to record during a run. For
-        instance, basic notifications of what is happening in the run, basic warnings,
-        or full errors. These are easily identified by specifying the "verbosity" of
-        the log statement in the code where you do the logging. The most important
-        verbosities are: error, warning, info (the default), and debug. In the ARMI
-        codebase, you will see many examples of logging:
+        Log statements are any text a user wants to record during a run. For instance,
+        basic notifications of what is happening in the run, simple warnings, or hard
+        errors. Every log message has an associated log level, controlled by the
+        "verbosity" of the logging statement in the code. In the ARMI codebase, you
+        can see many examples of logging:
 
         .. code-block:: python
 
             runLog.error("This sort of error might usually terminate the run.")
-            runLog.warning("The run will not terminate, but users might want to know.")
+            runLog.warning("Users probably want to know.")
             runLog.info("This is the usual verbosity.")
             runLog.debug("This is only logged during a debug run.")
+
+        The full list of logging levels is defined in ``_RunLog.getLogLevels()``, and
+        the developer specifies the verbosity of a run via ``_RunLog.setVerbosity()``.
 
         At the end of the ARMI-based simulation, the analyst will have a full record of
         potentially interesting information they can use to understand their run.
@@ -540,10 +542,11 @@ class RunLogger(logging.Logger):
         developers to pipe their log statements to both screen and file. This works for
         stdout and stderr.
 
-        By default, this logger prints all log messages during an ARMI simulation to
-        screen and to a plain text file. That is, at any place in the ARMI application,
-        developers can interject a plain text logging message, and when that code is
-        hit during an ARMI simulation, the text will be piped to screen and a log file.
+        At any place in the ARMI application, developers can interject a plain text
+        logging message, and when that code is hit during an ARMI simulation, the text
+        will be piped to screen and a log file. By default, the ``logging`` module only
+        logs to screen, but ARMI adds a ``FileHandler` in the ``RunLog`` constructor
+        and in py:meth:`armi.runLog._RunLog.startLog`.
     """
 
     FMT = "%(levelname)s%(message)s"
