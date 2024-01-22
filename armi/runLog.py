@@ -326,6 +326,16 @@ def concatenateLogs(logDir=None):
     .. impl:: Log files from different processes are combined.
         :id: I_ARMI_LOG_MPI
         :implements: R_ARMI_LOG_MPI
+
+        The log files are plain text files. Since ARMI is frequently run in parallel,
+        the situation arises where each ARMI process generates its own plain text log
+        file. This function combines the separate log files, per process, into one log
+        file.
+
+        The files are written in numerical order, with the lead process stdout first
+        then the lead process stderr. Then each other process is written to the
+        combined file, in order, stdout then stderr. Finally, the original stdout and
+        stderr files are deleted.
     """
     if logDir is None:
         logDir = LOG_DIR
@@ -503,9 +513,40 @@ class RunLogger(logging.Logger):
         :id: I_ARMI_LOG
         :implements: R_ARMI_LOG
 
+        Log statements are any text a user wants to record during a run. For instance,
+        basic notifications of what is happening in the run, simple warnings, or hard
+        errors. Every log message has an associated log level, controlled by the
+        "verbosity" of the logging statement in the code. In the ARMI codebase, you
+        can see many examples of logging:
+
+        .. code-block:: python
+
+            runLog.error("This sort of error might usually terminate the run.")
+            runLog.warning("Users probably want to know.")
+            runLog.info("This is the usual verbosity.")
+            runLog.debug("This is only logged during a debug run.")
+
+        The full list of logging levels is defined in ``_RunLog.getLogLevels()``, and
+        the developer specifies the verbosity of a run via ``_RunLog.setVerbosity()``.
+
+        At the end of the ARMI-based simulation, the analyst will have a full record of
+        potentially interesting information they can use to understand their run.
+
     .. impl:: Logging is done to the screen and to file.
         :id: I_ARMI_LOG_IO
         :implements: R_ARMI_LOG_IO
+
+        This logger makes it easy for users to add log statements to and ARMI
+        application, and ARMI will control the flow of those log statements. In
+        particular, ARMI overrides the normal Python logging tooling, to allow
+        developers to pipe their log statements to both screen and file. This works for
+        stdout and stderr.
+
+        At any place in the ARMI application, developers can interject a plain text
+        logging message, and when that code is hit during an ARMI simulation, the text
+        will be piped to screen and a log file. By default, the ``logging`` module only
+        logs to screen, but ARMI adds a ``FileHandler` in the ``RunLog`` constructor
+        and in py:meth:`armi.runLog._RunLog.startLog`.
     """
 
     FMT = "%(levelname)s%(message)s"
