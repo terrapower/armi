@@ -31,7 +31,7 @@ from armi.physics.neutronics.const import (
 
 def getFastFluxGroupCutoff(eGrpStruc):
     """
-    Given a constant "fast" energy threshold, return which ARMI energy group 
+    Given a constant "fast" energy threshold, return which ARMI energy group
     index contains this threshold.
 
     .. impl:: Return the energy group index which contains a given energy threshold.
