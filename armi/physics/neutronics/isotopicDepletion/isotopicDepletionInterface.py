@@ -45,6 +45,10 @@ def isDepletable(obj: composites.ArmiObject):
         :id: I_ARMI_DEPL_DEPLETABLE
         :implements: R_ARMI_DEPL_DEPLETABLE
 
+        Uses :py:meth:`~armi.reactor.composite.ArmiObject.hasFlags` or
+        :py:meth:`~armi.reactor.composite.ArmiObject.containsAtLeastOneChildWithFlags`
+        to determine if the "depletable" flag is in the ``obj``. If so, returns True.
+
     .. warning:: The ``DEPLETABLE`` flag is automatically added to compositions that have
         active nuclides. If you explicitly define any flags at all, you must also
         manually include ``DEPLETABLE`` or else the objects will silently not deplete.
