@@ -52,18 +52,18 @@ def setMaterialNamespaceOrder(order):
         :id: I_ARMI_MAT_NAMESPACE
         :implements: R_ARMI_MAT_NAMESPACE
 
-        An ARMI application will need materials. And materials can be imported from
-        any code the application has access to, like plugin packages. But that
-        immediately leads to the situation where one ARMI application will want to
-        import multiple collections of materials. To handle this, ARMI keeps a list of
-        material namespaces. This is an ordered list of importable packages that ARMI
+        An ARMI application will need materials. Materials can be imported from
+        any code the application has access to, like plugin packages. This leads to 
+        the situation where one ARMI application will want to import multiple 
+        collections of materials. To handle this, ARMI keeps a list of material 
+        namespaces. This is an ordered list of importable packages that ARMI
         can search for a particular material by name.
 
         This automatic exploration of an importable package saves the user the
         tedium have having to import or include hundreds of materials manually, or
         individually in a settings file. But it comes with a caveat; the list is
         ordered. If two different namespaces in the list include a material with the
-        same name, the first one found in the list is chosen, e.g. earlier namespace in
+        same name, the first one found in the list is chosen, i.e. earlier namespaces in
         the list have precedence.
     """
     global _MATERIAL_NAMESPACE_ORDER
@@ -147,14 +147,15 @@ def resolveMaterialClassByName(name: str, namespaceOrder: List[str] = None):
         :implements: R_ARMI_MAT_ORDER
 
         During the runtime of an ARMI application, but particularly during the
-        construction of the reactor in memory, materials will be identified by name. At
-        that point, this code is called to search for that material name. The search
-        goes through the ordered list of Python namespaces provided to search for the
-        name. The first time an instance of that material is found, it is returned. In
-        this way, the first items in the material namespace list take precedence.
-
-        When a meterial name is pased to this function, it might be something simple
-        like the string ``"UO2"``. But it could be much more specific, like
+        construction of the reactor in memory, materials will be requested from the 
+        materials plugin by name. At that point, this code is called to search for that 
+        material name. The search goes through the ordered list of Python 
+        namespaces provided to search for the name. The first time an instance of 
+        that material is found, it is returned. In this way, the first items in the material 
+        namespace list take precedence.
+        
+        When a material name is passed to this function, it may be either a simple 
+        name like the string ``"UO2"`` or it may be much more specific, like
         ``armi.materials.uraniumOxide:UO2``.
 
     Parameters

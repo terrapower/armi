@@ -43,8 +43,8 @@ class Material:
         The ARMI Materials library is based on the Object-Oriented Programming design
         approach, and uses this generic ``Material`` base class. In this class we
         define a large number of material properties like density, heat capacity, or
-        linear expansion. But this one class can't implement all of those mathematical
-        curves itself, so ARMI subclasses this base class to fill in the information.
+        linear expansion coefficient. Specific materials then subclass this base class to
+        assign particular values to those properties.
 
     .. impl:: Materials generate nuclide mass fractions at instantiation.
         :id: I_ARMI_MAT_FRACS
@@ -125,8 +125,7 @@ class Material:
             Every instance of an ARMI material must have a simple, human-readable
             string name. And, if possible, we want this string to match the class
             name. (This, of course, puts some limits on both the string and the
-            class name.) These names must easily be retrievable as a class
-            property.
+            class name.) These names are easily retrievable as a class property.
         """
         return self._name
 
@@ -745,10 +744,10 @@ class Fluid(Material):
             :id: I_ARMI_MAT_FLUID
             :implements: R_ARMI_MAT_FLUID
 
-            ARMI defines fluid materials as those that do not thermally expand. To
-            ensure this, any fluid materials can subclass this class, and they will
-            inherit this method with sets the linear expansion to zero at all
-            temperatures.
+            ARMI does not model thermal expansion of fluids. The ``Fluid`` superclass
+            therefore sets the thermal expansion coefficient to zero. All fluids 
+            subclassing  the ``Fluid`` material will inherit this method which sets the
+            linear expansion coefficient to zero at all temperatures.
         """
         return 0.0
 
