@@ -543,10 +543,7 @@ class RunLogger(logging.Logger):
         By default, this logger prints all log messages during an ARMI simulation to
         screen and to a plain text file. That is, at any place in the ARMI application,
         developers can interject a plain text logging message, and when that code is
-        hit during an ARMI simulation, the text will be piped to screen and to a log
-        file. This helpful for analysts who want to watch their simulation in real
-        time, and for everyone that want a record of anything interesting that happened
-        during the run.
+        hit during an ARMI simulation, the text will be piped to screen and a log file.
     """
 
     FMT = "%(levelname)s%(message)s"
