@@ -92,7 +92,7 @@ def getGroupStructure(name):
         structure name as an input parameter, which it uses as a key for the
         group structure dictionary. If the group structure name is valid, it
         returns a copy of the energy group structure resulting from the
-        dictionary lookup. Otherwise, it throws and error.
+        dictionary lookup. Otherwise, it throws an error.
 
     Notes
     -----
