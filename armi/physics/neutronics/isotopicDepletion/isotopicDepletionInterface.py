@@ -86,6 +86,11 @@ class AbstractIsotopicDepleter:
     .. impl:: ARMI provides a base class to deplete isotopes.
         :id: I_ARMI_DEPL_ABC
         :implements: R_ARMI_DEPL_ABC
+
+        This class provides some basic infrastructure typically needed in depletion
+        calculations within the ARMI framework. It stores a reactor, operator,
+        and case settings object, and also defines methods to store and retrieve
+        the objects which should be depleted based on their names.
     """
 
     name = None
