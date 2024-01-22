@@ -745,7 +745,7 @@ class Fluid(Material):
             :implements: R_ARMI_MAT_FLUID
 
             ARMI does not model thermal expansion of fluids. The ``Fluid`` superclass
-            therefore sets the thermal expansion coefficient to zero. All fluids 
+            therefore sets the thermal expansion coefficient to zero. All fluids
             subclassing  the ``Fluid`` material will inherit this method which sets the
             linear expansion coefficient to zero at all temperatures.
         """
