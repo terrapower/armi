@@ -60,11 +60,10 @@ def setMaterialNamespaceOrder(order):
         can search for a particular material by name.
 
         This automatic exploration of an importable package saves the user the
-        tedium have having to import or include hundreds of materials manually, or
-        individually in a settings file. But it comes with a caveat; the list is
-        ordered. If two different namespaces in the list include a material with the
-        same name, the first one found in the list is chosen, i.e. earlier namespaces in
-        the list have precedence.
+        tedium have having to import or include hundreds of materials manually somehow.
+        But it comes with a caveat; the list is ordered. If two different namespaces in
+        the list include a material with the same name, the first one found in the list
+        is chosen, i.e. earlier namespaces in the list have precedence.
     """
     global _MATERIAL_NAMESPACE_ORDER
     _MATERIAL_NAMESPACE_ORDER = order
@@ -147,12 +146,11 @@ def resolveMaterialClassByName(name: str, namespaceOrder: List[str] = None):
         :implements: R_ARMI_MAT_ORDER
 
         During the runtime of an ARMI application, but particularly during the
-        construction of the reactor in memory, materials will be requested from the
-        materials plugin by name. At that point, this code is called to search for that
-        material name. The search goes through the ordered list of Python
-        namespaces provided to search for the name. The first time an instance of
-        that material is found, it is returned. In this way, the first items in the material
-        namespace list take precedence.
+        construction of the reactor in memory, materials will be requested by name. At
+        that point, this code is called to search for that material name. The search
+        goes through the ordered list of Python namespaces provided. The first time an
+        instance of that material is found, it is returned. In this way, the first
+        items in the material namespace list take precedence.
 
         When a material name is passed to this function, it may be either a simple
         name like the string ``"UO2"`` or it may be much more specific, like
