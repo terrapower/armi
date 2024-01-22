@@ -39,6 +39,16 @@ class Grid(ABC):
         :id: I_ARMI_GRID_NEST
         :implements: R_ARMI_GRID_NEST
 
+        The reactor will usually have (i,j,k) coordinates to define a
+        simple mesh for locating objects in the reactor. But inside that mesh can
+        be a smaller mesh to define the layout of pins in a reactor, or fuel pellets in
+        a pin, or the layout of some intricate ex-core structure.
+
+        Every time the ``location`` of an object in the reactor is returned, ARMI will
+        look to see if the grid this object is in has a parent, and if so, ARMI will
+        try to sum the indices of the two nested grids to give a resultant, more
+        finely-grained grid position. ARMI can only handle grids nested 3 deep.
+
     Parameters
     ----------
     geomType : str or armi.reactor.geometry.GeomType
@@ -48,7 +58,6 @@ class Grid(ABC):
     armiObject : optional, armi.reactor.composites.ArmiObject
         If given, what is this grid attached to or what does it describe?
         Something like a :class:`armi.reactor.Core`
-
     """
 
     _geomType: str
@@ -90,6 +99,21 @@ class Grid(ABC):
         .. impl:: Grids shall be able to repesent 1/3 and full core symmetries.
             :id: I_ARMI_GRID_SYMMETRY
             :implements: R_ARMI_GRID_SYMMETRY
+
+            Every grid contains a :py:class:`armi.reactor.geometry.SymmetryType` or
+            string that defines a grid as full core, or 1/3 core, or 1/4, 1/8, or 1/16
+            core. The idea is that the user can define 1/3 or 1/4 of the reactor, so
+            the analysis can be run faster on a smaller reactor. And if a non-full
+            core reactor grid is defined, the boundaries of the grid can be reflective
+            or periodic, to determine what should happen at the boundaries of the
+            reactor core.
+
+            It is important to note, that not all of these geometries will apply to
+            every reactor or core. If your core is made of hexagonal assemblies, then a
+            1/3 core grid would make sense, but not if your reactor core was made up of
+            square assemblies. Likewise, a hexagonal core would not make be able to
+            support a 1/4 grid. You want to leave assemblies (and other objects) whole
+            when dividing a grid up fractionally.
         """
         return geometry.SymmetryType.fromStr(self._symmetry)
 

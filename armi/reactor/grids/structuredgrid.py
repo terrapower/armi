@@ -290,11 +290,23 @@ class StructuredGrid(Grid):
         self._unitSteps, self._bounds, self._offset = self._backup
 
     def getCoordinates(self, indices, nativeCoords=False) -> numpy.ndarray:
-        """Return the coordinates of the center of the mesh cell at the given indices in cm.
+        """Return the coordinates of the center of the mesh cell at the given indices
+        in cm.
 
         .. impl:: Get the coordinates from a location in a grid.
             :id: I_ARMI_GRID_GLOBAL_POS
             :implements: R_ARMI_GRID_GLOBAL_POS
+
+            Probably the most common request of a structure grid will be to give the
+            grid indices and return the physical coordinates of the center of the mesh
+            cell. This is super handy in any situation where the coordinates have
+            physical meaning.
+
+            The math for finding the centroid turns out to be very easy, as the mesh is
+            defined on the coordinates. So finding the mid-point along one axis is just
+            taking the upper and lower bounds and dividing by two. And this is done for
+            all axis. There are no more complicated situations where we need to find
+            the centroid of a octagon on a rectangular mesh, or the like.
         """
         indices = numpy.array(indices)
         return self._evaluateMesh(
@@ -319,16 +331,14 @@ class StructuredGrid(Grid):
         """
         Evaluate some function of indices on this grid.
 
-        Recall from above that steps are mesh centered and bounds are mesh edged.
+        Recall from above that steps are mesh-centered and bounds are mesh-edged.
 
         Notes
         -----
-        This method may be able to be simplified. Complications from arbitrary
-        mixtures of bounds-based and step-based meshing caused it to get bad.
-        These were separate subclasses first, but in practice almost all cases have some mix
-        of step-based (hexagons, squares), and bounds based (radial, zeta).
-
-        Improvements welcome!
+        This method may be simplifiable. Complications arose from mixtures of bounds-
+        based and step-based meshing. These were separate subclasses, but in practice
+        many cases have some mix of step-based (hexagons, squares), and bounds based
+        (radial, zeta).
         """
         boundCoords = []
         for ii, bounds in enumerate(self._bounds):
@@ -342,6 +352,7 @@ class StructuredGrid(Grid):
         result = numpy.zeros(len(indices))
         result[self._stepDims] = stepCoords
         result[self._boundDims] = boundCoords
+
         return result + self._offset
 
     def _centroidBySteps(self, indices):
