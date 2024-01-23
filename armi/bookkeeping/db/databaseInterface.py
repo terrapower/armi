@@ -226,10 +226,24 @@ class DatabaseInterface(interfaces.Interface):
             :id: I_ARMI_SNAPSHOT_RESTART
             :implements: R_ARMI_SNAPSHOT_RESTART
 
+            This method loads the state of a reactor from a particular point in time
+            from a standard ARMI
+            :py:class:`Database <armi.bookkeeping.db.database3.Database3>`. This is a
+            major use-case for having ARMI databases in the first case. And restarting
+            from such a database is easy, you just need to set a few settings::
+
+            * reloadDBName - Path to existing H5 file to reload from.
+            * startCycle - Operational cycle to restart from.
+            * startNode - Time node to start from.
+
         Notes
         -----
         Mixing the use of simple vs detailed cycles settings is allowed, provided
         that the cycle histories prior to `startCycle`/`startNode` are equivalent.
+
+        ARMI expects the reload DB to have been made in the same version of ARMI as you
+        are running. ARMI does not gaurantee that a DB from a decade ago will be easily
+        used to restart a run.
         """
         reloadDBName = self.cs["reloadDBName"]
         runLog.info(
@@ -248,7 +262,6 @@ class DatabaseInterface(interfaces.Interface):
                 self.cs,
             )
 
-            # check that cycle histories are equivalent up to this point
             self._checkThatCyclesHistoriesAreEquivalentUpToRestartTime(
                 loadDbCs, dbCycle, dbNode
             )
@@ -259,6 +272,7 @@ class DatabaseInterface(interfaces.Interface):
     def _checkThatCyclesHistoriesAreEquivalentUpToRestartTime(
         self, loadDbCs, dbCycle, dbNode
     ):
+        """Check that cycle histories are equivalent up to this point."""
         dbStepLengths = getStepLengths(loadDbCs)
         currentCaseStepLengths = getStepLengths(self.cs)
         dbStepHistory = []
