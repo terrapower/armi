@@ -142,7 +142,7 @@ def init(choice=None, fName=None, cs=None):
     fName : str, optional
         The path to a settings file to load: my_case.yaml
 
-    cs : CaseSettings, optional
+    cs : Settings, optional
         If supplied, this CS object will supercede the other case
         input methods and use the object directly
 
