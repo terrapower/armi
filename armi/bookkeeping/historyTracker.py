@@ -95,9 +95,21 @@ class HistoryTrackerInterface(interfaces.Interface):
     """
     Makes reports of the state that individual assemblies encounter.
 
-    .. impl:: This interface allows users to retrieve run data from somewhere other than the database.
+    .. impl:: This interface allows users to retrieve run data from somewhere other
+        than the database.
         :id: I_ARMI_HIST_TRACK
         :implements: R_ARMI_HIST_TRACK
+
+        This is a special :py:class:`Interface <armi.interfaces.Interface>` that is
+        designed to store assembly and cross section data throughout time. This is done
+        directly, with time-based lists of assembly data, and dictionaries of cross-
+        section data. Users turn this feature on or off using the ``"detailAllAssems"``
+        setting.
+
+    Notes
+    -----
+    This pre-dates the ARMI database system, and we would like to stop supporting this.
+    Please don't find new uses for this; use the databases.
 
     Attributes
     ----------
@@ -112,7 +124,8 @@ class HistoryTrackerInterface(interfaces.Interface):
 
     def __init__(self, r, cs):
         """
-        HistoryTracker that uses the database to look up parameter history rather than storing them in memory.
+        HistoryTracker that uses the database to look up parameter history rather than
+        storing them in memory.
 
         Warning
         -------
