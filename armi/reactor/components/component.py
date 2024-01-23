@@ -301,7 +301,7 @@ class Component(composites.Composite, metaclass=ComponentType):
             :id: I_ARMI_COMP_FLUID1
             :implements: R_ARMI_COMP_FLUID
 
-            Some components are fluids and are thus defined b y the shapes surrounding
+            Some components are fluids and are thus defined by the shapes surrounding
             them. This method cycles through each dimension defining the boarder of this
             component and converts the name of that component to a link to the object
             itself. This series of links is then used downstream to resolve
