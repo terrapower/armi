@@ -136,6 +136,58 @@ def __fromStringGeneral(cls, typeSpec, updateMethod):
     return result
 
 
+def _fromStringIgnoreErrors(cls, typeSpec):
+    """
+    Convert string into a set of flags.
+
+    Each word can be its own flag.
+
+    Notes
+    -----
+    This ignores words in the typeSpec that are not valid flags.
+
+    Complications arise when:
+
+    a. multiple-word flags are used such as *grid plate* or
+       *inlet nozzle* so we use lookups.
+    b. Some flags have digits in them. We just strip those off.
+    """
+
+    def updateMethodIgnoreErrors(typeSpec):
+        try:
+            return cls[typeSpec]
+        except KeyError:
+            return cls(0)
+
+    return __fromStringGeneral(cls, typeSpec, updateMethodIgnoreErrors)
+
+
+def _fromString(cls, typeSpec):
+    """Make flag from string and fail if any unknown words are encountered."""
+
+    def updateMethod(typeSpec):
+        try:
+            return cls[typeSpec]
+        except KeyError:
+            raise InvalidFlagsError(
+                "The requested type specification `{}` is invalid. "
+                "See armi.reactor.flags documentation.".format(typeSpec)
+            )
+
+    return __fromStringGeneral(cls, typeSpec, updateMethod)
+
+
+def _toString(cls, typeSpec):
+    """
+    Make flag from string and fail if any unknown words are encountered.
+
+    Notes
+    -----
+    This converts a flag from ``Flags.A|B`` to ``'A B'``
+    """
+    return str(typeSpec).split("{}.".format(cls.__name__))[1].replace("|", " ")
+
+
 class Flags(Flag):
     """Defines the valid flags used in the framework."""
 
@@ -228,34 +280,12 @@ class Flags(Flag):
 
     @classmethod
     def fromStringIgnoreErrors(cls, typeSpec):
-        """
-        Convert string into a set of flags.
-
-        Each word can be its own flag.
-
-        Notes
-        -----
-        This ignores words in the typeSpec that are not valid flags.
-
-        Complications arise when:
-
-        a. multiple-word flags are used such as *grid plate* or
-           *inlet nozzle* so we use lookups.
-        b. Some flags have digits in them. We just strip those off.
-        """
-
-        def updateMethodIgnoreErrors(typeSpec):
-            try:
-                return cls[typeSpec]
-            except KeyError:
-                return cls(0)
-
-        return __fromStringGeneral(cls, typeSpec, updateMethodIgnoreErrors)
+        return _fromStringIgnoreErrors(cls, typeSpec)
 
     @classmethod
     def fromString(cls, typeSpec):
         """
-        Retrieve flag from a string and fail if any unknown words are encountered.
+        Retrieve flag from a string.
 
         .. impl:: Retrieve flag from a string.
             :id: I_ARMI_FLAG_TO_STR0
@@ -272,22 +302,12 @@ class Flags(Flag):
             and the remaining string is matched up to any class attribute names.
             If any matches are found these are returned as flags.
         """
-
-        def updateMethod(typeSpec):
-            try:
-                return cls[typeSpec]
-            except KeyError:
-                raise InvalidFlagsError(
-                    "The requested type specification `{}` is invalid. "
-                    "See armi.reactor.flags documentation.".format(typeSpec)
-                )
-
-        return __fromStringGeneral(cls, typeSpec, updateMethod)
+        return _fromString(cls, typeSpec)
 
     @classmethod
     def toString(cls, typeSpec):
         """
-        Make flag from string and fail if any unknown words are encountered.
+        Convert a flag to a string.
 
         .. impl:: Convert a flag to string.
             :id: I_ARMI_FLAG_TO_STR1
@@ -299,7 +319,7 @@ class Flags(Flag):
             like  ``'A B'``. This is done via nesting string splitting and replacement
             actions.
         """
-        return str(typeSpec).split("{}.".format(cls.__name__))[1].replace("|", " ")
+        return _toString(cls, typeSpec)
 
 
 class InvalidFlagsError(KeyError):
