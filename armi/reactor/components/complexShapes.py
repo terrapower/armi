@@ -28,11 +28,10 @@ class HoledHexagon(basicShapes.Hexagon):
         :id: I_ARMI_COMP_SHAPES5
         :implements: R_ARMI_COMP_SHAPES
 
-        This class provides the interface for defining a holed hexagonal component. This
+        This class provides a framework for defining a holed hexagonal Component. This
         includes setting key parameters such as its material, temperature, and
-        dimensions. It also includes providing an interface for retrieving geometric
-        dimension information unique to holed hexagons, including the inner hole
-        diameter.
+        dimensions. It also provides the capability to retrieve the diameter of the
+        inner hole via the ``getCircleInnerDiameter`` method.
     """
 
     THERMAL_EXPANSION_DIMS = {"op", "holeOD"}
@@ -207,11 +206,11 @@ class HoledSquare(basicShapes.Square):
         :id: I_ARMI_COMP_SHAPES6
         :implements: R_ARMI_COMP_SHAPES
 
-        This class provides the interface for defining a holed square component. This
+        This class provides a framework for defining a holed square Component. This
         includes setting key parameters such as its material, temperature, and
         dimensions. It also includes providing an interface for retrieving geometric
-        dimension information unique to holed squares, including the inner hole
-        diameter.
+        dimension information unique to holed squares via the ``getComponentArea`` and
+        ``getCircleInnerDiameter`` methods.
     """
 
     THERMAL_EXPANSION_DIMS = {"widthOuter", "holeOD"}
@@ -268,11 +267,11 @@ class Helix(ShapedComponent):
         :id: I_ARMI_COMP_SHAPES7
         :implements: R_ARMI_COMP_SHAPES
 
-        This class provides the interface for defining a helical component. This
+        This class provides the interface for defining a helical Component. This
         includes setting key parameters such as its material, temperature, and
-        dimensions. It also includes providing an interface for retrieving geometric
-        dimension information unique to helixes. Helixes are used for the wire
-        wrapping around each fuel element.
+        dimensions. It also includes the ``getComponentArea method to retrieve the area
+        of a helix. Helixes can be used for wire wrapping around fuel pins in fast
+        reactor designs.
 
     Notes
     -----
