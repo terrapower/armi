@@ -160,7 +160,7 @@ class Serializer:
         spatial bases. These parameters represent the plant's state during execution
         of the model. Currently, this requires that the parameters be serializable to a
         numpy array of a datatype supported by the ``h5py`` package so that the data can
-        be written to, and subsequently read from, an h5 file.
+        be written to, and subsequently read from, an HDF5 file.
 
         This class allows for these parameters to be serialized in a custom manner by
         providing interfaces for packing and unpacking parameter data. The user or
