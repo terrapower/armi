@@ -37,7 +37,7 @@ class Zone:
         collection of locations in the Core. A Zone contains a group of locations
         in the Core, used to subdivide it for analysis. Each location represents
         an Assembly or a Block, where a single Zone must contain items of the same
-        type (i.e., Assembly or Block). Class methods are provided to add or remove
+        type (i.e., Assembly or Block). Methods are provided to add or remove
         one or more locations to/from the Zone, and similarly, add or remove one or
         more items with a Core location (i.e., Assemblies or Blocks) to/from the
         Zone. In addition, several Class methods are provided to facilitate the
