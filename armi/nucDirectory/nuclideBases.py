@@ -12,14 +12,48 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-This module provides fundamental nuclide information to be used throughout the framework
-and applications.
+This module provides fundamental nuclide information to be used throughout the
+framework and applications.
 
 .. impl:: Isotopes and isomers can be queried by name, label, MC2-3 ID, MCNP ID, and AAAZZZS ID.
     :id: I_ARMI_ND_ISOTOPES0
     :implements: R_ARMI_ND_ISOTOPES
 
-The nuclide class structure is outlined :ref:`here <nuclide-bases-class-diagram>`.
+    The :py:mod:`nuclideBases <armi.nucDirectory.nuclideBases>` module defines
+    the :py:class:`NuclideBase <armi.nucDirectory.nuclideBases.NuclideBase>`
+    class which is used to organize and store metadata about each nuclide. The
+    metadata is read from ``nuclides.dat`` file in the ARMI resources folder,
+    which contains metadata for 4614 isotopes. The module also contains classes
+    for special types of nuclides, including :py:class:`DummyNuclideBase
+    <armi.nucDirectory.nuclideBases.DummyNuclideBase>` for dummy nuclides,
+    :py:class:`LumpNuclideBase
+    <armi.nucDirectory.nuclideBases.LumpNuclideBase>`, for lumped fission
+    product nuclides, and :py:class:`NaturalNuclideBase
+    <armi.nucDirectory.nuclideBases.NaturlaNuclideBase>` for when data is given
+    collectively for an element at natural abundance rather than for individual
+    isotopes.
+
+    The :py:class:`NuclideBase <armi.nucDirectory.nuclideBases.NuclideBase>`
+    provides a data structure for information about a single nuclide, including
+    the atom number, atomic weight, element, isomeric state, half-life, and
+    name. 
+
+    The :py:mod:`nuclideBases <armi.nucDirectory.nuclideBases>` module provides
+    a factory and associated functions for instantiating the
+    :py:class:`NuclideBases <armi.nucDirectory.nuclideBases.NuclideBase>` and
+    building the global nuclide dictionaries, including:
+
+    * ``instances`` (list of nuclides)
+    * ``byName`` (keyed by name, e.g., ``U235``)
+    * ``byDBName`` (keyed by database name, e.g., ``nU235``)
+    * ``byLabel`` (keyed by label, e.g., ``U235``)
+    * ``byMcc2Id`` (keyed by MCC-2 ID, e.g., ``U-2355``)
+    * ``byMcc3Id`` (keyed by MCC-3 ID, e.g., ``U235_7``)
+    * ``byMcnpId`` (keyed by MCNP ID, e.g., ``92235``)
+    * ``byAAAZZZSId`` (keyed by AAAZZZS, e.g., ``2350920``)
+
+The nuclide class structure is outlined :ref:`here
+<nuclide-bases-class-diagram>`.
 
 .. _nuclide-bases-class-diagram:
 
@@ -502,6 +536,15 @@ class NuclideBase(INuclide, IMcnpNuclide):
     .. impl:: Isotopes and isomers can be queried by name and label.
         :id: I_ARMI_ND_ISOTOPES1
         :implements: R_ARMI_ND_ISOTOPES
+
+        The :py:class:`NuclideBase <armi.nucDirectory.nuclideBases.NuclideBase>`
+        class provides a data structure for information about a single nuclide,
+        including the atom number, atomic weight, element, isomeric state,
+        half-life, and name. The class contains static methods for creating an
+        internal ARMI name or label for a nuclide. There are instance methods
+        for generating the nuclide ID for external codes MCNP or Serpent and
+        retrieving the nuclide ID for MCC-2 or MCC-3. There are also instance
+        methods for generating an AAAZZZS ID and an ENDF MAT number.
     """
 
     def __init__(self, element, a, weight, abundance, state, halflife):
@@ -572,6 +615,11 @@ class NuclideBase(INuclide, IMcnpNuclide):
         .. impl:: Isotopes and isomers can be queried by MC2-2 ID.
             :id: I_ARMI_ND_ISOTOPES2
             :implements: R_ARMI_ND_ISOTOPES
+
+            This method returns the ``mcc2id`` attribute of a
+            :py:class:`NuclideBase <armi.nucDirectory.nuclideBases.NuclideBase>`
+            instance.  This attribute is initially populated by reading from the
+            mcc-nuclides.yaml file in the ARMI resources folder.
         """
         return self.mcc2id
 
@@ -581,6 +629,11 @@ class NuclideBase(INuclide, IMcnpNuclide):
         .. impl:: Isotopes and isomers can be queried by MC2-3 ID.
             :id: I_ARMI_ND_ISOTOPES3
             :implements: R_ARMI_ND_ISOTOPES
+
+            This method returns the ``mcc3id`` attribute of a
+            :py:class:`NuclideBase <armi.nucDirectory.nuclideBases.NuclideBase>`
+            instance.  This attribute is initially populated by reading from the
+            mcc-nuclides.yaml file in the ARMI resources folder.
         """
         return self.mcc3id
 
@@ -592,6 +645,12 @@ class NuclideBase(INuclide, IMcnpNuclide):
             :id: I_ARMI_ND_ISOTOPES4
             :implements: R_ARMI_ND_ISOTOPES
 
+            This method generates the MCNP ID for an isotope using the standard
+            MCNP format based on the atomic number A, number of protons Z, and
+            excited state. The implementation includes the special rule for
+            Am-242m, which is 95242. 95642 is used for the less common ground
+            state Am-242.
+
         Returns
         -------
         id : str
@@ -602,7 +661,7 @@ class NuclideBase(INuclide, IMcnpNuclide):
         if z == 95 and a == 242:
             # Am242 has special rules
             if self.state != 1:
-                # MCNP uses base state for the common metastable state AM242M , so AM242M is just 95242
+                # MCNP uses base state for the common metastable state AM242M, so AM242M is just 95242
                 # AM242 base state is called 95642 (+400) in mcnp.
                 # see https://mcnp.lanl.gov/pdf_files/la-ur-08-1999.pdf
                 # New ACE-Formatted Neutron and Proton Libraries Based on ENDF/B-VII.0
@@ -620,6 +679,10 @@ class NuclideBase(INuclide, IMcnpNuclide):
         .. impl:: Isotopes and isomers can be queried by AAAZZZS ID.
             :id: I_ARMI_ND_ISOTOPES5
             :implements: R_ARMI_ND_ISOTOPES
+
+            This method generates the AAAZZZS format ID for an isotope. This is
+            a general format independent of any code that precisely defines an
+            isotope or isomer.
 
         Notes
         -----
@@ -1164,6 +1227,14 @@ def addNuclideBases():
     .. impl:: Separating natural abundance data from code.
         :id: I_ARMI_ND_DATA0
         :implements: R_ARMI_ND_DATA
+
+        This function reads the nuclides.dat file from the ARMI resources
+        folder. This file contains metadata for 4614 nuclides, including
+        number of protons, number of neutrons, atomic number, excited
+        state, element symbol, atomic mass, natural abundance, half-life,
+        and spontaneous fission yield. The data in this file have been
+        collected from multiple different sources; the references are given
+        in comments at the top of the file.
     """
     with open(os.path.join(context.RES, "nuclides.dat")) as f:
         for line in f:
@@ -1225,6 +1296,15 @@ def readMCCNuclideData():
     .. impl:: Separating MCC data from code.
         :id: I_ARMI_ND_DATA1
         :implements: R_ARMI_ND_DATA
+
+        This function reads the mcc-nuclides.yaml file from the ARMI resources
+        folder. This file contains the MCC-2 ID (from ENDF/B-V.2) and MCC-3 ID
+        (from ENDF/B-VII.0) for all nuclides in MCC. The ``mcc2id`` and
+        ``mcc3id`` attributes of each :py:class:`NuclideBase
+        <armi.nucDirectory.nuclideBases.NuclideBase>` instance are updated as
+        the data is read, and the global dictionaries ``byMcc2Id`` and
+        ``byMcc3Id`` are populated with the nuclide bases keyed by their
+        corresponding ID for each code.
     """
     with open(os.path.join(context.RES, "mcc-nuclides.yaml"), "r") as f:
         yaml = YAML(typ="rt")
@@ -1249,6 +1329,12 @@ def updateNuclideBasesForSpecialCases():
     .. impl:: The special case name Am242g is supported.
         :id: I_ARMI_ND_ISOTOPES6
         :implements: R_ARMI_ND_ISOTOPES
+
+        This function updates the keys for the :py:class:`NuclideBase
+        <armi.nucDirectory.nuclideBases.NuclideBase>` instances for Am-242m and
+        Am-242 in the ``byName`` and ``byDBName`` global dictionaries.  This
+        function associates the more common isomer Am-242m with the name
+        "AM242", and uses "AM242G" to denote the ground state.
 
     Notes
     -----
