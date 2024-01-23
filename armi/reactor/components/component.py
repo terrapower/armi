@@ -178,6 +178,13 @@ class Component(composites.Composite, metaclass=ComponentType):
         component types within the ARMI source code. All primitive shapes (such as a
         square, circle, holed hexagon, helix etc.) are derived from this base class.
 
+        Fundamental capabilities of this class include the ability to store arbitrary
+        parameters for each component in the ARMI model hierarchy and for the attributes
+        to define the properties of a physical piece of the reactor. The ``p`` attribute
+        contains the parameters of a Component, while the ``material``, and temperature
+        attributes store information regarding the physical composition of the
+        Component.
+
     .. impl:: Order components by their outermost diameter (using the < operator).
         :id: I_ARMI_COMP_ORDER
         :implements: R_ARMI_COMP_ORDER
@@ -845,6 +852,12 @@ class Component(composites.Composite, metaclass=ComponentType):
             configuration, the thermal expansion factor is considered when setting the
             dimension.
 
+            If the ``retainLink`` argument is ``True``, any Components linked to this
+            one will also have its dimensions changed consistently. After a dimension
+            is updated, the ``clearLinkedCache`` method is called which sets the
+            volume of this Component to ``None``. This ensures that when the volume is
+            next accessed it is recomputed using the updated dimensions.
+
         Parameters
         ----------
         key : str
@@ -884,9 +897,10 @@ class Component(composites.Composite, metaclass=ComponentType):
 
             Due to thermal expansion, component dimensions depend on their temperature.
             This method retrieves a dimension from the component at a particular
-            temperature, if provided. If provided, the thermal expansion factor is
-            considered by what is returned by this method. If not provided, the cold
-            dimension is provided.
+            temperature, if provided. If the Component is a LinkedComponent then the
+            dimensions are resolved to ensure that any thermal expansion that has
+            occurred to the Components that the LinkedComponent depends on is reflected
+            in the returned dimension.
 
         Parameters
         ----------
@@ -964,12 +978,14 @@ class Component(composites.Composite, metaclass=ComponentType):
             :id: I_ARMI_COMP_EXPANSION0
             :implements: R_ARMI_COMP_EXPANSION
 
-            The dimensions of geometric information for components is heavily dependent
-            on the temperature of the component. This method will retrieve the thermal
-            expansion factor which accounts for the temperature's impact on the
-            component. Each material has unique thermal expansion properties. Therefore,
-            this method interrogates the material which comprises this component for its
-            thermal expansion factor.
+            This method enables the calculation of the thermal expansion factor
+            for a given material. If the material is solid, the difference
+            between T0 and Tc is used to calculate the thermal expansion
+            factor. If a solid material does not have a linear expansion factor
+            defined and the temperature difference is greater than
+            :py:attr:armi.reactor.components.component.Component._TOLERANCE, an
+            error is raised. Thermal expansion of fluids or custom materials is
+            neglected, currently.
 
         Parameters
         ----------

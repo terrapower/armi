@@ -576,7 +576,22 @@ class TestCircle(TestShapedComponent):
             self.assertAlmostEqual(cur, ref)
 
     def test_componentInteractionsLinkingByDimensions(self):
-        """Tests linking of components by dimensions."""
+        """Tests linking of components by dimensions.
+
+        .. test:: Show the dimensions of a liquid component can be defined to depend on the solid components that bound it.
+            :id: T_ARMI_COMP_FLUID1
+            :tests: R_ARMI_COMP_FLUID
+
+        The component ``gap``, representing the fuel-clad gap filled with void,
+        is defined with dimensions that depend on the fuel outer diameter and
+        clad inner diameter. The
+        :py:meth:`~armi.reactor.components.component.Component.resolveLinkedDims`
+        method links the gap dimensions appropriately when the component is
+        constructed, and the test shows the area of the gap is calculated
+        correctly based on the thermally-expanded dimensions of the fuel and
+        clad components.
+
+        """
         nPins = 217
         fuelDims = {"Tinput": 25.0, "Thot": 430.0, "od": 0.9, "id": 0.0, "mult": nPins}
         cladDims = {"Tinput": 25.0, "Thot": 430.0, "od": 1.1, "id": 1.0, "mult": nPins}
