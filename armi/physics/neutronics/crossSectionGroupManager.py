@@ -319,6 +319,14 @@ class AverageBlockCollection(BlockCollection):
     .. impl:: Create representative blocks using volume-weighted averaging.
         :id: I_ARMI_XSGM_CREATE_REPR_BLOCKS0
         :implements: R_ARMI_XSGM_CREATE_REPR_BLOCKS
+
+        This class functions as a data structure for utilties that construct new blocks from an existing block list based on a 
+        volume-weighted average. Inheriting functionality from the abstract 
+        :py:class:`Reactor <armi.physics.neutronics.crossSectionGroupManager.BlockCollection>` object, this class 
+        will construct representative blocks using averaged parameters of all blocks in the given collection.
+        Number density averages can be computed at a component level through `self._performAverageByComponent`, 
+        or at a block level by default. Average nuclide temperatures and burnup are also included when constructing a representative block.
+
     """
 
     def _makeRepresentativeBlock(self):
@@ -511,6 +519,13 @@ class CylindricalComponentsAverageBlockCollection(BlockCollection):
     .. impl:: Create representative blocks using custom cylindrical averaging.
         :id: I_ARMI_XSGM_CREATE_REPR_BLOCKS1
         :implements: R_ARMI_XSGM_CREATE_REPR_BLOCKS
+
+        This class functions as a data structure for utilties that construct representative blocks based on a volume-weighted average
+        using cylindrical blocks from an existing block list. Inheriting functionality from the abstract 
+        :py:class:`Reactor <armi.physics.neutronics.crossSectionGroupManager.BlockCollection>` object, this class 
+        will construct representative blocks using averaged parameters of all blocks in the given collection.
+        Number density averages are computed at a component level. Nuclide temperatures from a median block-average temperature
+        are used and the average burnup is evaluated across all blocks in the block list.
 
     Notes
     -----
@@ -843,6 +858,11 @@ class CrossSectionGroupManager(interfaces.Interface):
         .. impl:: The lattice physics interface and XSGM are connected at BOL.
             :id: I_ARMI_XSGM_FREQ0
             :implements: R_ARMI_XSGM_FREQ
+
+            This method sets the cross-section block averaging method and and logic for whether all blocks in a cross section group should be used when generating
+            a representative block. Furthermore, if the control logic for lattice physics frequency updates is set at beginning-of-life (`BOL`) through the :py:class:`LatticePhysicsInterface <armi.physics.neutronics.latticePhysics>`,
+            the cross-section group manager will construct representative blocks for each cross-section IDs at the beginning of the reactor state.
+
         """
         # now that all cs settings are loaded, apply defaults to compound XS settings
         from armi.physics.neutronics.settings import CONF_XS_BLOCK_REPRESENTATION
@@ -869,6 +889,10 @@ class CrossSectionGroupManager(interfaces.Interface):
             :id: I_ARMI_XSGM_FREQ1
             :implements: R_ARMI_XSGM_FREQ
 
+            This method will update representative blocks and block burnups at the beginning-of-cycle for each cross-section ID if the control logic
+            for lattice physics frequency updates is set at beginning-of-cycle (`BOC`) through the :py:class:`LatticePhysicsInterface <armi.physics.neutronics.latticePhysics>`.
+            At the beginning-of-cycle, the cross-section group manager will construct representative blocks for each cross-section IDs for the current reactor state.
+
         Notes
         -----
         The block list each each block collection cannot be emptied since it is used to derive nuclide temperatures.
@@ -884,11 +908,16 @@ class CrossSectionGroupManager(interfaces.Interface):
         self.clearRepresentativeBlocks()
 
     def interactEveryNode(self, cycle=None, tn=None):
-        """Interactino at every time now.
+        """Interaction at every time node.
 
         .. impl:: The lattice physics interface and XSGM are connected at every time node.
             :id: I_ARMI_XSGM_FREQ2
             :implements: R_ARMI_XSGM_FREQ
+
+            This method will update representative blocks and block burnups at every node for each cross-section ID if the control logic 
+            for lattices physics frequency updates is set for every node (`everyNode`) through the :py:class:`LatticePhysicsInterface <armi.physics.neutronics.latticePhysics>`.
+            At every node, the cross-section group manager will construct representative blocks for each cross-section ID in the current reactor state.
+
         """
         if self._latticePhysicsFrequency >= LatticePhysicsFrequency.everyNode:
             self.createRepresentativeBlocks()
@@ -899,6 +928,10 @@ class CrossSectionGroupManager(interfaces.Interface):
         .. impl:: The lattice physics interface and XSGM are connected during coupling.
             :id: I_ARMI_XSGM_FREQ3
             :implements: R_ARMI_XSGM_FREQ
+
+            This method will update representative blocks and block burnups at every node and the first coupled iteration for each cross-section ID
+            if the control logic for lattices physics frequency updates is set for the first coupled iteration (`firstCoupledIteration`) through the :py:class:`LatticePhysicsInterface <armi.physics.neutronics.latticePhysics>`.
+            The cross-section group manager will construct representative blocks for each cross-section ID at the first iteration of every time node.
 
         Notes
         -----
@@ -1077,11 +1110,16 @@ class CrossSectionGroupManager(interfaces.Interface):
         return (filePath, fileName)
 
     def createRepresentativeBlocks(self):
-        """Get a representative block from each cross section ID managed here.
+        """Get a representative block from each cross-section ID managed here.
 
         .. impl:: Create collections of blocks based on XS type and burn-up group.
             :id: I_ARMI_XSGM_CREATE_XS_GROUPS
             :implements: R_ARMI_XSGM_CREATE_XS_GROUPS
+
+            This method functions as a data structure for constructing the representative blocks and block burnups
+            for each cross-section ID in the reactor model. Starting with the making of cross-section groups, it will
+            find candidate blocks and create representative blocks from that selection.
+
         """
         representativeBlocks = {}
         self.avgNucTemperatures = {}
