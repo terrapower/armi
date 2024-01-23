@@ -193,11 +193,11 @@ class ComponentBlueprint(yamlize.Object):
             :implements: R_ARMI_MAT_USER_INPUT
 
             Allows for user input to impact a component's materials by applying
-            the ``material modifications`` section of a blueprints file (see :need:`I_ARMI_MAT_USER_INPUT0`)
-            to the material during constructions. This takes place during lower
+            the "material modifications" section of a blueprints file (see :need:`I_ARMI_MAT_USER_INPUT0`)
+            to the material during construction. This takes place during lower
             calls to ``_conformKwargs()`` and subsequently ``_constructMaterial()``,
-            which is passed in the component blueprint and the associated material
-            modifications for the block that the component belongs to.
+            which operate using the component blueprint and associated material
+            modifications from the component's block.
 
             Within ``_constructMaterial()``, the material class is resolved into a material
             object by calling :py:func:`~armi.materials.resolveMaterialClassByName`.
@@ -337,7 +337,7 @@ def insertDepletableNuclideKeys(c, blueprint):
         :id: I_ARMI_BP_NUC_FLAGS0
         :implements: R_ARMI_BP_NUC_FLAGS
 
-        This called during the component construction process for each component from within
+        This is called during the component construction process for each component from within
         :py:meth:`~armi.reactor.blueprints.componentBlueprint.ComponentBlueprint.construct`.
 
         For a given initialized component, check its flags to determine if it

@@ -181,11 +181,11 @@ class CustomIsotopic(yamlize.Map):
         reading from text files, serialization, and internal storage of the data.
 
         Is implemented as part of a blueprints file by being used in key-value pairs
-        within the :py:class:~`armi.reactor.blueprints.isotopicOptions.CustomIsotopics` class,
+        within the :py:class:`~armi.reactor.blueprints.isotopicOptions.CustomIsotopics` class,
         which is imported and used as an attribute within the larger :py:class:`~armi.reactor.blueprints.Blueprints`
         class.
 
-        These isotopics are linked to a component during calls to :py:meth:`~armi.reactor.blueprints.componentBlueprint.ComponentBlueprint.apply`,
+        These isotopics are linked to a component during calls to :py:meth:`~armi.reactor.blueprints.componentBlueprint.ComponentBlueprint.construct`,
         where the name specified in the ``isotopics`` attribute of the component blueprint
         is searched against the available ``CustomIsotopics`` defined in the
         "custom isotopics" section of the blueprints.
