@@ -221,8 +221,8 @@ class Zones:
         The Zones class facilitates the creation of a Zones object representing a
         collection of Zone objects. Class methods are provided to add or remove one
         or more Zone to/from the Zones object. Likewise, Class methods are provided
-        to validate that each Zones object is mutually exclusive, obtain the location
-        labels of Zones, return the Zone object where a particular Assembly or Block
+        to validate that the zones are mutually exclusive, obtain the location
+        labels of zones, return the Zone object where a particular Assembly or Block
         resides, sort the Zone objects alphabetically, and summarize the zone
         definitions. In addition, Class methods are provided to facilitate the
         retrieval of Zone objects by name, loop through the Zones in order, and
