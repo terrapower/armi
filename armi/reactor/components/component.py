@@ -883,7 +883,7 @@ class Component(composites.Composite, metaclass=ComponentType):
             :implements: R_ARMI_COMP_DIMS
 
             Due to thermal expansion, component dimensions depend on their temperature.
-            This method will retrieve a dimension from the component at a particular
+            This method retrieves a dimension from the component at a particular
             temperature, if provided. If provided, the thermal expansion factor is
             considered by what is returned by this method. If not provided, the cold
             dimension is provided.
