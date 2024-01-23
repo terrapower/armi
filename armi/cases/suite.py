@@ -44,15 +44,17 @@ class CaseSuite:
     """
     A CaseSuite is a collection of possibly related Case objects.
 
-    A CaseSuite is intended to be both a pre-processing and post-processing tool to
-    facilitate case generation and analysis. Under most circumstances one may wish to
-    subclass a CaseSuite to meet the needs of a specific calculation.
-
-    A CaseSuite is a collection that is keyed off Case titles.
-
     .. impl:: CaseSuite allows for one case to start after another completes.
         :id: I_ARMI_CASE_SUITE
         :implements: R_ARMI_CASE_SUITE
+
+        The CaseSuite object allows multiple, often related,
+        :py:class:`~armi.cases.case.Case` objects to be run sequentially. A
+        CaseSuite is intended to be both a pre-processing and post-processing
+        tool to facilitate case generation and analysis. Under most
+        circumstances one may wish to subclass a CaseSuite to meet the needs of
+        a specific calculation. A CaseSuite is a collection that is keyed off
+        Case titles.
     """
 
     def __init__(self, cs):
