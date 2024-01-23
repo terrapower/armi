@@ -13,9 +13,10 @@
 # limitations under the License.
 
 """
-A system to check user settings for validity and provide users with meaningful suggestions to fix.
+A system to check user settings for validity and provide users with meaningful
+suggestions to fix.
 
-This allows developers to specify a rich set of rules and suggestions for user settings.
+This allows developers to define a rich set of rules and suggestions for user settings.
 These then pop up during initialization of a run, either on the command line or as
 dialogues in the GUI. They say things like: "Your ___ setting has the value ___, which
 is impossible. Would you like to switch to ___?"
@@ -49,14 +50,13 @@ class Query:
         :id: I_ARMI_SETTINGS_RULES
         :implements: R_ARMI_SETTINGS_RULES
 
-        This class is meant to represent a generic validation test
-        against a setting. The goal is clear: developers create new
-        settings and they want to make sure those settings are used
-        correctly. As an implementation, there is a ``condition``
-        attribute in this class that is a function that returns
-        ``True`` or ``False`` based on the setting name and value.
-        Optionally, this class also contains a ``correction``
-        function that allows users to automatically correct a bad
+        This class is meant to represent a generic validation test against a setting.
+        The goal is: developers create new settings and they want to make sure those
+        settings are used correctly. As an implementation, users pass in a
+        ``condition`` function to this class that returns ``True`` or ``False`` based
+        on the setting name and value. And then this class has a ``resolve`` method
+        which tests if the condition is met. Optionally, this class also contains a
+        ``correction`` function that allows users to automatically correct a bad
         setting, if the developers can find a clear path forward.
     """
 
@@ -67,8 +67,8 @@ class Query:
         Parameters
         ----------
         condition : callable
-            A callable that returns True or False. If True,
-            then the query activates its question and potential correction.
+            A callable that returns True or False. If True, then the query activates
+            its question and potential correction.
         statement : str
             A statement of the problem indicated by a True condition
         question : str

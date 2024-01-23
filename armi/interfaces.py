@@ -93,20 +93,19 @@ class TightCoupler:
         :id: I_ARMI_OPERATOR_PHYSICS0
         :implements: R_ARMI_OPERATOR_PHYSICS
 
-        During a simulation, the developers of an ARMI application frequently
-        want to iterate on some physical calculation until that calculation has
-        converged to within some small tolerance. This is typically done to solve
-        the nonlinear dependence of different physical properties of the
-        reactor, like fuel performance. However, what parameter is being
-        tightly coupled is configurable by the developer.
+        During a simulation, the developers of an ARMI application frequently want to
+        iterate on some physical calculation until that calculation has converged to
+        within some small tolerance. This is typically done to solve the nonlinear
+        dependence of different physical properties of the reactor, like fuel
+        performance. However, what parameter is being tightly coupled is configurable
+        by the developer.
 
-        This class provides an easy, basic way to calculate if a single parameter
-        has converged, based on some convergence tolerance. If not, the number
-        of iterations the convergence has been tested is incremented, and
-        this class will wait, presuming another iteration is forthcoming. But
-        the general idea is that we need only provide a paramter, a tolerance,
-        and a number of iterations to define a basic convergence calculation,
-        which this class carries out in the ``isConverged`` method.
+        This class provides a way to calculate if a single parameter has converged
+        based on some convergence tolerance. The user provides the parameter,
+        tolerance, and a maximum number of iterations to define a basic convergence
+        calculation. If in the ``isConverged`` method the parameter has not converged,
+        the number of iterations is incremented, and this class will wait, presuming
+        another iteration is forthcoming.
 
     Parameters
     ----------
@@ -114,9 +113,8 @@ class TightCoupler:
         The name of a parameter defined in the ARMI Reactor model.
 
     tolerance : float
-        Defines the allowable error, epsilon, between the current previous
-        parameter value(s) to determine if the selected coupling parameter has
-        been converged.
+        Defines the allowable error between the current and previous parameter values
+        to determine if the selected coupling parameter has converged.
 
     maxIters : int
         Maximum number of tight coupling iterations allowed

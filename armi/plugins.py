@@ -146,14 +146,13 @@ class ArmiPlugin:
         :id: I_ARMI_PLUGIN
         :implements: R_ARMI_PLUGIN
 
-        Each plugin has the option of implementing the ``exposeInterfaces``
-        method, and this will be used as a plugin hook to add one or more
-        Interfaces to the ARMI Application. Interfaces can wrap external
-        executables with nuclear modeling codes in them, or directly
-        implement their logic in Python. But because Interfaces are Python
-        code, they have direct access to read and write from ARMI's reactor
-        data model. This Plugin to multiple Interfaces to reactor data model
-        connection is the primary way that developers add code to an ARMI
+        Each plugin has the option of implementing the ``exposeInterfaces`` method, and
+        this will be used as a plugin hook to add one or more Interfaces to the ARMI
+        Application. Interfaces can wrap external executables with nuclear modeling
+        codes in them, or directly implement their logic in Python. But because
+        Interfaces are Python code, they have direct access to read and write from
+        ARMI's reactor data model. This Plugin to multiple Interfaces to reactor data
+        model connection is the primary way that developers add code to an ARMI
         application and simulation.
     """
 
@@ -167,14 +166,10 @@ class ArmiPlugin:
             :id: I_ARMI_PLUGIN_INTERFACES
             :implements: R_ARMI_PLUGIN_INTERFACES
 
-            This method takes in a Settings object and returns a list of
-            Interfaces, the position of each Interface in the Interface stack,
-            and a list of arguments to pass to the Interface when initializing
-            it later. But all of that is just what is necessary so this Plugin
-            can add a list of well-defined Interfaces to the interface stack,
-            in the correct order.
-
-            These Interfaces can then be used to add code to a simulation.
+            This method takes in a Settings object and returns a list of Interfaces,
+            the position of each Interface in the Interface stack, and a list of
+            arguments to pass to the Interface when initializing it later. These
+            Interfaces can then be used to add code to a simulation.
 
         Returns
         -------
@@ -200,32 +195,30 @@ class ArmiPlugin:
             :id: I_ARMI_PLUGIN_PARAMS
             :implements: R_ARMI_PLUGIN_PARAMS
 
-            Through this method, plugin developers can create new Parameters.
-            A parameter can represent any physical property an analyst
-            might want to track. And they can be added at any level of the
-            reactor data model. Through this, the developers can extend
-            ARMI and what physical properties of the reactor they want to
-            calculate, track, and store to the database.
+            Through this method, plugin developers can create new Parameters. A
+            parameter can represent any physical property an analyst might want to
+            track. And they can be added at any level of the reactor data model.
+            Through this, the developers can extend ARMI and what physical properties
+            of the reactor they want to calculate, track, and store to the database.
 
         .. impl:: Define an arbitrary physical parameter.
             :id: I_ARMI_PARAM
             :implements: R_ARMI_PARAM
 
-            Through this method, plugin developers can create new Parameters.
-            A parameter can represent any physical property an analyst
-            might want to track. For example, through this method, a plugin
-            developer can add a new thermodynamic property that adds a
-            thermodynamic parameter to every block in the reactor. Or they
-            could add a neutronics parameter to every fuel assembly. A
-            parameter is quite generic. But these parameters will be tracked
-            in the reactor data model, extend what developers can do with ARMI,
+            Through this method, plugin developers can create new Parameters. A
+            parameter can represent any physical property an analyst might want to
+            track. For example, through this method, a plugin developer can add a new
+            thermodynamic property that adds a thermodynamic parameter to every block
+            in the reactor. Or they could add a neutronics parameter to every fuel
+            assembly. A parameter is quite generic. But these parameters will be
+            tracked in the reactor data model, extend what developers can do with ARMI,
             and will be saved to the output database.
 
         Returns
         -------
         dict
             Keys should be subclasses of ArmiObject, values being a
-            ParameterDefinitionCollection should be added to the key's perameter
+            ParameterDefinitionCollection should be added to the key's parameter
             definitions.
 
         Example
@@ -290,15 +283,8 @@ class ArmiPlugin:
             the Flags system. This method returns a dictionary mapping flag names
             to their desired numerical values. In most cases, no specific value
             is needed, one can be automatically generated using
-            :py:class:`armi.utils.flags.auto`.
-
-            Flags should be added to the ARMI system with great care; flag values
-            are potentially added to every object in the reactor data model and
-            stored in a bitfield. Thus, each additional flag increases the width of
-            the data needed to store them. Also remember, when adding new flags,
-            that flags are generally interpreted to define what something is. So
-            we don't expect to change "what something is" very often
-            (see :py:mod:`armi.reactor.flags`).
+            :py:class:`armi.utils.flags.auto`. (For more information, see
+            :py:mod:`armi.reactor.flags`.)
 
         See Also
         --------

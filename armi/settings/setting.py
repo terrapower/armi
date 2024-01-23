@@ -50,16 +50,15 @@ class Setting:
         :id: I_ARMI_SETTINGS_DEFAULTS
         :implements: R_ARMI_SETTINGS_DEFAULTS
 
-        Setting objects hold all associated information of a setting in ARMI
-        and should typically be accessed through the Settings class methods
-        rather than directly. The exception being the SettingAdapter class
-        designed for additional GUI related functionality.
+        Setting objects hold all associated information of a setting in ARMI and should
+        typically be accessed through the Settings class methods rather than directly.
+        Settings require a mandatory default value.
 
-        Setting subclasses can implement custom ``load`` and ``dump`` methods
-        that can enable serialization (to/from dicts) of custom objects. When
-        you set a setting's value, the value will be unserialized into
-        the custom object and when you call ``dump``, it will be serialized.
-        Just accessing the value will return the actual object in this case.
+        Setting subclasses can implement custom ``load`` and ``dump`` methods that can
+        enable serialization (to/from dicts) of custom objects. When you set a
+        setting's value, the value will be unserialized into the custom object and when
+        you call ``dump``, it will be serialized. Just accessing the value will return
+        the actual object in this case.
     """
 
     def __init__(
