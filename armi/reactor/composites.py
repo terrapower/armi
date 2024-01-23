@@ -2971,6 +2971,13 @@ class Composite(ArmiObject):
             :id: I_ARMI_CMP_MPI
             :implements: R_ARMI_CMP_MPI
 
+            Parameters need to be handled properly during parallel code execution.This
+            method synchronizes all parameters of the composite object across all
+            processes by cycling through all the children of the composite and ensuring
+            that their parameters are properly synchronized. If it fails to synchronize,
+            an error message is displayed which alerts the user to which composite has
+            inconsistent data across the processes.
+
         Returns
         -------
         int
