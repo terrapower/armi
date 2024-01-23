@@ -334,7 +334,7 @@ class Zones:
 
     def checkDuplicates(self) -> None:
         """
-        Validate that the the zones are mutually exclusive.
+        Validate that the zones are mutually exclusive.
 
         That is, make sure that no item appears in more than one Zone.
 
