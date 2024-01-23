@@ -65,6 +65,24 @@ class NuclideFlag(yamlize.Object):
         :id: I_ARMI_BP_NUC_FLAGS1
         :implements: R_ARMI_BP_NUC_FLAGS
 
+        This class creates a yaml interface for the user to specify in their blueprints
+        which isotopes should be depleted. It is incorporated into the "nuclide flags"
+        section of a blueprints file by being included as key-value pairs within
+        the :py:class:`~armi.reactor.blueprints.isotopicOptions.NuclideFlags` class,
+        which is in turn included into the overall blueprints within
+        :py:class:`~armi.reactor.blueprints.Blueprints`.
+
+        This class includes a boolean ``burn`` attribute which can be specified
+        for any nuclide. This attribute is examined by the :py:meth:`~armi.reactor.blueprints.isotopicOptions.NuclideFlag.fileAsActiveOrInert`
+        method to sort the nuclides into sets of depletable or not, which is typically
+        called during construction of assemblies in :py:meth:`~armi.reactor.blueprints.Blueprints.constructAssem`.
+
+        Note that while the ``burn`` attribute can be set by the user in the blueprints,
+        other methods may also set it based on case settings (see, for instance,
+        :py:func:`~armi.reactor.blueprints.isotopicOptions.genDefaultNucFlags`,
+        :py:func:`~armi.reactor.blueprints.isotopicOptions.autoUpdateNuclideFlags`, and
+        :py:func:`~armi.reactor.blueprints.isotopicOptions.getAllNuclideBasesByLibrary`).
+
     Attributes
     ----------
     nuclideName : str
@@ -154,6 +172,26 @@ class CustomIsotopic(yamlize.Map):
     .. impl:: Certain material modifications will be applied using this code.
         :id: I_ARMI_MAT_USER_INPUT2
         :implements: R_ARMI_MAT_USER_INPUT
+
+        Defines a yaml construct that allows the user to define a custom isotopic vector
+        from within their blueprints file, including a name and key-value pairs
+        corresponding to nuclide names and their concentrations.
+
+        Relies on the underlying infrastrature from the ``yamlize`` package for
+        reading from text files, serialization, and internal storage of the data.
+
+        Is implemented as part of a blueprints file by being used in key-value pairs
+        within the :py:class:~`armi.reactor.blueprints.isotopicOptions.CustomIsotopics` class,
+        which is imported and used as an attribute within the larger :py:class:`~armi.reactor.blueprints.Blueprints`
+        class.
+
+        These isotopics are linked to a component during calls to :py:meth:`~armi.reactor.blueprints.componentBlueprint.ComponentBlueprint.apply`,
+        where the name specified in the ``isotopics`` attribute of the component blueprint
+        is searched against the available ``CustomIsotopics`` defined in the
+        "custom isotopics" section of the blueprints.
+        Once linked, the :py:meth:`~armi.reactor.blueprints.isotopicOptions.CustomIsotopic.apply`
+        method is called, which adjusts the ``massFrac`` attribute of the component's
+        material class.
     """
 
     key_type = yamlize.Typed(str)
