@@ -148,7 +148,7 @@ class GridBlueprint(yamlize.Object):
         :id: I_ARMI_BP_GRID
         :implements: R_ARMI_BP_GRID
 
-        Defines a yaml construct that allows the user to a grid
+        Defines a yaml construct that allows the user to define a grid
         from within their blueprints file, including a name, geometry, dimensions,
         symmetry, and a map specifying the relative locations of components within that grid.
 
