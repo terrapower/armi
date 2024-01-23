@@ -40,7 +40,7 @@ class Zone:
         type (i.e., Assembly or Block). Methods are provided to add or remove
         one or more locations to/from the Zone, and similarly, add or remove one or
         more items with a Core location (i.e., Assemblies or Blocks) to/from the
-        Zone. In addition, several Class methods are provided to facilitate the
+        Zone. In addition, several methods are provided to facilitate the
         retrieval of locations from a Zone by performing functions to check if a
         location exists in the Zone, looping through the locations in the Zone in
         alphabetical order, and returning the number of locations in the Zone, etc.
