@@ -347,21 +347,31 @@ class UniformMeshGenerator:
 
 class UniformMeshGeometryConverter(GeometryConverter):
     """
-    This geometry converter can be used to change the axial mesh structure of the reactor core.
+    This geometry converter can be used to change the axial mesh structure of the
+    reactor core.
 
     Notes
     -----
     There are several staticmethods available on this class that allow for:
-        - Creation of a new reactor without applying a new uniform axial mesh. See: `<UniformMeshGeometryConverter.initNewReactor>`
-        - Creation of a new assembly with a new axial mesh applied. See: `<UniformMeshGeometryConverter.makeAssemWithUniformMesh>`
-        - Resetting the parameter state of an assembly back to the defaults for the provided block parameters. See: `<UniformMeshGeometryConverter.clearStateOnAssemblies>`
-        - Mapping number densities and block parameters between one assembly to another. See: `<UniformMeshGeometryConverter.setAssemblyStateFromOverlaps>`
+        - Creation of a new reactor without applying a new uniform axial mesh. See:
+        `<UniformMeshGeometryConverter.initNewReactor>`
+        - Creation of a new assembly with a new axial mesh applied. See:
+        `<UniformMeshGeometryConverter.makeAssemWithUniformMesh>`
+        - Resetting the parameter state of an assembly back to the defaults for the
+        provided block parameters. See:
+        `<UniformMeshGeometryConverter.clearStateOnAssemblies>`
+        - Mapping number densities and block parameters between one assembly to
+        another. See: `<UniformMeshGeometryConverter.setAssemblyStateFromOverlaps>`
 
-    This class is meant to be extended for specific physics calculations that require a uniform mesh.
-    The child types of this class should define custom `reactorParamsToMap` and `blockParamsToMap` attributes, and the `_setParamsToUpdate` method
-    to specify the precise parameters that need to be mapped in each direction between the non-uniform and uniform mesh assemblies. The definitions should avoid mapping
-    block parameters in both directions because the mapping process will cause numerical diffusion. The behavior of `setAssemblyStateFromOverlaps` is dependent on the
-    direction in which the mapping is being applied to prevent the numerical diffusion problem.
+    This class is meant to be extended for specific physics calculations that require a
+    uniform mesh. The child types of this class should define custom
+    `reactorParamsToMap` and `blockParamsToMap` attributes, and the
+    `_setParamsToUpdate` method to specify the precise parameters that need to be
+    mapped in each direction between the non-uniform and uniform mesh assemblies. The
+    definitions should avoid mapping block parameters in both directions because the
+    mapping process will cause numerical diffusion. The behavior of
+    `setAssemblyStateFromOverlaps` is dependent on the direction in which the mapping
+    is being applied to prevent the numerical diffusion problem.
 
     - "in" is used when mapping parameters into the uniform assembly
     from the non-uniform assembly.
