@@ -149,7 +149,7 @@ class MacroXSGenerationInterface(interfaces.Interface):
             :id: I_ARMI_MACRO_XS
             :implements: R_ARMI_MACRO_XS
 
-            This method builds macroscopic cross sections for a user-specifed
+            This method builds macroscopic cross sections for a user-specified
             set of blocks using a specified microscopic neutron or gamma cross
             section library. If no blocks are specified, cross sections are
             calculated for all blocks in the core. If no library is specified,
