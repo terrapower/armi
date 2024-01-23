@@ -331,15 +331,19 @@ class Case:
         """
         Run an ARMI case.
 
-        This initializes an ``Operator``, a ``Reactor`` and invokes
-        :py:meth:`Operator.operate`!
-
-        It also activates supervisory things like code coverage checking, profiling,
-        or tracing, if requested by users during debugging.
 
         .. impl:: The case class allows for a generic ARMI simulation.
             :id: I_ARMI_CASE
             :implements: R_ARMI_CASE
+
+            This method is responsible for "running" the ARMI simulation
+            instigated by the inputted settings. This initializes an
+            :py:class:`~armi.operators.operator.Operator`, a
+            :py:class:`~armi.reactor.reactors.Reactor` and invokes
+            :py:meth:`Operator.operate
+            <armi.operators.operator.Operator.operate>`. It also activates
+            supervisory things like code coverage checking, profiling, or
+            tracing, if requested by users during debugging.
 
         Notes
         -----
@@ -564,6 +568,17 @@ class Case:
         .. impl:: Perform validity checks on case inputs.
             :id: I_ARMI_CASE_CHECK
             :implements: R_ARMI_CASE_CHECK
+
+            This method checks the validity of the current settings. It relies
+            on an :py:class:`~armi.operators.settingsValidation.Inspector`
+            object from the :py:class:`~armi.operators.operator.Operator` to
+            generate a list of
+            :py:class:`~armi.operators.settingsValidation.Query` object that
+            represent potential issues in the settings. After gathering the
+            queries, this method prints a table of query "statements" and
+            "questions" to the console. If running in an interactive mode, the
+            user then has the opportunity to address the questions posed by the
+            queries by either addressing the potential issue or ignoring it.
 
         Returns
         -------

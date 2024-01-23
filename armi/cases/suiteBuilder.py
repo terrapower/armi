@@ -49,6 +49,18 @@ class SuiteBuilder:
         :id: I_ARMI_CASE_MOD0
         :implements: R_ARMI_CASE_MOD
 
+        This class provides the capability to create a
+        :py:class:`~armi.cases.suite.CaseSuite` based on programmatic
+        perturbations/modifications to case settings. It works by being
+        constructed with a base or nominal :py:class:`~armi.cases.case.Case`
+        object. Children classes then append the ``self.modifierSets`` member.
+        Each entry in ``self.modifierSets`` is a
+        :py:class:`~armi.cases.inputModifiers.inputModifiers.InputModifier`
+        representing a case to add to the suite by specifying modifications to
+        the settings of the base case. :py:meth:`SuiteBuilder.buildSuite` is
+        then called that returns the :py:class:`~armi.cases.suite.CaseSuite`
+        containing all the cases with modified settings.
+
     Attributes
     ----------
     baseCase : armi.cases.case.Case
@@ -213,14 +225,21 @@ class FullFactorialSuiteBuilder(SuiteBuilder):
 
         would result in 6 cases:
 
+        +-------+------------------+------------------+
         | Index | ``settingName1`` | ``settingName2`` |
-        | ----- | ---------------- | ---------------- |
+        +=======+==================+==================+
         | 0     | 1                | 3                |
+        +-------+------------------+------------------+
         | 1     | 2                | 3                |
+        +-------+------------------+------------------+
         | 2     | 1                | 4                |
+        +-------+------------------+------------------+
         | 3     | 2                | 4                |
+        +-------+------------------+------------------+
         | 4     | 1                | 5                |
+        +-------+------------------+------------------+
         | 5     | 2                | 5                |
+        +-------+------------------+------------------+
 
         See Also
         --------
@@ -299,13 +318,19 @@ class SeparateEffectsSuiteBuilder(SuiteBuilder):
 
         would result in 5 cases:
 
+        +-------+------------------+------------------+
         | Index | ``settingName1`` | ``settingName2`` |
-        | ----- | ---------------- | ---------------- |
+        +=======+==================+==================+
         | 0     | 1                | default          |
+        +-------+------------------+------------------+
         | 1     | 2                | default          |
+        +-------+------------------+------------------+
         | 2     | default          | 3                |
+        +-------+------------------+------------------+
         | 3     | default          | 4                |
+        +-------+------------------+------------------+
         | 4     | default          | 5                |
+        +-------+------------------+------------------+
 
         See Also
         --------

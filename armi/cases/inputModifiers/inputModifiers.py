@@ -18,22 +18,22 @@ class InputModifier:
     """
     Object that modifies input definitions in some well-defined way.
 
-    (This class is abstract.)
-
-    Subclasses must implement a ``__call__`` method accepting a ``Settings``,
-    ``Blueprints``, and ``SystemLayoutInput``.
-
-    The class attribute ``FAIL_IF_AFTER`` should be a tuple defining what, if any,
-    modifications this should fail if performed after. For example, one should not
-    adjust the smear density (a function of Cladding ID) before adjusting the Cladding
-    ID.
-
-    Some subclasses are provided, but you are expected to make your own design-specific
-    modifiers in most cases.
-
     .. impl:: A generic tool to modify user inputs on multiple cases.
         :id: I_ARMI_CASE_MOD1
         :implements: R_ARMI_CASE_MOD
+
+        This class serves as an abstract base class for modifying the inputs of
+        a case, typically case settings. Child classes must implement a
+        ``__call__`` method accepting a
+        :py:class:`~armi.settings.caseSettings.Settings`,
+        :py:class:`~armi.reactor.blueprints.Blueprints`, and
+        :py:class:`~armi.reactor.systemLayoutInput.SystemLayoutInput` and return
+        the appropriately modified version of these objects. The class attribute
+        ``FAIL_IF_AFTER`` should be a tuple defining what, if any, modifications
+        this should fail if performed after. For example, one should not adjust
+        the smear density (a function of Cladding ID) before adjusting the
+        Cladding ID. Some generic child classes are provided in this module, but
+        it is expected that design-specific modifiers are built individually.
     """
 
     FAIL_IF_AFTER = ()
