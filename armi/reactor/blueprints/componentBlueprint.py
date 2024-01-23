@@ -123,6 +123,30 @@ class ComponentBlueprint(yamlize.Object):
     .. impl:: Construct component from blueprint file.
         :id: I_ARMI_BP_COMP
         :implements: R_ARMI_BP_COMP
+
+        Defines a yaml construct that allows the user to specify attributes of a
+        component from within their blueprints file, including a name, flags, shape,
+        material and/or isotopic vector, input temperature, corresponding component dimensions,
+        and ID for placement in a block lattice (see :py:class:`~armi.reactor.blueprints.blockBlueprint.BlockBlueprint`).
+        Component dimensions that can be defined for a given component are dependent
+        on the component's ``shape`` attribute, and the dimensions defining each
+        shape can be found in the :py:mod:`~armi.reactor.components` module.
+
+        Limited validation on the inputs is performed to ensure that the component
+        shape corresponds to a valid shape defined by the ARMI application.
+
+        Relies on the underlying infrastrature from the ``yamlize`` package for
+        reading from text files, serialization, and internal storage of the data.
+
+        Is implemented as part of a blueprints file by being imported and used
+        as an attribute within the larger :py:class:`~armi.reactor.blueprints.Blueprints`
+        class. Is also be used within the :py:class:`~armi.reactor.blueprints.blockBlueprint.BlockBlueprint`
+        class to enable specification of components directly within the ``blocks``
+        portion of the blueprint file.
+
+        Includes a ``construct`` method, which instantiates an instance of
+        :py:class:`~armi.reactor.components.component.Component` with the characteristics
+        specified in the blueprints (see :need:`I_ARMI_MAT_USER_INPUT1`).
     """
 
     name = yamlize.Attribute(type=str)
@@ -167,6 +191,19 @@ class ComponentBlueprint(yamlize.Object):
         .. impl:: User-defined on material alterations are applied here.
             :id: I_ARMI_MAT_USER_INPUT1
             :implements: R_ARMI_MAT_USER_INPUT
+
+            Allows for user input to impact a component's materials by applying
+            the ``material modifications`` section of a blueprints file (see :need:`I_ARMI_MAT_USER_INPUT0`)
+            to the material during constructions. This takes place during lower
+            calls to ``_conformKwargs()`` and subsequently ``_constructMaterial()``,
+            which is passed in the component blueprint and the associated material
+            modifications for the block that the component belongs to.
+
+            Within ``_constructMaterial()``, the material class is resolved into a material
+            object by calling :py:func:`~armi.materials.resolveMaterialClassByName`.
+            The ``applyInputParams()`` method of that material class is then called,
+            passing in the associated material modifications data, which the material
+            class can then use to modify the isotopics as necessary.
         """
         runLog.debug("Constructing component {}".format(self.name))
         kwargs = self._conformKwargs(blueprint, matMods)
@@ -299,6 +336,20 @@ def insertDepletableNuclideKeys(c, blueprint):
     .. impl:: Insert any depletable blueprint flags onto this component.
         :id: I_ARMI_BP_NUC_FLAGS0
         :implements: R_ARMI_BP_NUC_FLAGS
+
+        This called during the component construction process for each component from within
+        :py:meth:`~armi.reactor.blueprints.componentBlueprint.ComponentBlueprint.construct`.
+
+        For a given initialized component, check its flags to determine if it
+        has been marked as depletable. If it is, use :py:func:`~armi.nucDirectory.nuclideBases.initReachableActiveNuclidesThroughBurnChain`
+        to apply the user-specifications in the "nuclide flags" section of the blueprints
+        to the component such that all active isotopes and derivatives of those
+        isotopes in the burn chain are initialized to have an entry in the component's
+        ``numberDensities`` dictionary.
+
+        Note that certain case settings, including ``fpModel`` and ``fpModelLibrary``,
+        may trigger modifications to the active nuclides specified by the user
+        in the "nuclide flags" section of the blueprints.
 
     Notes
     -----
