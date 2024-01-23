@@ -141,7 +141,7 @@ class ComponentBlueprint(yamlize.Object):
         Is implemented as part of a blueprints file by being imported and used
         as an attribute within the larger :py:class:`~armi.reactor.blueprints.Blueprints`
         class. Can also be used within the :py:class:`~armi.reactor.blueprints.blockBlueprint.BlockBlueprint`
-        class to enable specification of components directly within the ``blocks``
+        class to enable specification of components directly within the "blocks"
         portion of the blueprint file.
 
         Includes a ``construct`` method, which instantiates an instance of
