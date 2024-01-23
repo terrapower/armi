@@ -698,7 +698,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
             If a list of flags is provided, then all input flags will be
             checked against the flags of the object. If exact is ``False``, then the
-            object must have at least one of candidates exactly. If it is true then
+            object must have at least one of candidates exactly. If it is ``True`` then
             the object flags and candidates must match exactly.
 
         Parameters
