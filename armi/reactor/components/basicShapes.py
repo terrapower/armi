@@ -31,10 +31,10 @@ class Circle(ShapedComponent):
         :id: I_ARMI_COMP_SHAPES0
         :implements: R_ARMI_COMP_SHAPES
 
-        This class provides the interface for defining a Circle component. This includes
+        This class provides the framework for defining a Circle Component. This includes
         setting key parameters such as its material, temperature, and dimensions. It
-        also includes providing an interface for retrieving geometric dimension
-        information unique to circles.
+        also includes providing an interface for retrieving the area of a Circle
+        Component via the ``getComponentArea`` method.
     """
 
     is3D = False
@@ -100,10 +100,11 @@ class Hexagon(ShapedComponent):
         :id: I_ARMI_COMP_SHAPES1
         :implements: R_ARMI_COMP_SHAPES
 
-        This class provides the interface for defining a hexagonal component. This
+        This class provides the framework for defining a hexagonal Component. This
         includes setting key parameters such as its material, temperature, and
         dimensions. It also includes providing an interface for retrieving geometric
-        dimension information unique to hexagons.
+        dimension information unique to hexagons such as the ``getPerimeter`` and
+        ``getPitchData`` methods.
     """
 
     is3D = False
@@ -190,10 +191,11 @@ class Rectangle(ShapedComponent):
         :id: I_ARMI_COMP_SHAPES2
         :implements: R_ARMI_COMP_SHAPES
 
-        This class provides the interface for defining a rectangular component. This
+        This class provides the framework for defining a rectangular Component. This
         includes setting key parameters such as its material, temperature, and
-        dimensions. It also includes providing an interface for retrieving geometric
-        dimension information unique to rectangles.
+        dimensions. It also includes methods for computing geometric
+        information related to rectangles, such as the
+        ``getBoundingCircleOuterDiameter`` and ``getPitchData`` methods.
     """
 
     is3D = False
@@ -340,7 +342,7 @@ class Square(Rectangle):
         :id: I_ARMI_COMP_SHAPES3
         :implements: R_ARMI_COMP_SHAPES
 
-        This class provides the interface for defining a square component. This class
+        This class provides the framework for defining a square Component. This class
         subclasses the ``Rectangle`` class because a square is a subset of a rectangle.
         This includes setting key parameters such as its material, temperature, and
         dimensions.
@@ -421,10 +423,10 @@ class Triangle(ShapedComponent):
         :id: I_ARMI_COMP_SHAPES4
         :implements: R_ARMI_COMP_SHAPES
 
-        This class provides the interface for defining a triangular component. This
+        This class provides the interface for defining a triangular Component. This
         includes setting key parameters such as its material, temperature, and
-        dimensions. It also includes providing an interface for retrieving geometric
-        dimension information unique to triangles.
+        dimensions. It also includes providing a method for retrieving the area of a
+        Triangle Component via the ``getComponentArea`` method.
 
     Notes
     -----
