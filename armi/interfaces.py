@@ -52,7 +52,7 @@ class STACK_ORDER:  # noqa: invalid-class-name
         :implements: R_ARMI_OPERATOR_INTERFACES
 
         At each time node during a simulation, an ordered colletion of Interfaces
-        are run (the stack).. But ARMI does not force the order upon the analyst.
+        are run (referred to as the interface stack). But ARMI does not force the order upon the analyst.
         Instead, each Interface registers where in that ordered list it belongs by
         giving itself an order number (which can be an integer or a decimal).
         This class defines a set of constants which can be imported and used
@@ -264,7 +264,7 @@ class Interface:
         The Interface class defines a number methods with names like ``interact***``.
         These methods are called in order at each time node. This allows for an
         individual Plugin defining multiple interfaces to insert code at the start
-        or end of a particular time node or cylce during reactor simulation. In this
+        or end of a particular time node or cycle during reactor simulation. In this
         fashion, the Plugins and thus the Operator control when their code is run.
 
         The end goal of all this work is to allow the Plugins to carefully tune

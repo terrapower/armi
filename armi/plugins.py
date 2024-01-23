@@ -167,7 +167,7 @@ class ArmiPlugin:
             :id: I_ARMI_PLUGIN_INTERFACES
             :implements: R_ARMI_PLUGIN_INTERFACES
 
-            This method takes in a CaseSettings object and returns a list of
+            This method takes in a Settings object and returns a list of
             Interfaces, the position of each Interface in the Interface stack,
             and a list of arguments to pass to the Interface when initializing
             it later. But all of that is just what is necessary so this Plugin
@@ -214,7 +214,7 @@ class ArmiPlugin:
             Through this method, plugin developers can create new Parameters.
             A parameter can represent any physical property an analyst
             might want to track. For example, through this method, a plugin
-            developer can add a new thermodynmic property that add a
+            developer can add a new thermodynamic property that adds a
             thermodynamic parameter to every block in the reactor. Or they
             could add a neutronics parameter to every fuel assembly. A
             parameter is quite generic. But these parameters will be tracked
@@ -296,7 +296,7 @@ class ArmiPlugin:
             are potentially added to every object in the reactor data model and
             stored in a bitfield. Thus, each additional flag increases the width of
             the data needed to store them. Also remember, when adding new flags,
-            that flags are generally interpretted to define what something is. So
+            that flags are generally interpreted to define what something is. So
             we don't expect to change "what something is" very often
             (see :py:mod:`armi.reactor.flags`).
 
@@ -426,7 +426,7 @@ class ArmiPlugin:
 
             This hook allows plugin developers to provide their own configuration
             settings, which can participate in the
-            :py:class:`armi.settings.caseSettings.CaseSettings`. Plugins may provide
+            :py:class:`armi.settings.caseSettings.Settings`. Plugins may provide
             entirely new settings to what are already provided by ARMI, as well as
             new options or default values for existing settings. For instance, the
             framework provides a ``neutronicsKernel`` setting for selecting which

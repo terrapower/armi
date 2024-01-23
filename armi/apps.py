@@ -132,7 +132,7 @@ class App:
             :implements: R_ARMI_SETTINGS_UNIQUE
 
             Each ARMI application includes a collection of Plugins. Among other
-            things, these plugins can register new settings, that are not amoung
+            things, these plugins can register new settings in addition to
             the default settings that come with ARMI. This feature provides a
             lot of utility, so application developers can easily configure
             their ARMI appliction in customizable ways.

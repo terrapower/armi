@@ -95,14 +95,14 @@ class Operator:
         :implements: R_ARMI_OPERATOR_SETTINGS
 
         A major design feature of ARMI is that a run is built from user settings.
-        in code, this means that a CaseSettings object is passed into this
+        In code, this means that a case ``Settings`` object is passed into this
         class to intialize an Operator. Conceptually, this means that the
         Operator that controls a reactor simulation is defined by user settings.
         Because developers can create their own settings, the user can
         control an ARMI simulation with arbitrary granularity in this way. In
         practice, settings common control things like: how many cycles a
         reactor is being modeled for, how many timesteps are to be modeled
-        per time node, the vervosity of the logging during the run, and
+        per time node, the verbosity of the logging during the run, and
         which modeling steps (such as economics) will be run.
 
     Attributes
@@ -208,10 +208,10 @@ class Operator:
             necessary to break time into discrete chunks. In reactor
             modeling, it is common to first break the time a reactor
             is simulated for into the practical cycles the reactor
-            runs. And then those cycles are broke down into smaller
+            runs. And then those cycles are broken down into smaller
             chunks called burn steps. The final step lengths this
             method returns is a two-tiered list, where primary indices
-            correspond to cycle and secondary indices correspond to
+            correspond to the cycle and secondary indices correspond to
             the length of each intra-cycle step (in days).
         """
         if not self._stepLengths:
@@ -677,10 +677,10 @@ class Operator:
             between two or more physics solvers at the same solution point
             in simulated time. For example, a flux solution might be
             computed, then a temperature solution, and then another flux
-            solution based on updated temperatures (which updated
+            solution based on updated temperatures (which updates
             densities, dimensions, and Doppler).
 
-            This is distinct from loose coupling, which would simply uses
+            This is distinct from loose coupling, which simply uses
             the temperature values from the previous timestep in the
             current flux solution. It's also distinct from full coupling
             where all fields are solved simultaneously. ARMI supports

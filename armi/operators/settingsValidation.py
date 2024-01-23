@@ -49,7 +49,7 @@ class Query:
         :id: I_ARMI_SETTINGS_RULES
         :implements: R_ARMI_SETTINGS_RULES
 
-        This class is meant to represent a generic validateion test
+        This class is meant to represent a generic validation test
         against a setting. The goal is clear: developers create new
         settings and they want to make sure those settings are used
         correctly. As an implementation, there is a ``condition``
