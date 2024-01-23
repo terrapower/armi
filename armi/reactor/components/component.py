@@ -598,7 +598,7 @@ class Component(composites.Composite, metaclass=ComponentType):
 
             For certain operations it is important to know if a component is a solid or
             fluid material. This method will return a boolean indicating if the material
-            is solid or not.
+            is solid or not by checking if the material is an instance of the ``material.Fluid`` class.
         """
         return not isinstance(self.material, material.Fluid)
 
