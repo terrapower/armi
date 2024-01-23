@@ -180,6 +180,14 @@ class Assembly(composites.Composite):
         .. impl:: Assemblies are made up of type Block.
             :id: I_ARMI_ASSEM_BLOCKS
             :implements: R_ARMI_ASSEM_BLOCKS
+
+            Adds a unique Block to the top of the Assembly. If the Block already 
+            exists in the Assembly, an error is raised in 
+            :py:meth:`armi.reactor.composites.Composite.add`.
+            The spatialLocator of the Assembly is automatically updated 
+            to account for the new Block. The spatial locator for the Block is
+            also updated in ``reestablishBlockOrder``. The axial mesh and other 
+            block geometry parameters are updated in ``calculateZCoords``.
         """
         composites.Composite.add(self, obj)
         obj.spatialLocator = self.spatialGrid[0, 0, len(self) - 1]
@@ -220,12 +228,12 @@ class Assembly(composites.Composite):
             :id: I_ARMI_ASSEM_POSI0
             :implements: R_ARMI_ASSEM_POSI
 
-        Notes
-        -----
-        This function (and its friends) were created before the advent of both the
-        grid/spatialLocator system and the ability to represent things like the SFP as
-        siblings of a Core. In future, this will likely be re-implemented in terms of
-        just spatialLocator objects.
+            This method returns a string label indicating the location
+            of an Assembly. There are three options: 1) the Assembly
+            is not within a Core object and is interpreted as in the 
+            "load queue"; 2) the Assembly is within the spent fuel pool;
+            3) the Assembly is within a Core object, so it has a physical
+            location within the Core.
         """
         # just use ring and position, not axial (which is 0)
         if not self.parent:
@@ -243,6 +251,9 @@ class Assembly(composites.Composite):
         .. impl:: Assembly coordinates are retrievable.
             :id: I_ARMI_ASSEM_POSI1
             :implements: R_ARMI_ASSEM_POSI
+
+            In this method, the spatialLocator of an Assembly is leveraged to return
+            its physical (x,y) coordinates in cm.
         """
         x, y, _z = self.spatialLocator.getGlobalCoordinates()
         return (x, y)
@@ -257,6 +268,10 @@ class Assembly(composites.Composite):
         .. impl:: Assembly area is retrievable.
             :id: I_ARMI_ASSEM_DIMS0
             :implements: R_ARMI_ASSEM_DIMS
+
+            Returns the area of the first block in the Assembly. If there are no
+            block in the Assembly, a warning is issued and a default area of 1.0
+            is returned. 
         """
         try:
             return self[0].getArea()
@@ -272,6 +287,10 @@ class Assembly(composites.Composite):
         .. impl:: Assembly volume is retrievable.
             :id: I_ARMI_ASSEM_DIMS1
             :implements: R_ARMI_ASSEM_DIMS
+
+            The volume of the Assembly is calculated as the product of the
+            area of the first block (via ``getArea``) and the total height
+            of the assembly (via ``getTotalHeight``).
         """
         return self.getArea() * self.getTotalHeight()
 
@@ -476,6 +495,10 @@ class Assembly(composites.Composite):
         .. impl:: Assembly height is retrievable.
             :id: I_ARMI_ASSEM_DIMS2
             :implements: R_ARMI_ASSEM_DIMS
+
+            The height of the Assembly is calculated by taking the sum of the 
+            constituent Blocks. If a ``typeSpec`` is provided, the total height
+            of the blocks containing Flags that match the ``typeSpec`` is returned.
 
         Parameters
         ----------
@@ -1185,14 +1208,21 @@ class Assembly(composites.Composite):
 
     def getDim(self, typeSpec, dimName):
         """
-        Search through blocks in this assembly and find the first component of compName.
-        Then, look on that component for dimName.
+        With a preference for fuel blocks, find the first component in the Assembly with
+        flags that match ``typeSpec`` and return dimension as specified by ``dimName``.
 
         Example: getDim(Flags.WIRE, 'od') will return a wire's OD in cm.
 
         .. impl:: Assembly dimensions are retrievable.
             :id: I_ARMI_ASSEM_DIMS3
             :implements: R_ARMI_ASSEM_DIMS
+
+            This method searches for the first Component that matches the 
+            given ``typeSpec`` and returns the dimension as specified by
+            ``dimName``. There is a hard-coded preference for Components
+            to be within fuel Blocks. If there are no Blocks, then ``None``
+            is returned. If ``typeSpec`` is not within the first Block, an 
+            error is raised within :py:meth:`armi.reactor.blocksBlock.getDim`.
         """
         # prefer fuel blocks.
         bList = self.getBlocks(Flags.FUEL)
