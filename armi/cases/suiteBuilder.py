@@ -58,7 +58,7 @@ class SuiteBuilder:
         :py:class:`~armi.cases.inputModifiers.inputModifiers.InputModifier`
         representing a case to add to the suite by specifying modifications to
         the settings of the base case. :py:meth:`SuiteBuilder.buildSuite` is
-        then called that returns the :py:class:`~armi.cases.suite.CaseSuite`
+        then invoked, returning an instance of the :py:class:`~armi.cases.suite.CaseSuite`
         containing all the cases with modified settings.
 
     Attributes

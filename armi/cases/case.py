@@ -573,7 +573,7 @@ class Case:
             on an :py:class:`~armi.operators.settingsValidation.Inspector`
             object from the :py:class:`~armi.operators.operator.Operator` to
             generate a list of
-            :py:class:`~armi.operators.settingsValidation.Query` object that
+            :py:class:`~armi.operators.settingsValidation.Query` objects that
             represent potential issues in the settings. After gathering the
             queries, this method prints a table of query "statements" and
             "questions" to the console. If running in an interactive mode, the
