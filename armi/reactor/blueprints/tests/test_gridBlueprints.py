@@ -192,6 +192,7 @@ rzt_core:
         [8,6]: assembly9_7 fuel
 """
 
+# ruff: noqa: E501
 RTH_GEOM = """
 <reactor geom="ThetaRZ" symmetry="eighth core periodic">
     <assembly azimuthalMesh="4" name="assembly1_1 fuel" rad1="0.0" rad2="14.2857142857" radialMesh="4" theta1="0.0" theta2="0.11556368446681414" />

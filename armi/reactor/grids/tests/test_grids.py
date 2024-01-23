@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """Tests for grids."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-self-use,attribute-defined-outside-init
 from io import BytesIO
 import math
 import unittest
@@ -126,7 +125,9 @@ class TestSpatialLocator(unittest.TestCase):
         assert_allclose(pinIndexLoc.getCompleteIndices(), (1, 5, 0))
 
     def test_recursionPin(self):
-        """Ensure pin the center assem has axial coordinates consistent with a pin in an off-center assembly."""
+        """Ensure pin the center assem has axial coordinates consistent with a pin in
+        an off-center assembly.
+        """
         core = MockArmiObject()
         assem = MockArmiObject(core)
         block = MockArmiObject(assem)
