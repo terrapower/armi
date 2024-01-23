@@ -544,21 +544,34 @@ def _filterOutsideDomain(gridBp):
 
 
 def saveToStream(stream, bluep, full=False, tryMap=False):
-    """Save the blueprints to the passed stream.
+    """
+    Save the blueprints to the passed stream.
 
     This can save either the entire blueprints, or just the `grids:` section of the
     blueprints, based on the passed ``full`` argument. Saving just the grid
     blueprints can be useful when cobbling blueprints together with !include flags.
 
-    stream: file output stream of some kind
-    bluep: armi.reactor.blueprints.Blueprints, or Grids
-    full: bool ~ Is this a full output file, or just a partial/grids?
-    tryMap: regardless of input form, attempt to output as a lattice map. let's face it;
-    they're prettier.
-
     .. impl:: Write a blueprint file from a blueprint object.
         :id: I_ARMI_BP_TO_DB
         :implements: R_ARMI_BP_TO_DB
+
+        First makes a copy of the blueprints that are passed in. Then modifies
+        any grids specified in the blueprints into a canonical lattice map style,
+        if needed. Then uses the ``dump`` method that is inherent to all ``yamlize``
+        subclasses to write the blueprints to the given ``stream`` object.
+
+        If called with the ``full`` argument, the entire blueprints is dumped.
+        If not, only the grids portion is dumped.
+
+    Parameters
+    ----------
+    stream :
+        file output stream of some kind
+    bluep : armi.reactor.blueprints.Blueprints, or Grids
+    full : bool
+        Is this a full output file, or just a partial/grids?
+    tryMap : bool
+        regardless of input form, attempt to output as a lattice map
     """
     # To save, we want to try our best to output our grid blueprints in the lattice
     # map style. However, we do not want to wreck the state that the current
