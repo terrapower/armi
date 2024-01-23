@@ -42,23 +42,23 @@ from armi.settings import Setting
 
 class App:
     """
-    The main point of customization for the ARMI Framework.
-
-    The App class is intended to be subclassed in order to customize the functionality
-    and look-and-feel of the ARMI Framework for a specific use case. An App contains a
-    plugin manager, which should be populated in ``__init__()`` with a collection of
-    plugins that are deemed suitable for a given application, as well as other methods
-    which provide further customization.
-
-    The base App class is also a good place to expose some more convenient ways to get
-    data out of the Plugin API; calling the ``pluggy`` hooks directly can sometimes be a
-    pain, as the results returned by the individual plugins may need to be merged and/or
-    checked for errors. Adding that logic here reduces boilerplate throughout the rest
-    of the code.
+    The highest-level of abstraction for defining what happens during an ARMI run.
 
     .. impl:: An App has a plugin manager.
         :id: I_ARMI_APP_PLUGINS
         :implements: R_ARMI_APP_PLUGINS
+
+        The App class is intended to be subclassed in order to customize the functionality
+        and look-and-feel of the ARMI Framework for a specific use case. An App contains a
+        plugin manager, which should be populated in ``__init__()`` with a collection of
+        plugins that are deemed suitable for a given application, as well as other methods
+        which provide further customization.
+
+        The base App class is also a good place to expose some more convenient ways to get
+        data out of the Plugin API; calling the ``pluggy`` hooks directly can sometimes be a
+        pain, as the results returned by the individual plugins may need to be merged and/or
+        checked for errors. Adding that logic here reduces boilerplate throughout the rest
+        of the code.
     """
 
     name = "armi"
@@ -130,6 +130,17 @@ class App:
         .. impl:: Applications will not allow duplicate settings.
             :id: I_ARMI_SETTINGS_UNIQUE
             :implements: R_ARMI_SETTINGS_UNIQUE
+
+            Each ARMI application includes a collection of Plugins. Among other
+            things, these plugins can register new settings in addition to
+            the default settings that come with ARMI. This feature provides a
+            lot of utility, so application developers can easily configure
+            their ARMI appliction in customizable ways.
+
+            However, it would get confusing if two different plugins registered
+            a setting with the same name string. Or if a plugin registered a
+            setting with the same name as an ARMI default setting. So this
+            method throws an error if such a situation arises.
         """
         # Start with framework settings
         settingDefs = {
