@@ -1717,7 +1717,7 @@ class Core(composites.Composite):
             within that ring. For a `CartesianGrid
             <armi.reactor.grids.cartesian.CartesianGrid>`, the first number
             represents the x index and the second number represents the y index.
-            If there is no assebly in the grid at the requested location, this
+            If there is no assembly in the grid at the requested location, this
             method returns None.
         """
         ring, pos, _ = grids.locatorLabelToIndices(locationString)
@@ -1831,7 +1831,7 @@ class Core(composites.Composite):
 
             If showBlanks = False, it will return fewer than the maximum number
             of neighbors if not all neighbors explicitly exist in the core
-            model. For a hexaongal grid, the maximum number of neighbors is 6.
+            model. For a hexagonal grid, the maximum number of neighbors is 6.
             For a Cartesian grid, the maximum number is 4.
 
             If showBlanks = True and duplicateAssembliesOnReflectiveBoundary =
@@ -1875,7 +1875,7 @@ class Core(composites.Composite):
 
     def _getReflectiveDuplicateAssembly(self, neighborLoc):
         """
-        Return duplicate assemblies accross symmetry line.
+        Return duplicate assemblies across symmetry line.
 
         Notes
         -----
@@ -2259,8 +2259,8 @@ class Core(composites.Composite):
 
     def getMinimumPercentFluxInFuel(self, target=0.005):
         """
-        Goes through the entire reactor to determine what percentage of flux occures at
-        each ring.  Starting with the outer ring, this function helps determine the effective
+        Goes through the entire reactor to determine what percentage of flux occurs at
+        each ring. Starting with the outer ring, this function helps determine the effective
         size of the core where additional assemblies will not help the breeding in the TWR.
 
         Parameters
