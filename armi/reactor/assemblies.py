@@ -181,12 +181,12 @@ class Assembly(composites.Composite):
             :id: I_ARMI_ASSEM_BLOCKS
             :implements: R_ARMI_ASSEM_BLOCKS
 
-            Adds a unique Block to the top of the Assembly. If the Block already 
-            exists in the Assembly, an error is raised in 
+            Adds a unique Block to the top of the Assembly. If the Block already
+            exists in the Assembly, an error is raised in
             :py:meth:`armi.reactor.composites.Composite.add`.
-            The spatialLocator of the Assembly is automatically updated 
+            The spatialLocator of the Assembly is automatically updated
             to account for the new Block. The spatial locator for the Block is
-            also updated in ``reestablishBlockOrder``. The axial mesh and other 
+            also updated in ``reestablishBlockOrder``. The axial mesh and other
             block geometry parameters are updated in ``calculateZCoords``.
         """
         composites.Composite.add(self, obj)
@@ -230,7 +230,7 @@ class Assembly(composites.Composite):
 
             This method returns a string label indicating the location
             of an Assembly. There are three options: 1) the Assembly
-            is not within a Core object and is interpreted as in the 
+            is not within a Core object and is interpreted as in the
             "load queue"; 2) the Assembly is within the spent fuel pool;
             3) the Assembly is within a Core object, so it has a physical
             location within the Core.
@@ -271,7 +271,7 @@ class Assembly(composites.Composite):
 
             Returns the area of the first block in the Assembly. If there are no
             block in the Assembly, a warning is issued and a default area of 1.0
-            is returned. 
+            is returned.
         """
         try:
             return self[0].getArea()
@@ -496,7 +496,7 @@ class Assembly(composites.Composite):
             :id: I_ARMI_ASSEM_DIMS2
             :implements: R_ARMI_ASSEM_DIMS
 
-            The height of the Assembly is calculated by taking the sum of the 
+            The height of the Assembly is calculated by taking the sum of the
             constituent Blocks. If a ``typeSpec`` is provided, the total height
             of the blocks containing Flags that match the ``typeSpec`` is returned.
 
@@ -1217,11 +1217,11 @@ class Assembly(composites.Composite):
             :id: I_ARMI_ASSEM_DIMS3
             :implements: R_ARMI_ASSEM_DIMS
 
-            This method searches for the first Component that matches the 
+            This method searches for the first Component that matches the
             given ``typeSpec`` and returns the dimension as specified by
             ``dimName``. There is a hard-coded preference for Components
             to be within fuel Blocks. If there are no Blocks, then ``None``
-            is returned. If ``typeSpec`` is not within the first Block, an 
+            is returned. If ``typeSpec`` is not within the first Block, an
             error is raised within :py:meth:`armi.reactor.blocksBlock.getDim`.
         """
         # prefer fuel blocks.
