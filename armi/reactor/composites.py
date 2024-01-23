@@ -301,13 +301,12 @@ class ArmiObject(metaclass=CompositeModelType):
         :implements: R_ARMI_PARAM_PART
 
         An ARMI reactor model is composed of collections of ARMIObject objects. These
-        objects are combined to make components of increasing complexity in a
-        hierarchical manner. Each level of the composite tree is able to be assigned
-        parameters which define it, such as temperature, flux, or keff values. This
-        class defines an attribute of type ``ParameterCollection``, which contains
-        all the functionality of an ARMI ``Parameter`` object. Because the entire model
-        is composed of ARMIObjects at the most basic level, each level of the
-        composite tree contains this parameter attribute and can thus be queried.
+        objects are combined in a hierarchical manner. Each level of the composite tree
+        is able to be assigned parameters which define it, such as temperature, flux,
+        or keff values. This class defines an attribute of type ``ParameterCollection``,
+        which contains all the functionality of an ARMI ``Parameter`` object. Because
+        the entire model is composed of ARMIObjects at the most basic level, each level
+        of the composite tree contains this parameter attribute and can thus be queried.
 
     Attributes
     ----------
@@ -691,10 +690,16 @@ class ArmiObject(metaclass=CompositeModelType):
             :id: I_ARMI_CMP_FLAG0
             :implements: R_ARMI_CMP_FLAG
 
-            This method queries the flags of the composite, and if it does contain flags
-            returns ``True`` only if the composite has the flags of the type
-            requested. If it does not contain flags it returns false. If it
-            does not contain the requested flag, it also returns.
+            This method queries the flags (i.e. the ``typeID``) of the composite for a
+            given type, returning a boolean representing whether or not the candidate
+            flag is present in this ArmiObject. Candidate flags cannot be passed as a
+            ``string`` type and must be of a type ``Flag``. If no flags exist in the
+            object then ``False`` is returned.
+
+            If a list of flags is provided, then all input flags will be
+            checked against the flags of the object. If exact is ``False``, then the
+            object must have at least one of candidates exactly. If it is true then
+            the object flags and candidates must match exactly.
 
         Parameters
         ----------
@@ -791,7 +796,7 @@ class ArmiObject(metaclass=CompositeModelType):
             :id: I_ARMI_CMP_FLAG1
             :implements: R_ARMI_CMP_FLAG
 
-            This method provides an interface for setting the flag parameter of the
+            This method provides an interface for setting the flags parameter of the
             composite.
 
         Parameters
@@ -1288,12 +1293,11 @@ class ArmiObject(metaclass=CompositeModelType):
             :id: I_ARMI_CMP_NUC1
             :implements: R_ARMI_CMP_NUC
 
-            This method provides an interface for querying the number density
-            of a list of nuclides from the composite. It provides the result in units of
-            atoms/barn-cm. To do this it computes the volume of the composite and
-            normalizes to that value. Additionally, if this composite is comprised of
-            multiple children composites, the nuclides within each child composite is
-            also queried to determine the final result.
+            This method provides the capability to query the volume weighted number
+            densities for a list of nuclides within a given composite. It provides the
+            result in units of atoms/barn-cm. The volume weighting is accomplished by
+            multiplying the number densities within each child Composite by the volume
+            of the child Composite and dividing by the total volume of the Composite.
         """
         volumes = numpy.array(
             [
@@ -1339,7 +1343,9 @@ class ArmiObject(metaclass=CompositeModelType):
             of all nuclides within the composite. It does this by leveraging the
             ``_getNdensHelper`` method, which invokes the ``getNuclideNumberDensities``
             method. This method considers the nuclides within each child composite of
-            this composite (if they exist).
+            this composite (if they exist). If the ``expandFissionProducts`` flag is
+            ``True``, then the lumped fission products are expanded to include their
+            constituent elements via the ``_expandLFPs`` method.
 
         Parameters
         ----------
@@ -2503,7 +2509,8 @@ class ArmiObject(metaclass=CompositeModelType):
             Each composite has a name, and some composites are made up
             of collections of child composites. This method retrieves a child
             component from this composite by searching for it by name. If more than
-            one component shares the same name, it raises a ``ValueError``.
+            one component shares the same name, it raises a ``ValueError``. If no
+            components are found by the input name then ``None`` is returned.
 
         Parameters
         ----------
@@ -2723,14 +2730,11 @@ class Composite(ArmiObject):
 
         An ARMI reactor model is composed of collections of ARMIObject objects. This
         class is a child-class of the ARMIObject class and provides an interface
-        allowing a reactor model to be composed of composites. Objects are
-        combined to make components of increasing complexity in a hierarchical
-        manner.
+        allowing a reactor model to be composed of composites.
 
-        This class provides interfaces such as ``__iter__``, to iterate through all
-        child composites, adding, moving, inserting, or sorting children composites,
-        and other utilities which provide the desired hierarchy building capability of
-        an ARMI model.
+        This class provides various methods to query and modify the hierarchical ARMI
+        reactor model, including but not limited to, iterating, sorting, and adding or
+        removing child Composites.
 
     """
 
@@ -2847,7 +2851,7 @@ class Composite(ArmiObject):
 
             If the method is called with ``includeMaterials``, it will additionally
             include information about the material for each child. If a function is
-            supplied as the ``predicate`` argument, then this function will be used
+            supplied as the ``predicate`` argument, then this method will be used
             to evaluate all children as a filter to include or not. For example, if the
             caller of this method only desires children with a certain flag, or children
             which only contain a certain material, then the ``predicate`` function
