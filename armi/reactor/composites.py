@@ -306,7 +306,7 @@ class ArmiObject(metaclass=CompositeModelType):
         or keff values. This class defines an attribute of type ``ParameterCollection``,
         which contains all the functionality of an ARMI ``Parameter`` object. Because
         the entire model is composed of ARMIObjects at the most basic level, each level
-        of the composite tree contains this parameter attribute and can thus be queried.
+        of the Composite tree contains this parameter attribute and can thus be queried.
 
     Attributes
     ----------
@@ -636,7 +636,7 @@ class ArmiObject(metaclass=CompositeModelType):
             :id: I_ARMI_CMP_PARAMS
             :implements: R_ARMI_CMP_PARAMS
 
-            This class method provides an interface for obtaining the
+            This class method allows a user to obtain the
             ``paramCollection`` object, which is the object containing the interface for
             all parameters of an ARMI object.
 
@@ -675,7 +675,7 @@ class ArmiObject(metaclass=CompositeModelType):
             :id: I_ARMI_CMP_GET_NAME
             :implements: R_ARMI_CMP_GET_NAME
 
-            This method provides an interface for returning the name of a composite.
+            This method returns the name of a Composite.
         """
         return self.name
 
@@ -690,7 +690,7 @@ class ArmiObject(metaclass=CompositeModelType):
             :id: I_ARMI_CMP_FLAG0
             :implements: R_ARMI_CMP_FLAG
 
-            This method queries the flags (i.e. the ``typeID``) of the composite for a
+            This method queries the flags (i.e. the ``typeID``) of the Composite for a
             given type, returning a boolean representing whether or not the candidate
             flag is present in this ArmiObject. Candidate flags cannot be passed as a
             ``string`` type and must be of a type ``Flag``. If no flags exist in the
@@ -796,8 +796,7 @@ class ArmiObject(metaclass=CompositeModelType):
             :id: I_ARMI_CMP_FLAG1
             :implements: R_ARMI_CMP_FLAG
 
-            This method provides an interface for setting the flags parameter of the
-            composite.
+            This method allows for the setting of flags parameter of the Composite.
 
         Parameters
         ----------
@@ -917,7 +916,7 @@ class ArmiObject(metaclass=CompositeModelType):
             :id: I_ARMI_CMP_GET_MASS
             :implements: R_ARMI_CMP_GET_MASS
 
-            This method provides an interface for querying the mass of the composite.
+            This method allows for the querying of the mass of a Composite.
             If the ``nuclideNames`` argument is included, it will filter for the mass
             of those nuclide names and provide the sum of the mass of those nuclides.
 
@@ -1268,8 +1267,8 @@ class ArmiObject(metaclass=CompositeModelType):
             :id: I_ARMI_CMP_NUC0
             :implements: R_ARMI_CMP_NUC
 
-            This method provides an interface for querying the number density
-            of a specific nuclide within the composite. It invokes the
+            This method queries the number density
+            of a specific nuclide within the Composite. It invokes the
             ``getNuclideNumberDensities`` method for just the requested nuclide.
 
         Notes
@@ -1294,7 +1293,7 @@ class ArmiObject(metaclass=CompositeModelType):
             :implements: R_ARMI_CMP_NUC
 
             This method provides the capability to query the volume weighted number
-            densities for a list of nuclides within a given composite. It provides the
+            densities for a list of nuclides within a given Composite. It provides the
             result in units of atoms/barn-cm. The volume weighting is accomplished by
             multiplying the number densities within each child Composite by the volume
             of the child Composite and dividing by the total volume of the Composite.
@@ -1339,10 +1338,10 @@ class ArmiObject(metaclass=CompositeModelType):
             :id: I_ARMI_CMP_GET_NDENS
             :implements: R_ARMI_CMP_GET_NDENS
 
-            This method provides an interface for retrieving the number densities
-            of all nuclides within the composite. It does this by leveraging the
+            This method provides a way for retrieving the number densities
+            of all nuclides within the Composite. It does this by leveraging the
             ``_getNdensHelper`` method, which invokes the ``getNuclideNumberDensities``
-            method. This method considers the nuclides within each child composite of
+            method. This method considers the nuclides within each child Composite of
             this composite (if they exist). If the ``expandFissionProducts`` flag is
             ``True``, then the lumped fission products are expanded to include their
             constituent elements via the ``_expandLFPs`` method.
@@ -2506,11 +2505,11 @@ class ArmiObject(metaclass=CompositeModelType):
             :id: I_ARMI_CMP_BY_NAME
             :implements: R_ARMI_CMP_BY_NAME
 
-            Each composite has a name, and some composites are made up
-            of collections of child composites. This method retrieves a child
-            component from this composite by searching for it by name. If more than
-            one component shares the same name, it raises a ``ValueError``. If no
-            components are found by the input name then ``None`` is returned.
+            Each Composite has a name, and some Composites are made up
+            of collections of child Composites. This method retrieves a child
+            Component from this Composite by searching for it by name. If more than
+            one Component shares the same name, it raises a ``ValueError``. If no
+            Components are found by the input name then ``None`` is returned.
 
         Parameters
         ----------
@@ -2729,8 +2728,8 @@ class Composite(ArmiObject):
         :implements: R_ARMI_CMP
 
         An ARMI reactor model is composed of collections of ARMIObject objects. This
-        class is a child-class of the ARMIObject class and provides an interface
-        allowing a reactor model to be composed of composites.
+        class is a child-class of the ARMIObject class and provides a structure
+        allowing a reactor model to be composed of Composites.
 
         This class provides various methods to query and modify the hierarchical ARMI
         reactor model, including but not limited to, iterating, sorting, and adding or
@@ -2845,7 +2844,7 @@ class Composite(ArmiObject):
             :id: I_ARMI_CMP1
             :implements: R_ARMI_CMP
 
-            This method retrieves all children within a given composite object. Children
+            This method retrieves all children within a given Composite object. Children
             of any generation can be retrieved. This is achieved by visiting all
             children and calling this method recursively for each generation requested.
 
@@ -2977,9 +2976,9 @@ class Composite(ArmiObject):
 
             Parameters need to be handled properly during parallel code execution.This
             method synchronizes all parameters of the composite object across all
-            processes by cycling through all the children of the composite and ensuring
+            processes by cycling through all the children of the Composite and ensuring
             that their parameters are properly synchronized. If it fails to synchronize,
-            an error message is displayed which alerts the user to which composite has
+            an error message is displayed which alerts the user to which Composite has
             inconsistent data across the processes.
 
         Returns
