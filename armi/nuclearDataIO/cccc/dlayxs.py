@@ -224,11 +224,37 @@ class DlayxsIO(cccc.Stream):
         self.metadata = dlayxs.metadata
 
     def readWrite(self):
-        """Read and write DLAYXS files.
+        r"""Read and write DLAYXS files.
 
         .. impl:: Tool to read and write DLAYXS files.
             :id: I_ARMI_NUCDATA_DLAYXS
             :implements: R_ARMI_NUCDATA_DLAYXS
+
+            Reading and writing DALYXS delayed neutron data files is performed
+            with the following steps:
+
+            #. Read/write the data ``label`` for identification.
+
+                .. note::
+
+                    MC\ :sup:`2`-3  file does not use the expected number of
+                    characters for the ``label``, so its length needs to be
+                    stored in the :py:class:`~.cccc.IORecord`.
+
+            #. Read/write data length information, i.e. number of energy groups,
+               number of nuclides, and number of precursor families.
+
+            #. Read/write spectral data, including:
+
+                * Nuclide IDs
+                * Decay constants
+                * Emission spectra
+                * Energy group bounds
+                * Number of families to which fission in a given nuclide
+                  contributes delayed neutron precursors
+
+            #. Read/write 3D delayed neutron yield matrix, indexed by nuclide,
+               precursor family, and outgoing neutron energy group.
         """
         runLog.info(
             "{} DLAYXS library {}".format(

@@ -268,6 +268,45 @@ class IsotxsIO(cccc.Stream):
         .. impl:: Tool to read and write ISOTXS files.
             :id: I_ARMI_NUCDATA_ISOTXS
             :implements: R_ARMI_NUCDATA_ISOTXS
+
+            Reading and writing ISOTXS files is performed with the following
+            steps:
+
+            #. Read/write file ID record
+            #. Read/write file 1D record, which includes:
+
+                * Number of energy groups (``NGROUP``)
+                * Maximum number of up-scatter groups (``MAXUP``)
+                * Maximum number of down-scatter groups (``MAXDN``)
+                * Maximum scattering order (``MAXORD``)
+                * File-wide specification on fission spectrum type, i.e. vector
+                  or matrix (``ICHIST``)
+                * Maximum number of blocks of scattering data (``MSCMAX``)
+                * Subblocking control for scatter matrices (``NSBLOK``)
+
+            #. Read/write file 2D record, which includes:
+
+                * Library IDs for each isotope (``HSETID(I)``)
+                * Isotope names (``HISONM(I)``)
+                * Global fission spectrum (``CHI(J)``) if file-wide spectrum is
+                  specified (``ICHIST`` = 1)
+                * Energy group structure (``EMAX(J)`` and ``EMIN``)
+                * Locations of each nuclide record in the file (``LOCA(I)``)
+
+                    .. note::
+
+                        This is not used within ARMI, because it can compute it
+                        arbitrarily. Other codes use this to seek to a specific
+                        position within an ISOTXS file.
+
+            #. Read/write file 4D record for each nuclide, which includes
+               isotope-dependent, group-independent data.
+            #. Read/write file 5D record for each nuclide, which includes
+               principal cross sections.
+            #. Read/write file 6D record for each nuclide, which includes
+               fission spectrum if it is flagged as a matrix (``ICHI`` > 1)
+            #. Read/write file 7D record for each nuclide, which includes the
+               scattering matrices.
         """
         self._rwMessage()
         properties.unlockImmutableProperties(self._lib)
