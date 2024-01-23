@@ -131,7 +131,7 @@ def defineSettings():
             description="Generate multigroup cross sections for the selected particle "
             "type(s) using the specified lattice physics kernel (see Lattice Physics "
             "tab). When not set, the XS library will be auto-loaded from an existing "
-            "ISOTXS in the working directory, but fail fail if there is no ISOTXS.",
+            "ISOTXS in the working directory, but fail if there is no ISOTXS.",
             options=["", "Neutron", "Neutron and Gamma"],
         ),
         setting.Setting(
