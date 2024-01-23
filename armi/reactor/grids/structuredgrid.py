@@ -305,7 +305,7 @@ class StructuredGrid(Grid):
             The math for finding the centroid turns out to be very easy, as the mesh is
             defined on the coordinates. So finding the mid-point along one axis is just
             taking the upper and lower bounds and dividing by two. And this is done for
-            all axis. There are no more complicated situations where we need to find
+            all axes. There are no more complicated situations where we need to find
             the centroid of a octagon on a rectangular mesh, or the like.
         """
         indices = numpy.array(indices)

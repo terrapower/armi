@@ -97,11 +97,11 @@ class Grid(ABC):
         """Symmetry applied to the grid.
 
         .. impl:: Grids shall be able to repesent 1/3 and full core symmetries.
-            :id: I_ARMI_GRID_SYMMETRY
+            :id: I_ARMI_GRID_SYMMETRY0
             :implements: R_ARMI_GRID_SYMMETRY
 
             Every grid contains a :py:class:`armi.reactor.geometry.SymmetryType` or
-            string that defines a grid as full core, or 1/3 core, or 1/4, 1/8, or 1/16
+            string that defines a grid as full core or a partial core: 1/3, 1/4, 1/8, or 1/16
             core. The idea is that the user can define 1/3 or 1/4 of the reactor, so
             the analysis can be run faster on a smaller reactor. And if a non-full
             core reactor grid is defined, the boundaries of the grid can be reflective

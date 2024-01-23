@@ -56,7 +56,7 @@ class HexGrid(StructuredGrid):
 
         This class represents a hexagonal ``StructuredGrid``, that is one where the
         mesh maps to real, physical coordinates. This hexagonal grid is 2D, and divides
-        the plane up into regular, hexagons. That is, each hexagon is symmetric and
+        the plane up into regular hexagons. That is, each hexagon is symmetric and
         is precisely flush with six neighboring hexagons. This class only allows for
         two rotational options: flats up (where two sides of the hexagons are parallel
         with the X-axis), and points up (where two sides are parallel with the Y-axis).
