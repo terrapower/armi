@@ -322,9 +322,9 @@ class HexGrid(StructuredGrid):
         return symmetryLine
 
     def getSymmetricEquivalents(self, indices: IJKType) -> List[IJType]:
-        """Retrieve e quivalent contents based on 3rd symmetry.
+        """Retrieve equivalent contents based on third core periodic symmetry.
 
-        .. impl:: Equivalent contents in 3rd geometry are retrievable.
+        .. impl:: Retrieve the symmetric equivalent grid indices in third core hexagonal geometry.
             :id: I_ARMI_GRID_EQUIVALENTS
             :implements: R_ARMI_GRID_EQUIVALENTS
         """
