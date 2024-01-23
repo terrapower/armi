@@ -154,7 +154,7 @@ class MacroXSGenerationInterface(interfaces.Interface):
             section library. If no blocks are specified, cross sections are
             calculated for all blocks in the core. If no library is specified,
             the existing r.core.lib is used. The basic arithmetic involved in
-            generating macrosopic cross sections consists of multiplying
+            generating macroscopic cross sections consists of multiplying
             isotopic number densities by isotopic microscopic cross sections and
             summing over all isotopes in a composition. The calculation is
             implemented in :py:func:`computeMacroscopicGroupConstants
