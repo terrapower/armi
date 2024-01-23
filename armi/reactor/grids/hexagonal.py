@@ -47,12 +47,19 @@ class HexGrid(StructuredGrid):
     """
     Has 6 neighbors in plane.
 
-    It is recommended to use :meth:`fromPitch` rather than
-    calling the ``__init__`` constructor directly.
+    It is recommended to use :meth:`fromPitch` rather than calling the ``__init__``
+    constructor directly.
 
     .. impl:: Construct a hexagonal lattice.
         :id: I_ARMI_GRID_HEX
         :implements: R_ARMI_GRID_HEX
+
+        This class represents a hexagonal ``StructuredGrid``, that is one where the
+        mesh maps to real, physical coordinates. This hexagonal grid is 2D, and divides
+        the plane up into regular, hexagons. That is, each hexagon is symmetric and
+        is precisely flush with six neighboring hexagons. This class only allows for
+        two rotational options: flats up (where two sides of the hexagons are parallel
+        with the X-axis), and points up (where two sides are parallel with the Y-axis).
 
     Notes
     -----
@@ -82,9 +89,21 @@ class HexGrid(StructuredGrid):
             :id: I_ARMI_GRID_HEX_TYPE
             :implements: R_ARMI_GRID_HEX_TYPE
 
-        .. impl:: The user can specify the symmetry of a hexagonal grid when creating one.
+            When this method creates a ``HexGrid`` object, it can create a hexagonal
+            grid with one of two rotations: flats up (where two sides of the hexagons
+            are parallel with the X-axis), and points up (where two sides are parallel
+            with the Y-axis). While it is possible to imagine the hexagons being
+            rotated at other arbitrary angles, those are not supported here.
+
+        .. impl:: When creating a hexagonal grid, the user can specify the symmetry.
             :id: I_ARMI_GRID_SYMMETRY1
             :implements: R_ARMI_GRID_SYMMETRY
+
+            When this method creates a ``HexGrid`` object, it takes as an input the
+            symmetry of the resultant grid. This symmetry can be a string (e.g. "full")
+            or a ``SymmetryType`` object (e.g. ``FULL_CORE``). If the grid is not full-
+            core, the method ``getSymmetricEquivalents()`` will be usable to map any
+            possible grid cell to the ones that are being modeled in the sub-grid.
 
         Parameters
         ----------
@@ -322,11 +341,18 @@ class HexGrid(StructuredGrid):
         return symmetryLine
 
     def getSymmetricEquivalents(self, indices: IJKType) -> List[IJType]:
-        """Retrieve e quivalent contents based on 3rd symmetry.
+        """Retrieve the equivalent indices; return them as-is if this is full core, but
+        return the symmetric equivalent if this is a 1/3-core grid.
 
-        .. impl:: Equivalent contents in 3rd geometry are retrievable.
+        .. impl:: Equivalent contents in 1/3-core geometries are retrievable.
             :id: I_ARMI_GRID_EQUIVALENTS
             :implements: R_ARMI_GRID_EQUIVALENTS
+
+            This method takes in (I,J,K) indices, and if this ``HexGrid`` is full core,
+            it returns them as-is. If this ``HexGrid`` is 1/3-core, this method will
+            return the 1/3-core symmetric equivalent. If this grid is any other kind,
+            this method will just return an error; a hexagonal grid with any other
+            symmetry is probably an error.
         """
         if (
             self.symmetry.domain == geometry.DomainType.THIRD_CORE
@@ -344,7 +370,9 @@ class HexGrid(StructuredGrid):
 
     @staticmethod
     def _getSymmetricIdenticalsThird(indices) -> List[IJType]:
-        """This works by rotating the indices by 120 degrees twice, counterclockwise."""
+        """This works by rotating the indices by 120 degrees twice,
+        counterclockwise.
+        """
         i, j = indices[:2]
         if i == 0 and j == 0:
             return []
@@ -353,7 +381,8 @@ class HexGrid(StructuredGrid):
 
     def triangleCoords(self, indices: IJKType) -> numpy.ndarray:
         """
-        Return 6 coordinate pairs representing the centers of the 6 triangles in a hexagon centered here.
+        Return 6 coordinate pairs representing the centers of the 6 triangles in a
+        hexagon centered here.
 
         Ignores z-coordinate and only operates in 2D for now.
         """
@@ -377,27 +406,37 @@ class HexGrid(StructuredGrid):
             return True
 
     def isInFirstThird(self, locator, includeTopEdge=False) -> bool:
-        """True if locator is in first third of hex grid.
+        """Test if the given locator is in the first 1/3 of the HexGrid.
 
         .. impl:: Determine if grid is in first third.
             :id: I_ARMI_GRID_SYMMETRY_LOC
             :implements: R_ARMI_GRID_SYMMETRY_LOC
+
+            This is a simple helper method to determine if a given locator (from an
+            ArmiObject) is in the first 1/3 of the ``HexGrid``. This method does not
+            attempt to check if this grid is full or 1/3-core. It just does the basic
+            math of dividing up a hex-assembly reactor core into thirds and testing if
+            the given location is in the first 1/3 or not.
         """
         ring, pos = self.getRingPos(locator.indices)
         if ring == 1:
             return True
+
         maxPosTotal = self.getPositionsInRing(ring)
 
         maxPos1 = ring + ring // 2 - 1
         maxPos2 = maxPosTotal - ring // 2 + 1
         if ring % 2:
-            # odd ring. Upper edge assem typically not included.
+            # Odd ring; upper edge assem typically not included.
             if includeTopEdge:
                 maxPos1 += 1
         else:
-            maxPos2 += 1  # make a table to understand this.
+            # Even ring; upper edge assem included.
+            maxPos2 += 1
+
         if pos <= maxPos1 or pos >= maxPos2:
             return True
+
         return False
 
     def generateSortedHexLocationList(self, nLocs: int):
@@ -410,7 +449,7 @@ class HexGrid(StructuredGrid):
         by ring number then position number.
         """
         # first, roughly calculate how many rings need to be created to cover nLocs worth of assemblies
-        nLocs = int(nLocs)  # need to make this an integer
+        nLocs = int(nLocs)
 
         # next, generate a list of locations and corresponding distances
         locList = []
@@ -419,14 +458,16 @@ class HexGrid(StructuredGrid):
             for position in range(1, positions + 1):
                 i, j = self.getIndicesFromRingAndPos(ring, position)
                 locList.append(self[(i, j, 0)])
+
         # round to avoid differences due to floating point math
         locList.sort(
             key=lambda loc: (
                 round(numpy.linalg.norm(loc.getGlobalCoordinates()), 6),
-                loc.i,  # loc.i=ring
+                loc.i,
                 loc.j,
             )
-        )  # loc.j= pos
+        )
+
         return locList[:nLocs]
 
     # TODO: this is only used by testing and another method that just needs the count of assemblies
@@ -456,4 +497,5 @@ class HexGrid(StructuredGrid):
             loc = IndexLocation(i, j, 0, None)
             if self.isInFirstThird(loc, includeEdgeAssems):
                 positions.append(pos)
+
         return positions
