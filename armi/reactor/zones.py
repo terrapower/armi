@@ -224,7 +224,7 @@ class Zones:
         to validate that the zones are mutually exclusive, obtain the location
         labels of zones, return the Zone object where a particular Assembly or Block
         resides, sort the Zone objects alphabetically, and summarize the zone
-        definitions. In addition, Class methods are provided to facilitate the
+        definitions. In addition, methods are provided to facilitate the
         retrieval of Zone objects by name, loop through the Zones in order, and
         return the number of Zone objects.
     """
