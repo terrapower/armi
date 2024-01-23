@@ -148,6 +148,24 @@ class GridBlueprint(yamlize.Object):
         :id: I_ARMI_BP_GRID
         :implements: R_ARMI_BP_GRID
 
+        Defines a yaml construct that allows the user to a grid
+        from within their blueprints file, including a name, geometry, dimensions,
+        symmetry, and a map specifying the relative locations of components within that grid.
+
+        Relies on the underlying infrastrature from the ``yamlize`` package for
+        reading from text files, serialization, and internal storage of the data.
+
+        Is implemented as part of a blueprints file by being used in key-value pairs
+        within the :py:class:~`armi.reactor.blueprints.gridBlueprint.Grid` class,
+        which is imported and used as an attribute within the larger :py:class:`~armi.reactor.blueprints.Blueprints`
+        class.
+
+        Includes a ``construct`` method, which instantiates an instance of one
+        of the subclasses of :py:class:`~armi.reactor.grids.structuredgrid.StructuredGrid`.
+        This is typically called from within :py:meth:`~armi.reactor.blueprints.blockBlueprint.BlockBlueprint.construct`,
+        which then also associates the individual components in the block with
+        locations specifed in the grid.
+
     Attributes
     ----------
     name : str
