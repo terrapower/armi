@@ -44,10 +44,13 @@ class Grid(ABC):
         be a smaller mesh to define the layout of pins in a reactor, or fuel pellets in
         a pin, or the layout of some intricate ex-core structure.
 
-        Every time the ``location`` of an object in the reactor is returned, ARMI will
-        look to see if the grid this object is in has a parent, and if so, ARMI will
-        try to sum the indices of the two nested grids to give a resultant, more
-        finely-grained grid position. ARMI can only handle grids nested 3 deep.
+        Every time the :py:class:` armi.reactor.grids.locations.IndexLocation` of an
+        object in the reactor is returned, ARMI will look to see if the grid this object
+        is in has a :py:meth:`parent <armi.reactor.grids.locations.IndexLocation.parentLocation>`,
+        and if so, ARMI will try to sum the
+        :py:meth:`indices <armi.reactor.grids.locations.IndexLocation.indices>` of the two
+        nested grids to give a resultant, more finely-grained grid position. ARMI can only
+        handle grids nested 3 deep.
 
     Parameters
     ----------
