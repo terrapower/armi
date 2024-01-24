@@ -43,9 +43,9 @@ class FuelHandlerInterface(interfaces.Interface):
         User logic is able to be executed from within the
         :py:meth:`~armi.physics.fuelCycle.fuelHandlerInterface.FuelHandlerInterface.manageFuel` method,
         which will use the :py:meth:`~armi.physics.fuelCycle.fuelHandlerFactory.fuelHandlerFactory`
-        to search for a Python file specified by the case settings
-        ``fuelHandlerName`` and ``shuffleLogic``. If it exists, the user-specified
-        fuel handler will be imported, and any actions in its ``outage`` method
+        to search for a Python file specified by the case setting ``shuffleLogic``.
+        If it exists, the fuel handler with name specified by the user via the ``fuelHandlerName``
+        case setting will be imported, and any actions in its ``outage`` method
         will be executed at the :py:meth:`~armi.physics.fuelCycle.fuelHandlerInterface.FuelHandlerInterface.interactBOC`
         hook.
 
