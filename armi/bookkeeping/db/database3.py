@@ -113,6 +113,12 @@ class Database3:
         :id: I_ARMI_DB_H51
         :implements: R_ARMI_DB_H5
 
+        This class implements a light wrapper around H5 files, so they can be used to
+        store ARMI outputs. H5 files are commonly used in scientific applications in
+        Fortran and C++. As such, they are entirely language agnostic binary files. The
+        implementation here is that ARMI wraps the ``h5py`` library, and uses its
+        extensive tooling, instead of re-inventing the wheel.
+
     See Also
     --------
     `doc/user/outputs/database` for more details.
@@ -228,6 +234,13 @@ class Database3:
         .. impl:: Add system attributes to the database.
             :id: I_ARMI_DB_QA
             :implements: R_ARMI_DB_QA
+
+            This method writes some basic system information to the H5 file. This is
+            designed as a starting point, so users can see information about the system
+            their simulations were run on. As ARMI is used on Windows and Linux, the
+            tooling here has to be platform independent. The two major sources of
+            information are the ARMI :py:mod:`context <armi.context>` module and the
+            Python standard library ``platform``.
         """
         h5db.attrs["user"] = context.USER
         h5db.attrs["python"] = sys.version
@@ -458,9 +471,19 @@ class Database3:
             :id: I_ARMI_DB_CS
             :implements: R_ARMI_DB_CS
 
+            A ``Settings`` object is passed into this method, and then the settings are
+            converted into a YAML string stream. That stream is then written to the H5
+            file. Optionally, this method can take a pre-build settings string to be
+            written directly to the file.
+
         .. impl:: The reactor blueprints are saved the settings file.
             :id: I_ARMI_DB_BP
             :implements: R_ARMI_DB_BP
+
+            A ``Blueprints`` string is optionally passed into this method, and then
+            written to the H5 file. If it is not passed in, this method will attempt to
+            find the blueprints input file in the settings, and read the contents of
+            that file into a stream to be written to the H5 file.
 
         Notes
         -----
@@ -678,15 +701,24 @@ class Database3:
     ):
         """Load a new reactor from (cycle, node).
 
-        Case settings and blueprints can be provided by the client, or read from the database itself.
-        Providing these from the client could be useful when performing snapshot runs
-        or where it is expected to use results from a run using different settings and
-        continue with new settings (or if blueprints are not on the database).
-        Geometry is read from the database itself.
+        Case settings and blueprints can be provided by the client, or read from the
+        database itself. Providing these from the client could be useful when
+        performing snapshot runs or where it is expected to use results from a run
+        using different settings and continue with new settings (or if blueprints are
+        not on the database). Geometry is read from the database itself.
 
         .. impl:: Users can load a reactor from a DB.
             :id: I_ARMI_DB_R_LOAD
             :implements: R_ARMI_DB_R_LOAD
+
+            This method creates a ``Reactor`` object by reading the reactor state out
+            of an ARMI database file. This is done by passing in mandatory arguements
+            that specify the exact place in time you want to load the reactor from.
+            (That is, the cycle and node numbers.) Users can either pass the settings
+            and blueprints directly into this method, or it will attempt to read them
+            from the database file. The primary work done here is to read the hierarchy
+            of reactor objects from the data file, then reconstruct them in the correct
+            order.
 
         Parameters
         ----------
@@ -754,6 +786,7 @@ class Database3:
                 f"Due to the setting {CONF_SORT_REACTOR}, this Reactor is unsorted. "
                 "But this feature is temporary and will be removed by 2024."
             )
+
         return root
 
     @staticmethod
