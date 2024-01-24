@@ -1383,13 +1383,7 @@ class CartesianReactorNeighborTests(ReactorTests):
         self.r = loadTestReactor(TEST_ROOT, inputFileName="zpprTest.yaml")[1]
 
     def test_findNeighborsCartesian(self):
-        """
-        Find neighbors of a given assembly in Cartesian grid.
-
-        .. test:: Retrieve neighboring assemblies of a given assembly in a Cartesian grid.
-            :id: T_ARMI_R_FIND_NEIGHBORS_CART
-            :tests: R_ARMI_R_FIND_NEIGHBORS
-        """
+        """Find neighbors of a given assembly in a Cartesian grid."""
         loc = self.r.core.spatialGrid[1, 1, 0]
         a = self.r.core.childrenByLocator[loc]
         neighbs = self.r.core.findNeighbors(a)
