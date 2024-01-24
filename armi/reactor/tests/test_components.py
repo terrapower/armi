@@ -586,7 +586,7 @@ class TestCircle(TestShapedComponent):
         is defined with dimensions that depend on the fuel outer diameter and
         clad inner diameter. The
         :py:meth:`~armi.reactor.components.component.Component.resolveLinkedDims`
-        method links the gap dimensions appropriately when the component is
+        method links the gap dimensions appropriately when the Component is
         constructed, and the test shows the area of the gap is calculated
         correctly based on the thermally-expanded dimensions of the fuel and
         clad components.
