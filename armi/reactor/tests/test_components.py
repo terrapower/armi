@@ -582,7 +582,7 @@ class TestCircle(TestShapedComponent):
             :id: T_ARMI_COMP_FLUID1
             :tests: R_ARMI_COMP_FLUID
 
-        The component ``gap``, representing the fuel-clad gap filled with void,
+        The component ``gap``, representing the fuel-clad gap filled with Void,
         is defined with dimensions that depend on the fuel outer diameter and
         clad inner diameter. The
         :py:meth:`~armi.reactor.components.component.Component.resolveLinkedDims`
