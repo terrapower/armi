@@ -320,11 +320,11 @@ class AverageBlockCollection(BlockCollection):
         :id: I_ARMI_XSGM_CREATE_REPR_BLOCKS0
         :implements: R_ARMI_XSGM_CREATE_REPR_BLOCKS
 
-        This class functions as a data structure for utilties that construct new blocks from an existing block list based on a 
-        volume-weighted average. Inheriting functionality from the abstract 
-        :py:class:`Reactor <armi.physics.neutronics.crossSectionGroupManager.BlockCollection>` object, this class 
+        This class functions as a data structure for utilties that construct new blocks from an existing block list based on a
+        volume-weighted average. Inheriting functionality from the abstract
+        :py:class:`Reactor <armi.physics.neutronics.crossSectionGroupManager.BlockCollection>` object, this class
         will construct representative blocks using averaged parameters of all blocks in the given collection.
-        Number density averages can be computed at a component level through `self._performAverageByComponent`, 
+        Number density averages can be computed at a component level through `self._performAverageByComponent`,
         or at a block level by default. Average nuclide temperatures and burnup are also included when constructing a representative block.
 
     """
@@ -521,8 +521,8 @@ class CylindricalComponentsAverageBlockCollection(BlockCollection):
         :implements: R_ARMI_XSGM_CREATE_REPR_BLOCKS
 
         This class functions as a data structure for utilties that construct representative blocks based on a volume-weighted average
-        using cylindrical blocks from an existing block list. Inheriting functionality from the abstract 
-        :py:class:`Reactor <armi.physics.neutronics.crossSectionGroupManager.BlockCollection>` object, this class 
+        using cylindrical blocks from an existing block list. Inheriting functionality from the abstract
+        :py:class:`Reactor <armi.physics.neutronics.crossSectionGroupManager.BlockCollection>` object, this class
         will construct representative blocks using averaged parameters of all blocks in the given collection.
         Number density averages are computed at a component level. Nuclide temperatures from a median block-average temperature
         are used and the average burnup is evaluated across all blocks in the block list.
@@ -914,7 +914,7 @@ class CrossSectionGroupManager(interfaces.Interface):
             :id: I_ARMI_XSGM_FREQ2
             :implements: R_ARMI_XSGM_FREQ
 
-            This method will update representative blocks and block burnups at every node for each cross-section ID if the control logic 
+            This method will update representative blocks and block burnups at every node for each cross-section ID if the control logic
             for lattices physics frequency updates is set for every node (`everyNode`) through the :py:class:`LatticePhysicsInterface <armi.physics.neutronics.latticePhysics>`.
             At every node, the cross-section group manager will construct representative blocks for each cross-section ID in the current reactor state.
 
