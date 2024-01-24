@@ -220,7 +220,9 @@ class Dif3dStream(cccc.StreamWithDataContainer):
             record. The keys in each dictionary represent the parsed grouping of
             words in the records; for example, for the 4D record (stored as the
             attribute ``fourD``), each groupwise overrelaxation factor is stored
-            as the key ``OMEGA{i}``, where ``i`` is the group number.
+            as the key ``OMEGA{i}``, where ``i`` is the group number. See
+            :need:`I_ARMI_NUCDATA` for more details on the general
+            implementation.
 
             Each record is also embedded with the record size at the beginning
             and end of the record (always assumed to be present), which is used

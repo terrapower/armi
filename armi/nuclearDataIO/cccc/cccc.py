@@ -13,8 +13,21 @@
 # limitations under the License.
 
 """
-Defines containers for the reading and writing standard interface files 
+Defines containers for the reading and writing standard interface files
 for reactor physics codes.
+
+.. impl:: Generic tool for reading and writing CCCC format files for reactor physics codes
+    :id: I_ARMI_NUCDATA
+    :implements: R_ARMI_NUCDATA_ISOTXS,
+                 R_ARMI_NUCDATA_GAMISO,
+                 R_ARMI_NUCDATA_GEODST,
+                 R_ARMI_NUCDATA_DIF3D,
+                 R_ARMI_NUCDATA_PMATRX,
+                 R_ARMI_NUCDATA_DLAYXS
+
+    This module provides a number of base classes that implement general capabilities for binary and ascii file I/O. The :py:class:`IORecord` serves as an abstract base class that instantiates a number of methods which the binary and ascii children classes are meant to implement. These methods, prefixed with ``rw``, are meant to convert literal data types, e.g. float or int, to either binary or ascii. This base class does its own conversion for container data types, e.g. list or matrix, relying on the child implementation of the literal types that the container possesses. The binary conversion is implemented in :py:class:`BinaryRecordReader` and :py:class`BinaryRecordWriter`. The ascii conversion is implemented in :py:class:`AsciiRecordReader` and :py:class:`AsciiRecordWriter`.
+
+    These :py:class`IORecord` classes are used within :py:class`Stream` objects for the data conversion.
 """
 import io
 import itertools

@@ -190,8 +190,10 @@ class PmatrxIO(cccc.Stream):
             :id: I_ARMI_NUCDATA_PMATRX
             :implements: R_ARMI_NUCDATA_PMATRX
 
-            Reading and writing PMATRIX files is performed with the following
-            steps:
+            Reading and writing PMATRX files is performed using the general
+            nuclear data I/O functionalities described in
+            :need:`I_ARMI_NUCDATA`. A PMATRX file specifically follows the
+            following steps:
 
             #. Read/write global information including:
 

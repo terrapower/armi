@@ -269,8 +269,10 @@ class IsotxsIO(cccc.Stream):
             :id: I_ARMI_NUCDATA_ISOTXS
             :implements: R_ARMI_NUCDATA_ISOTXS
 
-            Reading and writing ISOTXS files is performed with the following
-            steps:
+            Reading and writing ISOTXS files is performed using the general
+            nuclear data I/O functionalities described in
+            :need:`I_ARMI_NUCDATA`. A ISOTXS file specifically follows the
+            following steps:
 
             #. Read/write file ID record
             #. Read/write file 1D record, which includes:

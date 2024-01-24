@@ -137,8 +137,10 @@ class GeodstStream(cccc.StreamWithDataContainer):
             :id: I_ARMI_NUCDATA_GEODST
             :implements: R_ARMI_NUCDATA_GEODST
 
-            Reading and writing GEODST files is performed with the following
-            steps:
+            Reading and writing GEODST files is performed using the general
+            nuclear data I/O functionalities described in
+            :need:`I_ARMI_NUCDATA`. A GEODST file specifically follows the
+            following steps:
 
             #. Read/write file ID record
 
