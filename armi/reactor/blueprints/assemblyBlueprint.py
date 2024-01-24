@@ -125,7 +125,7 @@ class AssemblyBlueprint(yamlize.Object):
         a list of axial mesh points in each block, a list of cross section identifiers
         for each block, and material options (see :need:`I_ARMI_MAT_USER_INPUT0`).
 
-        Relies on the underlying infrastrature from the ``yamlize`` package for
+        Relies on the underlying infrastructure from the ``yamlize`` package for
         reading from text files, serialization, and internal storage of the data.
 
         Is implemented as part of a blueprints file by being imported and used

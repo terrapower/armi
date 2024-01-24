@@ -135,7 +135,7 @@ class ComponentBlueprint(yamlize.Object):
         Limited validation on the inputs is performed to ensure that the component
         shape corresponds to a valid shape defined by the ARMI application.
 
-        Relies on the underlying infrastrature from the ``yamlize`` package for
+        Relies on the underlying infrastructure from the ``yamlize`` package for
         reading from text files, serialization, and internal storage of the data.
 
         Is implemented as part of a blueprints file by being imported and used

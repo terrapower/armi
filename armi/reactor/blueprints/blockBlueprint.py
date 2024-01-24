@@ -57,7 +57,7 @@ class BlockBlueprint(yamlize.KeyedList):
         contained within the block, where the keys are component names and the
         values are component blueprints (see :py:class:`~armi.reactor.blueprints.ComponentBlueprint.ComponentBlueprint`).
 
-        Relies on the underlying infrastrature from the ``yamlize`` package for
+        Relies on the underlying infrastructure from the ``yamlize`` package for
         reading from text files, serialization, and internal storage of the data.
 
         Is implemented into a blueprints file by being imported and used
