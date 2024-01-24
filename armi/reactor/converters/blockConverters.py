@@ -218,7 +218,8 @@ class ComponentMerger(BlockConverter):
         :implements: R_ARMI_BLOCKCONV
 
         This subclass of ``BlockConverter`` is meant as a one-time-use tool, to convert
-        a multi-component ``Block`` into one ``Component``. This means averaging the
+        a ``Block`` into one ``Component``. A ``Block`` is a ``Composite`` that may
+        probably has multiple ``Components`` somewhere in it. This means averaging the
         material properties in the original ``Block``, and ensuring that the final
         ``Component`` has the same shape and volume as the original ``Block``. This
         subclass essentially just uses the base class method
