@@ -162,7 +162,7 @@ class AxialExpansionChanger:
             :id: I_ARMI_AXIAL_EXP_PRESC
             :implements: R_ARMI_AXIAL_EXP_PRESC
 
-            This method performs component-wise axial expansion for an assembly given expansion coefficients
+            This method performs component-wise axial expansion for an Assembly given expansion coefficients
             and a corresponding list of Components. In ``setAssembly``, the Assembly is prepared
             for axial expansion by determining Component-wise axial linkage and checking to see if a dummy Block
             is in place (necessary for ensuring conservation properties). The provided expansion factors are
@@ -311,7 +311,6 @@ class AxialExpansionChanger:
             of the top-most Block in an Assembly. The ``zbottom`` of the top-most Block is
             adjusted to match the Block immediately below it. The ``height`` of the
             top-most Block is is then updated to reflect any expansion/contraction.
-
         """
         mesh = [0.0]
         numOfBlocks = self.linked.a.countBlocksWithFlags()
