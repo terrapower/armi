@@ -1116,7 +1116,7 @@ class CrossSectionGroupManager(interfaces.Interface):
             :id: I_ARMI_XSGM_CREATE_XS_GROUPS
             :implements: R_ARMI_XSGM_CREATE_XS_GROUPS
 
-            This method functions as a data structure for constructing the representative blocks and block burnups
+            This method constructs the representative blocks and block burnups
             for each cross-section ID in the reactor model. Starting with the making of cross-section groups, it will
             find candidate blocks and create representative blocks from that selection.
 
