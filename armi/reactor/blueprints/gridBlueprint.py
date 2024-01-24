@@ -148,6 +148,24 @@ class GridBlueprint(yamlize.Object):
         :id: I_ARMI_BP_GRID
         :implements: R_ARMI_BP_GRID
 
+        Defines a yaml construct that allows the user to specify a grid
+        from within their blueprints file, including a name, geometry, dimensions,
+        symmetry, and a map with the relative locations of components within that grid.
+
+        Relies on the underlying infrastructure from the ``yamlize`` package for
+        reading from text files, serialization, and internal storage of the data.
+
+        Is implemented as part of a blueprints file by being used in key-value pairs
+        within the :py:class:`~armi.reactor.blueprints.gridBlueprint.Grid` class,
+        which is imported and used as an attribute within the larger :py:class:`~armi.reactor.blueprints.Blueprints`
+        class.
+
+        Includes a ``construct`` method, which instantiates an instance of one
+        of the subclasses of :py:class:`~armi.reactor.grids.structuredgrid.StructuredGrid`.
+        This is typically called from within :py:meth:`~armi.reactor.blueprints.blockBlueprint.BlockBlueprint.construct`,
+        which then also associates the individual components in the block with
+        locations specifed in the grid.
+
     Attributes
     ----------
     name : str
@@ -526,21 +544,34 @@ def _filterOutsideDomain(gridBp):
 
 
 def saveToStream(stream, bluep, full=False, tryMap=False):
-    """Save the blueprints to the passed stream.
+    """
+    Save the blueprints to the passed stream.
 
     This can save either the entire blueprints, or just the `grids:` section of the
     blueprints, based on the passed ``full`` argument. Saving just the grid
     blueprints can be useful when cobbling blueprints together with !include flags.
 
-    stream: file output stream of some kind
-    bluep: armi.reactor.blueprints.Blueprints, or Grids
-    full: bool ~ Is this a full output file, or just a partial/grids?
-    tryMap: regardless of input form, attempt to output as a lattice map. let's face it;
-    they're prettier.
-
     .. impl:: Write a blueprint file from a blueprint object.
         :id: I_ARMI_BP_TO_DB
         :implements: R_ARMI_BP_TO_DB
+
+        First makes a copy of the blueprints that are passed in. Then modifies
+        any grids specified in the blueprints into a canonical lattice map style,
+        if needed. Then uses the ``dump`` method that is inherent to all ``yamlize``
+        subclasses to write the blueprints to the given ``stream`` object.
+
+        If called with the ``full`` argument, the entire blueprints is dumped.
+        If not, only the grids portion is dumped.
+
+    Parameters
+    ----------
+    stream :
+        file output stream of some kind
+    bluep : armi.reactor.blueprints.Blueprints, or Grids
+    full : bool
+        Is this a full output file, or just a partial/grids?
+    tryMap : bool
+        regardless of input form, attempt to output as a lattice map
     """
     # To save, we want to try our best to output our grid blueprints in the lattice
     # map style. However, we do not want to wreck the state that the current

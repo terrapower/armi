@@ -67,16 +67,34 @@ from armi.utils.mathematics import average1DWithinTolerance
 
 class Reactor(composites.Composite):
     """
-    Top level of the composite structure, potentially representing all components in a reactor.
+    Top level of the composite structure, potentially representing all
+    components in a reactor.
 
-    This class contains the core and any ex-core structures that are to be represented in the ARMI
-    model. Historically, the `Reactor` contained only the core. To support better representation of
-    ex-core structures, the old `Reactor` functionality was moved to the newer `Core` class, which
-    has a `Reactor` parent.
+    This class contains the core and any ex-core structures that are to be
+    represented in the ARMI model. Historically, the `Reactor` contained only
+    the core. To support better representation of ex-core structures, the old
+    `Reactor` functionality was moved to the newer `Core` class, which has a
+    `Reactor` parent.
 
     .. impl:: The user-specified reactor.
         :id: I_ARMI_R
         :implements: R_ARMI_R
+
+        The :py:class:`Reactor <armi.reactor.reactors.Reactor>` is the top
+        level of the composite structure, which can represent all components
+        within a reactor core. The reactor contains a :py:class:`Core
+        <armi.reactor.reactors.Core>`, which contains a collection of
+        :py:class:`Assembly <armi.reactor.assemblies.Assembly>` objects
+        arranged in a hexagonal or Cartesian grid. Each Assembly consists of a
+        stack of :py:class:`Block <armi.reactor.blocks.Block>` objects, which
+        are each composed of one or more :py:class:`Component
+        <armi.reactor.components.component.Component>` objects. Each
+        :py:class:`Interface <armi.interfaces.Interface>` is able to interact
+        with the reactor and its child :py:class:`Composites
+        <armi.reactor.composites.Composite>` by retrieving data from it or
+        writing new data to it. This is the main medium through which input
+        information and the output of physics calculations is exchanged between
+        interfaces and written to an ARMI database.
     """
 
     pDefs = reactorParameters.defineReactorParameters()
@@ -240,6 +258,19 @@ class Core(composites.Composite):
         :id: I_ARMI_R_CORE
         :implements: R_ARMI_R_CORE
 
+        A :py:class:`Core <armi.reactor.reactors.Core>` object is typically a
+        child of a :py:class:`Reactor <armi.reactor.reactors.Reactor>` object.
+        A Reactor can contain multiple objects of the Core type. The instance
+        attribute name `r.core` is reserved for the object representating the
+        active core. A reactor may also have a spent fuel pool instance
+        attribute, `r.sfp`, which is also of type
+        :py:class:`core <armi.reactor.reactors.Core>`.
+
+        Most of the operations to retrieve information from the ARMI reactor
+        data model are mediated through Core objects. For example,
+        :py:meth:`getAssemblies() <armi.reactor.reactors.Core.getAssemblies>` is
+        used to get a list of all assemblies in the Core.
+
     Attributes
     ----------
     params : dict
@@ -348,6 +379,26 @@ class Core(composites.Composite):
         .. impl:: Get core symmetry.
             :id: I_ARMI_R_SYMM
             :implements: R_ARMI_R_SYMM
+
+            This property getter returns the symmetry attribute of the
+            spatialGrid instance attribute. The spatialGrid is an instance of a
+            child of the abstract base class :py:class:`Grid
+            <armi.reactor.grids.grid.Grid>` type. The symmetry attribute is an
+            instance of the :py:class:`SymmetryType
+            <armi.reactor.geometry.SymmetryType>` class, which is a wrapper
+            around the :py:class:`DomainType <armi.reactor.geometry.DomainType>`
+            and :py:class:`BoundaryType <armi.reactor.geometry.BoundaryType>`
+            enumerations used to classify the domain (e.g., 1/3 core, quarter
+            core, full core) and symmetry boundary conditions (e.g., periodic,
+            reflective, none) of a reactor, respectively.
+
+            Only specific combinations of :py:class:`Grid
+            <armi.reactor.grids.grid.Grid>` type, :py:class:`DomainType
+            <armi.reactor.geometry.DomainType>`, and :py:class:`BoundaryType
+            <armi.reactor.geometry.BoundaryType>` are valid. The validity of a
+            user-specified geometry and symmetry is verified by a settings:
+            :py:meth:`Inspector
+            <armi.operators.settingsValidation.Inspector._inspectSettings`.
         """
         if not self.spatialGrid:
             raise ValueError("Cannot access symmetry before a spatialGrid is attached.")
@@ -778,6 +829,14 @@ class Core(composites.Composite):
             :id: I_ARMI_R_NUM_RINGS
             :implements: R_ARMI_R_NUM_RINGS
 
+            This method determines the number of rings in the reactor. If the
+            setting `circularRingMode` is enabled (by default it is false), the
+            assemblies will be grouped into roughly circular rings based on
+            their positions and the number of circular rings is reteurned.
+            Otherwise, the number of hex rings is returned. This parameter is
+            mostly used to facilitate certain fuel management strategies where
+            the fuel is categorized and moved based on ring indexing.
+
         Warning
         -------
         If you loop through range(maxRing) then ring+1 is the one you want!
@@ -1134,6 +1193,11 @@ class Core(composites.Composite):
         .. impl:: Get assembly by name.
             :id: I_ARMI_R_GET_ASSEM_NAME
             :implements: R_ARMI_R_GET_ASSEM_NAME
+
+            This method returns the :py:class:`assembly
+            <armi.reactor.core.assemblies.Assembly>` with a name matching the
+            value provided as an input parameter to this function. The `name` of
+            an assembly is based on the `assemNum` parameter.
 
         Parameters
         ----------
@@ -1651,6 +1715,18 @@ class Core(composites.Composite):
         .. impl:: Get assembly by location.
             :id: I_ARMI_R_GET_ASSEM_LOC
             :implements: R_ARMI_R_GET_ASSEM_LOC
+
+            This method returns the :py:class:`assembly
+            <armi.reactor.core.assemblies.Assembly>` located in the requested
+            location. The location is provided to this method as an input
+            parameter in a string with the format "001-001". For a `HexGrid
+            <armi.reactor.grids.hexagonal.HexGrid>`, the first number indicates
+            the hexagonal ring and the second number indicates the position
+            within that ring. For a `CartesianGrid
+            <armi.reactor.grids.cartesian.CartesianGrid>`, the first number
+            represents the x index and the second number represents the y index.
+            If there is no assembly in the grid at the requested location, this
+            method returns None.
         """
         ring, pos, _ = grids.locatorLabelToIndices(locationString)
         loc = self.spatialGrid.getLocatorFromRingAndPos(ring, pos)
@@ -1679,12 +1755,37 @@ class Core(composites.Composite):
         """
         Find assemblies that are next to this assembly.
 
-        Return a list of neighboring assemblies from the 30 degree point (point 1) then
-        counterclockwise around.
+        Return a list of neighboring assemblies.
+
+        For a hexagonal grid, the list begins from the 30 degree point (point 1)
+        then moves counterclockwise around.
+
+        For a Cartesian grid, the order of the neighbors is east, north, west,
+        south.
 
         .. impl:: Retrieve neighboring assemblies of a given assembly.
             :id: I_ARMI_R_FIND_NEIGHBORS
             :implements: R_ARMI_R_FIND_NEIGHBORS
+
+            This method takes an :py:class:`Assembly
+            <armi.reactor.assemblies.Assembly>` as an input parameter and returns
+            a list of the assemblies neighboring that assembly. There are 6
+            neighbors in a hexagonal grid and 4 neighbors in a Cartesian grid.
+            The (i, j) indices of the neighbors are provided by
+            :py:meth:`getNeighboringCellIndices
+            <armi.reactor.grids.StructuredGrid.getNeighboringCellIndices>`. For
+            a hexagonal grid, the (i, j) indices are converted to (ring,
+            position) indexing using the core.spatialGrid instance attribute.
+
+            The `showBlanks` option determines whether non-existing assemblies
+            will be indicated with a `None` in the list or just excluded from
+            the list altogether.
+
+            The `duplicateAssembliesOnReflectiveBoundary` setting only works for
+            1/3 core symmetry with periodic boundary conditions. For these types
+            of geometries, if this setting is `True`, neighbor lists for
+            assemblies along a periodic boundary will include the assemblies
+            along the opposite periodic boundary that are effectively neighbors.
 
         Parameters
         ----------
@@ -1692,55 +1793,64 @@ class Core(composites.Composite):
             The assembly to find neighbors of.
 
         showBlanks : Boolean, optional
-            If True, the returned array of 6 neighbors will return "None" for neighbors
-            that do not explicitly exist in the 1/3 core model (including many that WOULD
-            exist in a full core model).
+            If True, the returned array of 6 neighbors will return "None" for
+            neighbors that do not explicitly exist in the 1/3 core model
+            (including many that WOULD exist in a full core model).
 
-            If False, the returned array will not include the "None" neighbors. If one or
-            more neighbors does not explicitly exist in the 1/3 core model, the returned
-            array will have a length of less than 6.
+            If False, the returned array will not include the "None" neighbors.
+            If one or more neighbors does not explicitly exist in the 1/3 core
+            model, the returned array will have a length of less than 6.
 
         duplicateAssembliesOnReflectiveBoundary : Boolean, optional
-            If True, findNeighbors duplicates neighbor assemblies into their "symmetric
-            identicals" so that even assemblies that border symmetry lines will have 6
-            neighbors. The only assemblies that will have fewer than 6 neighbors are those
-            that border the outer core boundary (usually vacuum).
+            If True, findNeighbors duplicates neighbor assemblies into their
+            "symmetric identicals" so that even assemblies that border symmetry
+            lines will have 6 neighbors. The only assemblies that will have
+            fewer than 6 neighbors are those that border the outer core boundary
+            (usually vacuum).
 
-            If False, findNeighbors returns None for assemblies that do not exist in a 1/3
-            core model (but WOULD exist in a full core model).
+            If False, findNeighbors returns None for assemblies that do not
+            exist in a 1/3 core model (but WOULD exist in a full core model).
 
-            For example, applying findNeighbors for the central assembly (ring, pos) = (1,
-            1) in 1/3 core symmetry (with duplicateAssembliesOnReflectiveBoundary = True)
-            would return a list of 6 assemblies, but those 6 would really only be
-            assemblies (2, 1) and (2, 2) repeated 3 times each.
+            For example, applying findNeighbors for the central assembly (ring,
+            pos) = (1, 1) in 1/3 core symmetry (with
+            duplicateAssembliesOnReflectiveBoundary = True) would return a list
+            of 6 assemblies, but those 6 would really only be assemblies (2, 1)
+            and (2, 2) repeated 3 times each.
 
-            Note that the value of duplicateAssembliesOnReflectiveBoundary only really if
-            showBlanks = True.  This will have no effect if the model is full core since
-            asymmetric models could find many duplicates in the other thirds
+            Note that the value of duplicateAssembliesOnReflectiveBoundary only
+            really matters if showBlanks == True. This will have no effect if
+            the model is full core since asymmetric models could find many
+            duplicates in the other thirds
 
         Notes
         -----
-        This only works for 1/3 or full core symmetry.
+        The duplicateAssembliesOnReflectiveBoundary setting only works for third
+        core symmetry.
 
-        This uses the 'mcnp' index map (MCNP GEODST hex coordinates) instead of the
-        standard (ring, pos) map. because neighbors have consistent indices this way.  We
-        then convert over to (ring, pos) using the lookup table that a reactor has.
+        This uses the 'mcnp' index map (MCNP GEODST hex coordinates) instead of
+        the standard (ring, pos) map. because neighbors have consistent indices
+        this way.  We then convert over to (ring, pos) using the lookup table
+        that a reactor has.
 
         Returns
         -------
         neighbors : list of assembly objects
             This is a list of "nearest neighbors" to assembly a.
 
-            If showBlanks = False, it will return fewer than 6 neighbors if not all 6
-            neighbors explicitly exist in the core model.
+            If showBlanks = False, it will return fewer than the maximum number
+            of neighbors if not all neighbors explicitly exist in the core
+            model. For a hexagonal grid, the maximum number of neighbors is 6.
+            For a Cartesian grid, the maximum number is 4.
 
-            If showBlanks = True and duplicateAssembliesOnReflectiveBoundary = False, it
-            will have a "None" for assemblies that do not exist in the 1/3 model.
+            If showBlanks = True and duplicateAssembliesOnReflectiveBoundary =
+            False, it will have a "None" for assemblies that do not exist in the
+            1/3 model.
 
-            If showBlanks = True and duplicateAssembliesOnReflectiveBoundary = True, it
-            will return the existing "symmetric identical" assembly of a non-existing
-            assembly. It will only return "None" for an assembly when that assembly is
-            non-existing AND has no existing "symmetric identical".
+            If showBlanks = True and duplicateAssembliesOnReflectiveBoundary =
+            True, it will return the existing "symmetric identical" assembly of
+            a non-existing assembly. It will only return "None" for an assembly
+            when that assembly is non-existing AND has no existing "symmetric
+            identical".
 
         See Also
         --------
@@ -1773,7 +1883,7 @@ class Core(composites.Composite):
 
     def _getReflectiveDuplicateAssembly(self, neighborLoc):
         """
-        Return duplicate assemblies accross symmetry line.
+        Return duplicate assemblies across symmetry line.
 
         Notes
         -----
@@ -1934,6 +2044,17 @@ class Core(composites.Composite):
         .. impl:: Construct a mesh based on core blocks.
             :id: I_ARMI_R_MESH
             :implements: R_ARMI_R_MESH
+
+            This method iterates through all of the assemblies provided, or all
+            assemblies in the core if no list of `assems` is provided, and
+            constructs a tuple of three lists which contain the unique i, j, and
+            k mesh coordinates, respectively. The `applySubMesh` setting
+            controls whether the mesh will include the submesh coordinates. For
+            a standard assembly-based reactor geometry with a hexagonal or
+            Cartesian assembly grid, this method is only used to produce axial
+            (k) mesh points. If multiple assemblies are provided with different
+            axial meshes, the axial mesh list will contain the union of all
+            unique mesh points. Duplicate mesh points are removed.
 
         Parameters
         ----------
@@ -2146,8 +2267,8 @@ class Core(composites.Composite):
 
     def getMinimumPercentFluxInFuel(self, target=0.005):
         """
-        Goes through the entire reactor to determine what percentage of flux occures at
-        each ring.  Starting with the outer ring, this function helps determine the effective
+        Goes through the entire reactor to determine what percentage of flux occurs at
+        each ring. Starting with the outer ring, this function helps determine the effective
         size of the core where additional assemblies will not help the breeding in the TWR.
 
         Parameters
