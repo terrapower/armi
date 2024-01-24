@@ -40,7 +40,7 @@ class ExecutionOptions:
         will include the name and value of all public attributes of the instance.
 
         Also facilitates the ability to execute parallel instances of a code by
-        providing the ability to to resolve a ``runDir`` that is aware of the
+        providing the ability to resolve a ``runDir`` that is aware of the
         executing MPI rank. This is done via :py:meth:`~armi.physics.executers.ExecutionOptions.setRunDirFromCaseTitle`,
         where the user passes in a ``caseTitle`` string, which is hashed and combined
         with the MPI rank to provide a unique directory name to be used by each parallel
