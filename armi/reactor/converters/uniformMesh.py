@@ -123,15 +123,29 @@ class UniformMeshGenerator:
             :id: I_ARMI_UMC_NON_UNIFORM
             :implements: R_ARMI_UMC_NON_UNIFORM
 
+            Generates a core-wide mesh that preserves important material boundaries, in
+            particular the terminations of the fuel column as well as control assembly
+            material. Calls ``_computeAverageAxialMesh``, which operates by first
+            collecting all the mesh points for every assembly (``allMeshes``) and then
+            averaging them together using ``average1DWithinTolerance`` to obtain the
+            core-wide mesh.
+
         .. impl:: Produce a mesh with a size no smaller than a user-specified value.
             :id: I_ARMI_UMC_MIN_MESH
             :implements: R_ARMI_UMC_MIN_MESH
 
+            If a minimum mesh size ``minimumMeshSize`` is provided, calls
+            ``_decuspAxialMesh`` on the core-wide mesh to maintain that minimum size
+            while still attempting to honor fuel and control material boundaries. Relies
+            ultimately on ``_filterMesh`` to remove mesh points that violate the minimum
+            size. Note that ``_filterMesh`` will always respect the minimum mesh size,
+            even if this means losing a mesh point that represents a fuel or control
+            material boundary.
+
         Notes
         -----
         Attempts to reduce the effect of fuel and control rod absorber smearing
-        ("cusping" effect) by keeping important material boundaries in the
-        common mesh.
+        ("cusping" effect) by keeping important material boundaries in the common mesh.
         """
         self._computeAverageAxialMesh()
         if self.minimumMeshSize is not None:
