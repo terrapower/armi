@@ -392,7 +392,7 @@ class Layout:
             writes the reactor data model to the file in depth-first search order.
             Other than this search order, there are no guarantees as to what order the
             objects are written to the file. Though, this turns out to still be very
-            power. For instance, the data for all ``HexBlock`` children of a given
+            powerful. For instance, the data for all ``HexBlock`` children of a given
             parent are stored contiguously within the ``HexBlock`` group, and will not
             be interleaved with data from the ``HexBlock`` children of any of the
             parent's siblings.
