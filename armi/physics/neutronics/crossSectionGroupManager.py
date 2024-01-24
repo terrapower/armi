@@ -320,7 +320,7 @@ class AverageBlockCollection(BlockCollection):
         :id: I_ARMI_XSGM_CREATE_REPR_BLOCKS0
         :implements: R_ARMI_XSGM_CREATE_REPR_BLOCKS
 
-        This class functions as a data structure for utilties that construct new blocks from an existing block list based on a
+        This class constructs new blocks from an existing block list based on a
         volume-weighted average. Inheriting functionality from the abstract
         :py:class:`Reactor <armi.physics.neutronics.crossSectionGroupManager.BlockCollection>` object, this class
         will construct representative blocks using averaged parameters of all blocks in the given collection.
