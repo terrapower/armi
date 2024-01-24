@@ -40,15 +40,15 @@ framework and applications.
 
     The :py:mod:`nuclideBases <armi.nucDirectory.nuclideBases>` module provides
     a factory and associated functions for instantiating the
-    :py:class:`NuclideBases <armi.nucDirectory.nuclideBases.NuclideBase>` and
-    building the global nuclide dictionaries, including:
+    :py:class:`NuclideBase <armi.nucDirectory.nuclideBases.NuclideBase>` objects
+    and building the global nuclide dictionaries, including:
 
     * ``instances`` (list of nuclides)
     * ``byName`` (keyed by name, e.g., ``U235``)
     * ``byDBName`` (keyed by database name, e.g., ``nU235``)
     * ``byLabel`` (keyed by label, e.g., ``U235``)
-    * ``byMcc2Id`` (keyed by MCC-2 ID, e.g., ``U-2355``)
-    * ``byMcc3Id`` (keyed by MCC-3 ID, e.g., ``U235_7``)
+    * ``byMcc2Id`` (keyed by MC\ :sup:`2`-2 ID, e.g., ``U-2355``)
+    * ``byMcc3Id`` (keyed by MC\ :sup:`2`-3 ID, e.g., ``U235_7``)
     * ``byMcnpId`` (keyed by MCNP ID, e.g., ``92235``)
     * ``byAAAZZZSId`` (keyed by AAAZZZS, e.g., ``2350920``)
 
@@ -542,9 +542,10 @@ class NuclideBase(INuclide, IMcnpNuclide):
         including the atom number, atomic weight, element, isomeric state,
         half-life, and name. The class contains static methods for creating an
         internal ARMI name or label for a nuclide. There are instance methods
-        for generating the nuclide ID for external codes, e.g. MCNP or Serpent, and
-        retrieving the nuclide ID for MC\ :sup:`2`-2 or MC\ :sup:`2`-3. There are also instance
-        methods for generating an AAAZZZS ID and an ENDF MAT number.
+        for generating the nuclide ID for external codes, e.g. MCNP or Serpent,
+        and retrieving the nuclide ID for MC\ :sup:`2`-2 or MC\ :sup:`2`-3.
+        There are also instance methods for generating an AAAZZZS ID and an ENDF
+        MAT number.
     """
 
     def __init__(self, element, a, weight, abundance, state, halflife):
@@ -1229,13 +1230,13 @@ def addNuclideBases():
         :id: I_ARMI_ND_DATA0
         :implements: R_ARMI_ND_DATA
 
-        This function reads the nuclides.dat file from the ARMI resources
+        This function reads the `nuclides.dat` file from the ARMI resources
         folder. This file contains metadata for 4,614 nuclides, including
         number of protons, number of neutrons, atomic number, excited
         state, element symbol, atomic mass, natural abundance, half-life,
-        and spontaneous fission yield. The data in this file have been
+        and spontaneous fission yield. The data in `nuclides.dat` have been
         collected from multiple different sources; the references are given
-        in comments at the top of the file.
+        in comments at the top of that file.
     """
     with open(os.path.join(context.RES, "nuclides.dat")) as f:
         for line in f:
