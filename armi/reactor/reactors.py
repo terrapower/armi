@@ -381,9 +381,9 @@ class Core(composites.Composite):
             :implements: R_ARMI_R_SYMM
 
             This property getter returns the symmetry attribute of the
-            spatialGrid instance attribute.  The spatialGrid is an instance of a
+            spatialGrid instance attribute. The spatialGrid is an instance of a
             child of the abstract base class :py:class:`Grid
-            <armi.reactor.grids.grid.Grid>` type.  The symmetry attribute is an
+            <armi.reactor.grids.grid.Grid>` type. The symmetry attribute is an
             instance of the :py:class:`SymmetryType
             <armi.reactor.geometry.SymmetryType>` class, which is a wrapper
             around the :py:class:`DomainType <armi.reactor.geometry.DomainType>`
@@ -391,6 +391,14 @@ class Core(composites.Composite):
             enumerations used to classify the domain (e.g., 1/3 core, quarter
             core, full core) and symmetry boundary conditions (e.g., periodic,
             reflective, none) of a reactor, respectively.
+
+            Only specific combinations of :py:class:`Grid
+            <armi.reactor.grids.grid.Grid>` type, :py:class:`DomainType
+            <armi.reactor.geometry.DomainType>`, and :py:class:`BoundaryType
+            <armi.reactor.geometry.BoundaryType>` are valid. The validity of a
+            user-specified geometry and symmetry is verified by a settings:
+            :py:meth:`Inspector
+            <armi.operators.settingsValidation.Inspector._inspectSettings`.
         """
         if not self.spatialGrid:
             raise ValueError("Cannot access symmetry before a spatialGrid is attached.")
