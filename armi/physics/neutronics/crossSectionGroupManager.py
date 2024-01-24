@@ -889,7 +889,7 @@ class CrossSectionGroupManager(interfaces.Interface):
             :id: I_ARMI_XSGM_FREQ1
             :implements: R_ARMI_XSGM_FREQ
 
-            This method will update representative blocks and block burnups at the beginning-of-cycle for each cross-section ID if the control logic
+            This method updates representative blocks and block burnups at the beginning-of-cycle for each cross-section ID if the control logic
             for lattice physics frequency updates is set at beginning-of-cycle (`BOC`) through the :py:class:`LatticePhysicsInterface <armi.physics.neutronics.latticePhysics>`.
             At the beginning-of-cycle, the cross-section group manager will construct representative blocks for each cross-section IDs for the current reactor state.
 
