@@ -859,9 +859,9 @@ class FuelHandler:
             checked to make sure that both assemblies have the same number 
             and same height of stationary blocks. If not, return an error.
 
-            If all checks pass, use the :py:meth`~armi.reactor.assemblies.Assembly.remove`
+            If all checks pass, the :py:meth:`~armi.reactor.assemblies.Assembly.remove`
             and :py:meth:`~armi.reactor.assemblies.Assembly.insert``
-            methods to swap the stationary blocks between the two assemblies.
+            methods are used to swap the stationary blocks between the two assemblies.
 
             Once this process is complete, the actual assembly movement can take
             place. Through this process, the stationary blocks from the outgoing
