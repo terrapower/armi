@@ -292,12 +292,11 @@ class Flags(Flag):
             :implements: R_ARMI_FLAG_TO_STR
 
             For a string passed as ``typeSpec``, first converts the whole string
-            to uppercase.
-            Then tries to parse the string for any special phrases, as defined
-            in the module dictionary ``_CONVERSIONS``, and converts those phrases
-            to flags directly.
+            to uppercase. Then tries to parse the string for any special phrases, as
+            defined in the module dictionary ``_CONVERSIONS``, and converts those
+            phrases to flags directly.
 
-            Then splits the remaining string into separate words based on the presence
+            Then it splits the remaining string into separate words based on the presence
             of spaces. Looping over each of the words, any numbers are stripped out
             and the remaining string is matched up to any class attribute names.
             If any matches are found these are returned as flags.
