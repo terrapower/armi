@@ -1768,7 +1768,7 @@ class Core(composites.Composite):
             :implements: R_ARMI_R_FIND_NEIGHBORS
 
             This method takes an :py:class:`Assembly
-            <armi.reactor.assemblies.Assembly` as an input parameter and returns
+            <armi.reactor.assemblies.Assembly>` as an input parameter and returns
             a list of the assemblies neighboring that assembly. There are 6
             neighbors in a hexagonal grid and 4 neighbors in a Cartesian grid.
             The (i, j) indices of the neighbors are provided by
