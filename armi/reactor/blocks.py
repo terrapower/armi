@@ -586,6 +586,17 @@ class Block(composites.Composite):
         .. impl:: Location of a block is retrievable.
             :id: I_ARMI_BLOCK_POSI0
             :implements: R_ARMI_BLOCK_POSI
+
+            If the block does not have its ``core`` attribute set, if the block's
+            parent does not have a ``spatialGrid`` attribute, or if the block
+            does not have its location defined by its ``spatialLocator`` attribute,
+            return a string indicating that it is outside of the core.
+
+            Otherwise, use the :py:class:`~armi.reactor.grids.Grid.getLabel` static
+            method to convert the block's indices into a string like "XXX-YYY-ZZZ".
+            For hexagonal geometry, "XXX" is the zero-padded hexagonal core ring,
+            "YYY" is the zero-padded position in that ring, and "ZZZ" is the zero-padded
+            block axial index from the bottom of the core.
         """
         if self.core and self.parent.spatialGrid and self.spatialLocator:
             return self.core.spatialGrid.getLabel(
@@ -601,6 +612,11 @@ class Block(composites.Composite):
         .. impl:: Coordinates of a block are queryable.
             :id: I_ARMI_BLOCK_POSI1
             :implements: R_ARMI_BLOCK_POSI
+
+            Calls to the :py:meth:`~armi.reactor.grids.locations.IndexLocation.getGlobalCoordinates`
+            method of the block's ``spatialLocator`` attribute, which recursively
+            calls itself on all parents of the block to get the coordinates of the
+            block's centroid in 3D cartesian space.
         """
         if rotationDegreesCCW:
             raise NotImplementedError("Cannot get coordinates with rotation.")
@@ -685,6 +701,12 @@ class Block(composites.Composite):
         .. impl:: Volume of block is retrievable.
             :id: I_ARMI_BLOCK_DIMS0
             :implements: R_ARMI_BLOCK_DIMS
+
+            Loops over all the components in the block, calling
+            :py:meth:`~armi.reactor.components.component.Component.getVolume` on
+            each and summing the result. The summed value is then divided by
+            the symmetry factor of the block to account for reduced volumes of
+            blocks in certain symmetric representations.
 
         Returns
         -------
@@ -1083,9 +1105,21 @@ class Block(composites.Composite):
     def getNumPins(self):
         """Return the number of pins in this block.
 
-        .. impl:: Get the number of pins in a block; potentially zero.
+        .. impl:: Get the number of pins in a block.
             :id: I_ARMI_BLOCK_NPINS
             :implements: R_ARMI_BLOCK_NPINS
+
+            Uses some simple criteria to infer the number of pins in the block.
+
+            For every flag in the module list :py:data:`~armi.reactor.blocks.PIN_COMPONENTS`,
+            loop over all components of that type in the block. If the component
+            is an instance of :py:class:`~armi.reactor.components.basicShapes.Circle`,
+            add its multiplicity to a list, and sum that list over all components
+            with each given flag.
+
+            After looping over all possibilities, return the maximum value returned
+            from the process above, or if no compatible components were found,
+            return zero.
         """
         nPins = [
             sum(
@@ -1239,6 +1273,21 @@ class Block(composites.Composite):
         """
         Return the center-to-center hex pitch of this block.
 
+        .. impl:: Pitch of block is retrievable.
+            :id: I_ARMI_BLOCK_DIMS1
+            :implements: R_ARMI_BLOCK_DIMS
+
+            Uses the block's ``_pitchDefiningComponent`` to identify the component
+            in the block that defines the pitch. Then uses the
+            :py:meth:`~armi.reactor.components.component.Component.getPitchData`
+            method of that component to return the pitch for the block, accounting
+            for the component's current temperature.
+
+            The ``_pitchDefiningComponent`` attribute can be set by
+            :py:meth:`~armi.reactor.blocks.Block.setPitch`, but is typically
+            set via a calls to :py:meth:`~armi.reactor.blocks.Block._updatePitchComponent`
+            as components are added to the block with :py:meth:`~armi.reactor.blocks.Block.add`.
+
         Parameters
         ----------
         returnComp : bool, optional
@@ -1251,10 +1300,6 @@ class Block(composites.Composite):
         component : Component or None
             Component that has the max pitch, if returnComp == True. If no component is found to
             define the pitch, returns None
-
-        .. impl:: Pitch of block is retrievable.
-            :id: I_ARMI_BLOCK_DIMS1
-            :implements: R_ARMI_BLOCK_DIMS
 
         Notes
         -----
@@ -1565,6 +1610,14 @@ class Block(composites.Composite):
             :id: I_ARMI_MANUAL_TARG_COMP
             :implements: R_ARMI_MANUAL_TARG_COMP
 
+            Sets the ``axialExpTargetComponent`` parameter on the block to the name
+            of the component which is passed in. This is then used by the
+            :py:class:`~armi.reactor.converters.axialExpansionChanger.AxialExpansionChanger`
+            class during axial expansion.
+
+            This method is typically called from within :py:meth:`~armi.reactor.blueprints.blockBlueprint.BlockBlueprint.construct`
+            during the process of building a block from the blueprints.
+
         Parameter
         ---------
         targetComponent: :py:class:`Component <armi.reactor.components.component.Component>` object
@@ -1624,6 +1677,16 @@ class HexBlock(Block):
         .. impl:: Coordinates of a block are queryable.
             :id: I_ARMI_BLOCK_POSI2
             :implements: R_ARMI_BLOCK_POSI
+
+            Calls to the :py:meth:`~armi.reactor.grids.locations.IndexLocation.getGlobalCoordinates`
+            method of the block's ``spatialLocator`` attribute, which recursively
+            calls itself on all parents of the block to get the coordinates of the
+            block's centroid in 3D cartesian space.
+
+            Will additionally adjust the x and y coordinates based on the block
+            parameters ``displacementX`` and ``displacementY``.
+
+            Note that the ``rotationDegreesCCW`` argument is unused.
         """
         x, y, _z = self.spatialLocator.getGlobalCoordinates()
         x += self.p.displacementX * 100.0
