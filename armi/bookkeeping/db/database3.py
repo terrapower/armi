@@ -235,7 +235,7 @@ class Database3:
             :id: I_ARMI_DB_QA
             :implements: R_ARMI_DB_QA
 
-            This method writes some basic system information to the H4 file. This is
+            This method writes some basic system information to the H5 file. This is
             designed as a starting point, so users can see information about the system
             their simulations were run on. As ARMI is used on Windows and Linux, the
             tooling here has to be platform independent. The two major sources of
