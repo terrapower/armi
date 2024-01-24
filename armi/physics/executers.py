@@ -171,6 +171,19 @@ class DefaultExecuter(Executer):
     externally-executed physics codes. It is here for convenience
     but is not required. The sequence look like:
 
+    * Choose modeling options (either from the global run settings input or dictated programmatically)
+    * Apply geometry transformations to the ARMI Reactor as needed
+    * Build run-specific working directory
+    * Write input file(s)
+    * Put specific input files and libs in run directory
+    * Run the analysis (external execution, or not)
+    * Process output while still in run directory
+    * Check error conditions
+    * Move desired output files back to main working directory
+    * Clean up run directory
+    * Un-apply geometry transformations as needed
+    * Update ARMI data model as desired
+
     .. impl:: Default tool for executing external calculations.
         :id: I_ARMI_EX1
         :implements: R_ARMI_EX
@@ -190,19 +203,6 @@ class DefaultExecuter(Executer):
         from the run as specified in subclasses.
 
         Finally, any geometry perturbations that were performed are undone.
-
-    * Choose modeling options (either from the global run settings input or dictated programmatically)
-    * Apply geometry transformations to the ARMI Reactor as needed
-    * Build run-specific working directory
-    * Write input file(s)
-    * Put specific input files and libs in run directory
-    * Run the analysis (external execution, or not)
-    * Process output while still in run directory
-    * Check error conditions
-    * Move desired output files back to main working directory
-    * Clean up run directory
-    * Un-apply geometry transformations as needed
-    * Update ARMI data model as desired
     """
 
     def run(self):
