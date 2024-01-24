@@ -1299,8 +1299,8 @@ def readMCCNuclideData():
         :implements: R_ARMI_ND_DATA
 
         This function reads the mcc-nuclides.yaml file from the ARMI resources
-        folder. This file contains the MCC-2 ID (from ENDF/B-V.2) and MCC-3 ID
-        (from ENDF/B-VII.0) for all nuclides in MCC. The ``mcc2id`` and
+        folder. This file contains the MC\ :sup:`2`-2 ID (from ENDF/B-V.2) and MC\ :sup:`2`-3 ID
+        (from ENDF/B-VII.0) for all nuclides in MC\ :sup:`2`. The ``mcc2id`` and
         ``mcc3id`` attributes of each :py:class:`NuclideBase
         <armi.nucDirectory.nuclideBases.NuclideBase>` instance are updated as
         the data is read, and the global dictionaries ``byMcc2Id`` and
