@@ -1611,12 +1611,12 @@ class Block(composites.Composite):
             :implements: R_ARMI_MANUAL_TARG_COMP
 
             Sets the ``axialExpTargetComponent`` parameter on the block to the name
-            of the component which is passed in. This is then used by the
+            of the Component which is passed in. This is then used by the
             :py:class:`~armi.reactor.converters.axialExpansionChanger.AxialExpansionChanger`
             class during axial expansion.
 
             This method is typically called from within :py:meth:`~armi.reactor.blueprints.blockBlueprint.BlockBlueprint.construct`
-            during the process of building a block from the blueprints.
+            during the process of building a Block from the blueprints.
 
         Parameter
         ---------
