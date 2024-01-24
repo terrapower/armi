@@ -156,8 +156,8 @@ class Serializer:
         :id: I_ARMI_PARAM_SERIALIZE
         :implements: R_ARMI_PARAM_SERIALIZE
 
-        Many important core parameters are stored throughout the ARMI object on various
-        spatial bases. These parameters represent the plant's state during execution
+        Important physical parameters are stored in every ARMI object.
+        These parameters represent the plant's state during execution
         of the model. Currently, this requires that the parameters be serializable to a
         numpy array of a datatype supported by the ``h5py`` package so that the data can
         be written to, and subsequently read from, an HDF5 file.
