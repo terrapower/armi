@@ -589,7 +589,7 @@ class TestCircle(TestShapedComponent):
         method links the gap dimensions appropriately when the Component is
         constructed, and the test shows the area of the gap is calculated
         correctly based on the thermally-expanded dimensions of the fuel and
-        clad components.
+        clad Components.
 
         """
         nPins = 217
