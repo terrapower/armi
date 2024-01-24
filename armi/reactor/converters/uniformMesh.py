@@ -588,9 +588,10 @@ class UniformMeshGeometryConverter(GeometryConverter):
             :implements: R_ARMI_UMC_PARAM_BACKWARD
 
             To ensure that the parameters on the original Reactor are from the converted Reactor,
-            the first step is to clear the state on the original Reactor (see ``_clearStateOnReactor``).
-            ``_mapStateFromReactorToOther`` is then called to map Core-level parameters and, optionally,
-            averaged Block-level parameters (see :need:`I_ARMI_UMC_PARAM_FORWARD`).
+            the first step is to clear the Reactor-level parameters on the original Reactor
+            (see ``_clearStateOnReactor``). ``_mapStateFromReactorToOther`` is then called
+            to map Core-level parameters and, optionally, averaged Block-level parameters
+            (see :need:`I_ARMI_UMC_PARAM_FORWARD`).
         """
         runLog.extra(
             f"Applying uniform neutronics results from {self.convReactor} to {self._sourceReactor}"
