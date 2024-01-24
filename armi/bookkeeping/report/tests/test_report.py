@@ -142,6 +142,7 @@ class TestReport(unittest.TestCase):
 
         # pass that random file into the settings
         o.cs["crossSectionControl"]["DA"].xsFileLocation = randoFile
+        o.cs["crossSectionControl"]["DA"].fluxFileLocation = randoFile
 
         with mockRunLogs.BufferLog() as mock:
             # we should start with a clean slate
