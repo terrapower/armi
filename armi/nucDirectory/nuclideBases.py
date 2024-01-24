@@ -542,7 +542,7 @@ class NuclideBase(INuclide, IMcnpNuclide):
         including the atom number, atomic weight, element, isomeric state,
         half-life, and name. The class contains static methods for creating an
         internal ARMI name or label for a nuclide. There are instance methods
-        for generating the nuclide ID for external codes MCNP or Serpent and
+        for generating the nuclide ID for external codes, e.g. MCNP or Serpent, and
         retrieving the nuclide ID for MCC-2 or MCC-3. There are also instance
         methods for generating an AAAZZZS ID and an ENDF MAT number.
     """
