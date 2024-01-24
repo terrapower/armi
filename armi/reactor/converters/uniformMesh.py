@@ -123,13 +123,14 @@ class UniformMeshGenerator:
             :id: I_ARMI_UMC_NON_UNIFORM
             :implements: R_ARMI_UMC_NON_UNIFORM
 
-            A core-wide mesh is computed via ``_computeAverageAxialMesh``, which
+            A core-wide mesh is computed via ``_computeAverageAxialMesh`` which
             operates by first collecting all the mesh points for every assembly
             (``allMeshes``) and then averaging them together using
             ``average1DWithinTolerance``. An attempt to preserve fuel and control
-            material boundaries occurs ``minimumMeshSize`` is not None by
-            calling ``_decuspAxialMesh``. This is accomplished by moving fuel
-            region boundaries to accomodate control rod boundaries.
+            material boundaries is accomplished by moving fuel region boundaries
+            to accomodate control rod boundaries. Note this behavior only occurs
+            by calling ``_decuspAxialMesh`` which is dependent on ``minimumMeshSize``
+            being defined (this is controlled by the ``uniformMeshMinimumSize`` setting).
 
         .. impl:: Produce a mesh with a size no smaller than a user-specified value.
             :id: I_ARMI_UMC_MIN_MESH
