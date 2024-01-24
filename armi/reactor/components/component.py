@@ -173,23 +173,20 @@ class Component(composites.Composite, metaclass=ComponentType):
         :id: I_ARMI_COMP_DEF
         :implements: R_ARMI_COMP_DEF
 
-        The primitive object in an ARMI reactor is a component. A component is comprised
-        of a shape and composition. This class provides the interface for defining all
-        component types within the ARMI source code. All primitive shapes (such as a
+        The primitive object in an ARMI reactor is a Component. A Component is comprised
+        of a shape and composition. This class serves as a base class which all
+        Component types within ARMI are built upon. All primitive shapes (such as a
         square, circle, holed hexagon, helix etc.) are derived from this base class.
 
-        Fundamental capabilities of this class include the ability to store arbitrary
-        parameters for each component in the ARMI model hierarchy and for the attributes
-        to define the properties of a physical piece of the reactor. The ``p`` attribute
-        contains the parameters of a Component, while the ``material``, and temperature
-        attributes store information regarding the physical composition of the
-        Component.
+        Fundamental capabilities of this class include the ability to store parameters
+        and attributes which describe the physical state of each Component within the
+        ARMI data model.
 
-    .. impl:: Order components by their outermost diameter (using the < operator).
+    .. impl:: Order Components by their outermost diameter (using the < operator).
         :id: I_ARMI_COMP_ORDER
         :implements: R_ARMI_COMP_ORDER
 
-        Determining component order by outermost diameters is implemented via
+        Determining Component order by outermost diameters is implemented via
         the __lt__() method, which is used to control sort() as the
         standard approach in Python. However, __lt__() does not show up in the API.
 
@@ -308,9 +305,9 @@ class Component(composites.Composite, metaclass=ComponentType):
             :id: I_ARMI_COMP_FLUID1
             :implements: R_ARMI_COMP_FLUID
 
-            Some components are fluids and are thus defined by the shapes surrounding
+            Some Components are fluids and are thus defined by the shapes surrounding
             them. This method cycles through each dimension defining the border of this
-            component and converts the name of that component to a link to the object
+            Component and converts the name of that Component to a link to the object
             itself. This series of links is then used downstream to resolve
             dimensional information.
 
@@ -420,13 +417,13 @@ class Component(composites.Composite, metaclass=ComponentType):
             :id: I_ARMI_COMP_MAT0
             :implements: R_ARMI_COMP_MAT
 
-            This method returns the material object that is assigned to the component.
+            This method returns the material object that is assigned to the Component.
 
         .. impl:: Components have one-and-only-one material.
             :id: I_ARMI_COMP_1MAT
             :implements: R_ARMI_COMP_1MAT
 
-            This method returns the material object that is assigned to the component.
+            This method returns the material object that is assigned to the Component.
         """
         return self.material
 
@@ -465,13 +462,13 @@ class Component(composites.Composite, metaclass=ComponentType):
 
     def getArea(self, cold=False):
         """
-        Get the area of a component in cm^2.
+        Get the area of a Component in cm^2.
 
-        .. impl:: Get a dimension of a component.
+        .. impl:: Get a dimension of a Component.
             :id: I_ARMI_COMP_VOL0
             :implements: R_ARMI_COMP_VOL
 
-            This method returns the area of a component.
+            This method returns the area of a Component.
 
         See Also
         --------
@@ -492,13 +489,13 @@ class Component(composites.Composite, metaclass=ComponentType):
 
     def getVolume(self):
         """
-        Return the volume [cm^3] of the component.
+        Return the volume [cm^3] of the Component.
 
-        .. impl:: Get a dimension of a component.
+        .. impl:: Get a dimension of a Component.
             :id: I_ARMI_COMP_VOL1
             :implements: R_ARMI_COMP_VOL
 
-            This method returns the volume of a component.
+            This method returns the volume of a Component.
 
         Notes
         -----
@@ -603,7 +600,7 @@ class Component(composites.Composite, metaclass=ComponentType):
             :id: I_ARMI_COMP_SOLID
             :implements: R_ARMI_COMP_SOLID
 
-            For certain operations it is important to know if a component is a solid or
+            For certain operations it is important to know if a Component is a solid or
             fluid material. This method will return a boolean indicating if the material
             is solid or not by checking if the material is an instance of the ``material.Fluid`` class.
         """
@@ -709,8 +706,8 @@ class Component(composites.Composite, metaclass=ComponentType):
             :id: I_ARMI_COMP_NUCLIDE_FRACS0
             :implements: R_ARMI_COMP_NUCLIDE_FRACS
 
-            The method allows a user or plugin to set the number density of a component.
-            It also indicates to other processes that may depend on a component's
+            The method allows a user or plugin to set the number density of a Component.
+            It also indicates to other processes that may depend on a Component's
             status about this change via the ``assigned`` attribute.
 
         Parameters
@@ -736,8 +733,8 @@ class Component(composites.Composite, metaclass=ComponentType):
             :implements: R_ARMI_COMP_NUCLIDE_FRACS
 
             The method allows a user or plugin to set the number densities of a
-            component. In contrast to the ``setNumberDensity`` method, it sets all
-            densities within a component.
+            Component. In contrast to the ``setNumberDensity`` method, it sets all
+            densities within a Component.
 
         Parameters
         ----------
@@ -842,7 +839,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         """
         Set a single dimension on the component.
 
-        .. impl:: Set a component dimension, considering thermal expansion.
+        .. impl:: Set a Component dimension, considering thermal expansion.
             :id: I_ARMI_COMP_EXPANSION1
             :implements: R_ARMI_COMP_EXPANSION
 
@@ -895,8 +892,8 @@ class Component(composites.Composite, metaclass=ComponentType):
             :id: I_ARMI_COMP_DIMS
             :implements: R_ARMI_COMP_DIMS
 
-            Due to thermal expansion, component dimensions depend on their temperature.
-            This method retrieves a dimension from the component at a particular
+            Due to thermal expansion, Component dimensions depend on their temperature.
+            This method retrieves a dimension from the Component at a particular
             temperature, if provided. If the Component is a LinkedComponent then the
             dimensions are resolved to ensure that any thermal expansion that has
             occurred to the Components that the LinkedComponent depends on is reflected
@@ -983,7 +980,7 @@ class Component(composites.Composite, metaclass=ComponentType):
             between T0 and Tc is used to calculate the thermal expansion
             factor. If a solid material does not have a linear expansion factor
             defined and the temperature difference is greater than
-            :py:attr:armi.reactor.components.component.Component._TOLERANCE, an
+            :py:attr:`armi.reactor.components.component.Component._TOLERANCE`, an
             error is raised. Thermal expansion of fluids or custom materials is
             neglected, currently.
 
