@@ -119,13 +119,22 @@ class Flag(metaclass=_FlagMeta):
     """
     A collection of bitwise flags.
 
-    This is intended to emulate ``enum.Flag``, except with the possibility of extension
-    after the class has been defined. Most docs for ``enum.Flag`` should be relevant here,
-    but there are sure to be occasional differences.
+    This is intended to emulate ``enum.Flag``, except with the possibility of extension after the
+    class has been defined. Most docs for ``enum.Flag`` should be relevant here, but there are sure
+    to be occasional differences.
 
     .. impl:: No two flags have equivalence.
         :id: I_ARMI_FLAG_DEFINE
         :implements: R_ARMI_FLAG_DEFINE
+
+        A bitwise flag class intended to emulate the standard library's ``enum.Flag``, with the
+        added functionality that it allows for extension after the class has been defined. Each Flag
+        is unique; no two Flags are equivalent.
+
+        Note that while Python allows for arbitrary-width integers, exceeding the system-native
+        integer size can lead to challenges in storing data, e.g. in an HDF5 file. In this case, the
+        ``from_bytes()`` and ``to_bytes()`` methods are provided to represent a Flag's values in
+        smaller chunks so that writeability can be maintained.
 
     .. warning::
         Python features arbitrary-width integers, allowing one to represent an
@@ -224,11 +233,15 @@ class Flag(metaclass=_FlagMeta):
             :id: I_ARMI_FLAG_EXTEND0
             :implements: R_ARMI_FLAG_EXTEND
 
+            A class method to extend a ``Flag`` with a vector of provided additional ``fields``,
+            with field names as keys, without loss of uniqueness. Values for the additional
+            ``fields`` can be explicitly specified, or an instance of ``auto`` can be supplied.
+
         Parameters
         ----------
         fields : dict
-            A dictionary containing field names as keys, and their desired values, or
-            an instance of ``auto`` as values.
+            A dictionary containing field names as keys, and their desired values, or an instance of
+            ``auto`` as values.
 
         Example
         -------
