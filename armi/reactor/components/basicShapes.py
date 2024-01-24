@@ -191,7 +191,7 @@ class Rectangle(ShapedComponent):
         :id: I_ARMI_COMP_SHAPES2
         :implements: R_ARMI_COMP_SHAPES
 
-        This class provides the framework for defining a rectangular Component. This
+        This class provides the implementation for a rectangular Component. This
         includes setting key parameters such as its material, temperature, and
         dimensions. It also includes methods for computing geometric
         information related to rectangles, such as the
