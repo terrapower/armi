@@ -182,7 +182,7 @@ class DefaultExecuter(Executer):
 
         The :py:meth:`~armi.physics.executers.DefaultExecuter.run` method will first
         resolve any derived options in the ``options`` object and check if the specified
-        ``executablePath`` option is valid, raising an error is not. If it is,
+        ``executablePath`` option is valid, raising an error if not. If it is,
         preparation work for executing the code is performed, such as performing any geometry
         transformations specified in subclasses or building the directories needed
         to save input and output files. Once the temporary working directory is created,
