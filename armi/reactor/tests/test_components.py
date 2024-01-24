@@ -578,7 +578,7 @@ class TestCircle(TestShapedComponent):
     def test_componentInteractionsLinkingByDimensions(self):
         """Tests linking of Components by dimensions.
 
-        .. test:: Show the dimensions of a liquid component can be defined to depend on the solid components that bound it.
+        .. test:: Show the dimensions of a liquid Component can be defined to depend on the solid Components that bound it.
             :id: T_ARMI_COMP_FLUID1
             :tests: R_ARMI_COMP_FLUID
 
