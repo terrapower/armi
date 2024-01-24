@@ -23,7 +23,7 @@ framework and applications.
     the :py:class:`NuclideBase <armi.nucDirectory.nuclideBases.NuclideBase>`
     class which is used to organize and store metadata about each nuclide. The
     metadata is read from ``nuclides.dat`` file in the ARMI resources folder,
-    which contains metadata for 4614 isotopes. The module also contains classes
+    which contains metadata for 4,614 isotopes. The module also contains classes
     for special types of nuclides, including :py:class:`DummyNuclideBase
     <armi.nucDirectory.nuclideBases.DummyNuclideBase>` for dummy nuclides,
     :py:class:`LumpNuclideBase
