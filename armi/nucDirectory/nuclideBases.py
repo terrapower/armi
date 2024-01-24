@@ -29,7 +29,7 @@ framework and applications.
     :py:class:`LumpNuclideBase
     <armi.nucDirectory.nuclideBases.LumpNuclideBase>`, for lumped fission
     product nuclides, and :py:class:`NaturalNuclideBase
-    <armi.nucDirectory.nuclideBases.NaturlaNuclideBase>` for when data is given
+    <armi.nucDirectory.nuclideBases.NaturalNuclideBase>` for when data is given
     collectively for an element at natural abundance rather than for individual
     isotopes.
 
