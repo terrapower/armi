@@ -520,7 +520,7 @@ class CylindricalComponentsAverageBlockCollection(BlockCollection):
         :id: I_ARMI_XSGM_CREATE_REPR_BLOCKS1
         :implements: R_ARMI_XSGM_CREATE_REPR_BLOCKS
 
-        This class functions as a data structure for utilties that construct representative blocks based on a volume-weighted average
+        This class constructs representative blocks based on a volume-weighted average
         using cylindrical blocks from an existing block list. Inheriting functionality from the abstract
         :py:class:`Reactor <armi.physics.neutronics.crossSectionGroupManager.BlockCollection>` object, this class
         will construct representative blocks using averaged parameters of all blocks in the given collection.
