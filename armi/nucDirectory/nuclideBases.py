@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
+r"""
 This module provides fundamental nuclide information to be used throughout the
 framework and applications.
 
@@ -531,7 +531,7 @@ class IMcnpNuclide:
 
 
 class NuclideBase(INuclide, IMcnpNuclide):
-    """Represents an individual nuclide/isotope.
+    r"""Represents an individual nuclide/isotope.
 
     .. impl:: Isotopes and isomers can be queried by name and label.
         :id: I_ARMI_ND_ISOTOPES1
@@ -1293,7 +1293,7 @@ def __addLumpedFissionProductNuclideBases():
 
 
 def readMCCNuclideData():
-    """Read in the label data for the MC2-2 and MC2-3 cross section codes to the nuclide bases.
+    r"""Read in the label data for the MC2-2 and MC2-3 cross section codes to the nuclide bases.
 
     .. impl:: Separating MCC data from code.
         :id: I_ARMI_ND_DATA1
