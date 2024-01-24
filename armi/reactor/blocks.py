@@ -1710,7 +1710,7 @@ class HexBlock(Block):
 
             This method creates and returns a homogenized representation of itself in the form of a new Block.
             The homogenization occurs in the following manner. A single Hexagon Component is created
-            add added to the new Block. This Hexagon Component is given the 
+            add added to the new Block. This Hexagon Component is given the
             :py:class:`armi.materials.mixture._Mixture` material and a volume averaged temperature
             (``getAverageTempInC``). The number densities of the original Block are also stored on
             this new Component (:need:`I_ARMI_CMP_GET_NDENS`). Several parameters from the original block
@@ -1809,7 +1809,7 @@ class HexBlock(Block):
             :implements: R_ARMI_BLOCK_DIMS
 
             This method first retrives the pitch of the Hexagonal Block
-            (:need:`I_ARMI_UTIL_HEXAGON0`) and then leverages the 
+            (:need:`I_ARMI_UTIL_HEXAGON0`) and then leverages the
             area calculation via :need:`I_ARMI_UTIL_HEXAGON0`.
 
         """
@@ -2153,8 +2153,8 @@ class HexBlock(Block):
             be present. The flat-to-flat distance between the radial exterior of opposing
             pins in the outermost ring is computed by computing the distance between
             pin centers (``getPinCenterFlatToFlat``) and adding the outer diameter of
-            the clad Component and the outer diameter of the wire Component twice. The 
-            total margin between the inner pitch of the duct Component and the wire is then 
+            the clad Component and the outer diameter of the wire Component twice. The
+            total margin between the inner pitch of the duct Component and the wire is then
             computed. The pin to duct gap is then half this distance.
 
         Parameters
@@ -2341,10 +2341,10 @@ class HexBlock(Block):
             :id: I_ARMI_BLOCK_DIMS6
             :implements: R_ARMI_BLOCK_DIMS
 
-            This implementation requires that clad and wire Components are present. 
-            If not, an error is raised. If present, the pin pitch is calculated 
-            as the sum of the outer diameter of the clad and outer diameter of 
-            the wire.  
+            This implementation requires that clad and wire Components are present.
+            If not, an error is raised. If present, the pin pitch is calculated
+            as the sum of the outer diameter of the clad and outer diameter of
+            the wire.
 
         Parameters
         ----------
@@ -2385,30 +2385,30 @@ class HexBlock(Block):
 
             This implementation computes wetted perimeters for specific Components, as specified
             by their Flags (:need:`R_ARMI_FLAG_DEFINE`). Hollow hexagons and circular pin Components
-            are supported. The latter supports both instances where the exterior is wetted 
+            are supported. The latter supports both instances where the exterior is wetted
             (e.g., clad, wire) as well as when the interior and exterior are wetted (circular ducts).
 
             Hollow hexagons are calculated via,
 
-            .. math:: 
+            .. math::
 
                 \frac{6 \times \text{ip}}{\sqrt{3}},
-            
-            where :math:`\text{ip}` is the inner pitch of the hollow hexagon. Circular pin Components  
+
+            where :math:`\text{ip}` is the inner pitch of the hollow hexagon. Circular pin Components
             where the exterior is wetted is calculated via,
 
             .. math::
 
                 N \pi \left( \text{OD}_c + \text{OD}_w \right),
-            
+
             where :math:`N` is the total number of pins, :math:`\text{OD}_c` is the outer diameter
-            of the clad, and :math:`\text{OD}_w` is the outer diameter of the wire, respectively. 
+            of the clad, and :math:`\text{OD}_w` is the outer diameter of the wire, respectively.
             When both the interior and exterior are wetted, the wetted perimeter is calculated as
 
             .. math::
-            
+
                 \pi \left( \text{OD} + \text{ID} \right),
-            
+
             where :math:`\text{OD}` and :math:`\text{ID}` are the outer and inner diameters of the pin
             Component, respectively.
 
@@ -2491,7 +2491,7 @@ class HexBlock(Block):
             :id: I_ARMI_BLOCK_DIMS8
             :implements: R_ARMI_BLOCK_DIMS
 
-            Retrieving the flow area requires that there be a single coolant Component. 
+            Retrieving the flow area requires that there be a single coolant Component.
             If available, the area is calculated (:need:I_ARMI_COMP_VOL0).
         """
         return self.getComponent(Flags.COOLANT, exact=True).getArea()
@@ -2514,8 +2514,8 @@ class HexBlock(Block):
             .. math::
 
                 4\frac{A}{P},
-            
-            where :math:`A` is the flow area (:need:I_ARMI_BLOCK_DIMS8) and :math:`P` is the 
+
+            where :math:`A` is the flow area (:need:I_ARMI_BLOCK_DIMS8) and :math:`P` is the
             wetted perimeter (:need:I_ARMI_BLOCK_DIMS7).
         """
         return 4.0 * self.getFlowArea() / self.getWettedPerimeter()
