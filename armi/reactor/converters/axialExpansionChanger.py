@@ -69,6 +69,22 @@ def expandColdDimsToHot(
         :id: I_ARMI_INP_COLD_HEIGHT
         :implements: R_ARMI_INP_COLD_HEIGHT
 
+        This method is designed to be used during core construction to axially thermally expand the
+        assemblies to their "hot" temperatures (as determined by ``Thot`` values in blueprints).
+        First, The Assembly is prepared for axial expansion via ``setAssembly``. In
+        ``applyColdHeightMassIncrease``, the number densities on each Component is adjusted to
+        reflect that Assembly inputs are at cold (i.e., ``Tinput``) temperatures. To expand to
+        the requested hot temperatures, thermal expansion factors are then computed in
+        ``computeThermalExpansionFactors``. Finally, the Assembly is axially thermally expanded in
+        ``axiallyExpandAssembly``.
+
+        If the setting ``detailedAxialExpansion`` is ``False``, then each Assembly gets its Block mesh
+        set to match that of the "reference" Assembly (see ``getDefaultReferenceAssem`` and ``setBlockMesh``).
+
+        Once the Assemblies are axially expanded, the Block BOL heights are updated. To account for the change in
+        Block volume from axial expansion, ``completeInitialLoading`` is called to update any volume-dependent
+        Block information.
+
     Parameters
     ----------
     assems: list[:py:class:`Assembly <armi.reactor.assemblies.Assembly>`]
@@ -110,10 +126,6 @@ class AxialExpansionChanger:
     """
     Axially expand or contract assemblies or an entire core.
 
-    .. impl:: Preserve the total height of an ARMI assembly, during expansion.
-        :id: I_ARMI_ASSEM_HEIGHT_PRES
-        :implements: R_ARMI_ASSEM_HEIGHT_PRES
-
     Attributes
     ----------
     linked : :py:class:`AssemblyAxialLinkage`
@@ -144,11 +156,18 @@ class AxialExpansionChanger:
     def performPrescribedAxialExpansion(
         self, a, componentLst: list, percents: list, setFuel=True
     ):
-        """Perform axial expansion of an assembly given prescribed expansion percentages.
+        """Perform axial expansion/contraction of an assembly given prescribed expansion percentages.
 
         .. impl:: Perform expansion/contraction, given a list of components and expansion coefficients.
             :id: I_ARMI_AXIAL_EXP_PRESC
             :implements: R_ARMI_AXIAL_EXP_PRESC
+
+            This method performs component-wise axial expansion for an assembly given expansion coefficients
+            and a corresponding list of Components. In ``setAssembly``, the Assembly is prepared
+            for axial expansion by determining Component-wise axial linkage and checking to see if a dummy Block
+            is in place (necessary for ensuring conservation properties). The provided expansion factors are
+            then assigned to their corresponding Components in ``setExpansionFactors``. Finally, the axial
+            expansion is performed in ``axiallyExpandAssembly``
 
         Parameters
         ----------
@@ -178,11 +197,19 @@ class AxialExpansionChanger:
         setFuel: bool = True,
         expandFromTinputToThot: bool = False,
     ):
-        """Perform thermal expansion for an assembly given an axial temperature grid and field.
+        """Perform thermal expansion/contraction for an assembly given an axial temperature grid and field.
 
-        .. impl:: Perform thermal expansion/contraction, given an axial temp distribution over an assembly.
+        .. impl:: Perform thermal expansion/contraction, given an axial temperature distribution over an assembly.
             :id: I_ARMI_AXIAL_EXP_THERM
             :implements: R_ARMI_AXIAL_EXP_THERM
+
+            This method performs component-wise thermal expansion for an assembly given a discrete temperature
+            distribution over the axial length of the Assembly. In ``setAssembly``, the Assembly is prepared
+            for axial expansion by determining Component-wise axial linkage and checking to see if a dummy Block
+            is in place (necessary for ensuring conservation properties). The discrete temperature distribution
+            is then leveraged to update Component temperatures and compute thermal expansion factors
+            (via ``updateComponentTempsBy1DTempField`` and ``computeThermalExpansionFactors``, respectively).
+            Finally, the axial expansion is performed in ``axiallyExpandAssembly``.
 
         Parameters
         ----------
@@ -274,7 +301,18 @@ class AxialExpansionChanger:
                 raise RuntimeError(msg)
 
     def axiallyExpandAssembly(self):
-        """Utilizes assembly linkage to do axial expansion."""
+        """Utilizes assembly linkage to do axial expansion.
+
+        .. impl:: Preserve the total height of an ARMI assembly, during expansion.
+            :id: I_ARMI_ASSEM_HEIGHT_PRES
+            :implements: R_ARMI_ASSEM_HEIGHT_PRES
+
+            The total height of an Assembly is preserved by not changing the ``ztop`` position
+            of the top-most Block in an Assembly. The ``zbottom`` of the top-most Block is
+            adjusted to match the Block immediately below it. The ``height`` of the
+            top-most Block is is then updated to reflect any expansion/contraction.
+
+        """
         mesh = [0.0]
         numOfBlocks = self.linked.a.countBlocksWithFlags()
         runLog.debug(

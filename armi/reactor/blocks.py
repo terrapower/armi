@@ -1565,6 +1565,9 @@ class Block(composites.Composite):
             :id: I_ARMI_MANUAL_TARG_COMP
             :implements: R_ARMI_MANUAL_TARG_COMP
 
+            This method sets the provided Component to be the axial expansion
+            target Component.
+
         Parameter
         ---------
         targetComponent: :py:class:`Component <armi.reactor.components.component.Component>` object
