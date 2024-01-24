@@ -230,9 +230,9 @@ class DlayxsIO(cccc.Stream):
             :id: I_ARMI_NUCDATA_DLAYXS
             :implements: R_ARMI_NUCDATA_DLAYXS
 
-            Reading and writing DALYXS delayed neutron data files is performed
+            Reading and writing DLAYXS delayed neutron data files is performed
             using the general nuclear data I/O functionalities described in
-            :need:`I_ARMI_NUCDATA`. A DALYXS file specifically follows the
+            :need:`I_ARMI_NUCDATA`. A DLAYXS file specifically follows the
             following steps:
 
             #. Read/write the data ``label`` for identification.
@@ -243,8 +243,11 @@ class DlayxsIO(cccc.Stream):
                     characters for the ``label``, so its length needs to be
                     stored in the :py:class:`~.cccc.IORecord`.
 
-            #. Read/write data length information, i.e. number of energy groups,
-               number of nuclides, and number of precursor families.
+            #. Read/write file control information, i.e. the 1D record, which includes:
+
+                * Number of energy groups
+                * Number of nuclides
+                * Number of precursor families
 
             #. Read/write spectral data, including:
 
@@ -255,8 +258,9 @@ class DlayxsIO(cccc.Stream):
                 * Number of families to which fission in a given nuclide
                   contributes delayed neutron precursors
 
-            #. Read/write 3D delayed neutron yield matrix, indexed by nuclide,
-               precursor family, and outgoing neutron energy group.
+            #. Read/write 3D delayed neutron yield matrix on the 3D record,
+               indexed by nuclide, precursor family, and outgoing neutron energy
+               group.
         """
         runLog.info(
             "{} DLAYXS library {}".format(

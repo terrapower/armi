@@ -152,10 +152,6 @@ class GeodstStream(cccc.StreamWithDataContainer):
 
             #. Read/write file specifications on 1D record.
 
-                .. note::
-
-                    This record contains 27 integers.
-
             #. Based on the geometry type (``IGOM``), one of following records
                are read/written:
 

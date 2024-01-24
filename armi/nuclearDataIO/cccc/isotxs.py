@@ -306,7 +306,7 @@ class IsotxsIO(cccc.Stream):
             #. Read/write file 5D record for each nuclide, which includes
                principal cross sections.
             #. Read/write file 6D record for each nuclide, which includes
-               fission spectrum if it is flagged as a matrix (``ICHI`` > 1)
+               fission spectrum if it is flagged as a matrix (``ICHI`` > 1).
             #. Read/write file 7D record for each nuclide, which includes the
                scattering matrices.
         """
