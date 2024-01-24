@@ -732,7 +732,7 @@ class FuelHandler:
             each other. This will also update the ``childrenByLocator`` list on the
             core as well as the assembly parameters ``numMoves`` and ``daysSinceLastMove``.
 
-        .. impl:: User-specified blocks can be left in place and not moved.
+        .. impl:: User-specified blocks can be left in place during within-core swaps.
             :id: I_ARMI_SHUFFLE_STATIONARY0
             :implements: R_ARMI_SHUFFLE_STATIONARY
 
@@ -847,7 +847,7 @@ class FuelHandler:
         outgoing : :py:class:`Assembly <armi.reactor.assemblies.Assembly>`
             The assembly getting discharged out the core.
 
-        .. impl:: User-specified blocks can be left in place and not moved.
+        .. impl:: User-specified blocks can be left in place for the discharge swap.
             :id: I_ARMI_SHUFFLE_STATIONARY1
             :implements: R_ARMI_SHUFFLE_STATIONARY
 
