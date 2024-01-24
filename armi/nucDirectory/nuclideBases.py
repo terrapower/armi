@@ -680,9 +680,10 @@ class NuclideBase(INuclide, IMcnpNuclide):
             :id: I_ARMI_ND_ISOTOPES5
             :implements: R_ARMI_ND_ISOTOPES
 
-            This method generates the AAAZZZS format ID for an isotope. This is
-            a general format independent of any code that precisely defines an
-            isotope or isomer.
+            This method generates the AAAZZZS format ID for an isotope. Where
+            AAA is the mass number, ZZZ is the atomic number, and S is the
+            isomeric state. This is a general format independent of any code that
+            precisely defines an isotope or isomer.
 
         Notes
         -----
