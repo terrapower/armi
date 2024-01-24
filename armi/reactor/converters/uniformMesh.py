@@ -433,9 +433,24 @@ class UniformMeshGeometryConverter(GeometryConverter):
             :id: I_ARMI_UMC
             :implements: R_ARMI_UMC
 
+            Given a source Reactor, ``r``, as input and when ``_hasNonUniformAssems`` is ``False``,
+            a new Reactor is created in ``initNewReactor``. This new Reactor contains copies of select
+            information from the input source Reactor (e.g., Operator, Blueprints, cycle, timeNode, etc).
+            The uniform mesh to be applied to the new Reactor is calculated in ``_generateUniformMesh``
+            (see :need:`I_ARMI_UMC_NON_UNIFORM` and :need:`I_ARMI_UMC_MIN_MESH`). New assemblies with this
+            uniform mesh are created in ``_buildAllUniformAssemblies`` and added to the new Reactor.
+            Core-level parameters are then mapped from the source Reactor to the new Reactor in
+            ``_mapStateFromReactorToOther``. Finally, the core-wise axial mesh is updated on the new Reactor
+            via ``updateAxialMesh``.
+
+
         .. impl:: Map select parameters from composites on the original mesh to the new mesh.
             :id: I_ARMI_UMC_PARAM_FORWARD
             :implements: R_ARMI_UMC_PARAM_FORWARD
+
+            In ``_mapStateFromReactorToOther``, Core-level parameters are mapped from the source Reactor
+            to the new Reactor. If requested, block-level parameters can be mapped using an averaging
+            equation as described in ``setAssemblyStateFromOverlaps``.
         """
         if r is None:
             raise ValueError(f"No reactor provided in {self}")
@@ -555,6 +570,11 @@ class UniformMeshGeometryConverter(GeometryConverter):
         .. impl:: Map select parameters from composites on the new mesh to the original mesh.
             :id: I_ARMI_UMC_PARAM_BACKWARD
             :implements: R_ARMI_UMC_PARAM_BACKWARD
+
+            To ensure that the parameters on the original Reactor are from the converter Reactor,
+            the first step is to clear the state on the original Reactor (see ``_clearStateOnReactor``).
+            ``_mapStateFromReactorToOther`` is then called to map Core-level parameters and, optionally,
+            averaged Block-level parameters (see :need: I_ARMI_UMC_PARAM_FORWARD).
         """
         runLog.extra(
             f"Applying uniform neutronics results from {self.convReactor} to {self._sourceReactor}"
