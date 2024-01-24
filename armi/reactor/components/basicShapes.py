@@ -102,7 +102,7 @@ class Hexagon(ShapedComponent):
 
         This class provides the implementation of a hexagonal Component. This
         includes setting key parameters such as its material, temperature, and
-        dimensions. It also includes providing an interface for retrieving geometric
+        dimensions. It also includes methods for retrieving geometric
         dimension information unique to hexagons such as the ``getPerimeter`` and
         ``getPitchData`` methods.
     """
