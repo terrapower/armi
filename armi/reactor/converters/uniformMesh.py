@@ -455,7 +455,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
             (see :need:`I_ARMI_UMC_NON_UNIFORM` and :need:`I_ARMI_UMC_MIN_MESH`). New assemblies with this
             uniform mesh are created in ``_buildAllUniformAssemblies`` and added to the new Reactor.
             Core-level parameters are then mapped from the source Reactor to the new Reactor in
-            ``_mapStateFromReactorToOther``. Finally, the core-wise axial mesh is updated on the new Reactor
+            ``_mapStateFromReactorToOther``. Finally, the core-wide axial mesh is updated on the new Reactor
             via ``updateAxialMesh``.
 
 
@@ -586,10 +586,10 @@ class UniformMeshGeometryConverter(GeometryConverter):
             :id: I_ARMI_UMC_PARAM_BACKWARD
             :implements: R_ARMI_UMC_PARAM_BACKWARD
 
-            To ensure that the parameters on the original Reactor are from the converter Reactor,
+            To ensure that the parameters on the original Reactor are from the converted Reactor,
             the first step is to clear the state on the original Reactor (see ``_clearStateOnReactor``).
             ``_mapStateFromReactorToOther`` is then called to map Core-level parameters and, optionally,
-            averaged Block-level parameters (see :need: I_ARMI_UMC_PARAM_FORWARD).
+            averaged Block-level parameters (see :need:`I_ARMI_UMC_PARAM_FORWARD`).
         """
         runLog.extra(
             f"Applying uniform neutronics results from {self.convReactor} to {self._sourceReactor}"
