@@ -233,7 +233,7 @@ class Flag(metaclass=_FlagMeta):
             :id: I_ARMI_FLAG_EXTEND0
             :implements: R_ARMI_FLAG_EXTEND
 
-            A class method to extend a ``Flag`` with a vector of provided additional ``fields``,
+            A method to extend a ``Flag`` with a vector of provided additional ``fields``,
             with field names as keys, without loss of uniqueness. Values for the additional
             ``fields`` can be explicitly specified, or an instance of ``auto`` can be supplied.
 

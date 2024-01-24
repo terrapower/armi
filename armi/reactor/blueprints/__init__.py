@@ -546,7 +546,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
 
     @classmethod
     def load(cls, stream, roundTrip=False):
-        """This class method is a wrapper around the `yamlize.Object.load()` method.
+        """This method is a wrapper around the `yamlize.Object.load()` method.
 
         The reason for the wrapper is to allow us to default to `Cloader`. Essentially,
         the `CLoader` class is 10x faster, but doesn't allow for "round trip" (read-
