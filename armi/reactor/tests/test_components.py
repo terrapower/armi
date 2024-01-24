@@ -576,7 +576,7 @@ class TestCircle(TestShapedComponent):
             self.assertAlmostEqual(cur, ref)
 
     def test_componentInteractionsLinkingByDimensions(self):
-        """Tests linking of components by dimensions.
+        """Tests linking of Components by dimensions.
 
         .. test:: Show the dimensions of a liquid component can be defined to depend on the solid components that bound it.
             :id: T_ARMI_COMP_FLUID1
