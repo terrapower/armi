@@ -100,14 +100,17 @@ class ArmiParser(argparse.ArgumentParser):
 
 class ArmiCLI:
     """
-    ARMI CLI -- The main entry point into ARMI. There are various commands
-    available. To get help for the individual commands, run again with
-    `<command> --help`. Typically, the CLI implements functions that already
-    exist within ARMI.
+    ARMI CLI -- The main entry point into ARMI. There are various commands available. To get help
+    for the individual commands, run again with `<command> --help`. Typically, the CLI implements
+    functions that already exist within ARMI.
 
     .. impl:: The basic ARMI CLI, for running a simulation.
         :id: I_ARMI_CLI_CS
         :implements: R_ARMI_CLI_CS
+
+        Provides a basic command-line interface (CLI) for running an ARMI simulation. Available
+        commands can be listed with ``-l``. Information on individual commands can be obtained by
+        running with ``<command> --help``.
     """
 
     def __init__(self):

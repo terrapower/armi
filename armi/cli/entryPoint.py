@@ -51,12 +51,23 @@ class EntryPoint:
     """
     Generic command line entry point.
 
-    A valid subclass must provide at least a ``name`` class attribute, and may also
-    specify the other class attributes described below.
+    A valid subclass must provide at least a ``name`` class attribute, and may also specify the
+    other class attributes described below.
 
     .. impl:: Generic CLI base class for developers to use.
         :id: I_ARMI_CLI_GEN
         :implements: R_ARMI_CLI_GEN
+
+        Provides a base class for plugin developers to use in creating application-specific CLIs.
+        Valid subclasses must at least provide a ``name`` class attribute.
+
+        Optional class attributes that a subclass may provide include ``description``, a string
+        describing the command's actions, ``splash``, a boolean specifying whether to display a
+        splash screen upon execution, and ``settingsArgument``. If ``settingsArgument`` is specified
+        as ``required``, then a settings files is a required positional argument. If
+        ``settingsArgument`` is set to ``optional``, then a settings file is an optional positional
+        argument. If None is specified for the ``settingsArgument``, then no settings file argument
+        is added.
     """
 
     #: The <command-name> that is used to call the command from the command line
