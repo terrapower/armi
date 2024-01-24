@@ -914,7 +914,7 @@ class CrossSectionGroupManager(interfaces.Interface):
             :id: I_ARMI_XSGM_FREQ2
             :implements: R_ARMI_XSGM_FREQ
 
-            This method will update representative blocks and block burnups at every node for each cross-section ID if the control logic
+            This method updates representative blocks and block burnups at every node for each cross-section ID if the control logic
             for lattices physics frequency updates is set for every node (`everyNode`) through the :py:class:`LatticePhysicsInterface <armi.physics.neutronics.latticePhysics>`.
             At every node, the cross-section group manager will construct representative blocks for each cross-section ID in the current reactor state.
 
