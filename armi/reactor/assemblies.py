@@ -184,10 +184,11 @@ class Assembly(composites.Composite):
             Adds a unique Block to the top of the Assembly. If the Block already
             exists in the Assembly, an error is raised in
             :py:meth:`armi.reactor.composites.Composite.add`.
-            The spatialLocator of the Assembly is automatically updated
-            to account for the new Block. The spatial locator for the Block is
-            also updated in ``reestablishBlockOrder``. The axial mesh and other
-            block geometry parameters are updated in ``calculateZCoords``.
+            The spatialLocator of the Assembly is updated to account for
+            the new Block. In ``reestablishBlockOrder``, the Assembly spatialGrid
+            is reinitialized and Block-wise spatialLocator and name objects
+            are updated. The axial mesh and other Block geometry parameters are
+            updated in ``calculateZCoords``.
         """
         composites.Composite.add(self, obj)
         obj.spatialLocator = self.spatialGrid[0, 0, len(self) - 1]
@@ -1176,7 +1177,7 @@ class Assembly(composites.Composite):
 
     def reestablishBlockOrder(self):
         """
-        After children have been mixed up axially, this re-locates each block with the proper axial mesh.
+        The block ordering has changed, so the spatialGrid and Block-wise spatialLocator and name objects need updating.
 
         See Also
         --------
