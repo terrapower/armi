@@ -132,7 +132,7 @@ class GlobalFluxInterface(interfaces.Interface):
             global power from the flux solve is computed by summing the
             block-wise power in the core. This value is then compared to the
             user-specified power and raises an error if relative difference is
-            above :math:`10^{-5}`.
+            above 1e-5.
         """
         powerGenerated = (
             self.r.core.calcTotalParam(
@@ -1244,30 +1244,35 @@ def computeDpaRate(mgFlux, dpaXs):
         :id: I_ARMI_FLUX_DPA
         :implements: R_ARMI_FLUX_DPA
 
-        This method calculates DPA rates using the inputted multigroup flux and DPA cross sections.
-        Displacements calculated by displacement XS:
+        This method calculates DPA rates using the inputted multigroup flux and
+        DPA cross sections. Is simply does the operation: ``dpaPerSecond =
+        \sum_{g} mgFlux[g] * dpaXs[g]``. Where ``dpaPerSecond`` is the returned
+        DPA rate, ``mgFlux`` is the inputted multigroup flux, and ``dpaXS`` is
+        the inputted DPA cross section.
 
-        .. math::
+    Displacements calculated by displacement XS:
 
-            \text{Displacement rate} &= \phi N_{\text{HT9}} \sigma  \\
-            &= (\#/\text{cm}^2/s) \cdot (1/cm^3) \cdot (\text{barn})\\
-            &= (\#/\text{cm}^5/s) \cdot  \text{(barn)} * 10^{-24} \text{cm}^2/\text{barn} \\
-            &= \#/\text{cm}^3/s
+    .. math::
 
-
-        ::
-
-            DPA rate = displacement density rate / (number of atoms/cc)
-                    = dr [#/cm^3/s] / (nHT9)  [1/cm^3]
-                    = flux * barn * 1e-24
+        \text{Displacement rate} &= \phi N_{\text{HT9}} \sigma  \\
+        &= (\#/\text{cm}^2/s) \cdot (1/cm^3) \cdot (\text{barn})\\
+        &= (\#/\text{cm}^5/s) \cdot  \text{(barn)} * 10^{-24} \text{cm}^2/\text{barn} \\
+        &= \#/\text{cm}^3/s
 
 
-        .. math::
+    ::
 
-            \frac{\text{dpa}}{s}  = \frac{\phi N \sigma}{N} = \phi * \sigma
+        DPA rate = displacement density rate / (number of atoms/cc)
+                = dr [#/cm^3/s] / (nHT9)  [1/cm^3]
+                = flux * barn * 1e-24
 
-        the Number density of the structural material cancels out. It's in the macroscopic
-        XS and in the original number of atoms.
+
+    .. math::
+
+        \frac{\text{dpa}}{s}  = \frac{\phi N \sigma}{N} = \phi * \sigma
+
+    the Number density of the structural material cancels out. It's in the macroscopic
+    XS and in the original number of atoms.
 
     Raises
     ------
@@ -1329,7 +1334,7 @@ def calcReactionRates(obj, keff, lib):
         :implements: R_ARMI_FLUX_RX_RATES
 
         This method computes 1-group reaction rates for the inputted
-        :py:class:`ArmiObject <armi.reactor.composites.ArmiObject>` These
+        :py:class:`ArmiObject <armi.reactor.composites.ArmiObject>`. These
         reaction rates include:
 
         * fission
@@ -1337,26 +1342,26 @@ def calcReactionRates(obj, keff, lib):
         * n2n
         * absorption
 
-        Scatter could be added as well. This function is quite slow so it is
-        skipped for now as it is uncommonly needed.
+    Scatter could be added as well. This function is quite slow so it is
+    skipped for now as it is uncommonly needed.
 
-        Reaction rates are:
+    Reaction rates are:
 
-        .. math::
+    .. math::
 
-            \Sigma \phi = \sum_{\text{nuclides}} \sum_{\text{energy}} \Sigma
-            \phi
+        \Sigma \phi = \sum_{\text{nuclides}} \sum_{\text{energy}} \Sigma
+        \phi
 
-        The units of :math:`N \sigma \phi` are::
+    The units of :math:`N \sigma \phi` are::
 
-            [#/bn-cm] * [bn] * [#/cm^2/s] = [#/cm^3/s]
+        [#/bn-cm] * [bn] * [#/cm^2/s] = [#/cm^3/s]
 
-        The group-averaged microscopic cross section is:
+    The group-averaged microscopic cross section is:
 
-        .. math::
+    .. math::
 
-            \sigma_g = \frac{\int_{E g}^{E_{g+1}} \phi(E)  \sigma(E)
-            dE}{\int_{E_g}^{E_{g+1}} \phi(E) dE}
+        \sigma_g = \frac{\int_{E g}^{E_{g+1}} \phi(E)  \sigma(E)
+        dE}{\int_{E_g}^{E_{g+1}} \phi(E) dE}
     """
     rate = {}
     for simple in RX_PARAM_NAMES:
