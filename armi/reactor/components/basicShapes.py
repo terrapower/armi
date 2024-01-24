@@ -31,7 +31,7 @@ class Circle(ShapedComponent):
         :id: I_ARMI_COMP_SHAPES0
         :implements: R_ARMI_COMP_SHAPES
 
-        This class provides the framework for defining a Circle Component. This includes
+        This class provides the implementation of a Circle Component. This includes
         setting key parameters such as its material, temperature, and dimensions. It
         also includes providing an interface for retrieving the area of a Circle
         Component via the ``getComponentArea`` method.
