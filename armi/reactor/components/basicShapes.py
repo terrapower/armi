@@ -100,7 +100,7 @@ class Hexagon(ShapedComponent):
         :id: I_ARMI_COMP_SHAPES1
         :implements: R_ARMI_COMP_SHAPES
 
-        This class provides the framework for defining a hexagonal Component. This
+        This class provides the implementation of a hexagonal Component. This
         includes setting key parameters such as its material, temperature, and
         dimensions. It also includes providing an interface for retrieving geometric
         dimension information unique to hexagons such as the ``getPerimeter`` and
