@@ -143,9 +143,11 @@ def writeWelcomeHeaders(o, cs):
             # Users shouldn't ever have both of these defined, but this is not the place
             # for code to fail if they do. Allow for both to not be None.
             if fluxData.xsFileLocation is not None:
+                # list of files
                 fNames.extend(fluxData.xsFileLocation)
             if fluxData.fluxFileLocation is not None:
-                fNames.extend(fluxData.fluxFileLocation)
+                # single file
+                fNames.append(fluxData.fluxFileLocation)
             for fName in fNames:
                 label = f"crossSectionControl-{fluxSection}"
                 if isinstance(fName, list):
