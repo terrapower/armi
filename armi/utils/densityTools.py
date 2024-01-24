@@ -285,7 +285,7 @@ def normalizeNuclideList(nuclideVector, normalization=1.0):
         :id: I_ARMI_UTIL_DENS_TOOLS
         :implements: R_ARMI_UTIL_DENS_TOOLS
 
-        Given a vector of nuclides ``nuclideVector`` indexed by nuclide identifiers (``nuNames`` or ``nuclideBases``),
+        Given a vector of nuclides ``nuclideVector`` indexed by nuclide identifiers (``nucNames`` or ``nuclideBases``),
         normalizes to the provided ``normalization`` value.
 
     Parameters
@@ -325,7 +325,7 @@ def expandElementalMassFracsToNuclides(
         :id: I_ARMI_UTIL_EXP_MASS_FRACS
         :implements: R_ARMI_UTIL_EXP_MASS_FRACS
 
-        Given a vector of elements and nuclides with associated mass factions (``massFracs``),
+        Given a vector of elements and nuclides with associated mass fractions (``massFracs``),
         expands the elements in-place into a set of nuclides using
         ``expandElementalNuclideMassFracs``. Isotopes to expand into are provided for each element
         by specifying them with ``elementExpansionPairs``, which maps each element to a list of
