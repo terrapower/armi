@@ -62,9 +62,10 @@ from armi.utils import (
 
 class Operator:
     """
-    Orchestrates an ARMI run, building all the pieces, looping through the interfaces, and manipulating the reactor.
+    Orchestrate an ARMI run, building all the pieces, looping through the interfaces,
+    and manipulating the reactor.
 
-    This Standard Operator loops over a user-input number of cycles, each with a
+    This Operator loops over a user-input number of cycles, each with a
     user-input number of subcycles (called time nodes). It calls a series of
     interaction hooks on each of the
     :py:class:`~armi.interfaces.Interface` in the Interface Stack.
@@ -80,9 +81,29 @@ class Operator:
         :id: I_ARMI_OPERATOR_COMM
         :implements: R_ARMI_OPERATOR_COMM
 
+        A major design feature of ARMI is that the Operator orchestrates the
+        simulation, and as part of that, the Operator has access to the
+        Reactor data model. In code, this just means the reactor object is
+        a mandatory attribute of an instance of the Operator. But conceptually,
+        this means that while the Operator drives the simulation of the
+        reactor, all code has access to the same copy of the reactor data
+        model. This is a crucial idea that allows disparate external nuclear
+        models to interact; they interact with the ARMI reactor data model.
+
     .. impl:: An operator is built from user settings.
         :id: I_ARMI_OPERATOR_SETTINGS
         :implements: R_ARMI_OPERATOR_SETTINGS
+
+        A major design feature of ARMI is that a run is built from user settings.
+        In code, this means that a case ``Settings`` object is passed into this
+        class to intialize an Operator. Conceptually, this means that the
+        Operator that controls a reactor simulation is defined by user settings.
+        Because developers can create their own settings, the user can
+        control an ARMI simulation with arbitrary granularity in this way. In
+        practice, settings common control things like: how many cycles a
+        reactor is being modeled for, how many timesteps are to be modeled
+        per time node, the verbosity of the logging during the run, and
+        which modeling steps (such as economics) will be run.
 
     Attributes
     ----------
@@ -182,6 +203,16 @@ class Operator:
         .. impl:: Calculate step lengths from cycles and burn steps.
             :id: I_ARMI_FW_HISTORY
             :implements: R_ARMI_FW_HISTORY
+
+            In all computational modeling of physical systems, it is
+            necessary to break time into discrete chunks. In reactor
+            modeling, it is common to first break the time a reactor
+            is simulated for into the practical cycles the reactor
+            runs. And then those cycles are broken down into smaller
+            chunks called burn steps. The final step lengths this
+            method returns is a two-tiered list, where primary indices
+            correspond to the cycle and secondary indices correspond to
+            the length of each intra-cycle step (in days).
         """
         if not self._stepLengths:
             self._stepLengths = getStepLengths(self.cs)
@@ -622,27 +653,38 @@ class Operator:
 
         Notes
         -----
-        If the interfaces are flagged to be reversed at EOL, they are separated from the main stack and appended
-        at the end in reverse order. This allows, for example, an interface that must run first to also run last.
+        If the interfaces are flagged to be reversed at EOL, they are
+        separated from the main stack and appended at the end in reverse
+        order. This allows, for example, an interface that must run
+        first to also run last.
         """
         activeInterfaces = self.getActiveInterfaces("EOL")
         self._interactAll("EOL", activeInterfaces)
 
     def interactAllCoupled(self, coupledIteration):
         """
-        Interact for tight physics coupling over all enabled interfaces.
-
-        Tight coupling implies operator-split iterations between two or more physics solvers at the same solution
-        point in time. For example, a flux solution might be computed, then a temperature solution, and then
-        another flux solution based on updated temperatures (which updated densities, dimensions, and Doppler).
-
-        This is distinct from loose coupling, which would simply uses the temperature values from the previous timestep
-        in the current flux solution. It's also distinct from full coupling where all fields are solved simultaneously.
-        ARMI supports tight and loose coupling.
+        Run all interfaces that are involved in tight physics coupling.
 
         .. impl:: Physics coupling is driven from Operator.
             :id: I_ARMI_OPERATOR_PHYSICS1
             :implements: R_ARMI_OPERATOR_PHYSICS
+
+            This method runs all the interfaces that are defined as part
+            of the tight physics coupling of the reactor. Then it returns
+            if the coupling has converged or not.
+
+            Tight coupling implies the operator has split iterations
+            between two or more physics solvers at the same solution point
+            in simulated time. For example, a flux solution might be
+            computed, then a temperature solution, and then another flux
+            solution based on updated temperatures (which updates
+            densities, dimensions, and Doppler).
+
+            This is distinct from loose coupling, which simply uses
+            the temperature values from the previous timestep in the
+            current flux solution. It's also distinct from full coupling
+            where all fields are solved simultaneously. ARMI supports
+            tight and loose coupling.
         """
         activeInterfaces = self.getActiveInterfaces("Coupled")
         # Store the previous iteration values before calling interactAllCoupled
@@ -923,6 +965,15 @@ class Operator:
         .. impl:: An operator will expose an ordered list of interfaces.
             :id: I_ARMI_OPERATOR_INTERFACES
             :implements: R_ARMI_OPERATOR_INTERFACES
+
+            This method returns an ordered list of instances of the Interface
+            class. This list is useful because at any time node in the
+            reactor simulation, these interfaces will be called in
+            sequence to perform various types of calculations. It is
+            important to note that this Operator instance has a list of
+            Plugins, and each of those Plugins potentially defines
+            multiple Interfaces. And these Interfaces define their own
+            order, separate from the ordering of the Plugins.
 
         Notes
         -----
