@@ -216,6 +216,20 @@ class ComponentMerger(BlockConverter):
     .. impl:: Homogenize one component into another.
         :id: I_ARMI_BLOCKCONV0
         :implements: R_ARMI_BLOCKCONV
+
+        This subclass of ``BlockConverter`` is meant as a one-time-use tool, to convert
+        a ``Block`` into one ``Component``. A ``Block`` is a ``Composite`` that may
+        probably has multiple ``Components`` somewhere in it. This means averaging the
+        material properties in the original ``Block``, and ensuring that the final
+        ``Component`` has the same shape and volume as the original ``Block``. This
+        subclass essentially just uses the base class method
+        ``dissolveComponentIntoComponent()`` given prescribed solute and solvent
+        materials, to define the merger.
+
+    Notes
+    -----
+    It is the job of the developer to determine if merging a Block into one Component
+    will yield valid or sane results.
     """
 
     def __init__(self, sourceBlock, soluteName, solventName):
@@ -250,17 +264,23 @@ class MultipleComponentMerger(BlockConverter):
     liner was dissolved first, this would normally cause a ValueError in _verifyExpansion since the
     clad would be completely expanded over a non void component.
 
-    This could be implemented on the regular ComponentMerger, as the Flags system has enough power
-    in the type specification arguments to things like ``getComponents()``, ``hasFlags()``, etc., to
-    do single and multiple components with the same code.
-
-    .. impl:: Homogenize one component into another.
+    .. impl:: Homogenize multiple components into one.
         :id: I_ARMI_BLOCKCONV1
         :implements: R_ARMI_BLOCKCONV
+
+        This subclass of ``BlockConverter`` is meant as a one-time-use tool, to convert
+        a multiple ``Components`` into one. This means averaging the material
+        properties in the original ``Components``, and ensuring that the final
+        ``Component`` has the same shape and volume as all of the originals. This
+        subclass essentially just uses the base class method
+        ``dissolveComponentIntoComponent()`` given prescribed solute and solvent
+        materials, to define the merger. Though care is taken here to ensure the merger
+        isn't verified until it is completely finished.
     """
 
     def __init__(self, sourceBlock, soluteNames, solventName, specifiedMinID=0.0):
-        """
+        """Standard constructor method.
+
         Parameters
         ----------
         sourceBlock : :py:class:`armi.reactor.blocks.Block`
@@ -540,6 +560,15 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
         .. impl:: Convert hex blocks to cylindrical blocks.
             :id:  I_ARMI_BLOCKCONV_HEX_TO_CYL
             :implements: R_ARMI_BLOCKCONV_HEX_TO_CYL
+
+            This method converts a ``HexBlock`` to a cylindrical ``Block``. Obviously,
+            this is not a physically meaningful transition; it is a helpful
+            approximation tool for analysts. This is a subclass of
+            ``BlockAvgToCylConverter`` which is a subclass of ``BlockConverter``. This
+            converter expects the ``sourceBlock`` and ``driverFuelBlock`` to defined
+            and for the ``sourceBlock`` to have a spatial grid defined. Additionally,
+            both the ``sourceBlock`` and ``driverFuelBlock`` must be instances of
+            ``HexBlocks``.
         """
         runLog.info(
             "Converting representative block {} to its equivalent cylindrical model".format(
