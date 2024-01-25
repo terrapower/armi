@@ -435,10 +435,10 @@ class HexToRZThetaConverter(GeometryConverter):
             :implements: R_ARMI_CONV_3DHEX_TO_2DRZ
 
             This method converts the hex-z mesh to r-theta-z mesh.
-            It first verifies that the geometry type of the input reacotr ``r``
-            has the expected HEX geomety. Upon conversion, it determines the inner
-            and outer diameters of each rings in the r-theta-z mesh and calls
-            ``_createRadialThetaZone`` to create radial theta zone with homogenized mixture.
+            It first verifies that the geometry type of the input reactor ``r``
+            has the expected HEX geometry. Upon conversion, it determines the inner
+            and outer diameters of each ring in the r-theta-z mesh and calls
+            ``_createRadialThetaZone`` to create a radial theta zone with a homogenized mixture.
             The axial dimension of the r-theta-z mesh is then updated by ``updateAxialMesh``.
 
         Attributes
@@ -1262,10 +1262,9 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
             :id: I_ARMI_THIRD_TO_FULL_CORE0
             :implements: R_ARMI_THIRD_TO_FULL_CORE
 
-
-            This method first checks if the input model is already full core.
-            If full-core symmety is detected, the source model will be returned.
-            If not, it then verifies that the input model has the expected one-third
+            This method first checks if the input reactor is already full core.
+            If full-core symmetry is detected, the input reactor is returned.
+            If not, it then verifies that the input reactor has the expected one-third
             core symmetry and HEX geometry.
 
             Upon conversion, it loops over the assembly vector of the source
@@ -1369,7 +1368,7 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
             :implements: R_ARMI_THIRD_TO_FULL_CORE
 
             This method is a reverse process of the method ``convert``. It converts
-            the full-core model back to the original one-third core model by removing
+            the full-core reactor model back to the original one-third core reactor model by removing
             the added assemblies and changing the parameters of the center
             assembly from full core to one third core.
         """
@@ -1414,7 +1413,7 @@ class EdgeAssemblyChanger(GeometryChanger):
             :id: I_ARMI_ADD_EDGE_ASSEMS0
             :implements: R_ARMI_ADD_EDGE_ASSEMS
 
-            Edge assemblies on the 120-degree symmetric line of one-third core model are added
+            Edge assemblies on the 120-degree symmetric line of a one-third core reactor model are added
             because they are needed for DIF3D-finite difference or MCNP models. This is done
             by copying the assemblies from the lower boundary and placing them in their
             reflective positions on the upper boundary of the symmetry line.
@@ -1491,7 +1490,7 @@ class EdgeAssemblyChanger(GeometryChanger):
 
             This method is the reverse process of the method ``addEdgeAssemblies``. It is
             needed for the DIF3D-Nodal calculation. It removes the assemblies on the 120-degree
-            symmety line.
+            symmetry line.
 
         See Also
         --------
