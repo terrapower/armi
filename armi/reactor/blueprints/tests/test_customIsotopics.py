@@ -25,7 +25,6 @@ from armi.reactor.flags import Flags
 
 
 class TestCustomIsotopics(unittest.TestCase):
-
     yamlString = r"""
 nuclide flags:
     U238: {burn: true, xs: true}
@@ -185,6 +184,7 @@ assemblies:
         axial mesh points: [1, 1, 1, 1, 1, 1,1]
         xs types: [A, A, A, A, A, A,A]
 """
+    """:meta hide-value:"""
 
     @classmethod
     def setUpClass(cls):

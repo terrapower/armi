@@ -22,6 +22,8 @@ Displacements per atom are correlated to material damage.
 Notes
 -----
 This data structure can be updated by plugins with design-specific dpa data.
+
+:meta hide-value:
 """
 
 # The following are multigroup DPA XS for EBR II. They were generated using an ultra hard MCC spectrum
