@@ -261,9 +261,9 @@ class Core(composites.Composite):
         A :py:class:`Core <armi.reactor.reactors.Core>` object is typically a
         child of a :py:class:`Reactor <armi.reactor.reactors.Reactor>` object.
         A Reactor can contain multiple objects of the Core type. The instance
-        attribute name `r.core` is reserved for the object representating the
+        attribute name ``r.core`` is reserved for the object representating the
         active core. A reactor may also have a spent fuel pool instance
-        attribute, `r.sfp`, which is also of type
+        attribute, ``r.sfp``, which is also of type
         :py:class:`core <armi.reactor.reactors.Core>`.
 
         Most of the operations to retrieve information from the ARMI reactor
