@@ -629,7 +629,7 @@ class ArmiObject(metaclass=CompositeModelType):
         ``paramCollectionType`` is not a top-level object and therefore cannot be
         trivially pickled. Since we know that by the time we want to make any instances
         of/unpickle a given ``ArmiObject``, such a class attribute will have been
-        created and associated. So, we use this top-level class method to dig
+        created and associated. So, we use this top-level method to dig
         dynamically down to the underlying parameter collection type.
 
         .. impl:: Composites (and all ARMI objects) have parameter collections.

@@ -179,7 +179,7 @@ Design Considerations
     * - Parameters are just fancy properties with meta data.
       - Implementing the descriptor interface on a :py:class:`Parameter` removes the
         need to construct a :py:class:`Parameter` without a name, then come back through
-        with the ``applyParameters()`` class method to apply the
+        with the ``applyParameters()`` method to apply the
         :py:class:`Parameter` as a descriptor.
 
 .. _thefreedictionary: http://www.thefreedictionary.com/parameter

@@ -51,7 +51,7 @@ class Setting:
         :implements: R_ARMI_SETTINGS_DEFAULTS
 
         Setting objects hold all associated information of a setting in ARMI and should
-        typically be accessed through the Settings class methods rather than directly.
+        typically be accessed through the Settings methods rather than directly.
         Settings require a mandatory default value.
 
         Setting subclasses can implement custom ``load`` and ``dump`` methods that can

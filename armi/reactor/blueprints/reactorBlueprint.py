@@ -133,7 +133,7 @@ class SystemBlueprint(yamlize.Object):
         loadAssems : bool, optional
             whether to fill reactor with assemblies, as defined in blueprints, or not. Is False in
             :py:class:`UniformMeshGeometryConverter <armi.reactor.converters.uniformMesh.UniformMeshGeometryConverter>`
-            within the initNewReactor() class method.
+            within the initNewReactor() method.
 
         Raises
         ------

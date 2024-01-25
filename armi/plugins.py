@@ -698,7 +698,7 @@ class UserPlugin(ArmiPlugin):
             assert (
                 len(self.__class__.defineSettings()) == 0
             ), "UserPlugins cannot define new Settings, consider using an ArmiPlugin."
-            # NOTE: These are the class methods that we are staunchly _not_ allowing people
+            # NOTE: These are the methods that we are staunchly _not_ allowing people
             # to change in this class. If you need these, please use a regular ArmiPlugin.
             self.defineParameterRenames = lambda: {}
             self.defineSettings = lambda: []

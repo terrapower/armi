@@ -767,6 +767,6 @@ class ParameterBuilder:
 
 
 # Container for all parameter definition collections that have been bound to an
-# ArmiObject or subclass. These are added from the applyParameters() class method on
+# ArmiObject or subclass. These are added from the applyParameters() method on
 # the ParameterCollection class.
 ALL_DEFINITIONS = ParameterDefinitionCollection()
