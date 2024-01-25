@@ -545,8 +545,8 @@ class RunLogger(logging.Logger):
         At any place in the ARMI application, developers can interject a plain text
         logging message, and when that code is hit during an ARMI simulation, the text
         will be piped to screen and a log file. By default, the ``logging`` module only
-        logs to screen, but ARMI adds a ``FileHandler` in the ``RunLog`` constructor
-        and in py:meth:`armi.runLog._RunLog.startLog`.
+        logs to screen, but ARMI adds a ``FileHandler`` in the ``RunLog`` constructor
+        and in ``_RunLog.startLog``.
     """
 
     FMT = "%(levelname)s%(message)s"

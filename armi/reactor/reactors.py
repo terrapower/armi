@@ -261,9 +261,9 @@ class Core(composites.Composite):
         A :py:class:`Core <armi.reactor.reactors.Core>` object is typically a
         child of a :py:class:`Reactor <armi.reactor.reactors.Reactor>` object.
         A Reactor can contain multiple objects of the Core type. The instance
-        attribute name `r.core` is reserved for the object representating the
+        attribute name ``r.core`` is reserved for the object representating the
         active core. A reactor may also have a spent fuel pool instance
-        attribute, `r.sfp`, which is also of type
+        attribute, ``r.sfp``, which is also of type
         :py:class:`core <armi.reactor.reactors.Core>`.
 
         Most of the operations to retrieve information from the ARMI reactor
@@ -830,7 +830,7 @@ class Core(composites.Composite):
             :implements: R_ARMI_R_NUM_RINGS
 
             This method determines the number of rings in the reactor. If the
-            setting `circularRingMode` is enabled (by default it is false), the
+            setting ``circularRingMode`` is enabled (by default it is false), the
             assemblies will be grouped into roughly circular rings based on
             their positions and the number of circular rings is reteurned.
             Otherwise, the number of hex rings is returned. This parameter is
@@ -1196,8 +1196,8 @@ class Core(composites.Composite):
 
             This method returns the :py:class:`assembly
             <armi.reactor.core.assemblies.Assembly>` with a name matching the
-            value provided as an input parameter to this function. The `name` of
-            an assembly is based on the `assemNum` parameter.
+            value provided as an input parameter to this function. The ``name`` of
+            an assembly is based on the ``assemNum`` parameter.
 
         Parameters
         ----------
@@ -1719,10 +1719,10 @@ class Core(composites.Composite):
             This method returns the :py:class:`assembly
             <armi.reactor.core.assemblies.Assembly>` located in the requested
             location. The location is provided to this method as an input
-            parameter in a string with the format "001-001". For a `HexGrid
+            parameter in a string with the format "001-001". For a :py:class:`HexGrid
             <armi.reactor.grids.hexagonal.HexGrid>`, the first number indicates
             the hexagonal ring and the second number indicates the position
-            within that ring. For a `CartesianGrid
+            within that ring. For a :py:class:`CartesianGrid
             <armi.reactor.grids.cartesian.CartesianGrid>`, the first number
             represents the x index and the second number represents the y index.
             If there is no assembly in the grid at the requested location, this
@@ -1775,15 +1775,15 @@ class Core(composites.Composite):
             :py:meth:`getNeighboringCellIndices
             <armi.reactor.grids.StructuredGrid.getNeighboringCellIndices>`. For
             a hexagonal grid, the (i, j) indices are converted to (ring,
-            position) indexing using the core.spatialGrid instance attribute.
+            position) indexing using the ``core.spatialGrid`` instance attribute.
 
-            The `showBlanks` option determines whether non-existing assemblies
-            will be indicated with a `None` in the list or just excluded from
+            The ``showBlanks`` option determines whether non-existing assemblies
+            will be indicated with a ``None`` in the list or just excluded from
             the list altogether.
 
-            The `duplicateAssembliesOnReflectiveBoundary` setting only works for
+            The ``duplicateAssembliesOnReflectiveBoundary`` setting only works for
             1/3 core symmetry with periodic boundary conditions. For these types
-            of geometries, if this setting is `True`, neighbor lists for
+            of geometries, if this setting is ``True``, neighbor lists for
             assemblies along a periodic boundary will include the assemblies
             along the opposite periodic boundary that are effectively neighbors.
 
@@ -2046,9 +2046,9 @@ class Core(composites.Composite):
             :implements: R_ARMI_R_MESH
 
             This method iterates through all of the assemblies provided, or all
-            assemblies in the core if no list of `assems` is provided, and
+            assemblies in the core if no list of ``assems`` is provided, and
             constructs a tuple of three lists which contain the unique i, j, and
-            k mesh coordinates, respectively. The `applySubMesh` setting
+            k mesh coordinates, respectively. The ``applySubMesh`` setting
             controls whether the mesh will include the submesh coordinates. For
             a standard assembly-based reactor geometry with a hexagonal or
             Cartesian assembly grid, this method is only used to produce axial
