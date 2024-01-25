@@ -271,8 +271,8 @@ class IsotxsIO(cccc.Stream):
 
             Reading and writing ISOTXS files is performed using the general
             nuclear data I/O functionalities described in
-            :need:`I_ARMI_NUCDATA`. A ISOTXS file specifically follows the
-            following steps:
+            :need:`I_ARMI_NUCDATA`. Reading/writing a ISOTXS file is performed
+            through the following steps:
 
             #. Read/write file ID record
             #. Read/write file 1D record, which includes:
@@ -297,9 +297,10 @@ class IsotxsIO(cccc.Stream):
 
                     .. note::
 
-                        This is not used within ARMI, because it can compute it
-                        arbitrarily. Other codes use this to seek to a specific
-                        position within an ISOTXS file.
+                        The offset data is not read from the binary file because
+                        the ISOTXS reader can dynamically calculate the offset
+                        itself. Therefore, during a read operation, this data is
+                        ignored.
 
             #. Read/write file 4D record for each nuclide, which includes
                isotope-dependent, group-independent data.
@@ -410,8 +411,9 @@ class IsotxsIO(cccc.Stream):
 
         Notes
         -----
-        This is not used within ARMI, because it can compute it arbitrarily. Other codes use this to seek to a
-        specific position within an ISOTXS file.
+        The offset data is not read from the binary file because the ISOTXS
+        reader can dynamically calculate the offset itself. Therefore, during a
+        read operation, this data is ignored.
         """
         recordsPerNuclide = [
             self._computeNumIsotxsRecords(nuc) for nuc in self._lib.nuclides

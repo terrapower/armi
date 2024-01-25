@@ -232,8 +232,8 @@ class DlayxsIO(cccc.Stream):
 
             Reading and writing DLAYXS delayed neutron data files is performed
             using the general nuclear data I/O functionalities described in
-            :need:`I_ARMI_NUCDATA`. A DLAYXS file specifically follows the
-            following steps:
+            :need:`I_ARMI_NUCDATA`. Reading/writing a DLAYXS file is performed
+            through the following steps:
 
             #. Read/write the data ``label`` for identification.
 

@@ -139,16 +139,10 @@ class GeodstStream(cccc.StreamWithDataContainer):
 
             Reading and writing GEODST files is performed using the general
             nuclear data I/O functionalities described in
-            :need:`I_ARMI_NUCDATA`. A GEODST file specifically follows the
-            following steps:
+            :need:`I_ARMI_NUCDATA`. Reading/writing a GEODST file is performed
+            through the following steps:
 
             #. Read/write file ID record
-
-                .. note::
-
-                    The username, version, etc are embedded in this string but
-                    it's usually blank. The number 28 was actually obtained from
-                    a hex editor and may be code specific.
 
             #. Read/write file specifications on 1D record.
 
@@ -201,8 +195,7 @@ class GeodstStream(cccc.StreamWithDataContainer):
 
         Notes
         -----
-        The username, version, etc are embedded in this string but it's
-        usually blank. The number 28 was actually obtained from
+        The number 28 was actually obtained from
         a hex editor and may be code specific.
         """
         with self.createRecord() as record:

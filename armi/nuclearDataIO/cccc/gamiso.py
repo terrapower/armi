@@ -28,7 +28,8 @@ contained within a :py:class:`~armi.nuclearDataIO.xsLibraries.XSLibrary`.
     implementation :need:`I_ARMI_NUCDATA_ISOTXS` for more information. The
     differences from ISOTXS neutron data is data unique to gamma, including:
 
-    * Special treatment for particle velocities
+    * Special treatment for particle velocities, which is done by overriding
+      ``_rwLibraryEnergies``.
     * Inclusion of "dummy" nuclides into
       :py:class:`~armi.nuclearDataIO.xsLibraries.XSLibrary` so both neutron and
       gamma data cover the same nuclide set.

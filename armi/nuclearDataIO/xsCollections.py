@@ -791,11 +791,11 @@ def computeMacroscopicGroupConstants(
         :id: I_ARMI_NUCDATA_MACRO
         :implements: R_ARMI_NUCDATA_MACRO
 
-        This method computes the macroscopic cross sections of a specified
+        This function computes the macroscopic cross sections of a specified
         reaction type from inputted microscopic cross sections and number
         densities. The ``constantName`` parameter specifies what type of
         reaction is requested. The ``numberDensities`` parameter is dictionary
-        mapping the nuclide to its density. The ``lib`` parameter is a library
+        mapping the nuclide to its number density. The ``lib`` parameter is a library
         object like :py:class:`~armi.nuclearDataIO.xsLibraries.IsotxsLibrary` or
         :py:class:`~armi.nuclearDataIO.xsLibraries.CompxsLibrary` that holds the
         microscopic cross-section data. The ``microSuffix`` parameter specifies
@@ -804,23 +804,23 @@ def computeMacroscopicGroupConstants(
         ``getMicroSuffix`` method like :py:meth:`Block.getMicroSuffix
         <armi.reactor.blocks.Block.getMicroSuffix>`. ``libType`` is an optional
         parameter specifying whether the reaction is for neutrons or gammas.
-        This method also has the optional parameters ``multConstant`` and
-        ``multLib``, which allows another reaction's cross section to be
-        multiplied to the primary one. The macroscopic cross are then compute
-        as:
+        This function also has the optional parameters ``multConstant`` and
+        ``multLib``, which allows another constant from the library, such as
+        neutrons per fission (nu) or energy per fission (kappa), to be
+        multiplied to the primary one. The macroscopic cross sections are then
+        computed as:
 
         .. math::
 
-            \Sigma_{g} = \sum_{n} N_n \sigma_{n,g} \sigma_{\mathrm{m}, n,
-            g} \quad g=1,...,G
+            \Sigma_{g} = \sum_{n} N_n \sigma_{n,g}\nu_n \quad g=1,...,G
 
         where :math:`n` is the isotope index, :math:`g` is the energy group
-        index, :math:`\sigma` is the microscopic cross section, and
-        :math:`\sigma_{\mathrm{m}}` is the multiplying microscopic cross
-        section. If the ``constantName`` reaction is missing a cross section for
-        one or more of the nuclides in ``numberDensities`` a error is raised;
-        but if ``multConstant`` is missing that cross section, then those
-        nuclides are printed as a warning.
+        index, :math:`\sigma` is the microscopic cross section, and :math:`\nu`
+        is the scalar multiplier. If the library (``lib``) with suffix
+        ``microSuffix`` is missing a cross section for the ``constantName``
+        reaction for one or more of the nuclides in ``numberDensities`` an error
+        is raised; but if ``multConstant`` is missing that cross section, then
+        those nuclides are printed as a warning.
 
     Parameters
     ----------
