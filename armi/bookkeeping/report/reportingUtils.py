@@ -138,14 +138,23 @@ def writeWelcomeHeaders(o, cs):
             inputInfo.append((label, fName, shaHash))
 
         # bonus: grab the files stored in the crossSectionControl section
-        for fluxSection, fluxData in cs["crossSectionControl"].items():
-            if fluxData.xsFileLocation is not None:
-                label = f"crossSectionControl-{fluxSection}"
-                fName = fluxData.xsFileLocation
-                if isinstance(fName, list):
-                    fName = fName[0]
+        for xsID, xsSetting in cs["crossSectionControl"].items():
+            fNames = []
+            # Users shouldn't ever have both of these defined, but this is not the place
+            # for code to fail if they do. Allow for both to not be None.
+            if xsSetting.xsFileLocation is not None:
+                # possibly a list of files
+                if isinstance(xsSetting.xsFileLocation, list):
+                    fNames.extend(xsSetting.xsFileLocation)
+                else:
+                    fNames.append(xsSetting.xsFileLocation)
+            if xsSetting.fluxFileLocation is not None:
+                # single file
+                fNames.append(xsSetting.fluxFileLocation)
+            for fName in fNames:
+                label = f"crossSectionControl-{xsID}"
                 if fName and os.path.exists(fName):
-                    shaHash = getFileSHA1Hash(fName, digits=10)
+                    shaHash = getFileSHA1Hash(os.path.abspath(fName), digits=10)
                     inputInfo.append((label, fName, shaHash))
 
         return inputInfo
