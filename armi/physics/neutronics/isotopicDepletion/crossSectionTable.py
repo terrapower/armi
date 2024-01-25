@@ -187,7 +187,7 @@ def makeReactionRateTable(obj, nuclides: List = None):
         that is stored there. If ``obj`` does not belong to a ``Core``, a warning
         is printed.
 
-        For each child of ``obj``, use the ISOTXS library and the xsID for the associated block
+        For each child of ``obj``, use the ISOTXS library and the cross-section ID for the associated block
         to produce a reaction rate dictionary in units of inverse seconds for
         the nuclide specified in the original call to ``obj.getReactionRates()``.
         Because ``nDensity`` was originally specified as
