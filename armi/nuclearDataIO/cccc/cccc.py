@@ -44,11 +44,11 @@ for reactor physics codes.
     subclassed for each CCCC file. It is subclassed directly for the CCCC files
     that contain XS data:
 
-      * :py:class:`ISOTXS <armi.nuclearDataIO.cccc.isotxs.IsotxsIO>`,
-      * :py:mod:`GAMISO <armi.nuclearDataIO.cccc.gamiso>`,
-      * :py:class:`PMATRX <armi.nuclearDataIO.cccc.pmatrx.PmatrxIO>`.
-      * :py:class:`DLAYXS <armi.nuclearDataIO.cccc.dlayxs.DlayxsIO>`.
-      * :py:mod:`COMPXS <armi.nuclearDataIO.cccc.compxs>`.
+      * :py:class:`ISOTXS <armi.nuclearDataIO.cccc.isotxs.IsotxsIO>`
+      * :py:mod:`GAMISO <armi.nuclearDataIO.cccc.gamiso>`
+      * :py:class:`PMATRX <armi.nuclearDataIO.cccc.pmatrx.PmatrxIO>`
+      * :py:class:`DLAYXS <armi.nuclearDataIO.cccc.dlayxs.DlayxsIO>`
+      * :py:mod:`COMPXS <armi.nuclearDataIO.cccc.compxs>`
 
     For the CCCC file types that are outputs from a flux solver such as DIF3D
     (e.g., GEODST, DIF3D, NHFLUX) the streams are subclassed from
