@@ -2389,7 +2389,7 @@ class HexBlock(Block):
             This implementation computes wetted perimeters for specific Components, as specified
             by their Flags (:need:`R_ARMI_FLAG_DEFINE`). Hollow hexagons and circular pin Components
             are supported. The latter supports both instances where the exterior is wetted
-            (e.g., clad, wire) as well as when the interior and exterior are wetted (circular ducts).
+            (e.g., clad, wire) as well as when the interior and exterior are wetted (hollow circle).
 
             Hollow hexagons are calculated via,
 
