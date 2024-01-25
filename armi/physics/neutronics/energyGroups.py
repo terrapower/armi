@@ -131,6 +131,8 @@ Energy groups for use in multigroup neutronics.
 
 Values are the upper bound of each energy in eV from highest energy to lowest
 (because neutrons typically downscatter...)
+
+:meta hide-value:
 """
 
 GROUP_STRUCTURE["2"] = [HIGH_ENERGY_EV, 6.25e-01]
@@ -313,6 +315,7 @@ GROUP_STRUCTURE["ANL1041"] = _create_anl_energies_with_group_lethargies(
 GROUP_STRUCTURE["ANL2082"] = _create_anl_energies_with_group_lethargies(
     itertools.repeat(1, 2082)
 )
+
 
 # fmt: on
 def _create_multigroup_structures_on_finegroup_energies(
