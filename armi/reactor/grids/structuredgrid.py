@@ -379,7 +379,7 @@ class StructuredGrid(Grid):
     @staticmethod
     def getNeighboringCellIndices(i, j=0, k=0):
         """Return the indices of the immediate neighbors of a mesh point in the plane."""
-        return ((i + 1, j, k), (1, j + 1, k), (i - 1, j, k), (i, j - 1, k))
+        return ((i + 1, j, k), (i, j + 1, k), (i - 1, j, k), (i, j - 1, k))
 
     @staticmethod
     def getAboveAndBelowCellIndices(indices):

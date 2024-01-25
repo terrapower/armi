@@ -1376,3 +1376,30 @@ class CartesianReactorTests(ReactorTests):
 
         self.assertIn("Nuclide categorization", messages)
         self.assertIn("Structure", messages)
+
+
+class CartesianReactorNeighborTests(ReactorTests):
+    def setUp(self):
+        self.r = loadTestReactor(TEST_ROOT, inputFileName="zpprTest.yaml")[1]
+
+    def test_findNeighborsCartesian(self):
+        """Find neighbors of a given assembly in a Cartesian grid."""
+        loc = self.r.core.spatialGrid[1, 1, 0]
+        a = self.r.core.childrenByLocator[loc]
+        neighbs = self.r.core.findNeighbors(a)
+        locs = [tuple(a.spatialLocator.indices[:2]) for a in neighbs]
+        self.assertEqual(len(neighbs), 4)
+        self.assertIn((2, 1), locs)
+        self.assertIn((1, 2), locs)
+        self.assertIn((0, 1), locs)
+        self.assertIn((1, 0), locs)
+
+        # try with edge assembly
+        loc = self.r.core.spatialGrid[0, 0, 0]
+        a = self.r.core.childrenByLocator[loc]
+        neighbs = self.r.core.findNeighbors(a, showBlanks=False)
+        locs = [tuple(a.spatialLocator.indices[:2]) for a in neighbs]
+        self.assertEqual(len(neighbs), 2)
+        # in this case no locations that aren't actually in the core should be returned
+        self.assertIn((1, 0), locs)
+        self.assertIn((0, 1), locs)
