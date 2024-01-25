@@ -1423,8 +1423,8 @@ To use it, just say::
 
     a = self.findAssembly(param='maxPercentBu',compareTo=20)
 
-This will return the assembly in the reactor that has a maximum burnup closest to 20%. Other
-inputs to findAssembly are summarized in the API docs of
+This will return the assembly in the reactor that has a maximum burnup closest to 20%.
+Other inputs to findAssembly are summarized in the API docs of
 :py:meth:`~armi.physics.fuelCycle.fuelHandlers.FuelHandler.findAssembly`.
 
 
@@ -1433,30 +1433,40 @@ Fuel Management Examples
 
 Convergent-Divergent
 ^^^^^^^^^^^^^^^^^^^^
-Convergent-divergent shuffling is when fresh assemblies march in from the outside until they approach the jump ring,
-at which point they jump to the center and diverge until they reach the jump ring again, where they now jump to the
-outer periphery of the core, or become discharged.
+Convergent-divergent shuffling is when fresh assemblies march in from the outside until
+they approach the jump ring, at which point they jump to the center and diverge until
+they reach the jump ring again, where they now jump to the outer periphery of the core,
+or become discharged.
 
 If the jump ring is 6,  the order of target rings is::
 
     [6, 5, 4, 3, 2, 1, 6, 7, 8, 9, 10, 11, 12, 13]
 
-In this case, assemblies converge from ring 13 to 12, to 11, to 10, ..., to 6, and then jump to 1 and diverge
-until they get back to 6. In a discharging equilibrium case, the highest burned assembly in the jumpRing should
-get discharged and the lowest should jump by calling a dischargeSwap on cascade[0] and a fresh feed after this
-cascade is run.
+In this case, assemblies converge from ring 13 to 12, to 11, to 10, ..., to 6, and then
+jump to 1 and diverge until they get back to 6. In a discharging equilibrium case, the
+highest burned assembly in the jumpRing should get discharged and the lowest should
+jump by calling a dischargeSwap on cascade[0] and a fresh feed after this cascade is
+run.
 
-The convergent rings in this case are 7 through 13 and the divergent ones are 1 through 5 are the divergent ones.
+The convergent rings in this case are 7 through 13 and the divergent ones are 1
+through 5 are the divergent ones.
 
 
 Fuel Management Tips
 --------------------
 Some mistakes are common. Follow these tips.
 
-    * Always make sure your assembly-level types in the settings file are up to date with the grids in your bluepints file. Otherwise you'll be moving feeds when you want to move igniters, or something.
-    * Use the exclusions list! If you move a cascade and then the next cascade tries to run, it will choose your newly-moved assemblies if they fit your criteria in ``findAssemblies``. This leads to very confusing results. Therefore, once you move assemblies, you should default to adding them to the exclusions list.
-    * Print cascades during debugging. After you've built a cascade to swap, print it out and check the locations and types of each assembly in it. Is it what you want?
-    * Watch ``typeNum`` in the database. You can get good intuition about what is getting moved by viewing this parameter.
+    * Always make sure your assembly-level types in the settings file are up to date
+    with the grids in your bluepints file. Otherwise you'll be moving feeds when you
+    want to move igniters, or something.
+    * Use the exclusions list! If you move a cascade and then the next cascade tries
+    to run, it will choose your newly-moved assemblies if they fit your criteria in
+    ``findAssemblies``. This leads to very confusing results. Therefore, once you move
+    assemblies, you should default to adding them to the exclusions list.
+    * Print cascades during debugging. After you've built a cascade to swap, print it
+    out and check the locations and types of each assembly in it. Is it what you want?
+    * Watch ``typeNum`` in the database. You can get good intuition about what is
+    getting moved by viewing this parameter.
 
 Running a branch search
 -----------------------
@@ -1477,8 +1487,8 @@ should be used to fabricate new assemblies.
 Given a fuel handler that can thusly interpret factors between 0 and 1, the
 concept of branch searches is simple. They simply build uniformly distributed
 lists between 0 and 1 across however many CPUs are available and cases on all
-of them, passing one of each of the factors to each CPU in parallel. When the cases finish,
-the branch search determines the optimal result and selects the corresponding
+of them, passing one of each of the factors to each CPU in parallel. When the cases
+finish, the branch search determines the optimal result and selects the corresponding
 value of the factor to proceed.
 
 Branch searches are controlled by custom `getFactorList` methods specified in the
@@ -1527,27 +1537,43 @@ Settings Report
 This document lists all the `settings <#the-settings-input-file>`_ in ARMI.  
 
 They are all accessible to developers
-through the :py:class:`armi.settings.caseSettings.Settings` object, which is typically stored in a variable named
-``cs``. Interfaces have access to a simulation's settings through ``self.cs``.
+through the :py:class:`armi.settings.caseSettings.Settings` object, which is typically
+stored in a variable named ``cs``. Interfaces have access to a simulation's settings
+through ``self.cs``.
 
 
 .. exec::
     from armi import settings
     import textwrap
 
+    def looks_like_path(s):
+        """Super quick, not robust, check if a string looks like a file path."""
+        if s.startswith("\\\\") or s.startswith("//"):
+            return True
+        elif s[1:].startswith(":\\")
+            return True
+        return False
+
     subclassTables = {}
     cs = settings.Settings()
+
     # User textwrap to split up long words that mess up the table.
     wrapper = textwrap.TextWrapper(width=25, subsequent_indent='')
     wrapper2 = textwrap.TextWrapper(width=10, subsequent_indent='')
-    content = '\n.. list-table:: ARMI Settings\n   :header-rows: 1\n   :widths: 30 30 10 10\n    \n'
+    content = '\n.. list-table:: ARMI Settings\n   :header-rows: 1\n   :widths: 20 30 15 15\n    \n'
     content += '   * - Name\n     - Description\n     - Default\n     - Options\n'
 
     for setting in sorted(cs.values(), key=lambda s: s.name):
         content += '   * - {}\n'.format(' '.join(wrapper.wrap(setting.name)))
         content += '     - {}\n'.format(' '.join(wrapper.wrap(str(setting.description) or '')))
-        content += '     - {}\n'.format(' '.join(['``{}``'.format(wrapped) for wrapped in wrapper2.wrap(str(getattr(setting, 'default', None)).split("/")[-1])]))
-        content += '     - {}\n'.format(' '.join(['``{}``'.format(wrapped) for wrapped in wrapper.wrap(str(getattr(setting,'options','') or ''))]))
+        default = str(getattr(setting, 'default', None)).split("/")[-1]
+        options = str(getattr(setting,'options','') or '')
+        if looks_like_path(defaults):
+            # We don't want to display default file paths in this table.
+            default = ""
+            options = ""
+        content += '     - {}\n'.format(' '.join(['``{}``'.format(wrapped) for wrapped in wrapper2.wrap(default)]))
+        content += '     - {}\n'.format(' '.join(['``{}``'.format(wrapped) for wrapped in wrapper.wrap(options)]))
 
     content += '\n'
 
