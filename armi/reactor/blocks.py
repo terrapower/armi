@@ -1812,8 +1812,8 @@ class HexBlock(Block):
             :implements: R_ARMI_BLOCK_DIMS
 
             This method first retrieves the pitch of the hexagonal Block
-            (:need:I_ARMI_UTIL_HEXAGON0) and then leverages the
-            area calculation via :need:I_ARMI_UTIL_HEXAGON0.
+            (:need:`I_ARMI_UTIL_HEXAGON0`) and then leverages the
+            area calculation via :need:`I_ARMI_UTIL_HEXAGON0`.
 
         """
         pitch = self.getPitch()
@@ -2495,7 +2495,7 @@ class HexBlock(Block):
             :implements: R_ARMI_BLOCK_DIMS
 
             Retrieving the flow area requires that there be a single coolant Component.
-            If available, the area is calculated (:need:I_ARMI_COMP_VOL0).
+            If available, the area is calculated (:need:`I_ARMI_COMP_VOL0`).
         """
         return self.getComponent(Flags.COOLANT, exact=True).getArea()
 
@@ -2518,8 +2518,8 @@ class HexBlock(Block):
 
                 4\frac{A}{P},
 
-            where :math:`A` is the flow area (:need:I_ARMI_BLOCK_DIMS8) and :math:`P` is the
-            wetted perimeter (:need:I_ARMI_BLOCK_DIMS7).
+            where :math:`A` is the flow area (:need:`I_ARMI_BLOCK_DIMS8`) and :math:`P` is the
+            wetted perimeter (:need:`I_ARMI_BLOCK_DIMS7`).
         """
         return 4.0 * self.getFlowArea() / self.getWettedPerimeter()
 
