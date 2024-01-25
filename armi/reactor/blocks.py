@@ -617,6 +617,8 @@ class Block(composites.Composite):
             method of the block's ``spatialLocator`` attribute, which recursively
             calls itself on all parents of the block to get the coordinates of the
             block's centroid in 3D cartesian space.
+
+            If ``rotationDegreesCCW`` is non-zero, an error is raised.
         """
         if rotationDegreesCCW:
             raise NotImplementedError("Cannot get coordinates with rotation.")
