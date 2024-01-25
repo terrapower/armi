@@ -1230,11 +1230,11 @@ def addNuclideBases():
         :id: I_ARMI_ND_DATA0
         :implements: R_ARMI_ND_DATA
 
-        This function reads the `nuclides.dat` file from the ARMI resources
+        This function reads the ``nuclides.dat`` file from the ARMI resources
         folder. This file contains metadata for 4,614 nuclides, including
         number of protons, number of neutrons, atomic number, excited
         state, element symbol, atomic mass, natural abundance, half-life,
-        and spontaneous fission yield. The data in `nuclides.dat` have been
+        and spontaneous fission yield. The data in ``nuclides.dat`` have been
         collected from multiple different sources; the references are given
         in comments at the top of that file.
     """
