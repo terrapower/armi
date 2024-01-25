@@ -1223,7 +1223,7 @@ class Assembly(composites.Composite):
             ``dimName``. There is a hard-coded preference for Components
             to be within fuel Blocks. If there are no Blocks, then ``None``
             is returned. If ``typeSpec`` is not within the first Block, an
-            error is raised within :py:meth:`armi.reactor.blocksBlock.getDim`.
+            error is raised within :py:meth:`~armi.reactor.blocks.Block.getDim`.
         """
         # prefer fuel blocks.
         bList = self.getBlocks(Flags.FUEL)
