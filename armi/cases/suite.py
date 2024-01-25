@@ -49,12 +49,11 @@ class CaseSuite:
         :implements: R_ARMI_CASE_SUITE
 
         The CaseSuite object allows multiple, often related,
-        :py:class:`~armi.cases.case.Case` objects to be run sequentially. A
-        CaseSuite is intended to be both a pre-processing and post-processing
-        tool to facilitate case generation and analysis. Under most
-        circumstances one may wish to subclass a CaseSuite to meet the needs of
-        a specific calculation. A CaseSuite is a collection that is keyed off
-        Case titles.
+        :py:class:`~armi.cases.case.Case` objects to be run sequentially. A CaseSuite
+        is intended to be both a pre-processing or a post-processing tool to facilitate
+        case generation and analysis. Under most circumstances one may wish to subclass
+        a CaseSuite to meet the needs of a specific calculation. A CaseSuite is a
+        collection that is keyed off Case titles.
     """
 
     def __init__(self, cs):
@@ -92,7 +91,8 @@ class CaseSuite:
         self, rootDir=None, patterns=None, ignorePatterns=None, recursive=True
     ):
         """
-        Finds case objects by searching for a pattern of inputs, and adds them to the suite.
+        Finds case objects by searching for a pattern of file paths, and adds them to
+        the suite.
 
         This searches for Settings input files and loads them to create Case objects.
 
@@ -126,8 +126,8 @@ class CaseSuite:
 
         Notes
         -----
-        Some of these printouts won't make sense for all users, and may
-        make sense to be delegated to the plugins/app.
+        Some of these printouts won't make sense for all users, and may make sense to
+        be delegated to the plugins/app.
         """
         for setting in self.cs.environmentSettings:
             runLog.important(
@@ -158,8 +158,8 @@ class CaseSuite:
 
         Creates a clone for each case within a CaseSuite. If ``oldRoot`` is not
         specified, then each case clone is made in a directory with the title of the
-        case. If ``oldRoot`` is specified, then a relative path from ``oldRoot`` will be
-        used to determine a new relative path to the current directory ``oldRoot``.
+        case. If ``oldRoot`` is specified, then a relative path from ``oldRoot`` will
+        be used to determine a new relative path to the current directory ``oldRoot``.
 
         Parameters
         ----------

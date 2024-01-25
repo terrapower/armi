@@ -1246,11 +1246,17 @@ class Assembly(composites.Composite):
     def rotate(self, rad):
         """Rotates the spatial variables on an assembly by the specified angle.
 
-        Each block on the assembly is rotated in turn.
+        Each Block on the Assembly is rotated in turn.
 
         .. impl:: An assembly can be rotated about its z-axis.
             :id: I_ARMI_SHUFFLE_ROTATE
             :implements: R_ARMI_SHUFFLE_ROTATE
+
+            This method loops through every ``Block`` in this ``Assembly`` and rotates
+            it by a given angle (in radians). The rotation angle is positive in the
+            counter-clockwise direction, and must be divisible by increments of PI/6
+            (60 degrees). To actually perform the ``Block`` rotation, the
+            :py:meth:`armi.reactor.blocks.Block.rotate` method is called.
 
         Parameters
         ----------
@@ -1259,14 +1265,14 @@ class Assembly(composites.Composite):
 
         Warning
         -------
-        rad must be in 60-degree increments! (i.e., PI/6, PI/3, PI, 2 * PI/3, 5 * PI/6, etc)
+        rad must be in 60-degree increments! (i.e., PI/6, PI/3, PI, 2 * PI/3, etc)
         """
         for b in self.getBlocks():
             b.rotate(rad)
 
 
 class HexAssembly(Assembly):
-    """Placeholder, so users can explicitly define a hex-based assembly."""
+    """Placeholder, so users can explicitly define a hex-based Assembly."""
 
     pass
 
@@ -1281,7 +1287,9 @@ class RZAssembly(Assembly):
     HexAssembly because they use different locations and need to have Radial Meshes in
     their setting.
 
-    note ThRZAssemblies should be a subclass of Assemblies (similar to Hex-Z) because
+    Notes
+    -----
+    ThRZAssemblies should be a subclass of Assemblies (similar to Hex-Z) because
     they should have a common place to put information about subdividing the global mesh
     for transport - this is similar to how blocks have 'AxialMesh' in their blocks.
     """
@@ -1292,7 +1300,7 @@ class RZAssembly(Assembly):
 
     def radialOuter(self):
         """
-        returns the outer radial boundary of this assembly.
+        Returns the outer radial boundary of this assembly.
 
         See Also
         --------
@@ -1339,8 +1347,8 @@ class ThRZAssembly(RZAssembly):
 
     Notes
     -----
-    This is a subclass of RZAssemblies, which is its a subclass of the Generics Assembly
-    Object
+    This is a subclass of RZAssemblies, which is itself a subclass of the generic
+    Assembly class.
     """
 
     def __init__(self, assemType, assemNum=None):
