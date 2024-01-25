@@ -1845,7 +1845,7 @@ class HexBlock(Block):
             :implements: R_ARMI_BLOCK_DIMS
 
             This method retrieves the duct Component and quieries
-            it's inner pitch directly. If the duct is missing or if there
+            its outer pitch directly. If the duct is missing or if there
             are multiple duct Components, an error will be raised.
         """
         duct = self.getComponent(Flags.DUCT, exact=True)
