@@ -123,15 +123,31 @@ class UniformMeshGenerator:
             :id: I_ARMI_UMC_NON_UNIFORM
             :implements: R_ARMI_UMC_NON_UNIFORM
 
+            A core-wide mesh is computed via ``_computeAverageAxialMesh`` which
+            operates by first collecting all the mesh points for every assembly
+            (``allMeshes``) and then averaging them together using
+            ``average1DWithinTolerance``. An attempt to preserve fuel and control
+            material boundaries is accomplished by moving fuel region boundaries
+            to accomodate control rod boundaries. Note this behavior only occurs
+            by calling ``_decuspAxialMesh`` which is dependent on ``minimumMeshSize``
+            being defined (this is controlled by the ``uniformMeshMinimumSize`` setting).
+
         .. impl:: Produce a mesh with a size no smaller than a user-specified value.
             :id: I_ARMI_UMC_MIN_MESH
             :implements: R_ARMI_UMC_MIN_MESH
 
+            If a minimum mesh size ``minimumMeshSize`` is provided, calls
+            ``_decuspAxialMesh`` on the core-wide mesh to maintain that minimum size
+            while still attempting to honor fuel and control material boundaries. Relies
+            ultimately on ``_filterMesh`` to remove mesh points that violate the minimum
+            size. Note that ``_filterMesh`` will always respect the minimum mesh size,
+            even if this means losing a mesh point that represents a fuel or control
+            material boundary.
+
         Notes
         -----
         Attempts to reduce the effect of fuel and control rod absorber smearing
-        ("cusping" effect) by keeping important material boundaries in the
-        common mesh.
+        ("cusping" effect) by keeping important material boundaries in the common mesh.
         """
         self._computeAverageAxialMesh()
         if self.minimumMeshSize is not None:
@@ -433,9 +449,24 @@ class UniformMeshGeometryConverter(GeometryConverter):
             :id: I_ARMI_UMC
             :implements: R_ARMI_UMC
 
+            Given a source Reactor, ``r``, as input and when ``_hasNonUniformAssems`` is ``False``,
+            a new Reactor is created in ``initNewReactor``. This new Reactor contains copies of select
+            information from the input source Reactor (e.g., Operator, Blueprints, cycle, timeNode, etc).
+            The uniform mesh to be applied to the new Reactor is calculated in ``_generateUniformMesh``
+            (see :need:`I_ARMI_UMC_NON_UNIFORM` and :need:`I_ARMI_UMC_MIN_MESH`). New assemblies with this
+            uniform mesh are created in ``_buildAllUniformAssemblies`` and added to the new Reactor.
+            Core-level parameters are then mapped from the source Reactor to the new Reactor in
+            ``_mapStateFromReactorToOther``. Finally, the core-wide axial mesh is updated on the new Reactor
+            via ``updateAxialMesh``.
+
+
         .. impl:: Map select parameters from composites on the original mesh to the new mesh.
             :id: I_ARMI_UMC_PARAM_FORWARD
             :implements: R_ARMI_UMC_PARAM_FORWARD
+
+            In ``_mapStateFromReactorToOther``, Core-level parameters are mapped from the source Reactor
+            to the new Reactor. If requested, block-level parameters can be mapped using an averaging
+            equation as described in ``setAssemblyStateFromOverlaps``.
         """
         if r is None:
             raise ValueError(f"No reactor provided in {self}")
@@ -555,6 +586,12 @@ class UniformMeshGeometryConverter(GeometryConverter):
         .. impl:: Map select parameters from composites on the new mesh to the original mesh.
             :id: I_ARMI_UMC_PARAM_BACKWARD
             :implements: R_ARMI_UMC_PARAM_BACKWARD
+
+            To ensure that the parameters on the original Reactor are from the converted Reactor,
+            the first step is to clear the Reactor-level parameters on the original Reactor
+            (see ``_clearStateOnReactor``). ``_mapStateFromReactorToOther`` is then called
+            to map Core-level parameters and, optionally, averaged Block-level parameters
+            (see :need:`I_ARMI_UMC_PARAM_FORWARD`).
         """
         runLog.extra(
             f"Applying uniform neutronics results from {self.convReactor} to {self._sourceReactor}"
