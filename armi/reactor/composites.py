@@ -617,7 +617,7 @@ class ArmiObject(metaclass=CompositeModelType):
         Return a new instance of the specific ParameterCollection type associated with this object.
 
         This has the same effect as ``obj.paramCollectionType()``. Getting a new
-        instance through a method like this is useful in situations where the
+        instance through a class method like this is useful in situations where the
         ``paramCollectionType`` is not a top-level object and therefore cannot be
         trivially pickled. Since we know that by the time we want to make any instances
         of/unpickle a given ``ArmiObject``, such a class attribute will have been
