@@ -980,7 +980,7 @@ class Component(composites.Composite, metaclass=ComponentType):
             between ``T0`` and ``Tc`` is used to calculate the thermal expansion
             factor. If a solid material does not have a linear expansion factor
             defined and the temperature difference is greater than
-            :py:attr:`armi.reactor.components.component.Component._TOLERANCE`, an
+            a predetermined tolerance, an
             error is raised. Thermal expansion of fluids or custom materials is
             neglected, currently.
 
