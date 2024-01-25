@@ -25,14 +25,9 @@ contained within a :py:class:`~armi.nuclearDataIO.xsLibraries.XSLibrary`.
     The majority of the functionality in this module is inherited from the
     :py:mod:`~armi.nuclearDataIO.cccc.isotxs` module. See
     :py:class:`~armi.nuclearDataIO.cccc.isotxs.IsotxsIO` and its associated
-    implementation :need:`I_ARMI_NUCDATA_ISOTXS` for more information. The
-    differences from ISOTXS neutron data is data unique to gamma, including:
-
-    * Special treatment for particle velocities, which is done by overriding
-      ``_rwLibraryEnergies``.
-    * Inclusion of "dummy" nuclides into
-      :py:class:`~armi.nuclearDataIO.xsLibraries.XSLibrary` so both neutron and
-      gamma data cover the same nuclide set.
+    implementation :need:`I_ARMI_NUCDATA_ISOTXS` for more information. The only
+    difference from ISOTXS neutron data is a special treatment for gamma
+    velocities, which is done by overriding ``_rwLibraryEnergies``.
 
 See [GAMSOR]_.
 
