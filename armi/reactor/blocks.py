@@ -1811,9 +1811,9 @@ class HexBlock(Block):
             :id: I_ARMI_BLOCK_DIMS2
             :implements: R_ARMI_BLOCK_DIMS
 
-            This method first retrives the pitch of the Hexagonal Block
-            (:need:`I_ARMI_UTIL_HEXAGON0`) and then leverages the
-            area calculation via :need:`I_ARMI_UTIL_HEXAGON0`.
+            This method first retrieves the pitch of the hexagonal Block
+            (:need:I_ARMI_UTIL_HEXAGON0) and then leverages the
+            area calculation via :need:I_ARMI_UTIL_HEXAGON0.
 
         """
         pitch = self.getPitch()
