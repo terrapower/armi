@@ -855,7 +855,7 @@ class CrossSectionGroupManager(interfaces.Interface):
     def interactBOL(self):
         """Called at the Beginning-of-Life of a run, before any cycles start.
 
-        .. impl:: The lattice physics interface and XSGM are connected at BOL.
+        .. impl:: The lattice physics interface and cross-section group manager are connected at BOL.
             :id: I_ARMI_XSGM_FREQ0
             :implements: R_ARMI_XSGM_FREQ
 
@@ -885,7 +885,7 @@ class CrossSectionGroupManager(interfaces.Interface):
         """
         Update representative blocks and block burnup groups.
 
-        .. impl:: The lattice physics interface and XSGM are connected at BOC.
+        .. impl:: The lattice physics interface and cross-section group manager are connected at BOC.
             :id: I_ARMI_XSGM_FREQ1
             :implements: R_ARMI_XSGM_FREQ
 
@@ -910,7 +910,7 @@ class CrossSectionGroupManager(interfaces.Interface):
     def interactEveryNode(self, cycle=None, tn=None):
         """Interaction at every time node.
 
-        .. impl:: The lattice physics interface and XSGM are connected at every time node.
+        .. impl:: The lattice physics interface and cross-section group manager are connected at every time node.
             :id: I_ARMI_XSGM_FREQ2
             :implements: R_ARMI_XSGM_FREQ
 
@@ -923,19 +923,19 @@ class CrossSectionGroupManager(interfaces.Interface):
             self.createRepresentativeBlocks()
 
     def interactCoupled(self, iteration):
-        """Update XS groups on each physics coupling iteration to get latest temperatures.
+        """Update cross-section groups on each physics coupling iteration to get latest temperatures.
 
-        .. impl:: The lattice physics interface and XSGM are connected during coupling.
+        .. impl:: The lattice physics interface and cross-section group manager are connected during coupling.
             :id: I_ARMI_XSGM_FREQ3
             :implements: R_ARMI_XSGM_FREQ
 
             This method updates representative blocks and block burnups at every node and the first coupled iteration for each cross-section ID
-            if the control logic for lattices physics frequency updates is set for the first coupled iteration (`firstCoupledIteration`) through the :py:class:`LatticePhysicsInterface <armi.physics.neutronics.latticePhysics>`.
+            if the control logic for lattices physics frequency updates is set for the first coupled iteration (``firstCoupledIteration``) through the :py:class:`LatticePhysicsInterface <armi.physics.neutronics.latticePhysics>`.
             The cross-section group manager will construct representative blocks for each cross-section ID at the first iteration of every time node.
 
         Notes
         -----
-        Updating the XS on only the first (i.e., iteration == 0) timenode can be a reasonable approximation to
+        Updating the cross-section on only the first (i.e., iteration == 0) timenode can be a reasonable approximation to
         get new cross sections with some temperature updates but not have to run lattice physics on each
         coupled iteration. If the user desires to have the cross sections updated with every coupling iteration,
         the ``latticePhysicsFrequency: all`` option.
@@ -1112,7 +1112,7 @@ class CrossSectionGroupManager(interfaces.Interface):
     def createRepresentativeBlocks(self):
         """Get a representative block from each cross-section ID managed here.
 
-        .. impl:: Create collections of blocks based on XS type and burn-up group.
+        .. impl:: Create collections of blocks based on cross-section type and burn-up group.
             :id: I_ARMI_XSGM_CREATE_XS_GROUPS
             :implements: R_ARMI_XSGM_CREATE_XS_GROUPS
 

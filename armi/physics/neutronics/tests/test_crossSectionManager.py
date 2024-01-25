@@ -485,7 +485,7 @@ class TestBlockCollectionComponentAverage1DCylinder(unittest.TestCase):
         ]
 
     def test_ComponentAverage1DCylinder(self):
-        """Tests that the XS group manager calculates the expected component atom density
+        """Tests that the cross-section group manager calculates the expected component atom density
         and component area correctly.
 
         Order of components is also checked since in 1D cases the order of the components matters.
@@ -852,7 +852,7 @@ class TestCrossSectionGroupManager(unittest.TestCase):
     def test_interactBOL(self):
         """Test `BOL` lattice physics update frequency.
 
-        .. test:: The XSGM frequency depends on the LPI frequency at BOL.
+        .. test:: The cross-section group manager frequency depends on the LPI frequency at BOL.
             :id: T_ARMI_XSGM_FREQ0
             :tests: R_ARMI_XSGM_FREQ
         """
@@ -865,7 +865,7 @@ class TestCrossSectionGroupManager(unittest.TestCase):
     def test_interactBOC(self):
         """Test `BOC` lattice physics update frequency.
 
-        .. test:: The XSGM frequency depends on the LPI frequency at BOC.
+        .. test:: The cross-section group manager frequency depends on the LPI frequency at BOC.
             :id: T_ARMI_XSGM_FREQ1
             :tests: R_ARMI_XSGM_FREQ
         """
@@ -879,7 +879,7 @@ class TestCrossSectionGroupManager(unittest.TestCase):
     def test_interactEveryNode(self):
         """Test `everyNode` lattice physics update frequency.
 
-        .. test:: The XSGM frequency depends on the LPI frequency at every time node.
+        .. test:: The cross-section group manager frequency depends on the LPI frequency at every time node.
             :id: T_ARMI_XSGM_FREQ2
             :tests: R_ARMI_XSGM_FREQ
         """
@@ -895,7 +895,7 @@ class TestCrossSectionGroupManager(unittest.TestCase):
     def test_interactFirstCoupledIteration(self):
         """Test `firstCoupledIteration` lattice physics update frequency.
 
-        .. test:: The XSGM frequency depends on the LPI frequency during first coupled iteration.
+        .. test:: The cross-section group manager frequency depends on the LPI frequency during first coupled iteration.
             :id: T_ARMI_XSGM_FREQ3
             :tests: R_ARMI_XSGM_FREQ
         """
@@ -911,7 +911,7 @@ class TestCrossSectionGroupManager(unittest.TestCase):
     def test_interactAllCoupled(self):
         """Test `all` lattice physics update frequency.
 
-        .. test:: The XSGM frequency depends on the LPI frequency during coupling.
+        .. test:: The cross-section group manager frequency depends on the LPI frequency during coupling.
             :id: T_ARMI_XSGM_FREQ4
             :tests: R_ARMI_XSGM_FREQ
         """
@@ -927,7 +927,7 @@ class TestCrossSectionGroupManager(unittest.TestCase):
     def test_xsgmIsRunBeforeXS(self):
         """Test that the XSGM is run before the cross sections are calculated.
 
-        .. test:: Test that the XSGM is run before the cross sections are calculated.
+        .. test:: Test that the cross-section group manager is run before the cross sections are calculated.
             :id: T_ARMI_XSGM_FREQ5
             :tests: R_ARMI_XSGM_FREQ
         """
