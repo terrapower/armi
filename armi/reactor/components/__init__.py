@@ -333,7 +333,7 @@ class DerivedShape(UnshapedComponent):
             Computing the volume of a ``DerivedShape`` means looking at the solid
             materials around it, and finding what shaped space is left over in between
             them. This method calls the method ``_deriveVolumeAndArea``, which makes
-            use of the fact that the ARMI reactor data model is heirarchical. It starts
+            use of the fact that the ARMI reactor data model is hierarchical. It starts
             by finding the parent of this object, and then finding the volume of all
             the other objects at this level. Whatever is left over, is the volume of
             this object. Obviously, you can only have one ``DerivedShape`` child of any

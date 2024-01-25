@@ -1552,7 +1552,7 @@ through ``self.cs``.
             return True
         elif s[1:].startswith(":\\")
             return True
-        return False:
+        return False
 
     subclassTables = {}
     cs = settings.Settings()
