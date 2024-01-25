@@ -1668,7 +1668,8 @@ class HexBlock(Block):
 
         This class defines hexagonal-shaped Blocks. It inherits functionality from the parent
         class, Block, and defines hexagonal-specific methods including, but not limited to,
-        pin pitch, hydraulic diameter, and retrieving inner and outer pitch.
+        querying pin pitch, pin linear power densities, hydraulic diameter, and retrieving
+        inner and outer pitch.
     """
 
     PITCH_COMPONENT_TYPE: ClassVar[_PitchDefiningComponent] = (components.Hexagon,)
