@@ -187,8 +187,8 @@ class Component(composites.Composite, metaclass=ComponentType):
         :implements: R_ARMI_COMP_ORDER
 
         Determining Component order by outermost diameters is implemented via
-        the __lt__() method, which is used to control sort() as the
-        standard approach in Python. However, __lt__() does not show up in the API.
+        the ``__lt__()`` method, which is used to control ``sort()`` as the
+        standard approach in Python. However, ``__lt__()`` does not show up in the API.
 
     Attributes
     ----------
@@ -977,7 +977,7 @@ class Component(composites.Composite, metaclass=ComponentType):
 
             This method enables the calculation of the thermal expansion factor
             for a given material. If the material is solid, the difference
-            between T0 and Tc is used to calculate the thermal expansion
+            between ``T0`` and ``Tc`` is used to calculate the thermal expansion
             factor. If a solid material does not have a linear expansion factor
             defined and the temperature difference is greater than
             :py:attr:`armi.reactor.components.component.Component._TOLERANCE`, an
