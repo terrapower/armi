@@ -324,7 +324,7 @@ class AverageBlockCollection(BlockCollection):
         volume-weighted average. Inheriting functionality from the abstract
         :py:class:`Reactor <armi.physics.neutronics.crossSectionGroupManager.BlockCollection>` object, this class
         will construct representative blocks using averaged parameters of all blocks in the given collection.
-        Number density averages can be computed at a component level through ``self._performAverageByComponent``,
+        Number density averages can be computed at a component level
         or at a block level by default. Average nuclide temperatures and burnup are also included when constructing a representative block.
 
     """
