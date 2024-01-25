@@ -1248,11 +1248,14 @@ def computeDpaRate(mgFlux, dpaXs):
         Displacements calculated by displacement XS:
 
         .. math::
+            :nowrap:
 
+            \begin{aligned}
             \text{Displacement rate} &= \phi N_{\text{HT9}} \sigma  \\
             &= (\#/\text{cm}^2/s) \cdot (1/cm^3) \cdot (\text{barn})\\
             &= (\#/\text{cm}^5/s) \cdot  \text{(barn)} * 10^{-24} \text{cm}^2/\text{barn} \\
             &= \#/\text{cm}^3/s
+            \end{aligned}
 
 
         ::
