@@ -22,6 +22,13 @@ contained within a :py:class:`~armi.nuclearDataIO.xsLibraries.XSLibrary`.
     :id: I_ARMI_NUCDATA_GAMISO
     :implements: R_ARMI_NUCDATA_GAMISO
 
+    The majority of the functionality in this module is inherited from the
+    :py:mod:`~armi.nuclearDataIO.cccc.isotxs` module. See
+    :py:class:`~armi.nuclearDataIO.cccc.isotxs.IsotxsIO` and its associated
+    implementation :need:`I_ARMI_NUCDATA_ISOTXS` for more information. The only
+    difference from ISOTXS neutron data is a special treatment for gamma
+    velocities, which is done by overriding ``_rwLibraryEnergies``.
+
 See [GAMSOR]_.
 
 .. [GAMSOR] Smith, M. A., Lee, C. H., and Hill, R. N. GAMSOR: Gamma Source Preparation and DIF3D Flux Solution. United States:

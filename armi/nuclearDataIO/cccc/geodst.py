@@ -136,6 +136,39 @@ class GeodstStream(cccc.StreamWithDataContainer):
         .. impl:: Tool to read and write GEODST files.
             :id: I_ARMI_NUCDATA_GEODST
             :implements: R_ARMI_NUCDATA_GEODST
+
+            Reading and writing GEODST files is performed using the general
+            nuclear data I/O functionalities described in
+            :need:`I_ARMI_NUCDATA`. Reading/writing a GEODST file is performed
+            through the following steps:
+
+            #. Read/write file ID record
+
+            #. Read/write file specifications on 1D record.
+
+            #. Based on the geometry type (``IGOM``), one of following records
+               are read/written:
+
+                * Slab (1), cylinder (3), or sphere (3): Read/write 1-D coarse
+                  mesh boundaries and fine mesh intervals.
+                * X-Y (6), R-Z (7), Theta-R (8), uniform triangular (9),
+                  hexagonal (10), or R-Theta (11): Read/write 2-D coarse mesh
+                  boundaries and fine mesh intervals.
+                * R-Theta-Z (12, 15), R-Theta-Alpha (13, 16), X-Y-Z (14),
+                  uniform triangular-Z (17), hexagonal-Z(18): Read/write 3-D
+                  coarse mesh boundaries and fine mesh intervals.
+
+            #. If the geometry is not zero-dimensional (``IGOM`` > 0) and
+               buckling values are specified (``NBS`` > 0): Read/write geometry
+               data from 5D record.
+
+            #. If the geometry is not zero-dimensional (``IGOM`` > 0) and region
+               assignments are coarse-mesh-based (``NRASS`` = 0): Read/write
+               region assignments to coarse mesh interval.
+
+            #. If the geometry is not zero-dimensional (``IGOM`` > 0) and region
+               assignments are fine-mesh-based (``NRASS`` = 1): Read/write
+               region assignments to fine mesh interval.
         """
         self._rwFileID()
         self._rw1DRecord()
@@ -162,8 +195,7 @@ class GeodstStream(cccc.StreamWithDataContainer):
 
         Notes
         -----
-        The username, version, etc are embedded in this string but it's
-        usually blank. The number 28 was actually obtained from
+        The number 28 was actually obtained from
         a hex editor and may be code specific.
         """
         with self.createRecord() as record:
@@ -182,7 +214,6 @@ class GeodstStream(cccc.StreamWithDataContainer):
     def _rw2DRecord(self):
         """Read/write 1-D coarse mesh boundaries and fine mesh intervals."""
         with self.createRecord() as record:
-
             self._data.xmesh = record.rwList(
                 self._data.xmesh, "double", self._metadata["NCINTI"] + 1
             )
@@ -193,7 +224,6 @@ class GeodstStream(cccc.StreamWithDataContainer):
     def _rw3DRecord(self):
         """Read/write 2-D coarse mesh boundaries and fine mesh intervals."""
         with self.createRecord() as record:
-
             self._data.xmesh = record.rwList(
                 self._data.xmesh, "double", self._metadata["NCINTI"] + 1
             )
@@ -210,7 +240,6 @@ class GeodstStream(cccc.StreamWithDataContainer):
     def _rw4DRecord(self):
         """Read/write 3-D coarse mesh boundaries and fine mesh intervals."""
         with self.createRecord() as record:
-
             self._data.xmesh = record.rwList(
                 self._data.xmesh, "double", self._metadata["NCINTI"] + 1
             )

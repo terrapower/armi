@@ -189,6 +189,25 @@ class PmatrxIO(cccc.Stream):
         .. impl:: Tool to read and write PMATRX files.
             :id: I_ARMI_NUCDATA_PMATRX
             :implements: R_ARMI_NUCDATA_PMATRX
+
+            Reading and writing PMATRX files is performed using the general
+            nuclear data I/O functionalities described in
+            :need:`I_ARMI_NUCDATA`. Reading/writing a PMATRX file is performed
+            through the following steps:
+
+            #. Read/write global information including:
+
+                * Number of gamma energy groups
+                * Number of neutron energy groups
+                * Maximum scattering order
+                * Maximum number of compositions
+                * Maximum number of materials
+                * Maximum number of regions
+
+            #. Read/write energy group structure for neutrons and gammas
+            #. Read/write dose conversion factors
+            #. Read/write gamma production matrices for each nuclide, as well as
+               other reaction constants related to neutron-gamma production.
         """
         self._rwMessage()
         properties.unlockImmutableProperties(self._lib)
