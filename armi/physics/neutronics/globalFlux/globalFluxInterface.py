@@ -1245,7 +1245,7 @@ def computeDpaRate(mgFlux, dpaXs):
         :implements: R_ARMI_FLUX_DPA
 
         This method calculates DPA rates using the inputted multigroup flux and DPA cross sections.
-        Displacements calculated by displacement XS:
+        Displacements calculated by displacement cross-section:
 
         .. math::
             :nowrap:
@@ -1269,8 +1269,8 @@ def computeDpaRate(mgFlux, dpaXs):
 
             \frac{\text{dpa}}{s}  = \frac{\phi N \sigma}{N} = \phi * \sigma
 
-        the Number density of the structural material cancels out. It's in the macroscopic
-        XS and in the original number of atoms.
+        the number density of the structural material cancels out. It's in the macroscopic
+        cross-section and in the original number of atoms.
 
     Raises
     ------

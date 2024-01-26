@@ -396,9 +396,9 @@ class Core(composites.Composite):
             <armi.reactor.grids.grid.Grid>` type, :py:class:`DomainType
             <armi.reactor.geometry.DomainType>`, and :py:class:`BoundaryType
             <armi.reactor.geometry.BoundaryType>` are valid. The validity of a
-            user-specified geometry and symmetry is verified by a settings:
-            :py:meth:`Inspector
-            <armi.operators.settingsValidation.Inspector._inspectSettings`.
+            user-specified geometry and symmetry is verified by a settings
+            :py:class:`Inspector
+            <armi.operators.settingsValidation.Inspector`.
         """
         if not self.spatialGrid:
             raise ValueError("Cannot access symmetry before a spatialGrid is attached.")

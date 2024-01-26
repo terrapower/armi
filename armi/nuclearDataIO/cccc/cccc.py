@@ -42,7 +42,7 @@ for reactor physics codes.
     a file for reading or writing on the ``__enter__`` and closes that file upon
     ``__exit__``. :py:class:`Stream` is an abstract base class that is
     subclassed for each CCCC file. It is subclassed directly for the CCCC files
-    that contain XS data:
+    that contain cross-section data:
 
       * :py:class:`ISOTXS <armi.nuclearDataIO.cccc.isotxs.IsotxsIO>`
       * :py:mod:`GAMISO <armi.nuclearDataIO.cccc.gamiso>`
