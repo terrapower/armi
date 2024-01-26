@@ -90,41 +90,41 @@ Retrieve elements that are classified as actinides:
      <Element  LR (Z=103), Lawrencium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>]
 
 
-For specific data on nuclides within each element, refer to the 
-:ref:`nuclide bases summary table <nuclide-bases-table>`.
+.. only:: html
 
+    For specific data on nuclides within each element, refer to the
+    :ref:`nuclide bases summary table <nuclide-bases-table>`.
 
-.. exec::
-    from tabulate import tabulate
-    from armi.nucDirectory import elements
+    .. exec::
+        from tabulate import tabulate
+        from armi.nucDirectory import elements
 
-    attributes = ['z',
-                  'name',
-                  'symbol',
-                  'phase',
-                  'group',
-                  'is naturally occurring?',
-                  'is heavy metal?',
-                  'num. nuclides',]
+        attributes = ['z',
+                    'name',
+                    'symbol',
+                    'phase',
+                    'group',
+                    'is naturally occurring?',
+                    'is heavy metal?',
+                    'num. nuclides',]
 
-    def getAttributes(element):
-        return [
-            f'``{element.z}``',
-            f'``{element.name}``',
-            f'``{element.symbol}``',
-            f'``{element.phase}``',
-            f'``{element.group}``',
-            f'``{element.isNaturallyOccurring()}``',
-            f'``{element.isHeavyMetal()}``',
-            f'``{len(element.nuclides)}``',
-        ]
+        def getAttributes(element):
+            return [
+                f'``{element.z}``',
+                f'``{element.name}``',
+                f'``{element.symbol}``',
+                f'``{element.phase}``',
+                f'``{element.group}``',
+                f'``{element.isNaturallyOccurring()}``',
+                f'``{element.isHeavyMetal()}``',
+                f'``{len(element.nuclides)}``',
+            ]
 
-    sortedElements = sorted(elements.byZ.values())
-    return create_table(tabulate(tabular_data=[getAttributes(elem) for elem in sortedElements],
-                                 headers=attributes,
-                                 tablefmt='rst'),
-                        caption='List of elements')
-
+        sortedElements = sorted(elements.byZ.values())
+        return create_table(tabulate(tabular_data=[getAttributes(elem) for elem in sortedElements],
+                                    headers=attributes,
+                                    tablefmt='rst'),
+                            caption='List of elements')
 """
 
 import os
