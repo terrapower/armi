@@ -3,7 +3,7 @@ ARMI v0.3 Release Notes
 ***********************
 
 ARMI v0.3.1
-============
+===========
 Release Date: TBD
 
 What's new in ARMI?
@@ -12,17 +12,16 @@ What's new in ARMI?
 
 Bug Fixes
 ---------
-#. ``StructuredGrid.getNeighboringCellIndices()`` was incorrectly implemented for the second neighbor. (`PR#1614 <https://github.com/terrapower/armi/pull/1614>`_)
+#. TBD
 
 Changes that Affect Requirements
 --------------------------------
-
 #. TBD
 
 
 ARMI v0.3.0
-============
-Release Date: 2023-12-21
+===========
+Release Date: 2024-01-26
 
 What's new in ARMI?
 -------------------
@@ -30,6 +29,10 @@ What's new in ARMI?
 #. Attempt to set representative block number densities by component if possible. (`PR#1412 <https://github.com/terrapower/armi/pull/1412>`_)
 #. Use ``functools`` to preserve function attributes when wrapping with ``codeTiming.timed`` (`PR#1466 <https://github.com/terrapower/armi/pull/1466>`_)
 #. Remove a number of deprecated block, assembly, and core parameters related to a defunct internal plugin.
+
+Bug Fixes
+---------
+#. ``StructuredGrid.getNeighboringCellIndices()`` was incorrectly implemented for the second neighbor. (`PR#1614 <https://github.com/terrapower/armi/pull/1614>`_)
 
 Quality Work
 ------------
