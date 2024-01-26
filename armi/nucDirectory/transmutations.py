@@ -68,11 +68,11 @@ to the alternate product, ``PU239``.
 The example above also defines a ``nuSF`` item, which is how many neutrons are emitted per spontaneous
 fission. This is used for intrinsic source term calculations.
 
-[1] Maria Pusa and Jaakko Leppänen, "Computing the Matrix Exponential in Burnup Calculations",
-    Nuclear Science and Engineering, 164:2 (2010): 140-150.
+[1] Pusa, Maria, and Jaakko Leppanen. "Computing the matrix exponential in burnup calculations."
+    Nuclear science and engineering 164.2 (2010): 140-150.
 
-[2] C. Moler and C. Van Loan, "Nineteen Dubious Ways to Compute the Exponential of a Matrix",
-    SIAM Review, 20.4 (1978): 801-836.
+[2] Moler, Cleve, and Charles Van Loan. "Nineteen dubious ways to compute the exponential of a matrix."
+    SIAM review 20.4 (1978): 801-836.
 """
 import math
 
