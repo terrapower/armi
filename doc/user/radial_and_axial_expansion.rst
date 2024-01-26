@@ -64,13 +64,3 @@ Equation :eq:`linearExpansionFactor` is the expression used by ARMI in :py:meth:
 
 .. note::
     :py:meth:`linearExpansionPercent <armi.materials.material.Material.linearExpansionPercent>` returns :math:`\frac{L - L_0}{L_0}` in %.
-
-.. _radialExpansion:
-
-Radial Expansion
-================
-
-.. _axialExpansion:
-
-Axial Expansion
-===============
