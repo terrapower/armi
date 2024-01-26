@@ -46,6 +46,7 @@ See Also
 
 Examples
 --------
+
 ::
     >>> from armi.nuclearDataIO import compxs
     >>> lib = compxs.readBinary('COMPXS')

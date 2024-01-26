@@ -794,7 +794,7 @@ def computeMacroscopicGroupConstants(
         This function computes the macroscopic cross sections of a specified
         reaction type from inputted microscopic cross sections and number
         densities. The ``constantName`` parameter specifies what type of
-        reaction is requested. The ``numberDensities`` parameter is dictionary
+        reaction is requested. The ``numberDensities`` parameter is a dictionary
         mapping the nuclide to its number density. The ``lib`` parameter is a library
         object like :py:class:`~armi.nuclearDataIO.xsLibraries.IsotxsLibrary` or
         :py:class:`~armi.nuclearDataIO.xsLibraries.CompxsLibrary` that holds the
