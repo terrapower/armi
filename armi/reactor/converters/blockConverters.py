@@ -778,22 +778,17 @@ def radiiFromRingOfRods(distToRodCenter, numRods, rodRadii, layout="hexagon"):
     Notes
     -----
     There are two assumptions when making circles:
-
-      #. the rings are concentric about the radToRodCenter;
-      #. the ring area of the fuel rods are distributed to the inside and outside rings with the same thickness.
-
+    1) the rings are concentric about the radToRodCenter;
+    2) the ring area of the fuel rods are distributed to the inside and outside rings with the same thickness.
     thicknessOnEachSide (t) is calculated as follows:
-
-      * r1 = inner rad that thickness is added to on inside
-      * r2 = outer rad that thickness is added to on outside
-      * radToRodCenter = (r1 + r2) / 2.0 due to being concentric;
-      * Total Area = Area of annulus 1 + Area of annulus 2
-      * Area of annulus 1 = pi * r1 ** 2       -  pi * (r1 - t) ** 2
-      * Area of annulus 2 = pi * (r2 + t) ** 2 -  pi * r2 ** 2
-
+    r1 = inner rad that thickness is added to on inside
+    r2 = outer rad that thickness is added to on outside
+    radToRodCenter = (r1 + r2) / 2.0 due to being concentric;
+    Total Area = Area of annulus 1 + Area of annulus 2
+    Area of annulus 1 = pi * r1 ** 2       -  pi * (r1 - t) ** 2
+    Area of annulus 2 = pi * (r2 + t) ** 2 -  pi * r2 ** 2
     Solving for thicknessOnEachSide(t):
-
-      * t = Total Area  / (4 * pi * radToRodCenter)
+    t = Total Area  / (4 * pi * radToRodCenter)
     """
     if layout == "polygon":
         alpha = 2.0 * math.pi / float(numRods)
