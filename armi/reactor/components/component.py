@@ -129,7 +129,7 @@ class ComponentType(composites.CompositeModelType):
         system.
     """
 
-    TYPES = dict()
+    TYPES = dict()  #: :meta hide-value:
 
     NON_DIMENSION_NAMES = (
         "Tinput",

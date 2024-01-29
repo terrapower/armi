@@ -261,10 +261,10 @@ class Core(composites.Composite):
         A :py:class:`Core <armi.reactor.reactors.Core>` object is typically a
         child of a :py:class:`Reactor <armi.reactor.reactors.Reactor>` object.
         A Reactor can contain multiple objects of the Core type. The instance
-        attribute name ``r.core`` is reserved for the object representating the
+        attribute name ``r.core`` is reserved for the object representing the
         active core. A reactor may also have a spent fuel pool instance
         attribute, ``r.sfp``, which is also of type
-        :py:class:`core <armi.reactor.reactors.Core>`.
+        :py:class:`Core <armi.reactor.reactors.Core>`.
 
         Most of the operations to retrieve information from the ARMI reactor
         data model are mediated through Core objects. For example,
@@ -832,7 +832,7 @@ class Core(composites.Composite):
             This method determines the number of rings in the reactor. If the
             setting ``circularRingMode`` is enabled (by default it is false), the
             assemblies will be grouped into roughly circular rings based on
-            their positions and the number of circular rings is reteurned.
+            their positions and the number of circular rings is returned.
             Otherwise, the number of hex rings is returned. This parameter is
             mostly used to facilitate certain fuel management strategies where
             the fuel is categorized and moved based on ring indexing.
