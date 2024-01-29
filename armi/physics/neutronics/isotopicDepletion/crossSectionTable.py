@@ -15,12 +15,11 @@
 """
 Module containing the CrossSectionTable class.
 
-The CrossSectionTable is useful for performing isotopic depletion analysis by storing
-one-group cross sections of interest to such an analysis. This used to live alongside
-the isotopicDepletionInterface, but that proved to be an unpleasant coupling between the
-ARMI composite model and the physics code contained therein. Separating it out at least
-means that the composite model doesn't need to import the isotopicDepletionInterface to
-function.
+The CrossSectionTable is useful for performing isotopic depletion analysis by storing one-group
+cross sections of interest to such an analysis. This used to live alongside the
+isotopicDepletionInterface, but that proved to be an unpleasant coupling between the ARMI composite
+model and the physics code contained therein. Separating it out at least means that the composite
+model doesn't need to import the isotopicDepletionInterface to function.
 """
 import collections
 from typing import List
@@ -174,33 +173,30 @@ def makeReactionRateTable(obj, nuclides: List = None):
 
     Often useful in support of depletion.
 
-    .. impl:: Generate a reaction rate table with entries for (nG), (nF), (n2n), (nA), and (nP) reactions.
+    .. impl:: Generate a reaction rate table with entries for (nG), (nF), (n2n), (nA), and (nP)
+        reactions.
         :id: I_ARMI_DEPL_TABLES0
         :implements: R_ARMI_DEPL_TABLES
 
-        For a given composite object ``obj`` and a list of nuclides ``nuclides``
-        in that object, call ``obj.getReactionRates()`` for each nuclide with a ``nDensity`` parameter of 1.0.
-        If ``nuclides`` is not specified, use a list of all nuclides in ``obj``.
-        This will reach upwards through the parents of ``obj`` to the associated
-        :py:class:`~armi.reactor.reactors.Core` object and pull the ISOTXS library
-        that is stored there. If ``obj`` does not belong to a ``Core``, a warning
-        is printed.
+        For a given composite object ``obj`` and a list of nuclides ``nuclides`` in that object,
+        call ``obj.getReactionRates()`` for each nuclide with a ``nDensity`` parameter of 1.0. If
+        ``nuclides`` is not specified, use a list of all nuclides in ``obj``. This will reach
+        upwards through the parents of ``obj`` to the associated
+        :py:class:`~armi.reactor.reactors.Core` object and pull the ISOTXS library that is stored
+        there. If ``obj`` does not belong to a ``Core``, a warning is printed.
 
-        For each child of ``obj``, use the ISOTXS library and the cross-section ID for the associated block
-        to produce a reaction rate dictionary in units of inverse seconds for
-        the nuclide specified in the original call to ``obj.getReactionRates()``.
-        Because ``nDensity`` was originally specified as
-        1.0, this dictionary actually represents the reaction rates per unit volume.
-        If the nuclide is not in the ISOTXS library, a warning is printed.
+        For each child of ``obj``, use the ISOTXS library and the cross-section ID for the
+        associated block to produce a reaction rate dictionary in units of inverse seconds for the
+        nuclide specified in the original call to ``obj.getReactionRates()``. Because ``nDensity``
+        was originally specified as 1.0, this dictionary actually represents the reaction rates per
+        unit volume. If the nuclide is not in the ISOTXS library, a warning is printed.
 
-        Combine the reaction rates for all nuclides into a combined dictionary by
-        summing together reaction rates of the same type on the same isotope from
-        each of the children of ``obj``.
+        Combine the reaction rates for all nuclides into a combined dictionary by summing together
+        reaction rates of the same type on the same isotope from each of the children of ``obj``.
 
-        If ``obj`` has a non-zero multi-group flux, sum the group-wise flux into
-        the total flux and normalize the reaction rates by the total flux, producing
-        a one-group macroscopic cross section for each reaction type on each
-        nuclide. Store these values in a
+        If ``obj`` has a non-zero multi-group flux, sum the group-wise flux into the total flux and
+        normalize the reaction rates by the total flux, producing a one-group macroscopic cross
+        section for each reaction type on each nuclide. Store these values in a
         :py:class:`~armi.physics.neutronics.isotopicDepletion.crossSectionTable.CrossSectionTable`.
 
     Parameters

@@ -70,31 +70,27 @@ class Reactor(composites.Composite):
     Top level of the composite structure, potentially representing all
     components in a reactor.
 
-    This class contains the core and any ex-core structures that are to be
-    represented in the ARMI model. Historically, the `Reactor` contained only
-    the core. To support better representation of ex-core structures, the old
-    `Reactor` functionality was moved to the newer `Core` class, which has a
-    `Reactor` parent.
+    This class contains the core and any ex-core structures that are to be represented in the ARMI
+    model. Historically, the ``Reactor`` contained only the core. To support better representation
+    of ex-core structures, the old ``Reactor`` functionality was moved to the newer `Core` class,
+    which has a ``Reactor`` parent.
 
     .. impl:: The user-specified reactor.
         :id: I_ARMI_R
         :implements: R_ARMI_R
 
-        The :py:class:`Reactor <armi.reactor.reactors.Reactor>` is the top
-        level of the composite structure, which can represent all components
-        within a reactor core. The reactor contains a :py:class:`Core
-        <armi.reactor.reactors.Core>`, which contains a collection of
-        :py:class:`Assembly <armi.reactor.assemblies.Assembly>` objects
-        arranged in a hexagonal or Cartesian grid. Each Assembly consists of a
-        stack of :py:class:`Block <armi.reactor.blocks.Block>` objects, which
-        are each composed of one or more :py:class:`Component
-        <armi.reactor.components.component.Component>` objects. Each
-        :py:class:`Interface <armi.interfaces.Interface>` is able to interact
-        with the reactor and its child :py:class:`Composites
-        <armi.reactor.composites.Composite>` by retrieving data from it or
-        writing new data to it. This is the main medium through which input
-        information and the output of physics calculations is exchanged between
-        interfaces and written to an ARMI database.
+        The :py:class:`Reactor <armi.reactor.reactors.Reactor>` is the top level of the composite
+        structure, which can represent all components within a reactor core. The reactor contains a
+        :py:class:`Core <armi.reactor.reactors.Core>`, which contains a collection of
+        :py:class:`Assembly <armi.reactor.assemblies.Assembly>` objects arranged in a hexagonal or
+        Cartesian grid. Each Assembly consists of a stack of
+        :py:class:`Block <armi.reactor.blocks.Block>` objects, which are each composed of one or
+        more :py:class:`Component <armi.reactor.components.component.Component>` objects. Each
+        :py:class:`Interface <armi.interfaces.Interface>` is able to interact with the reactor and
+        its child :py:class:`Composites <armi.reactor.composites.Composite>` by retrieving data from
+        it or writing new data to it. This is the main medium through which input information and
+        the output of physics calculations is exchanged between interfaces and written to an ARMI
+        database.
     """
 
     pDefs = reactorParameters.defineReactorParameters()
@@ -149,8 +145,8 @@ class Reactor(composites.Composite):
 
         Notes
         -----
-        The "max assembly number" is not currently used in the Reactor. So the idea
-        is that we return the current number, then iterate it for the next assembly.
+        The "max assembly number" is not currently used in the Reactor. So the idea is that we
+        return the current number, then iterate it for the next assembly.
 
         Obviously, this method will be unused for non-assembly-based reactors.
 
@@ -258,18 +254,16 @@ class Core(composites.Composite):
         :id: I_ARMI_R_CORE
         :implements: R_ARMI_R_CORE
 
-        A :py:class:`Core <armi.reactor.reactors.Core>` object is typically a
-        child of a :py:class:`Reactor <armi.reactor.reactors.Reactor>` object.
-        A Reactor can contain multiple objects of the Core type. The instance
-        attribute name ``r.core`` is reserved for the object representating the
-        active core. A reactor may also have a spent fuel pool instance
-        attribute, ``r.sfp``, which is also of type
-        :py:class:`core <armi.reactor.reactors.Core>`.
+        A :py:class:`Core <armi.reactor.reactors.Core>` object is typically a child of a
+        :py:class:`Reactor <armi.reactor.reactors.Reactor>` object. A Reactor can contain multiple
+        objects of the Core type. The instance attribute name ``r.core`` is reserved for the object
+        representating the active core. A reactor may also have a spent fuel pool instance
+        attribute, ``r.sfp``, which is also of type :py:class:`core <armi.reactor.reactors.Core>`.
 
-        Most of the operations to retrieve information from the ARMI reactor
-        data model are mediated through Core objects. For example,
-        :py:meth:`getAssemblies() <armi.reactor.reactors.Core.getAssemblies>` is
-        used to get a list of all assemblies in the Core.
+        Most of the operations to retrieve information from the ARMI reactor data model are mediated
+        through Core objects. For example,
+        :py:meth:`getAssemblies() <armi.reactor.reactors.Core.getAssemblies>` is used to get a list
+        of all assemblies in the Core.
 
     Attributes
     ----------
@@ -380,24 +374,19 @@ class Core(composites.Composite):
             :id: I_ARMI_R_SYMM
             :implements: R_ARMI_R_SYMM
 
-            This property getter returns the symmetry attribute of the
-            spatialGrid instance attribute. The spatialGrid is an instance of a
-            child of the abstract base class :py:class:`Grid
-            <armi.reactor.grids.grid.Grid>` type. The symmetry attribute is an
-            instance of the :py:class:`SymmetryType
-            <armi.reactor.geometry.SymmetryType>` class, which is a wrapper
-            around the :py:class:`DomainType <armi.reactor.geometry.DomainType>`
-            and :py:class:`BoundaryType <armi.reactor.geometry.BoundaryType>`
-            enumerations used to classify the domain (e.g., 1/3 core, quarter
-            core, full core) and symmetry boundary conditions (e.g., periodic,
-            reflective, none) of a reactor, respectively.
+            This property getter returns the symmetry attribute of the spatialGrid instance
+            attribute. The spatialGrid is an instance of a child of the abstract base class
+            :py:class:`Grid <armi.reactor.grids.grid.Grid>` type. The symmetry attribute is an
+            instance of the :py:class:`SymmetryType <armi.reactor.geometry.SymmetryType>` class,
+            which is a wrapper around the :py:class:`DomainType <armi.reactor.geometry.DomainType>`
+            and :py:class:`BoundaryType <armi.reactor.geometry.BoundaryType>` enumerations used to
+            classify the domain (e.g., 1/3 core, quarter core, full core) and symmetry boundary
+            conditions (e.g., periodic, reflective, none) of a reactor, respectively.
 
-            Only specific combinations of :py:class:`Grid
-            <armi.reactor.grids.grid.Grid>` type, :py:class:`DomainType
-            <armi.reactor.geometry.DomainType>`, and :py:class:`BoundaryType
-            <armi.reactor.geometry.BoundaryType>` are valid. The validity of a
-            user-specified geometry and symmetry is verified by a settings
-            :py:class:`Inspector
+            Only specific combinations of :py:class:`Grid <armi.reactor.grids.grid.Grid>` type,
+            :py:class:`DomainType <armi.reactor.geometry.DomainType>`, and :py:class:`BoundaryType
+            <armi.reactor.geometry.BoundaryType>` are valid. The validity of a user-specified
+            geometry and symmetry is verified by a settings :py:class:`Inspector
             <armi.operators.settingsValidation.Inspector`.
         """
         if not self.spatialGrid:
@@ -433,12 +422,10 @@ class Core(composites.Composite):
         """
         Return the microscopic cross section library if one exists.
 
-        - If there is a library currently associated with the core,
-          it will be returned
-        - Otherwise, an ``ISOTXS`` file will be searched for in the working directory,
-          opened as ``ISOTXS`` object and returned.
-        - Finally, if no ``ISOTXS`` file exists in the working directory,
-          a None will be returned.
+        - If there is a library currently associated with the core, it will be returned
+        - Otherwise, an ``ISOTXS`` file will be searched for in the working directory, opened as
+          ``ISOTXS`` object and returned.
+        - Finally, if no ``ISOTXS`` file exists in the working directory, a None will be returned.
         """
         isotxsFileName = nuclearDataIO.getExpectedISOTXSFileName()
         if self._lib is None and os.path.exists(isotxsFileName):
@@ -468,14 +455,14 @@ class Core(composites.Composite):
         """
         Return the "reference" assembly for this Core.
 
-        The reference assembly is defined as the center-most assembly with a FUEL flag,
-        if any are present, or the center-most of any assembly otherwise.
+        The reference assembly is defined as the center-most assembly with a FUEL flag, if any are
+        present, or the center-most of any assembly otherwise.
 
         Warning
         -------
-        The convenience of this property should be weighed against it's somewhat
-        arbitrary nature for any particular client. The center-most fueled assembly is
-        not particularly representative of the state of the core as a whole.
+        The convenience of this property should be weighed against it's somewhat arbitrary nature
+        for any particular client. The center-most fueled assembly is not particularly
+        representative of the state of the core as a whole.
         """
         key = lambda a: a.spatialLocator.getRingPos()
         assems = self.getAssemblies(Flags.FUEL, sortKey=key)
@@ -526,9 +513,8 @@ class Core(composites.Composite):
     def setPowerIfNecessary(self):
         """Set the core power, from the power density.
 
-        If the power density is set, but the power isn't, we set the calculate the
-        total heavy metal mass of the reactor, and set the total power. Which will
-        then be the real source of truth again.
+        If the power density is set, but the power isn't, calculate the total heavy metal mass of
+        the reactor, and set the total power. Which will then be the real source of truth again.
         """
         if self.p.power == 0 and self.p.powerDensity > 0:
             self.setPowerFromDensity()
@@ -549,8 +535,7 @@ class Core(composites.Composite):
         """
         Store the current location of all assemblies.
 
-        This is required for shuffle printouts, repeat shuffling, and
-        MCNP shuffling.
+        This is required for shuffle printouts, repeat shuffling, and MCNP shuffling.
         """
         for a in self.getAssemblies(includeAll=True):
             a.lastLocationLabel = a.getLocation()

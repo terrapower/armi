@@ -3332,19 +3332,18 @@ class StateRetainer:
     """
     Retains state during some operations.
 
-    This can be used to temporarily cache state, perform an operation, extract some info, and
-    then revert back to the original state.
+    This can be used to temporarily cache state, perform an operation, extract some info, and then
+    revert back to the original state.
 
-    * A state retainer is faster than restoring state from a database as it reduces
-      the number of IO reads; however, it does use more memory.
+    * A state retainer is faster than restoring state from a database as it reduces the number of IO
+      reads; however, it does use more memory.
 
     * This can be used on any object within the composite pattern via with
       ``[rabc].retainState([list], [of], [parameters], [to], [retain]):``.
       Use on an object up in the hierarchy applies to all objects below as well.
 
-    * This is intended to work across MPI, so that if you were to broadcast the
-      reactor the state would be correct; however the exact implication on
-      ``parameters`` may be unclear.
+    * This is intended to work across MPI, so that if you were to broadcast the reactor the state
+      would be correct; however the exact implication on ``parameters`` may be unclear.
 
     """
 
@@ -3358,9 +3357,8 @@ class StateRetainer:
             composite object to retain state (recursively)
 
         paramsToApply: iterable of parameters.Parameter
-            Iterable of parameters.Parameter to retain updated values after `__exit__`.
-            All other parameters are reverted to the original state, i.e. retained at
-            the original value.
+            Iterable of parameters.Parameter to retain updated values after `__exit__`. All other
+            parameters are reverted to the original state, i.e. retained at the original value.
         """
         self.composite = composite
         self.paramsToApply = set(paramsToApply or [])
@@ -3373,7 +3371,9 @@ class StateRetainer:
         self._enterExitHelper(lambda obj: obj.restoreBackup(self.paramsToApply))
 
     def _enterExitHelper(self, func):
-        """Helper method for ``__enter__`` and ``__exit__``. ``func`` is a lambda to either ``backUp()`` or ``restoreBackup()``."""
+        """Helper method for ``__enter__`` and ``__exit__``. ``func`` is a lambda to either
+        ``backUp()`` or ``restoreBackup()``.
+        """
         paramDefs = set()
         for child in [self.composite] + self.composite.getChildren(
             deep=True, includeMaterials=True
@@ -3395,8 +3395,8 @@ def gatherMaterialsByVolume(
     Parameters
     ----------
     objects : list of ArmiObject
-        Objects to look within. This argument allows clients to search though some subset
-        of the three (e.g. when you're looking for all CLADDING components within FUEL blocks)
+        Objects to look within. This argument allows clients to search though some subset of the
+        three (e.g. when you're looking for all CLADDING components within FUEL blocks)
 
     typeSpec : TypeSpec
         Flags for the components to look at
@@ -3406,9 +3406,9 @@ def gatherMaterialsByVolume(
 
     Notes
     -----
-    This helper method is outside the main ArmiObject tree for the special clients that need
-    to filter both by container type (e.g. Block type) with one set of flags, and Components
-    with another set of flags.
+    This helper method is outside the main ArmiObject tree for the special clients that need to
+    filter both by container type (e.g. Block type) with one set of flags, and Components with
+    another set of flags.
 
     .. warning:: This is a **composition** related helper method that will likely be filed into
         classes/modules that deal specifically with the composition of things in the data model.
@@ -3433,18 +3433,19 @@ def getDominantMaterial(
     """
     Return the first sample of the most dominant material (by volume) in a set of objects.
 
-    .. warning:: This is a **composition** related helper method that will likely be filed into
-        classes/modules that deal specifically with the composition of things in the data model.
-        Thus clients that use it from here should expect to need updates soon.
+    Warning
+    -------
+    This is a **composition** related helper method that will likely be filed into classes/modules
+    that deal specifically with the composition of things in the data model. Thus clients that use
+    it from here should expect to need updates soon.
     """
     volumes, samples = gatherMaterialsByVolume(objects, typeSpec, exact)
 
     if volumes:
         # find matName with max volume
         maxMatName = list(sorted(volumes.items(), key=lambda item: item[1])).pop()[0]
-        # return this material. Note that if this material
-        # has properties like Zr-frac, enrichment, etc. then this will
-        # just return one in the batch, not an average.
+        # return this material. Note that if this material has properties like Zr-frac, enrichment,
+        # etc. then this will just return one in the batch, not an average.
         return samples[maxMatName]
 
     return None
@@ -3455,13 +3456,13 @@ def getReactionRateDict(nucName, lib, xsSuffix, mgFlux, nDens):
     Parameters
     ----------
     nucName : str
-        nuclide name -- e.g. 'U235', 'PU239', etc. Not to be confused with the nuclide
-        _label_, see the nucDirectory module for a description of the difference.
+        nuclide name -- e.g. 'U235', 'PU239', etc. Not to be confused with the nuclide _label_, see
+        the nucDirectory module for a description of the difference.
     lib : isotxs
         cross section library
     xsSuffix : str
-        cross section suffix, consisting of the type followed by the burnup group,
-        e.g. 'AB' for the second burnup group of type A
+        cross section suffix, consisting of the type followed by the burnup group, e.g. 'AB' for the
+        second burnup group of type A
     mgFlux : numpy.nArray
         integrated mgFlux (n-cm/s)
     nDens : float
