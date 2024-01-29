@@ -34,10 +34,10 @@ for reactor physics codes.
     container data types, e.g. list or matrix, relying on the child
     implementation of the literal types that the container possesses. The binary
     conversion is implemented in :py:class:`BinaryRecordReader` and
-    :py:class`BinaryRecordWriter`. The ASCII conversion is implemented in
+    :py:class:`BinaryRecordWriter`. The ASCII conversion is implemented in
     :py:class:`AsciiRecordReader` and :py:class:`AsciiRecordWriter`.
 
-    These :py:class`IORecord` classes are used within :py:class:`Stream` objects
+    These :py:class:`IORecord` classes are used within :py:class:`Stream` objects
     for the data conversion. :py:class:`Stream` is a context manager that opens
     a file for reading or writing on the ``__enter__`` and closes that file upon
     ``__exit__``. :py:class:`Stream` is an abstract base class that is

@@ -249,8 +249,12 @@ class CompositeModelType(resolveCollections.ResolveParametersMeta):
     subclasses, called TYPES.
     """
 
-    # Dictionary mapping class name -> class object for all subclasses
     TYPES: Dict[str, Type] = dict()
+    """
+    Dictionary mapping class name to class object for all subclasses.
+
+    :meta hide-value:
+    """
 
     def __new__(cls, name, bases, attrs):
         newType = resolveCollections.ResolveParametersMeta.__new__(

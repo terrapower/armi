@@ -1548,9 +1548,7 @@ through ``self.cs``.
 
     def looks_like_path(s):
         """Super quick, not robust, check if a string looks like a file path."""
-        if s.startswith("\\\\") or s.startswith("//"):
-            return True
-        elif s[1:].startswith(":\\")
+        if s.startswith("\\\\") or s.startswith("//") or s[1:].startswith(":\\"):
             return True
         return False
 
@@ -1568,7 +1566,7 @@ through ``self.cs``.
         content += '     - {}\n'.format(' '.join(wrapper.wrap(str(setting.description) or '')))
         default = str(getattr(setting, 'default', None)).split("/")[-1]
         options = str(getattr(setting,'options','') or '')
-        if looks_like_path(defaults):
+        if looks_like_path(default):
             # We don't want to display default file paths in this table.
             default = ""
             options = ""

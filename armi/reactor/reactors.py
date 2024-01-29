@@ -817,7 +817,7 @@ class Core(composites.Composite):
             This method determines the number of rings in the reactor. If the
             setting ``circularRingMode`` is enabled (by default it is false), the
             assemblies will be grouped into roughly circular rings based on
-            their positions and the number of circular rings is reteurned.
+            their positions and the number of circular rings is returned.
             Otherwise, the number of hex rings is returned. This parameter is
             mostly used to facilitate certain fuel management strategies where
             the fuel is categorized and moved based on ring indexing.
