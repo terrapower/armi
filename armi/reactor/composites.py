@@ -244,9 +244,9 @@ class CompositeModelType(resolveCollections.ResolveParametersMeta):
     """
     Metaclass for tracking subclasses of ArmiObject subclasses.
 
-    It is often useful to have an easily-accessible collection of all classes that
-    participate in the ARMI composite reactor model. This metaclass maintains a
-    collection of all defined subclasses, called TYPES.
+    It is often useful to have an easily-accessible collection of all classes that participate in
+    the ARMI composite reactor model. This metaclass maintains a collection of all defined
+    subclasses, called TYPES.
     """
 
     # Dictionary mapping class name -> class object for all subclasses
@@ -269,32 +269,29 @@ class ArmiObject(metaclass=CompositeModelType):
     This:
 
     * declares the interface for objects in the composition
-    * implements default behavior for the interface common to all
-      classes
-    * Declares an interface for accessing and managing
-      child objects
+    * implements default behavior for the interface common to all classes
+    * Declares an interface for accessing and managing child objects
     * Defines an interface for accessing parents.
 
-    Called "component" in gang of four, this is an ArmiObject here because the word
-    component was already taken in ARMI.
+    Called "component" in gang of four, this is an ArmiObject here because the word component was
+    already taken in ARMI.
 
-    The :py:class:`armi.reactor.parameters.ResolveParametersMeta` metaclass is used to
-    automatically create ``ParameterCollection`` subclasses for storing parameters
-    associated with any particular subclass of ArmiObject. Defining a ``pDefs`` class
-    attribute in the definition of a subclass of ArmiObject will lead to the creation of
-    a new subclass of py:class:`armi.reactor.parameters.ParameterCollection`, which will
-    contain the definitions from that class's ``pDefs`` as well as the definitions for
-    all of its parents. A new ``paramCollectionType`` class attribute will be added to
-    the ArmiObject subclass to reflect which type of parameter collection should be
-    used.
+    The :py:class:`armi.reactor.parameters.ResolveParametersMeta` metaclass is used to automatically
+    create ``ParameterCollection`` subclasses for storing parameters associated with any particular
+    subclass of ArmiObject. Defining a ``pDefs`` class attribute in the definition of a subclass of
+    ArmiObject will lead to the creation of a new subclass of
+    py:class:`armi.reactor.parameters.ParameterCollection`, which will contain the definitions from
+    that class's ``pDefs`` as well as the definitions for all of its parents. A new
+    ``paramCollectionType`` class attribute will be added to the ArmiObject subclass to reflect
+    which type of parameter collection should be used.
 
-    .. warning::
-        This class has far too many public methods. We are in the midst of a composite
-        tree cleanup that will likely break these out onto a number of separate functional
-        classes grouping things like composition, location, shape/dimensions, and
-        various physics queries. Methods are being collected here from the various
-        specialized subclasses (Block, Assembly) in preparation for this next step.
-        As a result, the public API on this method should be considered unstable.
+    Warning
+    -------
+    This class has far too many public methods. We are in the midst of a composite tree cleanup that
+    will likely break these out onto a number of separate functional classes grouping things like
+    composition, location, shape/dimensions, and various physics queries. Methods are being
+    collected here from the various specialized subclasses (Block, Assembly) in preparation for this
+    next step. As a result, the public API on this method should be considered unstable.
 
     .. impl:: Parameters are accessible throughout the armi tree.
         :id: I_ARMI_PARAM_PART

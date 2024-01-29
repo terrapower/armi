@@ -864,8 +864,8 @@ class Assembly(composites.Composite):
 
         Examples
         --------
-        for block, bottomZ in a.getBlocksAndZ(returnBottomZ=True):
-            print({0}'s bottom mesh point is {1}'.format(block, bottomZ))
+        >>> for block, bottomZ in a.getBlocksAndZ(returnBottomZ=True):
+        >>>     print({0}'s bottom mesh point is {1}'.format(block, bottomZ))
         """
         if returnBottomZ and returnTopZ:
             raise ValueError("Both returnTopZ and returnBottomZ are set to `True`")
@@ -889,10 +889,7 @@ class Assembly(composites.Composite):
         return zip(blocks, zCoords)
 
     def hasContinuousCoolantChannel(self):
-        for b in self.getBlocks():
-            if not b.containsAtLeastOneChildWithFlags(Flags.COOLANT):
-                return False
-        return True
+        return all(b.containsAtLeastOneChildWithFlags(Flags.COOLANT) for b in self.getBlocks())
 
     def getFirstBlock(self, typeSpec=None, exact=False):
         bs = self.getBlocks(typeSpec, exact=exact)

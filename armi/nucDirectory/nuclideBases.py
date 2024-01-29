@@ -564,7 +564,11 @@ class NuclideBase(INuclide, IMcnpNuclide):
         )
 
     def __repr__(self):
-        return f"<{self.__class__.__name__} {self.name}:  Z:{self.z}, A:{self.a}, S:{self.state}, W:{self.weight:<12.6e}, Label:{self.label}>, HL:{self.halflife:<15.11e}, Abund:{self.abundance:<8.6e}>"
+        return (
+            f"<{self.__class__.__name__} {self.name}:  Z:{self.z}, A:{self.a}, S:{self.state}, "
+            + f"W:{self.weight:<12.6e}, Label:{self.label}>, HL:{self.halflife:<15.11e}, "
+            + f"Abund:{self.abundance:<8.6e}>"
+        )
 
     @staticmethod
     def _createName(element, a, state):
