@@ -363,7 +363,7 @@ class Interface:
 
         Examples
         --------
-        return {'neutronsPerFission',self.neutronsPerFission}
+        >>> return {'neutronsPerFission',self.neutronsPerFission}
         """
         return {}
 

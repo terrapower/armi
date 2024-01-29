@@ -446,10 +446,10 @@ class Zones:
 
         Examples
         --------
-        zoneDefinitions:
-        - ring-1: 001-001
-        - ring-2: 002-001, 002-002
-        - ring-3: 003-001, 003-002, 003-003
+            zoneDefinitions:
+            - ring-1: 001-001
+            - ring-2: 002-001, 002-002
+            - ring-3: 003-001, 003-002, 003-003
         """
         # log a quick header
         runLog.info("zoneDefinitions:")

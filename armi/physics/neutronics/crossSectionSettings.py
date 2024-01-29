@@ -87,8 +87,8 @@ class XSGeometryTypes(Enum):
 
         Examples
         --------
-        XSGeometryTypes.getStr(XSGeometryTypes.ZERO_DIMENSIONAL) == "0D"
-        XSGeometryTypes.getStr(XSGeometryTypes.TWO_DIMENSIONAL_HEX) == "2D hex"
+            XSGeometryTypes.getStr(XSGeometryTypes.ZERO_DIMENSIONAL) == "0D"
+            XSGeometryTypes.getStr(XSGeometryTypes.TWO_DIMENSIONAL_HEX) == "2D hex"
         """
         geometryTypes = list(cls)
         if typeSpec not in geometryTypes:

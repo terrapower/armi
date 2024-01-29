@@ -1412,8 +1412,8 @@ class EdgeAssemblyChanger(GeometryChanger):
 
     Examples
     --------
-    edgeChanger = EdgeAssemblyChanger()
-    edgeChanger.removeEdgeAssemblies(reactor.core)
+        edgeChanger = EdgeAssemblyChanger()
+        edgeChanger.removeEdgeAssemblies(reactor.core)
     """
 
     def addEdgeAssemblies(self, core):

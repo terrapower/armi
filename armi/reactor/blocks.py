@@ -2049,7 +2049,7 @@ class HexBlock(Block):
 
         Examples
         --------
-        rotateIndexLookup[i_after_rotation-1] = i_before_rotation-1
+            rotateIndexLookup[i_after_rotation-1] = i_before_rotation-1
         """
         if not 0 <= rotNum <= 5:
             raise ValueError(
