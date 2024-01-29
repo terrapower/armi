@@ -14,11 +14,11 @@
 
 r"""
 This module contains cross section nuclides, which are a wrapper around the
-:py:class:`~armi.nucDirectory.nuclideBases.INuclide` objects. The cross section nuclide objects contain
-cross section information from a specific calculation (e.g. neutron, or gamma cross sections).
+:py:class:`~armi.nucDirectory.nuclideBases.INuclide` objects. The cross section nuclide objects
+contain cross section information from a specific calculation (e.g. neutron, or gamma cross sections).
 
-:py:class:`XSNuclide` objects also contain meta data from the original file, so that another file can be
-reconstructed.
+:py:class:`XSNuclide` objects also contain meta data from the original file, so that another file
+can be reconstructed.
 
 .. warning::
     :py:class:`XSNuclide` objects should only be created by reading data into

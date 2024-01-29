@@ -41,11 +41,11 @@ Requirements
 
 Examples
 --------
-converter = uniformMesh.NeutronicsUniformMeshConverter()
-converter.convert(reactor)
-uniformReactor = converter.convReactor
-# do calcs, then:
-converter.applyStateToOriginal()
+    converter = uniformMesh.NeutronicsUniformMeshConverter()
+    converter.convert(reactor)
+    uniformReactor = converter.convReactor
+    # do calcs, then:
+    converter.applyStateToOriginal()
 
 The mesh mapping happens as described in the figure:
 

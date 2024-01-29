@@ -49,7 +49,7 @@ class TightCouplingSettings(dict):
 
     Examples
     --------
-    couplingSettings = TightCouplingSettings({'globalFlux': {'parameter': 'keff', 'convergence': 1e-05}})
+        couplingSettings = TightCouplingSettings({'globalFlux': {'parameter': 'keff', 'convergence': 1e-05}})
     """
 
     def __repr__(self):

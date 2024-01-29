@@ -27,14 +27,14 @@ armi.nuclearDataIO.xsCollection.XSCollection : object that gets created.
 
 Examples
 --------
-# creating a MicroscopicXSCollection by loading one from ISOTXS.
-microLib = armi.nuclearDataIO.ISOTXS('ISOTXS')
-micros = myLib.nuclides['U235AA'].micros
+    # creating a MicroscopicXSCollection by loading one from ISOTXS.
+    microLib = armi.nuclearDataIO.ISOTXS('ISOTXS')
+    micros = myLib.nuclides['U235AA'].micros
 
-# creating macroscopic XS:
-mc = MacroscopicCrossSectionCreator()
-macroCollection = mc.createMacrosFromMicros(microLib, block)
-blocksWithMacros = mc.createMacrosOnBlocklist(microLib, blocks)
+    # creating macroscopic XS:
+    mc = MacroscopicCrossSectionCreator()
+    macroCollection = mc.createMacrosFromMicros(microLib, block)
+    blocksWithMacros = mc.createMacrosOnBlocklist(microLib, blocks)
 
 """
 import numpy

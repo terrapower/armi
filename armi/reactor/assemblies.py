@@ -864,8 +864,8 @@ class Assembly(composites.Composite):
 
         Examples
         --------
-        for block, bottomZ in a.getBlocksAndZ(returnBottomZ=True):
-            print({0}'s bottom mesh point is {1}'.format(block, bottomZ))
+            for block, bottomZ in a.getBlocksAndZ(returnBottomZ=True):
+                print({0}'s bottom mesh point is {1}'.format(block, bottomZ))
         """
         if returnBottomZ and returnTopZ:
             raise ValueError("Both returnTopZ and returnBottomZ are set to `True`")
@@ -982,9 +982,9 @@ class Assembly(composites.Composite):
         Examples
         --------
         If the block structure looks like:
-         50.0 to 100.0 Block3
-         25.0 to 50.0  Block2
-         0.0 to 25.0   Block1
+        50.0 to 100.0 Block3
+        25.0 to 50.0  Block2
+        0.0 to 25.0   Block1
 
         Then,
 

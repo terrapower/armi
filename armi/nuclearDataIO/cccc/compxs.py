@@ -46,7 +46,6 @@ See Also
 
 Examples
 --------
-::
     >>> from armi.nuclearDataIO import compxs
     >>> lib = compxs.readBinary('COMPXS')
     >>> r0 = lib.regions[0]

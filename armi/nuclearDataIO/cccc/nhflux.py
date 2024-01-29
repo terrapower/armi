@@ -413,7 +413,7 @@ class NhfluxStream(cccc.StreamWithDataContainer):
 
         Examples
         --------
-        geodstCoordMap[NodalIndex] = geodstIndex
+            geodstCoordMap[NodalIndex] = geodstIndex
 
         See Also
         --------

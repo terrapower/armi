@@ -2585,10 +2585,10 @@ class Core(composites.Composite):
         --------
         Manual zones will be defined in a special string format, e.g.:
 
-        zoneDefinitions:
-            - ring-1: 001-001
-            - ring-2: 002-001, 002-002
-            - ring-3: 003-001, 003-002, 003-003
+        >>> zoneDefinitions:
+        >>>     - ring-1: 001-001
+        >>>     - ring-2: 002-001, 002-002
+        >>>     - ring-3: 003-001, 003-002, 003-003
 
         Notes
         -----
