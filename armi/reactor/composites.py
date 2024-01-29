@@ -3189,6 +3189,7 @@ class Composite(ArmiObject):
         if nuclides is None:
             nuclides = self.getNuclides()
 
+        # ruff: noqa: SIM110
         for nucName in nuclides:
             if isinstance(nuclideBases.byName[nucName], nuclideBases.LumpNuclideBase):
                 return True

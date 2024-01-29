@@ -116,10 +116,10 @@ class CrossSectionTable(collections.OrderedDict):
 
     def hasValues(self):
         """Determines if there are non-zero values in this cross section table."""
-        for nuclideCrossSectionSet in self.values():
-            if any(nuclideCrossSectionSet.values()):
-                return True
-        return False
+        return any(
+            any(nuclideCrossSectionSet.values())
+            for nuclideCrossSectionSet in self.values()
+        )
 
     def getXsecTable(
         self,
@@ -133,26 +133,25 @@ class CrossSectionTable(collections.OrderedDict):
             :id: I_ARMI_DEPL_TABLES1
             :implements: R_ARMI_DEPL_TABLES
 
-            Loops over the reaction rates stored as ``self`` to produce a string with
-            the cross sections for each nuclide in the block. Cross sections may be
-            populated by :py:meth:`~armi.physics.neutronics.isotopicDepletion.crossSectionTable.makeReactionRateTable`.
+            Loops over the reaction rates stored as ``self`` to produce a string with the cross
+            sections for each nuclide in the block. Cross sections may be populated by
+            :py:meth:`~armi.physics.neutronics.isotopicDepletion.crossSectionTable.makeReactionRateTable`
 
-            The string will have a header with the table's name formatted according
-            to ``headerFormat`` followed by rows for each unique nuclide/reaction
-            combination, where each line is formatted according to ``tableFormat``.
+            The string will have a header with the table's name formatted according to
+            ``headerFormat`` followed by rows for each unique nuclide/reaction combination, where
+            each line is formatted according to ``tableFormat``.
 
         Parameters
         ----------
         headerFormat: string (optional)
-            this is the format in which the elements of the header with be returned
-            -- i.e. if you use a .format() call with  the case name you'll return a
-            formatted list of string elements
+            This is the format in which the elements of the header with be returned -- i.e. if you
+            use a .format() call with the case name you'll return a formatted list of strings.
 
         tableFormat: string (optional)
-            this is the format in which the elements of the table with be returned
-            -- i.e. if you use a .format() call with mcnpId, nG, nF, n2n, n3n, nA,
-            and nP you'll get the format you want. If you use a .format() call with  the case name you'll return a
-            formatted list of string elements
+            This is the format in which the elements of the table with be returned -- i.e. if you
+            use a .format() call with mcnpId, nG, nF, n2n, n3n, nA, and nP you'll get the format you
+            want. If you use a .format() call with  the case name you'll return a formatted list of
+            string elements
 
         Results
         -------

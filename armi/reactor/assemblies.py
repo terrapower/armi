@@ -889,7 +889,9 @@ class Assembly(composites.Composite):
         return zip(blocks, zCoords)
 
     def hasContinuousCoolantChannel(self):
-        return all(b.containsAtLeastOneChildWithFlags(Flags.COOLANT) for b in self.getBlocks())
+        return all(
+            b.containsAtLeastOneChildWithFlags(Flags.COOLANT) for b in self.getBlocks()
+        )
 
     def getFirstBlock(self, typeSpec=None, exact=False):
         bs = self.getBlocks(typeSpec, exact=exact)
