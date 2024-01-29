@@ -84,7 +84,7 @@ def convertToSlice(x, increment=False):
 
     Examples
     --------
-    a = np.array([10, 11, 12, 13])
+    >>> a = np.array([10, 11, 12, 13])
 
     >>> convertToSlice(2)
     slice(2, 3, None)

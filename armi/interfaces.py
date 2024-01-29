@@ -21,9 +21,7 @@ Learn all about interfaces in :doc:`/developer/guide`
 See Also
 --------
 armi.operators : Schedule calls to various interfaces
-
 armi.plugins : Register various interfaces
-
 """
 import copy
 from typing import Union
@@ -362,7 +360,7 @@ class Interface:
 
         Examples
         --------
-        return {'neutronsPerFission',self.neutronsPerFission}
+        >>> return {'neutronsPerFission',self.neutronsPerFission}
         """
         return {}
 
