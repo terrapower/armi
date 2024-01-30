@@ -136,6 +136,7 @@ extensions = [
     "sphinxcontrib.plantuml",
     "sphinx_rtd_theme",  # needed here for loading jquery in sphinx 6
     "sphinxcontrib.jquery",  # see https://github.com/readthedocs/sphinx_rtd_theme/issues/1452
+    "sphinx_needs",
 ]
 
 # Our API should make sense without documenting private/special members.
