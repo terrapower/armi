@@ -16,18 +16,21 @@
 This module contains the basic composite pattern underlying the reactor package.
 
 This follows the principles of the `Composite Design Pattern
-<https://en.wikipedia.org/wiki/Composite_pattern>`_ to allow the construction of a
-part/whole hierarchy representing a physical nuclear reactor. The composite objects act
-somewhat like lists: they can be indexed, iterated over, appended, extended, inserted,
-etc. Each member of the hierarchy knows its children and its parent, so full access to
-the hierarchy is available from everywhere. This design was chosen because of the close
-analogy of the model to the physical nature of nuclear reactors.
+<https://en.wikipedia.org/wiki/Composite_pattern>`_ to allow the construction of a part/whole
+hierarchy representing a physical nuclear reactor. The composite objects act somewhat like lists:
+they can be indexed, iterated over, appended, extended, inserted, etc. Each member of the hierarchy
+knows its children and its parent, so full access to the hierarchy is available from everywhere.
+This design was chosen because of the close analogy of the model to the physical nature of nuclear
+reactors.
 
-.. warning:: Because each member of the hierarchy is linked to the entire tree,
-    it is often unsafe to save references to individual members; it can cause
-    large and unexpected memory inefficiencies.
+Warning
+-------
+Because each member of the hierarchy is linked to the entire tree, it is often unsafe to save
+references to individual members; it can cause large and unexpected memory inefficiencies.
 
-See Also: :doc:`/developer/index`.
+See Also
+--------
+:doc:`/developer/index`.
 """
 import collections
 import itertools
@@ -566,7 +569,6 @@ class ArmiObject(metaclass=CompositeModelType):
         ----------
         typeSpec : TypeSpec
             Requested type of the child
-
         """
         for c in self.getChildren(deep):
             if c.hasFlags(typeSpec, exact=False):
@@ -587,7 +589,6 @@ class ArmiObject(metaclass=CompositeModelType):
         --------
         self.doChildrenHaveFlags
         self.containsOnlyChildrenWithFlags
-
         """
         return any(self.doChildrenHaveFlags(typeSpec))
 
@@ -604,7 +605,6 @@ class ArmiObject(metaclass=CompositeModelType):
         --------
         self.doChildrenHaveFlags
         self.containsAtLeastOneChildWithFlags
-
         """
         return all(self.doChildrenHaveFlags(typeSpec))
 
