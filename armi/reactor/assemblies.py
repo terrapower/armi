@@ -271,7 +271,7 @@ class Assembly(composites.Composite):
             :implements: R_ARMI_ASSEM_DIMS
 
             Returns the area of the first block in the Assembly. If there are no
-            block in the Assembly, a warning is issued and a default area of 1.0
+            blocks in the Assembly, a warning is issued and a default area of 1.0
             is returned.
         """
         try:
