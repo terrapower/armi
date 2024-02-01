@@ -841,33 +841,31 @@ class FuelHandler:
     def dischargeSwap(self, incoming, outgoing):
         """Removes one assembly from the core and replace it with another assembly.
 
+        .. impl:: User-specified blocks can be left in place for the discharge swap.
+            :id: I_ARMI_SHUFFLE_STATIONARY1
+            :implements: R_ARMI_SHUFFLE_STATIONARY
+
+            Before assemblies are moved, the ``_transferStationaryBlocks`` class method is called to
+            check if there are any block types specified by the user as stationary via the
+            ``stationaryBlockFlags`` case setting. Using these flags, blocks are gathered from each
+            assembly which should remain stationary and checked to make sure that both assemblies
+            have the same number and same height of stationary blocks. If not, return an error.
+
+            If all checks pass, the :py:meth:`~armi.reactor.assemblies.Assembly.remove` and
+            :py:meth:`~armi.reactor.assemblies.Assembly.insert`` methods are used to swap the
+            stationary blocks between the two assemblies.
+
+            Once this process is complete, the actual assembly movement can take place. Through this
+            process, the stationary blocks from the outgoing assembly remain in the original core
+            position, while the stationary blocks from the incoming assembly are discharged with the
+            outgoing assembly.
+
         Parameters
         ----------
         incoming : :py:class:`Assembly <armi.reactor.assemblies.Assembly>`
             The assembly getting swapped into the core.
         outgoing : :py:class:`Assembly <armi.reactor.assemblies.Assembly>`
             The assembly getting discharged out the core.
-
-        .. impl:: User-specified blocks can be left in place for the discharge swap.
-            :id: I_ARMI_SHUFFLE_STATIONARY1
-            :implements: R_ARMI_SHUFFLE_STATIONARY
-
-            Before assemblies are moved,
-            the ``_transferStationaryBlocks`` class method is called to
-            check if there are any block types specified by the user as stationary
-            via the ``stationaryBlockFlags`` case setting. Using these flags, blocks
-            are gathered from each assembly which should remain stationary and
-            checked to make sure that both assemblies have the same number
-            and same height of stationary blocks. If not, return an error.
-
-            If all checks pass, the :py:meth:`~armi.reactor.assemblies.Assembly.remove`
-            and :py:meth:`~armi.reactor.assemblies.Assembly.insert``
-            methods are used to swap the stationary blocks between the two assemblies.
-
-            Once this process is complete, the actual assembly movement can take
-            place. Through this process, the stationary blocks from the outgoing
-            assembly remain in the original core position, while the stationary
-            blocks from the incoming assembly are discharged with the outgoing assembly.
 
         See Also
         --------
