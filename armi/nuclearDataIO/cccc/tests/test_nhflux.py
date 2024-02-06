@@ -222,8 +222,8 @@ class TestNhfluxVariantVarsrc(unittest.TestCase):
 
     def test_writeRead(self):
         """
-        Write out the data structure to file. Then read it back in and make sure it matches
-        the data currently in memory.
+        Write out the modified data structure to file. Then, we read it back in and make
+        sure it matches the data currently in memory.
         """
         filename = "VARSRC"
         with TemporaryDirectoryChanger():

@@ -253,8 +253,9 @@ class NhfluxStream(cccc.StreamWithDataContainer):
         # Read the hex ordering map between DIF3D nodal and DIF3D GEODST. Also read index
         # pointers to incoming partial currents on outer reactor surface (these don't
         # belong to any assembly). Incoming partial currents are non-zero due to flux
-        # extrapolation. This record is only required when nSurf is greater than 1 (it
-        # is equal to one for VARSRC files, which are a subset of NHFLUX files).
+        # extrapolation. This record is only required when nSurf is greater than 1. It
+        # is equal to 1 for VARSRC files, which are a subset of NHFLUX files; VARSRC files
+        # do not have a 2D record (or 4D or 5D records).
         if self._metadata["nSurf"] > 1:
             self._rwGeodstCoordMap2D()
 
