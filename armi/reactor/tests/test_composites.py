@@ -39,7 +39,9 @@ from armi.tests import ISOAA_PATH
 
 class MockBP:
     allNuclidesInProblem = set(nuclideBases.byName.keys())
+    """:meta hide-value:"""
     activeNuclides = allNuclidesInProblem
+    """:meta hide-value:"""
     inactiveNuclides = set()
     elementsToExpand = set()
     customIsotopics = {}
@@ -108,7 +110,13 @@ class TestCompositePattern(unittest.TestCase):
         container.add(nested)
         self.container = container
 
-    def test_Composite(self):
+    def test_composite(self):
+        """Test basic Composite things.
+
+        .. test:: Composites are part of a hierarchical model.
+            :id: T_ARMI_CMP0
+            :tests: R_ARMI_CMP
+        """
         container = self.container
 
         children = container.getChildren()
@@ -122,6 +130,12 @@ class TestCompositePattern(unittest.TestCase):
         self.assertIn(self.thirdGen, list(self.container.iterComponents()))
 
     def test_getChildren(self):
+        """Test the get children method.
+
+        .. test:: Composites are part of a hierarchical model.
+            :id: T_ARMI_CMP1
+            :tests: R_ARMI_CMP
+        """
         # There are 5 leaves and 1 composite in container. The composite has one leaf.
         firstGen = self.container.getChildren()
         self.assertEqual(len(firstGen), 6)
@@ -138,6 +152,18 @@ class TestCompositePattern(unittest.TestCase):
             deep=True, predicate=lambda o: o.p.type == "liner"
         )
         self.assertEqual(len(onlyLiner), 1)
+
+    def test_getName(self):
+        """Test the getName method.
+
+        .. test:: Composites names should be accessible.
+            :id: T_ARMI_CMP_GET_NAME
+            :tests: R_ARMI_CMP_GET_NAME
+        """
+        self.assertEqual(self.secondGen.getName(), "liner")
+        self.assertEqual(self.thirdGen.getName(), "pin 77")
+        self.assertEqual(self.secondGen.getName(), "liner")
+        self.assertEqual(self.container.getName(), "inner test fuel")
 
     def test_sort(self):
         # in this case, the children should start sorted
@@ -216,6 +242,12 @@ class TestCompositePattern(unittest.TestCase):
         )
 
     def test_hasFlags(self):
+        """Ensure flags are queryable.
+
+        .. test:: Flags can be queried.
+            :id: T_ARMI_CMP_FLAG
+            :tests: R_ARMI_CMP_FLAG
+        """
         self.container.setType("fuel")
         self.assertFalse(self.container.hasFlags(Flags.SHIELD | Flags.FUEL, exact=True))
         self.assertTrue(self.container.hasFlags(Flags.FUEL))
@@ -514,6 +546,12 @@ class TestCompositeTree(unittest.TestCase):
         self.assertAlmostEqual(cur, ref, places=places)
 
     def test_getMaxParam(self):
+        """Test getMaxParam().
+
+        .. test:: Composites have parameter collections.
+            :id: T_ARMI_CMP_PARAMS0
+            :tests: R_ARMI_CMP_PARAMS
+        """
         for ci, c in enumerate(self.Block):
             if isinstance(c, basicShapes.Circle):
                 c.p.id = ci
@@ -524,6 +562,12 @@ class TestCompositeTree(unittest.TestCase):
         self.assertIs(comp, lastSeen)
 
     def test_getMinParam(self):
+        """Test getMinParam().
+
+        .. test:: Composites have parameter collections.
+            :id: T_ARMI_CMP_PARAMS1
+            :tests: R_ARMI_CMP_PARAMS
+        """
         for ci, c in reversed(list(enumerate(self.Block))):
             if isinstance(c, basicShapes.Circle):
                 c.p.id = ci
@@ -606,6 +650,12 @@ class TestMiscMethods(unittest.TestCase):
         self.obj = loadTestBlock()
 
     def test_setMass(self):
+        """Test setting and retrieving mass.
+
+        .. test:: Mass of a composite is retrievable.
+            :id: T_ARMI_CMP_GET_MASS
+            :tests: R_ARMI_CMP_GET_MASS
+        """
         masses = {"U235": 5.0, "U238": 3.0}
         self.obj.setMasses(masses)
         self.assertAlmostEqual(self.obj.getMass("U235"), 5.0)
@@ -621,6 +671,90 @@ class TestMiscMethods(unittest.TestCase):
         group.add(loadTestBlock())
         group.setMass("U235", 5)
         self.assertAlmostEqual(group.getMass("U235"), 5)
+
+        # ad a second block, and confirm it works
+        group.add(loadTestBlock())
+        self.assertGreater(group.getMass("U235"), 5)
+        self.assertAlmostEqual(group.getMass("U235"), 1364.28376185)
+
+    def test_getNumberDensities(self):
+        """Get number densities from composite.
+
+        .. test:: Number density of composite is retrievable.
+            :id: T_ARMI_CMP_GET_NDENS0
+            :tests: R_ARMI_CMP_GET_NDENS
+        """
+        # verify the number densities from the composite
+        ndens = self.obj.getNumberDensities()
+        self.assertAlmostEqual(0.0001096, ndens["SI"], 7)
+        self.assertAlmostEqual(0.0000368, ndens["W"], 7)
+
+        ndens = self.obj.getNumberDensity("SI")
+        self.assertAlmostEqual(0.0001096, ndens, 7)
+
+        # sum nuc densities from children components
+        totalVolume = self.obj.getVolume()
+        childDensities = {}
+        for o in self.obj.getChildren():
+            m = o.getVolume()
+            d = o.getNumberDensities()
+            for nuc, val in d.items():
+                if nuc not in childDensities:
+                    childDensities[nuc] = val * (m / totalVolume)
+                else:
+                    childDensities[nuc] += val * (m / totalVolume)
+
+        # verify the children match this composite
+        for nuc in ["FE", "SI"]:
+            self.assertAlmostEqual(
+                self.obj.getNumberDensity(nuc), childDensities[nuc], 4, msg=nuc
+            )
+
+    def test_getNumberDensitiesWithExpandedFissionProducts(self):
+        """Get number densities from composite.
+
+        .. test:: Get number densities.
+            :id: T_ARMI_CMP_NUC
+            :tests: R_ARMI_CMP_NUC
+        """
+        # verify the number densities from the composite
+        ndens = self.obj.getNumberDensities(expandFissionProducts=True)
+        self.assertAlmostEqual(0.0001096, ndens["SI"], 7)
+        self.assertAlmostEqual(0.0000368, ndens["W"], 7)
+
+        ndens = self.obj.getNumberDensity("SI")
+        self.assertAlmostEqual(0.0001096, ndens, 7)
+
+        # set the lumped fission product mapping
+        fpd = getDummyLFPFile()
+        lfps = fpd.createLFPsFromFile()
+        self.obj.setLumpedFissionProducts(lfps)
+
+        # sum nuc densities from children components
+        totalVolume = self.obj.getVolume()
+        childDensities = {}
+        for o in self.obj.getChildren():
+            # get the number densities with and without fission products
+            d0 = o.getNumberDensities(expandFissionProducts=False)
+            d = o.getNumberDensities(expandFissionProducts=True)
+
+            # prove that the expanded fission products have more isotopes
+            if len(d0) > 0:
+                self.assertGreater(len(d), len(d0))
+
+            # sum the child nuclide densites (weighted by mass fraction)
+            m = o.getVolume()
+            for nuc, val in d.items():
+                if nuc not in childDensities:
+                    childDensities[nuc] = val * (m / totalVolume)
+                else:
+                    childDensities[nuc] += val * (m / totalVolume)
+
+        # verify the children match this composite
+        for nuc in ["FE", "SI"]:
+            self.assertAlmostEqual(
+                self.obj.getNumberDensity(nuc), childDensities[nuc], 4, msg=nuc
+            )
 
     def test_dimensionReport(self):
         report = self.obj.setComponentDimensionsReport()

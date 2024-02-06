@@ -49,6 +49,7 @@ class TestFuelHandlerMgmtTools(FuelHandlerTestHelper):
         self.assertNotEqual(b.getRotationNum(), rotNum)
 
     def test_simpleAssemblyRotation(self):
+        """Test rotating assemblies 120 degrees."""
         fh = fuelHandlers.FuelHandler(self.o)
         newSettings = {CONF_ASSEM_ROTATION_STATIONARY: True}
         self.o.cs = self.o.cs.modified(newSettings=newSettings)

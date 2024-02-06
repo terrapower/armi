@@ -1,6 +1,6 @@
-==========================================
+******************************************
 Building input files for a thermal reactor
-==========================================
+******************************************
 
 In the :doc:`previous tutorial </tutorials/walkthrough_inputs>`,
 we introduced the basic input files and made a full
@@ -222,7 +222,7 @@ This should show a simple representation of the block.
 .. figure:: https://terrapower.github.io/armi/_static/c5g7-mox.png
    :figclass: align-center
 
-   **Figure 1.** A representation of a C5G7 fuel assembly. 
+   A representation of a C5G7 fuel assembly.
 
 
 Here are the full files used in this example:

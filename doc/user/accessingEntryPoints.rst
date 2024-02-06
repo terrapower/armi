@@ -1,9 +1,9 @@
+**********************
 Accessing Entry Points 
-======================
-
+**********************
 
 Reports Entry Point
--------------------
+===================
 
 There are two ways to access the reports entry point in ARMI.
 

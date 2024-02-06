@@ -36,6 +36,7 @@ from armi.utils import (
     getPreviousTimeNode,
     getCumulativeNodeNum,
     hasBurnup,
+    codeTiming,
 )
 
 
@@ -137,15 +138,7 @@ class TestGeneralUtils(unittest.TestCase):
             utils.plotMatrix(matrix, fname, xticks=xtick, yticks=ytick)
 
     def test_classesInHierarchy(self):
-        """Tests the classesInHierarchy utility.
-
-        .. test:: Tests that the Reactor is stored heirarchically
-           :id: T_REACTOR_HIERARCHY_0
-           :links: R_REACTOR_HIERARCHY
-
-           This test shows that the Blocks and Assemblies are stored
-           heirarchically inside the Core, which is inside the Reactor object.
-        """
+        """Tests the classesInHierarchy utility."""
         # load the test reactor
         _o, r = loadTestReactor()
 
@@ -161,6 +154,17 @@ class TestGeneralUtils(unittest.TestCase):
         # further validate the Reactor heirarchy is in place
         self.assertGreater(len(r.core.getAssemblies()), 50)
         self.assertGreater(len(r.core.getBlocks()), 200)
+
+    def test_codeTiming(self):
+        """Test that codeTiming preserves function attributes when it wraps a function."""
+
+        @codeTiming.timed
+        def testFunc():
+            """Test function docstring."""
+            pass
+
+        self.assertEqual(getattr(testFunc, "__doc__"), "Test function docstring.")
+        self.assertEqual(getattr(testFunc, "__name__"), "testFunc")
 
 
 class CyclesSettingsTests(unittest.TestCase):

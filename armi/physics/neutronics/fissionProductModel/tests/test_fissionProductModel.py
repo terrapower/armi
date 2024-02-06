@@ -126,12 +126,26 @@ class TestFissionProductModelExplicitMC2Library(unittest.TestCase):
             self.assertIn(nb.name, nuclideList)
 
     def test_nuclidesInModelAllDepletableBlocks(self):
-        """Test that the depletable blocks contain all the MC2-3 modeled nuclides."""
+        """Test that the depletable blocks contain all the MC2-3 modeled nuclides.
+
+        .. test:: Determine if any component is depletable.
+            :id: T_ARMI_DEPL_DEPLETABLE
+            :tests: R_ARMI_DEPL_DEPLETABLE
+        """
         # Check that there are some fuel and control blocks in the core model.
         fuelBlocks = self.r.core.getBlocks(Flags.FUEL)
         controlBlocks = self.r.core.getBlocks(Flags.CONTROL)
         self.assertGreater(len(fuelBlocks), 0)
         self.assertGreater(len(controlBlocks), 0)
+
+        # prove that the control blocks are not depletable
+        for b in controlBlocks:
+            self.assertFalse(isDepletable(b))
+
+        # as a corrolary of the above, prove that no components in the control blocks are depletable
+        for b in controlBlocks:
+            for c in b.getComponents():
+                self.assertFalse(isDepletable(c))
 
         # Force the the first component in the control blocks
         # to be labeled as depletable for checking that explicit
@@ -139,6 +153,19 @@ class TestFissionProductModelExplicitMC2Library(unittest.TestCase):
         for b in controlBlocks:
             c = b.getComponents()[0]
             c.p.flags |= Flags.DEPLETABLE
+
+        # now each control block should be depletable
+        for b in controlBlocks:
+            self.assertTrue(isDepletable(b))
+
+        # as a corrolary of the above, prove that only the first component in each control block is depletable
+        for b in controlBlocks:
+            comps = list(b.getComponents())
+            for i, c in enumerate(comps):
+                if i == 0:
+                    self.assertTrue(isDepletable(c))
+                else:
+                    self.assertFalse(isDepletable(c))
 
         # Run the ``interactBOL`` here to trigger setting up the fission
         # products in the reactor data model.

@@ -60,6 +60,7 @@ class NeutronicsPlugin(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineParameters():
+        """Define parameters for the plugin."""
         from armi.physics.neutronics import parameters as neutronicsParameters
 
         return neutronicsParameters.getNeutronicsParameterDefinitions()
@@ -67,6 +68,7 @@ class NeutronicsPlugin(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineEntryPoints():
+        """Define entry points for the plugin."""
         from armi.physics.neutronics import diffIsotxs
 
         entryPoints = [diffIsotxs.CompareIsotxsLibraries]
@@ -76,6 +78,7 @@ class NeutronicsPlugin(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineSettings():
+        """Define settings for the plugin."""
         from armi.physics.neutronics import settings as neutronicsSettings
         from armi.physics.neutronics import crossSectionSettings
         from armi.physics.neutronics.fissionProductModel import (
@@ -108,6 +111,7 @@ class NeutronicsPlugin(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def onProcessCoreLoading(core, cs, dbLoad):
+        """Called whenever a Core object is newly built."""
         applyEffectiveDelayedNeutronFractionToCore(core, cs)
 
     @staticmethod

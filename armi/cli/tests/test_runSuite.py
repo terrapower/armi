@@ -15,6 +15,7 @@
 import io
 import sys
 import unittest
+from unittest.mock import patch
 
 from armi import meta
 from armi.cli import ArmiCLI
@@ -22,7 +23,12 @@ from armi.cli import ArmiCLI
 
 class TestRunSuiteSuite(unittest.TestCase):
     def test_listCommand(self):
-        """Ensure run-suite entry point is registered."""
+        """Ensure run-suite entry point is registered.
+
+        .. test:: The ARMI CLI can be correctly initialized.
+            :id: T_ARMI_CLI_CS0
+            :tests: R_ARMI_CLI_CS
+        """
         acli = ArmiCLI()
 
         origout = sys.stdout
@@ -36,7 +42,12 @@ class TestRunSuiteSuite(unittest.TestCase):
         self.assertIn("run-suite", out.getvalue())
 
     def test_showVersion(self):
-        """Test the ArmiCLI.showVersion method."""
+        """Test the ArmiCLI.showVersion method.
+
+        .. test:: The ARMI CLI's basic "--version" functionality works.
+            :id: T_ARMI_CLI_CS1
+            :tests: R_ARMI_CLI_CS
+        """
         origout = sys.stdout
         try:
             out = io.StringIO()
@@ -47,3 +58,17 @@ class TestRunSuiteSuite(unittest.TestCase):
 
         self.assertIn("armi", out.getvalue())
         self.assertIn(meta.__version__, out.getvalue())
+
+    @patch("armi.cli.ArmiCLI.executeCommand")
+    def test_run(self, mockExeCmd):
+        """Test the ArmiCLI.run method.
+
+        .. test:: The ARMI CLI's import run() method works.
+            :id: T_ARMI_CLI_CS2
+            :tests: R_ARMI_CLI_CS
+        """
+        correct = 0
+        acli = ArmiCLI()
+        mockExeCmd.return_value = correct
+        ret = acli.run()
+        self.assertEqual(ret, correct)

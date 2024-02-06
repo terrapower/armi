@@ -1,6 +1,7 @@
 **************
 Profiling ARMI
 **************
+
 Python in slow, so it's important to profile code to keep it running reasonbly quickly. Using the 
 basic `Python profiler <https://docs.python.org/3/library/profile.html>`_ is the best way to get started. 
 Once you have a ``.stats`` file, however, we highly recommend using a visualizer.  
@@ -18,4 +19,4 @@ This produces images like this:
 .. figure:: /.static/buildMacros.png
     :align: center
 
-    **Figure 1.** An example of the profiler output rendered to a png.
+    An example of the profiler output rendered to a png.

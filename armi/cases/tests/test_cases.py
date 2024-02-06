@@ -199,6 +199,17 @@ class TestArmiCase(unittest.TestCase):
             self.assertTrue(isinstance(prof, cProfile.Profile))
 
     def test_run(self):
+        """
+        Test running a case.
+
+        .. test:: There is a generic mechanism to allow simulation runs.
+            :id: T_ARMI_CASE
+            :tests: R_ARMI_CASE
+
+        .. test:: Test case settings object is created, settings can be edited, and case can run.
+            :id: T_ARMI_SETTING
+            :tests: R_ARMI_SETTING
+        """
         with directoryChangers.TemporaryDirectoryChanger():
             cs = settings.Settings(ARMI_RUN_PATH)
             newSettings = {
@@ -283,6 +294,17 @@ class TestCaseSuiteDependencies(unittest.TestCase):
         """If you pass an invalid path, the clone can't happen, but it won't do any damage either."""
         with self.assertRaises(RuntimeError):
             _clone = self.suite.clone("test_clone")
+
+    def test_checkInputs(self):
+        """
+        Test the checkInputs() method on a couple of cases.
+
+        .. test:: Check the ARMI inputs for consistency and validity.
+            :id: T_ARMI_CASE_CHECK
+            :tests: R_ARMI_CASE_CHECK
+        """
+        self.c1.checkInputs()
+        self.c2.checkInputs()
 
     def test_dependenciesWithObscurePaths(self):
         """
@@ -393,6 +415,13 @@ class TestCaseSuiteDependencies(unittest.TestCase):
         self.assertIn(self.c1, self.c2.dependencies)
 
     def test_explicitDependency(self):
+        """
+        Test dependencies for case suites.
+
+        .. test:: Dependence allows for one case to start after the completion of another.
+            :id: T_ARMI_CASE_SUITE
+            :tests: R_ARMI_CASE_SUITE
+        """
         self.c1.addExplicitDependency(self.c2)
 
         self.assertIn(self.c2, self.c1.dependencies)
@@ -447,10 +476,26 @@ class MultiFilesInterfaces(interfaces.Interface):
         return {settingName: cs[settingName]}
 
 
+class TestPluginWithDuplicateSetting(plugins.ArmiPlugin):
+    @staticmethod
+    @plugins.HOOKIMPL
+    def defineSettings():
+        """Define a duplicate setting."""
+        return [
+            settings.setting.Setting(
+                "power",
+                default=123,
+                label="power",
+                description="duplicate power",
+            )
+        ]
+
+
 class TestPluginForCopyInterfacesMultipleFiles(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineSettings():
+        """Define settings for the plugin."""
         return [
             settings.setting.Setting(
                 "multipleFilesSetting",
@@ -463,6 +508,7 @@ class TestPluginForCopyInterfacesMultipleFiles(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def exposeInterfaces(cs):
+        """A plugin is mostly just a vehicle to add Interfaces to an Application."""
         return [
             interfaces.InterfaceInfo(
                 interfaces.STACK_ORDER.PREPROCESSING,
@@ -548,6 +594,21 @@ class TestCopyInterfaceInputs(unittest.TestCase):
             )
             self.assertFalse(os.path.exists(newSettings[testSetting]))
             self.assertEqual(newSettings[testSetting], fakeShuffle)
+
+    def test_failOnDuplicateSetting(self):
+        """
+        That that if a plugin attempts to add a duplicate setting, it raises an error.
+
+        .. test:: Plugins cannot register duplicate settings.
+            :id: T_ARMI_SETTINGS_UNIQUE
+            :tests: R_ARMI_SETTINGS_UNIQUE
+        """
+        # register the new Plugin
+        app = getApp()
+        app.pluginManager.register(TestPluginWithDuplicateSetting)
+
+        with self.assertRaises(ValueError):
+            _ = settings.Settings(ARMI_RUN_PATH)
 
     def test_copyInterfaceInputs_multipleFiles(self):
         # register the new Plugin

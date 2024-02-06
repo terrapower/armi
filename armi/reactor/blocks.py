@@ -157,7 +157,7 @@ class Block(composites.Composite):
 
         return b
 
-    def _createHomogenizedCopy(self, pinSpatialLocators=False):
+    def createHomogenizedCopy(self, pinSpatialLocators=False):
         """
         Create a copy of a block.
 
@@ -581,7 +581,23 @@ class Block(composites.Composite):
         self.completeInitialLoading()
 
     def getLocation(self):
-        """Return a string representation of the location."""
+        """Return a string representation of the location.
+
+        .. impl:: Location of a block is retrievable.
+            :id: I_ARMI_BLOCK_POSI0
+            :implements: R_ARMI_BLOCK_POSI
+
+            If the block does not have its ``core`` attribute set, if the block's
+            parent does not have a ``spatialGrid`` attribute, or if the block
+            does not have its location defined by its ``spatialLocator`` attribute,
+            return a string indicating that it is outside of the core.
+
+            Otherwise, use the :py:class:`~armi.reactor.grids.Grid.getLabel` static
+            method to convert the block's indices into a string like "XXX-YYY-ZZZ".
+            For hexagonal geometry, "XXX" is the zero-padded hexagonal core ring,
+            "YYY" is the zero-padded position in that ring, and "ZZZ" is the zero-padded
+            block axial index from the bottom of the core.
+        """
         if self.core and self.parent.spatialGrid and self.spatialLocator:
             return self.core.spatialGrid.getLabel(
                 self.spatialLocator.getCompleteIndices()
@@ -590,12 +606,26 @@ class Block(composites.Composite):
             return "ExCore"
 
     def coords(self, rotationDegreesCCW=0.0):
+        """
+        Returns the coordinates of the block.
+
+        .. impl:: Coordinates of a block are queryable.
+            :id: I_ARMI_BLOCK_POSI1
+            :implements: R_ARMI_BLOCK_POSI
+
+            Calls to the :py:meth:`~armi.reactor.grids.locations.IndexLocation.getGlobalCoordinates`
+            method of the block's ``spatialLocator`` attribute, which recursively
+            calls itself on all parents of the block to get the coordinates of the
+            block's centroid in 3D cartesian space.
+
+            If ``rotationDegreesCCW`` is non-zero, an error is raised.
+        """
         if rotationDegreesCCW:
             raise NotImplementedError("Cannot get coordinates with rotation.")
         return self.spatialLocator.getGlobalCoordinates()
 
     def setBuLimitInfo(self):
-        r"""Sets burnup limit based on igniter, feed, etc."""
+        """Sets burnup limit based on igniter, feed, etc."""
         if self.p.buRate == 0:
             # might be cycle 1 or a non-burning block
             self.p.timeToLimit = 0.0
@@ -670,6 +700,16 @@ class Block(composites.Composite):
         """
         Return the volume of a block.
 
+        .. impl:: Volume of block is retrievable.
+            :id: I_ARMI_BLOCK_DIMS0
+            :implements: R_ARMI_BLOCK_DIMS
+
+            Loops over all the components in the block, calling
+            :py:meth:`~armi.reactor.components.component.Component.getVolume` on
+            each and summing the result. The summed value is then divided by
+            the symmetry factor of the block to account for reduced volumes of
+            blocks in certain symmetric representations.
+
         Returns
         -------
         volume : float
@@ -719,10 +759,9 @@ class Block(composites.Composite):
 
         Returns
         -------
-             mass : float
+        mass : float
             Mass difference in grams. If you subtract mass, mass will be negative.
             If returnMass is False (default), this will always be zero.
-
         """
         self._updateDetailedNdens(frac, adjustList)
 
@@ -1066,7 +1105,24 @@ class Block(composites.Composite):
         return sortedComponents
 
     def getNumPins(self):
-        """Return the number of pins in this block."""
+        """Return the number of pins in this block.
+
+        .. impl:: Get the number of pins in a block.
+            :id: I_ARMI_BLOCK_NPINS
+            :implements: R_ARMI_BLOCK_NPINS
+
+            Uses some simple criteria to infer the number of pins in the block.
+
+            For every flag in the module list :py:data:`~armi.reactor.blocks.PIN_COMPONENTS`,
+            loop over all components of that type in the block. If the component
+            is an instance of :py:class:`~armi.reactor.components.basicShapes.Circle`,
+            add its multiplicity to a list, and sum that list over all components
+            with each given flag.
+
+            After looping over all possibilities, return the maximum value returned
+            from the process above, or if no compatible components were found,
+            return zero.
+        """
         nPins = [
             sum(
                 [
@@ -1219,6 +1275,21 @@ class Block(composites.Composite):
         """
         Return the center-to-center hex pitch of this block.
 
+        .. impl:: Pitch of block is retrievable.
+            :id: I_ARMI_BLOCK_DIMS1
+            :implements: R_ARMI_BLOCK_DIMS
+
+            Uses the block's ``_pitchDefiningComponent`` to identify the component
+            in the block that defines the pitch. Then uses the
+            :py:meth:`~armi.reactor.components.component.Component.getPitchData`
+            method of that component to return the pitch for the block, accounting
+            for the component's current temperature.
+
+            The ``_pitchDefiningComponent`` attribute can be set by
+            :py:meth:`~armi.reactor.blocks.Block.setPitch`, but is typically
+            set via a calls to :py:meth:`~armi.reactor.blocks.Block._updatePitchComponent`
+            as components are added to the block with :py:meth:`~armi.reactor.blocks.Block.add`.
+
         Parameters
         ----------
         returnComp : bool, optional
@@ -1243,7 +1314,6 @@ class Block(composites.Composite):
         See Also
         --------
         setPitch : sets pitch
-
         """
         c, _p = self._pitchDefiningComponent
         if c is None:
@@ -1530,13 +1600,25 @@ class Block(composites.Composite):
 
         Parameters
         ----------
-        rad - float
-            number (in radians) specifying the angle of counter clockwise rotation
+        rad: float
+            Number (in radians) specifying the angle of counter clockwise rotation.
         """
         raise NotImplementedError
 
     def setAxialExpTargetComp(self, targetComponent):
         """Sets the targetComponent for the axial expansion changer.
+
+        .. impl:: Set the target axial expansion components on a given block.
+            :id: I_ARMI_MANUAL_TARG_COMP
+            :implements: R_ARMI_MANUAL_TARG_COMP
+
+            Sets the ``axialExpTargetComponent`` parameter on the block to the name
+            of the Component which is passed in. This is then used by the
+            :py:class:`~armi.reactor.converters.axialExpansionChanger.AxialExpansionChanger`
+            class during axial expansion.
+
+            This method is typically called from within :py:meth:`~armi.reactor.blueprints.blockBlueprint.BlockBlueprint.construct`
+            during the process of building a Block from the blueprints.
 
         Parameter
         ---------
@@ -1577,6 +1659,18 @@ class Block(composites.Composite):
 
 
 class HexBlock(Block):
+    """
+    Defines a HexBlock.
+
+    .. impl:: ARMI has the ability to create hex shaped blocks.
+        :id: I_ARMI_BLOCK_HEX
+        :implements: R_ARMI_BLOCK_HEX
+
+        This class defines hexagonal-shaped Blocks. It inherits functionality from the parent
+        class, Block, and defines hexagonal-specific methods including, but not limited to,
+        querying pin pitch, pin linear power densities, hydraulic diameter, and retrieving
+        inner and outer pitch.
+    """
 
     PITCH_COMPONENT_TYPE: ClassVar[_PitchDefiningComponent] = (components.Hexagon,)
 
@@ -1584,6 +1678,23 @@ class HexBlock(Block):
         Block.__init__(self, name, height)
 
     def coords(self, rotationDegreesCCW=0.0):
+        """
+        Returns the coordinates of the block.
+
+        .. impl:: Coordinates of a block are queryable.
+            :id: I_ARMI_BLOCK_POSI2
+            :implements: R_ARMI_BLOCK_POSI
+
+            Calls to the :py:meth:`~armi.reactor.grids.locations.IndexLocation.getGlobalCoordinates`
+            method of the block's ``spatialLocator`` attribute, which recursively
+            calls itself on all parents of the block to get the coordinates of the
+            block's centroid in 3D cartesian space.
+
+            Will additionally adjust the x and y coordinates based on the block
+            parameters ``displacementX`` and ``displacementY``.
+
+            Note that the ``rotationDegreesCCW`` argument is unused.
+        """
         x, y, _z = self.spatialLocator.getGlobalCoordinates()
         x += self.p.displacementX * 100.0
         y += self.p.displacementY * 100.0
@@ -1592,9 +1703,22 @@ class HexBlock(Block):
             round(y, units.FLOAT_DIMENSION_DECIMALS),
         )
 
-    def _createHomogenizedCopy(self, pinSpatialLocators=False):
+    def createHomogenizedCopy(self, pinSpatialLocators=False):
         """
         Create a new homogenized copy of a block that is less expensive than a full deepcopy.
+
+        .. impl:: Block compositions can be homogenized.
+            :id: I_ARMI_BLOCK_HOMOG
+            :implements: R_ARMI_BLOCK_HOMOG
+
+            This method creates and returns a homogenized representation of itself in the form of a new Block.
+            The homogenization occurs in the following manner. A single Hexagon Component is created
+            and added to the new Block. This Hexagon Component is given the
+            :py:class:`armi.materials.mixture._Mixture` material and a volume averaged temperature
+            (``getAverageTempInC``). The number densities of the original Block are also stored on
+            this new Component (:need:`I_ARMI_CMP_GET_NDENS`). Several parameters from the original block
+            are copied onto the homogenized block (e.g., macros, lumped fission products, burnup group,
+            number of pins, and spatial grid).
 
         Notes
         -----
@@ -1619,6 +1743,12 @@ class HexBlock(Block):
         this copy operation.
 
         .. note: If you make a new block, you must add it to an assembly and a reactor.
+
+        Returns
+        -------
+        b
+            A homogenized block containing a single Hexagon Component that contains an
+            average temperature and the number densities from the original block.
 
         See Also
         --------
@@ -1674,21 +1804,55 @@ class HexBlock(Block):
         return b
 
     def getMaxArea(self):
-        """Compute the max area of this block if it was totally full."""
+        """
+        Compute the max area of this block if it was totally full.
+
+        .. impl:: Area of block is retrievable.
+            :id: I_ARMI_BLOCK_DIMS2
+            :implements: R_ARMI_BLOCK_DIMS
+
+            This method first retrieves the pitch of the hexagonal Block
+            (:need:`I_ARMI_UTIL_HEXAGON0`) and then leverages the
+            area calculation via :need:`I_ARMI_UTIL_HEXAGON0`.
+
+        """
         pitch = self.getPitch()
         if not pitch:
             return 0.0
         return hexagon.area(pitch)
 
     def getDuctIP(self):
+        """
+        Returns the duct IP dimension.
+
+        .. impl:: IP dimension is retrievable.
+            :id: I_ARMI_BLOCK_DIMS3
+            :implements: R_ARMI_BLOCK_DIMS
+
+            This method retrieves the duct Component and quieries
+            it's inner pitch directly. If the duct is missing or if there
+            are multiple duct Components, an error will be raised.
+        """
         duct = self.getComponent(Flags.DUCT, exact=True)
         return duct.getDimension("ip")
 
     def getDuctOP(self):
+        """
+        Returns the duct OP dimension.
+
+        .. impl:: OP dimension is retrievable.
+            :id: I_ARMI_BLOCK_DIMS4
+            :implements: R_ARMI_BLOCK_DIMS
+
+            This method retrieves the duct Component and quieries
+            its outer pitch directly. If the duct is missing or if there
+            are multiple duct Components, an error will be raised.
+        """
         duct = self.getComponent(Flags.DUCT, exact=True)
         return duct.getDimension("op")
 
     def initializePinLocations(self):
+        """Initialize pin locations."""
         nPins = self.getNumPins()
         self.p.pinLocation = list(range(1, nPins + 1))
 
@@ -1885,7 +2049,7 @@ class HexBlock(Block):
 
         Examples
         --------
-        rotateIndexLookup[i_after_rotation-1] = i_before_rotation-1
+            rotateIndexLookup[i_after_rotation-1] = i_before_rotation-1
         """
         if not 0 <= rotNum <= 5:
             raise ValueError(
@@ -1983,6 +2147,18 @@ class HexBlock(Block):
     def getPinToDuctGap(self, cold=False):
         """
         Returns the distance in cm between the outer most pin and the duct in a block.
+
+        .. impl:: Pin to duct gap of block is retrievable.
+            :id: I_ARMI_BLOCK_DIMS5
+            :implements: R_ARMI_BLOCK_DIMS
+
+            Requires that the outer most duct be Hexagonal and wire and clad Components
+            be present. The flat-to-flat distance between the radial exterior of opposing
+            pins in the outermost ring is computed by computing the distance between
+            pin centers (``getPinCenterFlatToFlat``) and adding the outer diameter of
+            the clad Component and the outer diameter of the wire Component twice. The
+            total margin between the inner pitch of the duct Component and the wire is then
+            computed. The pin to duct gap is then half this distance.
 
         Parameters
         ----------
@@ -2164,6 +2340,15 @@ class HexBlock(Block):
         Assumes that the pin pitch is defined entirely by contacting cladding tubes
         and wire wraps. Grid spacers not yet supported.
 
+        .. impl:: Pin pitch within block is retrievable.
+            :id: I_ARMI_BLOCK_DIMS6
+            :implements: R_ARMI_BLOCK_DIMS
+
+            This implementation requires that clad and wire Components are present.
+            If not, an error is raised. If present, the pin pitch is calculated
+            as the sum of the outer diameter of the clad and outer diameter of
+            the wire.
+
         Parameters
         ----------
         cold : boolean
@@ -2195,7 +2380,42 @@ class HexBlock(Block):
             )
 
     def getWettedPerimeter(self):
-        """Return the total wetted perimeter of the block in cm."""
+        r"""Return the total wetted perimeter of the block in cm.
+
+        .. impl:: Wetted perimeter of block is retrievable.
+            :id: I_ARMI_BLOCK_DIMS7
+            :implements: R_ARMI_BLOCK_DIMS
+
+            This implementation computes wetted perimeters for specific Components, as specified
+            by their Flags (:need:`R_ARMI_FLAG_DEFINE`). Hollow hexagons and circular pin Components
+            are supported. The latter supports both instances where the exterior is wetted
+            (e.g., clad, wire) as well as when the interior and exterior are wetted (hollow circle).
+
+            Hollow hexagons are calculated via,
+
+            .. math::
+
+                \frac{6 \times \text{ip}}{\sqrt{3}},
+
+            where :math:`\text{ip}` is the inner pitch of the hollow hexagon. Circular pin Components
+            where the exterior is wetted is calculated via,
+
+            .. math::
+
+                N \pi \left( \text{OD}_c + \text{OD}_w \right),
+
+            where :math:`N` is the total number of pins, :math:`\text{OD}_c` is the outer diameter
+            of the clad, and :math:`\text{OD}_w` is the outer diameter of the wire, respectively.
+            When both the interior and exterior are wetted, the wetted perimeter is calculated as
+
+            .. math::
+
+                \pi \left( \text{OD} + \text{ID} \right),
+
+            where :math:`\text{OD}` and :math:`\text{ID}` are the outer and inner diameters of the pin
+            Component, respectively.
+
+        """
         # flags pertaining to hexagon components where the interior of the hexagon is wetted
         wettedHollowHexagonComponentFlags = (
             Flags.DUCT,
@@ -2268,11 +2488,19 @@ class HexBlock(Block):
         )
 
     def getFlowArea(self):
-        """Return the total flowing coolant area of the block in cm^2."""
+        """Return the total flowing coolant area of the block in cm^2.
+
+        .. impl:: Flow area of block is retrievable.
+            :id: I_ARMI_BLOCK_DIMS8
+            :implements: R_ARMI_BLOCK_DIMS
+
+            Retrieving the flow area requires that there be a single coolant Component.
+            If available, the area is calculated (:need:`I_ARMI_COMP_VOL0`).
+        """
         return self.getComponent(Flags.COOLANT, exact=True).getArea()
 
     def getHydraulicDiameter(self):
-        """
+        r"""
         Return the hydraulic diameter in this block in cm.
 
         Hydraulic diameter is 4A/P where A is the flow area and P is the wetted perimeter.
@@ -2280,11 +2508,18 @@ class HexBlock(Block):
         inside of the duct. The flow area is the inner area of the duct minus the area of the
         pins and the wire.
 
-        To convert the inner hex pitch into a perimeter, first convert to side, then
-        multiply by 6.
+        .. impl:: Hydraulic diameter of block is retrievable.
+            :id: I_ARMI_BLOCK_DIMS9
+            :implements: R_ARMI_BLOCK_DIMS
 
-        p = sqrt(3)*s
-        l = 6*p/sqrt(3)
+            The hydraulic diamter is calculated via
+
+            .. math::
+
+                4\frac{A}{P},
+
+            where :math:`A` is the flow area (:need:`I_ARMI_BLOCK_DIMS8`) and :math:`P` is the
+            wetted perimeter (:need:`I_ARMI_BLOCK_DIMS7`).
         """
         return 4.0 * self.getFlowArea() / self.getWettedPerimeter()
 

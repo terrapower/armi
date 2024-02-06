@@ -44,11 +44,7 @@ class TestRadar(unittest.TestCase):
 
     def test_radar(self):
         """Test execution of radar plot. Note this has no asserts and is therefore a smoke test."""
-        self.r.core.p.doppler = 0.5
-        self.r.core.p.voidWorth = 0.5
         r2 = copy.deepcopy(self.r)
-        r2.core.p.voidWorth = 1.0
-        r2.core.p.doppler = 1.0
         plotCoreOverviewRadar([self.r, r2], ["Label1", "Label2"])
 
     def test_createPlotMetaData(self):

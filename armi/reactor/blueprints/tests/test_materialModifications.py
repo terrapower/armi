@@ -73,6 +73,13 @@ assemblies:
             assert_allclose(uzr.massFrac[nucName], massFrac)
 
     def test_u235_wt_frac_modification(self):
+        """Test constructing a component where the blueprints specify a material
+        modification for one nuclide.
+
+        .. test:: A material modification can be applied to all the components in an assembly.
+            :id: T_ARMI_MAT_USER_INPUT0
+            :tests: R_ARMI_MAT_USER_INPUT
+        """
         a = self.loadUZrAssembly(
             """
         material modifications:
@@ -90,6 +97,13 @@ assemblies:
         assert_allclose(0.20, u235 / u)
 
     def test_u235_wt_frac_byComponent_modification1(self):
+        """Test constructing a component where the blueprints specify a material
+        modification for one nuclide, for just one component.
+
+        .. test:: A material modification can be applied to one component in an assembly.
+            :id: T_ARMI_MAT_USER_INPUT1
+            :tests: R_ARMI_MAT_USER_INPUT
+        """
         a = self.loadUZrAssembly(
             """
         material modifications:
@@ -110,6 +124,13 @@ assemblies:
         assert_allclose(0.30, u235 / u)
 
     def test_u235_wt_frac_byComponent_modification2(self):
+        """Test constructing a component where the blueprints specify a material
+        modification for one nuclide, for multiple components.
+
+        .. test:: A material modification can be applied to multiple components in an assembly.
+            :id: T_ARMI_MAT_USER_INPUT2
+            :tests: R_ARMI_MAT_USER_INPUT
+        """
         a = self.loadUZrAssembly(
             """
         material modifications:

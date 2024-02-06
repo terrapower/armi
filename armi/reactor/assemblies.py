@@ -170,12 +170,25 @@ class Assembly(composites.Composite):
         self.p.assemNum = randint(-9e12, -1)
         self.renumber(self.p.assemNum)
 
-    def add(self, obj):
+    def add(self, obj: blocks.Block):
         """
         Add an object to this assembly.
 
         The simple act of adding a block to an assembly fully defines the location of
         the block in 3-D.
+
+        .. impl:: Assemblies are made up of type Block.
+            :id: I_ARMI_ASSEM_BLOCKS
+            :implements: R_ARMI_ASSEM_BLOCKS
+
+            Adds a unique Block to the top of the Assembly. If the Block already
+            exists in the Assembly, an error is raised in
+            :py:meth:`armi.reactor.composites.Composite.add`.
+            The spatialLocator of the Assembly is updated to account for
+            the new Block. In ``reestablishBlockOrder``, the Assembly spatialGrid
+            is reinitialized and Block-wise spatialLocator and name objects
+            are updated. The axial mesh and other Block geometry parameters are
+            updated in ``calculateZCoords``.
         """
         composites.Composite.add(self, obj)
         obj.spatialLocator = self.spatialGrid[0, 0, len(self) - 1]
@@ -212,12 +225,16 @@ class Assembly(composites.Composite):
         """
         Get string label representing this object's location.
 
-        Notes
-        -----
-        This function (and its friends) were created before the advent of both the
-        grid/spatialLocator system and the ability to represent things like the SFP as
-        siblings of a Core. In future, this will likely be re-implemented in terms of
-        just spatialLocator objects.
+        .. impl:: Assembly location is retrievable.
+            :id: I_ARMI_ASSEM_POSI0
+            :implements: R_ARMI_ASSEM_POSI
+
+            This method returns a string label indicating the location
+            of an Assembly. There are three options: 1) the Assembly
+            is not within a Core object and is interpreted as in the
+            "load queue"; 2) the Assembly is within the spent fuel pool;
+            3) the Assembly is within a Core object, so it has a physical
+            location within the Core.
         """
         # just use ring and position, not axial (which is 0)
         if not self.parent:
@@ -229,7 +246,16 @@ class Assembly(composites.Composite):
         )
 
     def coords(self):
-        """Return the location of the assembly in the plane using cartesian global coordinates."""
+        """Return the location of the assembly in the plane using cartesian global
+        coordinates.
+
+        .. impl:: Assembly coordinates are retrievable.
+            :id: I_ARMI_ASSEM_POSI1
+            :implements: R_ARMI_ASSEM_POSI
+
+            In this method, the spatialLocator of an Assembly is leveraged to return
+            its physical (x,y) coordinates in cm.
+        """
         x, y, _z = self.spatialLocator.getGlobalCoordinates()
         return (x, y)
 
@@ -238,6 +264,15 @@ class Assembly(composites.Composite):
         Return the area of the assembly by looking at its first block.
 
         The assumption is that all blocks in an assembly have the same area.
+        Calculate the total assembly volume in cm^3.
+
+        .. impl:: Assembly area is retrievable.
+            :id: I_ARMI_ASSEM_DIMS0
+            :implements: R_ARMI_ASSEM_DIMS
+
+            Returns the area of the first block in the Assembly. If there are no
+            blocks in the Assembly, a warning is issued and a default area of 1.0
+            is returned.
         """
         try:
             return self[0].getArea()
@@ -248,7 +283,16 @@ class Assembly(composites.Composite):
             return 1.0
 
     def getVolume(self):
-        """Calculate the total assembly volume in cm^3."""
+        """Calculate the total assembly volume in cm^3.
+
+        .. impl:: Assembly volume is retrievable.
+            :id: I_ARMI_ASSEM_DIMS1
+            :implements: R_ARMI_ASSEM_DIMS
+
+            The volume of the Assembly is calculated as the product of the
+            area of the first block (via ``getArea``) and the total height
+            of the assembly (via ``getTotalHeight``).
+        """
         return self.getArea() * self.getTotalHeight()
 
     def getPinPlenumVolumeInCubicMeters(self):
@@ -448,6 +492,14 @@ class Assembly(composites.Composite):
     def getTotalHeight(self, typeSpec=None):
         """
         Determine the height of this assembly in cm.
+
+        .. impl:: Assembly height is retrievable.
+            :id: I_ARMI_ASSEM_DIMS2
+            :implements: R_ARMI_ASSEM_DIMS
+
+            The height of the Assembly is calculated by taking the sum of the
+            constituent Blocks. If a ``typeSpec`` is provided, the total height
+            of the blocks containing Flags that match the ``typeSpec`` is returned.
 
         Parameters
         ----------
@@ -785,7 +837,6 @@ class Assembly(composites.Composite):
         -------
         blocks : list
             List of blocks.
-
         """
         if typeSpec is None:
             return self.getChildren()
@@ -813,8 +864,8 @@ class Assembly(composites.Composite):
 
         Examples
         --------
-        for block, bottomZ in a.getBlocksAndZ(returnBottomZ=True):
-            print({0}'s bottom mesh point is {1}'.format(block, bottomZ))
+            for block, bottomZ in a.getBlocksAndZ(returnBottomZ=True):
+                print({0}'s bottom mesh point is {1}'.format(block, bottomZ))
         """
         if returnBottomZ and returnTopZ:
             raise ValueError("Both returnTopZ and returnBottomZ are set to `True`")
@@ -838,10 +889,9 @@ class Assembly(composites.Composite):
         return zip(blocks, zCoords)
 
     def hasContinuousCoolantChannel(self):
-        for b in self.getBlocks():
-            if not b.containsAtLeastOneChildWithFlags(Flags.COOLANT):
-                return False
-        return True
+        return all(
+            b.containsAtLeastOneChildWithFlags(Flags.COOLANT) for b in self.getBlocks()
+        )
 
     def getFirstBlock(self, typeSpec=None, exact=False):
         bs = self.getBlocks(typeSpec, exact=exact)
@@ -931,9 +981,9 @@ class Assembly(composites.Composite):
         Examples
         --------
         If the block structure looks like:
-         50.0 to 100.0 Block3
-         25.0 to 50.0  Block2
-         0.0 to 25.0   Block1
+        50.0 to 100.0 Block3
+        25.0 to 50.0  Block2
+        0.0 to 25.0   Block1
 
         Then,
 
@@ -1126,7 +1176,7 @@ class Assembly(composites.Composite):
 
     def reestablishBlockOrder(self):
         """
-        After children have been mixed up axially, this re-locates each block with the proper axial mesh.
+        The block ordering has changed, so the spatialGrid and Block-wise spatialLocator and name objects need updating.
 
         See Also
         --------
@@ -1158,10 +1208,21 @@ class Assembly(composites.Composite):
 
     def getDim(self, typeSpec, dimName):
         """
-        Search through blocks in this assembly and find the first component of compName.
-        Then, look on that component for dimName.
+        With a preference for fuel blocks, find the first component in the Assembly with
+        flags that match ``typeSpec`` and return dimension as specified by ``dimName``.
 
         Example: getDim(Flags.WIRE, 'od') will return a wire's OD in cm.
+
+        .. impl:: Assembly dimensions are retrievable.
+            :id: I_ARMI_ASSEM_DIMS3
+            :implements: R_ARMI_ASSEM_DIMS
+
+            This method searches for the first Component that matches the
+            given ``typeSpec`` and returns the dimension as specified by
+            ``dimName``. There is a hard-coded preference for Components
+            to be within fuel Blocks. If there are no Blocks, then ``None``
+            is returned. If ``typeSpec`` is not within the first Block, an
+            error is raised within :py:meth:`~armi.reactor.blocks.Block.getDim`.
         """
         # prefer fuel blocks.
         bList = self.getBlocks(Flags.FUEL)
@@ -1182,20 +1243,36 @@ class Assembly(composites.Composite):
         return self[0].getSymmetryFactor()
 
     def rotate(self, rad):
-        """Rotates the spatial variables on an assembly the specified angle.
+        """Rotates the spatial variables on an assembly by the specified angle.
 
-        Each block on the assembly is rotated in turn.
+        Each Block on the Assembly is rotated in turn.
+
+        .. impl:: An assembly can be rotated about its z-axis.
+            :id: I_ARMI_SHUFFLE_ROTATE
+            :implements: R_ARMI_SHUFFLE_ROTATE
+
+            This method loops through every ``Block`` in this ``Assembly`` and rotates
+            it by a given angle (in radians). The rotation angle is positive in the
+            counter-clockwise direction, and must be divisible by increments of PI/6
+            (60 degrees). To actually perform the ``Block`` rotation, the
+            :py:meth:`armi.reactor.blocks.Block.rotate` method is called.
 
         Parameters
         ----------
         rad: float
             number (in radians) specifying the angle of counter clockwise rotation
+
+        Warning
+        -------
+        rad must be in 60-degree increments! (i.e., PI/6, PI/3, PI, 2 * PI/3, etc)
         """
         for b in self.getBlocks():
             b.rotate(rad)
 
 
 class HexAssembly(Assembly):
+    """Placeholder, so users can explicitly define a hex-based Assembly."""
+
     pass
 
 
@@ -1209,7 +1286,9 @@ class RZAssembly(Assembly):
     HexAssembly because they use different locations and need to have Radial Meshes in
     their setting.
 
-    note ThRZAssemblies should be a subclass of Assemblies (similar to Hex-Z) because
+    Notes
+    -----
+    ThRZAssemblies should be a subclass of Assemblies (similar to Hex-Z) because
     they should have a common place to put information about subdividing the global mesh
     for transport - this is similar to how blocks have 'AxialMesh' in their blocks.
     """
@@ -1220,7 +1299,7 @@ class RZAssembly(Assembly):
 
     def radialOuter(self):
         """
-        returns the outer radial boundary of this assembly.
+        Returns the outer radial boundary of this assembly.
 
         See Also
         --------
@@ -1267,8 +1346,8 @@ class ThRZAssembly(RZAssembly):
 
     Notes
     -----
-    This is a subclass of RZAssemblies, which is its a subclass of the Generics Assembly
-    Object
+    This is a subclass of RZAssemblies, which is itself a subclass of the generic
+    Assembly class.
     """
 
     def __init__(self, assemType, assemNum=None):

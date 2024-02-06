@@ -45,6 +45,22 @@ class SuiteBuilder:
     """
     Class for constructing a CaseSuite from combinations of modifications on base inputs.
 
+    .. impl:: A generic tool to modify user inputs on multiple cases.
+        :id: I_ARMI_CASE_MOD0
+        :implements: R_ARMI_CASE_MOD
+
+        This class provides the capability to create a
+        :py:class:`~armi.cases.suite.CaseSuite` based on programmatic
+        perturbations/modifications to case settings. It works by being
+        constructed with a base or nominal :py:class:`~armi.cases.case.Case`
+        object. Children classes then append the ``self.modifierSets`` member.
+        Each entry in ``self.modifierSets`` is a
+        :py:class:`~armi.cases.inputModifiers.inputModifiers.InputModifier`
+        representing a case to add to the suite by specifying modifications to
+        the settings of the base case. :py:meth:`SuiteBuilder.buildSuite` is
+        then invoked, returning an instance of the :py:class:`~armi.cases.suite.CaseSuite`
+        containing all the cases with modified settings.
+
     Attributes
     ----------
     baseCase : armi.cases.case.Case
@@ -86,9 +102,9 @@ class SuiteBuilder:
 
         Parameters
         ----------
-        inputModifiers : list(callable(CaseSettings, Blueprints, SystemLayoutInput))
+        inputModifiers : list(callable(Settings, Blueprints, SystemLayoutInput))
             A list of callable objects with the signature
-            ``(CaseSettings, Blueprints, SystemLayoutInput)``. When these objects are called
+            ``(Settings, Blueprints, SystemLayoutInput)``. When these objects are called
             they should perturb the settings, blueprints, and/or geometry by some amount determined
             by their construction.
         """
@@ -117,7 +133,7 @@ class SuiteBuilder:
             and a tuple of InputModifiers used to edit the case. This should be enough information
             for someone to derive a meaningful name.
 
-            The function should return a string specifying the path of the ``CaseSettings``, this
+            The function should return a string specifying the path of the ``Settings``, this
             allows the user to specify the directories where each case will be run.
 
             If not supplied the path will be ``./case-suite/<0000>/<title>-<0000>``, where
@@ -200,7 +216,7 @@ class FullFactorialSuiteBuilder(SuiteBuilder):
                     self.value = value
 
                 def __call__(self, cs, bp, geom):
-                    cs = cs.modified(newSettings={settignName: value})
+                    cs = cs.modified(newSettings={self.settingName: self.value})
                     return cs, bp, geom
 
             builder = FullFactorialSuiteBuilder(someCase)
@@ -209,14 +225,21 @@ class FullFactorialSuiteBuilder(SuiteBuilder):
 
         would result in 6 cases:
 
+        +-------+------------------+------------------+
         | Index | ``settingName1`` | ``settingName2`` |
-        | ----- | ---------------- | ---------------- |
+        +=======+==================+==================+
         | 0     | 1                | 3                |
+        +-------+------------------+------------------+
         | 1     | 2                | 3                |
+        +-------+------------------+------------------+
         | 2     | 1                | 4                |
+        +-------+------------------+------------------+
         | 3     | 2                | 4                |
+        +-------+------------------+------------------+
         | 4     | 1                | 5                |
+        +-------+------------------+------------------+
         | 5     | 2                | 5                |
+        +-------+------------------+------------------+
 
         See Also
         --------
@@ -246,7 +269,6 @@ class FullFactorialSuiteBuilderNoisy(FullFactorialSuiteBuilder):
         self.noiseFraction = noiseFraction
 
     def addDegreeOfFreedom(self, inputModifiers):
-
         new = []
         for newMod in inputModifiers:
             for existingModSet in self.modifierSets:
@@ -287,7 +309,7 @@ class SeparateEffectsSuiteBuilder(SuiteBuilder):
                     self.value = value
 
                 def __call__(self, cs, bp, geom):
-                    cs = cs.modified(newSettings={settignName: value})
+                    cs = cs.modified(newSettings={self.settignName: self.value})
                     return cs, bp, geom
 
             builder = SeparateEffectsSuiteBuilder(someCase)
@@ -296,13 +318,19 @@ class SeparateEffectsSuiteBuilder(SuiteBuilder):
 
         would result in 5 cases:
 
+        +-------+------------------+------------------+
         | Index | ``settingName1`` | ``settingName2`` |
-        | ----- | ---------------- | ---------------- |
+        +=======+==================+==================+
         | 0     | 1                | default          |
+        +-------+------------------+------------------+
         | 1     | 2                | default          |
+        +-------+------------------+------------------+
         | 2     | default          | 3                |
+        +-------+------------------+------------------+
         | 3     | default          | 4                |
+        +-------+------------------+------------------+
         | 4     | default          | 5                |
+        +-------+------------------+------------------+
 
         See Also
         --------
@@ -393,7 +421,7 @@ class LatinHyperCubeSuiteBuilder(SuiteBuilder):
             and a tuple of InputModifiers used to edit the case. This should be enough information
             for someone to derive a meaningful name.
 
-            The function should return a string specifying the path of the ``CaseSettings``, this
+            The function should return a string specifying the path of the ``Settings``, this
             allows the user to specify the directories where each case will be run.
 
             If not supplied the path will be ``./case-suite/<0000>/<title>-<0000>``, where

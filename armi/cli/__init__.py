@@ -100,10 +100,17 @@ class ArmiParser(argparse.ArgumentParser):
 
 class ArmiCLI:
     """
-    ARMI CLI -- The main entry point into ARMI. There are various commands
-    available, to get help for the individual commands, run again with
-    `<command> --help`. Generically, the CLI implements functions that already
-    exists within ARMI.
+    ARMI CLI -- The main entry point into ARMI. There are various commands available. To get help
+    for the individual commands, run again with `<command> --help`. Typically, the CLI implements
+    functions that already exist within ARMI.
+
+    .. impl:: The basic ARMI CLI, for running a simulation.
+        :id: I_ARMI_CLI_CS
+        :implements: R_ARMI_CLI_CS
+
+        Provides a basic command-line interface (CLI) for running an ARMI simulation. Available
+        commands can be listed with ``-l``. Information on individual commands can be obtained by
+        running with ``<command> --help``.
     """
 
     def __init__(self):
@@ -124,7 +131,7 @@ class ArmiCLI:
 
         parser = ArmiParser(
             prog=context.APP_NAME,
-            description=self.__doc__,
+            description=self.__doc__.split(".. impl")[0],
             usage="%(prog)s [-h] [-l | command [args]]",
         )
 
@@ -198,7 +205,7 @@ class ArmiCLI:
         return self.executeCommand(args.command, args.args)
 
     def executeCommand(self, command, args) -> Optional[int]:
-        r"""Execute `command` with arguments `args`, return optional exit code."""
+        """Execute `command` with arguments `args`, return optional exit code."""
         command = command.lower()
         if command not in self._entryPoints:
             print(

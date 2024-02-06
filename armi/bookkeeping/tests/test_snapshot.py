@@ -59,6 +59,13 @@ class TestSnapshotInterface(unittest.TestCase):
         self.assertTrue(mockSnapshotRequest.called)
 
     def test_activeateDefaultSnapshots_30cycles2BurnSteps(self):
+        """
+        Test snapshots for 30 cycles and 2 burnsteps, checking the dumpSnapshot setting.
+
+        .. test:: Allow extra data to be saved from a run, at specified time nodes.
+            :id: T_ARMI_SNAPSHOT0
+            :tests: R_ARMI_SNAPSHOT
+        """
         self.assertEqual([], self.cs["dumpSnapshot"])
 
         newSettings = {}
@@ -72,6 +79,13 @@ class TestSnapshotInterface(unittest.TestCase):
         self.assertEqual(["000000", "014000", "029002"], self.si.cs["dumpSnapshot"])
 
     def test_activeateDefaultSnapshots_17cycles5BurnSteps(self):
+        """
+        Test snapshots for 17 cycles and 5 burnsteps, checking the dumpSnapshot setting.
+
+        .. test:: Allow extra data to be saved from a run, at specified time nodes.
+            :id: T_ARMI_SNAPSHOT1
+            :tests: R_ARMI_SNAPSHOT
+        """
         self.assertEqual([], self.cs["dumpSnapshot"])
 
         newSettings = {}

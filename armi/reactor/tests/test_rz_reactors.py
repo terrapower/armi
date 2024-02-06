@@ -22,7 +22,7 @@ from armi.tests import TEST_ROOT
 from armi.reactor import reactors
 
 
-class Test_RZT_Reactor(unittest.TestCase):
+class TestRZTReactor(unittest.TestCase):
     """Tests for RZT reactors."""
 
     @classmethod
@@ -38,18 +38,19 @@ class Test_RZT_Reactor(unittest.TestCase):
         self.assertTrue(all(aziMesh == 8 for aziMesh in aziMeshes))
 
     def test_findAllMeshPoints(self):
+        """Test findAllMeshPoints()."""
         i, _, _ = self.r.core.findAllMeshPoints()
         self.assertLess(i[-1], 2 * math.pi)
 
 
-class Test_RZT_Reactor_modern(unittest.TestCase):
+class TestRZTReactorModern(unittest.TestCase):
     def test_loadRZT_reactor(self):
         """
         The Godiva benchmark model is a HEU sphere with a radius of 8.74 cm.
 
         This unit tests loading and verifies the reactor is loaded correctly by
         comparing volumes against expected volumes for full core (including
-        void boundary conditions) and just the fuel
+        void boundary conditions) and just the fuel.
         """
         cs = settings.Settings(
             fName=os.path.join(TEST_ROOT, "Godiva.armi.unittest.yaml")
@@ -70,15 +71,11 @@ class Test_RZT_Reactor_modern(unittest.TestCase):
             for c in b:
                 if "Godiva" in c.name:
                     fuelVolumes.append(c.getVolume())
-        """
-        verify the total reactor volume is as expected
-        """
+        # verify the total reactor volume is as expected
         tolerance = 1e-3
         error = math.fabs((refReactorVolume - sum(reactorVolumes)) / refReactorVolume)
         self.assertLess(error, tolerance)
 
-        """
-        verify the total fuel volume is as expected
-        """
+        # verify the total fuel volume is as expected
         error = math.fabs((refFuelVolume - sum(fuelVolumes)) / refFuelVolume)
         self.assertLess(error, tolerance)

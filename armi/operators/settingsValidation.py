@@ -13,9 +13,10 @@
 # limitations under the License.
 
 """
-A system to check user settings for validity and provide users with meaningful suggestions to fix.
+A system to check user settings for validity and provide users with meaningful
+suggestions to fix.
 
-This allows developers to specify a rich set of rules and suggestions for user settings.
+This allows developers to define a rich set of rules and suggestions for user settings.
 These then pop up during initialization of a run, either on the command line or as
 dialogues in the GUI. They say things like: "Your ___ setting has the value ___, which
 is impossible. Would you like to switch to ___?"
@@ -42,7 +43,22 @@ from armi.utils.mathematics import expandRepeatedFloats
 
 
 class Query:
-    """An individual query."""
+    """
+    An individual setting validator.
+
+    .. impl:: Rules to validate and customize a setting's behavior.
+        :id: I_ARMI_SETTINGS_RULES
+        :implements: R_ARMI_SETTINGS_RULES
+
+        This class is meant to represent a generic validation test against a setting.
+        The goal is: developers create new settings and they want to make sure those
+        settings are used correctly. As an implementation, users pass in a
+        ``condition`` function to this class that returns ``True`` or ``False`` based
+        on the setting name and value. And then this class has a ``resolve`` method
+        which tests if the condition is met. Optionally, this class also contains a
+        ``correction`` function that allows users to automatically correct a bad
+        setting, if the developers can find a clear path forward.
+    """
 
     def __init__(self, condition, statement, question, correction):
         """
@@ -51,8 +67,8 @@ class Query:
         Parameters
         ----------
         condition : callable
-            A callable that returns True or False. If True,
-            then the query activates its question and potential correction.
+            A callable that returns True or False. If True, then the query activates
+            its question and potential correction.
         statement : str
             A statement of the problem indicated by a True condition
         question : str
@@ -452,16 +468,16 @@ class Inspector:
         )
 
         def _willBeCopiedFrom(fName):
-            for copyFile in self.cs["copyFilesFrom"]:
-                if fName == os.path.split(copyFile)[1]:
-                    return True
-            return False
+            return any(
+                fName == os.path.split(copyFile)[1]
+                for copyFile in self.cs["copyFilesFrom"]
+            )
 
         self.addQuery(
             lambda: self.cs["explicitRepeatShuffles"]
             and not self._csRelativePathExists(self.cs["explicitRepeatShuffles"])
             and not _willBeCopiedFrom(self.cs["explicitRepeatShuffles"]),
-            "The specified repeat shuffle file `{0}` does not exist, and won't be copied from elsewhere. "
+            "The specified repeat shuffle file `{0}` does not exist, and won't be copied. "
             "Run will crash.".format(self.cs["explicitRepeatShuffles"]),
             "",
             self.NO_ACTION,
@@ -624,11 +640,10 @@ class Inspector:
                 except:  # noqa: bare-except
                     return True
 
-                for pf, af in zip(powerFracs, availabilities):
-                    if pf > 0.0 and af == 0.0:
-                        # this will be a full decay step and any power fraction will be ignored. May be ok, but warn.
-                        return True
-                return False
+                # This will be a full decay step and any power fraction will be ignored. May be ok.
+                return any(
+                    pf > 0.0 and af == 0.0 for pf, af in zip(powerFracs, availabilities)
+                )
 
             self.addQuery(
                 lambda: (

@@ -381,6 +381,22 @@ class Layout:
         return comps, groupedComps
 
     def writeToDB(self, h5group):
+        """Write a chunk of data to the database.
+
+        .. impl:: Write data to the DB for a given time step.
+            :id: I_ARMI_DB_TIME
+            :implements: R_ARMI_DB_TIME
+
+            This method writes a snapshot of the current state of the reactor to the
+            database. It takes a pointer to an existing HDF5 file as input, and it
+            writes the reactor data model to the file in depth-first search order.
+            Other than this search order, there are no guarantees as to what order the
+            objects are written to the file. Though, this turns out to still be very
+            powerful. For instance, the data for all ``HexBlock`` children of a given
+            parent are stored contiguously within the ``HexBlock`` group, and will not
+            be interleaved with data from the ``HexBlock`` children of any of the
+            parent's siblings.
+        """
         if "layout/type" in h5group:
             # It looks like we have already written the layout to DB, skip for now
             return

@@ -25,7 +25,6 @@ from armi.reactor.flags import Flags
 
 
 class TestCustomIsotopics(unittest.TestCase):
-
     yamlString = r"""
 nuclide flags:
     U238: {burn: true, xs: true}
@@ -185,6 +184,7 @@ assemblies:
         axial mesh points: [1, 1, 1, 1, 1, 1,1]
         xs types: [A, A, A, A, A, A,A]
 """
+    """:meta hide-value:"""
 
     @classmethod
     def setUpClass(cls):
@@ -210,6 +210,12 @@ assemblies:
         self.assertAlmostEqual(15.5, fuel.density(), 0)  # i.e. it is not 19.1
 
     def test_massFractionsAreApplied(self):
+        """Ensure that the custom isotopics can be specified via mass fractions.
+
+        .. test:: Test that custom isotopics can be specified via mass fractions.
+            :id: T_ARMI_MAT_USER_INPUT3
+            :tests: R_ARMI_MAT_USER_INPUT
+        """
         fuel0 = self.a[0].getComponent(Flags.FUEL)
         fuel1 = self.a[1].getComponent(Flags.FUEL)
         fuel2 = self.a[2].getComponent(Flags.FUEL)
@@ -223,25 +229,37 @@ assemblies:
         )  # keys are same
 
     def test_numberFractions(self):
-        # fuel 2 and 3 should be the same, one is defined as mass fractions, and the other as number fractions
+        """Ensure that the custom isotopics can be specified via number fractions.
+
+        .. test:: Test that custom isotopics can be specified via number fractions.
+            :id: T_ARMI_MAT_USER_INPUT4
+            :tests: R_ARMI_MAT_USER_INPUT
+        """
+        # fuel blocks 2 and 4 should be the same, one is defined as mass fractions, and the other as number fractions
         fuel2 = self.a[1].getComponent(Flags.FUEL)
-        fuel3 = self.a[3].getComponent(Flags.FUEL)
-        self.assertAlmostEqual(fuel2.density(), fuel3.density())
+        fuel4 = self.a[3].getComponent(Flags.FUEL)
+        self.assertAlmostEqual(fuel2.density(), fuel4.density())
 
         for nuc in fuel2.p.numberDensities.keys():
             self.assertAlmostEqual(
-                fuel2.p.numberDensities[nuc], fuel3.p.numberDensities[nuc]
+                fuel2.p.numberDensities[nuc], fuel4.p.numberDensities[nuc]
             )
 
     def test_numberDensities(self):
-        # fuel 2 and 3 should be the same, one is defined as mass fractions, and the other as number fractions
+        """Ensure that the custom isotopics can be specified via number densities.
+
+        .. test:: Test that custom isotopics can be specified via number fractions.
+            :id: T_ARMI_MAT_USER_INPUT5
+            :tests: R_ARMI_MAT_USER_INPUT
+        """
+        # fuel blocks 2 and 5 should be the same, one is defined as mass fractions, and the other as number densities
         fuel2 = self.a[1].getComponent(Flags.FUEL)
-        fuel3 = self.a[4].getComponent(Flags.FUEL)
-        self.assertAlmostEqual(fuel2.density(), fuel3.density())
+        fuel5 = self.a[4].getComponent(Flags.FUEL)
+        self.assertAlmostEqual(fuel2.density(), fuel5.density())
 
         for nuc in fuel2.p.numberDensities.keys():
             self.assertAlmostEqual(
-                fuel2.p.numberDensities[nuc], fuel3.p.numberDensities[nuc]
+                fuel2.p.numberDensities[nuc], fuel5.p.numberDensities[nuc]
             )
 
     def test_numberDensitiesAnchor(self):

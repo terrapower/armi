@@ -88,17 +88,17 @@ def _removeDimensionNameSpaces(attrs):
 
 
 class NullComponent(Component):
-    r"""Returns zero for all dimensions. is none."""
+    """Returns zero for all dimensions."""
 
     def __cmp__(self, other):
-        r"""Be smaller than everything."""
+        """Be smaller than everything."""
         return -1
 
     def __lt__(self, other):
         return True
 
     def __bool__(self):
-        r"""Handles truth testing."""
+        """Handles truth testing."""
         return False
 
     __nonzero__ = __bool__  # Python2 compatibility
@@ -323,7 +323,22 @@ class DerivedShape(UnshapedComponent):
             return math.sqrt(4.0 * self.getComponentArea() / math.pi)
 
     def computeVolume(self):
-        """Cannot compute volume until it is derived."""
+        """Cannot compute volume until it is derived.
+
+        .. impl:: The volume of a DerivedShape depends on the solid shapes surrounding
+            them.
+            :id: I_ARMI_COMP_FLUID0
+            :implements: R_ARMI_COMP_FLUID
+
+            Computing the volume of a ``DerivedShape`` means looking at the solid
+            materials around it, and finding what shaped space is left over in between
+            them. This method calls the method ``_deriveVolumeAndArea``, which makes
+            use of the fact that the ARMI reactor data model is hierarchical. It starts
+            by finding the parent of this object, and then finding the volume of all
+            the other objects at this level. Whatever is left over, is the volume of
+            this object. Obviously, you can only have one ``DerivedShape`` child of any
+            parent for this logic to work.
+        """
         return self._deriveVolumeAndArea()
 
     def _deriveVolumeAndArea(self):
@@ -395,6 +410,7 @@ class DerivedShape(UnshapedComponent):
             self.p.area = remainingArea
         else:
             self.p.area = remainingVolume / height
+
         return remainingVolume
 
     def getVolume(self):
@@ -412,7 +428,6 @@ class DerivedShape(UnshapedComponent):
         -------
         float
             volume of component in cm^3.
-
         """
         if self.parent.derivedMustUpdate:
             # tell _updateVolume to update it during the below getVolume call

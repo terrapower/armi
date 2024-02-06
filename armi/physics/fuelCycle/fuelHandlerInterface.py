@@ -31,6 +31,28 @@ class FuelHandlerInterface(interfaces.Interface):
     power or temperatures have been updated. This allows pre-run fuel management
     steps for highly customized fuel loadings. In typical runs, no fuel management
     occurs at the beginning of the first cycle and the as-input state is left as is.
+
+    .. impl:: ARMI provides a shuffle logic interface.
+        :id: I_ARMI_SHUFFLE
+        :implements: R_ARMI_SHUFFLE
+
+        This interface allows for a user to define custom shuffle logic that
+        modifies to the core model. Being based on the :py:class:`~armi.interfaces.Interface`
+        class, it has direct access to the current core model.
+
+        User logic is able to be executed from within the
+        :py:meth:`~armi.physics.fuelCycle.fuelHandlerInterface.FuelHandlerInterface.manageFuel` method,
+        which will use the :py:meth:`~armi.physics.fuelCycle.fuelHandlerFactory.fuelHandlerFactory`
+        to search for a Python file specified by the case setting ``shuffleLogic``.
+        If it exists, the fuel handler with name specified by the user via the ``fuelHandlerName``
+        case setting will be imported, and any actions in its ``outage`` method
+        will be executed at the :py:meth:`~armi.physics.fuelCycle.fuelHandlerInterface.FuelHandlerInterface.interactBOC`
+        hook.
+
+        If no class with the name specified by the ``fuelHandlerName`` setting is found
+        in the file with path ``shuffleLogic``, an error is returned.
+
+        See the user manual for how the custom shuffle logic file should be constructed.
     """
 
     name = "fuelHandler"
@@ -42,8 +64,6 @@ class FuelHandlerInterface(interfaces.Interface):
         # need order due to nature of moves but with fast membership tests
         self.moved = []
         self.cycle = 0
-        # filled during summary of EOC time in years of each cycle (time at which shuffling occurs)
-        self.cycleTime = {}
 
     @staticmethod
     def specifyInputs(cs):
@@ -86,9 +106,6 @@ class FuelHandlerInterface(interfaces.Interface):
             self.manageFuel(cycle)
 
     def interactEOC(self, cycle=None):
-        timeYears = self.r.p.time
-        # keep track of the EOC time in years.
-        self.cycleTime[cycle] = timeYears
         if self.r.sfp is not None:
             runLog.extra(
                 f"There are {len(self.r.sfp)} assemblies in the Spent Fuel Pool"

@@ -16,6 +16,7 @@
 import copy
 import os
 import time
+import functools
 
 
 def timed(*args):
@@ -36,9 +37,7 @@ def timed(*args):
     """
 
     def time_decorator(func):
-        time_decorator.__doc__ = func.__doc__
-        time_decorator.__name__ = func.__name__
-
+        @functools.wraps(func)
         def time_wrapper(*args, **kwargs):
             generated_name = "::".join(
                 [

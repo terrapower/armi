@@ -49,6 +49,26 @@ class SystemBlueprint(yamlize.Object):
     """
     The reactor-level structure input blueprint.
 
+    .. impl:: Build core and spent fuel pool from blueprints
+        :id: I_ARMI_BP_SYSTEMS
+        :implements: R_ARMI_BP_SYSTEMS, R_ARMI_BP_CORE
+
+        This class creates a yaml interface for the user to define systems with
+        grids, such as cores or spent fuel pools, each having their own name,
+        type, grid, and position in space. It is incorporated into the "systems"
+        section of a blueprints file by being included as key-value pairs within
+        the :py:class:`~armi.reactor.blueprints.reactorBlueprint.Systems` class,
+        which is in turn included into the overall blueprints within
+        :py:class:`~armi.reactor.blueprints.Blueprints`.
+
+        This class includes a :py:meth:`~armi.reactor.blueprints.reactorBlueprint.SystemBlueprint.construct`
+        method, which is typically called from within :py:func:`~armi.reactor.reactors.factory`
+        during the initialization of the reactor object to instantiate the core
+        and/or spent fuel pool objects. During that process, a spatial grid is
+        constructed based on the grid blueprints specified in the "grids" section
+        of the blueprints (see :need:`I_ARMI_BP_GRID`) and the assemblies needed
+        to fill the lattice are built from blueprints using :py:meth:`~armi.reactor.blueprints.Blueprints.constructAssem`.
+
     .. note:: We use string keys to link grids to objects that use them. This differs
         from how blocks/assembies are specified, which use YAML anchors. YAML anchors
         have proven to be problematic and difficult to work with
@@ -113,7 +133,7 @@ class SystemBlueprint(yamlize.Object):
         loadAssems : bool, optional
             whether to fill reactor with assemblies, as defined in blueprints, or not. Is False in
             :py:class:`UniformMeshGeometryConverter <armi.reactor.converters.uniformMesh.UniformMeshGeometryConverter>`
-            within the initNewReactor() class method.
+            within the initNewReactor() method.
 
         Raises
         ------

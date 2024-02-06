@@ -14,21 +14,18 @@
 
 """This module provides tests for the generic Executers."""
 import os
+import subprocess
 import unittest
 
+from armi.physics import executers
 from armi.reactor import geometry
 from armi.utils import directoryChangers
-from armi.physics import executers
 
 
-class MockReactorParams:
+class MockParams:
     def __init__(self):
         self.cycle = 1
         self.timeNode = 2
-
-
-class MockCoreParams:
-    pass
 
 
 class MockCore:
@@ -36,14 +33,14 @@ class MockCore:
         # just pick a random geomType
         self.geomType = geometry.GeomType.CARTESIAN
         self.symmetry = "full"
-        self.p = MockCoreParams()
+        self.p = MockParams()
 
 
 class MockReactor:
     def __init__(self):
         self.core = MockCore()
         self.o = None
-        self.p = MockReactorParams()
+        self.p = MockParams()
 
 
 class TestExecutionOptions(unittest.TestCase):
@@ -106,3 +103,72 @@ class TestExecuters(unittest.TestCase):
         self.executer.dcType = directoryChangers.ForcedCreationDirectoryChanger
         self.executer._updateRunDir("notThisString")
         self.assertEqual(self.executer.options.runDir, "runDir")
+
+    def test_runExternalExecutable(self):
+        """Run an external executable with an Executer.
+
+        .. test:: Run an external executable with an Executer.
+            :id: T_ARMI_EX
+            :tests: R_ARMI_EX
+        """
+        filePath = "test_runExternalExecutable.py"
+        outFile = "tmp.txt"
+        label = "printExtraStuff"
+
+        class MockExecutionOptions(executers.ExecutionOptions):
+            pass
+
+        class MockExecuter(executers.Executer):
+            def run(self, args):
+                if self.options.label == label:
+                    subprocess.run(["python", filePath, "extra stuff"])
+                else:
+                    subprocess.run(["python", filePath, args])
+
+        with directoryChangers.TemporaryDirectoryChanger():
+            # build a mock external program (a little Python script)
+            self.__makeALittleTestProgram(filePath, outFile)
+
+            # make sure the output file doesn't exist yet
+            self.assertFalse(os.path.exists(outFile))
+
+            # set up an executer for our little test program
+            opts = MockExecutionOptions()
+            exe = MockExecuter(opts, None)
+            exe.run("")
+
+            # make sure the output file exists now
+            self.assertTrue(os.path.exists(outFile))
+
+            # run the executer with options
+            testString = "some options"
+            exe.run(testString)
+
+            # make sure the output file exists now
+            self.assertTrue(os.path.exists(outFile))
+            newTxt = open(outFile, "r").read()
+            self.assertIn(testString, newTxt)
+
+            # now prove the options object can affect the execution
+            exe.options.label = label
+            exe.run("")
+            newerTxt = open(outFile, "r").read()
+            self.assertIn("extra stuff", newerTxt)
+
+    @staticmethod
+    def __makeALittleTestProgram(filePath, outFile):
+        """Helper method to write a tiny Python script.
+
+        We need "an external program" for testing.
+        """
+        txt = f"""import sys
+
+def main():
+    with open("{outFile}", "w") as f:
+        f.write(str(sys.argv))
+
+if __name__ == "__main__":
+    main()
+"""
+        with open(filePath, "w") as f:
+            f.write(txt)
