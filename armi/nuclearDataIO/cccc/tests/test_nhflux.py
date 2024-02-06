@@ -181,7 +181,9 @@ class TestNhfluxVariant(unittest.TestCase):
         )
 
     def test_write(self):
-        """Verify binary equivalence of written binary file."""
+        """
+        Verify binary equivalence of written binary file.
+        """
         with TemporaryDirectoryChanger():
             nhflux.NhfluxStreamVariant.writeBinary(self.nhf, "NHFLUX2")
             with open(SIMPLE_HEXZ_NHFLUX_VARIANT, "rb") as f1, open(
@@ -191,3 +193,57 @@ class TestNhfluxVariant(unittest.TestCase):
                 actualData = f2.read()
             for expected, actual in zip(expectedData, actualData):
                 self.assertEqual(expected, actual)
+
+
+class TestNhfluxVariantVarsrc(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        """
+        Load NHFLUX data from binary file. This file was produced using VARIANT v11.0
+        and is identical to the file used in TestNhfluxVariant.
+        """
+        cls.nhf = nhflux.NhfluxStreamVariant.readBinary(SIMPLE_HEXZ_NHFLUX_VARIANT)
+
+        # Make the data structure match the format for VARSRC
+        cls.nhf.metadata["nSurf"] = 1
+        cls.nhf.metadata["iwnhfl"] = 1
+        cls.emptyDatasets = [
+            "incomingPointersToAllAssemblies",
+            "externalCurrentPointers",
+            "geodstCoordMap",
+            "outgoingPCSymSecPointers",
+            "ingoingPCSymSecPointers",
+            "partialCurrentsHexAll",
+            "partialCurrentsHex_extAll",
+            "partialCurrentsZAll",
+        ]
+        for zeroDataset in cls.emptyDatasets:
+            setattr(cls.nhf, zeroDataset, np.array([]))
+
+    def test_writeRead(self):
+        """
+        Write out the data structure to file. Then read it back in and make sure it matches
+        the data currently in memory.
+        """
+        filename = "VARSRC"
+        with TemporaryDirectoryChanger():
+            nhflux.NhfluxStreamVariant.writeBinary(self.nhf, filename)
+            writtenVarsrc = nhflux.NhfluxStreamVariant.readBinary(filename)
+
+        # Make sure the metadata matches
+        self.assertEqual(len(writtenVarsrc.metadata), len(self.nhf.metadata))
+        for key in writtenVarsrc.metadata:
+            self.assertEqual(writtenVarsrc.metadata[key], self.nhf.metadata[key])
+
+        # Make sure that the flux moments match identically
+        self.assertTrue(
+            np.isclose(
+                writtenVarsrc.fluxMoments, self.nhf.fluxMoments, rtol=0.0, atol=0.0
+            ).all()
+        )
+
+        # Make sure all other datasets are empty, since the reader should not be trying
+        # to populate them.
+        for zeroDataset in self.emptyDatasets:
+            dataset = getattr(self.nhf, zeroDataset)
+            self.assertEqual(dataset.shape, (0,))
