@@ -135,8 +135,8 @@ required-version = "0.0.272"
 # Assume Python 3.9
 target-version = "py39"
 
-# Setting line-length to 140 (though blacks default is 88)
-line-length = 140
+# Setting line-length to 120 (though blacks default is 88)
+line-length = 120
 
 # Enable pycodestyle (E) and Pyflakes (F) codes by default.
 # D - NumPy docstring rules
