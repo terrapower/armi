@@ -15,18 +15,17 @@
 """
 Definitions of top-level reactor arrangements like the Core (default), SFP, etc.
 
-See documentation of blueprints in :doc:`/user/inputs/blueprints` for more context. See
-example in :py:mod:`armi.reactor.blueprints.tests.test_reactorBlueprints`.
+See documentation of blueprints in :doc:`/user/inputs/blueprints` for more context. See example in
+:py:mod:`armi.reactor.blueprints.tests.test_reactorBlueprints`.
 
-This was built to replace the old system that loaded the core geometry from the
-cs['geometry'] setting. Until the geom file-based input is completely removed, this
-system will attempt to migrate the core layout from geom files. When geom files are
-used, explicitly specifying a ``core`` system will result in an error.
+This was built to replace the old system that loaded the core geometry from the cs['geometry']
+setting. Until the geom file-based input is completely removed, this system will attempt to migrate
+the core layout from geom files. When geom files are used, explicitly specifying a ``core`` system
+will result in an error.
 
-System Blueprints are a big step in the right direction to generalize user input, but
-was still mostly adapted from the old Core layout input. As such, they still only really
-support Core-like systems. Future work should generalize the concept of "system" to more
-varied scenarios.
+System Blueprints are a big step in the right direction to generalize user input, but was still
+mostly adapted from the old Core layout input. As such, they still only really support Core-like
+systems. Future work should generalize the concept of "system" to more varied scenarios.
 
 See Also
 --------
@@ -61,17 +60,20 @@ class SystemBlueprint(yamlize.Object):
         which is in turn included into the overall blueprints within
         :py:class:`~armi.reactor.blueprints.Blueprints`.
 
-        This class includes a :py:meth:`~armi.reactor.blueprints.reactorBlueprint.SystemBlueprint.construct`
-        method, which is typically called from within :py:func:`~armi.reactor.reactors.factory`
-        during the initialization of the reactor object to instantiate the core
-        and/or spent fuel pool objects. During that process, a spatial grid is
-        constructed based on the grid blueprints specified in the "grids" section
-        of the blueprints (see :need:`I_ARMI_BP_GRID`) and the assemblies needed
-        to fill the lattice are built from blueprints using :py:meth:`~armi.reactor.blueprints.Blueprints.constructAssem`.
+        This class includes a
+        :py:meth:`~armi.reactor.blueprints.reactorBlueprint.SystemBlueprint.construct` method, which
+        is typically called from within :py:func:`~armi.reactor.reactors.factory` during the
+        initialization of the reactor object to instantiate the core and/or spent fuel pool objects.
+        During that process, a spatial grid is constructed based on the grid blueprints specified in
+        the "grids" section of the blueprints (see :need:`I_ARMI_BP_GRID`) and the assemblies needed
+        to fill the lattice are built from blueprints using
+        :py:meth:`~armi.reactor.blueprints.Blueprints.constructAssem`.
 
-    .. note:: We use string keys to link grids to objects that use them. This differs
-        from how blocks/assembies are specified, which use YAML anchors. YAML anchors
-        have proven to be problematic and difficult to work with
+    Notes
+    -----
+    We use string keys to link grids to objects that use them. This differs from how blocks/
+    assembies are specified, which use YAML anchors. YAML anchors have proven to be problematic and
+    difficult to work with.
     """
 
     name = yamlize.Attribute(key="name", type=str)
