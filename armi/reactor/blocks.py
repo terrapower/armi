@@ -1606,18 +1606,19 @@ class Block(composites.Composite):
             :id: I_ARMI_MANUAL_TARG_COMP
             :implements: R_ARMI_MANUAL_TARG_COMP
 
-            Sets the ``axialExpTargetComponent`` parameter on the block to the name
-            of the Component which is passed in. This is then used by the
+            Sets the ``axialExpTargetComponent`` parameter on the block to the name of the Component
+            which is passed in. This is then used by the
             :py:class:`~armi.reactor.converters.axialExpansionChanger.AxialExpansionChanger`
             class during axial expansion.
 
-            This method is typically called from within :py:meth:`~armi.reactor.blueprints.blockBlueprint.BlockBlueprint.construct`
-            during the process of building a Block from the blueprints.
+            This method is typically called from within
+            :py:meth:`~armi.reactor.blueprints.blockBlueprint.BlockBlueprint.construct` during the
+            process of building a Block from the blueprints.
 
         Parameter
         ---------
         targetComponent: :py:class:`Component <armi.reactor.components.component.Component>` object
-            component specified to be target component for axial expansion changer
+            Component specified to be target component for axial expansion changer
 
         See Also
         --------
@@ -1660,10 +1661,9 @@ class HexBlock(Block):
         :id: I_ARMI_BLOCK_HEX
         :implements: R_ARMI_BLOCK_HEX
 
-        This class defines hexagonal-shaped Blocks. It inherits functionality from the parent
-        class, Block, and defines hexagonal-specific methods including, but not limited to,
-        querying pin pitch, pin linear power densities, hydraulic diameter, and retrieving
-        inner and outer pitch.
+        This class defines hexagonal-shaped Blocks. It inherits functionality from the parent class,
+        Block, and defines hexagonal-specific methods including, but not limited to, querying pin
+        pitch, pin linear power densities, hydraulic diameter, and retrieving inner and outer pitch.
     """
 
     PITCH_COMPONENT_TYPE: ClassVar[_PitchDefiningComponent] = (components.Hexagon,)
@@ -2251,25 +2251,25 @@ class HexBlock(Block):
 
     def autoCreateSpatialGrids(self):
         """
-        Given a block without a spatialGrid, create a spatialGrid and give its children
-        the corresponding spatialLocators (if it is a simple block).
+        Given a block without a spatialGrid, create a spatialGrid and give its children the
+        corresponding spatialLocators (if it is a simple block).
 
-        In this case, a simple block would be one that has either multiplicity of
-        components equal to 1 or N but no other multiplicities. Also, this should only
-        happen when N fits exactly into a given number of hex rings.  Otherwise, do not
-        create a grid for this block.
+        In this case, a simple block would be one that has either multiplicity of components equal
+        to 1 or N but no other multiplicities. Also, this should only happen when N fits exactly
+        into a given number of hex rings.  Otherwise, do not create a grid for this block.
 
         Notes
         -----
-        If the block meets all the conditions, we gather all components to either be a multiIndexLocation containing all
-        of the pin positions, otherwise, locator is the center (0,0).
+        If the Block meets all the conditions, we gather all components to either be a
+        multiIndexLocation containing all of the pin positions, or the locator is the center (0,0).
 
         Also, this only works on blocks that have 'flat side up'.
 
         Raises
         ------
         ValueError
-            If the multiplicities of the block are not only 1 or N or if generated ringNumber leads to more positions than necessary.
+            If the multiplicities of the block are not only 1 or N or if generated ringNumber leads
+            to more positions than necessary.
         """
         # Check multiplicities...
         mults = {c.getDimension("mult") for c in self.iterComponents()}
@@ -2331,8 +2331,8 @@ class HexBlock(Block):
         """
         Get the pin pitch in cm.
 
-        Assumes that the pin pitch is defined entirely by contacting cladding tubes
-        and wire wraps. Grid spacers not yet supported.
+        Assumes that the pin pitch is defined entirely by contacting cladding tubes and wire wraps.
+        Grid spacers not yet supported.
 
         .. impl:: Pin pitch within block is retrievable.
             :id: I_ARMI_BLOCK_DIMS6
