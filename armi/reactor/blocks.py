@@ -13,12 +13,10 @@
 # limitations under the License.
 
 """
-Defines blocks, which are axial chunks of assemblies. They contain
-most of the state variables, including power, flux, and homogenized number densities.
+Defines blocks, which are axial chunks of assemblies. They contain most of the state variables,
+including power, flux, and homogenized number densities.
 
-Assemblies are made of blocks.
-
-Blocks are made of components.
+Assemblies are made of blocks. Blocks are made of components.
 """
 from typing import Optional, Type, Tuple, ClassVar
 import collections
@@ -87,8 +85,7 @@ class Block(composites.Composite):
             The name of this block
 
         height : float, optional
-            The height of the block in cm. Defaults to 1.0 so that
-            `getVolume` assumes unit height.
+            The height of the block in cm. Defaults to 1.0 so that `getVolume` assumes unit height.
         """
         composites.Composite.__init__(self, name)
         self.p.height = height
@@ -163,12 +160,11 @@ class Block(composites.Composite):
 
         Notes
         -----
-        Used to implement a copy function for specific block types that can
-        be much faster than a deepcopy by glossing over details that may be
-        unnecessary in certain contexts.
+        Used to implement a copy function for specific block types that can be much faster than a
+        deepcopy by glossing over details that may be unnecessary in certain contexts.
 
-        This base class implementation is just a deepcopy of the block, in full detail
-        (not homogenized).
+        This base class implementation is just a deepcopy of the block, in full detail (not
+        homogenized).
         """
         return copy.deepcopy(self)
 
@@ -221,10 +217,9 @@ class Block(composites.Composite):
 
         This also sets the block-level assembly-num param.
 
-        Once, we used a axial-character suffix to represent the axial
-        index, but this is inherently limited so we switched to a numerical
-        name. The axial suffix needs can be brought in in plugins that require
-        them.
+        Once, we used a axial-character suffix to represent the axial index, but this is inherently
+        limited so we switched to a numerical name. The axial suffix needs can be brought in to
+        plugins that require them.
 
         Examples
         --------
@@ -238,10 +233,10 @@ class Block(composites.Composite):
         """
         Compute the smear density of pins in this block.
 
-        Smear density is the area of the fuel divided by the area of the space available
-        for fuel inside the cladding. Other space filled with solid materials is not
-        considered available. If all the area is fuel, it has 100% smear density. Lower
-        smear density allows more room for swelling.
+        Smear density is the area of the fuel divided by the area of the space available for fuel
+        inside the cladding. Other space filled with solid materials is not considered available. If
+        all the area is fuel, it has 100% smear density. Lower smear density allows more room for
+        swelling.
 
         .. warning:: This requires circular fuel and circular cladding. Designs that vary
             from this will be wrong. It may make sense in the future to put this somewhere a
@@ -249,13 +244,12 @@ class Block(composites.Composite):
 
         Notes
         -----
-        This only considers circular objects. If you have a cladding that is not a circle,
-        it will be ignored.
+        This only considers circular objects. If you have a cladding that is not a circle, it will
+        be ignored.
 
-        Negative areas can exist for void gaps in the fuel pin. A negative area in a gap
-        represents overlap area between two solid components. To account for this
-        additional space within the pin cladding the abs(negativeArea) is added to the
-        inner cladding area.
+        Negative areas can exist for void gaps in the fuel pin. A negative area in a gap represents
+        overlap area between two solid components. To account for this additional space within the
+        pin cladding the abs(negativeArea) is added to the inner cladding area.
 
         Parameters
         ----------
@@ -299,7 +293,8 @@ class Block(composites.Composite):
             if c.isFuel():
                 fuelComponentArea += componentArea
             elif c.hasFlags(Flags.SLUG):
-                # this flag designates that this clad/slug combination isn't fuel and shouldn't be counted in the average
+                # this flag designates that this clad/slug combination isn't fuel and shouldn't be
+                # counted in the average
                 pass
             else:
                 if c.containsSolidMaterial():
@@ -337,9 +332,8 @@ class Block(composites.Composite):
         Raises
         ------
         ValueError
-            If the multiplicities of the block are not only 1 or N or if generated ringNumber leads to more positions than necessary.
-
-
+            If the multiplicities of the block are not only 1 or N or if generated ringNumber leads
+            to more positions than necessary.
         """
         raise NotImplementedError()
 
@@ -363,7 +357,7 @@ class Block(composites.Composite):
 
         volume: float, optional
             If average=True, the volume-integrated flux is divided by volume before being returned.
-            The user may specify a volume here, or the function will obtain the block volume directly.
+            The user may specify a volume, or the function will obtain the block volume directly.
 
         gamma : bool, optional
             Whether to return the neutron flux or the gamma flux.
@@ -391,8 +385,8 @@ class Block(composites.Composite):
         Parameters
         ----------
         fluxes : 2-D list of floats
-            The block-level pin multigroup fluxes. fluxes[g][i] represents the flux in group g for pin i.
-            Flux units are the standard n/cm^2/s.
+            The block-level pin multigroup fluxes. fluxes[g][i] represents the flux in group g for
+            pin i. Flux units are the standard n/cm^2/s.
             The "ARMI pin ordering" is used, which is counter-clockwise from 3 o'clock.
         adjoint : bool, optional
             Whether to set real or adjoint data.
@@ -402,8 +396,8 @@ class Block(composites.Composite):
         Outputs
         -------
         self.p.pinMgFluxes : 2-D array of floats
-            The block-level pin multigroup fluxes. pinMgFluxes[g][i] represents the flux in group g for pin i.
-            Flux units are the standard n/cm^2/s.
+            The block-level pin multigroup fluxes. pinMgFluxes[g][i] represents the flux in group g
+            for pin i. Flux units are the standard n/cm^2/s.
             The "ARMI pin ordering" is used, which is counter-clockwise from 3 o'clock.
         """
         pinFluxes = []
