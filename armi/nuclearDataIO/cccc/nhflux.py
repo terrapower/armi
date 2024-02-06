@@ -323,7 +323,7 @@ class NhfluxStream(cccc.StreamWithDataContainer):
                         self._data.fluxMomentsAll[:, z, :, gEff]
                     )
 
-                # Process currents, but only if iwnhfl is not equal to 1.
+                # Process currents, but only if iwnhfl is not equal to 1
                 if self._metadata["iwnhfl"] != 1:
                     # Loop through axial nodes
                     for z in range(nz):
