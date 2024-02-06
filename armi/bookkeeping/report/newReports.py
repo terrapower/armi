@@ -195,12 +195,13 @@ class ReportNode(ABC):
         Parameters
         ----------
         level : int
-            level of the nesting for this section, determines the size of the heading title for the Section
-            (The higher the level, the smaller the title font-size). Ranges from H1 - H4 in html terms.
+            level of the nesting for this section, determines the size of the heading title for the
+            Section (The higher the level, the smaller the title font-size). Ranges from H1 - H4 in
+            html terms.
 
         idPrefix : String
-            used for href/id referencing for the left hand side table of contents to be paired with the item
-            that render() is called upon.
+            Used for href/id referencing for the left hand side table of contents to be paired with
+            the item that render() is called upon.
 
         Returns
         -------
@@ -440,10 +441,10 @@ class TimeSeries(ReportNode):
     Example
     -------
 
-    >>> series = TimeSeries("Plot of K-effective", "plot", ["k-effective"], "k-eff", "keff.png") # Adding to a plot with k-effective
+    >>> series = TimeSeries("Plot of K-effective", "plot", ["k-effective"], "k-eff", "keff.png")
     >>> time = r.p.time                     # The current time node of the reactor.
     >>> data = r.core.p.keff                # The parameter k-effective value at that time.
-    >>> uncertainty = r.core.p.keffUnc      # Since the parameter yields keff-uncontrolled value at the current time.
+    >>> uncertainty = r.core.p.keffUnc      # The keff-uncontrolled at the current time.
     >>> series.add("k-effective", time, data, uncertainty)   # Adds this point to be plotted later.
 
     >>> # Adding to a plot with multiple lines for fuel Burn-Up Plot.
