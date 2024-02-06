@@ -1035,7 +1035,10 @@ class FuelHandler:
             elif "assembly" in line:
                 # this is the new load style where an actual assembly type is written to the shuffle logic
                 # due to legacy reasons, the assembly type will be put into group 4
-                pat = r"([A-Za-z0-9!\-]+) moved to ([A-Za-z0-9!\-]+) with assembly type ([A-Za-z0-9!\s]+)\s*(ANAME=\S+)?\s*with enrich list: (.+)"
+                pat = (
+                    r"([A-Za-z0-9!\-]+) moved to ([A-Za-z0-9!\-]+) with assembly type "
+                    + r"([A-Za-z0-9!\s]+)\s*(ANAME=\S+)?\s*with enrich list: (.+)"
+                )
                 m = re.search(pat, line)
                 if not m:
                     raise InputError(
