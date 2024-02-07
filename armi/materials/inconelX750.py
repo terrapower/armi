@@ -64,8 +64,8 @@ class InconelX750(Material):
     def polyfitThermalConductivity(self, power=2):
         r"""
         Calculates the coefficients of a polynomial fit for thermalConductivity. Based on data from
-        http://www.specialmetals.com/documents/Inconel%20alloy%20X-750.pdf Fits a polynomial to the
-        data set and returns the coefficients.
+        https://web.archive.org/web/20170215105917/http://www.specialmetals.com:80/documents/Inconel%20alloy%20X-750.pdf
+        Fits a polynomial to the data set and returns the coefficients.
 
         Parameters
         ----------
