@@ -45,7 +45,7 @@ class DelayedNeutronData:
     average over many nuclides (as computed after a delayed-neutron fraction calculation).
 
     For a problem with P precursor groups and G energy groups, delayed neutron precursor information
-    includes:
+    includes the three attributes of this class listed below.
 
     Attributes
     ----------
