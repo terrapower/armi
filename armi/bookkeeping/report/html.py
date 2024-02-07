@@ -181,7 +181,7 @@ def encode64(file_path):
 
         runLog.warning(
             (
-                "'.pdf' images cannot be embedded into this HTML report. {file_path} will not be"
+                f"'.pdf' images cannot be embedded into this HTML report. {file_path} will not be"
                 " inserted."
             )
         )

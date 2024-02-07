@@ -66,7 +66,7 @@ class TZM(Material):
         self.setMassFrac("MO", 0.996711222)
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
-        r"""
+        """
         Return linear expansion in %dL/L from interpolation of tabular data.
 
         This function is used to expand a material from its reference temperature (21C)
