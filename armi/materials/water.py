@@ -21,7 +21,7 @@ from armi.nucDirectory import thermalScattering as tsl
 from armi.utils import units
 from armi.utils.units import getTk
 
-__REF_SR1_86 = (
+_REF_SR1_86 = (
     "IAPWS SR1-86 Revised Supplementary Release on Saturation Properties of Ordinary Water and "
     "Steam"
 )
@@ -46,13 +46,13 @@ class Water(Fluid):
 
     thermalScatteringLaws = (tsl.byNbAndCompound[nb.byName["H"], tsl.H2O],)
     references = {
-        "vapor pressure": __REF_SR1_86,
-        "enthalpy (saturated water)": __REF_SR1_86,
-        "enthalpy (saturated steam)": __REF_SR1_86,
-        "entropy (saturated water)": __REF_SR1_86,
-        "entropy (saturated steam)": __REF_SR1_86,
-        "density (saturated water)": __REF_SR1_86,
-        "density (saturated steam)": __REF_SR1_86,
+        "vapor pressure": _REF_SR1_86,
+        "enthalpy (saturated water)": _REF_SR1_86,
+        "enthalpy (saturated steam)": _REF_SR1_86,
+        "entropy (saturated water)": _REF_SR1_86,
+        "entropy (saturated steam)": _REF_SR1_86,
+        "density (saturated water)": _REF_SR1_86,
+        "density (saturated steam)": _REF_SR1_86,
     }
 
     TEMPERATURE_CRITICAL_K = 647.096
