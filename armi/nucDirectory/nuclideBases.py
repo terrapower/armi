@@ -356,8 +356,9 @@ class INuclide(NuclideInterface):
         """
         Create an instance of an INuclide.
 
-        .. warning::
-            Do not call this constructor directly; use the factory instead.
+        Warning
+        -------
+        Do not call this constructor directly; use the factory instead.
         """
         if element not in elements.byName.values():
             raise ValueError(
@@ -365,7 +366,8 @@ class INuclide(NuclideInterface):
             )
         if state < 0:
             raise ValueError(
-                f"Error in initializing nuclide {name}. An invalid state {state} is provided. The state must be a positive integer."
+                f"Error in initializing nuclide {name}. An invalid state {state} is provided. The "
+                "state must be a positive integer."
             )
         if halflife < 0.0:
             raise ValueError(

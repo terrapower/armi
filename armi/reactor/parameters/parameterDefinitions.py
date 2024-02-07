@@ -173,6 +173,7 @@ class Serializer:
     armi.bookkeeping.db.database3.unpackSpecialData
     armi.reactor.flags.FlagSerializer
     """
+
     # This will accompany the packed data as an attribute when written, and will be provided to the
     # unpack() method when reading. If the underlying format of the data changes, make sure to
     # change this.

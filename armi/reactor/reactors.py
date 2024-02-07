@@ -13,15 +13,12 @@
 # limitations under the License.
 
 """
-Reactor objects represent the highest level in the hierarchy of
-structures that compose the system to be modeled. Core objects
-represent collections of assemblies.
+Reactor objects represent the highest level in the hierarchy of structures that compose the system
+to be modeled. Core objects represent collections of assemblies.
 
-Core is a high-level object in the data model in ARMI. They
-contain assemblies which in turn contain more refinement in
-representing the physical reactor. The reactor is the owner of
-many of the plant-wide state variables such as keff, cycle,
-and node.
+Core is a high-level object in the data model in ARMI. They contain assemblies which in turn contain
+more refinement in representing the physical reactor. The reactor is the owner of many of the plant-
+wide state variables such as keff, cycle, and node.
 """
 from typing import Optional
 import collections
@@ -67,8 +64,7 @@ from armi.utils.mathematics import average1DWithinTolerance
 
 class Reactor(composites.Composite):
     """
-    Top level of the composite structure, potentially representing all
-    components in a reactor.
+    Top level of the composite structure, potentially representing all components in a reactor.
 
     This class contains the core and any ex-core structures that are to be represented in the ARMI
     model. Historically, the ``Reactor`` contained only the core. To support better representation
@@ -2251,9 +2247,8 @@ class Core(composites.Composite):
 
     def getMinimumPercentFluxInFuel(self, target=0.005):
         """
-        Goes through the entire reactor to determine what percentage of flux occurs at
-        each ring. Starting with the outer ring, this function helps determine the effective
-        size of the core where additional assemblies will not help the breeding in the TWR.
+        Starting with the outer ring, this method goes through the entire Reactor to determine what
+        percentage of flux occurs at each ring.
 
         Parameters
         ----------

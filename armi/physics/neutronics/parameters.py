@@ -699,8 +699,8 @@ def _getNeutronicsBlockParams():
             "dpaPeakFromFluence",
             units=units.DPA,
             description=(
-                f"DPA approximation based on a fluence conversion factor set in the "
-                "{CONF_DPA_PER_FLUENCE} setting"
+                "DPA approximation based on a fluence conversion factor set in the "
+                f"{CONF_DPA_PER_FLUENCE} setting"
             ),
             location=ParamLocation.MAX,
             categories=[
