@@ -426,8 +426,6 @@ class TestGlobalFluxUtils(unittest.TestCase):
         """
         Test that the reaction rate code executes and sets a param > 0.0.
 
-        TODO: This could validate the reaction rate calculation.
-
         .. test:: Return the reaction rates for a given ArmiObject.
             :id: T_ARMI_FLUX_RX_RATES
             :tests: R_ARMI_FLUX_RX_RATES
