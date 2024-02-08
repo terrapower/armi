@@ -85,7 +85,7 @@ class Block(composites.Composite):
             The name of this block
 
         height : float, optional
-            The height of the block in cm. Defaults to 1.0 so that `getVolume` assumes unit height.
+            The height of the block in cm. Defaults to 1.0 so that ``getVolume`` assumes unit height.
         """
         composites.Composite.__init__(self, name)
         self.p.height = height

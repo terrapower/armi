@@ -64,7 +64,7 @@ class TestGeometryConverters(unittest.TestCase):
         )  # should wind up with 11 reflector assemblies per 1/3rd core
 
     def test_setNumberOfFuelAssems(self):
-        """Tests that ``setNumberOfFuelAssems~`` properly changes the number of fuel assemblies."""
+        """Tests that ``setNumberOfFuelAssems`` properly changes the number of fuel assemblies."""
         # tests ability to add fuel assemblies
         converter = geometryConverters.FuelAssemNumModifier(self.cs)
         converter.numFuelAssems = 60

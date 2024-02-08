@@ -18,7 +18,7 @@ Definitions of top-level reactor arrangements like the Core (default), SFP, etc.
 See documentation of blueprints in :doc:`/user/inputs/blueprints` for more context. See example in
 :py:mod:`armi.reactor.blueprints.tests.test_reactorBlueprints`.
 
-This was built to replace the old system that loaded the core geometry from the cs['geometry']
+This was built to replace the old system that loaded the core geometry from the ``cs['geometry']``
 setting. Until the geom file-based input is completely removed, this system will attempt to migrate
 the core layout from geom files. When geom files are used, explicitly specifying a ``core`` system
 will result in an error.

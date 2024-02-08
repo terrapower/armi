@@ -251,7 +251,7 @@ class GridBlueprint(yamlize.Object):
     @property
     def readFromLatticeMap(self):
         """
-        This is implemented as a property, since as a Yamlize object, __init__ is not always called
+        This is implemented as a property, since as a Yamlize object, ``__init__`` is not always called
         and we have to lazily evaluate its default value.
         """
         return getattr(self, "_readFromLatticeMap", False)
@@ -270,7 +270,7 @@ class GridBlueprint(yamlize.Object):
         """
         Build spatial grid.
 
-        If you do not enter latticeDimensions, a unit grid will be produced which must be adjusted
+        If you do not enter ``latticeDimensions``, a unit grid will be produced which must be adjusted
         to the proper dimensions (often by inspection of children) at a later time.
         """
         symmetry = (
