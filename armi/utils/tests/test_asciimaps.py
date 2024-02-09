@@ -296,12 +296,9 @@ class TestAsciiMaps(unittest.TestCase):
         # hex map is 19 rows tall: from -9 to 9
         asciimap = asciimaps.AsciiMapHexFullTipsUp()
         asciimap.readAscii(HEX_FULL_MAP)
-        # TODO: JOHN! Why does "print(asciimap)" fail here?
-        #       ValueError: Inconsistent lines (19) and offsets (38)
-        # print(asciimap)
-        # self.assertIn("7 1 1 1 1 1 1 1 1 0", str(asciimap))
 
         # spot check some values in the map
+        self.assertIn("7 1 1 1 1 1 1 1 1 0", str(asciimap))
         self.assertEqual(asciimap[-8, 7], "8")
         self.assertEqual(asciimap[-9, 0], "7")
         self.assertEqual(asciimap[0, -1], "2")
@@ -322,6 +319,7 @@ class TestAsciiMaps(unittest.TestCase):
             output = stream.read()
             self.assertEqual(output, HEX_FULL_MAP)
 
+        self.assertIn("7 1 1 1 1 1 1 1 1 0", str(asciimap))
         self.assertIn("7 1 1 1 1 1 1 1 1 0", str(asciimap2))
 
     def test_hexFullFlatsUp(self):

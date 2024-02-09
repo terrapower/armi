@@ -99,9 +99,17 @@ class AsciiMap:
         stream.write(self.__str__())
 
     def __str__(self):
-        """TODO JOHN"""
+        """Build the human-readable ASCII string representing the lattice map.
+
+        This method is useful for quickly printing out a lattice map.
+
+        Returns
+        -------
+        str : The custom ARMI ASCII-art-style string representing the map.
+        """
+        # Do some basic validation
         if not self.asciiLines:
-            raise ValueError("Cannot write ASCII map before ASCII lines are processed")
+            raise ValueError("Cannot write ASCII map before ASCII lines are processed.")
 
         if len(self.asciiOffsets) != len(self.asciiLines):
             runLog.error(f"AsciiLines: {self.asciiLines}")
@@ -111,6 +119,7 @@ class AsciiMap:
                 f"and offsets ({len(self.asciiOffsets)})"
             )
 
+        # Finally, build the string representation.
         txt = ""
         fmt = f"{{val:{len(self._placeholder)}s}}"
         for offset, line in zip(self.asciiOffsets, self.asciiLines):
@@ -199,35 +208,27 @@ class AsciiMap:
         is universal. In some implementations, this operation is in a different
         method for efficiency.
         """
-        print(f"TODO JOHN 1 _asciiMaxLine: {self._asciiMaxLine}")
         self._updateDimensionsFromData()
-        print(f"TODO JOHN 2 _asciiMaxLine: {self._asciiMaxLine}")
         self.asciiLines = []
-        print("--------------------------------------------------")
         for lineNum in self._getLineNumsToWrite():
-            print(lineNum)
             line = []
             for colNum in range(self._asciiMaxCol):
-                print(f"   {colNum}")
                 ij = self._getIJFromColRow(colNum, lineNum)
                 # convert to string and strip any whitespace in thing we're representing
                 line.append(
                     str(self.asciiLabelByIndices.get(ij, PLACEHOLDER)).replace(" ", "")
                 )
             self.asciiLines.append(line)
-        print("+++++++++++++++++++++++++++++++++++++++++++++++++++")
 
         # clean data
         noDataLinesYet = True  # handle all-placeholder rows
         newLines = []
         for line in self.asciiLines:
-            print(line)
             if re.search(f"^[{PLACEHOLDER}]+$", "".join(line)) and noDataLinesYet:
                 continue
 
             noDataLinesYet = False
             newLine = self._removeTrailingPlaceholders(line)
-            print(f"   {newLine}")
             if newLine:
                 newLines.append(newLine)
             else:
@@ -237,6 +238,7 @@ class AsciiMap:
                 raise ValueError(
                     "Cannot write asciimaps with blank rows from pure data yet."
                 )
+
         if not newLines:
             raise ValueError("No data found")
         self.asciiLines = newLines
@@ -272,6 +274,7 @@ class AsciiMap:
 
     def _makeOffsets(self):
         """Build offsets."""
+        raise NotImplementedError
 
     def items(self):
         return self.asciiLabelByIndices.items()
@@ -317,7 +320,7 @@ class AsciiMapCartesian(AsciiMap):
 
     def _makeOffsets(self):
         """Cartesian grids have 0 offset on all lines."""
-        AsciiMap._makeOffsets(self)
+        self.asciiOffsets = []
         for _line in self.asciiLines:
             self.asciiOffsets.append(0)
 
@@ -462,14 +465,7 @@ class AsciiMapHexThirdFlatsUp(AsciiMap):
         # now that we understand how many corner positions are truncated,
         # we can fully determine the size of the ascii map
         self._asciiMaxCol = self._ijMax + 1
-        print(
-            f"\n    TODO JOHN 1/3 before:  self._asciiMaxLine:   {self._asciiMaxLine}"
-        )
-        print(
-            f"    self._ijMax: {self._ijMax},    self._asciiLinesOffCorner:  {self._asciiLinesOffCorner}"
-        )
         self._asciiMaxLine = self._ijMax * 2 + 1 - self._asciiLinesOffCorner
-        print(f"    TODO JOHN 1/3 after:  self._asciiMaxLine:   {self._asciiMaxLine}\n")
 
 
 class AsciiMapHexFullFlatsUp(AsciiMapHexThirdFlatsUp):
@@ -528,7 +524,6 @@ class AsciiMapHexFullFlatsUp(AsciiMapHexThirdFlatsUp):
         """
         # max lines required if corners were not cut off
         maxIJIndex = self._ijMax
-        print(f"TODO JOHN: maxIJIndex: {maxIJIndex}")
         self.asciiOffsets = []
         # grab top left edge going down until corner where it lifts off edge.
         # Due to the placeholders these just oscillate
@@ -536,9 +531,7 @@ class AsciiMapHexFullFlatsUp(AsciiMapHexThirdFlatsUp):
             self.asciiOffsets.append((li - self._asciiLinesOffCorner) % 2)
 
         # going away from the left edge, the offsets increase linearly
-        print(f"TODO JOHN: len(self.asciiOffsets): {len(self.asciiOffsets)}")
         self.asciiOffsets.extend(range(maxIJIndex + 1))
-        print(f"TODO JOHN: len(self.asciiOffsets): {len(self.asciiOffsets)}")
 
         # since we allow cut-off corners, we must truncate the offsets
         # number of items in last line indicates how many
@@ -550,12 +543,7 @@ class AsciiMapHexFullFlatsUp(AsciiMapHexThirdFlatsUp):
     def _updateDimensionsFromData(self):
         AsciiMapHexThirdFlatsUp._updateDimensionsFromData(self)
         self._asciiMaxCol = self._ijMax + 1
-        print(f"    TODO JOHN FULL before:  self._asciiMaxLine:   {self._asciiMaxLine}")
-        print(
-            f"    self._ijMax: {self._ijMax},    self._asciiLinesOffCorner:  {self._asciiLinesOffCorner}"
-        )
         self._asciiMaxLine = self._ijMax * 4 + 1 - self._asciiLinesOffCorner * 2
-        print(f"    TODO JOHN FULL after:  self._asciiMaxLine:   {self._asciiMaxLine}")
 
 
 class AsciiMapHexFullTipsUp(AsciiMap):
@@ -638,7 +626,7 @@ class AsciiMapHexFullTipsUp(AsciiMap):
 
     def _makeOffsets(self):
         """Full hex tips-up grids have linearly incrementing offset."""
-        AsciiMap._makeOffsets(self)
+        self.asciiOffsets = []
         for li, _line in enumerate(self.asciiLines):
             self.asciiOffsets.append(li)
 
