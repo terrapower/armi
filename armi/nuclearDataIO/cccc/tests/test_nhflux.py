@@ -235,9 +235,9 @@ class TestNhfluxVariantVarsrc(unittest.TestCase):
 
         # Make sure that the flux moments match identically
         self.assertTrue(
-            np.isclose(
+            np.allclose(
                 writtenVarsrc.fluxMoments, self.nhf.fluxMoments, rtol=0.0, atol=0.0
-            ).all()
+            )
         )
 
         # Make sure all other datasets are empty, since the reader should not be trying
