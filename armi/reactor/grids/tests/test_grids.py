@@ -353,15 +353,15 @@ class TestHexGrid(unittest.TestCase):
         self.assertEqual(third.getPositionsInRing(3), 12)
         self.assertEqual(third.getSymmetricEquivalents((3, -2)), [(-1, 3), (-2, -1)])
 
-    def test_pointsUpFlatsUp(self):
-        """Test the pointedEndUp attribute of the fromPitch method.
+    def test_cornersUpFlatsUp(self):
+        """Test the cornersUp attribute of the fromPitch method.
 
         .. test:: Build a points-up and a flats-up hexagonal grids.
             :id: T_ARMI_GRID_HEX_TYPE
             :tests: R_ARMI_GRID_HEX_TYPE
         """
-        tipsUp = grids.HexGrid.fromPitch(1.0, pointedEndUp=True)
-        flatsUp = grids.HexGrid.fromPitch(1.0, pointedEndUp=False)
+        tipsUp = grids.HexGrid.fromPitch(1.0, cornersUp=True)
+        flatsUp = grids.HexGrid.fromPitch(1.0, cornersUp=False)
 
         self.assertEqual(tipsUp._unitSteps[0][0], 0.5)
         self.assertAlmostEqual(flatsUp._unitSteps[0][0], 0.8660254037844388)

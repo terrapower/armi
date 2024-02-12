@@ -318,7 +318,7 @@ class GridBlueprint(yamlize.Object):
             spatialGrid = grids.HexGrid.fromPitch(
                 pitch,
                 numRings=maxIndex + 2,
-                pointedEndUp=geom == geometry.HEX_CORNERS_UP,
+                cornersUp=geom == geometry.HEX_CORNERS_UP,
             )
         elif geom == geometry.CARTESIAN:
             # if full core or not cut-off, bump the first assembly from the center of

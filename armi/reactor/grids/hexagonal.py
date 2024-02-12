@@ -63,7 +63,7 @@ class HexGrid(StructuredGrid):
 
     Notes
     -----
-    In an axial plane (i, j) are as follows (second one is pointedEndUp)::
+    In an axial plane (i, j) are as follows (second one is cornersUp)::
 
 
                     ( 0, 1)
@@ -80,8 +80,24 @@ class HexGrid(StructuredGrid):
                 (-1, 0) ( 0,-1)
     """
 
+    def __init__(
+        self,
+        unitSteps=(0, 0, 0),
+        bounds=(None, None, None),
+        unitStepLimits=((0, 1), (0, 1), (0, 1)),
+        offset=None,
+        geomType="",
+        symmetry="",
+        armiObject=None,
+        cornersUp=False,
+    ):
+        super().__init__(
+            unitSteps, bounds, unitStepLimits, offset, geomType, symmetry, armiObject
+        )
+        self.cornersUp = cornersUp
+
     @staticmethod
-    def fromPitch(pitch, numRings=25, armiObject=None, pointedEndUp=False, symmetry=""):
+    def fromPitch(pitch, numRings=25, armiObject=None, cornersUp=False, symmetry=""):
         """
         Build a finite step-based 2-D hex grid from a hex pitch in cm.
 
@@ -116,7 +132,7 @@ class HexGrid(StructuredGrid):
         armiObject : ArmiObject, optional
             The object that this grid is anchored to (i.e. the reactor for a grid of
             assemblies)
-        pointedEndUp : bool, optional
+        cornersUp : bool, optional
             Rotate the hexagons 30 degrees so that the pointed end faces up instead of
             the flat.
         symmetry : string, optional
@@ -128,7 +144,7 @@ class HexGrid(StructuredGrid):
             A functional hexagonal grid object.
         """
         side = hexagon.side(pitch)
-        if pointedEndUp:
+        if cornersUp:
             # rotated 30 degrees CCW from normal
             # increases in i move you in x and y
             # increases in j also move you in x and y
@@ -142,12 +158,14 @@ class HexGrid(StructuredGrid):
             # y direction is a function of both.
             unitSteps = ((1.5 * side, 0.0, 0.0), (pitch / 2.0, pitch, 0.0), (0, 0, 0))
 
-        return HexGrid(
+        hex = HexGrid(
             unitSteps=unitSteps,
             unitStepLimits=((-numRings, numRings), (-numRings, numRings), (0, 1)),
             armiObject=armiObject,
             symmetry=symmetry,
         )
+        hex.cornersUp = cornersUp
+        return hex
 
     @property
     def pitch(self) -> float:
@@ -221,7 +239,7 @@ class HexGrid(StructuredGrid):
         Return the indices of the immediate neighbors of a mesh point in the plane.
 
         Note that these neighbors are ordered counter-clockwise beginning from the
-        30 or 60 degree direction. Exact direction is dependent on pointedEndUp arg.
+        30 or 60 degree direction. Exact direction is dependent on cornersUp arg.
         """
         return [
             (i + 1, j, k),
