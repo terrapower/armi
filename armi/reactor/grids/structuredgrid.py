@@ -58,7 +58,7 @@ class StructuredGrid(Grid):
         variety of geometries, including hexagonal and Cartesian.  The tuples are not
         vectors in the direction of the translation, but rather grouped by direction. If
         the bounds argument is described for a direction, the bounds will be used rather
-        than the unit step information.  The default of (0, 0, 0) makes all dimensions
+        than the unit step information. The default of (0, 0, 0) makes all dimensions
         insensitive to indices since the coordinates are calculated by the dot product
         of this and the indices.  With this default, any dimension that is desired to
         change with indices should be defined with bounds. RZtheta grids are created
@@ -73,7 +73,7 @@ class StructuredGrid(Grid):
         grids to be finite so we can populate them with SpatialLocator objects.
     offset : 3-tuple, optional
         Offset in cm for each axis. By default the center of the (0,0,0)-th object is in
-        the center of the grid.  Offsets can move it so that the (0,0,0)-th object can
+        the center of the grid. Offsets can move it so that the (0,0,0)-th object can
         be fully within a quadrant (i.e. in a Cartesian grid).
     armiObject : ArmiObject, optional
         The ArmiObject that this grid describes. For example if it's a 1-D assembly

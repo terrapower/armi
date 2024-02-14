@@ -433,11 +433,11 @@ class TestHexGrid(unittest.TestCase):
             newLoc = pickle.load(buf)
             assert_allclose(loc.indices, newLoc.indices)
 
-    def test_adjustPitch(self):
-        """Adjust the pich of a hexagonal lattice.
+    def test_adjustPitchFlatsUp(self):
+        """Adjust the pich of a hexagonal lattice, for a "flats up" grid.
 
         .. test:: Construct a hexagonal lattice with three rings.
-            :id: T_ARMI_GRID_HEX
+            :id: T_ARMI_GRID_HEX0
             :tests: R_ARMI_GRID_HEX
 
         .. test:: Return the grid coordinates of different locations.
@@ -451,14 +451,15 @@ class TestHexGrid(unittest.TestCase):
                 unitSteps=((1.5 / math.sqrt(3), 0.0, 0.0), (0.5, 1, 0.0), (0, 0, 0)),
                 unitStepLimits=((-3, 3), (-3, 3), (0, 1)),
                 offset=numpy.array([offset, offset, offset]),
+                cornersUp=False,
             )
 
             # test that we CAN change the pitch, and it scales the grid (but not the offset)
             v1 = grid.getCoordinates((1, 0, 0))
             grid.changePitch(2.0)
+            self.assertEqual(grid.pitch, 2.0)
             v2 = grid.getCoordinates((1, 0, 0))
             assert_allclose(2 * v1 - offset, v2)
-            self.assertEqual(grid.pitch, 2.0)
 
             # basic sanity: test number of rings has changed
             self.assertEqual(grid._unitStepLimits[0][1], 3)
@@ -466,6 +467,45 @@ class TestHexGrid(unittest.TestCase):
             # basic sanity: check the offset exists and is correct
             for i in range(3):
                 self.assertEqual(grid.offset[i], offset)
+
+    def test_adjustPitchCornersUp(self):
+        """Adjust the pich of a hexagonal lattice, for a "corners up" grid.
+
+        .. test:: Construct a hexagonal lattice with three rings.
+            :id: T_ARMI_GRID_HEX1
+            :tests: R_ARMI_GRID_HEX
+
+        .. test:: Return the grid coordinates of different locations.
+            :id: T_ARMI_GRID_GLOBAL_POS1
+            :tests: R_ARMI_GRID_GLOBAL_POS
+        """
+        # run this test for a grid with no offset, and then a few random offset values
+        for offset in [0, 1, 1.123, 3.14]:
+            offsets = [offset, 0, 0]
+            # build a hex grid with pitch=1, 3 rings, and the above offset
+            grid = grids.HexGrid(
+                unitSteps=((1.5 / math.sqrt(3), 0.0, 0.0), (0.5, 1, 0.0), (0, 0, 0)),
+                unitStepLimits=((-3, 3), (-3, 3), (0, 1)),
+                offset=numpy.array(offsets),
+                cornersUp=True,
+            )
+
+            # test that we CAN change the pitch, and it scales the grid (but not the offset)
+            v1 = grid.getCoordinates((1, 0, 0))
+            grid.changePitch(2.0)
+            self.assertAlmostEqual(grid.pitch, math.sqrt(3), delta=1e-9)
+            v2 = grid.getCoordinates((1, 0, 0))
+            b = math.sqrt(3) - 0.5
+            a = math.sqrt(3) * b - 2
+            correction = numpy.array([a, b, 0])
+            assert_allclose(v1 + correction, v2)
+
+            # basic sanity: test number of rings has changed
+            self.assertEqual(grid._unitStepLimits[0][1], 3)
+
+            # basic sanity: check the offset exists and is correct
+            for i, off in enumerate(offsets):
+                self.assertEqual(grid.offset[i], off)
 
     def test_badIndices(self):
         grid = grids.HexGrid.fromPitch(1.0, numRings=3)

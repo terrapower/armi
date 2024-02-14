@@ -30,7 +30,7 @@ from armi.reactor.grids.structuredgrid import StructuredGrid
 
 COS30 = sqrt(3) / 2.0
 SIN30 = 1.0 / 2.0
-# going CCW from "position 1" (top right)
+# going counter-clockwise from "position 1" (top right)
 TRIANGLES_IN_HEXAGON = numpy.array(
     [
         (+COS30, SIN30),
@@ -65,19 +65,23 @@ class HexGrid(StructuredGrid):
     -----
     In an axial plane (i, j) are as follows (second one is cornersUp)::
 
-
                     ( 0, 1)
              (-1, 1)       ( 1, 0)
                     ( 0, 0)
              (-1, 0)       ( 1,-1)
                     ( 0,-1)
 
-
                 ( 0, 1) ( 1, 0)
-
             (-1, 1) ( 0, 0) ( 1,-1)
-
                 (-1, 0) ( 0,-1)
+
+    Basic hexagon geometry::
+
+    - pitch = sqrt(3) * side
+    - long diagonal = 2 * side
+    - Area = (sqrt(3) / 4) * side^2
+    - perimeter = 6 * side
+
     """
 
     def __init__(
@@ -133,8 +137,8 @@ class HexGrid(StructuredGrid):
             The object that this grid is anchored to (i.e. the reactor for a grid of
             assemblies)
         cornersUp : bool, optional
-            Rotate the hexagons 30 degrees so that the pointed end faces up instead of
-            the flat.
+            Rotate the hexagons 30 degrees so that the corners point up instead of
+            the flat faces.
         symmetry : string, optional
             A string representation of the symmetry options for the grid.
 
@@ -143,28 +147,15 @@ class HexGrid(StructuredGrid):
         HexGrid
             A functional hexagonal grid object.
         """
-        side = hexagon.side(pitch)
-        if cornersUp:
-            # rotated 30 degrees CCW from normal
-            # increases in i move you in x and y
-            # increases in j also move you in x and y
-            unitSteps = (
-                (pitch / 2.0, -pitch / 2.0, 0),
-                (1.5 * side, 1.5 * side, 0),
-                (0, 0, 0),
-            )
-        else:
-            # x direction is only a function of i because j-axis is vertical.
-            # y direction is a function of both.
-            unitSteps = ((1.5 * side, 0.0, 0.0), (pitch / 2.0, pitch, 0.0), (0, 0, 0))
+        unitSteps = HexGrid.getRawUnitSteps(pitch, cornersUp)
 
         hex = HexGrid(
             unitSteps=unitSteps,
             unitStepLimits=((-numRings, numRings), (-numRings, numRings), (0, 1)),
             armiObject=armiObject,
             symmetry=symmetry,
+            cornersUp=cornersUp,
         )
-        hex.cornersUp = cornersUp
         return hex
 
     @property
@@ -408,12 +399,42 @@ class HexGrid(StructuredGrid):
         scale = self.pitch / 3.0
         return xy + scale * TRIANGLES_IN_HEXAGON
 
+    @staticmethod
+    def getRawUnitSteps(pitch, cornersUp=False):
+        """Get the raw unit steps (ignore step dimensions), for a hex grid.
+
+        Parameters
+        ----------
+        pitch : float
+            The short diameter of the hexagons (from flat side to flat side).
+        cornersUp : bool, optional
+            If True, the hexagons have a corner pointing in the Y direction. Default: False
+
+        Returns
+        -------
+        tuple : The full 3D set of derivatives of X,Y,Z in terms of i,j,k.
+        """
+        side = hexagon.side(pitch)
+        if cornersUp:
+            # rotated 30 degrees counter-clockwise from normal
+            # increases in i moves you in x and y
+            # increases in j also moves you in x and y
+            unitSteps = (
+                (pitch / 2.0, -pitch / 2.0, 0),
+                (1.5 * side, 1.5 * side, 0),
+                (0, 0, 0),
+            )
+        else:
+            # x direction is only a function of i because j-axis is vertical.
+            # y direction is a function of both.
+            unitSteps = ((1.5 * side, 0.0, 0.0), (pitch / 2.0, pitch, 0.0), (0, 0, 0))
+
+        return unitSteps
+
     def changePitch(self, newPitchCm: float):
         """Change the hex pitch."""
-        side = hexagon.side(newPitchCm)
-        self._unitSteps = numpy.array(
-            ((1.5 * side, 0.0, 0.0), (newPitchCm / 2.0, newPitchCm, 0.0), (0, 0, 0))
-        )[self._stepDims]
+        unitSteps = numpy.array(HexGrid.getRawUnitSteps(newPitchCm, self.cornersUp))
+        self._unitSteps = unitSteps[self._stepDims]
 
     def locatorInDomain(self, locator, symmetryOverlap: Optional[bool] = False) -> bool:
         # This will include the "top" 120-degree symmetry lines. This is to support
@@ -488,8 +509,7 @@ class HexGrid(StructuredGrid):
 
         return locList[:nLocs]
 
-    # TODO: this is only used by testing and another method that just needs the count of assemblies
-    #       in a ring, not the actual positions
+    # TODO: This is only used by the old GUI code, and should be moved there.
     def allPositionsInThird(self, ring, includeEdgeAssems=False):
         """
         Returns a list of all the positions in a ring (in the first third).
