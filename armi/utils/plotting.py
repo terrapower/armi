@@ -1212,7 +1212,14 @@ def _makeBlockPinPatches(block, cold):
 
             # goes through each location
             # want to place a patch at that location
-            blockPatches = _makeComponentPatch(component, (x, y), cold)
+            if isinstance(block.spatialGrid, grids.HexGrid):
+                hexRotation = 30 if block.spatialGrid.cornersUp else 0
+            else:
+                hexRotation = 0
+
+            blockPatches = _makeComponentPatch(
+                component, (x, y), cold, hexRotation=hexRotation
+            )
             for element in blockPatches:
                 patches.append(element)
 
@@ -1227,7 +1234,7 @@ def _makeBlockPinPatches(block, cold):
     return patches, data, names
 
 
-def _makeComponentPatch(component, position, cold):
+def _makeComponentPatch(component, position, cold, hexRotation=30):
     """Makes a component shaped patch to later be used for making block diagrams.
 
     Parameters
@@ -1283,10 +1290,10 @@ def _makeComponentPatch(component, position, cold):
     elif isinstance(component, Hexagon):
         if component.getDimension("ip", cold=cold) != 0:
             innerPoints = numpy.array(
-                hexagon.corners(30) * component.getDimension("ip", cold=cold)
+                hexagon.corners(hexRotation) * component.getDimension("ip", cold=cold)
             )
             outerPoints = numpy.array(
-                hexagon.corners(30) * component.getDimension("op", cold=cold)
+                hexagon.corners(hexRotation) * component.getDimension("op", cold=cold)
             )
             blockPatch = []
             for n in range(6):

@@ -160,6 +160,24 @@ class HexGrid(StructuredGrid):
         """
         return self._unitSteps[1][1]
 
+    @property
+    def cornersUp(self) -> bool:
+        """
+        Check whether the hexagonal grid is "corners up" or "flats up"
+
+        Corners up corners:
+           *
+         *   *
+         *   *
+           *
+
+        Flats up hexagon corners:
+          *  *
+        *      *
+          *  *
+        """
+        return self._unitSteps[0][1] != 0.0
+
     @staticmethod
     def indicesToRingPos(i: int, j: int) -> Tuple[int, int]:
         """
