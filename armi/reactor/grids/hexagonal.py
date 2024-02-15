@@ -163,18 +163,10 @@ class HexGrid(StructuredGrid):
     @property
     def cornersUp(self) -> bool:
         """
-        Check whether the hexagonal grid is "corners up" or "flats up"
+        Check whether the hexagonal grid is "corners up" or "flats up".
 
-        Corners up corners:
-           *
-         *   *
-         *   *
-           *
-
-        Flats up hexagon corners:
-          *  *
-        *      *
-          *  *
+        See the armi.reactor.grids.HexGrid class documentation for an
+        illustration of the two types of grid indexing.
         """
         return self._unitSteps[0][1] != 0.0
 
