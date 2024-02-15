@@ -257,20 +257,42 @@ class HexGrid(StructuredGrid):
 
     @staticmethod
     def _indicesAndEdgeFromRingAndPos(ring, position):
+        """Given the ring and position, return the (I,J) coordinates, and which edge the grid
+        cell is on.
+
+        Parameters
+        ----------
+        ring: int
+            Starting with 1 (not zero), the ring of the grid cell.
+        position: int
+            Starting with 1 (not zero), the position of the grid cell, in the ring.
+
+        Returns
+        -------
+        (int, int, int) : I coordinate, J coordinate, which edge of the hex ring
+
+        Notes
+        -----
+        - Edge indicates which edge of the ring in which the hexagon resides.
+        - Edge 0 is the NE edge, edge 1 is the N edge, etc.
+        - Offset is (0-based) index of the hexagon in that edge. For instance,
+          ring 3, pos 12 resides in edge 5 at index 1; it is the second hexagon
+          in ring 3, edge 5.
+        """
+        # The inputs start counting at 1, but the grid starts counting at zero.
         ring = ring - 1
         pos = position - 1
 
+        # Handle the center grid cell.
         if ring == 0:
             if pos != 0:
                 raise ValueError(f"Position in center ring must be 1, not {position}")
             return 0, 0, 0
 
-        # Edge indicates which edge of the ring in which the hexagon resides.
-        # Edge 0 is the NE edge, edge 1 is the N edge, etc.
-        # Offset is (0-based) index of the hexagon in that edge. For instance,
-        # ring 3, pos 12 resides in edge 5 at index 1; it is the second hexagon
-        # in ring 3, edge 5.
-        edge, offset = divmod(pos, ring)  # = pos//ring, pos%ring
+        # find the edge and offset (pos//ring or pos%ring)
+        edge, offset = divmod(pos, ring)
+
+        # find (I,J) based on the ring, edge, and offset
         if edge == 0:
             i = ring - offset
             j = offset
@@ -279,9 +301,9 @@ class HexGrid(StructuredGrid):
             j = ring
         elif edge == 2:
             i = -ring
-            j = -offset + ring
+            j = ring - offset
         elif edge == 3:
-            i = -ring + offset
+            i = offset - ring
             j = -offset
         elif edge == 4:
             i = offset
@@ -290,13 +312,25 @@ class HexGrid(StructuredGrid):
             i = ring
             j = offset - ring
         else:
-            raise ValueError(
-                "Edge {} is invalid. From ring {}, pos {}".format(edge, ring, pos)
-            )
+            raise ValueError(f"Edge {edge} is invalid. From ring {ring}, pos {pos}")
+
         return i, j, edge
 
     @staticmethod
     def getIndicesFromRingAndPos(ring: int, pos: int) -> IJType:
+        """Given the ring and position, return the (I,J) coordinates in the hex grid.
+
+        Parameters
+        ----------
+        ring: int
+            Starting with 1 (not zero), the ring of the grid cell.
+        position: int
+            Starting with 1 (not zero), the position of the grid cell, in the ring.
+
+        Returns
+        -------
+        (int, int) : I coordinate, J coordinate
+        """
         i, j, _edge = HexGrid._indicesAndEdgeFromRingAndPos(ring, pos)
         return i, j
 
@@ -350,16 +384,16 @@ class HexGrid(StructuredGrid):
         return symmetryLine
 
     def getSymmetricEquivalents(self, indices: IJKType) -> List[IJType]:
-        """Retrieve the equivalent indices; return them as-is if this is full core, but
-        return the symmetric equivalent if this is a 1/3-core grid.
+        """Retrieve the equivalent indices. If full core return nothing, if 1/3-core grid,
+        return the symmetric equivalents, if any other grid, raise an error.
 
         .. impl:: Equivalent contents in 1/3-core geometries are retrievable.
             :id: I_ARMI_GRID_EQUIVALENTS
             :implements: R_ARMI_GRID_EQUIVALENTS
 
             This method takes in (I,J,K) indices, and if this ``HexGrid`` is full core,
-            it returns them as-is. If this ``HexGrid`` is 1/3-core, this method will
-            return the 1/3-core symmetric equivalent. If this grid is any other kind,
+            it returns nothing. If this ``HexGrid`` is 1/3-core, this method will return
+            the 1/3-core symmetric equivalent of just (I,J). If this grid is any other kind,
             this method will just return an error; a hexagonal grid with any other
             symmetry is probably an error.
         """
@@ -379,9 +413,7 @@ class HexGrid(StructuredGrid):
 
     @staticmethod
     def _getSymmetricIdenticalsThird(indices) -> List[IJType]:
-        """This works by rotating the indices by 120 degrees twice,
-        counterclockwise.
-        """
+        """This works by rotating the indices by 120 degrees twice, counterclockwise."""
         i, j = indices[:2]
         if i == 0 and j == 0:
             return []
