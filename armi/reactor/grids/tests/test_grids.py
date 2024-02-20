@@ -484,7 +484,11 @@ class TestHexGrid(unittest.TestCase):
             offsets = [offset, 0, 0]
             # build a hex grid with pitch=1, 3 rings, and the above offset
             grid = grids.HexGrid(
-                unitSteps=((1.5 / math.sqrt(3), 0.0, 0.0), (0.5, 1, 0.0), (0, 0, 0)),
+                unitSteps=(
+                    (0.5, -0.5, 0),
+                    (1.5 / math.sqrt(3), 1.5 / math.sqrt(3), 0),
+                    (0, 0, 0),
+                ),
                 unitStepLimits=((-3, 3), (-3, 3), (0, 1)),
                 offset=numpy.array(offsets),
                 cornersUp=True,
@@ -495,9 +499,7 @@ class TestHexGrid(unittest.TestCase):
             grid.changePitch(2.0)
             self.assertAlmostEqual(grid.pitch, math.sqrt(3), delta=1e-9)
             v2 = grid.getCoordinates((1, 0, 0))
-            b = math.sqrt(3) - 0.5
-            a = math.sqrt(3) * b - 2
-            correction = numpy.array([a, b, 0])
+            correction = numpy.array([0.5, math.sqrt(3) / 2, 0])
             assert_allclose(v1 + correction, v2)
 
             # basic sanity: test number of rings has changed

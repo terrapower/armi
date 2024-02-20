@@ -98,7 +98,16 @@ class HexGrid(StructuredGrid):
         super().__init__(
             unitSteps, bounds, unitStepLimits, offset, geomType, symmetry, armiObject
         )
-        self.cornersUp = cornersUp
+
+    @property
+    def cornersUp(self) -> bool:
+        """
+        Check whether the hexagonal grid is "corners up" or "flats up".
+
+        See the armi.reactor.grids.HexGrid class documentation for an
+        illustration of the two types of grid indexing.
+        """
+        return self._unitSteps[0][1] != 0.0
 
     @staticmethod
     def fromPitch(pitch, numRings=25, armiObject=None, cornersUp=False, symmetry=""):
@@ -446,8 +455,10 @@ class HexGrid(StructuredGrid):
         -------
         tuple : The full 3D set of derivatives of X,Y,Z in terms of i,j,k.
         """
+        print("TODO JOHN getRawUnitSteps")
         side = hexagon.side(pitch)
         if cornersUp:
+            print("TODO JOHN getRawUnitSteps             TRUE")
             # rotated 30 degrees counter-clockwise from normal
             # increases in i moves you in x and y
             # increases in j also moves you in x and y
@@ -457,6 +468,7 @@ class HexGrid(StructuredGrid):
                 (0, 0, 0),
             )
         else:
+            print("TODO JOHN getRawUnitSteps             FALSE")
             # x direction is only a function of i because j-axis is vertical.
             # y direction is a function of both.
             unitSteps = ((1.5 * side, 0.0, 0.0), (pitch / 2.0, pitch, 0.0), (0, 0, 0))
@@ -465,6 +477,7 @@ class HexGrid(StructuredGrid):
 
     def changePitch(self, newPitchCm: float):
         """Change the hex pitch."""
+        print(f"TODO JOHN changePitch     self.cornersUp:   {self.cornersUp}")
         unitSteps = numpy.array(HexGrid.getRawUnitSteps(newPitchCm, self.cornersUp))
         self._unitSteps = unitSteps[self._stepDims]
 
