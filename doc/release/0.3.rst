@@ -12,11 +12,11 @@ What's new in ARMI?
 
 Bug Fixes
 ---------
-#. TBD
+#. Fixed two bugs with "corners up" hex grids. (`PR#1649 <https://github.com/terrapower/armi/pull/1649>`_)
 
 Changes that Affect Requirements
 --------------------------------
-#. TBD
+#. (`PR#1649 <https://github.com/terrapower/armi/pull/1649>`_) - Touched ``HexGrid`` by adding a "cornersUp" property and fixing two bugs.
 
 
 ARMI v0.3.0
