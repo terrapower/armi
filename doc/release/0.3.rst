@@ -13,6 +13,7 @@ What's new in ARMI?
 API Changes
 -----------
 #. Renaming ``structuredgrid.py`` to camelCase. (`PR#1650 <https://github.com/terrapower/armi/pull/1650>`_)
+#. Removing unused argument from ``Block.coords()``. (`PR#1651 <https://github.com/terrapower/armi/pull/1651>`_)
 #. TBD
 
 Bug Fixes
@@ -21,7 +22,7 @@ Bug Fixes
 
 Changes that Affect Requirements
 --------------------------------
-#. TBD
+#. (`PR#1651 <https://github.com/terrapower/armi/pull/1651>`_) - Very minor change to ``Block.coords()``, removing unused argument.
 
 
 ARMI v0.3.0
