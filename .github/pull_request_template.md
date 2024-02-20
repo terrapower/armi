@@ -7,6 +7,7 @@
 <!-- MANDATORY: Explain why the change is necessary -->
 <!-- Optional: Link to any related GitHub Issues -->
 
+
 ---
 
 ## Checklist
@@ -27,7 +28,14 @@
 
 <!-- Check the project-level cruft -->
 
-- [ ] The [release notes](https://terrapower.github.io/armi/release/index.html) (location `doc/release/0.X.rst`) are up-to-date with any important changes.
 - [ ] The [documentation](https://terrapower.github.io/armi/developer/tooling.html#document-it) is still up-to-date in the `doc` folder.
-- [ ] If any [requirements](https://terrapower.github.io/armi/developer/tooling.html#watch-for-requirements) were affected, mention it in the [release notes](https://terrapower.github.io/armi/release/index.html).
 - [ ] The dependencies are still up-to-date in `pyproject.toml`.
+- [ ] The [release notes](https://terrapower.github.io/armi/release/index.html) have been updated if necessary.
+<!--
+    Add multiple items to the release notes, if they match:
+    - If a feature was added.
+    - If a bug was fixed.
+    - If the ARMI API changed.
+    - If a requirement was touched:
+        + https://terrapower.github.io/armi/developer/tooling.html#watch-for-requirements
+-->
