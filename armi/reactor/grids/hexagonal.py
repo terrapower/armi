@@ -161,7 +161,7 @@ class HexGrid(StructuredGrid):
         HexGrid
             A functional hexagonal grid object.
         """
-        unitSteps = HexGrid.getRawUnitSteps(pitch, cornersUp)
+        unitSteps = HexGrid._getRawUnitSteps(pitch, cornersUp)
 
         hex = HexGrid(
             unitSteps=unitSteps,
@@ -445,7 +445,7 @@ class HexGrid(StructuredGrid):
         return xy + scale * TRIANGLES_IN_HEXAGON
 
     @staticmethod
-    def getRawUnitSteps(pitch, cornersUp=False):
+    def _getRawUnitSteps(pitch, cornersUp=False):
         """Get the raw unit steps (ignore step dimensions), for a hex grid.
 
         Parameters
@@ -478,7 +478,7 @@ class HexGrid(StructuredGrid):
 
     def changePitch(self, newPitchCm: float):
         """Change the hex pitch."""
-        unitSteps = numpy.array(HexGrid.getRawUnitSteps(newPitchCm, self.cornersUp))
+        unitSteps = numpy.array(HexGrid._getRawUnitSteps(newPitchCm, self.cornersUp))
         self._unitSteps = unitSteps[self._stepDims]
 
     def locatorInDomain(self, locator, symmetryOverlap: Optional[bool] = False) -> bool:
