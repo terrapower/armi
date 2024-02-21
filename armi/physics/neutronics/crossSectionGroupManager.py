@@ -1211,7 +1211,8 @@ class CrossSectionGroupManager(interfaces.Interface):
             oldXSID = origXSIDsFromNew[newXSID]
             oldBlockCollection = blockCollectionByXsGroup[oldXSID]
             newBlockCollection = oldBlockCollection.__class__(
-                oldBlockCollection.allNuclidesInProblem
+                oldBlockCollection.allNuclidesInProblem,
+                averageByComponent=oldBlockCollection.averageByComponent,
             )
             newBlockCollectionsByXsGroup[newXSID] = newBlockCollection
         return newBlockCollectionsByXsGroup, modifiedReprBlocks, origXSIDsFromNew
