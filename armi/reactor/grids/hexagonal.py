@@ -271,9 +271,9 @@ class HexGrid(StructuredGrid):
 
         Parameters
         ----------
-        ring: int
+        ring : int
             Starting with 1 (not zero), the ring of the grid cell.
-        position: int
+        position : int
             Starting with 1 (not zero), the position of the grid cell, in the ring.
 
         Returns
@@ -331,9 +331,9 @@ class HexGrid(StructuredGrid):
 
         Parameters
         ----------
-        ring: int
+        ring : int
             Starting with 1 (not zero), the ring of the grid cell.
-        position: int
+        position : int
             Starting with 1 (not zero), the position of the grid cell, in the ring.
 
         Returns

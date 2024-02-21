@@ -419,7 +419,7 @@ class AsciiMapHexThirdFlatsUp(AsciiMap):
 
         # renomalize the offsets to start at 0
         minOffset = min(self.asciiOffsets)
-        for _li, (_, offset) in enumerate(zip(self.asciiLines, self.asciiOffsets)):
+        for offset in self.asciiOffsets:
             newOffsets.append(offset - minOffset)
         self.asciiOffsets = newOffsets
 
