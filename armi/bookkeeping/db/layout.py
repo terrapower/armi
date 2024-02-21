@@ -603,7 +603,7 @@ def _packLocationsV1(
 def _packLocationsV2(
     locations: List[grids.LocationBase],
 ) -> Tuple[List[str], List[Tuple[int, int, int]]]:
-    """Location packing implementation for minor version 3. See release notes above."""
+    """Location packing implementation for minor version 3. See module docstring above."""
     locTypes = []
     locData: List[Tuple[int, int, int]] = []
     for loc in locations:
@@ -630,7 +630,7 @@ def _packLocationsV2(
 def _packLocationsV3(
     locations: List[grids.LocationBase],
 ) -> Tuple[List[str], List[Tuple[int, int, int]]]:
-    """Location packing implementation for minor version 4. See release notes above."""
+    """Location packing implementation for minor version 4. See module docstring above."""
     locTypes = []
     locData: List[Tuple[int, int, int]] = []
 
@@ -689,7 +689,7 @@ def _unpackLocationsV1(locationTypes, locData):
 
 
 def _unpackLocationsV2(locationTypes, locData):
-    """Location unpacking implementation for minor version 3+. See release notes above."""
+    """Location unpacking implementation for minor version 3+. See module docstring above."""
     locsIter = iter(locData)
     unpackedLocs = []
     for lt in locationTypes:
