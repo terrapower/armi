@@ -451,7 +451,6 @@ class TestHexGrid(unittest.TestCase):
                 unitSteps=((1.5 / math.sqrt(3), 0.0, 0.0), (0.5, 1, 0.0), (0, 0, 0)),
                 unitStepLimits=((-3, 3), (-3, 3), (0, 1)),
                 offset=numpy.array([offset, offset, offset]),
-                cornersUp=False,
             )
 
             # test number of rings before converting pitch
@@ -494,7 +493,6 @@ class TestHexGrid(unittest.TestCase):
                 ),
                 unitStepLimits=((-3, 3), (-3, 3), (0, 1)),
                 offset=numpy.array(offsets),
-                cornersUp=True,
             )
 
             # test number of rings before converting pitch

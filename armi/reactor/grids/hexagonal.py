@@ -84,21 +84,6 @@ class HexGrid(StructuredGrid):
 
     """
 
-    def __init__(
-        self,
-        unitSteps=(0, 0, 0),
-        bounds=(None, None, None),
-        unitStepLimits=((0, 1), (0, 1), (0, 1)),
-        offset=None,
-        geomType="",
-        symmetry="",
-        armiObject=None,
-        cornersUp=False,
-    ):
-        super().__init__(
-            unitSteps, bounds, unitStepLimits, offset, geomType, symmetry, armiObject
-        )
-
     @property
     def cornersUp(self) -> bool:
         """
@@ -163,7 +148,6 @@ class HexGrid(StructuredGrid):
             unitStepLimits=((-numRings, numRings), (-numRings, numRings), (0, 1)),
             armiObject=armiObject,
             symmetry=symmetry,
-            cornersUp=cornersUp,
         )
         return hex
 
