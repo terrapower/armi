@@ -14,6 +14,11 @@ API Changes
 -----------
 #. TBD
 
+API Changes
+-----------
+#. Renaming ``structuredgrid.py`` to camelCase. (`PR#1650 <https://github.com/terrapower/armi/pull/1650>`_)
+#. TBD
+
 Bug Fixes
 ---------
 #. TBD

@@ -26,7 +26,7 @@ from armi.reactor.grids.constants import (
     BOUNDARY_CENTER,
 )
 from armi.reactor.grids.locations import IndexLocation, IJKType, IJType
-from armi.reactor.grids.structuredgrid import StructuredGrid
+from armi.reactor.grids.structuredGrid import StructuredGrid
 
 COS30 = sqrt(3) / 2.0
 SIN30 = 1.0 / 2.0
