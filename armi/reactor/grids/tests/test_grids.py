@@ -454,6 +454,9 @@ class TestHexGrid(unittest.TestCase):
                 cornersUp=False,
             )
 
+            # test number of rings before converting pitch
+            self.assertEqual(grid._unitStepLimits[0][1], 3)
+
             # test that we CAN change the pitch, and it scales the grid (but not the offset)
             v1 = grid.getCoordinates((1, 0, 0))
             grid.changePitch(2.0)
@@ -461,7 +464,7 @@ class TestHexGrid(unittest.TestCase):
             v2 = grid.getCoordinates((1, 0, 0))
             assert_allclose(2 * v1 - offset, v2)
 
-            # basic sanity: test number of rings has changed
+            # basic sanity: test number of rings has not changed
             self.assertEqual(grid._unitStepLimits[0][1], 3)
 
             # basic sanity: check the offset exists and is correct
@@ -494,6 +497,9 @@ class TestHexGrid(unittest.TestCase):
                 cornersUp=True,
             )
 
+            # test number of rings before converting pitch
+            self.assertEqual(grid._unitStepLimits[0][1], 3)
+
             # test that we CAN change the pitch, and it scales the grid (but not the offset)
             v1 = grid.getCoordinates((1, 0, 0))
             grid.changePitch(2.0)
@@ -502,7 +508,7 @@ class TestHexGrid(unittest.TestCase):
             correction = numpy.array([0.5, math.sqrt(3) / 2, 0])
             assert_allclose(v1 + correction, v2)
 
-            # basic sanity: test number of rings has changed
+            # basic sanity: test number of rings has not changed
             self.assertEqual(grid._unitStepLimits[0][1], 3)
 
             # basic sanity: check the offset exists and is correct
