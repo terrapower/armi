@@ -431,7 +431,7 @@ class HexGrid(StructuredGrid):
         Parameters
         ----------
         pitch : float
-            The short diameter of the hexagons (from flat side to flat side).
+            The short diameter of the hexagons (flat to flat).
         cornersUp : bool, optional
             If True, the hexagons have a corner pointing in the Y direction. Default: False
 
