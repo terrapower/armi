@@ -331,7 +331,7 @@ class HexGrid(StructuredGrid):
 
     @staticmethod
     def getIndicesFromRingAndPos(ring: int, pos: int) -> IJType:
-        """Given the ring and position, return the (I,J) coordinates in the hex grid.
+        r"""Given the ring and position, return the (I,J) coordinates in the hex grid.
 
         Parameters
         ----------
@@ -343,6 +343,28 @@ class HexGrid(StructuredGrid):
         Returns
         -------
         (int, int) : I coordinate, J coordinate
+
+        Notes
+        -----
+        In an axial plane, the (ring, position) coordinates are as follows::
+
+             Flat-to-Flat                    Corners Up
+                 _____
+                /     \                      / \     / \
+          _____/  2,2  \_____              /     \ /     \
+         /     \       /     \            |  2,2  |  2,1  |
+        /  2,3  \_____/  2,1  \           |       |       |
+        \       /     \       /          / \     / \     / \
+         \_____/  1,1  \_____/         /     \ /     \ /     \
+         /     \       /     \        |  2,3  |  1,1  |  2,6  |
+        /  2,4  \_____/  2,6  \       |       |       |       |
+        \       /     \       /        \     / \     / \     /
+         \_____/  2,5  \_____/           \ /     \ /     \ /
+               \       /                  |  2,4  |  2,5  |
+                \_____/                   |       |       |
+                                           \     / \     /
+                                             \ /     \ /
+
         """
         i, j, _edge = HexGrid._indicesAndEdgeFromRingAndPos(ring, pos)
         return i, j
