@@ -44,7 +44,7 @@ TRIANGLES_IN_HEXAGON = numpy.array(
 
 
 class HexGrid(StructuredGrid):
-    """
+    r"""
     Has 6 neighbors in plane.
 
     It is recommended to use :meth:`fromPitch` rather than calling the ``__init__``
@@ -63,17 +63,37 @@ class HexGrid(StructuredGrid):
 
     Notes
     -----
-    In an axial plane (i, j) are as follows (second one is cornersUp)::
+    In an axial plane (i, j) are as follows (flats up)::
+             _____
+            /     \
+      _____/  0,1  \_____
+     /     \       /     \
+    / -1,1  \_____/  1,0  \
+    \       /     \       /
+     \_____/  0,0  \_____/
+     /     \       /     \
+    / -1,0  \_____/  1,-1 \
+    \       /     \       /
+     \_____/  0,-1 \_____/
+           \       /
+            \_____/
 
-                    ( 0, 1)
-             (-1, 1)       ( 1, 0)
-                    ( 0, 0)
-             (-1, 0)       ( 1,-1)
-                    ( 0,-1)
+    In an axial plane (i, j) are as follows (corners up)::
 
-                ( 0, 1) ( 1, 0)
-            (-1, 1) ( 0, 0) ( 1,-1)
-                (-1, 0) ( 0,-1)
+           / \     / \
+         /     \ /     \
+        |  0,1  |  1,0  |
+        |       |       |
+       / \     / \     / \
+     /     \ /     \ /     \
+    | -1,1  |  0,0  |  1,-1 |
+    |       |       |       |
+     \     / \     / \     /
+       \ /     \ /     \ /
+        | -1,0  |  0,-1 |
+        |       |       |
+         \     / \     /
+           \ /     \ /
 
     Basic hexagon geometry::
 
