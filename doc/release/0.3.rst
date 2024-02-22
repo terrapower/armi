@@ -13,15 +13,19 @@ What's new in ARMI?
 API Changes
 -----------
 #. Renaming ``structuredgrid.py`` to camelCase. (`PR#1650 <https://github.com/terrapower/armi/pull/1650>`_)
+#. Removing unused argument from ``Block.coords()``. (`PR#1651 <https://github.com/terrapower/armi/pull/1651>`_)
 #. TBD
 
 Bug Fixes
 ---------
 #. Fixed two bugs with "corners up" hex grids. (`PR#1649 <https://github.com/terrapower/armi/pull/1649>`_)
+#. TBD
 
 Changes that Affect Requirements
 --------------------------------
 #. (`PR#1649 <https://github.com/terrapower/armi/pull/1649>`_) - Touched ``HexGrid`` by adding a "cornersUp" property and fixing two bugs.
+#. (`PR#1651 <https://github.com/terrapower/armi/pull/1651>`_) - Very minor change to ``Block.coords()``, removing unused argument.
+#. TBD
 
 
 ARMI v0.3.0
