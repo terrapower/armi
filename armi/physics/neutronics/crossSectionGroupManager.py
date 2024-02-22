@@ -1019,10 +1019,8 @@ class CrossSectionGroupManager(interfaces.Interface):
         for b in blockList:
             xsID = b.getMicroSuffix()
             xsSettings = self._initializeXsID(xsID)
-            # xsSettings.averageByComponent = True
             blockCollectionType = blockCollectionFactory(
-                xsSettings,
-                self.r.blueprints.allNuclidesInProblem,
+                xsSettings, self.r.blueprints.allNuclidesInProblem
             )
             group = blockCollectionsByXsGroup.get(xsID, blockCollectionType)
             group.append(b)
