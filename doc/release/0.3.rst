@@ -12,7 +12,7 @@ What's new in ARMI?
 
 Bug Fixes
 ---------
-#. TBD
+#. When creating a new XS group, inherit settings from initial group. (`PR#1653 <https://github.com/terrapower/armi/pull/1653>`_)
 
 Changes that Affect Requirements
 --------------------------------
