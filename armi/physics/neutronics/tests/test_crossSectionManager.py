@@ -37,6 +37,7 @@ from armi.physics.neutronics.crossSectionGroupManager import (
     AverageBlockCollection,
 )
 from armi.physics.neutronics.crossSectionGroupManager import CrossSectionGroupManager
+from armi.physics.neutronics.crossSectionSettings import XSModelingOptions
 from armi.physics.neutronics.fissionProductModel.tests import test_lumpedFissionProduct
 from armi.physics.neutronics.settings import (
     CONF_XS_BLOCK_REPRESENTATION,
@@ -826,7 +827,25 @@ class TestCrossSectionGroupManager(unittest.TestCase):
         This tests that the XS ID of the new representative block is correct and that the compositions are identical
         between the original and the new representative blocks.
         """
-        _o, r = test_reactors.loadTestReactor(TEST_ROOT)
+        o, r = test_reactors.loadTestReactor(TEST_ROOT)
+        # set a few random non-default settings on AA to be copied to the new BA group
+        o.cs[CONF_CROSS_SECTION].update(
+            {
+                "AA": XSModelingOptions(
+                    "AA",
+                    geometry="0D",
+                    averageByComponent=True,
+                    xsMaxAtomNumber=60,
+                    criticalBuckling=False,
+                    xsPriority=2,
+                )
+            }
+        )
+        o.cs[CONF_CROSS_SECTION].setDefaults(
+            crossSectionGroupManager.AVERAGE_BLOCK_COLLECTION, ["fuel"]
+        )
+        aaSettings = o.cs[CONF_CROSS_SECTION]["AA"]
+        self.csm.cs = copy.deepcopy(o.cs
         self.csm.createRepresentativeBlocks()
         unperturbedReprBlocks = copy.deepcopy(self.csm.representativeBlocks)
         self.assertNotIn("BA", unperturbedReprBlocks)
@@ -848,6 +867,36 @@ class TestCrossSectionGroupManager(unittest.TestCase):
             newReprBlock.getNumberDensities(), oldReprBlock.getNumberDensities()
         )
         self.assertEqual(origXSIDsFromNew["BA"], "AA")
+
+        # check that settings were copied correctly
+        baSettings = self.csm.cs[CONF_CROSS_SECTION]["BA"]
+        self.assertEqual(baSettings.xsID, "BA")
+        self.assertEqual(baSettings.geometry, aaSettings.geometry)
+        self.assertEqual(baSettings.xsFileLocation, aaSettings.xsFileLocation)
+        self.assertEqual(baSettings.validBlockTypes, aaSettings.validBlockTypes)
+        self.assertEqual(baSettings.blockRepresentation, aaSettings.blockRepresentation)
+        self.assertEqual(baSettings.fluxFileLocation, aaSettings.fluxFileLocation)
+        self.assertEqual(baSettings.driverID, aaSettings.driverID)
+        self.assertEqual(baSettings.criticalBuckling, aaSettings.criticalBuckling)
+        self.assertEqual(
+            baSettings.nuclideReactionDriver, aaSettings.nuclideReactionDriver
+        )
+        self.assertEqual(baSettings.externalDriver, aaSettings.externalDriver)
+        self.assertEqual(
+            baSettings.useHomogenizedBlockComposition,
+            aaSettings.useHomogenizedBlockComposition,
+        )
+        self.assertEqual(baSettings.numInternalRings, aaSettings.numInternalRings)
+        self.assertEqual(baSettings.numExternalRings, aaSettings.numExternalRings)
+        self.assertEqual(baSettings.mergeIntoClad, aaSettings.mergeIntoClad)
+        self.assertEqual(
+            baSettings.meshSubdivisionsPerCm, aaSettings.meshSubdivisionsPerCm
+        )
+        self.assertEqual(baSettings.xsMaxAtomNumber, aaSettings.xsMaxAtomNumber)
+        self.assertEqual(baSettings.minDriverDensity, aaSettings.minDriverDensity)
+        self.assertEqual(baSettings.averageByComponent, aaSettings.averageByComponent)
+        self.assertEqual(baSettings.xsExecuteExclusive, aaSettings.xsExecuteExclusive)
+        self.assertEqual(baSettings.xsPriority, aaSettings.xsPriority)
 
     def test_interactBOL(self):
         """Test `BOL` lattice physics update frequency.
