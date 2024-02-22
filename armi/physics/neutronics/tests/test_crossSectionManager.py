@@ -845,7 +845,7 @@ class TestCrossSectionGroupManager(unittest.TestCase):
             crossSectionGroupManager.AVERAGE_BLOCK_COLLECTION, ["fuel"]
         )
         aaSettings = o.cs[CONF_CROSS_SECTION]["AA"]
-        self.csm.cs = copy.deepcopy(o.cs
+        self.csm.cs = copy.deepcopy(o.cs)
         self.csm.createRepresentativeBlocks()
         unperturbedReprBlocks = copy.deepcopy(self.csm.representativeBlocks)
         self.assertNotIn("BA", unperturbedReprBlocks)
