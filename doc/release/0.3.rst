@@ -6,8 +6,8 @@ ARMI v0.3.1
 ===========
 Release Date: TBD
 
-What's new in ARMI?
--------------------
+New Features
+------------
 #. TBD
 
 API Changes
