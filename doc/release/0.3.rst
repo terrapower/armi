@@ -6,8 +6,8 @@ ARMI v0.3.1
 ===========
 Release Date: TBD
 
-What's new in ARMI?
--------------------
+New Features
+------------
 #. TBD
 
 API Changes
@@ -23,6 +23,7 @@ Bug Fixes
 Changes that Affect Requirements
 --------------------------------
 #. (`PR#1651 <https://github.com/terrapower/armi/pull/1651>`_) - Very minor change to ``Block.coords()``, removing unused argument.
+#. TBD
 
 
 ARMI v0.3.0
