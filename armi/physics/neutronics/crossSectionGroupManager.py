@@ -1019,8 +1019,10 @@ class CrossSectionGroupManager(interfaces.Interface):
         for b in blockList:
             xsID = b.getMicroSuffix()
             xsSettings = self._initializeXsID(xsID)
+            # xsSettings.averageByComponent = True
             blockCollectionType = blockCollectionFactory(
-                xsSettings, self.r.blueprints.allNuclidesInProblem
+                xsSettings,
+                self.r.blueprints.allNuclidesInProblem,
             )
             group = blockCollectionsByXsGroup.get(xsID, blockCollectionType)
             group.append(b)
@@ -1270,6 +1272,12 @@ class CrossSectionGroupManager(interfaces.Interface):
             for b in blockList:
                 if b.getMicroSuffix() == origXSID:
                     b.p.xsType = newXSType
+
+            # copy XS settings to new XS ID
+            self.cs[CONF_CROSS_SECTION][newXSID] = copy.deepcopy(
+                self.cs[CONF_CROSS_SECTION][origXSID]
+            )
+            self.cs[CONF_CROSS_SECTION][newXSID].xsID = newXSID
 
         return modifiedReprBlocks, origXSIDsFromNew
 
