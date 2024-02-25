@@ -211,7 +211,26 @@ class BlockConverter:
 
 
 class ComponentMerger(BlockConverter):
-    """For a provided block, merged the solute component into the solvent component."""
+    """For a provided block, merged the solute component into the solvent component.
+
+    .. impl:: Homogenize one component into another.
+        :id: I_ARMI_BLOCKCONV0
+        :implements: R_ARMI_BLOCKCONV
+
+        This subclass of ``BlockConverter`` is meant as a one-time-use tool, to convert
+        a ``Block`` into one ``Component``. A ``Block`` is a ``Composite`` that may
+        probably has multiple ``Components`` somewhere in it. This means averaging the
+        material properties in the original ``Block``, and ensuring that the final
+        ``Component`` has the same shape and volume as the original ``Block``. This
+        subclass essentially just uses the base class method
+        ``dissolveComponentIntoComponent()`` given prescribed solute and solvent
+        materials, to define the merger.
+
+    Notes
+    -----
+    It is the job of the developer to determine if merging a Block into one Component
+    will yield valid or sane results.
+    """
 
     def __init__(self, sourceBlock, soluteName, solventName):
         """
@@ -245,13 +264,23 @@ class MultipleComponentMerger(BlockConverter):
     liner was dissolved first, this would normally cause a ValueError in _verifyExpansion since the
     clad would be completely expanded over a non void component.
 
-    This could be implemented on the regular ComponentMerger, as the Flags system has enough power
-    in the type specification arguments to things like ``getComponents()``, ``hasFlags()``, etc., to
-    do single and multiple components with the same code.
+    .. impl:: Homogenize multiple components into one.
+        :id: I_ARMI_BLOCKCONV1
+        :implements: R_ARMI_BLOCKCONV
+
+        This subclass of ``BlockConverter`` is meant as a one-time-use tool, to convert
+        a multiple ``Components`` into one. This means averaging the material
+        properties in the original ``Components``, and ensuring that the final
+        ``Component`` has the same shape and volume as all of the originals. This
+        subclass essentially just uses the base class method
+        ``dissolveComponentIntoComponent()`` given prescribed solute and solvent
+        materials, to define the merger. Though care is taken here to ensure the merger
+        isn't verified until it is completely finished.
     """
 
     def __init__(self, sourceBlock, soluteNames, solventName, specifiedMinID=0.0):
-        """
+        """Standard constructor method.
+
         Parameters
         ----------
         sourceBlock : :py:class:`armi.reactor.blocks.Block`
@@ -445,7 +474,7 @@ class BlockAvgToCylConverter(BlockConverter):
                     circleComp, innerR, outerR
                 )
             )
-            circle = Wedge((0.0, 0.0), outerR, 0, 360.0, outerR - innerR)
+            circle = Wedge((0.0, 0.0), outerR, 0, 360.0, width=outerR - innerR)
             patches.append(circle)
             colors.append(circleComp.density())
         colorMap = matplotlib.cm
@@ -526,7 +555,21 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
             )
 
     def convert(self):
-        """Perform the conversion."""
+        """Perform the conversion.
+
+        .. impl:: Convert hex blocks to cylindrical blocks.
+            :id:  I_ARMI_BLOCKCONV_HEX_TO_CYL
+            :implements: R_ARMI_BLOCKCONV_HEX_TO_CYL
+
+            This method converts a ``HexBlock`` to a cylindrical ``Block``. Obviously,
+            this is not a physically meaningful transition; it is a helpful
+            approximation tool for analysts. This is a subclass of
+            ``BlockAvgToCylConverter`` which is a subclass of ``BlockConverter``. This
+            converter expects the ``sourceBlock`` and ``driverFuelBlock`` to defined
+            and for the ``sourceBlock`` to have a spatial grid defined. Additionally,
+            both the ``sourceBlock`` and ``driverFuelBlock`` must be instances of
+            ``HexBlocks``.
+        """
         runLog.info(
             "Converting representative block {} to its equivalent cylindrical model".format(
                 self._sourceBlock
@@ -715,7 +758,7 @@ def radiiFromHexSides(sideLengths):
 
 
 def radiiFromRingOfRods(distToRodCenter, numRods, rodRadii, layout="hexagon"):
-    """
+    r"""
     Return list of radii from ring of rods.
 
     Parameters
@@ -735,17 +778,24 @@ def radiiFromRingOfRods(distToRodCenter, numRods, rodRadii, layout="hexagon"):
     Notes
     -----
     There are two assumptions when making circles:
-    1) the rings are concentric about the radToRodCenter;
-    2) the ring area of the fuel rods are distributed to the inside and outside rings with the same thickness.
-    thicknessOnEachSide (t) is calculated as follows:
-    r1 = inner rad that thickness is added to on inside
-    r2 = outer rad that thickness is added to on outside
-    radToRodCenter = (r1 + r2) / 2.0 due to being concentric;
-    Total Area = Area of annulus 1 + Area of annulus 2
-    Area of annulus 1 = pi * r1 ** 2       -  pi * (r1 - t) ** 2
-    Area of annulus 2 = pi * (r2 + t) ** 2 -  pi * r2 ** 2
-    Solving for thicknessOnEachSide(t):
-    t = Total Area  / (4 * pi * radToRodCenter)
+
+    #. The rings are concentric about the ``radToRodCenter``.
+    #. The ring area of the fuel rods are distributed to the inside and outside
+       rings with the same thickness. ``thicknessOnEachSide`` (:math:`t`) is calculated
+       as follows:
+
+        .. math::
+            :nowrap:
+
+            \begin{aligned}
+            r_1 &\equiv \text{inner rad that thickness is added to on inside} \\
+            r_2 &\equiv \text{outer rad that thickness is added to on outside} \\
+            \texttt{radToRodCenter} &= \frac{r_1 + r_2}{2} \text{(due to being concentric)} \\
+            \text{Total Area} &= \text{Area of annulus 1} + \text{Area of annulus 2} \\
+            \text{Area of annulus 1} &= \pi r_1^2 -  \pi (r_1 - t)^2 \\
+            \text{Area of annulus 2} &= \pi (r_2 + t)^2 -  \pi r_2^2 \\
+            t &= \frac{\text{Total Area}}{4\pi\times\texttt{radToRodCenter}}
+            \end{aligned}
     """
     if layout == "polygon":
         alpha = 2.0 * math.pi / float(numRods)

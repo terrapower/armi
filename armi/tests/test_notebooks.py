@@ -36,6 +36,9 @@ class NotebookTests(unittest.TestCase):
 
     def test_runDataModel(self):
         runNotebook(os.path.join(TUTORIALS, "data_model.ipynb"))
+        # Do some cleanup because some code run in the notebook doesn't honor the
+        # TempDirectoryChanger
+        os.remove(os.path.join(TUTORIALS, "anl-afci-177.h5"))
 
 
 def runNotebook(filename):

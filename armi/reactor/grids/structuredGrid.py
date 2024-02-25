@@ -17,8 +17,13 @@ from typing import Tuple, Union, List, Iterable, Optional, Sequence
 
 import numpy
 
-from .locations import IJKType, LocationBase, IndexLocation, MultiIndexLocation
-from .grid import Grid
+from armi.reactor.grids.locations import (
+    IJKType,
+    LocationBase,
+    IndexLocation,
+    MultiIndexLocation,
+)
+from armi.reactor.grids.grid import Grid
 
 # data structure for database-serialization of grids
 GridParameters = collections.namedtuple(
@@ -131,10 +136,6 @@ class StructuredGrid(Grid):
 
     * Unit step calculations use dot products and must not be polluted by the bound
       indices. Thus we reduce the size of the unitSteps tuple accordingly.
-
-    .. impl:: ARMI supports a number of structured mesh options.
-       :id: IMPL_REACTOR_MESH_0
-       :links: REQ_REACTOR_MESH
     """
 
     def __init__(
@@ -186,7 +187,7 @@ class StructuredGrid(Grid):
         return self._isAxialOnly
 
     def reduce(self) -> GridParameters:
-        """Recreate the parameter necessary to create this grid"""
+        """Recreate the parameter necessary to create this grid."""
         offset = None if not self._offset.any() else tuple(self._offset)
 
         bounds = _tuplify(self._bounds)
@@ -219,7 +220,7 @@ class StructuredGrid(Grid):
 
     @property
     def offset(self) -> numpy.ndarray:
-        """Offset in cm for each axis"""
+        """Offset in cm for each axis."""
         return self._offset
 
     @offset.setter
@@ -289,21 +290,38 @@ class StructuredGrid(Grid):
         self._unitSteps, self._bounds, self._offset = self._backup
 
     def getCoordinates(self, indices, nativeCoords=False) -> numpy.ndarray:
-        """Return the coordinates of the center of the mesh cell at the given given indices in cm."""
+        """Return the coordinates of the center of the mesh cell at the given indices
+        in cm.
+
+        .. impl:: Get the coordinates from a location in a grid.
+            :id: I_ARMI_GRID_GLOBAL_POS
+            :implements: R_ARMI_GRID_GLOBAL_POS
+
+            Probably the most common request of a structure grid will be to give the
+            grid indices and return the physical coordinates of the center of the mesh
+            cell. This is super handy in any situation where the coordinates have
+            physical meaning.
+
+            The math for finding the centroid turns out to be very easy, as the mesh is
+            defined on the coordinates. So finding the mid-point along one axis is just
+            taking the upper and lower bounds and dividing by two. And this is done for
+            all axes. There are no more complicated situations where we need to find
+            the centroid of a octagon on a rectangular mesh, or the like.
+        """
         indices = numpy.array(indices)
         return self._evaluateMesh(
             indices, self._centroidBySteps, self._centroidByBounds
         )
 
     def getCellBase(self, indices) -> numpy.ndarray:
-        """Get the mesh base (lower left) of this mesh cell in cm"""
+        """Get the mesh base (lower left) of this mesh cell in cm."""
         indices = numpy.array(indices)
         return self._evaluateMesh(
             indices, self._meshBaseBySteps, self._meshBaseByBounds
         )
 
     def getCellTop(self, indices) -> numpy.ndarray:
-        """Get the mesh top (upper right) of this mesh cell in cm"""
+        """Get the mesh top (upper right) of this mesh cell in cm."""
         indices = numpy.array(indices) + 1
         return self._evaluateMesh(
             indices, self._meshBaseBySteps, self._meshBaseByBounds
@@ -313,16 +331,14 @@ class StructuredGrid(Grid):
         """
         Evaluate some function of indices on this grid.
 
-        Recall from above that steps are mesh centered and bounds are mesh edged.
+        Recall from above that steps are mesh-centered and bounds are mesh-edged.
 
         Notes
         -----
-        This method may be able to be simplified. Complications from arbitrary
-        mixtures of bounds-based and step-based meshing caused it to get bad.
-        These were separate subclasses first, but in practice almost all cases have some mix
-        of step-based (hexagons, squares), and bounds based (radial, zeta).
-
-        Improvements welcome!
+        This method may be simplifiable. Complications arose from mixtures of bounds-
+        based and step-based meshing. These were separate subclasses, but in practice
+        many cases have some mix of step-based (hexagons, squares), and bounds based
+        (radial, zeta).
         """
         boundCoords = []
         for ii, bounds in enumerate(self._bounds):
@@ -336,6 +352,7 @@ class StructuredGrid(Grid):
         result = numpy.zeros(len(indices))
         result[self._stepDims] = stepCoords
         result[self._boundDims] = boundCoords
+
         return result + self._offset
 
     def _centroidBySteps(self, indices):
@@ -362,7 +379,7 @@ class StructuredGrid(Grid):
     @staticmethod
     def getNeighboringCellIndices(i, j=0, k=0):
         """Return the indices of the immediate neighbors of a mesh point in the plane."""
-        return ((i + 1, j, k), (1, j + 1, k), (i - 1, j, k), (i, j - 1, k))
+        return ((i + 1, j, k), (i, j + 1, k), (i - 1, j, k), (i, j - 1, k))
 
     @staticmethod
     def getAboveAndBelowCellIndices(indices):
@@ -392,9 +409,7 @@ class StructuredGrid(Grid):
     ) -> Tuple[
         Optional[Sequence[float]], Optional[Sequence[float]], Optional[Sequence[float]]
     ]:
-        """
-        Return the grid bounds for each dimension, if present.
-        """
+        """Return the grid bounds for each dimension, if present."""
         return self._bounds
 
     def getLocatorFromRingAndPos(self, ring, pos, k=0):
@@ -458,7 +473,6 @@ class StructuredGrid(Grid):
 
         A tuple is returned so that it is easy to compare pairs of indices.
         """
-
         # Regular grids don't know about ring and position. Check the parent.
         if (
             self.armiObject is not None
@@ -486,7 +500,7 @@ class StructuredGrid(Grid):
     @property
     @abstractmethod
     def pitch(self) -> Union[float, Tuple[float, float]]:
-        """Grid pitch
+        """Grid pitch.
 
         Some implementations may rely on a single pitch, such
         as axial or hexagonal grids. Cartesian grids may use
@@ -497,7 +511,6 @@ class StructuredGrid(Grid):
         -------
         float or tuple of (float, float)
             Grid spacing in cm
-
         """
 
 

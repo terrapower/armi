@@ -445,7 +445,7 @@ def _makeAssemPatches(core):
         x, y, _ = a.spatialLocator.getLocalCoordinates()
         if nSides == 6:
             assemPatch = matplotlib.patches.RegularPolygon(
-                (x, y), nSides, pitch / math.sqrt(3), orientation=math.pi / 2.0
+                (x, y), nSides, radius=pitch / math.sqrt(3), orientation=math.pi / 2.0
             )
         elif nSides == 4:
             # for rectangle x, y is defined as sides instead of center
@@ -529,7 +529,7 @@ def _createLegend(legendMap, collection, size=9, shape=Hexagon):
                 patch = matplotlib.patches.RegularPolygon(
                     (x, y),
                     6,
-                    height,
+                    radius=height,
                     orientation=math.pi / 2.0,
                     facecolor=colorRgb,
                     transform=handlebox.get_transform(),
@@ -538,14 +538,14 @@ def _createLegend(legendMap, collection, size=9, shape=Hexagon):
                 patch = matplotlib.patches.Rectangle(
                     (x - height / 2, y - height / 2),
                     height * 2,
-                    height,
+                    height * 2,
                     facecolor=colorRgb,
                     transform=handlebox.get_transform(),
                 )
             else:
                 patch = matplotlib.patches.Circle(
                     (x, y),
-                    height,
+                    radius=height,
                     facecolor=colorRgb,
                     transform=handlebox.get_transform(),
                 )
@@ -1185,7 +1185,7 @@ def _makeBlockPinPatches(block, cold):
         x, y, _ = location.getLocalCoordinates()
         if isinstance(comp, Hexagon):
             derivedPatch = matplotlib.patches.RegularPolygon(
-                (x, y), 6, largestPitch / math.sqrt(3)
+                (x, y), 6, radius=largestPitch / math.sqrt(3)
             )
         elif isinstance(comp, Square):
             derivedPatch = matplotlib.patches.Rectangle(
@@ -1301,7 +1301,7 @@ def _makeComponentPatch(component, position, cold):
         else:
             # Just make it a hexagon...
             blockPatch = matplotlib.patches.RegularPolygon(
-                (x, y), 6, component.getDimension("op", cold=cold) / math.sqrt(3)
+                (x, y), 6, radius=component.getDimension("op", cold=cold) / math.sqrt(3)
             )
 
     elif isinstance(component, Rectangle):
@@ -1372,7 +1372,9 @@ def _makeComponentPatch(component, position, cold):
     return [blockPatch]
 
 
-def plotBlockDiagram(block, fName, cold, cmapName="RdYlBu", materialList=None):
+def plotBlockDiagram(
+    block, fName, cold, cmapName="RdYlBu", materialList=None, fileFormat="svg"
+):
     """Given a Block with a spatial Grid, plot the diagram of
     it with all of its components. (wire, duct, coolant, etc...).
 
@@ -1380,14 +1382,16 @@ def plotBlockDiagram(block, fName, cold, cmapName="RdYlBu", materialList=None):
     ----------
     block : block object
     fName : String
-        name of the file to save to
+        Name of the file to save to
     cold : boolean
-        true is for cold temps, hot is false.
+        True is for cold temps, False is hot
     cmapName : String
         name of a colorMap to use for block colors
-    materialList: List
-        a list of material names across all blocks to be plotted
-        so that same material on all diagrams will have the same color.
+    materialList : List
+        A list of material names across all blocks to be plotted
+        so that same material on all diagrams will have the same color
+    fileFormat : str
+        The format to save the picture as, e.g. svg, png, jpg, etc.
     """
     _, ax = plt.subplots(figsize=(20, 20), dpi=200)
 
@@ -1440,7 +1444,7 @@ def plotBlockDiagram(block, fName, cold, cmapName="RdYlBu", materialList=None):
     ax.spines["left"].set_visible(False)
     ax.spines["bottom"].set_visible(False)
     ax.margins(0)
-    plt.savefig(fName, format="svg", **pltKwargs)
+    plt.savefig(fName, format=fileFormat, **pltKwargs)
     plt.close()
 
     return os.path.abspath(fName)
@@ -1504,7 +1508,7 @@ def plotTriangleFlux(
                 triangle = patches.mpatches.RegularPolygon(
                     (xInCm, yInCm),
                     3,
-                    sideLengthInCm / math.sqrt(3),
+                    radius=sideLengthInCm / math.sqrt(3),
                     orientation=math.pi * flipped,
                     linewidth=0.0,
                 )

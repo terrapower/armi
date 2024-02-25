@@ -37,7 +37,12 @@ from armi.utils.dynamicImporter import getEntireFamilyTree
 
 class TestInitializationEntryPoints(unittest.TestCase):
     def test_entryPointInitialization(self):
-        """Tests the initialization of all subclasses of `EntryPoint`."""
+        """Tests the initialization of all subclasses of `EntryPoint`.
+
+        .. test:: Test initialization of many basic CLIs.
+            :id: T_ARMI_CLI_GEN0
+            :tests: R_ARMI_CLI_GEN
+        """
         entryPoints = getEntireFamilyTree(EntryPoint)
 
         # Comparing to a minimum number of entry points, in case more are added.
@@ -74,6 +79,12 @@ class TestCheckInputEntryPoint(unittest.TestCase):
         self.assertEqual(ci.args.generate_design_summary, False)
 
     def test_checkInputEntryPointInvoke(self):
+        """Test the "check inputs" entry point.
+
+        .. test:: A working CLI child class, to validate inputs.
+            :id: T_ARMI_CLI_GEN1
+            :tests: R_ARMI_CLI_GEN
+        """
         ci = CheckInputEntryPoint()
         ci.addOptions()
         ci.parse_args([ARMI_RUN_PATH])
@@ -124,6 +135,12 @@ class TestCloneArmiRunCommandBatch(unittest.TestCase):
             self.assertNotIn("availabilityFactor", txt)
 
     def test_cloneArmiRunCommandBatchInvokeMedium(self):
+        """Test the "clone armi run" batch entry point, on medium detail.
+
+        .. test:: A working CLI child class, to clone a run.
+            :id: T_ARMI_CLI_GEN2
+            :tests: R_ARMI_CLI_GEN
+        """
         # Test medium write style
         ca = CloneArmiRunCommandBatch()
         ca.addOptions()

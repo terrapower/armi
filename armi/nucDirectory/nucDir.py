@@ -66,7 +66,7 @@ def getNuclideFromName(name):
 
 
 def getNaturalIsotopics(elementSymbol=None, z=None):
-    r"""
+    """
     Determines the atom fractions of all natural isotopes.
 
     Parameters
@@ -90,7 +90,8 @@ def getNaturalIsotopics(elementSymbol=None, z=None):
 
 
 def getNaturalMassIsotopics(elementSymbol=None, z=None):
-    r"""Return mass fractions of all natural isotopes.
+    """Return mass fractions of all natural isotopes.
+
     To convert number fractions to mass fractions, we multiply by A.
     """
     numIso = getNaturalIsotopics(elementSymbol, z)
@@ -107,7 +108,7 @@ def getNaturalMassIsotopics(elementSymbol=None, z=None):
 
 
 def getMc2Label(name):
-    r"""
+    """
     Return a MC2 prefix label without a xstype suffix.
 
     MC**2 has labels and library names. The labels are like
@@ -146,7 +147,7 @@ def getMc2Label(name):
 
 
 def getElementName(z=None, symbol=None):
-    r"""
+    """
     Returns element name.
 
     Parameters
@@ -173,7 +174,7 @@ def getElementName(z=None, symbol=None):
 
 
 def getElementSymbol(z=None, name=None):
-    r"""
+    """
     Returns element abbreviation given atomic number Z.
 
     Parameters
@@ -200,7 +201,7 @@ def getElementSymbol(z=None, name=None):
 
 
 def getNuclide(nucName):
-    r"""
+    """
     Looks up the ARMI nuclide object that has this name.
 
     Parameters
@@ -212,7 +213,6 @@ def getNuclide(nucName):
     -------
     nuc : Nuclide
         An armi nuclide object.
-
     """
     nuc = nuclideBases.byName.get(nucName, None)
     if nucName and not nuc:
@@ -223,7 +223,7 @@ def getNuclide(nucName):
 
 
 def getNuclides(nucName=None, elementSymbol=None):
-    r"""
+    """
     Returns a list of nuclide names in a particular nuclide or element.
 
     If no arguments, returns all nuclideBases in the directory
@@ -250,7 +250,7 @@ def getNuclides(nucName=None, elementSymbol=None):
 
 
 def getNuclideNames(nucName=None, elementSymbol=None):
-    r"""
+    """
     Returns a list of nuclide names in a particular nuclide or element.
 
     If no arguments, returns all nuclideBases in the directory.
@@ -269,7 +269,7 @@ def getNuclideNames(nucName=None, elementSymbol=None):
 
 
 def getAtomicWeight(lab=None, z=None, a=None):
-    r"""
+    """
     Returns atomic weight in g/mole.
 
     Parameters
@@ -339,7 +339,7 @@ def isFissile(name):
 
 
 def getThresholdDisplacementEnergy(nuc):
-    r"""
+    """
     Return the Lindhard cutoff; the energy required to displace an atom.
 
     From SPECTER.pdf Table II

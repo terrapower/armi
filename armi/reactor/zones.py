@@ -28,6 +28,22 @@ class Zone:
     """
     A group of locations in the Core, used to divide it up for analysis.
     Each location represents an Assembly or a Block.
+
+    .. impl:: A user can define a collection of armi locations.
+        :id: I_ARMI_ZONE
+        :implements: R_ARMI_ZONE
+
+        The Zone class facilitates the creation of a Zone object representing a
+        collection of locations in the Core. A Zone contains a group of locations
+        in the Core, used to subdivide it for analysis. Each location represents
+        an Assembly or a Block, where a single Zone must contain items of the same
+        type (i.e., Assembly or Block). Methods are provided to add or remove
+        one or more locations to/from the Zone, and similarly, add or remove one or
+        more items with a Core location (i.e., Assemblies or Blocks) to/from the
+        Zone. In addition, several methods are provided to facilitate the
+        retrieval of locations from a Zone by performing functions to check if a
+        location exists in the Zone, looping through the locations in the Zone in
+        alphabetical order, and returning the number of locations in the Zone, etc.
     """
 
     VALID_TYPES = (Assembly, Block)
@@ -196,7 +212,22 @@ class Zone:
 
 
 class Zones:
-    """Collection of Zone objects."""
+    """Collection of Zone objects.
+
+    .. impl:: A user can define a collection of armi zones.
+        :id: I_ARMI_ZONES
+        :implements: R_ARMI_ZONES
+
+        The Zones class facilitates the creation of a Zones object representing a
+        collection of Zone objects. Methods are provided to add or remove one
+        or more Zone to/from the Zones object. Likewise, methods are provided
+        to validate that the zones are mutually exclusive, obtain the location
+        labels of zones, return the Zone object where a particular Assembly or Block
+        resides, sort the Zone objects alphabetically, and summarize the zone
+        definitions. In addition, methods are provided to facilitate the
+        retrieval of Zone objects by name, loop through the Zones in order, and
+        return the number of Zone objects.
+    """
 
     def __init__(self):
         """Build a Zones object."""
@@ -303,7 +334,7 @@ class Zones:
 
     def checkDuplicates(self) -> None:
         """
-        Validate that the the zones are mutually exclusive.
+        Validate that the zones are mutually exclusive.
 
         That is, make sure that no item appears in more than one Zone.
 
@@ -393,7 +424,7 @@ class Zones:
                 return zone
 
         if not zoneFound:
-            runLog.warning("Was not able to find which zone {} is in".format(a))
+            runLog.debug(f"Was not able to find which zone {a} is in", single=True)
 
         return None
 
@@ -415,10 +446,10 @@ class Zones:
 
         Examples
         --------
-        zoneDefinitions:
-        - ring-1: 001-001
-        - ring-2: 002-001, 002-002
-        - ring-3: 003-001, 003-002, 003-003
+            zoneDefinitions:
+            - ring-1: 001-001
+            - ring-2: 002-001, 002-002
+            - ring-3: 003-001, 003-002, 003-003
         """
         # log a quick header
         runLog.info("zoneDefinitions:")

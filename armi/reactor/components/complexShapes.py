@@ -12,16 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Components represented by complex shapes, and typically less widely used.
-
-.. impl:: ARMI supports a reasonable set of basic shapes.
-   :id: IMPL_REACTOR_SHAPES_1
-   :links: REQ_REACTOR_SHAPES
-
-   Here ARMI implements its support for: Holed Hexagons, Holed Rectangles,
-   Holed Squares, and Helixes.
-"""
+"""Components represented by complex shapes, and typically less widely used."""
 
 import math
 
@@ -31,7 +22,17 @@ from armi.reactor.components import basicShapes
 
 
 class HoledHexagon(basicShapes.Hexagon):
-    """Hexagon with n uniform circular holes hollowed out of it."""
+    """Hexagon with n uniform circular holes hollowed out of it.
+
+    .. impl:: Holed hexagon shaped Component
+        :id: I_ARMI_COMP_SHAPES5
+        :implements: R_ARMI_COMP_SHAPES
+
+        This class provides an implementation for a holed hexagonal Component. This
+        includes setting key parameters such as its material, temperature, and
+        dimensions. It also provides the capability to retrieve the diameter of the
+        inner hole via the ``getCircleInnerDiameter`` method.
+    """
 
     THERMAL_EXPANSION_DIMS = {"op", "holeOD"}
 
@@ -199,7 +200,18 @@ class HoledRectangle(basicShapes.Rectangle):
 
 
 class HoledSquare(basicShapes.Square):
-    """Square with one circular hole in it."""
+    """Square with one circular hole in it.
+
+    .. impl:: Holed square shaped Component
+        :id: I_ARMI_COMP_SHAPES6
+        :implements: R_ARMI_COMP_SHAPES
+
+        This class provides an implementation for a holed square Component. This
+        includes setting key parameters such as its material, temperature, and
+        dimensions. It also includes methods to retrieve geometric
+        dimension information unique to holed squares via the ``getComponentArea`` and
+        ``getCircleInnerDiameter`` methods.
+    """
 
     THERMAL_EXPANSION_DIMS = {"widthOuter", "holeOD"}
 
@@ -250,6 +262,16 @@ class HoledSquare(basicShapes.Square):
 
 class Helix(ShapedComponent):
     """A spiral wire component used to model a pin wire-wrap.
+
+    .. impl:: Helix shaped Component
+        :id: I_ARMI_COMP_SHAPES7
+        :implements: R_ARMI_COMP_SHAPES
+
+        This class provides the implementation for a helical Component. This
+        includes setting key parameters such as its material, temperature, and
+        dimensions. It also includes the ``getComponentArea`` method to retrieve the
+        area of a helix. Helixes can be used for wire wrapping around fuel pins in fast
+        reactor designs.
 
     Notes
     -----

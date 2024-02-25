@@ -2,9 +2,11 @@
     Note that this file makes use of Python files in a ``armi-example-app`` folder
     so that they can be put under testing.
 
-================================
+.. _armi-make-first-app:
+
+********************************
 Making your first ARMI-based App
-================================
+********************************
 
 In this tutorial we will build a nuclear analysis application that runs (dummy) neutron
 flux and thermal/hydraulics calculations. Applications that do real analysis can be
@@ -51,7 +53,7 @@ files for us to fill in, like this::
             materials.py
             thermalSolver.py
         doc/
-        setup.py
+        pyproject.toml
         README.md
         LICENSE.md
 
@@ -82,8 +84,8 @@ These files are:
 
 * :file:`myapp/thermalSolver.py` contains the thermal/hydraulics solver
 
-* :file:`setup.py` the `python package installation file
-  <https://docs.python.org/3/distutils/setupscript.html>`_ to help users install your
+* :file:`pyproject.toml` the `python package installation file
+  <https://packaging.python.org/en/latest/flow/>`_ to help users install your
   application.
 
 * :file:`README.md` and :file:`LICENSE.md` are an optional description and license of your
@@ -385,7 +387,7 @@ from 360 |deg|\ C  to 510 |deg|\ C (as expected given our simple TH solver).
     program to the data in the primary ARMI HDF5 file. However it is slightly more
     finicky and has slightly less support in some tools (looking at VisIT).
 
-A generic description of the outputs is provided in :doc:`/user/outputs/index`.
+A generic description of the outputs is provided in :doc:`/user/outputs`.
 
 You can add your own outputs from your plugins.
 

@@ -31,7 +31,7 @@ APIDOC_DIR = ".apidocs"
 
 
 def create_figure(path, caption=None, align=None, alt=None, width=None):
-    r"""
+    """
     This method is available within ``.. exec::``. It allows someone to create a figure with a
     caption.
     """
@@ -50,7 +50,7 @@ def create_figure(path, caption=None, align=None, alt=None, width=None):
 
 
 def create_table(rst_table, caption=None, align=None, widths=None, width=None):
-    r"""
+    """
     This method is available within ``.. exec::``. It allows someone to create a table with a
     caption.
 
@@ -65,6 +65,56 @@ def create_table(rst_table, caption=None, align=None, widths=None, width=None):
         rst += ["    :widths: {}".format(widths)]
     rst += [""]
     rst += ["    " + line for line in rst_table.split("\n")]
+    return "\n".join(rst)
+
+
+def createListTable(
+    rows, caption=None, align=None, widths=None, width=None, klass=None
+):
+    """Take a list of data, and produce an RST-type string for a list-table.
+
+    Parameters
+    ----------
+    rows: list
+        List of input data (first row is the header).
+    align: str
+        "left", "center", or "right"
+    widths: str
+        "auto", "grid", or a list of integers
+    width: str
+        length or percentage of the line, surrounded by backticks
+    klass: str
+        Should be "class", but that is a reserved keyword.
+        "longtable", "special", or something custom
+
+    Returns
+    -------
+        str: RST list-table string
+    """
+    # we need valid input data
+    assert len(rows) > 1, "Not enough input data."
+    len0 = len(rows[0])
+    for row in rows[1:]:
+        assert len(row) == len0, "Rows aren't all the same length."
+
+    # build the list-table header block
+    rst = [".. list-table:: {}".format(caption or "")]
+    rst += ["    :header-rows: 1"]
+    if klass:
+        rst += ["    :class: {}".format(klass)]
+    if align:
+        rst += ["    :align: {}".format(align)]
+    if width:
+        rst += ["    :width: {}".format(width)]
+    if widths:
+        rst += ["    :widths: " + " ".join([str(w) for w in widths])]
+    rst += [""]
+
+    # build the list-table data
+    for row in rows:
+        rst += [f"    * - {row[0]}"]
+        rst += [f"      - {word}" for word in row[1:]]
+
     return "\n".join(rst)
 
 
@@ -119,7 +169,7 @@ class ExecDirective(Directive):
 
 
 class PyReverse(Directive):
-    r"""Runs pyreverse to generate UML for specified module name and options.
+    """Runs pyreverse to generate UML for specified module name and options.
 
     The directive accepts the same arguments as pyreverse, except you should not specify
     ``--project`` or ``-o`` (output format). These are automatically specified.

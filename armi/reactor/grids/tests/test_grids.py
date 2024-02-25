@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for grids"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-self-use,attribute-defined-outside-init
+"""Tests for grids."""
 from io import BytesIO
 import math
 import unittest
@@ -51,7 +50,7 @@ class MockArmiObject:
 
 
 class MockStructuredGrid(grids.StructuredGrid):
-    """Need a concrete class to test a lot of inherited methods
+    """Need a concrete class to test a lot of inherited methods.
 
     Abstract methods from the parent now raise ``NotImplementedError``
     """
@@ -126,7 +125,9 @@ class TestSpatialLocator(unittest.TestCase):
         assert_allclose(pinIndexLoc.getCompleteIndices(), (1, 5, 0))
 
     def test_recursionPin(self):
-        """Ensure pin the center assem has axial coordinates consistent with a pin in an off-center assembly."""
+        """Ensure pin the center assem has axial coordinates consistent with a pin in
+        an off-center assembly.
+        """
         core = MockArmiObject()
         assem = MockArmiObject(core)
         block = MockArmiObject(assem)
@@ -201,6 +202,10 @@ class TestGrid(unittest.TestCase):
         """
         Test that locations are created on demand, and the multi-index locations are
         returned when necessary.
+
+        .. test:: Return the locations of grid items with multiplicity greater than one.
+            :id: T_ARMI_GRID_ELEM_LOC
+            :tests: R_ARMI_GRID_ELEM_LOC
         """
         grid = grids.HexGrid.fromPitch(1.0, numRings=0)
         self.assertNotIn((0, 0, 0), grid._locations)
@@ -210,6 +215,10 @@ class TestGrid(unittest.TestCase):
         multiLoc = grid[[(0, 0, 0), (1, 0, 0), (0, 1, 0)]]
         self.assertIsInstance(multiLoc, grids.MultiIndexLocation)
         self.assertIn((1, 0, 0), grid._locations)
+
+        i = multiLoc.indices
+        i = [ii.tolist() for ii in i]
+        self.assertEqual(i, [[0, 0, 0], [1, 0, 0], [0, 1, 0]])
 
     def test_ringPosFromIndicesIncorrect(self):
         """Test the getRingPos fails if there is no armiObect or parent."""
@@ -223,12 +232,7 @@ class TestGrid(unittest.TestCase):
 
 
 class TestHexGrid(unittest.TestCase):
-    """A set of tests for the Hexagonal Grid
-
-    .. test: Tests of the Hexagonal grid.
-       :id: TEST_REACTOR_MESH_0
-       :link: REQ_REACTOR_MESH
-    """
+    """A set of tests for the Hexagonal Grid."""
 
     def test_positions(self):
         grid = grids.HexGrid.fromPitch(1.0)
@@ -307,26 +311,67 @@ class TestHexGrid(unittest.TestCase):
         )
 
     def test_getSymmetricIdenticalsThird(self):
-        grid = grids.HexGrid.fromPitch(1.0)
-        grid.symmetry = str(
+        """Retrieve equivalent contents based on 3rd symmetry.
+
+        .. test:: Equivalent contents in 3rd geometry are retrievable.
+            :id: T_ARMI_GRID_EQUIVALENTS
+            :tests: R_ARMI_GRID_EQUIVALENTS
+        """
+        g = grids.HexGrid.fromPitch(1.0)
+        g.symmetry = str(
             geometry.SymmetryType(
                 geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
             )
         )
-        self.assertEqual(grid.getSymmetricEquivalents((3, -2)), [(-1, 3), (-2, -1)])
-        self.assertEqual(grid.getSymmetricEquivalents((2, 1)), [(-3, 2), (1, -3)])
+        self.assertEqual(g.getSymmetricEquivalents((3, -2)), [(-1, 3), (-2, -1)])
+        self.assertEqual(g.getSymmetricEquivalents((2, 1)), [(-3, 2), (1, -3)])
 
-        symmetrics = grid.getSymmetricEquivalents(grid.getIndicesFromRingAndPos(5, 3))
+        symmetrics = g.getSymmetricEquivalents(g.getIndicesFromRingAndPos(5, 3))
         self.assertEqual(
-            [(5, 11), (5, 19)], [grid.getRingPos(indices) for indices in symmetrics]
+            [(5, 11), (5, 19)], [g.getRingPos(indices) for indices in symmetrics]
         )
 
+    def test_thirdAndFullSymmetry(self):
+        """Test that we can construct a full and a 1/3 core grid.
+
+        .. test:: Test 1/3 and full cores have the correct positions and rings.
+            :id: T_ARMI_GRID_SYMMETRY
+            :tests: R_ARMI_GRID_SYMMETRY
+        """
+        full = grids.HexGrid.fromPitch(1.0, symmetry="full core")
+        third = grids.HexGrid.fromPitch(1.0, symmetry="third core periodic")
+
+        # check full core
+        self.assertEqual(full.getMinimumRings(2), 2)
+        self.assertEqual(full.getIndicesFromRingAndPos(2, 2), (0, 1))
+        self.assertEqual(full.getPositionsInRing(3), 12)
+        self.assertEqual(full.getSymmetricEquivalents((3, -2)), [])
+
+        # check 1/3 core
+        self.assertEqual(third.getMinimumRings(2), 2)
+        self.assertEqual(third.getIndicesFromRingAndPos(2, 2), (0, 1))
+        self.assertEqual(third.getPositionsInRing(3), 12)
+        self.assertEqual(third.getSymmetricEquivalents((3, -2)), [(-1, 3), (-2, -1)])
+
+    def test_pointsUpFlatsUp(self):
+        """Test the pointedEndUp attribute of the fromPitch method.
+
+        .. test:: Build a points-up and a flats-up hexagonal grids.
+            :id: T_ARMI_GRID_HEX_TYPE
+            :tests: R_ARMI_GRID_HEX_TYPE
+        """
+        tipsUp = grids.HexGrid.fromPitch(1.0, pointedEndUp=True)
+        flatsUp = grids.HexGrid.fromPitch(1.0, pointedEndUp=False)
+
+        self.assertEqual(tipsUp._unitSteps[0][0], 0.5)
+        self.assertAlmostEqual(flatsUp._unitSteps[0][0], 0.8660254037844388)
+
     def test_triangleCoords(self):
-        grid = grids.HexGrid.fromPitch(8.15)
-        indices1 = grid.getIndicesFromRingAndPos(5, 3) + (0,)
-        indices2 = grid.getIndicesFromRingAndPos(5, 23) + (0,)
-        indices3 = grid.getIndicesFromRingAndPos(3, 4) + (0,)
-        cur = grid.triangleCoords(indices1)
+        g = grids.HexGrid.fromPitch(8.15)
+        indices1 = g.getIndicesFromRingAndPos(5, 3) + (0,)
+        indices2 = g.getIndicesFromRingAndPos(5, 23) + (0,)
+        indices3 = g.getIndicesFromRingAndPos(3, 4) + (0,)
+        cur = g.triangleCoords(indices1)
         ref = [
             (16.468_916_428_634_078, 25.808_333_333_333_337),
             (14.116_214_081_686_351, 27.166_666_666_666_67),
@@ -361,8 +406,8 @@ class TestHexGrid(unittest.TestCase):
 
     def test_getIndexBounds(self):
         numRings = 5
-        grid = grids.HexGrid.fromPitch(1.0, numRings=numRings)
-        boundsIJK = grid.getIndexBounds()
+        g = grids.HexGrid.fromPitch(1.0, numRings=numRings)
+        boundsIJK = g.getIndexBounds()
         self.assertEqual(
             boundsIJK, ((-numRings, numRings), (-numRings, numRings), (0, 1))
         )
@@ -389,11 +434,38 @@ class TestHexGrid(unittest.TestCase):
             assert_allclose(loc.indices, newLoc.indices)
 
     def test_adjustPitch(self):
-        grid = grids.HexGrid.fromPitch(1.0, numRings=3)
-        v1 = grid.getCoordinates((1, 0, 0))
-        grid.changePitch(2.0)
-        v2 = grid.getCoordinates((1, 0, 0))
-        assert_allclose(2 * v1, v2)
+        """Adjust the pich of a hexagonal lattice.
+
+        .. test:: Construct a hexagonal lattice with three rings.
+            :id: T_ARMI_GRID_HEX
+            :tests: R_ARMI_GRID_HEX
+
+        .. test:: Return the grid coordinates of different locations.
+            :id: T_ARMI_GRID_GLOBAL_POS0
+            :tests: R_ARMI_GRID_GLOBAL_POS
+        """
+        # run this test for a grid with no offset, and then a few random offset values
+        for offset in [0, 1, 1.123, 3.14]:
+            # build a hex grid with pitch=1, 3 rings, and the above offset
+            grid = grids.HexGrid(
+                unitSteps=((1.5 / math.sqrt(3), 0.0, 0.0), (0.5, 1, 0.0), (0, 0, 0)),
+                unitStepLimits=((-3, 3), (-3, 3), (0, 1)),
+                offset=numpy.array([offset, offset, offset]),
+            )
+
+            # test that we CAN change the pitch, and it scales the grid (but not the offset)
+            v1 = grid.getCoordinates((1, 0, 0))
+            grid.changePitch(2.0)
+            v2 = grid.getCoordinates((1, 0, 0))
+            assert_allclose(2 * v1 - offset, v2)
+            self.assertEqual(grid.pitch, 2.0)
+
+            # basic sanity: test number of rings has changed
+            self.assertEqual(grid._unitStepLimits[0][1], 3)
+
+            # basic sanity: check the offset exists and is correct
+            for i in range(3):
+                self.assertEqual(grid.offset[i], offset)
 
     def test_badIndices(self):
         grid = grids.HexGrid.fromPitch(1.0, numRings=3)
@@ -406,6 +478,12 @@ class TestHexGrid(unittest.TestCase):
             grid.getCoordinates((0, 5, -1))
 
     def test_isInFirstThird(self):
+        """Determine if grid is in first third.
+
+        .. test:: Determine if grid in first third.
+            :id: T_ARMI_GRID_SYMMETRY_LOC
+            :tests: R_ARMI_GRID_SYMMETRY_LOC
+        """
         grid = grids.HexGrid.fromPitch(1.0, numRings=10)
         self.assertTrue(grid.isInFirstThird(grid[0, 0, 0]))
         self.assertTrue(grid.isInFirstThird(grid[1, 0, 0]))
@@ -490,12 +568,7 @@ class TestBoundsDefinedGrid(unittest.TestCase):
 
 
 class TestThetaRZGrid(unittest.TestCase):
-    """A set of tests for the RZTheta Grid
-
-    .. test: Tests of the RZTheta grid.
-       :id: TEST_REACTOR_MESH_1
-       :link: REQ_REACTOR_MESH
-    """
+    """A set of tests for the RZTheta Grid."""
 
     def test_positions(self):
         grid = grids.ThetaRZGrid(
@@ -513,12 +586,7 @@ class TestThetaRZGrid(unittest.TestCase):
 
 
 class TestCartesianGrid(unittest.TestCase):
-    """A set of tests for the Cartesian Grid
-
-    .. test: Tests of the Cartesian grid.
-       :id: TEST_REACTOR_MESH_2
-       :link: REQ_REACTOR_MESH
-    """
+    """A set of tests for the Cartesian Grid."""
 
     def test_ringPosNoSplit(self):
         grid = grids.CartesianGrid.fromRectangle(1.0, 1.0, isOffset=True)

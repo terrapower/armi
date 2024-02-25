@@ -254,8 +254,12 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
             )
             self._getConservationMetrics(self.a)
 
-    def test_ThermalExpansionContractionConservation_Simple(self):
-        r"""Thermally expand and then contract to ensure original state is recovered.
+    def test_thermalExpansionContractionConservation_simple(self):
+        """Thermally expand and then contract to ensure original state is recovered.
+
+        .. test:: Thermally expand and then contract to ensure original assembly is recovered.
+            :id: T_ARMI_AXIAL_EXP_THERM0
+            :tests: R_ARMI_AXIAL_EXP_THERM
 
         Notes
         -----
@@ -290,8 +294,8 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
         self._checkMass(origMasses, newMasses)
         self._checkNDens(origNDens, newNDens, 1.0)
 
-    def test_ThermalExpansionContractionConservation_Complex(self):
-        r"""Thermally expand and then contract to ensure original state is recovered.
+    def test_thermalExpansionContractionConservation_complex(self):
+        """Thermally expand and then contract to ensure original state is recovered.
 
         Notes
         -----
@@ -367,8 +371,12 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
         with self.assertRaises(InputError):
             changer.setAssembly(a)
 
-    def test_PrescribedExpansionContractionConservation(self):
+    def test_prescribedExpansionContractionConservation(self):
         """Expand all components and then contract back to original state.
+
+        .. test:: Expand all components and then contract back to original state.
+            :id: T_ARMI_AXIAL_EXP_PRESC0
+            :tests: R_ARMI_AXIAL_EXP_PRESC
 
         Notes
         -----
@@ -428,7 +436,7 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
                 nDens[c] = c.getNumberDensities()
         return masses, nDens
 
-    def test_TargetComponentMassConservation(self):
+    def test_targetComponentMassConservation(self):
         """Tests mass conservation for target components."""
         self.expandAssemForMassConservationTest()
         for cName, masses in self.componentMass.items():
@@ -450,8 +458,13 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
                 msg="Total assembly steel mass is not conserved.",
             )
 
-    def test_NoMovementACLP(self):
-        """Ensures that above core load pad (ACLP) does not move during fuel-only expansion."""
+    def test_noMovementACLP(self):
+        """Ensures the above core load pad (ACLP) does not move during fuel-only expansion.
+
+        .. test:: Ensure the ACLP does not move during fuel-only expansion.
+            :id: T_ARMI_AXIAL_EXP_PRESC1
+            :tests: R_ARMI_AXIAL_EXP_PRESC
+        """
         # build test assembly with ACLP
         assembly = HexAssembly("testAssemblyType")
         assembly.spatialGrid = grids.axialUnitGrid(numCells=1)
@@ -776,7 +789,13 @@ class TestDetermineTargetComponent(AxialExpansionTestBase, unittest.TestCase):
             self.assertEqual(the_exception.error_code, 3)
 
     def test_manuallySetTargetComponent(self):
-        """Ensures that target components can be manually set (is done in practice via blueprints)."""
+        """
+        Ensures that target components can be manually set (is done in practice via blueprints).
+
+        .. test:: Allow user-specified target axial expansion components on a given block.
+            :id: T_ARMI_MANUAL_TARG_COMP
+            :tests: R_ARMI_MANUAL_TARG_COMP
+        """
         b = HexBlock("dummy", height=10.0)
         ductDims = {"Tinput": 25.0, "Thot": 25.0, "op": 17, "ip": 0.0, "mult": 1.0}
         duct = Hexagon("duct", "FakeMat", **ductDims)
@@ -835,8 +854,19 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
     def test_coldAssemblyExpansion(self):
         """Block heights are cold and should be expanded.
 
+        .. test:: Preserve the total height of a compatible ARMI assembly.
+            :id: T_ARMI_ASSEM_HEIGHT_PRES
+            :tests: R_ARMI_ASSEM_HEIGHT_PRES
+
+        .. test:: Axial expansion can be prescribed in blueprints for core constuction.
+            :id: T_ARMI_INP_COLD_HEIGHT
+            :tests: R_ARMI_INP_COLD_HEIGHT
+
         Notes
         -----
+        For R_ARMI_INP_COLD_HEIGHT, the action of axial expansion occurs in setUp() during core
+        construction, specifically in :py:meth:`constructAssem <armi.reactor.blueprints.Blueprints.constructAssem>`
+
         Two assertions here:
             1. total assembly height should be preserved (through use of top dummy block)
             2. in armi.tests.detailedAxialExpansion.refSmallReactorBase.yaml,

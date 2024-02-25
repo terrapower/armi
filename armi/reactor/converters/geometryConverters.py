@@ -15,14 +15,15 @@
 """
 Change a reactor from one geometry to another.
 
-Examples may include going from Hex to R-Z or from Third-core to full core.  This module
-contains **converters** (which create new reactor objects with different geometry), and
-**changers** (which modify a given reactor in place) in this module.
+Examples may include going from Hex to R-Z or from Third-core to full core.  This module contains
+**converters** (which create new reactor objects with different geometry), and **changers** (which
+modify a given reactor in place) in this module.
 
 Generally, mass is conserved in geometry conversions.
 
-.. warning:: These are mostly designed for hex geometry.
-
+Warning
+-------
+These are mostly designed for hex geometry.
 """
 import collections
 import copy
@@ -107,7 +108,8 @@ class GeometryConverter(GeometryChanger):
     --------
     To convert a hex case to a R-Z case, do this:
 
-    >>> geomConv = armi.reactorConverters.HexToRZConverter(useMostCommonXsId=False, expandReactor=False)
+    >>> from armi.reactorConverters import HexToRZConverter
+    >>> HexToRZConverter(useMostCommonXsId=False, expandReactor=False)
     >>> geomConv.convert(r)
     >>> newR = geomConv.convReactor
     >>> dif3d = dif3dInterface.Dif3dInterface('dif3dRZ', newR)
@@ -126,7 +128,8 @@ class FuelAssemNumModifier(GeometryChanger):
 
     Notes
     -----
-    - The number of fuel assemblies should ALWAYS be set for the third-core regardless of the reactor geometry model.
+    - The number of fuel assemblies should ALWAYS be set for the third-core regardless of the
+      reactor geometry model.
     - The modification is only valid for third-core and full-core geometry models.
     """
 
@@ -144,8 +147,8 @@ class FuelAssemNumModifier(GeometryChanger):
 
         Notes
         -----
-        - While adding fuel, does not modify existing fuel/control positions, but does overwrite assemblies in the
-          overwriteList (e.g. reflectors, shields)
+        - While adding fuel, does not modify existing fuel/control positions, but does overwrite
+          assemblies in the overwriteList (e.g. reflectors, shields)
         - Once specified amount of fuel is in place, removes all assemblies past the outer fuel boundary
         - To re-add reflector/shield assemblies around the new core, use the ringsToAdd attribute
         """
@@ -323,8 +326,8 @@ class HexToRZThetaConverter(GeometryConverter):
     Parameters
     ----------
     converterSettings: dict
-        Settings that specify how the mesh of the RZTheta reactor should be generated.
-        Controls the number of theta regions, how to group regions, etc.
+        Settings that specify how the mesh of the RZTheta reactor should be generated. Controls the
+        number of theta regions, how to group regions, etc.
 
         uniformThetaMesh
             bool flag that determines if the theta mesh should be uniform or not
@@ -336,19 +339,21 @@ class HexToRZThetaConverter(GeometryConverter):
            * ``Ring Compositions`` -- to convert by composition
 
         axialConversionType
-            * ``Axial Coordinates`` --  use :py:class:`armi.reactor.converters.meshConverters._RZThetaReactorMeshConverterByAxialCoordinates`
-            * ``Axial Bins`` -- use :py:class:`armi.reactor.converters.meshConverters._RZThetaReactorMeshConverterByAxialBins`
+            * ``Axial Coordinates`` --  use
+              :py:class:`armi.reactor.converters.meshConverters._RZThetaReactorMeshConverterByAxialCoordinates`
+            * ``Axial Bins`` -- use
+              :py:class:`armi.reactor.converters.meshConverters._RZThetaReactorMeshConverterByAxialBins`
 
         homogenizeAxiallyByFlags
-            Boolean that if set to True will ignore the `axialConversionType` input and determine a mesh based on the
-            material boundaries for each RZ region axially.
+            Boolean that if set to True will ignore the `axialConversionType` input and determine a
+            mesh based on the material boundaries for each RZ region axially.
 
     expandReactor : bool
-        If True, the HEX-Z reactor will be expanded to full core geometry prior to converting to the RZT reactor.
-        Either way the converted RZTheta core will be full core.
+        If True, the HEX-Z reactor will be expanded to full core geometry prior to converting to the
+        RZT reactor. Either way the converted RZTheta core will be full core.
     strictHomogenization : bool
-        If True, the converter will restrict HEX-Z blocks with dissimilar XS types from being homogenized into an
-        RZT block.
+        If True, the converter will restrict HEX-Z blocks with dissimilar XS types from being
+        homogenized into an RZT block.
     """
 
     _GEOMETRY_TYPE = geometry.GeomType.RZT
@@ -430,6 +435,17 @@ class HexToRZThetaConverter(GeometryConverter):
         """
         Run the conversion to 3 dimensional R-Z-Theta.
 
+        .. impl:: Tool to convert a hex core to an RZTheta core.
+            :id: I_ARMI_CONV_3DHEX_TO_2DRZ
+            :implements: R_ARMI_CONV_3DHEX_TO_2DRZ
+
+            This method converts the hex-z mesh to r-theta-z mesh.
+            It first verifies that the geometry type of the input reactor ``r``
+            has the expected HEX geometry. Upon conversion, it determines the inner
+            and outer diameters of each ring in the r-theta-z mesh and calls
+            ``_createRadialThetaZone`` to create a radial theta zone with a homogenized mixture.
+            The axial dimension of the r-theta-z mesh is then updated by ``updateAxialMesh``.
+
         Attributes
         ----------
         r : Reactor object
@@ -437,18 +453,22 @@ class HexToRZThetaConverter(GeometryConverter):
 
         Notes
         -----
-        As a part of the RZT mesh converters it is possible to obtain a radial mesh that
-        has repeated ring numbers.  For instance, if there are fuel assemblies and control
-        assemblies within the same radial hex ring then it's possible that a radial mesh
-        output from the byRingComposition mesh converter method will look something like:
+        The linked requirement technically points to a child class of this class, HexToRZConverter.
+        However, this is the method where the conversion actually happens and thus the
+        implementation tag is noted here.
+
+        As a part of the RZT mesh converters it is possible to obtain a radial mesh that has
+        repeated ring numbers.  For instance, if there are fuel assemblies and control assemblies
+        within the same radial hex ring then it's possible that a radial mesh output from the
+        byRingComposition mesh converter method will look something like:
 
         self.meshConverter.radialMesh = [2, 3, 4, 4, 5, 5, 6, 6, 6, 7, 8, 8, 9, 10]
 
-        In this instance the hex ring will remain the same for multiple iterations over
-        radial direction when homogenizing the hex core into the RZT geometry. In this
-        case, the converter needs to keep track of the compositions within this ring so
-        that it can separate this repeated ring into multiple RZT rings. Each of the RZT
-        rings should have a single composition (fuel1, fuel2, control, etc.)
+        In this instance the hex ring will remain the same for multiple iterations over radial
+        direction when homogenizing the hex core into the RZT geometry. In this case, the converter
+        needs to keep track of the compositions within this ring so that it can separate this
+        repeated ring into multiple RZT rings. Each of the RZT rings should have a single
+        composition (fuel1, fuel2, control, etc.)
 
         See Also
         --------
@@ -541,13 +561,15 @@ class HexToRZThetaConverter(GeometryConverter):
 
     def _getSortedAssemblyTypesInRadialZone(self, lowerRing, upperRing):
         """
-        Retrieve assembly types in a radial zone between (lowerRing, upperRing), sort from highest occurrence to lowest.
+        Retrieve assembly types in a radial zone between (lowerRing, upperRing), sort from highest
+        occurrence to lowest.
 
         Notes
         -----
-        - Assembly types are based on the assembly names and not the direct composition within each assembly. For
-          instance, if two assemblies are named `fuel 1` and `fuel 2` but they have the same composition at some reactor
-          state then they will still be separated as two different assembly types.
+        - Assembly types are based on the assembly names and not the direct composition within each
+          assembly. For instance, if two assemblies are named `fuel 1` and `fuel 2` but they have
+          the same composition at some reactor state then they will still be separated as two
+          different assembly types.
         """
         aCountByTypes = collections.Counter()
         for a in self._getAssembliesInCurrentRadialZone(lowerRing, upperRing):
@@ -594,8 +616,8 @@ class HexToRZThetaConverter(GeometryConverter):
 
         Notes
         -----
-        self._assemsInRadialZone keeps track of the unique assemblies that are in each radial ring. This
-        ensures that no assemblies are duplicated when using self._getAssemsInRadialThetaZone()
+        self._assemsInRadialZone keeps track of the unique assemblies that are in each radial ring.
+        This ensures that no assemblies are duplicated when using self._getAssemsInRadialThetaZone()
         """
         lowerTheta = 0.0
         for _thetaIndex, upperTheta in enumerate(self.meshConverter.thetaMesh):
@@ -662,7 +684,9 @@ class HexToRZThetaConverter(GeometryConverter):
         return aList
 
     def _getAssemsInRadialThetaZone(self, lowerRing, upperRing, lowerTheta, upperTheta):
-        """Retrieve list of assemblies in the reactor between (lowerRing, upperRing) and (lowerTheta, upperTheta)."""
+        """Retrieve list of assemblies in the reactor between (lowerRing, upperRing) and
+        (lowerTheta, upperTheta).
+        """
         thetaAssems = self._getAssembliesInSector(
             self._sourceReactor.core, math.degrees(lowerTheta), math.degrees(upperTheta)
         )
@@ -841,8 +865,10 @@ class HexToRZThetaConverter(GeometryConverter):
 
         if abs(newBlockVolumeFraction - 1.0) > 0.00001:
             raise ValueError(
-                "The volume fraction of block {} is {} and not 1.0. An error occurred when converting the reactor"
-                " geometry.".format(newBlock, newBlockVolumeFraction)
+                "The volume fraction of block {} is {} and not 1.0. An error occurred when "
+                "converting the reactor geometry.".format(
+                    newBlock, newBlockVolumeFraction
+                )
             )
 
     def createHomogenizedRZTBlock(
@@ -851,8 +877,9 @@ class HexToRZThetaConverter(GeometryConverter):
         """
         Create the homogenized RZT block by computing the average atoms in the zone.
 
-        Additional calculations are performed to determine the homogenized block type, the block average temperature,
-        and the volume fraction of each hex block that is in the new homogenized block.
+        Additional calculations are performed to determine the homogenized block type, the block
+        average temperature, and the volume fraction of each hex block that is in the new
+        homogenized block.
         """
         homBlockXsTypes = set()
         numHexBlockByType = collections.Counter()
@@ -881,8 +908,8 @@ class HexToRZThetaConverter(GeometryConverter):
         # Notify if blocks with different xs types are being homogenized. May be undesired behavior.
         if len(homBlockXsTypes) > 1:
             msg = (
-                "Blocks {} with dissimilar XS IDs are being homogenized in {} between axial heights {} "
-                "cm and {} cm. ".format(
+                "Blocks {} with dissimilar XS IDs are being homogenized in {} between axial heights"
+                " {} cm and {} cm. ".format(
                     self.blockMap[homBlock],
                     self.convReactor.core,
                     lowerAxialZ,
@@ -907,16 +934,17 @@ class HexToRZThetaConverter(GeometryConverter):
 
     def _getHomogenizedBlockType(self, numHexBlockByType):
         """
-        Generate the homogenized block mixture type based on the frequency of hex block types that were merged
-        together.
+        Generate the homogenized block mixture type based on the frequency of hex block types that
+        were merged together.
 
         Notes
         -----
         self._BLOCK_MIXTURE_TYPE_EXCLUSIONS:
-            The normal function of this method is to assign the mixture name based on the number of occurrences of the
-            block type. This list stops that and assigns the mixture based on the first occurrence.
-            (i.e. if the mixture has a set of blocks but it comes across one with the name of 'control' the process will
-            stop and the new mixture type will be set to 'mixture control'
+            The normal function of this method is to assign the mixture name based on the number of
+            occurrences of the block type. This list stops that and assigns the mixture based on the
+            first occurrence. (i.e. if the mixture has a set of blocks but it comes across one with
+            the name of 'control' the process will stop and the new mixture type will be set to
+            'mixture control'.
 
         self._BLOCK_MIXTURE_TYPE_MAP:
             A dictionary that provides the name of blocks that are condensed together
@@ -1194,11 +1222,11 @@ class HexToRZThetaConverter(GeometryConverter):
 
 
 class HexToRZConverter(HexToRZThetaConverter):
-    r"""
+    """
     Create a new reactor with R-Z coordinates from the Hexagonal-Z reactor.
 
-    This is a subclass of the HexToRZThetaConverter. See the HexToRZThetaConverter for explanation and setup of
-    the converterSettings.
+    This is a subclass of the HexToRZThetaConverter. See the HexToRZThetaConverter for
+    explanation and setup of the converterSettings.
     """
 
     _GEOMETRY_TYPE = geometry.GeomType.RZ
@@ -1242,6 +1270,23 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
     def convert(self, r):
         """
         Run the conversion.
+
+        .. impl:: Convert a one-third-core geometry to a full-core geometry.
+            :id: I_ARMI_THIRD_TO_FULL_CORE0
+            :implements: R_ARMI_THIRD_TO_FULL_CORE
+
+            This method first checks if the input reactor is already full core.
+            If full-core symmetry is detected, the input reactor is returned.
+            If not, it then verifies that the input reactor has the expected one-third
+            core symmetry and HEX geometry.
+
+            Upon conversion, it loops over the assembly vector of the source
+            one-third core model, copies and rotates each source assembly to create
+            new assemblies, and adds them on the full-core grid. For the center assembly,
+            it modifies its parameters.
+
+            Finally, it sets the domain type to full core.
+
 
         Parameters
         ----------
@@ -1329,7 +1374,17 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
         )
 
     def restorePreviousGeometry(self, r=None):
-        """Undo the changes made by convert by going back to 1/3 core."""
+        """Undo the changes made by convert by going back to 1/3 core.
+
+        .. impl:: Restore a one-third-core geometry to a full-core geometry.
+            :id: I_ARMI_THIRD_TO_FULL_CORE1
+            :implements: R_ARMI_THIRD_TO_FULL_CORE
+
+            This method is a reverse process of the method ``convert``. It converts
+            the full-core reactor model back to the original one-third core reactor model by removing
+            the added assemblies and changing the parameters of the center
+            assembly from full core to one third core.
+        """
         r = r or self._sourceReactor
 
         # remove the assemblies that were added when the conversion happened.
@@ -1357,15 +1412,24 @@ class EdgeAssemblyChanger(GeometryChanger):
 
     Examples
     --------
-    edgeChanger = EdgeAssemblyChanger()
-    edgeChanger.removeEdgeAssemblies(reactor.core)
+        edgeChanger = EdgeAssemblyChanger()
+        edgeChanger.removeEdgeAssemblies(reactor.core)
     """
 
     def addEdgeAssemblies(self, core):
         """
         Add the assemblies on the 120 degree symmetric line to 1/3 symmetric cases.
 
-        Needs to be called before a finite difference (DIF3D, DIFNT) or MCNP calculation
+        Needs to be called before a finite difference (DIF3D, DIFNT) or MCNP calculation.
+
+        .. impl:: Add assemblies along the 120-degree line to a reactor.
+            :id: I_ARMI_ADD_EDGE_ASSEMS0
+            :implements: R_ARMI_ADD_EDGE_ASSEMS
+
+            Edge assemblies on the 120-degree symmetric line of a one-third core reactor model are added
+            because they are needed for DIF3D-finite difference or MCNP models. This is done
+            by copying the assemblies from the lower boundary and placing them in their
+            reflective positions on the upper boundary of the symmetry line.
 
         Parameters
         ----------
@@ -1432,6 +1496,14 @@ class EdgeAssemblyChanger(GeometryChanger):
 
         This makes use of the assemblies knowledge of if it is in a region that it
         needs to be removed.
+
+        .. impl:: Remove assemblies along the 120-degree line from a reactor.
+            :id: I_ARMI_ADD_EDGE_ASSEMS1
+            :implements: R_ARMI_ADD_EDGE_ASSEMS
+
+            This method is the reverse process of the method ``addEdgeAssemblies``. It is
+            needed for the DIF3D-Nodal calculation. It removes the assemblies on the 120-degree
+            symmetry line.
 
         See Also
         --------

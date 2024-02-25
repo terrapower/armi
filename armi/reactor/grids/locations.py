@@ -20,7 +20,7 @@ import numpy
 
 if TYPE_CHECKING:
     # Avoid some circular imports
-    from . import Grid
+    from armi.reactor.grids import Grid
 
 
 IJType = Tuple[int, int]
@@ -57,9 +57,7 @@ class LocationBase(ABC):
         )
 
     def __getstate__(self) -> Hashable:
-        """
-        Used in pickling and deepcopy, this detaches the grid.
-        """
+        """Used in pickling and deepcopy, this detaches the grid."""
         return (self._i, self._j, self._k, None)
 
     def __setstate__(self, state: Hashable):
@@ -353,14 +351,19 @@ class MultiIndexLocation(IndexLocation):
     """
     A collection of index locations that can be used as a spatialLocator.
 
-    This allows components with multiplicity>1 to have location information
-    within a parent grid. The implication is that there are multiple
-    discrete components, each one residing in one of the actual locators
-    underlying this collection.
+    This allows components with multiplicity>1 to have location information within a
+    parent grid. The implication is that there are multiple discrete components, each
+    one residing in one of the actual locators underlying this collection.
 
-    This class contains an implementation that allows a multi-index
-    location to be used in the ARMI data model similar to a
-    individual IndexLocation.
+    .. impl:: Store components with multiplicity greater than 1
+        :id: I_ARMI_GRID_MULT
+        :implements: R_ARMI_GRID_MULT
+
+        As not all grids are "full core symmetry", ARMI will sometimes need to track
+        multiple positions for a single object: one for each symmetric portion of the
+        reactor. This class doesn't calculate those positions in the reactor, it just
+        tracks the multiple positions given to it. In practice, this class is mostly
+        just a list of ``IndexLocation`` objects.
     """
 
     # MIL's cannot be hashed, so we need to scrape off the implementation from
@@ -375,15 +378,13 @@ class MultiIndexLocation(IndexLocation):
         self._locations = []
 
     def __getstate__(self) -> List[IndexLocation]:
-        """
-        Used in pickling and deepcopy, this detaches the grid.
-        """
+        """Used in pickling and deepcopy, this detaches the grid."""
         return self._locations
 
     def __setstate__(self, state: List[IndexLocation]):
         """
-        Unpickle a locator, the grid will attach itself if it was also pickled, otherwise this will
-        be detached.
+        Unpickle a locator, the grid will attach itself if it was also pickled,
+        otherwise this will be detached.
         """
         self.__init__(None)
         self._locations = state
@@ -432,13 +433,14 @@ class MultiIndexLocation(IndexLocation):
         """
         Return indices for all locations.
 
-        Notes
-        -----
-        Notice that this returns a list of all of the indices, unlike the ``indices()``
-        implementation for :py:class:`IndexLocation`. This is intended to make the
-        behavior of getting the indices from the Locator symmetric with passing a list
-        of indices to the Grid's ``__getitem__()`` function, which constructs and
-        returns a ``MultiIndexLocation`` containing those indices.
+        .. impl:: Return the location of all instances of grid components with
+            multiplicity greater than 1.
+            :id: I_ARMI_GRID_ELEM_LOC
+            :implements: R_ARMI_GRID_ELEM_LOC
+
+            This method returns the indices of all the ``IndexLocation`` objects. To be
+            clear, this does not return the ``IndexLocation`` objects themselves. This
+            is designed to be consistent with the Grid's ``__getitem__()`` method.
         """
         return [loc.indices for loc in self._locations]
 
@@ -472,9 +474,8 @@ def addingIsValid(myGrid: "Grid", parentGrid: "Grid"):
     """
     True if adding a indices from one grid to another is considered valid.
 
-    In ARMI we allow the addition of a 1-D axial grid with a 2-D grid.
-    We do not allow any other kind of adding. This enables the 2D/1D
-    grid layout in Assemblies/Blocks but does not allow 2D indexing
-    in pins to become inconsistent.
+    In ARMI we allow the addition of a 1-D axial grid with a 2-D grid. We do not allow
+    any other kind of adding. This enables the 2D/1D grid layout in Assemblies/Blocks
+    but does not allow 2D indexing in pins to become inconsistent.
     """
     return myGrid.isAxialOnly and not parentGrid.isAxialOnly

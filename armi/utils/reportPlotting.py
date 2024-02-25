@@ -451,8 +451,6 @@ def _getNeutronicVals(r):
                 ("Rx. Swing", r.core.p.rxSwing),
                 ("Fast Flux Fr.", r.core.p.fastFluxFrAvg),
                 ("Leakage", r.core.p.leakageFracTotal),
-                ("Void worth", r.core.p.voidWorth),
-                ("Doppler", r.core.p.doppler),
                 ("Beta", r.core.p.beta),
                 ("Peak flux", r.core.p.maxFlux),
             ]

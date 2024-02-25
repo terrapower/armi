@@ -72,14 +72,13 @@ dependencies could conflict with your system dependencies.
 
     $ git clone https://github.com/terrapower/armi
     $ cd armi
-    $ pip3 install -r requirements.txt
-    $ python3 setup.py install
+    $ pip install -e .
     $ armi
 
 The easiest way to run the tests is to install `tox <https://tox.readthedocs.io/en/latest/>`_
 and then run::
 
-    $ pip3 install -r requirements-testing.txt
+    $ pip install -e .[test]
     $ tox -- -n 6
 
 This runs the unit tests in parallel on 6 processes. Omit the ``-n 6`` argument
@@ -87,7 +86,7 @@ to run on a single process.
 
 The tests can also be run directly, using ``pytest``::
 
-    $ pip3 install -r requirements-testing.txt
+    $ pip install -e .[test]
     $ pytest -n 4 armi
 
 From here, we recommend going through a few of our `gallery examples
@@ -313,7 +312,6 @@ see if their idea has wings, and if it does, they can then find a way to bring
 it to engineering and commercial reality.
 
 
-
 History of ARMI
 ---------------
 ARMI was originally created by TerraPower, LLC near Seattle WA starting in 2009. Its
@@ -397,7 +395,6 @@ Most of our code is in the ``camelCase`` style, which is not the normal style fo
 Python. This started in 2009 and we have stuck with the convention.
 
 
-
 License
 -------
 TerraPower and ARMI are registered trademarks of TerraPower, LLC.
@@ -408,7 +405,7 @@ The ARMI system is licensed as follows:
 
 .. code-block:: none
 
-	Copyright 2009-2023 TerraPower, LLC
+	Copyright 2009-2024 TerraPower, LLC
 
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
@@ -422,7 +419,7 @@ The ARMI system is licensed as follows:
 	See the License for the specific language governing permissions and
 	limitations under the License.
 
-Be careful when including any dependency in ARMI (say in a requirements.txt file) not
+Be careful when including any dependency in ARMI (say in the ``pyproject.toml`` file) not
 to include anything with a license that superceeds our Apache license. For instance,
 any third-party Python library included in ARMI with a GPL license will make the whole
 project fall under the GPL license. But a lot of potential users of ARMI will want to

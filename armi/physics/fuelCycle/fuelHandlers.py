@@ -124,7 +124,10 @@ class FuelHandler:
             # The user can choose the algorithm method name directly in the settings
             if hasattr(rotAlgos, self.cs[CONF_ASSEMBLY_ROTATION_ALG]):
                 rotationMethod = getattr(rotAlgos, self.cs[CONF_ASSEMBLY_ROTATION_ALG])
-                rotationMethod()
+                try:
+                    rotationMethod()
+                except TypeError:
+                    rotationMethod(self)
             else:
                 raise RuntimeError(
                     "FuelHandler {0} does not have a rotation algorithm called {1}.\n"
@@ -368,14 +371,15 @@ class FuelHandler:
 
         Examples
         --------
-        feed = self.findAssembly(targetRing=4,
-                                 width=(0,0),
-                                 param='maxPercentBu',
-                                 compareTo=100,
-                                 typeSpec=Flags.FEED | Flags.FUEL)
+        This returns the feed fuel assembly in ring 4 that has a burnup closest to 100%
+        (the highest burnup assembly)::
 
-        returns the feed fuel assembly in ring 4 that has a burnup closest to 100% (the highest
-        burnup assembly)
+            feed = self.findAssembly(targetRing=4,
+                                     width=(0,0),
+                                     param='maxPercentBu',
+                                     compareTo=100,
+                                     typeSpec=Flags.FEED | Flags.FUEL)
+
         """
 
         def compareAssem(candidate, current):
@@ -541,17 +545,9 @@ class FuelHandler:
                         # this assembly is in the excluded location list. skip it.
                         continue
 
-                # only continue of the Assembly is in a Zone
-                if zoneList:
-                    found = False  # guilty until proven innocent
-                    for zone in zoneList:
-                        if a.getLocation() in zone:
-                            # great! it's in there, so we'll accept this assembly
-                            found = True  # innocent
-                            break
-                    if not found:
-                        # this assembly is not in any of the zones in the zone list. skip it.
-                        continue
+                # only process of the Assembly is in a Zone
+                if not self.isAssemblyInAZone(zoneList, a):
+                    continue
 
                 # Now find the assembly with the param closest to the target val.
                 if param:
@@ -618,6 +614,21 @@ class FuelHandler:
         else:
             return minDiff[1]
 
+    @staticmethod
+    def isAssemblyInAZone(zoneList, a):
+        """Does the given assembly in one of these zones."""
+        if zoneList:
+            # ruff: noqa: SIM110
+            for zone in zoneList:
+                if a.getLocation() in zone:
+                    # Success!
+                    return True
+
+            return False
+        else:
+            # A little counter-intuitively, if there are no zones, we return True.
+            return True
+
     def _getAssembliesInRings(
         self,
         ringList,
@@ -626,7 +637,7 @@ class FuelHandler:
         exclusions=None,
         circularRingFlag=False,
     ):
-        r"""
+        """
         find assemblies in particular rings.
 
         Parameters
@@ -711,14 +722,42 @@ class FuelHandler:
         return assemblyList
 
     def swapAssemblies(self, a1, a2):
-        r"""
-        Moves a whole assembly from one place to another.
+        """Moves a whole assembly from one place to another.
+
+        .. impl:: Assemblies can be moved from one place to another.
+            :id: I_ARMI_SHUFFLE_MOVE
+            :implements: R_ARMI_SHUFFLE_MOVE
+
+            For the two assemblies that are passed in, call to their :py:meth:`~armi.reactor.assemblies.Assembly.moveTo`
+            methods to transfer their underlying ``spatialLocator`` attributes to
+            each other. This will also update the ``childrenByLocator`` list on the
+            core as well as the assembly parameters ``numMoves`` and ``daysSinceLastMove``.
+
+        .. impl:: User-specified blocks can be left in place during within-core swaps.
+            :id: I_ARMI_SHUFFLE_STATIONARY0
+            :implements: R_ARMI_SHUFFLE_STATIONARY
+
+            Before assemblies are moved,
+            the ``_transferStationaryBlocks`` class method is called to
+            check if there are any block types specified by the user as stationary
+            via the ``stationaryBlockFlags`` case setting. Using these flags, blocks
+            are gathered from each assembly which should remain stationary and
+            checked to make sure that both assemblies have the same number
+            and same height of stationary blocks. If not, return an error.
+
+            If all checks pass, the :py:meth:`~armi.reactor.assemblies.Assembly.remove`
+            and :py:meth:`~armi.reactor.assemblies.Assembly.insert`
+            methods are used to swap the stationary blocks between the two assemblies.
+
+            Once this process is complete, the actual assembly movement can take
+            place. Through this process, the stationary blocks remain in the same
+            core location.
 
         Parameters
         ----------
-        a1 : Assembly
+        a1 : :py:class:`Assembly <armi.reactor.assemblies.Assembly>`
             The first assembly
-        a2 : Assembly
+        a2 : :py:class:`Assembly <armi.reactor.assemblies.Assembly>`
             The second assembly
 
         See Also
@@ -800,8 +839,33 @@ class FuelHandler:
             assembly2.insert(assem2BlockIndex, assem1Block)
 
     def dischargeSwap(self, incoming, outgoing):
-        r"""
-        Removes one assembly from the core and replace it with another assembly.
+        """Removes one assembly from the core and replace it with another assembly.
+
+        .. impl:: User-specified blocks can be left in place for the discharge swap.
+            :id: I_ARMI_SHUFFLE_STATIONARY1
+            :implements: R_ARMI_SHUFFLE_STATIONARY
+
+            Before assemblies are moved, the ``_transferStationaryBlocks`` class method is called to
+            check if there are any block types specified by the user as stationary via the
+            ``stationaryBlockFlags`` case setting. Using these flags, blocks are gathered from each
+            assembly which should remain stationary and checked to make sure that both assemblies
+            have the same number and same height of stationary blocks. If not, return an error.
+
+            If all checks pass, the :py:meth:`~armi.reactor.assemblies.Assembly.remove` and
+            :py:meth:`~armi.reactor.assemblies.Assembly.insert`` methods are used to swap the
+            stationary blocks between the two assemblies.
+
+            Once this process is complete, the actual assembly movement can take place. Through this
+            process, the stationary blocks from the outgoing assembly remain in the original core
+            position, while the stationary blocks from the incoming assembly are discharged with the
+            outgoing assembly.
+
+        Parameters
+        ----------
+        incoming : :py:class:`Assembly <armi.reactor.assemblies.Assembly>`
+            The assembly getting swapped into the core.
+        outgoing : :py:class:`Assembly <armi.reactor.assemblies.Assembly>`
+            The assembly getting discharged out the core.
 
         See Also
         --------
@@ -971,7 +1035,10 @@ class FuelHandler:
             elif "assembly" in line:
                 # this is the new load style where an actual assembly type is written to the shuffle logic
                 # due to legacy reasons, the assembly type will be put into group 4
-                pat = r"([A-Za-z0-9!\-]+) moved to ([A-Za-z0-9!\-]+) with assembly type ([A-Za-z0-9!\s]+)\s*(ANAME=\S+)?\s*with enrich list: (.+)"
+                pat = (
+                    r"([A-Za-z0-9!\-]+) moved to ([A-Za-z0-9!\-]+) with assembly type "
+                    + r"([A-Za-z0-9!\s]+)\s*(ANAME=\S+)?\s*with enrich list: (.+)"
+                )
                 m = re.search(pat, line)
                 if not m:
                     raise InputError(

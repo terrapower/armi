@@ -24,7 +24,10 @@ from armi.nucDirectory import nuclideBases
 from armi import runLog
 from armi.nucDirectory import elements
 
-from .fissionProductModelSettings import CONF_LFP_COMPOSITION_FILE_PATH, CONF_FP_MODEL
+from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import (
+    CONF_LFP_COMPOSITION_FILE_PATH,
+    CONF_FP_MODEL,
+)
 
 
 class LumpedFissionProduct:
@@ -410,7 +413,8 @@ def _buildMo99LumpedFissionProduct():
     for lfp in nuclideBases.where(
         lambda nb: isinstance(nb, nuclideBases.LumpNuclideBase)
     ):
-        # Not all lump nuclides bases defined are fission products, so ensure that only fission products are considered.
+        # Not all lump nuclides bases defined are fission products, so ensure that only fission
+        # products are considered.
         if not ("FP" in lfp.name or "REGN" in lfp.name):
             continue
         mo99FP = LumpedFissionProduct(lfp.name)
@@ -421,6 +425,7 @@ def _buildMo99LumpedFissionProduct():
 
 def isGas(nuc):
     """True if nuclide is considered a gas."""
+    # ruff: noqa: SIM110
     for element in elements.getElementsByChemicalPhase(elements.ChemicalPhase.GAS):
         if element == nuc.element:
             return True

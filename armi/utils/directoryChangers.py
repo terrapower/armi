@@ -355,7 +355,7 @@ class ForcedCreationDirectoryChanger(DirectoryChanger):
 
 def directoryChangerFactory():
     if context.MPI_SIZE > 1:
-        from .directoryChangersMpi import MpiDirectoryChanger
+        from armi.utils.directoryChangersMpi import MpiDirectoryChanger
 
         return MpiDirectoryChanger
     else:

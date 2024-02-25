@@ -15,8 +15,9 @@
 """
 Framework-wide settings definitions and constants.
 
-This should contain Settings definitions for general-purpose "framework" settings. These
-should only include settings that are not related to any particular physics or plugins.
+This should contain Settings definitions for general-purpose "framework"
+settings. These should only include settings that are not related to any
+particular physics or plugins.
 """
 import os
 from typing import List
@@ -119,7 +120,40 @@ CONF_ZONE_DEFINITIONS = "zoneDefinitions"
 
 
 def defineSettings() -> List[setting.Setting]:
-    """Return a list of global framework settings."""
+    """
+    Return a list of global framework settings.
+
+    .. impl:: There is a setting for total core power.
+        :id: I_ARMI_SETTINGS_POWER
+        :implements: R_ARMI_SETTINGS_POWER
+
+        ARMI defines a collection of settings by default to be associated
+        with all runs, and one such setting is ``power``. This is the
+        total thermal power of the reactor. This is designed to be the
+        standard power of the reactor core, to be easily set by the user.
+        There is frequently the need to adjust the power of the reactor
+        at different cycles. That is done by setting the ``powerFractions``
+        setting to a list of fractions of this power.
+
+    .. impl:: Define a comment and a versions list to go with the settings.
+        :id: I_ARMI_SETTINGS_META1
+        :implements: R_ARMI_SETTINGS_META
+
+        Because nuclear analysts have a lot to keep track of when doing
+        various simulations of a reactor, ARMI provides a ``comment``
+        setting that takes an arbitrary string and stores it. This string
+        will be preserved in the settings file and thus in the database,
+        and can provide helpful notes for analysts in the future.
+
+        Likewise, it is helpful to know what versions of software were
+        used in an ARMI application. There is a dictionary-like setting
+        called ``versions`` that allows users to track the versions of:
+        ARMI, their ARMI application, and the versions of all the plugins
+        in their simulation. While it is always helpful to know what
+        versions of software you run, it is particularly needed in nuclear
+        engineering where demands will be made to track the exact
+        versions of code used in simulations.
+    """
     settings = [
         setting.Setting(
             CONF_NUM_PROCESSORS,

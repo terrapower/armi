@@ -109,6 +109,16 @@ class Database3:
     handles the packing and unpacking of the structure of the objects, their
     relationships, and their non-parameter attributes.
 
+    .. impl:: The database files are H5, and thus language agnostic.
+        :id: I_ARMI_DB_H51
+        :implements: R_ARMI_DB_H5
+
+        This class implements a light wrapper around H5 files, so they can be used to
+        store ARMI outputs. H5 files are commonly used in scientific applications in
+        Fortran and C++. As such, they are entirely language agnostic binary files. The
+        implementation here is that ARMI wraps the ``h5py`` library, and uses its
+        extensive tooling, instead of re-inventing the wheel.
+
     See Also
     --------
     `doc/user/outputs/database` for more details.
@@ -197,23 +207,14 @@ class Database3:
                 "Cannot open database with permission `{}`".format(self._permission)
             )
 
+        # open the database, and write a bunch of metadata to it
         runLog.info("Opening database file at {}".format(os.path.abspath(filePath)))
         self.h5db = h5py.File(filePath, self._permission)
         self.h5db.attrs["successfulCompletion"] = False
         self.h5db.attrs["version"] = meta.__version__
         self.h5db.attrs["databaseVersion"] = self.version
-        self.h5db.attrs["user"] = context.USER
-        self.h5db.attrs["python"] = sys.version
-        self.h5db.attrs["armiLocation"] = os.path.dirname(context.ROOT)
-        self.h5db.attrs["startTime"] = context.START_TIME
-        self.h5db.attrs["machines"] = numpy.array(context.MPI_NODENAMES).astype("S")
-        # store platform data
-        platform_data = uname()
-        self.h5db.attrs["platform"] = platform_data.system
-        self.h5db.attrs["hostname"] = platform_data.node
-        self.h5db.attrs["platformRelease"] = platform_data.release
-        self.h5db.attrs["platformVersion"] = platform_data.version
-        self.h5db.attrs["platformArch"] = platform_data.processor
+        self.writeSystemAttributes(self.h5db)
+
         # store app and plugin data
         app = getApp()
         self.h5db.attrs["appName"] = app.name
@@ -224,8 +225,36 @@ class Database3:
         ]
         ps = numpy.array([str(p[0]) + ":" + str(p[1]) for p in ps]).astype("S")
         self.h5db.attrs["pluginPaths"] = ps
-        # store the commit hash of the local repo
         self.h5db.attrs["localCommitHash"] = Database3.grabLocalCommitHash()
+
+    @staticmethod
+    def writeSystemAttributes(h5db):
+        """Write system attributes to the database.
+
+        .. impl:: Add system attributes to the database.
+            :id: I_ARMI_DB_QA
+            :implements: R_ARMI_DB_QA
+
+            This method writes some basic system information to the H5 file. This is
+            designed as a starting point, so users can see information about the system
+            their simulations were run on. As ARMI is used on Windows and Linux, the
+            tooling here has to be platform independent. The two major sources of
+            information are the ARMI :py:mod:`context <armi.context>` module and the
+            Python standard library ``platform``.
+        """
+        h5db.attrs["user"] = context.USER
+        h5db.attrs["python"] = sys.version
+        h5db.attrs["armiLocation"] = os.path.dirname(context.ROOT)
+        h5db.attrs["startTime"] = context.START_TIME
+        h5db.attrs["machines"] = numpy.array(context.MPI_NODENAMES).astype("S")
+
+        # store platform data
+        platform_data = uname()
+        h5db.attrs["platform"] = platform_data.system
+        h5db.attrs["hostname"] = platform_data.node
+        h5db.attrs["platformRelease"] = platform_data.release
+        h5db.attrs["platformVersion"] = platform_data.version
+        h5db.attrs["platformArch"] = platform_data.processor
 
     @staticmethod
     def grabLocalCommitHash():
@@ -423,6 +452,7 @@ class Database3:
     def loadGeometry(self):
         """
         This is primarily just used for migrations.
+
         The "geometry files" were replaced by ``systems:`` and ``grids:`` sections of ``Blueprints``.
         """
         geom = systemLayoutInput.SystemLayoutInput()
@@ -431,11 +461,29 @@ class Database3:
 
     def writeInputsToDB(self, cs, csString=None, geomString=None, bpString=None):
         """
-        Write inputs into the database based the CaseSettings.
+        Write inputs into the database based the Settings.
 
         This is not DRY on purpose. The goal is that any particular Database
         implementation should be very stable, so we dont want it to be easy to change
         one Database implementation's behavior when trying to change another's.
+
+        .. impl:: The run settings are saved the settings file.
+            :id: I_ARMI_DB_CS
+            :implements: R_ARMI_DB_CS
+
+            A ``Settings`` object is passed into this method, and then the settings are
+            converted into a YAML string stream. That stream is then written to the H5
+            file. Optionally, this method can take a pre-build settings string to be
+            written directly to the file.
+
+        .. impl:: The reactor blueprints are saved the settings file.
+            :id: I_ARMI_DB_BP
+            :implements: R_ARMI_DB_BP
+
+            A ``Blueprints`` string is optionally passed into this method, and then
+            written to the H5 file. If it is not passed in, this method will attempt to
+            find the blueprints input file in the settings, and read the contents of
+            that file into a stream to be written to the H5 file.
 
         Notes
         -----
@@ -650,16 +698,27 @@ class Database3:
         bp=None,
         statePointName=None,
         allowMissing=False,
-        updateGlobalAssemNum=True,
-        updateMasterCs=True,
     ):
         """Load a new reactor from (cycle, node).
 
-        Case settings and blueprints can be provided by the client, or read from the database itself.
-        Providing these from the client could be useful when performing snapshot runs
-        or where it is expected to use results from a run using different settings and
-        continue with new settings (or if blueprints are not on the database).
-        Geometry is read from the database itself.
+        Case settings and blueprints can be provided by the client, or read from the
+        database itself. Providing these from the client could be useful when
+        performing snapshot runs or where it is expected to use results from a run
+        using different settings and continue with new settings (or if blueprints are
+        not on the database). Geometry is read from the database itself.
+
+        .. impl:: Users can load a reactor from a DB.
+            :id: I_ARMI_DB_R_LOAD
+            :implements: R_ARMI_DB_R_LOAD
+
+            This method creates a ``Reactor`` object by reading the reactor state out
+            of an ARMI database file. This is done by passing in mandatory arguements
+            that specify the exact place in time you want to load the reactor from.
+            (That is, the cycle and node numbers.) Users can either pass the settings
+            and blueprints directly into this method, or it will attempt to read them
+            from the database file. The primary work done here is to read the hierarchy
+            of reactor objects from the data file, then reconstruct them in the correct
+            order.
 
         Parameters
         ----------
@@ -677,13 +736,6 @@ class Database3:
         allowMissing : bool, optional
             Whether to emit a warning, rather than crash if reading a database
             with undefined parameters. Default False.
-        updateGlobalAssemNum : bool, optional
-            DeprecationWarning: This is unused.
-        updateMasterCs : bool, optional
-            Whether to apply the cs (whether provided as an argument or read from
-            the database) as the primary for the case. Default True. Can be useful
-            if you don't intend to use the loaded reactor as the basis for further
-            computations in the current operator.
 
         Returns
         -------
@@ -693,8 +745,6 @@ class Database3:
         runLog.info("Loading reactor state for time node ({}, {})".format(cycle, node))
 
         cs = cs or self.loadCS()
-        if updateMasterCs:
-            settings.setMasterCs(cs)
         bp = bp or self.loadBlueprints()
 
         if node < 0:
@@ -727,12 +777,6 @@ class Database3:
         )
         root = comps[0][0]
 
-        if updateGlobalAssemNum:
-            runLog.warning(
-                "The method input `updateGlobalAssemNum` is no longer used.",
-                single=True,
-            )
-
         # return a Reactor object
         if cs[CONF_SORT_REACTOR]:
             root.sort()
@@ -742,6 +786,7 @@ class Database3:
                 f"Due to the setting {CONF_SORT_REACTOR}, this Reactor is unsorted. "
                 "But this feature is temporary and will be removed by 2024."
             )
+
         return root
 
     @staticmethod
@@ -1475,7 +1520,6 @@ def packSpecialData(
       ``None`` with a magical value that shouldn't be encountered in realistic
       scenarios.
 
-
     Parameters
     ----------
     data
@@ -1626,7 +1670,6 @@ def unpackSpecialData(data: numpy.ndarray, attrs, paramName: str) -> numpy.ndarr
     numpy.ndarray
         An ndarray containing the closest possible representation of the data that was
         originally written to the database.
-
 
     See Also
     --------

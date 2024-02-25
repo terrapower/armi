@@ -432,187 +432,6 @@ def getBlockParameterDefinitions():
     with pDefs.createBuilder(
         default=0.0,
         location=ParamLocation.AVERAGE,
-        categories=["reactivity coefficients"],
-    ) as pb:
-
-        pb.defParam(
-            "VoideddopplerWorth",
-            units=f"{units.REACTIVITY}*{units.DEGK}^(n-1)",
-            description="Distributed Voided Doppler constant.",
-        )
-
-        pb.defParam(
-            "dopplerWorth",
-            units=f"{units.REACTIVITY}*{units.DEGK}^(n-1)",
-            description="Distributed Doppler constant.",
-        )
-
-        pb.defParam(
-            "fuelWorth",
-            units=f"{units.REACTIVITY}/{units.KG})",
-            description="Reactivity worth of fuel material per unit mass",
-        )
-
-        pb.defParam(
-            "fuelWorthPT",
-            units=f"{units.PCM}/{units.PERCENT}/{units.CM}^3",
-            description="Fuel reactivity",
-        )
-
-        pb.defParam(
-            "structWorthPT",
-            units=f"{units.PCM}/{units.PERCENT}/{units.CM}^3",
-            description="Structure reactivity",
-        )
-
-        pb.defParam(
-            "radExpWorthPT",
-            units=f"{units.PCM}/{units.PERCENT}/{units.CM}^3",
-            description="Radial swelling reactivity",
-        )
-
-        pb.defParam(
-            "coolWorthPT",
-            units=f"{units.PCM}/{units.PERCENT}/{units.CM}^3",
-            description="Coolant reactivity",
-        )
-
-        pb.defParam(
-            "coolFlowingWorthPT",
-            units=f"{units.PCM}/{units.PERCENT}/{units.CM}^3",
-            description="Flowing coolant reactivity",
-        )
-
-        pb.defParam(
-            "axExpWorthPT",
-            units=f"{units.PCM}/{units.PERCENT}/{units.CM}^3",
-            description="Axial swelling reactivity",
-        )
-
-        pb.defParam(
-            "coolantWorth",
-            units=f"{units.REACTIVITY}/{units.KG})",
-            description="Reactivity worth of coolant material per unit mass",
-        )
-
-        pb.defParam(
-            "cladWorth",
-            units=f"{units.REACTIVITY}/{units.KG})",
-            description="Reactivity worth of clad material per unit mass",
-        )
-
-        pb.defParam(
-            "rxAxialCentsPerK",
-            units=f"{units.CENTS}/{units.DEGK}",
-            description="Axial temperature reactivity coefficient",
-        )
-
-        pb.defParam(
-            "rxAxialCentsPerPow",
-            units=f"{units.CENTS}/{units.DEGK}",
-            description="Axial power reactivity coefficient",
-        )
-
-        pb.defParam(
-            "rxCoolantCentsPerK",
-            units=f"{units.CENTS}/{units.DEGK}",
-            description="Coolant temperature reactivity coefficient",
-        )
-
-        pb.defParam(
-            "rxCoolantCentsPerPow",
-            units=f"{units.CENTS}/{units.DEGK}",
-            description="Coolant power reactivity coefficient",
-        )
-
-        pb.defParam(
-            "rxDopplerCentsPerK",
-            units=f"{units.CENTS}/{units.DEGK}",
-            description="Doppler temperature reactivity coefficient",
-        )
-
-        pb.defParam(
-            "rxDopplerCentsPerPow",
-            units=f"{units.CENTS}/{units.DEGK}",
-            description="Doppler power reactivity coefficient",
-        )
-
-        pb.defParam(
-            "rxFuelCentsPerK",
-            units=f"{units.CENTS}/{units.DEGK}",
-            description="Fuel temperature reactivity coefficient",
-        )
-
-        pb.defParam(
-            "rxFuelCentsPerPow",
-            units=f"{units.CENTS}/{units.DEGK}",
-            description="Fuel power reactivity coefficient",
-        )
-
-        pb.defParam(
-            "rxNetCentsPerK",
-            units=f"{units.CENTS}/{units.DEGK}",
-            description="Net temperature reactivity coefficient",
-        )
-
-        pb.defParam(
-            "rxNetCentsPerPow",
-            units=f"{units.CENTS}/{units.DEGK}",
-            description="Net power reactivity coefficient",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "rxNetPosNeg",
-            units=f"{units.CENTS}/{units.DEGK}",
-            description="Net temperature reactivity coefficient: positive or negative",
-        )
-
-        pb.defParam(
-            "rxNetPosNegPow",
-            units=f"{units.CENTS}/{units.DEGK}",
-            description="Net power reactivity coefficient: positive or negative",
-        )
-
-        pb.defParam(
-            "rxRadialCentsPerK",
-            units=f"{units.CENTS}/{units.DEGK}",
-            description="Radial temperature reactivity coefficient",
-        )
-
-        pb.defParam(
-            "rxRadialCentsPerPow",
-            units=f"{units.CENTS}/{units.DEGK}",
-            description="Radial power reactivity coefficient",
-        )
-
-        pb.defParam(
-            "rxStructCentsPerK",
-            units=f"{units.CENTS}/{units.DEGK}",
-            description="Structure temperature reactivity coefficient",
-        )
-
-        pb.defParam(
-            "rxStructCentsPerPow",
-            units=f"{units.CENTS}/{units.DEGK}",
-            description="Structure power reactivity coefficient",
-        )
-
-        pb.defParam(
-            "rxVoidedDopplerCentsPerK",
-            units=f"{units.CENTS}/{units.DEGK}",
-            description="Voided Doppler temperature reactivity coefficient",
-        )
-
-        pb.defParam(
-            "rxVoidedDopplerCentsPerPow",
-            units=f"{units.CENTS}/{units.DEGK}",
-            description="Voided Doppler power reactivity coefficient",
-        )
-
-    with pDefs.createBuilder(
-        default=0.0,
-        location=ParamLocation.AVERAGE,
         categories=[
             "reactivity coefficients",
             "spatially dependent",
@@ -623,83 +442,83 @@ def getBlockParameterDefinitions():
         # FUEL COEFFICIENTS
         pb.defParam(
             "rxFuelDensityCoeffPerMass",
-            units=f"{units.REACTIVITY}/{units.KG})",
-            description="Fuel Density Coefficient",
+            units=f"{units.REACTIVITY}/{units.KG}",
+            description="Fuel density coefficient",
         )
 
         pb.defParam(
             "rxFuelDopplerConstant",
             units=f"{units.REACTIVITY}*{units.DEGK}^(n-1)",
-            description="Fuel Doppler Constant",
+            description="Fuel Doppler constant",
         )
 
         pb.defParam(
             "rxFuelVoidedDopplerConstant",
             units=f"{units.REACTIVITY}*{units.DEGK}^(n-1)",
-            description="Fuel Voided-Coolant Constant",
+            description="Fuel voided-coolant Doppler constant",
         )
 
         pb.defParam(
             "rxFuelTemperatureCoeffPerMass",
-            units=f"{units.REACTIVITY}/{units.KG})",
-            description="Fuel Temperature Coefficient",
+            units=f"{units.REACTIVITY}/{units.KG}",
+            description="Fuel temperature coefficient",
         )
 
         pb.defParam(
             "rxFuelVoidedTemperatureCoeffPerMass",
-            units=f"{units.REACTIVITY}/{units.KG})",
-            description="Fuel Voided-Coolant Temperature Coefficient",
+            units=f"{units.REACTIVITY}/{units.KG}",
+            description="Fuel voided-coolant temperature coefficient",
         )
 
         # CLAD COEFFICIENTS
         pb.defParam(
             "rxCladDensityCoeffPerMass",
-            units=f"{units.REACTIVITY}/{units.KG})",
-            description="Clad Density Coefficient",
+            units=f"{units.REACTIVITY}/{units.KG}",
+            description="Clad density coefficient",
         )
 
         pb.defParam(
             "rxCladDopplerConstant",
             units=f"{units.REACTIVITY}*{units.DEGK}^(n-1)",
-            description="Clad Doppler Constant",
+            description="Clad Doppler constant",
         )
 
         pb.defParam(
             "rxCladTemperatureCoeffPerMass",
-            units=f"{units.REACTIVITY}/{units.KG})",
-            description="Clad Temperature Coefficient",
+            units=f"{units.REACTIVITY}/{units.KG}",
+            description="Clad temperature coefficient",
         )
 
         # STRUCTURE COEFFICIENTS
         pb.defParam(
             "rxStructureDensityCoeffPerMass",
-            units=f"{units.REACTIVITY}/{units.KG})",
-            description="Structure Density Coefficient",
+            units=f"{units.REACTIVITY}/{units.KG}",
+            description="Structure density coefficient",
         )
 
         pb.defParam(
             "rxStructureDopplerConstant",
             units=f"{units.REACTIVITY}*{units.DEGK}^(n-1)",
-            description="Structure Doppler Constant",
+            description="Structure Doppler constant",
         )
 
         pb.defParam(
             "rxStructureTemperatureCoeffPerMass",
-            units=f"{units.REACTIVITY}/{units.KG})",
-            description="Structure Temperature Coefficient",
+            units=f"{units.REACTIVITY}/{units.KG}",
+            description="Structure temperature coefficient",
         )
 
         # COOLANT COEFFICIENTS
         pb.defParam(
             "rxCoolantDensityCoeffPerMass",
-            units=f"{units.REACTIVITY}/{units.KG})",
-            description="Coolant Density Coefficient",
+            units=f"{units.REACTIVITY}/{units.KG}",
+            description="Coolant density coefficient",
         )
 
         pb.defParam(
             "rxCoolantTemperatureCoeffPerMass",
-            units=f"{units.REACTIVITY}/{units.KG})",
-            description="Coolant Temperature Coefficient",
+            units=f"{units.REACTIVITY}/{units.KG}",
+            description="Coolant temperature coefficient",
         )
 
     with pDefs.createBuilder(
@@ -715,83 +534,83 @@ def getBlockParameterDefinitions():
         # FUEL COEFFICIENTS
         pb.defParam(
             "rxFuelDensityCoeffPerTemp",
-            units=f"{units.REACTIVITY}/{units.DEGK})",
-            description="Fuel Density Coefficient",
+            units=f"{units.REACTIVITY}/{units.DEGK}",
+            description="Fuel density coefficient",
         )
 
         pb.defParam(
             "rxFuelDopplerCoeffPerTemp",
-            units=f"{units.REACTIVITY}/{units.DEGK})",
-            description="Fuel Doppler Coefficient",
+            units=f"{units.REACTIVITY}/{units.DEGK}",
+            description="Fuel Doppler coefficient",
         )
 
         pb.defParam(
             "rxFuelVoidedDopplerCoeffPerTemp",
-            units=f"{units.REACTIVITY}/{units.DEGK})",
-            description="Fuel Voided-Coolant Doppler Coefficient",
+            units=f"{units.REACTIVITY}/{units.DEGK}",
+            description="Fuel voided-coolant Doppler coefficient",
         )
 
         pb.defParam(
             "rxFuelTemperatureCoeffPerTemp",
-            units=f"{units.REACTIVITY}/{units.DEGK})",
-            description="Fuel Temperature Coefficient",
+            units=f"{units.REACTIVITY}/{units.DEGK}",
+            description="Fuel temperature coefficient",
         )
 
         pb.defParam(
             "rxFuelVoidedTemperatureCoeffPerTemp",
-            units=f"{units.REACTIVITY}/{units.DEGK})",
-            description="Fuel Voided-Coolant Temperature Coefficient",
+            units=f"{units.REACTIVITY}/{units.DEGK}",
+            description="Fuel voided-coolant temperature coefficient",
         )
 
         # CLAD COEFFICIENTS
         pb.defParam(
             "rxCladDensityCoeffPerTemp",
-            units=f"{units.REACTIVITY}/{units.DEGK})",
-            description="Clad Density Coefficient",
+            units=f"{units.REACTIVITY}/{units.DEGK}",
+            description="Clad density coefficient",
         )
 
         pb.defParam(
             "rxCladDopplerCoeffPerTemp",
-            units=f"{units.REACTIVITY}/{units.DEGK})",
-            description="Clad Doppler Coefficient",
+            units=f"{units.REACTIVITY}/{units.DEGK}",
+            description="Clad Doppler coefficient",
         )
 
         pb.defParam(
             "rxCladTemperatureCoeffPerTemp",
-            units=f"{units.REACTIVITY}/{units.DEGK})",
-            description="Clad Temperature Coefficient",
+            units=f"{units.REACTIVITY}/{units.DEGK}",
+            description="Clad temperature coefficient",
         )
 
         # STRUCTURE COEFFICIENTS
         pb.defParam(
             "rxStructureDensityCoeffPerTemp",
-            units=f"{units.REACTIVITY}/{units.DEGK})",
-            description="Structure Density Coefficient",
+            units=f"{units.REACTIVITY}/{units.DEGK}",
+            description="Structure density coefficient",
         )
 
         pb.defParam(
             "rxStructureDopplerCoeffPerTemp",
-            units=f"{units.REACTIVITY}/{units.DEGK})",
-            description="Structure Doppler Coefficient",
+            units=f"{units.REACTIVITY}/{units.DEGK}",
+            description="Structure Doppler coefficient",
         )
 
         pb.defParam(
             "rxStructureTemperatureCoeffPerTemp",
-            units=f"{units.REACTIVITY}/{units.DEGK})",
-            description="Structure Temperature Coefficient",
+            units=f"{units.REACTIVITY}/{units.DEGK}",
+            description="Structure temperature coefficient",
         )
 
         # COOLANT COEFFICIENTS
         pb.defParam(
             "rxCoolantDensityCoeffPerTemp",
-            units=f"{units.REACTIVITY}/{units.DEGK})",
-            description="Coolant Density Coefficient",
+            units=f"{units.REACTIVITY}/{units.DEGK}",
+            description="Coolant density coefficient",
         )
 
         pb.defParam(
             "rxCoolantTemperatureCoeffPerTemp",
-            units=f"{units.REACTIVITY}/{units.DEGK})",
-            description="Coolant Temperature Coefficient",
+            units=f"{units.REACTIVITY}/{units.DEGK}",
+            description="Coolant temperature coefficient",
         )
 
     with pDefs.createBuilder(default=0.0) as pb:
@@ -884,13 +703,6 @@ def getBlockParameterDefinitions():
         )
 
         pb.defParam(
-            "coolRemFrac",
-            units=units.UNITLESS,
-            description="Fractional sodium density change for each block",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
             "crWastage",
             units=units.MICRONS,
             description="Combines ACCI and clad corrosion for control blocks",
@@ -901,27 +713,6 @@ def getBlockParameterDefinitions():
             "cyclicNErr",
             units=units.UNITLESS,
             description="Relative error of the block number density",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "deltaTclad",
-            units=f"{units.DEGK}/{units.PERCENT}",
-            description=r"Change in fuel temperature due to 1% rise in power.",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "deltaTduct",
-            units=f"{units.DEGK}/{units.PERCENT}",
-            description=r"Change in fuel temperature due to 1% rise in power.",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "deltaTfuel",
-            units=f"{units.DEGK}/{units.PERCENT}",
-            description=r"Change in fuel temperature due to 1% rise in power.",
             location=ParamLocation.AVERAGE,
         )
 

@@ -44,40 +44,56 @@ class NuclideFlag(yamlize.Object):
     """
     Defines whether or not each nuclide is included in the burn chain and cross sections.
 
-    Also controls which nuclides get expanded from elementals to isotopics
-    and which natural isotopics to exclude (if any). Oftentimes, cross section
-    library creators include some natural isotopes but not all. For example,
-    it is common to include O16 but not O17 or O18. Each code has slightly
-    different interpretations of this so we give the user full control here.
+    Also controls which nuclides get expanded from elementals to isotopics and which natural
+    isotopics to exclude (if any). Oftentimes, cross section library creators include some natural
+    isotopes but not all. For example, it is common to include O16 but not O17 or O18. Each code has
+    slightly different interpretations of this so we give the user full control here.
 
     We also try to provide useful defaults.
 
-    There are lots of complications that can arise in these choices.
-    It makes reasonable sense to use elemental compositions
-    for things that are typically used  without isotopic modifications
-    (Fe, O, Zr, Cr, Na). If we choose to expand some or all of these
-    to isotopics at initialization based on cross section library
-    requirements, a single case will work fine with a given lattice
-    physics option. However, restarting from that case with different
-    cross section needs is challenging.
+    There are lots of complications that can arise in these choices. It makes reasonable sense to
+    use elemental compositions for things that are typically used  without isotopic modifications
+    (Fe, O, Zr, Cr, Na). If we choose to expand some or all of these to isotopics at initialization
+    based on cross section library requirements, a single case will work fine with a given lattice
+    physics option. However, restarting from that case with different cross section needs is
+    challenging.
+
+    .. impl:: The blueprint object that represents a nuclide flag.
+        :id: I_ARMI_BP_NUC_FLAGS1
+        :implements: R_ARMI_BP_NUC_FLAGS
+
+        This class creates a yaml interface for the user to specify in their blueprints which
+        isotopes should be depleted. It is incorporated into the "nuclide flags" section of a
+        blueprints file by being included as key-value pairs within the
+        :py:class:`~armi.reactor.blueprints.isotopicOptions.NuclideFlags` class, which is in turn
+        included into the overall blueprints within :py:class:`~armi.reactor.blueprints.Blueprints`.
+
+        This class includes a boolean ``burn`` attribute which can be specified for any nuclide.
+        This attribute is examined by the
+        :py:meth:`~armi.reactor.blueprints.isotopicOptions.NuclideFlag.fileAsActiveOrInert` method
+        to sort the nuclides into sets of depletable or not, which is typically called during
+        construction of assemblies in :py:meth:`~armi.reactor.blueprints.Blueprints.constructAssem`.
+
+        Note that while the ``burn`` attribute can be set by the user in the blueprints, other
+        methods may also set it based on case settings (see, for instance,
+        :py:func:`~armi.reactor.blueprints.isotopicOptions.genDefaultNucFlags`,
+        :py:func:`~armi.reactor.blueprints.isotopicOptions.autoUpdateNuclideFlags`, and
+        :py:func:`~armi.reactor.blueprints.isotopicOptions.getAllNuclideBasesByLibrary`).
 
     Attributes
     ----------
     nuclideName : str
         The name of the nuclide
     burn : bool
-        True if this nuclide should be added to the burn chain.
-        If True, all reachable nuclides via transmutation
-        and decay must be included as well.
+        True if this nuclide should be added to the burn chain. If True, all reachable nuclides via
+        transmutation and decay must be included as well.
     xs : bool
-        True if this nuclide should be included in the cross
-        section libraries. Effectively, if this nuclide is in the problem
-        at all, this should be true.
+        True if this nuclide should be included in the cross section libraries. Effectively, if this
+        nuclide is in the problem at all, this should be true.
     expandTo : list of str, optional
-        isotope nuclideNames to expand to. For example, if nuclideName is
-        ``O`` then this could be ``["O16", "O17"]`` to expand it into
-        those two isotopes (but not ``O18``). The nuclides will be scaled
-        up uniformly to account for any missing natural nuclides.
+        isotope nuclideNames to expand to. For example, if nuclideName is ``O`` then this could be
+        ``["O16", "O17"]`` to expand it into those two isotopes (but not ``O18``). The nuclides will
+        be scaled up uniformly to account for any missing natural nuclides.
     """
 
     nuclideName = yamlize.Attribute(type=str)
@@ -144,8 +160,32 @@ class NuclideFlags(yamlize.KeyedList):
 
 class CustomIsotopic(yamlize.Map):
     """
-    User specified, custom isotopics input defined by a name (such as MOX), and key/pairs of nuclide names and numeric
-    values consistent with the ``input format``.
+    User specified, custom isotopics input defined by a name (such as MOX), and key/pairs of nuclide
+    names and numeric values consistent with the ``input format``.
+
+    .. impl:: Certain material modifications will be applied using this code.
+        :id: I_ARMI_MAT_USER_INPUT2
+        :implements: R_ARMI_MAT_USER_INPUT
+
+        Defines a yaml construct that allows the user to define a custom isotopic vector from within
+        their blueprints file, including a name and key-value pairs corresponding to nuclide names
+        and their concentrations.
+
+        Relies on the underlying infrastructure from the ``yamlize`` package for reading from text
+        files, serialization, and internal storage of the data.
+
+        Is implemented as part of a blueprints file by being used in key-value pairs within the
+        :py:class:`~armi.reactor.blueprints.isotopicOptions.CustomIsotopics` class, which is
+        imported and used as an attribute within the larger
+        :py:class:`~armi.reactor.blueprints.Blueprints` class.
+
+        These isotopics are linked to a component during calls to
+        :py:meth:`~armi.reactor.blueprints.componentBlueprint.ComponentBlueprint.construct`, where
+        the name specified in the ``isotopics`` attribute of the component blueprint is searched
+        against the available ``CustomIsotopics`` defined in the "custom isotopics" section of the
+        blueprints. Once linked, the
+        :py:meth:`~armi.reactor.blueprints.isotopicOptions.CustomIsotopic.apply` method is called,
+        which adjusts the ``massFrac`` attribute of the component's material class.
     """
 
     key_type = yamlize.Typed(str)

@@ -18,13 +18,13 @@ import numpy
 
 from armi.reactor import geometry
 
-from .locations import IJType
-from .structuredgrid import StructuredGrid
+from armi.reactor.grids.locations import IJType
+from armi.reactor.grids.structuredGrid import StructuredGrid
 
 
 class CartesianGrid(StructuredGrid):
     """
-    Grid class representing a conformal Cartesian mesh
+    Grid class representing a conformal Cartesian mesh.
 
     It is recommended to call :meth:`fromRectangle` to construct,
     rather than directly constructing with ``__init__``
@@ -67,10 +67,6 @@ class CartesianGrid(StructuredGrid):
         Grid example where the axes lie between the "center assemblies" (even-by-even).
         Note that ring 1 has four locations, and that the center of the (0, 0)-index
         location is offset from the origin.
-
-    .. impl:: ARMI supports a Cartesian mesh.
-       :id: IMPL_REACTOR_MESH_1
-       :links: REQ_REACTOR_MESH
     """
 
     @classmethod
@@ -108,7 +104,7 @@ class CartesianGrid(StructuredGrid):
         )
 
     def overlapsWhichSymmetryLine(self, indices: IJType) -> None:
-        """Return lines of symmetry position at a given index can be found
+        """Return lines of symmetry position at a given index can be found.
 
         .. warning::
 
@@ -301,7 +297,7 @@ class CartesianGrid(StructuredGrid):
 
     @property
     def pitch(self) -> Tuple[float, float]:
-        """Grid pitch in the x and y dimension
+        """Grid pitch in the x and y dimension.
 
         Returns
         -------

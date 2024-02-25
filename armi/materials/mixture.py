@@ -21,6 +21,8 @@ class _Mixture(materials.Material):
     """
     Homogenized mixture of materials.
 
+    :meta public:
+
     .. warning:: This class is meant to be used for homogenized block models for neutronics and other
        physics solvers.
 
@@ -33,5 +35,5 @@ class _Mixture(materials.Material):
 
     See Also
     --------
-    armi.reactor.blocks.HexBlock._createHomogenizedCopy
+    armi.reactor.blocks.HexBlock.createHomogenizedCopy
     """

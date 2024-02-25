@@ -17,13 +17,6 @@ Components represented by basic shapes.
 
 Many reactor components can be described in 2D by circles, hexagons, rectangles, etc. These
 are defined in this subpackage.
-
-.. impl:: ARMI supports a reasonable set of basic shapes.
-   :id: IMPL_REACTOR_SHAPES_0
-   :links: REQ_REACTOR_SHAPES
-
-   Here ARMI implements its support for: Circles, Hexagons, Rectangles, Solid Rectangles,
-   Squares, and Triangles.
 """
 import math
 
@@ -32,7 +25,17 @@ from armi.reactor.components import componentParameters
 
 
 class Circle(ShapedComponent):
-    """A Circle."""
+    """A Circle.
+
+    .. impl:: Circle shaped Component
+        :id: I_ARMI_COMP_SHAPES0
+        :implements: R_ARMI_COMP_SHAPES
+
+        This class provides the implementation of a Circle Component. This includes
+        setting key parameters such as its material, temperature, and dimensions. It
+        also includes a method to retrieve the area of a Circle
+        Component via the ``getComponentArea`` method.
+    """
 
     is3D = False
 
@@ -91,7 +94,18 @@ class Circle(ShapedComponent):
 
 
 class Hexagon(ShapedComponent):
-    """A Hexagon."""
+    """A Hexagon.
+
+    .. impl:: Hexagon shaped Component
+        :id: I_ARMI_COMP_SHAPES1
+        :implements: R_ARMI_COMP_SHAPES
+
+        This class provides the implementation of a hexagonal Component. This
+        includes setting key parameters such as its material, temperature, and
+        dimensions. It also includes methods for retrieving geometric
+        dimension information unique to hexagons such as the ``getPerimeter`` and
+        ``getPitchData`` methods.
+    """
 
     is3D = False
 
@@ -171,7 +185,18 @@ class Hexagon(ShapedComponent):
 
 
 class Rectangle(ShapedComponent):
-    """A rectangle component."""
+    """A Rectangle.
+
+    .. impl:: Rectangle shaped Component
+        :id: I_ARMI_COMP_SHAPES2
+        :implements: R_ARMI_COMP_SHAPES
+
+        This class provides the implementation for a rectangular Component. This
+        includes setting key parameters such as its material, temperature, and
+        dimensions. It also includes methods for computing geometric
+        information related to rectangles, such as the
+        ``getBoundingCircleOuterDiameter`` and ``getPitchData`` methods.
+    """
 
     is3D = False
 
@@ -311,7 +336,17 @@ class SolidRectangle(Rectangle):
 
 
 class Square(Rectangle):
-    """Square component that can be solid or hollow."""
+    """Square component that can be solid or hollow.
+
+    .. impl:: Square shaped Component
+        :id: I_ARMI_COMP_SHAPES3
+        :implements: R_ARMI_COMP_SHAPES
+
+        This class provides the implementation for a square Component. This class
+        subclasses the ``Rectangle`` class because a square is a type of rectangle.
+        This includes setting key parameters such as its material, temperature, and
+        dimensions.
+    """
 
     is3D = False
 
@@ -383,6 +418,15 @@ class Square(Rectangle):
 class Triangle(ShapedComponent):
     """
     Triangle with defined base and height.
+
+    .. impl:: Triangle shaped Component
+        :id: I_ARMI_COMP_SHAPES4
+        :implements: R_ARMI_COMP_SHAPES
+
+        This class provides the implementation for defining a triangular Component. This
+        includes setting key parameters such as its material, temperature, and
+        dimensions. It also includes providing a method for retrieving the area of a
+        Triangle Component via the ``getComponentArea`` method.
 
     Notes
     -----

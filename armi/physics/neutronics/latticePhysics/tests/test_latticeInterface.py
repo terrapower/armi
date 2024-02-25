@@ -20,9 +20,12 @@ from armi.physics.neutronics.latticePhysics.latticePhysicsInterface import (
     LatticePhysicsInterface,
 )
 from armi import settings
+from armi.nuclearDataIO.cccc import isotxs
 from armi.operators.operator import Operator
+from armi.physics.neutronics import LatticePhysicsFrequency
 from armi.physics.neutronics.crossSectionGroupManager import CrossSectionGroupManager
 from armi.physics.neutronics.settings import CONF_GEN_XS
+from armi.physics.neutronics.settings import CONF_GLOBAL_FLUX_ACTIVE
 from armi.reactor.reactors import Reactor, Core
 from armi.reactor.tests.test_blocks import buildSimpleFuelBlock
 from armi.tests import mockRunLogs
@@ -30,8 +33,6 @@ from armi.reactor.assemblies import (
     HexAssembly,
     grids,
 )
-from armi.nuclearDataIO.cccc import isotxs
-from armi.physics.neutronics import LatticePhysicsFrequency
 from armi.tests import ISOAA_PATH
 
 # As an interface, LatticePhysicsInterface must be subclassed to be used
@@ -86,7 +87,27 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
         self.o.r.core.lib = "Nonsense"
         self.latticeInterface.testVerification = False
 
-    def test_LatticePhysicsInterface(self):
+    def test_includeGammaXS(self):
+        """Test that we can correctly flip the switch to calculate gamma XS.
+
+        .. test:: Users can flip a setting to determine if gamma XS are generated.
+            :id: T_ARMI_GAMMA_XS
+            :tests: R_ARMI_GAMMA_XS
+        """
+        # The default operator here turns off Gamma XS generation
+        self.assertFalse(self.latticeInterface.includeGammaXS)
+        self.assertEqual(self.o.cs[CONF_GLOBAL_FLUX_ACTIVE], "Neutron")
+
+        # but we can create an operator that turns on Gamma XS generation
+        cs = settings.Settings().modified(
+            newSettings={CONF_GLOBAL_FLUX_ACTIVE: "Neutron and Gamma"}
+        )
+        newOperator = Operator(cs)
+        newLatticeInterface = LatticeInterfaceTesterLibFalse(newOperator.r, cs)
+        self.assertTrue(newLatticeInterface.includeGammaXS)
+        self.assertEqual(cs[CONF_GLOBAL_FLUX_ACTIVE], "Neutron and Gamma")
+
+    def test_latticePhysicsInterface(self):
         """Super basic test of the LatticePhysicsInterface."""
         self.assertEqual(self.latticeInterface._updateBlockNeutronVelocities, True)
         self.assertEqual(self.latticeInterface.executablePath, "/tmp/fake_path")

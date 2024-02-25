@@ -60,16 +60,17 @@ Throughout the module, the term **global** refers to the top-level coordinate sy
 while the word **local** refers to within the current coordinate system defined by the
 current grid.
 """
+# ruff: noqa: F401
 from typing import Tuple, Optional
 
-from .constants import (
+from armi.reactor.grids.constants import (
     BOUNDARY_CENTER,
     BOUNDARY_0_DEGREES,
     BOUNDARY_120_DEGREES,
     BOUNDARY_60_DEGREES,
 )
 
-from .locations import (
+from armi.reactor.grids.locations import (
     LocationBase,
     IndexLocation,
     MultiIndexLocation,
@@ -77,12 +78,12 @@ from .locations import (
     addingIsValid,
 )
 
-from .grid import Grid
-from .structuredgrid import StructuredGrid, GridParameters, _tuplify
-from .axial import AxialGrid, axialUnitGrid
-from .cartesian import CartesianGrid
-from .hexagonal import HexGrid, COS30, SIN30, TRIANGLES_IN_HEXAGON
-from .thetarz import ThetaRZGrid, TAU
+from armi.reactor.grids.grid import Grid
+from armi.reactor.grids.structuredGrid import StructuredGrid, GridParameters, _tuplify
+from armi.reactor.grids.axial import AxialGrid, axialUnitGrid
+from armi.reactor.grids.cartesian import CartesianGrid
+from armi.reactor.grids.hexagonal import HexGrid, COS30, SIN30, TRIANGLES_IN_HEXAGON
+from armi.reactor.grids.thetarz import ThetaRZGrid, TAU
 
 
 def locatorLabelToIndices(label: str) -> Tuple[int, int, Optional[int]]:

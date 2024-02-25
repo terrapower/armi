@@ -12,12 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-r"""
-The ``Case`` object is responsible for running, and executing a set of user inputs.  Many
-entry points redirect into ``Case`` methods, such as ``clone``, ``compare``, and ``run``.
+"""
+The ``Case`` object is responsible for running, and executing a set of
+user inputs.  Many entry points redirect into ``Case`` methods, such as
+``clone``, ``compare``, and ``run``.
 
-The ``Case`` object provides an abstraction around ARMI inputs to allow for manipulation and
-collection of cases.
+The ``Case`` object provides an abstraction around ARMI inputs to allow
+for manipulation and collection of cases.
 
 See Also
 --------
@@ -81,8 +82,8 @@ class Case:
 
         Parameters
         ----------
-        cs : CaseSettings
-            CaseSettings for this Case
+        cs : Settings
+            Settings for this Case
 
         caseSuite : CaseSuite, optional
             CaseSuite this particular case belongs. Passing this in allows dependency
@@ -96,8 +97,8 @@ class Case:
             ``cs`` as needed.
 
         geom : SystemLayoutInput, optional
-            SystemLayoutInput for this case. If not supplied, it will be loaded from the ``cs`` as
-            needed.
+            SystemLayoutInput for this case. If not supplied, it will be loaded from the
+            ``cs`` as needed.
         """
         self._startTime = time.time()
         self._caseSuite = caseSuite
@@ -330,11 +331,19 @@ class Case:
         """
         Run an ARMI case.
 
-        This initializes an ``Operator``, a ``Reactor`` and invokes
-        :py:meth:`Operator.operate`!
 
-        It also activates supervisory things like code coverage checking, profiling,
-        or tracing, if requested by users during debugging.
+        .. impl:: The case class allows for a generic ARMI simulation.
+            :id: I_ARMI_CASE
+            :implements: R_ARMI_CASE
+
+            This method is responsible for "running" the ARMI simulation
+            instigated by the inputted settings. This initializes an
+            :py:class:`~armi.operators.operator.Operator`, a
+            :py:class:`~armi.reactor.reactors.Reactor` and invokes
+            :py:meth:`Operator.operate
+            <armi.operators.operator.Operator.operate>`. It also activates
+            supervisory things like code coverage checking, profiling, or
+            tracing, if requested by users during debugging.
 
         Notes
         -----
@@ -370,7 +379,7 @@ class Case:
 
     def _startCoverage(self):
         """Helper to the Case.run(): spin up the code coverage tooling,
-        if the CaseSettings file says to.
+        if the Settings file says to.
 
         Returns
         -------
@@ -398,7 +407,7 @@ class Case:
     @staticmethod
     def _endCoverage(userCovFile, cov=None):
         """Helper to the Case.run(): stop and report code coverage,
-        if the CaseSettings file says to.
+        if the Settings file says to.
 
         Parameters
         ----------
@@ -464,7 +473,7 @@ class Case:
 
     def _startProfiling(self):
         """Helper to the Case.run(): start the Python profiling,
-        if the CaseSettings file says to.
+        if the Settings file says to.
 
         Returns
         -------
@@ -481,7 +490,7 @@ class Case:
     @staticmethod
     def _endProfiling(profiler=None):
         """Helper to the Case.run(): stop and report python profiling,
-        if the CaseSettings file says to.
+        if the Settings file says to.
 
         Parameters
         ----------
@@ -555,6 +564,21 @@ class Case:
     def checkInputs(self):
         """
         Checks ARMI inputs for consistency.
+
+        .. impl:: Perform validity checks on case inputs.
+            :id: I_ARMI_CASE_CHECK
+            :implements: R_ARMI_CASE_CHECK
+
+            This method checks the validity of the current settings. It relies
+            on an :py:class:`~armi.operators.settingsValidation.Inspector`
+            object from the :py:class:`~armi.operators.operator.Operator` to
+            generate a list of
+            :py:class:`~armi.operators.settingsValidation.Query` objects that
+            represent potential issues in the settings. After gathering the
+            queries, this method prints a table of query "statements" and
+            "questions" to the console. If running in an interactive mode, the
+            user then has the opportunity to address the questions posed by the
+            queries by either addressing the potential issue or ignoring it.
 
         Returns
         -------
@@ -872,8 +896,11 @@ def _copyInputsHelper(
     try:
         pathTools.copyOrWarn(fileDescription, sourcePath, destFilePath)
         if pathlib.Path(destFilePath).exists():
-            return destFilePath
+            # the basename gets written back to the settings file to protect against
+            # potential future dir structure changes
+            return os.path.basename(destFilePath)
         else:
+            # keep original filepath in the settings file if file copy was unsuccessful
             return origFile
     except Exception:
         return origFile
@@ -901,7 +928,7 @@ def copyInterfaceInputs(
 
     Parameters
     ----------
-    cs : CaseSettings
+    cs : Settings
         The source case settings to find input files
     destination : str
         The target directory to copy input files to
@@ -961,6 +988,7 @@ def copyInterfaceInputs(
                             continue
                     except OSError:
                         pass
+
                 # Attempt to construct an absolute file path
                 sourceFullPath = os.path.join(sourceDirPath, f)
                 if WILDCARD:
@@ -982,11 +1010,11 @@ def copyInterfaceInputs(
                         label, sourceFullPath, destination, f
                     )
                     newFiles.append(str(destFilePath))
+
                 if destFilePath == f:
-                    runLog.info(
+                    runLog.debug(
                         f"No input files for `{label}` setting could be resolved with "
-                        f"the following path: `{sourceFullPath}`. Will not update "
-                        f"`{label}`."
+                        f"the following path: `{sourceFullPath}`. Will not update `{label}`."
                     )
 
             # Some settings are a single filename. Others are lists of files. Make
@@ -995,4 +1023,5 @@ def copyInterfaceInputs(
                 newSettings[label] = newFiles[0]
             else:
                 newSettings[label] = newFiles
+
     return newSettings

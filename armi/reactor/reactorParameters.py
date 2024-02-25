@@ -524,78 +524,6 @@ def defineCoreParameters():
     with pDefs.createBuilder(
         default=0.0,
         location=ParamLocation.AVERAGE,
-        categories=["reactivity coefficients"],
-    ) as pb:
-
-        pb.defParam(
-            "axial",
-            units=f"{units.CENTS}/{units.DEGK}",
-            description="Axial expansion coefficient",
-        )
-
-        pb.defParam(
-            "doppler",
-            units=f"{units.CENTS}/{units.DEGK}",
-            description="Doppler coefficient",
-        )
-
-        pb.defParam(
-            "dopplerConst",
-            units=f"{units.CENTS}*{units.DEGK}^(n-1)",
-            description="Doppler constant",
-        )
-
-        pb.defParam(
-            "fuelDensity",
-            units=f"{units.CENTS}/{units.DEGK}",
-            description="Fuel temperature coefficient",
-        )
-
-        pb.defParam(
-            "coolantDensity",
-            units=f"{units.CENTS}/{units.DEGK}",
-            description="Coolant temperature coefficient",
-        )
-
-        pb.defParam(
-            "totalCoolantDensity",
-            units=f"{units.CENTS}/{units.DEGK}",
-            description="Coolant temperature coefficient weighted to include bond and interstitial effects",
-        )
-
-        pb.defParam(
-            "Voideddoppler",
-            units=f"{units.CENTS}/{units.DEGK}",
-            description="Voided Doppler coefficient",
-        )
-
-        pb.defParam(
-            "VoideddopplerConst",
-            units=f"{units.CENTS}*{units.DEGK}^(n-1)",
-            description="Voided Doppler constant",
-        )
-
-        pb.defParam(
-            "voidWorth", units=f"{units.DOLLARS}", description="Coolant void worth"
-        )
-
-        pb.defParam("voidedKeff", units=units.UNITLESS, description="Voided keff")
-
-        pb.defParam(
-            "radialHT9",
-            units=f"{units.CENTS}/{units.DEGK}",
-            description="Radial expansion coefficient when driven by thermal expansion of HT9.",
-        )
-
-        pb.defParam(
-            "radialSS316",
-            units=f"{units.CENTS}/{units.DEGK}",
-            description="Radial expansion coefficient when driven by thermal expansion of SS316.",
-        )
-
-    with pDefs.createBuilder(
-        default=0.0,
-        location=ParamLocation.AVERAGE,
         categories=["reactivity coefficients", "kinetics"],
     ) as pb:
 
@@ -609,7 +537,7 @@ def defineCoreParameters():
         pb.defParam(
             "betaComponents",
             units=units.UNITLESS,
-            description="Group-wise delayed neutron fractions.",
+            description="Group-wise delayed neutron fractions",
             default=None,
         )
 
@@ -646,7 +574,7 @@ def defineCoreParameters():
 
         pb.defParam(
             "rxFuelAxialExpansionCoeffPerPercent",
-            units="dk/kk'-%",
+            units=f"{units.REACTIVITY}/{units.PERCENT}",
             description="Fuel Axial Expansion Coefficient",
         )
 

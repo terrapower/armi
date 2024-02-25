@@ -27,6 +27,7 @@ from armi import settings
 from armi.bookkeeping.db.database3 import Database3
 from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.cases import case
+from armi.context import PROJECT_ROOT
 from armi.physics.neutronics.settings import CONF_LOADING_FILE
 from armi.reactor import grids
 from armi.reactor.flags import Flags
@@ -53,7 +54,6 @@ def getSimpleDBOperator(cs):
     newSettings["nCycles"] = 1
     cs = cs.modified(newSettings=newSettings)
     genDBCase = case.Case(cs)
-    settings.setMasterCs(cs)
     runLog.setVerbosity("info")
 
     o = genDBCase.initializeOperator()
@@ -93,6 +93,11 @@ class TestDatabaseInterface(unittest.TestCase):
         self.db.close()
         self.stateRetainer.__exit__()
         self.td.__exit__(None, None, None)
+        # test_interactBOL leaves behind some dirt (accessible after db close) that the
+        # TempDirChanger is not catching
+        bolDirt = os.path.join(PROJECT_ROOT, "armiRun.h5")
+        if os.path.exists(bolDirt):
+            os.remove(bolDirt)
 
     def test_interactEveryNodeReturn(self):
         """Test that the DB is NOT written to if cs["tightCoupling"] = True."""
@@ -136,12 +141,40 @@ class TestDatabaseWriter(unittest.TestCase):
     def tearDown(self):
         self.td.__exit__(None, None, None)
 
-    def test_metaData_endSuccessfully(self):
-        def goodMethod(cycle, node):
-            pass
+    def test_writeSystemAttributes(self):
+        """Test the writeSystemAttributes method.
 
+        .. test:: Validate that we can directly write system attributes to a database file.
+            :id: T_ARMI_DB_QA0
+            :tests: R_ARMI_DB_QA
+        """
+        with h5py.File("test_writeSystemAttributes.h5", "w") as h5:
+            Database3.writeSystemAttributes(h5)
+
+        with h5py.File("test_writeSystemAttributes.h5", "r") as h5:
+            self.assertIn("user", h5.attrs)
+            self.assertIn("python", h5.attrs)
+            self.assertIn("armiLocation", h5.attrs)
+            self.assertIn("startTime", h5.attrs)
+            self.assertIn("machines", h5.attrs)
+            self.assertIn("platform", h5.attrs)
+            self.assertIn("hostname", h5.attrs)
+            self.assertIn("platformRelease", h5.attrs)
+            self.assertIn("platformVersion", h5.attrs)
+            self.assertIn("platformArch", h5.attrs)
+
+    def test_metaData_endSuccessfully(self):
+        """Test databases have the correct metadata in them.
+
+        .. test:: Validate that databases have system attributes written to them during the usual workflow.
+            :id: T_ARMI_DB_QA1
+            :tests: R_ARMI_DB_QA
+        """
         # the power should start at zero
         self.assertEqual(self.r.core.p.power, 0)
+
+        def goodMethod(cycle, node):
+            pass
 
         self.o.interfaces.append(MockInterface(self.o.r, self.o.cs, goodMethod))
         with self.o:
@@ -153,15 +186,23 @@ class TestDatabaseWriter(unittest.TestCase):
         with h5py.File(self.o.cs.caseTitle + ".h5", "r") as h5:
             self.assertTrue(h5.attrs["successfulCompletion"])
             self.assertEqual(h5.attrs["version"], version)
+
+            self.assertIn("caseTitle", h5.attrs)
+            self.assertIn("geomFile", h5["inputs"])
+            self.assertIn("settings", h5["inputs"])
+            self.assertIn("blueprints", h5["inputs"])
+
+            # validate system attributes
             self.assertIn("user", h5.attrs)
             self.assertIn("python", h5.attrs)
             self.assertIn("armiLocation", h5.attrs)
             self.assertIn("startTime", h5.attrs)
             self.assertIn("machines", h5.attrs)
-            self.assertIn("caseTitle", h5.attrs)
-            self.assertIn("geomFile", h5["inputs"])
-            self.assertIn("settings", h5["inputs"])
-            self.assertIn("blueprints", h5["inputs"])
+            self.assertIn("platform", h5.attrs)
+            self.assertIn("hostname", h5.attrs)
+            self.assertIn("platformRelease", h5.attrs)
+            self.assertIn("platformVersion", h5.attrs)
+            self.assertIn("platformArch", h5.attrs)
 
         # after operating, the power will be greater than zero
         self.assertGreater(self.r.core.p.power, 1e9)
@@ -263,8 +304,6 @@ class TestDatabaseReading(unittest.TestCase):
         newSettings["burnSteps"] = 2
         o, r = loadTestReactor(customSettings=newSettings)
         reduceTestReactorRings(r, o.cs, 3)
-
-        settings.setMasterCs(o.cs)
 
         o.interfaces = [i for i in o.interfaces if isinstance(i, (DatabaseInterface))]
         dbi = o.getInterface("database")

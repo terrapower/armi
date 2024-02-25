@@ -31,7 +31,8 @@ Requirements
    well as the multigroup real and adjoint flux.
 
 
-.. warning: This procedure can cause numerical diffusion in some cases. For example, 
+.. warning::
+    This procedure can cause numerical diffusion in some cases. For example, 
     if a control rod tip block has a large coolant block below it, things like peak
     absorption rate can get lost into it. We recalculate some but not all 
     reaction rates in the re-mapping process based on a flux remapping. To avoid this,
@@ -40,11 +41,11 @@ Requirements
 
 Examples
 --------
-converter = uniformMesh.NeutronicsUniformMeshConverter()
-converter.convert(reactor)
-uniformReactor = converter.convReactor
-# do calcs, then:
-converter.applyStateToOriginal()
+    converter = uniformMesh.NeutronicsUniformMeshConverter()
+    converter.convert(reactor)
+    uniformReactor = converter.convReactor
+    # do calcs, then:
+    converter.applyStateToOriginal()
 
 The mesh mapping happens as described in the figure:
 
@@ -108,7 +109,7 @@ class UniformMeshGenerator:
             Reactor for which a common mesh is generated
         minimumMeshSize : float, optional
             Minimum allowed separation between axial mesh points in cm
-            If no miminmum mesh size is provided, no "decusping" is performed
+            If no minimum mesh size is provided, no "decusping" is performed
         """
         self._sourceReactor = r
         self.minimumMeshSize = minimumMeshSize
@@ -118,11 +119,35 @@ class UniformMeshGenerator:
         """
         Generate a common axial mesh to use.
 
+        .. impl:: Try to preserve the boundaries of fuel and control material.
+            :id: I_ARMI_UMC_NON_UNIFORM
+            :implements: R_ARMI_UMC_NON_UNIFORM
+
+            A core-wide mesh is computed via ``_computeAverageAxialMesh`` which
+            operates by first collecting all the mesh points for every assembly
+            (``allMeshes``) and then averaging them together using
+            ``average1DWithinTolerance``. An attempt to preserve fuel and control
+            material boundaries is accomplished by moving fuel region boundaries
+            to accomodate control rod boundaries. Note this behavior only occurs
+            by calling ``_decuspAxialMesh`` which is dependent on ``minimumMeshSize``
+            being defined (this is controlled by the ``uniformMeshMinimumSize`` setting).
+
+        .. impl:: Produce a mesh with a size no smaller than a user-specified value.
+            :id: I_ARMI_UMC_MIN_MESH
+            :implements: R_ARMI_UMC_MIN_MESH
+
+            If a minimum mesh size ``minimumMeshSize`` is provided, calls
+            ``_decuspAxialMesh`` on the core-wide mesh to maintain that minimum size
+            while still attempting to honor fuel and control material boundaries. Relies
+            ultimately on ``_filterMesh`` to remove mesh points that violate the minimum
+            size. Note that ``_filterMesh`` will always respect the minimum mesh size,
+            even if this means losing a mesh point that represents a fuel or control
+            material boundary.
+
         Notes
         -----
         Attempts to reduce the effect of fuel and control rod absorber smearing
-        ("cusping" effect) by keeping important material boundaries in the
-        common mesh.
+        ("cusping" effect) by keeping important material boundaries in the common mesh.
         """
         self._computeAverageAxialMesh()
         if self.minimumMeshSize is not None:
@@ -338,21 +363,31 @@ class UniformMeshGenerator:
 
 class UniformMeshGeometryConverter(GeometryConverter):
     """
-    This geometry converter can be used to change the axial mesh structure of the reactor core.
+    This geometry converter can be used to change the axial mesh structure of the
+    reactor core.
 
     Notes
     -----
     There are several staticmethods available on this class that allow for:
-        - Creation of a new reactor without applying a new uniform axial mesh. See: `<UniformMeshGeometryConverter.initNewReactor>`
-        - Creation of a new assembly with a new axial mesh applied. See: `<UniformMeshGeometryConverter.makeAssemWithUniformMesh>`
-        - Resetting the parameter state of an assembly back to the defaults for the provided block parameters. See: `<UniformMeshGeometryConverter.clearStateOnAssemblies>`
-        - Mapping number densities and block parameters between one assembly to another. See: `<UniformMeshGeometryConverter.setAssemblyStateFromOverlaps>`
+        - Creation of a new reactor without applying a new uniform axial mesh. See:
+        `<UniformMeshGeometryConverter.initNewReactor>`
+        - Creation of a new assembly with a new axial mesh applied. See:
+        `<UniformMeshGeometryConverter.makeAssemWithUniformMesh>`
+        - Resetting the parameter state of an assembly back to the defaults for the
+        provided block parameters. See:
+        `<UniformMeshGeometryConverter.clearStateOnAssemblies>`
+        - Mapping number densities and block parameters between one assembly to
+        another. See: `<UniformMeshGeometryConverter.setAssemblyStateFromOverlaps>`
 
-    This class is meant to be extended for specific physics calculations that require a uniform mesh.
-    The child types of this class should define custom `reactorParamsToMap` and `blockParamsToMap` attributes, and the `_setParamsToUpdate` method
-    to specify the precise parameters that need to be mapped in each direction between the non-uniform and uniform mesh assemblies. The definitions should avoid mapping
-    block parameters in both directions because the mapping process will cause numerical diffusion. The behavior of `setAssemblyStateFromOverlaps` is dependent on the
-    direction in which the mapping is being applied to prevent the numerical diffusion problem.
+    This class is meant to be extended for specific physics calculations that require a
+    uniform mesh. The child types of this class should define custom
+    `reactorParamsToMap` and `blockParamsToMap` attributes, and the
+    `_setParamsToUpdate` method to specify the precise parameters that need to be
+    mapped in each direction between the non-uniform and uniform mesh assemblies. The
+    definitions should avoid mapping block parameters in both directions because the
+    mapping process will cause numerical diffusion. The behavior of
+    `setAssemblyStateFromOverlaps` is dependent on the direction in which the mapping
+    is being applied to prevent the numerical diffusion problem.
 
     - "in" is used when mapping parameters into the uniform assembly
     from the non-uniform assembly.
@@ -407,7 +442,32 @@ class UniformMeshGeometryConverter(GeometryConverter):
             self._minimumMeshSize = cs[CONF_UNIFORM_MESH_MINIMUM_SIZE]
 
     def convert(self, r=None):
-        """Create a new reactor core with a uniform mesh."""
+        """
+        Create a new reactor core with a uniform mesh.
+
+        .. impl:: Make a copy of the reactor where the new core has a uniform axial mesh.
+            :id: I_ARMI_UMC
+            :implements: R_ARMI_UMC
+
+            Given a source Reactor, ``r``, as input and when ``_hasNonUniformAssems`` is ``False``,
+            a new Reactor is created in ``initNewReactor``. This new Reactor contains copies of select
+            information from the input source Reactor (e.g., Operator, Blueprints, cycle, timeNode, etc).
+            The uniform mesh to be applied to the new Reactor is calculated in ``_generateUniformMesh``
+            (see :need:`I_ARMI_UMC_NON_UNIFORM` and :need:`I_ARMI_UMC_MIN_MESH`). New assemblies with this
+            uniform mesh are created in ``_buildAllUniformAssemblies`` and added to the new Reactor.
+            Core-level parameters are then mapped from the source Reactor to the new Reactor in
+            ``_mapStateFromReactorToOther``. Finally, the core-wide axial mesh is updated on the new Reactor
+            via ``updateAxialMesh``.
+
+
+        .. impl:: Map select parameters from composites on the original mesh to the new mesh.
+            :id: I_ARMI_UMC_PARAM_FORWARD
+            :implements: R_ARMI_UMC_PARAM_FORWARD
+
+            In ``_mapStateFromReactorToOther``, Core-level parameters are mapped from the source Reactor
+            to the new Reactor. If requested, block-level parameters can be mapped using an averaging
+            equation as described in ``setAssemblyStateFromOverlaps``.
+        """
         if r is None:
             raise ValueError(f"No reactor provided in {self}")
 
@@ -489,7 +549,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
         ----------
         sourceReactor : :py:class:`Reactor <armi.reactor.reactors.Reactor>` object.
             original reactor to be copied
-        cs: CaseSetting object
+        cs: Setting
             Complete settings object
         """
         # developer note: deepcopy on the blueprint object ensures that all relevant blueprints
@@ -519,7 +579,20 @@ class UniformMeshGeometryConverter(GeometryConverter):
         return newReactor
 
     def applyStateToOriginal(self):
-        """Apply the state of the converted reactor back to the original reactor, mapping number densities and block parameters."""
+        """
+        Apply the state of the converted reactor back to the original reactor,
+        mapping number densities and block parameters.
+
+        .. impl:: Map select parameters from composites on the new mesh to the original mesh.
+            :id: I_ARMI_UMC_PARAM_BACKWARD
+            :implements: R_ARMI_UMC_PARAM_BACKWARD
+
+            To ensure that the parameters on the original Reactor are from the converted Reactor,
+            the first step is to clear the Reactor-level parameters on the original Reactor
+            (see ``_clearStateOnReactor``). ``_mapStateFromReactorToOther`` is then called
+            to map Core-level parameters and, optionally, averaged Block-level parameters
+            (see :need:`I_ARMI_UMC_PARAM_FORWARD`).
+        """
         runLog.extra(
             f"Applying uniform neutronics results from {self.convReactor} to {self._sourceReactor}"
         )
@@ -694,7 +767,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
                         heightFrac = h / totalHeight
                         runLog.debug(f"XSType {xs}: {heightFrac:.4f}")
 
-            block = sourceBlock._createHomogenizedCopy(includePinCoordinates)
+            block = sourceBlock.createHomogenizedCopy(includePinCoordinates)
             block.p.xsType = xsType
             block.setHeight(topMeshPoint - bottom)
             block.p.axMesh = 1

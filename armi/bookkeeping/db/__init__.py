@@ -62,15 +62,14 @@ Database revision changelog
 import os
 from typing import Optional, List, Tuple
 
-from armi import settings
 from armi import runLog
 
 # re-export package components for easier import
-from .permissions import Permissions
-from .database3 import Database3
-from .databaseInterface import DatabaseInterface
-from .compareDB3 import compareDatabases
-from .factory import databaseFactory
+from armi.bookkeeping.db.permissions import Permissions
+from armi.bookkeeping.db.database3 import Database3
+from armi.bookkeeping.db.databaseInterface import DatabaseInterface
+from armi.bookkeeping.db.compareDB3 import compareDatabases
+from armi.bookkeeping.db.factory import databaseFactory
 
 
 __all__ = [
@@ -141,8 +140,6 @@ def loadOperator(pathToDb, loadCycle, loadNode, allowMissing=False):
         thisCase = cases.Case(cs)
 
         r = db.load(loadCycle, loadNode, allowMissing=allowMissing)
-
-    settings.setMasterCs(cs)
 
     o = thisCase.initializeOperator(r=r)
     runLog.important(

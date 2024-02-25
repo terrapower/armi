@@ -129,7 +129,7 @@ class ComponentType(composites.CompositeModelType):
         system.
     """
 
-    TYPES = dict()
+    TYPES = dict()  #: :meta hide-value:
 
     NON_DIMENSION_NAMES = (
         "Tinput",
@@ -169,6 +169,27 @@ class Component(composites.Composite, metaclass=ComponentType):
     Could be fuel pins, cladding, duct, wire wrap, etc. One component object may represent
     multiple physical components via the ``multiplicity`` mechanism.
 
+    .. impl:: Define a physical piece of a reactor.
+        :id: I_ARMI_COMP_DEF
+        :implements: R_ARMI_COMP_DEF
+
+        The primitive object in an ARMI reactor is a Component. A Component is comprised
+        of a shape and composition. This class serves as a base class which all
+        Component types within ARMI are built upon. All primitive shapes (such as a
+        square, circle, holed hexagon, helix etc.) are derived from this base class.
+
+        Fundamental capabilities of this class include the ability to store parameters
+        and attributes which describe the physical state of each Component within the
+        ARMI data model.
+
+    .. impl:: Order Components by their outermost diameter (using the < operator).
+        :id: I_ARMI_COMP_ORDER
+        :implements: R_ARMI_COMP_ORDER
+
+        Determining Component order by outermost diameters is implemented via
+        the ``__lt__()`` method, which is used to control ``sort()`` as the
+        standard approach in Python. However, ``__lt__()`` does not show up in the API.
+
     Attributes
     ----------
     temperatureInC : float
@@ -179,10 +200,6 @@ class Component(composites.Composite, metaclass=ComponentType):
         Temperature in C to which dimensions were thermally-expanded upon input.
     material : str or material.Material
         The material object that makes up this component and give it its thermo-mechanical properties.
-
-    .. impl:: ARMI allows for thermal expansion of all components by user-defined custom curves.
-       :id: IMPL_REACTOR_THERMAL_EXPANSION_0
-       :links: REQ_REACTOR_THERMAL_EXPANSION
     """
 
     DIMENSION_NAMES = tuple()  # will be assigned by ComponentType
@@ -282,7 +299,19 @@ class Component(composites.Composite, metaclass=ComponentType):
             self.resolveLinkedDims(components)
 
     def resolveLinkedDims(self, components):
-        """Convert dimension link strings to actual links."""
+        """Convert dimension link strings to actual links.
+
+        .. impl:: The volume of some defined shapes depend on the solid components surrounding them.
+            :id: I_ARMI_COMP_FLUID1
+            :implements: R_ARMI_COMP_FLUID
+
+            Some Components are fluids and are thus defined by the shapes surrounding
+            them. This method cycles through each dimension defining the border of this
+            Component and converts the name of that Component to a link to the object
+            itself. This series of links is then used downstream to resolve
+            dimensional information.
+
+        """
         for dimName in self.DIMENSION_NAMES:
             value = self.p[dimName]
             if not isinstance(value, str):
@@ -382,7 +411,20 @@ class Component(composites.Composite, metaclass=ComponentType):
         return self.getThermalExpansionFactor(Tc=newHot, T0=self.temperatureInC)
 
     def getProperties(self):
-        """Return the active Material object defining thermo-mechanical properties."""
+        """Return the active Material object defining thermo-mechanical properties.
+
+        .. impl:: Material properties are retrievable.
+            :id: I_ARMI_COMP_MAT0
+            :implements: R_ARMI_COMP_MAT
+
+            This method returns the material object that is assigned to the Component.
+
+        .. impl:: Components have one-and-only-one material.
+            :id: I_ARMI_COMP_1MAT
+            :implements: R_ARMI_COMP_1MAT
+
+            This method returns the material object that is assigned to the Component.
+        """
         return self.material
 
     @property
@@ -420,7 +462,13 @@ class Component(composites.Composite, metaclass=ComponentType):
 
     def getArea(self, cold=False):
         """
-        Get the area of a component in cm^2.
+        Get the area of a Component in cm^2.
+
+        .. impl:: Get a dimension of a Component.
+            :id: I_ARMI_COMP_VOL0
+            :implements: R_ARMI_COMP_VOL
+
+            This method returns the area of a Component.
 
         See Also
         --------
@@ -441,7 +489,13 @@ class Component(composites.Composite, metaclass=ComponentType):
 
     def getVolume(self):
         """
-        Return the volume [cm^3] of the component.
+        Return the volume [cm^3] of the Component.
+
+        .. impl:: Get a dimension of a Component.
+            :id: I_ARMI_COMP_VOL1
+            :implements: R_ARMI_COMP_VOL
+
+            This method returns the volume of a Component.
 
         Notes
         -----
@@ -498,7 +552,6 @@ class Component(composites.Composite, metaclass=ComponentType):
         Overlapping is allowed to maintain conservation of atoms while sticking close
         to the as-built geometry. Modules that need true geometries will have to
         handle this themselves.
-
         """
         if numpy.isnan(area):
             return
@@ -541,7 +594,16 @@ class Component(composites.Composite, metaclass=ComponentType):
         return isinstance(self.material, void.Void)
 
     def containsSolidMaterial(self):
-        """Returns True if the component material is a solid."""
+        """Returns True if the component material is a solid.
+
+        .. impl:: Determine if a material is solid.
+            :id: I_ARMI_COMP_SOLID
+            :implements: R_ARMI_COMP_SOLID
+
+            For certain operations it is important to know if a Component is a solid or
+            fluid material. This method will return a boolean indicating if the material
+            is solid or not by checking if the material is an instance of the ``material.Fluid`` class.
+        """
         return not isinstance(self.material, material.Fluid)
 
     def getComponentArea(self, cold=False):
@@ -640,6 +702,14 @@ class Component(composites.Composite, metaclass=ComponentType):
         """
         Set heterogeneous number density.
 
+        .. impl:: Setting nuclide fractions.
+            :id: I_ARMI_COMP_NUCLIDE_FRACS0
+            :implements: R_ARMI_COMP_NUCLIDE_FRACS
+
+            The method allows a user or plugin to set the number density of a Component.
+            It also indicates to other processes that may depend on a Component's
+            status about this change via the ``assigned`` attribute.
+
         Parameters
         ----------
         nucName : str
@@ -657,6 +727,14 @@ class Component(composites.Composite, metaclass=ComponentType):
     def setNumberDensities(self, numberDensities):
         """
         Set one or more multiple number densities. Clears out any number density not listed.
+
+        .. impl:: Setting nuclide fractions.
+            :id: I_ARMI_COMP_NUCLIDE_FRACS1
+            :implements: R_ARMI_COMP_NUCLIDE_FRACS
+
+            The method allows a user or plugin to set the number densities of a
+            Component. In contrast to the ``setNumberDensity`` method, it sets all
+            densities within a Component.
 
         Parameters
         ----------
@@ -761,6 +839,22 @@ class Component(composites.Composite, metaclass=ComponentType):
         """
         Set a single dimension on the component.
 
+        .. impl:: Set a Component dimension, considering thermal expansion.
+            :id: I_ARMI_COMP_EXPANSION1
+            :implements: R_ARMI_COMP_EXPANSION
+
+            Dimensions should be set considering the impact of thermal expansion. This
+            method allows for a user or plugin to set a dimension and indicate if the
+            dimension is for a cold configuration or not. If it is not for a cold
+            configuration, the thermal expansion factor is considered when setting the
+            dimension.
+
+            If the ``retainLink`` argument is ``True``, any Components linked to this
+            one will also have its dimensions changed consistently. After a dimension
+            is updated, the ``clearLinkedCache`` method is called which sets the
+            volume of this Component to ``None``. This ensures that when the volume is
+            next accessed it is recomputed using the updated dimensions.
+
         Parameters
         ----------
         key : str
@@ -793,6 +887,17 @@ class Component(composites.Composite, metaclass=ComponentType):
     def getDimension(self, key, Tc=None, cold=False):
         """
         Return a specific dimension at temperature as determined by key.
+
+        .. impl:: Retrieve a dimension at a specified temperature.
+            :id: I_ARMI_COMP_DIMS
+            :implements: R_ARMI_COMP_DIMS
+
+            Due to thermal expansion, Component dimensions depend on their temperature.
+            This method retrieves a dimension from the Component at a particular
+            temperature, if provided. If the Component is a LinkedComponent then the
+            dimensions are resolved to ensure that any thermal expansion that has
+            occurred to the Components that the LinkedComponent depends on is reflected
+            in the returned dimension.
 
         Parameters
         ----------
@@ -865,6 +970,19 @@ class Component(composites.Composite, metaclass=ComponentType):
     def getThermalExpansionFactor(self, Tc=None, T0=None):
         """
         Retrieves the material thermal expansion fraction.
+
+        .. impl:: Calculates radial thermal expansion factor.
+            :id: I_ARMI_COMP_EXPANSION0
+            :implements: R_ARMI_COMP_EXPANSION
+
+            This method enables the calculation of the thermal expansion factor
+            for a given material. If the material is solid, the difference
+            between ``T0`` and ``Tc`` is used to calculate the thermal expansion
+            factor. If a solid material does not have a linear expansion factor
+            defined and the temperature difference is greater than
+            a predetermined tolerance, an
+            error is raised. Thermal expansion of fluids or custom materials is
+            neglected, currently.
 
         Parameters
         ----------

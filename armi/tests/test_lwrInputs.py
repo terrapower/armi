@@ -90,8 +90,9 @@ class C5G7ReactorTests(unittest.TestCase):
         o = armi_init(fName=TEST_INPUT_TITLE + ".yaml")
         locsInput, locsDB = {}, {}
         loadLocs(o, locsInput)
-        o.operate()
-        o2 = db.loadOperator(TEST_INPUT_TITLE + ".h5", 0, 0)
+        with directoryChangers.TemporaryDirectoryChanger():
+            o.operate()
+            o2 = db.loadOperator(TEST_INPUT_TITLE + ".h5", 0, 0)
         loadLocs(o2, locsDB)
 
         for indices, coordsInput in sorted(locsInput.items()):

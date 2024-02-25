@@ -1,5 +1,9 @@
+.. _component-parameters-report:
+
+********************
 Component Parameters
-====================
+********************
+
 This document lists all of the Component Parameters that are provided by the ARMI Framework.
 
 .. exec::
