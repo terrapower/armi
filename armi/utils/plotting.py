@@ -1168,6 +1168,12 @@ def _makeBlockPinPatches(block, cold):
 
     sortedComps = sorted(block, reverse=True)
 
+    if isinstance(block.spatialGrid, grids.HexGrid):
+        hexRotation = 0 if block.spatialGrid.cornersUp else 30
+        print(f"Corners up: {block.spatialGrid.cornersUp}; hexRotation = {hexRotation}")
+    else:
+        hexRotation = 0
+
     derivedComponents = block.getComponentsOfShape(DerivedShape)
     if len(derivedComponents) == 1:
         derivedComponent = derivedComponents[0]
@@ -1185,7 +1191,10 @@ def _makeBlockPinPatches(block, cold):
         x, y, _ = location.getLocalCoordinates()
         if isinstance(comp, Hexagon):
             derivedPatch = matplotlib.patches.RegularPolygon(
-                (x, y), 6, radius=largestPitch / math.sqrt(3)
+                (x, y),
+                6,
+                radius=largestPitch / math.sqrt(3),
+                orientation=(hexRotation - 30.0) * (2.0 * math.pi) / 360.0,
             )
         elif isinstance(comp, Square):
             derivedPatch = matplotlib.patches.Rectangle(
@@ -1212,11 +1221,6 @@ def _makeBlockPinPatches(block, cold):
 
             # goes through each location
             # want to place a patch at that location
-            if isinstance(block.spatialGrid, grids.HexGrid):
-                hexRotation = 30 if block.spatialGrid.cornersUp else 0
-            else:
-                hexRotation = 0
-
             blockPatches = _makeComponentPatch(
                 component, (x, y), cold, hexRotation=hexRotation
             )
@@ -1247,6 +1251,9 @@ def _makeComponentPatch(component, position, cold, hexRotation=30):
         cold: boolean
             True if looking for dimension at cold temps
 
+        hexRotation: float, optional
+            Amount of counterclockwise rotation (in degrees) for a hexagon component patch
+
     Return
     ------
         blockPatch: List
@@ -1254,7 +1261,7 @@ def _makeComponentPatch(component, position, cold, hexRotation=30):
 
     Notes
     -----
-    Currently accepts components of shape DerivedShape, Helix, Circle, or Square
+    Currently accepts components of shape DerivedShape, Helix, Circle, Hexagon, or Square
     """
     x = position[0]
     y = position[1]
@@ -1308,7 +1315,10 @@ def _makeComponentPatch(component, position, cold, hexRotation=30):
         else:
             # Just make it a hexagon...
             blockPatch = matplotlib.patches.RegularPolygon(
-                (x, y), 6, radius=component.getDimension("op", cold=cold) / math.sqrt(3)
+                (x, y),
+                6,
+                radius=component.getDimension("op", cold=cold) / math.sqrt(3),
+                orientation=(hexRotation - 30.0) * (2.0 * math.pi) / 360.0,
             )
 
     elif isinstance(component, Rectangle):
