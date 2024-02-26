@@ -1170,7 +1170,6 @@ def _makeBlockPinPatches(block, cold):
 
     if isinstance(block.spatialGrid, grids.HexGrid):
         hexRotation = 0 if block.spatialGrid.cornersUp else 30
-        print(f"Corners up: {block.spatialGrid.cornersUp}; hexRotation = {hexRotation}")
     else:
         hexRotation = 0
 
