@@ -1251,7 +1251,8 @@ def _makeComponentPatch(component, position, cold, hexRotation=30):
             True if looking for dimension at cold temps
 
         hexRotation: float, optional
-            Amount of counterclockwise rotation (in degrees) for a hexagon component patch
+            Amount of counterclockwise rotation (in degrees) for a hexagon component patch. 0 degrees
+            corresponds to a hexagon with its corner pointing up.
 
     Return
     ------
