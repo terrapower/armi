@@ -183,6 +183,7 @@ class TestGrid(unittest.TestCase):
 
     def test_isAxialOnly(self):
         grid = grids.HexGrid.fromPitch(1.0, numRings=3)
+        self.assertEqual(grid.pitch, 1.0)
         self.assertEqual(grid.isAxialOnly, False)
 
         grid2 = grids.AxialGrid.fromNCells(10)
@@ -190,11 +191,13 @@ class TestGrid(unittest.TestCase):
 
     def test_lookupFactory(self):
         grid = grids.HexGrid.fromPitch(1.0, numRings=3)
+        self.assertEqual(grid.pitch, 1.0)
         self.assertEqual(grid[10, 5, 0].i, 10)
 
     def test_quasiReduce(self):
         """Make sure our DB-friendly version of reduce works."""
         grid = grids.HexGrid.fromPitch(1.0, numRings=3)
+        self.assertEqual(grid.pitch, 1.0)
         reduction = grid.reduce()
         self.assertAlmostEqual(reduction[0][1][1], 1.0)
 
@@ -208,6 +211,7 @@ class TestGrid(unittest.TestCase):
             :tests: R_ARMI_GRID_ELEM_LOC
         """
         grid = grids.HexGrid.fromPitch(1.0, numRings=0)
+        self.assertEqual(grid.pitch, 1.0)
         self.assertNotIn((0, 0, 0), grid._locations)
         _ = grid[0, 0, 0]
         self.assertIn((0, 0, 0), grid._locations)
@@ -236,6 +240,7 @@ class TestHexGrid(unittest.TestCase):
 
     def test_positions(self):
         grid = grids.HexGrid.fromPitch(1.0)
+        self.assertEqual(grid.pitch, 1.0)
         side = 1.0 / math.sqrt(3)
         assert_allclose(grid.getCoordinates((0, 0, 0)), (0.0, 0.0, 0.0))
         assert_allclose(grid.getCoordinates((1, 0, 0)), (1.5 * side, 0.5, 0.0))
@@ -360,10 +365,13 @@ class TestHexGrid(unittest.TestCase):
             :id: T_ARMI_GRID_HEX_TYPE
             :tests: R_ARMI_GRID_HEX_TYPE
         """
-        tipsUp = grids.HexGrid.fromPitch(1.0, cornersUp=True)
-        flatsUp = grids.HexGrid.fromPitch(1.0, cornersUp=False)
+        cornersUp = grids.HexGrid.fromPitch(1.0, cornersUp=True)
+        self.assertAlmostEqual(cornersUp.pitch, math.sqrt(3) / 2)
 
-        self.assertEqual(tipsUp._unitSteps[0][0], 0.5)
+        flatsUp = grids.HexGrid.fromPitch(1.0, cornersUp=False)
+        self.assertEqual(flatsUp.pitch, 1.0)
+
+        self.assertEqual(cornersUp._unitSteps[0][0], 0.5)
         self.assertAlmostEqual(flatsUp._unitSteps[0][0], 0.8660254037844388)
 
     def test_triangleCoords(self):
