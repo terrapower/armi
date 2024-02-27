@@ -134,6 +134,26 @@ class Triplet(yamlize.Object):
         self.z = z
 
 
+class Pitch(yamlize.Object):
+    """A x, y, z triplet or triangular hex pitch for coordinates or lattice pitch."""
+
+    hex = yamlize.Attribute(type=float, default=0.0)
+    x = yamlize.Attribute(type=float, default=0.0)
+    y = yamlize.Attribute(type=float, default=0.0)
+    z = yamlize.Attribute(type=float, default=0.0)
+
+    def __init__(self, hex=0.0, x=0.0, y=0.0, z=0.0):
+        self.hex = hex or x
+        self.x = x
+        self.y = y
+        self.z = z
+
+        if not any(self.hex, self.x, self.y, self.z):
+            raise InputError(
+                "`lattice pitch` must have at least one non-zero attribute! Check the blueprints."
+            )
+
+
 class GridBlueprint(yamlize.Object):
     """
     A grid input blueprint.
@@ -174,9 +194,9 @@ class GridBlueprint(yamlize.Object):
         The geometry of the grid (e.g. 'cartesian')
     latticeMap : str
         An asciimap representation of the lattice contents
-    latticeDimensions : Triplet
-        An x/y/z Triplet with grid dimensions in cm. This is used to specify a uniform
-        grid, such as Cartesian or Hex. Mutually exclusive with gridBounds.
+    latticeDimensions : Pitch
+        An x/y/z Triplet or hex pitch with grid dimensions in cm. This is used to specify a 
+        uniform grid, such as Cartesian or Hex. Mutually exclusive with gridBounds.
     gridBounds : dict
         A dictionary containing explicit grid boundaries. Specific keys used will depend
         on the type of grid being defined. Mutually exclusive with latticeDimensions.
@@ -190,9 +210,7 @@ class GridBlueprint(yamlize.Object):
     name = yamlize.Attribute(key="name", type=str)
     geom = yamlize.Attribute(key="geom", type=str, default=geometry.HEX)
     latticeMap = yamlize.Attribute(key="lattice map", type=str, default=None)
-    latticeDimensions = yamlize.Attribute(
-        key="lattice pitch", type=Triplet, default=None
-    )
+    latticeDimensions = yamlize.Attribute(key="lattice pitch", type=Pitch, default=None)
     gridBounds = yamlize.Attribute(key="grid bounds", type=dict, default=None)
     symmetry = yamlize.Attribute(
         key="symmetry",
@@ -313,7 +331,7 @@ class GridBlueprint(yamlize.Object):
                     )
             spatialGrid = grids.ThetaRZGrid(bounds=(theta, radii, (0.0, 0.0)))
         if geom in (geometry.HEX, geometry.HEX_CORNERS_UP):
-            pitch = self.latticeDimensions.x if self.latticeDimensions else 1.0
+            pitch = self.latticeDimensions.hex if self.latticeDimensions else 1.0
             # add 2 for potential dummy assems
             spatialGrid = grids.HexGrid.fromPitch(
                 pitch,
