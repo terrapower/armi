@@ -144,6 +144,8 @@ class Pitch(yamlize.Object):
 
     def __init__(self, hex=0.0, x=0.0, y=0.0, z=0.0):
         """
+        Parameters
+        ----------
         hex : float, optional
             Triangular/hex lattice pitch
         x : float, optional
@@ -158,7 +160,7 @@ class Pitch(yamlize.Object):
         ------
         InputError
             * If a `hex` pitch and `x` or `y` pitch are provided simultaneously.
-            * If no non-zero value is provided for any parameter
+            * If no non-zero value is provided for any parameter.
         """
         if hex and (x or y):
             raise InputError(
