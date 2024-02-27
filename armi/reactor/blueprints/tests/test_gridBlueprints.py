@@ -30,6 +30,7 @@ LATTICE_BLUEPRINT = """
 control:
     geom: hex_corners_up
     symmetry: full
+    lattice pitch: {{hex: 1.2}}
     lattice map: |
        - - - - - - - - - 1 1 1 1 1 1 1 1 1 4
         - - - - - - - - 1 1 1 1 1 1 1 1 1 1 1
@@ -360,7 +361,8 @@ class TestGridBlueprintsSection(unittest.TestCase):
 
     def test_simpleRead(self):
         gridDesign = self.grids["control"]
-        _ = gridDesign.construct()
+        grid = gridDesign.construct()
+        self.assertAlmostEqual(grid.pitch, 1.2)
         self.assertEqual(gridDesign.gridContents[0, -8], "6")
 
         # Cartesian full, odd

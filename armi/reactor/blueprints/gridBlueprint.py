@@ -165,7 +165,7 @@ class Pitch(yamlize.Object):
                 "Cannot mix `hex` with `x` and `y` attributes of `latticePitch`."
             )
 
-        if not any(self.hex, self.x, self.y, self.z):
+        if not any(hex, x, y, z):
             raise InputError(
                 "`lattice pitch` must have at least one non-zero attribute! Check the blueprints."
             )
