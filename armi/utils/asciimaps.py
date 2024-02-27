@@ -579,7 +579,7 @@ class AsciiMapHexFullTipsUp(AsciiMap):
 
         Indices simply increment from the base across the rows.
         """
-        return iBase + columnNum, jBase
+        return iBase + columnNum + jBase, -(iBase + columnNum)
 
     def _getIJFromColRow(self, columnNum, lineNum):
         """

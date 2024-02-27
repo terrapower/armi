@@ -291,6 +291,52 @@ class TestAsciiMaps(unittest.TestCase):
 
         self.assertEqual(asciimap[5, 0], "TG")
 
+    def test_hexFullCornersUpSpotCheck(self):
+        """Spot check some hex grid coordinates are what they should be."""
+        # The corners and a central line of non-zero values.
+        corners_map = """- - - - - - - - - 3 0 0 0 0 0 0 0 0 2
+         - - - - - - - - 0 0 0 0 0 0 0 0 0 0 0
+          - - - - - - - 0 0 0 0 0 0 0 0 0 0 0 0
+           - - - - - - 0 0 0 0 0 0 0 0 0 0 0 0 0
+            - - - - - 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+             - - - - 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+              - - - 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+               - - 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+                - 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+                 4 0 0 0 0 0 0 0 0 0 1 2 3 4 5 6 7 0 1
+                  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+                   0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+                    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+                     0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+                      0 0 0 0 0 0 0 0 0 0 0 0 0 0
+                       0 0 0 0 0 0 0 0 0 0 0 0 0
+                        0 0 0 0 0 0 0 0 0 0 0 0
+                         0 0 0 0 0 0 0 0 0 0 0
+                          5 0 0 0 0 0 0 0 0 6
+        """
+
+        # hex map is 19 rows tall: from -9 to 9
+        asciimap = asciimaps.AsciiMapHexFullTipsUp()
+        asciimap.readAscii(corners_map)
+
+        # verify the corners
+        self.assertEqual(asciimap[9, -9], "1")
+        self.assertEqual(asciimap[9, 0], "2")
+        self.assertEqual(asciimap[0, 9], "3")
+        self.assertEqual(asciimap[-9, 9], "4")
+        self.assertEqual(asciimap[-9, 0], "5")
+        self.assertEqual(asciimap[0, -9], "6")
+
+        # verify a line of coordinates
+        self.assertEqual(asciimap[0, 0], "0")
+        self.assertEqual(asciimap[1, -1], "1")
+        self.assertEqual(asciimap[2, -2], "2")
+        self.assertEqual(asciimap[3, -3], "3")
+        self.assertEqual(asciimap[4, -4], "4")
+        self.assertEqual(asciimap[5, -5], "5")
+        self.assertEqual(asciimap[6, -6], "6")
+        self.assertEqual(asciimap[7, -7], "7")
+
     def test_hexFullCornersUp(self):
         """Test sample full hex map (with hex corners up) against known answers."""
         # hex map is 19 rows tall: from -9 to 9
@@ -299,13 +345,13 @@ class TestAsciiMaps(unittest.TestCase):
 
         # spot check some values in the map
         self.assertIn("7 1 1 1 1 1 1 1 1 0", str(asciimap))
-        self.assertEqual(asciimap[-8, 7], "8")
-        self.assertEqual(asciimap[-9, 0], "7")
-        self.assertEqual(asciimap[0, -1], "2")
-        self.assertEqual(asciimap[0, -8], "6")
+        self.assertEqual(asciimap[-9, 9], "7")
+        self.assertEqual(asciimap[-8, 0], "6")
+        self.assertEqual(asciimap[-1, 0], "2")
+        self.assertEqual(asciimap[-1, 8], "8")
+        self.assertEqual(asciimap[0, -6], "3")
         self.assertEqual(asciimap[0, 0], "0")
-        self.assertEqual(asciimap[0, 9], "4")
-        self.assertEqual(asciimap[6, -6], "3")
+        self.assertEqual(asciimap[9, 0], "4")
 
         # also test writing from pure data (vs. reading) gives the exact same map
         asciimap2 = asciimaps.AsciiMapHexFullTipsUp()
