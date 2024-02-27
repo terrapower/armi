@@ -158,7 +158,7 @@ class HexGrid(StructuredGrid):
         --------
         armi.reactor.grids.HexGrid.fromPitch
         """
-        return self._unitSteps[1][1]
+        return sqrt(self._unitSteps[0][0] ** 2 + self._unitSteps[1][0] ** 2)
 
     @staticmethod
     def indicesToRingPos(i: int, j: int) -> Tuple[int, int]:
