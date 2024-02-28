@@ -355,7 +355,21 @@ class GridBlueprint(yamlize.Object):
                     )
             spatialGrid = grids.ThetaRZGrid(bounds=(theta, radii, (0.0, 0.0)))
         if geom in (geometry.HEX, geometry.HEX_CORNERS_UP):
-            pitch = self.latticeDimensions.hex if self.latticeDimensions else 1.0
+            if not self.latticeDimensions:
+                pitch = 1.0
+            else:
+                ld = self.latticeDimensions
+                if ld.hex and (ld.x or ld.y):
+                    raise InputError(
+                        "Cannot mix `hex` with `x` and `y` attributes of `latticePitch`."
+                    )
+
+                if not any([ld.hex, ld.x, ld.y, ld.z]):
+                    raise InputError(
+                        "`lattice pitch` must have at least one non-zero attribute! Check the blueprints."
+                    )
+
+                pitch = ld.hex or ld.x
             # add 2 for potential dummy assems
             spatialGrid = grids.HexGrid.fromPitch(
                 pitch,
