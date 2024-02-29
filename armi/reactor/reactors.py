@@ -2350,41 +2350,6 @@ class Core(composites.Composite):
         else:
             raise RuntimeError("no temperature average for {0}".format(typeSpec))
 
-    def getAllNuclidesIn(self, mats):
-        """
-        Find all nuclides that are present in these materials anywhere in the core.
-
-        Parameters
-        ----------
-        mats : iterable or Material
-            List (or single) of materials to scan the full core for, accumulating a nuclide list
-
-        Returns
-        -------
-        allNucNames : list
-            All nuclide names in this material anywhere in the reactor
-
-        See Also
-        --------
-        getDominantMaterial : finds the most prevalent material in a certain type of blocks
-        Block.adjustDensity : modifies nuclides in a block
-
-        Notes
-        -----
-        If you need to know the nuclides in a fuel pin, you can't just use the sample returned
-        from getDominantMaterial, because it may be a fresh fuel material (U and Zr) even though
-        there are burned materials elsewhere (with U, Zr, Pu, LFP, etc.).
-        """
-        if not isinstance(mats, list):
-            # single material passed in
-            mats = [mats]
-        names = set(m.name for m in mats)
-        allNucNames = set()
-        for c in self.iterComponents():
-            if c.material.name in names:
-                allNucNames.update(c.getNuclides())
-        return list(allNucNames)
-
     def growToFullCore(self, cs):
         """Copies symmetric assemblies to build a full core model out of a 1/3 core model.
 
