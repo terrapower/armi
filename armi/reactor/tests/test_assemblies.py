@@ -13,38 +13,39 @@
 # limitations under the License.
 
 """Tests assemblies.py."""
-import numpy as np
+import math
 import pathlib
 import random
 import unittest
+
+import numpy as np
 from numpy.testing import assert_allclose
 
 from armi import settings
 from armi import tests
+from armi.physics.neutronics.settings import (
+    CONF_LOADING_FILE,
+    CONF_XS_KERNEL,
+)
 from armi.reactor import assemblies
-from armi.reactor import blueprints
 from armi.reactor import blocks
+from armi.reactor import blueprints
 from armi.reactor import components
+from armi.reactor import geometry
 from armi.reactor import parameters
 from armi.reactor import reactors
-from armi.reactor import geometry
 from armi.reactor.assemblies import (
     copy,
     Flags,
     grids,
     HexAssembly,
-    math,
     numpy,
     runLog,
 )
+from armi.reactor.tests import test_reactors
 from armi.tests import TEST_ROOT, mockRunLogs
 from armi.utils import directoryChangers
 from armi.utils import textProcessors
-from armi.reactor.tests import test_reactors
-from armi.physics.neutronics.settings import (
-    CONF_LOADING_FILE,
-    CONF_XS_KERNEL,
-)
 
 
 NUM_BLOCKS = 3
@@ -268,6 +269,15 @@ class Assembly_TestCase(unittest.TestCase):
             self.blockList.append(b)
 
         self.assembly.calculateZCoords()
+
+    def test_getBIndexFromZIndex(self):
+        # make sure the axMesh parameters are set in our test block
+        for b in self.assembly:
+            b.p.axMesh = 1
+
+        for zIndex in range(6):
+            bIndex = self.assembly.getBIndexFromZIndex(zIndex * 0.5)
+            self.assertEqual(bIndex, math.ceil(zIndex / 2) if zIndex < 5 else -1)
 
     def test_notesParameter(self):
         self.assertEqual(self.assembly.p.notes, "")
