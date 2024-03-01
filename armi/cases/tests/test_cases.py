@@ -307,16 +307,10 @@ class TestCaseSuiteDependencies(unittest.TestCase):
         self.c2.checkInputs()
 
     def test_dependenciesWithObscurePaths(self):
-        """
-        Test directory dependence.
-
-        .. tip:: This should be updated to use the Python pathlib
-            so the tests can work in both Linux and Windows identically.
-        """
+        """Test directory dependence for strangely-written file paths (escape characters)."""
         checks = [
             ("c1.yaml", "c2.yaml", "c1.h5", True),
             (r"\\case\1\c1.yaml", r"\\case\2\c2.yaml", "c1.h5", False),
-            # below doesn't work due to some windows path obscurities
             (r"\\case\1\c1.yaml", r"\\case\2\c2.yaml", r"..\1\c1.h5", False),
         ]
         if platform.system() == "Windows":
@@ -335,7 +329,7 @@ class TestCaseSuiteDependencies(unittest.TestCase):
                         r"c2.yaml",
                         r".\c1.h5",
                         True,
-                    ),  # py bug in 3.6.4 and 3.7.1 fails here
+                    ),
                     (
                         r"\\cas\es\1\c1.yaml",
                         r"\\cas\es\2\c2.yaml",
