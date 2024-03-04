@@ -94,7 +94,7 @@ class TestCompareDB3(unittest.TestCase):
         self.assertEqual(dr.nDiffs(), 10)
 
     def test_compareDatabaseDuplicate(self):
-        """end-to-end test of compareDatabases() on a photocopy database."""
+        """End-to-end test of compareDatabases() on a photocopy database."""
         # build two super-simple H5 files for testing
         o, r = test_reactors.loadTestReactor(
             TEST_ROOT, customSettings={"reloadDBName": "reloadingDB.h5"}
