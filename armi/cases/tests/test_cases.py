@@ -446,48 +446,58 @@ class TestCaseSuiteComparison(unittest.TestCase):
 
     def test_compareNoDiffs(self):
         """As a baseline, this test should always reveal zero diffs."""
-        # Build the cases
-        suite = cases.CaseSuite(settings.Settings())
-
-        geom = systemLayoutInput.SystemLayoutInput()
-        geom.readGeomFromStream(io.StringIO(GEOM_INPUT))
-        bp = blueprints.Blueprints.load(BLUEPRINT_INPUT)
-
-        c1 = cases.Case(cs=settings.Settings(), geom=geom, bp=bp)
-        c1.cs.path = "c1.yaml"
-        suite.add(c1)
-
-        c2 = cases.Case(cs=settings.Settings(), geom=geom, bp=bp)
-        c2.cs.path = "c2.yaml"
-        suite.add(c2)
-
         # build two super-simple H5 files for testing
         o, r = test_reactors.loadTestReactor(
             TEST_ROOT, customSettings={"reloadDBName": "reloadingDB.h5"}
         )
 
-        # create two DBs, identical but for file names
-        tmpDir = os.getcwd()
-        dbs = []
-        for i in range(1, 3):
-            # create the tests DB
-            dbi = DatabaseInterface(r, o.cs)
-            dbi.initDB(fName=f"{tmpDir}/c{i}.h5")
-            db = dbi.database
+        suites = []
+        for _i in range(2):
+            # Build the cases
+            suite = cases.CaseSuite(settings.Settings())
 
-            # validate the file exists, and force it to be readable again
-            b = h5py.File(db._fullPath, "r")
-            self.assertEqual(list(b.keys()), ["inputs"])
-            self.assertEqual(
-                sorted(b["inputs"].keys()), ["blueprints", "geomFile", "settings"]
-            )
-            b.close()
+            geom = systemLayoutInput.SystemLayoutInput()
+            geom.readGeomFromStream(io.StringIO(GEOM_INPUT))
+            bp = blueprints.Blueprints.load(BLUEPRINT_INPUT)
 
-            # append to lists
-            dbs.append(db)
+            c1 = cases.Case(cs=settings.Settings(), geom=geom, bp=bp)
+            c1.cs.path = "c1.yaml"
+            suite.add(c1)
 
-        # do a comparison that should have no diffs
-        diff = c1.compare(c2)
+            c2 = cases.Case(cs=settings.Settings(), geom=geom, bp=bp)
+            c2.cs.path = "c2.yaml"
+            suite.add(c2)
+
+            suites.append(suite)
+
+            # create two DBs, identical but for file names
+            tmpDir = os.getcwd()
+            dbs = []
+            for i in range(1, 3):
+                # create the tests DB
+                dbi = DatabaseInterface(r, o.cs)
+                dbi.initDB(fName=f"{tmpDir}/c{i}.h5")
+                db = dbi.database
+
+                # validate the file exists, and force it to be readable again
+                b = h5py.File(db._fullPath, "r")
+                self.assertEqual(list(b.keys()), ["inputs"])
+                self.assertEqual(
+                    sorted(b["inputs"].keys()), ["blueprints", "geomFile", "settings"]
+                )
+                b.close()
+
+                # append to lists
+                dbs.append(db)
+
+            # do a comparison that should have no diffs
+            diff = c1.compare(c2)
+            self.assertEqual(diff, 0)
+
+        diff = suites[0].compare(suites[1])
+        self.assertEqual(diff, 0)
+
+        diff = suites[1].compare(suites[0])
         self.assertEqual(diff, 0)
 
 
