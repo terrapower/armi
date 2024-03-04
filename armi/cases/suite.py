@@ -203,9 +203,10 @@ class CaseSuite:
         """
         Run each case, one after the other.
 
-        .. warning:: Suite running may not work yet if the cases have interdependencies.
-                    We typically run on a HPC but are still working on a platform
-                    independent way of handling HPCs.
+        Warning
+        -------
+        Suite running may not work yet if the cases have interdependencies. We typically run on a
+        HPC but are still working on a platform independent way of handling HPCs.
         """
         for ci, case in enumerate(self):
             runLog.important(f"Running case {ci+1}/{len(self)}: {case}")
@@ -313,6 +314,7 @@ class CaseSuite:
             userFile, refFile, caseIssues = tableResults[testName]
             data.append((testName, userFile, refFile, caseIssues))
             totalDiffs += caseIssues
+
         print(tabulate.tabulate(data, header, tablefmt=fmt))
         print(
             tabulate.tabulate(
