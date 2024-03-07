@@ -31,6 +31,7 @@ authors = [
 ]
 dependencies = [
     "coverage>=7.2.0", # Code coverage tool. Sadly baked into every Case.
+    "docutils>=0.18.1", # Tools for processing docs into HTML
     "h5py>=3.0,<=3.9", # Needed because our database files are H5 format
     "htmltree>=0.7.6", # Our reports have HTML output
     "matplotlib>=3.5.3", # Important plotting library
@@ -75,8 +76,7 @@ grids = ["wxpython==4.2.1"]
 memprof = ["psutil"]
 mpi = ["mpi4py"]
 test = [
-    "black==22.6.0", # code formatter
-    "docutils", # 0.18.1  -  0.20.1
+    "black==22.6.0", # code formatter (version-pinned)
     "ipykernel", # 6.25.1  -  .
     "jupyter_client", # 8.3.1  -  .
     "nbconvert", # 7.6.0  -  .
@@ -84,7 +84,7 @@ test = [
     "pytest-cov", # 4.1.0  -  .
     "pytest-html", # 3.2.0  -  .
     "pytest-xdist", # 3.3.1  -  .
-    "ruff==0.0.272", # linting and code formatting
+    "ruff==0.0.272", # linting and code formatting (version-pinned)
 ]
 docs = [
 #######################################################################
