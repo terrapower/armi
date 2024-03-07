@@ -78,11 +78,10 @@ mpi = ["mpi4py"]
 test = [
     "black==22.6.0", # code formatter (version-pinned)
     "ipykernel", # 6.25.1  -  .
-    "jupyter_client", # 8.3.1  -  .
-    "nbconvert", # 7.6.0  -  .
+    #"jupyter_client", # 8.3.1  -  .
+    #"nbconvert", # 7.6.0  -  .
     "pytest", # 7.2.1  -  .
     "pytest-cov", # 4.1.0  -  .
-    #"pytest-html", # 3.2.0  -  .
     "pytest-xdist", # 3.3.1  -  .
     "ruff==0.0.272", # linting and code formatting (version-pinned)
 ]
