@@ -30,24 +30,21 @@ authors = [
     { name="TerraPower, LLC", email="armi-devs@terrapower.com" },
 ]
 dependencies = [
-    #"configparser>=5.0.0",  # TODO: Unused?
     "coverage>=7.2.0",
     "h5py>=3.0,<=3.9",  # Needed because our database files are H5 format
     "htmltree>=0.7.6",
     "matplotlib>=3.5.3",  # Important plotting library
     "numpy>=1.21,<=1.23.5",  # Important math library
     "ordered-set>=3.1.1",
-    "pillow>=9.5.0",
     "pluggy>=1.2.0",  # Central tool behind the ARMI Plugin system
-    "pyDOE>=0.3.8",
+    "pyDOE>=0.3.8",  # We import a Latin-hypercube algorithm to explore a phase space
     "pyevtk>=1.2.0",
-    "ruamel.yaml.clib<=0.2.7",
-    "ruamel.yaml<=0.17.21",
-    "scipy>=1.7.0",
+    "ruamel.yaml.clib<=0.2.7",  # C-based core of ruamel below
+    "ruamel.yaml<=0.17.21",  # Our foundational YAML library
+    "scipy>=1.7.0",  # we use for curve-fitting and matrix math
     "tabulate>=0.8.9",
     "toml>0.9.5",  # Needed to parse the pyproject.toml file
     "voluptuous>=0.12.1",
-    #"xlrd>=2.0.0",  # TODO: Unused?
     "yamlize==0.7.1",  # Custom YAML-to-object library
 ]
 classifiers = [
