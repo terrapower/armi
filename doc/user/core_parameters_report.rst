@@ -14,4 +14,3 @@ This document lists all of the Core Parameters that are provided by the ARMI Fra
    return generateParamTable(
        reactors.Core, reactorParameters.defineCoreParameters()
    )
-

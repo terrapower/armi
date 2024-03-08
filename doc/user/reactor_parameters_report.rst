@@ -14,4 +14,3 @@ This document lists all of the Reactor Parameters that are provided by the ARMI 
    return generateParamTable(
        reactors.Reactor, reactorParameters.defineReactorParameters()
    )
-

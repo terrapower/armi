@@ -14,5 +14,3 @@ This document lists all of the Assembly Parameters that are provided by the ARMI
    return generateParamTable(
        assemblies.Assembly, assemblyParameters.getAssemblyParameterDefinitions()
    )
-
-

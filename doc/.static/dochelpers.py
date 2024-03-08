@@ -14,8 +14,7 @@
 """
 Helpers for sphinx documentation.
 
-Can be used by armi docs or docs of anything else that
-can import armi.
+Can be used by armi docs or docs of anything else that can import armi.
 """
 
 
