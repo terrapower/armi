@@ -1,4 +1,4 @@
-# Copyright 2019 TerraPower, LLC
+# Copyright 2024 TerraPower, LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,33 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-Helpers for sphinx documentation.
-
-Can be used by armi docs or docs of anything else that can import armi.
-"""
+"""Helpers for Sphinx documentation."""
 
 
-def create_figure(path, caption=None, align=None, alt=None, width=None):
-    """
-    This method is available within ``.. exec::``. It allows someone to create a figure with a
-    caption.
-    """
-    rst = [".. figure:: {}".format(path)]
-    if align:
-        rst += ["    :align: {}".format(align)]
-    if alt:
-        rst += ["    :alt: {}".format(alt)]
-    if width:
-        rst += ["    :width: {}".format(width)]
-    if caption:
-        rst += [""]
-    if caption:
-        rst += ["    {}".format(caption)]
-    return rst
-
-
-def create_table(rst_table, caption=None, align=None, widths=None, width=None):
+def createTable(rst_table, caption=None, align=None, widths=None, width=None):
     """
     This method is available within ``.. exec::``. It allows someone to create a table with a
     caption.
@@ -164,41 +141,4 @@ def generateParamTable(klass, fwParams, app=None):
     """
         content.append(pluginContent + "\n")
 
-    return "\n".join(content)
-
-
-def generatePluginSettingsTable(settings, pluginName):
-    """
-    Return a string containing one or more restructured text list tables containing
-    settings descriptions for a plugin.
-
-    Parameters
-    ----------
-    settings : list of Settings
-        This is a list of settings definitions, typically returned by a
-        ``defineSettings`` plugin hook.
-    """
-    headerContent = """
-    .. list-table:: Settings defined in the {}
-       :header-rows: 1
-       :widths: 20 10 50 20
-
-       * - Name
-         - Label
-         - Description
-         - Default Value
-    """.format(
-        pluginName
-    )
-
-    content = [f".. _{pluginName}-settings-table:"]
-    pluginContent = headerContent
-    for setting in settings:
-        default = None if setting.default == "" else setting.default
-        pluginContent += f"""   * - ``{setting.name}``
-         - {setting.label}
-         - {setting.description}
-         - {default}
-    """
-    content.append(pluginContent + "\n")
     return "\n".join(content)
