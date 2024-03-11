@@ -17,6 +17,7 @@ API Changes
 #. Removing unused method ``HexGrid.allPositionsInThird()``. (`PR#1655 <https://github.com/terrapower/armi/pull/1655>`_)
 #. Removed unused methods: ``Reactor.getAllNuclidesIn()``, ``plotTriangleFlux()``. (`PR#1656 <https://github.com/terrapower/armi/pull/1656>`_)
 #. Removed ``armi.utils.dochelpers``; not relevant to nuclear modeling. (`PR#1662 <https://github.com/terrapower/armi/pull/1662>`_)
+#. Removing old tools created to help people convert to the current database format: ``armi.bookkeeping.db.convertDatabase()`` and ``ConvertDB``. (`PR#1658 <https://github.com/terrapower/armi/pull/1658>`_)
 #. TBD
 
 Bug Fixes
@@ -25,7 +26,7 @@ Bug Fixes
 
 Changes that Affect Requirements
 --------------------------------
-#. (`PR#1651 <https://github.com/terrapower/armi/pull/1651>`_) - Very minor change to ``Block.coords()``, removing unused argument.
+#. Very minor change to ``Block.coords()``, removing unused argument. (`PR#1651 <https://github.com/terrapower/armi/pull/1651>`_)
 #. TBD
 
 
