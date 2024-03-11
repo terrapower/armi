@@ -98,6 +98,7 @@ Retrieve elements that are classified as actinides:
     .. exec::
         from tabulate import tabulate
         from armi.nucDirectory import elements
+        from dochelpers import createTable
 
         attributes = ['z',
                     'name',
@@ -121,10 +122,10 @@ Retrieve elements that are classified as actinides:
             ]
 
         sortedElements = sorted(elements.byZ.values())
-        return create_table(tabulate(tabular_data=[getAttributes(elem) for elem in sortedElements],
+        return createTable(tabulate(tabular_data=[getAttributes(elem) for elem in sortedElements],
                                     headers=attributes,
                                     tablefmt='rst'),
-                            caption='List of elements')
+                           caption='List of elements')
 """
 
 import os
