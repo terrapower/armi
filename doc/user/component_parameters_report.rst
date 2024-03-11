@@ -9,6 +9,6 @@ This document lists all of the Component Parameters that are provided by the ARM
 .. exec::
    from armi.reactor.components import Component
    from armi.reactor.components.componentParameters import getComponentParameterDefinitions
-   from armi.utils.dochelpers import generateParamTable
+   from dochelpers import generateParamTable
 
    return generateParamTable(Component, getComponentParameterDefinitions())
