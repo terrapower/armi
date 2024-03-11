@@ -99,6 +99,7 @@ Retrieve U-235 by the AAAZZZS ID:
         import numpy
         from tabulate import tabulate
         from armi.nucDirectory import nuclideBases
+        from dochelpers import createTable
 
         attributes = ['name',
                     'type',
@@ -126,10 +127,10 @@ Retrieve U-235 by the AAAZZZS ID:
             ]
 
         sortedNucs = sorted(nuclideBases.instances)
-        return create_table(tabulate(tabular_data=[getAttributes(nuc) for nuc in sortedNucs],
-                                        headers=attributes,
-                                        tablefmt='rst'),
-                                        caption='List of nuclides')
+        return createTable(tabulate(tabular_data=[getAttributes(nuc) for nuc in sortedNucs],
+                                    headers=attributes,
+                                    tablefmt='rst'),
+                                    caption='List of nuclides')
 """
 
 import os

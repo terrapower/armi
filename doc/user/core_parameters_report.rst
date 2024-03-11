@@ -9,9 +9,8 @@ This document lists all of the Core Parameters that are provided by the ARMI Fra
 .. exec::
    from armi.reactor import reactors
    from armi.reactor import reactorParameters
-   from armi.utils.dochelpers import generateParamTable
+   from dochelpers import generateParamTable
 
    return generateParamTable(
        reactors.Core, reactorParameters.defineCoreParameters()
    )
-
