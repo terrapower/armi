@@ -25,8 +25,8 @@ from armi.reactor.grids.constants import (
     BOUNDARY_60_DEGREES,
     BOUNDARY_CENTER,
 )
-from armi.reactor.grids.locations import IndexLocation, IJKType, IJType
-from armi.reactor.grids.structuredgrid import StructuredGrid
+from armi.reactor.grids.locations import IJKType, IJType
+from armi.reactor.grids.structuredGrid import StructuredGrid
 
 COS30 = sqrt(3) / 2.0
 SIN30 = 1.0 / 2.0
@@ -469,33 +469,3 @@ class HexGrid(StructuredGrid):
         )
 
         return locList[:nLocs]
-
-    # TODO: this is only used by testing and another method that just needs the count of assemblies
-    #       in a ring, not the actual positions
-    def allPositionsInThird(self, ring, includeEdgeAssems=False):
-        """
-        Returns a list of all the positions in a ring (in the first third).
-
-        Parameters
-        ----------
-        ring : int
-            The ring to check
-        includeEdgeAssems : bool, optional
-            If True, include repeated positions in odd ring numbers. Default: False
-
-        Notes
-        -----
-        Rings start at 1, positions start at 1
-
-        Returns
-        -------
-        positions : int
-        """
-        positions = []
-        for pos in range(1, self.getPositionsInRing(ring) + 1):
-            i, j = self.getIndicesFromRingAndPos(ring, pos)
-            loc = IndexLocation(i, j, 0, None)
-            if self.isInFirstThird(loc, includeEdgeAssems):
-                positions.append(pos)
-
-        return positions

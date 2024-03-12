@@ -126,8 +126,7 @@ class Assembly(composites.Composite):
 
         Notes
         -----
-        You must run armi.reactor.reactors.Reactor.regenAssemblyLists after calling
-        this.
+        You must run armi.reactor.reactors.Reactor.regenAssemblyLists after calling this.
         """
         assemNum = self.getNum()
         for bi, b in enumerate(self):
@@ -303,7 +302,9 @@ class Assembly(composites.Composite):
         -----
         If there is no plenum blocks in the assembly, a plenum volume of 0.0 is returned
 
-        .. warning:: This is a bit design-specific for pinned assemblies
+        Warning
+        -------
+        This is a bit design-specific for pinned assemblies
         """
         plenumBlocks = self.getBlocks(Flags.PLENUM)
 
@@ -342,8 +343,9 @@ class Assembly(composites.Composite):
         -----
         Used for mesh sensitivity studies.
 
-        .. warning:: This is likely destined for a geometry converter rather than
-            this instance method.
+        Warning
+        -------
+        This is likely destined for a geometry converter rather than this instance method.
         """
         newBlockStack = []
         topIndex = -1
@@ -412,6 +414,7 @@ class Assembly(composites.Composite):
                 newBlocks -= (
                     1  # subtract one because we eliminated the original b completely.
                 )
+
         self.removeAll()
         self.spatialGrid = grids.axialUnitGrid(len(newBlockStack))
         for b in newBlockStack:
@@ -439,7 +442,6 @@ class Assembly(composites.Composite):
 
         armi.reactor.reactors.Reactor.findAllAxialMeshPoints : gets a global list of all
         of these, plus finer res.
-
         """
         bottom = 0.0
         meshVals = []
@@ -509,7 +511,6 @@ class Assembly(composites.Composite):
         -------
         height : float
             the height in cm
-
         """
         h = 0.0
         for b in self:
@@ -561,7 +562,6 @@ class Assembly(composites.Composite):
         elevation : list of floats
             Every float in the list is an elevation of a block boundary for the block
             type specified (has duplicates)
-
         """
         elevation, elevationsWithBlockBoundaries = 0.0, []
 

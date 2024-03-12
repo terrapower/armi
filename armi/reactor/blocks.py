@@ -599,7 +599,7 @@ class Block(composites.Composite):
         else:
             return "ExCore"
 
-    def coords(self, rotationDegreesCCW=0.0):
+    def coords(self):
         """
         Returns the coordinates of the block.
 
@@ -611,11 +611,7 @@ class Block(composites.Composite):
             method of the block's ``spatialLocator`` attribute, which recursively
             calls itself on all parents of the block to get the coordinates of the
             block's centroid in 3D cartesian space.
-
-            If ``rotationDegreesCCW`` is non-zero, an error is raised.
         """
-        if rotationDegreesCCW:
-            raise NotImplementedError("Cannot get coordinates with rotation.")
         return self.spatialLocator.getGlobalCoordinates()
 
     def setBuLimitInfo(self):
@@ -1671,7 +1667,7 @@ class HexBlock(Block):
     def __init__(self, name, height=1.0):
         Block.__init__(self, name, height)
 
-    def coords(self, rotationDegreesCCW=0.0):
+    def coords(self):
         """
         Returns the coordinates of the block.
 
@@ -1686,8 +1682,6 @@ class HexBlock(Block):
 
             Will additionally adjust the x and y coordinates based on the block
             parameters ``displacementX`` and ``displacementY``.
-
-            Note that the ``rotationDegreesCCW`` argument is unused.
         """
         x, y, _z = self.spatialLocator.getGlobalCoordinates()
         x += self.p.displacementX * 100.0

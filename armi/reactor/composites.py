@@ -2675,7 +2675,6 @@ class ArmiObject(metaclass=CompositeModelType):
             Gets components that are made of a particular material
         gatherMaterialsByVolume
             Classifies all materials by volume
-
         """
         return getDominantMaterial([self], typeSpec, exact)
 
