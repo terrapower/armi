@@ -1168,6 +1168,7 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         igniterZircMass1 = b.getMass("ZR")
         igniterFuelBlockMass = b.getMass()
         igniterDuctMass = b.getComponent(Flags.DUCT).getMass()
+        igniterCoolMass = b.getComponent(Flags.COOLANT).getMass()
 
         coolMass = 0
         b = igniterFuel[4]
@@ -1194,6 +1195,7 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         igniterHMMass1AfterExpand = b.getHMMass()
         igniterZircMass1AfterExpand = b.getMass("ZR")
         igniterDuctMassAfterExpand = b.getComponent(Flags.DUCT).getMass()
+        igniterCoolMassAfterExpand = b.getComponent(Flags.COOLANT).getMass()
 
         coolMass = 0
         b = igniterFuel[4]
@@ -1206,6 +1208,9 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         self.assertAlmostEqual(igniterZircMass1, igniterZircMass1AfterExpand, 7)
         self.assertAlmostEqual(
             igniterDuctMass, igniterDuctMassAfterExpand * 25.0 / 26.0, 7
+        )
+        self.assertAlmostEqual(
+            igniterCoolMass, igniterCoolMassAfterExpand * 25.0 / 26.0, 7
         )
         # Note the masses are linearly different by the amount that the plenum shrunk
         self.assertAlmostEqual(
@@ -1233,6 +1238,7 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         igniterZircMass1AfterShrink = b.getMass("ZR")
         igniterFuelBlockMassAfterShrink = b.getMass()
         igniterDuctMassAfterShrink = b.getComponent(Flags.DUCT).getMass()
+        igniterCoolMassAfterShrink = b.getComponent(Flags.COOLANT).getMass()
 
         coolMass = 0
         b = igniterFuel[4]
@@ -1246,6 +1252,7 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         self.assertAlmostEqual(igniterZircMass1, igniterZircMass1AfterShrink, 7)
         self.assertAlmostEqual(igniterFuelBlockMass, igniterFuelBlockMassAfterShrink, 7)
         self.assertAlmostEqual(igniterDuctMass, igniterDuctMassAfterShrink, 7)
+        self.assertAlmostEqual(igniterCoolMass, igniterCoolMassAfterShrink, 7)
         self.assertAlmostEqual(igniterPlenumMass, igniterPlenumMassAfterShrink, 7)
 
     def test_snapAxialMeshToReferenceConservingMassBasedOnBlockShield(self):
