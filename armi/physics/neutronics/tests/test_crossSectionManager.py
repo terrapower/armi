@@ -162,7 +162,7 @@ class TestBlockCollectionAverage(unittest.TestCase):
         # check that a new block collection of the representative block has right temperatures
         # this is required for Doppler coefficient calculations
         newBc = AverageBlockCollection(
-            self.blockList[0].r.blueprints.allNuclidesInProblem
+            self.blockList[0].core.r.blueprints.allNuclidesInProblem
         )
         newBc.append(avgB)
         newBc.calcAvgNuclideTemperatures()
@@ -201,7 +201,7 @@ class TestBlockCollectionAverage(unittest.TestCase):
 
         # U35 has different average temperature because blocks have different U235 content
         newBc = AverageBlockCollection(
-            self.blockList[0].r.blueprints.allNuclidesInProblem
+            self.blockList[0].core.r.blueprints.allNuclidesInProblem
         )
         newBc.append(avgB)
         newBc.calcAvgNuclideTemperatures()
@@ -253,7 +253,7 @@ class TestComponentAveraging(unittest.TestCase):
 
     def setUp(self):
         self.bc = AverageBlockCollection(
-            self.blockList[0].r.blueprints.allNuclidesInProblem
+            self.blockList[0].core.r.blueprints.allNuclidesInProblem
         )
         blockCopies = [copy.deepcopy(b) for b in self.blockList]
         self.bc.extend(blockCopies)
