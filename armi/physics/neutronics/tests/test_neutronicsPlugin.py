@@ -53,7 +53,7 @@ BA:
 """
 
 
-class Test_NeutronicsPlugin(TestPlugin):
+class TestNeutronicsPlugin(TestPlugin):
     plugin = neutronics.NeutronicsPlugin
 
     def setUp(self):
@@ -262,7 +262,7 @@ class NeutronicsReactorTests(unittest.TestCase):
         cs = settings.Settings()
         inspector = settingsValidation.Inspector(cs)
         sv = getNeutronicsSettingValidators(inspector)
-        self.assertEqual(len(sv), 9)
+        self.assertEqual(len(sv), 8)
 
         # Test the Query: boundaries are now "Extrapolated", not "Generalized"
         cs = cs.modified(newSettings={CONF_BOUNDARIES: "Generalized"})

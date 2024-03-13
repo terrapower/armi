@@ -77,29 +77,14 @@ import yamlize.objects
 
 from armi import context
 from armi import getPluginManager, getPluginManagerOrFail
+from armi import migration
 from armi import plugins
 from armi import runLog
 from armi.nucDirectory import nuclideBases
+from armi.physics.neutronics.settings import CONF_LOADING_FILE
 from armi.reactor import assemblies
 from armi.reactor import geometry
 from armi.reactor import systemLayoutInput
-from armi.reactor.flags import Flags
-from armi.scripts import migration
-from armi.utils.customExceptions import InputError
-from armi.utils import textProcessors
-from armi.settings.fwSettings.globalSettings import (
-    CONF_DETAILED_AXIAL_EXPANSION,
-    CONF_ASSEM_FLAGS_SKIP_AXIAL_EXP,
-    CONF_INPUT_HEIGHTS_HOT,
-    CONF_NON_UNIFORM_ASSEM_FLAGS,
-    CONF_ACCEPTABLE_BLOCK_AREA_ERROR,
-    CONF_GEOM_FILE,
-)
-from armi.physics.neutronics.settings import CONF_LOADING_FILE
-
-# NOTE: using non-ARMI-standard imports because these are all a part of this package,
-# and using the module imports would make the attribute definitions extremely long
-# without adding detail
 from armi.reactor.blueprints import isotopicOptions
 from armi.reactor.blueprints.assemblyBlueprint import AssemblyKeyedList
 from armi.reactor.blueprints.blockBlueprint import BlockKeyedList
@@ -108,13 +93,24 @@ from armi.reactor.blueprints.componentBlueprint import ComponentKeyedList
 from armi.reactor.blueprints.gridBlueprint import Grids, Triplet
 from armi.reactor.blueprints.reactorBlueprint import Systems, SystemBlueprint
 from armi.reactor.converters import axialExpansionChanger
+from armi.reactor.flags import Flags
+from armi.settings.fwSettings.globalSettings import (
+    CONF_DETAILED_AXIAL_EXPANSION,
+    CONF_ASSEM_FLAGS_SKIP_AXIAL_EXP,
+    CONF_INPUT_HEIGHTS_HOT,
+    CONF_NON_UNIFORM_ASSEM_FLAGS,
+    CONF_ACCEPTABLE_BLOCK_AREA_ERROR,
+    CONF_GEOM_FILE,
+)
+from armi.utils import textProcessors
+from armi.utils.customExceptions import InputError
 
 context.BLUEPRINTS_IMPORTED = True
 context.BLUEPRINTS_IMPORT_CONTEXT = "".join(traceback.format_stack())
 
 
 def loadFromCs(cs, roundTrip=False):
-    r"""Function to load Blueprints based on supplied ``CaseSettings``."""
+    """Function to load Blueprints based on supplied ``Settings``."""
     from armi.utils import directoryChangers
 
     with directoryChangers.DirectoryChanger(cs.inputDirectory, dumpOnException=False):
@@ -171,13 +167,7 @@ class _BlueprintsPluginCollector(yamlize.objects.ObjectType):
 
 
 class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
-    """
-    Base Blueprintsobject representing all the subsections in the input file.
-
-    .. impl:: ARMI represents a user-specified reactor by providing a "Blueprint" YAML interface.
-        :id: I_REACTOR_0
-        :links: R_REACTOR
-    """
+    """Base Blueprintsobject representing all the subsections in the input file."""
 
     nuclideFlags = yamlize.Attribute(
         key="nuclide flags", type=isotopicOptions.NuclideFlags, default=None
@@ -241,7 +231,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
 
         Parameters
         ----------
-        cs : CaseSettings object
+        cs : Settings
             Used to apply various modeling options when constructing an assembly.
 
         name : str (optional, and should be exclusive with specifier)
@@ -556,7 +546,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
 
     @classmethod
     def load(cls, stream, roundTrip=False):
-        """This class method is a wrapper around the `yamlize.Object.load()` method.
+        """This method is a wrapper around the `yamlize.Object.load()` method.
 
         The reason for the wrapper is to allow us to default to `Cloader`. Essentially,
         the `CLoader` class is 10x faster, but doesn't allow for "round trip" (read-
@@ -639,10 +629,5 @@ def migrate(bp: Blueprints, cs):
             aDesign.radialMeshPoints = radMesh
             aDesign.azimuthalMeshPoints = aziMesh
 
-    # Someday: write out the migrated file. At the moment this messes up the case
+    # TODO: write out the migrated file. At the moment this messes up the case
     # title and doesn't yet have the other systems in place so this isn't the right place.
-
-
-#     cs.writeToXMLFile(cs.caseTitle + '.migrated.xml')
-#     with open(os.path.split(cs['loadingFile'])[0] + '.migrated.' + '.yaml', 'w') as loadingFile:
-#         blueprints.Blueprints.dump(bp, loadingFile)

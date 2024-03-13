@@ -68,17 +68,21 @@ commands. You probably want to do this in a virtual environment as described in 
 documentation <https://terrapower.github.io/armi/installation.html>`_. Otherwise, the
 dependencies could conflict with your system dependencies.
 
-::
+First, upgrade your version of pip::
+
+    $ pip install pip>=22.1
+
+Now clone and install ARMI::
 
     $ git clone https://github.com/terrapower/armi
     $ cd armi
     $ pip install -e .
-    $ armi
+    $ armi --help
 
 The easiest way to run the tests is to install `tox <https://tox.readthedocs.io/en/latest/>`_
 and then run::
 
-    $ pip install -e .[test]
+    $ pip install -e ".[test]"
     $ tox -- -n 6
 
 This runs the unit tests in parallel on 6 processes. Omit the ``-n 6`` argument
@@ -86,7 +90,7 @@ to run on a single process.
 
 The tests can also be run directly, using ``pytest``::
 
-    $ pip install -e .[test]
+    $ pip install -e ".[test]"
     $ pytest -n 4 armi
 
 From here, we recommend going through a few of our `gallery examples
@@ -405,7 +409,7 @@ The ARMI system is licensed as follows:
 
 .. code-block:: none
 
-	Copyright 2009-2023 TerraPower, LLC
+	Copyright 2009-2024 TerraPower, LLC
 
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.

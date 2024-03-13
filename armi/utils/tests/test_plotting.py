@@ -55,6 +55,9 @@ class TestPlotting(unittest.TestCase):
             plotting.plotAssemblyTypes(self.r.core.parent.blueprints, plotPath)
             self._checkExists(plotPath)
 
+            if os.path.exists(plotPath):
+                os.remove(plotPath)
+
             plotPath = "coreAssemblyTypes2.png"
             plotting.plotAssemblyTypes(
                 self.r.core.parent.blueprints,
@@ -64,8 +67,14 @@ class TestPlotting(unittest.TestCase):
             )
             self._checkExists(plotPath)
 
+            if os.path.exists(plotPath):
+                os.remove(plotPath)
+
             with self.assertRaises(ValueError):
                 plotting.plotAssemblyTypes(None, plotPath, None)
+
+            if os.path.exists(plotPath):
+                os.remove(plotPath)
 
     def test_plotBlockFlux(self):
         with TemporaryDirectoryChanger():

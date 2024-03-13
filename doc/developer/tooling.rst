@@ -1,8 +1,11 @@
+.. _armi-tooling:
+
+**************************
 Tooling and Infrastructure
-==========================
+**************************
 
 Good Commit Messages
---------------------
+====================
 The ARMI project follows a few basic rules for "good" commit messages:
 
 * The purpose of the message is to explain to the changes you made to a stranger 5 years from now.
@@ -23,14 +26,14 @@ The ARMI project follows a few basic rules for "good" commit messages:
     * optional.
 
 Good Pull Requests
-------------------
+==================
 A good commit is like a sentence; it expresses one complete thought. In that context, a good
 Pull Request (PR) is like a paragraph; it contains a few sentences that contain one larger
 thought. A good PR is *not* a chapter or an entire book! It should not contain multiple
 independent ideas.
 
 One Idea = One PR
-^^^^^^^^^^^^^^^^^
+-----------------
 .. important ::
     If you *can* break a PR into smaller PRs, containing unrelated changes, please do.
 
@@ -40,19 +43,21 @@ They are busy people, and it will save them time and effort if your PR only has 
 If your PRs are smaller, you will notice a great increase in the quality of the reviews you get.
 
 Don't open until it is ready
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+----------------------------
+
 .. important ::
     Wait until your PR is complete to open it.
 
 Your PR isn't complete when the code works, it is complete when the code is polished and all the
 tests are written and working. The idea here is: as soon as you open a PR, people will start
-spending their time looking at it. And their time is valuable. An exception to this rule is that
-GitHub allows you to `open a Draft PR <https://github.blog/2019-02-14-introducing-draft-pull-requests/>`_
-which is a nice option if you need to open your PR early for some reason (usually testing). You
-can also convert any open PR to Draft if you decide it needs more work.
+spending their time looking at it. And their time is valuable. Even though GitHub allows you to
+`open a Draft PR <https://github.blog/2019-02-14-introducing-draft-pull-requests/>`_, this is
+not the default option in ARMI. It should not be your workflow to open a Draft PR by default. We
+prefer to keep the PR list as short as possible. A good rule of thumb is: don't open a PR until
+you think it is ready for final review.
 
 Test It
-^^^^^^^
+-------
 .. important ::
     If a PR doesn't have any changes to testing, it probably isn't complete.
 
@@ -67,7 +72,8 @@ If the changes in the PR are worth the time to make, they are worth the time to 
 reviewer by proving your code works.
 
 Document It
-^^^^^^^^^^^
+-----------
+
 .. important ::
     If it isn't documented, it doesn't exist.
 
@@ -77,15 +83,57 @@ nitty-gritty detail to fix a bug without you. Think about variable names, commen
 Also consider (if you are making a major change) that you might be making something in the docs
 out-of-date.
 
+Watch for Requirements
+----------------------
+When you are touching code in ARMI, watch out for the docstrings in the methods, classes, or
+modules you are editing. These docstrings might have bread crumbs that link back to requirements.
+Such breadcrumbs will look like:
+
+.. code-block::
+
+    """
+    .. test: This is a requirement test breadcrumb.
+
+    .. impl: This is an requirement implementation breadcrumb.
+
+    """
+
+If you touch any code that has such a docstring, even at the top of the file, you are going to be
+responsible for not breaking that code/functionality. And you will be required to explicitly
+call out that you touch such a code in your PR.
+
+Your PR reviewer will take an extra look at any PR that touches a requirement test or implementation.
+And you will need to add a special release note under the "Changes that Affect Requirements" section header.
+
+Add Release Notes
+-----------------
+For most PRs, you will need to add release notes to the
+`Release Notes documentation <https://github.com/terrapower/armi/tree/main/doc/release>`_. The goal
+here is to help track all the important changes that happened in ARMI, so ARMI can document what
+has changed during the next `release <https://github.com/terrapower/armi/releases>`_. To that end,
+minor PRs won't require a release note.
+
+In particular, in the release notes, you will find four sections in the releasee notes:
+
+1. **New Features** - A new feature (or major addition to a current feature) was added to the code.
+2. **API Changes** - ANY change to the public-facing API of ARMI.
+3. **Bug Fixes** - ANY bug fix in the code (not the documentation), no matter how minor.
+4. **Changes that Affect Requirements** - If you touch the code (``impl``) or test (``test``) for
+   anything that currently has a requirement crumb. (This must be a non-trivial change.)
+
+If your PR fits more than one of these categories, great! Put a description of your change under
+all the categories that apply.
+
+
 Packaging and dependency management
------------------------------------
+===================================
 The process of packaging Python projects and managing their dependencies is somewhat
 challenging and nuanced. The contents of our ``pyproject.toml`` follow existing conventions as
 much as possible. In particular, we follow `the official Python packaging guidance
 <https://packaging.python.org/en/latest/>`_.
 
 pyproject.toml
-^^^^^^^^^^^^^^
+--------------
 As much as possible, the ARMI team will try to centralize our installation and build systems
 through the top-level ``pyproject.toml`` file. The only exception will be our documentation,
 which has much customization done through the Sphinx ``doc/conf.py`` file.
@@ -97,7 +145,7 @@ packages that are not strictly required, but if installed enable extra functiona
 like unit testing or building documentation.
 
 Third-Party Licensing
-^^^^^^^^^^^^^^^^^^^^^
+---------------------
 Be careful when including any dependency in ARMI (say in the ``pyproject.toml`` file) not
 to include anything with a license that superceeds our Apache license. For instance,
 any third-party Python library included in ARMI with a GPL license will make the whole
@@ -108,7 +156,7 @@ For that reason, it is generally considered best-practice in the ARMI ecosystem 
 only use third-party Python libraries that have MIT or BSD licenses.
 
 Releasing a New Version of ARMI
--------------------------------
+===============================
 We use the common ``major.minor.bump`` version scheme where a version string
 might look like ``0.1.7``, ``1.0.0``, or ``12.3.123``. Each number has a specific meaning:
 
@@ -136,13 +184,14 @@ Every release should follow this process:
   - Or from another commit: ``git tag <commit-hash> 1.0.0 -m "Release v1.0.0"``
   - Pushing to the repo: ``git push origin 1.0.0``
   - **NOTE** - The ONLY tags in the ARMI repo are for official version releases.
+
 5. Also add the release notes on `the GitHub UI <https://github.com/terrapower/armi/releases>`__.
 6. Follow the instructions `here <https://github.com/terrapower/terrapower.github.io>`_ to
    archive the new documentation.
 7. Tell everyone!
 
 Module-Level Logging
---------------------
+====================
 In most of the modules in ``armi``, you will see logging using the ``runLog`` module.
 This is a custom, global logging object provided by the import:
 

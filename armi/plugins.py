@@ -59,7 +59,6 @@ Some things you may want to bring in via a plugin includes:
 
 Warning
 -------
-
 The plugin system was developed to support improved collaboration.  It is new and should
 be considered under development. The API is subject to change as the version of the ARMI
 framework approaches 1.0.
@@ -89,7 +88,6 @@ rather than an instance of that class. Also notice that all of the hooks are
 and only have access to the state passed into them to perform their function. This is a
 deliberate design choice to keep the plugin system simple and to preclude a large class
 of potential bugs. At some point it may make sense to revisit this.
-
 
 Other customization points
 --------------------------
@@ -140,8 +138,22 @@ HOOKIMPL = pluggy.HookimplMarker("armi")
 
 class ArmiPlugin:
     """
-    An ArmiPlugin provides a namespace to collect hook implementations provided by a
-    single "plugin". This API is incomplete, unstable, and expected to change.
+    An ArmiPlugin exposes a collection of hooks that allow users to add a
+    variety of things to their ARMI application: Interfaces, parameters,
+    settings, flags, and much more.
+
+    .. impl:: Plugins add code to the application through interfaces.
+        :id: I_ARMI_PLUGIN
+        :implements: R_ARMI_PLUGIN
+
+        Each plugin has the option of implementing the ``exposeInterfaces`` method, and
+        this will be used as a plugin hook to add one or more Interfaces to the ARMI
+        Application. Interfaces can wrap external executables with nuclear modeling
+        codes in them, or directly implement their logic in Python. But because
+        Interfaces are Python code, they have direct access to read and write from
+        ARMI's reactor data model. This Plugin to multiple Interfaces to reactor data
+        model connection is the primary way that developers add code to an ARMI
+        application and simulation.
     """
 
     @staticmethod
@@ -149,6 +161,15 @@ class ArmiPlugin:
     def exposeInterfaces(cs) -> List:
         """
         Function for exposing interface(s) to other code.
+
+        .. impl:: Plugins can add interfaces to the operator.
+            :id: I_ARMI_PLUGIN_INTERFACES
+            :implements: R_ARMI_PLUGIN_INTERFACES
+
+            This method takes in a Settings object and returns a list of Interfaces,
+            the position of each Interface in the Interface stack, and a list of
+            arguments to pass to the Interface when initializing it later. These
+            Interfaces can then be used to add code to a simulation.
 
         Returns
         -------
@@ -168,13 +189,36 @@ class ArmiPlugin:
     @HOOKSPEC
     def defineParameters() -> Dict:
         """
-        Function for defining additional parameters.
+        Define additional parameters for the reactor data model.
+
+        .. impl:: Plugins can add parameters to the reactor data model.
+            :id: I_ARMI_PLUGIN_PARAMS
+            :implements: R_ARMI_PLUGIN_PARAMS
+
+            Through this method, plugin developers can create new Parameters. A
+            parameter can represent any physical property an analyst might want to
+            track. And they can be added at any level of the reactor data model.
+            Through this, the developers can extend ARMI and what physical properties
+            of the reactor they want to calculate, track, and store to the database.
+
+        .. impl:: Define an arbitrary physical parameter.
+            :id: I_ARMI_PARAM
+            :implements: R_ARMI_PARAM
+
+            Through this method, plugin developers can create new Parameters. A
+            parameter can represent any physical property an analyst might want to
+            track. For example, through this method, a plugin developer can add a new
+            thermodynamic property that adds a thermodynamic parameter to every block
+            in the reactor. Or they could add a neutronics parameter to every fuel
+            assembly. A parameter is quite generic. But these parameters will be
+            tracked in the reactor data model, extend what developers can do with ARMI,
+            and will be saved to the output database.
 
         Returns
         -------
         dict
             Keys should be subclasses of ArmiObject, values being a
-            ParameterDefinitionCollection should be added to the key's perameter
+            ParameterDefinitionCollection should be added to the key's parameter
             definitions.
 
         Example
@@ -229,18 +273,18 @@ class ArmiPlugin:
     @HOOKSPEC
     def defineFlags() -> Dict[str, Union[int, flags.auto]]:
         """
-        Function to provide new Flags definitions.
+        Add new flags to the reactor data model, and the simulation.
 
-        This allows a plugin to provide novel values for the Flags system.
-        Implementations should return a dictionary mapping flag names to their desired
-        numerical values. In most cases, no specific value is needed, in which case
-        :py:class:`armi.utils.flags.auto` should be used.
+        .. impl:: Plugins can define new, unique flags to the system.
+            :id: I_ARMI_FLAG_EXTEND1
+            :implements: R_ARMI_FLAG_EXTEND
 
-        Flags should be added to the ARMI system with great care; flag values for each
-        object are stored in a bitfield, so each additional flag increases the width of
-        the data needed to store them. Also, due to the `what things are` interpretation
-        of flags (see :py:mod:`armi.reactor.flags`), new flags should probably refer to
-        novel design elements, rather than novel behaviors.
+            This method allows a plugin developers to provide novel values for
+            the Flags system. This method returns a dictionary mapping flag names
+            to their desired numerical values. In most cases, no specific value
+            is needed, one can be automatically generated using
+            :py:class:`armi.utils.flags.auto`. (For more information, see
+            :py:mod:`armi.reactor.flags`.)
 
         See Also
         --------
@@ -362,16 +406,22 @@ class ArmiPlugin:
         """
         Define configuration settings for this plugin.
 
-        This hook allows plugins to provide their own configuration settings, which can
-        participate in the :py:class:`armi.settings.caseSettings.CaseSettings`. Plugins
-        may provide entirely new settings to what are already provided by ARMI, as well
-        as new options or default values for existing settings. For instance, the
-        framework provides a ``neutronicsKernel`` setting for selecting which global
-        physics solver to use. Since we wish to enforce that the user specify a valid
-        kernel, the settings validator will check to make sure that the user's requested
-        kernel is among the available options. If a plugin were to provide a new
-        neutronics kernel (let's say MCNP), it should also define a new option to tell
-        the settings system that ``"MCNP"`` is a valid option.
+        .. impl:: Plugins can add settings to the run.
+            :id: I_ARMI_PLUGIN_SETTINGS
+            :implements: R_ARMI_PLUGIN_SETTINGS
+
+            This hook allows plugin developers to provide their own configuration
+            settings, which can participate in the
+            :py:class:`armi.settings.caseSettings.Settings`. Plugins may provide
+            entirely new settings to what are already provided by ARMI, as well as
+            new options or default values for existing settings. For instance, the
+            framework provides a ``neutronicsKernel`` setting for selecting which
+            global physics solver to use. Since we wish to enforce that the user
+            specify a valid kernel, the settings validator will check to make sure
+            that the user's requested kernel is among the available options. If a
+            plugin were to provide a new neutronics kernel (let's say MCNP), it
+            should also define a new option to tell the settings system that
+            ``"MCNP"`` is a valid option.
 
         Returns
         -------
@@ -648,7 +698,7 @@ class UserPlugin(ArmiPlugin):
             assert (
                 len(self.__class__.defineSettings()) == 0
             ), "UserPlugins cannot define new Settings, consider using an ArmiPlugin."
-            # NOTE: These are the class methods that we are staunchly _not_ allowing people
+            # NOTE: These are the methods that we are staunchly _not_ allowing people
             # to change in this class. If you need these, please use a regular ArmiPlugin.
             self.defineParameterRenames = lambda: {}
             self.defineSettings = lambda: []

@@ -320,37 +320,9 @@ def getAssemblyParameterDefinitions():
         pb.defParam("assemNum", units=units.UNITLESS, description="Assembly number")
 
         pb.defParam(
-            "axExpWorthPT",
-            units=f"{units.PCM}/{units.PERCENT}/{units.CM}^3",
-            description="Axial swelling reactivity",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "coolFlowingWorthPT",
-            units=f"{units.PCM}/{units.PERCENT}/{units.CM}^3",
-            description="Flowing coolant reactivity",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "coolWorthPT",
-            units=f"{units.PCM}/{units.PERCENT}/{units.CM}^3",
-            description="Coolant reactivity",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
             "dischargeTime",
             units=units.YEARS,
             description="Time the Assembly was removed from the Reactor.",
-        )
-
-        pb.defParam(
-            "fuelWorthPT",
-            units=f"{units.PCM}/{units.PERCENT}/{units.CM}^3",
-            description="Fuel reactivity",
-            location=ParamLocation.AVERAGE,
         )
 
         pb.defParam(
@@ -360,20 +332,6 @@ def getAssemblyParameterDefinitions():
             default="Default",
             saveToDB=True,
             categories=[parameters.Category.assignInBlueprints],
-        )
-
-        pb.defParam(
-            "radExpWorthPT",
-            units=f"{units.PCM}/{units.PERCENT}/{units.CM}^3",
-            description="Radial swelling reactivity",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "structWorthPT",
-            units=f"{units.PCM}/{units.PERCENT}/{units.CM}^3",
-            description="Structure reactivity",
-            location=ParamLocation.AVERAGE,
         )
 
     with pDefs.createBuilder(categories=["radialGeometry"]) as pb:

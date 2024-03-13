@@ -1,6 +1,419 @@
-*************************
+******
+Inputs
+******
+
+ARMI input files define the initial state of the reactor model and tell ARMI what kind of analysis should be
+performed on it.
+
+.. note:: We have a :ref:`walkthrough-inputs` tutorial for a quick 
+    overview of the inputs.
+
+There are several input files:
+
+Settings file
+	Contains simulation parameters (like full power, cycle length, and which physics modules to
+  	activate) and all kind of modeling approximation settings (e.g. convergence criteria)
+
+Blueprints file
+	Contains dimensions and composition of the components/blocks/assemblies in your reactor systems, from fuel 
+  	pins to heat exchangers
+ 
+Fuel management file
+	Describes how fuel moves around during a simulation
+
+
+Depending on the type of analysis, there may be additional inputs required. These include things like
+control logic, ex-core models for transients and shielding, etc.
+
+The core map input files can be graphically manipulated with the 
+:py:mod:`Grid editor <armi.utils.gridEditor>`.
+
+
+The Settings Input File
+=======================
+The **settings** input file defines a series of key/value pairs the define various information about the system you are
+modeling as well as which modules to run and various modeling/approximation settings. For example, it includes:
+
+* The case title
+* The reactor power
+* The number of cycles to run
+* Which physics solvers to activate
+* Whether or not to perform a critical control search
+* Whether or not to do tight coupling iterations
+* What neutronics approximations specific to the chosen physics solver to apply
+* Environment settings (paths to external codes)
+* How many CPUs to use on a computer cluster
+
+This file is a YAML file that you can edit manually with a text editor or with the ARMI GUI.
+
+Here is an excerpt from a settings file:
+
+.. literalinclude:: ../../../armi/tests/armiRun.yaml
+    :language: yaml
+    :lines: 3-15
+
+A full listing of settings available in the framework may be found in the `Table of all global settings <#settings-report>`_ .
+
+Many settings are provided by the ARMI Framework, and others are defined by various plugins.
+
+.. _armi-gui:
+
+The ARMI GUI
+------------
+The ARMI GUI may be used to manipulate many common settings (though the GUI can't change all of the settings).  The GUI
+also enables the graphical manipulation of a reactor core map, and convenient automation of commands required to submit to a
+cluster.  The GUI is a front-end to
+these files. You can choose to use the GUI or not, ARMI doesn't know or care --- it just reads these files and runs them.
+
+Note that one settings input file is required for each ARMI case, though many ARMI cases can refer to the same
+Blueprints, Core Map, and Fuel Management inputs.
+
+.. tip:: The ARMI GUI is not yet included in the open-source ARMI framework
+
+The assembly clicker
+^^^^^^^^^^^^^^^^^^^^
+The assembly clicker (in the ``grids`` editor) allows users to define the 2-D layout of the assemblies defined in the
+:ref:`bp-input-file`. This can be done in hexagon or cartesian. The results of this arrangement get written to
+grids in blueprints. Click on the assembly palette on the right and click on the locations where you want to put the
+assembly. By default, the input assumes a 1/3 core model, but you can create a full core model through the menu.
+
+If you want one assembly type to fill all positions in a ring, right click it once it is placed and choose ``Make ring
+like this hex``. Once you submit the job or save the settings file (File -> Save), you will be prompted for a new name
+of the geometry file before the settings file is saved. The geometry setting in the main tab will also be updated.
+
+The ARMI Environment Tab
+^^^^^^^^^^^^^^^^^^^^^^^^
+The environment tab contains important settings about which version of ARMI you will run
+and with which version of Python, etc. Most important is the ``ARMI location`` setting. This
+points to the codebase that will run. If you want to run the released version of ARMI,
+ensure that it is set in this setting. If you want to run a developer version, then be sure
+to update this setting.
+
+Other settings on this tab may need to be updated depending on your computational environment.
+Talk to your system admins to determine which settings are best.
+
+Some special settings
+---------------------
+A few settings warrant additional discussion.
+
+.. _detail-assems:
+
+Detail assemblies
+^^^^^^^^^^^^^^^^^
+Many plugins perform more detailed analysis on certain regions of the reactor. Since the analyses
+often take longer, ARMI has a feature, called *detail assemblies* to help. Different plugins
+may treat detail assemblies differently, so it's important to read the plugin documentation
+as well. For example, a depletion plugin may perform pin-level depletion and rotation analysis
+only on the detail assemblies. Or perhaps CFD thermal/hydraulics will be run on detail assemblies,
+while subchannel T/H is run on the others.
+
+Detail assemblies are specified by the user in a variety of ways,
+through the GUI or the settings system.
+
+.. warning:: The Detail Assemblies mechanism has begun to be too broad of a brush
+    for serious multiphysics calculations with each plugin treating them differently.
+    It is likely that this feature will be extended to be more flexible and less
+    surprising in the future.
+
+Detail Assembly Locations BOL
+    The ``detailAssemLocationsBOL`` setting is a list of assembly location strings
+    (e.g. ``004-003`` for ring 4, position 3). Assemblies that are in these locations at the
+    beginning-of-life will be activated as detail assemblies.
+
+Detail assembly numbers
+    The ``detailAssemNums`` setting is a list of ``assemNum``\ s that can be inferred from a previous
+    case and specified, regardless of when the assemblies enter the core. This is useful for
+    activating detailed treatment of assemblies that enter the core at a later cycle.
+
+Detail all assemblies
+    The ``detailAllAssems`` setting makes all assemblies in the problem detail assemblies
+
+.. _kinetics-settings:
+
+Kinetics settings
+^^^^^^^^^^^^^^^^^
+In reactor physics analyses it is standard practice to represent reactivity
+in either absolute units (i.e., dk/kk' or pcm) or in dollars or cents. To
+support this functionality, the framework supplies the ``beta`` and
+``decayConstants`` settings to apply the delayed neutron fraction and
+precursor decay constants to the Core parameters during initialization.
+
+These settings come with a few caveats:
+
+    1. The ``beta`` setting supports two different meanings depending on
+       the type that is provided. If a single value is given, then this setting
+       is interpreted as the effective delayed neutron fraction for the
+       system. If a list of values is provided, then this setting is interpreted
+       as the group-wise (precursor family) delayed neutron fractions (useful for
+       reactor kinetics simulations).
+
+    2. The ``decayConstants`` setting is used to define the precursor
+       decay constants for each group. When set, it must be
+       provided with a corresponding ``beta`` setting that has the
+       same number of groups. For example, if six-group delayed neutron
+       fractions are provided, the decay constants must also be provided
+       in the same six-group structure.
+
+    3. If ``beta`` is interpreted as the effective delayed neutron fraction for
+       the system, then the ``decayConstants`` setting will not be utilized.
+
+    4. If both the group-wise ``beta`` and ``decayConstants`` are provided
+       and their number of groups are consistent, then the effective delayed
+       neutron fraction for the system is calculated as the summation of the
+       group-wise delayed neutron fractions.
+
+.. _cycle-history:
+
+Cycle history
+^^^^^^^^^^^^^
+For all cases, ``nCycles`` and ``power`` must be specified by the user.
+In the case that only a single state is to be examined (i.e. no burnup), the user need only additionally specify ``nCycles = 1``.
+
+In the case of burnup, the reactor cycle history may be specified using either the simple or detailed
+option.
+The simple cycle history consists of the following case settings:
+    
+    * ``power``
+    * ``nCycles`` (default = 1)
+    * ``burnSteps`` (default = 4)
+    * ``availabilityFactor(s)`` (default = 1.0)
+    * ``cycleLength(s)`` (default = 365.2425)
+
+In addition, one may optionally use the ``powerFractions`` setting to change the reactor
+power between each cycle.
+With these settings, a user can define a history in which each cycle may vary
+in power, length, and uptime.
+The history is restricted, however, to each cycle having a constant power, to
+each cycle having the same number of burnup nodes, and to those burnup nodes being
+evenly spaced within each cycle.
+An example simple cycle history might look like
+
+.. code-block:: yaml
+
+       power: 1000000
+       nCycles: 3
+       burnSteps: 2
+       cycleLengths: [100, R2]
+       powerFractions: [1.0, 0.5, 1.0]
+       availabilityFactors: [0.9, 0.3, 0.93]
+
+Note the use of the special shorthand list notation, where repeated values in a list can be specified using an "R" followed by the number of times the value is to be repeated.
+
+The above scheme would represent 3 cycles of operation:
+    
+    1. 100% power for 90 days, split into two segments of 45 days each, followed by 10 days shutdown (i.e. 90% capacity)
+
+    2. 50% power for 30 days, split into two segments of 15 days each, followed by 70 days shutdown (i.e. 15% capacity)
+
+    3. 100% power for 93 days, split into two segments of 46.5 days each, followed by 7 days shutdown (i.e. 93% capacity)
+
+In each cycle, criticality calculations will be performed at 3 nodes evenly-spaced through the uptime portion of the cycle (i.e. ``availabilityFactor``*``powerFraction``), without option for changing node spacing or frequency.
+This input format can be useful for quick scoping and certain types of real analyses, but clearly has its limitations.
+
+To overcome these limitations, the detailed cycle history, consisting of the ``cycles`` setting may be specified instead.
+For each cycle, an entry to the ``cycles`` list is made with the following optional fields: 
+    
+    * ``name``
+    * ``power fractions``
+    * ``cumulative days``, ``step days``, or ``burn steps`` + ``cycle length``
+    * ``availability factor``
+
+An example detailed cycle history employing all of these fields could look like
+
+.. code-block:: yaml
+
+       power: 1000000
+       nCycles: 4
+       cycles:
+         - name: A
+           step days: [1, 1, 98]
+           power fractions: [0.1, 0.2, 1]
+           availability factor: 0.1
+         - name: B
+           cumulative days: [2, 72, 78, 86]
+           power fractions: [0.2, 1.0, 0.95, 0.93]
+         - name: C
+           step days: [5, R5]
+           power fractions: [1, R5]
+         - cycle length: 100
+           burn steps: 2
+           availability factor: 0.9
+
+Note that repeated values in a list may be again be entered using the shorthand notation for ``step days``, ``power fractions``, and ``availability factors`` (though not ``cumulative days`` because entries must be monotonically increasing).
+
+Such a scheme would define the following cycles:
+
+    1. A 2 day power ramp followed by full power operations for 98 days, with three nodes clustered during the ramp and another at the end of the cycle, followed by 900 days of shutdown
+
+    2. A 2 day power ramp followed by a prolonged period at full power and then a slight power reduction for the last 14 days in the cycle
+
+    3. Constant full-power operation for 30 days split into six even increments
+
+    4. Constant full-power operation for 90 days, split into two equal-length 45 day segments, followed by 10 days of downtime
+
+As can be seen, the detailed cycle history option provides much greated flexibility for simulating realistic operations, particularly power ramps or scenarios that call for unevenly spaced burnup nodes, such as xenon buildup in the early period of thermal reactor operations.
+
+.. note:: Although the detailed cycle history option allows for powers to change within each cycle, it should be noted that the power over each step is still considered to be constant.
+
+.. note:: The ``name`` field of the detailed cycle history is not yet used for anything, but this information will still be accessible on the operator during runtime.
+
+.. note:: Cycles without names will be given the name ``None``
+
+.. warning:: When a detailed cycle history is combined with tight coupling, a subclass of :py:meth:`LatticePhysicsInterface.interactCoupled <armi.physics.neutronics.latticePhysics.latticePhysicsInterface.LatticePhysicsInterface.interactCoupled>` should be used.
+
+.. _restart-cases:
+
+Restart cases
+^^^^^^^^^^^^^
+Oftentimes the user is interested in re-examining just a specific set of time nodes from an existing run.
+In these cases, it is sometimes not necessary to rerun an entire reactor history, and one may instead use one of the following options:
+    
+    1. Snapshot, where the reactor state is loaded from a database and just a single time node is run.
+
+    2. Restart, where the cycle history is loaded from a database and the calculation continues through the remaining specified time history.
+
+For either of these options, it is possible to alter the specific settings applied to the run by simply adjusting the case settings for the run.
+For instance, a run that originally had only neutronics may incorporate thermal hydraulics during a snapshot run by adding in the relevant TH settings.
+
+.. note:: For either of these options, it is advisable to first create a new case settings file with a name different than the one from which you will be restarting off of, so as to not overwrite those results.
+
+To run a snapshot, the following settings must be added to your case settings:
+
+    * Set ``runType`` to ``Snapshots``
+    * Add a list of cycle/node pairs corresponding to the desired snapshots to ``dumpSnapshot`` formatted as ``'CCCNNN'``
+    * Set ``reloadDBName`` to the existing database file that you would like to load the reactor state from
+
+An example of a snapshot run input:
+
+.. code-block:: yaml
+       
+       runType: Snapshots
+       reloadDBName: my-old-results.h5
+       dumpSnapshot: ['000000', '001002'] # would produce 2 snapshots, at BOL and at node 2 of cycle 1
+
+To run a restart, the following settings must be added to your case settings:
+
+    * Set ``runType`` to ``Standard``
+    * Set ``loadStyle`` to ``fromDB``
+    * Set ``startCycle`` and ``startNode`` to the cycle/node that you would like to continue the calculation from (inclusive). ``startNode`` may use negative indexing.
+    * Set ``reloadDBName`` to the existing database file from which you would like to load the reactor history up to the restart point
+    * If you would like to change the specified reactor history (see :ref:`restart-cases`), keep the history up to the restarting cycle/node unchanged, and just alter the history after that point. This means that the cycle history specified in your restart run should include all cycles/nodes up to the end of the simulation. For complicated restarts, it may be necessary to use the detailed ``cycles`` setting, even if the original case only used the simple history option.
+
+A few examples of restart cases:
+    
+    - Restarting a calculation at a specific cycle/node and continuing for the remainder of the originally-specified cycle history:
+        .. code-block:: yaml
+               
+               # old settings
+               nCycles: 2
+               burnSteps: 2
+               cycleLengths: [100, 100]
+               runType: Standard
+               loadStyle: fromInput
+               loadingFile: my-blueprints.yaml
+
+        .. code-block:: yaml
+            
+               # restart settings
+               nCycles: 2
+               burnSteps: 2
+               cycleLengths: [100, 100]
+               runType: Standard
+               loadStyle: fromDB
+               startCycle: 1
+               startNode: 0
+               reloadDBName: my-original-results.h5
+
+    - Add an additional cycle to the end of a case:
+        .. code-block:: yaml
+            
+               # old settings
+               nCycles: 1
+               burnSteps: 2
+               cycleLengths: [100]
+               runType: Standard
+               loadStyle: fromInput
+               loadingFile: my-blueprints.yaml
+
+        .. code-block:: yaml
+            
+               # restart settings
+               nCycles: 2
+               burnSteps: 2
+               cycleLengths: [100, 100]
+               runType: Standard
+               loadStyle: fromDB
+               startCycle: 0
+               startNode: -1
+               reloadDBName: my-original-results.h5
+
+    - Restart but cut the reactor history short:
+        .. code-block:: yaml
+            
+               # old settings
+               nCycles: 3
+               burnSteps: 2
+               cycleLengths: [100, 100, 100]
+               runType: Standard
+               loadStyle: fromInput
+               loadingFile: my-blueprints.yaml
+
+        .. code-block:: yaml
+            
+               # restart settings
+               nCycles: 2
+               burnSteps: 2
+               cycleLengths: [100, 100]
+               runType: Standard
+               loadStyle: fromDB
+               startCycle: 1
+               startNode: 0
+               reloadDBName: my-original-results.h5
+
+    - Restart with a different number of steps in the third cycle using the detailed ``cycles`` setting:
+        .. code-block:: yaml
+            
+               # old settings
+               nCycles: 3
+               burnSteps: 2
+               cycleLengths: [100, 100, 100]
+               runType: Standard
+               loadStyle: fromInput
+               loadingFile: my-blueprints.yaml
+
+        .. code-block:: yaml
+            
+               # restart settings
+               nCycles: 3
+               cycles:
+                 - cycle length: 100
+                   burn steps: 2
+                 - cycle length: 100
+                   burn steps: 2
+                 - cycle length: 100
+                   burn steps: 4
+               runType: Standard
+               loadStyle: fromDB
+               startCycle: 2
+               startNode: 0
+               reloadDBName: my-original-results.h5
+
+.. note:: The ``skipCycles`` setting is related to skipping the lattice physics calculation specifically, it is not required to do a restart run.
+
+.. note:: The X-SHUFFLES.txt file is required to do explicit repeated fuel management.
+
+.. note:: The restart.dat file is required to repeat the exact fuel management methods during a branch search. These can potentially modify the reactor state in ways that cannot be captures with the SHUFFLES.txt file.
+
+.. note:: The ISO binary cross section libraries are required to run cases that skip the lattice physics calculation (e.g. MC^2)
+
+.. note:: The multigroup flux is not yet stored on the output databases. If you need to do a restart with these values (e.g. for depletion), then you need to reload from neutronics outputs.
+
+.. note:: Restarting a calculation with an different version of ARMI than what was used to produce the restarting database may result in undefined behavior.
+
+.. _bp-input-file:
+
 The Blueprints Input File
-*************************
+=========================
 
 The **blueprints** input defines the dimensions of structures in the reactor, as well as their material makeup. In
 a typical case, pin dimensions, isotopic composition, control definitions, coolant type, etc. are
@@ -33,8 +446,7 @@ ARMI models are built hierarchically, first by defining components, and then by 
 collections of the levels of the reactor.
 
 Blueprint sections
-==================
-
+------------------
 The **blueprints** input file has several sections that corresponds to different levels of the reactor
 hierarchy. You will generally build inputs "bottoms up", first by defining elementary pieces (like pins)
 and then collecting them into the core and reactor.
@@ -44,7 +456,7 @@ The ARMI data model is represented schematically below, and the blueprints are d
 .. figure:: /.static/armi_reactor_objects.png
     :align: center
 
-    **Figure 1.** The primary data containers in ARMI
+    The primary data containers in ARMI
 
 :ref:`blocks <blocks-and-components>`:
     Defines :py:class:`~armi.reactor.components.component.Component` inputs for a
@@ -79,7 +491,7 @@ The ARMI data model is represented schematically below, and the blueprints are d
 .. _blocks-and-components:
 
 Blocks and Components
-=====================
+---------------------
 Blocks and components are defined together in the **blueprints** input.
 
 We will start with a component, and then define the whole ``blocks:``
@@ -106,7 +518,7 @@ input. The structure will be something like::
     is not fully implemented yet.
 
 Defining a Component
---------------------
+^^^^^^^^^^^^^^^^^^^^
 The **Components** section defines the pin (if modeling a pin-type reactor) and assembly in-plane
 dimensions (axial dimensions are defined in the :ref:`assemblies` input) and the material makeups of
 each :py:mod:`Component <armi.reactor.components>`. :py:mod:`Blocks <armi.reactor.blocks>` are
@@ -168,18 +580,20 @@ od
 .. _componentTypes:
 
 Component Types
----------------
+^^^^^^^^^^^^^^^
 Each component has a variety of dimensions to define the shape and composition. All dimensions are
 in cm.  The following is a list of included component shapes and their dimension inputs. Again,
 additional/custom components with arbitrary dimensions may be provided by the user via plugins.
 
 .. exec::
-    from tabulate import tabulate
     from armi.reactor.components import ComponentType
+    from dochelpers import createListTable
 
-    return create_table(tabulate(headers=('Component Name', 'Dimensions'),
-                   tabular_data=[(c.__name__, ', '.join(c.DIMENSION_NAMES)) for c in ComponentType.TYPES.values()],
-                   tablefmt='rst'), caption="Component list")
+    rows = [['Component Name', 'Dimensions']]
+    for c in ComponentType.TYPES.values():
+        rows.append([c.__name__, ', '.join(c.DIMENSION_NAMES)])
+
+    return createListTable(rows, widths=[25, 65], klass="longtable")
 
 When a ``DerivedShape`` is specified as the final component in a block, its area is inferred from
 the difference between the area of the block and the sum of the areas
@@ -189,7 +603,7 @@ a lattice of pins.
 .. _componentLinks:
 
 Component Links
----------------
+^^^^^^^^^^^^^^^
 Dimensions of a component may depend on the dimensions of a previously-defined component in the same
 block. For instance, the sodium bond between fuel and cladding. The format is simply
 ``<componentName>.<dimensionName>``. The dimension names are available in the table above.
@@ -233,7 +647,7 @@ reduced. This is physical since, in reality, the fluid would be displaced as dim
 change.
 
 Pin lattices
-------------
+^^^^^^^^^^^^
 Pin lattices may be explicitly defined in the block/component input in conjunction with the ``grids`` input
 section. A block may assigned a grid name, and then each component may be assigned one or more
 grid specifiers.
@@ -272,7 +686,7 @@ cladding as the fuel pins. ::
 .. _naming-flags:
 
 Flags and naming
-================
+----------------
 
 All objects in the ARMI Reactor Model possess a set of
 :py:class:`armi.reactor.flags.Flags`, which can be used to affect the way that the
@@ -310,7 +724,7 @@ will get the ``CLAD`` flag from its name.
 .. _assemblies:
 
 Assemblies
-==========
+----------
 Once components and blocks are defined, Assemblies can be created as extruded stacks of blocks from
 bottom to top. The assemblies use YAML anchors to refer to the blocks defined in the previous section.
 
@@ -395,22 +809,35 @@ material modifications
       from tabulate import tabulate
 
       data = []
-
       for m in Material.__subclasses__():
           numArgs = m.applyInputParams.__code__.co_argcount
           if numArgs > 1:
               modNames = m.applyInputParams.__code__.co_varnames[1:numArgs]
-              data.append((m.__name__, ', '.join(modNames)))
+              data.append((m.__name__, ", ".join(modNames)))
 
           for subM in m.__subclasses__():
               num = subM.applyInputParams.__code__.co_argcount
               if num > 1:
                   mods = subM.applyInputParams.__code__.co_varnames[1:num]
-                  data.append((subM.__name__, ', '.join(mods)))
+                  if numArgs > 1:
+                      mods += modNames
+                  data.append((subM.__name__, ", ".join(mods)))
 
+      d = {}
+      for k, v in data:
+          if k not in d:
+              d[k] = v
+          else:
+              d[k] = d[k].split(",") + v.split(",")
+              d[k] = sorted(set([vv.strip() for vv in d[k]]))
+              d[k] = ", ".join(d[k])
+      data = [(k, v) for k, v in d.items()]
       data.sort(key=lambda t: t[0])
-      return tabulate(headers=('Material Name', 'Available Modifications'),
-                      tabular_data=data, tablefmt='rst')
+      return tabulate(
+          headers=("Material Name", "Available Modifications"),
+          tabular_data=data,
+          tablefmt="rst",
+      )
 
   The class 1/class 2 modifications in fuel materials are used to identify mixtures of
   custom isotopics labels for input scenarios where a varying blend of a high-reactivity
@@ -508,7 +935,7 @@ other structure.
 .. _systems:
 
 Systems
-=======
+-------
 Once assemblies are defined they can be grouped together into the Core, the spent fuel pool (SFP), etc.
 
 A complete reactor structure with a core and a SFP may be seen below::
@@ -533,7 +960,7 @@ in units of cm. This allows you to define the relative position of the various s
 The ``grid name`` inputs are string mappings to the grid definitions described below.
 
 Plugin Behavior
----------------
+^^^^^^^^^^^^^^^
 
 The :meth:`armi.plugins.ArmiPlugin.defineSystemBuilders` method can be provided
 by plugins to control how ARMI converts the ``systems`` section into ``Composite``\ s
@@ -553,7 +980,7 @@ and new mappings of values to builders.
 .. _grids:
 
 Grids
-=====
+-----
 Grids are described inside a blueprint file using ``lattice map`` or ``grid contents`` fields to
 define arrangements in Hex, Cartesian, or R-Z-Theta. The optional ``lattice pitch`` entry allows
 you to specify spacing between objects that is different from tight packing. This input is required
@@ -609,7 +1036,7 @@ Example grid definitions are shown below::
 .. _custom-isotopics:
 
 Custom Isotopics
-================
+----------------
 In some cases (such as benchmarking a previous reactor), the default mass fractions from the
 material library are not what you want to model. In these cases, you may override the isotopic
 composition provided by the material library in this section. There are three ways to specify
@@ -636,10 +1063,10 @@ nuclear data library).
 The (mass) ``density`` input is invalid when specifying ``number densities``; the code will present an error message.
 
 Advanced topics
-===============
+---------------
 
 Overlapping shapes
-------------------
+^^^^^^^^^^^^^^^^^^
 Solids of different compositions in contact with each other present complications during thermal
 expansion. The ARMI Framework does not perform calculations to see exactly how such
 scenarios will behave mechanically; it instead focuses on conserving mass. To do this, users should
@@ -662,7 +1089,7 @@ component and get the siblings ``mult``. If you are concerned about performance 
 with a YAML anchor and alias.
 
 Component area modifications
-----------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 In some scenarios, it is desired to have one component's area be subtracted or added to another. For
 example, the area of the skids in a skid duct design needs to be subtracted from the interstitial
 coolant. The mechanism to handle this involves adding a parameter to the component to be
@@ -691,7 +1118,7 @@ without explicitly defining new components.
                 modArea: holes.sub      # "holes" is the name of the other component
 
 Putting it all together to make a Block
----------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Here is a complete fuel block definition::
 
@@ -756,7 +1183,7 @@ Here is a complete fuel block definition::
 
 
 Making blocks with unshaped components
---------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Sometimes you will want to make a homogenous block,  which is a mixture of multiple
 materials, and will not want to define an exact shape for each of the components in
@@ -835,15 +1262,13 @@ are now four components, but only three that have actual area and composition::
 
 This can similarly be done for hex geometry and and a hexagon with Outer Pitch (``op``).
 
----------
-
 .. warning:: The rest of the input described below are scheduled to be moved into the
    settings input file, since their nature is that of a setting.
 
 .. _nuclide-flags:
 
 Nuclide Flags
-=============
+-------------
 The ``nuclide flags`` setting allows the user to choose which nuclides they
 would like to consider in the problem, and whether or not each nuclide should
 transmute and decay. For example, sometimes you may not want to deplete trace
@@ -901,3 +1326,253 @@ The code will crash if materials used in :ref:`blocks-and-components` contain nu
 
 .. |Tinput| replace:: T\ :sub:`input`
 .. |Thot| replace:: T\ :sub:`hot`
+
+
+Fuel Management Input
+=====================
+
+Fuel management in ARMI is specified through custom Python scripts that often reside
+in the working directory of a run (but can be anywhere if you use full paths). During a normal run,
+ARMI checks for two fuel management settings:
+
+``shuffleLogic``
+   The path to the Python source file that contains the user's custom fuel
+   management logic
+
+``fuelHandlerName``
+   The name of a FuelHandler class that ARMI will look for in the Fuel Management Input file
+   pointed to by the ``shuffleLogic`` path. Since it's input, it's the user's responsibility
+   to design and place that object in that file.
+
+.. note:: We consider the limited syntax needed to express fuel management in Python
+   code itself to be sufficiently expressive and simple for non-programmers to
+   actually use. Indeed, this has been our experience.
+
+The ARMI Operator will call its fuel handler's ``outage`` method before each cycle (and, if requested, during branch
+search calculations). The :py:meth:`~armi.physics.fuelCycle.fuelHandlers.FuelHandler.outage` method
+will perform bookkeeping operations, and eventually
+call the user-defined ``chooseSwaps`` method (located in Fuel Management Input). ``chooseSwaps`` will
+generally contain calls to :py:meth:`~armi.physics.fuelCycle.fuelHandlers.FuelHandler.findAssembly`,
+:py:meth:`~armi.physics.fuelCycle.fuelHandlers.FuelHandler.swapAssemblies` ,
+:py:meth:`~armi.physics.fuelCycle.fuelHandlers.FuelHandler.swapCascade`, and
+:py:meth:`~armi.physics.fuelCycle.fuelHandlers.FuelHandler.dischargeSwap`, which are the primary
+fuel management operations and can be found in the fuel management module.
+
+Also found in the user-defined Fuel Management Input module is a ``getFactors`` method, which is used to control which
+shuffling routines get called and at which time.
+
+.. note::
+
+    See the :py:mod:`fuelHandlers module <armi.physics.fuelCycle.fuelHandlers>` for more details.
+
+Fuel Management Operations
+--------------------------
+In the ARMI, the assemblies can be moved as units around the reactor with swapAssemblies,
+dischargeSwap, and swapCascade of a ``FuelHandler`` interface.
+
+swapAssemblies
+^^^^^^^^^^^^^^
+swapAssemblies is the simplest fuel management operation. Given two assembly objects, this method will switch
+their locations. ::
+
+    self.swapAssemblies(a1,a2)
+
+dischargeSwap
+^^^^^^^^^^^^^
+A discharge swap is a simple operation that puts a new assembly into the reactor while discharging an
+outgoing one. ::
+
+    self.dischargeSwap(newIncoming,oldOutgoing)
+
+This operation keeps track of the outgoing assembly in a AssemblyList object that the Reactor object has access to so you can see how much of what you discharged.
+
+swapCascade
+^^^^^^^^^^^
+SwapCascade is a more powerful swapping function that can swap a list of assemblies in a "daisy-chain" type
+of operation. These are useful for doing the main overtone shuffling operations such as convergent shuffling
+and/or convergent-divergent shuffling. If we load up the list of assemblies, the first one will be put in the
+last one's position, and all others will shift accordingly.
+
+As an example, consider assemblies 1 through 5 in core positions A through E.::
+
+    self.swapCascade([a1,a2,a3,a4,a5])
+
+This table shows the positions of the assemblies before and after the swap cascade.
+
+
+========    ============================    ===========================
+Assembly    Position Before Swap Cascade    Position After Swap Cascade
+========    ============================    ===========================
+1           A                                   E
+2           B                                   A
+3           C                                   B
+4           D                                   C
+5           E                                   D
+========    ============================    ===========================
+
+Arbitrarily complex cascades can thusly be assembled by choosing the order of the assemblies passed into swapCascade.
+
+Choosing Assemblies to Move
+---------------------------
+The methods described in the previous section require known assemblies to shuffle. Choosing these assemblies is
+the essence of fuel shuffling design. The single method used for these purposes is the FuelHandler's ``findAssembly``
+method. This method is very general purpose, and ranks in the top 3 most important
+methods of the ARMI altogether.
+
+To use it, just say::
+
+    a = self.findAssembly(param='maxPercentBu',compareTo=20)
+
+This will return the assembly in the reactor that has a maximum burnup closest to 20%.
+Other inputs to findAssembly are summarized in the API docs of
+:py:meth:`~armi.physics.fuelCycle.fuelHandlers.FuelHandler.findAssembly`.
+
+
+Fuel Management Examples
+------------------------
+
+Convergent-Divergent
+^^^^^^^^^^^^^^^^^^^^
+Convergent-divergent shuffling is when fresh assemblies march in from the outside until
+they approach the jump ring, at which point they jump to the center and diverge until
+they reach the jump ring again, where they now jump to the outer periphery of the core,
+or become discharged.
+
+If the jump ring is 6,  the order of target rings is::
+
+    [6, 5, 4, 3, 2, 1, 6, 7, 8, 9, 10, 11, 12, 13]
+
+In this case, assemblies converge from ring 13 to 12, to 11, to 10, ..., to 6, and then
+jump to 1 and diverge until they get back to 6. In a discharging equilibrium case, the
+highest burned assembly in the jumpRing should get discharged and the lowest should
+jump by calling a dischargeSwap on cascade[0] and a fresh feed after this cascade is
+run.
+
+The convergent rings in this case are 7 through 13 and the divergent ones are 1
+through 5 are the divergent ones.
+
+
+Fuel Management Tips
+--------------------
+Some mistakes are common. Follow these tips.
+
+    * Always make sure your assembly-level types in the settings file are up to date
+    with the grids in your bluepints file. Otherwise you'll be moving feeds when you
+    want to move igniters, or something.
+    * Use the exclusions list! If you move a cascade and then the next cascade tries
+    to run, it will choose your newly-moved assemblies if they fit your criteria in
+    ``findAssemblies``. This leads to very confusing results. Therefore, once you move
+    assemblies, you should default to adding them to the exclusions list.
+    * Print cascades during debugging. After you've built a cascade to swap, print it
+    out and check the locations and types of each assembly in it. Is it what you want?
+    * Watch ``typeNum`` in the database. You can get good intuition about what is
+    getting moved by viewing this parameter.
+
+Running a branch search
+-----------------------
+ARMI can perform a branch search where a number of fuel management operations
+are performed in parallel and the preferred one is chosen and proceeded with.
+The key to any branch search is writing a fuel handler that can interpret
+**fuel management factors**, defined as keyed values between 0 and 1.
+
+As an example, a fuel handler may be written to interpret two factors, ``numDischarges``
+and ``chargeEnrich``. One method in the fuel handler would then take
+the value of ``factors['numDischarges']`` and multiply it by the maximum
+number of discharges (often set by another user setting) and then discharge
+this many assemblies. Similarly, another method would take the ``factors['chargeEnrich']``
+value (between 0 and 1) and multiply it by the maximum allowable enrichment
+(again, usually controlled by a user setting) to determine which enrichment
+should be used to fabricate new assemblies.
+
+Given a fuel handler that can thusly interpret factors between 0 and 1, the
+concept of branch searches is simple. They simply build uniformly distributed
+lists between 0 and 1 across however many CPUs are available and cases on all
+of them, passing one of each of the factors to each CPU in parallel. When the cases
+finish, the branch search determines the optimal result and selects the corresponding
+value of the factor to proceed.
+
+Branch searches are controlled by custom `getFactorList` methods specified in the
+`shuffleLogic` input files. This method should return two things:
+
+    * A ``defaultFactors``; a dictionary with user-defined keys and values between
+      0 and 1 for each key. These factors will be passed to the ``chooseSwaps``
+      method, which is typically overridden by the user in custom fuel handling code.
+      The fuel handling code should interpret the values and move the fuel
+      according to what is sent.
+
+    * A ``factorSearchFlags`` list, which lists the keys to be branch searched.
+      The search will optimize the first key first, and then do a second pass
+      on the second key, holding the optimal first value constant, and so on.
+
+Such a method may look like this::
+
+    def getFactorList(cycle,cs=None):
+
+        # init default shuffling factors
+        defaultFactors = {'chargeEnrich':0,'numDischarges':1}
+        factorSearchFlags=[] # init factors to run branch searches on
+
+        # determine when to activate various factors / searches
+        if cycle not in [0,5,6]:
+            # shuffling happens before neutronics so skip the first cycle.
+            defaultFactors['chargeEnrich']=1
+        else:
+            defaultFactors['numDischarges']=0
+            factorSearchFlags = ['chargeEnrich']
+
+        return defaultFactors,factorSearchFlags
+
+Once a proper ``getFactorList`` method exists and a fuel handler object
+exists that can interpret the factors, activate a branch search
+during a regular run by selecting the **Branch Search** option on the GUI.
+
+The **best** result from the branch search is determined by comparing the *keff* values
+with the ``targetK`` setting, which is available for setting in the GUI. The branch
+with *keff* closest to the setting, while still being above 1.0 is chosen.
+
+.. _settings-report:
+
+Settings Report
+===============
+This document lists all the `settings <#the-settings-input-file>`_ in ARMI.  
+
+They are all accessible to developers
+through the :py:class:`armi.settings.caseSettings.Settings` object, which is typically
+stored in a variable named ``cs``. Interfaces have access to a simulation's settings
+through ``self.cs``.
+
+
+.. exec::
+    from armi import settings
+    import textwrap
+
+    def looks_like_path(s):
+        """Super quick, not robust, check if a string looks like a file path."""
+        if s.startswith("\\\\") or s.startswith("//") or s[1:].startswith(":\\"):
+            return True
+        return False
+
+    subclassTables = {}
+    cs = settings.Settings()
+
+    # User textwrap to split up long words that mess up the table.
+    wrapper = textwrap.TextWrapper(width=25, subsequent_indent='')
+    wrapper2 = textwrap.TextWrapper(width=10, subsequent_indent='')
+    content = '\n.. list-table:: ARMI Settings\n   :header-rows: 1\n   :widths: 20 30 15 15\n    \n'
+    content += '   * - Name\n     - Description\n     - Default\n     - Options\n'
+
+    for setting in sorted(cs.values(), key=lambda s: s.name):
+        content += '   * - {}\n'.format(' '.join(wrapper.wrap(setting.name)))
+        content += '     - {}\n'.format(' '.join(wrapper.wrap(str(setting.description) or '')))
+        default = str(getattr(setting, 'default', None)).split("/")[-1]
+        options = str(getattr(setting,'options','') or '')
+        if looks_like_path(default):
+            # We don't want to display default file paths in this table.
+            default = ""
+            options = ""
+        content += '     - {}\n'.format(' '.join(['``{}``'.format(wrapped) for wrapped in wrapper2.wrap(default)]))
+        content += '     - {}\n'.format(' '.join(['``{}``'.format(wrapped) for wrapped in wrapper.wrap(options)]))
+
+    content += '\n'
+
+    return content

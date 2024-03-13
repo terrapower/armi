@@ -1,5 +1,6 @@
+************
 Entry Points
-============
+************
 
 **Entry Points** are like the verbs that your App can *do*.
 The :py:mod:`built-in entry points <armi.cli>`

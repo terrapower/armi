@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for the Database3 class."""
+from distutils.spawn import find_executable
 import subprocess
 import unittest
 
@@ -27,6 +28,13 @@ from armi.settings.fwSettings.globalSettings import CONF_SORT_REACTOR
 from armi.tests import TEST_ROOT
 from armi.utils import getPreviousTimeNode
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
+
+# determine if this is a parallel run, and git is installed
+GIT_EXE = None
+if find_executable("git") is not None:
+    GIT_EXE = "git"
+elif find_executable("git.exe") is not None:
+    GIT_EXE = "git.exe"
 
 
 class TestDatabase3(unittest.TestCase):
@@ -55,6 +63,12 @@ class TestDatabase3(unittest.TestCase):
         self.td.__exit__(None, None, None)
 
     def test_writeToDB(self):
+        """Test writing to the database.
+
+        .. test:: Write a single time step of data to the database.
+            :id: T_ARMI_DB_TIME
+            :tests: R_ARMI_DB_TIME
+        """
         self.r.p.cycle = 0
         self.r.p.timeNode = 0
         self.r.p.cycleLength = 0
@@ -67,6 +81,7 @@ class TestDatabase3(unittest.TestCase):
         self.db.writeToDB(self.r)
         self.assertEqual(sorted(self.db.h5db.keys()), ["c00n00", "inputs"])
 
+        # check the keys for a single time step
         keys = [
             "Circle",
             "Core",
@@ -95,6 +110,13 @@ class TestDatabase3(unittest.TestCase):
         )
 
     def test_getH5File(self):
+        """
+        Get the h5 file for the database, because that file format is language-agnostic.
+
+        .. test:: Show the database is H5-formatted.
+            :id: T_ARMI_DB_H5
+            :tests: R_ARMI_DB_H5
+        """
         with self.assertRaises(TypeError):
             _getH5File(None)
 
@@ -185,6 +207,10 @@ class TestDatabase3(unittest.TestCase):
         above. In that cs, `reloadDBName` is set to 'reloadingDB.h5', `startCycle` = 1,
         and `startNode` = 2. The nonexistent 'reloadingDB.h5' must first be
         created here for this test.
+
+        .. test:: Runs can be restarted from a snapshot.
+            :id: T_ARMI_SNAPSHOT_RESTART
+            :tests: R_ARMI_SNAPSHOT_RESTART
         """
         # first successfully call to prepRestartRun
         o, r = loadTestReactor(
@@ -334,6 +360,12 @@ class TestDatabase3(unittest.TestCase):
         )
 
     def test_load(self):
+        """Load a reactor at different time steps, from the database.
+
+        .. test:: Load the reactor from the database.
+            :id: T_ARMI_DB_R_LOAD
+            :tests: R_ARMI_DB_R_LOAD
+        """
         self.makeShuffleHistory()
         with self.assertRaises(KeyError):
             _r = self.db.load(0, 0)
@@ -529,6 +561,7 @@ class TestDatabase3(unittest.TestCase):
                 [(c, n) for c in (0, 1) for n in range(2)], "-all-iterations"
             )
 
+    @unittest.skipIf(GIT_EXE is None, "This test needs Git.")
     def test_grabLocalCommitHash(self):
         """Test of static method to grab a local commit hash with ARMI version."""
         # 1. test outside a Git repo
@@ -536,11 +569,16 @@ class TestDatabase3(unittest.TestCase):
         self.assertEqual(localHash, "unknown")
 
         # 2. test inside an empty git repo
-        code = subprocess.run(
-            ["git", "init", "."],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        ).returncode
+        try:
+            code = subprocess.run(
+                ["git", "init", "."],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            ).returncode
+        except FileNotFoundError:
+            print("Skipping this test because it is being run outside a git repo.")
+            return
+
         self.assertEqual(code, 0)
         localHash = database3.Database3.grabLocalCommitHash()
         self.assertEqual(localHash, "unknown")
@@ -590,14 +628,26 @@ class TestDatabase3(unittest.TestCase):
         self.assertEqual(str(self.db.fileName), "thing.h5")
 
     def test_readInputsFromDB(self):
+        """Test that we can read inputs from the database.
+
+        .. test:: Save and retrieve settings from the database.
+            :id: T_ARMI_DB_CS
+            :tests: R_ARMI_DB_CS
+
+        .. test:: Save and retrieve blueprints from the database.
+            :id: T_ARMI_DB_BP
+            :tests: R_ARMI_DB_BP
+        """
         inputs = self.db.readInputsFromDB()
         self.assertEqual(len(inputs), 3)
 
+        # settings
         self.assertGreater(len(inputs[0]), 100)
         self.assertIn("settings:", inputs[0])
 
         self.assertEqual(len(inputs[1]), 0)
 
+        # blueprints
         self.assertGreater(len(inputs[2]), 100)
         self.assertIn("custom isotopics:", inputs[2])
         self.assertIn("blocks:", inputs[2])

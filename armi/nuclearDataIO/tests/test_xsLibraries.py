@@ -54,7 +54,7 @@ DLAYXS_MCC3 = os.path.join(FIXTURE_DIR_CCCC, "mc2v3.dlayxs")
 UFG_FLUX_EDIT = os.path.join(FIXTURE_DIR, "mc2v3-AA.flux_ufg")
 
 
-class TempFileMixin:
+class TempFileMixin(unittest.TestCase):
     """really a test case."""
 
     def setUp(self):
@@ -67,12 +67,12 @@ class TempFileMixin:
     @property
     def testFileName(self):
         return os.path.join(
-            THIS_DIR,
+            self.td.destination,
             "{}-{}.nucdata".format(self.__class__.__name__, self._testMethodName),
         )
 
 
-class TestXSLibrary(unittest.TestCase, TempFileMixin):
+class TestXSLibrary(TempFileMixin):
     @classmethod
     def setUpClass(cls):
         cls.isotxsAA = isotxs.readBinary(ISOTXS_AA)
@@ -127,23 +127,24 @@ class TestXSLibrary(unittest.TestCase, TempFileMixin):
         finally:
             os.remove(dummyFileName)
 
-        dummyFileName = "ISOtopics.txt"
-        with open(dummyFileName, "w") as file:
-            file.write(
-                "This is a file that starts with the letters 'ISO' but will"
-                " break the regular expression search."
-            )
-
-        try:
-            with mockRunLogs.BufferLog() as log:
-                lib = xsLibraries.IsotxsLibrary()
-                xsLibraries.mergeXSLibrariesInWorkingDirectory(lib)
-                self.assertIn(
-                    f"{dummyFileName} in the merging of ISOXX files",
-                    log.getStdout(),
+        with TemporaryDirectoryChanger():
+            dummyFileName = "ISOtopics.txt"
+            with open(dummyFileName, "w") as file:
+                file.write(
+                    "This is a file that starts with the letters 'ISO' but will"
+                    " break the regular expression search."
                 )
-        finally:
-            pass
+
+            try:
+                with mockRunLogs.BufferLog() as log:
+                    lib = xsLibraries.IsotxsLibrary()
+                    xsLibraries.mergeXSLibrariesInWorkingDirectory(lib)
+                    self.assertIn(
+                        f"{dummyFileName} in the merging of ISOXX files",
+                        log.getStdout(),
+                    )
+            finally:
+                pass
 
     def _xsLibraryAttributeHelper(
         self,
@@ -234,7 +235,7 @@ class TestXSLibrary(unittest.TestCase, TempFileMixin):
         self.assertTrue(filecmp.cmp(refFile, self.testFileName))
 
 
-class Test_GetISOTXSFilesInWorkingDirectory(unittest.TestCase):
+class TestGetISOTXSFilesInWorkingDirectory(unittest.TestCase):
     def test_getISOTXSFilesWithoutLibrarySuffix(self):
         shouldBeThere = ["ISOAA", "ISOBA", os.path.join("file-path", "ISOCA")]
         shouldNotBeThere = [
@@ -288,7 +289,7 @@ class Test_GetISOTXSFilesInWorkingDirectory(unittest.TestCase):
 
 
 # NOTE: This is just a base class, so it isn't run directly.
-class TestXSlibraryMerging(unittest.TestCase, TempFileMixin):
+class TestXSlibraryMerging(TempFileMixin):
     """A shared class that defines tests that should be true for all IsotxsLibrary merging."""
 
     @classmethod
@@ -310,6 +311,7 @@ class TestXSlibraryMerging(unittest.TestCase, TempFileMixin):
         del cls.libLumped
 
     def setUp(self):
+        TempFileMixin.setUp(self)
         # load a library that is in the ARMI tree. This should
         # be a small library with LFPs, Actinides, structure, and coolant
         for attrName, path in [

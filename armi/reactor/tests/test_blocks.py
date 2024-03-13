@@ -24,7 +24,6 @@ from numpy.testing import assert_allclose
 
 from armi import materials, runLog, settings, tests
 from armi.reactor import blueprints
-from armi.reactor.blueprints.tests.test_blockBlueprints import FULL_BP
 from armi.reactor.components import basicShapes, complexShapes
 from armi.nucDirectory import nucDir, nuclideBases
 from armi.nuclearDataIO.cccc import isotxs
@@ -308,7 +307,9 @@ def getComponentData(component):
 
 
 class TestDetailedNDensUpdate(unittest.TestCase):
-    def setUp(self):
+    def test_updateDetailedNdens(self):
+        from armi.reactor.blueprints.tests.test_blockBlueprints import FULL_BP
+
         cs = settings.Settings()
         with io.StringIO(FULL_BP) as stream:
             bps = blueprints.Blueprints.load(stream)
@@ -319,7 +320,6 @@ class TestDetailedNDensUpdate(unittest.TestCase):
             a.add(buildSimpleFuelBlock())
             self.r.core.add(a)
 
-    def test_updateDetailedNdens(self):
         # get first block in assembly with 'fuel' key
         block = self.r.core[0][0]
         # get nuclides in first component in block
@@ -437,7 +437,7 @@ class Block_TestCase(unittest.TestCase):
         self.assertFalse(self.block.hasFlags(Flags.IGNITER | Flags.FUEL))
 
     def test_duplicate(self):
-        Block2 = blocks.Block._createHomogenizedCopy(self.block)
+        Block2 = blocks.Block.createHomogenizedCopy(self.block)
         originalComponents = self.block.getComponents()
         newComponents = Block2.getComponents()
         for c1, c2 in zip(originalComponents, newComponents):
@@ -474,6 +474,13 @@ class Block_TestCase(unittest.TestCase):
         self.assertEqual(self.block.p.flags, Block2.p.flags)
 
     def test_homogenizedMixture(self):
+        """
+        Confirms homogenized blocks have correct properties.
+
+        .. test:: Homogenize the compositions of a block.
+            :id: T_ARMI_BLOCK_HOMOG
+            :tests: R_ARMI_BLOCK_HOMOG
+        """
         args = [False, True]  # pinSpatialLocator argument
         expectedShapes = [
             [basicShapes.Hexagon],
@@ -481,7 +488,7 @@ class Block_TestCase(unittest.TestCase):
         ]
 
         for arg, shapes in zip(args, expectedShapes):
-            homogBlock = self.block._createHomogenizedCopy(pinSpatialLocators=arg)
+            homogBlock = self.block.createHomogenizedCopy(pinSpatialLocators=arg)
             for shapeType in shapes:
                 for c in homogBlock.getComponents():
                     if isinstance(c, shapeType):
@@ -844,6 +851,13 @@ class Block_TestCase(unittest.TestCase):
         self.assertAlmostEqual(cur, ref, places=places)
 
     def test_setLocation(self):
+        """
+        Retrieve a blocks location.
+
+        .. test:: Location of a block is retrievable.
+            :id: T_ARMI_BLOCK_POSI0
+            :tests: R_ARMI_BLOCK_POSI
+        """
         b = self.block
         # a bit obvious, but location is a property now...
         i, j = grids.HexGrid.getIndicesFromRingAndPos(2, 3)
@@ -1224,13 +1238,26 @@ class Block_TestCase(unittest.TestCase):
         )
 
     def test_getComponentByName(self):
+        """Test children by name.
+
+        .. test:: Get children by name.
+            :id: T_ARMI_CMP_BY_NAME0
+            :tests: R_ARMI_CMP_BY_NAME
+        """
         self.assertIsNone(
             self.block.getComponentByName("not the droid youre looking for")
         )
         self.assertIsNotNone(self.block.getComponentByName("annular void"))
 
-    def test_getSortedComponentsInsideOfComponent(self):
-        """Test that components can be sorted within a block and returned in the correct order."""
+    def test_getSortedComponentsInsideOfComponentClad(self):
+        """Test that components can be sorted within a block and returned in the correct order.
+
+        For an arbitrary example: a clad component.
+
+        .. test:: Get children by name.
+            :id: T_ARMI_CMP_BY_NAME1
+            :tests: R_ARMI_CMP_BY_NAME
+        """
         expected = [
             self.block.getComponentByName(c)
             for c in [
@@ -1248,7 +1275,11 @@ class Block_TestCase(unittest.TestCase):
         actual = self.block.getSortedComponentsInsideOfComponent(clad)
         self.assertListEqual(actual, expected)
 
-    def test_getSortedComponentsInsideOfComponentSpecifiedTypes(self):
+    def test_getSortedComponentsInsideOfComponentDuct(self):
+        """Test that components can be sorted within a block and returned in the correct order.
+
+        For an arbitrary example: a duct.
+        """
         expected = [
             self.block.getComponentByName(c)
             for c in [
@@ -1260,9 +1291,12 @@ class Block_TestCase(unittest.TestCase):
                 "gap2",
                 "outer liner",
                 "gap3",
+                "clad",
+                "wire",
+                "coolant",
             ]
         ]
-        clad = self.block.getComponent(Flags.CLAD)
+        clad = self.block.getComponent(Flags.DUCT)
         actual = self.block.getSortedComponentsInsideOfComponent(clad)
         self.assertListEqual(actual, expected)
 
@@ -1276,6 +1310,12 @@ class Block_TestCase(unittest.TestCase):
         self.assertEqual(1, self.block.getNumComponents(Flags.DUCT))
 
     def test_getNumPins(self):
+        """Test that we can get the number of pins from various blocks.
+
+        .. test:: Retrieve the number of pins from various blocks.
+            :id: T_ARMI_BLOCK_NPINS
+            :tests: R_ARMI_BLOCK_NPINS
+        """
         cur = self.block.getNumPins()
         ref = self.block.getDim(Flags.FUEL, "mult")
         self.assertEqual(cur, ref)
@@ -1535,6 +1575,28 @@ class Block_TestCase(unittest.TestCase):
         moles3 = b.p.molesHmBOL
         self.assertAlmostEqual(moles2, moles3)
 
+    def test_setImportantParams(self):
+        """Confirm that important block parameters can be set and get."""
+        # Test ability to set and get flux
+        applyDummyData(self.block)
+        self.assertEqual(self.block.p.mgFlux[0], 161720716762.12997)
+        self.assertEqual(self.block.p.mgFlux[-1], 601494405.293505)
+
+        # Test ability to set and get number density
+        fuel = self.block.getComponent(Flags.FUEL)
+
+        u235_dens = fuel.getNumberDensity("U235")
+        self.assertEqual(u235_dens, 0.003695461770836022)
+
+        fuel.setNumberDensity("U235", 0.5)
+        u235_dens = fuel.getNumberDensity("U235")
+        self.assertEqual(u235_dens, 0.5)
+
+        # TH parameter test
+        self.assertEqual(0, self.block.p.THmassFlowRate)
+        self.block.p.THmassFlowRate = 10
+        self.assertEqual(10, self.block.p.THmassFlowRate)
+
     def test_getMfp(self):
         """Test mean free path."""
         applyDummyData(self.block)
@@ -1735,6 +1797,75 @@ class BlockEnergyDepositionConstants(unittest.TestCase):
     @patch.object(xsCollections, "computeFissionEnergyGenerationConstants")
     @patch.object(xsCollections, "computeCaptureEnergyGenerationConstants")
     def test_getTotalEnergyGenerationConstants(self, mock_capture, mock_fission):
+        """Mock both xsCollections methods so you get complete coverage."""
+        _x = self.block.getTotalEnergyGenerationConstants()
+        self.assertEqual(mock_fission.call_count, 1)
+        self.assertEqual(mock_capture.call_count, 1)
+
+    @patch.object(xsCollections, "computeFissionEnergyGenerationConstants")
+    def test_getFissionEnergyDepositionConstants(self, mock_method):
+        """Test RuntimeError and that it gets to the deposition constant call."""
+        # make sure xsCollections.compute* gets hit
+        _x = self.block.getFissionEnergyGenerationConstants()
+        self.assertEqual(mock_method.call_count, 1)
+        # set core.lib to None and get RuntimeError
+        self.block.core.lib = None
+        with self.assertRaises(RuntimeError):
+            # fails because this test reactor does not have a cross-section library
+            _x = self.block.getFissionEnergyGenerationConstants()
+
+    @patch.object(xsCollections, "computeCaptureEnergyGenerationConstants")
+    def test_getCaptureEnergyGenerationConstants(self, mock_method):
+        """Test RuntimeError and that it gets to the deposition constant call."""
+        # make sure xsCollections.compute* gets hit
+        _x = self.block.getCaptureEnergyGenerationConstants()
+        self.assertEqual(mock_method.call_count, 1)
+        # set core.lib to None and get RuntimeError
+        self.block.core.lib = None
+        with self.assertRaises(RuntimeError):
+            # fails because this test reactor does not have a cross-section library
+            _x = self.block.getCaptureEnergyGenerationConstants()
+
+    @patch.object(xsCollections, "computeNeutronEnergyDepositionConstants")
+    def test_getNeutronEnergyDepositionConstants(self, mock_method):
+        """Test RuntimeError and that it gets to the deposition constant call."""
+        # make sure xsCollections.compute* gets hit
+        _x = self.block.getNeutronEnergyDepositionConstants()
+        self.assertEqual(mock_method.call_count, 1)
+        # set core.lib to None and get RuntimeError
+        self.block.core.lib = None
+        with self.assertRaises(RuntimeError):
+            _x = self.block.getNeutronEnergyDepositionConstants()
+
+    @patch.object(xsCollections, "computeGammaEnergyDepositionConstants")
+    def test_getGammaEnergyDepositionConstants(self, mock_method):
+        """Test RuntimeError and that it gets to the deposition constant call."""
+        # make sure xsCollections.compute* gets hit
+        _x = self.block.getGammaEnergyDepositionConstants()
+        self.assertEqual(mock_method.call_count, 1)
+        # set core.lib to None and get RuntimeError
+        self.block.core.lib = None
+        with self.assertRaises(RuntimeError):
+            # fails because this test reactor does not have a cross-section library
+            _x = self.block.getGammaEnergyDepositionConstants()
+
+
+class BlockEnergyDepositionConstants(unittest.TestCase):
+    """Tests the energy deposition methods.
+
+    MagicMocks xsCollections.compute*Constants() -- we're not testing those methods specifically so just make sure they're hit
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        cls.block = loadTestBlock()
+
+    def setUp(self):
+        self.block.core.lib = MagicMock()
+
+    @patch.object(xsCollections, "computeFissionEnergyGenerationConstants")
+    @patch.object(xsCollections, "computeCaptureEnergyGenerationConstants")
+    def test_getTotalEnergyGenerationConstants(self, mock_capture, mock_fission):
         """Mock both xsCollections methods so you get complete coverage"""
         _x = self.block.getTotalEnergyGenerationConstants()
         self.assertEqual(mock_fission.call_count, 1)
@@ -1788,7 +1919,7 @@ class BlockEnergyDepositionConstants(unittest.TestCase):
             _x = self.block.getGammaEnergyDepositionConstants()
 
 
-class Test_NegativeVolume(unittest.TestCase):
+class TestNegativeVolume(unittest.TestCase):
     def test_negativeVolume(self):
         """Build a block with WAY too many fuel pins and show that the derived volume is negative."""
         block = blocks.HexBlock("TestHexBlock")
@@ -1853,12 +1984,52 @@ class HexBlock_TestCase(unittest.TestCase):
         r.core.add(a, loc1)
 
     def test_getArea(self):
-        cur = self.HexBlock.getArea()
-        ref = math.sqrt(3) / 2.0 * 70.6**2
-        places = 6
-        self.assertAlmostEqual(cur, ref, places=places)
+        """Test that we can correctly calculate the area of a hexagonal block.
+
+        .. test:: Users can create blocks that have the correct hexagonal area.
+            :id: T_ARMI_BLOCK_HEX0
+            :tests: R_ARMI_BLOCK_HEX
+        """
+        # Test for various outer and inner pitches for HexBlocks with hex holes
+        for op in (20.0, 20.4, 20.1234, 25.001):
+            for ip in (0.0, 5.0001, 7.123, 10.0):
+                # generate a block with a different outer pitch
+                hBlock = blocks.HexBlock("TestAreaHexBlock")
+                hexDims = {
+                    "Tinput": 273.0,
+                    "Thot": 273.0,
+                    "op": op,
+                    "ip": ip,
+                    "mult": 1.0,
+                }
+                hComponent = components.Hexagon("duct", "UZr", **hexDims)
+                hBlock.add(hComponent)
+
+                # verify the area of the hexagon (with a hex hole) is correct
+                cur = hBlock.getArea()
+                ref = math.sqrt(3) / 2.0 * op**2
+                ref -= math.sqrt(3) / 2.0 * ip**2
+                self.assertAlmostEqual(cur, ref, places=6, msg=str(op))
+
+    def test_component_type(self):
+        """
+        Test that a hex block has the proper "hexagon" __name__.
+
+        .. test:: Users can create blocks with a hexagonal shape.
+            :id: T_ARMI_BLOCK_HEX1
+            :tests: R_ARMI_BLOCK_HEX
+        """
+        pitch_comp_type = self.HexBlock.PITCH_COMPONENT_TYPE[0]
+        self.assertEqual(pitch_comp_type.__name__, "Hexagon")
 
     def test_coords(self):
+        """
+        Test that coordinates are retrievable from a block.
+
+        .. test:: Coordinates of a block are queryable.
+            :id: T_ARMI_BLOCK_POSI1
+            :tests: R_ARMI_BLOCK_POSI
+        """
         core = self.HexBlock.core
         a = self.HexBlock.parent
         loc1 = core.spatialGrid[0, 1, 0]
@@ -1881,6 +2052,28 @@ class HexBlock_TestCase(unittest.TestCase):
 
     def test_getNumPins(self):
         self.assertEqual(self.HexBlock.getNumPins(), 169)
+
+    def test_block_dims(self):
+        """
+        Tests that the block class can provide basic dimensionality information about
+        itself.
+
+        .. test:: Important block dimensions are retrievable.
+            :id: T_ARMI_BLOCK_DIMS
+            :tests: R_ARMI_BLOCK_DIMS
+        """
+        self.assertAlmostEqual(4316.582, self.HexBlock.getVolume(), 3)
+        self.assertAlmostEqual(70.6, self.HexBlock.getPitch(), 1)
+        self.assertAlmostEqual(4316.582, self.HexBlock.getMaxArea(), 3)
+
+        self.assertEqual(70, self.HexBlock.getDuctIP())
+        self.assertEqual(70.6, self.HexBlock.getDuctOP())
+
+        self.assertAlmostEqual(34.273, self.HexBlock.getPinToDuctGap(), 3)
+        self.assertEqual(0.11, self.HexBlock.getPinPitch())
+        self.assertAlmostEqual(300.889, self.HexBlock.getWettedPerimeter(), 3)
+        self.assertAlmostEqual(4242.184, self.HexBlock.getFlowArea(), 3)
+        self.assertAlmostEqual(56.395, self.HexBlock.getHydraulicDiameter(), 3)
 
     def test_symmetryFactor(self):
         # full hex
@@ -2031,6 +2224,13 @@ class HexBlock_TestCase(unittest.TestCase):
         self.assertAlmostEqual(pinCenterFlatToFlat, f2f)
 
     def test_gridCreation(self):
+        """Create a grid for a block, and show that it can handle components with
+        multiplicity > 1.
+
+        .. test:: Grids can handle components with multiplicity > 1.
+            :id: T_ARMI_GRID_MULT
+            :tests: R_ARMI_GRID_MULT
+        """
         b = self.HexBlock
         # The block should have a spatial grid at construction,
         # since it has mults = 1 or 169 from setup
@@ -2041,9 +2241,18 @@ class HexBlock_TestCase(unittest.TestCase):
                 # Then it's spatialLocator must be of size 169
                 locations = c.spatialLocator
                 self.assertEqual(type(locations), grids.MultiIndexLocation)
+
                 mult = 0
-                for _ in locations:
+                uniqueLocations = set()
+                for loc in locations:
                     mult = mult + 1
+
+                    # test for the uniqueness of the locations (since mult > 1)
+                    if loc not in uniqueLocations:
+                        uniqueLocations.add(loc)
+                    else:
+                        self.assertTrue(False, msg="Duplicate location found!")
+
                 self.assertEqual(mult, 169)
 
     def test_gridNumPinsAndLocations(self):

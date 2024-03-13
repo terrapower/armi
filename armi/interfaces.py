@@ -21,9 +21,7 @@ Learn all about interfaces in :doc:`/developer/guide`
 See Also
 --------
 armi.operators : Schedule calls to various interfaces
-
 armi.plugins : Register various interfaces
-
 """
 import copy
 from typing import Union
@@ -44,20 +42,23 @@ class STACK_ORDER:  # noqa: invalid-class-name
     """
     Constants that help determine the order of modules in the interface stack.
 
-    Each module specifies an ``ORDER`` constant that specifies where in this order it
+    Each module defines an ``ORDER`` constant that specifies where in this order it
     should be placed in the Interface Stack.
 
-    Notes
-    -----
-    Originally, the ordering was accomplished with a very large if/else construct in ``createInterfaces``.
-    This made more modular by moving the add/activate logic into each module and replacing the if/else with
-    just a large hard-coded list of modules in order that could possibly be added. That hard-coded
-    list presented ``ImportError`` problems when building various subset distributions of ARMI so this ordering
-    mechanism was created to replace it, allowing the modules to define their required order internally.
+    .. impl:: Define an ordered list of interfaces.
+        :id: I_ARMI_OPERATOR_INTERFACES0
+        :implements: R_ARMI_OPERATOR_INTERFACES
 
-    Future improvements may include simply defining what information is required to perform a calculation
-    and figuring out the ordering from that. It's complex because in coupled simulations, everything
-    depends on everything.
+        At each time node during a simulation, an ordered colletion of Interfaces
+        are run (referred to as the interface stack). But ARMI does not force the order upon the analyst.
+        Instead, each Interface registers where in that ordered list it belongs by
+        giving itself an order number (which can be an integer or a decimal).
+        This class defines a set of constants which can be imported and used
+        by Interface developers to define that Interface's position in the stack.
+
+        The constants defined are given names, based on common stack orderings
+        in the ARMI ecosystem. But in the end, these are just constant values,
+        and the names they are given are merely suggestions.
 
     See Also
     --------
@@ -84,7 +85,25 @@ class STACK_ORDER:  # noqa: invalid-class-name
 class TightCoupler:
     """
     Data structure that defines tight coupling attributes that are implemented
-    within an Interface and called upon when ``interactCoupled`` is called.
+    within an Interface and called upon when ``interactAllCoupled`` is called.
+
+    .. impl:: The TightCoupler defines the convergence criteria for physics coupling.
+        :id: I_ARMI_OPERATOR_PHYSICS0
+        :implements: R_ARMI_OPERATOR_PHYSICS
+
+        During a simulation, the developers of an ARMI application frequently want to
+        iterate on some physical calculation until that calculation has converged to
+        within some small tolerance. This is typically done to solve the nonlinear
+        dependence of different physical properties of the reactor, like fuel
+        performance. However, what parameter is being tightly coupled is configurable
+        by the developer.
+
+        This class provides a way to calculate if a single parameter has converged
+        based on some convergence tolerance. The user provides the parameter,
+        tolerance, and a maximum number of iterations to define a basic convergence
+        calculation. If in the ``isConverged`` method the parameter has not converged,
+        the number of iterations is incremented, and this class will wait, presuming
+        another iteration is forthcoming.
 
     Parameters
     ----------
@@ -92,9 +111,8 @@ class TightCoupler:
         The name of a parameter defined in the ARMI Reactor model.
 
     tolerance : float
-        Defines the allowable error, epsilon, between the current previous
-        parameter value(s) to determine if the selected coupling parameter has
-        been converged.
+        Defines the allowable error between the current and previous parameter values
+        to determine if the selected coupling parameter has converged.
 
     maxIters : int
         Maximum number of tight coupling iterations allowed
@@ -111,7 +129,10 @@ class TightCoupler:
         self.eps = numpy.inf
 
     def __repr__(self):
-        return f"<{self.__class__.__name__}, Parameter: {self.parameter}, Convergence Criteria: {self.tolerance}, Maximum Coupled Iterations: {self.maxIters}>"
+        return (
+            f"<{self.__class__.__name__}, Parameter: {self.parameter}, Convergence Criteria: "
+            + f"{self.tolerance}, Maximum Coupled Iterations: {self.maxIters}>"
+        )
 
     def storePreviousIterationValue(self, val: _SUPPORTED_TYPES):
         """
@@ -233,13 +254,23 @@ class TightCoupler:
 
 class Interface:
     """
-    The eponymous Interface between the ARMI Reactor model and modules that operate upon it.
+    The eponymous Interface between the ARMI reactor data model and the Plugins.
 
-    This defines the operator's contract for interacting with the ARMI reactor model.
-    It is expected that interact* methods are defined as appropriate for the physics modeling.
+    .. impl:: The interface shall allow code execution at important operational points in time.
+        :id: I_ARMI_INTERFACE
+        :implements: R_ARMI_INTERFACE
 
-    Interface instances are gathered into an interface stack in
-    :py:meth:`armi.operators.operator.Operator.createInterfaces`.
+        The Interface class defines a number methods with names like ``interact***``.
+        These methods are called in order at each time node. This allows for an
+        individual Plugin defining multiple interfaces to insert code at the start
+        or end of a particular time node or cycle during reactor simulation. In this
+        fashion, the Plugins and thus the Operator control when their code is run.
+
+        The end goal of all this work is to allow the Plugins to carefully tune
+        when and how they interact with the reactor data model.
+
+        Interface instances are gathered into an interface stack in
+        :py:meth:`armi.operators.operator.Operator.createInterfaces`.
     """
 
     # list containing interfaceClass
@@ -258,7 +289,7 @@ class Interface:
     overridden by any concrete class that extends this one.
     """
 
-    # TODO: This is a terrible variable name.
+    # TODO: This is a terrible name.
     function = None
     """
     The function performed by an Interface. This is not required be be defined
@@ -332,7 +363,7 @@ class Interface:
 
         Examples
         --------
-        return {'neutronsPerFission',self.neutronsPerFission}
+        >>> return {'neutronsPerFission',self.neutronsPerFission}
         """
         return {}
 
@@ -589,7 +620,7 @@ class Interface:
         relative to the input directory. Absolute paths will not be copied anywhere.
 
 
-        The returned dictionary will enable the source CaseSettings object to
+        The returned dictionary will enable the source Settings object to
         be updated to the new file location. While the dictionary keys are
         recommended to be Setting objects, the name of the setting as a string,
         e.g., "shuffleLogic", is still interpreted. If the string name does not
@@ -606,7 +637,7 @@ class Interface:
 
         Parameters
         ----------
-        cs : CaseSettings
+        cs : Settings
             The case settings for a particular Case
         """
         return {}
@@ -728,7 +759,7 @@ def getActiveInterfaceInfo(cs):
 
     Parameters
     ----------
-    cs : CaseSettings
+    cs : Settings
         The case settings that activate relevant Interfaces
     """
     interfaceInfo = []

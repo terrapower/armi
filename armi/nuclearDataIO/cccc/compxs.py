@@ -46,7 +46,6 @@ See Also
 
 Examples
 --------
-::
     >>> from armi.nuclearDataIO import compxs
     >>> lib = compxs.readBinary('COMPXS')
     >>> r0 = lib.regions[0]
@@ -162,7 +161,7 @@ class _CompxsIO(cccc.Stream):
 
     See Also
     --------
-    armi.nuclearDataIO.cccc.isotxs._IsotxsIO
+    armi.nuclearDataIO.cccc.isotxs.IsotxsIO
     """
 
     _METADATA_TAGS = (
@@ -223,7 +222,7 @@ class _CompxsIO(cccc.Stream):
 
         See Also
         --------
-        armi.nuclearDataIO.cccc.isotxs._IsotxsIO.readWrite : reading/writing ISOTXS files
+        armi.nuclearDataIO.cccc.isotxs.IsotxsIO.readWrite : reading/writing ISOTXS files
         """
         runLog.info(
             "{} macroscopic cross library {}".format(

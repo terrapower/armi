@@ -17,7 +17,7 @@ from typing import TYPE_CHECKING, Optional, NoReturn
 import numpy
 
 from armi.reactor.grids.locations import IJType, IJKType
-from armi.reactor.grids.structuredgrid import StructuredGrid
+from armi.reactor.grids.structuredGrid import StructuredGrid
 
 if TYPE_CHECKING:
     # Avoid circular imports
@@ -37,10 +37,6 @@ class ThetaRZGrid(StructuredGrid):
     rather than directly constructing with ``__init__``
 
     See Figure 2.2 in Derstine 1984, ANL. [DIF3D]_.
-
-    .. impl:: ARMI supports an RZTheta mesh.
-       :id: I_REACTOR_MESH_3
-       :links: R_REACTOR_MESH
     """
 
     def getSymmetricEquivalents(self, indices: IJType) -> NoReturn:
