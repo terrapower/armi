@@ -1653,6 +1653,15 @@ class Block(composites.Composite):
                 coords.append(clad.spatialLocator.getLocalCoordinates())
         return coords
 
+    def getBoronMassEnrich(self):
+        """Return B-10 mass fraction."""
+        b10 = self.getMass("B10")
+        b11 = self.getMass("B11")
+        total = b11 + b10
+        if total == 0.0:
+            return 0.0
+        return b10 / total
+
 
 class HexBlock(Block):
     """

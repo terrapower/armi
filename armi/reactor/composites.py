@@ -1765,15 +1765,6 @@ class ArmiObject(metaclass=CompositeModelType):
         else:
             return 0.0
 
-    def getBoronMassEnrich(self):
-        """Return B-10 mass fraction."""
-        b10 = self.getMass("B10")
-        b11 = self.getMass("B11")
-        total = b11 + b10
-        if total == 0.0:
-            return 0.0
-        return b10 / total
-
     def getUraniumMassEnrich(self):
         """Returns U-235 mass fraction assuming U-235 and U-238 only."""
         u5 = self.getMass("U235")
