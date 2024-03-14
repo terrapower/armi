@@ -898,17 +898,6 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         raise NotImplementedError()
 
-    def getMaxVolume(self):
-        """
-        The maximum volume of this object if it were totally full.
-
-        Returns
-        -------
-        vol : float
-            volume in cm^3.
-        """
-        raise NotImplementedError()
-
     def getMass(self, nuclideNames=None):
         """
         Determine the mass in grams of nuclide(s) and/or elements in this object.

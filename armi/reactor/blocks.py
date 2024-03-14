@@ -635,17 +635,6 @@ class Block(composites.Composite):
     def getMaxArea(self):
         raise NotImplementedError
 
-    def getMaxVolume(self):
-        """
-        The maximum volume of this object if it were totally full.
-
-        Returns
-        -------
-        vol : float
-            volume in cm^3.
-        """
-        return self.getMaxArea() * self.getHeight()
-
     def getArea(self, cold=False):
         """
         Return the area of a block for a full core or a 1/3 core model.
