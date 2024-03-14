@@ -30,6 +30,7 @@ import numpy
 from armi import nuclideBases
 from armi import runLog
 from armi.bookkeeping import report
+from armi.nucDirectory import elements
 from armi.physics.neutronics import GAMMA
 from armi.physics.neutronics import NEUTRON
 from armi.reactor import blockParameters
@@ -1661,6 +1662,18 @@ class Block(composites.Composite):
         if total == 0.0:
             return 0.0
         return b10 / total
+
+    def getPuMoles(self):
+        """Returns total number of moles of Pu isotopes."""
+        nucNames = [nuc.name for nuc in elements.byZ[94].nuclides]
+        puN = sum(self.getNuclideNumberDensities(nucNames))
+
+        return (
+            puN
+            / units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
+            * self.getVolume()
+            * self.getSymmetryFactor()
+        )
 
 
 class HexBlock(Block):

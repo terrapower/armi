@@ -1781,20 +1781,6 @@ class ArmiObject(metaclass=CompositeModelType):
         u5 = self.getNumberDensity("U235")
         return u5 / (u8 + u5)
 
-    def getPuN(self):
-        """Returns total number density of Pu isotopes."""
-        nucNames = [nuc.name for nuc in elements.byZ[94].nuclides]
-        return sum(self.getNuclideNumberDensities(nucNames))
-
-    def getPuMoles(self):
-        """Returns total number of moles of Pu isotopes."""
-        return (
-            self.getPuN()
-            / units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
-            * self.getVolume()
-            * self.getSymmetryFactor()
-        )
-
     def calcTotalParam(
         self,
         param,

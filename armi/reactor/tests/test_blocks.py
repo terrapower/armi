@@ -1052,16 +1052,6 @@ class Block_TestCase(unittest.TestCase):
         }
         fuel.setNumberDensities({nuc: v / vFrac for nuc, v in refDict.items()})
 
-        # test number density
-        cur = self.block.getPuN()
-        ndens = 0.0
-        for nucName in refDict.keys():
-            if nucName in ["PU238", "PU239", "PU240", "PU241", "PU242"]:
-                ndens += self.block.getNumberDensity(nucName)
-        ref = ndens
-        places = 6
-        self.assertAlmostEqual(cur, ref, places=places)
-
         # test moles
         cur = self.block.getPuMoles()
         ndens = 0.0
