@@ -1670,6 +1670,14 @@ class Block(composites.Composite):
             * self.getSymmetryFactor()
         )
 
+    def getUraniumMassEnrich(self):
+        """Returns U-235 mass fraction assuming U-235 and U-238 only."""
+        u5 = self.getMass("U235")
+        if u5 < 1e-10:
+            return 0.0
+        u8 = self.getMass("U238")
+        return u5 / (u8 + u5)
+
 
 class HexBlock(Block):
     """
