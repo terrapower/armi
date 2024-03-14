@@ -2179,14 +2179,6 @@ class ArmiObject(metaclass=CompositeModelType):
         else:
             return 0.0
 
-    def getMaxUraniumMassEnrich(self):
-        maxV = 0
-        for child in self:
-            v = child.getUraniumMassEnrich()
-            if v > maxV:
-                maxV = v
-        return maxV
-
     def getFPMass(self):
         """Returns mass of fission products in this block in grams."""
         nucs = []

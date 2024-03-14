@@ -508,12 +508,6 @@ class Assembly_TestCase(unittest.TestCase):
     def test_getZrFrac(self):
         self.assertAlmostEqual(self.assembly.getZrFrac(), 0.1)
 
-    def test_getMaxUraniumMassEnrich(self):
-        baseEnrich = self.assembly[0].getUraniumMassEnrich()
-        self.assertAlmostEqual(self.assembly.getMaxUraniumMassEnrich(), baseEnrich)
-        self.assembly[2].setNumberDensity("U235", 2e-1)
-        self.assertGreater(self.assembly.getMaxUraniumMassEnrich(), baseEnrich)
-
     def test_getAge(self):
         res = 5.0
         for b in self.assembly:
