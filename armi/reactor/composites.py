@@ -2169,16 +2169,6 @@ class ArmiObject(metaclass=CompositeModelType):
         else:
             return pu / hm
 
-    def getZrFrac(self):
-        """Return the total zr/(hm+zr) fraction in this assembly."""
-        hm = self.getHMMass()
-        zrNucs = [nuc.name for nuc in elements.bySymbol["ZR"].nuclides]
-        zr = self.getMass(zrNucs)
-        if hm + zr > 0:
-            return zr / (hm + zr)
-        else:
-            return 0.0
-
     def getFPMass(self):
         """Returns mass of fission products in this block in grams."""
         nucs = []

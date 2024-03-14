@@ -505,9 +505,6 @@ class Assembly_TestCase(unittest.TestCase):
         fuelBlock.setMass("U238", 0.0)
         self.assertAlmostEqual(blockU35Mass * 2, fuelBlock.getMass("U235"))
 
-    def test_getZrFrac(self):
-        self.assertAlmostEqual(self.assembly.getZrFrac(), 0.1)
-
     def test_getAge(self):
         res = 5.0
         for b in self.assembly:
