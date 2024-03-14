@@ -3269,10 +3269,6 @@ class Composite(ArmiObject):
         for c in self.getChildren():
             c.printContents(includeNuclides=includeNuclides)
 
-    def isOnWhichSymmetryLine(self):
-        grid = self.parent.spatialGrid
-        return grid.overlapsWhichSymmetryLine(self.spatialLocator.getCompleteIndices())
-
     def _genChildByLocationLookupTable(self):
         """Update the childByLocation lookup table."""
         runLog.extra("Generating location-to-child lookup table.")

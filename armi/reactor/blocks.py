@@ -734,11 +734,6 @@ class Block(composites.Composite):
         """
         return 1.0
 
-    def isOnWhichSymmetryLine(self):
-        """Block symmetry lines are determined by the reactor, not the parent."""
-        grid = self.core.spatialGrid
-        return grid.overlapsWhichSymmetryLine(self.spatialLocator.getCompleteIndices())
-
     def adjustDensity(self, frac, adjustList, returnMass=False):
         """
         adjusts the total density of each nuclide in adjustList by frac.

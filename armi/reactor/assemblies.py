@@ -1269,6 +1269,10 @@ class Assembly(composites.Composite):
         for b in self.getBlocks():
             b.rotate(rad)
 
+    def isOnWhichSymmetryLine(self):
+        grid = self.parent.spatialGrid
+        return grid.overlapsWhichSymmetryLine(self.spatialLocator.getCompleteIndices())
+
 
 class HexAssembly(Assembly):
     """Placeholder, so users can explicitly define a hex-based Assembly."""

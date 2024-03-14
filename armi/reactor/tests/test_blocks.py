@@ -1943,9 +1943,6 @@ class HexBlock_TestCase(unittest.TestCase):
         self.assertEqual(v0 / 3.0, self.HexBlock.getVolume())
         self.assertAlmostEqual(m0 / 3.0, self.HexBlock.getMass())
 
-        symmetryLine = self.HexBlock.isOnWhichSymmetryLine()
-        self.assertEqual(grids.BOUNDARY_CENTER, symmetryLine)
-
     def test_retainState(self):
         """Ensure retainState restores params and spatialGrids."""
         self.HexBlock.spatialGrid = grids.HexGrid.fromPitch(1.0)

@@ -270,6 +270,10 @@ class Assembly_TestCase(unittest.TestCase):
 
         self.assembly.calculateZCoords()
 
+    def test_isOnWhichSymmetryLine(self):
+        line = self.assembly.isOnWhichSymmetryLine()
+        self.assertEqual(line, 2)
+
     def test_notesParameter(self):
         self.assertEqual(self.assembly.p.notes, "")
 
