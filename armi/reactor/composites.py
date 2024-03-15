@@ -2103,26 +2103,6 @@ class ArmiObject(metaclass=CompositeModelType):
         hmDens = sum(self.getNuclideNumberDensities(hmNuclides))
         return hmDens
 
-    def getPuFrac(self):
-        """
-        Compute the Pu/HM mass fraction in this object.
-
-        Returns
-        -------
-        puFrac : float
-            The pu mass fraction in heavy metal in this assembly
-        """
-        hm = self.getHMMass()
-        if hm == 0.0:
-            return 0.0
-        else:
-            # Get the mass of Pu in this object in grams.
-            nucs = []
-            for nucName in [nuc.name for nuc in elements.byZ[94].nuclides]:
-                nucs.append(nucName)
-            pu = self.getMass(nucs)
-            return pu / hm
-
     def getFPMass(self):
         """Returns mass of fission products in this block in grams."""
         nucs = []

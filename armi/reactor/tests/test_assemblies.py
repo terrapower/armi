@@ -483,18 +483,6 @@ class Assembly_TestCase(unittest.TestCase):
         ref = sum(bi.getMass(["U235", "PU239"]) for bi in self.assembly)
         self.assertAlmostEqual(cur, ref)
 
-    def test_getPuFrac(self):
-        puAssem = self.assembly.getPuFrac()
-        fuelBlock = self.assembly[1]
-        puBlock = fuelBlock.getPuFrac()
-        self.assertAlmostEqual(puAssem, puBlock)
-
-        #
-        fuelComp = fuelBlock.getComponent(Flags.FUEL)
-        fuelComp.setNumberDensity("PU239", 0.012)
-        self.assertGreater(self.assembly.getPuFrac(), puAssem)
-        self.assertGreater(fuelBlock.getPuFrac(), puAssem)
-
     def test_getMass(self):
         mass0 = self.assembly.getMass("U235")
         mass1 = sum(bi.getMass("U235") for bi in self.assembly)
