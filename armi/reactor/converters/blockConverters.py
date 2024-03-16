@@ -190,6 +190,7 @@ class BlockConverter:
                 not isinstance(c, components.Circle)
                 or c is solvent
                 or c.containsVoidMaterial()
+                or isinstance(solvent, components.DerivedShape)
             ):
                 continue
             if c.isEncapsulatedBy(solvent):
