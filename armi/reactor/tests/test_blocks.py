@@ -1964,7 +1964,7 @@ class HexBlock_TestCase(unittest.TestCase):
         with self.HexBlock.retainState():
             self.HexBlock.setType("fuel")
             self.HexBlock.spatialGrid.changePitch(2.0)
-        self.assertEqual(self.HexBlock.spatialGrid.pitch, 1.0)
+        self.assertAlmostEqual(self.HexBlock.spatialGrid.pitch, 1.0)
         self.assertTrue(self.HexBlock.hasFlags(Flags.INTERCOOLANT))
 
     def test_getPinCoords(self):
