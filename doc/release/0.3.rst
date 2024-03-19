@@ -22,11 +22,13 @@ API Changes
 
 Bug Fixes
 ---------
+#. Fixed four bugs with "corners up" hex grids. (`PR#1649 <https://github.com/terrapower/armi/pull/1649>`_)
 #. TBD
 
 Changes that Affect Requirements
 --------------------------------
 #. Very minor change to ``Block.coords()``, removing unused argument. (`PR#1651 <https://github.com/terrapower/armi/pull/1651>`_)
+#. Touched ``HexGrid`` by adding a "cornersUp" property and fixing two bugs. (`PR#1649 <https://github.com/terrapower/armi/pull/1649>`_)
 #. TBD
 
 
