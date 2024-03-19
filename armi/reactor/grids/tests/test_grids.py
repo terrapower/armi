@@ -183,7 +183,7 @@ class TestGrid(unittest.TestCase):
 
     def test_isAxialOnly(self):
         grid = grids.HexGrid.fromPitch(1.0, numRings=3)
-        self.assertEqual(grid.pitch, 1.0)
+        self.assertAlmostEqual(grid.pitch, 1.0)
         self.assertEqual(grid.isAxialOnly, False)
 
         grid2 = grids.AxialGrid.fromNCells(10)
@@ -191,13 +191,13 @@ class TestGrid(unittest.TestCase):
 
     def test_lookupFactory(self):
         grid = grids.HexGrid.fromPitch(1.0, numRings=3)
-        self.assertEqual(grid.pitch, 1.0)
+        self.assertAlmostEqual(grid.pitch, 1.0)
         self.assertEqual(grid[10, 5, 0].i, 10)
 
     def test_quasiReduce(self):
         """Make sure our DB-friendly version of reduce works."""
         grid = grids.HexGrid.fromPitch(1.0, numRings=3)
-        self.assertEqual(grid.pitch, 1.0)
+        self.assertAlmostEqual(grid.pitch, 1.0)
         reduction = grid.reduce()
         self.assertAlmostEqual(reduction[0][1][1], 1.0)
 
@@ -211,7 +211,7 @@ class TestGrid(unittest.TestCase):
             :tests: R_ARMI_GRID_ELEM_LOC
         """
         grid = grids.HexGrid.fromPitch(1.0, numRings=0)
-        self.assertEqual(grid.pitch, 1.0)
+        self.assertAlmostEqual(grid.pitch, 1.0)
         self.assertNotIn((0, 0, 0), grid._locations)
         _ = grid[0, 0, 0]
         self.assertIn((0, 0, 0), grid._locations)
@@ -240,7 +240,7 @@ class TestHexGrid(unittest.TestCase):
 
     def test_positions(self):
         grid = grids.HexGrid.fromPitch(1.0)
-        self.assertEqual(grid.pitch, 1.0)
+        self.assertAlmostEqual(grid.pitch, 1.0)
         side = 1.0 / math.sqrt(3)
         assert_allclose(grid.getCoordinates((0, 0, 0)), (0.0, 0.0, 0.0))
         assert_allclose(grid.getCoordinates((1, 0, 0)), (1.5 * side, 0.5, 0.0))
@@ -365,14 +365,14 @@ class TestHexGrid(unittest.TestCase):
             :id: T_ARMI_GRID_HEX_TYPE
             :tests: R_ARMI_GRID_HEX_TYPE
         """
-        cornersUp = grids.HexGrid.fromPitch(1.0, cornersUp=True)
-        self.assertAlmostEqual(cornersUp.pitch, math.sqrt(3) / 2)
-
         flatsUp = grids.HexGrid.fromPitch(1.0, cornersUp=False)
-        self.assertEqual(flatsUp.pitch, 1.0)
+        self.assertAlmostEqual(flatsUp._unitSteps[0][0], math.sqrt(3) / 2)
+        self.assertAlmostEqual(flatsUp.pitch, 1.0)
 
-        self.assertEqual(cornersUp._unitSteps[0][0], 0.5)
-        self.assertAlmostEqual(flatsUp._unitSteps[0][0], 0.8660254037844388)
+        cornersUp = grids.HexGrid.fromPitch(1.0, cornersUp=True)
+        self.assertAlmostEqual(cornersUp.pitch, 1.0)
+        self.assertAlmostEqual(cornersUp._unitSteps[0][0], 0.5)
+        self.assertAlmostEqual(cornersUp.pitch, 1.0)
 
     def test_triangleCoords(self):
         g = grids.HexGrid.fromPitch(8.15)
@@ -442,7 +442,7 @@ class TestHexGrid(unittest.TestCase):
             assert_allclose(loc.indices, newLoc.indices)
 
     def test_adjustPitchFlatsUp(self):
-        """Adjust the pich of a hexagonal lattice, for a "flats up" grid.
+        """Adjust the pitch of a hexagonal lattice, for a "flats up" grid.
 
         .. test:: Construct a hexagonal lattice with three rings.
             :id: T_ARMI_GRID_HEX0
@@ -467,7 +467,7 @@ class TestHexGrid(unittest.TestCase):
             # test that we CAN change the pitch, and it scales the grid (but not the offset)
             v1 = grid.getCoordinates((1, 0, 0))
             grid.changePitch(2.0)
-            self.assertEqual(grid.pitch, 2.0)
+            self.assertAlmostEqual(grid.pitch, 2.0)
             v2 = grid.getCoordinates((1, 0, 0))
             assert_allclose(2 * v1 - offset, v2)
 
@@ -509,7 +509,7 @@ class TestHexGrid(unittest.TestCase):
             # test that we CAN change the pitch, and it scales the grid (but not the offset)
             v1 = grid.getCoordinates((1, 0, 0))
             grid.changePitch(2.0)
-            self.assertAlmostEqual(grid.pitch, math.sqrt(3), delta=1e-9)
+            self.assertAlmostEqual(grid.pitch, 2.0, delta=1e-9)
             v2 = grid.getCoordinates((1, 0, 0))
             correction = numpy.array([0.5, math.sqrt(3) / 2, 0])
             assert_allclose(v1 + correction, v2)
