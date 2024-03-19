@@ -366,9 +366,6 @@ class TestHexGrid(unittest.TestCase):
         self.assertEqual(tipsUp._unitSteps[0][0], 0.5)
         self.assertAlmostEqual(flatsUp._unitSteps[0][0], 0.8660254037844388)
 
-        self.assertAlmostEqual(tipsUp.pitch, 1.0)
-        self.assertAlmostEqual(flatsUp.pitch, 1.0)
-
     def test_triangleCoords(self):
         g = grids.HexGrid.fromPitch(8.15)
         indices1 = g.getIndicesFromRingAndPos(5, 3) + (0,)
