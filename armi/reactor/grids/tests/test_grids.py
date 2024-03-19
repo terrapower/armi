@@ -437,7 +437,7 @@ class TestHexGrid(unittest.TestCase):
             assert_allclose(loc.indices, newLoc.indices)
 
     def test_adjustPitch(self):
-        """Adjust the pitch of a hexagonal lattice.
+        """Adjust the pich of a hexagonal lattice.
 
         .. test:: Construct a hexagonal lattice with three rings.
             :id: T_ARMI_GRID_HEX
@@ -461,7 +461,7 @@ class TestHexGrid(unittest.TestCase):
             grid.changePitch(2.0)
             v2 = grid.getCoordinates((1, 0, 0))
             assert_allclose(2 * v1 - offset, v2)
-            self.assertAlmostEqual(grid.pitch, 2.0)
+            self.assertEqual(grid.pitch, 2.0)
 
             # basic sanity: test number of rings has changed
             self.assertEqual(grid._unitStepLimits[0][1], 3)
