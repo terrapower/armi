@@ -370,7 +370,6 @@ class TestHexGrid(unittest.TestCase):
         self.assertAlmostEqual(flatsUp.pitch, 1.0)
 
         cornersUp = grids.HexGrid.fromPitch(1.0, cornersUp=True)
-        self.assertAlmostEqual(cornersUp.pitch, 1.0)
         self.assertAlmostEqual(cornersUp._unitSteps[0][0], 0.5)
         self.assertAlmostEqual(cornersUp.pitch, 1.0)
 
