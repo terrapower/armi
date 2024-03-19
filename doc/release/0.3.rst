@@ -22,7 +22,7 @@ API Changes
 
 Bug Fixes
 ---------
-#. Fixed two bugs with "corners up" hex grids. (`PR#1649 <https://github.com/terrapower/armi/pull/1649>`_)
+#. Fixed four bugs with "corners up" hex grids. (`PR#1649 <https://github.com/terrapower/armi/pull/1649>`_)
 #. TBD
 
 Changes that Affect Requirements
