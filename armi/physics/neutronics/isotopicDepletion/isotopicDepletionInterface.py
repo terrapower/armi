@@ -69,7 +69,7 @@ def isDepletable(obj: composites.ArmiObject):
 
 
 class AbstractIsotopicDepleter:
-    r"""
+    """
     Interact with a depletion code.
 
     This interface and subClasses deplete under a flux defined outside this
@@ -123,7 +123,7 @@ class AbstractIsotopicDepleter:
         return list(self._depleteByName.values())
 
     def run(self):
-        r"""
+        """
         Submit depletion case with external solver to the cluster.
 
         In addition to running the physics kernel, this method calls the waitForJob method
@@ -154,14 +154,12 @@ def makeXsecTable(
         a list of the nucNames of active isotopes
     isotxs: isotxs object
     headerFormat: string (optional)
-        this is the format in which the elements of the header with be returned
-        -- i.e. if you use a .format() call with  the case name you'll return a
-        formatted list of string elements
+        this is the format in which the elements of the header with be returned -- i.e. if you use a
+        .format() call with  the case name you'll return a formatted list of string elements
     tableFormat: string (optional)
-        this is the format in which the elements of the table with be returned
-        -- i.e. if you use a .format() call with mcnpId, nG, nF, n2n, n3n, nA,
-        and nP you'll get the format you want. If you use a .format() call with  the case name you'll return a
-        formatted list of string elements
+        This is the format in which the elements of the table with be returned -- i.e. if you use a
+        .format() call with mcnpId, nG, nF, n2n, n3n, nA, and nP you'll get the format you want. If
+        you use a .format() call with the case name you'll return a formatted list of strings.
 
     Results
     -------
@@ -196,10 +194,12 @@ def makeXsecTable(
 
 
 class AbstractIsotopicDepletionReader(interfaces.OutputReader):
-    r"""Read number density output produced by the isotopic depletion."""
+    """Read number density output produced by the isotopic depletion."""
 
     def read(self):
-        r"""Read a isotopic depletion Output File and applies results to armi objects in the ``ToDepletion`` attribute."""
+        """Read a isotopic depletion Output File and applies results to armi objects in the
+        ``ToDepletion`` attribute.
+        """
         raise NotImplementedError
 
 
@@ -209,8 +209,8 @@ class Csrc:
 
     Notes
     -----
-    The chemical vector is a dictionary of chemicals and their removal rate
-    constant -- this works like a decay constant.
+    The chemical vector is a dictionary of chemicals and their removal rate constant -- this works
+    like a decay constant.
 
     The isotopic vector is used to make a source material in continuous source definitions.
 

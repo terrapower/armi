@@ -39,8 +39,8 @@ class Inconel600(Material):
     def __init__(self):
         Material.__init__(self)
         self.refDens = 8.47  # g/cc
-        # Only density measurement presented in the reference.
-        # Presumed to be performed at 21C since this was the reference temperature for linear expansion measurements.
+        # Only density measurement presented in the reference. Presumed to be performed at 21C since
+        # this was the reference temperature for linear expansion measurements.
 
     def setDefaultMassFracs(self):
         massFracs = {
@@ -202,11 +202,12 @@ class Inconel600(Material):
         r"""
         From http://www.specialmetals.com/documents/Inconel%20alloy%20600.pdf.
 
-        Using the correlation for linearExpansionPercent, the 2nd order polynomial is divided by 100 to convert
-        from percent strain to strain, then differentiated with respect to temperature to find the correlation
-        for instantaneous linear expansion.
+        Using the correlation for linearExpansionPercent, the 2nd order polynomial is divided by 100
+        to convert from percent strain to strain, then differentiated with respect to temperature to
+        find the correlation for instantaneous linear expansion.
 
-        i.e. for a linearExpansionPercent correlation of a*Tc**2 + b*Tc + c, the linearExpansion correlation is 2*a/100*Tc + b/100
+        i.e. for a linearExpansionPercent correlation of a*Tc**2 + b*Tc + c, the linearExpansion
+        correlation is 2*a/100*Tc + b/100
 
         2*(3.722e-7/100.0)*Tc + 1.303e-3/100.0
 

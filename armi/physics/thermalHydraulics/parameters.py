@@ -178,14 +178,16 @@ def _getBlockParams():
         pb.defParam(
             "THaverageCladTemp",
             units=units.DEGC,
-            description="The nominal average clad temperature in the block, which should be used for neutronic and TH feedback.",
+            description="The nominal average clad temperature in the block, which should be used "
+            "for neutronic and TH feedback.",
             location=ParamLocation.AVERAGE,
         )
 
         pb.defParam(
             "THaverageGapTemp",
             units=units.DEGC,
-            description="The nominal average gap temperature in the block, which should be used for neutronic and TH feedback.",
+            description="The nominal average gap temperature in the block, which should be used "
+            "for neutronic and TH feedback.",
             location=ParamLocation.AVERAGE,
             saveToDB=True,
         )
@@ -193,7 +195,8 @@ def _getBlockParams():
         pb.defParam(
             "THaverageDuctTemp",
             units=units.DEGC,
-            description="The nominal average duct temperature in the block, which should be used for neutronic and TH feedback.",
+            description="The nominal average duct temperature in the block, which should be used "
+            "for neutronic and TH feedback.",
             location=ParamLocation.AVERAGE,
         )
 

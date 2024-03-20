@@ -21,6 +21,11 @@ from armi.nucDirectory import thermalScattering as tsl
 from armi.utils import units
 from armi.utils.units import getTk
 
+_REF_SR1_86 = (
+    "IAPWS SR1-86 Revised Supplementary Release on Saturation Properties of Ordinary Water and "
+    "Steam"
+)
+
 
 class Water(Fluid):
     """
@@ -41,13 +46,13 @@ class Water(Fluid):
 
     thermalScatteringLaws = (tsl.byNbAndCompound[nb.byName["H"], tsl.H2O],)
     references = {
-        "vapor pressure": "IAPWS SR1-86 Revised Supplementary Release on Saturation Properties of Ordinary Water and Steam",
-        "enthalpy (saturated water)": "IAPWS SR1-86 Revised Supplementary Release on Saturation Properties of Ordinary Water and Steam",
-        "enthalpy (saturated steam)": "IAPWS SR1-86 Revised Supplementary Release on Saturation Properties of Ordinary Water and Steam",
-        "entropy (saturated water)": "IAPWS SR1-86 Revised Supplementary Release on Saturation Properties of Ordinary Water and Steam",
-        "entropy (saturated steam)": "IAPWS SR1-86 Revised Supplementary Release on Saturation Properties of Ordinary Water and Steam",
-        "density (saturated water)": "IAPWS SR1-86 Revised Supplementary Release on Saturation Properties of Ordinary Water and Steam",
-        "density (saturated steam)": "IAPWS SR1-86 Revised Supplementary Release on Saturation Properties of Ordinary Water and Steam",
+        "vapor pressure": _REF_SR1_86,
+        "enthalpy (saturated water)": _REF_SR1_86,
+        "enthalpy (saturated steam)": _REF_SR1_86,
+        "entropy (saturated water)": _REF_SR1_86,
+        "entropy (saturated steam)": _REF_SR1_86,
+        "density (saturated water)": _REF_SR1_86,
+        "density (saturated steam)": _REF_SR1_86,
     }
 
     TEMPERATURE_CRITICAL_K = 647.096

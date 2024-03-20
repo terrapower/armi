@@ -15,12 +15,10 @@
 """
 This module defines the blueprints input object for assemblies.
 
-In addition to defining the input format, the ``AssemblyBlueprint`` class is responsible
-for constructing ``Assembly`` objects. An attempt has been made to decouple ``Assembly``
-construction from the rest of ARMI as much as possible. For example, an assembly does
-not require a reactor to be constructed, or a geometry file (but uses contained Block
-geometry type as a surrogate).
-
+In addition to defining the input format, the ``AssemblyBlueprint`` class is responsible for
+constructing ``Assembly`` objects. An attempt has been made to decouple ``Assembly`` construction
+from the rest of ARMI as much as possible. For example, an assembly does not require a reactor to be
+constructed, or a geometry file (but uses contained Block geometry type as a surrogate).
 """
 import yamlize
 
@@ -46,8 +44,8 @@ def _configureAssemblyTypes():
 
 class Modifications(yamlize.Map):
     """
-    The names of material modifications and lists of the modification values for
-    each block in the assembly.
+    The names of material modifications and lists of the modification values for each block in the
+    assembly.
     """
 
     key_type = yamlize.Typed(str)
@@ -55,10 +53,7 @@ class Modifications(yamlize.Map):
 
 
 class ByComponentModifications(yamlize.Map):
-    """
-    The name of a component within the block and an associated Modifications
-    object.
-    """
+    """The name of a component within the block and an associated Modifications object."""
 
     key_type = yamlize.Typed(str)
     value_type = Modifications
@@ -68,35 +63,36 @@ class MaterialModifications(yamlize.Map):
     """
     A yamlize map for reading and holding material modifications.
 
-    A user may specify material modifications directly
-    as keys/values on this class, in which case these material modifications will
-    be blanket applied to the entire block.
+    A user may specify material modifications directly as keys/values on this class, in which case
+    these material modifications will be blanket applied to the entire block.
 
-    If the user wishes to specify material modifications specific to a component
-    within the block, they should use the `by component` attribute, specifying
-    the keys/values underneath the name of a specific component in the block.
+    If the user wishes to specify material modifications specific to a component within the block,
+    they should use the `by component` attribute, specifying the keys/values underneath the name of
+    a specific component in the block.
 
     .. impl:: User-impact on material definitions.
         :id: I_ARMI_MAT_USER_INPUT0
         :implements: R_ARMI_MAT_USER_INPUT
 
-        Defines a yaml map attribute for the assembly portion of the blueprints
-        (see :py:class:`~armi.blueprints.assemblyBlueprint.AssemblyBlueprint`) that
-        allows users to specify material attributes as lists corresponding to
-        each axial block in the assembly. Two types of specifications can be made:
+        Defines a yaml map attribute for the assembly portion of the blueprints (see
+        :py:class:`~armi.blueprints.assemblyBlueprint.AssemblyBlueprint`) that allows users to
+        specify material attributes as lists corresponding to each axial block in the assembly. Two
+        types of specifications can be made:
 
-            1. Key-value pairs can be specified directly, where the key is the
-            name of the modification and the value is the list of block values.
+            1. Key-value pairs can be specified directly, where the key is the name of the
+            modification and the value is the list of block values.
 
-            2. The "by component" attribute can be used, in which case the user
-            can specify material attributes that are specific to individual components
-            in each block. This is enabled through the :py:class:`~armi.reactor.blueprints.assemblyBlueprint.ByComponentModifications`
-            class, which basically just allows for one additional layer of attributes
-            corresponding to the component names.
+            2. The "by component" attribute can be used, in which case the user can specify material
+            attributes that are specific to individual components in each block. This is enabled
+            through the
+            :py:class:`~armi.reactor.blueprints.assemblyBlueprint.ByComponentModifications` class,
+            which basically just allows for one additional layer of attributes corresponding to the
+            component names.
 
-        These material attributes can be used during the resolution of material
-        classes during core instantiation (see :py:meth:`~armi.reactor.blueprints.blockBlueprint.BlockBlueprint.construct`
-        and :py:meth:`~armi.reactor.blueprints.componentBlueprint.ComponentBlueprint.construct`).
+        These material attributes can be used during the resolution of material classes during core
+        instantiation (see
+        :py:meth:`~armi.reactor.blueprints.blockBlueprint.BlockBlueprint.construct` and
+        :py:meth:`~armi.reactor.blueprints.componentBlueprint.ComponentBlueprint.construct`).
     """
 
     key_type = yamlize.Typed(str)

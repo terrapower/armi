@@ -13,7 +13,8 @@
 # limitations under the License.
 
 """
-This module defines the ARMI input for a component definition, and code for constructing an ARMI ``Component``.
+This module defines the ARMI input for a component definition, and code for constructing an ARMI
+``Component``.
 
 Special logic is required for handling component links.
 """
@@ -69,11 +70,11 @@ class ComponentDimension(yamlize.Object):
     @classmethod
     def to_yaml(cls, dumper, self, _rtd=None):
         """
-        Override the ``Yamlizable.to_yaml`` to remove the object-like behavior, otherwise we'd end up with a
-        ``{value: ...}`` dictionary.
+        Override the ``Yamlizable.to_yaml`` to remove the object-like behavior, otherwise we'd end
+        up with a ``{value: ...}`` dictionary.
 
-        This allows someone to programmatically edit the component dimensions without using the ``ComponentDimension``
-        class.
+        This allows someone to programmatically edit the component dimensions without using the
+        ``ComponentDimension`` class.
         """
         if not isinstance(self, cls):
             self = cls(self)
@@ -117,36 +118,36 @@ class ComponentDimension(yamlize.Object):
 
 class ComponentBlueprint(yamlize.Object):
     """
-    This class defines the inputs necessary to build ARMI component objects. It uses ``yamlize`` to enable serialization
-    to and from YAML.
+    This class defines the inputs necessary to build ARMI component objects. It uses ``yamlize`` to
+    enable serialization to and from YAML.
 
     .. impl:: Construct component from blueprint file.
         :id: I_ARMI_BP_COMP
         :implements: R_ARMI_BP_COMP
 
-        Defines a yaml construct that allows the user to specify attributes of a
-        component from within their blueprints file, including a name, flags, shape,
-        material and/or isotopic vector, input temperature, corresponding component dimensions,
-        and ID for placement in a block lattice (see :py:class:`~armi.reactor.blueprints.blockBlueprint.BlockBlueprint`).
-        Component dimensions that can be defined for a given component are dependent
-        on the component's ``shape`` attribute, and the dimensions defining each
-        shape can be found in the :py:mod:`~armi.reactor.components` module.
+        Defines a yaml construct that allows the user to specify attributes of a component from
+        within their blueprints file, including a name, flags, shape, material and/or isotopic
+        vector, input temperature, corresponding component dimensions, and ID for placement in a
+        block lattice (see :py:class:`~armi.reactor.blueprints.blockBlueprint.BlockBlueprint`).
+        Component dimensions that can be defined for a given component are dependent on the
+        component's ``shape`` attribute, and the dimensions defining each shape can be found in the
+        :py:mod:`~armi.reactor.components` module.
 
-        Limited validation on the inputs is performed to ensure that the component
-        shape corresponds to a valid shape defined by the ARMI application.
+        Limited validation on the inputs is performed to ensure that the component shape corresponds
+        to a valid shape defined by the ARMI application.
 
-        Relies on the underlying infrastructure from the ``yamlize`` package for
-        reading from text files, serialization, and internal storage of the data.
+        Relies on the underlying infrastructure from the ``yamlize`` package for reading from text
+        files, serialization, and internal storage of the data.
 
-        Is implemented as part of a blueprints file by being imported and used
-        as an attribute within the larger :py:class:`~armi.reactor.blueprints.Blueprints`
-        class. Can also be used within the :py:class:`~armi.reactor.blueprints.blockBlueprint.BlockBlueprint`
-        class to enable specification of components directly within the "blocks"
-        portion of the blueprint file.
+        Is implemented as part of a blueprints file by being imported and used as an attribute
+        within the larger :py:class:`~armi.reactor.blueprints.Blueprints` class. Can also be used
+        within the :py:class:`~armi.reactor.blueprints.blockBlueprint.BlockBlueprint` class to
+        enable specification of components directly within the "blocks" portion of the blueprint
+        file.
 
         Includes a ``construct`` method, which instantiates an instance of
-        :py:class:`~armi.reactor.components.component.Component` with the characteristics
-        specified in the blueprints (see :need:`I_ARMI_MAT_USER_INPUT1`).
+        :py:class:`~armi.reactor.components.component.Component` with the characteristics specified
+        in the blueprints (see :need:`I_ARMI_MAT_USER_INPUT1`).
     """
 
     name = yamlize.Attribute(type=str)
@@ -340,21 +341,21 @@ def insertDepletableNuclideKeys(c, blueprint):
         This is called during the component construction process for each component from within
         :py:meth:`~armi.reactor.blueprints.componentBlueprint.ComponentBlueprint.construct`.
 
-        For a given initialized component, check its flags to determine if it
-        has been marked as depletable. If it is, use :py:func:`~armi.nucDirectory.nuclideBases.initReachableActiveNuclidesThroughBurnChain`
-        to apply the user-specifications in the "nuclide flags" section of the blueprints
-        to the component such that all active isotopes and derivatives of those
-        isotopes in the burn chain are initialized to have an entry in the component's
-        ``numberDensities`` dictionary.
+        For a given initialized component, check its flags to determine if it has been marked as
+        depletable. If it is, use
+        :py:func:`~armi.nucDirectory.nuclideBases.initReachableActiveNuclidesThroughBurnChain` to
+        apply the user-specifications in the "nuclide flags" section of the blueprints to the
+        Component such that all active isotopes and derivatives of those isotopes in the burn chain
+        are initialized to have an entry in the component's ``numberDensities`` dictionary.
 
-        Note that certain case settings, including ``fpModel`` and ``fpModelLibrary``,
-        may trigger modifications to the active nuclides specified by the user
-        in the "nuclide flags" section of the blueprints.
+        Note that certain case settings, including ``fpModel`` and ``fpModelLibrary``, may trigger
+        modifications to the active nuclides specified by the user in the "nuclide flags" section of
+        the blueprints.
 
     Notes
     -----
-    This should be moved to a neutronics/depletion plugin hook but requires some
-    refactoring in how active nuclides and reactors are initialized first.
+    This should be moved to a neutronics/depletion plugin hook but requires some refactoring in how
+    active nuclides and reactors are initialized first.
 
     See Also
     --------
@@ -375,8 +376,8 @@ class ComponentKeyedList(yamlize.KeyedList):
 
     This is used within the ``components:`` main entry of the blueprints.
 
-    This is *not* (yet) used when components are defined within a block blueprint.
-    That is handled in the blockBlueprint construct method.
+    This is *not* (yet) used when components are defined within a block blueprint. That is handled
+    in the blockBlueprint construct method.
     """
 
     item_type = ComponentBlueprint

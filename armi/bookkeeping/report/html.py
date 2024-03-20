@@ -180,12 +180,14 @@ def encode64(file_path):
         from armi import runLog
 
         runLog.warning(
-            "'.pdf' images cannot be embedded into this HTML report. {} will not be inserted.".format(
-                file_path
+            (
+                f"'.pdf' images cannot be embedded into this HTML report. {file_path} will not be"
+                " inserted."
             )
         )
-        return "Faulty PDF image inclusion: {} attempted to be inserted but no support is currently offered for such.".format(
-            file_path
+        return (
+            f"Faulty PDF image inclusion: {file_path} attempted to be inserted but no support is "
+            "currently offered for such."
         )
     with open(file_path, "rb") as img_src:
         return r"data:image/{};base64,{}".format(

@@ -925,7 +925,8 @@ class DlayxsTests(unittest.TestCase):
             ].precursorDecayConstants
             self.assertTrue(numpy.allclose(dlayData, endfProvidedData, 1e-3))
         except AssertionError:
-            # this is reraised because generating the message might take some time to format all the data from the arrays
+            # this is reraised because generating the message might take some time to format all the
+            # data from the arrays
             raise AssertionError(
                 "{} was different,\nexpected:{}\nactual:{}".format(
                     nucName, endfProvidedData, dlayData
@@ -935,7 +936,8 @@ class DlayxsTests(unittest.TestCase):
             pass
 
     @unittest.skip(
-        "All the delayNeutronsPerFission data from mcc-v3 does not agree, this may be because they are from ENDV/B VI.8."
+        "All the delayNeutronsPerFission data from mcc-v3 does not agree, this may be because they "
+        "are from ENDV/B VI.8."
     )
     def test_ENDFVII1NeutronsPerFission(self):
         """
@@ -1062,7 +1064,8 @@ class DlayxsTests(unittest.TestCase):
             numpyData = numpy.array(endfProvidedData)
             self.assertTrue(numpy.allclose(dlayData, numpyData, 1e-3))
         except AssertionError:
-            # this is reraised because generating the message might take some time to format all the data from the arrays
+            # this is reraised because generating the message might take some time to format all the
+            # data from the arrays
             raise AssertionError(
                 "{} was different,\nexpected:{}\nactual:{}".format(
                     nucName, numpyData, dlayData

@@ -412,7 +412,8 @@ class TestTightCoupling(unittest.TestCase):
 
         Notes
         -----
-        - Assertion #1: ensure that the convergence of Keff, eps, is greater than 1e-5 (the prescribed convergence criteria)
+        - Assertion #1: ensure that the convergence of Keff, eps, is greater than 1e-5 (the
+          prescribed convergence criteria)
         - Assertion #2: ensure that eps is (prevIterKeff - currIterKeff)
         """
         prevIterKeff = 0.9

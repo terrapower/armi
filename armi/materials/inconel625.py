@@ -231,11 +231,12 @@ class Inconel625(Material):
         r"""
         From http://www.specialmetals.com/assets/documents/alloys/inconel/inconel-alloy-625.pdf.
 
-        Using the correlation for linearExpansionPercent, the 2nd order polynomial is divided by 100 to convert
-        from percent strain to strain, then differentiated with respect to temperature to find the correlation
-        for instantaneous linear expansion.
+        Using the correlation for linearExpansionPercent, the 2nd order polynomial is divided by 100
+        to convert from percent strain to strain, then differentiated with respect to temperature to
+        find the correlation for instantaneous linear expansion.
 
-        i.e. for a linearExpansionPercent correlation of a*Tc**2 + b*Tc + c, the linearExpansion correlation is 2*a/100*Tc + b/100
+        i.e. for a linearExpansionPercent correlation of a*Tc**2 + b*Tc + c, the linearExpansion
+        correlation is 2*a/100*Tc + b/100
 
         2*(5.083e-7/100.0)*Tc + 1.125e-3/100.0
 

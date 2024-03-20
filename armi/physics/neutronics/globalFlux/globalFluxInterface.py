@@ -12,7 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""The Global flux interface provide a base class for all neutronics tools that compute the neutron and/or photon flux."""
+"""The Global flux interface provide a base class for all neutronics tools that compute the neutron
+and/or photon flux.
+"""
 import math
 from typing import Dict, Optional
 
@@ -1029,7 +1031,8 @@ class DoseResultsMapper(GlobalFluxResultMapper):
                     b.p.percentBuPeak + peakRatePerSecond * stepTimeInSeconds
                 )
             else:
-                # No rate, make bad assumption.... assumes peaking is same at each position through shuffling/irradiation history...
+                # No rate, make bad assumption.... assumes peaking is same at each position through
+                # shuffling/irradiation history...
                 runLog.warning(
                     "Scaling burnup by current peaking factor... This assumes peaking "
                     "factor was constant through shuffling/irradiation history.",
@@ -1045,7 +1048,7 @@ class DoseResultsMapper(GlobalFluxResultMapper):
         self.updateLoadpadDose()
 
     def updateCycleDoseParams(self):
-        r"""Updates reactor params based on the amount of dose (detailedDpa) accrued this cycle.
+        """Updates reactor params based on the amount of dose (detailedDpa) accrued this cycle.
 
         Params updated include:
 
@@ -1135,7 +1138,6 @@ class DoseResultsMapper(GlobalFluxResultMapper):
         See Also
         --------
         _calcLoadPadDose : computes the load pad dose
-
         """
         peakPeak, peakAvg = self._calcLoadPadDose()
         if peakPeak is None:
@@ -1165,8 +1167,7 @@ class DoseResultsMapper(GlobalFluxResultMapper):
             loadPadLength : float
                 The axial length of the load pad to average over
 
-        This builds axial splines over the assemblies and then integrates them
-        over the load pad.
+        This builds axial splines over the assemblies and then integrates them over the load pad.
 
         The assumptions are that detailedDpa is the average, defined in the center
         and detailedDpaPeak is the peak, also defined in the center of blocks.
@@ -1187,7 +1188,6 @@ class DoseResultsMapper(GlobalFluxResultMapper):
         --------
         writeLoadPadDoseSummary : prints out the dose
         Assembly.getParamValuesAtZ : gets the parameters at any arbitrary z point
-
         """
         loadPadBottom = self.options.loadPadElevation
         loadPadLength = self.options.loadPadLength
@@ -1325,7 +1325,6 @@ def calcReactionRates(obj, keff, lib):
 
     lib : XSLibrary
         Microscopic cross sections to use in computing the reaction rates.
-
 
     .. impl:: Return the reaction rates for a given ArmiObject
         :id: I_ARMI_FLUX_RX_RATES

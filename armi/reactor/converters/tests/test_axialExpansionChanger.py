@@ -864,7 +864,8 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
         Notes
         -----
         For R_ARMI_INP_COLD_HEIGHT, the action of axial expansion occurs in setUp() during core
-        construction, specifically in :py:meth:`constructAssem <armi.reactor.blueprints.Blueprints.constructAssem>`
+        construction, specifically in
+        :py:meth:`constructAssem <armi.reactor.blueprints.Blueprints.constructAssem>`
 
         Two assertions here:
             1. total assembly height should be preserved (through use of top dummy block)
@@ -913,14 +914,15 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
     def checkColdHeightBlockMass(
         self, bStd: HexBlock, bExp: HexBlock, flagType: Flags, nuclide: str
     ):
-        """Checks that nuclide masses for blocks with input cold heights and "inputHeightsConsideredHot": True are underpredicted.
+        """Checks that nuclide masses for blocks with input cold heights and
+        "inputHeightsConsideredHot": True are underpredicted.
 
         Notes
         -----
-        If blueprints have cold blocks heights with "inputHeightsConsideredHot": True in the inputs, then
-        the nuclide densities are thermally expanded but the block height is not. This ultimately results in
-        nuclide masses being underpredicted relative to the case where both nuclide densities and block heights
-        are thermally expanded.
+        If blueprints have cold blocks heights with "inputHeightsConsideredHot": True in the inputs,
+        then the nuclide densities are thermally expanded but the block height is not. This
+        ultimately results in nuclide masses being underpredicted relative to the case where both
+        nuclide densities and block heights are thermally expanded.
         """
         # custom materials don't expand
         if not isinstance(bStd.getComponent(flagType).material, custom.Custom):
@@ -976,7 +978,8 @@ class TestLinkage(AxialExpansionTestBase, unittest.TestCase):
         Notes
         -----
         - components "typeA" and "typeB" are assumed to be vertically stacked
-        - two assertions: 1) comparing "typeB" component to "typeA"; 2) comparing "typeA" component to "typeB"
+        - two assertions: 1) comparing "typeB" component to "typeA"; 2) comparing "typeA" component
+          to "typeB"
         - the different assertions are particularly useful for comparing two annuli
         - to add Component class types to a test:
             Add dictionary entry with following:

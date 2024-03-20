@@ -578,19 +578,17 @@ class TestCircle(TestShapedComponent):
     def test_componentInteractionsLinkingByDimensions(self):
         """Tests linking of Components by dimensions.
 
-        .. test:: Show the dimensions of a liquid Component can be defined to depend on the solid Components that bound it.
+        The component ``gap``, representing the fuel-clad gap filled with Void, is defined with
+        dimensions that depend on the fuel outer diameter and clad inner diameter. The
+        :py:meth:`~armi.reactor.components.component.Component.resolveLinkedDims` method links the
+        gap dimensions appropriately when the Component is constructed, and the test shows the area
+        of the gap is calculated correctly based on the thermally-expanded dimensions of the fuel
+        and clad Components.
+
+        .. test:: Show the dimensions of a liquid Component can be defined to depend on the solid
+            Components that bound it.
             :id: T_ARMI_COMP_FLUID1
             :tests: R_ARMI_COMP_FLUID
-
-        The component ``gap``, representing the fuel-clad gap filled with Void,
-        is defined with dimensions that depend on the fuel outer diameter and
-        clad inner diameter. The
-        :py:meth:`~armi.reactor.components.component.Component.resolveLinkedDims`
-        method links the gap dimensions appropriately when the Component is
-        constructed, and the test shows the area of the gap is calculated
-        correctly based on the thermally-expanded dimensions of the fuel and
-        clad Components.
-
         """
         nPins = 217
         fuelDims = {"Tinput": 25.0, "Thot": 430.0, "od": 0.9, "id": 0.0, "mult": nPins}
@@ -770,23 +768,23 @@ class TestComponentExpansion(unittest.TestCase):
                 circle.material.density(Tc=circle.temperatureInC),
             )
 
-        # brief 2D expansion with set temp to show mass is conserved
-        # hot height would come from block value
+        # brief 2D expansion with set temp to show mass is conserved hot height would come from
+        # block value
         warmMass = circle1.density() * circle1.getArea() * hotHeight
         circle1.setTemperature(self.tHot)
         hotMass = circle1.density() * circle1.getArea() * hotHeight
         self.assertAlmostEqual(warmMass, hotMass)
         circle1.setTemperature(self.tWarm)
 
-        # Change temp to circle 2 temp  to show equal to circle2
-        # and then change back to show recoverable to original values
+        # Change temp to circle 2 temp  to show equal to circle2 and then change back to show
+        # recoverable to original values
         oldArea = circle1.getArea()
         initialDens = circle1.density()
 
         # when block.setHeight is called (which effectively changes component height)
-        # component.setNumberDensity is called (for solid isotopes) to adjust the number
-        # density so that now the 2D expansion will be approximated/expanded around
-        # the hot temp which is akin to these adjustments
+        # component.setNumberDensity is called (for solid isotopes) to adjust the number density so
+        # that now the 2D expansion will be approximated/expanded around the hot temp which is akin
+        # to these adjustments
         heightFactor = circle1.getHeightFactor(self.tHot)
         circle1.adjustDensityForHeightExpansion(self.tHot)  # apply temp at new height
         circle1.setTemperature(self.tHot)
