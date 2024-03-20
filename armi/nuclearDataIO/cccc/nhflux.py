@@ -251,8 +251,11 @@ class NhfluxStream(cccc.StreamWithDataContainer):
         # Read the hex ordering map between DIF3D nodal and DIF3D GEODST. Also read index
         # pointers to incoming partial currents on outer reactor surface (these don't
         # belong to any assembly). Incoming partial currents are non-zero due to flux
-        # extrapolation
-        self._rwGeodstCoordMap2D()
+        # extrapolation. This record is only required when nSurf is greater than 1. It
+        # is equal to 1 for VARSRC files, which are a subset of NHFLUX files; VARSRC files
+        # do not have a 2D record (or 4D or 5D records).
+        if self._metadata["nSurf"] > 1:
+            self._rwGeodstCoordMap2D()
 
         # Number of energy groups
         ng = self._metadata["ngroup"]
@@ -318,7 +321,7 @@ class NhfluxStream(cccc.StreamWithDataContainer):
                         self._data.fluxMomentsAll[:, z, :, gEff]
                     )
 
-                # Process currents
+                # Process currents, but only if iwnhfl is not equal to 1
                 if self._metadata["iwnhfl"] != 1:
                     # Loop through axial nodes
                     for z in range(nz):
