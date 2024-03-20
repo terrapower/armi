@@ -361,7 +361,7 @@ class TestGridBlueprintsSection(unittest.TestCase):
 
     def test_simpleRead(self):
         gridDesign = self.grids["control"]
-        _ = gridDesign.construct()
+        grid = gridDesign.construct()
         self.assertAlmostEqual(grid.pitch, 1.2)
         self.assertEqual(gridDesign.gridContents[-8, 0], "6")
 
