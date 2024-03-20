@@ -447,18 +447,6 @@ def getBlockParameterDefinitions():
         )
 
         pb.defParam(
-            "rxFuelDopplerConstant",
-            units=f"{units.REACTIVITY}*{units.DEGK}^(n-1)",
-            description="Fuel Doppler constant",
-        )
-
-        pb.defParam(
-            "rxFuelVoidedDopplerConstant",
-            units=f"{units.REACTIVITY}*{units.DEGK}^(n-1)",
-            description="Fuel voided-coolant Doppler constant",
-        )
-
-        pb.defParam(
             "rxFuelTemperatureCoeffPerMass",
             units=f"{units.REACTIVITY}/{units.KG}",
             description="Fuel temperature coefficient",
@@ -478,12 +466,6 @@ def getBlockParameterDefinitions():
         )
 
         pb.defParam(
-            "rxCladDopplerConstant",
-            units=f"{units.REACTIVITY}*{units.DEGK}^(n-1)",
-            description="Clad Doppler constant",
-        )
-
-        pb.defParam(
             "rxCladTemperatureCoeffPerMass",
             units=f"{units.REACTIVITY}/{units.KG}",
             description="Clad temperature coefficient",
@@ -494,12 +476,6 @@ def getBlockParameterDefinitions():
             "rxStructureDensityCoeffPerMass",
             units=f"{units.REACTIVITY}/{units.KG}",
             description="Structure density coefficient",
-        )
-
-        pb.defParam(
-            "rxStructureDopplerConstant",
-            units=f"{units.REACTIVITY}*{units.DEGK}^(n-1)",
-            description="Structure Doppler constant",
         )
 
         pb.defParam(
@@ -548,6 +524,30 @@ def getBlockParameterDefinitions():
             "rxFuelVoidedDopplerCoeffPerTemp",
             units=f"{units.REACTIVITY}/{units.DEGK}",
             description="Fuel voided-coolant Doppler coefficient",
+        )
+
+        pb.defParam(
+            "rxFuelDopplerConstant",
+            units=f"{units.REACTIVITY}*{units.DEGK}^(n-1)",
+            description="Fuel Doppler constant",
+        )
+
+        pb.defParam(
+            "rxFuelVoidedDopplerConstant",
+            units=f"{units.REACTIVITY}*{units.DEGK}^(n-1)",
+            description="Fuel voided-coolant Doppler constant",
+        )
+
+        pb.defParam(
+            "rxStructureDopplerConstant",
+            units=f"{units.REACTIVITY}*{units.DEGK}^(n-1)",
+            description="Structure Doppler constant",
+        )
+
+        pb.defParam(
+            "rxCladDopplerConstant",
+            units=f"{units.REACTIVITY}*{units.DEGK}^(n-1)",
+            description="Clad Doppler constant",
         )
 
         pb.defParam(
