@@ -150,7 +150,7 @@ class Serializer:
         data within a database file; the data stored in a database are sensitive to the code that
         wrote them. Changing the method that a Serializer uses to pack or unpack data may break
         compatibility with old database files. Therefore, Serializers should be diligent about
-        signalling changes by updating their version. It is also good practice, whenever possible,
+        signaling changes by updating their version. It is also good practice, whenever possible,
         to support reading old versions so that database files written by old versions can still be
         read.
 
