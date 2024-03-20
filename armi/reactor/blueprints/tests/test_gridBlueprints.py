@@ -361,9 +361,9 @@ class TestGridBlueprintsSection(unittest.TestCase):
 
     def test_simpleRead(self):
         gridDesign = self.grids["control"]
-        grid = gridDesign.construct()
+        _ = gridDesign.construct()
         self.assertAlmostEqual(grid.pitch, 1.2)
-        self.assertEqual(gridDesign.gridContents[0, -8], "6")
+        self.assertEqual(gridDesign.gridContents[-8, 0], "6")
 
         # Cartesian full, odd
         gridDesign2 = self.grids["sfp"]

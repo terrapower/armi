@@ -587,7 +587,7 @@ additional/custom components with arbitrary dimensions may be provided by the us
 
 .. exec::
     from armi.reactor.components import ComponentType
-    from armi.utils.dochelpers import createListTable
+    from dochelpers import createListTable
 
     rows = [['Component Name', 'Dimensions']]
     for c in ComponentType.TYPES.values():

@@ -193,7 +193,10 @@ def writeWelcomeHeaders(o, cs):
                 )
                 # If this is on Windows: run sys info on each unique node too
                 if "win" in sys.platform:
-                    sysInfoCmd = 'systeminfo | findstr /B /C:"OS Name" /B /C:"OS Version" /B /C:"Processor" && systeminfo | findstr /E /C:"Mhz"'
+                    sysInfoCmd = (
+                        'systeminfo | findstr /B /C:"OS Name" /B /C:"OS Version" /B '
+                        '/C:"Processor" && systeminfo | findstr /E /C:"Mhz"'
+                    )
                     out = subprocess.run(
                         sysInfoCmd, capture_output=True, text=True, shell=True
                     )

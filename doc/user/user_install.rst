@@ -63,6 +63,18 @@ Getting the code
 ================
 Choose one of the following two installation methods depending on your needs.
 
+Step 0: Update PIP
+------------------
+In order to use the commands below, you're going to want to use a version of ``pip>=22.1``.
+Two common ways of solving that are::
+
+    (armi-venv) $ pip install pip>=22.1
+
+or, in most cases::
+
+    (armi-venv) $ pip install -U pip
+
+
 Option 1: Install as a library
 ------------------------------
 If you plan on running ARMI without viewing or modifying source code, you may
@@ -71,6 +83,7 @@ dependencies. This is useful for quick evaluations or to use it as a dependency
 in another project::
 
    	(armi-venv) $ pip install https://github.com/terrapower/armi/archive/main.zip
+
 
 Option 2: Install as a repository (for developers)
 --------------------------------------------------
@@ -86,7 +99,7 @@ the git repository with::
 Now install ARMI with all its dependencies::
 
     (armi-venv) $ cd armi
-    (armi-venv) $ pip install -e .[test]
+    (armi-venv) $ pip install -e ".[test]"
 
 .. tip:: If you don't want to install ARMI into your venv, you will need to add the ARMI source
 	location to your system's ``PYTHONPATH`` environment variable so that

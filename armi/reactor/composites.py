@@ -16,18 +16,21 @@
 This module contains the basic composite pattern underlying the reactor package.
 
 This follows the principles of the `Composite Design Pattern
-<https://en.wikipedia.org/wiki/Composite_pattern>`_ to allow the construction of a
-part/whole hierarchy representing a physical nuclear reactor. The composite objects act
-somewhat like lists: they can be indexed, iterated over, appended, extended, inserted,
-etc. Each member of the hierarchy knows its children and its parent, so full access to
-the hierarchy is available from everywhere. This design was chosen because of the close
-analogy of the model to the physical nature of nuclear reactors.
+<https://en.wikipedia.org/wiki/Composite_pattern>`_ to allow the construction of a part/whole
+hierarchy representing a physical nuclear reactor. The composite objects act somewhat like lists:
+they can be indexed, iterated over, appended, extended, inserted, etc. Each member of the hierarchy
+knows its children and its parent, so full access to the hierarchy is available from everywhere.
+This design was chosen because of the close analogy of the model to the physical nature of nuclear
+reactors.
 
-.. warning:: Because each member of the hierarchy is linked to the entire tree,
-    it is often unsafe to save references to individual members; it can cause
-    large and unexpected memory inefficiencies.
+Warning
+-------
+Because each member of the hierarchy is linked to the entire tree, it is often unsafe to save
+references to individual members; it can cause large and unexpected memory inefficiencies.
 
-See Also: :doc:`/developer/index`.
+See Also
+--------
+:doc:`/developer/index`.
 """
 import collections
 import itertools
@@ -244,9 +247,9 @@ class CompositeModelType(resolveCollections.ResolveParametersMeta):
     """
     Metaclass for tracking subclasses of ArmiObject subclasses.
 
-    It is often useful to have an easily-accessible collection of all classes that
-    participate in the ARMI composite reactor model. This metaclass maintains a
-    collection of all defined subclasses, called TYPES.
+    It is often useful to have an easily-accessible collection of all classes that participate in
+    the ARMI composite reactor model. This metaclass maintains a collection of all defined
+    subclasses, called TYPES.
     """
 
     TYPES: Dict[str, Type] = dict()
@@ -273,32 +276,29 @@ class ArmiObject(metaclass=CompositeModelType):
     This:
 
     * declares the interface for objects in the composition
-    * implements default behavior for the interface common to all
-      classes
-    * Declares an interface for accessing and managing
-      child objects
+    * implements default behavior for the interface common to all classes
+    * Declares an interface for accessing and managing child objects
     * Defines an interface for accessing parents.
 
-    Called "component" in gang of four, this is an ArmiObject here because the word
-    component was already taken in ARMI.
+    Called "component" in gang of four, this is an ArmiObject here because the word component was
+    already taken in ARMI.
 
-    The :py:class:`armi.reactor.parameters.ResolveParametersMeta` metaclass is used to
-    automatically create ``ParameterCollection`` subclasses for storing parameters
-    associated with any particular subclass of ArmiObject. Defining a ``pDefs`` class
-    attribute in the definition of a subclass of ArmiObject will lead to the creation of
-    a new subclass of py:class:`armi.reactor.parameters.ParameterCollection`, which will
-    contain the definitions from that class's ``pDefs`` as well as the definitions for
-    all of its parents. A new ``paramCollectionType`` class attribute will be added to
-    the ArmiObject subclass to reflect which type of parameter collection should be
-    used.
+    The :py:class:`armi.reactor.parameters.ResolveParametersMeta` metaclass is used to automatically
+    create ``ParameterCollection`` subclasses for storing parameters associated with any particular
+    subclass of ArmiObject. Defining a ``pDefs`` class attribute in the definition of a subclass of
+    ArmiObject will lead to the creation of a new subclass of
+    py:class:`armi.reactor.parameters.ParameterCollection`, which will contain the definitions from
+    that class's ``pDefs`` as well as the definitions for all of its parents. A new
+    ``paramCollectionType`` class attribute will be added to the ArmiObject subclass to reflect
+    which type of parameter collection should be used.
 
-    .. warning::
-        This class has far too many public methods. We are in the midst of a composite
-        tree cleanup that will likely break these out onto a number of separate functional
-        classes grouping things like composition, location, shape/dimensions, and
-        various physics queries. Methods are being collected here from the various
-        specialized subclasses (Block, Assembly) in preparation for this next step.
-        As a result, the public API on this method should be considered unstable.
+    Warning
+    -------
+    This class has far too many public methods. We are in the midst of a composite tree cleanup that
+    will likely break these out onto a number of separate functional classes grouping things like
+    composition, location, shape/dimensions, and various physics queries. Methods are being
+    collected here from the various specialized subclasses (Block, Assembly) in preparation for this
+    next step. As a result, the public API on this method should be considered unstable.
 
     .. impl:: Parameters are accessible throughout the armi tree.
         :id: I_ARMI_PARAM_PART
@@ -566,7 +566,6 @@ class ArmiObject(metaclass=CompositeModelType):
         ----------
         typeSpec : TypeSpec
             Requested type of the child
-
         """
         for c in self.getChildren(deep):
             if c.hasFlags(typeSpec, exact=False):
@@ -587,7 +586,6 @@ class ArmiObject(metaclass=CompositeModelType):
         --------
         self.doChildrenHaveFlags
         self.containsOnlyChildrenWithFlags
-
         """
         return any(self.doChildrenHaveFlags(typeSpec))
 
@@ -604,7 +602,6 @@ class ArmiObject(metaclass=CompositeModelType):
         --------
         self.doChildrenHaveFlags
         self.containsAtLeastOneChildWithFlags
-
         """
         return all(self.doChildrenHaveFlags(typeSpec))
 
@@ -2678,7 +2675,6 @@ class ArmiObject(metaclass=CompositeModelType):
             Gets components that are made of a particular material
         gatherMaterialsByVolume
             Classifies all materials by volume
-
         """
         return getDominantMaterial([self], typeSpec, exact)
 
@@ -3196,6 +3192,7 @@ class Composite(ArmiObject):
         if nuclides is None:
             nuclides = self.getNuclides()
 
+        # ruff: noqa: SIM110
         for nucName in nuclides:
             if isinstance(nuclideBases.byName[nucName], nuclideBases.LumpNuclideBase):
                 return True
@@ -3338,19 +3335,18 @@ class StateRetainer:
     """
     Retains state during some operations.
 
-    This can be used to temporarily cache state, perform an operation, extract some info, and
-    then revert back to the original state.
+    This can be used to temporarily cache state, perform an operation, extract some info, and then
+    revert back to the original state.
 
-    * A state retainer is faster than restoring state from a database as it reduces
-      the number of IO reads; however, it does use more memory.
+    * A state retainer is faster than restoring state from a database as it reduces the number of IO
+      reads; however, it does use more memory.
 
     * This can be used on any object within the composite pattern via with
       ``[rabc].retainState([list], [of], [parameters], [to], [retain]):``.
       Use on an object up in the hierarchy applies to all objects below as well.
 
-    * This is intended to work across MPI, so that if you were to broadcast the
-      reactor the state would be correct; however the exact implication on
-      ``parameters`` may be unclear.
+    * This is intended to work across MPI, so that if you were to broadcast the reactor the state
+      would be correct; however the exact implication on ``parameters`` may be unclear.
 
     """
 
@@ -3364,9 +3360,8 @@ class StateRetainer:
             composite object to retain state (recursively)
 
         paramsToApply: iterable of parameters.Parameter
-            Iterable of parameters.Parameter to retain updated values after `__exit__`.
-            All other parameters are reverted to the original state, i.e. retained at
-            the original value.
+            Iterable of parameters.Parameter to retain updated values after `__exit__`. All other
+            parameters are reverted to the original state, i.e. retained at the original value.
         """
         self.composite = composite
         self.paramsToApply = set(paramsToApply or [])
@@ -3379,7 +3374,9 @@ class StateRetainer:
         self._enterExitHelper(lambda obj: obj.restoreBackup(self.paramsToApply))
 
     def _enterExitHelper(self, func):
-        """Helper method for ``__enter__`` and ``__exit__``. ``func`` is a lambda to either ``backUp()`` or ``restoreBackup()``."""
+        """Helper method for ``__enter__`` and ``__exit__``. ``func`` is a lambda to either
+        ``backUp()`` or ``restoreBackup()``.
+        """
         paramDefs = set()
         for child in [self.composite] + self.composite.getChildren(
             deep=True, includeMaterials=True
@@ -3401,8 +3398,8 @@ def gatherMaterialsByVolume(
     Parameters
     ----------
     objects : list of ArmiObject
-        Objects to look within. This argument allows clients to search though some subset
-        of the three (e.g. when you're looking for all CLADDING components within FUEL blocks)
+        Objects to look within. This argument allows clients to search though some subset of the
+        three (e.g. when you're looking for all CLADDING components within FUEL blocks)
 
     typeSpec : TypeSpec
         Flags for the components to look at
@@ -3412,9 +3409,9 @@ def gatherMaterialsByVolume(
 
     Notes
     -----
-    This helper method is outside the main ArmiObject tree for the special clients that need
-    to filter both by container type (e.g. Block type) with one set of flags, and Components
-    with another set of flags.
+    This helper method is outside the main ArmiObject tree for the special clients that need to
+    filter both by container type (e.g. Block type) with one set of flags, and Components with
+    another set of flags.
 
     .. warning:: This is a **composition** related helper method that will likely be filed into
         classes/modules that deal specifically with the composition of things in the data model.
@@ -3439,18 +3436,19 @@ def getDominantMaterial(
     """
     Return the first sample of the most dominant material (by volume) in a set of objects.
 
-    .. warning:: This is a **composition** related helper method that will likely be filed into
-        classes/modules that deal specifically with the composition of things in the data model.
-        Thus clients that use it from here should expect to need updates soon.
+    Warning
+    -------
+    This is a **composition** related helper method that will likely be filed into classes/modules
+    that deal specifically with the composition of things in the data model. Thus clients that use
+    it from here should expect to need updates soon.
     """
     volumes, samples = gatherMaterialsByVolume(objects, typeSpec, exact)
 
     if volumes:
         # find matName with max volume
         maxMatName = list(sorted(volumes.items(), key=lambda item: item[1])).pop()[0]
-        # return this material. Note that if this material
-        # has properties like Zr-frac, enrichment, etc. then this will
-        # just return one in the batch, not an average.
+        # return this material. Note that if this material has properties like Zr-frac, enrichment,
+        # etc. then this will just return one in the batch, not an average.
         return samples[maxMatName]
 
     return None
@@ -3461,13 +3459,13 @@ def getReactionRateDict(nucName, lib, xsSuffix, mgFlux, nDens):
     Parameters
     ----------
     nucName : str
-        nuclide name -- e.g. 'U235', 'PU239', etc. Not to be confused with the nuclide
-        _label_, see the nucDirectory module for a description of the difference.
+        nuclide name -- e.g. 'U235', 'PU239', etc. Not to be confused with the nuclide _label_, see
+        the nucDirectory module for a description of the difference.
     lib : isotxs
         cross section library
     xsSuffix : str
-        cross section suffix, consisting of the type followed by the burnup group,
-        e.g. 'AB' for the second burnup group of type A
+        cross section suffix, consisting of the type followed by the burnup group, e.g. 'AB' for the
+        second burnup group of type A
     mgFlux : numpy.nArray
         integrated mgFlux (n-cm/s)
     nDens : float

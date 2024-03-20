@@ -205,7 +205,7 @@ class GridBlueprint(yamlize.Object):
         class.
 
         Includes a ``construct`` method, which instantiates an instance of one
-        of the subclasses of :py:class:`~armi.reactor.grids.structuredgrid.StructuredGrid`.
+        of the subclasses of :py:class:`~armi.reactor.grids.structuredGrid.StructuredGrid`.
         This is typically called from within :py:meth:`~armi.reactor.blueprints.blockBlueprint.BlockBlueprint.construct`,
         which then also associates the individual components in the block with
         locations specifed in the grid.
@@ -374,7 +374,7 @@ class GridBlueprint(yamlize.Object):
             spatialGrid = grids.HexGrid.fromPitch(
                 pitch,
                 numRings=maxIndex + 2,
-                pointedEndUp=geom == geometry.HEX_CORNERS_UP,
+                cornersUp=geom == geometry.HEX_CORNERS_UP,
             )
         elif geom == geometry.CARTESIAN:
             # if full core or not cut-off, bump the first assembly from the center of
