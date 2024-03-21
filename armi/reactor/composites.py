@@ -2513,16 +2513,6 @@ class ArmiObject(metaclass=CompositeModelType):
 
         return reportGroups
 
-    def printDensities(self, expandFissionProducts=False):
-        """Get lines that have the number densities of a object."""
-        numberDensities = self.getNumberDensities(
-            expandFissionProducts=expandFissionProducts
-        )
-        lines = []
-        for nucName, nucDens in numberDensities.items():
-            lines.append("{0:6s} {1:.7E}".format(nucName, nucDens))
-        return lines
-
     def expandAllElementalsToIsotopics(self):
         reactorNucs = self.getNuclides()
         for elemental in nuclideBases.where(
