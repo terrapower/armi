@@ -30,7 +30,7 @@ API Changes
     * Removing ``ArmiObject.getZrFrac()``.
     * Removing ``ArmiObject.printDensities()``.
     * Moving ``Composite.isOnWhichSymmetryLine()`` to ``Assembly``.
-    * Removed ``Block.isOnWhichSymmetryLine()``.
+    * Removing ``Block.isOnWhichSymmetryLine()``.
 #. TBD
 
 Bug Fixes
