@@ -118,11 +118,6 @@ class TestLumpedFissionProduct(unittest.TestCase):
         # data for these tests.
         self.assertEqual(lfp.getGaseousYieldFraction(), 8.9000e-05)
 
-    def test_printDensities(self):
-        _ = nuclideBases.fromName("XE135")
-        lfp = self.fpd.createSingleLFPFromFile("LFP38")
-        lfp.printDensities(10.0)
-
     def test_isGas(self):
         """Tests that a nuclide is a gas or not at STP based on its chemical phase."""
         nb = nuclideBases.byName["H1"]

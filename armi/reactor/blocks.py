@@ -30,6 +30,7 @@ import numpy
 from armi import nuclideBases
 from armi import runLog
 from armi.bookkeeping import report
+from armi.nucDirectory import elements
 from armi.physics.neutronics import GAMMA
 from armi.physics.neutronics import NEUTRON
 from armi.reactor import blockParameters
@@ -634,17 +635,6 @@ class Block(composites.Composite):
     def getMaxArea(self):
         raise NotImplementedError
 
-    def getMaxVolume(self):
-        """
-        The maximum volume of this object if it were totally full.
-
-        Returns
-        -------
-        vol : float
-            volume in cm^3.
-        """
-        return self.getMaxArea() * self.getHeight()
-
     def getArea(self, cold=False):
         """
         Return the area of a block for a full core or a 1/3 core model.
@@ -732,11 +722,6 @@ class Block(composites.Composite):
         armi.reactor.converters.geometryConverter.EdgeAssemblyChanger.scaleParamsRelatedToSymmetry
         """
         return 1.0
-
-    def isOnWhichSymmetryLine(self):
-        """Block symmetry lines are determined by the reactor, not the parent."""
-        grid = self.core.spatialGrid
-        return grid.overlapsWhichSymmetryLine(self.spatialLocator.getCompleteIndices())
 
     def adjustDensity(self, frac, adjustList, returnMass=False):
         """
@@ -1652,6 +1637,35 @@ class Block(composites.Composite):
             else:
                 coords.append(clad.spatialLocator.getLocalCoordinates())
         return coords
+
+    def getBoronMassEnrich(self):
+        """Return B-10 mass fraction."""
+        b10 = self.getMass("B10")
+        b11 = self.getMass("B11")
+        total = b11 + b10
+        if total == 0.0:
+            return 0.0
+        return b10 / total
+
+    def getPuMoles(self):
+        """Returns total number of moles of Pu isotopes."""
+        nucNames = [nuc.name for nuc in elements.byZ[94].nuclides]
+        puN = sum(self.getNuclideNumberDensities(nucNames))
+
+        return (
+            puN
+            / units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
+            * self.getVolume()
+            * self.getSymmetryFactor()
+        )
+
+    def getUraniumMassEnrich(self):
+        """Returns U-235 mass fraction assuming U-235 and U-238 only."""
+        u5 = self.getMass("U235")
+        if u5 < 1e-10:
+            return 0.0
+        u8 = self.getMass("U238")
+        return u5 / (u8 + u5)
 
 
 class HexBlock(Block):

@@ -760,10 +760,6 @@ class TestMiscMethods(unittest.TestCase):
         report = self.obj.setComponentDimensionsReport()
         self.assertEqual(len(report), len(self.obj))
 
-    def test_printDensities(self):
-        lines = self.obj.printDensities()
-        self.assertEqual(len(lines), len(self.obj.getNuclides()))
-
     def test_getAtomicWeight(self):
         weight = self.obj.getAtomicWeight()
         self.assertTrue(50 < weight < 100)
