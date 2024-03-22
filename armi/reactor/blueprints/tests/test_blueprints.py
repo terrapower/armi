@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Tests the blueprints (loading input) file."""
+import io
 import os
 import pathlib
 import unittest
@@ -30,6 +31,7 @@ from armi.reactor.flags import Flags
 from armi.tests import TEST_ROOT
 from armi.utils import directoryChangers
 from armi.utils import textProcessors
+from armi.reactor.blueprints.gridBlueprint import saveToStream
 
 
 class TestBlueprints(unittest.TestCase):
@@ -64,6 +66,64 @@ class TestBlueprints(unittest.TestCase):
     def tearDownClass(cls):
         cls.directoryChanger.close()
 
+    @staticmethod
+    def __stubify(latticeMap):
+        """Little helper method to allow lattie maps to be compared free of whitespace."""
+        return latticeMap.replace(" ", "").replace("-", "").replace("\n", "")
+
+    def test_roundTripCompleteBP(self):
+        """Test the round-tip of reading and writing blueprint files.
+
+        .. test:: Validates the round trip of reading and writing blueprints.
+            :id: T_ARMI_BP_TO_DB1
+            :tests: R_ARMI_BP_TO_DB
+        """
+        # the correct lattice map
+        latticeMap = """-   -   SH
+  -   SH  SH
+-   SH  OC  SH
+  SH  OC  OC  SH
+    OC  IC  OC  SH
+  OC  IC  IC  OC  SH
+    IC  IC  IC  OC  SH
+      IC  IC  PC  OC  SH
+    IC  PC  IC  IC  OC  SH
+      LA  IC  IC  IC  OC
+        IC  IC  IC  IC  SH
+      IC  LB  IC  IC  OC
+        IC  IC  PC  IC  SH
+          LA  IC  IC  OC
+        IC  IC  IC  IC  SH
+          IC  IC  IC  OC
+        IC  IC  IC  PC  SH"""
+        latticeMap = self.__stubify(latticeMap)
+
+        # validate some core elements from the blueprints
+        self.assertEqual(self.blueprints.gridDesigns["core"].symmetry, "third periodic")
+        map0 = self.__stubify(self.blueprints.gridDesigns["core"].latticeMap)
+        self.assertEqual(map0, latticeMap)
+
+        # save the blueprint to a stream
+        stream = io.StringIO()
+        stream.seek(0)
+        self.blueprints.dump(self.blueprints)
+        saveToStream(stream, self.blueprints, True, True)
+        stream.seek(0)
+
+        with directoryChangers.TemporaryDirectoryChanger():
+            # save the stream to a file
+            filePath = "test_roundTripCompleteBP.yaml"
+            with open(filePath, "w") as fout:
+                fout.write(stream.read())
+
+            # load the blueprint from that file again
+            bp = blueprints.Blueprints.load(open(filePath, "r").read())
+
+            # re-validate some core elements from the blueprints
+            self.assertEqual(bp.gridDesigns["core"].symmetry, "third periodic")
+            map1 = self.__stubify(bp.gridDesigns["core"].latticeMap)
+            self.assertEqual(map1, latticeMap)
+
     def test_nuclides(self):
         """Tests the available sets of nuclides work as expected."""
         actives = set(self.blueprints.activeNuclides)
@@ -87,7 +147,12 @@ class TestBlueprints(unittest.TestCase):
         self.assertAlmostEqual(mox["PU239"], 0.00286038)
 
     def test_componentDimensions(self):
-        """Tests that the user can specifiy the dimensions of a component with arbitray fidelity."""
+        """Tests that the user can specify the dimensions of a component with arbitrary fidelity.
+
+        .. test:: A component can be correctly created from a blueprint file.
+            :id: T_ARMI_BP_COMP
+            :tests: R_ARMI_BP_COMP
+        """
         fuelAssem = self.blueprints.constructAssem(self.cs, name="igniter fuel")
         fuel = fuelAssem.getComponents(Flags.FUEL)[0]
         self.assertAlmostEqual(fuel.getDimension("od", cold=True), 0.86602)
@@ -97,7 +162,12 @@ class TestBlueprints(unittest.TestCase):
         self.assertAlmostEqual(fuel.getDimension("mult"), 169)
 
     def test_traceNuclides(self):
-        """Ensure that armi.reactor.blueprints.componentBlueprint.insertDepletableNuclideKeys runs."""
+        """Ensure that armi.reactor.blueprints.componentBlueprint.insertDepletableNuclideKeys runs.
+
+        .. test:: Users marking components as depletable will affect number densities.
+            :id: T_ARMI_BP_NUC_FLAGS1
+            :tests: R_ARMI_BP_NUC_FLAGS
+        """
         fuel = (
             self.blueprints.constructAssem(self.cs, "igniter fuel")
             .getFirstBlock(Flags.FUEL)

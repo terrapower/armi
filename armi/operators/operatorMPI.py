@@ -15,20 +15,24 @@
 """
 The MPI-aware variant of the standard ARMI operator.
 
-See :py:class:`~armi.operators.operator.Operator` for the parent class.
+.. impl:: There is an MPI-aware variant of the ARMI Operator.
+    :id: I_ARMI_OPERATOR_MPI
+    :implements: R_ARMI_OPERATOR_MPI
 
-This sets up the main Operator on the primary MPI node and initializes worker
-processes on all other MPI nodes. At certain points in the run, particular interfaces
-might call into action all the workers. For example, a depletion or
-subchannel T/H module may ask the MPI pool to perform a few hundred
-independent physics calculations in parallel. In many cases, this can
-speed up the overall execution of an analysis manyfold, if a big enough
-computer or computer cluster is available. 
+    This sets up the main Operator on the primary MPI node and initializes
+    worker processes on all other MPI nodes. At certain points in the run,
+    particular interfaces might call into action all the workers. For
+    example, a depletion or subchannel T/H module may ask the MPI pool to
+    perform a few hundred independent physics calculations in parallel. In
+    many cases, this can speed up the overall execution of an analysis,
+    if a big enough computer or computing cluster is available.
+
+    See :py:class:`~armi.operators.operator.Operator` for the parent class.
 
 Notes
 -----
 This is not *yet* smart enough to use shared memory when the MPI
-tasks are on the same machine. Everything goes through MPI. This can 
+tasks are on the same machine. Everything goes through MPI. This can
 be optimized as needed.
 """
 import gc
@@ -185,6 +189,7 @@ class OperatorMPI(Operator):
                             cmd
                         )
                     )
+
             pm = getPluginManager()
             resetFlags = pm.hook.mpiActionRequiresReset(cmd=cmd)
             # only reset if all the plugins agree to reset

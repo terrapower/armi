@@ -15,9 +15,9 @@
 """
 Thorium Oxide solid ceramic.
 
-Data is from [#IAEA-TECDOCT-1450]_.
+Data is from [IAEA-TECDOCT-1450]_.
 
-.. [#IAEA-TECDOCT-1450] Thorium fuel cycle -- Potential benefits and challenges, IAEA-TECDOC-1450 (2005).
+.. [IAEA-TECDOCT-1450] Thorium fuel cycle -- Potential benefits and challenges, IAEA-TECDOC-1450 (2005).
     https://www-pub.iaea.org/mtcd/publications/pdf/te_1450_web.pdf
 """
 from armi import runLog

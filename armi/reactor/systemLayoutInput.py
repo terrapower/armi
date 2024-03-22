@@ -551,7 +551,7 @@ class SystemLayoutInput:
 
     @classmethod
     def loadFromCs(cls, cs):
-        """Function to load Geoemtry based on supplied ``CaseSettings``."""
+        """Function to load Geoemtry based on supplied ``Settings``."""
         if not cs["geomFile"]:
             return None
 

@@ -16,7 +16,6 @@
 import math
 import os
 import unittest
-
 from numpy.testing import assert_allclose
 
 from armi import runLog
@@ -27,7 +26,7 @@ from armi.reactor.converters import geometryConverters
 from armi.reactor.converters import uniformMesh
 from armi.reactor.flags import Flags
 from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
-from armi.tests import TEST_ROOT
+from armi.tests import TEST_ROOT, mockRunLogs
 from armi.utils import directoryChangers
 
 
@@ -40,7 +39,7 @@ class TestGeometryConverters(unittest.TestCase):
         self.cs = self.o.cs
 
     def test_addRing(self):
-        r"""Tests that the addRing method adds the correct number of fuel assemblies to the test reactor."""
+        """Tests that the addRing method adds the correct number of fuel assemblies to the test reactor."""
         converter = geometryConverters.FuelAssemNumModifier(self.cs)
         converter.numFuelAssems = 7
         converter.ringsToAdd = 1 * ["radial shield"]
@@ -65,7 +64,7 @@ class TestGeometryConverters(unittest.TestCase):
         )  # should wind up with 11 reflector assemblies per 1/3rd core
 
     def test_setNumberOfFuelAssems(self):
-        r"""Tests that the setNumberOfFuelAssems method properly changes the number of fuel assemblies."""
+        """Tests that the setNumberOfFuelAssems method properly changes the number of fuel assemblies."""
         # tests ability to add fuel assemblies
         converter = geometryConverters.FuelAssemNumModifier(self.cs)
         converter.numFuelAssems = 60
@@ -142,6 +141,19 @@ class TestHexToRZConverter(unittest.TestCase):
         del self.r
 
     def test_convert(self):
+        """Test HexToRZConverter.convert().
+
+        Notes
+        -----
+        Ensure the converted reactor has 1) nuclides and nuclide masses that match the
+        original reactor, 2) for a given (r,z,theta) location the expected block type exists,
+        3) the converted reactor has the right (r,z,theta) coordinates, and 4) the converted
+        reactor blocks all have a single (homogenized) component.
+
+        .. test:: Convert a 3D hex reactor core to an RZ-Theta core.
+            :id: T_ARMI_CONV_3DHEX_TO_2DRZ
+            :tests: R_ARMI_CONV_3DHEX_TO_2DRZ
+        """
         # make the reactor smaller, because of a test parallelization edge case
         for ring in [9, 8, 7, 6, 5, 4, 3]:
             self.r.core.removeAssembliesInRing(ring, self.o.cs)
@@ -266,7 +278,7 @@ class TestHexToRZConverter(unittest.TestCase):
 
 class TestEdgeAssemblyChanger(unittest.TestCase):
     def setUp(self):
-        r"""Use the related setup in the testFuelHandlers module."""
+        """Use the related setup in the testFuelHandlers module."""
         self.o, self.r = loadTestReactor(TEST_ROOT)
         reduceTestReactorRings(self.r, self.o.cs, 3)
 
@@ -275,33 +287,53 @@ class TestEdgeAssemblyChanger(unittest.TestCase):
         del self.r
 
     def test_edgeAssemblies(self):
-        r"""Sanity check on adding edge assemblies."""
+        """Sanity check on adding edge assemblies.
+
+        .. test:: Test adding/removing assemblies from a reactor.
+            :id: T_ARMI_ADD_EDGE_ASSEMS
+            :tests: R_ARMI_ADD_EDGE_ASSEMS
+        """
+
+        def getAssemByRingPos(ringPos: tuple):
+            for a in self.r.core.getAssemblies():
+                if a.spatialLocator.getRingPos() == ringPos:
+                    return a
+            return None
+
+        numAssemsOrig = len(self.r.core.getAssemblies())
+        # assert that there is no assembly in the (3, 4) (ring, position).
+        self.assertIsNone(getAssemByRingPos((3, 4)))
+        # add the assembly
         converter = geometryConverters.EdgeAssemblyChanger()
         converter.addEdgeAssemblies(self.r.core)
+        numAssemsWithEdgeAssem = len(self.r.core.getAssemblies())
+        # assert that there is an assembly in the (3, 4) (ring, position).
+        self.assertIsNotNone(getAssemByRingPos((3, 4)))
+        self.assertTrue(numAssemsWithEdgeAssem > numAssemsOrig)
+
+        # try to add the assembly again (you can't)
+        with mockRunLogs.BufferLog() as mock:
+            converter.addEdgeAssemblies(self.r.core)
+            self.assertIn("Skipping addition of edge assemblies", mock.getStdout())
+            self.assertTrue(numAssemsWithEdgeAssem, len(self.r.core.getAssemblies()))
 
         # must be added after geom transform
         for b in self.o.r.core.getBlocks():
             b.p.power = 1.0
-
-        numAssems = len(self.r.core.getAssemblies())
         converter.scaleParamsRelatedToSymmetry(self.r)
-
         a = self.r.core.getAssembliesOnSymmetryLine(grids.BOUNDARY_0_DEGREES)[0]
         self.assertTrue(all(b.p.power == 2.0 for b in a), "Powers were not scaled")
 
+        # remove the assembly that was added
         converter.removeEdgeAssemblies(self.r.core)
-        self.assertTrue(numAssems > len(self.r.core.getAssemblies()))
-        converter.addEdgeAssemblies(self.r.core)
-        self.assertEqual(numAssems, len(self.r.core.getAssemblies()))
-        # make sure it can be called twice.
-        converter.addEdgeAssemblies(self.r.core)
-        self.assertEqual(numAssems, len(self.r.core.getAssemblies()))
+        self.assertIsNone(getAssemByRingPos((3, 4)))
+        self.assertEqual(numAssemsOrig, len(self.r.core.getAssemblies()))
 
 
 class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
     def setUp(self):
         self.o, self.r = loadTestReactor(TEST_ROOT)
-        reduceTestReactorRings(self.r, self.o.cs, 2)
+        reduceTestReactorRings(self.r, self.o.cs, 3)
 
         # initialize the block powers to a uniform power profile, accounting for
         # the loaded reactor being 1/3 core
@@ -327,7 +359,20 @@ class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
         del self.r
 
     def test_growToFullCoreFromThirdCore(self):
-        """Test that a hex core can be converted from a third core to a full core geometry."""
+        """Test that a hex core can be converted from a third core to a full core geometry.
+
+        .. test:: Convert a third-core to a full-core geometry and then restore it.
+            :id: T_ARMI_THIRD_TO_FULL_CORE0
+            :tests: R_ARMI_THIRD_TO_FULL_CORE
+        """
+
+        def getLTAAssems():
+            aList = []
+            for a in self.r.core.getAssemblies():
+                if a.getType == "lta fuel":
+                    aList.append(a)
+            return aList
+
         # Check the initialization of the third core model
         self.assertFalse(self.r.core.isFullCore)
         self.assertEqual(
@@ -337,7 +382,10 @@ class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
             ),
         )
         initialNumBlocks = len(self.r.core.getBlocks())
-
+        assems = getLTAAssems()
+        expectedLoc = [(3, 2)]
+        for i, a in enumerate(assems):
+            self.assertEqual(a.spatialLocator.getRingPos(), expectedLoc[i])
         self.assertAlmostEqual(
             self.r.core.getTotalBlockParam("power"), self.o.cs["power"] / 3, places=5
         )
@@ -354,6 +402,10 @@ class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
         self.assertTrue(self.r.core.isFullCore)
         self.assertGreater(len(self.r.core.getBlocks()), initialNumBlocks)
         self.assertEqual(self.r.core.symmetry.domain, geometry.DomainType.FULL_CORE)
+        assems = getLTAAssems()
+        expectedLoc = [(3, 2), (3, 6), (3, 10)]
+        for i, a in enumerate(assems):
+            self.assertEqual(a.spatialLocator.getRingPos(), expectedLoc[i])
 
         # ensure that block power is handled correctly
         self.assertAlmostEqual(
@@ -378,6 +430,10 @@ class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
         self.assertAlmostEqual(
             self.r.core.getTotalBlockParam("power"), self.o.cs["power"] / 3, places=5
         )
+        assems = getLTAAssems()
+        expectedLoc = [(3, 2)]
+        for i, a in enumerate(assems):
+            self.assertEqual(a.spatialLocator.getRingPos(), expectedLoc[i])
 
     def test_initNewFullReactor(self):
         """Test that initNewReactor will growToFullCore if necessary."""
@@ -394,7 +450,13 @@ class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
         self.assertEqual(newR.core.symmetry.domain, geometry.DomainType.FULL_CORE)
 
     def test_skipGrowToFullCoreWhenAlreadyFullCore(self):
-        """Test that hex core is not modified when third core to full core changer is called on an already full core geometry."""
+        """Test that hex core is not modified when third core to full core changer is called on an already full core geometry.
+
+        .. test: Convert a one-third core to full core and restore back to one-third core.
+            :id: T_ARMI_THIRD_TO_FULL_CORE2
+            :tests: R_ARMI_THIRD_TO_FULL_CORE
+
+        """
         # Check the initialization of the third core model and convert to a full core
         self.assertFalse(self.r.core.isFullCore)
         self.assertEqual(
@@ -403,15 +465,31 @@ class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
                 geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
             ),
         )
+        numBlocksThirdCore = len(self.r.core.getBlocks())
+        # convert the third core to full core
         changer = geometryConverters.ThirdCoreHexToFullCoreChanger(self.o.cs)
-        changer.convert(self.r)
-        # Check that the changer does not affect the full core model on converting and restoring
-        initialNumBlocks = len(self.r.core.getBlocks())
+        with mockRunLogs.BufferLog() as mock:
+            changer.convert(self.r)
+            self.assertIn("Expanding to full core geometry", mock.getStdout())
+        numBlocksFullCore = len(self.r.core.getBlocks())
         self.assertEqual(self.r.core.symmetry.domain, geometry.DomainType.FULL_CORE)
-        changer = geometryConverters.ThirdCoreHexToFullCoreChanger(self.o.cs)
-        changer.convert(self.r)
+        # try to convert to full core again (it shouldn't do anything)
+        with mockRunLogs.BufferLog() as mock:
+            changer.convert(self.r)
+            self.assertIn(
+                "Detected that full core reactor already exists. Cannot expand.",
+                mock.getStdout(),
+            )
         self.assertEqual(self.r.core.symmetry.domain, geometry.DomainType.FULL_CORE)
-        self.assertEqual(initialNumBlocks, len(self.r.core.getBlocks()))
-        changer.restorePreviousGeometry(self.r)
-        self.assertEqual(initialNumBlocks, len(self.r.core.getBlocks()))
-        self.assertEqual(self.r.core.symmetry.domain, geometry.DomainType.FULL_CORE)
+        self.assertEqual(numBlocksFullCore, len(self.r.core.getBlocks()))
+        # restore back to 1/3 core
+        with mockRunLogs.BufferLog() as mock:
+            changer.restorePreviousGeometry(self.r)
+            self.assertIn("revert from full to 1/3 core", mock.getStdout())
+        self.assertEqual(numBlocksThirdCore, len(self.r.core.getBlocks()))
+        self.assertEqual(
+            self.r.core.symmetry,
+            geometry.SymmetryType(
+                geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
+            ),
+        )

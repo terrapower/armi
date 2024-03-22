@@ -20,6 +20,8 @@ import os
 import platform
 import unittest
 
+import h5py
+
 from armi import cases
 from armi import context
 from armi import getApp
@@ -27,9 +29,11 @@ from armi import interfaces
 from armi import plugins
 from armi import runLog
 from armi import settings
+from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
 from armi.reactor import blueprints
 from armi.reactor import systemLayoutInput
+from armi.reactor.tests import test_reactors
 from armi.tests import ARMI_RUN_PATH
 from armi.tests import mockRunLogs
 from armi.tests import TEST_ROOT
@@ -199,6 +203,17 @@ class TestArmiCase(unittest.TestCase):
             self.assertTrue(isinstance(prof, cProfile.Profile))
 
     def test_run(self):
+        """
+        Test running a case.
+
+        .. test:: There is a generic mechanism to allow simulation runs.
+            :id: T_ARMI_CASE
+            :tests: R_ARMI_CASE
+
+        .. test:: Test case settings object is created, settings can be edited, and case can run.
+            :id: T_ARMI_SETTING
+            :tests: R_ARMI_SETTING
+        """
         with directoryChangers.TemporaryDirectoryChanger():
             cs = settings.Settings(ARMI_RUN_PATH)
             newSettings = {
@@ -284,17 +299,22 @@ class TestCaseSuiteDependencies(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             _clone = self.suite.clone("test_clone")
 
-    def test_dependenciesWithObscurePaths(self):
+    def test_checkInputs(self):
         """
-        Test directory dependence.
+        Test the checkInputs() method on a couple of cases.
 
-        .. tip:: This should be updated to use the Python pathlib
-            so the tests can work in both Linux and Windows identically.
+        .. test:: Check the ARMI inputs for consistency and validity.
+            :id: T_ARMI_CASE_CHECK
+            :tests: R_ARMI_CASE_CHECK
         """
+        self.c1.checkInputs()
+        self.c2.checkInputs()
+
+    def test_dependenciesWithObscurePaths(self):
+        """Test directory dependence for strangely-written file paths (escape characters)."""
         checks = [
             ("c1.yaml", "c2.yaml", "c1.h5", True),
             (r"\\case\1\c1.yaml", r"\\case\2\c2.yaml", "c1.h5", False),
-            # below doesn't work due to some windows path obscurities
             (r"\\case\1\c1.yaml", r"\\case\2\c2.yaml", r"..\1\c1.h5", False),
         ]
         if platform.system() == "Windows":
@@ -313,7 +333,7 @@ class TestCaseSuiteDependencies(unittest.TestCase):
                         r"c2.yaml",
                         r".\c1.h5",
                         True,
-                    ),  # py bug in 3.6.4 and 3.7.1 fails here
+                    ),
                     (
                         r"\\cas\es\1\c1.yaml",
                         r"\\cas\es\2\c2.yaml",
@@ -393,6 +413,13 @@ class TestCaseSuiteDependencies(unittest.TestCase):
         self.assertIn(self.c1, self.c2.dependencies)
 
     def test_explicitDependency(self):
+        """
+        Test dependencies for case suites.
+
+        .. test:: Dependence allows for one case to start after the completion of another.
+            :id: T_ARMI_CASE_SUITE
+            :tests: R_ARMI_CASE_SUITE
+        """
         self.c1.addExplicitDependency(self.c2)
 
         self.assertIn(self.c2, self.c1.dependencies)
@@ -405,6 +432,73 @@ class TestCaseSuiteDependencies(unittest.TestCase):
     def test_buildCommand(self):
         cmd = self.c1.buildCommand()
         self.assertEqual(cmd, 'python -u  -m armi run "c1.yaml"')
+
+
+class TestCaseSuiteComparison(unittest.TestCase):
+    """CaseSuite.compare() tests."""
+
+    def setUp(self):
+        self.td = directoryChangers.TemporaryDirectoryChanger()
+        self.td.__enter__()
+
+    def tearDown(self):
+        self.td.__exit__(None, None, None)
+
+    def test_compareNoDiffs(self):
+        """As a baseline, this test should always reveal zero diffs."""
+        # build two super-simple H5 files for testing
+        o, r = test_reactors.loadTestReactor(
+            TEST_ROOT, customSettings={"reloadDBName": "reloadingDB.h5"}
+        )
+
+        suites = []
+        for _i in range(2):
+            # Build the cases
+            suite = cases.CaseSuite(settings.Settings())
+
+            geom = systemLayoutInput.SystemLayoutInput()
+            geom.readGeomFromStream(io.StringIO(GEOM_INPUT))
+            bp = blueprints.Blueprints.load(BLUEPRINT_INPUT)
+
+            c1 = cases.Case(cs=settings.Settings(), geom=geom, bp=bp)
+            c1.cs.path = "c1.yaml"
+            suite.add(c1)
+
+            c2 = cases.Case(cs=settings.Settings(), geom=geom, bp=bp)
+            c2.cs.path = "c2.yaml"
+            suite.add(c2)
+
+            suites.append(suite)
+
+            # create two DBs, identical but for file names
+            tmpDir = os.getcwd()
+            dbs = []
+            for i in range(1, 3):
+                # create the tests DB
+                dbi = DatabaseInterface(r, o.cs)
+                dbi.initDB(fName=f"{tmpDir}/c{i}.h5")
+                db = dbi.database
+
+                # validate the file exists, and force it to be readable again
+                b = h5py.File(db._fullPath, "r")
+                self.assertEqual(list(b.keys()), ["inputs"])
+                self.assertEqual(
+                    sorted(b["inputs"].keys()), ["blueprints", "geomFile", "settings"]
+                )
+                b.close()
+
+                # append to lists
+                dbs.append(db)
+
+            # do a comparison that should have no diffs
+            diff = c1.compare(c2)
+            self.assertEqual(diff, 0)
+
+        diff = suites[0].compare(suites[1])
+        self.assertEqual(diff, 0)
+
+        diff = suites[1].compare(suites[0])
+        self.assertEqual(diff, 0)
 
 
 class TestExtraInputWriting(unittest.TestCase):
@@ -447,10 +541,26 @@ class MultiFilesInterfaces(interfaces.Interface):
         return {settingName: cs[settingName]}
 
 
+class TestPluginWithDuplicateSetting(plugins.ArmiPlugin):
+    @staticmethod
+    @plugins.HOOKIMPL
+    def defineSettings():
+        """Define a duplicate setting."""
+        return [
+            settings.setting.Setting(
+                "power",
+                default=123,
+                label="power",
+                description="duplicate power",
+            )
+        ]
+
+
 class TestPluginForCopyInterfacesMultipleFiles(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineSettings():
+        """Define settings for the plugin."""
         return [
             settings.setting.Setting(
                 "multipleFilesSetting",
@@ -463,6 +573,7 @@ class TestPluginForCopyInterfacesMultipleFiles(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def exposeInterfaces(cs):
+        """A plugin is mostly just a vehicle to add Interfaces to an Application."""
         return [
             interfaces.InterfaceInfo(
                 interfaces.STACK_ORDER.PREPROCESSING,
@@ -548,6 +659,21 @@ class TestCopyInterfaceInputs(unittest.TestCase):
             )
             self.assertFalse(os.path.exists(newSettings[testSetting]))
             self.assertEqual(newSettings[testSetting], fakeShuffle)
+
+    def test_failOnDuplicateSetting(self):
+        """
+        That that if a plugin attempts to add a duplicate setting, it raises an error.
+
+        .. test:: Plugins cannot register duplicate settings.
+            :id: T_ARMI_SETTINGS_UNIQUE
+            :tests: R_ARMI_SETTINGS_UNIQUE
+        """
+        # register the new Plugin
+        app = getApp()
+        app.pluginManager.register(TestPluginWithDuplicateSetting)
+
+        with self.assertRaises(ValueError):
+            _ = settings.Settings(ARMI_RUN_PATH)
 
     def test_copyInterfaceInputs_multipleFiles(self):
         # register the new Plugin

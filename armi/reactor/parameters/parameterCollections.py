@@ -83,7 +83,7 @@ class _ParameterCollectionType(type):
 
 
 class ParameterCollection(metaclass=_ParameterCollectionType):
-    r"""An empty class for holding state information in the ARMI data structure.
+    """An empty class for holding state information in the ARMI data structure.
 
     A parameter collection stores one or more formally-defined values ("parameters").
     Until a given ParameterCollection subclass has been instantiated, new parameters may

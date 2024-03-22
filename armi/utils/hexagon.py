@@ -29,7 +29,19 @@ SQRT3 = math.sqrt(3.0)
 
 
 def area(pitch):
-    """Area of a hex given the flat-to-flat pitch."""
+    """
+    Area of a hex given the flat-to-flat pitch.
+
+    .. impl:: Compute hexagonal area
+        :id: I_ARMI_UTIL_HEXAGON0
+        :implements: R_ARMI_UTIL_HEXAGON
+
+        Computes the area of a hexagon given the flat-to-flat ``pitch``.
+
+    Notes
+    -----
+    The pitch is the distance between the center of the hexagons in the lattice.
+    """
     return SQRT3 / 2.0 * pitch**2
 
 
@@ -44,6 +56,10 @@ def side(pitch):
         \frac{s}{2}^2 + \frac{p}{2}^2 = s^2
 
     which you can solve to find p = sqrt(3)*s
+
+    Notes
+    -----
+    The pitch is the distance between the center of the hexagons in the lattice.
     """
     return pitch / SQRT3
 
@@ -78,6 +94,13 @@ def corners(rotation=0):
 
 
 def pitch(side):
+    """
+    Calculate the pitch from the length of a hexagon side.
+
+    Notes
+    -----
+    The pitch is the distance between the center of the hexagons in the lattice.
+    """
     return side * SQRT3
 
 
@@ -112,5 +135,13 @@ def numRingsToHoldNumCells(numCells):
 
 
 def numPositionsInRing(ring):
-    """Number of positions in ring (starting at 1) of a hex lattice."""
+    """Number of positions in ring (starting at 1) of a hex lattice.
+
+    .. impl:: Compute number of positions in a ring of a hex lattice
+        :id: I_ARMI_UTIL_HEXAGON1
+        :implements: R_ARMI_UTIL_HEXAGON
+
+        In a hexagonal lattice, calculate the number of positions in a given ``ring``. The number of
+        rings is indexed to 1, i.e. the centermost position in the lattice is ``ring=1``.
+    """
     return (ring - 1) * 6 if ring != 1 else 1

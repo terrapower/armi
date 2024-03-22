@@ -542,7 +542,10 @@ def _getNeutronicsBlockParams():
         pb.defParam(
             "kInf",
             units=units.UNITLESS,
-            description="Neutron production rate in this block/neutron absorption rate in this block. Not truly kinf but a reasonable approximation of reactivity.",
+            description=(
+                "Neutron production rate in this block/neutron absorption rate in this "
+                "block. Not truly kinf but a reasonable approximation of reactivity."
+            ),
         )
 
         pb.defParam(

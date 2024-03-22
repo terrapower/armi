@@ -1,23 +1,6 @@
-=======================
+***********************
 ARMI v0.2 Release Notes
-=======================
-
-ARMI v0.2.10
-============
-Release Date: TBD
-
-What's new in ARMI
-------------------
-#. The ``_copyInputsHelper()`` gives relative path and not absolute after copy. (`PR#1416 <https://github.com/terrapower/armi/pull/1416>`_)
-#. ARMI now mandates ``ruff`` linting. (`PR#1419 <https://github.com/terrapower/armi/pull/1419>`_)
-#. Removed all old ARMI requirements, to start the work fresh. (`PR#1438 <https://github.com/terrapower/armi/pull/1438>`_)
-#. Downgrading Draft PRs as policy. (`PR#1444 <https://github.com/terrapower/armi/pull/1444>`_)
-#. Attempt to set representative block number densities by component if possible. (`PR#1412 <https://github.com/terrapower/armi/pull/1412>`_)
-#. TBD
-
-Bug fixes
----------
-#. TBD
+***********************
 
 ARMI v0.2.9
 ===========
@@ -26,7 +9,7 @@ Release Date: 2023-09-27
 What's new in ARMI
 ------------------
 #. Moved the ``Reactor`` assembly number from the global scope to a ``Parameter``. (`PR#1383 <https://github.com/terrapower/armi/pull/1383>`_)
-#. Removed the global ``CaseSettings`` object, ``getMasterCs()``, and ``setMasterCs()``. (`PR#1399 <https://github.com/terrapower/armi/pull/1399>`_)
+#. Removed the global ``Settings`` object, ``getMasterCs()``, and ``setMasterCs()``. (`PR#1399 <https://github.com/terrapower/armi/pull/1399>`_)
 #. Moved the Spent Fuel Pool (``sfp``) from the ``Core`` to the ``Reactor``. (`PR#1336 <https://github.com/terrapower/armi/pull/1336>`_)
 #. Made the ``sfp`` a child of the ``Reactor`` so it is stored in the database. (`PR#1349 <https://github.com/terrapower/armi/pull/1349>`_)
 #. Broad cleanup of ``Parameters``: filled in all empty units and descriptions, removed unused params. (`PR#1345 <https://github.com/terrapower/armi/pull/1345>`_)

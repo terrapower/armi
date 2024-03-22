@@ -41,6 +41,13 @@ class TestBlockConverter(unittest.TestCase):
         self.td.__exit__(None, None, None)
 
     def test_dissolveWireIntoCoolant(self):
+        """
+        Test dissolving wire into coolant.
+
+        .. test:: Homogenize one component into another.
+            :id: T_ARMI_BLOCKCONV0
+            :tests: R_ARMI_BLOCKCONV
+        """
         self._test_dissolve(loadTestBlock(), "wire", "coolant")
         hotBlock = loadTestBlock(cold=False)
         self._test_dissolve(hotBlock, "wire", "coolant")
@@ -48,6 +55,13 @@ class TestBlockConverter(unittest.TestCase):
         self._test_dissolve(hotBlock, "wire", "coolant")
 
     def test_dissolveLinerIntoClad(self):
+        """
+        Test dissolving liner into clad.
+
+        .. test:: Homogenize one component into another.
+            :id: T_ARMI_BLOCKCONV1
+            :tests: R_ARMI_BLOCKCONV
+        """
         self._test_dissolve(loadTestBlock(), "outer liner", "clad")
         hotBlock = loadTestBlock(cold=False)
         self._test_dissolve(hotBlock, "outer liner", "clad")
@@ -91,20 +105,21 @@ class TestBlockConverter(unittest.TestCase):
         )
 
     def test_convert(self):
-        """Test conversion with no fuel driver."""
+        """Test conversion with no fuel driver.
+
+        .. test:: Convert hex blocks to cylindrical blocks.
+            :id:  T_ARMI_BLOCKCONV_HEX_TO_CYL1
+            :tests: R_ARMI_BLOCKCONV_HEX_TO_CYL
+        """
         block = (
             loadTestReactor(TEST_ROOT)[1]
             .core.getAssemblies(Flags.FUEL)[2]
             .getFirstBlock(Flags.FUEL)
         )
-
         block.spatialGrid = grids.HexGrid.fromPitch(1.0)
 
-        area = block.getArea()
         converter = blockConverters.HexComponentsToCylConverter(block)
         converter.convert()
-        self.assertAlmostEqual(area, converter.convertedBlock.getArea())
-        self.assertAlmostEqual(area, block.getArea())
 
         for compType in [Flags.FUEL, Flags.CLAD, Flags.DUCT]:
             self.assertAlmostEqual(
@@ -117,12 +132,22 @@ class TestBlockConverter(unittest.TestCase):
                     ]
                 ),
             )
+            for c in converter.convertedBlock.getComponents(compType):
+                self.assertEqual(
+                    block.getComponent(compType).temperatureInC, c.temperatureInC
+                )
 
+        self.assertEqual(block.getHeight(), converter.convertedBlock.getHeight())
         self._checkAreaAndComposition(block, converter.convertedBlock)
         self._checkCiclesAreInContact(converter.convertedBlock)
 
     def test_convertHexWithFuelDriver(self):
-        """Test conversion with fuel driver."""
+        """Test conversion with fuel driver.
+
+        .. test:: Convert hex blocks to cylindrical blocks.
+            :id:  T_ARMI_BLOCKCONV_HEX_TO_CYL0
+            :tests: R_ARMI_BLOCKCONV_HEX_TO_CYL
+        """
         driverBlock = (
             loadTestReactor(TEST_ROOT)[1]
             .core.getAssemblies(Flags.FUEL)[2]

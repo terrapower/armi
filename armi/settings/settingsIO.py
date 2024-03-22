@@ -141,9 +141,17 @@ class SettingRenamer:
 class SettingsReader:
     """Abstract class for processing settings files.
 
+    .. impl:: The setting use a human-readable, plain text file as input.
+        :id: I_ARMI_SETTINGS_IO_TXT
+        :implements: R_ARMI_SETTINGS_IO_TXT
+
+        ARMI uses the YAML standard for settings files. ARMI uses industry-standard
+        ``ruamel.yaml`` Python libraray to read these files. ARMI does not bend or
+        change the YAML file format standard in any way.
+
     Parameters
     ----------
-    cs : CaseSettings
+    cs : Settings
         The settings object to read into
     """
 
@@ -167,9 +175,9 @@ class SettingsReader:
 
         self._renamer = SettingRenamer(dict(self.cs.items()))
 
-        # the input version will be overwritten if explicitly stated in input file.
+        # The input version will be overwritten if explicitly stated in input file.
         # otherwise, it's assumed to precede the version inclusion change and should be
-        # treated as alright
+        # treated as alright.
 
     def __getitem__(self, key):
         return self.cs[key]
@@ -280,7 +288,6 @@ class SettingsWriter:
         preserves all settings originally in file even if they match the default value
     full
         all setting values regardless of default status
-
     """
 
     def __init__(self, settings_instance, style="short", settingsSetByUser=[]):

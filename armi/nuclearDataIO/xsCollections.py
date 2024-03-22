@@ -27,14 +27,14 @@ armi.nuclearDataIO.xsCollection.XSCollection : object that gets created.
 
 Examples
 --------
-# creating a MicroscopicXSCollection by loading one from ISOTXS.
-microLib = armi.nuclearDataIO.ISOTXS('ISOTXS')
-micros = myLib.nuclides['U235AA'].micros
+    # creating a MicroscopicXSCollection by loading one from ISOTXS.
+    microLib = armi.nuclearDataIO.ISOTXS('ISOTXS')
+    micros = myLib.nuclides['U235AA'].micros
 
-# creating macroscopic XS:
-mc = MacroscopicCrossSectionCreator()
-macroCollection = mc.createMacrosFromMicros(microLib, block)
-blocksWithMacros = mc.createMacrosOnBlocklist(microLib, blocks)
+    # creating macroscopic XS:
+    mc = MacroscopicCrossSectionCreator()
+    macroCollection = mc.createMacrosFromMicros(microLib, block)
+    blocksWithMacros = mc.createMacrosOnBlocklist(microLib, blocks)
 
 """
 import numpy
@@ -55,7 +55,7 @@ ND = "nd"              # (n, deuteron)
 NT = "nt"              # (n, triton)
 FISSION_XS = "fission" # (n, fission)
 N2N_XS = "n2n"         # (n,2n)
-NUSIGF = "nuSigF"      
+NUSIGF = "nuSigF"
 NU = "neutronsPerFission"
 # fmt: on
 CAPTURE_XS = [NGAMMA, NAPLHA, NP, ND, NT]
@@ -274,7 +274,6 @@ class XSCollection:
         """Compare the cross sections between two XSCollections objects."""
         equal = True
         for xsName in ALL_COLLECTION_DATA:
-
             myXsData = self.__dict__[xsName]
             theirXsData = other.__dict__[xsName]
 
@@ -381,6 +380,7 @@ class MacroscopicCrossSectionCreator:
     def createMacrosOnBlocklist(
         self, microLibrary, blockList, nucNames=None, libType="micros"
     ):
+        """Create macroscopic cross sections for a list of blocks."""
         for block in blockList:
             block.macros = self.createMacrosFromMicros(
                 microLibrary, block, nucNames, libType=libType
@@ -414,7 +414,6 @@ class MacroscopicCrossSectionCreator:
         -------
         macros : xsCollection.XSCollection
             A new XSCollection full of macroscopic cross sections
-
         """
         runLog.debug("Building macroscopic cross sections for {0}".format(block))
         if nucNames is None:
@@ -785,8 +784,43 @@ def computeMacroscopicGroupConstants(
     multConstant=None,
     multLib=None,
 ):
-    """
+    r"""
     Compute any macroscopic group constants given number densities and a microscopic library.
+
+    .. impl:: Compute macroscopic cross sections from microscopic cross sections and number densities.
+        :id: I_ARMI_NUCDATA_MACRO
+        :implements: R_ARMI_NUCDATA_MACRO
+
+        This function computes the macroscopic cross sections of a specified
+        reaction type from inputted microscopic cross sections and number
+        densities. The ``constantName`` parameter specifies what type of
+        reaction is requested. The ``numberDensities`` parameter is a dictionary
+        mapping the nuclide to its number density. The ``lib`` parameter is a library
+        object like :py:class:`~armi.nuclearDataIO.xsLibraries.IsotxsLibrary` or
+        :py:class:`~armi.nuclearDataIO.xsLibraries.CompxsLibrary` that holds the
+        microscopic cross-section data. The ``microSuffix`` parameter specifies
+        from which part of the library the microscopic cross sections are
+        gathered; this is typically gathered from a components
+        ``getMicroSuffix`` method like :py:meth:`Block.getMicroSuffix
+        <armi.reactor.blocks.Block.getMicroSuffix>`. ``libType`` is an optional
+        parameter specifying whether the reaction is for neutrons or gammas.
+        This function also has the optional parameters ``multConstant`` and
+        ``multLib``, which allows another constant from the library, such as
+        neutrons per fission (nu) or energy per fission (kappa), to be
+        multiplied to the primary one. The macroscopic cross sections are then
+        computed as:
+
+        .. math::
+
+            \Sigma_{g} = \sum_{n} N_n \sigma_{n,g}\nu_n \quad g=1,...,G
+
+        where :math:`n` is the isotope index, :math:`g` is the energy group
+        index, :math:`\sigma` is the microscopic cross section, and :math:`\nu`
+        is the scalar multiplier. If the library (``lib``) with suffix
+        ``microSuffix`` is missing a cross section for the ``constantName``
+        reaction for one or more of the nuclides in ``numberDensities`` an error
+        is raised; but if ``multConstant`` is missing that cross section, then
+        those nuclides are printed as a warning.
 
     Parameters
     ----------

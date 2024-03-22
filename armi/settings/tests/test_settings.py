@@ -41,10 +41,11 @@ from armi.utils.customExceptions import NonexistentSetting
 THIS_DIR = os.path.dirname(__file__)
 
 
-class DummyPlugin1(plugins.ArmiPlugin):
+class DummySettingPlugin1(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineSettings():
+        """Define settings for the plugin."""
         return [
             setting.Setting(
                 "extendableOption",
@@ -53,14 +54,21 @@ class DummyPlugin1(plugins.ArmiPlugin):
                 description="The neutronics / depletion solver for global flux solve.",
                 enforcedOptions=True,
                 options=["DEFAULT", "OTHER"],
-            )
+            ),
+            setting.Setting(
+                "avocado",
+                default=0,
+                label="Avocados",
+                description="Avocados are delicious.",
+            ),
         ]
 
 
-class DummyPlugin2(plugins.ArmiPlugin):
+class DummySettingPlugin2(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineSettings():
+        """Define settings for the plugin."""
         return [
             setting.Option("PLUGIN", "extendableOption"),
             setting.Default("PLUGIN", "extendableOption"),
@@ -71,13 +79,14 @@ class PluginAddsOptions(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineSettings():
+        """Define settings for the plugin."""
         return [
             setting.Option("MCNP", CONF_NEUTRONICS_KERNEL),
             setting.Option("MCNP_Slab", CONF_NEUTRONICS_KERNEL),
         ]
 
 
-class TestCaseSettings(unittest.TestCase):
+class TestSettings(unittest.TestCase):
     def setUp(self):
         self.cs = caseSettings.Settings()
 
@@ -97,6 +106,33 @@ class TestCaseSettings(unittest.TestCase):
         newEnv["moduleVerbosity"] = {}
         self.cs.updateEnvironmentSettingsFrom(newEnv)
         self.assertEqual(self.cs["verbosity"], "9")
+
+    def test_metaData(self):
+        """Test we can get and set the important settings metadata.
+
+        .. test:: Test getting and setting import settings metadata.
+            :id: T_ARMI_SETTINGS_META
+            :tests: R_ARMI_SETTINGS_META
+        """
+        # test get/set on caseTitle
+        self.assertEqual(self.cs.caseTitle, "armi")
+        testTitle = "test_metaData"
+        self.cs.caseTitle = testTitle
+        self.assertEqual(self.cs.caseTitle, testTitle)
+
+        # test get/set on comment
+        self.assertEqual(self.cs["comment"], "")
+        testComment = "Comment: test_metaData"
+        self.cs = self.cs.modified(newSettings={"comment": testComment})
+        self.assertEqual(self.cs["comment"], testComment)
+
+        # test get/set on version
+        self.assertEqual(len(self.cs["versions"]), 0)
+        self.cs = self.cs.modified(newSettings={"versions": {"something": 1.234}})
+
+        d = self.cs["versions"]
+        self.assertEqual(len(d), 1)
+        self.assertEqual(d["something"], 1.234)
 
 
 class TestAddingOptions(unittest.TestCase):
@@ -231,37 +267,51 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         )
 
     def test_pluginSettings(self):
+        """Test settings change depending on what plugins are registered.
+
+        .. test:: Registering a plugin can change what settings exist.
+            :id: T_ARMI_PLUGIN_SETTINGS
+            :tests: R_ARMI_PLUGIN_SETTINGS
+        """
         pm = getPluginManagerOrFail()
-        pm.register(DummyPlugin1)
+        pm.register(DummySettingPlugin1)
         # We have a setting; this should be fine
         cs = caseSettings.Settings()
 
         self.assertEqual(cs["extendableOption"], "DEFAULT")
+        self.assertEqual(cs["avocado"], 0)
         # We shouldn't have any settings from the other plugin, so this should be an
         # error.
         with self.assertRaises(vol.error.MultipleInvalid):
             newSettings = {"extendableOption": "PLUGIN"}
             cs = cs.modified(newSettings=newSettings)
 
-        pm.register(DummyPlugin2)
+        pm.register(DummySettingPlugin2)
         cs = caseSettings.Settings()
         self.assertEqual(cs["extendableOption"], "PLUGIN")
         # Now we should have the option from plugin 2; make sure that works
         cs = cs.modified(newSettings=newSettings)
         cs["extendableOption"] = "PLUGIN"
         self.assertIn("extendableOption", cs.keys())
-        pm.unregister(DummyPlugin2)
-        pm.unregister(DummyPlugin1)
+        pm.unregister(DummySettingPlugin2)
+        pm.unregister(DummySettingPlugin1)
 
         # Now try the same, but adding the plugins in a different order. This is to make
         # sure that it doesnt matter if the Setting or its Options come first
-        pm.register(DummyPlugin2)
-        pm.register(DummyPlugin1)
+        pm.register(DummySettingPlugin2)
+        pm.register(DummySettingPlugin1)
         cs = caseSettings.Settings()
         self.assertEqual(cs["extendableOption"], "PLUGIN")
+        self.assertEqual(cs["avocado"], 0)
 
     def test_default(self):
-        """Make sure default updating mechanism works."""
+        """
+        Make sure default updating mechanism works.
+
+        .. test:: The setting default is mandatory.
+            :id: T_ARMI_SETTINGS_DEFAULTS
+            :tests: R_ARMI_SETTINGS_DEFAULTS
+        """
         a = setting.Setting("testsetting", 0)
         newDefault = setting.Default(5, "testsetting")
         a.changeDefault(newDefault)

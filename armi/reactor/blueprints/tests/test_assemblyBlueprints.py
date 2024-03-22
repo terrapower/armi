@@ -183,6 +183,13 @@ assemblies:
         return design.assemblies["fuel a"]
 
     def test_checkParamConsistency(self):
+        """
+        Load assembly from a blueprint file.
+
+        .. test:: Create assembly from blueprint file.
+            :id: T_ARMI_BP_ASSEM
+            :tests: R_ARMI_BP_ASSEM
+        """
         # make sure a good example doesn't error
         a = self.loadCustomAssembly(self.twoBlockInput_correct)
         blockAxialMesh = a.getAxialMesh()

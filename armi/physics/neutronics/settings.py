@@ -83,7 +83,17 @@ CONF_LATTICE_PHYSICS_FREQUENCY = "latticePhysicsFrequency"
 
 
 def defineSettings():
-    """Standard function to define settings - for neutronics."""
+    """Standard function to define settings; for neutronics.
+
+    .. impl:: Users to select if gamma cross sections are generated.
+        :id: I_ARMI_GAMMA_XS
+        :implements: R_ARMI_GAMMA_XS
+
+        A single boolean setting can be used to turn on/off the calculation of gamma
+        cross sections. This is implemented with the usual boolean ``Setting`` logic.
+        The goal here is performance; save the compute time if the analyst doesn't need
+        those cross sections.
+    """
     settings = [
         setting.Setting(
             CONF_GROUP_STRUCTURE,
@@ -120,8 +130,8 @@ def defineSettings():
             label="Multigroup Cross Sections Generation",
             description="Generate multigroup cross sections for the selected particle "
             "type(s) using the specified lattice physics kernel (see Lattice Physics "
-            "tab). When not set, the XS library will be auto-loaded from an existing ISOTXS "
-            "within then working directory and fail if the ISOTXS does not exist.",
+            "tab). When not set, the XS library will be auto-loaded from an existing "
+            "ISOTXS in the working directory, but fail if there is no ISOTXS.",
             options=["", "Neutron", "Neutron and Gamma"],
         ),
         setting.Setting(
@@ -173,7 +183,7 @@ def defineSettings():
             CONF_EIGEN_PROB,
             default=True,
             label="Eigenvalue Problem",
-            description="Whether this is a eigenvalue problem or a fixed source problem",
+            description="Is this a eigenvalue problem or a fixed source problem?",
         ),
         setting.Setting(
             CONF_EXISTING_FIXED_SOURCE,
@@ -194,7 +204,8 @@ def defineSettings():
             CONF_EPS_EIG,
             default=1e-07,
             label="Eigenvalue Epsilon",
-            description="Convergence criteria for calculating the eigenvalue in the global flux solver",
+            description="Convergence criteria for calculating the eigenvalue in the "
+            "global flux solver",
         ),
         setting.Setting(
             CONF_EPS_FSAVG,
@@ -214,8 +225,8 @@ def defineSettings():
             label="Load pad elevation (cm)",
             description=(
                 "The elevation of the bottom of the above-core load pad (ACLP) in cm "
-                "from the bottom of the upper grid plate. Used for calculating the load "
-                "pad dose"
+                "from the bottom of the upper grid plate. Used for calculating the "
+                "load pad dose"
             ),
         ),
         setting.Setting(
@@ -228,7 +239,8 @@ def defineSettings():
             CONF_ACLP_DOSE_LIMIT,
             default=80.0,
             label="ALCP dose limit",
-            description="Dose limit in dpa used to position the above-core load pad (if one exists)",
+            description="Dose limit in dpa used to position the above-core load pad"
+            "(if one exists)",
         ),
         setting.Setting(
             CONF_RESTART_NEUTRONICS,
@@ -246,7 +258,8 @@ def defineSettings():
             CONF_INNERS_,
             default=0,
             label="Inner Iterations",
-            description="XY and Axial partial current sweep inner iterations. 0 lets the neutronics code pick a default.",
+            description="XY and Axial partial current sweep inner iterations. 0 lets "
+            "the neutronics code pick a default.",
         ),
         setting.Setting(
             CONF_GRID_PLATE_DPA_XS_SET,
@@ -275,34 +288,40 @@ def defineSettings():
             CONF_MINIMUM_FISSILE_FRACTION,
             default=0.045,
             label="Minimum Fissile Fraction",
-            description="Minimum fissile fraction (fissile number densities / heavy metal number densities).",
+            description="Minimum fissile fraction (fissile number densities / heavy "
+            "metal number densities).",
             oldNames=[("mc2.minimumFissileFraction", None)],
         ),
         setting.Setting(
             CONF_MINIMUM_NUCLIDE_DENSITY,
             default=1e-15,
             label="Minimum nuclide density",
-            description="Density to use for nuclides and fission products at infinite dilution. "
-            + "This is also used as the minimum density considered for computing macroscopic cross "
-            + "sections. It can also be passed to physics plugins.",
+            description="Density to use for nuclides and fission products at infinite "
+            "dilution. This is also used as the minimum density considered for "
+            "computing macroscopic cross sections. It can also be passed to physics "
+            "plugins.",
         ),
         setting.Setting(
             CONF_INFINITE_DILUTE_CUTOFF,
             default=1e-10,
             label="Infinite Dillute Cutoff",
-            description="Do not model nuclides with density less than this cutoff. Used with PARTISN and SERPENT.",
+            description="Do not model nuclides with density less than this cutoff. "
+            "Used with PARTISN and SERPENT.",
         ),
         setting.Setting(
             CONF_TOLERATE_BURNUP_CHANGE,
             default=0.0,
             label="Cross Section Burnup Group Tolerance",
-            description="Burnup window for computing cross sections. If the prior cross sections were computed within the window, new cross sections will not be generated and the prior calculated cross sections will be used.",
+            description="Burnup window for computing cross sections. If the prior "
+            "cross sections were computed within the window, new cross sections will "
+            "not be generated and the prior calculated cross sections will be used.",
         ),
         setting.Setting(
             CONF_XS_BLOCK_REPRESENTATION,
             default="Average",
             label="Cross Section Block Averaging Method",
-            description="The type of averaging to perform when creating cross sections for a group of blocks",
+            description="The type of averaging to perform when creating cross "
+            "sections for a group of blocks",
             options=[
                 "Median",
                 "Average",
@@ -314,7 +333,9 @@ def defineSettings():
             CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION,
             default=False,
             label="Include All Block Types in XS Generation",
-            description="Use all blocks in a cross section group when generating a representative block. When this is disabled only `fuel` blocks will be considered",
+            description="Use all blocks in a cross section group when generating a "
+            "representative block. When this is disabled only `fuel` blocks will be "
+            "considered",
         ),
         setting.Setting(
             CONF_XS_KERNEL,
@@ -327,7 +348,8 @@ def defineSettings():
             CONF_LATTICE_PHYSICS_FREQUENCY,
             default="BOC",
             label="Frequency of lattice physics updates",
-            description="Define the frequency at which cross sections are updated with new lattice physics interactions.",
+            description="Define the frequency at which cross sections are updated with "
+            "new lattice physics interactions.",
             options=[opt.name for opt in list(LatticePhysicsFrequency)],
             enforcedOptions=True,
         ),
@@ -341,7 +363,8 @@ def defineSettings():
             CONF_XS_BUCKLING_CONVERGENCE,
             default=1e-05,
             label="Buckling Convergence Criteria",
-            description="Convergence criteria for the buckling iteration if it is available in the lattice physics solver",
+            description="Convergence criteria for the buckling iteration if it is "
+            "available in the lattice physics solver",
             oldNames=[
                 ("mc2BucklingConvergence", None),
                 ("bucklingConvergence", None),
@@ -351,7 +374,8 @@ def defineSettings():
             CONF_XS_EIGENVALUE_CONVERGENCE,
             default=1e-05,
             label="Eigenvalue Convergence Criteria",
-            description="Convergence criteria for the eigenvalue in the lattice physics kernel",
+            description="Convergence criteria for the eigenvalue in the lattice "
+            "physics kernel",
         ),
     ]
 

@@ -75,6 +75,28 @@ class MaterialModifications(yamlize.Map):
     If the user wishes to specify material modifications specific to a component
     within the block, they should use the `by component` attribute, specifying
     the keys/values underneath the name of a specific component in the block.
+
+    .. impl:: User-impact on material definitions.
+        :id: I_ARMI_MAT_USER_INPUT0
+        :implements: R_ARMI_MAT_USER_INPUT
+
+        Defines a yaml map attribute for the assembly portion of the blueprints
+        (see :py:class:`~armi.blueprints.assemblyBlueprint.AssemblyBlueprint`) that
+        allows users to specify material attributes as lists corresponding to
+        each axial block in the assembly. Two types of specifications can be made:
+
+            1. Key-value pairs can be specified directly, where the key is the
+            name of the modification and the value is the list of block values.
+
+            2. The "by component" attribute can be used, in which case the user
+            can specify material attributes that are specific to individual components
+            in each block. This is enabled through the :py:class:`~armi.reactor.blueprints.assemblyBlueprint.ByComponentModifications`
+            class, which basically just allows for one additional layer of attributes
+            corresponding to the component names.
+
+        These material attributes can be used during the resolution of material
+        classes during core instantiation (see :py:meth:`~armi.reactor.blueprints.blockBlueprint.BlockBlueprint.construct`
+        and :py:meth:`~armi.reactor.blueprints.componentBlueprint.ComponentBlueprint.construct`).
     """
 
     key_type = yamlize.Typed(str)
@@ -92,6 +114,27 @@ class AssemblyBlueprint(yamlize.Object):
 
     This class utilizes ``yamlize`` to enable serialization to and from the
     blueprints YAML file.
+
+    .. impl:: Create assembly from blueprint file.
+        :id: I_ARMI_BP_ASSEM
+        :implements: R_ARMI_BP_ASSEM
+
+        Defines a yaml construct that allows the user to specify attributes of an
+        assembly from within their blueprints file, including a name, flags, specifier
+        for use in defining a core map, a list of blocks, a list of block heights,
+        a list of axial mesh points in each block, a list of cross section identifiers
+        for each block, and material options (see :need:`I_ARMI_MAT_USER_INPUT0`).
+
+        Relies on the underlying infrastructure from the ``yamlize`` package for
+        reading from text files, serialization, and internal storage of the data.
+
+        Is implemented as part of a blueprints file by being imported and used
+        as an attribute within the larger :py:class:`~armi.reactor.blueprints.Blueprints`
+        class.
+
+        Includes a ``construct`` method, which instantiates an instance of
+        :py:class:`~armi.reactor.assemblies.Assembly` with the characteristics
+        as specified in the blueprints.
     """
 
     name = yamlize.Attribute(type=str)
@@ -140,8 +183,8 @@ class AssemblyBlueprint(yamlize.Object):
 
         Parameters
         ----------
-        cs : CaseSettings
-            CaseSettings object which containing relevant modeling options.
+        cs : Settings
+            Settings object which containing relevant modeling options.
         blueprint : Blueprint
             Root blueprint object containing relevant modeling options.
         """

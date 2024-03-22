@@ -108,7 +108,7 @@ def _write(delay, fileName, fileMode):
 
 
 def _readWrite(delay, fileName, fileMode):
-    with _DlayxsIO(fileName, fileMode, delay) as rw:
+    with DlayxsIO(fileName, fileMode, delay) as rw:
         rw.readWrite()
     return delay
 
@@ -125,7 +125,6 @@ class Dlayxs(collections.OrderedDict):
     Module that use delayed neutron data should expect a ``DelayedNeutronData`` object as input.
     If you want an average over all nuclides, then you need to produce it using the properly-computed
     average contributions of each nuclide.
-
 
     Attributes
     ----------
@@ -216,13 +215,53 @@ class Dlayxs(collections.OrderedDict):
             )
 
 
-class _DlayxsIO(cccc.Stream):
+class DlayxsIO(cccc.Stream):
+    """Contains DLAYXS read/writers."""
+
     def __init__(self, fileName, fileMode, dlayxs):
         cccc.Stream.__init__(self, fileName, fileMode)
         self.dlayxs = dlayxs
         self.metadata = dlayxs.metadata
 
     def readWrite(self):
+        r"""Read and write DLAYXS files.
+
+        .. impl:: Tool to read and write DLAYXS files.
+            :id: I_ARMI_NUCDATA_DLAYXS
+            :implements: R_ARMI_NUCDATA_DLAYXS
+
+            Reading and writing DLAYXS delayed neutron data files is performed
+            using the general nuclear data I/O functionalities described in
+            :need:`I_ARMI_NUCDATA`. Reading/writing a DLAYXS file is performed
+            through the following steps:
+
+            #. Read/write the data ``label`` for identification.
+
+                .. note::
+
+                    MC\ :sup:`2`-3  file does not use the expected number of
+                    characters for the ``label``, so its length needs to be
+                    stored in the :py:class:`~.cccc.IORecord`.
+
+            #. Read/write file control information, i.e. the 1D record, which includes:
+
+                * Number of energy groups
+                * Number of nuclides
+                * Number of precursor families
+
+            #. Read/write spectral data, including:
+
+                * Nuclide IDs
+                * Decay constants
+                * Emission spectra
+                * Energy group bounds
+                * Number of families to which fission in a given nuclide
+                  contributes delayed neutron precursors
+
+            #. Read/write 3D delayed neutron yield matrix on the 3D record,
+               indexed by nuclide, precursor family, and outgoing neutron energy
+               group.
+        """
         runLog.info(
             "{} DLAYXS library {}".format(
                 "Reading" if "r" in self._fileMode else "Writing", self

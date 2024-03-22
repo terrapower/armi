@@ -127,12 +127,17 @@ class TestTightCoupler(unittest.TestCase):
     def test_isConverged(self):
         """Ensure TightCoupler.isConverged() works with float, 1D list, and ragged 2D list.
 
+        .. test:: The tight coupling logic is based around a convergence criteria.
+            :id: T_ARMI_OPERATOR_PHYSICS1
+            :tests: R_ARMI_OPERATOR_PHYSICS
+
         Notes
         -----
         2D lists can end up being ragged as assemblies can have different number of blocks.
         Ragged lists are easier to manage with lists as opposed to numpy.arrays,
         namely, their dimension is preserved.
         """
+        # show a situation where it doesn't converge
         previousValues = {
             "float": 1.0,
             "list1D": [1.0, 2.0],
@@ -146,6 +151,12 @@ class TestTightCoupler(unittest.TestCase):
         for previous, current in zip(previousValues.values(), updatedValues.values()):
             self.interface.coupler.storePreviousIterationValue(previous)
             self.assertFalse(self.interface.coupler.isConverged(current))
+
+        # show a situation where it DOES converge
+        previousValues = updatedValues
+        for previous, current in zip(previousValues.values(), updatedValues.values()):
+            self.interface.coupler.storePreviousIterationValue(previous)
+            self.assertTrue(self.interface.coupler.isConverged(current))
 
     def test_isConvergedRuntimeError(self):
         """Test to ensure 3D arrays do not work."""

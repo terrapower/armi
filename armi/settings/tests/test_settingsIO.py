@@ -70,6 +70,12 @@ class SettingsReaderTests(unittest.TestCase):
         self.assertEqual(getattr(reader, "path"), "")
 
     def test_readFromFile(self):
+        """Read settings from a (human-readable) YAML file.
+
+        .. test:: Settings can be input from a human-readable text file.
+            :id: T_ARMI_SETTINGS_IO_TXT0
+            :tests: R_ARMI_SETTINGS_IO_TXT
+        """
         with directoryChangers.TemporaryDirectoryChanger():
             inPath = os.path.join(TEST_ROOT, "armiRun.yaml")
             outPath = "test_readFromFile.yaml"
@@ -160,7 +166,12 @@ class SettingsWriterTests(unittest.TestCase):
         self.assertIn("numProcessors: 1", txt)
 
     def test_writeFull(self):
-        """Setting output as a full, all defaults included file."""
+        """Setting output as a full, all defaults included file.
+
+        .. test:: Settings can be output to a human-readable text file.
+            :id: T_ARMI_SETTINGS_IO_TXT1
+            :tests: R_ARMI_SETTINGS_IO_TXT
+        """
         self.cs.writeToYamlFile(self.filepathYaml, style="full")
         txt = open(self.filepathYaml, "r").read()
         self.assertIn("nCycles: 55", txt)

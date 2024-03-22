@@ -119,8 +119,21 @@ class GlobalFluxInterface(interfaces.Interface):
                 * units.ABS_REACTIVITY_TO_PCM
             )
 
-    def _checkEnergyBalance(self):
-        """Check that there is energy balance between the power generated and the specified power is the system."""
+    def checkEnergyBalance(self):
+        """Check that there is energy balance between the power generated and the specified power.
+
+        .. impl:: Validate the energy generation matches user specifications.
+            :id: I_ARMI_FLUX_CHECK_POWER
+            :implements: R_ARMI_FLUX_CHECK_POWER
+
+            This method checks that the global power computed from flux
+            evaluation matches the global power specified from the user within a
+            tolerance; if it does not, a ``ValueError`` is raised. The
+            global power from the flux solve is computed by summing the
+            block-wise power in the core. This value is then compared to the
+            user-specified power and raises an error if relative difference is
+            above :math:`10^{-5}`.
+        """
         powerGenerated = (
             self.r.core.calcTotalParam(
                 "power", calcBasedOnFullObj=False, generationNum=2
@@ -237,7 +250,23 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
         GlobalFluxInterface.interactCoupled(self, iteration)
 
     def getTightCouplingValue(self):
-        """Return the parameter value."""
+        """Return the parameter value.
+
+        .. impl:: Return k-eff or assembly-wise power distribution for coupled interactions.
+            :id: I_ARMI_FLUX_COUPLING_VALUE
+            :implements: R_ARMI_FLUX_COUPLING_VALUE
+
+            This method either returns the k-eff or assembly-wise power
+            distribution. If the :py:class:`coupler
+            <armi.interfaces.TightCoupler>` ``parameter`` member is ``"keff"``,
+            then this method returns the computed k-eff from the global flux
+            evaluation. If the ``parameter`` value is ``"power"``, then it
+            returns a list of power distributions in each assembly. The assembly
+            power distributions are lists of values representing the block
+            powers that are normalized to unity based on the assembly total
+            power. If the value is neither ``"keff"`` or ``"power"``, then this
+            method returns ``None``.
+        """
         if self.coupler.parameter == "keff":
             return self.r.core.p.keff
         if self.coupler.parameter == "power":
@@ -333,6 +362,25 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
 
 class GlobalFluxOptions(executers.ExecutionOptions):
     """Data structure representing common options in Global Flux Solvers.
+
+    .. impl:: Options for neutronics solvers.
+        :id: I_ARMI_FLUX_OPTIONS
+        :implements: R_ARMI_FLUX_OPTIONS
+
+        This class functions as a data structure for setting and retrieving
+        execution options for performing flux evaluations, these options
+        involve:
+
+        * What sort of problem is to be solved, i.e. real/adjoint,
+          eigenvalue/fixed-source, neutron/gamma, boundary conditions
+        * Convergence criteria for iterative algorithms
+        * Geometry type and mesh conversion details
+        * Specific parameters to be calculated after flux has been evaluated
+
+        These options can be retrieved by directly accessing class members. The
+        options are set by specifying a :py:class:`Settings
+        <armi.settings.caseSettings.Settings>` object and optionally specifying
+        a :py:class:`Reactor <armi.reactor.reactors.Reactor>` object.
 
     Attributes
     ----------
@@ -505,6 +553,19 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
     and copying certain user-defined files back to the working directory on error
     or completion. Given all these options and possible needs for information from
     global flux, this class provides a unified interface to everything.
+
+    .. impl:: Ensure the mesh in the reactor model is appropriate for neutronics solver execution.
+        :id: I_ARMI_FLUX_GEOM_TRANSFORM
+        :implements: R_ARMI_FLUX_GEOM_TRANSFORM
+
+        The primary purpose of this class is perform geometric and mesh
+        transformations on the reactor model to ensure a flux evaluation can
+        properly perform. This includes:
+
+        * Applying a uniform axial mesh for the 3D flux solve
+        * Expanding symmetrical geometries to full-core if necessary
+        * Adding/removing edge assemblies if necessary
+        * Undoing any transformations that might affect downstream calculations
     """
 
     def __init__(self, options: GlobalFluxOptions, reactor):
@@ -1178,31 +1239,38 @@ def computeDpaRate(mgFlux, dpaXs):
     dpaPerSecond : float
         The dpa/s in this material due to this flux
 
-    Notes
-    -----
-    Displacements calculated by displacement XS
 
-    .. math::
+    .. impl:: Compute DPA rates.
+        :id: I_ARMI_FLUX_DPA
+        :implements: R_ARMI_FLUX_DPA
 
-          \text{Displacement rate} &= \phi N_{\text{HT9}} \sigma  \\
-          &= (\#/\text{cm}^2/s) \cdot (1/cm^3) \cdot (\text{barn})\\
-          &= (\#/\text{cm}^5/s) \cdot  \text{(barn)} * 10^{-24} \text{cm}^2/\text{barn} \\
-          &= \#/\text{cm}^3/s
+        This method calculates DPA rates using the inputted multigroup flux and DPA cross sections.
+        Displacements calculated by displacement cross-section:
+
+        .. math::
+            :nowrap:
+
+            \begin{aligned}
+            \text{Displacement rate} &= \phi N_{\text{HT9}} \sigma  \\
+            &= (\#/\text{cm}^2/s) \cdot (1/cm^3) \cdot (\text{barn})\\
+            &= (\#/\text{cm}^5/s) \cdot  \text{(barn)} * 10^{-24} \text{cm}^2/\text{barn} \\
+            &= \#/\text{cm}^3/s
+            \end{aligned}
 
 
-    ::
+        ::
 
-        DPA rate = displacement density rate / (number of atoms/cc)
-                 = dr [#/cm^3/s] / (nHT9)  [1/cm^3]
-                 = flux * barn * 1e-24 
+            DPA rate = displacement density rate / (number of atoms/cc)
+                    = dr [#/cm^3/s] / (nHT9)  [1/cm^3]
+                    = flux * barn * 1e-24
 
 
-    .. math::
+        .. math::
 
-        \frac{\text{dpa}}{s}  = \frac{\phi N \sigma}{N} = \phi * \sigma
+            \frac{\text{dpa}}{s}  = \frac{\phi N \sigma}{N} = \phi * \sigma
 
-    the Number density of the structural material cancels out. It's in the macroscopic 
-    XS and in the original number of atoms.
+        the number density of the structural material cancels out. It's in the macroscopic
+        cross-section and in the original number of atoms.
 
     Raises
     ------
@@ -1258,33 +1326,40 @@ def calcReactionRates(obj, keff, lib):
     lib : XSLibrary
         Microscopic cross sections to use in computing the reaction rates.
 
-    Notes
-    -----
-    Values include:
 
-    * Fission
-    * nufission
-    * n2n
-    * absorption
+    .. impl:: Return the reaction rates for a given ArmiObject
+        :id: I_ARMI_FLUX_RX_RATES
+        :implements: R_ARMI_FLUX_RX_RATES
 
-    Scatter could be added as well. This function is quite slow so it is
-    skipped for now as it is uncommonly needed.
+        This method computes 1-group reaction rates for the inputted
+        :py:class:`ArmiObject <armi.reactor.composites.ArmiObject>` These
+        reaction rates include:
 
-    Reaction rates are:
+        * fission
+        * nufission
+        * n2n
+        * absorption
 
-    .. math::
+        Scatter could be added as well. This function is quite slow so it is
+        skipped for now as it is uncommonly needed.
 
-        \Sigma \phi = \sum_{\text{nuclides}} \sum_{\text{energy}} \Sigma \phi
+        Reaction rates are:
 
-    The units of :math:`N \sigma \phi` are::
+        .. math::
 
-        [#/bn-cm] * [bn] * [#/cm^2/s] = [#/cm^3/s]
+            \Sigma \phi = \sum_{\text{nuclides}} \sum_{\text{energy}} \Sigma
+            \phi
 
-    The group-averaged microscopic cross section is:
+        The units of :math:`N \sigma \phi` are::
 
-    .. math::
+            [#/bn-cm] * [bn] * [#/cm^2/s] = [#/cm^3/s]
 
-        \sigma_g = \frac{\int_{E g}^{E_{g+1}} \phi(E)  \sigma(E) dE}{\int_{E_g}^{E_{g+1}} \phi(E) dE}
+        The group-averaged microscopic cross section is:
+
+        .. math::
+
+            \sigma_g = \frac{\int_{E g}^{E_{g+1}} \phi(E)  \sigma(E)
+            dE}{\int_{E_g}^{E_{g+1}} \phi(E) dE}
     """
     rate = {}
     for simple in RX_PARAM_NAMES:

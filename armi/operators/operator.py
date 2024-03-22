@@ -27,6 +27,7 @@ import os
 import re
 import shutil
 import time
+from typing import Tuple
 
 from armi import context
 from armi import interfaces
@@ -43,6 +44,8 @@ from armi.settings.fwSettings.globalSettings import (
     CONF_TIGHT_COUPLING,
     CONF_TIGHT_COUPLING_MAX_ITERS,
     CONF_CYCLES_SKIP_TIGHT_COUPLING_INTERACTION,
+    CONF_DEFERRED_INTERFACE_NAMES,
+    CONF_DEFERRED_INTERFACES_CYCLE,
 )
 from armi.utils import codeTiming
 from armi.utils import (
@@ -59,9 +62,10 @@ from armi.utils import (
 
 class Operator:
     """
-    Orchestrates an ARMI run, building all the pieces, looping through the interfaces, and manipulating the reactor.
+    Orchestrate an ARMI run, building all the pieces, looping through the interfaces,
+    and manipulating the reactor.
 
-    This Standard Operator loops over a user-input number of cycles, each with a
+    This Operator loops over a user-input number of cycles, each with a
     user-input number of subcycles (called time nodes). It calls a series of
     interaction hooks on each of the
     :py:class:`~armi.interfaces.Interface` in the Interface Stack.
@@ -73,9 +77,37 @@ class Operator:
 
     .. note:: The :doc:`/developer/guide` has some additional narrative on this topic.
 
+    .. impl:: An operator will have a reactor object to communicate between plugins.
+        :id: I_ARMI_OPERATOR_COMM
+        :implements: R_ARMI_OPERATOR_COMM
+
+        A major design feature of ARMI is that the Operator orchestrates the
+        simulation, and as part of that, the Operator has access to the
+        Reactor data model. In code, this just means the reactor object is
+        a mandatory attribute of an instance of the Operator. But conceptually,
+        this means that while the Operator drives the simulation of the
+        reactor, all code has access to the same copy of the reactor data
+        model. This is a crucial idea that allows disparate external nuclear
+        models to interact; they interact with the ARMI reactor data model.
+
+    .. impl:: An operator is built from user settings.
+        :id: I_ARMI_OPERATOR_SETTINGS
+        :implements: R_ARMI_OPERATOR_SETTINGS
+
+        A major design feature of ARMI is that a run is built from user settings.
+        In code, this means that a case ``Settings`` object is passed into this
+        class to intialize an Operator. Conceptually, this means that the
+        Operator that controls a reactor simulation is defined by user settings.
+        Because developers can create their own settings, the user can
+        control an ARMI simulation with arbitrary granularity in this way. In
+        practice, settings common control things like: how many cycles a
+        reactor is being modeled for, how many timesteps are to be modeled
+        per time node, the verbosity of the logging during the run, and
+        which modeling steps (such as economics) will be run.
+
     Attributes
     ----------
-    cs : CaseSettings object
+    cs : Settings
             Global settings that define the run.
 
     cycleNames : list of str
@@ -116,7 +148,7 @@ class Operator:
 
         Parameters
         ----------
-        cs : CaseSettings object
+        cs : Settings
             Global settings that define the run.
 
         Raises
@@ -165,6 +197,23 @@ class Operator:
 
     @property
     def stepLengths(self):
+        """
+        Calculate step lengths.
+
+        .. impl:: Calculate step lengths from cycles and burn steps.
+            :id: I_ARMI_FW_HISTORY
+            :implements: R_ARMI_FW_HISTORY
+
+            In all computational modeling of physical systems, it is
+            necessary to break time into discrete chunks. In reactor
+            modeling, it is common to first break the time a reactor
+            is simulated for into the practical cycles the reactor
+            runs. And then those cycles are broken down into smaller
+            chunks called burn steps. The final step lengths this
+            method returns is a two-tiered list, where primary indices
+            correspond to the cycle and secondary indices correspond to
+            the length of each intra-cycle step (in days).
+        """
         if not self._stepLengths:
             self._stepLengths = getStepLengths(self.cs)
             if self._stepLengths == [] and self.cs["nCycles"] == 1:
@@ -559,8 +608,7 @@ class Operator:
 
     def interactAllInit(self):
         """Call interactInit on all interfaces in the stack after they are initialized."""
-        allInterfaces = self.interfaces[:]  # copy just in case
-        self._interactAll("Init", allInterfaces)
+        self._interactAll("Init", self.getInterfaces())
 
     def interactAllBOL(self, excludedInterfaceNames=()):
         """
@@ -568,30 +616,15 @@ class Operator:
 
         All enabled or bolForce interfaces will be called excluding interfaces with excludedInterfaceNames.
         """
-        activeInterfaces = [
-            ii
-            for ii in self.interfaces
-            if (ii.enabled() or ii.bolForce()) and ii.name not in excludedInterfaceNames
-        ]
-        activeInterfaces = [
-            ii
-            for ii in activeInterfaces
-            if ii.name not in self.cs["deferredInterfaceNames"]
-        ]
+        activeInterfaces = self.getActiveInterfaces("BOL", excludedInterfaceNames)
         self._interactAll("BOL", activeInterfaces)
 
     def interactAllBOC(self, cycle):
         """Interact at beginning of cycle of all enabled interfaces."""
-        activeInterfaces = [ii for ii in self.interfaces if ii.enabled()]
-        if cycle < self.cs["deferredInterfacesCycle"]:
-            activeInterfaces = [
-                ii
-                for ii in activeInterfaces
-                if ii.name not in self.cs["deferredInterfaceNames"]
-            ]
+        activeInterfaces = self.getActiveInterfaces("BOC", cycle=cycle)
         return self._interactAll("BOC", activeInterfaces, cycle)
 
-    def interactAllEveryNode(self, cycle, tn, excludedInterfaceNames=None):
+    def interactAllEveryNode(self, cycle, tn, excludedInterfaceNames=()):
         """
         Call the interactEveryNode hook for all enabled interfaces.
 
@@ -606,22 +639,12 @@ class Operator:
         excludedInterfaceNames : list, optional
             Names of interface names that will not be interacted with.
         """
-        excludedInterfaceNames = excludedInterfaceNames or ()
-        activeInterfaces = [
-            ii
-            for ii in self.interfaces
-            if ii.enabled() and ii.name not in excludedInterfaceNames
-        ]
+        activeInterfaces = self.getActiveInterfaces("EveryNode", excludedInterfaceNames)
         self._interactAll("EveryNode", activeInterfaces, cycle, tn)
 
-    def interactAllEOC(self, cycle, excludedInterfaceNames=None):
+    def interactAllEOC(self, cycle, excludedInterfaceNames=()):
         """Interact end of cycle for all enabled interfaces."""
-        excludedInterfaceNames = excludedInterfaceNames or ()
-        activeInterfaces = [
-            ii
-            for ii in self.interfaces
-            if ii.enabled() and ii.name not in excludedInterfaceNames
-        ]
+        activeInterfaces = self.getActiveInterfaces("EOC", excludedInterfaceNames)
         self._interactAll("EOC", activeInterfaces, cycle)
 
     def interactAllEOL(self):
@@ -630,29 +653,40 @@ class Operator:
 
         Notes
         -----
-        If the interfaces are flagged to be reversed at EOL, they are separated from the main stack and appended
-        at the end in reverse order. This allows, for example, an interface that must run first to also run last.
+        If the interfaces are flagged to be reversed at EOL, they are
+        separated from the main stack and appended at the end in reverse
+        order. This allows, for example, an interface that must run
+        first to also run last.
         """
-        activeInterfaces = [ii for ii in self.interfaces if ii.enabled()]
-        interfacesAtEOL = [ii for ii in activeInterfaces if not ii.reverseAtEOL]
-        activeReverseInterfaces = [ii for ii in activeInterfaces if ii.reverseAtEOL]
-        interfacesAtEOL.extend(reversed(activeReverseInterfaces))
-        self._interactAll("EOL", interfacesAtEOL)
+        activeInterfaces = self.getActiveInterfaces("EOL")
+        self._interactAll("EOL", activeInterfaces)
 
     def interactAllCoupled(self, coupledIteration):
         """
-        Interact for tight physics coupling over all enabled interfaces.
+        Run all interfaces that are involved in tight physics coupling.
 
-        Tight coupling implies operator-split iterations between two or more physics solvers at the same solution
-        point in time. For example, a flux solution might be computed, then a temperature solution, and then
-        another flux solution based on updated temperatures (which updated densities, dimensions, and Doppler).
+        .. impl:: Physics coupling is driven from Operator.
+            :id: I_ARMI_OPERATOR_PHYSICS1
+            :implements: R_ARMI_OPERATOR_PHYSICS
 
-        This is distinct from loose coupling, which would simply uses the temperature values from the previous timestep
-        in the current flux solution. It's also distinct from full coupling where all fields are solved simultaneously.
-        ARMI supports tight and loose coupling.
+            This method runs all the interfaces that are defined as part
+            of the tight physics coupling of the reactor. Then it returns
+            if the coupling has converged or not.
+
+            Tight coupling implies the operator has split iterations
+            between two or more physics solvers at the same solution point
+            in simulated time. For example, a flux solution might be
+            computed, then a temperature solution, and then another flux
+            solution based on updated temperatures (which updates
+            densities, dimensions, and Doppler).
+
+            This is distinct from loose coupling, which simply uses
+            the temperature values from the previous timestep in the
+            current flux solution. It's also distinct from full coupling
+            where all fields are solved simultaneously. ARMI supports
+            tight and loose coupling.
         """
-        activeInterfaces = [ii for ii in self.interfaces if ii.enabled()]
-
+        activeInterfaces = self.getActiveInterfaces("Coupled")
         # Store the previous iteration values before calling interactAllCoupled
         # for each interface.
         for interface in activeInterfaces:
@@ -660,7 +694,6 @@ class Operator:
                 interface.coupler.storePreviousIterationValue(
                     interface.getTightCouplingValue()
                 )
-
         self._interactAll("Coupled", activeInterfaces, coupledIteration)
 
         return self._checkTightCouplingConvergence(activeInterfaces)
@@ -915,7 +948,13 @@ class Operator:
         return candidateI
 
     def interfaceIsActive(self, name):
-        """True if named interface exists and is active."""
+        """True if named interface exists and is enabled.
+
+        Notes
+        -----
+        This logic is significantly simpler that getActiveInterfaces. This logic only
+        touches the enabled() flag, but doesn't take into account the case settings.
+        """
         i = self.getInterface(name)
         return i and i.enabled()
 
@@ -923,11 +962,81 @@ class Operator:
         """
         Get list of interfaces in interface stack.
 
+        .. impl:: An operator will expose an ordered list of interfaces.
+            :id: I_ARMI_OPERATOR_INTERFACES
+            :implements: R_ARMI_OPERATOR_INTERFACES
+
+            This method returns an ordered list of instances of the Interface
+            class. This list is useful because at any time node in the
+            reactor simulation, these interfaces will be called in
+            sequence to perform various types of calculations. It is
+            important to note that this Operator instance has a list of
+            Plugins, and each of those Plugins potentially defines
+            multiple Interfaces. And these Interfaces define their own
+            order, separate from the ordering of the Plugins.
+
         Notes
         -----
         Returns a copy so you can manipulate the list in an interface, like dependencies.
         """
         return self.interfaces[:]
+
+    def getActiveInterfaces(
+        self,
+        interactState: str,
+        excludedInterfaceNames: Tuple[str] = (),
+        cycle: int = 0,
+    ):
+        """Retrieve the interfaces which are active for a given interaction state.
+
+        Parameters
+        ----------
+        interactState: str
+            A string dictating which interaction state the interfaces should be pulled for.
+        excludedInterfaceNames: Tuple[str]
+            A tuple of strings dictating which interfaces should be manually skipped.
+        cycle: int
+            The given cycle. 0 by default.
+
+        Returns
+        -------
+        activeInterfaces: List[Interfaces]
+            The interfaces deemed active for the given interactState.
+        """
+        # Validate the inputs
+        if excludedInterfaceNames is None:
+            excludedInterfaceNames = ()
+
+        if interactState not in ("BOL", "BOC", "EveryNode", "EOC", "EOL", "Coupled"):
+            raise ValueError(f"{interactState} is an unknown interaction state!")
+
+        # Ensure the interface is enabled.
+        enabled = lambda i: i.enabled()
+        if interactState == "BOL":
+            enabled = lambda i: i.enabled() or i.bolForce()
+
+        # Ensure the name of the interface isn't in some exclusion list.
+        nameCheck = lambda i: True
+        if interactState == "EveryNode" or interactState == "EOC":
+            nameCheck = lambda i: i.name not in excludedInterfaceNames
+        elif interactState == "BOC" and cycle < self.cs[CONF_DEFERRED_INTERFACES_CYCLE]:
+            nameCheck = lambda i: i.name not in self.cs[CONF_DEFERRED_INTERFACE_NAMES]
+        elif interactState == "BOL":
+            nameCheck = (
+                lambda i: i.name not in self.cs[CONF_DEFERRED_INTERFACE_NAMES]
+                and i.name not in excludedInterfaceNames
+            )
+
+        # Finally, find the active interfaces.
+        activeInterfaces = [i for i in self.interfaces if enabled(i) and nameCheck(i)]
+
+        # Special Case: At EOL we reverse the order of some interfaces.
+        if interactState == "EOL":
+            actInts = [ii for ii in activeInterfaces if not ii.reverseAtEOL]
+            actInts.extend(reversed([ii for ii in activeInterfaces if ii.reverseAtEOL]))
+            activeInterfaces = actInts
+
+        return activeInterfaces
 
     def reattach(self, r, cs=None):
         """Add links to globally-shared objects to this operator and all interfaces.

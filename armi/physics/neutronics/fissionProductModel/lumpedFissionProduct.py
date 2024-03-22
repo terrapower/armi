@@ -413,7 +413,8 @@ def _buildMo99LumpedFissionProduct():
     for lfp in nuclideBases.where(
         lambda nb: isinstance(nb, nuclideBases.LumpNuclideBase)
     ):
-        # Not all lump nuclides bases defined are fission products, so ensure that only fission products are considered.
+        # Not all lump nuclides bases defined are fission products, so ensure that only fission
+        # products are considered.
         if not ("FP" in lfp.name or "REGN" in lfp.name):
             continue
         mo99FP = LumpedFissionProduct(lfp.name)
@@ -424,6 +425,7 @@ def _buildMo99LumpedFissionProduct():
 
 def isGas(nuc):
     """True if nuclide is considered a gas."""
+    # ruff: noqa: SIM110
     for element in elements.getElementsByChemicalPhase(elements.ChemicalPhase.GAS):
         if element == nuc.element:
             return True

@@ -32,6 +32,7 @@ from armi.bookkeeping.report.reportingUtils import (
 )
 from armi.reactor.tests.test_reactors import loadTestReactor
 from armi.tests import mockRunLogs
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
 class TestReport(unittest.TestCase):
@@ -141,6 +142,7 @@ class TestReport(unittest.TestCase):
 
         # pass that random file into the settings
         o.cs["crossSectionControl"]["DA"].xsFileLocation = randoFile
+        o.cs["crossSectionControl"]["DA"].fluxFileLocation = randoFile
 
         with mockRunLogs.BufferLog() as mock:
             # we should start with a clean slate
@@ -158,6 +160,15 @@ class TestReport(unittest.TestCase):
 
 
 class TestReportInterface(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.td = TemporaryDirectoryChanger()
+        cls.td.__enter__()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.td.__exit__(None, None, None)
+
     def test_printReports(self):
         """Testing printReports method."""
         repInt = reportInterface.ReportInterface(None, None)

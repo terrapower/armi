@@ -19,13 +19,16 @@ are called armiRun.yaml which is located in armi.tests
 """
 import collections
 import copy
+import os
 import unittest
+from unittest.mock import patch
 
 import numpy as np
 
 from armi.physics.fuelCycle import fuelHandlers, settings
 from armi.physics.fuelCycle.settings import (
     CONF_ASSEM_ROTATION_STATIONARY,
+    CONF_ASSEMBLY_ROTATION_ALG,
     CONF_PLOT_SHUFFLE_ARROWS,
     CONF_RUN_LATTICE_BEFORE_SHUFFLING,
 )
@@ -36,6 +39,7 @@ from armi.physics.neutronics.latticePhysics.latticePhysicsInterface import (
 from armi.reactor import assemblies, blocks, components, grids
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
+from armi.reactor.zones import Zone
 from armi.settings import caseSettings
 from armi.tests import ArmiTestHelper
 from armi.tests import mockRunLogs
@@ -176,6 +180,53 @@ class TestFuelHandler(FuelHandlerTestHelper):
             param="percentBu", compareTo=100, blockLevelMax=True, typeSpec=None
         )
         self.assertIs(a, a1)
+
+    @patch("armi.physics.fuelCycle.fuelHandlers.FuelHandler.chooseSwaps")
+    def test_outage(self, mockChooseSwaps):
+        # mock up a fuel handler
+        fh = fuelHandlers.FuelHandler(self.o)
+        mockChooseSwaps.return_value = list(self.r.core.getAssemblies())
+
+        # edge case: cannot perform two outages on the same FuelHandler
+        fh.moved = [self.r.core.getFirstAssembly()]
+        with self.assertRaises(ValueError):
+            fh.outage(factor=1.0)
+
+        # edge case: fail if the shuffle file is missing
+        fh.moved = []
+        self.o.cs = self.o.cs.modified(
+            newSettings={"explicitRepeatShuffles": "fakePath"}
+        )
+        with self.assertRaises(RuntimeError):
+            fh.outage(factor=1.0)
+
+        # a successful run
+        fh.moved = []
+        self.o.cs = self.o.cs.modified(
+            newSettings={
+                "explicitRepeatShuffles": "",
+                "fluxRecon": True,
+                CONF_ASSEMBLY_ROTATION_ALG: "simpleAssemblyRotation",
+            }
+        )
+        fh.outage(factor=1.0)
+        self.assertEqual(len(fh.moved), 0)
+
+    def test_isAssemblyInAZone(self):
+        # build a fuel handler
+        fh = fuelHandlers.FuelHandler(self.o)
+
+        # test the default value if there are no zones
+        a = self.r.core.getFirstAssembly()
+        self.assertTrue(fh.isAssemblyInAZone(None, a))
+
+        # If our assembly isn't in one of the supplied zones
+        z = Zone("test_isAssemblyInAZone")
+        self.assertFalse(fh.isAssemblyInAZone([z], a))
+
+        # If our assembly IS in one of the supplied zones
+        z.addLoc(a.getLocation())
+        self.assertTrue(fh.isAssemblyInAZone([z], a))
 
     def test_width(self):
         """Tests the width capability of findAssembly."""
@@ -385,14 +436,22 @@ class TestFuelHandler(FuelHandlerTestHelper):
         fh.interactEOL()
 
     def test_repeatShuffles(self):
-        """
-        Builds a dummy core. Does some shuffles. Repeats the shuffles. Checks that it was a perfect repeat.
+        """Loads the ARMI test reactor with a custom shuffle logic file and shuffles assemblies twice.
 
-        Checks some other things in the meantime
+        Notes
+        -----
+        The custom shuffle logic is executed by :py:meth:`armi.physics.fuelCycle.fuelHandlerInterface.FuelHandlerInterface.manageFuel`
+        within :py:meth:`armi.physics.fuelCycle.tests.test_fuelHandlers.TestFuelHandler.runShuffling`. There are
+        two primary assertions: spent fuel pool assemblies are in the correct location and the assemblies were shuffled
+        into their correct locations. This process is repeated twice to ensure repeatability.
 
-        See Also
-        --------
-        runShuffling : creates the shuffling file to be read in.
+        .. test:: Execute user-defined shuffle operations based on a reactor model.
+            :id: T_ARMI_SHUFFLE
+            :tests: R_ARMI_SHUFFLE
+
+        .. test:: Move an assembly from one position in the core to another.
+            :id: T_ARMI_SHUFFLE_MOVE0
+            :tests: R_ARMI_SHUFFLE_MOVE
         """
         # check labels before shuffling:
         for a in self.r.sfp.getChildren():
@@ -432,6 +491,13 @@ class TestFuelHandler(FuelHandlerTestHelper):
         for a in self.r.sfp.getChildren():
             self.assertEqual(a.getLocation(), "SFP")
 
+        # Do some cleanup, since the fuelHandler Interface has code that gets
+        # around the TempDirectoryChanger
+        os.remove("armiRun2-SHUFFLES.txt")
+        os.remove("armiRun2.shuffles_0.png")
+        os.remove("armiRun2.shuffles_1.png")
+        os.remove("armiRun2.shuffles_2.png")
+
     def test_readMoves(self):
         """
         Depends on the ``shuffleLogic`` created by ``repeatShuffles``.
@@ -456,6 +522,10 @@ class TestFuelHandler(FuelHandlerTestHelper):
         self.assertEqual(sfpMove[0], "SFP")
         self.assertEqual(sfpMove[1], "005-003")
         self.assertEqual(sfpMove[4], "A0073")  # name of assem in SFP
+
+        # make sure we fail hard if the file doesn't exist
+        with self.assertRaises(RuntimeError):
+            fh.readMoves("totall_fictional_file.txt")
 
     def test_processMoveList(self):
         fh = fuelHandlers.FuelHandler(self.o)
@@ -522,7 +592,12 @@ class TestFuelHandler(FuelHandlerTestHelper):
         self.assertEqual(type(b.p.linPowByPinGamma), np.ndarray)
 
     def test_transferStationaryBlocks(self):
-        """Test the _transferStationaryBlocks method."""
+        """Test the _transferStationaryBlocks method.
+
+        .. test:: User-specified blocks can remain in place during shuffling
+            :id: T_ARMI_SHUFFLE_STATIONARY0
+            :tests: R_ARMI_SHUFFLE_STATIONARY
+        """
         # grab stationary block flags
         sBFList = self.r.core.stationaryBlockFlagsList
 
@@ -679,7 +754,16 @@ class TestFuelHandler(FuelHandlerTestHelper):
             self.assertIn("top elevation of stationary", mock.getStdout())
 
     def test_dischargeSwap(self):
-        """Test the dischargeSwap method."""
+        """Remove an assembly from the core and replace it with one from the SFP.
+
+        .. test:: Move an assembly from one position in the core to another.
+            :id: T_ARMI_SHUFFLE_MOVE1
+            :tests: R_ARMI_SHUFFLE_MOVE
+
+        .. test:: User-specified blocks can remain in place during shuffling
+            :id: T_ARMI_SHUFFLE_STATIONARY1
+            :tests: R_ARMI_SHUFFLE_STATIONARY
+        """
         # grab stationary block flags
         sBFList = self.r.core.stationaryBlockFlagsList
 

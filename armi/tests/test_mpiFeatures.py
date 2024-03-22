@@ -25,6 +25,7 @@ or
 mpiexec.exe -n 2 python -m pytest armi/tests/test_mpiFeatures.py
 """
 from distutils.spawn import find_executable
+from unittest.mock import patch
 import os
 import unittest
 
@@ -40,6 +41,7 @@ from armi.reactor import reactors
 from armi.reactor.parameters import parameterDefinitions
 from armi.reactor.tests import test_reactors
 from armi.tests import ARMI_RUN_PATH, TEST_ROOT
+from armi.tests import mockRunLogs
 from armi.utils import pathTools
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
@@ -97,12 +99,27 @@ class MpiOperatorTests(unittest.TestCase):
         self.o = OperatorMPI(cs=self.old_op.cs)
         self.o.r = self.r
 
+    @patch("armi.operators.Operator.operate")
     @unittest.skipIf(context.MPI_SIZE <= 1 or MPI_EXE is None, "Parallel test only")
-    def test_basicOperatorMPI(self):
-        self.o.operate()
+    def test_basicOperatorMPI(self, mockOpMpi):
+        """Test we can drive a parallel operator.
+
+        .. test:: Run a parallel operator.
+            :id: T_ARMI_OPERATOR_MPI0
+            :tests: R_ARMI_OPERATOR_MPI
+        """
+        with mockRunLogs.BufferLog() as mock:
+            self.o.operate()
+            self.assertIn("OperatorMPI.operate", mock.getStdout())
 
     @unittest.skipIf(context.MPI_SIZE <= 1 or MPI_EXE is None, "Parallel test only")
     def test_primaryException(self):
+        """Test a custom interface that only fails on the main process.
+
+        .. test:: Run a parallel operator that fails online on the main process.
+            :id: T_ARMI_OPERATOR_MPI1
+            :tests: R_ARMI_OPERATOR_MPI
+        """
         self.o.removeAllInterfaces()
         failer = FailingInterface1(self.o.r, self.o.cs)
         self.o.addInterface(failer)

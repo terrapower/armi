@@ -152,6 +152,21 @@ class Serializer:
         their version. It is also good practice, whenever possible, to support reading
         old versions so that database files written by old versions can still be read.
 
+    .. impl:: Users can define custom parameter serializers.
+        :id: I_ARMI_PARAM_SERIALIZE
+        :implements: R_ARMI_PARAM_SERIALIZE
+
+        Important physical parameters are stored in every ARMI object.
+        These parameters represent the plant's state during execution
+        of the model. Currently, this requires that the parameters be serializable to a
+        numpy array of a datatype supported by the ``h5py`` package so that the data can
+        be written to, and subsequently read from, an HDF5 file.
+
+        This class allows for these parameters to be serialized in a custom manner by
+        providing interfaces for packing and unpacking parameter data. The user or
+        downstream plugin is able to specify how data is serialized if that data is not
+        naturally serializable.
+
     See Also
     --------
     armi.bookkeeping.db.database3.packSpecialData
@@ -336,6 +351,17 @@ class Parameter:
     def setter(self, setter):
         """Decorator method for assigning setter.
 
+        .. impl:: Provide a way to signal if a parameter needs updating across processes.
+            :id: I_ARMI_PARAM_PARALLEL
+            :implements: R_ARMI_PARAM_PARALLEL
+
+            Parameters need to be handled properly during parallel code execution. This
+            includes notifying processes if a parameter has been updated by
+            another process. This method allows for setting a parameter's value as well
+            as an attribute that signals whether this parameter has been updated. Future
+            processes will be able to query this attribute so that the parameter's
+            status is properly communicated.
+
         Notes
         -----
         Unlike the traditional Python ``property`` class, this does not return a new
@@ -457,7 +483,7 @@ class ParameterDefinitionCollection:
         return matches[0]
 
     def add(self, paramDef):
-        r"""Add a :py:class:`Parameter` to this collection."""
+        """Add a :py:class:`Parameter` to this collection."""
         assert not self._locked, "This ParameterDefinitionCollection has been locked."
         self._paramDefs.append(paramDef)
         self._paramDefDict[paramDef.name, paramDef.collectionType] = paramDef
@@ -519,7 +545,7 @@ class ParameterDefinitionCollection:
         return self._filter(lambda pd: not (pd.assigned & mask))
 
     def forType(self, compositeType):
-        r"""
+        """
         Create a :py:class:`ParameterDefinitionCollection` that contains definitions for a
         specific composite type.
         """
@@ -545,16 +571,16 @@ class ParameterDefinitionCollection:
             pd.assigned |= mask
 
     def byNameAndType(self, name, compositeType):
-        r"""Get a :py:class:`Parameter` by compositeType and name."""
+        """Get a :py:class:`Parameter` by compositeType and name."""
         return self._paramDefDict[name, compositeType.paramCollectionType]
 
     def byNameAndCollectionType(self, name, collectionType):
-        r"""Get a :py:class:`Parameter` by collectionType and name."""
+        """Get a :py:class:`Parameter` by collectionType and name."""
         return self._paramDefDict[name, collectionType]
 
     @property
     def categories(self):
-        r"""Get the categories of all the :py:class:`~Parameter` instances within this collection."""
+        """Get the categories of all the :py:class:`~Parameter` instances within this collection."""
         categories = set()
         for paramDef in self:
             categories |= paramDef.categories
@@ -574,6 +600,15 @@ class ParameterDefinitionCollection:
     def toWriteToDB(self, assignedMask: Optional[int] = None):
         """
         Get a list of acceptable parameters to store to the database for a level of the data model.
+
+        .. impl:: Filter parameters to write to DB.
+            :id: I_ARMI_PARAM_DB
+            :implements: R_ARMI_PARAM_DB
+
+            This method is called when writing the parameters to the database file. It
+            queries the parameter's ``saveToDB`` attribute to ensure that this parameter
+            is desired for saving to the database file. It returns a list of parameters
+            that should be included in the database write operation.
 
         Parameters
         ----------
@@ -732,6 +767,6 @@ class ParameterBuilder:
 
 
 # Container for all parameter definition collections that have been bound to an
-# ArmiObject or subclass. These are added from the applyParameters() class method on
+# ArmiObject or subclass. These are added from the applyParameters() method on
 # the ParameterCollection class.
 ALL_DEFINITIONS = ParameterDefinitionCollection()

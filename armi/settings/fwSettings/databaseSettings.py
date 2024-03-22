@@ -30,6 +30,7 @@ CONF_FORCE_DB_PARAMS = "forceDbParams"
 
 
 def defineSettings():
+    """Define settings for the interface."""
     settings = [
         setting.Setting(
             CONF_DB,

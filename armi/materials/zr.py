@@ -33,8 +33,10 @@ class Zr(Material):
     references = {
         "density": "AAA Materials Handbook 45803",
         "thermal conductivity": "AAA Fuels handbook. ANL",
-        "linear expansion": "Y.S. Touloukian, R.K. Kirby, R.E. Taylor and P.D. Desai, Thermal Expansion, Thermophysical Properties of Matter, Vol. 12, IFI/Plenum, New York-Washington (1975)",
-        "linear expansion percent": "Y.S. Touloukian, R.K. Kirby, R.E. Taylor and P.D. Desai, Thermal Expansion, Thermophysical Properties of Matter, Vol. 12, IFI/Plenum, New York-Washington (1975)",
+        "linear expansion": "Y.S. Touloukian, R.K. Kirby, R.E. Taylor and P.D. Desai, Thermal Expansion, "
+        + "Thermophysical Properties of Matter, Vol. 12, IFI/Plenum, New York-Washington (1975)",
+        "linear expansion percent": "Y.S. Touloukian, R.K. Kirby, R.E. Taylor and P.D. Desai, Thermal Expansion, "
+        + "Thermophysical Properties of Matter, Vol. 12, IFI/Plenum, New York-Washington (1975)",
     }
 
     linearExpansionTableK = [

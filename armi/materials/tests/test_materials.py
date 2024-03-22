@@ -19,7 +19,8 @@ import unittest
 
 from numpy import testing
 
-from armi import materials, settings
+from armi import context, materials, settings
+from armi.materials import _MATERIAL_NAMESPACE_ORDER, setMaterialNamespaceOrder
 from armi.nucDirectory import nuclideBases
 from armi.reactor import blueprints
 from armi.tests import mockRunLogs
@@ -49,6 +50,7 @@ class _Material_Test:
         self.assertNotEqual(self.mat.density(500), 0)
 
     def test_TD(self):
+        """Test the material density."""
         self.assertEqual(self.mat.getTD(), self.mat.theoreticalDensityFrac)
 
         self.mat.clearCache()
@@ -59,6 +61,7 @@ class _Material_Test:
         self.assertEqual(self.mat.cached, {})
 
     def test_duplicate(self):
+        """Test the material duplication."""
         mat = self.mat.duplicate()
 
         self.assertEqual(len(mat.massFrac), len(self.mat.massFrac))
@@ -70,6 +73,7 @@ class _Material_Test:
         self.assertEqual(mat.theoreticalDensityFrac, self.mat.theoreticalDensityFrac)
 
     def test_cache(self):
+        """Test the material cache."""
         self.mat.clearCache()
         self.assertEqual(len(self.mat.cached), 0)
 
@@ -80,11 +84,13 @@ class _Material_Test:
         self.assertEqual(val, "Noether")
 
     def test_densityKgM3(self):
+        """Test the density for kg/m^3."""
         dens = self.mat.density(500)
         densKgM3 = self.mat.densityKgM3(500)
         self.assertEqual(dens * 1000.0, densKgM3)
 
     def test_pseudoDensityKgM3(self):
+        """Test the pseudo density for kg/m^3."""
         dens = self.mat.pseudoDensity(500)
         densKgM3 = self.mat.pseudoDensityKgM3(500)
         self.assertEqual(dens * 1000.0, densKgM3)
@@ -101,6 +107,16 @@ class MaterialFindingTests(unittest.TestCase):
     """Make sure materials are discoverable as designed."""
 
     def test_findMaterial(self):
+        """Test resolveMaterialClassByName() function.
+
+        .. test:: Materials can be grabbed from a list of namespaces.
+            :id: T_ARMI_MAT_NAMESPACE0
+            :tests: R_ARMI_MAT_NAMESPACE
+
+        .. test:: You can find a material by name.
+            :id: T_ARMI_MAT_NAME
+            :tests: R_ARMI_MAT_NAME
+        """
         self.assertIs(
             materials.resolveMaterialClassByName(
                 "Void", namespaceOrder=["armi.materials"]
@@ -127,6 +143,52 @@ class MaterialFindingTests(unittest.TestCase):
             materials.resolveMaterialClassByName(
                 "Unobtanium", namespaceOrder=["armi.materials"]
             )
+
+    def __validateMaterialNamespace(self):
+        """Helper method to validate the material namespace a little."""
+        self.assertTrue(isinstance(_MATERIAL_NAMESPACE_ORDER, list))
+        self.assertGreater(len(_MATERIAL_NAMESPACE_ORDER), 0)
+        for nameSpace in _MATERIAL_NAMESPACE_ORDER:
+            self.assertTrue(isinstance(nameSpace, str))
+
+    @unittest.skipUnless(context.MPI_RANK == 0, "test only on root node")
+    def test_namespacing(self):
+        """Test loading materials with different material namespaces, to cover how they work.
+
+        .. test:: Material can be found in defined packages.
+            :id: T_ARMI_MAT_NAMESPACE1
+            :tests: R_ARMI_MAT_NAMESPACE
+
+        .. test:: Material namespaces register materials with an order of priority.
+            :id: T_ARMI_MAT_ORDER
+            :tests: R_ARMI_MAT_ORDER
+        """
+        # let's do a quick test of getting a material from the default namespace
+        setMaterialNamespaceOrder(["armi.materials"])
+        uraniumOxide = materials.resolveMaterialClassByName(
+            "UraniumOxide", namespaceOrder=["armi.materials"]
+        )
+        self.assertGreater(uraniumOxide().density(500), 0)
+
+        # validate the default namespace in ARMI
+        self.__validateMaterialNamespace()
+
+        # show you can add a material namespace
+        newMats = "armi.utils.tests.test_densityTools"
+        setMaterialNamespaceOrder(["armi.materials", newMats])
+        self.__validateMaterialNamespace()
+
+        # in the case of duplicate materials, show that the material namespace determines
+        # which material is chosen
+        uraniumOxideTest = materials.resolveMaterialClassByName(
+            "UraniumOxide", namespaceOrder=[newMats, "armi.materials"]
+        )
+        for t in range(200, 600):
+            self.assertEqual(uraniumOxideTest().density(t), 0)
+            self.assertEqual(uraniumOxideTest().pseudoDensity(t), 0)
+
+        # for safety, reset the material namespace list and order
+        setMaterialNamespaceOrder(["armi.materials"])
 
 
 class Californium_TestCase(_Material_Test, unittest.TestCase):
@@ -705,6 +767,12 @@ class UraniumOxide_TestCase(_Material_Test, unittest.TestCase):
         self.assertAlmostEqual(expectedDeltaT, actualDeltaT)
 
     def test_duplicate(self):
+        """Test the material duplication.
+
+        .. test:: Materials shall calc mass fracs at init.
+            :id: T_ARMI_MAT_FRACS4
+            :tests: R_ARMI_MAT_FRACS
+        """
         duplicateU = self.mat.duplicate()
 
         for key in self.mat.massFrac:
@@ -737,6 +805,13 @@ class Thorium_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.Thorium
 
     def test_setDefaultMassFracs(self):
+        """
+        Test default mass fractions.
+
+        .. test:: The materials generate nuclide mass fractions.
+            :id: T_ARMI_MAT_FRACS0
+            :tests: R_ARMI_MAT_FRACS
+        """
         self.mat.setDefaultMassFracs()
         cur = self.mat.massFrac
         ref = {"TH232": 1.0}
@@ -810,12 +885,23 @@ class Void_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.Void
 
     def test_pseudoDensity(self):
+        """This material has a no pseudo-density.
+
+        .. test:: There is a void material.
+            :id: T_ARMI_MAT_VOID0
+            :tests: R_ARMI_MAT_VOID
+        """
         self.mat.setDefaultMassFracs()
         cur = self.mat.pseudoDensity()
         self.assertEqual(cur, 0.0)
 
     def test_density(self):
-        """This material has no density function."""
+        """This material has no density.
+
+        .. test:: There is a void material.
+            :id: T_ARMI_MAT_VOID1
+            :tests: R_ARMI_MAT_VOID
+        """
         self.assertEqual(self.mat.density(500), 0)
 
         self.mat.setDefaultMassFracs()
@@ -823,11 +909,23 @@ class Void_TestCase(_Material_Test, unittest.TestCase):
         self.assertEqual(cur, 0.0)
 
     def test_linearExpansion(self):
+        """This material does not expand linearly.
+
+        .. test:: There is a void material.
+            :id: T_ARMI_MAT_VOID2
+            :tests: R_ARMI_MAT_VOID
+        """
         cur = self.mat.linearExpansion(400)
         ref = 0.0
         self.assertEqual(cur, ref)
 
     def test_propertyValidTemperature(self):
+        """This material has no valid temperatures.
+
+        .. test:: There is a void material.
+            :id: T_ARMI_MAT_VOID3
+            :tests: R_ARMI_MAT_VOID
+        """
         self.assertEqual(len(self.mat.propertyValidTemperature), 0)
 
 
@@ -839,6 +937,13 @@ class Mixture_TestCase(_Material_Test, unittest.TestCase):
         self.assertEqual(self.mat.density(500), 0)
 
     def test_setDefaultMassFracs(self):
+        """
+        Test default mass fractions.
+
+        .. test:: The materials generate nuclide mass fractions.
+            :id: T_ARMI_MAT_FRACS1
+            :tests: R_ARMI_MAT_FRACS
+        """
         self.mat.setDefaultMassFracs()
         cur = self.mat.pseudoDensity(500)
         self.assertEqual(cur, 0.0)
@@ -852,6 +957,7 @@ class Mixture_TestCase(_Material_Test, unittest.TestCase):
 
 
 class Lead_TestCase(_Material_Test, unittest.TestCase):
+
     MAT_CLASS = materials.Lead
 
     def test_volumetricExpansion(self):
@@ -873,11 +979,24 @@ class Lead_TestCase(_Material_Test, unittest.TestCase):
         )
 
     def test_linearExpansion(self):
-        cur = self.mat.linearExpansion(400)
-        ref = 0.0
-        self.assertEqual(cur, ref)
+        """Unit tests for lead materials linear expansion.
+
+        .. test:: Fluid materials do not linearly expand, at any temperature.
+            :id: T_ARMI_MAT_FLUID2
+            :tests: R_ARMI_MAT_FLUID
+        """
+        for t in range(300, 901, 25):
+            cur = self.mat.linearExpansion(t)
+            self.assertEqual(cur, 0)
 
     def test_setDefaultMassFracs(self):
+        """
+        Test default mass fractions.
+
+        .. test:: The materials generate nuclide mass fractions.
+            :id: T_ARMI_MAT_FRACS2
+            :tests: R_ARMI_MAT_FRACS
+        """
         self.mat.setDefaultMassFracs()
         cur = self.mat.massFrac
         ref = {"PB": 1}
@@ -908,6 +1027,13 @@ class LeadBismuth_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.LeadBismuth
 
     def test_setDefaultMassFracs(self):
+        """
+        Test default mass fractions.
+
+        .. test:: The materials generate nuclide mass fractions.
+            :id: T_ARMI_MAT_FRACS3
+            :tests: R_ARMI_MAT_FRACS
+        """
         self.mat.setDefaultMassFracs()
         cur = self.mat.massFrac
         ref = {"BI209": 0.555, "PB": 0.445}

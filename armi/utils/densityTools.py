@@ -24,13 +24,21 @@ def getNDensFromMasses(rho, massFracs, normalize=False):
     """
     Convert density (g/cc) and massFracs vector into a number densities vector (#/bn-cm).
 
+    .. impl:: Number densities are retrievable from masses.
+        :id: I_ARMI_UTIL_MASS2N_DENS
+        :implements: R_ARMI_UTIL_MASS2N_DENS
+
+        Loops over all provided nuclides (given as keys in the ``massFracs`` vector) and calculates
+        number densities of each, at a given material ``density``. Mass fractions can be provided
+        either as normalized to 1, or as unnormalized with subsequent normalization calling
+        ``normalizeNuclideList`` via the ``normalize`` flag.
+
     Parameters
     ----------
     rho : float
         density in (g/cc)
     massFracs : dict
-        vector of mass fractions -- normalized to 1 -- keyed by their nuclide
-        name
+        vector of mass fractions -- normalized to 1 -- keyed by their nuclide name
 
     Returns
     -------
@@ -168,6 +176,25 @@ def formatMaterialCard(
     """
     Formats nuclides and densities into a MCNP material card.
 
+    .. impl:: Create MCNP material card.
+        :id: I_ARMI_UTIL_MCNP_MAT_CARD
+        :implements: R_ARMI_UTIL_MCNP_MAT_CARD
+
+        Loops over a vector of nuclides (of type ``nuclideBase``) provided in ``densities`` and
+        formats them into a list of strings consistent with MCNP material card syntax, skipping
+        dummy nuclides and LFPs.
+
+        A ``matNum`` may optionally be provided for the created material card: if not provided, it
+        is left blank. The desired number of significant figures for the created card can be
+        optionally provided by ``sigFigs``. Nuclides whose number density falls below a threshold
+        (optionally specified by ``minDens``) are set to the threshold value.
+
+        The boolean ``mcnp6Compatible`` may optionally be provided to include the nuclide library at
+        the end of the vector of individual nuclides using the "nlib=" syntax leveraged by MCNP. If
+        this boolean is turned on, the associated value ``mcnpLibrary`` should generally also be
+        provided, as otherwise, the library will be left blank in the resulting material card
+        string.
+
     Parameters
     ----------
     densities : dict
@@ -196,6 +223,7 @@ def formatMaterialCard(
         mCard = ["m{matNum}\n".format(matNum=matNum)]
     else:
         mCard = ["m{}\n"]
+
     for nuc, dens in sorted(densities.items()):
         # skip LFPs and Dummies.
         if isinstance(nuc, (nuclideBases.LumpNuclideBase)):
@@ -214,6 +242,7 @@ def formatMaterialCard(
 
     if mcnp6Compatible:
         mCard.append("      nlib={lib}c\n".format(lib=mcnpLibrary))
+
     return mCard
 
 
@@ -250,7 +279,14 @@ def filterNuclideList(nuclideVector, nuclides):
 
 def normalizeNuclideList(nuclideVector, normalization=1.0):
     """
-    normalize the nuclide vector.
+    Normalize the nuclide vector.
+
+    .. impl:: Normalize nuclide vector.
+        :id: I_ARMI_UTIL_DENS_TOOLS
+        :implements: R_ARMI_UTIL_DENS_TOOLS
+
+        Given a vector of nuclides ``nuclideVector`` indexed by nuclide identifiers (``nucNames`` or ``nuclideBases``),
+        normalizes to the provided ``normalization`` value.
 
     Parameters
     ----------
@@ -285,15 +321,29 @@ def expandElementalMassFracsToNuclides(
     -----
     This indirectly updates number densities through mass fractions.
 
+    .. impl:: Expand mass fractions to nuclides.
+        :id: I_ARMI_UTIL_EXP_MASS_FRACS
+        :implements: R_ARMI_UTIL_EXP_MASS_FRACS
+
+        Given a vector of elements and nuclides with associated mass fractions (``massFracs``),
+        expands the elements in-place into a set of nuclides using
+        ``expandElementalNuclideMassFracs``. Isotopes to expand into are provided for each element
+        by specifying them with ``elementExpansionPairs``, which maps each element to a list of
+        particular NuclideBases; if left unspecified, all naturally-occurring isotopes are included.
+
+        Explicitly specifying the expansion isotopes provides a way for particular
+        naturally-occurring isotopes to be excluded from the expansion, e.g. excluding O-18 from an
+        expansion of elemental oxygen.
+
     Parameters
     ----------
     massFracs : dict(str, float)
-        dictionary of nuclide or element names with mass fractions.
-        Elements will be expanded in place using natural isotopics.
+        dictionary of nuclide or element names with mass fractions. Elements will be expanded in
+        place using natural isotopics.
 
     elementExpansionPairs : (Element, [NuclideBase]) pairs
-        element objects to expand (from nuclidBase.element) and list
-        of NuclideBases to expand into (or None for all natural)
+        element objects to expand (from nuclidBase.element) and list of NuclideBases to expand into
+        (or None for all natural)
     """
     # expand elements
     for element, isotopicSubset in elementExpansionPairs:

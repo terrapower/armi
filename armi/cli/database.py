@@ -15,70 +15,11 @@
 """Entry point into ARMI for manipulating output databases."""
 import os
 import pathlib
-import re
 
 from armi import context
 from armi import runLog
 from armi.cli.entryPoint import EntryPoint
 from armi.utils.textProcessors import resolveMarkupInclusions
-
-
-class ConvertDB(EntryPoint):
-    """Convert databases between different versions."""
-
-    name = "convert-db"
-    mode = context.Mode.BATCH
-
-    def addOptions(self):
-        self.parser.add_argument("h5db", help="Input database path", type=str)
-        self.parser.add_argument(
-            "--output-name", "-o", help="output database name", type=str, default=None
-        )
-        self.parser.add_argument(
-            "--output-version",
-            help=(
-                "output database version. '2' or 'xtview' for older XTView database; '3' "
-                "for new format."
-            ),
-            type=str,
-            default=None,
-        )
-
-        self.parser.add_argument(
-            "--nodes",
-            help="An optional list of time nodes to migrate. Should look like "
-            "`(1,0)(1,1)(1,2)`, etc",
-            type=str,
-            default=None,
-        )
-
-    def parse_args(self, args):
-        EntryPoint.parse_args(self, args)
-        if self.args.output_version is None:
-            self.args.output_version = "3"
-        elif self.args.output_version.lower() == "xtview":
-            self.args.output_version = "2"
-
-        if self.args.nodes is not None:
-            self.args.nodes = [
-                (int(cycle), int(node))
-                for cycle, node in re.findall(r"\((\d+),(\d+)\)", self.args.nodes)
-            ]
-
-    def invoke(self):
-        from armi.bookkeeping.db import convertDatabase
-
-        if self.args.nodes is not None:
-            runLog.info(
-                "Converting the following time nodes: {}".format(self.args.nodes)
-            )
-
-        convertDatabase(
-            self.args.h5db,
-            outputDBName=self.args.output_name,
-            outputVersion=self.args.output_version,
-            nodes=self.args.nodes,
-        )
 
 
 class ExtractInputs(EntryPoint):

@@ -13,7 +13,7 @@ Help Wanted
 
 There are a lot of places you can get started to help the ARMI project and team:
 
-* Better :doc:`documentation </developer/documenting>`
+* Better :ref:`armi-docing`
 * Better test coverage
 * Many more type annotations are desired. Type issues cause lots of bugs.
 * Targeted speedups (e.g. informed by a profiler)
@@ -53,15 +53,15 @@ The process for opening a PR against ARMI goes something like this:
 3. Make your code changes to your new branch
 4. Submit a Pull Request against `ARMIs main branch <https://github.com/terrapower/armi/pull/new/main>`_
     a. See `GitHubs general guidance on Pull Requests <https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request>`_
-    b. See :doc:`ARMIs specific guidance </developer/tooling>` on what makes a "good" Pull Request.
+    b. See ARMIs specific guidance on what makes a "good" Pull Request: :ref:`armi-tooling`.
 5. Actively engage with your PR reviewer's questions and comments.
 
 > Note that a bot will require that you sign our `Contributor License Agreement <https://gist.github.com/youngmit/8654abcf93f309771ae9296abebe9d4a>`_
 before we can accept a pull request from you.
 
-See our published documentation for a complete guide to our :doc:`coding standards and practices </developer/standards_and_practices.html>`.
+See our published documentation for a complete guide to our coding standards and practices: :ref:`armi-stds`.
 
-Also, please check out our (quick) synopsis on :doc:`good commit messages </developer/tooling>`.
+Also, please check out our (quick) synopsis on good commit messages: :ref:`armi-tooling`.
 
 Licensing of Tools
 ==================

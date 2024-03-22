@@ -23,7 +23,6 @@ if not isConfigured():
 from armi.reactor import systemLayoutInput
 from armi.reactor.blueprints import Blueprints
 from armi.reactor.blueprints.gridBlueprint import Grids, saveToStream
-from armi.reactor.blueprints.tests.test_blockBlueprints import FULL_BP, FULL_BP_GRID
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
@@ -193,6 +192,7 @@ rzt_core:
         [8,6]: assembly9_7 fuel
 """
 
+# ruff: noqa: E501
 RTH_GEOM = """
 <reactor geom="ThetaRZ" symmetry="eighth core periodic">
     <assembly azimuthalMesh="4" name="assembly1_1 fuel" rad1="0.0" rad2="14.2857142857" radialMesh="4" theta1="0.0" theta2="0.11556368446681414" />
@@ -306,7 +306,7 @@ TINY_GRID = """core:
 """
 
 
-class TestRoundTrip(unittest.TestCase):
+class TestGridBPRoundTrip(unittest.TestCase):
     def setUp(self):
         self.grids = Grids.load(SMALL_HEX)
 
@@ -314,13 +314,27 @@ class TestRoundTrip(unittest.TestCase):
         self.assertIn("core", self.grids)
 
     def test_roundTrip(self):
+        """
+        Test saving blueprint data to a stream.
+
+        .. test:: Grid blueprints can be written to disk.
+            :id: T_ARMI_BP_TO_DB0
+            :tests: R_ARMI_BP_TO_DB
+        """
         stream = io.StringIO()
         saveToStream(stream, self.grids, False, True)
         stream.seek(0)
         gridBp = Grids.load(stream)
         self.assertIn("third", gridBp["core"].symmetry)
 
-    def test_tiny_map(self):
+    def test_tinyMap(self):
+        """
+        Test that a lattice map can be defined, written, and read in from blueprint file.
+
+        .. test:: Define a lattice map in reactor core.
+            :id: T_ARMI_BP_GRID1
+            :tests: R_ARMI_BP_GRID
+        """
         grid = Grids.load(TINY_GRID)
         stream = io.StringIO()
         saveToStream(stream, grid, full=True, tryMap=True)
@@ -347,7 +361,7 @@ class TestGridBlueprintsSection(unittest.TestCase):
     def test_simpleRead(self):
         gridDesign = self.grids["control"]
         _ = gridDesign.construct()
-        self.assertEqual(gridDesign.gridContents[0, -8], "6")
+        self.assertEqual(gridDesign.gridContents[-8, 0], "6")
 
         # Cartesian full, odd
         gridDesign2 = self.grids["sfp"]
@@ -381,6 +395,14 @@ class TestGridBlueprintsSection(unittest.TestCase):
             self.assertEqual(gridDesign4.gridContents[-4, -3], "1")
 
     def test_simpleReadLatticeMap(self):
+        """Read lattice map and create a grid.
+
+        .. test:: Define a lattice map in reactor core.
+            :id: T_ARMI_BP_GRID0
+            :tests: R_ARMI_BP_GRID
+        """
+        from armi.reactor.blueprints.tests.test_blockBlueprints import FULL_BP
+
         # Cartesian full, even/odd hybrid
         gridDesign4 = self.grids["sfp even"]
         _grid = gridDesign4.construct()
@@ -412,6 +434,8 @@ class TestGridBlueprintsSection(unittest.TestCase):
         self.assertTrue(os.path.exists(filePath))
 
     def test_simpleReadNoLatticeMap(self):
+        from armi.reactor.blueprints.tests.test_blockBlueprints import FULL_BP_GRID
+
         # Cartesian full, even/odd hybrid
         gridDesign4 = self.grids["sfp even"]
         _grid = gridDesign4.construct()

@@ -93,7 +93,6 @@ class TestBlockCollectionMedian(unittest.TestCase):
         self.bc.extend(self.blockList)
 
     def test_createRepresentativeBlock(self):
-
         avgB = self.bc.createRepresentativeBlock()
         self.assertAlmostEqual(avgB.p.percentBu, 50.0)
 
@@ -132,25 +131,24 @@ class TestBlockCollectionAverage(unittest.TestCase):
         self.bc.averageByComponent = True
 
     def test_performAverageByComponent(self):
-        """
-        Check the averageByComponent attribute
-        """
+        """Check the averageByComponent attribute."""
         self.bc._checkBlockSimilarity = MagicMock(return_value=True)
         self.assertTrue(self.bc._performAverageByComponent())
         self.bc.averageByComponent = False
         self.assertFalse(self.bc._performAverageByComponent())
 
     def test_checkBlockSimilarity(self):
-        """
-        Check the block similarity test
-        """
+        """Check the block similarity test."""
         self.assertTrue(self.bc._checkBlockSimilarity())
         self.bc.append(test_blocks.loadTestBlock())
         self.assertFalse(self.bc._checkBlockSimilarity())
 
     def test_createRepresentativeBlock(self):
-        """
-        Test creation of a representative block
+        """Test creation of a representative block.
+
+        .. test:: Create representative blocks using a volume-weighted averaging.
+            :id: T_ARMI_XSGM_CREATE_REPR_BLOCKS0
+            :tests: R_ARMI_XSGM_CREATE_REPR_BLOCKS
         """
         avgB = self.bc.createRepresentativeBlock()
         self.assertNotIn(avgB, self.bc)
@@ -171,10 +169,7 @@ class TestBlockCollectionAverage(unittest.TestCase):
         self.assertAlmostEqual(newBc.avgNucTemperatures["NA23"], 402.0)
 
     def test_createRepresentativeBlockDissimilar(self):
-        """
-        Test creation of a representative block from a collection with dissimilar blocks
-        """
-
+        """Test creation of a representative block from a collection with dissimilar blocks."""
         uniqueBlock = test_blocks.loadTestBlock()
         uniqueBlock.p.percentBu = 50.0
         fpFactory = test_lumpedFissionProduct.getDummyLFPFile()
@@ -262,9 +257,7 @@ class TestComponentAveraging(unittest.TestCase):
         self.bc.extend(blockCopies)
 
     def test_getAverageComponentNumberDensities(self):
-        """
-        Test component number density averaging
-        """
+        """Test component number density averaging."""
         # becaue of the way densities are set up, the middle block (index 1 of 0-2) component densities are equivalent to the average
         b = self.bc[1]
         for compIndex, c in enumerate(b.getComponents()):
@@ -278,9 +271,7 @@ class TestComponentAveraging(unittest.TestCase):
                 )
 
     def test_getAverageComponentTemperature(self):
-        """
-        Test mass-weighted component temperature averaging
-        """
+        """Test mass-weighted component temperature averaging."""
         b = self.bc[0]
         massWeightedIncrease = 5.0 / 3.0
         baseTemps = [600, 400, 500, 500, 400, 500, 400]
@@ -294,9 +285,7 @@ class TestComponentAveraging(unittest.TestCase):
             )
 
     def test_getAverageComponentTemperatureVariedWeights(self):
-        """
-        Test mass-weighted component temperature averaging with variable weights
-        """
+        """Test mass-weighted component temperature averaging with variable weights."""
         # make up a fake weighting with power param
         self.bc.weightingParam = "power"
         for i, b in enumerate(self.bc):
@@ -313,9 +302,7 @@ class TestComponentAveraging(unittest.TestCase):
             )
 
     def test_getAverageComponentTemperatureNoMass(self):
-        """
-        Test component temperature averaging when the components have no mass
-        """
+        """Test component temperature averaging when the components have no mass."""
         for b in self.bc:
             for nuc in b.getNuclides():
                 b.setNumberDensity(nuc, 0.0)
@@ -379,10 +366,10 @@ class TestBlockCollectionComponentAverage(unittest.TestCase):
         self.expectedAreas = [[1, 6, 1], [1, 2, 1, 4]]
 
     def test_ComponentAverageRepBlock(self):
-        r"""
-        tests that the XS group manager calculates the expected component atom density
-        and component area correctly. Order of components is also checked since in
-        1D cases the order of the components matters.
+        """Tests that the XS group manager calculates the expected component atom density
+        and component area correctly.
+
+        Order of components is also checked since in 1D cases the order of the components matters.
         """
         xsgm = self.o.getInterface("xsGroups")
 
@@ -421,11 +408,11 @@ class TestBlockCollectionComponentAverage(unittest.TestCase):
 
 
 class TestBlockCollectionComponentAverage1DCylinder(unittest.TestCase):
-    r"""tests for 1D cylinder XS gen cases."""
+    """tests for 1D cylinder XS gen cases."""
 
     def setUp(self):
-        r"""
-        First part of setup same as test_Cartesian.
+        """First part of setup same as test_Cartesian.
+
         Second part of setup builds lists/dictionaries of expected values to compare to.
         has expected values for component isotopic atom density and component area.
         """
@@ -498,10 +485,14 @@ class TestBlockCollectionComponentAverage1DCylinder(unittest.TestCase):
         ]
 
     def test_ComponentAverage1DCylinder(self):
-        r"""
-        tests that the XS group manager calculates the expected component atom density
-        and component area correctly. Order of components is also checked since in
-        1D cases the order of the components matters.
+        """Tests that the cross-section group manager calculates the expected component atom density
+        and component area correctly.
+
+        Order of components is also checked since in 1D cases the order of the components matters.
+
+        .. test:: Create representative blocks using custom cylindrical averaging.
+            :id: T_ARMI_XSGM_CREATE_REPR_BLOCKS1
+            :tests: R_ARMI_XSGM_CREATE_REPR_BLOCKS
         """
         xsgm = self.o.getInterface("xsGroups")
 
@@ -546,7 +537,6 @@ class TestBlockCollectionComponentAverage1DCylinder(unittest.TestCase):
                 )
 
     def test_checkComponentConsistency(self):
-
         xsgm = self.o.getInterface("xsGroups")
         xsgm.interactBOL()
         blockCollectionsByXsGroup = xsgm.makeCrossSectionGroups()
@@ -701,7 +691,7 @@ class TestBlockCollectionFluxWeightedAverage(unittest.TestCase):
             self.bc.createRepresentativeBlock()
 
 
-class Test_CrossSectionGroupManager(unittest.TestCase):
+class TestCrossSectionGroupManager(unittest.TestCase):
     def setUp(self):
         cs = settings.Settings()
         self.blockList = makeBlocks(20)
@@ -775,6 +765,12 @@ class Test_CrossSectionGroupManager(unittest.TestCase):
         self.assertEqual("D", xsType3)
 
     def test_getRepresentativeBlocks(self):
+        """Test that we can create the representative blocks for a reactor.
+
+        .. test:: Build representative blocks for a reactor.
+            :id: T_ARMI_XSGM_CREATE_XS_GROUPS
+            :tests: R_ARMI_XSGM_CREATE_XS_GROUPS
+        """
         _o, r = test_reactors.loadTestReactor(TEST_ROOT)
         self.csm.r = r
 
@@ -793,7 +789,7 @@ class Test_CrossSectionGroupManager(unittest.TestCase):
         intercoolant.setNumberDensity("NA23", units.TRACE_NUMBER_DENSITY)
 
         self.csm.createRepresentativeBlocks()
-        blocks = self.csm.representativeBlocks
+        blocks = list(self.csm.representativeBlocks.values())
         self.assertGreater(len(blocks), 0)
 
         # Test ability to get average nuclide temperature in block.
@@ -810,6 +806,16 @@ class Test_CrossSectionGroupManager(unittest.TestCase):
 
         # Test that retrieving temperatures fails if a representative block for a given XS ID does not exist
         self.assertEqual(self.csm.getNucTemperature("Z", "U235"), None)
+
+        # Test dimensions
+        self.assertEqual(blocks[0].getHeight(), 25.0)
+        self.assertEqual(blocks[1].getHeight(), 25.0)
+        self.assertAlmostEqual(blocks[0].getVolume(), 6074.356308731789)
+        self.assertAlmostEqual(blocks[1].getVolume(), 6074.356308731789)
+
+        # Number densities haven't been calculated yet
+        self.assertIsNone(blocks[0].p.detailedNDens)
+        self.assertIsNone(blocks[1].p.detailedNDens)
 
     def test_createRepresentativeBlocksUsingExistingBlocks(self):
         """
@@ -844,14 +850,26 @@ class Test_CrossSectionGroupManager(unittest.TestCase):
         self.assertEqual(origXSIDsFromNew["BA"], "AA")
 
     def test_interactBOL(self):
-        """Test `BOL` lattice physics update frequency."""
+        """Test `BOL` lattice physics update frequency.
+
+        .. test:: The cross-section group manager frequency depends on the LPI frequency at BOL.
+            :id: T_ARMI_XSGM_FREQ0
+            :tests: R_ARMI_XSGM_FREQ
+        """
+        self.assertFalse(self.csm.representativeBlocks)
         self.blockList[0].r.p.timeNode = 0
         self.csm.cs[CONF_LATTICE_PHYSICS_FREQUENCY] = "BOL"
         self.csm.interactBOL()
         self.assertTrue(self.csm.representativeBlocks)
 
     def test_interactBOC(self):
-        """Test `BOC` lattice physics update frequency."""
+        """Test `BOC` lattice physics update frequency.
+
+        .. test:: The cross-section group manager frequency depends on the LPI frequency at BOC.
+            :id: T_ARMI_XSGM_FREQ1
+            :tests: R_ARMI_XSGM_FREQ
+        """
+        self.assertFalse(self.csm.representativeBlocks)
         self.blockList[0].r.p.timeNode = 0
         self.csm.cs[CONF_LATTICE_PHYSICS_FREQUENCY] = "BOC"
         self.csm.interactBOL()
@@ -859,7 +877,12 @@ class Test_CrossSectionGroupManager(unittest.TestCase):
         self.assertTrue(self.csm.representativeBlocks)
 
     def test_interactEveryNode(self):
-        """Test `everyNode` lattice physics update frequency."""
+        """Test `everyNode` lattice physics update frequency.
+
+        .. test:: The cross-section group manager frequency depends on the LPI frequency at every time node.
+            :id: T_ARMI_XSGM_FREQ2
+            :tests: R_ARMI_XSGM_FREQ
+        """
         self.csm.cs[CONF_LATTICE_PHYSICS_FREQUENCY] = "BOC"
         self.csm.interactBOL()
         self.csm.interactEveryNode()
@@ -870,7 +893,12 @@ class Test_CrossSectionGroupManager(unittest.TestCase):
         self.assertTrue(self.csm.representativeBlocks)
 
     def test_interactFirstCoupledIteration(self):
-        """Test `firstCoupledIteration` lattice physics update frequency."""
+        """Test `firstCoupledIteration` lattice physics update frequency.
+
+        .. test:: The cross-section group manager frequency depends on the LPI frequency during first coupled iteration.
+            :id: T_ARMI_XSGM_FREQ3
+            :tests: R_ARMI_XSGM_FREQ
+        """
         self.csm.cs[CONF_LATTICE_PHYSICS_FREQUENCY] = "everyNode"
         self.csm.interactBOL()
         self.csm.interactCoupled(iteration=0)
@@ -881,7 +909,12 @@ class Test_CrossSectionGroupManager(unittest.TestCase):
         self.assertTrue(self.csm.representativeBlocks)
 
     def test_interactAllCoupled(self):
-        """Test `all` lattice physics update frequency."""
+        """Test `all` lattice physics update frequency.
+
+        .. test:: The cross-section group manager frequency depends on the LPI frequency during coupling.
+            :id: T_ARMI_XSGM_FREQ4
+            :tests: R_ARMI_XSGM_FREQ
+        """
         self.csm.cs[CONF_LATTICE_PHYSICS_FREQUENCY] = "firstCoupledIteration"
         self.csm.interactBOL()
         self.csm.interactCoupled(iteration=1)
@@ -890,6 +923,17 @@ class Test_CrossSectionGroupManager(unittest.TestCase):
         self.csm.interactBOL()
         self.csm.interactCoupled(iteration=1)
         self.assertTrue(self.csm.representativeBlocks)
+
+    def test_xsgmIsRunBeforeXS(self):
+        """Test that the XSGM is run before the cross sections are calculated.
+
+        .. test:: Test that the cross-section group manager is run before the cross sections are calculated.
+            :id: T_ARMI_XSGM_FREQ5
+            :tests: R_ARMI_XSGM_FREQ
+        """
+        from armi.interfaces import STACK_ORDER
+
+        self.assertLess(crossSectionGroupManager.ORDER, STACK_ORDER.CROSS_SECTIONS)
 
     def test_copyPregeneratedFiles(self):
         """
