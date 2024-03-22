@@ -85,9 +85,6 @@ from armi.physics.neutronics.settings import CONF_LOADING_FILE
 from armi.reactor import assemblies
 from armi.reactor import geometry
 from armi.reactor import systemLayoutInput
-# NOTE: using non-ARMI-standard imports because these are all a part of this package,
-# and using the module imports would make the attribute definitions extremely long
-# without adding detail
 from armi.reactor.blueprints import isotopicOptions
 from armi.reactor.blueprints.assemblyBlueprint import AssemblyKeyedList
 from armi.reactor.blueprints.blockBlueprint import BlockKeyedList
