@@ -25,7 +25,7 @@ from armi.reactor.converters.axialExpansion.tests import buildAxialExpAssembly
 
 
 class TestGetLinkedComponents(unittest.TestCase):
-    """Runs through AssemblyAxialLinkage::_determineAxialLinkage() and does full linkage
+    """Runs through AssemblyAxialLinkage::_determineAxialLinkage() and does full linkage.
 
     The individual methods, _getLinkedBlocks, _getLinkedComponents, and _determineLinked are then
     tested in individual tests by asserting that the linkage is as expected.
@@ -58,7 +58,7 @@ class TestGetLinkedComponents(unittest.TestCase):
                 )
 
     def test_getLinkedComponents(self):
-        """spot check to ensure component linkage is as expected"""
+        """Spot check to ensure component linkage is as expected."""
         ## Test 1: check for shield -- fuel -- fuel linkage
         shieldBlock = self.a[0]
         shieldComp = shieldBlock.getComponent(Flags.SHIELD)
@@ -78,7 +78,7 @@ class TestGetLinkedComponents(unittest.TestCase):
         )
 
     def test_getLinkedComponent_runLogs(self):
-        """check runLogs get hit right"""
+        """Check runLogs get hit right."""
         a = buildAxialExpAssembly.buildTestAssembly("HT9")
         a[0].remove(a[0][1])  # remove clad from shield block
         a[3].remove(a[3][1])  # remove clad from plenum block
@@ -100,7 +100,7 @@ class TestGetLinkedComponents(unittest.TestCase):
 
 
 class TestDetermineLinked(unittest.TestCase):
-    """Test assemblyAxialLinkage.py::AssemblyAxialLinkage::_determineLinked for anticipated configrations
+    """Test assemblyAxialLinkage.py::AssemblyAxialLinkage::_determineLinked for anticipated configrations.
 
     This is the primary method used to determined if two components are linked axial linkage between components.
     """

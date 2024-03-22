@@ -21,7 +21,7 @@ from armi.reactor.components import DerivedShape
 
 
 def buildTestAssembly(materialName: str, hot: bool = False):
-    """Create test assembly
+    """Create test assembly.
 
     Parameters
     ----------

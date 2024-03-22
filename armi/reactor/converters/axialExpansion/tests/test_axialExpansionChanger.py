@@ -20,12 +20,10 @@ from statistics import mean
 from armi.materials import custom
 from armi.reactor.assemblies import HexAssembly, grids
 from armi.reactor.blocks import HexBlock
-from armi.reactor.components.basicShapes import Circle
 from armi.reactor.converters.axialExpansion import getSolidComponents
 from armi.reactor.converters.axialExpansion.axialExpansionChanger import (
     AxialExpansionChanger,
 )
-from armi.reactor.converters.axialExpansion.expansionData import ExpansionData
 from armi.reactor.converters.axialExpansion.tests import AxialExpansionTestBase
 from armi.reactor.converters.axialExpansion.tests.buildAxialExpAssembly import (
     buildTestAssembly,

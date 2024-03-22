@@ -85,28 +85,6 @@ from armi.physics.neutronics.settings import CONF_LOADING_FILE
 from armi.reactor import assemblies
 from armi.reactor import geometry
 from armi.reactor import systemLayoutInput
-from armi.reactor.blueprints import isotopicOptions
-from armi.reactor.blueprints.assemblyBlueprint import AssemblyKeyedList
-from armi.reactor.blueprints.blockBlueprint import BlockKeyedList
-from armi.reactor.blueprints.componentBlueprint import ComponentGroups
-from armi.reactor.blueprints.componentBlueprint import ComponentKeyedList
-from armi.reactor.blueprints.gridBlueprint import Grids, Triplet
-from armi.reactor.blueprints.reactorBlueprint import Systems, SystemBlueprint
-from armi.reactor.converters.axialExpansion.axialExpansionChanger import (
-    expandColdDimsToHot,
-)
-from armi.reactor.converters.axialExpansion import makeAssemsAbleToSnapToUniformMesh
-from armi.reactor.flags import Flags
-from armi.settings.fwSettings.globalSettings import (
-    CONF_DETAILED_AXIAL_EXPANSION,
-    CONF_ASSEM_FLAGS_SKIP_AXIAL_EXP,
-    CONF_INPUT_HEIGHTS_HOT,
-    CONF_NON_UNIFORM_ASSEM_FLAGS,
-    CONF_ACCEPTABLE_BLOCK_AREA_ERROR,
-    CONF_GEOM_FILE,
-)
-from armi.physics.neutronics.settings import CONF_LOADING_FILE
-
 # NOTE: using non-ARMI-standard imports because these are all a part of this package,
 # and using the module imports would make the attribute definitions extremely long
 # without adding detail

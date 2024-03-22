@@ -82,7 +82,7 @@ class TestComputeThermalExpansionFactors(AxialExpansionTestBase):
         AxialExpansionTestBase.tearDown(self)
 
     def test_computeThermalExpansionFactors_FromTinput2Thot(self):
-        """expand from Tinput to Thot"""
+        """Expand from Tinput to Thot."""
         self.expData = ExpansionData(self.a, False, True)
         self.expData.computeThermalExpansionFactors()
         for b in self.a:
@@ -90,7 +90,7 @@ class TestComputeThermalExpansionFactors(AxialExpansionTestBase):
                 self.assertEqual(self.expData._expansionFactors[c], 1.044776119402985)
 
     def test_computeThermalExpansionFactors_NoRefTemp(self):
-        """occurs when not expanding from Tinput to Thot and no new temperature prescribed"""
+        """Occurs when not expanding from Tinput to Thot and no new temperature prescribed."""
         self.expData = ExpansionData(self.a, False, False)
         self.expData.computeThermalExpansionFactors()
         for b in self.a:
@@ -98,7 +98,7 @@ class TestComputeThermalExpansionFactors(AxialExpansionTestBase):
                 self.assertEqual(self.expData._expansionFactors[c], 1.0)
 
     def test_computeThermalExpansionFactors_withRefTemp(self):
-        """occurs when expanding from some reference temp (not equal to Tinput) to Thot"""
+        """Occurs when expanding from some reference temp (not equal to Tinput) to Thot."""
         self.expData = ExpansionData(self.a, False, False)
         for b in self.a:
             for c in getSolidComponents(b):
@@ -155,7 +155,7 @@ class TestUpdateComponentTemps(unittest.TestCase):
 
 
 class TestSetTargetComponents(unittest.TestCase):
-    """Runs through _setTargetComponents in the init and checks to make sure they're all set right
+    """Runs through _setTargetComponents in the init and checks to make sure they're all set right.
 
     Coverage for isTargetComponent is provided when querying each component for their target component
     """
@@ -165,7 +165,7 @@ class TestSetTargetComponents(unittest.TestCase):
         cls.a = buildTestAssembly("HT9")
 
     def test_checkTargetComponents(self):
-        """make sure target components are set right. Skip the dummy block."""
+        """Make sure target components are set right. Skip the dummy block."""
         expData = ExpansionData(self.a, False, False)
         for b in self.a[-1]:
             for c in b:
