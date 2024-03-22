@@ -673,7 +673,7 @@ class Assembly(composites.Composite):
 
     def _shouldMassBeConserved(self, belowFuelColumn, b):
         """
-        Determine from a rule set if the mass of a block should be conserved during axial expansion.
+        Determine from a rule set if the mass of a block component should be conserved during axial expansion.
 
         Parameters
         ----------
@@ -689,8 +689,8 @@ class Assembly(composites.Composite):
         conserveMass : boolean
             Should the mass be conserved in this block
 
-        adjustList : list of nuclides
-            What nuclides should have their mass conserved (if any)
+        conserveComponents : list of components
+            What components should have their mass conserved (if any)
 
         belowFuelColumn : boolean
             Update whether the block is above or below a fuel column
@@ -703,30 +703,31 @@ class Assembly(composites.Composite):
         if b.hasFlags(Flags.FUEL):
             # fuel block
             conserveMass = True
-            adjustList = b.getComponent(Flags.FUEL).getNuclides()
+            conserveComponents = b.getComponents(Flags.FUEL)
         elif self.hasFlags(Flags.FUEL):
             # non-fuel block of a fuel assembly.
             if belowFuelColumn:
                 # conserve mass of everything below the fuel so as to not invalidate
                 # grid-plate dose calcs.
                 conserveMass = True
-                adjustList = b.getNuclides()
                 # conserve mass of everything except coolant.
-                coolant = b.getComponent(Flags.COOLANT)
-                coolantList = coolant.getNuclides() if coolant else []
-                for nuc in coolantList:
-                    if nuc in adjustList:
-                        adjustList.remove(nuc)
+                conserveComponents = [
+                    comp
+                    for comp in b.getComponents()
+                    if not comp.hasFlags(
+                        [Flags.COOLANT, Flags.INTERCOOLANT, Flags.INTERDUCTCOOLANT]
+                    )
+                ]
             else:
                 # plenum or above block in fuel assembly. don't conserve mass.
                 conserveMass = False
-                adjustList = None
+                conserveComponents = []
         else:
             # non fuel block in non-fuel assem. Don't conserve mass.
             conserveMass = False
-            adjustList = None
+            conserveComponents = []
 
-        return conserveMass, adjustList
+        return conserveMass, conserveComponents
 
     def setBlockMesh(self, blockMesh, conserveMassFlag=False, adjustList=None):
         """
@@ -796,15 +797,19 @@ class Assembly(composites.Composite):
                 return
 
             if conserveMassFlag == "auto":
-                conserveMass, adjustList = self._shouldMassBeConserved(
+                conserveMass, conserveComponents = self._shouldMassBeConserved(
                     belowFuelColumn, b
                 )
             else:
                 conserveMass = conserveMassFlag
+                conserveComponents = b.getComponents()
 
-            b.setHeight(
-                newTop - zBottom, conserveMass=conserveMass, adjustList=adjustList
-            )
+            oldBlockHeight = b.getHeight()
+            b.setHeight(newTop - zBottom, conserveMass=False)
+            if conserveMass:
+                heightRatio = oldBlockHeight / b.getHeight()
+                for c in conserveComponents:
+                    c.changeNDensByFactor(heightRatio)
             zBottom = newTop
 
         self.calculateZCoords()
