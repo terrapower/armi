@@ -22,7 +22,7 @@ from armi.bookkeeping.visualization.entryPoint import VisFileEntryPoint
 from armi.cli.checkInputs import CheckInputEntryPoint, ExpandBlueprints
 from armi.cli.clone import CloneArmiRunCommandBatch, CloneSuiteCommand
 from armi.cli.compareCases import CompareCases, CompareSuites
-from armi.cli.database import ConvertDB, ExtractInputs, InjectInputs
+from armi.cli.database import ExtractInputs, InjectInputs
 from armi.cli.entryPoint import EntryPoint
 from armi.cli.migrateInputs import MigrateInputs
 from armi.cli.modify import ModifyCaseSettingsCommand
@@ -46,7 +46,7 @@ class TestInitializationEntryPoints(unittest.TestCase):
         entryPoints = getEntireFamilyTree(EntryPoint)
 
         # Comparing to a minimum number of entry points, in case more are added.
-        self.assertGreater(len(entryPoints), 16)
+        self.assertGreater(len(entryPoints), 15)
 
         for e in entryPoints:
             entryPoint = e()
@@ -189,36 +189,6 @@ class TestCompareSuites(unittest.TestCase):
         self.assertEqual(cs.name, "compare-suites")
         self.assertEqual(cs.args.reference, "/path/to/fake1.h5")
         self.assertIsNone(cs.args.weights)
-
-
-class TestConvertDB(unittest.TestCase):
-    def test_convertDbBasics(self):
-        cdb = ConvertDB()
-        cdb.addOptions()
-        cdb.parse_args(["/path/to/fake.h5"])
-
-        self.assertEqual(cdb.name, "convert-db")
-        self.assertEqual(cdb.args.output_version, "3")
-        self.assertIsNone(cdb.args.nodes)
-
-        # Since the file is fake, invoke() should exit early.
-        with mockRunLogs.BufferLog() as mock:
-            cdb.args.nodes = [1, 2, 3]
-            with self.assertRaises(ValueError):
-                cdb.invoke()
-            self.assertIn("Converting the", mock.getStdout())
-
-    def test_convertDbOutputVersion(self):
-        cdb = ConvertDB()
-        cdb.addOptions()
-        cdb.parse_args(["/path/to/fake.h5", "--output-version", "XtView"])
-        self.assertEqual(cdb.args.output_version, "2")
-
-    def test_convertDbOutputNodes(self):
-        cdb = ConvertDB()
-        cdb.addOptions()
-        cdb.parse_args(["/path/to/fake.h5", "--nodes", "(1,2)"])
-        self.assertEqual(cdb.args.nodes, [(1, 2)])
 
 
 class TestExpandBlueprints(unittest.TestCase):
