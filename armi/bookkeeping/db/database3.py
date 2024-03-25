@@ -100,6 +100,137 @@ def getH5GroupName(cycle: int, timeNode: int, statePointName: str = None) -> str
     return "c{:0>2}n{:0>2}{}".format(cycle, timeNode, statePointName or "")
 
 
+class JaggedArray:
+    def __init__(self, jaggedData, paramName):
+        """
+        Take a list of numpy arrays or lists and flatten them into a single 1D array
+
+        Parameters
+        ----------
+        jaggedData: list of numpy.ndarray
+            A list of numpy arrays (or lists) to be flattened into a single array
+        paramName: str
+            The name of the parameter represented by this data
+        """
+        offset = 0
+        flattenedArray = []
+        offsets = []
+        shapes = []
+        for array in jaggedData:
+            if isinstance(array, numpy.ndarray):
+                shapes.append(array.shape)
+                flattenedArray.extend(array.flatten())
+            elif isinstance(array, list):
+                shapes.append(tuple(len(array)))
+                flattenedArray.extend(array)
+            elif array is None:
+                flattenedArray.append(None)
+            offsets.append(offset)
+            offset += array.size
+        self.flattenedArray = numpy.array(flattenedArray)
+        self.offsets = numpy.array(offsets)
+        self.shapes = numpy.array(shapes)
+        self.nones = numpy.array(
+            [i for i, val in enumerate(flattenedArray) if val == None]
+        )
+        self.dtype = self.flattenedArray.dtype
+        self.paramName = paramName
+
+    def __iter__(self):
+        """
+        Iterate over the unpacked list
+        """
+        return iter(self.unpack())
+
+    @classmethod
+    def fromH5(cls, data, offsets, shapes, nones, dtype, paramName):
+        """
+        Create a JaggedArray instance from an HDF5 dataset
+
+        The JaggedArray is stored in HDF5 as a flat 1D array with accompanying
+        attributes of "offsets" and "shapes" to define how to reconstitute the
+        original data.
+
+        Parameters
+        ----------
+        data: numpy.ndarray
+            A flattened 1D numpy array read in from an HDF5 file
+        offsets: numpy.ndarray
+            Offset indices for the zeroth element of each constituent array
+        shapes: numpy.ndarray
+            The shape of each constituent array
+        nones: numpy.ndarray
+            The location of Nones
+        dtype: numpy.dtype
+            The data type for the array
+        paramName: str
+            The name of the parameter represented by this data
+
+        Returns
+        -------
+        obj: JaggedArray An instance of JaggedArray populated with the input data
+        """
+        obj = cls([], paramName)
+        obj.flattenedArray = numpy.array(data)
+        obj.offsets = numpy.array(offsets)
+        obj.shapes = numpy.array(shapes)
+        obj.nones = numpy.array(nones)
+        obj.dtype = dtype
+        obj.paramName = paramName
+        return obj
+
+    def tolist(self):
+        """Alias for unpack() to make this class respond like a numpy.ndarray"""
+        return self.unpack()
+
+    def unpack(self):
+        """
+        Unpack a JaggedArray object into a list of arrays
+
+        Returns
+        -------
+        unpackedJaggedData: list of numpy.ndarray
+            List of numpy arrays with varying dimensions (i.e., jagged arrays)
+        """
+        unpackedJaggedData: List[Optional[numpy.ndarray]] = []
+        for offset, shape in zip(self.offsets, self.shapes):
+            unpackedJaggedData.append(
+                numpy.ndarray(
+                    shape, dtype=self.dtype, buffer=self.flattenedArray[offset:]
+                )
+            )
+        return self.replaceNonsenseWithNones(unpackedJaggedData)
+
+    def replaceNonsenseWithNones(self, unpackedData):
+        """Replace None markers in the unpacked array with an actual None"""
+
+        unpackedObject = []
+        for i, data in enumerate(unpackedData):
+            if numpy.issubdtype(self.dtype, numpy.floating):
+                isNone = numpy.isnan(data)
+            elif numpy.issubdtype(self.dtype, numpy.integer):
+                isNone = data == numpy.iinfo(self.dtype).min + 2
+            elif numpy.issubdtype(self.dtype, numpy.str_):
+                isNone = data == "<!None!>"
+            elif numpy.issubdtype(self.dtype, numpy.object_):
+                # object type means Nones are probably already present
+                isNone = data == None
+            else:
+                raise TypeError(
+                    "Unable to resolve values that should be None for `{}`. dtype = `{}`".format(
+                        self.paramName, self.dtype
+                    )
+                )
+
+            if data.ndim > 1 and isNone.all():
+                replacedData = None
+            else:
+                replacedData = numpy.array(data, dtype=numpy.dtype("O"))
+                replacedData[isNone] = None
+            unpackedObject.append(replacedData)
+        return unpackedObject
+
+
 class Database3:
     """
     Version 3 of the ARMI Database, handling serialization and loading of Reactor states.
@@ -869,6 +1000,15 @@ class Database3:
         return comp
 
     def _writeParams(self, h5group, comps):
+        def _getShape(array):
+            """Get the shape of a numpy.ndarray or list"""
+            if isinstance(array, numpy.ndarray):
+                return array.shape
+            elif isinstance(array, list):
+                return (len(array),)
+            else:
+                return (1,)
+
         c = comps[0]
         groupName = c.__class__.__name__
         if groupName not in h5group:
@@ -912,14 +1052,24 @@ class Database3:
                     attrs[_SERIALIZER_NAME] = paramDef.serializer.__name__
                     attrs[_SERIALIZER_VERSION] = paramDef.serializer.version
                 else:
-                    data = numpy.array(temp)
+                    # check if temp is a jagged array
+                    if any(isinstance(x, (numpy.ndarray, list)) for x in temp):
+                        shapes = set([_getShape(x) for x in temp])
+                        jagged = len(set([_getShape(x) for x in temp])) != 1
+                    else:
+                        jagged = False
+                    data = (
+                        JaggedArray(temp, paramDef.name)
+                        if jagged
+                        else numpy.array(temp)
+                    )
                     del temp
 
             # Convert Unicode to byte-string
             if data.dtype.kind == "U":
                 data = data.astype("S")
 
-            if data.dtype.kind == "O":
+            if data.dtype.kind == "O" or isinstance(data, JaggedArray):
                 # Something was added to the data array that caused numpy to want to
                 # treat it as a general-purpose Object array. This usually happens
                 # because:
@@ -1490,7 +1640,7 @@ class Database3:
 
 
 def packSpecialData(
-    data: numpy.ndarray, paramName: str
+    arrayData: [numpy.ndarray, JaggedArray], paramName: str
 ) -> Tuple[Optional[numpy.ndarray], Dict[str, Any]]:
     """
     Reduce data that wouldn't otherwise play nicely with HDF5/numpy arrays to a format
@@ -1522,9 +1672,11 @@ def packSpecialData(
 
     Parameters
     ----------
-    data
+    arrayData
         An ndarray storing the data that we want to stuff into the database. These are
         usually dtype=Object, which is how we usually end up here in the first place.
+        If the data is jagged, a special JaggedArray instance is passed in, which
+        contains a 1D array with offsets.
 
     paramName
         The parameter name that we are trying to store data for. This is mostly used for
@@ -1536,8 +1688,13 @@ def packSpecialData(
     """
     # Check to make sure that we even need to do this. If the numpy data type is
     # not "O", chances are we have nice, clean data.
-    if data.dtype != "O":
-        return data, {}
+    if isinstance(arrayData, JaggedArray):
+        data = arrayData.flattenedArray
+    else:
+        if arrayData.dtype != "O":
+            return arrayData, {}
+        else:
+            data = arrayData
 
     attrs: Dict[str, Any] = {"specialFormatting": True}
 
@@ -1560,7 +1717,7 @@ def packSpecialData(
     # A robust solution would need
     # to do this on a case-by-case basis, and re-do it any time we want to
     # write, since circumstances may change. Not only that, but we may need
-    # to do perform more that one of these operations to get to an array
+    # to perform more that one of these operations to get to an array
     # that we want to put in the database.
     if any(isinstance(d, dict) for d in data):
         # we're assuming that a dict is {str: float}. We store the union of
@@ -1590,48 +1747,18 @@ def packSpecialData(
         if isinstance(val, (list, tuple)):
             data[i] = numpy.array(val)
 
+    if isinstance(arrayData, JaggedArray):
+        attrs["jagged"] = True
+        attrs["offsets"] = arrayData.offsets
+        attrs["shapes"] = arrayData.shapes
+        attrs["noneLocations"] = arrayData.nones
+        if len(arrayData.nones > 0):
+            data = replaceNonesWithNonsense(data, paramName, arrayData.nones)
+        return data, attrs
+
     if not any(isinstance(d, numpy.ndarray) for d in data):
         # looks like 1-D plain-old-data
         data = replaceNonesWithNonsense(data, paramName, nones)
-        return data, attrs
-
-    # check if data is jagged
-    candidate = next((d for d in data if d is not None))
-    shape = candidate.shape
-    ndim = candidate.ndim
-    isJagged = (
-        not all(d.shape == shape for d in data if d is not None) or candidate.size == 0
-    )
-
-    if isJagged:
-        assert all(
-            val.ndim == ndim for val in data if val is not None
-        ), "Inconsistent dimensions in jagged array for: {}\nDimensions: {}".format(
-            paramName, [val.ndim for val in data if val is not None]
-        )
-        attrs["jagged"] = True
-
-        # offsets[i] is the index of the zero-th element of sub-array i
-        offsets = numpy.array(
-            [0]
-            + list(
-                itertools.accumulate(val.size if val is not None else 0 for val in data)
-            )[:-1]
-        )
-
-        # shapes[i] is the shape of the i-th sub-array. Nones are represented by all
-        # zeros
-        shapes = numpy.array(
-            list(val.shape if val is not None else ndim * (0,) for val in data)
-        )
-
-        data = numpy.delete(data, nones)
-
-        data = numpy.concatenate(data, axis=None)
-
-        attrs["offsets"] = offsets
-        attrs["shapes"] = shapes
-        attrs["noneLocations"] = nones
         return data, attrs
 
     if any(isinstance(d, (tuple, list, numpy.ndarray)) for d in data):
@@ -1687,21 +1814,9 @@ def unpackSpecialData(data: numpy.ndarray, attrs, paramName: str) -> numpy.ndarr
     if attrs.get("jagged", False):
         offsets = attrs["offsets"]
         shapes = attrs["shapes"]
-        ndim = len(shapes[0])
-        emptyArray = numpy.ndarray(ndim * (0,), dtype=data.dtype)
-        unpackedJaggedData: List[Optional[numpy.ndarray]] = []
-        for offset, shape in zip(offsets, shapes):
-            if tuple(shape) == ndim * (0,):
-                # Start with an empty array. This may be replaced with a None later
-                unpackedJaggedData.append(emptyArray)
-            else:
-                unpackedJaggedData.append(
-                    numpy.ndarray(shape, dtype=data.dtype, buffer=data[offset:])
-                )
-        for i in attrs["noneLocations"]:
-            unpackedJaggedData[i] = None
-
-        return numpy.array(unpackedJaggedData, dtype=object)
+        nones = attrs["noneLocations"]
+        data = JaggedArray.fromH5(data, offsets, shapes, nones, data.dtype, paramName)
+        return data
     if attrs.get("dict", False):
         keys = numpy.char.decode(attrs["keys"])
         unpackedData = []
