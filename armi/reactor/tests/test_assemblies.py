@@ -320,10 +320,15 @@ class Assembly_TestCase(unittest.TestCase):
 
     def test_add(self):
         a = makeTestAssembly(1, 1)
-        b = blocks.HexBlock("TestBlock")
-        a.add(b)
-        self.assertIn(b, a)
-        self.assertEqual(b.parent, a)
+
+        # successfully add some Blocks to an Assembly
+        for n in range(3):
+            self.assertEqual(len(a), n)
+            b = blocks.HexBlock("TestBlock")
+            a.add(b)
+            self.assertIn(b, a)
+            self.assertEqual(b.parent, a)
+            self.assertEqual(len(a), n + 1)
 
     def test_moveTo(self):
         ref = self.r.core.spatialGrid.getLocatorFromRingAndPos(3, 10)
