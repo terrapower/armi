@@ -368,10 +368,14 @@ class Assembly_TestCase(unittest.TestCase):
             :id: T_ARMI_ASSEM_DIMS0
             :tests: R_ARMI_ASSEM_DIMS
         """
+        # Default case: for assemblies with no blocks
+        a = HexAssembly("TestAssem", assemNum=10)
+        self.assertEqual(a.getArea(), 1)
+
+        # more realistic case: a hex block/assembly
         cur = self.assembly.getArea()
         ref = math.sqrt(3) / 2.0 * self.hexDims["op"] ** 2
-        places = 6
-        self.assertAlmostEqual(cur, ref, places=places)
+        self.assertAlmostEqual(cur, ref, places=6)
 
     def test_getVolume(self):
         """Tests volume calculation for hex assembly.
