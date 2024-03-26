@@ -137,7 +137,7 @@ class JaggedArray:
                     shapes.append(numpyArray.shape)
                     offset += numpyArray.size
                     flattenedArray.extend(numpyArray.flatten())
-                except: # noqa: E722
+                except:  # noqa: E722
                     # numpy might fail if it's jagged
                     flattenedList = self.flatten(array)
                     shapes.append(
