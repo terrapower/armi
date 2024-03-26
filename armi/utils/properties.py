@@ -28,8 +28,10 @@ def areEqual(val1, val2, relativeTolerance=0.0):
 def numpyHackForEqual(val1, val2):
     """Checks lots of types for equality like strings and dicts."""
     # when doing this with numpy arrays you get an array of booleans which causes the value error
-    notEqual = val1 != val2
+    if val1.size != val2.size:
+        return False
 
+    notEqual = val1 != val2
     try:  # should work for everything but numpy arrays
         if isinstance(notEqual, numpy.ndarray) and notEqual.size == 0:
             return True
