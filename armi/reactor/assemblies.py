@@ -317,9 +317,8 @@ class Assembly(composites.Composite):
         plenumBlocks = self.getBlocks(Flags.PLENUM)
         plenumTemps = [b.p.THcoolantOutletT for b in plenumBlocks]
 
-        if (
-            not plenumTemps
-        ):  # no plenum blocks, use the top block of the assembly for plenum temperature
+        # no plenum blocks, use the top block of the assembly for plenum temperature
+        if not plenumTemps:
             runLog.warning("No plenum blocks exist. Using outlet coolant temperature.")
             plenumTemps = [self[-1].p.THcoolantOutletT]
 

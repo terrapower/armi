@@ -879,6 +879,11 @@ class Assembly_TestCase(unittest.TestCase):
             :id: T_ARMI_ASSEM_DIMS3
             :tests: R_ARMI_ASSEM_DIMS
         """
+        # quick test, if there are no blocks
+        a = HexAssembly("TestAssem", assemNum=10)
+        self.assertIsNone(a.getDim(Flags.FUEL, "op"))
+
+        # more interesting test, with blocks
         cur = self.assembly.getDim(Flags.FUEL, "op")
         ref = self.hexDims["op"]
         places = 6
