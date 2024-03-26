@@ -17,6 +17,7 @@ import filecmp
 import os
 import traceback
 import unittest
+import numpy
 
 from six.moves import cPickle
 
@@ -439,7 +440,7 @@ class Pmatrx_merge_Tests(TestXSlibraryMerging):
 
     def test_cannotMergeXSLibsWithDifferentGammaGroupStructures(self):
         dummyXsLib = xsLibraries.IsotxsLibrary()
-        dummyXsLib.gammaEnergyUpperBounds = [1, 2, 3]
+        dummyXsLib.gammaEnergyUpperBounds = numpy.array([1, 2, 3])
         with self.assertRaises(properties.ImmutablePropertyError):
             dummyXsLib.merge(self.libCombined)
 
