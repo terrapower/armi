@@ -137,7 +137,7 @@ class JaggedArray:
                     shapes.append(numpyArray.shape)
                     offset += numpyArray.size
                     flattenedArray.extend(numpyArray.flatten())
-                except:
+                except: # noqa: E722
                     # numpy might fail if it's jagged
                     flattenedList = self.flatten(array)
                     shapes.append(
@@ -170,7 +170,7 @@ class JaggedArray:
             if len(x) == 0:
                 return []
             first, rest = x[0], x[1:]
-            return JaggedArray.flatten(first) + JaggedArray.flatten(rest)
+            return JaggedArray.flatten(first) + self.flatten(rest)
         else:
             return [x]
 
