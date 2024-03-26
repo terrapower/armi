@@ -1748,11 +1748,6 @@ def packSpecialData(
 
         return data, attrs
 
-    # conform non-numpy arrays to numpy
-    for i, val in enumerate(data):
-        if isinstance(val, (list, tuple)):
-            data[i] = numpy.array(val)
-
     if isinstance(arrayData, JaggedArray):
         attrs["jagged"] = True
         attrs["offsets"] = arrayData.offsets
@@ -1761,6 +1756,11 @@ def packSpecialData(
         if len(arrayData.nones > 0):
             data = replaceNonesWithNonsense(data, paramName, arrayData.nones)
         return data, attrs
+
+    # conform non-numpy arrays to numpy
+    for i, val in enumerate(data):
+        if isinstance(val, (list, tuple)):
+            data[i] = numpy.array(val)
 
     if not any(isinstance(d, numpy.ndarray) for d in data):
         # looks like 1-D plain-old-data
