@@ -126,7 +126,10 @@ class JaggedArray:
             elif array is None:
                 flattenedArray.append(None)
             offsets.append(offset)
-            offset += array.size
+            if array is not None:
+                offset += array.size
+            else:
+                offset += 1
         self.flattenedArray = numpy.array(flattenedArray)
         self.offsets = numpy.array(offsets)
         self.shapes = numpy.array(shapes)
