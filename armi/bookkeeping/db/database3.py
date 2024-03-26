@@ -211,7 +211,7 @@ class JaggedArray:
                 isNone = data == "<!None!>"
             elif numpy.issubdtype(self.dtype, numpy.object_):
                 # object type means Nones are probably already present
-                isNone = data == None
+                isNone = data == None  # noqa: E711
             else:
                 raise TypeError(
                     "Unable to resolve values that should be None for `{}`. dtype = `{}`".format(
