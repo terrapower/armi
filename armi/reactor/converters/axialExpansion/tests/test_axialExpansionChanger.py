@@ -189,7 +189,11 @@ class TestConservation(AxialExpansionTestBase):
             self._getConservationMetrics(self.a)
 
     def test_ThermalExpansionContractionConservation_Simple(self):
-        r"""Thermally expand and then contract to ensure original state is recovered.
+        """Thermally expand and then contract to ensure original state is recovered.
+
+        .. test:: Thermally expand and then contract to ensure original assembly is recovered.
+            :id: T_ARMI_AXIAL_EXP_THERM0
+            :tests: R_ARMI_AXIAL_EXP_THERM
 
         Notes
         -----
