@@ -1068,7 +1068,7 @@ class Database3:
             if data.dtype.kind == "U":
                 data = data.astype("S")
 
-            if data.dtype.kind == "O" or isinstance(data, JaggedArray):
+            if data.dtype.kind == "O":
                 # Something was added to the data array that caused numpy to want to
                 # treat it as a general-purpose Object array. This usually happens
                 # because:
@@ -1096,6 +1096,9 @@ class Database3:
                 else:
                     data, specialAttrs = packSpecialData(data, paramDef.name)
                     attrs.update(specialAttrs)
+            if isinstance(data, JaggedArray):
+                data, specialAttrs = packSpecialData(data, paramDef.name)
+                attrs.update(specialAttrs)
 
             if data is None:
                 continue
