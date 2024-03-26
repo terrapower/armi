@@ -103,7 +103,7 @@ def getH5GroupName(cycle: int, timeNode: int, statePointName: str = None) -> str
 class JaggedArray:
     def __init__(self, jaggedData, paramName):
         """
-        Take a list of numpy arrays or lists and flatten them into a single 1D array
+        Take a list of numpy arrays or lists and flatten them into a single 1D array.
 
         Parameters
         ----------
@@ -131,21 +131,19 @@ class JaggedArray:
         self.offsets = numpy.array(offsets)
         self.shapes = numpy.array(shapes)
         self.nones = numpy.array(
-            [i for i, val in enumerate(flattenedArray) if val == None]
+            [i for i, val in enumerate(flattenedArray) if val is None]
         )
         self.dtype = self.flattenedArray.dtype
         self.paramName = paramName
 
     def __iter__(self):
-        """
-        Iterate over the unpacked list
-        """
+        """Iterate over the unpacked list."""
         return iter(self.unpack())
 
     @classmethod
     def fromH5(cls, data, offsets, shapes, nones, dtype, paramName):
         """
-        Create a JaggedArray instance from an HDF5 dataset
+        Create a JaggedArray instance from an HDF5 dataset.
 
         The JaggedArray is stored in HDF5 as a flat 1D array with accompanying
         attributes of "offsets" and "shapes" to define how to reconstitute the
@@ -185,7 +183,7 @@ class JaggedArray:
 
     def unpack(self):
         """
-        Unpack a JaggedArray object into a list of arrays
+        Unpack a JaggedArray object into a list of arrays.
 
         Returns
         -------
@@ -202,8 +200,7 @@ class JaggedArray:
         return self.replaceNonsenseWithNones(unpackedJaggedData)
 
     def replaceNonsenseWithNones(self, unpackedData):
-        """Replace None markers in the unpacked array with an actual None"""
-
+        """Replace None markers in the unpacked array with an actual None."""
         unpackedObject = []
         for i, data in enumerate(unpackedData):
             if numpy.issubdtype(self.dtype, numpy.floating):
@@ -1001,7 +998,7 @@ class Database3:
 
     def _writeParams(self, h5group, comps):
         def _getShape(array):
-            """Get the shape of a numpy.ndarray or list"""
+            """Get the shape of a numpy.ndarray or list."""
             if isinstance(array, numpy.ndarray):
                 return array.shape
             elif isinstance(array, list):
@@ -1054,7 +1051,6 @@ class Database3:
                 else:
                     # check if temp is a jagged array
                     if any(isinstance(x, (numpy.ndarray, list)) for x in temp):
-                        shapes = set([_getShape(x) for x in temp])
                         jagged = len(set([_getShape(x) for x in temp])) != 1
                     else:
                         jagged = False
