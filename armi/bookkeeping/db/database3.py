@@ -105,6 +105,15 @@ class JaggedArray:
         """
         Take a list of numpy arrays or lists and flatten them into a single 1D array.
 
+        This implementation can preserve the structure of a multi-dimensional numpy array
+        by storing the dimensions in self.shapes and then re-populating a numpy array of
+        that shape from the flattened 1D array. However, it can only preserve one layer of
+        jaggedness in a list of lists (or other iterables). For example, a list of tuples
+        with varying lengths can be flattened and reconstituted exactly. But, if a list of
+        lists of tuples is passed in, the tuples in that final layer of nesting will all be
+        flattened to a single 1D numpy array after a round trip. No structure is retained
+        from nested lists of lists or lists of tuples.
+
         Parameters
         ----------
         jaggedData: list of numpy.ndarray
@@ -122,12 +131,13 @@ class JaggedArray:
                 shapes.append(array.shape)
                 offset += array.size
                 flattenedArray.extend(array.flatten())
-            elif isinstance(array, list):
+            elif isinstance(array, (int, float, list, tuple)):
+                flattenedList = self.flatten(array)
                 shapes.append(
-                    len(array),
+                    len(flattenedList),
                 )
-                offset += len(array)
-                flattenedArray.extend(array)
+                offset += len(flattenedList)
+                flattenedArray.extend(flattenedList)
             elif array is None:
                 flattenedArray.append(None)
                 offset += 1
@@ -146,6 +156,16 @@ class JaggedArray:
 
     def __contains__(self, other):
         return other in self.flattenedArray
+
+    @staticmethod
+    def flatten(x):
+        if isinstance(x, list):
+            if len(x) == 0:
+                return []
+            first, rest = x[0], x[1:]
+            return self.flatten(first) + self.flatten(rest)
+        else:
+            return [x]
 
     @classmethod
     def fromH5(cls, data, offsets, shapes, nones, dtype, paramName):
