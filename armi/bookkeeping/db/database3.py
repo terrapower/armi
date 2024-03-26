@@ -117,18 +117,19 @@ class JaggedArray:
         offsets = []
         shapes = []
         for array in jaggedData:
+            offsets.append(offset)
             if isinstance(array, numpy.ndarray):
                 shapes.append(array.shape)
+                offset += array.size
                 flattenedArray.extend(array.flatten())
             elif isinstance(array, list):
-                shapes.append(tuple(len(array)))
+                shapes.append(
+                    len(array),
+                )
+                offset += len(array)
                 flattenedArray.extend(array)
             elif array is None:
                 flattenedArray.append(None)
-            offsets.append(offset)
-            if array is not None:
-                offset += array.size
-            else:
                 offset += 1
         self.flattenedArray = numpy.array(flattenedArray)
         self.offsets = numpy.array(offsets)
@@ -142,6 +143,9 @@ class JaggedArray:
     def __iter__(self):
         """Iterate over the unpacked list."""
         return iter(self.unpack())
+
+    def __contains__(self, other):
+        return other in self.flattenedArray
 
     @classmethod
     def fromH5(cls, data, offsets, shapes, nones, dtype, paramName):
