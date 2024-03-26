@@ -293,6 +293,10 @@ class TestConservation(AxialExpansionTestBase):
     def test_PrescribedExpansionContractionConservation(self):
         """Expand all components and then contract back to original state.
 
+        .. test:: Expand all components and then contract back to original state.
+            :id: T_ARMI_AXIAL_EXP_PRESC0
+            :tests: R_ARMI_AXIAL_EXP_PRESC
+
         Notes
         -----
         - uniform expansion over all components within the assembly
@@ -374,7 +378,12 @@ class TestConservation(AxialExpansionTestBase):
             )
 
     def test_NoMovementACLP(self):
-        """Ensures that above core load pad (ACLP) does not move during fuel-only expansion."""
+        """Ensures that above core load pad (ACLP) does not move during fuel-only expansion.
+
+        .. test:: Ensure the ACLP does not move during fuel-only expansion.
+            :id: T_ARMI_AXIAL_EXP_PRESC1
+            :tests: R_ARMI_AXIAL_EXP_PRESC
+        """
         # build test assembly with ACLP
         assembly = HexAssembly("testAssemblyType")
         assembly.spatialGrid = grids.axialUnitGrid(numCells=1)
@@ -555,8 +564,19 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
     def test_coldAssemblyExpansion(self):
         """Block heights are cold and should be expanded.
 
+        .. test:: Preserve the total height of a compatible ARMI assembly.
+            :id: T_ARMI_ASSEM_HEIGHT_PRES
+            :tests: R_ARMI_ASSEM_HEIGHT_PRES
+
+        .. test:: Axial expansion can be prescribed in blueprints for core constuction.
+            :id: T_ARMI_INP_COLD_HEIGHT
+            :tests: R_ARMI_INP_COLD_HEIGHT
+
         Notes
         -----
+        For R_ARMI_INP_COLD_HEIGHT, the action of axial expansion occurs in setUp() during core
+        construction, specifically in :py:meth:`constructAssem <armi.reactor.blueprints.Blueprints.constructAssem>`
+
         Two assertions here:
             1. total assembly height should be preserved (through use of top dummy block)
             2. in armi.tests.detailedAxialExpansion.refSmallReactorBase.yaml,
