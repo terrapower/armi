@@ -178,7 +178,7 @@ class JaggedArray:
         return obj
 
     def tolist(self):
-        """Alias for unpack() to make this class respond like a numpy.ndarray"""
+        """Alias for unpack() to make this class respond like a numpy.ndarray."""
         return self.unpack()
 
     def unpack(self):
