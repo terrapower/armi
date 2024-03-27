@@ -15,11 +15,13 @@
 """Test axialExpansionChanger."""
 import collections
 import os
+import io
 import unittest
 from statistics import mean
 
 from armi import materials
-from armi.materials import _MATERIAL_NAMESPACE_ORDER, custom
+from armi.settings import Settings
+from armi.materials import _MATERIAL_NAMESPACE_ORDER, custom, ht9
 from armi.reactor.assemblies import HexAssembly, grids
 from armi.reactor.blocks import HexBlock
 from armi.reactor.components import DerivedShape, UnshapedComponent
@@ -28,12 +30,15 @@ from armi.reactor.components.complexShapes import Helix
 from armi.reactor.converters.axialExpansionChanger import (
     AxialExpansionChanger,
     ExpansionData,
-    _determineLinked,
+    AssemblyAxialLinkage,
     getSolidComponents,
 )
 from armi.reactor.flags import Flags
 from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
-from armi.tests import TEST_ROOT
+from armi.reactor.blueprints.tests.test_blockBlueprints import FULL_BP
+from armi.reactor import blueprints
+from armi.tests import TEST_ROOT, mockRunLogs
+from armi.utils.customExceptions import InputError
 from armi.utils import units
 from numpy import array, linspace, zeros
 
@@ -355,6 +360,17 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
             newMass = a.getMass("B10")
         return newMass
 
+    def test_checkForBlocksWithoutSolids(self):
+        a = buildTestAssemblyWithFakeMaterial(
+            name="Sodium"
+        )  # every component is sodium
+        changer = AxialExpansionChanger(detailedAxialExpansion=True)
+        changer.setAssembly(a)  # no error because _everything_ is sodium
+
+        a[0][1].material = ht9.HT9()
+        with self.assertRaises(InputError):
+            changer.setAssembly(a)
+
     def test_prescribedExpansionContractionConservation(self):
         """Expand all components and then contract back to original state.
 
@@ -660,21 +676,6 @@ class TestExceptions(AxialExpansionTestBase, unittest.TestCase):
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
 
-    def test_determineLinked(self):
-        compDims = {"Tinput": 25.0, "Thot": 25.0}
-        compA = UnshapedComponent("unshaped_1", "FakeMat", **compDims)
-        compB = UnshapedComponent("unshaped_2", "FakeMat", **compDims)
-        self.assertFalse(_determineLinked(compA, compB))
-
-    def test_getLinkedComponents(self):
-        """Test for multiple component axial linkage."""
-        shieldBlock = self.obj.linked.a[0]
-        shieldComp = shieldBlock[0]
-        shieldComp.setDimension("od", 0.785, cold=True)
-        with self.assertRaises(RuntimeError) as cm:
-            self.obj.linked._getLinkedComponents(shieldBlock, shieldComp)
-            self.assertEqual(cm.exception, 3)
-
 
 class TestDetermineTargetComponent(AxialExpansionTestBase, unittest.TestCase):
     """Verify determineTargetComponent method is properly updating _componentDeterminesBlockHeight."""
@@ -923,8 +924,10 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
         are thermally expanded.
         """
         # custom materials don't expand
-        if not isinstance(bStd.getComponent(flagType).material, custom.Custom):
-            self.assertGreater(bExp.getMass(nuclide), bStd.getMass(nuclide))
+        compsOfInterest = bStd.getChildrenWithFlags(typeSpec=flagType)
+        for c in compsOfInterest:
+            if not isinstance(c.material, custom.Custom):
+                self.assertGreater(bExp.getMass(nuclide), bStd.getMass(nuclide))
 
 
 def checkColdBlockHeight(bStd, bExp, assertType, strForAssertion):
@@ -942,23 +945,24 @@ def checkColdBlockHeight(bStd, bExp, assertType, strForAssertion):
     )
 
 
-class TestLinkage(AxialExpansionTestBase, unittest.TestCase):
-    """Test axial linkage between components."""
+class TestCheckOverlap(AxialExpansionTestBase, unittest.TestCase):
+    """Test AssemblyAxialLinkage._checkOverlap for axial linkage between various component combinations."""
 
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         """Contains common dimensions for all component class types."""
-        AxialExpansionTestBase.setUp(self)
-        self.common = ("test", "FakeMat", 25.0, 25.0)  # name, material, Tinput, Thot
+        AxialExpansionTestBase.setUp(cls)
+        cls.common = ("test", "FakeMat", 25.0, 25.0)  # name, material, Tinput, Thot
 
-    def tearDown(self):
-        AxialExpansionTestBase.tearDown(self)
+    @classmethod
+    def tearDownClass(cls):
+        AxialExpansionTestBase.tearDown(cls)
 
     def runTest(
         self,
         componentsToTest: dict,
         assertionBool: bool,
         name: str,
-        commonArgs: tuple = None,
     ):
         """Runs various linkage tests.
 
@@ -970,8 +974,6 @@ class TestLinkage(AxialExpansionTestBase, unittest.TestCase):
             expected truth value for test
         name : str
             the name of the test
-        commonArgs : tuple, optional
-            arguments common to all Component class types
 
         Notes
         -----
@@ -982,35 +984,31 @@ class TestLinkage(AxialExpansionTestBase, unittest.TestCase):
             Add dictionary entry with following:
               {Component Class Type: [{<settings for component 1>}, {<settings for component 2>}]
         """
-        if commonArgs is None:
-            common = self.common
-        else:
-            common = commonArgs
         for method, dims in componentsToTest.items():
-            typeA = method(*common, **dims[0])
-            typeB = method(*common, **dims[1])
+            typeA = method(*self.common, **dims[0])
+            typeB = method(*self.common, **dims[1])
             if assertionBool:
                 self.assertTrue(
-                    _determineLinked(typeA, typeB),
+                    AssemblyAxialLinkage._checkOverlap(typeA, typeB),
                     msg="Test {0:s} failed for component type {1:s}!".format(
                         name, str(method)
                     ),
                 )
                 self.assertTrue(
-                    _determineLinked(typeB, typeA),
+                    AssemblyAxialLinkage._checkOverlap(typeB, typeA),
                     msg="Test {0:s} failed for component type {1:s}!".format(
                         name, str(method)
                     ),
                 )
             else:
                 self.assertFalse(
-                    _determineLinked(typeA, typeB),
+                    AssemblyAxialLinkage._checkOverlap(typeA, typeB),
                     msg="Test {0:s} failed for component type {1:s}!".format(
                         name, str(method)
                     ),
                 )
                 self.assertFalse(
-                    _determineLinked(typeB, typeA),
+                    AssemblyAxialLinkage._checkOverlap(typeB, typeA),
                     msg="Test {0:s} failed for component type {1:s}!".format(
                         name, str(method)
                     ),
@@ -1040,21 +1038,6 @@ class TestLinkage(AxialExpansionTestBase, unittest.TestCase):
             ],
         }
         self.runTest(componentTypesToTest, True, "test_overlappingSolidPins")
-
-    def test_differentMultNotOverlapping(self):
-        componentTypesToTest = {
-            Circle: [{"od": 0.5, "mult": 10}, {"od": 0.5, "mult": 20}],
-            Hexagon: [{"op": 0.5, "mult": 10}, {"op": 1.0, "mult": 20}],
-            Rectangle: [
-                {"lengthOuter": 1.0, "widthOuter": 1.0, "mult": 10},
-                {"lengthOuter": 1.0, "widthOuter": 1.0, "mult": 20},
-            ],
-            Helix: [
-                {"od": 0.5, "axialPitch": 1.0, "helixDiameter": 1.0, "mult": 10},
-                {"od": 1.0, "axialPitch": 1.0, "helixDiameter": 1.0, "mult": 20},
-            ],
-        }
-        self.runTest(componentTypesToTest, False, "test_differentMultNotOverlapping")
 
     def test_solidPinNotOverlappingAnnulus(self):
         componentTypesToTest = {
@@ -1098,18 +1081,155 @@ class TestLinkage(AxialExpansionTestBase, unittest.TestCase):
             componentTypesToTest, True, "test_AnnularHexOverlappingThickAnnularHex"
         )
 
-    def test_liquids(self):
-        componentTypesToTest = {
-            Circle: [{"od": 1.0, "id": 0.0}, {"od": 1.0, "id": 0.0}],
-            Hexagon: [{"op": 1.0, "ip": 0.0}, {"op": 1.0, "ip": 0.0}],
-        }
-        liquid = ("test", "Sodium", 425.0, 425.0)  # name, material, Tinput, Thot
-        self.runTest(componentTypesToTest, False, "test_liquids", commonArgs=liquid)
 
-    def test_unshapedComponentAndCircle(self):
+class TestDetermineLinked(AxialExpansionTestBase, unittest.TestCase):
+    """Test AssemblyAxialLinkage._determineLinked for the different linkage cases.
+
+    Notes
+    -----
+    Each test represents a linkage "Case". See the docstring for
+    AssemblyAxialLinkage::_determineLinked for a description of each case.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        AxialExpansionTestBase.setUp(cls)
+        cls.common = ("test", "FakeMat", 25.0, 25.0)
+
+    @classmethod
+    def tearDownClass(cls):
+        AxialExpansionTestBase.tearDown(cls)
+
+    def test_Case5(self):
         comp1 = Circle(*self.common, od=1.0, id=0.0)
         comp2 = UnshapedComponent(*self.common, area=1.0)
-        self.assertFalse(_determineLinked(comp1, comp2))
+        self.assertFalse(AssemblyAxialLinkage._determineLinked(comp1, comp2))
+
+    def test_Case1(self):
+        comp1 = UnshapedComponent(*self.common, area=2.0)
+        comp2 = UnshapedComponent(*self.common, area=1.0)
+        with mockRunLogs.BufferLog() as mock:
+            self.assertFalse(AssemblyAxialLinkage._determineLinked(comp1, comp2))
+            self.assertIn(
+                "nor is it physical to do so. Instead of crashing and raising an error, ",
+                mock.getStdout(),
+            )
+
+    def test_Case3(self):
+        comp1 = Circle(*self.common, od=1.0, id=0.0, mult=7)
+        comp2 = Circle(*self.common, od=1.5, id=0.0, mult=7)
+        self.assertTrue(AssemblyAxialLinkage._determineLinked(comp1, comp2))
+
+    def test_Case4(self):
+        componentTypesToTest = {
+            Circle: [{"od": 0.5, "mult": 10}, {"od": 0.5, "mult": 20}],
+            Hexagon: [{"op": 0.5, "mult": 10}, {"op": 1.0, "mult": 20}],
+            Rectangle: [
+                {"lengthOuter": 1.0, "widthOuter": 1.0, "mult": 10},
+                {"lengthOuter": 1.0, "widthOuter": 1.0, "mult": 20},
+            ],
+            Helix: [
+                {"od": 0.5, "axialPitch": 1.0, "helixDiameter": 1.0, "mult": 10},
+                {"od": 1.0, "axialPitch": 1.0, "helixDiameter": 1.0, "mult": 20},
+            ],
+        }
+        for method, dims in componentTypesToTest.items():
+            compA = method(*self.common, **dims[0])
+            compB = method(*self.common, **dims[1])
+            self.assertFalse(AssemblyAxialLinkage._determineLinked(compA, compB))
+
+    def test_Case2(self):
+        """Spot check the linkage for the Flag.TEST component."""
+        cs = Settings()
+        with io.StringIO(FULL_BP) as stream:
+            bps = blueprints.Blueprints.load(stream)
+            bps._prepConstruction(cs)
+            fuelBlockLower = bps.assemblies["fuel"][0]
+            fuelBlockUpper = bps.assemblies["fuel"][1]
+            self.assertTrue(
+                AssemblyAxialLinkage._determineLinked(
+                    fuelBlockUpper.getComponent(Flags.TEST),
+                    fuelBlockLower.getComponent(
+                        Flags.FEED | Flags.DEPLETABLE, exact=True
+                    ),
+                )
+            )
+            self.assertTrue(
+                AssemblyAxialLinkage._determineLinked(
+                    fuelBlockUpper.getComponent(Flags.TEST),
+                    fuelBlockLower.getComponent(Flags.SLUG | Flags.DEPLETABLE),
+                )
+            )
+            self.assertFalse(
+                AssemblyAxialLinkage._determineLinked(
+                    fuelBlockUpper.getComponent(Flags.TEST),
+                    fuelBlockLower.getComponent(Flags.FUEL | Flags.DEPLETABLE),
+                )
+            )
+
+
+class TestRetrieveAxialLinkage(unittest.TestCase):
+    """Ensure that axial linkage for components can be retrieved appropriately.
+
+    Notes
+    -----
+    Three cases here.
+    Case 1: easy case, just pull the linked component as there is an explicit 1-1 linking.
+    Case 2: c.p.FEED in block 1 has candidate links to [c.p.FEED and c.p.SLUG] in block 0.
+            Use the matching flags to determine linkage.
+    Case 3: c.p.TEST in block 1 has candidate links to [c.p.FEED, c.p.SLUG].
+            Determine which component in block 0 has the highest ztop. This is the
+            linked component.
+
+    Warning
+    -------
+    If c.p.CLAD in block 1 has candidate links to [c.p.CLAD, c.p.CLAD] in block 0,
+    the first component with the clad flags in block 0 will be the linked component.
+    If possible, use additional flags in the blueprints to be as explicit as possible.
+    """
+
+    def setUp(self):
+        self.axialExpChnger = AxialExpansionChanger()
+        self.axialExpChnger.reset()
+
+    def test_Case1(self):
+        a = buildTestAssemblyWithFakeMaterial("HT9")
+        self.axialExpChnger.setAssembly(a)
+        refLinkage = {
+            1: [Flags.SHIELD, Flags.CLAD, Flags.DUCT],
+            2: [Flags.FUEL, Flags.CLAD, Flags.DUCT],
+            3: [Flags.FUEL, Flags.CLAD, Flags.DUCT],
+        }
+        for ib, b in enumerate(self.axialExpChnger.linked.a[1:], start=1):
+            for ic, c in enumerate(getSolidComponents(b)):
+                linkedC = self.axialExpChnger.retrieveLinkedComponent(c)
+                self.assertTrue(linkedC.hasFlags(refLinkage[ib][ic]))
+
+    def test_Cases2And3(self):
+        cs = Settings()
+        with io.StringIO(FULL_BP) as stream:
+            bps = blueprints.Blueprints.load(stream)
+            bps._prepConstruction(cs)
+        a = bps.assemblies["fuel"]
+        self.axialExpChnger.setAssembly(a)
+        refLinkage = {
+            1: [
+                Flags.FUEL,
+                Flags.FEED,
+                Flags.CLAD,
+                [Flags.CLAD, Flags.FEED],
+                Flags.DUCT,
+            ],
+        }
+        for ib, b in enumerate(self.axialExpChnger.linked.a):
+            for ic, c in enumerate(getSolidComponents(b)):
+                if ib == 0:
+                    # c.ztop gets set during axial expansion, but since we aren't doing
+                    # actual expansion, we set it manually
+                    c.ztop = b.p.ztop
+                    continue
+                linkedC = self.axialExpChnger.retrieveLinkedComponent(c)
+                self.assertTrue(linkedC.hasFlags(refLinkage[ib][ic]))
 
 
 def buildTestAssemblyWithFakeMaterial(name: str, hot: bool = False):
