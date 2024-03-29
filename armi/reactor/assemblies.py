@@ -32,6 +32,7 @@ from armi.reactor import blocks
 from armi.reactor import composites
 from armi.reactor import grids
 from armi.reactor.flags import Flags
+from armi.materials.material import Fluid
 from armi.reactor.parameters import ParamLocation
 
 
@@ -710,13 +711,11 @@ class Assembly(composites.Composite):
                 # conserve mass of everything below the fuel so as to not invalidate
                 # grid-plate dose calcs.
                 conserveMass = True
-                # conserve mass of everything except coolant.
+                # conserve mass of everything except fluids.
                 conserveComponents = [
                     comp
                     for comp in b.getComponents()
-                    if not comp.hasFlags(
-                        [Flags.COOLANT, Flags.INTERCOOLANT, Flags.INTERDUCTCOOLANT]
-                    )
+                    if not isinstance(comp.material, Fluid)
                 ]
             else:
                 # plenum or above block in fuel assembly. don't conserve mass.
@@ -729,7 +728,7 @@ class Assembly(composites.Composite):
 
         return conserveMass, conserveComponents
 
-    def setBlockMesh(self, blockMesh, conserveMassFlag=False, adjustList=None):
+    def setBlockMesh(self, blockMesh, conserveMassFlag=False):
         """
         Snaps the axial mesh points of this assembly to correspond with the reference mesh.
 
@@ -757,7 +756,14 @@ class Assembly(composites.Composite):
         Parameters
         ----------
         blockMesh : iterable
-            a list of floats describing the upper mesh points of each block in cm.
+            A list of floats describing the upper mesh points of each block in cm.
+
+        conserveMassFlag : bool or str
+            Option for how to treat mass conservation when the block mesh changes.
+            Conservation of mass for fuel components is enabled by
+            conserveMassFlag="auto". If not auto, a boolean value should be
+            passed. The default is False, which does not conserve any masses.
+            True conserves mass for all components.
 
         See Also
         --------
@@ -805,7 +811,7 @@ class Assembly(composites.Composite):
                 conserveComponents = b.getComponents()
 
             oldBlockHeight = b.getHeight()
-            b.setHeight(newTop - zBottom, conserveMass=False)
+            b.setHeight(newTop - zBottom)
             if conserveMass:
                 heightRatio = oldBlockHeight / b.getHeight()
                 for c in conserveComponents:
