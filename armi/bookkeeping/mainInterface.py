@@ -27,7 +27,7 @@ from armi import interfaces
 from armi import operators
 from armi import runLog
 from armi import utils
-from armi.bookkeeping.db.database3 import Database3
+from armi.bookkeeping.db.database import Database
 from armi.utils import pathTools
 from armi.utils.customExceptions import InputError
 
@@ -137,7 +137,7 @@ class MainInterface(interfaces.Interface):
                 # skip at BOL because interactBOL handled it.
                 pass
             else:
-                with Database3(self.cs["reloadDBName"], "r") as db:
+                with Database(self.cs["reloadDBName"], "r") as db:
                     r = db.load(cycle, node, self.cs)
 
                 self.o.reattach(r, self.cs)

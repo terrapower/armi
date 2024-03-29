@@ -41,7 +41,7 @@ from armi.reactor import blocks
 from armi.reactor import composites
 from armi.reactor import reactors
 from armi.reactor import parameters
-from armi.bookkeeping.db import database3
+from armi.bookkeeping.db import database
 from armi.bookkeeping.visualization import dumper
 from armi.bookkeeping.visualization import utils
 
@@ -109,7 +109,7 @@ class VtkDumper(dumper.VisFileDumper):
         blockData = _collectObjectData(blks, includeParams, excludeParams)
         assemData = _collectObjectData(assems, includeParams, excludeParams)
         # block number densities are special, since they arent stored as params
-        blockNdens = database3.collectBlockNumberDensities(blks)
+        blockNdens = database.collectBlockNumberDensities(blks)
         # we need to copy the number density vectors to guarantee unit stride, which
         # pyevtk requires. Kinda seems like something it could do for us, but oh well.
         blockNdens = {key: numpy.array(value) for key, value in blockNdens.items()}
@@ -180,7 +180,7 @@ def _collectObjectData(
                 continue
 
             try:
-                data = database3.replaceNonesWithNonsense(data, pDef.name, nones=nones)
+                data = database.replaceNonesWithNonsense(data, pDef.name, nones=nones)
             except (ValueError, TypeError):
                 # Looks like we have some weird data. We might be able to handle it
                 # with more massaging, but probably not visualizable anyhow

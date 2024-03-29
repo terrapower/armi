@@ -52,7 +52,7 @@ from armi.reactor import assemblies
 from armi.reactor import composites
 from armi.reactor import reactors
 from armi.reactor import blocks
-from armi.bookkeeping.db import database3
+from armi.bookkeeping.db import database
 from armi.bookkeeping.visualization import dumper
 from armi.bookkeeping.visualization import utils
 
@@ -165,7 +165,7 @@ class XdmfDumper(dumper.VisFileDumper):
             # into a new h5 file, but why?
             raise ValueError("Input database needed to generate XDMF output!")
 
-        self._inputDb = database3.Database3(self._inputName, "r")
+        self._inputDb = database.Database(self._inputName, "r")
         with self._inputDb as db:
             dbVersion = db.version
 
@@ -282,7 +282,7 @@ class XdmfDumper(dumper.VisFileDumper):
         cycle = r.p.cycle
         node = r.p.timeNode
 
-        timeGroupName = database3.getH5GroupName(cycle, node)
+        timeGroupName = database.getH5GroupName(cycle, node)
 
         # careful here! we are trying to use the database datasets as the source of hard
         # data without copying, so the order that we make the mesh needs to be the same

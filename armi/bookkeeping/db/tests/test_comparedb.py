@@ -18,7 +18,7 @@ import unittest
 import h5py
 import numpy as np
 
-from armi.bookkeeping.db.compareDB3 import (
+from armi.bookkeeping.db.compareDB import (
     _compareSets,
     _compareAuxData,
     _diffSimpleData,

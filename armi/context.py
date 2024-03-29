@@ -30,7 +30,7 @@ import sys
 import time
 
 # h5py needs to be imported here, so that the disconnectAllHdfDBs() call that gets bound
-# to atexit below doesn't lead to a segfault on python exit. The Database3 module is
+# to atexit below doesn't lead to a segfault on python exit. The Database module is
 # imported at call time, since it itself needs stuff that is initialized in this module
 # to import properly.  However, if that import leads to the first time that h5py is
 # imported in this process, doing so will cause a segfault. The theory here is that this
@@ -298,8 +298,8 @@ def disconnectAllHdfDBs() -> None:
     get around this by using the garbage collector to manually disconnect all open HdfDB
     objects.
     """
-    from armi.bookkeeping.db import Database3
+    from armi.bookkeeping.db import Database
 
-    h5dbs = [db for db in gc.get_objects() if isinstance(db, Database3)]
+    h5dbs = [db for db in gc.get_objects() if isinstance(db, Database)]
     for db in h5dbs:
         db.close()

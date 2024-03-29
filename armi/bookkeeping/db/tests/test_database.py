@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for the Database3 class."""
+"""Tests for the Database class."""
 from distutils.spawn import find_executable
 import subprocess
 import unittest
@@ -20,7 +20,7 @@ import h5py
 import numpy
 
 from armi.bookkeeping.db import _getH5File
-from armi.bookkeeping.db import database3
+from armi.bookkeeping.db import database
 from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.reactor import parameters
 from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
@@ -37,8 +37,8 @@ elif find_executable("git.exe") is not None:
     GIT_EXE = "git.exe"
 
 
-class TestDatabase3(unittest.TestCase):
-    """Tests for the Database3 class."""
+class TestDatabase(unittest.TestCase):
+    """Tests for the Database class."""
 
     def setUp(self):
         self.td = TemporaryDirectoryChanger()
@@ -50,7 +50,7 @@ class TestDatabase3(unittest.TestCase):
 
         self.dbi = DatabaseInterface(self.r, self.o.cs)
         self.dbi.initDB(fName=self._testMethodName + ".h5")
-        self.db: database3.Database3 = self.dbi.database
+        self.db: database.Database = self.dbi.database
         self.stateRetainer = self.r.retainState().__enter__()
 
         # used to test location-based history. see details below
@@ -197,8 +197,8 @@ class TestDatabase3(unittest.TestCase):
 
     def _compareRoundTrip(self, data):
         """Make sure that data is unchanged by packing/unpacking."""
-        packed, attrs = database3.packSpecialData(data, "testing")
-        roundTrip = database3.unpackSpecialData(packed, attrs, "testing")
+        packed, attrs = database.packSpecialData(data, "testing")
+        roundTrip = database.unpackSpecialData(packed, attrs, "testing")
         self._compareArrays(data, roundTrip)
 
     def test_prepRestartRun(self):
@@ -350,13 +350,13 @@ class TestDatabase3(unittest.TestCase):
         ]
 
         self.assertEqual(
-            database3.Layout.computeAncestors(serialNums, numChildren), expected_1
+            database.Layout.computeAncestors(serialNums, numChildren), expected_1
         )
         self.assertEqual(
-            database3.Layout.computeAncestors(serialNums, numChildren, 2), expected_2
+            database.Layout.computeAncestors(serialNums, numChildren, 2), expected_2
         )
         self.assertEqual(
-            database3.Layout.computeAncestors(serialNums, numChildren, 3), expected_3
+            database.Layout.computeAncestors(serialNums, numChildren, 3), expected_3
         )
 
     def test_load(self):
@@ -482,7 +482,7 @@ class TestDatabase3(unittest.TestCase):
         self.r.p.cycle = 1
         self.r.p.timeNode = 0
         tnGroup = self.db.getH5Group(self.r)
-        database3.Database3._writeAttrs(
+        database.Database._writeAttrs(
             tnGroup["layout/serialNum"],
             tnGroup,
             {
@@ -492,7 +492,7 @@ class TestDatabase3(unittest.TestCase):
         )
 
         db_path = "restartDB.h5"
-        db2 = database3.Database3(db_path, "w")
+        db2 = database.Database(db_path, "w")
         with db2:
             db2.mergeHistory(self.db, 2, 2)
             self.r.p.cycle = 1
@@ -506,7 +506,7 @@ class TestDatabase3(unittest.TestCase):
             )
 
             # exercise the _resolveAttrs function
-            attrs = database3.Database3._resolveAttrs(
+            attrs = database.Database._resolveAttrs(
                 tnGroup["layout/serialNum"].attrs, tnGroup
             )
             self.assertTrue(numpy.array_equal(attrs["fakeBigData"], numpy.eye(6400)))
@@ -529,7 +529,7 @@ class TestDatabase3(unittest.TestCase):
             self.assertEqual(newDb["c00n00/Reactor/cycle"][()], 0)
             self.assertEqual(newDb["c00n00/Reactor/cycleLength"][()][0], 0)
             self.assertNotIn("c03n00", newDb)
-            self.assertEqual(newDb.attrs["databaseVersion"], database3.DB_VERSION)
+            self.assertEqual(newDb.attrs["databaseVersion"], database.DB_VERSION)
 
             # validate that the min set of meta data keys exists
             meta_data_keys = [
@@ -565,7 +565,7 @@ class TestDatabase3(unittest.TestCase):
     def test_grabLocalCommitHash(self):
         """Test of static method to grab a local commit hash with ARMI version."""
         # 1. test outside a Git repo
-        localHash = database3.Database3.grabLocalCommitHash()
+        localHash = database.Database.grabLocalCommitHash()
         self.assertEqual(localHash, "unknown")
 
         # 2. test inside an empty git repo
@@ -580,7 +580,7 @@ class TestDatabase3(unittest.TestCase):
             return
 
         self.assertEqual(code, 0)
-        localHash = database3.Database3.grabLocalCommitHash()
+        localHash = database.Database.grabLocalCommitHash()
         self.assertEqual(localHash, "unknown")
 
         # 3. test inside a git repo with one tag
@@ -603,7 +603,7 @@ class TestDatabase3(unittest.TestCase):
         self.assertEqual(code, 0)
 
         # test that we recover the correct commit hash
-        localHash = database3.Database3.grabLocalCommitHash()
+        localHash = database.Database.grabLocalCommitHash()
         self.assertEqual(localHash, "thanks")
 
         # delete the .git directory
@@ -653,7 +653,7 @@ class TestDatabase3(unittest.TestCase):
         self.assertIn("blocks:", inputs[2])
 
     def test_deleting(self):
-        self.assertEqual(type(self.db), database3.Database3)
+        self.assertEqual(type(self.db), database.Database)
         del self.db
         self.assertFalse(hasattr(self, "db"))
         self.db = self.dbi.database

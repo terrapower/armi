@@ -24,7 +24,7 @@ from armi import __version__ as version
 from armi import interfaces
 from armi import runLog
 from armi import settings
-from armi.bookkeeping.db.database3 import Database3
+from armi.bookkeeping.db.database import Database
 from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.cases import case
 from armi.context import PROJECT_ROOT
@@ -86,7 +86,7 @@ class TestDatabaseInterface(unittest.TestCase):
         self.o, self.r = loadTestReactor(TEST_ROOT)
         self.dbi = DatabaseInterface(self.r, self.o.cs)
         self.dbi.initDB(fName=self._testMethodName + ".h5")
-        self.db: Database3 = self.dbi.database
+        self.db: Database = self.dbi.database
         self.stateRetainer = self.r.retainState().__enter__()
 
     def tearDown(self):
@@ -149,7 +149,7 @@ class TestDatabaseWriter(unittest.TestCase):
             :tests: R_ARMI_DB_QA
         """
         with h5py.File("test_writeSystemAttributes.h5", "w") as h5:
-            Database3.writeSystemAttributes(h5)
+            Database.writeSystemAttributes(h5)
 
         with h5py.File("test_writeSystemAttributes.h5", "r") as h5:
             self.assertIn("user", h5.attrs)
@@ -341,7 +341,7 @@ class TestDatabaseReading(unittest.TestCase):
         self.assertEqual(len(r.core.blocksByName), 95)
 
     def test_growToFullCore(self):
-        with Database3(self.dbName, "r") as db:
+        with Database(self.dbName, "r") as db:
             r = db.load(0, 0, allowMissing=True)
 
         # test partial core values
@@ -355,7 +355,7 @@ class TestDatabaseReading(unittest.TestCase):
         self._fullCoreSizeChecker(r)
 
     def test_growToFullCoreWithCS(self):
-        with Database3(self.dbName, "r") as db:
+        with Database(self.dbName, "r") as db:
             r = db.load(0, 0, allowMissing=True)
 
         r.core.growToFullCore(self.cs)
@@ -382,7 +382,7 @@ class TestDatabaseReading(unittest.TestCase):
         self._fullCoreSizeChecker(r)
 
     def test_readWritten(self):
-        with Database3(self.dbName, "r") as db:
+        with Database(self.dbName, "r") as db:
             r2 = db.load(0, 0, self.cs)
 
         for a1, a2 in zip(self.r.core, r2.core):
@@ -423,7 +423,7 @@ class TestDatabaseReading(unittest.TestCase):
             )
 
     def test_readWithoutInputs(self):
-        with Database3(self.dbName, "r") as db:
+        with Database(self.dbName, "r") as db:
             r2 = db.load(0, 0)
 
         for b1, b2 in zip(self.r.core.getBlocks(), r2.core.getBlocks()):
@@ -434,7 +434,7 @@ class TestDatabaseReading(unittest.TestCase):
             assert_allclose(b.p.flux, 1e6 * bi)
 
     def test_variousTypesWork(self):
-        with Database3(self.dbName, "r") as db:
+        with Database(self.dbName, "r") as db:
             r2 = db.load(1, 1)
 
         b1 = self.r.core.getFirstBlock(Flags.FUEL)

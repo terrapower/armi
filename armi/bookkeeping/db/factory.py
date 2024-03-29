@@ -15,7 +15,7 @@
 import pathlib
 from typing import Optional
 
-from armi.bookkeeping.db.database3 import Database3
+from armi.bookkeeping.db.database import Database
 from armi.bookkeeping.db import permissions
 
 
@@ -74,7 +74,7 @@ def databaseFactory(dbName: str, permission: str, version: Optional[str] = None)
             )
 
         if majorversion == "3":
-            return Database3(dbPath, permission)
+            return Database(dbPath, permission)
 
         raise ValueError("Unable to determine Database version for {}".format(dbName))
 
@@ -87,6 +87,6 @@ def databaseFactory(dbName: str, permission: str, version: Optional[str] = None)
                 "migrate."
             )
         if majorversion == "3":
-            return Database3(dbPath, permission)
+            return Database(dbPath, permission)
 
     return None
