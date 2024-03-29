@@ -19,8 +19,5 @@ stuck.
 
 And the file ``compareDB3.py`` was named to match the ``Database3`` naming convention.
 """
-# ruff: noqa: F401
 # ruff: noqa: F403
 from armi.bookkeeping.db.compareDB import *
-
-###from armi.bookkeeping.db.compareDB import _compareSets

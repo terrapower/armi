@@ -29,7 +29,7 @@ Changes that Affect Requirements
 --------------------------------
 #. Very minor change to ``Block.coords()``, removing unused argument. (`PR#1651 <https://github.com/terrapower/armi/pull/1651>`_)
 #. Touched ``HexGrid`` by adding a "cornersUp" property and fixing two bugs. (`PR#1649 <https://github.com/terrapower/armi/pull/1649>`_)
-#. Renamed ``Database3`` to ``Database``, which trivially changes the implementation. (`PR#16?? <https://github.com/terrapower/armi/pull/16??>`_)
+#. Renamed ``Database3`` to ``Database``, which trivially changes the implementation. (`PR#1674 <https://github.com/terrapower/armi/pull/1674>`_)
 #. TBD(`PR#1649 <https://github.com/terrapower/armi/pull/1649>`_)
 
 
