@@ -1153,6 +1153,8 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         # gridplate, fuel, fuel, fuel, plenum
         for b in igniterFuel.getBlocks(Flags.FUEL):
             fuelComp = b.getComponent(Flags.FUEL)
+            # add isotopes from clad and coolant to fuel component to test mass conservation
+            # mass should only be conserved within fuel component, not over the whole block
             fuelComp.setNumberDensity("FE56", 1e-10)
             fuelComp.setNumberDensity("NA23", 1e-10)
         b = igniterFuel[0]
@@ -1206,6 +1208,8 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         self.assertAlmostEqual(igniterMassGrid, igniterMassGridAfterExpand, 7)
         self.assertAlmostEqual(igniterHMMass1, igniterHMMass1AfterExpand, 7)
         self.assertAlmostEqual(igniterZircMass1, igniterZircMass1AfterExpand, 7)
+        # demonstrate that the duct and coolant mass are not conserved.
+        # number density stays constant, mass is scaled by ratio of new to old height
         self.assertAlmostEqual(
             igniterDuctMass, igniterDuctMassAfterExpand * 25.0 / 26.0, 7
         )
