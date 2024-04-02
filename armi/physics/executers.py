@@ -32,6 +32,7 @@ class ExecutionOptions:
     .. impl:: Options for executing external calculations.
         :id: I_ARMI_EX0
         :implements: R_ARMI_EX
+        :qualified_code: Nala
 
         Implements a basic container to hold and report options to be used in
         the execution of an external code (see :need:`I_ARMI_EX1`).
@@ -187,6 +188,7 @@ class DefaultExecuter(Executer):
     .. impl:: Default tool for executing external calculations.
         :id: I_ARMI_EX1
         :implements: R_ARMI_EX
+        :qualified_code: Nala
 
         Facilitates the execution of external calculations by accepting ``options`` (an
         :py:class:`~armi.physics.executers.ExecutionOptions` object) and providing

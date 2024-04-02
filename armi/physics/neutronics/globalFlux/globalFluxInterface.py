@@ -125,6 +125,7 @@ class GlobalFluxInterface(interfaces.Interface):
         .. impl:: Validate the energy generation matches user specifications.
             :id: I_ARMI_FLUX_CHECK_POWER
             :implements: R_ARMI_FLUX_CHECK_POWER
+            :qualified_code: Nala
 
             This method checks that the global power computed from flux
             evaluation matches the global power specified from the user within a
@@ -255,6 +256,7 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
         .. impl:: Return k-eff or assembly-wise power distribution for coupled interactions.
             :id: I_ARMI_FLUX_COUPLING_VALUE
             :implements: R_ARMI_FLUX_COUPLING_VALUE
+            :qualified_code: Nala
 
             This method either returns the k-eff or assembly-wise power
             distribution. If the :py:class:`coupler
@@ -366,6 +368,7 @@ class GlobalFluxOptions(executers.ExecutionOptions):
     .. impl:: Options for neutronics solvers.
         :id: I_ARMI_FLUX_OPTIONS
         :implements: R_ARMI_FLUX_OPTIONS
+        :qualified_code: Nala
 
         This class functions as a data structure for setting and retrieving
         execution options for performing flux evaluations, these options
@@ -557,6 +560,7 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
     .. impl:: Ensure the mesh in the reactor model is appropriate for neutronics solver execution.
         :id: I_ARMI_FLUX_GEOM_TRANSFORM
         :implements: R_ARMI_FLUX_GEOM_TRANSFORM
+        :qualified_code: Nala
 
         The primary purpose of this class is perform geometric and mesh
         transformations on the reactor model to ensure a flux evaluation can
@@ -1243,6 +1247,7 @@ def computeDpaRate(mgFlux, dpaXs):
     .. impl:: Compute DPA rates.
         :id: I_ARMI_FLUX_DPA
         :implements: R_ARMI_FLUX_DPA
+        :qualified_code: Nala
 
         This method calculates DPA rates using the inputted multigroup flux and DPA cross sections.
         Displacements calculated by displacement cross-section:
@@ -1330,6 +1335,7 @@ def calcReactionRates(obj, keff, lib):
     .. impl:: Return the reaction rates for a given ArmiObject
         :id: I_ARMI_FLUX_RX_RATES
         :implements: R_ARMI_FLUX_RX_RATES
+        :qualified_code: Nala
 
         This method computes 1-group reaction rates for the inputted
         :py:class:`ArmiObject <armi.reactor.composites.ArmiObject>` These

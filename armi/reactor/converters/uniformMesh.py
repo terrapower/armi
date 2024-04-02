@@ -122,6 +122,7 @@ class UniformMeshGenerator:
         .. impl:: Try to preserve the boundaries of fuel and control material.
             :id: I_ARMI_UMC_NON_UNIFORM
             :implements: R_ARMI_UMC_NON_UNIFORM
+            :qualified_code: Nala
 
             A core-wide mesh is computed via ``_computeAverageAxialMesh`` which
             operates by first collecting all the mesh points for every assembly
@@ -135,6 +136,7 @@ class UniformMeshGenerator:
         .. impl:: Produce a mesh with a size no smaller than a user-specified value.
             :id: I_ARMI_UMC_MIN_MESH
             :implements: R_ARMI_UMC_MIN_MESH
+            :qualified_code: Nala
 
             If a minimum mesh size ``minimumMeshSize`` is provided, calls
             ``_decuspAxialMesh`` on the core-wide mesh to maintain that minimum size
@@ -448,6 +450,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
         .. impl:: Make a copy of the reactor where the new core has a uniform axial mesh.
             :id: I_ARMI_UMC
             :implements: R_ARMI_UMC
+            :qualified_code: Nala
 
             Given a source Reactor, ``r``, as input and when ``_hasNonUniformAssems`` is ``False``,
             a new Reactor is created in ``initNewReactor``. This new Reactor contains copies of select
@@ -463,6 +466,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
         .. impl:: Map select parameters from composites on the original mesh to the new mesh.
             :id: I_ARMI_UMC_PARAM_FORWARD
             :implements: R_ARMI_UMC_PARAM_FORWARD
+            :qualified_code: Nala
 
             In ``_mapStateFromReactorToOther``, Core-level parameters are mapped from the source Reactor
             to the new Reactor. If requested, block-level parameters can be mapped using an averaging
@@ -586,6 +590,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
         .. impl:: Map select parameters from composites on the new mesh to the original mesh.
             :id: I_ARMI_UMC_PARAM_BACKWARD
             :implements: R_ARMI_UMC_PARAM_BACKWARD
+            :qualified_code: Nala
 
             To ensure that the parameters on the original Reactor are from the converted Reactor,
             the first step is to clear the Reactor-level parameters on the original Reactor

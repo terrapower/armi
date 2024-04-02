@@ -39,6 +39,7 @@ class Material:
     .. impl:: The abstract material class.
         :id: I_ARMI_MAT_PROPERTIES
         :implements: R_ARMI_MAT_PROPERTIES
+        :qualified_code: Nala
 
         The ARMI Materials library is based on the Object-Oriented Programming design
         approach, and uses this generic ``Material`` base class. In this class we
@@ -49,6 +50,7 @@ class Material:
     .. impl:: Materials generate nuclide mass fractions at instantiation.
         :id: I_ARMI_MAT_FRACS
         :implements: R_ARMI_MAT_FRACS
+        :qualified_code: Nala
 
         An ARMI material is meant to be able to represent real world materials that
         might be used in the construction of a nuclear reactor. As such, they are
@@ -121,6 +123,7 @@ class Material:
         .. impl:: The name of a material is accessible.
             :id: I_ARMI_MAT_NAME
             :implements: R_ARMI_MAT_NAME
+            :qualified_code: Nala
 
             Every instance of an ARMI material must have a simple, human-readable
             string name. And, if possible, we want this string to match the class
@@ -743,6 +746,7 @@ class Fluid(Material):
         .. impl:: Fluid materials are not thermally expandable.
             :id: I_ARMI_MAT_FLUID
             :implements: R_ARMI_MAT_FLUID
+            :qualified_code: Nala
 
             ARMI does not model thermal expansion of fluids. The ``Fluid`` superclass
             therefore sets the thermal expansion coefficient to zero. All fluids

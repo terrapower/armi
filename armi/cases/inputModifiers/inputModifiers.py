@@ -21,6 +21,7 @@ class InputModifier:
     .. impl:: A generic tool to modify user inputs on multiple cases.
         :id: I_ARMI_CASE_MOD1
         :implements: R_ARMI_CASE_MOD
+        :qualified_code: Nala
 
         This class serves as an abstract base class for modifying the inputs of
         a case, typically case settings. Child classes must implement a

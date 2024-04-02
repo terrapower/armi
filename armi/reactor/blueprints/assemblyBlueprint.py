@@ -79,6 +79,7 @@ class MaterialModifications(yamlize.Map):
     .. impl:: User-impact on material definitions.
         :id: I_ARMI_MAT_USER_INPUT0
         :implements: R_ARMI_MAT_USER_INPUT
+        :qualified_code: Nala
 
         Defines a yaml map attribute for the assembly portion of the blueprints
         (see :py:class:`~armi.blueprints.assemblyBlueprint.AssemblyBlueprint`) that
@@ -118,6 +119,7 @@ class AssemblyBlueprint(yamlize.Object):
     .. impl:: Create assembly from blueprint file.
         :id: I_ARMI_BP_ASSEM
         :implements: R_ARMI_BP_ASSEM
+        :qualified_code: Nala
 
         Defines a yaml construct that allows the user to specify attributes of an
         assembly from within their blueprints file, including a name, flags, specifier

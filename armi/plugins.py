@@ -145,6 +145,7 @@ class ArmiPlugin:
     .. impl:: Plugins add code to the application through interfaces.
         :id: I_ARMI_PLUGIN
         :implements: R_ARMI_PLUGIN
+        :qualified_code: Nala
 
         Each plugin has the option of implementing the ``exposeInterfaces`` method, and
         this will be used as a plugin hook to add one or more Interfaces to the ARMI
@@ -165,6 +166,7 @@ class ArmiPlugin:
         .. impl:: Plugins can add interfaces to the operator.
             :id: I_ARMI_PLUGIN_INTERFACES
             :implements: R_ARMI_PLUGIN_INTERFACES
+            :qualified_code: Nala
 
             This method takes in a Settings object and returns a list of Interfaces,
             the position of each Interface in the Interface stack, and a list of
@@ -194,6 +196,7 @@ class ArmiPlugin:
         .. impl:: Plugins can add parameters to the reactor data model.
             :id: I_ARMI_PLUGIN_PARAMS
             :implements: R_ARMI_PLUGIN_PARAMS
+            :qualified_code: Nala
 
             Through this method, plugin developers can create new Parameters. A
             parameter can represent any physical property an analyst might want to
@@ -204,6 +207,7 @@ class ArmiPlugin:
         .. impl:: Define an arbitrary physical parameter.
             :id: I_ARMI_PARAM
             :implements: R_ARMI_PARAM
+            :qualified_code: Nala
 
             Through this method, plugin developers can create new Parameters. A
             parameter can represent any physical property an analyst might want to
@@ -278,6 +282,7 @@ class ArmiPlugin:
         .. impl:: Plugins can define new, unique flags to the system.
             :id: I_ARMI_FLAG_EXTEND1
             :implements: R_ARMI_FLAG_EXTEND
+            :qualified_code: Nala
 
             This method allows a plugin developers to provide novel values for
             the Flags system. This method returns a dictionary mapping flag names
@@ -409,6 +414,7 @@ class ArmiPlugin:
         .. impl:: Plugins can add settings to the run.
             :id: I_ARMI_PLUGIN_SETTINGS
             :implements: R_ARMI_PLUGIN_SETTINGS
+            :qualified_code: Nala
 
             This hook allows plugin developers to provide their own configuration
             settings, which can participate in the

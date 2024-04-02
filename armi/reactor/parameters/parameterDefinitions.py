@@ -155,6 +155,7 @@ class Serializer:
     .. impl:: Users can define custom parameter serializers.
         :id: I_ARMI_PARAM_SERIALIZE
         :implements: R_ARMI_PARAM_SERIALIZE
+        :qualified_code: Nala
 
         Important physical parameters are stored in every ARMI object.
         These parameters represent the plant's state during execution
@@ -354,6 +355,7 @@ class Parameter:
         .. impl:: Provide a way to signal if a parameter needs updating across processes.
             :id: I_ARMI_PARAM_PARALLEL
             :implements: R_ARMI_PARAM_PARALLEL
+            :qualified_code: Nala
 
             Parameters need to be handled properly during parallel code execution. This
             includes notifying processes if a parameter has been updated by
@@ -604,6 +606,7 @@ class ParameterDefinitionCollection:
         .. impl:: Filter parameters to write to DB.
             :id: I_ARMI_PARAM_DB
             :implements: R_ARMI_PARAM_DB
+            :qualified_code: Nala
 
             This method is called when writing the parameters to the database file. It
             queries the parameter's ``saveToDB`` attribute to ensure that this parameter

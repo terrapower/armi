@@ -51,6 +51,7 @@ class Settings:
     .. impl:: Settings are used to define an ARMI run.
         :id: I_ARMI_SETTING0
         :implements: R_ARMI_SETTING
+        :qualified_code: Nala
 
         The Settings object is accessible to most ARMI objects through self.cs
         (for 'case settings'). It acts largely as a dictionary, and setting values
@@ -113,6 +114,7 @@ class Settings:
         .. impl:: Define a case title to go with the settings.
             :id: I_ARMI_SETTINGS_META0
             :implements: R_ARMI_SETTINGS_META
+            :qualified_code: Nala
 
             Every Settings object has a "case title"; a string for users to
             help identify their run. This case title is used in log file

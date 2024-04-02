@@ -319,6 +319,7 @@ class AverageBlockCollection(BlockCollection):
     .. impl:: Create representative blocks using volume-weighted averaging.
         :id: I_ARMI_XSGM_CREATE_REPR_BLOCKS0
         :implements: R_ARMI_XSGM_CREATE_REPR_BLOCKS
+        :qualified_code: Nala
 
         This class constructs new blocks from an existing block list based on a
         volume-weighted average. Inheriting functionality from the abstract
@@ -519,6 +520,7 @@ class CylindricalComponentsAverageBlockCollection(BlockCollection):
     .. impl:: Create representative blocks using custom cylindrical averaging.
         :id: I_ARMI_XSGM_CREATE_REPR_BLOCKS1
         :implements: R_ARMI_XSGM_CREATE_REPR_BLOCKS
+        :qualified_code: Nala
 
         This class constructs representative blocks based on a volume-weighted average
         using cylindrical blocks from an existing block list. Inheriting functionality from the abstract
@@ -859,6 +861,7 @@ class CrossSectionGroupManager(interfaces.Interface):
             BOL.
             :id: I_ARMI_XSGM_FREQ0
             :implements: R_ARMI_XSGM_FREQ
+            :qualified_code: Nala
 
             This method sets the cross-section block averaging method and and logic for whether all
             blocks in a cross section group should be used when generating a representative block.
@@ -893,6 +896,7 @@ class CrossSectionGroupManager(interfaces.Interface):
             BOC.
             :id: I_ARMI_XSGM_FREQ1
             :implements: R_ARMI_XSGM_FREQ
+            :qualified_code: Nala
 
             This method updates representative blocks and block burnups at the beginning-of-cycle
             for each cross-section ID if the control logic for lattice physics frequency updates is
@@ -922,6 +926,7 @@ class CrossSectionGroupManager(interfaces.Interface):
             every time node.
             :id: I_ARMI_XSGM_FREQ2
             :implements: R_ARMI_XSGM_FREQ
+            :qualified_code: Nala
 
             This method updates representative blocks and block burnups at every node for each
             cross-section ID if the control logic for lattices physics frequency updates is set for
@@ -941,6 +946,7 @@ class CrossSectionGroupManager(interfaces.Interface):
             during coupling.
             :id: I_ARMI_XSGM_FREQ3
             :implements: R_ARMI_XSGM_FREQ
+            :qualified_code: Nala
 
             This method updates representative blocks and block burnups at every node and the first
             coupled iteration for each cross-section ID if the control logic for lattices physics
@@ -1133,6 +1139,7 @@ class CrossSectionGroupManager(interfaces.Interface):
         .. impl:: Create collections of blocks based on cross-section type and burn-up group.
             :id: I_ARMI_XSGM_CREATE_XS_GROUPS
             :implements: R_ARMI_XSGM_CREATE_XS_GROUPS
+            :qualified_code: Nala
 
             This method constructs the representative blocks and block burnups
             for each cross-section ID in the reactor model. Starting with the making of cross-section groups, it will

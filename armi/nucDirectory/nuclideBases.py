@@ -18,6 +18,7 @@ framework and applications.
 .. impl:: Isotopes and isomers can be queried by name, label, MC2-3 ID, MCNP ID, and AAAZZZS ID.
     :id: I_ARMI_ND_ISOTOPES0
     :implements: R_ARMI_ND_ISOTOPES
+    :qualified_code: Nala
 
     The :py:mod:`nuclideBases <armi.nucDirectory.nuclideBases>` module defines
     the :py:class:`NuclideBase <armi.nucDirectory.nuclideBases.NuclideBase>`
@@ -498,6 +499,7 @@ class NuclideBase(INuclide, IMcnpNuclide):
     .. impl:: Isotopes and isomers can be queried by name and label.
         :id: I_ARMI_ND_ISOTOPES1
         :implements: R_ARMI_ND_ISOTOPES
+        :qualified_code: Nala
 
         The :py:class:`NuclideBase <armi.nucDirectory.nuclideBases.NuclideBase>`
         class provides a data structure for information about a single nuclide,
@@ -582,6 +584,7 @@ class NuclideBase(INuclide, IMcnpNuclide):
         .. impl:: Isotopes and isomers can be queried by MC2-2 ID.
             :id: I_ARMI_ND_ISOTOPES2
             :implements: R_ARMI_ND_ISOTOPES
+            :qualified_code: Nala
 
             This method returns the ``mcc2id`` attribute of a
             :py:class:`NuclideBase <armi.nucDirectory.nuclideBases.NuclideBase>`
@@ -596,6 +599,7 @@ class NuclideBase(INuclide, IMcnpNuclide):
         .. impl:: Isotopes and isomers can be queried by MC2-3 ID.
             :id: I_ARMI_ND_ISOTOPES3
             :implements: R_ARMI_ND_ISOTOPES
+            :qualified_code: Nala
 
             This method returns the ``mcc3id`` attribute of a
             :py:class:`NuclideBase <armi.nucDirectory.nuclideBases.NuclideBase>`
@@ -611,6 +615,7 @@ class NuclideBase(INuclide, IMcnpNuclide):
         .. impl:: Isotopes and isomers can be queried by MCNP ID.
             :id: I_ARMI_ND_ISOTOPES4
             :implements: R_ARMI_ND_ISOTOPES
+            :qualified_code: Nala
 
             This method generates the MCNP ID for an isotope using the standard
             MCNP format based on the atomic number A, number of protons Z, and
@@ -646,6 +651,7 @@ class NuclideBase(INuclide, IMcnpNuclide):
         .. impl:: Isotopes and isomers can be queried by AAAZZZS ID.
             :id: I_ARMI_ND_ISOTOPES5
             :implements: R_ARMI_ND_ISOTOPES
+            :qualified_code: Nala
 
             This method generates the AAAZZZS format ID for an isotope. Where
             AAA is the mass number, ZZZ is the atomic number, and S is the
@@ -1195,6 +1201,7 @@ def addNuclideBases():
     .. impl:: Separating natural abundance data from code.
         :id: I_ARMI_ND_DATA0
         :implements: R_ARMI_ND_DATA
+        :qualified_code: Nala
 
         This function reads the ``nuclides.dat`` file from the ARMI resources
         folder. This file contains metadata for 4,614 nuclides, including
@@ -1264,6 +1271,7 @@ def readMCCNuclideData():
     .. impl:: Separating MCC data from code.
         :id: I_ARMI_ND_DATA1
         :implements: R_ARMI_ND_DATA
+        :qualified_code: Nala
 
         This function reads the mcc-nuclides.yaml file from the ARMI resources
         folder. This file contains the MC\ :sup:`2`-2 ID (from ENDF/B-V.2) and MC\ :sup:`2`-3 ID
@@ -1297,6 +1305,7 @@ def updateNuclideBasesForSpecialCases():
     .. impl:: The special case name Am242g is supported.
         :id: I_ARMI_ND_ISOTOPES6
         :implements: R_ARMI_ND_ISOTOPES
+        :qualified_code: Nala
 
         This function updates the keys for the :py:class:`NuclideBase
         <armi.nucDirectory.nuclideBases.NuclideBase>` instances for Am-242m and

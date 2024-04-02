@@ -136,6 +136,7 @@ class GeodstStream(cccc.StreamWithDataContainer):
         .. impl:: Tool to read and write GEODST files.
             :id: I_ARMI_NUCDATA_GEODST
             :implements: R_ARMI_NUCDATA_GEODST
+            :qualified_code: Nala
 
             Reading and writing GEODST files is performed using the general
             nuclear data I/O functionalities described in

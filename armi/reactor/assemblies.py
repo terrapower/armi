@@ -179,6 +179,7 @@ class Assembly(composites.Composite):
         .. impl:: Assemblies are made up of type Block.
             :id: I_ARMI_ASSEM_BLOCKS
             :implements: R_ARMI_ASSEM_BLOCKS
+            :qualified_code: Nala
 
             Adds a unique Block to the top of the Assembly. If the Block already
             exists in the Assembly, an error is raised in
@@ -227,6 +228,7 @@ class Assembly(composites.Composite):
         .. impl:: Assembly location is retrievable.
             :id: I_ARMI_ASSEM_POSI0
             :implements: R_ARMI_ASSEM_POSI
+            :qualified_code: Nala
 
             This method returns a string label indicating the location
             of an Assembly. There are three options: 1) the Assembly
@@ -251,6 +253,7 @@ class Assembly(composites.Composite):
         .. impl:: Assembly coordinates are retrievable.
             :id: I_ARMI_ASSEM_POSI1
             :implements: R_ARMI_ASSEM_POSI
+            :qualified_code: Nala
 
             In this method, the spatialLocator of an Assembly is leveraged to return
             its physical (x,y) coordinates in cm.
@@ -268,6 +271,7 @@ class Assembly(composites.Composite):
         .. impl:: Assembly area is retrievable.
             :id: I_ARMI_ASSEM_DIMS0
             :implements: R_ARMI_ASSEM_DIMS
+            :qualified_code: Nala
 
             Returns the area of the first block in the Assembly. If there are no
             blocks in the Assembly, a warning is issued and a default area of 1.0
@@ -287,6 +291,7 @@ class Assembly(composites.Composite):
         .. impl:: Assembly volume is retrievable.
             :id: I_ARMI_ASSEM_DIMS1
             :implements: R_ARMI_ASSEM_DIMS
+            :qualified_code: Nala
 
             The volume of the Assembly is calculated as the product of the
             area of the first block (via ``getArea``) and the total height
@@ -498,6 +503,7 @@ class Assembly(composites.Composite):
         .. impl:: Assembly height is retrievable.
             :id: I_ARMI_ASSEM_DIMS2
             :implements: R_ARMI_ASSEM_DIMS
+            :qualified_code: Nala
 
             The height of the Assembly is calculated by taking the sum of the
             constituent Blocks. If a ``typeSpec`` is provided, the total height
@@ -1216,6 +1222,7 @@ class Assembly(composites.Composite):
         .. impl:: Assembly dimensions are retrievable.
             :id: I_ARMI_ASSEM_DIMS3
             :implements: R_ARMI_ASSEM_DIMS
+            :qualified_code: Nala
 
             This method searches for the first Component that matches the
             given ``typeSpec`` and returns the dimension as specified by
@@ -1250,6 +1257,7 @@ class Assembly(composites.Composite):
         .. impl:: An assembly can be rotated about its z-axis.
             :id: I_ARMI_SHUFFLE_ROTATE
             :implements: R_ARMI_SHUFFLE_ROTATE
+            :qualified_code: Nala
 
             This method loops through every ``Block`` in this ``Assembly`` and rotates
             it by a given angle (in radians). The rotation angle is positive in the

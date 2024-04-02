@@ -189,6 +189,7 @@ class PmatrxIO(cccc.Stream):
         .. impl:: Tool to read and write PMATRX files.
             :id: I_ARMI_NUCDATA_PMATRX
             :implements: R_ARMI_NUCDATA_PMATRX
+            :qualified_code: Nala
 
             Reading and writing PMATRX files is performed using the general
             nuclear data I/O functionalities described in

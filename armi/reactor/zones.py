@@ -32,6 +32,7 @@ class Zone:
     .. impl:: A user can define a collection of armi locations.
         :id: I_ARMI_ZONE
         :implements: R_ARMI_ZONE
+        :qualified_code: Nala
 
         The Zone class facilitates the creation of a Zone object representing a
         collection of locations in the Core. A Zone contains a group of locations
@@ -217,6 +218,7 @@ class Zones:
     .. impl:: A user can define a collection of armi zones.
         :id: I_ARMI_ZONES
         :implements: R_ARMI_ZONES
+        :qualified_code: Nala
 
         The Zones class facilitates the creation of a Zones object representing a
         collection of Zone objects. Methods are provided to add or remove one

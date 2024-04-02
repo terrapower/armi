@@ -204,6 +204,7 @@ class Dif3dStream(cccc.StreamWithDataContainer):
         .. impl:: Tool to read and write DIF3D files.
             :id: I_ARMI_NUCDATA_DIF3D
             :implements: R_ARMI_NUCDATA_DIF3D
+            :qualified_code: Nala
 
             The reading and writing of the DIF3D binary file is performed using
             :py:class:`StreamWithDataContainer <.cccc.StreamWithDataContainer>`

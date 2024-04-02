@@ -48,6 +48,7 @@ class App:
     .. impl:: An App has a plugin manager.
         :id: I_ARMI_APP_PLUGINS
         :implements: R_ARMI_APP_PLUGINS
+        :qualified_code: Nala
 
         The App class is intended to be subclassed in order to customize the functionality
         and look-and-feel of the ARMI Framework for a specific use case. An App contains a
@@ -131,6 +132,7 @@ class App:
         .. impl:: Applications will not allow duplicate settings.
             :id: I_ARMI_SETTINGS_UNIQUE
             :implements: R_ARMI_SETTINGS_UNIQUE
+            :qualified_code: Nala
 
             Each ARMI application includes a collection of Plugins. Among other
             things, these plugins can register new settings in addition to

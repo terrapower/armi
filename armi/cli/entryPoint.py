@@ -57,6 +57,7 @@ class EntryPoint:
     .. impl:: Generic CLI base class for developers to use.
         :id: I_ARMI_CLI_GEN
         :implements: R_ARMI_CLI_GEN
+        :qualified_code: Nala
 
         Provides a base class for plugin developers to use in creating application-specific CLIs.
         Valid subclasses must at least provide a ``name`` class attribute.

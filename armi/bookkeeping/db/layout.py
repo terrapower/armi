@@ -386,6 +386,7 @@ class Layout:
         .. impl:: Write data to the DB for a given time step.
             :id: I_ARMI_DB_TIME
             :implements: R_ARMI_DB_TIME
+            :qualified_code: Nala
 
             This method writes a snapshot of the current state of the reactor to the
             database. It takes a pointer to an existing HDF5 file as input, and it

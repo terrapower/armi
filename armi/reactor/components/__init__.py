@@ -329,6 +329,7 @@ class DerivedShape(UnshapedComponent):
             them.
             :id: I_ARMI_COMP_FLUID0
             :implements: R_ARMI_COMP_FLUID
+            :qualified_code: Nala
 
             Computing the volume of a ``DerivedShape`` means looking at the solid
             materials around it, and finding what shaped space is left over in between

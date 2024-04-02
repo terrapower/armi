@@ -78,6 +78,7 @@ class Reactor(composites.Composite):
     .. impl:: The user-specified reactor.
         :id: I_ARMI_R
         :implements: R_ARMI_R
+        :qualified_code: Nala
 
         The :py:class:`Reactor <armi.reactor.reactors.Reactor>` is the top level of the composite
         structure, which can represent all components within a reactor core. The reactor contains a
@@ -253,6 +254,7 @@ class Core(composites.Composite):
     .. impl:: Represent a reactor core as a composite object.
         :id: I_ARMI_R_CORE
         :implements: R_ARMI_R_CORE
+        :qualified_code: Nala
 
         A :py:class:`Core <armi.reactor.reactors.Core>` object is typically a child of a
         :py:class:`Reactor <armi.reactor.reactors.Reactor>` object. A Reactor can contain multiple
@@ -373,6 +375,7 @@ class Core(composites.Composite):
         .. impl:: Get core symmetry.
             :id: I_ARMI_R_SYMM
             :implements: R_ARMI_R_SYMM
+            :qualified_code: Nala
 
             This property getter returns the symmetry attribute of the spatialGrid instance
             attribute. The spatialGrid is an instance of a child of the abstract base class
@@ -813,6 +816,7 @@ class Core(composites.Composite):
         .. impl:: Retrieve number of rings in core.
             :id: I_ARMI_R_NUM_RINGS
             :implements: R_ARMI_R_NUM_RINGS
+            :qualified_code: Nala
 
             This method determines the number of rings in the reactor. If the
             setting ``circularRingMode`` is enabled (by default it is false), the
@@ -1178,6 +1182,7 @@ class Core(composites.Composite):
         .. impl:: Get assembly by name.
             :id: I_ARMI_R_GET_ASSEM_NAME
             :implements: R_ARMI_R_GET_ASSEM_NAME
+            :qualified_code: Nala
 
             This method returns the :py:class:`assembly
             <armi.reactor.core.assemblies.Assembly>` with a name matching the
@@ -1700,6 +1705,7 @@ class Core(composites.Composite):
         .. impl:: Get assembly by location.
             :id: I_ARMI_R_GET_ASSEM_LOC
             :implements: R_ARMI_R_GET_ASSEM_LOC
+            :qualified_code: Nala
 
             This method returns the :py:class:`assembly
             <armi.reactor.core.assemblies.Assembly>` located in the requested
@@ -1751,6 +1757,7 @@ class Core(composites.Composite):
         .. impl:: Retrieve neighboring assemblies of a given assembly.
             :id: I_ARMI_R_FIND_NEIGHBORS
             :implements: R_ARMI_R_FIND_NEIGHBORS
+            :qualified_code: Nala
 
             This method takes an :py:class:`Assembly
             <armi.reactor.assemblies.Assembly>` as an input parameter and returns
@@ -2029,6 +2036,7 @@ class Core(composites.Composite):
         .. impl:: Construct a mesh based on core blocks.
             :id: I_ARMI_R_MESH
             :implements: R_ARMI_R_MESH
+            :qualified_code: Nala
 
             This method iterates through all of the assemblies provided, or all
             assemblies in the core if no list of ``assems`` is provided, and

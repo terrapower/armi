@@ -296,6 +296,7 @@ class StructuredGrid(Grid):
         .. impl:: Get the coordinates from a location in a grid.
             :id: I_ARMI_GRID_GLOBAL_POS
             :implements: R_ARMI_GRID_GLOBAL_POS
+            :qualified_code: Nala
 
             Probably the most common request of a structure grid will be to give the
             grid indices and return the physical coordinates of the center of the mesh

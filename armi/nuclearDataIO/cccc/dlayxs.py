@@ -229,6 +229,7 @@ class DlayxsIO(cccc.Stream):
         .. impl:: Tool to read and write DLAYXS files.
             :id: I_ARMI_NUCDATA_DLAYXS
             :implements: R_ARMI_NUCDATA_DLAYXS
+            :qualified_code: Nala
 
             Reading and writing DLAYXS delayed neutron data files is performed
             using the general nuclear data I/O functionalities described in

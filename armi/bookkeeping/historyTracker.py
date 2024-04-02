@@ -99,6 +99,7 @@ class HistoryTrackerInterface(interfaces.Interface):
         than the database.
         :id: I_ARMI_HIST_TRACK
         :implements: R_ARMI_HIST_TRACK
+        :qualified_code: Nala
 
         This is a special :py:class:`Interface <armi.interfaces.Interface>` that is
         designed to store assembly and cross section data throughout time. This is done

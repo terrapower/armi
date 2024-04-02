@@ -24,6 +24,7 @@ for reactor physics codes.
                  R_ARMI_NUCDATA_DIF3D,
                  R_ARMI_NUCDATA_PMATRX,
                  R_ARMI_NUCDATA_DLAYXS
+    :qualified_code: Nala
 
     This module provides a number of base classes that implement general
     capabilities for binary and ASCII file I/O. The :py:class:`IORecord` serves

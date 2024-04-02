@@ -303,6 +303,7 @@ class ArmiObject(metaclass=CompositeModelType):
     .. impl:: Parameters are accessible throughout the armi tree.
         :id: I_ARMI_PARAM_PART
         :implements: R_ARMI_PARAM_PART
+        :qualified_code: Nala
 
         An ARMI reactor model is composed of collections of ARMIObject objects. These
         objects are combined in a hierarchical manner. Each level of the composite tree
@@ -636,6 +637,7 @@ class ArmiObject(metaclass=CompositeModelType):
         .. impl:: Composites (and all ARMI objects) have parameter collections.
             :id: I_ARMI_CMP_PARAMS
             :implements: R_ARMI_CMP_PARAMS
+            :qualified_code: Nala
 
             This class method allows a user to obtain the
             ``paramCollection`` object, which is the object containing the interface for
@@ -675,6 +677,7 @@ class ArmiObject(metaclass=CompositeModelType):
         .. impl:: Composite name is accessible.
             :id: I_ARMI_CMP_GET_NAME
             :implements: R_ARMI_CMP_GET_NAME
+            :qualified_code: Nala
 
             This method returns the name of a Composite.
         """
@@ -690,6 +693,7 @@ class ArmiObject(metaclass=CompositeModelType):
         .. impl:: Composites have queryable flags.
             :id: I_ARMI_CMP_FLAG0
             :implements: R_ARMI_CMP_FLAG
+            :qualified_code: Nala
 
             This method queries the flags (i.e. the ``typeID``) of the Composite for a
             given type, returning a boolean representing whether or not the candidate
@@ -796,6 +800,7 @@ class ArmiObject(metaclass=CompositeModelType):
         .. impl:: Composites have modifiable flags.
             :id: I_ARMI_CMP_FLAG1
             :implements: R_ARMI_CMP_FLAG
+            :qualified_code: Nala
 
             This method allows for the setting of flags parameter of the Composite.
 
@@ -916,6 +921,7 @@ class ArmiObject(metaclass=CompositeModelType):
         .. impl:: Return mass of composite.
             :id: I_ARMI_CMP_GET_MASS
             :implements: R_ARMI_CMP_GET_MASS
+            :qualified_code: Nala
 
             This method allows for the querying of the mass of a Composite.
             If the ``nuclideNames`` argument is included, it will filter for the mass
@@ -1267,6 +1273,7 @@ class ArmiObject(metaclass=CompositeModelType):
         .. impl:: Get number density for a specific nuclide
             :id: I_ARMI_CMP_NUC0
             :implements: R_ARMI_CMP_NUC
+            :qualified_code: Nala
 
             This method queries the number density
             of a specific nuclide within the Composite. It invokes the
@@ -1292,6 +1299,7 @@ class ArmiObject(metaclass=CompositeModelType):
         .. impl:: Get number densities for specific nuclides.
             :id: I_ARMI_CMP_NUC1
             :implements: R_ARMI_CMP_NUC
+            :qualified_code: Nala
 
             This method provides the capability to query the volume weighted number
             densities for a list of nuclides within a given Composite. It provides the
@@ -1338,6 +1346,7 @@ class ArmiObject(metaclass=CompositeModelType):
         .. impl:: Number density of composite is retrievable.
             :id: I_ARMI_CMP_GET_NDENS
             :implements: R_ARMI_CMP_GET_NDENS
+            :qualified_code: Nala
 
             This method provides a way for retrieving the number densities
             of all nuclides within the Composite. It does this by leveraging the
@@ -2505,6 +2514,7 @@ class ArmiObject(metaclass=CompositeModelType):
         .. impl:: Get child component by name.
             :id: I_ARMI_CMP_BY_NAME
             :implements: R_ARMI_CMP_BY_NAME
+            :qualified_code: Nala
 
             Each Composite has a name, and some Composites are made up
             of collections of child Composites. This method retrieves a child
@@ -2726,6 +2736,7 @@ class Composite(ArmiObject):
     .. impl:: Composites are a physical part of the reactor in a hierarchical data model.
         :id: I_ARMI_CMP0
         :implements: R_ARMI_CMP
+        :qualified_code: Nala
 
         An ARMI reactor model is composed of collections of ARMIObject objects. This
         class is a child-class of the ARMIObject class and provides a structure
@@ -2843,6 +2854,7 @@ class Composite(ArmiObject):
         .. impl:: Composites have children in the hierarchical data model.
             :id: I_ARMI_CMP1
             :implements: R_ARMI_CMP
+            :qualified_code: Nala
 
             This method retrieves all children within a given Composite object. Children
             of any generation can be retrieved. This is achieved by visiting all
@@ -2973,6 +2985,7 @@ class Composite(ArmiObject):
         .. impl:: Composites can be synchronized across MPI threads.
             :id: I_ARMI_CMP_MPI
             :implements: R_ARMI_CMP_MPI
+            :qualified_code: Nala
 
             Parameters need to be handled properly during parallel code execution.This
             method synchronizes all parameters of the composite object across all

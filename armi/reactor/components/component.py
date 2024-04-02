@@ -172,6 +172,7 @@ class Component(composites.Composite, metaclass=ComponentType):
     .. impl:: Define a physical piece of a reactor.
         :id: I_ARMI_COMP_DEF
         :implements: R_ARMI_COMP_DEF
+        :qualified_code: Nala
 
         The primitive object in an ARMI reactor is a Component. A Component is comprised
         of a shape and composition. This class serves as a base class which all
@@ -185,6 +186,7 @@ class Component(composites.Composite, metaclass=ComponentType):
     .. impl:: Order Components by their outermost diameter (using the < operator).
         :id: I_ARMI_COMP_ORDER
         :implements: R_ARMI_COMP_ORDER
+        :qualified_code: Nala
 
         Determining Component order by outermost diameters is implemented via
         the ``__lt__()`` method, which is used to control ``sort()`` as the
@@ -304,6 +306,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         .. impl:: The volume of some defined shapes depend on the solid components surrounding them.
             :id: I_ARMI_COMP_FLUID1
             :implements: R_ARMI_COMP_FLUID
+            :qualified_code: Nala
 
             Some Components are fluids and are thus defined by the shapes surrounding
             them. This method cycles through each dimension defining the border of this
@@ -416,12 +419,14 @@ class Component(composites.Composite, metaclass=ComponentType):
         .. impl:: Material properties are retrievable.
             :id: I_ARMI_COMP_MAT0
             :implements: R_ARMI_COMP_MAT
+            :qualified_code: Nala
 
             This method returns the material object that is assigned to the Component.
 
         .. impl:: Components have one-and-only-one material.
             :id: I_ARMI_COMP_1MAT
             :implements: R_ARMI_COMP_1MAT
+            :qualified_code: Nala
 
             This method returns the material object that is assigned to the Component.
         """
@@ -467,6 +472,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         .. impl:: Get a dimension of a Component.
             :id: I_ARMI_COMP_VOL0
             :implements: R_ARMI_COMP_VOL
+            :qualified_code: Nala
 
             This method returns the area of a Component.
 
@@ -494,6 +500,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         .. impl:: Get a dimension of a Component.
             :id: I_ARMI_COMP_VOL1
             :implements: R_ARMI_COMP_VOL
+            :qualified_code: Nala
 
             This method returns the volume of a Component.
 
@@ -599,6 +606,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         .. impl:: Determine if a material is solid.
             :id: I_ARMI_COMP_SOLID
             :implements: R_ARMI_COMP_SOLID
+            :qualified_code: Nala
 
             For certain operations it is important to know if a Component is a solid or
             fluid material. This method will return a boolean indicating if the material
@@ -705,6 +713,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         .. impl:: Setting nuclide fractions.
             :id: I_ARMI_COMP_NUCLIDE_FRACS0
             :implements: R_ARMI_COMP_NUCLIDE_FRACS
+            :qualified_code: Nala
 
             The method allows a user or plugin to set the number density of a Component.
             It also indicates to other processes that may depend on a Component's
@@ -731,6 +740,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         .. impl:: Setting nuclide fractions.
             :id: I_ARMI_COMP_NUCLIDE_FRACS1
             :implements: R_ARMI_COMP_NUCLIDE_FRACS
+            :qualified_code: Nala
 
             The method allows a user or plugin to set the number densities of a
             Component. In contrast to the ``setNumberDensity`` method, it sets all
@@ -842,6 +852,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         .. impl:: Set a Component dimension, considering thermal expansion.
             :id: I_ARMI_COMP_EXPANSION1
             :implements: R_ARMI_COMP_EXPANSION
+            :qualified_code: Nala
 
             Dimensions should be set considering the impact of thermal expansion. This
             method allows for a user or plugin to set a dimension and indicate if the
@@ -891,6 +902,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         .. impl:: Retrieve a dimension at a specified temperature.
             :id: I_ARMI_COMP_DIMS
             :implements: R_ARMI_COMP_DIMS
+            :qualified_code: Nala
 
             Due to thermal expansion, Component dimensions depend on their temperature.
             This method retrieves a dimension from the Component at a particular
@@ -974,6 +986,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         .. impl:: Calculates radial thermal expansion factor.
             :id: I_ARMI_COMP_EXPANSION0
             :implements: R_ARMI_COMP_EXPANSION
+            :qualified_code: Nala
 
             This method enables the calculation of the thermal expansion factor
             for a given material. If the material is solid, the difference

@@ -148,6 +148,7 @@ class MacroXSGenerationInterface(interfaces.Interface):
         .. impl:: Build macroscopic cross sections for blocks.
             :id: I_ARMI_MACRO_XS
             :implements: R_ARMI_MACRO_XS
+            :qualified_code: Nala
 
             This method builds macroscopic cross sections for a user-specified
             set of blocks using a specified microscopic neutron or gamma cross

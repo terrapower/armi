@@ -727,6 +727,7 @@ class FuelHandler:
         .. impl:: Assemblies can be moved from one place to another.
             :id: I_ARMI_SHUFFLE_MOVE
             :implements: R_ARMI_SHUFFLE_MOVE
+            :qualified_code: Nala
 
             For the two assemblies that are passed in, call to their :py:meth:`~armi.reactor.assemblies.Assembly.moveTo`
             methods to transfer their underlying ``spatialLocator`` attributes to
@@ -736,6 +737,7 @@ class FuelHandler:
         .. impl:: User-specified blocks can be left in place during within-core swaps.
             :id: I_ARMI_SHUFFLE_STATIONARY0
             :implements: R_ARMI_SHUFFLE_STATIONARY
+            :qualified_code: Nala
 
             Before assemblies are moved,
             the ``_transferStationaryBlocks`` class method is called to
@@ -844,6 +846,7 @@ class FuelHandler:
         .. impl:: User-specified blocks can be left in place for the discharge swap.
             :id: I_ARMI_SHUFFLE_STATIONARY1
             :implements: R_ARMI_SHUFFLE_STATIONARY
+            :qualified_code: Nala
 
             Before assemblies are moved, the ``_transferStationaryBlocks`` class method is called to
             check if there are any block types specified by the user as stationary via the

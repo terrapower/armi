@@ -21,6 +21,7 @@ contained within a :py:class:`~armi.nuclearDataIO.xsLibraries.XSLibrary`.
 .. impl:: Tool to read and write GAMISO files.
     :id: I_ARMI_NUCDATA_GAMISO
     :implements: R_ARMI_NUCDATA_GAMISO
+    :qualified_code: Nala
 
     The majority of the functionality in this module is inherited from the
     :py:mod:`~armi.nuclearDataIO.cccc.isotxs` module. See

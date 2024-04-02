@@ -47,6 +47,7 @@ class CaseSuite:
     .. impl:: CaseSuite allows for one case to start after another completes.
         :id: I_ARMI_CASE_SUITE
         :implements: R_ARMI_CASE_SUITE
+        :qualified_code: Nala
 
         The CaseSuite object allows multiple, often related,
         :py:class:`~armi.cases.case.Case` objects to be run sequentially. A CaseSuite

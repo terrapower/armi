@@ -358,6 +358,7 @@ class MultiIndexLocation(IndexLocation):
     .. impl:: Store components with multiplicity greater than 1
         :id: I_ARMI_GRID_MULT
         :implements: R_ARMI_GRID_MULT
+        :qualified_code: Nala
 
         As not all grids are "full core symmetry", ARMI will sometimes need to track
         multiple positions for a single object: one for each symmetric portion of the
@@ -437,6 +438,7 @@ class MultiIndexLocation(IndexLocation):
             multiplicity greater than 1.
             :id: I_ARMI_GRID_ELEM_LOC
             :implements: R_ARMI_GRID_ELEM_LOC
+            :qualified_code: Nala
 
             This method returns the indices of all the ``IndexLocation`` objects. To be
             clear, this does not return the ``IndexLocation`` objects themselves. This

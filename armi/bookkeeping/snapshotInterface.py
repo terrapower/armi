@@ -48,6 +48,7 @@ class SnapshotInterface(interfaces.Interface):
     .. impl:: Save extra data to be saved from a run, at specified time nodes.
         :id: I_ARMI_SNAPSHOT0
         :implements: R_ARMI_SNAPSHOT
+        :qualified_code: Nala
 
         This is a special :py:class:`Interface <armi.interfaces.Interface>` that is
         designed to run along all the other Interfaces during a simulation, to save off

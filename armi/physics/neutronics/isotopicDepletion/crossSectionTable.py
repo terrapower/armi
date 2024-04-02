@@ -131,6 +131,7 @@ class CrossSectionTable(collections.OrderedDict):
         .. impl:: Generate a formatted cross section table.
             :id: I_ARMI_DEPL_TABLES1
             :implements: R_ARMI_DEPL_TABLES
+            :qualified_code: Nala
 
             Loops over the reaction rates stored as ``self`` to produce a string with the cross
             sections for each nuclide in the block. Cross sections may be populated by
@@ -177,6 +178,7 @@ def makeReactionRateTable(obj, nuclides: List = None):
         reactions.
         :id: I_ARMI_DEPL_TABLES0
         :implements: R_ARMI_DEPL_TABLES
+        :qualified_code: Nala
 
         For a given composite object ``obj`` and a list of nuclides ``nuclides`` in that object,
         call ``obj.getReactionRates()`` for each nuclide with a ``nDensity`` parameter of 1.0. If

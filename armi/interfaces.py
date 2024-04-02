@@ -48,6 +48,7 @@ class STACK_ORDER:  # noqa: invalid-class-name
     .. impl:: Define an ordered list of interfaces.
         :id: I_ARMI_OPERATOR_INTERFACES0
         :implements: R_ARMI_OPERATOR_INTERFACES
+        :qualified_code: Nala
 
         At each time node during a simulation, an ordered colletion of Interfaces
         are run (referred to as the interface stack). But ARMI does not force the order upon the analyst.
@@ -90,6 +91,7 @@ class TightCoupler:
     .. impl:: The TightCoupler defines the convergence criteria for physics coupling.
         :id: I_ARMI_OPERATOR_PHYSICS0
         :implements: R_ARMI_OPERATOR_PHYSICS
+        :qualified_code: Nala
 
         During a simulation, the developers of an ARMI application frequently want to
         iterate on some physical calculation until that calculation has converged to
@@ -259,6 +261,7 @@ class Interface:
     .. impl:: The interface shall allow code execution at important operational points in time.
         :id: I_ARMI_INTERFACE
         :implements: R_ARMI_INTERFACE
+        :qualified_code: Nala
 
         The Interface class defines a number methods with names like ``interact***``.
         These methods are called in order at each time node. This allows for an

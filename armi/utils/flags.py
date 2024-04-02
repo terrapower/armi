@@ -126,6 +126,7 @@ class Flag(metaclass=_FlagMeta):
     .. impl:: No two flags have equivalence.
         :id: I_ARMI_FLAG_DEFINE
         :implements: R_ARMI_FLAG_DEFINE
+        :qualified_code: Nala
 
         A bitwise flag class intended to emulate the standard library's ``enum.Flag``, with the
         added functionality that it allows for extension after the class has been defined. Each Flag
@@ -232,6 +233,7 @@ class Flag(metaclass=_FlagMeta):
         .. impl:: Set of flags are extensible without loss of uniqueness.
             :id: I_ARMI_FLAG_EXTEND0
             :implements: R_ARMI_FLAG_EXTEND
+            :qualified_code: Nala
 
             A class method to extend a ``Flag`` with a vector of provided additional ``fields``,
             with field names as keys, without loss of uniqueness. Values for the additional

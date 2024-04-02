@@ -44,6 +44,7 @@ def isDepletable(obj: composites.ArmiObject):
     .. impl:: Determine if any component is depletable.
         :id: I_ARMI_DEPL_DEPLETABLE
         :implements: R_ARMI_DEPL_DEPLETABLE
+        :qualified_code: Nala
 
         Uses :py:meth:`~armi.reactor.composite.ArmiObject.hasFlags` or
         :py:meth:`~armi.reactor.composite.ArmiObject.containsAtLeastOneChildWithFlags`
@@ -86,6 +87,7 @@ class AbstractIsotopicDepleter:
     .. impl:: ARMI provides a base class to deplete isotopes.
         :id: I_ARMI_DEPL_ABC
         :implements: R_ARMI_DEPL_ABC
+        :qualified_code: Nala
 
         This class provides some basic infrastructure typically needed in depletion
         calculations within the ARMI framework. It stores a reactor, operator,

@@ -68,6 +68,7 @@ def expandColdDimsToHot(
     .. impl:: Perform expansion during core construction based on block heights at a specified temperature.
         :id: I_ARMI_INP_COLD_HEIGHT
         :implements: R_ARMI_INP_COLD_HEIGHT
+        :qualified_code: Nala
 
         This method is designed to be used during core construction to axially thermally expand the
         assemblies to their "hot" temperatures (as determined by ``Thot`` values in blueprints).
@@ -161,6 +162,7 @@ class AxialExpansionChanger:
         .. impl:: Perform expansion/contraction, given a list of components and expansion coefficients.
             :id: I_ARMI_AXIAL_EXP_PRESC
             :implements: R_ARMI_AXIAL_EXP_PRESC
+            :qualified_code: Nala
 
             This method performs component-wise axial expansion for an Assembly given expansion coefficients
             and a corresponding list of Components. In ``setAssembly``, the Assembly is prepared
@@ -204,6 +206,7 @@ class AxialExpansionChanger:
             over an assembly.
             :id: I_ARMI_AXIAL_EXP_THERM
             :implements: R_ARMI_AXIAL_EXP_THERM
+            :qualified_code: Nala
 
             This method performs component-wise thermal expansion for an assembly given a discrete
             temperature distribution over the axial length of the Assembly. In ``setAssembly``, the
@@ -310,6 +313,7 @@ class AxialExpansionChanger:
         .. impl:: Preserve the total height of an ARMI assembly, during expansion.
             :id: I_ARMI_ASSEM_HEIGHT_PRES
             :implements: R_ARMI_ASSEM_HEIGHT_PRES
+            :qualified_code: Nala
 
             The total height of an Assembly is preserved by not changing the ``ztop`` position
             of the top-most Block in an Assembly. The ``zbottom`` of the top-most Block is

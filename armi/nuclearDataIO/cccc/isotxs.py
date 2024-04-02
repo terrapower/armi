@@ -268,6 +268,7 @@ class IsotxsIO(cccc.Stream):
         .. impl:: Tool to read and write ISOTXS files.
             :id: I_ARMI_NUCDATA_ISOTXS
             :implements: R_ARMI_NUCDATA_ISOTXS
+            :qualified_code: Nala
 
             Reading and writing ISOTXS files is performed using the general
             nuclear data I/O functionalities described in

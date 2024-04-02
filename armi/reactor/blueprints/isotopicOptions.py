@@ -61,6 +61,7 @@ class NuclideFlag(yamlize.Object):
     .. impl:: The blueprint object that represents a nuclide flag.
         :id: I_ARMI_BP_NUC_FLAGS1
         :implements: R_ARMI_BP_NUC_FLAGS
+        :qualified_code: Nala
 
         This class creates a yaml interface for the user to specify in their blueprints which
         isotopes should be depleted. It is incorporated into the "nuclide flags" section of a
@@ -166,6 +167,7 @@ class CustomIsotopic(yamlize.Map):
     .. impl:: Certain material modifications will be applied using this code.
         :id: I_ARMI_MAT_USER_INPUT2
         :implements: R_ARMI_MAT_USER_INPUT
+        :qualified_code: Nala
 
         Defines a yaml construct that allows the user to define a custom isotopic vector from within
         their blueprints file, including a name and key-value pairs corresponding to nuclide names

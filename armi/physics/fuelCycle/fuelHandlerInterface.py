@@ -35,6 +35,7 @@ class FuelHandlerInterface(interfaces.Interface):
     .. impl:: ARMI provides a shuffle logic interface.
         :id: I_ARMI_SHUFFLE
         :implements: R_ARMI_SHUFFLE
+        :qualified_code: Nala
 
         This interface allows for a user to define custom shuffle logic that
         modifies to the core model. Being based on the :py:class:`~armi.interfaces.Interface`

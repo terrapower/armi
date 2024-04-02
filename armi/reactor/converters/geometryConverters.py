@@ -438,6 +438,7 @@ class HexToRZThetaConverter(GeometryConverter):
         .. impl:: Tool to convert a hex core to an RZTheta core.
             :id: I_ARMI_CONV_3DHEX_TO_2DRZ
             :implements: R_ARMI_CONV_3DHEX_TO_2DRZ
+            :qualified_code: Nala
 
             This method converts the hex-z mesh to r-theta-z mesh.
             It first verifies that the geometry type of the input reactor ``r``
@@ -1274,6 +1275,7 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
         .. impl:: Convert a one-third-core geometry to a full-core geometry.
             :id: I_ARMI_THIRD_TO_FULL_CORE0
             :implements: R_ARMI_THIRD_TO_FULL_CORE
+            :qualified_code: Nala
 
             This method first checks if the input reactor is already full core.
             If full-core symmetry is detected, the input reactor is returned.
@@ -1379,6 +1381,7 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
         .. impl:: Restore a one-third-core geometry to a full-core geometry.
             :id: I_ARMI_THIRD_TO_FULL_CORE1
             :implements: R_ARMI_THIRD_TO_FULL_CORE
+            :qualified_code: Nala
 
             This method is a reverse process of the method ``convert``. It converts
             the full-core reactor model back to the original one-third core reactor model by removing
@@ -1425,6 +1428,7 @@ class EdgeAssemblyChanger(GeometryChanger):
         .. impl:: Add assemblies along the 120-degree line to a reactor.
             :id: I_ARMI_ADD_EDGE_ASSEMS0
             :implements: R_ARMI_ADD_EDGE_ASSEMS
+            :qualified_code: Nala
 
             Edge assemblies on the 120-degree symmetric line of a one-third core reactor model are added
             because they are needed for DIF3D-finite difference or MCNP models. This is done
@@ -1500,6 +1504,7 @@ class EdgeAssemblyChanger(GeometryChanger):
         .. impl:: Remove assemblies along the 120-degree line from a reactor.
             :id: I_ARMI_ADD_EDGE_ASSEMS1
             :implements: R_ARMI_ADD_EDGE_ASSEMS
+            :qualified_code: Nala
 
             This method is the reverse process of the method ``addEdgeAssemblies``. It is
             needed for the DIF3D-Nodal calculation. It removes the assemblies on the 120-degree

@@ -48,6 +48,7 @@ class SuiteBuilder:
     .. impl:: A generic tool to modify user inputs on multiple cases.
         :id: I_ARMI_CASE_MOD0
         :implements: R_ARMI_CASE_MOD
+        :qualified_code: Nala
 
         This class provides the capability to create a
         :py:class:`~armi.cases.suite.CaseSuite` based on programmatic

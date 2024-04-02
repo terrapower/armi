@@ -47,6 +47,7 @@ class BlockBlueprint(yamlize.KeyedList):
     .. impl:: Create a Block from blueprint file.
         :id: I_ARMI_BP_BLOCK
         :implements: R_ARMI_BP_BLOCK
+        :qualified_code: Nala
 
         Defines a yaml construct that allows the user to specify attributes of a
         block from within their blueprints file, including a name, flags, a radial

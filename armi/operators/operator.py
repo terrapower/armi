@@ -80,6 +80,7 @@ class Operator:
     .. impl:: An operator will have a reactor object to communicate between plugins.
         :id: I_ARMI_OPERATOR_COMM
         :implements: R_ARMI_OPERATOR_COMM
+        :qualified_code: Nala
 
         A major design feature of ARMI is that the Operator orchestrates the
         simulation, and as part of that, the Operator has access to the
@@ -93,6 +94,7 @@ class Operator:
     .. impl:: An operator is built from user settings.
         :id: I_ARMI_OPERATOR_SETTINGS
         :implements: R_ARMI_OPERATOR_SETTINGS
+        :qualified_code: Nala
 
         A major design feature of ARMI is that a run is built from user settings.
         In code, this means that a case ``Settings`` object is passed into this
@@ -203,6 +205,7 @@ class Operator:
         .. impl:: Calculate step lengths from cycles and burn steps.
             :id: I_ARMI_FW_HISTORY
             :implements: R_ARMI_FW_HISTORY
+            :qualified_code: Nala
 
             In all computational modeling of physical systems, it is
             necessary to break time into discrete chunks. In reactor
@@ -668,6 +671,7 @@ class Operator:
         .. impl:: Physics coupling is driven from Operator.
             :id: I_ARMI_OPERATOR_PHYSICS1
             :implements: R_ARMI_OPERATOR_PHYSICS
+            :qualified_code: Nala
 
             This method runs all the interfaces that are defined as part
             of the tight physics coupling of the reactor. Then it returns
@@ -965,6 +969,7 @@ class Operator:
         .. impl:: An operator will expose an ordered list of interfaces.
             :id: I_ARMI_OPERATOR_INTERFACES
             :implements: R_ARMI_OPERATOR_INTERFACES
+            :qualified_code: Nala
 
             This method returns an ordered list of instances of the Interface
             class. This list is useful because at any time node in the

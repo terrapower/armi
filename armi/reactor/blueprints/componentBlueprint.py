@@ -123,6 +123,7 @@ class ComponentBlueprint(yamlize.Object):
     .. impl:: Construct component from blueprint file.
         :id: I_ARMI_BP_COMP
         :implements: R_ARMI_BP_COMP
+        :qualified_code: Nala
 
         Defines a yaml construct that allows the user to specify attributes of a
         component from within their blueprints file, including a name, flags, shape,
@@ -191,6 +192,7 @@ class ComponentBlueprint(yamlize.Object):
         .. impl:: User-defined on material alterations are applied here.
             :id: I_ARMI_MAT_USER_INPUT1
             :implements: R_ARMI_MAT_USER_INPUT
+            :qualified_code: Nala
 
             Allows for user input to impact a component's materials by applying
             the "material modifications" section of a blueprints file (see :need:`I_ARMI_MAT_USER_INPUT0`)
@@ -336,6 +338,7 @@ def insertDepletableNuclideKeys(c, blueprint):
     .. impl:: Insert any depletable blueprint flags onto this component.
         :id: I_ARMI_BP_NUC_FLAGS0
         :implements: R_ARMI_BP_NUC_FLAGS
+        :qualified_code: Nala
 
         This is called during the component construction process for each component from within
         :py:meth:`~armi.reactor.blueprints.componentBlueprint.ComponentBlueprint.construct`.

@@ -53,6 +53,7 @@ class HexGrid(StructuredGrid):
     .. impl:: Construct a hexagonal lattice.
         :id: I_ARMI_GRID_HEX
         :implements: R_ARMI_GRID_HEX
+        :qualified_code: Nala
 
         This class represents a hexagonal ``StructuredGrid``, that is one where the
         mesh maps to real, physical coordinates. This hexagonal grid is 2D, and divides
@@ -122,6 +123,7 @@ class HexGrid(StructuredGrid):
         .. impl:: Hexagonal grids can be points-up or flats-up.
             :id: I_ARMI_GRID_HEX_TYPE
             :implements: R_ARMI_GRID_HEX_TYPE
+            :qualified_code: Nala
 
             When this method creates a ``HexGrid`` object, it can create a hexagonal
             grid with one of two rotations: flats up (where two sides of the hexagons
@@ -132,6 +134,7 @@ class HexGrid(StructuredGrid):
         .. impl:: When creating a hexagonal grid, the user can specify the symmetry.
             :id: I_ARMI_GRID_SYMMETRY1
             :implements: R_ARMI_GRID_SYMMETRY
+            :qualified_code: Nala
 
             When this method creates a ``HexGrid`` object, it takes as an input the
             symmetry of the resultant grid. This symmetry can be a string (e.g. "full")
@@ -425,6 +428,7 @@ class HexGrid(StructuredGrid):
         .. impl:: Equivalent contents in 1/3-core geometries are retrievable.
             :id: I_ARMI_GRID_EQUIVALENTS
             :implements: R_ARMI_GRID_EQUIVALENTS
+            :qualified_code: Nala
 
             This method takes in (I,J,K) indices, and if this ``HexGrid`` is full core,
             it returns nothing. If this ``HexGrid`` is 1/3-core, this method will return
@@ -517,6 +521,7 @@ class HexGrid(StructuredGrid):
         .. impl:: Determine if grid is in first third.
             :id: I_ARMI_GRID_SYMMETRY_LOC
             :implements: R_ARMI_GRID_SYMMETRY_LOC
+            :qualified_code: Nala
 
             This is a simple helper method to determine if a given locator (from an
             ArmiObject) is in the first 1/3 of the ``HexGrid``. This method does not

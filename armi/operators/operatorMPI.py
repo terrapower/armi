@@ -18,6 +18,7 @@ The MPI-aware variant of the standard ARMI operator.
 .. impl:: There is an MPI-aware variant of the ARMI Operator.
     :id: I_ARMI_OPERATOR_MPI
     :implements: R_ARMI_OPERATOR_MPI
+    :qualified_code: Nala
 
     This sets up the main Operator on the primary MPI node and initializes
     worker processes on all other MPI nodes. At certain points in the run,

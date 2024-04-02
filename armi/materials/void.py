@@ -26,6 +26,7 @@ class Void(material.Fluid):
     .. impl:: Define a void material with zero density.
         :id: I_ARMI_MAT_VOID
         :implements: R_ARMI_MAT_VOID
+        :qualified_code: Nala
 
         To help with expansion, it is sometimes useful to put a small section of void
         material into the reactor model. This is not meant to represent a true void,

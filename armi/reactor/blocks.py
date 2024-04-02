@@ -586,6 +586,7 @@ class Block(composites.Composite):
         .. impl:: Location of a block is retrievable.
             :id: I_ARMI_BLOCK_POSI0
             :implements: R_ARMI_BLOCK_POSI
+            :qualified_code: Nala
 
             If the block does not have its ``core`` attribute set, if the block's
             parent does not have a ``spatialGrid`` attribute, or if the block
@@ -612,6 +613,7 @@ class Block(composites.Composite):
         .. impl:: Coordinates of a block are queryable.
             :id: I_ARMI_BLOCK_POSI1
             :implements: R_ARMI_BLOCK_POSI
+            :qualified_code: Nala
 
             Calls to the :py:meth:`~armi.reactor.grids.locations.IndexLocation.getGlobalCoordinates`
             method of the block's ``spatialLocator`` attribute, which recursively
@@ -699,6 +701,7 @@ class Block(composites.Composite):
         .. impl:: Volume of block is retrievable.
             :id: I_ARMI_BLOCK_DIMS0
             :implements: R_ARMI_BLOCK_DIMS
+            :qualified_code: Nala
 
             Loops over all the components in the block, calling
             :py:meth:`~armi.reactor.components.component.Component.getVolume` on
@@ -1106,6 +1109,7 @@ class Block(composites.Composite):
         .. impl:: Get the number of pins in a block.
             :id: I_ARMI_BLOCK_NPINS
             :implements: R_ARMI_BLOCK_NPINS
+            :qualified_code: Nala
 
             Uses some simple criteria to infer the number of pins in the block.
 
@@ -1274,6 +1278,7 @@ class Block(composites.Composite):
         .. impl:: Pitch of block is retrievable.
             :id: I_ARMI_BLOCK_DIMS1
             :implements: R_ARMI_BLOCK_DIMS
+            :qualified_code: Nala
 
             Uses the block's ``_pitchDefiningComponent`` to identify the component
             in the block that defines the pitch. Then uses the
@@ -1607,6 +1612,7 @@ class Block(composites.Composite):
         .. impl:: Set the target axial expansion components on a given block.
             :id: I_ARMI_MANUAL_TARG_COMP
             :implements: R_ARMI_MANUAL_TARG_COMP
+            :qualified_code: Nala
 
             Sets the ``axialExpTargetComponent`` parameter on the block to the name
             of the Component which is passed in. This is then used by the
@@ -1661,6 +1667,7 @@ class HexBlock(Block):
     .. impl:: ARMI has the ability to create hex shaped blocks.
         :id: I_ARMI_BLOCK_HEX
         :implements: R_ARMI_BLOCK_HEX
+        :qualified_code: Nala
 
         This class defines hexagonal-shaped Blocks. It inherits functionality from the parent
         class, Block, and defines hexagonal-specific methods including, but not limited to,
@@ -1680,6 +1687,7 @@ class HexBlock(Block):
         .. impl:: Coordinates of a block are queryable.
             :id: I_ARMI_BLOCK_POSI2
             :implements: R_ARMI_BLOCK_POSI
+            :qualified_code: Nala
 
             Calls to the :py:meth:`~armi.reactor.grids.locations.IndexLocation.getGlobalCoordinates`
             method of the block's ``spatialLocator`` attribute, which recursively
@@ -1704,6 +1712,7 @@ class HexBlock(Block):
         .. impl:: Block compositions can be homogenized.
             :id: I_ARMI_BLOCK_HOMOG
             :implements: R_ARMI_BLOCK_HOMOG
+            :qualified_code: Nala
 
             This method creates and returns a homogenized representation of itself in the form of a new Block.
             The homogenization occurs in the following manner. A single Hexagon Component is created
@@ -1804,6 +1813,7 @@ class HexBlock(Block):
         .. impl:: Area of block is retrievable.
             :id: I_ARMI_BLOCK_DIMS2
             :implements: R_ARMI_BLOCK_DIMS
+            :qualified_code: Nala
 
             This method first retrieves the pitch of the hexagonal Block
             (:need:`I_ARMI_UTIL_HEXAGON0`) and then leverages the
@@ -1822,6 +1832,7 @@ class HexBlock(Block):
         .. impl:: IP dimension is retrievable.
             :id: I_ARMI_BLOCK_DIMS3
             :implements: R_ARMI_BLOCK_DIMS
+            :qualified_code: Nala
 
             This method retrieves the duct Component and quieries
             it's inner pitch directly. If the duct is missing or if there
@@ -1837,6 +1848,7 @@ class HexBlock(Block):
         .. impl:: OP dimension is retrievable.
             :id: I_ARMI_BLOCK_DIMS4
             :implements: R_ARMI_BLOCK_DIMS
+            :qualified_code: Nala
 
             This method retrieves the duct Component and quieries
             its outer pitch directly. If the duct is missing or if there
@@ -2145,6 +2157,7 @@ class HexBlock(Block):
         .. impl:: Pin to duct gap of block is retrievable.
             :id: I_ARMI_BLOCK_DIMS5
             :implements: R_ARMI_BLOCK_DIMS
+            :qualified_code: Nala
 
             Requires that the outer most duct be Hexagonal and wire and clad Components
             be present. The flat-to-flat distance between the radial exterior of opposing
@@ -2337,6 +2350,7 @@ class HexBlock(Block):
         .. impl:: Pin pitch within block is retrievable.
             :id: I_ARMI_BLOCK_DIMS6
             :implements: R_ARMI_BLOCK_DIMS
+            :qualified_code: Nala
 
             This implementation requires that clad and wire Components are present.
             If not, an error is raised. If present, the pin pitch is calculated
@@ -2379,6 +2393,7 @@ class HexBlock(Block):
         .. impl:: Wetted perimeter of block is retrievable.
             :id: I_ARMI_BLOCK_DIMS7
             :implements: R_ARMI_BLOCK_DIMS
+            :qualified_code: Nala
 
             This implementation computes wetted perimeters for specific Components, as specified
             by their Flags (:need:`R_ARMI_FLAG_DEFINE`). Hollow hexagons and circular pin Components
@@ -2487,6 +2502,7 @@ class HexBlock(Block):
         .. impl:: Flow area of block is retrievable.
             :id: I_ARMI_BLOCK_DIMS8
             :implements: R_ARMI_BLOCK_DIMS
+            :qualified_code: Nala
 
             Retrieving the flow area requires that there be a single coolant Component.
             If available, the area is calculated (:need:`I_ARMI_COMP_VOL0`).
@@ -2505,6 +2521,7 @@ class HexBlock(Block):
         .. impl:: Hydraulic diameter of block is retrievable.
             :id: I_ARMI_BLOCK_DIMS9
             :implements: R_ARMI_BLOCK_DIMS
+            :qualified_code: Nala
 
             The hydraulic diamter is calculated via
 

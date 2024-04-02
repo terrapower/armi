@@ -37,6 +37,7 @@ def getFastFluxGroupCutoff(eGrpStruc):
     .. impl:: Return the energy group index which contains a given energy threshold.
         :id: I_ARMI_EG_FE
         :implements: R_ARMI_EG_FE
+        :qualified_code: Nala
 
         This function returns the energy group within a given group structure
         that contains the fast flux threshold energy. The threshold energy is
@@ -86,6 +87,7 @@ def getGroupStructure(name):
     .. impl:: Provide the neutron energy group bounds for a given group structure.
         :id: I_ARMI_EG_NE
         :implements: R_ARMI_EG_NE
+        :qualified_code: Nala
 
         There are several built-in group structures that are defined in this
         module, which are stored in a dictionary. This function takes a group

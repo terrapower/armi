@@ -88,6 +88,7 @@ def defineSettings():
     .. impl:: Users to select if gamma cross sections are generated.
         :id: I_ARMI_GAMMA_XS
         :implements: R_ARMI_GAMMA_XS
+        :qualified_code: Nala
 
         A single boolean setting can be used to turn on/off the calculation of gamma
         cross sections. This is implemented with the usual boolean ``Setting`` logic.

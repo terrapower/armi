@@ -326,6 +326,7 @@ def concatenateLogs(logDir=None):
     .. impl:: Log files from different processes are combined.
         :id: I_ARMI_LOG_MPI
         :implements: R_ARMI_LOG_MPI
+        :qualified_code: Nala
 
         The log files are plain text files. Since ARMI is frequently run in parallel,
         the situation arises where each ARMI process generates its own plain text log
@@ -512,6 +513,7 @@ class RunLogger(logging.Logger):
     .. impl:: A simulation-wide log, with user-specified verbosity.
         :id: I_ARMI_LOG
         :implements: R_ARMI_LOG
+        :qualified_code: Nala
 
         Log statements are any text a user wants to record during a run. For instance,
         basic notifications of what is happening in the run, simple warnings, or hard
@@ -535,6 +537,7 @@ class RunLogger(logging.Logger):
     .. impl:: Logging is done to the screen and to file.
         :id: I_ARMI_LOG_IO
         :implements: R_ARMI_LOG_IO
+        :qualified_code: Nala
 
         This logger makes it easy for users to add log statements to and ARMI
         application, and ARMI will control the flow of those log statements. In

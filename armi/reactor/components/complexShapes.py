@@ -27,6 +27,7 @@ class HoledHexagon(basicShapes.Hexagon):
     .. impl:: Holed hexagon shaped Component
         :id: I_ARMI_COMP_SHAPES5
         :implements: R_ARMI_COMP_SHAPES
+        :qualified_code: Nala
 
         This class provides an implementation for a holed hexagonal Component. This
         includes setting key parameters such as its material, temperature, and
@@ -205,6 +206,7 @@ class HoledSquare(basicShapes.Square):
     .. impl:: Holed square shaped Component
         :id: I_ARMI_COMP_SHAPES6
         :implements: R_ARMI_COMP_SHAPES
+        :qualified_code: Nala
 
         This class provides an implementation for a holed square Component. This
         includes setting key parameters such as its material, temperature, and
@@ -266,6 +268,7 @@ class Helix(ShapedComponent):
     .. impl:: Helix shaped Component
         :id: I_ARMI_COMP_SHAPES7
         :implements: R_ARMI_COMP_SHAPES
+        :qualified_code: Nala
 
         This class provides the implementation for a helical Component. This
         includes setting key parameters such as its material, temperature, and

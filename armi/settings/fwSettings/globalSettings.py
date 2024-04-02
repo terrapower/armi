@@ -126,6 +126,7 @@ def defineSettings() -> List[setting.Setting]:
     .. impl:: There is a setting for total core power.
         :id: I_ARMI_SETTINGS_POWER
         :implements: R_ARMI_SETTINGS_POWER
+        :qualified_code: Nala
 
         ARMI defines a collection of settings by default to be associated
         with all runs, and one such setting is ``power``. This is the
@@ -138,6 +139,7 @@ def defineSettings() -> List[setting.Setting]:
     .. impl:: Define a comment and a versions list to go with the settings.
         :id: I_ARMI_SETTINGS_META1
         :implements: R_ARMI_SETTINGS_META
+        :qualified_code: Nala
 
         Because nuclear analysts have a lot to keep track of when doing
         various simulations of a reactor, ARMI provides a ``comment``

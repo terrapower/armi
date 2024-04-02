@@ -335,6 +335,7 @@ class Case:
         .. impl:: The case class allows for a generic ARMI simulation.
             :id: I_ARMI_CASE
             :implements: R_ARMI_CASE
+            :qualified_code: Nala
 
             This method is responsible for "running" the ARMI simulation
             instigated by the inputted settings. This initializes an
@@ -568,6 +569,7 @@ class Case:
         .. impl:: Perform validity checks on case inputs.
             :id: I_ARMI_CASE_CHECK
             :implements: R_ARMI_CASE_CHECK
+            :qualified_code: Nala
 
             This method checks the validity of the current settings. It relies
             on an :py:class:`~armi.operators.settingsValidation.Inspector`

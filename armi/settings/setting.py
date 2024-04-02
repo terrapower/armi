@@ -49,6 +49,7 @@ class Setting:
     .. impl:: The setting default is mandatory.
         :id: I_ARMI_SETTINGS_DEFAULTS
         :implements: R_ARMI_SETTINGS_DEFAULTS
+        :qualified_code: Nala
 
         Setting objects hold all associated information of a setting in ARMI and should
         typically be accessed through the Settings methods rather than directly.

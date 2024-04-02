@@ -216,6 +216,7 @@ class ComponentMerger(BlockConverter):
     .. impl:: Homogenize one component into another.
         :id: I_ARMI_BLOCKCONV0
         :implements: R_ARMI_BLOCKCONV
+        :qualified_code: Nala
 
         This subclass of ``BlockConverter`` is meant as a one-time-use tool, to convert
         a ``Block`` into one ``Component``. A ``Block`` is a ``Composite`` that may
@@ -267,6 +268,7 @@ class MultipleComponentMerger(BlockConverter):
     .. impl:: Homogenize multiple components into one.
         :id: I_ARMI_BLOCKCONV1
         :implements: R_ARMI_BLOCKCONV
+        :qualified_code: Nala
 
         This subclass of ``BlockConverter`` is meant as a one-time-use tool, to convert
         a multiple ``Components`` into one. This means averaging the material
@@ -560,6 +562,7 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
         .. impl:: Convert hex blocks to cylindrical blocks.
             :id:  I_ARMI_BLOCKCONV_HEX_TO_CYL
             :implements: R_ARMI_BLOCKCONV_HEX_TO_CYL
+            :qualified_code: Nala
 
             This method converts a ``HexBlock`` to a cylindrical ``Block``. Obviously,
             this is not a physically meaningful transition; it is a helpful

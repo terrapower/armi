@@ -30,6 +30,7 @@ class Circle(ShapedComponent):
     .. impl:: Circle shaped Component
         :id: I_ARMI_COMP_SHAPES0
         :implements: R_ARMI_COMP_SHAPES
+        :qualified_code: Nala
 
         This class provides the implementation of a Circle Component. This includes
         setting key parameters such as its material, temperature, and dimensions. It
@@ -99,6 +100,7 @@ class Hexagon(ShapedComponent):
     .. impl:: Hexagon shaped Component
         :id: I_ARMI_COMP_SHAPES1
         :implements: R_ARMI_COMP_SHAPES
+        :qualified_code: Nala
 
         This class provides the implementation of a hexagonal Component. This
         includes setting key parameters such as its material, temperature, and
@@ -190,6 +192,7 @@ class Rectangle(ShapedComponent):
     .. impl:: Rectangle shaped Component
         :id: I_ARMI_COMP_SHAPES2
         :implements: R_ARMI_COMP_SHAPES
+        :qualified_code: Nala
 
         This class provides the implementation for a rectangular Component. This
         includes setting key parameters such as its material, temperature, and
@@ -341,6 +344,7 @@ class Square(Rectangle):
     .. impl:: Square shaped Component
         :id: I_ARMI_COMP_SHAPES3
         :implements: R_ARMI_COMP_SHAPES
+        :qualified_code: Nala
 
         This class provides the implementation for a square Component. This class
         subclasses the ``Rectangle`` class because a square is a type of rectangle.
@@ -422,6 +426,7 @@ class Triangle(ShapedComponent):
     .. impl:: Triangle shaped Component
         :id: I_ARMI_COMP_SHAPES4
         :implements: R_ARMI_COMP_SHAPES
+        :qualified_code: Nala
 
         This class provides the implementation for defining a triangular Component. This
         includes setting key parameters such as its material, temperature, and

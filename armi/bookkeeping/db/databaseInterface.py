@@ -225,6 +225,7 @@ class DatabaseInterface(interfaces.Interface):
         .. impl:: Runs at a particular timenode can be re-instantiated for a snapshot.
             :id: I_ARMI_SNAPSHOT_RESTART
             :implements: R_ARMI_SNAPSHOT_RESTART
+            :qualified_code: Nala
 
             This method loads the state of a reactor from a particular point in time
             from a standard ARMI

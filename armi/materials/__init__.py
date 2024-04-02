@@ -52,6 +52,7 @@ def setMaterialNamespaceOrder(order):
         of duplicates.
         :id: I_ARMI_MAT_ORDER
         :implements: R_ARMI_MAT_ORDER
+        :qualified_code: Nala
 
         An ARMI application will need materials. Materials can be imported from
         any code the application has access to, like plugin packages. This leads to
@@ -144,6 +145,7 @@ def resolveMaterialClassByName(name: str, namespaceOrder: List[str] = None):
     .. impl:: Materials can be searched across packages in a defined namespace.
         :id: I_ARMI_MAT_NAMESPACE
         :implements: R_ARMI_MAT_NAMESPACE
+        :qualified_code: Nala
 
         During the runtime of an ARMI application, but particularly during the
         construction of the reactor in memory, materials will be requested by name. At

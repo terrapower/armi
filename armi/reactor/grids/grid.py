@@ -38,6 +38,7 @@ class Grid(ABC):
     .. impl:: Grids can nest.
         :id: I_ARMI_GRID_NEST
         :implements: R_ARMI_GRID_NEST
+        :qualified_code: Nala
 
         The reactor will usually have (i,j,k) coordinates to define a
         simple mesh for locating objects in the reactor. But inside that mesh can
@@ -102,6 +103,7 @@ class Grid(ABC):
         .. impl:: Grids shall be able to repesent 1/3 and full core symmetries.
             :id: I_ARMI_GRID_SYMMETRY0
             :implements: R_ARMI_GRID_SYMMETRY
+            :qualified_code: Nala
 
             Every grid contains a :py:class:`armi.reactor.geometry.SymmetryType` or
             string that defines a grid as full core or a partial core: 1/3, 1/4, 1/8, or 1/16

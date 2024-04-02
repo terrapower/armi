@@ -121,6 +121,7 @@ def init(choice=None, fName=None, cs=None):
     .. impl:: Settings are used to define an ARMI run.
         :id: I_ARMI_SETTING1
         :implements: R_ARMI_SETTING
+        :qualified_code: Nala
 
         This method initializes an ARMI run, and if successful returns an Operator.
         That operator is designed to drive the reactor simulation through time steps to

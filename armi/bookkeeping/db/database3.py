@@ -112,6 +112,7 @@ class Database3:
     .. impl:: The database files are H5, and thus language agnostic.
         :id: I_ARMI_DB_H51
         :implements: R_ARMI_DB_H5
+        :qualified_code: Nala
 
         This class implements a light wrapper around H5 files, so they can be used to
         store ARMI outputs. H5 files are commonly used in scientific applications in
@@ -234,6 +235,7 @@ class Database3:
         .. impl:: Add system attributes to the database.
             :id: I_ARMI_DB_QA
             :implements: R_ARMI_DB_QA
+            :qualified_code: Nala
 
             This method writes some basic system information to the H5 file. This is
             designed as a starting point, so users can see information about the system
@@ -470,6 +472,7 @@ class Database3:
         .. impl:: The run settings are saved the settings file.
             :id: I_ARMI_DB_CS
             :implements: R_ARMI_DB_CS
+            :qualified_code: Nala
 
             A ``Settings`` object is passed into this method, and then the settings are
             converted into a YAML string stream. That stream is then written to the H5
@@ -479,6 +482,7 @@ class Database3:
         .. impl:: The reactor blueprints are saved the settings file.
             :id: I_ARMI_DB_BP
             :implements: R_ARMI_DB_BP
+            :qualified_code: Nala
 
             A ``Blueprints`` string is optionally passed into this method, and then
             written to the H5 file. If it is not passed in, this method will attempt to
@@ -710,6 +714,7 @@ class Database3:
         .. impl:: Users can load a reactor from a DB.
             :id: I_ARMI_DB_R_LOAD
             :implements: R_ARMI_DB_R_LOAD
+            :qualified_code: Nala
 
             This method creates a ``Reactor`` object by reading the reactor state out
             of an ARMI database file. This is done by passing in mandatory arguements

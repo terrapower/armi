@@ -27,6 +27,7 @@ def getNDensFromMasses(rho, massFracs, normalize=False):
     .. impl:: Number densities are retrievable from masses.
         :id: I_ARMI_UTIL_MASS2N_DENS
         :implements: R_ARMI_UTIL_MASS2N_DENS
+        :qualified_code: Nala
 
         Loops over all provided nuclides (given as keys in the ``massFracs`` vector) and calculates
         number densities of each, at a given material ``density``. Mass fractions can be provided
@@ -179,6 +180,7 @@ def formatMaterialCard(
     .. impl:: Create MCNP material card.
         :id: I_ARMI_UTIL_MCNP_MAT_CARD
         :implements: R_ARMI_UTIL_MCNP_MAT_CARD
+        :qualified_code: Nala
 
         Loops over a vector of nuclides (of type ``nuclideBase``) provided in ``densities`` and
         formats them into a list of strings consistent with MCNP material card syntax, skipping
@@ -284,6 +286,7 @@ def normalizeNuclideList(nuclideVector, normalization=1.0):
     .. impl:: Normalize nuclide vector.
         :id: I_ARMI_UTIL_DENS_TOOLS
         :implements: R_ARMI_UTIL_DENS_TOOLS
+        :qualified_code: Nala
 
         Given a vector of nuclides ``nuclideVector`` indexed by nuclide identifiers (``nucNames`` or ``nuclideBases``),
         normalizes to the provided ``normalization`` value.
@@ -324,6 +327,7 @@ def expandElementalMassFracsToNuclides(
     .. impl:: Expand mass fractions to nuclides.
         :id: I_ARMI_UTIL_EXP_MASS_FRACS
         :implements: R_ARMI_UTIL_EXP_MASS_FRACS
+        :qualified_code: Nala
 
         Given a vector of elements and nuclides with associated mass fractions (``massFracs``),
         expands the elements in-place into a set of nuclides using

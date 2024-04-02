@@ -52,6 +52,7 @@ class SystemBlueprint(yamlize.Object):
     .. impl:: Build core and spent fuel pool from blueprints
         :id: I_ARMI_BP_SYSTEMS
         :implements: R_ARMI_BP_SYSTEMS, R_ARMI_BP_CORE
+        :qualified_code: Nala
 
         This class creates a yaml interface for the user to define systems with
         grids, such as cores or spent fuel pools, each having their own name,

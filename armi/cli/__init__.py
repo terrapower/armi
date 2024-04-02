@@ -107,6 +107,7 @@ class ArmiCLI:
     .. impl:: The basic ARMI CLI, for running a simulation.
         :id: I_ARMI_CLI_CS
         :implements: R_ARMI_CLI_CS
+        :qualified_code: Nala
 
         Provides a basic command-line interface (CLI) for running an ARMI simulation. Available
         commands can be listed with ``-l``. Information on individual commands can be obtained by

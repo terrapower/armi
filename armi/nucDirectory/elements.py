@@ -19,6 +19,7 @@ and applications.
 .. impl:: A tool for querying basic data for elements of the periodic table.
     :id: I_ARMI_ND_ELEMENTS0
     :implements: R_ARMI_ND_ELEMENTS
+    :qualified_code: Nala
 
     The :py:mod:`elements <armi.nucDirectory.elements>` module defines the
     :py:class:`Element <armi.nucDirectory.elements.Element>` class which acts as
@@ -171,6 +172,7 @@ class Element:
         .. impl:: An element of the periodic table.
             :id: I_ARMI_ND_ELEMENTS1
             :implements: R_ARMI_ND_ELEMENTS
+            :qualified_code: Nala
 
             The :py:class:`Element <armi.nucDirectory.elements.Element>` class
             acts as a data structure for organizing information about an

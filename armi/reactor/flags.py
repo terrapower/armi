@@ -290,6 +290,7 @@ class Flags(Flag):
         .. impl:: Retrieve flag from a string.
             :id: I_ARMI_FLAG_TO_STR0
             :implements: R_ARMI_FLAG_TO_STR
+            :qualified_code: Nala
 
             For a string passed as ``typeSpec``, first converts the whole string
             to uppercase. Then tries to parse the string for any special phrases, as
@@ -311,6 +312,7 @@ class Flags(Flag):
         .. impl:: Convert a flag to string.
             :id: I_ARMI_FLAG_TO_STR1
             :implements: R_ARMI_FLAG_TO_STR
+            :qualified_code: Nala
 
             This converts the representation of a bunch of flags from ``typeSpec``,
             which might look like ``Flags.A|B``,

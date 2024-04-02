@@ -147,6 +147,7 @@ class GridBlueprint(yamlize.Object):
     .. impl:: Define a lattice map in reactor core.
         :id: I_ARMI_BP_GRID
         :implements: R_ARMI_BP_GRID
+        :qualified_code: Nala
 
         Defines a yaml construct that allows the user to specify a grid
         from within their blueprints file, including a name, geometry, dimensions,
@@ -554,6 +555,7 @@ def saveToStream(stream, bluep, full=False, tryMap=False):
     .. impl:: Write a blueprint file from a blueprint object.
         :id: I_ARMI_BP_TO_DB
         :implements: R_ARMI_BP_TO_DB
+        :qualified_code: Nala
 
         First makes a copy of the blueprints that are passed in. Then modifies
         any grids specified in the blueprints into a canonical lattice map style,

@@ -144,6 +144,7 @@ class SettingsReader:
     .. impl:: The setting use a human-readable, plain text file as input.
         :id: I_ARMI_SETTINGS_IO_TXT
         :implements: R_ARMI_SETTINGS_IO_TXT
+        :qualified_code: Nala
 
         ARMI uses the YAML standard for settings files. ARMI uses industry-standard
         ``ruamel.yaml`` Python libraray to read these files. ARMI does not bend or

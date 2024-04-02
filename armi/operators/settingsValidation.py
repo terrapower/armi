@@ -49,6 +49,7 @@ class Query:
     .. impl:: Rules to validate and customize a setting's behavior.
         :id: I_ARMI_SETTINGS_RULES
         :implements: R_ARMI_SETTINGS_RULES
+        :qualified_code: Nala
 
         This class is meant to represent a generic validation test against a setting.
         The goal is: developers create new settings and they want to make sure those
