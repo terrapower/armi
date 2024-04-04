@@ -8,7 +8,7 @@ Release Date: TBD
 
 What's new in ARMI?
 -------------------
-#. TBD
+#. Conserve mass by component in assembly.setBlockMesh(). (`PR#1665 <https://github.com/terrapower/armi/pull/1665>`_)
 
 Bug Fixes
 ---------
