@@ -1079,11 +1079,11 @@ class Block_TestCase(unittest.TestCase):
 
         cur = self.block.getNumberDensity("U235")
         ref = densAdj * u235Dens
-        self.assertAlmostEqual(cur, ref, places=6)
+        self.assertAlmostEqual(cur, ref, places=9)
 
         cur = self.block.getNumberDensity("U238")
         ref = densAdj * u238Dens
-        self.assertAlmostEqual(cur, ref, places=6)
+        self.assertAlmostEqual(cur, ref, places=9)
 
         self.assertAlmostEqual(mass2 - mass1, massDiff)
 

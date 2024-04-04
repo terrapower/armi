@@ -344,7 +344,7 @@ class DerivedShape(UnshapedComponent):
     @staticmethod
     def getMaxVolume(block):
         """
-        The maximum volume of the given Block if it were totally full.
+        The maximum volume of the parent Block.
 
         Parameters
         ----------
