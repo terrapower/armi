@@ -129,7 +129,10 @@ class TightCoupler:
         self.eps = numpy.inf
 
     def __repr__(self):
-        return f"<{self.__class__.__name__}, Parameter: {self.parameter}, Convergence Criteria: {self.tolerance}, Maximum Coupled Iterations: {self.maxIters}>"
+        return (
+            f"<{self.__class__.__name__}, Parameter: {self.parameter}, Convergence Criteria: "
+            + f"{self.tolerance}, Maximum Coupled Iterations: {self.maxIters}>"
+        )
 
     def storePreviousIterationValue(self, val: _SUPPORTED_TYPES):
         """

@@ -17,7 +17,7 @@ from typing import TYPE_CHECKING, Optional, NoReturn
 import numpy
 
 from armi.reactor.grids.locations import IJType, IJKType
-from armi.reactor.grids.structuredgrid import StructuredGrid
+from armi.reactor.grids.structuredGrid import StructuredGrid
 
 if TYPE_CHECKING:
     # Avoid circular imports
