@@ -2,37 +2,51 @@
 Inputs
 ******
 
-ARMI input files define the initial state of the reactor model and tell ARMI what kind of analysis should be
-performed on it.
+ARMI input files define the initial state of the reactor model and tell ARMI what kind of analysis
+should be performed on it.
 
-.. note:: We have a :ref:`walkthrough-inputs` tutorial for a quick 
-    overview of the inputs.
+.. note:: We have a :ref:`walkthrough-inputs` tutorial for a quick overview of the inputs.
 
 There are several input files:
 
 Settings file
-	Contains simulation parameters (like full power, cycle length, and which physics modules to
-  	activate) and all kind of modeling approximation settings (e.g. convergence criteria)
+    Contains simulation parameters (like full power, cycle length, and which physics modules to
+    activate) and all kind of modeling approximation settings (e.g. convergence criteria)
 
 Blueprints file
-	Contains dimensions and composition of the components/blocks/assemblies in your reactor systems, from fuel 
-  	pins to heat exchangers
- 
+    Contains dimensions and composition of the components/blocks/assemblies in your reactor systems,
+    from fuel pins to heat exchangers
+
 Fuel management file
-	Describes how fuel moves around during a simulation
+    Describes how fuel moves around during a simulation
 
 
-Depending on the type of analysis, there may be additional inputs required. These include things like
-control logic, ex-core models for transients and shielding, etc.
+Depending on the type of analysis, developers may create other input files for things like: control
+logic, ex-core models for transients and shielding, etc.
 
-The core map input files can be graphically manipulated with the 
-:py:mod:`Grid editor <armi.utils.gridEditor>`.
+
+YAML Files
+==========
+ARMI's input files all use the `YAML <https://en.wikipedia.org/wiki/YAML>`_ format. This is a well-
+known file format, chosen because it is human-readable and easy to hand-write. That being said,
+there are two details about the YAML format that are important to know:
+
+Ordering
+    YAML is not order specific; however, one of the techniques used to limit the size of the input
+    includes using YAML anchors to resuse block and component definitions. YAML anchors (e.g.
+    ``&block_name``) must be defined before their corresponding alias (e.g. ``*block_name``) used.
+
+Duplicate Keys
+    YAML allows for duplicate keys. However, in ARMI, duplicates might be erroneous. Unfortunately,
+    because the international YAML specification allows for duplicates, none of the YAML-parsing
+    libraries see it as an error. You will have to hand-verify your inputs are correct.
 
 
 The Settings Input File
 =======================
-The **settings** input file defines a series of key/value pairs the define various information about the system you are
-modeling as well as which modules to run and various modeling/approximation settings. For example, it includes:
+The **settings** input file defines a series of key/value pairs the define various information about
+the system you are modeling as well as which modules to run and various modeling/approximation
+settings. For example, it includes:
 
 * The case title
 * The reactor power
@@ -52,7 +66,8 @@ Here is an excerpt from a settings file:
     :language: yaml
     :lines: 3-15
 
-A full listing of settings available in the framework may be found in the `Table of all global settings <#settings-report>`_ .
+A full listing of settings available in the framework may be found in the
+`Table of all global settings <#settings-report>`_ .
 
 Many settings are provided by the ARMI Framework, and others are defined by various plugins.
 
@@ -60,13 +75,14 @@ Many settings are provided by the ARMI Framework, and others are defined by vari
 
 The ARMI GUI
 ------------
-The ARMI GUI may be used to manipulate many common settings (though the GUI can't change all of the settings).  The GUI
-also enables the graphical manipulation of a reactor core map, and convenient automation of commands required to submit to a
-cluster.  The GUI is a front-end to
-these files. You can choose to use the GUI or not, ARMI doesn't know or care --- it just reads these files and runs them.
+The ARMI GUI may be used to manipulate many common settings (though the GUI can't change all of the
+settings).  The GUI also enables the graphical manipulation of a reactor core map, and convenient
+automation of commands required to submit to a cluster.  The GUI is a front-end to these files. You
+can choose to use the GUI or not, ARMI doesn't know or care --- it just reads these files and runs
+them.
 
-Note that one settings input file is required for each ARMI case, though many ARMI cases can refer to the same
-Blueprints, Core Map, and Fuel Management inputs.
+Note that one settings input file is required for each ARMI case, though many ARMI cases can refer
+to the same Blueprints, Core Map, and Fuel Management inputs.
 
 .. tip:: The ARMI GUI is not yet included in the open-source ARMI framework
 
@@ -481,11 +497,8 @@ The ARMI data model is represented schematically below, and the blueprints are d
 :ref:`custom isotopics <custom-isotopics>`:
     Special setting: defines user-specified isotopic compositions.
 
-.. warning::
-
-    YAML is not order specific; however, one of the techniques used to limit the size of the input
-    includes using YAML anchors to resuse block and component definitions. YAML anchors (e.g.
-    ``&block_name``) must be defined before their corresponding alias (e.g. ``*block_name``) used.
+The core map input files can be graphically manipulated with the 
+:py:mod:`Grid editor <armi.utils.gridEditor>`.
 
 
 .. _blocks-and-components:
