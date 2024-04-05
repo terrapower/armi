@@ -26,6 +26,11 @@ Bug Fixes
 #. Fixed four bugs with "corners up" hex grids. (`PR#1649 <https://github.com/terrapower/armi/pull/1649>`_)
 #. TBD
 
+Quality Work
+------------
+#. We now enforce a maximum line length of 120 characters, using ``ruff``. (`PR#1646 <https://github.com/terrapower/armi/pull/1646>`_)
+#. TBD
+
 Changes that Affect Requirements
 --------------------------------
 #. Very minor change to ``Block.coords()``, removing unused argument. (`PR#1651 <https://github.com/terrapower/armi/pull/1651>`_)
@@ -36,7 +41,7 @@ Changes that Affect Requirements
 
 ARMI v0.3.0
 ===========
-Release Date: 2024-01-26
+Release Date: 2024-02-02
 
 What's new in ARMI?
 -------------------
