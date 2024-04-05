@@ -10,15 +10,15 @@ should be performed on it.
 There are several input files:
 
 Settings file
-	Contains simulation parameters (like full power, cycle length, and which physics modules to
-  	activate) and all kind of modeling approximation settings (e.g. convergence criteria)
+    Contains simulation parameters (like full power, cycle length, and which physics modules to
+    activate) and all kind of modeling approximation settings (e.g. convergence criteria)
 
 Blueprints file
-	Contains dimensions and composition of the components/blocks/assemblies in your reactor systems,
+    Contains dimensions and composition of the components/blocks/assemblies in your reactor systems,
     from fuel pins to heat exchangers
- 
+
 Fuel management file
-	Describes how fuel moves around during a simulation
+    Describes how fuel moves around during a simulation
 
 
 Depending on the type of analysis, developers may create other input files for things like: control
@@ -29,7 +29,7 @@ YAML Files
 ==========
 ARMI's input files all use the `YAML <https://en.wikipedia.org/wiki/YAML>`_ format. This is a well-
 known file format, chosen because it is human-readable and easy to hand-write. That being said,
-there are two details about the YAML format it is important to know:
+there are two details about the YAML format that are important to know:
 
 Ordering
     YAML is not order specific; however, one of the techniques used to limit the size of the input
