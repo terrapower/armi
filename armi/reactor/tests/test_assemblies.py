@@ -320,10 +320,15 @@ class Assembly_TestCase(unittest.TestCase):
 
     def test_add(self):
         a = makeTestAssembly(1, 1)
-        b = blocks.HexBlock("TestBlock")
-        a.add(b)
-        self.assertIn(b, a)
-        self.assertEqual(b.parent, a)
+
+        # successfully add some Blocks to an Assembly
+        for n in range(3):
+            self.assertEqual(len(a), n)
+            b = blocks.HexBlock("TestBlock")
+            a.add(b)
+            self.assertIn(b, a)
+            self.assertEqual(b.parent, a)
+            self.assertEqual(len(a), n + 1)
 
     def test_moveTo(self):
         ref = self.r.core.spatialGrid.getLocatorFromRingAndPos(3, 10)
@@ -363,10 +368,14 @@ class Assembly_TestCase(unittest.TestCase):
             :id: T_ARMI_ASSEM_DIMS0
             :tests: R_ARMI_ASSEM_DIMS
         """
+        # Default case: for assemblies with no blocks
+        a = HexAssembly("TestAssem", assemNum=10)
+        self.assertEqual(a.getArea(), 1)
+
+        # more realistic case: a hex block/assembly
         cur = self.assembly.getArea()
         ref = math.sqrt(3) / 2.0 * self.hexDims["op"] ** 2
-        places = 6
-        self.assertAlmostEqual(cur, ref, places=places)
+        self.assertAlmostEqual(cur, ref, places=6)
 
     def test_getVolume(self):
         """Tests volume calculation for hex assembly.
@@ -870,6 +879,11 @@ class Assembly_TestCase(unittest.TestCase):
             :id: T_ARMI_ASSEM_DIMS3
             :tests: R_ARMI_ASSEM_DIMS
         """
+        # quick test, if there are no blocks
+        a = HexAssembly("TestAssem", assemNum=10)
+        self.assertIsNone(a.getDim(Flags.FUEL, "op"))
+
+        # more interesting test, with blocks
         cur = self.assembly.getDim(Flags.FUEL, "op")
         ref = self.hexDims["op"]
         places = 6

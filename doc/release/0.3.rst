@@ -30,6 +30,7 @@ Changes that Affect Requirements
 --------------------------------
 #. Very minor change to ``Block.coords()``, removing unused argument. (`PR#1651 <https://github.com/terrapower/armi/pull/1651>`_)
 #. Touched ``HexGrid`` by adding a "cornersUp" property and fixing two bugs. (`PR#1649 <https://github.com/terrapower/armi/pull/1649>`_)
+#. Very slightly modified the implementation of ``Assembly.add()``. (`PR#1670 <https://github.com/terrapower/armi/pull/1670>`_)
 #. TBD
 
 

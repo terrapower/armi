@@ -192,15 +192,10 @@ class Assembly(composites.Composite):
         """
         composites.Composite.add(self, obj)
         obj.spatialLocator = self.spatialGrid[0, 0, len(self) - 1]
-        # assemblies have bounds-based 1-D spatial grids. Adjust it to the right value.
-        if len(self.spatialGrid._bounds[2]) < len(self):
-            self.spatialGrid._bounds[2][len(self)] = (
-                self.spatialGrid._bounds[2][len(self) - 1] + obj.getHeight()
-            )
-        else:
-            # more work is needed, make a new mesh
-            self.reestablishBlockOrder()
-            self.calculateZCoords()
+
+        # more work is needed, make a new mesh
+        self.reestablishBlockOrder()
+        self.calculateZCoords()
 
     def moveTo(self, locator):
         """Move an assembly somewhere else."""
@@ -323,9 +318,8 @@ class Assembly(composites.Composite):
         plenumBlocks = self.getBlocks(Flags.PLENUM)
         plenumTemps = [b.p.THcoolantOutletT for b in plenumBlocks]
 
-        if (
-            not plenumTemps
-        ):  # no plenum blocks, use the top block of the assembly for plenum temperature
+        # no plenum blocks, use the top block of the assembly for plenum temperature
+        if not plenumTemps:
             runLog.warning("No plenum blocks exist. Using outlet coolant temperature.")
             plenumTemps = [self[-1].p.THcoolantOutletT]
 
