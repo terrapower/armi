@@ -13,38 +13,39 @@
 # limitations under the License.
 
 """Tests assemblies.py."""
-import numpy as np
+import math
 import pathlib
 import random
 import unittest
+
+import numpy as np
 from numpy.testing import assert_allclose
 
 from armi import settings
 from armi import tests
+from armi.physics.neutronics.settings import (
+    CONF_LOADING_FILE,
+    CONF_XS_KERNEL,
+)
 from armi.reactor import assemblies
-from armi.reactor import blueprints
 from armi.reactor import blocks
+from armi.reactor import blueprints
 from armi.reactor import components
+from armi.reactor import geometry
 from armi.reactor import parameters
 from armi.reactor import reactors
-from armi.reactor import geometry
 from armi.reactor.assemblies import (
     copy,
     Flags,
     grids,
     HexAssembly,
-    math,
     numpy,
     runLog,
 )
+from armi.reactor.tests import test_reactors
 from armi.tests import TEST_ROOT, mockRunLogs
 from armi.utils import directoryChangers
 from armi.utils import textProcessors
-from armi.reactor.tests import test_reactors
-from armi.physics.neutronics.settings import (
-    CONF_LOADING_FILE,
-    CONF_XS_KERNEL,
-)
 
 
 NUM_BLOCKS = 3
@@ -882,7 +883,7 @@ class Assembly_TestCase(unittest.TestCase):
         self.assertEqual(self.assembly.getDominantMaterial().getName(), ref)
 
     def test_iteration(self):
-        r"""Tests the ability to doubly-loop over assemblies (under development)."""
+        """Tests the ability to doubly-loop over assemblies (under development)."""
         a = self.assembly
 
         for bi, b in enumerate(a):
@@ -917,7 +918,6 @@ class Assembly_TestCase(unittest.TestCase):
 
     def test_getBlocksBetweenElevations(self):
         # assembly should have 3 blocks of 10 cm in it
-
         blocksAndHeights = self.assembly.getBlocksBetweenElevations(0, 10)
         self.assertEqual(blocksAndHeights[0], (self.assembly[0], 10.0))
 
@@ -1135,6 +1135,19 @@ class Assembly_TestCase(unittest.TestCase):
             pitch_comp_type = b.PITCH_COMPONENT_TYPE[0]
             self.assertEqual(pitch_comp_type.__name__, "Hexagon")
 
+    def test_getBIndexFromZIndex(self):
+        # make sure the axMesh parameters are set in our test block
+        for b in self.assembly:
+            b.p.axMesh = 1
+
+        for zIndex in range(6):
+            bIndex = self.assembly.getBIndexFromZIndex(zIndex * 0.5)
+            self.assertEqual(bIndex, math.ceil(zIndex / 2) if zIndex < 5 else -1)
+
+    def test_getElevationBoundariesByBlockType(self):
+        elevations = self.assembly.getElevationBoundariesByBlockType()
+        self.assertEqual(elevations, [0.0, 10.0, 10.0, 20.0, 20.0, 30.0])
+
 
 class AssemblyInReactor_TestCase(unittest.TestCase):
     def setUp(self):
@@ -1146,11 +1159,16 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
 
         grid = self.r.core.spatialGrid
 
-        ################################
-        # examine mass change in igniterFuel
-        ################################
+        # 1. examine mass change in igniterFuel
+
         igniterFuel = self.r.core.childrenByLocator[grid[0, 0, 0]]
         # gridplate, fuel, fuel, fuel, plenum
+        for b in igniterFuel.getBlocks(Flags.FUEL):
+            fuelComp = b.getComponent(Flags.FUEL)
+            # add isotopes from clad and coolant to fuel component to test mass conservation
+            # mass should only be conserved within fuel component, not over the whole block
+            fuelComp.setNumberDensity("FE56", 1e-10)
+            fuelComp.setNumberDensity("NA23", 1e-10)
         b = igniterFuel[0]
         coolantNucs = b.getComponent(Flags.COOLANT).getNuclides()
         coolMass = 0
@@ -1163,6 +1181,8 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         igniterHMMass1 = b.getHMMass()
         igniterZircMass1 = b.getMass("ZR")
         igniterFuelBlockMass = b.getMass()
+        igniterDuctMass = b.getComponent(Flags.DUCT).getMass()
+        igniterCoolMass = b.getComponent(Flags.COOLANT).getMass()
 
         coolMass = 0
         b = igniterFuel[4]
@@ -1174,9 +1194,8 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         for a in self.r.core.getAssemblies():
             a.setBlockMesh(refMesh, conserveMassFlag="auto")
 
-        #############################
-        # check igniter mass after expansion
-        #############################
+        # 2. check igniter mass after expansion
+
         # gridplate, fuel, fuel, fuel, plenum
         b = igniterFuel[0]
         coolantNucs = b.getComponent(Flags.COOLANT).getNuclides()
@@ -1188,6 +1207,8 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         b = igniterFuel[1]
         igniterHMMass1AfterExpand = b.getHMMass()
         igniterZircMass1AfterExpand = b.getMass("ZR")
+        igniterDuctMassAfterExpand = b.getComponent(Flags.DUCT).getMass()
+        igniterCoolMassAfterExpand = b.getComponent(Flags.COOLANT).getMass()
 
         coolMass = 0
         b = igniterFuel[4]
@@ -1198,6 +1219,14 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         self.assertAlmostEqual(igniterMassGrid, igniterMassGridAfterExpand, 7)
         self.assertAlmostEqual(igniterHMMass1, igniterHMMass1AfterExpand, 7)
         self.assertAlmostEqual(igniterZircMass1, igniterZircMass1AfterExpand, 7)
+        # demonstrate that the duct and coolant mass are not conserved.
+        # number density stays constant, mass is scaled by ratio of new to old height
+        self.assertAlmostEqual(
+            igniterDuctMass, igniterDuctMassAfterExpand * 25.0 / 26.0, 7
+        )
+        self.assertAlmostEqual(
+            igniterCoolMass, igniterCoolMassAfterExpand * 25.0 / 26.0, 7
+        )
         # Note the masses are linearly different by the amount that the plenum shrunk
         self.assertAlmostEqual(
             igniterPlenumMass, igniterPlenumMassAfterExpand * 75 / 67.0, 7
@@ -1207,9 +1236,8 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         for a in self.r.core.getAssemblies():
             a.setBlockMesh(originalMesh, conserveMassFlag="auto")
 
-        #############################
-        # check igniter mass after shrink to original
-        #############################
+        # 3. check igniter mass after shrink to original
+
         # gridplate, fuel, fuel, fuel, plenum
         b = igniterFuel[0]
         coolantNucs = b.getComponent(Flags.COOLANT).getNuclides()
@@ -1223,6 +1251,8 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         igniterHMMass1AfterShrink = b.getHMMass()
         igniterZircMass1AfterShrink = b.getMass("ZR")
         igniterFuelBlockMassAfterShrink = b.getMass()
+        igniterDuctMassAfterShrink = b.getComponent(Flags.DUCT).getMass()
+        igniterCoolMassAfterShrink = b.getComponent(Flags.COOLANT).getMass()
 
         coolMass = 0
         b = igniterFuel[4]
@@ -1235,6 +1265,8 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         self.assertAlmostEqual(igniterHMMass1, igniterHMMass1AfterShrink, 7)
         self.assertAlmostEqual(igniterZircMass1, igniterZircMass1AfterShrink, 7)
         self.assertAlmostEqual(igniterFuelBlockMass, igniterFuelBlockMassAfterShrink, 7)
+        self.assertAlmostEqual(igniterDuctMass, igniterDuctMassAfterShrink, 7)
+        self.assertAlmostEqual(igniterCoolMass, igniterCoolMassAfterShrink, 7)
         self.assertAlmostEqual(igniterPlenumMass, igniterPlenumMassAfterShrink, 7)
 
     def test_snapAxialMeshToReferenceConservingMassBasedOnBlockShield(self):
@@ -1245,9 +1277,8 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         grid = self.r.core.spatialGrid
         i, j = grid.getIndicesFromRingAndPos(9, 2)
 
-        ################################
-        # examine mass change in radial shield
-        ################################
+        # 1. examine mass change in radial shield
+
         a = self.r.core.childrenByLocator[grid[i, j, 0]]
         # gridplate, axial shield, axial shield, axial shield, plenum
         b = a[0]
@@ -1275,9 +1306,8 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         for a in self.r.core.getAssemblies():
             a.setBlockMesh(refMesh, conserveMassFlag="auto")
 
-        ################################
-        # examine mass change in radial shield after expansion
-        ################################
+        # 2. examine mass change in radial shield after expansion
+
         # gridplate, axial shield, axial shield, axial shield, plenum
         b = a[0]
         coolantNucs = b.getComponent(Flags.COOLANT).getNuclides()
@@ -1315,9 +1345,8 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         for a in self.r.core.getAssemblies():
             a.setBlockMesh(originalMesh, conserveMassFlag="auto")
 
-        ################################
-        # examine mass change in radial shield after shrink to original
-        ################################
+        # 3. examine mass change in radial shield after shrink to original
+
         # gridplate, axial shield, axial shield, axial shield, plenum
         b = a[0]
         coolantNucs = b.getComponent(Flags.COOLANT).getNuclides()
