@@ -1052,16 +1052,6 @@ class Block_TestCase(unittest.TestCase):
         }
         fuel.setNumberDensities({nuc: v / vFrac for nuc, v in refDict.items()})
 
-        # test number density
-        cur = self.block.getPuN()
-        ndens = 0.0
-        for nucName in refDict.keys():
-            if nucName in ["PU238", "PU239", "PU240", "PU241", "PU242"]:
-                ndens += self.block.getNumberDensity(nucName)
-        ref = ndens
-        places = 6
-        self.assertAlmostEqual(cur, ref, places=places)
-
         # test moles
         cur = self.block.getPuMoles()
         ndens = 0.0
@@ -1074,16 +1064,7 @@ class Block_TestCase(unittest.TestCase):
             * self.block.getVolume()
             * self.block.getSymmetryFactor()
         )
-        places = 6
-        self.assertAlmostEqual(cur, ref, places=places)
-
-        # test mass
-        cur = self.block.getPuMass()
-        pu = 0.0
-        for nucName in refDict.keys():
-            if nucName in ["PU238", "PU239", "PU240", "PU241", "PU242"]:
-                pu += self.block.getMass(nucName)
-        self.assertAlmostEqual(cur, pu)
+        self.assertAlmostEqual(cur, ref, places=6)
 
     def test_adjustDensity(self):
         u235Dens = 0.003
@@ -1098,12 +1079,11 @@ class Block_TestCase(unittest.TestCase):
 
         cur = self.block.getNumberDensity("U235")
         ref = densAdj * u235Dens
-        places = 6
-        self.assertAlmostEqual(cur, ref, places=places)
+        self.assertAlmostEqual(cur, ref, places=9)
 
         cur = self.block.getNumberDensity("U238")
         ref = densAdj * u238Dens
-        self.assertAlmostEqual(cur, ref, places=places)
+        self.assertAlmostEqual(cur, ref, places=9)
 
         self.assertAlmostEqual(mass2 - mass1, massDiff)
 
@@ -1953,9 +1933,6 @@ class HexBlock_TestCase(unittest.TestCase):
         self.assertEqual(a0 / 3.0, self.HexBlock.getArea())
         self.assertEqual(v0 / 3.0, self.HexBlock.getVolume())
         self.assertAlmostEqual(m0 / 3.0, self.HexBlock.getMass())
-
-        symmetryLine = self.HexBlock.isOnWhichSymmetryLine()
-        self.assertEqual(grids.BOUNDARY_CENTER, symmetryLine)
 
     def test_retainState(self):
         """Ensure retainState restores params and spatialGrids."""

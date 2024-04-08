@@ -270,6 +270,10 @@ class Assembly_TestCase(unittest.TestCase):
 
         self.assembly.calculateZCoords()
 
+    def test_isOnWhichSymmetryLine(self):
+        line = self.assembly.isOnWhichSymmetryLine()
+        self.assertEqual(line, 2)
+
     def test_notesParameter(self):
         self.assertEqual(self.assembly.p.notes, "")
 
@@ -488,18 +492,6 @@ class Assembly_TestCase(unittest.TestCase):
         ref = sum(bi.getMass(["U235", "PU239"]) for bi in self.assembly)
         self.assertAlmostEqual(cur, ref)
 
-    def test_getPuFrac(self):
-        puAssem = self.assembly.getPuFrac()
-        fuelBlock = self.assembly[1]
-        puBlock = fuelBlock.getPuFrac()
-        self.assertAlmostEqual(puAssem, puBlock)
-
-        #
-        fuelComp = fuelBlock.getComponent(Flags.FUEL)
-        fuelComp.setNumberDensity("PU239", 0.012)
-        self.assertGreater(self.assembly.getPuFrac(), puAssem)
-        self.assertGreater(fuelBlock.getPuFrac(), puAssem)
-
     def test_getMass(self):
         mass0 = self.assembly.getMass("U235")
         mass1 = sum(bi.getMass("U235") for bi in self.assembly)
@@ -513,15 +505,6 @@ class Assembly_TestCase(unittest.TestCase):
 
         fuelBlock.setMass("U238", 0.0)
         self.assertAlmostEqual(blockU35Mass * 2, fuelBlock.getMass("U235"))
-
-    def test_getZrFrac(self):
-        self.assertAlmostEqual(self.assembly.getZrFrac(), 0.1)
-
-    def test_getMaxUraniumMassEnrich(self):
-        baseEnrich = self.assembly[0].getUraniumMassEnrich()
-        self.assertAlmostEqual(self.assembly.getMaxUraniumMassEnrich(), baseEnrich)
-        self.assembly[2].setNumberDensity("U235", 2e-1)
-        self.assertGreater(self.assembly.getMaxUraniumMassEnrich(), baseEnrich)
 
     def test_getAge(self):
         res = 5.0
