@@ -79,16 +79,8 @@ Now clone and install ARMI::
     $ pip install -e .
     $ armi --help
 
-The easiest way to run the tests is to install `tox <https://tox.readthedocs.io/en/latest/>`_
-and then run::
-
-    $ pip install -e ".[test]"
-    $ tox -- -n 6
-
-This runs the unit tests in parallel on 6 processes. Omit the ``-n 6`` argument
-to run on a single process.
-
-The tests can also be run directly, using ``pytest``::
+The ARMI tests are meant to be run using `pytest <https://docs.pytest.org/en/8.0.x/>`_
+locally ::
 
     $ pip install -e ".[test]"
     $ pytest -n 4 armi
