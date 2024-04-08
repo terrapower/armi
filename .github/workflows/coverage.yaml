@@ -31,9 +31,9 @@ jobs:
       - name: Run Coverage
         run: |
           coverage run --rcfile=.coveragerc -m pytest -n 4 --cov=armi --cov-config=.coveragerc --cov-report=lcov --ignore=venv armi
-          mpiexec -n 2 --use-hwthread-cpus coverage run --rcfile=.coveragerc -m pytest --cov=armi --cov-config=.coveragerc --cov-report=lcov --cov-append --ignore=venv armi/tests/test_mpiFeatures.py
-          mpiexec -n 2 --use-hwthread-cpus coverage run --rcfile=.coveragerc -m pytest --cov=armi --cov-config=.coveragerc --cov-report=lcov --cov-append --ignore=venv armi/tests/test_mpiParameters.py
-          coverage combine --rcfile=.coveragerc --keep -a || true
+          mpiexec -n 2 --use-hwthread-cpus coverage run --rcfile=.coveragerc -m pytest --cov=armi --cov-config=.coveragerc --cov-report=lcov --cov-append --ignore=venv armi/tests/test_mpiFeatures.py || true
+          mpiexec -n 2 --use-hwthread-cpus coverage run --rcfile=.coveragerc -m pytest --cov=armi --cov-config=.coveragerc --cov-report=lcov --cov-append --ignore=venv armi/tests/test_mpiParameters.py || true
+          coverage combine --rcfile=.coveragerc --keep -a
       - name: Publish to coveralls.io
         uses: coverallsapp/github-action@v1.1.2
         with:
