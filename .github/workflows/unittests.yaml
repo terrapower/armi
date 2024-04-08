@@ -26,10 +26,12 @@ jobs:
         run: sudo apt-get update
       - name: Install mpi libs
         run: sudo apt-get -y install libopenmpi-dev
-      - name: Run Unit Tests and Combine Coverage
+      - name: Run Tests and Coverage
         run: |
           pip install -e .[memprof,mpi,test]
           pytest -n 4 armi
           mpiexec -n 2 --use-hwthread-cpus coverage run --rcfile=.coveragerc -m pytest --cov=armi --cov-config=.coveragerc --cov-report=lcov --cov-append --ignore=venv armi/tests/test_mpiFeatures.py
+          sleep 10
           mpiexec -n 2 --use-hwthread-cpus coverage run --rcfile=.coveragerc -m pytest --cov=armi --cov-config=.coveragerc --cov-report=lcov --cov-append --ignore=venv armi/tests/test_mpiParameters.py
+          sleep 10
           coverage combine --rcfile=.coveragerc --keep -a
