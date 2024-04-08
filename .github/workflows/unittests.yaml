@@ -31,7 +31,5 @@ jobs:
           pip install -e .[memprof,mpi,test]
           pytest -n 4 armi
           mpiexec -n 2 --use-hwthread-cpus coverage run --rcfile=.coveragerc -m pytest --cov=armi --cov-config=.coveragerc --cov-report=lcov --cov-append --ignore=venv armi/tests/test_mpiFeatures.py || true
-          sleep 10
           mpiexec -n 2 --use-hwthread-cpus coverage run --rcfile=.coveragerc -m pytest --cov=armi --cov-config=.coveragerc --cov-report=lcov --cov-append --ignore=venv armi/tests/test_mpiParameters.py || true
-          sleep 10
           coverage combine --rcfile=.coveragerc --keep -a
