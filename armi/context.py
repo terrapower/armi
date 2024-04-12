@@ -124,6 +124,9 @@ try:
     MPI_SIZE = MPI_COMM.Get_size()
     MPI_NODENAME = MPI.Get_processor_name()
     MPI_NODENAMES = MPI_COMM.allgather(MPI_NODENAME)
+
+    if MPI_SIZE > 1 and CURRENT_MODE == Mode.INTERACTIVE:
+        CURRENT_MODE = Mode.BATCH
 except ImportError:
     # stick with defaults
     pass
