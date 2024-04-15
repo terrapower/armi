@@ -898,17 +898,6 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         raise NotImplementedError()
 
-    def getMaxVolume(self):
-        """
-        The maximum volume of this object if it were totally full.
-
-        Returns
-        -------
-        vol : float
-            volume in cm^3.
-        """
-        raise NotImplementedError()
-
     def getMass(self, nuclideNames=None):
         """
         Determine the mass in grams of nuclide(s) and/or elements in this object.
@@ -1765,23 +1754,6 @@ class ArmiObject(metaclass=CompositeModelType):
         else:
             return 0.0
 
-    def getBoronMassEnrich(self):
-        """Return B-10 mass fraction."""
-        b10 = self.getMass("B10")
-        b11 = self.getMass("B11")
-        total = b11 + b10
-        if total == 0.0:
-            return 0.0
-        return b10 / total
-
-    def getUraniumMassEnrich(self):
-        """Returns U-235 mass fraction assuming U-235 and U-238 only."""
-        u5 = self.getMass("U235")
-        if u5 < 1e-10:
-            return 0.0
-        u8 = self.getMass("U238")
-        return u5 / (u8 + u5)
-
     def getUraniumNumEnrich(self):
         """Returns U-235 number fraction."""
         u8 = self.getNumberDensity("U238")
@@ -1789,20 +1761,6 @@ class ArmiObject(metaclass=CompositeModelType):
             return 0.0
         u5 = self.getNumberDensity("U235")
         return u5 / (u8 + u5)
-
-    def getPuN(self):
-        """Returns total number density of Pu isotopes."""
-        nucNames = [nuc.name for nuc in elements.byZ[94].nuclides]
-        return sum(self.getNuclideNumberDensities(nucNames))
-
-    def getPuMoles(self):
-        """Returns total number of moles of Pu isotopes."""
-        return (
-            self.getPuN()
-            / units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
-            * self.getVolume()
-            * self.getSymmetryFactor()
-        )
 
     def calcTotalParam(
         self,
@@ -2144,48 +2102,6 @@ class ArmiObject(metaclass=CompositeModelType):
         ]
         hmDens = sum(self.getNuclideNumberDensities(hmNuclides))
         return hmDens
-
-    def getPuMass(self):
-        """Get the mass of Pu in this object in grams."""
-        nucs = []
-        for nucName in [nuc.name for nuc in elements.byZ[94].nuclides]:
-            nucs.append(nucName)
-        pu = self.getMass(nucs)
-        return pu
-
-    def getPuFrac(self):
-        """
-        Compute the Pu/HM mass fraction in this object.
-
-        Returns
-        -------
-        puFrac : float
-            The pu mass fraction in heavy metal in this assembly
-        """
-        hm = self.getHMMass()
-        pu = self.getPuMass()
-        if hm == 0.0:
-            return 0.0
-        else:
-            return pu / hm
-
-    def getZrFrac(self):
-        """Return the total zr/(hm+zr) fraction in this assembly."""
-        hm = self.getHMMass()
-        zrNucs = [nuc.name for nuc in elements.bySymbol["ZR"].nuclides]
-        zr = self.getMass(zrNucs)
-        if hm + zr > 0:
-            return zr / (hm + zr)
-        else:
-            return 0.0
-
-    def getMaxUraniumMassEnrich(self):
-        maxV = 0
-        for child in self:
-            v = child.getUraniumMassEnrich()
-            if v > maxV:
-                maxV = v
-        return maxV
 
     def getFPMass(self):
         """Returns mass of fission products in this block in grams."""
@@ -2596,16 +2512,6 @@ class ArmiObject(metaclass=CompositeModelType):
             reportGroups.append(c.setDimensionReport())
 
         return reportGroups
-
-    def printDensities(self, expandFissionProducts=False):
-        """Get lines that have the number densities of a object."""
-        numberDensities = self.getNumberDensities(
-            expandFissionProducts=expandFissionProducts
-        )
-        lines = []
-        for nucName, nucDens in numberDensities.items():
-            lines.append("{0:6s} {1:.7E}".format(nucName, nucDens))
-        return lines
 
     def expandAllElementalsToIsotopics(self):
         reactorNucs = self.getNuclides()
@@ -3309,10 +3215,6 @@ class Composite(ArmiObject):
         runLog.important(self)
         for c in self.getChildren():
             c.printContents(includeNuclides=includeNuclides)
-
-    def isOnWhichSymmetryLine(self):
-        grid = self.parent.spatialGrid
-        return grid.overlapsWhichSymmetryLine(self.spatialLocator.getCompleteIndices())
 
     def _genChildByLocationLookupTable(self):
         """Update the childByLocation lookup table."""

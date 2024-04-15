@@ -439,7 +439,10 @@ class TestCompositeTree(unittest.TestCase):
         runLog.info(self.r.core.getFirstBlock().getComponents()[0].constituentReport())
 
     def test_getNuclides(self):
-        """The getNuclides should return all keys that have ever been in this block, including values that are at trace."""
+        """
+        The getNuclides should return all keys that have ever been in this block, including values
+        that are at trace.
+        """
         cur = self.Block.getNuclides()
         ref = self.refDict.keys()
         for key in ref:
@@ -448,9 +451,8 @@ class TestCompositeTree(unittest.TestCase):
 
     def test_getFuelMass(self):
         """
-        This test creates a dummy assembly and ensures that the assembly, block, and fuel component masses are
-        consistent.
-        `getFuelMass` ensures that the fuel component is used to `getMass`.
+        This test creates a dummy assembly and ensures that the assembly, block, and fuel component
+        masses are consistent. `getFuelMass` ensures that the fuel component is used to `getMass`.
         """
         cs = settings.Settings()
         assemDesign = assemblyBlueprint.AssemblyBlueprint.load(self.blueprintYaml)
@@ -759,10 +761,6 @@ class TestMiscMethods(unittest.TestCase):
     def test_dimensionReport(self):
         report = self.obj.setComponentDimensionsReport()
         self.assertEqual(len(report), len(self.obj))
-
-    def test_printDensities(self):
-        lines = self.obj.printDensities()
-        self.assertEqual(len(lines), len(self.obj.getNuclides()))
 
     def test_getAtomicWeight(self):
         weight = self.obj.getAtomicWeight()

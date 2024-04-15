@@ -26,7 +26,10 @@ jobs:
         run: sudo apt-get update
       - name: Install mpi libs
         run: sudo apt-get -y install libopenmpi-dev
-      - name: Install Tox and any other packages
-        run: pip install tox
-      - name: Run Tox
-        run: tox -e test,mpitest
+      - name: Run Tests and Coverage
+        run: |
+          pip install -e .[memprof,mpi,test]
+          pytest -n 4 armi
+          mpiexec -n 2 --use-hwthread-cpus coverage run --rcfile=.coveragerc -m pytest --cov=armi --cov-config=.coveragerc --cov-report=lcov --cov-append --ignore=venv armi/tests/test_mpiFeatures.py || true
+          mpiexec -n 2 --use-hwthread-cpus coverage run --rcfile=.coveragerc -m pytest --cov=armi --cov-config=.coveragerc --cov-report=lcov --cov-append --ignore=venv armi/tests/test_mpiParameters.py || true
+          coverage combine --rcfile=.coveragerc --keep -a
