@@ -193,6 +193,13 @@ def writeWelcomeHeaders(o, cs):
                 )
                 # If this is on Windows: run sys info on each unique node too
                 if "win" in sys.platform:
+                    """Example results:
+
+                    OS Name:         Microsoft Windows 10 Enterprise
+                    OS Version:      10.0.19041 N/A Build 19041
+                    Processor(s):    1 Processor(s) Installed.
+                                     [01]: Intel64 Family 6 Model 142 Stepping 12 GenuineIntel ~801 Mhz
+                    """
                     sysInfoCmd = (
                         'systeminfo | findstr /B /C:"OS Name" /B /C:"OS Version" /B '
                         '/C:"Processor" && systeminfo | findstr /E /C:"Mhz"'
@@ -201,6 +208,12 @@ def writeWelcomeHeaders(o, cs):
                         sysInfoCmd, capture_output=True, text=True, shell=True
                     )
                     sysInfo += out.stdout
+                elif "linux" in sys.platform:
+                    pass
+                else:
+                    # TODO: JOHN
+                    pass
+
             runLog.header("=========== Machine Information ===========")
             runLog.info(
                 tabulate.tabulate(

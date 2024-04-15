@@ -45,10 +45,10 @@ def insertGeneralReportContent(cs, r, report, stage):
 
     Parameters
     ----------
-        cs : case settings
-        r : reactor
-        report : ReportContents object
-        blueprint : blueprint
+    cs : armi.settings.caseSettings.Settings
+    r : Reactor
+    report : ReportContents
+    blueprint : Blueprint
     """
     # These items only happen once at BOL
     if stage == newReports.ReportStage.Begin:
@@ -61,7 +61,7 @@ def comprehensiveBOLContent(cs, r, report):
 
     Parameters
     ----------
-    cs: Case Settings
+    cs: armi.settings.caseSettings.Settings
     r: Reactor
     report: ReportContent
     """
@@ -84,7 +84,6 @@ def insertDesignContent(r, report):
     ----------
     r: reactor
     report: ReportContent
-
     """
     report[DESIGN][PIN_ASSEMBLY_DESIGN_SUMMARY] = getPinDesignTable(r.core)
 
@@ -103,14 +102,13 @@ def insertDesignContent(r, report):
 
 
 def insertBlockDesignReport(blueprint, report, cs):
-    r"""Summarize the block designs from the loading file.
+    """Summarize the block designs from the loading file.
 
     Parameters
     ----------
     blueprint : Blueprint
     report: ReportContent
-    cs: Case Settings
-
+    cs: armi.settings.caseSettings.Settings
     """
     report[DESIGN]["Block Summaries"] = newReports.Section("Block Summaries")
 
@@ -170,12 +168,14 @@ def insertBlockDesignReport(blueprint, report, cs):
 
 
 def insertCoreDesignReport(core, cs, report):
-    r"""Builds report to summarize core design inputs.
+    """Builds report to summarize core design inputs.
 
     Parameters
     ----------
-    core:  armi.reactor.reactors.Core
+    core: armi.reactor.reactors.Core
     cs: armi.settings.caseSettings.Settings
+    report : ReportContent
+        The report to be added to.
     """
     coreDesignTable = newReports.Table("Core Report Table")
     coreDesignTable.header = ["", "Input Parameter"]
@@ -211,7 +211,7 @@ def _setGeneralCoreParametersData(core, cs, coreDesignTable):
     Parameters
     ----------
     core: Core
-    cs: Case Settings
+    cs: armi.settings.caseSettings.Settings
     coreDesignTable: newReports.Table
         Current state of table to be added to
     """
@@ -317,7 +317,6 @@ def insertEndOfLifeContent(r, report):
     Parameters
     ----------
     r : Reactor
-        the reactor
     report : ReportContent
         The report to be added to.
     """
@@ -347,7 +346,7 @@ def insertBlockDiagrams(cs, blueprint, report, cold):
 
     Parameters
     ----------
-    cs: Case Settings
+    cs: armi.settings.caseSettings.Settings
     blueprint: Blueprint
     report: ReportContent
     cold: boolean
@@ -388,7 +387,7 @@ def insertMetaTable(cs, report):
 
     Parameters
     ----------
-    cs: Case Settings
+    cs: armi.settings.caseSettings.Settings
     report: ReportContent
     """
     section = report[COMPREHENSIVE_REPORT]
@@ -407,7 +406,7 @@ def insertSettingsData(cs, report):
 
     Parameters
     ----------
-    cs: Case Settings
+    cs: armi.settings.caseSettings.Settings
     report: ReportContent
         The report to be added to
     """
@@ -617,7 +616,7 @@ def createDimensionReport(comp):
 def insertCoreAndAssemblyMaps(
     r, cs, report, blueprint, generateFullCoreMap=False, showBlockAxMesh=True
 ):
-    r"""Create core and assembly design plots.
+    """Create core and assembly design plots.
 
     Parameters
     ----------
