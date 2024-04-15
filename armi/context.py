@@ -125,7 +125,7 @@ try:
     MPI_NODENAME = MPI.Get_processor_name()
     MPI_NODENAMES = MPI_COMM.allgather(MPI_NODENAME)
 
-    # catch an exceptional case where MPI incorrectly identifies "interactive mode"
+    # fix an exceptional error case when we are not in "interactive mode"
     if MPI_SIZE > 1 and CURRENT_MODE == Mode.INTERACTIVE:
         CURRENT_MODE = Mode.BATCH
 except ImportError:
