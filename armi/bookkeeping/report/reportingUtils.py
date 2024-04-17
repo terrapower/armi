@@ -191,28 +191,17 @@ def writeWelcomeHeaders(o, cs):
                 nodeMappingData.append(
                     (uniqueName, numProcessors, ", ".join(matchingProcs))
                 )
+
                 # If this is on Windows: run sys info on each unique node too
                 if "win" in sys.platform:
-                    """Example results:
-
-                    OS Name:         Microsoft Windows 10 Enterprise
-                    OS Version:      10.0.19041 N/A Build 19041
-                    Processor(s):    1 Processor(s) Installed.
-                                     [01]: Intel64 Family 6 Model 142 Stepping 12 GenuineIntel ~801 Mhz
-                    """
-                    sysInfoCmd = (
-                        'systeminfo | findstr /B /C:"OS Name" /B /C:"OS Version" /B '
-                        '/C:"Processor" && systeminfo | findstr /E /C:"Mhz"'
-                    )
-                    out = subprocess.run(
-                        sysInfoCmd, capture_output=True, text=True, shell=True
-                    )
-                    sysInfo += out.stdout
+                    sysInfo += getSystemInfoWindows()
                 elif "linux" in sys.platform:
-                    pass
+                    sysInfo += getSystemInfoLinux()
                 else:
-                    # TODO: JOHN
-                    pass
+                    runLog.warning(
+                        f"Cannot get system information for {sys.platform} because "
+                        + "ARMI only supports Linux and Windows."
+                    )
 
             runLog.header("=========== Machine Information ===========")
             runLog.info(
@@ -252,6 +241,79 @@ def writeWelcomeHeaders(o, cs):
     _writeInputFileInformation(cs)
     _writeMachineInformation()
     _writeReactorCycleInformation(o, cs)
+
+
+def getSystemInfoWindows():
+    """TODO.
+
+    Example results:
+
+    OS Name:         Microsoft Windows 10 Enterprise
+    OS Version:      10.0.19041 N/A Build 19041
+    Processor(s):    1 Processor(s) Installed.
+                     [01]: Intel64 Family 6 Model 142 Stepping 12 GenuineIntel ~801 Mhz
+    """
+    sysInfoCmd = (
+        'systeminfo | findstr /B /C:"OS Name" /B /C:"OS Version" /B '
+        '/C:"Processor" && systeminfo | findstr /E /C:"Mhz"'
+    )
+    return subprocess.run(sysInfoCmd, capture_output=True, text=True, shell=True)
+
+
+def getSystemInfoLinux():
+    """TODO.
+
+    Example results:
+
+    OS Name:       Ubuntu
+    OS Version:    Ubuntu 22.04.3 LTS
+    Processor(s):  2 Processor(s) Installed.
+                   [1]: Intel(R) Core(TM) i5-1035G1 CPU @ 1.00GHz
+                   [2]: Intel(R) Core(TM) i5-1035G1 CPU @ 1.00GHz
+    """
+    # get OS name / version
+
+    # the os-relese file should contain something like:
+    # PRETTY_NAME="Ubuntu 22.04.3 LTS"
+    # NAME="Ubuntu"
+    # VERSION_ID="22.04"
+    # VERSION="22.04.3 LTS (Jammy Jellyfish)"
+    # ...
+    cmd = 'cat /etc/os-release | grep "^NAME="'
+    os_name = subprocess.run(cmd, capture_output=True, text=True, shell=True).stdout
+    if os_name:
+        os_name = os_name.split("=")[1].replace('"', "").strip()
+
+        cmd = 'cat /etc/os-release | grep "^PRETTY_NAME="'
+        os_ver = subprocess.run(cmd, capture_output=True, text=True, shell=True).stdout
+        os_ver = os_ver.split("=")[1].replace('"', "").strip()
+    else:
+        os_name = subprocess.run(
+            "uname -a", capture_output=True, text=True, shell=True
+        ).stdout.strip()
+        os_ver = os_name
+        if not os_name:
+            raise RuntimeError("What OS is this? TODO JOHN")
+
+    out = "OS Name:       "
+    out += os_name
+    out += "\nOS Version:    "
+    out += os_ver
+    out += "\n"
+
+    # get processor information
+    cmd = "cat /proc/cpuinfo"
+    proc = subprocess.run(cmd, capture_output=True, text=True, shell=True).stdout
+    proc_num = proc.split("\nprocessor")[-1]
+    proc_num = int(proc_num.split("\n")[0].split(":")[-1].strip()) + 1
+    out += f"Processor(s):  {proc_num} Processor(s) Installed.\n"
+    proc_names = [
+        ln.split(":")[-1].strip() for ln in proc.split("\n") if "model name" in ln
+    ]
+    for i, pn in enumerate(proc_names):
+        out += f"{' '*15}[{i+1}]: {pn}\n"
+
+    return out
 
 
 def getInterfaceStackSummary(o):
