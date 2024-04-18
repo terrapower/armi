@@ -271,46 +271,54 @@ def _getSystemInfoLinux():
     --------
     Example results:
 
-        OS Name:       Ubuntu
-        OS Version:    Ubuntu 22.04.3 LTS
-        Processor(s):  2 Processor(s) Installed.
-                       [1]: Intel(R) Core(TM) i5-1035G1 CPU @ 1.00GHz
-                       [2]: Intel(R) Core(TM) i5-1035G1 CPU @ 1.00GHz
+        OS Info:  Ubuntu 22.04.3 LTS
+        Processor(s):
+            processor   : 0
+            vendor_id   : GenuineIntel
+            cpu family  : 6
+            model       : 126
+            model name  : Intel(R) Core(TM) i5-1035G1 CPU @ 1.00GHz
+            ...
     """
     # get OS name / version
-    cmd = 'cat /etc/os-release | grep "^NAME="'
-    os_name = subprocess.run(cmd, capture_output=True, text=True, shell=True).stdout
-    if os_name:
-        os_name = os_name.split("=")[1].replace('"', "").strip()
+    linuxOsCommands = [
+        'cat /etc/os-release | grep "^PRETTY_NAME=" | cut -d = -f 2',
+        "uname -a",
+        "lsb_release -d | cut -d : -f 2",
+        'hostnamectl | grep "Operating System" | cut -d : -f 2',
+    ]
+    osInfo = ""
+    for cmd in linuxOsCommands:
+        osInfo = subprocess.run(
+            cmd, capture_output=True, text=True, shell=True
+        ).stdout.strip()
+        if osInfo:
+            break
 
-        cmd = 'cat /etc/os-release | grep "^PRETTY_NAME="'
-        os_ver = subprocess.run(cmd, capture_output=True, text=True, shell=True).stdout
-        os_ver = os_ver.split("=")[1].replace('"', "").strip()
-    else:
-        runLog.warning("OS system info not found.")
+    if not osInfo:
+        runLog.warning("Linux OS information not found.")
         return ""
 
-    out = "OS Name:       "
-    out += os_name
-    out += "\nOS Version:    "
-    out += os_ver
-    out += "\n"
-
     # get processor information
-    cmd = "cat /proc/cpuinfo"
-    proc = subprocess.run(cmd, capture_output=True, text=True, shell=True).stdout
-    if not proc:
-        runLog.warning("Processor info not found.")
-    else:
-        proc_num = proc.split("\nprocessor")[-1]
-        proc_num = int(proc_num.split("\n")[0].split(":")[-1].strip()) + 1
-        out += f"Processor(s):  {proc_num} Processor(s) Installed.\n"
+    linuxProcCommands = ["cat /proc/cpuinfo", "lscpu", "lshw -class CPU"]
+    procInfo = ""
+    for cmd in linuxProcCommands:
+        procInfo = subprocess.run(
+            cmd, capture_output=True, text=True, shell=True
+        ).stdout
+        if procInfo:
+            break
 
-        proc_names = [
-            ln.split(":")[-1].strip() for ln in proc.split("\n") if "model name" in ln
-        ]
-        for i, pn in enumerate(proc_names):
-            out += f"{' '*15}[{i+1}]: {pn}\n"
+    if not procInfo:
+        runLog.warning("Linux processor information not found.")
+        return ""
+
+    # build output string
+    out = "OS Info:  "
+    out += osInfo.strip()
+    out += "\nProcessor(s):\n    "
+    out += procInfo.strip().replace("\n", "\n    ")
+    out += "\n"
 
     return out
 
@@ -325,12 +333,23 @@ def getSystemInfo():
 
     Examples
     --------
-    Example results:
+    Example Windows:
 
-        OS Name:       Ubuntu
-        OS Version:    Ubuntu 22.04.3 LTS
-        Processor(s):  1 Processor(s) Installed.
-                       [1]: Intel(R) Core(TM) i5-1035G1 CPU @ 1.00GHz
+        OS Name:         Microsoft Windows 10 Enterprise
+        OS Version:      10.0.19041 N/A Build 19041
+        Processor(s):    1 Processor(s) Installed.
+                         [01]: Intel64 Family 6 Model 142 Stepping 12 GenuineIntel ~801 Mhz
+
+    Example Linux results:
+
+        OS Info:  Ubuntu 22.04.3 LTS
+        Processor(s):
+            processor   : 0
+            vendor_id   : GenuineIntel
+            cpu family  : 6
+            model       : 126
+            model name  : Intel(R) Core(TM) i5-1035G1 CPU @ 1.00GHz
+            ...
     """
     # Get basic system information (on Windows and Linux)
     if "win" in sys.platform:

@@ -49,27 +49,29 @@ class _MockReturnResult:
 
 class TestReportingUtils(unittest.TestCase):
     def test_getSystemInfoLinux(self):
-        catOsName = 'NAME="Ubuntu"\n'
-        catOsPrettyName = 'PRETTY_NAME="Ubuntu 22.04.3 LTS"\n'
-        catProcInfo = """processor : 0
+        """Test _getSystemInfoLinux() on any operating system, by mocking the system calls."""
+        osInfo = '"Ubuntu 22.04.3 LTS"'
+        procInfo = """processor : 0
 vendor_id   : GenuineIntel
 cpu family  : 6
 model       : 126
 model name  : Intel(R) Core(TM) i5-1035G1 CPU @ 1.00GHz
+...
 """
-        correctResult = """OS Name:       Ubuntu
-OS Version:    Ubuntu 22.04.3 LTS
-Processor(s):  1 Processor(s) Installed.
-               [1]: Intel(R) Core(TM) i5-1035G1 CPU @ 1.00GHz"""
+        correctResult = """OS Info:  "Ubuntu 22.04.3 LTS"
+Processor(s):
+    processor : 0
+    vendor_id   : GenuineIntel
+    cpu family  : 6
+    model       : 126
+    model name  : Intel(R) Core(TM) i5-1035G1 CPU @ 1.00GHz
+    ..."""
 
         def __mockSubprocessRun(*args, **kwargs):
             if "os-release" in args[0]:
-                if "PRETTY" in args[0]:
-                    return _MockReturnResult(catOsPrettyName)
-                else:
-                    return _MockReturnResult(catOsName)
+                return _MockReturnResult(osInfo)
             else:
-                return _MockReturnResult(catProcInfo)
+                return _MockReturnResult(procInfo)
 
         with patch.object(subprocess, "run", side_effect=__mockSubprocessRun):
             out = _getSystemInfoLinux()
@@ -77,6 +79,7 @@ Processor(s):  1 Processor(s) Installed.
 
     @patch("subprocess.run")
     def test_getSystemInfoWindows(self, mockSubprocess):
+        """Test _getSystemInfoWindows() on any operating system, by mocking the system call."""
         windowsResult = """OS Name:         Microsoft Windows 10 Enterprise
 OS Version:      10.0.19041 N/A Build 19041
 Processor(s):    1 Processor(s) Installed.
@@ -90,15 +93,15 @@ Processor(s):    1 Processor(s) Installed.
     def test_getSystemInfo(self):
         """Basic sanity check of getSystemInfo() running in the wild.
 
-        This test should pass if it is run on Window or mainstream Linux distros. But we expect this to fail
-        if the test is run on some other OS.
+        This test should pass if it is run on Window or mainstream Linux distros. But we expect this
+        to fail if the test is run on some other OS.
         """
         out = getSystemInfo()
-        substrings = ["OS Name:", "OS Version", "Processor(s):"]
+        substrings = ["OS ", "Processor(s):"]
         for sstr in substrings:
             self.assertIn(sstr, out)
 
-        self.assertGreater(len(out), sum(len(sstr) + 3 for sstr in substrings))
+        self.assertGreater(len(out), sum(len(sstr) + 5 for sstr in substrings))
 
 
 class TestReport(unittest.TestCase):
