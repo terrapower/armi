@@ -262,6 +262,11 @@ def _getSystemInfoWindows():
 def _getSystemInfoLinux():
     """Get system information, assuming the system is Linux.
 
+    This method uses multiple, redundant variations on common Linux command utilities to get the
+    information necessary. While it is not possible to guarantee what programs or files will be
+    available on "all Linux operating system", this collection of tools is widely supported and
+    should provide a reasonably broad-distribution coverage.
+
     Returns
     -------
     str
@@ -326,30 +331,14 @@ def _getSystemInfoLinux():
 def getSystemInfo():
     """Get system information, assuming the system is Windows or Linux.
 
+    Notes
+    -----
+    The format of the system information will be different on Windows vs Linux.
+
     Returns
     -------
     str
         Basic system information: OS name, OS version, basic processor information
-
-    Examples
-    --------
-    Example Windows:
-
-        OS Name:         Microsoft Windows 10 Enterprise
-        OS Version:      10.0.19041 N/A Build 19041
-        Processor(s):    1 Processor(s) Installed.
-                         [01]: Intel64 Family 6 Model 142 Stepping 12 GenuineIntel ~801 Mhz
-
-    Example Linux results:
-
-        OS Info:  Ubuntu 22.04.3 LTS
-        Processor(s):
-            processor   : 0
-            vendor_id   : GenuineIntel
-            cpu family  : 6
-            model       : 126
-            model name  : Intel(R) Core(TM) i5-1035G1 CPU @ 1.00GHz
-            ...
     """
     # Get basic system information (on Windows and Linux)
     if "win" in sys.platform:
