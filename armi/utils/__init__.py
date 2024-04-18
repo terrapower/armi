@@ -810,8 +810,14 @@ def safeCopy(src: str, dst: str) -> None:
     if os.path.isdir(dst):
         dst = os.path.join(dst, os.path.basename(src))
     srcSize = os.path.getsize(src)
-    shutil.copyfile(src, dst)
-    shutil.copymode(src, dst)
+    # Historical note: this used to run shutil.copyfile then shutil.copymode,
+    # but the latter clashed with permissions on a linux system. Both copy and
+    # cp -a accomplish the same thing.
+    if os.name == "nt":
+        cmd = f'copy "{src}" "{dst}"'
+    else:
+        cmd = f'cp -a "{src}" "{dst}"'
+    os.system(cmd)
     while True:
         dstSize = os.path.getsize(dst)
         if srcSize == dstSize:
