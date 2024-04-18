@@ -192,16 +192,7 @@ def writeWelcomeHeaders(o, cs):
                     (uniqueName, numProcessors, ", ".join(matchingProcs))
                 )
 
-                # If this is on Windows: run sys info on each unique node too
-                if "win" in sys.platform:
-                    sysInfo += getSystemInfoWindows()
-                elif "linux" in sys.platform:
-                    sysInfo += getSystemInfoLinux()
-                else:
-                    runLog.warning(
-                        f"Cannot get system information for {sys.platform} because "
-                        + "ARMI only supports Linux and Windows."
-                    )
+                sysInfo += getSystemInfo
 
             runLog.header("=========== Machine Information ===========")
             runLog.info(
@@ -211,6 +202,7 @@ def writeWelcomeHeaders(o, cs):
                     tablefmt="armi",
                 )
             )
+
             if sysInfo:
                 runLog.header("=========== System Information ===========")
                 runLog.info(sysInfo)
@@ -243,42 +235,49 @@ def writeWelcomeHeaders(o, cs):
     _writeReactorCycleInformation(o, cs)
 
 
-def getSystemInfoWindows():
-    """TODO.
+def _getSystemInfoWindows():
+    """Get system information, assuming the system is Windows.
 
+    Returns
+    -------
+    str
+        Basic system information: OS name, OS version, basic processor information
+
+    Examples
+    --------
     Example results:
 
-    OS Name:         Microsoft Windows 10 Enterprise
-    OS Version:      10.0.19041 N/A Build 19041
-    Processor(s):    1 Processor(s) Installed.
-                     [01]: Intel64 Family 6 Model 142 Stepping 12 GenuineIntel ~801 Mhz
+        OS Name:         Microsoft Windows 10 Enterprise
+        OS Version:      10.0.19041 N/A Build 19041
+        Processor(s):    1 Processor(s) Installed.
+                         [01]: Intel64 Family 6 Model 142 Stepping 12 GenuineIntel ~801 Mhz
     """
-    sysInfoCmd = (
+    cmd = (
         'systeminfo | findstr /B /C:"OS Name" /B /C:"OS Version" /B '
         '/C:"Processor" && systeminfo | findstr /E /C:"Mhz"'
     )
-    return subprocess.run(sysInfoCmd, capture_output=True, text=True, shell=True)
+    return subprocess.run(cmd, capture_output=True, text=True, shell=True).stdout
 
 
-def getSystemInfoLinux():
-    """TODO.
+def _getSystemInfoLinux():
+    """Get system information, assuming the system is Linux.
 
+    Returns
+    -------
+    str
+        Basic system information: OS name, OS version, basic processor information
+
+    Examples
+    --------
     Example results:
 
-    OS Name:       Ubuntu
-    OS Version:    Ubuntu 22.04.3 LTS
-    Processor(s):  2 Processor(s) Installed.
-                   [1]: Intel(R) Core(TM) i5-1035G1 CPU @ 1.00GHz
-                   [2]: Intel(R) Core(TM) i5-1035G1 CPU @ 1.00GHz
+        OS Name:       Ubuntu
+        OS Version:    Ubuntu 22.04.3 LTS
+        Processor(s):  2 Processor(s) Installed.
+                       [1]: Intel(R) Core(TM) i5-1035G1 CPU @ 1.00GHz
+                       [2]: Intel(R) Core(TM) i5-1035G1 CPU @ 1.00GHz
     """
     # get OS name / version
-
-    # the os-relese file should contain something like:
-    # PRETTY_NAME="Ubuntu 22.04.3 LTS"
-    # NAME="Ubuntu"
-    # VERSION_ID="22.04"
-    # VERSION="22.04.3 LTS (Jammy Jellyfish)"
-    # ...
     cmd = 'cat /etc/os-release | grep "^NAME="'
     os_name = subprocess.run(cmd, capture_output=True, text=True, shell=True).stdout
     if os_name:
@@ -288,12 +287,8 @@ def getSystemInfoLinux():
         os_ver = subprocess.run(cmd, capture_output=True, text=True, shell=True).stdout
         os_ver = os_ver.split("=")[1].replace('"', "").strip()
     else:
-        os_name = subprocess.run(
-            "uname -a", capture_output=True, text=True, shell=True
-        ).stdout.strip()
-        os_ver = os_name
-        if not os_name:
-            raise RuntimeError("What OS is this? TODO JOHN")
+        runLog.warning("OS system info not found.")
+        return ""
 
     out = "OS Name:       "
     out += os_name
@@ -304,16 +299,50 @@ def getSystemInfoLinux():
     # get processor information
     cmd = "cat /proc/cpuinfo"
     proc = subprocess.run(cmd, capture_output=True, text=True, shell=True).stdout
-    proc_num = proc.split("\nprocessor")[-1]
-    proc_num = int(proc_num.split("\n")[0].split(":")[-1].strip()) + 1
-    out += f"Processor(s):  {proc_num} Processor(s) Installed.\n"
-    proc_names = [
-        ln.split(":")[-1].strip() for ln in proc.split("\n") if "model name" in ln
-    ]
-    for i, pn in enumerate(proc_names):
-        out += f"{' '*15}[{i+1}]: {pn}\n"
+    if not proc:
+        runLog.warning("Processor info not found.")
+    else:
+        proc_num = proc.split("\nprocessor")[-1]
+        proc_num = int(proc_num.split("\n")[0].split(":")[-1].strip()) + 1
+        out += f"Processor(s):  {proc_num} Processor(s) Installed.\n"
+
+        proc_names = [
+            ln.split(":")[-1].strip() for ln in proc.split("\n") if "model name" in ln
+        ]
+        for i, pn in enumerate(proc_names):
+            out += f"{' '*15}[{i+1}]: {pn}\n"
 
     return out
+
+
+def getSystemInfo():
+    """Get system information, assuming the system is Windows or Linux.
+
+    Returns
+    -------
+    str
+        Basic system information: OS name, OS version, basic processor information
+
+    Examples
+    --------
+    Example results:
+
+        OS Name:       Ubuntu
+        OS Version:    Ubuntu 22.04.3 LTS
+        Processor(s):  1 Processor(s) Installed.
+                       [1]: Intel(R) Core(TM) i5-1035G1 CPU @ 1.00GHz
+    """
+    # Get basic system information (on Windows and Linux)
+    if "win" in sys.platform:
+        return _getSystemInfoWindows()
+    elif "linux" in sys.platform:
+        return _getSystemInfoLinux()
+    else:
+        runLog.warning(
+            f"Cannot get system information for {sys.platform} because ARMI only "
+            + "supports Linux and Windows."
+        )
+        return ""
 
 
 def getInterfaceStackSummary(o):
@@ -465,8 +494,7 @@ def _makeBOLAssemblyMassSummary(massSum):
             line += "{0:<25.3f}".format(s[val])
         str_.append("{0:12s}{1}".format(val, line))
 
-    # print blocks in this assembly
-    # up to 10
+    # print blocks in this assembly up to 10
     for i in range(10):
         line = " " * 12
         for s in massSum:
@@ -476,6 +504,7 @@ def _makeBOLAssemblyMassSummary(massSum):
                 line += " " * 25
         if re.search(r"\S", line):  # \S matches any non-whitespace character.
             str_.append(line)
+
     return "\n".join(str_)
 
 
@@ -500,10 +529,10 @@ def writeCycleSummary(core):
 
     Parameters
     ----------
-    core:  armi.reactor.reactors.Core
+    core: armi.reactor.reactors.Core
     cs: armi.settings.caseSettings.Settings
     """
-    # would io be worth considering for this?
+    # Would io be worth considering for this?
     cycle = core.r.p.cycle
     str_ = []
     runLog.important("Cycle {0} Summary:".format(cycle))
@@ -521,7 +550,6 @@ def setNeutronBalancesReport(core):
     Parameters
     ----------
     core  : armi.reactor.reactors.Core
-
     """
     if not core.getFirstBlock().p.rateCap:
         runLog.warning(
@@ -717,7 +745,7 @@ def makeCoreDesignReport(core, cs):
 
     Parameters
     ----------
-    core:  armi.reactor.reactors.Core
+    core: armi.reactor.reactors.Core
     cs: armi.settings.caseSettings.Settings
     """
     coreDesignTable = report.data.Table(

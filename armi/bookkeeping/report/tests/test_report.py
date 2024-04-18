@@ -15,12 +15,17 @@
 """Really basic tests of the report Utils."""
 import logging
 import os
+import subprocess
 import unittest
+from unittest.mock import patch
 
 from armi import runLog, settings
 from armi.bookkeeping import report
 from armi.bookkeeping.report import data, reportInterface
 from armi.bookkeeping.report.reportingUtils import (
+    _getSystemInfoLinux,
+    _getSystemInfoWindows,
+    getSystemInfo,
     makeBlockDesignReport,
     setNeutronBalancesReport,
     summarizePinDesign,
@@ -33,6 +38,67 @@ from armi.bookkeeping.report.reportingUtils import (
 from armi.reactor.tests.test_reactors import loadTestReactor
 from armi.tests import mockRunLogs
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
+
+
+class _MockReturnResult:
+    """Mocking the subproces.run() return object."""
+
+    def __init__(self, stdout):
+        self.stdout = stdout
+
+
+class TestReportingUtils(unittest.TestCase):
+    def test_getSystemInfoLinux(self):
+        catOsName = 'NAME="Ubuntu"\n'
+        catOsPrettyName = 'PRETTY_NAME="Ubuntu 22.04.3 LTS"\n'
+        catProcInfo = """processor : 0
+vendor_id   : GenuineIntel
+cpu family  : 6
+model       : 126
+model name  : Intel(R) Core(TM) i5-1035G1 CPU @ 1.00GHz
+"""
+        correctResult = """OS Name:       Ubuntu
+OS Version:    Ubuntu 22.04.3 LTS
+Processor(s):  1 Processor(s) Installed.
+               [1]: Intel(R) Core(TM) i5-1035G1 CPU @ 1.00GHz"""
+
+        def __mockSubprocessRun(*args, **kwargs):
+            if "os-release" in args[0]:
+                if "PRETTY" in args[0]:
+                    return _MockReturnResult(catOsPrettyName)
+                else:
+                    return _MockReturnResult(catOsName)
+            else:
+                return _MockReturnResult(catProcInfo)
+
+        with patch.object(subprocess, "run", side_effect=__mockSubprocessRun):
+            out = _getSystemInfoLinux()
+            self.assertEqual(out.strip(), correctResult)
+
+    @patch("subprocess.run")
+    def test_getSystemInfoWindows(self, mockSubprocess):
+        windowsResult = """OS Name:         Microsoft Windows 10 Enterprise
+OS Version:      10.0.19041 N/A Build 19041
+Processor(s):    1 Processor(s) Installed.
+                 [01]: Intel64 Family 6 Model 142 Stepping 12 GenuineIntel ~801 Mhz"""
+
+        mockSubprocess.return_value = _MockReturnResult(windowsResult)
+
+        out = _getSystemInfoWindows()
+        self.assertEqual(out, windowsResult)
+
+    def test_getSystemInfo(self):
+        """Basic sanity check of getSystemInfo() running in the wild.
+
+        This test should pass if it is run on Window or mainstream Linux distros. But we expect this to fail
+        if the test is run on some other OS.
+        """
+        out = getSystemInfo()
+        substrings = ["OS Name:", "OS Version", "Processor(s):"]
+        for sstr in substrings:
+            self.assertIn(sstr, out)
+
+        self.assertGreater(len(out), sum(len(sstr) + 3 for sstr in substrings))
 
 
 class TestReport(unittest.TestCase):
