@@ -1766,7 +1766,8 @@ class Block_TestCase(unittest.TestCase):
 class BlockEnergyDepositionConstants(unittest.TestCase):
     """Tests the energy deposition methods.
 
-    MagicMocks xsCollections.compute*Constants() -- we're not testing those methods specifically so just make sure they're hit
+    MagicMocks xsCollections.compute*Constants() -- we're not testing those methods specifically
+    so just make sure they're hit
     """
 
     @classmethod

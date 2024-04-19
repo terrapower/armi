@@ -47,7 +47,6 @@ from armi.utils import hexagon
 from armi.utils import units
 from armi.utils.plotting import plotBlockFlux
 from armi.utils.units import TRACE_NUMBER_DENSITY
-from armi.nuclearDataIO import xsCollections
 
 PIN_COMPONENTS = [
     Flags.CONTROL,
