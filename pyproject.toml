@@ -226,11 +226,11 @@ exclude_also = [
     "armi/utils/tests/test_gridGui.py",
     "venv/",
     ]
-source = armi
+source = "armi"
 parallel = true
 # Change default .coverage file to something that doesn't have a dot
 # because some Windows services can't handle dots.
-data_file = coverage_results.cov
+data_file = "coverage_results.cov"
 
 [tool.coverage.report]
 # Regexes for lines to exclude from consideration
