@@ -47,6 +47,7 @@ from armi.utils import hexagon
 from armi.utils import units
 from armi.utils.plotting import plotBlockFlux
 from armi.utils.units import TRACE_NUMBER_DENSITY
+from armi.nuclearDataIO import xsCollections
 
 PIN_COMPONENTS = [
     Flags.CONTROL,
@@ -1595,6 +1596,124 @@ class Block(composites.Composite):
             else:
                 coords.append(clad.spatialLocator.getLocalCoordinates())
         return coords
+
+    def getTotalEnergyGenerationConstants(self):
+        """
+        Get the total energy generation group constants for a block.
+
+        Gives the total energy generation rates when multiplied by the multigroup flux.
+
+        Returns
+        -------
+        totalEnergyGenConstant: numpy.array
+            Total (fission + capture) energy generation group constants (Joules/cm)
+        """
+        return (
+            self.getFissionEnergyGenerationConstants()
+            + self.getCaptureEnergyGenerationConstants()
+        )
+
+    def getFissionEnergyGenerationConstants(self):
+        """
+        Get the fission energy generation group constants for a block.
+
+        Gives the fission energy generation rates when multiplied by the multigroup
+        flux.
+
+        Returns
+        -------
+        fissionEnergyGenConstant: numpy.array
+            Energy generation group constants (Joules/cm)
+
+        Raises
+        ------
+        RuntimeError:
+            Reports if a cross section library is not assigned to a reactor.
+        """
+        if not self.core.lib:
+            raise RuntimeError(
+                "Cannot compute energy generation group constants without a library"
+                ". Please ensure a library exists."
+            )
+
+        return xsCollections.computeFissionEnergyGenerationConstants(
+            self.getNumberDensities(), self.core.lib, self.getMicroSuffix()
+        )
+
+    def getCaptureEnergyGenerationConstants(self):
+        """
+        Get the capture energy generation group constants for a block.
+
+        Gives the capture energy generation rates when multiplied by the multigroup
+        flux.
+
+        Returns
+        -------
+        fissionEnergyGenConstant: numpy.array
+            Energy generation group constants (Joules/cm)
+
+        Raises
+        ------
+        RuntimeError:
+            Reports if a cross section library is not assigned to a reactor.
+        """
+        if not self.core.lib:
+            raise RuntimeError(
+                "Cannot compute energy generation group constants without a library"
+                ". Please ensure a library exists."
+            )
+
+        return xsCollections.computeCaptureEnergyGenerationConstants(
+            self.getNumberDensities(), self.core.lib, self.getMicroSuffix()
+        )
+
+    def getNeutronEnergyDepositionConstants(self):
+        """
+        Get the neutron energy deposition group constants for a block.
+
+        Returns
+        -------
+        energyDepConstants: numpy.array
+            Neutron energy generation group constants (in Joules/cm)
+
+        Raises
+        ------
+        RuntimeError:
+            Reports if a cross section library is not assigned to a reactor.
+        """
+        if not self.core.lib:
+            raise RuntimeError(
+                "Cannot get neutron energy deposition group constants without "
+                "a library. Please ensure a library exists."
+            )
+
+        return xsCollections.computeNeutronEnergyDepositionConstants(
+            self.getNumberDensities(), self.core.lib, self.getMicroSuffix()
+        )
+
+    def getGammaEnergyDepositionConstants(self):
+        """
+        Get the gamma energy deposition group constants for a block.
+
+        Returns
+        -------
+        energyDepConstants: numpy.array
+            Energy generation group constants (in Joules/cm)
+
+        Raises
+        ------
+        RuntimeError:
+            Reports if a cross section library is not assigned to a reactor.
+        """
+        if not self.core.lib:
+            raise RuntimeError(
+                "Cannot get gamma energy deposition group constants without "
+                "a library. Please ensure a library exists."
+            )
+
+        return xsCollections.computeGammaEnergyDepositionConstants(
+            self.getNumberDensities(), self.core.lib, self.getMicroSuffix()
+        )
 
     def getBoronMassEnrich(self):
         """Return B-10 mass fraction."""
