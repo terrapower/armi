@@ -127,8 +127,9 @@ def defineCoreParameters():
             "detailedNucKeys",
             setter=isNumpyArray("detailedNucKeys"),
             units=units.UNITLESS,
-            description="""Nuclide vector keys, used to map densities in b.p.detailedNDens and a.p.detailedNDens.
-            ZZZAAA (ZZZ atomic number, AAA mass number, + 100 * m for metastable states.""",
+            description="""Nuclide vector keys, used to map densities in b.p.detailedNDens and 
+            a.p.detailedNDens.ZZZAAA (ZZZ atomic number, AAA mass number, + 100 * m for metastable
+            states.""",
             saveToDB=True,
             default=None,
         )
@@ -139,8 +140,8 @@ def defineCoreParameters():
             "orientation",
             units=units.DEGREES,
             description=(
-                "Triple representing rotations counterclockwise around each spatial axis. For example, "
-                "a hex assembly rotated by 1/6th has orientation (0,0,60.0)"
+                "Triple representing rotations counterclockwise around each spatial axis. For "
+                "example, a hex assembly rotated by 1/6th has orientation (0,0,60.0)"
             ),
             default=None,
         )
@@ -181,14 +182,20 @@ def defineCoreParameters():
             default=0.0,
             units=units.PCM,
             saveToDB=True,
-            description="Worth requirement for the primary control rods in the reactor core to achieve safe shutdown.",
+            description=(
+                "Worth requirement for the primary control rods in the reactor core to "
+                "achieve safe shutdown."
+            ),
         )
         pb.defParam(
             "crWorthRequiredSecondary",
             default=0.0,
             units=units.PCM,
             saveToDB=True,
-            description="Worth requirement for the secondary control rods in the reactor core to achieve safe shutdown.",
+            description=(
+                "Worth requirement for the secondary control rods in the reactor core to "
+                "achieve safe shutdown."
+            ),
         )
         pb.defParam(
             "crTransientOverpowerWorth",
@@ -196,8 +203,8 @@ def defineCoreParameters():
             units=units.PCM,
             saveToDB=True,
             description=(
-                "Reactivity worth introduced by removal of the highest worth primary "
-                "control rod from the core, starting from its critical position"
+                "Reactivity worth introduced by removal of the highest worth primary control rod "
+                "from the core, starting from its critical position"
             ),
         )
 
@@ -216,7 +223,10 @@ def defineCoreParameters():
         pb.defParam(
             "referenceBlockAxialMesh",
             units=units.CM,
-            description="The axial block boundaries that assemblies should conform to in a uniform mesh case.",
+            description=(
+                "The axial block boundaries that assemblies should conform to in a "
+                "uniform mesh case."
+            ),
             default=None,
         )
 
@@ -229,8 +239,8 @@ def defineCoreParameters():
         pb.defParam(
             "doublingTime",
             units=units.YEARS,
-            description="""The time it takes to produce enough spent fuel to fuel a daughter reactor,
-            in effective number of years at full power.""",
+            description="""The time it takes to produce enough spent fuel to fuel a daughter 
+            reactor, in effective number of years at full power.""",
         )
 
         pb.defParam(
@@ -272,8 +282,9 @@ def defineCoreParameters():
         pb.defParam(
             "maxcladFCCI",
             units=units.MICRONS,
-            description="The core wide maximum amount of cladding wastage due to fuel chemical clad interaction calculated "
-            + "at the 0-sigma TH HCF temperatures and using the conservative FCCI model",
+            description="The core wide maximum amount of cladding wastage due to fuel chemical "
+            + "clad interaction calculated at the 0-sigma TH HCF temperatures and using the "
+            + "conservative FCCI model",
             default=0.0,
         )
 
@@ -340,7 +351,8 @@ def defineCoreParameters():
         pb.defParam(
             "THmaxDeltaPPump",
             units=units.PASCALS,
-            description="The maximum pumping pressure rise required to pump the given mass flow rate through the rod bundle",
+            description="The maximum pumping pressure rise required to pump the given mass flow "
+            + "rate through the rod bundle",
         )
 
         pb.defParam(
@@ -516,8 +528,8 @@ def defineCoreParameters():
             "jumpRing",
             units=units.UNITLESS,
             description=(
-                "Radial ring number where bred-up fuel assemblies shuffle jump from the low power to the "
-                "high power region."
+                "Radial ring number where bred-up fuel assemblies shuffle jump from the low power "
+                "to the high power region."
             ),
         )
 

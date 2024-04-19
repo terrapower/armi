@@ -40,7 +40,8 @@ class InconelX750(Material):
         Material.__init__(self)
         self.refDens = 8.28  # g/cc
         # Only density measurement presented in the reference.
-        # Presumed to be performed at 21C since this was the reference temperature for linear expansion measurements.
+        # Presumed to be performed at 21C since this was the reference temperature for linear
+        # expansion measurements.
 
     def setDefaultMassFracs(self):
         massFracs = {
@@ -62,8 +63,8 @@ class InconelX750(Material):
 
     def polyfitThermalConductivity(self, power=2):
         r"""
-        Calculates the coefficients of a polynomial fit for thermalConductivity.
-        Based on data from http://www.specialmetals.com/documents/Inconel%20alloy%20X-750.pdf
+        Calculates the coefficients of a polynomial fit for thermalConductivity. Based on data from
+        https://web.archive.org/web/20170215105917/http://www.specialmetals.com:80/documents/Inconel%20alloy%20X-750.pdf
         Fits a polynomial to the data set and returns the coefficients.
 
         Parameters
@@ -234,11 +235,12 @@ class InconelX750(Material):
         r"""
         From http://www.specialmetals.com/documents/Inconel%20alloy%20X-750.pdf.
 
-        Using the correlation for linearExpansionPercent, the 2nd order polynomial is divided by 100 to convert
-        from percent strain to strain, then differentiated with respect to temperature to find the correlation
-        for instantaneous linear expansion.
+        Using the correlation for linearExpansionPercent, the 2nd order polynomial is divided by 100
+        to convert from percent strain to strain, then differentiated with respect to temperature to
+        find the correlation for instantaneous linear expansion.
 
-        i.e. for a linearExpansionPercent correlation of a*Tc**2 + b*Tc + c, the linearExpansion correlation is 2*a/100*Tc + b/100
+        i.e. for a linearExpansionPercent correlation of a*Tc**2 + b*Tc + c, the linearExpansion
+        correlation is 2*a/100*Tc + b/100
 
         2*(6.8378e-7/100.0)*Tc + 1.056e-3/100.0
 
