@@ -628,7 +628,7 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
     def checkColdHeightBlockMass(
         self, bStd: HexBlock, bExp: HexBlock, flagType: Flags, nuclide: str
     ):
-        """Checks that nuclide masses for blocks with input cold heights and "inputHeightsConsideredHot": True are underpredicted.
+        """Ensures nuclide masses are underpredicted when input cold heights and "inputHeightsConsideredHot": True.
 
         Notes
         -----
