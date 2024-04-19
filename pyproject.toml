@@ -219,6 +219,45 @@ filterwarnings = [
     "ignore: the matrix subclass is not the recommended way:PendingDeprecationWarning",
 ]
 
+[tool.coverage.run]
+exclude_also = [
+    "armi/cli/gridGui.py",
+    "armi/utils/gridEditor.py",
+    "armi/utils/tests/test_gridGui.py",
+    "venv/",
+    ]
+source = armi
+parallel = true
+# Change default .coverage file to something that doesn't have a dot
+# because some Windows services can't handle dots.
+data_file = coverage_results.cov
+
+[tool.coverage.report]
+# Regexes for lines to exclude from consideration
+omit = [
+    "armi/cli/gridGui.py",
+    "armi/utils/gridEditor.py",
+    "*/tests/*",
+    ]
+
+exclude_also = [
+    # Don't complain about missing debug-only code:
+    "def __repr__",
+    "if self\\.debug",
+
+    # Don't complain if tests don't hit defensive assertion code:
+    "raise AssertionError",
+    "raise KeyboardInterrupt",
+    "raise NotImplementedError",
+    "except ImportError",
+    "pass",
+
+    # Don't complain if non-runnable code isn't run:
+    "if __name__ == .__main__.:",
+    ]
+
+ignore_errors = true
+
 
 #######################################################################
 #              DATA FILES TO BE INCLUDED WITH THE PROJECT             #
