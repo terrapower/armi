@@ -192,7 +192,7 @@ def writeWelcomeHeaders(o, cs):
                     (uniqueName, numProcessors, ", ".join(matchingProcs))
                 )
 
-                sysInfo += getSystemInfo
+                sysInfo += getSystemInfo()
 
             runLog.header("=========== Machine Information ===========")
             runLog.info(

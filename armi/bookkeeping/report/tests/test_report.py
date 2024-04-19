@@ -41,7 +41,7 @@ from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
 class _MockReturnResult:
-    """Mocking the subproces.run() return object."""
+    """Mocking the subprocess.run() return object."""
 
     def __init__(self, stdout):
         self.stdout = stdout
