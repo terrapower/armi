@@ -171,7 +171,7 @@ class AssemblyAxialLinkage:
         Notes
         -----
         - Requires that shapes have the getCircleInnerDiameter and getBoundingCircleOuterDiameter defined
-        - For axial linkage to be True, components MUST be solids, the same Component Class, multiplicity, and meet 
+        - For axial linkage to be True, components MUST be solids, the same Component Class, multiplicity, and meet
         inner and outer diameter requirements.
         - When component dimensions are retrieved, cold=True to ensure that dimensions are evaluated
         at cold/input temperatures. At temperature, solid-solid interfaces in ARMI may produce

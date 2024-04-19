@@ -333,7 +333,7 @@ class AxialExpansionChanger:
             b.p.z = b.p.zbottom + b.getHeight() / 2.0
 
             self._checkBlockHeight(b)
-            # call component.clearCache to update the component volume, 
+            # call component.clearCache to update the component volume,
             # and therefore the masses, of all solid components.
             for c in getSolidComponents(b):
                 c.clearCache()
