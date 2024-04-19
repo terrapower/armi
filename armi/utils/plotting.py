@@ -1194,9 +1194,8 @@ def _makeBlockPinPatches(block, cold):
             )
         else:
             raise TypeError(
-                "Shape of the pitch-defining element is not a Square or Hex it is {}, cannot plot for this type of block".format(
-                    comp.shape
-                )
+                "Shape of the pitch-defining element is not a Square or Hex it is "
+                f"{comp.shape}, cannot plot for this type of block."
             )
         patches.append(derivedPatch)
         data.append(material)

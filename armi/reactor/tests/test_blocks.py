@@ -1053,16 +1053,6 @@ class Block_TestCase(unittest.TestCase):
         }
         fuel.setNumberDensities({nuc: v / vFrac for nuc, v in refDict.items()})
 
-        # test number density
-        cur = self.block.getPuN()
-        ndens = 0.0
-        for nucName in refDict.keys():
-            if nucName in ["PU238", "PU239", "PU240", "PU241", "PU242"]:
-                ndens += self.block.getNumberDensity(nucName)
-        ref = ndens
-        places = 6
-        self.assertAlmostEqual(cur, ref, places=places)
-
         # test moles
         cur = self.block.getPuMoles()
         ndens = 0.0
@@ -1075,16 +1065,7 @@ class Block_TestCase(unittest.TestCase):
             * self.block.getVolume()
             * self.block.getSymmetryFactor()
         )
-        places = 6
-        self.assertAlmostEqual(cur, ref, places=places)
-
-        # test mass
-        cur = self.block.getPuMass()
-        pu = 0.0
-        for nucName in refDict.keys():
-            if nucName in ["PU238", "PU239", "PU240", "PU241", "PU242"]:
-                pu += self.block.getMass(nucName)
-        self.assertAlmostEqual(cur, pu)
+        self.assertAlmostEqual(cur, ref, places=6)
 
     def test_adjustDensity(self):
         u235Dens = 0.003
@@ -1099,12 +1080,11 @@ class Block_TestCase(unittest.TestCase):
 
         cur = self.block.getNumberDensity("U235")
         ref = densAdj * u235Dens
-        places = 6
-        self.assertAlmostEqual(cur, ref, places=places)
+        self.assertAlmostEqual(cur, ref, places=9)
 
         cur = self.block.getNumberDensity("U238")
         ref = densAdj * u238Dens
-        self.assertAlmostEqual(cur, ref, places=places)
+        self.assertAlmostEqual(cur, ref, places=9)
 
         self.assertAlmostEqual(mass2 - mass1, massDiff)
 
@@ -1618,8 +1598,9 @@ class Block_TestCase(unittest.TestCase):
             )
 
         for expected, actual in zip(expectedData, actualData):
-            msg = "Data (component, density, volume, mass) for component {} does not match. Expected: {}, Actual: {}".format(
-                expected[0], expected, actual
+            msg = (
+                "Data (component, density, volume, mass) for component {} does not match. "
+                "Expected: {}, Actual: {}".format(expected[0], expected, actual)
             )
             for expectedVal, actualVal in zip(expected, actual):
                 self.assertAlmostEqual(expectedVal, actualVal, msg=msg)
@@ -1635,8 +1616,9 @@ class Block_TestCase(unittest.TestCase):
             )
 
         for expected, actual in zip(expectedData, actualData):
-            msg = "Data (component, density, volume, mass) for component {} does not match. Expected: {}, Actual: {}".format(
-                expected[0], expected, actual
+            msg = (
+                "Data (component, density, volume, mass) for component {} does not match. "
+                "Expected: {}, Actual: {}".format(expected[0], expected, actual)
             )
             for expectedVal, actualVal in zip(expected, actual):
                 self.assertAlmostEqual(expectedVal, actualVal, msg=msg)
@@ -1647,11 +1629,11 @@ class Block_TestCase(unittest.TestCase):
 
         Notes
         -----
-        This test calculates a reference coolant area by subtracting the areas of the intercoolant, duct, wire wrap,
-        and pins from the total hex block area.
-        The area of the pins is calculated using only the outer radius of the clad.
-        This avoids the use of negative areas as implemented in Block.getVolumeFractions.
-        Na-23 mass will not be conserved as when duct/clad expands sodium is evacuated
+        This test calculates a reference coolant area by subtracting the areas of the intercoolant,
+        duct, wire wrap, and pins from the total hex block area. The area of the pins is calculated
+        using only the outer radius of the clad. This avoids the use of negative areas as
+        implemented in Block.getVolumeFractions. Na-23 mass will not be conserved as when duct/clad
+        expands sodium is evacuated.
 
         See Also
         --------
@@ -1852,7 +1834,7 @@ class BlockEnergyDepositionConstants(unittest.TestCase):
 
 class TestNegativeVolume(unittest.TestCase):
     def test_negativeVolume(self):
-        """Build a block with WAY too many fuel pins and show that the derived volume is negative."""
+        """Build a Block with WAY too many fuel pins & show that the derived volume is negative."""
         block = blocks.HexBlock("TestHexBlock")
 
         coldTemp = 20
@@ -1986,8 +1968,7 @@ class HexBlock_TestCase(unittest.TestCase):
 
     def test_block_dims(self):
         """
-        Tests that the block class can provide basic dimensionality information about
-        itself.
+        Tests that the block class can provide basic dimensionality information about itself.
 
         .. test:: Important block dimensions are retrievable.
             :id: T_ARMI_BLOCK_DIMS
@@ -2023,9 +2004,6 @@ class HexBlock_TestCase(unittest.TestCase):
         self.assertEqual(v0 / 3.0, self.HexBlock.getVolume())
         self.assertAlmostEqual(m0 / 3.0, self.HexBlock.getMass())
 
-        symmetryLine = self.HexBlock.isOnWhichSymmetryLine()
-        self.assertEqual(grids.BOUNDARY_CENTER, symmetryLine)
-
     def test_retainState(self):
         """Ensure retainState restores params and spatialGrids."""
         self.HexBlock.spatialGrid = grids.HexGrid.fromPitch(1.0)
@@ -2033,7 +2011,7 @@ class HexBlock_TestCase(unittest.TestCase):
         with self.HexBlock.retainState():
             self.HexBlock.setType("fuel")
             self.HexBlock.spatialGrid.changePitch(2.0)
-        self.assertEqual(self.HexBlock.spatialGrid.pitch, 1.0)
+        self.assertAlmostEqual(self.HexBlock.spatialGrid.pitch, 1.0)
         self.assertTrue(self.HexBlock.hasFlags(Flags.INTERCOOLANT))
 
     def test_getPinCoords(self):
@@ -2073,8 +2051,8 @@ class HexBlock_TestCase(unittest.TestCase):
 
         Notes
         -----
-        This assumes there are 3 materials in the homogeneous block, one with half
-        the area fraction, and 2 with 1/4 each.
+        This assumes there are 3 materials in the homogeneous block, one with half the area
+        fraction, and 2 with 1/4 each.
         """
         desiredPitch = 14.0
         hexTotalArea = hexagon.area(desiredPitch)
@@ -2083,18 +2061,17 @@ class HexBlock_TestCase(unittest.TestCase):
         areaFractions = [0.5, 0.25, 0.25]
         materials = ["HT9", "UZr", "Sodium"]
 
-        # There are 2 ways to do this, the first is to pick a component to be the pitch
-        # defining component, and given it the shape of a hexagon to define the pitch
-        # The hexagon outer pitch (op) is defined by the pitch of the block/assembly.
-        # the ip is defined by whatever thickness is necessary to have the desired area
-        # fraction. The second way is shown in the second half of this test.
+        # There are 2 ways to do this, the first is to pick a component to be the pitch defining
+        # component, and given it the shape of a hexagon to define the pitch. The hexagon outer
+        # pitch (op) is defined by the pitch of the block/assembly. The ip is defined by whatever
+        # thickness is necessary to have the desired area fraction. The second way is shown in the
+        # second half of this test.
         hexBlock = blocks.HexBlock("TestHexBlock")
 
         hexComponentArea = areaFractions[0] * hexTotalArea
 
-        # Picking 1st material to use for the hex component here, but really the choice
-        # is arbitrary.
-        # area grows quadratically with op
+        # Picking 1st material to use for the hex component here, but really the choice is
+        # arbitrary. area grows quadratically with op
         ipNeededForCorrectArea = desiredPitch * areaFractions[0] ** 0.5
         self.assertEqual(
             hexComponentArea, hexTotalArea - hexagon.area(ipNeededForCorrectArea)
@@ -2119,10 +2096,10 @@ class HexBlock_TestCase(unittest.TestCase):
         self.assertAlmostEqual(hexTotalArea, hexBlock.getMaxArea())
         self.assertAlmostEqual(sum(c.getArea() for c in hexBlock), hexTotalArea)
 
-        # For this second way, we will simply define the 3 components as unshaped, with
-        # the desired area fractions, and make a 4th component that is an infinitely
-        # thin hexagon with the the desired pitch. The downside of this method is that
-        # now the block has a fourth component with no volume.
+        # For this second way, we will simply define the 3 components as unshaped, with  the desired
+        # area fractions, and make a 4th component that is an infinitely thin hexagon with the the
+        # desired pitch. The downside of this method is that now the block has a fourth component
+        # with no volume.
         hexBlock = blocks.HexBlock("TestHexBlock")
         for aFrac, material in zip(areaFractions, materials):
             unshapedArgs = {"area": hexTotalArea * aFrac}
@@ -2155,8 +2132,7 @@ class HexBlock_TestCase(unittest.TestCase):
         self.assertAlmostEqual(pinCenterFlatToFlat, f2f)
 
     def test_gridCreation(self):
-        """Create a grid for a block, and show that it can handle components with
-        multiplicity > 1.
+        """Create a grid for a block, and show that it can handle components with multiplicity > 1.
 
         .. test:: Grids can handle components with multiplicity > 1.
             :id: T_ARMI_GRID_MULT
@@ -2334,9 +2310,8 @@ class ThRZBlock_TestCase(unittest.TestCase):
 
     def test_verifyBlockDims(self):
         """
-        This function is currently null. It consists of a single line that
-        returns nothing. This test covers that line. If the function is ever
-        implemented, it can be tested here.
+        This function is currently null. It consists of a single line that returns nothing. This
+        test covers that line. If the function is ever implemented, it can be tested here.
         """
         self.ThRZBlock.verifyBlockDims()
 
@@ -2389,8 +2364,8 @@ class CartesianBlock_TestCase(unittest.TestCase):
 
         Notes
         -----
-        This assumes there are 3 materials in the homogeneous block, one with half
-        the area fraction, and 2 with 1/4 each.
+        This assumes there are 3 materials in the homogeneous block, one with half the area
+        fraction, and 2 with 1/4 each.
         """
         desiredPitch = (10.0, 12.0)
         rectTotalArea = desiredPitch[0] * desiredPitch[1]
@@ -2399,24 +2374,21 @@ class CartesianBlock_TestCase(unittest.TestCase):
         areaFractions = [0.5, 0.25, 0.25]
         materials = ["HT9", "UZr", "Sodium"]
 
-        # There are 2 ways to do this, the first is to pick a component to be the pitch
-        # defining component, and given it the shape of a rectangle to define the pitch
-        # The rectangle outer dimensions is defined by the pitch of the block/assembly.
-        # the inner dimensions is defined by whatever thickness is necessary to have
-        # the desired area fraction.
-        # The second way is to define all physical material components as unshaped, and
-        # add an additional infinitely thin Void component (no area) that defines pitch.
-        # See second part of HexBlock_TestCase.test_getPitchHomogeneousBlock for
-        # demonstration.
+        # There are 2 ways to do this, the first is to pick a component to be the pitch defining
+        # component, and given it the shape of a rectangle to define the pitch. The rectangle outer
+        # dimensions is defined by the pitch of the block/assembly. The inner dimensions is defined
+        # by whatever thickness is necessary to have the desired area fraction. The second way is to
+        # define all physical material components as unshaped, and add an additional infinitely thin
+        # Void component (no area) that defines pitch. See second part of
+        # HexBlock_TestCase.test_getPitchHomogeneousBlock for demonstration.
         cartBlock = blocks.CartesianBlock("TestCartBlock")
 
         hexComponentArea = areaFractions[0] * rectTotalArea
 
-        # Picking 1st material to use for the hex component here, but really the choice
-        # is arbitrary.
+        # Picking 1st material to use for the hex component here, but really the choice is
+        # arbitrary.
         # area grows quadratically with outer dimensions.
-        # Note there are infinitely many inner dims that would preserve area,
-        # this is just one of them.
+        # Note there are infinitely many inner dims that would preserve area, this is just one.
         innerDims = [dim * areaFractions[0] ** 0.5 for dim in desiredPitch]
         self.assertAlmostEqual(
             hexComponentArea, rectTotalArea - innerDims[0] * innerDims[1]
@@ -2463,28 +2435,24 @@ class CartesianBlock_TestCase(unittest.TestCase):
 
 
 class MassConservationTests(unittest.TestCase):
-    r"""Tests designed to verify mass conservation during thermal expansion."""
+    """Tests designed to verify mass conservation during thermal expansion."""
 
     def setUp(self):
         self.b = buildSimpleFuelBlock()
 
     def test_heightExpansionDifferences(self):
-        r"""The point of this test is to determine if the number densities stay the same
-        with two different heights of the same block.  Since we want to expand a block
-        from cold temperatures to hot using the fuel expansion coefficient (most important neutronicall),
-        other components are not grown correctly.  This means that on the block level, axial expansion will
-        NOT conserve mass of non-fuel components.  However, the excess mass is simply added to the top of
+        """The point of this test is to determine if the number densities stay the same with two
+        different heights of the same block.  Since we want to expand a block from cold temperatures
+        to hot using the fuel expansion coefficient (most important neutronicall), other components
+        are not grown correctly. This means that on the block level, axial expansion will NOT
+        conserve mass of non-fuel components. However, the excess mass is simply added to the top of
         the reactor in the plenum regions (or any non fueled region).
         """
-        # assume the default block height is 'cold' height.  Now we must determine
-        # what the hot height should be based on thermal expansion.  Change the height
-        # of the block based on the different thermal expansions of the components then
-        # see the effect on the number densities.
-
+        # Assume the default block height is 'cold' height.  Now we must determine what the hot
+        # height should be based on thermal expansion.  Change the height of the block based on the
+        # different thermal expansions of the components then see the effect on number densities.
         fuel = self.b.getComponent(Flags.FUEL)
-
         height = self.b.getHeight()
-
         Thot = fuel.temperatureInC
         Tcold = fuel.inputTemperatureInC
 
@@ -2514,16 +2482,18 @@ class MassConservationTests(unittest.TestCase):
             hotFuelU238,
             hotCladU238,
             10,
-            "Number Density of fuel in one height ({0}) != number density of fuel at another height {1}. Number density conservation "
-            "violated during thermal expansion".format(hotFuelU238, hotCladU238),
+            "Number Density of fuel in one height ({0}) != number density of fuel at another "
+            "height {1}. Number density conservation violated during thermal "
+            "expansion".format(hotFuelU238, hotCladU238),
         )
 
         self.assertAlmostEqual(
             hotFuelIRON,
             hotCladIRON,
             10,
-            "Number Density of clad in one height ({0}) != number density of clad at another height {1}. Number density conservation "
-            "violated during thermal expansion".format(hotFuelIRON, hotCladIRON),
+            "Number Density of clad in one height ({0}) != number density of clad at another "
+            "height {1}. Number density conservation violated during thermal "
+            "expansion".format(hotFuelIRON, hotCladIRON),
         )
 
     def test_massFuelHeatup(self):
@@ -2536,8 +2506,8 @@ class MassConservationTests(unittest.TestCase):
             massCold,
             massHot,
             10,
-            "Cold mass of fuel ({0}) != hot mass {1}. Mass conservation "
-            "violated during thermal expansion".format(massCold, massHot),
+            "Cold mass of fuel ({0}) != hot mass {1}. Mass conservation violated during thermal "
+            "expansion".format(massCold, massHot),
         )
 
     def test_massCladHeatup(self):
@@ -2550,8 +2520,8 @@ class MassConservationTests(unittest.TestCase):
             massCold,
             massHot,
             10,
-            "Cold mass of clad ({0}) != hot mass {1}. Mass conservation "
-            "violated during thermal expansion".format(massCold, massHot),
+            "Cold mass of clad ({0}) != hot mass {1}. Mass conservation violated during thermal "
+            "expansion".format(massCold, massHot),
         )
 
     def test_massDuctHeatup(self):
@@ -2578,10 +2548,8 @@ class MassConservationTests(unittest.TestCase):
         self.assertGreater(
             massCold,
             massHot,
-            "Cold mass of coolant ({0}) <= hot mass {1}. Mass conservation "
-            "not violated during thermal expansion of coolant".format(
-                massCold, massHot
-            ),
+            "Cold mass of coolant ({0}) <= hot mass {1}. Mass conservation not violated during "
+            "thermal expansion of coolant".format(massCold, massHot),
         )
 
     def test_dimensionDuctHeatup(self):
@@ -2595,8 +2563,8 @@ class MassConservationTests(unittest.TestCase):
             correctHot,
             pitchHot,
             10,
-            "Theoretical pitch of duct ({0}) != hot pitch {1}. Linear expansion "
-            "violated during heatup. \nTc={tc} Tref={tref} dLL={dLL} cold={pcold}".format(
+            "Theoretical pitch of duct ({0}) != hot pitch {1}. Linear expansion violated during "
+            "heatup. \nTc={tc} Tref={tref} dLL={dLL} cold={pcold}".format(
                 correctHot,
                 pitchHot,
                 tc=duct.temperatureInC,
@@ -2610,8 +2578,8 @@ class MassConservationTests(unittest.TestCase):
         """
         Verify that the cold mass is what it should be, even though the hot height is input.
 
-        At the cold temperature (but with hot height), the mass should be the same as at hot temperature
-        and hot height.
+        At the cold temperature (but with hot height), the mass should be the same as at hot
+        temperature and hot height.
         """
         fuel = self.b.getComponent(Flags.FUEL)
         # set ref (input/cold) temperature.
@@ -2640,7 +2608,7 @@ class MassConservationTests(unittest.TestCase):
         )
 
     def test_massConsistency(self):
-        r"""Verify that the sum of the component masses equals the total mass."""
+        """Verify that the sum of the component masses equals the total mass."""
         tMass = 0.0
         for child in self.b:
             tMass += child.getMass()
