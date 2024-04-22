@@ -1,21 +1,4 @@
 ***********************
-ARMI v0.3 Release Notes
-=======================
-
-ARMI v0.3.1
-============
-Release Date: TBD
-
-What's new in ARMI
-------------------
-#. Removal of the Block.reactor property. (`PR#1425 <https://github.com/terrapower/armi/pull/1425>`_)
-#. TBD
-
-Bug fixes
----------
-#. TBD
-
-***********************
 ARMI v0.2 Release Notes
 =======================
 
