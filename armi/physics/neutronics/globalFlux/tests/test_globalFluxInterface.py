@@ -306,7 +306,8 @@ class TestGlobalFluxInterfaceWithExecutersNonUniform(unittest.TestCase):
         This will serve as a broad end-to-end test of the interface, and also
         stress test the mesh issues with non-uniform assemblies.
 
-        .. test:: Run the global flux interface to show the geometry converter is called when the nonuniform mesh option is used.
+        .. test:: Run the global flux interface to show the geometry converter is called when the
+            nonuniform mesh option is used.
             :id: T_ARMI_FLUX_GEOM_TRANSFORM_CONV
             :tests: R_ARMI_FLUX_GEOM_TRANSFORM
         """
@@ -335,8 +336,8 @@ class TestGlobalFluxResultMapper(unittest.TestCase):
     """
 
     def test_mapper(self):
-        # Switch to MC2v2 setting to make sure the isotopic/elemental expansions are compatible
-        # with actually doing some math using the ISOAA test microscopic library
+        # Switch to MC2v2 setting to make sure the isotopic/elemental expansions are compatible with
+        # actually doing some math using the ISOAA test microscopic library
         o, r = test_reactors.loadTestReactor(customSettings={CONF_XS_KERNEL: "MC2v2"})
         applyDummyFlux(r)
         r.core.lib = isotxs.readBinary(ISOAA_PATH)
@@ -428,8 +429,6 @@ class TestGlobalFluxUtils(unittest.TestCase):
         .. test:: Return the reaction rates for a given ArmiObject.
             :id: T_ARMI_FLUX_RX_RATES
             :tests: R_ARMI_FLUX_RX_RATES
-
-        .. warning:: This does not validate the reaction rate calculation.
         """
         b = test_blocks.loadTestBlock()
         test_blocks.applyDummyData(b)
@@ -442,7 +441,7 @@ class TestGlobalFluxUtils(unittest.TestCase):
 
 
 def applyDummyFlux(r, ng=33):
-    """Set arbitrary flux distribution on reactor."""
+    """Set arbitrary flux distribution on a Reactor."""
     for b in r.core.getBlocks():
         b.p.power = 1.0
         b.p.mgFlux = numpy.arange(ng, dtype=numpy.float64)

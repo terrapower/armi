@@ -130,8 +130,8 @@ required-version = "0.0.272"
 # Assume Python 3.9
 target-version = "py39"
 
-# Setting line-length to 140 (though blacks default is 88)
-line-length = 140
+# Setting line-length to 120 (though blacks default is 88)
+line-length = 120
 
 # Enable pycodestyle (E) and Pyflakes (F) codes by default.
 # D - NumPy docstring rules
@@ -218,6 +218,45 @@ addopts = "--durations=30 --tb=native"
 filterwarnings = [
     "ignore: the matrix subclass is not the recommended way:PendingDeprecationWarning",
 ]
+
+[tool.coverage.run]
+exclude_also = [
+    "armi/cli/gridGui.py",
+    "armi/utils/gridEditor.py",
+    "armi/utils/tests/test_gridGui.py",
+    "venv/",
+    ]
+source = ["armi"]
+parallel = true
+# Change default .coverage file to something that doesn't have a dot
+# because some Windows services can't handle dots.
+data_file = "coverage_results.cov"
+
+[tool.coverage.report]
+# Regexes for lines to exclude from consideration
+omit = [
+    "armi/cli/gridGui.py",
+    "armi/utils/gridEditor.py",
+    "*/tests/*",
+    ]
+
+exclude_also = [
+    # Don't complain about missing debug-only code:
+    "def __repr__",
+    "if self\\.debug",
+
+    # Don't complain if tests don't hit defensive assertion code:
+    "raise AssertionError",
+    "raise KeyboardInterrupt",
+    "raise NotImplementedError",
+    "except ImportError",
+    "pass",
+
+    # Don't complain if non-runnable code isn't run:
+    "if __name__ == .__main__.:",
+    ]
+
+ignore_errors = true
 
 
 #######################################################################
