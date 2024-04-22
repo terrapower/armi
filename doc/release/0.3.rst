@@ -42,6 +42,7 @@ Bug Fixes
 Quality Work
 ------------
 #. We now enforce a maximum line length of 120 characters, using ``ruff``. (`PR#1646 <https://github.com/terrapower/armi/pull/1646>`_)
+#. Move ``.coveragerc`` file information into ``pyproject.toml``. (`PR#1692 <https://github.com/terrapower/armi/pull/1692>`_)
 #. TBD
 
 Changes that Affect Requirements
