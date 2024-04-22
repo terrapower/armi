@@ -821,7 +821,7 @@ def safeCopy(src: str, dst: str) -> None:
         cmd = f'cp -a "{src}" "{dst}"'
     else:
         runLog.warning(
-            f"Cannot perform ``safeCopy`` on files because ARMI only supports "
+            "Cannot perform ``safeCopy`` on files because ARMI only supports "
             + "Linux and Windows."
         )
     os.system(cmd)
