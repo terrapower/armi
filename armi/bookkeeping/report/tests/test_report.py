@@ -25,6 +25,7 @@ from armi.bookkeeping.report import data, reportInterface
 from armi.bookkeeping.report.reportingUtils import (
     _getSystemInfoLinux,
     _getSystemInfoWindows,
+    getNodeName,
     getSystemInfo,
     makeBlockDesignReport,
     setNeutronBalancesReport,
@@ -102,6 +103,15 @@ Processor(s):    1 Processor(s) Installed.
             self.assertIn(sstr, out)
 
         self.assertGreater(len(out), sum(len(sstr) + 5 for sstr in substrings))
+
+    def test_getNodeName(self):
+        """Test that the getNodeName() method returns a non-empty string.
+
+        It is hard to know what string SHOULD be return here, and it would depend on how the OS is
+        set up on your machine or cluster. But this simple test needs to pass as-is on Windows
+        and Linux.
+        """
+        self.assertGreater(len(getNodeName()), 0)
 
 
 class TestReport(unittest.TestCase):

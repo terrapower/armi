@@ -78,7 +78,7 @@ def writeWelcomeHeaders(o, cs):
             (Operator_ArmiCodebase, context.ROOT),
             (Operator_WorkingDirectory, os.getcwd()),
             (Operator_PythonInterperter, sys.version),
-            (Operator_MasterMachine, os.environ.get("COMPUTERNAME", "?")),
+            (Operator_MasterMachine, getNodeName()),
             (Operator_NumProcessors, context.MPI_SIZE),
             (Operator_Date, context.START_TIME),
         ]
@@ -233,6 +233,30 @@ def writeWelcomeHeaders(o, cs):
     _writeInputFileInformation(cs)
     _writeMachineInformation()
     _writeReactorCycleInformation(o, cs)
+
+
+def getNodeName():
+    """Get the name of this comput node.
+
+    First, look in context.py. Then try various Linux tools. Then try Windows commands.
+
+    Returns
+    -------
+    str
+        Compute node name.
+    """
+    hostNames = [
+        context.MPI_NODENAME,
+        context.MPI_NODENAMES[0],
+        subprocess.run("hostname", capture_output=True, text=True, shell=True).stdout,
+        subprocess.run("uname -n", capture_output=True, text=True, shell=True).stdout,
+        os.environ.get("COMPUTERNAME", context.LOCAL),
+    ]
+    for nodeName in hostNames:
+        if nodeName and nodeName != context.LOCAL:
+            return nodeName
+
+    return context.LOCAL
 
 
 def _getSystemInfoWindows():
