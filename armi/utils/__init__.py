@@ -834,7 +834,7 @@ def safeCopy(src: str, dst: str) -> None:
         if totalWaitTime > maxWaitTime:
             runLog.warning(
                 f"File copy from {dst} to {src} has failed due to exceeding "
-                + f"``maxWaitTime`` of {maxWaitTime/60} min."
+                + f"a maximum wait time of {maxWaitTime/60} minutes."
             )
             break
 
