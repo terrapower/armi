@@ -809,22 +809,21 @@ def safeCopy(src: str, dst: str) -> None:
     # Convert files to OS-independence
     src = os.path.abspath(src)
     dst = os.path.abspath(dst)
-    waitTime = 0.01  # 10 ms
-    maxWaitTime = 1800  # 30 min
     if os.path.isdir(dst):
         dst = os.path.join(dst, os.path.basename(src))
     srcSize = os.path.getsize(src)
-    # Both copy and cp -a accomplish the same thing (copy a file and its metadata)
     if "win" in sys.platform:
         cmd = f'copy "{src}" "{dst}"'
     elif "linux" in sys.platform:
-        cmd = f'cp -a "{src}" "{dst}"'
+        cmd = f'cp "{src}" "{dst}"'
     else:
         runLog.warning(
             "Cannot perform ``safeCopy`` on files because ARMI only supports "
             + "Linux and Windows."
         )
     os.system(cmd)
+    waitTime = 0.01  # 10 ms
+    maxWaitTime = 1800  # 30 min
     totalWaitTime = 0
     while True:
         dstSize = os.path.getsize(dst)
