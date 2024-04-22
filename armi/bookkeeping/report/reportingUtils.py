@@ -236,7 +236,7 @@ def writeWelcomeHeaders(o, cs):
 
 
 def getNodeName():
-    """Get the name of this comput node.
+    """Get the name of this compute node.
 
     First, look in context.py. Then try various Linux tools. Then try Windows commands.
 
