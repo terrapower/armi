@@ -9,6 +9,7 @@ Release Date: TBD
 New Features
 ------------
 #. Conserve mass by component in assembly.setBlockMesh(). (`PR#1665 <https://github.com/terrapower/armi/pull/1665>`_)
+#. System information is now also logged on Linux. (`PR#1689 <https://github.com/terrapower/armi/pull/1689>`_)
 #. TBD
 
 API Changes
