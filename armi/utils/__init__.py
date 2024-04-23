@@ -817,7 +817,7 @@ def safeCopy(src: str, dst: str) -> None:
     elif "linux" in sys.platform:
         cmd = f'cp "{src}" "{dst}"'
     else:
-        runLog.warning(
+        raise OSError(
             "Cannot perform ``safeCopy`` on files because ARMI only supports "
             + "Linux and Windows."
         )
@@ -834,7 +834,7 @@ def safeCopy(src: str, dst: str) -> None:
         if totalWaitTime > maxWaitTime:
             runLog.warning(
                 f"File copy from {dst} to {src} has failed due to exceeding "
-                + f"``maxWaitTime`` of {maxWaitTime/60} min."
+                + f"a maximum wait time of {maxWaitTime/60} minutes."
             )
             break
 
