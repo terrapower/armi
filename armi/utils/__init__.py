@@ -817,7 +817,7 @@ def safeCopy(src: str, dst: str) -> None:
     elif "linux" in sys.platform:
         cmd = f'cp "{src}" "{dst}"'
     else:
-        runLog.warning(
+        raise OSError(
             "Cannot perform ``safeCopy`` on files because ARMI only supports "
             + "Linux and Windows."
         )
