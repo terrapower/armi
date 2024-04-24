@@ -20,6 +20,7 @@ API Changes
 #. Removed unused methods: ``Reactor.getAllNuclidesIn()``, ``plotTriangleFlux()``. (`PR#1656 <https://github.com/terrapower/armi/pull/1656>`_)
 #. Removed ``armi.utils.dochelpers``; not relevant to nuclear modeling. (`PR#1662 <https://github.com/terrapower/armi/pull/1662>`_)
 #. Removing old tools created to help people convert to the current database format: ``armi.bookkeeping.db.convertDatabase()`` and ``ConvertDB``. (`PR#1658 <https://github.com/terrapower/armi/pull/1658>`_)
+#. Removed the variable ``armi.physics.neutronics.isotopicDepletion.ORDER``. (`PR#1671 <https://github.com/terrapower/armi/pull/1671>`_)
 #. Removing extraneous ``ArmiOjbect`` methods. (`PR#1667 <https://github.com/terrapower/armi/pull/1667>`_)
     * Moving ``ArmiObject.getBoronMassEnrich()`` to ``Block``.
     * Moving ``ArmiObject.getPuMoles()`` to ``Block``.
