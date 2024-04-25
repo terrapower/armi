@@ -47,6 +47,7 @@ from armi.utils import hexagon
 from armi.utils import units
 from armi.utils.plotting import plotBlockFlux
 from armi.utils.units import TRACE_NUMBER_DENSITY
+from armi.nuclearDataIO import xsCollections
 
 PIN_COMPONENTS = [
     Flags.CONTROL,
@@ -175,42 +176,6 @@ class Block(composites.Composite):
 
         c = self.getAncestor(lambda c: isinstance(c, Core))
         return c
-
-    @property
-    def r(self):
-        """
-        Look through the ancestors of the Block to find a Reactor, and return it.
-
-        Notes
-        -----
-        Typical hierarchy: Reactor <- Core <- Assembly <- Block
-        A block should only have a reactor through a parent assembly.
-        It may make sense to try to factor out usage of ``b.r``.
-
-        Returns
-        -------
-        core.parent : armi.reactor.reactors.Reactor
-            ARMI reactor object that is an ancestor of the block.
-
-        Raises
-        ------
-        ValueError
-            If the parent of the block's ``core`` is not an ``armi.reactor.reactors.Reactor``.
-        """
-        from armi.reactor.reactors import Reactor
-
-        core = self.core
-        if core is None:
-            return self.getAncestor(lambda o: isinstance(o, Reactor))
-
-        if not isinstance(core.parent, Reactor):
-            raise TypeError(
-                "Parent of Block ({}) core is not a Reactor. Got {} instead".format(
-                    core.parent, type(core.parent)
-                )
-            )
-
-        return core.parent
 
     def makeName(self, assemNum, axialIndex):
         """
@@ -748,7 +713,6 @@ class Block(composites.Composite):
         numDensities = self.getNuclideNumberDensities(adjustList)
 
         for nuclideName, dens in zip(adjustList, numDensities):
-
             if not dens:
                 # don't modify zeros.
                 continue
@@ -773,7 +737,7 @@ class Block(composites.Composite):
             # BOL assems get expanded to a reference so the first check is needed so it
             # won't call .blueprints on None since BOL assems don't have a core/r
             return
-        if any(nuc in self.r.blueprints.activeNuclides for nuc in adjustList):
+        if any(nuc in self.core.r.blueprints.activeNuclides for nuc in adjustList):
             self.p.detailedNDens *= frac
             # Other power densities do not need to be updated as they are calculated in
             # the global flux interface, which occurs after axial expansion from crucible
@@ -1632,6 +1596,124 @@ class Block(composites.Composite):
             else:
                 coords.append(clad.spatialLocator.getLocalCoordinates())
         return coords
+
+    def getTotalEnergyGenerationConstants(self):
+        """
+        Get the total energy generation group constants for a block.
+
+        Gives the total energy generation rates when multiplied by the multigroup flux.
+
+        Returns
+        -------
+        totalEnergyGenConstant: numpy.array
+            Total (fission + capture) energy generation group constants (Joules/cm)
+        """
+        return (
+            self.getFissionEnergyGenerationConstants()
+            + self.getCaptureEnergyGenerationConstants()
+        )
+
+    def getFissionEnergyGenerationConstants(self):
+        """
+        Get the fission energy generation group constants for a block.
+
+        Gives the fission energy generation rates when multiplied by the multigroup
+        flux.
+
+        Returns
+        -------
+        fissionEnergyGenConstant: numpy.array
+            Energy generation group constants (Joules/cm)
+
+        Raises
+        ------
+        RuntimeError:
+            Reports if a cross section library is not assigned to a reactor.
+        """
+        if not self.core.lib:
+            raise RuntimeError(
+                "Cannot compute energy generation group constants without a library"
+                ". Please ensure a library exists."
+            )
+
+        return xsCollections.computeFissionEnergyGenerationConstants(
+            self.getNumberDensities(), self.core.lib, self.getMicroSuffix()
+        )
+
+    def getCaptureEnergyGenerationConstants(self):
+        """
+        Get the capture energy generation group constants for a block.
+
+        Gives the capture energy generation rates when multiplied by the multigroup
+        flux.
+
+        Returns
+        -------
+        fissionEnergyGenConstant: numpy.array
+            Energy generation group constants (Joules/cm)
+
+        Raises
+        ------
+        RuntimeError:
+            Reports if a cross section library is not assigned to a reactor.
+        """
+        if not self.core.lib:
+            raise RuntimeError(
+                "Cannot compute energy generation group constants without a library"
+                ". Please ensure a library exists."
+            )
+
+        return xsCollections.computeCaptureEnergyGenerationConstants(
+            self.getNumberDensities(), self.core.lib, self.getMicroSuffix()
+        )
+
+    def getNeutronEnergyDepositionConstants(self):
+        """
+        Get the neutron energy deposition group constants for a block.
+
+        Returns
+        -------
+        energyDepConstants: numpy.array
+            Neutron energy generation group constants (in Joules/cm)
+
+        Raises
+        ------
+        RuntimeError:
+            Reports if a cross section library is not assigned to a reactor.
+        """
+        if not self.core.lib:
+            raise RuntimeError(
+                "Cannot get neutron energy deposition group constants without "
+                "a library. Please ensure a library exists."
+            )
+
+        return xsCollections.computeNeutronEnergyDepositionConstants(
+            self.getNumberDensities(), self.core.lib, self.getMicroSuffix()
+        )
+
+    def getGammaEnergyDepositionConstants(self):
+        """
+        Get the gamma energy deposition group constants for a block.
+
+        Returns
+        -------
+        energyDepConstants: numpy.array
+            Energy generation group constants (in Joules/cm)
+
+        Raises
+        ------
+        RuntimeError:
+            Reports if a cross section library is not assigned to a reactor.
+        """
+        if not self.core.lib:
+            raise RuntimeError(
+                "Cannot get gamma energy deposition group constants without "
+                "a library. Please ensure a library exists."
+            )
+
+        return xsCollections.computeGammaEnergyDepositionConstants(
+            self.getNumberDensities(), self.core.lib, self.getMicroSuffix()
+        )
 
     def getBoronMassEnrich(self):
         """Return B-10 mass fraction."""
@@ -2527,7 +2609,6 @@ class HexBlock(Block):
 
 
 class CartesianBlock(Block):
-
     PITCH_DIMENSION = "widthOuter"
     PITCH_COMPONENT_TYPE = components.Rectangle
 

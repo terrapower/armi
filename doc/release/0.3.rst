@@ -9,6 +9,7 @@ Release Date: TBD
 New Features
 ------------
 #. Conserve mass by component in assembly.setBlockMesh(). (`PR#1665 <https://github.com/terrapower/armi/pull/1665>`_)
+#. Removal of the Block.reactor property. (`PR#1425 <https://github.com/terrapower/armi/pull/1425>`_)
 #. System information is now also logged on Linux. (`PR#1689 <https://github.com/terrapower/armi/pull/1689>`_)
 #. TBD
 
@@ -34,6 +35,13 @@ API Changes
     * Removing ``ArmiObject.printDensities()``.
     * Moving ``Composite.isOnWhichSymmetryLine()`` to ``Assembly``.
     * Removing ``Block.isOnWhichSymmetryLine()``.
+#. Removal of the ``Block.reactor`` property. (`PR#1425 <https://github.com/terrapower/armi/pull/1425>`_)
+#. Moving several ``ArmiObject`` methods. (`PR#1425 <https://github.com/terrapower/armi/pull/1425>`_)
+    * Moving ``ArmiObject.getNeutronEnergyDepositionConstants`` to ``Block``.
+    * Moving ``ArmiObject.getGammaEnergyDepositionConstants`` to ``Block``.
+    * Moving ``ArmiObject.getTotalEnergyGenerationConstants`` to ``Block``.
+    * Moving ``ArmiObject.getFissionEnergyGenerationConstants`` to ``Block``.
+    * Moving ``ArmiObject.getCaptureEnergyGenerationConstants`` to ``Block``.
 #. TBD
 
 Bug Fixes

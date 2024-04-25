@@ -57,7 +57,9 @@ THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 class TestBlockCollection(unittest.TestCase):
     def setUp(self):
         self.blockList = makeBlocks()
-        self.bc = BlockCollection(self.blockList[0].r.blueprints.allNuclidesInProblem)
+        self.bc = BlockCollection(
+            self.blockList[0].core.r.blueprints.allNuclidesInProblem
+        )
         self.bc.extend(self.blockList)
 
     def test_add(self):
@@ -88,7 +90,7 @@ class TestBlockCollectionMedian(unittest.TestCase):
             b.p.percentBu = bi / 4.0 * 100
         self.blockList[0], self.blockList[2] = self.blockList[2], self.blockList[0]
         self.bc = MedianBlockCollection(
-            self.blockList[0].r.blueprints.allNuclidesInProblem
+            self.blockList[0].core.r.blueprints.allNuclidesInProblem
         )
         self.bc.extend(self.blockList)
 
@@ -125,7 +127,7 @@ class TestBlockCollectionAverage(unittest.TestCase):
 
     def setUp(self):
         self.bc = AverageBlockCollection(
-            self.blockList[0].r.blueprints.allNuclidesInProblem
+            self.blockList[0].core.r.blueprints.allNuclidesInProblem
         )
         self.bc.extend(self.blockList)
         self.bc.averageByComponent = True
@@ -160,7 +162,7 @@ class TestBlockCollectionAverage(unittest.TestCase):
         # check that a new block collection of the representative block has right temperatures
         # this is required for Doppler coefficient calculations
         newBc = AverageBlockCollection(
-            self.blockList[0].r.blueprints.allNuclidesInProblem
+            self.blockList[0].core.r.blueprints.allNuclidesInProblem
         )
         newBc.append(avgB)
         newBc.calcAvgNuclideTemperatures()
@@ -199,7 +201,7 @@ class TestBlockCollectionAverage(unittest.TestCase):
 
         # U35 has different average temperature because blocks have different U235 content
         newBc = AverageBlockCollection(
-            self.blockList[0].r.blueprints.allNuclidesInProblem
+            self.blockList[0].core.r.blueprints.allNuclidesInProblem
         )
         newBc.append(avgB)
         newBc.calcAvgNuclideTemperatures()
@@ -251,7 +253,7 @@ class TestComponentAveraging(unittest.TestCase):
 
     def setUp(self):
         self.bc = AverageBlockCollection(
-            self.blockList[0].r.blueprints.allNuclidesInProblem
+            self.blockList[0].core.r.blueprints.allNuclidesInProblem
         )
         blockCopies = [copy.deepcopy(b) for b in self.blockList]
         self.bc.extend(blockCopies)
@@ -675,7 +677,7 @@ class TestBlockCollectionFluxWeightedAverage(unittest.TestCase):
 
     def setUp(self):
         self.bc = FluxWeightedAverageBlockCollection(
-            self.blockList[0].r.blueprints.allNuclidesInProblem
+            self.blockList[0].core.r.blueprints.allNuclidesInProblem
         )
         self.bc.extend(self.blockList)
 
@@ -696,7 +698,7 @@ class TestCrossSectionGroupManager(unittest.TestCase):
     def setUp(self):
         cs = settings.Settings()
         self.blockList = makeBlocks(20)
-        self.csm = CrossSectionGroupManager(self.blockList[0].r, cs)
+        self.csm = CrossSectionGroupManager(self.blockList[0].core.r, cs)
         for bi, b in enumerate(self.blockList):
             b.p.percentBu = bi / 19.0 * 100
         self.csm._setBuGroupBounds([3, 10, 30, 100])
@@ -858,7 +860,7 @@ class TestCrossSectionGroupManager(unittest.TestCase):
             :tests: R_ARMI_XSGM_FREQ
         """
         self.assertFalse(self.csm.representativeBlocks)
-        self.blockList[0].r.p.timeNode = 0
+        self.blockList[0].core.r.p.timeNode = 0
         self.csm.cs[CONF_LATTICE_PHYSICS_FREQUENCY] = "BOL"
         self.csm.interactBOL()
         self.assertTrue(self.csm.representativeBlocks)
@@ -871,7 +873,7 @@ class TestCrossSectionGroupManager(unittest.TestCase):
             :tests: R_ARMI_XSGM_FREQ
         """
         self.assertFalse(self.csm.representativeBlocks)
-        self.blockList[0].r.p.timeNode = 0
+        self.blockList[0].core.r.p.timeNode = 0
         self.csm.cs[CONF_LATTICE_PHYSICS_FREQUENCY] = "BOC"
         self.csm.interactBOL()
         self.csm.interactBOC()

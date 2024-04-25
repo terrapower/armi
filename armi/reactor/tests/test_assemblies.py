@@ -524,7 +524,6 @@ class Assembly_TestCase(unittest.TestCase):
 
         # add some blocks with a component
         for _i in range(assemNum2):
-
             self.hexDims = {
                 "Tinput": 273.0,
                 "Thot": 273.0,
@@ -665,9 +664,9 @@ class Assembly_TestCase(unittest.TestCase):
             else:
                 self.assertEqual(cur, ref)
 
-        # Block level reactor and parent
+        # Block level core and parent
         for b in assembly2:
-            self.assertEqual(b.r, None)
+            self.assertEqual(b.core, None)
             self.assertEqual(b.parent, assembly2)
 
     def test_hasFlags(self):
@@ -728,7 +727,6 @@ class Assembly_TestCase(unittest.TestCase):
             self.assertAlmostEqual(cur, ref, places=places)
 
     def test_getMaxParam(self):
-
         for bi, b in enumerate(self.assembly):
             b.p.power = bi
         self.assertAlmostEqual(
