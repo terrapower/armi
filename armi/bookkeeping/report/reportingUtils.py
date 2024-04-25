@@ -78,7 +78,7 @@ def writeWelcomeHeaders(o, cs):
             (Operator_ArmiCodebase, context.ROOT),
             (Operator_WorkingDirectory, os.getcwd()),
             (Operator_PythonInterperter, sys.version),
-            (Operator_MasterMachine, os.environ.get("COMPUTERNAME", "?")),
+            (Operator_MasterMachine, getNodeName()),
             (Operator_NumProcessors, context.MPI_SIZE),
             (Operator_Date, context.START_TIME),
         ]
@@ -191,16 +191,9 @@ def writeWelcomeHeaders(o, cs):
                 nodeMappingData.append(
                     (uniqueName, numProcessors, ", ".join(matchingProcs))
                 )
-                # If this is on Windows: run sys info on each unique node too
-                if "win" in sys.platform:
-                    sysInfoCmd = (
-                        'systeminfo | findstr /B /C:"OS Name" /B /C:"OS Version" /B '
-                        '/C:"Processor" && systeminfo | findstr /E /C:"Mhz"'
-                    )
-                    out = subprocess.run(
-                        sysInfoCmd, capture_output=True, text=True, shell=True
-                    )
-                    sysInfo += out.stdout
+
+                sysInfo += getSystemInfo()
+
             runLog.header("=========== Machine Information ===========")
             runLog.info(
                 tabulate.tabulate(
@@ -209,6 +202,7 @@ def writeWelcomeHeaders(o, cs):
                     tablefmt="armi",
                 )
             )
+
             if sysInfo:
                 runLog.header("=========== System Information ===========")
                 runLog.info(sysInfo)
@@ -239,6 +233,148 @@ def writeWelcomeHeaders(o, cs):
     _writeInputFileInformation(cs)
     _writeMachineInformation()
     _writeReactorCycleInformation(o, cs)
+
+
+def getNodeName():
+    """Get the name of this compute node.
+
+    First, look in context.py. Then try various Linux tools. Then try Windows commands.
+
+    Returns
+    -------
+    str
+        Compute node name.
+    """
+    hostNames = [
+        context.MPI_NODENAME,
+        context.MPI_NODENAMES[0],
+        subprocess.run("hostname", capture_output=True, text=True, shell=True).stdout,
+        subprocess.run("uname -n", capture_output=True, text=True, shell=True).stdout,
+        os.environ.get("COMPUTERNAME", context.LOCAL),
+    ]
+    for nodeName in hostNames:
+        if nodeName and nodeName != context.LOCAL:
+            return nodeName
+
+    return context.LOCAL
+
+
+def _getSystemInfoWindows():
+    """Get system information, assuming the system is Windows.
+
+    Returns
+    -------
+    str
+        Basic system information: OS name, OS version, basic processor information
+
+    Examples
+    --------
+    Example results:
+
+        OS Name:         Microsoft Windows 10 Enterprise
+        OS Version:      10.0.19041 N/A Build 19041
+        Processor(s):    1 Processor(s) Installed.
+                         [01]: Intel64 Family 6 Model 142 Stepping 12 GenuineIntel ~801 Mhz
+    """
+    cmd = (
+        'systeminfo | findstr /B /C:"OS Name" /B /C:"OS Version" /B '
+        '/C:"Processor" && systeminfo | findstr /E /C:"Mhz"'
+    )
+    return subprocess.run(cmd, capture_output=True, text=True, shell=True).stdout
+
+
+def _getSystemInfoLinux():
+    """Get system information, assuming the system is Linux.
+
+    This method uses multiple, redundant variations on common Linux command utilities to get the
+    information necessary. While it is not possible to guarantee what programs or files will be
+    available on "all Linux operating system", this collection of tools is widely supported and
+    should provide a reasonably broad-distribution coverage.
+
+    Returns
+    -------
+    str
+        Basic system information: OS name, OS version, basic processor information
+
+    Examples
+    --------
+    Example results:
+
+        OS Info:  Ubuntu 22.04.3 LTS
+        Processor(s):
+            processor   : 0
+            vendor_id   : GenuineIntel
+            cpu family  : 6
+            model       : 126
+            model name  : Intel(R) Core(TM) i5-1035G1 CPU @ 1.00GHz
+            ...
+    """
+    # get OS name / version
+    linuxOsCommands = [
+        'cat /etc/os-release | grep "^PRETTY_NAME=" | cut -d = -f 2',
+        "uname -a",
+        "lsb_release -d | cut -d : -f 2",
+        'hostnamectl | grep "Operating System" | cut -d : -f 2',
+    ]
+    osInfo = ""
+    for cmd in linuxOsCommands:
+        osInfo = subprocess.run(
+            cmd, capture_output=True, text=True, shell=True
+        ).stdout.strip()
+        if osInfo:
+            break
+
+    if not osInfo:
+        runLog.warning("Linux OS information not found.")
+        return ""
+
+    # get processor information
+    linuxProcCommands = ["cat /proc/cpuinfo", "lscpu", "lshw -class CPU"]
+    procInfo = ""
+    for cmd in linuxProcCommands:
+        procInfo = subprocess.run(
+            cmd, capture_output=True, text=True, shell=True
+        ).stdout
+        if procInfo:
+            break
+
+    if not procInfo:
+        runLog.warning("Linux processor information not found.")
+        return ""
+
+    # build output string
+    out = "OS Info:  "
+    out += osInfo.strip()
+    out += "\nProcessor(s):\n    "
+    out += procInfo.strip().replace("\n", "\n    ")
+    out += "\n"
+
+    return out
+
+
+def getSystemInfo():
+    """Get system information, assuming the system is Windows or Linux.
+
+    Notes
+    -----
+    The format of the system information will be different on Windows vs Linux.
+
+    Returns
+    -------
+    str
+        Basic system information: OS name, OS version, basic processor information
+    """
+    # Get basic system information (on Windows and Linux)
+    if "win" in sys.platform:
+        return _getSystemInfoWindows()
+    elif "linux" in sys.platform:
+        return _getSystemInfoLinux()
+    else:
+        runLog.warning(
+            f"Cannot get system information for {sys.platform} because ARMI only "
+            + "supports Linux and Windows."
+        )
+        return ""
 
 
 def getInterfaceStackSummary(o):
@@ -390,8 +526,7 @@ def _makeBOLAssemblyMassSummary(massSum):
             line += "{0:<25.3f}".format(s[val])
         str_.append("{0:12s}{1}".format(val, line))
 
-    # print blocks in this assembly
-    # up to 10
+    # print blocks in this assembly up to 10
     for i in range(10):
         line = " " * 12
         for s in massSum:
@@ -401,6 +536,7 @@ def _makeBOLAssemblyMassSummary(massSum):
                 line += " " * 25
         if re.search(r"\S", line):  # \S matches any non-whitespace character.
             str_.append(line)
+
     return "\n".join(str_)
 
 
@@ -425,10 +561,10 @@ def writeCycleSummary(core):
 
     Parameters
     ----------
-    core:  armi.reactor.reactors.Core
+    core: armi.reactor.reactors.Core
     cs: armi.settings.caseSettings.Settings
     """
-    # would io be worth considering for this?
+    # Would io be worth considering for this?
     cycle = core.r.p.cycle
     str_ = []
     runLog.important("Cycle {0} Summary:".format(cycle))
@@ -446,7 +582,6 @@ def setNeutronBalancesReport(core):
     Parameters
     ----------
     core  : armi.reactor.reactors.Core
-
     """
     if not core.getFirstBlock().p.rateCap:
         runLog.warning(
@@ -642,7 +777,7 @@ def makeCoreDesignReport(core, cs):
 
     Parameters
     ----------
-    core:  armi.reactor.reactors.Core
+    core: armi.reactor.reactors.Core
     cs: armi.settings.caseSettings.Settings
     """
     coreDesignTable = report.data.Table(

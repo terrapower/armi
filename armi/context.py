@@ -104,8 +104,9 @@ MPI_COMM = None
 # MPI_SIZE is the total number of CPUs
 MPI_RANK = 0
 MPI_SIZE = 1
-MPI_NODENAME = "local"
-MPI_NODENAMES = ["local"]
+LOCAL = "local"
+MPI_NODENAME = LOCAL
+MPI_NODENAMES = [LOCAL]
 
 
 try:
