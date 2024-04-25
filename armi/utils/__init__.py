@@ -806,17 +806,38 @@ class MergeableDict(dict):
 
 def safeCopy(src: str, dst: str) -> None:
     """This copy overwrites ``shutil.copy`` and checks that copy operation is truly completed before continuing."""
-    waitTime = 0.01  # 10 ms
+    # Convert files to OS-independence
+    src = os.path.abspath(src)
+    dst = os.path.abspath(dst)
     if os.path.isdir(dst):
         dst = os.path.join(dst, os.path.basename(src))
     srcSize = os.path.getsize(src)
-    shutil.copyfile(src, dst)
-    shutil.copymode(src, dst)
+    if "win" in sys.platform:
+        cmd = f'copy "{src}" "{dst}"'
+    elif "linux" in sys.platform:
+        cmd = f'cp "{src}" "{dst}"'
+    else:
+        raise OSError(
+            "Cannot perform ``safeCopy`` on files because ARMI only supports "
+            + "Linux and Windows."
+        )
+    os.system(cmd)
+    waitTime = 0.01  # 10 ms
+    maxWaitTime = 1800  # 30 min
+    totalWaitTime = 0
     while True:
         dstSize = os.path.getsize(dst)
         if srcSize == dstSize:
             break
         time.sleep(waitTime)
+        totalWaitTime += waitTime
+        if totalWaitTime > maxWaitTime:
+            runLog.warning(
+                f"File copy from {dst} to {src} has failed due to exceeding "
+                + f"a maximum wait time of {maxWaitTime/60} minutes."
+            )
+            break
+
     runLog.extra("Copied {} -> {}".format(src, dst))
 
 
