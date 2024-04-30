@@ -326,7 +326,6 @@ class TestCompositePattern(unittest.TestCase):
 
 
 class TestCompositeTree(unittest.TestCase):
-
     blueprintYaml = """
     name: test assembly
     height: [1, 1]  # 2 blocks
@@ -391,7 +390,7 @@ class TestCompositeTree(unittest.TestCase):
 
     def setUp(self):
         self.Block = loadTestBlock()
-        self.r = self.Block.r
+        self.r = self.Block.core.r
         self.Block.setHeight(100.0)
         self.refDict = {
             "U235": 0.00275173784234,
@@ -465,18 +464,6 @@ class TestCompositeTree(unittest.TestCase):
             self.assertEqual(b.getFuelMass(), fuel.getMass())
 
         self.assertEqual(fuelMass, a.getFuelMass())
-
-    def test_getNeutronEnergyDepositionConstants(self):
-        """Until we improve test architecture, this test can not be more interesting."""
-        with self.assertRaises(RuntimeError):
-            # fails because this test reactor does not have a cross-section library
-            _x = self.r.core.getNeutronEnergyDepositionConstants()
-
-    def test_getGammaEnergyDepositionConstants(self):
-        """Until we improve test architecture, this test can not be more interesting."""
-        with self.assertRaises(RuntimeError):
-            # fails because this test reactor does not have a cross-section library
-            _x = self.r.core.getGammaEnergyDepositionConstants()
 
     def test_getChildrenIncludeMaterials(self):
         """Test that the ``StateRetainer`` retains material properties when they are modified."""

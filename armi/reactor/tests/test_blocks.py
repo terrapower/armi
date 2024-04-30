@@ -16,6 +16,7 @@ import copy
 import math
 import os
 import unittest
+from unittest.mock import MagicMock, patch
 import io
 
 import numpy
@@ -37,6 +38,7 @@ from armi.reactor.tests.test_assemblies import makeTestAssembly
 from armi.tests import ISOAA_PATH, TEST_ROOT
 from armi.utils import hexagon, units
 from armi.utils.units import MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
+from armi.nuclearDataIO import xsCollections
 
 NUM_PINS_IN_TEST_BLOCK = 217
 
@@ -288,7 +290,7 @@ def applyDummyData(block):
     xslib._nuclides["WAA"] = xslib._nuclides["W184AA"]
     xslib._nuclides["MNAA"] = xslib._nuclides["MN55AA"]
     block.p.mgFlux = flux
-    block.r.core.lib = xslib
+    block.core.lib = xslib
 
 
 def getComponentData(component):
@@ -333,7 +335,6 @@ class Block_TestCase(unittest.TestCase):
     def setUp(self):
         self.block = loadTestBlock()
         self._hotBlock = loadTestBlock(cold=False)
-        self.r = self.block.r
 
     def test_getSmearDensity(self):
         cur = self.block.getSmearDensity()
@@ -881,7 +882,7 @@ class Block_TestCase(unittest.TestCase):
                 3,
             ),
         ):
-            self.r.core.symmetry = geometry.SymmetryType.fromAny(symmetry)
+            self.block.core.symmetry = geometry.SymmetryType.fromAny(symmetry)
             i, j = grids.HexGrid.getIndicesFromRingAndPos(1, 1)
             b.spatialLocator = b.core.spatialGrid[i, j, 0]
             self.assertEqual(0, b.spatialLocator.k)
@@ -1762,6 +1763,76 @@ class Block_TestCase(unittest.TestCase):
         )
 
 
+class BlockEnergyDepositionConstants(unittest.TestCase):
+    """Tests the energy deposition methods.
+
+    MagicMocks xsCollections.compute*Constants() -- we're not testing those methods specifically
+    so just make sure they're hit
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        cls.block = loadTestBlock()
+
+    def setUp(self):
+        self.block.core.lib = MagicMock()
+
+    @patch.object(xsCollections, "computeFissionEnergyGenerationConstants")
+    @patch.object(xsCollections, "computeCaptureEnergyGenerationConstants")
+    def test_getTotalEnergyGenerationConstants(self, mock_capture, mock_fission):
+        """Mock both xsCollections methods so you get complete coverage."""
+        _x = self.block.getTotalEnergyGenerationConstants()
+        self.assertEqual(mock_fission.call_count, 1)
+        self.assertEqual(mock_capture.call_count, 1)
+
+    @patch.object(xsCollections, "computeFissionEnergyGenerationConstants")
+    def test_getFissionEnergyDepositionConstants(self, mock_method):
+        """Test RuntimeError and that it gets to the deposition constant call."""
+        # make sure xsCollections.compute* gets hit
+        _x = self.block.getFissionEnergyGenerationConstants()
+        self.assertEqual(mock_method.call_count, 1)
+        # set core.lib to None and get RuntimeError
+        self.block.core.lib = None
+        with self.assertRaises(RuntimeError):
+            # fails because this test reactor does not have a cross-section library
+            _x = self.block.getFissionEnergyGenerationConstants()
+
+    @patch.object(xsCollections, "computeCaptureEnergyGenerationConstants")
+    def test_getCaptureEnergyGenerationConstants(self, mock_method):
+        """Test RuntimeError and that it gets to the deposition constant call."""
+        # make sure xsCollections.compute* gets hit
+        _x = self.block.getCaptureEnergyGenerationConstants()
+        self.assertEqual(mock_method.call_count, 1)
+        # set core.lib to None and get RuntimeError
+        self.block.core.lib = None
+        with self.assertRaises(RuntimeError):
+            # fails because this test reactor does not have a cross-section library
+            _x = self.block.getCaptureEnergyGenerationConstants()
+
+    @patch.object(xsCollections, "computeNeutronEnergyDepositionConstants")
+    def test_getNeutronEnergyDepositionConstants(self, mock_method):
+        """Test RuntimeError and that it gets to the deposition constant call."""
+        # make sure xsCollections.compute* gets hit
+        _x = self.block.getNeutronEnergyDepositionConstants()
+        self.assertEqual(mock_method.call_count, 1)
+        # set core.lib to None and get RuntimeError
+        self.block.core.lib = None
+        with self.assertRaises(RuntimeError):
+            _x = self.block.getNeutronEnergyDepositionConstants()
+
+    @patch.object(xsCollections, "computeGammaEnergyDepositionConstants")
+    def test_getGammaEnergyDepositionConstants(self, mock_method):
+        """Test RuntimeError and that it gets to the deposition constant call."""
+        # make sure xsCollections.compute* gets hit
+        _x = self.block.getGammaEnergyDepositionConstants()
+        self.assertEqual(mock_method.call_count, 1)
+        # set core.lib to None and get RuntimeError
+        self.block.core.lib = None
+        with self.assertRaises(RuntimeError):
+            # fails because this test reactor does not have a cross-section library
+            _x = self.block.getGammaEnergyDepositionConstants()
+
+
 class TestNegativeVolume(unittest.TestCase):
     def test_negativeVolume(self):
         """Build a Block with WAY too many fuel pins & show that the derived volume is negative."""
@@ -1873,12 +1944,12 @@ class HexBlock_TestCase(unittest.TestCase):
             :id: T_ARMI_BLOCK_POSI1
             :tests: R_ARMI_BLOCK_POSI
         """
-        r = self.HexBlock.r
+        core = self.HexBlock.core
         a = self.HexBlock.parent
-        loc1 = r.core.spatialGrid[0, 1, 0]
+        loc1 = core.spatialGrid[0, 1, 0]
         a.spatialLocator = loc1
         x0, y0 = self.HexBlock.coords()
-        a.spatialLocator = r.core.spatialGrid[0, -1, 0]  # symmetric
+        a.spatialLocator = core.spatialGrid[0, -1, 0]  # symmetric
         x2, y2 = self.HexBlock.coords()
         a.spatialLocator = loc1
         self.HexBlock.p.displacementX = 0.01
@@ -1919,7 +1990,7 @@ class HexBlock_TestCase(unittest.TestCase):
 
     def test_symmetryFactor(self):
         # full hex
-        self.HexBlock.spatialLocator = self.HexBlock.r.core.spatialGrid[2, 0, 0]
+        self.HexBlock.spatialLocator = self.HexBlock.core.spatialGrid[2, 0, 0]
         self.HexBlock.clearCache()
         self.assertEqual(1.0, self.HexBlock.getSymmetryFactor())
         a0 = self.HexBlock.getArea()
@@ -1927,7 +1998,7 @@ class HexBlock_TestCase(unittest.TestCase):
         m0 = self.HexBlock.getMass()
 
         # 1/3 symmetric
-        self.HexBlock.spatialLocator = self.HexBlock.r.core.spatialGrid[0, 0, 0]
+        self.HexBlock.spatialLocator = self.HexBlock.core.spatialGrid[0, 0, 0]
         self.HexBlock.clearCache()
         self.assertEqual(3.0, self.HexBlock.getSymmetryFactor())
         self.assertEqual(a0 / 3.0, self.HexBlock.getArea())
