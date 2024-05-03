@@ -404,13 +404,12 @@ def plotFaceMap(
             )
     elif referencesToKeep:
         # Don't show yet, since it will be updated.
+        plt.close(fig)
         return fName
     else:
         plt.show()
 
-    # don't close figure here. Have caller call plotting.close or plt.close when
-    # they are done with it.
-    # TODO: JOHN:      plt.close(fig)
+    plt.close(fig)
     return fName
 
 
