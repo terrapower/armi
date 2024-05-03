@@ -410,7 +410,7 @@ def plotFaceMap(
 
     # don't close figure here. Have caller call plotting.close or plt.close when
     # they are done with it.
-
+    # TODO: JOHN:      plt.close(fig)
     return fName
 
 
@@ -821,8 +821,8 @@ def plotAssemblyTypes(
     if fileName:
         fig.savefig(fileName)
         runLog.debug("Writing assem layout {} in {}".format(fileName, os.getcwd()))
-        plt.close(fig)
 
+    plt.close(fig)
     return fig
 
 
@@ -1089,7 +1089,6 @@ def plotBlockFlux(core, fName=None, bList=None, peak=False, adjoint=False, bList
 
     if fName:
         plt.savefig(fName)
-        plt.close()
         report.setData(
             "Flux Plot {}".format(os.path.split(fName)[1]),
             os.path.abspath(fName),
@@ -1097,6 +1096,8 @@ def plotBlockFlux(core, fName=None, bList=None, peak=False, adjoint=False, bList
         )
     else:
         plt.show()
+
+    plt.close()
 
 
 def makeHistogram(x, y):
