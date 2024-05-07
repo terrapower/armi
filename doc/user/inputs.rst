@@ -577,8 +577,6 @@ material
     The temperature (in C) that the component dimensions will be thermal expanded to (using material properties based on
     the ``material`` input). To disable automatic thermal expansion, set |Tinput| and |Thot| both to the same value
 
-    .. note:: The T/H modules of ARMI will update the hot temperature when coupling is activated.
-
 mult
     Multiplicity specifies how many duplicates of this component exist in this block. If you want 169 pins per assembly,
     this would be 169. This does not explicitly describe the location of the pins. Note that many fast-neutron systems
