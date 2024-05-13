@@ -577,8 +577,6 @@ material
     The temperature (in C) that the component dimensions will be thermal expanded to (using material properties based on
     the ``material`` input). To disable automatic thermal expansion, set |Tinput| and |Thot| both to the same value
 
-    .. note:: The T/H modules of ARMI will update the hot temperature when coupling is activated.
-
 mult
     Multiplicity specifies how many duplicates of this component exist in this block. If you want 169 pins per assembly,
     this would be 169. This does not explicitly describe the location of the pins. Note that many fast-neutron systems
@@ -762,15 +760,14 @@ A complete definition of an inner-core assembly may be seen below::
                 nozzleType: Inner
                 xs types: [A, B, C, D, E, F]
 
-.. note:: While component dimensions are entered as cold dimensions, axial heights must
-        be entered as hot dimensions. The reason for this is that each component with different
-        material will thermally expand at different rates. In the axial dimension, this is
-        problematic because after a change in temperature each component in the same block
-        will have a different height. The solution is to pre-expand each component
-        axially and enter hot axial block heights. After the reactor is created, further
-        temperature changes will cause dimension changes only in 2 dimensions (radially). Mass
-        is always conserved, but if temperature deviates significantly from hot axial heights,
-        density may deviate as well.
+.. note:: 
+        While component dimensions are entered as cold dimensions, axial heights may be entered as 
+        either cold or hot dimensions. In older versions of ARMI, it was required to enter heights 
+        in the hot dimension (this behavior is preserved by setting `inputHeightsConsideredHot: True`).
+        However, with the 
+        :py:class:`axial expansion changer <armi.reactor.converters.axialExpansionChanger.AxialExpansionChanger>`, 
+        heights may be entered at cold temperatures (`inputHeightsConsideredHot: False`). Each Assembly will then 
+        be expanded to its hot dimensions upon construction.
 
 For many cases, a shared height and axial mesh point definition is sufficient. These can be included
 globally as shown above and linked with anchors, or specified explicitly.
