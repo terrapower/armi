@@ -24,6 +24,6 @@ jobs:
       - name: Run Unit Tests on Windows
         run: |
           pip install -e .[memprof,mpi,test]
-          pytest -n 4 armi
+          pytest -n 2 armi
       - name: Find Test Crumbs
         run: python .github/workflows/find_test_crumbs.py
