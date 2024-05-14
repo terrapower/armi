@@ -315,18 +315,6 @@ def defineCoreParameters():
         )
 
         pb.defParam(
-            "outsideFuelRing",
-            units=units.UNITLESS,
-            description="The ring (integer) with the fraction of flux that best meets the target",
-        )
-
-        pb.defParam(
-            "outsideFuelRingFluxFr",
-            units=units.UNITLESS,
-            description="Ratio of the flux in a ring to the total reactor fuel flux",
-        )
-
-        pb.defParam(
             "peakGridDpaAt60Years",
             units=units.DPA,
             description="Grid plate peak dpa after 60 years irradiation",
