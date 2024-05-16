@@ -43,7 +43,7 @@ API Changes
     * Moving ``ArmiObject.getFissionEnergyGenerationConstants`` to ``Block``.
     * Moving ``ArmiObject.getCaptureEnergyGenerationConstants`` to ``Block``.
 #. Removing the parameters ``outsideFuelRing`` and ``outsideFuelRingFluxFr``. (`PR#1700 <https://github.com/terrapower/armi/pull/1700>`_)
-#. Removing the setting ``doOrificedTH``. (`PR#1705 <https://github.com/terrapower/armi/pull/1705>`_)
+#. Removing the setting ``doOrificedTH``. (`PR#1706 <https://github.com/terrapower/armi/pull/1706>`_)
 #. TBD
 
 Bug Fixes
