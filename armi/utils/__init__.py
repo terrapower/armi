@@ -813,17 +813,18 @@ def safeCopy(src: str, dst: str) -> None:
         dst = os.path.join(dst, os.path.basename(src))
     srcSize = os.path.getsize(src)
     if "win" in sys.platform:
-        cmd = f'copy "{src}" "{dst}"'
+        shutil.copyfile(src, dst)
+        shutil.copymode(src, dst)
     elif "linux" in sys.platform:
         cmd = f'cp "{src}" "{dst}"'
+        os.system(cmd)
     else:
         raise OSError(
             "Cannot perform ``safeCopy`` on files because ARMI only supports "
             + "Linux and Windows."
         )
-    os.system(cmd)
     waitTime = 0.01  # 10 ms
-    maxWaitTime = 1800  # 30 min
+    maxWaitTime = 300  # 5 min
     totalWaitTime = 0
     while True:
         dstSize = os.path.getsize(dst)

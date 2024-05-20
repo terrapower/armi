@@ -25,7 +25,7 @@ Accessing Some Interesting Info
 Often times, you may be interested in the geometric dimensions of various blocks. These are stored on the
 :py:mod:`components <armi.reactor.components>`, and may be accessed as follows::
 
-    b = o.r.getFirstBlock(Flags.FUEL)
+    b = o.r.core.getFirstBlock(Flags.FUEL)
     fuel = b.getComponent(Flags.FUEL)
     od = fuel.getDimension('od',cold=True)  # fuel outer diameter in cm
     odHot = fuel.getDimension('od')  # hot dimension

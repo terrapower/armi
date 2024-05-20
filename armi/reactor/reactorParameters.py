@@ -122,7 +122,6 @@ def defineCoreParameters():
     pDefs = parameters.ParameterDefinitionCollection()
 
     with pDefs.createBuilder() as pb:
-
         pb.defParam(
             "detailedNucKeys",
             setter=isNumpyArray("detailedNucKeys"),
@@ -135,7 +134,6 @@ def defineCoreParameters():
         )
 
     with pDefs.createBuilder(location=ParamLocation.CENTROID) as pb:
-
         pb.defParam(
             "orientation",
             units=units.DEGREES,
@@ -147,7 +145,6 @@ def defineCoreParameters():
         )
 
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, default=0.0) as pb:
-
         pb.defParam(
             "maxAssemNum",
             units=units.UNITLESS,
@@ -158,7 +155,6 @@ def defineCoreParameters():
         pb.defParam("numMoves", units=units.UNITLESS, description="numMoves", default=0)
 
     with pDefs.createBuilder(location="N/A", categories=["control rods"]) as pb:
-
         pb.defParam(
             "crMostValuablePrimaryRodLocation",
             default="",
@@ -209,7 +205,6 @@ def defineCoreParameters():
         )
 
     with pDefs.createBuilder() as pb:
-
         pb.defParam(
             "axialMesh",
             units=units.CM,
@@ -219,7 +214,6 @@ def defineCoreParameters():
         )
 
     with pDefs.createBuilder(default=0.0, location="N/A") as pb:
-
         pb.defParam(
             "referenceBlockAxialMesh",
             units=units.CM,
@@ -312,18 +306,6 @@ def defineCoreParameters():
             "minutesSinceStart",
             units=units.MINUTES,
             description="Run time since the beginning of the calculation",
-        )
-
-        pb.defParam(
-            "outsideFuelRing",
-            units=units.UNITLESS,
-            description="The ring (integer) with the fraction of flux that best meets the target",
-        )
-
-        pb.defParam(
-            "outsideFuelRingFluxFr",
-            units=units.UNITLESS,
-            description="Ratio of the flux in a ring to the total reactor fuel flux",
         )
 
         pb.defParam(

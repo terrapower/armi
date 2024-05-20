@@ -65,7 +65,6 @@ CONF_DETAIL_ALL_ASSEMS = "detailAllAssems"
 CONF_DETAIL_ASSEM_LOCATIONS_BOL = "detailAssemLocationsBOL"
 CONF_DETAIL_ASSEM_NUMS = "detailAssemNums"
 CONF_DETAILED_AXIAL_EXPANSION = "detailedAxialExpansion"
-CONF_DO_ORIFICED_TH = "doOrificedTH"  # zones
 CONF_DUMP_SNAPSHOT = "dumpSnapshot"
 CONF_EQ_DIRECT = "eqDirect"  # fuelCycle/equilibrium coupling
 CONF_EXPLICIT_REPEAT_SHUFFLES = "explicitRepeatShuffles"
@@ -507,13 +506,6 @@ def defineSettings() -> List[setting.Setting]:
             label="Dump Snapshot Files",
             description="List of snapshots to dump reactor physics kernel input and "
             "output files. Can be used to perform follow-on analysis.",
-        ),
-        setting.Setting(
-            CONF_DO_ORIFICED_TH,
-            default=False,
-            label="Perform Core Orificing",
-            description="Perform orificed thermal hydraulics (requires bounds file "
-            "from a previous case)",
         ),
         setting.Setting(
             CONF_EQ_DIRECT,
