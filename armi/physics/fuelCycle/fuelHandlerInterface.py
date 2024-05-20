@@ -135,7 +135,6 @@ class FuelHandlerInterface(interfaces.Interface):
                 fName="{}.shuffles_{}.png".format(self.cs.caseTitle, self.r.p.cycle),
                 shuffleArrows=arrows,
             )
-            plotting.close()
 
     def makeShuffleReport(self):
         """
@@ -148,7 +147,6 @@ class FuelHandlerInterface(interfaces.Interface):
         See Also
         --------
         readMoves : reads this file and parses it.
-
         """
         fname = self.cs.caseTitle + "-SHUFFLES.txt"
         out = open(fname, "w")
