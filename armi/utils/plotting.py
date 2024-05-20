@@ -404,7 +404,6 @@ def plotFaceMap(
             )
     elif referencesToKeep:
         # Don't show yet, since it will be updated.
-        plt.close(fig)
         return fName
     else:
         plt.show()
