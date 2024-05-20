@@ -42,6 +42,7 @@ API Changes
     * Moving ``ArmiObject.getTotalEnergyGenerationConstants`` to ``Block``.
     * Moving ``ArmiObject.getFissionEnergyGenerationConstants`` to ``Block``.
     * Moving ``ArmiObject.getCaptureEnergyGenerationConstants`` to ``Block``.
+#. Removing the parameeter ``rdIterNum``. (`PR#1704 <https://github.com/terrapower/armi/pull/1704>`_)
 #. Removing the parameters ``outsideFuelRing`` and ``outsideFuelRingFluxFr``. (`PR#1700 <https://github.com/terrapower/armi/pull/1700>`_)
 #. Removing the setting ``doOrificedTH``. (`PR#1706 <https://github.com/terrapower/armi/pull/1706>`_)
 #. TBD
