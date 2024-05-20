@@ -16,6 +16,7 @@
 import logging
 import os
 import subprocess
+import sys
 import unittest
 from unittest.mock import patch
 
@@ -98,7 +99,12 @@ Processor(s):    1 Processor(s) Installed.
         to fail if the test is run on some other OS.
         """
         out = getSystemInfo()
-        substrings = ["OS ", "Processor(s):"]
+
+        if "darwin" in sys.platform:
+            substrings = ["System Software", "Hardware Overview"]
+        else:
+            substrings = ["OS ", "Processor(s):"]
+
         for sstr in substrings:
             self.assertIn(sstr, out)
 

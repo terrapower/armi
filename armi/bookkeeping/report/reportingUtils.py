@@ -283,6 +283,31 @@ def _getSystemInfoWindows():
     return subprocess.run(cmd, capture_output=True, text=True, shell=True).stdout
 
 
+def _getSystemInfoMac():
+    """Get system information, assuming the system is MacOS.
+
+    Returns
+    -------
+    str
+        Basic system information: OS name, OS version, basic processor information
+
+    Examples
+    --------
+    Example results:
+
+        System Software Overview:
+
+        System Version: macOS 12.1 (21C52)
+        Kernel Version: Darwin 21.2.0
+        ...
+        Hardware Overview:
+        Model Name: MacBook Pro
+        ...
+    """
+    cmd = "system_profiler SPSoftwareDataType SPHardwareDataType"
+    return subprocess.run(cmd, capture_output=True, text=True, shell=True).stdout
+
+
 def _getSystemInfoLinux():
     """Get system information, assuming the system is Linux.
 
@@ -369,6 +394,8 @@ def getSystemInfo():
         return _getSystemInfoWindows()
     elif "linux" in sys.platform:
         return _getSystemInfoLinux()
+    elif "darwin" in sys.platform:
+        return _getSystemInfoMac()
     else:
         runLog.warning(
             f"Cannot get system information for {sys.platform} because ARMI only "
