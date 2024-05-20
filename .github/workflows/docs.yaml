@@ -23,7 +23,7 @@ jobs:
       - name: Install Pandoc
         run: sudo apt-get -y install pandoc
       - name: Setup Graphviz
-        uses: ts-graphviz/setup-graphviz@v1
+        uses: ts-graphviz/setup-graphviz@v2.0.2
       - name: Make HTML Docs
         run: |
           pip install -e .[memprof,mpi,test,docs]
