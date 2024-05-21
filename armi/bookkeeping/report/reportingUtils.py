@@ -304,7 +304,7 @@ def _getSystemInfoMac():
         Model Name: MacBook Pro
         ...
     """
-    cmd = "system_profiler SPSoftwareDataType SPHardwareDataType"
+    cmd = "system_profiler"
     return subprocess.run(cmd, capture_output=True, text=True, shell=True).stdout
 
 
@@ -399,7 +399,7 @@ def getSystemInfo():
     else:
         runLog.warning(
             f"Cannot get system information for {sys.platform} because ARMI only "
-            + "supports Linux and Windows."
+            + "supports Linux, Windows, and MacOS."
         )
         return ""
 
