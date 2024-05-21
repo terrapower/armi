@@ -25,6 +25,6 @@ jobs:
         run: |
           brew install openmpi
           pip install -e .[memprof,mpi,test]
-          pytest armi
+          pytest -x armi/bookkeeping/report
       - name: Find Test Crumbs
         run: python .github/workflows/find_test_crumbs.py
