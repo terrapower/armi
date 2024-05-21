@@ -304,7 +304,7 @@ def _getSystemInfoMac():
         Model Name: MacBook Pro
         ...
     """
-    cmd = "system_profiler"
+    cmd = "ioreg"
     return subprocess.run(cmd, capture_output=True, text=True, shell=True).stdout
 
 
