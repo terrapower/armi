@@ -305,7 +305,7 @@ def _getSystemInfoMac():
         ...
     """
     cmd = "ioreg"
-    return subprocess.run(cmd, capture_output=True, text=True, shell=True).stdout
+    return subprocess.check_output(cmd, shell=True).decode("utf-8")
 
 
 def _getSystemInfoLinux():
