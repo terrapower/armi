@@ -24,6 +24,7 @@ jobs:
       - name: Run Unit Tests on MacOS
         run: |
           brew install openmpi
+          brew install system_profiler
           pip install -e .[memprof,mpi,test]
           pytest -x armi/bookkeeping/report
       - name: Find Test Crumbs
