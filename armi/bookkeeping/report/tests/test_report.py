@@ -96,7 +96,7 @@ Processor(s):    1 Processor(s) Installed.
     @patch("subprocess.run")
     def test_getSystemInfoMac(self, mockSubprocess):
         """Test _getSystemInfoMac() on any operating system, by mocking the system call."""
-        macResult = """System Software Overview:
+        macResult = b"""System Software Overview:
 
         System Version: macOS 12.1 (21C52)
         Kernel Version: Darwin 21.2.0
@@ -108,7 +108,7 @@ Processor(s):    1 Processor(s) Installed.
         mockSubprocess.return_value = _MockReturnResult(macResult)
 
         out = _getSystemInfoMac()
-        self.assertEqual(out, macResult)
+        self.assertEqual(out, macResult.decode("utf-8"))
 
     def test_getSystemInfo(self):
         """Basic sanity check of getSystemInfo() running in the wild.
