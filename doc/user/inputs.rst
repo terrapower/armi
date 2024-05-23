@@ -478,7 +478,7 @@ The ARMI data model is represented schematically below, and the blueprints are d
     Defines :py:class:`~armi.reactor.components.component.Component` inputs for a
     :py:class:`~armi.reactor.blocks.Block`.
 
-:ref:`asssemblies <assemblies>`:
+:ref:`assemblies <assemblies>`:
     Defines vertical stacks of blocks used to define the axial profile of an
     :py:class:`~armi.reactor.assemblies.Assembly`.
 

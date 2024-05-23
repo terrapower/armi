@@ -304,7 +304,7 @@ def _getSystemInfoMac():
         Model Name: MacBook Pro
         ...
     """
-    cmd = "system_profiler"
+    cmd = "system_profiler SPSoftwareDataType SPHardwareDataType"
     return subprocess.check_output(cmd, shell=True).decode("utf-8")
 
 

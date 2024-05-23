@@ -11,7 +11,7 @@ on:
 jobs:
   build:
 
-    runs-on: macos-12
+    runs-on: macos-14
 
     steps:
       - uses: actions/checkout@v2
@@ -26,5 +26,3 @@ jobs:
           brew install openmpi
           pip install -e .[memprof,mpi,test]
           pytest -x armi/bookkeeping/report
-      - name: Find Test Crumbs
-        run: python .github/workflows/find_test_crumbs.py
