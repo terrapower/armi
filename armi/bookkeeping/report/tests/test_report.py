@@ -16,6 +16,7 @@
 import logging
 import os
 import subprocess
+import sys
 import unittest
 from unittest.mock import patch
 
@@ -24,6 +25,7 @@ from armi.bookkeeping import report
 from armi.bookkeeping.report import data, reportInterface
 from armi.bookkeeping.report.reportingUtils import (
     _getSystemInfoLinux,
+    _getSystemInfoMac,
     _getSystemInfoWindows,
     getNodeName,
     getSystemInfo,
@@ -91,14 +93,36 @@ Processor(s):    1 Processor(s) Installed.
         out = _getSystemInfoWindows()
         self.assertEqual(out, windowsResult)
 
+    @patch("subprocess.run")
+    def test_getSystemInfoMac(self, mockSubprocess):
+        """Test _getSystemInfoMac() on any operating system, by mocking the system call."""
+        macResult = b"""System Software Overview:
+
+        System Version: macOS 12.1 (21C52)
+        Kernel Version: Darwin 21.2.0
+        ...
+        Hardware Overview:
+        Model Name: MacBook Pro
+        ..."""
+
+        mockSubprocess.return_value = _MockReturnResult(macResult)
+
+        out = _getSystemInfoMac()
+        self.assertEqual(out, macResult.decode("utf-8"))
+
     def test_getSystemInfo(self):
         """Basic sanity check of getSystemInfo() running in the wild.
 
         This test should pass if it is run on Window or mainstream Linux distros. But we expect this
         to fail if the test is run on some other OS.
         """
+        if "darwin" in sys.platform:
+            # too comlicated to test MacOS in this method
+            return
+
         out = getSystemInfo()
         substrings = ["OS ", "Processor(s):"]
+
         for sstr in substrings:
             self.assertIn(sstr, out)
 

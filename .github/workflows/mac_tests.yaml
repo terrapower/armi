@@ -1,0 +1,28 @@
+name: ARMI MacOS Tests
+
+on:
+  push:
+    paths-ignore:
+      - 'doc/**'
+  pull_request:
+    paths-ignore:
+      - 'doc/**'
+
+jobs:
+  build:
+
+    runs-on: macos-14
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.11'
+      - name: Upgrade PIP
+        run: python -m pip install --upgrade pip
+      - name: Run Unit Tests on MacOS
+        run: |
+          brew install openmpi
+          pip install -e .[memprof,mpi,test]
+          pytest armi
