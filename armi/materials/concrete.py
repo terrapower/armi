@@ -15,9 +15,8 @@
 """
 Concrete.
 
-Concrete is often used to provide structural support of nuclear equipment.
-
-It can also provide radiation shielding.
+Concrete is often used to provide structural support of nuclear equipment. It can also provide
+radiation shielding.
 """
 
 from armi.materials.material import Material
@@ -26,7 +25,7 @@ from armi.materials.material import Material
 class Concrete(Material):
     """Simple concreate material.
 
-    http://jolissrch-inter.tokai-sc.jaea.go.jp/pdfdata/JAERI-Data-Code-98-004.pdf
+    https://web.archive.org/web/20130122161516/http://jolissrch-inter.tokai-sc.jaea.go.jp/pdfdata/JAERI-Data-Code-98-004.pdf
     """
 
     def setDefaultMassFracs(self):
