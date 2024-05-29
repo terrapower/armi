@@ -86,7 +86,7 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "mgFluxGamma",
-            units=f"{units.GRAMS}*{units.CM}/{units.SECONDS}",
+            units=f"#*{units.CM}/{units.SECONDS}",
             description="multigroup gamma flux",
             location=ParamLocation.VOLUME_INTEGRATED,
             saveToDB=True,
