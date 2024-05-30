@@ -110,7 +110,7 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "extSrc",
-            units=f"{units.GRAMS}/{units.CM}^3/{units.SECONDS}",
+            units=f"#/{units.CM}^3/{units.SECONDS}",
             description="multigroup external source",
             location=ParamLocation.AVERAGE,
             saveToDB=False,
@@ -120,7 +120,7 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "mgGammaSrc",
-            units=f"{units.GRAMS}/{units.CM}^3/{units.SECONDS}",
+            units=f"#/{units.CM}^3/{units.SECONDS}",
             description="multigroup gamma source",
             location=ParamLocation.AVERAGE,
             saveToDB=True,
@@ -133,7 +133,7 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "gammaSrc",
-            units=f"{units.GRAMS}/{units.CM}^3/{units.SECONDS}",
+            units=f"#/{units.CM}^3/{units.SECONDS}",
             description="gamma source",
             location=ParamLocation.AVERAGE,
             saveToDB=True,
@@ -183,7 +183,7 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "pinMgFluxesGamma",
-            units=f"{units.GRAMS}/{units.CM}^2/{units.SECONDS}",
+            units=f"#/{units.CM}^2/{units.SECONDS}",
             description="should be a blank 3-D array, but re-defined later (ng x nPins x nAxialSegments)",
             categories=[parameters.Category.pinQuantities, parameters.Category.gamma],
             saveToDB=False,
@@ -528,7 +528,7 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "fluxGamma",
-            units=f"{units.GRAMS}/{units.CM}^2/{units.SECONDS}",
+            units=f"#/{units.CM}^2/{units.SECONDS}",
             description="Gamma scalar flux",
             categories=[
                 parameters.Category.retainOnReplacement,
