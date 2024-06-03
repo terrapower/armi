@@ -15,6 +15,7 @@ New Features
 
 API Changes
 -----------
+#. Replacing the concrete material with a better reference. (`PR#1717 <https://github.com/terrapower/armi/pull/1717>`_)
 #. Renaming ``structuredgrid.py`` to camelCase. (`PR#1650 <https://github.com/terrapower/armi/pull/1650>`_)
 #. Removing unused argument from ``Block.coords()``. (`PR#1651 <https://github.com/terrapower/armi/pull/1651>`_)
 #. Removing unused method ``HexGrid.allPositionsInThird()``. (`PR#1655 <https://github.com/terrapower/armi/pull/1655>`_)
