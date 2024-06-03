@@ -1,4 +1,4 @@
-name: ARMI unit tests
+name: unit tests - older Pythons
 
 on:
   push:
@@ -11,10 +11,10 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
-        python: [3.9, '3.10', '3.11', '3.12']
+        python: [3.7, 3.8]
 
     steps:
       - uses: actions/checkout@v2
