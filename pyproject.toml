@@ -15,9 +15,19 @@
 #######################################################################
 #                        GENERAL PYTHON CONFIG                        #
 #######################################################################
+#[build-system]
+#requires = ["setuptools>=61.2"]
+#build-backend = "setuptools.build_meta"
+#
+#[tool.setuptools.packages]
+#find = {}
+
 [build-system]
-requires = ["setuptools>=61.2"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling>=1.24.2"]
+build-backend = "hatchling.build"
+
+[tool.hatch.metadata]
+allow-direct-references = true
 
 [project]
 name = "armi"
@@ -116,9 +126,6 @@ docs = [
 
 [project.scripts]
 armi = "armi.__main__:main"
-
-[tool.setuptools.packages]
-find = {}
 
 
 #######################################################################
