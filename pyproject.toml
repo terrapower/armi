@@ -15,19 +15,9 @@
 #######################################################################
 #                        GENERAL PYTHON CONFIG                        #
 #######################################################################
-#[build-system]
-#requires = ["setuptools>=61.2"]
-#build-backend = "setuptools.build_meta"
-#
-#[tool.setuptools.packages]
-#find = {}
-
 [build-system]
-requires = ["hatchling>=1.24.2"]
-build-backend = "hatchling.build"
-
-[tool.hatch.metadata]
-allow-direct-references = true
+requires = ["setuptools>=61.2"]
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "armi"
@@ -70,7 +60,6 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering :: Information Analysis",
 ]
 
@@ -126,6 +115,9 @@ docs = [
 
 [project.scripts]
 armi = "armi.__main__:main"
+
+[tool.setuptools.packages]
+find = {}
 
 
 #######################################################################
