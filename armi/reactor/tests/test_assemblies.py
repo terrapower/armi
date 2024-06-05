@@ -1163,6 +1163,12 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
 
         igniterFuel = self.r.core.childrenByLocator[grid[0, 0, 0]]
         # gridplate, fuel, fuel, fuel, plenum
+        for b in igniterFuel.getBlocks(Flags.FUEL):
+            fuelComp = b.getComponent(Flags.FUEL)
+            # add isotopes from clad and coolant to fuel component to test mass conservation
+            # mass should only be conserved within fuel component, not over the whole block
+            fuelComp.setNumberDensity("FE56", 1e-10)
+            fuelComp.setNumberDensity("NA23", 1e-10)
         b = igniterFuel[0]
         coolantNucs = b.getComponent(Flags.COOLANT).getNuclides()
         coolMass = 0
@@ -1175,6 +1181,8 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         igniterHMMass1 = b.getHMMass()
         igniterZircMass1 = b.getMass("ZR")
         igniterFuelBlockMass = b.getMass()
+        igniterDuctMass = b.getComponent(Flags.DUCT).getMass()
+        igniterCoolMass = b.getComponent(Flags.COOLANT).getMass()
 
         coolMass = 0
         b = igniterFuel[4]
@@ -1199,6 +1207,8 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         b = igniterFuel[1]
         igniterHMMass1AfterExpand = b.getHMMass()
         igniterZircMass1AfterExpand = b.getMass("ZR")
+        igniterDuctMassAfterExpand = b.getComponent(Flags.DUCT).getMass()
+        igniterCoolMassAfterExpand = b.getComponent(Flags.COOLANT).getMass()
 
         coolMass = 0
         b = igniterFuel[4]
@@ -1209,6 +1219,14 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         self.assertAlmostEqual(igniterMassGrid, igniterMassGridAfterExpand, 7)
         self.assertAlmostEqual(igniterHMMass1, igniterHMMass1AfterExpand, 7)
         self.assertAlmostEqual(igniterZircMass1, igniterZircMass1AfterExpand, 7)
+        # demonstrate that the duct and coolant mass are not conserved.
+        # number density stays constant, mass is scaled by ratio of new to old height
+        self.assertAlmostEqual(
+            igniterDuctMass, igniterDuctMassAfterExpand * 25.0 / 26.0, 7
+        )
+        self.assertAlmostEqual(
+            igniterCoolMass, igniterCoolMassAfterExpand * 25.0 / 26.0, 7
+        )
         # Note the masses are linearly different by the amount that the plenum shrunk
         self.assertAlmostEqual(
             igniterPlenumMass, igniterPlenumMassAfterExpand * 75 / 67.0, 7
@@ -1233,6 +1251,8 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         igniterHMMass1AfterShrink = b.getHMMass()
         igniterZircMass1AfterShrink = b.getMass("ZR")
         igniterFuelBlockMassAfterShrink = b.getMass()
+        igniterDuctMassAfterShrink = b.getComponent(Flags.DUCT).getMass()
+        igniterCoolMassAfterShrink = b.getComponent(Flags.COOLANT).getMass()
 
         coolMass = 0
         b = igniterFuel[4]
@@ -1245,6 +1265,8 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         self.assertAlmostEqual(igniterHMMass1, igniterHMMass1AfterShrink, 7)
         self.assertAlmostEqual(igniterZircMass1, igniterZircMass1AfterShrink, 7)
         self.assertAlmostEqual(igniterFuelBlockMass, igniterFuelBlockMassAfterShrink, 7)
+        self.assertAlmostEqual(igniterDuctMass, igniterDuctMassAfterShrink, 7)
+        self.assertAlmostEqual(igniterCoolMass, igniterCoolMassAfterShrink, 7)
         self.assertAlmostEqual(igniterPlenumMass, igniterPlenumMassAfterShrink, 7)
 
     def test_snapAxialMeshToReferenceConservingMassBasedOnBlockShield(self):
