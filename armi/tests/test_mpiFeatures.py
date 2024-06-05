@@ -24,9 +24,9 @@ mpiexec -n 2 python -m pytest armi/tests/test_mpiFeatures.py
 or
 mpiexec.exe -n 2 python -m pytest armi/tests/test_mpiFeatures.py
 """
-from distutils.spawn import find_executable
 from unittest.mock import patch
 import os
+import shutil
 import unittest
 
 from armi import context
@@ -47,9 +47,9 @@ from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 # determine if this is a parallel run, and MPI is installed
 MPI_EXE = None
-if find_executable("mpiexec.exe") is not None:
+if shutil.which("mpiexec.exe") is not None:
     MPI_EXE = "mpiexec.exe"
-elif find_executable("mpiexec") is not None:
+elif shutil.which("mpiexec") is not None:
     MPI_EXE = "mpiexec"
 
 MPI_COMM = context.MPI_COMM
