@@ -341,6 +341,17 @@ class DerivedShape(UnshapedComponent):
         """
         return self._deriveVolumeAndArea()
 
+    def getMaxVolume(self):
+        """
+        The maximum volume of the parent Block.
+
+        Returns
+        -------
+        vol : float
+            volume in cm^3.
+        """
+        return self.parent.getMaxArea() * self.parent.getHeight()
+
     def _deriveVolumeAndArea(self):
         """
         Derive the volume and area of a ``DerivedShape``.
@@ -383,7 +394,7 @@ class DerivedShape(UnshapedComponent):
             except:  # noqa: bare-except
                 siblingArea = None
 
-        remainingVolume = self.parent.getMaxVolume() - siblingVolume
+        remainingVolume = self.getMaxVolume() - siblingVolume
         if siblingArea:
             remainingArea = self.parent.getMaxArea() - siblingArea
 
@@ -393,8 +404,8 @@ class DerivedShape(UnshapedComponent):
                 f"The component areas in {self.parent} exceed the maximum "
                 "allowable volume based on the geometry. Check that the "
                 "geometry is defined correctly.\n"
-                f"Maximum allowable volume: {self.parent.getMaxVolume()} cm^3\n"
-                f"Volume of all non-derived shape components: {siblingVolume} cm^3\n"
+                f"Maximum allowable volume: {self.getMaxVolume()} "
+                f"cm^3\nVolume of all non-derived shape components: {siblingVolume} cm^3\n"
             )
             runLog.error(msg)
             raise ValueError(

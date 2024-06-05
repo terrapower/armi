@@ -39,7 +39,7 @@ class TestGeometryConverters(unittest.TestCase):
         self.cs = self.o.cs
 
     def test_addRing(self):
-        """Tests that the addRing method adds the correct number of fuel assemblies to the test reactor."""
+        """Tests that ``addRing`` adds the correct number of fuel assemblies to the test reactor."""
         converter = geometryConverters.FuelAssemNumModifier(self.cs)
         converter.numFuelAssems = 7
         converter.ringsToAdd = 1 * ["radial shield"]
@@ -48,7 +48,7 @@ class TestGeometryConverters(unittest.TestCase):
         numAssems = len(self.r.core.getAssemblies())
         self.assertEqual(
             numAssems, 13
-        )  # should wind up with 6 reflector assemblies per 1/3rd core
+        )  # should end up with 6 reflector assemblies per 1/3rd Core
         locator = self.r.core.spatialGrid.getLocatorFromRingAndPos(4, 1)
         shieldtype = self.r.core.childrenByLocator[locator].getType()
         self.assertEqual(
@@ -64,7 +64,7 @@ class TestGeometryConverters(unittest.TestCase):
         )  # should wind up with 11 reflector assemblies per 1/3rd core
 
     def test_setNumberOfFuelAssems(self):
-        """Tests that the setNumberOfFuelAssems method properly changes the number of fuel assemblies."""
+        """Tests that ``setNumberOfFuelAssems`` properly changes the number of fuel assemblies."""
         # tests ability to add fuel assemblies
         converter = geometryConverters.FuelAssemNumModifier(self.cs)
         converter.numFuelAssems = 60
@@ -450,12 +450,12 @@ class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
         self.assertEqual(newR.core.symmetry.domain, geometry.DomainType.FULL_CORE)
 
     def test_skipGrowToFullCoreWhenAlreadyFullCore(self):
-        """Test that hex core is not modified when third core to full core changer is called on an already full core geometry.
+        """Test that hex core is not modified when third core to full core changer is called on an
+        already full core geometry.
 
         .. test: Convert a one-third core to full core and restore back to one-third core.
             :id: T_ARMI_THIRD_TO_FULL_CORE2
             :tests: R_ARMI_THIRD_TO_FULL_CORE
-
         """
         # Check the initialization of the third core model and convert to a full core
         self.assertFalse(self.r.core.isFullCore)

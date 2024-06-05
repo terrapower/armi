@@ -25,7 +25,7 @@ Building the documentation
 Before building documentation, ensure that you have installed the test requirements into
 your ARMI virtual environment with::
 
-    pip install -e .[test]
+    pip install -e .[docs]
 
 You also need to have the following utilities available in your PATH:
 
