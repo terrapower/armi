@@ -43,36 +43,30 @@ import subprocess
 import sys
 from platform import uname
 from typing import (
+    Any,
+    Dict,
+    Generator,
+    List,
     Optional,
+    Sequence,
     Tuple,
     Type,
-    Dict,
-    Any,
-    List,
-    Sequence,
-    Generator,
 )
 
 import h5py
 import numpy
 
-from armi import context
-from armi import getApp
-from armi import meta
-from armi import runLog
-from armi import settings
+from armi import context, getApp, meta, runLog, settings
 from armi.bookkeeping.db.layout import (
-    Layout,
     DB_VERSION,
+    Layout,
     replaceNonesWithNonsense,
     replaceNonsenseWithNones,
 )
-from armi.bookkeeping.db.typedefs import History, Histories
+from armi.bookkeeping.db.typedefs import Histories, History
 from armi.nucDirectory import nuclideBases
 from armi.physics.neutronics.settings import CONF_LOADING_FILE
-from armi.reactor import grids
-from armi.reactor import parameters
-from armi.reactor import systemLayoutInput
+from armi.reactor import grids, parameters, systemLayoutInput
 from armi.reactor.assemblies import Assembly
 from armi.reactor.blocks import Block
 from armi.reactor.components import Component
@@ -170,7 +164,7 @@ class JaggedArray:
             if len(x) == 0:
                 return []
             first, rest = x[0], x[1:]
-            return JaggedArray.flatten(first) + self.flatten(rest)
+            return JaggedArray.flatten(first) + JaggedArray.flatten(rest)
         else:
             return [x]
 
