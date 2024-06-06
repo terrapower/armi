@@ -17,10 +17,10 @@ Test the cross section manager.
 
 :py:mod:`armi.physics.neutronics.crossSectionGroupManager`
 """
-from io import BytesIO
 import copy
 import os
 import unittest
+from io import BytesIO
 from unittest.mock import MagicMock
 
 from six.moves import cPickle
@@ -29,28 +29,24 @@ from armi import settings
 from armi.physics.neutronics import crossSectionGroupManager
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.physics.neutronics.crossSectionGroupManager import (
-    BlockCollection,
-    FluxWeightedAverageBlockCollection,
-)
-from armi.physics.neutronics.crossSectionGroupManager import (
-    MedianBlockCollection,
     AverageBlockCollection,
+    BlockCollection,
+    CrossSectionGroupManager,
+    FluxWeightedAverageBlockCollection,
+    MedianBlockCollection,
 )
-from armi.physics.neutronics.crossSectionGroupManager import CrossSectionGroupManager
 from armi.physics.neutronics.crossSectionSettings import XSModelingOptions
 from armi.physics.neutronics.fissionProductModel.tests import test_lumpedFissionProduct
 from armi.physics.neutronics.settings import (
-    CONF_XS_BLOCK_REPRESENTATION,
     CONF_LATTICE_PHYSICS_FREQUENCY,
+    CONF_XS_BLOCK_REPRESENTATION,
 )
 from armi.reactor.blocks import HexBlock
 from armi.reactor.flags import Flags
-from armi.reactor.tests import test_reactors, test_blocks
-from armi.tests import TEST_ROOT
-from armi.tests import mockRunLogs
+from armi.reactor.tests import test_blocks, test_reactors
+from armi.tests import TEST_ROOT, mockRunLogs
 from armi.utils import units
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
-
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -870,33 +866,30 @@ class TestCrossSectionGroupManager(unittest.TestCase):
 
         # check that settings were copied correctly
         baSettings = self.csm.cs[CONF_CROSS_SECTION]["BA"]
+        settingsList = [
+            "geometry",
+            "xsFileLocation",
+            "validBlockTypes",
+            "blockRepresentation",
+            "fluxFileLocation",
+            "driverID",
+            "criticalBuckling",
+            "nuclideReactionDriver",
+            "externalDriver",
+            "useHomogenizedBlockComposition",
+            "numInternalRings",
+            "numExternalRings",
+            "mergeIntoClad",
+            "meshSubdivisionsPerCm",
+            "xsMaxAtomNumber",
+            "minDriverDensity",
+            "averageByComponent",
+            "xsExecuteExclusive",
+            "xsPriority",
+        ]
         self.assertEqual(baSettings.xsID, "BA")
-        self.assertEqual(baSettings.geometry, aaSettings.geometry)
-        self.assertEqual(baSettings.xsFileLocation, aaSettings.xsFileLocation)
-        self.assertEqual(baSettings.validBlockTypes, aaSettings.validBlockTypes)
-        self.assertEqual(baSettings.blockRepresentation, aaSettings.blockRepresentation)
-        self.assertEqual(baSettings.fluxFileLocation, aaSettings.fluxFileLocation)
-        self.assertEqual(baSettings.driverID, aaSettings.driverID)
-        self.assertEqual(baSettings.criticalBuckling, aaSettings.criticalBuckling)
-        self.assertEqual(
-            baSettings.nuclideReactionDriver, aaSettings.nuclideReactionDriver
-        )
-        self.assertEqual(baSettings.externalDriver, aaSettings.externalDriver)
-        self.assertEqual(
-            baSettings.useHomogenizedBlockComposition,
-            aaSettings.useHomogenizedBlockComposition,
-        )
-        self.assertEqual(baSettings.numInternalRings, aaSettings.numInternalRings)
-        self.assertEqual(baSettings.numExternalRings, aaSettings.numExternalRings)
-        self.assertEqual(baSettings.mergeIntoClad, aaSettings.mergeIntoClad)
-        self.assertEqual(
-            baSettings.meshSubdivisionsPerCm, aaSettings.meshSubdivisionsPerCm
-        )
-        self.assertEqual(baSettings.xsMaxAtomNumber, aaSettings.xsMaxAtomNumber)
-        self.assertEqual(baSettings.minDriverDensity, aaSettings.minDriverDensity)
-        self.assertEqual(baSettings.averageByComponent, aaSettings.averageByComponent)
-        self.assertEqual(baSettings.xsExecuteExclusive, aaSettings.xsExecuteExclusive)
-        self.assertEqual(baSettings.xsPriority, aaSettings.xsPriority)
+        for setting in settingsList:
+            self.assertEqual(baSettings.__dict__[setting], aaSettings.__dict__[setting])
 
     def test_interactBOL(self):
         """Test `BOL` lattice physics update frequency.
