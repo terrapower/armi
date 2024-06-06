@@ -61,6 +61,7 @@ import numpy
 from armi import context, interfaces, runLog
 from armi.physics.neutronics import LatticePhysicsFrequency
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
+from armi.reactor import flags
 from armi.reactor.components import basicShapes
 from armi.reactor.flags import Flags
 from armi.utils.units import TRACE_NUMBER_DENSITY
@@ -1229,7 +1230,8 @@ class CrossSectionGroupManager(interfaces.Interface):
             if len(oldBlockCollection._validRepresentativeBlockTypes) > 0:
                 validBlockTypes = []
                 for flag in oldBlockCollection._validRepresentativeBlockTypes:
-                    validBlockTypes.append(str(flag).split(".")[1])
+                    # validBlockTypes.append(str(flag).split(".")[1])
+                    validBlockTypes.append(flags._toString(Flags, flag))
             else:
                 validBlockTypes = None
             newBlockCollection = oldBlockCollection.__class__(
