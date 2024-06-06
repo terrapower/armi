@@ -105,6 +105,26 @@ call out that you touch such a code in your PR.
 Your PR reviewer will take an extra look at any PR that touches a requirement test or implementation.
 And you will need to add a special release note under the "Changes that Affect Requirements" section header.
 
+Add Release Notes
+-----------------
+For most PRs, you will need to add release notes to the
+`Release Notes documentation <https://github.com/terrapower/armi/tree/main/doc/release>`_. The goal
+here is to help track all the important changes that happened in ARMI, so ARMI can document what
+has changed during the next `release <https://github.com/terrapower/armi/releases>`_. To that end,
+minor PRs won't require a release note.
+
+In particular, in the release notes, you will find four sections in the releasee notes:
+
+1. **New Features** - A new feature (or major addition to a current feature) was added to the code.
+2. **API Changes** - ANY change to the public-facing API of ARMI.
+3. **Bug Fixes** - ANY bug fix in the code (not the documentation), no matter how minor.
+4. **Changes that Affect Requirements** - If you touch the code (``impl``) or test (``test``) for
+   anything that currently has a requirement crumb. (This must be a non-trivial change.)
+
+If your PR fits more than one of these categories, great! Put a description of your change under
+all the categories that apply.
+
+
 Packaging and dependency management
 ===================================
 The process of packaging Python projects and managing their dependencies is somewhat

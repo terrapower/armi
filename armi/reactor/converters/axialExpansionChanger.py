@@ -197,19 +197,22 @@ class AxialExpansionChanger:
         setFuel: bool = True,
         expandFromTinputToThot: bool = False,
     ):
-        """Perform thermal expansion/contraction for an assembly given an axial temperature grid and field.
+        """Perform thermal expansion/contraction for an assembly given an axial temperature grid and
+        field.
 
-        .. impl:: Perform thermal expansion/contraction, given an axial temperature distribution over an assembly.
+        .. impl:: Perform thermal expansion/contraction, given an axial temperature distribution
+            over an assembly.
             :id: I_ARMI_AXIAL_EXP_THERM
             :implements: R_ARMI_AXIAL_EXP_THERM
 
-            This method performs component-wise thermal expansion for an assembly given a discrete temperature
-            distribution over the axial length of the Assembly. In ``setAssembly``, the Assembly is prepared
-            for axial expansion by determining Component-wise axial linkage and checking to see if a dummy Block
-            is in place (necessary for ensuring conservation properties). The discrete temperature distribution
-            is then leveraged to update Component temperatures and compute thermal expansion factors
-            (via ``updateComponentTempsBy1DTempField`` and ``computeThermalExpansionFactors``, respectively).
-            Finally, the axial expansion is performed in ``axiallyExpandAssembly``.
+            This method performs component-wise thermal expansion for an assembly given a discrete
+            temperature distribution over the axial length of the Assembly. In ``setAssembly``, the
+            Assembly is prepared for axial expansion by determining Component-wise axial linkage and
+            checking to see if a dummy Block is in place (necessary for ensuring conservation
+            properties). The discrete temperature distribution is then leveraged to update Component
+            temperatures and compute thermal expansion factors (via
+            ``updateComponentTempsBy1DTempField`` and ``computeThermalExpansionFactors``,
+            respectively). Finally, the axial expansion is performed in ``axiallyExpandAssembly``.
 
         Parameters
         ----------
@@ -251,10 +254,11 @@ class AxialExpansionChanger:
 
         Notes
         -----
-        When considering thermal expansion, if there is an axial temperature distribution on the assembly,
-        the axial expansion methodology will NOT perfectly preseve mass. The magnitude of the gradient of
-        the temperature distribution is the primary factor in determining the cumulative loss of mass conservation.
-        Additional details will be documented in :ref:`axialExpansion` of the documentation.
+        When considering thermal expansion, if there is an axial temperature distribution on the
+        assembly, the axial expansion methodology will NOT perfectly preseve mass. The magnitude of
+        the gradient of the temperature distribution is the primary factor in determining the
+        cumulative loss of mass conservation. Additional details will be documented in
+        :ref:`axialExpansion` of the documentation.
         """
         self.linked = AssemblyAxialLinkage(a)
         self.expansionData = ExpansionData(
@@ -360,7 +364,8 @@ class AxialExpansionChanger:
             b.p.z = b.p.zbottom + b.getHeight() / 2.0
 
             _checkBlockHeight(b)
-            # call component.clearCache to update the component volume, and therefore the masses, of all solid components.
+            # Call Component.clearCache to update the Component volume, and therefore the masses,
+            # of all solid components.
             for c in getSolidComponents(b):
                 c.clearCache()
             # redo mesh -- functionality based on assembly.calculateZCoords()
@@ -443,18 +448,19 @@ class AssemblyAxialLinkage:
         reference to original assembly; is directly modified/changed during expansion.
 
     linkedBlocks : dict
-        keys   --> :py:class:`Block <armi.reactor.blocks.Block>`
-
-        values --> list of axially linked blocks; index 0 = lower linked block; index 1: upper linked block.
-
-        see also: self._getLinkedBlocks()
+        - keys = :py:class:`Block <armi.reactor.blocks.Block>`
+        - values = list of axially linked blocks; index 0 = lower linked block; index 1: upper
+          linked block.
 
     linkedComponents : dict
-        keys -->   :py:class:`Component <armi.reactor.components.component.Component>`
+        - keys = :py:class:`Component <armi.reactor.components.component.Component>`
+        - values = list of axially linked components; index 0 = lower linked component;
+          index 1: upper linked component.
 
-        values --> list of axially linked components; index 0 = lower linked component; index 1: upper linked component.
-
-        see also: self._getLinkedComponents
+    See Also
+    --------
+    - self._getLinkedComponents
+    - self._getLinkedBlocks()
     """
 
     def __init__(self, StdAssem):
@@ -550,8 +556,8 @@ class AssemblyAxialLinkage:
                             errMsg = (
                                 "Multiple component axial linkages have been found for "
                                 f"Component {c}; Block {b}; Assembly {b.parent}."
-                                " This is indicative of an error in the blueprints! Linked components found are"
-                                f"{lstLinkedC[ib]} and {otherC}"
+                                " This is indicative of an error in the blueprints! Linked "
+                                f"components found are {lstLinkedC[ib]} and {otherC}"
                             )
                             runLog.error(msg=errMsg)
                             raise RuntimeError(errMsg)
@@ -583,9 +589,10 @@ def _determineLinked(componentA, componentB):
 
     Notes
     -----
-    - Requires that shapes have the getCircleInnerDiameter and getBoundingCircleOuterDiameter defined
-    - For axial linkage to be True, components MUST be solids, the same Component Class, multiplicity, and meet inner
-      and outer diameter requirements.
+    - Requires that shapes have the getCircleInnerDiameter and getBoundingCircleOuterDiameter
+      defined
+    - For axial linkage to be True, components MUST be solids, the same Component Class,
+      multiplicity, and meet inner and outer diameter requirements.
     - When component dimensions are retrieved, cold=True to ensure that dimensions are evaluated
       at cold/input temperatures. At temperature, solid-solid interfaces in ARMI may produce
       slight overlaps due to thermal expansion. Handling these potential overlaps are out of scope.
@@ -603,8 +610,8 @@ def _determineLinked(componentA, componentB):
         if isinstance(componentA, UnshapedComponent):
             runLog.warning(
                 f"Components {componentA} and {componentB} are UnshapedComponents "
-                "and do not have 'getCircleInnerDiameter' or getBoundingCircleOuterDiameter methods; "
-                "nor is it physical to do so. Instead of crashing and raising an error, "
+                "and do not have 'getCircleInnerDiameter' or getBoundingCircleOuterDiameter "
+                "methods; nor is it physical to do so. Instead of crashing and raising an error, "
                 "they are going to be assumed to not be linked.",
                 single=True,
             )
@@ -681,12 +688,18 @@ class ExpansionData:
             )
             raise RuntimeError
         if 0.0 in expFrac:
-            msg = "An expansion fraction, L1/L0, equal to 0.0, is not physical. Expansion fractions should be greater than 0.0."
+            msg = (
+                "An expansion fraction, L1/L0, equal to 0.0, is not physical. Expansion fractions "
+                "should be greater than 0.0."
+            )
             runLog.error(msg)
             raise RuntimeError(msg)
         for exp in expFrac:
             if exp < 0.0:
-                msg = "A negative expansion fraction, L1/L0, is not physical. Expansion fractions should be greater than 0.0."
+                msg = (
+                    "A negative expansion fraction, L1/L0, is not physical. Expansion fractions "
+                    "should be greater than 0.0."
+                )
                 runLog.error(msg)
                 raise RuntimeError(msg)
         for c, p in zip(componentLst, expFrac):
@@ -762,7 +775,7 @@ class ExpansionData:
         for b in self._a:
             for c in getSolidComponents(b):
                 if self.expandFromTinputToThot:
-                    # get thermal expansion factor between c.inputTemperatureInC and c.temperatureInC
+                    # get thermal expansion factor between c.inputTemperatureInC & c.temperatureInC
                     self._expansionFactors[c] = c.getThermalExpansionFactor()
                 elif c in self.componentReferenceTemperature:
                     growFrac = c.getThermalExpansionFactor(
@@ -770,9 +783,9 @@ class ExpansionData:
                     )
                     self._expansionFactors[c] = growFrac
                 else:
-                    # we want expansion factors relative to componentReferenceTemperature not Tinput.
-                    # But for this component there isn't a componentReferenceTemperature,
-                    # so we'll assume that the expansion factor is 1.0.
+                    # We want expansion factors relative to componentReferenceTemperature not
+                    # Tinput. But for this component there isn't a componentReferenceTemperature, so
+                    # we'll assume that the expansion factor is 1.0.
                     self._expansionFactors[c] = 1.0
 
     def getExpansionFactor(self, c):
@@ -810,7 +823,8 @@ class ExpansionData:
                 self.determineTargetComponent(b)
 
     def determineTargetComponent(self, b, flagOfInterest=None):
-        """Determines target component, stores it on the block, and appends it to self._componentDeterminesBlockHeight.
+        """Determines target component, stores it on the block, and appends it to
+        self._componentDeterminesBlockHeight.
 
         Parameters
         ----------
@@ -833,7 +847,7 @@ class ExpansionData:
             multiple target components found
         """
         if flagOfInterest is None:
-            # Follow expansion of most neutronically important component, fuel first then control/poison
+            # Follow expansion of most neutronically important component, fuel then control/poison
             for targetFlag in TARGET_FLAGS_IN_PREFERRED_ORDER:
                 componentWFlag = [c for c in b.getChildren() if c.hasFlags(targetFlag)]
                 if componentWFlag != []:

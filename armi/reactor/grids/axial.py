@@ -17,7 +17,7 @@ import warnings
 import numpy
 
 from armi.reactor.grids.locations import IJType, LocationBase
-from armi.reactor.grids.structuredgrid import StructuredGrid
+from armi.reactor.grids.structuredGrid import StructuredGrid
 
 if TYPE_CHECKING:
     from armi.reactor.composites import ArmiObject

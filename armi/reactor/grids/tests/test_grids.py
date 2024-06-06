@@ -183,6 +183,7 @@ class TestGrid(unittest.TestCase):
 
     def test_isAxialOnly(self):
         grid = grids.HexGrid.fromPitch(1.0, numRings=3)
+        self.assertAlmostEqual(grid.pitch, 1.0)
         self.assertEqual(grid.isAxialOnly, False)
 
         grid2 = grids.AxialGrid.fromNCells(10)
@@ -190,11 +191,13 @@ class TestGrid(unittest.TestCase):
 
     def test_lookupFactory(self):
         grid = grids.HexGrid.fromPitch(1.0, numRings=3)
+        self.assertAlmostEqual(grid.pitch, 1.0)
         self.assertEqual(grid[10, 5, 0].i, 10)
 
     def test_quasiReduce(self):
         """Make sure our DB-friendly version of reduce works."""
         grid = grids.HexGrid.fromPitch(1.0, numRings=3)
+        self.assertAlmostEqual(grid.pitch, 1.0)
         reduction = grid.reduce()
         self.assertAlmostEqual(reduction[0][1][1], 1.0)
 
@@ -208,6 +211,7 @@ class TestGrid(unittest.TestCase):
             :tests: R_ARMI_GRID_ELEM_LOC
         """
         grid = grids.HexGrid.fromPitch(1.0, numRings=0)
+        self.assertAlmostEqual(grid.pitch, 1.0)
         self.assertNotIn((0, 0, 0), grid._locations)
         _ = grid[0, 0, 0]
         self.assertIn((0, 0, 0), grid._locations)
@@ -236,6 +240,7 @@ class TestHexGrid(unittest.TestCase):
 
     def test_positions(self):
         grid = grids.HexGrid.fromPitch(1.0)
+        self.assertAlmostEqual(grid.pitch, 1.0)
         side = 1.0 / math.sqrt(3)
         assert_allclose(grid.getCoordinates((0, 0, 0)), (0.0, 0.0, 0.0))
         assert_allclose(grid.getCoordinates((1, 0, 0)), (1.5 * side, 0.5, 0.0))
@@ -353,18 +358,20 @@ class TestHexGrid(unittest.TestCase):
         self.assertEqual(third.getPositionsInRing(3), 12)
         self.assertEqual(third.getSymmetricEquivalents((3, -2)), [(-1, 3), (-2, -1)])
 
-    def test_pointsUpFlatsUp(self):
-        """Test the pointedEndUp attribute of the fromPitch method.
+    def test_cornersUpFlatsUp(self):
+        """Test the cornersUp attribute of the fromPitch method.
 
         .. test:: Build a points-up and a flats-up hexagonal grids.
             :id: T_ARMI_GRID_HEX_TYPE
             :tests: R_ARMI_GRID_HEX_TYPE
         """
-        tipsUp = grids.HexGrid.fromPitch(1.0, pointedEndUp=True)
-        flatsUp = grids.HexGrid.fromPitch(1.0, pointedEndUp=False)
+        flatsUp = grids.HexGrid.fromPitch(1.0, cornersUp=False)
+        self.assertAlmostEqual(flatsUp._unitSteps[0][0], math.sqrt(3) / 2)
+        self.assertAlmostEqual(flatsUp.pitch, 1.0)
 
-        self.assertEqual(tipsUp._unitSteps[0][0], 0.5)
-        self.assertAlmostEqual(flatsUp._unitSteps[0][0], 0.8660254037844388)
+        cornersUp = grids.HexGrid.fromPitch(1.0, cornersUp=True)
+        self.assertAlmostEqual(cornersUp._unitSteps[0][0], 0.5)
+        self.assertAlmostEqual(cornersUp.pitch, 1.0)
 
     def test_triangleCoords(self):
         g = grids.HexGrid.fromPitch(8.15)
@@ -433,11 +440,11 @@ class TestHexGrid(unittest.TestCase):
             newLoc = pickle.load(buf)
             assert_allclose(loc.indices, newLoc.indices)
 
-    def test_adjustPitch(self):
-        """Adjust the pich of a hexagonal lattice.
+    def test_adjustPitchFlatsUp(self):
+        """Adjust the pitch of a hexagonal lattice, for a "flats up" grid.
 
         .. test:: Construct a hexagonal lattice with three rings.
-            :id: T_ARMI_GRID_HEX
+            :id: T_ARMI_GRID_HEX0
             :tests: R_ARMI_GRID_HEX
 
         .. test:: Return the grid coordinates of different locations.
@@ -453,19 +460,65 @@ class TestHexGrid(unittest.TestCase):
                 offset=numpy.array([offset, offset, offset]),
             )
 
+            # test number of rings before converting pitch
+            self.assertEqual(grid._unitStepLimits[0][1], 3)
+
             # test that we CAN change the pitch, and it scales the grid (but not the offset)
             v1 = grid.getCoordinates((1, 0, 0))
             grid.changePitch(2.0)
+            self.assertAlmostEqual(grid.pitch, 2.0)
             v2 = grid.getCoordinates((1, 0, 0))
             assert_allclose(2 * v1 - offset, v2)
-            self.assertEqual(grid.pitch, 2.0)
 
-            # basic sanity: test number of rings has changed
+            # basic sanity: test number of rings has not changed
             self.assertEqual(grid._unitStepLimits[0][1], 3)
 
             # basic sanity: check the offset exists and is correct
             for i in range(3):
                 self.assertEqual(grid.offset[i], offset)
+
+    def test_adjustPitchCornersUp(self):
+        """Adjust the pich of a hexagonal lattice, for a "corners up" grid.
+
+        .. test:: Construct a hexagonal lattice with three rings.
+            :id: T_ARMI_GRID_HEX1
+            :tests: R_ARMI_GRID_HEX
+
+        .. test:: Return the grid coordinates of different locations.
+            :id: T_ARMI_GRID_GLOBAL_POS1
+            :tests: R_ARMI_GRID_GLOBAL_POS
+        """
+        # run this test for a grid with no offset, and then a few random offset values
+        for offset in [0, 1, 1.123, 3.14]:
+            offsets = [offset, 0, 0]
+            # build a hex grid with pitch=1, 3 rings, and the above offset
+            grid = grids.HexGrid(
+                unitSteps=(
+                    (0.5, -0.5, 0),
+                    (1.5 / math.sqrt(3), 1.5 / math.sqrt(3), 0),
+                    (0, 0, 0),
+                ),
+                unitStepLimits=((-3, 3), (-3, 3), (0, 1)),
+                offset=numpy.array(offsets),
+            )
+
+            # test number of rings before converting pitch
+            self.assertEqual(grid._unitStepLimits[0][1], 3)
+
+            # test that we CAN change the pitch, and it scales the grid (but not the offset)
+            v1 = grid.getCoordinates((1, 0, 0))
+            grid.changePitch(2.0)
+            self.assertAlmostEqual(grid.pitch, 2.0, delta=1e-9)
+            v2 = grid.getCoordinates((1, 0, 0))
+            correction = numpy.array([0.5, math.sqrt(3) / 2, 0])
+            assert_allclose(v1 + correction, v2)
+
+            # basic sanity: test number of rings has not changed
+            self.assertEqual(grid._unitStepLimits[0][1], 3)
+
+            # basic sanity: check the offset exists and is correct
+            for i, off in enumerate(offsets):
+                self.assertEqual(grid.offset[i], off)
 
     def test_badIndices(self):
         grid = grids.HexGrid.fromPitch(1.0, numRings=3)
