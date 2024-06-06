@@ -58,14 +58,12 @@ import string
 
 import numpy
 
-from armi import context
-from armi import interfaces
-from armi import runLog
+from armi import context, interfaces, runLog
+from armi.physics.neutronics import LatticePhysicsFrequency
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.reactor.components import basicShapes
 from armi.reactor.flags import Flags
 from armi.utils.units import TRACE_NUMBER_DENSITY
-from armi.physics.neutronics import LatticePhysicsFrequency
 
 ORDER = interfaces.STACK_ORDER.BEFORE + interfaces.STACK_ORDER.CROSS_SECTIONS
 
@@ -865,11 +863,11 @@ class CrossSectionGroupManager(interfaces.Interface):
 
         """
         # now that all cs settings are loaded, apply defaults to compound XS settings
-        from armi.physics.neutronics.settings import CONF_XS_BLOCK_REPRESENTATION
         from armi.physics.neutronics.settings import (
             CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION,
+            CONF_LATTICE_PHYSICS_FREQUENCY,
+            CONF_XS_BLOCK_REPRESENTATION,
         )
-        from armi.physics.neutronics.settings import CONF_LATTICE_PHYSICS_FREQUENCY
 
         self.cs[CONF_CROSS_SECTION].setDefaults(
             self.cs[CONF_XS_BLOCK_REPRESENTATION],
@@ -1210,8 +1208,15 @@ class CrossSectionGroupManager(interfaces.Interface):
         for newXSID in modifiedReprBlocks:
             oldXSID = origXSIDsFromNew[newXSID]
             oldBlockCollection = blockCollectionByXsGroup[oldXSID]
+            if len(oldBlockCollection._validRepresentativeBlockTypes) > 0:
+                validBlockTypes = []
+                for flag in oldBlockCollection._validRepresentativeBlockTypes:
+                    validBlockTypes.append(str(flag).split(".")[1])
+            else:
+                validBlockTypes = None
             newBlockCollection = oldBlockCollection.__class__(
                 oldBlockCollection.allNuclidesInProblem,
+                validBlockTypes=validBlockTypes,
                 averageByComponent=oldBlockCollection.averageByComponent,
             )
             newBlockCollectionsByXsGroup[newXSID] = newBlockCollection
