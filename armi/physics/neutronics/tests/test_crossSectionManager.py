@@ -866,30 +866,11 @@ class TestCrossSectionGroupManager(unittest.TestCase):
 
         # check that settings were copied correctly
         baSettings = self.csm.cs[CONF_CROSS_SECTION]["BA"]
-        settingsList = [
-            "geometry",
-            "xsFileLocation",
-            "validBlockTypes",
-            "blockRepresentation",
-            "fluxFileLocation",
-            "driverID",
-            "criticalBuckling",
-            "nuclideReactionDriver",
-            "externalDriver",
-            "useHomogenizedBlockComposition",
-            "numInternalRings",
-            "numExternalRings",
-            "mergeIntoClad",
-            "meshSubdivisionsPerCm",
-            "xsMaxAtomNumber",
-            "minDriverDensity",
-            "averageByComponent",
-            "xsExecuteExclusive",
-            "xsPriority",
-        ]
         self.assertEqual(baSettings.xsID, "BA")
-        for setting in settingsList:
-            self.assertEqual(baSettings.__dict__[setting], aaSettings.__dict__[setting])
+        for setting, baSettingValue in baSettings.__dict__.items():
+            if setting == "xsID":
+                continue
+            self.assertEqual(baSettingValue, aaSettings.__dict__[setting])
 
     def test_interactBOL(self):
         """Test `BOL` lattice physics update frequency.
