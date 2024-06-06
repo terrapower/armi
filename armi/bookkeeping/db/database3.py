@@ -1534,10 +1534,10 @@ class Database3:
                 # 3) not performing parameter renaming. This may become necessary
                 for paramName in params or h5GroupForType.keys():
                     if paramName == "location":
-                        # cast to a numpy array so that we can use list indices
-                        data = numpy.array(layout.location)[layoutIndicesForType][
-                            indexInData
-                        ]
+                        locs = []
+                        for id in indexInData:
+                            locs.append((layout.location[layoutIndicesForType[id]]))
+                        data = numpy.array(locs)
                     elif paramName in h5GroupForType:
                         dataSet = h5GroupForType[paramName]
                         try:
@@ -1573,7 +1573,9 @@ class Database3:
 
                     # iterating of numpy is not fast..
                     for c, val in zip(reorderedComps, data.tolist()):
-                        if isinstance(val, list):
+                        if paramName == "location":
+                            val = tuple(val)
+                        elif isinstance(val, list):
                             val = numpy.array(val)
 
                         histData[c][paramName][cycle, timeNode] = val
