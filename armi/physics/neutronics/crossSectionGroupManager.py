@@ -1227,10 +1227,12 @@ class CrossSectionGroupManager(interfaces.Interface):
         for newXSID in modifiedReprBlocks:
             oldXSID = origXSIDsFromNew[newXSID]
             oldBlockCollection = blockCollectionByXsGroup[oldXSID]
+
+            # create a new block collection that inherits all of the properties
+            # and settings from oldBlockCollection.
             if len(oldBlockCollection._validRepresentativeBlockTypes) > 0:
                 validBlockTypes = []
                 for flag in oldBlockCollection._validRepresentativeBlockTypes:
-                    # validBlockTypes.append(str(flag).split(".")[1])
                     validBlockTypes.append(flags._toString(Flags, flag))
             else:
                 validBlockTypes = None
