@@ -1235,7 +1235,6 @@ class CrossSectionGroupManager(interfaces.Interface):
             if len(oldBlockCollection._validRepresentativeBlockTypes) > 0:
                 validBlockTypes = []
                 for flag in oldBlockCollection._validRepresentativeBlockTypes:
-                    # validBlockTypes.append(str(flag).split(".")[1])
                     validBlockTypes.append(flags._toString(Flags, flag))
             else:
                 validBlockTypes = None
