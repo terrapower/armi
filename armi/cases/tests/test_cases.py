@@ -139,10 +139,7 @@ class TestArmiCase(unittest.TestCase):
         covRcDir = os.path.abspath(context.PROJECT_ROOT)
         # Don't actually copy the file, just check the file paths match
         covRcFile = case._getCoverageRcFile(userCovFile="", makeCopy=False)
-        if platform.system() == "Windows":
-            self.assertEqual(covRcFile, os.path.join(covRcDir, "coveragerc"))
-        else:
-            self.assertEqual(covRcFile, os.path.join(covRcDir, ".coveragerc"))
+        self.assertEqual(covRcFile, os.path.join(covRcDir, "pyproject.toml"))
 
         userFile = "UserCovRc"
         covRcFile = case._getCoverageRcFile(userCovFile=userFile, makeCopy=False)

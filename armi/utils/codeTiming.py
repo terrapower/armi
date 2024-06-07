@@ -182,7 +182,7 @@ class MasterTimer:
 
     @staticmethod
     def report(inclusion_cutoff=0.1, total_time=False):
-        r"""
+        """
         Write a string report of the timers.
 
         Parameters
@@ -190,7 +190,8 @@ class MasterTimer:
         inclusion_cutoff : float, optional
             Will not show results that have less than this fraction of the total time.
         total_time : bool, optional
-            Use either the ratio of total time or time since last report for consideration against the cutoff
+            Use either the ratio of total time or time since last report for consideration against
+            the cutoff
 
         See Also
         --------
@@ -232,7 +233,8 @@ class MasterTimer:
         inclusion_cutoff : float, optional
             Will not show results that have less than this fraction of the total time.
         total_time : bool, optional
-            Use either the ratio of total time or time since last report for consideration against the cutoff
+            Use either the ratio of total time or time since last report for consideration against
+            the cutoff
         """
         import matplotlib.pyplot as plt
         import numpy as np
@@ -308,12 +310,13 @@ class MasterTimer:
 
 
 class _Timer:
-    r"""Code timer to call at various points to measure performance.
+    """Code timer to call at various points to measure performance.
 
     see MasterTimer.getTimer() for construction
     """
 
-    _frozen = False  # if the master timer stops, all timers must freeze, with no thaw (how would that make sense in a run?)
+    # If the master timer stops, all timers must freeze with no thaw.
+    _frozen = False
 
     def __init__(self, name, start):
         self.name = name
@@ -374,7 +377,7 @@ class _Timer:
 
     @property
     def times(self):
-        """List of time start and stop pairs, if active the current time is used as the last stop."""
+        """List of time start / stop pairs, if active the current time is used as the last stop."""
         if self.isActive:
             times = copy.deepcopy(self._times)
             times[-1] = (self._times[-1][0], MasterTimer.time())

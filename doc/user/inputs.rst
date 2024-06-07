@@ -2,37 +2,51 @@
 Inputs
 ******
 
-ARMI input files define the initial state of the reactor model and tell ARMI what kind of analysis should be
-performed on it.
+ARMI input files define the initial state of the reactor model and tell ARMI what kind of analysis
+should be performed on it.
 
-.. note:: We have a :ref:`walkthrough-inputs` tutorial for a quick 
-    overview of the inputs.
+.. note:: We have a :ref:`walkthrough-inputs` tutorial for a quick overview of the inputs.
 
 There are several input files:
 
 Settings file
-	Contains simulation parameters (like full power, cycle length, and which physics modules to
-  	activate) and all kind of modeling approximation settings (e.g. convergence criteria)
+    Contains simulation parameters (like full power, cycle length, and which physics modules to
+    activate) and all kind of modeling approximation settings (e.g. convergence criteria)
 
 Blueprints file
-	Contains dimensions and composition of the components/blocks/assemblies in your reactor systems, from fuel 
-  	pins to heat exchangers
- 
+    Contains dimensions and composition of the components/blocks/assemblies in your reactor systems,
+    from fuel pins to heat exchangers
+
 Fuel management file
-	Describes how fuel moves around during a simulation
+    Describes how fuel moves around during a simulation
 
 
-Depending on the type of analysis, there may be additional inputs required. These include things like
-control logic, ex-core models for transients and shielding, etc.
+Depending on the type of analysis, developers may create other input files for things like: control
+logic, ex-core models for transients and shielding, etc.
 
-The core map input files can be graphically manipulated with the 
-:py:mod:`Grid editor <armi.utils.gridEditor>`.
+
+YAML Files
+==========
+ARMI's input files all use the `YAML <https://en.wikipedia.org/wiki/YAML>`_ format. This is a well-
+known file format, chosen because it is human-readable and easy to hand-write. That being said,
+there are two details about the YAML format that are important to know:
+
+Ordering
+    YAML is not order specific; however, one of the techniques used to limit the size of the input
+    includes using YAML anchors to resuse block and component definitions. YAML anchors (e.g.
+    ``&block_name``) must be defined before their corresponding alias (e.g. ``*block_name``) used.
+
+Duplicate Keys
+    YAML allows for duplicate keys. However, in ARMI, duplicates might be erroneous. Unfortunately,
+    because the international YAML specification allows for duplicates, none of the YAML-parsing
+    libraries see it as an error. You will have to hand-verify your inputs are correct.
 
 
 The Settings Input File
 =======================
-The **settings** input file defines a series of key/value pairs the define various information about the system you are
-modeling as well as which modules to run and various modeling/approximation settings. For example, it includes:
+The **settings** input file defines a series of key/value pairs the define various information about
+the system you are modeling as well as which modules to run and various modeling/approximation
+settings. For example, it includes:
 
 * The case title
 * The reactor power
@@ -48,11 +62,12 @@ This file is a YAML file that you can edit manually with a text editor or with t
 
 Here is an excerpt from a settings file:
 
-.. literalinclude:: ../../../armi/tests/armiRun.yaml
+.. literalinclude:: ../../armi/tests/armiRun.yaml
     :language: yaml
     :lines: 3-15
 
-A full listing of settings available in the framework may be found in the `Table of all global settings <#settings-report>`_ .
+A full listing of settings available in the framework may be found in the
+`Table of all global settings <#settings-report>`_ .
 
 Many settings are provided by the ARMI Framework, and others are defined by various plugins.
 
@@ -60,13 +75,14 @@ Many settings are provided by the ARMI Framework, and others are defined by vari
 
 The ARMI GUI
 ------------
-The ARMI GUI may be used to manipulate many common settings (though the GUI can't change all of the settings).  The GUI
-also enables the graphical manipulation of a reactor core map, and convenient automation of commands required to submit to a
-cluster.  The GUI is a front-end to
-these files. You can choose to use the GUI or not, ARMI doesn't know or care --- it just reads these files and runs them.
+The ARMI GUI may be used to manipulate many common settings (though the GUI can't change all of the
+settings).  The GUI also enables the graphical manipulation of a reactor core map, and convenient
+automation of commands required to submit to a cluster.  The GUI is a front-end to these files. You
+can choose to use the GUI or not, ARMI doesn't know or care --- it just reads these files and runs
+them.
 
-Note that one settings input file is required for each ARMI case, though many ARMI cases can refer to the same
-Blueprints, Core Map, and Fuel Management inputs.
+Note that one settings input file is required for each ARMI case, though many ARMI cases can refer
+to the same Blueprints, Core Map, and Fuel Management inputs.
 
 .. tip:: The ARMI GUI is not yet included in the open-source ARMI framework
 
@@ -462,7 +478,7 @@ The ARMI data model is represented schematically below, and the blueprints are d
     Defines :py:class:`~armi.reactor.components.component.Component` inputs for a
     :py:class:`~armi.reactor.blocks.Block`.
 
-:ref:`asssemblies <assemblies>`:
+:ref:`assemblies <assemblies>`:
     Defines vertical stacks of blocks used to define the axial profile of an
     :py:class:`~armi.reactor.assemblies.Assembly`.
 
@@ -481,11 +497,8 @@ The ARMI data model is represented schematically below, and the blueprints are d
 :ref:`custom isotopics <custom-isotopics>`:
     Special setting: defines user-specified isotopic compositions.
 
-.. warning::
-
-    YAML is not order specific; however, one of the techniques used to limit the size of the input
-    includes using YAML anchors to resuse block and component definitions. YAML anchors (e.g.
-    ``&block_name``) must be defined before their corresponding alias (e.g. ``*block_name``) used.
+The core map input files can be graphically manipulated with the 
+:py:mod:`Grid editor <armi.utils.gridEditor>`.
 
 
 .. _blocks-and-components:
@@ -563,8 +576,6 @@ material
 |Thot|
     The temperature (in C) that the component dimensions will be thermal expanded to (using material properties based on
     the ``material`` input). To disable automatic thermal expansion, set |Tinput| and |Thot| both to the same value
-
-    .. note:: The T/H modules of ARMI will update the hot temperature when coupling is activated.
 
 mult
     Multiplicity specifies how many duplicates of this component exist in this block. If you want 169 pins per assembly,
@@ -749,15 +760,14 @@ A complete definition of an inner-core assembly may be seen below::
                 nozzleType: Inner
                 xs types: [A, B, C, D, E, F]
 
-.. note:: While component dimensions are entered as cold dimensions, axial heights must
-        be entered as hot dimensions. The reason for this is that each component with different
-        material will thermally expand at different rates. In the axial dimension, this is
-        problematic because after a change in temperature each component in the same block
-        will have a different height. The solution is to pre-expand each component
-        axially and enter hot axial block heights. After the reactor is created, further
-        temperature changes will cause dimension changes only in 2 dimensions (radially). Mass
-        is always conserved, but if temperature deviates significantly from hot axial heights,
-        density may deviate as well.
+.. note:: 
+        While component dimensions are entered as cold dimensions, axial heights may be entered as 
+        either cold or hot dimensions. In older versions of ARMI, it was required to enter heights 
+        in the hot dimension (this behavior is preserved by setting `inputHeightsConsideredHot: True`).
+        However, with the 
+        :py:class:`axial expansion changer <armi.reactor.converters.axialExpansionChanger.AxialExpansionChanger>`, 
+        heights may be entered at cold temperatures (`inputHeightsConsideredHot: False`). Each Assembly will then 
+        be expanded to its hot dimensions upon construction.
 
 For many cases, a shared height and axial mesh point definition is sufficient. These can be included
 globally as shown above and linked with anchors, or specified explicitly.

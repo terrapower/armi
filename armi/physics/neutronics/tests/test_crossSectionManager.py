@@ -54,7 +54,9 @@ THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 class TestBlockCollection(unittest.TestCase):
     def setUp(self):
         self.blockList = makeBlocks()
-        self.bc = BlockCollection(self.blockList[0].r.blueprints.allNuclidesInProblem)
+        self.bc = BlockCollection(
+            self.blockList[0].core.r.blueprints.allNuclidesInProblem
+        )
         self.bc.extend(self.blockList)
 
     def test_add(self):
@@ -85,7 +87,7 @@ class TestBlockCollectionMedian(unittest.TestCase):
             b.p.percentBu = bi / 4.0 * 100
         self.blockList[0], self.blockList[2] = self.blockList[2], self.blockList[0]
         self.bc = MedianBlockCollection(
-            self.blockList[0].r.blueprints.allNuclidesInProblem
+            self.blockList[0].core.r.blueprints.allNuclidesInProblem
         )
         self.bc.extend(self.blockList)
 
@@ -122,7 +124,7 @@ class TestBlockCollectionAverage(unittest.TestCase):
 
     def setUp(self):
         self.bc = AverageBlockCollection(
-            self.blockList[0].r.blueprints.allNuclidesInProblem
+            self.blockList[0].core.r.blueprints.allNuclidesInProblem
         )
         self.bc.extend(self.blockList)
         self.bc.averageByComponent = True
@@ -157,7 +159,7 @@ class TestBlockCollectionAverage(unittest.TestCase):
         # check that a new block collection of the representative block has right temperatures
         # this is required for Doppler coefficient calculations
         newBc = AverageBlockCollection(
-            self.blockList[0].r.blueprints.allNuclidesInProblem
+            self.blockList[0].core.r.blueprints.allNuclidesInProblem
         )
         newBc.append(avgB)
         newBc.calcAvgNuclideTemperatures()
@@ -196,7 +198,7 @@ class TestBlockCollectionAverage(unittest.TestCase):
 
         # U35 has different average temperature because blocks have different U235 content
         newBc = AverageBlockCollection(
-            self.blockList[0].r.blueprints.allNuclidesInProblem
+            self.blockList[0].core.r.blueprints.allNuclidesInProblem
         )
         newBc.append(avgB)
         newBc.calcAvgNuclideTemperatures()
@@ -248,14 +250,15 @@ class TestComponentAveraging(unittest.TestCase):
 
     def setUp(self):
         self.bc = AverageBlockCollection(
-            self.blockList[0].r.blueprints.allNuclidesInProblem
+            self.blockList[0].core.r.blueprints.allNuclidesInProblem
         )
         blockCopies = [copy.deepcopy(b) for b in self.blockList]
         self.bc.extend(blockCopies)
 
     def test_getAverageComponentNumberDensities(self):
         """Test component number density averaging."""
-        # becaue of the way densities are set up, the middle block (index 1 of 0-2) component densities are equivalent to the average
+        # becaue of the way densities are set up, the middle block (index 1 of 0-2) component
+        # densities are equivalent to the average
         b = self.bc[1]
         for compIndex, c in enumerate(b.getComponents()):
             avgDensities = self.bc._getAverageComponentNumberDensities(compIndex)
@@ -671,7 +674,7 @@ class TestBlockCollectionFluxWeightedAverage(unittest.TestCase):
 
     def setUp(self):
         self.bc = FluxWeightedAverageBlockCollection(
-            self.blockList[0].r.blueprints.allNuclidesInProblem
+            self.blockList[0].core.r.blueprints.allNuclidesInProblem
         )
         self.bc.extend(self.blockList)
 
@@ -692,7 +695,7 @@ class TestCrossSectionGroupManager(unittest.TestCase):
     def setUp(self):
         cs = settings.Settings()
         self.blockList = makeBlocks(20)
-        self.csm = CrossSectionGroupManager(self.blockList[0].r, cs)
+        self.csm = CrossSectionGroupManager(self.blockList[0].core.r, cs)
         for bi, b in enumerate(self.blockList):
             b.p.percentBu = bi / 19.0 * 100
         self.csm._setBuGroupBounds([3, 10, 30, 100])
@@ -771,15 +774,14 @@ class TestCrossSectionGroupManager(unittest.TestCase):
         _o, r = test_reactors.loadTestReactor(TEST_ROOT)
         self.csm.r = r
 
-        # Assumption: All sodium in fuel blocks for this test is 450 C and this is the
-        # expected sodium temperature.
-        # These lines of code take the first sodium block and decrease the temperature of the block,
-        # but change the atom density to approximately zero.
-        # Checking later on the nuclide temperature of sodium is asserted to be still 450.
-        # This perturbation proves that altering the temperature of an component with near zero atom density
-        # does not affect the average temperature of the block collection.
-        # This demonstrates that the temperatures of a block collection are atom weighted rather than just the
-        # average temperature.
+        # Assumption: All sodium in fuel blocks for this test is 450 C and this is the expected
+        # sodium temperature. These lines of code take the first sodium block and decrease the
+        # temperature of the block, but change the atom density to approximately zero. Checking
+        # later on the nuclide temperature of sodium is asserted to be still 450. This perturbation
+        # proves that altering the temperature of an component with near zero atom density does not
+        # affect the average temperature of the block collection. This demonstrates that the
+        # temperatures of a block collection are atom weighted rather than just the average
+        # temperature.
         regularFuel = r.core.getFirstBlock(Flags.FUEL, exact=True)
         intercoolant = regularFuel.getComponent(Flags.INTERCOOLANT)
         intercoolant.setTemperature(100)  # just above melting
@@ -816,12 +818,13 @@ class TestCrossSectionGroupManager(unittest.TestCase):
 
     def test_createRepresentativeBlocksUsingExistingBlocks(self):
         """
-        Demonstrates that a new representative block can be generated from an existing representative block.
+        Demonstrates that a new representative block can be generated from an existing
+        representative block.
 
         Notes
         -----
-        This tests that the XS ID of the new representative block is correct and that the compositions are identical
-        between the original and the new representative blocks.
+        This tests that the XS ID of the new representative block is correct and that the
+        compositions are identical between the original and the new representative blocks.
         """
         o, r = test_reactors.loadTestReactor(TEST_ROOT)
         # set a few random non-default settings on AA to be copied to the new BA group
@@ -880,7 +883,7 @@ class TestCrossSectionGroupManager(unittest.TestCase):
             :tests: R_ARMI_XSGM_FREQ
         """
         self.assertFalse(self.csm.representativeBlocks)
-        self.blockList[0].r.p.timeNode = 0
+        self.blockList[0].core.r.p.timeNode = 0
         self.csm.cs[CONF_LATTICE_PHYSICS_FREQUENCY] = "BOL"
         self.csm.interactBOL()
         self.assertTrue(self.csm.representativeBlocks)
@@ -893,7 +896,7 @@ class TestCrossSectionGroupManager(unittest.TestCase):
             :tests: R_ARMI_XSGM_FREQ
         """
         self.assertFalse(self.csm.representativeBlocks)
-        self.blockList[0].r.p.timeNode = 0
+        self.blockList[0].core.r.p.timeNode = 0
         self.csm.cs[CONF_LATTICE_PHYSICS_FREQUENCY] = "BOC"
         self.csm.interactBOL()
         self.csm.interactBOC()
@@ -902,7 +905,8 @@ class TestCrossSectionGroupManager(unittest.TestCase):
     def test_interactEveryNode(self):
         """Test `everyNode` lattice physics update frequency.
 
-        .. test:: The cross-section group manager frequency depends on the LPI frequency at every time node.
+        .. test:: The cross-section group manager frequency depends on the LPI frequency at every
+            time node.
             :id: T_ARMI_XSGM_FREQ2
             :tests: R_ARMI_XSGM_FREQ
         """
@@ -918,7 +922,8 @@ class TestCrossSectionGroupManager(unittest.TestCase):
     def test_interactFirstCoupledIteration(self):
         """Test `firstCoupledIteration` lattice physics update frequency.
 
-        .. test:: The cross-section group manager frequency depends on the LPI frequency during first coupled iteration.
+        .. test:: The cross-section group manager frequency depends on the LPI frequency during
+            first coupled iteration.
             :id: T_ARMI_XSGM_FREQ3
             :tests: R_ARMI_XSGM_FREQ
         """
@@ -960,8 +965,8 @@ class TestCrossSectionGroupManager(unittest.TestCase):
 
     def test_copyPregeneratedFiles(self):
         """
-        Tests copying pre-generated cross section and flux files
-        using reactor that is built from a case settings file.
+        Tests copying pre-generated cross section and flux files using reactor that is built from a
+        case settings file.
         """
         o, r = test_reactors.loadTestReactor(TEST_ROOT)
         # Need to overwrite the relative paths with absolute
@@ -996,6 +1001,5 @@ class TestXSNumberConverters(unittest.TestCase):
 
 def makeBlocks(howMany=20):
     _o, r = test_reactors.loadTestReactor(TEST_ROOT)
-    return r.core.getBlocks(Flags.FUEL)[
-        3 : howMany + 3
-    ]  # shift y 3 to skip central assemblies 1/3 volume
+    # shift y 3 to skip central assemblies 1/3 volume
+    return r.core.getBlocks(Flags.FUEL)[3 : howMany + 3]

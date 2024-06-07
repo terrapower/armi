@@ -13,15 +13,12 @@
 # limitations under the License.
 
 """
-Reactor objects represent the highest level in the hierarchy of
-structures that compose the system to be modeled. Core objects
-represent collections of assemblies.
+Reactor objects represent the highest level in the hierarchy of structures that compose the system
+to be modeled. Core objects represent collections of assemblies.
 
-Core is a high-level object in the data model in ARMI. They
-contain assemblies which in turn contain more refinement in
-representing the physical reactor. The reactor is the owner of
-many of the plant-wide state variables such as keff, cycle,
-and node.
+Core is a high-level object in the data model in ARMI. They contain assemblies which in turn contain
+more refinement in representing the physical reactor. The reactor is the owner of many of the plant-
+wide state variables such as keff, cycle, and node.
 """
 from typing import Optional
 import collections
@@ -67,8 +64,7 @@ from armi.utils.mathematics import average1DWithinTolerance
 
 class Reactor(composites.Composite):
     """
-    Top level of the composite structure, potentially representing all
-    components in a reactor.
+    Top level of the composite structure, potentially representing all components in a reactor.
 
     This class contains the core and any ex-core structures that are to be represented in the ARMI
     model. Historically, the ``Reactor`` contained only the core. To support better representation
@@ -886,14 +882,14 @@ class Core(composites.Composite):
             The types of blocks to be counted in a single assembly
 
         assemTypeSpec : Flags or list of Flags
-            The types of assemblies that are to be examine for the blockTypes
-            of interest.  None is every assembly
+            The types of assemblies that are to be examine for the blockTypes of interest. None is
+            every assembly.
 
         Returns
         -------
         maxBlocks : int
-            The maximum number of blocks of the specified types in a single
-            assembly in the entire core
+            The maximum number of blocks of the specified types in a single assembly in the entire
+            core.
         """
         assems = self.getAssemblies(typeSpec=assemTypeSpec)
         try:
@@ -1018,8 +1014,8 @@ class Core(composites.Composite):
         self, ring, typeSpec=None, exactType=False, exclusions=None
     ):
         """
-        Returns the assemblies in a specified ring.  Definitions of rings can change
-        with problem parameters.
+        Returns the assemblies in a specified ring. Definitions of rings can change with problem
+        parameters.
 
         Parameters
         ----------
@@ -1066,9 +1062,8 @@ class Core(composites.Composite):
         self, ring, typeSpec=None, exactType=False, exclusions=None
     ):
         """
-        Gets an assemblies within a circular range of the center of the core.  This
-        function allows for more circular styled assembly shuffling instead of the
-        current hex approach.
+        Gets an assemblies within a circular range of the center of the core. This function allows
+        for more circular styled assembly shuffling instead of the current hex approach.
 
         Parameters
         ----------
@@ -1120,7 +1115,8 @@ class Core(composites.Composite):
 
     def buildCircularRingDictionary(self, ringPitch=1.0):
         """
-        Builds a dictionary of all circular rings in the core.  This is required information for getAssembliesInCircularRing.
+        Builds a dictionary of all circular rings in the core. This is required information for
+        getAssembliesInCircularRing.
 
         The purpose of this function is to allow for more circular core shuffling in the hex design.
 
@@ -1160,12 +1156,12 @@ class Core(composites.Composite):
         for assem in self.getAssemblies(includeBolAssems=True, includeSFP=True):
             aName = assem.getName()
             if aName in assymap and assymap[aName] != assem:
-                # dangerous situation that can occur in restart runs where the global assemNum isn't updated.
-                # !=assem clause added because sometimes an assem is in one of the includeAll lists that is also in the
-                # core and that's ok.
+                # dangerous situation that can occur in restart runs where the global assemNum isn't
+                # updated. !=assem clause added because sometimes an assem is in one of the
+                # includeAll lists that is also in the core and that's ok.
                 runLog.error(
-                    "Two (or more) assemblies in the reactor (and associated lists) have the name {0},\n"
-                    "including {1} and {2}.".format(aName, assem, assymap[aName])
+                    "Two (or more) assemblies in the reactor (and associated lists) have the name "
+                    "{0},\nincluding {1} and {2}.".format(aName, assem, assymap[aName])
                 )
                 raise RuntimeError("Assembly name collision.")
 
@@ -1179,8 +1175,8 @@ class Core(composites.Composite):
             :id: I_ARMI_R_GET_ASSEM_NAME
             :implements: R_ARMI_R_GET_ASSEM_NAME
 
-            This method returns the :py:class:`assembly
-            <armi.reactor.core.assemblies.Assembly>` with a name matching the
+            This method returns the :py:class:`assembly <armi.reactor.core.assemblies.Assembly>`
+            with a name matching the
             value provided as an input parameter to this function. The ``name`` of
             an assembly is based on the ``assemNum`` parameter.
 
@@ -1814,7 +1810,7 @@ class Core(composites.Composite):
 
         This uses the 'mcnp' index map (MCNP GEODST hex coordinates) instead of
         the standard (ring, pos) map. because neighbors have consistent indices
-        this way.  We then convert over to (ring, pos) using the lookup table
+        this way. We then convert over to (ring, pos) using the lookup table
         that a reactor has.
 
         Returns
@@ -2218,12 +2214,11 @@ class Core(composites.Composite):
         Parameters
         ----------
         extraAssems : list
-            additional assemblies to consider when determining the mesh points.  They may
-            be useful in the MCPNXT models to represent the fuel management dummies.
+            additional assemblies to consider when determining the mesh points. They may be useful
+            in the MCPNXT models to represent the fuel management dummies.
 
         applySubMesh : bool
-            (not implemented) generates submesh points to further discretize the radial
-            reactor mesh
+            (not implemented) generates submesh points to further discretize the radial reactor mesh
         """
         _, j, _ = self.findAllMeshPoints(extraAssems, applySubMesh)
         return j
@@ -2252,9 +2247,8 @@ class Core(composites.Composite):
 
     def getMinimumPercentFluxInFuel(self, target=0.005):
         """
-        Goes through the entire reactor to determine what percentage of flux occurs at
-        each ring. Starting with the outer ring, this function helps determine the effective
-        size of the core where additional assemblies will not help the breeding in the TWR.
+        Starting with the outer ring, this method goes through the entire Reactor to determine what
+        percentage of flux occurs at each ring.
 
         Parameters
         ----------

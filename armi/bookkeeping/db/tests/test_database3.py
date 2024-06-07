@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for the Database3 class."""
-from distutils.spawn import find_executable
+import shutil
 import subprocess
 import unittest
 
@@ -31,9 +31,9 @@ from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 # determine if this is a parallel run, and git is installed
 GIT_EXE = None
-if find_executable("git") is not None:
+if shutil.which("git") is not None:
     GIT_EXE = "git"
-elif find_executable("git.exe") is not None:
+elif shutil.which("git.exe") is not None:
     GIT_EXE = "git.exe"
 
 
