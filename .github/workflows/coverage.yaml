@@ -24,14 +24,16 @@ jobs:
           python-version: '3.11'
       - name: Update package index
         run: sudo apt-get update
-      - name: Install mpi libs
-        run: sudo apt-get -y install libopenmpi-dev
-      - name: Install Tox and any other packages
-        run: pip install tox
-      - name: Run Coverage Part 1
-        run: tox -e cov1
-      - name: Run Coverage Part 2
-        run: tox -e cov2 || true
+      - name: Install ARMI and MPI
+        run: |
+          sudo apt-get -y install libopenmpi-dev
+          pip install -e .[memprof,mpi,test]
+      - name: Run Coverage
+        run: |
+          coverage run --rcfile=pyproject.toml -m pytest -n 4 --cov=armi --cov-config=pyproject.toml --cov-report=lcov --ignore=venv armi
+          mpiexec -n 2 --use-hwthread-cpus coverage run --rcfile=pyproject.toml -m pytest --cov=armi --cov-config=pyproject.toml --cov-report=lcov --cov-append --ignore=venv armi/tests/test_mpiFeatures.py || true
+          mpiexec -n 2 --use-hwthread-cpus coverage run --rcfile=pyproject.toml -m pytest --cov=armi --cov-config=pyproject.toml --cov-report=lcov --cov-append --ignore=venv armi/tests/test_mpiParameters.py || true
+          coverage combine --rcfile=pyproject.toml --keep -a
       - name: Publish to coveralls.io
         uses: coverallsapp/github-action@v1.1.2
         with:

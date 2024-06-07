@@ -8,34 +8,70 @@ Release Date: TBD
 
 New Features
 ------------
-#. Conserve mass by component in assembly.setBlockMesh(). (`PR#1665 <https://github.com/terrapower/armi/pull/1665>`_)
+#. Conserve mass by component in ``assembly.setBlockMesh()``. (`PR#1665 <https://github.com/terrapower/armi/pull/1665>`_)
+#. Removal of the ``Block.reactor`` property. (`PR#1425 <https://github.com/terrapower/armi/pull/1425>`_)
+#. System information is now also logged on Linux. (`PR#1689 <https://github.com/terrapower/armi/pull/1689>`_)
 #. TBD
 
 API Changes
 -----------
+#. Replacing the concrete material with a better reference. (`PR#1717 <https://github.com/terrapower/armi/pull/1717>`_)
 #. Renaming ``structuredgrid.py`` to camelCase. (`PR#1650 <https://github.com/terrapower/armi/pull/1650>`_)
 #. Removing unused argument from ``Block.coords()``. (`PR#1651 <https://github.com/terrapower/armi/pull/1651>`_)
 #. Removing unused method ``HexGrid.allPositionsInThird()``. (`PR#1655 <https://github.com/terrapower/armi/pull/1655>`_)
 #. Removed unused methods: ``Reactor.getAllNuclidesIn()``, ``plotTriangleFlux()``. (`PR#1656 <https://github.com/terrapower/armi/pull/1656>`_)
 #. Removed ``armi.utils.dochelpers``; not relevant to nuclear modeling. (`PR#1662 <https://github.com/terrapower/armi/pull/1662>`_)
 #. Removing old tools created to help people convert to the current database format: ``armi.bookkeeping.db.convertDatabase()`` and ``ConvertDB``. (`PR#1658 <https://github.com/terrapower/armi/pull/1658>`_)
+#. Removed the variable ``armi.physics.neutronics.isotopicDepletion.ORDER``. (`PR#1671 <https://github.com/terrapower/armi/pull/1671>`_)
+#. Removing extraneous ``ArmiOjbect`` methods. (`PR#1667 <https://github.com/terrapower/armi/pull/1667>`_)
+    * Moving ``ArmiObject.getBoronMassEnrich()`` to ``Block``.
+    * Moving ``ArmiObject.getPuMoles()`` to ``Block``.
+    * Moving ``ArmiObject.getUraniumMassEnrich()`` to ``Block``.
+    * Removing ``ArmiObject.getMaxUraniumMassEnrich.()``.
+    * Removing ``ArmiObject.getMaxVolume()`` & ``Block.getMaxVolume()``.
+    * Removing ``ArmiObject.getPuFrac()``.
+    * Removing ``ArmiObject.getPuMass()``.
+    * Removing ``ArmiObject.getPuN()``.
+    * Removing ``ArmiObject.getZrFrac()``.
+    * Removing ``ArmiObject.printDensities()``.
+    * Moving ``Composite.isOnWhichSymmetryLine()`` to ``Assembly``.
+    * Removing ``Block.isOnWhichSymmetryLine()``.
+#. Removing the ``Block.reactor`` property. (`PR#1425 <https://github.com/terrapower/armi/pull/1425>`_)
+#. Moving several ``ArmiObject`` methods. (`PR#1425 <https://github.com/terrapower/armi/pull/1425>`_)
+    * Moving ``ArmiObject.getNeutronEnergyDepositionConstants`` to ``Block``.
+    * Moving ``ArmiObject.getGammaEnergyDepositionConstants`` to ``Block``.
+    * Moving ``ArmiObject.getTotalEnergyGenerationConstants`` to ``Block``.
+    * Moving ``ArmiObject.getFissionEnergyGenerationConstants`` to ``Block``.
+    * Moving ``ArmiObject.getCaptureEnergyGenerationConstants`` to ``Block``.
+#. Removing the parameeter ``rdIterNum``. (`PR#1704 <https://github.com/terrapower/armi/pull/1704>`_)
+#. Removing the parameters ``outsideFuelRing`` and ``outsideFuelRingFluxFr``. (`PR#1700 <https://github.com/terrapower/armi/pull/1700>`_)
+#. Removing the setting ``doOrificedTH``. (`PR#1706 <https://github.com/terrapower/armi/pull/1706>`_)
 #. TBD
 
 Bug Fixes
 ---------
 #. Fixed four bugs with "corners up" hex grids. (`PR#1649 <https://github.com/terrapower/armi/pull/1649>`_)
+#. Fixed ``safeCopy`` to work on both Windows and Linux with strict permissions (`PR#1691 <https://github.com/terrapower/armi/pull/1691>`_)
+#. TBD
+
+Quality Work
+------------
+#. Supporting MacOS in CI. (`PR#1713 <https://github.com/terrapower/armi/pull/1713>`_)
+#. We now enforce a maximum line length of 120 characters, using ``ruff``. (`PR#1646 <https://github.com/terrapower/armi/pull/1646>`_)
+#. Move ``.coveragerc`` file information into ``pyproject.toml``. (`PR#1692 <https://github.com/terrapower/armi/pull/1692>`_)
 #. TBD
 
 Changes that Affect Requirements
 --------------------------------
 #. Very minor change to ``Block.coords()``, removing unused argument. (`PR#1651 <https://github.com/terrapower/armi/pull/1651>`_)
 #. Touched ``HexGrid`` by adding a "cornersUp" property and fixing two bugs. (`PR#1649 <https://github.com/terrapower/armi/pull/1649>`_)
+#. Very slightly modified the implementation of ``Assembly.add()``. (`PR#1670 <https://github.com/terrapower/armi/pull/1670>`_)
 #. TBD
 
 
 ARMI v0.3.0
 ===========
-Release Date: 2024-01-26
+Release Date: 2024-02-02
 
 What's new in ARMI?
 -------------------

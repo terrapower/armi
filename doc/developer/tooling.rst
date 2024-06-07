@@ -116,7 +116,8 @@ minor PRs won't require a release note.
 In particular, in the release notes, you will find four sections in the releasee notes:
 
 1. **New Features** - A new feature (or major addition to a current feature) was added to the code.
-2. **API Changes** - ANY change to the public-facing API of ARMI.
+2. **API Changes** - ANY breaking change to the public-facing API of ARMI. (A breaking change is
+   when you change the existing API, not when you add something new to the API.)
 3. **Bug Fixes** - ANY bug fix in the code (not the documentation), no matter how minor.
 4. **Changes that Affect Requirements** - If you touch the code (``impl``) or test (``test``) for
    anything that currently has a requirement crumb. (This must be a non-trivial change.)

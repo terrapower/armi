@@ -104,8 +104,9 @@ MPI_COMM = None
 # MPI_SIZE is the total number of CPUs
 MPI_RANK = 0
 MPI_SIZE = 1
-MPI_NODENAME = "local"
-MPI_NODENAMES = ["local"]
+LOCAL = "local"
+MPI_NODENAME = LOCAL
+MPI_NODENAMES = [LOCAL]
 
 
 try:
@@ -124,6 +125,10 @@ try:
     MPI_SIZE = MPI_COMM.Get_size()
     MPI_NODENAME = MPI.Get_processor_name()
     MPI_NODENAMES = MPI_COMM.allgather(MPI_NODENAME)
+
+    # fix an exceptional error case when we are not in "interactive mode"
+    if MPI_SIZE > 1 and CURRENT_MODE == Mode.INTERACTIVE:
+        CURRENT_MODE = Mode.BATCH
 except ImportError:
     # stick with defaults
     pass

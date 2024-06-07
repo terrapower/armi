@@ -14,6 +14,7 @@
 
 """Testing some utility functions."""
 from collections import defaultdict
+import os
 import unittest
 
 import numpy as np
@@ -21,6 +22,7 @@ import numpy as np
 from armi import utils
 from armi.reactor.tests.test_reactors import loadTestReactor
 from armi.settings.caseSettings import Settings
+from armi.tests import mockRunLogs
 from armi.utils import (
     directoryChangers,
     getPowerFractions,
@@ -37,6 +39,7 @@ from armi.utils import (
     getCumulativeNodeNum,
     hasBurnup,
     codeTiming,
+    safeCopy,
 )
 
 
@@ -165,6 +168,33 @@ class TestGeneralUtils(unittest.TestCase):
 
         self.assertEqual(getattr(testFunc, "__doc__"), "Test function docstring.")
         self.assertEqual(getattr(testFunc, "__name__"), "testFunc")
+
+    def test_safeCopy(self):
+        with directoryChangers.TemporaryDirectoryChanger():
+            os.mkdir("dir1")
+            os.mkdir("dir2")
+            file1 = "dir1/file1.txt"
+            with open(file1, "w") as f:
+                f.write("Hello")
+            file2 = "dir1\\file2.txt"
+            with open(file2, "w") as f:
+                f.write("Hello2")
+
+            with mockRunLogs.BufferLog() as mock:
+                # Test Linuxy file path
+                self.assertEqual("", mock.getStdout())
+                safeCopy(file1, "dir2")
+                self.assertIn("Copied", mock.getStdout())
+                self.assertIn("file1", mock.getStdout())
+                self.assertIn("->", mock.getStdout())
+                # Clean up for next safeCopy
+                mock.emptyStdout()
+                # Test Windowsy file path
+                self.assertEqual("", mock.getStdout())
+                safeCopy(file2, "dir2")
+                self.assertIn("Copied", mock.getStdout())
+                self.assertIn("file2", mock.getStdout())
+                self.assertIn("->", mock.getStdout())
 
 
 class CyclesSettingsTests(unittest.TestCase):
