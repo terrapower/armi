@@ -528,6 +528,9 @@ class Operator:
                     )
                 )
 
+            # Allow inherited classes to clean up things after an interaction
+            self._finalizeInteract()
+
         runLog.header(
             "===========  Completed {} Event ===========\n".format(
                 interactionName + cycleNodeTag
@@ -535,6 +538,13 @@ class Operator:
         )
 
         return halt
+
+    def _finalizeInteract(self):
+        """Member called after each interface has completed its interaction.
+
+        Useful for cleaning up data.
+        """
+        pass
 
     def printInterfaceSummary(self, interface, interactionName, statePointIndex, *args):
         """
