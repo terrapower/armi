@@ -17,10 +17,10 @@ Test the cross section manager.
 
 :py:mod:`armi.physics.neutronics.crossSectionGroupManager`
 """
-from io import BytesIO
 import copy
 import os
 import unittest
+from io import BytesIO
 from unittest.mock import MagicMock
 
 from six.moves import cPickle
@@ -29,27 +29,24 @@ from armi import settings
 from armi.physics.neutronics import crossSectionGroupManager
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.physics.neutronics.crossSectionGroupManager import (
-    BlockCollection,
-    FluxWeightedAverageBlockCollection,
-)
-from armi.physics.neutronics.crossSectionGroupManager import (
-    MedianBlockCollection,
     AverageBlockCollection,
+    BlockCollection,
+    CrossSectionGroupManager,
+    FluxWeightedAverageBlockCollection,
+    MedianBlockCollection,
 )
-from armi.physics.neutronics.crossSectionGroupManager import CrossSectionGroupManager
+from armi.physics.neutronics.crossSectionSettings import XSModelingOptions
 from armi.physics.neutronics.fissionProductModel.tests import test_lumpedFissionProduct
 from armi.physics.neutronics.settings import (
-    CONF_XS_BLOCK_REPRESENTATION,
     CONF_LATTICE_PHYSICS_FREQUENCY,
+    CONF_XS_BLOCK_REPRESENTATION,
 )
 from armi.reactor.blocks import HexBlock
 from armi.reactor.flags import Flags
-from armi.reactor.tests import test_reactors, test_blocks
-from armi.tests import TEST_ROOT
-from armi.tests import mockRunLogs
+from armi.reactor.tests import test_blocks, test_reactors
+from armi.tests import TEST_ROOT, mockRunLogs
 from armi.utils import units
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
-
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -829,7 +826,25 @@ class TestCrossSectionGroupManager(unittest.TestCase):
         This tests that the XS ID of the new representative block is correct and that the
         compositions are identical between the original and the new representative blocks.
         """
-        _o, r = test_reactors.loadTestReactor(TEST_ROOT)
+        o, r = test_reactors.loadTestReactor(TEST_ROOT)
+        # set a few random non-default settings on AA to be copied to the new BA group
+        o.cs[CONF_CROSS_SECTION].update(
+            {
+                "AA": XSModelingOptions(
+                    "AA",
+                    geometry="0D",
+                    averageByComponent=True,
+                    xsMaxAtomNumber=60,
+                    criticalBuckling=False,
+                    xsPriority=2,
+                )
+            }
+        )
+        o.cs[CONF_CROSS_SECTION].setDefaults(
+            crossSectionGroupManager.AVERAGE_BLOCK_COLLECTION, ["fuel"]
+        )
+        aaSettings = o.cs[CONF_CROSS_SECTION]["AA"]
+        self.csm.cs = copy.deepcopy(o.cs)
         self.csm.createRepresentativeBlocks()
         unperturbedReprBlocks = copy.deepcopy(self.csm.representativeBlocks)
         self.assertNotIn("BA", unperturbedReprBlocks)
@@ -851,6 +866,14 @@ class TestCrossSectionGroupManager(unittest.TestCase):
             newReprBlock.getNumberDensities(), oldReprBlock.getNumberDensities()
         )
         self.assertEqual(origXSIDsFromNew["BA"], "AA")
+
+        # check that settings were copied correctly
+        baSettings = self.csm.cs[CONF_CROSS_SECTION]["BA"]
+        self.assertEqual(baSettings.xsID, "BA")
+        for setting, baSettingValue in baSettings.__dict__.items():
+            if setting == "xsID":
+                continue
+            self.assertEqual(baSettingValue, aaSettings.__dict__[setting])
 
     def test_interactBOL(self):
         """Test `BOL` lattice physics update frequency.
