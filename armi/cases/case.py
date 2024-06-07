@@ -30,10 +30,8 @@ import cProfile
 import glob
 import os
 import pathlib
-import platform
 import pstats
 import re
-import shutil
 import sys
 import textwrap
 import time
@@ -62,8 +60,8 @@ from armi.utils.customExceptions import NonexistentSetting
 from armi.utils.directoryChangers import DirectoryChanger
 from armi.utils.directoryChangers import ForcedCreationDirectoryChanger
 
-# change from default .coverage to help with Windows dotfile issues.
-# Must correspond with data_file entry in `coveragerc`!
+# Change from default .coverage to help with Windows dotfile issues.
+# Must correspond with data_file entry in `pyproject.toml`!
 COVERAGE_RESULTS_FILE = "coverage_results.cov"
 
 
@@ -444,6 +442,10 @@ class Case:
         """Helper to provide the coverage configuration file according to the OS. A
         user-supplied file will take precedence, and is not checked for a dot-filename.
 
+        Notes
+        -----
+        ARMI replaced the ".coveragerc" file has been replaced by "pyproject.toml".
+
         Parameters
         ----------
         userCovFile : str
@@ -455,21 +457,14 @@ class Case:
         Returns
         -------
         covFile : str
-            path of coveragerc file
+            path of pyprojec.toml file
         """
         # User-defined file takes precedence.
         if userCovFile:
             return os.path.abspath(userCovFile)
 
         covRcDir = os.path.abspath(context.PROJECT_ROOT)
-        covFile = os.path.join(covRcDir, ".coveragerc")
-        if platform.system() == "Windows":
-            covFileWin = os.path.join(covRcDir, "coveragerc")
-            if makeCopy is True:
-                # Make a copy of the file without the dot in the name
-                shutil.copy(covFile, covFileWin)
-            return covFileWin
-        return covFile
+        return os.path.join(covRcDir, "pyproject.toml")
 
     def _startProfiling(self):
         """Helper to the Case.run(): start the Python profiling,

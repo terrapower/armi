@@ -70,6 +70,9 @@ venv*/
 *.h5
 *.txt
 
+# metadata file specific to MacOS
+.DS_Store
+
 # vis files
 *.vtu
 *.vtd

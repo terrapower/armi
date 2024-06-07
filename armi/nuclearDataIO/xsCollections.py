@@ -15,11 +15,12 @@
 """
 Cross section collections contain cross sections for a single nuclide or region.
 
-Specifically, they are used as attributes of :py:class:`~armi.nuclearDataIO.xsNuclides.XSNuclide`, which
-then are combined as a :py:class:`~armi.nuclearDataIO.xsLibraries.XSLibrary`.
+Specifically, they are used as attributes of :py:class:`~armi.nuclearDataIO.xsNuclides.XSNuclide`,
+which then are combined as a :py:class:`~armi.nuclearDataIO.xsLibraries.XSLibrary`.
 
-These may represent microscopic or macroscopic neutron or photon cross sections. When they are macroscopic,
-they generally represent a whole region with many nuclides, though this is not required.
+These may represent microscopic or macroscopic neutron or photon cross sections. When they are
+macroscopic, they generally represent a whole region with many nuclides, though this is not
+required.
 
 See Also
 --------
@@ -542,6 +543,7 @@ class MacroscopicCrossSectionCreator:
         self.macros.removal += columnSum - diags
 
 
+# ruff: noqa: E501
 def computeBlockAverageChi(b, isotxsLib):
     r"""
     Return the block average total chi vector based on isotope chi vectors.

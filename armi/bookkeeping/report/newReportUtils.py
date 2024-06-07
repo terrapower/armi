@@ -617,7 +617,7 @@ def createDimensionReport(comp):
 def insertCoreAndAssemblyMaps(
     r, cs, report, blueprint, generateFullCoreMap=False, showBlockAxMesh=True
 ):
-    r"""Create core and assembly design plots.
+    """Create core and assembly design plots.
 
     Parameters
     ----------
@@ -700,7 +700,6 @@ def insertCoreAndAssemblyMaps(
         fontSize=8,
     )
 
-    plotting.close()
     report[DESIGN][CORE_MAP] = newReports.Image(
         "Map of the Core at BOL", os.path.abspath(fName)
     )
