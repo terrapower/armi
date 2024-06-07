@@ -46,6 +46,7 @@ API Changes
 #. Removing the parameeter ``rdIterNum``. (`PR#1704 <https://github.com/terrapower/armi/pull/1704>`_)
 #. Removing the parameters ``outsideFuelRing`` and ``outsideFuelRingFluxFr``. (`PR#1700 <https://github.com/terrapower/armi/pull/1700>`_)
 #. Removing the setting ``doOrificedTH``. (`PR#1706 <https://github.com/terrapower/armi/pull/1706>`_)
+#. Changing the Doppler constant params to ``VOLUME_INTEGRATED``. (`PR#1659 <https://github.com/terrapower/armi/pull/1659>`_)
 #. TBD
 
 Bug Fixes
