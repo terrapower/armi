@@ -33,8 +33,8 @@ def getBlockParameterDefinitions():
             "orientation",
             units=units.DEGREES,
             description=(
-                "Triple representing rotations counterclockwise around each spatial axis. For example, "
-                "a hex assembly rotated by 1/6th has orientation (0,0,60.0)"
+                "Triple representing rotations counterclockwise around each spatial axis. For "
+                "example, a hex assembly rotated by 1/6th has orientation (0,0,60.0)"
             ),
             default=None,
         )
@@ -161,7 +161,10 @@ def getBlockParameterDefinitions():
         pb.defParam(
             "residence",
             units=units.DAYS,
-            description="Duration that a block has been in the core multiplied by the fraction of full power generated in that time.",
+            description=(
+                "Duration that a block has been in the core multiplied by the fraction "
+                "of full power generated in that time."
+            ),
             categories=["cumulative"],
         )
 
@@ -345,7 +348,10 @@ def getBlockParameterDefinitions():
         pb.defParam(
             "axialExpTargetComponent",
             units=units.UNITLESS,
-            description="The name of the target component used for axial expansion and contraction of solid components.",
+            description=(
+                "The name of the target component used for axial expansion and "
+                "contraction of solid components."
+            ),
             default="",
             saveToDB=True,
         )
@@ -625,12 +631,11 @@ def getBlockParameterDefinitions():
         pb.defParam(
             "assemNum",
             units=units.UNITLESS,
-            description="Index that refers, nominally, to the assemNum parameter of "
-            "the containing Assembly object. This is stored on the Block to aid in "
-            "visualizing shuffle patterns and the like, and should not be used within "
-            "the code. These are not guaranteed to be consistent with the containing "
-            "Assembly, so they should not be used as a reliable means to reconstruct "
-            "the model.",
+            description="Index that refers, nominally, to the assemNum parameter of the containing "
+            "Assembly object. This is stored on the Block to aid in visualizing shuffle patterns "
+            "and the like, and should not be used within the code. These are not guaranteed to be "
+            "consistent with the containing Assembly, so they should not be used as a reliable "
+            "means to reconstruct the model.",
             categories=[parameters.Category.retainOnReplacement],
         )
 
@@ -799,7 +804,10 @@ def getBlockParameterDefinitions():
         pb.defParam(
             "smearDensity",
             units=units.UNITLESS,
-            description="Smear density of fuel pins in this block. Defined as the ratio of fuel area to total space inside cladding.",
+            description=(
+                "Smear density of fuel pins in this block. Defined as the ratio of fuel "
+                "area to total space inside cladding."
+            ),
             location=ParamLocation.AVERAGE,
         )
 

@@ -16,18 +16,21 @@
 This module contains the basic composite pattern underlying the reactor package.
 
 This follows the principles of the `Composite Design Pattern
-<https://en.wikipedia.org/wiki/Composite_pattern>`_ to allow the construction of a
-part/whole hierarchy representing a physical nuclear reactor. The composite objects act
-somewhat like lists: they can be indexed, iterated over, appended, extended, inserted,
-etc. Each member of the hierarchy knows its children and its parent, so full access to
-the hierarchy is available from everywhere. This design was chosen because of the close
-analogy of the model to the physical nature of nuclear reactors.
+<https://en.wikipedia.org/wiki/Composite_pattern>`_ to allow the construction of a part/whole
+hierarchy representing a physical nuclear reactor. The composite objects act somewhat like lists:
+they can be indexed, iterated over, appended, extended, inserted, etc. Each member of the hierarchy
+knows its children and its parent, so full access to the hierarchy is available from everywhere.
+This design was chosen because of the close analogy of the model to the physical nature of nuclear
+reactors.
 
-.. warning:: Because each member of the hierarchy is linked to the entire tree,
-    it is often unsafe to save references to individual members; it can cause
-    large and unexpected memory inefficiencies.
+Warning
+-------
+Because each member of the hierarchy is linked to the entire tree, it is often unsafe to save
+references to individual members; it can cause large and unexpected memory inefficiencies.
 
-See Also: :doc:`/developer/index`.
+See Also
+--------
+:doc:`/developer/index`.
 """
 import collections
 import itertools
@@ -44,7 +47,6 @@ from armi import runLog
 from armi import utils
 from armi.nucDirectory import elements
 from armi.nucDirectory import nucDir, nuclideBases
-from armi.nuclearDataIO import xsCollections
 from armi.physics.neutronics.fissionProductModel import fissionProductModel
 from armi.reactor import grids
 from armi.reactor import parameters
@@ -244,9 +246,9 @@ class CompositeModelType(resolveCollections.ResolveParametersMeta):
     """
     Metaclass for tracking subclasses of ArmiObject subclasses.
 
-    It is often useful to have an easily-accessible collection of all classes that
-    participate in the ARMI composite reactor model. This metaclass maintains a
-    collection of all defined subclasses, called TYPES.
+    It is often useful to have an easily-accessible collection of all classes that participate in
+    the ARMI composite reactor model. This metaclass maintains a collection of all defined
+    subclasses, called TYPES.
     """
 
     TYPES: Dict[str, Type] = dict()
@@ -273,32 +275,29 @@ class ArmiObject(metaclass=CompositeModelType):
     This:
 
     * declares the interface for objects in the composition
-    * implements default behavior for the interface common to all
-      classes
-    * Declares an interface for accessing and managing
-      child objects
+    * implements default behavior for the interface common to all classes
+    * Declares an interface for accessing and managing child objects
     * Defines an interface for accessing parents.
 
-    Called "component" in gang of four, this is an ArmiObject here because the word
-    component was already taken in ARMI.
+    Called "component" in gang of four, this is an ArmiObject here because the word component was
+    already taken in ARMI.
 
-    The :py:class:`armi.reactor.parameters.ResolveParametersMeta` metaclass is used to
-    automatically create ``ParameterCollection`` subclasses for storing parameters
-    associated with any particular subclass of ArmiObject. Defining a ``pDefs`` class
-    attribute in the definition of a subclass of ArmiObject will lead to the creation of
-    a new subclass of py:class:`armi.reactor.parameters.ParameterCollection`, which will
-    contain the definitions from that class's ``pDefs`` as well as the definitions for
-    all of its parents. A new ``paramCollectionType`` class attribute will be added to
-    the ArmiObject subclass to reflect which type of parameter collection should be
-    used.
+    The :py:class:`armi.reactor.parameters.ResolveParametersMeta` metaclass is used to automatically
+    create ``ParameterCollection`` subclasses for storing parameters associated with any particular
+    subclass of ArmiObject. Defining a ``pDefs`` class attribute in the definition of a subclass of
+    ArmiObject will lead to the creation of a new subclass of
+    py:class:`armi.reactor.parameters.ParameterCollection`, which will contain the definitions from
+    that class's ``pDefs`` as well as the definitions for all of its parents. A new
+    ``paramCollectionType`` class attribute will be added to the ArmiObject subclass to reflect
+    which type of parameter collection should be used.
 
-    .. warning::
-        This class has far too many public methods. We are in the midst of a composite
-        tree cleanup that will likely break these out onto a number of separate functional
-        classes grouping things like composition, location, shape/dimensions, and
-        various physics queries. Methods are being collected here from the various
-        specialized subclasses (Block, Assembly) in preparation for this next step.
-        As a result, the public API on this method should be considered unstable.
+    Warning
+    -------
+    This class has far too many public methods. We are in the midst of a composite tree cleanup that
+    will likely break these out onto a number of separate functional classes grouping things like
+    composition, location, shape/dimensions, and various physics queries. Methods are being
+    collected here from the various specialized subclasses (Block, Assembly) in preparation for this
+    next step. As a result, the public API on this method should be considered unstable.
 
     .. impl:: Parameters are accessible throughout the armi tree.
         :id: I_ARMI_PARAM_PART
@@ -566,7 +565,6 @@ class ArmiObject(metaclass=CompositeModelType):
         ----------
         typeSpec : TypeSpec
             Requested type of the child
-
         """
         for c in self.getChildren(deep):
             if c.hasFlags(typeSpec, exact=False):
@@ -587,7 +585,6 @@ class ArmiObject(metaclass=CompositeModelType):
         --------
         self.doChildrenHaveFlags
         self.containsOnlyChildrenWithFlags
-
         """
         return any(self.doChildrenHaveFlags(typeSpec))
 
@@ -604,7 +601,6 @@ class ArmiObject(metaclass=CompositeModelType):
         --------
         self.doChildrenHaveFlags
         self.containsAtLeastOneChildWithFlags
-
         """
         return all(self.doChildrenHaveFlags(typeSpec))
 
@@ -898,17 +894,6 @@ class ArmiObject(metaclass=CompositeModelType):
         See Also
         --------
         armi.reactor.blocks.HexBlock.getMaxArea
-        """
-        raise NotImplementedError()
-
-    def getMaxVolume(self):
-        """
-        The maximum volume of this object if it were totally full.
-
-        Returns
-        -------
-        vol : float
-            volume in cm^3.
         """
         raise NotImplementedError()
 
@@ -1365,124 +1350,6 @@ class ArmiObject(metaclass=CompositeModelType):
             return self._expandLFPs(numberDensities)
         return numberDensities
 
-    def getNeutronEnergyDepositionConstants(self):
-        """
-        Get the neutron energy deposition group constants for a composite.
-
-        Returns
-        -------
-        energyDepConstants: numpy.array
-            Neutron energy generation group constants (in Joules/cm)
-
-        Raises
-        ------
-        RuntimeError:
-            Reports if a cross section library is not assigned to a reactor.
-        """
-        if not self.r.core.lib:
-            raise RuntimeError(
-                "Cannot get neutron energy deposition group constants without "
-                "a library. Please ensure a library exists."
-            )
-
-        return xsCollections.computeNeutronEnergyDepositionConstants(
-            self.getNumberDensities(), self.r.core.lib, self.getMicroSuffix()
-        )
-
-    def getGammaEnergyDepositionConstants(self):
-        """
-        Get the gamma energy deposition group constants for a composite.
-
-        Returns
-        -------
-        energyDepConstants: numpy.array
-            Energy generation group constants (in Joules/cm)
-
-        Raises
-        ------
-        RuntimeError:
-            Reports if a cross section library is not assigned to a reactor.
-        """
-        if not self.r.core.lib:
-            raise RuntimeError(
-                "Cannot get gamma energy deposition group constants without "
-                "a library. Please ensure a library exists."
-            )
-
-        return xsCollections.computeGammaEnergyDepositionConstants(
-            self.getNumberDensities(), self.r.core.lib, self.getMicroSuffix()
-        )
-
-    def getTotalEnergyGenerationConstants(self):
-        """
-        Get the total energy generation group constants for a composite.
-
-        Gives the total energy generation rates when multiplied by the multigroup flux.
-
-        Returns
-        -------
-        totalEnergyGenConstant: numpy.array
-            Total (fission + capture) energy generation group constants (Joules/cm)
-        """
-        return (
-            self.getFissionEnergyGenerationConstants()
-            + self.getCaptureEnergyGenerationConstants()
-        )
-
-    def getFissionEnergyGenerationConstants(self):
-        """
-        Get the fission energy generation group constants for a composite.
-
-        Gives the fission energy generation rates when multiplied by the multigroup
-        flux.
-
-        Returns
-        -------
-        fissionEnergyGenConstant: numpy.array
-            Energy generation group constants (Joules/cm)
-
-        Raises
-        ------
-        RuntimeError:
-            Reports if a cross section library is not assigned to a reactor.
-        """
-        if not self.r.core.lib:
-            raise RuntimeError(
-                "Cannot compute energy generation group constants without a library"
-                ". Please ensure a library exists."
-            )
-
-        return xsCollections.computeFissionEnergyGenerationConstants(
-            self.getNumberDensities(), self.r.core.lib, self.getMicroSuffix()
-        )
-
-    def getCaptureEnergyGenerationConstants(self):
-        """
-        Get the capture energy generation group constants for a composite.
-
-        Gives the capture energy generation rates when multiplied by the multigroup
-        flux.
-
-        Returns
-        -------
-        fissionEnergyGenConstant: numpy.array
-            Energy generation group constants (Joules/cm)
-
-        Raises
-        ------
-        RuntimeError:
-            Reports if a cross section library is not assigned to a reactor.
-        """
-        if not self.r.core.lib:
-            raise RuntimeError(
-                "Cannot compute energy generation group constants without a library"
-                ". Please ensure a library exists."
-            )
-
-        return xsCollections.computeCaptureEnergyGenerationConstants(
-            self.getNumberDensities(), self.r.core.lib, self.getMicroSuffix()
-        )
-
     def _expandLFPs(self, numberDensities):
         """
         Expand the LFPs on the numberDensities dictionary using this composite's
@@ -1768,23 +1635,6 @@ class ArmiObject(metaclass=CompositeModelType):
         else:
             return 0.0
 
-    def getBoronMassEnrich(self):
-        """Return B-10 mass fraction."""
-        b10 = self.getMass("B10")
-        b11 = self.getMass("B11")
-        total = b11 + b10
-        if total == 0.0:
-            return 0.0
-        return b10 / total
-
-    def getUraniumMassEnrich(self):
-        """Returns U-235 mass fraction assuming U-235 and U-238 only."""
-        u5 = self.getMass("U235")
-        if u5 < 1e-10:
-            return 0.0
-        u8 = self.getMass("U238")
-        return u5 / (u8 + u5)
-
     def getUraniumNumEnrich(self):
         """Returns U-235 number fraction."""
         u8 = self.getNumberDensity("U238")
@@ -1792,20 +1642,6 @@ class ArmiObject(metaclass=CompositeModelType):
             return 0.0
         u5 = self.getNumberDensity("U235")
         return u5 / (u8 + u5)
-
-    def getPuN(self):
-        """Returns total number density of Pu isotopes."""
-        nucNames = [nuc.name for nuc in elements.byZ[94].nuclides]
-        return sum(self.getNuclideNumberDensities(nucNames))
-
-    def getPuMoles(self):
-        """Returns total number of moles of Pu isotopes."""
-        return (
-            self.getPuN()
-            / units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
-            * self.getVolume()
-            * self.getSymmetryFactor()
-        )
 
     def calcTotalParam(
         self,
@@ -2147,48 +1983,6 @@ class ArmiObject(metaclass=CompositeModelType):
         ]
         hmDens = sum(self.getNuclideNumberDensities(hmNuclides))
         return hmDens
-
-    def getPuMass(self):
-        """Get the mass of Pu in this object in grams."""
-        nucs = []
-        for nucName in [nuc.name for nuc in elements.byZ[94].nuclides]:
-            nucs.append(nucName)
-        pu = self.getMass(nucs)
-        return pu
-
-    def getPuFrac(self):
-        """
-        Compute the Pu/HM mass fraction in this object.
-
-        Returns
-        -------
-        puFrac : float
-            The pu mass fraction in heavy metal in this assembly
-        """
-        hm = self.getHMMass()
-        pu = self.getPuMass()
-        if hm == 0.0:
-            return 0.0
-        else:
-            return pu / hm
-
-    def getZrFrac(self):
-        """Return the total zr/(hm+zr) fraction in this assembly."""
-        hm = self.getHMMass()
-        zrNucs = [nuc.name for nuc in elements.bySymbol["ZR"].nuclides]
-        zr = self.getMass(zrNucs)
-        if hm + zr > 0:
-            return zr / (hm + zr)
-        else:
-            return 0.0
-
-    def getMaxUraniumMassEnrich(self):
-        maxV = 0
-        for child in self:
-            v = child.getUraniumMassEnrich()
-            if v > maxV:
-                maxV = v
-        return maxV
 
     def getFPMass(self):
         """Returns mass of fission products in this block in grams."""
@@ -2600,16 +2394,6 @@ class ArmiObject(metaclass=CompositeModelType):
 
         return reportGroups
 
-    def printDensities(self, expandFissionProducts=False):
-        """Get lines that have the number densities of a object."""
-        numberDensities = self.getNumberDensities(
-            expandFissionProducts=expandFissionProducts
-        )
-        lines = []
-        for nucName, nucDens in numberDensities.items():
-            lines.append("{0:6s} {1:.7E}".format(nucName, nucDens))
-        return lines
-
     def expandAllElementalsToIsotopics(self):
         reactorNucs = self.getNuclides()
         for elemental in nuclideBases.where(
@@ -2678,7 +2462,6 @@ class ArmiObject(metaclass=CompositeModelType):
             Gets components that are made of a particular material
         gatherMaterialsByVolume
             Classifies all materials by volume
-
         """
         return getDominantMaterial([self], typeSpec, exact)
 
@@ -3196,6 +2979,7 @@ class Composite(ArmiObject):
         if nuclides is None:
             nuclides = self.getNuclides()
 
+        # ruff: noqa: SIM110
         for nucName in nuclides:
             if isinstance(nuclideBases.byName[nucName], nuclideBases.LumpNuclideBase):
                 return True
@@ -3313,10 +3097,6 @@ class Composite(ArmiObject):
         for c in self.getChildren():
             c.printContents(includeNuclides=includeNuclides)
 
-    def isOnWhichSymmetryLine(self):
-        grid = self.parent.spatialGrid
-        return grid.overlapsWhichSymmetryLine(self.spatialLocator.getCompleteIndices())
-
     def _genChildByLocationLookupTable(self):
         """Update the childByLocation lookup table."""
         runLog.extra("Generating location-to-child lookup table.")
@@ -3338,19 +3118,18 @@ class StateRetainer:
     """
     Retains state during some operations.
 
-    This can be used to temporarily cache state, perform an operation, extract some info, and
-    then revert back to the original state.
+    This can be used to temporarily cache state, perform an operation, extract some info, and then
+    revert back to the original state.
 
-    * A state retainer is faster than restoring state from a database as it reduces
-      the number of IO reads; however, it does use more memory.
+    * A state retainer is faster than restoring state from a database as it reduces the number of IO
+      reads; however, it does use more memory.
 
     * This can be used on any object within the composite pattern via with
       ``[rabc].retainState([list], [of], [parameters], [to], [retain]):``.
       Use on an object up in the hierarchy applies to all objects below as well.
 
-    * This is intended to work across MPI, so that if you were to broadcast the
-      reactor the state would be correct; however the exact implication on
-      ``parameters`` may be unclear.
+    * This is intended to work across MPI, so that if you were to broadcast the reactor the state
+      would be correct; however the exact implication on ``parameters`` may be unclear.
 
     """
 
@@ -3364,9 +3143,8 @@ class StateRetainer:
             composite object to retain state (recursively)
 
         paramsToApply: iterable of parameters.Parameter
-            Iterable of parameters.Parameter to retain updated values after `__exit__`.
-            All other parameters are reverted to the original state, i.e. retained at
-            the original value.
+            Iterable of parameters.Parameter to retain updated values after `__exit__`. All other
+            parameters are reverted to the original state, i.e. retained at the original value.
         """
         self.composite = composite
         self.paramsToApply = set(paramsToApply or [])
@@ -3379,7 +3157,9 @@ class StateRetainer:
         self._enterExitHelper(lambda obj: obj.restoreBackup(self.paramsToApply))
 
     def _enterExitHelper(self, func):
-        """Helper method for ``__enter__`` and ``__exit__``. ``func`` is a lambda to either ``backUp()`` or ``restoreBackup()``."""
+        """Helper method for ``__enter__`` and ``__exit__``. ``func`` is a lambda to either
+        ``backUp()`` or ``restoreBackup()``.
+        """
         paramDefs = set()
         for child in [self.composite] + self.composite.getChildren(
             deep=True, includeMaterials=True
@@ -3401,8 +3181,8 @@ def gatherMaterialsByVolume(
     Parameters
     ----------
     objects : list of ArmiObject
-        Objects to look within. This argument allows clients to search though some subset
-        of the three (e.g. when you're looking for all CLADDING components within FUEL blocks)
+        Objects to look within. This argument allows clients to search though some subset of the
+        three (e.g. when you're looking for all CLADDING components within FUEL blocks)
 
     typeSpec : TypeSpec
         Flags for the components to look at
@@ -3412,9 +3192,9 @@ def gatherMaterialsByVolume(
 
     Notes
     -----
-    This helper method is outside the main ArmiObject tree for the special clients that need
-    to filter both by container type (e.g. Block type) with one set of flags, and Components
-    with another set of flags.
+    This helper method is outside the main ArmiObject tree for the special clients that need to
+    filter both by container type (e.g. Block type) with one set of flags, and Components with
+    another set of flags.
 
     .. warning:: This is a **composition** related helper method that will likely be filed into
         classes/modules that deal specifically with the composition of things in the data model.
@@ -3439,18 +3219,19 @@ def getDominantMaterial(
     """
     Return the first sample of the most dominant material (by volume) in a set of objects.
 
-    .. warning:: This is a **composition** related helper method that will likely be filed into
-        classes/modules that deal specifically with the composition of things in the data model.
-        Thus clients that use it from here should expect to need updates soon.
+    Warning
+    -------
+    This is a **composition** related helper method that will likely be filed into classes/modules
+    that deal specifically with the composition of things in the data model. Thus clients that use
+    it from here should expect to need updates soon.
     """
     volumes, samples = gatherMaterialsByVolume(objects, typeSpec, exact)
 
     if volumes:
         # find matName with max volume
         maxMatName = list(sorted(volumes.items(), key=lambda item: item[1])).pop()[0]
-        # return this material. Note that if this material
-        # has properties like Zr-frac, enrichment, etc. then this will
-        # just return one in the batch, not an average.
+        # return this material. Note that if this material has properties like Zr-frac, enrichment,
+        # etc. then this will just return one in the batch, not an average.
         return samples[maxMatName]
 
     return None
@@ -3461,13 +3242,13 @@ def getReactionRateDict(nucName, lib, xsSuffix, mgFlux, nDens):
     Parameters
     ----------
     nucName : str
-        nuclide name -- e.g. 'U235', 'PU239', etc. Not to be confused with the nuclide
-        _label_, see the nucDirectory module for a description of the difference.
+        nuclide name -- e.g. 'U235', 'PU239', etc. Not to be confused with the nuclide _label_, see
+        the nucDirectory module for a description of the difference.
     lib : isotxs
         cross section library
     xsSuffix : str
-        cross section suffix, consisting of the type followed by the burnup group,
-        e.g. 'AB' for the second burnup group of type A
+        cross section suffix, consisting of the type followed by the burnup group, e.g. 'AB' for the
+        second burnup group of type A
     mgFlux : numpy.nArray
         integrated mgFlux (n-cm/s)
     nDens : float

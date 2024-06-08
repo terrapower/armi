@@ -91,45 +91,6 @@ Retrieve U-235 by the AAAZZZS ID:
 >>> nuclideBases.byAAAZZZSId['2350920']
 <NuclideBase U235:  Z:92, A:235, S:0, W:2.350439e+02, Label:U235>, HL:2.22160758861e+16, Abund:7.204000e-03>
 
-.. only:: html
-
-    .. _nuclide-bases-table:
-
-    .. exec::
-        import numpy
-        from tabulate import tabulate
-        from armi.nucDirectory import nuclideBases
-
-        attributes = ['name',
-                    'type',
-                    'a',
-                    'z',
-                    'state',
-                    'abundance',
-                    'weight',
-                    'halflife']
-
-        def getAttributes(nuc):
-            if nuc.halflife == numpy.inf:
-                halflife = "inf"
-            else:
-                halflife = f'{nuc.halflife:<12.6e}'
-            return [
-                f'``{nuc.name}``',
-                f':py:class:`~armi.nucDirectory.nuclideBases.{nuc.__class__.__name__}`',
-                f'``{nuc.a}``',
-                f'``{nuc.z}``',
-                f'``{nuc.state}``',
-                f'``{nuc.abundance:<12.6e}``',
-                f'``{nuc.weight:<12.6e}``',
-                f'``{halflife}``',
-            ]
-
-        sortedNucs = sorted(nuclideBases.instances)
-        return create_table(tabulate(tabular_data=[getAttributes(nuc) for nuc in sortedNucs],
-                                        headers=attributes,
-                                        tablefmt='rst'),
-                                        caption='List of nuclides')
 """
 
 import os
@@ -356,8 +317,9 @@ class INuclide(NuclideInterface):
         """
         Create an instance of an INuclide.
 
-        .. warning::
-            Do not call this constructor directly; use the factory instead.
+        Warning
+        -------
+        Do not call this constructor directly; use the factory instead.
         """
         if element not in elements.byName.values():
             raise ValueError(
@@ -365,7 +327,8 @@ class INuclide(NuclideInterface):
             )
         if state < 0:
             raise ValueError(
-                f"Error in initializing nuclide {name}. An invalid state {state} is provided. The state must be a positive integer."
+                f"Error in initializing nuclide {name}. An invalid state {state} is provided. The "
+                "state must be a positive integer."
             )
         if halflife < 0.0:
             raise ValueError(
@@ -564,7 +527,11 @@ class NuclideBase(INuclide, IMcnpNuclide):
         )
 
     def __repr__(self):
-        return f"<{self.__class__.__name__} {self.name}:  Z:{self.z}, A:{self.a}, S:{self.state}, W:{self.weight:<12.6e}, Label:{self.label}>, HL:{self.halflife:<15.11e}, Abund:{self.abundance:<8.6e}>"
+        return (
+            f"<{self.__class__.__name__} {self.name}:  Z:{self.z}, A:{self.a}, S:{self.state}, "
+            + f"W:{self.weight:<12.6e}, Label:{self.label}>, HL:{self.halflife:<15.11e}, "
+            + f"Abund:{self.abundance:<8.6e}>"
+        )
 
     @staticmethod
     def _createName(element, a, state):

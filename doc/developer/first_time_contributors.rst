@@ -28,17 +28,10 @@ Any contribution must pass all included unit tests. You will frequently have to 
 tests your code changes break. And you should definitely add tests to cover anything
 new your code does.
 
-The standard way to run the tests is to install and use `tox <https://tox.readthedocs.io/en/latest/>`_::
+The ARMI tests are meant to be run using `pytest <https://docs.pytest.org/en/8.0.x/>`_
+locally ::
 
-    $ pip install tox
-    $ tox -- -n 6
-
-This runs the unit tests in parallel on 6 processes. Omit the ``-n 6`` argument
-to run on a single process.
-
-Or the tests can also be run using ``pytest`` directly::
-
-    $ pip intall -e .[test]
+    $ pip install -e .[test]
     $ pytest -n 4 armi
 
 Submitting Changes

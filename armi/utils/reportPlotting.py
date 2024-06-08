@@ -122,7 +122,7 @@ def plotReactorPerformance(reactor, dbi, buGroups, extension=None, history=None)
 
 
 def valueVsTime(name, x, y, key, yaxis, title, ymin=None, extension=None):
-    r"""
+    """
     Plots a value vs. time with a standard graph format.
 
     Parameters
@@ -167,7 +167,7 @@ def valueVsTime(name, x, y, key, yaxis, title, ymin=None, extension=None):
 
 
 def keffVsTime(name, time, keff, keffUnc=None, ymin=None, extension=None):
-    r"""
+    """
     Plots core keff vs. time.
 
     Parameters
@@ -317,8 +317,8 @@ def xsHistoryVsTime(name, history, buGroups, extension=None):
 
 
 def movesVsCycle(name, scalars, extension=None):
-    r"""
-    make a bar chart showing the number of moves per cycle in the full core.
+    """
+    Make a bar chart showing the number of moves per cycle in the full core.
 
     A move is defined as an assembly being picked up, moved, and put down. So if
     two assemblies are swapped, that is 2 moves. Note that it does not count

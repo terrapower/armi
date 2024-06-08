@@ -617,7 +617,7 @@ def createDimensionReport(comp):
 def insertCoreAndAssemblyMaps(
     r, cs, report, blueprint, generateFullCoreMap=False, showBlockAxMesh=True
 ):
-    r"""Create core and assembly design plots.
+    """Create core and assembly design plots.
 
     Parameters
     ----------
@@ -638,7 +638,12 @@ def insertCoreAndAssemblyMaps(
     }
 
     core = r.core
-    imageCaption = "The axial block and enrichment distributions of assemblies in the core at beginning of life. The percentage represents the block enrichment (U-235 or B-10), where as the additional character represents the cross section id of the block. The number of fine-mesh subdivisions are provided on the secondary y-axis."
+    imageCaption = (
+        "The axial block and enrichment distributions of assemblies in the core at beginning of "
+        + "life. The percentage represents the block enrichment (U-235 or B-10), where as the "
+        + "additional character represents the cross section id of the block. The number of fine-"
+        + "mesh subdivisions are provided on the secondary y-axis."
+    )
 
     report[DESIGN]["Assembly Designs"] = newReports.Section("Assembly Designs")
     currentSection = report[DESIGN]["Assembly Designs"]
@@ -695,7 +700,6 @@ def insertCoreAndAssemblyMaps(
         fontSize=8,
     )
 
-    plotting.close()
     report[DESIGN][CORE_MAP] = newReports.Image(
         "Map of the Core at BOL", os.path.abspath(fName)
     )
