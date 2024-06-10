@@ -239,6 +239,10 @@ class OperatorMPI(Operator):
 
         .. warning:: This should build empty non-core systems too.
         """
+        # Nothing to do if we never had anything
+        if self.r is None:
+            return
+
         cs = self.cs
         bp = self.r.blueprints
         spatialGrid = self.r.core.spatialGrid
