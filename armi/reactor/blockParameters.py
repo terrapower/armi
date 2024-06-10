@@ -780,7 +780,7 @@ def getBlockParameterDefinitions():
             units=units.PERCENT_FIMA,
             description="Peak percentage of the initial heavy metal atoms that have been fissioned",
             location=ParamLocation.MAX,
-            categories=["cumulative"],
+            categories=["cumulative", "eq cumulative shift"],
         )
 
         pb.defParam(
