@@ -28,7 +28,7 @@ coverage.lcov
 coverage_results.*
 htmlcov/
 monkeytype.*
-armicontrib-openmc
+armicontrib-*
 
 # No workspace crumbs.
 *~
