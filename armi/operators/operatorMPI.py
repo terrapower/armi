@@ -218,6 +218,7 @@ class OperatorMPI(Operator):
         what to do with the "reset" broadcast.
         """
         context.MPI_COMM.bcast("clear", root=0)
+        runLog.extra("Workers have been cleared.")
 
     def _clearWorker(self):
         """Clear out the reactor on the workers."""
