@@ -1089,41 +1089,36 @@ class Database3:
                     )
                     del temp
 
-            # Convert Unicode to byte-string
-            if data.dtype.kind == "U":
-                data = data.astype("S")
-
-            if data.dtype.kind == "O":
-                # Something was added to the data array that caused numpy to want to
-                # treat it as a general-purpose Object array. This usually happens
-                # because:
-                # - the data contain NoDefaults
-                # - the data contain one or more Nones,
-                # - the data contain special types like tuples, dicts, etc
-                # - the data are composed of arrays that numpy would otherwise happily
-                # convert to a higher-order array, but the dimensions of the sub-arrays
-                # are inconsistent ("jagged")
-                # - there is some sort of honest-to-goodness weird object
-                # We want to support the first two cases with minimal intrusion, since
-                # these should be pretty easy to faithfully represent in the db. The
-                # jagged case should be supported as well, but may require a less
-                # faithful representation (e.g. flattened), but the last case isn't
-                # really worth supporting.
-
-                # Here is one proposal:
-                # - Check to see if the array is jagged. all(shape == shape[0]). If not,
-                # flatten, store the data offsets and array shapes, and None locations
-                # as attrs
-                # - If not jagged, all top-level ndarrays are the same shape, so it is
-                # easier to replace Nones with ndarrays filled with special values.
-                if parameters.NoDefault in data:
-                    data = None
-                else:
-                    data, specialAttrs = packSpecialData(data, paramDef.name)
-                    attrs.update(specialAttrs)
+            # - Check to see if the array is jagged. If so, flatten, store the
+            # data offsets and array shapes, and None locations as attrs.
+            # - If not jagged, all top-level ndarrays are the same shape, so it is
+            # easier to replace Nones with ndarrays filled with special values.
             if isinstance(data, JaggedArray):
                 data, specialAttrs = packSpecialData(data, paramDef.name)
                 attrs.update(specialAttrs)
+
+            else: # numpy.ndarray
+                # Convert Unicode to byte-string
+                if data.dtype.kind == "U":
+                    data = data.astype("S")
+
+                if data.dtype.kind == "O":
+                    # Something was added to the data array that caused numpy to want to
+                    # treat it as a general-purpose Object array. This usually happens
+                    # because:
+                    # - the data contain NoDefaults
+                    # - the data contain one or more Nones,
+                    # - the data contain special types like tuples, dicts, etc
+                    # - there is some sort of honest-to-goodness weird object
+                    # We want to support the first two cases with minimal intrusion, since
+                    # these should be pretty easy to faithfully represent in the db.
+                    # The last case isn't really worth supporting.
+
+                    if parameters.NoDefault in data:
+                        data = None
+                    else:
+                        data, specialAttrs = packSpecialData(data, paramDef.name)
+                        attrs.update(specialAttrs)
 
             if data is None:
                 continue
@@ -1702,10 +1697,9 @@ def packSpecialData(
     Parameters
     ----------
     arrayData
-        An ndarray storing the data that we want to stuff into the database. These are
-        usually dtype=Object, which is how we usually end up here in the first place.
-        If the data is jagged, a special JaggedArray instance is passed in, which
-        contains a 1D array with offsets.
+        An ndarray or JaggedArray object storing the data that we want to stuff into
+        the database. If the data is jagged, a special JaggedArray instance is passed
+        in, which contains a 1D array with offsets and shapes.
 
     paramName
         The parameter name that we are trying to store data for. This is mostly used for
@@ -1715,11 +1709,11 @@ def packSpecialData(
     --------
     unpackSpecialData
     """
-    # Check to make sure that we even need to do this. If the numpy data type is
-    # not "O", chances are we have nice, clean data.
     if isinstance(arrayData, JaggedArray):
         data = arrayData.flattenedArray
     else:
+        # Check to make sure that we even need to do this. If the numpy data type is
+        # not "O", chances are we have nice, clean data.
         if arrayData.dtype != "O":
             return arrayData, {}
         else:
@@ -1746,7 +1740,7 @@ def packSpecialData(
     # A robust solution would need
     # to do this on a case-by-case basis, and re-do it any time we want to
     # write, since circumstances may change. Not only that, but we may need
-    # to perform more that one of these operations to get to an array
+    # to perform more than one of these operations to get to an array
     # that we want to put in the database.
     if any(isinstance(d, dict) for d in data):
         # we're assuming that a dict is {str: float}. We store the union of
