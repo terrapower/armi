@@ -1097,7 +1097,7 @@ class Database3:
                 data, specialAttrs = packSpecialData(data, paramDef.name)
                 attrs.update(specialAttrs)
 
-            else: # numpy.ndarray
+            else:  # numpy.ndarray
                 # Convert Unicode to byte-string
                 if data.dtype.kind == "U":
                     data = data.astype("S")
