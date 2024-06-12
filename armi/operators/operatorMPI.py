@@ -164,7 +164,7 @@ class OperatorMPI(Operator):
                 if note != "wait":
                     raise RuntimeError('did not get "wait". Got {0}'.format(note))
             elif cmd == "reset":
-                runLog.info("Workers are being reset.")
+                runLog.extra("Workers are being reset.")
             else:
                 # we don't understand the command on our own. check the interfaces
                 # this allows all interfaces to have their own custom operation code.
