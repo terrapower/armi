@@ -91,6 +91,13 @@ class FailingInterface3(Interface):
         return False
 
 
+class MockInterface(Interface):
+    name = "mockInterface"
+
+    def interactInit(self):
+        pass
+
+
 class MpiOperatorTests(unittest.TestCase):
     """Testing the MPI parallelization operator."""
 
@@ -139,6 +146,31 @@ class MpiOperatorTests(unittest.TestCase):
             self.assertRaises(Exception, self.o.operate)
         else:
             self.o.operate()
+
+    @unittest.skipIf(context.MPI_SIZE <= 1 or MPI_EXE is None, "Parallel test only")
+    def test_finalizeInteract(self):
+        """Test to make sure workers are reset after interface interactions."""
+        # Add a random number of interfaces
+        interface = MockInterface(self.o.r, self.o.cs)
+        self.o.addInterface(interface)
+
+        with mockRunLogs.BufferLog() as mock:
+            if context.MPI_RANK == 0:
+                self.o.interactAllInit()
+                context.MPI_COMM.bcast("quit", root=0)
+                context.MPI_COMM.bcast("finished", root=0)
+            else:
+                self.o.workerOperate()
+
+            logMessage = (
+                "Workers have been reset."
+                if context.MPI_RANK == 0
+                else "Workers are being reset."
+            )
+            numCalls = len(
+                [line for line in mock.getStdout().splitlines() if logMessage in line]
+            )
+            self.assertGreaterEqual(numCalls, 1)
 
 
 # these two must be defined up here so that they can be pickled

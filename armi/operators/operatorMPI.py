@@ -163,6 +163,8 @@ class OperatorMPI(Operator):
                 note = context.MPI_COMM.bcast("wait", root=0)
                 if note != "wait":
                     raise RuntimeError('did not get "wait". Got {0}'.format(note))
+            elif cmd == "reset":
+                runLog.extra("Workers are being reset.")
             else:
                 # we don't understand the command on our own. check the interfaces
                 # this allows all interfaces to have their own custom operation code.
@@ -193,13 +195,27 @@ class OperatorMPI(Operator):
             pm = getPluginManager()
             resetFlags = pm.hook.mpiActionRequiresReset(cmd=cmd)
             # only reset if all the plugins agree to reset
-            if all(resetFlags):
+            if all(resetFlags) or cmd == "reset":
                 self._resetWorker()
 
             # might be an mpi action which has a reactor and everything, preventing
             # garbage collection
             del cmd
             gc.collect()
+
+    def _finalizeInteract(self):
+        """Inherited member called after each interface has completed its interact.
+
+        This will force all the workers to clear their reactor data so that it
+        isn't carried around to the next interact.
+
+        Notes
+        -----
+        This is only called on the root processor. Worker processors will know
+        what to do with the "reset" broadcast.
+        """
+        context.MPI_COMM.bcast("reset", root=0)
+        runLog.extra("Workers have been reset.")
 
     def _resetWorker(self):
         """
@@ -214,12 +230,16 @@ class OperatorMPI(Operator):
 
         .. warning:: This should build empty non-core systems too.
         """
-        xsGroups = self.getInterface("xsGroups")
-        if xsGroups:
-            xsGroups.clearRepresentativeBlocks()
+        # Nothing to do if we never had anything
+        if self.r is None:
+            return
+
         cs = self.cs
         bp = self.r.blueprints
         spatialGrid = self.r.core.spatialGrid
+        xsGroups = self.getInterface("xsGroups")
+        if xsGroups:
+            xsGroups.clearRepresentativeBlocks()
         self.detach()
         self.r = reactors.Reactor(cs.caseTitle, bp)
         core = reactors.Core("Core")
