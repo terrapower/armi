@@ -163,8 +163,8 @@ class OperatorMPI(Operator):
                 note = context.MPI_COMM.bcast("wait", root=0)
                 if note != "wait":
                     raise RuntimeError('did not get "wait". Got {0}'.format(note))
-            elif cmd == "clear":
-                runLog.info("Workers are being cleared.")
+            elif cmd == "reset":
+                runLog.info("Workers are being reset.")
             else:
                 # we don't understand the command on our own. check the interfaces
                 # this allows all interfaces to have their own custom operation code.
@@ -192,14 +192,11 @@ class OperatorMPI(Operator):
                         )
                     )
 
-            if cmd == "clear":
-                self._clearWorker()
-            else:
-                pm = getPluginManager()
-                resetFlags = pm.hook.mpiActionRequiresReset(cmd=cmd)
-                # only reset if all the plugins agree to reset
-                if all(resetFlags):
-                    self._resetWorker()
+            pm = getPluginManager()
+            resetFlags = pm.hook.mpiActionRequiresReset(cmd=cmd)
+            # only reset if all the plugins agree to reset
+            if all(resetFlags) or cmd == "reset":
+                self._resetWorker()
 
             # might be an mpi action which has a reactor and everything, preventing
             # garbage collection
@@ -217,15 +214,8 @@ class OperatorMPI(Operator):
         This is only called on the root processor. Worker processors will know
         what to do with the "reset" broadcast.
         """
-        context.MPI_COMM.bcast("clear", root=0)
-        runLog.extra("Workers have been cleared.")
-
-    def _clearWorker(self):
-        """Clear out the reactor on the workers."""
-        xsGroups = self.getInterface("xsGroups")
-        if xsGroups:
-            xsGroups.clearRepresentativeBlocks()
-        self.detach()
+        context.MPI_COMM.bcast("reset", root=0)
+        runLog.extra("Workers have been reset.")
 
     def _resetWorker(self):
         """
@@ -247,9 +237,10 @@ class OperatorMPI(Operator):
         cs = self.cs
         bp = self.r.blueprints
         spatialGrid = self.r.core.spatialGrid
-
-        self._clearWorker()
-
+        xsGroups = self.getInterface("xsGroups")
+        if xsGroups:
+            xsGroups.clearRepresentativeBlocks()
+        self.detach()
         self.r = reactors.Reactor(cs.caseTitle, bp)
         core = reactors.Core("Core")
         self.r.add(core)
