@@ -18,7 +18,7 @@ import six
 from armi import runLog
 from armi.physics.neutronics import crossSectionGroupManager
 from armi.reactor import parameters
-from armi.reactor.parameters import ParamLocation, Parameter, NoDefault
+from armi.reactor.parameters import NoDefault, Parameter, ParamLocation
 from armi.reactor.parameters.parameterDefinitions import isNumpyArray
 from armi.utils import units
 from armi.utils.units import ASCII_LETTER_A
@@ -785,6 +785,7 @@ def getBlockParameterDefinitions():
             units=units.PERCENT_FIMA,
             description="Peak percentage of the initial heavy metal atoms that have been fissioned",
             location=ParamLocation.MAX,
+            categories=["cumulative", "eq cumulative shift"],
         )
 
         pb.defParam(
