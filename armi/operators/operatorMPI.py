@@ -216,7 +216,7 @@ class OperatorMPI(Operator):
         """
         if context.MPI_SIZE > 1:
             context.MPI_COMM.bcast("reset", root=0)
-        runLog.extra("Workers have been reset.")
+            runLog.extra("Workers have been reset.")
 
     def _resetWorker(self):
         """
