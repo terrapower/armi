@@ -21,6 +21,11 @@ The grid editor may be invoked with the :py:mod:`armi.cli.gridGui` entry point::
 
     $ python -m armi grids
 
+If you have an existing set of input files, pass in the blueprints input file
+as the first argument and the system will load up the associated grid, e.g.::
+
+    $ python -m armi grids FFTF-blueprints.yaml
+
 
 **Known Issues**
 
