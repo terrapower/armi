@@ -115,6 +115,10 @@ class Setting:
         """
         self.name = name
         self.description = description or name
+        runLog.warning(
+            f"DeprecationWarning: Setting {name} defined without description.",
+            single=True,
+        )
         self.label = label or name
         self.options = options
         self.enforcedOptions = enforcedOptions
