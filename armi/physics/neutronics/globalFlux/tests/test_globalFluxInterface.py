@@ -213,7 +213,7 @@ class TestGlobalFluxInterfaceWithExecuters(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.cs = settings.Settings()
-        _o, cls.r = test_reactors.loadTestReactor()
+        cls.r = test_reactors.loadTestReactor()[1]
 
     def setUp(self):
         self.r.core.p.keff = 1.0
@@ -380,7 +380,7 @@ class TestGlobalFluxResultMapper(unittest.TestCase):
     def test_updateCycleDoseParams(self, mockGetMaxParam):
         # set up situation
         mockGetMaxParam.return_value = 1.23
-        o, r = test_reactors.loadTestReactor(customSettings={CONF_XS_KERNEL: "MC2v2"})
+        o, r = test_reactors.loadTestReactor()
         applyDummyFlux(r)
         r.core.lib = isotxs.readBinary(ISOAA_PATH)
         r.p.timeNode = 1
@@ -416,7 +416,7 @@ class TestGlobalFluxResultMapper(unittest.TestCase):
 
     def test_updateLoadpadDose(self):
         # init test reactor
-        o, r = test_reactors.loadTestReactor(customSettings={CONF_XS_KERNEL: "MC2v2"})
+        o, r = test_reactors.loadTestReactor()
 
         # init options
         opts = globalFluxInterface.GlobalFluxOptions("test_updateLoadpadDose")
