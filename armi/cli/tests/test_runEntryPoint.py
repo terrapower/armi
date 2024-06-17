@@ -374,17 +374,18 @@ class TestRunSuiteCommand(unittest.TestCase):
 class TestVisFileEntryPointCommand(unittest.TestCase):
     def test_visFileEntryPointBasics(self):
         with TemporaryDirectoryChanger() as newDir:
+            # build test DB
             self.o, self.r = loadTestReactor(
                 TEST_ROOT, customSettings={"reloadDBName": "reloadingDB.h5"}
             )
             reduceTestReactorRings(self.r, self.o.cs, maxNumRings=2)
-
             self.dbi = DatabaseInterface(self.r, self.o.cs)
             dbPath = os.path.join(newDir.destination, f"{self._testMethodName}.h5")
             self.dbi.initDB(fName=dbPath)
             self.db = self.dbi.database
             self.db.writeToDB(self.r)
 
+            # create Viz entry point
             vf = VisFileEntryPoint()
             vf.addOptions()
             vf.parse_args([dbPath])
@@ -392,6 +393,7 @@ class TestVisFileEntryPointCommand(unittest.TestCase):
             self.assertEqual(vf.name, "vis-file")
             self.assertIsNone(vf.settingsArgument)
 
+            # test the invoke method
             with mockRunLogs.BufferLog() as mock:
                 self.assertEqual("", mock.getStdout())
 
@@ -399,3 +401,11 @@ class TestVisFileEntryPointCommand(unittest.TestCase):
 
                 desired = "Creating visualization file for cycle 0, time node 0..."
                 self.assertIn(desired, mock.getStdout())
+
+            # test the parse method (using the same DB to save time)
+            vf = VisFileEntryPoint()
+            vf.parse([dbPath])
+            self.assertIsNone(vf.args.nodes)
+            self.assertIsNone(vf.args.min_node)
+            self.assertIsNone(vf.args.max_node)
+            self.assertEqual(vf.args.output_name, "test_visFileEntryPointBasics")
