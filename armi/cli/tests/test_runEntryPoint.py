@@ -18,6 +18,7 @@ import sys
 import unittest
 
 from armi.__main__ import main
+from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.bookkeeping.visualization.entryPoint import VisFileEntryPoint
 from armi.cli.checkInputs import CheckInputEntryPoint, ExpandBlueprints
 from armi.cli.clone import CloneArmiRunCommandBatch, CloneSuiteCommand
@@ -30,6 +31,7 @@ from armi.cli.reportsEntryPoint import ReportsEntryPoint
 from armi.cli.run import RunEntryPoint
 from armi.cli.runSuite import RunSuiteCommand
 from armi.physics.neutronics.diffIsotxs import CompareIsotxsLibraries
+from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
 from armi.tests import mockRunLogs, TEST_ROOT, ARMI_RUN_PATH
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 from armi.utils.dynamicImporter import getEntireFamilyTree
@@ -371,9 +373,29 @@ class TestRunSuiteCommand(unittest.TestCase):
 
 class TestVisFileEntryPointCommand(unittest.TestCase):
     def test_visFileEntryPointBasics(self):
-        vf = VisFileEntryPoint()
-        vf.addOptions()
-        vf.parse_args(["/path/to/fake.h5"])
+        with TemporaryDirectoryChanger() as newDir:
+            self.o, self.r = loadTestReactor(
+                TEST_ROOT, customSettings={"reloadDBName": "reloadingDB.h5"}
+            )
+            reduceTestReactorRings(self.r, self.o.cs, maxNumRings=2)
 
-        self.assertEqual(vf.name, "vis-file")
-        self.assertIsNone(vf.settingsArgument)
+            self.dbi = DatabaseInterface(self.r, self.o.cs)
+            dbPath = os.path.join(newDir.destination, f"{self._testMethodName}.h5")
+            self.dbi.initDB(fName=dbPath)
+            self.db = self.dbi.database
+            self.db.writeToDB(self.r)
+
+            vf = VisFileEntryPoint()
+            vf.addOptions()
+            vf.parse_args([dbPath])
+
+            self.assertEqual(vf.name, "vis-file")
+            self.assertIsNone(vf.settingsArgument)
+
+            with mockRunLogs.BufferLog() as mock:
+                self.assertEqual("", mock.getStdout())
+
+                vf.invoke()
+
+                desired = "Creating visualization file for cycle 0, time node 0..."
+                self.assertIn(desired, mock.getStdout())
