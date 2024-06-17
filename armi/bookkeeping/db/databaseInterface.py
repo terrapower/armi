@@ -169,6 +169,8 @@ class DatabaseInterface(interfaces.Interface):
         # We cannot presume whether we are at EOL based on cycle and cs["nCycles"],
         # since cs["nCycles"] is not a difinitive indicator of EOL; ultimately the
         # Operator has the final say.
+        # I want a failure at EOC without using sys.exit()
+        ded = deathAtEOC
         if not self.o.atEOL:
             self.r.core.p.minutesSinceStart = (
                 time.time() - self.r.core.timeOfStart
