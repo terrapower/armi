@@ -223,16 +223,32 @@ class TestExpandBlueprints(unittest.TestCase):
 
 class TestExtractInputs(unittest.TestCase):
     def test_extractInputsBasics(self):
-        ei = ExtractInputs()
-        ei.addOptions()
-        ei.parse_args(["/path/to/fake"])
+        with TemporaryDirectoryChanger() as newDir:
+            # build test DB
+            o, r = loadTestReactor(TEST_ROOT)
+            dbi = DatabaseInterface(r, o.cs)
+            dbPath = os.path.join(newDir.destination, f"{self._testMethodName}.h5")
+            dbi.initDB(fName=dbPath)
+            db = dbi.database
+            db.writeToDB(r)
 
-        self.assertEqual(ei.name, "extract-inputs")
-        self.assertEqual(ei.args.output_base, "/path/to/fake")
+            # init the CLI
+            ei = ExtractInputs()
+            ei.addOptions()
+            ei.parse_args([dbPath])
 
-        with self.assertRaises(FileNotFoundError):
-            # The "fake" file doesn't exist, so this should fail.
-            ei.invoke()
+            # test the CLI initialization
+            self.assertEqual(ei.name, "extract-inputs")
+            self.assertEqual(ei.args.output_base, dbPath[:-3])
+
+            # run the CLI on a test DB, verify it worked via logging
+            with mockRunLogs.BufferLog() as mock:
+                runLog.LOG.startLog("test_extractInputsBasics")
+                runLog.LOG.setVerbosity(logging.INFO)
+                self.assertEqual("", mock.getStdout())
+                ei.invoke()
+                self.assertIn("Writing settings to", mock.getStdout())
+                self.assertIn("Writing blueprints to", mock.getStdout())
 
 
 class TestInjectInputs(unittest.TestCase):
