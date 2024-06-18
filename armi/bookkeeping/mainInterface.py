@@ -95,16 +95,16 @@ class MainInterface(interfaces.Interface):
         """
         At the start of each run, arbitrary lists of user-defined files can be copied around.
 
-        This logic is controlled by the settings ``CONF_COPY_FILES_FROM`` & ``CONF_COPY_FILES_TO``.
+        This logic is controlled by the settings ``copyFilesFrom`` & ``copyFilesTo``.
 
-        ``CONF_COPY_FILES_FROM`` :
+        ``copyFilesFrom`` :
 
         - List of files to copy (cannot be directories).
         - Can be of length zero (that just means no files will be copied).
         - The file names listed can use the ``*`` glob syntax, to reference multiple files.
 
 
-        ``CONF_COPY_FILES_TO`` :
+        ``copyFilesTo`` :
 
         - List of directories to copy the files into.
         - Can be of length zero; all files will be copied to the local dir.
