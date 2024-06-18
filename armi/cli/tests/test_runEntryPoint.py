@@ -13,10 +13,12 @@
 # limitations under the License.
 """Test for run cli entry point."""
 from shutil import copyfile
+import logging
 import os
 import sys
 import unittest
 
+from armi import runLog
 from armi.__main__ import main
 from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.bookkeeping.visualization.entryPoint import VisFileEntryPoint
@@ -92,6 +94,8 @@ class TestCheckInputEntryPoint(unittest.TestCase):
         ci.parse_args([ARMI_RUN_PATH])
 
         with mockRunLogs.BufferLog() as mock:
+            runLog.LOG.startLog("test_checkInputEntryPointInvoke")
+            runLog.LOG.setVerbosity(logging.INFO)
             self.assertEqual("", mock.getStdout())
 
             ci.invoke()
@@ -208,6 +212,8 @@ class TestExpandBlueprints(unittest.TestCase):
 
         # Since the file is fake, invoke() should exit early.
         with mockRunLogs.BufferLog() as mock:
+            runLog.LOG.startLog("test_expandBlueprintsBasics")
+            runLog.LOG.setVerbosity(logging.INFO)
             self.assertEqual("", mock.getStdout())
             ebp.invoke()
             self.assertIn("does not exist", mock.getStdout())
@@ -242,6 +248,8 @@ class TestInjectInputs(unittest.TestCase):
         ii.parse_args(["/path/to/fake.h5"])
 
         with mockRunLogs.BufferLog() as mock:
+            runLog.LOG.startLog("test_injectInputsInvokeIgnore")
+            runLog.LOG.setVerbosity(logging.INFO)
             self.assertEqual("", mock.getStdout())
             ii.invoke()
             self.assertIn("No settings", mock.getStdout())
@@ -374,6 +382,8 @@ class TestRunSuiteCommand(unittest.TestCase):
 
         # test the invoke method
         with mockRunLogs.BufferLog() as mock:
+            runLog.LOG.startLog("test_runSuiteCommandBasics")
+            runLog.LOG.setVerbosity(logging.INFO)
             self.assertEqual("", mock.getStdout())
             rs.invoke()
             self.assertIn("Finding potential settings files", mock.getStdout())
@@ -405,6 +415,8 @@ class TestVisFileEntryPointCommand(unittest.TestCase):
 
             # test the invoke method
             with mockRunLogs.BufferLog() as mock:
+                runLog.LOG.startLog("test_visFileEntryPointBasics")
+                runLog.LOG.setVerbosity(logging.INFO)
                 self.assertEqual("", mock.getStdout())
 
                 vf.invoke()
