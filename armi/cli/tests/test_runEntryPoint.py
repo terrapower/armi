@@ -181,6 +181,10 @@ class TestCompareCases(unittest.TestCase):
         self.assertIsNone(cc.args.timestepCompare)
         self.assertIsNone(cc.args.weights)
 
+        with self.assertRaises(ValueError):
+            # The "fake" files do exist, so this should fail.
+            cc.invoke()
+
 
 class TestCompareSuites(unittest.TestCase):
     def test_compareSuitesBasics(self):
@@ -218,11 +222,9 @@ class TestExtractInputs(unittest.TestCase):
         self.assertEqual(ei.name, "extract-inputs")
         self.assertEqual(ei.args.output_base, "/path/to/fake")
 
-        with mockRunLogs.BufferLog() as mock:
-            self.assertEqual("", mock.getStdout())
-            with self.assertRaises(FileNotFoundError):
-                # The "fake" file doesn't exist, so this should fail.
-                ei.invoke()
+        with self.assertRaises(FileNotFoundError):
+            # The "fake" file doesn't exist, so this should fail.
+            ei.invoke()
 
 
 class TestInjectInputs(unittest.TestCase):
@@ -254,11 +256,9 @@ class TestInjectInputs(unittest.TestCase):
             ii.parse_args(["/path/to/fake.h5", "--blueprints", bp])
 
             # invoke and check log
-            with mockRunLogs.BufferLog() as mock:
-                self.assertEqual("", mock.getStdout())
-                with self.assertRaises(FileNotFoundError):
-                    # The "fake.h5" doesn't exist, so this should fail.
-                    ii.invoke()
+            with self.assertRaises(FileNotFoundError):
+                # The "fake.h5" doesn't exist, so this should fail.
+                ii.invoke()
 
 
 class TestMigrateInputs(unittest.TestCase):
