@@ -313,11 +313,9 @@ class TestReportsEntryPoint(unittest.TestCase):
         self.assertEqual(rep.name, "report")
         self.assertEqual(rep.settingsArgument, "optional")
 
-        with mockRunLogs.BufferLog() as mock:
-            self.assertEqual("", mock.getStdout())
-            with self.assertRaises(ValueError):
-                # The "fake.h5" doesn't exist, so this should fail.
-                rep.invoke()
+        with self.assertRaises(ValueError):
+            # The "fake.h5" doesn't exist, so this should fail.
+            rep.invoke()
 
 
 class TestCompareIsotxsLibsEntryPoint(unittest.TestCase):
@@ -330,6 +328,10 @@ class TestCompareIsotxsLibsEntryPoint(unittest.TestCase):
 
         self.assertEqual(com.name, "diff-isotxs")
         self.assertIsNone(com.settingsArgument)
+
+        with self.assertRaises(FileNotFoundError):
+            # The provided files don't exist, so this should fail.
+            com.invoke()
 
 
 class TestRunEntryPoint(unittest.TestCase):
