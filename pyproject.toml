@@ -34,7 +34,7 @@ dependencies = [
     "h5py>=3.0,<=3.9", # Needed because our database files are H5 format
     "htmltree>=0.7.6", # Our reports have HTML output
     "matplotlib>=3.5.3,<3.8.0", # Important plotting library
-    "numpy>=1.21,<=1.23.5", # Important math library
+    "numpy>=1.21", # Important math library
     "ordered-set>=3.1.1", # A useful data structure
     "pluggy>=1.2.0", # Central tool behind the ARMI Plugin system
     "pyDOE>=0.3.8", # We import a Latin-hypercube algorithm to explore a phase space

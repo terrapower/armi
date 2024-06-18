@@ -36,24 +36,19 @@ import collections
 import itertools
 import operator
 import timeit
-from typing import Dict, Optional, Type, Tuple, List, Union
+from typing import Dict, List, Optional, Tuple, Type, Union
 
 import numpy
 import six
 import tabulate
 
-from armi import context
-from armi import runLog
-from armi import utils
-from armi.nucDirectory import elements
-from armi.nucDirectory import nucDir, nuclideBases
+from armi import context, runLog, utils
+from armi.nucDirectory import elements, nucDir, nuclideBases
 from armi.physics.neutronics.fissionProductModel import fissionProductModel
-from armi.reactor import grids
-from armi.reactor import parameters
+from armi.reactor import grids, parameters
 from armi.reactor.flags import Flags, TypeSpec
 from armi.reactor.parameters import resolveCollections
-from armi.utils import densityTools
-from armi.utils import units
+from armi.utils import densityTools, units
 from armi.utils.densityTools import calculateNumberDensity
 
 
@@ -217,7 +212,7 @@ def _defineBaseParameters():
         the DB, it is possible to recover the flags from that.
         * Storing flags to the DB may be complicated, since it is easier to imagine a
         number of flags that is greater than the width of natively-supported integer
-        types, requiring some extra tricks to store the flages in an HDF5 file.
+        types, requiring some extra tricks to store the flags in an HDF5 file.
         * Allowing flags to be modified by plugins further complicates things, in that
         it is important to ensure that the meaning of all bits in the flag value are
         consistent between a database state and the current ARMI environment. This may

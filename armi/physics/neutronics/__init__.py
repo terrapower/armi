@@ -36,8 +36,7 @@ from enum import IntEnum
 import numpy
 import tabulate
 
-from armi import plugins
-from armi import runLog
+from armi import plugins, runLog
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
 
 
@@ -79,8 +78,8 @@ class NeutronicsPlugin(plugins.ArmiPlugin):
     @plugins.HOOKIMPL
     def defineSettings():
         """Define settings for the plugin."""
-        from armi.physics.neutronics import settings as neutronicsSettings
         from armi.physics.neutronics import crossSectionSettings
+        from armi.physics.neutronics import settings as neutronicsSettings
         from armi.physics.neutronics.fissionProductModel import (
             fissionProductModelSettings,
         )
@@ -99,10 +98,10 @@ class NeutronicsPlugin(plugins.ArmiPlugin):
     @plugins.HOOKIMPL
     def defineSettingsValidators(inspector):
         """Implementation of settings inspections for neutronics settings."""
-        from armi.physics.neutronics.settings import getNeutronicsSettingValidators
         from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import (
             getFissionProductModelSettingValidators,
         )
+        from armi.physics.neutronics.settings import getNeutronicsSettingValidators
 
         settingsValidators = getNeutronicsSettingValidators(inspector)
         settingsValidators.extend(getFissionProductModelSettingValidators(inspector))
@@ -132,7 +131,6 @@ from armi.physics.neutronics.const import (
     NEUTRONGAMMA,
     RESTARTFILES,
 )
-
 
 # ARC and CCCC cross section file format names
 COMPXS = "COMPXS"
@@ -252,18 +250,20 @@ def applyEffectiveDelayedNeutronFractionToCore(core, cs):
         core.p.betaDecayConstants = numpy.array(decayConstants)
 
         reportTableData.append(("Total Delayed Neutron Fraction", core.p.beta))
-        reportTableData.append(
-            ("Group-wise Delayed Neutron Fractions", core.p.betaComponents)
-        )
-        reportTableData.append(
-            ("Group-wise Precursor Decay Constants", core.p.betaDecayConstants)
-        )
+        for i, betaComponent in enumerate(core.p.betaComponents):
+            reportTableData.append(
+                (f"Group {i} Delayed Neutron Fractions", betaComponent)
+            )
+        for i, decayConstant in enumerate(core.p.betaDecayConstants):
+            reportTableData.append(
+                ("Group {i} Precursor Decay Constants", decayConstant)
+            )
 
     # Report to the user the values were not applied.
     if not reportTableData and (beta is not None or decayConstants is not None):
         runLog.warning(
             f"Delayed neutron fraction(s) - {beta} and decay constants"
-            " - {decayConstants} have not been applied."
+            f" - {decayConstants} have not been applied."
         )
     else:
         runLog.extra(
