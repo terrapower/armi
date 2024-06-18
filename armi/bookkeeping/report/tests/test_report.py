@@ -13,12 +13,13 @@
 # limitations under the License.
 
 """Really basic tests of the report Utils."""
+from glob import glob
+from unittest.mock import patch
 import logging
 import os
 import subprocess
 import sys
 import unittest
-from unittest.mock import patch
 
 from armi import runLog, settings
 from armi.bookkeeping import report
@@ -30,6 +31,7 @@ from armi.bookkeeping.report.reportingUtils import (
     getNodeName,
     getSystemInfo,
     makeBlockDesignReport,
+    makeCoreDesignReport,
     setNeutronBalancesReport,
     summarizePinDesign,
     summarizePower,
@@ -181,6 +183,10 @@ class TestReport(unittest.TestCase):
     def test_reactorSpecificReporting(self):
         """Test a number of reporting utils that require reactor/core information."""
         o, r = loadTestReactor()
+
+        # make sure makeCoreDesignReport() doesn't fail, though it won't generate an output here
+        makeCoreDesignReport(r.core, o.cs)
+        self.assertEqual(len(glob("*.html")), 0)
 
         with mockRunLogs.BufferLog() as mock:
             # we should start with a clean slate
