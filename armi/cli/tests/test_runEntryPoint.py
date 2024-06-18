@@ -365,10 +365,18 @@ class TestRunSuiteCommand(unittest.TestCase):
     def test_runSuiteCommandBasics(self):
         rs = RunSuiteCommand()
         rs.addOptions()
-        rs.parse_args(["/path/to/fake.yaml"])
+        rs.parse_args(["/path/to/fake.yaml", "-l"])
 
         self.assertEqual(rs.name, "run-suite")
         self.assertIsNone(rs.settingsArgument)
+
+        # test the invoke method
+        with mockRunLogs.BufferLog() as mock:
+            self.assertEqual("", mock.getStdout())
+            rs.invoke()
+            self.assertIn("Finding potential settings files", mock.getStdout())
+            self.assertIn("Checking for valid settings", mock.getStdout())
+            self.assertIn("Primary Log Verbosity", mock.getStdout())
 
 
 class TestVisFileEntryPointCommand(unittest.TestCase):
