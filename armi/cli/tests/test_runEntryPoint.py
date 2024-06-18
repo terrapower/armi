@@ -177,28 +177,30 @@ class TestCloneSuiteCommand(unittest.TestCase):
 
 class TestCompareCases(unittest.TestCase):
     def test_compareCasesBasics(self):
-        cc = CompareCases()
-        cc.addOptions()
-        cc.parse_args(["/path/to/fake1.h5", "/path/to/fake2.h5"])
+        with TemporaryDirectoryChanger():
+            cc = CompareCases()
+            cc.addOptions()
+            cc.parse_args(["/path/to/fake1.h5", "/path/to/fake2.h5"])
 
-        self.assertEqual(cc.name, "compare")
-        self.assertIsNone(cc.args.timestepCompare)
-        self.assertIsNone(cc.args.weights)
+            self.assertEqual(cc.name, "compare")
+            self.assertIsNone(cc.args.timestepCompare)
+            self.assertIsNone(cc.args.weights)
 
-        with self.assertRaises(ValueError):
-            # The "fake" files do exist, so this should fail.
-            cc.invoke()
+            with self.assertRaises(ValueError):
+                # The "fake" files do exist, so this should fail.
+                cc.invoke()
 
 
 class TestCompareSuites(unittest.TestCase):
     def test_compareSuitesBasics(self):
-        cs = CompareSuites()
-        cs.addOptions()
-        cs.parse_args(["/path/to/fake1.h5", "/path/to/fake2.h5"])
+        with TemporaryDirectoryChanger():
+            cs = CompareSuites()
+            cs.addOptions()
+            cs.parse_args(["/path/to/fake1.h5", "/path/to/fake2.h5"])
 
-        self.assertEqual(cs.name, "compare-suites")
-        self.assertEqual(cs.args.reference, "/path/to/fake1.h5")
-        self.assertIsNone(cs.args.weights)
+            self.assertEqual(cs.name, "compare-suites")
+            self.assertEqual(cs.args.reference, "/path/to/fake1.h5")
+            self.assertIsNone(cs.args.weights)
 
 
 class TestExpandBlueprints(unittest.TestCase):
