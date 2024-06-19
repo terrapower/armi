@@ -46,7 +46,7 @@ def getSimpleDBOperator(cs):
     It's used to make the db unit tests run very quickly.
     """
     newSettings = {}
-    newSettings[CONF_LOADING_FILE] = "refOneBlockReactor.yaml"
+    newSettings[CONF_LOADING_FILE] = "smallestTestReactor/refOneBlockReactor.yaml"
     newSettings["verbosity"] = "important"
     newSettings["db"] = True
     newSettings["runType"] = "Standard"
