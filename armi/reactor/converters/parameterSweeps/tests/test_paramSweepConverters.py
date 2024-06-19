@@ -32,7 +32,9 @@ THIS_DIR = os.path.dirname(__file__)
 
 class TestParamSweepConverters(unittest.TestCase):
     def setUp(self):
-        self.o, self.r = loadTestReactor(TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+        self.o, self.r = loadTestReactor(
+            TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
         self.cs = self.o.cs
 
     def test_paramSweepConverter(self):
