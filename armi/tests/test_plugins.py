@@ -153,7 +153,9 @@ class TestPluginBasics(unittest.TestCase):
             :tests: R_ARMI_PLUGIN_INTERFACES
         """
         # generate a test operator, with a full set of interfaces from plugsin
-        o = loadTestReactor(TEST_ROOT)[0]
+        o = loadTestReactor(
+            TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )[0]
         pm = getPluginManagerOrFail()
 
         # test the plugins were generated
