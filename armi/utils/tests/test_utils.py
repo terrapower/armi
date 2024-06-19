@@ -143,7 +143,9 @@ class TestGeneralUtils(unittest.TestCase):
     def test_classesInHierarchy(self):
         """Tests the classesInHierarchy utility."""
         # load the test reactor
-        _o, r = loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+        _o, r = loadTestReactor(
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
 
         # call the `classesInHierarchy` function
         classCounts = defaultdict(lambda: 0)
