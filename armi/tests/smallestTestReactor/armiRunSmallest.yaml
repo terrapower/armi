@@ -1,3 +1,7 @@
+# This is a non-physical test reactor.
+# This is designed to speed up testing of code that only technically needs a full reactor object.
+# This is a single-hex-assembly reactor, with only one block.
+
 settings:
   availabilityFactor: 1
   beta: 0.003454
