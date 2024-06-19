@@ -83,7 +83,9 @@ class TestDatabaseInterface(unittest.TestCase):
     def setUp(self):
         self.td = directoryChangers.TemporaryDirectoryChanger()
         self.td.__enter__()
-        self.o, self.r = loadTestReactor(TEST_ROOT)
+        self.o, self.r = loadTestReactor(
+            TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
         self.dbi = DatabaseInterface(self.r, self.o.cs)
         self.dbi.initDB(fName=self._testMethodName + ".h5")
         self.db: Database3 = self.dbi.database
