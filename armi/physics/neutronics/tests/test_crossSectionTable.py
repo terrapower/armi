@@ -60,7 +60,9 @@ class TestCrossSectionTable(unittest.TestCase):
             :id: T_ARMI_DEPL_ABC
             :tests: R_ARMI_DEPL_ABC
         """
-        _o, r = loadTestReactor()
+        _o, r = loadTestReactor(
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
         cs = Settings()
 
         aid = idi.AbstractIsotopicDepleter(r, cs)
