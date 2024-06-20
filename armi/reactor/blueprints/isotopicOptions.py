@@ -393,15 +393,11 @@ class CustomIsotopic(yamlize.Map):
         material.massFrac = dict(self.massFracs)
         if self.density is not None:
             if not isinstance(material, materials.Custom):
-                runLog.warning(
-                    "You either specified a custom mass density or number densities "
-                    "(which implies a mass density) on `{}` with custom isotopics `{}`. "
-                    "This has no effect on this Material class; you can only "
-                    "override mass density on `Custom` "
-                    "materials. Consider switching to number fraction input. "
-                    "Continuing to use {} mass density.".format(
-                        material, self.name, material
-                    )
+                runLog.important(
+                    "A custom density or number densities has been specified for a non-custom "
+                    "material. The material density will not be updated to prevent unintentional "
+                    "density changes across the model. Only custom materials may have a density "
+                    "specified."
                 )
                 # specifically, non-Custom materials only use refDensity and dLL, mat.customDensity has no effect
                 return

@@ -225,7 +225,31 @@ class ComponentBlueprint(yamlize.Object):
             constructedObject = components.factory(shape, [], kwargs)
             _setComponentFlags(constructedObject, self.flags, blueprint)
             insertDepletableNuclideKeys(constructedObject, blueprint)
+
+        # set the custom density for non-custom material components after construction
+        self.customDensityCheck(constructedObject, blueprint)
+
         return constructedObject
+
+    def customDensityCheck(self, constructedComponent, blueprint):
+        """Apply a custom density to a material with custom isotopics but not a 'custom material'."""
+        if self.isotopics is not None:
+            # must nest because one can't check for attribues on a NoneType
+            if blueprint.customIsotopics[self.isotopics].density is not None:
+                mat = materials.resolveMaterialClassByName(self.material)()
+                if not isinstance(mat, materials.Custom):
+                    densityRatio = (
+                        blueprint.customIsotopics[self.isotopics].density
+                        / constructedComponent.density()
+                    )
+                    constructedComponent.changeNDensByFactor(densityRatio)
+
+                    runLog.important(
+                        "A custom material density was specified in the custom isotopics for material {} "
+                        "in component {}. The component density has been altered to {}.".format(
+                            mat, constructedComponent, constructedComponent.density()
+                        )
+                    )
 
     def _conformKwargs(self, blueprint, matMods):
         """This method gets the relevant kwargs to construct the component."""
