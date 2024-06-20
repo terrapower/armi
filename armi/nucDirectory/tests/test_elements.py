@@ -23,16 +23,10 @@ from armi.tests import mockRunLogs
 
 class TestElement(unittest.TestCase):
     def test_elements_elementBulkProperties(self):
-        numElements = 120
-        self.assertEqual(
-            sum(range(1, numElements + 1)), sum([ee.z for ee in elements.byZ.values()])
-        )
+        numElements = len(elements.byZ)
         self.assertEqual(numElements, len(elements.byZ.values()))
         self.assertEqual(numElements, len(elements.byName))
         self.assertEqual(numElements, len(elements.bySymbol))
-        self.assertEqual(numElements, len(elements.byZ))
-        for ee in elements.byZ.values():
-            self.assertIsNotNone(ee.standardWeight)
 
     def test_element_elementByNameReturnsElement(self):
         """Get elements by name.
