@@ -80,7 +80,6 @@ class TestElement(unittest.TestCase):
         # re-initialize the elements
         with mockRunLogs.BufferLog():
             nuclideBases.destroyGlobalNuclides()
-            elements.factory()
             nuclideBases.factory()
             # Ensure that the burn chain data is initialized after clearing
             # out the nuclide data and reinitializing it.
