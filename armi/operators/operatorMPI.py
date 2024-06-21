@@ -214,8 +214,9 @@ class OperatorMPI(Operator):
         This is only called on the root processor. Worker processors will know
         what to do with the "reset" broadcast.
         """
-        context.MPI_COMM.bcast("reset", root=0)
-        runLog.extra("Workers have been reset.")
+        if context.MPI_SIZE > 1:
+            context.MPI_COMM.bcast("reset", root=0)
+            runLog.extra("Workers have been reset.")
 
     def _resetWorker(self):
         """

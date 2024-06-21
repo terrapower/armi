@@ -24,7 +24,7 @@ name = "armi"
 version = "0.3.0"
 description = "An open-source nuclear reactor analysis automation framework that helps design teams increase efficiency and quality."
 license = {file = "LICENSE.md"}
-requires-python = ">3.6"
+requires-python = ">3.8"
 readme = "README.rst"
 authors = [
     { name="TerraPower, LLC", email="armi-devs@terrapower.com" },
@@ -55,8 +55,6 @@ classifiers = [
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
