@@ -220,10 +220,8 @@ assemblies:
             :id: T_ARMI_MAT_USER_INPUT3
             :tests: R_ARMI_MAT_USER_INPUT
         """
-        fuel0 = self.a[0].getComponent(Flags.FUEL)
         fuel1 = self.a[1].getComponent(Flags.FUEL)
         fuel2 = self.a[2].getComponent(Flags.FUEL)
-        fuel6 = self.a[6].getComponent(Flags.FUEL)
         self.assertEqual(self.numCustomNuclides, len(fuel1.p.numberDensities))
         self.assertAlmostEqual(19.1, fuel1.density())
 
@@ -231,12 +229,26 @@ assemblies:
             set(fuel2.p.numberDensities.keys()), set(fuel1.p.numberDensities.keys())
         )  # keys are same
 
-        # The block without "material: Custom" should have the density specified in the custom isotopics
-        # and that density should /not/ be the same as the block with no modifications
+    def test_densitiesAppliedToNonCustomMaterials(self):
+        """Ensure that a density can be set in custom isotopics for components using library materials."""
+        # The template block
+        fuel0 = self.a[0].getComponent(Flags.FUEL)
+        # The block with custom density but not the 'Custom' material
+        fuel2 = self.a[2].getComponent(Flags.FUEL)
+        # A block like the template block, but made after the custom block
+        fuel6 = self.a[6].getComponent(Flags.FUEL)
+
+        # Check that the density is set correctly on the custom density block,
+        # and that it is not the same as the original
         self.assertAlmostEqual(19.1, fuel2.density())
         self.assertNotAlmostEqual(fuel0.density(), fuel2.density(), places=2)
-        # original material density should not be changed after setting a custom density component
+        # Check that the custom density block has the correct material
+        self.assertEqual("UZr", fuel2.material.name)
+        # original material density should not be changed after setting a custom density component,
+        # so a new block without custom isotopics and density should have the same density as the original
         self.assertAlmostEqual(fuel6.density(), fuel0.density())
+        self.assertEqual(fuel6.material.name, fuel0.material.name)
+        self.assertEqual("UZr", fuel0.material.name)
 
     def test_numberFractions(self):
         """Ensure that the custom isotopics can be specified via number fractions.
