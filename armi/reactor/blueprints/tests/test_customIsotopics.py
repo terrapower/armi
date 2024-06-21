@@ -220,6 +220,7 @@ assemblies:
             :id: T_ARMI_MAT_USER_INPUT3
             :tests: R_ARMI_MAT_USER_INPUT
         """
+        fuel0 = self.a[0].getComponent(Flags.FUEL)
         fuel1 = self.a[1].getComponent(Flags.FUEL)
         fuel2 = self.a[2].getComponent(Flags.FUEL)
         fuel6 = self.a[6].getComponent(Flags.FUEL)
@@ -230,12 +231,12 @@ assemblies:
             set(fuel2.p.numberDensities.keys()), set(fuel1.p.numberDensities.keys())
         )  # keys are same
 
+        # The block without "material: Custom" should have the density specified in the custom isotopics
+        # and that density should /not/ be the same as the block with no modifications
         self.assertAlmostEqual(19.1, fuel2.density())
+        self.assertNotAlmostEqual(fuel0.density(), fuel2.density(), places=2)
         # original material density should not be changed after setting a custom density component
-        self.assertNotAlmostEqual(fuel2.density(), fuel6.density(), places=2)
-        self.assertAlmostEqual(
-            fuel6.density(), fuel6.material.density(Tc=fuel6.p.temperatureInC)
-        )
+        self.assertAlmostEqual(fuel6.density(), fuel0.density())
 
     def test_numberFractions(self):
         """Ensure that the custom isotopics can be specified via number fractions.
