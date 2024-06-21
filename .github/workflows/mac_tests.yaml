@@ -25,4 +25,4 @@ jobs:
         run: |
           brew install openmpi
           pip install -e .[memprof,mpi,test]
-          pytest armi
+          pytest -n 4 armi
