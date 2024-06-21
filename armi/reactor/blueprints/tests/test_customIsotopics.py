@@ -220,7 +220,6 @@ assemblies:
             :id: T_ARMI_MAT_USER_INPUT3
             :tests: R_ARMI_MAT_USER_INPUT
         """
-        fuel0 = self.a[0].getComponent(Flags.FUEL)
         fuel1 = self.a[1].getComponent(Flags.FUEL)
         fuel2 = self.a[2].getComponent(Flags.FUEL)
         fuel6 = self.a[6].getComponent(Flags.FUEL)
