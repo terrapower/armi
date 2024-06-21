@@ -227,11 +227,11 @@ class ComponentBlueprint(yamlize.Object):
             insertDepletableNuclideKeys(constructedObject, blueprint)
 
         # set the custom density for non-custom material components after construction
-        self.customDensityCheck(constructedObject, blueprint)
+        self.setCustomDensity(constructedObject, blueprint)
 
         return constructedObject
 
-    def customDensityCheck(self, constructedComponent, blueprint):
+    def setCustomDensity(self, constructedComponent, blueprint):
         """Apply a custom density to a material with custom isotopics but not a 'custom material'."""
         if self.isotopics is not None:
             # must nest because one can't check for attribues on a NoneType

@@ -163,7 +163,11 @@ blocks:
             material: Custom
             isotopics: linked uranium number densities
 
-    steel: &block_6
+    fuel with no modifications: &block_6  # after a custom density has been set
+        fuel:
+            <<: *basic_fuel
+
+    steel: &block_7
         clad:
             shape: Hexagon
             material: Custom
@@ -179,10 +183,10 @@ blocks:
 assemblies:
     fuel a: &assembly_a
         specifier: IC
-        blocks: [*block_0, *block_1, *block_2, *block_3, *block_4, *block_5, *block_6]
-        height: [10, 10, 10, 10, 10, 10,10]
-        axial mesh points: [1, 1, 1, 1, 1, 1,1]
-        xs types: [A, A, A, A, A, A,A]
+        blocks: [*block_0, *block_1, *block_2, *block_3, *block_4, *block_5, *block_6, *block_7]
+        height: [10, 10, 10, 10, 10, 10, 10, 10]
+        axial mesh points: [1, 1, 1, 1, 1, 1, 1, 1]
+        xs types: [A, A, A, A, A, A, A, A]
 """
     """:meta hide-value:"""
 
@@ -219,14 +223,20 @@ assemblies:
         fuel0 = self.a[0].getComponent(Flags.FUEL)
         fuel1 = self.a[1].getComponent(Flags.FUEL)
         fuel2 = self.a[2].getComponent(Flags.FUEL)
+        fuel6 = self.a[6].getComponent(Flags.FUEL)
         self.assertEqual(self.numCustomNuclides, len(fuel1.p.numberDensities))
         self.assertAlmostEqual(19.1, fuel1.density())
 
-        # density only works with a Custom material type.
-        self.assertAlmostEqual(fuel0.density(), fuel2.density())
         self.assertEqual(
             set(fuel2.p.numberDensities.keys()), set(fuel1.p.numberDensities.keys())
         )  # keys are same
+
+        self.assertAlmostEqual(19.1, fuel2.density())
+        # original material density should not be changed after setting a custom density component
+        self.assertNotAlmostEqual(fuel2.density(), fuel6.density(), places=2)
+        self.assertAlmostEqual(
+            fuel6.density(), fuel6.material.density(Tc=fuel6.p.temperatureInC)
+        )
 
     def test_numberFractions(self):
         """Ensure that the custom isotopics can be specified via number fractions.
