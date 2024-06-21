@@ -395,7 +395,7 @@ class CustomIsotopic(yamlize.Map):
             if not isinstance(material, materials.Custom):
                 runLog.important(
                     "A custom density or number densities has been specified for a non-custom "
-                    "material. The material density will not be updated to prevent unintentional "
+                    "material. The material object's density will not be updated to prevent unintentional "
                     "density changes across the model. Only custom materials may have a density "
                     "specified."
                 )
