@@ -245,8 +245,9 @@ class ComponentBlueprint(yamlize.Object):
                     constructedComponent.changeNDensByFactor(densityRatio)
 
                     runLog.important(
-                        "A custom material density was specified in the custom isotopics for material {} "
-                        "in component {}. The component density has been altered to {}.".format(
+                        "A custom material density was specified in the custom isotopics for non-custom "
+                        "material {} in component {}. The component density has been altered to "
+                        "{}.".format(
                             mat, constructedComponent, constructedComponent.density()
                         )
                     )
