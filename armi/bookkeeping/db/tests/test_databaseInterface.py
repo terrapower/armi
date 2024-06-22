@@ -46,7 +46,7 @@ def getSimpleDBOperator(cs):
     It's used to make the db unit tests run very quickly.
     """
     newSettings = {}
-    newSettings[CONF_LOADING_FILE] = "refOneBlockReactor.yaml"
+    newSettings[CONF_LOADING_FILE] = "smallestTestReactor/refOneBlockReactor.yaml"
     newSettings["verbosity"] = "important"
     newSettings["db"] = True
     newSettings["runType"] = "Standard"
@@ -83,7 +83,9 @@ class TestDatabaseInterface(unittest.TestCase):
     def setUp(self):
         self.td = directoryChangers.TemporaryDirectoryChanger()
         self.td.__enter__()
-        self.o, self.r = loadTestReactor(TEST_ROOT)
+        self.o, self.r = loadTestReactor(
+            TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
         self.dbi = DatabaseInterface(self.r, self.o.cs)
         self.dbi.initDB(fName=self._testMethodName + ".h5")
         self.db: Database3 = self.dbi.database
@@ -95,9 +97,13 @@ class TestDatabaseInterface(unittest.TestCase):
         self.td.__exit__(None, None, None)
         # test_interactBOL leaves behind some dirt (accessible after db close) that the
         # TempDirChanger is not catching
-        bolDirt = os.path.join(PROJECT_ROOT, "armiRun.h5")
-        if os.path.exists(bolDirt):
-            os.remove(bolDirt)
+        bolDirt = [
+            os.path.join(PROJECT_ROOT, "armiRun.h5"),
+            os.path.join(PROJECT_ROOT, "armiRunSmallest.h5"),
+        ]
+        for dirt in bolDirt:
+            if os.path.exists(dirt):
+                os.remove(dirt)
 
     def test_interactEveryNodeReturn(self):
         """Test that the DB is NOT written to if cs["tightCoupling"] = True."""

@@ -225,7 +225,9 @@ class TestExtractInputs(unittest.TestCase):
     def test_extractInputsBasics(self):
         with TemporaryDirectoryChanger() as newDir:
             # build test DB
-            o, r = loadTestReactor(TEST_ROOT)
+            o, r = loadTestReactor(
+                inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+            )
             dbi = DatabaseInterface(r, o.cs)
             dbPath = os.path.join(newDir.destination, f"{self._testMethodName}.h5")
             dbi.initDB(fName=dbPath)
@@ -414,7 +416,9 @@ class TestVisFileEntryPointCommand(unittest.TestCase):
         with TemporaryDirectoryChanger() as newDir:
             # build test DB
             self.o, self.r = loadTestReactor(
-                TEST_ROOT, customSettings={"reloadDBName": "reloadingDB.h5"}
+                TEST_ROOT,
+                customSettings={"reloadDBName": "reloadingDB.h5"},
+                inputFileName="smallestTestReactor/armiRunSmallest.yaml",
             )
             reduceTestReactorRings(self.r, self.o.cs, maxNumRings=2)
             self.dbi = DatabaseInterface(self.r, self.o.cs)
