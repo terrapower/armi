@@ -328,6 +328,11 @@ blocks:
             mult: 169.0
             op: 0.86602
 
+    no density uo2: &block_3
+        fuel:
+            <<: *basic_fuel
+            material: UraniumOxide
+            isotopics: uranium isotopic number densities
 
 
 assemblies:
@@ -339,6 +344,15 @@ assemblies:
         xs types: [A, A, A]
         material modifications:
             TD_frac: ["", "", ""]
+    
+    fuel b: &assembly_b
+        specifier: IC
+        blocks: [*block_0, *block_3, *block_2]
+        height: [10, 10, 10]
+        axial mesh points: [1, 1, 1]
+        xs types: [A, A, A]
+        material modifications:
+            TD_frac: ["", "0.0", ""]
 
 """
     """:meta hide-value:"""
@@ -404,7 +418,7 @@ assemblies:
         self.assertEqual("UZr", fuel0.material.name)
 
     def test_customDensityLogsAndErrors(self):
-        """Test that the right warning messages are emitted when applying custom densities."""
+        """Test that the right warning messages and errors are emitted when applying custom densities."""
         # Check for warnings when specifying both TD_frac and custom isotopics
         with mockRunLogs.BufferLog() as mockLog:
             # we should start with a clean slate
@@ -430,12 +444,19 @@ assemblies:
                 msg=streamVal,
             )
 
-        # Check that assigning a custom density to a material with 0 density fails
+        # Check that assigning a custom density to the Void material fails
         cs = settings.Settings()
         cs = cs.modified(newSettings={CONF_XS_KERNEL: "MC2v2"})
         bp = blueprints.Blueprints.load(self.yamlStringWithError)
+        # Ensure we have some Void
+        self.assertEqual(bp.blockDesigns["custom void"]["fuel"].material, "Void")
+        # Can't have stuff in Void
         with self.assertRaises(ValueError):
             bp.constructAssem(cs, name="fuel a")
+
+        # Try making a 0 density non-Void material by setting TD_frac to 0.0
+        with self.assertRaises(ValueError):
+            bp.constructAssem(cs, name="fuel b")
 
     def test_numberFractions(self):
         """Ensure that the custom isotopics can be specified via number fractions.
