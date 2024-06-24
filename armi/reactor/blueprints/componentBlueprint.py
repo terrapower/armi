@@ -227,17 +227,36 @@ class ComponentBlueprint(yamlize.Object):
             insertDepletableNuclideKeys(constructedObject, blueprint)
 
         # set the custom density for non-custom material components after construction
-        self.setCustomDensity(constructedObject, blueprint)
+        self.setCustomDensity(constructedObject, blueprint, matMods)
 
         return constructedObject
 
-    def setCustomDensity(self, constructedComponent, blueprint):
+    def setCustomDensity(self, constructedComponent, blueprint, matMods):
         """Apply a custom density to a material with custom isotopics but not a 'custom material'."""
         if self.isotopics is not None:
             # must nest because one can't check for attribues on a NoneType
-            if blueprint.customIsotopics[self.isotopics].density is not None:
+            if blueprint.customIsotopics[self.isotopics].density > 0:
                 mat = materials.resolveMaterialClassByName(self.material)()
                 if not isinstance(mat, materials.Custom):
+                    # check for some problem cases
+                    if "TD_frac" in matMods.keys():
+                        runLog.warning(
+                            "Both TD_frac and a custom density (custom isotopics) has been specified for "
+                            "material {}. The custom density will override the density calculated using "
+                            "TD_frac.".format(self.material)
+                        )
+                    if not mat.density(Tc=self.Tinput) > 0:
+                        runLog.error(
+                            "A custom density has been assigned to material '{}', which has no baseline "
+                            "density. Only materials with a starting density may be assigned a density. "
+                            "This comes up e.g. if isotopics are assigned to 'Void'.".format(
+                                self.material
+                            )
+                        )
+                        raise ValueError(
+                            "Cannot apply custom densities to materials without density."
+                        )
+
                     densityRatio = (
                         blueprint.customIsotopics[self.isotopics].density
                         / constructedComponent.density()

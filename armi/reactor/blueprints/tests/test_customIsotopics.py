@@ -14,6 +14,7 @@
 
 """Unit test custom isotopics."""
 import unittest
+from logging import DEBUG
 
 import yamlize
 
@@ -22,6 +23,8 @@ from armi.physics.neutronics.settings import CONF_XS_KERNEL
 from armi.reactor import blueprints
 from armi.reactor.blueprints import isotopicOptions
 from armi.reactor.flags import Flags
+from armi import runLog
+from armi.tests import mockRunLogs
 
 
 class TestCustomIsotopics(unittest.TestCase):
@@ -167,7 +170,13 @@ blocks:
         fuel:
             <<: *basic_fuel
 
-    steel: &block_7
+    overspecified fuel: &block_7
+        fuel:
+            <<: *basic_fuel
+            material: UraniumOxide
+            isotopics: uranium isotopic number densities
+
+    steel: &block_8
         clad:
             shape: Hexagon
             material: Custom
@@ -183,10 +192,154 @@ blocks:
 assemblies:
     fuel a: &assembly_a
         specifier: IC
-        blocks: [*block_0, *block_1, *block_2, *block_3, *block_4, *block_5, *block_6, *block_7]
-        height: [10, 10, 10, 10, 10, 10, 10, 10]
-        axial mesh points: [1, 1, 1, 1, 1, 1, 1, 1]
-        xs types: [A, A, A, A, A, A, A, A]
+        blocks: [*block_0, *block_1, *block_2, *block_3, *block_4, *block_5, *block_6, *block_7, *block_8]
+        height: [10, 10, 10, 10, 10, 10, 10, 10, 10]
+        axial mesh points: [1, 1, 1, 1, 1, 1, 1, 1, 1]
+        xs types: [A, A, A, A, A, A, A, A, A]
+        material modifications:
+            TD_frac: ["", "", "", "", "", "", "", 0.1, ""]
+
+"""
+
+    # This yaml is designed to raise an error when built
+    yamlStringWithError = r"""
+nuclide flags:
+    U238: {burn: true, xs: true}
+    U235: {burn: true, xs: true}
+    U234: {burn: true, xs: true}
+    ZR: {burn: false, xs: true}
+    AL: {burn: false, xs: true}
+    FE: {burn: false, xs: true}
+    C: {burn: false, xs: true}
+    DUMP2: {burn: true, xs: true}
+    DUMP1: {burn: true, xs: true}
+    LFP35: {burn: true, xs: true}
+    PU239: {burn: true, xs: true}
+    NP237: {burn: true, xs: true}
+    LFP38: {burn: true, xs: true}
+    LFP39: {burn: true, xs: true}
+    PU240: {burn: true, xs: true}
+    PU236: {burn: true, xs: true}
+    PU238: {burn: true, xs: true}
+    U236: {burn: true, xs: true}
+    LFP40: {burn: true, xs: true}
+    PU241: {burn: true, xs: true}
+    AM241: {burn: true, xs: true}
+    LFP41: {burn: true, xs: true}
+    PU242: {burn: true, xs: true}
+    AM243: {burn: true, xs: true}
+    CM244: {burn: true, xs: true}
+    CM242: {burn: true, xs: true}
+    AM242: {burn: true, xs: true}
+    CM245: {burn: true, xs: true}
+    NP238: {burn: true, xs: true}
+    CM243: {burn: true, xs: true}
+    CM246: {burn: true, xs: true}
+    CM247: {burn: true, xs: true}
+    NI: {burn: true, xs: true}
+    W: {burn: true, xs: true, expandTo: ["W182", "W183", "W184", "W186"]}
+    MN: {burn: true, xs: true}
+    CR: {burn: true, xs: true}
+    V: {burn: true, xs: true}
+    SI: {burn: true, xs: true}
+    MO: {burn: true, xs: true}
+
+custom isotopics:
+    uranium isotopic mass fractions:
+        input format: mass fractions
+        U238: 0.992742
+        U235: 0.007204
+        U234: 0.000054
+        density: 19.1
+
+    # >>> from armi.nucDirectory import elements, nuclideBases
+    # >>> import numpy
+    # >>> u = elements.bySymbol['U']
+    # >>> w_i = numpy.array([n.abundance for n in u.getNaturalIsotopics()])
+    # >>> Mi = numpy.array([n.weight for n in u.getNaturalIsotopics()])
+    # >>> Ni = w_i * 19.1 * 6.0221e23 / Mi
+    # >>> N_norm = Ni / sum(Ni)
+    # >>> N_norm.round(6)
+    # array([  5.50000000e-05,   7.29500000e-03,   9.92650000e-01])
+    uranium isotopic number fractions:
+        input format: number fractions
+        U238: 0.992650
+        U235: 0.007295
+        U234: 0.000055
+        density: 19.1
+
+    # >>> from armi.nucDirectory import elements, nuclideBases
+    # >>> import numpy
+    # >>> u = elements.bySymbol['U']
+    # >>> Mi = numpy.array([n.weight for n in u.getNaturalIsotopics()])
+    # >>> w_i = numpy.array([n.abundance for n in u.getNaturalIsotopics()])
+    # >>> Ni = 19.1 * w_i * 6.0221e23 / Mi
+    # array([  2.65398007e+18,   3.52549755e+20,   4.79692055e+22])
+    # >>> for n, ni in zip(u.getNaturalIsotopics(), Ni):
+    # >>>     print '        {}: {:.7e}'.format(n.name, ni) # requires 7 decimal places!
+    uranium isotopic number densities: &u_isotopics
+        input format: number densities
+        U234: 2.6539102e-06
+        U235: 3.5254048e-04
+        U238: 4.7967943e-02
+
+    linked uranium number densities: *u_isotopics
+
+    steel:
+        input format: mass fractions
+        FE: 0.7
+        C: 0.3
+        density: 7.0
+
+blocks:
+    uzr fuel: &block_0
+        fuel: &basic_fuel
+            shape: Hexagon
+            material: UZr
+            Tinput: 25.0
+            Thot: 600.0
+            ip: 0.0
+            mult: 1.0
+            op: 10.0
+
+        clad:
+            shape: Circle
+            material: HT9
+            Tinput: 25.0
+            Thot: 600.0
+            id: 0.0
+            mult: 1.0
+            od: 10.0
+
+    custom void: &block_1
+        fuel:
+            <<: *basic_fuel
+            material: Void
+            isotopics: uranium isotopic number densities
+
+    steel: &block_2
+        clad:
+            shape: Hexagon
+            material: Custom
+            isotopics: steel
+            Tinput: 25.0
+            Thot: 600.0
+            ip: 0.0
+            mult: 169.0
+            op: 0.86602
+
+
+
+assemblies:
+    fuel a: &assembly_a
+        specifier: IC
+        blocks: [*block_0, *block_1, *block_2]
+        height: [10, 10, 10]
+        axial mesh points: [1, 1, 1]
+        xs types: [A, A, A]
+        material modifications:
+            TD_frac: ["", "", ""]
+
 """
     """:meta hide-value:"""
 
@@ -249,6 +402,40 @@ assemblies:
         self.assertAlmostEqual(fuel6.density(), fuel0.density())
         self.assertEqual(fuel6.material.name, fuel0.material.name)
         self.assertEqual("UZr", fuel0.material.name)
+
+    def test_customDensityLogsAndErrors(self):
+        """Test that the right warning messages are emitted when applying custom densities."""
+        # Check for warnings when specifying both TD_frac and custom isotopics
+        with mockRunLogs.BufferLog() as mockLog:
+            # we should start with a clean slate
+            self.assertEqual("", mockLog.getStdout())
+            runLog.LOG.startLog("test_customDensityLogsAndErrors")
+            runLog.LOG.setVerbosity(DEBUG)
+
+            # rebuild the input to capture the logs
+            cs = settings.Settings()
+            cs = cs.modified(newSettings={CONF_XS_KERNEL: "MC2v2"})
+            bp = blueprints.Blueprints.load(self.yamlString)
+            bp.constructAssem(cs, name="fuel a")
+
+            # Check for log messages
+            streamVal = mockLog.getStdout()
+            self.assertIn("Both TD_frac and a custom density", streamVal, msg=streamVal)
+            self.assertIn(
+                "A custom material density was specified", streamVal, msg=streamVal
+            )
+            self.assertIn(
+                "A custom density or number densities has been specified",
+                streamVal,
+                msg=streamVal,
+            )
+
+        # Check that assigning a custom density to a material with 0 density fails
+        cs = settings.Settings()
+        cs = cs.modified(newSettings={CONF_XS_KERNEL: "MC2v2"})
+        bp = blueprints.Blueprints.load(self.yamlStringWithError)
+        with self.assertRaises(ValueError):
+            bp.constructAssem(cs, name="fuel a")
 
     def test_numberFractions(self):
         """Ensure that the custom isotopics can be specified via number fractions.
