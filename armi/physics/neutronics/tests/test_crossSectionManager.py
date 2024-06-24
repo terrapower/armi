@@ -320,7 +320,7 @@ class TestComponentAveraging(unittest.TestCase):
 
 
 class TestBlockCollectionComponentAverage(unittest.TestCase):
-    r"""tests for ZPPR 1D XS gen cases."""
+    """Tests for ZPPR 1D XS gen cases."""
 
     def setUp(self):
         r"""
@@ -826,7 +826,9 @@ class TestCrossSectionGroupManager(unittest.TestCase):
         This tests that the XS ID of the new representative block is correct and that the
         compositions are identical between the original and the new representative blocks.
         """
-        o, r = test_reactors.loadTestReactor(TEST_ROOT)
+        o, r = test_reactors.loadTestReactor(
+            TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
         # set a few random non-default settings on AA to be copied to the new BA group
         o.cs[CONF_CROSS_SECTION].update(
             {
@@ -968,7 +970,9 @@ class TestCrossSectionGroupManager(unittest.TestCase):
         Tests copying pre-generated cross section and flux files using reactor that is built from a
         case settings file.
         """
-        o, r = test_reactors.loadTestReactor(TEST_ROOT)
+        o, r = test_reactors.loadTestReactor(
+            TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
         # Need to overwrite the relative paths with absolute
         o.cs[CONF_CROSS_SECTION]["XA"].xsFileLocation = [
             os.path.join(THIS_DIR, "ISOXA")

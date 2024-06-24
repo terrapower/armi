@@ -26,7 +26,6 @@ from armi.mpiActions import (
 from armi import context
 from armi.reactor.tests import test_reactors
 from armi.tests import mockRunLogs
-from armi.tests import TEST_ROOT
 from armi.utils import iterables
 
 
@@ -126,7 +125,9 @@ class MpiIterTests(unittest.TestCase):
         allObjs = list(range(numObjs))
         objs = self._distributeObjects(allObjs, numProcs)
 
-        o, r = test_reactors.loadTestReactor(TEST_ROOT)
+        o, r = test_reactors.loadTestReactor(
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
 
         act = DistributionAction([self.action])
         act.invokeHook = passer
@@ -139,7 +140,9 @@ class MpiIterTests(unittest.TestCase):
         allObjs = list(range(numObjs))
         objs = self._distributeObjects(allObjs, numProcs)
 
-        o, r = test_reactors.loadTestReactor(TEST_ROOT)
+        o, r = test_reactors.loadTestReactor(
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
         act = DistributeStateAction([self.action])
 
         act.invokeHook = passer
@@ -153,7 +156,9 @@ class MpiIterTests(unittest.TestCase):
         We expect this to run all the way through the pickle diagnoser,
         because the test reactor should be easily picklable.
         """
-        o, _ = test_reactors.loadTestReactor(TEST_ROOT)
+        o, _ = test_reactors.loadTestReactor(
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
 
         with mockRunLogs.BufferLog() as mock:
             self.assertEqual("", mock.getStdout())

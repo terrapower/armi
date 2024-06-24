@@ -171,7 +171,9 @@ class TestGlobalFluxInterface(unittest.TestCase):
         Check that a 1000 pcm rx swing is observed due to the mock.
         """
         cs = settings.Settings()
-        _o, r = test_reactors.loadTestReactor()
+        _o, r = test_reactors.loadTestReactor(
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
         gfi = MockGlobalFluxInterface(r, cs)
         gfi.interactBOC()
         gfi.interactEveryNode(0, 0)
@@ -197,7 +199,9 @@ class TestGlobalFluxInterface(unittest.TestCase):
             :tests: R_ARMI_FLUX_CHECK_POWER
         """
         cs = settings.Settings()
-        _o, r = test_reactors.loadTestReactor()
+        _o, r = test_reactors.loadTestReactor(
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
         gfi = MockGlobalFluxInterface(r, cs)
         self.assertEqual(gfi.checkEnergyBalance(), None)
 
@@ -213,7 +217,9 @@ class TestGlobalFluxInterfaceWithExecuters(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.cs = settings.Settings()
-        cls.r = test_reactors.loadTestReactor()[1]
+        cls.r = test_reactors.loadTestReactor(
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )[1]
 
     def setUp(self):
         self.r.core.p.keff = 1.0
@@ -298,7 +304,9 @@ class TestGlobalFluxInterfaceWithExecutersNonUniform(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cs = settings.Settings()
-        _o, cls.r = test_reactors.loadTestReactor()
+        _o, cls.r = test_reactors.loadTestReactor(
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
         cls.r.core.p.keff = 1.0
         cls.gfi = MockGlobalFluxWithExecutersNonUniform(cls.r, cs)
 
@@ -341,7 +349,10 @@ class TestGlobalFluxResultMapper(unittest.TestCase):
     def test_mapper(self):
         # Switch to MC2v2 setting to make sure the isotopic/elemental expansions are compatible with
         # actually doing some math using the ISOAA test microscopic library
-        o, r = test_reactors.loadTestReactor(customSettings={CONF_XS_KERNEL: "MC2v2"})
+        o, r = test_reactors.loadTestReactor(
+            customSettings={CONF_XS_KERNEL: "MC2v2"},
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml",
+        )
         applyDummyFlux(r)
         r.core.lib = isotxs.readBinary(ISOAA_PATH)
         mapper = globalFluxInterface.GlobalFluxResultMapper(cs=o.cs)
@@ -380,7 +391,9 @@ class TestGlobalFluxResultMapper(unittest.TestCase):
     def test_updateCycleDoseParams(self, mockGetMaxParam):
         # set up situation
         mockGetMaxParam.return_value = 1.23
-        o, r = test_reactors.loadTestReactor()
+        o, r = test_reactors.loadTestReactor(
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
         applyDummyFlux(r)
         r.core.lib = isotxs.readBinary(ISOAA_PATH)
         r.p.timeNode = 1
@@ -416,7 +429,9 @@ class TestGlobalFluxResultMapper(unittest.TestCase):
 
     def test_updateLoadpadDose(self):
         # init test reactor
-        o, r = test_reactors.loadTestReactor()
+        o, r = test_reactors.loadTestReactor(
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
 
         # init options
         opts = globalFluxInterface.GlobalFluxOptions("test_updateLoadpadDose")

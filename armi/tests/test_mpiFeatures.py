@@ -102,7 +102,9 @@ class MpiOperatorTests(unittest.TestCase):
     """Testing the MPI parallelization operator."""
 
     def setUp(self):
-        self.old_op, self.r = test_reactors.loadTestReactor(TEST_ROOT)
+        self.old_op, self.r = test_reactors.loadTestReactor(
+            TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
         self.o = OperatorMPI(cs=self.old_op.cs)
         self.o.r = self.r
 
