@@ -37,7 +37,9 @@ from armi.reactor.assemblyLists import SpentFuelPool
 from armi.reactor.components import Hexagon, Rectangle
 from armi.reactor.composites import Composite
 from armi.reactor.converters import geometryConverters
-from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
+from armi.reactor.converters.axialExpansion.axialExpansionChanger import (
+    AxialExpansionChanger,
+)
 from armi.reactor.flags import Flags
 from armi.settings.fwSettings.globalSettings import CONF_ASSEM_FLAGS_SKIP_AXIAL_EXP
 from armi.settings.fwSettings.globalSettings import CONF_SORT_REACTOR
