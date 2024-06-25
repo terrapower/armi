@@ -28,7 +28,7 @@ from armi.tests import mockRunLogs
 
 
 class TestCustomIsotopics(unittest.TestCase):
-    yamlString = r"""
+    yamlPreamble = r"""
 nuclide flags:
     U238: {burn: true, xs: true}
     U235: {burn: true, xs: true}
@@ -78,15 +78,6 @@ custom isotopics:
         U234: 0.000054
         density: 19.1
 
-    # >>> from armi.nucDirectory import elements, nuclideBases
-    # >>> import numpy
-    # >>> u = elements.bySymbol['U']
-    # >>> w_i = numpy.array([n.abundance for n in u.getNaturalIsotopics()])
-    # >>> Mi = numpy.array([n.weight for n in u.getNaturalIsotopics()])
-    # >>> Ni = w_i * 19.1 * 6.0221e23 / Mi
-    # >>> N_norm = Ni / sum(Ni)
-    # >>> N_norm.round(6)
-    # array([  5.50000000e-05,   7.29500000e-03,   9.92650000e-01])
     uranium isotopic number fractions:
         input format: number fractions
         U238: 0.992650
@@ -94,15 +85,6 @@ custom isotopics:
         U234: 0.000055
         density: 19.1
 
-    # >>> from armi.nucDirectory import elements, nuclideBases
-    # >>> import numpy
-    # >>> u = elements.bySymbol['U']
-    # >>> Mi = numpy.array([n.weight for n in u.getNaturalIsotopics()])
-    # >>> w_i = numpy.array([n.abundance for n in u.getNaturalIsotopics()])
-    # >>> Ni = 19.1 * w_i * 6.0221e23 / Mi
-    # array([  2.65398007e+18,   3.52549755e+20,   4.79692055e+22])
-    # >>> for n, ni in zip(u.getNaturalIsotopics(), Ni):
-    # >>>     print '        {}: {:.7e}'.format(n.name, ni) # requires 7 decimal places!
     uranium isotopic number densities: &u_isotopics
         input format: number densities
         U234: 2.6539102e-06
@@ -117,6 +99,9 @@ custom isotopics:
         C: 0.3
         density: 7.0
 
+"""
+
+    yamlGoodBlocks = r"""
 blocks:
     uzr fuel: &block_0
         fuel: &basic_fuel
@@ -204,96 +189,7 @@ assemblies:
 
 """
 
-    # This yaml is designed to raise an error when built
-    yamlStringWithError = r"""
-nuclide flags:
-    U238: {burn: true, xs: true}
-    U235: {burn: true, xs: true}
-    U234: {burn: true, xs: true}
-    ZR: {burn: false, xs: true}
-    AL: {burn: false, xs: true}
-    FE: {burn: false, xs: true}
-    C: {burn: false, xs: true}
-    DUMP2: {burn: true, xs: true}
-    DUMP1: {burn: true, xs: true}
-    LFP35: {burn: true, xs: true}
-    PU239: {burn: true, xs: true}
-    NP237: {burn: true, xs: true}
-    LFP38: {burn: true, xs: true}
-    LFP39: {burn: true, xs: true}
-    PU240: {burn: true, xs: true}
-    PU236: {burn: true, xs: true}
-    PU238: {burn: true, xs: true}
-    U236: {burn: true, xs: true}
-    LFP40: {burn: true, xs: true}
-    PU241: {burn: true, xs: true}
-    AM241: {burn: true, xs: true}
-    LFP41: {burn: true, xs: true}
-    PU242: {burn: true, xs: true}
-    AM243: {burn: true, xs: true}
-    CM244: {burn: true, xs: true}
-    CM242: {burn: true, xs: true}
-    AM242: {burn: true, xs: true}
-    CM245: {burn: true, xs: true}
-    NP238: {burn: true, xs: true}
-    CM243: {burn: true, xs: true}
-    CM246: {burn: true, xs: true}
-    CM247: {burn: true, xs: true}
-    NI: {burn: true, xs: true}
-    W: {burn: true, xs: true, expandTo: ["W182", "W183", "W184", "W186"]}
-    MN: {burn: true, xs: true}
-    CR: {burn: true, xs: true}
-    V: {burn: true, xs: true}
-    SI: {burn: true, xs: true}
-    MO: {burn: true, xs: true}
-
-custom isotopics:
-    uranium isotopic mass fractions:
-        input format: mass fractions
-        U238: 0.992742
-        U235: 0.007204
-        U234: 0.000054
-        density: 19.1
-
-    # >>> from armi.nucDirectory import elements, nuclideBases
-    # >>> import numpy
-    # >>> u = elements.bySymbol['U']
-    # >>> w_i = numpy.array([n.abundance for n in u.getNaturalIsotopics()])
-    # >>> Mi = numpy.array([n.weight for n in u.getNaturalIsotopics()])
-    # >>> Ni = w_i * 19.1 * 6.0221e23 / Mi
-    # >>> N_norm = Ni / sum(Ni)
-    # >>> N_norm.round(6)
-    # array([  5.50000000e-05,   7.29500000e-03,   9.92650000e-01])
-    uranium isotopic number fractions:
-        input format: number fractions
-        U238: 0.992650
-        U235: 0.007295
-        U234: 0.000055
-        density: 19.1
-
-    # >>> from armi.nucDirectory import elements, nuclideBases
-    # >>> import numpy
-    # >>> u = elements.bySymbol['U']
-    # >>> Mi = numpy.array([n.weight for n in u.getNaturalIsotopics()])
-    # >>> w_i = numpy.array([n.abundance for n in u.getNaturalIsotopics()])
-    # >>> Ni = 19.1 * w_i * 6.0221e23 / Mi
-    # array([  2.65398007e+18,   3.52549755e+20,   4.79692055e+22])
-    # >>> for n, ni in zip(u.getNaturalIsotopics(), Ni):
-    # >>>     print '        {}: {:.7e}'.format(n.name, ni) # requires 7 decimal places!
-    uranium isotopic number densities: &u_isotopics
-        input format: number densities
-        U234: 2.6539102e-06
-        U235: 3.5254048e-04
-        U238: 4.7967943e-02
-
-    linked uranium number densities: *u_isotopics
-
-    steel:
-        input format: mass fractions
-        FE: 0.7
-        C: 0.3
-        density: 7.0
-
+    yamlBadBlocks = r"""
 blocks:
     uzr fuel: &block_0
         fuel: &basic_fuel
@@ -358,6 +254,12 @@ assemblies:
             TD_frac: ["", "0.0", ""]  # set density to 0 to cause error in custom density
 
 """
+
+    # this yaml is supposed to successfully build
+    yamlString = yamlPreamble + yamlGoodBlocks
+
+    # This yaml is designed to raise an error when built
+    yamlStringWithError = yamlPreamble + yamlBadBlocks
     """:meta hide-value:"""
 
     @classmethod
