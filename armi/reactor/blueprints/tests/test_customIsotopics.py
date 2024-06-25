@@ -176,7 +176,12 @@ blocks:
             material: UraniumOxide
             isotopics: uranium isotopic number densities
 
-    steel: &block_8
+    density set via number density: &block_8
+        fuel:
+            <<: *basic_fuel
+            isotopics: uranium isotopic number densities
+
+    steel: &block_9
         clad:
             shape: Hexagon
             material: Custom
@@ -187,17 +192,15 @@ blocks:
             mult: 169.0
             op: 0.86602
 
-
-
 assemblies:
     fuel a: &assembly_a
         specifier: IC
-        blocks: [*block_0, *block_1, *block_2, *block_3, *block_4, *block_5, *block_6, *block_7, *block_8]
-        height: [10, 10, 10, 10, 10, 10, 10, 10, 10]
-        axial mesh points: [1, 1, 1, 1, 1, 1, 1, 1, 1]
-        xs types: [A, A, A, A, A, A, A, A, A]
+        blocks: [*block_0, *block_1, *block_2, *block_3, *block_4, *block_5, *block_6, *block_7, *block_8, *block_9]
+        height: [10, 10, 10, 10, 10, 10, 10, 10, 10, 10]
+        axial mesh points: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+        xs types: [A, A, A, A, A, A, A, A, A, A]
         material modifications:
-            TD_frac: ["", "", "", "", "", "", "", 0.1, ""]
+            TD_frac: ["", "", "", "", "", "", "", 0.1, "", ""]
 
 """
 
@@ -352,7 +355,7 @@ assemblies:
         axial mesh points: [1, 1, 1]
         xs types: [A, A, A]
         material modifications:
-            TD_frac: ["", "0.0", ""]
+            TD_frac: ["", "0.0", ""]  # set density to 0 to cause error in custom density
 
 """
     """:meta hide-value:"""
@@ -404,6 +407,8 @@ assemblies:
         fuel2 = self.a[2].getComponent(Flags.FUEL)
         # A block like the template block, but made after the custom block
         fuel6 = self.a[6].getComponent(Flags.FUEL)
+        # A block with custom density set via number density
+        fuel8 = self.a[8].getComponent(Flags.FUEL)
 
         # Check that the density is set correctly on the custom density block,
         # and that it is not the same as the original
@@ -411,6 +416,8 @@ assemblies:
         self.assertNotAlmostEqual(fuel0.density(), fuel2.density(), places=2)
         # Check that the custom density block has the correct material
         self.assertEqual("UZr", fuel2.material.name)
+        # Check that the block with only number densities set has a new density
+        self.assertAlmostEqual(19.1, fuel8.density())
         # original material density should not be changed after setting a custom density component,
         # so a new block without custom isotopics and density should have the same density as the original
         self.assertAlmostEqual(fuel6.density(), fuel0.density())
