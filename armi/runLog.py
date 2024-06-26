@@ -175,6 +175,9 @@ class _RunLog:
         In this situation, we do the mangling needed to get the log level to the correct number.
         And we do some custom string manipulation so we can handle de-duplicating warnings.
         """
+        if not os.path.exists(LOG_DIR):
+            createLogDir(LOG_DIR)
+
         # Determine the log level: users can optionally pass in custom strings ("debug")
         msgLevel = msgType if isinstance(msgType, int) else self.logLevels[msgType][0]
 
@@ -721,10 +724,6 @@ def createLogDir(logDir: str = None) -> None:
             raise OSError("Was unable to create the log directory: {}".format(logDir))
 
         time.sleep(secondsWait)
-
-
-if not os.path.exists(LOG_DIR):
-    createLogDir(LOG_DIR)
 
 
 def logFactory():

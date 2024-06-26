@@ -13,7 +13,6 @@ bin/*
 /bin
 dist/
 dist-*/
-*.png
 doc/_build
 doc/user/tutorials
 doc/tutorials/anl-afci-177*
@@ -59,7 +58,6 @@ venv*/
 **/.coverage*
 **/logs/*
 *.ascii
-*.png
 
 # Misc. exclusions
 *.html

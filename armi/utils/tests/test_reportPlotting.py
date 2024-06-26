@@ -35,7 +35,9 @@ from armi.utils.reportPlotting import (
 
 class TestRadar(unittest.TestCase):
     def setUp(self):
-        self.o, self.r = test_reactors.loadTestReactor(TEST_ROOT)
+        self.o, self.r = test_reactors.loadTestReactor(
+            TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
         self.td = TemporaryDirectoryChanger()
         self.td.__enter__()
 
@@ -81,20 +83,20 @@ class TestRadar(unittest.TestCase):
 
         # plot with no keff function
         keffVsTime(self.r.name, t, t, keffUnc=[], extension=ext)
-        self.assertTrue(os.path.exists("R-armiRun.keff.png"))
-        self.assertGreater(os.path.getsize("R-armiRun.keff.png"), 0)
+        self.assertTrue(os.path.exists("R-armiRunSmallest.keff.png"))
+        self.assertGreater(os.path.getsize("R-armiRunSmallest.keff.png"), 0)
 
         # plot with a keff function
         keffVsTime(self.r.name, t, t, t, extension=ext)
-        self.assertTrue(os.path.exists("R-armiRun.keff.png"))
-        self.assertGreater(os.path.getsize("R-armiRun.keff.png"), 0)
+        self.assertTrue(os.path.exists("R-armiRunSmallest.keff.png"))
+        self.assertGreater(os.path.getsize("R-armiRunSmallest.keff.png"), 0)
 
     def test_valueVsTime(self):
         t = list(range(12))
         ext = "png"
         valueVsTime(self.r.name, t, t, "val", "yaxis", "title", extension=ext)
-        self.assertTrue(os.path.exists("R-armiRun.val.png"))
-        self.assertGreater(os.path.getsize("R-armiRun.val.png"), 0)
+        self.assertTrue(os.path.exists("R-armiRunSmallest.val.png"))
+        self.assertGreater(os.path.getsize("R-armiRunSmallest.val.png"), 0)
 
     def test_buVsTime(self):
         name = "buvstime"

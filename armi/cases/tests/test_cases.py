@@ -445,7 +445,9 @@ class TestCaseSuiteComparison(unittest.TestCase):
         """As a baseline, this test should always reveal zero diffs."""
         # build two super-simple H5 files for testing
         o, r = test_reactors.loadTestReactor(
-            TEST_ROOT, customSettings={"reloadDBName": "reloadingDB.h5"}
+            TEST_ROOT,
+            customSettings={"reloadDBName": "reloadingDB.h5"},
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml",
         )
 
         suites = []

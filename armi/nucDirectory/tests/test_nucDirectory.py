@@ -15,15 +15,10 @@
 """Tests nuclide directory."""
 import unittest
 
-from armi.nucDirectory import nucDir, elements, nuclideBases
-from armi.tests import mockRunLogs
+from armi.nucDirectory import nucDir, nuclideBases
 
 
 class TestNucDirectory(unittest.TestCase):
-    def setUp(self):
-        with mockRunLogs.BufferLog():
-            elements.factory()
-
     def test_nucDir_getNameForOldDashedNames(self):
         oldNames = [
             "U-232",

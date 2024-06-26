@@ -1043,6 +1043,15 @@ Example grid definitions are shown below::
 .. tip:: We have gone through some effort to allow both pin and core grid definitions to share this
     input and it may improve in the future.
 
+You may set up some kinds of grids (e.g. 1/3 and full core hex or Cartesian core
+loadings) using our interactive graphical grid editor described more in
+:py:mod:`armi.utils.gridEditor`.
+
+.. figure:: /.static/gridEditor.png
+    :align: center
+
+    An example of the Grid Editor being used on a FFTF input file
+
 .. _custom-isotopics:
 
 Custom Isotopics
