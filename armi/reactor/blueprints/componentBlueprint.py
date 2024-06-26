@@ -233,42 +233,58 @@ class ComponentBlueprint(yamlize.Object):
 
     def setCustomDensity(self, constructedComponent, blueprint, matMods):
         """Apply a custom density to a material with custom isotopics but not a 'custom material'."""
-        if self.isotopics is not None:
-            # must nest because one can't check for attribues on a NoneType
-            if blueprint.customIsotopics[self.isotopics].density > 0:
-                mat = materials.resolveMaterialClassByName(self.material)()
-                if not isinstance(mat, materials.Custom):
-                    # check for some problem cases
-                    if "TD_frac" in matMods.keys():
-                        runLog.warning(
-                            "Both TD_frac and a custom density (custom isotopics) has been specified for "
-                            "material {}. The custom density will override the density calculated using "
-                            "TD_frac.".format(self.material)
-                        )
-                    if not mat.density(Tc=self.Tinput) > 0:
-                        runLog.error(
-                            "A custom density has been assigned to material '{}', which has no baseline "
-                            "density. Only materials with a starting density may be assigned a density. "
-                            "This comes up e.g. if isotopics are assigned to 'Void'.".format(
-                                self.material
-                            )
-                        )
-                        raise ValueError(
-                            "Cannot apply custom densities to materials without density."
-                        )
+        if self.isotopics is None:
+            # No custom isotopics specified
+            return
+        density = blueprint.customIsotopics[self.isotopics].density
+        if density is None:
+            # Nothing to do
+            return
+        if blueprint.customIsotopics[self.isotopics].density <= 0:
+            runLog.error(
+                "A zero or negative density was specified in a custom isotopics input. "
+                "This is not permitted, if a 0 density material is needed, use 'Void'. "
+                "The component is {} and the isotopics entry is {}.".format(
+                    constructedComponent, self.isotopics
+                )
+            )
+            raise ValueError(
+                "A zero or negative density was specified in the custom isotopics for a component"
+            )
 
-                    densityRatio = (
-                        blueprint.customIsotopics[self.isotopics].density
-                        / constructedComponent.density()
+        mat = materials.resolveMaterialClassByName(self.material)()
+        if not isinstance(mat, materials.Custom):
+            # check for some problem cases
+            if "TD_frac" in matMods.keys():
+                runLog.warning(
+                    "Both TD_frac and a custom density (custom isotopics) has been specified for "
+                    "material {}. The custom density will override the density calculated using "
+                    "TD_frac.".format(self.material)
+                )
+            if not mat.density(Tc=self.Tinput) > 0:
+                runLog.error(
+                    "A custom density has been assigned to material '{}', which has no baseline "
+                    "density. Only materials with a starting density may be assigned a density. "
+                    "This comes up e.g. if isotopics are assigned to 'Void'.".format(
+                        self.material
                     )
-                    constructedComponent.changeNDensByFactor(densityRatio)
+                )
+                raise ValueError(
+                    "Cannot apply custom densities to materials without density."
+                )
 
-                    runLog.important(
-                        "A custom material density was specified in the custom isotopics for non-custom "
-                        "material {}. The component density has been altered to "
-                        "{}.".format(mat, constructedComponent.density()),
-                        single=True,
-                    )
+            densityRatio = (
+                blueprint.customIsotopics[self.isotopics].density
+                / constructedComponent.density()
+            )
+            constructedComponent.changeNDensByFactor(densityRatio)
+
+            runLog.important(
+                "A custom material density was specified in the custom isotopics for non-custom "
+                "material {}. The component density has been altered to "
+                "{}.".format(mat, constructedComponent.density()),
+                single=True,
+            )
 
     def _conformKwargs(self, blueprint, matMods):
         """This method gets the relevant kwargs to construct the component."""

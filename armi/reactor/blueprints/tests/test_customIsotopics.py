@@ -91,6 +91,20 @@ custom isotopics:
         U235: 3.5254048e-04
         U238: 4.7967943e-02
 
+    bad uranium isotopic mass fractions:
+        input format: mass fractions
+        U238: 0.992742
+        U235: 0.007204
+        U234: 0.000054
+        density: 0
+
+    negative uranium isotopic mass fractions:
+        input format: mass fractions
+        U238: 0.992742
+        U235: 0.007204
+        U234: 0.000054
+        density: -1
+
     linked uranium number densities: *u_isotopics
 
     steel:
@@ -233,6 +247,18 @@ blocks:
             material: UraniumOxide
             isotopics: uranium isotopic number densities
 
+    no density uo2: &block_4
+        fuel:
+            <<: *basic_fuel
+            material: UraniumOxide
+            isotopics: bad uranium isotopic mass fractions
+    
+    no density uo2: &block_5
+        fuel:
+            <<: *basic_fuel
+            material: UraniumOxide
+            isotopics: bad uranium isotopic mass fractions
+
 
 assemblies:
     fuel a: &assembly_a
@@ -252,6 +278,20 @@ assemblies:
         xs types: [A, A, A]
         material modifications:
             TD_frac: ["", "0.0", ""]  # set density to 0 to cause error in custom density
+
+    fuel c: &assembly_c
+        specifier: IC
+        blocks: [*block_0, *block_4, *block_2]
+        height: [10, 10, 10]
+        axial mesh points: [1, 1, 1]
+        xs types: [A, A, A]
+
+    fuel d: &assembly_d
+        specifier: IC
+        blocks: [*block_0, *block_5, *block_2]
+        height: [10, 10, 10]
+        axial mesh points: [1, 1, 1]
+        xs types: [A, A, A]
 
 """
 
@@ -366,6 +406,14 @@ assemblies:
         # Try making a 0 density non-Void material by setting TD_frac to 0.0
         with self.assertRaises(ValueError):
             bp.constructAssem(cs, name="fuel b")
+
+        # Try making a material with mass fractions with a density of 0
+        with self.assertRaises(ValueError):
+            bp.constructAssem(cs, name="fuel c")
+
+        # Try making a material with mass fractions with a negative density
+        with self.assertRaises(ValueError):
+            bp.constructAssem(cs, name="fuel d")
 
     def test_numberFractions(self):
         """Ensure that the custom isotopics can be specified via number fractions.
