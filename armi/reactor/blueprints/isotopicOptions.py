@@ -397,7 +397,8 @@ class CustomIsotopic(yamlize.Map):
                     "A custom density or number densities has been specified for non-custom "
                     "material {}. The material object's density will not be updated to prevent unintentional "
                     "density changes across the model. Only custom materials may have a density "
-                    "specified.".format(material)
+                    "specified.".format(material),
+                    single=True
                 )
                 # specifically, non-Custom materials only use refDensity and dLL, mat.customDensity has no effect
                 return

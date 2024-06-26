@@ -265,10 +265,11 @@ class ComponentBlueprint(yamlize.Object):
 
                     runLog.important(
                         "A custom material density was specified in the custom isotopics for non-custom "
-                        "material {} in component {}. The component density has been altered to "
+                        "material {}. The component density has been altered to "
                         "{}.".format(
-                            mat, constructedComponent, constructedComponent.density()
-                        )
+                            mat, constructedComponent.density()
+                        ),
+                        single=True
                     )
 
     def _conformKwargs(self, blueprint, matMods):
