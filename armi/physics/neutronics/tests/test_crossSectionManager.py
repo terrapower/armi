@@ -877,6 +877,68 @@ class TestCrossSectionGroupManager(unittest.TestCase):
                 continue
             self.assertEqual(baSettingValue, aaSettings.__dict__[setting])
 
+    def test_createRepresentativeBlocksUsingExistingBlocksDisableValidBlockTypes(self):
+        """
+        Demonstrates that a new representative block can be generated from an existing
+        representative block with the setting `disableBlockTypeExclusionInXsGeneration: true`.
+
+        Notes
+        -----
+        This tests that the XS ID of the new representative block is correct and that the
+        compositions are identical between the original and the new representative blocks.
+        """
+        o, r = test_reactors.loadTestReactor(
+            TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
+        # set a few random non-default settings on AA to be copied to the new BA group
+        o.cs[CONF_CROSS_SECTION].update(
+            {
+                "AA": XSModelingOptions(
+                    "AA",
+                    geometry="0D",
+                    averageByComponent=True,
+                    xsMaxAtomNumber=60,
+                    criticalBuckling=False,
+                    xsPriority=2,
+                )
+            }
+        )
+        o.cs[CONF_CROSS_SECTION].setDefaults(
+            crossSectionGroupManager.AVERAGE_BLOCK_COLLECTION, True
+        )
+
+        aaSettings = o.cs[CONF_CROSS_SECTION]["AA"]
+        self.csm.cs = copy.deepcopy(o.cs)
+        self.csm.createRepresentativeBlocks()
+        unperturbedReprBlocks = copy.deepcopy(self.csm.representativeBlocks)
+        self.assertNotIn("BA", unperturbedReprBlocks)
+        block = r.core.getFirstBlock()
+        blockXSID = block.getMicroSuffix()
+        blockList = [block]
+        (
+            _bCollect,
+            newRepresentativeBlocks,
+            origXSIDsFromNew,
+        ) = self.csm.createRepresentativeBlocksUsingExistingBlocks(
+            blockList, unperturbedReprBlocks
+        )
+        self.assertIn("BA", newRepresentativeBlocks)
+        oldReprBlock = unperturbedReprBlocks[blockXSID]
+        newReprBlock = newRepresentativeBlocks["BA"]
+        self.assertEqual(newReprBlock.getMicroSuffix(), "BA")
+        self.assertEqual(
+            newReprBlock.getNumberDensities(), oldReprBlock.getNumberDensities()
+        )
+        self.assertEqual(origXSIDsFromNew["BA"], "AA")
+
+        # check that settings were copied correctly
+        baSettings = self.csm.cs[CONF_CROSS_SECTION]["BA"]
+        self.assertEqual(baSettings.xsID, "BA")
+        for setting, baSettingValue in baSettings.__dict__.items():
+            if setting == "xsID":
+                continue
+            self.assertEqual(baSettingValue, aaSettings.__dict__[setting])
+
     def test_interactBOL(self):
         """Test `BOL` lattice physics update frequency.
 
