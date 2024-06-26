@@ -1077,6 +1077,8 @@ class Operator:
         """
         if self.r:
             self.r.o = None
+            for comp in self.r:
+                comp.parent = None
         self.r = None
         for i in self.interfaces:
             i.o = None

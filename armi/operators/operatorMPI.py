@@ -238,6 +238,7 @@ class OperatorMPI(Operator):
         cs = self.cs
         bp = self.r.blueprints
         spatialGrid = self.r.core.spatialGrid
+        spatialGrid.armiObject = None
         xsGroups = self.getInterface("xsGroups")
         if xsGroups:
             xsGroups.clearRepresentativeBlocks()
@@ -246,6 +247,7 @@ class OperatorMPI(Operator):
         core = reactors.Core("Core")
         self.r.add(core)
         core.spatialGrid = spatialGrid
+        core.spatialGrid.armiObject = core
         self.reattach(self.r, cs)
 
     @staticmethod
