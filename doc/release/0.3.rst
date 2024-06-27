@@ -13,6 +13,7 @@ New Features
 #. System information is now also logged on Linux. (`PR#1689 <https://github.com/terrapower/armi/pull/1689>`_)
 #. Reset ``Reactor`` data on worker processors after every interaction to free memory from state distribution.
    (`PR#1729 <https://github.com/terrapower/armi/pull/1729>`_ and `PR#1750 <https://github.com/terrapower/armi/pull/1750>`_)
+#. Density can be specified for components via ``custom isotopics`` in the blueprints. (`PR#1745 <https://github.com/terrapower/armi/pull/1745>`_)
 #. TBD
 
 API Changes

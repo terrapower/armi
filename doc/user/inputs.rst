@@ -1081,6 +1081,30 @@ nuclear data library).
 
 The (mass) ``density`` input is invalid when specifying ``number densities``; the code will present an error message.
 
+Material density may be specified in custom isotopics either explicitly in a ``mass fractions`` input 
+format (shown above) or implicitly with ``number densities``. This is fairly straightforward for the 
+``Custom`` material, as it has no baseline density. Density may also be specified for components using 
+materials which have entries in the materials library. Users should be aware of the following interactions 
+when specifying a custom density for components using a library material:
+
+    1. The library material density will not be changed. Only the component(s) with the custom isotopics 
+    entry will have the density modification.
+
+    2. Density specified by custom isotopics will override all other density modifications in the component 
+    construction phase (e.g. ``TD_frac`` entries).
+
+    3. Only the component density is changed, not other material properties are altered to account for the 
+    change in composition/density.
+
+    4. Density can only be specified using custom isotopics for non- ``Custom`` materials that have some 
+    initial density. Don't try to make ``Void`` have mass!
+
+Densities specified using ``Custom Isotopics`` are applied in component construction, and should be specified 
+at the input temperature for the component. Note that when overriding the density of a library material, all 
+other properties of that material (e.g. expansion coefficients) will continue to be used as if the component 
+consisted of the library material. In other words, ARMI will still think the component is made out of the 
+original material!
+
 Advanced topics
 ---------------
 

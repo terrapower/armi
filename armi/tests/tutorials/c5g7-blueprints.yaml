@@ -162,7 +162,6 @@ blocks:
             # has same od as fuel, so there needs to be something in the gap.
             shape: Circle
             material: Void
-            isotopics: moderator
             Tinput: 25.0
             Thot: 25.0
             id: fission chamber.od
