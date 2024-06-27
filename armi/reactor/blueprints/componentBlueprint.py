@@ -236,10 +236,12 @@ class ComponentBlueprint(yamlize.Object):
         if self.isotopics is None:
             # No custom isotopics specified
             return
+
         density = blueprint.customIsotopics[self.isotopics].density
         if density is None:
             # Nothing to do
             return
+
         if blueprint.customIsotopics[self.isotopics].density <= 0:
             runLog.error(
                 "A zero or negative density was specified in a custom isotopics input. "
