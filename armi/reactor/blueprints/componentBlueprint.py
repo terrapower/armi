@@ -242,7 +242,7 @@ class ComponentBlueprint(yamlize.Object):
             # Nothing to do
             return
 
-        if blueprint.customIsotopics[self.isotopics].density <= 0:
+        if density <= 0:
             runLog.error(
                 "A zero or negative density was specified in a custom isotopics input. "
                 "This is not permitted, if a 0 density material is needed, use 'Void'. "
@@ -275,10 +275,7 @@ class ComponentBlueprint(yamlize.Object):
                     "Cannot apply custom densities to materials without density."
                 )
 
-            densityRatio = (
-                blueprint.customIsotopics[self.isotopics].density
-                / constructedComponent.density()
-            )
+            densityRatio = density / constructedComponent.density()
             constructedComponent.changeNDensByFactor(densityRatio)
 
             runLog.important(
