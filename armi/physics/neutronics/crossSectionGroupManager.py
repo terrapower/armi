@@ -1235,15 +1235,12 @@ class CrossSectionGroupManager(interfaces.Interface):
 
             # create a new block collection that inherits all of the properties
             # and settings from oldBlockCollection.
-            if oldBlockCollection._validRepresentativeBlockTypes is not None:
-                if len(oldBlockCollection._validRepresentativeBlockTypes) > 0:
-                    validBlockTypes = []
-                    for flag in oldBlockCollection._validRepresentativeBlockTypes:
-                        validBlockTypes.append(flags._toString(Flags, flag))
-                else:
-                    validBlockTypes = None
-            else:
-                validBlockTypes = None
+            validBlockTypes = oldBlockCollection._validRepresentativeBlockTypes
+            if validBlockTypes is not None and len(validBlockTypes) > 0:
+                validBlockTypes = [
+                    flags._toString(Flags, flag)
+                    for flag in oldBlockCollection._validRepresentativeBlockTypes
+                ]
             newBlockCollection = oldBlockCollection.__class__(
                 oldBlockCollection.allNuclidesInProblem,
                 validBlockTypes=validBlockTypes,
