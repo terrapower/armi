@@ -1,8 +1,9 @@
 # Simple description of the C5G7 benchmark problem
-# General description from: https://www.oecd-nea.org/science/docs/2003/nsc-doc2003-16.pdf
-# Composition/dimensions description from: https://www.oecd-nea.org/science/docs/1996/nsc-doc96-02-rev2.pdf
+# General description from: https://www.oecd-nea.org/upload/docs/application/pdf/2019-12/nsc-doc2003-16.pdf
+# Composition/dimensions description from: https://www.oecd-nea.org/upload/docs/application/pdf/2020-01/nsc-doc96-02-rev2.pdf
 # start-custom-isotopics
 custom isotopics:
+    # NEA/NSC/DOC(96)2 Table 2 - Isotopic Distributions for each medium
     mox low: # 4.3%
         input format: number densities
         U235: 5.00E-5
@@ -70,6 +71,7 @@ custom isotopics:
 # end-custom-isotopics
 blocks:
     uo2: &block_uo2
+        # NEA/NSC/DOC(96)2 Table 1 - Cell geometries
         grid name: UO2 grid
         fuel:
             shape: Circle
