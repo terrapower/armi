@@ -188,7 +188,7 @@ In the case that only a single state is to be examined (i.e. no burnup), the use
 In the case of burnup, the reactor cycle history may be specified using either the simple or detailed
 option.
 The simple cycle history consists of the following case settings:
-    
+
     * ``power``
     * ``nCycles`` (default = 1)
     * ``burnSteps`` (default = 4)
@@ -216,7 +216,7 @@ An example simple cycle history might look like
 Note the use of the special shorthand list notation, where repeated values in a list can be specified using an "R" followed by the number of times the value is to be repeated.
 
 The above scheme would represent 3 cycles of operation:
-    
+
     1. 100% power for 90 days, split into two segments of 45 days each, followed by 10 days shutdown (i.e. 90% capacity)
 
     2. 50% power for 30 days, split into two segments of 15 days each, followed by 70 days shutdown (i.e. 15% capacity)
@@ -227,8 +227,8 @@ In each cycle, criticality calculations will be performed at 3 nodes evenly-spac
 This input format can be useful for quick scoping and certain types of real analyses, but clearly has its limitations.
 
 To overcome these limitations, the detailed cycle history, consisting of the ``cycles`` setting may be specified instead.
-For each cycle, an entry to the ``cycles`` list is made with the following optional fields: 
-    
+For each cycle, an entry to the ``cycles`` list is made with the following optional fields:
+
     * ``name``
     * ``power fractions``
     * ``cumulative days``, ``step days``, or ``burn steps`` + ``cycle length``
@@ -283,7 +283,7 @@ Restart cases
 ^^^^^^^^^^^^^
 Oftentimes the user is interested in re-examining just a specific set of time nodes from an existing run.
 In these cases, it is sometimes not necessary to rerun an entire reactor history, and one may instead use one of the following options:
-    
+
     1. Snapshot, where the reactor state is loaded from a database and just a single time node is run.
 
     2. Restart, where the cycle history is loaded from a database and the calculation continues through the remaining specified time history.
@@ -302,7 +302,7 @@ To run a snapshot, the following settings must be added to your case settings:
 An example of a snapshot run input:
 
 .. code-block:: yaml
-       
+
        runType: Snapshots
        reloadDBName: my-old-results.h5
        dumpSnapshot: ['000000', '001002'] # would produce 2 snapshots, at BOL and at node 2 of cycle 1
@@ -316,10 +316,10 @@ To run a restart, the following settings must be added to your case settings:
     * If you would like to change the specified reactor history (see :ref:`restart-cases`), keep the history up to the restarting cycle/node unchanged, and just alter the history after that point. This means that the cycle history specified in your restart run should include all cycles/nodes up to the end of the simulation. For complicated restarts, it may be necessary to use the detailed ``cycles`` setting, even if the original case only used the simple history option.
 
 A few examples of restart cases:
-    
+
     - Restarting a calculation at a specific cycle/node and continuing for the remainder of the originally-specified cycle history:
         .. code-block:: yaml
-               
+
                # old settings
                nCycles: 2
                burnSteps: 2
@@ -329,7 +329,7 @@ A few examples of restart cases:
                loadingFile: my-blueprints.yaml
 
         .. code-block:: yaml
-            
+
                # restart settings
                nCycles: 2
                burnSteps: 2
@@ -342,7 +342,7 @@ A few examples of restart cases:
 
     - Add an additional cycle to the end of a case:
         .. code-block:: yaml
-            
+
                # old settings
                nCycles: 1
                burnSteps: 2
@@ -352,7 +352,7 @@ A few examples of restart cases:
                loadingFile: my-blueprints.yaml
 
         .. code-block:: yaml
-            
+
                # restart settings
                nCycles: 2
                burnSteps: 2
@@ -365,7 +365,7 @@ A few examples of restart cases:
 
     - Restart but cut the reactor history short:
         .. code-block:: yaml
-            
+
                # old settings
                nCycles: 3
                burnSteps: 2
@@ -375,7 +375,7 @@ A few examples of restart cases:
                loadingFile: my-blueprints.yaml
 
         .. code-block:: yaml
-            
+
                # restart settings
                nCycles: 2
                burnSteps: 2
@@ -388,7 +388,7 @@ A few examples of restart cases:
 
     - Restart with a different number of steps in the third cycle using the detailed ``cycles`` setting:
         .. code-block:: yaml
-            
+
                # old settings
                nCycles: 3
                burnSteps: 2
@@ -398,7 +398,7 @@ A few examples of restart cases:
                loadingFile: my-blueprints.yaml
 
         .. code-block:: yaml
-            
+
                # restart settings
                nCycles: 3
                cycles:
@@ -497,7 +497,7 @@ The ARMI data model is represented schematically below, and the blueprints are d
 :ref:`custom isotopics <custom-isotopics>`:
     Special setting: defines user-specified isotopic compositions.
 
-The core map input files can be graphically manipulated with the 
+The core map input files can be graphically manipulated with the
 :py:mod:`Grid editor <armi.utils.gridEditor>`.
 
 
@@ -555,7 +555,7 @@ Component name
     The component name (``fuel``) is specified at the top. Some physics kernels interpret names specially, so
     pay attention to any naming conventions. As a general rule, you can expect that people will be doing regex
     on your name, so you should not use any of these characters in your component names:
-    ``. ^ $ * + ? { } [ ] \ | ( ) :``. 
+    ``. ^ $ * + ? { } [ ] \ | ( ) :``.
 
 shape
     The shape will be extruded to the length specified in the ``assemblies`` input section below. ARMI contains
@@ -760,13 +760,13 @@ A complete definition of an inner-core assembly may be seen below::
                 nozzleType: Inner
                 xs types: [A, B, C, D, E, F]
 
-.. note:: 
-        While component dimensions are entered as cold dimensions, axial heights may be entered as 
-        either cold or hot dimensions. In older versions of ARMI, it was required to enter heights 
+.. note::
+        While component dimensions are entered as cold dimensions, axial heights may be entered as
+        either cold or hot dimensions. In older versions of ARMI, it was required to enter heights
         in the hot dimension (this behavior is preserved by setting `inputHeightsConsideredHot: True`).
-        However, with the 
-        :py:class:`axial expansion changer <armi.reactor.converters.axialExpansionChanger.AxialExpansionChanger>`, 
-        heights may be entered at cold temperatures (`inputHeightsConsideredHot: False`). Each Assembly will then 
+        However, with the
+        :py:class:`axial expansion changer <armi.reactor.converters.axialExpansionChanger.AxialExpansionChanger>`,
+        heights may be entered at cold temperatures (`inputHeightsConsideredHot: False`). Each Assembly will then
         be expanded to its hot dimensions upon construction.
 
 For many cases, a shared height and axial mesh point definition is sufficient. These can be included
@@ -1081,28 +1081,28 @@ nuclear data library).
 
 The (mass) ``density`` input is invalid when specifying ``number densities``; the code will present an error message.
 
-Material density may be specified in custom isotopics either explicitly in a ``mass fractions`` input 
-format (shown above) or implicitly with ``number densities``. This is fairly straightforward for the 
-``Custom`` material, as it has no baseline density. Density may also be specified for components using 
-materials which have entries in the materials library. Users should be aware of the following interactions 
+Material density may be specified in custom isotopics either explicitly in a ``mass fractions`` input
+format (shown above) or implicitly with ``number densities``. This is fairly straightforward for the
+``Custom`` material, as it has no baseline density. Density may also be specified for components using
+materials which have entries in the materials library. Users should be aware of the following interactions
 when specifying a custom density for components using a library material:
 
-    1. The library material density will not be changed. Only the component(s) with the custom isotopics 
+    1. The library material density will not be changed. Only the component(s) with the custom isotopics
     entry will have the density modification.
 
-    2. Density specified by custom isotopics will override all other density modifications in the component 
+    2. Density specified by custom isotopics will override all other density modifications in the component
     construction phase (e.g. ``TD_frac`` entries).
 
-    3. Only the component density is changed, not other material properties are altered to account for the 
+    3. Only the component density is changed, not other material properties are altered to account for the
     change in composition/density.
 
-    4. Density can only be specified using custom isotopics for non- ``Custom`` materials that have some 
+    4. Density can only be specified using custom isotopics for non- ``Custom`` materials that have some
     initial density. Don't try to make ``Void`` have mass!
 
-Densities specified using ``Custom Isotopics`` are applied in component construction, and should be specified 
-at the input temperature for the component. Note that when overriding the density of a library material, all 
-other properties of that material (e.g. expansion coefficients) will continue to be used as if the component 
-consisted of the library material. In other words, ARMI will still think the component is made out of the 
+Densities specified using ``Custom Isotopics`` are applied in component construction, and should be specified
+at the input temperature for the component. Note that when overriding the density of a library material, all
+other properties of that material (e.g. expansion coefficients) will continue to be used as if the component
+consisted of the library material. In other words, ARMI will still think the component is made out of the
 original material!
 
 Advanced topics
@@ -1500,16 +1500,16 @@ Fuel Management Tips
 Some mistakes are common. Follow these tips.
 
     * Always make sure your assembly-level types in the settings file are up to date
-    with the grids in your bluepints file. Otherwise you'll be moving feeds when you
-    want to move igniters, or something.
+      with the grids in your bluepints file. Otherwise you'll be moving feeds when you
+      want to move igniters, or something.
     * Use the exclusions list! If you move a cascade and then the next cascade tries
-    to run, it will choose your newly-moved assemblies if they fit your criteria in
-    ``findAssemblies``. This leads to very confusing results. Therefore, once you move
-    assemblies, you should default to adding them to the exclusions list.
+      to run, it will choose your newly-moved assemblies if they fit your criteria in
+      ``findAssemblies``. This leads to very confusing results. Therefore, once you move
+      assemblies, you should default to adding them to the exclusions list.
     * Print cascades during debugging. After you've built a cascade to swap, print it
-    out and check the locations and types of each assembly in it. Is it what you want?
+      out and check the locations and types of each assembly in it. Is it what you want?
     * Watch ``typeNum`` in the database. You can get good intuition about what is
-    getting moved by viewing this parameter.
+      getting moved by viewing this parameter.
 
 Running a branch search
 -----------------------
@@ -1577,7 +1577,7 @@ with *keff* closest to the setting, while still being above 1.0 is chosen.
 
 Settings Report
 ===============
-This document lists all the `settings <#the-settings-input-file>`_ in ARMI.  
+This document lists all the `settings <#the-settings-input-file>`_ in ARMI.
 
 They are all accessible to developers
 through the :py:class:`armi.settings.caseSettings.Settings` object, which is typically
@@ -1588,6 +1588,7 @@ through ``self.cs``.
 .. exec::
     from armi import settings
     import textwrap
+    from dochelpers import escapeSpecialCharacters
 
     def looks_like_path(s):
         """Super quick, not robust, check if a string looks like a file path."""
@@ -1606,7 +1607,8 @@ through ``self.cs``.
 
     for setting in sorted(cs.values(), key=lambda s: s.name):
         content += '   * - {}\n'.format(' '.join(wrapper.wrap(setting.name)))
-        content += '     - {}\n'.format(' '.join(wrapper.wrap(str(setting.description) or '')))
+        description = escapeSpecialCharacters(str(setting.description) or "")
+        content += "     - {}\n".format(" ".join(wrapper.wrap(description)))
         default = str(getattr(setting, 'default', None)).split("/")[-1]
         options = str(getattr(setting,'options','') or '')
         if looks_like_path(default):

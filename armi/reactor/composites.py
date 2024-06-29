@@ -2255,7 +2255,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
         Parameters
         ----------
-        material : Material object, optional
+        material : armi.materials.material.Material, optional
             The material to match
         materialName : str, optional
             The material name to match.
@@ -2453,7 +2453,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
         Returns
         -------
-        mat : Material
+        mat : armi.materials.material.Material
              the first instance of the most dominant material (by volume) in this object.
 
         See Also
