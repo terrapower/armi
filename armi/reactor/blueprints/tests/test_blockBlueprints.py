@@ -32,14 +32,39 @@ blocks:
             id: 0.0
             od: 0.7
             latticeIDs: [1]
-        clad: # same args as test_blocks (except mult)
+        feed:
+            shape: Circle
+            material: UZr
+            Tinput: 25.0
+            Thot: 600.0
+            id: 0.0
+            od: 0.7
+            latticeIDs: [2]
+        slug:
+            shape: Circle
+            material: UZr
+            Tinput: 25.0
+            Thot: 600.0
+            id: 0.0
+            od: 0.7
+            latticeIDs: [3]
+        clad: &component_clad
+            # same args as test_blocks (except mult)
             shape: Circle
             material: HT9
             Tinput: 25.0
             Thot: 450.0
             id: .77
             od: .80
-            latticeIDs: [1,2]
+            latticeIDs: [1]
+        clad_feed:
+            <<: *component_clad
+            flags: CLAD FEED
+            latticeIDs: [2]
+        clad_slug:
+            <<: *component_clad
+            flags: CLAD SLUG
+            latticeIDs: [3]
         coolant:
             shape: DerivedShape
             material: Sodium
@@ -72,14 +97,23 @@ blocks:
             id: 0.0
             od: 0.67
             latticeIDs: [1]
-        clad:
+        test:
             shape: Circle
-            material: HT9
+            material: UZr
             Tinput: 25.0
-            Thot: 450.0
-            id: .77
-            od: .80
-            latticeIDs: [1,2]
+            Thot: 600.0
+            id: 0.0
+            od: 0.67
+            latticeIDs: [2,3]
+        clad: *component_clad
+        clad_feed:
+            # should be clad_test with CLAD TEST
+            # flags, but for testing in 
+            # test_axialExpansionChanger.TestRetrieveAxialLinkage 
+            # we make it clad_feed.
+            <<: *component_clad
+            flags: CLAD FEED
+            latticeIDs: [2,3]
         coolant:
             shape: DerivedShape
             material: Sodium
@@ -338,7 +372,7 @@ class TestGriddedBlock(unittest.TestCase):
             self.cs, self.blueprints
         )
         fuelBlock = a1[0]
-        clad = fuelBlock.getComponent(Flags.CLAD)
+        clad = fuelBlock.getComponent(Flags.CLAD, exact=True)
 
         # now construct clad programmatically like in test_Blocks
         programmaticBlock = test_blocks.buildSimpleFuelBlock()
