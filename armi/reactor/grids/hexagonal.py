@@ -182,6 +182,16 @@ class HexGrid(StructuredGrid):
         """
         return sqrt(self._unitSteps[0][0] ** 2 + self._unitSteps[1][0] ** 2)
 
+    @property
+    def cornersUp(self) -> bool:
+        """
+        Check whether the hexagonal grid is "corners up" or "flats up".
+
+        See the armi.reactor.grids.HexGrid class documentation for an
+        illustration of the two types of grid indexing.
+        """
+        return self._unitSteps[0][1] != 0.0
+
     @staticmethod
     def indicesToRingPos(i: int, j: int) -> Tuple[int, int]:
         """
