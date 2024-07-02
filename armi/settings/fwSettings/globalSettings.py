@@ -423,7 +423,8 @@ def defineSettings() -> List[setting.Setting]:
             CONF_BURNUP_PEAKING_FACTOR,
             default=0.0,
             label="Burn-up Peaking Factor",
-            description="None",
+            description="The peak/avg factor for burnup and DPA. If it is not set the current flux "
+            "peaking is used (this is typically conservatively high).",
             schema=vol.All(vol.Coerce(float), vol.Range(min=0)),
         ),
         setting.Setting(
@@ -529,7 +530,7 @@ def defineSettings() -> List[setting.Setting]:
             CONF_FRESH_FEED_TYPE,
             default="feed fuel",
             label="Fresh Feed Type",
-            description="None",
+            description="The type of fresh fuel added to the core.",
             options=["feed fuel", "igniter fuel", "inner driver fuel"],
         ),
         setting.Setting(
@@ -668,7 +669,10 @@ def defineSettings() -> List[setting.Setting]:
             schema=vol.All(vol.Coerce(float), vol.Range(min=0)),
         ),
         setting.Setting(
-            CONF_REMOVE_PER_CYCLE, default=3, label="Move per Cycle", description="None"
+            CONF_REMOVE_PER_CYCLE,
+            default=3,
+            label="Remove per Cycle",
+            description="The number of fuel assemblies removed per cycle at equilibrium.",
         ),
         setting.Setting(
             CONF_RUN_TYPE,

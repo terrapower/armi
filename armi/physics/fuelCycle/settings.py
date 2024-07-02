@@ -101,13 +101,19 @@ def getFuelCycleSettings():
             label="Plot shuffle arrows",
         ),
         setting.Setting(
-            CONF_JUMP_RING_NUM, default=8, label="Jump Ring Number", description="None"
+            CONF_JUMP_RING_NUM,
+            default=8,
+            label="Jump Ring Number",
+            description="The number of hex rings jumped when distributing the feed assemblies in "
+            "the alternating concentric rings or checkerboard shuffle patterns (convergent / "
+            "divergent shuffling).",
         ),
         setting.Setting(
             CONF_LEVELS_PER_CASCADE,
             default=14,
             label="Move per cascade",
-            description="None",
+            description="The number of moves made per cascade when performing convergent or "
+            "divergent shuffle patterns.",
         ),
     ]
     return settings
