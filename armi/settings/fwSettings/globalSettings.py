@@ -530,7 +530,7 @@ def defineSettings() -> List[setting.Setting]:
             CONF_FRESH_FEED_TYPE,
             default="feed fuel",
             label="Fresh Feed Type",
-            description="The type of fresh fuel added to the core, used in fuel shuffling logic.",
+            description="The type of fresh fuel added to the core, used in certain pre-defined fuel shuffling logic sequences.",
             options=["feed fuel", "igniter fuel", "inner driver fuel"],
         ),
         setting.Setting(
