@@ -11,6 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""
+Tooling to help flatten jagged (non rectangular) data into rectangular arrays.
+
+The goal here is to support jagged data for NumPy arrays to be written into the ARMI databases.
+"""
 
 from typing import List, Optional
 
