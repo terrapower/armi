@@ -33,7 +33,7 @@ class JaggedArray:
     with varying lengths can be flattened and reconstituted exactly. But, if a list of
     lists of tuples is passed in, the tuples in that final layer of nesting will all be
     flattened to a single 1D numpy array after a round trip. No structure is retained
-    from nested lists of lists or lists of tuples.
+    from nested lists of jagged lists or tuples.
     """
 
     def __init__(self, jaggedData, paramName):
@@ -43,7 +43,7 @@ class JaggedArray:
         Parameters
         ----------
         jaggedData: list of np.ndarray
-            A list of numpy arrays (or lists) to be flattened into a single array
+            A list of numpy arrays (or lists or tuples) to be flattened into a single array
         paramName: str
             The name of the parameter represented by this data
         """
@@ -93,7 +93,14 @@ class JaggedArray:
 
     @staticmethod
     def flatten(x):
-        if isinstance(x, list):
+        """
+        Recursively flatten an iterable (list, tuple, or numpy.ndarray).
+
+        x : list, tuple, np.ndarray
+            An iterable. Can be a nested iterable in which the elements
+            themselves are also iterable.
+        """
+        if isinstance(x, (list, tuple, np.ndarray)):
             if len(x) == 0:
                 return []
             first, rest = x[0], x[1:]
