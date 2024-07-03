@@ -863,12 +863,12 @@ class Database3:
 
         return comp
 
-    def _writeParams(self, h5group, comps):
-        def _getShape(arr):
-            """Get the shape of a numpy.ndarray or list."""
+    def _writeParams(self, h5group, comps) -> tuple:
+        def _getShape(arr: [numpy.ndarray, List, Tuple]):
+            """Get the shape of a numpy.ndarray, list, or tuple."""
             if isinstance(arr, numpy.ndarray):
                 return arr.shape
-            elif isinstance(arr, list):
+            elif isinstance(arr, (list, tuple)):
                 return (len(arr),)
             else:
                 return (1,)
