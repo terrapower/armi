@@ -21,6 +21,8 @@ from typing import List, Optional
 
 import numpy as np
 
+from armi import runLog
+
 
 class JaggedArray:
     """
@@ -77,7 +79,16 @@ class JaggedArray:
 
         self.flattenedArray = np.array(flattenedArray)
         self.offsets = np.array(offsets)
-        self.shapes = np.array(shapes)
+        try:
+            self.shapes = np.array(shapes)
+        except ValueError as ee:
+            runLog.error(
+                "Error! It seems like ARMI may have tried to flatten a jagged array "
+                "where the elements have different numbers of dimensions. `shapes` "
+                "attribute of the JaggedArray for {} cannot be made into a numpy "
+                "array; it might be jagged.".format(paramName)
+            )
+            raise ValueError(ee)
         self.nones = np.array(
             [i for i, val in enumerate(flattenedArray) if val is None]
         )
