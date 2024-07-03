@@ -11,6 +11,9 @@ New Features
 #. Conserve mass by component in ``assembly.setBlockMesh()``. (`PR#1665 <https://github.com/terrapower/armi/pull/1665>`_)
 #. Removal of the ``Block.reactor`` property. (`PR#1425 <https://github.com/terrapower/armi/pull/1425>`_)
 #. System information is now also logged on Linux. (`PR#1689 <https://github.com/terrapower/armi/pull/1689>`_)
+#. Reset ``Reactor`` data on worker processors after every interaction to free memory from state distribution.
+   (`PR#1729 <https://github.com/terrapower/armi/pull/1729>`_ and `PR#1750 <https://github.com/terrapower/armi/pull/1750>`_)
+#. Density can be specified for components via ``custom isotopics`` in the blueprints. (`PR#1745 <https://github.com/terrapower/armi/pull/1745>`_)
 #. TBD
 
 API Changes
@@ -53,12 +56,13 @@ Bug Fixes
 ---------
 #. Fixed four bugs with "corners up" hex grids. (`PR#1649 <https://github.com/terrapower/armi/pull/1649>`_)
 #. Fixed ``safeCopy`` to work on both Windows and Linux with strict permissions (`PR#1691 <https://github.com/terrapower/armi/pull/1691>`_)
-#. When creating a new XS group, inherit settings from initial group. (`PR#1653 <https://github.com/terrapower/armi/pull/1653>`_)
+#. When creating a new XS group, inherit settings from initial group. (`PR#1653 <https://github.com/terrapower/armi/pull/1653>`_, `PR#1751 <https://github.com/terrapower/armi/pull/1751>`_)
 
 #. TBD
 
 Quality Work
 ------------
+#. Creating a single-block test reactor, to speed up unit tests. (`PR#1737 <https://github.com/terrapower/armi/pull/1737>`_)
 #. Supporting MacOS in CI. (`PR#1713 <https://github.com/terrapower/armi/pull/1713>`_)
 #. We now enforce a maximum line length of 120 characters, using ``ruff``. (`PR#1646 <https://github.com/terrapower/armi/pull/1646>`_)
 #. Move ``.coveragerc`` file information into ``pyproject.toml``. (`PR#1692 <https://github.com/terrapower/armi/pull/1692>`_)

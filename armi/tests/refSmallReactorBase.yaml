@@ -11,7 +11,6 @@ custom isotopics:
         U238: 0.0134125
     PuUZr:
         input format: mass fractions
-        density: 9.491820414019937
         PU239: 0.1
         U235: 0.15
         U238: 0.65

@@ -26,8 +26,8 @@ import voluptuous as vol
 
 from armi import context
 from armi.settings import setting
-from armi.utils.mathematics import isMonotonic
 from armi.settings.fwSettings import tightCouplingSettings
+from armi.utils.mathematics import isMonotonic
 
 
 # Framework settings
@@ -221,8 +221,9 @@ def defineSettings() -> List[setting.Setting]:
             default=True,
             label="Input Height Considered Hot",
             description=(
-                "This is a flag to determine if block heights, as provided in blueprints, are at hot dimensions. "
-                "If false, block heights are at cold/as-built dimensions and will be thermally expanded as appropriate."
+                "This is a flag to determine if block heights, as provided in blueprints, are at "
+                "hot dimensions. If false, block heights are at cold/as-built dimensions and will "
+                "be thermally expanded as appropriate."
             ),
         ),
         setting.Setting(
@@ -236,8 +237,7 @@ def defineSettings() -> List[setting.Setting]:
             CONF_TRACE,
             default=False,
             label="Use the Python Tracer",
-            description="Activate Python trace module to print out each line as it's "
-            "executed",
+            description="Activate Python trace module to print out each line as it's executed",
             isEnvironment=True,
         ),
         setting.Setting(
@@ -305,8 +305,7 @@ def defineSettings() -> List[setting.Setting]:
             default=1.0,
             label="Plant Availability Factor",
             description="Availability factor of the plant. This is the fraction of the "
-            "time that the plant is operating. If variable, use `availabilityFactors` "
-            "setting.",
+            "time that the plant is operating. If variable, use `availabilityFactors` setting.",
             oldNames=[
                 ("capacityFactor", None),
             ],
@@ -441,10 +440,18 @@ def defineSettings() -> List[setting.Setting]:
             description="A comment describing this case",
         ),
         setting.Setting(
-            CONF_COPY_FILES_FROM, default=[], label="None", description="None"
+            CONF_COPY_FILES_FROM,
+            default=[],
+            label="Copy These Files",
+            description="A list of files that need to be copied at the start of a run.",
         ),
         setting.Setting(
-            CONF_COPY_FILES_TO, default=[], label="None", description="None"
+            CONF_COPY_FILES_TO,
+            default=[],
+            label="Copy to These Directories",
+            description="A list of directories to copy provided files into at the start of a run."
+            "This list can be of length zero (copy to working dir), 1 (copy all files to the same "
+            f"place), or it must be the same length as {CONF_COPY_FILES_FROM}",
         ),
         setting.Setting(
             CONF_DEBUG, default=False, label="Python Debug Mode", description="None"
@@ -453,8 +460,7 @@ def defineSettings() -> List[setting.Setting]:
             CONF_DEBUG_MEM,
             default=False,
             label="Debug Memory",
-            description="Turn on memory debugging options to help find problems with "
-            "the code",
+            description="Turn on memory debugging options to help find problems with the code",
         ),
         setting.Setting(
             CONF_DEBUG_MEM_SIZE,
@@ -489,8 +495,7 @@ def defineSettings() -> List[setting.Setting]:
             label="Detailed Assems - ID",
             description="Assembly numbers(IDs) for assemblies that will have "
             "'detailed' treatment. This option will track assemblies that not in the "
-            "core at BOL. Note: This option is interpreted differently by different "
-            "modules.",
+            "core at BOL. Note: This option is interpreted differently by different modules.",
             schema=vol.Schema([int]),
         ),
         setting.Setting(
