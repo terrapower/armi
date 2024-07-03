@@ -54,7 +54,6 @@ CONF_CYCLE_LENGTH = "cycleLength"
 CONF_CYCLE_LENGTHS = "cycleLengths"
 CONF_CYCLES = "cycles"
 CONF_CYCLES_SKIP_TIGHT_COUPLING_INTERACTION = "cyclesSkipTightCouplingInteraction"
-CONF_DEBUG = "debug"
 CONF_DEBUG_MEM = "debugMem"
 CONF_DEBUG_MEM_SIZE = "debugMemSize"
 CONF_DECAY_CONSTANTS = "decayConstants"
@@ -453,9 +452,6 @@ def defineSettings() -> List[setting.Setting]:
             description="A list of directories to copy provided files into at the start of a run."
             "This list can be of length zero (copy to working dir), 1 (copy all files to the same "
             f"place), or it must be the same length as {CONF_COPY_FILES_FROM}",
-        ),
-        setting.Setting(
-            CONF_DEBUG, default=False, label="Python Debug Mode", description="None"
         ),
         setting.Setting(
             CONF_DEBUG_MEM,
