@@ -562,25 +562,26 @@ class Operator:
         runLog.header(line)
 
     @staticmethod
-    def _expandCycleAndTimeNodeArgs(*args, interactionName):
+    def _expandCycleAndTimeNodeArgs(self, *args, interactionName):
         """Return text annotating information for current run event.
 
         Notes
         -----
         - Init, BOL, EOL: empty
-        - Everynode: (cycle, time node)
+        - Everynode: cycle, time node
         - BOC: cycle number
-        - Coupling: iteration number
+        - Coupling: cycle, time node, iteration number
         """
         cycleNodeInfo = ""
         if args:
             if len(args) == 1:
                 if interactionName == "Coupled":
-                    cycleNodeInfo = f" - iteration {args[0]}"
+                    cycleNodeInfo = f" - timestep: cycle {self.r.p.cycle}, node {self.r.p.timenode}"
+                    cycleNodeInfo += f" - iteration {args[0]}"
                 elif interactionName in ("BOC", "EOC"):
-                    cycleNodeInfo = f" - cycle {args[0]}"
+                    cycleNodeInfo = f" - timestep: cycle {args[0]}"
             else:
-                cycleNodeInfo = f" - cycle {args[0]}, node {args[1]}"
+                cycleNodeInfo = f" - timestep: cycle {args[0]}, node {args[1]}"
         return cycleNodeInfo
 
     def _debugDB(self, interactionName, interfaceName, statePointIndex=0):
