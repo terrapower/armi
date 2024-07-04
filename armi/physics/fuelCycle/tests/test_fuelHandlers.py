@@ -874,6 +874,25 @@ class TestFuelHandler(FuelHandlerTestHelper):
         with self.assertRaises(ValueError):
             fh.dischargeSwap(a2, a1)
 
+    def test_getAssembliesInRings(self):
+        fh = fuelHandlers.FuelHandler(self.o)
+        aList0 = fh._getAssembliesInRings([0], Flags.FUEL, False, None, False)
+        self.assertEqual(len(aList0), 1)
+
+        aList1 = fh._getAssembliesInRings([0, 1, 2], Flags.FUEL, False, None, False)
+        self.assertEqual(len(aList1), 3)
+
+        aList2 = fh._getAssembliesInRings([0, 1, 2], Flags.FUEL, True, None, False)
+        self.assertEqual(len(aList2), 3)
+
+        aList3 = fh._getAssembliesInRings(
+            [0, 1, 2, "SFP"], Flags.FUEL, True, None, False
+        )
+        self.assertEqual(len(aList3), 4)
+
+        aList4 = fh._getAssembliesInRings([0, 1, 2], Flags.FUEL, False, None, True)
+        self.assertEqual(len(aList4), 3)
+
 
 class TestFuelPlugin(unittest.TestCase):
     """Tests that make sure the plugin is being discovered well."""

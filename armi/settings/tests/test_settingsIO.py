@@ -96,9 +96,19 @@ class SettingsRenameTests(unittest.TestCase):
             "testSetting1",
             default=None,
             oldNames=[("oSetting1", None), ("osetting1", datetime.date.today())],
+            description="Just a unit test setting.",
         ),
-        setting.Setting("testSetting2", default=None, oldNames=[("oSetting2", None)]),
-        setting.Setting("testSetting3", default=None),
+        setting.Setting(
+            "testSetting2",
+            default=None,
+            oldNames=[("oSetting2", None)],
+            description="Just a unit test setting.",
+        ),
+        setting.Setting(
+            "testSetting3",
+            default=None,
+            description="Just a unit test setting.",
+        ),
     ]
 
     def test_rename(self):
@@ -123,7 +133,10 @@ class SettingsRenameTests(unittest.TestCase):
             for setting in self.testSettings
             + [
                 setting.Setting(
-                    "someOtherSetting", default=None, oldNames=[("oSetting1", None)]
+                    "someOtherSetting",
+                    default=None,
+                    oldNames=[("oSetting1", None)],
+                    description="Just a unit test setting.",
                 )
             ]
         }

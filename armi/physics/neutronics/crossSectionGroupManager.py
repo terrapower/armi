@@ -58,14 +58,13 @@ import string
 
 import numpy
 
-from armi import context
-from armi import interfaces
-from armi import runLog
+from armi import context, interfaces, runLog
+from armi.physics.neutronics import LatticePhysicsFrequency
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
+from armi.reactor import flags
 from armi.reactor.components import basicShapes
 from armi.reactor.flags import Flags
 from armi.utils.units import TRACE_NUMBER_DENSITY
-from armi.physics.neutronics import LatticePhysicsFrequency
 
 ORDER = interfaces.STACK_ORDER.BEFORE + interfaces.STACK_ORDER.CROSS_SECTIONS
 
@@ -874,11 +873,11 @@ class CrossSectionGroupManager(interfaces.Interface):
             reactor state.
         """
         # now that all cs settings are loaded, apply defaults to compound XS settings
-        from armi.physics.neutronics.settings import CONF_XS_BLOCK_REPRESENTATION
         from armi.physics.neutronics.settings import (
             CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION,
+            CONF_LATTICE_PHYSICS_FREQUENCY,
+            CONF_XS_BLOCK_REPRESENTATION,
         )
-        from armi.physics.neutronics.settings import CONF_LATTICE_PHYSICS_FREQUENCY
 
         self.cs[CONF_CROSS_SECTION].setDefaults(
             self.cs[CONF_XS_BLOCK_REPRESENTATION],
@@ -1233,8 +1232,19 @@ class CrossSectionGroupManager(interfaces.Interface):
         for newXSID in modifiedReprBlocks:
             oldXSID = origXSIDsFromNew[newXSID]
             oldBlockCollection = blockCollectionByXsGroup[oldXSID]
+
+            # create a new block collection that inherits all of the properties
+            # and settings from oldBlockCollection.
+            validBlockTypes = oldBlockCollection._validRepresentativeBlockTypes
+            if validBlockTypes is not None and len(validBlockTypes) > 0:
+                validBlockTypes = [
+                    flags._toString(Flags, flag)
+                    for flag in oldBlockCollection._validRepresentativeBlockTypes
+                ]
             newBlockCollection = oldBlockCollection.__class__(
-                oldBlockCollection.allNuclidesInProblem
+                oldBlockCollection.allNuclidesInProblem,
+                validBlockTypes=validBlockTypes,
+                averageByComponent=oldBlockCollection.averageByComponent,
             )
             newBlockCollectionsByXsGroup[newXSID] = newBlockCollection
         return newBlockCollectionsByXsGroup, modifiedReprBlocks, origXSIDsFromNew
@@ -1292,6 +1302,12 @@ class CrossSectionGroupManager(interfaces.Interface):
             for b in blockList:
                 if b.getMicroSuffix() == origXSID:
                     b.p.xsType = newXSType
+
+            # copy XS settings to new XS ID
+            self.cs[CONF_CROSS_SECTION][newXSID] = copy.deepcopy(
+                self.cs[CONF_CROSS_SECTION][origXSID]
+            )
+            self.cs[CONF_CROSS_SECTION][newXSID].xsID = newXSID
 
         return modifiedReprBlocks, origXSIDsFromNew
 

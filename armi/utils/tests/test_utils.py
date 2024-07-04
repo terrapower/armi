@@ -143,7 +143,9 @@ class TestGeneralUtils(unittest.TestCase):
     def test_classesInHierarchy(self):
         """Tests the classesInHierarchy utility."""
         # load the test reactor
-        _o, r = loadTestReactor()
+        _o, r = loadTestReactor(
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
 
         # call the `classesInHierarchy` function
         classCounts = defaultdict(lambda: 0)
@@ -155,8 +157,8 @@ class TestGeneralUtils(unittest.TestCase):
         self.assertEqual(classCounts[type(r.core)], 1)
 
         # further validate the Reactor heirarchy is in place
-        self.assertGreater(len(r.core.getAssemblies()), 50)
-        self.assertGreater(len(r.core.getBlocks()), 200)
+        self.assertEqual(len(r.core.getAssemblies()), 1)
+        self.assertEqual(len(r.core.getBlocks()), 1)
 
     def test_codeTiming(self):
         """Test that codeTiming preserves function attributes when it wraps a function."""

@@ -11,10 +11,10 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
-        python: [3.7, 3.8, 3.9, '3.10', '3.11']
+        python: [3.9, '3.10', '3.11']
 
     steps:
       - uses: actions/checkout@v2
@@ -26,10 +26,9 @@ jobs:
         run: sudo apt-get update
       - name: Install mpi libs
         run: sudo apt-get -y install libopenmpi-dev
-      - name: Run Tests and Coverage
+      - name: Run Tests
         run: |
           pip install -e .[memprof,mpi,test]
           pytest -n 4 armi
-          mpiexec -n 2 --use-hwthread-cpus coverage run --rcfile=pyproject.toml -m pytest --cov=armi --cov-config=pyproject.toml --cov-report=lcov --cov-append --ignore=venv armi/tests/test_mpiFeatures.py || true
-          mpiexec -n 2 --use-hwthread-cpus coverage run --rcfile=pyproject.toml -m pytest --cov=armi --cov-config=pyproject.toml --cov-report=lcov --cov-append --ignore=venv armi/tests/test_mpiParameters.py || true
-          coverage combine --rcfile=pyproject.toml --keep -a
+          mpiexec -n 2 --use-hwthread-cpus coverage run --rcfile=pyproject.toml -m pytest --cov=armi --cov-config=pyproject.toml --ignore=venv armi/tests/test_mpiFeatures.py || true
+          mpiexec -n 2 --use-hwthread-cpus coverage run --rcfile=pyproject.toml -m pytest --cov=armi --cov-config=pyproject.toml --ignore=venv armi/tests/test_mpiParameters.py || true

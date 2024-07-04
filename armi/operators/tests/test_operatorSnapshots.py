@@ -32,7 +32,10 @@ class TestOperatorSnapshots(unittest.TestCase):
         newSettings["branchVerbosity"] = "important"
         newSettings["nCycles"] = 1
         newSettings["dumpSnapshot"] = ["000000", "008000", "016005"]
-        o1, self.r = test_reactors.loadTestReactor(customSettings=newSettings)
+        o1, self.r = test_reactors.loadTestReactor(
+            customSettings=newSettings,
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml",
+        )
         self.o = OperatorSnapshots(o1.cs)
         self.o.r = self.r
 
@@ -58,7 +61,7 @@ class TestOperatorSnapshots(unittest.TestCase):
 
         self.assertEqual(self.r.core.p.power, 0.0)
         self.o._mainOperate()
-        self.assertEqual(self.r.core.p.power, 100000000.0)
+        self.assertEqual(self.r.core.p.power, 1000000.0)
 
     def test_createInterfaces(self):
         self.assertEqual(len(self.o.interfaces), 0)
