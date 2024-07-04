@@ -1297,9 +1297,13 @@ class Block_TestCase(unittest.TestCase):
         testBlock.add(fuel)
         testBlock.add(refl)
 
-        print(testBlock.getNumComponents(Flags.FUEL)) # is 127
-        print(testBlock.getNumComponents([Flags.FUEL, Flags.PIN])) # is 169
-        print(testBlock.getNumPins()) # is 127 (should be 169...)
+        print(testBlock.getNumComponents(Flags.FUEL)) # is 127 (TA thinks should be 1)
+        print(testBlock.getNumComponents([Flags.FUEL, Flags.PIN])) # is 169 (TA thinks should be 2)
+        print(testBlock.getNumPins()) # is 127 (TA thinks this should be 169...)
+        ## Also, getNumPins() should allow for a list of flags so users could do the following
+        ## testBlock.getNumPins(Flags.FUEL) # returns 127
+        ## testBlock.getNumPins([Flags.FUEL, Flags.PIN]) # returns 169
+        ## or for a default behavior, testBlock.getNumPins() # returns all pins regardless of flags, so this would be 169
 
     def test_getNumPins(self):
         """Test that we can get the number of pins from various blocks.
