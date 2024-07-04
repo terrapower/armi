@@ -1289,6 +1289,18 @@ class Block_TestCase(unittest.TestCase):
 
         self.assertEqual(1, self.block.getNumComponents(Flags.DUCT))
 
+        testBlock = blocks.HexBlock("fuel", height=10.0)
+        fuelDims = {"Tinput": 25.0, "Thot": 600, "od": 0.76, "id": 0.00, "mult": 127.0}
+        reflDims = {"Tinput": 25.0, "Thot": 600, "od": 0.76, "id": 0.00, "mult": 42.0}
+        fuel = components.Circle("fuel", "UZr", **fuelDims)
+        refl = components.Circle("pin", "HT9", **reflDims)
+        testBlock.add(fuel)
+        testBlock.add(refl)
+
+        print(testBlock.getNumComponents(Flags.FUEL)) # is 127
+        print(testBlock.getNumComponents([Flags.FUEL, Flags.PIN])) # is 169
+        print(testBlock.getNumPins()) # is 127 (should be 169...)
+
     def test_getNumPins(self):
         """Test that we can get the number of pins from various blocks.
 
