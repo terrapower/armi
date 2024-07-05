@@ -487,9 +487,7 @@ class Operator:
 
         halt = False
 
-        cycleNodeTag = self._expandCycleAndTimeNodeArgs(
-            *args, interactionName=interactionName
-        )
+        cycleNodeTag = self._expandCycleAndTimeNodeArgs(interactionName)
         runLog.header(
             "===========  Triggering {} Event ===========".format(
                 interactionName + cycleNodeTag
@@ -497,9 +495,7 @@ class Operator:
         )
 
         for statePointIndex, interface in enumerate(activeInterfaces, start=1):
-            self.printInterfaceSummary(
-                interface, interactionName, statePointIndex, *args
-            )
+            self.printInterfaceSummary(interface, interactionName, statePointIndex)
 
             # maybe make this a context manager
             if printMemUsage:
@@ -546,42 +542,42 @@ class Operator:
         """
         pass
 
-    def printInterfaceSummary(self, interface, interactionName, statePointIndex, *args):
+    def printInterfaceSummary(self, interface, interactionName, statePointIndex):
         """
         Log which interaction point is about to be executed.
 
         This looks better as multiple lines but it's a lot easier to grep as one line.
         We leverage newlines instead of long banners to save disk space.
         """
-        nodeInfo = self._expandCycleAndTimeNodeArgs(
-            *args, interactionName=interactionName
-        )
+        nodeInfo = self._expandCycleAndTimeNodeArgs(interactionName)
         line = "=========== {:02d} - {:30s} {:15s} ===========".format(
             statePointIndex, interface.name, interactionName + nodeInfo
         )
         runLog.header(line)
 
-    @staticmethod
-    def _expandCycleAndTimeNodeArgs(self, *args, interactionName):
+    def _expandCycleAndTimeNodeArgs(self, interactionName):
         """Return text annotating information for current run event.
 
         Notes
         -----
         - Init, BOL, EOL: empty
         - Everynode: cycle, time node
-        - BOC: cycle number
-        - Coupling: cycle, time node, iteration number
+        - BOC, EOC: cycle number
+        - Coupled: cycle, time node, iteration number
         """
-        cycleNodeInfo = ""
-        if args:
-            if len(args) == 1:
-                if interactionName == "Coupled":
-                    cycleNodeInfo = f" - timestep: cycle {self.r.p.cycle}, node {self.r.p.timenode}"
-                    cycleNodeInfo += f" - iteration {args[0]}"
-                elif interactionName in ("BOC", "EOC"):
-                    cycleNodeInfo = f" - timestep: cycle {args[0]}"
-            else:
-                cycleNodeInfo = f" - timestep: cycle {args[0]}, node {args[1]}"
+        if interactionName == "Coupled":
+            cycleNodeInfo = (
+                f" - timestep: cycle {self.r.p.cycle}, node {self.r.p.timeNode}"
+                f" - iteration {self.r.core.p.coupledIteration}"
+            )
+        elif interactionName in ("BOC", "EOC"):
+            cycleNodeInfo = f" - timestep: cycle {self.r.p.cycle}"
+        elif interactionName in ("Init", "BOL", "EOL"):
+            cycleNodeInfo = ""
+        else:
+            cycleNodeInfo = (
+                f" - timestep: cycle {self.r.p.cycle}, node {self.r.p.timeNode}"
+            )
         return cycleNodeInfo
 
     def _debugDB(self, interactionName, interfaceName, statePointIndex=0):
