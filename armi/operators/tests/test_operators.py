@@ -554,14 +554,14 @@ class TestInterfaceAndEventHeaders(unittest.TestCase):
         cls.r.core.p.coupledIteration = 7
 
     def test_expandCycleAndTimeNodeArgs_Empty(self):
-        """When *args are empty, cycleNodeInfo should be an empty string."""
+        """When cycleNodeInfo should be an empty string."""
         for task in ["Init", "BOL", "EOL"]:
             self.assertEqual(
                 self.o._expandCycleAndTimeNodeArgs(interactionName=task), ""
             )
 
     def test_expandCycleAndTimeNodeArgs_Cycle(self):
-        """When *args is a single value, cycleNodeInfo should return the right string."""
+        """When cycleNodeInfo should return only the cycle."""
         for task in ["BOC", "EOC"]:
             self.assertEqual(
                 self.o._expandCycleAndTimeNodeArgs(interactionName=task),
@@ -569,14 +569,14 @@ class TestInterfaceAndEventHeaders(unittest.TestCase):
             )
 
     def test_expandCycleAndTimeNodeArgs_EveryNode(self):
-        """When *args is two values, cycleNodeInfo should return the right string."""
+        """When cycleNodeInfo should return the cycle and node."""
         self.assertEqual(
             self.o._expandCycleAndTimeNodeArgs(interactionName="EveryNode"),
             f" - timestep: cycle {self.r.p.cycle}, node {self.r.p.timeNode}",
         )
 
     def test_expandCycleAndTimeNodeArgs_Coupled(self):
-        """When *args is two values, cycleNodeInfo should return the right string."""
+        """When cycleNodeInfo should return the cycle, node, and interaction."""
         self.assertEqual(
             self.o._expandCycleAndTimeNodeArgs(interactionName="Coupled"),
             (
