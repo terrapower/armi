@@ -576,7 +576,7 @@ class TestInterfaceAndEventHeaders(unittest.TestCase):
         )
 
     def test_expandCycleAndTimeNodeArgs_Coupled(self):
-        """When cycleNodeInfo should return the cycle, node, and interaction."""
+        """When cycleNodeInfo should return the cycle, node, and iteration number."""
         self.assertEqual(
             self.o._expandCycleAndTimeNodeArgs(interactionName="Coupled"),
             (
