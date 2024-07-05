@@ -13,21 +13,25 @@
 # limitations under the License.
 
 """Really basic tests of the report Utils."""
+from glob import glob
+from unittest.mock import patch
 import logging
 import os
 import subprocess
+import sys
 import unittest
-from unittest.mock import patch
 
 from armi import runLog, settings
 from armi.bookkeeping import report
 from armi.bookkeeping.report import data, reportInterface
 from armi.bookkeeping.report.reportingUtils import (
     _getSystemInfoLinux,
+    _getSystemInfoMac,
     _getSystemInfoWindows,
     getNodeName,
     getSystemInfo,
     makeBlockDesignReport,
+    makeCoreDesignReport,
     setNeutronBalancesReport,
     summarizePinDesign,
     summarizePower,
@@ -91,14 +95,36 @@ Processor(s):    1 Processor(s) Installed.
         out = _getSystemInfoWindows()
         self.assertEqual(out, windowsResult)
 
+    @patch("subprocess.run")
+    def test_getSystemInfoMac(self, mockSubprocess):
+        """Test _getSystemInfoMac() on any operating system, by mocking the system call."""
+        macResult = b"""System Software Overview:
+
+        System Version: macOS 12.1 (21C52)
+        Kernel Version: Darwin 21.2.0
+        ...
+        Hardware Overview:
+        Model Name: MacBook Pro
+        ..."""
+
+        mockSubprocess.return_value = _MockReturnResult(macResult)
+
+        out = _getSystemInfoMac()
+        self.assertEqual(out, macResult.decode("utf-8"))
+
     def test_getSystemInfo(self):
         """Basic sanity check of getSystemInfo() running in the wild.
 
         This test should pass if it is run on Window or mainstream Linux distros. But we expect this
         to fail if the test is run on some other OS.
         """
+        if "darwin" in sys.platform:
+            # too comlicated to test MacOS in this method
+            return
+
         out = getSystemInfo()
         substrings = ["OS ", "Processor(s):"]
+
         for sstr in substrings:
             self.assertIn(sstr, out)
 
@@ -156,7 +182,11 @@ class TestReport(unittest.TestCase):
 
     def test_reactorSpecificReporting(self):
         """Test a number of reporting utils that require reactor/core information."""
-        o, r = loadTestReactor()
+        o, r = loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+
+        # make sure makeCoreDesignReport() doesn't fail, though it won't generate an output here
+        makeCoreDesignReport(r.core, o.cs)
+        self.assertEqual(len(glob("*.html")), 0)
 
         with mockRunLogs.BufferLog() as mock:
             # we should start with a clean slate
@@ -167,8 +197,6 @@ class TestReport(unittest.TestCase):
             writeAssemblyMassSummary(r)
             self.assertIn("BOL Assembly Mass Summary", mock.getStdout())
             self.assertIn("igniter fuel", mock.getStdout())
-            self.assertIn("primary control", mock.getStdout())
-            self.assertIn("plenum", mock.getStdout())
             mock.emptyStdout()
 
             setNeutronBalancesReport(r.core)
@@ -193,9 +221,7 @@ class TestReport(unittest.TestCase):
             mock.emptyStdout()
 
             summarizePower(r.core)
-            self.assertIn("Power in radial shield", mock.getStdout())
-            self.assertIn("Power in primary control", mock.getStdout())
-            self.assertIn("Power in feed fuel", mock.getStdout())
+            self.assertIn("Power in igniter fuel", mock.getStdout())
             mock.emptyStdout()
 
             writeCycleSummary(r.core)
@@ -214,7 +240,7 @@ class TestReport(unittest.TestCase):
             self.assertEqual(len(mock.getStdout()), 0)
 
     def test_writeWelcomeHeaders(self):
-        o, r = loadTestReactor()
+        o, r = loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
 
         # grab this file path
         randoFile = os.path.abspath(__file__)
@@ -266,7 +292,7 @@ class TestReportInterface(unittest.TestCase):
         self.assertEqual(repInt.distributable(), 4)
 
     def test_interactBOLReportInt(self):
-        o, r = loadTestReactor()
+        o, r = loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
         repInt = reportInterface.ReportInterface(r, o.cs)
 
         with mockRunLogs.BufferLog() as mock:
@@ -274,10 +300,9 @@ class TestReportInterface(unittest.TestCase):
             self.assertIn("Writing assem layout", mock.getStdout())
             self.assertIn("BOL Assembly", mock.getStdout())
             self.assertIn("wetMass", mock.getStdout())
-            self.assertIn("moveable plenum", mock.getStdout())
 
     def test_interactEveryNode(self):
-        o, r = loadTestReactor()
+        o, r = loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
         repInt = reportInterface.ReportInterface(r, o.cs)
 
         with mockRunLogs.BufferLog() as mock:
@@ -287,15 +312,15 @@ class TestReportInterface(unittest.TestCase):
             self.assertIn("keff=", mock.getStdout())
 
     def test_interactBOC(self):
-        o, r = loadTestReactor()
+        o, r = loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
         repInt = reportInterface.ReportInterface(r, o.cs)
 
         self.assertEqual(repInt.fuelCycleSummary["bocFissile"], 0.0)
         repInt.interactBOC(1)
-        self.assertAlmostEqual(repInt.fuelCycleSummary["bocFissile"], 726.30401755)
+        self.assertAlmostEqual(repInt.fuelCycleSummary["bocFissile"], 4.290603409612653)
 
     def test_interactEOC(self):
-        o, r = loadTestReactor()
+        o, r = loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
         repInt = reportInterface.ReportInterface(r, o.cs)
 
         with mockRunLogs.BufferLog() as mock:
@@ -304,7 +329,7 @@ class TestReportInterface(unittest.TestCase):
             self.assertIn("TIMER REPORTS", mock.getStdout())
 
     def test_interactEOL(self):
-        o, r = loadTestReactor()
+        o, r = loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
         repInt = reportInterface.ReportInterface(r, o.cs)
 
         with mockRunLogs.BufferLog() as mock:

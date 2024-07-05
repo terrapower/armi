@@ -37,7 +37,9 @@ class TestPlotting(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.o, cls.r = test_reactors.loadTestReactor()
+        cls.o, cls.r = test_reactors.loadTestReactor(
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
 
     def test_plotDepthMap(self):  # indirectly tests plot face map
         with TemporaryDirectoryChanger():

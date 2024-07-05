@@ -478,7 +478,7 @@ The ARMI data model is represented schematically below, and the blueprints are d
     Defines :py:class:`~armi.reactor.components.component.Component` inputs for a
     :py:class:`~armi.reactor.blocks.Block`.
 
-:ref:`asssemblies <assemblies>`:
+:ref:`assemblies <assemblies>`:
     Defines vertical stacks of blocks used to define the axial profile of an
     :py:class:`~armi.reactor.assemblies.Assembly`.
 
@@ -1043,6 +1043,15 @@ Example grid definitions are shown below::
 .. tip:: We have gone through some effort to allow both pin and core grid definitions to share this
     input and it may improve in the future.
 
+You may set up some kinds of grids (e.g. 1/3 and full core hex or Cartesian core
+loadings) using our interactive graphical grid editor described more in
+:py:mod:`armi.utils.gridEditor`.
+
+.. figure:: /.static/gridEditor.png
+    :align: center
+
+    An example of the Grid Editor being used on a FFTF input file
+
 .. _custom-isotopics:
 
 Custom Isotopics
@@ -1071,6 +1080,30 @@ ARMI will expand elemental nuclides to their natural isotopics in most cases (to
 nuclear data library).
 
 The (mass) ``density`` input is invalid when specifying ``number densities``; the code will present an error message.
+
+Material density may be specified in custom isotopics either explicitly in a ``mass fractions`` input 
+format (shown above) or implicitly with ``number densities``. This is fairly straightforward for the 
+``Custom`` material, as it has no baseline density. Density may also be specified for components using 
+materials which have entries in the materials library. Users should be aware of the following interactions 
+when specifying a custom density for components using a library material:
+
+    1. The library material density will not be changed. Only the component(s) with the custom isotopics 
+    entry will have the density modification.
+
+    2. Density specified by custom isotopics will override all other density modifications in the component 
+    construction phase (e.g. ``TD_frac`` entries).
+
+    3. Only the component density is changed, not other material properties are altered to account for the 
+    change in composition/density.
+
+    4. Density can only be specified using custom isotopics for non- ``Custom`` materials that have some 
+    initial density. Don't try to make ``Void`` have mass!
+
+Densities specified using ``Custom Isotopics`` are applied in component construction, and should be specified 
+at the input temperature for the component. Note that when overriding the density of a library material, all 
+other properties of that material (e.g. expansion coefficients) will continue to be used as if the component 
+consisted of the library material. In other words, ARMI will still think the component is made out of the 
+original material!
 
 Advanced topics
 ---------------

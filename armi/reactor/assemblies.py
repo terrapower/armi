@@ -40,15 +40,6 @@ class Assembly(composites.Composite):
     """
     A single assembly in a reactor made up of blocks built from the bottom up.
     Append blocks to add them up. Index blocks with 0 being the bottom.
-
-    Attributes
-    ----------
-    pinNum : int
-        The number of pins in this assembly.
-
-    pinPeakingFactors : list of floats
-        The assembly-averaged pin power peaking factors. This is the ratio of pin
-        power to AVERAGE pin power in an assembly.
     """
 
     pDefs = assemblyParameters.getAssemblyParameterDefinitions()
@@ -82,7 +73,6 @@ class Assembly(composites.Composite):
         self.setType(typ)
         self._current = 0  # for iterating
         self.p.buLimit = self.getMaxParam("buLimit")
-        self.pinPeakingFactors = []  # assembly-averaged pin power peaking factors
         self.lastLocationLabel = self.LOAD_QUEUE
 
     def __repr__(self):

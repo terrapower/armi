@@ -22,19 +22,6 @@ from armi.utils import units
 def defineReactorParameters():
     pDefs = parameters.ParameterDefinitionCollection()
 
-    pDefs.add(
-        parameters.Parameter(
-            "rdIterNum",
-            units=units.UNITLESS,
-            description="Integer number of region-density equilibrium iterations",
-            location=ParamLocation.AVERAGE,
-            saveToDB=True,
-            default=parameters.NoDefault,
-            setter=parameters.NoDefault,
-            categories=set(),
-        )
-    )
-
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, default=0.0) as pb:
         pb.defParam(
             "cycle",

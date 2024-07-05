@@ -149,8 +149,7 @@ class Report:
 class Group:
     """Abstract class, when extended is used for storage for data within a report.
 
-    Only accepts things wrapped in the ReportDatum class
-
+    Only accepts things wrapped in the ReportDatum class.
     """
 
     def __init__(self, title, description=""):
@@ -193,6 +192,10 @@ class Table(Group):
 
     def __str__(self):
         """Truer to content representation."""
+        # error handling
+        if not len(self.data):
+            return ""
+
         # set up
         prototypical_data = list(self.data.values())[0]
         num_cols = len(prototypical_data) + 1

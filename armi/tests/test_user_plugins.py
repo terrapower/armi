@@ -244,7 +244,9 @@ class TestUserPlugins(unittest.TestCase):
         plug0 = [p[1] for p in pluginz if p[0] == name][0]
 
         # load a reactor and grab the fuel assemblies
-        o, r = test_reactors.loadTestReactor(TEST_ROOT)
+        o, r = test_reactors.loadTestReactor(
+            TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
         fuels = r.core.getBlocks(Flags.FUEL)
 
         # prove that our plugin affects the core in the desired way
@@ -269,7 +271,9 @@ class TestUserPlugins(unittest.TestCase):
         self.assertIn("UserPluginWithInterface", pluginNames)
 
         # load a reactor and grab the fuel assemblieapps
-        o, r = test_reactors.loadTestReactor(TEST_ROOT)
+        o, r = test_reactors.loadTestReactor(
+            TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
         _fuels = r.core.getAssemblies(Flags.FUEL)
 
         # This is here because we have multiple tests altering the App()

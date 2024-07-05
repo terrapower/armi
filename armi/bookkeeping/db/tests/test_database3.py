@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for the Database3 class."""
-from distutils.spawn import find_executable
+import shutil
 import subprocess
 import unittest
 
@@ -31,14 +31,14 @@ from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 # determine if this is a parallel run, and git is installed
 GIT_EXE = None
-if find_executable("git") is not None:
+if shutil.which("git") is not None:
     GIT_EXE = "git"
-elif find_executable("git.exe") is not None:
+elif shutil.which("git.exe") is not None:
     GIT_EXE = "git.exe"
 
 
 class TestDatabase3(unittest.TestCase):
-    """Tests for the Database3 class."""
+    """Tests for the Database3 class that require a large, complicated reactor."""
 
     def setUp(self):
         self.td = TemporaryDirectoryChanger()
@@ -61,78 +61,6 @@ class TestDatabase3(unittest.TestCase):
         self.db.close()
         self.stateRetainer.__exit__()
         self.td.__exit__(None, None, None)
-
-    def test_writeToDB(self):
-        """Test writing to the database.
-
-        .. test:: Write a single time step of data to the database.
-            :id: T_ARMI_DB_TIME
-            :tests: R_ARMI_DB_TIME
-        """
-        self.r.p.cycle = 0
-        self.r.p.timeNode = 0
-        self.r.p.cycleLength = 0
-
-        # Adding some nonsense in, to test NoDefault params
-        self.r.p.availabilityFactor = parameters.NoDefault
-
-        # validate that the H5 file gets bigger after the write
-        self.assertEqual(list(self.db.h5db.keys()), ["inputs"])
-        self.db.writeToDB(self.r)
-        self.assertEqual(sorted(self.db.h5db.keys()), ["c00n00", "inputs"])
-
-        # check the keys for a single time step
-        keys = [
-            "Circle",
-            "Core",
-            "DerivedShape",
-            "Helix",
-            "HexAssembly",
-            "HexBlock",
-            "Hexagon",
-            "Reactor",
-            "SpentFuelPool",
-            "layout",
-        ]
-        self.assertEqual(sorted(self.db.h5db["c00n00"].keys()), sorted(keys))
-
-        # validate availabilityFactor did not make it into the H5 file
-        rKeys = [
-            "maxAssemNum",
-            "cycle",
-            "cycleLength",
-            "flags",
-            "serialNum",
-            "timeNode",
-        ]
-        self.assertEqual(
-            sorted(self.db.h5db["c00n00"]["Reactor"].keys()), sorted(rKeys)
-        )
-
-    def test_getH5File(self):
-        """
-        Get the h5 file for the database, because that file format is language-agnostic.
-
-        .. test:: Show the database is H5-formatted.
-            :id: T_ARMI_DB_H5
-            :tests: R_ARMI_DB_H5
-        """
-        with self.assertRaises(TypeError):
-            _getH5File(None)
-
-        h5 = _getH5File(self.db)
-        self.assertEqual(type(h5), h5py.File)
-
-    def makeHistory(self):
-        """Walk the reactor through a few time steps and write them to the db."""
-        for cycle, node in ((cycle, node) for cycle in range(2) for node in range(2)):
-            self.r.p.cycle = cycle
-            self.r.p.timeNode = node
-            # something that splitDatabase won't change, so that we can make sure that
-            # the right data went to the right new groups/cycles
-            self.r.p.cycleLength = cycle
-
-            self.db.writeToDB(self.r)
 
     def makeShuffleHistory(self):
         """Walk the reactor through a few time steps with some shuffling."""
@@ -173,191 +101,6 @@ class TestDatabase3(unittest.TestCase):
 
         # add some fake missing parameter data to test allowMissing
         self.db.h5db["c00n00/Reactor/missingParam"] = "i don't exist"
-
-    def _compareArrays(self, ref, src):
-        """
-        Compare two numpy arrays.
-
-        Comparing numpy arrays that may have unsavory data (NaNs, Nones, jagged
-        data, etc.) is really difficult. For now, convert to a list and compare
-        element-by-element.
-        """
-        self.assertEqual(type(ref), type(src))
-        if isinstance(ref, numpy.ndarray):
-            ref = ref.tolist()
-            src = src.tolist()
-
-        for v1, v2 in zip(ref, src):
-            # Entries may be None
-            if isinstance(v1, numpy.ndarray):
-                v1 = v1.tolist()
-            if isinstance(v2, numpy.ndarray):
-                v2 = v2.tolist()
-            self.assertEqual(v1, v2)
-
-    def _compareRoundTrip(self, data):
-        """Make sure that data is unchanged by packing/unpacking."""
-        packed, attrs = database3.packSpecialData(data, "testing")
-        roundTrip = database3.unpackSpecialData(packed, attrs, "testing")
-        self._compareArrays(data, roundTrip)
-
-    def test_prepRestartRun(self):
-        """
-        This test is based on the armiRun.yaml case that is loaded during the `setUp`
-        above. In that cs, `reloadDBName` is set to 'reloadingDB.h5', `startCycle` = 1,
-        and `startNode` = 2. The nonexistent 'reloadingDB.h5' must first be
-        created here for this test.
-
-        .. test:: Runs can be restarted from a snapshot.
-            :id: T_ARMI_SNAPSHOT_RESTART
-            :tests: R_ARMI_SNAPSHOT_RESTART
-        """
-        # first successfully call to prepRestartRun
-        o, r = loadTestReactor(
-            TEST_ROOT, customSettings={"reloadDBName": "reloadingDB.h5"}
-        )
-        cs = o.cs
-        reduceTestReactorRings(r, cs, maxNumRings=3)
-
-        ratedPower = cs["power"]
-        startCycle = cs["startCycle"]
-        startNode = cs["startNode"]
-        cyclesSetting = [
-            {"step days": [1000, 1000], "power fractions": [1, 1]},
-            {"step days": [1000, 1000], "power fractions": [1, 1]},
-            {"step days": [1000, 1000], "power fractions": [1, 1]},
-        ]
-        cycleP, nodeP = getPreviousTimeNode(startCycle, startNode, cs)
-        cyclesSetting[cycleP]["power fractions"][nodeP] = 0.5
-        numCycles = 2
-        numNodes = 2
-        cs = cs.modified(
-            newSettings={
-                "nCycles": numCycles,
-                "cycles": cyclesSetting,
-                "reloadDBName": "something_fake.h5",
-            }
-        )
-
-        # create a db based on the cs
-        dbi = DatabaseInterface(r, cs)
-        dbi.initDB(fName="reloadingDB.h5")
-        db = dbi.database
-
-        # populate the db with some things
-        for cycle, node in (
-            (cycle, node) for cycle in range(numCycles) for node in range(numNodes)
-        ):
-            r.p.cycle = cycle
-            r.p.timeNode = node
-            r.p.cycleLength = sum(cyclesSetting[cycle]["step days"])
-            r.core.p.power = ratedPower * cyclesSetting[cycle]["power fractions"][node]
-            db.writeToDB(r)
-        db.close()
-
-        self.dbi.prepRestartRun()
-
-        # prove that the reloaded reactor has the correct power
-        self.assertEqual(self.o.r.p.cycle, cycleP)
-        self.assertEqual(self.o.r.p.timeNode, nodeP)
-        self.assertEqual(cyclesSetting[cycleP]["power fractions"][nodeP], 0.5)
-        self.assertEqual(
-            self.o.r.core.p.power,
-            ratedPower * cyclesSetting[cycleP]["power fractions"][nodeP],
-        )
-
-        # now make the cycle histories clash and confirm that an error is thrown
-        cs = cs.modified(
-            newSettings={
-                "cycles": [
-                    {"step days": [666, 666], "power fractions": [1, 1]},
-                    {"step days": [666, 666], "power fractions": [1, 1]},
-                    {"step days": [666, 666], "power fractions": [1, 1]},
-                ],
-            }
-        )
-
-        # create a db based on the cs
-        dbi = DatabaseInterface(r, cs)
-        dbi.initDB(fName="reloadingDB.h5")
-        db = dbi.database
-
-        # populate the db with something
-        for cycle, node in (
-            (cycle, node) for cycle in range(numCycles) for node in range(numNodes)
-        ):
-            r.p.cycle = cycle
-            r.p.timeNode = node
-            r.p.cycleLength = 2000
-            db.writeToDB(r)
-        db.close()
-
-        with self.assertRaises(ValueError):
-            self.dbi.prepRestartRun()
-
-    def test_computeParents(self):
-        # The below arrays represent a tree structure like this:
-        #                 71 -----------------------.
-        #                 |                          \
-        #                12--.-----.------.          72
-        #               / |  \      \      \
-        #             22 30  4---.   6      18-.
-        #            / |  |  | \  \        / |  \
-        #           8 17  2 32 52 62      1  9  10
-        #
-        # This should cover a handful of corner cases
-        numChildren = [2, 5, 2, 0, 0, 1, 0, 3, 0, 0, 0, 0, 3, 0, 0, 0, 0]
-        serialNums = [71, 12, 22, 8, 17, 30, 2, 4, 32, 53, 62, 6, 18, 1, 9, 10, 72]
-
-        expected_1 = [None, 71, 12, 22, 22, 12, 30, 12, 4, 4, 4, 12, 12, 18, 18, 18, 71]
-        expected_2 = [
-            None,
-            None,
-            71,
-            12,
-            12,
-            71,
-            12,
-            71,
-            12,
-            12,
-            12,
-            71,
-            71,
-            12,
-            12,
-            12,
-            None,
-        ]
-        expected_3 = [
-            None,
-            None,
-            None,
-            71,
-            71,
-            None,
-            71,
-            None,
-            71,
-            71,
-            71,
-            None,
-            None,
-            71,
-            71,
-            71,
-            None,
-        ]
-
-        self.assertEqual(
-            database3.Layout.computeAncestors(serialNums, numChildren), expected_1
-        )
-        self.assertEqual(
-            database3.Layout.computeAncestors(serialNums, numChildren, 2), expected_2
-        )
-        self.assertEqual(
-            database3.Layout.computeAncestors(serialNums, numChildren, 3), expected_3
-        )
 
     def test_load(self):
         """Load a reactor at different time steps, from the database.
@@ -437,6 +180,132 @@ class TestDatabase3(unittest.TestCase):
         )
         self.assertIn((2, 0), hist["chargeTime"].keys())
         self.assertEqual(hist["chargeTime"][(2, 0)], 2)
+
+
+class TestDatabase3Smaller(unittest.TestCase):
+    """Tests for the Database3 class, that can use a smaller test reactor."""
+
+    def setUp(self):
+        self.td = TemporaryDirectoryChanger()
+        self.td.__enter__()
+        self.o, self.r = loadTestReactor(
+            TEST_ROOT,
+            customSettings={"reloadDBName": "reloadingDB.h5"},
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml",
+        )
+
+        self.dbi = DatabaseInterface(self.r, self.o.cs)
+        self.dbi.initDB(fName=self._testMethodName + ".h5")
+        self.db: database3.Database3 = self.dbi.database
+        self.stateRetainer = self.r.retainState().__enter__()
+
+        # used to test location-based history. see details below
+        self.centralAssemSerialNums = []
+        self.centralTopBlockSerialNums = []
+
+    def tearDown(self):
+        self.db.close()
+        self.stateRetainer.__exit__()
+        self.td.__exit__(None, None, None)
+
+    def makeHistory(self):
+        """Walk the reactor through a few time steps and write them to the db."""
+        for cycle, node in ((cycle, node) for cycle in range(2) for node in range(2)):
+            self.r.p.cycle = cycle
+            self.r.p.timeNode = node
+            # something that splitDatabase won't change, so that we can make sure that
+            # the right data went to the right new groups/cycles
+            self.r.p.cycleLength = cycle
+
+            self.db.writeToDB(self.r)
+
+    def _compareArrays(self, ref, src):
+        """
+        Compare two numpy arrays.
+
+        Comparing numpy arrays that may have unsavory data (NaNs, Nones, jagged
+        data, etc.) is really difficult. For now, convert to a list and compare
+        element-by-element.
+        """
+        self.assertEqual(type(ref), type(src))
+        if isinstance(ref, numpy.ndarray):
+            ref = ref.tolist()
+            src = src.tolist()
+
+        for v1, v2 in zip(ref, src):
+            # Entries may be None
+            if isinstance(v1, numpy.ndarray):
+                v1 = v1.tolist()
+            if isinstance(v2, numpy.ndarray):
+                v2 = v2.tolist()
+            self.assertEqual(v1, v2)
+
+    def _compareRoundTrip(self, data):
+        """Make sure that data is unchanged by packing/unpacking."""
+        packed, attrs = database3.packSpecialData(data, "testing")
+        roundTrip = database3.unpackSpecialData(packed, attrs, "testing")
+        self._compareArrays(data, roundTrip)
+
+    def test_writeToDB(self):
+        """Test writing to the database.
+
+        .. test:: Write a single time step of data to the database.
+            :id: T_ARMI_DB_TIME
+            :tests: R_ARMI_DB_TIME
+        """
+        self.r.p.cycle = 0
+        self.r.p.timeNode = 0
+        self.r.p.cycleLength = 0
+
+        # Adding some nonsense in, to test NoDefault params
+        self.r.p.availabilityFactor = parameters.NoDefault
+
+        # validate that the H5 file gets bigger after the write
+        self.assertEqual(list(self.db.h5db.keys()), ["inputs"])
+        self.db.writeToDB(self.r)
+        self.assertEqual(sorted(self.db.h5db.keys()), ["c00n00", "inputs"])
+
+        # check the keys for a single time step
+        keys = [
+            "Circle",
+            "Core",
+            "DerivedShape",
+            "Helix",
+            "HexAssembly",
+            "HexBlock",
+            "Hexagon",
+            "Reactor",
+            "SpentFuelPool",
+            "layout",
+        ]
+        self.assertEqual(sorted(self.db.h5db["c00n00"].keys()), sorted(keys))
+
+        # validate availabilityFactor did not make it into the H5 file
+        rKeys = [
+            "maxAssemNum",
+            "cycle",
+            "cycleLength",
+            "flags",
+            "serialNum",
+            "timeNode",
+        ]
+        self.assertEqual(
+            sorted(self.db.h5db["c00n00"]["Reactor"].keys()), sorted(rKeys)
+        )
+
+    def test_getH5File(self):
+        """
+        Get the h5 file for the database, because that file format is language-agnostic.
+
+        .. test:: Show the database is H5-formatted.
+            :id: T_ARMI_DB_H5
+            :tests: R_ARMI_DB_H5
+        """
+        with self.assertRaises(TypeError):
+            _getH5File(None)
+
+        h5 = _getH5File(self.db)
+        self.assertEqual(type(h5), h5py.File)
 
     def test_auxData(self):
         path = self.db.getAuxiliaryDataPath((2, 0), "test_stuff")
@@ -649,7 +518,6 @@ class TestDatabase3(unittest.TestCase):
 
         # blueprints
         self.assertGreater(len(inputs[2]), 100)
-        self.assertIn("custom isotopics:", inputs[2])
         self.assertIn("blocks:", inputs[2])
 
     def test_deleting(self):
@@ -665,9 +533,167 @@ class TestDatabase3(unittest.TestCase):
     def test_loadCS(self):
         cs = self.db.loadCS()
         self.assertEqual(cs["numProcessors"], 1)
-        self.assertEqual(cs["nCycles"], 6)
+        self.assertEqual(cs["nCycles"], 2)
 
     def test_loadBlueprints(self):
         bp = self.db.loadBlueprints()
         self.assertIsNone(bp.nuclideFlags)
         self.assertEqual(len(bp.assemblies), 0)
+
+    def test_prepRestartRun(self):
+        """
+        This test is based on the armiRun.yaml case that is loaded during the `setUp`
+        above. In that cs, `reloadDBName` is set to 'reloadingDB.h5', `startCycle` = 1,
+        and `startNode` = 2. The nonexistent 'reloadingDB.h5' must first be
+        created here for this test.
+
+        .. test:: Runs can be restarted from a snapshot.
+            :id: T_ARMI_SNAPSHOT_RESTART
+            :tests: R_ARMI_SNAPSHOT_RESTART
+        """
+        # first successfully call to prepRestartRun
+        o, r = loadTestReactor(
+            TEST_ROOT, customSettings={"reloadDBName": "reloadingDB.h5"}
+        )
+        cs = o.cs
+        reduceTestReactorRings(r, cs, maxNumRings=3)
+
+        ratedPower = cs["power"]
+        startCycle = cs["startCycle"]
+        startNode = cs["startNode"]
+        cyclesSetting = [
+            {"step days": [1000, 1000], "power fractions": [1, 1]},
+            {"step days": [1000, 1000], "power fractions": [1, 1]},
+            {"step days": [1000, 1000], "power fractions": [1, 1]},
+        ]
+        cycleP, nodeP = getPreviousTimeNode(startCycle, startNode, cs)
+        cyclesSetting[cycleP]["power fractions"][nodeP] = 0.5
+        numCycles = 2
+        numNodes = 2
+        cs = cs.modified(
+            newSettings={
+                "nCycles": numCycles,
+                "cycles": cyclesSetting,
+                "reloadDBName": "something_fake.h5",
+            }
+        )
+
+        # create a db based on the cs
+        dbi = DatabaseInterface(r, cs)
+        dbi.initDB(fName="reloadingDB.h5")
+        db = dbi.database
+
+        # populate the db with some things
+        for cycle, node in (
+            (cycle, node) for cycle in range(numCycles) for node in range(numNodes)
+        ):
+            r.p.cycle = cycle
+            r.p.timeNode = node
+            r.p.cycleLength = sum(cyclesSetting[cycle]["step days"])
+            r.core.p.power = ratedPower * cyclesSetting[cycle]["power fractions"][node]
+            db.writeToDB(r)
+        db.close()
+
+        self.dbi.prepRestartRun()
+
+        # prove that the reloaded reactor has the correct power
+        self.assertEqual(self.o.r.p.cycle, cycleP)
+        self.assertEqual(self.o.r.p.timeNode, nodeP)
+        self.assertEqual(cyclesSetting[cycleP]["power fractions"][nodeP], 0.5)
+        self.assertEqual(
+            self.o.r.core.p.power,
+            ratedPower * cyclesSetting[cycleP]["power fractions"][nodeP],
+        )
+
+        # now make the cycle histories clash and confirm that an error is thrown
+        cs = cs.modified(
+            newSettings={
+                "cycles": [
+                    {"step days": [666, 666], "power fractions": [1, 1]},
+                    {"step days": [666, 666], "power fractions": [1, 1]},
+                    {"step days": [666, 666], "power fractions": [1, 1]},
+                ],
+            }
+        )
+
+        # create a db based on the cs
+        dbi = DatabaseInterface(r, cs)
+        dbi.initDB(fName="reloadingDB.h5")
+        db = dbi.database
+
+        # populate the db with something
+        for cycle, node in (
+            (cycle, node) for cycle in range(numCycles) for node in range(numNodes)
+        ):
+            r.p.cycle = cycle
+            r.p.timeNode = node
+            r.p.cycleLength = 2000
+            db.writeToDB(r)
+        db.close()
+
+        with self.assertRaises(ValueError):
+            self.dbi.prepRestartRun()
+
+    def test_computeParents(self):
+        # The below arrays represent a tree structure like this:
+        #                 71 -----------------------.
+        #                 |                          \
+        #                12--.-----.------.          72
+        #               / |  \      \      \
+        #             22 30  4---.   6      18-.
+        #            / |  |  | \  \        / |  \
+        #           8 17  2 32 52 62      1  9  10
+        #
+        # This should cover a handful of corner cases
+        numChildren = [2, 5, 2, 0, 0, 1, 0, 3, 0, 0, 0, 0, 3, 0, 0, 0, 0]
+        serialNums = [71, 12, 22, 8, 17, 30, 2, 4, 32, 53, 62, 6, 18, 1, 9, 10, 72]
+
+        expected_1 = [None, 71, 12, 22, 22, 12, 30, 12, 4, 4, 4, 12, 12, 18, 18, 18, 71]
+        expected_2 = [
+            None,
+            None,
+            71,
+            12,
+            12,
+            71,
+            12,
+            71,
+            12,
+            12,
+            12,
+            71,
+            71,
+            12,
+            12,
+            12,
+            None,
+        ]
+        expected_3 = [
+            None,
+            None,
+            None,
+            71,
+            71,
+            None,
+            71,
+            None,
+            71,
+            71,
+            71,
+            None,
+            None,
+            71,
+            71,
+            71,
+            None,
+        ]
+
+        self.assertEqual(
+            database3.Layout.computeAncestors(serialNums, numChildren), expected_1
+        )
+        self.assertEqual(
+            database3.Layout.computeAncestors(serialNums, numChildren, 2), expected_2
+        )
+        self.assertEqual(
+            database3.Layout.computeAncestors(serialNums, numChildren, 3), expected_3
+        )
