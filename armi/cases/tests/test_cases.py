@@ -234,7 +234,9 @@ class TestArmiCase(unittest.TestCase):
 
                 self.assertIn("Triggering BOL Event", mock.getStdout())
                 self.assertIn("xsGroups", mock.getStdout())
-                self.assertIn("Completed EveryNode - timestep: cycle 0", mock.getStdout())
+                self.assertIn(
+                    "Completed EveryNode - timestep: cycle 0", mock.getStdout()
+                )
 
     def test_clone(self):
         testTitle = "CLONE_TEST"
