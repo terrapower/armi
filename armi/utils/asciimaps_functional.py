@@ -1187,6 +1187,10 @@ def asciiMapFromGeomAndDomain(
     if isinstance(domain, str):
         domain = geometry.DomainType.fromAny(domain)
 
+    # Handle HEX_CORNERS_UP by converting it to HEX
+    if geomType == "hex_corners_up":
+        geomType = geometry.GeomType.HEX
+
     # Define a mapping from geometry and domain types to the corresponding conversion functions
     map_from_geom = {
         (geometry.GeomType.HEX, geometry.DomainType.THIRD_CORE): HexThirdFlatsUp_asciiLinesToIndices,
@@ -1197,7 +1201,7 @@ def asciiMapFromGeomAndDomain(
     }
 
     # Special case handling for HEX_CORNERS_UP with FULL_CORE
-    if geomType == geometry.GeomType.HEX_CORNERS_UP and domain == geometry.DomainType.FULL_CORE:
+    if geomType == geometry.GeomType.HEX and domain == geometry.DomainType.FULL_CORE:
         return HexFullTipsUp_asciiLinesToIndices(ascii_map)
 
     # Retrieve the conversion function from the map
