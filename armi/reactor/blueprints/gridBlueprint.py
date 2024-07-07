@@ -110,7 +110,7 @@ import yamlize
 from ruamel.yaml import scalarstring
 
 from armi.utils.customExceptions import InputError
-from armi.utils import asciimaps
+from armi.utils import asciimaps_functional as AF
 from armi.utils.mathematics import isMonotonic
 from armi.reactor import geometry, grids
 from armi.reactor import blueprints
@@ -422,7 +422,7 @@ class GridBlueprint(yamlize.Object):
         self.readFromLatticeMap = True
         symmetry = geometry.SymmetryType.fromStr(self.symmetry)
         geom = geometry.GeomType.fromStr(self.geom)
-        latticeCls = asciimaps.asciiMapFromGeomAndDomain(self.geom, symmetry.domain)
+        latticeCls = AF.asciiMapFromGeomAndDomain(self.geom, symmetry.domain)
         asciimap = latticeCls()
         asciimap.readAscii(self.latticeMap)
         self.gridContents = dict()
@@ -596,7 +596,7 @@ def saveToStream(stream, bluep, full=False, tryMap=False):
         if gridDesign.readFromLatticeMap or tryMap:
             symmetry = geometry.SymmetryType.fromStr(gridDesign.symmetry)
 
-            aMap = asciimaps.asciiMapFromGeomAndDomain(
+            aMap = AF.asciiMapFromGeomAndDomain(
                 gridDesign.geom, symmetry.domain
             )()
             aMap.asciiLabelByIndices = {
