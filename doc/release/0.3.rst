@@ -50,6 +50,7 @@ API Changes
 #. Removing the parameters ``outsideFuelRing`` and ``outsideFuelRingFluxFr``. (`PR#1700 <https://github.com/terrapower/armi/pull/1700>`_)
 #. Removing the setting ``doOrificedTH``. (`PR#1706 <https://github.com/terrapower/armi/pull/1706>`_)
 #. Changing the Doppler constant params to ``VOLUME_INTEGRATED``. (`PR#1659 <https://github.com/terrapower/armi/pull/1659>`_)
+#. Change ``Operator._expandCycleAndTimeNodeArgs`` to be a non-static method so it no longer needs to take arbitrary args (`PR#1766 <https://github.com/terrapower/armi/pull/1766>`_)
 #. TBD
 
 Bug Fixes
