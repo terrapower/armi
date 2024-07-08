@@ -543,32 +543,44 @@ settings:
 
 
 class TestInterfaceAndEventHeaders(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.o, cls.r = test_reactors.loadTestReactor(
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml",
+            customSettings={CONF_TIGHT_COUPLING: True},
+        )
+        cls.r.p.cycle = 0
+        cls.r.p.timeNode = 1
+        cls.r.core.p.coupledIteration = 7
+
     def test_expandCycleAndTimeNodeArgs_Empty(self):
-        """When *args are empty, cycleNodeInfo should be an empty string."""
+        """When cycleNodeInfo should be an empty string."""
         for task in ["Init", "BOL", "EOL"]:
             self.assertEqual(
-                Operator._expandCycleAndTimeNodeArgs(interactionName=task), ""
+                self.o._expandCycleAndTimeNodeArgs(interactionName=task), ""
             )
 
-    def test_expandCycleAndTimeNodeArgs_OneArg(self):
-        """When *args is a single value, cycleNodeInfo should return the right string."""
-        cycle = 0
+    def test_expandCycleAndTimeNodeArgs_Cycle(self):
+        """When cycleNodeInfo should return only the cycle."""
         for task in ["BOC", "EOC"]:
             self.assertEqual(
-                Operator._expandCycleAndTimeNodeArgs(cycle, interactionName=task),
-                f" - cycle {cycle}",
+                self.o._expandCycleAndTimeNodeArgs(interactionName=task),
+                f" - timestep: cycle {self.r.p.cycle}",
             )
+
+    def test_expandCycleAndTimeNodeArgs_EveryNode(self):
+        """When cycleNodeInfo should return the cycle and node."""
         self.assertEqual(
-            Operator._expandCycleAndTimeNodeArgs(cycle, interactionName="Coupled"),
-            f" - iteration {cycle}",
+            self.o._expandCycleAndTimeNodeArgs(interactionName="EveryNode"),
+            f" - timestep: cycle {self.r.p.cycle}, node {self.r.p.timeNode}",
         )
 
-    def test_expandCycleAndTimeNodeArgs_TwoArg(self):
-        """When *args is two values, cycleNodeInfo should return the right string."""
-        cycle, timeNode = 0, 0
+    def test_expandCycleAndTimeNodeArgs_Coupled(self):
+        """When cycleNodeInfo should return the cycle, node, and iteration number."""
         self.assertEqual(
-            Operator._expandCycleAndTimeNodeArgs(
-                cycle, timeNode, interactionName="EveryNode"
+            self.o._expandCycleAndTimeNodeArgs(interactionName="Coupled"),
+            (
+                f" - timestep: cycle {self.r.p.cycle}, node {self.r.p.timeNode} "
+                f"- iteration {self.r.core.p.coupledIteration}"
             ),
-            f" - cycle {cycle}, node {timeNode}",
         )
