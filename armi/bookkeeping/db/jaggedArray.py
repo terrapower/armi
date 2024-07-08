@@ -53,29 +53,33 @@ class JaggedArray:
         flattenedArray = []
         offsets = []
         shapes = []
-        for arr in jaggedData:
-            offsets.append(offset)
-            if isinstance(arr, np.ndarray):
-                shapes.append(arr.shape)
-                offset += arr.size
-                flattenedArray.extend(arr.flatten())
-            elif isinstance(arr, (int, float, list, tuple)):
-                try:
-                    numpyArray = np.array(arr)
-                    shapes.append(numpyArray.shape)
-                    offset += numpyArray.size
-                    flattenedArray.extend(numpyArray.flatten())
-                except:  # noqa: E722
-                    # numpy might fail if it's jagged
-                    flattenedList = self.flatten(arr)
-                    shapes.append(
-                        len(flattenedList),
-                    )
-                    offset += len(flattenedList)
-                    flattenedArray.extend(flattenedList)
-            elif arr is None:
-                flattenedArray.append(None)
+        nones = []
+        for i, arr in enumerate(jaggedData):
+            if isinstance(arr, (np.ndarray, list, tuple)):
+                if len(arr) == 0:
+                    nones.append(i)
+                else:
+                    offsets.append(offset)
+                    try:
+                        numpyArray = np.array(arr)
+                        shapes.append(numpyArray.shape)
+                        offset += numpyArray.size
+                        flattenedArray.extend(numpyArray.flatten())
+                    except:  # noqa: E722
+                        # numpy might fail if it's jagged
+                        flattenedList = self.flatten(arr)
+                        shapes.append(
+                            len(flattenedList),
+                        )
+                        offset += len(flattenedList)
+                        flattenedArray.extend(flattenedList)
+            elif isinstance(arr, (int, float)):
+                offsets.append(offset)
+                shapes.append((1,))
                 offset += 1
+                flattenedArray.append(arr)
+            elif arr is None:
+                nones.append(i)
 
         self.flattenedArray = np.array(flattenedArray)
         self.offsets = np.array(offsets)
@@ -88,10 +92,9 @@ class JaggedArray:
                 "attribute of the JaggedArray for {} cannot be made into a numpy "
                 "array; it might be jagged.".format(paramName)
             )
+            runLog.error(shapes)
             raise ValueError(ee)
-        self.nones = np.array(
-            [i for i, val in enumerate(flattenedArray) if val is None]
-        )
+        self.nones = np.array(nones)
         self.dtype = self.flattenedArray.dtype
         self.paramName = paramName
 
@@ -175,34 +178,7 @@ class JaggedArray:
                 np.ndarray(shape, dtype=self.dtype, buffer=self.flattenedArray[offset:])
             )
 
-        return self.replaceNonsenseWithNones(unpackedJaggedData)
+        for i in self.nones:
+            unpackedJaggedData.insert(i, None)
 
-    def replaceNonsenseWithNones(self, unpackedData):
-        """Replace None markers in the unpacked array with an actual None."""
-        unpackedObject = []
-        for i, data in enumerate(unpackedData):
-            if np.issubdtype(self.dtype, np.floating):
-                isNone = np.isnan(data)
-            elif np.issubdtype(self.dtype, np.integer):
-                isNone = data == np.iinfo(self.dtype).min + 2
-            elif np.issubdtype(self.dtype, np.str_):
-                isNone = data == "<!None!>"
-            elif np.issubdtype(self.dtype, np.object_):
-                # object type means Nones are probably already present
-                isNone = data == None  # noqa: E711
-            else:
-                raise TypeError(
-                    "Unable to resolve values that should be None for `{}`. dtype = `{}`".format(
-                        self.paramName, self.dtype
-                    )
-                )
-
-            if data.ndim > 1 and isNone.all():
-                replacedData = None
-            else:
-                replacedData = np.array(data, dtype=np.dtype("O"))
-                replacedData[isNone] = None
-
-            unpackedObject.append(replacedData)
-
-        return unpackedObject
+        return unpackedJaggedData

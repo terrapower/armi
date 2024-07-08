@@ -647,7 +647,7 @@ class Database3:
         if groupName in self.h5db:
             return self.h5db[groupName]
         else:
-            group = self.h5db.create_group(groupName)
+            group = self.h5db.create_group(groupName, track_order=True)
             group.attrs["cycle"] = r.p.cycle
             group.attrs["timeNode"] = r.p.timeNode
             return group
@@ -879,7 +879,7 @@ class Database3:
             # Only create the group if it doesnt already exist. This happens when
             # re-writing params in the same time node (e.g. something changed between
             # EveryNode and EOC)
-            g = h5group.create_group(groupName)
+            g = h5group.create_group(groupName, track_order=True)
         else:
             g = h5group[groupName]
 
@@ -969,7 +969,9 @@ class Database3:
                         "should have been empty".format(paramDef.name, g)
                     )
 
-                dataset = g.create_dataset(paramDef.name, data=data, compression="gzip")
+                dataset = g.create_dataset(
+                    paramDef.name, data=data, compression="gzip", track_order=True
+                )
                 if any(attrs):
                     Database3._writeAttrs(dataset, h5group, attrs)
             except Exception:
@@ -993,7 +995,9 @@ class Database3:
         nDens = collectBlockNumberDensities(blocks)
 
         for nucName, numDens in nDens.items():
-            h5group.create_dataset(nucName, data=numDens, compression="gzip")
+            h5group.create_dataset(
+                nucName, data=numDens, compression="gzip", track_order=True
+            )
 
     @staticmethod
     def _readParams(h5group, compTypeName, comps, allowMissing=False):
@@ -1457,7 +1461,7 @@ class Database3:
                 )
 
                 if "attrs" not in group:
-                    attrGroup = group.create_group("attrs")
+                    attrGroup = group.create_group("attrs", track_order=True)
                 else:
                     attrGroup = group["attrs"]
                 dataName = str(len(attrGroup)) + "_" + key
@@ -1518,6 +1522,7 @@ def packSpecialData(
     composites that are storing the parameters. For instance, if we are dealing with a
     Block parameter, the first index in the numpy array of data is the block index; so
     if each block has a parameter that is a dictionary, ``data`` would be a ndarray,
+                    offset += arr.size
     where each element is a dictionary. This routine supports a number of different
     "strange" things:
 
@@ -1609,8 +1614,6 @@ def packSpecialData(
         attrs["offsets"] = arrayData.offsets
         attrs["shapes"] = arrayData.shapes
         attrs["noneLocations"] = arrayData.nones
-        if len(arrayData.nones > 0):
-            data = replaceNonesWithNonsense(data, paramName, arrayData.nones)
         return data, attrs
 
     # conform non-numpy arrays to numpy
