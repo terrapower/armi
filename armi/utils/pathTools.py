@@ -40,7 +40,7 @@ def armiAbsPath(*pathParts):
         from ccl import common_operations
 
         return common_operations.convert_to_unc_path(result)
-    except:  # noqa: bare-except;reason=avoid pywin32 p.load parallel issues
+    except:  # noqa: E722
         return result
 
 
@@ -185,7 +185,7 @@ def moduleAndAttributeExist(pathAttr):
         userSpecifiedModule = importCustomPyModule(modulePath)
 
     # Blanket except is okay since we are checking to see if a custom import will work.
-    except:  # noqa: bare-except
+    except Exception:
         return False
 
     return moduleAttributeName in userSpecifiedModule.__dict__

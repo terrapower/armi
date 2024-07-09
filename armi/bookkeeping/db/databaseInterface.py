@@ -194,7 +194,7 @@ class DatabaseInterface(interfaces.Interface):
             # writing
             self._db.writeToDB(self.r, "error")
             self._db.close(False)
-        except:  # noqa: bare-except; we're already responding to an error
+        except Exception:  # we're already responding to an error
             pass
 
     def interactDistributeState(self) -> None:

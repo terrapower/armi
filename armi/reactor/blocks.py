@@ -1233,6 +1233,7 @@ class Block(composites.Composite):
         ----------
         returnComp : bool, optional
             If true, will return the component that has the maximum pitch as well
+
         Returns
         -------
         pitch : float or None
@@ -2315,7 +2316,7 @@ class HexBlock(Block):
         """
         try:
             symmetry = self.parent.spatialLocator.grid.symmetry
-        except:  # noqa: bare-except
+        except Exception:
             return 1.0
         if (
             symmetry.domain == geometry.DomainType.THIRD_CORE
