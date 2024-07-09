@@ -123,10 +123,11 @@ class ComponentType(composites.CompositeModelType):
     in order to conform them to the correct format. Additionally, the constructors
     arguments can be used to determine the Component subclasses dimensions.
 
-    .. warning:: The import-time metaclass-based component subclass registration was a
-        good idea, but in practice has caused significant confusion and trouble. We will
-        replace this soon with an explicit plugin-based component subclass registration
-        system.
+    Warning
+    -------
+    The import-time metaclass-based component subclass registration was a good idea, but in practice
+    has caused significant confusion and trouble. We will replace this soon with an explicit
+    plugin-based component subclass registration system.
     """
 
     TYPES = dict()  #: :meta hide-value:
@@ -278,7 +279,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         thatOD = other.getBoundingCircleOuterDiameter(cold=True)
         try:
             return thisOD < thatOD
-        except:  # noqa: bare-except
+        except Exception:
             raise ValueError(
                 "Components 1 ({} with OD {}) and 2 ({} and OD {}) cannot be ordered because their "
                 "bounding circle outer diameters are not comparable.".format(
@@ -325,7 +326,7 @@ class Component(composites.Composite, metaclass=ComponentType):
                     comp = components[name]
                     linkedKey = match.group(2)
                     self.p[dimName] = _DimensionLink((comp, linkedKey))
-                except:  # noqa: bare-except
+                except Exception:
                     if value.count(".") > 1:
                         raise ValueError(
                             "Component names should not have periods in them: `{}`".format(
@@ -549,9 +550,8 @@ class Component(composites.Composite, metaclass=ComponentType):
         which may be placed between components that will overlap during thermal expansion
         (such as liners and cladding and annular fuel).
 
-        Overlapping is allowed to maintain conservation of atoms while sticking close
-        to the as-built geometry. Modules that need true geometries will have to
-        handle this themselves.
+        Overlapping is allowed to maintain conservation of atoms while sticking close to the
+        as-built geometry. Modules that need true geometries will have to handle this themselves.
         """
         if numpy.isnan(area):
             return
@@ -1097,7 +1097,8 @@ class Component(composites.Composite, metaclass=ComponentType):
         """
         Set another component's number densities to reflect this one merged into it.
 
-        You must also modify the geometry of the other component and remove this component to conserve atoms.
+        You must also modify the geometry of the other component and remove this component to
+        conserve atoms.
         """
         # record pre-merged number densities and areas
         aMe = self.getArea()
@@ -1133,11 +1134,11 @@ class Component(composites.Composite, metaclass=ComponentType):
         self._restoreLinkedDims(linkedDims)
 
     def restoreBackup(self, paramsToApply):
-        r"""
+        """
         Restore the parameters from perviously created backup.
 
-        This needed to be overridden due to linked components which actually have a parameter value of another
-        ARMI component.
+        This needed to be overridden due to linked components which actually have a parameter value
+        of another ARMI component.
         """
         linkedDims = self._getLinkedDimsAndValues()
         composites.Composite.restoreBackup(self, paramsToApply)
@@ -1147,12 +1148,12 @@ class Component(composites.Composite, metaclass=ComponentType):
         linkedDims = []
 
         for dimName in self.DIMENSION_NAMES:
-            # backUp and restore are called in tight loops, getting the value and
-            # checking here is faster than calling self.dimensionIsLinked because that
-            # requires and extra p.__getitem__
+            # backUp and restore are called in tight loops, getting the value and checking here is
+            # faster than calling self.dimensionIsLinked because that requires and extra
+            # p.__getitem__
             try:
                 val = self.p[dimName]
-            except:  # noqa: bare-except
+            except Exception:
                 raise RuntimeError(
                     "Could not find parameter {} defined for {}. Is the desired "
                     "Component class?".format(dimName, self)
@@ -1223,14 +1224,13 @@ class Component(composites.Composite, metaclass=ComponentType):
         """
         Return the multigroup neutron tracklength in [n-cm/s].
 
-        The first entry is the first energy group (fastest neutrons). Each additional
-        group is the next energy group, as set in the ISOTXS library.
+        The first entry is the first energy group (fastest neutrons). Each additional group is the
+        next energy group, as set in the ISOTXS library.
 
         Parameters
         ----------
         adjoint : bool, optional
             Return adjoint flux instead of real
-
         gamma : bool, optional
             Whether to return the neutron flux or the gamma flux.
 
@@ -1295,9 +1295,8 @@ class Component(composites.Composite, metaclass=ComponentType):
 
         Notes
         -----
-        This pitch data should only be used if this is the pitch defining component in
-        a block. The block is responsible for determining which component in it is the
-        pitch defining component.
+        This pitch data should only be used if this is the pitch defining component in a block. The
+        block is responsible for determining which component in it is the pitch defining component.
         """
         raise NotImplementedError(
             f"Method not implemented on component {self}. "

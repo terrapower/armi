@@ -719,16 +719,14 @@ class Assembly_TestCase(unittest.TestCase):
         for param in paramDict:
             cur = list(self.assembly.getChildParamValues(param))
             ref = []
-            x = 0
-            for b in self.blockList:
-                ref.append(self.blockList[x].p[param])
-                x += 1
-            places = 6
-            self.assertAlmostEqual(cur, ref, places=places)
+            for i, b in enumerate(self.blockList):
+                ref.append(self.blockList[i].p[param])
+            self.assertAlmostEqual(cur, ref, places=6)
 
     def test_getMaxParam(self):
         for bi, b in enumerate(self.assembly):
             b.p.power = bi
+
         self.assertAlmostEqual(
             self.assembly.getMaxParam("power"), len(self.assembly) - 1
         )
@@ -739,7 +737,6 @@ class Assembly_TestCase(unittest.TestCase):
         self.assembly[2].p.power = 10.0
 
         heights = self.assembly.getElevationsMatchingParamValue("power", 15.0)
-
         self.assertListEqual(heights, [12.5, 20.0])
 
     def test_calcAvgParam(self):

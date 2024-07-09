@@ -540,10 +540,7 @@ class HexGrid(StructuredGrid):
             # Even ring; upper edge assem included.
             maxPos2 += 1
 
-        if pos <= maxPos1 or pos >= maxPos2:
-            return True
-
-        return False
+        return bool(pos <= maxPos1 or pos >= maxPos2)
 
     def generateSortedHexLocationList(self, nLocs: int):
         """

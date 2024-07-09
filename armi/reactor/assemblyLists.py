@@ -186,7 +186,7 @@ class AssemblyList(composites.Composite):
                 )
                 lastTime = thisTime
                 thisTimeCount = 0
-            totCount += 1
+            totCount += 1  # noqa: SIM113
             thisTimeCount += 1
 
 

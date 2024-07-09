@@ -1206,9 +1206,7 @@ class Block(composites.Composite):
             and c.hasFlags(Flags.GAP)
             and c.getDimension("id") == 0
         )
-        if self.hasFlags([Flags.PLENUM, Flags.ACLP]) and cIsCenterGapGap:
-            return True
-        return False
+        return self.hasFlags([Flags.PLENUM, Flags.ACLP]) and cIsCenterGapGap
 
     def getPitch(self, returnComp=False):
         """
