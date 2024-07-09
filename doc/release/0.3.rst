@@ -11,6 +11,9 @@ New Features
 #. Conserve mass by component in ``assembly.setBlockMesh()``. (`PR#1665 <https://github.com/terrapower/armi/pull/1665>`_)
 #. Removal of the ``Block.reactor`` property. (`PR#1425 <https://github.com/terrapower/armi/pull/1425>`_)
 #. System information is now also logged on Linux. (`PR#1689 <https://github.com/terrapower/armi/pull/1689>`_)
+#. Reset ``Reactor`` data on worker processors after every interaction to free memory from state distribution.
+   (`PR#1729 <https://github.com/terrapower/armi/pull/1729>`_ and `PR#1750 <https://github.com/terrapower/armi/pull/1750>`_)
+#. Density can be specified for components via ``custom isotopics`` in the blueprints. (`PR#1745 <https://github.com/terrapower/armi/pull/1745>`_)
 #. TBD
 
 API Changes
@@ -47,13 +50,14 @@ API Changes
 #. Removing the parameters ``outsideFuelRing`` and ``outsideFuelRingFluxFr``. (`PR#1700 <https://github.com/terrapower/armi/pull/1700>`_)
 #. Removing the setting ``doOrificedTH``. (`PR#1706 <https://github.com/terrapower/armi/pull/1706>`_)
 #. Changing the Doppler constant params to ``VOLUME_INTEGRATED``. (`PR#1659 <https://github.com/terrapower/armi/pull/1659>`_)
+#. Change ``Operator._expandCycleAndTimeNodeArgs`` to be a non-static method so it no longer needs to take arbitrary args (`PR#1766 <https://github.com/terrapower/armi/pull/1766>`_)
 #. TBD
 
 Bug Fixes
 ---------
 #. Fixed four bugs with "corners up" hex grids. (`PR#1649 <https://github.com/terrapower/armi/pull/1649>`_)
 #. Fixed ``safeCopy`` to work on both Windows and Linux with strict permissions (`PR#1691 <https://github.com/terrapower/armi/pull/1691>`_)
-#. When creating a new XS group, inherit settings from initial group. (`PR#1653 <https://github.com/terrapower/armi/pull/1653>`_)
+#. When creating a new XS group, inherit settings from initial group. (`PR#1653 <https://github.com/terrapower/armi/pull/1653>`_, `PR#1751 <https://github.com/terrapower/armi/pull/1751>`_)
 
 #. TBD
 

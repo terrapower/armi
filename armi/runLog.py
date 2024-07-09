@@ -175,9 +175,6 @@ class _RunLog:
         In this situation, we do the mangling needed to get the log level to the correct number.
         And we do some custom string manipulation so we can handle de-duplicating warnings.
         """
-        if not os.path.exists(LOG_DIR):
-            createLogDir(LOG_DIR)
-
         # Determine the log level: users can optionally pass in custom strings ("debug")
         msgLevel = msgType if isinstance(msgType, int) else self.logLevels[msgType][0]
 
@@ -347,14 +344,6 @@ def concatenateLogs(logDir=None):
     stdoutFiles = sorted(glob(os.path.join(logDir, "*.stdout")))
     if not len(stdoutFiles):
         info("No log files found to concatenate.")
-
-        # If the log dir is empty, we can delete it.
-        try:
-            os.rmdir(logDir)
-        except:  # noqa: bare-except
-            # low priority concern: it's an empty log dir.
-            pass
-
         return
 
     info("Concatenating {0} log files".format(len(stdoutFiles)))
@@ -724,6 +713,10 @@ def createLogDir(logDir: str = None) -> None:
             raise OSError("Was unable to create the log directory: {}".format(logDir))
 
         time.sleep(secondsWait)
+
+
+if not os.path.exists(LOG_DIR):
+    createLogDir(LOG_DIR)
 
 
 def logFactory():

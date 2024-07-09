@@ -816,16 +816,8 @@ class TestCrossSectionGroupManager(unittest.TestCase):
         self.assertIsNone(blocks[0].p.detailedNDens)
         self.assertIsNone(blocks[1].p.detailedNDens)
 
-    def test_createRepresentativeBlocksUsingExistingBlocks(self):
-        """
-        Demonstrates that a new representative block can be generated from an existing
-        representative block.
-
-        Notes
-        -----
-        This tests that the XS ID of the new representative block is correct and that the
-        compositions are identical between the original and the new representative blocks.
-        """
+    def _createRepresentativeBlocksUsingExistingBlocks(self, validBlockTypes):
+        """Reusable code used in multiple unit tests."""
         o, r = test_reactors.loadTestReactor(
             TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml"
         )
@@ -843,7 +835,7 @@ class TestCrossSectionGroupManager(unittest.TestCase):
             }
         )
         o.cs[CONF_CROSS_SECTION].setDefaults(
-            crossSectionGroupManager.AVERAGE_BLOCK_COLLECTION, ["fuel"]
+            crossSectionGroupManager.AVERAGE_BLOCK_COLLECTION, validBlockTypes
         )
         aaSettings = o.cs[CONF_CROSS_SECTION]["AA"]
         self.csm.cs = copy.deepcopy(o.cs)
@@ -876,6 +868,30 @@ class TestCrossSectionGroupManager(unittest.TestCase):
             if setting == "xsID":
                 continue
             self.assertEqual(baSettingValue, aaSettings.__dict__[setting])
+
+    def test_createRepresentativeBlocksUsingExistingBlocks(self):
+        """
+        Demonstrates that a new representative block can be generated from an existing
+        representative block.
+
+        Notes
+        -----
+        This tests that the XS ID of the new representative block is correct and that the
+        compositions are identical between the original and the new representative blocks.
+        """
+        self._createRepresentativeBlocksUsingExistingBlocks(["fuel"])
+
+    def test_createRepresentativeBlocksUsingExistingBlocksDisableValidBlockTypes(self):
+        """
+        Demonstrates that a new representative block can be generated from an existing
+        representative block with the setting `disableBlockTypeExclusionInXsGeneration: true`.
+
+        Notes
+        -----
+        This tests that the XS ID of the new representative block is correct and that the
+        compositions are identical between the original and the new representative blocks.
+        """
+        self._createRepresentativeBlocksUsingExistingBlocks(True)
 
     def test_interactBOL(self):
         """Test `BOL` lattice physics update frequency.
