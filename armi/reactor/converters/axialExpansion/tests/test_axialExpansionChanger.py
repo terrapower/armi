@@ -1,4 +1,4 @@
-# Copyright 2019 TerraPower, LLC
+# Copyright 2023 TerraPower, LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,92 +13,31 @@
 # limitations under the License.
 
 """Test axialExpansionChanger."""
-import collections
 import os
 import unittest
 from statistics import mean
 
-from armi import materials
-from armi.materials import _MATERIAL_NAMESPACE_ORDER, custom
+from armi.materials import custom
 from armi.reactor.assemblies import HexAssembly, grids
 from armi.reactor.blocks import HexBlock
-from armi.reactor.components import DerivedShape, UnshapedComponent
-from armi.reactor.components.basicShapes import Circle, Hexagon, Rectangle
-from armi.reactor.components.complexShapes import Helix
-from armi.reactor.converters.axialExpansionChanger import (
+from armi.reactor.converters.axialExpansion import getSolidComponents
+from armi.reactor.converters.axialExpansion.axialExpansionChanger import (
     AxialExpansionChanger,
-    ExpansionData,
-    _determineLinked,
-    getSolidComponents,
+)
+from armi.reactor.converters.axialExpansion.tests import AxialExpansionTestBase
+from armi.reactor.converters.axialExpansion.tests.buildAxialExpAssembly import (
+    buildTestAssembly,
+    buildTestBlock,
+    buildDummySodium,
 )
 from armi.reactor.flags import Flags
 from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
 from armi.tests import TEST_ROOT
-from armi.utils import units
 from numpy import array, linspace, zeros
 
 
-class AxialExpansionTestBase(unittest.TestCase):
-    """Common methods and variables for unit tests."""
-
-    Steel_Component_Lst = [
-        Flags.DUCT,
-        Flags.GRID_PLATE,
-        Flags.HANDLING_SOCKET,
-        Flags.INLET_NOZZLE,
-        Flags.CLAD,
-        Flags.WIRE,
-        Flags.ACLP,
-        Flags.GUIDE_TUBE,
-    ]
-
-    def setUp(self):
-        self.obj = AxialExpansionChanger()
-        self.componentMass = collections.defaultdict(list)
-        self.componentDensity = collections.defaultdict(list)
-        self.totalAssemblySteelMass = []
-        self.blockZtop = collections.defaultdict(list)
-        self.origNameSpace = _MATERIAL_NAMESPACE_ORDER
-        # set namespace order for materials so that fake HT9 material can be found
-        materials.setMaterialNamespaceOrder(
-            [
-                "armi.reactor.converters.tests.test_axialExpansionChanger",
-                "armi.materials",
-            ]
-        )
-
-    def tearDown(self):
-        # reset global namespace
-        materials.setMaterialNamespaceOrder(self.origNameSpace)
-
-    def _getConservationMetrics(self, a):
-        """Retrieves and stores various conservation metrics.
-
-        - useful for verification and unittesting
-        - Finds and stores:
-            1. mass and density of target components
-            2. mass of assembly steel
-            3. block heights
-        """
-        totalSteelMass = 0.0
-        for b in a:
-            # store block ztop
-            self.blockZtop[b].append(b.p.ztop)
-            for c in getSolidComponents(b):
-                # store mass and density of component
-                self.componentMass[c].append(c.getMass())
-                self.componentDensity[c].append(
-                    c.material.getProperty("density", c.temperatureInK)
-                )
-                # store steel mass for assembly
-                if c.p.flags in self.Steel_Component_Lst:
-                    totalSteelMass += c.getMass()
-
-        self.totalAssemblySteelMass.append(totalSteelMass)
-
-
 class Temperature:
-    """Create and store temperature grid/field."""
+    """Create and store temperature grid/field for verification testing."""
 
     def __init__(
         self,
@@ -153,12 +92,12 @@ class Temperature:
                 self.tempField[i, :] = tmp[i]
 
 
-class TestAxialExpansionHeight(AxialExpansionTestBase, unittest.TestCase):
+class TestAxialExpansionHeight(AxialExpansionTestBase):
     """Verify that test assembly is expanded correctly."""
 
     def setUp(self):
         AxialExpansionTestBase.setUp(self)
-        self.a = buildTestAssemblyWithFakeMaterial(name="FakeMat")
+        self.a = buildTestAssembly(materialName="FakeMat")
 
         self.temp = Temperature(
             self.a.getTotalHeight(), numTempGridPts=11, tempSteps=10
@@ -190,7 +129,7 @@ class TestAxialExpansionHeight(AxialExpansionTestBase, unittest.TestCase):
 
     def _generateComponentWiseExpectedHeight(self):
         """Calculate the expected height, external of AssemblyAxialExpansion()."""
-        assem = buildTestAssemblyWithFakeMaterial(name="FakeMat")
+        assem = buildTestAssembly(materialName="FakeMat")
         aveBlockTemp = zeros((len(assem), self.temp.tempSteps))
         self.trueZtop = zeros((len(assem), self.temp.tempSteps))
         self.trueHeight = zeros((len(assem), self.temp.tempSteps))
@@ -227,12 +166,12 @@ class TestAxialExpansionHeight(AxialExpansionTestBase, unittest.TestCase):
         return mean(tmpMapping)
 
 
-class TestConservation(AxialExpansionTestBase, unittest.TestCase):
+class TestConservation(AxialExpansionTestBase):
     """Verify that conservation is maintained in assembly-level axial expansion."""
 
     def setUp(self):
         AxialExpansionTestBase.setUp(self)
-        self.a = buildTestAssemblyWithFakeMaterial(name="FakeMat")
+        self.a = buildTestAssembly(materialName="FakeMat")
 
     def tearDown(self):
         AxialExpansionTestBase.tearDown(self)
@@ -249,7 +188,7 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
             )
             self._getConservationMetrics(self.a)
 
-    def test_thermalExpansionContractionConservation_simple(self):
+    def test_ThermalExpansionContractionConservation_Simple(self):
         """Thermally expand and then contract to ensure original state is recovered.
 
         .. test:: Thermally expand and then contract to ensure original assembly is recovered.
@@ -261,7 +200,7 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
         Temperature field is always isothermal and initially at 25 C.
         """
         isothermalTempList = [100.0, 350.0, 250.0, 25.0]
-        a = buildTestAssemblyWithFakeMaterial(name="HT9")
+        a = buildTestAssembly(materialName="HT9")
         origMesh = a.getAxialMesh()[:-1]
         origMasses, origNDens = self._getComponentMassAndNDens(a)
         axialExpChngr = AxialExpansionChanger(detailedAxialExpansion=True)
@@ -289,8 +228,8 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
         self._checkMass(origMasses, newMasses)
         self._checkNDens(origNDens, newNDens, 1.0)
 
-    def test_thermalExpansionContractionConservation_complex(self):
-        """Thermally expand and then contract to ensure original state is recovered.
+    def test_ThermalExpansionContractionConservation_Complex(self):
+        r"""Thermally expand and then contract to ensure original state is recovered.
 
         Notes
         -----
@@ -355,7 +294,7 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
             newMass = a.getMass("B10")
         return newMass
 
-    def test_prescribedExpansionContractionConservation(self):
+    def test_PrescribedExpansionContractionConservation(self):
         """Expand all components and then contract back to original state.
 
         .. test:: Expand all components and then contract back to original state.
@@ -367,7 +306,7 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
         - uniform expansion over all components within the assembly
         - 10 total expansion steps: 5 at +1.01 L1/L0, and 5 at -(1.01^-1) L1/L0
         """
-        a = buildTestAssemblyWithFakeMaterial(name="FakeMat")
+        a = buildTestAssembly(materialName="FakeMat")
         axExpChngr = AxialExpansionChanger()
         origMesh = a.getAxialMesh()
         origMasses, origNDens = self._getComponentMassAndNDens(a)
@@ -420,7 +359,7 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
                 nDens[c] = c.getNumberDensities()
         return masses, nDens
 
-    def test_targetComponentMassConservation(self):
+    def test_TargetComponentMassConservation(self):
         """Tests mass conservation for target components."""
         self.expandAssemForMassConservationTest()
         for cName, masses in self.componentMass.items():
@@ -442,8 +381,8 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
                 msg="Total assembly steel mass is not conserved.",
             )
 
-    def test_noMovementACLP(self):
-        """Ensures the above core load pad (ACLP) does not move during fuel-only expansion.
+    def test_NoMovementACLP(self):
+        """Ensures that above core load pad (ACLP) does not move during fuel-only expansion.
 
         .. test:: Ensure the ACLP does not move during fuel-only expansion.
             :id: T_ARMI_AXIAL_EXP_PRESC1
@@ -453,15 +392,15 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
         assembly = HexAssembly("testAssemblyType")
         assembly.spatialGrid = grids.axialUnitGrid(numCells=1)
         assembly.spatialGrid.armiObject = assembly
-        assembly.add(_buildTestBlock("shield", "FakeMat", 25.0, 10.0))
-        assembly.add(_buildTestBlock("fuel", "FakeMat", 25.0, 10.0))
-        assembly.add(_buildTestBlock("fuel", "FakeMat", 25.0, 10.0))
-        assembly.add(_buildTestBlock("plenum", "FakeMat", 25.0, 10.0))
+        assembly.add(buildTestBlock("shield", "FakeMat", 25.0, 10.0))
+        assembly.add(buildTestBlock("fuel", "FakeMat", 25.0, 10.0))
+        assembly.add(buildTestBlock("fuel", "FakeMat", 25.0, 10.0))
+        assembly.add(buildTestBlock("plenum", "FakeMat", 25.0, 10.0))
         assembly.add(
-            _buildTestBlock("aclp", "FakeMat", 25.0, 10.0)
+            buildTestBlock("aclp", "FakeMat", 25.0, 10.0)
         )  # "aclp plenum" also works
-        assembly.add(_buildTestBlock("plenum", "FakeMat", 25.0, 10.0))
-        assembly.add(_buildDummySodium(25.0, 10.0))
+        assembly.add(buildTestBlock("plenum", "FakeMat", 25.0, 10.0))
+        assembly.add(buildDummySodium(25.0, 10.0))
         assembly.calculateZCoords()
         assembly.reestablishBlockOrder()
 
@@ -550,12 +489,12 @@ class TestManageCoreMesh(unittest.TestCase):
             self.assertLess(old, new)
 
 
-class TestExceptions(AxialExpansionTestBase, unittest.TestCase):
+class TestExceptions(AxialExpansionTestBase):
     """Verify exceptions are caught."""
 
     def setUp(self):
         AxialExpansionTestBase.setUp(self)
-        self.a = buildTestAssemblyWithFakeMaterial(name="FakeMatException")
+        self.a = buildTestAssembly(materialName="FakeMatException")
         self.obj.setAssembly(self.a)
 
     def tearDown(self):
@@ -566,55 +505,13 @@ class TestExceptions(AxialExpansionTestBase, unittest.TestCase):
         assembly = HexAssembly("testAssemblyType")
         assembly.spatialGrid = grids.axialUnitGrid(numCells=1)
         assembly.spatialGrid.armiObject = assembly
-        assembly.add(_buildTestBlock("shield", "FakeMat", 25.0, 10.0))
+        assembly.add(buildTestBlock("shield", "FakeMat", 25.0, 10.0))
         assembly.calculateZCoords()
         assembly.reestablishBlockOrder()
         # create instance of expansion changer
         obj = AxialExpansionChanger(detailedAxialExpansion=True)
         with self.assertRaises(RuntimeError) as cm:
             obj.setAssembly(assembly)
-            the_exception = cm.exception
-            self.assertEqual(the_exception.error_code, 3)
-
-    def test_setExpansionFactors(self):
-        with self.assertRaises(RuntimeError) as cm:
-            cList = self.a[0].getChildren()
-            expansionGrowthFracs = range(len(cList) + 1)
-            self.obj.expansionData.setExpansionFactors(cList, expansionGrowthFracs)
-            the_exception = cm.exception
-            self.assertEqual(the_exception.error_code, 3)
-
-        with self.assertRaises(RuntimeError) as cm:
-            cList = self.a[0].getChildren()
-            expansionGrowthFracs = zeros(len(cList))
-            self.obj.expansionData.setExpansionFactors(cList, expansionGrowthFracs)
-            the_exception = cm.exception
-            self.assertEqual(the_exception.error_code, 3)
-
-        with self.assertRaises(RuntimeError) as cm:
-            cList = self.a[0].getChildren()
-            expansionGrowthFracs = zeros(len(cList)) - 10.0
-            self.obj.expansionData.setExpansionFactors(cList, expansionGrowthFracs)
-            the_exception = cm.exception
-            self.assertEqual(the_exception.error_code, 3)
-
-    def test_updateComponentTempsBy1DTempFieldValueError(self):
-        tempGrid = [5.0, 15.0, 35.0]
-        tempField = linspace(25.0, 310.0, 3)
-        with self.assertRaises(ValueError) as cm:
-            self.obj.expansionData.updateComponentTempsBy1DTempField(
-                tempGrid, tempField
-            )
-            the_exception = cm.exception
-            self.assertEqual(the_exception.error_code, 3)
-
-    def test_updateComponentTempsBy1DTempFieldRuntimeError(self):
-        tempGrid = [5.0, 15.0, 35.0]
-        tempField = linspace(25.0, 310.0, 10)
-        with self.assertRaises(RuntimeError) as cm:
-            self.obj.expansionData.updateComponentTempsBy1DTempField(
-                tempGrid, tempField
-            )
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
 
@@ -634,194 +531,12 @@ class TestExceptions(AxialExpansionTestBase, unittest.TestCase):
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
 
-    def test_isFuelLocked(self):
-        """Ensures that the RuntimeError statement in ExpansionData::_isFuelLocked is raised appropriately.
-
-        Notes
-        -----
-        This is implemented by creating a fuel block that contains no fuel component
-        and passing it to ExpansionData::_isFuelLocked.
-        """
-        expdata = ExpansionData(
-            HexAssembly("testAssemblyType"), setFuel=True, expandFromTinputToThot=False
-        )
-        b_NoFuel = HexBlock("fuel", height=10.0)
-        shieldDims = {
-            "Tinput": 25.0,
-            "Thot": 25.0,
-            "od": 0.76,
-            "id": 0.00,
-            "mult": 127.0,
-        }
-        shield = Circle("shield", "FakeMat", **shieldDims)
-        b_NoFuel.add(shield)
-        with self.assertRaises(RuntimeError) as cm:
-            expdata._isFuelLocked(b_NoFuel)
-            the_exception = cm.exception
-            self.assertEqual(the_exception.error_code, 3)
-
-    def test_determineLinked(self):
-        compDims = {"Tinput": 25.0, "Thot": 25.0}
-        compA = UnshapedComponent("unshaped_1", "FakeMat", **compDims)
-        compB = UnshapedComponent("unshaped_2", "FakeMat", **compDims)
-        self.assertFalse(_determineLinked(compA, compB))
-
-    def test_getLinkedComponents(self):
-        """Test for multiple component axial linkage."""
-        shieldBlock = self.obj.linked.a[0]
-        shieldComp = shieldBlock[0]
-        shieldComp.setDimension("od", 0.785, cold=True)
-        with self.assertRaises(RuntimeError) as cm:
-            self.obj.linked._getLinkedComponents(shieldBlock, shieldComp)
-            self.assertEqual(cm.exception, 3)
-
-
-class TestDetermineTargetComponent(AxialExpansionTestBase, unittest.TestCase):
-    """Verify determineTargetComponent method is properly updating _componentDeterminesBlockHeight."""
-
-    def setUp(self):
-        AxialExpansionTestBase.setUp(self)
-        self.expData = ExpansionData([], setFuel=True, expandFromTinputToThot=True)
-        coolDims = {"Tinput": 25.0, "Thot": 25.0}
-        self.coolant = DerivedShape("coolant", "Sodium", **coolDims)
-
-    def tearDown(self):
-        AxialExpansionTestBase.tearDown(self)
-
-    def test_determineTargetComponent(self):
-        """Provides coverage for searching TARGET_FLAGS_IN_PREFERRED_ORDER."""
-        b = HexBlock("fuel", height=10.0)
-        fuelDims = {"Tinput": 25.0, "Thot": 25.0, "od": 0.76, "id": 0.00, "mult": 127.0}
-        cladDims = {"Tinput": 25.0, "Thot": 25.0, "od": 0.80, "id": 0.77, "mult": 127.0}
-        fuel = Circle("fuel", "FakeMat", **fuelDims)
-        clad = Circle("clad", "FakeMat", **cladDims)
-        b.add(fuel)
-        b.add(clad)
-        b.add(self.coolant)
-        # make sure that b.p.axialExpTargetComponent is empty initially
-        self.assertFalse(b.p.axialExpTargetComponent)
-        # call method, and check that target component is correct
-        self.expData.determineTargetComponent(b)
-        self.assertTrue(
-            self.expData.isTargetComponent(fuel),
-            msg=f"determineTargetComponent failed to recognize intended component: {fuel}",
-        )
-        self.assertEqual(
-            b.p.axialExpTargetComponent,
-            fuel.name,
-            msg=f"determineTargetComponent failed to recognize intended component: {fuel}",
-        )
-
-    def test_determineTargetComponentBlockWithMultipleFlags(self):
-        """Provides coverage for searching TARGET_FLAGS_IN_PREFERRED_ORDER with multiple flags."""
-        # build a block that has two flags as well as a component matching each
-        b = HexBlock("fuel poison", height=10.0)
-        fuelDims = {"Tinput": 25.0, "Thot": 25.0, "od": 0.9, "id": 0.5, "mult": 200.0}
-        poisonDims = {"Tinput": 25.0, "Thot": 25.0, "od": 0.5, "id": 0.0, "mult": 10.0}
-        fuel = Circle("fuel", "FakeMat", **fuelDims)
-        poison = Circle("poison", "FakeMat", **poisonDims)
-        b.add(fuel)
-        b.add(poison)
-        b.add(self.coolant)
-        # call method, and check that target component is correct
-        self.expData.determineTargetComponent(b)
-        self.assertTrue(
-            self.expData.isTargetComponent(fuel),
-            msg=f"determineTargetComponent failed to recognize intended component: {fuel}",
-        )
-
-    def test_specifyTargetComponent_NotFound(self):
-        """Ensure RuntimeError gets raised when no target component is found."""
-        b = HexBlock("fuel", height=10.0)
-        b.add(self.coolant)
-        b.setType("fuel")
-        with self.assertRaises(RuntimeError) as cm:
-            self.expData.determineTargetComponent(b)
-            the_exception = cm.exception
-            self.assertEqual(the_exception.error_code, 3)
-        with self.assertRaises(RuntimeError) as cm:
-            self.expData.determineTargetComponent(b, Flags.FUEL)
-            the_exception = cm.exception
-            self.assertEqual(the_exception.error_code, 3)
-
-    def test_specifyTargetComponent_singleSolid(self):
-        """Ensures that specifyTargetComponent is smart enough to set the only solid as the target component."""
-        b = HexBlock("plenum", height=10.0)
-        ductDims = {"Tinput": 25.0, "Thot": 25.0, "op": 17, "ip": 0.0, "mult": 1.0}
-        duct = Hexagon("duct", "FakeMat", **ductDims)
-        b.add(duct)
-        b.add(self.coolant)
-        b.getVolumeFractions()
-        b.setType("plenum")
-        self.expData.determineTargetComponent(b)
-        self.assertTrue(
-            self.expData.isTargetComponent(duct),
-            msg=f"determineTargetComponent failed to recognize intended component: {duct}",
-        )
-
-    def test_specifyTargetComponet_MultipleFound(self):
-        """Ensure RuntimeError is hit when multiple target components are found.
-
-        Notes
-        -----
-        This can occur if a block has a mixture of fuel types. E.g., different fuel materials,
-        or different fuel geometries.
-        """
-        b = HexBlock("fuel", height=10.0)
-        fuelAnnularDims = {
-            "Tinput": 25.0,
-            "Thot": 25.0,
-            "od": 0.9,
-            "id": 0.5,
-            "mult": 100.0,
-        }
-        fuelDims = {"Tinput": 25.0, "Thot": 25.0, "od": 1.0, "id": 0.0, "mult": 10.0}
-        fuel = Circle("fuel", "FakeMat", **fuelDims)
-        fuelAnnular = Circle("fuel annular", "FakeMat", **fuelAnnularDims)
-        b.add(fuel)
-        b.add(fuelAnnular)
-        b.add(self.coolant)
-        b.setType("FuelBlock")
-        with self.assertRaises(RuntimeError) as cm:
-            self.expData.determineTargetComponent(b, flagOfInterest=Flags.FUEL)
-            the_exception = cm.exception
-            self.assertEqual(the_exception.error_code, 3)
-
-    def test_manuallySetTargetComponent(self):
-        """
-        Ensures that target components can be manually set (is done in practice via blueprints).
-
-        .. test:: Allow user-specified target axial expansion components on a given block.
-            :id: T_ARMI_MANUAL_TARG_COMP
-            :tests: R_ARMI_MANUAL_TARG_COMP
-        """
-        b = HexBlock("dummy", height=10.0)
-        ductDims = {"Tinput": 25.0, "Thot": 25.0, "op": 17, "ip": 0.0, "mult": 1.0}
-        duct = Hexagon("duct", "FakeMat", **ductDims)
-        b.add(duct)
-        b.add(self.coolant)
-        b.getVolumeFractions()
-        b.setType("duct")
-
-        # manually set target component
-        b.setAxialExpTargetComp(duct)
-        self.assertEqual(
-            b.p.axialExpTargetComponent,
-            duct.name,
-        )
-
-        # check that target component is stored on expansionData object correctly
-        self.expData._componentDeterminesBlockHeight[
-            b.getComponentByName(b.p.axialExpTargetComponent)
-        ] = True
-        self.assertTrue(self.expData.isTargetComponent(duct))
-
 
 class TestGetSolidComponents(unittest.TestCase):
     """Verify that getSolidComponents returns just solid components."""
 
     def setUp(self):
-        self.a = buildTestAssemblyWithFakeMaterial(name="HT9")
+        self.a = buildTestAssembly(materialName="HT9")
 
     def test_getSolidComponents(self):
         for b in self.a:
@@ -864,8 +579,7 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
         Notes
         -----
         For R_ARMI_INP_COLD_HEIGHT, the action of axial expansion occurs in setUp() during core
-        construction, specifically in
-        :py:meth:`constructAssem <armi.reactor.blueprints.Blueprints.constructAssem>`
+        construction, specifically in :py:meth:`constructAssem <armi.reactor.blueprints.Blueprints.constructAssem>`
 
         Two assertions here:
             1. total assembly height should be preserved (through use of top dummy block)
@@ -914,15 +628,14 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
     def checkColdHeightBlockMass(
         self, bStd: HexBlock, bExp: HexBlock, flagType: Flags, nuclide: str
     ):
-        """Checks that nuclide masses for blocks with input cold heights and
-        "inputHeightsConsideredHot": True are underpredicted.
+        """Ensures nuclide masses are underpredicted when input cold heights and "inputHeightsConsideredHot": True.
 
         Notes
         -----
-        If blueprints have cold blocks heights with "inputHeightsConsideredHot": True in the inputs,
-        then the nuclide densities are thermally expanded but the block height is not. This
-        ultimately results in nuclide masses being underpredicted relative to the case where both
-        nuclide densities and block heights are thermally expanded.
+        If blueprints have cold blocks heights with "inputHeightsConsideredHot": True in the inputs, then
+        the nuclide densities are thermally expanded but the block height is not. This ultimately results in
+        nuclide masses being underpredicted relative to the case where both nuclide densities and block heights
+        are thermally expanded.
         """
         # custom materials don't expand
         if not isinstance(bStd.getComponent(flagType).material, custom.Custom):
@@ -942,294 +655,3 @@ def checkColdBlockHeight(bStd, bExp, assertType, strForAssertion):
             strForAssertion,
         ),
     )
-
-
-class TestLinkage(AxialExpansionTestBase, unittest.TestCase):
-    """Test axial linkage between components."""
-
-    def setUp(self):
-        """Contains common dimensions for all component class types."""
-        AxialExpansionTestBase.setUp(self)
-        self.common = ("test", "FakeMat", 25.0, 25.0)  # name, material, Tinput, Thot
-
-    def tearDown(self):
-        AxialExpansionTestBase.tearDown(self)
-
-    def runTest(
-        self,
-        componentsToTest: dict,
-        assertionBool: bool,
-        name: str,
-        commonArgs: tuple = None,
-    ):
-        """Runs various linkage tests.
-
-        Parameters
-        ----------
-        componentsToTest : dict
-            keys --> component class type; values --> dimensions specific to key
-        assertionBool : boolean
-            expected truth value for test
-        name : str
-            the name of the test
-        commonArgs : tuple, optional
-            arguments common to all Component class types
-
-        Notes
-        -----
-        - components "typeA" and "typeB" are assumed to be vertically stacked
-        - two assertions: 1) comparing "typeB" component to "typeA"; 2) comparing "typeA" component
-          to "typeB"
-        - the different assertions are particularly useful for comparing two annuli
-        - to add Component class types to a test:
-            Add dictionary entry with following:
-              {Component Class Type: [{<settings for component 1>}, {<settings for component 2>}]
-        """
-        if commonArgs is None:
-            common = self.common
-        else:
-            common = commonArgs
-        for method, dims in componentsToTest.items():
-            typeA = method(*common, **dims[0])
-            typeB = method(*common, **dims[1])
-            if assertionBool:
-                self.assertTrue(
-                    _determineLinked(typeA, typeB),
-                    msg="Test {0:s} failed for component type {1:s}!".format(
-                        name, str(method)
-                    ),
-                )
-                self.assertTrue(
-                    _determineLinked(typeB, typeA),
-                    msg="Test {0:s} failed for component type {1:s}!".format(
-                        name, str(method)
-                    ),
-                )
-            else:
-                self.assertFalse(
-                    _determineLinked(typeA, typeB),
-                    msg="Test {0:s} failed for component type {1:s}!".format(
-                        name, str(method)
-                    ),
-                )
-                self.assertFalse(
-                    _determineLinked(typeB, typeA),
-                    msg="Test {0:s} failed for component type {1:s}!".format(
-                        name, str(method)
-                    ),
-                )
-
-    def test_overlappingSolidPins(self):
-        componentTypesToTest = {
-            Circle: [{"od": 0.5, "id": 0.0}, {"od": 1.0, "id": 0.0}],
-            Hexagon: [{"op": 0.5, "ip": 0.0}, {"op": 1.0, "ip": 0.0}],
-            Rectangle: [
-                {
-                    "lengthOuter": 0.5,
-                    "lengthInner": 0.0,
-                    "widthOuter": 0.5,
-                    "widthInner": 0.0,
-                },
-                {
-                    "lengthOuter": 1.0,
-                    "lengthInner": 0.0,
-                    "widthOuter": 1.0,
-                    "widthInner": 0.0,
-                },
-            ],
-            Helix: [
-                {"od": 0.5, "axialPitch": 1.0, "helixDiameter": 1.0},
-                {"od": 1.0, "axialPitch": 1.0, "helixDiameter": 1.0},
-            ],
-        }
-        self.runTest(componentTypesToTest, True, "test_overlappingSolidPins")
-
-    def test_differentMultNotOverlapping(self):
-        componentTypesToTest = {
-            Circle: [{"od": 0.5, "mult": 10}, {"od": 0.5, "mult": 20}],
-            Hexagon: [{"op": 0.5, "mult": 10}, {"op": 1.0, "mult": 20}],
-            Rectangle: [
-                {"lengthOuter": 1.0, "widthOuter": 1.0, "mult": 10},
-                {"lengthOuter": 1.0, "widthOuter": 1.0, "mult": 20},
-            ],
-            Helix: [
-                {"od": 0.5, "axialPitch": 1.0, "helixDiameter": 1.0, "mult": 10},
-                {"od": 1.0, "axialPitch": 1.0, "helixDiameter": 1.0, "mult": 20},
-            ],
-        }
-        self.runTest(componentTypesToTest, False, "test_differentMultNotOverlapping")
-
-    def test_solidPinNotOverlappingAnnulus(self):
-        componentTypesToTest = {
-            Circle: [{"od": 0.5, "id": 0.0}, {"od": 1.0, "id": 0.6}],
-        }
-        self.runTest(componentTypesToTest, False, "test_solidPinNotOverlappingAnnulus")
-
-    def test_solidPinOverlappingWithAnnulus(self):
-        componentTypesToTest = {
-            Circle: [{"od": 0.7, "id": 0.0}, {"od": 1.0, "id": 0.6}],
-        }
-        self.runTest(componentTypesToTest, True, "test_solidPinOverlappingWithAnnulus")
-
-    def test_annularPinNotOverlappingWithAnnulus(self):
-        componentTypesToTest = {
-            Circle: [{"od": 0.6, "id": 0.3}, {"od": 1.0, "id": 0.6}],
-        }
-        self.runTest(
-            componentTypesToTest, False, "test_annularPinNotOverlappingWithAnnulus"
-        )
-
-    def test_annularPinOverlappingWithAnnuls(self):
-        componentTypesToTest = {
-            Circle: [{"od": 0.7, "id": 0.3}, {"od": 1.0, "id": 0.6}],
-        }
-        self.runTest(componentTypesToTest, True, "test_annularPinOverlappingWithAnnuls")
-
-    def test_thinAnnularPinOverlappingWithThickAnnulus(self):
-        componentTypesToTest = {
-            Circle: [{"od": 0.7, "id": 0.3}, {"od": 0.6, "id": 0.5}],
-        }
-        self.runTest(
-            componentTypesToTest, True, "test_thinAnnularPinOverlappingWithThickAnnulus"
-        )
-
-    def test_AnnularHexOverlappingThickAnnularHex(self):
-        componentTypesToTest = {
-            Hexagon: [{"op": 1.0, "ip": 0.8}, {"op": 1.2, "ip": 0.8}]
-        }
-        self.runTest(
-            componentTypesToTest, True, "test_AnnularHexOverlappingThickAnnularHex"
-        )
-
-    def test_liquids(self):
-        componentTypesToTest = {
-            Circle: [{"od": 1.0, "id": 0.0}, {"od": 1.0, "id": 0.0}],
-            Hexagon: [{"op": 1.0, "ip": 0.0}, {"op": 1.0, "ip": 0.0}],
-        }
-        liquid = ("test", "Sodium", 425.0, 425.0)  # name, material, Tinput, Thot
-        self.runTest(componentTypesToTest, False, "test_liquids", commonArgs=liquid)
-
-    def test_unshapedComponentAndCircle(self):
-        comp1 = Circle(*self.common, od=1.0, id=0.0)
-        comp2 = UnshapedComponent(*self.common, area=1.0)
-        self.assertFalse(_determineLinked(comp1, comp2))
-
-
-def buildTestAssemblyWithFakeMaterial(name: str, hot: bool = False):
-    """Create test assembly consisting of list of fake material.
-
-    Parameters
-    ----------
-    name : string
-        determines which fake material to use
-    """
-    if not hot:
-        hotTemp = 25.0
-        height = 10.0
-    else:
-        hotTemp = 250.0
-        height = 10.0 + 0.02 * (250.0 - 25.0)
-
-    assembly = HexAssembly("testAssemblyType")
-    assembly.spatialGrid = grids.axialUnitGrid(numCells=1)
-    assembly.spatialGrid.armiObject = assembly
-    assembly.add(_buildTestBlock("shield", name, hotTemp, height))
-    assembly.add(_buildTestBlock("fuel", name, hotTemp, height))
-    assembly.add(_buildTestBlock("fuel", name, hotTemp, height))
-    assembly.add(_buildTestBlock("plenum", name, hotTemp, height))
-    assembly.add(_buildDummySodium(hotTemp, height))
-    assembly.calculateZCoords()
-    assembly.reestablishBlockOrder()
-    return assembly
-
-
-def _buildTestBlock(blockType: str, name: str, hotTemp: float, height: float):
-    """Return a simple pin type block filled with coolant and surrounded by duct.
-
-    Parameters
-    ----------
-    blockType : string
-        determines which type of block you're building
-    name : string
-        determines which material to use
-    """
-    b = HexBlock(blockType, height=height)
-
-    fuelDims = {"Tinput": 25.0, "Thot": hotTemp, "od": 0.76, "id": 0.00, "mult": 127.0}
-    cladDims = {"Tinput": 25.0, "Thot": hotTemp, "od": 0.80, "id": 0.77, "mult": 127.0}
-    ductDims = {"Tinput": 25.0, "Thot": hotTemp, "op": 16, "ip": 15.3, "mult": 1.0}
-    intercoolantDims = {
-        "Tinput": 25.0,
-        "Thot": hotTemp,
-        "op": 17.0,
-        "ip": ductDims["op"],
-        "mult": 1.0,
-    }
-    coolDims = {"Tinput": 25.0, "Thot": hotTemp}
-    mainType = Circle(blockType, name, **fuelDims)
-    clad = Circle("clad", name, **cladDims)
-    duct = Hexagon("duct", name, **ductDims)
-
-    coolant = DerivedShape("coolant", "Sodium", **coolDims)
-    intercoolant = Hexagon("intercoolant", "Sodium", **intercoolantDims)
-
-    b.add(mainType)
-    b.add(clad)
-    b.add(duct)
-    b.add(coolant)
-    b.add(intercoolant)
-    b.setType(blockType)
-
-    b.getVolumeFractions()
-
-    return b
-
-
-def _buildDummySodium(hotTemp: float, height: float):
-    """Build a dummy sodium block."""
-    b = HexBlock("dummy", height=height)
-
-    sodiumDims = {"Tinput": 25.0, "Thot": hotTemp, "op": 17, "ip": 0.0, "mult": 1.0}
-    dummy = Hexagon("dummy coolant", "Sodium", **sodiumDims)
-
-    b.add(dummy)
-    b.getVolumeFractions()
-    b.setType("dummy")
-
-    return b
-
-
-class FakeMat(materials.ht9.HT9):
-    """Fake material used to verify armi.reactor.converters.axialExpansionChanger.
-
-    Notes
-    -----
-    - specifically used in TestAxialExpansionHeight to verify axialExpansionChanger produces
-      expected heights from hand calculation
-    - also used to verify mass and height conservation resulting from even amounts of expansion
-      and contraction. See TestConservation.
-    """
-
-    name = "FakeMat"
-
-    def linearExpansionPercent(self, Tk=None, Tc=None):
-        """A fake linear expansion percent."""
-        Tc = units.getTc(Tc, Tk)
-        return 0.02 * Tc
-
-
-class FakeMatException(materials.ht9.HT9):
-    """Fake material used to verify TestExceptions.
-
-    Notes
-    -----
-    - the only difference between this and `class Fake(HT9)` above is that the thermal expansion factor
-      is higher to ensure that a negative block height is caught in TestExceptions:test_AssemblyAxialExpansionException.
-    """
-
-    name = "FakeMatException"
-
-    def linearExpansionPercent(self, Tk=None, Tc=None):
-        """A fake linear expansion percent."""
-        Tc = units.getTc(Tc, Tk)
-        return 0.08 * Tc
