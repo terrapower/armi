@@ -72,19 +72,20 @@ directional diffusion coefficient multipliers, respectively. Similary, the ``d<1
 values are the first, second, and third dimension directional diffusion coefficient
 additive terms, respectively.
 """
-from scipy.sparse import csc_matrix
 from traceback import format_exc
+
+from scipy.sparse import csc_matrix
 import numpy
 
 from armi import runLog
 from armi.nuclearDataIO import cccc
-from armi.utils.properties import unlockImmutableProperties, lockImmutableProperties
 from armi.nuclearDataIO.xsCollections import XSCollection
 from armi.nuclearDataIO.nuclearFileMetadata import (
     RegionXSMetadata,
     COMPXS_POWER_CONVERSION_FACTORS,
     REGIONXS_POWER_CONVERT_DIRECTIONAL_DIFF,
 )
+from armi.utils.properties import unlockImmutableProperties, lockImmutableProperties
 
 
 def _getRegionIO():
