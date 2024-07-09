@@ -40,7 +40,7 @@ def armiAbsPath(*pathParts):
         from ccl import common_operations
 
         return common_operations.convert_to_unc_path(result)
-    except:  # noqa: E722
+    except Exception:
         return result
 
 
@@ -51,10 +51,8 @@ def copyOrWarn(fileDescription, sourcePath, destinationPath):
     ----------
     fileDescription : str
         a description of the file and/or operation being performed.
-
     sourcePath : str
         Path of the file to be copied.
-
     destinationPath : str
         Path for the copied file.
     """

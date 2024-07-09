@@ -84,7 +84,7 @@ class TestXSLibrary(TempFileMixin):
             cls.xsLib.merge(copy.deepcopy(cls.isotxsAA))
             cls.xsLib.merge(copy.deepcopy(cls.gamisoAA))
             cls.xsLib.merge(copy.deepcopy(cls.pmatrxAA))
-        except:  # noqa: bare-except
+        except Exception:
             cls.xsLibGenerationErrorStack = traceback.format_exc()
 
     def test_canPickleAndUnpickleISOTXS(self):
@@ -288,9 +288,14 @@ class TestGetISOTXSFilesInWorkingDirectory(unittest.TestCase):
         self.assertEqual(set(), container & set(shouldNotBeThere))
 
 
-# NOTE: This is just a base class, so it isn't run directly.
 class TestXSlibraryMerging(TempFileMixin):
-    """A shared class that defines tests that should be true for all IsotxsLibrary merging."""
+    """
+    A shared class that defines tests that should be true for all IsotxsLibrary merging.
+
+    Notes
+    -----
+    This is just a base class, so it isn't run directly.
+    """
 
     @classmethod
     def setUpClass(cls):

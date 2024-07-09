@@ -115,4 +115,4 @@ has since been updated significantly to both read and write the files.
 This was originally inspired by Prof. James Paul Holloway's alpha
 release of ccccutils written in c++ from 2001.
 """
-from armi.nuclearDataIO.cccc import *  # noqa: unused-import
+from armi.nuclearDataIO.cccc import *  # noqa: F403

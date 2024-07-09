@@ -222,7 +222,7 @@ class PmatrxIO(cccc.Stream):
             self._rwGroupStructure()
             self._rwDoseConversionFactor()
             self._rwIsotopes(numNucs)
-        except:  # noqa: bare-except
+        except Exception:
             runLog.error(traceback.format_exc())
             raise OSError("Failed to read/write {}".format(self))
         finally:
