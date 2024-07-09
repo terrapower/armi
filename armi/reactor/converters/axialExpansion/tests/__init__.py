@@ -17,11 +17,11 @@ import unittest
 
 from armi import materials
 from armi.materials import _MATERIAL_NAMESPACE_ORDER
-from armi.reactor.flags import Flags
 from armi.reactor.converters.axialExpansion import getSolidComponents
 from armi.reactor.converters.axialExpansion.axialExpansionChanger import (
     AxialExpansionChanger,
 )
+from armi.reactor.flags import Flags
 
 
 class AxialExpansionTestBase(unittest.TestCase):

@@ -13,8 +13,7 @@
 # limitations under the License.
 
 import unittest
-from armi.tests import mockRunLogs
-from armi.reactor.flags import Flags
+
 from armi.reactor.components import UnshapedComponent
 from armi.reactor.components.basicShapes import Circle, Hexagon, Rectangle
 from armi.reactor.components.complexShapes import Helix
@@ -22,6 +21,8 @@ from armi.reactor.converters.axialExpansion.assemblyAxialLinkage import (
     AssemblyAxialLinkage,
 )
 from armi.reactor.converters.axialExpansion.tests import buildAxialExpAssembly
+from armi.reactor.flags import Flags
+from armi.tests import mockRunLogs
 
 
 class TestGetLinkedComponents(unittest.TestCase):

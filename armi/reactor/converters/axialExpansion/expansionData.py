@@ -17,8 +17,8 @@ from typing import List
 
 from armi import runLog
 from armi.materials.material import Fluid
-from armi.reactor.flags import Flags
 from armi.reactor.converters.axialExpansion import getSolidComponents
+from armi.reactor.flags import Flags
 
 
 class ExpansionData:
@@ -185,8 +185,7 @@ class ExpansionData:
         c : :py:class:`Component <armi.reactor.components.component.Component>`
             Component to retrive expansion factor for
         """
-        value = self._expansionFactors.get(c, 1.0)
-        return value
+        return self._expansionFactors.get(c, 1.0)
 
     def _setTargetComponents(self, setFuel):
         """Sets target component for each block.

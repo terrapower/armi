@@ -13,11 +13,11 @@
 # limitations under the License.
 
 from armi import materials
-from armi.utils import units
 from armi.reactor.assemblies import HexAssembly, grids
 from armi.reactor.blocks import HexBlock
-from armi.reactor.components.basicShapes import Circle, Hexagon
 from armi.reactor.components import DerivedShape
+from armi.reactor.components.basicShapes import Circle, Hexagon
+from armi.utils import units
 
 
 def buildTestAssembly(materialName: str, hot: bool = False):

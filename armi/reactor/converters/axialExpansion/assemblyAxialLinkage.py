@@ -13,9 +13,9 @@
 # limitations under the License.
 
 from armi import runLog
-from armi.reactor.flags import Flags
 from armi.reactor.components import UnshapedComponent
 from armi.reactor.converters.axialExpansion import getSolidComponents
+from armi.reactor.flags import Flags
 
 
 class AssemblyAxialLinkage:
@@ -197,14 +197,10 @@ class AssemblyAxialLinkage:
                 )
                 linked = False
             else:
-                idA, odA = (
-                    componentA.getCircleInnerDiameter(cold=True),
-                    componentA.getBoundingCircleOuterDiameter(cold=True),
-                )
-                idB, odB = (
-                    componentB.getCircleInnerDiameter(cold=True),
-                    componentB.getBoundingCircleOuterDiameter(cold=True),
-                )
+                idA = componentA.getCircleInnerDiameter(cold=True)
+                odA = componentA.getBoundingCircleOuterDiameter(cold=True)
+                idB = componentB.getCircleInnerDiameter(cold=True)
+                odB = componentB.getBoundingCircleOuterDiameter(cold=True)
 
                 biggerID = max(idA, idB)
                 smallerOD = min(odA, odB)
