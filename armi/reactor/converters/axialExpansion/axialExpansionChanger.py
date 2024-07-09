@@ -214,10 +214,10 @@ class AxialExpansionChanger:
         Parameters
         ----------
          a : :py:class:`Assembly <armi.reactor.assemblies.Assembly>`
-            ARMI assembly to be changed
+            Assembly to be changed
         setFuel : boolean, optional
-            Boolean to determine whether or not fuel blocks should have their target components set
-            This is useful when target components within a fuel block need to be determined on-the-fly.
+            Determine whether fuel blocks should have their target components set.
+            This is useful when target components within a fuel Block need to be determined on-the-fly.
         expandFromTinputToThot: bool
             determines if thermal expansion factors should be calculated from c.inputTemperatureInC
             to c.temperatureInC (True) or some other reference temperature and c.temperatureInC (False)
