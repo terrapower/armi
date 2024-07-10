@@ -146,7 +146,6 @@ def loadOperator(
         cs = db.loadCS()
         thisCase = cases.Case(cs)
 
-
         r = db.load(
             loadCycle,
             loadNode,

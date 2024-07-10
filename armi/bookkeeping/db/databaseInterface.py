@@ -163,7 +163,6 @@ class DatabaseInterface(interfaces.Interface):
         """In case anything changed since last cycle (e.g. rxSwing), update DB. (End of Cycle)"""
         self._db.writeToDB(self.r, "EOC")
 
-
     def interactEOL(self):
         """DB's should be closed at run's end. (End of Life)."""
         # minutesSinceStarts should include as much of the ARMI run as possible so EOL
