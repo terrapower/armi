@@ -152,13 +152,13 @@ def loadOperator(
             statePointName=statePointName,
             allowMissing=allowMissing,
         )
-    #settings.setMasterCs(cs)
+
 
     # Update the global assembly number because, if the user is loading a reactor from
     # blueprints and does not have access to an operator, it is unlikely that there is
     # another reactor that has alter the global assem num. Fresh cases typically want
     # this updated.
-    #updateGlobalAssemblyNum(r)
+    
 
     o = thisCase.initializeOperator(r=r)
     runLog.important(
