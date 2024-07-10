@@ -12,11 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-
-This file contains tools for common tasks in parsing in python strings into non-string values
-
-"""
+"""This file contains tools for common tasks in parsing in python strings into non-string values."""
 
 import ast
 import copy
@@ -63,7 +59,7 @@ def _numericSpecialBehavior(source, rt):
 
 
 def parseValue(source, requestedType, allowNone=False, matchingNonetype=True):
-    """Tries parse a python value, expecting input to be the right type or a string"""
+    """Tries parse a python value, expecting input to be the right type or a string."""
     # misuse prevention
     if requestedType == str:
         raise TypeError(
@@ -99,5 +95,5 @@ def parseValue(source, requestedType, allowNone=False, matchingNonetype=True):
 
 
 def datetimeFromStr(string):
-    """Converts an arbitrary string to a datetime object"""
+    """Converts an arbitrary string to a datetime object."""
     return parser.parse(string)

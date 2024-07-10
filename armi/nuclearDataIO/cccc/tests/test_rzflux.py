@@ -11,10 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-Test rzflux reading and writing.
-"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+"""Test rzflux reading and writing."""
 import os
 import unittest
 
@@ -27,7 +24,7 @@ SIMPLE_RZFLUX = os.path.join(THIS_DIR, "fixtures", "simple_cartesian.rzflux")
 
 
 class TestRzflux(unittest.TestCase):
-    """Tests the rzflux class"""
+    """Tests the rzflux class."""
 
     def test_readRzflux(self):
         """Ensure we can read a RZFLUX file."""

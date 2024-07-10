@@ -11,10 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-Test PWDINT reading and writing.
-"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+"""Test PWDINT reading and writing."""
 import os
 import unittest
 
@@ -39,7 +36,7 @@ class TestGeodst(unittest.TestCase):
         self.assertGreater(pwr.powerDensity.min(), 0.0)
 
     def test_writeGeodst(self):
-        """Ensure that we can write a modified PWDINT"""
+        """Ensure that we can write a modified PWDINT."""
         with TemporaryDirectoryChanger():
             pwr = pwdint.readBinary(SIMPLE_PWDINT)
             pwdint.writeBinary(pwr, "PWDINT2")

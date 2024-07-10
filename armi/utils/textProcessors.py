@@ -11,12 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-Utility classes and functions for manipulating text files.
-"""
+"""Utility classes and functions for manipulating text files."""
+import io
 import os
 import re
-import io
 import pathlib
 from typing import List, Tuple, Union, Optional, TextIO
 
@@ -40,13 +38,10 @@ Matches:
 """
 
 FLOATING_PATTERN = r"[+-]?\d+\.*\d*"
-"""
-Matches 1, 100, 1.0, -1.2, +12.234
-"""
+"""Matches 1, 100, 1.0, -1.2, +12.234"""
 
 DECIMAL_PATTERN = r"[+-]?\d*\.\d+"
-"""matches .1, 1.213423, -23.2342, +.023
-"""
+"""Matches .1, 1.213423, -23.2342, +.023"""
 
 
 class FileMark:
@@ -63,10 +58,10 @@ class FileMark:
 
 
 def _processIncludes(
-    src,
+    src: Union[TextIO, pathlib.Path],
     out,
     includes: List[Tuple[pathlib.Path, FileMark]],
-    root,
+    root: pathlib.Path,
     indentation=0,
     currentFile="<stream>",
 ):
@@ -93,7 +88,13 @@ def _processIncludes(
             return 0
 
     indentSpace = " " * indentation
-    for i, line in enumerate(src.readlines()):
+    if hasattr(src, "getvalue"):
+        # assume stringIO
+        lines = [ln + "\n" for ln in src.getvalue().split("\n")]
+    else:
+        # assume file stream or TextIOBase, and it has a readlines attr
+        lines = src.readlines()
+    for i, line in enumerate(lines):
         leadingSpace = indentSpace if i > 0 else ""
         m = _INCLUDE_RE.match(line)
         if m:
@@ -139,7 +140,7 @@ def resolveMarkupInclusions(
 
     Parameters
     ----------
-    src : TextIOBase or Path
+    src : StringIO or TextIOBase/Path
         If a Path is provided, read text from there. If is stream is provided, consume
         text from the stream. If a stream is provided, ``root`` must also be provided.
     root : Optional Path
@@ -221,7 +222,7 @@ def findYamlInclusions(
         if not path.is_absolute():
             try:
                 path = (mark.relativeTo / path).relative_to(root or os.getcwd())
-            except ValueError as _:
+            except ValueError:
                 # Can't make a relative path. IMO, pathlib gives up a little too early,
                 # but we still probably want to decay to absolute paths if the files
                 # arent in the same tree.
@@ -378,7 +379,7 @@ class SequentialReader:
         if self._stream is not None:
             try:
                 self._stream.close()
-            except:  # pylint: disable=bare-except
+            except:  # noqa: bare-except
                 # We really don't care if anything fails here, plus an exception in exit is ignored anyway
                 pass
         self._stream = None
@@ -476,7 +477,7 @@ class SequentialReader:
 
 
 class SequentialStringIOReader(SequentialReader):
-    """
+    r"""
     Fast sequential reader that must be used within a with statement.
 
     Attributes
@@ -526,7 +527,6 @@ class TextProcessor:
     A general text processing object that extends python's abilities to scan through huge files.
 
     Use this instead of a raw file object to read data out of output files, etc.
-
     """
 
     scipat = SCIENTIFIC_PATTERN
@@ -554,7 +554,7 @@ class TextProcessor:
             self.f = SmartList(f)
 
     def reset(self):
-        r"""rewinds the file so you can search through it again"""
+        """Rewinds the file so you can search through it again."""
         self.f.seek(0)
 
     def __repr__(self):
@@ -567,17 +567,16 @@ class TextProcessor:
         pass
 
     def fsearch(self, pattern, msg=None, killOn=None, textFlag=False):
-        r"""
+        """
         Searches file f for pattern and displays msg when found. Returns line in which
         pattern is found or FALSE if no pattern is found.
-        Stops searching if finds killOn first
+        Stops searching if finds killOn first.
 
         If you specify textFlag=True, the search won't use a regular expression (and
         can't). The basic result is you get less powerful matching capabilities at a
         huge speedup (10x or so probably, but that's just a guess.) pattern and killOn
         must be pure text if you do this.
         """
-
         current = 0
         result = ""
         if textFlag:
@@ -620,8 +619,9 @@ class TextProcessor:
 
 
 class SmartList:
-    r"""A list that does stuff like files do i.e. remembers where it was, can seek, etc.
-    Actually this is pretty slow. so much for being smart. nice idea though."""
+    """A list that does stuff like files do i.e. remembers where it was, can seek, etc.
+    Actually this is pretty slow. so much for being smart. nice idea though.
+    """
 
     def __init__(self, f):
         self.lines = f.readlines()

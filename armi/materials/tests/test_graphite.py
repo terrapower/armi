@@ -11,10 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-Tests for graphite material
-"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+"""Tests for graphite material."""
 import math
 import unittest
 
@@ -46,10 +43,7 @@ class Graphite_TestCase(unittest.TestCase):
         self.assertEqual(len(self.mat.propertyValidTemperature), 0)
 
     def test_density(self):
-        """
-        test to reproduce density measurements results in table 2 from
-        [INL-EXT-16-38241]
-        """
+        """Test to reproduce density measurements results in table 2 from [INL-EXT-16-38241]."""
         uncertainty = 0.01
 
         for Tc, ref_rho in [
@@ -63,11 +57,7 @@ class Graphite_TestCase(unittest.TestCase):
             (800.9, 1.8748),
         ]:
 
-            test_rho = self.mat.density3(Tc=Tc)
+            test_rho = self.mat.density(Tc=Tc)
             error = math.fabs((ref_rho - test_rho) / ref_rho)
 
             self.assertLess(error, uncertainty)
-
-
-if __name__ == "__main__":
-    unittest.main()

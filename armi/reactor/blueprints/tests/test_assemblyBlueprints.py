@@ -11,8 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
-
+"""Tests for Assembly Blueprints."""
 import unittest
 
 from armi import settings
@@ -184,6 +183,13 @@ assemblies:
         return design.assemblies["fuel a"]
 
     def test_checkParamConsistency(self):
+        """
+        Load assembly from a blueprint file.
+
+        .. test:: Create assembly from blueprint file.
+            :id: T_ARMI_BP_ASSEM
+            :tests: R_ARMI_BP_ASSEM
+        """
         # make sure a good example doesn't error
         a = self.loadCustomAssembly(self.twoBlockInput_correct)
         blockAxialMesh = a.getAxialMesh()
@@ -202,7 +208,3 @@ assemblies:
 
         with self.assertRaises(ValueError):
             a = self.loadCustomAssembly(self.twoBlockInput_wrongMatMods)
-
-
-if __name__ == "__main__":
-    unittest.main()

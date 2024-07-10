@@ -11,8 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Test plotting"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
+"""Test plotting."""
 import copy
 import os
 import unittest
@@ -36,7 +35,9 @@ from armi.utils.reportPlotting import (
 
 class TestRadar(unittest.TestCase):
     def setUp(self):
-        self.o, self.r = test_reactors.loadTestReactor(TEST_ROOT)
+        self.o, self.r = test_reactors.loadTestReactor(
+            TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
         self.td = TemporaryDirectoryChanger()
         self.td.__enter__()
 
@@ -45,11 +46,7 @@ class TestRadar(unittest.TestCase):
 
     def test_radar(self):
         """Test execution of radar plot. Note this has no asserts and is therefore a smoke test."""
-        self.r.core.p.doppler = 0.5
-        self.r.core.p.voidWorth = 0.5
         r2 = copy.deepcopy(self.r)
-        r2.core.p.voidWorth = 1.0
-        r2.core.p.doppler = 1.0
         plotCoreOverviewRadar([self.r, r2], ["Label1", "Label2"])
 
     def test_createPlotMetaData(self):
@@ -86,20 +83,20 @@ class TestRadar(unittest.TestCase):
 
         # plot with no keff function
         keffVsTime(self.r.name, t, t, keffUnc=[], extension=ext)
-        self.assertTrue(os.path.exists("R-armiRun.keff.png"))
-        self.assertGreater(os.path.getsize("R-armiRun.keff.png"), 0)
+        self.assertTrue(os.path.exists("R-armiRunSmallest.keff.png"))
+        self.assertGreater(os.path.getsize("R-armiRunSmallest.keff.png"), 0)
 
         # plot with a keff function
         keffVsTime(self.r.name, t, t, t, extension=ext)
-        self.assertTrue(os.path.exists("R-armiRun.keff.png"))
-        self.assertGreater(os.path.getsize("R-armiRun.keff.png"), 0)
+        self.assertTrue(os.path.exists("R-armiRunSmallest.keff.png"))
+        self.assertGreater(os.path.getsize("R-armiRunSmallest.keff.png"), 0)
 
     def test_valueVsTime(self):
         t = list(range(12))
         ext = "png"
         valueVsTime(self.r.name, t, t, "val", "yaxis", "title", extension=ext)
-        self.assertTrue(os.path.exists("R-armiRun.val.png"))
-        self.assertGreater(os.path.getsize("R-armiRun.val.png"), 0)
+        self.assertTrue(os.path.exists("R-armiRunSmallest.val.png"))
+        self.assertGreater(os.path.getsize("R-armiRunSmallest.val.png"), 0)
 
     def test_buVsTime(self):
         name = "buvstime"
@@ -144,7 +141,3 @@ class TestRadar(unittest.TestCase):
         xsHistoryVsTime(name, history, [], "png")
         self.assertTrue(os.path.exists(figName))
         self.assertGreater(os.path.getsize(figName), 0)
-
-
-if __name__ == "__main__":
-    unittest.main()

@@ -11,32 +11,24 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-Test the fission product module to ensure all FP are available.
-"""
+"""Test the fission product module to ensure all FP are available."""
 import unittest
 
-
 from armi import nuclideBases
-from armi.reactor.flags import Flags
-
 from armi.physics.neutronics.fissionProductModel import fissionProductModel
-from armi.reactor.tests.test_reactors import (
-    buildOperatorOfEmptyHexBlocks,
-    loadTestReactor,
-)
 from armi.physics.neutronics.fissionProductModel.tests import test_lumpedFissionProduct
 from armi.physics.neutronics.isotopicDepletion.isotopicDepletionInterface import (
     isDepletable,
 )
-
-
-def _getLumpedFissionProductNumberDensities(b):
-    """Returns the number densities for each lumped fission product in a block."""
-    nDens = {}
-    for lfpName, lfp in b.getLumpedFissionProductCollection().items():
-        nDens[lfp] = b.getNumberDensity(lfpName)
-    return nDens
+from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import (
+    CONF_FP_MODEL,
+    CONF_FISSION_PRODUCT_LIBRARY_NAME,
+)
+from armi.reactor.flags import Flags
+from armi.reactor.tests.test_reactors import (
+    buildOperatorOfEmptyHexBlocks,
+    loadTestReactor,
+)
 
 
 class TestFissionProductModelLumpedFissionProducts(unittest.TestCase):
@@ -74,44 +66,44 @@ class TestFissionProductModelLumpedFissionProducts(unittest.TestCase):
         self.assertGreater(len(fissionProductNames), 5)
         self.assertIn("XE135", fissionProductNames)
 
-
-class TestFissionProductModelIndependentLumpedFissionProducts(unittest.TestCase):
-    """
-    Tests the fission product model interface behavior when lumped fission products are enabled but made
-    independent for each block. Mainly tests the FissionProductModel._useGlobalLFPs property.
-
-    Notes
-    -----
-    This loads the global fission products from a file stream.
-    """
-
-    def setUp(self):
-        o = buildOperatorOfEmptyHexBlocks()
-        o.cs["makeAllBlockLFPsIndependent"] = True
-        o.removeAllInterfaces()
-        self.fpModel = fissionProductModel.FissionProductModel(o.r, o.cs)
-        o.addInterface(self.fpModel)
-
-        # Load the fission products from a file stream.
-        dummyLFPs = test_lumpedFissionProduct.getDummyLFPFile()
-        self.fpModel.setGlobalLumpedFissionProducts(dummyLFPs.createLFPsFromFile())
-
+    def test_fpApplication(self):
+        o, r = loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+        fpModel = fissionProductModel.FissionProductModel(o.r, o.cs)
         # Set up the global LFPs and check that they are setup.
-        self.fpModel.interactBOL()
-        self.assertFalse(self.fpModel._useGlobalLFPs)
+        self.assertTrue(fpModel._useGlobalLFPs)
+        fpModel.interactBOL()
+        for b in r.core.getBlocks():
+            if b.isFuel():
+                self.assertTrue(b._lumpedFissionProducts is not None)
+            else:
+                self.assertTrue(b._lumpedFissionProducts is None)
+
+        # now check if all depletable blocks do not have all nuclides if not detailedAxialExpansion
+        fpModel.allBlocksNeedAllNucs = False
+        fpModel.interactBOL()
+        allNucsInProblem = set(r.blueprints.allNuclidesInProblem)
+        for b in r.core.getBlocks():
+            if isDepletable(b):
+                if len(allNucsInProblem - set(b.getNuclides())) > 0:
+                    break
+        else:
+            self.assertTrue(False, "All blocks have all nuclides!")
 
 
 class TestFissionProductModelExplicitMC2Library(unittest.TestCase):
     """
     Tests the fission product model interface behavior when explicit fission products are enabled.
+
+    These tests can use a smaller test reactor, and so will be faster.
     """
 
     def setUp(self):
         o, r = loadTestReactor(
             customSettings={
-                "fpModel": "explicitFissionProducts",
-                "fpModelLibrary": "MC2-3",
-            }
+                CONF_FP_MODEL: "explicitFissionProducts",
+                CONF_FISSION_PRODUCT_LIBRARY_NAME: "MC2-3",
+            },
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml",
         )
         self.r = r
         self.fpModel = fissionProductModel.FissionProductModel(o.r, o.cs)
@@ -138,14 +130,47 @@ class TestFissionProductModelExplicitMC2Library(unittest.TestCase):
         for nb in nuclideBases.byMcc3Id.values():
             self.assertIn(nb.name, nuclideList)
 
-    def test_nuclidesInModelAllDepletableBlocks(self):
-        """Test that the depletable blocks contain all the MC2-3 modeled nuclides."""
 
+class TestFissionProductModelExplicitMC2LibrarySlower(unittest.TestCase):
+    """
+    Tests the fission product model interface behavior when explicit fission products are enabled.
+
+    These tests require a large test reactor, and will lead to slower tests.
+    """
+
+    def setUp(self):
+        o, r = loadTestReactor(
+            customSettings={
+                CONF_FP_MODEL: "explicitFissionProducts",
+                CONF_FISSION_PRODUCT_LIBRARY_NAME: "MC2-3",
+            }
+        )
+        self.r = r
+        self.fpModel = fissionProductModel.FissionProductModel(o.r, o.cs)
+        # Set up the global LFPs and check that they are setup.
+        self.assertFalse(self.fpModel._useGlobalLFPs)
+
+    def test_nuclidesInModelAllDepletableBlocks(self):
+        """Test that the depletable blocks contain all the MC2-3 modeled nuclides.
+
+        .. test:: Determine if any component is depletable.
+            :id: T_ARMI_DEPL_DEPLETABLE
+            :tests: R_ARMI_DEPL_DEPLETABLE
+        """
         # Check that there are some fuel and control blocks in the core model.
         fuelBlocks = self.r.core.getBlocks(Flags.FUEL)
         controlBlocks = self.r.core.getBlocks(Flags.CONTROL)
         self.assertGreater(len(fuelBlocks), 0)
         self.assertGreater(len(controlBlocks), 0)
+
+        # prove that the control blocks are not depletable
+        for b in controlBlocks:
+            self.assertFalse(isDepletable(b))
+
+        # as a corrolary of the above, prove that no components in the control blocks are depletable
+        for b in controlBlocks:
+            for c in b.getComponents():
+                self.assertFalse(isDepletable(c))
 
         # Force the the first component in the control blocks
         # to be labeled as depletable for checking that explicit
@@ -153,6 +178,19 @@ class TestFissionProductModelExplicitMC2Library(unittest.TestCase):
         for b in controlBlocks:
             c = b.getComponents()[0]
             c.p.flags |= Flags.DEPLETABLE
+
+        # now each control block should be depletable
+        for b in controlBlocks:
+            self.assertTrue(isDepletable(b))
+
+        # as a corrolary of the above, prove that only the first component in each control block is depletable
+        for b in controlBlocks:
+            comps = list(b.getComponents())
+            for i, c in enumerate(comps):
+                if i == 0:
+                    self.assertTrue(isDepletable(c))
+                else:
+                    self.assertFalse(isDepletable(c))
 
         # Run the ``interactBOL`` here to trigger setting up the fission
         # products in the reactor data model.
@@ -167,8 +205,3 @@ class TestFissionProductModelExplicitMC2Library(unittest.TestCase):
                     self.assertIn(nb.name, nuclideList)
             else:
                 self.assertLess(len(b.getNuclides()), len(nuclideBases.byMcc3Id))
-
-
-if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'Test.testName']
-    unittest.main()

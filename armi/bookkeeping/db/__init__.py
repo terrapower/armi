@@ -27,7 +27,6 @@ Repeat Yourself (DRY) practices in the same way as other code. Therefore, do not
 code between different major versions of the databases. Create a new module if you are
 creating a new major database version.
 
-
 Database revision changelog
 ---------------------------
  - 1: Originally, calculation results were stored in a SQL database.
@@ -61,19 +60,14 @@ Database revision changelog
        location, without having to compose the full model.
 """
 import os
-from typing import Optional, List, Tuple
 
-from armi import settings
-from armi.utils import pathTools
 from armi import runLog
-from armi.reactor import reactors
 
 # re-export package components for easier import
-from .permissions import Permissions
-from .database3 import Database3, updateGlobalAssemblyNum
-from .databaseInterface import DatabaseInterface
-from .compareDB3 import compareDatabases
-from .factory import databaseFactory
+from armi.bookkeeping.db.database3 import Database3
+from armi.bookkeeping.db.databaseInterface import DatabaseInterface
+from armi.bookkeeping.db.compareDB3 import compareDatabases
+from armi.bookkeeping.db.factory import databaseFactory
 
 
 __all__ = [
@@ -135,7 +129,6 @@ def loadOperator(
     """
     # `import armi` doesn't work if imported at top
     from armi import cases
-    from armi import settings
 
     if not os.path.exists(pathToDb):
         raise ValueError(
@@ -152,6 +145,7 @@ def loadOperator(
         # so creating a reactor from the database should be included.
         cs = db.loadCS()
         thisCase = cases.Case(cs)
+
 
         r = db.load(
             loadCycle,
@@ -178,87 +172,6 @@ def loadOperator(
         "ARMI does not support loading operator states, as they are not stored."
     )
     return o
-
-
-def convertDatabase(
-    inputDBName: str,
-    outputDBName: Optional[str] = None,
-    outputVersion: Optional[str] = None,
-    nodes: Optional[List[Tuple[int, int]]] = None,
-):
-    """
-    Convert database files between different versions.
-
-    Parameters
-    ----------
-    inputDB
-        name of the complete hierarchy database
-    outputDB
-        name of the output database that should be consistent with XTView
-    outputVersion
-        version of the database to convert to. Defaults to latest version
-    nodes
-        optional list of specific (cycle,node)s to convert
-    """
-    dbIn = databaseFactory(inputDBName, permission=Permissions.READ_ONLY_FME)
-
-    if dbIn.version == outputVersion:
-        runLog.important(
-            "The input database ({}) appears to already be in the desired "
-            "format ({})".format(inputDBName, dbIn.version)
-        )
-        return
-
-    outputDBName = outputDBName or "-converted".join(os.path.splitext(inputDBName))
-    dbOut = databaseFactory(
-        outputDBName, permission=Permissions.CREATE_FILE_TIE, version=outputVersion
-    )
-    # each DB load resets the verbosity to that of the run. Here we allow
-    # conversion users to overpower it.
-    conversionVerbosity = runLog.getVerbosity()
-    runLog.extra(f"Converting {dbIn} to DB version {outputVersion}")
-    with dbIn, dbOut:
-        dbNodes = list(dbIn.genTimeSteps())
-
-        if nodes is not None and any(node not in dbNodes for node in nodes):
-            raise RuntimeError(
-                "Some of the requested nodes are not in the source database.\n"
-                "Requested: {}\n"
-                "Present: {}".format(nodes, dbNodes)
-            )
-
-        # Making the bold assumption that we are working with HDF5
-        h5In = _getH5File(dbIn)
-        h5Out = _getH5File(dbOut)
-        dbOut.writeInputsToDB(None, *dbIn.readInputsFromDB())
-
-        for cycle, timeNode in dbNodes:
-            if nodes is not None and (cycle, timeNode) not in nodes:
-                continue
-            runLog.extra(f"Converting cycle={cycle}, timeNode={timeNode}")
-            timeStepsInOutDB = set(dbOut.genTimeSteps())
-            r = dbIn.load(cycle, timeNode)
-            if (r.p.cycle, r.p.timeNode) in timeStepsInOutDB:
-                runLog.warning(
-                    "Time step ({}, {}) is already in the output DB. This "
-                    "is probably due to repeated cycle/timeNode in the source DB; "
-                    "deleting the existing time step and re-writing".format(
-                        r.p.cycle, r.p.timeNode
-                    )
-                )
-                del dbOut[r.p.cycle, r.p.timeNode, None]
-            runLog.setVerbosity(conversionVerbosity)
-            dbOut.writeToDB(r)
-
-            for auxPath in dbIn.genAuxiliaryData((cycle, timeNode)):
-                name = next(reversed(auxPath.split("/")))
-                auxOutPath = dbOut.getAuxiliaryDataPath((cycle, timeNode), name)
-                runLog.important(
-                    "Copying auxiliary data for time ({}, {}): {} -> {}".format(
-                        cycle, timeNode, auxPath, auxOutPath
-                    )
-                )
-                h5In.copy(auxPath, h5Out, name=auxOutPath)
 
 
 def _getH5File(db):

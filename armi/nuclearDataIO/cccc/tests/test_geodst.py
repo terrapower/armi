@@ -11,10 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-Test GEODST reading and writing.
-"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+"""Test GEODST reading and writing."""
 import os
 import unittest
 
@@ -28,7 +25,7 @@ SIMPLE_GEODST = os.path.join(THIS_DIR, "fixtures", "simple_hexz.geodst")
 
 
 class TestGeodst(unittest.TestCase):
-    r"""
+    """
     Tests the GEODST class.
 
     This reads from a GEODST file that was created using DIF3D 11 on a small
@@ -36,7 +33,12 @@ class TestGeodst(unittest.TestCase):
     """
 
     def test_readGeodst(self):
-        """Ensure we can read a GEODST file."""
+        """Ensure we can read a GEODST file.
+
+        .. test:: Test reading GEODST files.
+            :id: T_ARMI_NUCDATA_GEODST0
+            :tests: R_ARMI_NUCDATA_GEODST
+        """
         geo = geodst.readBinary(SIMPLE_GEODST)
         self.assertEqual(geo.metadata["IGOM"], 18)
         self.assertAlmostEqual(geo.xmesh[1], 16.79, places=5)  # hex pitch
@@ -46,7 +48,12 @@ class TestGeodst(unittest.TestCase):
         self.assertEqual(geo.coarseMeshRegions.max(), geo.metadata["NREG"])
 
     def test_writeGeodst(self):
-        """Ensure that we can write a modified GEODST."""
+        """Ensure that we can write a modified GEODST.
+
+        .. test:: Test writing GEODST files.
+            :id: T_ARMI_NUCDATA_GEODST1
+            :tests: R_ARMI_NUCDATA_GEODST
+        """
         with TemporaryDirectoryChanger():
             geo = geodst.readBinary(SIMPLE_GEODST)
             geo.zmesh[-1] *= 2

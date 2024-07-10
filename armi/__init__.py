@@ -1,4 +1,4 @@
-# Copyright 2009-2019 TerraPower, LLC
+# Copyright 2019 TerraPower, LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ If using the ``run`` entry point, additional work is done:
 * Wrap up
 * Quit
 """
+# ruff: noqa: F401
 import atexit
 import datetime
 import importlib
@@ -102,13 +103,13 @@ _ignoreConfigures = False
 
 
 def disableFutureConfigures():
-    """Exposed function to ensure armi.configure() isn't called more than once"""
+    """Exposed function to ensure armi.configure() isn't called more than once."""
     global _ignoreConfigures
     _ignoreConfigures = True
 
 
 def isStableReleaseVersion(version=None):
-    """Determine if the version should be considered a stable release"""
+    """Determine if the version should be considered a stable release."""
     version = version or __version__
     return "-" not in version
 
@@ -117,22 +118,35 @@ def init(choice=None, fName=None, cs=None):
     """
     Scan a directory for armi inputs and load one to interact with.
 
+    .. impl:: Settings are used to define an ARMI run.
+        :id: I_ARMI_SETTING1
+        :implements: R_ARMI_SETTING
+
+        This method initializes an ARMI run, and if successful returns an Operator.
+        That operator is designed to drive the reactor simulation through time steps to
+        simulate its operation. This method takes in a settings file or object to
+        initialize the operator. Whether a settings file or object is supplied, the
+        operator will be built based on the those settings. Because the total
+        collection of settings can be modified by developers of ARMI applications,
+        providing these settings allow ARMI end-users to define their simulation as
+        granularly as they need.
+
     Parameters
     ----------
     choice : int, optional
-        Automatically run with this item out of the menu
-        that would be produced of existing xml files.
+        Automatically run with this item out of the menu that would be produced by the
+        existing YAML files.
 
     fName : str, optional
-        An actual case name to load. e.g. ntTwr1.xml
+        The path to a settings file to load: my_case.yaml
 
-    cs : object, optional
-        If supplied, supercede the other case input methods and use the object directly
+    cs : Settings, optional
+        If supplied, this CS object will supercede the other case input methods and use
+        the object directly.
 
     Examples
     --------
     >>> o = armi.init()
-
     """
     from armi import cases
     from armi import settings
@@ -141,8 +155,6 @@ def init(choice=None, fName=None, cs=None):
         if fName is None:
             fName = settings.promptForSettingsFile(choice)
         cs = settings.Settings(fName)
-    # clear out any old masterCs objects
-    settings.setMasterCs(cs)
 
     armiCase = cases.Case(cs=cs)
     armiCase.checkInputs()
@@ -196,16 +208,12 @@ def getDefaultPluginManager() -> pluginManager.ArmiPluginManager:
 
 
 def isConfigured():
-    """
-    Returns whether ARMI has been configured with an App.
-    """
+    """Returns whether ARMI has been configured with an App."""
     return _app is not None
 
 
 def getPluginManager() -> Optional[pluginManager.ArmiPluginManager]:
-    """
-    Return the plugin manager, if there is one.
-    """
+    """Return the plugin manager, if there is one."""
     global _app
     if _app is None:
         return None
@@ -213,9 +221,7 @@ def getPluginManager() -> Optional[pluginManager.ArmiPluginManager]:
 
 
 def getPluginManagerOrFail() -> pluginManager.ArmiPluginManager:
-    """
-    Return the plugin manager. Raise an error if there is none.
-    """
+    """Return the plugin manager. Raise an error if there is none."""
     global _app
     assert _app is not None, (
         "The ARMI plugin manager was requested, no App has been configured. Ensure "
@@ -245,9 +251,7 @@ def _cleanupOnCancel(signum, _frame):
 
 
 def _liveInterpreter():
-    """
-    Return whether we are running within a live/interactive python interpreter.
-    """
+    """Return whether we are running within a live/interactive python interpreter."""
     return not hasattr(main, "__file__")
 
 
@@ -314,7 +318,7 @@ def configure(app: Optional[apps.App] = None, permissive=False):
     pm = app.pluginManager
     parameters.collectPluginParameters(pm)
     parameters.applyAllParameters()
-    flags.registerPluginFlags(pm)
+    _app.registerPluginFlags()
 
 
 def applyAsyncioWindowsWorkaround() -> None:
@@ -325,7 +329,7 @@ def applyAsyncioWindowsWorkaround() -> None:
     his error showed up during jupyter notebook built-tests and documentation.
     See https://bugs.python.org/issue37373
     """
-    import asyncio  # pylint: disable=import-outside-toplevel; packed with workaround for easy removal
+    import asyncio
 
     if (
         sys.version_info[0] == 3
@@ -344,5 +348,5 @@ atexit.register(context.cleanTempDirs)
 # SIGBREAK doesn't exist on non-windows
 # This actually doesn't work in mpi runs because MSMPI's mpiexec does not pass signals.
 if os.name == "nt":
-    signal.signal(signal.SIGBREAK, _cleanupOnCancel)  # pylint: disable=no-member
+    signal.signal(signal.SIGBREAK, _cleanupOnCancel)
 signal.signal(signal.SIGINT, _cleanupOnCancel)

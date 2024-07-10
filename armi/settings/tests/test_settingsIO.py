@@ -11,9 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License0.
-""" Testing the settingsIO """
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
-
+"""Testing the settingsIO."""
 import datetime
 import io
 import os
@@ -24,6 +22,7 @@ from armi import settings
 from armi.cli import entryPoint
 from armi.settings import setting
 from armi.settings import settingsIO
+from armi.tests import TEST_ROOT
 from armi.utils import directoryChangers
 from armi.utils.customExceptions import (
     InvalidSettingsFileError,
@@ -70,6 +69,26 @@ class SettingsReaderTests(unittest.TestCase):
         self.assertFalse(getattr(reader, "filelessBP"))
         self.assertEqual(getattr(reader, "path"), "")
 
+    def test_readFromFile(self):
+        """Read settings from a (human-readable) YAML file.
+
+        .. test:: Settings can be input from a human-readable text file.
+            :id: T_ARMI_SETTINGS_IO_TXT0
+            :tests: R_ARMI_SETTINGS_IO_TXT
+        """
+        with directoryChangers.TemporaryDirectoryChanger():
+            inPath = os.path.join(TEST_ROOT, "armiRun.yaml")
+            outPath = "test_readFromFile.yaml"
+
+            txt = open(inPath, "r").read()
+            verb = "branchVerbosity:"
+            txt0, txt1 = txt.split(verb)
+            newTxt = f"{txt0}{verb} fake\n  {verb}{txt1}"
+            open(outPath, "w").write(newTxt)
+
+            with self.assertRaises(InvalidSettingsFileError):
+                settings.caseSettings.Settings(outPath)
+
 
 class SettingsRenameTests(unittest.TestCase):
     testSettings = [
@@ -77,9 +96,19 @@ class SettingsRenameTests(unittest.TestCase):
             "testSetting1",
             default=None,
             oldNames=[("oSetting1", None), ("osetting1", datetime.date.today())],
+            description="Just a unit test setting.",
         ),
-        setting.Setting("testSetting2", default=None, oldNames=[("oSetting2", None)]),
-        setting.Setting("testSetting3", default=None),
+        setting.Setting(
+            "testSetting2",
+            default=None,
+            oldNames=[("oSetting2", None)],
+            description="Just a unit test setting.",
+        ),
+        setting.Setting(
+            "testSetting3",
+            default=None,
+            description="Just a unit test setting.",
+        ),
     ]
 
     def test_rename(self):
@@ -104,7 +133,10 @@ class SettingsRenameTests(unittest.TestCase):
             for setting in self.testSettings
             + [
                 setting.Setting(
-                    "someOtherSetting", default=None, oldNames=[("oSetting1", None)]
+                    "someOtherSetting",
+                    default=None,
+                    oldNames=[("oSetting1", None)],
+                    description="Just a unit test setting.",
                 )
             ]
         }
@@ -128,7 +160,7 @@ class SettingsWriterTests(unittest.TestCase):
         self.td.__exit__(None, None, None)
 
     def test_writeShort(self):
-        """Setting output as a sparse file"""
+        """Setting output as a sparse file."""
         self.cs.writeToYamlFile(self.filepathYaml, style="short")
         self.cs.loadFromInputFile(self.filepathYaml)
         txt = open(self.filepathYaml, "r").read()
@@ -137,7 +169,8 @@ class SettingsWriterTests(unittest.TestCase):
 
     def test_writeMedium(self):
         """Setting output as a sparse file that only includes defaults if they are
-        user-specified"""
+        user-specified.
+        """
         with open(self.filepathYaml, "w") as stream:
             # Specify a setting that is also a default
             self.cs.writeToYamlStream(stream, "medium", ["numProcessors"])
@@ -146,7 +179,12 @@ class SettingsWriterTests(unittest.TestCase):
         self.assertIn("numProcessors: 1", txt)
 
     def test_writeFull(self):
-        """Setting output as a full, all defaults included file"""
+        """Setting output as a full, all defaults included file.
+
+        .. test:: Settings can be output to a human-readable text file.
+            :id: T_ARMI_SETTINGS_IO_TXT1
+            :tests: R_ARMI_SETTINGS_IO_TXT
+        """
         self.cs.writeToYamlFile(self.filepathYaml, style="full")
         txt = open(self.filepathYaml, "r").read()
         self.assertIn("nCycles: 55", txt)

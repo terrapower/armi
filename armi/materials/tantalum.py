@@ -12,16 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tantalum"""
+"""Tantalum."""
 
 from armi.materials.material import SimpleSolid
 
 
 class Tantalum(SimpleSolid):
-    name = "Tantalum"
-
     def setDefaultMassFracs(self):
         self.setMassFrac("TA181", 1)
 
-    def density3(self, Tk=None, Tc=None):
+    def density(self, Tk=None, Tc=None):
         return 16.6  # g/cc

@@ -15,7 +15,6 @@
 This module contains subclasses of the armi.runLog._RunLog class that can be used to determine whether or not
 one of the specific methods were called. These should only be used in testing.
 """
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import six
 import sys
 
@@ -23,7 +22,7 @@ from armi import runLog
 
 
 class BufferLog(runLog._RunLog):
-    r"""Log which captures the output in attributes instead of emitting them
+    r"""Log which captures the output in attributes instead of emitting them.
 
     Used mostly in testing to ensure certain things get output, or to prevent any output
     from showing.
@@ -59,7 +58,7 @@ class BufferLog(runLog._RunLog):
             label = msg
 
         # Skip writing the message if it is below the set verbosity
-        msgVerbosity = self.logLevels[msgType][0]  # pylint: disable=protected-access
+        msgVerbosity = self.logLevels[msgType][0]
         if msgVerbosity < self._verbosity:
             return
 
@@ -68,9 +67,7 @@ class BufferLog(runLog._RunLog):
             return
 
         # Do the actual logging, but add that custom indenting first
-        msg = (
-            self.logLevels[msgType][1] + str(msg) + "\n"
-        )  # pylint: disable=protected-access
+        msg = self.logLevels[msgType][1] + str(msg) + "\n"
         self._outputStream += msg
 
     def _msgHasAlreadyBeenEmitted(self, label, msgType=""):
@@ -93,8 +90,11 @@ class BufferLog(runLog._RunLog):
         """Reset the single warned list so we get messages again."""
         self._singleMessageCounts.clear()
 
-    def getStdoutValue(self):
+    def getStdout(self):
         return self._outputStream
+
+    def emptyStdout(self):
+        self._outputStream = ""
 
     def getStderrValue(self):
         return self._errStream.getvalue()

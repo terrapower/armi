@@ -17,13 +17,13 @@ General framework-wide testing functions and files.
 This package contains some input files that can be used across
 a wide variety of unit tests in other lower-level subpackages.
 """
+from typing import Optional
 import datetime
 import itertools
 import os
 import re
 import shutil
 import unittest
-from typing import Optional
 
 from armi import context
 from armi import runLog
@@ -104,7 +104,7 @@ class Fixture:
 
     def __call__(self):
         if self._error is not None:
-            raise self._error  # pylint: disable=E0702
+            raise self._error
         elif not self._success:
             missingDependencies = [
                 d for d in self.dependencies if not os.path.exists(d)
@@ -115,7 +115,8 @@ class Fixture:
                         "\n    ".join(missingDependencies)
                     )
                 )
-                raise self._error  # pylint: disable=E0702
+                raise self._error
+
             # at this point we need to update because
             # 1) there are missing targets that need to be generated, or
             # 2) targets are older than the dependencies.
@@ -164,11 +165,11 @@ class Fixture:
 
 
 def fixture(refDirectory=None, targets=None, dependencies=None):
-    r"""
+    """
     Decorator to run function based on targets and dependencies similar to GNU Make.
 
     Parameters
-    ==========
+    ----------
     refDirectory : str
         String reference directory for all targets/dependencies. This makes it possible to simplify file paths.
         If ``os.path.abspath(<path>) == <path>``, then refDirectory is not used.
@@ -178,7 +179,6 @@ def fixture(refDirectory=None, targets=None, dependencies=None):
 
     dependencies : iterable(str)
         List of dependencies that the ``targets`` require.
-
     """
 
     def _decorator(makeFunction):
@@ -188,17 +188,17 @@ def fixture(refDirectory=None, targets=None, dependencies=None):
 
 
 def requires_fixture(fixtureFunction):
-    r"""
+    """
     Decorator to require a fixture to have been completed.
 
     Parameters
-    ==========
+    ----------
     fixtureFunction : function without any parameters
-        Fixture function is a function that has been decorated with ``fixture`` and is called prior to running
+        Fixture function is a function that has been decorated with fixture and is called prior to running
         the decorated function.
 
     Notes
-    =====
+    -----
     This cannot be used on classes.
     """
 
@@ -249,7 +249,6 @@ class ArmiTestHelper(unittest.TestCase):
             is in the value of something that can be parsed into a float, and the
             relative difference between the two floats is below the passed epsilon.
         """
-
         if falseNegList is None:
             falseNegList = []
         elif isinstance(falseNegList, str):

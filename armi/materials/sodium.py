@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Simple sodium material"""
+"""Simple sodium material."""
 
-from armi.materials import material
 from armi import runLog
+from armi.materials import material
 from armi.utils.units import getTc, getTk
 
 
@@ -31,10 +31,7 @@ class Sodium(material.Fluid):
     .. [ANL-RE-95-2] Fink, J.K., and Leibowitz, L. Thermodynamic and transport properties of sodium
         liquid and vapor. United States: N. p., 1995. Web. doi:10.2172/94649.
         https://www.osti.gov/biblio/94649-gXNdLI/webviewable/
-
     """
-
-    name = "Sodium"
 
     propertyValidTemperature = {
         "density": ((97.85, 2230.55), "C"),
@@ -43,11 +40,11 @@ class Sodium(material.Fluid):
     }
 
     def setDefaultMassFracs(self):
-        """It's just sodium"""
+        """It's just sodium."""
         self.setMassFrac("NA", 1.0)
-        self.p.refDens = 0.968
+        self.refDens = 0.968
 
-    def density(self, Tk=None, Tc=None):
+    def pseudoDensity(self, Tk=None, Tc=None):
         """
         Returns density of Sodium in g/cc.
 
@@ -87,10 +84,8 @@ class Sodium(material.Fluid):
         ) / 1000.0  # convert from kg/m^3 to g/cc.
 
     def specificVolumeLiquid(self, Tk=None, Tc=None):
-        """
-        Returns the liquid specific volume in m^3/kg of this material given Tk in K or Tc in C.
-        """
-        return 1 / (1000.0 * self.density(Tk, Tc))
+        """Returns the liquid specific volume in m^3/kg of this material given Tk in K or Tc in C."""
+        return 1 / (1000.0 * self.pseudoDensity(Tk, Tc))
 
     def enthalpy(self, Tk=None, Tc=None):
         """
@@ -103,8 +98,8 @@ class Sodium(material.Fluid):
         enthalpy = (
             -365.77
             + 1.6582 * Tk
-            - 4.2395e-4 * Tk ** 2
-            + 1.4847e-7 * Tk ** 3
+            - 4.2395e-4 * Tk**2
+            + 1.4847e-7 * Tk**3
             + 2992.6 / Tk
         )
         enthalpy = enthalpy * 1000  # convert from kJ/kg to kJ/kg
@@ -112,7 +107,7 @@ class Sodium(material.Fluid):
 
     def thermalConductivity(self, Tk=None, Tc=None):
         """
-        Returns thermal conductivity of Sodium
+        Returns thermal conductivity of Sodium.
 
         From [ANL-RE-95-2]_, Table 2.1-2
 
@@ -127,11 +122,10 @@ class Sodium(material.Fluid):
         -------
         thermalConductivity : float
             thermal conductivity of Sodium (W/m-K)
-
         """
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("thermal conductivity", Tk)
         thermalConductivity = (
-            124.67 - 0.11381 * Tk + 5.5226e-5 * Tk ** 2 - 1.1842e-8 * Tk ** 3
+            124.67 - 0.11381 * Tk + 5.5226e-5 * Tk**2 - 1.1842e-8 * Tk**3
         )
         return thermalConductivity

@@ -5,9 +5,8 @@ Framework Architecture
 Here we will discuss some big-picture elements of the ARMI architecture. Throughout,
 links to the API docs will lead to additional details.
 
------------------
 The Reactor Model
------------------
+=================
 
 The :py:mod:`~armi.reactor` package is the central representation of a nuclear reactor
 in ARMI.  All modules can be expected to want access to some element of the state data
@@ -16,15 +15,15 @@ package's code during runtime.
 
 An approximation of `Composite Design Pattern
 <http://en.wikipedia.org/wiki/Composite_pattern>`_ is used to represent the **Reactor**
-in ARMI. In this hierarchy the **Reactor** object is a **Core** object, and potentially
-many generic **Composite** objects representing ex-core structures. The **Core** is made
-of **Assembly** objects, which are in turn made up as a collection of **Block** objects.
-:term:`State <reactor state>` variables may be stored at any level of this hierarchy
-using the :py:mod:`armi.reactor.parameters` system to contain results (e.g., ``keff``, ``flow rates``,
-``power``, ``flux``, etc.). Within each block are **Components** that define the
-pin-level geometry.  Associated with each Component are **Material** objects that
-contain material properties (``density``, ``conductivity``, ``heat capacity``, etc.) and
-isotopic mass fractions.
+in ARMI. In this hierarchy the **Reactor** object has a child **Core** object, and
+potentially many generic **Composite** child objects representing ex-core structures.
+The **Core** is made of **Assembly** objects, which are in turn made up as a collection
+of **Block** objects. :term:`State <reactor state>` variables may be stored at any level
+of this hierarchy using the :py:mod:`armi.reactor.parameters` system to contain results
+(e.g., ``keff``, ``flow rates``, ``power``, ``flux``, etc.). Within each block are
+**Components** that define the pin-level geometry.  Associated with each Component are
+**Material** objects that contain material properties (``density``, ``conductivity``,
+``heat capacity``, etc.) and isotopic mass fractions.
 
 .. note:: Non-core structures (spent fuel pools, core restraint, heat exchangers, etc.)
    may be represented analogously to the **Core**, but this feature is new and under
@@ -34,14 +33,14 @@ isotopic mass fractions.
 .. figure:: /.static/armi_reactor_objects.png
     :align: center
 
-    **Figure 1.** The primary data containers in ARMI
+    The primary data containers in ARMI
 
 Each level of the composite pattern hierarchy contains most of its state data in a
 collection of parameters detailing considerations of how the reactor has progressed
 through time to any given point. This information also constitutes the majority of what
 gets written to the database for evaluation and/or follow-on analysis.
 
-Review the :doc:`/tutorials/data_model` section for examples
+Review the data model :ref:`armi-tutorials` section for examples
 exploring a populated instance of the **Reactor** model.
 
 Finding objects in a model
@@ -49,7 +48,7 @@ Finding objects in a model
 Under most circumstances a :py:class:`armi.reactor.reactors.Reactor` instance will have a
 ``.core`` attribute, which is an instance of :py:class:`armi.reactor.reactors.Core`. While the
 Composite pattern discussed above can be used very generally, the ``Core`` class
-enforces a couple of constrains that can be very useful:
+enforces a couple of constraints that can be very useful:
 
 * A ``Core`` is a 2-D arrangement of :py:class:`armi.reactor.assemblies.Assembly`
   objects.
@@ -113,9 +112,8 @@ defined. During a run, they can be used to create new instances of reactor model
 such as when a new assembly is fabricated during a fuel management operation in a later
 cycle.
 
----------
 Operators
----------
+=========
 
 Operators conduct the execution sequence of an ARMI run. They basically contain the main
 loop. When any operator is instantiated, several actions occur:
@@ -208,7 +206,7 @@ interface stack is traversed in order.
 .. figure:: /.static/armi_general_flowchart.png
     :align: center
 
-    **Figure 1.** The computational flow of the interface hooks
+    The computational flow of the interface hooks
 
 For example, input checking routines would run at beginning-of-life (BOL), calculation
 modules might run at every time node, etc. To accommodate these various needs, interface
@@ -223,8 +221,8 @@ hooks include:
 * :py:meth:`interactBOC <armi.interfaces.Interface.interactBOC>` -- Beginning of cycle.
   Happens once per cycle.
 
-* :py:meth:`interactEveryNode <armi.interfaces.Interface.interactEveryNode>` -- happens
-  after every node step/flux calculation
+* :py:meth:`interactEveryNode <armi.interfaces.Interface.interactEveryNode>` -- Happens
+  after every node step/flux calculation.
 
 * :py:meth:`interactEOC <armi.interfaces.Interface.interactEOC>` -- End of cycle.
 
@@ -232,6 +230,9 @@ hooks include:
 
 * :py:meth:`interactError <armi.interfaces.Interface.interactError>` -- When an error
   occurs, this can run to clean up or print debugging info.
+
+* :py:meth:`interactCoupled <armi.interfaces.Interface.interactCoupled>` -- Happens
+  after every node step/flux calculation, if tight physics coupling is active.
 
 These interaction points are optional in every interface, and you may override one or
 more of them to suit your needs.  You should not change the arguments to the hooks,
@@ -265,13 +266,12 @@ as deemed necessary to have the interfaces work properly.
 To use interfaces in parallel, please refer to :py:mod:`armi.mpiActions`.
 
 
--------
 Plugins
--------
+=======
 
 Plugins are higher-level objects that can bring in one or more Interfaces, settings
 definitions, parameters, validations, etc. They are documented in
-:doc:`/developer/making_armi_based_apps` and :py:mod:`armi.plugins`.
+:ref:`armi-app-making` and :py:mod:`armi.plugins`.
 
 
 Entry Points
@@ -281,7 +281,7 @@ cases, launch the GUI, and perform various testing and utility operations. When 
 invoke ARMI with ``python -m armi run``, the ``__main__.py`` file is loaded and all
 valid Entry Points are dynamically loaded. The proper entry point (in this case,
 :py:class:`armi.cli.run.RunEntryPoint`) is invoked. As ARMI initializes itself, settings
-are loaded into a :py:class:`CaseSettings <armi.settings.caseSettings.CaseSettings>`
+are loaded into a :py:class:`Settings <armi.settings.caseSettings.Settings>`
 object.  From those settings, an :py:class:`Operator <armi.operators.operator.Operator>`
 subclass is built by a factory and its ``operate`` method is called. This fires up the
 main ARMI analysis loop and its interface stack is looped over as indicated by user

@@ -31,21 +31,21 @@ Requirements
    well as the multigroup real and adjoint flux.
 
 
-.. warning: This procedure can cause numerical diffusion in some cases. For example, 
+.. warning::
+    This procedure can cause numerical diffusion in some cases. For example, 
     if a control rod tip block has a large coolant block below it, things like peak
     absorption rate can get lost into it. We recalculate some but not all 
     reaction rates in the re-mapping process based on a flux remapping. To avoid this,
     finer meshes will help. Always perform mesh sensitivity studies to ensure appropriate
     convergence for your needs.
 
-
 Examples
 --------
-converter = uniformMesh.NeutronicsUniformMeshConverter()
-converter.convert(reactor)
-uniformReactor = converter.convReactor
-# do calcs, then:
-converter.applyStateToOriginal()
+    converter = uniformMesh.NeutronicsUniformMeshConverter()
+    converter.convert(reactor)
+    uniformReactor = converter.convReactor
+    # do calcs, then:
+    converter.applyStateToOriginal()
 
 The mesh mapping happens as described in the figure:
 
@@ -71,6 +71,7 @@ from armi.reactor.flags import Flags
 from armi.reactor.converters.geometryConverters import GeometryConverter
 from armi.reactor import parameters
 from armi.reactor.reactors import Reactor
+from armi.settings.fwSettings.globalSettings import CONF_UNIFORM_MESH_MINIMUM_SIZE
 
 HEAVY_METAL_PARAMS = ["molesHmBOL", "massHmBOL"]
 
@@ -85,23 +86,308 @@ def converterFactory(globalFluxOptions):
         )
 
 
+class UniformMeshGenerator:
+    """
+    This class generates a common axial mesh to for the uniform mesh converter to use. The
+    generation algorithm starts with the simple ``average1DWithinTolerance`` utility function
+    to compute a representative "average" of the assembly meshes in the reactor. It then modifies
+    that mesh to more faithfully represent important material boundaries of fuel and control
+    absorber material.
+
+    The decusping feature is controlled with the case setting ``uniformMeshMinimumSize``. If no
+    value is provided for this setting, the uniform mesh generator will skip the decusping step
+    and just provide the result of ``_computeAverageAxialMesh``.
+    """
+
+    def __init__(self, r, minimumMeshSize=None):
+        """
+        Initialize an object to generate an appropriate common axial mesh to use for uniform mesh conversion.
+
+        Parameters
+        ----------
+        r : :py:class:`Reactor <armi.reactor.reactors.Reactor>` object.
+            Reactor for which a common mesh is generated
+        minimumMeshSize : float, optional
+            Minimum allowed separation between axial mesh points in cm
+            If no minimum mesh size is provided, no "decusping" is performed
+        """
+        self._sourceReactor = r
+        self.minimumMeshSize = minimumMeshSize
+        self._commonMesh = None
+
+    def generateCommonMesh(self):
+        """
+        Generate a common axial mesh to use.
+
+        .. impl:: Try to preserve the boundaries of fuel and control material.
+            :id: I_ARMI_UMC_NON_UNIFORM
+            :implements: R_ARMI_UMC_NON_UNIFORM
+
+            A core-wide mesh is computed via ``_computeAverageAxialMesh`` which
+            operates by first collecting all the mesh points for every assembly
+            (``allMeshes``) and then averaging them together using
+            ``average1DWithinTolerance``. An attempt to preserve fuel and control
+            material boundaries is accomplished by moving fuel region boundaries
+            to accomodate control rod boundaries. Note this behavior only occurs
+            by calling ``_decuspAxialMesh`` which is dependent on ``minimumMeshSize``
+            being defined (this is controlled by the ``uniformMeshMinimumSize`` setting).
+
+        .. impl:: Produce a mesh with a size no smaller than a user-specified value.
+            :id: I_ARMI_UMC_MIN_MESH
+            :implements: R_ARMI_UMC_MIN_MESH
+
+            If a minimum mesh size ``minimumMeshSize`` is provided, calls
+            ``_decuspAxialMesh`` on the core-wide mesh to maintain that minimum size
+            while still attempting to honor fuel and control material boundaries. Relies
+            ultimately on ``_filterMesh`` to remove mesh points that violate the minimum
+            size. Note that ``_filterMesh`` will always respect the minimum mesh size,
+            even if this means losing a mesh point that represents a fuel or control
+            material boundary.
+
+        Notes
+        -----
+        Attempts to reduce the effect of fuel and control rod absorber smearing
+        ("cusping" effect) by keeping important material boundaries in the common mesh.
+        """
+        self._computeAverageAxialMesh()
+        if self.minimumMeshSize is not None:
+            self._decuspAxialMesh()
+
+    def _computeAverageAxialMesh(self):
+        """
+        Computes an average axial mesh based on the core's reference assembly.
+
+        Notes
+        -----
+        This iterates over all the assemblies in the core and collects all assembly meshes
+        that have the same number of fine-mesh points as the `refAssem` for the core. Based on
+        this, the proposed uniform mesh will be some average of many assemblies in the core.
+        The reason for this is to account for the fact that multiple assemblies (i.e., fuel assemblies)
+        may have a different mesh due to differences in thermal and/or burn-up expansion.
+
+        Averaging all the assembly meshes that have the same number of points can be undesirable
+        in certain corner cases because no preference is assigned based on assembly type. For
+        example: if the reflector assemblies have the same number of mesh points as the fuel
+        assemblies but the size of the blocks is slightly different, the reflector mesh can influence
+        the uniform mesh and effectively pull it away from the fuel mesh boundaries, potentially
+        resulting in smearing (i.e., homogenization) of fuel with non-fuel materials. This is an
+        undesirable outcome. In the future, it may be advantageous to determine a better way of
+        sorting and prioritizing assembly meshes for generating the uniform mesh.
+        """
+        src = self._sourceReactor
+        refAssem = src.core.refAssem
+
+        refNumPoints = len(src.core.findAllAxialMeshPoints([refAssem])[1:])
+        allMeshes = []
+        for a in src.core:
+            # Get the mesh points of the assembly, neglecting the first coordinate
+            # (typically zero).
+            aMesh = src.core.findAllAxialMeshPoints([a])[1:]
+            if len(aMesh) == refNumPoints:
+                allMeshes.append(aMesh)
+
+        averageMesh = average1DWithinTolerance(numpy.array(allMeshes))
+        self._commonMesh = numpy.array(averageMesh)
+
+    def _decuspAxialMesh(self):
+        """
+        Preserve control rod material boundaries to reduce control rod cusping effect.
+
+        Notes
+        -----
+        Uniform mesh conversion can lead to axial smearing of control assembly material, which causes
+        a pronounced control rod "cusping" affect in the differential rod worth. This function
+        modifies the uniform mesh to honor fuel and control rod material boundaries while avoiding excessively
+        small mesh sizes.
+
+        If adding control rod material boundaries to the mesh creates excessively small mesh regions,
+        this function will move internal fuel region boundaries to make room for the control rod boundaries.
+
+        This function operates by filtering out mesh points that are too close together while always holding on
+        to the specified "anchor" points in the mesh. The anchor points are built up progressively as the
+        appropriate bottom and top boundaries of fuel and control assemblies are determined.
+        """
+        # filter fuel material boundaries to mininum mesh size
+        filteredBottomFuel, filteredTopFuel = self._getFilteredMeshTopAndBottom(
+            Flags.FUEL
+        )
+        materialBottoms, materialTops = self._getFilteredMeshTopAndBottom(
+            Flags.CONTROL, filteredBottomFuel, filteredTopFuel
+        )
+
+        # combine the bottoms and tops into one list with bottom preference
+        allMatBounds = materialBottoms + materialTops
+        materialAnchors = self._filterMesh(
+            allMatBounds,
+            self.minimumMeshSize,
+            filteredBottomFuel + filteredTopFuel,
+            preference="bottom",
+            warn=True,
+        )
+
+        runLog.extra(
+            "Attempting to honor control and fuel material boundaries in uniform mesh "
+            f"for {self} while also keeping minimum mesh size of {self.minimumMeshSize}. "
+            f"Material boundaries are: {allMatBounds}"
+        )
+
+        # combine material bottom boundaries with full mesh using bottom preference
+        meshWithBottoms = self._filterMesh(
+            list(self._commonMesh) + materialBottoms,
+            self.minimumMeshSize,
+            materialBottoms,
+            preference="bottom",
+        )
+        # combine material top boundaries with full mesh using top preference
+        meshWithTops = self._filterMesh(
+            list(self._commonMesh) + materialTops,
+            self.minimumMeshSize,
+            materialTops,
+            preference="top",
+        )
+        # combine all mesh points using all material boundaries as anchors with top preference
+        # top vs. bottom preference is somewhat arbitrary here
+        combinedMesh = self._filterMesh(
+            list(set(meshWithBottoms + meshWithTops)),
+            self.minimumMeshSize,
+            materialAnchors,
+            preference="top",
+        )
+
+        self._commonMesh = numpy.array(combinedMesh)
+
+    def _filterMesh(
+        self, meshList, minimumMeshSize, anchorPoints, preference="bottom", warn=False
+    ):
+        """
+        Check for mesh violating the minimum mesh size and remove them if necessary.
+
+        Parameters
+        ----------
+        meshList : list of float, required
+            List of mesh points to be filtered by minimum mesh size
+        minimumMeshSize : float, required
+            Minimum allowed separation between axial mesh points in cm
+        anchorPoints : list of float, required
+            These mesh points will not be removed. Note that the anchor points must be separated by
+            at least the ``minimumMeshSize``.
+        preference : str, optional
+            When neither mesh point is in the list of ``anchorPoints``, which mesh point is given preference
+            ("bottom" or "top")
+        warn : bool, optional
+            Whether to log a warning when a mesh is removed. This is true if a
+            control material boundary is removed, but otherwise it is false.
+        """
+        if preference == "bottom":
+            meshList = sorted(list(set(meshList)))
+        elif preference == "top":
+            meshList = sorted(list(set(meshList)), reverse=True)
+        else:
+            raise ValueError(
+                f"Mesh filtering preference {preference} is not an option! Preference must be either bottom or top"
+            )
+
+        while True:
+            for i in range(len(meshList) - 1):
+                difference = abs(meshList[i + 1] - meshList[i])
+                if difference < minimumMeshSize:
+                    if meshList[i] in anchorPoints and meshList[i + 1] in anchorPoints:
+                        errorMsg = (
+                            "Attempting to remove two anchor points!\n"
+                            "The uniform mesh minimum size for decusping is smaller than the "
+                            "gap between anchor points, which cannot be removed:\n"
+                            f"{meshList[i]}, {meshList[i+1]}, gap = {abs(meshList[i]-meshList[i+1])}"
+                        )
+                        runLog.error(errorMsg)
+                        raise ValueError(errorMsg)
+                    if meshList[i + 1] in anchorPoints:
+                        removeIndex = i
+                    else:
+                        removeIndex = i + 1
+
+                    if warn:
+                        runLog.warning(
+                            f"{meshList[i + 1]} is too close to {meshList[i]}! "
+                            f"Difference = {difference} is less than mesh size "
+                            f"tolerance of {minimumMeshSize}. The uniform mesh will "
+                            f"remove {meshList[removeIndex]}."
+                        )
+                    break
+            else:
+                return sorted(meshList)
+            meshList.pop(removeIndex)
+
+    def _getFilteredMeshTopAndBottom(self, flags, bottoms=None, tops=None):
+        """
+        Get the bottom and top boundaries of fuel assemblies and filter them based on the ``minimumMeshSize``.
+
+        Parameters
+        ----------
+        flags : armi.reactor.flags.Flags
+            The assembly and block flags for which to preserve material boundaries
+            ``getAssemblies()`` and ``getBlocks()`` are both called with the default, ``exact=False``
+        bottoms : list[float], optional
+            Mesh "anchors" for material bottom boundaries
+        tops : list[float], optional
+            Mesh "anchors" for material top boundaries
+
+        Returns
+        -------
+        filteredBottoms : the bottom of assembly materials, filtered to a minimum separation of
+            ``minimumMeshSize`` with preference for the lowest bounds
+        filteredTops : the top of assembly materials, filtered to a minimum separation of
+            ``minimumMeshSize`` with preference for the top bounds
+        """
+
+        def firstBlockBottom(a, flags):
+            return a.getFirstBlock(flags).p.zbottom
+
+        def lastBlockTop(a, flags):
+            return a.getBlocks(flags)[-1].p.ztop
+
+        filteredBoundaries = dict()
+        for meshList, preference, meshGetter, extreme in [
+            (bottoms, "bottom", firstBlockBottom, min),
+            (tops, "top", lastBlockTop, max),
+        ]:
+            matBoundaries = set(meshList) if meshList is not None else set()
+            for a in self._sourceReactor.core.getAssemblies(flags):
+                matBoundaries.add(meshGetter(a, flags))
+            anchors = meshList if meshList is not None else [extreme(matBoundaries)]
+            filteredBoundaries[preference] = self._filterMesh(
+                matBoundaries, self.minimumMeshSize, anchors, preference=preference
+            )
+
+        return filteredBoundaries["bottom"], filteredBoundaries["top"]
+
+
 class UniformMeshGeometryConverter(GeometryConverter):
     """
-    This geometry converter can be used to change the axial mesh structure of the reactor core.
+    This geometry converter can be used to change the axial mesh structure of the
+    reactor core.
 
     Notes
     -----
     There are several staticmethods available on this class that allow for:
-        - Creation of a new reactor without applying a new uniform axial mesh. See: `<UniformMeshGeometryConverter.initNewReactor>`
-        - Creation of a new assembly with a new axial mesh applied. See: `<UniformMeshGeometryConverter.makeAssemWithUniformMesh>`
-        - Resetting the parameter state of an assembly back to the defaults for the provided block parameters. See: `<UniformMeshGeometryConverter.clearStateOnAssemblies>`
-        - Mapping number densities and block parameters between one assembly to another. See: `<UniformMeshGeometryConverter.setAssemblyStateFromOverlaps>`
+        - Creation of a new reactor without applying a new uniform axial mesh. See:
+        `<UniformMeshGeometryConverter.initNewReactor>`
+        - Creation of a new assembly with a new axial mesh applied. See:
+        `<UniformMeshGeometryConverter.makeAssemWithUniformMesh>`
+        - Resetting the parameter state of an assembly back to the defaults for the
+        provided block parameters. See:
+        `<UniformMeshGeometryConverter.clearStateOnAssemblies>`
+        - Mapping number densities and block parameters between one assembly to
+        another. See: `<UniformMeshGeometryConverter.setAssemblyStateFromOverlaps>`
 
-    This class is meant to be extended for specific physics calculations that require a uniform mesh.
-    The child types of this class should define custom `reactorParamsToMap` and `blockParamsToMap` attributes, and the `_setParamsToUpdate` method
-    to specify the precise parameters that need to be mapped in each direction between the non-uniform and uniform mesh assemblies. The definitions should avoid mapping
-    block parameters in both directions because the mapping process will cause numerical diffusion. The behavior of `setAssemblyStateFromOverlaps` is dependent on the
-    direction in which the mapping is being applied to prevent the numerical diffusion problem.
+    This class is meant to be extended for specific physics calculations that require a
+    uniform mesh. The child types of this class should define custom
+    `reactorParamsToMap` and `blockParamsToMap` attributes, and the
+    `_setParamsToUpdate` method to specify the precise parameters that need to be
+    mapped in each direction between the non-uniform and uniform mesh assemblies. The
+    definitions should avoid mapping block parameters in both directions because the
+    mapping process will cause numerical diffusion. The behavior of
+    `setAssemblyStateFromOverlaps` is dependent on the direction in which the mapping
+    is being applied to prevent the numerical diffusion problem.
 
     - "in" is used when mapping parameters into the uniform assembly
     from the non-uniform assembly.
@@ -146,14 +432,42 @@ class UniformMeshGeometryConverter(GeometryConverter):
         self._nonUniformMeshFlags = None
         self._hasNonUniformAssems = None
         self._nonUniformAssemStorage = set()
+        self._minimumMeshSize = None
+
         if cs is not None:
             self._nonUniformMeshFlags = [
                 Flags.fromStringIgnoreErrors(f) for f in cs["nonUniformAssemFlags"]
             ]
             self._hasNonUniformAssems = any(self._nonUniformMeshFlags)
+            self._minimumMeshSize = cs[CONF_UNIFORM_MESH_MINIMUM_SIZE]
 
     def convert(self, r=None):
-        """Create a new reactor core with a uniform mesh."""
+        """
+        Create a new reactor core with a uniform mesh.
+
+        .. impl:: Make a copy of the reactor where the new core has a uniform axial mesh.
+            :id: I_ARMI_UMC
+            :implements: R_ARMI_UMC
+
+            Given a source Reactor, ``r``, as input and when ``_hasNonUniformAssems`` is ``False``,
+            a new Reactor is created in ``initNewReactor``. This new Reactor contains copies of select
+            information from the input source Reactor (e.g., Operator, Blueprints, cycle, timeNode, etc).
+            The uniform mesh to be applied to the new Reactor is calculated in ``_generateUniformMesh``
+            (see :need:`I_ARMI_UMC_NON_UNIFORM` and :need:`I_ARMI_UMC_MIN_MESH`). New assemblies with this
+            uniform mesh are created in ``_buildAllUniformAssemblies`` and added to the new Reactor.
+            Core-level parameters are then mapped from the source Reactor to the new Reactor in
+            ``_mapStateFromReactorToOther``. Finally, the core-wide axial mesh is updated on the new Reactor
+            via ``updateAxialMesh``.
+
+
+        .. impl:: Map select parameters from composites on the original mesh to the new mesh.
+            :id: I_ARMI_UMC_PARAM_FORWARD
+            :implements: R_ARMI_UMC_PARAM_FORWARD
+
+            In ``_mapStateFromReactorToOther``, Core-level parameters are mapped from the source Reactor
+            to the new Reactor. If requested, block-level parameters can be mapped using an averaging
+            equation as described in ``setAssemblyStateFromOverlaps``.
+        """
         if r is None:
             raise ValueError(f"No reactor provided in {self}")
 
@@ -167,7 +481,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
         if self._hasNonUniformAssems:
             runLog.extra(
                 f"Replacing non-uniform assemblies in reactor {r}, "
-                f"with assemblies whose axial mesh is uniform with "
+                "with assemblies whose axial mesh is uniform with "
                 f"the core's reference assembly mesh: {r.core.refAssem.getAxialMesh()}"
             )
             self.convReactor = self._sourceReactor
@@ -181,11 +495,10 @@ class UniformMeshGeometryConverter(GeometryConverter):
                 )
                 homogAssem.spatialLocator = assem.spatialLocator
 
-                # Remove this assembly from the core and add it to the
-                # temporary storage list so that it can be replaced with the homogenized assembly.
-                # Note that we do not call the `removeAssembly` method because
-                # this will delete the core assembly from existence rather than
-                # only stripping its spatialLocator away.
+                # Remove this assembly from the core and add it to the temporary storage
+                # so that it can be replaced with the homogenized assembly. Note that we
+                # do not call `removeAssembly()` because this will delete the core
+                # assembly from existence rather than only stripping its spatialLocator.
                 if assem.spatialLocator in self.convReactor.core.childrenByLocator:
                     self.convReactor.core.childrenByLocator.pop(assem.spatialLocator)
                 self.convReactor.core.remove(assem)
@@ -196,11 +509,10 @@ class UniformMeshGeometryConverter(GeometryConverter):
                 assem.setName(assem.getName() + self._TEMP_STORAGE_NAME_SUFFIX)
                 self._nonUniformAssemStorage.add(assem)
                 self.convReactor.core.add(homogAssem)
-
         else:
             runLog.extra(f"Building copy of {r} with a uniform axial mesh.")
             self.convReactor = self.initNewReactor(r, self._cs)
-            self._computeAverageAxialMesh()
+            self._generateUniformMesh(minimumMeshSize=self._minimumMeshSize)
             self._buildAllUniformAssemblies()
             self._mapStateFromReactorToOther(
                 self._sourceReactor, self.convReactor, mapBlockParams=False
@@ -214,15 +526,30 @@ class UniformMeshGeometryConverter(GeometryConverter):
             f"Reactor core conversion time: {completeEndTime-completeStartTime} seconds"
         )
 
+    def _generateUniformMesh(self, minimumMeshSize):
+        """
+        Generate a common axial mesh to use for uniform mesh conversion.
+
+        Parameters
+        ----------
+        minimumMeshSize : float, required
+            Minimum allowed separation between axial mesh points in cm
+        """
+        generator = UniformMeshGenerator(
+            self._sourceReactor, minimumMeshSize=minimumMeshSize
+        )
+        generator.generateCommonMesh()
+        self._uniformMesh = generator._commonMesh
+
     @staticmethod
     def initNewReactor(sourceReactor, cs):
-        """Build a new, yet empty, reactor with the same settings as sourceReactor
+        """Build a new, yet empty, reactor with the same settings as sourceReactor.
 
         Parameters
         ----------
         sourceReactor : :py:class:`Reactor <armi.reactor.reactors.Reactor>` object.
             original reactor to be copied
-        cs: CaseSetting object
+        cs: Setting
             Complete settings object
         """
         # developer note: deepcopy on the blueprint object ensures that all relevant blueprints
@@ -235,6 +562,10 @@ class UniformMeshGeometryConverter(GeometryConverter):
         coreDesign = bp.systemDesigns["core"]
 
         coreDesign.construct(cs, bp, newReactor, loadAssems=False)
+        newReactor.p.cycle = sourceReactor.p.cycle
+        newReactor.p.timeNode = sourceReactor.p.timeNode
+        newReactor.p.maxAssemNum = sourceReactor.p.maxAssemNum
+        newReactor.core.p.coupledIteration = sourceReactor.core.p.coupledIteration
         newReactor.core.lib = sourceReactor.core.lib
         newReactor.core.setPitchUniform(sourceReactor.core.getAssemblyPitch())
         newReactor.o = (
@@ -248,7 +579,20 @@ class UniformMeshGeometryConverter(GeometryConverter):
         return newReactor
 
     def applyStateToOriginal(self):
-        """Apply the state of the converted reactor back to the original reactor, mapping number densities and block parameters."""
+        """
+        Apply the state of the converted reactor back to the original reactor,
+        mapping number densities and block parameters.
+
+        .. impl:: Map select parameters from composites on the new mesh to the original mesh.
+            :id: I_ARMI_UMC_PARAM_BACKWARD
+            :implements: R_ARMI_UMC_PARAM_BACKWARD
+
+            To ensure that the parameters on the original Reactor are from the converted Reactor,
+            the first step is to clear the Reactor-level parameters on the original Reactor
+            (see ``_clearStateOnReactor``). ``_mapStateFromReactorToOther`` is then called
+            to map Core-level parameters and, optionally, averaged Block-level parameters
+            (see :need:`I_ARMI_UMC_PARAM_FORWARD`).
+        """
         runLog.extra(
             f"Applying uniform neutronics results from {self.convReactor} to {self._sourceReactor}"
         )
@@ -289,8 +633,8 @@ class UniformMeshGeometryConverter(GeometryConverter):
                     runLog.error(
                         f"No assembly matching name {assem.getName()} "
                         f"was found in the temporary storage list. {assem} "
-                        f"will persist as an axially unified assembly. "
-                        f"This is likely not intended."
+                        "will persist as an axially unified assembly. "
+                        "This is likely not intended."
                     )
 
             self._sourceReactor.core.updateAxialMesh()
@@ -357,8 +701,19 @@ class UniformMeshGeometryConverter(GeometryConverter):
             between two assemblies.
         """
         newAssem = UniformMeshGeometryConverter._createNewAssembly(sourceAssem)
+        newAssem.p.assemNum = sourceAssem.p.assemNum
         runLog.debug(f"Creating a uniform mesh of {newAssem}")
         bottom = 0.0
+
+        def checkPriorityFlags(b):
+            """
+            Check that a block has the flags that are prioritized for uniform mesh conversion.
+
+            Also check that it's not different type of block that is a superset of the
+            priority flags, like "Flags.FUEL | Flags.PLENUM"
+            """
+            priorityFlags = [Flags.FUEL, Flags.CONTROL, Flags.SHIELD | Flags.RADIAL]
+            return b.hasFlags(priorityFlags) and not b.hasFlags(Flags.PLENUM)
 
         for topMeshPoint in newMesh:
             overlappingBlockInfo = sourceAssem.getBlocksBetweenElevations(
@@ -377,27 +732,29 @@ class UniformMeshGeometryConverter(GeometryConverter):
             # select one as a "source" for determining which cross section
             # type to use. This uses the following rules:
             #     1. Determine the total height corresponding to each XS type that
-            #     appears for blocks with FUEL or CONTROL flags in this domain.
+            #     appears for blocks with FUEL, CONTROL, or SHIELD|RADIAL flags in this domain.
             #     2. Determine the single XS type that represents the largest fraction
-            #     of the total height of FUEL or CONTROL cross sections.
-            #     3. Use the first block of the majority XS type as the representative block.
+            #     of the total height of FUEL, CONTROL, or SHIELD|RADIAL cross sections.
+            #     3. Use the first block of the majority XS type as the source block.
+            #     4. If none of the special block types are present(fuelOrAbsorber == False),
+            #     use the xs type that represents the largest fraction of the destination block.
             typeHeight = collections.defaultdict(float)
             blocks = [b for b, _h in overlappingBlockInfo]
+            fuelOrAbsorber = any(checkPriorityFlags(b) for b in blocks)
             for b, h in overlappingBlockInfo:
-                if b.hasFlags([Flags.FUEL, Flags.CONTROL]):
+                if checkPriorityFlags(b) or not fuelOrAbsorber:
                     typeHeight[b.p.xsType] += h
 
             sourceBlock = None
             # xsType is the one with the majority of overlap
-            if len(typeHeight) > 0:
-                xsType = next(
-                    k for k, v in typeHeight.items() if v == max(typeHeight.values())
-                )
-                for b in blocks:
-                    if b.hasFlags([Flags.FUEL, Flags.CONTROL]):
-                        if b.p.xsType == xsType:
-                            sourceBlock = b
-                            break
+            xsType = next(
+                k for k, v in typeHeight.items() if v == max(typeHeight.values())
+            )
+            for b in blocks:
+                if checkPriorityFlags(b) or not fuelOrAbsorber:
+                    if b.p.xsType == xsType:
+                        sourceBlock = b
+                        break
 
             if len(typeHeight) > 1:
                 if sourceBlock:
@@ -410,14 +767,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
                         heightFrac = h / totalHeight
                         runLog.debug(f"XSType {xs}: {heightFrac:.4f}")
 
-            # If no blocks meet the FUEL or CONTROL criteria above, or there is only one
-            # XS type present, just select the first block as the source block and use
-            # its cross section type.
-            if sourceBlock is None:
-                sourceBlock = blocks[0]
-                xsType = blocks[0].p.xsType
-
-            block = sourceBlock._createHomogenizedCopy(includePinCoordinates)
+            block = sourceBlock.createHomogenizedCopy(includePinCoordinates)
             block.p.xsType = xsType
             block.setHeight(topMeshPoint - bottom)
             block.p.axMesh = 1
@@ -443,7 +793,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
         mapNumberDensities=False,
         calcReactionRates=False,
     ):
-        """
+        r"""
         Set state data (i.e., number densities and block-level parameters) on a assembly based on a source
         assembly with a different axial mesh.
 
@@ -487,7 +837,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
         --------
         setNumberDensitiesFromOverlaps : does this but does smarter caching for number densities.
         """
-
         for destBlock in destinationAssembly:
             zLower = destBlock.p.zbottom
             zUpper = destBlock.p.ztop
@@ -500,12 +849,12 @@ class UniformMeshGeometryConverter(GeometryConverter):
                 continue
             elif not sourceBlocksInfo:
                 raise ValueError(
-                    f"An error occurred when attempting to map to the "
+                    "An error occurred when attempting to map to the "
                     f"results from {sourceAssembly} to {destinationAssembly}. "
                     f"No blocks in {sourceAssembly} exist between the axial "
                     f"elevations of {zLower:<12.5f} cm and {zUpper:<12.5f} cm. "
-                    f"This a major bug in the uniform mesh converter that should "
-                    f"be reported to the developers."
+                    "This a major bug in the uniform mesh converter that should "
+                    "be reported to the developers."
                 )
 
             if mapNumberDensities:
@@ -528,12 +877,19 @@ class UniformMeshGeometryConverter(GeometryConverter):
                     ):
                         if sourceBlockVal is None:
                             continue
-                        if paramMapper.isVolIntegrated[paramName]:
-                            denominator = sourceBlockHeight
+                        if paramMapper.isPeak[paramName]:
+                            updatedDestVals[paramName] = max(
+                                sourceBlockVal, updatedDestVals[paramName]
+                            )
                         else:
-                            denominator = destinationBlockHeight
-                        integrationFactor = sourceBlockOverlapHeight / denominator
-                        updatedDestVals[paramName] += sourceBlockVal * integrationFactor
+                            if paramMapper.isVolIntegrated[paramName]:
+                                denominator = sourceBlockHeight
+                            else:
+                                denominator = destinationBlockHeight
+                            integrationFactor = sourceBlockOverlapHeight / denominator
+                            updatedDestVals[paramName] += (
+                                sourceBlockVal * integrationFactor
+                            )
 
                 paramMapper.paramSetter(
                     destBlock, updatedDestVals.values(), updatedDestVals.keys()
@@ -668,31 +1024,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
         """Perform checks to ensure conversion occurred properly."""
         pass
 
-    def _computeAverageAxialMesh(self):
-        """
-        Computes an average axial mesh based on the core's reference assembly.
-
-        Notes
-        -----
-        This iterates over all the assemblies in the core and collects all assembly meshes
-        that have the same number of fine-mesh points as the `refAssem` for the core. Based on
-        this, the proposed uniform mesh will be some average of many assemblies in the core.
-        The reason for this is to account for the fact that multiple assemblies (i.e., fuel assemblies)
-        may have a different mesh due to differences in thermal and/or burn-up expansion.
-        """
-        src = self._sourceReactor
-        refAssem = src.core.refAssem
-
-        refNumPoints = len(src.core.findAllAxialMeshPoints([refAssem])) - 1
-        allMeshes = []
-        for a in src.core:
-            # Get the mesh points of the assembly, neglecting the first coordinate
-            # (typically zero).
-            aMesh = src.core.findAllAxialMeshPoints([a])[1:]
-            if len(aMesh) == refNumPoints:
-                allMeshes.append(aMesh)
-        self._uniformMesh = average1DWithinTolerance(numpy.array(allMeshes))
-
     @staticmethod
     def _createNewAssembly(sourceAssembly):
         a = sourceAssembly.__class__(sourceAssembly.getType())
@@ -745,7 +1076,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
         This is a basic parameter mapping routine that can be used by most sub-classes.
         If special mapping logic is required, this method can be defined on sub-classes as necessary.
         """
-
         # Map reactor core parameters
         for paramName in self.paramMapper.reactorParamNames:
             # Check if the source reactor has a value assigned for this
@@ -798,6 +1128,28 @@ class UniformMeshGeometryConverter(GeometryConverter):
             except TypeError:
                 continue
             globalFluxInterface.calcReactionRates(b, keff, lib)
+
+    def updateReactionRates(self):
+        """
+        Update reaction rates on converted assemblies.
+
+        Notes
+        -----
+        In some cases, we may want to read flux into a converted reactor from a
+        pre-existing physics output instead of mapping it in from the pre-conversion
+        source reactor. This method can be called after reading that flux in to
+        calculate updated reaction rates derived from that flux.
+        """
+        if self._hasNonUniformAssems:
+            for assem in self.convReactor.core.getAssemblies(self._nonUniformMeshFlags):
+                self._calculateReactionRates(
+                    self.convReactor.core.lib, self.convReactor.core.p.keff, assem
+                )
+        else:
+            for assem in self.convReactor.core.getAssemblies():
+                self._calculateReactionRates(
+                    self.convReactor.core.lib, self.convReactor.core.p.keff, assem
+                )
 
 
 class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
@@ -882,6 +1234,7 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
         excludedCategories = [parameters.Category.gamma]
         if direction == "out":
             excludedCategories.append(parameters.Category.cumulative)
+            excludedCategories.append(parameters.Category.cumulativeOverCycle)
         excludedParamNames = []
         for category in excludedCategories:
             excludedParamNames.extend(b.p.paramDefs.inCategory(category).names)
@@ -890,13 +1243,15 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
                 [
                     name
                     for name in b.p.paramDefs.inCategory(category).names
-                    if not name in excludedParamNames
+                    if name not in excludedParamNames
                 ]
             )
         if direction == "in":
             # initial heavy metal masses are needed to calculate burnup in MWd/kg
             blockParamNames.extend(HEAVY_METAL_PARAMS)
 
+        # remove any duplicates (from parameters that have multiple categories)
+        blockParamNames = list(set(blockParamNames))
         self.paramMapper = ParamMapper(reactorParamNames, blockParamNames, b)
 
 
@@ -929,11 +1284,11 @@ class GammaUniformMeshConverter(UniformMeshGeometryConverter):
     }
     blockParamMappingCategories = {
         "in": [
-            parameters.Category.detailedAxialExpansion,
             parameters.Category.multiGroupQuantities,
         ],
         "out": [
             parameters.Category.gamma,
+            parameters.Category.neutronics,
         ],
     }
 
@@ -965,7 +1320,12 @@ class GammaUniformMeshConverter(UniformMeshGeometryConverter):
             )
         b = self._sourceReactor.core.getFirstBlock()
         if direction == "out":
-            excludeList = b.p.paramDefs.inCategory(parameters.Category.cumulative).names
+            excludeList = (
+                b.p.paramDefs.inCategory(parameters.Category.cumulative).names
+                + b.p.paramDefs.inCategory(
+                    parameters.Category.cumulativeOverCycle
+                ).names
+            )
         else:
             excludeList = b.p.paramDefs.inCategory(parameters.Category.gamma).names
         for category in self.blockParamMappingCategories[direction]:
@@ -973,10 +1333,12 @@ class GammaUniformMeshConverter(UniformMeshGeometryConverter):
                 [
                     name
                     for name in b.p.paramDefs.inCategory(category).names
-                    if not name in excludeList
+                    if name not in excludeList
                 ]
             )
 
+        # remove any duplicates (from parameters that have multiple categories)
+        blockParamNames = list(set(blockParamNames))
         self.paramMapper = ParamMapper(reactorParamNames, blockParamNames, b)
 
 
@@ -991,7 +1353,7 @@ class ParamMapper:
 
     def __init__(self, reactorParamNames, blockParamNames, b):
         """
-        Initialize the list of parameter defaults
+        Initialize the list of parameter defaults.
 
         The ParameterDefinitionCollection lookup is very slow, so this we do it once
         and store it as a hashed list.
@@ -1007,6 +1369,16 @@ class ParamMapper:
             )
             for paramName in blockParamNames
         }
+        # determine which parameters are peak/max
+        # Unfortunately, these parameters don't tell you WHERE in the block the peak
+        # value occurs. So when mapping block parameters in setAssemblyStateFromOverlaps(),
+        # we will just grab the maximum value over all of the source blocks. This effectively
+        # assumes that all of the source blocks overlap 100% with the destination block,
+        # although this is rarely actually the case.
+        self.isPeak = {
+            paramName: b.p.paramDefs[paramName].atLocation(parameters.ParamLocation.MAX)
+            for paramName in blockParamNames
+        }
 
         self.reactorParamNames = reactorParamNames
         self.blockParamNames = blockParamNames
@@ -1019,7 +1391,7 @@ class ParamMapper:
             if val is None:
                 continue
 
-            if isinstance(val, list) or isinstance(val, numpy.ndarray):
+            if isinstance(val, (tuple, list, numpy.ndarray)):
                 ParamMapper._arrayParamSetter(block, [val], [paramName])
             else:
                 ParamMapper._scalarParamSetter(block, [val], [paramName])
@@ -1029,26 +1401,11 @@ class ParamMapper:
         paramVals = []
         for paramName in paramNames:
             val = block.p[paramName]
-            defaultValue = self.paramDefaults[paramName]
-            valType = type(defaultValue)
-            # Array / list parameters can be have values that are `None`, lists, or numpy arrays. This first
-            # checks if the value type is any of these and if so, the block-level parameter is treated as an
-            # array.
-            if (
-                isinstance(None, valType)
-                or isinstance(valType, list)
-                or isinstance(valType, numpy.ndarray)
-            ):
-                if val is None or len(val) == 0:
-                    paramVals.append(None)
-                else:
-                    paramVals.append(numpy.array(val))
-            # Otherwise, the parameter is treated as a scalar, like a float/string/integer.
+            # list-like should be treated as a numpy array
+            if isinstance(val, (tuple, list, numpy.ndarray)):
+                paramVals.append(numpy.array(val) if len(val) > 0 else None)
             else:
-                if val == defaultValue:
-                    paramVals.append(defaultValue)
-                else:
-                    paramVals.append(val)
+                paramVals.append(val)
 
         return numpy.array(paramVals, dtype=object)
 
@@ -1069,7 +1426,7 @@ class ParamMapper:
 
 def setNumberDensitiesFromOverlaps(block, overlappingBlockInfo):
     r"""
-    Set number densities on a block based on overlapping blocks
+    Set number densities on a block based on overlapping blocks.
 
     A conservation of number of atoms technique is used to map the non-uniform number densities onto the uniform
     neutronics mesh. When the number density of a height :math:`H` neutronics mesh block :math:`N^{\prime}` is

@@ -11,9 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-Energy group structures for multigroup neutronics calculations.
-"""
+"""Energy group structures for multigroup neutronics calculations."""
 
 import copy
 import itertools
@@ -23,7 +21,7 @@ import numpy
 
 from armi import runLog
 from armi.utils.mathematics import findNearestValue
-from .const import (
+from armi.physics.neutronics.const import (
     FAST_FLUX_THRESHOLD_EV,
     MAXIMUM_XS_LIBRARY_ENERGY,
     ULTRA_FINE_GROUP_LETHARGY_WIDTH,
@@ -32,7 +30,22 @@ from .const import (
 
 
 def getFastFluxGroupCutoff(eGrpStruc):
-    """Given a constant "fast" energy threshold, return which ARMI energy group index contains this threshold."""
+    """
+    Given a constant "fast" energy threshold, return which ARMI energy group
+    index contains this threshold.
+
+    .. impl:: Return the energy group index which contains a given energy threshold.
+        :id: I_ARMI_EG_FE
+        :implements: R_ARMI_EG_FE
+
+        This function returns the energy group within a given group structure
+        that contains the fast flux threshold energy. The threshold energy is
+        imported from the :py:mod:`constants <armi.physics.neutronics.const>` in
+        the neutronics module, where it is defined as 100 keV. This is a
+        standard definition for fast flux. This function also calculates and
+        returns the fraction of the threshold energy group that is above the 100
+        keV threshold.
+    """
     gThres = -1
     for g, eV in enumerate(eGrpStruc):
         if eV < FAST_FLUX_THRESHOLD_EV:
@@ -67,12 +80,24 @@ def _create_anl_energies_with_group_lethargies(*group_lethargies):
 
 def getGroupStructure(name):
     """
-    Return descending neutron energy group upper bounds in eV for a given structure name.
+    Return descending neutron energy group upper bounds in eV for a given
+    structure name.
+
+    .. impl:: Provide the neutron energy group bounds for a given group structure.
+        :id: I_ARMI_EG_NE
+        :implements: R_ARMI_EG_NE
+
+        There are several built-in group structures that are defined in this
+        module, which are stored in a dictionary. This function takes a group
+        structure name as an input parameter, which it uses as a key for the
+        group structure dictionary. If the group structure name is valid, it
+        returns a copy of the energy group structure resulting from the
+        dictionary lookup. Otherwise, it throws an error.
 
     Notes
     -----
-    Copy of the group structure is return so that modifications of the energy bounds does
-    not propagate back to the `GROUP_STRUCTURE` dictionary.
+    Copy of the group structure is return so that modifications of the energy
+    bounds does not propagate back to the `GROUP_STRUCTURE` dictionary.
     """
     try:
         return copy.copy(GROUP_STRUCTURE[name])
@@ -85,9 +110,7 @@ def getGroupStructure(name):
 
 
 def getGroupStructureType(neutronEnergyBoundsInEv):
-    """
-    Return neutron energy group structure name for a given set of neutron energy group bounds in eV.
-    """
+    """Return neutron energy group structure name for a given set of neutron energy group bounds in eV."""
     neutronEnergyBoundsInEv = numpy.array(neutronEnergyBoundsInEv)
     for groupStructureType in GROUP_STRUCTURE:
         refNeutronEnergyBoundsInEv = numpy.array(getGroupStructure(groupStructureType))
@@ -108,6 +131,8 @@ Energy groups for use in multigroup neutronics.
 
 Values are the upper bound of each energy in eV from highest energy to lowest
 (because neutrons typically downscatter...)
+
+:meta hide-value:
 """
 
 GROUP_STRUCTURE["2"] = [HIGH_ENERGY_EV, 6.25e-01]
@@ -290,6 +315,7 @@ GROUP_STRUCTURE["ANL1041"] = _create_anl_energies_with_group_lethargies(
 GROUP_STRUCTURE["ANL2082"] = _create_anl_energies_with_group_lethargies(
     itertools.repeat(1, 2082)
 )
+
 
 # fmt: on
 def _create_multigroup_structures_on_finegroup_energies(

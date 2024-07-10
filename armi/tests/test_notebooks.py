@@ -19,7 +19,6 @@ assumes each cell is a test. To prevent inadvertent breaking
 of the ipynbs, we imply run them here and show during unit
 testing that a failure was introduced.
 """
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import os
 import unittest
 
@@ -37,6 +36,9 @@ class NotebookTests(unittest.TestCase):
 
     def test_runDataModel(self):
         runNotebook(os.path.join(TUTORIALS, "data_model.ipynb"))
+        # Do some cleanup because some code run in the notebook doesn't honor the
+        # TempDirectoryChanger
+        os.remove(os.path.join(TUTORIALS, "anl-afci-177.h5"))
 
 
 def runNotebook(filename):

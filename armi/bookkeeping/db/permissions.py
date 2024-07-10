@@ -14,7 +14,7 @@
 
 
 class Permissions:
-    """Mappings to HDF5 permissions flags"""
+    """Mappings to HDF5 permissions flags."""
 
     READ_ONLY_FME = "r"  # File Must Exist
     READ_WRITE_FME = "r+"  # File Must Exist

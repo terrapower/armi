@@ -31,8 +31,8 @@ NOTE: Psutil and sys.getsizeof will certainly report slightly different results.
 NOTE: In Windows, it seems that even if your garbage is collected, Windows does not de-allocate all the memory.
 So if you are a worker and you just got a 2GB reactor but then deleted it, Windows will keep you at 2GB for a while.
 
-See Also:
-
+See Also
+--------
 https://pythonhosted.org/psutil/
 https://docs.python.org/3/library/gc.html#gc.garbage
 """
@@ -64,7 +64,7 @@ REPORT_COUNT = 100000
 
 
 def describeInterfaces(cs):
-    """Function for exposing interface(s) to other code"""
+    """Function for exposing interface(s) to other code."""
     return (MemoryProfiler, {})
 
 
@@ -101,7 +101,7 @@ class MemoryProfiler(interfaces.Interface):
             mpiAction.broadcast().invoke(self.o, self.r, self.cs)
 
     def interactEOL(self):
-        r"""End of life hook. Good place to wrap up or print out summary outputs"""
+        r"""End of life hook. Good place to wrap up or print out summary outputs."""
         if self.cs["debugMem"]:
             mpiAction = ProfileMemoryUsageAction("EOL")
             mpiAction.broadcast().invoke(self.o, self.r, self.cs)
@@ -141,10 +141,11 @@ class MemoryProfiler(interfaces.Interface):
                     "Dict {:30s} has {:4d} ArmiObjects".format(attrName, len(attrObj))
                 )
 
-        runLog.important("SFP has {:4d} ArmiObjects".format(len(self.r.core.sfp)))
+        if self.r.sfp is not None:
+            runLog.important("SFP has {:4d} ArmiObjects".format(len(self.r.sfp)))
 
     def checkForDuplicateObjectsOnArmiModel(self, attrName, refObject):
-        """Scans thorugh ARMI model for duplicate objects"""
+        """Scans thorugh ARMI model for duplicate objects."""
         if self.r is None:
             return
         uniqueIds = set()
@@ -188,7 +189,7 @@ class MemoryProfiler(interfaces.Interface):
 
     def _printFullMemoryBreakdown(self, reportSize=True, printReferrers=False):
         """
-        looks for any class from any module in the garbage collector and prints their count and size
+        looks for any class from any module in the garbage collector and prints their count and size.
 
         Parameters
         ----------
@@ -219,10 +220,10 @@ class MemoryProfiler(interfaces.Interface):
                 "UNIQUE_INSTANCE_COUNT: {:60s} {:10d}     {:10.1f} MB".format(
                     counter.classType.__name__,
                     counter.count,
-                    counter.memSize / (1024 ** 2.0),
+                    counter.memSize / (1024**2.0),
                 )
             )
-            if printReferrers and counter.memSize / (1024 ** 2.0) > 100:
+            if printReferrers and counter.memSize / (1024**2.0) > 100:
                 referrers = gc.get_referrers(counter.first)
                 runLog.info("          Referrers of first one: ")
                 for referrer in referrers:
@@ -241,7 +242,7 @@ class MemoryProfiler(interfaces.Interface):
 
     @staticmethod
     def getReferrers(obj):
-        """Print referrers in a useful way (as opposed to gigabytes of text"""
+        """Print referrers in a useful way (as opposed to gigabytes of text."""
         runLog.info("Printing first 100 character of first 100 referrers")
         for ref in gc.get_referrers(obj)[:100]:
             runLog.important("ref for {}: {}".format(obj, repr(ref)[:100]))
@@ -307,10 +308,7 @@ class InstanceCounter:
 
         self.ids.add(itemId)
         if self.reportSize:
-            try:
-                self.memSize += sys.getsizeof(item)
-            except:
-                self.memSize = float("nan")
+            self.memSize += sys.getsizeof(item)
         self.count += 1
         return True
 
@@ -344,7 +342,7 @@ class SystemAndProcessMemoryUsage:
         self.processMemoryInMB: Optional[float] = None
         if _havePsutil:
             self.percentNodeRamUsed = psutil.virtual_memory().percent
-            self.processMemoryInMB = psutil.Process().memory_info().rss / (1012.0 ** 2)
+            self.processMemoryInMB = psutil.Process().memory_info().rss / (1024.0**2)
 
     def __isub__(self, other):
         if self.percentNodeRamUsed is not None and other.percentNodeRamUsed is not None:

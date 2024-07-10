@@ -31,7 +31,7 @@ from armi import runLog
 
 
 class ReportContent:
-    """Holds the report contents"""
+    """Holds the report contents."""
 
     def __init__(self, title):
         self.title = title
@@ -39,7 +39,6 @@ class ReportContent:
 
     def writeReports(self):
         """Renders each report into a document for viewing."""
-
         body = htmltree.Body()
         head = htmltree.Head()
 
@@ -119,7 +118,7 @@ class ReportContent:
             self.sections[key] = item
 
     def tableOfContents(self):
-        """Creates a Table of Contents at the top of the document that links to later Sections
+        """Creates a Table of Contents at the top of the document that links to later Sections.
 
         Parameters
         ----------
@@ -191,17 +190,18 @@ class ReportNode(ABC):
 
     @abstractmethod
     def render(self, level, idPrefix):
-        """Renders the section to a htmltree element for inserting into HTML document tree
+        """Renders the section to a htmltree element for inserting into HTML document tree.
 
         Parameters
         ----------
         level : int
-            level of the nesting for this section, determines the size of the heading title for the Section
-            (The higher the level, the smaller the title font-size). Ranges from H1 - H4 in html terms.
+            level of the nesting for this section, determines the size of the heading title for the
+            Section (The higher the level, the smaller the title font-size). Ranges from H1 - H4 in
+            html terms.
 
         idPrefix : String
-            used for href/id referencing for the left hand side table of contents to be paired with the item
-            that render() is called upon.
+            Used for href/id referencing for the left hand side table of contents to be paired with
+            the item that render() is called upon.
 
         Returns
         -------
@@ -268,7 +268,7 @@ class Section(ReportNode):
         return self.title
 
     def render(self, level, idPrefix="") -> htmltree.HtmlElement:
-        """Renders a Section into the appropriate html representation
+        """Renders a Section into the appropriate html representation.
 
         Parameters
         ----------
@@ -306,7 +306,7 @@ class Section(ReportNode):
 
 class Image(ReportNode):
     """For Images within the report (such as Hexplots premade and not time dependent)
-    (For time dependent images see TimeSeries)
+    (For time dependent images see TimeSeries).
 
     Parameters
     ----------
@@ -340,8 +340,7 @@ class Image(ReportNode):
         return self.caption
 
     def render(self, level, idPrefix="") -> htmltree.HtmlElement:
-        """Wraps an image file into an html Img tag. (With caption included in the figure)"""
-
+        """Wraps an image file into an html Img tag. (With caption included in the figure)."""
         figure = htmltree.Figure()
         if self.encode:
             self.imagePath = encode64(os.path.abspath(self.imagePath))
@@ -355,7 +354,7 @@ class Image(ReportNode):
 
 
 class Table(ReportNode):
-    """For Table Objects that are then later converted to htmltree tables
+    """For Table Objects that are then later converted to htmltree tables.
 
     Parameters
     ----------
@@ -393,7 +392,6 @@ class Table(ReportNode):
         """Converts a TableSection object into a html table representation htmltree element with
         header as heading if not None.
         """
-
         table = htmltree.Table()
         table.C.append(htmltree.Caption(self.title, id=idPrefix))
         if self.header is not None:
@@ -443,10 +441,10 @@ class TimeSeries(ReportNode):
     Example
     -------
 
-    >>> series = TimeSeries("Plot of K-effective", "plot", ["k-effective"], "k-eff", "keff.png") # Adding to a plot with k-effective
+    >>> series = TimeSeries("Plot of K-effective", "plot", ["k-effective"], "k-eff", "keff.png")
     >>> time = r.p.time                     # The current time node of the reactor.
     >>> data = r.core.p.keff                # The parameter k-effective value at that time.
-    >>> uncertainty = r.core.p.keffUnc      # Since the parameter yields keff-uncontrolled value at the current time.
+    >>> uncertainty = r.core.p.keffUnc      # The keff-uncontrolled at the current time.
     >>> series.add("k-effective", time, data, uncertainty)   # Adds this point to be plotted later.
 
     >>> # Adding to a plot with multiple lines for fuel Burn-Up Plot.
@@ -487,7 +485,6 @@ class TimeSeries(ReportNode):
 
         Parameters
         ----------
-
         lineToAddTo: String
             Label associated with the line we are adding ths point to
         time: float
@@ -559,7 +556,8 @@ class TimeSeries(ReportNode):
 
     def render(self, level, idPrefix="") -> htmltree.HtmlElement:
         """Renders the Timeseries into a graph and places that Image into an html Img tag and returns a div
-        containing that image and the images caption if it has one stored."""
+        containing that image and the images caption if it has one stored.
+        """
         figName = self.plot()
         if self.encode:
             img = htmltree.Img(
@@ -586,13 +584,12 @@ class ReportStage(Enum):
 
 
 def encode64(file_path):
-    """Encodes the contents of the file indicated by the path
+    """Encodes the contents of the file indicated by the path.
 
     Return
     ------
     String that is the embedded HTML src attribute for an image in base64
     """
-
     xtn = os.path.splitext(file_path)[1][1:]  # [1:] to cut out the period
     with open(file_path, "rb") as img_src:
         if xtn == "svg":

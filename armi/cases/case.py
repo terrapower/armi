@@ -12,12 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-r"""
-The ``Case`` object is responsible for running, and executing a set of user inputs.  Many
-entry points redirect into ``Case`` methods, such as ``clone``, ``compare``, and ``run``
+"""
+The ``Case`` object is responsible for running, and executing a set of
+user inputs.  Many entry points redirect into ``Case`` methods, such as
+``clone``, ``compare``, and ``run``.
 
-The ``Case`` object provides an abstraction around ARMI inputs to allow for manipulation and
-collection of cases.
+The ``Case`` object provides an abstraction around ARMI inputs to allow
+for manipulation and collection of cases.
 
 See Also
 --------
@@ -29,10 +30,8 @@ import cProfile
 import glob
 import os
 import pathlib
-import platform
 import pstats
 import re
-import shutil
 import sys
 import textwrap
 import time
@@ -51,6 +50,7 @@ from armi import settings
 from armi.bookkeeping.db import compareDatabases
 from armi.cli import reportsEntryPoint
 from armi.nucDirectory import nuclideBases
+from armi.physics.neutronics.settings import CONF_LOADING_FILE
 from armi.reactor import blueprints
 from armi.reactor import reactors
 from armi.reactor import systemLayoutInput
@@ -60,8 +60,8 @@ from armi.utils.customExceptions import NonexistentSetting
 from armi.utils.directoryChangers import DirectoryChanger
 from armi.utils.directoryChangers import ForcedCreationDirectoryChanger
 
-# change from default .coverage to help with Windows dotfile issues.
-# Must correspond with data_file entry in `coveragerc`!
+# Change from default .coverage to help with Windows dotfile issues.
+# Must correspond with data_file entry in `pyproject.toml`!
 COVERAGE_RESULTS_FILE = "coverage_results.cov"
 
 
@@ -80,8 +80,8 @@ class Case:
 
         Parameters
         ----------
-        cs : CaseSettings
-            CaseSettings for this Case
+        cs : Settings
+            Settings for this Case
 
         caseSuite : CaseSuite, optional
             CaseSuite this particular case belongs. Passing this in allows dependency
@@ -95,8 +95,8 @@ class Case:
             ``cs`` as needed.
 
         geom : SystemLayoutInput, optional
-            SystemLayoutInput for this case. If not supplied, it will be loaded from the ``cs`` as
-            needed.
+            SystemLayoutInput for this case. If not supplied, it will be loaded from the
+            ``cs`` as needed.
         """
         self._startTime = time.time()
         self._caseSuite = caseSuite
@@ -211,7 +211,7 @@ class Case:
 
     def addExplicitDependency(self, case):
         """
-        Register an explicit dependency
+        Register an explicit dependency.
 
         When evaluating the ``dependency`` property, dynamic dependencies are probed
         using the current case settings and plugin hooks. Sometimes, it is necessary to
@@ -253,7 +253,6 @@ class Case:
 
     def _getPotentialDependencies(self, dirName, title):
         """Get a parent case based on a directory and case title."""
-
         if dirName is None:
             dirName = self.directory
         elif not os.path.isabs(dirName):
@@ -314,7 +313,7 @@ class Case:
 
         This accounts for whether or not the dependency is enabled.
 
-        Note
+        TODO
         ----
         This is a leftover from before the release of the ARMI framework. The API of the
         proprietary cluster communication library is being used here. This should either
@@ -324,19 +323,25 @@ class Case:
             return
         for dependency in self.dependencies:
             if dependency.enabled:
-                # pylint: disable=protected-access; dependency should
-                # also be a Case, so it's not really "protected"
                 self._tasks[0].add_parent(dependency._tasks[-1])
 
     def run(self):
         """
         Run an ARMI case.
 
-        This initializes an ``Operator``, a ``Reactor`` and invokes
-        :py:meth:`Operator.operate`!
 
-        It also activates supervisory things like code coverage checking, profiling,
-        or tracing, if requested by users during debugging.
+        .. impl:: The case class allows for a generic ARMI simulation.
+            :id: I_ARMI_CASE
+            :implements: R_ARMI_CASE
+
+            This method is responsible for "running" the ARMI simulation
+            instigated by the inputted settings. This initializes an
+            :py:class:`~armi.operators.operator.Operator`, a
+            :py:class:`~armi.reactor.reactors.Reactor` and invokes
+            :py:meth:`Operator.operate
+            <armi.operators.operator.Operator.operate>`. It also activates
+            supervisory things like code coverage checking, profiling, or
+            tracing, if requested by users during debugging.
 
         Notes
         -----
@@ -372,7 +377,7 @@ class Case:
 
     def _startCoverage(self):
         """Helper to the Case.run(): spin up the code coverage tooling,
-        if the CaseSettings file says to.
+        if the Settings file says to.
 
         Returns
         -------
@@ -400,7 +405,7 @@ class Case:
     @staticmethod
     def _endCoverage(userCovFile, cov=None):
         """Helper to the Case.run(): stop and report code coverage,
-        if the CaseSettings file says to.
+        if the Settings file says to.
 
         Parameters
         ----------
@@ -437,6 +442,10 @@ class Case:
         """Helper to provide the coverage configuration file according to the OS. A
         user-supplied file will take precedence, and is not checked for a dot-filename.
 
+        Notes
+        -----
+        ARMI replaced the ".coveragerc" file has been replaced by "pyproject.toml".
+
         Parameters
         ----------
         userCovFile : str
@@ -448,25 +457,18 @@ class Case:
         Returns
         -------
         covFile : str
-            path of coveragerc file
+            path of pyprojec.toml file
         """
         # User-defined file takes precedence.
         if userCovFile:
             return os.path.abspath(userCovFile)
 
         covRcDir = os.path.abspath(context.PROJECT_ROOT)
-        covFile = os.path.join(covRcDir, ".coveragerc")
-        if platform.system() == "Windows":
-            covFileWin = os.path.join(covRcDir, "coveragerc")
-            if makeCopy == True:
-                # Make a copy of the file without the dot in the name
-                shutil.copy(covFile, covFileWin)
-            return covFileWin
-        return covFile
+        return os.path.join(covRcDir, "pyproject.toml")
 
     def _startProfiling(self):
         """Helper to the Case.run(): start the Python profiling,
-        if the CaseSettings file says to.
+        if the Settings file says to.
 
         Returns
         -------
@@ -483,7 +485,7 @@ class Case:
     @staticmethod
     def _endProfiling(profiler=None):
         """Helper to the Case.run(): stop and report python profiling,
-        if the CaseSettings file says to.
+        if the Settings file says to.
 
         Parameters
         ----------
@@ -547,8 +549,8 @@ class Case:
         if not os.path.exists(self.cs["burnChainFileName"]):
             raise ValueError(
                 f"The burn-chain file {self.cs['burnChainFileName']} does not exist. The "
-                f"data cannot be loaded. Fix this path or disable burn-chain initialization using "
-                f"the `initializeBurnChain` setting."
+                "data cannot be loaded. Fix this path or disable burn-chain initialization using "
+                "the `initializeBurnChain` setting."
             )
 
         with open(self.cs["burnChainFileName"]) as burnChainStream:
@@ -557,6 +559,21 @@ class Case:
     def checkInputs(self):
         """
         Checks ARMI inputs for consistency.
+
+        .. impl:: Perform validity checks on case inputs.
+            :id: I_ARMI_CASE_CHECK
+            :implements: R_ARMI_CASE_CHECK
+
+            This method checks the validity of the current settings. It relies
+            on an :py:class:`~armi.operators.settingsValidation.Inspector`
+            object from the :py:class:`~armi.operators.operator.Operator` to
+            generate a list of
+            :py:class:`~armi.operators.settingsValidation.Query` objects that
+            represent potential issues in the settings. After gathering the
+            queries, this method prints a table of query "statements" and
+            "questions" to the console. If running in an interactive mode, the
+            user then has the opportunity to address the questions posed by the
+            queries by either addressing the potential issue or ignoring it.
 
         Returns
         -------
@@ -657,7 +674,6 @@ class Case:
         ------
         RuntimeError
             If the source and destination are the same
-
         """
         cloneCS = self.cs.duplicate()
 
@@ -683,9 +699,9 @@ class Case:
         clone.cs.writeToYamlFile(clone.cs.path, style=writeStyle, fromFile=self.cs.path)
         runLog.important("finished writing {}".format(clone.cs))
 
-        fromPath = lambda fname: pathTools.armiAbsPath(self.cs.inputDirectory, fname)
+        fromPath = lambda f: pathTools.armiAbsPath(self.cs.inputDirectory, f)
 
-        for inputFileSetting in ["loadingFile", "geomFile"]:
+        for inputFileSetting in [CONF_LOADING_FILE, "geomFile"]:
             fileName = self.cs[inputFileSetting]
             if fileName:
                 pathTools.copyOrWarn(
@@ -698,16 +714,16 @@ class Case:
                     "skipping {}, there is no file specified".format(inputFileSetting)
                 )
 
-        with open(self.cs["loadingFile"], "r") as f:
+        with open(self.cs[CONF_LOADING_FILE], "r") as f:
             # The root for handling YAML includes is relative to the YAML file, not the
             # settings file
             root = (
                 pathlib.Path(self.cs.inputDirectory)
-                / pathlib.Path(self.cs["loadingFile"]).parent
+                / pathlib.Path(self.cs[CONF_LOADING_FILE]).parent
             )
             cloneRoot = (
                 pathlib.Path(clone.cs.inputDirectory)
-                / pathlib.Path(clone.cs["loadingFile"]).parent
+                / pathlib.Path(clone.cs[CONF_LOADING_FILE]).parent
             )
             for includePath, mark in textProcessors.findYamlInclusions(f, root=root):
                 if not includePath.is_absolute():
@@ -742,6 +758,7 @@ class Case:
         that,
         exclusion: Optional[Sequence[str]] = None,
         tolerance=0.01,
+        timestepCompare=None,
     ) -> int:
         """
         Compare the output databases from two run cases. Return number of differences.
@@ -754,7 +771,11 @@ class Case:
             "SRC: {}".format(self.dbName, that.dbName)
         )
         diffResults = compareDatabases(
-            self.dbName, that.dbName, tolerance=tolerance, exclusions=exclusion
+            self.dbName,
+            that.dbName,
+            tolerance=tolerance,
+            exclusions=exclusion,
+            timestepCompare=timestepCompare,
         )
 
         code = 1 if diffResults is None else diffResults.nDiffs()
@@ -806,11 +827,11 @@ class Case:
         ):
             # trick: these seemingly no-ops load the bp and geom via properties if
             # they are not yet initialized.
-            self.bp  # pylint: disable=pointless-statement
-            self.geom  # pylint: disable=pointless-statement
+            self.bp
+            self.geom
 
             newSettings = {}
-            newSettings["loadingFile"] = self.title + "-blueprints.yaml"
+            newSettings[CONF_LOADING_FILE] = self.title + "-blueprints.yaml"
             if self.geom:
                 newSettings["geomFile"] = self.title + "-geom.yaml"
                 self.geom.writeGeom(newSettings["geomFile"])
@@ -821,7 +842,7 @@ class Case:
                     for varName, val in self.independentVariables.items()
                 ]
 
-            with open(newSettings["loadingFile"], "w") as loadingFile:
+            with open(newSettings[CONF_LOADING_FILE], "w") as loadingFile:
                 blueprints.Blueprints.dump(self.bp, loadingFile)
 
             # copy input files from other modules/plugins
@@ -870,8 +891,11 @@ def _copyInputsHelper(
     try:
         pathTools.copyOrWarn(fileDescription, sourcePath, destFilePath)
         if pathlib.Path(destFilePath).exists():
-            return destFilePath
+            # the basename gets written back to the settings file to protect against
+            # potential future dir structure changes
+            return os.path.basename(destFilePath)
         else:
+            # keep original filepath in the settings file if file copy was unsuccessful
             return origFile
     except Exception:
         return origFile
@@ -899,7 +923,7 @@ def copyInterfaceInputs(
 
     Parameters
     ----------
-    cs : CaseSettings
+    cs : Settings
         The source case settings to find input files
     destination : str
         The target directory to copy input files to
@@ -915,7 +939,6 @@ def copyInterfaceInputs(
 
     Notes
     -----
-
     Regarding the handling of relative file paths: In the future this could be
     simplified by adding a concept for a suite root directory, below which it is safe
     to copy files without needing to update settings that point with a relative path
@@ -938,7 +961,7 @@ def copyInterfaceInputs(
                 except NonexistentSetting(key):
                     raise ValueError(
                         f"{key} is not a valid setting. Ensure the relevant specifyInputs "
-                        f"method uses a correct setting name."
+                        "method uses a correct setting name."
                     )
             label = key.name
 
@@ -960,6 +983,7 @@ def copyInterfaceInputs(
                             continue
                     except OSError:
                         pass
+
                 # Attempt to construct an absolute file path
                 sourceFullPath = os.path.join(sourceDirPath, f)
                 if WILDCARD:
@@ -981,11 +1005,11 @@ def copyInterfaceInputs(
                         label, sourceFullPath, destination, f
                     )
                     newFiles.append(str(destFilePath))
+
                 if destFilePath == f:
-                    runLog.info(
+                    runLog.debug(
                         f"No input files for `{label}` setting could be resolved with "
-                        f"the following path: `{sourceFullPath}`. Will not update "
-                        f"`{label}`."
+                        f"the following path: `{sourceFullPath}`. Will not update `{label}`."
                     )
 
             # Some settings are a single filename. Others are lists of files. Make
@@ -994,4 +1018,5 @@ def copyInterfaceInputs(
                 newSettings[label] = newFiles[0]
             else:
                 newSettings[label] = newFiles
+
     return newSettings

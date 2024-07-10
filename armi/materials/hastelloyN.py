@@ -12,17 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Hastelloy-N is a high-nickel structural material invented by ORNL for handling molten fluoride salts.
-"""
+"""Hastelloy-N is a high-nickel structural material invented by ORNL for handling molten fluoride salts."""
 
-from armi.utils.units import getTk, getTc
 from armi.materials.material import Material
+from armi.utils.units import getTk, getTc
 
 
 class HastelloyN(Material):
     r"""
-    Hastelloy N alloy (UNS N10003)
+    Hastelloy N alloy (UNS N10003).
 
     .. [Haynes] Haynes International, H-2052D 2020
         (http://haynesintl.com/docs/default-source/pdfs/new-alloy-brochures/corrosion-resistant-alloys/brochures/n-brochure.pdf)
@@ -32,7 +30,6 @@ class HastelloyN(Material):
         INL/EXT-11-23076, 2011
 
     """
-    name = "HastelloyN"
 
     materialIntro = (
         "Hastelloy N alloy is a nickel-base alloy that was invented at Oak RIdge National Laboratories "
@@ -46,9 +43,11 @@ class HastelloyN(Material):
         "thermal expansion": ((293.15, 1173.15), "K"),
     }
 
+    refTempK = 293.15
+
     def setDefaultMassFracs(self):
-        r"""
-        Hastelloy N mass fractions
+        """
+        Hastelloy N mass fractions.
 
         From [Haynes]_.
         """
@@ -64,10 +63,9 @@ class HastelloyN(Material):
         self.setMassFrac("W", 0.005)  # max.
         self.setMassFrac("AL", 0.0025)  # max.
         self.setMassFrac("TI", 0.0025)  # max.
-        self.setMassFrac("NI", 1.0 - sum(self.p.massFrac.values()))  # balance
+        self.setMassFrac("NI", 1.0 - sum(self.massFrac.values()))  # balance
 
-        self.p.refTempK = 273.15 + 20
-        self.p.refDens = 8.86
+        self.refDens = 8.86
 
     def thermalConductivity(self, Tk=None, Tc=None):
         r"""
@@ -89,7 +87,7 @@ class HastelloyN(Material):
         Tc = getTc(Tc, Tk)
         Tk = getTk(Tc=Tc)
         self.checkPropertyTempRange("thermal conductivity", Tk)
-        return 1.92857e-05 * Tc ** 2 + 3.12857e-03 * Tc + 1.17743e01  # W/m-K
+        return 1.92857e-05 * Tc**2 + 3.12857e-03 * Tc + 1.17743e01  # W/m-K
 
     def heatCapacity(self, Tk=None, Tc=None):
         r"""
@@ -114,16 +112,16 @@ class HastelloyN(Material):
         return (
             +3.19981e02
             + 2.47421e00 * Tc
-            - 2.49306e-02 * Tc ** 2
-            + 1.32517e-04 * Tc ** 3
-            - 3.58872e-07 * Tc ** 4
-            + 4.69003e-10 * Tc ** 5
-            - 2.32692e-13 * Tc ** 6
+            - 2.49306e-02 * Tc**2
+            + 1.32517e-04 * Tc**3
+            - 3.58872e-07 * Tc**4
+            + 4.69003e-10 * Tc**5
+            - 2.32692e-13 * Tc**6
         )
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
         r"""
-        average thermal expansion dL/L. Used for computing hot dimensions
+        average thermal expansion dL/L. Used for computing hot dimensions.
 
         Parameters
         ----------
@@ -137,7 +135,7 @@ class HastelloyN(Material):
         %dLL(T) in m/m/K
         """
         Tc = getTc(Tc, Tk)
-        refTempC = getTc(Tk=self.p.refTempK)
+        refTempC = getTc(Tk=self.refTempK)
         return 100.0 * self.meanCoefficientThermalExpansion(Tc=Tc) * (Tc - refTempC)
 
     def meanCoefficientThermalExpansion(self, Tk=None, Tc=None):
@@ -159,4 +157,4 @@ class HastelloyN(Material):
         Tc = getTc(Tc, Tk)
         Tk = getTk(Tc=Tc)
         self.checkPropertyTempRange("thermal expansion", Tk)
-        return 2.60282e-12 * Tc ** 2 + 7.69859e-10 * Tc + 1.21036e-05
+        return 2.60282e-12 * Tc**2 + 7.69859e-10 * Tc + 1.21036e-05

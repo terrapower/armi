@@ -12,17 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-r"""
-"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
+"""Test for xs nuclides."""
 import unittest
 
-from armi.nuclearDataIO import xsNuclides
 from armi.nucDirectory import nuclideBases
-from armi.tests import mockRunLogs
-from armi.tests import ISOAA_PATH
-from armi.nuclearDataIO import xsLibraries
 from armi.nuclearDataIO import isotxs
+from armi.nuclearDataIO import xsLibraries
+from armi.nuclearDataIO import xsNuclides
+from armi.tests import ISOAA_PATH
+from armi.tests import mockRunLogs
 
 
 class NuclideTests(unittest.TestCase):
@@ -62,30 +60,30 @@ class NuclideTests(unittest.TestCase):
 
     def test_nuclide_newLabelsDontCauseWarnings(self):
         with mockRunLogs.BufferLog() as logCapture:
-            self.assertEqual("", logCapture._outputStream)
+            self.assertEqual("", logCapture.getStdout())
             fe = nuclideBases.byName["FE"]
             feNuc = xsNuclides.XSNuclide(None, "FEAA")
             feNuc.isotxsMetadata["nuclideId"] = fe.name
             feNuc.updateBaseNuclide()
             self.assertEqual(fe, feNuc._base)
-            self.assertEqual("", logCapture._outputStream)
+            self.assertEqual("", logCapture.getStdout())
 
     def test_nuclide_oldLabelsCauseWarnings(self):
         with mockRunLogs.BufferLog() as logCapture:
-            self.assertEqual("", logCapture._outputStream)
+            self.assertEqual("", logCapture.getStdout())
             pu = nuclideBases.byName["PU239"]
             puNuc = xsNuclides.XSNuclide(None, "PLUTAA")
             puNuc.isotxsMetadata["nuclideId"] = pu.name
             puNuc.updateBaseNuclide()
             self.assertEqual(pu, puNuc._base)
-            length = len(logCapture._outputStream)
+            length = len(logCapture.getStdout())
             self.assertGreater(length, 15)
             # now get it with a legitmate same label, length shouldn't change
             puNuc = xsNuclides.XSNuclide(None, "PLUTAB")
             puNuc.isotxsMetadata["nuclideId"] = pu.name
             puNuc.updateBaseNuclide()
             self.assertEqual(pu, puNuc._base)
-            self.assertEqual(length, len(logCapture._outputStream))
+            self.assertEqual(length, len(logCapture.getStdout()))
 
     def test_nuclide_nuclideBaseMethodsShouldNotFail(self):
         for nuc in self.lib.nuclides:
@@ -103,7 +101,7 @@ class NuclideTests(unittest.TestCase):
         self.assertEqual(0.008091875669521187, sum(nuc.micros.nGamma))
 
     def test_nuclide_2dXsArrangementIsCorrect(self):
-        """manually compare some 2d XS data to ensure the correct coordinates"""
+        """Manually compare some 2d XS data to ensure the correct coordinates."""
         u235 = self.lib["U235AA"]
         self.assertAlmostEqual(5.76494979858, u235.micros.total[0, 0])
         self.assertAlmostEqual(6.5928812027, u235.micros.total[1, 0])
@@ -124,7 +122,7 @@ class NuclideTests(unittest.TestCase):
         self.assertAlmostEqual(973.399902343, pu239.micros.total[32, 1])
 
     def test_nuclide_scatterXsArrangementIsCorrect(self):
-        """manually compare scatter XS data to ensure the correct coordinates"""
+        """Manually compare scatter XS data to ensure the correct coordinates."""
         u235 = self.lib["U235AA"]
         elasticScatter = u235.micros.elasticScatter
         n2nScatter = u235.micros.n2nScatter
@@ -166,23 +164,34 @@ class NuclideTests(unittest.TestCase):
         self.assertAlmostEqual(0.457990020514, inelasticScatter[(2, 2)])
         self.assertAlmostEqual(1.16550609164e-07, n2nScatter[(19, 1)])
         self.assertAlmostEqual(5.22556074429e-05, inelasticScatter[(16, 2)])
-        ######
         # the code below is very useful for generating the above test information
-        ######
-        # for key, xs in pu239Scatter.items():
-        #    mk = max(key[1:])
-        #    if len(key)  == 5 and 1 in key and 2 in key and (mk <= 2 or mk > 15):
-        #        print ('self.assertAlmostEqual({}, pu239.micros[{}])'
-        #               .format(xs, key))
+        """
+        for key, xs in pu239Scatter.items():
+            mk = max(key[1:])
+            if len(key)  == 5 and 1 in key and 2 in key and (mk <= 2 or mk > 15):
+                print ('self.assertAlmostEqual({}, pu239.micros[{}])'
+                       .format(xs, key))
+        """
 
     def test_getMicroXS(self):
         """Check whether getMicroXS method returns the correct cross sections for the input nuclide."""
         u235Nuc = self.lib["U235AA"]
         for i in range(self.lib.numGroups):
-            ref_FissionXS = u235Nuc.micros.fission[i]
-            cur_FissionXS = u235Nuc.getMicroXS("fission", i)
-            self.assertAlmostEqual(ref_FissionXS, cur_FissionXS)
+            refFissionXS = u235Nuc.micros.fission[i]
+            curFissionXS = u235Nuc.getMicroXS("fission", i)
+            self.assertAlmostEqual(refFissionXS, curFissionXS)
 
+        # error raised if you attempt a bad group index
+        with self.assertRaises(IndexError):
+            u235Nuc.getMicroXS("fission", -999)
 
-if __name__ == "__main__":
-    unittest.main()
+        # zero returned if you try to grab a non-existant interaction
+        self.assertEqual(u235Nuc.getMicroXS("fake", 1), 0)
+
+    def test_getXS(self):
+        u235Nuc = self.lib["U235AA"]
+        refFission = u235Nuc.micros.fission
+        curFission = u235Nuc.getXS("fission")
+        self.assertAlmostEqual(len(refFission), len(curFission))
+        self.assertAlmostEqual(refFission[0], curFission[0])
+        self.assertAlmostEqual(refFission[1], curFission[1])

@@ -12,12 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""A place for the FuelHandler's Interface"""
+"""A place for the FuelHandler's Interface."""
 
-from armi import runLog
 from armi import interfaces
-from armi.utils import plotting
+from armi import runLog
 from armi.physics.fuelCycle import fuelHandlerFactory
+from armi.physics.fuelCycle.settings import CONF_PLOT_SHUFFLE_ARROWS
+from armi.physics.fuelCycle.settings import CONF_RUN_LATTICE_BEFORE_SHUFFLING
+from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
+from armi.utils import plotting
 
 
 class FuelHandlerInterface(interfaces.Interface):
@@ -28,6 +31,28 @@ class FuelHandlerInterface(interfaces.Interface):
     power or temperatures have been updated. This allows pre-run fuel management
     steps for highly customized fuel loadings. In typical runs, no fuel management
     occurs at the beginning of the first cycle and the as-input state is left as is.
+
+    .. impl:: ARMI provides a shuffle logic interface.
+        :id: I_ARMI_SHUFFLE
+        :implements: R_ARMI_SHUFFLE
+
+        This interface allows for a user to define custom shuffle logic that
+        modifies to the core model. Being based on the :py:class:`~armi.interfaces.Interface`
+        class, it has direct access to the current core model.
+
+        User logic is able to be executed from within the
+        :py:meth:`~armi.physics.fuelCycle.fuelHandlerInterface.FuelHandlerInterface.manageFuel` method,
+        which will use the :py:meth:`~armi.physics.fuelCycle.fuelHandlerFactory.fuelHandlerFactory`
+        to search for a Python file specified by the case setting ``shuffleLogic``.
+        If it exists, the fuel handler with name specified by the user via the ``fuelHandlerName``
+        case setting will be imported, and any actions in its ``outage`` method
+        will be executed at the :py:meth:`~armi.physics.fuelCycle.fuelHandlerInterface.FuelHandlerInterface.interactBOC`
+        hook.
+
+        If no class with the name specified by the ``fuelHandlerName`` setting is found
+        in the file with path ``shuffleLogic``, an error is returned.
+
+        See the user manual for how the custom shuffle logic file should be constructed.
     """
 
     name = "fuelHandler"
@@ -39,8 +64,6 @@ class FuelHandlerInterface(interfaces.Interface):
         # need order due to nature of moves but with fast membership tests
         self.moved = []
         self.cycle = 0
-        # filled during summary of EOC time in years of each cycle (time at which shuffling occurs)
-        self.cycleTime = {}
 
     @staticmethod
     def specifyInputs(cs):
@@ -48,7 +71,7 @@ class FuelHandlerInterface(interfaces.Interface):
             cs.getSetting(settingName): [
                 cs[settingName],
             ]
-            for settingName in ["shuffleLogic", "explicitRepeatShuffles"]
+            for settingName in [CONF_SHUFFLE_LOGIC, "explicitRepeatShuffles"]
             if cs[settingName]
         }
         return files
@@ -62,11 +85,13 @@ class FuelHandlerInterface(interfaces.Interface):
         # if lattice physics is requested, compute it here instead of after fuel management.
         # This enables XS to exist for branch searching, etc.
         mc2 = self.o.getInterface(function="latticePhysics")
-        if mc2 and self.cs["runLatticePhysicsBeforeShuffling"]:
+        xsgm = self.o.getInterface("xsGroups")
+        if mc2 and self.cs[CONF_RUN_LATTICE_BEFORE_SHUFFLING]:
             runLog.extra(
-                'Running {0} lattice physics before fuel management due to the "runLatticePhysicsBeforeShuffling"'
-                " setting being activated.".format(mc2)
+                f'Running {mc2} lattice physics before fuel management due to the "{CONF_RUN_LATTICE_BEFORE_SHUFFLING}"'
+                " setting being activated."
             )
+            xsgm.interactBOC(cycle=cycle)
             mc2.interactBOC(cycle=cycle)
 
         if self.enabled() and (
@@ -81,17 +106,13 @@ class FuelHandlerInterface(interfaces.Interface):
             self.manageFuel(cycle)
 
     def interactEOC(self, cycle=None):
-        timeYears = self.r.p.time
-        # keep track of the EOC time in years.
-        self.cycleTime[cycle] = timeYears
-        runLog.extra(
-            "There are {} assemblies in the Spent Fuel Pool".format(
-                len(self.r.core.sfp)
+        if self.r.sfp is not None:
+            runLog.extra(
+                f"There are {len(self.r.sfp)} assemblies in the Spent Fuel Pool"
             )
-        )
 
     def interactEOL(self):
-        """Make reports at EOL"""
+        """Make reports at EOL."""
         self.makeShuffleReport()
 
     def manageFuel(self, cycle):
@@ -104,7 +125,8 @@ class FuelHandlerInterface(interfaces.Interface):
         self.r.core.locateAllAssemblies()
         shuffleFactors, _ = fh.getFactorList(cycle)
         fh.outage(shuffleFactors)  # move the assemblies around
-        if self.cs["plotShuffleArrows"]:
+
+        if self.cs[CONF_PLOT_SHUFFLE_ARROWS]:
             arrows = fh.makeShuffleArrows()
             plotting.plotFaceMap(
                 self.r.core,
@@ -113,7 +135,6 @@ class FuelHandlerInterface(interfaces.Interface):
                 fName="{}.shuffles_{}.png".format(self.cs.caseTitle, self.r.p.cycle),
                 shuffleArrows=arrows,
             )
-            plotting.close()
 
     def makeShuffleReport(self):
         """
@@ -126,7 +147,6 @@ class FuelHandlerInterface(interfaces.Interface):
         See Also
         --------
         readMoves : reads this file and parses it.
-
         """
         fname = self.cs.caseTitle + "-SHUFFLES.txt"
         out = open(fname, "w")

@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """Tests for the composite pattern."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 from copy import deepcopy
 import unittest
 
@@ -40,7 +39,9 @@ from armi.tests import ISOAA_PATH
 
 class MockBP:
     allNuclidesInProblem = set(nuclideBases.byName.keys())
+    """:meta hide-value:"""
     activeNuclides = allNuclidesInProblem
+    """:meta hide-value:"""
     inactiveNuclides = set()
     elementsToExpand = set()
     customIsotopics = {}
@@ -49,25 +50,29 @@ class MockBP:
 def getDummyParamDefs():
     dummyDefs = parameters.ParameterDefinitionCollection()
     with dummyDefs.createBuilder() as pb:
-
-        pb.defParam("type", units="none", description="Fake type")
+        pb.defParam("type", units=utils.units.UNITLESS, description="Fake type")
     return dummyDefs
+
+
+_testGrid = grids.CartesianGrid.fromRectangle(0.01, 0.01)
 
 
 class DummyComposite(composites.Composite):
     pDefs = getDummyParamDefs()
 
-    def __init__(self, name):
+    def __init__(self, name, i=0):
         composites.Composite.__init__(self, name)
         self.p.type = name
+        self.spatialLocator = grids.IndexLocation(i, i, i, _testGrid)
 
 
 class DummyLeaf(composites.Composite):
     pDefs = getDummyParamDefs()
 
-    def __init__(self, name):
+    def __init__(self, name, i=0):
         composites.Composite.__init__(self, name)
         self.p.type = name
+        self.spatialLocator = grids.IndexLocation(i, i, i, _testGrid)
 
     def getChildren(
         self, deep=False, generationNum=1, includeMaterials=False, predicate=None
@@ -91,21 +96,27 @@ class TestCompositePattern(unittest.TestCase):
     def setUp(self):
         self.cs = settings.Settings()
         runLog.setVerbosity("error")
-        container = DummyComposite("inner test fuel")
+        container = DummyComposite("inner test fuel", 99)
         for i in range(5):
-            leaf = DummyLeaf("duct {}".format(i))
+            leaf = DummyLeaf("duct {}".format(i), i + 100)
             leaf.setType("duct")
             container.add(leaf)
-        nested = DummyComposite("clad")
+        nested = DummyComposite("clad", 98)
         nested.setType("clad")
-        self.secondGen = DummyComposite("liner")
-        self.thirdGen = DummyLeaf("pin 77")
+        self.secondGen = DummyComposite("liner", 97)
+        self.thirdGen = DummyLeaf("pin 77", 33)
         self.secondGen.add(self.thirdGen)
         nested.add(self.secondGen)
         container.add(nested)
         self.container = container
 
-    def test_Composite(self):
+    def test_composite(self):
+        """Test basic Composite things.
+
+        .. test:: Composites are part of a hierarchical model.
+            :id: T_ARMI_CMP0
+            :tests: R_ARMI_CMP
+        """
         container = self.container
 
         children = container.getChildren()
@@ -119,6 +130,12 @@ class TestCompositePattern(unittest.TestCase):
         self.assertIn(self.thirdGen, list(self.container.iterComponents()))
 
     def test_getChildren(self):
+        """Test the get children method.
+
+        .. test:: Composites are part of a hierarchical model.
+            :id: T_ARMI_CMP1
+            :tests: R_ARMI_CMP
+        """
         # There are 5 leaves and 1 composite in container. The composite has one leaf.
         firstGen = self.container.getChildren()
         self.assertEqual(len(firstGen), 6)
@@ -135,6 +152,42 @@ class TestCompositePattern(unittest.TestCase):
             deep=True, predicate=lambda o: o.p.type == "liner"
         )
         self.assertEqual(len(onlyLiner), 1)
+
+    def test_getName(self):
+        """Test the getName method.
+
+        .. test:: Composites names should be accessible.
+            :id: T_ARMI_CMP_GET_NAME
+            :tests: R_ARMI_CMP_GET_NAME
+        """
+        self.assertEqual(self.secondGen.getName(), "liner")
+        self.assertEqual(self.thirdGen.getName(), "pin 77")
+        self.assertEqual(self.secondGen.getName(), "liner")
+        self.assertEqual(self.container.getName(), "inner test fuel")
+
+    def test_sort(self):
+        # in this case, the children should start sorted
+        c0 = [c.name for c in self.container.getChildren()]
+        self.container.sort()
+        c1 = [c.name for c in self.container.getChildren()]
+        self.assertNotEqual(c0, c1)
+
+        # verify repeated sortings behave
+        for _ in range(3):
+            self.container.sort()
+            ci = [c.name for c in self.container.getChildren()]
+            self.assertEqual(c1, ci)
+
+        # break the order
+        children = self.container.getChildren()
+        self.container._children = children[2:] + children[:2]
+        c2 = [c.name for c in self.container.getChildren()]
+        self.assertNotEqual(c1, c2)
+
+        # verify the sort order
+        self.container.sort()
+        c3 = [c.name for c in self.container.getChildren()]
+        self.assertEqual(c1, c3)
 
     def test_areChildernOfType(self):
         expectedResults = [False, False, False, False, False, True]
@@ -189,6 +242,12 @@ class TestCompositePattern(unittest.TestCase):
         )
 
     def test_hasFlags(self):
+        """Ensure flags are queryable.
+
+        .. test:: Flags can be queried.
+            :id: T_ARMI_CMP_FLAG
+            :tests: R_ARMI_CMP_FLAG
+        """
         self.container.setType("fuel")
         self.assertFalse(self.container.hasFlags(Flags.SHIELD | Flags.FUEL, exact=True))
         self.assertTrue(self.container.hasFlags(Flags.FUEL))
@@ -260,9 +319,13 @@ class TestCompositePattern(unittest.TestCase):
         self.assertEqual(len(rRates), 6)
         self.assertEqual(sum([r for r in rRates.values()]), 0)
 
+    def test_syncParameters(self):
+        data = [{"serialNum": 123}, {"flags": "FAKE"}]
+        numSynced = self.container._syncParameters(data, {})
+        self.assertEqual(numSynced, 2)
+
 
 class TestCompositeTree(unittest.TestCase):
-
     blueprintYaml = """
     name: test assembly
     height: [1, 1]  # 2 blocks
@@ -327,7 +390,7 @@ class TestCompositeTree(unittest.TestCase):
 
     def setUp(self):
         self.Block = loadTestBlock()
-        self.r = self.Block.r
+        self.r = self.Block.core.r
         self.Block.setHeight(100.0)
         self.refDict = {
             "U235": 0.00275173784234,
@@ -375,7 +438,10 @@ class TestCompositeTree(unittest.TestCase):
         runLog.info(self.r.core.getFirstBlock().getComponents()[0].constituentReport())
 
     def test_getNuclides(self):
-        """getNuclides should return all keys that have ever been in this block, including values that are at trace."""
+        """
+        The getNuclides should return all keys that have ever been in this block, including values
+        that are at trace.
+        """
         cur = self.Block.getNuclides()
         ref = self.refDict.keys()
         for key in ref:
@@ -384,9 +450,8 @@ class TestCompositeTree(unittest.TestCase):
 
     def test_getFuelMass(self):
         """
-        This test creates a dummy assembly and ensures that the assembly, block, and fuel component masses are
-        consistent.
-        `getFuelMass` ensures that the fuel component is used to `getMass`
+        This test creates a dummy assembly and ensures that the assembly, block, and fuel component
+        masses are consistent. `getFuelMass` ensures that the fuel component is used to `getMass`.
         """
         cs = settings.Settings()
         assemDesign = assemblyBlueprint.AssemblyBlueprint.load(self.blueprintYaml)
@@ -400,29 +465,14 @@ class TestCompositeTree(unittest.TestCase):
 
         self.assertEqual(fuelMass, a.getFuelMass())
 
-    def test_getNeutronEnergyDepositionConstants(self):
-        """Until we improve test architecture, this test can not be more interesting"""
-        with self.assertRaises(RuntimeError):
-            # fails because this test reactor does not have a cross-section library
-            _x = self.r.core.getNeutronEnergyDepositionConstants()
-
-    def test_getGammaEnergyDepositionConstants(self):
-        """Until we improve test architecture, this test can not be more interesting"""
-        with self.assertRaises(RuntimeError):
-            # fails because this test reactor does not have a cross-section library
-            _x = self.r.core.getGammaEnergyDepositionConstants()
-
     def test_getChildrenIncludeMaterials(self):
         """Test that the ``StateRetainer`` retains material properties when they are modified."""
         cs = settings.Settings()
         assemDesign = assemblyBlueprint.AssemblyBlueprint.load(self.blueprintYaml)
         a = assemDesign.construct(cs, MockBP)
         component = a[0][0]
-        referenceDensity = component.material.p.density
-        self.assertEqual(component.material.p.density, referenceDensity)
-        with a.retainState():
-            component.material.p.density = 5.0
-        self.assertEqual(component.material.p.density, referenceDensity)
+        referenceDensity = component.material.pseudoDensity(Tc=200)
+        self.assertEqual(component.material.pseudoDensity(Tc=200), referenceDensity)
 
     def test_getHMMass(self):
         fuelDims = {"Tinput": 273.0, "Thot": 273.0, "od": 0.76, "id": 0.0, "mult": 1.0}
@@ -485,6 +535,12 @@ class TestCompositeTree(unittest.TestCase):
         self.assertAlmostEqual(cur, ref, places=places)
 
     def test_getMaxParam(self):
+        """Test getMaxParam().
+
+        .. test:: Composites have parameter collections.
+            :id: T_ARMI_CMP_PARAMS0
+            :tests: R_ARMI_CMP_PARAMS
+        """
         for ci, c in enumerate(self.Block):
             if isinstance(c, basicShapes.Circle):
                 c.p.id = ci
@@ -495,6 +551,12 @@ class TestCompositeTree(unittest.TestCase):
         self.assertIs(comp, lastSeen)
 
     def test_getMinParam(self):
+        """Test getMinParam().
+
+        .. test:: Composites have parameter collections.
+            :id: T_ARMI_CMP_PARAMS1
+            :tests: R_ARMI_CMP_PARAMS
+        """
         for ci, c in reversed(list(enumerate(self.Block))):
             if isinstance(c, basicShapes.Circle):
                 c.p.id = ci
@@ -577,6 +639,12 @@ class TestMiscMethods(unittest.TestCase):
         self.obj = loadTestBlock()
 
     def test_setMass(self):
+        """Test setting and retrieving mass.
+
+        .. test:: Mass of a composite is retrievable.
+            :id: T_ARMI_CMP_GET_MASS
+            :tests: R_ARMI_CMP_GET_MASS
+        """
         masses = {"U235": 5.0, "U238": 3.0}
         self.obj.setMasses(masses)
         self.assertAlmostEqual(self.obj.getMass("U235"), 5.0)
@@ -593,13 +661,93 @@ class TestMiscMethods(unittest.TestCase):
         group.setMass("U235", 5)
         self.assertAlmostEqual(group.getMass("U235"), 5)
 
+        # ad a second block, and confirm it works
+        group.add(loadTestBlock())
+        self.assertGreater(group.getMass("U235"), 5)
+        self.assertAlmostEqual(group.getMass("U235"), 1364.28376185)
+
+    def test_getNumberDensities(self):
+        """Get number densities from composite.
+
+        .. test:: Number density of composite is retrievable.
+            :id: T_ARMI_CMP_GET_NDENS0
+            :tests: R_ARMI_CMP_GET_NDENS
+        """
+        # verify the number densities from the composite
+        ndens = self.obj.getNumberDensities()
+        self.assertAlmostEqual(0.0001096, ndens["SI"], 7)
+        self.assertAlmostEqual(0.0000368, ndens["W"], 7)
+
+        ndens = self.obj.getNumberDensity("SI")
+        self.assertAlmostEqual(0.0001096, ndens, 7)
+
+        # sum nuc densities from children components
+        totalVolume = self.obj.getVolume()
+        childDensities = {}
+        for o in self.obj.getChildren():
+            m = o.getVolume()
+            d = o.getNumberDensities()
+            for nuc, val in d.items():
+                if nuc not in childDensities:
+                    childDensities[nuc] = val * (m / totalVolume)
+                else:
+                    childDensities[nuc] += val * (m / totalVolume)
+
+        # verify the children match this composite
+        for nuc in ["FE", "SI"]:
+            self.assertAlmostEqual(
+                self.obj.getNumberDensity(nuc), childDensities[nuc], 4, msg=nuc
+            )
+
+    def test_getNumberDensitiesWithExpandedFissionProducts(self):
+        """Get number densities from composite.
+
+        .. test:: Get number densities.
+            :id: T_ARMI_CMP_NUC
+            :tests: R_ARMI_CMP_NUC
+        """
+        # verify the number densities from the composite
+        ndens = self.obj.getNumberDensities(expandFissionProducts=True)
+        self.assertAlmostEqual(0.0001096, ndens["SI"], 7)
+        self.assertAlmostEqual(0.0000368, ndens["W"], 7)
+
+        ndens = self.obj.getNumberDensity("SI")
+        self.assertAlmostEqual(0.0001096, ndens, 7)
+
+        # set the lumped fission product mapping
+        fpd = getDummyLFPFile()
+        lfps = fpd.createLFPsFromFile()
+        self.obj.setLumpedFissionProducts(lfps)
+
+        # sum nuc densities from children components
+        totalVolume = self.obj.getVolume()
+        childDensities = {}
+        for o in self.obj.getChildren():
+            # get the number densities with and without fission products
+            d0 = o.getNumberDensities(expandFissionProducts=False)
+            d = o.getNumberDensities(expandFissionProducts=True)
+
+            # prove that the expanded fission products have more isotopes
+            if len(d0) > 0:
+                self.assertGreater(len(d), len(d0))
+
+            # sum the child nuclide densites (weighted by mass fraction)
+            m = o.getVolume()
+            for nuc, val in d.items():
+                if nuc not in childDensities:
+                    childDensities[nuc] = val * (m / totalVolume)
+                else:
+                    childDensities[nuc] += val * (m / totalVolume)
+
+        # verify the children match this composite
+        for nuc in ["FE", "SI"]:
+            self.assertAlmostEqual(
+                self.obj.getNumberDensity(nuc), childDensities[nuc], 4, msg=nuc
+            )
+
     def test_dimensionReport(self):
         report = self.obj.setComponentDimensionsReport()
         self.assertEqual(len(report), len(self.obj))
-
-    def test_printDensities(self):
-        lines = self.obj.printDensities()
-        self.assertEqual(len(lines), len(self.obj.getNuclides()))
 
     def test_getAtomicWeight(self):
         weight = self.obj.getAtomicWeight()
@@ -628,7 +776,3 @@ class TestGetReactionRateDict(unittest.TestCase):
             nucName="PU239", lib=lib, xsSuffix="AA", mgFlux=1, nDens=1
         )
         self.assertEqual(rxRatesDict["nG"], sum(lib["PU39AA"].micros.nGamma))
-
-
-if __name__ == "__main__":
-    unittest.main()

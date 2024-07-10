@@ -25,11 +25,8 @@ from armi.materials.material import Material
 
 
 class Custom(Material):
-    """
-    Custom Materials have user input properties.
-    """
+    """Custom Materials have user input properties."""
 
-    name = "Custom Material"
     enrichedNuclide = "U235"
 
     def __init__(self):
@@ -40,20 +37,20 @@ class Custom(Material):
         by a constant user-input density.
         """
         Material.__init__(self)
-        self.p.density = 1.0
+        self.customDensity = 1.0
 
-    def density(self, Tk=None, Tc=None):
-        r"""
+    def pseudoDensity(self, Tk=None, Tc=None):
+        """
         The density value is set in the loading input.
 
         In some cases it needs to be set after full core assemblies are populated (e.g. for
         CustomLocation materials), so the missing density warning will appear no matter
         what.
         """
-        return self.p.density
+        return self.customDensity
 
     def setMassFrac(self, *args, **kwargs):
-        if self.p.density == 1.0:
+        if self.customDensity == 1.0:
             raise ValueError(
                 "Cannot set mass fractions on Custom materials unless a density "
                 "is defined."

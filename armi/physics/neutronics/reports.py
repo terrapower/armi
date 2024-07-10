@@ -17,10 +17,18 @@ from collections import defaultdict
 from armi.bookkeeping.report import newReportUtils
 from armi.bookkeeping.report import newReports
 from armi.reactor.flags import Flags
+from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import (
+    CONF_FP_MODEL,
+)
+from armi.physics.neutronics.settings import (
+    CONF_BOUNDARIES,
+    CONF_NEUTRONICS_KERNEL,
+    CONF_NEUTRONICS_TYPE,
+)
 
 
 def insertNeutronicsReport(r, cs, report, stage):
-    """Generate the Neutronics section of the Report
+    """Generate the Neutronics section of the Report.
 
     Parameters
     ----------
@@ -55,14 +63,19 @@ def insertNeutronicsBOLContent(r, cs, report):
     table = section.get(
         newReportUtils.SETTINGS, newReports.Table("Settings", "Overview of the Run")
     )
-    for key in ["boundaries", "neutronicsKernel", "neutronicsType", "fpModel"]:
+    for key in [
+        CONF_BOUNDARIES,
+        CONF_NEUTRONICS_KERNEL,
+        CONF_NEUTRONICS_TYPE,
+        CONF_FP_MODEL,
+    ]:
         table.addRow([key, cs[key]])
 
     insertInitialCoreFuelAssem(r, report)
 
 
 def neutronicsPlotting(r, report, cs):
-    """Keeps track of plotting content which is collected when Standard Stage of the report
+    """Keeps track of plotting content which is collected when Standard Stage of the report.
 
     Parameters
     ----------
@@ -118,7 +131,7 @@ def neutronicsPlotting(r, report, cs):
 
 
 def insertInitialCoreFuelAssem(r, report):
-    """Creates table of initial core fuel assemblies
+    """Creates table of initial core fuel assemblies.
 
     Parameters
     ----------
@@ -150,7 +163,7 @@ def insertInitialCoreFuelAssem(r, report):
 
 
 def generateLinePlot(subsectionHeading, r, report, yaxis, name, caption=""):
-    """Creates the TimeSeries in the Report for finding peak values vs. time
+    """Creates the TimeSeries in the Report for finding peak values vs. time.
 
     Parameters
     ----------
@@ -175,7 +188,7 @@ def generateLinePlot(subsectionHeading, r, report, yaxis, name, caption=""):
     maxValue = defaultdict(float)
     # dictionary for a specific time step.
     for a in r.core.getAssemblies(Flags.FUEL):
-        if BURNUP_PLOT == subsectionHeading:
+        if subsectionHeading == BURNUP_PLOT:
             maxValue[a.p.type] = max(maxValue[a.p.type], a.p.maxPercentBu)
         else:
             maxValue[a.p.type] = max(maxValue[a.p.type], a.p.maxDpaPeak)

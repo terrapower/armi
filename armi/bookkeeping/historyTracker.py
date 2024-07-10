@@ -69,6 +69,7 @@ See :ref:`detail-assems`.
 
 """
 from typing import Tuple
+import traceback
 
 import tabulate
 
@@ -82,7 +83,7 @@ ORDER = 2 * interfaces.STACK_ORDER.BEFORE + interfaces.STACK_ORDER.BOOKKEEPING
 
 
 def describeInterfaces(cs):
-    """Function for exposing interface(s) to other code"""
+    """Function for exposing interface(s) to other code."""
     if cs["runType"] not in (operators.RunTypes.EQUILIBRIUM):
         klass = HistoryTrackerInterface
         return (klass, {})
@@ -94,6 +95,22 @@ class HistoryTrackerInterface(interfaces.Interface):
     """
     Makes reports of the state that individual assemblies encounter.
 
+    .. impl:: This interface allows users to retrieve run data from somewhere other
+        than the database.
+        :id: I_ARMI_HIST_TRACK
+        :implements: R_ARMI_HIST_TRACK
+
+        This is a special :py:class:`Interface <armi.interfaces.Interface>` that is
+        designed to store assembly and cross section data throughout time. This is done
+        directly, with time-based lists of assembly data, and dictionaries of cross-
+        section data. Users turn this feature on or off using the ``"detailAllAssems"``
+        setting.
+
+    Notes
+    -----
+    This pre-dates the ARMI database system, and we would like to stop supporting this.
+    Please don't find new uses for this; use the databases.
+
     Attributes
     ----------
     detailAssemblyNames : list
@@ -101,14 +118,14 @@ class HistoryTrackerInterface(interfaces.Interface):
 
     time : list
         list of reactor time in years
-
     """
 
     name = "history"
 
     def __init__(self, r, cs):
         """
-        HistoryTracker that uses the database to look up parameter history rather than storing them in memory.
+        HistoryTracker that uses the database to look up parameter history rather than
+        storing them in memory.
 
         Warning
         -------
@@ -139,9 +156,7 @@ class HistoryTrackerInterface(interfaces.Interface):
         self._writeDetailAssemblyHistories()
 
     def addDetailAssembliesBOL(self):
-        """
-        Find and activate assemblies that the user requested detailed treatment of.
-        """
+        """Find and activate assemblies that the user requested detailed treatment of."""
         if self.cs["detailAssemLocationsBOL"]:
             for locLabel in self.cs["detailAssemLocationsBOL"]:
                 ring, pos, _axial = grids.locatorLabelToIndices(locLabel)
@@ -192,9 +207,7 @@ class HistoryTrackerInterface(interfaces.Interface):
                 self.addDetailAssembly(a)
 
     def _writeDetailAssemblyHistories(self):
-        """
-        Write data file with assembly histories
-        """
+        """Write data file with assembly histories."""
         for a in self.getDetailAssemblies():
             self.writeAssemHistory(a)
 
@@ -216,9 +229,7 @@ class HistoryTrackerInterface(interfaces.Interface):
         return "{0}-{1}-{2}Hist.txt".format(self.cs.caseTitle, label, letter)
 
     def getTrackedParams(self):
-        """
-        Give the list of block parameters that are being tracked.
-        """
+        """Give the list of block parameters that are being tracked."""
         trackedParams = {"residence", "ztop", "zbottom"}
 
         # loop through interfaces to allow them to add custom params.
@@ -235,7 +246,7 @@ class HistoryTrackerInterface(interfaces.Interface):
             self.detailAssemblyNames.append(aName)
 
     def getDetailAssemblies(self):
-        r"""returns the assemblies that have been signaled as detail assemblies."""
+        """Returns the assemblies that have been signaled as detail assemblies."""
         assems = []
         if not self.detailAssemblyNames:
             runLog.info("No detail assemblies HistoryTrackerInterface")
@@ -353,11 +364,11 @@ class HistoryTrackerInterface(interfaces.Interface):
             keys = [key for key in keys if key != "loc"]
             data = dbi.getHistories(blocks, keys, timesteps)
             self._preloadedBlockHistory = data
-        except:  # pylint: disable=bare-except
+        except:  # noqa: bare-except
             # fails during the beginning of standard runs, but that's ok
             runLog.info(
-                f"Unable to pre-load block history values due to error:"
-                "\n{traceback.format_exc()}"
+                "Unable to pre-load block history values due to error:"
+                f"\n{traceback.format_exc()}"
             )
             self.unloadBlockHistoryVals()
 
@@ -425,7 +436,7 @@ class HistoryTrackerInterface(interfaces.Interface):
 
     def getTimeSteps(self, a=None):
         r"""
-        return list of time steps values (in years) that are available.
+        Return list of time steps values (in years) that are available.
 
         Parameters
         ----------

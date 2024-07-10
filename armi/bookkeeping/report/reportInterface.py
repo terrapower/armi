@@ -12,9 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-r"""
-This interface serves the reporting needs of ARMI. If there is any information that a user desires
-to show in PDF form to others this is the place to do it.
+"""
+This interface serves the reporting needs of ARMI.
+
+If there is any information that a user desires to show in PDF form to
+others this is the place to do it.
 """
 import re
 
@@ -23,6 +25,7 @@ from armi import runLog
 from armi.bookkeeping import report
 from armi.bookkeeping.report import reportingUtils
 from armi.physics import neutronics
+from armi.physics.neutronics.settings import CONF_NEUTRONICS_TYPE
 from armi.reactor.flags import Flags
 from armi.utils import directoryChangers
 from armi.utils import reportPlotting
@@ -31,14 +34,14 @@ ORDER = interfaces.STACK_ORDER.BEFORE + interfaces.STACK_ORDER.BOOKKEEPING
 
 
 def describeInterfaces(cs):
-    """Function for exposing interface(s) to other code"""
+    """Function for exposing interface(s) to other code."""
     if cs["genReports"]:
         return (ReportInterface, {})
     return None
 
 
 class ReportInterface(interfaces.Interface):
-    """An interface to manage the use of the report system"""
+    """An interface to manage the use of the report system."""
 
     name = "report"
 
@@ -83,7 +86,7 @@ class ReportInterface(interfaces.Interface):
         )
 
         if self.cs["plots"]:
-            adjoint = self.cs["neutronicsType"] == neutronics.ADJREAL_CALC
+            adjoint = self.cs[CONF_NEUTRONICS_TYPE] == neutronics.ADJREAL_CALC
             figName = (
                 self.cs.caseTitle
                 + "_{0}_{1}".format(cycle, node)
@@ -115,7 +118,7 @@ class ReportInterface(interfaces.Interface):
         reportingUtils.makeBlockDesignReport(self.r)
 
     def interactEOL(self):
-        """Adds the data to the report, and generates it"""
+        """Adds the data to the report, and generates it."""
         b = self.r.core.getFirstBlock(Flags.FUEL)
         b.setAreaFractionsReport()
 
@@ -166,7 +169,8 @@ class ReportInterface(interfaces.Interface):
     #        Misc Summaries
     # --------------------------------------------
     def writeRunSummary(self):
-        """Make a summary of the run"""
+        """Make a summary of the run."""
         # spent fuel pool report
-        self.r.core.sfp.report()
-        self.r.core.sfp.count()
+        if self.r.sfp is not None:
+            self.r.sfp.report()
+            self.r.sfp.count()

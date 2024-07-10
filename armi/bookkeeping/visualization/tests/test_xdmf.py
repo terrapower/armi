@@ -27,7 +27,6 @@ class TestXdmf(unittest.TestCase):
     """
 
     def test_dedupTimes(self):
-        # pylint: disable = protected-access
         # no duplicates
         self.assertEqual(
             xdmf.XdmfDumper._dedupTimes([1.0 * t for t in range(10)]),

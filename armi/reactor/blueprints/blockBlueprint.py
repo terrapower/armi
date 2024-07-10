@@ -12,18 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-This module defines the ARMI input for a block definition, and code for constructing an ARMI ``Block``.
-"""
+"""This module defines the ARMI input for a block definition, and code for constructing an ARMI ``Block``."""
 import collections
+from inspect import signature
+from typing import Iterable, Set, Iterator
 
 import yamlize
 
 from armi import getPluginManagerOrFail, runLog
+from armi.materials.material import Material
 from armi.reactor import blocks
+from armi.reactor.composites import Composite
 from armi.reactor import parameters
 from armi.reactor.flags import Flags
 from armi.reactor.blueprints import componentBlueprint
+from armi.reactor.components.component import Component
 from armi.reactor.converters import blockConverters
 from armi.settings.fwSettings import globalSettings
 
@@ -39,7 +42,31 @@ def _configureGeomOptions():
 
 
 class BlockBlueprint(yamlize.KeyedList):
-    """Input definition for Block."""
+    """Input definition for Block.
+
+    .. impl:: Create a Block from blueprint file.
+        :id: I_ARMI_BP_BLOCK
+        :implements: R_ARMI_BP_BLOCK
+
+        Defines a yaml construct that allows the user to specify attributes of a block from within
+        their blueprints file, including a name, flags, a radial grid to specify locations of pins,
+        and the name of a component which drives the axial expansion of the block (see
+        :py:mod:`~armi.reactor.converters.axialExpansionChanger`).
+
+        In addition, the user may specify key-value pairs to specify the components contained within
+        the block, where the keys are component names and the values are component blueprints (see
+        :py:class:`~armi.reactor.blueprints.ComponentBlueprint.ComponentBlueprint`).
+
+        Relies on the underlying infrastructure from the ``yamlize`` package for reading from text
+        files, serialization, and internal storage of the data.
+
+        Is implemented into a blueprints file by being imported and used as an attribute within the
+        larger :py:class:`~armi.reactor.blueprints.Blueprints` class.
+
+        Includes a ``construct`` method, which instantiates an instance of
+        :py:class:`~armi.reactor.blocks.Block` with the characteristics as specified in the
+        blueprints.
+    """
 
     item_type = componentBlueprint.ComponentBlueprint
     key_attr = componentBlueprint.ComponentBlueprint.name
@@ -78,8 +105,8 @@ class BlockBlueprint(yamlize.KeyedList):
 
         Parameters
         ----------
-        cs : CaseSettings
-            CaseSettings object for the appropriate simulation.
+        cs : Settings
+            Settings object for the appropriate simulation.
 
         blueprint : Blueprints
             Blueprints object containing various detailed information, such as nuclides to model
@@ -115,11 +142,24 @@ class BlockBlueprint(yamlize.KeyedList):
         self._checkByComponentMaterialInput(materialInput)
 
         for componentDesign in self:
-            filteredMaterialInput = self._filterMaterialInput(
+            filteredMaterialInput, byComponentMatModKeys = self._filterMaterialInput(
                 materialInput, componentDesign
             )
             c = componentDesign.construct(blueprint, filteredMaterialInput)
             components[c.name] = c
+
+            # check that the mat mods for this component are valid options
+            # this will only examine by-component mods, block mods are done later
+            if isinstance(c, Component):
+                # there are other things like composite groups that don't get
+                # material modifications -- skip those
+                validMatModOptions = self._getMaterialModsFromBlockChildren(c)
+                for key in byComponentMatModKeys:
+                    if key not in validMatModOptions:
+                        raise ValueError(
+                            f"{c} in block {self.name} has invalid material modification: {key}"
+                        )
+
             if spatialGrid:
                 componentLocators = gridDesign.getMultiLocator(
                     spatialGrid, componentDesign.latticeIDs
@@ -140,6 +180,19 @@ class BlockBlueprint(yamlize.KeyedList):
                     elif not mult or mult == 1.0:
                         # learn mult from grid definition
                         c.setDimension("mult", len(c.spatialLocator))
+
+        # check that the block level mat mods use valid options in the same way
+        # as we did for the by-component mods above
+        validMatModOptions = self._getBlockwiseMaterialModifierOptions(
+            components.values()
+        )
+
+        if "byBlock" in materialInput:
+            for key in materialInput["byBlock"]:
+                if key not in validMatModOptions:
+                    raise ValueError(
+                        f"Block {self.name} has invalid material modification key: {key}"
+                    )
 
         # Resolve linked dims after all components in the block are created
         for c in components.values():
@@ -167,12 +220,10 @@ class BlockBlueprint(yamlize.KeyedList):
                 b.setAxialExpTargetComp(components[self.axialExpTargetComponent])
             except KeyError as noMatchingComponent:
                 raise RuntimeError(
-                    "Block {0} --> axial expansion target component {1} specified in the blueprints does not "
-                    "match any component names. Revise axial expansion target component in blueprints "
-                    "to match the name of a component and retry.".format(
-                        b,
-                        self.axialExpTargetComponent,
-                    )
+                    f"Block {b} --> axial expansion target component {self.axialExpTargetComponent} "
+                    "specified in the blueprints does not match any component names. "
+                    "Revise axial expansion target component in blueprints "
+                    "to match the name of a component and retry."
                 ) from noMatchingComponent
 
         for c in components.values():
@@ -196,6 +247,43 @@ class BlockBlueprint(yamlize.KeyedList):
                 runLog.warning(str(e), single=True)
         return b
 
+    def _getBlockwiseMaterialModifierOptions(
+        self, children: Iterable[Composite]
+    ) -> Set[str]:
+        """Collect all the material modifiers that exist on a block."""
+        validMatModOptions = set()
+        for c in children:
+            perChildModifiers = self._getMaterialModsFromBlockChildren(c)
+            validMatModOptions.update(perChildModifiers)
+        return validMatModOptions
+
+    def _getMaterialModsFromBlockChildren(self, c: Composite) -> Set[str]:
+        """Collect all the material modifiers from a child of a block."""
+        perChildModifiers = set()
+        for material in self._getMaterialsInComposite(c):
+            for materialParentClass in material.__class__.__mro__:
+                # we must loop over parents as well, since applyInputParams
+                # could call to Parent.applyInputParams()
+                if issubclass(materialParentClass, Material):
+                    perChildModifiers.update(
+                        signature(
+                            materialParentClass.applyInputParams
+                        ).parameters.keys()
+                    )
+        # self is a parameter to methods, so it gets picked up here
+        # but that's obviously not a real material modifier
+        perChildModifiers.discard("self")
+        return perChildModifiers
+
+    def _getMaterialsInComposite(self, child: Composite) -> Iterator[Material]:
+        """Collect all the materials in a composite."""
+        # Leaf node, no need to traverse further down
+        if isinstance(child, Component):
+            yield child.material
+            return
+        # Don't apply modifications to other things that could reside
+        # in a block e.g., component groups
+
     def _checkByComponentMaterialInput(self, materialInput):
         for component in materialInput:
             if component != "byBlock":
@@ -216,6 +304,7 @@ class BlockBlueprint(yamlize.KeyedList):
         for a given component, the by-component value will be used.
         """
         filteredMaterialInput = {}
+        byComponentMatModKeys = set()
 
         # first add the by-block modifications without question
         if "byBlock" in materialInput:
@@ -232,13 +321,14 @@ class BlockBlueprint(yamlize.KeyedList):
                 # overwriting any by-block modifications of the same type
                 if component == componentDesign.name:
                     for modName, modVal in mod.items():
+                        byComponentMatModKeys.add(modName)
                         filteredMaterialInput[modName] = modVal
 
-        return filteredMaterialInput
+        return filteredMaterialInput, byComponentMatModKeys
 
     def _getGridDesign(self, blueprint):
         """
-        Get the appropriate grid design
+        Get the appropriate grid design.
 
         This happens when a lattice input is provided on the block. Otherwise all
         components are ambiguously defined in the block.
@@ -296,9 +386,7 @@ for paramDef in parameters.forType(blocks.Block).inCategory(
 
 
 def _setBlueprintNumberOfAxialMeshes(meshPoints, factor):
-    """
-    Set the blueprint number of axial mesh based on the axial mesh refinement factor.
-    """
+    """Set the blueprint number of axial mesh based on the axial mesh refinement factor."""
     if factor <= 0:
         raise ValueError(
             "A positive axial mesh refinement factor "

@@ -11,7 +11,6 @@ custom isotopics:
         U238: 0.0134125
     PuUZr:
         input format: mass fractions
-        density: 9.491820414019937
         PU239: 0.1
         U235: 0.15
         U238: 0.65
@@ -237,6 +236,14 @@ blocks:
             isotopics: MOX
             mult: 169.0
             od: 0.86602
+        bond: &component_fuel_bond2
+            shape: Circle
+            material: Sodium
+            Tinput: 450.0
+            Thot: 450.0
+            id: fuel.od
+            mult: fuel.mult
+            od: liner1.id
         clad: *component_fuel_clad
         liner1: &component_fuel2_liner1
             shape: Circle
@@ -256,7 +263,6 @@ blocks:
             mergeWith: clad
             mult: 169.0
             od: 0.99
-        bond: *component_fuel_bond
         wire: *component_fuel_wire
         coolant: *component_fuel_coolant
         duct: *component_fuel_duct
@@ -377,7 +383,7 @@ assemblies:
         blocks: [*block_grid_plate, *block_fuel2, *block_fuel2, *block_fuel2, *block_plenum]
         height: *standard_heights
         axial mesh points: *standard_axial_mesh_points
-        xs types: *igniter_fuel_xs_types
+        xs types: &middle_fuel_xs_types [Z, Z, Z, Z, Z]
     annular fuel:
         specifier: AF
         blocks: [*block_grid_plate, *block_fuel3, *block_fuel3, *block_fuel3, *block_plenum]

@@ -17,8 +17,9 @@ Mixed-oxide (MOX) ceramic fuel.
 
 A definitive source for these properties is [#ornltm20002]_.
 
-.. [#ornltm20002] Thermophysical Properties of MOX and UO2 Fuels Including the Effects of Irradiation. S.G. Popov, et.al. 
-    Oak Ridge National Laboratory. ORNL/TM-2000/351 https://rsicc.ornl.gov/fmdp/tm2000-351.pdf
+.. [#ornltm20002] Thermophysical Properties of MOX and UO2 Fuels Including the Effects of
+    Irradiation. S.G. Popov, et.al.  Oak Ridge National Laboratory.
+    ORNL/TM-2000/351 https://rsicc.ornl.gov/fmdp/tm2000-351.pdf
 
 """
 from armi import runLog
@@ -31,17 +32,16 @@ class MOX(UraniumOxide):
     """
     MOX fuel.
 
-    Some parameters (density, thermal conductivity, etc) are inherited from UraniumOxide.
-    These parameters are sufficiently equivalent to pure UO2 in the literature to leave them unchanged.
+    Some parameters (density, thermal conductivity, etc) are inherited from UraniumOxide. These
+    parameters are sufficiently equivalent to pure UO2 in the literature to leave them unchanged.
 
     Specific MOX mixtures may be defined in blueprints under custom isotopics.
     """
 
-    name = "MOX"
-
-    theoreticalDensityFrac = 1.0  # Default value
-
     enrichedNuclide = "U235"
+
+    def __init__(self):
+        UraniumOxide.__init__(self)
 
     def applyInputParams(
         self, U235_wt_frac=None, TD_frac=None, mass_frac_PU02=None, *args, **kwargs
@@ -65,8 +65,6 @@ class MOX(UraniumOxide):
                     label="Zero theoretical density",
                 )
             self.adjustTD(td)
-        else:
-            self.adjustTD(1.00)  # default to fully dense.
 
         if mass_frac_PU02 is not None:
             self.setMassFracPuO2(mass_frac_PU02)
@@ -168,7 +166,7 @@ class MOX(UraniumOxide):
 
     def meltingPoint(self):
         """
-        Melting point in K - ORNL/TM-2000/351
+        Melting point in K - ORNL/TM-2000/351.
 
         Melting point is a function of PuO2 mol fraction.
         The liquidus Tl and solidus Ts temperatures in K are given by:
@@ -182,6 +180,6 @@ class MOX(UraniumOxide):
         return (
             3120.0
             - 655.3 * molFracPuO2
-            + 336.4 * molFracPuO2 ** 2
-            - 99.9 * molFracPuO2 ** 3
+            + 336.4 * molFracPuO2**2
+            - 99.9 * molFracPuO2**3
         )

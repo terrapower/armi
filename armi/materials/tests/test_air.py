@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""unit tests for air materials"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+"""Unit tests for air materials."""
 
 import math
 import unittest
@@ -179,11 +178,14 @@ REFERENCE_THERMAL_CONDUCTIVITY_mJ_PER_M_K = [
 
 
 class Test_Air(unittest.TestCase):
-    """
-    unit tests for air materials
+    """unit tests for air materials.
+
+    .. test:: There is a base class for fluid materials.
+        :id: T_ARMI_MAT_FLUID1
+        :tests: R_ARMI_MAT_FLUID
     """
 
-    def test_density(self):
+    def test_pseudoDensity(self):
         """
         Reproduce verification results at 300K from Incropera, Frank P., et al.
         Fundamentals of heat and mass transfer. Vol. 5. New York: Wiley, 2002.
@@ -192,7 +194,9 @@ class Test_Air(unittest.TestCase):
 
         for Tk, densKgPerM3 in zip(REFERENCE_Tk, REFERENCE_DENSITY_KG_PER_M3):
             if Tk < 2400:
-                error = math.fabs((air.densityKgM3(Tk=Tk) - densKgPerM3) / densKgPerM3)
+                error = math.fabs(
+                    (air.pseudoDensityKgM3(Tk=Tk) - densKgPerM3) / densKgPerM3
+                )
                 self.assertLess(error, 1e-2)
 
     def test_heatCapacity(self):
@@ -220,7 +224,7 @@ class Test_Air(unittest.TestCase):
         for Tk, thermalConductivity in zip(
             REFERENCE_Tk, REFERENCE_THERMAL_CONDUCTIVITY_mJ_PER_M_K
         ):
-            if 200 < Tk and Tk < 850:
+            if Tk > 200 and Tk < 850:
                 error = math.fabs(
                     (air.thermalConductivity(Tk=Tk) - thermalConductivity * 1e-3)
                     / (thermalConductivity * 1e-3)
@@ -228,10 +232,7 @@ class Test_Air(unittest.TestCase):
                 self.assertLess(error, 1e-2)
 
     def test_massFrac(self):
-        """
-        reproduce the number ratios results to PNNL-15870 Rev 1
-        """
-
+        """Reproduce the number ratios results to PNNL-15870 Rev 1."""
         air = Air()
 
         refC = 0.000150
@@ -239,7 +240,7 @@ class Test_Air(unittest.TestCase):
         refO = 0.210748
         refAR = 0.004671
 
-        nDens = densityTools.getNDensFromMasses(air.density(Tk=300), air.p.massFrac)
+        nDens = densityTools.getNDensFromMasses(air.pseudoDensity(Tk=300), air.massFrac)
 
         error = math.fabs(nDens["C"] / sum(nDens.values()) - refC)
         self.assertLess(error, 1e-4)
@@ -250,32 +251,17 @@ class Test_Air(unittest.TestCase):
         error = math.fabs(nDens["AR"] / sum(nDens.values()) - refAR)
         self.assertLess(error, 1e-4)
 
-    def test_checkPropertyTempRange(self):
-
+    def test_validRanges(self):
         air = Air()
 
-        air.density(Tk=2399)
-        try:
-            air.density(Tk=2401)
-        except AssertionError:
-            pass
+        den0 = air.density(Tk=101)
+        denf = air.density(Tk=2399)
+        self.assertLess(denf, den0)
 
-        air.heatCapacity(Tk=1299)
-        try:
-            air.heatCapacity(Tk=1301)
-        except AssertionError:
-            pass
+        hc0 = air.heatCapacity(Tk=101)
+        hcf = air.heatCapacity(Tk=1299)
+        self.assertGreater(hcf, hc0)
 
-        air.thermalConductivity(Tk=849)
-        try:
-            air.thermalConductivity(Tk=851)
-        except AssertionError:
-            pass
-        try:
-            air.thermalConductivity(Tk=199)
-        except AssertionError:
-            pass
-
-
-if __name__ == "__main__":
-    unittest.main()
+        tc0 = air.thermalConductivity(Tk=201)
+        tcf = air.thermalConductivity(Tk=849)
+        self.assertGreater(tcf, tc0)

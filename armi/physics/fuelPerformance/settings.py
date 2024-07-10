@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Settings related to fuel performance"""
+"""Settings related to fuel performance."""
 
 from armi.operators.settingsValidation import Query
 from armi.settings import setting
@@ -44,7 +44,10 @@ def defineSettings():
             CONF_FGYF,
             default=0.25,
             label="Fission Gas Yield Fraction",
-            description="The fraction of gaseous atoms produced per fission event, assuming a fission product yield of 2.0",
+            description=(
+                "The fraction of gaseous atoms produced per fission event, assuming a "
+                "fission product yield of 2.0"
+            ),
         ),
         setting.Setting(
             CONF_AXIAL_EXPANSION,
@@ -84,29 +87,28 @@ def defineValidators(inspector):
     return [
         Query(
             lambda: (
-                inspector.cs["axialExpansion"]
-                or inspector.cs["bondRemoval"]
-                or inspector.cs["fgRemoval"]
-                or inspector.cs["claddingWastage"]
-                or inspector.cs["claddingStrain"]
+                inspector.cs[CONF_AXIAL_EXPANSION]
+                or inspector.cs[CONF_BOND_REMOVAL]
+                or inspector.cs[CONF_FGR_REMOVAL]
+                or inspector.cs[CONF_CLADDING_WASTAGE]
+                or inspector.cs[CONF_CLADDING_STRAIN]
             )
-            and inspector.cs["fuelPerformanceEngine"] == "",
+            and inspector.cs[CONF_FUEL_PERFORMANCE_ENGINE] == "",
             "A fuel performance behavior has been selected but no fuel performance engine is selected.",
             "",
             inspector.NO_ACTION,
         ),
         Query(
             lambda: (
-                inspector.cs["axialExpansion"]
-                or inspector.cs["bondRemoval"]
-                or inspector.cs["fgRemoval"]
-                or inspector.cs["claddingWastage"]
-                or inspector.cs["claddingStrain"]
+                inspector.cs[CONF_AXIAL_EXPANSION]
+                or inspector.cs[CONF_BOND_REMOVAL]
+                or inspector.cs[CONF_FGR_REMOVAL]
+                or inspector.cs[CONF_CLADDING_WASTAGE]
+                or inspector.cs[CONF_CLADDING_STRAIN]
             )
             and not inspector.cs["doTH"],
             "A fuel performance behavior has been selected which may require thermal-hydraulics.",
             "Would you like to turn the TH option on?",
-            # pylint: disable=protected-access
             lambda: inspector._assignCS("doTH", True),
         ),
     ]

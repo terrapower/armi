@@ -11,10 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-Tests for ThO2
-"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+"""Tests for ThO2."""
 import unittest
 
 from armi.materials.tests.test_materials import _Material_Test
@@ -31,10 +28,10 @@ class ThoriumOxide_TestCase(_Material_Test, unittest.TestCase):
         self.ThoriumOxide_TD_frac = ThoriumOxide()
         self.ThoriumOxide_TD_frac.applyInputParams(TD_frac=0.4)
 
-    def test_theoretical_density(self):
-        ref = self.mat.density(500)
+    def test_theoretical_pseudoDensity(self):
+        ref = self.mat.pseudoDensity(500)
 
-        reduced = self.ThoriumOxide_TD_frac.density(500)
+        reduced = self.ThoriumOxide_TD_frac.pseudoDensity(500)
         self.assertAlmostEqual(ref * 0.4, reduced)
 
     def test_linearExpansionPercent(self):
@@ -42,7 +39,3 @@ class ThoriumOxide_TestCase(_Material_Test, unittest.TestCase):
 
     def test_propertyValidTemperature(self):
         self.assertGreater(len(self.mat.propertyValidTemperature), 0)
-
-
-if __name__ == "__main__":
-    unittest.main()

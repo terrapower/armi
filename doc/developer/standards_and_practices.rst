@@ -1,3 +1,5 @@
+.. _armi-stds:
+
 **********************************
 Standards and Practices for Coding
 **********************************
@@ -186,7 +188,7 @@ code, consider pulling the repeated code out into it's own function, or using a 
 
 Public methods should have docstrings
 =====================================
-Always create the :doc:`proper docstrings </developer/code_practices/documentation_guidelines>` for all public
+Always create the `proper docstrings <https://numpydoc.readthedocs.io/en/latest/example.html>`_ for all public
 functions and public classes.
 
 Unit tests
@@ -291,10 +293,10 @@ ARMI developers **shall** use one of the following well-defined, Python-supporte
 .yaml
     YAML files are like JSON files but can have comments in them.
 
-Address the pylint warnings
-===========================
-Our pull request system integrates with the automatic code checker, pylint. Any new code you add must have
-zero pylint warnings or errors.
+Address the ruff warnings
+=========================
+Our pull request system integrates with the automatic code checker, ruff. Any new code you add must have
+zero ruff warnings or errors.
 
 General do's and don'ts
 =======================
@@ -302,9 +304,5 @@ General do's and don'ts
 do not use ``print``
     ARMI code should not use the ``print`` function; use one of the methods within ``armi.runLog``.
 
-do not use ``super``
-    In preference to the ``super`` function, explicitly call the parent object's method. For example, in an
-    ``__init__``, use ``ParentClass.__init__(self, plus, additional, arguments)``.
-
-do not leave ``TODO`` statements in production code
-    If your ``TODO`` statement is important, perhaps it should be a GitHub Issue.
+Do not add new ``TODO`` statements in your commits and PRs.
+    If your new ``TODO`` statement is important, it should be a GitHub Issue. Yes, we have existing ``TODO`` statements in the code, those are relic and need to be removed. Also, never mark the code with ``FIXME`` or ``XXX```; open a ticket.

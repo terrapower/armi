@@ -11,8 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
-
+"""Tests for material modifications."""
 import unittest
 
 from numpy.testing import assert_allclose
@@ -69,11 +68,18 @@ assemblies:
         uzr = materials.UZr()
         fuelComponent = a[0][0]
         totalMass = fuelComponent.getMass()
-        for nucName in uzr.p.massFrac:
+        for nucName in uzr.massFrac:
             massFrac = fuelComponent.getMass(nucName) / totalMass
-            assert_allclose(uzr.p.massFrac[nucName], massFrac)
+            assert_allclose(uzr.massFrac[nucName], massFrac)
 
     def test_u235_wt_frac_modification(self):
+        """Test constructing a component where the blueprints specify a material
+        modification for one nuclide.
+
+        .. test:: A material modification can be applied to all the components in an assembly.
+            :id: T_ARMI_MAT_USER_INPUT0
+            :tests: R_ARMI_MAT_USER_INPUT
+        """
         a = self.loadUZrAssembly(
             """
         material modifications:
@@ -91,6 +97,13 @@ assemblies:
         assert_allclose(0.20, u235 / u)
 
     def test_u235_wt_frac_byComponent_modification1(self):
+        """Test constructing a component where the blueprints specify a material
+        modification for one nuclide, for just one component.
+
+        .. test:: A material modification can be applied to one component in an assembly.
+            :id: T_ARMI_MAT_USER_INPUT1
+            :tests: R_ARMI_MAT_USER_INPUT
+        """
         a = self.loadUZrAssembly(
             """
         material modifications:
@@ -111,6 +124,13 @@ assemblies:
         assert_allclose(0.30, u235 / u)
 
     def test_u235_wt_frac_byComponent_modification2(self):
+        """Test constructing a component where the blueprints specify a material
+        modification for one nuclide, for multiple components.
+
+        .. test:: A material modification can be applied to multiple components in an assembly.
+            :id: T_ARMI_MAT_USER_INPUT2
+            :tests: R_ARMI_MAT_USER_INPUT
+        """
         a = self.loadUZrAssembly(
             """
         material modifications:
@@ -189,7 +209,7 @@ assemblies:
             "fuel2": {"ZR_wt_frac": 0.3, "U235_wt_frac": 0.3},
         }
         componentDesign = a[0][0]
-        filteredMaterialInput = BlockBlueprint._filterMaterialInput(
+        filteredMaterialInput, _ = BlockBlueprint._filterMaterialInput(
             materialInput, componentDesign
         )
 
@@ -197,6 +217,92 @@ assemblies:
 
         self.assertEqual(filteredMaterialInput, filteredMaterialInput_reference)
 
+    def test_invalidMatModName(self):
+        """
+        This test shows proves that we can detect invalid material modification
+        names when they are specified on an assembly blueprint. We happen to know
+        that ZR_wt_frac is a valid modification for the UZr material class, so we
+        use that in the first call to prove that things initially work fine.
+        """
+        a = self.loadUZrAssembly(
+            """
+        material modifications:
+            ZR_wt_frac: [1]
+            by component:
+                fuel2:
+                    ZR_wt_frac: [0]
+        """
+        )
+        # just to prove that the above works fine before we modify it
+        self.assertAlmostEqual(a[0][0].getMassFrac("ZR"), 1)
+        self.assertAlmostEqual(a[0][1].getMassFrac("ZR"), 0)
 
-if __name__ == "__main__":
-    unittest.main()
+        with self.assertRaises(ValueError):
+            a = self.loadUZrAssembly(
+                """
+        material modifications:
+            this_is_a_fake_name: [1]
+            by component:
+                fuel2:
+                    ZR_wt_frac: [0]
+        """
+            )
+
+        with self.assertRaises(ValueError):
+            a = self.loadUZrAssembly(
+                """
+        material modifications:
+            ZR_wt_frac: [1]
+            by component:
+                fuel2:
+                    this_is_a_fake_name: [0]
+        """
+            )
+
+    def test_matModsUpTheMRO(self):
+        """
+        Make sure that valid/invalid material modifications are searched up
+        the MRO for a material class.
+        """
+        _a = self.loadUZrAssembly(
+            """
+        material modifications:
+            ZR_wt_frac: [1]
+            class1_wt_frac: [1]
+            class1_custom_isotopics: [dummy]
+            class2_custom_isotopics: [dummy]
+            by component:
+                fuel2:
+                    ZR_wt_frac: [0]
+                    class1_wt_frac: [1]
+                    class1_custom_isotopics: [dummy]
+                    class2_custom_isotopics: [dummy]
+custom isotopics:
+    dummy:
+        input format: mass fractions
+        density: 1
+        U: 1
+"""
+        )
+
+        with self.assertRaises(ValueError):
+            _a = self.loadUZrAssembly(
+                """
+        material modifications:
+            ZR_wt_frac: [1]
+            klass1_wt_frac: [1]
+            klass1_custom_isotopics: [dummy]
+            klass2_custom_isotopics: [dummy]
+            by component:
+                fuel2:
+                    ZR_wt_frac: [0]
+                    klass1_wt_frac: [1]
+                    klass1_custom_isotopics: [dummy]
+                    klass2_custom_isotopics: [dummy]
+custom isotopics:
+    dummy:
+        input format: mass fractions
+        density: 1
+        U: 1
+"""
+            )

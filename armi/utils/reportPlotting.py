@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-Plotting Utils specific to reports
+Plotting Utils specific to reports.
 
 This module makes heavy use of matplotlib. Beware that plots generated with matplotlib
 may not free their memory, even after the plot is closed, and excessive use of
@@ -60,15 +60,13 @@ def plotReactorPerformance(reactor, dbi, buGroups, extension=None, history=None)
         The burnup groups in the problem
 
     extension : str, optional
-        The file extention for saving plots
+        The file extension for saving plots
 
     history: armi.bookkeeping.historyTracker.HistoryTrackerInterface object
         The history tracker interface
     """
     try:
-        data = dbi.getHistory(
-            reactor, params=["cycle", "time", "eFeedMT", "eSWU", "eFuelCycleCost"]
-        )
+        data = dbi.getHistory(reactor, params=["cycle", "time", "eFeedMT", "eSWU"])
         data.update(
             dbi.getHistory(
                 reactor.core,
@@ -122,8 +120,8 @@ def plotReactorPerformance(reactor, dbi, buGroups, extension=None, history=None)
 
 
 def valueVsTime(name, x, y, key, yaxis, title, ymin=None, extension=None):
-    r"""
-    Plots a value vs. time with a standard graph format
+    """
+    Plots a value vs. time with a standard graph format.
 
     Parameters
     ----------
@@ -143,7 +141,7 @@ def valueVsTime(name, x, y, key, yaxis, title, ymin=None, extension=None):
         The minimum y-axis value. If any ordinates are less than this value,
         it will be ignored.
     extension : str, optional
-        The file extention for saving the figure
+        The file extension for saving the figure
     """
     extension = extension or settings.Settings()["outputFileExtension"]
 
@@ -167,8 +165,8 @@ def valueVsTime(name, x, y, key, yaxis, title, ymin=None, extension=None):
 
 
 def keffVsTime(name, time, keff, keffUnc=None, ymin=None, extension=None):
-    r"""
-    Plots core keff vs. time
+    """
+    Plots core keff vs. time.
 
     Parameters
     ----------
@@ -183,7 +181,7 @@ def keffVsTime(name, time, keff, keffUnc=None, ymin=None, extension=None):
     ymin : float, optional
         Minimum y-axis value to target.
     extension : str, optional
-        The file extention for saving the figure
+        The file extension for saving the figure
     """
     extension = extension or settings.Settings()["outputFileExtension"]
 
@@ -217,7 +215,7 @@ def keffVsTime(name, time, keff, keffUnc=None, ymin=None, extension=None):
 
 def buVsTime(name, scalars, extension=None):
     r"""
-    produces a burnup and DPA vs. time plot for this case
+    produces a burnup and DPA vs. time plot for this case.
 
     Will add a second axis containing DPA if the scalar column maxDPA exists.
 
@@ -228,7 +226,7 @@ def buVsTime(name, scalars, extension=None):
     scalars : dict
         Scalar values for this case
     extension : str, optional
-        The file extention for saving the figure
+        The file extension for saving the figure
     """
     extension = extension or settings.Settings()["outputFileExtension"]
 
@@ -280,11 +278,11 @@ def xsHistoryVsTime(name, history, buGroups, extension=None):
     buGroups : list of float
         The burnup groups in the problem
     extension : str, optional
-        The file extention for saving the figure
+        The file extension for saving the figure
     """
     extension = extension or settings.Settings()["outputFileExtension"]
 
-    if not history.xsHistory:
+    if history is None or not history.xsHistory:
         return
 
     colors = itertools.cycle(["b", "g", "r", "c", "m", "y", "k"])
@@ -317,8 +315,8 @@ def xsHistoryVsTime(name, history, buGroups, extension=None):
 
 
 def movesVsCycle(name, scalars, extension=None):
-    r"""
-    make a bar chart showing the number of moves per cycle in the full core
+    """
+    Make a bar chart showing the number of moves per cycle in the full core.
 
     A move is defined as an assembly being picked up, moved, and put down. So if
     two assemblies are swapped, that is 2 moves. Note that it does not count
@@ -331,7 +329,7 @@ def movesVsCycle(name, scalars, extension=None):
     name : str
         reactor.name
     extension : str, optional
-        The file extention for saving the figure
+        The file extension for saving the figure
 
     See Also
     --------
@@ -441,6 +439,7 @@ def plotCoreOverviewRadar(reactors, reactorNames=None):
         size="large",
     )
     plt.savefig("reactor_comparison.png")
+    plt.close()
 
 
 def _getNeutronicVals(r):
@@ -450,8 +449,6 @@ def _getNeutronicVals(r):
                 ("Rx. Swing", r.core.p.rxSwing),
                 ("Fast Flux Fr.", r.core.p.fastFluxFrAvg),
                 ("Leakage", r.core.p.leakageFracTotal),
-                ("Void worth", r.core.p.voidWorth),
-                ("Doppler", r.core.p.doppler),
                 ("Beta", r.core.p.beta),
                 ("Peak flux", r.core.p.maxFlux),
             ]
@@ -464,7 +461,6 @@ def _getMechanicalVals(r):
     labels, vals = list(
         zip(
             *[
-                ("Dilation", r.core.p.maxdilationTotal),
                 ("Hold down", 1.0),
                 ("Distortion", 3.0),
             ]
@@ -512,7 +508,6 @@ def _getFuelVals(r):
     data = [
         ("Max FCCI", r.core.p.maxcladFCCI),
         ("Max BU", r.core.p.maxpercentBu),
-        ("Residence", r.core.p.maxresidence),
         (
             "Smear dens.",
             r.core.calcAvgParam("smearDensity", generationNum=2, typeSpec=Flags.FUEL),
@@ -551,7 +546,7 @@ def _radarFactory(numVars, frame="circle"):
     This function creates a RadarAxes projection and registers it.
 
     Raises
-    -------
+    ------
     ValueError
         If value of the frame is unknown.
 
@@ -561,7 +556,6 @@ def _radarFactory(numVars, frame="circle"):
         Number of variables for radar chart.
     frame : {'circle' | 'polygon'}
         Shape of frame surrounding axes.
-
     """
     # calculate evenly-spaced axis angles
     # rotate theta such that the first axis is at the top
@@ -581,8 +575,6 @@ def _radarFactory(numVars, frame="circle"):
     def close_line(line):
         """Closes the input line."""
         x, y = line.get_data()
-        # pylint: disable=fixme
-        # FIXME: markers at x[0], y[0] get doubled-up
         if x[0] != x[-1]:
             x = numpy.concatenate((x, [x[0]]))
             y = numpy.concatenate((y, [y[0]]))
@@ -606,12 +598,12 @@ def _radarFactory(numVars, frame="circle"):
         draw_patch = staticmethod(patchDict[frame])
 
         def fill(self, *args, **kwargs):
-            """Override fill so that line is closed by default"""
+            """Override fill so that line is closed by default."""
             closed = kwargs.pop("closed", True)
             return super(_RadarAxes, self).fill(closed=closed, *args, **kwargs)
 
         def plot(self, *args, **kwargs):
-            """Override plot so that line is closed by default"""
+            """Override plot so that line is closed by default."""
             lines = super(_RadarAxes, self).plot(*args, **kwargs)
             for line in lines:
                 close_line(line)
@@ -652,15 +644,12 @@ def _unitPolyVerts(theta):
     verts = list(zip(r * numpy.cos(theta) + x0, r * numpy.sin(theta) + y0))
     return verts
 
-    # pylint: disable=differing-param-doc
-    # pylint: disable=differing-type-doc
-
 
 def createPlotMetaData(
     title, xLabel, yLabel, xMajorTicks=None, yMajorTicks=None, legendLabels=None
 ):
     """
-    Create plot metadata (title, labels, ticks)
+    Create plot metadata (title, labels, ticks).
 
     Parameters
     ----------

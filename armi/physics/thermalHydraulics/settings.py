@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Settings related to Thermal Hydraulics"""
+"""Settings related to Thermal Hydraulics."""
 
 from armi.settings import setting
 
@@ -28,7 +28,7 @@ def defineSettings():
             default=False,
             label="Run Thermal Hydraulics",
             description=(
-                f"Activate thermal hydraulics calculations using the physics module defined in "
+                "Activate thermal hydraulics calculations using the physics module defined in "
                 f"`{CONF_TH_KERNEL}`"
             ),
         ),

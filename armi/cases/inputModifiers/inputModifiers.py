@@ -18,18 +18,22 @@ class InputModifier:
     """
     Object that modifies input definitions in some well-defined way.
 
-    (This class is abstract.)
+    .. impl:: A generic tool to modify user inputs on multiple cases.
+        :id: I_ARMI_CASE_MOD1
+        :implements: R_ARMI_CASE_MOD
 
-    Subclasses must implement a ``__call__`` method accepting a ``CaseSettings``,
-    ``Blueprints``, and ``SystemLayoutInput``.
-
-    The class attribute ``FAIL_IF_AFTER`` should be a tuple defining what, if any,
-    modifications this should fail if performed after. For example, one should not
-    adjust the smear density (a function of Cladding ID) before adjusting the Cladding
-    ID.
-
-    Some subclasses are provided, but you are expected to make your own design-specific
-    modifiers in most cases.
+        This class serves as an abstract base class for modifying the inputs of
+        a case, typically case settings. Child classes must implement a
+        ``__call__`` method accepting a
+        :py:class:`~armi.settings.caseSettings.Settings`,
+        :py:class:`~armi.reactor.blueprints.Blueprints`, and
+        :py:class:`~armi.reactor.systemLayoutInput.SystemLayoutInput` and return
+        the appropriately modified version of these objects. The class attribute
+        ``FAIL_IF_AFTER`` should be a tuple defining what, if any, modifications
+        this should fail if performed after. For example, one should not adjust
+        the smear density (a function of Cladding ID) before adjusting the
+        Cladding ID. Some generic child classes are provided in this module, but
+        it is expected that design-specific modifiers are built individually.
     """
 
     FAIL_IF_AFTER = ()
@@ -60,7 +64,7 @@ class SamplingInputModifier(InputModifier):
 
     (This class is abstract.)
 
-    Subclasses must implement a ``__call__`` method accepting a ``CaseSettings``,
+    Subclasses must implement a ``__call__`` method accepting a ``Settings``,
     ``Blueprints``, and ``SystemLayoutInput``.
 
     This is a modified version of the InputModifier abstract class that imposes
@@ -74,7 +78,7 @@ class SamplingInputModifier(InputModifier):
     def __init__(
         self, name: str, paramType: str, bounds: list, independentVariable=None
     ):
-        """[summary]
+        """Constructor for the Sampling input modifier.
 
         Parameters
         ----------
@@ -106,7 +110,7 @@ class FullCoreModifier(InputModifier):
 
     Notes
     -----
-    Besides the core, other grids may also be of interest for expansion, like
+    Besides the Core, other grids may also be of interest for expansion, like
     a grid that defines fuel management. However, the expansion of a fuel
     management schedule to full core is less trivial than just expanding
     the core itself. Thus, this modifier currently does not attempt
@@ -116,7 +120,7 @@ class FullCoreModifier(InputModifier):
     """
 
     def __call__(self, cs, bp, geom):
-        """Core might be on a geom object or a grid blueprint"""
+        """Core might be on a geom object or a grid blueprint."""
         if geom:
             geom.growToFullCore()
         else:
@@ -127,9 +131,7 @@ class FullCoreModifier(InputModifier):
 
 
 class SettingsModifier(InputModifier):
-    """
-    Adjust setting to specified value.
-    """
+    """Adjust setting to specified value."""
 
     def __init__(self, settingName, value):
         InputModifier.__init__(self, independentVariable={settingName: value})
@@ -147,7 +149,6 @@ class MultiSettingModifier(InputModifier):
 
     Examples
     --------
-
     >>> inputModifiers.MultiSettingModifier(
     ...    {CONF_NEUTRONICS_TYPE: "both", CONF_COARSE_MESH_REBALANCE: -1}
     ... )

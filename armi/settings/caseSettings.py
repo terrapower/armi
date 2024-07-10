@@ -12,18 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-r"""
+"""
 This defines a Settings object that acts mostly like a dictionary. It
-is meant to be treated mostly like a singleton, where each custom ARMI
-object has access to it. It contains global user settings like the core
-power level, the input file names, the number of cycles to run, the run type,
-the environment setup, and hundreds of other things.
+is meant so that each ARMI run has one-and-only-one Settings object. It records
+user settings like the core power level, the input file names, the number of cycles to
+run, the run type, the environment setup, and hundreds of other things.
 
-A settings object can be saved as or loaded from an YAML file. The ARMI GUI is designed to
+A Settings object can be saved as or loaded from an YAML file. The ARMI GUI is designed to
 create this settings file, which is then loaded by an ARMI process on the cluster.
-
-A primary case settings is created as ``masterCs``
-
 """
 import io
 import logging
@@ -38,8 +34,6 @@ from armi.settings.setting import Setting
 from armi.utils import pathTools
 from armi.utils.customExceptions import NonexistentSetting
 
-DEP_WARNING = "Deprecation Warning: Settings will not be mutable mid-run: {}"
-
 SIMPLE_CYCLES_INPUTS = {
     "availabilityFactor",
     "availabilityFactors",
@@ -52,28 +46,29 @@ SIMPLE_CYCLES_INPUTS = {
 
 class Settings:
     """
-    A container for global settings, such as case title, power level, and many run options.
+    A container for run settings, such as case title, power level, and many more.
 
-    It is accessible to most ARMI objects through self.cs (for 'Case Settings').
-    It acts largely as a dictionary, and setting values are accessed by keys.
+    .. impl:: Settings are used to define an ARMI run.
+        :id: I_ARMI_SETTING0
+        :implements: R_ARMI_SETTING
 
-    The settings object has a 1-to-1 correspondence with the ARMI settings input file.
-    This file may be created by hand or by the GUI in submitter.py.
+        The Settings object is accessible to most ARMI objects through self.cs
+        (for 'case settings'). It acts largely as a dictionary, and setting values
+        are accessed by keys.
+
+        The Settings object has a 1-to-1 correspondence with the ARMI settings
+        input file. This file may be created by hand or by a GUI.
 
     Notes
     -----
     The actual settings in any instance of this class are immutable.
     """
 
-    # Settings is not a singleton, but there is a globally
-    # shared instance considered most germane to the current run
-    instance = None
-
     defaultCaseTitle = "armi"
 
     def __init__(self, fName=None):
         """
-        Instantiate a settings object
+        Instantiate a Settings object.
 
         Parameters
         ----------
@@ -92,22 +87,20 @@ class Settings:
         provided by the user on the command line.  Therefore, _failOnLoad is used to
         prevent this from happening.
         """
-        from armi import getApp  # pylint: disable=import-outside-toplevel
+        from armi import getApp
 
         self.path = ""
 
         app = getApp()
         assert app is not None
         self.__settings = app.getSettings()
-        if not Settings.instance:
-            Settings.instance = self
 
         if fName:
             self.loadFromInputFile(fName)
 
     @property
     def inputDirectory(self):
-        """getter for settings file path"""
+        """Getter for settings file path."""
         if self.path is None:
             return os.getcwd()
         else:
@@ -115,7 +108,21 @@ class Settings:
 
     @property
     def caseTitle(self):
-        """getter for settings case title"""
+        """Getter for settings case title.
+
+        .. impl:: Define a case title to go with the settings.
+            :id: I_ARMI_SETTINGS_META0
+            :implements: R_ARMI_SETTINGS_META
+
+            Every Settings object has a "case title"; a string for users to
+            help identify their run. This case title is used in log file
+            names, it is printed during a run, it is frequently used to
+            name the settings file. It is designed to be an easy-to-use
+            and easy-to-understand way to keep track of simulations. The
+            general idea here is that the average analyst that is using
+            ARMI will run many ARMI-based simulations, and there needs
+            to be an easy to identify them all.
+        """
         if not self.path:
             return self.defaultCaseTitle
         else:
@@ -123,12 +130,12 @@ class Settings:
 
     @caseTitle.setter
     def caseTitle(self, value):
-        """setter for the case title"""
+        """Setter for the case title."""
         self.path = os.path.join(self.inputDirectory, value + ".yaml")
 
     @property
     def environmentSettings(self):
-        """getter for environment settings"""
+        """Getter for environment settings."""
         return [
             setting.name
             for setting in self.__settings.values()
@@ -140,7 +147,7 @@ class Settings:
 
     def __repr__(self):
         total = len(self.__settings.keys())
-        isAltered = lambda setting: 1 if setting.value != setting.default else 0
+        isAltered = lambda s: 1 if s.value != s.default else 0
         altered = sum([isAltered(setting) for setting in self.__settings.values()])
 
         return "<{} name:{} total:{} altered:{}>".format(
@@ -222,7 +229,7 @@ class Settings:
         --------
         armi.settings.setting.Setting.__getstate__ : removes schema
         """
-        from armi import getApp  # pylint: disable=import-outside-toplevel
+        from armi import getApp
 
         self.__settings = getApp().getSettings()
 
@@ -233,7 +240,6 @@ class Settings:
 
         # with schema restored, restore all setting values
         for name, settingState in state["_Settings__settings"].items():
-            # pylint: disable=protected-access
             if name in self.__settings:
                 self.__settings[name]._value = settingState.value
             elif isinstance(settingState, Setting):
@@ -251,15 +257,15 @@ class Settings:
         return self.__settings.items()
 
     def duplicate(self):
-        """return a duplicate copy of this settings object"""
+        """Return a duplicate copy of this settings object."""
         cs = deepcopy(self)
-        cs._failOnLoad = False  # pylint: disable=protected-access
+        cs._failOnLoad = False
         # it's not really protected access since it is a new Settings object.
         # _failOnLoad is set to false, because this new settings object should be independent of the command line
         return cs
 
     def revertToDefaults(self):
-        """Sets every setting back to its default value"""
+        """Sets every setting back to its default value."""
         for setting in self.__settings.values():
             setting.revertToDefault()
 
@@ -289,7 +295,7 @@ class Settings:
         """Add any ad-hoc 'user' plugins that are referenced in the settings file."""
         userPlugins = self["userPlugins"]
         if len(userPlugins):
-            from armi import getApp  # pylint: disable=import-outside-toplevel
+            from armi import getApp
 
             app = getApp()
             app.registerUserPlugins(userPlugins)
@@ -338,7 +344,7 @@ class Settings:
 
     def initLogVerbosity(self):
         """
-        Central location to init logging verbosity
+        Central location to init logging verbosity.
 
         Notes
         -----
@@ -381,12 +387,13 @@ class Settings:
             settingsSetByUser = []
         with open(self.path, "w") as stream:
             writer = self.writeToYamlStream(stream, style, settingsSetByUser)
+
         return writer
 
     def getSettingsSetByUser(self, fPath):
         """
         Grabs the list of settings in the user-defined input file so that the settings
-        can be tracked outside of a Settings Object
+        can be tracked outside of a Settings object.
 
         Parameters
         ----------
@@ -398,13 +405,14 @@ class Settings:
         userSettingsNames : list
             The settings names read in from a yaml settings file
         """
-
         # We do not want to load these as settings, but just grab the dictionary straight
         # from the settings file to know which settings are user-defined
         with open(fPath, "r") as stream:
             yaml = YAML()
+            yaml.allow_duplicate_keys = False
             tree = yaml.load(stream)
             userSettings = tree[settingsIO.Roots.CUSTOM]
+
         userSettingsNames = list(userSettings.keys())
         return userSettingsNames
 
@@ -423,7 +431,7 @@ class Settings:
 
         Returns
         -------
-        writer : SettingsWriter object
+        writer : SettingsWriter
         """
         writer = settingsIO.SettingsWriter(
             self, style=style, settingsSetByUser=settingsSetByUser
@@ -432,12 +440,12 @@ class Settings:
         return writer
 
     def updateEnvironmentSettingsFrom(self, otherCs):
-        r"""Updates the environment settings in this object based on some other cs
-        (from the GUI, most likely)
+        """Updates the environment settings in this object based on some other cs
+        (from the GUI, most likely).
 
         Parameters
         ----------
-        otherCs : Settings object
+        otherCs : Settings
             A cs object that environment settings will be inherited from.
 
         This enables users to run tests with their environment rather than the reference environment
@@ -447,7 +455,6 @@ class Settings:
 
     def modified(self, caseTitle=None, newSettings=None):
         """Return a new Settings object containing the provided modifications."""
-        # pylint: disable=protected-access
         settings = self.duplicate()
 
         if caseTitle:

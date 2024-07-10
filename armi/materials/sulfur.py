@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Sulfur
-"""
+"""Sulfur."""
 
 from armi import runLog
 from armi.materials import material
@@ -23,7 +21,6 @@ from armi.utils.units import getTk
 
 
 class Sulfur(material.Fluid):
-    name = "Sulfur"
 
     propertyValidTemperature = {
         "density": ((334, 430), "K"),
@@ -51,23 +48,33 @@ class Sulfur(material.Fluid):
         self.fullDensFrac = float(TD)
 
     def setDefaultMassFracs(self):
-        """Mass fractions"""
+        """Mass fractions."""
         self.fullDensFrac = 1.0
         self.setMassFrac("S32", 0.9493)
         self.setMassFrac("S33", 0.0076)
         self.setMassFrac("S34", 0.0429)
         self.setMassFrac("S36", 0.002)
 
-    def density(self, Tk=None, Tc=None):
-        r"""P. Espeau, R. Ceolin "density of molten sulfur in the 334-508K range" """
+    def pseudoDensity(self, Tk=None, Tc=None):
+        """Density of Liquid Sulfur.
+
+        Ref: P. Espeau, R. Ceolin "density of molten sulfur in the 334-508K range"
+
+        Notes
+        -----
+        In ARMI, we define pseudoDensity() and density() as the same for Fluids.
+        """
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("density", Tk)
 
         return (2.18835 - 0.00098187 * Tk) * (self.fullDensFrac)
 
     def volumetricExpansion(self, Tk=None, Tc=None):
-        r"""P. Espeau, R. Ceolin "density of molten sulfur in the 334-508K range"
-        This is just a two-point interpolation."""
+        """
+        This is just a two-point interpolation.
+
+        P. Espeau, R. Ceolin "density of molten sulfur in the 334-508K range"
+        """
         Tk = getTk(Tc, Tk)
         (Tmin, Tmax) = self.propertyValidTemperature["volumetric expansion"][0]
         self.checkPropertyTempRange("volumetric expansion", Tk)

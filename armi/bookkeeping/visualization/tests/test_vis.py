@@ -12,28 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Test report visutalizaion"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+"""Test report visualization."""
 import unittest
 
 import numpy
 from pyevtk.vtk import VtkTetra
 
-from armi.reactor.tests import test_reactors
-from armi.reactor import components
-from armi.reactor import blocks
 from armi import settings
 from armi.bookkeeping.db import Database3
+from armi.bookkeeping.visualization import utils
 from armi.bookkeeping.visualization import vtk
 from armi.bookkeeping.visualization import xdmf
-from armi.bookkeeping.visualization import utils
+from armi.reactor import blocks
+from armi.reactor import components
+from armi.reactor.tests import test_reactors
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
 class TestVtkMesh(unittest.TestCase):
-    """
-    Test the VtkMesh utility class
-    """
+    """Test the VtkMesh utility class."""
 
     def test_testVtkMesh(self):
         mesh = utils.VtkMesh.empty()
@@ -65,14 +62,14 @@ class TestVtkMesh(unittest.TestCase):
 
 
 class TestVisDump(unittest.TestCase):
-    """
-    Test dumping a whole reactor and some specific block types
-    """
+    """Test dumping a whole reactor and some specific block types."""
 
     @classmethod
     def setUpClass(cls):
         caseSetting = settings.Settings()
-        _, cls.r = test_reactors.loadTestReactor()
+        _, cls.r = test_reactors.loadTestReactor(
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
 
         cls.hexBlock = cls.r.core.getBlocks()[0]
 

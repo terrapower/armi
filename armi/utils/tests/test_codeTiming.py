@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Unit tests for code timing"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+"""Unit tests for code timing."""
 import time
 import unittest
 
@@ -133,7 +132,3 @@ class CodeTimingTest(unittest.TestCase):
         self.assertIn(name, table)
         self.assertIn("CUMULATIVE", table)
         self.assertIn("ACTIVE", table)
-
-
-if __name__ == "__main__":
-    unittest.main()

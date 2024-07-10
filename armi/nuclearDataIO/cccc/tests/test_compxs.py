@@ -12,10 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Test the COMPXS reader/writer with a simple problem.
-"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+"""Test the COMPXS reader/writer with a simple problem."""
 import os
 import unittest
 
@@ -30,7 +27,7 @@ from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
 class TestCompxs(unittest.TestCase):
-    """Test the compxs reader/writer"""
+    """Test the compxs reader/writer."""
 
     @property
     def binaryWritePath(self):
@@ -56,7 +53,7 @@ class TestCompxs(unittest.TestCase):
         self.assertAlmostEqual(0.41745778918, min(self.lib.neutronEnergyUpperBounds))
 
     def test_regionPrimaryXS(self):
-        """Test the primary cross sections for the second region - fissile"""
+        """Test the primary cross sections for the second region - fissile."""
         expectedMacros = {
             "absorption": [
                 0.00810444,
@@ -327,7 +324,3 @@ class TestCompxs(unittest.TestCase):
             nuclearDataIO.getExpectedCOMPXSFileName(cycle=23), "COMPXS-c23"
         )
         self.assertEqual(nuclearDataIO.getExpectedCOMPXSFileName(), "COMPXS")
-
-
-if __name__ == "__main__":
-    unittest.main()

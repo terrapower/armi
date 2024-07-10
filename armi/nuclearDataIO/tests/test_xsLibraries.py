@@ -11,28 +11,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for xsLibraries.IsotxsLibrary"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,unused-variable
+"""Tests for xsLibraries.IsotxsLibrary."""
 import copy
 import filecmp
 import os
-import shutil
-import subprocess
 import traceback
 import unittest
 
 from six.moves import cPickle
 
-from armi import settings
-from armi.tests import mockRunLogs
 from armi.nucDirectory import nuclideBases
+from armi.nuclearDataIO import xsLibraries
+from armi.nuclearDataIO.cccc import gamiso
 from armi.nuclearDataIO.cccc import isotxs
 from armi.nuclearDataIO.cccc import pmatrx
-from armi.nuclearDataIO.cccc import gamiso
-from armi.nuclearDataIO import xsLibraries
-from armi.utils import directoryChangers
+from armi.tests import mockRunLogs
 from armi.utils import properties
-from armi.utils import outputCache
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 THIS_DIR = os.path.dirname(__file__)
 RUN_DIR = os.path.join(THIS_DIR, "library-file-generation")
@@ -45,13 +40,13 @@ ISOTXS_AB = os.path.join(FIXTURE_DIR, "ISOAB")
 ISOTXS_AA_AB = os.path.join(FIXTURE_DIR, "combined-AA-AB.isotxs")
 ISOTXS_LUMPED = os.path.join(FIXTURE_DIR, "combined-and-lumped-AA-AB.isotxs")
 
-PMATRX_AA = os.path.join(FIXTURE_DIR, "AA.PMATRX")
-PMATRX_AB = os.path.join(FIXTURE_DIR, "AB.PMATRX")
+PMATRX_AA = os.path.join(FIXTURE_DIR, "AA.pmatrx")
+PMATRX_AB = os.path.join(FIXTURE_DIR, "AB.pmatrx")
 PMATRX_AA_AB = os.path.join(FIXTURE_DIR, "combined-AA-AB.pmatrx")
 PMATRX_LUMPED = os.path.join(FIXTURE_DIR, "combined-and-lumped-AA-AB.pmatrx")
 
-GAMISO_AA = os.path.join(FIXTURE_DIR, "AA.GAMISO")
-GAMISO_AB = os.path.join(FIXTURE_DIR, "AB.GAMISO")
+GAMISO_AA = os.path.join(FIXTURE_DIR, "AA.gamiso")
+GAMISO_AB = os.path.join(FIXTURE_DIR, "AB.gamiso")
 GAMISO_AA_AB = os.path.join(FIXTURE_DIR, "combined-AA-AB.gamiso")
 GAMISO_LUMPED = os.path.join(FIXTURE_DIR, "combined-and-lumped-AA-AB.gamiso")
 
@@ -59,124 +54,8 @@ DLAYXS_MCC3 = os.path.join(FIXTURE_DIR_CCCC, "mc2v3.dlayxs")
 UFG_FLUX_EDIT = os.path.join(FIXTURE_DIR, "mc2v3-AA.flux_ufg")
 
 
-def copyInputForPmatrxAndGamsio(inpPath):
-    with open(inpPath, "r") as inp, open(
-        inpPath.replace(".inp", ".pmatrx.inp"), "w"
-    ) as pmatrxInp, open(inpPath.replace(".inp", ".gamiso.inp"), "w") as gamisoInp:
-        for line in inp:
-            pmatrxInp.write(line.replace("isotxs", "pmatrx"))
-            gamisoInp.write(line.replace(".isotxs", ".gamiso"))
-
-
-def createTestXSLibraryFiles(cachePath):
-    r"""This method is used to generate 5 ISOTXS files used during testing.
-
-    Notes
-    -----
-    It runs a batch file pointing to the MC**2-v3 executable with MC**2-v3 inputs within the repository,
-    instead of placing the larger binary ISOTXS files within the repository.
-
-    Also, the _CREATE_ERROR module attribute is used to track whether we have already tried to generate
-    ISOTXS files. Basically, this method can (and should) be called in the setUp/setUpClass of any test
-    that uses the generated ISOTXS files. Therefore, it is possible that for some reason the ISOTXS
-    generation fails, and it would not be worth the time to continually try to recreate the ISOTXS files
-    for each test that uses them, instead just raise the error that occurred the first time.
-    """
-    cs = settings.Settings()
-    cs["outputCacheLocation"] = cachePath
-    mc2v3 = cs.get("mc2v3.path").default
-    with directoryChangers.DirectoryChanger(RUN_DIR):
-        # the two lines below basically copy the inputs to be used for PMATRX and GAMISO generation.
-        # Since they are inputs to secondary calculations, the inputs need to be created before any
-        # other output is generated. Do not move the two lines below to, for exmaple just before they
-        # are used, otherwise the input to the GAMISO calculation would be younger than the output
-        # DLAYXS, which would cause this the @fixture to determine that targets are out of date.
-        # The result would be that the targets will never be up to date, which defeats the purpose ;-).
-        # IMPORTANT!! these two lines cannot move!
-        copyInputForPmatrxAndGamsio("combine-AA-AB.inp")
-        copyInputForPmatrxAndGamsio("combine-and-lump-AA-AB.inp")
-        # IMPORTANT!! these two lines cannot move!
-        ############################################################
-        ##                                                        ##
-        ##                   GENERATE DLAYXS                      ##
-        ##                                                        ##
-        ############################################################
-        outputCache.cacheCall(
-            cs["outputCacheLocation"], mc2v3, ["mc2v3-dlayxs.inp"], ["DLAYXS"]
-        )
-        shutil.move("DLAYXS", DLAYXS_MCC3)
-
-        ############################################################
-        ##                                                        ##
-        ##                   GENERATE ISOTXS                      ##
-        ##                                                        ##
-        ############################################################
-        outputCache.cacheCall(
-            cs["outputCacheLocation"],
-            mc2v3,
-            ["mc2v3-AA.inp"],
-            ["ISOTXS.merged", "GAMISO.merged", "PMATRX.merged", "output.flux_ufg"],
-        )
-        shutil.move("ISOTXS.merged", ISOTXS_AA)
-        shutil.move("GAMISO.merged", GAMISO_AA)
-        shutil.move("PMATRX.merged", PMATRX_AA)
-        shutil.move("output.flux_ufg", UFG_FLUX_EDIT)
-
-        outputCache.cacheCall(
-            cs["outputCacheLocation"],
-            mc2v3,
-            ["mc2v3-AB.inp"],
-            ["ISOTXS.merged", "GAMISO.merged", "PMATRX.merged"],
-        )
-        shutil.move("ISOTXS.merged", ISOTXS_AB)
-        shutil.move("GAMISO.merged", GAMISO_AB)
-        shutil.move("PMATRX.merged", PMATRX_AB)
-
-        # ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-        # ::                                                      ::
-        # ::                     COMBINE                          ::
-        # ::                                                      ::
-        # ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-        outputCache.cacheCall(
-            cs["outputCacheLocation"], mc2v3, ["combine-AA-AB.inp"], ["ISOTXS.merged"]
-        )
-        shutil.move("ISOTXS.merged", ISOTXS_AA_AB)
-
-        outputCache.cacheCall(
-            cs["outputCacheLocation"],
-            mc2v3,
-            ["combine-AA-AB.pmatrx.inp"],
-            ["PMATRX.merged"],
-        )
-        shutil.move("PMATRX.merged", PMATRX_AA_AB)
-
-        outputCache.cacheCall(
-            cs["outputCacheLocation"],
-            mc2v3,
-            ["combine-AA-AB.gamiso.inp"],
-            ["ISOTXS.merged"],
-        )
-        shutil.move("ISOTXS.merged", GAMISO_AA_AB)
-
-        # ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-        # ::                                                      ::
-        # ::                COMBINE AND LUMP                      ::
-        # ::                                                      ::
-        # ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-        subprocess.call([mc2v3, "combine-and-lump-AA-AB.inp"])
-        shutil.move("ISOTXS.merged", ISOTXS_LUMPED)
-
-        subprocess.call([mc2v3, "combine-and-lump-AA-AB.pmatrx.inp"])
-        shutil.move("PMATRX.merged", PMATRX_LUMPED)
-
-        subprocess.call([mc2v3, "combine-and-lump-AA-AB.gamiso.inp"])
-        shutil.move("ISOTXS.merged", GAMISO_LUMPED)
-
-
-class TempFileMixin:
-    """really a test case"""
+class TempFileMixin(unittest.TestCase):
+    """really a test case."""
 
     def setUp(self):
         self.td = TemporaryDirectoryChanger()
@@ -188,12 +67,12 @@ class TempFileMixin:
     @property
     def testFileName(self):
         return os.path.join(
-            THIS_DIR,
+            self.td.destination,
             "{}-{}.nucdata".format(self.__class__.__name__, self._testMethodName),
         )
 
 
-class TestXSLibrary(unittest.TestCase, TempFileMixin):
+class TestXSLibrary(TempFileMixin):
     @classmethod
     def setUpClass(cls):
         cls.isotxsAA = isotxs.readBinary(ISOTXS_AA)
@@ -205,7 +84,7 @@ class TestXSLibrary(unittest.TestCase, TempFileMixin):
             cls.xsLib.merge(copy.deepcopy(cls.isotxsAA))
             cls.xsLib.merge(copy.deepcopy(cls.gamisoAA))
             cls.xsLib.merge(copy.deepcopy(cls.pmatrxAA))
-        except:
+        except:  # noqa: bare-except
             cls.xsLibGenerationErrorStack = traceback.format_exc()
 
     def test_canPickleAndUnpickleISOTXS(self):
@@ -244,27 +123,28 @@ class TestXSLibrary(unittest.TestCase, TempFileMixin):
                 lib = xsLibraries.IsotxsLibrary()
                 with self.assertRaises(OSError):
                     xsLibraries.mergeXSLibrariesInWorkingDirectory(lib, "ISOTXS", "")
-                self.assertIn(dummyFileName, log.getStdoutValue())
+                self.assertIn(dummyFileName, log.getStdout())
         finally:
             os.remove(dummyFileName)
 
-        dummyFileName = "ISOtopics.txt"
-        with open(dummyFileName, "w") as file:
-            file.write(
-                "This is a file that starts with the letters 'ISO' but will"
-                " break the regular expression search."
-            )
-
-        try:
-            with mockRunLogs.BufferLog() as log:
-                lib = xsLibraries.IsotxsLibrary()
-                xsLibraries.mergeXSLibrariesInWorkingDirectory(lib)
-                self.assertIn(
-                    f"{dummyFileName} in the merging of ISOXX files",
-                    log.getStdoutValue(),
+        with TemporaryDirectoryChanger():
+            dummyFileName = "ISOtopics.txt"
+            with open(dummyFileName, "w") as file:
+                file.write(
+                    "This is a file that starts with the letters 'ISO' but will"
+                    " break the regular expression search."
                 )
-        finally:
-            pass
+
+            try:
+                with mockRunLogs.BufferLog() as log:
+                    lib = xsLibraries.IsotxsLibrary()
+                    xsLibraries.mergeXSLibrariesInWorkingDirectory(lib)
+                    self.assertIn(
+                        f"{dummyFileName} in the merging of ISOXX files",
+                        log.getStdout(),
+                    )
+            finally:
+                pass
 
     def _xsLibraryAttributeHelper(
         self,
@@ -355,7 +235,7 @@ class TestXSLibrary(unittest.TestCase, TempFileMixin):
         self.assertTrue(filecmp.cmp(refFile, self.testFileName))
 
 
-class Test_GetISOTXSFilesInWorkingDirectory(unittest.TestCase):
+class TestGetISOTXSFilesInWorkingDirectory(unittest.TestCase):
     def test_getISOTXSFilesWithoutLibrarySuffix(self):
         shouldBeThere = ["ISOAA", "ISOBA", os.path.join("file-path", "ISOCA")]
         shouldNotBeThere = [
@@ -398,7 +278,7 @@ class Test_GetISOTXSFilesInWorkingDirectory(unittest.TestCase):
 
     def assert_contains_only(self, container, shouldBeThere, shouldNotBeThere):
         """
-        Utility method for saying what things contain
+        Utility method for saying what things contain.
 
         This could just check the contents and the length, but the error produced when you pass shouldNotBeThere
         is much nicer.
@@ -408,8 +288,8 @@ class Test_GetISOTXSFilesInWorkingDirectory(unittest.TestCase):
         self.assertEqual(set(), container & set(shouldNotBeThere))
 
 
-# LOOK OUT, THIS GETS DELETED LATER ON SO IT DOESN'T RUN... IT IS AN ABSTRACT CLASS!!
-class TestXSlibraryMerging(unittest.TestCase, TempFileMixin):
+# NOTE: This is just a base class, so it isn't run directly.
+class TestXSlibraryMerging(TempFileMixin):
     """A shared class that defines tests that should be true for all IsotxsLibrary merging."""
 
     @classmethod
@@ -431,6 +311,7 @@ class TestXSlibraryMerging(unittest.TestCase, TempFileMixin):
         del cls.libLumped
 
     def setUp(self):
+        TempFileMixin.setUp(self)
         # load a library that is in the ARMI tree. This should
         # be a small library with LFPs, Actinides, structure, and coolant
         for attrName, path in [
@@ -662,7 +543,3 @@ class Combined_merge_Tests(unittest.TestCase):
 
 # Remove the abstract class, so that it does not run (all tests would fail)
 del TestXSlibraryMerging
-
-
-if __name__ == "__main__":
-    unittest.main()

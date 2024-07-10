@@ -1,7 +1,0 @@
-# See the discussion in docs\developer\tooling
---prefer-binary
-# see https://github.com/advisories/GHSA-6p56-wp2h-9hxr
-# This is included in requirements.txt because of a security alert numpy released
-numpy>=1.21,<=1.23.5
-
--e .[memprof]

@@ -11,8 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Unit tests for input modifiers"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+"""Unit tests for input modifiers."""
 import math
 import unittest
 
@@ -41,9 +40,9 @@ class TestBlueprintModifiers(unittest.TestCase):
             fuelOD^2 / 4 = 0.5 * cladID^2 / 4
             fuelOD = \sqrt{0.5}
 
-
-        .. note:: the area of fuel is 0.5 * inner area of clad
-
+        Notes
+        -----
+        The area of fuel is 0.5 * inner area of clad.
         """
         bp = self.bp
         self.assertEqual(1.0, bp.blockDesigns["fuel 1"]["clad"].id)
@@ -132,7 +131,3 @@ class TestBlueprintModifiers(unittest.TestCase):
         self.assertEqual(
             1.05, bp.blockDesigns["block 5"]["clad"].id
         )  # modifies all blocks
-
-
-if __name__ == "__main__":
-    unittest.main()

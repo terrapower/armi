@@ -13,16 +13,9 @@
 # limitations under the License.
 
 """Module to test parameter sweep converters."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
-import math
 import os
 import unittest
 
-from armi import runLog
-from armi import settings
-from armi.reactor import blocks
-from armi.reactor import geometry
-from armi.reactor import grids
 from armi.tests import TEST_ROOT
 from armi.reactor.converters.parameterSweeps.generalParameterSweepConverters import (
     CustomModifier,
@@ -31,7 +24,7 @@ from armi.reactor.converters.parameterSweeps.generalParameterSweepConverters imp
     SettingsModifier,
 )
 from armi.reactor.tests.test_reactors import loadTestReactor
-from armi.reactor.flags import Flags
+from armi.physics.neutronics.settings import CONF_EPS_FSPOINT
 
 
 THIS_DIR = os.path.dirname(__file__)
@@ -39,11 +32,13 @@ THIS_DIR = os.path.dirname(__file__)
 
 class TestParamSweepConverters(unittest.TestCase):
     def setUp(self):
-        self.o, self.r = loadTestReactor(TEST_ROOT)
+        self.o, self.r = loadTestReactor(
+            TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
         self.cs = self.o.cs
 
     def test_paramSweepConverter(self):
-        """basic test of the param sweep converter"""
+        """Basic test of the param sweep converter."""
         con = ParameterSweepConverter(self.cs, "FakeParam")
         self.assertEqual(con._parameter, "FakeParam")
 
@@ -51,18 +46,17 @@ class TestParamSweepConverters(unittest.TestCase):
         self.assertEqual(con._sourceReactor, self.r)
 
     def test_neutronicConvergenceModifier(self):
-        """super basic test of the Neutronic Convergence Modifier"""
+        """Super basic test of the Neutronic Convergence Modifier."""
         custom = NeutronicConvergenceModifier(self.cs, 1000)
         self.assertEqual(custom._parameter, 1000)
 
         custom.convert(self.r)
-        self.assertAlmostEqual(custom._cs["epsFSPoint"], 1, delta=1e-3)
+        self.assertAlmostEqual(custom._cs[CONF_EPS_FSPOINT], 1, delta=1e-3)
 
     def test_settingsModifier(self):
-        """Super basic test of the Settings Modifier"""
+        """Super basic test of the Settings Modifier."""
         con = SettingsModifier(self.cs, "comment", "FakeParam")
         self.assertEqual(con._parameter, "FakeParam")
-        val = self.cs["comment"]
 
         con.convert(self.r)
         self.assertEqual(con._sourceReactor, self.r)
@@ -72,7 +66,7 @@ class TestParamSweepConverters(unittest.TestCase):
         self.assertEqual(con._cs["comment"], "FakeParam")
 
     def test_customModifier(self):
-        """Super basic test of the Custom Modifier"""
+        """Super basic test of the Custom Modifier."""
         con = CustomModifier(self.cs, "FakeParam")
         self.assertEqual(con._parameter, "FakeParam")
 

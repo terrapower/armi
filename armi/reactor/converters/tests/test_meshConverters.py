@@ -12,20 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""unit tests of RZ Mesh Converter"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+"""Unit tests of RZ Mesh Converter."""
 import math
 import unittest
 
-from armi.reactor.tests.test_reactors import loadTestReactor
 from armi.reactor.converters import meshConverters, geometryConverters
+from armi.reactor.tests.test_reactors import loadTestReactor
 from armi.tests import TEST_ROOT
 
 
 class TestRZReactorMeshConverter(unittest.TestCase):
-    """
-    Loads a hex reactor and converts its mesh to RZTheta coordinates
-    """
+    """Loads a hex reactor and converts its mesh to RZTheta coordinates."""
 
     def setUp(self):
         self.o, self.r = loadTestReactor(TEST_ROOT)
@@ -148,8 +145,3 @@ class TestRZReactorMeshConverter(unittest.TestCase):
         self.assertListEqual(meshConvert.radialMesh, expectedRadialMesh)
         self.assertListEqual(meshConvert.axialMesh, expectedAxialMesh)
         self.assertListEqual(meshConvert.thetaMesh, expectedThetaMesh)
-
-
-if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'TestRZReactorMeshConverter.test_meshByRingCompositionAxialBinsSmallCore']
-    unittest.main()

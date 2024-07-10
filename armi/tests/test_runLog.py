@@ -11,8 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests of the runLog tooling"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+"""Tests of the runLog tooling."""
 from io import StringIO
 from shutil import rmtree
 import logging
@@ -26,7 +25,12 @@ from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 class TestRunLog(unittest.TestCase):
     def test_setVerbosityFromInteger(self):
-        """Test that the log verbosity can be set with an integer."""
+        """Test that the log verbosity can be set with an integer.
+
+        .. test:: The run log verbosity can be configured with an integer.
+            :id: T_ARMI_LOG0
+            :tests: R_ARMI_LOG
+        """
         log = runLog._RunLog(1)
         expectedStrVerbosity = "debug"
         verbosityRank = log.getLogVerbosityRank(expectedStrVerbosity)
@@ -35,7 +39,13 @@ class TestRunLog(unittest.TestCase):
         self.assertEqual(verbosityRank, logging.DEBUG)
 
     def test_setVerbosityFromString(self):
-        """Test that the log verbosity can be set with a string."""
+        """
+        Test that the log verbosity can be set with a string.
+
+        .. test:: The run log verbosity can be configured with a string.
+            :id: T_ARMI_LOG1
+            :tests: R_ARMI_LOG
+        """
         log = runLog._RunLog(1)
         expectedStrVerbosity = "error"
         verbosityRank = log.getLogVerbosityRank(expectedStrVerbosity)
@@ -44,7 +54,7 @@ class TestRunLog(unittest.TestCase):
         self.assertEqual(verbosityRank, logging.ERROR)
 
     def test_verbosityOutOfRange(self):
-        """Test that the log verbosity setting resets to a canonical value when it is out of range"""
+        """Test that the log verbosity setting resets to a canonical value when it is out of range."""
         runLog.setVerbosity(-50)
         self.assertEqual(
             runLog.LOG.logger.level, min([v[0] for v in runLog.LOG.logLevels.values()])
@@ -64,7 +74,7 @@ class TestRunLog(unittest.TestCase):
             runLog.setVerbosity(["debug"])
 
     def test_parentRunLogging(self):
-        """A basic test of the logging of the parent runLog"""
+        """A basic test of the logging of the parent runLog."""
         # init the _RunLog object
         log = runLog.LOG = runLog._RunLog(0)
         log.startLog("test_parentRunLogging")
@@ -80,6 +90,7 @@ class TestRunLog(unittest.TestCase):
         log.log("debug", "You shouldn't see this.", single=False, label=None)
         log.log("warning", "Hello, ", single=False, label=None)
         log.log("error", "world!", single=False, label=None)
+
         log.logger.flush()
         log.logger.close()
         runLog.close(99)
@@ -89,8 +100,22 @@ class TestRunLog(unittest.TestCase):
         self.assertIn("Hello", streamVal, msg=streamVal)
         self.assertIn("world", streamVal, msg=streamVal)
 
+    def test_getWhiteSpace(self):
+        log = runLog._RunLog(0)
+        space0 = len(log.getWhiteSpace(0))
+        space1 = len(log.getWhiteSpace(1))
+        space9 = len(log.getWhiteSpace(9))
+
+        self.assertGreater(space1, space0)
+        self.assertEqual(space1, space9)
+
     def test_warningReport(self):
-        """A simple test of the warning tracking and reporting logic"""
+        """A simple test of the warning tracking and reporting logic.
+
+        .. test:: Generate a warning report after a simulation is complete.
+            :id: T_ARMI_LOG2
+            :tests: R_ARMI_LOG
+        """
         # create the logger and do some logging
         log = runLog.LOG = runLog._RunLog(321)
         log.startLog("test_warningReport")
@@ -126,8 +151,18 @@ class TestRunLog(unittest.TestCase):
         self.assertNotIn("invisible", streamVal, msg=streamVal)
         self.assertEqual(streamVal.count("test_warningReport"), 2, msg=streamVal)
 
+        # bonus check: edge case in duplicates filter
+        backupLog, log.logger = log.logger, None
+        self.assertIsNone(log.getDuplicatesFilter())
+        log.logger = backupLog
+
     def test_warningReportInvalid(self):
-        """A test of warningReport in an invalid situation"""
+        """A test of warningReport in an invalid situation.
+
+        .. test:: Test an important edge case for a warning report.
+            :id: T_ARMI_LOG3
+            :tests: R_ARMI_LOG
+        """
         # create the logger and do some logging
         testName = "test_warningReportInvalid"
         log = runLog.LOG = runLog._RunLog(323)
@@ -166,10 +201,10 @@ class TestRunLog(unittest.TestCase):
         self.assertEqual(streamVal.count(testName), 1, msg=streamVal)
 
     def test_closeLogging(self):
-        """A basic test of the close() functionality"""
+        """A basic test of the close() functionality."""
 
         def validate_loggers(log):
-            """little test helper, to make sure our loggers still look right"""
+            """Little test helper, to make sure our loggers still look right."""
             handlers = [str(h) for h in log.logger.handlers]
             self.assertEqual(len(handlers), 1, msg=",".join(handlers))
 
@@ -193,42 +228,51 @@ class TestRunLog(unittest.TestCase):
         runLog.close(0)
 
     def test_setVerbosity(self):
-        """Let's test the setVerbosity() method carefully"""
+        """Let's test the setVerbosity() method carefully.
+
+        .. test:: The run log has configurable verbosity.
+            :id: T_ARMI_LOG4
+            :tests: R_ARMI_LOG
+
+        .. test:: The run log can log to stream.
+            :id: T_ARMI_LOG_IO0
+            :tests: R_ARMI_LOG_IO
+        """
         with mockRunLogs.BufferLog() as mock:
             # we should start with a clean slate
-            self.assertEqual("", mock._outputStream)
+            self.assertEqual("", mock.getStdout())
             runLog.LOG.startLog("test_setVerbosity")
             runLog.LOG.setVerbosity(logging.INFO)
 
             # we should start at info level, and that should be working correctly
             self.assertEqual(runLog.LOG.getVerbosity(), logging.INFO)
             runLog.info("hi")
-            self.assertIn("hi", mock._outputStream)
-            mock._outputStream = ""
+            self.assertIn("hi", mock.getStdout())
+            mock.emptyStdout()
 
             runLog.debug("invisible")
-            self.assertEqual("", mock._outputStream)
+            self.assertEqual("", mock.getStdout())
 
             # setVerbosity() to WARNING, and verify it is working
             runLog.LOG.setVerbosity(logging.WARNING)
             runLog.info("still invisible")
-            self.assertEqual("", mock._outputStream)
+            self.assertEqual("", mock.getStdout())
             runLog.warning("visible")
-            self.assertIn("visible", mock._outputStream)
-            mock._outputStream = ""
+            self.assertIn("visible", mock.getStdout())
+            mock.emptyStdout()
 
             # setVerbosity() to DEBUG, and verify it is working
             runLog.LOG.setVerbosity(logging.DEBUG)
             runLog.debug("Visible")
-            self.assertIn("Visible", mock._outputStream)
-            mock._outputStream = ""
+            self.assertIn("Visible", mock.getStdout())
+            mock.emptyStdout()
 
             # setVerbosity() to ERROR, and verify it is working
             runLog.LOG.setVerbosity(logging.ERROR)
             runLog.warning("Still Invisible")
-            self.assertEqual("", mock._outputStream)
+            self.assertEqual("", mock.getStdout())
             runLog.error("Visible!")
-            self.assertIn("Visible!", mock._outputStream)
+            self.assertIn("Visible!", mock.getStdout())
 
             # we shouldn't be able to setVerbosity() to a non-canonical value (logging module defense)
             self.assertEqual(runLog.LOG.getVerbosity(), logging.ERROR)
@@ -236,32 +280,51 @@ class TestRunLog(unittest.TestCase):
             self.assertEqual(runLog.LOG.getVerbosity(), logging.WARNING)
 
     def test_setVerbosityBeforeStartLog(self):
-        """The user/dev my accidentally call setVerbosity() before startLog(), this should be mostly supportable"""
+        """The user/dev may accidentally call ``setVerbosity()`` before ``startLog()``,
+        this should be mostly supportable. This is just an edge case.
+
+        .. test:: Test that we support the user setting log verbosity BEFORE the logging starts.
+            :id: T_ARMI_LOG5
+            :tests: R_ARMI_LOG
+        """
         with mockRunLogs.BufferLog() as mock:
-            # we should start with a clean slate
-            self.assertEqual("", mock._outputStream)
+            # we should start with a clean slate, before debug logging
+            self.assertEqual("", mock.getStdout())
             runLog.LOG.setVerbosity(logging.DEBUG)
             runLog.LOG.startLog("test_setVerbosityBeforeStartLog")
 
             # we should start at info level, and that should be working correctly
             self.assertEqual(runLog.LOG.getVerbosity(), logging.DEBUG)
             runLog.debug("hi")
-            self.assertIn("hi", mock._outputStream)
-            mock._outputStream = ""
+            self.assertIn("hi", mock.getStdout())
+            mock.emptyStdout()
+
+            # we should start with a clean slate, before info loggin
+            self.assertEqual("", mock.getStdout())
+            runLog.LOG.setVerbosity(logging.INFO)
+            runLog.LOG.startLog("test_setVerbosityBeforeStartLog2")
+
+            # we should start at info level, and that should be working correctly
+            self.assertEqual(runLog.LOG.getVerbosity(), logging.INFO)
+            runLog.debug("nope")
+            runLog.info("hi")
+            self.assertIn("hi", mock.getStdout())
+            self.assertNotIn("nope", mock.getStdout())
+            mock.emptyStdout()
 
     def test_callingStartLogMultipleTimes(self):
-        """calling startLog() multiple times will lead to multiple output files, but logging should still work"""
+        """Calling startLog() multiple times will lead to multiple output files, but logging should still work."""
         with mockRunLogs.BufferLog() as mock:
             # we should start with a clean slate
-            self.assertEqual("", mock._outputStream)
+            self.assertEqual("", mock.getStdout())
             runLog.LOG.startLog("test_callingStartLogMultipleTimes1")
             runLog.LOG.setVerbosity(logging.INFO)
 
             # we should start at info level, and that should be working correctly
             self.assertEqual(runLog.LOG.getVerbosity(), logging.INFO)
             runLog.info("hi1")
-            self.assertIn("hi1", mock._outputStream)
-            mock._outputStream = ""
+            self.assertIn("hi1", mock.getStdout())
+            mock.emptyStdout()
 
             # call startLog() again
             runLog.LOG.startLog("test_callingStartLogMultipleTimes2")
@@ -270,8 +333,8 @@ class TestRunLog(unittest.TestCase):
             # we should start at info level, and that should be working correctly
             self.assertEqual(runLog.LOG.getVerbosity(), logging.INFO)
             runLog.info("hi2")
-            self.assertIn("hi2", mock._outputStream)
-            mock._outputStream = ""
+            self.assertIn("hi2", mock.getStdout())
+            mock.emptyStdout()
 
             # call startLog() again
             runLog.LOG.startLog("test_callingStartLogMultipleTimes3")
@@ -280,8 +343,8 @@ class TestRunLog(unittest.TestCase):
             # we should start at info level, and that should be working correctly
             self.assertEqual(runLog.LOG.getVerbosity(), logging.INFO)
             runLog.info("hi3")
-            self.assertIn("hi3", mock._outputStream)
-            mock._outputStream = ""
+            self.assertIn("hi3", mock.getStdout())
+            mock.emptyStdout()
 
             # call startLog() again, with a duplicate logger name
             runLog.LOG.startLog("test_callingStartLogMultipleTimes3")
@@ -290,11 +353,21 @@ class TestRunLog(unittest.TestCase):
             # we should start at info level, and that should be working correctly
             self.assertEqual(runLog.LOG.getVerbosity(), logging.INFO)
             runLog.info("hi333")
-            self.assertIn("hi333", mock._outputStream)
-            mock._outputStream = ""
+            self.assertIn("hi333", mock.getStdout())
+            mock.emptyStdout()
 
     def test_concatenateLogs(self):
-        """simple test of the concat logs function"""
+        """
+        Simple test of the concat logs function.
+
+        .. test:: The run log combines logs from different processes.
+            :id: T_ARMI_LOG_MPI
+            :tests: R_ARMI_LOG_MPI
+
+        .. test:: The run log can log to file.
+            :id: T_ARMI_LOG_IO1
+            :tests: R_ARMI_LOG_IO
+        """
         with TemporaryDirectoryChanger():
             # create the log dir
             logDir = "test_concatenateLogs"
@@ -338,7 +411,12 @@ class TestRunLog(unittest.TestCase):
             self.assertFalse(os.path.exists(stderrFile))
 
     def test_createLogDir(self):
-        """Test the createLogDir() method"""
+        """Test the createLogDir() method.
+
+        .. test:: Test that log directories can be created for logging output files.
+            :id: T_ARMI_LOG6
+            :tests: R_ARMI_LOG
+        """
         with TemporaryDirectoryChanger():
             logDir = "test_createLogDir"
             self.assertFalse(os.path.exists(logDir))
@@ -371,6 +449,12 @@ class TestRunLogger(unittest.TestCase):
         self.assertEqual(len(self.rl.filters), 1)
 
     def test_write(self):
+        """Test that we can write text to the logger output stream.
+
+        .. test:: Write logging text to the logging stream and/or file.
+            :id: T_ARMI_LOG7
+            :tests: R_ARMI_LOG
+        """
         # divert the logging to a stream, to make testing easier
         stream = StringIO()
         handler = logging.StreamHandler(stream)
@@ -383,7 +467,3 @@ class TestRunLogger(unittest.TestCase):
         # test what was logged
         streamVal = stream.getvalue()
         self.assertIn(testName, streamVal, msg=streamVal)
-
-
-if __name__ == "__main__":
-    unittest.main()

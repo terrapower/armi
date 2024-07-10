@@ -11,8 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for cross section table for depletion"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+"""Tests for cross section table for depletion."""
 import unittest
 
 from armi.nuclearDataIO.cccc import isotxs
@@ -30,6 +29,12 @@ from armi.tests import ISOAA_PATH
 
 class TestCrossSectionTable(unittest.TestCase):
     def test_makeTable(self):
+        """Test making a cross section table.
+
+        .. test:: Generate cross section table.
+            :id: T_ARMI_DEPL_TABLES
+            :tests: R_ARMI_DEPL_TABLES
+        """
         obj = loadTestBlock()
         obj.p.mgFlux = range(33)
         core = obj.getAncestorWithFlags(Flags.CORE)
@@ -48,7 +53,16 @@ class TestCrossSectionTable(unittest.TestCase):
         self.assertIn("mcnpId", xSecTable[-1])
 
     def test_isotopicDepletionInterface(self):
-        _o, r = loadTestReactor()
+        """
+        Test isotopic depletion interface.
+
+        .. test:: ARMI provides a base class to deplete isotopes.
+            :id: T_ARMI_DEPL_ABC
+            :tests: R_ARMI_DEPL_ABC
+        """
+        _o, r = loadTestReactor(
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
         cs = Settings()
 
         aid = idi.AbstractIsotopicDepleter(r, cs)
@@ -57,7 +71,3 @@ class TestCrossSectionTable(unittest.TestCase):
 
         self.assertEqual(len(aid.getToDeplete()), 0)
         self.assertEqual(ORDER, 5.0)
-
-
-if __name__ == "__main__":
-    unittest.main()

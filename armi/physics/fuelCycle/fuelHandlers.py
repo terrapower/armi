@@ -24,6 +24,7 @@ the particular shuffling of a case.
 
 This module also handles repeat shuffles when doing a restart.
 """
+# ruff: noqa: F401
 import os
 import re
 import warnings
@@ -34,6 +35,7 @@ from armi import runLog
 from armi.physics.fuelCycle import assemblyRotationAlgorithms as rotAlgos
 from armi.physics.fuelCycle.fuelHandlerFactory import fuelHandlerFactory
 from armi.physics.fuelCycle.fuelHandlerInterface import FuelHandlerInterface
+from armi.physics.fuelCycle.settings import CONF_ASSEMBLY_ROTATION_ALG
 from armi.reactor.flags import Flags
 from armi.utils.customExceptions import InputError
 
@@ -72,7 +74,7 @@ class FuelHandler:
         Link to the current cycle number.
 
         Notes
-        ------
+        -----
         This retains backwards compatibility with previous fuel handler inputs.
         """
         return self.o.r.p.cycle
@@ -88,7 +90,7 @@ class FuelHandler:
         return self.o.r
 
     def outage(self, factor=1.0):
-        r"""
+        """
         Simulates a reactor reload outage. Moves and tracks fuel.
 
         This sets the moveList structure.
@@ -117,17 +119,24 @@ class FuelHandler:
             self.chooseSwaps(factor)
 
         # do rotations if pin-level details are available (requires fluxRecon plugin)
-        if self.cs["fluxRecon"] and self.cs["assemblyRotationAlgorithm"]:
+        if self.cs["fluxRecon"] and self.cs[CONF_ASSEMBLY_ROTATION_ALG]:
             # Rotate assemblies ONLY IF at least some assemblies have pin detail
             # The user can choose the algorithm method name directly in the settings
-            if hasattr(rotAlgos, self.cs["assemblyRotationAlgorithm"]):
-                rotationMethod = getattr(rotAlgos, self.cs["assemblyRotationAlgorithm"])
-                rotationMethod()
+            if hasattr(rotAlgos, self.cs[CONF_ASSEMBLY_ROTATION_ALG]):
+                rotationMethod = getattr(rotAlgos, self.cs[CONF_ASSEMBLY_ROTATION_ALG])
+                try:
+                    rotationMethod()
+                except TypeError:
+                    rotationMethod(self)
             else:
                 raise RuntimeError(
                     "FuelHandler {0} does not have a rotation algorithm called {1}.\n"
-                    'Change your "assemblyRotationAlgorithm" setting'
-                    "".format(rotAlgos, self.cs["assemblyRotationAlgorithm"])
+                    "Change your {2} setting"
+                    "".format(
+                        rotAlgos,
+                        self.cs[CONF_ASSEMBLY_ROTATION_ALG],
+                        CONF_ASSEMBLY_ROTATION_ALG,
+                    )
                 )
 
         # inform the reactor of how many moves occurred so it can put the number in the database.
@@ -156,6 +165,7 @@ class FuelHandler:
             numMoved = 0
 
         self.o.r.core.p.numMoves = numMoved
+        self.o.r.core.setBlockMassParams()
 
         runLog.important(
             "Fuel handler performed {0} assembly shuffles.".format(numMoved)
@@ -194,7 +204,8 @@ class FuelHandler:
         return defaultFactorList, factorSearchFlags
 
     def prepCore(self):
-        """Aux. function to run before XS generation (do moderation, etc. here)"""
+        """Aux function to run before XS generation (do moderation, etc)."""
+        pass
 
     def prepSearch(self, *args, **kwargs):
         """
@@ -360,14 +371,15 @@ class FuelHandler:
 
         Examples
         --------
-        feed = self.findAssembly(targetRing=4,
-                                 width=(0,0),
-                                 param='maxPercentBu',
-                                 compareTo=100,
-                                 typeSpec=Flags.FEED | Flags.FUEL)
+        This returns the feed fuel assembly in ring 4 that has a burnup closest to 100%
+        (the highest burnup assembly)::
 
-        returns the feed fuel assembly in ring 4 that has a burnup closest to 100% (the highest
-        burnup assembly)
+            feed = self.findAssembly(targetRing=4,
+                                     width=(0,0),
+                                     param='maxPercentBu',
+                                     compareTo=100,
+                                     typeSpec=Flags.FEED | Flags.FUEL)
+
         """
 
         def compareAssem(candidate, current):
@@ -435,7 +447,7 @@ class FuelHandler:
             # separate it
             compareTo, mult = compareTo
 
-        if isinstance(compareTo, float) or isinstance(compareTo, int):
+        if isinstance(compareTo, (float, int)):
             # floating point or int.
             compVal = compareTo * mult
         elif param:
@@ -533,17 +545,9 @@ class FuelHandler:
                         # this assembly is in the excluded location list. skip it.
                         continue
 
-                # only continue of the Assembly is in a Zone
-                if zoneList:
-                    found = False  # guilty until proven innocent
-                    for zone in zoneList:
-                        if a.getLocation() in zone:
-                            # great! it's in there, so we'll accept this assembly
-                            found = True  # innocent
-                            break
-                    if not found:
-                        # this assembly is not in any of the zones in the zone list. skip it.
-                        continue
+                # only process of the Assembly is in a Zone
+                if not self.isAssemblyInAZone(zoneList, a):
+                    continue
 
                 # Now find the assembly with the param closest to the target val.
                 if param:
@@ -610,6 +614,21 @@ class FuelHandler:
         else:
             return minDiff[1]
 
+    @staticmethod
+    def isAssemblyInAZone(zoneList, a):
+        """Does the given assembly in one of these zones."""
+        if zoneList:
+            # ruff: noqa: SIM110
+            for zone in zoneList:
+                if a.getLocation() in zone:
+                    # Success!
+                    return True
+
+            return False
+        else:
+            # A little counter-intuitively, if there are no zones, we return True.
+            return True
+
     def _getAssembliesInRings(
         self,
         ringList,
@@ -618,8 +637,8 @@ class FuelHandler:
         exclusions=None,
         circularRingFlag=False,
     ):
-        r"""
-        find assemblies in particular rings
+        """
+        find assemblies in particular rings.
 
         Parameters
         ----------
@@ -644,6 +663,16 @@ class FuelHandler:
         assemblyList : list
             List of assemblies in each ring of the ringList. [[a1,a2,a3],[a4,a5,a6,a7],...]
         """
+        if "SFP" in ringList and self.r.sfp is None:
+            sfpAssems = []
+            runLog.warning(
+                f"{self} can't pull from SFP; no SFP is attached to the reactor {self.r}."
+                "To get assemblies from an SFP, you must add an SFP system to the blueprints"
+                f"or otherwise instantiate a SpentFuelPool object as r.sfp"
+            )
+        else:
+            sfpAssems = self.r.sfp.getChildren()
+
         assemblyList = [[] for _i in range(len(ringList))]  # empty lists for each ring
         if exclusions is None:
             exclusions = []
@@ -654,7 +683,7 @@ class FuelHandler:
             assemListTmp2 = []
             if ringList[0] == "SFP":
                 # kind of a hack for now. Need the capability.
-                assemblyList = self.r.core.sfp.getChildren()
+                assemblyList = sfpAssems
             else:
                 for i, ringNumber in enumerate(ringList):
                     assemListTmp = self.r.core.getAssembliesInCircularRing(
@@ -672,7 +701,7 @@ class FuelHandler:
         else:
             if ringList[0] == "SFP":
                 # kind of a hack for now. Need the capability.
-                assemList = self.r.core.sfp.getChildren()
+                assemList = sfpAssems
             else:
                 assemList = self.r.core.getAssemblies()
 
@@ -693,14 +722,42 @@ class FuelHandler:
         return assemblyList
 
     def swapAssemblies(self, a1, a2):
-        r"""
-        Moves a whole assembly from one place to another
+        """Moves a whole assembly from one place to another.
+
+        .. impl:: Assemblies can be moved from one place to another.
+            :id: I_ARMI_SHUFFLE_MOVE
+            :implements: R_ARMI_SHUFFLE_MOVE
+
+            For the two assemblies that are passed in, call to their :py:meth:`~armi.reactor.assemblies.Assembly.moveTo`
+            methods to transfer their underlying ``spatialLocator`` attributes to
+            each other. This will also update the ``childrenByLocator`` list on the
+            core as well as the assembly parameters ``numMoves`` and ``daysSinceLastMove``.
+
+        .. impl:: User-specified blocks can be left in place during within-core swaps.
+            :id: I_ARMI_SHUFFLE_STATIONARY0
+            :implements: R_ARMI_SHUFFLE_STATIONARY
+
+            Before assemblies are moved,
+            the ``_transferStationaryBlocks`` class method is called to
+            check if there are any block types specified by the user as stationary
+            via the ``stationaryBlockFlags`` case setting. Using these flags, blocks
+            are gathered from each assembly which should remain stationary and
+            checked to make sure that both assemblies have the same number
+            and same height of stationary blocks. If not, return an error.
+
+            If all checks pass, the :py:meth:`~armi.reactor.assemblies.Assembly.remove`
+            and :py:meth:`~armi.reactor.assemblies.Assembly.insert`
+            methods are used to swap the stationary blocks between the two assemblies.
+
+            Once this process is complete, the actual assembly movement can take
+            place. Through this process, the stationary blocks remain in the same
+            core location.
 
         Parameters
         ----------
-        a1 : Assembly
+        a1 : :py:class:`Assembly <armi.reactor.assemblies.Assembly>`
             The first assembly
-        a2 : Assembly
+        a2 : :py:class:`Assembly <armi.reactor.assemblies.Assembly>`
             The second assembly
 
         See Also
@@ -725,7 +782,7 @@ class FuelHandler:
 
     def _transferStationaryBlocks(self, assembly1, assembly2):
         """
-        Exchange the stationary blocks (e.g. grid plate) between the moving assemblies
+        Exchange the stationary blocks (e.g. grid plate) between the moving assemblies.
 
         These blocks in effect are not moved at all.
         """
@@ -755,6 +812,20 @@ class FuelHandler:
                     assembly1, a1StationaryBlocks, assembly2, a2StationaryBlocks
                 )
             )
+        if a1StationaryBlocks and a2StationaryBlocks:
+            if a1StationaryBlocks[-1][0].p.ztop != a2StationaryBlocks[-1][0].p.ztop:
+                runLog.warning(
+                    """Difference in top elevation of stationary blocks 
+                     between {} (Stationary Blocks: {}, Elevation at top of stationary blocks {}) 
+                     and {} (Stationary Blocks: {}, Elevation at top of stationary blocks {}))""".format(
+                        assembly1,
+                        a1StationaryBlocks,
+                        a1StationaryBlocks[-1][0].p.ztop,
+                        assembly2,
+                        a2StationaryBlocks,
+                        a2StationaryBlocks[-1][0].p.ztop,
+                    )
+                )
 
         # swap stationary blocks
         for (assem1Block, assem1BlockIndex), (assem2Block, assem2BlockIndex) in zip(
@@ -768,8 +839,33 @@ class FuelHandler:
             assembly2.insert(assem2BlockIndex, assem1Block)
 
     def dischargeSwap(self, incoming, outgoing):
-        r"""
-        Removes one assembly from the core and replace it with another assembly.
+        """Removes one assembly from the core and replace it with another assembly.
+
+        .. impl:: User-specified blocks can be left in place for the discharge swap.
+            :id: I_ARMI_SHUFFLE_STATIONARY1
+            :implements: R_ARMI_SHUFFLE_STATIONARY
+
+            Before assemblies are moved, the ``_transferStationaryBlocks`` class method is called to
+            check if there are any block types specified by the user as stationary via the
+            ``stationaryBlockFlags`` case setting. Using these flags, blocks are gathered from each
+            assembly which should remain stationary and checked to make sure that both assemblies
+            have the same number and same height of stationary blocks. If not, return an error.
+
+            If all checks pass, the :py:meth:`~armi.reactor.assemblies.Assembly.remove` and
+            :py:meth:`~armi.reactor.assemblies.Assembly.insert` methods are used to swap the
+            stationary blocks between the two assemblies.
+
+            Once this process is complete, the actual assembly movement can take place. Through this
+            process, the stationary blocks from the outgoing assembly remain in the original core
+            position, while the stationary blocks from the incoming assembly are discharged with the
+            outgoing assembly.
+
+        Parameters
+        ----------
+        incoming : :py:class:`Assembly <armi.reactor.assemblies.Assembly>`
+            The assembly getting swapped into the core.
+        outgoing : :py:class:`Assembly <armi.reactor.assemblies.Assembly>`
+            The assembly getting discharged out the core.
 
         See Also
         --------
@@ -804,10 +900,11 @@ class FuelHandler:
         # future, this mechanism may be used to handle symmetry in general.
         outgoing.p.multiplicity = len(loc.getSymmetricEquivalents()) + 1
 
-        if incoming in self.r.core.sfp.getChildren():
-            # pull it out of the sfp if it's in there.
-            runLog.extra("removing {0} from the sfp".format(incoming))
-            self.r.core.sfp.remove(incoming)
+        if self.r.sfp is not None:
+            if incoming in self.r.sfp.getChildren():
+                # pull it out of the sfp if it's in there.
+                runLog.extra("removing {0} from the sfp".format(incoming))
+                self.r.sfp.remove(incoming)
 
         incoming.p.multiplicity = 1
         self.r.core.add(incoming, loc)
@@ -846,7 +943,7 @@ class FuelHandler:
 
     def repeatShufflePattern(self, explicitRepeatShuffles):
         r"""
-        Repeats the fuel management from a previous ARMI run
+        Repeats the fuel management from a previous ARMI run.
 
         Parameters
         ----------
@@ -895,7 +992,7 @@ class FuelHandler:
     @staticmethod
     def readMoves(fname):
         r"""
-        reads a shuffle output file and sets up the moves dictionary
+        Reads a shuffle output file and sets up the moves dictionary.
 
         Parameters
         ----------
@@ -919,7 +1016,7 @@ class FuelHandler:
         """
         try:
             f = open(fname)
-        except:
+        except OSError:
             raise RuntimeError(
                 "Could not find/open repeat shuffle file {} in working directory {}"
                 "".format(fname, os.getcwd())
@@ -938,7 +1035,10 @@ class FuelHandler:
             elif "assembly" in line:
                 # this is the new load style where an actual assembly type is written to the shuffle logic
                 # due to legacy reasons, the assembly type will be put into group 4
-                pat = r"([A-Za-z0-9!\-]+) moved to ([A-Za-z0-9!\-]+) with assembly type ([A-Za-z0-9!\s]+)\s*(ANAME=\S+)?\s*with enrich list: (.+)"
+                pat = (
+                    r"([A-Za-z0-9!\-]+) moved to ([A-Za-z0-9!\-]+) with assembly type "
+                    + r"([A-Za-z0-9!\s]+)\s*(ANAME=\S+)?\s*with enrich list: (.+)"
+                )
                 m = re.search(pat, line)
                 if not m:
                     raise InputError(
@@ -993,7 +1093,7 @@ class FuelHandler:
     @staticmethod
     def trackChain(moveList, startingAt, alreadyDone=None):
         r"""
-        builds a chain of locations based on starting location
+        Builds a chain of locations based on starting location.
 
         Notes
         -----
@@ -1201,7 +1301,7 @@ class FuelHandler:
         self, loadChains, loopChains, enriches, loadChargeTypes, loadNames
     ):
         r"""
-        Actually does the fuel movements required to repeat a shuffle order
+        Actually does the fuel movements required to repeat a shuffle order.
 
         Parameters
         ----------
@@ -1257,11 +1357,11 @@ class FuelHandler:
             # not only use the proper assembly type but also adjust the enrichment.
             if assemblyName:
                 # get this assembly from the SFP
-                loadAssembly = self.r.core.sfp.getAssembly(assemblyName)
+                loadAssembly = self.r.sfp.getAssembly(assemblyName)
                 if not loadAssembly:
                     runLog.error(
                         "the required assembly {0} is not found in the SFP. It contains: {1}"
-                        "".format(assemblyName, self.r.core.sfp.getChildren())
+                        "".format(assemblyName, self.r.sfp.getChildren())
                     )
                     raise RuntimeError(
                         "the required assembly {0} is not found in the SFP.".format(

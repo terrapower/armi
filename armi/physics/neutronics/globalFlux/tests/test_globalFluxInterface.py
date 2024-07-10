@@ -11,24 +11,30 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for generic global flux interface"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+"""Tests for generic global flux interface."""
+import logging
 import unittest
+from unittest.mock import patch
 
 import numpy
 
+from armi import runLog
 from armi import settings
 from armi.nuclearDataIO.cccc import isotxs
 from armi.physics.neutronics.globalFlux import globalFluxInterface
+from armi.physics.neutronics.settings import (
+    CONF_GRID_PLATE_DPA_XS_SET,
+    CONF_XS_KERNEL,
+)
 from armi.reactor import geometry
 from armi.reactor.blocks import HexBlock
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_blocks
 from armi.reactor.tests import test_reactors
 from armi.tests import ISOAA_PATH
+from armi.tests import mockRunLogs
 
 
-# pylint: disable=abstract-method
 class MockReactorParams:
     def __init__(self):
         self.cycle = 1
@@ -79,9 +85,7 @@ class MockGlobalFluxWithExecuters(
 
 class MockGlobalFluxWithExecutersNonUniform(MockGlobalFluxWithExecuters):
     def getExecuterOptions(self, label=None):
-        """
-        Return modified executerOptions
-        """
+        """Return modified executerOptions."""
         opts = globalFluxInterface.GlobalFluxInterfaceUsingExecuters.getExecuterOptions(
             self, label=label
         )
@@ -94,7 +98,7 @@ class MockGlobalFluxExecuter(globalFluxInterface.GlobalFluxExecuter):
 
     def _readOutput(self):
         class MockOutputReader:
-            def apply(self, r):  # pylint: disable=no-self-use
+            def apply(self, r):
                 r.core.p.keff += 0.01
 
             def getKeff(self):
@@ -104,13 +108,27 @@ class MockGlobalFluxExecuter(globalFluxInterface.GlobalFluxExecuter):
 
 
 class TestGlobalFluxOptions(unittest.TestCase):
+    """Tests for GlobalFluxOptions."""
+
     def test_readFromSettings(self):
+        """Test reading global flux options from case settings.
+
+        .. test:: Tests GlobalFluxOptions.
+            :id: T_ARMI_FLUX_OPTIONS_CS
+            :tests: R_ARMI_FLUX_OPTIONS
+        """
         cs = settings.Settings()
         opts = globalFluxInterface.GlobalFluxOptions("neutronics-run")
         opts.fromUserSettings(cs)
         self.assertFalse(opts.adjoint)
 
     def test_readFromReactors(self):
+        """Test reading global flux options from reactor objects.
+
+        .. test:: Tests GlobalFluxOptions.
+            :id: T_ARMI_FLUX_OPTIONS_R
+            :tests: R_ARMI_FLUX_OPTIONS
+        """
         reactor = MockReactor()
         opts = globalFluxInterface.GlobalFluxOptions("neutronics-run")
         opts.fromReactor(reactor)
@@ -133,14 +151,29 @@ class TestGlobalFluxOptions(unittest.TestCase):
 
 
 class TestGlobalFluxInterface(unittest.TestCase):
+    def test_computeDpaRate(self):
+        """
+        Compute DPA and DPA rates from multi-group neutron flux and cross sections.
+
+        .. test:: Compute DPA rates.
+            :id: T_ARMI_FLUX_DPA
+            :tests: R_ARMI_FLUX_DPA
+        """
+        xs = [1, 2, 3]
+        flx = [0.5, 0.75, 2]
+        res = globalFluxInterface.computeDpaRate(flx, xs)
+        self.assertEqual(res, 10**-24 * (0.5 + 1.5 + 6))
+
     def test_interaction(self):
         """
-        Ensure the basic interaction hooks work
+        Ensure the basic interaction hooks work.
 
         Check that a 1000 pcm rx swing is observed due to the mock.
         """
         cs = settings.Settings()
-        _o, r = test_reactors.loadTestReactor()
+        _o, r = test_reactors.loadTestReactor(
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
         gfi = MockGlobalFluxInterface(r, cs)
         gfi.interactBOC()
         gfi.interactEveryNode(0, 0)
@@ -159,10 +192,23 @@ class TestGlobalFluxInterface(unittest.TestCase):
         self.assertIn("detailedDpa", params)
 
     def test_checkEnergyBalance(self):
+        """Test energy balance check.
+
+        .. test:: Block-wise power is consistent with reactor data model power.
+            :id: T_ARMI_FLUX_CHECK_POWER
+            :tests: R_ARMI_FLUX_CHECK_POWER
+        """
         cs = settings.Settings()
-        _o, r = test_reactors.loadTestReactor()
+        _o, r = test_reactors.loadTestReactor(
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
         gfi = MockGlobalFluxInterface(r, cs)
-        gfi._checkEnergyBalance()
+        self.assertEqual(gfi.checkEnergyBalance(), None)
+
+        # Test when nameplate power doesn't equal sum of block power
+        r.core.p.power = 1e-10
+        with self.assertRaises(ValueError):
+            gfi.checkEnergyBalance()
 
 
 class TestGlobalFluxInterfaceWithExecuters(unittest.TestCase):
@@ -170,19 +216,37 @@ class TestGlobalFluxInterfaceWithExecuters(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cs = settings.Settings()
-        _o, cls.r = test_reactors.loadTestReactor()
-        cls.r.core.p.keff = 1.0
-        cls.gfi = MockGlobalFluxWithExecuters(cls.r, cs)
+        cls.cs = settings.Settings()
+        cls.r = test_reactors.loadTestReactor(
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )[1]
 
-    def test_executerInteraction(self):
-        gfi, r = self.gfi, self.r
+    def setUp(self):
+        self.r.core.p.keff = 1.0
+        self.gfi = MockGlobalFluxWithExecuters(self.r, self.cs)
+
+    @patch(
+        "armi.physics.neutronics.globalFlux.globalFluxInterface.GlobalFluxExecuter._execute"
+    )
+    @patch(
+        "armi.physics.neutronics.globalFlux.globalFluxInterface.GlobalFluxExecuter._performGeometryTransformations"
+    )
+    def test_executerInteraction(self, mockGeometryTransform, mockExecute):
+        """Run the global flux interface and executer though one time now.
+
+        .. test:: Run the global flux interface to check that the mesh converter is called before the neutronics solver.
+            :id: T_ARMI_FLUX_GEOM_TRANSFORM_ORDER
+            :tests: R_ARMI_FLUX_GEOM_TRANSFORM
+        """
+        call_order = []
+        mockGeometryTransform.side_effect = lambda *a, **kw: call_order.append(
+            mockGeometryTransform
+        )
+        mockExecute.side_effect = lambda *a, **kw: call_order.append(mockExecute)
+        gfi = self.gfi
         gfi.interactBOC()
         gfi.interactEveryNode(0, 0)
-        r.p.timeNode += 1
-        gfi.interactEveryNode(0, 1)
-        gfi.interactEOC()
-        self.assertAlmostEqual(r.core.p.rxSwing, (1.02 - 1.01) / 1.01 * 1e5)
+        self.assertEqual([mockGeometryTransform, mockExecute], call_order)
 
     def test_calculateKeff(self):
         self.assertEqual(self.gfi.calculateKeff(), 1.05)  # set in mock
@@ -191,6 +255,48 @@ class TestGlobalFluxInterfaceWithExecuters(unittest.TestCase):
         class0 = globalFluxInterface.GlobalFluxInterfaceUsingExecuters.getExecuterCls()
         self.assertEqual(class0, globalFluxInterface.GlobalFluxExecuter)
 
+    def test_setTightCouplingDefaults(self):
+        """Assert that tight coupling defaults are only set if cs["tightCoupling"]=True."""
+        self.assertIsNone(self.gfi.coupler)
+        self._setTightCouplingTrue()
+        self.assertEqual(self.gfi.coupler.parameter, "keff")
+        self._setTightCouplingFalse()
+
+    def test_getTightCouplingValue(self):
+        """Test getTightCouplingValue returns the correct value for keff and type for power.
+
+        .. test:: Return k-eff or assembly-wise power for coupling interactions.
+            :id: T_ARMI_FLUX_COUPLING_VALUE
+            :tests: R_ARMI_FLUX_COUPLING_VALUE
+        """
+        self._setTightCouplingTrue()
+        self.assertEqual(self.gfi.getTightCouplingValue(), 1.0)  # set in setUp
+        self.gfi.coupler.parameter = "power"
+        for a in self.r.core.getChildren():
+            for b in a:
+                b.p.power = 10.0
+        self.assertEqual(
+            self.gfi.getTightCouplingValue(),
+            self._getCouplingPowerDistributions(self.r.core),
+        )
+        self._setTightCouplingFalse()
+
+    @staticmethod
+    def _getCouplingPowerDistributions(core):
+        scaledPowers = []
+        for a in core:
+            assemblyPower = sum(b.p.power for b in a)
+            scaledPowers.append([b.p.power / assemblyPower for b in a])
+
+        return scaledPowers
+
+    def _setTightCouplingTrue(self):
+        self.cs["tightCoupling"] = True
+        self.gfi._setTightCouplingDefaults()
+
+    def _setTightCouplingFalse(self):
+        self.cs["tightCoupling"] = False
+
 
 class TestGlobalFluxInterfaceWithExecutersNonUniform(unittest.TestCase):
     """Tests for global flux execution with non-uniform assemblies."""
@@ -198,18 +304,29 @@ class TestGlobalFluxInterfaceWithExecutersNonUniform(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cs = settings.Settings()
-        _o, cls.r = test_reactors.loadTestReactor()
+        _o, cls.r = test_reactors.loadTestReactor(
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
         cls.r.core.p.keff = 1.0
         cls.gfi = MockGlobalFluxWithExecutersNonUniform(cls.r, cs)
 
-    def test_executerInteractionNonUniformAssems(self):
-        gfi, r = self.gfi, self.r
+    @patch("armi.reactor.converters.uniformMesh.converterFactory")
+    def test_executerInteractionNonUniformAssems(self, mockConverterFactory):
+        """Run the global flux interface with non-uniform assemblies.
+
+        This will serve as a broad end-to-end test of the interface, and also
+        stress test the mesh issues with non-uniform assemblies.
+
+        .. test:: Run the global flux interface to show the geometry converter is called when the
+            nonuniform mesh option is used.
+            :id: T_ARMI_FLUX_GEOM_TRANSFORM_CONV
+            :tests: R_ARMI_FLUX_GEOM_TRANSFORM
+        """
+        gfi = self.gfi
         gfi.interactBOC()
         gfi.interactEveryNode(0, 0)
-        r.p.timeNode += 1
-        gfi.interactEveryNode(0, 1)
-        gfi.interactEOC()
-        self.assertAlmostEqual(r.core.p.rxSwing, (1.02 - 1.01) / 1.01 * 1e5)
+        self.assertTrue(gfi.getExecuterOptions().hasNonUniformAssems)
+        mockConverterFactory.assert_called()
 
     def test_calculateKeff(self):
         self.assertEqual(self.gfi.calculateKeff(), 1.05)  # set in mock
@@ -230,12 +347,15 @@ class TestGlobalFluxResultMapper(unittest.TestCase):
     """
 
     def test_mapper(self):
-        # Switch to MC2v2 setting to make sure the isotopic/elemental expansions are compatible
-        # with actually doing some math using the ISOAA test microscopic library
-        o, r = test_reactors.loadTestReactor(customSettings={"xsKernel": "MC2v2"})
+        # Switch to MC2v2 setting to make sure the isotopic/elemental expansions are compatible with
+        # actually doing some math using the ISOAA test microscopic library
+        o, r = test_reactors.loadTestReactor(
+            customSettings={CONF_XS_KERNEL: "MC2v2"},
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml",
+        )
         applyDummyFlux(r)
         r.core.lib = isotxs.readBinary(ISOAA_PATH)
-        mapper = globalFluxInterface.GlobalFluxResultMapper()
+        mapper = globalFluxInterface.GlobalFluxResultMapper(cs=o.cs)
         mapper.r = r
         mapper._renormalizeNeutronFluxByBlock(100)
         self.assertAlmostEqual(r.core.calcTotalParam("power", generationNum=2), 100)
@@ -248,21 +368,96 @@ class TestGlobalFluxResultMapper(unittest.TestCase):
         block = r.core.getFirstBlock()
         self.assertGreater(block.p.detailedDpaRate, 0)
         self.assertEqual(block.p.detailedDpa, 0)
+        block.p.pointsEdgeDpa = numpy.array([0 for i in range(6)])
+        block.p.pointsCornerDpa = numpy.array([0 for i in range(6)])
+        block.p.pointsEdgeDpaRate = numpy.array([1.0e-5 for i in range(6)])
+        block.p.pointsCornerDpaRate = numpy.array([1.0e-5 for i in range(6)])
 
         # Test DoseResultsMapper. Pass in full list of blocks to apply() in order
         # to exercise blockList option (does not change behavior, since this is what
         # apply() does anyway)
-        opts = globalFluxInterface.GlobalFluxOptions("test")
+        opts = globalFluxInterface.GlobalFluxOptions("test_mapper")
         opts.fromUserSettings(o.cs)
         dosemapper = globalFluxInterface.DoseResultsMapper(1000, opts)
         dosemapper.apply(r, blockList=r.core.getBlocks())
         self.assertGreater(block.p.detailedDpa, 0)
+        self.assertGreater(numpy.min(block.p.pointsCornerDpa), 0)
+        self.assertGreater(numpy.min(block.p.pointsEdgeDpa), 0)
 
         mapper.clearFlux()
         self.assertEqual(len(block.p.mgFlux), 0)
 
+    @patch("armi.reactor.composites.ArmiObject.getMaxParam")
+    def test_updateCycleDoseParams(self, mockGetMaxParam):
+        # set up situation
+        mockGetMaxParam.return_value = 1.23
+        o, r = test_reactors.loadTestReactor(
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
+        applyDummyFlux(r)
+        r.core.lib = isotxs.readBinary(ISOAA_PATH)
+        r.p.timeNode = 1
+        r.p.cycleLength = 365
+        opts = globalFluxInterface.GlobalFluxOptions("test_updateCycleDoseParams")
+        opts.fromUserSettings(o.cs)
+        opts.aclpDoseLimit = 100
+
+        # build the mapper
+        mapper = globalFluxInterface.DoseResultsMapper(1000, opts)
+        mapper.r = r
+
+        # test the starting position
+        self.assertEqual(mapper.r.core.p.elevationOfACLP3Cycles, 0)
+        self.assertEqual(mapper.r.core.p.elevationOfACLP7Cycles, 0)
+        self.assertEqual(mapper.r.core.p.dpaFullWidthHalfMax, 0)
+
+        # test the logs, as this case won't change the param values
+        with mockRunLogs.BufferLog() as mock:
+            self.assertEqual("", mock.getStdout())
+            runLog.LOG.startLog("test_updateCycleDoseParams")
+            runLog.LOG.setVerbosity(logging.INFO)
+            mapper.updateCycleDoseParams()
+            stdOut = mock.getStdout()
+            somethingStrange = "Something strange with detailedDpaThisCycle"
+            self.assertIn(somethingStrange, stdOut)
+            self.assertEqual(stdOut.count(somethingStrange), 3)
+
+        # test the ending position
+        self.assertEqual(mapper.r.core.p.elevationOfACLP3Cycles, 0)
+        self.assertEqual(mapper.r.core.p.elevationOfACLP7Cycles, 0)
+        self.assertEqual(mapper.r.core.p.dpaFullWidthHalfMax, 0)
+
+    def test_updateLoadpadDose(self):
+        # init test reactor
+        o, r = test_reactors.loadTestReactor(
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
+
+        # init options
+        opts = globalFluxInterface.GlobalFluxOptions("test_updateLoadpadDose")
+        opts.fromUserSettings(o.cs)
+        opts.aclpDoseLimit = 100
+        opts.loadPadElevation = 12
+        opts.loadPadLength = 24
+
+        # init mapper
+        mapper = globalFluxInterface.DoseResultsMapper(1000, opts)
+        mapper.r = r
+
+        # test logging from updateLoadpadDose
+        with mockRunLogs.BufferLog() as mock:
+            self.assertEqual("", mock.getStdout())
+            runLog.LOG.startLog("test_updateLoadpadDose")
+            runLog.LOG.setVerbosity(logging.INFO)
+
+            mapper.updateLoadpadDose()
+            self.assertIn("Above-core load", mock.getStdout())
+            self.assertIn("The peak ACLP dose", mock.getStdout())
+            self.assertIn("The max avg", mock.getStdout())
+
     def test_getDpaXs(self):
-        mapper = globalFluxInterface.GlobalFluxResultMapper()
+        cs = settings.Settings()
+        mapper = globalFluxInterface.GlobalFluxResultMapper(cs=cs)
 
         # test fuel block
         b = HexBlock("fuel", height=10.0)
@@ -276,18 +471,19 @@ class TestGlobalFluxResultMapper(unittest.TestCase):
         self.assertTrue(b.hasFlags(Flags.GRID_PLATE))
 
         # test grid plate block
-        mapper.cs["gridPlateDpaXsSet"] = "dpa_EBRII_PE16"
+        mapper.cs[CONF_GRID_PLATE_DPA_XS_SET] = "dpa_EBRII_PE16"
         vals = mapper.getDpaXs(b)
         self.assertEqual(len(vals), 33)
         self.assertAlmostEqual(vals[0], 2478.95, 1)
 
         # test null case
-        mapper.cs["gridPlateDpaXsSet"] = "fake"
+        mapper.cs[CONF_GRID_PLATE_DPA_XS_SET] = "fake"
         with self.assertRaises(KeyError):
             mapper.getDpaXs(b)
 
     def test_getBurnupPeakingFactor(self):
-        mapper = globalFluxInterface.GlobalFluxResultMapper()
+        cs = settings.Settings()
+        mapper = globalFluxInterface.GlobalFluxResultMapper(cs=cs)
 
         # test fuel block
         mapper.cs["burnupPeakingFactor"] = 0.0
@@ -297,27 +493,37 @@ class TestGlobalFluxResultMapper(unittest.TestCase):
         factor = mapper.getBurnupPeakingFactor(b)
         self.assertEqual(factor, 2.5)
 
+    def test_getBurnupPeakingFactorZero(self):
+        cs = settings.Settings()
+        mapper = globalFluxInterface.GlobalFluxResultMapper(cs=cs)
+
+        # test fuel block without any peaking factor set
+        b = HexBlock("fuel", height=10.0)
+        factor = mapper.getBurnupPeakingFactor(b)
+        self.assertEqual(factor, 0.0)
+
 
 class TestGlobalFluxUtils(unittest.TestCase):
     def test_calcReactionRates(self):
         """
         Test that the reaction rate code executes and sets a param > 0.0.
 
-        .. warning: This does not validate the reaction rate calculation.
+        .. test:: Return the reaction rates for a given ArmiObject.
+            :id: T_ARMI_FLUX_RX_RATES
+            :tests: R_ARMI_FLUX_RX_RATES
         """
         b = test_blocks.loadTestBlock()
         test_blocks.applyDummyData(b)
         self.assertAlmostEqual(b.p.rateAbs, 0.0)
-        globalFluxInterface.calcReactionRates(b, 1.01, b.r.core.lib)
+        globalFluxInterface.calcReactionRates(b, 1.01, b.core.lib)
         self.assertGreater(b.p.rateAbs, 0.0)
+        vfrac = b.getComponentAreaFrac(Flags.FUEL)
+        self.assertEqual(b.p.fisDens, b.p.rateFis / vfrac)
+        self.assertEqual(b.p.fisDensHom, b.p.rateFis)
 
 
 def applyDummyFlux(r, ng=33):
-    """Set arbitrary flux distribution on reactor."""
+    """Set arbitrary flux distribution on a Reactor."""
     for b in r.core.getBlocks():
         b.p.power = 1.0
         b.p.mgFlux = numpy.arange(ng, dtype=numpy.float64)
-
-
-if __name__ == "__main__":
-    unittest.main()

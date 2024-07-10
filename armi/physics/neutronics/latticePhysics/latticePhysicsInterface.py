@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """"
-Lattice Physics Interface
+Lattice Physics Interface.
 
 Parent classes for codes responsible for generating broad-group cross sections
 """
@@ -25,7 +25,15 @@ from armi import interfaces, runLog
 from armi.utils import codeTiming
 from armi.physics import neutronics
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
+from armi.physics.neutronics.settings import (
+    CONF_GEN_XS,
+    CONF_CLEAR_XS,
+    CONF_TOLERATE_BURNUP_CHANGE,
+    CONF_XS_KERNEL,
+    CONF_LATTICE_PHYSICS_FREQUENCY,
+)
 from armi.utils.customExceptions import important
+from armi.physics.neutronics import LatticePhysicsFrequency
 
 
 LATTICE_PHYSICS = "latticePhysics"
@@ -74,40 +82,49 @@ class LatticePhysicsInterface(interfaces.Interface):
 
         # Set to True by default, but should be disabled when perturbed cross sections are generated.
         self._updateBlockNeutronVelocities = True
-        # Geometry options available through the lattice physics interfaces
-        self._ZERO_DIMENSIONAL_GEOM = "0D"
-        self._ONE_DIMENSIONAL_GEOM = "1D"
-        self._TWO_DIMENSIONAL_GEOM = "2D"
-        self._SLAB_MODEL = " slab"
-        self._CYLINDER_MODEL = " cylinder"
-        self._HEX_MODEL = " hex"
-        self._burnupTolerance = self.cs["tolerateBurnupChange"]
+        self._burnupTolerance = self.cs[CONF_TOLERATE_BURNUP_CHANGE]
         self._oldXsIdsAndBurnup = {}
         self.executablePath = self._getExecutablePath()
         self.executableRoot = os.path.dirname(self.executablePath)
         self.includeGammaXS = neutronics.gammaTransportIsRequested(
             cs
         ) or neutronics.gammaXsAreRequested(cs)
+        self._latticePhysicsFrequency = LatticePhysicsFrequency[
+            self.cs[CONF_LATTICE_PHYSICS_FREQUENCY]
+        ]
 
     def _getExecutablePath(self):
         raise NotImplementedError
+
+    @codeTiming.timed
+    def interactBOL(self, cycle=0):
+        """
+        Run the lattice physics code if ``genXS`` is set and update burnup groups.
+
+        Generate new cross sections based off the case settings and the current state
+        of the reactor if the lattice physics frequency is BOL.
+        """
+        if self._latticePhysicsFrequency == LatticePhysicsFrequency.BOL:
+            self.updateXSLibrary(cycle)
 
     @codeTiming.timed
     def interactBOC(self, cycle=0):
         """
         Run the lattice physics code if ``genXS`` is set and update burnup groups.
 
-        Generate new cross sections based off the case settings and the current state of the reactor.
+        Generate new cross sections based off the case settings and the current state
+        of the reactor if the lattice physics frequency is BOC.
 
         Notes
         -----
-        :py:meth:`armi.physics.fuelCycle.fuelHandlers.FuelHandler.interactBOC` also calls this if the
-        ``runLatticePhysicsBeforeShuffling``setting is True.
+        :py:meth:`armi.physics.fuelCycle.fuelHandlerInterface.FuelHandlerInterface.interactBOC`
+        also calls this if the ``runLatticePhysicsBeforeShuffling``setting is True.
         This happens because branch searches may need XS.
         """
-        self.updateXSLibrary(cycle)
+        if self._latticePhysicsFrequency == LatticePhysicsFrequency.BOC:
+            self.updateXSLibrary(cycle)
 
-    def updateXSLibrary(self, cycle):
+    def updateXSLibrary(self, cycle, node=None):
         """
         Update the current XS library, either by creating or reloading one.
 
@@ -115,6 +132,8 @@ class LatticePhysicsInterface(interfaces.Interface):
         ----------
         cycle : int
             The cycle that is being processed. Used to name the library.
+        node : int, optional
+            The node that is being processed. Used to name the library.
 
         See Also
         --------
@@ -123,41 +142,43 @@ class LatticePhysicsInterface(interfaces.Interface):
         runLog.important("Preparing XS for cycle {}".format(cycle))
         representativeBlocks, xsIds = self._getBlocksAndXsIds()
         if self._newLibraryShouldBeCreated(cycle, representativeBlocks, xsIds):
-            if self.cs["clearXS"]:
+            if self.cs[CONF_CLEAR_XS]:
                 self.clearXS()
             self.computeCrossSections(
                 blockList=representativeBlocks, xsLibrarySuffix=self._getSuffix(cycle)
             )
-            self._renameExistingLibrariesForCycle(cycle)
+            self._renameExistingLibrariesForStatepoint(cycle, node)
         else:
-            self.readExistingXSLibraries(cycle)
+            self.readExistingXSLibraries(cycle, node)
 
         self._checkInputs()
 
-    def _renameExistingLibrariesForCycle(self, cycle):
+    def _renameExistingLibrariesForStatepoint(self, cycle, node):
         """Copy the existing neutron and/or gamma libraries into cycle-dependent files."""
-        shutil.copy(neutronics.ISOTXS, nuclearDataIO.getExpectedISOTXSFileName(cycle))
+        shutil.copy(
+            neutronics.ISOTXS, nuclearDataIO.getExpectedISOTXSFileName(cycle, node)
+        )
         if self.includeGammaXS:
             shutil.copy(
                 neutronics.GAMISO,
                 nuclearDataIO.getExpectedGAMISOFileName(
-                    cycle=cycle, suffix=self._getSuffix(cycle)
+                    cycle=cycle, node=node, suffix=self._getSuffix(cycle)
                 ),
             )
             shutil.copy(
                 neutronics.PMATRX,
                 nuclearDataIO.getExpectedPMATRXFileName(
-                    cycle=cycle, suffix=self._getSuffix(cycle)
+                    cycle=cycle, node=node, suffix=self._getSuffix(cycle)
                 ),
             )
 
     def _checkInputs(self):
         pass
 
-    def readExistingXSLibraries(self, cycle):
+    def readExistingXSLibraries(self, cycle, node):
         raise NotImplementedError
 
-    def makeCycleXSFilesAsBaseFiles(self, cycle):
+    def makeCycleXSFilesAsBaseFiles(self, cycle, node):
         raise NotImplementedError
 
     @staticmethod
@@ -184,16 +205,27 @@ class LatticePhysicsInterface(interfaces.Interface):
 
     def _readGammaBinaries(self, lib, gamisoFileName, pmatrxFileName):
         raise NotImplementedError(
-            "Gamma cross sections not implemented in {}".format(self.cs["xsKernel"])
+            "Gamma cross sections not implemented in {}".format(self.cs[CONF_XS_KERNEL])
         )
 
     def _writeGammaBinaries(self, lib, gamisoFileName, pmatrxFileName):
         raise NotImplementedError(
-            "Gamma cross sections not implemented in {}".format(self.cs["xsKernel"])
+            "Gamma cross sections not implemented in {}".format(self.cs[CONF_XS_KERNEL])
         )
 
-    def _getSuffix(self, cycle):  # pylint: disable=unused-argument, no-self-use
+    def _getSuffix(self, cycle):
         return ""
+
+    def interactEveryNode(self, cycle=None, node=None):
+        """
+        Run the lattice physics code if ``genXS`` is set and update burnup groups.
+
+        Generate new cross sections based off the case settings and the current state
+        of the reactor if the lattice physics frequency is at least everyNode.
+        """
+        if self._latticePhysicsFrequency >= LatticePhysicsFrequency.everyNode:
+            self.r.core.lib = None
+            self.updateXSLibrary(self.r.p.cycle, self.r.p.timeNode)
 
     def interactCoupled(self, iteration):
         """
@@ -203,24 +235,32 @@ class LatticePhysicsInterface(interfaces.Interface):
         -----
         This accounts for changes in cross section data due to temperature changes, which are important
         for cross section resonance effects and accurately characterizing Doppler constant and coefficient
-        evaluations. This coupling iteration is limited to when the time node is equal to zero. This is
-        assumed to be reasonable for most applications as 1) microscopic cross section changes with burn-up
-        are deemed to be less significant compared to convergence on the temperature state, and 2) temperature
-        distributions are not expected to dramatically change for time steps > 0.
+        evaluations. For Standard and Equilibrium run types, this coupling iteration is limited to when the
+        time node is equal to zero. The validity of this assumption lies in the expectation that these runs
+        have consistent power, flow, and temperature conditions at all time nodes. For Snapshot run types,
+        this assumption, in general, is invalidated as the requested reactor state may sufficiently differ
+        from what exists on the database and where tight coupling is needed to capture temperature effects.
 
         .. warning::
 
-            The latter assumptions are design and application-specific and a subclass should be
-            considered when violated.
+            For Standard and Equilibrium run types, if the reactor power, flow, and/or temperature state
+            is expected to vary over the lifetime of the simulation, as could be the case with
+            :ref:`detailed cycle histories <cycle-history>`, a custom subclass should be considered.
 
         Parameters
         ----------
         iteration : int
             This is unused since cross sections are generated on a per-cycle basis.
         """
-        if self.r.p.timeNode == 0:
+        # always run for snapshots to account for temp effect of different flow or power statepoint
+        targetFrequency = (
+            LatticePhysicsFrequency.firstCoupledIteration
+            if iteration == 0
+            else LatticePhysicsFrequency.all
+        )
+        if self._latticePhysicsFrequency >= targetFrequency:
             self.r.core.lib = None
-            self.updateXSLibrary(self.r.p.cycle)
+            self.updateXSLibrary(self.r.p.cycle, self.r.p.timeNode)
 
     def clearXS(self):
         raise NotImplementedError
@@ -364,19 +404,18 @@ class LatticePhysicsInterface(interfaces.Interface):
 
         Criteria include:
 
-        #. genXS setting is turned on
+        #. CONF_GEN_XS setting is turned on
         #. We are beyond any requested skipCycles (restart cycles)
         #. The blocks have changed burnup beyond the burnup threshold
         #. Lattice physics kernel (e.g. MC2) hasn't already been executed for this cycle
            (possible if it runs during fuel handling)
-
         """
-        executeXSGen = bool(self.cs["genXS"] and cycle >= self.cs["skipCycles"])
+        executeXSGen = bool(self.cs[CONF_GEN_XS] and cycle >= self.cs["skipCycles"])
         idsChangedBurnup = self._checkBurnupThresholds(representativeBlockList)
         if executeXSGen and not idsChangedBurnup:
             executeXSGen = False
 
-        if self.r.core._lib is not None:  # pylint: disable=protected-access
+        if self.r.core._lib is not None:
             # justification=r.core.lib property can raise exception or load pre-generated
             # ISOTXS, but the interface should have responsibilty of loading
             # XS's have already generated for this cycle (maybe during fuel management). Should we update due to
@@ -386,7 +425,7 @@ class LatticePhysicsInterface(interfaces.Interface):
                 runLog.info(
                     f"Although a XS library {self.r.core._lib} exists on {self.r.core}, "
                     f"there are missing XS IDs {missing} required. The XS generation on cycle {cycle} "
-                    f"is not enabled, but will be run to generate these missing cross sections."
+                    "is not enabled, but will be run to generate these missing cross sections."
                 )
                 executeXSGen = True
             elif missing:
@@ -412,7 +451,7 @@ class LatticePhysicsInterface(interfaces.Interface):
         else:
             runLog.info(
                 f"Cross sections will not be generated on cycle {cycle}. The "
-                f"setting `genXS` is {self.cs['genXS']} and `skipCycles` "
+                f"setting `{CONF_GEN_XS}` is {self.cs[CONF_GEN_XS]} and `skipCycles` "
                 f"is {self.cs['skipCycles']}"
             )
 
@@ -437,7 +476,6 @@ class LatticePhysicsInterface(interfaces.Interface):
         -------
         idsChangedBurnup: bool
             flag regarding whether or not burnup changed substantially
-
         """
         idsChangedBurnup = True
         if self._burnupTolerance > 0:

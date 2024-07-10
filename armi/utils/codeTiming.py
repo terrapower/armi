@@ -11,13 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-Utilities related to profiling code.
-"""
+"""Utilities related to profiling code."""
 
-import time
 import copy
 import os
+import time
+import functools
 
 
 def timed(*args):
@@ -35,13 +34,10 @@ def timed(*args):
         @timed('call my timer this instead')
         def mymethod2(stuff)
            do even more stuff
-
     """
 
     def time_decorator(func):
-        time_decorator.__doc__ = func.__doc__
-        time_decorator.__name__ = func.__name__
-
+        @functools.wraps(func)
         def time_wrapper(*args, **kwargs):
             generated_name = "::".join(
                 [
@@ -72,10 +68,9 @@ def timed(*args):
 
 
 def getMasterTimer():
-    """Duplicate function to the MasterTimer.getMasterTimer method
+    """Duplicate function to the MasterTimer.getMasterTimer method.
 
     Provided for convenience and developer preference of which to use
-
     """
     return MasterTimer.getMasterTimer()
 
@@ -106,10 +101,9 @@ class MasterTimer:
 
     @staticmethod
     def getTimer(event_name):
-        """Return a timer with no special action take
+        """Return a timer with no special action take.
 
         ``with timer: ...`` friendly!
-
         """
         master = MasterTimer.getMasterTimer()
 
@@ -121,10 +115,9 @@ class MasterTimer:
 
     @staticmethod
     def startTimer(event_name):
-        """Return a timer with a start call, or a newly made started timer
+        """Return a timer with a start call, or a newly made started timer.
 
         ``with timer: ...`` unfriendly!
-
         """
         master = MasterTimer.getMasterTimer()
 
@@ -137,10 +130,9 @@ class MasterTimer:
 
     @staticmethod
     def endTimer(event_name):
-        """Return a timer with a stop call, or a newly made unstarted timer
+        """Return a timer with a stop call, or a newly made unstarted timer.
 
         ``with timer: ...`` unfriendly!
-
         """
         master = MasterTimer.getMasterTimer()
 
@@ -153,7 +145,7 @@ class MasterTimer:
 
     @staticmethod
     def time():
-        """System time offset by when this master timer was initialized"""
+        """System time offset by when this master timer was initialized."""
         master = MasterTimer.getMasterTimer()
 
         if master.end_time:
@@ -163,7 +155,7 @@ class MasterTimer:
 
     @staticmethod
     def startAll():
-        """Starts all timers, won't work after a stopAll command"""
+        """Starts all timers, won't work after a stopAll command."""
         master = MasterTimer.getMasterTimer()
 
         for timer in master.timers.values():
@@ -171,14 +163,14 @@ class MasterTimer:
 
     @staticmethod
     def stopAll():
-        """Kills the timer run, can't easily be restarted"""
+        """Kills the timer run, can't easily be restarted."""
         master = MasterTimer.getMasterTimer()
 
         for timer in master.timers.values():
             timer.over_start = 0  # deal with what recursion may have caused
             timer.stop()
 
-        _Timer._frozen = True  # pylint: disable=protected-access
+        _Timer._frozen = True
 
         master.end_time = time.time()
 
@@ -190,21 +182,21 @@ class MasterTimer:
 
     @staticmethod
     def report(inclusion_cutoff=0.1, total_time=False):
-        r"""
-        Write a string report of the timers
+        """
+        Write a string report of the timers.
 
         Parameters
         ----------
         inclusion_cutoff : float, optional
             Will not show results that have less than this fraction of the total time.
         total_time : bool, optional
-            Use either the ratio of total time or time since last report for consideration against the cutoff
+            Use either the ratio of total time or time since last report for consideration against
+            the cutoff
 
         See Also
         --------
         armi.utils.codeTiming._Timer.__str__ : prints out the results for each individual line item
         """
-
         master = MasterTimer.getMasterTimer()
 
         table = [
@@ -231,7 +223,7 @@ class MasterTimer:
 
     @staticmethod
     def timeline(base_file_name, inclusion_cutoff=0.1, total_time=False):
-        r"""Produces a timeline graphic of the timers
+        r"""Produces a timeline graphic of the timers.
 
         Parameters
         ----------
@@ -241,8 +233,8 @@ class MasterTimer:
         inclusion_cutoff : float, optional
             Will not show results that have less than this fraction of the total time.
         total_time : bool, optional
-            Use either the ratio of total time or time since last report for consideration against the cutoff
-
+            Use either the ratio of total time or time since last report for consideration against
+            the cutoff
         """
         import matplotlib.pyplot as plt
         import numpy as np
@@ -313,17 +305,18 @@ class MasterTimer:
         # done
         filename = base_file_name + ".code-timeline.png"
         plt.savefig(filename)
+        plt.close()
         return os.path.join(os.getcwd(), filename)
 
 
 class _Timer:
-    r"""Code timer to call at various points to measure performance
+    """Code timer to call at various points to measure performance.
 
     see MasterTimer.getTimer() for construction
-
     """
 
-    _frozen = False  # if the master timer stops, all timers must freeze, with no thaw (how would that make sense in a run?)
+    # If the master timer stops, all timers must freeze with no thaw.
+    _frozen = False
 
     def __init__(self, name, start):
         self.name = name
@@ -353,9 +346,8 @@ class _Timer:
             self.pauses,
             self.isActive,
         )
-        self.reportedTotal = (
-            self.time
-        )  # needs to come after str generation because it resets the timeSinceReport
+        # needs to come after str generation because it resets the timeSinceReport
+        self.reportedTotal = self.time
         return str_
 
     def __enter__(self):
@@ -369,24 +361,23 @@ class _Timer:
         return self._active
 
     @property
-    def pauses(
-        self,
-    ):  # if this number seems high remember .start() twice in a row adds a pause
+    def pauses(self):
+        """If this number seems high remember .start() twice in a row adds a pause."""
         return len(self._times) - 1 if self._times else 0
 
     @property
     def time(self):
-        """Total time value"""
+        """Total time value."""
         return sum([t[1] - t[0] for t in self.times])
 
     @property
     def timeSinceReport(self):
-        """The elapsed time since this timer was asked to report itself"""
+        """The elapsed time since this timer was asked to report itself."""
         return self.time - self.reportedTotal
 
     @property
     def times(self):
-        """List of time start and stop pairs, if active the current time is used as the last stop"""
+        """List of time start / stop pairs, if active the current time is used as the last stop."""
         if self.isActive:
             times = copy.deepcopy(self._times)
             times[-1] = (self._times[-1][0], MasterTimer.time())

@@ -29,10 +29,9 @@ independent interfaces:
 .. warning:: There is also some legacy and question-raising code in this module that
     is here temporarily while we finish untangling some of the neutronics
     plugins outside of ARMI.
-
 """
-
-import os
+# ruff: noqa: F401, E402
+from enum import IntEnum
 
 import numpy
 import tabulate
@@ -43,16 +42,12 @@ from armi.physics.neutronics.const import CONF_CROSS_SECTION
 
 
 class NeutronicsPlugin(plugins.ArmiPlugin):
-    """
-    The built-in neutronics plugin with a few capabilities and a lot of state parameter definitions.
-    """
+    """The built-in neutronics plugin with a few capabilities and a lot of state parameter definitions."""
 
     @staticmethod
     @plugins.HOOKIMPL
     def exposeInterfaces(cs):
-        """
-        Collect and expose all of the interfaces that live under the built-in neutronics package
-        """
+        """Collect and expose all of the interfaces that live under the built-in neutronics package."""
         from armi.physics.neutronics import crossSectionGroupManager
         from armi.physics.neutronics.fissionProductModel import fissionProductModel
 
@@ -65,13 +60,15 @@ class NeutronicsPlugin(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineParameters():
-        from . import parameters as neutronicsParameters
+        """Define parameters for the plugin."""
+        from armi.physics.neutronics import parameters as neutronicsParameters
 
         return neutronicsParameters.getNeutronicsParameterDefinitions()
 
     @staticmethod
     @plugins.HOOKIMPL
     def defineEntryPoints():
+        """Define entry points for the plugin."""
         from armi.physics.neutronics import diffIsotxs
 
         entryPoints = [diffIsotxs.CompareIsotxsLibraries]
@@ -81,6 +78,7 @@ class NeutronicsPlugin(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineSettings():
+        """Define settings for the plugin."""
         from armi.physics.neutronics import settings as neutronicsSettings
         from armi.physics.neutronics import crossSectionSettings
         from armi.physics.neutronics.fissionProductModel import (
@@ -113,12 +111,13 @@ class NeutronicsPlugin(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def onProcessCoreLoading(core, cs, dbLoad):
+        """Called whenever a Core object is newly built."""
         applyEffectiveDelayedNeutronFractionToCore(core, cs)
 
     @staticmethod
     @plugins.HOOKIMPL
     def getReportContents(r, cs, report, stage, blueprint):
-        """Generates the Report Content for the Neutronics Report"""
+        """Generates the Report Content for the Neutronics Report."""
         from armi.physics.neutronics import reports
 
         return reports.insertNeutronicsReport(r, cs, report, stage)
@@ -139,7 +138,10 @@ from armi.physics.neutronics.const import (
 COMPXS = "COMPXS"
 PMATRX = "PMATRX"
 GAMISO = "GAMISO"
+PMATRX_EXT = "pmatrx"
+GAMISO_EXT = "gamiso"
 ISOTXS = "ISOTXS"
+DIF3D = "DIF3D"
 
 # Constants for neutronics calculation types
 ADJOINT_CALC = "adjoint"
@@ -186,7 +188,9 @@ def gammaTransportIsRequested(cs):
     flag : bool
         Returns true if gamma transport is requested.
     """
-    return GAMMA in cs["globalFluxActive"]
+    from armi.physics.neutronics.settings import CONF_GLOBAL_FLUX_ACTIVE
+
+    return GAMMA in cs[CONF_GLOBAL_FLUX_ACTIVE]
 
 
 def gammaXsAreRequested(cs):
@@ -203,17 +207,23 @@ def gammaXsAreRequested(cs):
     flag : bool
         Returns true if gamma cross section generation is requested.
     """
-    return GAMMA in cs["genXS"]
+    from armi.physics.neutronics.settings import CONF_GEN_XS
+
+    return GAMMA in cs[CONF_GEN_XS]
 
 
 def adjointCalculationRequested(cs):
-    """Return true if an adjoint calculation is requested based on the ``neutronicsType`` setting."""
-    return cs["neutronicsType"] in [ADJOINT_CALC, ADJREAL_CALC]
+    """Return true if an adjoint calculation is requested based on the ``CONF_NEUTRONICS_TYPE`` setting."""
+    from armi.physics.neutronics.settings import CONF_NEUTRONICS_TYPE
+
+    return cs[CONF_NEUTRONICS_TYPE] in [ADJOINT_CALC, ADJREAL_CALC]
 
 
 def realCalculationRequested(cs):
-    """Return true if a real calculation is requested based on the ``neutronicsType`` type setting."""
-    return cs["neutronicsType"] in ["real", "both"]
+    """Return true if a real calculation is requested based on the ``CONF_NEUTRONICS_TYPE`` type setting."""
+    from armi.physics.neutronics.settings import CONF_NEUTRONICS_TYPE
+
+    return cs[CONF_NEUTRONICS_TYPE] in ["real", "both"]
 
 
 def applyEffectiveDelayedNeutronFractionToCore(core, cs):
@@ -263,3 +273,32 @@ def applyEffectiveDelayedNeutronFractionToCore(core, cs):
                 tablefmt="armi",
             )
         )
+
+
+class LatticePhysicsFrequency(IntEnum):
+    """
+    Enumeration for lattice physics update frequency options.
+
+    NEVER = never automatically trigger lattice physics (a custom script could still trigger it)
+    BOL = Beginning-of-life (c0n0)
+    BOC = Beginning-of-cycle (c*n0)
+    everyNode = Every interaction node (c*n*)
+    firstCoupledIteration = every node + the first coupled iteration at each node
+    all = every node + every coupled iteration
+
+    Notes
+    -----
+    firstCoupledIteration only updates the cross sections during the first coupled iteration,
+    but not on any subsequent iterations. This may be an appropriate approximation in some cases
+    to save compute time, but each individual user should give careful consideration to whether
+    this is the behavior they want for a particular application. The main purpose of this setting
+    is to capture a large change in temperature distribution when running a snapshot at a different
+    power/flow condition than the original state being loaded from the database.
+    """
+
+    never = 0
+    BOL = 1
+    BOC = 2
+    everyNode = 3
+    firstCoupledIteration = 4
+    all = 5

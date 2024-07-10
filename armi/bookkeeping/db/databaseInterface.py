@@ -45,7 +45,7 @@ ORDER = interfaces.STACK_ORDER.BOOKKEEPING
 
 
 def describeInterfaces(cs):
-    """Function for exposing interface(s) to other code"""
+    """Function for exposing interface(s) to other code."""
     return (DatabaseInterface, {"enabled": cs["db"]})
 
 
@@ -86,9 +86,7 @@ class DatabaseInterface(interfaces.Interface):
 
     @property
     def database(self):
-        """
-        Presents the internal database object, if it exists.
-        """
+        """Presents the internal database object, if it exists."""
         if self._db is not None:
             return self._db
         else:
@@ -98,7 +96,7 @@ class DatabaseInterface(interfaces.Interface):
             )
 
     def interactBOL(self):
-        """Initialize the database if the main interface was not available. (Begining of Life)"""
+        """Initialize the database if the main interface was not available. (Begining of Life)."""
         if not self._db:
             self.initDB()
 
@@ -150,7 +148,7 @@ class DatabaseInterface(interfaces.Interface):
         - if tight coupling is enabled, the DB will be written in operator.py::Operator::_timeNodeLoop
           via writeDBEveryNode
         """
-        if self.o.cs["numCoupledIterations"]:
+        if self.o.cs["tightCoupling"]:
             # h5 cant handle overwriting so we skip here and write once the tight coupling loop has completed
             return
         self.writeDBEveryNode(cycle, node)
@@ -165,8 +163,9 @@ class DatabaseInterface(interfaces.Interface):
         """In case anything changed since last cycle (e.g. rxSwing), update DB. (End of Cycle)"""
         self._db.writeToDB(self.r, "EOC")
 
+
     def interactEOL(self):
-        """DB's should be closed at run's end. (End of Life)"""
+        """DB's should be closed at run's end. (End of Life)."""
         # minutesSinceStarts should include as much of the ARMI run as possible so EOL
         # is necessary, too.
         self.r.core.p.minutesSinceStart = (time.time() - self.r.core.timeOfStart) / 60.0
@@ -174,7 +173,7 @@ class DatabaseInterface(interfaces.Interface):
         self._db.close(True)
 
     def interactError(self):
-        r"""Get shutdown state information even if the run encounters an error"""
+        """Get shutdown state information even if the run encounters an error."""
         try:
             self.r.core.p.minutesSinceStart = (
                 time.time() - self.r.core.timeOfStart
@@ -184,7 +183,7 @@ class DatabaseInterface(interfaces.Interface):
             # writing
             self._db.writeToDB(self.r, "error")
             self._db.close(False)
-        except:  # pylint: disable=bare-except; we're already responding to an error
+        except:  # noqa: bare-except; we're already responding to an error
             pass
 
     def interactDistributeState(self) -> None:
@@ -212,10 +211,28 @@ class DatabaseInterface(interfaces.Interface):
         `startCycle` and `startNode`, having loaded the state from all cycles prior
         to that in the requested database.
 
+        .. impl:: Runs at a particular timenode can be re-instantiated for a snapshot.
+            :id: I_ARMI_SNAPSHOT_RESTART
+            :implements: R_ARMI_SNAPSHOT_RESTART
+
+            This method loads the state of a reactor from a particular point in time
+            from a standard ARMI
+            :py:class:`Database <armi.bookkeeping.db.database3.Database3>`. This is a
+            major use-case for having ARMI databases in the first case. And restarting
+            from such a database is easy, you just need to set a few settings::
+
+            * reloadDBName - Path to existing H5 file to reload from.
+            * startCycle - Operational cycle to restart from.
+            * startNode - Time node to start from.
+
         Notes
         -----
         Mixing the use of simple vs detailed cycles settings is allowed, provided
         that the cycle histories prior to `startCycle`/`startNode` are equivalent.
+
+        ARMI expects the reload DB to have been made in the same version of ARMI as you
+        are running. ARMI does not gaurantee that a DB from a decade ago will be easily
+        used to restart a run.
         """
         reloadDBName = self.cs["reloadDBName"]
         runLog.info(
@@ -234,7 +251,6 @@ class DatabaseInterface(interfaces.Interface):
                 self.cs,
             )
 
-            # check that cycle histories are equivalent up to this point
             self._checkThatCyclesHistoriesAreEquivalentUpToRestartTime(
                 loadDbCs, dbCycle, dbNode
             )
@@ -245,6 +261,7 @@ class DatabaseInterface(interfaces.Interface):
     def _checkThatCyclesHistoriesAreEquivalentUpToRestartTime(
         self, loadDbCs, dbCycle, dbNode
     ):
+        """Check that cycle histories are equivalent up to this point."""
         dbStepLengths = getStepLengths(loadDbCs)
         currentCaseStepLengths = getStepLengths(self.cs)
         dbStepHistory = []
@@ -271,7 +288,6 @@ class DatabaseInterface(interfaces.Interface):
                 "The cycle history up to the restart cycle/node must be equivalent."
             )
 
-    # TODO: The use of "yield" here is suspect.
     def _getLoadDB(self, fileName):
         """
         Return the database to load from in order of preference.
@@ -293,9 +309,7 @@ class DatabaseInterface(interfaces.Interface):
             if os.path.exists(self.cs["reloadDBName"]):
                 yield Database3(self.cs["reloadDBName"], "r")
 
-    def loadState(
-        self, cycle, timeNode, timeStepName="", fileName=None, updateGlobalAssemNum=True
-    ):
+    def loadState(self, cycle, timeNode, timeStepName="", fileName=None):
         """
         Loads a fresh reactor and applies it to the Operator.
 
@@ -320,7 +334,6 @@ class DatabaseInterface(interfaces.Interface):
                         statePointName=timeStepName,
                         cs=self.cs,
                         allowMissing=True,
-                        updateGlobalAssemNum=updateGlobalAssemNum,
                     )
                     self.o.reattach(newR, self.cs)
                     break

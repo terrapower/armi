@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests the geometry (loading input) file"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
+"""Tests the geometry (loading input) file."""
 import io
 import os
 import unittest
@@ -271,14 +270,14 @@ class TestSystemLayoutInput(unittest.TestCase):
             geom.readGeomFromStream(io.StringIO(GEOM_INPUT))
             fName = "testYamlIO.yaml"
             with open(fName, "w") as f:
-                geom._writeYaml(f)  # pylint: disable=protected-access
+                geom._writeYaml(f)
             with open(fName) as f:
                 geom2 = SystemLayoutInput()
-                geom2._readYaml(f)  # pylint: disable=protected-access
+                geom2._readYaml(f)
             self.assertEqual(geom2.assemTypeByIndices[2, 2], "A2")
 
-    def test_asciimap(self):  # pylint: disable=no-self-use
-        """Ensure this can write ascii maps"""
+    def test_asciimap(self):
+        """Ensure this can write ascii maps."""
         geom = SystemLayoutInput()
         geom.readGeomFromStream(io.StringIO(GEOM_INPUT))
         geom._writeAsciiMap()
@@ -313,13 +312,8 @@ class TestSystemLayoutInputTRZ(unittest.TestCase):
             geom.readGeomFromFile(os.path.join(TEST_ROOT, "trz_geom.xml"))
             fName = "testTRZYamlIO.yaml"
             with open(fName, "w") as f:
-                geom._writeYaml(f)  # pylint: disable=protected-access
+                geom._writeYaml(f)
             with open(fName) as f:
                 geom2 = SystemLayoutInput()
-                geom2._readYaml(f)  # pylint: disable=protected-access
+                geom2._readYaml(f)
             self.assertEqual(geom2.assemTypeByIndices[2.0, 3.0, 0.0, 180.0, 1, 1], "MC")
-
-
-if __name__ == "__main__":
-    #  import sys; sys.argv = ['', 'TestLoadingReactorTRZ.test_loadTRZGeom']
-    unittest.main()

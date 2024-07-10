@@ -90,9 +90,7 @@ class VtkMesh:
         return numpy.array(self.vertices[:, 2])
 
     def append(self, other):
-        """
-        Add more cells to the mesh.
-        """
+        """Add more cells to the mesh."""
         connectOffset = self.vertices.shape[0]
         offsetOffset = self.offsets[-1] if self.offsets.size > 0 else 0
 
@@ -108,7 +106,6 @@ class VtkMesh:
         Write this mesh and the passed data to a VTK file. Returns the base path, plus
         relevant extension.
         """
-
         fullPath = unstructuredGridToVTK(
             path,
             self.x,
@@ -258,7 +255,7 @@ def _createCartesianBlockMesh(b: blocks.CartesianBlock) -> VtkMesh:
 
 
 def _createTRZBlockMesh(b: blocks.ThRZBlock) -> VtkMesh:
-    # There's no sugar-coating this one. It sucks.
+    # This could be improved.
     rIn = b.radialInner()
     rOut = b.radialOuter()
     thIn = b.thetaInner()

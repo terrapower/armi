@@ -13,7 +13,6 @@ bin/*
 /bin
 dist/
 dist-*/
-*.png
 doc/_build
 doc/user/tutorials
 doc/tutorials/anl-afci-177*
@@ -24,6 +23,8 @@ doc/gallery
 doc/gallery-src/framework/*.yaml
 .coverage
 coverage.xml
+coverage.lcov
+coverage_results.*
 htmlcov/
 monkeytype.*
 
@@ -50,13 +51,13 @@ pytestdebug.log
 dump-temp-*
 dump-tests*
 .vim-bookmarks
+armi-venv/*
 venv*/
 .mypy_cache/
 **/__pycache__
 **/.coverage*
 **/logs/*
 *.ascii
-*.png
 
 # Misc. exclusions
 *.html
@@ -66,6 +67,9 @@ venv*/
 *.mp4
 *.h5
 *.txt
+
+# metadata file specific to MacOS
+.DS_Store
 
 # vis files
 *.vtu

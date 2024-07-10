@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for flags"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+"""Tests for flags."""
 import pickle
 import unittest
 
@@ -27,9 +26,17 @@ class TestFlags(unittest.TestCase):
         self._help_fromString(flags.Flags.fromStringIgnoreErrors)
         self.assertEqual(flags.Flags.fromStringIgnoreErrors("invalid"), flags.Flags(0))
 
-    def test_toString(self):
+    def test_flagsToAndFromString(self):
+        """
+        Convert flag to and from string for serialization.
+
+        .. test:: Convert flag to a string.
+            :id: T_ARMI_FLAG_TO_STR
+            :tests: R_ARMI_FLAG_TO_STR
+        """
         f = flags.Flags.FUEL
         self.assertEqual(flags.Flags.toString(f), "FUEL")
+        self.assertEqual(f, flags.Flags.fromString("FUEL"))
 
     def test_fromStringStrict(self):
         self._help_fromString(flags.Flags.fromString)
@@ -105,7 +112,3 @@ class TestFlags(unittest.TestCase):
         stream = pickle.dumps(flags.Flags.BOND | flags.Flags.A)
         flag = pickle.loads(stream)
         self.assertEqual(flag, flags.Flags.BOND | flags.Flags.A)
-
-
-if __name__ == "__main__":
-    unittest.main()

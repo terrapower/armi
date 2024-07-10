@@ -12,12 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for reactor blueprints"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+"""Tests for reactor blueprints."""
 import os
 import unittest
 
+from armi.reactor.assemblyLists import SpentFuelPool
 from armi.reactor import blueprints
+from armi.reactor.reactors import Core
 from armi import settings
 from armi.reactor import reactors
 from armi.reactor.blueprints import reactorBlueprint
@@ -32,6 +33,7 @@ core:
     y: 10.1
     z: 1.1
 sfp:
+    type: sfp
     grid name: sfp
     origin:
         x: 0.0
@@ -101,15 +103,27 @@ class TestReactorBlueprints(unittest.TestCase):
         return core, sfp
 
     def test_construct(self):
-        """Actually construct some reactor systems."""
+        """Actually construct some reactor systems.
+
+        .. test:: Create core and spent fuel pool with blueprint.
+            :id: T_ARMI_BP_SYSTEMS
+            :tests: R_ARMI_BP_SYSTEMS
+
+        .. test:: Create core object with blueprint.
+            :id: T_ARMI_BP_CORE
+            :tests: R_ARMI_BP_CORE
+        """
         core, sfp = self._setupReactor()
         self.assertEqual(len(core), 2)
         self.assertEqual(len(sfp), 4)
 
+        self.assertIsInstance(core, Core)
+        self.assertIsInstance(sfp, SpentFuelPool)
+
     def test_materialDataSummary(self):
         """Test that the material data summary for the core is valid as a printout to the stdout."""
         expectedMaterialData = [
-            ("Custom Material", "ARMI", False),
+            ("Custom", "ARMI", False),
             ("HT9", "ARMI", False),
             ("UZr", "ARMI", False),
         ]
@@ -117,7 +131,3 @@ class TestReactorBlueprints(unittest.TestCase):
         materialData = reactorBlueprint.summarizeMaterialData(core)
         for actual, expected in zip(materialData, expectedMaterialData):
             self.assertEqual(actual, expected)
-
-
-if __name__ == "__main__":
-    unittest.main()

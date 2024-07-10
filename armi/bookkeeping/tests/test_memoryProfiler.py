@@ -12,10 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Tests for memoryProfiler
-"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
+"""Tests for memoryProfiler."""
 import logging
 import unittest
 
@@ -27,7 +24,11 @@ from armi.tests import mockRunLogs, TEST_ROOT
 
 class TestMemoryProfiler(unittest.TestCase):
     def setUp(self):
-        self.o, self.r = test_reactors.loadTestReactor(TEST_ROOT, {"debugMem": True})
+        self.o, self.r = test_reactors.loadTestReactor(
+            TEST_ROOT,
+            {"debugMem": True},
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml",
+        )
         self.memPro = self.o.getInterface("memoryProfiler")
 
     def tearDown(self):
@@ -36,7 +37,7 @@ class TestMemoryProfiler(unittest.TestCase):
     def test_fullBreakdown(self):
         with mockRunLogs.BufferLog() as mock:
             # we should start with a clean slate
-            self.assertEqual("", mock._outputStream)
+            self.assertEqual("", mock.getStdout())
             runLog.LOG.startLog("test_fullBreakdown")
             runLog.LOG.setVerbosity(logging.INFO)
 
@@ -45,13 +46,13 @@ class TestMemoryProfiler(unittest.TestCase):
             self.memPro._printFullMemoryBreakdown(reportSize=False)
 
             # do some basic testing
-            self.assertTrue(mock._outputStream.count("UNIQUE_INSTANCE_COUNT") > 10)
-            self.assertIn("garbage", mock._outputStream)
+            self.assertTrue(mock.getStdout().count("UNIQUE_INSTANCE_COUNT") > 10)
+            self.assertIn("garbage", mock.getStdout())
 
     def test_displayMemoryUsage(self):
         with mockRunLogs.BufferLog() as mock:
             # we should start with a clean slate
-            self.assertEqual("", mock._outputStream)
+            self.assertEqual("", mock.getStdout())
             runLog.LOG.startLog("test_displayMemUsage")
             runLog.LOG.setVerbosity(logging.INFO)
 
@@ -60,12 +61,12 @@ class TestMemoryProfiler(unittest.TestCase):
             self.memPro.displayMemoryUsage(1)
 
             # do some basic testing
-            self.assertIn("End Memory Usage Report", mock._outputStream)
+            self.assertIn("End Memory Usage Report", mock.getStdout())
 
     def test_printFullMemoryBreakdown(self):
         with mockRunLogs.BufferLog() as mock:
             # we should start with a clean slate
-            self.assertEqual("", mock._outputStream)
+            self.assertEqual("", mock.getStdout())
             runLog.LOG.startLog("test_displayMemUsage")
             runLog.LOG.setVerbosity(logging.INFO)
 
@@ -74,20 +75,20 @@ class TestMemoryProfiler(unittest.TestCase):
             self.memPro._printFullMemoryBreakdown(reportSize=True)
 
             # do some basic testing
-            self.assertIn("UNIQUE_INSTANCE_COUNT", mock._outputStream)
-            self.assertIn(" MB", mock._outputStream)
+            self.assertIn("UNIQUE_INSTANCE_COUNT", mock.getStdout())
+            self.assertIn(" MB", mock.getStdout())
 
     def test_getReferrers(self):
         with mockRunLogs.BufferLog() as mock:
             # we should start with a clean slate
-            self.assertEqual("", mock._outputStream)
+            self.assertEqual("", mock.getStdout())
             testName = "test_getReferrers"
             runLog.LOG.startLog(testName)
             runLog.LOG.setVerbosity(logging.DEBUG)
 
             # grab the referrers
             self.memPro.getReferrers(self.r)
-            memLog = mock._outputStream
+            memLog = mock.getStdout()
 
         # test the results
         self.assertGreater(memLog.count("ref for"), 10)
@@ -99,7 +100,7 @@ class TestMemoryProfiler(unittest.TestCase):
     def test_checkForDuplicateObjectsOnArmiModel(self):
         with mockRunLogs.BufferLog() as mock:
             # we should start with a clean slate
-            self.assertEqual("", mock._outputStream)
+            self.assertEqual("", mock.getStdout())
             testName = "test_checkForDuplicateObjectsOnArmiModel"
             runLog.LOG.startLog(testName)
             runLog.LOG.setVerbosity(logging.IMPORTANT)
@@ -110,13 +111,13 @@ class TestMemoryProfiler(unittest.TestCase):
 
             # validate the outputs are as we expect
             self.assertIn(
-                "There are 2 unique objects stored as `.cs`", mock._outputStream
+                "There are 2 unique objects stored as `.cs`", mock.getStdout()
             )
-            self.assertIn("Expected id", mock._outputStream)
-            self.assertIn("Expected object", mock._outputStream)
-            self.assertIn("These types of objects", mock._outputStream)
-            self.assertIn("MemoryProfiler", mock._outputStream)
-            self.assertIn("MainInterface", mock._outputStream)
+            self.assertIn("Expected id", mock.getStdout())
+            self.assertIn("Expected object", mock.getStdout())
+            self.assertIn("These types of objects", mock.getStdout())
+            self.assertIn("MemoryProfiler", mock.getStdout())
+            self.assertIn("MainInterface", mock.getStdout())
 
     def test_profileMemoryUsageAction(self):
         pmua = memoryProfiler.ProfileMemoryUsageAction("timeDesc")
@@ -163,7 +164,3 @@ class KlassCounterTests(unittest.TestCase):
         self.assertEqual(counter[dict].count, 2)
         self.assertEqual(counter[tuple].count, 2)
         self.assertEqual(counter[int].count, 7)
-
-
-if __name__ == "__main__":
-    unittest.main()

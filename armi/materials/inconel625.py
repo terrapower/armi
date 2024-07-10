@@ -12,17 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Inconel625
-"""
+"""Inconel625."""
 import numpy
 
-from armi.utils.units import getTc
 from armi.materials.material import Material
+from armi.utils.units import getTc
 
 
 class Inconel625(Material):
-    name = "Inconel625"
     propertyValidTemperature = {
         "heat capacity": ((221.0, 1093.0), "C"),
         "linear expansion": ((21.0, 927.0), "C"),
@@ -37,11 +34,11 @@ class Inconel625(Material):
         "thermalConductivity": "http://www.specialmetals.com/assets/documents/alloys/inconel/inconel-alloy-625.pdf",
         "specific heat": "http://www.specialmetals.com/assets/documents/alloys/inconel/inconel-alloy-625.pdf",
     }
+    refTempK = 294.15
 
     def __init__(self):
         Material.__init__(self)
-        self.p.refTempK = 294.15
-        self.p.refDens = 8.44  # g/cc
+        self.refDens = 8.44  # g/cc
         # Only density measurement presented in the reference.
         # Presumed to be performed at 21C since this was the reference temperature for linear expansion measurements.
 
@@ -101,7 +98,7 @@ class Inconel625(Material):
         """
         Tc = getTc(Tc, Tk)
         self.checkPropertyTempRange("thermal conductivity", Tc)
-        thermalCond = 2.7474e-6 * Tc ** 2 + 0.012907 * Tc + 9.62532
+        thermalCond = 2.7474e-6 * Tc**2 + 0.012907 * Tc + 9.62532
         return thermalCond  # W/m-C
 
     def polyfitHeatCapacity(self, power=2):
@@ -148,7 +145,7 @@ class Inconel625(Material):
         return numpy.polyfit(numpy.array(Tc), numpy.array(cp), power).tolist()
 
     def heatCapacity(self, Tk=None, Tc=None):
-        r"""
+        """
         Returns the specific heat capacity of Inconel625.
 
         Parameters
@@ -165,13 +162,13 @@ class Inconel625(Material):
         """
         Tc = getTc(Tc, Tk)
         self.checkPropertyTempRange("heat capacity", Tc)
-        heatCapacity = -5.3777e-6 * Tc ** 2 + 0.25 * Tc + 404.26
+        heatCapacity = -5.3777e-6 * Tc**2 + 0.25 * Tc + 404.26
         return heatCapacity  # J/kg-C
 
     def polyfitLinearExpansionPercent(self, power=2):
         r"""
         Calculates the coefficients of a polynomial fit for linearExpansionPercent.
-        Based on data from http://www.specialmetals.com/assets/documents/alloys/inconel/inconel-alloy-625.pdf
+        Based on data from http://www.specialmetals.com/assets/documents/alloys/inconel/inconel-alloy-625.pdf.
 
         Uses mean CTE values to find percent thermal strain values. Fits a polynomial
         to the data set and returns the coefficients.
@@ -185,7 +182,7 @@ class Inconel625(Material):
         -------
         list of length 'power' containing the polynomial fit coefficients for linearExpansionPercent
         """
-        refTempC = getTc(None, Tk=self.p.refTempK)
+        refTempC = getTc(None, Tk=self.refTempK)
         Tc = [93.0, 204.0, 316.0, 427.0, 538.0, 649.0, 760.0, 871.0, 927.0]
         alpha_mean = [
             1.28e-05,
@@ -211,7 +208,7 @@ class Inconel625(Material):
         ).tolist()
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
-        r"""
+        """
         Returns percent linear expansion of Inconel625.
 
         Parameters
@@ -227,18 +224,19 @@ class Inconel625(Material):
         """
         Tc = getTc(Tc, Tk)
         self.checkPropertyTempRange("linear expansion percent", Tc)
-        linExpPercent = 5.083e-7 * Tc ** 2 + 1.125e-3 * Tc - 1.804e-2
+        linExpPercent = 5.083e-7 * Tc**2 + 1.125e-3 * Tc - 1.804e-2
         return linExpPercent
 
     def linearExpansion(self, Tk=None, Tc=None):
         r"""
-        From http://www.specialmetals.com/assets/documents/alloys/inconel/inconel-alloy-625.pdf
+        From http://www.specialmetals.com/assets/documents/alloys/inconel/inconel-alloy-625.pdf.
 
-        Using the correlation for linearExpansionPercent, the 2nd order polynomial is divided by 100 to convert
-        from percent strain to strain, then differentiated with respect to temperature to find the correlation
-        for instantaneous linear expansion.
+        Using the correlation for linearExpansionPercent, the 2nd order polynomial is divided by 100
+        to convert from percent strain to strain, then differentiated with respect to temperature to
+        find the correlation for instantaneous linear expansion.
 
-        i.e. for a linearExpansionPercent correlation of a*Tc**2 + b*Tc + c, the linearExpansion correlation is 2*a/100*Tc + b/100
+        i.e. for a linearExpansionPercent correlation of a*Tc**2 + b*Tc + c, the linearExpansion
+        correlation is 2*a/100*Tc + b/100
 
         2*(5.083e-7/100.0)*Tc + 1.125e-3/100.0
 

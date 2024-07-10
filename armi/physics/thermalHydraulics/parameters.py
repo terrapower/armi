@@ -35,10 +35,9 @@ def _getBlockParams():
 
         pb.defParam(
             "pressureLossCoeffs",
-            units="",
+            units=units.UNITLESS,
             description="Pressure loss coefficients from form losses outside of bundle region of "
-            "assembly, e.g. losses through pin attachment hardware, expansion in inlet "
-            "nozzle.",
+            "assembly, e.g. losses through pin attachment hardware, expansion in inlet nozzle.",
             default=None,
             categories=[parameters.Category.assignInBlueprints],
         )
@@ -56,7 +55,7 @@ def _getBlockParams():
 
         pb.defParam(
             "THhotChannelHeatTransferCoeff",
-            units="W/m^2/K",
+            units=f"{units.WATTS}/{units.METERS}^2/{units.DEGK}",
             saveToDB=True,
             description="Film heat transfer coefficient for hot channel in the assembly.",
         )
@@ -137,7 +136,7 @@ def _getBlockParams():
 
         pb.defParam(
             "THdilationPressure",
-            units="Pa",
+            units=units.PASCALS,
             description="Dilation pressure",
             categories=["thInterface"],
             default=0.0,
@@ -179,14 +178,16 @@ def _getBlockParams():
         pb.defParam(
             "THaverageCladTemp",
             units=units.DEGC,
-            description="The nominal average clad temperature in the block, which should be used for neutronic and TH feedback.",
+            description="The nominal average clad temperature in the block, which should be used "
+            "for neutronic and TH feedback.",
             location=ParamLocation.AVERAGE,
         )
 
         pb.defParam(
             "THaverageGapTemp",
             units=units.DEGC,
-            description="The nominal average gap temperature in the block, which should be used for neutronic and TH feedback.",
+            description="The nominal average gap temperature in the block, which should be used "
+            "for neutronic and TH feedback.",
             location=ParamLocation.AVERAGE,
             saveToDB=True,
         )
@@ -194,7 +195,8 @@ def _getBlockParams():
         pb.defParam(
             "THaverageDuctTemp",
             units=units.DEGC,
-            description="The nominal average duct temperature in the block, which should be used for neutronic and TH feedback.",
+            description="The nominal average duct temperature in the block, which should be used "
+            "for neutronic and TH feedback.",
             location=ParamLocation.AVERAGE,
         )
 
@@ -209,14 +211,14 @@ def _getBlockParams():
             "THcoolantInletT",
             units=units.DEGC,
             description="The nominal average bulk coolant inlet temperature into the block.",
-            location=ParamLocation.AVERAGE,
+            location=ParamLocation.BOTTOM,
         )
 
         pb.defParam(
             "THcoolantOutletT",
             units=units.DEGC,
             description="Coolant temperature at the outlet of this block",
-            location=ParamLocation.AVERAGE,
+            location=ParamLocation.TOP,
         )
 
         pb.defParam(
@@ -228,7 +230,7 @@ def _getBlockParams():
 
         pb.defParam(
             "THdeltaPTotal",
-            units="Pa",
+            units=units.PASCALS,
             description="Total pressure difference in a block",
             location=ParamLocation.AVERAGE,
         )
@@ -237,7 +239,7 @@ def _getBlockParams():
             "THhotChannelOutletT",
             units=units.DEGC,
             description="Nominal hot channel outlet temperature",
-            location=ParamLocation.AVERAGE,
+            location=ParamLocation.TOP,
         )
 
         pb.defParam(
@@ -256,7 +258,7 @@ def _getBlockParams():
 
         pb.defParam(
             "THmassFlowRate",
-            units="kg/s",
+            units=f"{units.KG}/{units.SECONDS}",
             description="Mass flow rate",
             location=ParamLocation.AVERAGE,
         )
@@ -269,7 +271,7 @@ def _getBlockParams():
         )
 
     with pDefs.createBuilder(
-        default=0.0, categories=["thermal hydraulics", "mongoose"], saveToDB=True
+        default=None, categories=["thermal hydraulics", "mongoose"], saveToDB=True
     ) as pb:
 
         pb.defParam(
@@ -286,6 +288,9 @@ def _getBlockParams():
             location=ParamLocation.TOP | ParamLocation.EDGES,
         )
 
+    with pDefs.createBuilder(
+        default=0, categories=["thermal hydraulics", "mongoose"], saveToDB=True
+    ) as pb:
         pb.defParam(
             "THhotChannel",
             units=units.UNITLESS,

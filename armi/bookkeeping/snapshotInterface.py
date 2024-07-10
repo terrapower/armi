@@ -28,8 +28,8 @@ What in particular is done is dependent on the case settings and the collection 
 Snapshots can be requested through the settings: ``dumpSnapshot`` and/or ``defaultSnapshots``.
 """
 from armi import interfaces
-from armi import runLog
 from armi import operators
+from armi import runLog
 from armi.utils import getStepLengths
 
 
@@ -37,24 +37,46 @@ ORDER = interfaces.STACK_ORDER.POSTPROCESSING
 
 
 def describeInterfaces(cs):
-    """Function for exposing interface(s) to other code"""
+    """Function for exposing interface(s) to other code."""
     return (SnapshotInterface, {})
 
 
 class SnapshotInterface(interfaces.Interface):
-    """Snapshot managerial interface"""
+    """
+    Snapshot managerial interface.
+
+    .. impl:: Save extra data to be saved from a run, at specified time nodes.
+        :id: I_ARMI_SNAPSHOT0
+        :implements: R_ARMI_SNAPSHOT
+
+        This is a special :py:class:`Interface <armi.interfaces.Interface>` that is
+        designed to run along all the other Interfaces during a simulation, to save off
+        important or helpful data. By default, this is designed to be used with the
+        ``"defaultSnapshots"`` and ``""dumpSnapshot""`` settings. These settings were
+        added so users can control if snapshot data will be recorded during their run.
+        Broadly, this class is implemented to run the Operator method
+        :py:meth:`o.snapshotRequest <armi.operators.Operator.snapshotRequest>`.
+    """
 
     name = "snapshot"
 
     def interactBOL(self):
+        """Active the default snapshots at BOL."""
         interfaces.Interface.interactBOL(self)
         if self.cs["defaultSnapshots"]:
             self.activateDefaultSnapshots()
 
     def interactEveryNode(self, cycle, node):
+        """Call the snapshot interface to copy files at each node, if requested."""
         snapText = getCycleNodeStamp(cycle, node)  # CCCNNN
         if self.cs["dumpSnapshot"] and snapText in self.cs["dumpSnapshot"]:
             self.o.snapshotRequest(cycle, node)
+
+    def interactCoupled(self, iteration):
+        """Call the snapshot interface to copy files for coupled iterations, if requested."""
+        snapText = getCycleNodeStamp(self.r.p.cycle, self.r.p.timeNode)  # CCCNNN
+        if self.cs["dumpSnapshot"] and snapText in self.cs["dumpSnapshot"]:
+            self.o.snapshotRequest(self.r.p.cycle, self.r.p.timeNode, iteration)
 
     def activateDefaultSnapshots(self):
         """Figure out and assign some default snapshots (BOL, MOL, EOL)."""
@@ -106,7 +128,7 @@ class SnapshotInterface(interfaces.Interface):
 
 def extractCycleNodeFromStamp(stamp):
     """
-    Returns cycle and node from a CCCNNN stamp
+    Returns cycle and node from a CCCNNN stamp.
 
     See Also
     --------

@@ -47,7 +47,7 @@ import time
 #
 # >>> atexit.register(willSegFault)
 
-import h5py
+import h5py  # noqa: unused-import
 
 
 BLUEPRINTS_IMPORTED = False
@@ -81,7 +81,7 @@ class Mode(enum.Enum):
     @classmethod
     def setMode(cls, mode):
         """Set the run mode of the current ARMI case."""
-        global CURRENT_MODE  # pylint: disable=global-statement
+        global CURRENT_MODE
         assert isinstance(mode, cls), "Invalid mode {}".format(mode)
         CURRENT_MODE = mode
 
@@ -104,8 +104,9 @@ MPI_COMM = None
 # MPI_SIZE is the total number of CPUs
 MPI_RANK = 0
 MPI_SIZE = 1
-MPI_NODENAME = "local"
-MPI_NODENAMES = ["local"]
+LOCAL = "local"
+MPI_NODENAME = LOCAL
+MPI_NODENAMES = [LOCAL]
 
 
 try:
@@ -124,6 +125,10 @@ try:
     MPI_SIZE = MPI_COMM.Get_size()
     MPI_NODENAME = MPI.Get_processor_name()
     MPI_NODENAMES = MPI_COMM.allgather(MPI_NODENAME)
+
+    # fix an exceptional error case when we are not in "interactive mode"
+    if MPI_SIZE > 1 and CURRENT_MODE == Mode.INTERACTIVE:
+        CURRENT_MODE = Mode.BATCH
 except ImportError:
     # stick with defaults
     pass
@@ -132,7 +137,7 @@ try:
     # trying a windows approach
     APP_DATA = os.path.join(os.environ["APPDATA"], "armi")
     APP_DATA = APP_DATA.replace("/", "\\")
-except:  # pylint: disable=bare-except
+except:  # noqa: bare-except
     # non-windows
     APP_DATA = os.path.expanduser("~/.armi")
 
@@ -140,7 +145,7 @@ if MPI_NODENAMES.index(MPI_NODENAME) == MPI_RANK:
     if not os.path.isdir(APP_DATA):
         try:
             os.makedirs(APP_DATA)
-        except OSError as e:
+        except OSError:
             pass
     if not os.path.isdir(APP_DATA):
         raise OSError("Directory doesn't exist {0}".format(APP_DATA))
@@ -177,7 +182,7 @@ def activateLocalFastPath() -> None:
     instantiate one operator after the other, the path will already exist the second time.
     The directory is created in the Operator constructor.
     """
-    global _FAST_PATH, _FAST_PATH_IS_TEMPORARY, APP_DATA  # pylint: disable=global-statement
+    global _FAST_PATH, _FAST_PATH_IS_TEMPORARY, APP_DATA
 
     # Try to fix pathing issues in Windows.
     if os.name == "nt":
@@ -226,7 +231,6 @@ def cleanTempDirs(olderThanDays=None):
         If provided, deletes other ARMI directories if they are older than the requested
         time.
     """
-    # pylint: disable=import-outside-toplevel # avoid cyclic import
     from armi import runLog
     from armi.utils.pathTools import cleanPath
 
@@ -240,7 +244,7 @@ def cleanTempDirs(olderThanDays=None):
             )
         try:
             cleanPath(_FAST_PATH, mpiRank=MPI_RANK)
-        except Exception as error:  # pylint: disable=broad-except
+        except Exception as error:
             for outputStream in (sys.stderr, sys.stdout):
                 if printMsg:
                     print(
@@ -262,7 +266,6 @@ def cleanAllArmiTempDirs(olderThanDays: int) -> None:
 
     This is a useful utility in HPC environments when some runs crash sometimes.
     """
-    # pylint: disable=import-outside-toplevel # avoid cyclic import
     from armi.utils.pathTools import cleanPath
 
     gracePeriod = datetime.timedelta(days=olderThanDays)
@@ -281,13 +284,13 @@ def cleanAllArmiTempDirs(olderThanDays: int) -> None:
             if runIsOldAndLikleyComplete or fromThisRun:
                 # Delete old files
                 cleanPath(dirPath, mpiRank=MPI_RANK)
-        except:  # pylint: disable=bare-except
+        except:  # noqa: bare-except
             pass
 
 
 def disconnectAllHdfDBs() -> None:
     """
-    Forcibly disconnect all instances of HdfDB objects
+    Forcibly disconnect all instances of HdfDB objects.
 
     Notes
     -----
@@ -300,8 +303,7 @@ def disconnectAllHdfDBs() -> None:
     get around this by using the garbage collector to manually disconnect all open HdfDB
     objects.
     """
-
-    from armi.bookkeeping.db import Database3  # pylint: disable=import-outside-toplevel
+    from armi.bookkeeping.db import Database3
 
     h5dbs = [db for db in gc.get_objects() if isinstance(db, Database3)]
     for db in h5dbs:

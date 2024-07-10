@@ -14,6 +14,7 @@
 
 """
 Tests for featurest that need MPI, and thus require special testing.
+
 These tests will be generally ignored by pytest if you are trying to run
 them in an environment without MPI installed.
 
@@ -23,9 +24,9 @@ mpiexec -n 2 python -m pytest armi/tests/test_mpiFeatures.py
 or
 mpiexec.exe -n 2 python -m pytest armi/tests/test_mpiFeatures.py
 """
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
-from distutils.spawn import find_executable
+from unittest.mock import patch
 import os
+import shutil
 import unittest
 
 from armi import context
@@ -34,26 +35,28 @@ from armi import settings
 from armi.interfaces import Interface
 from armi.mpiActions import DistributeStateAction
 from armi.operators import OperatorMPI
+from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.reactor import blueprints
 from armi.reactor import reactors
 from armi.reactor.parameters import parameterDefinitions
 from armi.reactor.tests import test_reactors
 from armi.tests import ARMI_RUN_PATH, TEST_ROOT
+from armi.tests import mockRunLogs
 from armi.utils import pathTools
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 # determine if this is a parallel run, and MPI is installed
 MPI_EXE = None
-if find_executable("mpiexec.exe") is not None:
+if shutil.which("mpiexec.exe") is not None:
     MPI_EXE = "mpiexec.exe"
-elif find_executable("mpiexec") is not None:
+elif shutil.which("mpiexec") is not None:
     MPI_EXE = "mpiexec"
 
 MPI_COMM = context.MPI_COMM
 
 
 class FailingInterface1(Interface):
-    """utility classes to make sure the logging system fails properly"""
+    """utility classes to make sure the logging system fails properly."""
 
     name = "failer"
 
@@ -62,7 +65,7 @@ class FailingInterface1(Interface):
 
 
 class FailingInterface2(Interface):
-    """utility class to make sure the logging system fails properly"""
+    """utility class to make sure the logging system fails properly."""
 
     name = "failer"
 
@@ -71,14 +74,14 @@ class FailingInterface2(Interface):
 
 
 class FailingInterface3(Interface):
-    """fails on worker operate"""
+    """fails on worker operate."""
 
     name = "failer"
 
     def fail(self):
         raise RuntimeError("Failing interface critical worker failure")
 
-    def interactEveryNode(self, c, n):  # pylint:disable=unused-argument
+    def interactEveryNode(self, c, n):
         context.MPI_COMM.bcast("fail", root=0)
 
     def workerOperate(self, cmd):
@@ -88,20 +91,44 @@ class FailingInterface3(Interface):
         return False
 
 
+class MockInterface(Interface):
+    name = "mockInterface"
+
+    def interactInit(self):
+        pass
+
+
 class MpiOperatorTests(unittest.TestCase):
-    """Testing the MPI parallelization operator"""
+    """Testing the MPI parallelization operator."""
 
     def setUp(self):
-        self.old_op, self.r = test_reactors.loadTestReactor(TEST_ROOT)
+        self.old_op, self.r = test_reactors.loadTestReactor(
+            TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
         self.o = OperatorMPI(cs=self.old_op.cs)
         self.o.r = self.r
 
+    @patch("armi.operators.Operator.operate")
     @unittest.skipIf(context.MPI_SIZE <= 1 or MPI_EXE is None, "Parallel test only")
-    def test_basicOperatorMPI(self):
-        self.o.operate()
+    def test_basicOperatorMPI(self, mockOpMpi):
+        """Test we can drive a parallel operator.
+
+        .. test:: Run a parallel operator.
+            :id: T_ARMI_OPERATOR_MPI0
+            :tests: R_ARMI_OPERATOR_MPI
+        """
+        with mockRunLogs.BufferLog() as mock:
+            self.o.operate()
+            self.assertIn("OperatorMPI.operate", mock.getStdout())
 
     @unittest.skipIf(context.MPI_SIZE <= 1 or MPI_EXE is None, "Parallel test only")
     def test_primaryException(self):
+        """Test a custom interface that only fails on the main process.
+
+        .. test:: Run a parallel operator that fails online on the main process.
+            :id: T_ARMI_OPERATOR_MPI1
+            :tests: R_ARMI_OPERATOR_MPI
+        """
         self.o.removeAllInterfaces()
         failer = FailingInterface1(self.o.r, self.o.cs)
         self.o.addInterface(failer)
@@ -121,6 +148,31 @@ class MpiOperatorTests(unittest.TestCase):
             self.assertRaises(Exception, self.o.operate)
         else:
             self.o.operate()
+
+    @unittest.skipIf(context.MPI_SIZE <= 1 or MPI_EXE is None, "Parallel test only")
+    def test_finalizeInteract(self):
+        """Test to make sure workers are reset after interface interactions."""
+        # Add a random number of interfaces
+        interface = MockInterface(self.o.r, self.o.cs)
+        self.o.addInterface(interface)
+
+        with mockRunLogs.BufferLog() as mock:
+            if context.MPI_RANK == 0:
+                self.o.interactAllInit()
+                context.MPI_COMM.bcast("quit", root=0)
+                context.MPI_COMM.bcast("finished", root=0)
+            else:
+                self.o.workerOperate()
+
+            logMessage = (
+                "Workers have been reset."
+                if context.MPI_RANK == 0
+                else "Workers are being reset."
+            )
+            numCalls = len(
+                [line for line in mock.getStdout().splitlines() if logMessage in line]
+            )
+            self.assertGreaterEqual(numCalls, 1)
 
 
 # these two must be defined up here so that they can be pickled
@@ -158,7 +210,6 @@ class MpiDistributeStateTests(unittest.TestCase):
         self.cs = settings.Settings(fName=ARMI_RUN_PATH)
         bp = blueprints.loadFromCs(self.cs)
 
-        settings.setMasterCs(self.cs)
         self.o = OperatorMPI(self.cs)
         self.o.r = reactors.factory(self.cs, bp)
         self.action = DistributeStateAction()
@@ -178,9 +229,9 @@ class MpiDistributeStateTests(unittest.TestCase):
             original = {ss.name: ss.value for ss in self.cs.values()}
             current = {ss.name: ss.value for ss in self.action.o.cs.values()}
             # remove values that are *expected to be* different...
-            # crossSectionControl is removed because unittest is being mean about
+            # CONF_CROSS_SECTION is removed because unittest is being mean about
             # comparing dicts...
-            for key in ["stationaryBlockFlags", "verbosity", "crossSectionControl"]:
+            for key in ["stationaryBlockFlags", "verbosity", CONF_CROSS_SECTION]:
                 if key in original:
                     del original[key]
                 if key in current:
@@ -300,12 +351,3 @@ class MpiPathToolsTests(unittest.TestCase):
             pathTools.cleanPath(dir3, mpiRank=context.MPI_RANK)
             MPI_COMM.barrier()
             self.assertFalse(os.path.exists(dir3))
-
-
-if __name__ == "__main__":
-    # these tests must be run from the command line using MPI:
-    #
-    # mpiexec -n 2 python -m pytest armi/tests/test_mpiFeatures.py
-    # or
-    # mpiexec.exe -n 2 python -m pytest armi/tests/test_mpiFeatures.py
-    pass

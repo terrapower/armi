@@ -34,7 +34,6 @@ armi.operators :  Operations that ARMI will perform on a reactor model.
     These may be created by ``Case`` objects created by certain entry points (e.g. ``run``).
 
 armi : Fundamental entry point that calls this package.
-
 """
 
 # importing each module causes the any EntryPoints defined in the module that
@@ -43,7 +42,6 @@ armi : Fundamental entry point that calls this package.
 
 import argparse
 import re
-import sys
 import textwrap
 from typing import Optional
 
@@ -93,9 +91,7 @@ class EntryPointsPlugin(plugins.ArmiPlugin):
 
 
 class ArmiParser(argparse.ArgumentParser):
-    """
-    Subclass of default ArgumentParser to better handle application splash text.
-    """
+    """Subclass of default ArgumentParser to better handle application splash text."""
 
     def print_help(self, file=None):
         splash()
@@ -104,14 +100,21 @@ class ArmiParser(argparse.ArgumentParser):
 
 class ArmiCLI:
     """
-    ARMI CLI -- The main entry point into ARMI. There are various commands
-    available, to get help for the individual commands, run again with
-    `<command> --help`. Generically, the CLI implements functions that already
-    exists within ARMI
+    ARMI CLI -- The main entry point into ARMI. There are various commands available. To get help
+    for the individual commands, run again with `<command> --help`. Typically, the CLI implements
+    functions that already exist within ARMI.
+
+    .. impl:: The basic ARMI CLI, for running a simulation.
+        :id: I_ARMI_CLI_CS
+        :implements: R_ARMI_CLI_CS
+
+        Provides a basic command-line interface (CLI) for running an ARMI simulation. Available
+        commands can be listed with ``-l``. Information on individual commands can be obtained by
+        running with ``<command> --help``.
     """
 
     def __init__(self):
-        from armi import getPluginManager  # pylint: disable=import-outside-toplevel
+        from armi import getPluginManager
 
         self._entryPoints = dict()
         for pluginEntryPoints in getPluginManager().hook.defineEntryPoints():
@@ -128,7 +131,7 @@ class ArmiCLI:
 
         parser = ArmiParser(
             prog=context.APP_NAME,
-            description=self.__doc__,
+            description=self.__doc__.split(".. impl")[0],
             usage="%(prog)s [-h] [-l | command [args]]",
         )
 
@@ -148,8 +151,8 @@ class ArmiCLI:
 
     @staticmethod
     def showVersion():
-        """Print the App name and version on the command line"""
-        from armi import getApp  # pylint: disable=import-outside-toplevel
+        """Print the App name and version on the command line."""
+        from armi import getApp
 
         prog = context.APP_NAME
         app = getApp()
@@ -202,7 +205,7 @@ class ArmiCLI:
         return self.executeCommand(args.command, args.args)
 
     def executeCommand(self, command, args) -> Optional[int]:
-        r"""execute `command` with arguments `args`, return optional exit code."""
+        """Execute `command` with arguments `args`, return optional exit code."""
         command = command.lower()
         if command not in self._entryPoints:
             print(
@@ -233,7 +236,7 @@ class ArmiCLI:
 
 def splash():
     """Emit a the active App's splash text to the runLog for the primary node."""
-    from armi import getApp  # pylint: disable=import-outside-toplevel
+    from armi import getApp
 
     app = getApp()
     assert app is not None

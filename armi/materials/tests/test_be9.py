@@ -11,8 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Unit test for Beryllium"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+"""Unit test for Beryllium."""
 import unittest
 
 from armi.materials.be9 import Be9
@@ -20,19 +19,15 @@ from armi.materials.tests import test_materials
 
 
 class Test_Be9(test_materials._Material_Test, unittest.TestCase):
-    """Be tests"""
+    """Beryllium tests."""
 
     MAT_CLASS = Be9
 
-    def test_density(self):
-        cur = self.mat.density(Tc=25)
+    def test_pseudoDensity(self):
+        cur = self.mat.pseudoDensity(Tc=25)
         ref = 1.85
         delta = ref * 0.001
         self.assertAlmostEqual(cur, ref, delta=delta)
 
     def test_propertyValidTemperature(self):
         self.assertGreater(len(self.mat.propertyValidTemperature), 0)
-
-
-if __name__ == "__main__":
-    unittest.main()

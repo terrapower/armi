@@ -68,14 +68,14 @@ class CompareCases(EntryPoint):
             help=("Patterns for parameters to ignore in comparisons"),
         )
         parser.add_argument(
-            "--timestepMatchup",
+            "--timestepCompare",
             default=None,
             action="store",
             nargs="+",
             help=(
-                "How to line up timesteps for comparisons. Note that any timestep not listed"
-                "will not be compared. Format the key and value separated by a period. "
-                "E.g. 0.0 1.2 2.1 3.3 will swap comparisons on the 1st and 2nd timenodes"
+                "List of timesteps to compare. Note that any timestep not listed will "
+                "not be compared. Format the cycle and node separated by a period. E.g. "
+                "0.0 0.1 1.2 3.3 will compare c0n0, c0n1, c1n2, c3n3 and skip all others"
             ),
         )
 
@@ -99,9 +99,9 @@ class CompareCases(EntryPoint):
     def parse(self, args):
         EntryPoint.parse(self, args)
 
-        if self.args.timestepMatchup:
-            self.args.timestepMatchup = dict(
-                map(int, kv.split(".")) for kv in self.args.timestepMatchup
+        if self.args.timestepCompare:
+            self.args.timestepCompare = list(
+                tuple(map(int, step.split("."))) for step in self.args.timestepCompare
             )
 
         if self.args.weights:
@@ -115,12 +115,13 @@ class CompareCases(EntryPoint):
             self.args.cmpDB,
             tolerance=self.args.tolerance,
             exclusions=self.args.exclude,
+            timestepCompare=self.args.timestepCompare,
         )
         return diffs.nDiffs()
 
 
 class CompareSuites(CompareCases):
-    """Do a case-by-case comparison between two CaseSuites"""
+    """Do a case-by-case comparison between two CaseSuites."""
 
     name = "compare-suites"
 
@@ -201,7 +202,7 @@ class CompareSuites(CompareCases):
             weights=self.args.weights,
             tolerance=self.args.tolerance,
             exclusion=self.args.exclude,
-            timestepMatchup=self.args.timestepMatchup,
+            timestepCompare=self.args.timestepCompare,
         )
 
         if nIssues > 0:

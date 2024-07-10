@@ -12,10 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-r""" Testing some utility functions
-"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,too-many-public-methods,invalid-name
+"""Testing some utility functions."""
 from collections import defaultdict
+import os
 import unittest
 
 import numpy as np
@@ -23,6 +22,7 @@ import numpy as np
 from armi import utils
 from armi.reactor.tests.test_reactors import loadTestReactor
 from armi.settings.caseSettings import Settings
+from armi.tests import mockRunLogs
 from armi.utils import (
     directoryChangers,
     getPowerFractions,
@@ -38,6 +38,8 @@ from armi.utils import (
     getPreviousTimeNode,
     getCumulativeNodeNum,
     hasBurnup,
+    codeTiming,
+    safeCopy,
 )
 
 
@@ -139,17 +141,11 @@ class TestGeneralUtils(unittest.TestCase):
             utils.plotMatrix(matrix, fname, xticks=xtick, yticks=ytick)
 
     def test_classesInHierarchy(self):
-        """Tests the classesInHierarchy utility
-
-        .. test:: Tests that the Reactor is stored heirarchically
-           :id: TEST_REACTOR_HIERARCHY_0
-           :links: REQ_REACTOR_HIERARCHY
-
-           This test shows that the Blocks and Assemblies are stored
-           heirarchically inside the Core, which is inside the Reactor object.
-        """
+        """Tests the classesInHierarchy utility."""
         # load the test reactor
-        _o, r = loadTestReactor()
+        _o, r = loadTestReactor(
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
 
         # call the `classesInHierarchy` function
         classCounts = defaultdict(lambda: 0)
@@ -161,8 +157,46 @@ class TestGeneralUtils(unittest.TestCase):
         self.assertEqual(classCounts[type(r.core)], 1)
 
         # further validate the Reactor heirarchy is in place
-        self.assertGreater(len(r.core.getAssemblies()), 50)
-        self.assertGreater(len(r.core.getBlocks()), 200)
+        self.assertEqual(len(r.core.getAssemblies()), 1)
+        self.assertEqual(len(r.core.getBlocks()), 1)
+
+    def test_codeTiming(self):
+        """Test that codeTiming preserves function attributes when it wraps a function."""
+
+        @codeTiming.timed
+        def testFunc():
+            """Test function docstring."""
+            pass
+
+        self.assertEqual(getattr(testFunc, "__doc__"), "Test function docstring.")
+        self.assertEqual(getattr(testFunc, "__name__"), "testFunc")
+
+    def test_safeCopy(self):
+        with directoryChangers.TemporaryDirectoryChanger():
+            os.mkdir("dir1")
+            os.mkdir("dir2")
+            file1 = "dir1/file1.txt"
+            with open(file1, "w") as f:
+                f.write("Hello")
+            file2 = "dir1\\file2.txt"
+            with open(file2, "w") as f:
+                f.write("Hello2")
+
+            with mockRunLogs.BufferLog() as mock:
+                # Test Linuxy file path
+                self.assertEqual("", mock.getStdout())
+                safeCopy(file1, "dir2")
+                self.assertIn("Copied", mock.getStdout())
+                self.assertIn("file1", mock.getStdout())
+                self.assertIn("->", mock.getStdout())
+                # Clean up for next safeCopy
+                mock.emptyStdout()
+                # Test Windowsy file path
+                self.assertEqual("", mock.getStdout())
+                safeCopy(file2, "dir2")
+                self.assertIn("Copied", mock.getStdout())
+                self.assertIn("file2", mock.getStdout())
+                self.assertIn("->", mock.getStdout())
 
 
 class CyclesSettingsTests(unittest.TestCase):
@@ -354,6 +388,9 @@ settings:
             getCycleNodeFromCumulativeNode(8, self.standaloneSimpleCS), (2, 0)
         )
 
+        with self.assertRaises(ValueError):
+            getCycleNodeFromCumulativeNode(-1, self.standaloneSimpleCS)
+
     def test_getPreviousTimeNode(self):
         with self.assertRaises(ValueError):
             getPreviousTimeNode(0, 0, "foo")
@@ -368,7 +405,3 @@ settings:
 
         self.assertEqual(getCumulativeNodeNum(2, 0, self.standaloneDetailedCS), 10)
         self.assertEqual(getCumulativeNodeNum(1, 0, self.standaloneDetailedCS), 4)
-
-
-if __name__ == "__main__":
-    unittest.main()

@@ -42,7 +42,6 @@ import numpy
 from armi import runLog
 from armi.bookkeeping import report
 from armi.materials import custom
-from armi.nuclearDataIO.cccc.rtflux import RtfluxData
 from armi.reactor import grids
 from armi.reactor.components import Helix, Circle, DerivedShape
 from armi.reactor.components.basicShapes import Hexagon, Rectangle, Square
@@ -409,9 +408,7 @@ def plotFaceMap(
     else:
         plt.show()
 
-    # don't close figure here. Have caller call plotting.close or plt.close when
-    # they are done with it.
-
+    plt.close(fig)
     return fName
 
 
@@ -445,7 +442,7 @@ def _makeAssemPatches(core):
         x, y, _ = a.spatialLocator.getLocalCoordinates()
         if nSides == 6:
             assemPatch = matplotlib.patches.RegularPolygon(
-                (x, y), nSides, pitch / math.sqrt(3), orientation=math.pi / 2.0
+                (x, y), nSides, radius=pitch / math.sqrt(3), orientation=math.pi / 2.0
             )
         elif nSides == 4:
             # for rectangle x, y is defined as sides instead of center
@@ -529,7 +526,7 @@ def _createLegend(legendMap, collection, size=9, shape=Hexagon):
                 patch = matplotlib.patches.RegularPolygon(
                     (x, y),
                     6,
-                    height,
+                    radius=height,
                     orientation=math.pi / 2.0,
                     facecolor=colorRgb,
                     transform=handlebox.get_transform(),
@@ -538,14 +535,14 @@ def _createLegend(legendMap, collection, size=9, shape=Hexagon):
                 patch = matplotlib.patches.Rectangle(
                     (x - height / 2, y - height / 2),
                     height * 2,
-                    height,
+                    height * 2,
                     facecolor=colorRgb,
                     transform=handlebox.get_transform(),
                 )
             else:
                 patch = matplotlib.patches.Circle(
                     (x, y),
-                    height,
+                    radius=height,
                     facecolor=colorRgb,
                     transform=handlebox.get_transform(),
                 )
@@ -778,7 +775,7 @@ def plotAssemblyTypes(
     # Setup figure
     fig, ax = plt.subplots(figsize=(15, 15), dpi=300)
     for index, assem in enumerate(assems):
-        isLastAssem = True if index == (numAssems - 1) else False
+        isLastAssem = index == numAssems - 1
         (xBlockLoc, yBlockHeights, yBlockAxMesh) = _plotBlocksInAssembly(
             ax,
             assem,
@@ -822,8 +819,8 @@ def plotAssemblyTypes(
     if fileName:
         fig.savefig(fileName)
         runLog.debug("Writing assem layout {} in {}".format(fileName, os.getcwd()))
-        plt.close(fig)
 
+    plt.close(fig)
     return fig
 
 
@@ -1005,7 +1002,7 @@ def plotBlockFlux(core, fName=None, bList=None, peak=False, adjoint=False, bList
                 _, self.peakHistogram = makeHistogram(self.E, self.peakFlux)
 
         def checkSize(self):
-            if not len(self.E) == len(self.avgFlux):
+            if len(self.E) != len(self.avgFlux):
                 runLog.error(self.avgFlux)
                 raise
 
@@ -1020,9 +1017,10 @@ def plotBlockFlux(core, fName=None, bList=None, peak=False, adjoint=False, bList
         return
     elif adjoint:
         bList2 = bList
+
     try:
         G = len(core.lib.neutronEnergyUpperBounds)
-    except:
+    except:  # noqa: bare-except
         runLog.warning("No ISOTXS library attached so no flux plots.")
         return
 
@@ -1097,11 +1095,13 @@ def plotBlockFlux(core, fName=None, bList=None, peak=False, adjoint=False, bList
     else:
         plt.show()
 
+    plt.close()
+
 
 def makeHistogram(x, y):
     """
     Take a list of x and y values, and return a histogram-ified version
-    Good for plotting multigroup flux spectrum or cross sections
+    Good for plotting multigroup flux spectrum or cross sections.
     """
     if not len(x) == len(y):
         raise ValueError(
@@ -1183,7 +1183,7 @@ def _makeBlockPinPatches(block, cold):
         x, y, _ = location.getLocalCoordinates()
         if isinstance(comp, Hexagon):
             derivedPatch = matplotlib.patches.RegularPolygon(
-                (x, y), 6, largestPitch / math.sqrt(3)
+                (x, y), 6, radius=largestPitch / math.sqrt(3)
             )
         elif isinstance(comp, Square):
             derivedPatch = matplotlib.patches.Rectangle(
@@ -1193,9 +1193,8 @@ def _makeBlockPinPatches(block, cold):
             )
         else:
             raise TypeError(
-                "Shape of the pitch-defining element is not a Square or Hex it is {}, cannot plot for this type of block".format(
-                    comp.shape
-                )
+                "Shape of the pitch-defining element is not a Square or Hex it is "
+                f"{comp.shape}, cannot plot for this type of block."
             )
         patches.append(derivedPatch)
         data.append(material)
@@ -1299,7 +1298,7 @@ def _makeComponentPatch(component, position, cold):
         else:
             # Just make it a hexagon...
             blockPatch = matplotlib.patches.RegularPolygon(
-                (x, y), 6, component.getDimension("op", cold=cold) / math.sqrt(3)
+                (x, y), 6, radius=component.getDimension("op", cold=cold) / math.sqrt(3)
             )
 
     elif isinstance(component, Rectangle):
@@ -1370,22 +1369,26 @@ def _makeComponentPatch(component, position, cold):
     return [blockPatch]
 
 
-def plotBlockDiagram(block, fName, cold, cmapName="RdYlBu", materialList=None):
+def plotBlockDiagram(
+    block, fName, cold, cmapName="RdYlBu", materialList=None, fileFormat="svg"
+):
     """Given a Block with a spatial Grid, plot the diagram of
-    it with all of its components. (wire, duct, coolant, etc...)
+    it with all of its components. (wire, duct, coolant, etc...).
 
     Parameters
     ----------
     block : block object
     fName : String
-        name of the file to save to
+        Name of the file to save to
     cold : boolean
-        true is for cold temps, hot is false.
+        True is for cold temps, False is hot
     cmapName : String
         name of a colorMap to use for block colors
-    materialList: List
-        a list of material names across all blocks to be plotted
-        so that same material on all diagrams will have the same color.
+    materialList : List
+        A list of material names across all blocks to be plotted
+        so that same material on all diagrams will have the same color
+    fileFormat : str
+        The format to save the picture as, e.g. svg, png, jpg, etc.
     """
     _, ax = plt.subplots(figsize=(20, 20), dpi=200)
 
@@ -1438,98 +1441,17 @@ def plotBlockDiagram(block, fName, cold, cmapName="RdYlBu", materialList=None):
     ax.spines["left"].set_visible(False)
     ax.spines["bottom"].set_visible(False)
     ax.margins(0)
-    plt.savefig(fName, format="svg", **pltKwargs)
+    plt.savefig(fName, format=fileFormat, **pltKwargs)
+    plt.close()
 
     return os.path.abspath(fName)
-
-
-def plotTriangleFlux(
-    rtfluxData: RtfluxData,
-    axialZ,
-    energyGroup,
-    hexPitch=math.sqrt(3.0),
-    hexSideSubdivisions=1,
-    imgFileExt=".png",
-):
-    """
-    Plot region total flux for one core-wide axial slice on triangular/hexagonal geometry.
-
-    .. warning:: This will run on non-triangular meshes but will look wrong.
-
-    Parameters
-    ----------
-    rtfluxData : RtfluxData object
-        The RTFLUX/ATFLUX data object containing all read file data.
-        Alternatively, this could be a FIXSRC file object,
-        but only if FIXSRC.fixSrc is first renamed FIXSRC.triangleFluxes.
-    axialZ : int
-        The DIF3D axial node index of the core-wide slice to plot.
-    energyGroup : int
-        The energy group index to plot.
-    hexPitch: float, optional
-        The flat-to-flat hexagonal assembly pitch in this core.
-        By default, it is sqrt(3) so that the triangle edge length is 1 if hexSideSubdivisions=1.
-    hexSideSubdivisions : int, optional
-        By default, it is 1 so that the triangle edge length is 1 if hexPitch=sqrt(3).
-    imgFileExt : str, optional
-        The image file extension.
-
-    Examples
-    --------
-    >>> rtflux = rtflux.RtfluxStream.readBinary("RTFLUX")
-    >>> plotTriangleFlux(rtflux, axialZ=10, energyGroup=4)
-    """
-    triHeightInCm = hexPitch / 2.0 / hexSideSubdivisions
-    sideLengthInCm = triHeightInCm / (math.sqrt(3.0) / 2.0)
-    s2InCm = sideLengthInCm / 2.0
-
-    vals = rtfluxData.groupFluxes[:, :, axialZ, energyGroup]
-    patches = []
-    colorVals = []
-    for i in range(vals.shape[0]):
-        for j in range(vals.shape[1]):
-            # use (i+j)%2 for rectangular meshing
-            flipped = i % 2
-            xInCm = s2InCm * (i - j)
-            yInCm = triHeightInCm * j + sideLengthInCm / 2.0 / math.sqrt(3) * (
-                1 + flipped
-            )
-
-            flux = vals[i][j]
-
-            if flux:
-                triangle = patches.mpatches.RegularPolygon(
-                    (xInCm, yInCm),
-                    3,
-                    sideLengthInCm / math.sqrt(3),
-                    orientation=math.pi * flipped,
-                    linewidth=0.0,
-                )
-
-                patches.append(triangle)
-                colorVals.append(flux)
-
-    collection = PatchCollection(patches, alpha=1.0, linewidths=(0,), edgecolors="none")
-    # add color map to this collection ONLY (pins, not ducts)
-    collection.set_array(numpy.array(colorVals))
-
-    plt.figure()
-    ax = plt.gca()
-    ax.add_collection(collection)
-    colbar = plt.colorbar(collection)
-    colbar.set_label("n/s/cm$^3$")
-    plt.ylabel("cm")
-    plt.xlabel("cm")
-    ax.autoscale_view()
-    plt.savefig("RTFLUX-z" + str(axialZ + 1) + "-g" + str(energyGroup + 1) + imgFileExt)
-    plt.close()
 
 
 def plotNucXs(
     isotxs, nucNames, xsNames, fName=None, label=None, noShow=False, title=None
 ):
     """
-    generates a XS plot for a nuclide on the ISOTXS library
+    generates a XS plot for a nuclide on the ISOTXS library.
 
     Parameters
     ----------
@@ -1585,3 +1507,5 @@ def plotNucXs(
         plt.savefig(fName)
     elif not noShow:
         plt.show()
+
+    plt.close()

@@ -51,8 +51,23 @@ class EntryPoint:
     """
     Generic command line entry point.
 
-    A valid subclass must provide at least a ``name`` class attribute, and may also
-    specify the other class attributes described below.
+    A valid subclass must provide at least a ``name`` class attribute, and may also specify the
+    other class attributes described below.
+
+    .. impl:: Generic CLI base class for developers to use.
+        :id: I_ARMI_CLI_GEN
+        :implements: R_ARMI_CLI_GEN
+
+        Provides a base class for plugin developers to use in creating application-specific CLIs.
+        Valid subclasses must at least provide a ``name`` class attribute.
+
+        Optional class attributes that a subclass may provide include ``description``, a string
+        describing the command's actions, ``splash``, a boolean specifying whether to display a
+        splash screen upon execution, and ``settingsArgument``. If ``settingsArgument`` is specified
+        as ``required``, then a settings files is a required positional argument. If
+        ``settingsArgument`` is set to ``optional``, then a settings file is an optional positional
+        argument. If None is specified for the ``settingsArgument``, then no settings file argument
+        is added.
     """
 
     #: The <command-name> that is used to call the command from the command line
@@ -90,11 +105,10 @@ class EntryPoint:
     def __init__(self):
         if self.name is None:
             raise AttributeError(
-                f"Subclasses of EntryPoint must define a `name` class attribute"
+                "Subclasses of EntryPoint must define a `name` class attribute"
             )
 
         self.cs = self._initSettings()
-        settings.setMasterCs(self.cs)
 
         self.parser = argparse.ArgumentParser(
             prog="{} {}".format(context.APP_NAME, self.name),
@@ -103,7 +117,7 @@ class EntryPoint:
         if self.settingsArgument is not None:
             if self.settingsArgument not in ["required", "optional"]:
                 raise AttributeError(
-                    f"Subclasses of EntryPoint must specify if the a case settings file is `required` or `optional`"
+                    "Subclasses of EntryPoint must specify if the a case settings file is `required` or `optional`"
                 )
             if self.settingsArgument == "optional":
                 self.parser.add_argument(
@@ -171,9 +185,7 @@ class EntryPoint:
         runLog.setVerbosity(self.cs["verbosity"])
 
     def parse(self, args):
-        """
-        Parse the command line arguments, with the command specific arguments.
-        """
+        """Parse the command line arguments, with the command specific arguments."""
         self.addOptions()
         self.parse_args(args)
 
@@ -202,7 +214,7 @@ class EntryPoint:
         This will override whatever is in the settings file.
 
         Parameters
-        ---------
+        ----------
         settingName : str
             the setting name
 
@@ -300,7 +312,7 @@ def storeBool(boolDefault, ep):
 def setSetting(ep):
     class _SetSettingAction(argparse.Action):
         """This class loads the command line supplied setting values into the
-        :py:data:`armi.settings.cs`
+        :py:data:`armi.settings.cs`.
         """
 
         def __call__(self, parser, namespace, values, option_string=None):
@@ -318,7 +330,7 @@ def setSetting(ep):
 def setCaseTitle(cs):
     class _SetCaseTitleAction(argparse.Action):
         """This class sets the case title to the supplied value of the
-        :py:data:`armi.settings.cs`
+        :py:data:`armi.settings.cs`.
         """
 
         def __call__(self, parser, namespace, value, option_string=None):
@@ -331,7 +343,7 @@ def setCaseTitle(cs):
 def loadSettings(cs):
     class LoadSettingsAction(argparse.Action):
         """This class loads the command line supplied settings file into the
-        :py:data:`armi.settings.cs`
+        :py:data:`armi.settings.cs`.
         """
 
         def __call__(self, parser, namespace, values, option_string=None):

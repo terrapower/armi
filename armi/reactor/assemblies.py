@@ -20,6 +20,7 @@ Generally, blocks are stacked from bottom to top.
 import copy
 import math
 import pickle
+from random import randint
 
 import numpy
 from scipy import interpolate
@@ -31,47 +32,14 @@ from armi.reactor import blocks
 from armi.reactor import composites
 from armi.reactor import grids
 from armi.reactor.flags import Flags
+from armi.materials.material import Fluid
 from armi.reactor.parameters import ParamLocation
-
-# to count the blocks that we create and generate a block number
-_assemNum = 0
-
-
-def incrementAssemNum():
-    global _assemNum  # tracked on a  module level
-    val = _assemNum  # return value before incrementing.
-    _assemNum += 1
-    return val
-
-
-def getAssemNum():
-    global _assemNum
-    return _assemNum
-
-
-def resetAssemNumCounter():
-    setAssemNumCounter(0)
-
-
-def setAssemNumCounter(val):
-    runLog.extra("Resetting global assembly number to {0}".format(val))
-    global _assemNum
-    _assemNum = val
 
 
 class Assembly(composites.Composite):
     """
     A single assembly in a reactor made up of blocks built from the bottom up.
     Append blocks to add them up. Index blocks with 0 being the bottom.
-
-    Attributes
-    ----------
-    pinNum : int
-        The number of pins in this assembly.
-
-    pinPeakingFactors : list of floats
-        The assembly-averaged pin power peaking factors. This is the ratio of pin
-        power to AVERAGE pin power in an assembly.
     """
 
     pDefs = assemblyParameters.getAssemblyParameterDefinitions()
@@ -80,8 +48,7 @@ class Assembly(composites.Composite):
     SPENT_FUEL_POOL = "SFP"
     # For assemblies coming in from the database, waiting to be loaded to their old
     # position. This is a necessary distinction, since we need to make sure that a bunch
-    # of fuel management stuff doesn't treat its re-placement into the core as a new
-    # move
+    # of fuel management stuff doesn't treat its re-placement into the core as a new move
     DATABASE = "database"
     NOT_IN_CORE = [LOAD_QUEUE, SPENT_FUEL_POOL]
 
@@ -93,18 +60,19 @@ class Assembly(composites.Composite):
             Name of assembly design (e.g. the name from the blueprints input file).
 
         assemNum : int, optional
-            The unique ID number of this assembly. If none is passed, the class-level
-            value will be taken and then incremented.
+            The unique ID number of this assembly. If None is provided, we generate a
+            random int. This makes it clear that it is a placeholder. When an assembly with
+            a negative ID is placed into a Reactor, it will be given a new, positive ID.
         """
+        # If no assembly number is provided, generate a random number as a placeholder.
         if assemNum is None:
-            assemNum = incrementAssemNum()
+            assemNum = randint(-9e12, -1)
         name = self.makeNameFromAssemNum(assemNum)
         composites.Composite.__init__(self, name)
         self.p.assemNum = assemNum
         self.setType(typ)
         self._current = 0  # for iterating
         self.p.buLimit = self.getMaxParam("buLimit")
-        self.pinPeakingFactors = []  # assembly-averaged pin power peaking factors
         self.lastLocationLabel = self.LOAD_QUEUE
 
     def __repr__(self):
@@ -128,7 +96,7 @@ class Assembly(composites.Composite):
         same grid. It may be beneficial in the future to maintain the more strict behavior
         of ArmiObject's ``__lt__`` implementation once the SFP situation is cleared up.
 
-        See also
+        See Also
         --------
         armi.reactor.composites.ArmiObject.__lt__
         """
@@ -136,6 +104,49 @@ class Assembly(composites.Composite):
             return composites.ArmiObject.__lt__(self, other)
         except ValueError:
             return False
+
+    def renameBlocksAccordingToAssemblyNum(self):
+        """
+        Updates the names of all blocks to comply with the assembly number.
+
+        Useful after an assembly number/name has been loaded from a snapshot and you
+        want to update all block names to be consistent.
+
+        It may be better to store block numbers on each block as params. A database that
+        can hold strings would be even better.
+
+        Notes
+        -----
+        You must run armi.reactor.reactors.Reactor.regenAssemblyLists after calling this.
+        """
+        assemNum = self.getNum()
+        for bi, b in enumerate(self):
+            b.setName(b.makeName(assemNum, bi))
+
+    @staticmethod
+    def makeNameFromAssemNum(assemNum):
+        """
+        Set the name of this assembly (and the containing blocks) based on an assemNum.
+
+        AssemNums are like serial numbers for assemblies.
+        """
+        return "A{0:04d}".format(int(assemNum))
+
+    def renumber(self, newNum):
+        """
+        Change the assembly number of this assembly.
+
+        And handle the downstream impacts of changing the name of this Assembly and all
+        of the Blocks within this Assembly.
+
+        Parameters
+        ----------
+        newNum : int
+            The new Assembly number.
+        """
+        self.p.assemNum = int(newNum)
+        self.name = self.makeNameFromAssemNum(self.p.assemNum)
+        self.renameBlocksAccordingToAssemblyNum()
 
     def makeUnique(self):
         """
@@ -145,40 +156,36 @@ class Assembly(composites.Composite):
         ``deepcopy`` to get a unique ``assemNum`` since a deepcopy implies it would
         otherwise have been the same object.
         """
-        self.p.assemNum = incrementAssemNum()
-        self.name = self.makeNameFromAssemNum(self.p.assemNum)
-        for bi, b in enumerate(self):
-            b.setName(b.makeName(self.p.assemNum, bi))
+        # Default to a random negative assembly number (unique enough)
+        self.p.assemNum = randint(-9e12, -1)
+        self.renumber(self.p.assemNum)
 
-    @staticmethod
-    def makeNameFromAssemNum(assemNum):
-        """
-        Set the name of this assembly (and the containing blocks) based on an assemNum.
-
-        AssemNums are like serial numbers for assemblies.
-        """
-        name = "A{0:04d}".format(int(assemNum))
-        return name
-
-    def add(self, obj):
+    def add(self, obj: blocks.Block):
         """
         Add an object to this assembly.
 
         The simple act of adding a block to an assembly fully defines the location of
         the block in 3-D.
+
+        .. impl:: Assemblies are made up of type Block.
+            :id: I_ARMI_ASSEM_BLOCKS
+            :implements: R_ARMI_ASSEM_BLOCKS
+
+            Adds a unique Block to the top of the Assembly. If the Block already
+            exists in the Assembly, an error is raised in
+            :py:meth:`armi.reactor.composites.Composite.add`.
+            The spatialLocator of the Assembly is updated to account for
+            the new Block. In ``reestablishBlockOrder``, the Assembly spatialGrid
+            is reinitialized and Block-wise spatialLocator and name objects
+            are updated. The axial mesh and other Block geometry parameters are
+            updated in ``calculateZCoords``.
         """
         composites.Composite.add(self, obj)
         obj.spatialLocator = self.spatialGrid[0, 0, len(self) - 1]
-        # assemblies have bounds-based 1-D spatial grids. Adjust it to have the right
-        # value.
-        if len(self.spatialGrid._bounds[2]) < len(self):
-            self.spatialGrid._bounds[2][len(self)] = (
-                self.spatialGrid._bounds[2][len(self) - 1] + obj.getHeight()
-            )
-        else:
-            # more work is needed, make a new mesh
-            self.reestablishBlockOrder()
-            self.calculateZCoords()
+
+        # more work is needed, make a new mesh
+        self.reestablishBlockOrder()
+        self.calculateZCoords()
 
     def moveTo(self, locator):
         """Move an assembly somewhere else."""
@@ -196,19 +203,23 @@ class Assembly(composites.Composite):
         obj.spatialLocator = self.spatialGrid[0, 0, index]
 
     def getNum(self):
-        """Return unique integer for this assembly"""
+        """Return unique integer for this assembly."""
         return int(self.p.assemNum)
 
     def getLocation(self):
         """
         Get string label representing this object's location.
 
-        Notes
-        -----
-        This function (and its friends) were created before the advent of both the
-        grid/spatialLocator system and the ability to represent things like the SFP as
-        siblings of a Core. In future, this will likely be re-implemented in terms of
-        just spatialLocator objects.
+        .. impl:: Assembly location is retrievable.
+            :id: I_ARMI_ASSEM_POSI0
+            :implements: R_ARMI_ASSEM_POSI
+
+            This method returns a string label indicating the location
+            of an Assembly. There are three options: 1) the Assembly
+            is not within a Core object and is interpreted as in the
+            "load queue"; 2) the Assembly is within the spent fuel pool;
+            3) the Assembly is within a Core object, so it has a physical
+            location within the Core.
         """
         # just use ring and position, not axial (which is 0)
         if not self.parent:
@@ -220,8 +231,15 @@ class Assembly(composites.Composite):
         )
 
     def coords(self):
-        """
-        Return the location of the assembly in the plane using cartesian global coordinates.
+        """Return the location of the assembly in the plane using cartesian global
+        coordinates.
+
+        .. impl:: Assembly coordinates are retrievable.
+            :id: I_ARMI_ASSEM_POSI1
+            :implements: R_ARMI_ASSEM_POSI
+
+            In this method, the spatialLocator of an Assembly is leveraged to return
+            its physical (x,y) coordinates in cm.
         """
         x, y, _z = self.spatialLocator.getGlobalCoordinates()
         return (x, y)
@@ -231,6 +249,15 @@ class Assembly(composites.Composite):
         Return the area of the assembly by looking at its first block.
 
         The assumption is that all blocks in an assembly have the same area.
+        Calculate the total assembly volume in cm^3.
+
+        .. impl:: Assembly area is retrievable.
+            :id: I_ARMI_ASSEM_DIMS0
+            :implements: R_ARMI_ASSEM_DIMS
+
+            Returns the area of the first block in the Assembly. If there are no
+            blocks in the Assembly, a warning is issued and a default area of 1.0
+            is returned.
         """
         try:
             return self[0].getArea()
@@ -241,7 +268,16 @@ class Assembly(composites.Composite):
             return 1.0
 
     def getVolume(self):
-        """Calculate the total assembly volume in cm^3."""
+        """Calculate the total assembly volume in cm^3.
+
+        .. impl:: Assembly volume is retrievable.
+            :id: I_ARMI_ASSEM_DIMS1
+            :implements: R_ARMI_ASSEM_DIMS
+
+            The volume of the Assembly is calculated as the product of the
+            area of the first block (via ``getArea``) and the total height
+            of the assembly (via ``getTotalHeight``).
+        """
         return self.getArea() * self.getTotalHeight()
 
     def getPinPlenumVolumeInCubicMeters(self):
@@ -252,7 +288,9 @@ class Assembly(composites.Composite):
         -----
         If there is no plenum blocks in the assembly, a plenum volume of 0.0 is returned
 
-        .. warning:: This is a bit design-specific for pinned assemblies
+        Warning
+        -------
+        This is a bit design-specific for pinned assemblies
         """
         plenumBlocks = self.getBlocks(Flags.PLENUM)
 
@@ -270,9 +308,8 @@ class Assembly(composites.Composite):
         plenumBlocks = self.getBlocks(Flags.PLENUM)
         plenumTemps = [b.p.THcoolantOutletT for b in plenumBlocks]
 
-        if (
-            not plenumTemps
-        ):  # no plenum blocks, use the top block of the assembly for plenum temperature
+        # no plenum blocks, use the top block of the assembly for plenum temperature
+        if not plenumTemps:
             runLog.warning("No plenum blocks exist. Using outlet coolant temperature.")
             plenumTemps = [self[-1].p.THcoolantOutletT]
 
@@ -291,8 +328,9 @@ class Assembly(composites.Composite):
         -----
         Used for mesh sensitivity studies.
 
-        .. warning:: This is likely destined for a geometry converter rather than
-            this instance method.
+        Warning
+        -------
+        This is likely destined for a geometry converter rather than this instance method.
         """
         newBlockStack = []
         topIndex = -1
@@ -315,9 +353,7 @@ class Assembly(composites.Composite):
         self.reestablishBlockOrder()
 
     def adjustResolution(self, refA):
-        """
-        Split the blocks in this assembly to have the same mesh structure as refA.
-        """
+        """Split the blocks in this assembly to have the same mesh structure as refA."""
         newBlockStack = []
 
         newBlocks = 0  # number of new blocks we've added so far.
@@ -363,6 +399,7 @@ class Assembly(composites.Composite):
                 newBlocks -= (
                     1  # subtract one because we eliminated the original b completely.
                 )
+
         self.removeAll()
         self.spatialGrid = grids.axialUnitGrid(len(newBlockStack))
         for b in newBlockStack:
@@ -390,7 +427,6 @@ class Assembly(composites.Composite):
 
         armi.reactor.reactors.Reactor.findAllAxialMeshPoints : gets a global list of all
         of these, plus finer res.
-
         """
         bottom = 0.0
         meshVals = []
@@ -442,7 +478,15 @@ class Assembly(composites.Composite):
 
     def getTotalHeight(self, typeSpec=None):
         """
-        Determine the height of this assembly in cm
+        Determine the height of this assembly in cm.
+
+        .. impl:: Assembly height is retrievable.
+            :id: I_ARMI_ASSEM_DIMS2
+            :implements: R_ARMI_ASSEM_DIMS
+
+            The height of the Assembly is calculated by taking the sum of the
+            constituent Blocks. If a ``typeSpec`` is provided, the total height
+            of the blocks containing Flags that match the ``typeSpec`` is returned.
 
         Parameters
         ----------
@@ -452,7 +496,6 @@ class Assembly(composites.Composite):
         -------
         height : float
             the height in cm
-
         """
         h = 0.0
         for b in self:
@@ -483,7 +526,7 @@ class Assembly(composites.Composite):
 
     def getElevationBoundariesByBlockType(self, blockType=None):
         """
-        Gets of list of elevations, ordered from bottom to top of all boundaries of the block of specified type
+        Gets of list of elevations, ordered from bottom to top of all boundaries of the block of specified type.
 
         Useful for determining location of the top of the upper grid plate or active
         fuel, etc by using [0] to get the lowest boundary and [-1] to get highest
@@ -504,7 +547,6 @@ class Assembly(composites.Composite):
         elevation : list of floats
             Every float in the list is an elevation of a block boundary for the block
             type specified (has duplicates)
-
         """
         elevation, elevationsWithBlockBoundaries = 0.0, []
 
@@ -537,7 +579,6 @@ class Assembly(composites.Composite):
         -------
         heights : list
             z-coordinates where the specified param takes the specified value
-
         """
         heights = []
         # loop from bottom to top
@@ -566,7 +607,7 @@ class Assembly(composites.Composite):
         return heights
 
     def getAge(self):
-        """gets a height-averaged residence time of this assembly in days"""
+        """Gets a height-averaged residence time of this assembly in days."""
         at = 0.0
         for b in self:
             at += b.p.residence * b.getHeight()
@@ -574,7 +615,7 @@ class Assembly(composites.Composite):
 
     def makeAxialSnapList(self, refAssem=None, refMesh=None, force=False):
         """
-        Creates a list of block indices that should track axially with refAssem's
+        Creates a list of block indices that should track axially with refAssem's.
 
         When axially expanding, the control rods, shields etc. need to maintain mesh
         lines with the rest of the core. To do this, we'll just keep track of which
@@ -617,7 +658,7 @@ class Assembly(composites.Composite):
 
     def _shouldMassBeConserved(self, belowFuelColumn, b):
         """
-        Determine from a rule set if the mass of a block should be conserved during axial expansion
+        Determine from a rule set if the mass of a block component should be conserved during axial expansion.
 
         Parameters
         ----------
@@ -633,8 +674,8 @@ class Assembly(composites.Composite):
         conserveMass : boolean
             Should the mass be conserved in this block
 
-        adjustList : list of nuclides
-            What nuclides should have their mass conserved (if any)
+        conserveComponents : list of components
+            What components should have their mass conserved (if any)
 
         belowFuelColumn : boolean
             Update whether the block is above or below a fuel column
@@ -644,36 +685,34 @@ class Assembly(composites.Composite):
         armi.assemblies.Assembly.setBlockMesh
 
         """
-
         if b.hasFlags(Flags.FUEL):
             # fuel block
             conserveMass = True
-            adjustList = b.getComponent(Flags.FUEL).getNuclides()
+            conserveComponents = b.getComponents(Flags.FUEL)
         elif self.hasFlags(Flags.FUEL):
             # non-fuel block of a fuel assembly.
             if belowFuelColumn:
                 # conserve mass of everything below the fuel so as to not invalidate
                 # grid-plate dose calcs.
                 conserveMass = True
-                adjustList = b.getNuclides()
-                # conserve mass of everything except coolant.
-                coolant = b.getComponent(Flags.COOLANT)
-                coolantList = coolant.getNuclides() if coolant else []
-                for nuc in coolantList:
-                    if nuc in adjustList:
-                        adjustList.remove(nuc)
+                # conserve mass of everything except fluids.
+                conserveComponents = [
+                    comp
+                    for comp in b.getComponents()
+                    if not isinstance(comp.material, Fluid)
+                ]
             else:
                 # plenum or above block in fuel assembly. don't conserve mass.
                 conserveMass = False
-                adjustList = None
+                conserveComponents = []
         else:
             # non fuel block in non-fuel assem. Don't conserve mass.
             conserveMass = False
-            adjustList = None
+            conserveComponents = []
 
-        return conserveMass, adjustList
+        return conserveMass, conserveComponents
 
-    def setBlockMesh(self, blockMesh, conserveMassFlag=False, adjustList=None):
+    def setBlockMesh(self, blockMesh, conserveMassFlag=False):
         """
         Snaps the axial mesh points of this assembly to correspond with the reference mesh.
 
@@ -701,7 +740,14 @@ class Assembly(composites.Composite):
         Parameters
         ----------
         blockMesh : iterable
-            a list of floats describing the upper mesh points of each block in cm.
+            A list of floats describing the upper mesh points of each block in cm.
+
+        conserveMassFlag : bool or str
+            Option for how to treat mass conservation when the block mesh changes.
+            Conservation of mass for fuel components is enabled by
+            conserveMassFlag="auto". If not auto, a boolean value should be
+            passed. The default is False, which does not conserve any masses.
+            True conserves mass for all components.
 
         See Also
         --------
@@ -741,15 +787,19 @@ class Assembly(composites.Composite):
                 return
 
             if conserveMassFlag == "auto":
-                conserveMass, adjustList = self._shouldMassBeConserved(
+                conserveMass, conserveComponents = self._shouldMassBeConserved(
                     belowFuelColumn, b
                 )
             else:
                 conserveMass = conserveMassFlag
+                conserveComponents = b.getComponents()
 
-            b.setHeight(
-                newTop - zBottom, conserveMass=conserveMass, adjustList=adjustList
-            )
+            oldBlockHeight = b.getHeight()
+            b.setHeight(newTop - zBottom)
+            if conserveMass:
+                heightRatio = oldBlockHeight / b.getHeight()
+                for c in conserveComponents:
+                    c.changeNDensByFactor(heightRatio)
             zBottom = newTop
 
         self.calculateZCoords()
@@ -760,7 +810,7 @@ class Assembly(composites.Composite):
         self.setBlockMesh(mesh)
 
     def dump(self, fName=None):
-        """Pickle the assembly and write it to a file"""
+        """Pickle the assembly and write it to a file."""
         if not fName:
             fName = self.getName() + ".dump.pkl"
 
@@ -782,7 +832,6 @@ class Assembly(composites.Composite):
         -------
         blocks : list
             List of blocks.
-
         """
         if typeSpec is None:
             return self.getChildren()
@@ -810,10 +859,9 @@ class Assembly(composites.Composite):
 
         Examples
         --------
-        for block, bottomZ in a.getBlocksAndZ(returnBottomZ=True):
-            print({0}'s bottom mesh point is {1}'.format(block, bottomZ))
+            for block, bottomZ in a.getBlocksAndZ(returnBottomZ=True):
+                print({0}'s bottom mesh point is {1}'.format(block, bottomZ))
         """
-
         if returnBottomZ and returnTopZ:
             raise ValueError("Both returnTopZ and returnBottomZ are set to `True`")
 
@@ -836,10 +884,9 @@ class Assembly(composites.Composite):
         return zip(blocks, zCoords)
 
     def hasContinuousCoolantChannel(self):
-        for b in self.getBlocks():
-            if not b.containsAtLeastOneChildWithFlags(Flags.COOLANT):
-                return False
-        return True
+        return all(
+            b.containsAtLeastOneChildWithFlags(Flags.COOLANT) for b in self.getBlocks()
+        )
 
     def getFirstBlock(self, typeSpec=None, exact=False):
         bs = self.getBlocks(typeSpec, exact=exact)
@@ -860,7 +907,7 @@ class Assembly(composites.Composite):
 
     def getBlockAtElevation(self, elevation):
         """
-        Returns the block at a specified axial dimension elevation (given in cm)
+        Returns the block at a specified axial dimension elevation (given in cm).
 
         If height matches the exact top of the block, the block is considered at that
         height.
@@ -904,7 +951,6 @@ class Assembly(composites.Composite):
             The axial index (beginning with 0) of the ARMI block containing the
             DIF3D node corresponding to zIndex.
         """
-
         zIndexTot = -1
         for bIndex, b in enumerate(self):
             zIndexTot += b.p.axMesh
@@ -914,7 +960,7 @@ class Assembly(composites.Composite):
 
     def getBlocksBetweenElevations(self, zLower, zUpper):
         """
-        Return block(s) between two axial elevations and their corresponding heights
+        Return block(s) between two axial elevations and their corresponding heights.
 
         Parameters
         ----------
@@ -930,9 +976,9 @@ class Assembly(composites.Composite):
         Examples
         --------
         If the block structure looks like:
-         50.0 to 100.0 Block3
-         25.0 to 50.0  Block2
-         0.0 to 25.0   Block1
+        50.0 to 100.0 Block3
+        25.0 to 50.0  Block2
+        0.0 to 25.0   Block1
 
         Then,
 
@@ -1036,7 +1082,7 @@ class Assembly(composites.Composite):
 
     def getParamOfZFunction(self, param, interpType="linear", fillValue=numpy.NaN):
         """
-        Interpolates a param axially to find it at any value of elevation z
+        Interpolates a param axially to find it at any value of elevation z.
 
         By default, assumes that all parameters are for the center of a block. So for
         parameters such as THoutletTemperature that are defined on the top, this may be
@@ -1125,7 +1171,7 @@ class Assembly(composites.Composite):
 
     def reestablishBlockOrder(self):
         """
-        After children have been mixed up axially, this re-locates each block with the proper axial mesh.
+        The block ordering has changed, so the spatialGrid and Block-wise spatialLocator and name objects need updating.
 
         See Also
         --------
@@ -1140,28 +1186,9 @@ class Assembly(composites.Composite):
             # update the name too. NOTE: You must update the history tracker.
             b.setName(b.makeName(self.p.assemNum, zi))
 
-    def renameBlocksAccordingToAssemblyNum(self):
-        """
-        Updates the names of all blocks to comply with the assembly number.
-
-        Useful after an assembly number/name has been loaded from a snapshot and you
-        want to update all block names to be consistent.
-
-        It may be better to store block numbers on each block as params. A database that
-        can hold strings would be even better.
-
-        Notes
-        -----
-        You must run armi.reactor.reactors.Reactor.regenAssemblyLists after calling
-        this.
-        """
-        assemNum = self.getNum()
-        for bi, b in enumerate(self):
-            b.setName(b.makeName(assemNum, bi))
-
     def countBlocksWithFlags(self, blockTypeSpec=None):
         """
-        Returns the number of blocks of a specified type
+        Returns the number of blocks of a specified type.
 
         blockTypeSpec : Flags or list
             Restrict to only these types of blocks. typeSpec is None, return all of the
@@ -1176,12 +1203,22 @@ class Assembly(composites.Composite):
 
     def getDim(self, typeSpec, dimName):
         """
-        Search through blocks in this assembly and find the first component of compName.
-        Then, look on that component for dimName.
+        With a preference for fuel blocks, find the first component in the Assembly with
+        flags that match ``typeSpec`` and return dimension as specified by ``dimName``.
 
         Example: getDim(Flags.WIRE, 'od') will return a wire's OD in cm.
-        """
 
+        .. impl:: Assembly dimensions are retrievable.
+            :id: I_ARMI_ASSEM_DIMS3
+            :implements: R_ARMI_ASSEM_DIMS
+
+            This method searches for the first Component that matches the
+            given ``typeSpec`` and returns the dimension as specified by
+            ``dimName``. There is a hard-coded preference for Components
+            to be within fuel Blocks. If there are no Blocks, then ``None``
+            is returned. If ``typeSpec`` is not within the first Block, an
+            error is raised within :py:meth:`~armi.reactor.blocks.Block.getDim`.
+        """
         # prefer fuel blocks.
         bList = self.getBlocks(Flags.FUEL)
         if not bList:
@@ -1200,20 +1237,41 @@ class Assembly(composites.Composite):
         """Return the symmetry factor of this assembly."""
         return self[0].getSymmetryFactor()
 
-    def rotate(self, deg):
-        """Rotates the spatial variables on an assembly the specified angle.
+    def rotate(self, rad):
+        """Rotates the spatial variables on an assembly by the specified angle.
 
-        Each block on the assembly is rotated in turn.
+        Each Block on the Assembly is rotated in turn.
+
+        .. impl:: An assembly can be rotated about its z-axis.
+            :id: I_ARMI_SHUFFLE_ROTATE
+            :implements: R_ARMI_SHUFFLE_ROTATE
+
+            This method loops through every ``Block`` in this ``Assembly`` and rotates
+            it by a given angle (in radians). The rotation angle is positive in the
+            counter-clockwise direction, and must be divisible by increments of PI/6
+            (60 degrees). To actually perform the ``Block`` rotation, the
+            :py:meth:`armi.reactor.blocks.Block.rotate` method is called.
 
         Parameters
         ----------
-        deg - float
-            number specifying the angle of counter clockwise rotation"""
+        rad: float
+            number (in radians) specifying the angle of counter clockwise rotation
+
+        Warning
+        -------
+        rad must be in 60-degree increments! (i.e., PI/6, PI/3, PI, 2 * PI/3, etc)
+        """
         for b in self.getBlocks():
-            b.rotate(deg)
+            b.rotate(rad)
+
+    def isOnWhichSymmetryLine(self):
+        grid = self.parent.spatialGrid
+        return grid.overlapsWhichSymmetryLine(self.spatialLocator.getCompleteIndices())
 
 
 class HexAssembly(Assembly):
+    """Placeholder, so users can explicitly define a hex-based Assembly."""
+
     pass
 
 
@@ -1225,9 +1283,11 @@ class RZAssembly(Assembly):
     """
     RZAssembly are assemblies in RZ geometry; they need to be different objects than
     HexAssembly because they use different locations and need to have Radial Meshes in
-    their setting
+    their setting.
 
-    note ThRZAssemblies should be a subclass of Assemblies (similar to Hex-Z) because
+    Notes
+    -----
+    ThRZAssemblies should be a subclass of Assemblies (similar to Hex-Z) because
     they should have a common place to put information about subdividing the global mesh
     for transport - this is similar to how blocks have 'AxialMesh' in their blocks.
     """
@@ -1238,7 +1298,7 @@ class RZAssembly(Assembly):
 
     def radialOuter(self):
         """
-        returns the outer radial boundary of this assembly
+        Returns the outer radial boundary of this assembly.
 
         See Also
         --------
@@ -1285,8 +1345,9 @@ class ThRZAssembly(RZAssembly):
 
     Notes
     -----
-    This is a subclass of RZAssemblies, which is its a subclass of the Generics Assembly
-    Object"""
+    This is a subclass of RZAssemblies, which is itself a subclass of the generic
+    Assembly class.
+    """
 
     def __init__(self, assemType, assemNum=None):
         RZAssembly.__init__(self, assemType, assemNum)

@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-The bookkeeping package handles data persistence, reporting, and some debugging.
-"""
+"""The bookkeeping package handles data persistence, reporting, and some debugging."""
 from armi import plugins
 
 
@@ -46,9 +44,6 @@ class BookkeepingPlugin(plugins.ArmiPlugin):
         from armi.cli import database
 
         entryPoints = []
-        # Disabling ConvertDB because there is no other format to convert between. The
-        # entry point is rather general so leaving this here so we don't forget about it
-        # entryPoints.append(database.ConvertDB)
         entryPoints.append(database.ExtractInputs)
         entryPoints.append(database.InjectInputs)
         entryPoints.append(visualization.VisFileEntryPoint)
@@ -80,7 +75,6 @@ class BookkeepingPlugin(plugins.ArmiPlugin):
         --------
         armi.operators.operatorMPI.OperatorMPI.workerOperate
         """
-        # pylint: disable=import-outside-toplevel ; avoid cyclic imports
         from armi.bookkeeping import memoryProfiler
         from armi import mpiActions
 
@@ -103,12 +97,9 @@ class BookkeepingPlugin(plugins.ArmiPlugin):
         Generate general report content. Where diagrams/tables
         not specific to additional plugins comes together.
 
-
         Currently only happening at End and Begin stage because no content gathered
         in these sections is used to create a graph across time.
-
         """
-        from armi.cli import reportsEntryPoint
         from armi.bookkeeping.report import newReports as reports
         from armi.bookkeeping.report import newReportUtils
 
@@ -118,4 +109,3 @@ class BookkeepingPlugin(plugins.ArmiPlugin):
                 newReportUtils.insertBlueprintContent(r, cs, report, blueprint)
         elif stage == reports.ReportStage.End:
             newReportUtils.insertEndOfLifeContent(r, report)
-        return

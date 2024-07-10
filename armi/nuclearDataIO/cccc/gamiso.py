@@ -13,16 +13,27 @@
 # limitations under the License.
 
 """
-Module for reading GAMISO files which contains gamma cross section data
+Module for reading GAMISO files which contains gamma cross section data.
 
-GAMISO is a binary file created by MC**2-v3 that contains multigroup microscopic gamma cross sections. GAMISO data is
-contained within a :py:class:`~armi.nuclearDataIO.xsLibraries.XSLibrary`.
+GAMISO is a binary file created by MC**2-v3 that contains multigroup microscopic gamma cross
+sections. GAMISO data is contained within a :py:class:`~armi.nuclearDataIO.xsLibraries.XSLibrary`.
 
-See [GAMSOR]_. 
+.. impl:: Tool to read and write GAMISO files.
+    :id: I_ARMI_NUCDATA_GAMISO
+    :implements: R_ARMI_NUCDATA_GAMISO
 
-.. [GAMSOR] Smith, M. A., Lee, C. H., and Hill, R. N. GAMSOR: Gamma Source Preparation and DIF3D Flux Solution. United States: 
-            N. p., 2016. Web. doi:10.2172/1343095. `On OSTI <https://www.osti.gov/biblio/1343095-gamsor-gamma-source-preparation-dif3d-flux-solution>`_
-            
+    The majority of the functionality in this module is inherited from the
+    :py:mod:`~armi.nuclearDataIO.cccc.isotxs` module. See
+    :py:class:`~armi.nuclearDataIO.cccc.isotxs.IsotxsIO` and its associated
+    implementation :need:`I_ARMI_NUCDATA_ISOTXS` for more information. The only
+    difference from ISOTXS neutron data is a special treatment for gamma
+    velocities, which is done by overriding ``_rwLibraryEnergies``.
+
+See [GAMSOR]_.
+
+.. [GAMSOR] Smith, M. A., Lee, C. H., and Hill, R. N. GAMSOR: Gamma Source Preparation and DIF3D
+            Flux Solution. United States: N. p., 2016. Web. doi:10.2172/1343095. `On OSTI
+            <https://www.osti.gov/biblio/1343095-gamsor-gamma-source-preparation-dif3d-flux-solution>`_
 """
 
 from armi import runLog
@@ -70,8 +81,8 @@ def addDummyNuclidesToLibrary(lib, dummyNuclides):
 
     Notes
     -----
-    Since MC2-3 does not write DUMMY nuclide information for GAMISO files, this is necessary to provide a
-    consistent set of nuclide-level data across all the nuclides in a
+    Since MC2-3 does not write DUMMY nuclide information for GAMISO files, this is necessary to
+    provide a consistent set of nuclide-level data across all the nuclides in a
     :py:class:`~armi.nuclearDataIO.xsLibraries.XSLibrary`.
     """
     if not dummyNuclides:
@@ -111,7 +122,7 @@ def addDummyNuclidesToLibrary(lib, dummyNuclides):
     return any(dummyNuclideKeysAddedToLibrary)
 
 
-class _GamisoIO(isotxs._IsotxsIO):  # pylint: disable=protected-access,abstract-method
+class _GamisoIO(isotxs.IsotxsIO):
     """
     A reader/writer for GAMISO data files.
 
@@ -151,9 +162,7 @@ writeBinary = _GamisoIO.writeBinary
 writeAscii = _GamisoIO.writeAscii
 
 
-class _GamisoNuclideIO(
-    isotxs._IsotxsNuclideIO
-):  # pylint: disable=protected-access,abstract-method
+class _GamisoNuclideIO(isotxs._IsotxsNuclideIO):
     """
     A reader/writer for GAMISO nuclides.
 
@@ -162,7 +171,7 @@ class _GamisoNuclideIO(
     The GAMISO file format is identical to ISOTXS.
     """
 
-    _FILE_LABEL = u"GAMISO"
+    _FILE_LABEL = "GAMISO"
 
     def _getFileMetadata(self):
         return self._lib.gamisoMetadata

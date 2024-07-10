@@ -17,13 +17,6 @@ Components represented by basic shapes.
 
 Many reactor components can be described in 2D by circles, hexagons, rectangles, etc. These
 are defined in this subpackage.
-
-.. impl:: ARMI supports a reasonable set of basic shapes.
-   :id: IMPL_REACTOR_SHAPES_0
-   :links: REQ_REACTOR_SHAPES
-
-   Here ARMI implements its support for: Circles, Hexagons, Rectangles, Solid Rectangles,
-   Squares, and Triangles.
 """
 import math
 
@@ -32,7 +25,17 @@ from armi.reactor.components import componentParameters
 
 
 class Circle(ShapedComponent):
-    """A Circle."""
+    """A Circle.
+
+    .. impl:: Circle shaped Component
+        :id: I_ARMI_COMP_SHAPES0
+        :implements: R_ARMI_COMP_SHAPES
+
+        This class provides the implementation of a Circle Component. This includes
+        setting key parameters such as its material, temperature, and dimensions. It
+        also includes a method to retrieve the area of a Circle
+        Component via the ``getComponentArea`` method.
+    """
 
     is3D = False
 
@@ -79,19 +82,30 @@ class Circle(ShapedComponent):
         idiam = self.getDimension("id", cold=cold)
         od = self.getDimension("od", cold=cold)
         mult = self.getDimension("mult", cold=cold)
-        area = math.pi * (od ** 2 - idiam ** 2) / 4.0
+        area = math.pi * (od**2 - idiam**2) / 4.0
         area *= mult
         return area
 
     def isEncapsulatedBy(self, other):
-        """Return True if this ring lies completely inside the argument component"""
+        """Return True if this ring lies completely inside the argument component."""
         otherID, otherOD = other.getDimension("id"), other.getDimension("od")
         myID, myOD = self.getDimension("id"), self.getDimension("od")
         return otherID <= myID < otherOD and otherID < myOD <= otherOD
 
 
 class Hexagon(ShapedComponent):
-    """A Hexagon."""
+    """A Hexagon.
+
+    .. impl:: Hexagon shaped Component
+        :id: I_ARMI_COMP_SHAPES1
+        :implements: R_ARMI_COMP_SHAPES
+
+        This class provides the implementation of a hexagonal Component. This
+        includes setting key parameters such as its material, temperature, and
+        dimensions. It also includes methods for retrieving geometric
+        dimension information unique to hexagons such as the ``getPerimeter`` and
+        ``getPitchData`` methods.
+    """
 
     is3D = False
 
@@ -146,7 +160,7 @@ class Hexagon(ShapedComponent):
         op = self.getDimension("op", cold=cold)
         ip = self.getDimension("ip", cold=cold)
         mult = self.getDimension("mult")
-        area = math.sqrt(3.0) / 2.0 * (op ** 2 - ip ** 2)
+        area = math.sqrt(3.0) / 2.0 * (op**2 - ip**2)
         area *= mult
         return area
 
@@ -171,7 +185,18 @@ class Hexagon(ShapedComponent):
 
 
 class Rectangle(ShapedComponent):
-    """A rectangle component."""
+    """A Rectangle.
+
+    .. impl:: Rectangle shaped Component
+        :id: I_ARMI_COMP_SHAPES2
+        :implements: R_ARMI_COMP_SHAPES
+
+        This class provides the implementation for a rectangular Component. This
+        includes setting key parameters such as its material, temperature, and
+        dimensions. It also includes methods for computing geometric
+        information related to rectangles, such as the
+        ``getBoundingCircleOuterDiameter`` and ``getPitchData`` methods.
+    """
 
     is3D = False
 
@@ -218,12 +243,12 @@ class Rectangle(ShapedComponent):
     def getBoundingCircleOuterDiameter(self, Tc=None, cold=False):
         lengthO = self.getDimension("lengthOuter", Tc, cold=cold)
         widthO = self.getDimension("widthOuter", Tc, cold=cold)
-        return math.sqrt(widthO ** 2 + lengthO ** 2)
+        return math.sqrt(widthO**2 + lengthO**2)
 
     def getCircleInnerDiameter(self, Tc=None, cold=False):
         lengthI = self.getDimension("lengthInner", Tc, cold=cold)
         widthI = self.getDimension("widthInner", Tc, cold=cold)
-        return math.sqrt(widthI ** 2 + lengthI ** 2)
+        return math.sqrt(widthI**2 + lengthI**2)
 
     def getComponentArea(self, cold=False):
         """Computes the area of the rectangle in cm^2."""
@@ -311,7 +336,17 @@ class SolidRectangle(Rectangle):
 
 
 class Square(Rectangle):
-    """Square component that can be solid or hollow."""
+    """Square component that can be solid or hollow.
+
+    .. impl:: Square shaped Component
+        :id: I_ARMI_COMP_SHAPES3
+        :implements: R_ARMI_COMP_SHAPES
+
+        This class provides the implementation for a square Component. This class
+        subclasses the ``Rectangle`` class because a square is a type of rectangle.
+        This includes setting key parameters such as its material, temperature, and
+        dimensions.
+    """
 
     is3D = False
 
@@ -359,11 +394,11 @@ class Square(Rectangle):
 
     def getBoundingCircleOuterDiameter(self, Tc=None, cold=False):
         widthO = self.getDimension("widthOuter", Tc, cold=cold)
-        return math.sqrt(widthO ** 2 + widthO ** 2)
+        return math.sqrt(widthO**2 + widthO**2)
 
     def getCircleInnerDiameter(self, Tc=None, cold=False):
         widthI = self.getDimension("widthInner", Tc, cold=cold)
-        return math.sqrt(widthI ** 2 + widthI ** 2)
+        return math.sqrt(widthI**2 + widthI**2)
 
     def getPitchData(self):
         """
@@ -383,6 +418,15 @@ class Square(Rectangle):
 class Triangle(ShapedComponent):
     """
     Triangle with defined base and height.
+
+    .. impl:: Triangle shaped Component
+        :id: I_ARMI_COMP_SHAPES4
+        :implements: R_ARMI_COMP_SHAPES
+
+        This class provides the implementation for defining a triangular Component. This
+        includes setting key parameters such as its material, temperature, and
+        dimensions. It also includes providing a method for retrieving the area of a
+        Triangle Component via the ``getComponentArea`` method.
 
     Notes
     -----

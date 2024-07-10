@@ -21,14 +21,14 @@ when using the ARMI framework as a submodule in a larger project.
 
 Tests must be invoked via pytest for this to have any affect, for example::
 
-    $ pytest -n6 framework/armi
+    $ pytest -n 6 armi
 
 """
 import os
 
 import matplotlib
 
-from armi import apps, configure, context, settings
+from armi import apps, configure, context
 from armi.settings import caseSettings
 from armi.tests import TEST_ROOT
 
@@ -41,7 +41,7 @@ def pytest_sessionstart(session):
 
 def bootstrapArmiTestEnv():
     """
-    Perform ARMI config appropriate for running unit tests
+    Perform ARMI config appropriate for running unit tests.
 
     .. tip:: This can be imported and run from other ARMI applications
         for test support.
@@ -51,7 +51,6 @@ def bootstrapArmiTestEnv():
     cs = caseSettings.Settings()
 
     context.Mode.setMode(context.Mode.BATCH)
-    settings.setMasterCs(cs)
     # Need to init burnChain.
     # see armi.cases.case.Case._initBurnChain
     with open(cs["burnChainFileName"]) as burnChainStream:

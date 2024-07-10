@@ -11,15 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from armi.utils.properties import ImmutablePropertyError
-
 """
 Cross section library objects. 
 
 Cross section libraries, currently, contain neutron and/or gamma
 cross sections, but are not necessarily intended to be only neutron and gamma data.
 """
-
 import glob
 import os
 import re
@@ -27,7 +24,6 @@ import re
 from armi import runLog
 from armi.nucDirectory import nuclideBases
 from armi.nuclearDataIO.nuclearFileMetadata import NuclideXSMetadata, RegionXSMetadata
-from armi.nuclearDataIO import xsNuclides
 from armi.utils import properties
 
 _ISOTXS_EXT = "ISO"
@@ -35,7 +31,6 @@ _ISOTXS_EXT = "ISO"
 
 def compare(lib1, lib2):
     """Compare two XSLibraries, and return True if equal, or False if not."""
-    # pylint: disable=import-outside-toplevel) ; avoid cyclic import with isotxs bringing this in for data structure
     from armi.nuclearDataIO.cccc import isotxs
     from armi.nuclearDataIO.cccc import gamiso
     from armi.nuclearDataIO.cccc import pmatrx
@@ -47,6 +42,7 @@ def compare(lib1, lib2):
     equal &= isotxs.compare(lib1, lib2)
     equal &= gamiso.compare(lib1, lib2)
     equal &= pmatrx.compare(lib1, lib2)
+
     return equal
 
 
@@ -103,7 +99,7 @@ def getSuffixFromNuclideLabel(nucLabel):
 
 def getISOTXSLibrariesToMerge(xsLibrarySuffix, xsLibFileNames):
     """
-    Find ISOTXS libraries out of a list that should be merged based on the provided ``xsLibrarySuffix``
+    Find ISOTXS libraries out of a list that should be merged based on the provided ``xsLibrarySuffix``.
 
     Parameters
     ----------
@@ -181,7 +177,6 @@ def mergeXSLibrariesInWorkingDirectory(
         An alternate directory in which to search for files other than the working directory. The main purpose
         of this is for testing, but it could also be useful to users.
     """
-    # pylint: disable=import-outside-toplevel) ; avoid cyclic import with isotxs bringing this in for data structure
     from armi.nuclearDataIO.cccc import isotxs
     from armi.nuclearDataIO.cccc import gamiso
     from armi.nuclearDataIO.cccc import pmatrx
@@ -269,9 +264,9 @@ def mergeXSLibrariesInWorkingDirectory(
                 os.path.exists(gamisoLibraryPath) and os.path.exists(pmatrxLibraryPath)
             ):
                 runLog.warning(
-                    f"One of GAMISO or PMATRX data exist for "
+                    "One of GAMISO or PMATRX data exist for "
                     f"XS ID {xsID} with suffix {xsLibrarySuffix}. "
-                    f"Attempting to find GAMISO/PMATRX data with "
+                    "Attempting to find GAMISO/PMATRX data with "
                     f"only XS ID {xsID} instead."
                 )
                 gamisoLibraryPath = os.path.join(
@@ -412,7 +407,7 @@ class IsotxsLibrary(_XSLibrary):
 
     @property
     def numGroups(self):
-        """Get the number of neutron energy groups"""
+        """Get the number of neutron energy groups."""
         # This unlocks the immutable property so that it can be
         # read prior to not being set to check the number of groups
         # that are defined. If the property is not unlocked before
@@ -430,7 +425,7 @@ class IsotxsLibrary(_XSLibrary):
 
     @property
     def numGroupsGamma(self):
-        """get the number of gamma energy groups"""
+        """Get the number of gamma energy groups."""
         # This unlocks the immutable property so that it can be
         # read prior to not being set to check the number of groups
         # that are defined. If the property is not unlocked before
@@ -521,7 +516,7 @@ class IsotxsLibrary(_XSLibrary):
         return [self[name] for name in self._orderedNuclideLabels]
 
     def getNuclides(self, suffix):
-        """Returns a list of the nuclide objects in the library"""
+        """Returns a list of the nuclide objects in the library."""
         nucs = []
         # nucName is U235IA, etc.. nuc.name is U235, etc
         for nucLabel, nuc in self.items():
@@ -533,7 +528,7 @@ class IsotxsLibrary(_XSLibrary):
         return nucs
 
     def merge(self, other):
-        """Merge two XSLibraries"""
+        """Merge two XSLibraries."""
         runLog.debug("Merging XS library {} into XS library {}".format(other, self))
         self._mergeProperties(other)
         # merging meta data may raise an exception before knowing anything about the contained nuclides
@@ -582,7 +577,7 @@ class IsotxsLibrary(_XSLibrary):
 
     def getScatterWeights(self, scatterMatrixKey="elasticScatter"):
         """
-        Build or retrieve pre-built scatter weight data
+        Build or retrieve pre-built scatter weight data.
 
         This acts like a cache for _buildScatterWeights
 

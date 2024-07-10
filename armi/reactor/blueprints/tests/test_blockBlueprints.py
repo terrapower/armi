@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for block blueprints."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 import io
 import unittest
 
@@ -64,7 +63,7 @@ blocks:
             op: 16.75
     other fuel: &block_fuel_other
         grid name: fuelgrid
-        flags: fuel test
+        flags: fuel test depletable
         fuel:
             shape: Circle
             material: UZr
@@ -266,13 +265,13 @@ class TestGriddedBlock(unittest.TestCase):
             self.blueprints._prepConstruction(self.cs)
 
     def test_constructSpatialGrid(self):
-        """Test intermediate grid construction function"""
+        """Test intermediate grid construction function."""
         bDesign = self.blueprints.blockDesigns["fuel"]
         gridDesign = bDesign._getGridDesign(self.blueprints)
         self.assertEqual(gridDesign.gridContents[0, 0], "2")
 
     def test_getLocatorsAtLatticePositions(self):
-        """Ensure extraction of specifiers results in locators"""
+        """Ensure extraction of specifiers results in locators."""
         bDesign = self.blueprints.blockDesigns["fuel"]
         gridDesign = bDesign._getGridDesign(self.blueprints)
         grid = gridDesign.construct()
@@ -281,7 +280,12 @@ class TestGriddedBlock(unittest.TestCase):
         self.assertIs(grid[locators[0].getCompleteIndices()], locators[0])
 
     def test_blockLattice(self):
-        """Make sure constructing a block with grid specifiers works as a whole."""
+        """Make sure constructing a block with grid specifiers works as a whole.
+
+        .. test:: Create block with blueprint file.
+            :id: T_ARMI_BP_BLOCK
+            :tests: R_ARMI_BP_BLOCK
+        """
         aDesign = self.blueprints.assemDesigns.bySpecifier["IC"]
         a = aDesign.construct(self.cs, self.blueprints)
         fuelBlock = a.getFirstBlock(Flags.FUEL)
@@ -294,7 +298,7 @@ class TestGriddedBlock(unittest.TestCase):
         self.assertTrue(seen)
 
     def test_nonLatticeComponentHasRightMult(self):
-        """Make sure non-grid components in blocks with grids get the right multiplicity"""
+        """Make sure non-grid components in blocks with grids get the right multiplicity."""
         aDesign = self.blueprints.assemDesigns.bySpecifier["IC"]
         a = aDesign.construct(self.cs, self.blueprints)
         fuelBlock = a.getFirstBlock(Flags.FUEL)
@@ -302,6 +306,13 @@ class TestGriddedBlock(unittest.TestCase):
         self.assertEqual(duct.getDimension("mult"), 1.0)
 
     def test_explicitFlags(self):
+        """
+        Test flags are created from blueprint file.
+
+        .. test:: Nuc flags can define depletable objects.
+            :id: T_ARMI_BP_NUC_FLAGS0
+            :tests: R_ARMI_BP_NUC_FLAGS
+        """
         a1 = self.blueprints.assemDesigns.bySpecifier["IC"].construct(
             self.cs, self.blueprints
         )
@@ -313,7 +324,9 @@ class TestGriddedBlock(unittest.TestCase):
         )
 
         self.assertTrue(b1.hasFlags(Flags.FUEL, exact=True))
-        self.assertTrue(b2.hasFlags(Flags.FUEL | Flags.TEST, exact=True))
+        self.assertTrue(
+            b2.hasFlags(Flags.FUEL | Flags.TEST | Flags.DEPLETABLE, exact=True)
+        )
 
         self.assertEqual(a1.p.flags, Flags.FUEL)
         self.assertTrue(a1.hasFlags(Flags.FUEL, exact=True))
@@ -331,16 +344,11 @@ class TestGriddedBlock(unittest.TestCase):
         programmaticBlock = test_blocks.buildSimpleFuelBlock()
         programaticClad = programmaticBlock.getComponent(Flags.CLAD)
         self.assertAlmostEqual(
-            clad.getMassDensity(),
-            clad.material.density3(Tc=clad.temperatureInC),
+            clad.density(),
+            clad.material.density(Tc=clad.temperatureInC),
         )
 
         self.assertAlmostEqual(
-            clad.getMassDensity(),
-            programaticClad.getMassDensity(),
+            clad.density(),
+            programaticClad.density(),
         )
-
-
-if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'Test.testName']
-    unittest.main()

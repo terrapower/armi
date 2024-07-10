@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Test for Zones"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
+"""Test for Zones."""
 import logging
 import os
 import unittest
@@ -73,6 +72,13 @@ class TestZone(unittest.TestCase):
             self.bList.append(b)
 
     def test_addItem(self):
+        """
+        Test adding an item.
+
+        .. test:: Add item to a zone.
+            :id: T_ARMI_ZONE0
+            :tests: R_ARMI_ZONE
+        """
         zone = zones.Zone("test_addItem")
         zone.addItem(self.aList[0])
         self.assertIn(self.aList[0].getLocation(), zone)
@@ -87,6 +93,13 @@ class TestZone(unittest.TestCase):
         self.assertRaises(AssertionError, zone.removeItem, "also nope")
 
     def test_addItems(self):
+        """
+        Test adding items.
+
+        .. test:: Add multiple items to a zone.
+            :id: T_ARMI_ZONE1
+            :tests: R_ARMI_ZONE
+        """
         zone = zones.Zone("test_addItems")
         zone.addItems(self.aList)
         for a in self.aList:
@@ -99,6 +112,13 @@ class TestZone(unittest.TestCase):
             self.assertNotIn(a.getLocation(), zone)
 
     def test_addLoc(self):
+        """
+        Test adding a location.
+
+        .. test:: Add location to a zone.
+            :id: T_ARMI_ZONE2
+            :tests: R_ARMI_ZONE
+        """
         zone = zones.Zone("test_addLoc")
         zone.addLoc(self.aList[0].getLocation())
         self.assertIn(self.aList[0].getLocation(), zone)
@@ -113,6 +133,13 @@ class TestZone(unittest.TestCase):
         self.assertRaises(AssertionError, zone.removeLoc, 1234)
 
     def test_addLocs(self):
+        """
+        Test adding locations.
+
+        .. test:: Add multiple locations to a zone.
+            :id: T_ARMI_ZONE3
+            :tests: R_ARMI_ZONE
+        """
         zone = zones.Zone("test_addLocs")
         zone.addLocs([a.getLocation() for a in self.aList])
         for a in self.aList:
@@ -180,6 +207,13 @@ class TestZones(unittest.TestCase):
         self.zonez = self.r.core.zones
 
     def test_dictionaryInterface(self):
+        """
+        Test creating and interacting with the Zones object.
+
+        .. test:: Create collection of Zones.
+            :id: T_ARMI_ZONES
+            :tests: R_ARMI_ZONES
+        """
         zs = zones.Zones()
 
         # validate the addZone() and __len__() work
@@ -281,15 +315,15 @@ class TestZones(unittest.TestCase):
         with mockRunLogs.BufferLog() as mock:
             runLog.LOG.startLog("test_summary")
             runLog.LOG.setVerbosity(logging.INFO)
-            self.assertEqual("", mock._outputStream)
+            self.assertEqual("", mock.getStdout())
 
             self.zonez.summary()
 
-            self.assertIn("zoneDefinitions:", mock._outputStream)
-            self.assertIn("- ring-1: ", mock._outputStream)
-            self.assertIn("- ring-2: ", mock._outputStream)
-            self.assertIn("- ring-3: ", mock._outputStream)
-            self.assertIn("003-001, 003-002, 003-003", mock._outputStream)
+            self.assertIn("zoneDefinitions:", mock.getStdout())
+            self.assertIn("- ring-1: ", mock.getStdout())
+            self.assertIn("- ring-2: ", mock.getStdout())
+            self.assertIn("- ring-3: ", mock.getStdout())
+            self.assertIn("003-001, 003-002, 003-003", mock.getStdout())
 
     def test_sortZones(self):
         # create some zones in non-alphabetical order
@@ -310,7 +344,3 @@ class TestZones(unittest.TestCase):
         self.assertEqual(list(zs._zones.keys())[0], "ring-1")
         self.assertEqual(list(zs._zones.keys())[1], "ring-2")
         self.assertEqual(list(zs._zones.keys())[2], "ring-3")
-
-
-if __name__ == "__main__":
-    unittest.main()

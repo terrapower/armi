@@ -1,13 +1,15 @@
-=======================================
+.. _walkthrough-inputs:
+
+***************************************
 Building input files for a fast reactor
-=======================================
+***************************************
 
 The true power of ARMI comes when you have a reactor at your fingertips. To get this,
 you must describe the reactor via input files.
 This tutorial will walk you through building input files from scratch for a reactor.
 We will model the CR=1.0 sodium-cooled fast reactor documented in `ANL-AFCI-177
 <https://publications.anl.gov/anlpubs/2008/05/61507.pdf>`_. The full :doc:`documentation
-for input files is available here </user/inputs/index>`.
+for input files is available here </user/inputs>`.
 
 .. tip:: The full inputs created in this tutorial are available for download at the bottom of
 	this page.
@@ -352,22 +354,6 @@ Specifying settings
 Now we need to specify some **settings** that define fundamental reactor
 parameters, as well as modeling approximation options. For this, we make a
 **settings file**, called ``anl-afci-177.yaml``.
-
-First we need to supply some metadata about the settings themselves:
-
-.. literalinclude:: ../../armi/tests/tutorials/anl-afci-177.yaml
-    :language: yaml
-    :start-after: begin-metadata
-    :end-before: begin-settings
-
-The version here is the version of ARMI. It shows "uncontrolled" (the
-preferred default) because this is just a test file we want to always work
-with the latest ARMI. But if you are doing a really important analysis, you
-might want to document which specific version of ARMI you used, like:
-"version: 0.2.5" or similar. This field is mostly for documentation purposes,
-and is not enforced by ARMI. However, if your settings file has an invalid
-setting, you will see any version mismatch here printed as a little hint as
-to why your settings file might be wrong.
 
 The thermal power in this reference is 1000 MWt. The thermal efficiency isn't
 specified, so let's assume 0.38. From Table 4.8, the cycle length is 370 EFPD.

@@ -43,7 +43,7 @@ WRITE_FULL = "full"
 
 
 class Roots:
-    """XML tree root node common strings"""
+    """XML tree root node common strings."""
 
     CUSTOM = "settings"
     VERSION = "version"
@@ -141,9 +141,17 @@ class SettingRenamer:
 class SettingsReader:
     """Abstract class for processing settings files.
 
+    .. impl:: The setting use a human-readable, plain text file as input.
+        :id: I_ARMI_SETTINGS_IO_TXT
+        :implements: R_ARMI_SETTINGS_IO_TXT
+
+        ARMI uses the YAML standard for settings files. ARMI uses industry-standard
+        ``ruamel.yaml`` Python libraray to read these files. ARMI does not bend or
+        change the YAML file format standard in any way.
+
     Parameters
     ----------
-    cs : CaseSettings
+    cs : Settings
         The settings object to read into
     """
 
@@ -167,9 +175,9 @@ class SettingsReader:
 
         self._renamer = SettingRenamer(dict(self.cs.items()))
 
-        # the input version will be overwritten if explicitly stated in input file.
+        # The input version will be overwritten if explicitly stated in input file.
         # otherwise, it's assumed to precede the version inclusion change and should be
-        # treated as alright
+        # treated as alright.
 
     def __getitem__(self, key):
         return self.cs[key]
@@ -182,7 +190,6 @@ class SettingsReader:
 
     def readFromFile(self, path, handleInvalids=True):
         """Load file and read it."""
-
         with open(path, "r") as f:
             # make sure that we can actually open the file before trying to guess its
             # format. This will yield better error messages when things go awry.
@@ -206,20 +213,32 @@ class SettingsReader:
     def _readYaml(self, stream):
         """Read settings from a YAML stream."""
         from armi.physics.thermalHydraulics import const  # avoid circular import
+        from armi.settings.fwSettings.globalSettings import CONF_VERSIONS
 
-        yaml = YAML()
+        yaml = YAML(typ="rt")
+        yaml.allow_duplicate_keys = False
         tree = yaml.load(stream)
         if "settings" not in tree:
             raise InvalidSettingsFileError(
                 self.inputPath,
                 "Missing the `settings:` header required in YAML settings",
             )
+
         if const.ORIFICE_SETTING_ZONE_MAP in tree:
             raise InvalidSettingsFileError(
                 self.inputPath, "Appears to be an orifice_settings file"
             )
+
         caseSettings = tree[Roots.CUSTOM]
-        self.inputVersion = tree["metadata"][Roots.VERSION]
+        setts = tree["settings"]
+        if CONF_VERSIONS in setts and "armi" in setts[CONF_VERSIONS]:
+            self.inputVersion = setts[CONF_VERSIONS]["armi"]
+        else:
+            runLog.warning(
+                "Versions setting section not found. Continuing with uncontrolled verisons."
+            )
+            self.inputVersion = "uncontrolled"
+
         for settingName, settingVal in caseSettings.items():
             self._applySettings(settingName, settingVal)
 
@@ -269,7 +288,6 @@ class SettingsWriter:
         preserves all settings originally in file even if they match the default value
     full
         all setting values regardless of default status
-
     """
 
     def __init__(self, settings_instance, style="short", settingsSetByUser=[]):
@@ -282,9 +300,9 @@ class SettingsWriter:
         self.settingsSetByUser = settingsSetByUser
 
     @staticmethod
-    def _getVersion():
-        tag, attrib = Roots.CUSTOM, {Roots.VERSION: version}
-        return tag, attrib
+    def _getTag():
+        tag, _attrib = Roots.CUSTOM, {Roots.VERSION: version}
+        return tag
 
     def writeYaml(self, stream):
         """Write settings to YAML file."""
@@ -297,12 +315,13 @@ class SettingsWriter:
 
     def _preprocessYaml(self, settingData):
         """
-        Clean up the dict before dumping to yaml.
+        Clean up the dict before dumping to YAML.
 
         If it has just a value attrib it flattens it for brevity.
         """
-        tag, attrib = self._getVersion()
-        yamlData = {"metadata": attrib}  # put version info in
+        from armi.settings.fwSettings.globalSettings import CONF_VERSIONS
+
+        yamlData = {}
         cleanedData = collections.OrderedDict()
         for settingObj, settingDatum in settingData.items():
             if "value" in settingDatum and len(settingDatum) == 1:
@@ -311,7 +330,13 @@ class SettingsWriter:
             else:
                 cleanedData[settingObj.name] = settingDatum
 
+        # add ARMI version to the settings YAML
+        if CONF_VERSIONS not in cleanedData:
+            cleanedData[CONF_VERSIONS] = {}
+        cleanedData[CONF_VERSIONS]["armi"] = version
+
         # this gets rid of a !!omap associated with ordered dicts
+        tag = self._getTag()
         yamlData.update({tag: ruamel.yaml.comments.CommentedMap(cleanedData)})
         return yamlData
 
@@ -342,6 +367,7 @@ class SettingsWriter:
                     attribValue = attribValue.__name__
                 settingDatum[attribName] = attribValue
             settingData[settingObject] = settingDatum
+
         return settingData
 
 
@@ -349,7 +375,7 @@ def prompt(statement, question, *options):
     """Prompt the user for some information."""
     if context.CURRENT_MODE == context.Mode.GUI:
         # avoid hard dependency on wx
-        import wx  # pylint: disable=import-error
+        import wx
 
         msg = statement + "\n\n\n" + question
         style = wx.CENTER
@@ -401,7 +427,7 @@ def prompt(statement, question, *options):
 
 
 class RunLogPromptCancel(Exception):
-    """An error that occurs when the user submits a cancel on a runLog prompt which allows for cancellation"""
+    """An error that occurs when the user submits a cancel on a runLog prompt which allows for cancellation."""
 
     pass
 

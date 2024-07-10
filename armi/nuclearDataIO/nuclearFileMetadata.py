@@ -73,7 +73,7 @@ class _Metadata:
 
     def update(self, other):
         """Updates the underlying dictionary, similar to the dict implementation."""
-        self._data.update(other._data)  # pylint: disable=protected-access
+        self._data.update(other._data)
 
     def merge(self, other, selfContainer, otherContainer, fileType, exceptionClass):
         """
@@ -127,7 +127,6 @@ class _Metadata:
             mergedData[key] = mergedVal
         return mergedData
 
-    # pylint: disable=unused-argument, no-self-use
     def _getSkippedKeys(self, other, selfContainer, otherContainer, mergedData):
         return set()
 
@@ -230,7 +229,7 @@ class NuclideXSMetadata(FileMetadata):
 
 
 class RegionXSMetadata(FileMetadata):
-    """Metadata for library files containing region cross sections, e.g. ``COMPXS``"""
+    """Metadata for library files containing region cross sections, e.g. ``COMPXS``."""
 
     def _mergeLibrarySpecificData(
         self, other, selfContainer, otherContainer, mergedData
@@ -245,9 +244,7 @@ class RegionXSMetadata(FileMetadata):
         )
         mergedData["numFissComps"] = self["numFissComps"] + other["numFissComps"]
 
-    def _getSkippedKeys(
-        self, other, selfContainer, otherContainer, mergedData
-    ):  # pylint: disable=unused-argument
+    def _getSkippedKeys(self, other, selfContainer, otherContainer, mergedData):
         return set(
             ["numComps", "compFamiliesWithPrecursors", "numFissComps"]
             + COMPXS_POWER_CONVERSION_FACTORS

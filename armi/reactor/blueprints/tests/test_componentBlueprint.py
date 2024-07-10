@@ -12,10 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Module for testing componentBlueprint
-"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+"""Module for testing componentBlueprint."""
 import inspect
 import unittest
 
@@ -71,7 +68,7 @@ assemblies:
     def test_componentInitializationControlCustomIsotopics(self):
         nuclideFlags = (
             inspect.cleandoc(
-                r"""
+                """
             nuclide flags:
                 U234: {burn: true, xs: true}
                 U235: {burn: true, xs: true}
@@ -102,7 +99,7 @@ assemblies:
     def test_autoDepletable(self):
         nuclideFlags = (
             inspect.cleandoc(
-                r"""
+                """
             nuclide flags:
                 U234: {burn: true, xs: true}
                 U235: {burn: true, xs: true}
@@ -335,8 +332,3 @@ assemblies:
         expectedNuclides = ["TH232"]
         for nuc in expectedNuclides:
             self.assertIn(nuc, a[0][0].getNuclides())
-
-
-if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'TestComponentBlueprint.test_componentInitializationAmericiumCustomIsotopics']
-    unittest.main()

@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-Build Reactor Inputs Programmatically
-=====================================
+Build Reactor Inputs Programmatically.
+======================================
 
 Sometimes it's desirable to build input definitions for ARMI using
 code rather than by writing the textual input files directly.
@@ -26,26 +26,25 @@ programmatically (e.g. for parameter sweeps).
 
 This example shows how to make Blueprints objects programmatically completely
 from scratch.
-
 """
+# ruff: noqa: E402
 import matplotlib.pyplot as plt
-from armi import configure, runLog
+
+from armi import configure
 
 # configure ARMI
 configure(permissive=True)
 
-# pylint: disable=wrong-import-position
+from armi import cases
 from armi.reactor import blueprints
-from armi import settings
-from armi.settings import caseSettings
-from armi.reactor.blueprints import isotopicOptions
 from armi.reactor.blueprints import assemblyBlueprint
 from armi.reactor.blueprints import blockBlueprint
 from armi.reactor.blueprints import componentBlueprint
 from armi.reactor.blueprints import gridBlueprint
+from armi.reactor.blueprints import isotopicOptions
 from armi.reactor.blueprints import reactorBlueprint
+from armi.settings import caseSettings
 from armi.utils import plotting
-from armi import cases
 
 
 def buildCase():
@@ -61,7 +60,6 @@ def buildCase():
     bp.systemDesigns = buildSystems()
 
     cs = caseSettings.Settings()
-    settings.setMasterCs(cs)  # remove once we eliminate masterCs
     cs.path = None
     cs.caseTitle = "scripted-case"
     case = cases.Case(cs=cs, bp=bp)
@@ -148,7 +146,7 @@ def buildComponents():
 
 
 def buildBlocks(components):
-    """Build block blueprints"""
+    """Build block blueprints."""
     blocks = blockBlueprint.BlockKeyedList()
     fuel = blockBlueprint.BlockBlueprint()
     fuel.name = "fuel"
@@ -166,7 +164,7 @@ def buildBlocks(components):
 
 
 def buildAssemblies(blockDesigns):
-    """Build assembly blueprints"""
+    """Build assembly blueprints."""
     fuelBock, reflectorBlock = blockDesigns["fuel"], blockDesigns["reflector"]
 
     assemblies = assemblyBlueprint.AssemblyKeyedList()
@@ -199,8 +197,7 @@ def buildAssemblies(blockDesigns):
 
 
 def buildGrids():
-    """Build the core map grid"""
-
+    """Build the core map grid."""
     coreGrid = gridBlueprint.GridBlueprint("core")
     coreGrid.geom = "hex"
     coreGrid.symmetry = "third periodic"
@@ -217,7 +214,7 @@ def buildGrids():
 
 
 def buildSystems():
-    """Build the core system"""
+    """Build the core system."""
     systems = reactorBlueprint.Systems()
     core = reactorBlueprint.SystemBlueprint("core", "core", gridBlueprint.Triplet())
     systems["core"] = core

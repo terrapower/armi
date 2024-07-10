@@ -17,27 +17,28 @@ This module performs some file manipulations, cleanups, state loads, etc.
 
 It's a bit of a catch-all interface, and it's name is admittedly not very descriptive.
 """
-
 import glob
+import itertools
 import os
 import re
-import itertools
 
+from armi import context
 from armi import interfaces
+from armi import operators
 from armi import runLog
 from armi import utils
-from armi.utils import pathTools
-from armi import operators
-from armi.utils.customExceptions import InputError
 from armi.bookkeeping.db.database3 import Database3
-from armi import context
+from armi.settings.fwSettings.globalSettings import CONF_COPY_FILES_FROM
+from armi.settings.fwSettings.globalSettings import CONF_COPY_FILES_TO
+from armi.utils import pathTools
+from armi.utils.customExceptions import InputError
 
 
 ORDER = interfaces.STACK_ORDER.PREPROCESSING
 
 
 def describeInterfaces(_cs):
-    """Function for exposing interface(s) to other code"""
+    """Function for exposing interface(s) to other code."""
     return (MainInterface, {"reverseAtEOL": True})
 
 
@@ -47,9 +48,8 @@ class MainInterface(interfaces.Interface):
 
     Notes
     -----
-    Interacts early so that the database is accessible as soon as possible in the run.
-    The database interfaces interacts near the end of the interface stack, but the main
-    interface interacts first.
+    Interacts early so that the database is accessible as soon as possible in the run. The database
+    interfaces runs near the end of the interface stack, but the main interface interacts first.
     """
 
     name = "main"
@@ -65,10 +65,9 @@ class MainInterface(interfaces.Interface):
 
         Notes
         -----
-        This happens here rather than on the database interface, as the database
-        interacts near the end of the stack. Some interactBOL methods may be
-        dependent on having data in the database, such as calls to history tracker
-        during a restart run.
+        This happens here rather than on the database interface, as the database interacts near the
+        end of the stack. Some interactBOL methods may be dependent on having data in the database,
+        such as calls to history tracker during a restart run.
         """
         dbi = self.o.getInterface("database")
         if not dbi.enabled():
@@ -81,30 +80,49 @@ class MainInterface(interfaces.Interface):
             # load case before going forward with normal cycle
             runLog.important("MainInterface loading from DB")
 
-            # Load the database from the point just before start cycle and start node
-            # as the run will continue at the begining of start cycle and start node,
-            # and the database contains the values from the run at the end of the
-            # interface stack, which are what the start start cycle and start node
-            # should begin with.
+            # Load the database from the point just before start cycle and start node as the run
+            # will continue at the begining of start cycle and start node, and the database contains
+            # the values from the run at the end of the interface stack, which are what the start
+            # start cycle and start node should begin with.
 
-            # NOTE: this should be the responsibility of the database, but cannot
-            # because the Database is last in the stack and the MainInterface is
-            # first
+            # NOTE: this should be the responsibility of the database, but cannot because the
+            # database is last in the stack and the MainInterface is first
             dbi.prepRestartRun()
             self.r.p.cycle = self.cs["startCycle"]
             self.r.p.timeNode = self.cs["startNode"]
 
     def _moveFiles(self):
-        # check for orificed flow bounds files. These will often be named based on the
-        # case that this one is dependent upon, but not always. For example, testSassys
-        # is dependent on the safety case but requires physics bounds files.  now copy
-        # the files over
+        """
+        At the start of each run, arbitrary lists of user-defined files can be copied around.
+
+        This logic is controlled by the settings ``copyFilesFrom`` & ``copyFilesTo``.
+
+        ``copyFilesFrom`` :
+
+        - List of files to copy (cannot be directories).
+        - Can be of length zero (that just means no files will be copied).
+        - The file names listed can use the ``*`` glob syntax, to reference multiple files.
+
+
+        ``copyFilesTo`` :
+
+        - List of directories to copy the files into.
+        - Can be of length zero; all files will be copied to the local dir.
+        - Can be of length one; all files will be copied to that dir.
+        - The only other valid length for this list _must_ be the same length as the "from" list.
+
+        Notes
+        -----
+        If a provided "from" file is missing, this method will silently pass over that. It will only
+        check if the length of the "from" and "to" lists are valid in the end.
+        """
+        # handle a lot of asterisks and missing files
         copyFilesFrom = [
             filePath
-            for possiblePat in self.cs["copyFilesFrom"]
-            for filePath in glob.glob(possiblePat)
+            for possiblePath in self.cs[CONF_COPY_FILES_FROM]
+            for filePath in glob.glob(possiblePath)
         ]
-        copyFilesTo = self.cs["copyFilesTo"]
+        copyFilesTo = self.cs[CONF_COPY_FILES_TO]
 
         if len(copyFilesTo) in (len(copyFilesFrom), 0, 1):
             # if any files to copy, then use the first as the default, i.e. len() == 1,
@@ -113,19 +131,20 @@ class MainInterface(interfaces.Interface):
             for filename, dest in itertools.zip_longest(
                 copyFilesFrom, copyFilesTo, fillvalue=default
             ):
-                pathTools.copyOrWarn("copyFilesFrom", filename, dest)
+                pathTools.copyOrWarn(CONF_COPY_FILES_FROM, filename, dest)
         else:
             runLog.error(
-                "cs['copyFilesTo'] must either be length 1, 0, or have the same number of entries as "
-                "cs['copyFilesFrom']. Actual values:\n"
-                "    copyFilesTo   : {}\n"
-                "    copyFilesFrom : {}".format(copyFilesTo, copyFilesFrom)
+                f"cs['{CONF_COPY_FILES_TO}'] must either be length 0, 1, or have the same number "
+                f"of entries as cs['{CONF_COPY_FILES_FROM}']. Actual values:\n"
+                f"    {CONF_COPY_FILES_TO}   : {copyFilesTo}\n"
+                f"    {CONF_COPY_FILES_FROM} : {copyFilesFrom}"
             )
-            raise InputError("Failed to process copyFilesTo/copyFilesFrom")
+            raise InputError(
+                f"Failed to process {CONF_COPY_FILES_FROM}/{CONF_COPY_FILES_TO}"
+            )
 
     def interactBOC(self, cycle=None):
-        r"""typically the first interface to interact beginning of cycle."""
-
+        """Typically the first interface to interact beginning of cycle."""
         runLog.important("Beginning of Cycle {0}".format(cycle))
         runLog.LOG.clearSingleWarnings()
 
@@ -193,10 +212,10 @@ class MainInterface(interfaces.Interface):
         if os.path.exists("failedRuns"):
             utils.pathTools.cleanPath("failedRuns")
 
-    # pylint: disable=no-self-use
     def cleanLastCycleFiles(self):
-        r"""Delete ARMI files from previous cycle that aren't necessary for the next cycle.
-        Unless you're doing reloads, of course."""
+        """Delete ARMI files from previous cycle that aren't necessary for the next cycle.
+        Unless you're doing reloads, of course.
+        """
         runLog.important("Cleaning ARMI files due to reallySmallRun option")
         for fileName in os.listdir(os.getcwd()):
             # clean MC**2 and REBUS inputs and outputs

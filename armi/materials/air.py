@@ -11,17 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from armi.utils import units
 
-"""Simple air material"""
-
+"""Simple air material."""
 from armi.materials import material
-from armi.utils.units import getTk
+from armi.utils.units import getTk, G_PER_CM3_TO_KG_PER_M3
 
 
 class Air(material.Fluid):
     """
-    Dry, Near Sea Level
+    Dry, Near Sea Level.
 
     Correlations based off of values in Incropera, Frank P., et al.
     Fundamentals of heat and mass transfer. Vol. 5. New York: Wiley, 2002.
@@ -30,20 +28,18 @@ class Air(material.Fluid):
             https://www.pnnl.gov/main/publications/external/technical_reports/PNNL-15870Rev1.pdf
     """
 
-    name = "Air"
-
     """
     temperature ranges based on where values are more than 1% off of reference
     """
     propertyValidTemperature = {
-        "density": ((100, 2400), "K"),
+        "pseudoDensity": ((100, 2400), "K"),
         "heat capacity": ((100, 1300), "K"),
         "thermal conductivity": ((200, 850), "K"),
     }
 
     def setDefaultMassFracs(self):
         """
-        Set mass fractions
+        Set mass fractions.
 
         Notes
         -----
@@ -59,7 +55,7 @@ class Air(material.Fluid):
         self.setMassFrac("O", 0.231781)
         self.setMassFrac("AR", 0.012827)
 
-    def density(
+    def pseudoDensity(
         self,
         Tk=None,
         Tc=None,
@@ -77,22 +73,24 @@ class Air(material.Fluid):
         Tc : float, optional
             temperature in degrees Celsius
 
+        Notes
+        -----
+        In ARMI, we define pseudoDensity() and density() as the same for Fluids.
+
         Returns
         -------
         density : float
             mass density in g/cc
         """
         Tk = getTk(Tc, Tk)
-        self.checkPropertyTempRange("density", Tk)
+        self.checkPropertyTempRange("pseudoDensity", Tk)
         inv_Tk = 1.0 / getTk(Tc, Tk)
-        rho_kgPerM3 = 1.15675e03 * inv_Tk ** 2 + 3.43413e02 * inv_Tk + 2.99731e-03
-        return rho_kgPerM3 / units.G_PER_CM3_TO_KG_PER_M3
+        rho_kgPerM3 = 1.15675e03 * inv_Tk**2 + 3.43413e02 * inv_Tk + 2.99731e-03
+        return rho_kgPerM3 / G_PER_CM3_TO_KG_PER_M3
 
     def specificVolumeLiquid(self, Tk=None, Tc=None):
-        """
-        Returns the liquid specific volume in m^3/kg of this material given Tk in K or Tc in C.
-        """
-        return 1 / (1000.0 * self.density(Tk, Tc))
+        """Returns the liquid specific volume in m^3/kg of this material given Tk in K or Tc in C."""
+        return 1 / (1000.0 * self.pseudoDensity(Tk, Tc))
 
     def thermalConductivity(self, Tk=None, Tc=None):
         """
@@ -116,8 +114,8 @@ class Air(material.Fluid):
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("thermal conductivity", Tk)
         thermalConductivity = (
-            2.13014e-08 * Tk ** 3
-            - 6.31916e-05 * Tk ** 2
+            2.13014e-08 * Tk**3
+            - 6.31916e-05 * Tk**2
             + 1.11629e-01 * Tk
             - 2.00043e00
         )
@@ -147,9 +145,9 @@ class Air(material.Fluid):
         return (
             sum(
                 [
-                    +1.38642e-13 * Tk ** 4,
-                    -6.47481e-10 * Tk ** 3,
-                    +1.02345e-06 * Tk ** 2,
+                    +1.38642e-13 * Tk**4,
+                    -6.47481e-10 * Tk**3,
+                    +1.02345e-06 * Tk**2,
                     -4.32829e-04 * Tk,
                     +1.06133e00,
                 ]

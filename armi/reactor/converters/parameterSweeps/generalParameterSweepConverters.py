@@ -12,10 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Module for general core parameter sweeps
-"""
+"""Module for general core parameter sweeps."""
 from armi.reactor.converters.geometryConverters import GeometryConverter
+from armi.physics.neutronics.settings import (
+    CONF_EPS_EIG,
+    CONF_EPS_FSAVG,
+    CONF_EPS_FSPOINT,
+)
 
 
 class ParameterSweepConverter(GeometryConverter):
@@ -66,8 +69,8 @@ class NeutronicConvergenceModifier(ParameterSweepConverter):
         fs = 1.0e-12 + self._parameter * 1.0e-3
 
         newSettings = {}
-        newSettings["epsFSAvg"] = fs
-        newSettings["epsFSPoint"] = fs
-        newSettings["epsEig"] = 1.0e-14 + self._parameter * 1.0e-4
+        newSettings[CONF_EPS_FSAVG] = fs
+        newSettings[CONF_EPS_FSPOINT] = fs
+        newSettings[CONF_EPS_EIG] = 1.0e-14 + self._parameter * 1.0e-4
 
         self._cs = self._cs.modified(newSettings=newSettings)

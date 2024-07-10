@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Various math utilities"""
+"""Various math utilities."""
 import math
 import operator  # the python package, not the ARMI module
 import re
@@ -84,7 +84,7 @@ def convertToSlice(x, increment=False):
 
     Examples
     --------
-    a = np.array([10, 11, 12, 13])
+    >>> a = np.array([10, 11, 12, 13])
 
     >>> convertToSlice(2)
     slice(2, 3, None)
@@ -99,7 +99,6 @@ def convertToSlice(x, increment=False):
     >>> a[convertToSlice(None)]
     array([10, 11, 12, 13])
 
-
     >>> a[utils.convertToSlice([1, 3])]
     array([11, 13])
 
@@ -109,7 +108,6 @@ def convertToSlice(x, increment=False):
 
     >>> a[utils.convertToSlice(slice(2, 3, None), increment=-1)]
     array([11])
-
     """
     if increment is False:
         increment = 0
@@ -123,7 +121,7 @@ def convertToSlice(x, increment=False):
     if isinstance(x, list):
         x = np.array(x)
 
-    if isinstance(x, (int, np.integer)) or isinstance(x, (float, np.floating)):
+    if isinstance(x, (int, np.integer, float, np.floating)):
         x = slice(int(x), int(x) + 1, None)
 
     # Correct the slice indices to be group instead of index based.
@@ -158,12 +156,13 @@ def convertToSlice(x, increment=False):
 
 
 def efmt(a: str) -> str:
-    r"""Converts string exponential number to another string with just 2 digits in the exponent."""
+    """Converts string exponential number to another string with just 2 digits in the exponent."""
     # this assumes that none of our numbers will be more than 1e100 or less than 1e-100...
     if len(a.split("E")) != 2:
         two = a.split("e")
     else:
         two = a.split("E")
+
     # print two
     exp = two[1]  # this is '+002' or '+02' or something
 
@@ -202,7 +201,7 @@ def expandRepeatedFloats(repeatedList):
 
 def findClosest(listToSearch, val, indx=False):
     r"""
-    find closest item in a list.
+    Find closest item in a list.
 
     Parameters
     ----------
@@ -221,7 +220,6 @@ def findClosest(listToSearch, val, indx=False):
         The item in the listToSearch that is closest to val
     minI : int
         The index of the item in listToSearch that is closest to val. Returned if indx=True.
-
     """
     d = float("inf")
     minVal = None
@@ -245,7 +243,8 @@ def findNearestValue(searchList, searchValue):
 
 def findNearestValueAndIndex(searchList, searchValue):
     """Search a given list for the value that is closest to the given search value. Return a tuple
-    containing the value and its index in the list."""
+    containing the value and its index in the list.
+    """
     searchArray = np.array(searchList)
     closestValueIndex = (np.abs(searchArray - searchValue)).argmin()
     return searchArray[closestValueIndex], closestValueIndex
@@ -272,12 +271,13 @@ def fixThreeDigitExp(strToFloat: str) -> float:
 
 
 def getFloat(val):
-    r"""returns float version of val, or None if it's impossible. Useful for converting
-    user-input into floats when '' might be possible."""
+    """Returns float version of val, or None if it's impossible. Useful for converting
+    user-input into floats when '' might be possible.
+    """
     try:
         newVal = float(val)
         return newVal
-    except:
+    except:  # noqa: bare-except
         return None
 
 
@@ -288,6 +288,7 @@ def getStepsFromValues(values, prevValue=0.0):
         currentVal = float(val)
         steps.append(currentVal - prevValue)
         prevValue = currentVal
+
     return steps
 
 
@@ -320,15 +321,12 @@ def isMonotonic(inputIter, relation):
     except KeyError:
         raise ValueError(f"Valid relation not specified: {relation}")
 
-    if not all([op(x, y) for x, y in zip(inputIter, inputIter[1:])]):
-        return False
-    else:
-        return True
+    return all([op(x, y) for x, y in zip(inputIter, inputIter[1:])])
 
 
 def linearInterpolation(x0, y0, x1, y1, targetX=None, targetY=None):
     r"""
-    does a linear interpolation (or extrapolation) for y=f(x)
+    Does a linear interpolation (or extrapolation) for y=f(x).
 
     Parameters
     ----------
@@ -352,7 +350,6 @@ def linearInterpolation(x0, y0, x1, y1, targetX=None, targetY=None):
     y = m(x-x0) + b
 
     x = (y-b)/m
-
     """
     if x1 == x0:
         raise ZeroDivisionError("The x-values are identical. Cannot interpolate.")
@@ -393,12 +390,10 @@ def minimizeScalarFunc(
     maxIterations : int
         The maximum number of iterations that the Newton's method will be allowed to perform.
 
-
     Returns
     -------
     ans : float
         The guess that when input to the func returns the goal.
-
     """
 
     def goalFunc(guess, func, positiveGuesses):
@@ -483,7 +478,7 @@ def newtonsMethod(
 
 def parabolaFromPoints(p1, p2, p3):
     r"""
-    find the parabola that passes through three points
+    Find the parabola that passes through three points.
 
     We solve a simultaneous equation with three points.
 
@@ -506,7 +501,6 @@ def parabolaFromPoints(p1, p2, p3):
     Returns
     -------
     a,b,c coefficients of y=ax^2+bx+c
-
     """
     A = np.array(
         [[p1[0] ** 2, p1[0], 1], [p2[0] ** 2, p2[0], 1], [p3[0] ** 2, p3[0], 1]]
@@ -554,7 +548,6 @@ def parabolicInterpolation(ap, bp, cp, targetY):
 
         slope : float
             The slope of the keff vs. time curve at t=newTime
-
     """
     roots = np.roots([ap, bp, cp - targetY])
     realRoots = []
@@ -577,7 +570,7 @@ def parabolicInterpolation(ap, bp, cp, targetY):
 
 
 def relErr(v1: float, v2: float) -> float:
-    """find the relative error between to numbers"""
+    """Find the relative error between to numbers."""
     if v1:
         return (v2 - v1) / v1
     else:
@@ -652,7 +645,7 @@ def resampleStepwise(xin, yin, xout, avg=True):
         if [1 for c in chunk if (not hasattr(c, "__len__") and c is None)]:
             yout.append(None)
         elif avg:
-            weighted_sum = sum([c * l for c, l in zip(chunk, length)])
+            weighted_sum = sum([ch * ln for ch, ln in zip(chunk, length)])
             yout.append(weighted_sum / sum(length))
         else:
             yout.append(sum(chunk))
@@ -662,7 +655,7 @@ def resampleStepwise(xin, yin, xout, avg=True):
 
 def rotateXY(x, y, degreesCounterclockwise=None, radiansCounterclockwise=None):
     """
-    Rotates x, y coordinates
+    Rotates x, y coordinates.
 
     Parameters
     ----------

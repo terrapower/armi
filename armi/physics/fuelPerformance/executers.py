@@ -23,7 +23,7 @@ Fuel performance is described in the
 
 from armi.physics import executers
 
-from .settings import (
+from armi.physics.fuelPerformance.settings import (
     CONF_FUEL_PERFORMANCE_ENGINE,
     CONF_AXIAL_EXPANSION,
     CONF_BOND_REMOVAL,
@@ -60,7 +60,6 @@ class FuelPerformanceOptions(executers.ExecutionOptions):
         """Load options from reactor."""
 
 
-# pylint: disable=abstract-method
 class FuelPerformanceExecuter(executers.DefaultExecuter):
     """
     Prep, execute, and process a fuel performance solve.

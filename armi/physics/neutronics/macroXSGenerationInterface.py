@@ -26,18 +26,28 @@ from armi import mpiActions
 from armi import runLog
 from armi.nuclearDataIO import xsCollections
 from armi.utils import iterables
+from armi.physics.neutronics.settings import CONF_MINIMUM_NUCLIDE_DENSITY
 
 
 class MacroXSGenerator(mpiActions.MpiAction):
     """An action that can make macroscopic cross sections, even in parallel."""
 
-    def __init__(self, blocks, lib, buildScatterMatrix, buildOnlyCoolant, libType):
+    def __init__(
+        self,
+        blocks,
+        lib,
+        buildScatterMatrix,
+        buildOnlyCoolant,
+        libType,
+        minimumNuclideDensity=0.0,
+    ):
         mpiActions.MpiAction.__init__(self)
         self.buildScatterMatrix = buildScatterMatrix
         self.buildOnlyCoolant = buildOnlyCoolant
         self.libType = libType
         self.lib = lib
         self.blocks = blocks
+        self.minimumNuclideDensity = minimumNuclideDensity
 
     def __reduce__(self):
         # Prevent blocks and lib from being broadcast by passing None to ctor.
@@ -46,11 +56,17 @@ class MacroXSGenerator(mpiActions.MpiAction):
         # which utilizes this action. Default arguments make things more complicated.
         return (
             MacroXSGenerator,
-            (None, None, self.buildScatterMatrix, self.buildOnlyCoolant, self.libType),
+            (
+                None,
+                None,
+                self.buildScatterMatrix,
+                self.buildOnlyCoolant,
+                self.libType,
+                self.minimumNuclideDensity,
+            ),
         )
 
     def invokeHook(self):
-
         # logic here gets messy due to all the default arguments in the calling
         # method. There exists a large number of permutations to be handled.
 
@@ -66,7 +82,9 @@ class MacroXSGenerator(mpiActions.MpiAction):
             lib = None
 
         mc = xsCollections.MacroscopicCrossSectionCreator(
-            self.buildScatterMatrix, self.buildOnlyCoolant
+            self.buildScatterMatrix,
+            self.buildOnlyCoolant,
+            self.minimumNuclideDensity,
         )
 
         if context.MPI_SIZE > 1:
@@ -107,6 +125,7 @@ class MacroXSGenerationInterface(interfaces.Interface):
     def __init__(self, r, cs):
         interfaces.Interface.__init__(self, r, cs)
         self.macrosLastBuiltAt = None
+        self.minimumNuclideDensity = cs[CONF_MINIMUM_NUCLIDE_DENSITY]
 
     def buildMacros(
         self,
@@ -117,35 +136,56 @@ class MacroXSGenerationInterface(interfaces.Interface):
         libType="micros",
     ):
         """
-        Builds block-level macroscopic cross sections for making diffusion equation matrices.
+        Builds block-level macroscopic cross sections for making diffusion
+        equation matrices.
 
         This will use MPI if armi.context.MPI_SIZE > 1
 
-        Builds G-vectors of the basic XS ('nGamma','fission','nalph','np','n2n','nd','nt')
-        Builds GxG matrices for scatter matrices
+        Builds G-vectors of the basic XS
+        ('nGamma','fission','nalph','np','n2n','nd','nt') Builds GxG matrices
+        for scatter matrices
+
+        .. impl:: Build macroscopic cross sections for blocks.
+            :id: I_ARMI_MACRO_XS
+            :implements: R_ARMI_MACRO_XS
+
+            This method builds macroscopic cross sections for a user-specified
+            set of blocks using a specified microscopic neutron or gamma cross
+            section library. If no blocks are specified, cross sections are
+            calculated for all blocks in the core. If no library is specified,
+            the existing r.core.lib is used. The basic arithmetic involved in
+            generating macroscopic cross sections consists of multiplying
+            isotopic number densities by isotopic microscopic cross sections and
+            summing over all isotopes in a composition. The calculation is
+            implemented in :py:func:`computeMacroscopicGroupConstants
+            <armi.nuclearDataIO.xsCollections.computeMacroscopicGroupConstants>`.
+            This method uses an :py:class:`mpiAction
+            <armi.mpiActions.MpiAction>` to distribute the work of calculating
+            macroscopic cross sections across the worker processes.
 
         Parameters
         ----------
         lib : library object , optional
-            If lib is specified, then buildMacros will build macro XS using micro XS data from lib.
-            If lib = None, then buildMacros will use the existing library self.r.core.lib. If that does
-            not exist, then buildMacros will use a new nuclearDataIO.ISOTXS object.
+            If lib is specified, then buildMacros will build macro XS using
+            micro XS data from lib. If lib = None, then buildMacros will use the
+            existing library self.r.core.lib. If that does not exist, then
+            buildMacros will use a new nuclearDataIO.ISOTXS object.
 
         buildScatterMatrix : Boolean, optional
-            If True, all macro XS will be built, including the time-consuming scatter matrix.
-            If False, only the macro XS that are needed for fluxRecon.computePinMGFluxAndPower
-            will be built. These include 'transport', 'fission', and a few others. No ng x ng
-            matrices (such as 'scatter' or 'chi') will be built. Essentially, this option
-            saves huge runtime for the fluxRecon module.
+            If True, all macro XS will be built, including the time-consuming
+            scatter matrix. If False, only the macro XS that are needed for
+            fluxRecon.computePinMGFluxAndPower will be built. These include
+            'transport', 'fission', and a few others. No ng x ng matrices (such
+            as 'scatter' or 'chi') will be built. Essentially, this option saves
+            huge runtime for the fluxRecon module.
 
         buildOnlyCoolant : Boolean, optional
-            If True, homogenized macro XS will be built only for NA-23.
-            If False, the function runs normally.
+            If True, homogenized macro XS will be built only for NA-23. If
+            False, the function runs normally.
 
         libType : str, optional
-            The block attribute containing the desired microscopic XS for this block:
-            either "micros" for neutron XS or "gammaXS" for gamma XS.
-
+            The block attribute containing the desired microscopic XS for this
+            block: either "micros" for neutron XS or "gammaXS" for gamma XS.
         """
         cycle = self.r.p.cycle
         self.macrosLastBuiltAt = (
@@ -154,7 +194,12 @@ class MacroXSGenerationInterface(interfaces.Interface):
 
         runLog.important("Building macro XS")
         xsGen = MacroXSGenerator(
-            bListSome, lib, buildScatterMatrix, buildOnlyCoolant, libType
+            bListSome,
+            lib,
+            buildScatterMatrix,
+            buildOnlyCoolant,
+            libType,
+            self.minimumNuclideDensity,
         )
         xsGen.broadcast()
         xsGen.invoke(self.o, self.r, self.cs)

@@ -17,19 +17,16 @@ System to handle basic configuration settings.
 
 Notes
 -----
-Rather than having subclases for each setting type, we simply derive
-the type based on the type of the default, and we enforce it with
-schema validation. This also allows for more complex schema validation
-for settings that are more complex dictionaries (e.g. XS, rx coeffs, etc.).
-
-One reason for complexity of the previous settings implementation was
-good interoperability with the GUI widgets.
+The type of each setting is derived from the type of the default
+value. When users set values to their settings, ARMI enforces
+these types with schema validation. This also allows for more
+complex schema validation for settings that are more complex
+dictionaries (e.g. XS, rx coeffs).
 """
-
-import copy
 from collections import namedtuple
-import datetime
 from typing import List, Optional, Tuple
+import copy
+import datetime
 
 import voluptuous as vol
 
@@ -49,17 +46,19 @@ class Setting:
     """
     A particular setting.
 
-    Setting objects hold all associated information of a setting in ARMI and should
-    typically be accessed through the Settings class methods rather than directly. The
-    exception being the SettingAdapter class designed for additional GUI related
-    functionality.
+    .. impl:: The setting default is mandatory.
+        :id: I_ARMI_SETTINGS_DEFAULTS
+        :implements: R_ARMI_SETTINGS_DEFAULTS
 
-    Setting subclasses can implement custom ``load`` and ``dump`` methods
-    that can enable serialization (to/from dicts) of custom objects. When
-    you set a setting's value, the value will be unserialized into
-    the custom object and when you call ``dump``, it will be serialized.
-    Just accessing the value will return the actual object in this case.
+        Setting objects hold all associated information of a setting in ARMI and should
+        typically be accessed through the Settings methods rather than directly.
+        Settings require a mandatory default value.
 
+        Setting subclasses can implement custom ``load`` and ``dump`` methods that can
+        enable serialization (to/from dicts) of custom objects. When you set a
+        setting's value, the value will be unserialized into the custom object and when
+        you call ``dump``, it will be serialized. Just accessing the value will return
+        the actual object in this case.
     """
 
     def __init__(
@@ -116,6 +115,11 @@ class Setting:
         """
         self.name = name
         self.description = description or name
+        if not description or description in ("None", "none"):
+            runLog.warning(
+                f"DeprecationWarning: Setting {name} defined without description.",
+                single=True,
+            )
         self.label = label or name
         self.options = options
         self.enforcedOptions = enforcedOptions
@@ -279,7 +283,7 @@ class Setting:
 
     def isDefault(self):
         """
-        Returns a boolean based on whether or not the setting equals its default value
+        Returns a boolean based on whether or not the setting equals its default value.
 
         It's possible for a setting to change and not be reported as such when it is changed back to its default.
         That behavior seems acceptable.
@@ -299,7 +303,8 @@ class Setting:
         """
         Additional hack, residual from when settings system could write settings definitions.
 
-        This is only needed here due to the unit tests in test_settings."""
+        This is only needed here due to the unit tests in test_settings.
+        """
         return {
             "value": self.value,
             "type": type(self.default),
@@ -370,7 +375,7 @@ class FlagListSetting(Setting):
             elif isinstance(v, Flags):
                 flagVals.append(v)
             else:
-                raise ValueError(f"Invalid flag input `{v}` in `{self}`")
+                raise ValueError(f"Invalid flag input `{v}` in `FlagListSetting`")
         return flagVals
 
     def dump(self) -> List[str]:

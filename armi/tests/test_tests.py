@@ -12,16 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Unit tests for the test helpers.
-"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+"""Unit tests for the test helpers."""
 import unittest
 
 from armi import tests
 
 
-class Test_CompareFiles(unittest.TestCase):
+class TestCompareFiles(unittest.TestCase):
     def test_compareFileLine(self):
         expected = "oh look, a number! 3.14 and some text and another number 1.5"
 

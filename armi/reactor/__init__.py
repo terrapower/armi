@@ -20,7 +20,28 @@ The key classes of the reactor package are shown below:
 
 .. _reactor-class-diagram:
 
-.. pyreverse:: armi.reactor -A -k --ignore=complexShapes.py,grids.py,componentParameters.py,dodecaShapes.py,volumetricShapes.py,tests,converters,blockParameters.py,assemblyParameters.py,reactorParameters.py,batchParameters.py,basicShapes.py,shapes.py,zones.py,parameters,flags.py,geometry.py,blueprints,batch.py,assemblyLists.py,plugins.py
+.. pyreverse:: armi.reactor -A -k --ignore=
+               assemblyLists.py,
+               assemblyParameters.py,
+               basicShapes.py,
+               batch.py,
+               batchParameters.py,
+               blockParameters.py,
+               blueprints,
+               complexShapes.py,
+               componentParameters.py,
+               converters,
+               dodecaShapes.py,
+               flags.py,
+               geometry.py,
+               grids.py,
+               parameters,
+               plugins.py,
+               reactorParameters.py,
+               shapes.py,
+               tests,
+               volumetricShapes.py,
+               zones.py
     :align: center
     :alt: Reactor class diagram
     :width: 90%
@@ -44,16 +65,14 @@ if TYPE_CHECKING:  # pragma: no cover
 
 
 class ReactorPlugin(plugins.ArmiPlugin):
-    """
-    Plugin exposing built-in reactor components, blocks, assemblies, etc.
-    """
+    """Plugin exposing built-in reactor components, blocks, assemblies, etc."""
 
     @staticmethod
     @plugins.HOOKIMPL
     def defineBlockTypes():
-        from .components.basicShapes import Rectangle, Hexagon
-        from .components.volumetricShapes import RadialSegment
-        from . import blocks
+        from armi.reactor.components.basicShapes import Rectangle, Hexagon
+        from armi.reactor.components.volumetricShapes import RadialSegment
+        from armi.reactor import blocks
 
         return [
             (Rectangle, blocks.CartesianBlock),
@@ -64,12 +83,8 @@ class ReactorPlugin(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineAssemblyTypes():
-        from .blocks import HexBlock, CartesianBlock, ThRZBlock
-        from .assemblies import (
-            HexAssembly,
-            CartesianAssembly,
-            ThRZAssembly,
-        )
+        from armi.reactor.blocks import HexBlock, CartesianBlock, ThRZBlock
+        from armi.reactor.assemblies import HexAssembly, CartesianAssembly, ThRZAssembly
 
         return [
             (HexBlock, HexAssembly),

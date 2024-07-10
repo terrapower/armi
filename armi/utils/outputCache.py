@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-TerraPower Calculation Results Cache (CRC)
+TerraPower Calculation Results Cache (CRC).
 
 This helps avoid duplicated time/energy in running cases.
 In test systems and analysis, it's possible that the same calc will be done
@@ -35,7 +35,7 @@ Storing a file to the cache::
     crc.store(exe, inp, outFiles)
 
 Notes
-------
+-----
 Could probably be, like, a decorate on subprocess but we call subprocess a bunch of
 different ways.
 """
@@ -46,7 +46,6 @@ import os
 import shutil
 import subprocess
 
-from armi import context
 from armi import runLog
 from armi.utils.pathTools import cleanPath
 

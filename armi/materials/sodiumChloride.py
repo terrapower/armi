@@ -13,24 +13,23 @@
 # limitations under the License.
 
 """
-Sodium Chloride salt
+Sodium Chloride salt.
 
-.. note:: This is a very basic description of this material.
-
+Notes
+-----
+This is a very simple description of this material.
 """
 from armi.materials.material import SimpleSolid
 from armi.utils.units import getTk
 
 
 class NaCl(SimpleSolid):
-    name = "NaCl"
-
     def setDefaultMassFracs(self):
         self.setMassFrac("NA23", 0.3934)
         self.setMassFrac("CL35", 0.4596)
         self.setMassFrac("CL37", 0.1470)
 
-    def density3(self, Tk=None, Tc=None):
+    def density(self, Tk=None, Tc=None):
         """
         Return the density of Sodium Chloride.
 

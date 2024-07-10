@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Zirconium metal
-"""
+"""Zirconium metal."""
 
 from numpy import interp
 
@@ -23,9 +21,7 @@ from armi.utils.units import getTk
 
 
 class Zr(Material):
-    """Metallic zirconium"""
-
-    name = "Zirconium"
+    """Metallic zirconium."""
 
     propertyValidTemperature = {
         "density": ((293, 1800), "K"),
@@ -37,8 +33,10 @@ class Zr(Material):
     references = {
         "density": "AAA Materials Handbook 45803",
         "thermal conductivity": "AAA Fuels handbook. ANL",
-        "linear expansion": "Y.S. Touloukian, R.K. Kirby, R.E. Taylor and P.D. Desai, Thermal Expansion, Thermophysical Properties of Matter, Vol. 12, IFI/Plenum, New York-Washington (1975)",
-        "linear expansion percent": "Y.S. Touloukian, R.K. Kirby, R.E. Taylor and P.D. Desai, Thermal Expansion, Thermophysical Properties of Matter, Vol. 12, IFI/Plenum, New York-Washington (1975)",
+        "linear expansion": "Y.S. Touloukian, R.K. Kirby, R.E. Taylor and P.D. Desai, Thermal Expansion, "
+        + "Thermophysical Properties of Matter, Vol. 12, IFI/Plenum, New York-Washington (1975)",
+        "linear expansion percent": "Y.S. Touloukian, R.K. Kirby, R.E. Taylor and P.D. Desai, Thermal Expansion, "
+        + "Thermophysical Properties of Matter, Vol. 12, IFI/Plenum, New York-Washington (1975)",
     }
 
     linearExpansionTableK = [
@@ -77,25 +75,24 @@ class Zr(Material):
         1.13e-5,
     ]
 
+    refTempK = 298.15
+
     def __init__(self):
         Material.__init__(self)
-        referenceTemp = 298.15
-        referenceDensity = self._computeReferenceDensity(Tk=referenceTemp)
-        self.p.refTempK = referenceTemp
-        self.p.refDens = referenceDensity
+        self.refDens = self._computeReferenceDensity(Tk=self.refTempK)
 
     def setDefaultMassFracs(self):
         self.setMassFrac("ZR", 1.0)
 
     def _computeReferenceDensity(self, Tk=None, Tc=None):
-        r"""AAA Materials Handbook 45803"""
+        r"""AAA Materials Handbook 45803."""
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("density", Tk)
 
         if Tk < 1135:
-            return -3.29256e-8 * Tk ** 2 - 9.67145e-5 * Tk + 6.60176
+            return -3.29256e-8 * Tk**2 - 9.67145e-5 * Tk + 6.60176
         else:
-            return -2.61683e-8 * Tk ** 2 - 1.11331e-4 * Tk + 6.63616
+            return -2.61683e-8 * Tk**2 - 1.11331e-4 * Tk + 6.63616
 
     def thermalConductivity(self, Tk=None, Tc=None):
         """
@@ -105,10 +102,10 @@ class Zr(Material):
         """
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("thermal conductivity", Tk)
-        return 8.853 + (0.007082 * Tk) + (0.000002533 * Tk ** 2) + (2992.0 / Tk)
+        return 8.853 + (0.007082 * Tk) + (0.000002533 * Tk**2) + (2992.0 / Tk)
 
     def linearExpansion(self, Tk=None, Tc=None):
-        r"""linear expansion in m/mK
+        r"""Linear expansion in m/mK.
 
         Reference: Y.S. Touloukian, R.K. Kirby, R.E. Taylor and P.D. Desai, Thermal Expansion,
                    Thermophysical Properties of Matter, Vol. 12, IFI/Plenum, New York-Washington (1975)
@@ -120,7 +117,7 @@ class Zr(Material):
         return interp(Tk, self.linearExpansionTableK, self.linearExpansionTable)
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
-        r"""linear expansion in dL/L
+        r"""Linear expansion in dL/L.
 
         Reference: Y.S. Touloukian, R.K. Kirby, R.E. Taylor and P.D. Desai, Thermal Expansion,
                    Thermophysical Properties of Matter, Vol. 12, IFI/Plenum, New York-Washington (1975)
@@ -133,9 +130,9 @@ class Zr(Material):
         # NOTE: checkPropertyTempRange takes care of lower/upper limits
         if Tk < 1137:
             return (
-                -0.111 + (2.325e-4 * Tk) + (5.595e-7 * Tk ** 2) - (1.768e-10 * Tk ** 3)
+                -0.111 + (2.325e-4 * Tk) + (5.595e-7 * Tk**2) - (1.768e-10 * Tk**3)
             )
         else:
             return (
-                -0.759 + (1.474e-3 * Tk) - (5.140e-7 * Tk ** 2) + (1.559e-10 * Tk ** 3)
+                -0.759 + (1.474e-3 * Tk) - (5.140e-7 * Tk**2) + (1.559e-10 * Tk**3)
             )

@@ -12,14 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Scandium Oxide"""
+"""Scandium Oxide."""
 
-from armi.utils.units import getTk
 from armi.materials.material import Material
+from armi.utils.units import getTk
 
 
 class Sc2O3(Material):
-    name = "Sc2O3"
 
     propertyValidTemperature = {"linear expansion percent": ((273.15, 1573.15), "K")}
 
@@ -28,7 +27,7 @@ class Sc2O3(Material):
         """
         https://en.wikipedia.org/wiki/Scandium_oxide
         """
-        self.p.refDens = 3.86
+        self.refDens = 3.86
 
     def setDefaultMassFracs(self):
         self.setMassFrac("SC45", 0.6520)
@@ -44,4 +43,4 @@ class Sc2O3(Material):
         """
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("linear expansion percent", Tk)
-        return 2.6045e-07 * Tk ** 2 + 4.6374e-04 * Tk - 1.4696e-01
+        return 2.6045e-07 * Tk**2 + 4.6374e-04 * Tk - 1.4696e-01

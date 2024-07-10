@@ -12,13 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Tests for DELAYXS
-"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+"""Tests for DELAYXS."""
 import copy
 import filecmp
-import os
 import unittest
 
 import numpy
@@ -36,8 +32,11 @@ class DlayxsTests(unittest.TestCase):
         cls.dlayxs3 = dlayxs.readBinary(test_xsLibraries.DLAYXS_MCC3)
 
     def test_decayConstants(self):
-        """
-        test that all emission spectrum delayEmissionSpectrum is normalized
+        """Test that all emission spectrum delayEmissionSpectrum is normalized.
+
+        .. test:: Test reading DLAYXS files.
+            :id: T_ARMI_NUCDATA_DLAYXS0
+            :tests: R_ARMI_NUCDATA_DLAYXS
         """
         delay = self.dlayxs3
         self.assertTrue(
@@ -54,9 +53,7 @@ class DlayxsTests(unittest.TestCase):
         )
 
     def test_chi_delay(self):
-        """
-        test that all emission spectrum delayEmissionSpectrum is normalized
-        """
+        """Test that all emission spectrum delayEmissionSpectrum is normalized."""
         delay = self.dlayxs3
         self.assertTrue(
             numpy.allclose(
@@ -313,7 +310,7 @@ class DlayxsTests(unittest.TestCase):
         "The TH232, U232, PU238 and PU242 numbers do not agree, likely because they are from ENDV/B VI.8."
     )
     def test_ENDFVII1DecayConstants(self):
-        """Test ENDF/B VII.1 decay constants. Retrieved from ENDF/B VII.1"""
+        """Test ENDF/B VII.1 decay constants. Retrieved from ENDF/B VII.1."""
         self._assertDC(
             "TH227  ",
             [
@@ -928,7 +925,8 @@ class DlayxsTests(unittest.TestCase):
             ].precursorDecayConstants
             self.assertTrue(numpy.allclose(dlayData, endfProvidedData, 1e-3))
         except AssertionError:
-            # this is reraised because generating the message might take some time to format all the data from the arrays
+            # this is reraised because generating the message might take some time to format all the
+            # data from the arrays
             raise AssertionError(
                 "{} was different,\nexpected:{}\nactual:{}".format(
                     nucName, endfProvidedData, dlayData
@@ -938,10 +936,11 @@ class DlayxsTests(unittest.TestCase):
             pass
 
     @unittest.skip(
-        "All the delayNeutronsPerFission data from mcc-v3 does not agree, this may be because they are from ENDV/B VI.8."
+        "All the delayNeutronsPerFission data from mcc-v3 does not agree, this may be because they "
+        "are from ENDV/B VI.8."
     )
     def test_ENDFVII1NeutronsPerFission(self):
-        r"""
+        """
         Build delayed nu based on ENDF/B-VII data.
 
         Notes
@@ -1065,7 +1064,8 @@ class DlayxsTests(unittest.TestCase):
             numpyData = numpy.array(endfProvidedData)
             self.assertTrue(numpy.allclose(dlayData, numpyData, 1e-3))
         except AssertionError:
-            # this is reraised because generating the message might take some time to format all the data from the arrays
+            # this is reraised because generating the message might take some time to format all the
+            # data from the arrays
             raise AssertionError(
                 "{} was different,\nexpected:{}\nactual:{}".format(
                     nucName, numpyData, dlayData
@@ -1079,6 +1079,12 @@ class DlayxsTests(unittest.TestCase):
             self.assertTrue(dlayxs.compare(self.dlayxs3, copy.deepcopy(self.dlayxs3)))
 
     def test_writeBinary_mcc3(self):
+        """Verify binary equivalence of written DLAYXS file.
+
+        .. test:: Test writing DLAYXS files.
+            :id: T_ARMI_NUCDATA_DLAYXS1
+            :tests: R_ARMI_NUCDATA_DLAYXS
+        """
         with TemporaryDirectoryChanger():
             dlayxs.writeBinary(self.dlayxs3, "test_writeBinary_mcc3.temp")
             self.assertTrue(
@@ -1120,8 +1126,3 @@ class DlayxsTests(unittest.TestCase):
         self.assertTrue(
             numpy.allclose(avg.delayEmissionSpectrum, dlayU235.delayEmissionSpectrum)
         )
-
-
-if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'DlayxsTests.test_writeBinary_mcc3']
-    unittest.main(verbosity=2)

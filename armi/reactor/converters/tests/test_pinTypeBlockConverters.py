@@ -11,10 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-Unit tests for pin type block converters
-"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+"""Unit tests for pin type block converters."""
 import copy
 import unittest
 
@@ -58,18 +55,13 @@ class TestPinTypeConverters(unittest.TestCase):
 
 
 class MassConservationTests(unittest.TestCase):
-    r"""
-    Tests designed to verify mass conservation during thermal expansion
-    """
+    r"""Tests designed to verify mass conservation during thermal expansion."""
 
     def setUp(self):
         self.b = buildSimpleFuelBlock()
 
     def test_adjustSmearDensity(self):
-        r"""
-        Tests the getting, setting, and getting of smear density functions
-
-        """
+        r"""Tests the getting, setting, and getting of smear density functions."""
         bolBlock = copy.deepcopy(self.b)
 
         s = self.b.getSmearDensity(cold=False)
@@ -99,8 +91,3 @@ class MassConservationTests(unittest.TestCase):
 
         adjustSmearDensity(self.b, 0.733, bolBlock=bolBlock)
         self.assertAlmostEqual(0.733, self.b.getSmearDensity(), 8)
-
-
-if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'Test.testName']
-    unittest.main()

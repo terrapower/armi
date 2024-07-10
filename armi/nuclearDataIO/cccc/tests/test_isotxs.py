@@ -11,28 +11,52 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-r"""Tests the workings of the library wrappers."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+"""Tests the workings of the library wrappers."""
 import unittest
 
 from armi import nuclearDataIO
-from armi.tests import ISOAA_PATH
 from armi.nucDirectory import nuclideBases
-from armi.nuclearDataIO.cccc import isotxs
 from armi.nuclearDataIO import xsLibraries
+from armi.nuclearDataIO.cccc import isotxs
+from armi.tests import ISOAA_PATH
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
 class TestIsotxs(unittest.TestCase):
-    r"""
-    Tests the ISOTXS class
-    """
+    """Tests the ISOTXS class."""
 
     @classmethod
     def setUpClass(cls):
         # load a library that is in the ARMI tree. This should
         # be a small library with LFPs, Actinides, structure, and coolant
         cls.lib = isotxs.readBinary(ISOAA_PATH)
+
+    def test_writeBinary(self):
+        """Test reading in an ISOTXS file, and then writing it back out again.
+
+        Now, the library here can't guarantee the output will be the same as the
+        input. But we can guarantee the  written file is still valid, by reading
+        it again.
+
+        .. test:: Write ISOTSX binary files.
+            :id: T_ARMI_NUCDATA_ISOTXS0
+            :tests: R_ARMI_NUCDATA_ISOTXS
+        """
+        with TemporaryDirectoryChanger():
+            origLib = isotxs.readBinary(ISOAA_PATH)
+
+            fname = self._testMethodName + "temp-aa.isotxs"
+            isotxs.writeBinary(origLib, fname)
+            lib = isotxs.readBinary(fname)
+
+            # validate the written file is still valid
+            nucs = lib.nuclides
+            self.assertTrue(nucs)
+            self.assertIn("AA", lib.xsIDs)
+            nuc = lib["U235AA"]
+            self.assertIsNotNone(nuc)
+            with self.assertRaises(KeyError):
+                lib.getNuclide("nonexistent", "zz")
 
     def test_isotxsGeneralData(self):
         nucs = self.lib.nuclides
@@ -124,6 +148,9 @@ class TestIsotxs(unittest.TestCase):
         self.assertEqual(nuclearDataIO.getExpectedISOTXSFileName(cycle=0), "ISOTXS-c0")
         self.assertEqual(nuclearDataIO.getExpectedISOTXSFileName(cycle=1), "ISOTXS-c1")
         self.assertEqual(
+            nuclearDataIO.getExpectedISOTXSFileName(cycle=0, node=1), "ISOTXS-c0n1"
+        )
+        self.assertEqual(
             nuclearDataIO.getExpectedISOTXSFileName(cycle=23), "ISOTXS-c23"
         )
         self.assertEqual(nuclearDataIO.getExpectedISOTXSFileName(xsID="AA"), "ISOAA")
@@ -138,20 +165,24 @@ class TestIsotxs(unittest.TestCase):
 
     def test_getGAMISOFileName(self):
         self.assertEqual(
-            nuclearDataIO.getExpectedGAMISOFileName(cycle=0), "cycle0.GAMISO"
+            nuclearDataIO.getExpectedGAMISOFileName(cycle=0), "cycle0.gamiso"
         )
         self.assertEqual(
-            nuclearDataIO.getExpectedGAMISOFileName(cycle=1), "cycle1.GAMISO"
+            nuclearDataIO.getExpectedGAMISOFileName(cycle=1), "cycle1.gamiso"
         )
         self.assertEqual(
-            nuclearDataIO.getExpectedGAMISOFileName(cycle=23), "cycle23.GAMISO"
+            nuclearDataIO.getExpectedGAMISOFileName(cycle=1, node=3),
+            "cycle1node3.gamiso",
         )
         self.assertEqual(
-            nuclearDataIO.getExpectedGAMISOFileName(xsID="AA"), "AA.GAMISO"
+            nuclearDataIO.getExpectedGAMISOFileName(cycle=23), "cycle23.gamiso"
+        )
+        self.assertEqual(
+            nuclearDataIO.getExpectedGAMISOFileName(xsID="AA"), "AA.gamiso"
         )
         self.assertEqual(
             nuclearDataIO.getExpectedGAMISOFileName(xsID="AA", suffix="test"),
-            "AA-test.GAMISO",
+            "AA-test.gamiso",
         )
         self.assertEqual(nuclearDataIO.getExpectedGAMISOFileName(), "GAMISO")
         with self.assertRaises(ValueError):
@@ -161,6 +192,12 @@ class TestIsotxs(unittest.TestCase):
 
 class Isotxs_merge_Tests(unittest.TestCase):
     def test_mergeMccV2FilesRemovesTheFileWideChi(self):
+        """Test merging ISOTXS files.
+
+        .. test:: Read ISOTXS files.
+            :id: T_ARMI_NUCDATA_ISOTXS1
+            :tests: R_ARMI_NUCDATA_ISOTXS
+        """
         isoaa = isotxs.readBinary(ISOAA_PATH)
         self.assertAlmostEqual(1.0, sum(isoaa.isotxsMetadata["chi"]), 5)
         self.assertAlmostEqual(1, isoaa.isotxsMetadata["fileWideChiFlag"])
@@ -174,8 +211,3 @@ class Isotxs_merge_Tests(unittest.TestCase):
             del someIsotxs[key]
         someIsotxs.merge(isotxs.readBinary(ISOAA_PATH))
         self.assertEqual(None, someIsotxs.isotxsMetadata["chi"])
-
-
-if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'TestIsotxs.test_getNuclide']
-    unittest.main()  # verbosity=2)

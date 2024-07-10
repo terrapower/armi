@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+"""Basic water material."""
 import math
 
 from armi.materials.material import Fluid
@@ -21,10 +21,15 @@ from armi.nucDirectory import thermalScattering as tsl
 from armi.utils import units
 from armi.utils.units import getTk
 
+_REF_SR1_86 = (
+    "IAPWS SR1-86 Revised Supplementary Release on Saturation Properties of Ordinary Water and "
+    "Steam"
+)
+
 
 class Water(Fluid):
     """
-    Water
+    Water.
 
     This is a good faith implementation of the Revised Supplementary Properties
     of Ordinary Water Substance (1992) by IAPWS -- International Association for
@@ -39,16 +44,15 @@ class Water(Fluid):
     power industry
     """
 
-    name = "Water"
     thermalScatteringLaws = (tsl.byNbAndCompound[nb.byName["H"], tsl.H2O],)
     references = {
-        "vapor pressure": "IAPWS SR1-86 Revised Supplementary Release on Saturation Properties of Ordinary Water and Steam",
-        "enthalpy (saturated water)": "IAPWS SR1-86 Revised Supplementary Release on Saturation Properties of Ordinary Water and Steam",
-        "enthalpy (saturated steam)": "IAPWS SR1-86 Revised Supplementary Release on Saturation Properties of Ordinary Water and Steam",
-        "entropy (saturated water)": "IAPWS SR1-86 Revised Supplementary Release on Saturation Properties of Ordinary Water and Steam",
-        "entropy (saturated steam)": "IAPWS SR1-86 Revised Supplementary Release on Saturation Properties of Ordinary Water and Steam",
-        "density (saturated water)": "IAPWS SR1-86 Revised Supplementary Release on Saturation Properties of Ordinary Water and Steam",
-        "density (saturated steam)": "IAPWS SR1-86 Revised Supplementary Release on Saturation Properties of Ordinary Water and Steam",
+        "vapor pressure": _REF_SR1_86,
+        "enthalpy (saturated water)": _REF_SR1_86,
+        "enthalpy (saturated steam)": _REF_SR1_86,
+        "entropy (saturated water)": _REF_SR1_86,
+        "entropy (saturated steam)": _REF_SR1_86,
+        "density (saturated water)": _REF_SR1_86,
+        "density (saturated steam)": _REF_SR1_86,
     }
 
     TEMPERATURE_CRITICAL_K = 647.096
@@ -64,14 +68,15 @@ class Water(Fluid):
 
     # coefficients for auxiliary quantity for enthalpy and entropy
     # kept as d to match original source
-    d = {}
-    d["alpha"] = -1135.905627715
-    d["phi"] = 2319.5246
-    d[1] = -5.65134998e-8
-    d[2] = 2690.66631
-    d[3] = 127.287297
-    d[4] = -135.003439
-    d[5] = 0.981825814
+    d = {
+        1: -5.65134998e-08,
+        2: 2690.66631,
+        3: 127.287297,
+        4: -135.003439,
+        5: 0.981825814,
+        "alpha": -1135.905627715,
+        "phi": 2319.5246,
+    }
 
     def setDefaultMassFracs(self) -> None:
         massHydrogen = elements.bySymbol["H"].standardWeight
@@ -82,14 +87,12 @@ class Water(Fluid):
             self.setMassFrac(nucName, mfrac)
 
     def theta(self, Tk: float = None, Tc: float = None) -> float:
-        """
-        returns temperature normalized to the critical temperature
-        """
+        """Returns temperature normalized to the critical temperature."""
         return getTk(Tc=Tc, Tk=Tk) / self.TEMPERATURE_CRITICAL_K
 
     def tau(self, Tc: float = None, Tk: float = None) -> float:
         """
-        returns 1 - temperature normalized to the critical temperature
+        Returns 1 - temperature normalized to the critical temperature.
 
         Note
         ----
@@ -99,7 +102,7 @@ class Water(Fluid):
 
     def vaporPressure(self, Tk: float = None, Tc: float = None) -> float:
         """
-        Returns vapor pressure in (Pa)
+        Returns vapor pressure in (Pa).
 
         Parameters
         ----------
@@ -132,11 +135,11 @@ class Water(Fluid):
 
         sum_coefficients = (
             a1 * tau
-            + a2 * tau ** 1.5
-            + a3 * tau ** 3
-            + a4 * tau ** 3.5
-            + a5 * tau ** 4
-            + a6 * tau ** 7.5
+            + a2 * tau**1.5
+            + a3 * tau**3
+            + a4 * tau**3.5
+            + a5 * tau**4
+            + a6 * tau**7.5
         )
         log_vapor_pressure = T_ratio * sum_coefficients
         vapor_pressure = self.VAPOR_PRESSURE_CRITICAL_PA * math.e ** (
@@ -149,7 +152,7 @@ class Water(Fluid):
         self, Tk: float = None, Tc: float = None, dT: float = 1e-6
     ) -> float:
         """
-        approximation of derivative of vapor pressure wrt temperature
+        Approximation of derivative of vapor pressure wrt temperature.
 
         Parameters
         ----------
@@ -160,7 +163,7 @@ class Water(Fluid):
 
         Note
         ----
-        this uses a numerical approximation
+        This uses a numerical approximation
         """
         Tcold = getTk(Tc=Tc, Tk=Tk) - dT / 2.0
         Thot = Tcold + dT
@@ -172,7 +175,7 @@ class Water(Fluid):
         self, Tk: float = None, Tc: float = None
     ) -> float:
         """
-        Returns the auxiliary quantity for specific enthalpy
+        Returns the auxiliary quantity for specific enthalpy.
 
         Parameters
         ----------
@@ -200,11 +203,11 @@ class Water(Fluid):
 
         normalized_alpha = (
             self.d["alpha"]
-            + self.d[1] * theta ** -19
+            + self.d[1] * theta**-19
             + self.d[2] * theta
-            + self.d[3] * theta ** 4.5
-            + self.d[4] * theta ** 5.0
-            + self.d[5] * theta ** 54.5
+            + self.d[3] * theta**4.5
+            + self.d[4] * theta**5.0
+            + self.d[5] * theta**54.5
         )
 
         # past the supercritical point tau's raised to .5 cause complex #'s
@@ -214,7 +217,7 @@ class Water(Fluid):
         self, Tk: float = None, Tc: float = None
     ) -> float:
         """
-        Returns the auxiliary quantity for specific entropy
+        Returns the auxiliary quantity for specific entropy.
 
         Parameters
         ----------
@@ -242,11 +245,11 @@ class Water(Fluid):
 
         normalized_phi = (
             self.d["phi"]
-            + 19.0 / 20.0 * self.d[1] * theta ** -20.0
+            + 19.0 / 20.0 * self.d[1] * theta**-20.0
             + self.d[2] * math.log(theta)
-            + 9.0 / 7.0 * self.d[3] * theta ** 3.5
-            + 5.0 / 4.0 * self.d[4] * theta ** 4.0
-            + 109.0 / 107.0 * self.d[5] * theta ** 53.5
+            + 9.0 / 7.0 * self.d[3] * theta**3.5
+            + 5.0 / 4.0 * self.d[4] * theta**4.0
+            + 109.0 / 107.0 * self.d[5] * theta**53.5
         )
 
         # past the supercritical point tau's raised to .5 cause complex #'s
@@ -254,7 +257,7 @@ class Water(Fluid):
 
     def enthalpy(self, Tk: float = None, Tc: float = None) -> float:
         """
-        Returns enthalpy of saturated water
+        Returns enthalpy of saturated water.
 
         Parameters
         ----------
@@ -277,14 +280,14 @@ class Water(Fluid):
         """
         alpha = self.auxiliaryQuantitySpecificEnthalpy(Tc=Tc, Tk=Tk)
         T = getTk(Tc=Tc, Tk=Tk)
-        rho = self.densityKgM3(Tc=Tc, Tk=Tk)
+        rho = self.pseudoDensityKgM3(Tc=Tc, Tk=Tk)
         dp_dT = self.vaporPressurePrime(Tc=Tc, Tk=Tk)
 
         return alpha + T / rho * dp_dT
 
     def entropy(self, Tk: float = None, Tc: float = None) -> float:
         """
-        Returns entropy of saturated water
+        Returns entropy of saturated water.
 
         Parameters
         ----------
@@ -306,12 +309,19 @@ class Water(Fluid):
         steam power industry
         """
         phi = self.auxiliaryQuantitySpecificEntropy(Tc=Tc, Tk=Tk)
-        rho = self.densityKgM3(Tc=Tc, Tk=Tk)
+        rho = self.pseudoDensityKgM3(Tc=Tc, Tk=Tk)
         dp_dT = self.vaporPressurePrime(Tc=Tc, Tk=Tk)
 
         return phi + 1.0 / rho * dp_dT
 
-    def density(self, Tk=None, Tc=None):
+    def pseudoDensity(self, Tk=None, Tc=None):
+        """
+        Density for arbitrary forms of water.
+
+        Notes
+        -----
+        In ARMI, we define pseudoDensity() and density() as the same for Fluids.
+        """
         raise NotImplementedError(
             "Please use a concrete instance: SaturatedWater or SaturatedSteam."
         )
@@ -319,7 +329,7 @@ class Water(Fluid):
 
 class SaturatedWater(Water):
     """
-    Saturated Water
+    Saturated Water.
 
     This is a good faith implementation of the Revised Supplementary Properties
     of Ordinary Water Substance (1992) by IAPWS -- International Association for
@@ -329,11 +339,9 @@ class SaturatedWater(Water):
     Saturated  Steam Material Class.
     """
 
-    name = "SaturatedWater"
-
-    def density(self, Tk: float = None, Tc: float = None) -> float:
+    def pseudoDensity(self, Tk: float = None, Tc: float = None) -> float:
         """
-        returns density in g/cc
+        Returns density in g/cc.
 
         Parameters
         ----------
@@ -349,6 +357,7 @@ class SaturatedWater(Water):
 
         Note
         ----
+        In ARMI, we define pseudoDensity() and density() as the same for Fluids.
         IAPWS-IF97
         http://www.iapws.org/relguide/supsat.pdf
         IAPWS-IF97 is now the international standard for calculations in the steam power industry
@@ -378,7 +387,7 @@ class SaturatedWater(Water):
 
 class SaturatedSteam(Water):
     """
-    Saturated Steam
+    Saturated Steam.
 
     This is a good faith implementation of the Revised Supplementary Properties
     of Ordinary Water Substance (1992) by IAPWS -- International Association for
@@ -388,11 +397,9 @@ class SaturatedSteam(Water):
     Saturated  Steam Material Class.
     """
 
-    name = "SaturatedSteam"
-
-    def density(self, Tk: float = None, Tc: float = None) -> float:
+    def pseudoDensity(self, Tk: float = None, Tc: float = None) -> float:
         """
-        returns density in g/cc
+        Returns density in g/cc.
 
         Parameters
         ----------
@@ -406,8 +413,9 @@ class SaturatedSteam(Water):
         density: float
             density in g/cc
 
-        Note
-        ----
+        Notes
+        -----
+        In ARMI, we define pseudoDensity() and density() as the same for Fluids.
         IAPWS-IF97
         http://www.iapws.org/relguide/supsat.pdf
         IAPWS-IF97 is now the international standard for calculations in the steam power industry
@@ -432,6 +440,6 @@ class SaturatedSteam(Water):
 
         # past the supercritical point tau's raised to .5 cause complex #'s
         return (
-            math.e ** log_normalized_rho.real
+            math.e**log_normalized_rho.real
             * self.DENSITY_CRITICAL_GPERCUBICCENTIMETER
         )

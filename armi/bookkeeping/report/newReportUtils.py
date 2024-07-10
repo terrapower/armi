@@ -15,10 +15,12 @@ import collections
 import os
 import numpy
 
-from armi.reactor.components import component
 from armi import runLog
-from armi.reactor.flags import Flags
 from armi.bookkeeping.report import newReports
+from armi.materials import custom
+from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
+from armi.reactor.components import component
+from armi.reactor.flags import Flags
 from armi.utils import (
     units,
     plotting,
@@ -27,7 +29,6 @@ from armi.utils import (
     getCycleLengths,
     getStepLengths,
 )
-from armi.materials import custom
 
 
 def insertBlueprintContent(r, cs, report, blueprint):
@@ -42,7 +43,8 @@ def insertGeneralReportContent(cs, r, report, stage):
     Creates Report content that is not plugin specific. Various things for the Design
     and Comprehensive sections of the report.
 
-    Parameters:
+    Parameters
+    ----------
         cs : case settings
         r : reactor
         report : ReportContents object
@@ -55,7 +57,7 @@ def insertGeneralReportContent(cs, r, report, stage):
 
 
 def comprehensiveBOLContent(cs, r, report):
-    """Adds BOL content to the Comprehensive section of the report
+    """Adds BOL content to the Comprehensive section of the report.
 
     Parameters
     ----------
@@ -101,11 +103,10 @@ def insertDesignContent(r, report):
 
 
 def insertBlockDesignReport(blueprint, report, cs):
-    r"""Summarize the block designs from the loading file
+    r"""Summarize the block designs from the loading file.
 
     Parameters
     ----------
-
     blueprint : Blueprint
     report: ReportContent
     cs: Case Settings
@@ -169,7 +170,7 @@ def insertBlockDesignReport(blueprint, report, cs):
 
 
 def insertCoreDesignReport(core, cs, report):
-    r"""Builds report to summarize core design inputs
+    r"""Builds report to summarize core design inputs.
 
     Parameters
     ----------
@@ -188,12 +189,14 @@ def insertCoreDesignReport(core, cs, report):
 
 
 def _setGeneralCoreDesignData(cs, coreDesignTable):
+    from armi.physics.neutronics.settings import CONF_LOADING_FILE
+
     coreDesignTable.addRow(["Case Title", "{}".format(cs.caseTitle)])
     coreDesignTable.addRow(["Run Type", "{}".format(cs["runType"])])
     coreDesignTable.addRow(["Geometry File", "{}".format(cs["geomFile"])])
-    coreDesignTable.addRow(["Loading File", "{}".format(cs["loadingFile"])])
+    coreDesignTable.addRow(["Loading File", "{}".format(cs[CONF_LOADING_FILE])])
     coreDesignTable.addRow(
-        ["Fuel Shuffling Logic File", "{}".format(cs["shuffleLogic"])]
+        ["Fuel Shuffling Logic File", "{}".format(cs[CONF_SHUFFLE_LOGIC])]
     )
     coreDesignTable.addRow(["Reactor State Loading", "{}".format(cs["loadStyle"])])
     if cs["loadStyle"] == "fromDB":
@@ -203,7 +206,7 @@ def _setGeneralCoreDesignData(cs, coreDesignTable):
 
 
 def _setGeneralCoreParametersData(core, cs, coreDesignTable):
-    """Sets the general Core Parameter Data
+    """Sets the general Core Parameter Data.
 
     Parameters
     ----------
@@ -291,20 +294,25 @@ def _setGeneralCoreParametersData(core, cs, coreDesignTable):
 
 
 def _setGeneralSimulationData(core, cs, coreDesignTable):
+    from armi.physics.neutronics.settings import CONF_GEN_XS
+    from armi.physics.neutronics.settings import CONF_GLOBAL_FLUX_ACTIVE
+
     coreDesignTable.addRow(["  ", ""])
     coreDesignTable.addRow(["Full Core Model", "{}".format(core.isFullCore)])
     coreDesignTable.addRow(
-        ["Loose Physics Coupling Enabled", "{}".format(bool(cs["looseCoupling"]))]
+        ["Tight Physics Coupling Enabled", "{}".format(bool(cs["tightCoupling"]))]
     )
-    coreDesignTable.addRow(["Lattice Physics Enabled for", "{}".format(cs["genXS"])])
     coreDesignTable.addRow(
-        ["Neutronics Enabled for", "{}".format(cs["globalFluxActive"])]
+        ["Lattice Physics Enabled for", "{}".format(cs[CONF_GEN_XS])]
+    )
+    coreDesignTable.addRow(
+        ["Neutronics Enabled for", "{}".format(cs[CONF_GLOBAL_FLUX_ACTIVE])]
     )
 
 
 def insertEndOfLifeContent(r, report):
     """
-    Generate End of Life Content for the report
+    Generate End of Life Content for the report.
 
     Parameters
     ----------
@@ -312,7 +320,6 @@ def insertEndOfLifeContent(r, report):
         the reactor
     report : ReportContent
         The report to be added to.
-
     """
     fName2 = "powerMap.png"
     dataForTotalPower = [a.getMaxParam("power") / units.WATTS_PER_MW for a in r.core]
@@ -336,7 +343,7 @@ def insertEndOfLifeContent(r, report):
 
 
 def insertBlockDiagrams(cs, blueprint, report, cold):
-    """Adds Block Diagrams to the report
+    """Adds Block Diagrams to the report.
 
     Parameters
     ----------
@@ -349,11 +356,11 @@ def insertBlockDiagrams(cs, blueprint, report, cold):
     materialList = []
     for bDesign in blueprint.blockDesigns:
         block = bDesign.construct(cs, blueprint, 0, 1, 0, "A", dict())
-        for component in block:
-            if isinstance(component.material, custom.Custom):
-                materialName = component.p.customIsotopicsName
+        for comp in block:
+            if isinstance(comp.material, custom.Custom):
+                materialName = comp.p.customIsotopicsName
             else:
-                materialName = component.material.name
+                materialName = comp.material.name
             if materialName not in materialList:
                 materialList.append(materialName)
 
@@ -377,13 +384,12 @@ def insertBlockDiagrams(cs, blueprint, report, cold):
 
 
 def insertMetaTable(cs, report):
-    """Generates part of the Settings table
+    """Generates part of the Settings table.
 
     Parameters
     ----------
     cs: Case Settings
     report: ReportContent
-
     """
     section = report[COMPREHENSIVE_REPORT]
     tableList = section.get(
@@ -397,7 +403,7 @@ def insertMetaTable(cs, report):
 
 
 def insertSettingsData(cs, report):
-    """Creates tableSections of Parameters (Case Parameters, Reactor Parameters, Case Controls and Snapshots of the run
+    """Creates tableSections of Parameters (Case Parameters, Reactor Parameters, Case Controls and Snapshots of the run.
 
     Parameters
     ----------
@@ -405,6 +411,9 @@ def insertSettingsData(cs, report):
     report: ReportContent
         The report to be added to
     """
+    from armi.physics.neutronics.settings import CONF_GEN_XS
+    from armi.physics.neutronics.settings import CONF_NEUTRONICS_KERNEL
+
     report[COMPREHENSIVE_REPORT][CASE_PARAMETERS] = newReports.Table("Case Parameters")
     report[COMPREHENSIVE_REPORT][REACTOR_PARAMS] = newReports.Table(
         "Reactor Parameters"
@@ -430,7 +439,7 @@ def insertSettingsData(cs, report):
     for key in ["power", "Tin", "Tout"]:
         report[COMPREHENSIVE_REPORT][REACTOR_PARAMS].addRow([key, cs[key]])
 
-    for key in ["genXS", "neutronicsKernel"]:
+    for key in [CONF_GEN_XS, CONF_NEUTRONICS_KERNEL]:
         report[COMPREHENSIVE_REPORT][CASE_CONTROLS].addRow([key, str(cs[key])])
 
     for key in ["buGroups"]:
@@ -438,7 +447,7 @@ def insertSettingsData(cs, report):
 
 
 def getPinDesignTable(core):
-    """Summarizes Pin and Assembly Design for the input
+    """Summarizes Pin and Assembly Design for the input.
 
     Parameters
     ----------
@@ -494,7 +503,7 @@ def getPinDesignTable(core):
         tableRows.addRow(
             ["Plenum Height (cm):", "{0:.2f}".format(a.getHeight(Flags.PLENUM))]
         )
-    except Exception as error:  # pylint: disable=broad-except
+    except Exception as error:
         runLog.warning("Pin summarization failed to work")
         runLog.warning(error)
 
@@ -503,7 +512,7 @@ def getPinDesignTable(core):
 
 def insertAreaFractionsReport(block, report):
     """
-    Adds to an Assembly Area Fractions
+    Adds to an Assembly Area Fractions.
 
     Adds to the table subsection of the Comprehensive Section
     of the report.
@@ -514,7 +523,6 @@ def insertAreaFractionsReport(block, report):
         The block
     report : ReportContent
         The report
-
     """
     for c, frac in block.getVolumeFractions():
         report[COMPREHENSIVE_REPORT][ASSEMBLY_AREA].addRow(
@@ -609,8 +617,7 @@ def createDimensionReport(comp):
 def insertCoreAndAssemblyMaps(
     r, cs, report, blueprint, generateFullCoreMap=False, showBlockAxMesh=True
 ):
-
-    r"""Create core and assembly design plots
+    """Create core and assembly design plots.
 
     Parameters
     ----------
@@ -621,7 +628,6 @@ def insertCoreAndAssemblyMaps(
     generateFullCoreMap : bool, default False
     showBlockAxMesh : bool, default True
     """
-
     assemPrototypes = set()
     for aKey in blueprint.assemDesigns.keys():
         assemPrototypes.add(blueprint.constructAssem(cs, name=aKey))
@@ -632,7 +638,12 @@ def insertCoreAndAssemblyMaps(
     }
 
     core = r.core
-    imageCaption = "The axial block and enrichment distributions of assemblies in the core at beginning of life. The percentage represents the block enrichment (U-235 or B-10), where as the additional character represents the cross section id of the block. The number of fine-mesh subdivisions are provided on the secondary y-axis."
+    imageCaption = (
+        "The axial block and enrichment distributions of assemblies in the core at beginning of "
+        + "life. The percentage represents the block enrichment (U-235 or B-10), where as the "
+        + "additional character represents the cross section id of the block. The number of fine-"
+        + "mesh subdivisions are provided on the secondary y-axis."
+    )
 
     report[DESIGN]["Assembly Designs"] = newReports.Section("Assembly Designs")
     currentSection = report[DESIGN]["Assembly Designs"]
@@ -689,7 +700,6 @@ def insertCoreAndAssemblyMaps(
         fontSize=8,
     )
 
-    plotting.close()
     report[DESIGN][CORE_MAP] = newReports.Image(
         "Map of the Core at BOL", os.path.abspath(fName)
     )

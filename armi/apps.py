@@ -19,15 +19,16 @@ This module defines the :py:class:`App` class, which is used to configure the AR
 Framework for a specific application. An ``App`` implements a simple interface for
 customizing much of the Framework's behavior.
 
-.. admonition:: Historical Fun Fact
+Notes
+-----
+Historical Fun Fact
 
-    This pattern is used by many frameworks as a way of encapsulating what would
-    otherwise be global state. The ARMI Framework has historically made heavy use of
-    global state (e.g., :py:mod:`armi.nucDirectory.nuclideBases`), and it will take
-    quite a bit of effort to refactor the code to access such things through an App
-    object. We are planning to do this, but for now this App class is somewhat
-    rudimentary.
+This pattern is used by many frameworks as a way of encapsulating what would otherwise be global
+state. The ARMI Framework has historically made heavy use of global state (e.g.,
+:py:mod:`armi.nucDirectory.nuclideBases`), and it will take quite a bit of effort to refactor the
+code to access such things through an App object.
 """
+# ruff: noqa: E402
 from typing import Dict, Optional, Tuple, List
 import collections
 import importlib
@@ -35,25 +36,30 @@ import sys
 
 from armi import context, plugins, pluginManager, meta, settings
 from armi.reactor import parameters
-from armi.settings import Setting
+from armi.reactor.flags import Flags
 from armi.settings import fwSettings
+from armi.settings import Setting
 
 
 class App:
     """
-    The main point of customization for the ARMI Framework.
+    The highest-level of abstraction for defining what happens during an ARMI run.
 
-    The App class is intended to be subclassed in order to customize the functionality
-    and look-and-feel of the ARMI Framework for a specific use case. An App contains a
-    plugin manager, which should be populated in ``__init__()`` with a collection of
-    plugins that are deemed suitable for a given application, as well as other methods
-    which provide further customization.
+    .. impl:: An App has a plugin manager.
+        :id: I_ARMI_APP_PLUGINS
+        :implements: R_ARMI_APP_PLUGINS
 
-    The base App class is also a good place to expose some more convenient ways to get
-    data out of the Plugin API; calling the ``pluggy`` hooks directly can sometimes be a
-    pain, as the results returned by the individual plugins may need to be merged and/or
-    checked for errors. Adding that logic here reduces boilerplate throughout the rest
-    of the code.
+        The App class is intended to be subclassed in order to customize the functionality
+        and look-and-feel of the ARMI Framework for a specific use case. An App contains a
+        plugin manager, which should be populated in ``__init__()`` with a collection of
+        plugins that are deemed suitable for a given application, as well as other methods
+        which provide further customization.
+
+        The base App class is also a good place to expose some more convenient ways to get
+        data out of the Plugin API; calling the ``pluggy`` hooks directly can sometimes be a
+        pain, as the results returned by the individual plugins may need to be merged and/or
+        checked for errors. Adding that logic here reduces boilerplate throughout the rest
+        of the code.
     """
 
     name = "armi"
@@ -73,12 +79,12 @@ class App:
         For a description of the things that an ARMI plugin can do, see the
         :py:mod:`armi.plugins` module.
         """
+        self._pluginFlagsRegistered: bool = False
         self._pm: Optional[pluginManager.ArmiPluginManager] = None
         self._paramRenames: Optional[Tuple[Dict[str, str], int]] = None
         self.__initNewPlugins()
 
     def __initNewPlugins(self):
-        # pylint: disable=import-outside-toplevel
         from armi import cli
         from armi import bookkeeping
         from armi.physics import fuelCycle
@@ -121,6 +127,21 @@ class App:
     def getSettings(self) -> Dict[str, Setting]:
         """
         Return a dictionary containing all Settings defined by the framework and all plugins.
+
+        .. impl:: Applications will not allow duplicate settings.
+            :id: I_ARMI_SETTINGS_UNIQUE
+            :implements: R_ARMI_SETTINGS_UNIQUE
+
+            Each ARMI application includes a collection of Plugins. Among other
+            things, these plugins can register new settings in addition to
+            the default settings that come with ARMI. This feature provides a
+            lot of utility, so application developers can easily configure
+            their ARMI appliction in customizable ways.
+
+            However, it would get confusing if two different plugins registered
+            a setting with the same name string. Or if a plugin registered a
+            setting with the same name as an ARMI default setting. So this
+            method throws an error if such a situation arises.
         """
         # Start with framework settings
         settingDefs = {
@@ -212,9 +233,7 @@ class App:
             currentNames = {pd.name for pd in parameters.ALL_DEFINITIONS}
 
             renames = dict()
-            for (
-                pluginRenames
-            ) in self._pm.hook.defineParameterRenames():  # pylint: disable=no-member
+            for pluginRenames in self._pm.hook.defineParameterRenames():
                 collisions = currentNames & pluginRenames.keys()
                 if collisions:
                     raise plugins.PluginError(
@@ -231,8 +250,26 @@ class App:
             self._paramRenames = renames, self._pm.counter
         return renames
 
-    def registerUserPlugins(self, pluginPaths):
+    def registerPluginFlags(self):
         """
+        Apply flags specified in the passed ``PluginManager`` to the ``Flags`` class.
+
+        See Also
+        --------
+        armi.plugins.ArmiPlugin.defineFlags
+        """
+        if self._pluginFlagsRegistered:
+            raise RuntimeError(
+                "Plugin flags have already been registered. Cannot do it twice!"
+            )
+
+        for pluginFlags in self._pm.hook.defineFlags():
+            Flags.extend(pluginFlags)
+
+        self._pluginFlagsRegistered = True
+
+    def registerUserPlugins(self, pluginPaths):
+        r"""
         Register additional plugins passed in by importable paths.
         These plugins may be provided e.g. by an application during startup
         based on user input.
@@ -260,6 +297,8 @@ class App:
         restrict their flexibility and power as compared to the usual ArmiPlugins.
         """
         for pluginPath in pluginPaths:
+            if self._isPluginRegistered(pluginPath):
+                continue
             if ".py:" in pluginPath:
                 # The path is of the form: /path/to/why.py:MyPlugin
                 self.__registerUserPluginsAbsPath(pluginPath)
@@ -267,9 +306,42 @@ class App:
                 # The path is of the form: armi.thing.what.MyPlugin
                 self.__registerUserPluginsInternalImport(pluginPath)
 
+    def _isPluginRegistered(self, pluginPath: str):
+        r"""
+        Check if the plugin at the provided path is already registered.
+
+        The expected path formats are:
+        ------------------------------
+        importable namespace:
+        ``armi.stuff.plugindir.pluginMod.pluginCls``
+
+        or on Linux/Unix:
+        ``/path/to/pluginMod.py:pluginCls``
+
+        or on Windows:
+        ``C:\\path\\to\\pluginMod.py:pluginCls``
+
+        Parameters
+        ----------
+        pluginPath : str
+            String path to a userPlugin.
+
+        Returns
+        -------
+        bool
+            Whether or not the plugin name is already registered with the manager.
+        """
+        if ":" in pluginPath:
+            pluginName = pluginPath.strip().split(":")[-1]
+        else:
+            pluginName = pluginPath.strip().split(".")[-1]
+
+        return self._pm.has_plugin(pluginName)
+
     def __registerUserPluginsAbsPath(self, pluginPath):
-        """Helper method to register a single UserPlugin where
-        the given path is of the form: /path/to/why.py:MyPlugin
+        """Helper method to register a single UserPlugin via absolute path.
+
+        Here the given path is of the form: /path/to/why.py:MyPlugin
         """
         assert pluginPath.count(".py:") == 1, f"Invalid plugin path: {pluginPath}"
 
@@ -285,9 +357,15 @@ class App:
         assert issubclass(plugin, plugins.UserPlugin)
         self._pm.register(plugin)
 
+        # ensure UserPlugin flags are loaded
+        newFlags = plugin.defineFlags()
+        if newFlags:
+            Flags.extend(newFlags)
+
     def __registerUserPluginsInternalImport(self, pluginPath):
-        """Helper method to register a single UserPlugin where
-        the given path is of the form: armi.thing.what.MyPlugin
+        """Helper method to register a single UserPlugin via internal import.
+
+        Here the given path is of the form: armi.thing.what.MyPlugin
         """
         names = pluginPath.strip().split(".")
         modPath = ".".join(names[:-1])
@@ -296,6 +374,11 @@ class App:
         plugin = getattr(mod, clsName)
         assert issubclass(plugin, plugins.UserPlugin)
         self._pm.register(plugin)
+
+        # ensure UserPlugin flags are loaded
+        newFlags = plugin.defineFlags()
+        if newFlags:
+            Flags.extend(newFlags)
 
     @property
     def splashText(self):
@@ -322,7 +405,6 @@ class App:
 
         # add the name/version of the current App, if it's not the default
         if context.APP_NAME != "armi":
-            # pylint: disable=import-outside-toplevel # avoid cyclic import
             from armi import getApp
 
             splash += r"""

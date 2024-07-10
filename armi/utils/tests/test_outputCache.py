@@ -11,8 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-""" tests of the output cache tools"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,invalid-name
+"""Tests of the output cache tools."""
 import os
 import time
 import unittest
@@ -128,7 +127,3 @@ class TestOutputCache(unittest.TestCase):
                 fakeExe, inputPaths, cacheDir, newFolder
             )
             self.assertFalse(result)
-
-
-if __name__ == "__main__":
-    unittest.main()

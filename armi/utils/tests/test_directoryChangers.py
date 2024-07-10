@@ -13,10 +13,10 @@
 # limitations under the License.
 
 """Module for testing directoryChangers."""
-import os
-import unittest
 from pathlib import Path
+import os
 import shutil
+import unittest
 
 from armi.utils import directoryChangers
 from armi.utils import directoryChangersMpi
@@ -43,9 +43,7 @@ class TestDirectoryChangers(unittest.TestCase):
     def test_mpiAction(self):
         try:
             os.mkdir(self.temp_directory)
-            cdma = directoryChangersMpi._ChangeDirectoryMpiAction(
-                self.temp_directory
-            )  # pylint: disable=protected-access
+            cdma = directoryChangersMpi._ChangeDirectoryMpiAction(self.temp_directory)
             self.assertTrue(cdma.invoke(None, None, None))
         finally:
             os.chdir("..")
@@ -53,9 +51,7 @@ class TestDirectoryChangers(unittest.TestCase):
 
     def test_mpiActionFailsOnNonexistentPath(self):
         with self.assertRaises(IOError):
-            cdma = directoryChangersMpi._ChangeDirectoryMpiAction(
-                self.temp_directory
-            )  # pylint: disable=protected-access
+            cdma = directoryChangersMpi._ChangeDirectoryMpiAction(self.temp_directory)
             cdma.invoke(None, None, None)
 
     def test_exception(self):
@@ -121,7 +117,7 @@ class TestDirectoryChangers(unittest.TestCase):
         """
 
         def f(name):
-            """Utility to avoid test clashes during cleanups"""
+            """Utility to avoid test clashes during cleanups."""
             return self._testMethodName + name
 
         with directoryChangers.TemporaryDirectoryChanger(
@@ -147,14 +143,13 @@ class TestDirectoryChangers(unittest.TestCase):
 
         self.assertTrue(os.path.exists(os.path.join("temp", f("file1.txt"))))
         self.assertTrue(os.path.exists(os.path.join("temp", f("file2.txt"))))
-        os.remove(os.path.join("temp", f("file1.txt")))
-        os.remove(os.path.join("temp", f("file2.txt")))
+        shutil.rmtree("temp")
 
     def test_file_retrieval_missing_file(self):
         """Tests that the directory changer still returns a subset of files even if all do not exist."""
 
         def f(name):
-            """Utility to avoid test clashes during cleanups"""
+            """Utility to avoid test clashes during cleanups."""
             return self._testMethodName + name
 
         with directoryChangers.TemporaryDirectoryChanger(

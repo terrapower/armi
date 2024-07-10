@@ -13,12 +13,14 @@ analyzing ARMI output files, etc.
    :numbered:
 
    user_install
-   inputs/index
-   outputs/index
+   inputs
+   outputs
    manual_data_access
    reactor_parameters_report
    core_parameters_report
+   component_parameters_report
    assembly_parameters_report
    block_parameters_report
-   assorted_guide
+   physics_coupling
+   radial_and_axial_expansion
    accessingEntryPoints

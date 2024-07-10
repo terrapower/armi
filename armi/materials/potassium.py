@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Potassium"""
+"""Potassium."""
 
-from armi.utils.units import getTc, getTk
 from armi.materials import material
+from armi.utils.units import getTc, getTk
 
 
 class Potassium(material.Fluid):
@@ -25,16 +25,20 @@ class Potassium(material.Fluid):
     From Foust, O.J. Sodium-NaK Engineering Handbook Vol. 1. New York: Gordon and Breach, 1972.
     """
 
-    name = "Potassium"
-    propertyValidTemperature = {"density": ((63.38, 759), "K")}
+    propertyValidTemperature = {"density": ((63.2, 1250), "C")}
 
-    def density(self, Tk=None, Tc=None):
+    def pseudoDensity(self, Tk=None, Tc=None):
         r"""
-        Calculates the density of molten Potassium in g/cc
+        Calculates the density of molten Potassium in g/cc.
+
         From Foust, O.J. Sodium-NaK Engineering Handbook Vol. 1. New York: Gordon and Breach, 1972.
         Page 18.
+
+        Notes
+        -----
+        In ARMI, we define pseudoDensity() and density() as the same for Fluids.
         """
         Tc = getTc(Tc, Tk)
         Tk = getTk(Tc=Tc)
-        self.checkPropertyTempRange("density", Tk)
-        return 0.8415 - 2.172e-4 * Tc - 2.70e-8 * Tc ** 2 + 4.77e-12 * Tc ** 3
+        self.checkPropertyTempRange("density", Tc)
+        return 0.8415 - 2.172e-4 * Tc - 2.70e-8 * Tc**2 + 4.77e-12 * Tc**3

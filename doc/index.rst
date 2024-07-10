@@ -9,13 +9,12 @@ ARMI
    :maxdepth: 2
 
    installation
-   gallery/index
-   tutorials/index
    user/index
    developer/index
+   gallery/index
+   tutorials/index
    release/index
    glossary
-   requirements/index
    API Docs <.apidocs/modules>
 
 
@@ -26,5 +25,4 @@ ARMI
 *  :ref:`genindex`
 *  :ref:`modindex`
 *  :ref:`search`
-
 

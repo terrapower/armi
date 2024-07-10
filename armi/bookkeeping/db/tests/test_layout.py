@@ -11,9 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-r""" Tests for the db Layout and associated tools"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-member,disallowed-name,invalid-name
+"""Tests for the db Layout and associated tools."""
 import os
 import unittest
 
@@ -25,7 +23,7 @@ from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
 class TestLocationPacking(unittest.TestCase):
-    r"""Tests for database location"""
+    """Tests for database location."""
 
     def setUp(self):
         self.td = TemporaryDirectoryChanger()
@@ -35,7 +33,6 @@ class TestLocationPacking(unittest.TestCase):
         self.td.__exit__(None, None, None)
 
     def test_locationPacking(self):
-        # pylint: disable=protected-access
         loc1 = grids.IndexLocation(1, 2, 3, None)
         loc2 = grids.CoordinateLocation(4.0, 5.0, 6.0, None)
         loc3 = grids.MultiIndexLocation(None)
@@ -56,7 +53,6 @@ class TestLocationPacking(unittest.TestCase):
         self.assertEqual(unpackedData[2], [(7, 8, 9), (10, 11, 12)])
 
     def test_locationPackingOlderVersions(self):
-        # pylint: disable=protected-access
         for version in [1, 2]:
             loc1 = grids.IndexLocation(1, 2, 3, None)
             loc2 = grids.CoordinateLocation(4.0, 5.0, 6.0, None)
@@ -79,7 +75,6 @@ class TestLocationPacking(unittest.TestCase):
             self.assertEqual(unpackedData[2][1].tolist(), [10, 11, 12])
 
     def test_locationPackingOldVersion(self):
-        # pylint: disable=protected-access
         version = 3
 
         loc1 = grids.IndexLocation(1, 2, 3, None)

@@ -41,7 +41,6 @@ armi.interfaces : Code that operators schedule to perform the real analysis or
 
 from armi import context
 from armi import getPluginManagerOrFail
-from armi import runLog
 from armi.operators.runTypes import RunTypes
 from armi.operators.operator import Operator
 from armi.operators.operatorMPI import OperatorMPI
@@ -53,7 +52,7 @@ def factory(cs):
     return getOperatorClassFromSettings(cs)(cs)
 
 
-def getOperatorClassFromSettings(cs):  # pylint: disable=too-many-return-statements
+def getOperatorClassFromSettings(cs):
     """Choose a operator class based on user settings (possibly from plugin).
 
     Parameters

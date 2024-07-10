@@ -12,9 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-r"""
-This module handles logging of console output (e.g. warnings, information, errors)
-during an armi run.
+"""
+This module handles logging of console during a simulation.
 
 The default way of calling and the global armi logger is to just import it:
 
@@ -44,9 +43,7 @@ Or change the log level the same way:
 .. code::
 
     runLog.setVerbosity('debug')
-
 """
-from __future__ import print_function
 from glob import glob
 import collections
 import logging
@@ -63,7 +60,6 @@ _ADD_LOG_METHOD_STR = """def {0}(self, message, *args, **kws):
     if self.isEnabledFor({1}):
         self._log({1}, message, args, **kws)
 logging.Logger.{0} = {0}"""
-_WHITE_SPACE = " " * 6
 LOG_DIR = os.path.join(os.getcwd(), "logs")
 OS_SECONDS_TIMEOUT = 2 * 60
 SEP = "|"
@@ -73,7 +69,8 @@ STDOUT_LOGGER_NAME = "ARMI"
 
 class _RunLog:
     """
-    Handles all the logging
+    Handles all the logging.
+
     For the parent process, things are allowed to print to stdout and stderr,
     but the stdout prints are formatted like log statements.
     For the child processes, everything is piped to log files.
@@ -84,15 +81,13 @@ class _RunLog:
 
     def __init__(self, mpiRank=0):
         """
-        Build a log object
+        Build a log object.
 
         Parameters
         ----------
         mpiRank : int
             If this is zero, we are in the parent process, otherwise child process.
-            The default of 0 means we assume the parent process.
             This should not be adjusted after instantiation.
-
         """
         self._mpiRank = mpiRank
         self._verbosity = logging.INFO
@@ -106,29 +101,53 @@ class _RunLog:
         self._setLogLevels()
 
     def setNullLoggers(self):
-        """Helper method to set both of our loggers to Null handlers"""
+        """Helper method to set both of our loggers to Null handlers."""
         self.logger = NullLogger("NULL")
         self.stderrLogger = NullLogger("NULL2", isStderr=True)
 
-    def _setLogLevels(self):
-        """Here we fill the logLevels dict with custom strings that depend on the MPI rank"""
-        # NOTE: use ordereddict so we can get right order of options in GUI
-        _rank = "" if self._mpiRank == 0 else "-{:>03d}".format(self._mpiRank)
-        self.logLevels = collections.OrderedDict(
+    @staticmethod
+    def getLogLevels(mpiRank):
+        """Helper method to build an important data object this class needs.
+
+        Parameters
+        ----------
+        mpiRank : int
+            If this is zero, we are in the parent process, otherwise child process.
+            This should not be adjusted after instantiation.
+        """
+        rank = "" if mpiRank == 0 else "-{:>03d}".format(mpiRank)
+
+        # NOTE: using ordereddict so we can get right order of options in GUI
+        return collections.OrderedDict(
             [
-                ("debug", (logging.DEBUG, "[dbug{}] ".format(_rank))),
-                ("extra", (15, "[xtra{}] ".format(_rank))),
-                ("info", (logging.INFO, "[info{}] ".format(_rank))),
-                ("important", (25, "[impt{}] ".format(_rank))),
-                ("prompt", (27, "[prmt{}] ".format(_rank))),
-                ("warning", (logging.WARNING, "[warn{}] ".format(_rank))),
-                ("error", (logging.ERROR, "[err {}] ".format(_rank))),
-                ("header", (100, "".format(_rank))),
+                ("debug", (logging.DEBUG, f"[dbug{rank}] ")),
+                ("extra", (15, f"[xtra{rank}] ")),
+                ("info", (logging.INFO, f"[info{rank}] ")),
+                ("important", (25, f"[impt{rank}] ")),
+                ("prompt", (27, f"[prmt{rank}] ")),
+                ("warning", (logging.WARNING, f"[warn{rank}] ")),
+                ("error", (logging.ERROR, f"[err {rank}] ")),
+                ("header", (100, f"{rank}")),
             ]
         )
-        self._logLevelNumbers = sorted([l[0] for l in self.logLevels.values()])
-        global _WHITE_SPACE
-        _WHITE_SPACE = " " * len(max([l[1] for l in self.logLevels.values()]))
+
+    @staticmethod
+    def getWhiteSpace(mpiRank):
+        """Helper method to build the white space used to left-adjust the log lines.
+
+        Parameters
+        ----------
+        mpiRank : int
+            If this is zero, we are in the parent process, otherwise child process.
+            This should not be adjusted after instantiation.
+        """
+        logLevels = _RunLog.getLogLevels(mpiRank)
+        return " " * len(max([ll[1] for ll in logLevels.values()]))
+
+    def _setLogLevels(self):
+        """Here we fill the logLevels dict with custom strings that depend on the MPI rank."""
+        self.logLevels = self.getLogLevels(self._mpiRank)
+        self._logLevelNumbers = sorted([ll[0] for ll in self.logLevels.values()])
 
         # modify the logging module strings for printing
         for longLogString, (logValue, shortLogString) in self.logLevels.items():
@@ -249,7 +268,7 @@ class _RunLog:
             sys.stderr = self.initialErr
 
     def startLog(self, name):
-        """Initialize the streams when parallel processing"""
+        """Initialize the streams when parallel processing."""
         # open the main logger
         self.logger = logging.getLogger(
             STDOUT_LOGGER_NAME + SEP + name + SEP + str(self._mpiRank)
@@ -279,7 +298,7 @@ class _RunLog:
 
 
 def close(mpiRank=None):
-    """End use of the log. Concatenate if needed and restore defaults"""
+    """End use of the log. Concatenate if needed and restore defaults."""
     mpiRank = context.MPI_RANK if mpiRank is None else mpiRank
 
     if mpiRank == 0:
@@ -303,6 +322,20 @@ def concatenateLogs(logDir=None):
     Concatenate the armi run logs and delete them.
 
     Should only ever be called by parent.
+
+    .. impl:: Log files from different processes are combined.
+        :id: I_ARMI_LOG_MPI
+        :implements: R_ARMI_LOG_MPI
+
+        The log files are plain text files. Since ARMI is frequently run in parallel,
+        the situation arises where each ARMI process generates its own plain text log
+        file. This function combines the separate log files, per process, into one log
+        file.
+
+        The files are written in numerical order, with the lead process stdout first
+        then the lead process stderr. Then each other process is written to the
+        combined file, in order, stdout then stderr. Finally, the original stdout and
+        stderr files are deleted.
     """
     if logDir is None:
         logDir = LOG_DIR
@@ -311,14 +344,6 @@ def concatenateLogs(logDir=None):
     stdoutFiles = sorted(glob(os.path.join(logDir, "*.stdout")))
     if not len(stdoutFiles):
         info("No log files found to concatenate.")
-
-        # If the log dir is empty, we can delete it.
-        try:
-            os.rmdir(logDir)
-        except:
-            # low priority concern: it's an empty log dir.
-            pass
-
         return
 
     info("Concatenating {0} log files".format(len(stdoutFiles)))
@@ -380,26 +405,24 @@ def concatenateLogs(logDir=None):
 # Here are all the module-level functions that should be used for most outputs.
 # They use the Log object behind the scenes.
 def raw(msg):
-    """
-    Print raw text without any special functionality.
-    """
-    LOG.log("header", msg, single=False, label=msg)
+    """Print raw text without any special functionality."""
+    LOG.log("header", msg, single=False)
 
 
 def extra(msg, single=False, label=None):
-    LOG.log("extra", msg, single=single, label=label)
+    LOG.log("extra", msg, single=single)
 
 
 def debug(msg, single=False, label=None):
-    LOG.log("debug", msg, single=single, label=label)
+    LOG.log("debug", msg, single=single)
 
 
 def info(msg, single=False, label=None):
-    LOG.log("info", msg, single=single, label=label)
+    LOG.log("info", msg, single=single)
 
 
 def important(msg, single=False, label=None):
-    LOG.log("important", msg, single=single, label=label)
+    LOG.log("important", msg, single=single)
 
 
 def warning(msg, single=False, label=None):
@@ -426,12 +449,9 @@ def getVerbosity():
     return LOG.getVerbosity()
 
 
-# ---------------------------------------
-
-
 class DeduplicationFilter(logging.Filter):
     """
-    Important logging filter
+    Important logging filter.
 
     * allow users to turn off duplicate warnings
     * handles special indentation rules for our logs
@@ -446,18 +466,23 @@ class DeduplicationFilter(logging.Filter):
         # determine if this is a "do not duplicate" message
         msg = str(record.msg)
         single = getattr(record, "single", False)
-        label = getattr(record, "label", msg)
-        label = msg if label is None else label
 
         # If the message is set to "do not duplicate" we may filter it out
         if single:
             if record.levelno in (logging.WARNING, logging.CRITICAL):
+                # if this is from the custom logger, it will have a "label"
+                label = getattr(record, "label", msg)
+                # the "label" default is None, which needs to be replaced
+                label = msg if label is None else label
+
                 if label not in self.singleWarningMessageCounts:
                     self.singleWarningMessageCounts[label] = 1
                 else:
                     self.singleWarningMessageCounts[label] += 1
                     return False
             else:
+                # in sub-warning cases, hash the msg, for a faster label lookup
+                label = hash(msg)
                 if label not in self.singleMessageCounts:
                     self.singleMessageCounts[label] = 1
                 else:
@@ -465,15 +490,55 @@ class DeduplicationFilter(logging.Filter):
                     return False
 
         # Handle some special string-mangling we want to do, for multi-line messages
-        record.msg = msg.rstrip().replace("\n", "\n" + _WHITE_SPACE)
+        whiteSpace = _RunLog.getWhiteSpace(context.MPI_RANK)
+        record.msg = msg.rstrip().replace("\n", "\n" + whiteSpace)
         return True
 
 
 class RunLogger(logging.Logger):
-    """Custom Logger to support:
+    """Custom Logger to support our specific desires.
 
     1. Giving users the option to de-duplicate warnings
     2. Piping stderr to a log file
+
+    .. impl:: A simulation-wide log, with user-specified verbosity.
+        :id: I_ARMI_LOG
+        :implements: R_ARMI_LOG
+
+        Log statements are any text a user wants to record during a run. For instance,
+        basic notifications of what is happening in the run, simple warnings, or hard
+        errors. Every log message has an associated log level, controlled by the
+        "verbosity" of the logging statement in the code. In the ARMI codebase, you
+        can see many examples of logging:
+
+        .. code-block:: python
+
+            runLog.error("This sort of error might usually terminate the run.")
+            runLog.warning("Users probably want to know.")
+            runLog.info("This is the usual verbosity.")
+            runLog.debug("This is only logged during a debug run.")
+
+        The full list of logging levels is defined in ``_RunLog.getLogLevels()``, and
+        the developer specifies the verbosity of a run via ``_RunLog.setVerbosity()``.
+
+        At the end of the ARMI-based simulation, the analyst will have a full record of
+        potentially interesting information they can use to understand their run.
+
+    .. impl:: Logging is done to the screen and to file.
+        :id: I_ARMI_LOG_IO
+        :implements: R_ARMI_LOG_IO
+
+        This logger makes it easy for users to add log statements to and ARMI
+        application, and ARMI will control the flow of those log statements. In
+        particular, ARMI overrides the normal Python logging tooling, to allow
+        developers to pipe their log statements to both screen and file. This works for
+        stdout and stderr.
+
+        At any place in the ARMI application, developers can interject a plain text
+        logging message, and when that code is hit during an ARMI simulation, the text
+        will be piped to screen and a log file. By default, the ``logging`` module only
+        logs to screen, but ARMI adds a ``FileHandler`` in the ``RunLog`` constructor
+        and in ``_RunLog.startLog``.
     """
 
     FMT = "%(levelname)s%(message)s"
@@ -508,16 +573,12 @@ class RunLogger(logging.Logger):
 
     def log(self, msgType, msg, single=False, label=None, **kwargs):
         """
-        This is a wrapper around logger.log() that does most of the work and is
-        used by all message passers (e.g. info, warning, etc.).
+        This is a wrapper around logger.log() that does most of the work.
 
-        In this situation, we do the mangling needed to get the log level to the correct number.
-        And we do some custom string manipulation so we can handle de-duplicating warnings.
+        This is used by all message passers (e.g. info, warning, etc.). In this situation,
+        we do the mangling needed to get the log level to the correct number. And we do
+        some custom string manipulation so we can handle de-duplicating warnings.
         """
-        # If the log dir hasn't been created yet, create it.
-        if not os.path.exists(LOG_DIR):
-            createLogDir(LOG_DIR)
-
         # Determine the log level: users can optionally pass in custom strings ("debug")
         msgLevel = msgType if isinstance(msgType, int) else LOG.logLevels[msgType][0]
 
@@ -528,7 +589,7 @@ class RunLogger(logging.Logger):
 
     def _log(self, *args, **kwargs):
         """
-        Wrapper around the standard library Logger._log() method
+        Wrapper around the standard library Logger._log() method.
 
         The primary goal here is to allow us to support the deduplication of warnings.
 
@@ -554,22 +615,22 @@ class RunLogger(logging.Logger):
         logging.Logger._log(self, *args, **kwargs)
 
     def allowStopDuplicates(self):
-        """helper method to allow us to safely add the deduplication filter at any time"""
+        """Helper method to allow us to safely add the deduplication filter at any time."""
         for f in self.filters:
             if isinstance(f, DeduplicationFilter):
                 return
         self.addFilter(DeduplicationFilter())
 
     def write(self, msg, **kwargs):
-        """the redirect method that allows to do stderr piping"""
+        """The redirect method that allows to do stderr piping."""
         self.error(msg)
 
     def flush(self, *args, **kwargs):
-        """stub, purely to allow stderr piping"""
+        """Stub, purely to allow stderr piping."""
         pass
 
     def close(self):
-        """helper method, to shutdown and delete a Logger"""
+        """Helper method, to shutdown and delete a Logger."""
         self.handlers.clear()
         del self
 
@@ -601,12 +662,13 @@ class RunLogger(logging.Logger):
         self.info("------------------------------------")
 
     def setVerbosity(self, intLevel):
-        """A helper method to try to partially support the local, historical method of the same name"""
+        """A helper method to try to partially support the local, historical method of the same name."""
         self.setLevel(intLevel)
 
 
 class NullLogger(RunLogger):
     """This is really just a placeholder for logging before or after the span of a normal armi run.
+
     It will forward all logging to stdout/stderr, as you'd normally expect.
     But it will preserve the formatting and duplication tools of the armi library.
     """
@@ -619,7 +681,7 @@ class NullLogger(RunLogger):
             self.handlers = [logging.StreamHandler(sys.stdout)]
 
     def addHandler(self, *args, **kwargs):
-        """ensure this STAYS a null logger"""
+        """Ensure this STAYS a null logger."""
         pass
 
 
@@ -628,11 +690,8 @@ logging.RunLogger = RunLogger
 logging.setLoggerClass(RunLogger)
 
 
-# ============ begin logging support ============
-
-
 def createLogDir(logDir: str = None) -> None:
-    """A helper method to create the log directory"""
+    """A helper method to create the log directory."""
     # the usual case is the user does not pass in a log dir path, so we use the global one
     if logDir is None:
         logDir = LOG_DIR
@@ -656,7 +715,8 @@ def createLogDir(logDir: str = None) -> None:
         time.sleep(secondsWait)
 
 
-# ---------------------------------------
+if not os.path.exists(LOG_DIR):
+    createLogDir(LOG_DIR)
 
 
 def logFactory():

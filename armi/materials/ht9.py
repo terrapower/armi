@@ -37,13 +37,11 @@ class HT9(materials.Material):
             https://www.osti.gov/biblio/1506477-metallic-fuels-handbook
     """
 
-    name = "HT9"
-
     propertyValidTemperature = {"linear expansion": ((293, 1050), "K")}
 
     def setDefaultMassFracs(self):
         """
-        HT9 mass fractions
+        HT9 mass fractions.
 
         From E.2-1 of [MFH]_.
         https://www.osti.gov/biblio/1506477-metallic-fuels-handbook
@@ -56,9 +54,9 @@ class HT9(materials.Material):
         self.setMassFrac("MO", 0.01)
         self.setMassFrac("W", 0.0055)
         self.setMassFrac("V", 0.0030)
-        self.setMassFrac("FE", 1.0 - sum(self.p.massFrac.values()))
+        self.setMassFrac("FE", 1.0 - sum(self.massFrac.values()))
 
-        self.p.refDens = 7.778
+        self.refDens = 7.778
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
         """
@@ -68,11 +66,11 @@ class HT9(materials.Material):
         """
         tk = units.getTk(Tc, Tk)
         self.checkPropertyTempRange("linear expansion", tk)
-        return -0.16256 + 1.62307e-4 * tk + 1.42357e-6 * tk ** 2 - 5.50344e-10 * tk ** 3
+        return -0.16256 + 1.62307e-4 * tk + 1.42357e-6 * tk**2 - 5.50344e-10 * tk**3
 
     def thermalConductivity(self, Tk=None, Tc=None):
         """
-        Thermal conductivity in W/m-K)
+        Thermal conductivity in W/m-K).
 
         From [MFH]_, E.2.2.3, eq 5.
 
@@ -82,7 +80,7 @@ class HT9(materials.Material):
         return (
             29.65
             - 6.668e-2 * Tk
-            + 2.184e-4 * Tk ** 2
-            - 2.527e-7 * Tk ** 3
-            + 9.621e-11 * Tk ** 4
+            + 2.184e-4 * Tk**2
+            - 2.527e-7 * Tk**3
+            + 9.621e-11 * Tk**4
         )

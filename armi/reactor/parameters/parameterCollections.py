@@ -28,6 +28,7 @@ from armi.reactor.parameters.parameterDefinitions import (
     SINCE_ANYTHING,
     NEVER,
 )
+from armi.utils import units
 
 
 GLOBAL_SERIAL_NUM = -1
@@ -49,7 +50,7 @@ def _getBaseParameterDefinitions():
     pDefs.add(
         parameterDefinitions.Parameter(
             "serialNum",
-            units="",
+            units=units.UNITLESS,
             description=(
                 "Unique serial integer for all objects in the ARMI Composite Tree. "
                 "The numbers are only unique for a simulation, on an MPI rank."
@@ -82,7 +83,7 @@ class _ParameterCollectionType(type):
 
 
 class ParameterCollection(metaclass=_ParameterCollectionType):
-    r"""An empty class for holding state information in the ARMI data structure.
+    """An empty class for holding state information in the ARMI data structure.
 
     A parameter collection stores one or more formally-defined values ("parameters").
     Until a given ParameterCollection subclass has been instantiated, new parameters may
@@ -284,7 +285,6 @@ class ParameterCollection(metaclass=_ParameterCollectionType):
         ArmiObject to which it may belong. In this case, serialNum needs to be
         incremented so that the objects are unique. serialNum is special.
         """
-
         # Grabbing state first and passing it into __init__() as a performance
         # optimization. This avoids the extra work in __init__() of defaulting all of
         # the parameters, only to set them in __setstate__(). Instead we pass them in,

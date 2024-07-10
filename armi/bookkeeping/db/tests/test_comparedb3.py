@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for the compareDB3 module"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
+"""Tests for the compareDB3 module."""
 import unittest
 
 import h5py
@@ -35,7 +34,7 @@ from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
 class TestCompareDB3(unittest.TestCase):
-    """Tests for the compareDB3 module"""
+    """Tests for the compareDB3 module."""
 
     def setUp(self):
         self.td = TemporaryDirectoryChanger()
@@ -95,10 +94,12 @@ class TestCompareDB3(unittest.TestCase):
         self.assertEqual(dr.nDiffs(), 10)
 
     def test_compareDatabaseDuplicate(self):
-        """end-to-end test of compareDatabases() on a photocopy database"""
+        """End-to-end test of compareDatabases() on a photocopy database."""
         # build two super-simple H5 files for testing
         o, r = test_reactors.loadTestReactor(
-            TEST_ROOT, customSettings={"reloadDBName": "reloadingDB.h5"}
+            TEST_ROOT,
+            customSettings={"reloadDBName": "reloadingDB.h5"},
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml",
         )
 
         # create two DBs, identical but for file names
@@ -126,10 +127,12 @@ class TestCompareDB3(unittest.TestCase):
         self.assertEqual(diffs.nDiffs(), 0)
 
     def test_compareDatabaseSim(self):
-        """end-to-end test of compareDatabases() on very simlar databases"""
+        """End-to-end test of compareDatabases() on very simlar databases."""
         # build two super-simple H5 files for testing
         o, r = test_reactors.loadTestReactor(
-            TEST_ROOT, customSettings={"reloadDBName": "reloadingDB.h5"}
+            TEST_ROOT,
+            customSettings={"reloadDBName": "reloadingDB.h5"},
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml",
         )
 
         # create two DBs, identical but for file names
@@ -173,8 +176,12 @@ class TestCompareDB3(unittest.TestCase):
             dbs.append(db)
 
         # end-to-end validation that comparing a photocopy database works
-        diffs = compareDatabases(dbs[0]._fullPath, dbs[1]._fullPath)
-        self.assertEqual(len(diffs.diffs), 456)
+        diffs = compareDatabases(
+            dbs[0]._fullPath,
+            dbs[1]._fullPath,
+            timestepCompare=[(0, 0), (0, 1)],
+        )
+        self.assertEqual(len(diffs.diffs), 465)
         # Cycle length is only diff (x3)
         self.assertEqual(diffs.nDiffs(), 3)
 
@@ -214,7 +221,7 @@ class TestCompareDB3(unittest.TestCase):
             with mockRunLogs.BufferLog() as mock:
                 _diffSpecialData(refData, srcData3, out, dr)
                 self.assertEqual(dr.nDiffs(), 0)
-                self.assertIn("Special formatting parameters for", mock._outputStream)
+                self.assertIn("Special formatting parameters for", mock.getStdout())
 
             # make an H5 datasets that will cause unpackSpecialData to fail
             f4 = h5py.File("test_diffSpecialData4.hdf5", "w")
@@ -230,6 +237,17 @@ class TestCompareDB3(unittest.TestCase):
             with self.assertRaises(Exception) as e:
                 _diffSpecialData(refData4, srcData5, out, dr)
                 self.assertIn("Unable to unpack special data for paramName", e)
+
+            # make an H5 datasets that will add a np.inf diff because keys don't match
+            f6 = h5py.File("test_diffSpecialData6.hdf5", "w")
+            refData6 = f6.create_dataset("numberDensities", data=a2)
+            refData6.attrs["shapes"] = "2"
+            refData6.attrs["numDens"] = a2
+            f7 = h5py.File("test_diffSpecialData7.hdf5", "w")
+            srcData7 = f7.create_dataset("densities", data=a2)
+            srcData7.attrs["colors"] = "2"
+            srcData7.attrs["numberDens"] = a2
+            _diffSpecialData(refData6, srcData7, out, dr)
 
     def test_diffSimpleData(self):
         dr = DiffResults(0.01)
@@ -288,7 +306,3 @@ class TestCompareDB3(unittest.TestCase):
             # there should be no difference
             _compareAuxData(out, refData, srcData, dr)
             self.assertEqual(dr.nDiffs(), 0)
-
-
-if __name__ == "__main__":
-    unittest.main()

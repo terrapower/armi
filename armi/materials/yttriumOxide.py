@@ -12,20 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Yttrium Oxide"""
+"""Yttrium Oxide."""
 
 from armi.materials.material import Material
 from armi.utils.units import getTk
 
 
 class Y2O3(Material):
-    name = "Y2O3"
-
     propertyValidTemperature = {"linear expansion percent": ((273.15, 1573.15), "K")}
 
     def __init__(self):
         Material.__init__(self)
-        self.p.refDens = 5.03
+        self.refDens = 5.03
 
     def setDefaultMassFracs(self):
         self.setMassFrac("Y89", 0.7875)
@@ -42,4 +40,4 @@ class Y2O3(Material):
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("linear expansion percent", Tk)
 
-        return 1.4922e-07 * Tk ** 2 + 6.2448e-04 * Tk - 1.8414e-01
+        return 1.4922e-07 * Tk**2 + 6.2448e-04 * Tk - 1.8414e-01

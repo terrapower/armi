@@ -28,18 +28,12 @@ There is one included fuel cycle plugin: The Fuel Handler.
 
 The fuel handler plugin moves fuel around in a reactor.
 """
-import os
-
-import voluptuous as vol
-
 from armi import interfaces
 from armi import operators
 from armi import plugins
-from armi import runLog
 from armi.operators import RunTypes
 from armi.physics.fuelCycle import fuelHandlers
 from armi.physics.fuelCycle import settings
-from armi.utils import directoryChangers
 
 ORDER = interfaces.STACK_ORDER.FUEL_MANAGEMENT
 
@@ -51,17 +45,19 @@ class FuelHandlerPlugin(plugins.ArmiPlugin):
     @plugins.HOOKIMPL
     def exposeInterfaces(cs):
         """
-        Implementation of the exposeInterfaces plugin hookspec
+        Implementation of the exposeInterfaces plugin hookspec.
 
         Notes
         -----
         The interface may import user input modules to customize the actual
         fuel management.
         """
-        fuelHandlerNeedsToBeActive = cs["fuelHandlerName"] or (
+        from armi.physics.neutronics.settings import CONF_NEUTRONICS_KERNEL
+
+        fuelHandlerNeedsToBeActive = cs[settings.CONF_FUEL_HANDLER_NAME] or (
             cs["eqDirect"] and cs["runType"].lower() == RunTypes.STANDARD.lower()
         )
-        if not fuelHandlerNeedsToBeActive or "MCNP" in cs["neutronicsKernel"]:
+        if not fuelHandlerNeedsToBeActive or "MCNP" in cs[CONF_NEUTRONICS_KERNEL]:
             return []
         else:
 
@@ -75,6 +71,7 @@ class FuelHandlerPlugin(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineSettings():
+        """Define settings for the plugin."""
         return settings.getFuelCycleSettings()
 
     @staticmethod

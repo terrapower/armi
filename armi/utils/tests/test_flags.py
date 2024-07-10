@@ -11,8 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-r""" Testing flags.py"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-member,disallowed-name,invalid-name
+"""Testing flags.py."""
 import unittest
 
 from armi.utils.flags import Flag, auto
@@ -29,7 +28,7 @@ class TestFlag(unittest.TestCase):
 
     def test_auto(self):
         """
-        make sure that auto() works right, and that mixing it with explicit values
+        Make sure that auto() works right, and that mixing it with explicit values
         doesnt lead to collision.
         """
 
@@ -70,13 +69,43 @@ class TestFlag(unittest.TestCase):
         f2 = F.from_bytes(array)
         self.assertEqual(f, f2)
 
-    def test_collision(self):
-        """Make sure that we catch value collisions"""
+    def test_collision_extension(self):
+        """Ensure the set of flags cannot be programmatically extended if duplicate created.
+
+        .. test:: Set of flags are extensible without loss of uniqueness.
+            :id: T_ARMI_FLAG_EXTEND0
+            :tests: R_ARMI_FLAG_EXTEND
+        """
+
+        class F(Flag):
+            foo = auto()
+            bar = 1
+            baz = auto()
+
+        F.extend({"a": auto()})
+        F.extend({"b": 1})
+
+    def test_collision_creation(self):
+        """Make sure that we catch value collisions upon creation.
+
+        .. test:: No two flags have equivalence.
+            :id: T_ARMI_FLAG_DEFINE
+            :tests: R_ARMI_FLAG_DEFINE
+        """
         with self.assertRaises(AssertionError):
 
-            class F(Flag):  # pylint: disable=unused-variable
+            class F(Flag):
                 foo = 1
                 bar = 1
+
+        class D(Flag):
+            foo = auto()
+            bar = auto()
+            baz = auto()
+
+        self.assertEqual(D.foo._value, 1)
+        self.assertEqual(D.bar._value, 2)
+        self.assertEqual(D.baz._value, 4)
 
     def test_bool(self):
         f = ExampleFlag()
@@ -89,7 +118,7 @@ class TestFlag(unittest.TestCase):
         self.assertNotIn(ExampleFlag.BAR, f)
 
     def test_bitwise(self):
-        """Make sure that bitwise operators work right"""
+        """Make sure that bitwise operators work right."""
         f = ExampleFlag.FOO | ExampleFlag.BAR
         self.assertTrue(f & ExampleFlag.FOO)
         self.assertTrue(f & ExampleFlag.BAR)
@@ -108,7 +137,7 @@ class TestFlag(unittest.TestCase):
         self.assertEqual(f2 ^ f, ExampleFlag.BAR | ExampleFlag.BAZ)
 
     def test_iteration(self):
-        """we want to be able to iterate over set flags"""
+        """We want to be able to iterate over set flags."""
         f = ExampleFlag.FOO | ExampleFlag.BAZ
         flagsOn = [val for val in f]
         self.assertIn(ExampleFlag.FOO, flagsOn)
@@ -122,7 +151,3 @@ class TestFlag(unittest.TestCase):
 
     def test_getitem(self):
         self.assertEqual(ExampleFlag["FOO"], ExampleFlag.FOO)
-
-
-if __name__ == "__main__":
-    unittest.main()

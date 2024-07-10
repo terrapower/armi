@@ -13,28 +13,27 @@
 # limitations under the License.
 
 """
-Thorium Uranium metal
+Thorium Uranium metal.
 
-Data is from [#IAEA-TECDOCT-1450]_.
+Data is from [IAEA-TECDOCT-1450]_.
 
-.. [#IAEA-TECDOCT-1450] Thorium fuel cycle -- Potential benefits and challenges, IAEA-TECDOC-1450 (2005).
+.. [IAEA-TECDOCT-1450] Thorium fuel cycle -- Potential benefits and challenges, IAEA-TECDOC-1450 (2005).
     https://www-pub.iaea.org/mtcd/publications/pdf/te_1450_web.pdf
 """
 
-from armi.utils.units import getTk
-from armi.materials import material
 from armi import runLog
+from armi.materials.material import FuelMaterial
+from armi.utils.units import getTk
 
 
-class ThU(material.Material):
-    name = "ThU"
+class ThU(FuelMaterial):
     enrichedNuclide = "U233"
     propertyValidTemperature = {"linear expansion": ((30, 600), "K")}
 
     def __init__(self):
-        material.Material.__init__(self)
-        """g/cc from IAEA TE 1450"""
-        self.p.refDens = 11.68
+        FuelMaterial.__init__(self)
+        # density in g/cc from IAEA TE 1450
+        self.refDens = 11.68
 
     def getEnrichment(self):
         return self.getMassFrac("U233") / (
@@ -42,27 +41,32 @@ class ThU(material.Material):
         )
 
     def applyInputParams(self, U233_wt_frac=None, *args, **kwargs):
-        runLog.warning("Material {} has not yet been tested for accuracy".format("ThU"))
+        runLog.warning(
+            "Material {} has not yet been tested for accuracy".format("ThU"),
+            single=True,
+            label="ThU applyInputParams",
+        )
 
         if U233_wt_frac is not None:
             self.adjustMassEnrichment(U233_wt_frac)
-        material.FuelMaterial.applyInputParams(self, *args, **kwargs)
+
+        FuelMaterial.applyInputParams(self, *args, **kwargs)
 
     def setDefaultMassFracs(self):
         self.setMassFrac("TH232", 1.0)
         self.setMassFrac("U233", 0.0)
 
     def linearExpansion(self, Tk=None, Tc=None):
-        r"""m/m/K from IAEA TE 1450"""
+        """Linear expansion in m/m/K from IAEA TE 1450."""
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("linear expansion", Tk)
         return 11.9e-6
 
     def thermalConductivity(self, Tk=None, Tc=None):
-        r"""W/m-K from IAEA TE 1450"""
+        """Thermal conductivity in W/m-K from IAEA TE 1450."""
         Tk = getTk(Tc, Tk)
         return 43.1
 
     def meltingPoint(self):
-        r"""melting point in K from IAEA TE 1450"""
+        """Melting point in K from IAEA TE 1450."""
         return 2025.0

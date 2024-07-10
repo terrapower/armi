@@ -13,24 +13,77 @@
 # limitations under the License.
 
 """
-Defines containers for the reading and writing standard interface files 
-for reactor physics codes.
+Defines containers for the reading and writing standard interface files for reactor physics codes.
+
+.. impl:: Generic tool for reading and writing Committee on Computer Code Coordination (CCCC) format
+    files for reactor physics codes
+    :id: I_ARMI_NUCDATA
+    :implements: R_ARMI_NUCDATA_ISOTXS,
+                 R_ARMI_NUCDATA_GAMISO,
+                 R_ARMI_NUCDATA_GEODST,
+                 R_ARMI_NUCDATA_DIF3D,
+                 R_ARMI_NUCDATA_PMATRX,
+                 R_ARMI_NUCDATA_DLAYXS
+
+    This module provides a number of base classes that implement general capabilities for binary and
+    ASCII file I/O. The :py:class:`IORecord` serves as an abstract base class that instantiates a
+    number of methods that the binary and ASCII children classes are meant to implement. These
+    methods, prefixed with ``rw``, are meant to convert literal data types, e.g. float or int, to
+    either binary or ASCII. This base class does its own conversion for container data types, e.g.
+    list or matrix, relying on the child implementation of the literal types that the container
+    possesses. The binary conversion is implemented in :py:class:`BinaryRecordReader` and
+    :py:class:`BinaryRecordWriter`. The ASCII conversion is implemented in
+    :py:class:`AsciiRecordReader` and :py:class:`AsciiRecordWriter`.
+
+    These :py:class:`IORecord` classes are used within :py:class:`Stream` objects for the data
+    conversion. :py:class:`Stream` is a context manager that opens a file for reading or writing on
+    the ``__enter__`` and closes that file upon ``__exit__``. :py:class:`Stream` is an abstract base
+    class that is subclassed for each CCCC file. It is subclassed directly for the CCCC files that
+    contain cross-section data:
+
+      * :py:class:`ISOTXS <armi.nuclearDataIO.cccc.isotxs.IsotxsIO>`
+      * :py:mod:`GAMISO <armi.nuclearDataIO.cccc.gamiso>`
+      * :py:class:`PMATRX <armi.nuclearDataIO.cccc.pmatrx.PmatrxIO>`
+      * :py:class:`DLAYXS <armi.nuclearDataIO.cccc.dlayxs.DlayxsIO>`
+      * :py:mod:`COMPXS <armi.nuclearDataIO.cccc.compxs>`
+
+    For the CCCC file types that are outputs from a flux solver such as DIF3D (e.g., GEODST, DIF3D,
+    NHFLUX) the streams are subclassed from :py:class:`StreamWithDataContainer`, which is a special
+    abstract subclass of :py:class:`Stream` that implements a common pattern used for these file
+    types. In a :py:class:`StreamWithDataContainer`, the data is directly read to or written from a
+    specialized data container.
+
+    The data container structure for each type of CCCC file is implemented in the module for that
+    file, as a subclass of :py:class:`DataContainer`. The subclasses for each CCCC file type define
+    standard attribute names for the data that will be read from or written to the CCCC file. CCCC
+    file types that follow this pattern include:
+
+      * :py:class:`GEODST <armi.nuclearDataIO.cccc.geodst.GeodstData>`
+      * :py:class:`DIF3D <armi.nuclearDataIO.cccc.dif3d.Dif3dData>`
+      * :py:class:`NHFLUX <armi.nuclearDataIO.cccc.nhflux.NHFLUX>` (and multiple sub-classes)
+      * :py:class:`LABELS <armi.nuclearDataIO.cccc.labels.LabelsData>`
+      * :py:class:`PWDINT <armi.nuclearDataIO.cccc.pwdint.PwdintData>`
+      * :py:class:`RTFLUX <armi.nuclearDataIO.cccc.rtflux.RtfluxData>`
+      * :py:class:`RZFLUX <armi.nuclearDataIO.cccc.rzflux.RzfluxData>`
+      * :py:class:`RTFLUX <armi.nuclearDataIO.cccc.rtflux.RtfluxData>`
+
+    The logic to parse or write each specific file format is contained within the
+    :py:meth:`Stream.readWrite` implementations of the respective subclasses.
 """
 import io
 import itertools
-import struct
 import os
+import struct
 from copy import deepcopy
 from typing import List
 
 import numpy
 
 from armi import runLog
-
-from .. import nuclearFileMetadata
+from armi.nuclearDataIO import nuclearFileMetadata
 
 IMPLICIT_INT = "IJKLMN"
-"""Letters that trigger implicit integer types in old FORTRAN 77 codes"""
+"""Letters that trigger implicit integer types in old FORTRAN 77 codes."""
 
 
 class IORecord:
@@ -60,7 +113,7 @@ class IORecord:
     _intSize = struct.calcsize("i")
     _longSize = struct.calcsize("q")
     maxsize = len(
-        str(2 ** 31 - 1)
+        str(2**31 - 1)
     )  # limit to max short even though Python3 can go bigger.
     _intFormat = " {{:>+{}}}".format(maxsize)
     _intLength = maxsize + 1
@@ -120,7 +173,6 @@ class IORecord:
         The method has a seemingly odd signature, because it is used for both reading and writing.
         When writing, the :code:`val` should have value, but when the record is being read,
         :code:`val` can be :code:`None` or anything else; it is ignored.
-
         """
         raise NotImplementedError()
 
@@ -137,7 +189,6 @@ class IORecord:
         The method has a seemingly odd signature, because it is used for both reading and writing.
         When writing, the :code:`val` should have value, but when the record is being read,
         :code:`val` can be :code:`None` or anything else; it is ignored.
-
         """
         raise NotImplementedError()
 
@@ -149,7 +200,6 @@ class IORecord:
         The method has a seemingly odd signature, because it is used for both reading and writing.
         When writing, the :code:`val` should have value, but when the record is being read,
         :code:`val` can be :code:`None` or anything else; it is ignored.
-
         """
         raise NotImplementedError()
 
@@ -161,7 +211,6 @@ class IORecord:
         The method has a seemingly odd signature, because it is used for both reading and writing.
         When writing, the :code:`val` should have value, but when the record is being read,
         :code:`val` can be :code:`None` or anything else; it is ignored.
-
         """
         raise NotImplementedError()
 
@@ -229,9 +278,7 @@ class IORecord:
         return self._rwMatrix(contents, self.rwDouble, *shape)
 
     def rwIntMatrix(self, contents, *shape):
-        """
-        Read or write a matrix of int values.
-        """
+        """Read or write a matrix of int values."""
         return self._rwMatrix(contents, self.rwInt, *shape)
 
     @staticmethod
@@ -277,14 +324,14 @@ class IORecord:
 
 
 class BinaryRecordReader(IORecord):
-    """Writes a single CCCC record in binary format.
+    """
+    Writes a single CCCC record in binary format.
 
     Notes
     -----
     This class reads a single CCCC record in binary format. A CCCC record consists of a leading and
     ending integer indicating how many bytes the record is. The data contained within the record may
     be integer, float, double, or string.
-
     """
 
     def open(self):
@@ -348,9 +395,11 @@ class BinaryRecordReader(IORecord):
 
 
 class BinaryRecordWriter(IORecord):
-    r"""a single record from a CCCC file
+    """
+    Reads a single CCCC record in binary format.
 
-    Reads binary information sequentially."""
+    Reads binary information sequentially.
+    """
 
     def __init__(self, stream, hasRecordBoundaries=True):
         IORecord.__init__(self, stream, hasRecordBoundaries)
@@ -408,7 +457,8 @@ class BinaryRecordWriter(IORecord):
 
 
 class AsciiRecordReader(BinaryRecordReader):
-    """Reads a single CCCC record in ASCII format.
+    """
+    Reads a single CCCC record in ASCII format.
 
     See Also
     --------
@@ -443,7 +493,8 @@ class AsciiRecordReader(BinaryRecordReader):
 
 
 class AsciiRecordWriter(IORecord):
-    """Writes a single CCCC record in ASCII format.
+    r"""
+    Writes a single CCCC record in ASCII format.
 
     Since there is no specific format of an ASCII CCCC record, the format is roughly the same as
     the :py:class:`BinaryRecordWriter`, except that the :class:`AsciiRecordReader` puts a space in
@@ -504,7 +555,9 @@ class Stream:
     """
     An abstract CCCC IO stream.
 
-    .. warning:: This is more of a stream Parser/Serializer than an actual stream.
+    Warning
+    -------
+    This is more of a stream Parser/Serializer than an actual stream.
 
     Notes
     -----
@@ -577,12 +630,12 @@ class Stream:
 
     @classmethod
     def readBinary(cls, fileName: str):
-        """Read data from a binary file into a data structure"""
+        """Read data from a binary file into a data structure."""
         return cls._read(fileName, "rb")
 
     @classmethod
     def readAscii(cls, fileName: str):
-        """Read data from an ASCII file into a data structure"""
+        """Read data from an ASCII file into a data structure."""
         return cls._read(fileName, "r")
 
     @classmethod
@@ -591,12 +644,12 @@ class Stream:
 
     @classmethod
     def writeBinary(cls, data: DataContainer, fileName: str):
-        """Write the contents of a data container to a binary file"""
+        """Write the contents of a data container to a binary file."""
         return cls._write(data, fileName, "wb")
 
     @classmethod
     def writeAscii(cls, data: DataContainer, fileName: str):
-        """Write the contents of a data container to an ASCII file"""
+        """Write the contents of a data container to an ASCII file."""
         return cls._write(data, fileName, "w")
 
     @classmethod
@@ -611,7 +664,9 @@ class StreamWithDataContainer(Stream):
     This is a relatively common pattern so some of the boilerplate
     is handled here.
 
-    .. warning:: This is more of a stream Parser/Serializer than an actual stream.
+    Warning
+    -------
+    This is more of a stream Parser/Serializer than an actual stream.
 
     Notes
     -----
@@ -637,7 +692,6 @@ class StreamWithDataContainer(Stream):
             fileMode,
         )
 
-    # pylint: disable=arguments-differ
     @classmethod
     def _write(cls, data: DataContainer, fileName: str, fileMode: str):
         return cls._readWrite(data, fileName, fileMode)

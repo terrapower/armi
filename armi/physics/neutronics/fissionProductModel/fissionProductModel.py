@@ -100,6 +100,11 @@ from armi import runLog
 from armi import interfaces
 from armi.reactor.flags import Flags
 from armi.physics.neutronics.fissionProductModel import lumpedFissionProduct
+from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import (
+    CONF_FP_MODEL,
+    CONF_MAKE_ALL_BLOCK_LFPS_INDEPENDENT,
+)
+
 
 NUM_FISSION_PRODUCTS_PER_LFP = 2.0
 
@@ -107,8 +112,7 @@ ORDER = interfaces.STACK_ORDER.AFTER + interfaces.STACK_ORDER.PREPROCESSING
 
 
 def describeInterfaces(_cs):
-    """Function for exposing interface(s) to other code"""
-
+    """Function for exposing interface(s) to other code."""
     return (FissionProductModel, {})
 
 
@@ -123,14 +127,14 @@ class FissionProductModel(interfaces.Interface):
 
     @property
     def _explicitFissionProducts(self):
-        return self.cs["fpModel"] == "explicitFissionProducts"
+        return self.cs[CONF_FP_MODEL] == "explicitFissionProducts"
 
     @property
     def _useGlobalLFPs(self):
-        if self.cs["makeAllBlockLFPsIndependent"] or self._explicitFissionProducts:
-            return False
-        else:
-            return True
+        return not (
+            self.cs[CONF_MAKE_ALL_BLOCK_LFPS_INDEPENDENT]
+            or self._explicitFissionProducts
+        )
 
     @property
     def _fissionProductBlockType(self):
@@ -155,21 +159,22 @@ class FissionProductModel(interfaces.Interface):
 
     def setAllComponentFissionProducts(self):
         """
-        Initialize all blueprint nuclides for each ``DEPLETABLE`` component in the core.
+        Initialize all nuclides for each ``DEPLETABLE`` component in the core.
 
         Notes
         -----
         This should be called when explicit fission product modeling is enabled to
-        ensure that fission products are initialized on the depletable components within
-        the reactor data model.
+        ensure that all isotopes are initialized on the depletable components within
+        the reactor data model so that there is some density as a starting point.
 
         When explicit fission products are enabled and the user has not already included
         all fission products in the blueprints (in ``nuclideFlags``), the ``fpModelLibrary`` setting is used
         to autofill all the nuclides in a given library into the ``blueprints.allNuclidesInProblem``
         list. All nuclides that were not manually initialized by the user are added to
-        the ``DEPLETABLE`` components throughout every block in the core. The ``DEPLETABLE``
-        flag is based on the user adding this explicitly in the blueprints, or is based on
-        the user setting a nuclide to ``burn: true`` in the blueprint ``nuclideFlags``.
+        the ``DEPLETABLE`` components throughout every block in the core.
+
+        The ``DEPLETABLE`` flag is based on the user adding this explicitly in the blueprints,
+        or is based on the user setting a nuclide to ``burn: true`` in the blueprint ``nuclideFlags``.
 
         See Also
         --------
@@ -179,7 +184,9 @@ class FissionProductModel(interfaces.Interface):
         for b in self.r.core.getBlocks(includeAll=True):
             b.setLumpedFissionProducts(None)
             for c in b.getComponents(Flags.DEPLETABLE):
+                # Add all isotopes in problem at 0.0 density
                 updatedNDens = c.getNumberDensities()
+                # self.r.blueprints.allNuclidesInProblem contains ~everything in ENDF if _explicitFissionProducts
                 for nuc in self.r.blueprints.allNuclidesInProblem:
                     if nuc in updatedNDens:
                         continue
@@ -220,7 +227,6 @@ class FissionProductModel(interfaces.Interface):
         --------
         armi.reactor.blocks.Block.getLumpedFissionProductCollection : same thing, but block-level compatible. Use this
         """
-
         self._globalLFPs = lfps
 
     def interactBOC(self, cycle=None):

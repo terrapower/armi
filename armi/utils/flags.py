@@ -23,16 +23,13 @@ support extension. We also considered the ``aenum`` package, which permits exten
 ``Enum`` classes, but unfortunately does not support extension of ``Flags``. So, we had to
 make our own. This is a much simplified version of what comes with ``aenum``, but still
 provides most of the safety and functionality.
-
-There is an `issue <https://bitbucket.org/stoneleaf/aenum/issues/27/>`_ on the ``aenum``
-bitbucket site to track ``Flag`` extension.
 """
 import math
 
 from typing import Dict, Union, Sequence, List, Tuple
 
 
-class auto:
+class auto:  # noqa: invalid-class-name
     """
     Empty class for requesting a lazily-evaluated automatic field value.
 
@@ -46,7 +43,7 @@ class auto:
 
     def __iter__(self):
         """
-        Dummy __iter__ implementation
+        Dummy __iter__ implementation.
 
         This is only needed to make mypy happy when it type checks things that have
         FlagTypes in them, since these can normally be iterated over, but mypy doesn't
@@ -115,16 +112,29 @@ class _FlagMeta(type):
         to ``type(klass).__getitem__(klass, key)``, which for an implementation of Flag
         is this metaclass.
         """
-        return cls(cls._nameToValue[key])  # pylint: disable=E1120
+        return cls(cls._nameToValue[key])
 
 
 class Flag(metaclass=_FlagMeta):
     """
     A collection of bitwise flags.
 
-    This is intended to emulate ``enum.Flag``, except with the possibility of extension
-    after the class has been defined. Most docs for ``enum.Flag`` should be relevant here,
-    but there are sure to be occasional differences.
+    This is intended to emulate ``enum.Flag``, except with the possibility of extension after the
+    class has been defined. Most docs for ``enum.Flag`` should be relevant here, but there are sure
+    to be occasional differences.
+
+    .. impl:: No two flags have equivalence.
+        :id: I_ARMI_FLAG_DEFINE
+        :implements: R_ARMI_FLAG_DEFINE
+
+        A bitwise flag class intended to emulate the standard library's ``enum.Flag``, with the
+        added functionality that it allows for extension after the class has been defined. Each Flag
+        is unique; no two Flags are equivalent.
+
+        Note that while Python allows for arbitrary-width integers, exceeding the system-native
+        integer size can lead to challenges in storing data, e.g. in an HDF5 file. In this case, the
+        ``from_bytes()`` and ``to_bytes()`` methods are provided to represent a Flag's values in
+        smaller chunks so that writeability can be maintained.
 
     .. warning::
         Python features arbitrary-width integers, allowing one to represent an
@@ -136,7 +146,6 @@ class Flag(metaclass=_FlagMeta):
         represent a Flag's values in smaller chunks.
     """
 
-    # for pylint. Set by metaclass
     _autoAt = None
     _nameToValue = dict()
     _valuesTaken = set()
@@ -183,9 +192,7 @@ class Flag(metaclass=_FlagMeta):
 
     @classmethod
     def _resolveAutos(cls, fields: Sequence[str]) -> List[Tuple[str, int]]:
-        """
-        Assign values to autos, based on the current state of the class.
-        """
+        """Assign values to autos, based on the current state of the class."""
         # There is some opportunity for code re-use between this and the metaclass...
         resolved = []
         for field in fields:
@@ -198,23 +205,17 @@ class Flag(metaclass=_FlagMeta):
 
     @classmethod
     def width(cls):
-        """
-        Return the number of bytes needed to store all of the flags on this class.
-        """
+        """Return the number of bytes needed to store all of the flags on this class."""
         return cls._width
 
     @classmethod
     def fields(cls):
-        """
-        Return a dictionary containing a mapping from field name to integer value.
-        """
+        """Return a dictionary containing a mapping from field name to integer value."""
         return cls._nameToValue
 
     @classmethod
     def sortedFields(cls):
-        """
-        Return a list of all field names, sorted by increasing integer value.
-        """
+        """Return a list of all field names, sorted by increasing integer value."""
         return [
             i[0] for i in sorted(cls._nameToValue.items(), key=lambda item: item[1])
         ]
@@ -228,11 +229,19 @@ class Flag(metaclass=_FlagMeta):
             This alters the class that it is called upon! Existing instances should see
             the new data, since classes are mutable.
 
+        .. impl:: Set of flags are extensible without loss of uniqueness.
+            :id: I_ARMI_FLAG_EXTEND0
+            :implements: R_ARMI_FLAG_EXTEND
+
+            A class method to extend a ``Flag`` with a vector of provided additional ``fields``,
+            with field names as keys, without loss of uniqueness. Values for the additional
+            ``fields`` can be explicitly specified, or an instance of ``auto`` can be supplied.
+
         Parameters
         ----------
         fields : dict
-            A dictionary containing field names as keys, and their desired values, or
-            an instance of ``auto`` as values.
+            A dictionary containing field names as keys, and their desired values, or an instance of
+            ``auto`` as values.
 
         Example
         -------
@@ -260,8 +269,8 @@ class Flag(metaclass=_FlagMeta):
 
         This is useful when storing Flags in a data type of limited size. Python ints
         can be of arbitrary size, while most other systems can only represent integers
-        of 32 or 64 bits. For compatibiliy, this function allows to convert the flags to
-        a sequence of single-byte elements.
+        of 32 or 64 bits. For compatibility, this function allows to convert the flags
+        to a sequence of single-byte elements.
 
         Note that this uses snake_case to mimic the method on the Python-native int
         type.
@@ -270,9 +279,7 @@ class Flag(metaclass=_FlagMeta):
 
     @classmethod
     def from_bytes(cls, bytes, byteorder="little"):
-        """
-        Return a Flags instance given a byte stream.
-        """
+        """Return a Flags instance given a byte stream."""
         return cls(int.from_bytes(bytes, byteorder=byteorder))
 
     def __int__(self):

@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """Test reading/writing of NHFLUX dataset."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
 import os
 import unittest
 
@@ -182,7 +181,7 @@ class TestNhfluxVariant(unittest.TestCase):
         )
 
     def test_write(self):
-        """Verify binary equivalence of written binary file"""
+        """Verify binary equivalence of written binary file."""
         with TemporaryDirectoryChanger():
             nhflux.NhfluxStreamVariant.writeBinary(self.nhf, "NHFLUX2")
             with open(SIMPLE_HEXZ_NHFLUX_VARIANT, "rb") as f1, open(
@@ -192,7 +191,3 @@ class TestNhfluxVariant(unittest.TestCase):
                 actualData = f2.read()
             for expected, actual in zip(expectedData, actualData):
                 self.assertEqual(expected, actual)
-
-
-if __name__ == "__main__":
-    unittest.main()

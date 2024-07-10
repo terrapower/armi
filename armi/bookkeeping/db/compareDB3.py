@@ -62,7 +62,7 @@ from armi.reactor.composites import ArmiObject
 
 
 class OutputWriter:
-    """Basically a tee to writeln to runLog and the output file"""
+    """Basically a tee to writeln to runLog and the output file."""
 
     def __init__(self, fname):
         self.fname = fname
@@ -138,7 +138,7 @@ class DiffResults:
         return [None] * (len(self._columns) - 1)
 
     def reportDiffs(self, stream: OutputWriter) -> None:
-        """Print out a well-formatted table of the non-zero diffs"""
+        """Print out a well-formatted table of the non-zero diffs."""
         # filter out empty rows
         diffsToPrint = {
             key: value
@@ -164,6 +164,7 @@ def compareDatabases(
     srcFileName: str,
     exclusions: Optional[Sequence[str]] = None,
     tolerance: float = 0.0,
+    timestepCompare: Optional[Sequence[Tuple[int, int]]] = None,
 ) -> Optional[DiffResults]:
     """High-level method to compare two ARMI H5 files, given file paths."""
     compiledExclusions = None
@@ -185,21 +186,24 @@ def compareDatabases(
             )
 
         with ref, src:
-            _, nDiff = _compareH5Groups(out, ref, src, "timesteps")
+            if not timestepCompare:
+                _, nDiff = _compareH5Groups(out, ref, src, "timesteps")
 
-            if nDiff > 0:
-                runLog.warning(
-                    "{} and {} have differing timestep groups, and are "
-                    "probably not safe to compare. This is likely due to one of "
-                    "the cases having failed to complete.".format(ref, src)
-                )
-                return None
+                if nDiff > 0:
+                    runLog.warning(
+                        "{} and {} have differing timestep groups, and are "
+                        "probably not safe to compare. This is likely due to one of "
+                        "the cases having failed to complete.".format(ref, src)
+                    )
+                    return None
 
             for refGroup, srcGroup in zip(
-                ref.genTimeStepGroups(), src.genTimeStepGroups()
+                ref.genTimeStepGroups(timeSteps=timestepCompare),
+                src.genTimeStepGroups(timeSteps=timestepCompare),
             ):
                 runLog.info(
-                    "Comparing time step {}".format(refGroup.name.split("/")[1])
+                    f"Comparing ref time step {refGroup.name.split('/')[1]} to src time "
+                    f"step {srcGroup.name.split('/')[1]}"
                 )
                 diffResults.addTimeStep(refGroup.name)
                 _compareTimeStep(
@@ -319,13 +323,13 @@ def _diffSpecialData(
     compName = refData.name.split("/")[-2]
 
     nDiffs = _compareSets(
-        set(srcData.attrs.keys()), set(refData.attrs.keys()), "formatting data"
+        set(srcData.attrs.keys()), set(refData.attrs.keys()), out, "formatting data"
     )
     keysMatch = nDiffs == 0
     diffResults.addStructureDiffs(nDiffs)
 
     if not keysMatch:
-        diffResults.addDiff(name, name, [numpy.inf], [numpy.inf], [numpy.inf])
+        diffResults.addDiff(name, name, numpy.inf, numpy.inf, numpy.inf)
         return
 
     if srcData.attrs.get("dict", False):
@@ -373,7 +377,9 @@ def _diffSpecialData(
         if isinstance(dSrc, numpy.ndarray) and isinstance(dRef, numpy.ndarray):
             if dSrc.shape != dRef.shape:
                 out.writeln("Shapes did not match for {}".format(refData))
-                diffResults.add([numpy.inf], [numpy.inf], [numpy.inf], [numpy.inf])
+                diffResults.addDiff(
+                    compName, paramName, numpy.inf, numpy.inf, numpy.inf
+                )
                 return
 
             # make sure not to try to compare empty arrays. Numpy is mediocre at

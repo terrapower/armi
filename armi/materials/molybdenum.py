@@ -12,19 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Molybdenum
-"""
+"""Molybdenum."""
 
 from armi.materials.material import SimpleSolid
 
 
 class Molybdenum(SimpleSolid):
-    name = "Molybdenum"
-
     def setDefaultMassFracs(self):
         """Moly mass fractions."""
         self.setMassFrac("MO", 1.0)
 
-    def density3(self, Tk=None, Tc=None):
+    def density(self, Tk=None, Tc=None):
         return 10.28  # g/cc

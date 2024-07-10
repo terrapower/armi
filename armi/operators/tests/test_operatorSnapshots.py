@@ -12,15 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for operator snapshots"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-method-argument,import-outside-toplevel
+"""Tests for operator snapshots."""
 import unittest
 
+from armi import settings
 from armi.bookkeeping.db.databaseInterface import DatabaseInterface
+from armi.operators import getOperatorClassFromSettings
+from armi.operators.runTypes import RunTypes
 from armi.operators.snapshots import OperatorSnapshots
 from armi.reactor.tests import test_reactors
-from armi.settings.fwSettings.databaseSettings import CONF_FORCE_DB_PARAMS
-from armi.operators.runTypes import RunTypes
 
 
 class TestOperatorSnapshots(unittest.TestCase):
@@ -31,9 +31,11 @@ class TestOperatorSnapshots(unittest.TestCase):
         newSettings["verbosity"] = "important"
         newSettings["branchVerbosity"] = "important"
         newSettings["nCycles"] = 1
-        newSettings[CONF_FORCE_DB_PARAMS] = ["baseBu"]
         newSettings["dumpSnapshot"] = ["000000", "008000", "016005"]
-        o1, self.r = test_reactors.loadTestReactor(customSettings=newSettings)
+        o1, self.r = test_reactors.loadTestReactor(
+            customSettings=newSettings,
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml",
+        )
         self.o = OperatorSnapshots(o1.cs)
         self.o.r = self.r
 
@@ -59,8 +61,40 @@ class TestOperatorSnapshots(unittest.TestCase):
 
         self.assertEqual(self.r.core.p.power, 0.0)
         self.o._mainOperate()
-        self.assertEqual(self.r.core.p.power, 100000000.0)
+        self.assertEqual(self.r.core.p.power, 1000000.0)
+
+    def test_createInterfaces(self):
+        self.assertEqual(len(self.o.interfaces), 0)
+        self.o.createInterfaces()
+
+        # If someone adds an interface, we don't want this test to break, so let's do >6
+        self.assertGreater(len(self.o.interfaces), 6)
+
+    def test_createInterfacesDisabled(self):
+        self.assertEqual(len(self.o.interfaces), 0)
+        allInterfaces = [
+            "main",
+            "fissionProducts",
+            "xsGroups",
+            "fuelHandler",
+            "history",
+            "database",
+            "memoryProfiler",
+            "snapshot",
+        ]
+        for i in allInterfaces:
+            self.o.disabledInterfaces.append(i)
+        self.o.createInterfaces()
+
+        # If someone adds an interface, we don't want this test to break, so let's do >6
+        self.assertGreater(len(self.o.interfaces), 6)
+        for i in self.o.interfaces:
+            self.assertFalse(i.enabled())
 
 
-if __name__ == "__main__":
-    unittest.main()
+class TestOperatorSnapshotsSettings(unittest.TestCase):
+    def test_getOperatorClassFromSettings(self):
+        cs = settings.Settings()
+        cs = cs.modified(newSettings={"runType": RunTypes.SNAPSHOTS})
+        clazz = getOperatorClassFromSettings(cs)
+        self.assertEqual(clazz, OperatorSnapshots)

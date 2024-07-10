@@ -12,28 +12,36 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""unit tests for the neutronics plugin"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+"""Unit tests for the neutronics plugin."""
 import io
-import os
 import unittest
 
 from ruamel.yaml import YAML
 
+from armi import getPluginManagerOrFail, settings, tests
 from armi.operators import settingsValidation
 from armi.physics import neutronics
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.physics.neutronics.settings import (
+    CONF_GEN_XS,
+    CONF_GLOBAL_FLUX_ACTIVE,
+    CONF_GROUP_STRUCTURE,
+    CONF_DPA_XS_SET,
     CONF_OUTERS_,
     CONF_INNERS_,
     CONF_NEUTRONICS_KERNEL,
+    CONF_LATTICE_PHYSICS_FREQUENCY,
     getNeutronicsSettingValidators,
 )
+from armi.settings.fwSettings.globalSettings import CONF_RUN_TYPE
 from armi.settings import caseSettings
 from armi.tests import TEST_ROOT
 from armi.tests.test_plugins import TestPlugin
 from armi.utils import directoryChangers
-from armi import getPluginManagerOrFail, settings, tests
+from armi.physics.neutronics.settings import (
+    CONF_BOUNDARIES,
+    CONF_GRID_PLATE_DPA_XS_SET,
+)
 
 XS_EXAMPLE = """AA:
     geometry: 0D
@@ -45,7 +53,7 @@ BA:
 """
 
 
-class Test_NeutronicsPlugin(TestPlugin):
+class TestNeutronicsPlugin(TestPlugin):
     plugin = neutronics.NeutronicsPlugin
 
     def setUp(self):
@@ -81,7 +89,7 @@ class Test_NeutronicsPlugin(TestPlugin):
         self.assertIn("geometry: 1D", outText)
 
     def test_neutronicsSettingsLoaded(self):
-        """Check that various special neutronics-specifics settings are loaded"""
+        """Check that various special neutronics-specifics settings are loaded."""
         cs = caseSettings.Settings()
 
         self.assertIn(CONF_INNERS_, cs)
@@ -241,7 +249,7 @@ class NeutronicsReactorTests(unittest.TestCase):
 
     @staticmethod
     def __autoCorrectAllQueries(settingsValidator):
-        """Force-Correct (resolve() to "YES") all queries in a Settings Validator"""
+        """Force-Correct (resolve() to "YES") all queries in a Settings Validator."""
         for query in settingsValidator:
             try:
                 query.correction()
@@ -256,74 +264,86 @@ class NeutronicsReactorTests(unittest.TestCase):
         sv = getNeutronicsSettingValidators(inspector)
         self.assertEqual(len(sv), 8)
 
-        # Test the Query: boundaries are now "Extrapolated", not "Normal"
-        cs = cs.modified(newSettings={"boundaries": "Normal"})
+        # Test the Query: boundaries are now "Extrapolated", not "Generalized"
+        cs = cs.modified(newSettings={CONF_BOUNDARIES: "Generalized"})
         inspector = settingsValidation.Inspector(cs)
         sv = getNeutronicsSettingValidators(inspector)
 
         self.__autoCorrectAllQueries(sv)
-        self.assertEqual(inspector.cs["boundaries"], "Extrapolated")
+        self.assertEqual(inspector.cs[CONF_BOUNDARIES], "Extrapolated")
 
         # Test the Query: genXS are no longer True/False
-        cs = cs.modified(newSettings={"genXS": "True"})
+        cs = cs.modified(newSettings={CONF_GEN_XS: "True"})
         inspector = settingsValidation.Inspector(cs)
         sv = getNeutronicsSettingValidators(inspector)
 
         self.__autoCorrectAllQueries(sv)
-        self.assertEqual(inspector.cs["genXS"], "Neutron")
+        self.assertEqual(inspector.cs[CONF_GEN_XS], "Neutron")
 
-        cs = cs.modified(newSettings={"genXS": "False"})
+        cs = cs.modified(newSettings={CONF_GEN_XS: "False"})
         inspector = settingsValidation.Inspector(cs)
         sv = getNeutronicsSettingValidators(inspector)
 
         self.__autoCorrectAllQueries(sv)
-        self.assertEqual(inspector.cs["genXS"], "")
+        self.assertEqual(inspector.cs[CONF_GEN_XS], "")
 
-        # Test the Query: globalFluxActive are no longer True/False
-        cs = cs.modified(newSettings={"globalFluxActive": "True"})
+        # Test the Query: CONF_GLOBAL_FLUX_ACTIVE are no longer True/False
+        cs = cs.modified(newSettings={CONF_GLOBAL_FLUX_ACTIVE: "True"})
         inspector = settingsValidation.Inspector(cs)
         sv = getNeutronicsSettingValidators(inspector)
 
         self.__autoCorrectAllQueries(sv)
-        self.assertEqual(inspector.cs["globalFluxActive"], "Neutron")
+        self.assertEqual(inspector.cs[CONF_GLOBAL_FLUX_ACTIVE], "Neutron")
 
-        cs = cs.modified(newSettings={"globalFluxActive": "False"})
+        cs = cs.modified(newSettings={CONF_GLOBAL_FLUX_ACTIVE: "False"})
         inspector = settingsValidation.Inspector(cs)
         sv = getNeutronicsSettingValidators(inspector)
 
         self.__autoCorrectAllQueries(sv)
-        self.assertEqual(inspector.cs["globalFluxActive"], "")
+        self.assertEqual(inspector.cs[CONF_GLOBAL_FLUX_ACTIVE], "")
 
         # Test the Query: try to migrate the Group Structure name
-        cs = cs.modified(newSettings={"groupStructure": "armi45"})
+        cs = cs.modified(newSettings={CONF_GROUP_STRUCTURE: "armi45"})
         inspector = settingsValidation.Inspector(cs)
         sv = getNeutronicsSettingValidators(inspector)
 
         self.__autoCorrectAllQueries(sv)
-        self.assertEqual(inspector.cs["groupStructure"], "ARMI45")
+        self.assertEqual(inspector.cs[CONF_GROUP_STRUCTURE], "ARMI45")
 
-        cs = cs.modified(newSettings={"groupStructure": "bad_value"})
+        cs = cs.modified(newSettings={CONF_GROUP_STRUCTURE: "bad_value"})
         inspector = settingsValidation.Inspector(cs)
         sv = getNeutronicsSettingValidators(inspector)
 
         self.__autoCorrectAllQueries(sv)
-        self.assertEqual(inspector.cs["groupStructure"], "ANL33")
+        self.assertEqual(inspector.cs[CONF_GROUP_STRUCTURE], "ANL33")
 
         # Test the Query: migrating some common shortened names for dpa XS sets
-        cs = cs.modified(newSettings={"dpaXsSet": "dpaHT9_33"})
+        cs = cs.modified(newSettings={CONF_DPA_XS_SET: "dpaHT9_33"})
         inspector = settingsValidation.Inspector(cs)
         sv = getNeutronicsSettingValidators(inspector)
 
         self.__autoCorrectAllQueries(sv)
-        self.assertEqual(inspector.cs["dpaXsSet"], "dpaHT9_ANL33_TwrBol")
+        self.assertEqual(inspector.cs[CONF_DPA_XS_SET], "dpaHT9_ANL33_TwrBol")
 
-        cs = cs.modified(newSettings={"gridPlateDpaXsSet": "dpa_SS316"})
+        cs = cs.modified(newSettings={CONF_GRID_PLATE_DPA_XS_SET: "dpa_SS316"})
         inspector = settingsValidation.Inspector(cs)
         sv = getNeutronicsSettingValidators(inspector)
 
         self.__autoCorrectAllQueries(sv)
-        self.assertEqual(inspector.cs["gridPlateDpaXsSet"], "dpaSS316_ANL33_TwrBol")
+        self.assertEqual(
+            inspector.cs[CONF_GRID_PLATE_DPA_XS_SET], "dpaSS316_ANL33_TwrBol"
+        )
 
+        cs = cs.modified(
+            newSettings={
+                CONF_RUN_TYPE: "Snapshots",
+                CONF_LATTICE_PHYSICS_FREQUENCY: "BOC",
+            }
+        )
+        inspector = settingsValidation.Inspector(cs)
+        sv = getNeutronicsSettingValidators(inspector)
 
-if __name__ == "__main__":
-    unittest.main()
+        self.__autoCorrectAllQueries(sv)
+        self.assertEqual(
+            inspector.cs[CONF_LATTICE_PHYSICS_FREQUENCY], "firstCoupledIteration"
+        )

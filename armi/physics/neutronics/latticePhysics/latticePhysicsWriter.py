@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-Lattice Physics Writer
+Lattice Physics Writer.
 
 Parent class for lattice physics writers.
 
@@ -25,6 +25,7 @@ import math
 import collections
 
 import numpy
+import ordered_set
 
 from armi import runLog
 from armi import interfaces
@@ -32,8 +33,17 @@ from armi.physics import neutronics
 from armi.reactor import components
 from armi.nucDirectory import nuclideBases
 from armi.reactor.flags import Flags
-from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.utils.customExceptions import warn_when_root
+from armi.physics.neutronics.const import CONF_CROSS_SECTION
+from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import (
+    CONF_FP_MODEL,
+)
+from armi.physics.neutronics.settings import (
+    CONF_MINIMUM_FISSILE_FRACTION,
+    CONF_MINIMUM_NUCLIDE_DENSITY,
+)
+from armi.physics.neutronics.settings import CONF_GEN_XS
+from armi.settings.fwSettings.globalSettings import CONF_DETAILED_AXIAL_EXPANSION
 
 
 # number of decimal places to round temperatures to in _groupNuclidesByTemperature
@@ -43,7 +53,7 @@ _NUCLIDE_VALUES_TEMPERATURE_INDEX = 1
 
 
 @warn_when_root
-def NuclideNameFoundMultipleTimes(nuclideName):
+def nuclideNameFoundMultipleTimes(nuclideName):
     return "Nuclide `{}' was found multiple times.".format(nuclideName)
 
 
@@ -93,8 +103,8 @@ class LatticePhysicsWriter(interfaces.InputWriter):
             self.cs
         ):
             raise ValueError(
-                "Invalid `genXS` setting to generate gamma XS for {}.".format(
-                    self.block
+                "Invalid `{}` setting to generate gamma XS for {}.".format(
+                    CONF_GEN_XS, self.block
                 )
             )
         self.xsId = representativeBlock.getMicroSuffix()
@@ -103,16 +113,32 @@ class LatticePhysicsWriter(interfaces.InputWriter):
         self.driverXsID = self.xsSettings.driverID
         self.numExternalRings = self.xsSettings.numExternalRings
         self.criticalBucklingSearchActive = self.xsSettings.criticalBuckling
-        blockNeedsFPs = representativeBlock.getLumpedFissionProductCollection() != None
+
+        self.executeExclusive = self.xsSettings.xsExecuteExclusive
+        self.priority = self.xsSettings.xsPriority
+        self.maxAtomNumberToModelInfDilute = (
+            self.xsSettings.xsMaxAtomNumber
+            if self.xsSettings.xsMaxAtomNumber is not None
+            else 999
+        )
+        # would prefer this in 1D but its used in 0D in _writeSourceComposition
+        self.minDriverDensity = self.xsSettings.minDriverDensity
+
+        blockNeedsFPs = (
+            representativeBlock.getLumpedFissionProductCollection() is not None
+        )
 
         self.modelFissionProducts = (
-            blockNeedsFPs and self.cs["fpModel"] != "noFissionProducts"
+            blockNeedsFPs and self.cs[CONF_FP_MODEL] != "noFissionProducts"
         )
-        self.explicitFissionProducts = self.cs["fpModel"] == "explicitFissionProducts"
+        self.explicitFissionProducts = (
+            self.cs[CONF_FP_MODEL] == "explicitFissionProducts"
+        )
         self.diluteFissionProducts = (
-            blockNeedsFPs and self.cs["fpModel"] == "infinitelyDilute"
+            blockNeedsFPs and self.cs[CONF_FP_MODEL] == "infinitelyDilute"
         )
-        self.minimumNuclideDensity = self.cs["minimumNuclideDensity"]
+        self.minimumNuclideDensity = self.cs[CONF_MINIMUM_NUCLIDE_DENSITY]
+        self.infinitelyDiluteDensity = self.minimumNuclideDensity
         self._unusedNuclides = set()
         self._allNuclideObjects = None
 
@@ -142,7 +168,7 @@ class LatticePhysicsWriter(interfaces.InputWriter):
             ),
         )
 
-    def write(self):  # pylint: disable=arguments-differ
+    def write(self):
         raise NotImplementedError
 
     @property
@@ -219,11 +245,19 @@ class LatticePhysicsWriter(interfaces.InputWriter):
         # on the components will already contain all the nuclides required to be
         # modeled by the lattice physics writer. Otherwise, assume that `allNuclidesInProblem`
         # should be modeled.
-        nuclides = (
-            sorted(objNuclides)
-            if self.explicitFissionProducts
-            else self.r.blueprints.allNuclidesInProblem
-        )
+        if self.explicitFissionProducts:
+            # If detailed axial expansion is active, mapping between blocks occurs on uniform mesh
+            # and this can cause blocks to have isotopes that they don't have cross sections for.
+            # Fix this by adding all isotopes so they are present in lattice physics.
+            if self.cs[CONF_DETAILED_AXIAL_EXPANSION]:
+                nuclides = self.r.blueprints.allNuclidesInProblem
+            else:
+                nuclides = ordered_set.OrderedSet(sorted(objNuclides))
+        else:
+            nuclides = self.r.blueprints.allNuclidesInProblem
+
+        nuclides = nuclides.union(self.r.blueprints.nucsToForceInXsGen)
+
         numDensities = subjectObject.getNuclideNumberDensities(nuclides)
 
         for nucName, dens in zip(nuclides, numDensities):
@@ -240,7 +274,7 @@ class LatticePhysicsWriter(interfaces.InputWriter):
 
             density = max(dens, self.minimumNuclideDensity)
             if nuc in nucDensities:
-                NuclideNameFoundMultipleTimes(nucName)
+                nuclideNameFoundMultipleTimes(nucName)
                 dens, nucTemperatureInC, nucCategory = nucDensities[nuc]
                 density = dens + density
                 nucDensities[nuc] = (density, nucTemperatureInC, nucCategory)
@@ -329,14 +363,14 @@ class LatticePhysicsWriter(interfaces.InputWriter):
         return fuelTemperatureInC
 
     def _getDetailedFissionProducts(self, dfpDensities):
-        """Return a dictionary of fission products not provided in the reactor blueprint nuclides
+        """Return a dictionary of fission products not provided in the reactor blueprint nuclides.
 
         Notes
         -----
         Assumes that all fission products are at the same temperature of the lumped fission product of U238 within the
         block.
         """
-        if self.cs["fpModel"] != "noFissionProducts":
+        if self.cs[CONF_FP_MODEL] != "noFissionProducts":
             fissProductTemperatureInC = self._getAvgNuclideTemperatureInC("LFP38")
             return {
                 fp: (dens, fissProductTemperatureInC, self.FISSION_PRODUCT_CATEGORY)
@@ -349,7 +383,7 @@ class LatticePhysicsWriter(interfaces.InputWriter):
         Expands the nuclides in the LFP based on their yields.
 
         Returns
-        --------
+        -------
         dfpDensities : dict
             Detailed Fission Product Densities. keys are FP names, values are block number densities in atoms/bn-cm.
 
@@ -403,7 +437,7 @@ class LatticePhysicsWriter(interfaces.InputWriter):
         Notes
         -----
         We're going to increase the Pu-239 density to make the ratio of fissile mass to heavy metal mass equal to the
-        target ``minimumFissileFraction``::
+        target ``CONF_MINIMUM_FISSILE_FRACTION``::
 
             minFrac = (fiss - old + new) / (hm - old + new)
             minFrac * (hm - old + new) = fiss - old + new
@@ -412,15 +446,14 @@ class LatticePhysicsWriter(interfaces.InputWriter):
 
         where::
 
-            minFrac = ``minimumFissileFraction`` setting
+            minFrac = ``CONF_MINIMUM_FISSILE_FRACTION`` setting
             fiss = fissile mass of block
             hm = heavy metal mass of block
             old = number density of Pu-239 before adjustment
             new = number density of Pu-239 after adjustment
 
         """
-
-        minFrac = self.cs["minimumFissileFraction"]
+        minFrac = self.cs[CONF_MINIMUM_FISSILE_FRACTION]
         fiss = sum(dens[0] for nuc, dens in nucDensities.items() if nuc.isFissile())
         hm = sum(dens[0] for nuc, dens in nucDensities.items() if nuc.isHeavyMetal())
 

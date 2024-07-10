@@ -12,25 +12,35 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Tests for settings validation system.
-"""
+"""Tests for settings validation system."""
+import os
 import unittest
 
-from armi import settings
+from armi import context
 from armi import operators
+from armi import settings
+from armi.operators import settingsValidation
 from armi.operators.settingsValidation import createQueryRevertBadPathToDefault
+from armi.utils import directoryChangers
 
 
 class TestInspector(unittest.TestCase):
-    """Test case"""
-
     def setUp(self):
+        self.td = directoryChangers.TemporaryDirectoryChanger()
+        self.td.__enter__()
+        self.init_mode = context.CURRENT_MODE
         self.cs = settings.Settings()
         self.inspector = operators.getOperatorClassFromSettings(self.cs).inspector(
             self.cs
         )
         self.inspector.queries = []  # clear out the auto-generated ones
+        self.filepathYaml = os.path.join(
+            os.getcwd(), self._testMethodName + "_test_setting_io.yaml"
+        )
+
+    def tearDown(self):
+        context.Mode.setMode(self.init_mode)
+        self.td.__exit__(None, None, None)
 
     def test_query(self):
         buh = {1: 2, 3: 4}
@@ -51,6 +61,58 @@ class TestInspector(unittest.TestCase):
         self.assertFalse(query)
 
         self.assertEqual(str(query), "<Query: beepbopboopbeep>")
+
+    def test_overwriteSettingsCorrectiveQuery(self):
+        """
+        Tests the case where a corrective query is resolved.
+        Checks to make sure the settings file is overwritten with the resolved setting.
+
+        .. test:: Settings have validation and correction tools.
+            :id: T_ARMI_SETTINGS_RULES0
+            :tests: R_ARMI_SETTINGS_RULES
+        """
+        # load settings from test settings file
+        self.cs["cycleLength"] = 300.0
+        self.cs.writeToYamlFile(self.filepathYaml)
+        self.cs.loadFromInputFile(self.filepathYaml)
+        self.assertEqual(self.cs["cycleLength"], 300.0)
+
+        # define corrective query
+        def csChange(x, y, z):
+            x[y] = z
+
+        self.inspector.addQuery(
+            lambda: self.inspector.cs["cycleLength"] == 300.0,
+            "Changing `cycleLength` from 300.0 to 666",
+            ":D",
+            lambda: csChange(self.cs, "cycleLength", 666),
+        )
+
+        # redefine prompt function in order to circumvent need for user input
+        def fakePrompt(*inputs):
+            return True
+
+        nominalPromptFunction = settingsValidation.prompt
+        settingsValidation.prompt = fakePrompt
+
+        try:
+            # run inspector
+            self.inspector.run()
+
+            # check to see if file was overwritten correctly
+            self.cs.loadFromInputFile(self.filepathYaml)
+            self.assertEqual(self.cs["cycleLength"], 666)
+
+            # check to see if original settings were saved in "_old.yaml" file
+            oldFilePath = "{}_old.yaml".format(self.filepathYaml.split(".yaml")[0])
+            self.assertTrue(os.path.exists(oldFilePath) and os.path.isfile(oldFilePath))
+            self.csOriginal = settings.Settings()
+            self.csOriginal.loadFromInputFile(oldFilePath)
+            self.assertEqual(self.csOriginal["cycleLength"], 300.0)
+
+        finally:
+            # reset prompt function to nominal
+            settingsValidation.prompt = nominalPromptFunction
 
     def test_changeOfCS(self):
         self.inspector.addQuery(
@@ -87,13 +149,7 @@ class TestInspector(unittest.TestCase):
 
     def test_assignCS(self):
         keys = sorted(self.inspector.cs.keys())
-        self.assertIn("HCFcoretype", keys)
-
-        self.assertEqual(self.inspector.cs["HCFcoretype"], "TWRC")
-        self.inspector._assignCS(
-            "HCFcoretype", "FAKE"
-        )  # pylint: disable=protected-access
-        self.assertEqual(self.inspector.cs["HCFcoretype"], "FAKE")
+        self.assertIn("nCycles", keys)
 
     def test_createQueryRevertBadPathToDefault(self):
         query = createQueryRevertBadPathToDefault(self.inspector, "numProcessors")
@@ -135,7 +191,3 @@ class TestInspector(unittest.TestCase):
         )
         self.inspector._assignCS("cycleLength", 666)
         self.assertTrue(self.inspector._checkForBothSimpleAndDetailedCyclesInputs())
-
-
-if __name__ == "__main__":
-    unittest.main()

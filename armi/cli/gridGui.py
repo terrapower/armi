@@ -20,9 +20,7 @@ from armi.cli import entryPoint
 
 
 class GridGuiEntryPoint(entryPoint.EntryPoint):
-    """
-    Load the grid editor GUI
-    """
+    """Load the grid editor GUI."""
 
     name = "grids"
 

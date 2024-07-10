@@ -13,8 +13,8 @@
 # limitations under the License.
 
 """
-Make a Theta-R-Z grid
-=====================
+Make a Theta-R-Z grid.
+======================
 
 This builds a 3-D grid in Theta-R-Z geometry by specifying the theta, r, and z
 dimension bounds explicitly.
@@ -22,12 +22,12 @@ dimension bounds explicitly.
 Learn more about :py:mod:`grids <armi.reactor.grids>`.
 """
 import itertools
+
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 
-from armi.reactor import grids
 from armi import configure
+from armi.reactor import grids
 
 configure(permissive=True)
 

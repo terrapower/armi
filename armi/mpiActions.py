@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-This module provides an abstract class to be used to implement "MPI actions."
+This module provides an abstract class to be used to implement "MPI actions.".
 
 MPI actions are tasks, activities, or work that can be executed on the worker nodes. The standard
 workflow is essentially that the primary node creates an :py:class:`~armi.mpiActions.MpiAction`,
@@ -52,12 +52,11 @@ sends it to the workers, and then both the primary and the workers
 
 In order to create a new, custom MPI Action, inherit from :py:class:`~armi.mpiActions.MpiAction`,
 and override the :py:meth:`~armi.mpiActions.MpiAction.invokeHook` method.
-
 """
 import collections
 import gc
-import timeit
 import math
+import timeit
 
 from six.moves import cPickle
 import tabulate
@@ -68,7 +67,6 @@ from armi import runLog
 from armi import settings
 from armi import utils
 from armi.reactor import reactors
-from armi.reactor import assemblies
 from armi.reactor.parameters import parameterDefinitions
 from armi.utils import iterables
 
@@ -77,7 +75,7 @@ class MpiAction:
     """Base of all MPI actions.
 
     MPI Actions are tasks that can be executed without needing lots of other
-    information. When a worker node sits in it's main loop, and receives an MPI Action, it will
+    information. When a worker node sits in its main loop, and receives an MPI Action, it will
     simply call :py:meth:`~armi.mpiActions.MpiAction.invoke`.
     """
 
@@ -86,6 +84,13 @@ class MpiAction:
         self.r = None
         self.cs = None
         self.serial = False
+        # items can be set to exclusive if they will take considerably longer
+        # they will be queued first, and the CPUs for this action will not
+        # be used for any other purpose (except when number of exclusive actions > num CPU groups)
+        self.runActionExclusive = False
+        # lower number is higher; halfway between 1-10.. probably dont need more
+        # than 10 priorities but negative nums work too...
+        self.priority = 5
 
     @property
     def parallel(self):
@@ -119,15 +124,12 @@ class MpiAction:
         r : :py:class:`armi.operators.Reactor`
             If a reactor is not necessary, supply :code:`None`.
         """
-
         instance = cls()
         instance.broadcast()
         return instance.invoke(o, r, cs)
 
     def _mpiOperationHelper(self, obj, mpiFunction):
-        """
-        Strips off the operator, reactor, cs from the mpiAction before
-        """
+        """Strips off the operator, reactor, cs from the mpiAction before."""
         if obj is None or obj is self:
             # prevent sending o, r, and cs, they should be handled appropriately by the other nodes
             # reattach with finally
@@ -136,7 +138,7 @@ class MpiAction:
             self.o = self.r = self.cs = None
         try:
             return mpiFunction(obj, root=0)
-        except (cPickle.PicklingError) as error:
+        except cPickle.PicklingError as error:
             runLog.error("Failed to {} {}.".format(mpiFunction.__name__, obj))
             runLog.error(error)
             raise
@@ -264,7 +266,7 @@ class MpiAction:
         """
         ntasks = len(objectsForAllCoresToIter)
         numLocalObjects, deficit = divmod(ntasks, context.MPI_SIZE)
-        if context.MPI_RANK < deficit:
+        if deficit > context.MPI_RANK:
             numLocalObjects += 1
             first = context.MPI_RANK * numLocalObjects
         else:
@@ -303,31 +305,30 @@ def runActions(o, r, cs, actions, numPerNode=None, serial=False):
         return runActionsInSerial(o, r, cs, actions)
 
     useForComputation = [True] * context.MPI_SIZE
-    if numPerNode != None:
+    if numPerNode is not None:
         if numPerNode < 1:
             raise ValueError("numPerNode must be >= 1")
         numThisNode = {nodeName: 0 for nodeName in context.MPI_NODENAMES}
         for rank, nodeName in enumerate(context.MPI_NODENAMES):
+            # if we have more processors than tasks, disable the extra
             useForComputation[rank] = numThisNode[nodeName] < numPerNode
             numThisNode[nodeName] += 1
-    numBatches = int(
-        math.ceil(
-            len(actions) / float(len([rank for rank in useForComputation if rank]))
-        )
-    )
+
+    queue, numBatches = _makeQueue(actions, useForComputation)
     runLog.extra(
         "Running {} MPI actions in parallel over {} batches".format(
             len(actions), numBatches
         )
     )
-
-    queue = list(actions)  # create a new list.. we will use as a queue
     results = []
     batchNum = 0
     while queue:
         actionsThisRound = []
         for useRank in useForComputation:
             actionsThisRound.append(queue.pop(0) if useRank and queue else None)
+        useForComputation = _disableForExclusiveTasks(
+            actionsThisRound, useForComputation
+        )
         realActions = [
             (context.MPI_NODENAMES[rank], rank, act)
             for rank, act in enumerate(actionsThisRound)
@@ -346,6 +347,54 @@ def runActions(o, r, cs, actions, numPerNode=None, serial=False):
         distrib.broadcast()
         results.append(distrib.invoke(o, r, cs))
     return results
+
+
+def _disableForExclusiveTasks(actionsThisRound, useForComputation):
+    # disable processors that are exclusive for next
+    indicesToDisable = [
+        i
+        for i, action in enumerate(actionsThisRound)
+        if action is not None and action.runActionExclusive
+    ]
+    for i in indicesToDisable:
+        useForComputation[i] = False
+    return useForComputation
+
+
+def _makeQueue(actions, useForComputation):
+    """
+    Sort actions by priority in a queue, if more exclusive than CPUs makes all non-exclusive.
+
+    Notes
+    -----
+    All exclusive actions will occur first regardless of the priority.
+    All non-exclusive actions will be after all exclusive actions regardless of the priority.
+    Within these 2 bins, priority matters.
+    In the event that more exclusive actions are requested than CPUs - 1, all actions will
+    be changed to non-exclusive but previously evaluated order will remain.
+    CPUs - 1 is to reserve at least 1 CPU for non-exclusive actions.
+    """
+
+    def sortActionPriority(action):
+        # exclusive actions first and those groups of CPUs only get 1 action
+        exclusivePriority = 1 if action.runActionExclusive else 2
+        return (exclusivePriority, action.priority)
+
+    queue = list(sorted(actions, key=sortActionPriority))
+    minCPUsForRemainingTasks = 1
+    nExclusiveCPUs = len([action for action in queue if action.runActionExclusive])
+    nCPUsAvailable = len([rank for rank in useForComputation if rank])
+    if nExclusiveCPUs + minCPUsForRemainingTasks > nCPUsAvailable:
+        # there are more exclusive tasks than sets of CPUs, so just make them all
+        # non-exclusive and evenly balance them
+        for action in queue:
+            action.runActionExclusive = False
+        numBatches = int(math.ceil(len(actions) / float(nCPUsAvailable)))
+    else:
+        nLeftoverCPUs = nCPUsAvailable - nExclusiveCPUs
+        nLeftoverActions = len(actions) - nExclusiveCPUs
+        numBatches = int(math.ceil(nLeftoverActions / nLeftoverCPUs))
+    return queue, numBatches
 
 
 def runActionsInSerial(o, r, cs, actions):
@@ -402,7 +451,7 @@ class DistributionAction(MpiAction):
         Overrides invokeHook to distribute work amongst available resources as requested.
 
         Notes
-        =====
+        -----
         Two things about this method make it non-recursive
         """
         canDistribute = context.MPI_DISTRIBUTABLE
@@ -486,9 +535,9 @@ class DistributeStateAction(MpiAction):
             # the operator/interface attachment may invalidate some of the cache, but since
             # all the underlying data is the same, ultimately all state should be (initially) the
             # same.
-            # XXX: this is an indication we need to revamp either how the operator attachment works
+            # TODO: this is an indication we need to revamp either how the operator attachment works
             # or how the interfaces are distributed.
-            self.r._markSynchronized()  # pylint: disable=protected-access
+            self.r._markSynchronized()
 
         except (cPickle.PicklingError, TypeError) as error:
             runLog.error("Failed to transmit on distribute state root MPI bcast")
@@ -501,11 +550,11 @@ class DistributeStateAction(MpiAction):
             raise
 
         if context.MPI_RANK != 0:
-            self.r.core.regenAssemblyLists()  # pylint: disable=no-member
+            self.r.core.regenAssemblyLists()
 
         # check to make sure that everything has been properly reattached
-        if self.r.core.getFirstBlock().r is not self.r:  # pylint: disable=no-member
-            raise RuntimeError("Block.r is not self.r. Reattach the blocks!")
+        if self.r.core.getFirstBlock().core.r is not self.r:
+            raise RuntimeError("Block.core.r is not self.r. Reattach the blocks!")
 
         beforeCollection = timeit.default_timer()
 
@@ -533,7 +582,6 @@ class DistributeStateAction(MpiAction):
             raise RuntimeError("Failed to transmit settings, received: {}".format(cs))
 
         if context.MPI_RANK != 0:
-            settings.setMasterCs(cs)
             self.o.cs = cs
         return cs
 
@@ -559,8 +607,6 @@ class DistributeStateAction(MpiAction):
         runLog.debug(
             "The reactor has {} assemblies".format(len(self.r.core.getAssemblies()))
         )
-        numAssemblies = self.broadcast(assemblies.getAssemNum())
-        assemblies.setAssemNumCounter(numAssemblies)
         # attach here so any interface actions use a properly-setup reactor.
         self.o.reattach(self.r, cs)  # sets r and cs
 
@@ -641,7 +687,7 @@ class DistributeStateAction(MpiAction):
                         return
                     self.o.removeInterface(iOld)
                     self.o.addInterface(iNew)
-                    iNew.interactDistributeState()  # pylint: disable=no-member
+                    iNew.interactDistributeState()
                 elif distributable == interfaces.Interface.Distribute.NEW:
                     runLog.debug("Initializing new interface {0}".format(iName))
                     # make a fresh instance of the non-transmittable interface.
@@ -688,19 +734,19 @@ def _diagnosePickleError(o):
     checker(o.r)
 
     runLog.info("Scanning all assemblies for pickle errors")
-    for a in o.r.core.getAssemblies(includeAll=True):  # pylint: disable=no-member
+    for a in o.r.core.getAssemblies(includeAll=True):
         checker(a)
 
     runLog.info("Scanning all blocks for pickle errors")
-    for b in o.r.core.getBlocks(includeAll=True):  # pylint: disable=no-member
+    for b in o.r.core.getBlocks(includeAll=True):
         checker(b)
 
     runLog.info("Scanning blocks by name for pickle errors")
-    for _bName, b in o.r.core.blocksByName.items():  # pylint: disable=no-member
+    for _bName, b in o.r.core.blocksByName.items():
         checker(b)
 
     runLog.info("Scanning the ISOTXS library for pickle errors")
-    checker(o.r.core.lib)  # pylint: disable=no-member
+    checker(o.r.core.lib)
 
     for interface in o.getInterfaces():
         runLog.info("Scanning {} for pickle errors".format(interface))

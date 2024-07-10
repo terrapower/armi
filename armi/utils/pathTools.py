@@ -16,12 +16,11 @@
 This module contains commonly used functions relating to directories, files and path
 manipulations.
 """
-
-import os
-import shutil
-import importlib
-import pathlib
 from time import sleep
+import importlib
+import os
+import pathlib
+import shutil
 
 from armi import context
 from armi import runLog
@@ -41,7 +40,7 @@ def armiAbsPath(*pathParts):
         from ccl import common_operations
 
         return common_operations.convert_to_unc_path(result)
-    except:  # pylint: disable=broad-except;reason=avoid pywin32 p.load parallel issues
+    except:  # noqa: bare-except;reason=avoid pywin32 p.load parallel issues
         return result
 
 
@@ -75,7 +74,7 @@ def copyOrWarn(fileDescription, sourcePath, destinationPath):
 
 
 def isFilePathNewer(path1, path2):
-    r"""Returns true if path1 is newer than path2.
+    """Returns true if path1 is newer than path2.
 
     Returns true if path1 is newer than path2, or if path1 exists and path2 does not, otherwise
     raises an IOError.
@@ -158,7 +157,6 @@ def moduleAndAttributeExist(pathAttr):
     """
     Return True if the specified python module, and attribute of the module exist.
 
-
     Parameters
     ----------
     pathAttr : str
@@ -185,9 +183,11 @@ def moduleAndAttributeExist(pathAttr):
 
     try:
         userSpecifiedModule = importCustomPyModule(modulePath)
+
     # Blanket except is okay since we are checking to see if a custom import will work.
-    except:
+    except:  # noqa: bare-except
         return False
+
     return moduleAttributeName in userSpecifiedModule.__dict__
 
 
@@ -235,7 +235,7 @@ def cleanPath(path, mpiRank=0):
         )
 
     # delete the file/directory from only one process
-    if context.MPI_RANK == mpiRank:
+    if mpiRank == context.MPI_RANK:
         if os.path.exists(path) and os.path.isdir(path):
             shutil.rmtree(path)
         elif not os.path.isdir(path):
@@ -252,7 +252,4 @@ def cleanPath(path, mpiRank=0):
             break
         sleep(waitTime)
 
-    if os.path.exists(path):
-        return False
-    else:
-        return True
+    return not os.path.exists(path)

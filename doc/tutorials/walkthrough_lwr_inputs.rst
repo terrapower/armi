@@ -1,14 +1,14 @@
-==========================================
+******************************************
 Building input files for a thermal reactor
-==========================================
+******************************************
 
 In the :doc:`previous tutorial </tutorials/walkthrough_inputs>`,
 we introduced the basic input files and made a full
 input for a sodium-cooled fast reactor. In this tutorial, we will build simple
 inputs for the light-water reactor (LWR) benchmark problem called C5G7 as defined
-in `NEA/NSC/DOC(2003)16 <https://www.oecd-nea.org/science/docs/2003/nsc-doc2003-16.pdf>`_.
+in `NEA/NSC/DOC(2003)16 <https://www.oecd-nea.org/upload/docs/application/pdf/2019-12/nsc-doc2003-16.pdf>`_.
 The compositions are documented in
-`NEA/NSC/DOC(98)2 <https://www.oecd-nea.org/science/docs/1996/nsc-doc96-02-rev2.pdf>`_.
+`NEA/NSC/DOC(96)2 <https://www.oecd-nea.org/upload/docs/application/pdf/2020-01/nsc-doc96-02-rev2.pdf>`_.
 
 .. tip:: The full inputs created in this tutorial are available for download at the bottom of
     this page.
@@ -37,7 +37,8 @@ Custom isotopic vectors
 -----------------------
 When using materials that differ in properties or composition from the
 materials in the ARMI material library, you can use custom isotopics
-to specify their composition.
+to specify their composition. The composition details below are documented in Table 2 of
+`NEA/NSC/DOC(96)2 <https://www.oecd-nea.org/upload/docs/application/pdf/2020-01/nsc-doc96-02-rev2.pdf>`_.
 
 
 .. literalinclude:: ../../armi/tests/tutorials/c5g7-blueprints.yaml
@@ -222,7 +223,7 @@ This should show a simple representation of the block.
 .. figure:: https://terrapower.github.io/armi/_static/c5g7-mox.png
    :figclass: align-center
 
-   **Figure 1.** A representation of a C5G7 fuel assembly. 
+   A representation of a C5G7 fuel assembly.
 
 
 Here are the full files used in this example:

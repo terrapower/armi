@@ -11,13 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-r"""
-Tests the workings of the library wrappers.
-"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+"""Tests the workings of the library wrappers."""
 import filecmp
-import os
 import unittest
 
 from armi import nuclearDataIO
@@ -59,20 +54,20 @@ class TestPmatrxNuclides(unittest.TestCase):
 
     def test_getPMATRXFileName(self):
         self.assertEqual(
-            nuclearDataIO.getExpectedPMATRXFileName(cycle=0), "cycle0.PMATRX"
+            nuclearDataIO.getExpectedPMATRXFileName(cycle=0), "cycle0.pmatrx"
         )
         self.assertEqual(
-            nuclearDataIO.getExpectedPMATRXFileName(cycle=1), "cycle1.PMATRX"
+            nuclearDataIO.getExpectedPMATRXFileName(cycle=1), "cycle1.pmatrx"
         )
         self.assertEqual(
-            nuclearDataIO.getExpectedPMATRXFileName(cycle=23), "cycle23.PMATRX"
+            nuclearDataIO.getExpectedPMATRXFileName(cycle=23), "cycle23.pmatrx"
         )
         self.assertEqual(
-            nuclearDataIO.getExpectedPMATRXFileName(xsID="AA"), "AA.PMATRX"
+            nuclearDataIO.getExpectedPMATRXFileName(xsID="AA"), "AA.pmatrx"
         )
         self.assertEqual(
             nuclearDataIO.getExpectedPMATRXFileName(xsID="AA", suffix="test"),
-            "AA-test.PMATRX",
+            "AA-test.pmatrx",
         )
         self.assertEqual(nuclearDataIO.getExpectedPMATRXFileName(), "PMATRX")
         with self.assertRaises(ValueError):
@@ -122,7 +117,7 @@ class TestPmatrx(unittest.TestCase):
         ]
         self.assertTrue((energies == self.lib.gammaEnergyUpperBounds).all())
 
-    def test_pmatrxNeutronEneries(self):
+    def test_pmatrxNeutronEnergies(self):
         energies = [
             14190675.0,
             10000000.0,
@@ -206,12 +201,17 @@ class TestProductionMatrix_FromWritten(TestPmatrx):
     """
 
     def test_writtenIsIdenticalToOriginal(self):
-        """Make sure our writer produces something identical to the original."""
+        """Make sure our writer produces something identical to the original.
+
+        .. test:: Test reading and writing PMATRIX files.
+            :id: T_ARMI_NUCDATA_PMATRX
+            :tests: R_ARMI_NUCDATA_PMATRX
+        """
         origLib = pmatrx.readBinary(test_xsLibraries.PMATRX_AA)
 
         fname = self._testMethodName + "temp-aa.pmatrx"
         pmatrx.writeBinary(origLib, fname)
-        lib = pmatrx.readBinary(fname)
+        _lib = pmatrx.readBinary(fname)
 
         self.assertTrue(filecmp.cmp(test_xsLibraries.PMATRX_AA, fname))
 
@@ -240,7 +240,3 @@ class TestProductionMatrix_FromWrittenAscii(TestPmatrx):
 
     def tearDown(self):
         self.td.__exit__(None, None, None)
-
-
-if __name__ == "__main__":
-    unittest.main()

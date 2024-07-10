@@ -11,9 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-Abstract base class for visualization file dumpers.
-"""
+"""Abstract base class for visualization file dumpers."""
 from abc import ABC, abstractmethod
 
 from armi.reactor import reactors
@@ -26,12 +24,8 @@ class VisFileDumper(ABC):
 
     @abstractmethod
     def __enter__(self):
-        """
-        Invoke initialize when entering a context manager
-        """
+        """Invoke initialize when entering a context manager."""
 
     @abstractmethod
     def __exit__(self, type, value, traceback):
-        """
-        Invoke initialize when entering a context manager
-        """
+        """Invoke initialize when entering a context manager."""

@@ -21,6 +21,11 @@ The grid editor may be invoked with the :py:mod:`armi.cli.gridGui` entry point::
 
     $ python -m armi grids
 
+If you have an existing set of input files, pass in the blueprints input file
+as the first argument and the system will load up the associated grid, e.g.::
+
+    $ python -m armi grids FFTF-blueprints.yaml
+
 
 **Known Issues**
 
@@ -42,7 +47,6 @@ The grid editor may be invoked with the :py:mod:`armi.cli.gridGui` entry point::
 * No proper zoom support, and object sizes are fixed and don't accommodate long
   specifiers. Adding zoom would make for a fun first task to a new developer interested
   in computer graphics.
-
 """
 import colorsys
 import enum
@@ -105,16 +109,12 @@ LUMINANCE_WEIGHTS = numpy.array([0.3, 0.59, 0.11])
 
 
 def _translationMatrix(x, y):
-    """
-    Return an affine transformation matrix representing an x- and y-translation.
-    """
+    """Return an affine transformation matrix representing an x- and y-translation."""
     return numpy.array([[1.0, 0.0, x], [0.0, 1.0, y], [0.0, 0.0, 1.0]])
 
 
 def _boundingBox(points: Sequence[numpy.ndarray]) -> wx.Rect:
-    """
-    Return the smallest wx.Rect that contains all of the passed points.
-    """
+    """Return the smallest wx.Rect that contains all of the passed points."""
     xmin = numpy.amin([p[0] for p in points])
     xmax = numpy.amax([p[0] for p in points])
 
@@ -126,15 +126,13 @@ def _boundingBox(points: Sequence[numpy.ndarray]) -> wx.Rect:
 
 def _desaturate(c: Sequence[float]):
     r, g, b = tuple(c)
-    h, l, s = colorsys.rgb_to_hls(r, g, b)
-    l = l + (1.0 - l) * 0.5
-    return numpy.array(colorsys.hls_to_rgb(h, l, s))
+    hue, lig, sat = colorsys.rgb_to_hls(r, g, b)
+    lig = lig + (1.0 - lig) * 0.5
+    return numpy.array(colorsys.hls_to_rgb(hue, lig, sat))
 
 
 def _getColorAndBrushFromFlags(f, bold=True):
-    """
-    Given a set of Flags, return a wx.Pen and wx.Brush with which to draw a shape
-    """
+    """Given a set of Flags, return a wx.Pen and wx.Brush with which to draw a shape."""
     c = numpy.array([0.0, 0.0, 0.0])
     nColors = 0
 
@@ -226,9 +224,7 @@ def _drawShape(
 
 
 class _GridControls(wx.Panel):
-    """
-    Collection of controls for the main Grid editor. Save/Open, num rings, etc.
-    """
+    """Collection of controls for the main Grid editor. Save/Open, num rings, etc."""
 
     def __init__(self, parent):
         wx.Panel.__init__(
@@ -337,9 +333,7 @@ class _GridControls(wx.Panel):
 
 
 class _PathControl(wx.Panel):
-    """
-    Collection of controls for manipulating fuel shuffling paths.
-    """
+    """Collection of controls for manipulating fuel shuffling paths."""
 
     def __init__(self, parent, viewer=None):
         wx.Panel.__init__(self, parent, id=wx.ID_ANY)
@@ -524,9 +518,7 @@ class _AssemblyPalette(wx.ScrolledWindow):
         self.SetSizerAndFit(sizer)
 
     def _setActiveAssemID(self, id: Optional[int]):
-        """
-        Make sure the appropriate button is on, but none others.
-        """
+        """Make sure the appropriate button is on, but none others."""
         if self.activeAssemID is not None and self.activeAssemID != id:
             # there is currently an active assem, and it isnt the requested one. Turn
             # its button off.
@@ -540,7 +532,7 @@ class _AssemblyPalette(wx.ScrolledWindow):
 
     def onToggle(self, event):
         """
-        Respond to toggle events
+        Respond to toggle events.
 
         This makes sure that the right selector button is activated, and switches the
         GUI mode into the proper one based on whether an assembly design is selected, or
@@ -573,9 +565,7 @@ class _AssemblyPalette(wx.ScrolledWindow):
         self.pathControl.maybeIncrement()
 
     def getSelectedAssem(self) -> Optional[Union[AssemblyBlueprint, Tuple[int, int]]]:
-        """
-        Return the currently-selected assembly design or fuel path indices
-        """
+        """Return the currently-selected assembly design or fuel path indices."""
         if self.activeAssemID in self.assemDesignsById:
             # We have an assembly design activated. return it
             return self.assemDesignsById[self.activeAssemID]
@@ -604,9 +594,7 @@ class _AssemblyPalette(wx.ScrolledWindow):
             return None
 
     def setActiveAssem(self, assemDesign: Optional[Union[AssemblyBlueprint, tuple]]):
-        """
-        Override the selected assembly design from above.
-        """
+        """Override the selected assembly design from above."""
         specifier = None
         if isinstance(assemDesign, AssemblyBlueprint):
             specifier = assemDesign.specifier
@@ -850,9 +838,7 @@ class GridGui(wx.ScrolledWindow):
         return min(sortableObjectIds)[1]
 
     def drawGrid(self):
-        """
-        Wipe out anything in the drawing and re-draw everything.
-        """
+        """Wipe out anything in the drawing and re-draw everything."""
         self.pdc.Clear()
         self.pdc.RemoveAll()
 
@@ -917,9 +903,7 @@ class GridGui(wx.ScrolledWindow):
             self.pdc.SetIdBounds(id, boundingBox)
 
     def drawArrows(self):
-        """
-        Draw fuel path arrows.
-        """
+        """Draw fuel path arrows."""
         if self.mode != GridGui.Mode.PATH:
             return
 
@@ -970,7 +954,7 @@ class GridGui(wx.ScrolledWindow):
 
     def _getLabel(self, idx) -> Tuple[str, Optional[str], bool]:
         """
-        Given (i, j, k) indices, return information about the object at that location
+        Given (i, j, k) indices, return information about the object at that location.
 
         This will return a tuple containing:
          - The label to actually display in the GUI
@@ -1019,9 +1003,7 @@ class GridGui(wx.ScrolledWindow):
         return label, description, bold
 
     def setNumRings(self, n: int):
-        """
-        Change the number of rings that should be drawn
-        """
+        """Change the number of rings that should be drawn."""
         self.numRings = n
         if self.grid.geomType == geometry.GeomType.HEX:
             grid = grids.HexGrid.fromPitch(1, numRings=self.numRings)
@@ -1478,9 +1460,7 @@ class GridBlueprintControl(wx.Panel):
                 self.bp = self.bp
 
     def loadFile(self, fName, cs=None):
-        """
-        Load a new blueprints file, refreshing pretty much everything.
-        """
+        """Load a new blueprints file, refreshing pretty much everything."""
         self._fName = fName
         self._cs = cs
         with open(fName, "r") as bpYaml:
@@ -1694,9 +1674,7 @@ class NewGridBlueprintDialog(wx.Dialog):
         self.Fit()
 
     def selectGeomType(self, geom):
-        """
-        Enable/disable relevant controls for the selected geom type.
-        """
+        """Enable/disable relevant controls for the selected geom type."""
         # make sure the geom type Choice is in sync. This function doesn't have to be
         # called from the event handler.
         self.geomType.SetSelection(self._idxFromGeom[geom])
@@ -1709,9 +1687,7 @@ class NewGridBlueprintDialog(wx.Dialog):
         self.selectGeomType(self._geomFromIdx[self.geomType.GetSelection()])
 
     def _toggleControls(self):
-        """
-        Make sure that the appropriate controls are enabled/disabled
-        """
+        """Make sure that the appropriate controls are enabled/disabled."""
         geom = self._geomFromIdx[self.geomType.GetSelection()]
         full = self.domainFull.GetValue()
         self.throughCenter.Enable(enable=geom == geometry.GeomType.CARTESIAN)
@@ -1732,9 +1708,7 @@ class NewGridBlueprintDialog(wx.Dialog):
         self._toggleControls()
 
     def getGridBlueprint(self):
-        """
-        Using the state of the dialog controls, return a corresponding GridBlueprint.
-        """
+        """Using the state of the dialog controls, return a corresponding GridBlueprint."""
         name = self.gridName.GetValue()
         geom = self._geomFromIdx[self.geomType.GetSelection()]
 
@@ -1764,8 +1738,6 @@ class NewGridBlueprintDialog(wx.Dialog):
 
 
 if __name__ == "__main__":
-    import sys
-
     app = wx.App()
     frame = wx.Frame(None, wx.ID_ANY, title="Grid Blueprints GUI", size=(1000, 1000))
 

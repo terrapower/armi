@@ -1,5 +1,3 @@
-metadata:
-  version: uncontrolled
 settings:
   availabilityFactor: 0.9
   fakeBad: 123456
@@ -14,3 +12,5 @@ settings:
   genXS: Neutron
   numProcessors: 1
   genReports: false
+  versions:
+    armi: uncontrolled

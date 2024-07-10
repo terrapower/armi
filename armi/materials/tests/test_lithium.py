@@ -11,14 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-Tests for lithium.
-"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+"""Tests for lithium."""
 import unittest
 
-from armi.materials.tests.test_materials import _Material_Test
 from armi.materials.lithium import Lithium
+from armi.materials.tests.test_materials import _Material_Test
 from armi.nucDirectory import nuclideBases as nb
 
 
@@ -49,12 +46,12 @@ class Lithium_TestCase(_Material_Test, unittest.TestCase):
         )
         self.assertAlmostEqual(self.Lithium_both.getMassFrac("LI6"), 0.8, places=10)
 
-    def test_density(self):
-        ref = self.mat.density(Tc=100)
+    def test_pseudoDensity(self):
+        ref = self.mat.pseudoDensity(Tc=100)
         cur = 0.512
         self.assertAlmostEqual(ref, cur, delta=abs(ref * 0.001))
 
-        ref = self.mat.density(Tc=200)
+        ref = self.mat.pseudoDensity(Tc=200)
         cur = 0.512
         self.assertAlmostEqual(ref, cur, delta=abs(ref * 0.001))
 
@@ -79,7 +76,3 @@ class Lithium_TestCase(_Material_Test, unittest.TestCase):
 
     def test_propertyValidTemperature(self):
         self.assertEqual(len(self.mat.propertyValidTemperature), 0)
-
-
-if __name__ == "__main__":
-    unittest.main()

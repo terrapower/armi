@@ -20,20 +20,18 @@ modeling approximations to apply and how many cycles to run and at what power an
 availability fraction and things like that. The ARMI Framework itself has many settings
 of its own, and plugins typically register some of their own settings as well.
 """
+from typing import List
 import fnmatch
-import os
 import glob
-import shutil
-from typing import List, Union
+import os
 
 from ruamel import yaml
 
 from armi import runLog
 from armi.settings.caseSettings import Settings
+from armi.settings.setting import Default  # noqa: unused-import
+from armi.settings.setting import Option  # noqa: unused-import
 from armi.settings.setting import Setting
-from armi.settings.setting import Option
-from armi.settings.setting import Default
-from armi.utils import pathTools
 from armi.utils.customExceptions import InvalidSettingsFileError
 
 
@@ -131,7 +129,7 @@ def recursivelyLoadSettingsFiles(
 
 def promptForSettingsFile(choice=None):
     """
-    Allows the user to select an ARMI input from the input files in the directory
+    Allows the user to select an ARMI input from the input files in the directory.
 
     Parameters
     ----------
@@ -153,34 +151,3 @@ def promptForSettingsFile(choice=None):
         choice = int(input("Enter choice: "))
 
     return files[choice]
-
-
-def getMasterCs():
-    """
-    Return the global case-settings object (cs).
-
-    This can be called at any time to create or obtain the primary Cs, a module-level CS
-    intended to be shared by many other objects.
-
-    It can have multiple instances in multiprocessing cases.
-
-    Returns
-    -------
-    cs : Settings
-        The loaded cs object
-    """
-    cs = Settings.instance
-    if cs is None:
-        cs = Settings()
-        setMasterCs(cs)
-    return cs
-
-
-def setMasterCs(cs):
-    """
-    Set the primary Cs to be the one that is passed in.
-
-    These are kept track of independently on a PID basis to allow independent multiprocessing.
-    """
-    Settings.instance = cs
-    runLog.debug("Primary cs set to {} with ID: {}".format(cs, id(cs)))

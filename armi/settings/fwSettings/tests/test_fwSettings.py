@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for the framework settings"""
+"""Tests for the framework settings."""
 import unittest
 
 import voluptuous as vol
@@ -97,11 +97,6 @@ class TestSchema(unittest.TestCase):
                 "error": vol.error.MultipleInvalid,
             },
             "nCycles": {"valid": 1, "invalid": -1, "error": vol.error.MultipleInvalid},
-            "numCoupledIterations": {
-                "valid": 0,
-                "invalid": -1,
-                "error": vol.error.MultipleInvalid,
-            },
             "power": {"valid": 0, "invalid": -1, "error": vol.error.MultipleInvalid},
             "skipCycles": {
                 "valid": 0,
@@ -142,7 +137,3 @@ class TestSchema(unittest.TestCase):
             expectedError = settingVal["error"]
             with self.assertRaises(expectedError):
                 self.cs = self.cs.modified(newSettings={settingName: invalidOption})
-
-
-if __name__ == "__main__":
-    unittest.main()

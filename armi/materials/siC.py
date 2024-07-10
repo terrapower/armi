@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Silicon Carbide
-"""
+"""Silicon Carbide."""
 
 import math
 
@@ -25,8 +23,8 @@ from armi.utils.units import getTc
 
 
 class SiC(Material):
-    r"""Silicon Carbide"""
-    name = "Silicon Carbide"
+    """Silicon Carbide."""
+
     thermalScatteringLaws = (
         tsl.byNbAndCompound[nb.byName["C"], tsl.SIC],
         tsl.byNbAndCompound[nb.byName["SI"], tsl.SIC],
@@ -70,12 +68,13 @@ class SiC(Material):
         "thermal conductivity": ((0, 2000), "C"),
     }
 
+    refTempK = 298.15
+
     def setDefaultMassFracs(self):
         self.setMassFrac("C", 0.299547726)
         self.setMassFrac("SI", 0.700452274)
 
-        self.p.refTempK = 298.15
-        self.p.refDens = 3.21
+        self.refDens = 3.21
 
     def meltingPoint(self):
         return 3003.0
@@ -90,7 +89,7 @@ class SiC(Material):
         self.checkPropertyTempRange("cumulative linear expansion", Tc)
         return (4.22 + 8.33e-4 * Tc - 3.51 * math.exp(-0.00527 * Tc)) * 1.0e-6
 
-    def density(self, Tc=None, Tk=None):
+    def pseudoDensity(self, Tc=None, Tk=None):
         Tc = getTc(Tc, Tk)
         self.checkPropertyTempRange("density", Tc)
         rho0 = 3.16

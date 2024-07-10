@@ -26,58 +26,113 @@ object hold actual instances of these data.
 See detailed docs in `:doc: Lattice Physics <reference/physics/neutronics/latticePhysics/latticePhysics>`.
 """
 
+from enum import Enum
 from typing import Dict, Union
 
 import voluptuous as vol
 
+from armi import context
 from armi import runLog
+from armi.physics.neutronics import crossSectionGroupManager
+from armi.physics.neutronics.crossSectionGroupManager import BLOCK_COLLECTIONS
 from armi.settings import Setting
 
-from armi.physics.neutronics.crossSectionGroupManager import BLOCK_COLLECTIONS
-
-CONF_XSID = "xsID"
-CONF_GEOM = "geometry"
 CONF_BLOCK_REPRESENTATION = "blockRepresentation"
-CONF_DRIVER = "driverID"
-CONF_BUCKLING = "criticalBuckling"
-CONF_REACTION_DRIVER = "nuclideReactionDriver"
 CONF_BLOCKTYPES = "validBlockTypes"
+CONF_BUCKLING = "criticalBuckling"
+CONF_DRIVER = "driverID"
 CONF_EXTERNAL_DRIVER = "externalDriver"
+CONF_EXTERNAL_RINGS = "numExternalRings"
+CONF_XS_FILE_LOCATION = "xsFileLocation"
+CONF_EXTERNAL_FLUX_FILE_LOCATION = "fluxFileLocation"
+CONF_GEOM = "geometry"
 CONF_HOMOGBLOCK = "useHomogenizedBlockComposition"
 CONF_INTERNAL_RINGS = "numInternalRings"
-CONF_EXTERNAL_RINGS = "numExternalRings"
 CONF_MERGE_INTO_CLAD = "mergeIntoClad"
-CONF_FILE_LOCATION = "fileLocation"
 CONF_MESH_PER_CM = "meshSubdivisionsPerCm"
+CONF_REACTION_DRIVER = "nuclideReactionDriver"
+CONF_XSID = "xsID"
+CONF_XS_EXECUTE_EXCLUSIVE = "xsExecuteExclusive"
+CONF_XS_PRIORITY = "xsPriority"
+CONF_COMPONENT_AVERAGING = "averageByComponent"
+CONF_XS_MAX_ATOM_NUMBER = "xsMaxAtomNumber"
+CONF_MIN_DRIVER_DENSITY = "minDriverDensity"
 
-# These may be used as arguments to ``latticePhysicsInterface._getGeomDependentWriters``.
-# This could be an ENUM later.
+
+class XSGeometryTypes(Enum):
+    """
+    Data structure for storing the available geometry options
+    within the framework.
+    """
+
+    ZERO_DIMENSIONAL = 1
+    ONE_DIMENSIONAL_SLAB = 2
+    ONE_DIMENSIONAL_CYLINDER = 4
+    TWO_DIMENSIONAL_HEX = 8
+
+    @classmethod
+    def _mapping(cls):
+        mapping = {
+            cls.ZERO_DIMENSIONAL: "0D",
+            cls.ONE_DIMENSIONAL_SLAB: "1D slab",
+            cls.ONE_DIMENSIONAL_CYLINDER: "1D cylinder",
+            cls.TWO_DIMENSIONAL_HEX: "2D hex",
+        }
+        return mapping
+
+    @classmethod
+    def getStr(cls, typeSpec: Enum):
+        """
+        Return a string representation of the given ``typeSpec``.
+
+        Examples
+        --------
+            XSGeometryTypes.getStr(XSGeometryTypes.ZERO_DIMENSIONAL) == "0D"
+            XSGeometryTypes.getStr(XSGeometryTypes.TWO_DIMENSIONAL_HEX) == "2D hex"
+        """
+        geometryTypes = list(cls)
+        if typeSpec not in geometryTypes:
+            raise TypeError(f"{typeSpec} not in {geometryTypes}")
+        return cls._mapping()[cls[typeSpec.name]]
+
+
 XS_GEOM_TYPES = {
-    "0D",
-    "1D slab",
-    "1D cylinder",
-    "2D hex",
+    XSGeometryTypes.getStr(XSGeometryTypes.ZERO_DIMENSIONAL),
+    XSGeometryTypes.getStr(XSGeometryTypes.ONE_DIMENSIONAL_SLAB),
+    XSGeometryTypes.getStr(XSGeometryTypes.ONE_DIMENSIONAL_CYLINDER),
+    XSGeometryTypes.getStr(XSGeometryTypes.TWO_DIMENSIONAL_HEX),
 }
 
 # This dictionary defines the valid set of inputs based on
 # the geometry type within the ``XSModelingOptions``
 _VALID_INPUTS_BY_GEOMETRY_TYPE = {
-    "0D": {
+    XSGeometryTypes.getStr(XSGeometryTypes.ZERO_DIMENSIONAL): {
         CONF_XSID,
         CONF_GEOM,
         CONF_BUCKLING,
         CONF_DRIVER,
         CONF_BLOCKTYPES,
         CONF_BLOCK_REPRESENTATION,
+        CONF_EXTERNAL_FLUX_FILE_LOCATION,
+        CONF_COMPONENT_AVERAGING,
+        CONF_XS_EXECUTE_EXCLUSIVE,
+        CONF_XS_PRIORITY,
+        CONF_XS_MAX_ATOM_NUMBER,
     },
-    "1D slab": {
+    XSGeometryTypes.getStr(XSGeometryTypes.ONE_DIMENSIONAL_SLAB): {
         CONF_XSID,
         CONF_GEOM,
         CONF_MESH_PER_CM,
         CONF_BLOCKTYPES,
         CONF_BLOCK_REPRESENTATION,
+        CONF_EXTERNAL_FLUX_FILE_LOCATION,
+        CONF_COMPONENT_AVERAGING,
+        CONF_XS_EXECUTE_EXCLUSIVE,
+        CONF_XS_PRIORITY,
+        CONF_XS_MAX_ATOM_NUMBER,
+        CONF_MIN_DRIVER_DENSITY,
     },
-    "1D cylinder": {
+    XSGeometryTypes.getStr(XSGeometryTypes.ONE_DIMENSIONAL_CYLINDER): {
         CONF_XSID,
         CONF_GEOM,
         CONF_MERGE_INTO_CLAD,
@@ -88,8 +143,14 @@ _VALID_INPUTS_BY_GEOMETRY_TYPE = {
         CONF_MESH_PER_CM,
         CONF_BLOCKTYPES,
         CONF_BLOCK_REPRESENTATION,
+        CONF_EXTERNAL_FLUX_FILE_LOCATION,
+        CONF_COMPONENT_AVERAGING,
+        CONF_XS_EXECUTE_EXCLUSIVE,
+        CONF_XS_PRIORITY,
+        CONF_XS_MAX_ATOM_NUMBER,
+        CONF_MIN_DRIVER_DENSITY,
     },
-    "2D hex": {
+    XSGeometryTypes.getStr(XSGeometryTypes.TWO_DIMENSIONAL_HEX): {
         CONF_XSID,
         CONF_GEOM,
         CONF_BUCKLING,
@@ -98,6 +159,12 @@ _VALID_INPUTS_BY_GEOMETRY_TYPE = {
         CONF_REACTION_DRIVER,
         CONF_EXTERNAL_RINGS,
         CONF_BLOCK_REPRESENTATION,
+        CONF_EXTERNAL_FLUX_FILE_LOCATION,
+        CONF_COMPONENT_AVERAGING,
+        CONF_XS_EXECUTE_EXCLUSIVE,
+        CONF_XS_PRIORITY,
+        CONF_XS_MAX_ATOM_NUMBER,
+        CONF_MIN_DRIVER_DENSITY,
     },
 }
 
@@ -119,8 +186,14 @@ _SINGLE_XS_SCHEMA = vol.Schema(
         vol.Optional(CONF_INTERNAL_RINGS): vol.Coerce(int),
         vol.Optional(CONF_EXTERNAL_RINGS): vol.Coerce(int),
         vol.Optional(CONF_MERGE_INTO_CLAD): [str],
-        vol.Optional(CONF_FILE_LOCATION): [str],
+        vol.Optional(CONF_XS_FILE_LOCATION): [str],
+        vol.Optional(CONF_EXTERNAL_FLUX_FILE_LOCATION): str,
         vol.Optional(CONF_MESH_PER_CM): vol.Coerce(float),
+        vol.Optional(CONF_XS_EXECUTE_EXCLUSIVE): bool,
+        vol.Optional(CONF_XS_PRIORITY): vol.Coerce(float),
+        vol.Optional(CONF_XS_MAX_ATOM_NUMBER): vol.Coerce(int),
+        vol.Optional(CONF_MIN_DRIVER_DENSITY): vol.Coerce(float),
+        vol.Optional(CONF_COMPONENT_AVERAGING): bool,
     }
 )
 
@@ -159,7 +232,6 @@ class XSSettings(dict):
 
         Notes
         -----
-
         1. If ``AA`` and ``AB`` exist, but ``AC`` is created, then the intended behavior
            is that ``AC`` settings will be set to the settings in ``AA``.
 
@@ -235,13 +307,19 @@ class XSSettings(dict):
         To simplify downstream handling of the various XS controls, we build a full data structure here
         that should fully define the settings for each individual cross section ID.
         """
-        if self._blockRepresentation is None:
-            raise ValueError(
-                f"The defaults of {self} have not been set. Call ``setDefaults`` first "
-                "before attempting to add a new XS ID."
-            )
+        # Only check since the state of the underlying cross section dictionary does not
+        # get broadcasted to worker nodes. This check is only relevant for the first time
+        # this is called and when called by the head node.
+        if context.MPI_RANK == 0:
+            if self._blockRepresentation is None:
+                raise ValueError(
+                    f"The defaults of {self} have not been set. Call ``setDefaults`` first "
+                    "before attempting to add a new XS ID."
+                )
 
-        xsOpt = XSModelingOptions(xsID, geometry="0D")
+        xsOpt = XSModelingOptions(
+            xsID, geometry=XSGeometryTypes.getStr(XSGeometryTypes.ZERO_DIMENSIONAL)
+        )
         xsOpt.setDefaults(self._blockRepresentation, self._validBlockTypes)
         xsOpt.validate()
         return xsOpt
@@ -258,15 +336,20 @@ class XSModelingOptions:
 
     geometry: str
         The geometry modeling approximation for regions of the core with
-        this assigned xsID. This is required if the ``fileLocation``
-        attribute is not provided. This cannot be set if the ``fileLocation``
+        this assigned xsID. This is required if the ``xsFileLocation``
+        attribute is not provided. This cannot be set if the ``xsFileLocation``
         is provided.
 
-    fileLocation: list of str
+    xsFileLocation: list of str or None
         This should be a list of paths where the cross sections for this
         xsID can be copied from. This is required if the ``geometry``
         attribute is not provided. This cannot be set if the ``geometry``
         is provided.
+
+    fluxFileLocation: str or None
+        This should be a path where a pre-calculated flux solution
+        for this xsID can be copied from. The ``geometry`` attribute
+        must be provided with this input.
 
     validBlockTypes: str or None
         This is a configuration option for how the cross section group manager
@@ -331,6 +414,25 @@ class XSModelingOptions:
         This is a lattice physics configuration option that can be used to control
         subregion meshing of the representative block in 1D problems.
 
+    xsExecuteExclusive : bool
+        The mpi task that results from this xsID will reserve a full processor and
+        no others will allocate to it. This is useful for time balancing when you
+        have one task that takes much longer than the others.
+
+    xsPriority:
+        The priority of the mpi tasks that results from this xsID. Lower priority
+        will execute first. starting longer jobs first is generally more efficient.
+
+    xsMaxAtomNumber : int
+        The maximum atom number to model for infinite dilute isotopes in lattice physics.
+        This is used to avoid modeling isotopes with a large atomic number
+        (e.g., fission products) as a depletion product of an isotope with a much
+        smaller atomic number.
+
+    minDriverDensity: float
+        The minimum number density for nuclides included in driver material for a 1D
+        lattice physics model.
+
     Notes
     -----
     Not all default attributes may be useful for your specific application and you may
@@ -344,7 +446,8 @@ class XSModelingOptions:
         self,
         xsID,
         geometry=None,
-        fileLocation=None,
+        xsFileLocation=None,
+        fluxFileLocation=None,
         validBlockTypes=None,
         blockRepresentation=None,
         driverID=None,
@@ -356,15 +459,21 @@ class XSModelingOptions:
         numExternalRings=None,
         mergeIntoClad=None,
         meshSubdivisionsPerCm=None,
+        xsExecuteExclusive=None,
+        xsPriority=None,
+        xsMaxAtomNumber=None,
+        averageByComponent=False,
+        minDriverDensity=0.0,
     ):
         self.xsID = xsID
         self.geometry = geometry
-        self.fileLocation = fileLocation
+        self.xsFileLocation = xsFileLocation
         self.validBlockTypes = validBlockTypes
         self.blockRepresentation = blockRepresentation
 
         # These are application specific, feel free use them
         # in your own lattice physics plugin(s).
+        self.fluxFileLocation = fluxFileLocation
         self.driverID = driverID
         self.criticalBuckling = criticalBuckling
         self.nuclideReactionDriver = nuclideReactionDriver
@@ -374,12 +483,21 @@ class XSModelingOptions:
         self.numExternalRings = numExternalRings
         self.mergeIntoClad = mergeIntoClad
         self.meshSubdivisionsPerCm = meshSubdivisionsPerCm
+        self.xsMaxAtomNumber = xsMaxAtomNumber
+        self.minDriverDensity = minDriverDensity
+        self.averageByComponent = averageByComponent
+        # these are related to execution
+        self.xsExecuteExclusive = xsExecuteExclusive
+        self.xsPriority = xsPriority
 
     def __repr__(self):
-        if self.isPregenerated:
-            suffix = f"Pregenerated: {self.isPregenerated}"
+        if self.xsIsPregenerated:
+            suffix = f"Pregenerated: {self.xsIsPregenerated}"
         else:
             suffix = f"Geometry Model: {self.geometry}"
+            if self.fluxIsPregenerated:
+                suffix = f"{suffix}, External Flux Solution: {self.fluxFileLocation}"
+
         return f"<{self.__class__.__name__}, XSID: {self.xsID}, {suffix}>"
 
     def __iter__(self):
@@ -396,13 +514,18 @@ class XSModelingOptions:
         return self.xsID[1]
 
     @property
-    def isPregenerated(self):
+    def xsIsPregenerated(self):
         """True if this points to a pre-generated XS file."""
-        return self.fileLocation is not None
+        return self.xsFileLocation is not None
+
+    @property
+    def fluxIsPregenerated(self):
+        """True if this points to a pre-generated flux solution file."""
+        return self.fluxFileLocation is not None
 
     def serialize(self):
-        """Return as a dictionary without ``xsID`` and with ``None`` values excluded."""
-        doNotSerialize = ["xsID"]
+        """Return as a dictionary without ``CONF_XSID`` and with ``None`` values excluded."""
+        doNotSerialize = [CONF_XSID]
         return {
             key: val
             for key, val in self
@@ -416,26 +539,30 @@ class XSModelingOptions:
         Raises
         ------
         ValueError
-            When the mutually exclusive ``fileLocation`` and ``geometry`` attributes
+            When the mutually exclusive ``xsFileLocation`` and ``geometry`` attributes
             are provided or when neither are provided.
         """
         # Check for valid inputs when the file location is supplied.
-        if self.fileLocation is None and self.geometry is None:
-            raise ValueError(f"{self} is missing a geometry input or a file location.")
+        if self.xsFileLocation:
+            if self.geometry is not None:
+                runLog.warning(
+                    f"Either file location or geometry inputs in {self} should be given, but not both. "
+                    "The file location setting will take precedence over the geometry inputs. "
+                    "Remove one or the other in the `crossSectionSettings` input to fix this warning."
+                )
 
-        if self.fileLocation is not None and self.geometry is not None:
-            runLog.warning(
-                f"Either file location or geometry inputs in {self} should be given, but not both. "
-                "The file location setting will take precedence over the geometry inputs. "
-                "Remove one or the other in the `crossSectionSettings` input to fix this warning."
-            )
+        if self.xsFileLocation is None or self.fluxFileLocation is not None:
+            if self.geometry is None:
+                raise ValueError(
+                    f"{self} is missing a geometry input or a file location."
+                )
 
         invalids = []
-        if self.fileLocation is not None:
+        if self.xsFileLocation is not None:
             for var, val in self:
                 # Skip these attributes since they are valid options
-                # when the ``fileLocation`` attribute`` is set.
-                if var in [CONF_XSID, CONF_FILE_LOCATION, CONF_BLOCK_REPRESENTATION]:
+                # when the ``xsFileLocation`` attribute`` is set.
+                if var in [CONF_XSID, CONF_XS_FILE_LOCATION, CONF_BLOCK_REPRESENTATION]:
                     continue
                 if val is not None:
                     invalids.append((var, val))
@@ -494,42 +621,71 @@ class XSModelingOptions:
             validBlockTypes = validBlockTypes
 
         defaults = {}
-        if self.isPregenerated:
+        if self.xsIsPregenerated:
+            allowableBlockCollections = [
+                crossSectionGroupManager.MEDIAN_BLOCK_COLLECTION,
+                crossSectionGroupManager.AVERAGE_BLOCK_COLLECTION,
+                crossSectionGroupManager.FLUX_WEIGHTED_AVERAGE_BLOCK_COLLECTION,
+            ]
             defaults = {
-                CONF_FILE_LOCATION: self.fileLocation,
+                CONF_XS_FILE_LOCATION: self.xsFileLocation,
                 CONF_BLOCK_REPRESENTATION: blockRepresentation,
             }
 
-        elif self.geometry == "0D":
+        elif self.geometry == XSGeometryTypes.getStr(XSGeometryTypes.ZERO_DIMENSIONAL):
+            allowableBlockCollections = [
+                crossSectionGroupManager.MEDIAN_BLOCK_COLLECTION,
+                crossSectionGroupManager.AVERAGE_BLOCK_COLLECTION,
+                crossSectionGroupManager.FLUX_WEIGHTED_AVERAGE_BLOCK_COLLECTION,
+            ]
+            bucklingSearch = not self.fluxIsPregenerated
             defaults = {
-                CONF_GEOM: "0D",
-                CONF_BUCKLING: True,
+                CONF_GEOM: self.geometry,
+                CONF_BUCKLING: bucklingSearch,
                 CONF_DRIVER: "",
                 CONF_BLOCK_REPRESENTATION: blockRepresentation,
                 CONF_BLOCKTYPES: validBlockTypes,
+                CONF_EXTERNAL_FLUX_FILE_LOCATION: self.fluxFileLocation,
             }
-        elif self.geometry == "1D slab":
+        elif self.geometry == XSGeometryTypes.getStr(
+            XSGeometryTypes.ONE_DIMENSIONAL_SLAB
+        ):
+            allowableBlockCollections = [
+                crossSectionGroupManager.SLAB_COMPONENTS_BLOCK_COLLECTION,
+            ]
             defaults = {
-                CONF_GEOM: "1D slab",
+                CONF_GEOM: self.geometry,
                 CONF_MESH_PER_CM: 1.0,
-                CONF_BLOCK_REPRESENTATION: blockRepresentation,
+                CONF_BLOCK_REPRESENTATION: crossSectionGroupManager.SLAB_COMPONENTS_BLOCK_COLLECTION,
                 CONF_BLOCKTYPES: validBlockTypes,
             }
-        elif self.geometry == "1D cylinder":
+        elif self.geometry == XSGeometryTypes.getStr(
+            XSGeometryTypes.ONE_DIMENSIONAL_CYLINDER
+        ):
+            allowableBlockCollections = [
+                crossSectionGroupManager.CYLINDRICAL_COMPONENTS_BLOCK_COLLECTION
+            ]
             defaults = {
-                CONF_GEOM: "1D cylinder",
+                CONF_GEOM: self.geometry,
                 CONF_DRIVER: "",
                 CONF_MERGE_INTO_CLAD: ["gap"],
                 CONF_MESH_PER_CM: 1.0,
                 CONF_INTERNAL_RINGS: 0,
                 CONF_EXTERNAL_RINGS: 1,
                 CONF_HOMOGBLOCK: False,
-                CONF_BLOCK_REPRESENTATION: blockRepresentation,
+                CONF_BLOCK_REPRESENTATION: crossSectionGroupManager.CYLINDRICAL_COMPONENTS_BLOCK_COLLECTION,
                 CONF_BLOCKTYPES: validBlockTypes,
             }
-        elif self.geometry == "2D hex":
+        elif self.geometry == XSGeometryTypes.getStr(
+            XSGeometryTypes.TWO_DIMENSIONAL_HEX
+        ):
+            allowableBlockCollections = [
+                crossSectionGroupManager.MEDIAN_BLOCK_COLLECTION,
+                crossSectionGroupManager.AVERAGE_BLOCK_COLLECTION,
+                crossSectionGroupManager.FLUX_WEIGHTED_AVERAGE_BLOCK_COLLECTION,
+            ]
             defaults = {
-                CONF_GEOM: "2D hex",
+                CONF_GEOM: self.geometry,
                 CONF_BUCKLING: False,
                 CONF_EXTERNAL_DRIVER: True,
                 CONF_DRIVER: "",
@@ -538,10 +694,22 @@ class XSModelingOptions:
                 CONF_BLOCK_REPRESENTATION: blockRepresentation,
             }
 
+        defaults[CONF_XS_EXECUTE_EXCLUSIVE] = False
+        defaults[CONF_XS_PRIORITY] = 5
+        defaults[CONF_COMPONENT_AVERAGING] = False
+
         for attrName, defaultValue in defaults.items():
             currentValue = getattr(self, attrName)
             if currentValue is None:
                 setattr(self, attrName, defaultValue)
+            else:
+                if attrName == CONF_BLOCK_REPRESENTATION:
+                    if currentValue not in allowableBlockCollections:
+                        raise ValueError(
+                            f"Invalid block collection type `{currentValue}` assigned "
+                            f"for {self.xsID}. Expected one of the "
+                            f"following: {allowableBlockCollections}"
+                        )
 
         self.validate()
 
@@ -573,7 +741,7 @@ def serializeXSSettings(xsSettingsDict: Union[XSSettings, Dict]) -> Dict[str, Di
             xsIDVals = {
                 config: confVal
                 for config, confVal in xsOpts.items()
-                if config != "xsID" and confVal is not None
+                if config != CONF_XSID and confVal is not None
             }
         else:
             raise TypeError(

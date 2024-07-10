@@ -25,18 +25,17 @@ These objects hold the dimensions, temperatures, composition, and shape of react
     :width: 100%
 
     Class inheritance diagram for :py:mod:`armi.reactor.components`.
-
 """
-
+# ruff: noqa: F405
 import math
 
 import numpy
 
 from armi import runLog
-from armi.reactor.components.component import *  # pylint: disable=wildcard-import
-from armi.reactor.components.basicShapes import *  # pylint: disable=wildcard-import
-from armi.reactor.components.complexShapes import *  # pylint: disable=wildcard-import
-from armi.reactor.components.volumetricShapes import *  # pylint: disable=wildcard-import
+from armi.reactor.components.component import *  # noqa: undefined-local-with-import-star
+from armi.reactor.components.basicShapes import *  # noqa: undefined-local-with-import-star
+from armi.reactor.components.complexShapes import *  # noqa: undefined-local-with-import-star
+from armi.reactor.components.volumetricShapes import *  # noqa: undefined-local-with-import-star
 
 
 def factory(shape, bcomps, kwargs):
@@ -44,14 +43,12 @@ def factory(shape, bcomps, kwargs):
     Build a new component object.
 
     Parameters
-    ---------
+    ----------
     shape : str
         lowercase string corresponding to the component type name
-
     bcomps : list(Component)
         list of "sibling" components. This list is used to find component links, which are of the form
         ``<name>.<dimension``.
-
     kwargs : dict
         dictionary of inputs for the Component subclass's ``__init__`` method.
     """
@@ -91,17 +88,17 @@ def _removeDimensionNameSpaces(attrs):
 
 
 class NullComponent(Component):
-    r"""returns zero for all dimensions. is none."""
+    """Returns zero for all dimensions."""
 
     def __cmp__(self, other):
-        r"""be smaller than everything."""
+        """Be smaller than everything."""
         return -1
 
     def __lt__(self, other):
         return True
 
     def __bool__(self):
-        r"""handles truth testing."""
+        """Handles truth testing."""
         return False
 
     __nonzero__ = __bool__  # Python2 compatibility
@@ -137,7 +134,7 @@ class UnshapedComponent(Component):
         Thot,
         area=numpy.NaN,
         modArea=None,
-        isotopics=None,  # pylint: disable=too-many-arguments
+        isotopics=None,
         mergeWith=None,
         components=None,
     ):
@@ -222,7 +219,7 @@ class UnshapedVolumetricComponent(UnshapedComponent):
         Thot,
         area=numpy.NaN,
         op=None,
-        isotopics=None,  # pylint: disable=too-many-arguments
+        isotopics=None,
         mergeWith=None,
         components=None,
         volume=numpy.NaN,
@@ -255,7 +252,7 @@ class UnshapedVolumetricComponent(UnshapedComponent):
 class ZeroMassComponent(UnshapedVolumetricComponent):
     """
     A component that never has mass -- it always returns zero for getMass and
-    getNumberDensity
+    getNumberDensity.
 
     Useful for situations where you want to give a block integrated flux, but ensure
     mass is never added to it
@@ -266,17 +263,17 @@ class ZeroMassComponent(UnshapedVolumetricComponent):
     """
 
     def getNumberDensity(self, *args, **kwargs):
-        """Always return 0 because this component has not mass"""
+        """Always return 0 because this component has not mass."""
         return 0.0
 
     def setNumberDensity(self, *args, **kwargs):
-        """Never add mass"""
+        """Never add mass."""
         pass
 
 
 class PositiveOrNegativeVolumeComponent(UnshapedVolumetricComponent):
     """
-    A component that may have negative mass for removing mass from batches
+    A component that may have negative mass for removing mass from batches.
 
     See Also
     --------
@@ -293,7 +290,7 @@ class DerivedShape(UnshapedComponent):
     This a component that does have specific dimensions, but they're complicated.
 
     Notes
-    ----
+    -----
     - This component type is "derived" through the addition or
       subtraction of other shaped components (e.g. Coolant)
     - Because its area and volume are defined by other components,
@@ -326,12 +323,38 @@ class DerivedShape(UnshapedComponent):
             return math.sqrt(4.0 * self.getComponentArea() / math.pi)
 
     def computeVolume(self):
-        """Cannot compute volume until it is derived."""
+        """Cannot compute volume until it is derived.
+
+        .. impl:: The volume of a DerivedShape depends on the solid shapes surrounding
+            them.
+            :id: I_ARMI_COMP_FLUID0
+            :implements: R_ARMI_COMP_FLUID
+
+            Computing the volume of a ``DerivedShape`` means looking at the solid
+            materials around it, and finding what shaped space is left over in between
+            them. This method calls the method ``_deriveVolumeAndArea``, which makes
+            use of the fact that the ARMI reactor data model is hierarchical. It starts
+            by finding the parent of this object, and then finding the volume of all
+            the other objects at this level. Whatever is left over, is the volume of
+            this object. Obviously, you can only have one ``DerivedShape`` child of any
+            parent for this logic to work.
+        """
         return self._deriveVolumeAndArea()
+
+    def getMaxVolume(self):
+        """
+        The maximum volume of the parent Block.
+
+        Returns
+        -------
+        vol : float
+            volume in cm^3.
+        """
+        return self.parent.getMaxArea() * self.parent.getHeight()
 
     def _deriveVolumeAndArea(self):
         """
-        Derive the volume and area of ``DerivedShape``\ s.
+        Derive the volume and area of a ``DerivedShape``.
 
         Notes
         -----
@@ -347,7 +370,6 @@ class DerivedShape(UnshapedComponent):
         with purely 2D components. Thus we track area and volume fractions here
         when possible.
         """
-
         if self.parent is None:
             raise ValueError(
                 f"Cannot compute volume/area of {self} without a parent object."
@@ -369,10 +391,10 @@ class DerivedShape(UnshapedComponent):
             try:
                 if siblingArea is not None:
                     siblingArea += sibling.getArea()
-            except:
+            except:  # noqa: bare-except
                 siblingArea = None
 
-        remainingVolume = self.parent.getMaxVolume() - siblingVolume
+        remainingVolume = self.getMaxVolume() - siblingVolume
         if siblingArea:
             remainingArea = self.parent.getMaxArea() - siblingArea
 
@@ -380,10 +402,10 @@ class DerivedShape(UnshapedComponent):
         if remainingVolume < 0:
             msg = (
                 f"The component areas in {self.parent} exceed the maximum "
-                f"allowable volume based on the geometry. Check that the "
-                f"geometry is defined correctly.\n"
-                f"Maximum allowable volume: {self.parent.getMaxVolume()} cm^3\n"
-                f"Volume of all non-derived shape components: {siblingVolume} cm^3\n"
+                "allowable volume based on the geometry. Check that the "
+                "geometry is defined correctly.\n"
+                f"Maximum allowable volume: {self.getMaxVolume()} "
+                f"cm^3\nVolume of all non-derived shape components: {siblingVolume} cm^3\n"
             )
             runLog.error(msg)
             raise ValueError(
@@ -399,6 +421,7 @@ class DerivedShape(UnshapedComponent):
             self.p.area = remainingArea
         else:
             self.p.area = remainingVolume / height
+
         return remainingVolume
 
     def getVolume(self):
@@ -416,7 +439,6 @@ class DerivedShape(UnshapedComponent):
         -------
         float
             volume of component in cm^3.
-
         """
         if self.parent.derivedMustUpdate:
             # tell _updateVolume to update it during the below getVolume call

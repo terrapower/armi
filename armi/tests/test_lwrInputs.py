@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for C5G7 input files."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access
 from logging import WARNING
 import os
 import unittest
@@ -47,11 +46,11 @@ class C5G7ReactorTests(unittest.TestCase):
     def test_loadC5G7(self):
         """
         Load the C5G7 case from input and check basic counts.
-        (Also, check that we are getting warnings when reading the YAML.)
+        (Also, check that we are getting warnings when reading the YAML).
         """
         with mockRunLogs.BufferLog() as mock:
             # we should start with a clean slate
-            self.assertEqual("", mock._outputStream)
+            self.assertEqual("", mock.getStdout())
             runLog.LOG.startLog("test_loadC5G7")
             runLog.LOG.setVerbosity(WARNING)
 
@@ -61,10 +60,8 @@ class C5G7ReactorTests(unittest.TestCase):
             b = o.r.core.getFirstBlock(Flags.MOX)
 
             # test warnings are being logged for malformed isotopics info in the settings file
-            streamVal = mock._outputStream
-            self.assertGreater(streamVal.count("[warn]"), 32, msg=streamVal)
-            self.assertGreater(streamVal.count("custom isotopics"), 32, msg=streamVal)
-            self.assertIn("Uranium Oxide", streamVal, msg=streamVal)
+            streamVal = mock.getStdout()
+            self.assertIn("UraniumOxide", streamVal, msg=streamVal)
             self.assertIn("SaturatedWater", streamVal, msg=streamVal)
             self.assertIn("invalid settings: fakeBad", streamVal, msg=streamVal)
 
@@ -91,8 +88,9 @@ class C5G7ReactorTests(unittest.TestCase):
         o = armi_init(fName=TEST_INPUT_TITLE + ".yaml")
         locsInput, locsDB = {}, {}
         loadLocs(o, locsInput)
-        o.operate()
-        o2 = db.loadOperator(TEST_INPUT_TITLE + ".h5", 0, 0)
+        with directoryChangers.TemporaryDirectoryChanger():
+            o.operate()
+            o2 = db.loadOperator(TEST_INPUT_TITLE + ".h5", 0, 0)
         loadLocs(o2, locsDB)
 
         for indices, coordsInput in sorted(locsInput.items()):

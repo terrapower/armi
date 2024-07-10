@@ -39,7 +39,6 @@ HeatCapacityConstants = collections.namedtuple(
 
 
 class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
-    name = "Uranium Oxide"
 
     enrichedNuclide = "U235"
 
@@ -63,12 +62,12 @@ class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
     }
 
     references = {
-        "thermal conductivity": "Thermal conductivity of uranium dioxide by nonequilibrium molecular dynamics simulation. S. Motoyama. Physical Review B, Volume 60, Number 1, July 1999",
-        "linear expansion": "Thermophysical Properties of MOX and UO2 Fuels Including the Effects of Irradiation. S.G. Popov, et.al. Oak Ridge National Laboratory. ORNL/TM-2000/351",
+        "thermal conductivity": "Thermal conductivity of uranium dioxide by nonequilibrium molecular dynamics "
+        + "simulation. S. Motoyama. Physical Review B, Volume 60, Number 1, July 1999",
+        "linear expansion": "Thermophysical Properties of MOX and UO2 Fuels Including the Effects of Irradiation. "
+        + "S.G. Popov, et.al. Oak Ridge National Laboratory. ORNL/TM-2000/351",
         "heat capacity": "ORNL/TM-2000/351",
     }
-
-    theoreticalDensityFrac = 1.0  # Default value
 
     thermalScatteringLaws = (
         tsl.byNbAndCompound[nb.byName["U"], tsl.UO2],
@@ -76,7 +75,8 @@ class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
     )
 
     # Thermal conductivity values taken from:
-    # Thermal conductivity of uranium dioxide by nonequilibrium molecular dynamics simulation. S. Motoyama. Physical Review B, Volume 60, Number 1, July 1999
+    # Thermal conductivity of uranium dioxide by nonequilibrium molecular dynamics simulation. S. Motoyama.
+    #    Physical Review B, Volume 60, Number 1, July 1999
     thermalConductivityTableK = [
         300,
         600,
@@ -104,13 +104,8 @@ class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
     ]
 
     def __init__(self):
-        material.SimpleSolid.__init__(self)
-
-    def adjustTD(self, val: float) -> None:
-        self.theoreticalDensityFrac = val
-
-    def getTD(self) -> float:
-        return self.theoreticalDensityFrac
+        material.FuelMaterial.__init__(self)
+        self.refDens = self.density(Tk=self.refTempK)
 
     def applyInputParams(
         self, U235_wt_frac: float = None, TD_frac: float = None, *args, **kwargs
@@ -134,14 +129,11 @@ class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
                     label="Zero theoretical density",
                 )
             self.adjustTD(td)
-        else:
-            self.adjustTD(1.00)  # default to fully dense.
+
         material.FuelMaterial.applyInputParams(self, *args, **kwargs)
 
     def setDefaultMassFracs(self) -> None:
-        r"""
-        UO2 mass fractions. Using Natural Uranium without U234
-        """
+        """UO2 mass fractions. Using Natural Uranium without U234."""
         u235 = nb.byName["U235"]
         u238 = nb.byName["U238"]
         oxygen = nb.byName["O"]
@@ -161,22 +153,22 @@ class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
 
     def meltingPoint(self):
         """
-        Melting point in K
+        Melting point in K.
 
         From [#ornltm2000]_.
         """
         return self.__meltingPoint
 
-    def density3(self, Tk: float = None, Tc: float = None) -> float:
+    def density(self, Tk: float = None, Tc: float = None) -> float:
         """
-        Density in (g/cc)
+        Density in (g/cc).
 
         Polynomial line fit to data from [#ornltm2000]_ on page 11.
         """
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("density", Tk)
 
-        return (-1.01147e-7 * Tk ** 2 - 1.29933e-4 * Tk + 1.09805e1) * self.getTD()
+        return (-1.01147e-7 * Tk**2 - 1.29933e-4 * Tk + 1.09805e1) * self.getTD()
 
     def heatCapacity(self, Tk: float = None, Tc: float = None) -> float:
         """
@@ -195,7 +187,7 @@ class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
             * math.exp(hcc.theta / Tk)
             / (math.exp(hcc.theta / Tk) - 1.0) ** 2
             + 2 * hcc.c2 * Tk
-            + hcc.c3 * hcc.Ea * math.exp(-hcc.Ea / Tk) / Tk ** 2
+            + hcc.c3 * hcc.Ea * math.exp(-hcc.Ea / Tk) / Tk**2
         )
         return specificHeatCapacity
 
@@ -208,11 +200,11 @@ class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("linear expansion", Tk)
 
-        return 1.06817e-12 * Tk ** 2 - 1.37322e-9 * Tk + 1.02863e-5
+        return 1.06817e-12 * Tk**2 - 1.37322e-9 * Tk + 1.02863e-5
 
     def linearExpansionPercent(self, Tk: float = None, Tc: float = None) -> float:
         """
-        Return dL/L
+        Return dL/L.
 
         From Section 3.3 of [#ornltm2000]_
         """
@@ -221,16 +213,16 @@ class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
 
         if Tk >= 273.0 and Tk < 923.0:
             return (
-                -2.66e-03 + 9.802e-06 * Tk - 2.705e-10 * Tk ** 2 + 4.391e-13 * Tk ** 3
+                -2.66e-03 + 9.802e-06 * Tk - 2.705e-10 * Tk**2 + 4.391e-13 * Tk**3
             ) * 100.0
         else:
             return (
-                -3.28e-03 + 1.179e-05 * Tk - 2.429e-09 * Tk ** 2 + 1.219e-12 * Tk ** 3
+                -3.28e-03 + 1.179e-05 * Tk - 2.429e-09 * Tk**2 + 1.219e-12 * Tk**3
             ) * 100.0
 
     def thermalConductivity(self, Tk: float = None, Tc: float = None) -> float:
         """
-        Thermal conductivity
+        Thermal conductivity.
 
         Ref: Thermal conductivity of uranium dioxide by nonequilibrium molecular dynamics
         simulation. S. Motoyama. Physical Review B, Volume 60, Number 1, July 1999
@@ -242,5 +234,8 @@ class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
 
 
 class UO2(UraniumOxide):
-    r"""Another name for UraniumOxide"""
-    pass
+    """Another name for UraniumOxide."""
+
+    def __init__(self):
+        UraniumOxide.__init__(self)
+        self._name = "UraniumOxide"

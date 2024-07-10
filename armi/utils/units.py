@@ -11,23 +11,53 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-# pylint: disable=too-many-lines, invalid-name
-"""
-The units module contains unit conversion functions and constants.
-"""
+"""The units module contains unit conversion functions and constants."""
 import math
 
 import scipy.constants
 
 
-# Names
-DEGC = chr(176) + "C"
-MICRONS = chr(181) + "m"
-NOT_APPLICABLE = "N/A"
+# Units (misc)
+DPA = "dpa"
+FIMA = "FIMA"
+PERCENT_FIMA = r"%FIMA"
+MB = "MB"  # megabytes
+MOLES = "mole"
+MWD = "MWd"
+PASCALS = "Pa"
+PERCENT = "%"
 UNITLESS = ""
+USD = "USD"  # US currency (the dollar)
+# Units (angles)
+DEGREES = "degrees"
+RADIANS = "radians"
+# Units (energy)
+EV = "eV"
+MW = "MW"
+WATTS = "W"
+# Units (length)
+CM = "cm"
+METERS = "m"
+MICRONS = chr(181) + "m"
+# Units (mass)
+GRAMS = "g"
+KG = "kg"
+MT = "MT"
+# Units (reactivity)
+CENTS = "cents"  # 1/100th of a dollar
+DOLLARS = "$"  # (dk/k/k') / beta
+PCM = "pcm"
+REACTIVITY = chr(916) + "k/k/k'"
+# Units (temperature)
+DEGC = chr(176) + "C"
+DEGK = "K"
+# Units (time)
+DAYS = "days"
+MINUTES = "min"
+SECONDS = "s"
+YEARS = "yr"
 
-# conversions
+# Unit conversions
 C_TO_K = 273.15
 BOLTZMAN_CONSTANT = 8.6173324e-11  # boltzmann constant in MeV/K
 AVOGADROS_NUMBER = 6.0221415e23
@@ -80,7 +110,7 @@ TRACE_NUMBER_DENSITY = 1e-50
 MIN_FUEL_HM_MOLES_PER_CC = 1e-10
 
 # More than 10 decimals can create floating point comparison problems in MCNP and DIF3D
-FLOAT_DIMENSION_DECIMALS = 10
+FLOAT_DIMENSION_DECIMALS = 8
 EFFECTIVELY_ZERO = 10.0 ** (-1 * FLOAT_DIMENSION_DECIMALS)
 
 #
@@ -110,7 +140,7 @@ REYNOLDS_TURBULENT = 4000.0
 
 def getTk(Tc=None, Tk=None):
     """
-    Return a temperature in Kelvin, given a temperature in Celsius or Kelvin
+    Return a temperature in Kelvin, given a temperature in Celsius or Kelvin.
 
     Returns
     -------
@@ -132,7 +162,7 @@ def getTk(Tc=None, Tk=None):
 
 def getTc(Tc=None, Tk=None):
     """
-    Return a temperature in Celcius, given a temperature in Celsius or Kelvin
+    Return a temperature in Celsius, given a temperature in Celsius or Kelvin.
 
     Returns
     -------
@@ -154,7 +184,7 @@ def getTc(Tc=None, Tk=None):
 
 def getTf(Tc=None, Tk=None):
     """
-    Return a temperature in Fahrenheit, given a temperature in Celsius or Kelvin
+    Return a temperature in Fahrenheit, given a temperature in Celsius or Kelvin.
 
     Returns
     -------
@@ -171,7 +201,7 @@ def getTf(Tc=None, Tk=None):
 
 def getTemperature(Tc=None, Tk=None, tempUnits=None):
     """
-    Returns the temperature in the prescribed temperature units
+    Returns the temperature in the prescribed temperature units.
 
     Parameters
     ----------
@@ -286,7 +316,7 @@ def sanitizeAngle(theta):
 
 def getXYLineParameters(theta, x=0, y=0):
     """
-    returns parameters A B C D for a plane in the XY direction
+    Returns parameters A B C D for a plane in the XY direction.
 
     Parameters
     ----------

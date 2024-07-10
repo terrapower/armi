@@ -151,7 +151,6 @@ def _fromStringIgnoreErrors(cls, typeSpec):
     a. multiple-word flags are used such as *grid plate* or
        *inlet nozzle* so we use lookups.
     b. Some flags have digits in them. We just strip those off.
-
     """
 
     def updateMethodIgnoreErrors(typeSpec):
@@ -190,9 +189,7 @@ def _toString(cls, typeSpec):
 
 
 class Flags(Flag):
-    """
-    Defines the valid flags used in the framework.
-    """
+    """Defines the valid flags used in the framework."""
 
     # basic classifiers
     PRIMARY = auto()
@@ -287,10 +284,40 @@ class Flags(Flag):
 
     @classmethod
     def fromString(cls, typeSpec):
+        """
+        Retrieve flag from a string.
+
+        .. impl:: Retrieve flag from a string.
+            :id: I_ARMI_FLAG_TO_STR0
+            :implements: R_ARMI_FLAG_TO_STR
+
+            For a string passed as ``typeSpec``, first converts the whole string
+            to uppercase. Then tries to parse the string for any special phrases, as
+            defined in the module dictionary ``_CONVERSIONS``, and converts those
+            phrases to flags directly.
+
+            Then it splits the remaining string into separate words based on the presence
+            of spaces. Looping over each of the words, any numbers are stripped out
+            and the remaining string is matched up to any class attribute names.
+            If any matches are found these are returned as flags.
+        """
         return _fromString(cls, typeSpec)
 
     @classmethod
     def toString(cls, typeSpec):
+        """
+        Convert a flag to a string.
+
+        .. impl:: Convert a flag to string.
+            :id: I_ARMI_FLAG_TO_STR1
+            :implements: R_ARMI_FLAG_TO_STR
+
+            This converts the representation of a bunch of flags from ``typeSpec``,
+            which might look like ``Flags.A|B``,
+            into a string with spaces in between the flag names, which would look
+            like  ``'A B'``. This is done via nesting string splitting and replacement
+            actions.
+        """
         return _toString(cls, typeSpec)
 
 
@@ -298,28 +325,6 @@ class InvalidFlagsError(KeyError):
     """Raised when code attempts to look for an undefined flag."""
 
     pass
-
-
-_PLUGIN_FLAGS_REGISTERED = False
-
-
-def registerPluginFlags(pm):
-    """
-    Apply flags specified in the passed ``PluginManager`` to the ``Flags`` class.
-
-    See Also
-    --------
-    armi.plugins.ArmiPlugin.defineFlags
-    """
-    global _PLUGIN_FLAGS_REGISTERED
-    if _PLUGIN_FLAGS_REGISTERED:
-        raise RuntimeError(
-            "Plugin flags have already been registered. Cannot do it twice!"
-        )
-
-    for pluginFlags in pm.hook.defineFlags():
-        Flags.extend(pluginFlags)
-    _PLUGIN_FLAGS_REGISTERED = True
 
 
 # string conversions for multiple-word flags

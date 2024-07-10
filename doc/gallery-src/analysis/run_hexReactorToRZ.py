@@ -28,11 +28,10 @@ import math
 
 import matplotlib.pyplot as plt
 
-from armi.reactor.tests import test_reactors
-from armi.reactor.flags import Flags
+from armi import configure
 from armi.reactor.converters import geometryConverters
+from armi.reactor.tests import test_reactors
 from armi.utils import plotting
-from armi import configure, runLog
 
 # configure ARMI
 configure(permissive=True)
@@ -56,3 +55,4 @@ converter.convert(r)
 figs = converter.plotConvertedReactor()
 
 plt.show()
+plt.close()

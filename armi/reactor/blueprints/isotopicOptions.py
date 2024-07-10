@@ -20,14 +20,22 @@ allow specification of arbitrary isotopic compositions.
 """
 import yamlize
 
-from armi.utils import units
 from armi import materials
 from armi import runLog
 from armi.nucDirectory import elements
 from armi.nucDirectory import nucDir
 from armi.nucDirectory import nuclideBases
 from armi.utils import densityTools
+from armi.utils import units
 from armi.utils.customExceptions import InputError
+from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import (
+    CONF_FP_MODEL,
+    CONF_FISSION_PRODUCT_LIBRARY_NAME,
+)
+from armi.physics.neutronics.settings import (
+    CONF_NEUTRONICS_KERNEL,
+    CONF_XS_KERNEL,
+)
 
 ALLOWED_KEYS = set(nuclideBases.byName.keys()) | set(elements.bySymbol.keys())
 
@@ -36,46 +44,62 @@ class NuclideFlag(yamlize.Object):
     """
     Defines whether or not each nuclide is included in the burn chain and cross sections.
 
-    Also controls which nuclides get expanded from elementals to isotopics
-    and which natural isotopics to exclude (if any). Oftentimes, cross section
-    library creators include some natural isotopes but not all. For example,
-    it is common to include O16 but not O17 or O18. Each code has slightly
-    different interpretations of this so we give the user full control here.
+    Also controls which nuclides get expanded from elementals to isotopics and which natural
+    isotopics to exclude (if any). Oftentimes, cross section library creators include some natural
+    isotopes but not all. For example, it is common to include O16 but not O17 or O18. Each code has
+    slightly different interpretations of this so we give the user full control here.
 
     We also try to provide useful defaults.
 
-    There are lots of complications that can arise in these choices.
-    It makes reasonable sense to use elemental compositions
-    for things that are typically used  without isotopic modifications
-    (Fe, O, Zr, Cr, Na). If we choose to expand some or all of these
-    to isotopics at initialization based on cross section library
-    requirements, a single case will work fine with a given lattice
-    physics option. However, restarting from that case with different
-    cross section needs is challenging.
+    There are lots of complications that can arise in these choices. It makes reasonable sense to
+    use elemental compositions for things that are typically used  without isotopic modifications
+    (Fe, O, Zr, Cr, Na). If we choose to expand some or all of these to isotopics at initialization
+    based on cross section library requirements, a single case will work fine with a given lattice
+    physics option. However, restarting from that case with different cross section needs is
+    challenging.
+
+    .. impl:: The blueprint object that represents a nuclide flag.
+        :id: I_ARMI_BP_NUC_FLAGS1
+        :implements: R_ARMI_BP_NUC_FLAGS
+
+        This class creates a yaml interface for the user to specify in their blueprints which
+        isotopes should be depleted. It is incorporated into the "nuclide flags" section of a
+        blueprints file by being included as key-value pairs within the
+        :py:class:`~armi.reactor.blueprints.isotopicOptions.NuclideFlags` class, which is in turn
+        included into the overall blueprints within :py:class:`~armi.reactor.blueprints.Blueprints`.
+
+        This class includes a boolean ``burn`` attribute which can be specified for any nuclide.
+        This attribute is examined by the
+        :py:meth:`~armi.reactor.blueprints.isotopicOptions.NuclideFlag.fileAsActiveOrInert` method
+        to sort the nuclides into sets of depletable or not, which is typically called during
+        construction of assemblies in :py:meth:`~armi.reactor.blueprints.Blueprints.constructAssem`.
+
+        Note that while the ``burn`` attribute can be set by the user in the blueprints, other
+        methods may also set it based on case settings (see, for instance,
+        :py:func:`~armi.reactor.blueprints.isotopicOptions.genDefaultNucFlags`,
+        :py:func:`~armi.reactor.blueprints.isotopicOptions.autoUpdateNuclideFlags`, and
+        :py:func:`~armi.reactor.blueprints.isotopicOptions.getAllNuclideBasesByLibrary`).
 
     Attributes
     ----------
     nuclideName : str
         The name of the nuclide
     burn : bool
-        True if this nuclide should be added to the burn chain.
-        If True, all reachable nuclides via transmutation
-        and decay must be included as well.
+        True if this nuclide should be added to the burn chain. If True, all reachable nuclides via
+        transmutation and decay must be included as well.
     xs : bool
-        True if this nuclide should be included in the cross
-        section libraries. Effectively, if this nuclide is in the problem
-        at all, this should be true.
+        True if this nuclide should be included in the cross section libraries. Effectively, if this
+        nuclide is in the problem at all, this should be true.
     expandTo : list of str, optional
-        isotope nuclideNames to expand to. For example, if nuclideName is
-        ``O`` then this could be ``["O16", "O17"]`` to expand it into
-        those two isotopes (but not ``O18``). The nuclides will be scaled
-        up uniformly to account for any missing natural nuclides.
+        isotope nuclideNames to expand to. For example, if nuclideName is ``O`` then this could be
+        ``["O16", "O17"]`` to expand it into those two isotopes (but not ``O18``). The nuclides will
+        be scaled up uniformly to account for any missing natural nuclides.
     """
 
     nuclideName = yamlize.Attribute(type=str)
 
     @nuclideName.validator
-    def nuclideName(self, value):  # pylint: disable=method-hidden
+    def nuclideName(self, value):
         if value not in ALLOWED_KEYS:
             raise ValueError(
                 "`{}` is not a valid nuclide name, must be one of: {}".format(
@@ -99,9 +123,7 @@ class NuclideFlag(yamlize.Object):
             self.nuclideName, self.burn, self.xs
         )
 
-    def fileAsActiveOrInert(
-        self, activeSet, inertSet, undefinedBurnChainActiveNuclides
-    ):
+    def fileAsActiveOrInert(self, activeSet, inertSet):
         """
         Given a nuclide or element name, file it as either active or inert.
 
@@ -109,6 +131,7 @@ class NuclideFlag(yamlize.Object):
         rather than the NaturalNuclideBase, as the NaturalNuclideBase will never
         occur in such a problem.
         """
+        undefBurnChainActiveNuclides = set()
         nb = nuclideBases.byName[self.nuclideName]
         if self.expandTo:
             nucBases = [nuclideBases.byName[nn] for nn in self.expandTo]
@@ -121,17 +144,15 @@ class NuclideFlag(yamlize.Object):
             if self.burn:
                 if not nuc.trans and not nuc.decays:
                     # DUMPs and LFPs usually
-                    undefinedBurnChainActiveNuclides.add(nuc.name)
+                    undefBurnChainActiveNuclides.add(nuc.name)
                 activeSet.add(nuc.name)
             if self.xs:
                 inertSet.add(nuc.name)
-        return expanded
+        return expanded, undefBurnChainActiveNuclides
 
 
 class NuclideFlags(yamlize.KeyedList):
-    """
-    An OrderedDict of ``NuclideFlags``, keyed by their ``nuclideName``.
-    """
+    """An OrderedDict of ``NuclideFlags``, keyed by their ``nuclideName``."""
 
     item_type = NuclideFlag
     key_attr = NuclideFlag.nuclideName
@@ -139,8 +160,32 @@ class NuclideFlags(yamlize.KeyedList):
 
 class CustomIsotopic(yamlize.Map):
     """
-    User specified, custom isotopics input defined by a name (such as MOX), and key/pairs of nuclide names and numeric
-    values consistent with the ``input format``.
+    User specified, custom isotopics input defined by a name (such as MOX), and key/pairs of nuclide
+    names and numeric values consistent with the ``input format``.
+
+    .. impl:: Certain material modifications will be applied using this code.
+        :id: I_ARMI_MAT_USER_INPUT2
+        :implements: R_ARMI_MAT_USER_INPUT
+
+        Defines a yaml construct that allows the user to define a custom isotopic vector from within
+        their blueprints file, including a name and key-value pairs corresponding to nuclide names
+        and their concentrations.
+
+        Relies on the underlying infrastructure from the ``yamlize`` package for reading from text
+        files, serialization, and internal storage of the data.
+
+        Is implemented as part of a blueprints file by being used in key-value pairs within the
+        :py:class:`~armi.reactor.blueprints.isotopicOptions.CustomIsotopics` class, which is
+        imported and used as an attribute within the larger
+        :py:class:`~armi.reactor.blueprints.Blueprints` class.
+
+        These isotopics are linked to a component during calls to
+        :py:meth:`~armi.reactor.blueprints.componentBlueprint.ComponentBlueprint.construct`, where
+        the name specified in the ``isotopics`` attribute of the component blueprint is searched
+        against the available ``CustomIsotopics`` defined in the "custom isotopics" section of the
+        blueprints. Once linked, the
+        :py:meth:`~armi.reactor.blueprints.isotopicOptions.CustomIsotopic.apply` method is called,
+        which adjusts the ``massFrac`` attribute of the component's material class.
     """
 
     key_type = yamlize.Typed(str)
@@ -149,7 +194,7 @@ class CustomIsotopic(yamlize.Map):
     inputFormat = yamlize.Attribute(key="input format", type=str)
 
     @inputFormat.validator
-    def inputFormat(self, value):  # pylint: disable=method-hidden
+    def inputFormat(self, value):
         if value not in self._allowedFormats:
             raise ValueError(
                 "Cannot set `inputFormat` to `{}`, must be one of: {}".format(
@@ -344,29 +389,25 @@ class CustomIsotopic(yamlize.Map):
         ----------
         material : Material
             An ARMI Material instance.
-
         """
-        material.p.massFrac = dict(self.massFracs)
+        material.massFrac = dict(self.massFracs)
         if self.density is not None:
             if not isinstance(material, materials.Custom):
-                runLog.warning(
-                    "You either specified a custom mass density or number densities "
-                    "(which implies a mass density) on `{}` with custom isotopics `{}`. "
-                    "This has no effect on this Material class; you can only "
-                    "override mass density on `Custom` "
-                    "materials. Consider switching to number fraction input. "
-                    "Continuing to use {} mass density.".format(
-                        material, self.name, material
-                    )
+                runLog.important(
+                    "A custom density or number densities has been specified for non-custom "
+                    "material {}. The material object's density will not be updated to prevent unintentional "
+                    "density changes across the model. Only custom materials may have a density "
+                    "specified.".format(material),
+                    single=True,
                 )
-                return  # specifically, non-Custom materials only use refDensity and dLL, .p.density has no effect
-            material.p.density = self.density
+                # specifically, non-Custom materials only use refDensity and dLL, mat.customDensity has no effect
+                return
+
+            material.customDensity = self.density
 
 
 class CustomIsotopics(yamlize.KeyedList):
-    """
-    OrderedDict of CustomIsotopic objects, keyed by their name.
-    """
+    """OrderedDict of CustomIsotopic objects, keyed by their name."""
 
     item_type = CustomIsotopic
 
@@ -445,9 +486,9 @@ def getDefaultNuclideFlags():
     return nuclideFlags
 
 
-def autoSelectElementsToKeepFromSettings(cs):
+def eleExpandInfoBasedOnCodeENDF(cs):
     """
-    Intelligently choose elements to expand based on settings.
+    Intelligently choose elements to expand based on code and ENDF version.
 
     If settings point to a particular code and library and we know
     that combo requires certain elementals to be expanded, we
@@ -493,7 +534,7 @@ def autoSelectElementsToKeepFromSettings(cs):
         if nnb and nnb.getMcc2Id():
             elementalsInMC2.add(nnb)
 
-    if "MCNP" in cs["neutronicsKernel"]:
+    if "MCNP" in cs[CONF_NEUTRONICS_KERNEL]:
         expansionStrings.update(mcnpExpansions)
         if int(cs["mcnpLibrary"]) == 50:
             elementalsToKeep.update(nuclideBases.instances)  # skip expansion
@@ -511,11 +552,11 @@ def autoSelectElementsToKeepFromSettings(cs):
                 )
             )
 
-    elif cs["xsKernel"] in ["", "SERPENT", "MC2v3", "MC2v3-PARTISN"]:
+    elif cs[CONF_XS_KERNEL] in ["", "SERPENT", "MC2v3", "MC2v3-PARTISN"]:
         elementalsToKeep.update(endf70Elementals)
         expansionStrings.update(mc2Expansions)
 
-    elif cs["xsKernel"] == "DRAGON":
+    elif cs[CONF_XS_KERNEL] == "DRAGON":
         # Users need to use default nuclear lib name. This is documented.
         dragLib = cs["dragonDataPath"]
         # only supports ENDF/B VII/VIII at the moment.
@@ -532,7 +573,7 @@ def autoSelectElementsToKeepFromSettings(cs):
                 f"Unrecognized DRAGLIB name: {dragLib} Use default file name."
             )
 
-    elif cs["xsKernel"] == "MC2v2":
+    elif cs[CONF_XS_KERNEL] == "MC2v2":
         # strip out any NaturalNuclideBase with no getMcc2Id() (not on mcc-nuclides.yaml)
         elementalsToKeep.update(elementalsInMC2)
         expansionStrings.update(mc2Expansions)
@@ -557,7 +598,7 @@ def genDefaultNucFlags():
     return flags
 
 
-def autoUpdateNuclideFlags(cs, nuclideFlags):
+def autoUpdateNuclideFlags(cs, nuclideFlags, inerts):
     """
     This function is responsible for examining the fission product model treatment
     that is selected by the user and adding a set of nuclides to the `nuclideFlags`
@@ -576,32 +617,33 @@ def autoUpdateNuclideFlags(cs, nuclideFlags):
     nbs = getAllNuclideBasesByLibrary(cs)
     if nbs:
         runLog.info(
-            f"Adding explicit fission products to the nuclide flags based on the "
-            f"fission product model set to `{cs['fpModel']}`."
+            "Adding explicit fission products to the nuclide flags based on the "
+            f"fission product model set to `{cs[CONF_FP_MODEL]}`."
         )
         for nb in nbs:
             nuc = nb.name
             if nuc in nuclideFlags or elements.byZ[nb.z] in nuclideFlags:
                 continue
-            nuclideFlag = NuclideFlag(nuc, burn=False, xs=True, expandTo=[])
-            nuclideFlags[nuc] = nuclideFlag
+            nuclideFlags[nuc] = NuclideFlag(nuc, burn=False, xs=True, expandTo=[])
+            # inert since burn is False
+            inerts.add(nuc)
 
 
 def getAllNuclideBasesByLibrary(cs):
     """
     Return a list of nuclide bases available for cross section modeling
-    based on the ``fpModelLibrary`` setting.
+    based on the ``CONF_FISSION_PRODUCT_LIBRARY_NAME`` setting.
     """
     nbs = []
-    if cs["fpModel"] == "explicitFissionProducts":
-        if not cs["fpModelLibrary"]:
+    if cs[CONF_FP_MODEL] == "explicitFissionProducts":
+        if not cs[CONF_FISSION_PRODUCT_LIBRARY_NAME]:
             nbs = []
-        if cs["fpModelLibrary"] == "MC2-3":
+        if cs[CONF_FISSION_PRODUCT_LIBRARY_NAME] == "MC2-3":
             nbs = nuclideBases.byMcc3Id.values()
         else:
             raise ValueError(
-                f"An option to handle the `fpModelLibrary` "
-                f"set to `{cs['fpModelLibrary']}` has not been "
-                f"implemented."
+                "An option to handle the `CONF_FISSION_PRODUCT_LIBRARY_NAME` "
+                f"set to `{cs[CONF_FISSION_PRODUCT_LIBRARY_NAME]}` has not been "
+                "implemented."
             )
     return nbs

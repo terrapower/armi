@@ -13,8 +13,7 @@
 # limitations under the License.
 
 r"""
-The parameters system holds state information for everything within ARMI's composite
-structure:
+The parameters hold state info for everything in ARMI's composites structure.
 
 .. list-table:: Example Parameters
     :widths: 50 50
@@ -71,7 +70,6 @@ of any such types. The type within a given array should be homogeneous. Examples
     >>> b.p.flux = 2.5e13
     >>> b.p.fuelTemp = numpy.array(range(217), dtype=float)
     >>> b.p.fuelTemp[58] = 600
-
 
 .. note::
 
@@ -181,13 +179,13 @@ Design Considerations
     * - Parameters are just fancy properties with meta data.
       - Implementing the descriptor interface on a :py:class:`Parameter` removes the
         need to construct a :py:class:`Parameter` without a name, then come back through
-        with the ``applyParameters()`` class method to apply the
+        with the ``applyParameters()`` method to apply the
         :py:class:`Parameter` as a descriptor.
 
 .. _thefreedictionary: http://www.thefreedictionary.com/parameter
 .. _Meriam-Webster: http://www.merriam-webster.com/dictionary/parameter
 """
-
+# ruff: noqa: F401
 from armi.reactor.parameters.parameterCollections import (
     ParameterCollection,
     collectPluginParameters,

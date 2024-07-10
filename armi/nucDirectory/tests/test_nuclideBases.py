@@ -12,18 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for nuclideBases"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+"""Tests for nuclideBases."""
+import math
 import os
 import random
-import math
 import unittest
-from ruamel import yaml
+
+from ruamel.yaml import YAML
 
 from armi.context import RES
-from armi.utils.units import SECONDS_PER_HOUR, AVOGADROS_NUMBER, CURIE_PER_BECQUEREL
-from armi.nucDirectory import nuclideBases, elements
+from armi.nucDirectory import nuclideBases
 from armi.nucDirectory.tests import NUCDIRECTORY_TESTS_DEFAULT_DIR_PATH
+from armi.utils.units import SECONDS_PER_HOUR, AVOGADROS_NUMBER, CURIE_PER_BECQUEREL
 
 
 class TestNuclide(unittest.TestCase):
@@ -31,7 +31,6 @@ class TestNuclide(unittest.TestCase):
     def setUpClass(cls):
         cls.nucDirectoryTestsPath = NUCDIRECTORY_TESTS_DEFAULT_DIR_PATH
         nuclideBases.destroyGlobalNuclides()
-        elements.factory()
         nuclideBases.factory()
         # Ensure that the burn chain data is initialized before running these tests.
         nuclideBases.burnChainImposed = False
@@ -137,6 +136,12 @@ class TestNuclide(unittest.TestCase):
             )
 
     def test_nucBases_labelAndNameCollsionsAreForSameNuclide(self):
+        """The name and labels for correct for nuclides.
+
+        .. test:: Validate the name, label, and DB name are accessible for nuclides.
+            :id: T_ARMI_ND_ISOTOPES0
+            :tests: R_ARMI_ND_ISOTOPES
+        """
         count = 0
         for nuc in nuclideBases.where(lambda nn: nn.name == nn.label):
             count += 1
@@ -146,9 +151,7 @@ class TestNuclide(unittest.TestCase):
         self.assertGreater(count, 10)
 
     def test_nucBases_imposeBurnChainDecayBulkStatistics(self):
-        """
-        Test must be updated manually when burn chain is modified.
-        """
+        """Test must be updated manually when burn chain is modified."""
         decayers = list(nuclideBases.where(lambda nn: len(nn.decays) > 0))
         self.assertTrue(decayers)
         for nuc in decayers:
@@ -187,6 +190,12 @@ class TestNuclide(unittest.TestCase):
             )  # ternary fission
 
     def test_nucBases_imposeBurn_nuSF(self):
+        """Test the nuclide data from file (specifically neutrons / sponaneous fission).
+
+        .. test:: Test that nuclide data was read from file instead of code.
+            :id: T_ARMI_ND_DATA0
+            :tests: R_ARMI_ND_DATA
+        """
         actual = {
             nn.name: nn.nuSF for nn in nuclideBases.where(lambda nn: nn.nuSF > 0.0)
         }
@@ -215,14 +224,8 @@ class TestNuclide(unittest.TestCase):
             "TH232": 1.5,
             "NP237": 2.05,
             "PA231": 1.710000,
-            "PU236": 2.120000,
-            "PU238": 2.210000,
-            "PU239": 2.320000,
-            "PU240": 2.151000,
             "PU241": 2.25,
-            "PU242": 2.141000,
             "PU244": 2.290000,
-            "U232": 1.71,
             "U233": 1.76,
             "AM241": 2.5,
             "AM242M": 2.56,
@@ -243,6 +246,12 @@ class TestNuclide(unittest.TestCase):
         )
 
     def test_nucBases_Am242m(self):
+        """Test the correct am242g and am242m abbreviations are supported.
+
+        .. test:: Specifically test for Am242 and Am242g because it is a special case.
+            :id: T_ARMI_ND_ISOTOPES1
+            :tests: R_ARMI_ND_ISOTOPES
+        """
         am242m = nuclideBases.byName["AM242"]
         self.assertEqual(am242m, nuclideBases.byName["AM242M"])
         self.assertEqual("nAm242m", am242m.getDatabaseName())
@@ -258,8 +267,8 @@ class TestNuclide(unittest.TestCase):
         for nb in nuclideBases.where(lambda nn: nn.z <= 89):
             self.assertFalse(nb.isHeavyMetal())
         for nb in nuclideBases.where(lambda nn: nn.z > 89):
-            if isinstance(nb, nuclideBases.DummyNuclideBase) or isinstance(
-                nb, nuclideBases.LumpNuclideBase
+            if isinstance(
+                nb, (nuclideBases.DummyNuclideBase, nuclideBases.LumpNuclideBase)
             ):
                 self.assertFalse(nb.isHeavyMetal())
             else:
@@ -271,6 +280,12 @@ class TestNuclide(unittest.TestCase):
         self.assertIsNone(nb.getDecay("sf"))
 
     def test_getEndfMatNum(self):
+        """Test get nuclides by name.
+
+        .. test:: Test get nuclides by name.
+            :id: T_ARMI_ND_ISOTOPES2
+            :tests: R_ARMI_ND_ISOTOPES
+        """
         self.assertEqual(nuclideBases.byName["U235"].getEndfMatNum(), "9228")
         self.assertEqual(nuclideBases.byName["U238"].getEndfMatNum(), "9237")
         self.assertEqual(nuclideBases.byName["PU239"].getEndfMatNum(), "9437")
@@ -373,9 +388,15 @@ class TestNuclide(unittest.TestCase):
         self.assertAlmostEqual(activity, 0.9885593, places=6)
 
     def test_loadMcc2Data(self):
-        """Tests consistency with the `mcc-nuclides.yaml` input and the nuclides in the data model."""
+        """Tests consistency with the `mcc-nuclides.yaml` input and the nuclides in the data model.
+
+        .. test:: Test that MCC v2 IDs can be queried by nuclides.
+            :id: T_ARMI_ND_ISOTOPES3
+            :tests: R_ARMI_ND_ISOTOPES
+        """
         with open(os.path.join(RES, "mcc-nuclides.yaml")) as f:
-            data = yaml.load(f, Loader=yaml.RoundTripLoader)
+            yaml = YAML(typ="rt")
+            data = yaml.load(f)
             expectedNuclides = set(
                 [nuc for nuc in data.keys() if data[nuc]["ENDF/B-V.2"] is not None]
             )
@@ -388,9 +409,19 @@ class TestNuclide(unittest.TestCase):
         self.assertEqual(len(nuclideBases.byMcc2Id), len(expectedNuclides))
 
     def test_loadMcc3Data(self):
-        """Tests consistency with the `mcc-nuclides.yaml` input and the nuclides in the data model."""
+        """Tests consistency with the `mcc-nuclides.yaml` input and the nuclides in the data model.
+
+        .. test:: Test that MCC v3 IDs can be queried by nuclides.
+            :id: T_ARMI_ND_ISOTOPES4
+            :tests: R_ARMI_ND_ISOTOPES
+
+        .. test:: Test the MCC nuclide data that was read from file instead of code.
+            :id: T_ARMI_ND_DATA1
+            :tests: R_ARMI_ND_DATA
+        """
         with open(os.path.join(RES, "mcc-nuclides.yaml")) as f:
-            data = yaml.load(f, Loader=yaml.RoundTripLoader)
+            yaml = YAML(typ="rt")
+            data = yaml.load(f)
             expectedNuclides = set(
                 [nuc for nuc in data.keys() if data[nuc]["ENDF/B-VII.0"] is not None]
             )
@@ -404,9 +435,14 @@ class TestNuclide(unittest.TestCase):
         self.assertEqual(len(nuclideBases.byMcc3Id), len(expectedNuclides) - 1)
 
 
-class test_getAAAZZZSId(unittest.TestCase):
+class TestAAAZZZSId(unittest.TestCase):
     def test_AAAZZZSNameGenerator(self):
+        """Test that AAAZZS ID name generator.
 
+        .. test:: Query the AAAZZS IDs can be retrieved for nuclides.
+            :id: T_ARMI_ND_ISOTOPES5
+            :tests: R_ARMI_ND_ISOTOPES
+        """
         referenceNucNames = [
             ("C", "120060"),
             ("U235", "2350920"),
@@ -419,8 +455,3 @@ class test_getAAAZZZSId(unittest.TestCase):
             nb = nuclideBases.byName[nucName]
             if refAaazzzs:
                 self.assertEqual(refAaazzzs, nb.getAAAZZZSId())
-
-
-if __name__ == "__main__":
-    #     import sys;sys.argv = ['', 'TestNuclide.test_nucBases_factoryIsFast']
-    unittest.main()

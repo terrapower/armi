@@ -13,34 +13,52 @@
 # limitations under the License.
 
 """
-A system to check user settings for validity and provide users with meaningful suggestions to fix.
+A system to check user settings for validity and provide users with meaningful
+suggestions to fix.
 
-This allows developers to specify a rich set of rules and suggestions for user settings.
+This allows developers to define a rich set of rules and suggestions for user settings.
 These then pop up during initialization of a run, either on the command line or as
 dialogues in the GUI. They say things like: "Your ___ setting has the value ___, which
 is impossible. Would you like to switch to ___?"
-
 """
+import itertools
 import os
+import re
+import shutil
 
 from armi import context
 from armi import getPluginManagerOrFail
 from armi import runLog
-from armi.utils import pathTools
-from armi.utils.mathematics import expandRepeatedFloats
+from armi.physics import neutronics
 from armi.reactor import geometry
 from armi.reactor import systemLayoutInput
-from armi.physics import neutronics
-from armi.utils import directoryChangers
 from armi.settings.settingsIO import (
     prompt,
     RunLogPromptCancel,
     RunLogPromptUnresolvable,
 )
+from armi.utils import directoryChangers
+from armi.utils import pathTools
+from armi.utils.mathematics import expandRepeatedFloats
 
 
 class Query:
-    """An individual query."""
+    """
+    An individual setting validator.
+
+    .. impl:: Rules to validate and customize a setting's behavior.
+        :id: I_ARMI_SETTINGS_RULES
+        :implements: R_ARMI_SETTINGS_RULES
+
+        This class is meant to represent a generic validation test against a setting.
+        The goal is: developers create new settings and they want to make sure those
+        settings are used correctly. As an implementation, users pass in a
+        ``condition`` function to this class that returns ``True`` or ``False`` based
+        on the setting name and value. And then this class has a ``resolve`` method
+        which tests if the condition is met. Optionally, this class also contains a
+        ``correction`` function that allows users to automatically correct a bad
+        setting, if the developers can find a clear path forward.
+    """
 
     def __init__(self, condition, statement, question, correction):
         """
@@ -49,8 +67,8 @@ class Query:
         Parameters
         ----------
         condition : callable
-            A callable that returns True or False. If True,
-            then the query activates its question and potential correction.
+            A callable that returns True or False. If True, then the query activates
+            its question and potential correction.
         statement : str
             A statement of the problem indicated by a True condition
         question : str
@@ -89,7 +107,7 @@ class Query:
         return self.correction is not Inspector.NO_ACTION
 
     def resolve(self):
-        """Standard i/o prompt for resolution of an individual query"""
+        """Standard i/o prompt for resolution of an individual query."""
         if context.MPI_RANK != 0:
             return
 
@@ -142,7 +160,7 @@ class Inspector:
     """
 
     @staticmethod
-    def NO_ACTION():  # pylint: disable=invalid-name
+    def NO_ACTION():
         """Convenience callable used to generate Queries that can't be easily auto-resolved."""
         return None
 
@@ -205,10 +223,7 @@ class Inspector:
             issues = [
                 query
                 for query in self.queries
-                if query
-                and (
-                    query.isCorrective() and not query._passed
-                )  # pylint: disable=protected-access
+                if query and (query.isCorrective() and not query._passed)
             ]
             if any(issues):
                 # something isn't resolved or was unresolved by changes
@@ -218,10 +233,28 @@ class Inspector:
                 )
             runLog.debug("{} has finished querying.".format(self.__class__.__name__))
 
+        if correctionsMade:
+            # find unused file path to store original settings as to avoid overwrite
+            strSkeleton = "{}_old".format(self.cs.path.split(".yaml")[0])
+            for num in itertools.count():
+                if num == 0:
+                    renamePath = f"{strSkeleton}.yaml"
+                else:
+                    renamePath = f"{strSkeleton}{num}.yaml"
+                if not self._csRelativePathExists(renamePath):
+                    break
+            # preserve old file before saving settings file
+            runLog.important(
+                f"Preserving original settings file by renaming `{renamePath}`"
+            )
+            shutil.copy(self.cs.path, renamePath)
+            # save settings file
+            self.cs.writeToYamlFile(self.cs.path)
+
         return correctionsMade
 
     def addQuery(self, condition, statement, question, correction):
-        """Convenience method, query must be resolved, else run fails"""
+        """Convenience method, query must be resolved, else run fails."""
         if not callable(correction):
             raise ValueError(
                 'Query for "{}" malformed. Expecting callable.'.format(statement)
@@ -256,32 +289,34 @@ class Inspector:
         )
 
     def _assignCS(self, key, value):
-        """Lambda assignment workaround"""
+        """Lambda assignment workaround."""
         # this type of assignment works, but be mindful of
         # scoping when trying different methods
         runLog.extra(f"Updating setting `{key}` to `{value}`")
         self.cs[key] = value
 
-    def _raise(self):  # pylint: disable=no-self-use
+    def _raise(self):
         raise KeyboardInterrupt("Input inspection has been interrupted.")
 
     def _inspectBlueprints(self):
         """Blueprints early error detection and old format conversions."""
+        from armi.physics.neutronics.settings import CONF_LOADING_FILE
+
         # if there is a blueprints object, we don't need to check for a file
         if self.cs.filelessBP:
             return
 
         self.addQuery(
-            lambda: not self.cs["loadingFile"],
+            lambda: not self.cs[CONF_LOADING_FILE],
             "No blueprints file loaded. Run will probably fail.",
             "",
             self.NO_ACTION,
         )
 
         self.addQuery(
-            lambda: not self._csRelativePathExists(self.cs["loadingFile"]),
+            lambda: not self._csRelativePathExists(self.cs[CONF_LOADING_FILE]),
             "Blueprints file {} not found. Run will fail.".format(
-                self.cs["loadingFile"]
+                self.cs[CONF_LOADING_FILE]
             ),
             "",
             self.NO_ACTION,
@@ -319,7 +354,7 @@ class Inspector:
         against the default, if the user specifies all the simple cycle settings
         _exactly_ as the defaults, this won't be caught. But, it would be very
         coincidental for the user to _specify_ all the default values when
-        performing any real analysis, so whatever.
+        performing any real analysis.
 
         Also, we must bypass the `Settings` getter and reach directly
         into the underlying `__settings` dict to avoid triggering an error
@@ -348,8 +383,13 @@ class Inspector:
 
     def _inspectSettings(self):
         """Check settings for inconsistencies."""
-        # import here to avoid cyclic issues
         from armi import operators
+        from armi.physics.neutronics.settings import (
+            CONF_BC_COEFFICIENT,
+            CONF_BOUNDARIES,
+            CONF_XS_KERNEL,
+            CONF_XS_SCATTERING_ORDER,
+        )
 
         self.addQueryBadLocationWillLikelyFail("operatorLocation")
 
@@ -428,24 +468,31 @@ class Inspector:
         )
 
         def _willBeCopiedFrom(fName):
-            for copyFile in self.cs["copyFilesFrom"]:
-                if fName == os.path.split(copyFile)[1]:
-                    return True
-            return False
+            return any(
+                fName == os.path.split(copyFile)[1]
+                for copyFile in self.cs["copyFilesFrom"]
+            )
 
         self.addQuery(
             lambda: self.cs["explicitRepeatShuffles"]
             and not self._csRelativePathExists(self.cs["explicitRepeatShuffles"])
             and not _willBeCopiedFrom(self.cs["explicitRepeatShuffles"]),
-            "The specified repeat shuffle file `{0}` does not exist, and won't be copied from elsewhere. "
+            "The specified repeat shuffle file `{0}` does not exist, and won't be copied. "
             "Run will crash.".format(self.cs["explicitRepeatShuffles"]),
             "",
             self.NO_ACTION,
         )
 
         self.addQuery(
-            lambda: not self.cs["power"],
-            "No power level set. You must always start by importing a base settings file.",
+            lambda: not self.cs["power"] and not self.cs["powerDensity"],
+            "No power or powerDensity set. You must always start by importing a base settings file.",
+            "",
+            self.NO_ACTION,
+        )
+
+        self.addQuery(
+            lambda: self.cs["power"] > 0 and self.cs["powerDensity"] > 0,
+            "The power and powerDensity are both set, please note the power will be used as the truth.",
             "",
             self.NO_ACTION,
         )
@@ -456,13 +503,13 @@ class Inspector:
         # gamma cross sections enabled.
         self.addQuery(
             lambda: (
-                "MC2v3" in self.cs["xsKernel"]
+                "MC2v3" in self.cs[CONF_XS_KERNEL]
                 and neutronics.gammaXsAreRequested(self.cs)
-                and self.cs["xsScatteringOrder"] != 3
+                and self.cs[CONF_XS_SCATTERING_ORDER] != 3
             ),
             "MC2-3 will crash if a scattering order is not set to 3 when generating gamma XS.",
-            "Would you like to set the `xsScatteringOrder` to 3?",
-            lambda: self._assignCS("xsScatteringOrder", 3),
+            f"Would you like to set the `{CONF_XS_SCATTERING_ORDER}` to 3?",
+            lambda: self._assignCS(CONF_XS_SCATTERING_ORDER, 3),
         )
 
         self.addQuery(
@@ -476,22 +523,22 @@ class Inspector:
         )
 
         self.addQuery(
-            lambda: not self.cs["looseCoupling"]
-            and self.cs["numCoupledIterations"] > 0,
-            "You have {0} coupled iterations selected, but have not activated loose coupling.".format(
-                self.cs["numCoupledIterations"]
+            lambda: (
+                not self.cs["tightCoupling"]
+                and self.cs["tightCouplingMaxNumIters"] != 4
             ),
-            "Set looseCoupling to True?",
-            lambda: self._assignCS("looseCoupling", True),
+            "You've requested a non default number of tight coupling iterations but left tightCoupling: False."
+            "Do you want to set tightCoupling to True?",
+            "",
+            lambda: self._assignCS("tightCoupling", True),
         )
 
         self.addQuery(
-            lambda: self.cs["numCoupledIterations"] > 0,
-            "You have {0} coupling iterations selected.".format(
-                self.cs["numCoupledIterations"]
-            ),
-            "1 coupling iteration doubles run time (2 triples, etc). Do you want to use 0 instead? ",
-            lambda: self._assignCS("numCoupledIterations", 0),
+            lambda: (not self.cs["tightCoupling"] and self.cs["tightCouplingSettings"]),
+            "You've requested non default tight coupling settings but tightCoupling: False."
+            "Do you want to set tightCoupling to True?",
+            "",
+            lambda: self._assignCS("tightCoupling", True),
         )
 
         self.addQuery(
@@ -572,7 +619,7 @@ class Inspector:
                     and (
                         (
                             len(self.cs["cycleLengths"]) > 1
-                            if self.cs["cycleLengths"] != None
+                            if self.cs["cycleLengths"] is not None
                             else False
                         )
                         or self.cs["nCycles"] > 1
@@ -590,14 +637,13 @@ class Inspector:
                     availabilities = expandRepeatedFloats(
                         self.cs["availabilityFactors"]
                     ) or ([self.cs["availabilityFactor"]] * self.cs["nCycles"])
-                except:  # pylint: disable=bare-except
+                except:  # noqa: bare-except
                     return True
 
-                for pf, af in zip(powerFracs, availabilities):
-                    if pf > 0.0 and af == 0.0:
-                        # this will be a full decay step and any power fraction will be ignored. May be ok, but warn.
-                        return True
-                return False
+                # This will be a full decay step and any power fraction will be ignored. May be ok.
+                return any(
+                    pf > 0.0 and af == 0.0 for pf, af in zip(powerFracs, availabilities)
+                )
 
             self.addQuery(
                 lambda: (
@@ -633,16 +679,6 @@ class Inspector:
         )
 
         self.addQuery(
-            lambda: self.cs["runType"] == operators.RunTypes.EQUILIBRIUM
-            and self.cs["cycles"],
-            "Equilibrium cases cannot use the `cycles` case setting to define detailed"
-            " cycle information. Try instead using the simple cycle history inputs"
-            " `cycleLength(s)`, `burnSteps`, `availabilityFactor(s)`, and/or `powerFractions`",
-            "",
-            self.NO_ACTION,
-        )
-
-        self.addQuery(
             lambda: self.cs["skipCycles"] > 0
             and not os.path.exists(self.cs.caseTitle + ".restart.dat"),
             "This is a restart case, but the required restart file {0}.restart.dat is not found".format(
@@ -662,11 +698,11 @@ class Inspector:
 
         self.addQuery(
             lambda: (
-                self.cs["boundaries"] != neutronics.GENERAL_BC
-                and self.cs["bcCoefficient"]
+                self.cs[CONF_BOUNDARIES] != neutronics.GENERAL_BC
+                and self.cs[CONF_BC_COEFFICIENT]
             ),
-            "General neutronic boundary condition was not selected, but `bcCoefficient` was defined. "
-            "Please enable `Generalized` neutronic boundary condition or disable `bcCoefficient`.",
+            f"General neutronic boundary condition was not selected, but `{CONF_BC_COEFFICIENT}` was defined. "
+            f"Please enable `Generalized` neutronic boundary condition or disable `{CONF_BC_COEFFICIENT}`.",
             "",
             self.NO_ACTION,
         )
@@ -709,7 +745,6 @@ def createQueryRevertBadPathToDefault(inspector, settingName, initialLambda=None
     initialLambda: None or callable function
         If ``None``, the callable argument for :py:meth:`addQuery` is does the setting's path exist.
         If more complicated callable arguments are needed, they can be passed in as the ``initialLambda`` setting.
-
     """
     if initialLambda is None:
         initialLambda = lambda: (
@@ -726,3 +761,45 @@ def createQueryRevertBadPathToDefault(inspector, settingName, initialLambda=None
         inspector.cs.getSetting(settingName).revertToDefault,
     )
     return query
+
+
+def validateVersion(versionThis: str, versionRequired: str) -> bool:
+    """Helper function to allow users to verify that their version matches the settings file.
+
+    Parameters
+    ----------
+    versionThis: str
+        The version of this ARMI, App, or Plugin.
+        This MUST be in the form: 1.2.3
+    versionRequired: str
+        The version to compare against, say in a Settings file.
+        This must be in one of the forms: 1.2.3, 1.2, or 1
+
+    Returns
+    -------
+    bool
+        Does this version match the version in the Settings file/object?
+    """
+    fullV = "\d+\.\d+\.\d+"
+    medV = "\d+\.\d+"
+    minV = "\d+"
+
+    if versionRequired == "uncontrolled":
+        # This default flag means we don't want to check the version.
+        return True
+    elif re.search(fullV, versionThis) is None:
+        raise ValueError(
+            "The input version ({0}) does not match the required format: {1}".format(
+                versionThis, fullV
+            )
+        )
+    elif re.search(fullV, versionRequired) is not None:
+        return versionThis == versionRequired
+    elif re.search(medV, versionRequired) is not None:
+        return ".".join(versionThis.split(".")[:2]) == versionRequired
+    elif re.search(minV, versionRequired) is not None:
+        return versionThis.split(".")[0] == versionRequired
+    else:
+        raise ValueError(
+            "The required version is not a valid format: {}".format(versionRequired)
+        )

@@ -13,11 +13,9 @@
 # limitations under the License.
 
 """Tests for the App class."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,import-outside-toplevel
 import copy
 import unittest
 
-from armi import cli
 from armi import configure
 from armi import context
 from armi import getApp
@@ -25,11 +23,12 @@ from armi import getDefaultPluginManager
 from armi import isStableReleaseVersion
 from armi import meta
 from armi import plugins
+from armi.reactor.flags import Flags
 from armi.__main__ import main
 
 
 class TestPlugin1(plugins.ArmiPlugin):
-    """This should be fine on its own"""
+    """This should be fine on its own."""
 
     @staticmethod
     @plugins.HOOKIMPL
@@ -56,9 +55,7 @@ class TestPlugin3(plugins.ArmiPlugin):
 
 
 class TestPlugin4(plugins.ArmiPlugin):
-    """This should be fine on its own, and safe to merge with TestPlugin1. And would
-    make for a pretty good rename IRL.
-    """
+    """This should be fine on its own, and safe to merge with TestPlugin1."""
 
     @staticmethod
     @plugins.HOOKIMPL
@@ -77,7 +74,7 @@ class TestApps(unittest.TestCase):
         self._backupApp = copy.deepcopy(getApp())
 
     def tearDown(self):
-        """Restore the App to its original state"""
+        """Restore the App to its original state."""
         import armi
 
         armi._app = self._backupApp
@@ -121,6 +118,19 @@ class TestApps(unittest.TestCase):
             plugins.PluginError, ".*currently-defined parameters.*"
         ):
             app.getParamRenames()
+
+    def test_registerPluginFlags(self):
+        # set up the app, pm, and register some plugins
+        app = getApp()
+
+        # validate our flags have been registered
+        self.assertEqual(Flags.fromString("FUEL"), Flags.FUEL)
+        self.assertEqual(Flags.fromString("PRIMARY"), Flags.PRIMARY)
+
+        # validate we can only register the flags once
+        for _ in range(3):
+            with self.assertRaises(RuntimeError):
+                app.registerPluginFlags()
 
     def test_getParamRenamesInvalids(self):
         # a basic test of the method
@@ -201,15 +211,26 @@ class TestApps(unittest.TestCase):
         armi._ignoreConfigures = old
 
 
-class TestArmi(unittest.TestCase):
+class TestArmiHighLevel(unittest.TestCase):
     """Tests for functions in the ARMI __init__ module."""
 
-    def test_getDefaultPlugMan(self):
+    def test_getDefaultPluginManager(self):
+        """Test the default plugin manager.
+
+        .. test:: The default application consists of a list of default plugins.
+            :id: T_ARMI_APP_PLUGINS
+            :tests: R_ARMI_APP_PLUGINS
+        """
         pm = getDefaultPluginManager()
         pm2 = getDefaultPluginManager()
 
         self.assertNotEqual(pm, pm2)
-        self.assertIn(cli.EntryPointsPlugin, pm.get_plugins())
+        pluginsList = "".join([str(p) for p in pm.get_plugins()])
+
+        self.assertIn("BookkeepingPlugin", pluginsList)
+        self.assertIn("EntryPointsPlugin", pluginsList)
+        self.assertIn("NeutronicsPlugin", pluginsList)
+        self.assertIn("ReactorPlugin", pluginsList)
 
     def test_overConfigured(self):
         with self.assertRaises(RuntimeError):

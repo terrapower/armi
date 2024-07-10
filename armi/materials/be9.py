@@ -27,22 +27,20 @@ from armi.nucDirectory import nuclideBases as nb
 class Be9(Material):
     """Beryllium."""
 
-    name = "Be-9"
     thermalScatteringLaws = (tsl.byNbAndCompound[nb.byName["BE"], tsl.BE_METAL],)
     propertyValidTemperature = {"linear expansion percent": ((50, 1560.0), "K")}
 
     def setDefaultMassFracs(self):
         self.setMassFrac("BE9", 1.0)
-
-        self.p.refDens = 1.85
+        self.refDens = 1.85
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
         r"""
         Finds the linear expansion coefficient of Be9. given T in C
         returns m/m-K
         Based on http://www-ferp.ucsd.edu/LIB/PROPS/PANOS/be.html
-        which is in turn based on Fusion Engineering and Design . FEDEEE 5(2), 141-234 (1987)
+        which is in turn based on Fusion Engineering and Design . FEDEEE 5(2), 141-234 (1987).
         """
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("linear expansion percent", Tk)
-        return 1e-4 * (8.4305 + 1.1464e-2 * Tk - 2.9752e-6 * Tk ** 2)
+        return 1e-4 * (8.4305 + 1.1464e-2 * Tk - 2.9752e-6 * Tk**2)

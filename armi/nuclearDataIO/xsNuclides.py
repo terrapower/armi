@@ -14,11 +14,11 @@
 
 r"""
 This module contains cross section nuclides, which are a wrapper around the
-:py:class:`~armi.nucDirectory.nuclideBases.INuclide` objects. The cross section nuclide objects contain
-cross section information from a specific calculation (e.g. neutron, or gamma cross sections).
+:py:class:`~armi.nucDirectory.nuclideBases.INuclide` objects. The cross section nuclide objects
+contain cross section information from a specific calculation (e.g. neutron, or gamma cross sections).
 
-:py:class:`XSNuclide` objects also contain meta data from the original file, so that another file can be
-reconstructed.
+:py:class:`XSNuclide` objects also contain meta data from the original file, so that another file
+can be reconstructed.
 
 .. warning::
     :py:class:`XSNuclide` objects should only be created by reading data into
@@ -95,11 +95,11 @@ class XSNuclide(nuclideBases.NuclideWrapper):
         self._base = nuclideBase
 
     def getMicroXS(self, interaction, group):
-        r"""Returns the microscopic xs as the ISOTXS value if it exists or a 0 since it doesn't"""
+        """Returns the microscopic xs as the ISOTXS value if it exists or a 0 since it doesn't."""
         if interaction in self.micros.__dict__:
             try:
                 return self.micros[interaction][group]
-            except:
+            except IndexError:
                 raise IndexError(
                     "Group {0} not found in interaction {1} of nuclide {2}".format(
                         group, interaction, self.name
@@ -109,7 +109,7 @@ class XSNuclide(nuclideBases.NuclideWrapper):
             return 0
 
     def getXS(self, interaction):
-        r"""Get the cross section of a particular interaction.
+        """Get the cross section of a particular interaction.
 
         See Also
         --------
@@ -229,7 +229,7 @@ def _mergeAttributes(this, other, attrName):
 
 
 def plotScatterMatrix(scatterMatrix, scatterTypeLabel="", fName=None):
-    r"""plots a matrix to show scattering."""
+    """Plots a matrix to show scattering."""
     from matplotlib import pyplot
 
     pyplot.imshow(scatterMatrix.todense(), interpolation="nearest")
@@ -242,6 +242,8 @@ def plotScatterMatrix(scatterMatrix, scatterTypeLabel="", fName=None):
         pyplot.savefig(fName)
     else:
         pyplot.show()
+
+    pyplot.close()
 
 
 def plotCompareScatterMatrix(scatterMatrix1, scatterMatrix2, fName=None):
@@ -260,3 +262,5 @@ def plotCompareScatterMatrix(scatterMatrix1, scatterMatrix2, fName=None):
         pyplot.savefig(fName)
     else:
         pyplot.show()
+
+    pyplot.close()

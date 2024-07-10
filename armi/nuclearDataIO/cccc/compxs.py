@@ -40,14 +40,12 @@ The file structure is listed here ::
     *********
           POWER CONVERSION FACTORS              ALWAYS
 
-
 See Also
 --------
 :py:mod:`armi.nuclearDataIO.cccc.isotxs`
 
 Examples
 --------
-::
     >>> from armi.nuclearDataIO import compxs
     >>> lib = compxs.readBinary('COMPXS')
     >>> r0 = lib.regions[0]
@@ -74,9 +72,8 @@ directional diffusion coefficient multipliers, respectively. Similary, the ``d<1
 values are the first, second, and third dimension directional diffusion coefficient
 additive terms, respectively.
 """
-
-from traceback import format_exc
 from scipy.sparse import csc_matrix
+from traceback import format_exc
 import numpy
 
 from armi import runLog
@@ -164,7 +161,7 @@ class _CompxsIO(cccc.Stream):
 
     See Also
     --------
-    armi.nuclearDataIO.cccc.isotxs._IsotxsIO
+    armi.nuclearDataIO.cccc.isotxs.IsotxsIO
     """
 
     _METADATA_TAGS = (
@@ -225,9 +222,8 @@ class _CompxsIO(cccc.Stream):
 
         See Also
         --------
-        armi.nuclearDataIO.cccc.isotxs._IsotxsIO.readWrite : reading/writing ISOTXS files
+        armi.nuclearDataIO.cccc.isotxs.IsotxsIO.readWrite : reading/writing ISOTXS files
         """
-
         runLog.info(
             "{} macroscopic cross library {}".format(
                 "Reading" if self._isReading else "Writing", self
@@ -242,7 +238,7 @@ class _CompxsIO(cccc.Stream):
                 regionIO = _getRegionIO()(region, self, self._lib)
                 regionIO.rwRegionData()
             self._rw5DRecord()
-        except:
+        except:  # noqa: bare-except
             raise OSError(
                 "Failed to {} {} \n\n\n{}".format(
                     "read" if self._isReading else "write", self, format_exc()
@@ -305,7 +301,7 @@ class _CompxsIO(cccc.Stream):
         )
 
     def _rw5DRecord(self):
-        """Write power conversion factors"""
+        """Write power conversion factors."""
         numComps = self._getFileMetadata()["numComps"]
         with self.createRecord() as record:
             for factor in COMPXS_POWER_CONVERSION_FACTORS:
@@ -314,10 +310,10 @@ class _CompxsIO(cccc.Stream):
                 )
 
 
-readBinary = _CompxsIO.readBinary  # pylint: disable=invalid-name
-readAscii = _CompxsIO.readAscii  # pylint: disable=invalid-name
-writeBinary = _CompxsIO.writeBinary  # pylint: disable=invalid-name
-writeAscii = _CompxsIO.writeAscii  # pylint: disable=invalid-name
+readBinary = _CompxsIO.readBinary
+readAscii = _CompxsIO.readAscii
+writeBinary = _CompxsIO.writeBinary
+writeAscii = _CompxsIO.writeAscii
 
 
 class _CompxsRegionIO:
@@ -355,7 +351,7 @@ class _CompxsRegionIO:
         self._rw4DRecord()
 
     def _rw3DRecord(self):
-        r"""Write the composition specifications block"""
+        r"""Write the composition specifications block."""
         with self._compxsIO.createRecord() as record:
             self._getRegionMetadata()["chiFlag"] = record.rwInt(
                 self._getRegionMetadata()["chiFlag"]
@@ -376,7 +372,7 @@ class _CompxsRegionIO:
                 )
 
     def _rw4DRecord(self):
-        r"""Write the composition macroscopic cross sections"""
+        r"""Write the composition macroscopic cross sections."""
         if self._isReading:
             self._region.allocateXS(self._getFileMetadata()["numGroups"])
 
@@ -615,10 +611,9 @@ class CompxsRegion:
         See Also
         --------
         :py:class:`scipy.sparse.csc_matrix`
-
         """
         self.macros.totalScatter = self.macros.totalScatter.makeSparse()
-        self.macros.totalScatter.eliminate_zeros()  # pylint: disable=no-member
+        self.macros.totalScatter.eliminate_zeros()
         if self._getFileMetadata()["maxScatteringOrder"]:
             for sctOrdr, sctObj in self.macros.higherOrderScatter.items():
                 self.macros.higherOrderScatter[sctOrdr] = sctObj.makeSparse()
@@ -631,7 +626,6 @@ class CompxsRegion:
         See Also
         --------
         :py:meth:`armi.nucDirectory.XSNuclide.getXS`
-
         """
         return self.macros[interaction]
 

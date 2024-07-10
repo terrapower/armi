@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-Generic Thermal/Hydraulics Plugin
+Generic Thermal/Hydraulics Plugin.
 
 Thermal/hydraulics is concerned with temperatures, flows, pressures,
 and heat transfer.
@@ -52,6 +52,7 @@ class ThermalHydraulicsPlugin(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineParameters():
+        """Define additional parameters for the reactor data model."""
         from armi.physics.thermalHydraulics import parameters
 
         return parameters.getParameterDefinitions()

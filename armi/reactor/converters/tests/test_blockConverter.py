@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Test block conversions"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+"""Test block conversions."""
 import os
 import unittest
 
@@ -28,6 +27,9 @@ from armi.reactor.tests.test_reactors import loadTestReactor, TEST_ROOT
 from armi.utils import hexagon
 from armi.reactor import grids
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
+from armi.physics.neutronics.isotopicDepletion.isotopicDepletionInterface import (
+    isDepletable,
+)
 
 
 class TestBlockConverter(unittest.TestCase):
@@ -39,6 +41,13 @@ class TestBlockConverter(unittest.TestCase):
         self.td.__exit__(None, None, None)
 
     def test_dissolveWireIntoCoolant(self):
+        """
+        Test dissolving wire into coolant.
+
+        .. test:: Homogenize one component into another.
+            :id: T_ARMI_BLOCKCONV0
+            :tests: R_ARMI_BLOCKCONV
+        """
         self._test_dissolve(loadTestBlock(), "wire", "coolant")
         hotBlock = loadTestBlock(cold=False)
         self._test_dissolve(hotBlock, "wire", "coolant")
@@ -46,6 +55,13 @@ class TestBlockConverter(unittest.TestCase):
         self._test_dissolve(hotBlock, "wire", "coolant")
 
     def test_dissolveLinerIntoClad(self):
+        """
+        Test dissolving liner into clad.
+
+        .. test:: Homogenize one component into another.
+            :id: T_ARMI_BLOCKCONV1
+            :tests: R_ARMI_BLOCKCONV
+        """
         self._test_dissolve(loadTestBlock(), "outer liner", "clad")
         hotBlock = loadTestBlock(cold=False)
         self._test_dissolve(hotBlock, "outer liner", "clad")
@@ -53,7 +69,7 @@ class TestBlockConverter(unittest.TestCase):
         self._test_dissolve(hotBlock, "outer liner", "clad")
 
     def _perturbTemps(self, block, cName, tCold, tHot):
-        "Give the component different ref and hot temperatures than in test_Blocks."
+        """Give the component different ref and hot temperatures than in test_Blocks."""
         c = block.getComponent(Flags.fromString(cName))
         c.refTemp, c.refHot = tCold, tHot
         c.setTemperature(tHot)
@@ -89,20 +105,21 @@ class TestBlockConverter(unittest.TestCase):
         )
 
     def test_convert(self):
-        """Test conversion with no fuel driver."""
+        """Test conversion with no fuel driver.
+
+        .. test:: Convert hex blocks to cylindrical blocks.
+            :id:  T_ARMI_BLOCKCONV_HEX_TO_CYL1
+            :tests: R_ARMI_BLOCKCONV_HEX_TO_CYL
+        """
         block = (
             loadTestReactor(TEST_ROOT)[1]
             .core.getAssemblies(Flags.FUEL)[2]
             .getFirstBlock(Flags.FUEL)
         )
-
         block.spatialGrid = grids.HexGrid.fromPitch(1.0)
 
-        area = block.getArea()
         converter = blockConverters.HexComponentsToCylConverter(block)
         converter.convert()
-        self.assertAlmostEqual(area, converter.convertedBlock.getArea())
-        self.assertAlmostEqual(area, block.getArea())
 
         for compType in [Flags.FUEL, Flags.CLAD, Flags.DUCT]:
             self.assertAlmostEqual(
@@ -115,12 +132,22 @@ class TestBlockConverter(unittest.TestCase):
                     ]
                 ),
             )
+            for c in converter.convertedBlock.getComponents(compType):
+                self.assertEqual(
+                    block.getComponent(compType).temperatureInC, c.temperatureInC
+                )
 
+        self.assertEqual(block.getHeight(), converter.convertedBlock.getHeight())
         self._checkAreaAndComposition(block, converter.convertedBlock)
         self._checkCiclesAreInContact(converter.convertedBlock)
 
     def test_convertHexWithFuelDriver(self):
-        """Test conversion with fuel driver."""
+        """Test conversion with fuel driver.
+
+        .. test:: Convert hex blocks to cylindrical blocks.
+            :id:  T_ARMI_BLOCKCONV_HEX_TO_CYL0
+            :tests: R_ARMI_BLOCKCONV_HEX_TO_CYL
+        """
         driverBlock = (
             loadTestReactor(TEST_ROOT)[1]
             .core.getAssemblies(Flags.FUEL)[2]
@@ -128,15 +155,27 @@ class TestBlockConverter(unittest.TestCase):
         )
 
         block = loadTestReactor(TEST_ROOT)[1].core.getFirstBlock(Flags.CONTROL)
+        control = block.getComponent(Flags.CONTROL)
+
+        # add depletable flag to see if it is carried
+        control.p.flags |= Flags.DEPLETABLE
 
         driverBlock.spatialGrid = None
         block.spatialGrid = grids.HexGrid.fromPitch(1.0)
 
-        self._testConvertWithDriverRings(
+        convertedWithoutDriver = self._testConvertWithDriverRings(
             block,
             driverBlock,
             blockConverters.HexComponentsToCylConverter,
             hexagon.numPositionsInRing,
+        )
+
+        self.assertEqual(5, len([c for c in convertedWithoutDriver if isDepletable(c)]))
+        self.assertEqual(
+            5, len([c for c in convertedWithoutDriver if c.hasFlags(Flags.CONTROL)])
+        )
+        self.assertEqual(
+            9, len([c for c in convertedWithoutDriver if c.hasFlags(Flags.CLAD)])
         )
 
         # This should fail because a spatial grid is required
@@ -157,12 +196,14 @@ class TestBlockConverter(unittest.TestCase):
         driverBlock.spatialGrid = None
         block.spatialGrid = None
 
-        self._testConvertWithDriverRings(
+        convertedWithoutDriver = self._testConvertWithDriverRings(
             block,
             driverBlock,
             blockConverters.BlockAvgToCylConverter,
             hexagon.numPositionsInRing,
         )
+        # block went to 1 component
+        self.assertEqual(1, len([c for c in convertedWithoutDriver]))
 
     def test_convertHexWithFuelDriverOnNegativeComponentAreaBlock(self):
         """
@@ -228,8 +269,10 @@ class TestBlockConverter(unittest.TestCase):
                 self.assertTrue(c.isFuel(), "c was {}".format(c.name))
                 # remove external driver rings in preperation to check composition
                 convertedBlock.remove(c)
+            convBlockWithoutDriver = convertedBlock
+            self._checkAreaAndComposition(block, convBlockWithoutDriver)
 
-            self._checkAreaAndComposition(block, convertedBlock)
+        return convBlockWithoutDriver
 
     def _checkAreaAndComposition(self, block, convertedBlock):
         self.assertAlmostEqual(block.getArea(), convertedBlock.getArea())
@@ -374,8 +417,3 @@ def buildControlBlockWithLinkedNegativeAreaComponent():
     b.getVolumeFractions()  # TODO: remove, should be no-op when removed self.cached
 
     return b
-
-
-if __name__ == "__main__":
-    #     import sys;sys.argv = ['', 'TestBlockConverter.test_convertHexWithFuelDriver']
-    unittest.main()

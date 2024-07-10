@@ -12,10 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Test the reading and writing of the DIF3D/VARIANT LABELS interface file
-"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+"""Test the reading and writing of the DIF3D/VARIANT LABELS interface file."""
 import os
 import unittest
 
@@ -59,8 +56,3 @@ class TestLabels(unittest.TestCase):
                 expectedData = f.read().splitlines()
             for expected, actual in zip(expectedData, actualData):
                 self.assertEqual(expected, actual)
-
-
-if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'TestLabels.test_writeLabelsAscii']
-    unittest.main()

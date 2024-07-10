@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for basic plotting tools"""
+"""Tests for basic plotting tools."""
 import os
 import unittest
 
@@ -37,7 +37,9 @@ class TestPlotting(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.o, cls.r = test_reactors.loadTestReactor()
+        cls.o, cls.r = test_reactors.loadTestReactor(
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
 
     def test_plotDepthMap(self):  # indirectly tests plot face map
         with TemporaryDirectoryChanger():
@@ -55,6 +57,9 @@ class TestPlotting(unittest.TestCase):
             plotting.plotAssemblyTypes(self.r.core.parent.blueprints, plotPath)
             self._checkExists(plotPath)
 
+            if os.path.exists(plotPath):
+                os.remove(plotPath)
+
             plotPath = "coreAssemblyTypes2.png"
             plotting.plotAssemblyTypes(
                 self.r.core.parent.blueprints,
@@ -64,8 +69,14 @@ class TestPlotting(unittest.TestCase):
             )
             self._checkExists(plotPath)
 
+            if os.path.exists(plotPath):
+                os.remove(plotPath)
+
             with self.assertRaises(ValueError):
                 plotting.plotAssemblyTypes(None, plotPath, None)
+
+            if os.path.exists(plotPath):
+                os.remove(plotPath)
 
     def test_plotBlockFlux(self):
         with TemporaryDirectoryChanger():
@@ -98,7 +109,6 @@ class TestPlotting(unittest.TestCase):
             self.assertTrue(os.path.exists("blockDiagram23.svg"))
 
     def test_plotCartesianBlock(self):
-        # pylint: disable=import-outside-toplevel
         from armi import settings
         from armi.reactor import blueprints, reactors
 
@@ -117,7 +127,3 @@ class TestPlotting(unittest.TestCase):
 
     def _checkExists(self, fName):
         self.assertTrue(os.path.exists(fName))
-
-
-if __name__ == "__main__":
-    unittest.main()

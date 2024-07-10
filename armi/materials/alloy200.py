@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Alloy-200 are wrought commercially pure nickel.
-"""
+"""Alloy-200 are wrought commercially pure nickel."""
 from numpy import interp
 
 from armi.materials.material import Material
@@ -23,7 +21,6 @@ from armi.utils.units import getTk
 
 class Alloy200(Material):
 
-    name = "Alloy200"
     references = {
         "linearExpansion": [
             "Alloy 200/201 Data Sheet http://www.jacquet.biz/JACQUET/USA/files/JCQusa-alloy-200-201.pdf"
@@ -86,7 +83,7 @@ class Alloy200(Material):
 
     def linearExpansion(self, Tk=None, Tc=None):
         r"""
-        Returns instantaneous coefficient of thermal expansion of Alloy 200
+        Returns instantaneous coefficient of thermal expansion of Alloy 200.
 
         Parameters
         ----------
@@ -119,4 +116,4 @@ class Alloy200(Material):
             nickleMassFrac -= assumedMassFrac
 
         self.setMassFrac("NI", nickleMassFrac)
-        self.p.refDens = 8.9
+        self.refDens = 8.9

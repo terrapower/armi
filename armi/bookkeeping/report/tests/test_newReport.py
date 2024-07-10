@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Test new reports"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+"""Test new reports."""
 import collections
 import os
 import unittest
@@ -21,18 +20,20 @@ import unittest
 import htmltree
 
 from armi import getPluginManagerOrFail
-from armi.bookkeeping.report import newReports
 from armi.bookkeeping.report import data
+from armi.bookkeeping.report import newReports
 from armi.physics.neutronics.reports import neutronicsPlotting
 from armi.reactor.tests import test_reactors
-from armi.tests import TEST_ROOT
 from armi.tests import mockRunLogs
+from armi.tests import TEST_ROOT
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
 class TestReportContentCreation(unittest.TestCase):
     def setUp(self):
-        self.o, self.r = test_reactors.loadTestReactor(TEST_ROOT)
+        self.o, self.r = test_reactors.loadTestReactor(
+            TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
         self.td = TemporaryDirectoryChanger()
         self.td.__enter__()
 
@@ -147,16 +148,12 @@ class TestReportContentCreation(unittest.TestCase):
         env = data.Report("Environment", "ARMI Env Info")
 
         with mockRunLogs.BufferLog() as mock:
-            self.assertEqual("", mock._outputStream)
+            self.assertEqual("", mock.getStdout())
             _ = env["badStuff"]
-            self.assertIn("Cannot locate group", mock._outputStream)
+            self.assertIn("Cannot locate group", mock.getStdout())
 
-            mock._outputStream = ""
-            self.assertEqual("", mock._outputStream)
+            mock.emptyStdout()
+            self.assertEqual("", mock.getStdout())
             env.writeHTML()
-            self.assertIn("Writing HTML document", mock._outputStream)
-            self.assertIn("[info] HTML document", mock._outputStream)
-
-
-if __name__ == "__main__":
-    unittest.main()
+            self.assertIn("Writing HTML document", mock.getStdout())
+            self.assertIn("[info] HTML document", mock.getStdout())

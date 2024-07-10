@@ -92,9 +92,7 @@ class RtfluxStream(cccc.StreamWithDataContainer):
         return RtfluxData()
 
     def readWrite(self):
-        """
-        Step through the structure of the file and read/write it.
-        """
+        """Step through the structure of the file and read/write it."""
         self._rwFileID()
         self._rw1DRecord()
         if self._metadata["NDIM"] == 1:
@@ -117,18 +115,14 @@ class RtfluxStream(cccc.StreamWithDataContainer):
             self._metadata["label"] = record.rwString(self._metadata["label"], 28)
 
     def _rw1DRecord(self):
-        """
-        Read/write File specifications on 1D record.
-        """
+        """Read/write File specifications on 1D record."""
         with self.createRecord() as record:
             self._metadata.update(
                 record.rwImplicitlyTypedMap(FILE_SPEC_1D_KEYS, self._metadata)
             )
 
     def _rw2DRecord(self):
-        """
-        Read/write 1-dimensional regular total flux.
-        """
+        """Read/write 1-dimensional regular total flux."""
         raise NotImplementedError("1-D RTFLUX files are not yet implemented.")
 
     def _rw3DRecord(self):
@@ -137,7 +131,6 @@ class RtfluxStream(cccc.StreamWithDataContainer):
 
         The records contain blocks of values in the i-j planes.
         """
-
         ng = self._metadata["NGROUP"]
         imax = self._metadata["NINTI"]
         jmax = self._metadata["NINTJ"]
@@ -187,7 +180,6 @@ class AtfluxStream(RtfluxStream):
 
         0 based, so if NG=33 and you want the third group (g=2), this returns 30.
         """
-
         ng = self._metadata["NGROUP"]
         return ng - g - 1
 
@@ -197,7 +189,6 @@ def getFDFluxReader(adjointFlag):
     Returns the appropriate DIF3D FD flux binary file reader class,
     either RTFLUX (real) or ATFLUX (adjoint).
     """
-
     if adjointFlag:
         return AtfluxStream
     else:

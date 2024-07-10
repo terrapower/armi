@@ -12,19 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Niobium Zirconium Alloy
-"""
+"""Niobium Zirconium Alloy."""
 
 from armi.materials.material import SimpleSolid
 
 
 class NZ(SimpleSolid):
-    name = "NZ"
-
     def setDefaultMassFracs(self):
         self.setMassFrac("NB93", 0.99)
         self.setMassFrac("ZR", 0.01)
 
-    def density3(self, Tk=None, Tc=None):
+    def density(self, Tk=None, Tc=None):
         return 8.66  # g/cc

@@ -12,21 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""unit tests for water materials"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+"""Unit tests for water materials."""
 import unittest
-from armi.materials.water import SaturatedWater, SaturatedSteam
+
+from armi.materials.water import SaturatedWater, SaturatedSteam, Water
 
 
 class Test_Water(unittest.TestCase):
-    """
-    unit tests for water materials
-    """
+    """Unit tests for water materials."""
 
     def test_water_at_freezing(self):
         """
-        Reproduce verification results from IAPWS-IF97 for water at 0C
+        Reproduce verification results from IAPWS-IF97 for water at 0C.
+
         http://www.iapws.org/relguide/supsat.pdf
+
+        .. test:: There is a base class for fluid materials.
+            :id: T_ARMI_MAT_FLUID0
+            :tests: R_ARMI_MAT_FLUID
         """
         water = SaturatedWater()
         steam = SaturatedSteam()
@@ -49,8 +52,12 @@ class Test_Water(unittest.TestCase):
         self.assertAlmostEqual(ref_dp_dT, water.vaporPressurePrime(Tk=Tk), 3)
         self.assertAlmostEqual(ref_dp_dT, steam.vaporPressurePrime(Tk=Tk), 3)
 
-        self.assertAlmostEqual(ref_saturated_water_rho, water.densityKgM3(Tk=Tk), 0)
-        self.assertAlmostEqual(ref_saturated_steam_rho, steam.densityKgM3(Tk=Tk), 0)
+        self.assertAlmostEqual(
+            ref_saturated_water_rho, water.pseudoDensityKgM3(Tk=Tk), 0
+        )
+        self.assertAlmostEqual(
+            ref_saturated_steam_rho, steam.pseudoDensityKgM3(Tk=Tk), 0
+        )
 
         self.assertAlmostEqual(
             ref_alpha, water.auxiliaryQuantitySpecificEnthalpy(Tk=Tk), 3
@@ -76,10 +83,10 @@ class Test_Water(unittest.TestCase):
 
     def test_water_at_boiling(self):
         """
-        Reproduce verification results from IAPWS-IF97 for water at 100C
+        Reproduce verification results from IAPWS-IF97 for water at 100C.
+
         http://www.iapws.org/relguide/supsat.pdf
         """
-
         water = SaturatedWater()
         steam = SaturatedSteam()
 
@@ -101,8 +108,12 @@ class Test_Water(unittest.TestCase):
         self.assertAlmostEqual(ref_dp_dT / water.vaporPressurePrime(Tk=Tk), 1, 3)
         self.assertAlmostEqual(ref_dp_dT / steam.vaporPressurePrime(Tk=Tk), 1, 3)
 
-        self.assertAlmostEqual(ref_saturated_water_rho, water.densityKgM3(Tk=Tk), 0)
-        self.assertAlmostEqual(ref_saturated_steam_rho, steam.densityKgM3(Tk=Tk), 0)
+        self.assertAlmostEqual(
+            ref_saturated_water_rho, water.pseudoDensityKgM3(Tk=Tk), 0
+        )
+        self.assertAlmostEqual(
+            ref_saturated_steam_rho, steam.pseudoDensityKgM3(Tk=Tk), 0
+        )
 
         self.assertAlmostEqual(
             ref_alpha / water.auxiliaryQuantitySpecificEnthalpy(Tk=Tk), 1, 3
@@ -130,10 +141,10 @@ class Test_Water(unittest.TestCase):
 
     def test_water_at_critcalPoint(self):
         """
-        Reproduce verification results from IAPWS-IF97 for water at 647.096K
+        Reproduce verification results from IAPWS-IF97 for water at 647.096K.
+
         http://www.iapws.org/relguide/supsat.pdf
         """
-
         water = SaturatedWater()
         steam = SaturatedSteam()
 
@@ -155,8 +166,12 @@ class Test_Water(unittest.TestCase):
         self.assertAlmostEqual(ref_dp_dT / water.vaporPressurePrime(Tk=Tk), 1, 3)
         self.assertAlmostEqual(ref_dp_dT / steam.vaporPressurePrime(Tk=Tk), 1, 3)
 
-        self.assertAlmostEqual(ref_saturated_water_rho, water.densityKgM3(Tk=Tk), 0)
-        self.assertAlmostEqual(ref_saturated_steam_rho, steam.densityKgM3(Tk=Tk), 0)
+        self.assertAlmostEqual(
+            ref_saturated_water_rho, water.pseudoDensityKgM3(Tk=Tk), 0
+        )
+        self.assertAlmostEqual(
+            ref_saturated_steam_rho, steam.pseudoDensityKgM3(Tk=Tk), 0
+        )
 
         self.assertAlmostEqual(
             ref_alpha / water.auxiliaryQuantitySpecificEnthalpy(Tk=Tk), 1, 3
@@ -196,6 +211,12 @@ class Test_Water(unittest.TestCase):
         steam = SaturatedSteam()
         self.assertEqual(len(steam.propertyValidTemperature), 0)
 
+    def test_validateNames(self):
+        water = Water()
+        self.assertEqual(water.name, "Water")
 
-if __name__ == "__main__":
-    unittest.main()
+        sat = SaturatedWater()
+        self.assertEqual(sat.name, "SaturatedWater")
+
+        steam = SaturatedSteam()
+        self.assertEqual(steam.name, "SaturatedSteam")

@@ -11,23 +11,30 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Unit tests for input modifiers"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,protected-access,invalid-name,no-self-use,no-method-argument,import-outside-toplevel
+"""Unit tests for input modifiers."""
 from ruamel import yaml
 import io
 import os
 import unittest
 
-from armi.utils import directoryChangers
 from armi import cases
+from armi import settings
 from armi.cases import suiteBuilder
 from armi.reactor import blueprints
 from armi.reactor import systemLayoutInput
-from armi import settings
+from armi.utils import directoryChangers
 from armi.cases.inputModifiers import (
     neutronicsModifiers,
     inputModifiers,
     pinTypeInputModifiers,
+)
+from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import (
+    CONF_FP_MODEL,
+)
+from armi.physics.neutronics.settings import (
+    CONF_EPS_EIG,
+    CONF_EPS_FSAVG,
+    CONF_EPS_FSPOINT,
 )
 from armi.reactor.tests import test_reactors
 
@@ -141,7 +148,7 @@ class TestsuiteBuilderIntegrations(unittest.TestCase):
     def test_settingsModifier(self):
         builder = suiteBuilder.SeparateEffectsSuiteBuilder(self.baseCase)
         builder.addDegreeOfFreedom(
-            inputModifiers.SettingsModifier("fpModel", v)
+            inputModifiers.SettingsModifier(CONF_FP_MODEL, v)
             for v in ("noFissionProducts", "infinitelyDilute", "MO99")
         )
         builder.addDegreeOfFreedom(
@@ -166,7 +173,7 @@ class TestsuiteBuilderIntegrations(unittest.TestCase):
             self.assertTrue(os.path.exists("case-suite"))
 
     def test_bluePrintBlockModifier(self):
-        """test BluePrintBlockModifier with build suite naming function argument"""
+        """Test BluePrintBlockModifier with build suite naming function argument."""
         case_nbr = 1
         builder = suiteBuilder.FullFactorialSuiteBuilder(self.baseCase)
 
@@ -220,9 +227,9 @@ class TestSettingsModifiers(unittest.TestCase):
         cs, _, _ = neutronicsModifiers.NeutronicConvergenceModifier(1e-2)(
             cs, None, None
         )
-        self.assertAlmostEqual(cs["epsEig"], 1e-2)
-        self.assertAlmostEqual(cs["epsFSAvg"], 1.0)
-        self.assertAlmostEqual(cs["epsFSPoint"], 1.0)
+        self.assertAlmostEqual(cs[CONF_EPS_EIG], 1e-2)
+        self.assertAlmostEqual(cs[CONF_EPS_FSAVG], 1.0)
+        self.assertAlmostEqual(cs[CONF_EPS_FSPOINT], 1.0)
 
 
 class NeutronicsKernelOpts(inputModifiers.InputModifier):
@@ -236,7 +243,7 @@ class NeutronicsKernelOpts(inputModifiers.InputModifier):
 
 
 class TestFullCoreModifier(unittest.TestCase):
-    """Ensure full core conversion works"""
+    """Ensure full core conversion works."""
 
     def test_fullCoreConversion(self):
         cs = settings.Settings(os.path.join(test_reactors.TEST_ROOT, "armiRun.yaml"))
@@ -245,7 +252,3 @@ class TestFullCoreModifier(unittest.TestCase):
         self.assertEqual(case.bp.gridDesigns["core"].symmetry, "third periodic")
         case, case.bp, _ = mod(case, case.bp, None)
         self.assertEqual(case.bp.gridDesigns["core"].symmetry, "full")
-
-
-if __name__ == "__main__":
-    unittest.main()

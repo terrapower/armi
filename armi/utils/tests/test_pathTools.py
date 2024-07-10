@@ -12,10 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Unit tests for pathTools.
-"""
-# pylint: disable=missing-function-docstring,missing-class-docstring,abstract-method,protected-access,no-member,disallowed-name,invalid-name
+"""Unit tests for pathTools."""
 import os
 import time
 import types
@@ -59,7 +56,6 @@ class PathToolsTests(unittest.TestCase):
 
     def test_moduleAndAttributeExist(self):
         """Test that determination of existence of module attribute works."""
-
         # test that no `:` doesn't raise an exception
         self.assertFalse(pathTools.moduleAndAttributeExist(r"path/that/not/exist.py"))
         # test that multiple `:` doesn't raise an exception
@@ -75,9 +71,7 @@ class PathToolsTests(unittest.TestCase):
 
     @unittest.skipUnless(context.MPI_RANK == 0, "test only on root node")
     def test_cleanPathNoMpi(self):
-        """
-        Simple tests of cleanPath(), in the no-MPI scenario
-        """
+        """Simple tests of cleanPath(), in the no-MPI scenario."""
         with TemporaryDirectoryChanger():
             # TEST 0: File is not safe to delete, due to name pathing
             filePath0 = "test0_cleanPathNoMpi"
@@ -141,7 +135,3 @@ class PathToolsTests(unittest.TestCase):
                 f1.write("test")
 
             self.assertTrue(pathTools.isAccessible(path1))
-
-
-if __name__ == "__main__":
-    unittest.main()
