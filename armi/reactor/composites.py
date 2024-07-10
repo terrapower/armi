@@ -3031,6 +3031,7 @@ class Composite(ArmiObject):
         -----
         If you set nDensity to 1/CM2_PER_BARN this makes 1 group cross section generation easier
         """
+        from armi.reactor.assemblies import Assembly
         from armi.reactor.blocks import Block
         from armi.reactor.reactors import Core
 
@@ -3038,18 +3039,16 @@ class Composite(ArmiObject):
             nDensity = self.getNumberDensity(nucName)
 
         try:
-            core = self.getAncestor(lambda c: isinstance(c, Core))
-
-            try:
+            if isinstance(self, Assembly):
                 block = self.getChildren(
                     deep=True, predicate=lambda o: isinstance(o, Block)
                 )[0]
-            except Exception:
+            else:
                 block = self.getAncestor(lambda x: isinstance(x, Block))
 
             return getReactionRateDict(
                 nucName,
-                core.lib,
+                self.getAncestor(lambda c: isinstance(c, Core)).lib,
                 block.getMicroSuffix(),
                 self.getIntegratedMgFlux(),
                 nDensity,
