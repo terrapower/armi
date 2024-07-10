@@ -58,7 +58,7 @@ also be provided in the module-level docstrings.
 
 .. [CCCC-IV] R. Douglas O'Dell, "Standard Interface Files and Procedures for Reactor Physics
              Codes, Version IV," LA-6941-MS, Los Alamos National Laboratory (September 1977).
-             Web. doi:10.2172/5369298. (`OSTI <https://www.osti.gov/biblio/5369298>`_)
+             Web. doi:10.2172/5369298. (`OSTI <https://www.osti.gov/biblio/5369298>`__)
 
 Using the system
 ----------------
