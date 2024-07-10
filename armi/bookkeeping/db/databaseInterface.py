@@ -154,13 +154,13 @@ class DatabaseInterface(interfaces.Interface):
         self.writeDBEveryNode(cycle, node)
 
     def writeDBEveryNode(self, cycle, node):
-        """write the database at the end of the time node"""
+        """Write the database at the end of the time node."""
         self._db.writeToDB(self.r)
         if self.cs[CONF_SYNC_AFTER_WRITE]:
             self._db.syncToSharedFolder()
 
     def interactEOC(self, cycle=None):
-        """In case anything changed since last cycle (e.g. rxSwing), update DB. (End of Cycle)"""
+        """In case anything changed since last cycle (e.g. rxSwing), update DB. (End of Cycle)."""
         self._db.writeToDB(self.r, "EOC")
 
     def interactEOL(self):
