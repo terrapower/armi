@@ -3015,6 +3015,8 @@ class Composite(ArmiObject):
 
     def _getReactionRates(self, nucName, nDensity=None):
         """
+        Helper to get the reaction rates of a certain nuclide on one ArmiObject.
+
         Parameters
         ----------
         nucName : str
@@ -3029,9 +3031,11 @@ class Composite(ArmiObject):
 
         Notes
         -----
-        If you set nDensity to 1/CM2_PER_BARN this makes 1 group cross section generation easier
+        If you set nDensity to 1/CM2_PER_BARN this makes 1 group cross section generation easier.
+
+        This method is not designed to work on ``Assembly``, ``Core``, or anything higher on the
+        heirarchy than ``Block``.
         """
-        from armi.reactor.assemblies import Assembly
         from armi.reactor.blocks import Block
         from armi.reactor.reactors import Core
 
@@ -3039,17 +3043,10 @@ class Composite(ArmiObject):
             nDensity = self.getNumberDensity(nucName)
 
         try:
-            if isinstance(self, (Assembly, Core)):
-                block = self.getChildren(
-                    deep=True, predicate=lambda o: isinstance(o, Block)
-                )[0]
-            else:
-                block = self.getAncestor(lambda x: isinstance(x, Block))
-
             return getReactionRateDict(
                 nucName,
                 self.getAncestor(lambda c: isinstance(c, Core)).lib,
-                block.getMicroSuffix(),
+                self.getAncestor(lambda x: isinstance(x, Block)).getMicroSuffix(),
                 self.getIntegratedMgFlux(),
                 nDensity,
             )
@@ -3066,9 +3063,37 @@ class Composite(ArmiObject):
             )
             return {"nG": 0, "nF": 0, "n2n": 0, "nA": 0, "nP": 0}
 
+    def __getReactionRatesChildren(self):
+        """
+        A ``getReactionRates`` helper method, to get child objects to this one.
+
+        Returns
+        -------
+        objects : list
+            list of child objects, in a fashion relevant to ``getReactionRates``.
+        """
+        from armi.reactor.reactors import Reactor
+
+        # If this ArmiObject is an Assembly or higher, get all the Blocks
+        objects = []
+        if isinstance(self, Reactor):
+            objects = self.core.getBlocks()
+        elif hasattr(self, "getBlocks"):
+            objects = self.getBlocks()
+
+        # Try to just get the children.
+        if not len(objects):
+            objects in self.getChildren()
+
+        # Not all composite objects are iterable (i.e. components)
+        if not len(objects):
+            objects = [self]
+
+        return objects
+
     def getReactionRates(self, nucName, nDensity=None):
         """
-        Get the reaction rates of a certain nuclide on this object.
+        Get the reaction rates of a certain nuclide on this ArmiObject.
 
         Parameters
         ----------
@@ -3084,18 +3109,15 @@ class Composite(ArmiObject):
 
         Notes
         -----
-        This is volume integrated NOT (1/cm3-s)
+        This is volume integrated NOT (1/cm3-s).
 
-        If you set nDensity to 1 this makes 1-group cross section generation easier
+        If you set nDensity to 1 this makes 1-group cross section generation easier.
         """
         rxnRates = {"nG": 0, "nF": 0, "n2n": 0, "nA": 0, "nP": 0, "n3n": 0}
 
-        # not all composite objects are iterable (i.e. components), so in that
-        # case just examine only the object itself
-        for armiObject in self.getChildren() or [self]:
-            for rxName, val in armiObject._getReactionRates(
-                nucName, nDensity=nDensity
-            ).items():
+        # The reaction rates for this object is the sum of its children
+        for armiObject in self.__getReactionRatesChildren():
+            for rxName, val in armiObject._getReactionRates(nucName, nDensity).items():
                 rxnRates[rxName] += val
 
         return rxnRates

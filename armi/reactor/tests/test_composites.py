@@ -331,25 +331,31 @@ class TestCompositePattern(unittest.TestCase):
         # test on a Block
         b = r.core.getFirstAssembly().getFirstBlock()
         b.p.mgFlux = 1
-        rRates = b.getReactionRates("U235")
-        self.assertEqual(len(rRates), 6)
-        self.assertGreater(sum([r for r in rRates.values()]), 0)
+        rRatesBlock = b.getReactionRates("U235")
+        self.assertEqual(len(rRatesBlock), 6)
+        self.assertGreater(sum([r for r in rRatesBlock.values()]), 0)
 
         # test on an Assembly
         assem = r.core.getFirstAssembly()
-        rRates = assem.getReactionRates("U235")
-        self.assertEqual(len(rRates), 6)
-        self.assertGreater(sum([r for r in rRates.values()]), 0)
+        rRatesAssem = assem.getReactionRates("U235")
+        self.assertEqual(len(rRatesAssem), 6)
+        self.assertGreater(sum([r for r in rRatesAssem.values()]), 0)
 
         # test on a Core
-        rRates = r.core.getReactionRates("U235")
-        self.assertEqual(len(rRates), 6)
-        self.assertGreater(sum([r for r in rRates.values()]), 0)
+        rRatesCore = r.core.getReactionRates("U235")
+        self.assertEqual(len(rRatesCore), 6)
+        self.assertGreater(sum([r for r in rRatesCore.values()]), 0)
 
         # test on a Reactor
-        rRates = r.getReactionRates("U235")
-        self.assertEqual(len(rRates), 6)
-        self.assertGreater(sum([r for r in rRates.values()]), 0)
+        rRatesReactor = r.getReactionRates("U235")
+        self.assertEqual(len(rRatesReactor), 6)
+        self.assertGreater(sum([r for r in rRatesReactor.values()]), 0)
+
+        # test that all different levels of the heirarchy have the same reaction rates
+        for key, val in rRatesBlock.items():
+            self.assertAlmostEqual(rRatesAssem[key], val)
+            self.assertAlmostEqual(rRatesCore[key], val)
+            self.assertAlmostEqual(rRatesReactor[key], val)
 
     def test_syncParameters(self):
         data = [{"serialNum": 123}, {"flags": "FAKE"}]
