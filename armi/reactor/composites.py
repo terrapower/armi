@@ -2997,7 +2997,6 @@ class Composite(ArmiObject):
         ----------
         adjoint : bool, optional
             Return adjoint flux instead of real
-
         gamma : bool, optional
             Whether to return the neutron flux or the gamma flux.
 
@@ -3007,11 +3006,11 @@ class Composite(ArmiObject):
             multigroup neutron tracklength in [n-cm/s]
         """
         integratedMgFlux = numpy.zeros(1)
-
         for c in self:
-            integratedMgFlux = integratedMgFlux + c.getIntegratedMgFlux(
-                adjoint=adjoint, gamma=gamma
-            )
+            mgFlux = c.getIntegratedMgFlux(adjoint=adjoint, gamma=gamma)
+            if mgFlux is not None:
+                integratedMgFlux = integratedMgFlux + mgFlux
+
         return integratedMgFlux
 
     def _getReactionRates(self, nucName, nDensity=None):
@@ -3033,14 +3032,25 @@ class Composite(ArmiObject):
         If you set nDensity to 1/CM2_PER_BARN this makes 1 group cross section generation easier
         """
         from armi.reactor.blocks import Block
+        from armi.reactor.reactors import Core
 
         if nDensity is None:
             nDensity = self.getNumberDensity(nucName)
+
         try:
+            core = self.getAncestor(lambda c: isinstance(c, Core))
+
+            try:
+                block = self.getChildren(
+                    deep=True, predicate=lambda o: isinstance(o, Block)
+                )[0]
+            except Exception:
+                block = self.getAncestor(lambda x: isinstance(x, Block))
+
             return getReactionRateDict(
                 nucName,
-                self.getAncestorWithFlags(Flags.CORE).lib,
-                self.getAncestor(lambda x: isinstance(x, Block)).getMicroSuffix(),
+                core.lib,
+                block.getMicroSuffix(),
                 self.getIntegratedMgFlux(),
                 nDensity,
             )

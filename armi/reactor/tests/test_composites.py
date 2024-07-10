@@ -34,6 +34,7 @@ from armi.reactor.components import basicShapes
 from armi.reactor.composites import getReactionRateDict
 from armi.reactor.flags import Flags, TypeSpec
 from armi.reactor.tests.test_blocks import loadTestBlock
+from armi.reactor.tests.test_reactors import loadTestReactor
 from armi.tests import ISOAA_PATH
 
 
@@ -315,9 +316,35 @@ class TestCompositePattern(unittest.TestCase):
         self.assertEqual(mgFlux, [0.0])
 
     def test_getReactionRates(self):
+        # test the null case
         rRates = self.container.getReactionRates("U235")
         self.assertEqual(len(rRates), 6)
         self.assertEqual(sum([r for r in rRates.values()]), 0)
+
+        # init reactor
+        _o, r = loadTestReactor(
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
+        lib = nuclearDataIO.isotxs.readBinary(ISOAA_PATH)
+        r.core.lib = lib
+
+        # test on a Block
+        b = r.core.getFirstAssembly().getFirstBlock()
+        b.p.mgFlux = 1
+        rRates = b.getReactionRates("U235")
+        self.assertEqual(len(rRates), 6)
+        self.assertGreater(sum([r for r in rRates.values()]), 0)
+
+        # test on an assembly
+        assem = r.core.getFirstAssembly()
+        rRates = assem.getReactionRates("U235")
+        self.assertEqual(len(rRates), 6)
+        self.assertGreater(sum([r for r in rRates.values()]), 0)
+
+        # test on a core
+        rRates = r.core.getReactionRates("U235")
+        self.assertEqual(len(rRates), 6)
+        self.assertGreater(sum([r for r in rRates.values()]), 0)
 
     def test_syncParameters(self):
         data = [{"serialNum": 123}, {"flags": "FAKE"}]
