@@ -335,14 +335,19 @@ class TestCompositePattern(unittest.TestCase):
         self.assertEqual(len(rRates), 6)
         self.assertGreater(sum([r for r in rRates.values()]), 0)
 
-        # test on an assembly
+        # test on an Assembly
         assem = r.core.getFirstAssembly()
         rRates = assem.getReactionRates("U235")
         self.assertEqual(len(rRates), 6)
         self.assertGreater(sum([r for r in rRates.values()]), 0)
 
-        # test on a core
+        # test on a Core
         rRates = r.core.getReactionRates("U235")
+        self.assertEqual(len(rRates), 6)
+        self.assertGreater(sum([r for r in rRates.values()]), 0)
+
+        # test on a Reactor
+        rRates = r.getReactionRates("U235")
         self.assertEqual(len(rRates), 6)
         self.assertGreater(sum([r for r in rRates.values()]), 0)
 

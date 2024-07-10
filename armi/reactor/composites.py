@@ -3039,7 +3039,7 @@ class Composite(ArmiObject):
             nDensity = self.getNumberDensity(nucName)
 
         try:
-            if isinstance(self, Assembly):
+            if isinstance(self, (Assembly, Core)):
                 block = self.getChildren(
                     deep=True, predicate=lambda o: isinstance(o, Block)
                 )[0]
