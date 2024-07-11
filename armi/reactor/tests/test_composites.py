@@ -328,9 +328,15 @@ class TestCompositePattern(unittest.TestCase):
         lib = nuclearDataIO.isotxs.readBinary(ISOAA_PATH)
         r.core.lib = lib
 
-        # test on a Block
+        # test on a Component
         b = r.core.getFirstAssembly().getFirstBlock()
         b.p.mgFlux = 1
+        c = b.getComponents()[0]
+        rRatesComp = c.getReactionRates("U235")
+        self.assertEqual(len(rRatesComp), 6)
+        self.assertGreater(sum([r for r in rRatesComp.values()]), 0)
+
+        # test on a Block
         rRatesBlock = b.getReactionRates("U235")
         self.assertEqual(len(rRatesBlock), 6)
         self.assertGreater(sum([r for r in rRatesBlock.values()]), 0)
