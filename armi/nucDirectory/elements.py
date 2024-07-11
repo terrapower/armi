@@ -71,7 +71,7 @@ Retrieve gaseous elements at Standard Temperature and Pressure (STP):
 
 
 Retrieve elements that are classified as actinides:
- 
+
  >>> elements.getElementsByChemicalGroup(elements.ChemicalGroup.ACTINIDE)
     [<Element  AC (Z=89), Actinium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>,
      <Element  TH (Z=90), Thorium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>,
@@ -125,7 +125,8 @@ Retrieve elements that are classified as actinides:
         return createTable(tabulate(tabular_data=[getAttributes(elem) for elem in sortedElements],
                                     headers=attributes,
                                     tablefmt='rst'),
-                           caption='List of elements')
+                           caption='List of elements',
+                           label='nuclide-bases-table')
 """
 
 import os

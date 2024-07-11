@@ -1242,6 +1242,7 @@ class Component(composites.Composite, metaclass=ComponentType):
             # no pin-level flux is available
             if not self.parent:
                 return numpy.zeros(1)
+
             volumeFraction = self.getVolume() / self.parent.getVolume()
             return volumeFraction * self.parent.getIntegratedMgFlux(adjoint, gamma)
 
@@ -1256,6 +1257,7 @@ class Component(composites.Composite, metaclass=ComponentType):
                 pinFluxes = self.parent.p.pinMgFluxesAdj
             else:
                 pinFluxes = self.parent.p.pinMgFluxes
+
         return pinFluxes[self.p.pinNum - 1] * self.getVolume()
 
     def density(self):

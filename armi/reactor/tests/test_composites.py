@@ -34,6 +34,7 @@ from armi.reactor.components import basicShapes
 from armi.reactor.composites import getReactionRateDict
 from armi.reactor.flags import Flags, TypeSpec
 from armi.reactor.tests.test_blocks import loadTestBlock
+from armi.reactor.tests.test_reactors import loadTestReactor
 from armi.tests import ISOAA_PATH
 
 
@@ -315,9 +316,52 @@ class TestCompositePattern(unittest.TestCase):
         self.assertEqual(mgFlux, [0.0])
 
     def test_getReactionRates(self):
+        # test the null case
         rRates = self.container.getReactionRates("U235")
         self.assertEqual(len(rRates), 6)
         self.assertEqual(sum([r for r in rRates.values()]), 0)
+
+        # init reactor
+        _o, r = loadTestReactor(
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
+        lib = nuclearDataIO.isotxs.readBinary(ISOAA_PATH)
+        r.core.lib = lib
+
+        # test on a Component
+        b = r.core.getFirstAssembly().getFirstBlock()
+        b.p.mgFlux = 1
+        c = b.getComponents()[0]
+        rRatesComp = c.getReactionRates("U235")
+        self.assertEqual(len(rRatesComp), 6)
+        self.assertGreater(sum([r for r in rRatesComp.values()]), 0)
+
+        # test on a Block
+        rRatesBlock = b.getReactionRates("U235")
+        self.assertEqual(len(rRatesBlock), 6)
+        self.assertGreater(sum([r for r in rRatesBlock.values()]), 0)
+
+        # test on an Assembly
+        assem = r.core.getFirstAssembly()
+        rRatesAssem = assem.getReactionRates("U235")
+        self.assertEqual(len(rRatesAssem), 6)
+        self.assertGreater(sum([r for r in rRatesAssem.values()]), 0)
+
+        # test on a Core
+        rRatesCore = r.core.getReactionRates("U235")
+        self.assertEqual(len(rRatesCore), 6)
+        self.assertGreater(sum([r for r in rRatesCore.values()]), 0)
+
+        # test on a Reactor
+        rRatesReactor = r.getReactionRates("U235")
+        self.assertEqual(len(rRatesReactor), 6)
+        self.assertGreater(sum([r for r in rRatesReactor.values()]), 0)
+
+        # test that all different levels of the heirarchy have the same reaction rates
+        for key, val in rRatesBlock.items():
+            self.assertAlmostEqual(rRatesAssem[key], val)
+            self.assertAlmostEqual(rRatesCore[key], val)
+            self.assertAlmostEqual(rRatesReactor[key], val)
 
     def test_syncParameters(self):
         data = [{"serialNum": 123}, {"flags": "FAKE"}]

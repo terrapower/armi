@@ -33,7 +33,7 @@ FAIL_ON_RANGE = False
 
 
 class Material:
-    """
+    r"""
     A material is made up of elements or isotopes. It has bulk properties like density.
 
     .. impl:: The abstract material class.
@@ -62,7 +62,7 @@ class Material:
     massFrac : dict
         Mass fractions for all nuclides in the material keyed on the nuclide symbols
     refDens : float
-        A reference density used by some materials, for instance `SimpleSolid`s, during thermal
+        A reference density used by some materials, for instance `SimpleSolid`\ s, during thermal
         expansion
     theoreticalDensityFrac : float
         Fraction of the material's density in reality, which is commonly different from 1.0 in solid
