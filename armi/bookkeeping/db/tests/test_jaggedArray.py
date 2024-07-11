@@ -43,6 +43,12 @@ class TestJaggedArray(unittest.TestCase):
         dataSet = [True, True, [False, True, False]]
         self._compareRoundTrip(dataSet, "test-bool")
 
+    def test_flatten(self):
+        """Test the recursive flattening static method"""
+        testdata = [(1, 2), [3, 4, 5], [], None, 6, numpy.array([7, 8, 9])]
+        flatArray = JaggedArray.flatten(testdata)
+        self.assertEqual(flatArray, [1, 2, 3, 4, 5, None, 6, 7, 8, 9])
+
     def _compareRoundTrip(self, data, paramName):
         """Make sure that data is unchanged by packing/unpacking."""
         jaggedArray = JaggedArray(data, paramName)
