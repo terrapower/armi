@@ -21,6 +21,7 @@ import numpy
 
 from armi.bookkeeping.db import _getH5File
 from armi.bookkeeping.db import database3
+from armi.bookkeeping.db.jaggedArray import JaggedArray
 from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.reactor import parameters
 from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
@@ -327,10 +328,8 @@ class TestDatabase3Smaller(unittest.TestCase):
         twoByTwo = numpy.array([[1, 2], [3, 4]])
         twoByOne = numpy.array([[1], [None]])
         threeByThree = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
-        dataJag = database3.JaggedArray([twoByTwo, threeByThree], "testParam")
-        dataJagNones = database3.JaggedArray(
-            [twoByTwo, twoByOne, threeByThree], "testParam"
-        )
+        dataJag = JaggedArray([twoByTwo, threeByThree], "testParam")
+        dataJagNones = JaggedArray([twoByTwo, twoByOne, threeByThree], "testParam")
         dataDict = numpy.array(
             [{"bar": 2, "baz": 3}, {"foo": 4, "baz": 6}, {"foo": 7, "bar": 8}]
         )
