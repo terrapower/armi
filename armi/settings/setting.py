@@ -65,7 +65,7 @@ class Setting:
         self,
         name,
         default,
-        description=None,
+        description,
         label=None,
         options=None,
         schema=None,
@@ -83,7 +83,7 @@ class Setting:
             the setting's name
         default : object
             The setting's default value
-        description : str, optional
+        description : str
             The description of the setting
         label : str, optional
             the shorter description used for the ARMI GUI
