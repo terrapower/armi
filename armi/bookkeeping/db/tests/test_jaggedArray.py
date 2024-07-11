@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for the JaggedArray class."""
-import shutil
-import subprocess
 import unittest
 
 import h5py
@@ -24,7 +22,7 @@ from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
 class TestJaggedArray(unittest.TestCase):
-    """Tests for the JaggedArray class"""
+    """Tests for the JaggedArray class."""
 
     def setUp(self):
         self.td = TemporaryDirectoryChanger()
@@ -44,7 +42,7 @@ class TestJaggedArray(unittest.TestCase):
         self._compareRoundTrip(dataSet, "test-bool")
 
     def test_flatten(self):
-        """Test the recursive flattening static method"""
+        """Test the recursive flattening static method."""
         testdata = [(1, 2), [3, 4, 5], [], None, 6, numpy.array([7, 8, 9])]
         flatArray = JaggedArray.flatten(testdata)
         self.assertEqual(flatArray, [1, 2, 3, 4, 5, None, 6, 7, 8, 9])
