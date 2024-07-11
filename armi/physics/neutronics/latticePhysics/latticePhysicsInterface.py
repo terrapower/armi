@@ -118,7 +118,7 @@ class LatticePhysicsInterface(interfaces.Interface):
         Notes
         -----
         :py:meth:`armi.physics.fuelCycle.fuelHandlerInterface.FuelHandlerInterface.interactBOC`
-        also calls this if the ``runLatticePhysicsBeforeShuffling``setting is True.
+        also calls this if the ``runLatticePhysicsBeforeShuffling`` setting is True.
         This happens because branch searches may need XS.
         """
         if self._latticePhysicsFrequency == LatticePhysicsFrequency.BOC:

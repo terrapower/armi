@@ -101,11 +101,11 @@ class TestHistoryTracker(ArmiTestHelper):
         self.td.__exit__(None, None, None)
 
     def test_calcMGFluence(self):
-        """
+        r"""
         This test confirms that mg flux has many groups when loaded with the history tracker.
 
         armi.bookeeping.db.hdf.hdfDB.readBlocksHistory requires
-        historical_values[historical_indices] to be cast as a list to read more than the
+        historical_values\[historical_indices\] to be cast as a list to read more than the
         first energy group. This test shows that this behavior is preserved.
 
         .. test:: Demonstrate that a parameter stored at differing time nodes can be recovered.
@@ -202,9 +202,10 @@ class TestHistoryTracker(ArmiTestHelper):
         """
         Test generation of history report.
 
-        This does a swap for 5 timesteps:
-        |       TS  0     1      2       3       4
-        |LOC      (1,1) (2,1)  (3,1)   (4,1)   SFP
+        This does a swap for 5 timesteps::
+
+            |       TS  0     1      2       3       4
+            |LOC      (1,1) (2,1)  (3,1)   (4,1)   SFP
         """
         history = self.o.getInterface("history")
         history.interactBOL()
