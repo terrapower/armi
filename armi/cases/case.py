@@ -619,32 +619,6 @@ class Case:
         """Uses the ReportInterface to create a fancy HTML page describing the design inputs."""
         _ = reportsEntryPoint.createReportFromSettings(self.cs)
 
-    def buildCommand(self, python="python"):
-        """
-        Build an execution command for running or submitting a job.
-
-        Parameters
-        ----------
-        python : str, optional
-            The path to the python executable to use for executing the case. By default
-            this will be whatever "python" resolves to in the target environment.
-            However when running in more exotic environments (e.g. HPC cluster), it is
-            usually desireable to provide a specific python executable.
-        """
-        command = ""
-        if self.cs["numProcessors"] > 1:
-            command += "mpiexec -n {} ".format(self.cs["numProcessors"])
-            if self.cs["mpiTasksPerNode"] > 0:
-                command += "-c {} ".format(self.cs["mpiTasksPerNode"])
-
-        command += "{} -u ".format(python)
-        if not __debug__:
-            command += " -O "
-
-        command += ' -m {} run "{}.yaml"'.format(context.APP_NAME, self.cs.caseTitle)
-
-        return command
-
     def clone(
         self,
         additionalFiles=None,
