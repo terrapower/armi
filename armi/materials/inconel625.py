@@ -203,9 +203,7 @@ class Inconel625(Material):
 
         Tc.insert(0, refTempC)
 
-        return np.polyfit(
-            np.array(Tc), np.array(linExpPercent), power
-        ).tolist()
+        return np.polyfit(np.array(Tc), np.array(linExpPercent), power).tolist()
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
         """

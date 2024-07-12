@@ -322,9 +322,7 @@ class TestDatabase3Smaller(unittest.TestCase):
         data1 = np.array([1, 2, 3, 4, 5, 6, 7, 8])
         data1iNones = np.array([1, 2, None, 5, 6])
         data1fNones = np.array([None, 2.0, None, 5.0, 6.0])
-        data2fNones = np.array(
-            [None, [[1.0, 2.0, 6.0], [2.0, 3.0, 4.0]]], dtype=object
-        )
+        data2fNones = np.array([None, [[1.0, 2.0, 6.0], [2.0, 3.0, 4.0]]], dtype=object)
         twoByTwo = np.array([[1, 2], [3, 4]])
         twoByOne = np.array([[1], [None]])
         threeByThree = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])

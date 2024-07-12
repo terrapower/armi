@@ -69,9 +69,7 @@ class DelayedNeutronData:
     def __init__(self, numEnergyGroups, numPrecursorGroups):
         self.precursorDecayConstants = np.zeros(numPrecursorGroups)
         self.delayEmissionSpectrum = np.zeros((numPrecursorGroups, numEnergyGroups))
-        self.delayNeutronsPerFission = np.zeros(
-            (numPrecursorGroups, numEnergyGroups)
-        )
+        self.delayNeutronsPerFission = np.zeros((numPrecursorGroups, numEnergyGroups))
 
 
 def compare(lib1, lib2):

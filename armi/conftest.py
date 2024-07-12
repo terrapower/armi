@@ -25,9 +25,7 @@ Tests must be invoked via pytest for this to have any affect, for example::
 
 """
 import os
-import numpy as np
 import matplotlib
-
 from armi import apps, configure, context
 from armi.settings import caseSettings
 from armi.tests import TEST_ROOT

@@ -17,8 +17,6 @@ import math
 import pathlib
 import random
 import unittest
-
-import numpy as np
 from numpy.testing import assert_allclose
 
 from armi import settings
@@ -962,21 +960,15 @@ class Assembly_TestCase(unittest.TestCase):
             for b, flux in zip(self.assembly, [[1, 10], [2, 8], [3, 6]]):
                 b.p.mgFlux = flux
             self.assertTrue(
-                np.allclose(
-                    [2.5, 7.0], self.assembly.getParamValuesAtZ("mgFlux", 20.0)
-                )
+                np.allclose([2.5, 7.0], self.assembly.getParamValuesAtZ("mgFlux", 20.0))
             )
             self.assertTrue(
-                np.allclose(
-                    [1.5, 9.0], self.assembly.getParamValuesAtZ("mgFlux", 10.0)
-                )
+                np.allclose([1.5, 9.0], self.assembly.getParamValuesAtZ("mgFlux", 10.0))
             )
             for b in self.assembly:
                 b.p.mgFlux = [0.0] * 2
             self.assertTrue(
-                np.allclose(
-                    [0.0, 0.0], self.assembly.getParamValuesAtZ("mgFlux", 10.0)
-                )
+                np.allclose([0.0, 0.0], self.assembly.getParamValuesAtZ("mgFlux", 10.0))
             )
 
             # single value param at corner

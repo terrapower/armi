@@ -377,9 +377,7 @@ def _diffSpecialData(
         if isinstance(dSrc, np.ndarray) and isinstance(dRef, np.ndarray):
             if dSrc.shape != dRef.shape:
                 out.writeln("Shapes did not match for {}".format(refData))
-                diffResults.addDiff(
-                    compName, paramName, np.inf, np.inf, np.inf
-                )
+                diffResults.addDiff(compName, paramName, np.inf, np.inf, np.inf)
                 return
 
             # make sure not to try to compare empty arrays. Numpy is mediocre at
@@ -501,9 +499,7 @@ def _compareComponentData(
                     paramName, refSpecial, srcSpecial
                 )
             )
-            diffResults.addDiff(
-                refGroup.name, paramName, np.inf, np.inf, np.inf
-            )
+            diffResults.addDiff(refGroup.name, paramName, np.inf, np.inf, np.inf)
             continue
 
         if srcSpecial or refSpecial:

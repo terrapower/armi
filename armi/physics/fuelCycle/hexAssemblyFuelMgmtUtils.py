@@ -251,9 +251,7 @@ def buildRingSchedule(
     # don't let it be smaller than 2 because linspace(1,5,1)= [1], linspace(1,5,2)= [1,5]
     numSteps = max(numSteps, 2)
 
-    baseRings = [
-        int(ring) for ring in np.linspace(dischargeRing, chargeRing, numSteps)
-    ]
+    baseRings = [int(ring) for ring in np.linspace(dischargeRing, chargeRing, numSteps)]
     # eliminate duplicates.
     newBaseRings = []
     for br in baseRings:

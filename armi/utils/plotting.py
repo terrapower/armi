@@ -1405,9 +1405,7 @@ def plotBlockDiagram(
             if materialName not in materialList:
                 materialList.append(materialName)
 
-    materialMap = {
-        material: ai for ai, material in enumerate(np.unique(materialList))
-    }
+    materialMap = {material: ai for ai, material in enumerate(np.unique(materialList))}
     patches, data, _ = _makeBlockPinPatches(block, cold)
 
     collection = PatchCollection(patches, cmap=cmapName, alpha=1.0)

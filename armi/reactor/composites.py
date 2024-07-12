@@ -86,9 +86,9 @@ class FlagSerializer(parameters.Serializer):
         functionality without having to do unholy things to ARMI's actual set of
         ``reactor.flags.Flags``.
         """
-        npa = np.array(
-            [b for f in data for b in f.to_bytes()], dtype=np.uint8
-        ).reshape((len(data), flagCls.width()))
+        npa = np.array([b for f in data for b in f.to_bytes()], dtype=np.uint8).reshape(
+            (len(data), flagCls.width())
+        )
 
         return npa, {"flag_order": flagCls.sortedFields()}
 
@@ -2856,9 +2856,7 @@ class Composite(ArmiObject):
                     # out of sync, and this parameter was also globally modified and
                     # readjusted to the original value.
                     curVal = self.p[key]
-                    if isinstance(val, np.ndarray) or isinstance(
-                        curVal, np.ndarray
-                    ):
+                    if isinstance(val, np.ndarray) or isinstance(curVal, np.ndarray):
                         if (val != curVal).any():
                             errors[self, key].append(nodeRank)
                     elif curVal != val:

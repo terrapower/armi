@@ -560,9 +560,9 @@ def _radarFactory(numVars, frame="circle"):
     # calculate evenly-spaced axis angles
     # rotate theta such that the first axis is at the top
     # keep within 0 to 2pi range though.
-    theta = (
-        np.linspace(0, 2 * np.pi, numVars, endpoint=False) + np.pi / 2
-    ) % (2.0 * np.pi)
+    theta = (np.linspace(0, 2 * np.pi, numVars, endpoint=False) + np.pi / 2) % (
+        2.0 * np.pi
+    )
 
     def drawPolyPatch():
         verts = _unitPolyVerts(theta)

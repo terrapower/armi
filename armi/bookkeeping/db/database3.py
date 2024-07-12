@@ -922,9 +922,7 @@ class Database3:
                     else:
                         jagged = False
                     data = (
-                        JaggedArray(temp, paramDef.name)
-                        if jagged
-                        else np.array(temp)
+                        JaggedArray(temp, paramDef.name) if jagged else np.array(temp)
                     )
                     del temp
 

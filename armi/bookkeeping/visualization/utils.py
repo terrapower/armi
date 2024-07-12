@@ -203,9 +203,7 @@ def _createHexBlockMesh(b: blocks.HexBlock) -> VtkMesh:
     hexVerts2d = np.vstack((hexVerts2d, hexVerts2d))
 
     # fold in z locations to get 3d coordinates
-    hexVerts = np.hstack(
-        (hexVerts2d, np.array([[zMin] * 6 + [zMax] * 6]).transpose())
-    )
+    hexVerts = np.hstack((hexVerts2d, np.array([[zMin] * 6 + [zMax] * 6]).transpose()))
 
     return VtkMesh(
         hexVerts,
@@ -242,9 +240,7 @@ def _createCartesianBlockMesh(b: blocks.CartesianBlock) -> VtkMesh:
     boxVerts = np.vstack((rectVerts, rectVerts))
 
     # fold in z coordinates
-    boxVerts = np.hstack(
-        (boxVerts, np.array([[zMin] * 4 + [zMax] * 4]).transpose())
-    )
+    boxVerts = np.hstack((boxVerts, np.array([[zMin] * 4 + [zMax] * 4]).transpose()))
 
     return VtkMesh(
         boxVerts,

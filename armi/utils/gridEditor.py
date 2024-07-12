@@ -59,7 +59,6 @@ from typing import Dict, Optional, Sequence, Tuple, Union
 import wx
 import wx.adv
 import numpy as np
-import numpy as np.linalg
 
 from armi.utils import hexagon
 from armi.utils import textProcessors
@@ -1185,9 +1184,7 @@ class GridGui(wx.ScrolledWindow):
 
         _ = self._gridScale(self.grid)
 
-        allCenters = np.array(
-            [self.grid.getCoordinates(idx)[:2] for idx in inDomain]
-        )
+        allCenters = np.array([self.grid.getCoordinates(idx)[:2] for idx in inDomain])
         minXY = np.amin(allCenters, axis=0)
         maxXY = np.amax(allCenters, axis=0)
 

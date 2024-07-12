@@ -494,9 +494,7 @@ def getBlockNuclideTemperatureAvgTerms(block, allNucNames):
     vol = block.getVolume()
     components, volFracs = zip(*block.getVolumeFractions())
     # D = CxN matrix of number densities
-    ndens = np.array(
-        [getNumberDensitiesWithTrace(c, allNucNames) for c in components]
-    )
+    ndens = np.array([getNumberDensitiesWithTrace(c, allNucNames) for c in components])
     temperatures = np.array(
         [c.temperatureInC for c in components]
     )  # C-length temperature array
