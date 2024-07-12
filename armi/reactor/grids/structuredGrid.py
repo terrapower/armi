@@ -159,7 +159,7 @@ class StructuredGrid(Grid):
             else:
                 self._boundDims.append(dimensionIndex)
 
-        # np prefers tuples like this to do slicing on arrays
+        # numpy prefers tuples like this to do slicing on arrays
         self._boundDims = (tuple(self._boundDims),)
         self._stepDims = (tuple(self._stepDims),)
 
@@ -200,7 +200,7 @@ class StructuredGrid(Grid):
         unitSteps = []
         compressedSteps = list(self._unitSteps[:])
         for i in range(3):
-            # Recall _stepDims are stored as a single-value tuple (for np indexing)
+            # Recall _stepDims are stored as a single-value tuple (for numpy indexing)
             # So this just is grabbing the actual data.
             if i in self._stepDims[0]:
                 unitSteps.append(compressedSteps.pop(0))

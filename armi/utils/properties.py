@@ -27,17 +27,17 @@ def areEqual(val1, val2, relativeTolerance=0.0):
 
 def npHackForEqual(val1, val2):
     """Checks lots of types for equality like strings and dicts."""
-    # when doing this with np arrays you get an array of booleans which causes the value error
+    # when doing this with numpy arrays you get an array of booleans which causes the value error
     if isinstance(val1, np.ndarray) and isinstance(val2, np.ndarray):
         if val1.size != val2.size:
             return False
 
     notEqual = val1 != val2
-    try:  # should work for everything but np arrays
+    try:  # should work for everything but numpy arrays
         if isinstance(notEqual, np.ndarray) and notEqual.size == 0:
             return True
         return not notEqual.__bool__()
-    except (AttributeError, ValueError):  # from comparing 2 np arrays
+    except (AttributeError, ValueError):  # from comparing 2 numpy arrays
         return not notEqual.any()
 
 

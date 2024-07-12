@@ -246,7 +246,7 @@ class IndexLocation(LocationBase):
         This strips off the annoying ``grid`` tagalong which is there to ensure proper
         equality (i.e. (0,0,0) in a storage rack is not equal to (0,0,0) in a core).
 
-        It is a np array for two reasons:
+        It is a numpy array for two reasons:
 
         1. It can be added and subtracted for the recursive computations
            through different coordinate systems

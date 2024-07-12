@@ -79,8 +79,8 @@ def convertToSlice(x, increment=False):
         Returns a slice object that can be used in an array
         like a[x] to select from its members.
         Also, the slice has its index numbers decremented by 1.
-        It can also return a np array, which can be used
-        to slice other np arrays in the same way as a slice.
+        It can also return a numpy array, which can be used
+        to slice other numpy arrays in the same way as a slice.
 
     Examples
     --------

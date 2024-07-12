@@ -942,7 +942,7 @@ class Database3:
                     data = data.astype("S")
 
                 if data.dtype.kind == "O":
-                    # Something was added to the data array that caused np to want to
+                    # Something was added to the data array that caused numpy to want to
                     # treat it as a general-purpose Object array. This usually happens
                     # because:
                     # - the data contain NoDefaults
@@ -1058,7 +1058,7 @@ class Database3:
             if "linkedDims" in attrs:
                 linkedDims = np.char.decode(attrs["linkedDims"])
 
-            # iterating of np is not fast...
+            # iterating of numpy is not fast...
             for c, val, linkedDim in itertools.zip_longest(
                 comps, data.tolist(), linkedDims, fillvalue=""
             ):
@@ -1169,7 +1169,7 @@ class Database3:
 
         for h5TimeNodeGroup in self.genTimeStepGroups(timeSteps):
             if "layout" not in h5TimeNodeGroup:
-                # layout hasnt been written for this time step, so we can't get anything
+                # layout hasn't been written for this time step, so we can't get anything
                 # useful here. Perhaps the current value is of use, in which case the
                 # DatabaseInterface should be used.
                 continue
@@ -1194,7 +1194,7 @@ class Database3:
                 ]
             )
 
-            # This could also be way more efficient if lLocation were a np array
+            # This could also be way more efficient if lLocation were a numpy array
             objectLocationsInLayout = [lLocation[i] for i in objectIndicesInLayout]
 
             objectIndicesInData = np.array(layout.indexInData)[
@@ -1409,7 +1409,7 @@ class Database3:
                             len(reorderedComps),
                         )
 
-                    # iterating of np is not fast..
+                    # iterating of numpy is not fast..
                     for c, val in zip(reorderedComps, data.tolist()):
                         if paramName == "location":
                             val = tuple(val)
@@ -1510,17 +1510,17 @@ def packSpecialData(
     arrayData: [np.ndarray, JaggedArray], paramName: str
 ) -> Tuple[Optional[np.ndarray], Dict[str, Any]]:
     """
-    Reduce data that wouldn't otherwise play nicely with HDF5/np arrays to a format
+    Reduce data that wouldn't otherwise play nicely with HDF5/numpy arrays to a format
     that will.
 
     This is the main entry point for conforming "strange" data into something that will
-    both fit into a np array/HDF5 dataset, and be recoverable to its original-ish
+    both fit into a numpy array/HDF5 dataset, and be recoverable to its original-ish
     state when reading it back in. This is accomplished by detecting a handful of known
     offenders and using various HDF5 attributes to store necessary auxiliary data. It is
     important to keep in mind that the data that is passed in has already been converted
-    to a np array, so the top dimension is always representing the collection of
+    to a numpy array, so the top dimension is always representing the collection of
     composites that are storing the parameters. For instance, if we are dealing with a
-    Block parameter, the first index in the np array of data is the block index; so
+    Block parameter, the first index in the numpy array of data is the block index; so
     if each block has a parameter that is a dictionary, ``data`` would be a ndarray,
                     offset += arr.size
     where each element is a dictionary. This routine supports a number of different
@@ -1556,7 +1556,7 @@ def packSpecialData(
     if isinstance(arrayData, JaggedArray):
         data = arrayData.flattenedArray
     else:
-        # Check to make sure that we even need to do this. If the np data type is
+        # Check to make sure that we even need to do this. If the numpy data type is
         # not "O", chances are we have nice, clean data.
         if arrayData.dtype != "O":
             return arrayData, {}
@@ -1602,7 +1602,7 @@ def packSpecialData(
             # The data themselves are nasty. We could support this, but best to wait for
             # a credible use case.
             raise TypeError(
-                "Unable to coerce dictionary data into usable np array for "
+                "Unable to coerce dictionary data into usable numpy array for "
                 "{}".format(paramName)
             )
         attrs["keys"] = np.array(keys).astype("S")
@@ -1616,7 +1616,7 @@ def packSpecialData(
         attrs["noneLocations"] = arrayData.nones
         return data, attrs
 
-    # conform non-np arrays to np
+    # conform non-numpy arrays to numpy
     for i, val in enumerate(data):
         if isinstance(val, (list, tuple)):
             data[i] = np.array(val)
@@ -1632,7 +1632,7 @@ def packSpecialData(
 
     if len(nones) == 0:
         raise TypeError(
-            "Cannot write {} to the database, it did not resolve to a np/HDF5 "
+            "Cannot write {} to the database, it did not resolve to a numpy/HDF5 "
             "type.".format(paramName)
         )
 
@@ -1642,7 +1642,7 @@ def packSpecialData(
 
 def unpackSpecialData(data: np.ndarray, attrs, paramName: str) -> np.ndarray:
     """
-    Extract data from a specially-formatted HDF5 dataset into a np array.
+    Extract data from a specially-formatted HDF5 dataset into a numpy array.
 
     This should invert the operations performed by :py:func:`packSpecialData`.
 

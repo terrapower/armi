@@ -315,7 +315,7 @@ def _diffSpecialData(
     Compare specially-formatted datasets.
 
     This employs the pack/unpackSpecialData functions to reconstitute complicated
-    datasets for comparison. These usually don't behave well as giant np arrays, so
+    datasets for comparison. These usually don't behave well as giant numpy arrays, so
     we go element-by-element to calculate the diffs, then concatenate them.
     """
     name = refData.name

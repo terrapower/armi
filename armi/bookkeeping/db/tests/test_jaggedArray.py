@@ -82,9 +82,9 @@ class TestJaggedArray(unittest.TestCase):
 
     def _compareArrays(self, ref, src):
         """
-        Compare two np arrays.
+        Compare two numpy arrays.
 
-        Comparing np arrays that may have unsavory data (NaNs, Nones, jagged
+        Comparing numpy arrays that may have unsavory data (NaNs, Nones, jagged
         data, etc.) is really difficult. For now, convert to a list and compare
         element-by-element.
 
@@ -92,9 +92,9 @@ class TestJaggedArray(unittest.TestCase):
         here converts the initial data into the format expected to be produced
         by the round trip. The conversions are:
 
-        - For scalar values (int, float, etc.), the data becomes a np
+        - For scalar values (int, float, etc.), the data becomes a numpy
           array with a dimension of 1 after the round trip.
-        - Tuples and lists become np arrays
+        - Tuples and lists become numpy arrays
         - Empty lists become `None`
 
         """

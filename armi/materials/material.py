@@ -431,7 +431,7 @@ class Material:
         """Get the temperature at which the perturbed density occurs (in Celcius)."""
         # 0 at tempertature of targetDensity
         densFunc = lambda temp: self.density(Tc=temp) - targetDensity
-        # is a np array if fsolve is called
+        # is a numpy array if fsolve is called
         tAtTargetDensity = float(fsolve(densFunc, tempGuessInC))
         return tAtTargetDensity
 

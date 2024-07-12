@@ -715,7 +715,7 @@ def getBlockBandwidth(m, nintj, nblok):
 
     This function computes JL and JU for these purposes. It also converts
     JL and JU to zero based indices rather than 1 based ones, as is almost
-    always wanted when dealing with python/np matrices.
+    always wanted when dealing with python/numpy matrices.
 
     The term *bandwidth* refers to a kind of sparse matrix representation.
     Some rows only have columns JL to JH in them rather than 0 to JMAX.

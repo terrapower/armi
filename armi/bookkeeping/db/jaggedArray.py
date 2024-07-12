@@ -26,15 +26,15 @@ from armi import runLog
 
 class JaggedArray:
     """
-    Take a list of np arrays or lists and flatten them into a single 1D array.
+    Take a list of numpy arrays or lists and flatten them into a single 1D array.
 
-    This implementation can preserve the structure of a multi-dimensional np array
-    by storing the dimensions in self.shapes and then re-populating a np array of
+    This implementation can preserve the structure of a multi-dimensional numpy array
+    by storing the dimensions in self.shapes and then re-populating a numpy array of
     that shape from the flattened 1D array. However, it can only preserve one layer of
     jaggedness in a list of lists (or other iterables). For example, a list of tuples
     with varying lengths can be flattened and reconstituted exactly. But, if a list of
     lists of tuples is passed in, the tuples in that final layer of nesting will all be
-    flattened to a single 1D np array after a round trip. No structure is retained
+    flattened to a single 1D numpy array after a round trip. No structure is retained
     from nested lists of jagged lists or tuples.
     """
 
@@ -45,7 +45,7 @@ class JaggedArray:
         Parameters
         ----------
         jaggedData: list of np.ndarray
-            A list of np arrays (or lists or tuples) to be flattened into a single array
+            A list of numpy arrays (or lists or tuples) to be flattened into a single array
         paramName: str
             The name of the parameter represented by this data
         """
@@ -66,7 +66,7 @@ class JaggedArray:
                         offset += npArray.size
                         flattenedArray.extend(npArray.flatten())
                     except:  # noqa: E722
-                        # np might fail if it's jagged
+                        # numpy might fail if it's jagged
                         flattenedList = self.flatten(arr)
                         shapes.append(
                             len(flattenedList),
@@ -89,7 +89,7 @@ class JaggedArray:
             runLog.error(
                 "Error! It seems like ARMI may have tried to flatten a jagged array "
                 "where the elements have different numbers of dimensions. `shapes` "
-                "attribute of the JaggedArray for {} cannot be made into a np "
+                "attribute of the JaggedArray for {} cannot be made into a numpy "
                 "array; it might be jagged.".format(paramName)
             )
             runLog.error(shapes)
@@ -134,7 +134,7 @@ class JaggedArray:
         Parameters
         ----------
         data: np.ndarray
-            A flattened 1D np array read in from an HDF5 file
+            A flattened 1D numpy array read in from an HDF5 file
         offsets: np.ndarray
             Offset indices for the zeroth element of each constituent array
         shapes: np.ndarray
@@ -170,7 +170,7 @@ class JaggedArray:
         Returns
         -------
         unpackedJaggedData: list of np.ndarray
-            List of np arrays with varying dimensions (i.e., jagged arrays)
+            List of numpy arrays with varying dimensions (i.e., jagged arrays)
         """
         unpackedJaggedData: List[Optional[np.ndarray]] = []
         numElements = len(self.offsets) + len(self.nones)
