@@ -120,7 +120,7 @@ class TestDatabaseInterface(unittest.TestCase):
         self.assertEqual(self.dbi.distributable(), 4)
 
     def test_demonstrateWritingInteractions(self):
-        """Test that the DB is NOT written to if cs["tightCoupling"] = True."""
+        """Test what nodes are written to the database during the interaction calls."""
         self.o.cs["burnSteps"] = 2  # make test insensitive to burn steps
         r = self.r
 
