@@ -173,17 +173,19 @@ class JaggedArray:
             List of numpy arrays with varying dimensions (i.e., jagged arrays)
         """
         unpackedJaggedData: List[Optional[np.ndarray]] = []
-        numElements = len(self.offsets) + len(self.nones)
+        shapeIndices = [i for i, x in enumerate(self.shapes) if sum(x) != 0]
+        numElements = len(shapeIndices) + len(self.nones)
         j = 0  # non-None element counter
         for i in range(numElements):
             if i in self.nones:
                 unpackedJaggedData.append(None)
             else:
+                k = shapeIndices[j]
                 unpackedJaggedData.append(
                     np.ndarray(
-                        self.shapes[j],
+                        self.shapes[k],
                         dtype=self.dtype,
-                        buffer=self.flattenedArray[self.offsets[j] :],
+                        buffer=self.flattenedArray[self.offsets[k] :],
                     )
                 )
                 j += 1
