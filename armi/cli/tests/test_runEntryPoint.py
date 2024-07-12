@@ -252,6 +252,8 @@ class TestExtractInputs(unittest.TestCase):
                 self.assertIn("Writing settings to", mock.getStdout())
                 self.assertIn("Writing blueprints to", mock.getStdout())
 
+            db.close()
+
 
 class TestInjectInputs(unittest.TestCase):
     def test_injectInputsBasics(self):
