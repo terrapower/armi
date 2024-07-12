@@ -160,8 +160,8 @@ class DatabaseInterface(interfaces.Interface):
             self._db.syncToSharedFolder()
 
     def interactEOC(self, cycle=None):
-        """In case anything changed since last cycle (e.g. rxSwing), update DB. (End of Cycle)."""
-        self._db.writeToDB(self.r, "EOC")
+        """Dont write; this state doesn't tend to be important since its decay only step and its at the same time at start of next cycle."""
+        return
 
     def interactEOL(self):
         """DB's should be closed at run's end. (End of Life)."""
