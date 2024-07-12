@@ -39,7 +39,7 @@ from armi.reactor.assemblies import (
     Flags,
     grids,
     HexAssembly,
-    numpy,
+    np,
     runLog,
 )
 from armi.reactor.tests import test_reactors
@@ -632,7 +632,7 @@ class Assembly_TestCase(unittest.TestCase):
                     continue
                 ref = refBlock.p[refParam]
                 cur = curBlock.p[refParam]
-                if isinstance(cur, numpy.ndarray):
+                if isinstance(cur, np.ndarray):
                     self.assertTrue((cur == ref).all())
                 else:
                     if refParam == "location":
@@ -659,7 +659,7 @@ class Assembly_TestCase(unittest.TestCase):
                 continue
             ref = self.assembly.p[param]
             cur = assembly2.p[param]
-            if isinstance(cur, numpy.ndarray):
+            if isinstance(cur, np.ndarray):
                 assert_allclose(cur, ref)
             else:
                 self.assertEqual(cur, ref)
@@ -955,26 +955,26 @@ class Assembly_TestCase(unittest.TestCase):
             for b in self.assembly:
                 b.p.percentBu = None
             self.assertTrue(
-                numpy.isnan(self.assembly.getParamValuesAtZ("percentBu", 25.0))
+                np.isnan(self.assembly.getParamValuesAtZ("percentBu", 25.0))
             )
 
             # multiDimensional param
             for b, flux in zip(self.assembly, [[1, 10], [2, 8], [3, 6]]):
                 b.p.mgFlux = flux
             self.assertTrue(
-                numpy.allclose(
+                np.allclose(
                     [2.5, 7.0], self.assembly.getParamValuesAtZ("mgFlux", 20.0)
                 )
             )
             self.assertTrue(
-                numpy.allclose(
+                np.allclose(
                     [1.5, 9.0], self.assembly.getParamValuesAtZ("mgFlux", 10.0)
                 )
             )
             for b in self.assembly:
                 b.p.mgFlux = [0.0] * 2
             self.assertTrue(
-                numpy.allclose(
+                np.allclose(
                     [0.0, 0.0], self.assembly.getParamValuesAtZ("mgFlux", 10.0)
                 )
             )
@@ -983,7 +983,7 @@ class Assembly_TestCase(unittest.TestCase):
             for b, temp in zip(self.assembly, [100, 200, 300]):
                 b.p.THcornTemp = [temp + iCorner for iCorner in range(6)]
             value = self.assembly.getParamValuesAtZ("THcornTemp", 20.0)
-            self.assertTrue(numpy.allclose([200, 201, 202, 203, 204, 205], value))
+            self.assertTrue(np.allclose([200, 201, 202, 203, 204, 205], value))
         finally:
             percentBuDef.location = originalLoc
 

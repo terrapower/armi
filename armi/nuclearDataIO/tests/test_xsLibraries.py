@@ -18,7 +18,7 @@ import os
 import traceback
 import unittest
 
-import numpy
+import numpy as np
 from six.moves import cPickle
 
 from armi.nucDirectory import nuclideBases
@@ -355,8 +355,8 @@ class TestXSlibraryMerging(TempFileMixin):
 
     def test_cannotMergeXSLibxWithDifferentGroupStructure(self):
         dummyXsLib = xsLibraries.IsotxsLibrary()
-        dummyXsLib.neutronEnergyUpperBounds = numpy.array([1, 2, 3])
-        dummyXsLib.gammaEnergyUpperBounds = numpy.array([1, 2, 3])
+        dummyXsLib.neutronEnergyUpperBounds = np.array([1, 2, 3])
+        dummyXsLib.gammaEnergyUpperBounds = np.array([1, 2, 3])
         with self.assertRaises(properties.ImmutablePropertyError):
             dummyXsLib.merge(self.libCombined)
 
@@ -438,7 +438,7 @@ class Pmatrx_merge_Tests(TestXSlibraryMerging):
 
     def test_cannotMergeXSLibsWithDifferentGammaGroupStructures(self):
         dummyXsLib = xsLibraries.IsotxsLibrary()
-        dummyXsLib.gammaEnergyUpperBounds = numpy.array([1, 2, 3])
+        dummyXsLib.gammaEnergyUpperBounds = np.array([1, 2, 3])
         with self.assertRaises(properties.ImmutablePropertyError):
             dummyXsLib.merge(self.libCombined)
 

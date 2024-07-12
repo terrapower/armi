@@ -37,7 +37,7 @@ import matplotlib.colors as mcolors
 import matplotlib.patches
 import matplotlib.pyplot as plt
 import matplotlib.text as mpl_text
-import numpy
+import numpy as np
 
 from armi import runLog
 from armi.bookkeeping import report
@@ -49,7 +49,7 @@ from armi.reactor.flags import Flags
 from armi.utils import hexagon
 
 
-LUMINANCE_WEIGHTS = numpy.array([0.3, 0.59, 0.11, 0.0])
+LUMINANCE_WEIGHTS = np.array([0.3, 0.59, 0.11, 0.0])
 
 
 def colorGenerator(skippedColors=10):
@@ -128,7 +128,7 @@ def plotBlockDepthMap(
             paramValsAtElevation.append(a.getBlockAtElevation(elevation).p[param])
         data.append(paramValsAtElevation)
 
-    data = numpy.array(data)
+    data = np.array(data)
 
     fig = plt.figure(figsize=(12, 12), dpi=100)
     # Make these now, so they are still referenceable after plotFaceMap.
@@ -328,11 +328,11 @@ def plotFaceMap(
             "They should be equal length.".format(len(data), len(labels))
         )
 
-    collection.set_array(numpy.array(data))
+    collection.set_array(np.array(data))
     if minScale or maxScale:
         collection.set_clim([minScale, maxScale])
     else:
-        collection.norm.autoscale(numpy.array(data))
+        collection.norm.autoscale(np.array(data))
     ax.add_collection(collection)
 
     # Makes text in the center of each shape displaying the values.
@@ -343,9 +343,9 @@ def plotFaceMap(
     if makeColorBar:
         collection2 = PatchCollection(patches, cmap=cmapName, alpha=1.0)
         if minScale and maxScale:
-            collection2.set_array(numpy.array([minScale, maxScale]))
+            collection2.set_array(np.array([minScale, maxScale]))
         else:
-            collection2.set_array(numpy.array(data))
+            collection2.set_array(np.array(data))
 
         if "radial" in cBarLabel:
             colbar = fig.colorbar(
@@ -461,7 +461,7 @@ def _setPlotValText(ax, texts, core, data, labels, labelFmt, fontSize, collectio
     for a, val, label in zip(core, data, labels):
         x, y, _ = a.spatialLocator.getLocalCoordinates()
         cmap = collection.get_cmap()
-        patchColor = numpy.asarray(cmap(collection.norm(val)))
+        patchColor = np.asarray(cmap(collection.norm(val)))
         luminance = patchColor.dot(LUMINANCE_WEIGHTS)
         dark = luminance < 0.5
         if dark:
@@ -547,7 +547,7 @@ def _createLegend(legendMap, collection, size=9, shape=Hexagon):
                     transform=handlebox.get_transform(),
                 )
 
-            luminance = numpy.array(colorRgb).dot(LUMINANCE_WEIGHTS)
+            luminance = np.array(colorRgb).dot(LUMINANCE_WEIGHTS)
             dark = luminance < 0.5
             if dark:
                 color = "white"
@@ -804,10 +804,10 @@ def plotAssemblyTypes(
     ax.yaxis.set_ticks_position("left")
     yBlockHeights.insert(0, 0.0)
     yBlockHeights.sort()
-    yBlockHeightDiffs = numpy.diff(
+    yBlockHeightDiffs = np.diff(
         yBlockHeights
     )  # Compute differential heights between each block
-    ax.set_yticks([0.0] + list(set(numpy.cumsum(yBlockHeightDiffs))))
+    ax.set_yticks([0.0] + list(set(np.cumsum(yBlockHeightDiffs))))
     ax.xaxis.set_visible(False)
 
     ax.set_title(title, y=1.03)
@@ -962,13 +962,13 @@ def plotBlockFlux(core, fName=None, bList=None, peak=False, adjoint=False, bList
             self.E = None
 
             if not blockList:
-                self.avgFlux = numpy.zeros(self.nGroup)
-                self.peakFlux = numpy.zeros(self.nGroup)
+                self.avgFlux = np.zeros(self.nGroup)
+                self.peakFlux = np.zeros(self.nGroup)
                 self.lineAvg = "-"
                 self.linePeak = "-"
             else:
-                self.avgFlux = numpy.zeros(self.nGroup)
-                self.peakFlux = numpy.zeros(self.nGroup)
+                self.avgFlux = np.zeros(self.nGroup)
+                self.peakFlux = np.zeros(self.nGroup)
 
                 if self.adjoint:
                     self.labelAvg = "Average Adjoint Flux"
@@ -986,8 +986,8 @@ def plotBlockFlux(core, fName=None, bList=None, peak=False, adjoint=False, bList
 
         def calcAverage(self):
             for b in self.blockList:
-                thisFlux = numpy.array(b.getMgFlux(adjoint=self.adjoint))
-                self.avgFlux += numpy.array(thisFlux)
+                thisFlux = np.array(b.getMgFlux(adjoint=self.adjoint))
+                self.avgFlux += np.array(thisFlux)
                 if sum(thisFlux) > sum(self.peakFlux):
                     self.peakFlux = thisFlux
 
@@ -1109,8 +1109,8 @@ def makeHistogram(x, y):
             + "len(x) == {} and len(y) == {}".format(len(x), len(y))
         )
     n = len(x)
-    xHistogram = numpy.zeros(2 * n)
-    yHistogram = numpy.zeros(2 * n)
+    xHistogram = np.zeros(2 * n)
+    yHistogram = np.zeros(2 * n)
     for i in range(n):
         lower = 2 * i
         upper = 2 * i + 1
@@ -1279,10 +1279,10 @@ def _makeComponentPatch(component, position, cold):
         )
     elif isinstance(component, Hexagon):
         if component.getDimension("ip", cold=cold) != 0:
-            innerPoints = numpy.array(
+            innerPoints = np.array(
                 hexagon.corners(30) * component.getDimension("ip", cold=cold)
             )
-            outerPoints = numpy.array(
+            outerPoints = np.array(
                 hexagon.corners(30) * component.getDimension("op", cold=cold)
             )
             blockPatch = []
@@ -1303,7 +1303,7 @@ def _makeComponentPatch(component, position, cold):
 
     elif isinstance(component, Rectangle):
         if component.getDimension("widthInner", cold=cold) != 0:
-            innerPoints = numpy.array(
+            innerPoints = np.array(
                 [
                     [
                         x + component.getDimension("widthInner", cold=cold) / 2,
@@ -1324,7 +1324,7 @@ def _makeComponentPatch(component, position, cold):
                 ]
             )
 
-            outerPoints = numpy.array(
+            outerPoints = np.array(
                 [
                     [
                         x + component.getDimension("widthOuter", cold=cold) / 2,
@@ -1406,14 +1406,14 @@ def plotBlockDiagram(
                 materialList.append(materialName)
 
     materialMap = {
-        material: ai for ai, material in enumerate(numpy.unique(materialList))
+        material: ai for ai, material in enumerate(np.unique(materialList))
     }
     patches, data, _ = _makeBlockPinPatches(block, cold)
 
     collection = PatchCollection(patches, cmap=cmapName, alpha=1.0)
 
-    allColors = numpy.array(list(materialMap.values()))
-    ourColors = numpy.array([materialMap[materialName] for materialName in data])
+    allColors = np.array(list(materialMap.values()))
+    ourColors = np.array([materialMap[materialName] for materialName in data])
 
     collection.set_array(ourColors)
     ax.add_collection(collection)
@@ -1425,7 +1425,7 @@ def plotBlockDiagram(
             "",
             "{}".format(materialName),
         )
-        for materialName in numpy.unique(data)
+        for materialName in np.unique(data)
     ]
     legend = _createLegend(legendMap, collection, size=50, shape=Rectangle)
     pltKwargs = {

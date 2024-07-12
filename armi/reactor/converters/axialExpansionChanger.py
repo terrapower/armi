@@ -709,9 +709,9 @@ class ExpansionData:
 
         Parameters
         ----------
-        tempGrid : numpy array
+        tempGrid : np array
             1D axial temperature grid (i.e., physical locations where temp is stored)
-        tempField : numpy array
+        tempField : np array
             temperature values along grid
 
         Notes

@@ -110,7 +110,7 @@ class _Metadata:
             selfVal = self[key]
             otherVal = other[key]
             mergedVal = None
-            if not properties.numpyHackForEqual(selfVal, otherVal):
+            if not properties.npHackForEqual(selfVal, otherVal):
                 raise exceptionClass(
                     "{libType} {key} metadata differs between {lib1} and {lib2}; Cannot Merge\n"
                     "{key} has values of {val1} and {val2}".format(

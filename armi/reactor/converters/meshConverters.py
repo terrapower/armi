@@ -18,7 +18,7 @@ import math
 import collections
 import itertools
 
-import numpy
+import numpy as np
 
 from armi import runLog
 from armi.reactor import grids
@@ -160,7 +160,7 @@ class RZThetaReactorMeshConverter(MeshConverter):
     def _generateUniformThetaMesh(self):
         """Create a uniform theta mesh over 2*pi using the user specified number of theta bins."""
         self.thetaMesh = list(
-            numpy.linspace(0, 2 * math.pi, self._numThetaMeshBins + 1)[1:]
+            np.linspace(0, 2 * math.pi, self._numThetaMeshBins + 1)[1:]
         )
 
     def _generateNonUniformThetaMesh(self):
@@ -396,7 +396,7 @@ def checkLastValueInList(
     msg = "The last value in {} is {} and should be {}".format(
         listName, inputList[-1], expectedValue
     )
-    if not numpy.isclose(inputList[-1], expectedValue, eps):
+    if not np.isclose(inputList[-1], expectedValue, eps):
         if adjustLastValue:
             del inputList[-1]
             inputList.append(expectedValue)

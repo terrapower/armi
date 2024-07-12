@@ -105,7 +105,7 @@ from io import StringIO
 import itertools
 from typing import Tuple
 
-import numpy
+import numpy as np
 import yamlize
 from ruamel.yaml import scalarstring
 
@@ -296,8 +296,8 @@ class GridBlueprint(yamlize.Object):
                     )
 
             # convert to list, otherwise it is a CommentedSeq
-            theta = numpy.array(self.gridBounds["theta"])
-            radii = numpy.array(self.gridBounds["r"])
+            theta = np.array(self.gridBounds["theta"])
+            radii = np.array(self.gridBounds["r"])
             for lst, name in ((theta, "theta"), (radii, "radii")):
                 if not isMonotonic(lst, "<"):
                     raise InputError(

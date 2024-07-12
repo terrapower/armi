@@ -18,7 +18,7 @@ and/or photon flux.
 import math
 from typing import Dict, Optional
 
-import numpy
+import numpy as np
 import scipy.integrate
 
 from armi import interfaces
@@ -723,7 +723,7 @@ class GlobalFluxResultMapper(interfaces.OutputReader):
         currentCorePower = 0.0
         for b in self.r.core.getBlocks():
             # The multi-group flux is volume integrated, so J/cm * n-cm/s gives units of Watts
-            b.p.power = numpy.dot(
+            b.p.power = np.dot(
                 b.getTotalEnergyGenerationConstants(), b.getIntegratedMgFlux()
             )
             b.p.flux = sum(b.getMgFlux())
@@ -994,13 +994,13 @@ class DoseResultsMapper(GlobalFluxResultMapper):
             # if it is a non-hex block, this should be a no-op
             if b.p.pointsCornerDpaRate is not None:
                 if b.p.pointsCornerDpa is None:
-                    b.p.pointsCornerDpa = numpy.zeros((6,))
+                    b.p.pointsCornerDpa = np.zeros((6,))
                 b.p.pointsCornerDpa = (
                     b.p.pointsCornerDpa + b.p.pointsCornerDpaRate * stepTimeInSeconds
                 )
             if b.p.pointsEdgeDpaRate is not None:
                 if b.p.pointsEdgeDpa is None:
-                    b.p.pointsEdgeDpa = numpy.zeros((6,))
+                    b.p.pointsEdgeDpa = np.zeros((6,))
                 b.p.pointsEdgeDpa = (
                     b.p.pointsEdgeDpa + b.p.pointsEdgeDpaRate * stepTimeInSeconds
                 )
@@ -1199,7 +1199,7 @@ class DoseResultsMapper(GlobalFluxResultMapper):
         peakAvg = (0.0, None)
         loadPadTop = loadPadBottom + loadPadLength
 
-        zrange = numpy.linspace(loadPadBottom, loadPadTop, 100)
+        zrange = np.linspace(loadPadBottom, loadPadTop, 100)
         for a in self.r.core.getAssemblies(Flags.FUEL):
             # scan over the load pad to find the peak dpa
             # no caching.

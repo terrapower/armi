@@ -23,7 +23,7 @@ Hexagons are fundamental to advanced reactors.
 
 import math
 
-import numpy
+import numpy as np
 
 SQRT3 = math.sqrt(3.0)
 
@@ -70,7 +70,7 @@ def corners(rotation=0):
 
     Zero rotation implies flat-to-flat aligned with y-axis. Origin in the center.
     """
-    points = numpy.array(
+    points = np.array(
         [
             (1.0 / (2.0 * math.sqrt(3.0)), 0.5),
             (1.0 / math.sqrt(3.0), 0.0),
@@ -83,14 +83,14 @@ def corners(rotation=0):
 
     rotation = rotation / 180.0 * math.pi
 
-    rotation = numpy.array(
+    rotation = np.array(
         [
             [math.cos(rotation), -math.sin(rotation)],
             [math.sin(rotation), math.cos(rotation)],
         ]
     )
 
-    return numpy.array([tuple(rotation.dot(point)) for point in points])
+    return np.array([tuple(rotation.dot(point)) for point in points])
 
 
 def pitch(side):

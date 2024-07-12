@@ -23,7 +23,7 @@ This module implements reading and writing of the DLAYXS, consistent with [CCCC-
 """
 import collections
 
-import numpy
+import numpy as np
 
 from armi import runLog
 from armi.nucDirectory import nuclideBases
@@ -67,9 +67,9 @@ class DelayedNeutronData:
     """
 
     def __init__(self, numEnergyGroups, numPrecursorGroups):
-        self.precursorDecayConstants = numpy.zeros(numPrecursorGroups)
-        self.delayEmissionSpectrum = numpy.zeros((numPrecursorGroups, numEnergyGroups))
-        self.delayNeutronsPerFission = numpy.zeros(
+        self.precursorDecayConstants = np.zeros(numPrecursorGroups)
+        self.delayEmissionSpectrum = np.zeros((numPrecursorGroups, numEnergyGroups))
+        self.delayNeutronsPerFission = np.zeros(
             (numPrecursorGroups, numEnergyGroups)
         )
 
@@ -266,7 +266,7 @@ class DlayxsIO(cccc.Stream):
 
         # if the data objects are empty, then we are reading, otherwise the data already exists...
         # If we are reading, then we have to map all the metadata into the DelayedNeutronData structures
-        if not numpy.any(list(self.dlayxs.values())[0].delayEmissionSpectrum):
+        if not np.any(list(self.dlayxs.values())[0].delayEmissionSpectrum):
             for nuc, dlayData in self.dlayxs.items():
                 for ii, family in enumerate(self.dlayxs.nuclideFamily[nuc]):
                     dlayData.precursorDecayConstants[ii] = self.metadata[

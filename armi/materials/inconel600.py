@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """Inconel600."""
-import numpy
+import numpy as np
 
 from armi.materials.material import Material
 from armi.utils.units import getTc
@@ -73,7 +73,7 @@ class Inconel600(Material):
         """
         Tc = [20.0, 100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0]
         k = [14.9, 15.9, 17.3, 19.0, 20.5, 22.1, 23.9, 25.7, 27.5]
-        return numpy.polyfit(numpy.array(Tc), numpy.array(k), power).tolist()
+        return np.polyfit(np.array(Tc), np.array(k), power).tolist()
 
     def thermalConductivity(self, Tk=None, Tc=None):
         r"""
@@ -113,7 +113,7 @@ class Inconel600(Material):
         """
         Tc = [20.0, 100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0]
         cp = [444.0, 465.0, 486.0, 502.0, 519.0, 536.0, 578.0, 595.0, 611.0, 628.0]
-        return numpy.polyfit(numpy.array(Tc), numpy.array(cp), power).tolist()
+        return np.polyfit(np.array(Tc), np.array(cp), power).tolist()
 
     def heatCapacity(self, Tk=None, Tc=None):
         r"""
@@ -174,8 +174,8 @@ class Inconel600(Material):
 
         Tc.insert(0, refTempC)
 
-        return numpy.polyfit(
-            numpy.array(Tc), numpy.array(linExpPercent), power
+        return np.polyfit(
+            np.array(Tc), np.array(linExpPercent), power
         ).tolist()
 
     def linearExpansionPercent(self, Tk=None, Tc=None):

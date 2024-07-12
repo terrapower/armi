@@ -16,7 +16,7 @@
 import os
 import unittest
 
-import numpy
+import numpy as np
 
 from armi.reactor.converters import blockConverters
 from armi.reactor import blocks
@@ -326,7 +326,7 @@ class TestToCircles(unittest.TestCase):
     def test_fromHex(self):
         actualRadii = blockConverters.radiiFromHexPitches([7.47, 7.85, 8.15])
         expected = [3.92203, 4.12154, 4.27906]
-        self.assertTrue(numpy.allclose(expected, actualRadii, rtol=1e-5))
+        self.assertTrue(np.allclose(expected, actualRadii, rtol=1e-5))
 
     def test_fromRingOfRods(self):
         # JOYO-LMFR-RESR-001, rev 1, Table A.2, 5th layer (ring 6)
@@ -334,7 +334,7 @@ class TestToCircles(unittest.TestCase):
             0.76 * 5, 6 * 5, [0.28, 0.315]
         )
         expected = [3.24034, 3.28553, 3.62584, 3.67104]
-        self.assertTrue(numpy.allclose(expected, actualRadii, rtol=1e-5))
+        self.assertTrue(np.allclose(expected, actualRadii, rtol=1e-5))
 
 
 def _buildJoyoFuel():

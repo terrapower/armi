@@ -24,7 +24,7 @@ physics codes.
 import math
 import collections
 
-import numpy
+import numpy as np
 import ordered_set
 
 from armi import runLog
@@ -351,7 +351,7 @@ class LatticePhysicsWriter(interfaces.InputWriter):
         if not fuelComponents:
             fuelTemperatureInC = self.block.getAverageTempInC()
         else:
-            fuelTemperatureInC = numpy.mean(
+            fuelTemperatureInC = np.mean(
                 [fc.temperatureInC for fc in fuelComponents]
             )
         if not fuelTemperatureInC or math.isnan(fuelTemperatureInC):

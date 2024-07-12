@@ -15,7 +15,7 @@ import collections
 import itertools
 from typing import Tuple, Union, List, Iterable, Optional, Sequence
 
-import numpy
+import numpy as np
 
 from armi.reactor.grids.locations import (
     IJKType,
@@ -159,7 +159,7 @@ class StructuredGrid(Grid):
             else:
                 self._boundDims.append(dimensionIndex)
 
-        # numpy prefers tuples like this to do slicing on arrays
+        # np prefers tuples like this to do slicing on arrays
         self._boundDims = (tuple(self._boundDims),)
         self._stepDims = (tuple(self._stepDims),)
 
@@ -170,8 +170,8 @@ class StructuredGrid(Grid):
 
         # only represent unit steps in dimensions they're being used so as to not
         # pollute the dot product. This may reduce the length of this from 3 to 2 or 1
-        self._unitSteps = numpy.array(unitSteps)[self._stepDims]
-        self._offset = numpy.zeros(3) if offset is None else numpy.array(offset)
+        self._unitSteps = np.array(unitSteps)[self._stepDims]
+        self._offset = np.zeros(3) if offset is None else np.array(offset)
         self._locations = {}
         self._buildLocations()  # locations are owned by a grid, so the grid builds them.
 
@@ -200,7 +200,7 @@ class StructuredGrid(Grid):
         unitSteps = []
         compressedSteps = list(self._unitSteps[:])
         for i in range(3):
-            # Recall _stepDims are stored as a single-value tuple (for numpy indexing)
+            # Recall _stepDims are stored as a single-value tuple (for np indexing)
             # So this just is grabbing the actual data.
             if i in self._stepDims[0]:
                 unitSteps.append(compressedSteps.pop(0))
@@ -219,12 +219,12 @@ class StructuredGrid(Grid):
         )
 
     @property
-    def offset(self) -> numpy.ndarray:
+    def offset(self) -> np.ndarray:
         """Offset in cm for each axis."""
         return self._offset
 
     @offset.setter
-    def offset(self, offset: numpy.ndarray):
+    def offset(self, offset: np.ndarray):
         self._offset = offset
 
     def __repr__(self) -> str:
@@ -289,7 +289,7 @@ class StructuredGrid(Grid):
     def restoreBackup(self):
         self._unitSteps, self._bounds, self._offset = self._backup
 
-    def getCoordinates(self, indices, nativeCoords=False) -> numpy.ndarray:
+    def getCoordinates(self, indices, nativeCoords=False) -> np.ndarray:
         """Return the coordinates of the center of the mesh cell at the given indices
         in cm.
 
@@ -308,26 +308,26 @@ class StructuredGrid(Grid):
             all axes. There are no more complicated situations where we need to find
             the centroid of a octagon on a rectangular mesh, or the like.
         """
-        indices = numpy.array(indices)
+        indices = np.array(indices)
         return self._evaluateMesh(
             indices, self._centroidBySteps, self._centroidByBounds
         )
 
-    def getCellBase(self, indices) -> numpy.ndarray:
+    def getCellBase(self, indices) -> np.ndarray:
         """Get the mesh base (lower left) of this mesh cell in cm."""
-        indices = numpy.array(indices)
+        indices = np.array(indices)
         return self._evaluateMesh(
             indices, self._meshBaseBySteps, self._meshBaseByBounds
         )
 
-    def getCellTop(self, indices) -> numpy.ndarray:
+    def getCellTop(self, indices) -> np.ndarray:
         """Get the mesh top (upper right) of this mesh cell in cm."""
-        indices = numpy.array(indices) + 1
+        indices = np.array(indices) + 1
         return self._evaluateMesh(
             indices, self._meshBaseBySteps, self._meshBaseByBounds
         )
 
-    def _evaluateMesh(self, indices, stepOperator, boundsOperator) -> numpy.ndarray:
+    def _evaluateMesh(self, indices, stepOperator, boundsOperator) -> np.ndarray:
         """
         Evaluate some function of indices on this grid.
 
@@ -346,17 +346,17 @@ class StructuredGrid(Grid):
                 boundCoords.append(boundsOperator(indices[ii], bounds))
 
         # limit step operator to the step dimensions
-        stepCoords = stepOperator(numpy.array(indices)[self._stepDims])
+        stepCoords = stepOperator(np.array(indices)[self._stepDims])
 
         # now mix/match bounds coords with step coords appropriately.
-        result = numpy.zeros(len(indices))
+        result = np.zeros(len(indices))
         result[self._stepDims] = stepCoords
         result[self._boundDims] = boundCoords
 
         return result + self._offset
 
     def _centroidBySteps(self, indices):
-        return numpy.dot(self._unitSteps, indices)
+        return np.dot(self._unitSteps, indices)
 
     def _meshBaseBySteps(self, indices):
         return (
@@ -515,9 +515,9 @@ class StructuredGrid(Grid):
 
 
 def _tuplify(maybeArray) -> tuple:
-    if isinstance(maybeArray, (numpy.ndarray, list, tuple)):
+    if isinstance(maybeArray, (np.ndarray, list, tuple)):
         maybeArray = tuple(
-            tuple(row) if isinstance(row, (numpy.ndarray, list)) else row
+            tuple(row) if isinstance(row, (np.ndarray, list)) else row
             for row in maybeArray
         )
 
