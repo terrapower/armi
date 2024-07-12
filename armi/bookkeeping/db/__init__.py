@@ -153,11 +153,6 @@ def loadOperator(
             allowMissing=allowMissing,
         )
 
-    # Update the global assembly number because, if the user is loading a reactor from
-    # blueprints and does not have access to an operator, it is unlikely that there is
-    # another reactor that has alter the global assem num. Fresh cases typically want
-    # this updated.
-
     o = thisCase.initializeOperator(r=r)
     runLog.important(
         "The operator will not be in the same state that it was at that cycle and "
