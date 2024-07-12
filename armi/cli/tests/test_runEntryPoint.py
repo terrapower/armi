@@ -455,3 +455,5 @@ class TestVisFileEntryPointCommand(unittest.TestCase):
             self.assertIsNone(vf.args.min_node)
             self.assertIsNone(vf.args.max_node)
             self.assertEqual(vf.args.output_name, "test_visFileEntryPointBasics")
+
+            self.db.close()
