@@ -151,9 +151,9 @@ class DatabaseInterface(interfaces.Interface):
         if self.o.cs["tightCoupling"]:
             # h5 cant handle overwriting so we skip here and write once the tight coupling loop has completed
             return
-        self.writeDBEveryNode(cycle, node)
+        self.writeDBEveryNode()
 
-    def writeDBEveryNode(self, cycle, node):
+    def writeDBEveryNode(self):
         """Write the database at the end of the time node."""
         self._db.writeToDB(self.r)
         if self.cs[CONF_SYNC_AFTER_WRITE]:
