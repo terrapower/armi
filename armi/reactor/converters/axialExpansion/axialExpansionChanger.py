@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Enable component-wise axial expansion for assemblies and/or a reactor."""
+from numpy import array
 
 from armi import runLog
 from armi.reactor.flags import Flags
@@ -20,11 +21,10 @@ from armi.reactor.converters.axialExpansion import (
     getSolidComponents,
     _getDefaultReferenceAssem,
 )
-from armi.reactor.converters.axialExpansion.expansionData import ExpansionData
 from armi.reactor.converters.axialExpansion.assemblyAxialLinkage import (
     AssemblyAxialLinkage,
 )
-from numpy import array
+from armi.reactor.converters.axialExpansion.expansionData import ExpansionData
 
 
 def expandColdDimsToHot(
@@ -137,7 +137,7 @@ class AxialExpansionChanger:
             for axial expansion by determining Component-wise axial linkage and checking to see if a dummy Block
             is in place (necessary for ensuring conservation properties). The provided expansion factors are
             then assigned to their corresponding Components in ``setExpansionFactors``. Finally, the axial
-            expansion is performed in ``axiallyExpandAssembly``
+            expansion is performed in ``axiallyExpandAssembly``.
 
         Parameters
         ----------
@@ -209,7 +209,7 @@ class AxialExpansionChanger:
         self.expansionData = None
 
     def setAssembly(self, a, setFuel=True, expandFromTinputToThot=False):
-        """Set the armi assembly to be changed and init expansion data class for assembly.
+        """Set the Assembly to be changed and init the expansion data class for the Assembly.
 
         Parameters
         ----------
@@ -381,7 +381,8 @@ class AxialExpansionChanger:
         -----
         3cm is a presumptive lower threshhold for DIF3D
         """
-        if b.getHeight() < 3.0:
+        DIF3D_LOWER_LIMIT = 3.0
+        if b.getHeight() < DIF3D_LOWER_LIMIT:
             runLog.debug(
                 "Block {0:s} ({1:s}) has a height less than 3.0 cm. ({2:.12e})".format(
                     b.name, str(b.p.flags), b.getHeight()
