@@ -155,6 +155,7 @@ class DatabaseInterface(interfaces.Interface):
 
     def writeDBEveryNode(self):
         """Write the database at the end of the time node."""
+        self.r.core.p.minutesSinceStart = (time.time() - self.r.core.timeOfStart) / 60.0
         self._db.writeToDB(self.r)
         if self.cs[CONF_SYNC_AFTER_WRITE]:
             self._db.syncToSharedFolder()
@@ -162,7 +163,6 @@ class DatabaseInterface(interfaces.Interface):
     def interactEOC(self, cycle=None):
         """
         Dont write; this state doesn't tend to be important since its decay only step.
-
 
         Notes
         -----

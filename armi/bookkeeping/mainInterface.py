@@ -61,7 +61,7 @@ class MainInterface(interfaces.Interface):
 
     def _activateDBPrepRestart(self):
         """
-        Instantiate the database state, and add pervious time nodes for restart run.
+        Instantiate the database state, and add previous time nodes for restart run.
 
         Notes
         -----
