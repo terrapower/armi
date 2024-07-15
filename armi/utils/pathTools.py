@@ -25,6 +25,16 @@ import shutil
 from armi import context
 from armi import runLog
 
+DO_NOT_CLEAN_PATHS = [
+    "armiruns",
+    "failedruns",
+    "mc2run",
+    "mongoose",
+    "shufflebranches",
+    "snapshot",
+    "tests",
+]
+
 
 def armiAbsPath(*pathParts):
     """
@@ -192,12 +202,12 @@ def moduleAndAttributeExist(pathAttr):
 def cleanPath(path, mpiRank=0):
     """Recursively delete a path.
 
-    !!! careful with this !!! It can delete the entire cluster.
+    !!! Be careful with this !!! It can delete the entire cluster.
 
-    We add copious os.path.exists checks in case an MPI set of things is trying to delete everything at the same time.
-    Always check filenames for some special flag when calling this, especially
-    with full permissions on the cluster. You could accidentally delete everyone's work
-    with one misplaced line! This doesn't ask questions.
+    We add copious os.path.exists checks in case an MPI set of things is trying to delete everything
+    at the same time. Always check filenames for some special flag when calling this, especially
+    with full permissions on the cluster. You could accidentally delete everyone's work with one
+    misplaced line! This doesn't ask questions.
 
     Safety nets include an allow-list of paths.
 
@@ -212,15 +222,7 @@ def cleanPath(path, mpiRank=0):
     if not os.path.exists(path):
         return True
 
-    for validPath in [
-        "armiruns",
-        "failedruns",
-        "mc2run",
-        "mongoose",
-        "shufflebranches",
-        "snapshot",
-        "tests",
-    ]:
+    for validPath in DO_NOT_CLEAN_PATHS:
         if validPath in path.lower():
             valid = True
 

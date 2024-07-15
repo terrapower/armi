@@ -18,13 +18,12 @@ import os
 import traceback
 import unittest
 
+import numpy
 from six.moves import cPickle
 
 from armi.nucDirectory import nuclideBases
 from armi.nuclearDataIO import xsLibraries
-from armi.nuclearDataIO.cccc import gamiso
-from armi.nuclearDataIO.cccc import isotxs
-from armi.nuclearDataIO.cccc import pmatrx
+from armi.nuclearDataIO.cccc import gamiso, isotxs, pmatrx
 from armi.tests import mockRunLogs
 from armi.utils import properties
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
@@ -361,8 +360,8 @@ class TestXSlibraryMerging(TempFileMixin):
 
     def test_cannotMergeXSLibxWithDifferentGroupStructure(self):
         dummyXsLib = xsLibraries.IsotxsLibrary()
-        dummyXsLib.neutronEnergyUpperBounds = [1, 2, 3]
-        dummyXsLib.gammaEnergyUpperBounds = [1, 2, 3]
+        dummyXsLib.neutronEnergyUpperBounds = numpy.array([1, 2, 3])
+        dummyXsLib.gammaEnergyUpperBounds = numpy.array([1, 2, 3])
         with self.assertRaises(properties.ImmutablePropertyError):
             dummyXsLib.merge(self.libCombined)
 
@@ -444,7 +443,7 @@ class Pmatrx_merge_Tests(TestXSlibraryMerging):
 
     def test_cannotMergeXSLibsWithDifferentGammaGroupStructures(self):
         dummyXsLib = xsLibraries.IsotxsLibrary()
-        dummyXsLib.gammaEnergyUpperBounds = [1, 2, 3]
+        dummyXsLib.gammaEnergyUpperBounds = numpy.array([1, 2, 3])
         with self.assertRaises(properties.ImmutablePropertyError):
             dummyXsLib.merge(self.libCombined)
 
