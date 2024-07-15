@@ -14,7 +14,30 @@
 """Helpers for Sphinx documentation."""
 
 
-def createTable(rst_table, caption=None, align=None, widths=None, width=None):
+def escapeSpecialCharacters(s):
+    """Escapes RST special characters in inputted string.
+
+    Special characters include: ``*|_``. More to be added when found troublesome.
+
+    Parameters
+    ----------
+    s : str
+        String with characters to be escaped.
+
+    Returns
+    -------
+    str
+        Input string with special characters escaped.
+    """
+    news = s[:]
+    for char in ["*", "|", "_"]:
+        news = news.replace(char, "\\" + char)
+    return news
+
+
+def createTable(
+    rst_table, caption=None, label=None, align=None, widths=None, width=None
+):
     """
     This method is available within ``.. exec::``. It allows someone to create a table with a
     caption.
@@ -22,6 +45,8 @@ def createTable(rst_table, caption=None, align=None, widths=None, width=None):
     The ``rst_table``
     """
     rst = [".. table:: {}".format(caption or "")]
+    if label:
+        rst += ["    :name: {}".format(label)]
     if align:
         rst += ["    :align: {}".format(align)]
     if width:
@@ -136,8 +161,8 @@ def generateParamTable(klass, fwParams, app=None):
         pluginContent = headerContent.format(srcName)
         for pd in pdefs:
             pluginContent += f"""   * - {pd.name}
-         - {pd.description}
-         - {pd.units}
+         - {escapeSpecialCharacters(str(pd.description))}
+         - {escapeSpecialCharacters(pd.units)}
     """
         content.append(pluginContent + "\n")
 

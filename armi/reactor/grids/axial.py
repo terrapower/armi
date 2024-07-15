@@ -26,7 +26,7 @@ if TYPE_CHECKING:
 class AxialGrid(StructuredGrid):
     """1-D grid in the k-direction (z).
 
-    .. note:::
+    .. note::
 
         It is recommended to use :meth:`fromNCells` rather than calling
         the ``__init_`` constructor directly
@@ -93,8 +93,7 @@ def axialUnitGrid(
     """
     Build a 1-D unit grid in the k-direction based on a number of times. Each mesh is 1cm wide.
 
-    .. deprecated::
-
+    .. deprecated:: 0.3
         Use :class:`AxialUnitGrid` class instead
 
     """
