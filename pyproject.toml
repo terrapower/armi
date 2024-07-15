@@ -153,6 +153,7 @@ exclude = [
     "buck-out",
     "build",
     "dist",
+    "doc/tutorials/armi-example-app",
     "node_modules",
     "venv",
 ]
