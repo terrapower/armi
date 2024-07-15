@@ -160,7 +160,14 @@ class DatabaseInterface(interfaces.Interface):
             self._db.syncToSharedFolder()
 
     def interactEOC(self, cycle=None):
-        """Dont write; this state doesn't tend to be important since its decay only step and its at the same time at start of next cycle."""
+        """
+        Dont write; this state doesn't tend to be important since its decay only step.
+
+
+        Notes
+        -----
+        The same time is available at start of next cycle.
+        """
         return
 
     def interactEOL(self):

@@ -91,8 +91,9 @@ class MainInterface(interfaces.Interface):
 
             if self.cs["startNode"] == 0:
                 # DB interface loaded the pervious time step (last time node of previous cycle), but
-                # this is BEFORE the EOC interactions have happened..
-                # so here we explicitly call the EOC interactions now and then proceed with normal BOL interactions for the cycle we are starting
+                # this is BEFORE the EOC interactions have happened.
+                # so here we explicitly call the EOC interactions now and then proceed with normal
+                # BOL interactions for the cycle we are starting
                 self.interactAllEOC(self.r.p.cycle)
 
             # advance time time since we loaded the pervious time step
