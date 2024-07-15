@@ -90,7 +90,7 @@ class MainInterface(interfaces.Interface):
             dbi.prepRestartRun()
 
             if self.cs["startNode"] == 0:
-                # DB interface loaded the pervious time step (last time node of previous cycle), but
+                # DB interface loaded the previous time step (last time node of previous cycle), but
                 # this is BEFORE the EOC interactions have happened.
                 # so here we explicitly call the EOC interactions now and then proceed with normal
                 # BOL interactions for the cycle we are starting
