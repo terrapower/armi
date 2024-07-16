@@ -176,6 +176,10 @@ class DatabaseInterface(interfaces.Interface):
         # is necessary, too.
         self.r.core.p.minutesSinceStart = (time.time() - self.r.core.timeOfStart) / 60.0
         self._db.writeToDB(self.r, "EOL")
+        self.closeDB()
+
+    def closeDB(self):
+        "Close the DB, writting to file."
         self._db.close(True)
 
     def interactError(self):

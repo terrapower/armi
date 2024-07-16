@@ -91,6 +91,8 @@ class OperatorSnapshots(operatorMPI.OperatorMPI):
         exclude = ("database",)
         # run things that happen at EOL, like reports, plotters, etc.
         self.interactAllEOL(excludedInterfaceNames=exclude)
+        # dump the database
+        self.getInterface("database").closeDB()
         runLog.important("Done with ARMI snapshots case.")
 
     @staticmethod

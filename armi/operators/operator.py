@@ -654,7 +654,7 @@ class Operator:
         activeInterfaces = self.getActiveInterfaces("EOC", excludedInterfaceNames)
         self._interactAll("EOC", activeInterfaces, cycle)
 
-    def interactAllEOL(self):
+    def interactAllEOL(self, excludedInterfaceNames=()):
         """
         Run interactEOL for all enabled interfaces.
 
@@ -665,7 +665,7 @@ class Operator:
         order. This allows, for example, an interface that must run
         first to also run last.
         """
-        activeInterfaces = self.getActiveInterfaces("EOL")
+        activeInterfaces = self.getActiveInterfaces("EOL", excludedInterfaceNames)
         self._interactAll("EOL", activeInterfaces)
 
     def interactAllCoupled(self, coupledIteration):
