@@ -17,7 +17,7 @@ import numpy as np
 
 
 def areEqual(val1, val2, relativeTolerance=0.0):
-    hackEqual = npHackForEqual(val1, val2)
+    hackEqual = numpyHackForEqual(val1, val2)
     if hackEqual or not relativeTolerance:  # takes care of dictionaries and strings.
         return hackEqual
     return np.allclose(
@@ -25,7 +25,7 @@ def areEqual(val1, val2, relativeTolerance=0.0):
     )  # does not work for dictionaries or strings
 
 
-def npHackForEqual(val1, val2):
+def numpyHackForEqual(val1, val2):
     """Checks lots of types for equality like strings and dicts."""
     # when doing this with numpy arrays you get an array of booleans which causes the value error
     if isinstance(val1, np.ndarray) and isinstance(val2, np.ndarray):
@@ -106,7 +106,7 @@ def createImmutableProperty(name, dependencyAction, doc):
             currentVal = getattr(self, privateName)
             if currentVal is None or value is None:
                 setattr(self, privateName, value if currentVal is None else currentVal)
-            elif not npHackForEqual(currentVal, value):
+            elif not numpyHackForEqual(currentVal, value):
                 raise ImmutablePropertyError(
                     "{} on {} has already been set by reading {} file.\n"
                     "The original value:           ({})\n"

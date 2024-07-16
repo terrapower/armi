@@ -72,7 +72,7 @@ def compareNuclideXS(nuc1, nuc2):
     ]:
         val1 = getattr(nuc1, attrName)
         val2 = getattr(nuc2, attrName)
-        if not properties.npHackForEqual(val1, val2):
+        if not properties.numpyHackForEqual(val1, val2):
             runLog.important(
                 "{} and {} have different `{}` attributes:\n{}\n{}".format(
                     nuc1, nuc2, attrName, val1, val2
