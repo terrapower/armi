@@ -469,7 +469,7 @@ class Operator:
         if writeDB:
             # database has not yet been written, so we need to write it.
             dbi = self.getInterface("database")
-            dbi.writeDBEveryNode(cycle, timeNode)
+            dbi.writeDBEveryNode()
 
     def _interactAll(self, interactionName, activeInterfaces, *args):
         """
