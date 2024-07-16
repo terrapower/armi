@@ -85,12 +85,12 @@ class OperatorSnapshots(operatorMPI.OperatorMPI):
             )
             self._performTightCoupling(ssCycle, ssNode, writeDB=False)
 
-            # database is excluded at last snapshot since it writes at EOL
-            exclude = ("database",) if (ssCycle, ssNode) == lastTimeStep else ()
-            self.interactAllEOC(self.r.p.cycle, excludedInterfaceNames=exclude)
+            self.interactAllEOC(self.r.p.cycle)
 
+        # database is excluded since we dont need an extra write for snapshots
+        exclude = ("database",)
         # run things that happen at EOL, like reports, plotters, etc.
-        self.interactAllEOL()
+        self.interactAllEOL(excludedInterfaceNames=exclude)
         runLog.important("Done with ARMI snapshots case.")
 
     @staticmethod
