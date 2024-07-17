@@ -623,7 +623,7 @@ class Operator:
 
         All enabled or bolForce interfaces will be called excluding interfaces with excludedInterfaceNames.
         """
-        activeInterfaces = self.getActiveInterfaces("BOL", excludedInterfaceNames)
+        activeInterfaces = self.getActiveInterfaces("BOL", excludedInterfaceNames=excludedInterfaceNames)
         self._interactAll("BOL", activeInterfaces)
 
     def interactAllBOC(self, cycle):
@@ -646,12 +646,12 @@ class Operator:
         excludedInterfaceNames : list, optional
             Names of interface names that will not be interacted with.
         """
-        activeInterfaces = self.getActiveInterfaces("EveryNode", excludedInterfaceNames)
+        activeInterfaces = self.getActiveInterfaces("EveryNode", excludedInterfaceNames=excludedInterfaceNames)
         self._interactAll("EveryNode", activeInterfaces, cycle, tn)
 
     def interactAllEOC(self, cycle, excludedInterfaceNames=()):
         """Interact end of cycle for all enabled interfaces."""
-        activeInterfaces = self.getActiveInterfaces("EOC", excludedInterfaceNames)
+        activeInterfaces = self.getActiveInterfaces("EOC", excludedInterfaceNames=excludedInterfaceNames)
         self._interactAll("EOC", activeInterfaces, cycle)
 
     def interactAllEOL(self, excludedInterfaceNames=()):
@@ -665,7 +665,7 @@ class Operator:
         order. This allows, for example, an interface that must run
         first to also run last.
         """
-        activeInterfaces = self.getActiveInterfaces("EOL", excludedInterfaceNames)
+        activeInterfaces = self.getActiveInterfaces("EOL", excludedInterfaceNames=excludedInterfaceNames)
         self._interactAll("EOL", activeInterfaces)
 
     def interactAllCoupled(self, coupledIteration):
