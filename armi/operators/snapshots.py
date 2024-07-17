@@ -62,6 +62,8 @@ class OperatorSnapshots(operatorMPI.OperatorMPI):
 
         # update the snapshot requests if the user chose to load from a specific cycle/node
         dbi = self.getInterface("database")
+        # database is excluded since SS writes by itself
+        excludeDB = ("database",)
         for ssCycle, ssNode in snapshots:
             runLog.important(
                 "Beginning snapshot ({0:02d}, {1:02d})".format(ssCycle, ssNode)
@@ -77,18 +79,18 @@ class OperatorSnapshots(operatorMPI.OperatorMPI):
             if halt:
                 break
 
-            # database is excluded since it writes at EOC
+            # database is excluded since it writes after coupled
             self.interactAllEveryNode(
-                ssCycle, ssNode, excludedInterfaceNames=("database",)
+                ssCycle, ssNode, excludedInterfaceNames=excludeDB
             )
             self._performTightCoupling(ssCycle, ssNode, writeDB=False)
+            # tight coupling is done, now write to DB
+            dbi.writeEveryNode()
 
             self.interactAllEOC(self.r.p.cycle)
 
-        # database is excluded since we dont need an extra write for snapshots
-        exclude = ("database",)
         # run things that happen at EOL, like reports, plotters, etc.
-        self.interactAllEOL(excludedInterfaceNames=exclude)
+        self.interactAllEOL(excludedInterfaceNames=excludeDB)
         dbi.closeDB()  # dump the database to file
         runLog.important("Done with ARMI snapshots case.")
 
