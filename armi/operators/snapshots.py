@@ -80,9 +80,7 @@ class OperatorSnapshots(operatorMPI.OperatorMPI):
                 break
 
             # database is excluded since it writes after coupled
-            self.interactAllEveryNode(
-                ssCycle, ssNode, excludedInterfaceNames=excludeDB
-            )
+            self.interactAllEveryNode(ssCycle, ssNode, excludedInterfaceNames=excludeDB)
             self._performTightCoupling(ssCycle, ssNode, writeDB=False)
             # tight coupling is done, now write to DB
             dbi.writeEveryNode()
