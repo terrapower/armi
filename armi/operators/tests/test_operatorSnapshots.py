@@ -42,6 +42,7 @@ class TestOperatorSnapshots(unittest.TestCase):
         # mock a Database Interface
         self.dbi = DatabaseInterface(self.r, o1.cs)
         self.dbi.loadState = lambda c, n: None
+        self.dbi.closeDB = lambda: None
 
     def test_atEOL(self):
         self.assertFalse(self.o.atEOL)

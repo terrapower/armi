@@ -62,8 +62,6 @@ class OperatorSnapshots(operatorMPI.OperatorMPI):
 
         # update the snapshot requests if the user chose to load from a specific cycle/node
         dbi = self.getInterface("database")
-
-        lastTimeStep = snapshots[-1]
         for ssCycle, ssNode in snapshots:
             runLog.important(
                 "Beginning snapshot ({0:02d}, {1:02d})".format(ssCycle, ssNode)
@@ -91,8 +89,7 @@ class OperatorSnapshots(operatorMPI.OperatorMPI):
         exclude = ("database",)
         # run things that happen at EOL, like reports, plotters, etc.
         self.interactAllEOL(excludedInterfaceNames=exclude)
-        # dump the database
-        self.getInterface("database").closeDB()
+        dbi.closeDB()  # dump the database to file
         runLog.important("Done with ARMI snapshots case.")
 
     @staticmethod

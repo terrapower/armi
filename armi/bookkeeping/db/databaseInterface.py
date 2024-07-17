@@ -179,7 +179,7 @@ class DatabaseInterface(interfaces.Interface):
         self.closeDB()
 
     def closeDB(self):
-        "Close the DB, writting to file."
+        "Close the DB, writing to file."
         self._db.close(True)
 
     def interactError(self):
