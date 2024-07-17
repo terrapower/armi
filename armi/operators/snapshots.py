@@ -83,7 +83,7 @@ class OperatorSnapshots(operatorMPI.OperatorMPI):
             self.interactAllEveryNode(ssCycle, ssNode, excludedInterfaceNames=excludeDB)
             self._performTightCoupling(ssCycle, ssNode, writeDB=False)
             # tight coupling is done, now write to DB
-            dbi.writeEveryNode()
+            dbi.writeDBEveryNode()
 
             self.interactAllEOC(self.r.p.cycle)
 

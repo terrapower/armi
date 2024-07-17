@@ -1024,7 +1024,7 @@ class Operator:
 
         # Ensure the name of the interface isn't in some exclusion list.
         nameCheck = lambda i: True
-        if interactState == "EveryNode" or interactState == "EOC":
+        if interactState in ("EveryNode", "EOC", "EOL"):
             nameCheck = lambda i: i.name not in excludedInterfaceNames
         elif interactState == "BOC" and cycle < self.cs[CONF_DEFERRED_INTERFACES_CYCLE]:
             nameCheck = lambda i: i.name not in self.cs[CONF_DEFERRED_INTERFACE_NAMES]
