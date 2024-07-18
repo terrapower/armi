@@ -95,7 +95,10 @@ START_TIME = time.ctime()
 
 # Set batch mode if not a TTY, which means you're on a cluster writing to a stdout file
 # In this mode you cannot respond to prompts or anything
-CURRENT_MODE = Mode.INTERACTIVE if sys.stdout.isatty() else Mode.BATCH
+# This does not work replabliy for both windows and linux so an os-specific solution is
+# applied
+isatty = sys.stdout.isatty() if "win" in sys.platform else sys.stdin.isatty()
+CURRENT_MODE = Mode.INTERACTIVE if isatty else Mode.BATCH
 Mode.setMode(CURRENT_MODE)
 
 MPI_COMM = None
@@ -125,10 +128,6 @@ try:
     MPI_SIZE = MPI_COMM.Get_size()
     MPI_NODENAME = MPI.Get_processor_name()
     MPI_NODENAMES = MPI_COMM.allgather(MPI_NODENAME)
-
-    # fix an exceptional error case when we are not in "interactive mode"
-    if MPI_SIZE > 1 and CURRENT_MODE == Mode.INTERACTIVE:
-        CURRENT_MODE = Mode.BATCH
 except ImportError:
     # stick with defaults
     pass
