@@ -122,7 +122,7 @@ class GlobalFluxInterface(interfaces.Interface):
             eocKeff = self.r.core.p.keffUnc or self.r.core.p.keff
             swing = (eocKeff - self._bocKeff) / (eocKeff * self._bocKeff)
             self.r.core.p.rxSwing = swing * units.ABS_REACTIVITY_TO_PCM
-            runLog.important(
+            runLog.info(
                 f"BOC Uncontrolled keff: {self._bocKeff},  "
                 f"EOC Uncontrolled keff: {self.r.core.p.keffUnc}, "
                 f"Cycle Reactivity Swing: {self.r.core.p.rxSwing} pcm"
