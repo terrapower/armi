@@ -112,14 +112,15 @@ class GlobalFluxInterface(interfaces.Interface):
     def _setRxSwingRelatedParams(self):
         """Set Params Related to Rx Swing"""
         if self.r.p.timeNode == 0:
-            self._bocKeff = self.r.core.p.keffUnc  # track boc uncontrolled keff for rxSwing param.
+            # track boc uncontrolled keff for rxSwing param.
+            self._bocKeff = self.r.core.p.keffUnc or self.r.core.p.keff
 
         # A 1 burnstep cycle would have 2 nodes, and the last node would be node index 1 (first is zero)
         lastNodeInCycle = getBurnSteps(self.cs)[self.r.p.cycle]
         if self.r.p.timeNode == lastNodeInCycle and self._bocKeff is not None:
-            swing = (self.r.core.p.keff - self._bocKeff) / (
-                self.r.core.p.keff * self._bocKeff
-            )
+
+            eocKeff = self.r.core.p.keffUnc or self.r.core.p.keff
+            swing = (eocKeff - self._bocKeff) / (eocKeff * self._bocKeff)
             self.r.core.p.rxSwing = swing * units.ABS_REACTIVITY_TO_PCM
             runLog.important(
                 f"BOC Uncontrolled keff: {self._bocKeff},  "
