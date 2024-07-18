@@ -47,7 +47,7 @@ import time
 #
 # >>> atexit.register(willSegFault)
 
-import h5py  # noqa: unused-import
+import h5py  # noqa: F401
 
 
 BLUEPRINTS_IMPORTED = False
@@ -137,7 +137,7 @@ try:
     # trying a windows approach
     APP_DATA = os.path.join(os.environ["APPDATA"], "armi")
     APP_DATA = APP_DATA.replace("/", "\\")
-except:  # noqa: bare-except
+except Exception:
     # non-windows
     APP_DATA = os.path.expanduser("~/.armi")
 
@@ -284,7 +284,7 @@ def cleanAllArmiTempDirs(olderThanDays: int) -> None:
             if runIsOldAndLikleyComplete or fromThisRun:
                 # Delete old files
                 cleanPath(dirPath, mpiRank=MPI_RANK)
-        except:  # noqa: bare-except
+        except Exception:
             pass
 
 
@@ -295,12 +295,11 @@ def disconnectAllHdfDBs() -> None:
     Notes
     -----
     This is a hack to help ARMI exit gracefully when the garbage collector and h5py have issues
-    destroying objects. After lots of investigation, the root cause for why this was having issues
-    was never identified. It appears that when several HDF5 files are open in the same run (e.g.
-    when calling armi.init() multiple times from a post-processing script), when these h5py File
-    objects were closed, the garbage collector would raise an exception related to the repr'ing the
-    object. We get around this by using the garbage collector to manually disconnect all open HdfDB
-    objects.
+    destroying objects. The root cause for why this was having issues was never identified. It
+    appears that when several HDF5 files are open in the same run (e.g. when calling ``armi.init()``
+    multiple times from a post-processing script), when these h5py File objects were closed, the
+    garbage collector would raise an exception related to the repr'ing the object. We get around
+    this by using the garbage collector to manually disconnect all open HdfDBs.
     """
     from armi.bookkeeping.db import Database3
 

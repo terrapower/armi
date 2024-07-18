@@ -287,7 +287,7 @@ class Database3:
             try:
                 commit_hash = subprocess.check_output(["git", "describe"])
                 return commit_hash.decode("utf-8").strip()
-            except:  # noqa: bare-except
+            except Exception:
                 return unknown
         else:
             return unknown
@@ -1426,7 +1426,7 @@ class Database3:
                 if cycleNode not in hist:
                     try:
                         hist[cycleNode] = c.p[paramName]
-                    except:  # noqa: bare-except
+                    except Exception:
                         if paramName == "location":
                             hist[cycleNode] = c.spatialLocator.indices
 

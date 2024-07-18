@@ -1263,7 +1263,7 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
         for param in self.listOfVolIntegratedParamsToScale:
             if b.p[param] is None:
                 continue
-            if type(b.p[param]) == list:
+            if type(b.p[param]) is list:
                 # some params like volume-integrated mg flux are lists
                 b.p[param] = [op(val, 3) for val in b.p[param]]
             else:

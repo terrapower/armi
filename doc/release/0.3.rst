@@ -69,6 +69,7 @@ Quality Work
 #. Creating a single-block test reactor, to speed up unit tests. (`PR#1737 <https://github.com/terrapower/armi/pull/1737>`_)
 #. Supporting MacOS in CI. (`PR#1713 <https://github.com/terrapower/armi/pull/1713>`_)
 #. We now enforce a maximum line length of 120 characters, using ``ruff``. (`PR#1646 <https://github.com/terrapower/armi/pull/1646>`_)
+#. Updating ``ruff`` to version ``0.5.1``. (`PR#1770 <https://github.com/terrapower/armi/pull/1770>`_)
 #. Move ``.coveragerc`` file information into ``pyproject.toml``. (`PR#1692 <https://github.com/terrapower/armi/pull/1692>`_)
 #. TBD
 
