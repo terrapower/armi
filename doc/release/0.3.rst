@@ -62,6 +62,7 @@ Bug Fixes
 #. Fixed ``safeCopy`` to work on both Windows and Linux with strict permissions (`PR#1691 <https://github.com/terrapower/armi/pull/1691>`_)
 #. When creating a new XS group, inherit settings from initial group. (`PR#1653 <https://github.com/terrapower/armi/pull/1653>`_, `PR#1751 <https://github.com/terrapower/armi/pull/1751>`_)
 #. Fixed a bug with ``Core.getReactionRates``. (`PR#1771 <https://github.com/terrapower/armi/pull/1771>`_)
+#. Fixed a bug with interactive versus batch mode checking on windows versus linux. (`PR#1786 <https://github.com/terrapower/armi/pull/1786>`_)
 #. TBD
 
 Quality Work
