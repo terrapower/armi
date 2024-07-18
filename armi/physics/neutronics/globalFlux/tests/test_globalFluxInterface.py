@@ -171,14 +171,31 @@ class TestGlobalFluxInterface(unittest.TestCase):
         Check that a 1000 pcm rx swing is observed due to the mock.
         """
         cs = settings.Settings()
+        cs["burnSteps"] = 2
         _o, r = test_reactors.loadTestReactor(
             inputFileName="smallestTestReactor/armiRunSmallest.yaml"
         )
         gfi = MockGlobalFluxInterface(r, cs)
+        bocKeff = 1.1
+        r.core.p.keffUnc = 1.1
         gfi.interactBOC()
+
+        r.p.cycle, r.p.timeNode = 0, 0
         gfi.interactEveryNode(0, 0)
-        gfi.interactEOC()
-        self.assertAlmostEqual(r.core.p.rxSwing, 1000)
+        self.assertAlmostEqual(gfi._bocKeff, r.core.p.keffUnc)
+        r.core.p.keffUnc = 1.05
+        r.p.cycle, r.p.timeNode = 0, 1
+        gfi.interactEveryNode(0, 1)
+        # doesn't change since its not the first node
+        self.assertAlmostEqual(gfi._bocKeff, bocKeff)
+        r.core.p.keffUnc = 1.01
+        r.p.cycle, r.p.timeNode = 0, 2
+        gfi.interactEveryNode(0, 2)
+        self.assertAlmostEqual(gfi._bocKeff, bocKeff)
+        self.assertAlmostEqual(r.core.p.rxSwing, -1e5 * (1.1 - 1.01) / (1.1 * 1.01))
+        gfi.interactBOC(0)
+        # now its zeroed at BOC
+        self.assertAlmostEqual(r.core.p.rxSwing, 0)
 
     def test_getIOFileNames(self):
         cs = settings.Settings()
