@@ -110,7 +110,7 @@ class GlobalFluxInterface(interfaces.Interface):
         self._setRxSwingRelatedParams()
 
     def _setRxSwingRelatedParams(self):
-        """Set Params Related to Rx Swing"""
+        """Set Params Related to Rx Swing."""
         if self.r.p.timeNode == 0:
             # track boc uncontrolled keff for rxSwing param.
             self._bocKeff = self.r.core.p.keffUnc or self.r.core.p.keff
