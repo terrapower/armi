@@ -33,7 +33,7 @@ from armi.reactor.converters import geometryConverters
 from armi.reactor.converters import uniformMesh
 from armi.reactor.flags import Flags
 from armi.settings.caseSettings import Settings
-from armi.utils import units, codeTiming, getMaxBurnSteps
+from armi.utils import units, codeTiming, getMaxBurnSteps, getBurnSteps
 
 ORDER = interfaces.STACK_ORDER.FLUX
 
@@ -85,7 +85,7 @@ class GlobalFluxInterface(interfaces.Interface):
 
     def interactBOC(self, cycle=None):
         interfaces.Interface.interactBOC(self, cycle)
-        self.r.core.p.rxSwing = 0.0  # zero out rxSwing until EOC.
+        self.r.core.p.rxSwing = 0.0  # zero out rxSwing until last time node.
         self.r.core.p.maxDetailedDpaThisCycle = 0.0  # zero out cumulative params
         self.r.core.p.dpaFullWidthHalfMax = 0.0
         self.r.core.p.elevationOfACLP3Cycles = 0.0
@@ -102,23 +102,29 @@ class GlobalFluxInterface(interfaces.Interface):
         is up to date with the reactor state.
         """
         interfaces.Interface.interactEveryNode(self, cycle, node)
-
-        if self.r.p.timeNode == 0:
-            self._bocKeff = self.r.core.p.keff  # track boc keff for rxSwing param.
+        self._setRxSwingRelatedParams()
 
     def interactCoupled(self, iteration):
         """Runs during a tightly-coupled physics iteration to updated the flux and power."""
         interfaces.Interface.interactCoupled(self, iteration)
+        self._setRxSwingRelatedParams()
+
+    def _setRxSwingRelatedParams(self):
+        """Set Params Related to Rx Swing"""
         if self.r.p.timeNode == 0:
             self._bocKeff = self.r.core.p.keff  # track boc keff for rxSwing param.
 
-    def interactEOC(self, cycle=None):
-        interfaces.Interface.interactEOC(self, cycle)
-        if self._bocKeff is not None:
-            self.r.core.p.rxSwing = (
-                (self.r.core.p.keff - self._bocKeff)
-                / self._bocKeff
-                * units.ABS_REACTIVITY_TO_PCM
+        # A 1 burnstep cycle would have 2 nodes, and the last node would be node index 1 (first is zero)
+        lastNodeInCycle = getBurnSteps(self.cs)[self.r.p.cycle]
+        if self.r.p.timeNode == lastNodeInCycle and self._bocKeff is not None:
+            swing = (self.r.core.p.keff - self._bocKeff) / (
+                self.r.core.p.keff * self._bocKeff
+            )
+            self.r.core.p.rxSwing = swing * units.ABS_REACTIVITY_TO_PCM
+            runLog.important(
+                f"BOC Uncontrolled keff: {self._bocKeff},  "
+                f"EOC Uncontrolled keff: {self.r.core.p.keff}, "
+                f"Cycle Reactivity Swing: {self.r.core.p.rxSwing} pcm"
             )
 
     def checkEnergyBalance(self):
