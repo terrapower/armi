@@ -829,26 +829,20 @@ def computeMacroscopicGroupConstants(
     constantName : str
         Name of the reaction for which to obtain the group constants. This name should match a
         cross section name or an attribute in the collection.
-
     numberDensities : dict
         nucName keys, number density values (atoms/bn-cm) of all nuclides in the composite for which
         the macroscopic group constants are computed. See composite `getNuclideNumberDensities` method.
-
     lib : library object
         Microscopic cross section library.
-
     microSuffix : str
         Microscopic library suffix (e.g. 'AB') for this composite.
         See composite `getMicroSuffix` method.
-
     libType : str, optional
         The block attribute containing the desired microscopic XS for this block:
         either "micros" for neutron XS or "gammaXS" for gamma XS.
-
     multConstant : str, optional
         Name of constant by which the group constants will be multiplied. This name should match a
         cross section name or an attribute in the collection.
-
     multLib : library object, optional
         Microscopic cross section nuclide library to obtain the multiplier from.
         If None, same library as base cross section is used.
@@ -925,7 +919,7 @@ def _getXsMultiplier(libNuclide, multiplier, libType):
         try:
             microCollection = getattr(libNuclide, libType)
             multiplierVal = getattr(microCollection, multiplier)
-        except:  # noqa: bare-except
+        except Exception:
             multiplierVal = libNuclide.isotxsMetadata[multiplier]
     else:
         multiplierVal = 1.0

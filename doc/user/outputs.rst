@@ -248,5 +248,5 @@ still being able to faithfully reconstruct the original data. To accomplish this
 HDF5 dataset attributes to indicate when some manipulation is necessary. Writing
 such special data to the HDF5 file and reading it back again is accomplished with the
 :py:func:`armi.bookkeeping.db.database3.packSpecialData` and
-:py:func:`armi.bookkeeping.db.database3.packSpecialData`. Refer to their implementations
+:py:func:`armi.bookkeeping.db.database3.unpackSpecialData`. Refer to their implementations
 and documentation for more details.
