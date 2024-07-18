@@ -277,7 +277,7 @@ class TestCreateOperator(unittest.TestCase):
 
         # validate some more nitty-gritty operator details come from settings
         burnStepsSetting = cs["burnSteps"]
-        if type(burnStepsSetting) != list:
+        if type(burnStepsSetting) is not list:
             burnStepsSetting = [burnStepsSetting]
         self.assertEqual(o.burnSteps, burnStepsSetting)
         self.assertEqual(o.maxBurnSteps, max(burnStepsSetting))

@@ -34,7 +34,7 @@ dependencies = [
     "h5py>=3.0,<=3.9", # Needed because our database files are H5 format
     "htmltree>=0.7.6", # Our reports have HTML output
     "matplotlib>=3.5.3,<3.8.0", # Important plotting library
-    "numpy>=1.21,<=1.23.5", # Important math library
+    "numpy>=1.21", # Important math library
     "ordered-set>=3.1.1", # A useful data structure
     "pluggy>=1.2.0", # Central tool behind the ARMI Plugin system
     "pyDOE>=0.3.8", # We import a Latin-hypercube algorithm to explore a phase space
@@ -80,7 +80,7 @@ test = [
     "pytest>=7.0.0", # Our primary test tooling
     "pytest-cov>=4.0.0", # coverage plugin
     "pytest-xdist>=3.0.0", # To spread our tests over multiple CPUs
-    "ruff==0.0.272", # Linting and code formatting (version-pinned)
+    "ruff==0.5.1", # Linting and code formatting (version-pinned)
 ]
 docs = [
 #######################################################################
@@ -123,7 +123,7 @@ find = {}
 #######################################################################
 [tool.ruff]
 # This is the exact version of Ruff we use.
-required-version = "0.0.272"
+required-version = "0.5.1"
 
 # Assume Python 3.9
 target-version = "py39"
@@ -131,6 +131,34 @@ target-version = "py39"
 # Setting line-length to 120 (though blacks default is 88)
 line-length = 120
 
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pycache__",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "doc/tutorials/armi-example-app",
+    "node_modules",
+    "venv",
+]
+
+[tool.ruff.lint]
 # Enable pycodestyle (E) and Pyflakes (F) codes by default.
 # D - NumPy docstring rules
 # N801 - Class name should use CapWords convention
@@ -165,33 +193,7 @@ select = ["E", "F", "D", "N801", "SIM", "TID"]
 #
 ignore = ["D100", "D101", "D102", "D103", "D105", "D106", "D205", "D401", "D404", "E731", "RUF100", "SIM102", "SIM105", "SIM108", "SIM114", "SIM115", "SIM117", "SIM118"]
 
-# Exclude a variety of commonly ignored directories.
-exclude = [
-    ".bzr",
-    ".direnv",
-    ".eggs",
-    ".git",
-    ".git-rewrite",
-    ".hg",
-    ".mypy_cache",
-    ".nox",
-    ".pants.d",
-    ".pytype",
-    ".ruff_cache",
-    ".svn",
-    ".tox",
-    ".venv",
-    "__pycache__",
-    "__pypackages__",
-    "_build",
-    "buck-out",
-    "build",
-    "dist",
-    "node_modules",
-    "venv",
-]
-
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 # D1XX - enforces writing docstrings
 # E741 - ambiguous variable name
 # N - We have our own naming conventions for unit tests.
@@ -199,10 +201,10 @@ exclude = [
 "*/tests/*" = ["D1", "E741", "N", "SLF001"]
 "doc/gallery-src/*" = ["D400"]
 
-[tool.ruff.flake8-tidy-imports]
+[tool.ruff.lint.flake8-tidy-imports]
 ban-relative-imports = "all"
 
-[tool.ruff.pydocstyle]
+[tool.ruff.lint.pydocstyle]
 convention = "numpy"
 
 

@@ -364,7 +364,7 @@ class HistoryTrackerInterface(interfaces.Interface):
             keys = [key for key in keys if key != "loc"]
             data = dbi.getHistories(blocks, keys, timesteps)
             self._preloadedBlockHistory = data
-        except:  # noqa: bare-except
+        except Exception:
             # fails during the beginning of standard runs, but that's ok
             runLog.info(
                 "Unable to pre-load block history values due to error:"
