@@ -1208,9 +1208,7 @@ class Block(composites.Composite):
             and c.hasFlags(Flags.GAP)
             and c.getDimension("id") == 0
         )
-        if self.hasFlags([Flags.PLENUM, Flags.ACLP]) and cIsCenterGapGap:
-            return True
-        return False
+        return self.hasFlags([Flags.PLENUM, Flags.ACLP]) and cIsCenterGapGap
 
     def getPitch(self, returnComp=False):
         """
@@ -2318,7 +2316,7 @@ class HexBlock(Block):
         """
         try:
             symmetry = self.parent.spatialLocator.grid.symmetry
-        except:  # noqa: bare-except
+        except Exception:
             return 1.0
         if (
             symmetry.domain == geometry.DomainType.THIRD_CORE

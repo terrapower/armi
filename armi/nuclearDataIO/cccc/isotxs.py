@@ -327,7 +327,7 @@ class IsotxsIO(cccc.Stream):
                     self._lib[nucLabel] = nuc
                 nuclideIO = self._getNuclideIO()(nuc, self, self._lib)
                 nuclideIO.rwNuclide()
-        except:  # noqa: bare-except
+        except Exception:
             raise OSError(
                 "Failed to read/write {} \n\n\n{}".format(self, traceback.format_exc())
             )
@@ -370,8 +370,8 @@ class IsotxsIO(cccc.Stream):
 
         Notes
         -----
-        Contains isotope names, global chi distribution, energy group structure, and locations of each nuclide record
-        in the file
+        Contains isotope names, global chi distribution, energy group structure, and locations of
+        each nuclide record in the file
         """
         with self.createRecord() as record:
             # skip "merger   test..." string

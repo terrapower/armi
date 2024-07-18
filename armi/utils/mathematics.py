@@ -277,7 +277,7 @@ def getFloat(val):
     try:
         newVal = float(val)
         return newVal
-    except:  # noqa: bare-except
+    except Exception:
         return None
 
 

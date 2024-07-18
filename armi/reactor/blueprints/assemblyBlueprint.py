@@ -250,9 +250,7 @@ class AssemblyBlueprint(yamlize.Object):
         bool
             Result of the check
         """
-        if value != "" and value is not None:
-            return True
-        return False
+        return bool(value != "" and value is not None)
 
     def _createBlock(self, cs, blueprint, bDesign, axialIndex):
         """Create a block based on the block design and the axial index."""

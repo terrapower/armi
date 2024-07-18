@@ -32,10 +32,10 @@ import math
 import numpy as np
 
 from armi import runLog
-from armi.reactor.components.component import *  # noqa: undefined-local-with-import-star
-from armi.reactor.components.basicShapes import *  # noqa: undefined-local-with-import-star
-from armi.reactor.components.complexShapes import *  # noqa: undefined-local-with-import-star
-from armi.reactor.components.volumetricShapes import *  # noqa: undefined-local-with-import-star
+from armi.reactor.components.component import *  # noqa: F403
+from armi.reactor.components.basicShapes import *  # noqa: F403
+from armi.reactor.components.complexShapes import *  # noqa: F403
+from armi.reactor.components.volumetricShapes import *  # noqa: F403
 
 
 def factory(shape, bcomps, kwargs):
@@ -358,25 +358,22 @@ class DerivedShape(UnshapedComponent):
 
         Notes
         -----
-        If a parent exists, this will iterate over it and then determine
-        both the volume and area based on its context within the scope
-        of the parent object by considering the volumes and areas of
-        the surrounding components.
+        If a parent exists, this will iterate over it and then determine both the volume and area
+        based on its context within the scope of the parent object by considering the volumes and
+        areas of the surrounding components.
 
-        Since some components are volumetric shapes, this must consider the volume
-        so that it wraps around in all three dimensions.
+        Since some components are volumetric shapes, this must consider the volume so that it wraps
+        around in all three dimensions.
 
-        But there are also situations where we need to handle zero-height blocks
-        with purely 2D components. Thus we track area and volume fractions here
-        when possible.
+        But there are also situations where we need to handle zero-height blocks with purely 2D
+        components. Thus we track area and volume fractions here when possible.
         """
         if self.parent is None:
             raise ValueError(
                 f"Cannot compute volume/area of {self} without a parent object."
             )
 
-        # Determine the volume/areas of the non-derived shape components
-        # within the parent.
+        # Determine the volume/areas of the non-derived shape components within the parent.
         siblingVolume = 0.0
         siblingArea = 0.0
         for sibling in self.parent.getChildren():
@@ -391,7 +388,7 @@ class DerivedShape(UnshapedComponent):
             try:
                 if siblingArea is not None:
                     siblingArea += sibling.getArea()
-            except:  # noqa: bare-except
+            except Exception:
                 siblingArea = None
 
         remainingVolume = self.getMaxVolume() - siblingVolume

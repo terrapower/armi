@@ -224,7 +224,7 @@ def autodoc_skip_member_handler(app, what, name, obj, skip, options):
         s = str(obj).strip()
         if s.startswith("<Attribute") and "_yamlized_" in s:
             return True
-    except:  # noqa: bare-except
+    except Exception:
         pass
 
     return name.startswith("_") or name in excludes

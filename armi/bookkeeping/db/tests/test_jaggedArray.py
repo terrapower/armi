@@ -47,6 +47,48 @@ class TestJaggedArray(unittest.TestCase):
         flatArray = JaggedArray.flatten(testdata)
         self.assertEqual(flatArray, [1, 2, 3, 4, 5, None, 6, 7, 8, 9])
 
+    def test_backwardsCompatible(self):
+        """
+        Test that the new JaggedArray can unpack the old database jagged data format.
+
+        The "old" database format contains shapes and offsets for locations that have None.
+        The "new" database format only contains shapes and offsets for non-None values.
+        The "new" unpacking routine is able to read either format.
+        """
+        paramName = "test_old"
+        data = [[1, 2], None, [3, 4, 5], None, None, [6, 7, 8, 9]]
+        flattenedArray = numpy.array([1, 2, 3, 4, 5, 6, 7, 8, 9])
+        shapes = [(2,), (0,), (3,), (0,), (0,), (4,)]
+        offsets = [0, 2, 2, 5, 5, 5, 5]
+        nones = [1, 3, 4]
+        h5file = "test_oldFormat.h5"
+        with h5py.File(h5file, "w") as hf:
+            dset = hf.create_dataset(
+                data=flattenedArray,
+                name=paramName,
+            )
+            dset.attrs["jagged"] = True
+            dset.attrs["offsets"] = offsets
+            dset.attrs["shapes"] = shapes
+            dset.attrs["noneLocations"] = nones
+
+        with h5py.File(h5file, "r") as hf:
+            dataset = hf[paramName]
+            values = dataset[()]
+            offsets = dataset.attrs["offsets"]
+            shapes = dataset.attrs["shapes"]
+            nones = dataset.attrs["noneLocations"]
+
+        roundTrip = JaggedArray.fromH5(
+            values,
+            offsets,
+            shapes,
+            nones,
+            dtype=flattenedArray.dtype,
+            paramName=paramName,
+        )
+        self._compareArrays(data, roundTrip)
+
     def _compareRoundTrip(self, data, paramName):
         """Make sure that data is unchanged by packing/unpacking."""
         jaggedArray = JaggedArray(data, paramName)

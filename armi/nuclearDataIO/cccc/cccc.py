@@ -235,7 +235,7 @@ class IORecord:
             "string": lambda val: self.rwString(val, strLength),
             "double": self.rwDouble,
         }
-        action = actions.get(containedType, None)
+        action = actions.get(containedType)
         if action is None:
             raise Exception(
                 'Cannot pack or unpack the type "{}".'.format(containedType)

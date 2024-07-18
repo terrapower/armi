@@ -708,7 +708,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
                             for sbf in sBFList
                         )
                     )
-                except:  # noqa: bare-except
+                except Exception:
                     a1[block.spatialLocator.k - 1].setType(
                         a1[block.spatialLocator.k - 1].p.type, sBFList[0]
                     )
@@ -858,7 +858,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
                             for sbf in sBFList
                         )
                     )
-                except:  # noqa: bare-except
+                except Exception:
                     a1[block.spatialLocator.k - 1].setType(
                         a1[block.spatialLocator.k - 1].p.type, sBFList[0]
                     )

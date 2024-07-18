@@ -231,7 +231,7 @@ class Layout:
         try:
             self.temperatures.append((comp.inputTemperatureInC, comp.temperatureInC))
             self.material.append(comp.material.__class__.__name__)
-        except:  # noqa: bare-except
+        except Exception:
             self.temperatures.append((-900, -900))  # an impossible temperature
             self.material.append("")
 
@@ -816,7 +816,7 @@ def replaceNonesWithNonsense(
 
     try:
         data = data.astype(realType)
-    except:  # noqa: bare-except
+    except Exception:
         raise ValueError(
             "Could not coerce data for {} to {}, data:\n{}".format(
                 paramName, realType, data

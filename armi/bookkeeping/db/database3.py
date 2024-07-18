@@ -119,7 +119,8 @@ class Database3:
     `doc/user/outputs/database` for more details.
     """
 
-    timeNodeGroupPattern = re.compile(r"^c(\d\d)n(\d\d)$")
+    # Allows matching for, e.g., c01n02EOL
+    timeNodeGroupPattern = re.compile(r"^c(\d\d)n(\d\d).*$")
 
     def __init__(self, fileName: os.PathLike, permission: str):
         """
@@ -286,7 +287,7 @@ class Database3:
             try:
                 commit_hash = subprocess.check_output(["git", "describe"])
                 return commit_hash.decode("utf-8").strip()
-            except:  # noqa: bare-except
+            except Exception:
                 return unknown
         else:
             return unknown
@@ -1423,7 +1424,7 @@ class Database3:
                 if cycleNode not in hist:
                     try:
                         hist[cycleNode] = c.p[paramName]
-                    except:  # noqa: bare-except
+                    except Exception:
                         if paramName == "location":
                             hist[cycleNode] = c.spatialLocator.indices
 

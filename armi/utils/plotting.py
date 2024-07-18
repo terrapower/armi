@@ -1020,7 +1020,7 @@ def plotBlockFlux(core, fName=None, bList=None, peak=False, adjoint=False, bList
 
     try:
         G = len(core.lib.neutronEnergyUpperBounds)
-    except:  # noqa: bare-except
+    except Exception:
         runLog.warning("No ISOTXS library attached so no flux plots.")
         return
 
