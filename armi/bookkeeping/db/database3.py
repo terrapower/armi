@@ -119,7 +119,8 @@ class Database3:
     `doc/user/outputs/database` for more details.
     """
 
-    timeNodeGroupPattern = re.compile(r"^c(\d\d)n(\d\d)$")
+    # Allows matching for, e.g., c01n02EOL
+    timeNodeGroupPattern = re.compile(r"^c(\d\d)n(\d\d).*$")
 
     def __init__(self, fileName: os.PathLike, permission: str):
         """
