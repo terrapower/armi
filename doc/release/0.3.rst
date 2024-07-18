@@ -26,6 +26,7 @@ API Changes
 #. Removed unused methods: ``Reactor.getAllNuclidesIn()``, ``plotTriangleFlux()``. (`PR#1656 <https://github.com/terrapower/armi/pull/1656>`_)
 #. Removed ``armi.utils.dochelpers``; not relevant to nuclear modeling. (`PR#1662 <https://github.com/terrapower/armi/pull/1662>`_)
 #. Removing old tools created to help people convert to the current database format: ``armi.bookkeeping.db.convertDatabase()`` and ``ConvertDB``. (`PR#1658 <https://github.com/terrapower/armi/pull/1658>`_)
+#. Removing the unused method ``Case.buildCommand()``. (`PR#1773 <https://github.com/terrapower/armi/pull/1773>`_)
 #. Removed the variable ``armi.physics.neutronics.isotopicDepletion.ORDER``. (`PR#1671 <https://github.com/terrapower/armi/pull/1671>`_)
 #. Removing extraneous ``ArmiOjbect`` methods. (`PR#1667 <https://github.com/terrapower/armi/pull/1667>`_)
     * Moving ``ArmiObject.getBoronMassEnrich()`` to ``Block``.
@@ -47,7 +48,7 @@ API Changes
     * Moving ``ArmiObject.getTotalEnergyGenerationConstants`` to ``Block``.
     * Moving ``ArmiObject.getFissionEnergyGenerationConstants`` to ``Block``.
     * Moving ``ArmiObject.getCaptureEnergyGenerationConstants`` to ``Block``.
-#. Removing the parameeter ``rdIterNum``. (`PR#1704 <https://github.com/terrapower/armi/pull/1704>`_)
+#. Removing the parameter ``rdIterNum``. (`PR#1704 <https://github.com/terrapower/armi/pull/1704>`_)
 #. Removing the parameters ``outsideFuelRing`` and ``outsideFuelRingFluxFr``. (`PR#1700 <https://github.com/terrapower/armi/pull/1700>`_)
 #. Removing the setting ``doOrificedTH``. (`PR#1706 <https://github.com/terrapower/armi/pull/1706>`_)
 #. Changing the Doppler constant params to ``VOLUME_INTEGRATED``. (`PR#1659 <https://github.com/terrapower/armi/pull/1659>`_)
