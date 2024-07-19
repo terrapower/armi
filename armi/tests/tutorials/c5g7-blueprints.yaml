@@ -46,13 +46,13 @@ custom isotopics:
         input format: number densities
         H: 6.70e-2
         O: 3.35E-2
-        B: 2.87E-5
+        B: 2.78E-5
     Zr clad:
         input format: number densities
         ZR: 4.30E-2
     Al clad:
         input format: number densities
-        AL: 6.00e-2
+        AL27: 6.00e-2
     fission chamber:
         # Fission Chamber composition isn't well defined so this is a guess...
         # U235 density is based on Macros of UO2 for fission XS in group 3. Group 3
@@ -65,9 +65,8 @@ custom isotopics:
         input format: number densities
         H: 6.70e-2
         O: 3.35E-2
-        B: 2.87E-5
-        U235: 6.0e-8
-        U238: 6.0e-9
+        B: 2.78E-5
+        U235: 1.0e-8
 # end-custom-isotopics
 blocks:
     uo2: &block_uo2
