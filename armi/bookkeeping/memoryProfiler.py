@@ -340,14 +340,19 @@ class SystemAndProcessMemoryUsage:
         # directly by the standard operator and reports, so easier said than done.
         self.percentNodeRamUsed: Optional[float] = None
         self.processMemoryInMB: Optional[float] = None
+        self.processVirtualMemoryInMB: Optional[float] = None
         if _havePsutil:
             self.percentNodeRamUsed = psutil.virtual_memory().percent
             self.processMemoryInMB = psutil.Process().memory_info().rss / (1024.0**2)
+            self.processVirtualMemoryInMB = psutil.Process().memory_info().vms / (
+                1024.0**2
+            )
 
     def __isub__(self, other):
         if self.percentNodeRamUsed is not None and other.percentNodeRamUsed is not None:
             self.percentNodeRamUsed -= other.percentNodeRamUsed
             self.processMemoryInMB -= other.processMemoryInMB
+            self.processVirtualMemoryInMB -= other.processVirtualMemoryInMB
         return self
 
 
