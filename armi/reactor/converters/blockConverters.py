@@ -311,7 +311,7 @@ class MultipleComponentMerger(BlockConverter):
                 soluteName, self.solventName, minID=self.specifiedMinID
             )
         solvent = self._sourceBlock.getComponentByName(self.solventName)
-        if not solvent.__class__ is components.DerivedShape:
+        if solvent.__class__ is not components.DerivedShape:
             BlockConverter._verifyExpansion(self, self.soluteNames, solvent)
         return self._sourceBlock
 
