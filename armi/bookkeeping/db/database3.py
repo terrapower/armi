@@ -1523,7 +1523,6 @@ def packSpecialData(
     composites that are storing the parameters. For instance, if we are dealing with a
     Block parameter, the first index in the numpy array of data is the block index; so
     if each block has a parameter that is a dictionary, ``data`` would be a ndarray,
-                    offset += arr.size
     where each element is a dictionary. This routine supports a number of different
     "strange" things:
 
