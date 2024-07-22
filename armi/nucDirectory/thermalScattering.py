@@ -204,7 +204,7 @@ class ThermalScattering:
     def _genOpenMCLabel(self):
         """
         Derive the OpenMC label of a TSL.
-        
+
         Similar to ENDFB8 label generator:
         * If nuclideBases is length one and contains a ``NaturalNuclideBase``, then the
           name will be assumed to be ``Element_in_compoundName``
@@ -212,15 +212,16 @@ class ThermalScattering:
           like Fe-56 and  the label will be (for example) c_Fe56
         * If nuclideBases has length greater than one, the compoundName will form the
           entire of the label. So, if Si and O are in the bases, the compoundName must
-          be ``SiO2_alpha`` in order to get ``c_SiO2_alpha`` as a OpenMC label.
-          
+          be ``SiO2_alpha`` (note the underscore vs hyphen in ENDFB8 Label) in order to
+          get ``c_SiO2_alpha`` as an OpenMC label.
+
         Similar to ACE label generator, some labels must be provided
         by the user upon instantiation, for example:
 
         * ``c_Graphite_10p``
         * ``c_Graphite_30p``
         * ``c_Graphite``
-        
+
         """
         first = next(iter(self.nbs))
         if len(self.nbs) > 1:
@@ -275,7 +276,11 @@ def factory():
         byNbAndCompound[isotope, None] = ThermalScattering(isotope)
 
     byNbAndCompound[be, BE_METAL] = ThermalScattering(
-        be, BE_METAL, endf8Label=f"tsl-{BE_METAL}.endf", aceLabel="be-met", openmcLabel="c_Be"
+        be,
+        BE_METAL,
+        endf8Label=f"tsl-{BE_METAL}.endf",
+        aceLabel="be-met",
+        openmcLabel="c_Be",
     )
     byNbAndCompound[be, BEO] = ThermalScattering(
         be, BEO, endf8Label=BEO, aceLabel="be-beo"
@@ -293,7 +298,11 @@ def factory():
     byNbAndCompound[zr, ZRH] = ThermalScattering(zr, ZRH)
     byNbAndCompound[si, SIC] = ThermalScattering(si, SIC)
     byNbAndCompound[c, CRYSTALLINE_GRAPHITE] = ThermalScattering(
-        c, CRYSTALLINE_GRAPHITE, f"tsl-{CRYSTALLINE_GRAPHITE}.endf", "grph", "c_Graphite"
+        c,
+        CRYSTALLINE_GRAPHITE,
+        f"tsl-{CRYSTALLINE_GRAPHITE}.endf",
+        "grph",
+        "c_Graphite",
     )
     byNbAndCompound[c, GRAPHITE_10P] = ThermalScattering(
         c, GRAPHITE_10P, f"tsl-{GRAPHITE_10P}.endf", "grph10", "c_Graphite_10p"

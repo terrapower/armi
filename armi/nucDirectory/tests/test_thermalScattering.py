@@ -92,6 +92,22 @@ class TestThermalScattering(unittest.TestCase):
         fe56tsl = ts.ThermalScattering(fe56)
         self.assertEqual(fe56tsl._genACELabel(), "fe-56")
 
+    def test_OpenMCCompound(self):
+        si = nb.byName["SI"]
+        o = nb.byName["O"]
+        sio2 = ts.ThermalScattering((si, o), "SiO2_alpha")
+        self.assertEqual(sio2._genOpenMCLabel(), "c_SiO2_alpha")
+
+    def test_OpenMCElementInCompound(self):
+        hyd = nb.byName["H"]
+        hInH2O = ts.ThermalScattering(hyd, "H2O")
+        self.assertEqual(hInH2O._genOpenMCLabel(), "c_H_in_H2O")
+
+    def test_OpenMCIsotope(self):
+        fe56 = nb.byName["FE56"]
+        fe56tsl = ts.ThermalScattering(fe56)
+        self.assertEqual(fe56tsl._genOpenMCLabel(), "c_Fe56")
+
     def test_failOnMultiple(self):
         """HT9 has carbon in it with no TSL, while graphite has C with TSL. This should crash."""
         b = buildBlockWithTSL()
