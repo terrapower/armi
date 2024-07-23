@@ -81,6 +81,18 @@ class TestBlockConverter(unittest.TestCase):
         self.assertNotIn(soluteName, convertedBlock.getComponentNames())
         self._checkAreaAndComposition(block, convertedBlock)
 
+    def test_dissolveMultiple(self):
+        """Test dissolving multiple components into another."""
+        self._test_dissolve_multi(loadTestBlock(), ["wire", "clad"], "coolant")
+        self._test_dissolve_multi(loadTestBlock(), ["inner liner", "outer liner"], "clad")
+
+    def _test_dissolve_multi(self, block, soluteNames, solventName):
+        converter = blockConverters.MultipleComponentMerger(block, soluteNames, solventName)
+        convertedBlock = converter.convert()
+        for soluteName in soluteNames:
+            self.assertNotIn(soluteName, convertedBlock.getComponentNames())
+        self._checkAreaAndComposition(block, convertedBlock)
+
     def test_build_NthRing(self):
         """Test building of one ring."""
         RING = 6
