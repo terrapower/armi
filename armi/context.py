@@ -79,7 +79,7 @@ USER = getpass.getuser()
 START_TIME = time.ctime()
 
 # Set batch mode if not a TTY, which means you're on a cluster writing to a stdout file. In this
-# mode you cannot respond to prompts. (This does not work replabliy for both Windows and Linux so an
+# mode you cannot respond to prompts. (This does not work reliably for both Windows and Linux so an
 # os-specific solution is applied.)
 isatty = sys.stdout.isatty() if "win" in sys.platform else sys.stdin.isatty()
 CURRENT_MODE = Mode.INTERACTIVE if isatty else Mode.BATCH
