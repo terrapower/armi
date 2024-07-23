@@ -12,23 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for the Context module."""
+"""Serial tests for the Context module."""
 import unittest
 
 from armi import context
 
 
-class TestContext(unittest.TestCase):
-    def setUp(self):
-        pass
+class TestContextSerial(unittest.TestCase):
+    """Serial tests for the Context module."""
 
-    def test_mpiSizeAndRank(self):
+    @unittest.skipIf(context.MPI_SIZE > 1, "Serial test only")
+    def test_rank(self):
         if context.MPI_SIZE > 1:
             self.assertGreater(context.MPI_RANK, -1)
         else:
             self.assertEqual(context.MPI_RANK, 0)
             self.assertEqual(context.MPI_SIZE, 1)
 
+    @unittest.skipIf(context.MPI_SIZE > 1, "Serial test only")
     def test_nonNoneData(self):
         self.assertGreater(len(context.APP_DATA), 0)
         self.assertGreater(len(context.DOC), 0)
