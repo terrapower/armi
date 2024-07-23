@@ -567,17 +567,20 @@ class Operator:
         """
         if interactionName == "Coupled":
             cycleNodeInfo = (
-                f" - timestep: cycle {self.r.p.cycle}, node {self.r.p.timeNode}"
-                f" - iteration {self.r.core.p.coupledIteration}"
+                f" - timestep: cycle {self.r.p.cycle}, node {self.r.p.timeNode}, "
+                f"year {self.r.p.time} - iteration {self.r.core.p.coupledIteration}"
             )
         elif interactionName in ("BOC", "EOC"):
             cycleNodeInfo = f" - timestep: cycle {self.r.p.cycle}"
+            # - timestep: cycle 2
         elif interactionName in ("Init", "BOL", "EOL"):
             cycleNodeInfo = ""
         else:
             cycleNodeInfo = (
-                f" - timestep: cycle {self.r.p.cycle}, node {self.r.p.timeNode}"
+                f" - timestep: cycle {self.r.p.cycle}, node {self.r.p.timeNode}, "
+                f"year {self.r.p.time}"
             )
+
         return cycleNodeInfo
 
     def _debugDB(self, interactionName, interfaceName, statePointIndex=0):
