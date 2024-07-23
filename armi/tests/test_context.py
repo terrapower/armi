@@ -23,11 +23,8 @@ class TestContextSerial(unittest.TestCase):
 
     @unittest.skipIf(context.MPI_SIZE > 1, "Serial test only")
     def test_rank(self):
-        if context.MPI_SIZE > 1:
-            self.assertGreater(context.MPI_RANK, -1)
-        else:
-            self.assertEqual(context.MPI_RANK, 0)
-            self.assertEqual(context.MPI_SIZE, 1)
+        self.assertEqual(context.MPI_RANK, 0)
+        self.assertEqual(context.MPI_SIZE, 1)
 
     @unittest.skipIf(context.MPI_SIZE > 1, "Serial test only")
     def test_nonNoneData(self):
