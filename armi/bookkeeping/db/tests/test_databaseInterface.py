@@ -350,7 +350,8 @@ class TestDatabaseReading(unittest.TestCase):
         # than the original input file. This allows settings to be
         # changed in memory like this and survive for testing.
         newSettings = {"verbosity": "extra"}
-        newSettings["nCycles"] = 2
+        cls.nCycles = 2
+        newSettings["nCycles"] = cls.nCycles
         newSettings["burnSteps"] = 2
         o, r = loadTestReactor(customSettings=newSettings)
         reduceTestReactorRings(r, o.cs, 3)
@@ -509,6 +510,18 @@ class TestDatabaseReading(unittest.TestCase):
             numDensVec2.append(c2.p.numberDensities[k])
 
         assert_allclose(numDensVec1, numDensVec2)
+
+    def test_timesteps(self):
+        with Database3(self.dbName, "r") as db:
+            # build time steps in the DB file
+            timesteps = []
+            for cycle in range(self.nCycles):
+                for bStep in range(3):
+                    timesteps.append(f"/c0{cycle}n0{bStep}")
+            timesteps.append("/c01n02EOL")
+
+            # verify the timesteps are correct, including the EOL
+            self.assertEqual(list(db.keys()), timesteps)
 
 
 class TestBadName(unittest.TestCase):

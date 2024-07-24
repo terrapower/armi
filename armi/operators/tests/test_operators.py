@@ -207,14 +207,27 @@ class OperatorTests(unittest.TestCase):
         self.assertIn("history", interfaceNames)
         self.assertNotIn("xsGroups", interfaceNames)
 
-        # Test EOL
-        interfaces = self.o.getActiveInterfaces("EOL")
-        self.assertEqual(interfaces[-1].name, "main")
-
         # Test Coupled
         interfaces = self.o.getActiveInterfaces("Coupled")
         for test, ref in zip(interfaces, self.activeInterfaces):
             self.assertEqual(test.name, ref.name)
+
+        # Test EOL
+        interfaces = self.o.getActiveInterfaces("EOL")
+        self.assertEqual(interfaces[-1].name, "main")
+
+        # Test excludedInterfaceNames
+        excludedInterfaceNames = ["fissionProducts", "fuelHandler", "xsGroups"]
+        interfaces = self.o.getActiveInterfaces(
+            "EOL", excludedInterfaceNames=excludedInterfaceNames
+        )
+        interfaceNames = [ii.name for ii in interfaces]
+        self.assertIn("history", interfaceNames)
+        self.assertIn("main", interfaceNames)
+        self.assertIn("snapshot", interfaceNames)
+        self.assertNotIn("fissionProducts", interfaceNames)
+        self.assertNotIn("fuelHandler", interfaceNames)
+        self.assertNotIn("xsGroups", interfaceNames)
 
     def test_loadStateError(self):
         """The ``loadTestReactor()`` test tool does not have any history in the DB to load from."""
