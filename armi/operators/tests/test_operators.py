@@ -215,7 +215,6 @@ class OperatorTests(unittest.TestCase):
         # Test EOL
         interfaces = self.o.getActiveInterfaces("EOL")
         self.assertEqual(interfaces[-1].name, "main")
-        print([i.name for i in interfaces])
 
         # Test excludedInterfaceNames
         excludedInterfaceNames = ["fissionProducts", "fuelHandler", "xsGroups"]
