@@ -356,12 +356,6 @@ def defineCoreParameters():
         )
 
         pb.defParam(
-            "powerDecay",
-            units=units.WATTS,
-            description="Decay power from decaying radionuclides",
-        )
-
-        pb.defParam(
             "medAbsCore",
             units=units.EV,
             description="Median energy of neutrons absorbed in the core",
