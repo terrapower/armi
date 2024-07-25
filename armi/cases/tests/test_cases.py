@@ -234,7 +234,7 @@ class TestArmiCase(unittest.TestCase):
                 self.assertIn("Triggering BOL Event", mock.getStdout())
                 self.assertIn("xsGroups", mock.getStdout())
                 self.assertIn(
-                    "Completed EveryNode - timestep: cycle 0, node 0 Event",
+                    "Completed EveryNode - timestep: cycle 0, node 0, year 0.00 Event",
                     mock.getStdout(),
                 )
 
