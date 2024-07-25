@@ -568,7 +568,8 @@ class Operator:
         if interactionName == "Coupled":
             cycleNodeInfo = (
                 f" - timestep: cycle {self.r.p.cycle}, node {self.r.p.timeNode}, "
-                f"year {self.r.p.time} - iteration {self.r.core.p.coupledIteration}"
+                f"year {'{0:.2f}'.format(self.r.p.time)} - iteration "
+                f"{self.r.core.p.coupledIteration}"
             )
         elif interactionName in ("BOC", "EOC"):
             cycleNodeInfo = f" - timestep: cycle {self.r.p.cycle}"
@@ -578,7 +579,7 @@ class Operator:
         else:
             cycleNodeInfo = (
                 f" - timestep: cycle {self.r.p.cycle}, node {self.r.p.timeNode}, "
-                f"year {self.r.p.time}"
+                f"year {'{0:.2f}'.format(self.r.p.time)}"
             )
 
         return cycleNodeInfo
