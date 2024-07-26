@@ -326,6 +326,16 @@ class TestCompositePattern(unittest.TestCase):
         for c in self.container.getChildren():
             self.assertIsNotNone(c._lumpedFissionProducts)
 
+    def test_getLumpedFissionProductsIfNecessaryNullCase(self):
+        # build a lumped fission product collection
+        fpd = getDummyLFPFile()
+        lfps = fpd.createLFPsFromFile()
+        self.container.setChildrenLumpedFissionProducts(lfps)
+
+        # test the null case
+        result = self.container.getLumpedFissionProductsIfNecessary(None)
+        self.assertEqual(len(result), 0)
+
     def test_getIntegratedMgFlux(self):
         mgFlux = self.container.getIntegratedMgFlux()
         self.assertEqual(mgFlux, [0.0])
@@ -444,13 +454,13 @@ class TestCompositeTree(unittest.TestCase):
 
     def __init__(self, *args, **kwargs):
         unittest.TestCase.__init__(self, *args, **kwargs)
-        self.Block = None
+        self.block = None
         self.r = None
 
     def setUp(self):
-        self.Block = loadTestBlock()
-        self.r = self.Block.core.r
-        self.Block.setHeight(100.0)
+        self.block = loadTestBlock()
+        self.r = self.block.core.r
+        self.block.setHeight(100.0)
         self.refDict = {
             "U235": 0.00275173784234,
             "U238": 0.0217358415457,
@@ -462,28 +472,28 @@ class TestCompositeTree(unittest.TestCase):
             "NA23": 2e-2,
             "ZR": 0.00709003962772,
         }
-        self.Block.setNumberDensities(self.refDict)
+        self.block.setNumberDensities(self.refDict)
 
     def test_ordering(self):
         a = assemblies.Assembly("dummy")
         a.spatialGrid = grids.axialUnitGrid(2, armiObject=a)
-        otherBlock = deepcopy(self.Block)
-        a.add(self.Block)
+        otherBlock = deepcopy(self.block)
+        a.add(self.block)
         a.add(otherBlock)
-        self.assertTrue(self.Block < otherBlock)
-        locator = self.Block.spatialLocator
-        self.Block.spatialLocator = otherBlock.spatialLocator
+        self.assertTrue(self.block < otherBlock)
+        locator = self.block.spatialLocator
+        self.block.spatialLocator = otherBlock.spatialLocator
         otherBlock.spatialLocator = locator
-        self.assertTrue(otherBlock < self.Block)
+        self.assertTrue(otherBlock < self.block)
 
     def test_summing(self):
         a = assemblies.Assembly("dummy")
         a.spatialGrid = grids.axialUnitGrid(2, armiObject=a)
-        otherBlock = deepcopy(self.Block)
-        a.add(self.Block)
+        otherBlock = deepcopy(self.block)
+        a.add(self.block)
         a.add(otherBlock)
 
-        b = self.Block + otherBlock
+        b = self.block + otherBlock
         self.assertEqual(len(b), 26)
         self.assertFalse(b[0].is3D)
         self.assertIn("Circle", str(b[0]))
@@ -501,7 +511,7 @@ class TestCompositeTree(unittest.TestCase):
         The getNuclides should return all keys that have ever been in this block, including values
         that are at trace.
         """
-        cur = self.Block.getNuclides()
+        cur = self.block.getNuclides()
         ref = self.refDict.keys()
         for key in ref:
             self.assertIn(key, cur)
@@ -536,9 +546,9 @@ class TestCompositeTree(unittest.TestCase):
     def test_getHMMass(self):
         fuelDims = {"Tinput": 273.0, "Thot": 273.0, "od": 0.76, "id": 0.0, "mult": 1.0}
         self.fuelComponent = components.Circle("fuel", "UZr", **fuelDims)
-        self.Block.add(self.fuelComponent)
+        self.block.add(self.fuelComponent)
 
-        self.Block.clearNumberDensities()
+        self.block.clearNumberDensities()
         self.refDict = {
             "U235": 0.00275173784234,
             "U238": 0.0217358415457,
@@ -550,14 +560,14 @@ class TestCompositeTree(unittest.TestCase):
             "NA23": 2e-2,
             "ZR": 0.00709003962772,
         }
-        self.Block.setNumberDensities(self.refDict)
+        self.block.setNumberDensities(self.refDict)
 
-        cur = self.Block.getHMMass()
+        cur = self.block.getHMMass()
 
         mass = 0.0
         for nucName in self.refDict.keys():
             if nucDir.isHeavyMetal(nucName):
-                mass += self.Block.getMass(nucName)
+                mass += self.block.getMass(nucName)
 
         places = 6
         self.assertAlmostEqual(cur, mass, places=places)
@@ -566,28 +576,28 @@ class TestCompositeTree(unittest.TestCase):
         fuelDims = {"Tinput": 273.0, "Thot": 273.0, "od": 0.76, "id": 0.0, "mult": 1.0}
         self.fuelComponent = components.Circle("fuel", "UZr", **fuelDims)
         self.fuelComponent.material.setMassFrac("LFP38", 0.25)
-        self.Block.add(self.fuelComponent)
+        self.block.add(self.fuelComponent)
 
         refDict = {"LFP35": 0.1, "LFP38": 0.05, "LFP39": 0.7}
         self.fuelComponent.setNumberDensities(refDict)
 
-        cur = self.Block.getFPMass()
+        cur = self.block.getFPMass()
 
         mass = 0.0
         for nucName in refDict.keys():
-            mass += self.Block.getMass(nucName)
+            mass += self.block.getMass(nucName)
         ref = mass
 
         places = 6
         self.assertAlmostEqual(cur, ref, places=places)
 
     def test_getFissileMass(self):
-        cur = self.Block.getFissileMass()
+        cur = self.block.getFissileMass()
 
         mass = 0.0
         for nucName in self.refDict.keys():
             if nucName in nuclideBases.NuclideBase.fissile:
-                mass += self.Block.getMass(nucName)
+                mass += self.block.getMass(nucName)
         ref = mass
 
         places = 6
@@ -600,12 +610,12 @@ class TestCompositeTree(unittest.TestCase):
             :id: T_ARMI_CMP_PARAMS0
             :tests: R_ARMI_CMP_PARAMS
         """
-        for ci, c in enumerate(self.Block):
+        for ci, c in enumerate(self.block):
             if isinstance(c, basicShapes.Circle):
                 c.p.id = ci
                 lastSeen = c
                 lastIndex = ci
-        cMax, comp = self.Block.getMaxParam("id", returnObj=True)
+        cMax, comp = self.block.getMaxParam("id", returnObj=True)
         self.assertEqual(cMax, lastIndex)
         self.assertIs(comp, lastSeen)
 
@@ -616,12 +626,12 @@ class TestCompositeTree(unittest.TestCase):
             :id: T_ARMI_CMP_PARAMS1
             :tests: R_ARMI_CMP_PARAMS
         """
-        for ci, c in reversed(list(enumerate(self.Block))):
+        for ci, c in reversed(list(enumerate(self.block))):
             if isinstance(c, basicShapes.Circle):
                 c.p.id = ci
                 lastSeen = c
                 lastIndex = ci
-        cMax, comp = self.Block.getMinParam("id", returnObj=True)
+        cMax, comp = self.block.getMinParam("id", returnObj=True)
         self.assertEqual(cMax, lastIndex)
         self.assertIs(comp, lastSeen)
 
