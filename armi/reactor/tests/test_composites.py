@@ -311,6 +311,21 @@ class TestCompositePattern(unittest.TestCase):
         self.assertEqual(len(numDens), 9)
         self.assertEqual(numDens["MO99"], 0)
 
+    def test_setChildrenLumpedFissionProducts(self):
+        # build a lumped fission product collection
+        fpd = getDummyLFPFile()
+        lfps = fpd.createLFPsFromFile()
+
+        # validate that the LFP collection is None
+        self.container.setChildrenLumpedFissionProducts(None)
+        for c in self.container.getChildren():
+            self.assertIsNone(c._lumpedFissionProducts)
+
+        # validate that the LFP collection is not None
+        self.container.setChildrenLumpedFissionProducts(lfps)
+        for c in self.container.getChildren():
+            self.assertIsNotNone(c._lumpedFissionProducts)
+
     def test_getIntegratedMgFlux(self):
         mgFlux = self.container.getIntegratedMgFlux()
         self.assertEqual(mgFlux, [0.0])
