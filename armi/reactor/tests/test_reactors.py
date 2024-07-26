@@ -384,6 +384,11 @@ class HexReactorTests(ReactorTests):
         expectedSuffixes = ["AA"]
         self.assertListEqual(expectedSuffixes, actualSuffixes)
 
+    def test_genBlocksByLocName(self):
+        self.r.core.genBlocksByLocName()
+        self.assertGreater(len(self.r.core.blocksByLocName), 300)
+        self.assertIn("009-009-004", self.r.core.blocksByLocName)
+
     def test_countBlocksOfType(self):
         numControlBlocks = self.r.core.countBlocksWithFlags([Flags.DUCT, Flags.CONTROL])
 
