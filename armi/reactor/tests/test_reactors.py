@@ -389,6 +389,11 @@ class HexReactorTests(ReactorTests):
         self.assertGreater(len(self.r.core.blocksByLocName), 300)
         self.assertIn("009-009-004", self.r.core.blocksByLocName)
 
+    def test_setPitchUniform(self):
+        self.r.core.setPitchUniform(0.0)
+        for b in self.r.core.getBlocks():
+            self.assertEqual(b.getPitch(), 0.0)
+
     def test_countBlocksOfType(self):
         numControlBlocks = self.r.core.countBlocksWithFlags([Flags.DUCT, Flags.CONTROL])
 
