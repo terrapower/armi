@@ -326,6 +326,21 @@ class TestCompositePattern(unittest.TestCase):
         for c in self.container.getChildren():
             self.assertIsNotNone(c._lumpedFissionProducts)
 
+    def test_requiresLumpedFissionProducts(self):
+        # build a lumped fission product collection
+        fpd = getDummyLFPFile()
+        lfps = fpd.createLFPsFromFile()
+        self.container.setChildrenLumpedFissionProducts(lfps)
+
+        # test the null case
+        result = self.container.requiresLumpedFissionProducts(None)
+        self.assertFalse(result)
+
+        # test the usual case
+        nuclides = self.container.getNuclides()
+        result = self.container.requiresLumpedFissionProducts(nuclides)
+        self.assertFalse(result)
+
     def test_getLumpedFissionProductsIfNecessaryNullCase(self):
         # build a lumped fission product collection
         fpd = getDummyLFPFile()
