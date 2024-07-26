@@ -1221,6 +1221,10 @@ class Block_TestCase(unittest.TestCase):
             ],
         )
 
+        # test edge case
+        cur = self.block.getComponentsOfMaterial(None, "UZr")
+        self.assertEqual(cur[0], ref)
+
     def test_getComponentByName(self):
         """Test children by name.
 
