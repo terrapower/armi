@@ -1316,11 +1316,11 @@ def calcReactionRatesBlockList(objList, keff, xsNucDict):
     Compute 1-group reaction rates for the objcects in objList (usually a block)
     """
 
-    rate = {}
-    for simple in RX_PARAM_NAMES:
-        rate[simple] = 0.0
-
     for obj in objList:
+        rate = {}
+        for simple in RX_PARAM_NAMES:
+            rate[simple] = 0.0
+
         numberDensities = obj.getNumberDensities()
         try:
             mgFlux = numpy.array(obj.getMgFlux())
