@@ -780,6 +780,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
             newAssem,
             paramMapper,
             mapNumberDensities,
+            calcReactionRates=False,
         )
         return newAssem
 
