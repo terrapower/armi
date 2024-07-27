@@ -16,24 +16,20 @@
 and/or photon flux.
 """
 import math
+from collections import defaultdict
 from typing import Dict, Optional
 
 import numpy
 import scipy.integrate
 
-from armi import interfaces
-from armi import runLog
-from armi.physics import constants
-from armi.physics import executers
-from armi.physics import neutronics
-from armi.reactor import geometry
-from armi.reactor import reactors
+from armi import interfaces, runLog
+from armi.physics import constants, executers, neutronics
+from armi.reactor import geometry, reactors
 from armi.reactor.blocks import Block
-from armi.reactor.converters import geometryConverters
-from armi.reactor.converters import uniformMesh
+from armi.reactor.converters import geometryConverters, uniformMesh
 from armi.reactor.flags import Flags
 from armi.settings.caseSettings import Settings
-from armi.utils import units, codeTiming, getMaxBurnSteps, getBurnSteps
+from armi.utils import codeTiming, getBurnSteps, getMaxBurnSteps, units
 
 ORDER = interfaces.STACK_ORDER.FLUX
 
@@ -499,9 +495,9 @@ class GlobalFluxOptions(executers.ExecutionOptions):
             CONF_XS_KERNEL,
         )
         from armi.settings.fwSettings.globalSettings import (
-            CONF_PHYSICS_FILES,
-            CONF_NON_UNIFORM_ASSEM_FLAGS,
             CONF_DETAILED_AXIAL_EXPANSION,
+            CONF_NON_UNIFORM_ASSEM_FLAGS,
+            CONF_PHYSICS_FILES,
         )
 
         self.kernelName = cs[CONF_NEUTRONICS_KERNEL]
@@ -1313,6 +1309,56 @@ def computeDpaRate(mgFlux, dpaXs):
         dpaPerSecond = 0.0
 
     return dpaPerSecond
+
+
+def calcReactionRatesBlockList(objList, keff, xsNucDict):
+    r"""
+    Compute 1-group reaction rates for the objcects in objList (usually a block)
+    """
+
+    rate = {}
+    for simple in RX_PARAM_NAMES:
+        rate[simple] = 0.0
+
+    for obj in objList:
+        numberDensities = obj.getNumberDensities()
+        mgFlux = numpy.array(obj.getMgFlux())
+
+        for nucName, numberDensity in numberDensities.items():
+            if numberDensity == 0.0:
+                continue
+            nucrate = {}
+            for simple in RX_PARAM_NAMES:
+                nucrate[simple] = 0.0
+
+            micros = xsNucDict[nucName].micros
+
+            # absorption is fission + capture (no n2n here)
+            for name in RX_ABS_MICRO_LABELS:
+                volumetricRR = numberDensity * mgFlux.dot(micros[name])
+                nucrate["rateAbs"] = volumetricRR
+                if name != "fission":
+                    nucrate["rateCap"] += volumetricRR
+                else:
+                    nucrate["rateFis"] += volumetricRR
+                    # scale nu by keff.
+                    nusigmaF = micros["fission"] * micros.neutronsPerFission
+                    nucrate["rateProdFis"] += (
+                        numberDensity * mgFlux.dot(nusigmaF) / keff
+                    )
+
+            nucrate["rateProdN2n"] += 2.0 * numberDensity * mgFlux.dot(micros.n2n)
+
+            for simple in RX_PARAM_NAMES:
+                if nucrate[simple]:
+                    rate[simple] += nucrate[simple]
+
+        for paramName, val in rate.items():
+            obj.p[paramName] = val  # put in #/cm^3/s
+
+        vFuel = obj.getComponentAreaFrac(Flags.FUEL) if rate["rateFis"] > 0.0 else 1.0
+        obj.p.fisDens = rate["rateFis"] / vFuel
+        obj.p.fisDensHom = rate["rateFis"]
 
 
 def calcReactionRates(obj, keff, lib):
