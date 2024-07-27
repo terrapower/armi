@@ -1322,7 +1322,10 @@ def calcReactionRatesBlockList(objList, keff, xsNucDict):
 
     for obj in objList:
         numberDensities = obj.getNumberDensities()
-        mgFlux = numpy.array(obj.getMgFlux())
+        try:
+            mgFlux = numpy.array(obj.getMgFlux())
+        except TypeError:
+            continue
 
         for nucName, numberDensity in numberDensities.items():
             if numberDensity == 0.0:

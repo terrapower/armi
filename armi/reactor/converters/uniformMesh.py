@@ -1102,7 +1102,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
         if self.calcReactionRates:
             self._calculateReactionRatesEfficient(
-                destReactor.core.lib, sourceReactor.core.p.keff
+                destReactor.core, sourceReactor.core.p.keff
             )
 
         # Clear the cached data after it has been mapped to prevent issues with
@@ -1110,20 +1110,22 @@ class UniformMeshGeometryConverter(GeometryConverter):
         self._cachedReactorCoreParamData = {}
 
     @staticmethod
-    def _calculateReactionRatesEfficient(lib, keff):
+    def _calculateReactionRatesEfficient(core, keff):
         """
         First, sort blocks into groups by XS type. Then, we just need to grab micros for each XS type once.
 
         Iterate over list of blocks with the given XS type; calculate reaction rates for these blocks
         """
+        from armi.physics.neutronics.globalFlux import globalFluxInterface
+
         xsTypeGroups = collections.defaultdict(list)
-        for b in self.r.core.getBlocks():
+        for b in core.getBlocks():
             xsTypeGroups[b.getMicroSuffix()].append(b)
 
         for xsID, blockList in xsTypeGroups.items():
             xsNucDict = {
-                nuclide.name: self.r.core.lib.getNuclide(nuclide.name, xsID)
-                for nuclide in self.r.core.lib.getNuclides(xsID)
+                nuclide.name: core.lib.getNuclide(nuclide.name, xsID)
+                for nuclide in core.lib.getNuclides(xsID)
             }
             globalFluxInterface.calcReactionRatesBlockList(blockList, keff, xsNucDict)
 
