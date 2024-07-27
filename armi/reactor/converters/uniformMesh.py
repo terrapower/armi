@@ -1097,11 +1097,13 @@ class UniformMeshGeometryConverter(GeometryConverter):
                     aDest,
                     self.paramMapper,
                     mapNumberDensities,
-                    calcReactionRates=False
+                    calcReactionRates=False,
                 )
 
         if self.calcReactionRates:
-            self._calculateReactionRatesEfficient(destReactor.core.lib, sourceReactor.core.keff)
+            self._calculateReactionRatesEfficient(
+                destReactor.core.lib, sourceReactor.core.p.keff
+            )
 
         # Clear the cached data after it has been mapped to prevent issues with
         # holding on to block data long-term.
@@ -1117,7 +1119,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
         xsTypeGroups = collections.defaultdict(list)
         for b in self.r.core.getBlocks():
             xsTypeGroups[b.getMicroSuffix()].append(b)
-
 
         for xsID, blockList in xsTypeGroups.items():
             xsNucDict = {
