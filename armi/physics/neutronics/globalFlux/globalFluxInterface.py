@@ -1339,7 +1339,7 @@ def calcReactionRatesBlockList(objList, keff, xsNucDict):
             # absorption is fission + capture (no n2n here)
             for name in RX_ABS_MICRO_LABELS:
                 volumetricRR = numberDensity * mgFlux.dot(micros[name])
-                nucrate["rateAbs"] = volumetricRR
+                nucrate["rateAbs"] += volumetricRR
                 if name != "fission":
                     nucrate["rateCap"] += volumetricRR
                 else:
