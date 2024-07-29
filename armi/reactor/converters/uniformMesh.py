@@ -904,8 +904,8 @@ class UniformMeshGeometryConverter(GeometryConverter):
                 )
             core = sourceAssembly.getAncestor(lambda c: isinstance(c, Core))
             if core is not None:
-                UniformMeshGeometryConverter._calculateReactionRatesEfficient(
-                    core, keff=core.p.keff
+                UniformMeshGeometryConverter._calculateReactionRates(
+                    lib=core.lib, keff=core.p.keff, assem=destinationAssembly
                 )
             else:
                 runLog.warning(
@@ -1100,6 +1100,8 @@ class UniformMeshGeometryConverter(GeometryConverter):
                     calcReactionRates=False,
                 )
 
+        # If requested, the reaction rates will be calculated based on the
+        # mapped neutron flux and the XS library.
         if self.calcReactionRates:
             self._calculateReactionRatesEfficient(
                 destReactor.core, sourceReactor.core.p.keff
@@ -1169,10 +1171,9 @@ class UniformMeshGeometryConverter(GeometryConverter):
                     self.convReactor.core.lib, self.convReactor.core.p.keff, assem
                 )
         else:
-            for assem in self.convReactor.core.getAssemblies():
-                self._calculateReactionRatesEfficient(
-                    self.convReactor.core, self.convReactor.core.p.keff
-                )
+            self._calculateReactionRatesEfficient(
+                self.convReactor.core, self.convReactor.core.p.keff
+            )
 
 
 class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
