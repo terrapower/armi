@@ -905,7 +905,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
             core = sourceAssembly.getAncestor(lambda c: isinstance(c, Core))
             if core is not None:
                 UniformMeshGeometryConverter._calculateReactionRatesEfficient(
-                    lib=core.lib, keff=core.p.keff, assem=destinationAssembly
+                    core, keff=core.p.keff
                 )
             else:
                 runLog.warning(
@@ -1171,7 +1171,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
         else:
             for assem in self.convReactor.core.getAssemblies():
                 self._calculateReactionRatesEfficient(
-                    self.convReactor.core.lib, self.convReactor.core.p.keff, assem
+                    self.convReactor.core, self.convReactor.core.p.keff
                 )
 
 
