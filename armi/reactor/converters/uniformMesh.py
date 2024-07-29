@@ -1097,7 +1097,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
                     aDest,
                     self.paramMapper,
                     mapNumberDensities,
-                    calcReactionRates=self.calcReactionRates,
+                    calcReactionRates=False,
                 )
 
         if self.calcReactionRates:
