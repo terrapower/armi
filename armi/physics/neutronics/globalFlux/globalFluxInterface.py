@@ -16,7 +16,6 @@
 and/or photon flux.
 """
 import math
-from collections import defaultdict
 from typing import Dict, Optional
 
 import numpy
