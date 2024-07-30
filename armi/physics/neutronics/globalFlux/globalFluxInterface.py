@@ -1313,9 +1313,32 @@ def computeDpaRate(mgFlux, dpaXs):
 
 def calcReactionRatesBlockList(objList, keff, xsNucDict):
     r"""
-    Compute 1-group reaction rates for the objcects in objList (usually a block)
-    """
+    Compute 1-group reaction rates for the objcects in objList (usually a block).
 
+    Parameters
+    ----------
+    objList : List[Block]
+        The list of objects to compute reaction rates on. Notionally this could be upgraded to be
+        any kind of ArmiObject but with params defined as they are it currently is only
+        implemented for a block.
+
+    keff : float
+        The keff of the core. This is required to get the neutron production rate correct
+        via the neutron balance statement (since nuSigF has a 1/keff term).
+
+    xsNucDict: Dict[str, XSNuclide]
+        Microscopic cross sections to use in computing the reaction rates.
+
+    .. impl:: Return the reaction rates for a given ArmiObject
+        :id: I_ARMI_FLUX_RX_RATES_BY_XS_ID
+        :implements: R_ARMI_FLUX_RX_RATES
+
+        This is an alternative implementation of :need:`I_ARMI_FLUX_RX_RATES` that
+        is more efficient when computing reaction rates for a large set of blocks
+        that share a common set of microscopic cross sections.
+
+        Fore more detail on the reation rate calculations, see :need:`I_ARMI_FLUX_RX_RATES`.
+    """
     for obj in objList:
         rate = {}
         for simple in RX_PARAM_NAMES:
