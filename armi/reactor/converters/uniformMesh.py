@@ -1121,16 +1121,14 @@ class UniformMeshGeometryConverter(GeometryConverter):
         from armi.physics.neutronics.globalFlux import globalFluxInterface
 
         xsTypeGroups = collections.defaultdict(list)
-        nucSet = set()
         for b in core.getBlocks():
             xsTypeGroups[b.getMicroSuffix()].append(b)
-            nucSet.update(
-                nuc for nuc, ndens in b.getNumberDensities().items() if ndens > 0.0
-            )
 
-        nucList = sorted(nucSet)
         for xsID, blockList in xsTypeGroups.items():
-            xsNucDict = {nuc: core.lib.getNuclide(nuc, xsID) for nuc in nucList}
+            xsNucDict = {
+                nuclide.name: core.lib.getNuclide(nuclide.name, xsID)
+                for nuclide in core.lib.getNuclides(xsID)
+            }
             globalFluxInterface.calcReactionRatesBlockList(blockList, keff, xsNucDict)
 
     @staticmethod
