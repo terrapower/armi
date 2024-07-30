@@ -1124,14 +1124,11 @@ class UniformMeshGeometryConverter(GeometryConverter):
         nucSet = set()
         for b in core.getBlocks():
             xsTypeGroups[b.getMicroSuffix()].append(b)
-            nucSet.add(b.getNuclides())
+            nucSet.update(b.getNuclides())
 
         nucList = sorted(nucSet)
         for xsID, blockList in xsTypeGroups.items():
-            xsNucDict = {
-                nuc: core.lib.getNuclide(nuc, xsID)
-                for nuc in nucList
-            }
+            xsNucDict = {nuc: core.lib.getNuclide(nuc, xsID) for nuc in nucList}
             globalFluxInterface.calcReactionRatesBlockList(blockList, keff, xsNucDict)
 
     @staticmethod
