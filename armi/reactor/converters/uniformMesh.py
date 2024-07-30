@@ -1128,9 +1128,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
             nucSet = set()
             for b in blockList:
                 nucSet.update(
-                    nuc
-                    for nuc, ndens in b.getNumberDensities().items()
-                    if ndens > 0.0
+                    nuc for nuc, ndens in b.getNumberDensities().items() if ndens > 0.0
                 )
             nucList = sorted(nucSet)
             xsNucDict = {nuc: core.lib.getNuclide(nuc, xsID) for nuc in nucList}
