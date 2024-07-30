@@ -1356,7 +1356,12 @@ def calcReactionRatesBlockList(objList, keff, xsNucDict):
             for simple in RX_PARAM_NAMES:
                 nucrate[simple] = 0.0
 
-            micros = xsNucDict[nucName].micros
+            try:
+                micros = xsNucDict[nucName].micros
+            except KeyError:
+                errorMsg = f"Micro XS not available for {nucName} found in {obj}!"
+                runLog.error(errorMsg)
+                raise ValueError(errorMsg)
 
             # absorption is fission + capture (no n2n here)
             for name in RX_ABS_MICRO_LABELS:
