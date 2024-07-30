@@ -22,7 +22,7 @@ build with the most up-to-date code.
 
 Building the documentation
 ==========================
-Before building documentation, ensure that you have installed the test requirements into
+Before building documentation, ensure that you have installed the documentation requirements into
 your ARMI virtual environment with::
 
     pip install -e .[docs]
