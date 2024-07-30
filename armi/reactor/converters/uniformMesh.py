@@ -1124,7 +1124,11 @@ class UniformMeshGeometryConverter(GeometryConverter):
         nucSet = set()
         for b in core.getBlocks():
             xsTypeGroups[b.getMicroSuffix()].append(b)
-            nucSet.update(b.getNuclides())
+            nucSet.update(
+                nuc
+                for nuc, ndens in b.getNumberDensities().items()
+                if ndens > 0.0
+            )
 
         nucList = sorted(nucSet)
         for xsID, blockList in xsTypeGroups.items():
