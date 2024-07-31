@@ -113,7 +113,7 @@ here is to help track all the important changes that happened in ARMI, so ARMI c
 has changed during the next `release <https://github.com/terrapower/armi/releases>`_. To that end,
 minor PRs won't require a release note.
 
-In particular, in the release notes, you will find four sections in the releasee notes:
+In particular, in the release notes, you will find four sections in the release notes:
 
 1. **New Features** - A new feature (or major addition to a current feature) was added to the code.
 2. **API Changes** - ANY breaking change to the public-facing API of ARMI. (A breaking change is
@@ -148,7 +148,7 @@ like unit testing or building documentation.
 Third-Party Licensing
 ---------------------
 Be careful when including any dependency in ARMI (say in the ``pyproject.toml`` file) not
-to include anything with a license that superceeds our Apache license. For instance,
+to include anything with a license that supercedes our Apache license. For instance,
 any third-party Python library included in ARMI with a GPL license will make the whole
 project fall under the GPL license. But a lot of potential users of ARMI will want to
 keep some of their work private, so we can't allow any GPL tools.
@@ -165,7 +165,7 @@ might look like ``0.1.7``, ``1.0.0``, or ``12.3.123``. Each number has a specifi
 * ``minor`` - Revved when we decide the code or our API has reached a stable point.
 * ``bump`` - Revved every time we modify the API, and any other time we want.
 
-**NOTE**: Changes to documenation or testing probably do not deserve a version bump.
+**NOTE**: Changes to documentation or testing probably do not deserve a version bump.
 
 **Any change to a major or minor version is considered a release.**
 
