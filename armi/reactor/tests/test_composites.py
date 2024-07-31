@@ -337,9 +337,12 @@ class TestCompositePattern(unittest.TestCase):
         self.assertFalse(result)
 
         # test the usual case
-        nuclides = self.container.getNuclides()
-        result = self.container.requiresLumpedFissionProducts(nuclides)
+        result = self.container.requiresLumpedFissionProducts(set())
         self.assertFalse(result)
+
+        # test a positive case
+        result = self.container.requiresLumpedFissionProducts(["LFP35"])
+        self.assertTrue(result)
 
     def test_getLumpedFissionProductsIfNecessaryNullCase(self):
         # build a lumped fission product collection
