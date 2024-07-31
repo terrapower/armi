@@ -20,7 +20,6 @@ from unittest.mock import patch
 import numpy
 
 from armi import runLog, settings
-from armi.nucDirectory import nuclideBases
 from armi.nuclearDataIO.cccc import isotxs
 from armi.physics.neutronics.globalFlux import globalFluxInterface
 from armi.physics.neutronics.settings import (
