@@ -1100,12 +1100,12 @@ class UniformMeshGeometryConverter(GeometryConverter):
                     calcReactionRates=False,
                 )
 
-        # If requested, the reaction rates will be calculated based on the
-        # mapped neutron flux and the XS library.
-        if self.calcReactionRates:
-            self._calculateReactionRatesEfficient(
-                destReactor.core, sourceReactor.core.p.keff
-            )
+            # If requested, the reaction rates will be calculated based on the
+            # mapped neutron flux and the XS library.
+            if self.calcReactionRates:
+                self._calculateReactionRatesEfficient(
+                    destReactor.core, sourceReactor.core.p.keff
+                )
 
         # Clear the cached data after it has been mapped to prevent issues with
         # holding on to block data long-term.
