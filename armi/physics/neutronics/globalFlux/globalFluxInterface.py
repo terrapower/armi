@@ -1233,20 +1233,6 @@ def computeDpaRate(mgFlux, dpaXs):
     r"""
     Compute the DPA rate incurred by exposure of a certain flux spectrum.
 
-    Parameters
-    ----------
-    mgFlux : list
-        multigroup neutron flux in #/cm^2/s
-
-    dpaXs : list
-        DPA cross section in barns to convolute with flux to determine DPA rate
-
-    Returns
-    -------
-    dpaPerSecond : float
-        The dpa/s in this material due to this flux
-
-
     .. impl:: Compute DPA rates.
         :id: I_ARMI_FLUX_DPA
         :implements: R_ARMI_FLUX_DPA
@@ -1279,11 +1265,23 @@ def computeDpaRate(mgFlux, dpaXs):
         the number density of the structural material cancels out. It's in the macroscopic
         cross-section and in the original number of atoms.
 
+    Parameters
+    ----------
+    mgFlux : list
+        multigroup neutron flux in #/cm^2/s
+
+    dpaXs : list
+        DPA cross section in barns to convolute with flux to determine DPA rate
+
+    Returns
+    -------
+    dpaPerSecond : float
+        The dpa/s in this material due to this flux
+
     Raises
     ------
     RuntimeError
        Negative dpa rate.
-
     """
     displacements = 0.0
     if len(mgFlux) != len(dpaXs):
@@ -1319,20 +1317,6 @@ def calcReactionRates(obj, keff, lib):
     r"""
     Compute 1-group reaction rates for this object (usually a block).
 
-    Parameters
-    ----------
-    obj : Block
-        The object to compute reaction rates on. Notionally this could be upgraded to be
-        any kind of ArmiObject but with params defined as they are it currently is only
-        implemented for a block.
-
-    keff : float
-        The keff of the core. This is required to get the neutron production rate correct
-        via the neutron balance statement (since nuSigF has a 1/keff term).
-
-    lib : XSLibrary
-        Microscopic cross sections to use in computing the reaction rates.
-
     .. impl:: Return the reaction rates for a given ArmiObject
         :id: I_ARMI_FLUX_RX_RATES
         :implements: R_ARMI_FLUX_RX_RATES
@@ -1366,6 +1350,20 @@ def calcReactionRates(obj, keff, lib):
 
             \sigma_g = \frac{\int_{E g}^{E_{g+1}} \phi(E)  \sigma(E)
             dE}{\int_{E_g}^{E_{g+1}} \phi(E) dE}
+
+    Parameters
+    ----------
+    obj : Block
+        The object to compute reaction rates on. Notionally this could be upgraded to be
+        any kind of ArmiObject but with params defined as they are it currently is only
+        implemented for a block.
+
+    keff : float
+        The keff of the core. This is required to get the neutron production rate correct
+        via the neutron balance statement (since nuSigF has a 1/keff term).
+
+    lib : XSLibrary
+        Microscopic cross sections to use in computing the reaction rates.
     """
     rate = {}
     for simple in RX_PARAM_NAMES:
