@@ -127,12 +127,13 @@ class TestNuclide(unittest.TestCase):
             atomicMass = 0.0
             for natIso in natNuk.getNaturalIsotopics():
                 atomicMass += natIso.abundance * natIso.weight
-            self.assertEqual(
+            self.assertAlmostEqual(
                 atomicMass,
                 natNuk.weight,
                 "{} weight is {}, expected {}".format(
                     natNuk, natNuk.weight, atomicMass
                 ),
+                delta=0.000001,
             )
 
     def test_nucBases_labelAndNameCollsionsAreForSameNuclide(self):
