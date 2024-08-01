@@ -44,16 +44,15 @@ Or change the log level the same way:
 
     runLog.setVerbosity('debug')
 """
-from glob import glob
 import collections
 import logging
 import operator
 import os
 import sys
 import time
+from glob import glob
 
 from armi import context
-
 
 # global constants
 _ADD_LOG_METHOD_STR = """def {0}(self, message, *args, **kws):
@@ -355,7 +354,8 @@ def concatenateLogs(logDir=None):
         prefix = STDOUT_LOGGER_NAME + "."
         if stdoutFile[0 : len(prefix)] == prefix:
             caseTitle = stdoutFile.split(".")[-3]
-            break
+            if len(caseTitle) > 0:
+                break
 
     combinedLogName = os.path.join(logDir, "{}-mpi.log".format(caseTitle))
     with open(combinedLogName, "w") as workerLog:
