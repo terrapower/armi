@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests of the runLog tooling."""
-from io import StringIO
-from shutil import rmtree
 import logging
 import os
 import unittest
+from io import StringIO
+from shutil import rmtree
 
 from armi import runLog
 from armi.tests import mockRunLogs
@@ -388,8 +388,16 @@ class TestRunLog(unittest.TestCase):
             with open(stdoutFile2, "w") as f:
                 f.write("hello other world\n")
 
+            # verify behavior for a corner case
+            stdoutFile3 = os.path.join(
+                logDir, "{}..0000.stdout".format(runLog.STDOUT_LOGGER_NAME)
+            )
+            with open(stdoutFile3, "w") as f:
+                f.write("hello world again\n")
+
             self.assertTrue(os.path.exists(stdoutFile1))
             self.assertTrue(os.path.exists(stdoutFile2))
+            self.assertTrue(os.path.exists(stdoutFile3))
 
             # create a stderr file
             stderrFile = os.path.join(
@@ -408,7 +416,21 @@ class TestRunLog(unittest.TestCase):
             self.assertTrue(os.path.exists(combinedLogFile))
             self.assertFalse(os.path.exists(stdoutFile1))
             self.assertFalse(os.path.exists(stdoutFile2))
+            self.assertFalse(os.path.exists(stdoutFile3))
             self.assertFalse(os.path.exists(stderrFile))
+
+            # verify behavior for a corner case
+            stdoutFile3 = os.path.join(
+                logDir, "{}..0000.stdout".format(runLog.STDOUT_LOGGER_NAME)
+            )
+            with open(stdoutFile3, "w") as f:
+                f.write("hello world again\n")
+            # concat logs
+            runLog.concatenateLogs(logDir=logDir)
+            # verify output
+            combinedLogFile = os.path.join(logDir, "armi-workers-mpi.log")
+            self.assertTrue(os.path.exists(combinedLogFile))
+            self.assertFalse(os.path.exists(stdoutFile3))
 
     def test_createLogDir(self):
         """Test the createLogDir() method.
