@@ -32,7 +32,7 @@ import os
 from typing import Optional, Sequence
 import traceback
 
-import tabulate
+from armi.utils import tabulate
 
 from armi import runLog
 from armi import settings

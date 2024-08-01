@@ -59,7 +59,7 @@ import math
 import timeit
 
 from six.moves import cPickle
-import tabulate
+from armi.utils import tabulate
 
 from armi import context
 from armi import interfaces

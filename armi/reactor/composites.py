@@ -40,7 +40,7 @@ from typing import Dict, List, Optional, Tuple, Type, Union
 
 import numpy
 import six
-import tabulate
+from armi.utils import tabulate
 
 from armi import context, runLog, utils
 from armi.nucDirectory import elements, nucDir, nuclideBases

@@ -39,7 +39,7 @@ import trace
 
 import coverage
 import six
-import tabulate
+from armi.utils import tabulate
 
 from armi import context
 from armi import getPluginManager

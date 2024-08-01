@@ -16,7 +16,7 @@
 
 import pathlib
 import sys
-import traceback
+from armi.utils import traceback
 
 from armi import runLog
 from armi.cli.entryPoint import EntryPoint

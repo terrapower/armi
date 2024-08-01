@@ -23,7 +23,7 @@ import pathlib
 import re
 import subprocess
 import sys
-import tabulate
+from armi.utils import tabulate
 import textwrap
 import time
 

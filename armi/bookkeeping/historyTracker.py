@@ -71,7 +71,7 @@ See :ref:`detail-assems`.
 from typing import Tuple
 import traceback
 
-import tabulate
+from armi.utils import tabulate
 
 from armi import interfaces
 from armi import runLog

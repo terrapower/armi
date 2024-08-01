@@ -28,7 +28,7 @@ import os
 import time
 
 import numpy
-import tabulate
+from armi.utils import tabulate
 
 from armi import getPluginManagerOrFail, materials, nuclearDataIO
 from armi import runLog

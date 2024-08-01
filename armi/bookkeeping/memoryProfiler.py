@@ -39,7 +39,7 @@ https://docs.python.org/3/library/gc.html#gc.garbage
 from typing import Optional
 import gc
 import sys
-import tabulate
+from armi.utils import tabulate
 
 from armi import context
 from armi import interfaces

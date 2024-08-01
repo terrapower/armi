@@ -49,7 +49,7 @@ import os
 import re
 import traceback
 
-from tabulate import tabulate
+from armi.utils.tabulate import tabulate
 import h5py
 import numpy
 
