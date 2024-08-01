@@ -39,18 +39,18 @@ https://docs.python.org/3/library/gc.html#gc.garbage
 from typing import Optional
 import gc
 import sys
-from armi.utils import tabulate
 
 from armi import context
 from armi import interfaces
 from armi import mpiActions
 from armi import runLog
 from armi.reactor.composites import ArmiObject
+from armi.utils import tabulate
 
 try:
+    # psutil is an optional requirement, since it doesnt support MacOS very well
     import psutil
 
-    # psutil is an optional requirement, since it doesnt support MacOS very well
     _havePsutil = True
 except ImportError:
     runLog.warning(

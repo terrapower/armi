@@ -28,7 +28,6 @@ import os
 import time
 
 import numpy
-from armi.utils import tabulate
 
 from armi import getPluginManagerOrFail, materials, nuclearDataIO
 from armi import runLog
@@ -58,6 +57,7 @@ from armi.settings.fwSettings.globalSettings import (
 )
 from armi.utils import createFormattedStrWithDelimiter, units
 from armi.utils import directoryChangers
+from armi.utils import tabulate
 from armi.utils.iterables import Sequence
 from armi.utils.mathematics import average1DWithinTolerance
 

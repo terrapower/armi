@@ -59,7 +59,6 @@ import math
 import timeit
 
 from six.moves import cPickle
-from armi.utils import tabulate
 
 from armi import context
 from armi import interfaces
@@ -69,6 +68,7 @@ from armi import utils
 from armi.reactor import reactors
 from armi.reactor.parameters import parameterDefinitions
 from armi.utils import iterables
+from armi.utils import tabulate
 
 
 class MpiAction:

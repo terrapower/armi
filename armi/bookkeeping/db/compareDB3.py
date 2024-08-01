@@ -49,7 +49,6 @@ import os
 import re
 import traceback
 
-from armi.utils.tabulate import tabulate
 import h5py
 import numpy
 
@@ -59,6 +58,7 @@ from armi.bookkeeping.db.database3 import Database3
 from armi.bookkeeping.db.factory import databaseFactory
 from armi.bookkeeping.db.permissions import Permissions
 from armi.reactor.composites import ArmiObject
+from armi.utils.tabulate import tabulate
 
 
 class OutputWriter:

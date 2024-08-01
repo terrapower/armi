@@ -16,13 +16,12 @@ r"""
 The ``CaseSuite`` object is responsible for running, and executing a set of user inputs.  Many
 entry points redirect into ``CaseSuite`` methods, such as ``clone``, ``compare``, and ``submit``.
 
-Used in conjunction with the :py:class:`~armi.cases.case.Case` object, ``CaseSuite`` can
-be used to collect a series of cases
-and submit them to a cluster for execution. Furthermore, a ``CaseSuite`` can be used to gather
-executed cases for post-analysis.
+Used in conjunction with the :py:class:`~armi.cases.case.Case` object, ``CaseSuite`` can be used to
+collect a series of cases and submit them to a cluster for execution. Furthermore, a ``CaseSuite``
+can be used to gather executed cases for post-analysis.
 
-``CaseSuite``\ s should allow ``Cases`` to be added from totally separate directories.
-This is useful for plugin-informed testing as well as other things.
+``CaseSuite``\ s should allow ``Cases`` to be added from totally separate directories. This is
+useful for plugin-informed testing as well as other things.
 
 See Also
 --------
@@ -32,12 +31,11 @@ import os
 from typing import Optional, Sequence
 import traceback
 
-from armi.utils import tabulate
-
 from armi import runLog
 from armi import settings
 from armi.cases import case as armicase
 from armi.utils import directoryChangers
+from armi.utils import tabulate
 
 
 class CaseSuite:
