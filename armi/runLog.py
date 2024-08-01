@@ -353,8 +353,9 @@ def concatenateLogs(logDir=None):
         stdoutFile = os.path.normpath(stdoutPath).split(os.sep)[-1]
         prefix = STDOUT_LOGGER_NAME + "."
         if stdoutFile[0 : len(prefix)] == prefix:
-            caseTitle = stdoutFile.split(".")[-3]
-            if len(caseTitle) > 0:
+            candidate = stdoutFile.split(".")[-3]
+            if len(candidate) > 0:
+                caseTitle = candidate
                 break
 
     combinedLogName = os.path.join(logDir, "{}-mpi.log".format(caseTitle))
