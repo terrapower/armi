@@ -1,4 +1,5 @@
 # TODO: LICENSE things
+#       This was originally https://github.com/astanin/python-tabulate/tree/master
 
 """Pretty-print tabular data."""
 
@@ -12,14 +13,7 @@ import math
 import textwrap
 import dataclasses
 
-try:
-    # TODO: just delete this.
-    import wcwidth  # optional wide-character (CJK) support
-except ImportError:
-    wcwidth = None
-
-
-__all__ = ["tabulate", "tabulate_formats", "simple_separated_format"]
+__all__ = ["tabulate", "tabulate_formats"]
 
 
 # minimum extra space in headers
@@ -31,20 +25,14 @@ PRESERVE_WHITESPACE = False
 _DEFAULT_FLOATFMT = "g"
 _DEFAULT_INTFMT = ""
 _DEFAULT_MISSINGVAL = ""
-# default align will be overwritten by "left", "center" or "decimal"
-# depending on the formatter
+# default align will be overwritten by "left", "center" or "decimal" depending on the formatter
 _DEFAULT_ALIGN = "default"
-
-
-# if True, enable wide-character (CJK) support
-WIDE_CHARS_MODE = wcwidth is not None
 
 # Constant that can be used as part of passed rows to generate a separating line
 # It is purposely an unprintable character, very unlikely to be used in a table
 SEPARATING_LINE = "\001"
 
 Line = namedtuple("Line", ["begin", "hline", "sep", "end"])
-
 DataRow = namedtuple("DataRow", ["begin", "sep", "end"])
 
 # A table structure is supposed to be:
@@ -287,26 +275,6 @@ _float_with_thousands_separators = re.compile(
 )
 
 
-def simple_separated_format(separator):
-    r"""Construct a simple TableFormat with columns separated by a separator.
-
-    >>> tsv = simple_separated_format("\\t") ; \
-        tabulate([["foo", 1], ["spam", 23]], tablefmt=tsv) == 'foo \\t 1\\nspam\\t23'
-    True
-
-    """
-    return TableFormat(
-        None,
-        None,
-        None,
-        None,
-        headerrow=DataRow("", separator, ""),
-        datarow=DataRow("", separator, ""),
-        padding=0,
-        with_header_hide=None,
-    )
-
-
 def _isnumber_with_thousands_separator(string):
     """Function to test of a string is a number with a thousands separator.
 
@@ -536,11 +504,7 @@ def _visible_width(s):
     (5, 5)
 
     """
-    # optional wide-character support
-    if wcwidth is not None and WIDE_CHARS_MODE:
-        len_fn = wcwidth.wcswidth
-    else:
-        len_fn = len
+    len_fn = len
     if isinstance(s, (str, bytes)):
         return len_fn(_strip_ansi(s))
     else:
@@ -560,19 +524,18 @@ def _multiline_width(multiline_s, line_width_fn=len):
     return max(map(line_width_fn, re.split("[\r\n]", multiline_s)))
 
 
-def _choose_width_fn(has_invisible, enable_widechars, is_multiline):
+def _choose_width_fn(has_invisible, is_multiline):
     """Return a function to calculate visible cell width."""
     if has_invisible:
         line_width_fn = _visible_width
-    elif enable_widechars:
-        # optional wide-character support if available
-        line_width_fn = wcwidth.wcswidth
     else:
         line_width_fn = len
+
     if is_multiline:
         width_fn = lambda s: _multiline_width(s, line_width_fn)  # noqa
     else:
         width_fn = line_width_fn
+
     return width_fn
 
 
@@ -602,18 +565,17 @@ def _align_column_choose_padfn(strings, alignment, has_invisible):
     return strings, padfn
 
 
-def _align_column_choose_width_fn(has_invisible, enable_widechars, is_multiline):
+def _align_column_choose_width_fn(has_invisible, is_multiline):
     if has_invisible:
         line_width_fn = _visible_width
-    elif enable_widechars:
-        # optional wide-character support if available
-        line_width_fn = wcwidth.wcswidth
     else:
         line_width_fn = len
+
     if is_multiline:
         width_fn = lambda s: _align_column_multiline_width(s, line_width_fn)  # noqa
     else:
         width_fn = line_width_fn
+
     return width_fn
 
 
@@ -634,23 +596,16 @@ def _flat_list(nested_list):
 
 
 def _align_column(
-    strings,
-    alignment,
-    minwidth=0,
-    has_invisible=True,
-    enable_widechars=False,
-    is_multiline=False,
+    strings, alignment, minwidth=0, has_invisible=True, is_multiline=False
 ):
     """[string] -> [padded_string]."""
     strings, padfn = _align_column_choose_padfn(strings, alignment, has_invisible)
-    width_fn = _align_column_choose_width_fn(
-        has_invisible, enable_widechars, is_multiline
-    )
+    width_fn = _align_column_choose_width_fn(has_invisible, is_multiline)
 
     s_widths = list(map(width_fn, strings))
     maxwidth = max(max(_flat_list(s_widths)), minwidth)
     if is_multiline:
-        if not enable_widechars and not has_invisible:
+        if not has_invisible:
             padded_strings = [
                 "\n".join([padfn(maxwidth, s) for s in ms.splitlines()])
                 for ms in strings
@@ -669,7 +624,7 @@ def _align_column(
                 for ms, mw in zip(strings, visible_widths)
             ]
     else:  # single-line cell values
-        if not enable_widechars and not has_invisible:
+        if not has_invisible:
             padded_strings = [padfn(maxwidth, s) for s in strings]
         else:
             # enable wide-character width corrections
@@ -678,6 +633,7 @@ def _align_column(
             # wcswidth and _visible_width don't count invisible characters;
             # padfn doesn't need to apply another correction
             padded_strings = [padfn(w, s) for s, w in zip(strings, visible_widths)]
+
     return padded_strings
 
 
@@ -1361,7 +1317,6 @@ def tabulate(
 
     has_invisible = _ansi_codes.search(plain_text) is not None
 
-    enable_widechars = wcwidth is not None and WIDE_CHARS_MODE
     if (
         not isinstance(tablefmt, TableFormat)
         and tablefmt in multiline_formats
@@ -1371,7 +1326,7 @@ def tabulate(
         is_multiline = True
     else:
         is_multiline = False
-    width_fn = _choose_width_fn(has_invisible, enable_widechars, is_multiline)
+    width_fn = _choose_width_fn(has_invisible, is_multiline)
 
     # format rows and columns, convert numeric values to strings
     cols = list(izip_longest(*list_of_lists))
@@ -1410,6 +1365,7 @@ def tabulate(
         aligns = [colglobalalign] * len(cols)
     else:  # default
         aligns = [numalign if ct in [int, float] else stralign for ct in coltypes]
+
     # then specific alignements
     if colalign is not None:
         assert isinstance(colalign, Iterable)
@@ -1428,7 +1384,7 @@ def tabulate(
         [width_fn(h) + min_padding for h in headers] if headers else [0] * len(cols)
     )
     cols = [
-        _align_column(c, a, minw, has_invisible, enable_widechars, is_multiline)
+        _align_column(c, a, minw, has_invisible, is_multiline)
         for c, a, minw in zip(cols, aligns, minwidths)
     ]
 
@@ -1686,10 +1642,7 @@ class _CustomTextWrap(textwrap.TextWrapper):
         ignores color codes.
         """
         stripped = _strip_ansi(item)
-        if wcwidth:
-            return wcwidth.wcswidth(stripped)
-        else:
-            return len(stripped)
+        return len(stripped)
 
     def _update_lines(self, lines, new_line):
         """Adds a new line to the list of lines the text is being wrapped into.
