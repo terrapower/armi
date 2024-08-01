@@ -354,6 +354,10 @@ class TestCompositePattern(unittest.TestCase):
         result = self.container.getLumpedFissionProductsIfNecessary(None)
         self.assertEqual(len(result), 0)
 
+        # test a positive case
+        result = self.container.getLumpedFissionProductsIfNecessary(["LFP35"])
+        self.assertGreater(len(result), 0)
+
     def test_getIntegratedMgFlux(self):
         mgFlux = self.container.getIntegratedMgFlux()
         self.assertEqual(mgFlux, [0.0])
