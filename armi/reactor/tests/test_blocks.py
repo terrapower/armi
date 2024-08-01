@@ -1010,8 +1010,12 @@ class Block_TestCase(unittest.TestCase):
         u5 = self.block.getNumberDensity("U235")
         ref = u5 / (u8 + u5)
 
-        places = 6
-        self.assertAlmostEqual(cur, ref, places=places)
+        self.assertAlmostEqual(cur, ref, places=6)
+
+        # test the zero edge case
+        self.block.adjustUEnrich(0)
+        cur = self.block.getUraniumNumEnrich()
+        self.assertEqual(cur, 0.0)
 
     def test_getNumberOfAtoms(self):
         self.block.clearNumberDensities()
@@ -1216,6 +1220,10 @@ class Block_TestCase(unittest.TestCase):
                 self.block.getComponent(Flags.DUCT),
             ],
         )
+
+        # test edge case
+        cur = self.block.getComponentsOfMaterial(None, "UZr")
+        self.assertEqual(cur[0], ref)
 
     def test_getComponentByName(self):
         """Test children by name.
