@@ -33,7 +33,6 @@ armi.reactor.blueprints.gridBlueprints : Method for storing system assembly layo
 armi.reactor.systemLayoutInput.SystemLayoutInput : Deprecated method for reading the individual
 face-map xml files.
 """
-import tabulate
 import yamlize
 
 from armi import context
@@ -42,6 +41,7 @@ from armi import runLog
 from armi.reactor import geometry
 from armi.reactor import grids
 from armi.reactor.blueprints.gridBlueprint import Triplet
+from armi.utils import tabulate
 
 
 class SystemBlueprint(yamlize.Object):
@@ -96,11 +96,10 @@ class SystemBlueprint(yamlize.Object):
 
     @staticmethod
     def _resolveSystemType(typ: str):
-        # Loop over all plugins that could be attached and determine if any
-        # tell us how to build a specific systems attribute. Sub-optimial
-        # as this check is called for each system (e.g., core, spent fuel pool).
-        # It is assumed that the number of systems is currently low enough to justify
-        # this structure.
+        # Loop over all plugins that could be attached and determine if any tell us how to build a
+        # specific systems attribute. Sub-optimial as this check is called for each system (e.g.,
+        # core, spent fuel pool). It is assumed that the number of systems is currently low enough
+        # to justify this structure.
 
         manager = getPluginManagerOrFail()
 
@@ -108,9 +107,8 @@ class SystemBlueprint(yamlize.Object):
         seen = set()
         for options in manager.hook.defineSystemBuilders():
             for key, builder in options.items():
-                # Take the first match we find. This would allow other plugins to
-                # define a new core builder before finding those defined by the
-                # ReactorPlugin
+                # Take the first match we find. This would allow other plugins to define a new core
+                # builder before finding those defined by the ReactorPlugin
                 if key == typ:
                     return builder
                 seen.add(key)

@@ -90,7 +90,7 @@ class CheckInputEntryPoint(EntryPoint):
         )
 
     def invoke(self):
-        import tabulate
+        from armi.utils import tabulate
         from armi import cases
 
         suite = cases.CaseSuite(self.cs)

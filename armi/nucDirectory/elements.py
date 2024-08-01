@@ -96,7 +96,7 @@ Retrieve elements that are classified as actinides:
     :ref:`nuclide bases summary table <nuclide-bases-table>`.
 
     .. exec::
-        from tabulate import tabulate
+        from armi.utils.tabulate import tabulate
         from armi.nucDirectory import elements
         from dochelpers import createTable
 
