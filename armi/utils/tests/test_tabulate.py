@@ -878,3 +878,109 @@ class TestTabulateOutput(unittest.TestCase):
         )
         result = tabulate(_test_table, _test_table_headers, tablefmt="github")
         self.assertEqual(expected, result)
+
+    def test_grid(self):
+        """Output: grid with headers."""
+        expected = "\n".join(
+            [
+                "+-----------+-----------+",
+                "| strings   |   numbers |",
+                "+===========+===========+",
+                "| spam      |   41.9999 |",
+                "+-----------+-----------+",
+                "| eggs      |  451      |",
+                "+-----------+-----------+",
+            ]
+        )
+        result = tabulate(_test_table, _test_table_headers, tablefmt="grid")
+        self.assertEqual(expected, result)
+
+    def test_grid_headerless(self):
+        """Output: grid without headers."""
+        expected = "\n".join(
+            [
+                "+------+----------+",
+                "| spam |  41.9999 |",
+                "+------+----------+",
+                "| eggs | 451      |",
+                "+------+----------+",
+            ]
+        )
+        result = tabulate(_test_table, tablefmt="grid")
+        self.assertEqual(expected, result)
+
+    def test_grid_multiline_headerless(self):
+        """Output: grid with multiline cells without headers."""
+        table = [["foo bar\nbaz\nbau", "hello"], ["", "multiline\nworld"]]
+        expected = "\n".join(
+            [
+                "+---------+-----------+",
+                "| foo bar |   hello   |",
+                "|   baz   |           |",
+                "|   bau   |           |",
+                "+---------+-----------+",
+                "|         | multiline |",
+                "|         |   world   |",
+                "+---------+-----------+",
+            ]
+        )
+        result = tabulate(table, stralign="center", tablefmt="grid")
+        self.assertEqual(expected, result)
+
+    def test_grid_multiline(self):
+        """Output: grid with multiline cells with headers."""
+        table = [[2, "foo\nbar"]]
+        headers = ("more\nspam \x1b[31meggs\x1b[0m", "more spam\n& eggs")
+        expected = "\n".join(
+            [
+                "+-------------+-------------+",
+                "|        more | more spam   |",
+                "|   spam \x1b[31meggs\x1b[0m | & eggs      |",
+                "+=============+=============+",
+                "|           2 | foo         |",
+                "|             | bar         |",
+                "+-------------+-------------+",
+            ]
+        )
+        result = tabulate(table, headers, tablefmt="grid")
+        self.assertEqual(expected, result)
+
+    def test_grid_multiline_with_empty_cells(self):
+        """Output: grid with multiline cells and empty cells with headers."""
+        table = [
+            ["hdr", "data", "fold"],
+            ["1", "", ""],
+            ["2", "very long data", "fold\nthis"],
+        ]
+        expected = "\n".join(
+            [
+                "+-------+----------------+--------+",
+                "|   hdr | data           | fold   |",
+                "+=======+================+========+",
+                "|     1 |                |        |",
+                "+-------+----------------+--------+",
+                "|     2 | very long data | fold   |",
+                "|       |                | this   |",
+                "+-------+----------------+--------+",
+            ]
+        )
+        result = tabulate(table, headers="firstrow", tablefmt="grid")
+        self.assertEqual(expected, result)
+
+    def test_grid_multiline_with_empty_cells_headerless(self):
+        """Output: grid with multiline cells and empty cells without headers."""
+        table = [["0", "", ""], ["1", "", ""], ["2", "very long data", "fold\nthis"]]
+        expected = "\n".join(
+            [
+                "+---+----------------+------+",
+                "| 0 |                |      |",
+                "+---+----------------+------+",
+                "| 1 |                |      |",
+                "+---+----------------+------+",
+                "| 2 | very long data | fold |",
+                "|   |                | this |",
+                "+---+----------------+------+",
+            ]
+        )
+        result = tabulate(table, tablefmt="grid")
+        self.assertEqual(expected, result)
