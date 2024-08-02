@@ -545,7 +545,7 @@ def _choose_width_fn(has_invisible, is_multiline):
         line_width_fn = len
 
     if is_multiline:
-        width_fn = lambda s: _multiline_width(s, line_width_fn)  # noqa
+        width_fn = lambda s: _multiline_width(s, line_width_fn)
     else:
         width_fn = line_width_fn
 
@@ -585,7 +585,7 @@ def _align_column_choose_width_fn(has_invisible, is_multiline):
         line_width_fn = len
 
     if is_multiline:
-        width_fn = lambda s: _align_column_multiline_width(s, line_width_fn)  # noqa
+        width_fn = lambda s: _align_column_multiline_width(s, line_width_fn)
     else:
         width_fn = line_width_fn
 
@@ -722,11 +722,11 @@ def _format(val, valtype, floatfmt, intfmt, missingval="", has_invisible=True):
         except (TypeError, UnicodeDecodeError):
             return str(val)
     elif valtype is float:
-        is_a_colored_number = has_invisible and isinstance(val, (str, bytes))
-        if is_a_colored_number:
-            raw_val = _strip_ansi(val)
-            formatted_val = format(float(raw_val), floatfmt)
-            return val.replace(raw_val, formatted_val)
+        isAColoredNumber = has_invisible and isinstance(val, (str, bytes))
+        if isAColoredNumber:
+            rawVal = _strip_ansi(val)
+            formattedVal = format(float(rawVal), floatfmt)
+            return val.replace(rawVal, formattedVal)
         else:
             return format(float(val), floatfmt)
     else:
@@ -756,23 +756,23 @@ def _align_header(
         return _padleft(width, header)
 
 
-def _remove_separating_lines(rows):
+def _removeSeparatingLines(rows):
     if type(rows) is list:
-        separating_lines = []
+        separatingLines = []
         sans_rows = []
         for index, row in enumerate(rows):
             if _is_separating_line(row):
-                separating_lines.append(index)
+                separatingLines.append(index)
             else:
                 sans_rows.append(row)
-        return sans_rows, separating_lines
+        return sans_rows, separatingLines
     else:
         return rows, None
 
 
-def _reinsert_separating_lines(rows, separating_lines):
-    if separating_lines:
-        for index in separating_lines:
+def _reinsert_separatingLines(rows, separatingLines):
+    if separatingLines:
+        for index in separatingLines:
             rows.insert(index, SEPARATING_LINE)
 
 
@@ -785,14 +785,14 @@ def _prepend_row_index(rows, index):
             "index must be as long as the number of data rows: "
             + "len(index)={} len(rows)={}".format(len(index), len(rows))
         )
-    sans_rows, separating_lines = _remove_separating_lines(rows)
+    sans_rows, separatingLines = _removeSeparatingLines(rows)
     new_rows = []
     index_iter = iter(index)
     for row in sans_rows:
         index_v = next(index_iter)
         new_rows.append([index_v] + list(row))
     rows = new_rows
-    _reinsert_separating_lines(rows, separating_lines)
+    _reinsert_separatingLines(rows, separatingLines)
     return rows
 
 
@@ -805,7 +805,7 @@ def _bool(val):
         return False
 
 
-def _normalize_tabular_data(tabular_data, headers, showindex="default"):
+def _normalizeTabularData(tabular_data, headers, showindex="default"):
     """Transform a supported data type to a list of lists & a list of headers, with header padding.
 
     Supported tabular data types:
@@ -982,16 +982,16 @@ def _normalize_tabular_data(tabular_data, headers, showindex="default"):
     return rows, headers, headers_pad
 
 
-def _wrap_text_to_colwidths(list_of_lists, colwidths, numparses=True):
-    if len(list_of_lists):
-        num_cols = len(list_of_lists[0])
+def _wrapTextToColwidths(listOfLists, colwidths, numparses=True):
+    if len(listOfLists):
+        num_cols = len(listOfLists[0])
     else:
         num_cols = 0
-    numparses = _expand_iterable(numparses, num_cols, True)
+    numparses = _expandIterable(numparses, num_cols, True)
 
     result = []
 
-    for row in list_of_lists:
+    for row in listOfLists:
         new_row = []
         for cell, width, numparse in zip(row, colwidths, numparses):
             if _isnumber(cell) and numparse:
@@ -1055,7 +1055,7 @@ def tabulate(
     stralign=_DEFAULT_ALIGN,
     missingval=_DEFAULT_MISSINGVAL,
     showindex="default",
-    disable_numparse=False,
+    disableNumparse=False,
     colglobalalign=None,
     colalign=None,
     maxcolwidths=None,
@@ -1229,9 +1229,9 @@ def tabulate(
     strings such as specific git SHAs e.g. "42992e1" will be parsed into the number 429920 and
     aligned as such.
 
-    To completely disable number parsing (and alignment), use `disable_numparse=True`. For more fine
+    To completely disable number parsing (and alignment), use `disableNumparse=True`. For more fine
     grained control, a list column indices is used to disable number parsing only on those columns
-    e.g. `disable_numparse=[0, 2]` would disable number parsing only on the first and third columns.
+    e.g. `disableNumparse=[0, 2]` would disable number parsing only on the first and third columns.
 
     Column Widths and Auto Line Wrapping
     ------------------------------------
@@ -1260,44 +1260,44 @@ def tabulate(
     if tabular_data is None:
         tabular_data = []
 
-    list_of_lists, headers, headers_pad = _normalize_tabular_data(
+    listOfLists, headers, headers_pad = _normalizeTabularData(
         tabular_data, headers, showindex=showindex
     )
-    list_of_lists, separating_lines = _remove_separating_lines(list_of_lists)
+    listOfLists, separatingLines = _removeSeparatingLines(listOfLists)
 
     if maxcolwidths is not None:
-        if len(list_of_lists):
-            num_cols = len(list_of_lists[0])
+        if len(listOfLists):
+            num_cols = len(listOfLists[0])
         else:
             num_cols = 0
         if isinstance(maxcolwidths, int):  # Expand scalar for all columns
-            maxcolwidths = _expand_iterable(maxcolwidths, num_cols, maxcolwidths)
+            maxcolwidths = _expandIterable(maxcolwidths, num_cols, maxcolwidths)
         else:  # Ignore col width for any 'trailing' columns
-            maxcolwidths = _expand_iterable(maxcolwidths, num_cols, None)
+            maxcolwidths = _expandIterable(maxcolwidths, num_cols, None)
 
-        numparses = _expand_numparse(disable_numparse, num_cols)
-        list_of_lists = _wrap_text_to_colwidths(
-            list_of_lists, maxcolwidths, numparses=numparses
+        numparses = _expandNumparse(disableNumparse, num_cols)
+        listOfLists = _wrapTextToColwidths(
+            listOfLists, maxcolwidths, numparses=numparses
         )
 
     if maxheadercolwidths is not None:
-        num_cols = len(list_of_lists[0])
+        num_cols = len(listOfLists[0])
         if isinstance(maxheadercolwidths, int):  # Expand scalar for all columns
-            maxheadercolwidths = _expand_iterable(
+            maxheadercolwidths = _expandIterable(
                 maxheadercolwidths, num_cols, maxheadercolwidths
             )
         else:  # Ignore col width for any 'trailing' columns
-            maxheadercolwidths = _expand_iterable(maxheadercolwidths, num_cols, None)
+            maxheadercolwidths = _expandIterable(maxheadercolwidths, num_cols, None)
 
-        numparses = _expand_numparse(disable_numparse, num_cols)
-        headers = _wrap_text_to_colwidths(
+        numparses = _expandNumparse(disableNumparse, num_cols)
+        headers = _wrapTextToColwidths(
             [headers], maxheadercolwidths, numparses=numparses
         )[0]
 
     # empty values in the first column of RST tables should be escaped (issue #82)
     # "" should be escaped as "\\ " or ".."
     if tablefmt == "rst":
-        list_of_lists, headers = _rst_escape_first_column(list_of_lists, headers)
+        listOfLists, headers = _rst_escape_first_column(listOfLists, headers)
 
     # PrettyTable formatting does not use any extra padding. Numbers are not parsed and are treated
     # the same as strings for alignment. Check if pretty is the format being used and override the
@@ -1305,7 +1305,7 @@ def tabulate(
     min_padding = MIN_PADDING
     if tablefmt == "pretty":
         min_padding = 0
-        disable_numparse = True
+        disableNumparse = True
         numalign = "center" if numalign == _DEFAULT_ALIGN else numalign
         stralign = "center" if stralign == _DEFAULT_ALIGN else stralign
     else:
@@ -1323,7 +1323,7 @@ def tabulate(
             map(_to_str, headers),
             # rows: chain the rows together into a single iterable after mapping the bytestring
             # conversino to each cell value
-            chain.from_iterable(map(_to_str, row) for row in list_of_lists),
+            chain.from_iterable(map(_to_str, row) for row in listOfLists),
         )
     )
 
@@ -1341,8 +1341,8 @@ def tabulate(
     width_fn = _choose_width_fn(has_invisible, is_multiline)
 
     # format rows and columns, convert numeric values to strings
-    cols = list(izip_longest(*list_of_lists))
-    numparses = _expand_numparse(disable_numparse, len(cols))
+    cols = list(izip_longest(*listOfLists))
+    numparses = _expandNumparse(disableNumparse, len(cols))
     coltypes = [_column_type(col, numparse=np) for col, np in zip(cols, numparses)]
     if isinstance(floatfmt, str):
         # old version: just duplicate the string to use in each column
@@ -1444,8 +1444,8 @@ def tabulate(
         tablefmt = _table_formats.get(tablefmt, _table_formats["simple"])
 
     ra_default = rowalign if isinstance(rowalign, str) else None
-    rowaligns = _expand_iterable(rowalign, len(rows), ra_default)
-    _reinsert_separating_lines(rows, separating_lines)
+    rowaligns = _expandIterable(rowalign, len(rows), ra_default)
+    _reinsert_separatingLines(rows, separatingLines)
 
     return _format_table(
         tablefmt,
@@ -1459,38 +1459,38 @@ def tabulate(
     )
 
 
-def _expand_numparse(disable_numparse, column_count):
+def _expandNumparse(disableNumparse, columnCount):
     """
-    Return a list of bools of length `column_count` which indicates whether number parsing should be
+    Return a list of bools of length `columnCount` which indicates whether number parsing should be
     used on each column.
 
-    If `disable_numparse` is a list of indices, each of those indices are False, and everything else
-    is True. If `disable_numparse` is a bool, then the returned list is all the same.
+    If `disableNumparse` is a list of indices, each of those indices are False, and everything else
+    is True. If `disableNumparse` is a bool, then the returned list is all the same.
     """
-    if isinstance(disable_numparse, Iterable):
-        numparses = [True] * column_count
-        for index in disable_numparse:
+    if isinstance(disableNumparse, Iterable):
+        numparses = [True] * columnCount
+        for index in disableNumparse:
             numparses[index] = False
         return numparses
     else:
-        return [not disable_numparse] * column_count
+        return [not disableNumparse] * columnCount
 
 
-def _expand_iterable(original, num_desired, default):
+def _expandIterable(original, numDesired, default):
     """
-    Expands the `original` argument to return a return a list of length `num_desired`. If `original`
-    is shorter than `num_desired`, it will be padded with the value in `default`.
+    Expands the `original` argument to return a return a list of length `numDesired`. If `original`
+    is shorter than `numDesired`, it will be padded with the value in `default`.
 
-    If `original` is not a list to begin with (i.e. scalar value) a list of length `num_desired`
+    If `original` is not a list to begin with (i.e. scalar value) a list of length `numDesired`
     completely populated with `default will be returned
     """
     if isinstance(original, Iterable) and not isinstance(original, str):
-        return original + [default] * (num_desired - len(original))
+        return original + [default] * (numDesired - len(original))
     else:
-        return [default] * num_desired
+        return [default] * numDesired
 
 
-def _pad_row(cells, padding):
+def _padRow(cells, padding):
     if cells:
         pad = " " * padding
         padded_cells = [pad + cell + pad for cell in cells]
@@ -1499,56 +1499,56 @@ def _pad_row(cells, padding):
         return cells
 
 
-def _build_simple_row(padded_cells, rowfmt):
+def _buildSimpleRow(padded_cells, rowfmt):
     """Format row according to DataRow format without padding."""
     begin, sep, end = rowfmt
     return (begin + sep.join(padded_cells) + end).rstrip()
 
 
-def _build_row(padded_cells, colwidths, colaligns, rowfmt):
+def _buildRow(padded_cells, colwidths, colaligns, rowfmt):
     """Return a string which represents a row of data cells."""
     if not rowfmt:
         return None
     if hasattr(rowfmt, "__call__"):
         return rowfmt(padded_cells, colwidths, colaligns)
     else:
-        return _build_simple_row(padded_cells, rowfmt)
+        return _buildSimpleRow(padded_cells, rowfmt)
 
 
-def _append_basic_row(lines, padded_cells, colwidths, colaligns, rowfmt, rowalign=None):
-    # NOTE: rowalign is ignored and exists for api compatibility with _append_multiline_row
-    lines.append(_build_row(padded_cells, colwidths, colaligns, rowfmt))
+def _appendBasicRow(lines, padded_cells, colwidths, colaligns, rowfmt, rowalign=None):
+    # NOTE: rowalign is ignored and exists for api compatibility with _appendMultilineRow
+    lines.append(_buildRow(padded_cells, colwidths, colaligns, rowfmt))
     return lines
 
 
-def _align_cell_veritically(text_lines, num_lines, column_width, row_alignment):
-    delta_lines = num_lines - len(text_lines)
-    blank = [" " * column_width]
-    if row_alignment == "bottom":
-        return blank * delta_lines + text_lines
-    elif row_alignment == "center":
+def _alignCellVeritically(textLines, numLines, columnWidth, rowAlignment):
+    delta_lines = numLines - len(textLines)
+    blank = [" " * columnWidth]
+    if rowAlignment == "bottom":
+        return blank * delta_lines + textLines
+    elif rowAlignment == "center":
         top_delta = delta_lines // 2
         bottom_delta = delta_lines - top_delta
-        return top_delta * blank + text_lines + bottom_delta * blank
+        return top_delta * blank + textLines + bottom_delta * blank
     else:
-        return text_lines + blank * delta_lines
+        return textLines + blank * delta_lines
 
 
-def _append_multiline_row(
-    lines, padded_multiline_cells, padded_widths, colaligns, rowfmt, pad, rowalign=None
+def _appendMultilineRow(
+    lines, paddedMultilineCells, padded_widths, colaligns, rowfmt, pad, rowalign=None
 ):
     colwidths = [w - 2 * pad for w in padded_widths]
-    cells_lines = [c.splitlines() for c in padded_multiline_cells]
+    cells_lines = [c.splitlines() for c in paddedMultilineCells]
     nlines = max(map(len, cells_lines))  # number of lines in the row
 
     cells_lines = [
-        _align_cell_veritically(cl, nlines, w, rowalign)
+        _alignCellVeritically(cl, nlines, w, rowalign)
         for cl, w in zip(cells_lines, colwidths)
     ]
     lines_cells = [[cl[i] for cl in cells_lines] for i in range(nlines)]
     for ln in lines_cells:
-        padded_ln = _pad_row(ln, pad)
-        _append_basic_row(lines, padded_ln, colwidths, colaligns, rowfmt)
+        padded_ln = _padRow(ln, pad)
+        _appendBasicRow(lines, padded_ln, colwidths, colaligns, rowfmt)
     return lines
 
 
@@ -1561,7 +1561,7 @@ def _build_line(colwidths, colaligns, linefmt):
     else:
         begin, fill, sep, end = linefmt
         cells = [fill * w for w in colwidths]
-        return _build_simple_row(cells, (begin, sep, end))
+        return _buildSimpleRow(cells, (begin, sep, end))
 
 
 def _append_line(lines, colwidths, colaligns, linefmt):
@@ -1580,11 +1580,11 @@ def _format_table(
 
     padded_widths = [(w + 2 * pad) for w in colwidths]
     if is_multiline:
-        pad_row = lambda row, _: row  # noqa do it later, in _append_multiline_row
-        append_row = partial(_append_multiline_row, pad=pad)
+        pad_row = lambda row, _: row
+        append_row = partial(_appendMultilineRow, pad=pad)
     else:
-        pad_row = _pad_row
-        append_row = _append_basic_row
+        pad_row = _padRow
+        append_row = _appendBasicRow
 
     padded_headers = pad_row(headers, pad)
     padded_rows = [pad_row(row, pad) for row in rows]
