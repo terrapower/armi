@@ -22,6 +22,7 @@ import unittest
 import numpy  # TODO: as np
 
 from armi.utils.tabulate import _alignColumn, _alignCellVeritically, _multilineWidth
+from armi.utils.tabulate import SEPARATING_LINE
 from armi.utils.tabulate import tabulate, tabulate_formats
 
 
@@ -470,4 +471,130 @@ class TestTabulateInternal(unittest.TestCase):
         text = ["just", "one ", "cell"]
         result = _alignCellVeritically(text, 6, 4, "bottom")
         expected = ["    ", "    ", "    ", "just", "one ", "cell"]
+        self.assertEqual(expected, result)
+
+
+# TODO: JOHN: reformat data
+# _test_table shows
+#  - coercion of a string to a number,
+#  - left alignment of text,
+#  - decimal point alignment of numbers
+_test_table = [["spam", 41.9999], ["eggs", "451.0"]]
+_test_table_with_sep_line = [["spam", 41.9999], SEPARATING_LINE, ["eggs", "451.0"]]
+_test_table_headers = ["strings", "numbers"]
+
+
+class TestTabulateOutput(unittest.TestCase):
+    def test_plain(self):
+        """Output: plain with headers."""
+        expected = "\n".join(
+            ["strings      numbers", "spam         41.9999", "eggs        451"]
+        )
+        result = tabulate(_test_table, _test_table_headers, tablefmt="plain")
+        self.assertEqual(expected, result)
+
+    def test_plain_headerless(self):
+        """Output: plain without headers."""
+        expected = "\n".join(["spam   41.9999", "eggs  451"])
+        result = tabulate(_test_table, tablefmt="plain")
+        self.assertEqual(expected, result)
+
+    def test_plain_multiline_headerless(self):
+        """Output: plain with multiline cells without headers."""
+        table = [["foo bar\nbaz\nbau", "hello"], ["", "multiline\nworld"]]
+        expected = "\n".join(
+            [
+                "foo bar    hello",
+                "  baz",
+                "  bau",
+                "         multiline",
+                "           world",
+            ]
+        )
+        result = tabulate(table, stralign="center", tablefmt="plain")
+        self.assertEqual(expected, result)
+
+    def test_plain_multiline(self):
+        """Output: plain with multiline cells with headers."""
+        table = [[2, "foo\nbar"]]
+        headers = ("more\nspam \x1b[31meggs\x1b[0m", "more spam\n& eggs")
+        expected = "\n".join(
+            [
+                "       more  more spam",
+                "  spam \x1b[31meggs\x1b[0m  & eggs",
+                "          2  foo",
+                "             bar",
+            ]
+        )
+        result = tabulate(table, headers, tablefmt="plain")
+        self.assertEqual(expected, result)
+
+    def test_plain_multiline_with_links(self):
+        """Output: plain with multiline cells with links and headers."""
+        table = [[2, "foo\nbar"]]
+        headers = (
+            "more\nspam \x1b]8;;target\x1b\\eggs\x1b]8;;\x1b\\",
+            "more spam\n& eggs",
+        )
+        expected = "\n".join(
+            [
+                "       more  more spam",
+                "  spam \x1b]8;;target\x1b\\eggs\x1b]8;;\x1b\\  & eggs",
+                "          2  foo",
+                "             bar",
+            ]
+        )
+        result = tabulate(table, headers, tablefmt="plain")
+        self.assertEqual(expected, result)
+
+    def test_plain_multiline_with_empty_cells(self):
+        """Output: plain with multiline cells and empty cells with headers."""
+        table = [
+            ["hdr", "data", "fold"],
+            ["1", "", ""],
+            ["2", "very long data", "fold\nthis"],
+        ]
+        expected = "\n".join(
+            [
+                "  hdr  data            fold",
+                "    1",
+                "    2  very long data  fold",
+                "                       this",
+            ]
+        )
+        result = tabulate(table, headers="firstrow", tablefmt="plain")
+        self.assertEqual(expected, result)
+
+    def test_plain_multiline_with_empty_cells_headerless(self):
+        """Output: plain with multiline cells and empty cells without headers."""
+        table = [["0", "", ""], ["1", "", ""], ["2", "very long data", "fold\nthis"]]
+        expected = "\n".join(
+            ["0", "1", "2  very long data  fold", "                   this"]
+        )
+        result = tabulate(table, tablefmt="plain")
+        self.assertEqual(expected, result)
+
+    def test_plain_maxcolwidth_autowraps(self):
+        """Output: maxcolwidth will result in autowrapping longer cells."""
+        table = [["hdr", "fold"], ["1", "very long data"]]
+        expected = "\n".join(["  hdr  fold", "    1  very long", "       data"])
+        result = tabulate(
+            table, headers="firstrow", tablefmt="plain", maxcolwidths=[10, 10]
+        )
+        self.assertEqual(expected, result)
+
+    def test_plain_maxcolwidth_autowraps_with_sep(self):
+        """Output: maxcolwidth will result in autowrapping longer cells and separating line."""
+        table = [
+            ["hdr", "fold"],
+            ["1", "very long data"],
+            SEPARATING_LINE,
+            ["2", "last line"],
+        ]
+        expected = "\n".join(
+            ["  hdr  fold", "    1  very long", "       data", "", "    2  last line"]
+        )
+        result = tabulate(
+            table, headers="firstrow", tablefmt="plain", maxcolwidths=[10, 10]
+        )
         self.assertEqual(expected, result)
