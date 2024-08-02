@@ -672,3 +672,209 @@ class TestTabulateOutput(unittest.TestCase):
             maxheadercolwidths=[None, 2],
         )
         self.assertEqual(expected, result)
+
+    def test_simple(self):
+        """Output: simple with headers."""
+        expected = "\n".join(
+            [
+                "strings      numbers",
+                "---------  ---------",
+                "spam         41.9999",
+                "eggs        451",
+            ]
+        )
+        result = tabulate(_test_table, _test_table_headers, tablefmt="simple")
+        self.assertEqual(expected, result)
+
+    def test_simple_with_sep_line(self):
+        """Output: simple with headers and separating line."""
+        expected = "\n".join(
+            [
+                "strings      numbers",
+                "---------  ---------",
+                "spam         41.9999",
+                "---------  ---------",
+                "eggs        451",
+            ]
+        )
+        result = tabulate(
+            _test_table_with_sep_line, _test_table_headers, tablefmt="simple"
+        )
+        self.assertEqual(expected, result)
+
+    def test_readme_example_with_sep(self):
+        table = [["Earth", 6371], ["Mars", 3390], SEPARATING_LINE, ["Moon", 1737]]
+        expected = "\n".join(
+            [
+                "-----  ----",
+                "Earth  6371",
+                "Mars   3390",
+                "-----  ----",
+                "Moon   1737",
+                "-----  ----",
+            ]
+        )
+        result = tabulate(table, tablefmt="simple")
+        self.assertEqual(expected, result)
+
+    def test_simple_multiline_2(self):
+        """Output: simple with multiline cells."""
+        expected = "\n".join(
+            [
+                " key     value",
+                "-----  ---------",
+                " foo      bar",
+                "spam   multiline",
+                "         world",
+            ]
+        )
+        table = [["key", "value"], ["foo", "bar"], ["spam", "multiline\nworld"]]
+        result = tabulate(
+            table, headers="firstrow", stralign="center", tablefmt="simple"
+        )
+        self.assertEqual(expected, result)
+
+    def test_simple_multiline_2_with_sep_line(self):
+        """Output: simple with multiline cells."""
+        expected = "\n".join(
+            [
+                " key     value",
+                "-----  ---------",
+                " foo      bar",
+                "-----  ---------",
+                "spam   multiline",
+                "         world",
+            ]
+        )
+        table = [
+            ["key", "value"],
+            ["foo", "bar"],
+            SEPARATING_LINE,
+            ["spam", "multiline\nworld"],
+        ]
+        result = tabulate(
+            table, headers="firstrow", stralign="center", tablefmt="simple"
+        )
+        self.assertEqual(expected, result)
+
+    def test_simple_headerless(self):
+        """Output: simple without headers."""
+        expected = "\n".join(
+            ["----  --------", "spam   41.9999", "eggs  451", "----  --------"]
+        )
+        result = tabulate(_test_table, tablefmt="simple")
+        self.assertEqual(expected, result)
+
+    def test_simple_headerless_with_sep_line(self):
+        """Output: simple without headers."""
+        expected = "\n".join(
+            [
+                "----  --------",
+                "spam   41.9999",
+                "----  --------",
+                "eggs  451",
+                "----  --------",
+            ]
+        )
+        result = tabulate(_test_table_with_sep_line, tablefmt="simple")
+        self.assertEqual(expected, result)
+
+    def test_simple_multiline_headerless(self):
+        """Output: simple with multiline cells without headers."""
+        table = [["foo bar\nbaz\nbau", "hello"], ["", "multiline\nworld"]]
+        expected = "\n".join(
+            [
+                "-------  ---------",
+                "foo bar    hello",
+                "  baz",
+                "  bau",
+                "         multiline",
+                "           world",
+                "-------  ---------",
+            ]
+        )
+        result = tabulate(table, stralign="center", tablefmt="simple")
+        self.assertEqual(expected, result)
+
+    def test_simple_multiline(self):
+        """Output: simple with multiline cells with headers."""
+        table = [[2, "foo\nbar"]]
+        headers = ("more\nspam \x1b[31meggs\x1b[0m", "more spam\n& eggs")
+        expected = "\n".join(
+            [
+                "       more  more spam",
+                "  spam \x1b[31meggs\x1b[0m  & eggs",
+                "-----------  -----------",
+                "          2  foo",
+                "             bar",
+            ]
+        )
+        result = tabulate(table, headers, tablefmt="simple")
+        self.assertEqual(expected, result)
+
+    def test_simple_multiline_with_links(self):
+        """Output: simple with multiline cells with links and headers."""
+        table = [[2, "foo\nbar"]]
+        headers = (
+            "more\nspam \x1b]8;;target\x1b\\eggs\x1b]8;;\x1b\\",
+            "more spam\n& eggs",
+        )
+        expected = "\n".join(
+            [
+                "       more  more spam",
+                "  spam \x1b]8;;target\x1b\\eggs\x1b]8;;\x1b\\  & eggs",
+                "-----------  -----------",
+                "          2  foo",
+                "             bar",
+            ]
+        )
+        result = tabulate(table, headers, tablefmt="simple")
+        self.assertEqual(expected, result)
+
+    def test_simple_multiline_with_empty_cells(self):
+        """Output: simple with multiline cells and empty cells with headers."""
+        table = [
+            ["hdr", "data", "fold"],
+            ["1", "", ""],
+            ["2", "very long data", "fold\nthis"],
+        ]
+        expected = "\n".join(
+            [
+                "  hdr  data            fold",
+                "-----  --------------  ------",
+                "    1",
+                "    2  very long data  fold",
+                "                       this",
+            ]
+        )
+        result = tabulate(table, headers="firstrow", tablefmt="simple")
+        self.assertEqual(expected, result)
+
+    def test_simple_multiline_with_empty_cells_headerless(self):
+        """Output: simple with multiline cells and empty cells without headers."""
+        table = [["0", "", ""], ["1", "", ""], ["2", "very long data", "fold\nthis"]]
+        expected = "\n".join(
+            [
+                "-  --------------  ----",
+                "0",
+                "1",
+                "2  very long data  fold",
+                "                   this",
+                "-  --------------  ----",
+            ]
+        )
+        result = tabulate(table, tablefmt="simple")
+        self.assertEqual(expected, result)
+
+    def test_github(self):
+        """Output: github with headers."""
+        expected = "\n".join(
+            [
+                "| strings   |   numbers |",
+                "|-----------|-----------|",
+                "| spam      |   41.9999 |",
+                "| eggs      |  451      |",
+            ]
+        )
+        result = tabulate(_test_table, _test_table_headers, tablefmt="github")
+        self.assertEqual(expected, result)
