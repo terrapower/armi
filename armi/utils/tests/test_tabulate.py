@@ -16,8 +16,10 @@
 #       This was originally https://github.com/astanin/python-tabulate
 
 """Tests for tabulate."""
-import numpy  # TODO: as np
+from collections import OrderedDict, UserDict
 import unittest
+
+import numpy  # TODO: as np
 
 from armi.utils.tabulate import tabulate, tabulate_formats
 
@@ -213,4 +215,136 @@ class TestTabulate(unittest.TestCase):
             ]
         )
         result = tabulate(na, headers=["person", "years", "cm"])
+        self.assertEqual(expected, result)
+
+    def test_list_of_namedtuples(self):
+        """Input: a list of named tuples with field names as headers."""
+        from collections import namedtuple
+
+        NT = namedtuple("NT", ["foo", "bar"])
+        lt = [NT(1, 2), NT(3, 4)]
+        expected = "\n".join(["-  -", "1  2", "3  4", "-  -"])
+        result = tabulate(lt)
+        self.assertEqual(expected, result)
+
+    def test_list_of_namedtuples_keys(self):
+        """Input: a list of named tuples with field names as headers."""
+        from collections import namedtuple
+
+        NT = namedtuple("NT", ["foo", "bar"])
+        lt = [NT(1, 2), NT(3, 4)]
+        expected = "\n".join(
+            ["  foo    bar", "-----  -----", "    1      2", "    3      4"]
+        )
+        result = tabulate(lt, headers="keys")
+        self.assertEqual(expected, result)
+
+    def test_list_of_dicts(self):
+        """Input: a list of dictionaries."""
+        lod = [{"foo": 1, "bar": 2}, {"foo": 3, "bar": 4}]
+        expected1 = "\n".join(["-  -", "1  2", "3  4", "-  -"])
+        expected2 = "\n".join(["-  -", "2  1", "4  3", "-  -"])
+        result = tabulate(lod)
+        self.assertIn(result, [expected1, expected2])
+
+    def test_list_of_userdicts(self):
+        """Input: a list of UserDicts."""
+        lod = [UserDict(foo=1, bar=2), UserDict(foo=3, bar=4)]
+        expected1 = "\n".join(["-  -", "1  2", "3  4", "-  -"])
+        expected2 = "\n".join(["-  -", "2  1", "4  3", "-  -"])
+        result = tabulate(lod)
+        self.assertIn(result, [expected1, expected2])
+
+    def test_list_of_dicts_keys(self):
+        """Input: a list of dictionaries, with keys as headers."""
+        lod = [{"foo": 1, "bar": 2}, {"foo": 3, "bar": 4}]
+        expected1 = "\n".join(
+            ["  foo    bar", "-----  -----", "    1      2", "    3      4"]
+        )
+        expected2 = "\n".join(
+            ["  bar    foo", "-----  -----", "    2      1", "    4      3"]
+        )
+        result = tabulate(lod, headers="keys")
+        self.assertIn(result, [expected1, expected2])
+
+    def test_list_of_userdicts_keys(self):
+        """Input: a list of UserDicts."""
+        lod = [UserDict(foo=1, bar=2), UserDict(foo=3, bar=4)]
+        expected1 = "\n".join(
+            ["  foo    bar", "-----  -----", "    1      2", "    3      4"]
+        )
+        expected2 = "\n".join(
+            ["  bar    foo", "-----  -----", "    2      1", "    4      3"]
+        )
+        result = tabulate(lod, headers="keys")
+        self.assertIn(result, [expected1, expected2])
+
+    def test_list_of_dicts_with_missing_keys(self):
+        """Input: a list of dictionaries, with missing keys."""
+        lod = [{"foo": 1}, {"bar": 2}, {"foo": 4, "baz": 3}]
+        expected = "\n".join(
+            [
+                "  foo    bar    baz",
+                "-----  -----  -----",
+                "    1",
+                "           2",
+                "    4             3",
+            ]
+        )
+        result = tabulate(lod, headers="keys")
+        self.assertEqual(expected, result)
+
+    def test_list_of_dicts_firstrow(self):
+        """Input: a list of dictionaries, with the first dict as headers."""
+        lod = [{"foo": "FOO", "bar": "BAR"}, {"foo": 3, "bar": 4, "baz": 5}]
+        # if some key is missing in the first dict, use the key name instead
+        expected1 = "\n".join(
+            ["  FOO    BAR    baz", "-----  -----  -----", "    3      4      5"]
+        )
+        expected2 = "\n".join(
+            ["  BAR    FOO    baz", "-----  -----  -----", "    4      3      5"]
+        )
+        result = tabulate(lod, headers="firstrow")
+        self.assertIn(result, [expected1, expected2])
+
+    def test_list_of_dicts_with_dict_of_headers(self):
+        """Input: a dict of user headers for a list of dicts."""
+        table = [{"letters": "ABCDE", "digits": 12345}]
+        headers = {"digits": "DIGITS", "letters": "LETTERS"}
+        expected1 = "\n".join(
+            ["  DIGITS  LETTERS", "--------  ---------", "   12345  ABCDE"]
+        )
+        expected2 = "\n".join(
+            ["LETTERS      DIGITS", "---------  --------", "ABCDE         12345"]
+        )
+        result = tabulate(table, headers=headers)
+        self.assertIn(result, [expected1, expected2])
+
+    def test_list_of_dicts_with_list_of_headers(self):
+        """Input: ValueError on a list of headers with a list of dicts."""
+        table = [{"letters": "ABCDE", "digits": 12345}]
+        headers = ["DIGITS", "LETTERS"]
+        with self.assertRaises(ValueError):
+            tabulate(table, headers=headers)
+
+    def test_list_of_ordereddicts(self):
+        """Input: a list of OrderedDicts."""
+        od = OrderedDict([("b", 1), ("a", 2)])
+        lod = [od, od]
+        expected = "\n".join(["  b    a", "---  ---", "  1    2", "  1    2"])
+        result = tabulate(lod, headers="keys")
+        self.assertEqual(expected, result)
+
+    def test_list_bytes(self):
+        """Input: a list of bytes."""
+        lb = [["你好".encode("utf-8")], ["你好"]]
+        expected = "\n".join(
+            [
+                "bytes",
+                "---------------------------",
+                r"b'\xe4\xbd\xa0\xe5\xa5\xbd'",
+                "你好",
+            ]
+        )
+        result = tabulate(lb, headers=["bytes"])
         self.assertEqual(expected, result)
