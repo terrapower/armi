@@ -404,7 +404,7 @@ def _type(string, hasInvisible=True, numparse=True):
 
     """
     if hasInvisible and isinstance(string, (str, bytes)):
-        string = _strip_ansi(string)
+        string = _stripAnsi(string)
 
     if string is None:
         return type(None)
@@ -491,16 +491,16 @@ def _padnone(ignore_width, s):
     return s
 
 
-def _strip_ansi(s):
+def _stripAnsi(s):
     r"""Remove ANSI escape sequences, both CSI (color codes, etc) and OSC hyperlinks.
 
     CSI sequences are simply removed from the output, while OSC hyperlinks are replaced with the
     link text. Note: it may be desirable to show the URI instead but this is not supported.
 
-    >>> repr(_strip_ansi('\x1B]8;;https://example.com\x1B\\This is a link\x1B]8;;\x1B\\'))
+    >>> repr(_stripAnsi('\x1B]8;;https://example.com\x1B\\This is a link\x1B]8;;\x1B\\'))
     "'This is a link'"
 
-    >>> repr(_strip_ansi('\x1b[31mred\x1b[0m text'))
+    >>> repr(_stripAnsi('\x1b[31mred\x1b[0m text'))
     "'red text'"
 
     """
@@ -510,21 +510,21 @@ def _strip_ansi(s):
         return _ansiCodesBytes.sub(r"\4", s)
 
 
-def _visible_width(s):
+def _visibleWidth(s):
     r"""Visible width of a printed string. ANSI color codes are removed.
 
-    >>> _visible_width('\x1b[31mhello\x1b[0m'), _visible_width("world")
+    >>> _visibleWidth('\x1b[31mhello\x1b[0m'), _visibleWidth("world")
     (5, 5)
 
     """
     len_fn = len
     if isinstance(s, (str, bytes)):
-        return len_fn(_strip_ansi(s))
+        return len_fn(_stripAnsi(s))
     else:
         return len_fn(str(s))
 
 
-def _is_multiline(s):
+def _isMultiline(s):
     if isinstance(s, str):
         return bool(re.search(_multilineCodes, s))
     else:
@@ -537,14 +537,14 @@ def _multilineWidth(multiline_s, line_width_fn=len):
     return max(map(line_width_fn, re.split("[\r\n]", multiline_s)))
 
 
-def _choose_width_fn(hasInvisible, is_multiline):
+def _chooseWidthFn(hasInvisible, isMultiline):
     """Return a function to calculate visible cell width."""
     if hasInvisible:
-        line_width_fn = _visible_width
+        line_width_fn = _visibleWidth
     else:
         line_width_fn = len
 
-    if is_multiline:
+    if isMultiline:
         width_fn = lambda s: _multilineWidth(s, line_width_fn)
     else:
         width_fn = line_width_fn
@@ -563,7 +563,7 @@ def _alignColumnChoosePadfn(strings, alignment, hasInvisible):
         padfn = _padboth
     elif alignment == "decimal":
         if hasInvisible:
-            decimals = [_afterpoint(_strip_ansi(s)) for s in strings]
+            decimals = [_afterpoint(_stripAnsi(s)) for s in strings]
         else:
             decimals = [_afterpoint(s) for s in strings]
         maxdecimals = max(decimals)
@@ -578,13 +578,13 @@ def _alignColumnChoosePadfn(strings, alignment, hasInvisible):
     return strings, padfn
 
 
-def _alignColumnChooseWidthFn(hasInvisible, is_multiline):
+def _alignColumnChooseWidthFn(hasInvisible, isMultiline):
     if hasInvisible:
-        line_width_fn = _visible_width
+        line_width_fn = _visibleWidth
     else:
         line_width_fn = len
 
-    if is_multiline:
+    if isMultiline:
         width_fn = lambda s: _alignColumnMultilineWidth(s, line_width_fn)
     else:
         width_fn = line_width_fn
@@ -597,7 +597,7 @@ def _alignColumnMultilineWidth(multiline_s, line_width_fn=len):
     return list(map(line_width_fn, re.split("[\r\n]", multiline_s)))
 
 
-def _flat_list(nested_list):
+def _flatList(nested_list):
     ret = []
     for item in nested_list:
         if isinstance(item, list):
@@ -608,14 +608,14 @@ def _flat_list(nested_list):
     return ret
 
 
-def _alignColumn(strings, alignment, minwidth=0, hasInvisible=True, is_multiline=False):
+def _alignColumn(strings, alignment, minwidth=0, hasInvisible=True, isMultiline=False):
     """[string] -> [padded_string]."""
     strings, padfn = _alignColumnChoosePadfn(strings, alignment, hasInvisible)
-    width_fn = _alignColumnChooseWidthFn(hasInvisible, is_multiline)
+    width_fn = _alignColumnChooseWidthFn(hasInvisible, isMultiline)
 
     s_widths = list(map(width_fn, strings))
-    maxwidth = max(max(_flat_list(s_widths)), minwidth)
-    if is_multiline:
+    maxwidth = max(max(_flatList(s_widths)), minwidth)
+    if isMultiline:
         if not hasInvisible:
             padded_strings = [
                 "\n".join([padfn(maxwidth, s) for s in ms.splitlines()])
@@ -624,15 +624,15 @@ def _alignColumn(strings, alignment, minwidth=0, hasInvisible=True, is_multiline
         else:
             # enable wide-character width corrections
             s_lens = [[len(s) for s in re.split("[\r\n]", ms)] for ms in strings]
-            visible_widths = [
+            visibleWidths = [
                 [maxwidth - (w - ll) for w, ll in zip(mw, ml)]
                 for mw, ml in zip(s_widths, s_lens)
             ]
-            # wcswidth and _visible_width don't count invisible characters;
+            # wcswidth and _visibleWidth don't count invisible characters;
             # padfn doesn't need to apply another correction
             padded_strings = [
                 "\n".join([padfn(w, s) for s, w in zip((ms.splitlines() or ms), mw)])
-                for ms, mw in zip(strings, visible_widths)
+                for ms, mw in zip(strings, visibleWidths)
             ]
     else:  # single-line cell values
         if not hasInvisible:
@@ -640,15 +640,15 @@ def _alignColumn(strings, alignment, minwidth=0, hasInvisible=True, is_multiline
         else:
             # enable wide-character width corrections
             s_lens = list(map(len, strings))
-            visible_widths = [maxwidth - (w - ll) for w, ll in zip(s_widths, s_lens)]
-            # wcswidth and _visible_width don't count invisible characters;
+            visibleWidths = [maxwidth - (w - ll) for w, ll in zip(s_widths, s_lens)]
+            # wcswidth and _visibleWidth don't count invisible characters;
             # padfn doesn't need to apply another correction
-            padded_strings = [padfn(w, s) for s, w in zip(strings, visible_widths)]
+            padded_strings = [padfn(w, s) for s, w in zip(strings, visibleWidths)]
 
     return padded_strings
 
 
-def _more_generic(type1, type2):
+def _moreGeneric(type1, type2):
     types = {
         type(None): 0,
         bool: 1,
@@ -692,7 +692,7 @@ def _column_type(strings, hasInvisible=True, numparse=True):
 
     """
     types = [_type(s, hasInvisible, numparse) for s in strings]
-    return reduce(_more_generic, types, bool)
+    return reduce(_moreGeneric, types, bool)
 
 
 def _format(val, valtype, floatfmt, intfmt, missingval="", hasInvisible=True):
@@ -722,7 +722,7 @@ def _format(val, valtype, floatfmt, intfmt, missingval="", hasInvisible=True):
     elif valtype is float:
         isAColoredNumber = hasInvisible and isinstance(val, (str, bytes))
         if isAColoredNumber:
-            rawVal = _strip_ansi(val)
+            rawVal = _stripAnsi(val)
             formattedVal = format(float(rawVal), floatfmt)
             return val.replace(rawVal, formattedVal)
         else:
@@ -731,18 +731,18 @@ def _format(val, valtype, floatfmt, intfmt, missingval="", hasInvisible=True):
         return f"{val}"
 
 
-def _align_header(
-    header, alignment, width, visible_width, is_multiline=False, width_fn=None
+def _alignHeader(
+    header, alignment, width, visibleWidth, isMultiline=False, width_fn=None
 ):
-    """Pad string header to width chars given known visible_width of the header."""
-    if is_multiline:
-        header_lines = re.split(_multilineCodes, header)
-        padded_lines = [
-            _align_header(h, alignment, width, width_fn(h)) for h in header_lines
+    """Pad string header to width chars given known visibleWidth of the header."""
+    if isMultiline:
+        headerLines = re.split(_multilineCodes, header)
+        paddedLines = [
+            _alignHeader(h, alignment, width, width_fn(h)) for h in headerLines
         ]
-        return "\n".join(padded_lines)
+        return "\n".join(paddedLines)
     # else: not multiline
-    ninvisible = len(header) - visible_width
+    ninvisible = len(header) - visibleWidth
     width += ninvisible
     if alignment == "left":
         return _padright(width, header)
@@ -768,13 +768,13 @@ def _removeSeparatingLines(rows):
         return rows, None
 
 
-def _reinsert_separatingLines(rows, separatingLines):
+def _reinsertSeparatingLines(rows, separatingLines):
     if separatingLines:
         for index in separatingLines:
             rows.insert(index, SEPARATING_LINE)
 
 
-def _prepend_row_index(rows, index):
+def _prependRowIndex(rows, index):
     """Add a left-most index column."""
     if index is None or index is False:
         return rows
@@ -790,7 +790,7 @@ def _prepend_row_index(rows, index):
         index_v = next(index_iter)
         new_rows.append([index_v] + list(row))
     rows = new_rows
-    _reinsert_separatingLines(rows, separatingLines)
+    _reinsertSeparatingLines(rows, separatingLines)
     return rows
 
 
@@ -959,15 +959,15 @@ def _normalizeTabularData(tabular_data, headers, showindex="default"):
     # add or remove an index column
     showindex_is_a_str = type(showindex) in [str, bytes]
     if showindex == "default" and index is not None:
-        rows = _prepend_row_index(rows, index)
+        rows = _prependRowIndex(rows, index)
     elif isinstance(showindex, Sized) and not showindex_is_a_str:
-        rows = _prepend_row_index(rows, list(showindex))
+        rows = _prependRowIndex(rows, list(showindex))
     elif isinstance(showindex, Iterable) and not showindex_is_a_str:
-        rows = _prepend_row_index(rows, showindex)
+        rows = _prependRowIndex(rows, showindex)
     elif showindex == "always" or (_bool(showindex) and not showindex_is_a_str):
         if index is None:
             index = list(range(len(rows)))
-        rows = _prepend_row_index(rows, index)
+        rows = _prependRowIndex(rows, index)
     elif showindex == "never" or (not _bool(showindex) and not showindex_is_a_str):
         pass
 
@@ -1017,7 +1017,7 @@ def _wrapTextToColwidths(listOfLists, colwidths, numparses=True):
     return result
 
 
-def _to_str(s, encoding="utf8", errors="ignore"):
+def _toStr(s, encoding="utf8", errors="ignore"):
     """
     A type safe wrapper for converting a bytestring to str.
 
@@ -1028,13 +1028,13 @@ def _to_str(s, encoding="utf8", errors="ignore"):
     2. decode() is called for the given parameter and assumes utf8 encoding, but the default error
        behavior is changed from 'strict' to 'ignore'
 
-    >>> repr(_to_str(b'foo'))
+    >>> repr(_toStr(b'foo'))
     "'foo'"
 
-    >>> repr(_to_str('foo'))
+    >>> repr(_toStr('foo'))
     "'foo'"
 
-    >>> repr(_to_str(42))
+    >>> repr(_toStr(42))
     "'42'"
 
     """
@@ -1318,10 +1318,10 @@ def tabulate(
     plain_text = "\t".join(
         chain(
             # headers
-            map(_to_str, headers),
+            map(_toStr, headers),
             # rows: chain the rows together into a single iterable after mapping the bytestring
             # conversino to each cell value
-            chain.from_iterable(map(_to_str, row) for row in listOfLists),
+            chain.from_iterable(map(_toStr, row) for row in listOfLists),
         )
     )
 
@@ -1330,13 +1330,13 @@ def tabulate(
     if (
         not isinstance(tablefmt, TableFormat)
         and tablefmt in multiline_formats
-        and _is_multiline(plain_text)
+        and _isMultiline(plain_text)
     ):
         tablefmt = multiline_formats.get(tablefmt, tablefmt)
-        is_multiline = True
+        isMultiline = True
     else:
-        is_multiline = False
-    width_fn = _choose_width_fn(hasInvisible, is_multiline)
+        isMultiline = False
+    width_fn = _chooseWidthFn(hasInvisible, isMultiline)
 
     # format rows and columns, convert numeric values to strings
     cols = list(izip_longest(*listOfLists))
@@ -1394,7 +1394,7 @@ def tabulate(
         [width_fn(h) + min_padding for h in headers] if headers else [0] * len(cols)
     )
     cols = [
-        _alignColumn(c, a, minw, hasInvisible, is_multiline)
+        _alignColumn(c, a, minw, hasInvisible, isMultiline)
         for c, a, minw in zip(cols, aligns, minwidths)
     ]
 
@@ -1430,7 +1430,7 @@ def tabulate(
             for minw, c in zip(minwidths, t_cols)
         ]
         headers = [
-            _align_header(h, a, minw, width_fn(h), is_multiline, width_fn)
+            _alignHeader(h, a, minw, width_fn(h), isMultiline, width_fn)
             for h, a, minw in zip(headers, aligns_headers, minwidths)
         ]
         rows = list(zip(*cols))
@@ -1443,16 +1443,16 @@ def tabulate(
 
     ra_default = rowalign if isinstance(rowalign, str) else None
     rowaligns = _expandIterable(rowalign, len(rows), ra_default)
-    _reinsert_separatingLines(rows, separatingLines)
+    _reinsertSeparatingLines(rows, separatingLines)
 
-    return _format_table(
+    return _formatTable(
         tablefmt,
         headers,
         aligns_headers,
         rows,
         minwidths,
         aligns,
-        is_multiline,
+        isMultiline,
         rowaligns=rowaligns,
     )
 
@@ -1562,14 +1562,12 @@ def _build_line(colwidths, colaligns, linefmt):
         return _buildSimpleRow(cells, (begin, sep, end))
 
 
-def _append_line(lines, colwidths, colaligns, linefmt):
+def _appendLine(lines, colwidths, colaligns, linefmt):
     lines.append(_build_line(colwidths, colaligns, linefmt))
     return lines
 
 
-def _format_table(
-    fmt, headers, headersaligns, rows, colwidths, colaligns, is_multiline, rowaligns
-):
+def _formatTable(fmt, headers, headersaligns, rows, colwidths, colaligns, isMultiline, rowaligns):
     """Produce a plain-text representation of the table."""
     lines = []
     hidden = fmt.with_header_hide if (headers and fmt.with_header_hide) else []
@@ -1577,7 +1575,7 @@ def _format_table(
     headerrow = fmt.headerrow
 
     padded_widths = [(w + 2 * pad) for w in colwidths]
-    if is_multiline:
+    if isMultiline:
         pad_row = lambda row, _: row
         append_row = partial(_appendMultilineRow, pad=pad)
     else:
@@ -1588,12 +1586,12 @@ def _format_table(
     padded_rows = [pad_row(row, pad) for row in rows]
 
     if fmt.lineabove and "lineabove" not in hidden:
-        _append_line(lines, padded_widths, colaligns, fmt.lineabove)
+        _appendLine(lines, padded_widths, colaligns, fmt.lineabove)
 
     if padded_headers:
         append_row(lines, padded_headers, padded_widths, headersaligns, headerrow)
         if fmt.linebelowheader and "linebelowheader" not in hidden:
-            _append_line(lines, padded_widths, colaligns, fmt.linebelowheader)
+            _appendLine(lines, padded_widths, colaligns, fmt.linebelowheader)
 
     if padded_rows and fmt.linebetweenrows and "linebetweenrows" not in hidden:
         # initial rows with a line below
@@ -1601,7 +1599,7 @@ def _format_table(
             append_row(
                 lines, row, padded_widths, colaligns, fmt.datarow, rowalign=ralign
             )
-            _append_line(lines, padded_widths, colaligns, fmt.linebetweenrows)
+            _appendLine(lines, padded_widths, colaligns, fmt.linebetweenrows)
         # the last row without a line below
         append_row(
             lines,
@@ -1623,12 +1621,12 @@ def _format_table(
             # test to see if either the 1st column or the 2nd column (account for showindex) has the
             # SEPARATING_LINE flag
             if _isSeparatingLine(row):
-                _append_line(lines, padded_widths, colaligns, separating_line)
+                _appendLine(lines, padded_widths, colaligns, separating_line)
             else:
                 append_row(lines, row, padded_widths, colaligns, fmt.datarow)
 
     if fmt.linebelow and "linebelow" not in hidden:
-        _append_line(lines, padded_widths, colaligns, fmt.linebelow)
+        _appendLine(lines, padded_widths, colaligns, fmt.linebelow)
 
     if headers or rows:
         return "\n".join(lines)
@@ -1651,10 +1649,10 @@ class _CustomTextWrap(textwrap.TextWrapper):
         """Custom len that gets console column width for wide and non-wide characters as well as
         ignores color codes.
         """
-        stripped = _strip_ansi(item)
+        stripped = _stripAnsi(item)
         return len(stripped)
 
-    def _update_lines(self, lines, new_line):
+    def _updateLines(self, lines, new_line):
         """Adds a new line to the list of lines the text is being wrapped into.
 
         This function will also track any ANSI color codes in this string as well as add any colors

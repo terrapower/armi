@@ -414,7 +414,7 @@ class TestTabulateInternal(unittest.TestCase):
     def test_alignColumnMultiline(self):
         """Internal: _align_column(..., is_multiline=True)."""
         column = ["1", "123", "12345\n6"]
-        output = _alignColumn(column, "center", is_multiline=True)
+        output = _alignColumn(column, "center", isMultiline=True)
         expected = ["  1  ", " 123 ", "12345" + "\n" + "  6  "]
         self.assertEqual(expected, output)
 
