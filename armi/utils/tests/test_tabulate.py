@@ -1289,3 +1289,236 @@ class TestTabulateOutput(unittest.TestCase):
         )
         expected = "  one  two\n\nthree  four"
         self.assertEqual(expected, result)
+
+    def test_column_global_and_specific_alignment(self):
+        """Test `colglobalalign` and `"global"` parameter for `colalign`."""
+        table = [[1, 2, 3, 4], [111, 222, 333, 444]]
+        colglobalalign = "center"
+        colalign = ("global", "left", "right")
+        result = tabulate(table, colglobalalign=colglobalalign, colalign=colalign)
+        expected = "\n".join(
+            [
+                "---  ---  ---  ---",
+                " 1   2      3   4",
+                "111  222  333  444",
+                "---  ---  ---  ---",
+            ]
+        )
+        self.assertEqual(expected, result)
+
+    def test_headers_global_and_specific_alignment(self):
+        """Test `headersglobalalign` and `headersalign`."""
+        table = [[1, 2, 3, 4, 5, 6], [111, 222, 333, 444, 555, 666]]
+        colglobalalign = "center"
+        colalign = ("left",)
+        headers = ["h", "e", "a", "d", "e", "r"]
+        headersglobalalign = "right"
+        headersalign = ("same", "same", "left", "global", "center")
+        result = tabulate(
+            table,
+            headers=headers,
+            colglobalalign=colglobalalign,
+            colalign=colalign,
+            headersglobalalign=headersglobalalign,
+            headersalign=headersalign,
+        )
+        expected = "\n".join(
+            [
+                "h     e   a      d   e     r",
+                "---  ---  ---  ---  ---  ---",
+                "1     2    3    4    5    6",
+                "111  222  333  444  555  666",
+            ]
+        )
+        self.assertEqual(expected, result)
+
+    def test_colalign_or_headersalign_too_long(self):
+        """Test `colalign` and `headersalign` too long."""
+        table = [[1, 2], [111, 222]]
+        colalign = ("global", "left", "center")
+        headers = ["h"]
+        headersalign = ("center", "right", "same")
+        result = tabulate(
+            table, headers=headers, colalign=colalign, headersalign=headersalign
+        )
+        expected = "\n".join(["      h", "---  ---", "  1  2", "111  222"])
+        self.assertEqual(expected, result)
+
+    def test_float_conversions(self):
+        """Output: float format parsed."""
+        test_headers = [
+            "str",
+            "bad_float",
+            "just_float",
+            "with_inf",
+            "with_nan",
+            "neg_inf",
+        ]
+        test_table = [
+            ["spam", 41.9999, "123.345", "12.2", "nan", "0.123123"],
+            ["eggs", "451.0", 66.2222, "inf", 123.1234, "-inf"],
+            ["asd", "437e6548", 1.234e2, float("inf"), float("nan"), 0.22e23],
+        ]
+        result = tabulate(test_table, test_headers, tablefmt="grid")
+        expected = "\n".join(
+            [
+                "+-------+-------------+--------------+------------+------------+-------------+",
+                "| str   | bad_float   |   just_float |   with_inf |   with_nan |     neg_inf |",
+                "+=======+=============+==============+============+============+=============+",
+                "| spam  | 41.9999     |     123.345  |       12.2 |    nan     |    0.123123 |",
+                "+-------+-------------+--------------+------------+------------+-------------+",
+                "| eggs  | 451.0       |      66.2222 |      inf   |    123.123 | -inf        |",
+                "+-------+-------------+--------------+------------+------------+-------------+",
+                "| asd   | 437e6548    |     123.4    |      inf   |    nan     |    2.2e+22  |",
+                "+-------+-------------+--------------+------------+------------+-------------+",
+            ]
+        )
+        self.assertEqual(expected, result)
+
+    def test_missingval(self):
+        """Output: substitution of missing values."""
+        result = tabulate(
+            [["Alice", 10], ["Bob", None]], missingval="n/a", tablefmt="plain"
+        )
+        expected = "Alice   10\nBob    n/a"
+        self.assertEqual(expected, result)
+
+    def test_missingval_multi(self):
+        """Output: substitution of missing values with different values per column."""
+        result = tabulate(
+            [["Alice", "Bob", "Charlie"], [None, None, None]],
+            missingval=("n/a", "?"),
+            tablefmt="plain",
+        )
+        expected = "Alice  Bob  Charlie\nn/a    ?"
+        self.assertEqual(expected, result)
+
+    def test_column_alignment(self):
+        """Output: custom alignment for text and numbers."""
+        expected = "\n".join(["-----  ---", "Alice   1", "  Bob  333", "-----  ---"])
+        result = tabulate(
+            [["Alice", 1], ["Bob", 333]], stralign="right", numalign="center"
+        )
+        self.assertEqual(expected, result)
+
+    def test_dict_like_with_index(self):
+        """Output: a table with a running index."""
+        dd = {"b": range(101, 104)}
+        expected = "\n".join(["      b", "--  ---", " 0  101", " 1  102", " 2  103"])
+        result = tabulate(dd, "keys", showindex=True)
+        self.assertEqual(expected, result)
+
+    def test_list_of_lists_with_index(self):
+        """Output: a table with a running index."""
+        dd = zip(*[range(3), range(101, 104)])
+        # keys' order (hence columns' order) is not deterministic in Python 3
+        # => we have to consider both possible results as valid
+        expected = "\n".join(
+            [
+                "      a    b",
+                "--  ---  ---",
+                " 0    0  101",
+                " 1    1  102",
+                " 2    2  103",
+            ]
+        )
+        result = tabulate(dd, headers=["a", "b"], showindex=True)
+        self.assertEqual(expected, result)
+
+    def test_list_of_lists_with_index_with_sep_line(self):
+        """Output: a table with a running index."""
+        dd = [(0, 101), SEPARATING_LINE, (1, 102), (2, 103)]
+        # keys' order (hence columns' order) is not deterministic in Python 3
+        # => we have to consider both possible results as valid
+        expected = "\n".join(
+            [
+                "      a    b",
+                "--  ---  ---",
+                " 0    0  101",
+                "--  ---  ---",
+                " 1    1  102",
+                " 2    2  103",
+            ]
+        )
+        result = tabulate(dd, headers=["a", "b"], showindex=True)
+        self.assertEqual(expected, result)
+
+    def test_list_of_lists_with_supplied_index(self):
+        """Output: a table with a supplied index."""
+        dd = zip(*[list(range(3)), list(range(101, 104))])
+        expected = "\n".join(
+            [
+                "      a    b",
+                "--  ---  ---",
+                " 1    0  101",
+                " 2    1  102",
+                " 3    2  103",
+            ]
+        )
+        result = tabulate(dd, headers=["a", "b"], showindex=[1, 2, 3])
+        self.assertEqual(expected, result)
+        # the index must be as long as the number of rows
+        with self.assertRaises(ValueError):
+            tabulate(dd, headers=["a", "b"], showindex=[1, 2])
+
+    def test_list_of_lists_with_index_firstrow(self):
+        """Output: a table with a running index and header='firstrow'."""
+        dd = zip(*[["a"] + list(range(3)), ["b"] + list(range(101, 104))])
+        expected = "\n".join(
+            [
+                "      a    b",
+                "--  ---  ---",
+                " 0    0  101",
+                " 1    1  102",
+                " 2    2  103",
+            ]
+        )
+        result = tabulate(dd, headers="firstrow", showindex=True)
+        self.assertEqual(expected, result)
+        # the index must be as long as the number of rows
+        with self.assertRaises(ValueError):
+            tabulate(dd, headers="firstrow", showindex=[1, 2])
+
+    def test_disable_numparse_default(self):
+        """Output: Default table output with number parsing and alignment."""
+        expected = "\n".join(
+            [
+                "strings      numbers",
+                "---------  ---------",
+                "spam         41.9999",
+                "eggs        451",
+            ]
+        )
+        result = tabulate(_test_table, _test_table_headers)
+        self.assertEqual(expected, result)
+        result = tabulate(_test_table, _test_table_headers, disableNumparse=False)
+        self.assertEqual(expected, result)
+
+    def test_disable_numparse_true(self):
+        """Output: Default table output, but without number parsing and alignment."""
+        expected = "\n".join(
+            [
+                "strings    numbers",
+                "---------  ---------",
+                "spam       41.9999",
+                "eggs       451.0",
+            ]
+        )
+        result = tabulate(_test_table, _test_table_headers, disableNumparse=True)
+        self.assertEqual(expected, result)
+
+    def test_disable_numparse_list(self):
+        """Output: Default table output, but with number parsing selectively disabled."""
+        table_headers = ["h1", "h2", "h3"]
+        test_table = [["foo", "bar", "42992e1"]]
+        expected = "\n".join(
+            ["h1    h2    h3", "----  ----  -------", "foo   bar   42992e1"]
+        )
+        result = tabulate(test_table, table_headers, disableNumparse=[2])
+        self.assertEqual(expected, result)
+
+        expected = "\n".join(
+            ["h1    h2        h3", "----  ----  ------", "foo   bar   429920"]
+        )
+        result = tabulate(test_table, table_headers, disableNumparse=[0, 1])
+        self.assertEqual(expected, result)
