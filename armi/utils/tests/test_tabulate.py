@@ -1105,3 +1105,119 @@ class TestTabulateOutput(unittest.TestCase):
         )
         result = tabulate(table, tablefmt="pretty")
         self.assertEqual(expected, result)
+
+    def test_rst(self):
+        """Output: rst with headers."""
+        expected = "\n".join(
+            [
+                "=========  =========",
+                "strings      numbers",
+                "=========  =========",
+                "spam         41.9999",
+                "eggs        451",
+                "=========  =========",
+            ]
+        )
+        result = tabulate(_test_table, _test_table_headers, tablefmt="rst")
+        self.assertEqual(expected, result)
+
+    def test_rst_with_empty_values_in_first_column(self):
+        """Output: rst with dots in first column."""
+        test_headers = ["", "what"]
+        test_data = [("", "spam"), ("", "eggs")]
+        expected = "\n".join(
+            [
+                "====  ======",
+                "..    what",
+                "====  ======",
+                "..    spam",
+                "..    eggs",
+                "====  ======",
+            ]
+        )
+        result = tabulate(test_data, test_headers, tablefmt="rst")
+        self.assertEqual(expected, result)
+
+    def test_rst_headerless(self):
+        """Output: rst without headers."""
+        expected = "\n".join(
+            ["====  ========", "spam   41.9999", "eggs  451", "====  ========"]
+        )
+        result = tabulate(_test_table, tablefmt="rst")
+        self.assertEqual(expected, result)
+
+    def test_rst_multiline(self):
+        """Output: rst with multiline cells with headers."""
+        table = [[2, "foo\nbar"]]
+        headers = ("more\nspam \x1b[31meggs\x1b[0m", "more spam\n& eggs")
+        expected = "\n".join(
+            [
+                "===========  ===========",
+                "       more  more spam",
+                "  spam \x1b[31meggs\x1b[0m  & eggs",
+                "===========  ===========",
+                "          2  foo",
+                "             bar",
+                "===========  ===========",
+            ]
+        )
+        result = tabulate(table, headers, tablefmt="rst")
+        self.assertEqual(expected, result)
+
+    def test_rst_multiline_with_links(self):
+        """Output: rst with multiline cells with headers."""
+        table = [[2, "foo\nbar"]]
+        headers = (
+            "more\nspam \x1b]8;;target\x1b\\eggs\x1b]8;;\x1b\\",
+            "more spam\n& eggs",
+        )
+        expected = "\n".join(
+            [
+                "===========  ===========",
+                "       more  more spam",
+                "  spam \x1b]8;;target\x1b\\eggs\x1b]8;;\x1b\\  & eggs",
+                "===========  ===========",
+                "          2  foo",
+                "             bar",
+                "===========  ===========",
+            ]
+        )
+        result = tabulate(table, headers, tablefmt="rst")
+        self.assertEqual(expected, result)
+
+    def test_rst_multiline_with_empty_cells(self):
+        """Output: rst with multiline cells and empty cells with headers."""
+        table = [
+            ["hdr", "data", "fold"],
+            ["1", "", ""],
+            ["2", "very long data", "fold\nthis"],
+        ]
+        expected = "\n".join(
+            [
+                "=====  ==============  ======",
+                "  hdr  data            fold",
+                "=====  ==============  ======",
+                "    1",
+                "    2  very long data  fold",
+                "                       this",
+                "=====  ==============  ======",
+            ]
+        )
+        result = tabulate(table, headers="firstrow", tablefmt="rst")
+        self.assertEqual(expected, result)
+
+    def test_rst_multiline_with_empty_cells_headerless(self):
+        """Output: rst with multiline cells and empty cells without headers."""
+        table = [["0", "", ""], ["1", "", ""], ["2", "very long data", "fold\nthis"]]
+        expected = "\n".join(
+            [
+                "=  ==============  ====",
+                "0",
+                "1",
+                "2  very long data  fold",
+                "                   this",
+                "=  ==============  ====",
+            ]
+        )
+        result = tabulate(table, tablefmt="rst")
+        self.assertEqual(expected, result)
