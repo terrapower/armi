@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# NOTE: This code originally started out as this MIT-licensed "tabulate":
+# NOTE: This code originally started out as the MIT-licensed "tabulate":
 #       This was originally https://github.com/astanin/python-tabulate
 
 """Pretty-print tabular data."""
@@ -830,9 +830,8 @@ def _normalize_tabular_data(tabular_data, headers, showindex="default"):
     """
     try:
         bool(headers)
-        is_headers2bool_broken = False  # noqa
-    except ValueError:  # numpy.ndarray, pandas.core.index.Index, ...
-        is_headers2bool_broken = True  # noqa
+    except ValueError:
+        # numpy.ndarray, pandas.core.index.Index, ...
         headers = list(headers)
 
     index = None
