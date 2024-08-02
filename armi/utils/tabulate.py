@@ -94,7 +94,7 @@ TableFormat = namedtuple(
 )
 
 
-def _is_separating_line(row):
+def _isSeparatingLine(row):
     row_type = type(row)
     is_sl = (row_type is list or row_type is str) and (
         (len(row) >= 1 and row[0] == SEPARATING_LINE)
@@ -103,23 +103,23 @@ def _is_separating_line(row):
     return is_sl
 
 
-def _rst_escape_first_column(rows, headers):
-    def escape_empty(val):
+def _rstEscapeFirstColumn(rows, headers):
+    def escapeEmpty(val):
         if isinstance(val, (str, bytes)) and not val.strip():
             return ".."
         else:
             return val
 
-    new_headers = list(headers)
-    new_rows = []
+    newHeaders = list(headers)
+    newRows = []
     if headers:
-        new_headers[0] = escape_empty(headers[0])
+        newHeaders[0] = escapeEmpty(headers[0])
     for row in rows:
-        new_row = list(row)
-        if new_row:
-            new_row[0] = escape_empty(row[0])
-        new_rows.append(new_row)
-    return new_rows, new_headers
+        newRow = list(row)
+        if newRow:
+            newRow[0] = escapeEmpty(row[0])
+        newRows.append(newRow)
+    return newRows, newHeaders
 
 
 _table_formats = {
@@ -231,8 +231,8 @@ multiline_formats = {
     "rst": "rst",
 }
 
-_multiline_codes = re.compile(r"\r|\n|\r\n")
-_multiline_codes_bytes = re.compile(b"\r|\n|\r\n")
+_multilineCodes = re.compile(r"\r|\n|\r\n")
+_multilineCodesBytes = re.compile(b"\r|\n|\r\n")
 
 # Handle ANSI escape sequences for both control sequence introducer (CSI) and operating system
 # command (OSC). Both of these begin with 0x1b (or octal 033), which will be shown below as ESC.
@@ -261,7 +261,7 @@ _csi = rf"{_esc}\["
 _osc = rf"{_esc}\]"
 _st = rf"{_esc}\\"
 
-_ansi_escape_pat = rf"""
+_ansiEscapePat = rf"""
     (
         # terminal colors, etc
         {_csi}        # CSI
@@ -279,8 +279,8 @@ _ansi_escape_pat = rf"""
         {_osc}8;;{_st}  # "closing" OSC sequence
     )
 """
-_ansi_codes = re.compile(_ansi_escape_pat, re.VERBOSE)
-_ansi_codes_bytes = re.compile(_ansi_escape_pat.encode("utf8"), re.VERBOSE)
+_ansi_codes = re.compile(_ansiEscapePat, re.VERBOSE)
+_ansi_codes_bytes = re.compile(_ansiEscapePat.encode("utf8"), re.VERBOSE)
 _ansi_color_reset_code = "\033[0m"
 
 _float_with_thousands_separators = re.compile(
@@ -526,10 +526,10 @@ def _visible_width(s):
 
 def _is_multiline(s):
     if isinstance(s, str):
-        return bool(re.search(_multiline_codes, s))
+        return bool(re.search(_multilineCodes, s))
     else:
         # a bytestring
-        return bool(re.search(_multiline_codes_bytes, s))
+        return bool(re.search(_multilineCodesBytes, s))
 
 
 def _multilineWidth(multiline_s, line_width_fn=len):
@@ -738,7 +738,7 @@ def _align_header(
 ):
     """Pad string header to width chars given known visible_width of the header."""
     if is_multiline:
-        header_lines = re.split(_multiline_codes, header)
+        header_lines = re.split(_multilineCodes, header)
         padded_lines = [
             _align_header(h, alignment, width, width_fn(h)) for h in header_lines
         ]
@@ -761,7 +761,7 @@ def _removeSeparatingLines(rows):
         separatingLines = []
         sans_rows = []
         for index, row in enumerate(rows):
-            if _is_separating_line(row):
+            if _isSeparatingLine(row):
                 separatingLines.append(index)
             else:
                 sans_rows.append(row)
@@ -956,7 +956,7 @@ def _normalizeTabularData(tabular_data, headers, showindex="default"):
         headers = []
 
     headers = list(map(str, headers))
-    rows = list(map(lambda r: r if _is_separating_line(r) else list(r), rows))
+    rows = list(map(lambda r: r if _isSeparatingLine(r) else list(r), rows))
 
     # add or remove an index column
     showindex_is_a_str = type(showindex) in [str, bytes]
@@ -1297,7 +1297,7 @@ def tabulate(
     # empty values in the first column of RST tables should be escaped (issue #82)
     # "" should be escaped as "\\ " or ".."
     if tablefmt == "rst":
-        listOfLists, headers = _rst_escape_first_column(listOfLists, headers)
+        listOfLists, headers = _rstEscapeFirstColumn(listOfLists, headers)
 
     # PrettyTable formatting does not use any extra padding. Numbers are not parsed and are treated
     # the same as strings for alignment. Check if pretty is the format being used and override the
@@ -1624,7 +1624,7 @@ def _format_table(
         for row in padded_rows:
             # test to see if either the 1st column or the 2nd column (account for showindex) has the
             # SEPARATING_LINE flag
-            if _is_separating_line(row):
+            if _isSeparatingLine(row):
                 _append_line(lines, padded_widths, colaligns, separating_line)
             else:
                 append_row(lines, row, padded_widths, colaligns, fmt.datarow)
