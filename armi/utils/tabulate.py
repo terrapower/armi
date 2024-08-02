@@ -279,39 +279,39 @@ _ansiEscapePat = rf"""
         {_osc}8;;{_st}  # "closing" OSC sequence
     )
 """
-_ansi_codes = re.compile(_ansiEscapePat, re.VERBOSE)
-_ansi_codes_bytes = re.compile(_ansiEscapePat.encode("utf8"), re.VERBOSE)
-_ansi_color_reset_code = "\033[0m"
+_ansiCodes = re.compile(_ansiEscapePat, re.VERBOSE)
+_ansiCodesBytes = re.compile(_ansiEscapePat.encode("utf8"), re.VERBOSE)
+_ansiColorResetCode = "\033[0m"
 
-_float_with_thousands_separators = re.compile(
+_floatWithThousandsSeparators = re.compile(
     r"^(([+-]?[0-9]{1,3})(?:,([0-9]{3}))*)?(?(1)\.[0-9]*|\.[0-9]+)?$"
 )
 
 
-def _isnumber_with_thousands_separator(string):
+def _isnumberWithThousandsSeparator(string):
     """Function to test of a string is a number with a thousands separator.
 
-    >>> _isnumber_with_thousands_separator(".")
+    >>> _isnumberWithThousandsSeparator(".")
     False
-    >>> _isnumber_with_thousands_separator("1")
+    >>> _isnumberWithThousandsSeparator("1")
     True
-    >>> _isnumber_with_thousands_separator("1.")
+    >>> _isnumberWithThousandsSeparator("1.")
     True
-    >>> _isnumber_with_thousands_separator(".1")
+    >>> _isnumberWithThousandsSeparator(".1")
     True
-    >>> _isnumber_with_thousands_separator("1000")
+    >>> _isnumberWithThousandsSeparator("1000")
     False
-    >>> _isnumber_with_thousands_separator("1,000")
+    >>> _isnumberWithThousandsSeparator("1,000")
     True
-    >>> _isnumber_with_thousands_separator("1,0000")
+    >>> _isnumberWithThousandsSeparator("1,0000")
     False
-    >>> _isnumber_with_thousands_separator("1,000.1234")
+    >>> _isnumberWithThousandsSeparator("1,000.1234")
     True
-    >>> _isnumber_with_thousands_separator(b"1,000.1234")
+    >>> _isnumberWithThousandsSeparator(b"1,000.1234")
     True
-    >>> _isnumber_with_thousands_separator("+1,000.1234")
+    >>> _isnumberWithThousandsSeparator("+1,000.1234")
     True
-    >>> _isnumber_with_thousands_separator("-1,000.1234")
+    >>> _isnumberWithThousandsSeparator("-1,000.1234")
     True
     """
     try:
@@ -319,7 +319,7 @@ def _isnumber_with_thousands_separator(string):
     except (UnicodeDecodeError, AttributeError):
         pass
 
-    return bool(re.match(_float_with_thousands_separators, string))
+    return bool(re.match(_floatWithThousandsSeparators, string))
 
 
 def _isconvertible(conv, string):
@@ -388,7 +388,7 @@ def _isbool(string):
     )
 
 
-def _type(string, has_invisible=True, numparse=True):
+def _type(string, hasInvisible=True, numparse=True):
     r"""The least generic type (type(None), int, float, str, unicode).
 
     >>> _type(None) is type(None)
@@ -403,7 +403,7 @@ def _type(string, has_invisible=True, numparse=True):
     True
 
     """
-    if has_invisible and isinstance(string, (str, bytes)):
+    if hasInvisible and isinstance(string, (str, bytes)):
         string = _strip_ansi(string)
 
     if string is None:
@@ -438,7 +438,7 @@ def _afterpoint(string):
     2
 
     """
-    if _isnumber(string) or _isnumber_with_thousands_separator(string):
+    if _isnumber(string) or _isnumberWithThousandsSeparator(string):
         if _isint(string):
             return -1
         else:
@@ -505,9 +505,9 @@ def _strip_ansi(s):
 
     """
     if isinstance(s, str):
-        return _ansi_codes.sub(r"\4", s)
+        return _ansiCodes.sub(r"\4", s)
     else:  # a bytestring
-        return _ansi_codes_bytes.sub(r"\4", s)
+        return _ansiCodesBytes.sub(r"\4", s)
 
 
 def _visible_width(s):
@@ -537,9 +537,9 @@ def _multilineWidth(multiline_s, line_width_fn=len):
     return max(map(line_width_fn, re.split("[\r\n]", multiline_s)))
 
 
-def _choose_width_fn(has_invisible, is_multiline):
+def _choose_width_fn(hasInvisible, is_multiline):
     """Return a function to calculate visible cell width."""
-    if has_invisible:
+    if hasInvisible:
         line_width_fn = _visible_width
     else:
         line_width_fn = len
@@ -552,7 +552,7 @@ def _choose_width_fn(has_invisible, is_multiline):
     return width_fn
 
 
-def _align_column_choose_padfn(strings, alignment, has_invisible):
+def _alignColumnChoosePadfn(strings, alignment, hasInvisible):
     if alignment == "right":
         if not PRESERVE_WHITESPACE:
             strings = [s.strip() for s in strings]
@@ -562,7 +562,7 @@ def _align_column_choose_padfn(strings, alignment, has_invisible):
             strings = [s.strip() for s in strings]
         padfn = _padboth
     elif alignment == "decimal":
-        if has_invisible:
+        if hasInvisible:
             decimals = [_afterpoint(_strip_ansi(s)) for s in strings]
         else:
             decimals = [_afterpoint(s) for s in strings]
@@ -578,21 +578,21 @@ def _align_column_choose_padfn(strings, alignment, has_invisible):
     return strings, padfn
 
 
-def _align_column_choose_width_fn(has_invisible, is_multiline):
-    if has_invisible:
+def _alignColumnChooseWidthFn(hasInvisible, is_multiline):
+    if hasInvisible:
         line_width_fn = _visible_width
     else:
         line_width_fn = len
 
     if is_multiline:
-        width_fn = lambda s: _align_column_multilineWidth(s, line_width_fn)
+        width_fn = lambda s: _alignColumnMultilineWidth(s, line_width_fn)
     else:
         width_fn = line_width_fn
 
     return width_fn
 
 
-def _align_column_multilineWidth(multiline_s, line_width_fn=len):
+def _alignColumnMultilineWidth(multiline_s, line_width_fn=len):
     """Visible width of a potentially multiline content."""
     return list(map(line_width_fn, re.split("[\r\n]", multiline_s)))
 
@@ -608,17 +608,15 @@ def _flat_list(nested_list):
     return ret
 
 
-def _alignColumn(
-    strings, alignment, minwidth=0, has_invisible=True, is_multiline=False
-):
+def _alignColumn(strings, alignment, minwidth=0, hasInvisible=True, is_multiline=False):
     """[string] -> [padded_string]."""
-    strings, padfn = _align_column_choose_padfn(strings, alignment, has_invisible)
-    width_fn = _align_column_choose_width_fn(has_invisible, is_multiline)
+    strings, padfn = _alignColumnChoosePadfn(strings, alignment, hasInvisible)
+    width_fn = _alignColumnChooseWidthFn(hasInvisible, is_multiline)
 
     s_widths = list(map(width_fn, strings))
     maxwidth = max(max(_flat_list(s_widths)), minwidth)
     if is_multiline:
-        if not has_invisible:
+        if not hasInvisible:
             padded_strings = [
                 "\n".join([padfn(maxwidth, s) for s in ms.splitlines()])
                 for ms in strings
@@ -637,7 +635,7 @@ def _alignColumn(
                 for ms, mw in zip(strings, visible_widths)
             ]
     else:  # single-line cell values
-        if not has_invisible:
+        if not hasInvisible:
             padded_strings = [padfn(maxwidth, s) for s in strings]
         else:
             # enable wide-character width corrections
@@ -671,7 +669,7 @@ def _more_generic(type1, type2):
     return invtypes[moregeneric]
 
 
-def _column_type(strings, has_invisible=True, numparse=True):
+def _column_type(strings, hasInvisible=True, numparse=True):
     r"""The least generic type all column values are convertible to.
 
     >>> _column_type([True, False]) is bool
@@ -693,11 +691,11 @@ def _column_type(strings, has_invisible=True, numparse=True):
     True
 
     """
-    types = [_type(s, has_invisible, numparse) for s in strings]
+    types = [_type(s, hasInvisible, numparse) for s in strings]
     return reduce(_more_generic, types, bool)
 
 
-def _format(val, valtype, floatfmt, intfmt, missingval="", has_invisible=True):
+def _format(val, valtype, floatfmt, intfmt, missingval="", hasInvisible=True):
     r"""Format a value according to its type.
 
     Unicode is supported:
@@ -722,7 +720,7 @@ def _format(val, valtype, floatfmt, intfmt, missingval="", has_invisible=True):
         except (TypeError, UnicodeDecodeError):
             return str(val)
     elif valtype is float:
-        isAColoredNumber = has_invisible and isinstance(val, (str, bytes))
+        isAColoredNumber = hasInvisible and isinstance(val, (str, bytes))
         if isAColoredNumber:
             rawVal = _strip_ansi(val)
             formattedVal = format(float(rawVal), floatfmt)
@@ -1327,7 +1325,7 @@ def tabulate(
         )
     )
 
-    has_invisible = _ansi_codes.search(plain_text) is not None
+    hasInvisible = _ansiCodes.search(plain_text) is not None
 
     if (
         not isinstance(tablefmt, TableFormat)
@@ -1338,7 +1336,7 @@ def tabulate(
         is_multiline = True
     else:
         is_multiline = False
-    width_fn = _choose_width_fn(has_invisible, is_multiline)
+    width_fn = _choose_width_fn(hasInvisible, is_multiline)
 
     # format rows and columns, convert numeric values to strings
     cols = list(izip_longest(*listOfLists))
@@ -1365,7 +1363,7 @@ def tabulate(
         if len(missing_vals) < len(cols):
             missing_vals.extend((len(cols) - len(missing_vals)) * [_DEFAULT_MISSINGVAL])
     cols = [
-        [_format(v, ct, fl_fmt, int_fmt, miss_v, has_invisible) for v in c]
+        [_format(v, ct, fl_fmt, int_fmt, miss_v, hasInvisible) for v in c]
         for c, ct, fl_fmt, int_fmt, miss_v in zip(
             cols, coltypes, float_formats, int_formats, missing_vals
         )
@@ -1396,7 +1394,7 @@ def tabulate(
         [width_fn(h) + min_padding for h in headers] if headers else [0] * len(cols)
     )
     cols = [
-        _alignColumn(c, a, minw, has_invisible, is_multiline)
+        _alignColumn(c, a, minw, hasInvisible, is_multiline)
         for c, a, minw in zip(cols, aligns, minwidths)
     ]
 
@@ -1662,7 +1660,7 @@ class _CustomTextWrap(textwrap.TextWrapper):
         This function will also track any ANSI color codes in this string as well as add any colors
         from previous lines order to preserve the same formatting as a single unwrapped string.
         """
-        code_matches = [x for x in _ansi_codes.finditer(new_line)]
+        code_matches = [x for x in _ansiCodes.finditer(new_line)]
         color_codes = [
             code.string[code.span()[0] : code.span()[1]] for code in code_matches
         ]
@@ -1671,7 +1669,7 @@ class _CustomTextWrap(textwrap.TextWrapper):
         new_line = "".join(self._active_codes) + new_line
 
         for code in color_codes:
-            if code != _ansi_color_reset_code:
+            if code != _ansiColorResetCode:
                 self._active_codes.append(code)
             else:  # A single reset code resets everything
                 self._active_codes = []
@@ -1679,6 +1677,6 @@ class _CustomTextWrap(textwrap.TextWrapper):
         # Always ensure each line is color terminted if any colors are still active, otherwise
         # colors will bleed into other cells on the console
         if len(self._active_codes) > 0:
-            new_line = new_line + _ansi_color_reset_code
+            new_line = new_line + _ansiColorResetCode
 
         lines.append(new_line)
