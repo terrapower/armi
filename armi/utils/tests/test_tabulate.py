@@ -21,10 +21,11 @@ import unittest
 
 import numpy  # TODO: as np
 
+from armi.utils.tabulate import _multilineWidth
 from armi.utils.tabulate import tabulate, tabulate_formats
 
 
-class TestTabulate(unittest.TestCase):
+class TestTabulateAPI(unittest.TestCase):
     def test_tabulateFormats(self):
         """API: tabulate_formats is a list of strings."""
         supported = tabulate_formats
@@ -32,6 +33,8 @@ class TestTabulate(unittest.TestCase):
         for fmt in supported:
             self.assertEqual(type(fmt), str)
 
+
+class TestTabulateInputs(unittest.TestCase):
     def test_iterableOfIterables(self):
         """Input: an interable of iterables."""
         ii = iter(map(lambda x: iter(x), [range(5), range(5, 0, -1)]))
@@ -348,3 +351,12 @@ class TestTabulate(unittest.TestCase):
         )
         result = tabulate(lb, headers=["bytes"])
         self.assertEqual(expected, result)
+
+
+class TestTabulateInternal(unittest.TestCase):
+    def test_multilineWidth(self):
+        """Internal: _multilineWidth()."""
+        multilineString = "\n".join(["foo", "barbaz", "spam"])
+        self.assertEqual(_multilineWidth(multilineString), 6)
+        onelineString = "12345"
+        self.assertEqual(_multilineWidth(onelineString), len(onelineString))

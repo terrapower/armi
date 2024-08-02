@@ -532,7 +532,7 @@ def _is_multiline(s):
         return bool(re.search(_multiline_codes_bytes, s))
 
 
-def _multiline_width(multiline_s, line_width_fn=len):
+def _multilineWidth(multiline_s, line_width_fn=len):
     """Visible width of a potentially multiline content."""
     return max(map(line_width_fn, re.split("[\r\n]", multiline_s)))
 
@@ -545,7 +545,7 @@ def _choose_width_fn(has_invisible, is_multiline):
         line_width_fn = len
 
     if is_multiline:
-        width_fn = lambda s: _multiline_width(s, line_width_fn)
+        width_fn = lambda s: _multilineWidth(s, line_width_fn)
     else:
         width_fn = line_width_fn
 
@@ -585,14 +585,14 @@ def _align_column_choose_width_fn(has_invisible, is_multiline):
         line_width_fn = len
 
     if is_multiline:
-        width_fn = lambda s: _align_column_multiline_width(s, line_width_fn)
+        width_fn = lambda s: _align_column_multilineWidth(s, line_width_fn)
     else:
         width_fn = line_width_fn
 
     return width_fn
 
 
-def _align_column_multiline_width(multiline_s, line_width_fn=len):
+def _align_column_multilineWidth(multiline_s, line_width_fn=len):
     """Visible width of a potentially multiline content."""
     return list(map(line_width_fn, re.split("[\r\n]", multiline_s)))
 
