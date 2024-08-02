@@ -2,6 +2,8 @@ name: ARMI Windows tests
 
 on:
   push:
+    branches:
+      - main
     paths-ignore:
       - 'doc/**'
   pull_request:

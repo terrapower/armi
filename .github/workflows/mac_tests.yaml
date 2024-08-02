@@ -2,6 +2,8 @@ name: ARMI MacOS Tests
 
 on:
   push:
+    branches:
+      - main
     paths-ignore:
       - 'doc/**'
   pull_request:
