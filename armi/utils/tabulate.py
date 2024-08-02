@@ -608,7 +608,7 @@ def _flat_list(nested_list):
     return ret
 
 
-def _align_column(
+def _alignColumn(
     strings, alignment, minwidth=0, has_invisible=True, is_multiline=False
 ):
     """[string] -> [padded_string]."""
@@ -1396,7 +1396,7 @@ def tabulate(
         [width_fn(h) + min_padding for h in headers] if headers else [0] * len(cols)
     )
     cols = [
-        _align_column(c, a, minw, has_invisible, is_multiline)
+        _alignColumn(c, a, minw, has_invisible, is_multiline)
         for c, a, minw in zip(cols, aligns, minwidths)
     ]
 

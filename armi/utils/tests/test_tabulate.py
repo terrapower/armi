@@ -21,7 +21,7 @@ import unittest
 
 import numpy  # TODO: as np
 
-from armi.utils.tabulate import _multilineWidth
+from armi.utils.tabulate import _alignColumn, _alignCellVeritically, _multilineWidth
 from armi.utils.tabulate import tabulate, tabulate_formats
 
 
@@ -360,3 +360,114 @@ class TestTabulateInternal(unittest.TestCase):
         self.assertEqual(_multilineWidth(multilineString), 6)
         onelineString = "12345"
         self.assertEqual(_multilineWidth(onelineString), len(onelineString))
+
+    def test_align_column_decimal(self):
+        """Internal: _align_column(..., 'decimal')."""
+        column = ["12.345", "-1234.5", "1.23", "1234.5", "1e+234", "1.0e234"]
+        result = _alignColumn(column, "decimal")
+        expected = [
+            "   12.345  ",
+            "-1234.5    ",
+            "    1.23   ",
+            " 1234.5    ",
+            "    1e+234 ",
+            "    1.0e234",
+        ]
+        self.assertEqual(expected, result)
+
+    def test_align_column_decimal_with_thousand_separators(self):
+        """Internal: _align_column(..., 'decimal')."""
+        column = ["12.345", "-1234.5", "1.23", "1,234.5", "1e+234", "1.0e234"]
+        output = _alignColumn(column, "decimal")
+        expected = [
+            "   12.345  ",
+            "-1234.5    ",
+            "    1.23   ",
+            "1,234.5    ",
+            "    1e+234 ",
+            "    1.0e234",
+        ]
+        self.assertEqual(expected, output)
+
+    def test_align_column_decimal_with_incorrect_thousand_separators(self):
+        """Internal: _align_column(..., 'decimal')."""
+        column = ["12.345", "-1234.5", "1.23", "12,34.5", "1e+234", "1.0e234"]
+        output = _alignColumn(column, "decimal")
+        expected = [
+            "     12.345  ",
+            "  -1234.5    ",
+            "      1.23   ",
+            "12,34.5      ",
+            "      1e+234 ",
+            "      1.0e234",
+        ]
+        self.assertEqual(expected, output)
+
+    def test_alignColumnNone(self):
+        """Internal: _align_column(..., None)."""
+        column = ["123.4", "56.7890"]
+        output = _alignColumn(column, None)
+        expected = ["123.4", "56.7890"]
+        self.assertEqual(expected, output)
+
+    def test_alignColumnMultiline(self):
+        """Internal: _align_column(..., is_multiline=True)."""
+        column = ["1", "123", "12345\n6"]
+        output = _alignColumn(column, "center", is_multiline=True)
+        expected = ["  1  ", " 123 ", "12345" + "\n" + "  6  "]
+        self.assertEqual(expected, output)
+
+    def test_align_cell_veritically_one_line_only(self):
+        """Internal: Aligning a single height cell is same regardless of alignment value."""
+        lines = ["one line"]
+        column_width = 8
+
+        top = _alignCellVeritically(lines, 1, column_width, "top")
+        center = _alignCellVeritically(lines, 1, column_width, "center")
+        bottom = _alignCellVeritically(lines, 1, column_width, "bottom")
+        none = _alignCellVeritically(lines, 1, column_width, None)
+
+        expected = ["one line"]
+        assert top == center == bottom == none == expected
+
+    def test_align_cell_veritically_top_single_text_multiple_pad(self):
+        """Internal: Align single cell text to top."""
+        result = _alignCellVeritically(["one line"], 3, 8, "top")
+        expected = ["one line", "        ", "        "]
+        self.assertEqual(expected, result)
+
+    def test_align_cell_veritically_center_single_text_multiple_pad(self):
+        """Internal: Align single cell text to center."""
+        result = _alignCellVeritically(["one line"], 3, 8, "center")
+        expected = ["        ", "one line", "        "]
+        self.assertEqual(expected, result)
+
+    def test_align_cell_veritically_bottom_single_text_multiple_pad(self):
+        """Internal: Align single cell text to bottom."""
+        result = _alignCellVeritically(["one line"], 3, 8, "bottom")
+        expected = ["        ", "        ", "one line"]
+        self.assertEqual(expected, result)
+
+    def test_align_cell_veritically_top_multi_text_multiple_pad(self):
+        """Internal: Align multiline celltext text to top."""
+        text = ["just", "one ", "cell"]
+        result = _alignCellVeritically(text, 6, 4, "top")
+        expected = ["just", "one ", "cell", "    ", "    ", "    "]
+        self.assertEqual(expected, result)
+
+    def test_align_cell_veritically_center_multi_text_multiple_pad(self):
+        """Internal: Align multiline celltext text to center."""
+        text = ["just", "one ", "cell"]
+        result = _alignCellVeritically(text, 6, 4, "center")
+
+        # Even number of rows, can't perfectly center, but we pad less
+        # at top when required to do make a judgement
+        expected = ["    ", "just", "one ", "cell", "    ", "    "]
+        self.assertEqual(expected, result)
+
+    def test_align_cell_veritically_bottom_multi_text_multiple_pad(self):
+        """Internal: Align multiline celltext text to bottom."""
+        text = ["just", "one ", "cell"]
+        result = _alignCellVeritically(text, 6, 4, "bottom")
+        expected = ["    ", "    ", "    ", "just", "one ", "cell"]
+        self.assertEqual(expected, result)
