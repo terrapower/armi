@@ -1,17 +1,30 @@
-# TODO: LICENSE things
-#       This was originally https://github.com/astanin/python-tabulate/tree/master
+# Copyright 2024 TerraPower, LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# NOTE: This code originally started out as this MIT-licensed "tabulate":
+#       This was originally https://github.com/astanin/python-tabulate
 
 """Pretty-print tabular data."""
-
-import warnings
 from collections import namedtuple
 from collections.abc import Iterable, Sized
-from itertools import chain, zip_longest as izip_longest
 from functools import reduce, partial
-import re
-import math
-import textwrap
+from itertools import chain, zip_longest as izip_longest
 import dataclasses
+import math
+import re
+import textwrap
+import warnings
 
 __all__ = ["tabulate", "tabulate_formats"]
 
