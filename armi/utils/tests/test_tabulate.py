@@ -1221,3 +1221,71 @@ class TestTabulateOutput(unittest.TestCase):
         )
         result = tabulate(table, tablefmt="rst")
         self.assertEqual(expected, result)
+
+    def test_no_data(self):
+        """Output: table with no data."""
+        expected = "\n".join(["strings    numbers", "---------  ---------"])
+        result = tabulate(None, _test_table_headers, tablefmt="simple")
+        self.assertEqual(expected, result)
+
+    def test_empty_data(self):
+        """Output: table with empty data."""
+        expected = "\n".join(["strings    numbers", "---------  ---------"])
+        result = tabulate([], _test_table_headers, tablefmt="simple")
+        self.assertEqual(expected, result)
+
+    def test_no_data_without_headers(self):
+        """Output: table with no data and no headers."""
+        expected = ""
+        result = tabulate(None, tablefmt="simple")
+        self.assertEqual(expected, result)
+
+    def test_empty_data_without_headers(self):
+        """Output: table with empty data and no headers."""
+        expected = ""
+        result = tabulate([], tablefmt="simple")
+        self.assertEqual(expected, result)
+
+    def test_intfmt(self):
+        """Output: integer format."""
+        result = tabulate([[10000], [10]], intfmt=",", tablefmt="plain")
+        expected = "10,000\n    10"
+        self.assertEqual(expected, result)
+
+    def test_empty_data_with_headers(self):
+        """Output: table with empty data and headers as firstrow."""
+        expected = ""
+        result = tabulate([], headers="firstrow")
+        self.assertEqual(expected, result)
+
+    def test_floatfmt(self):
+        """Output: floating point format."""
+        result = tabulate([["1.23456789"], [1.0]], floatfmt=".3f", tablefmt="plain")
+        expected = "1.235\n1.000"
+        self.assertEqual(expected, result)
+
+    def test_floatfmt_multi(self):
+        """Output: floating point format different for each column."""
+        result = tabulate(
+            [[0.12345, 0.12345, 0.12345]], floatfmt=(".1f", ".3f"), tablefmt="plain"
+        )
+        expected = "0.1  0.123  0.12345"
+        self.assertEqual(expected, result)
+
+    def test_colalign_multi(self):
+        """Output: string columns with custom colalign."""
+        result = tabulate(
+            [["one", "two"], ["three", "four"]], colalign=("right",), tablefmt="plain"
+        )
+        expected = "  one  two\nthree  four"
+        self.assertEqual(expected, result)
+
+    def test_colalign_multi_with_sep_line(self):
+        """Output: string columns with custom colalign."""
+        result = tabulate(
+            [["one", "two"], SEPARATING_LINE, ["three", "four"]],
+            colalign=("right",),
+            tablefmt="plain",
+        )
+        expected = "  one  two\n\nthree  four"
+        self.assertEqual(expected, result)
