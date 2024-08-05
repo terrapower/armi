@@ -21,7 +21,7 @@ We are keeping these in ARMI even if they appear unused internally.
 """
 import math
 
-import numpy
+import numpy as np
 
 from armi import runLog
 from armi.reactor.flags import Flags
@@ -251,9 +251,7 @@ def buildRingSchedule(
     # don't let it be smaller than 2 because linspace(1,5,1)= [1], linspace(1,5,2)= [1,5]
     numSteps = max(numSteps, 2)
 
-    baseRings = [
-        int(ring) for ring in numpy.linspace(dischargeRing, chargeRing, numSteps)
-    ]
+    baseRings = [int(ring) for ring in np.linspace(dischargeRing, chargeRing, numSteps)]
     # eliminate duplicates.
     newBaseRings = []
     for br in baseRings:
@@ -331,7 +329,7 @@ def buildConvergentRingSchedule(chargeRing, dischargeRing=1, coarseFactor=0.0):
     # don't let it be smaller than 2 because linspace(1,5,1)= [1], linspace(1,5,2)= [1,5]
     numSteps = max(numSteps, 2)
     convergent = [
-        int(ring) for ring in numpy.linspace(dischargeRing, chargeRing, numSteps)
+        int(ring) for ring in np.linspace(dischargeRing, chargeRing, numSteps)
     ]
 
     # step 2. eliminate duplicates
@@ -392,7 +390,7 @@ def _buildEqRingScheduleHelper(ringSchedule, numRings):
         toRing = ringSchedule[i + 1]
         numRings = abs(toRing - fromRing) + 1
 
-        ringList.extend([int(j) for j in numpy.linspace(fromRing, toRing, numRings)])
+        ringList.extend([int(j) for j in np.linspace(fromRing, toRing, numRings)])
 
     # eliminate doubles (but allow a ring to show up multiple times)
     newList = []
@@ -429,8 +427,8 @@ def _squaredDistanceFromOrigin(a):
     -------
     float: Distance from reactor center
     """
-    origin = numpy.array([0.0, 0.0, 0.0])
-    p = numpy.array(a.spatialLocator.getLocalCoordinates())
+    origin = np.array([0.0, 0.0, 0.0])
+    p = np.array(a.spatialLocator.getLocalCoordinates())
     return ((p - origin) ** 2).sum()
 
 

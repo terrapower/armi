@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Alloy-200 are wrought commercially pure nickel."""
+
 from numpy import interp
 
 from armi.materials.material import Material

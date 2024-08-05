@@ -96,7 +96,7 @@ Retrieve U-235 by the AAAZZZS ID:
 import os
 
 from ruamel.yaml import YAML
-import numpy
+import numpy as np
 
 from armi import context
 from armi import runLog
@@ -728,7 +728,7 @@ class NaturalNuclideBase(INuclide, IMcnpNuclide):
                 [nn.weight * nn.abundance for nn in element.getNaturalIsotopics()]
             ),
             abundance=0.0,
-            halflife=numpy.inf,
+            halflife=np.inf,
             name=name,
             label=name,
         )
@@ -827,7 +827,7 @@ class DummyNuclideBase(INuclide):
             state=0,
             weight=weight,
             abundance=0.0,
-            halflife=numpy.inf,
+            halflife=np.inf,
             name=name,
             label="DMP" + name[4],
         )
@@ -893,7 +893,7 @@ class LumpNuclideBase(INuclide):
             state=0,
             weight=weight,
             abundance=0.0,
-            halflife=numpy.inf,
+            halflife=np.inf,
             name=name,
             label=name[1:],
         )
@@ -1221,7 +1221,7 @@ def addNuclideBases():
             abun = float(lineData[6])
             halflife = lineData[7]
             if halflife == "inf":
-                halflife = numpy.inf
+                halflife = np.inf
             else:
                 halflife = float(halflife)
             nuSF = float(lineData[8])

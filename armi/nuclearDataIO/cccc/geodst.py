@@ -29,7 +29,7 @@ Examples
 
 """
 
-import numpy
+import numpy as np
 
 from armi.nuclearDataIO import cccc
 
@@ -291,13 +291,13 @@ class GeodstStream(cccc.StreamWithDataContainer):
         if self._data.coarseMeshRegions is None:
             # initialize all-zeros here before reading now that we
             # have the matrix dimension metadata available.
-            self._data.coarseMeshRegions = numpy.zeros(
+            self._data.coarseMeshRegions = np.zeros(
                 (
                     self._metadata["NCINTI"],
                     self._metadata["NCINTJ"],
                     self._metadata["NCINTK"],
                 ),
-                dtype=numpy.int16,
+                dtype=np.int16,
             )
         for ki in range(self._metadata["NCINTK"]):
             with self.createRecord() as record:
@@ -312,13 +312,13 @@ class GeodstStream(cccc.StreamWithDataContainer):
         if self._data.fineMeshRegions is None:
             # initialize all-zeros here before reading now that we
             # have the matrix dimension metadata available.
-            self._data.fineMeshRegions = numpy.zeros(
+            self._data.fineMeshRegions = np.zeros(
                 (
                     self._metadata["NINTI"],
                     self._metadata["NINTJ"],
                     self._metadata["NINTK"],
                 ),
-                dtype=numpy.int16,
+                dtype=np.int16,
             )
         for ki in range(self._metadata["NINTK"]):
             with self.createRecord() as record:

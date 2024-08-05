@@ -29,7 +29,7 @@ import os
 import re
 import warnings
 
-import numpy
+import numpy as np
 
 from armi import runLog
 from armi.physics.fuelCycle import assemblyRotationAlgorithms as rotAlgos
@@ -393,7 +393,7 @@ class FuelHandler:
             close, the assembly with the lesser assemNum wins. This should result in a
             more stable comparison than on floating-point comparisons alone.
             """
-            if numpy.isclose(candidate[0], current[0], rtol=1e-8, atol=1e-8):
+            if np.isclose(candidate[0], current[0], rtol=1e-8, atol=1e-8):
                 return candidate[1].p.assemNum < current[1].p.assemNum
             else:
                 return candidate[0] < current[0]
@@ -1427,7 +1427,7 @@ class FuelHandler:
             currentCoords = a.spatialLocator.getGlobalCoordinates()
             oldCoords = self.oldLocations.get(a.getName(), None)
             if oldCoords is None:
-                oldCoords = numpy.array((-50, -50, 0))
+                oldCoords = np.array((-50, -50, 0))
             elif any(currentCoords != oldCoords):
                 arrows.append((oldCoords, currentCoords))
 

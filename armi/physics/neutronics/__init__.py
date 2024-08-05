@@ -33,7 +33,7 @@ independent interfaces:
 # ruff: noqa: F401, E402
 from enum import IntEnum
 
-import numpy
+import numpy as np
 import tabulate
 
 from armi import plugins, runLog
@@ -246,8 +246,8 @@ def applyEffectiveDelayedNeutronFractionToCore(core, cs):
             )
 
         core.p.beta = sum(beta)
-        core.p.betaComponents = numpy.array(beta)
-        core.p.betaDecayConstants = numpy.array(decayConstants)
+        core.p.betaComponents = np.array(beta)
+        core.p.betaDecayConstants = np.array(decayConstants)
 
         reportTableData.append(("Total Delayed Neutron Fraction", core.p.beta))
         for i, betaComponent in enumerate(core.p.betaComponents):

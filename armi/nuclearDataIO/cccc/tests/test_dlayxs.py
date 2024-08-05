@@ -17,7 +17,7 @@ import copy
 import filecmp
 import unittest
 
-import numpy
+import numpy as np
 
 from armi.nucDirectory import nuclideBases
 from armi.nuclearDataIO.cccc import dlayxs
@@ -40,13 +40,13 @@ class DlayxsTests(unittest.TestCase):
         """
         delay = self.dlayxs3
         self.assertTrue(
-            numpy.allclose(
+            np.allclose(
                 delay[nuclideBases.byName["PU239"]].precursorDecayConstants,
                 [0.013271, 0.030881, 0.11337, 0.29249999, 0.85749, 2.72970009],
             )
         )
         self.assertTrue(
-            numpy.allclose(
+            np.allclose(
                 delay[nuclideBases.byName["U235"]].precursorDecayConstants,
                 [0.013336, 0.032739, 0.12078, 0.30278, 0.84948999, 2.85299993],
             )
@@ -56,7 +56,7 @@ class DlayxsTests(unittest.TestCase):
         """Test that all emission spectrum delayEmissionSpectrum is normalized."""
         delay = self.dlayxs3
         self.assertTrue(
-            numpy.allclose(
+            np.allclose(
                 delay[nuclideBases.byName["PU239"]].delayEmissionSpectrum[0, :],
                 [
                     0.00000000e00,
@@ -96,7 +96,7 @@ class DlayxsTests(unittest.TestCase):
             )
         )
         self.assertTrue(
-            numpy.allclose(
+            np.allclose(
                 delay[nuclideBases.byName["U235"]].delayEmissionSpectrum[0, :],
                 [
                     0.00000000e00,
@@ -146,7 +146,7 @@ class DlayxsTests(unittest.TestCase):
         # was used to make sure the data wasn't accidentally transposed, hence there are two nuclides with two vectors
         # being tested.
         self.assertTrue(
-            numpy.allclose(
+            np.allclose(
                 delay[nuclideBases.byName["PU239"]].delayNeutronsPerFission[0, :],
                 [
                     0.00015611,
@@ -186,7 +186,7 @@ class DlayxsTests(unittest.TestCase):
             )
         )
         self.assertTrue(
-            numpy.allclose(
+            np.allclose(
                 delay[nuclideBases.byName["PU239"]].delayNeutronsPerFission[1, :],
                 [
                     0.00101669,
@@ -226,7 +226,7 @@ class DlayxsTests(unittest.TestCase):
             )
         )
         self.assertTrue(
-            numpy.allclose(
+            np.allclose(
                 delay[nuclideBases.byName["U235"]].delayNeutronsPerFission[0, :],
                 [
                     0.000315,
@@ -266,7 +266,7 @@ class DlayxsTests(unittest.TestCase):
             )
         )
         self.assertTrue(
-            numpy.allclose(
+            np.allclose(
                 delay[nuclideBases.byName["U235"]].delayNeutronsPerFission[1, :],
                 [
                     0.0016254,
@@ -923,7 +923,7 @@ class DlayxsTests(unittest.TestCase):
             dlayData = self.dlayxs3[
                 nuclideBases.byName[nucName.strip()]
             ].precursorDecayConstants
-            self.assertTrue(numpy.allclose(dlayData, endfProvidedData, 1e-3))
+            self.assertTrue(np.allclose(dlayData, endfProvidedData, 1e-3))
         except AssertionError:
             # this is reraised because generating the message might take some time to format all the
             # data from the arrays
@@ -1061,14 +1061,14 @@ class DlayxsTests(unittest.TestCase):
             dlayData = self.dlayxs3[
                 nuclideBases.byName[nucName.strip()]
             ].delayNeutronsPerFission
-            numpyData = numpy.array(endfProvidedData)
-            self.assertTrue(numpy.allclose(dlayData, numpyData, 1e-3))
+            npData = np.array(endfProvidedData)
+            self.assertTrue(np.allclose(dlayData, npData, 1e-3))
         except AssertionError:
             # this is reraised because generating the message might take some time to format all the
             # data from the arrays
             raise AssertionError(
                 "{} was different,\nexpected:{}\nactual:{}".format(
-                    nucName, numpyData, dlayData
+                    nucName, npData, dlayData
                 )
             )
         except KeyError:
@@ -1117,12 +1117,12 @@ class DlayxsTests(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             _avg = self.dlayxs3.generateAverageDelayedNeutronConstants()
 
-        fracs = dict(zip(self.dlayxs3.keys(), numpy.zeros(len(self.dlayxs3))))
+        fracs = dict(zip(self.dlayxs3.keys(), np.zeros(len(self.dlayxs3))))
         u235 = nuclideBases.byName["U235"]
         fracs[u235] = 1.0
         self.dlayxs3.nuclideContributionFractions = fracs
         avg = self.dlayxs3.generateAverageDelayedNeutronConstants()
         dlayU235 = self.dlayxs3[u235]
         self.assertTrue(
-            numpy.allclose(avg.delayEmissionSpectrum, dlayU235.delayEmissionSpectrum)
+            np.allclose(avg.delayEmissionSpectrum, dlayU235.delayEmissionSpectrum)
         )

@@ -61,10 +61,10 @@ class JaggedArray:
                 else:
                     offsets.append(offset)
                     try:
-                        numpyArray = np.array(arr)
-                        shapes.append(numpyArray.shape)
-                        offset += numpyArray.size
-                        flattenedArray.extend(numpyArray.flatten())
+                        npArray = np.array(arr)
+                        shapes.append(npArray.shape)
+                        offset += npArray.size
+                        flattenedArray.extend(npArray.flatten())
                     except:  # noqa: E722
                         # numpy might fail if it's jagged
                         flattenedList = self.flatten(arr)
@@ -108,7 +108,7 @@ class JaggedArray:
     @staticmethod
     def flatten(x):
         """
-        Recursively flatten an iterable (list, tuple, or numpy.ndarray).
+        Recursively flatten an iterable (list, tuple, or np.ndarray).
 
         x : list, tuple, np.ndarray
             An iterable. Can be a nested iterable in which the elements

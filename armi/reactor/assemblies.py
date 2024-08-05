@@ -22,7 +22,7 @@ import math
 import pickle
 from random import randint
 
-import numpy
+import numpy as np
 from scipy import interpolate
 
 from armi import runLog
@@ -473,7 +473,7 @@ class Assembly(composites.Composite):
 
         # length of this is numBlocks + 1
         bounds = list(self.spatialGrid._bounds)
-        bounds[2] = numpy.array(mesh)
+        bounds[2] = np.array(mesh)
         self.spatialGrid._bounds = tuple(bounds)
 
     def getTotalHeight(self, typeSpec=None):
@@ -645,7 +645,7 @@ class Assembly(composites.Composite):
         for b in self:
             top = z + b.getHeight()
             try:
-                b.p.topIndex = numpy.where(numpy.isclose(refMesh, top))[0].tolist()[0]
+                b.p.topIndex = np.where(np.isclose(refMesh, top))[0].tolist()[0]
             except IndexError:
                 runLog.error(
                     "Height {0} in this assembly ({1} in {4}) is not in the reactor mesh "
@@ -806,7 +806,7 @@ class Assembly(composites.Composite):
 
     def setBlockHeights(self, blockHeights):
         """Set the block heights of all blocks in the assembly."""
-        mesh = numpy.cumsum(blockHeights)
+        mesh = np.cumsum(blockHeights)
         self.setBlockMesh(mesh)
 
     def dump(self, fName=None):
@@ -1027,7 +1027,7 @@ class Assembly(composites.Composite):
         return blocksHere
 
     def getParamValuesAtZ(
-        self, param, elevations, interpType="linear", fillValue=numpy.NaN
+        self, param, elevations, interpType="linear", fillValue=np.NaN
     ):
         """
         Interpolates a param axially to find it at any value of elevation z.
@@ -1072,7 +1072,7 @@ class Assembly(composites.Composite):
 
         Returns
         -------
-        valAtZ : numpy.ndarray
+        valAtZ : np.ndarray
             This will be of the shape (z,data-shape)
         """
         interpolator = self.getParamOfZFunction(
@@ -1080,7 +1080,7 @@ class Assembly(composites.Composite):
         )
         return interpolator(elevations)
 
-    def getParamOfZFunction(self, param, interpType="linear", fillValue=numpy.NaN):
+    def getParamOfZFunction(self, param, interpType="linear", fillValue=np.NaN):
         """
         Interpolates a param axially to find it at any value of elevation z.
 
@@ -1119,7 +1119,7 @@ class Assembly(composites.Composite):
 
         Returns
         -------
-        valAtZ : numpy.ndarray
+        valAtZ : np.ndarray
             This will be of the shape (z,data-shape)
         """
         paramDef = self[0].p.paramDefs[param]
@@ -1143,7 +1143,7 @@ class Assembly(composites.Composite):
             z.insert(0, 0.0)
             z.pop(-1)
 
-        z = numpy.asarray(z)
+        z = np.asarray(z)
 
         values = self.getChildParamValues(param).transpose()
 

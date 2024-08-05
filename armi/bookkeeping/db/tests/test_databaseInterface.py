@@ -17,7 +17,7 @@ import types
 import unittest
 
 import h5py
-import numpy
+import numpy as np
 from numpy.testing import assert_allclose, assert_equal
 
 from armi import __version__ as version
@@ -365,7 +365,7 @@ class TestDatabaseReading(unittest.TestCase):
         def writeFlux(cycle, node):
             for bi, b in enumerate(o.r.core.getBlocks()):
                 b.p.flux = 1e6 * bi + cycle * 100 + node
-                b.p.mgFlux = numpy.repeat(b.p.flux / 33, 33)
+                b.p.mgFlux = np.repeat(b.p.flux / 33, 33)
 
         o.interfaces.insert(0, MockInterface(o.r, o.cs, writeFlux))
         with o:
@@ -453,8 +453,8 @@ class TestDatabaseReading(unittest.TestCase):
                     self.assertEqual(c1.name, c2.name)
                     if isinstance(c1.spatialLocator, grids.MultiIndexLocation):
                         assert_equal(
-                            numpy.array(c1.spatialLocator.indices),
-                            numpy.array(c2.spatialLocator.indices),
+                            np.array(c1.spatialLocator.indices),
+                            np.array(c2.spatialLocator.indices),
                         )
                     else:
                         assert_equal(
@@ -491,8 +491,8 @@ class TestDatabaseReading(unittest.TestCase):
         b1 = self.r.core.getFirstBlock(Flags.FUEL)
         b2 = r2.core.getFirstBlock(Flags.FUEL)
 
-        self.assertIsInstance(b1.p.mgFlux, numpy.ndarray)
-        self.assertIsInstance(b2.p.mgFlux, numpy.ndarray)
+        self.assertIsInstance(b1.p.mgFlux, np.ndarray)
+        self.assertIsInstance(b2.p.mgFlux, np.ndarray)
         assert_allclose(b1, b2)
 
         c1 = b1.getComponent(Flags.FUEL)

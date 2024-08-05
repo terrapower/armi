@@ -13,7 +13,7 @@
 # limitations under the License.
 import collections
 import os
-import numpy
+import numpy as np
 
 from armi import runLog
 from armi.bookkeeping.report import newReports
@@ -486,7 +486,7 @@ def getPinDesignTable(core):
             designInfo["zrFrac"].append(fuel.getMassFrac("ZR"))
 
         # assumption made that all lists contain only numerical data
-        designInfo = {key: numpy.average(data) for key, data in designInfo.items()}
+        designInfo = {key: np.average(data) for key, data in designInfo.items()}
         dimensionless = {"sd", "hot sd", "zrFrac", "nPins"}
         for key, average_value in designInfo.items():
             dim = "{0:10s}".format(key)

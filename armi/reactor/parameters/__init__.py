@@ -68,7 +68,7 @@ number densities, etc. Parameters can be any basic type (float, int, str), or an
 of any such types. The type within a given array should be homogeneous. Examples::
 
     >>> b.p.flux = 2.5e13
-    >>> b.p.fuelTemp = numpy.array(range(217), dtype=float)
+    >>> b.p.fuelTemp = np.array(range(217), dtype=float)
     >>> b.p.fuelTemp[58] = 600
 
 .. note::

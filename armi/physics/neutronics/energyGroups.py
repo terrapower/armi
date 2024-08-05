@@ -17,7 +17,7 @@ import copy
 import itertools
 import math
 
-import numpy
+import numpy as np
 
 from armi import runLog
 from armi.utils.mathematics import findNearestValue
@@ -111,12 +111,12 @@ def getGroupStructure(name):
 
 def getGroupStructureType(neutronEnergyBoundsInEv):
     """Return neutron energy group structure name for a given set of neutron energy group bounds in eV."""
-    neutronEnergyBoundsInEv = numpy.array(neutronEnergyBoundsInEv)
+    neutronEnergyBoundsInEv = np.array(neutronEnergyBoundsInEv)
     for groupStructureType in GROUP_STRUCTURE:
-        refNeutronEnergyBoundsInEv = numpy.array(getGroupStructure(groupStructureType))
+        refNeutronEnergyBoundsInEv = np.array(getGroupStructure(groupStructureType))
         if len(refNeutronEnergyBoundsInEv) != len(neutronEnergyBoundsInEv):
             continue
-        if numpy.allclose(refNeutronEnergyBoundsInEv, neutronEnergyBoundsInEv, 1e-5):
+        if np.allclose(refNeutronEnergyBoundsInEv, neutronEnergyBoundsInEv, 1e-5):
             return groupStructureType
     raise ValueError(
         "Neutron energy group structure type does not exist for the given neutron energy bounds: {}".format(

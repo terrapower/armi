@@ -17,7 +17,7 @@ import pickle
 from typing import Any, Optional, List, Set
 import sys
 
-import numpy
+import numpy as np
 import six
 
 from armi import runLog
@@ -484,8 +484,8 @@ class ParameterCollection(metaclass=_ParameterCollectionType):
         for pd, currentValue in currentData.items():
             # correct for global paramDef.assigned assumption
             retainedValue = getattr(self, pd.fieldName)
-            if isinstance(retainedValue, numpy.ndarray) or isinstance(
-                currentValue, numpy.ndarray
+            if isinstance(retainedValue, np.ndarray) or isinstance(
+                currentValue, np.ndarray
             ):
                 if (retainedValue != currentValue).any():
                     setattr(self, pd.fieldName, currentValue)
