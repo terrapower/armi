@@ -1555,60 +1555,6 @@ class TestTabulateTextWrapper(unittest.TestCase):
 
             self.assertEqual(orig.wrap(data), cust.wrap(data))
 
-    def test_wrapper_len_ignores_color_chars(self):
-        data = "\033[31m\033[104mtenletters\033[0m"
-        result = CTW._len(data)
-        self.assertEqual(10, result)
-
-    def test_wrapFullLineColor(self):
-        """TextWrapper: Wrap a line when the full thing is enclosed in color tags."""
-        # This has both a text color and a background color
-        data = "\033[31m\033[104mThis is a test string for testing TextWrap with colors\033[0m"
-
-        expected = [
-            "\033[31m\033[104mThis is a test\033[0m",
-            "\033[31m\033[104mstring for testing\033[0m",
-            "\033[31m\033[104mTextWrap with colors\033[0m",
-        ]
-        print("xxxxxxxxxxxxxxxxx")
-        print(expected)
-        print("xxxxxxxxxxxxxxxxx")
-        wrapper = CTW(width=20)
-        result = wrapper.wrap(data)
-        self.assertEqual(expected, result)
-
-    def test_wrapColorInSingleLine(self):
-        """TextWrapper: Wrap a line - preserve internal color tags, and don't
-        propagate them to other lines when they don't need to be.
-        """
-        # This has both a text color and a background color
-        data = "This is a test string for testing \033[31mTextWrap\033[0m with colors"
-
-        expected = [
-            "This is a test string for",
-            "testing \033[31mTextWrap\033[0m with",
-            "colors",
-        ]
-        wrapper = CTW(width=25)
-        result = wrapper.wrap(data)
-        self.assertEqual(expected, result)
-
-    def test_wrapColorLineSplillover(self):
-        """TextWrapper: Wrap a line - preserve internal color tags and wrap them to
-        other lines when required, requires adding the colors tags to other lines as appropriate.
-        """
-        # This has both a text color and a background color
-        data = "This is a \033[31mtest string for testing TextWrap\033[0m with colors"
-
-        expected = [
-            "This is a \033[31mtest string for\033[0m",
-            "\033[31mtesting TextWrap\033[0m with",
-            "colors",
-        ]
-        wrapper = CTW(width=25)
-        result = wrapper.wrap(data)
-        self.assertEqual(expected, result)
-
     def test_wrapDatetime(self):
         """TextWrapper: Show that datetimes can be wrapped without crashing."""
         data = [

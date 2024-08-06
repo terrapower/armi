@@ -281,7 +281,6 @@ _ansiEscapePat = rf"""
 """
 _ansiCodes = re.compile(_ansiEscapePat, re.VERBOSE)
 _ansiCodesBytes = re.compile(_ansiEscapePat.encode("utf8"), re.VERBOSE)
-_ansiColorResetCode = "\033[0m"
 
 _floatWithThousandsSeparators = re.compile(
     r"^(([+-]?[0-9]{1,3})(?:,([0-9]{3}))*)?(?(1)\.[0-9]*|\.[0-9]+)?$"
@@ -492,7 +491,7 @@ def _padnone(ignoreWidth, s):
 
 
 def _stripAnsi(s):
-    r"""Remove ANSI escape sequences, both CSI (color codes, etc) and OSC hyperlinks.
+    r"""Remove ANSI escape sequences, both CSI and OSC hyperlinks.
 
     CSI sequences are simply removed from the output, while OSC hyperlinks are replaced with the
     link text. Note: it may be desirable to show the URI instead but this is not supported.
@@ -511,7 +510,7 @@ def _stripAnsi(s):
 
 
 def _visibleWidth(s):
-    r"""Visible width of a printed string. ANSI color codes are removed.
+    r"""Visible width of a printed string.
 
     >>> _visibleWidth('\x1b[31mhello\x1b[0m'), _visibleWidth("world")
     (5, 5)
@@ -1629,47 +1628,20 @@ def _formatTable(
         return ""
 
 
-# TODO: Remove all color stuff?
 class _CustomTextWrap(textwrap.TextWrapper):
     """A custom implementation of CPython's textwrap.TextWrapper. This supports both wide characters
     (Korea, Japanese, Chinese) - including mixed string.
     """
 
     def __init__(self, *args, **kwargs):
-        self._activeCodes = []
         textwrap.TextWrapper.__init__(self, *args, **kwargs)
 
     @staticmethod
     def _len(item):
-        """Custom len that gets console column width for wide and non-wide characters as well as
-        ignores color codes.
-        """
+        """Custom len that gets console column width for wide and non-wide characters."""
         stripped = _stripAnsi(item)
         return len(stripped)
 
     def _updateLines(self, lines, newLine):
-        """Adds a new line to the list of lines the text is being wrapped into.
-
-        This function will also track any ANSI color codes in this string as well as add any colors
-        from previous lines order to preserve the same formatting as a single unwrapped string.
-        """
-        codeMatches = [x for x in _ansiCodes.finditer(newLine)]
-        colorCodes = [
-            code.string[code.span()[0] : code.span()[1]] for code in codeMatches
-        ]
-
-        # Add color codes from earlier in the unwrapped line, and then track any new ones we add.
-        newLine = "".join(self._activeCodes) + newLine
-
-        for code in colorCodes:
-            if code != _ansiColorResetCode:
-                self._activeCodes.append(code)
-            else:  # A single reset code resets everything
-                self._activeCodes = []
-
-        # Always ensure each line is color terminted if any colors are still active, otherwise
-        # colors will bleed into other cells on the console
-        if len(self._activeCodes) > 0:
-            newLine = newLine + _ansiColorResetCode
-
+        """Adds a new line to the list of lines the text is being wrapped into."""
         lines.append(newLine)
