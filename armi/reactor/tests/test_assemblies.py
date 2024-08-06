@@ -134,7 +134,7 @@ def buildTestAssemblies():
     assemblieObjs = []
     for numBlocks, blockTemplate in zip([1, 1, 5, 4], [block, block2, block, block]):
         assembly = assemblies.HexAssembly("testAssemblyType")
-        assembly.spatialGrid = grids.axialUnitGrid(numBlocks)
+        assembly.spatialGrid = grids.AxialGrid.fromNCells(numBlocks)
         assembly.spatialGrid.armiObject = assembly
         for _i in range(numBlocks):
             newBlock = copy.deepcopy(blockTemplate)
@@ -184,7 +184,7 @@ def makeTestAssembly(
 ):
     coreGrid = r.core.spatialGrid if r is not None else spatialGrid
     a = HexAssembly("TestAssem", assemNum=assemNum)
-    a.spatialGrid = grids.axialUnitGrid(numBlocks)
+    a.spatialGrid = grids.AxialGrid.fromNCells(numBlocks)
     a.spatialGrid.armiObject = a
     a.spatialLocator = coreGrid[2, 2, 0]
     return a

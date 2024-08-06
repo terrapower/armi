@@ -110,7 +110,7 @@ class FuelHandlerTestHelper(ArmiTestHelper):
 
         # generate an assembly
         self.assembly = assemblies.HexAssembly("TestAssemblyType")
-        self.assembly.spatialGrid = grids.axialUnitGrid(1)
+        self.assembly.spatialGrid = grids.AxialGrid.fromNCells(1)
         for _ in range(1):
             self.assembly.add(copy.deepcopy(self.block))
 
