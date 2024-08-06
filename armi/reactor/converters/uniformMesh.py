@@ -1028,7 +1028,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
     @staticmethod
     def _createNewAssembly(sourceAssembly):
         a = sourceAssembly.__class__(sourceAssembly.getType())
-        a.spatialGrid = grids.axialUnitGrid(len(sourceAssembly))
+        a.spatialGrid = grids.AxialGrid.fromNCells(len(sourceAssembly))
         a.setName(sourceAssembly.getName())
         return a
 
