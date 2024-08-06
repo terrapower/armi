@@ -487,7 +487,7 @@ def _padboth(width, s):
     return fmt.format(s)
 
 
-def _padnone(ignore_width, s):
+def _padnone(ignoreWidth, s):
     return s
 
 
@@ -591,14 +591,14 @@ def _alignColumnChooseWidthFn(hasInvisible, isMultiline):
     return widthFn
 
 
-def _alignColumnMultilineWidth(multiline_s, lineWidthFn=len):
+def _alignColumnMultilineWidth(multilineS, lineWidthFn=len):
     """Visible width of a potentially multiline content."""
-    return list(map(lineWidthFn, re.split("[\r\n]", multiline_s)))
+    return list(map(lineWidthFn, re.split("[\r\n]", multilineS)))
 
 
-def _flatList(nested_list):
+def _flatList(nestedList):
     ret = []
-    for item in nested_list:
+    for item in nestedList:
         if isinstance(item, list):
             for subitem in item:
                 ret.append(subitem)
@@ -921,7 +921,6 @@ def _normalizeTabularData(tabularData, headers, showindex="default"):
             and hasattr(tabularData, "rowcount")
         ):
             # Python Database API cursor object (PEP 0249)
-            # print tabulate(cursor, headers='keys')
             headers = [column[0] for column in tabularData.description]
         elif (
             dataclasses is not None
@@ -986,10 +985,10 @@ def _wrapTextToColwidths(listOfLists, colwidths, numparses=True):
     result = []
 
     for row in listOfLists:
-        new_row = []
+        newRow = []
         for cell, width, numparse in zip(row, colwidths, numparses):
             if _isnumber(cell) and numparse:
-                new_row.append(cell)
+                newRow.append(cell)
                 continue
 
             if width is not None:
@@ -997,18 +996,18 @@ def _wrapTextToColwidths(listOfLists, colwidths, numparses=True):
                 # Cast based on our internal type handling
                 # Any future custom formatting of types (such as datetimes)
                 # may need to be more explicit than just `str` of the object
-                casted_cell = (
+                castedCell = (
                     str(cell) if _isnumber(cell) else _type(cell, numparse)(cell)
                 )
                 wrapped = [
                     "\n".join(wrapper.wrap(line))
-                    for line in casted_cell.splitlines()
+                    for line in castedCell.splitlines()
                     if line.strip() != ""
                 ]
-                new_row.append("\n".join(wrapped))
+                newRow.append("\n".join(wrapped))
             else:
-                new_row.append(cell)
-        result.append(new_row)
+                newRow.append(cell)
+        result.append(newRow)
 
     return result
 
@@ -1296,9 +1295,9 @@ def tabulate(
     # PrettyTable formatting does not use any extra padding. Numbers are not parsed and are treated
     # the same as strings for alignment. Check if pretty is the format being used and override the
     # defaults so it does not impact other formats.
-    min_padding = MIN_PADDING
+    minPadding = MIN_PADDING
     if tablefmt == "pretty":
-        min_padding = 0
+        minPadding = 0
         disableNumparse = True
         numalign = "center" if numalign == _DEFAULT_ALIGN else numalign
         stralign = "center" if stralign == _DEFAULT_ALIGN else stralign
@@ -1311,7 +1310,7 @@ def tabulate(
     #
     # convert the headers and rows into a single, tab-delimited string ensuring that any bytestrings
     # are decoded safely (i.e. errors ignored)
-    plain_text = "\t".join(
+    plainText = "\t".join(
         chain(
             # headers
             map(_toStr, headers),
@@ -1321,12 +1320,12 @@ def tabulate(
         )
     )
 
-    hasInvisible = _ansiCodes.search(plain_text) is not None
+    hasInvisible = _ansiCodes.search(plainText) is not None
 
     if (
         not isinstance(tablefmt, TableFormat)
         and tablefmt in multiline_formats
-        and _isMultiline(plain_text)
+        and _isMultiline(plainText)
     ):
         tablefmt = multiline_formats.get(tablefmt, tablefmt)
         isMultiline = True
@@ -1387,7 +1386,7 @@ def tabulate(
             elif align != "global":
                 aligns[idx] = align
     minwidths = (
-        [widthFn(h) + min_padding for h in headers] if headers else [0] * len(cols)
+        [widthFn(h) + minPadding for h in headers] if headers else [0] * len(cols)
     )
     cols = [
         _alignColumn(c, a, minw, hasInvisible, isMultiline)
@@ -1436,8 +1435,8 @@ def tabulate(
     if not isinstance(tablefmt, TableFormat):
         tablefmt = _table_formats.get(tablefmt, _table_formats["simple"])
 
-    ra_default = rowalign if isinstance(rowalign, str) else None
-    rowaligns = _expandIterable(rowalign, len(rows), ra_default)
+    raDefault = rowalign if isinstance(rowalign, str) else None
+    rowaligns = _expandIterable(rowalign, len(rows), raDefault)
     _reinsertSeparatingLines(rows, separatingLines)
 
     return _formatTable(
@@ -1515,22 +1514,22 @@ def _appendBasicRow(lines, paddedCells, colwidths, colaligns, rowfmt, rowalign=N
 
 
 def _alignCellVeritically(textLines, numLines, columnWidth, rowAlignment):
-    delta_lines = numLines - len(textLines)
+    deltaLines = numLines - len(textLines)
     blank = [" " * columnWidth]
     if rowAlignment == "bottom":
-        return blank * delta_lines + textLines
+        return blank * deltaLines + textLines
     elif rowAlignment == "center":
-        topDelta = delta_lines // 2
-        bottom_delta = delta_lines - topDelta
-        return topDelta * blank + textLines + bottom_delta * blank
+        topDelta = deltaLines // 2
+        bottomDelta = deltaLines - topDelta
+        return topDelta * blank + textLines + bottomDelta * blank
     else:
-        return textLines + blank * delta_lines
+        return textLines + blank * deltaLines
 
 
 def _appendMultilineRow(
-    lines, paddedMultilineCells, padded_widths, colaligns, rowfmt, pad, rowalign=None
+    lines, paddedMultilineCells, paddedWidths, colaligns, rowfmt, pad, rowalign=None
 ):
-    colwidths = [w - 2 * pad for w in padded_widths]
+    colwidths = [w - 2 * pad for w in paddedWidths]
     cells_lines = [c.splitlines() for c in paddedMultilineCells]
     nlines = max(map(len, cells_lines))  # number of lines in the row
 
@@ -1540,8 +1539,9 @@ def _appendMultilineRow(
     ]
     linesCells = [[cl[i] for cl in cells_lines] for i in range(nlines)]
     for ln in linesCells:
-        padded_ln = _padRow(ln, pad)
-        _appendBasicRow(lines, padded_ln, colwidths, colaligns, rowfmt)
+        paddedLn = _padRow(ln, pad)
+        _appendBasicRow(lines, paddedLn, colwidths, colaligns, rowfmt)
+
     return lines
 
 
@@ -1571,59 +1571,57 @@ def _formatTable(
     pad = fmt.padding
     headerrow = fmt.headerrow
 
-    padded_widths = [(w + 2 * pad) for w in colwidths]
+    paddedWidths = [(w + 2 * pad) for w in colwidths]
     if isMultiline:
-        pad_row = lambda row, _: row
-        append_row = partial(_appendMultilineRow, pad=pad)
+        padRow = lambda row, _: row
+        appendRow = partial(_appendMultilineRow, pad=pad)
     else:
-        pad_row = _padRow
-        append_row = _appendBasicRow
+        padRow = _padRow
+        appendRow = _appendBasicRow
 
-    padded_headers = pad_row(headers, pad)
-    padded_rows = [pad_row(row, pad) for row in rows]
+    paddedHeaders = padRow(headers, pad)
+    paddedRows = [padRow(row, pad) for row in rows]
 
     if fmt.lineabove and "lineabove" not in hidden:
-        _appendLine(lines, padded_widths, colaligns, fmt.lineabove)
+        _appendLine(lines, paddedWidths, colaligns, fmt.lineabove)
 
-    if padded_headers:
-        append_row(lines, padded_headers, padded_widths, headersaligns, headerrow)
+    if paddedHeaders:
+        appendRow(lines, paddedHeaders, paddedWidths, headersaligns, headerrow)
         if fmt.linebelowheader and "linebelowheader" not in hidden:
-            _appendLine(lines, padded_widths, colaligns, fmt.linebelowheader)
+            _appendLine(lines, paddedWidths, colaligns, fmt.linebelowheader)
 
-    if padded_rows and fmt.linebetweenrows and "linebetweenrows" not in hidden:
+    if paddedRows and fmt.linebetweenrows and "linebetweenrows" not in hidden:
         # initial rows with a line below
-        for row, ralign in zip(padded_rows[:-1], rowaligns):
-            append_row(
-                lines, row, padded_widths, colaligns, fmt.datarow, rowalign=ralign
-            )
-            _appendLine(lines, padded_widths, colaligns, fmt.linebetweenrows)
+        for row, ralign in zip(paddedRows[:-1], rowaligns):
+            appendRow(lines, row, paddedWidths, colaligns, fmt.datarow, rowalign=ralign)
+            _appendLine(lines, paddedWidths, colaligns, fmt.linebetweenrows)
         # the last row without a line below
-        append_row(
+        appendRow(
             lines,
-            padded_rows[-1],
-            padded_widths,
+            paddedRows[-1],
+            paddedWidths,
             colaligns,
             fmt.datarow,
             rowalign=rowaligns[-1],
         )
     else:
-        separating_line = (
+        separatingLine = (
             fmt.linebetweenrows
             or fmt.linebelowheader
             or fmt.linebelow
             or fmt.lineabove
             or Line("", "", "", "")
         )
-        for row in padded_rows:
+        for row in paddedRows:
             # test to see if either the 1st column or the 2nd column (account for showindex) has the
             # SEPARATING_LINE flag
             if _isSeparatingLine(row):
-                _appendLine(lines, padded_widths, colaligns, separating_line)
+                _appendLine(lines, paddedWidths, colaligns, separatingLine)
             else:
-                append_row(lines, row, padded_widths, colaligns, fmt.datarow)
+                appendRow(lines, row, paddedWidths, colaligns, fmt.datarow)
 
     if fmt.linebelow and "linebelow" not in hidden:
-        _appendLine(lines, padded_widths, colaligns, fmt.linebelow)
+        _appendLine(lines, paddedWidths, colaligns, fmt.linebelow)
 
     if headers or rows:
         return "\n".join(lines)
@@ -1637,8 +1635,7 @@ class _CustomTextWrap(textwrap.TextWrapper):
     """
 
     def __init__(self, *args, **kwargs):
-        self._active_codes = []
-        self.max_lines = None  # For python2 compatibility
+        self._activeCodes = []
         textwrap.TextWrapper.__init__(self, *args, **kwargs)
 
     @staticmethod
@@ -1649,29 +1646,29 @@ class _CustomTextWrap(textwrap.TextWrapper):
         stripped = _stripAnsi(item)
         return len(stripped)
 
-    def _updateLines(self, lines, new_line):
+    def _updateLines(self, lines, newLine):
         """Adds a new line to the list of lines the text is being wrapped into.
 
         This function will also track any ANSI color codes in this string as well as add any colors
         from previous lines order to preserve the same formatting as a single unwrapped string.
         """
-        code_matches = [x for x in _ansiCodes.finditer(new_line)]
-        color_codes = [
-            code.string[code.span()[0] : code.span()[1]] for code in code_matches
+        codeMatches = [x for x in _ansiCodes.finditer(newLine)]
+        colorCodes = [
+            code.string[code.span()[0] : code.span()[1]] for code in codeMatches
         ]
 
         # Add color codes from earlier in the unwrapped line, and then track any new ones we add.
-        new_line = "".join(self._active_codes) + new_line
+        newLine = "".join(self._activeCodes) + newLine
 
-        for code in color_codes:
+        for code in colorCodes:
             if code != _ansiColorResetCode:
-                self._active_codes.append(code)
+                self._activeCodes.append(code)
             else:  # A single reset code resets everything
-                self._active_codes = []
+                self._activeCodes = []
 
         # Always ensure each line is color terminted if any colors are still active, otherwise
         # colors will bleed into other cells on the console
-        if len(self._active_codes) > 0:
-            new_line = new_line + _ansiColorResetCode
+        if len(self._activeCodes) > 0:
+            newLine = newLine + _ansiColorResetCode
 
-        lines.append(new_line)
+        lines.append(newLine)
