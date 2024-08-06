@@ -20,11 +20,12 @@ from collections import namedtuple
 from collections.abc import Iterable, Sized
 from functools import reduce, partial
 from itertools import chain, zip_longest as izip_longest
+from textwrap import TextWrapper
 import dataclasses
 import math
 import re
-import textwrap
-import warnings
+
+from armi import runLog
 
 __all__ = ["tabulate", "tabulate_formats"]
 
@@ -991,7 +992,7 @@ def _wrapTextToColwidths(listOfLists, colwidths, numparses=True):
                 continue
 
             if width is not None:
-                wrapper = _CustomTextWrap(width=width)
+                wrapper = TextWrapper(width=width)
                 # Cast based on our internal type handling
                 # Any future custom formatting of types (such as datetimes)
                 # may need to be more explicit than just `str` of the object
@@ -1374,10 +1375,9 @@ def tabulate(
     if colalign is not None:
         assert isinstance(colalign, Iterable)
         if isinstance(colalign, str):
-            warnings.warn(
+            runLog.warning(
                 f"As a string, `colalign` is interpreted as {[c for c in colalign]}. Did you "
-                + f'mean `colglobalalign = "{colalign}"` or `colalign = ("{colalign}",)`?',
-                stacklevel=2,
+                + f'mean `colglobalalign = "{colalign}"` or `colalign = ("{colalign}",)`?'
             )
         for idx, align in enumerate(colalign):
             if not idx < len(aligns):
@@ -1405,11 +1405,10 @@ def tabulate(
         if headersalign is not None:
             assert isinstance(headersalign, Iterable)
             if isinstance(headersalign, str):
-                warnings.warn(
+                runLog.warning(
                     f"As a string, `headersalign` is interpreted as {[c for c in headersalign]}. "
                     + f'Did you mean `headersglobalalign = "{headersalign}"` or `headersalign = '
-                    + f'("{headersalign}",)`?',
-                    stacklevel=2,
+                    + f'("{headersalign}",)`?'
                 )
             for idx, align in enumerate(headersalign):
                 hidx = headersPad + idx
@@ -1544,7 +1543,7 @@ def _appendMultilineRow(
     return lines
 
 
-def _build_line(colwidths, colaligns, linefmt):
+def _buildLine(colwidths, colaligns, linefmt):
     """Return a string which represents a horizontal line."""
     if not linefmt:
         return None
@@ -1557,7 +1556,7 @@ def _build_line(colwidths, colaligns, linefmt):
 
 
 def _appendLine(lines, colwidths, colaligns, linefmt):
-    lines.append(_build_line(colwidths, colaligns, linefmt))
+    lines.append(_buildLine(colwidths, colaligns, linefmt))
     return lines
 
 
@@ -1626,22 +1625,3 @@ def _formatTable(
         return "\n".join(lines)
     else:  # a completely empty table
         return ""
-
-
-class _CustomTextWrap(textwrap.TextWrapper):
-    """A custom implementation of CPython's textwrap.TextWrapper. This supports both wide characters
-    (Korea, Japanese, Chinese) - including mixed string.
-    """
-
-    def __init__(self, *args, **kwargs):
-        textwrap.TextWrapper.__init__(self, *args, **kwargs)
-
-    @staticmethod
-    def _len(item):
-        """Custom len that gets console column width for wide and non-wide characters."""
-        stripped = _stripAnsi(item)
-        return len(stripped)
-
-    def _updateLines(self, lines, newLine):
-        """Adds a new line to the list of lines the text is being wrapped into."""
-        lines.append(newLine)

@@ -19,14 +19,11 @@
 from collections import namedtuple
 from collections import OrderedDict
 from collections import UserDict
-from datetime import datetime
-from textwrap import TextWrapper as OTW
 import unittest
 
 import numpy as np
 
 from armi.utils.tabulate import _alignColumn, _alignCellVeritically, _multilineWidth
-from armi.utils.tabulate import _CustomTextWrap as CTW
 from armi.utils.tabulate import SEPARATING_LINE
 from armi.utils.tabulate import tabulate, tabulate_formats
 
@@ -1526,60 +1523,4 @@ class TestTabulateOutput(unittest.TestCase):
             ["h1    h2        h3", "----  ----  ------", "foo   bar   429920"]
         )
         result = tabulate(test_table, table_headers, disableNumparse=[0, 1])
-        self.assertEqual(expected, result)
-
-
-class TestTabulateTextWrapper(unittest.TestCase):
-    def test_wrapMultiwordNonWide(self):
-        """TextWrapper: non-wide character regression tests."""
-        data = "this is a test string for regression splitting"
-        for width in range(1, len(data)):
-            orig = OTW(width=width)
-            cust = CTW(width=width)
-
-            self.assertEqual(orig.wrap(data), cust.wrap(data))
-
-    def test_wrapMultiwordNonWideWithHypens(self):
-        """TextWrapper: non-wide character regression tests that contain hyphens."""
-        data = "how should-we-split-this non-sense string that-has-lots-of-hypens"
-        for width in range(1, len(data)):
-            orig = OTW(width=width)
-            cust = CTW(width=width)
-
-            self.assertEqual(orig.wrap(data), cust.wrap(data))
-
-    def test_wrapLongwordNonWide(self):
-        """TextWrapper: Some non-wide character regression tests."""
-        data = "ThisIsASingleReallyLongWordThatWeNeedToSplit"
-        for width in range(1, len(data)):
-            orig = OTW(width=width)
-            cust = CTW(width=width)
-
-            self.assertEqual(orig.wrap(data), cust.wrap(data))
-
-    def test_wrapDatetime(self):
-        """TextWrapper: Show that datetimes can be wrapped without crashing."""
-        data = [
-            ["First Entry", datetime(2020, 1, 1, 5, 6, 7)],
-            ["Second Entry", datetime(2021, 2, 2, 0, 0, 0)],
-        ]
-        headers = ["Title", "When"]
-        result = tabulate(data, headers=headers, tablefmt="grid", maxcolwidths=[7, 5])
-
-        expected = [
-            "+---------+--------+",
-            "| Title   | When   |",
-            "+=========+========+",
-            "| First   | 2020-  |",
-            "| Entry   | 01-01  |",
-            "|         | 05:06  |",
-            "|         | :07    |",
-            "+---------+--------+",
-            "| Second  | 2021-  |",
-            "| Entry   | 02-02  |",
-            "|         | 00:00  |",
-            "|         | :00    |",
-            "+---------+--------+",
-        ]
-        expected = "\n".join(expected)
         self.assertEqual(expected, result)
