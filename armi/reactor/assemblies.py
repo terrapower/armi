@@ -1179,7 +1179,7 @@ class Assembly(composites.Composite):
             reordering.
         """
         # replace grid with one that has the right number of locations
-        self.spatialGrid = grids.axialUnitGrid(len(self))
+        self.spatialGrid = grids.AxialGrid.fromNCells(len(self))
         self.spatialGrid.armiObject = self
         for zi, b in enumerate(self):
             b.spatialLocator = self.spatialGrid[0, 0, zi]
