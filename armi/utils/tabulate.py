@@ -1629,6 +1629,7 @@ def _formatTable(
         return ""
 
 
+# TODO: Remove all color stuff?
 class _CustomTextWrap(textwrap.TextWrapper):
     """A custom implementation of CPython's textwrap.TextWrapper. This supports both wide characters
     (Korea, Japanese, Chinese) - including mixed string.
