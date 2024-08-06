@@ -59,7 +59,7 @@ class TestTabulateInputs(unittest.TestCase):
         result = tabulate(ii, "abcde")
         self.assertEqual(expected, result)
 
-    def test_iterable_of_iterables_firstrow(self):
+    def test_iterableOfIterablesFirstrow(self):
         """Input: an interable of iterables with the first row as headers."""
         ii = iter(map(lambda x: iter(x), ["abcde", range(5), range(5, 0, -1)]))
         expected = "\n".join(
@@ -73,7 +73,7 @@ class TestTabulateInputs(unittest.TestCase):
         result = tabulate(ii, "firstrow")
         self.assertEqual(expected, result)
 
-    def test_list_of_lists(self):
+    def test_listOfLists(self):
         """Input: a list of lists with headers."""
         ll = [["a", "one", 1], ["b", "two", None]]
         expected = "\n".join(
@@ -87,7 +87,7 @@ class TestTabulateInputs(unittest.TestCase):
         result = tabulate(ll, headers=["string", "number"])
         self.assertEqual(expected, result)
 
-    def test_list_of_lists_firstrow(self):
+    def test_listOfListsFirstrow(self):
         """Input: a list of lists with the first row as headers."""
         ll = [["string", "number"], ["a", "one", 1], ["b", "two", None]]
         expected = "\n".join(
@@ -101,7 +101,7 @@ class TestTabulateInputs(unittest.TestCase):
         result = tabulate(ll, headers="firstrow")
         self.assertEqual(expected, result)
 
-    def test_list_of_lists_keys(self):
+    def test_listOfListsKeys(self):
         """Input: a list of lists with column indices as headers."""
         ll = [["a", "one", 1], ["b", "two", None]]
         expected = "\n".join(
@@ -110,7 +110,7 @@ class TestTabulateInputs(unittest.TestCase):
         result = tabulate(ll, headers="keys")
         self.assertEqual(expected, result)
 
-    def testDictLike(self):
+    def test_dictLike(self):
         """Input: a dict of iterables with keys as headers."""
         # columns should be padded with None, keys should be used as headers
         dd = {"a": range(3), "b": range(101, 105)}
@@ -122,7 +122,7 @@ class TestTabulateInputs(unittest.TestCase):
         result = tabulate(dd, "keys")
         self.assertEqual(result, expected1)
 
-    def test_numpy_2d(self):
+    def test_numpy2d(self):
         """Input: a 2D NumPy array with headers."""
         na = (numpy.arange(1, 10, dtype=numpy.float32).reshape((3, 3)) ** 3) * 0.5
         expected = "\n".join(
@@ -137,7 +137,7 @@ class TestTabulateInputs(unittest.TestCase):
         result = tabulate(na, ["a", "b", "c"])
         self.assertEqual(expected, result)
 
-    def test_numpy_2d_firstrow(self):
+    def test_numpy2dFirstrow(self):
         """Input: a 2D NumPy array with the first row as headers."""
         na = numpy.arange(1, 10, dtype=numpy.int32).reshape((3, 3)) ** 3
         expected = "\n".join(
@@ -146,7 +146,7 @@ class TestTabulateInputs(unittest.TestCase):
         result = tabulate(na, headers="firstrow")
         self.assertEqual(expected, result)
 
-    def test_numpy_2d_keys(self):
+    def test_numpy2dKeys(self):
         """Input: a 2D NumPy array with column indices as headers."""
         na = (numpy.arange(1, 10, dtype=numpy.float32).reshape((3, 3)) ** 3) * 0.5
         expected = "\n".join(
@@ -161,7 +161,7 @@ class TestTabulateInputs(unittest.TestCase):
         result = tabulate(na, headers="keys")
         self.assertEqual(expected, result)
 
-    def test_numpy_record_array(self):
+    def test_numpyRecordArray(self):
         """Input: a 2D NumPy record array without header."""
         na = numpy.asarray(
             [("Alice", 23, 169.5), ("Bob", 27, 175.0)],
@@ -181,7 +181,7 @@ class TestTabulateInputs(unittest.TestCase):
         result = tabulate(na)
         self.assertEqual(expected, result)
 
-    def test_numpy_record_array_keys(self):
+    def test_numpyRecordArrayKeys(self):
         """Input: a 2D NumPy record array with column names as headers."""
         na = numpy.asarray(
             [("Alice", 23, 169.5), ("Bob", 27, 175.0)],
@@ -201,7 +201,7 @@ class TestTabulateInputs(unittest.TestCase):
         result = tabulate(na, headers="keys")
         self.assertEqual(expected, result)
 
-    def test_numpy_record_array_headers(self):
+    def test_numpyRecordArrayHeaders(self):
         """Input: a 2D NumPy record array with user-supplied headers."""
         na = numpy.asarray(
             [("Alice", 23, 169.5), ("Bob", 27, 175.0)],
@@ -221,7 +221,7 @@ class TestTabulateInputs(unittest.TestCase):
         result = tabulate(na, headers=["person", "years", "cm"])
         self.assertEqual(expected, result)
 
-    def test_list_of_namedtuples(self):
+    def test_listOf_namedtuples(self):
         """Input: a list of named tuples with field names as headers."""
         from collections import namedtuple
 
@@ -231,7 +231,7 @@ class TestTabulateInputs(unittest.TestCase):
         result = tabulate(lt)
         self.assertEqual(expected, result)
 
-    def test_list_of_namedtuples_keys(self):
+    def test_listOfNamedtuplesKeys(self):
         """Input: a list of named tuples with field names as headers."""
         from collections import namedtuple
 
@@ -243,7 +243,7 @@ class TestTabulateInputs(unittest.TestCase):
         result = tabulate(lt, headers="keys")
         self.assertEqual(expected, result)
 
-    def test_list_of_dicts(self):
+    def test_listOfDicts(self):
         """Input: a list of dictionaries."""
         lod = [{"foo": 1, "bar": 2}, {"foo": 3, "bar": 4}]
         expected1 = "\n".join(["-  -", "1  2", "3  4", "-  -"])
@@ -251,7 +251,7 @@ class TestTabulateInputs(unittest.TestCase):
         result = tabulate(lod)
         self.assertIn(result, [expected1, expected2])
 
-    def test_list_of_userdicts(self):
+    def test_listOfUserdicts(self):
         """Input: a list of UserDicts."""
         lod = [UserDict(foo=1, bar=2), UserDict(foo=3, bar=4)]
         expected1 = "\n".join(["-  -", "1  2", "3  4", "-  -"])
@@ -259,7 +259,7 @@ class TestTabulateInputs(unittest.TestCase):
         result = tabulate(lod)
         self.assertIn(result, [expected1, expected2])
 
-    def test_list_of_dicts_keys(self):
+    def test_listOfDictsKeys(self):
         """Input: a list of dictionaries, with keys as headers."""
         lod = [{"foo": 1, "bar": 2}, {"foo": 3, "bar": 4}]
         expected1 = "\n".join(
@@ -271,7 +271,7 @@ class TestTabulateInputs(unittest.TestCase):
         result = tabulate(lod, headers="keys")
         self.assertIn(result, [expected1, expected2])
 
-    def test_list_of_userdicts_keys(self):
+    def test_listOfUserdictsKeys(self):
         """Input: a list of UserDicts."""
         lod = [UserDict(foo=1, bar=2), UserDict(foo=3, bar=4)]
         expected1 = "\n".join(
@@ -283,7 +283,7 @@ class TestTabulateInputs(unittest.TestCase):
         result = tabulate(lod, headers="keys")
         self.assertIn(result, [expected1, expected2])
 
-    def test_list_of_dicts_with_missing_keys(self):
+    def test_listOfDictsWithMissingKeys(self):
         """Input: a list of dictionaries, with missing keys."""
         lod = [{"foo": 1}, {"bar": 2}, {"foo": 4, "baz": 3}]
         expected = "\n".join(
@@ -298,7 +298,7 @@ class TestTabulateInputs(unittest.TestCase):
         result = tabulate(lod, headers="keys")
         self.assertEqual(expected, result)
 
-    def test_list_of_dicts_firstrow(self):
+    def test_listOfDictsFirstrow(self):
         """Input: a list of dictionaries, with the first dict as headers."""
         lod = [{"foo": "FOO", "bar": "BAR"}, {"foo": 3, "bar": 4, "baz": 5}]
         # if some key is missing in the first dict, use the key name instead
@@ -311,7 +311,7 @@ class TestTabulateInputs(unittest.TestCase):
         result = tabulate(lod, headers="firstrow")
         self.assertIn(result, [expected1, expected2])
 
-    def test_list_of_dicts_with_dict_of_headers(self):
+    def test_listOfDictsWithDictOfHeaders(self):
         """Input: a dict of user headers for a list of dicts."""
         table = [{"letters": "ABCDE", "digits": 12345}]
         headers = {"digits": "DIGITS", "letters": "LETTERS"}
@@ -324,14 +324,14 @@ class TestTabulateInputs(unittest.TestCase):
         result = tabulate(table, headers=headers)
         self.assertIn(result, [expected1, expected2])
 
-    def test_list_of_dicts_with_list_of_headers(self):
+    def test_listOfDicts_with_list_of_headers(self):
         """Input: ValueError on a list of headers with a list of dicts."""
         table = [{"letters": "ABCDE", "digits": 12345}]
         headers = ["DIGITS", "LETTERS"]
         with self.assertRaises(ValueError):
             tabulate(table, headers=headers)
 
-    def test_list_of_ordereddicts(self):
+    def test_listOfOrdereddicts(self):
         """Input: a list of OrderedDicts."""
         od = OrderedDict([("b", 1), ("a", 2)])
         lod = [od, od]
@@ -339,7 +339,7 @@ class TestTabulateInputs(unittest.TestCase):
         result = tabulate(lod, headers="keys")
         self.assertEqual(expected, result)
 
-    def test_list_bytes(self):
+    def test_listBytes(self):
         """Input: a list of bytes."""
         lb = [["你好".encode("utf-8")], ["你好"]]
         expected = "\n".join(
@@ -362,7 +362,7 @@ class TestTabulateInternal(unittest.TestCase):
         onelineString = "12345"
         self.assertEqual(_multilineWidth(onelineString), len(onelineString))
 
-    def test_align_column_decimal(self):
+    def test_alignColumnDecimal(self):
         """Internal: _align_column(..., 'decimal')."""
         column = ["12.345", "-1234.5", "1.23", "1234.5", "1e+234", "1.0e234"]
         result = _alignColumn(column, "decimal")
@@ -376,7 +376,7 @@ class TestTabulateInternal(unittest.TestCase):
         ]
         self.assertEqual(expected, result)
 
-    def test_align_column_decimal_with_thousand_separators(self):
+    def test_alignColumnDecimalWithThousandSeparators(self):
         """Internal: _align_column(..., 'decimal')."""
         column = ["12.345", "-1234.5", "1.23", "1,234.5", "1e+234", "1.0e234"]
         output = _alignColumn(column, "decimal")
@@ -390,7 +390,7 @@ class TestTabulateInternal(unittest.TestCase):
         ]
         self.assertEqual(expected, output)
 
-    def test_align_column_decimal_with_incorrect_thousand_separators(self):
+    def test_alignColumnDecimalWithIncorrectThousandSeparators(self):
         """Internal: _align_column(..., 'decimal')."""
         column = ["12.345", "-1234.5", "1.23", "12,34.5", "1e+234", "1.0e234"]
         output = _alignColumn(column, "decimal")
@@ -418,7 +418,7 @@ class TestTabulateInternal(unittest.TestCase):
         expected = ["  1  ", " 123 ", "12345" + "\n" + "  6  "]
         self.assertEqual(expected, output)
 
-    def test_align_cell_veritically_one_line_only(self):
+    def test_alignCellVeriticallyOneLineOnly(self):
         """Internal: Aligning a single height cell is same regardless of alignment value."""
         lines = ["one line"]
         column_width = 8
@@ -431,32 +431,32 @@ class TestTabulateInternal(unittest.TestCase):
         expected = ["one line"]
         assert top == center == bottom == none == expected
 
-    def test_align_cell_veritically_top_single_text_multiple_pad(self):
+    def test_alignCellVeriticallyTopSingleTextMultiplePad(self):
         """Internal: Align single cell text to top."""
         result = _alignCellVeritically(["one line"], 3, 8, "top")
         expected = ["one line", "        ", "        "]
         self.assertEqual(expected, result)
 
-    def test_align_cell_veritically_center_single_text_multiple_pad(self):
+    def test_alignCellVeriticallyCenterSingleTextMultiplePad(self):
         """Internal: Align single cell text to center."""
         result = _alignCellVeritically(["one line"], 3, 8, "center")
         expected = ["        ", "one line", "        "]
         self.assertEqual(expected, result)
 
-    def test_align_cell_veritically_bottom_single_text_multiple_pad(self):
+    def test_alignCellVeriticallyBottomSingleTextMultiplePad(self):
         """Internal: Align single cell text to bottom."""
         result = _alignCellVeritically(["one line"], 3, 8, "bottom")
         expected = ["        ", "        ", "one line"]
         self.assertEqual(expected, result)
 
-    def test_align_cell_veritically_top_multi_text_multiple_pad(self):
+    def test_alignCellVeriticallyTopMultiTextMultiplePad(self):
         """Internal: Align multiline celltext text to top."""
         text = ["just", "one ", "cell"]
         result = _alignCellVeritically(text, 6, 4, "top")
         expected = ["just", "one ", "cell", "    ", "    ", "    "]
         self.assertEqual(expected, result)
 
-    def test_align_cell_veritically_center_multi_text_multiple_pad(self):
+    def test_alignCellVeriticallyCenterMultiTextMultiplePad(self):
         """Internal: Align multiline celltext text to center."""
         text = ["just", "one ", "cell"]
         result = _alignCellVeritically(text, 6, 4, "center")
@@ -466,7 +466,7 @@ class TestTabulateInternal(unittest.TestCase):
         expected = ["    ", "just", "one ", "cell", "    ", "    "]
         self.assertEqual(expected, result)
 
-    def test_align_cell_veritically_bottom_multi_text_multiple_pad(self):
+    def test_alignCellVeriticallyBottomMultiTextMultiplePad(self):
         """Internal: Align multiline celltext text to bottom."""
         text = ["just", "one ", "cell"]
         result = _alignCellVeritically(text, 6, 4, "bottom")
@@ -493,13 +493,13 @@ class TestTabulateOutput(unittest.TestCase):
         result = tabulate(_test_table, _test_table_headers, tablefmt="plain")
         self.assertEqual(expected, result)
 
-    def test_plain_headerless(self):
+    def test_plainHeaderless(self):
         """Output: plain without headers."""
         expected = "\n".join(["spam   41.9999", "eggs  451"])
         result = tabulate(_test_table, tablefmt="plain")
         self.assertEqual(expected, result)
 
-    def test_plain_multiline_headerless(self):
+    def test_plainMultilineHeaderless(self):
         """Output: plain with multiline cells without headers."""
         table = [["foo bar\nbaz\nbau", "hello"], ["", "multiline\nworld"]]
         expected = "\n".join(
@@ -514,7 +514,7 @@ class TestTabulateOutput(unittest.TestCase):
         result = tabulate(table, stralign="center", tablefmt="plain")
         self.assertEqual(expected, result)
 
-    def test_plain_multiline(self):
+    def test_plainMultiline(self):
         """Output: plain with multiline cells with headers."""
         table = [[2, "foo\nbar"]]
         headers = ("more\nspam \x1b[31meggs\x1b[0m", "more spam\n& eggs")
@@ -529,7 +529,7 @@ class TestTabulateOutput(unittest.TestCase):
         result = tabulate(table, headers, tablefmt="plain")
         self.assertEqual(expected, result)
 
-    def test_plain_multiline_with_links(self):
+    def test_plainMultilineWithLinks(self):
         """Output: plain with multiline cells with links and headers."""
         table = [[2, "foo\nbar"]]
         headers = (
@@ -547,7 +547,7 @@ class TestTabulateOutput(unittest.TestCase):
         result = tabulate(table, headers, tablefmt="plain")
         self.assertEqual(expected, result)
 
-    def test_plain_multiline_with_empty_cells(self):
+    def test_plainMultilineWithEmptyCells(self):
         """Output: plain with multiline cells and empty cells with headers."""
         table = [
             ["hdr", "data", "fold"],
@@ -565,7 +565,7 @@ class TestTabulateOutput(unittest.TestCase):
         result = tabulate(table, headers="firstrow", tablefmt="plain")
         self.assertEqual(expected, result)
 
-    def test_plain_multiline_with_empty_cells_headerless(self):
+    def test_plainMultilineWithEmptyCellsHeaderless(self):
         """Output: plain with multiline cells and empty cells without headers."""
         table = [["0", "", ""], ["1", "", ""], ["2", "very long data", "fold\nthis"]]
         expected = "\n".join(
@@ -574,7 +574,7 @@ class TestTabulateOutput(unittest.TestCase):
         result = tabulate(table, tablefmt="plain")
         self.assertEqual(expected, result)
 
-    def test_plain_maxcolwidth_autowraps(self):
+    def test_plainMaxcolwidthAutowraps(self):
         """Output: maxcolwidth will result in autowrapping longer cells."""
         table = [["hdr", "fold"], ["1", "very long data"]]
         expected = "\n".join(["  hdr  fold", "    1  very long", "       data"])
@@ -583,7 +583,7 @@ class TestTabulateOutput(unittest.TestCase):
         )
         self.assertEqual(expected, result)
 
-    def test_plain_maxcolwidth_autowraps_with_sep(self):
+    def test_plainMaxcolwidthAutowrapsWithSep(self):
         """Output: maxcolwidth will result in autowrapping longer cells and separating line."""
         table = [
             ["hdr", "fold"],
@@ -599,7 +599,7 @@ class TestTabulateOutput(unittest.TestCase):
         )
         self.assertEqual(expected, result)
 
-    def test_maxcolwidth_single_value(self):
+    def test_maxcolwidthSingleValue(self):
         """Output: maxcolwidth can be specified as a single number that works for each column."""
         table = [
             ["hdr", "fold1", "fold2"],
@@ -617,7 +617,7 @@ class TestTabulateOutput(unittest.TestCase):
         result = tabulate(table, headers="firstrow", tablefmt="plain", maxcolwidths=6)
         self.assertEqual(expected, result)
 
-    def test_maxcolwidth_pad_tailing_widths(self):
+    def test_maxcolwidthPadTailingWidths(self):
         """Output: maxcolwidth, if only partly specified, pads tailing cols with None."""
         table = [
             ["hdr", "fold1", "fold2"],
@@ -636,7 +636,7 @@ class TestTabulateOutput(unittest.TestCase):
         )
         self.assertEqual(expected, result)
 
-    def test_maxcolwidth_honor_disable_parsenum(self):
+    def test_maxcolwidthHonorDisableParsenum(self):
         """Output: Using maxcolwidth in conjunction with disable_parsenum is honored."""
         table = [
             ["first number", 123.456789, "123.456789"],
@@ -658,7 +658,7 @@ class TestTabulateOutput(unittest.TestCase):
         result = tabulate(table, tablefmt="grid", maxcolwidths=6, disableNumparse=[2])
         self.assertEqual(expected, result)
 
-    def test_plain_maxheadercolwidths_autowraps(self):
+    def test_plainMaxheadercolwidthsAutowraps(self):
         """Output: maxheadercolwidths will result in autowrapping header cell."""
         table = [["hdr", "fold"], ["1", "very long data"]]
         expected = "\n".join(
@@ -686,7 +686,7 @@ class TestTabulateOutput(unittest.TestCase):
         result = tabulate(_test_table, _test_table_headers, tablefmt="simple")
         self.assertEqual(expected, result)
 
-    def test_simple_with_sep_line(self):
+    def test_simpleWithSepLine(self):
         """Output: simple with headers and separating line."""
         expected = "\n".join(
             [
@@ -702,7 +702,7 @@ class TestTabulateOutput(unittest.TestCase):
         )
         self.assertEqual(expected, result)
 
-    def test_readme_example_with_sep(self):
+    def test_readmeExampleWithSep(self):
         table = [["Earth", 6371], ["Mars", 3390], SEPARATING_LINE, ["Moon", 1737]]
         expected = "\n".join(
             [
@@ -717,7 +717,7 @@ class TestTabulateOutput(unittest.TestCase):
         result = tabulate(table, tablefmt="simple")
         self.assertEqual(expected, result)
 
-    def test_simple_multiline_2(self):
+    def testSimpleMultiline2(self):
         """Output: simple with multiline cells."""
         expected = "\n".join(
             [
@@ -734,7 +734,7 @@ class TestTabulateOutput(unittest.TestCase):
         )
         self.assertEqual(expected, result)
 
-    def test_simple_multiline_2_with_sep_line(self):
+    def testSimpleMultiline2WithSepLine(self):
         """Output: simple with multiline cells."""
         expected = "\n".join(
             [
@@ -757,7 +757,7 @@ class TestTabulateOutput(unittest.TestCase):
         )
         self.assertEqual(expected, result)
 
-    def test_simple_headerless(self):
+    def test_simpleHeaderless(self):
         """Output: simple without headers."""
         expected = "\n".join(
             ["----  --------", "spam   41.9999", "eggs  451", "----  --------"]
@@ -765,7 +765,7 @@ class TestTabulateOutput(unittest.TestCase):
         result = tabulate(_test_table, tablefmt="simple")
         self.assertEqual(expected, result)
 
-    def test_simple_headerless_with_sep_line(self):
+    def test_simpleHeaderlessWithSepLine(self):
         """Output: simple without headers."""
         expected = "\n".join(
             [
@@ -779,7 +779,7 @@ class TestTabulateOutput(unittest.TestCase):
         result = tabulate(_test_table_with_sep_line, tablefmt="simple")
         self.assertEqual(expected, result)
 
-    def test_simple_multiline_headerless(self):
+    def testSimpleMultilineHeaderless(self):
         """Output: simple with multiline cells without headers."""
         table = [["foo bar\nbaz\nbau", "hello"], ["", "multiline\nworld"]]
         expected = "\n".join(
@@ -796,7 +796,7 @@ class TestTabulateOutput(unittest.TestCase):
         result = tabulate(table, stralign="center", tablefmt="simple")
         self.assertEqual(expected, result)
 
-    def test_simple_multiline(self):
+    def test_simpleMultiline(self):
         """Output: simple with multiline cells with headers."""
         table = [[2, "foo\nbar"]]
         headers = ("more\nspam \x1b[31meggs\x1b[0m", "more spam\n& eggs")
@@ -812,7 +812,7 @@ class TestTabulateOutput(unittest.TestCase):
         result = tabulate(table, headers, tablefmt="simple")
         self.assertEqual(expected, result)
 
-    def test_simple_multiline_with_links(self):
+    def testSimpleMultilineWithLinks(self):
         """Output: simple with multiline cells with links and headers."""
         table = [[2, "foo\nbar"]]
         headers = (
@@ -831,7 +831,7 @@ class TestTabulateOutput(unittest.TestCase):
         result = tabulate(table, headers, tablefmt="simple")
         self.assertEqual(expected, result)
 
-    def test_simple_multiline_with_empty_cells(self):
+    def testSimpleMultilineWithEmptyCells(self):
         """Output: simple with multiline cells and empty cells with headers."""
         table = [
             ["hdr", "data", "fold"],
@@ -850,7 +850,7 @@ class TestTabulateOutput(unittest.TestCase):
         result = tabulate(table, headers="firstrow", tablefmt="simple")
         self.assertEqual(expected, result)
 
-    def test_simple_multiline_with_empty_cells_headerless(self):
+    def testSimpleMultilineWithEmptyCellsHeaderless(self):
         """Output: simple with multiline cells and empty cells without headers."""
         table = [["0", "", ""], ["1", "", ""], ["2", "very long data", "fold\nthis"]]
         expected = "\n".join(
@@ -895,7 +895,7 @@ class TestTabulateOutput(unittest.TestCase):
         result = tabulate(_test_table, _test_table_headers, tablefmt="grid")
         self.assertEqual(expected, result)
 
-    def test_grid_headerless(self):
+    def test_gridHeaderless(self):
         """Output: grid without headers."""
         expected = "\n".join(
             [
@@ -909,7 +909,7 @@ class TestTabulateOutput(unittest.TestCase):
         result = tabulate(_test_table, tablefmt="grid")
         self.assertEqual(expected, result)
 
-    def test_grid_multiline_headerless(self):
+    def test_gridMultilineHeaderless(self):
         """Output: grid with multiline cells without headers."""
         table = [["foo bar\nbaz\nbau", "hello"], ["", "multiline\nworld"]]
         expected = "\n".join(
@@ -927,7 +927,7 @@ class TestTabulateOutput(unittest.TestCase):
         result = tabulate(table, stralign="center", tablefmt="grid")
         self.assertEqual(expected, result)
 
-    def test_grid_multiline(self):
+    def test_gridMultiline(self):
         """Output: grid with multiline cells with headers."""
         table = [[2, "foo\nbar"]]
         headers = ("more\nspam \x1b[31meggs\x1b[0m", "more spam\n& eggs")
@@ -945,7 +945,7 @@ class TestTabulateOutput(unittest.TestCase):
         result = tabulate(table, headers, tablefmt="grid")
         self.assertEqual(expected, result)
 
-    def test_grid_multiline_with_empty_cells(self):
+    def test_gridMultilineWithEmptyCells(self):
         """Output: grid with multiline cells and empty cells with headers."""
         table = [
             ["hdr", "data", "fold"],
@@ -967,7 +967,7 @@ class TestTabulateOutput(unittest.TestCase):
         result = tabulate(table, headers="firstrow", tablefmt="grid")
         self.assertEqual(expected, result)
 
-    def test_grid_multiline_with_empty_cells_headerless(self):
+    def test_gridMultilineWithEmptyCellsHeaderless(self):
         """Output: grid with multiline cells and empty cells without headers."""
         table = [["0", "", ""], ["1", "", ""], ["2", "very long data", "fold\nthis"]]
         expected = "\n".join(
@@ -1000,7 +1000,7 @@ class TestTabulateOutput(unittest.TestCase):
         result = tabulate(_test_table, _test_table_headers, tablefmt="pretty")
         self.assertEqual(expected, result)
 
-    def test_pretty_headerless(self):
+    def test_prettyHeaderless(self):
         """Output: pretty without headers."""
         expected = "\n".join(
             [
@@ -1013,7 +1013,7 @@ class TestTabulateOutput(unittest.TestCase):
         result = tabulate(_test_table, tablefmt="pretty")
         self.assertEqual(expected, result)
 
-    def test_pretty_multiline_headerless(self):
+    def test_prettyMultilineHeaderless(self):
         """Output: pretty with multiline cells without headers."""
         table = [["foo bar\nbaz\nbau", "hello"], ["", "multiline\nworld"]]
         expected = "\n".join(
@@ -1030,7 +1030,7 @@ class TestTabulateOutput(unittest.TestCase):
         result = tabulate(table, tablefmt="pretty")
         self.assertEqual(expected, result)
 
-    def test_pretty_multiline(self):
+    def test_prettyMultiline(self):
         """Output: pretty with multiline cells with headers."""
         table = [[2, "foo\nbar"]]
         headers = ("more\nspam \x1b[31meggs\x1b[0m", "more spam\n& eggs")
@@ -1048,7 +1048,7 @@ class TestTabulateOutput(unittest.TestCase):
         result = tabulate(table, headers, tablefmt="pretty")
         self.assertEqual(expected, result)
 
-    def test_pretty_multiline_with_links(self):
+    def test_prettyMultilineWithLinks(self):
         """Output: pretty with multiline cells with headers."""
         table = [[2, "foo\nbar"]]
         headers = (
@@ -1069,7 +1069,7 @@ class TestTabulateOutput(unittest.TestCase):
         result = tabulate(table, headers, tablefmt="pretty")
         self.assertEqual(expected, result)
 
-    def test_pretty_multiline_with_empty_cells(self):
+    def test_prettyMultilineWithEmptyCells(self):
         """Output: pretty with multiline cells and empty cells with headers."""
         table = [
             ["hdr", "data", "fold"],
@@ -1090,7 +1090,7 @@ class TestTabulateOutput(unittest.TestCase):
         result = tabulate(table, headers="firstrow", tablefmt="pretty")
         self.assertEqual(expected, result)
 
-    def test_pretty_multiline_with_empty_cells_headerless(self):
+    def test_prettyMultilineWithEmptyCellsHeaderless(self):
         """Output: pretty with multiline cells and empty cells without headers."""
         table = [["0", "", ""], ["1", "", ""], ["2", "very long data", "fold\nthis"]]
         expected = "\n".join(
@@ -1121,7 +1121,7 @@ class TestTabulateOutput(unittest.TestCase):
         result = tabulate(_test_table, _test_table_headers, tablefmt="rst")
         self.assertEqual(expected, result)
 
-    def test_rst_with_empty_values_in_first_column(self):
+    def test_rstWithEmptyValuesInFirstColumn(self):
         """Output: rst with dots in first column."""
         test_headers = ["", "what"]
         test_data = [("", "spam"), ("", "eggs")]
@@ -1138,7 +1138,7 @@ class TestTabulateOutput(unittest.TestCase):
         result = tabulate(test_data, test_headers, tablefmt="rst")
         self.assertEqual(expected, result)
 
-    def test_rst_headerless(self):
+    def test_rstHeaderless(self):
         """Output: rst without headers."""
         expected = "\n".join(
             ["====  ========", "spam   41.9999", "eggs  451", "====  ========"]
@@ -1146,7 +1146,7 @@ class TestTabulateOutput(unittest.TestCase):
         result = tabulate(_test_table, tablefmt="rst")
         self.assertEqual(expected, result)
 
-    def test_rst_multiline(self):
+    def test_rstMultiline(self):
         """Output: rst with multiline cells with headers."""
         table = [[2, "foo\nbar"]]
         headers = ("more\nspam \x1b[31meggs\x1b[0m", "more spam\n& eggs")
@@ -1164,7 +1164,7 @@ class TestTabulateOutput(unittest.TestCase):
         result = tabulate(table, headers, tablefmt="rst")
         self.assertEqual(expected, result)
 
-    def test_rst_multiline_with_links(self):
+    def test_rstMultilineWithLinks(self):
         """Output: rst with multiline cells with headers."""
         table = [[2, "foo\nbar"]]
         headers = (
@@ -1185,7 +1185,7 @@ class TestTabulateOutput(unittest.TestCase):
         result = tabulate(table, headers, tablefmt="rst")
         self.assertEqual(expected, result)
 
-    def test_rst_multiline_with_empty_cells(self):
+    def test_rstMultilineWithEmptyCells(self):
         """Output: rst with multiline cells and empty cells with headers."""
         table = [
             ["hdr", "data", "fold"],
@@ -1206,7 +1206,7 @@ class TestTabulateOutput(unittest.TestCase):
         result = tabulate(table, headers="firstrow", tablefmt="rst")
         self.assertEqual(expected, result)
 
-    def test_rst_multiline_with_empty_cells_headerless(self):
+    def test_rstMultilineWithEmptyCellsHeaderless(self):
         """Output: rst with multiline cells and empty cells without headers."""
         table = [["0", "", ""], ["1", "", ""], ["2", "very long data", "fold\nthis"]]
         expected = "\n".join(
@@ -1222,25 +1222,25 @@ class TestTabulateOutput(unittest.TestCase):
         result = tabulate(table, tablefmt="rst")
         self.assertEqual(expected, result)
 
-    def test_no_data(self):
+    def test_noData(self):
         """Output: table with no data."""
         expected = "\n".join(["strings    numbers", "---------  ---------"])
         result = tabulate(None, _test_table_headers, tablefmt="simple")
         self.assertEqual(expected, result)
 
-    def test_empty_data(self):
+    def test_emptyData(self):
         """Output: table with empty data."""
         expected = "\n".join(["strings    numbers", "---------  ---------"])
         result = tabulate([], _test_table_headers, tablefmt="simple")
         self.assertEqual(expected, result)
 
-    def test_no_data_without_headers(self):
+    def test_noDataWithoutHeaders(self):
         """Output: table with no data and no headers."""
         expected = ""
         result = tabulate(None, tablefmt="simple")
         self.assertEqual(expected, result)
 
-    def test_empty_data_without_headers(self):
+    def test_emptyDataWithoutHeaders(self):
         """Output: table with empty data and no headers."""
         expected = ""
         result = tabulate([], tablefmt="simple")
@@ -1252,7 +1252,7 @@ class TestTabulateOutput(unittest.TestCase):
         expected = "10,000\n    10"
         self.assertEqual(expected, result)
 
-    def test_empty_data_with_headers(self):
+    def test_emptyDataWithHeaders(self):
         """Output: table with empty data and headers as firstrow."""
         expected = ""
         result = tabulate([], headers="firstrow")
@@ -1264,7 +1264,7 @@ class TestTabulateOutput(unittest.TestCase):
         expected = "1.235\n1.000"
         self.assertEqual(expected, result)
 
-    def test_floatfmt_multi(self):
+    def test_floatfmtMulti(self):
         """Output: floating point format different for each column."""
         result = tabulate(
             [[0.12345, 0.12345, 0.12345]], floatfmt=(".1f", ".3f"), tablefmt="plain"
@@ -1272,7 +1272,7 @@ class TestTabulateOutput(unittest.TestCase):
         expected = "0.1  0.123  0.12345"
         self.assertEqual(expected, result)
 
-    def test_colalign_multi(self):
+    def test_colalignMulti(self):
         """Output: string columns with custom colalign."""
         result = tabulate(
             [["one", "two"], ["three", "four"]], colalign=("right",), tablefmt="plain"
@@ -1280,7 +1280,7 @@ class TestTabulateOutput(unittest.TestCase):
         expected = "  one  two\nthree  four"
         self.assertEqual(expected, result)
 
-    def test_colalign_multi_with_sep_line(self):
+    def test_colalignMultiWithSepLine(self):
         """Output: string columns with custom colalign."""
         result = tabulate(
             [["one", "two"], SEPARATING_LINE, ["three", "four"]],
@@ -1290,7 +1290,7 @@ class TestTabulateOutput(unittest.TestCase):
         expected = "  one  two\n\nthree  four"
         self.assertEqual(expected, result)
 
-    def test_column_global_and_specific_alignment(self):
+    def test_columnGlobalAndSpecificAlignment(self):
         """Test `colglobalalign` and `"global"` parameter for `colalign`."""
         table = [[1, 2, 3, 4], [111, 222, 333, 444]]
         colglobalalign = "center"
@@ -1306,7 +1306,7 @@ class TestTabulateOutput(unittest.TestCase):
         )
         self.assertEqual(expected, result)
 
-    def test_headers_global_and_specific_alignment(self):
+    def test_headersGlobalAndSpecificAlignment(self):
         """Test `headersglobalalign` and `headersalign`."""
         table = [[1, 2, 3, 4, 5, 6], [111, 222, 333, 444, 555, 666]]
         colglobalalign = "center"
@@ -1332,7 +1332,7 @@ class TestTabulateOutput(unittest.TestCase):
         )
         self.assertEqual(expected, result)
 
-    def test_colalign_or_headersalign_too_long(self):
+    def test_colalignOrHeadersalignTooLong(self):
         """Test `colalign` and `headersalign` too long."""
         table = [[1, 2], [111, 222]]
         colalign = ("global", "left", "center")
@@ -1344,7 +1344,7 @@ class TestTabulateOutput(unittest.TestCase):
         expected = "\n".join(["      h", "---  ---", "  1  2", "111  222"])
         self.assertEqual(expected, result)
 
-    def test_float_conversions(self):
+    def test_floatConversions(self):
         """Output: float format parsed."""
         test_headers = [
             "str",
@@ -1383,7 +1383,7 @@ class TestTabulateOutput(unittest.TestCase):
         expected = "Alice   10\nBob    n/a"
         self.assertEqual(expected, result)
 
-    def test_missingval_multi(self):
+    def test_missingvalMulti(self):
         """Output: substitution of missing values with different values per column."""
         result = tabulate(
             [["Alice", "Bob", "Charlie"], [None, None, None]],
@@ -1393,7 +1393,7 @@ class TestTabulateOutput(unittest.TestCase):
         expected = "Alice  Bob  Charlie\nn/a    ?"
         self.assertEqual(expected, result)
 
-    def test_column_alignment(self):
+    def test_columnAlignment(self):
         """Output: custom alignment for text and numbers."""
         expected = "\n".join(["-----  ---", "Alice   1", "  Bob  333", "-----  ---"])
         result = tabulate(
@@ -1401,14 +1401,14 @@ class TestTabulateOutput(unittest.TestCase):
         )
         self.assertEqual(expected, result)
 
-    def test_dict_like_with_index(self):
+    def test_dictLikeWithIndex(self):
         """Output: a table with a running index."""
         dd = {"b": range(101, 104)}
         expected = "\n".join(["      b", "--  ---", " 0  101", " 1  102", " 2  103"])
         result = tabulate(dd, "keys", showindex=True)
         self.assertEqual(expected, result)
 
-    def test_list_of_lists_with_index(self):
+    def test_listOfListsWithIndex(self):
         """Output: a table with a running index."""
         dd = zip(*[range(3), range(101, 104)])
         # keys' order (hence columns' order) is not deterministic in Python 3
@@ -1425,7 +1425,7 @@ class TestTabulateOutput(unittest.TestCase):
         result = tabulate(dd, headers=["a", "b"], showindex=True)
         self.assertEqual(expected, result)
 
-    def test_list_of_lists_with_index_with_sep_line(self):
+    def test_listOfListsWithIndexWithSepLine(self):
         """Output: a table with a running index."""
         dd = [(0, 101), SEPARATING_LINE, (1, 102), (2, 103)]
         # keys' order (hence columns' order) is not deterministic in Python 3
@@ -1443,7 +1443,7 @@ class TestTabulateOutput(unittest.TestCase):
         result = tabulate(dd, headers=["a", "b"], showindex=True)
         self.assertEqual(expected, result)
 
-    def test_list_of_lists_with_supplied_index(self):
+    def test_listOfListsWithSuppliedIndex(self):
         """Output: a table with a supplied index."""
         dd = zip(*[list(range(3)), list(range(101, 104))])
         expected = "\n".join(
@@ -1461,7 +1461,7 @@ class TestTabulateOutput(unittest.TestCase):
         with self.assertRaises(ValueError):
             tabulate(dd, headers=["a", "b"], showindex=[1, 2])
 
-    def test_list_of_lists_with_index_firstrow(self):
+    def test_listOfListsWithIndexFirstrow(self):
         """Output: a table with a running index and header='firstrow'."""
         dd = zip(*[["a"] + list(range(3)), ["b"] + list(range(101, 104))])
         expected = "\n".join(
@@ -1479,7 +1479,7 @@ class TestTabulateOutput(unittest.TestCase):
         with self.assertRaises(ValueError):
             tabulate(dd, headers="firstrow", showindex=[1, 2])
 
-    def test_disable_numparse_default(self):
+    def test_disableNumparseDefault(self):
         """Output: Default table output with number parsing and alignment."""
         expected = "\n".join(
             [
@@ -1494,7 +1494,7 @@ class TestTabulateOutput(unittest.TestCase):
         result = tabulate(_test_table, _test_table_headers, disableNumparse=False)
         self.assertEqual(expected, result)
 
-    def test_disable_numparse_true(self):
+    def test_disableNumparseTrue(self):
         """Output: Default table output, but without number parsing and alignment."""
         expected = "\n".join(
             [
@@ -1507,7 +1507,7 @@ class TestTabulateOutput(unittest.TestCase):
         result = tabulate(_test_table, _test_table_headers, disableNumparse=True)
         self.assertEqual(expected, result)
 
-    def test_disable_numparse_list(self):
+    def test_disableNumparseList(self):
         """Output: Default table output, but with number parsing selectively disabled."""
         table_headers = ["h1", "h2", "h3"]
         test_table = [["foo", "bar", "42992e1"]]
