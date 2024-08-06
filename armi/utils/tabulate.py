@@ -612,8 +612,8 @@ def _alignColumn(strings, alignment, minwidth=0, hasInvisible=True, isMultiline=
     strings, padfn = _alignColumnChoosePadfn(strings, alignment, hasInvisible)
     widthFn = _alignColumnChooseWidthFn(hasInvisible, isMultiline)
 
-    s_widths = list(map(widthFn, strings))
-    maxwidth = max(max(_flatList(s_widths)), minwidth)
+    sWidths = list(map(widthFn, strings))
+    maxwidth = max(max(_flatList(sWidths)), minwidth)
     if isMultiline:
         if not hasInvisible:
             paddedStrings = [
@@ -625,7 +625,7 @@ def _alignColumn(strings, alignment, minwidth=0, hasInvisible=True, isMultiline=
             sLens = [[len(s) for s in re.split("[\r\n]", ms)] for ms in strings]
             visibleWidths = [
                 [maxwidth - (w - ll) for w, ll in zip(mw, ml)]
-                for mw, ml in zip(s_widths, sLens)
+                for mw, ml in zip(sWidths, sLens)
             ]
             # wcswidth and _visibleWidth don't count invisible characters;
             # padfn doesn't need to apply another correction
@@ -639,7 +639,7 @@ def _alignColumn(strings, alignment, minwidth=0, hasInvisible=True, isMultiline=
         else:
             # enable wide-character width corrections
             sLens = list(map(len, strings))
-            visibleWidths = [maxwidth - (w - ll) for w, ll in zip(s_widths, sLens)]
+            visibleWidths = [maxwidth - (w - ll) for w, ll in zip(sWidths, sLens)]
             # wcswidth and _visibleWidth don't count invisible characters;
             # padfn doesn't need to apply another correction
             paddedStrings = [padfn(w, s) for s, w in zip(strings, visibleWidths)]
@@ -668,25 +668,25 @@ def _moreGeneric(type1, type2):
     return invtypes[moregeneric]
 
 
-def _column_type(strings, hasInvisible=True, numparse=True):
+def _columnType(strings, hasInvisible=True, numparse=True):
     r"""The least generic type all column values are convertible to.
 
-    >>> _column_type([True, False]) is bool
+    >>> _columnType([True, False]) is bool
     True
-    >>> _column_type(["1", "2"]) is int
+    >>> _columnType(["1", "2"]) is int
     True
-    >>> _column_type(["1", "2.3"]) is float
+    >>> _columnType(["1", "2.3"]) is float
     True
-    >>> _column_type(["1", "2.3", "four"]) is str
+    >>> _columnType(["1", "2.3", "four"]) is str
     True
-    >>> _column_type(["four", '\u043f\u044f\u0442\u044c']) is str
+    >>> _columnType(["four", '\u043f\u044f\u0442\u044c']) is str
     True
-    >>> _column_type([None, "brux"]) is str
+    >>> _columnType([None, "brux"]) is str
     True
-    >>> _column_type([1, 2, None]) is int
+    >>> _columnType([1, 2, None]) is int
     True
     >>> import datetime as dt
-    >>> _column_type([dt.datetime(1991,2,19), dt.time(17,35)]) is str
+    >>> _columnType([dt.datetime(1991,2,19), dt.time(17,35)]) is str
     True
 
     """
@@ -756,13 +756,13 @@ def _alignHeader(
 def _removeSeparatingLines(rows):
     if type(rows) is list:
         separatingLines = []
-        sans_rows = []
+        sansRows = []
         for index, row in enumerate(rows):
             if _isSeparatingLine(row):
                 separatingLines.append(index)
             else:
-                sans_rows.append(row)
-        return sans_rows, separatingLines
+                sansRows.append(row)
+        return sansRows, separatingLines
     else:
         return rows, None
 
@@ -782,13 +782,13 @@ def _prependRowIndex(rows, index):
             "index must be as long as the number of data rows: "
             + "len(index)={} len(rows)={}".format(len(index), len(rows))
         )
-    sans_rows, separatingLines = _removeSeparatingLines(rows)
-    new_rows = []
-    index_iter = iter(index)
-    for row in sans_rows:
-        index_v = next(index_iter)
-        new_rows.append([index_v] + list(row))
-    rows = new_rows
+    sansRows, separatingLines = _removeSeparatingLines(rows)
+    newRows = []
+    indexIter = iter(index)
+    for row in sansRows:
+        indexV = next(indexIter)
+        newRows.append([indexV] + list(row))
+    rows = newRows
     _reinsertSeparatingLines(rows, separatingLines)
     return rows
 
@@ -884,19 +884,19 @@ def _normalizeTabularData(tabularData, headers, showindex="default"):
             headers = list(map(str, rows[0]._fields))
         elif len(rows) > 0 and hasattr(rows[0], "keys") and hasattr(rows[0], "values"):
             # dict-like object
-            uniq_keys = set()  # implements hashed lookup
+            uniqKeys = set()  # implements hashed lookup
             keys = []  # storage for set
             if headers == "firstrow":
                 firstdict = rows[0] if len(rows) > 0 else {}
                 keys.extend(firstdict.keys())
-                uniq_keys.update(keys)
+                uniqKeys.update(keys)
                 rows = rows[1:]
             for row in rows:
                 for k in row.keys():
                     # Save unique items in input order
-                    if k not in uniq_keys:
+                    if k not in uniqKeys:
                         keys.append(k)
-                        uniq_keys.add(k)
+                        uniqKeys.add(k)
             if headers == "keys":
                 headers = keys
             elif isinstance(headers, dict):
@@ -914,7 +914,6 @@ def _normalizeTabularData(tabularData, headers, showindex="default"):
                     "headers for a list of dicts is not a dict or a keyword"
                 )
             rows = [[row.get(k) for k in keys] for row in rows]
-
         elif (
             headers == "keys"
             and hasattr(tabularData, "description")
@@ -924,18 +923,16 @@ def _normalizeTabularData(tabularData, headers, showindex="default"):
             # Python Database API cursor object (PEP 0249)
             # print tabulate(cursor, headers='keys')
             headers = [column[0] for column in tabularData.description]
-
         elif (
             dataclasses is not None
             and len(rows) > 0
             and dataclasses.is_dataclass(rows[0])
         ):
             # Python 3.7+'s dataclass
-            field_names = [field.name for field in dataclasses.fields(rows[0])]
+            fieldNames = [field.name for field in dataclasses.fields(rows[0])]
             if headers == "keys":
-                headers = field_names
-            rows = [[getattr(row, f) for f in field_names] for row in rows]
-
+                headers = fieldNames
+            rows = [[getattr(row, f) for f in fieldNames] for row in rows]
         elif headers == "keys" and len(rows) > 0:
             # keys are column indices
             headers = list(map(str, range(len(rows[0]))))
@@ -956,27 +953,27 @@ def _normalizeTabularData(tabularData, headers, showindex="default"):
     rows = list(map(lambda r: r if _isSeparatingLine(r) else list(r), rows))
 
     # add or remove an index column
-    showindex_is_a_str = type(showindex) in [str, bytes]
+    showIndexIsSStr = type(showindex) in [str, bytes]
     if showindex == "default" and index is not None:
         rows = _prependRowIndex(rows, index)
-    elif isinstance(showindex, Sized) and not showindex_is_a_str:
+    elif isinstance(showindex, Sized) and not showIndexIsSStr:
         rows = _prependRowIndex(rows, list(showindex))
-    elif isinstance(showindex, Iterable) and not showindex_is_a_str:
+    elif isinstance(showindex, Iterable) and not showIndexIsSStr:
         rows = _prependRowIndex(rows, showindex)
-    elif showindex == "always" or (_bool(showindex) and not showindex_is_a_str):
+    elif showindex == "always" or (_bool(showindex) and not showIndexIsSStr):
         if index is None:
             index = list(range(len(rows)))
         rows = _prependRowIndex(rows, index)
-    elif showindex == "never" or (not _bool(showindex) and not showindex_is_a_str):
+    elif showindex == "never" or (not _bool(showindex) and not showIndexIsSStr):
         pass
 
     # pad with empty headers for initial columns if necessary
-    headers_pad = 0
+    headersPad = 0
     if headers and len(rows) > 0:
-        headers_pad = max(0, len(rows[0]) - len(headers))
-        headers = [""] * headers_pad + headers
+        headersPad = max(0, len(rows[0]) - len(headers))
+        headers = [""] * headersPad + headers
 
-    return rows, headers, headers_pad
+    return rows, headers, headersPad
 
 
 def _wrapTextToColwidths(listOfLists, colwidths, numparses=True):
@@ -1043,7 +1040,7 @@ def _toStr(s, encoding="utf8", errors="ignore"):
 
 
 def tabulate(
-    tabularData,
+    tabular_data,
     headers=(),
     tablefmt="simple",
     floatfmt=_DEFAULT_FLOATFMT,
@@ -1070,7 +1067,7 @@ def tabulate(
       2  10001
     ---  ---------
 
-    The first required argument (`tabularData`) can be a list-of-lists (or another iterable of
+    The first required argument (`tabular_data`) can be a list-of-lists (or another iterable of
     iterables), a list of named tuples, a dictionary of iterables, an iterable of dictionaries, an
     iterable of dataclasses (Python 3.7+), a two-dimensional NumPy array, NumPy record array, or a
     Pandas' dataframe.
@@ -1127,7 +1124,7 @@ def tabulate(
         values are: "global" (no override), "same" (follow column alignment), "right", "center",
         "left".
 
-    Note on intended behaviour: If there is no `tabularData`, any column alignment argument is
+    Note on intended behaviour: If there is no `tabular_data`, any column alignment argument is
         ignored. Hence, in this case, header alignment cannot be inferred from column alignment.
 
     Table formats
@@ -1254,11 +1251,11 @@ def tabulate(
 
     Header column width can be specified in a similar way using `maxheadercolwidth`.
     """
-    if tabularData is None:
-        tabularData = []
+    if tabular_data is None:
+        tabular_data = []
 
-    listOfLists, headers, headers_pad = _normalizeTabularData(
-        tabularData, headers, showindex=showindex
+    listOfLists, headers, headersPad = _normalizeTabularData(
+        tabular_data, headers, showindex=showindex
     )
     listOfLists, separatingLines = _removeSeparatingLines(listOfLists)
 
@@ -1340,31 +1337,31 @@ def tabulate(
     # format rows and columns, convert numeric values to strings
     cols = list(izip_longest(*listOfLists))
     numparses = _expandNumparse(disableNumparse, len(cols))
-    coltypes = [_column_type(col, numparse=np) for col, np in zip(cols, numparses)]
+    coltypes = [_columnType(col, numparse=np) for col, np in zip(cols, numparses)]
     if isinstance(floatfmt, str):
         # old version: just duplicate the string to use in each column
-        float_formats = len(cols) * [floatfmt]
+        floatFormats = len(cols) * [floatfmt]
     else:  # if floatfmt is list, tuple etc we have one per column
-        float_formats = list(floatfmt)
-        if len(float_formats) < len(cols):
-            float_formats.extend((len(cols) - len(float_formats)) * [_DEFAULT_FLOATFMT])
+        floatFormats = list(floatfmt)
+        if len(floatFormats) < len(cols):
+            floatFormats.extend((len(cols) - len(floatFormats)) * [_DEFAULT_FLOATFMT])
     if isinstance(intfmt, str):
         # old version: just duplicate the string to use in each column
-        int_formats = len(cols) * [intfmt]
+        intFormats = len(cols) * [intfmt]
     else:  # if intfmt is list, tuple etc we have one per column
-        int_formats = list(intfmt)
-        if len(int_formats) < len(cols):
-            int_formats.extend((len(cols) - len(int_formats)) * [_DEFAULT_INTFMT])
+        intFormats = list(intfmt)
+        if len(intFormats) < len(cols):
+            intFormats.extend((len(cols) - len(intFormats)) * [_DEFAULT_INTFMT])
     if isinstance(missingval, str):
-        missing_vals = len(cols) * [missingval]
+        missingVals = len(cols) * [missingval]
     else:
-        missing_vals = list(missingval)
-        if len(missing_vals) < len(cols):
-            missing_vals.extend((len(cols) - len(missing_vals)) * [_DEFAULT_MISSINGVAL])
+        missingVals = list(missingval)
+        if len(missingVals) < len(cols):
+            missingVals.extend((len(cols) - len(missingVals)) * [_DEFAULT_MISSINGVAL])
     cols = [
         [_format(v, ct, flFmt, intFmt, missV, hasInvisible) for v in c]
         for c, ct, flFmt, intFmt, missV in zip(
-            cols, coltypes, float_formats, int_formats, missing_vals
+            cols, coltypes, floatFormats, intFormats, missingVals
         )
     ]
 
@@ -1417,7 +1414,7 @@ def tabulate(
                     stacklevel=2,
                 )
             for idx, align in enumerate(headersalign):
-                hidx = headers_pad + idx
+                hidx = headersPad + idx
                 if not hidx < len(alignsHeaders):
                     break
                 elif align == "same" and hidx < len(aligns):  # same as column align
