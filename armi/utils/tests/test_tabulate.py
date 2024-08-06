@@ -16,12 +16,14 @@
 #       This was originally https://github.com/astanin/python-tabulate
 
 """Tests for tabulate."""
-from collections import OrderedDict, UserDict
+from collections import namedtuple
+from collections import OrderedDict
+from collections import UserDict
 from datetime import datetime
 from textwrap import TextWrapper as OTW
 import unittest
 
-import numpy  # TODO: as np
+import numpy as np
 
 from armi.utils.tabulate import _alignColumn, _alignCellVeritically, _multilineWidth
 from armi.utils.tabulate import _CustomTextWrap as CTW
@@ -127,7 +129,7 @@ class TestTabulateInputs(unittest.TestCase):
 
     def test_numpy2d(self):
         """Input: a 2D NumPy array with headers."""
-        na = (numpy.arange(1, 10, dtype=numpy.float32).reshape((3, 3)) ** 3) * 0.5
+        na = (np.arange(1, 10, dtype=np.float32).reshape((3, 3)) ** 3) * 0.5
         expected = "\n".join(
             [
                 "    a      b      c",
@@ -142,7 +144,7 @@ class TestTabulateInputs(unittest.TestCase):
 
     def test_numpy2dFirstrow(self):
         """Input: a 2D NumPy array with the first row as headers."""
-        na = numpy.arange(1, 10, dtype=numpy.int32).reshape((3, 3)) ** 3
+        na = np.arange(1, 10, dtype=np.int32).reshape((3, 3)) ** 3
         expected = "\n".join(
             ["  1    8    27", "---  ---  ----", " 64  125   216", "343  512   729"]
         )
@@ -151,7 +153,7 @@ class TestTabulateInputs(unittest.TestCase):
 
     def test_numpy2dKeys(self):
         """Input: a 2D NumPy array with column indices as headers."""
-        na = (numpy.arange(1, 10, dtype=numpy.float32).reshape((3, 3)) ** 3) * 0.5
+        na = (np.arange(1, 10, dtype=np.float32).reshape((3, 3)) ** 3) * 0.5
         expected = "\n".join(
             [
                 "    0      1      2",
@@ -166,7 +168,7 @@ class TestTabulateInputs(unittest.TestCase):
 
     def test_numpyRecordArray(self):
         """Input: a 2D NumPy record array without header."""
-        na = numpy.asarray(
+        na = np.asarray(
             [("Alice", 23, 169.5), ("Bob", 27, 175.0)],
             dtype={
                 "names": ["name", "age", "height"],
@@ -186,7 +188,7 @@ class TestTabulateInputs(unittest.TestCase):
 
     def test_numpyRecordArrayKeys(self):
         """Input: a 2D NumPy record array with column names as headers."""
-        na = numpy.asarray(
+        na = np.asarray(
             [("Alice", 23, 169.5), ("Bob", 27, 175.0)],
             dtype={
                 "names": ["name", "age", "height"],
@@ -206,7 +208,7 @@ class TestTabulateInputs(unittest.TestCase):
 
     def test_numpyRecordArrayHeaders(self):
         """Input: a 2D NumPy record array with user-supplied headers."""
-        na = numpy.asarray(
+        na = np.asarray(
             [("Alice", 23, 169.5), ("Bob", 27, 175.0)],
             dtype={
                 "names": ["name", "age", "height"],
@@ -226,8 +228,6 @@ class TestTabulateInputs(unittest.TestCase):
 
     def test_listOf_namedtuples(self):
         """Input: a list of named tuples with field names as headers."""
-        from collections import namedtuple
-
         NT = namedtuple("NT", ["foo", "bar"])
         lt = [NT(1, 2), NT(3, 4)]
         expected = "\n".join(["-  -", "1  2", "3  4", "-  -"])
@@ -236,8 +236,6 @@ class TestTabulateInputs(unittest.TestCase):
 
     def test_listOfNamedtuplesKeys(self):
         """Input: a list of named tuples with field names as headers."""
-        from collections import namedtuple
-
         NT = namedtuple("NT", ["foo", "bar"])
         lt = [NT(1, 2), NT(3, 4)]
         expected = "\n".join(
