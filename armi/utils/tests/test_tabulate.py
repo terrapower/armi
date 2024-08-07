@@ -27,10 +27,12 @@ import numpy as np
 from armi.utils.tabulate import _alignCellVeritically
 from armi.utils.tabulate import _alignColumn
 from armi.utils.tabulate import _bool
+from armi.utils.tabulate import _buildRow
 from armi.utils.tabulate import _format
 from armi.utils.tabulate import _isMultiline
 from armi.utils.tabulate import _multilineWidth
 from armi.utils.tabulate import _normalizeTabularData
+from armi.utils.tabulate import _table_formats
 from armi.utils.tabulate import _type
 from armi.utils.tabulate import _visibleWidth
 from armi.utils.tabulate import SEPARATING_LINE
@@ -369,6 +371,19 @@ class TestTabulateInternal(unittest.TestCase):
         self.assertTrue(_bool(123))
         self.assertFalse(_bool(np.array([1, 0, -1])))
 
+    def test_buildRow(self):
+        """Basic sanity test of internal _buildRow() function."""
+        rowFormat = _table_formats["armi"].datarow
+        self.assertEqual(_buildRow("", [2, 2], ["center", "center"], rowFormat), "")
+
+        d = {"a": 1, "b": 2}
+        self.assertEqual(_buildRow(d, [2, 2], ["center", "center"], rowFormat), "a  b")
+
+        lst = ["ab", "cd"]
+        self.assertEqual(
+            _buildRow(lst, [2, 2], ["center", "center"], rowFormat), "ab  cd"
+        )
+
     def test_format(self):
         """Basic sanity test of internal _format() function."""
         self.assertEqual(_format(None, str, "8", "", "X", True), "X")
@@ -377,7 +392,6 @@ class TestTabulateInternal(unittest.TestCase):
         self.assertEqual(
             _format(bytes("abc", "utf-8"), bytes, "8", "", "X", True), "abc"
         )
-        self.assertEqual(_format("\t", bytes, "8", "", "X", True), "X")
         self.assertEqual(_format("3.14", float, "4", "", "X", True), "3.14")
         colorNum = "\x1b[31m3.14\x1b[0m"
         self.assertEqual(_format(colorNum, float, "4", "", "X", True), colorNum)

@@ -896,19 +896,7 @@ def _normalizeTabularData(tabularData, headers, showindex="default"):
                     "headers for a list of dicts is not a dict or a keyword"
                 )
             rows = [[row.get(k) for k in keys] for row in rows]
-        elif (
-            headers == "keys"
-            and hasattr(tabularData, "description")
-            and hasattr(tabularData, "fetchone")
-            and hasattr(tabularData, "rowcount")
-        ):
-            # Python Database API cursor object (PEP 0249)
-            headers = [column[0] for column in tabularData.description]
-        elif (
-            dataclasses is not None
-            and len(rows) > 0
-            and dataclasses.is_dataclass(rows[0])
-        ):
+        elif len(rows) > 0 and dataclasses.is_dataclass(rows[0]):
             # Python 3.7+'s dataclass
             fieldNames = [field.name for field in dataclasses.fields(rows[0])]
             if headers == "keys":
