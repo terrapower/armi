@@ -25,7 +25,7 @@ import unittest
 import numpy as np
 
 from armi.utils.tabulate import _alignColumn, _alignCellVeritically, _multilineWidth
-from armi.utils.tabulate import _type, _visibleWidth
+from armi.utils.tabulate import _isMultiline, _type, _visibleWidth, _format
 from armi.utils.tabulate import SEPARATING_LINE
 from armi.utils.tabulate import tabulate, tabulate_formats
 
@@ -355,6 +355,34 @@ class TestTabulateInputs(unittest.TestCase):
 
 
 class TestTabulateInternal(unittest.TestCase):
+    def test_format(self):
+        """Basic sanity test of internal _format() function."""
+        self.assertEqual(_format(None, str, "8", "", "X", True), "X")
+        self.assertEqual(_format(123, str, "8", "", "X", True), "123")
+        self.assertEqual(_format("123", int, "8", "", "X", True), "123")
+        self.assertEqual(
+            _format(bytes("abc", "utf-8"), bytes, "8", "", "X", True), "abc"
+        )
+        self.assertEqual(_format(None, bytes, "8", "", "X", True), "X")
+        self.assertEqual(_format("3.14", float, "4", "", "X", True), "3.14")
+        colorNum = "\x1b[31m3.14\x1b[0m"
+        self.assertEqual(_format(colorNum, float, "4", "", "X", True), colorNum)
+        self.assertEqual(_format(None, None, "8", "", "X", True), "X")
+
+    def test_isMultiline(self):
+        """Basic sanity test of internal _isMultiline() function."""
+        self.assertFalse(_isMultiline("world"))
+        self.assertTrue(_isMultiline("hello\nworld"))
+        self.assertFalse(_isMultiline(bytes("world", "utf-8")))
+        self.assertTrue(_isMultiline(bytes("hello\nworld", "utf-8")))
+
+    def test_multilineWidth(self):
+        """Internal: _multilineWidth()."""
+        multilineString = "\n".join(["foo", "barbaz", "spam"])
+        self.assertEqual(_multilineWidth(multilineString), 6)
+        onelineString = "12345"
+        self.assertEqual(_multilineWidth(onelineString), len(onelineString))
+
     def test_type(self):
         """Basic sanity test of internal _type() function."""
         self.assertEqual(_type(None), type(None))
@@ -364,17 +392,25 @@ class TestTabulateInternal(unittest.TestCase):
         self.assertEqual(_type("\x1b[31m42\x1b[0m"), type(42))
         self.assertEqual(_type(datetime.now()), type("2024-12-31"))
 
+    def test_assortedRareEdgeCases(self):
+        """Test some of the more rare edge cases in the purely internal functions."""
+        from armi.utils.tabulate import _alignHeader
+        from armi.utils.tabulate import _removeSeparatingLines
+        from armi.utils.tabulate import _prependRowIndex
+
+        self.assertEqual(_alignHeader("123", False, 3, 3, False, None), "123")
+
+        result = _removeSeparatingLines(123)
+        self.assertEqual(result[0], 123)
+        self.assertIsNone(result[1])
+
+        self.assertEqual(_prependRowIndex([123], None), [123])
+
     def test_visibleWidth(self):
+        """Basic sanity test of internal _visibleWidth() function."""
         self.assertEqual(_visibleWidth("world"), 5)
         self.assertEqual(_visibleWidth("\x1b[31mhello\x1b[0m"), 5)
         self.assertEqual(_visibleWidth(np.ones(3)), 10)
-
-    def test_multilineWidth(self):
-        """Internal: _multilineWidth()."""
-        multilineString = "\n".join(["foo", "barbaz", "spam"])
-        self.assertEqual(_multilineWidth(multilineString), 6)
-        onelineString = "12345"
-        self.assertEqual(_multilineWidth(onelineString), len(onelineString))
 
     def test_alignColumnDecimal(self):
         """Internal: _align_column(..., 'decimal')."""
