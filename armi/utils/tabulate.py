@@ -11,13 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-# NOTE: This code originally started out as the MIT-licensed "tabulate":
-#       This was originally https://github.com/astanin/python-tabulate
 
 """Pretty-print tabular data.
 
-TODO: JOHN
+This file started out as the MIT-licensed "tabulate". Though we have made, and will continue to make
+many arbitrary changes as we need. Thanks to the tabulate team.
+
+https://github.com/astanin/python-tabulate
 """
 from collections import namedtuple
 from collections.abc import Iterable, Sized
