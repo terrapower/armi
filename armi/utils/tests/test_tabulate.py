@@ -30,6 +30,7 @@ from armi.utils.tabulate import _bool
 from armi.utils.tabulate import _format
 from armi.utils.tabulate import _isMultiline
 from armi.utils.tabulate import _multilineWidth
+from armi.utils.tabulate import _normalizeTabularData
 from armi.utils.tabulate import _type
 from armi.utils.tabulate import _visibleWidth
 from armi.utils.tabulate import SEPARATING_LINE
@@ -376,7 +377,7 @@ class TestTabulateInternal(unittest.TestCase):
         self.assertEqual(
             _format(bytes("abc", "utf-8"), bytes, "8", "", "X", True), "abc"
         )
-        self.assertEqual(_format(None, bytes, "8", "", "X", True), "X")
+        self.assertEqual(_format("\t", bytes, "8", "", "X", True), "X")
         self.assertEqual(_format("3.14", float, "4", "", "X", True), "3.14")
         colorNum = "\x1b[31m3.14\x1b[0m"
         self.assertEqual(_format(colorNum, float, "4", "", "X", True), colorNum)
@@ -395,6 +396,23 @@ class TestTabulateInternal(unittest.TestCase):
         self.assertEqual(_multilineWidth(multilineString), 6)
         onelineString = "12345"
         self.assertEqual(_multilineWidth(onelineString), len(onelineString))
+
+    def test_normalizeTabularData(self):
+        """Basic sanity test of internal _normalizeTabularData() function."""
+        res = _normalizeTabularData([[1, 2], [3, 4]], np.array(["a", "b"]), "default")
+        self.assertEqual(res[0], [[1, 2], [3, 4]])
+        self.assertEqual(res[1], ["a", "b"])
+        self.assertEqual(res[2], 0)
+
+        res = _normalizeTabularData([], "keys", "default")
+        self.assertEqual(len(res[0]), 0)
+        self.assertEqual(len(res[1]), 0)
+        self.assertEqual(res[2], 0)
+
+        res = _normalizeTabularData([], "firstrow", "default")
+        self.assertEqual(len(res[0]), 0)
+        self.assertEqual(len(res[1]), 0)
+        self.assertEqual(res[2], 0)
 
     def test_type(self):
         """Basic sanity test of internal _type() function."""

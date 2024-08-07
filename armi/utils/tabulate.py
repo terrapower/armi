@@ -833,20 +833,17 @@ def _normalizeTabularData(tabularData, headers, showindex="default"):
         headers = list(headers)
 
     index = None
-    if hasattr(tabularData, "keys") and hasattr(tabularData, "values"):
-        # dict-like?
-        if hasattr(tabularData.values, "__call__"):
-            # likely a conventional dict
-            keys = tabularData.keys()
-            # columns have to be transposed
-            rows = list(izip_longest(*tabularData.values()))
-        else:
-            raise ValueError("tabular data doesn't appear to be a dict or a DataFrame")
+    if type(tabularData) is dict:
+        # dict-like
+        keys = tabularData.keys()
+        # columns have to be transposed
+        rows = list(izip_longest(*tabularData.values()))
 
         if headers == "keys":
-            headers = list(map(str, keys))  # headers should be strings
-
-    else:  # it's a usual iterable of iterables, or a NumPy array, or an iterable of dataclasses
+            # headers should be strings
+            headers = list(map(str, keys))
+    else:
+        # it's a usual iterable of iterables, or a NumPy array, or an iterable of dataclasses
         rows = list(tabularData)
 
         if headers == "keys" and not rows:
@@ -948,8 +945,6 @@ def _normalizeTabularData(tabularData, headers, showindex="default"):
         if index is None:
             index = list(range(len(rows)))
         rows = _prependRowIndex(rows, index)
-    elif showindex == "never" or (not _bool(showindex) and not showIndexIsSStr):
-        pass
 
     # pad with empty headers for initial columns if necessary
     headersPad = 0
