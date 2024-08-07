@@ -19,11 +19,13 @@
 from collections import namedtuple
 from collections import OrderedDict
 from collections import UserDict
+from datetime import datetime
 import unittest
 
 import numpy as np
 
 from armi.utils.tabulate import _alignColumn, _alignCellVeritically, _multilineWidth
+from armi.utils.tabulate import _type, _visibleWidth
 from armi.utils.tabulate import SEPARATING_LINE
 from armi.utils.tabulate import tabulate, tabulate_formats
 
@@ -353,6 +355,20 @@ class TestTabulateInputs(unittest.TestCase):
 
 
 class TestTabulateInternal(unittest.TestCase):
+    def test_type(self):
+        """Basic sanity test of internal _type() function."""
+        self.assertEqual(_type(None), type(None))
+        self.assertEqual(_type("foo"), type(""))
+        self.assertEqual(_type("1"), type(1))
+        self.assertEqual(_type("\x1b[31m42\x1b[0m"), type(42))
+        self.assertEqual(_type("\x1b[31m42\x1b[0m"), type(42))
+        self.assertEqual(_type(datetime.now()), type("2024-12-31"))
+
+    def test_visibleWidth(self):
+        self.assertEqual(_visibleWidth("world"), 5)
+        self.assertEqual(_visibleWidth("\x1b[31mhello\x1b[0m"), 5)
+        self.assertEqual(_visibleWidth(np.ones(3)), 10)
+
     def test_multilineWidth(self):
         """Internal: _multilineWidth()."""
         multilineString = "\n".join(["foo", "barbaz", "spam"])

@@ -15,7 +15,10 @@
 # NOTE: This code originally started out as the MIT-licensed "tabulate":
 #       This was originally https://github.com/astanin/python-tabulate
 
-"""Pretty-print tabular data."""
+"""Pretty-print tabular data.
+
+TODO: JOHN
+"""
 from collections import namedtuple
 from collections.abc import Iterable, Sized
 from functools import reduce, partial
@@ -815,12 +818,10 @@ def _normalizeTabularData(tabularData, headers, showindex="default"):
     * 2D NumPy arrays
     * NumPy record arrays (usually used with headers="keys")
     * dict of iterables (usually used with headers="keys")
-    * pandas.DataFrame (usually used with headers="keys")
 
     The first row can be used as headers if headers="firstrow",
     column indices can be used as headers if headers="keys".
 
-    If showindex="default", show row indices of the pandas.DataFrame.
     If showindex="always", show row indices for all types of data.
     If showindex="never", don't show row indices for all types of data.
     If showindex is an iterable, show its values as row indices.
@@ -828,33 +829,17 @@ def _normalizeTabularData(tabularData, headers, showindex="default"):
     try:
         bool(headers)
     except ValueError:
-        # numpy.ndarray, pandas.core.index.Index, ...
+        # numpy.ndarray, ...
         headers = list(headers)
 
     index = None
     if hasattr(tabularData, "keys") and hasattr(tabularData, "values"):
-        # dict-like and pandas.DataFrame?
+        # dict-like?
         if hasattr(tabularData.values, "__call__"):
             # likely a conventional dict
             keys = tabularData.keys()
-            rows = list(
-                izip_longest(*tabularData.values())
-            )  # columns have to be transposed
-        elif hasattr(tabularData, "index"):
-            # values is a property, has .index => it's likely a pandas.DataFrame (pandas 0.11.0)
-            keys = list(tabularData)
-            if (
-                showindex in ["default", "always", True]
-                and tabularData.index.name is not None
-            ):
-                if isinstance(tabularData.index.name, list):
-                    keys[:0] = tabularData.index.name
-                else:
-                    keys[:0] = [tabularData.index.name]
-            vals = tabularData.values  # values matrix doesn't need to be transposed
-            # for DataFrames add an index per default
-            index = list(tabularData.index)
-            rows = [list(row) for row in vals]
+            # columns have to be transposed
+            rows = list(izip_longest(*tabularData.values()))
         else:
             raise ValueError("tabular data doesn't appear to be a dict or a DataFrame")
 
@@ -865,7 +850,7 @@ def _normalizeTabularData(tabularData, headers, showindex="default"):
         rows = list(tabularData)
 
         if headers == "keys" and not rows:
-            # an empty table (issue #81)
+            # an empty table
             headers = []
         elif (
             headers == "keys"
@@ -1068,8 +1053,7 @@ def tabulate(
 
     The first required argument (`tabular_data`) can be a list-of-lists (or another iterable of
     iterables), a list of named tuples, a dictionary of iterables, an iterable of dictionaries, an
-    iterable of dataclasses (Python 3.7+), a two-dimensional NumPy array, NumPy record array, or a
-    Pandas' dataframe.
+    iterable of dataclasses (Python 3.7+), a two-dimensional NumPy array, or NumPy record array.
 
     Table headers
     -------------
@@ -1083,7 +1067,7 @@ def tabulate(
     Otherwise a headerless table is produced.
 
     If the number of headers is less than the number of columns, they are supposed to be names of
-    the last columns. This is consistent with the plain-text format of R and Pandas' dataframes.
+    the last columns. This is consistent with the plain-text format of R.
 
     >>> print(tabulate([["sex","age"],["Alice","F",24],["Bob","M",19]],
     ...       headers="firstrow"))
@@ -1091,17 +1075,6 @@ def tabulate(
     -----  -----  -----
     Alice  F         24
     Bob    M         19
-
-    By default, pandas.DataFrame data have an additional column called row index. To add a similar
-    column to all other types of data, use `showindex="always"` or `showindex=True`. To suppress row
-    indices for all types of data, pass `showindex="never" or `showindex=False`. To add a custom row
-    index column, pass `showindex=some_iterable`.
-
-    >>> print(tabulate([["F",24],["M",19]], showindex="always"))
-    -  -  --
-    0  F  24
-    1  M  19
-    -  -  --
 
     Column and Headers alignment
     ----------------------------
@@ -1287,7 +1260,7 @@ def tabulate(
             [headers], maxheadercolwidths, numparses=numparses
         )[0]
 
-    # empty values in the first column of RST tables should be escaped (issue #82)
+    # empty values in the first column of RST tables should be escaped
     # "" should be escaped as "\\ " or ".."
     if tablefmt == "rst":
         listOfLists, headers = _rstEscapeFirstColumn(listOfLists, headers)
