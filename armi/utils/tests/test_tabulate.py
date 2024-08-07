@@ -24,10 +24,17 @@ import unittest
 
 import numpy as np
 
-from armi.utils.tabulate import _alignColumn, _alignCellVeritically, _multilineWidth
-from armi.utils.tabulate import _isMultiline, _type, _visibleWidth, _format
+from armi.utils.tabulate import _alignCellVeritically
+from armi.utils.tabulate import _alignColumn
+from armi.utils.tabulate import _bool
+from armi.utils.tabulate import _format
+from armi.utils.tabulate import _isMultiline
+from armi.utils.tabulate import _multilineWidth
+from armi.utils.tabulate import _type
+from armi.utils.tabulate import _visibleWidth
 from armi.utils.tabulate import SEPARATING_LINE
-from armi.utils.tabulate import tabulate, tabulate_formats
+from armi.utils.tabulate import tabulate
+from armi.utils.tabulate import tabulate_formats
 
 
 class TestTabulateAPI(unittest.TestCase):
@@ -355,6 +362,12 @@ class TestTabulateInputs(unittest.TestCase):
 
 
 class TestTabulateInternal(unittest.TestCase):
+    def test_bool(self):
+        self.assertTrue(_bool("stuff"))
+        self.assertFalse(_bool(""))
+        self.assertTrue(_bool(123))
+        self.assertFalse(_bool(np.array([1, 0, -1])))
+
     def test_format(self):
         """Basic sanity test of internal _format() function."""
         self.assertEqual(_format(None, str, "8", "", "X", True), "X")
@@ -395,8 +408,8 @@ class TestTabulateInternal(unittest.TestCase):
     def test_assortedRareEdgeCases(self):
         """Test some of the more rare edge cases in the purely internal functions."""
         from armi.utils.tabulate import _alignHeader
-        from armi.utils.tabulate import _removeSeparatingLines
         from armi.utils.tabulate import _prependRowIndex
+        from armi.utils.tabulate import _removeSeparatingLines
 
         self.assertEqual(_alignHeader("123", False, 3, 3, False, None), "123")
 
