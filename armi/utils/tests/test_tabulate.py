@@ -389,6 +389,8 @@ class TestTabulateInternal(unittest.TestCase):
             _buildRow(lst, [2, 2], ["center", "center"], rowFormat), "ab  cd"
         )
 
+        self.assertIsNone(_buildRow("ab", [2, 2], ["center", "center"], ""))
+
     def test_buildLine(self):
         """Basic sanity test of internal _buildLine() function."""
         lineFormat = _table_formats["armi"].lineabove
