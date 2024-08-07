@@ -27,6 +27,7 @@ import numpy as np
 from armi.utils.tabulate import _alignCellVeritically
 from armi.utils.tabulate import _alignColumn
 from armi.utils.tabulate import _bool
+from armi.utils.tabulate import _buildLine
 from armi.utils.tabulate import _buildRow
 from armi.utils.tabulate import _format
 from armi.utils.tabulate import _isMultiline
@@ -376,13 +377,24 @@ class TestTabulateInternal(unittest.TestCase):
         rowFormat = _table_formats["armi"].datarow
         self.assertEqual(_buildRow("", [2, 2], ["center", "center"], rowFormat), "")
 
+        formatter = lambda a, b, c: "xyz"
         d = {"a": 1, "b": 2}
-        self.assertEqual(_buildRow(d, [2, 2], ["center", "center"], rowFormat), "a  b")
+        self.assertEqual(_buildRow(d, [2, 2], ["center", "center"], formatter), "xyz")
 
         lst = ["ab", "cd"]
         self.assertEqual(
             _buildRow(lst, [2, 2], ["center", "center"], rowFormat), "ab  cd"
         )
+
+    def test_buildLine(self):
+        """Basic sanity test of internal _buildLine() function."""
+        lineFormat = _table_formats["armi"].lineabove
+        self.assertEqual(_buildLine([2, 2], ["center", "center"], lineFormat), "--  --")
+
+        formatter = lambda a, b: "xyz"
+        self.assertEqual(_buildLine([2, 2], ["center", "center"], formatter), "xyz")
+
+        self.assertIsNone(_buildLine([2, 2], ["center", "center"], None))
 
     def test_format(self):
         """Basic sanity test of internal _format() function."""
