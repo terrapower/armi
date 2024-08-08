@@ -160,13 +160,14 @@ def store(exePath, inputPaths, outputFiles, cacheDir):
     folderLoc = _getCachedFolder(exePath, inputPaths, cacheDir)
     if os.path.exists(folderLoc):
         deleteCache(folderLoc)
-    os.makedirs(folderLoc)
+    os.makedirs(folderLoc, mode=0o770)
     _makeOutputManifest(outputsThatExist, folderLoc)
 
     for outputFile in outputsThatExist:
         baseName = os.path.basename(outputFile)
         cachedLoc = os.path.join(folderLoc, baseName)
         shutil.copy(outputFile, cachedLoc)
+        os.chmod(cachedLoc, 0o770)
 
     runLog.info("Added outputs for {} to the cache.".format(exePath))
 
