@@ -56,6 +56,32 @@ class TestTabulateAPI(unittest.TestCase):
 
 
 class TestTabulateInputs(unittest.TestCase):
+    def test_iterableOfEmpties(self):
+        """Input: test various empty inputs."""
+        ii = iter(map(lambda x: iter(x), []))
+        result = tabulate(ii, "firstrow")
+        self.assertEqual("", result)
+
+        ij = iter(map(lambda x: iter(x), ["abcde"]))
+        expected = "\n".join(
+            [
+                "a    b    c    d    e",
+                "---  ---  ---  ---  ---",
+            ]
+        )
+        result = tabulate(ij, "firstrow")
+        self.assertEqual(expected, result)
+
+        ik = iter([])
+        expected = "\n".join(
+            [
+                "a    b    c",
+                "---  ---  ---",
+            ]
+        )
+        result = tabulate(ik, "abc")
+        self.assertEqual(expected, result)
+
     def test_iterableOfIterables(self):
         """Input: an interable of iterables."""
         ii = iter(map(lambda x: iter(x), [range(5), range(5, 0, -1)]))
