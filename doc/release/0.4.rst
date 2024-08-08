@@ -8,6 +8,7 @@ Release Date: TBD
 
 New Features
 ------------
+#. ARMI now supports Python 3.12. (`PR#1813 <https://github.com/terrapower/armi/pull/1813>`_)
 #. TBD
 
 API Changes
