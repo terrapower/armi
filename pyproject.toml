@@ -31,7 +31,8 @@ authors = [
 ]
 dependencies = [
     "coverage>=7.2.0", # Code coverage tool. Sadly baked into every Case.
-    "h5py>=3.9", # Needed because our database files are H5 format
+    "h5py>=3.9 ; python_version >= '3.11.0'", # Needed because our database files are H5 format
+    "h5py>=3.0,<=3.9 ; python_version < '3.11.0'",
     "htmltree>=0.7.6", # Our reports have HTML output
     "matplotlib>=3.5.3,<3.8.0", # Important plotting library
     "numpy>=1.21", # Important math library
@@ -39,8 +40,10 @@ dependencies = [
     "pluggy>=1.2.0", # Central tool behind the ARMI Plugin system
     "pyDOE>=0.3.8", # We import a Latin-hypercube algorithm to explore a phase space
     "pyevtk>=1.2.0", # Handles binary VTK visualization files
-    "ruamel.yaml.clib", # C-based core of ruamel below
-    "ruamel.yaml", # Our foundational YAML library
+    "ruamel.yaml.clib ; python_version >= '3.11.0'", # C-based core of ruamel below
+    "ruamel.yaml ; python_version >= '3.11.0'", # Our foundational YAML library
+    "ruamel.yaml.clib<=0.2.7 ; python_version < '3.11.0'", # C-based core of ruamel below
+    "ruamel.yaml<=0.17.21 ; python_version < '3.11.0'", # Our foundational YAML library
     "scipy>=1.7.0", # Used for curve-fitting and matrix math
     "tabulate>=0.8.9", # Used to pretty-print tabular data
     "toml>0.9.5", # Needed to parse the pyproject.toml file
@@ -58,6 +61,7 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering :: Information Analysis",
 ]
 
