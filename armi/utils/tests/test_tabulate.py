@@ -65,7 +65,7 @@ class TestTabulateInputs(unittest.TestCase):
         result = tabulate(ii)
         self.assertEqual(expected, result)
 
-    def test_iterable_of_iterables_headers(self):
+    def test_iterableOfIterablesHeaders(self):
         """Input: an interable of iterables with headers."""
         ii = iter(map(lambda x: iter(x), [range(5), range(5, 0, -1)]))
         expected = "\n".join(
@@ -241,7 +241,7 @@ class TestTabulateInputs(unittest.TestCase):
         result = tabulate(na, headers=["person", "years", "cm"])
         self.assertEqual(expected, result)
 
-    def test_listOf_namedtuples(self):
+    def test_listOfNamedtuples(self):
         """Input: a list of named tuples with field names as headers."""
         NT = namedtuple("NT", ["foo", "bar"])
         lt = [NT(1, 2), NT(3, 4)]
@@ -340,7 +340,7 @@ class TestTabulateInputs(unittest.TestCase):
         result = tabulate(table, headers=headers)
         self.assertIn(result, [expected1, expected2])
 
-    def test_listOfDicts_with_list_of_headers(self):
+    def test_listOfDictsWithListOfHeaders(self):
         """Input: ValueError on a list of headers with a list of dicts."""
         table = [{"letters": "ABCDE", "digits": 12345}]
         headers = ["DIGITS", "LETTERS"]
@@ -371,142 +371,6 @@ class TestTabulateInputs(unittest.TestCase):
 
 
 class TestTabulateInternal(unittest.TestCase):
-    def test_bool(self):
-        self.assertTrue(_bool("stuff"))
-        self.assertFalse(_bool(""))
-        self.assertTrue(_bool(123))
-        self.assertFalse(_bool(np.array([1, 0, -1])))
-
-    def test_buildRow(self):
-        """Basic sanity test of internal _buildRow() function."""
-        rowFormat = _table_formats["armi"].datarow
-        self.assertEqual(_buildRow("", [2, 2], ["center", "center"], rowFormat), "")
-
-        formatter = lambda a, b, c: "xyz"
-        d = {"a": 1, "b": 2}
-        self.assertEqual(_buildRow(d, [2, 2], ["center", "center"], formatter), "xyz")
-
-        lst = ["ab", "cd"]
-        self.assertEqual(
-            _buildRow(lst, [2, 2], ["center", "center"], rowFormat), "ab  cd"
-        )
-
-        self.assertIsNone(_buildRow("ab", [2, 2], ["center", "center"], ""))
-
-    def test_buildLine(self):
-        """Basic sanity test of internal _buildLine() function."""
-        lineFormat = _table_formats["armi"].lineabove
-        self.assertEqual(_buildLine([2, 2], ["center", "center"], lineFormat), "--  --")
-
-        formatter = lambda a, b: "xyz"
-        self.assertEqual(_buildLine([2, 2], ["center", "center"], formatter), "xyz")
-
-        self.assertIsNone(_buildLine([2, 2], ["center", "center"], None))
-
-    def test_format(self):
-        """Basic sanity test of internal _format() function."""
-        self.assertEqual(_format(None, str, "8", "", "X", True), "X")
-        self.assertEqual(_format(123, str, "8", "", "X", True), "123")
-        self.assertEqual(_format("123", int, "8", "", "X", True), "123")
-        self.assertEqual(
-            _format(bytes("abc", "utf-8"), bytes, "8", "", "X", True), "abc"
-        )
-        self.assertEqual(_format("3.14", float, "4", "", "X", True), "3.14")
-        colorNum = "\x1b[31m3.14\x1b[0m"
-        self.assertEqual(_format(colorNum, float, "4", "", "X", True), colorNum)
-        self.assertEqual(_format(None, None, "8", "", "X", True), "X")
-
-    def test_isMultiline(self):
-        """Basic sanity test of internal _isMultiline() function."""
-        self.assertFalse(_isMultiline("world"))
-        self.assertTrue(_isMultiline("hello\nworld"))
-        self.assertFalse(_isMultiline(bytes("world", "utf-8")))
-        self.assertTrue(_isMultiline(bytes("hello\nworld", "utf-8")))
-
-    def test_multilineWidth(self):
-        """Internal: _multilineWidth()."""
-        multilineString = "\n".join(["foo", "barbaz", "spam"])
-        self.assertEqual(_multilineWidth(multilineString), 6)
-        onelineString = "12345"
-        self.assertEqual(_multilineWidth(onelineString), len(onelineString))
-
-    def test_normalizeTabularData(self):
-        """Basic sanity test of internal _normalizeTabularData() function."""
-        res = _normalizeTabularData([[1, 2], [3, 4]], np.array(["a", "b"]), "default")
-        self.assertEqual(res[0], [[1, 2], [3, 4]])
-        self.assertEqual(res[1], ["a", "b"])
-        self.assertEqual(res[2], 0)
-
-        res = _normalizeTabularData([], "keys", "default")
-        self.assertEqual(len(res[0]), 0)
-        self.assertEqual(len(res[1]), 0)
-        self.assertEqual(res[2], 0)
-
-        res = _normalizeTabularData([], "firstrow", "default")
-        self.assertEqual(len(res[0]), 0)
-        self.assertEqual(len(res[1]), 0)
-        self.assertEqual(res[2], 0)
-
-        @dataclass
-        class row:
-            a: int
-            b: int
-
-        rows = [row(1, 2), row(3, 4)]
-        res = _normalizeTabularData(rows, "keys", "default")
-        self.assertEqual(res[0], [[1, 2], [3, 4]])
-        self.assertEqual(res[1], ["a", "b"])
-        self.assertEqual(res[2], 0)
-
-        res = _normalizeTabularData(rows, ["x", "y"], "default")
-        self.assertEqual(res[0], [[1, 2], [3, 4]])
-        self.assertEqual(res[1], ["x", "y"])
-        self.assertEqual(res[2], 0)
-
-    def test_type(self):
-        """Basic sanity test of internal _type() function."""
-        self.assertEqual(_type(None), type(None))
-        self.assertEqual(_type("foo"), type(""))
-        self.assertEqual(_type("1"), type(1))
-        self.assertEqual(_type("\x1b[31m42\x1b[0m"), type(42))
-        self.assertEqual(_type("\x1b[31m42\x1b[0m"), type(42))
-        self.assertEqual(_type(datetime.now()), type("2024-12-31"))
-
-    def test_wrapTextToColWidths(self):
-        """Basic sanity test of internal _wrapTextToColWidths() function."""
-        res = _wrapTextToColWidths([], [2, 2], True)
-        self.assertEqual(len(res), 0)
-
-        res = _wrapTextToColWidths([[1], [2]], [2, 2], True)
-        self.assertEqual(res[0][0], 1)
-        self.assertEqual(res[1][0], 2)
-
-        res = _wrapTextToColWidths([["1"], ["2"]], [2, 2], False)
-        self.assertEqual(res[0][0], "1")
-        self.assertEqual(res[1][0], "2")
-
-    # TODO: JOHN: alphabetize tests
-
-    def test_assortedRareEdgeCases(self):
-        """Test some of the more rare edge cases in the purely internal functions."""
-        from armi.utils.tabulate import _alignHeader
-        from armi.utils.tabulate import _prependRowIndex
-        from armi.utils.tabulate import _removeSeparatingLines
-
-        self.assertEqual(_alignHeader("123", False, 3, 3, False, None), "123")
-
-        result = _removeSeparatingLines(123)
-        self.assertEqual(result[0], 123)
-        self.assertIsNone(result[1])
-
-        self.assertEqual(_prependRowIndex([123], None), [123])
-
-    def test_visibleWidth(self):
-        """Basic sanity test of internal _visibleWidth() function."""
-        self.assertEqual(_visibleWidth("world"), 5)
-        self.assertEqual(_visibleWidth("\x1b[31mhello\x1b[0m"), 5)
-        self.assertEqual(_visibleWidth(np.ones(3)), 10)
-
     def test_alignColumnDecimal(self):
         """Internal: _align_column(..., 'decimal')."""
         column = ["12.345", "-1234.5", "1.23", "1234.5", "1e+234", "1.0e234"]
@@ -617,6 +481,140 @@ class TestTabulateInternal(unittest.TestCase):
         result = _alignCellVeritically(text, 6, 4, "bottom")
         expected = ["    ", "    ", "    ", "just", "one ", "cell"]
         self.assertEqual(expected, result)
+
+    def test_assortedRareEdgeCases(self):
+        """Test some of the more rare edge cases in the purely internal functions."""
+        from armi.utils.tabulate import _alignHeader
+        from armi.utils.tabulate import _prependRowIndex
+        from armi.utils.tabulate import _removeSeparatingLines
+
+        self.assertEqual(_alignHeader("123", False, 3, 3, False, None), "123")
+
+        result = _removeSeparatingLines(123)
+        self.assertEqual(result[0], 123)
+        self.assertIsNone(result[1])
+
+        self.assertEqual(_prependRowIndex([123], None), [123])
+
+    def test_bool(self):
+        self.assertTrue(_bool("stuff"))
+        self.assertFalse(_bool(""))
+        self.assertTrue(_bool(123))
+        self.assertFalse(_bool(np.array([1, 0, -1])))
+
+    def test_buildLine(self):
+        """Basic sanity test of internal _buildLine() function."""
+        lineFormat = _table_formats["armi"].lineabove
+        self.assertEqual(_buildLine([2, 2], ["center", "center"], lineFormat), "--  --")
+
+        formatter = lambda a, b: "xyz"
+        self.assertEqual(_buildLine([2, 2], ["center", "center"], formatter), "xyz")
+
+        self.assertIsNone(_buildLine([2, 2], ["center", "center"], None))
+
+    def test_buildRow(self):
+        """Basic sanity test of internal _buildRow() function."""
+        rowFormat = _table_formats["armi"].datarow
+        self.assertEqual(_buildRow("", [2, 2], ["center", "center"], rowFormat), "")
+
+        formatter = lambda a, b, c: "xyz"
+        d = {"a": 1, "b": 2}
+        self.assertEqual(_buildRow(d, [2, 2], ["center", "center"], formatter), "xyz")
+
+        lst = ["ab", "cd"]
+        self.assertEqual(
+            _buildRow(lst, [2, 2], ["center", "center"], rowFormat), "ab  cd"
+        )
+
+        self.assertIsNone(_buildRow("ab", [2, 2], ["center", "center"], ""))
+
+    def test_format(self):
+        """Basic sanity test of internal _format() function."""
+        self.assertEqual(_format(None, str, "8", "", "X", True), "X")
+        self.assertEqual(_format(123, str, "8", "", "X", True), "123")
+        self.assertEqual(_format("123", int, "8", "", "X", True), "123")
+        self.assertEqual(
+            _format(bytes("abc", "utf-8"), bytes, "8", "", "X", True), "abc"
+        )
+        self.assertEqual(_format("3.14", float, "4", "", "X", True), "3.14")
+        colorNum = "\x1b[31m3.14\x1b[0m"
+        self.assertEqual(_format(colorNum, float, "4", "", "X", True), colorNum)
+        self.assertEqual(_format(None, None, "8", "", "X", True), "X")
+
+    def test_isMultiline(self):
+        """Basic sanity test of internal _isMultiline() function."""
+        self.assertFalse(_isMultiline("world"))
+        self.assertTrue(_isMultiline("hello\nworld"))
+        self.assertFalse(_isMultiline(bytes("world", "utf-8")))
+        self.assertTrue(_isMultiline(bytes("hello\nworld", "utf-8")))
+
+    def test_multilineWidth(self):
+        """Internal: _multilineWidth()."""
+        multilineString = "\n".join(["foo", "barbaz", "spam"])
+        self.assertEqual(_multilineWidth(multilineString), 6)
+        onelineString = "12345"
+        self.assertEqual(_multilineWidth(onelineString), len(onelineString))
+
+    def test_normalizeTabularData(self):
+        """Basic sanity test of internal _normalizeTabularData() function."""
+        res = _normalizeTabularData([[1, 2], [3, 4]], np.array(["a", "b"]), "default")
+        self.assertEqual(res[0], [[1, 2], [3, 4]])
+        self.assertEqual(res[1], ["a", "b"])
+        self.assertEqual(res[2], 0)
+
+        res = _normalizeTabularData([], "keys", "default")
+        self.assertEqual(len(res[0]), 0)
+        self.assertEqual(len(res[1]), 0)
+        self.assertEqual(res[2], 0)
+
+        res = _normalizeTabularData([], "firstrow", "default")
+        self.assertEqual(len(res[0]), 0)
+        self.assertEqual(len(res[1]), 0)
+        self.assertEqual(res[2], 0)
+
+        @dataclass
+        class row:
+            a: int
+            b: int
+
+        rows = [row(1, 2), row(3, 4)]
+        res = _normalizeTabularData(rows, "keys", "default")
+        self.assertEqual(res[0], [[1, 2], [3, 4]])
+        self.assertEqual(res[1], ["a", "b"])
+        self.assertEqual(res[2], 0)
+
+        res = _normalizeTabularData(rows, ["x", "y"], "default")
+        self.assertEqual(res[0], [[1, 2], [3, 4]])
+        self.assertEqual(res[1], ["x", "y"])
+        self.assertEqual(res[2], 0)
+
+    def test_type(self):
+        """Basic sanity test of internal _type() function."""
+        self.assertEqual(_type(None), type(None))
+        self.assertEqual(_type("foo"), type(""))
+        self.assertEqual(_type("1"), type(1))
+        self.assertEqual(_type("\x1b[31m42\x1b[0m"), type(42))
+        self.assertEqual(_type("\x1b[31m42\x1b[0m"), type(42))
+        self.assertEqual(_type(datetime.now()), type("2024-12-31"))
+
+    def test_visibleWidth(self):
+        """Basic sanity test of internal _visibleWidth() function."""
+        self.assertEqual(_visibleWidth("world"), 5)
+        self.assertEqual(_visibleWidth("\x1b[31mhello\x1b[0m"), 5)
+        self.assertEqual(_visibleWidth(np.ones(3)), 10)
+
+    def test_wrapTextToColWidths(self):
+        """Basic sanity test of internal _wrapTextToColWidths() function."""
+        res = _wrapTextToColWidths([], [2, 2], True)
+        self.assertEqual(len(res), 0)
+
+        res = _wrapTextToColWidths([[1], [2]], [2, 2], True)
+        self.assertEqual(res[0][0], 1)
+        self.assertEqual(res[1][0], 2)
+
+        res = _wrapTextToColWidths([["1"], ["2"]], [2, 2], False)
+        self.assertEqual(res[0][0], "1")
+        self.assertEqual(res[1][0], "2")
 
 
 class TestTabulateOutput(unittest.TestCase):
@@ -862,7 +860,7 @@ class TestTabulateOutput(unittest.TestCase):
         result = tabulate(table, tablefmt="simple")
         self.assertEqual(expected, result)
 
-    def testSimpleMultiline2(self):
+    def test_simpleMultiline2(self):
         """Output: simple with multiline cells."""
         expected = "\n".join(
             [
@@ -879,7 +877,7 @@ class TestTabulateOutput(unittest.TestCase):
         )
         self.assertEqual(expected, result)
 
-    def testSimpleMultiline2WithSepLine(self):
+    def test_simpleMultiline2WithSepLine(self):
         """Output: simple with multiline cells."""
         expected = "\n".join(
             [
@@ -924,7 +922,7 @@ class TestTabulateOutput(unittest.TestCase):
         result = tabulate(self.test_table_with_sep_line, tablefmt="simple")
         self.assertEqual(expected, result)
 
-    def testSimpleMultilineHeaderless(self):
+    def test_simpleMultilineHeaderless(self):
         """Output: simple with multiline cells without headers."""
         table = [["foo bar\nbaz\nbau", "hello"], ["", "multiline\nworld"]]
         expected = "\n".join(
@@ -957,7 +955,7 @@ class TestTabulateOutput(unittest.TestCase):
         result = tabulate(table, headers, tablefmt="simple")
         self.assertEqual(expected, result)
 
-    def testSimpleMultilineWithLinks(self):
+    def test_simpleMultilineWithLinks(self):
         """Output: simple with multiline cells with links and headers."""
         table = [[2, "foo\nbar"]]
         headers = (
@@ -976,7 +974,7 @@ class TestTabulateOutput(unittest.TestCase):
         result = tabulate(table, headers, tablefmt="simple")
         self.assertEqual(expected, result)
 
-    def testSimpleMultilineWithEmptyCells(self):
+    def test_simpleMultilineWithEmptyCells(self):
         """Output: simple with multiline cells and empty cells with headers."""
         table = [
             ["hdr", "data", "fold"],
@@ -995,7 +993,7 @@ class TestTabulateOutput(unittest.TestCase):
         result = tabulate(table, headers="firstrow", tablefmt="simple")
         self.assertEqual(expected, result)
 
-    def testSimpleMultilineWithEmptyCellsHeaderless(self):
+    def test_simpleMultilineWithEmptyCellsHeaderless(self):
         """Output: simple with multiline cells and empty cells without headers."""
         table = [["0", "", ""], ["1", "", ""], ["2", "very long data", "fold\nthis"]]
         expected = "\n".join(
