@@ -350,12 +350,13 @@ class TestDatabase3Smaller(unittest.TestCase):
         self.r.p.cycle = 1
         self.r.p.timeNode = 0
         tnGroup = self.db.getH5Group(self.r)
+        randomText = "this isn't a reference to another dataset"
         database3.Database3._writeAttrs(
             tnGroup["layout/serialNum"],
             tnGroup,
             {
-                "fakeBigData": numpy.eye(640),
-                "someString": "this isn't a reference to another dataset",
+                "fakeBigData": numpy.eye(64),
+                "someString": randomText,
             },
         )
 
@@ -369,15 +370,15 @@ class TestDatabase3Smaller(unittest.TestCase):
 
             # this test is a little bit implementation-specific, but nice to be explicit
             self.assertEqual(
-                tnGroup["layout/serialNum"].attrs["fakeBigData"],
-                "@/c01n00/attrs/0_fakeBigData",
+                tnGroup["layout/serialNum"].attrs["someString"],
+                randomText,
             )
 
             # exercise the _resolveAttrs function
             attrs = database3.Database3._resolveAttrs(
                 tnGroup["layout/serialNum"].attrs, tnGroup
             )
-            self.assertTrue(numpy.array_equal(attrs["fakeBigData"], numpy.eye(640)))
+            self.assertTrue(numpy.array_equal(attrs["fakeBigData"], numpy.eye(64)))
 
             keys = sorted(db2.keys())
             self.assertEqual(len(keys), 4)

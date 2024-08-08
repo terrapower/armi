@@ -405,25 +405,17 @@ class Layout:
                 "layout/type",
                 data=numpy.array(self.type).astype("S"),
                 compression="gzip",
-                track_order=True,
             )
             h5group.create_dataset(
                 "layout/name",
                 data=numpy.array(self.name).astype("S"),
                 compression="gzip",
-                track_order=True,
             )
             h5group.create_dataset(
-                "layout/serialNum",
-                data=self.serialNum,
-                compression="gzip",
-                track_order=True,
+                "layout/serialNum", data=self.serialNum, compression="gzip"
             )
             h5group.create_dataset(
-                "layout/indexInData",
-                data=self.indexInData,
-                compression="gzip",
-                track_order=True,
+                "layout/indexInData", data=self.indexInData, compression="gzip"
             )
             h5group.create_dataset(
                 "layout/numChildren",
