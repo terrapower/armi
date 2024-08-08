@@ -88,7 +88,7 @@ class TestTabulateInputs(unittest.TestCase):
         expected = "\n".join(
             ["-  -  -  -  -", "0  1  2  3  4", "5  4  3  2  1", "-  -  -  -  -"]
         )
-        result = tabulate(ii)
+        result = tabulate(ii, headersalign="center")
         self.assertEqual(expected, result)
 
     def test_iterableOfIterablesHeaders(self):
