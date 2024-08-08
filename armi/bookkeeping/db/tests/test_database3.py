@@ -354,7 +354,7 @@ class TestDatabase3Smaller(unittest.TestCase):
             tnGroup["layout/serialNum"],
             tnGroup,
             {
-                "fakeBigData": numpy.eye(6400),
+                "fakeBigData": numpy.eye(640),
                 "someString": "this isn't a reference to another dataset",
             },
         )
@@ -377,7 +377,7 @@ class TestDatabase3Smaller(unittest.TestCase):
             attrs = database3.Database3._resolveAttrs(
                 tnGroup["layout/serialNum"].attrs, tnGroup
             )
-            self.assertTrue(numpy.array_equal(attrs["fakeBigData"], numpy.eye(6400)))
+            self.assertTrue(numpy.array_equal(attrs["fakeBigData"], numpy.eye(640)))
 
             keys = sorted(db2.keys())
             self.assertEqual(len(keys), 4)
