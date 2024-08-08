@@ -816,7 +816,7 @@ material modifications
 
   .. exec::
       from armi.materials import Material
-      from tabulate import tabulate
+      from armi.utils.tabulate import tabulate
 
       data = []
       for m in Material.__subclasses__():

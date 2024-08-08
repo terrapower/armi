@@ -23,7 +23,6 @@ import pathlib
 import re
 import subprocess
 import sys
-import tabulate
 import textwrap
 import time
 
@@ -39,6 +38,7 @@ from armi.reactor.flags import Flags
 from armi.utils import getFileSHA1Hash
 from armi.utils import iterables
 from armi.utils import plotting
+from armi.utils import tabulate
 from armi.utils import textProcessors
 from armi.utils import units
 
