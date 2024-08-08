@@ -40,6 +40,7 @@ from armi.utils.tabulate import _normalizeTabularData
 from armi.utils.tabulate import _table_formats
 from armi.utils.tabulate import _type
 from armi.utils.tabulate import _visibleWidth
+from armi.utils.tabulate import _wrapTextToColWidths
 from armi.utils.tabulate import SEPARATING_LINE
 from armi.utils.tabulate import tabulate
 from armi.utils.tabulate import tabulate_formats
@@ -470,6 +471,21 @@ class TestTabulateInternal(unittest.TestCase):
         self.assertEqual(_type("\x1b[31m42\x1b[0m"), type(42))
         self.assertEqual(_type("\x1b[31m42\x1b[0m"), type(42))
         self.assertEqual(_type(datetime.now()), type("2024-12-31"))
+
+    def test_wrapTextToColWidths(self):
+        """Basic sanity test of internal _wrapTextToColWidths() function."""
+        res = _wrapTextToColWidths([], [2, 2], True)
+        self.assertEqual(len(res), 0)
+
+        res = _wrapTextToColWidths([[1], [2]], [2, 2], True)
+        self.assertEqual(res[0][0], 1)
+        self.assertEqual(res[1][0], 2)
+
+        res = _wrapTextToColWidths([["1"], ["2"]], [2, 2], False)
+        self.assertEqual(res[0][0], "1")
+        self.assertEqual(res[1][0], "2")
+
+    # TODO: JOHN: alphabetize tests
 
     def test_assortedRareEdgeCases(self):
         """Test some of the more rare edge cases in the purely internal functions."""

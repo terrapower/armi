@@ -943,7 +943,7 @@ def _normalizeTabularData(tabularData, headers, showindex="default"):
     return rows, headers, headersPad
 
 
-def _wrapTextToColwidths(listOfLists, colwidths, numparses=True):
+def _wrapTextToColWidths(listOfLists, colwidths, numparses=True):
     if len(listOfLists):
         numCols = len(listOfLists[0])
     else:
@@ -1225,7 +1225,7 @@ def tabulate(
             maxcolwidths = _expandIterable(maxcolwidths, numCols, None)
 
         numparses = _expandNumparse(disableNumparse, numCols)
-        listOfLists = _wrapTextToColwidths(
+        listOfLists = _wrapTextToColWidths(
             listOfLists, maxcolwidths, numparses=numparses
         )
 
@@ -1239,7 +1239,7 @@ def tabulate(
             maxheadercolwidths = _expandIterable(maxheadercolwidths, numCols, None)
 
         numparses = _expandNumparse(disableNumparse, numCols)
-        headers = _wrapTextToColwidths(
+        headers = _wrapTextToColWidths(
             [headers], maxheadercolwidths, numparses=numparses
         )[0]
 
