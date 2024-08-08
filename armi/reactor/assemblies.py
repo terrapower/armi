@@ -66,7 +66,7 @@ class Assembly(composites.Composite):
         """
         # If no assembly number is provided, generate a random number as a placeholder.
         if assemNum is None:
-            assemNum = randint(-9e12, -1)
+            assemNum = randint(-9000000000000, -1)
         name = self.makeNameFromAssemNum(assemNum)
         composites.Composite.__init__(self, name)
         self.p.assemNum = assemNum
@@ -157,7 +157,7 @@ class Assembly(composites.Composite):
         otherwise have been the same object.
         """
         # Default to a random negative assembly number (unique enough)
-        self.p.assemNum = randint(-9e12, -1)
+        self.p.assemNum = randint(-9000000000000, -1)
         self.renumber(self.p.assemNum)
 
     def add(self, obj: blocks.Block):
