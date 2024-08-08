@@ -205,6 +205,10 @@ simulation. It is very easy to use:
     runLog.info("Default log level.")
     runLog.error("The run will die, or the results are invalid.")
 
+.. note::
+    Calling ``runLog.error()`` is not the same as calling Python's ``raise error``; a log statement
+    does not kill a run, or raise an error, it just puts some text in the log.
+
 When an ARMI simulation is run, it will be run at a particular log level. All log messages that are
 at or above that log level will be seen during the simulation and in the final log files. To that
 end, it is important to know how to use each of these log levels:
