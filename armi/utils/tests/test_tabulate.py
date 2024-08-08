@@ -22,6 +22,7 @@ https://github.com/astanin/python-tabulate
 from collections import namedtuple
 from collections import OrderedDict
 from collections import UserDict
+from dataclasses import dataclass
 from datetime import datetime
 import unittest
 
@@ -443,6 +444,22 @@ class TestTabulateInternal(unittest.TestCase):
         res = _normalizeTabularData([], "firstrow", "default")
         self.assertEqual(len(res[0]), 0)
         self.assertEqual(len(res[1]), 0)
+        self.assertEqual(res[2], 0)
+
+        @dataclass
+        class row:
+            a: int
+            b: int
+
+        rows = [row(1, 2), row(3, 4)]
+        res = _normalizeTabularData(rows, "keys", "default")
+        self.assertEqual(res[0], [[1, 2], [3, 4]])
+        self.assertEqual(res[1], ["a", "b"])
+        self.assertEqual(res[2], 0)
+
+        res = _normalizeTabularData(rows, ["x", "y"], "default")
+        self.assertEqual(res[0], [[1, 2], [3, 4]])
+        self.assertEqual(res[1], ["x", "y"])
         self.assertEqual(res[2], 0)
 
     def test_type(self):
