@@ -13,6 +13,7 @@
 # limitations under the License.
 """Enable component-wise axial expansion for assemblies and/or a reactor."""
 
+import collections
 from statistics import mean
 from typing import List
 
@@ -20,6 +21,9 @@ from armi import runLog
 from armi.materials import material
 from armi.reactor.components import UnshapedComponent
 from armi.reactor.flags import Flags
+from armi.reactor.grids import MultiIndexLocation
+from armi.utils.customExceptions import InputError
+
 from numpy import array
 
 TARGET_FLAGS_IN_PREFERRED_ORDER = [
@@ -263,7 +267,7 @@ class AxialExpansionChanger:
         self.expansionData = ExpansionData(
             a, setFuel=setFuel, expandFromTinputToThot=expandFromTinputToThot
         )
-        self._isTopDummyBlockPresent()
+        self._checkAssemblyConstructionIsValid()
 
     def applyColdHeightMassIncrease(self):
         """
@@ -281,6 +285,10 @@ class AxialExpansionChanger:
                 c.temperatureInC, c.inputTemperatureInC
             )
             c.changeNDensByFactor(axialExpansionFactor)
+
+    def _checkAssemblyConstructionIsValid(self):
+        self._isTopDummyBlockPresent()
+        self._checkForBlocksWithoutSolids()
 
     def _isTopDummyBlockPresent(self):
         """Determines if top most block of assembly is a dummy block.
@@ -302,6 +310,33 @@ class AxialExpansionChanger:
                 msg = "Cannot run detailedAxialExpansion without a dummy block at the top of the assembly!"
                 runLog.error(msg)
                 raise RuntimeError(msg)
+
+    def _checkForBlocksWithoutSolids(self):
+        """
+        Makes sure that there aren't any blocks (other than the top-most dummy block)
+        that are entirely fluid filled, unless all blocks in the assembly are only
+        fluids. The expansion changer doesn't know what to do with such mixed assemblies.
+        """
+        solidCompsInAssem = [
+            c
+            for c in self.linked.a.iterComponents()
+            if not isinstance(c.material, material.Fluid)
+        ]
+        if len(solidCompsInAssem) == 0:
+            return
+
+        for b in self.linked.a[:-1]:
+            # the topmost block has already been confirmed as the dummy block
+            solidCompsInBlock = [
+                c
+                for c in b.iterComponents()
+                if not isinstance(c.material, material.Fluid)
+            ]
+            if len(solidCompsInBlock) == 0:
+                raise InputError(
+                    f"Assembly {self.linked.a} is constructed improperly for use with the axial expansion changer.\n"
+                    "Consider using the assemFlagsToSkipAxialExpansion case setting."
+                )
 
     def axiallyExpandAssembly(self):
         """Utilizes assembly linkage to do axial expansion.
@@ -338,9 +373,10 @@ class AxialExpansionChanger:
                     if ib == 0:
                         c.zbottom = 0.0
                     else:
-                        if self.linked.linkedComponents[c][0] is not None:
+                        if self.linked.linkedComponents[c][0]:
                             # use linked components below
-                            c.zbottom = self.linked.linkedComponents[c][0].ztop
+                            linkedComponent = self.retrieveLinkedComponent(c)
+                            c.zbottom = linkedComponent.ztop
                         else:
                             # otherwise there aren't any linked components
                             # so just set the bottom of the component to
@@ -374,6 +410,31 @@ class AxialExpansionChanger:
         bounds = list(self.linked.a.spatialGrid._bounds)
         bounds[2] = array(mesh)
         self.linked.a.spatialGrid._bounds = tuple(bounds)
+
+    def retrieveLinkedComponent(self, c):
+        """Retrieve the linked component.
+
+        Notes
+        -----
+        3 cases are considered, see test_axialExpansionChanger.py::TestRetriveAxialLinkage for details.
+        """
+        linkedComponents = self.linked.linkedComponents[c][0]
+        # Case 1
+        if len(linkedComponents) == 1:
+            return linkedComponents[0]
+
+        ## Case 2
+        for otherC in linkedComponents:
+            if otherC.hasFlags(c.p.flags):
+                return otherC
+
+        # Case 3
+        maxCompZtop = 0.0
+        for otherC in linkedComponents:
+            if otherC.ztop > maxCompZtop:
+                linked = otherC
+                maxCompZtop = otherC.ztop
+        return linked
 
     def manageCoreMesh(self, r):
         """Manage core mesh post assembly-level expansion.
@@ -546,97 +607,129 @@ class AssemblyAxialLinkage:
         RuntimeError
             multiple candidate components are found to be axially linked to a component
         """
-        lstLinkedC = [None, None]
+        self.linkedComponents[c] = collections.defaultdict(list)
         for ib, linkdBlk in enumerate(self.linkedBlocks[b]):
             if linkdBlk is not None:
                 for otherC in getSolidComponents(linkdBlk.getChildren()):
-                    if _determineLinked(c, otherC):
-                        if lstLinkedC[ib] is not None:
-                            errMsg = (
-                                "Multiple component axial linkages have been found for "
-                                f"Component {c}; Block {b}; Assembly {b.parent}."
-                                " This is indicative of an error in the blueprints! Linked "
-                                f"components found are {lstLinkedC[ib]} and {otherC}"
-                            )
-                            runLog.error(msg=errMsg)
-                            raise RuntimeError(errMsg)
-                        lstLinkedC[ib] = otherC
+                    if AssemblyAxialLinkage._determineLinked(c, otherC):
+                        self.linkedComponents[c][ib].append(otherC)
 
-        self.linkedComponents[c] = lstLinkedC
-
-        if lstLinkedC[0] is None:
+        if not self.linkedComponents[c][0]:
             runLog.debug(
                 f"Assembly {self.a}, Block {b}, Component {c} has nothing linked below it!",
                 single=True,
             )
-        if lstLinkedC[1] is None:
+        if not self.linkedComponents[c][1]:
             runLog.debug(
                 f"Assembly {self.a}, Block {b}, Component {c} has nothing linked above it!",
                 single=True,
             )
 
+    @staticmethod
+    def _determineLinked(componentA, componentB) -> bool:
+        """Determine axial component linkage for two solid components.
 
-def _determineLinked(componentA, componentB):
-    """Determine axial component linkage for two components.
+        Parameters
+        ----------
+        componentA : :py:class:`Component <armi.reactor.components.component.Component>`
+            component of interest
+        componentB : :py:class:`Component <armi.reactor.components.component.Component>`
+            component to compare and see if is linked to componentA
 
-    Parameters
-    ----------
-    componentA : :py:class:`Component <armi.reactor.components.component.Component>`
-        component of interest
-    componentB : :py:class:`Component <armi.reactor.components.component.Component>`
-        component to compare and see if is linked to componentA
+        Notes
+        -----
+        If componentA and componentB are both solids and the same type, geometric overlap can be checked via
+        getCircleInnerDiameter and getBoundingCircleOuterDiameter. Five different cases are accounted for.
+        If they do not meet these initial criteria, linkage is assumed to be False.
+        Case #1: Unshaped Components. There is no way to determine overlap so they're assumed to be not linked.
+        Case #2: Blocks with specified grids. If componentA and componentB share common grid indices (cannot be a partial
+        case, ALL of the indices must be contained by one or the other), then overlap can be checked.
+        Case #3: If Component position is not specified via a grid, the multiplicity is checked. If consistent, they are
+        assumed to be in the same positions and their overlap is checked.
+        Case #4: Cases 1-3 are not True so we assume there is no linkage.
+        Case #5: Components are either not both solids or are not the same type. These cannot be linked.
 
-    Notes
-    -----
-    - Requires that shapes have the getCircleInnerDiameter and getBoundingCircleOuterDiameter
-      defined
-    - For axial linkage to be True, components MUST be solids, the same Component Class,
-      multiplicity, and meet inner and outer diameter requirements.
-    - When component dimensions are retrieved, cold=True to ensure that dimensions are evaluated
-      at cold/input temperatures. At temperature, solid-solid interfaces in ARMI may produce
-      slight overlaps due to thermal expansion. Handling these potential overlaps are out of scope.
+        Returns
+        -------
+        linked : bool
+            status is componentA and componentB are axially linked to one another
+        """
+        if isinstance(componentA, type(componentB)):
+            if isinstance(componentA, UnshapedComponent):
+                ## Case 1 -- see docstring
+                runLog.warning(
+                    f"Components {componentA} and {componentB} are UnshapedComponents "
+                    "and do not have 'getCircleInnerDiameter' or getBoundingCircleOuterDiameter methods; "
+                    "nor is it physical to do so. Instead of crashing and raising an error, "
+                    "they are going to be assumed to not be linked.",
+                    single=True,
+                )
+                linked = False
+            elif isinstance(
+                componentA.spatialLocator, MultiIndexLocation
+            ) and isinstance(componentB.spatialLocator, MultiIndexLocation):
+                ## Case 2 -- see docstring
+                componentAIndices = [
+                    list(index) for index in componentA.spatialLocator.indices
+                ]
+                componentBIndices = [
+                    list(index) for index in componentB.spatialLocator.indices
+                ]
+                # check for common indices between components. If either component has indices within its counterpart,
+                # then they are candidates to be linked and overlap should be checked.
+                if len(componentAIndices) < len(componentBIndices):
+                    if all(index in componentBIndices for index in componentAIndices):
+                        linked = AssemblyAxialLinkage._checkOverlap(
+                            componentA, componentB
+                        )
+                    else:
+                        linked = False
+                else:
+                    if all(index in componentAIndices for index in componentBIndices):
+                        linked = AssemblyAxialLinkage._checkOverlap(
+                            componentA, componentB
+                        )
+                    else:
+                        linked = False
+            elif componentA.getDimension("mult") == componentB.getDimension("mult"):
+                ## Case 3 -- see docstring
+                linked = AssemblyAxialLinkage._checkOverlap(componentA, componentB)
+            else:
+                ## Case 4 -- see docstring
+                linked = False
+        else:
+            ## Case 5 -- see docstring
+            linked = False
 
-    Returns
-    -------
-    linked : bool
-        status is componentA and componentB are axially linked to one another
-    """
-    if (
-        (componentA.containsSolidMaterial() and componentB.containsSolidMaterial())
-        and isinstance(componentA, type(componentB))
-        and (componentA.getDimension("mult") == componentB.getDimension("mult"))
-    ):
-        if isinstance(componentA, UnshapedComponent):
-            runLog.warning(
-                f"Components {componentA} and {componentB} are UnshapedComponents "
-                "and do not have 'getCircleInnerDiameter' or getBoundingCircleOuterDiameter "
-                "methods; nor is it physical to do so. Instead of crashing and raising an error, "
-                "they are going to be assumed to not be linked.",
-                single=True,
-            )
+        return linked
+
+    @staticmethod
+    def _checkOverlap(componentA, componentB) -> bool:
+        """Check two components for geometric overlap.
+
+        Notes
+        -----
+        When component dimensions are retrieved, cold=True to ensure that dimensions are evaluated
+        at cold/input temperatures. At temperature, solid-solid interfaces in ARMI may produce
+        slight overlaps due to thermal expansion. Handling these potential overlaps are out of scope.
+        """
+        idA, odA = (
+            componentA.getCircleInnerDiameter(cold=True),
+            componentA.getBoundingCircleOuterDiameter(cold=True),
+        )
+        idB, odB = (
+            componentB.getCircleInnerDiameter(cold=True),
+            componentB.getBoundingCircleOuterDiameter(cold=True),
+        )
+        biggerID = max(idA, idB)
+        smallerOD = min(odA, odB)
+        if biggerID >= smallerOD:
+            # one object fits inside the other
             linked = False
         else:
-            idA, odA = (
-                componentA.getCircleInnerDiameter(cold=True),
-                componentA.getBoundingCircleOuterDiameter(cold=True),
-            )
-            idB, odB = (
-                componentB.getCircleInnerDiameter(cold=True),
-                componentB.getBoundingCircleOuterDiameter(cold=True),
-            )
+            linked = True
 
-            biggerID = max(idA, idB)
-            smallerOD = min(odA, odB)
-            if biggerID >= smallerOD:
-                # one object fits inside the other
-                linked = False
-            else:
-                linked = True
-
-    else:
-        linked = False
-
-    return linked
+        return linked
 
 
 class ExpansionData:
