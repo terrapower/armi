@@ -1012,8 +1012,8 @@ def tabulate(
     tablefmt="simple",
     floatfmt=_DEFAULT_FLOATFMT,
     intfmt=_DEFAULT_INTFMT,
-    numalign=_DEFAULT_ALIGN,
-    stralign=_DEFAULT_ALIGN,
+    numAlign=_DEFAULT_ALIGN,
+    strAlign=_DEFAULT_ALIGN,
     missingval=_DEFAULT_MISSINGVAL,
     showindex="default",
     disableNumparse=False,
@@ -1064,8 +1064,8 @@ def tabulate(
 
     `tabulate` tries to detect column types automatically, and aligns the values properly. By
     default it aligns decimal points of the numbers (or flushes integer numbers to the right), and
-    flushes everything else to the left. Possible column alignments (`numalign`, `stralign`) are:
-    "right", "center", "left", "decimal" (only for `numalign`), and None (to disable alignment).
+    flushes everything else to the left. Possible column alignments (`numAlign`, `strAlign`) are:
+    "right", "center", "left", "decimal" (only for `numAlign`), and None (to disable alignment).
 
     `colglobalalign` allows for global alignment of columns, before any specific override from
         `colalign`. Possible values are: None (defaults according to coltype), "right", "center",
@@ -1255,11 +1255,11 @@ def tabulate(
     if tablefmt == "pretty":
         minPadding = 0
         disableNumparse = True
-        numalign = "center" if numalign == _DEFAULT_ALIGN else numalign
-        stralign = "center" if stralign == _DEFAULT_ALIGN else stralign
+        numAlign = "center" if numAlign == _DEFAULT_ALIGN else numAlign
+        strAlign = "center" if strAlign == _DEFAULT_ALIGN else strAlign
     else:
-        numalign = "decimal" if numalign == _DEFAULT_ALIGN else numalign
-        stralign = "left" if stralign == _DEFAULT_ALIGN else stralign
+        numAlign = "decimal" if numAlign == _DEFAULT_ALIGN else numAlign
+        strAlign = "left" if strAlign == _DEFAULT_ALIGN else strAlign
 
     # optimization: look for ANSI control codes once, enable smart width functions only if a control
     # code is found
@@ -1325,7 +1325,7 @@ def tabulate(
     if colglobalalign is not None:  # if global alignment provided
         aligns = [colglobalalign] * len(cols)
     else:  # default
-        aligns = [numalign if ct in [int, float] else stralign for ct in coltypes]
+        aligns = [numAlign if ct in [int, float] else strAlign for ct in coltypes]
 
     # then specific alignements
     if colalign is not None:
@@ -1356,7 +1356,7 @@ def tabulate(
         if headersglobalalign is not None:  # if global alignment provided
             alignsHeaders = [headersglobalalign] * len(tCols)
         else:  # default
-            alignsHeaders = aligns or [stralign] * len(headers)
+            alignsHeaders = aligns or [strAlign] * len(headers)
         # then specific header alignements
         if headersalign is not None:
             assert isinstance(headersalign, Iterable)
