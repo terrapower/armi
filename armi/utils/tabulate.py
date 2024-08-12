@@ -1019,11 +1019,11 @@ def tabulate(
     disableNumParse=False,
     colGlobalAlign=None,
     colAlign=None,
-    maxcolwidths=None,
-    headersglobalalign=None,
-    headersalign=None,
-    rowalign=None,
-    maxheadercolwidths=None,
+    maxColWidths=None,
+    headersGlobalAlign=None,
+    headersAlign=None,
+    rowAlign=None,
+    maxHeaderColWidths=None,
 ):
     r"""Format a fixed width table for pretty printing.
 
@@ -1072,10 +1072,10 @@ def tabulate(
         "decimal", "left".
     `colAlign` allows for column-wise override starting from left-most column. Possible values are:
         "global" (no override), "right", "center", "decimal", "left".
-    `headersglobalalign` allows for global headers alignment, before any specific override from
-        `headersalign`. Possible values are: None (follow columns alignment), "right", "center",
+    `headersGlobalAlign` allows for global headers alignment, before any specific override from
+        `headersAlign`. Possible values are: None (follow columns alignment), "right", "center",
         "left".
-    `headersalign` allows for header-wise override starting from left-most given header. Possible
+    `headersAlign` allows for header-wise override starting from left-most given header. Possible
         values are: "global" (no override), "same" (follow column alignment), "right", "center",
         "left".
 
@@ -1193,7 +1193,7 @@ def tabulate(
           [('1', 'John Smith', \
             'This is a rather long description that might look better if it is wrapped a bit')], \
           headers=("Issue Id", "Author", "Description"), \
-          maxcolwidths=[None, None, 30], \
+          maxColWidths=[None, None, 30], \
           tablefmt="grid"  \
         ))
     +------------+------------+-------------------------------+
@@ -1214,33 +1214,33 @@ def tabulate(
     )
     listOfLists, separatingLines = _removeSeparatingLines(listOfLists)
 
-    if maxcolwidths is not None:
+    if maxColWidths is not None:
         if len(listOfLists):
             numCols = len(listOfLists[0])
         else:
             numCols = 0
-        if isinstance(maxcolwidths, int):  # Expand scalar for all columns
-            maxcolwidths = _expandIterable(maxcolwidths, numCols, maxcolwidths)
+        if isinstance(maxColWidths, int):  # Expand scalar for all columns
+            maxColWidths = _expandIterable(maxColWidths, numCols, maxColWidths)
         else:  # Ignore col width for any 'trailing' columns
-            maxcolwidths = _expandIterable(maxcolwidths, numCols, None)
+            maxColWidths = _expandIterable(maxColWidths, numCols, None)
 
         numparses = _expandNumparse(disableNumParse, numCols)
         listOfLists = _wrapTextToColWidths(
-            listOfLists, maxcolwidths, numparses=numparses
+            listOfLists, maxColWidths, numparses=numparses
         )
 
-    if maxheadercolwidths is not None:
+    if maxHeaderColWidths is not None:
         numCols = len(listOfLists[0])
-        if isinstance(maxheadercolwidths, int):  # Expand scalar for all columns
-            maxheadercolwidths = _expandIterable(
-                maxheadercolwidths, numCols, maxheadercolwidths
+        if isinstance(maxHeaderColWidths, int):  # Expand scalar for all columns
+            maxHeaderColWidths = _expandIterable(
+                maxHeaderColWidths, numCols, maxHeaderColWidths
             )
         else:  # Ignore col width for any 'trailing' columns
-            maxheadercolwidths = _expandIterable(maxheadercolwidths, numCols, None)
+            maxHeaderColWidths = _expandIterable(maxHeaderColWidths, numCols, None)
 
         numparses = _expandNumparse(disableNumParse, numCols)
         headers = _wrapTextToColWidths(
-            [headers], maxheadercolwidths, numparses=numparses
+            [headers], maxHeaderColWidths, numparses=numparses
         )[0]
 
     # empty values in the first column of RST tables should be escaped
@@ -1353,20 +1353,20 @@ def tabulate(
         # align headers and add headers
         tCols = cols or [[""]] * len(headers)
         # first set global alignment
-        if headersglobalalign is not None:  # if global alignment provided
-            alignsHeaders = [headersglobalalign] * len(tCols)
+        if headersGlobalAlign is not None:  # if global alignment provided
+            alignsHeaders = [headersGlobalAlign] * len(tCols)
         else:  # default
             alignsHeaders = aligns or [strAlign] * len(headers)
         # then specific header alignements
-        if headersalign is not None:
-            assert isinstance(headersalign, Iterable)
-            if isinstance(headersalign, str):
+        if headersAlign is not None:
+            assert isinstance(headersAlign, Iterable)
+            if isinstance(headersAlign, str):
                 runLog.warning(
-                    f"As a string, `headersalign` is interpreted as {[c for c in headersalign]}. "
-                    + f'Did you mean `headersglobalalign = "{headersalign}"` or `headersalign = '
-                    + f'("{headersalign}",)`?'
+                    f"As a string, `headersAlign` is interpreted as {[c for c in headersAlign]}. "
+                    + f'Did you mean `headersGlobalAlign = "{headersAlign}"` or `headersAlign = '
+                    + f'("{headersAlign}",)`?'
                 )
-            for idx, align in enumerate(headersalign):
+            for idx, align in enumerate(headersAlign):
                 hidx = headersPad + idx
                 if not hidx < len(alignsHeaders):
                     break
@@ -1389,8 +1389,8 @@ def tabulate(
     if not isinstance(tablefmt, TableFormat):
         tablefmt = _table_formats.get(tablefmt, _table_formats["simple"])
 
-    raDefault = rowalign if isinstance(rowalign, str) else None
-    rowaligns = _expandIterable(rowalign, len(rows), raDefault)
+    raDefault = rowAlign if isinstance(rowAlign, str) else None
+    rowAligns = _expandIterable(rowAlign, len(rows), raDefault)
     _reinsertSeparatingLines(rows, separatingLines)
 
     return _formatTable(
@@ -1401,7 +1401,7 @@ def tabulate(
         minwidths,
         aligns,
         isMultiline,
-        rowaligns=rowaligns,
+        rowAligns=rowAligns,
     )
 
 
@@ -1461,8 +1461,8 @@ def _buildRow(paddedCells, colwidths, colAligns, rowfmt):
         return _buildSimpleRow(paddedCells, rowfmt)
 
 
-def _appendBasicRow(lines, paddedCells, colwidths, colAligns, rowfmt, rowalign=None):
-    # NOTE: rowalign is ignored and exists for api compatibility with _appendMultilineRow
+def _appendBasicRow(lines, paddedCells, colwidths, colAligns, rowfmt, rowAlign=None):
+    # NOTE: rowAlign is ignored and exists for api compatibility with _appendMultilineRow
     lines.append(_buildRow(paddedCells, colwidths, colAligns, rowfmt))
     return lines
 
@@ -1481,14 +1481,14 @@ def _alignCellVeritically(textLines, numLines, columnWidth, rowAlignment):
 
 
 def _appendMultilineRow(
-    lines, paddedMultilineCells, paddedWidths, colAligns, rowfmt, pad, rowalign=None
+    lines, paddedMultilineCells, paddedWidths, colAligns, rowfmt, pad, rowAlign=None
 ):
     colwidths = [w - 2 * pad for w in paddedWidths]
     cellsLines = [c.splitlines() for c in paddedMultilineCells]
     nlines = max(map(len, cellsLines))  # number of lines in the row
 
     cellsLines = [
-        _alignCellVeritically(cl, nlines, w, rowalign)
+        _alignCellVeritically(cl, nlines, w, rowAlign)
         for cl, w in zip(cellsLines, colwidths)
     ]
     linesCells = [[cl[i] for cl in cellsLines] for i in range(nlines)]
@@ -1517,7 +1517,7 @@ def _appendLine(lines, colwidths, colAligns, linefmt):
 
 
 def _formatTable(
-    fmt, headers, headersaligns, rows, colwidths, colAligns, isMultiline, rowaligns
+    fmt, headers, headersAligns, rows, colwidths, colAligns, isMultiline, rowAligns
 ):
     """Produce a plain-text representation of the table."""
     lines = []
@@ -1540,14 +1540,14 @@ def _formatTable(
         _appendLine(lines, paddedWidths, colAligns, fmt.lineabove)
 
     if paddedHeaders:
-        appendRow(lines, paddedHeaders, paddedWidths, headersaligns, headerrow)
+        appendRow(lines, paddedHeaders, paddedWidths, headersAligns, headerrow)
         if fmt.linebelowheader and "linebelowheader" not in hidden:
             _appendLine(lines, paddedWidths, colAligns, fmt.linebelowheader)
 
     if paddedRows and fmt.linebetweenrows and "linebetweenrows" not in hidden:
         # initial rows with a line below
-        for row, ralign in zip(paddedRows[:-1], rowaligns):
-            appendRow(lines, row, paddedWidths, colAligns, fmt.datarow, rowalign=ralign)
+        for row, ralign in zip(paddedRows[:-1], rowAligns):
+            appendRow(lines, row, paddedWidths, colAligns, fmt.datarow, rowAlign=ralign)
             _appendLine(lines, paddedWidths, colAligns, fmt.linebetweenrows)
         # the last row without a line below
         appendRow(
@@ -1556,7 +1556,7 @@ def _formatTable(
             paddedWidths,
             colAligns,
             fmt.datarow,
-            rowalign=rowaligns[-1],
+            rowAlign=rowAligns[-1],
         )
     else:
         separatingLine = (

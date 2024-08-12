@@ -88,7 +88,7 @@ class TestTabulateInputs(unittest.TestCase):
         expected = "\n".join(
             ["-  -  -  -  -", "0  1  2  3  4", "5  4  3  2  1", "-  -  -  -  -"]
         )
-        result = tabulate(ii, headersalign="center")
+        result = tabulate(ii, headersAlign="center")
         self.assertEqual(expected, result)
 
     def test_iterableOfIterablesHeaders(self):
@@ -748,7 +748,7 @@ class TestTabulateOutput(unittest.TestCase):
         table = [["hdr", "fold"], ["1", "very long data"]]
         expected = "\n".join(["  hdr  fold", "    1  very long", "       data"])
         result = tabulate(
-            table, headers="firstrow", tablefmt="plain", maxcolwidths=[10, 10]
+            table, headers="firstrow", tablefmt="plain", maxColWidths=[10, 10]
         )
         self.assertEqual(expected, result)
 
@@ -764,11 +764,11 @@ class TestTabulateOutput(unittest.TestCase):
             ["  hdr  fold", "    1  very long", "       data", "", "    2  last line"]
         )
         result = tabulate(
-            table, headers="firstrow", tablefmt="plain", maxcolwidths=[10, 10]
+            table, headers="firstrow", tablefmt="plain", maxColWidths=[10, 10]
         )
         self.assertEqual(expected, result)
 
-    def test_maxcolwidthSingleValue(self):
+    def test_maxColWidthsingleValue(self):
         """Output: maxcolwidth can be specified as a single number that works for each column."""
         table = [
             ["hdr", "fold1", "fold2"],
@@ -783,7 +783,7 @@ class TestTabulateOutput(unittest.TestCase):
                 "                longer",
             ]
         )
-        result = tabulate(table, headers="firstrow", tablefmt="plain", maxcolwidths=6)
+        result = tabulate(table, headers="firstrow", tablefmt="plain", maxColWidths=6)
         self.assertEqual(expected, result)
 
     def test_maxcolwidthPadTailingWidths(self):
@@ -801,7 +801,7 @@ class TestTabulateOutput(unittest.TestCase):
             ]
         )
         result = tabulate(
-            table, headers="firstrow", tablefmt="plain", maxcolwidths=[None, 6]
+            table, headers="firstrow", tablefmt="plain", maxColWidths=[None, 6]
         )
         self.assertEqual(expected, result)
 
@@ -824,11 +824,11 @@ class TestTabulateOutput(unittest.TestCase):
             ]
         )
         # Grid makes showing the alignment difference a little easier
-        result = tabulate(table, tablefmt="grid", maxcolwidths=6, disableNumParse=[2])
+        result = tabulate(table, tablefmt="grid", maxColWidths=6, disableNumParse=[2])
         self.assertEqual(expected, result)
 
-    def test_plainMaxheadercolwidthsAutowraps(self):
-        """Output: maxheadercolwidths will result in autowrapping header cell."""
+    def test_plainmaxHeaderColWidthsAutowraps(self):
+        """Output: maxHeaderColWidths will result in autowrapping header cell."""
         table = [["hdr", "fold"], ["1", "very long data"]]
         expected = "\n".join(
             ["  hdr  fo", "       ld", "    1  very long", "       data"]
@@ -837,8 +837,8 @@ class TestTabulateOutput(unittest.TestCase):
             table,
             headers="firstrow",
             tablefmt="plain",
-            maxcolwidths=[10, 10],
-            maxheadercolwidths=[None, 2],
+            maxColWidths=[10, 10],
+            maxHeaderColWidths=[None, 2],
         )
         self.assertEqual(expected, result)
 
@@ -1476,20 +1476,20 @@ class TestTabulateOutput(unittest.TestCase):
         self.assertEqual(expected, result)
 
     def test_headersGlobalAndSpecificAlignment(self):
-        """Test `headersglobalalign` and `headersalign`."""
+        """Test `headersGlobalAlign` and `headersAlign`."""
         table = [[1, 2, 3, 4, 5, 6], [111, 222, 333, 444, 555, 666]]
         colGlobalAlign = "center"
         colAlign = ("left",)
         headers = ["h", "e", "a", "d", "e", "r"]
-        headersglobalalign = "right"
-        headersalign = ("same", "same", "left", "global", "center")
+        headersGlobalAlign = "right"
+        headersAlign = ("same", "same", "left", "global", "center")
         result = tabulate(
             table,
             headers=headers,
             colGlobalAlign=colGlobalAlign,
             colAlign=colAlign,
-            headersglobalalign=headersglobalalign,
-            headersalign=headersalign,
+            headersGlobalAlign=headersGlobalAlign,
+            headersAlign=headersAlign,
         )
         expected = "\n".join(
             [
@@ -1501,14 +1501,14 @@ class TestTabulateOutput(unittest.TestCase):
         )
         self.assertEqual(expected, result)
 
-    def test_colAlignOrHeadersalignTooLong(self):
-        """Test `colAlign` and `headersalign` too long."""
+    def test_colAlignOrheadersAlignTooLong(self):
+        """Test `colAlign` and `headersAlign` too long."""
         table = [[1, 2], [111, 222]]
         colAlign = ("global", "left", "center")
         headers = ["h"]
-        headersalign = ("center", "right", "same")
+        headersAlign = ("center", "right", "same")
         result = tabulate(
-            table, headers=headers, colAlign=colAlign, headersalign=headersalign
+            table, headers=headers, colAlign=colAlign, headersAlign=headersAlign
         )
         expected = "\n".join(["      h", "---  ---", "  1  2", "111  222"])
         self.assertEqual(expected, result)
