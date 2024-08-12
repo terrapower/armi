@@ -1574,7 +1574,7 @@ class TestTabulateOutput(unittest.TestCase):
         """Output: a table with a running index."""
         dd = {"b": range(101, 104)}
         expected = "\n".join(["      b", "--  ---", " 0  101", " 1  102", " 2  103"])
-        result = tabulate(dd, "keys", showindex=True)
+        result = tabulate(dd, "keys", showIndex=True)
         self.assertEqual(expected, result)
 
     def test_listOfListsWithIndex(self):
@@ -1591,7 +1591,7 @@ class TestTabulateOutput(unittest.TestCase):
                 " 2    2  103",
             ]
         )
-        result = tabulate(dd, headers=["a", "b"], showindex=True)
+        result = tabulate(dd, headers=["a", "b"], showIndex=True)
         self.assertEqual(expected, result)
 
     def test_listOfListsWithIndexWithSepLine(self):
@@ -1609,7 +1609,7 @@ class TestTabulateOutput(unittest.TestCase):
                 " 2    2  103",
             ]
         )
-        result = tabulate(dd, headers=["a", "b"], showindex=True)
+        result = tabulate(dd, headers=["a", "b"], showIndex=True)
         self.assertEqual(expected, result)
 
     def test_listOfListsWithSuppliedIndex(self):
@@ -1624,11 +1624,11 @@ class TestTabulateOutput(unittest.TestCase):
                 " 3    2  103",
             ]
         )
-        result = tabulate(dd, headers=["a", "b"], showindex=[1, 2, 3])
+        result = tabulate(dd, headers=["a", "b"], showIndex=[1, 2, 3])
         self.assertEqual(expected, result)
         # the index must be as long as the number of rows
         with self.assertRaises(ValueError):
-            tabulate(dd, headers=["a", "b"], showindex=[1, 2])
+            tabulate(dd, headers=["a", "b"], showIndex=[1, 2])
 
     def test_listOfListsWithIndexFirstrow(self):
         """Output: a table with a running index and header='firstrow'."""
@@ -1642,11 +1642,11 @@ class TestTabulateOutput(unittest.TestCase):
                 " 2    2  103",
             ]
         )
-        result = tabulate(dd, headers="firstrow", showindex=True)
+        result = tabulate(dd, headers="firstrow", showIndex=True)
         self.assertEqual(expected, result)
         # the index must be as long as the number of rows
         with self.assertRaises(ValueError):
-            tabulate(dd, headers="firstrow", showindex=[1, 2])
+            tabulate(dd, headers="firstrow", showIndex=[1, 2])
 
     def test_disableNumparseDefault(self):
         """Output: Default table output with number parsing and alignment."""

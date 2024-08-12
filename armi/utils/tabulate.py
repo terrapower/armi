@@ -805,7 +805,7 @@ def _bool(val):
         return False
 
 
-def _normalizeTabularData(tabularData, headers, showindex="default"):
+def _normalizeTabularData(tabularData, headers, showIndex="default"):
     """Transform a supported data type to a list of lists & a list of headers, with header padding.
 
     Supported tabular data types:
@@ -822,9 +822,9 @@ def _normalizeTabularData(tabularData, headers, showindex="default"):
     The first row can be used as headers if headers="firstrow",
     column indices can be used as headers if headers="keys".
 
-    If showindex="always", show row indices for all types of data.
-    If showindex="never", don't show row indices for all types of data.
-    If showindex is an iterable, show its values as row indices.
+    If showIndex="always", show row indices for all types of data.
+    If showIndex="never", don't show row indices for all types of data.
+    If showIndex is an iterable, show its values as row indices.
     """
     try:
         bool(headers)
@@ -922,14 +922,14 @@ def _normalizeTabularData(tabularData, headers, showindex="default"):
     rows = list(map(lambda r: r if _isSeparatingLine(r) else list(r), rows))
 
     # add or remove an index column
-    showIndexIsSStr = type(showindex) in [str, bytes]
-    if showindex == "default" and index is not None:
+    showIndexIsSStr = type(showIndex) in [str, bytes]
+    if showIndex == "default" and index is not None:
         rows = _prependRowIndex(rows, index)
-    elif isinstance(showindex, Sized) and not showIndexIsSStr:
-        rows = _prependRowIndex(rows, list(showindex))
-    elif isinstance(showindex, Iterable) and not showIndexIsSStr:
-        rows = _prependRowIndex(rows, showindex)
-    elif showindex == "always" or (_bool(showindex) and not showIndexIsSStr):
+    elif isinstance(showIndex, Sized) and not showIndexIsSStr:
+        rows = _prependRowIndex(rows, list(showIndex))
+    elif isinstance(showIndex, Iterable) and not showIndexIsSStr:
+        rows = _prependRowIndex(rows, showIndex)
+    elif showIndex == "always" or (_bool(showIndex) and not showIndexIsSStr):
         if index is None:
             index = list(range(len(rows)))
         rows = _prependRowIndex(rows, index)
@@ -1015,7 +1015,7 @@ def tabulate(
     numAlign=_DEFAULT_ALIGN,
     strAlign=_DEFAULT_ALIGN,
     missingVal=_DEFAULT_missingVal,
-    showindex="default",
+    showIndex="default",
     disableNumparse=False,
     colglobalalign=None,
     colalign=None,
@@ -1210,7 +1210,7 @@ def tabulate(
         tabular_data = []
 
     listOfLists, headers, headersPad = _normalizeTabularData(
-        tabular_data, headers, showindex=showindex
+        tabular_data, headers, showIndex=showIndex
     )
     listOfLists, separatingLines = _removeSeparatingLines(listOfLists)
 
@@ -1567,7 +1567,7 @@ def _formatTable(
             or Line("", "", "", "")
         )
         for row in paddedRows:
-            # test to see if either the 1st column or the 2nd column (account for showindex) has the
+            # test to see if either the 1st column or the 2nd column (account for showIndex) has the
             # SEPARATING_LINE flag
             if _isSeparatingLine(row):
                 _appendLine(lines, paddedWidths, colaligns, separatingLine)
