@@ -210,8 +210,13 @@ simulation. It is very easy to use:
     does not kill a run, or raise an error, it just puts some text in the log.
 
 When an ARMI simulation is run, it will be run at a particular log level. All log messages that are
-at or above that log level will be seen during the simulation and in the final log files. To that
-end, it is important to know how to use each of these log levels:
+at or above that log level will be seen during the simulation and in the final log files. To control
+the log level of an ARMI run, you use the setting ``verbosity`` in your settings file. You will
+probably be running ARMI in a parallel mode, and if you want the child processes to have a different
+log level than the main process, you can set ``branchVerbosity`` to the desired verbosity of all the
+child processes.
+
+For reference, here are the log levels that ARMI supports:
 
 .. list-table::
     :widths: 20 20 60
