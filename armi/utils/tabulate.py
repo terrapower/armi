@@ -41,7 +41,7 @@ PRESERVE_WHITESPACE = False
 
 _DEFAULT_FLOATFMT = "g"
 _DEFAULT_INTFMT = ""
-_DEFAULT_MISSINGVAL = ""
+_DEFAULT_missingVal = ""
 # default align will be overwritten by "left", "center" or "decimal" depending on the formatter
 _DEFAULT_ALIGN = "default"
 
@@ -697,7 +697,7 @@ def _columnType(strings, hasInvisible=True, numparse=True):
     return reduce(_moreGeneric, types, bool)
 
 
-def _format(val, valtype, floatfmt, intfmt, missingval="", hasInvisible=True):
+def _format(val, valtype, floatfmt, intfmt, missingVal="", hasInvisible=True):
     r"""Format a value according to its type.
 
     Unicode is supported:
@@ -710,7 +710,7 @@ def _format(val, valtype, floatfmt, intfmt, missingval="", hasInvisible=True):
 
     """  # noqa
     if val is None:
-        return missingval
+        return missingVal
 
     if valtype is str:
         return f"{val}"
@@ -1014,7 +1014,7 @@ def tabulate(
     intfmt=_DEFAULT_INTFMT,
     numAlign=_DEFAULT_ALIGN,
     strAlign=_DEFAULT_ALIGN,
-    missingval=_DEFAULT_MISSINGVAL,
+    missingVal=_DEFAULT_missingVal,
     showindex="default",
     disableNumparse=False,
     colglobalalign=None,
@@ -1090,12 +1090,12 @@ def tabulate(
     `floatfmt` is a format specification used for columns which contain numeric data with a decimal
     point. This can also be a list or tuple of format strings, one per column.
 
-    `None` values are replaced with a `missingval` string (like `floatfmt`, this can also be a list
+    `None` values are replaced with a `missingVal` string (like `floatfmt`, this can also be a list
     of values for different columns):
 
     >>> print(tabulate([["spam", 1, None],
     ...                 ["eggs", 42, 3.14],
-    ...                 ["other", None, 2.7]], missingval="?"))
+    ...                 ["other", None, 2.7]], missingVal="?"))
     -----  --  ----
     spam    1  ?
     eggs   42  3.14
@@ -1307,12 +1307,12 @@ def tabulate(
         intFormats = list(intfmt)
         if len(intFormats) < len(cols):
             intFormats.extend((len(cols) - len(intFormats)) * [_DEFAULT_INTFMT])
-    if isinstance(missingval, str):
-        missingVals = len(cols) * [missingval]
+    if isinstance(missingVal, str):
+        missingVals = len(cols) * [missingVal]
     else:
-        missingVals = list(missingval)
+        missingVals = list(missingVal)
         if len(missingVals) < len(cols):
-            missingVals.extend((len(cols) - len(missingVals)) * [_DEFAULT_MISSINGVAL])
+            missingVals.extend((len(cols) - len(missingVals)) * [_DEFAULT_missingVal])
     cols = [
         [_format(v, ct, flFmt, intFmt, missV, hasInvisible) for v in c]
         for c, ct, flFmt, intFmt, missV in zip(

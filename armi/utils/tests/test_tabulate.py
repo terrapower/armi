@@ -1544,19 +1544,19 @@ class TestTabulateOutput(unittest.TestCase):
         )
         self.assertEqual(expected, result)
 
-    def test_missingval(self):
+    def test_missingVal(self):
         """Output: substitution of missing values."""
         result = tabulate(
-            [["Alice", 10], ["Bob", None]], missingval="n/a", tablefmt="plain"
+            [["Alice", 10], ["Bob", None]], missingVal="n/a", tablefmt="plain"
         )
         expected = "Alice   10\nBob    n/a"
         self.assertEqual(expected, result)
 
-    def test_missingvalMulti(self):
+    def test_missingValMulti(self):
         """Output: substitution of missing values with different values per column."""
         result = tabulate(
             [["Alice", "Bob", "Charlie"], [None, None, None]],
-            missingval=("n/a", "?"),
+            missingVal=("n/a", "?"),
             tablefmt="plain",
         )
         expected = "Alice  Bob  Charlie\nn/a    ?"
