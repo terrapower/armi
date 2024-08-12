@@ -1016,9 +1016,9 @@ def tabulate(
     strAlign=_DEFAULT_ALIGN,
     missingVal=_DEFAULT_missingVal,
     showIndex="default",
-    disableNumparse=False,
-    colglobalalign=None,
-    colalign=None,
+    disableNumParse=False,
+    colGlobalAlign=None,
+    colAlign=None,
     maxcolwidths=None,
     headersglobalalign=None,
     headersalign=None,
@@ -1067,10 +1067,10 @@ def tabulate(
     flushes everything else to the left. Possible column alignments (`numAlign`, `strAlign`) are:
     "right", "center", "left", "decimal" (only for `numAlign`), and None (to disable alignment).
 
-    `colglobalalign` allows for global alignment of columns, before any specific override from
-        `colalign`. Possible values are: None (defaults according to coltype), "right", "center",
+    `colGlobalAlign` allows for global alignment of columns, before any specific override from
+        `colAlign`. Possible values are: None (defaults according to coltype), "right", "center",
         "decimal", "left".
-    `colalign` allows for column-wise override starting from left-most column. Possible values are:
+    `colAlign` allows for column-wise override starting from left-most column. Possible values are:
         "global" (no override), "right", "center", "decimal", "left".
     `headersglobalalign` allows for global headers alignment, before any specific override from
         `headersalign`. Possible values are: None (follow columns alignment), "right", "center",
@@ -1178,9 +1178,9 @@ def tabulate(
     strings such as specific git SHAs e.g. "42992e1" will be parsed into the number 429920 and
     aligned as such.
 
-    To completely disable number parsing (and alignment), use `disableNumparse=True`. For more fine
+    To completely disable number parsing (and alignment), use `disableNumParse=True`. For more fine
     grained control, a list column indices is used to disable number parsing only on those columns
-    e.g. `disableNumparse=[0, 2]` would disable number parsing only on the first and third columns.
+    e.g. `disableNumParse=[0, 2]` would disable number parsing only on the first and third columns.
 
     Column Widths and Auto Line Wrapping
     ------------------------------------
@@ -1224,7 +1224,7 @@ def tabulate(
         else:  # Ignore col width for any 'trailing' columns
             maxcolwidths = _expandIterable(maxcolwidths, numCols, None)
 
-        numparses = _expandNumparse(disableNumparse, numCols)
+        numparses = _expandNumparse(disableNumParse, numCols)
         listOfLists = _wrapTextToColWidths(
             listOfLists, maxcolwidths, numparses=numparses
         )
@@ -1238,7 +1238,7 @@ def tabulate(
         else:  # Ignore col width for any 'trailing' columns
             maxheadercolwidths = _expandIterable(maxheadercolwidths, numCols, None)
 
-        numparses = _expandNumparse(disableNumparse, numCols)
+        numparses = _expandNumparse(disableNumParse, numCols)
         headers = _wrapTextToColWidths(
             [headers], maxheadercolwidths, numparses=numparses
         )[0]
@@ -1254,7 +1254,7 @@ def tabulate(
     minPadding = MIN_PADDING
     if tablefmt == "pretty":
         minPadding = 0
-        disableNumparse = True
+        disableNumParse = True
         numAlign = "center" if numAlign == _DEFAULT_ALIGN else numAlign
         strAlign = "center" if strAlign == _DEFAULT_ALIGN else strAlign
     else:
@@ -1291,7 +1291,7 @@ def tabulate(
 
     # format rows and columns, convert numeric values to strings
     cols = list(izip_longest(*listOfLists))
-    numparses = _expandNumparse(disableNumparse, len(cols))
+    numparses = _expandNumparse(disableNumParse, len(cols))
     coltypes = [_columnType(col, numparse=np) for col, np in zip(cols, numparses)]
     if isinstance(floatfmt, str):
         # old version: just duplicate the string to use in each column
@@ -1322,20 +1322,20 @@ def tabulate(
 
     # align columns
     # first set global alignment
-    if colglobalalign is not None:  # if global alignment provided
-        aligns = [colglobalalign] * len(cols)
+    if colGlobalAlign is not None:  # if global alignment provided
+        aligns = [colGlobalAlign] * len(cols)
     else:  # default
         aligns = [numAlign if ct in [int, float] else strAlign for ct in coltypes]
 
     # then specific alignements
-    if colalign is not None:
-        assert isinstance(colalign, Iterable)
-        if isinstance(colalign, str):
+    if colAlign is not None:
+        assert isinstance(colAlign, Iterable)
+        if isinstance(colAlign, str):
             runLog.warning(
-                f"As a string, `colalign` is interpreted as {[c for c in colalign]}. Did you "
-                + f'mean `colglobalalign = "{colalign}"` or `colalign = ("{colalign}",)`?'
+                f"As a string, `colAlign` is interpreted as {[c for c in colAlign]}. Did you "
+                + f'mean `colGlobalAlign = "{colAlign}"` or `colAlign = ("{colAlign}",)`?'
             )
-        for idx, align in enumerate(colalign):
+        for idx, align in enumerate(colAlign):
             if not idx < len(aligns):
                 break
             elif align != "global":
@@ -1405,21 +1405,21 @@ def tabulate(
     )
 
 
-def _expandNumparse(disableNumparse, columnCount):
+def _expandNumparse(disableNumParse, columnCount):
     """
     Return a list of bools of length `columnCount` which indicates whether number parsing should be
     used on each column.
 
-    If `disableNumparse` is a list of indices, each of those indices are False, and everything else
-    is True. If `disableNumparse` is a bool, then the returned list is all the same.
+    If `disableNumParse` is a list of indices, each of those indices are False, and everything else
+    is True. If `disableNumParse` is a bool, then the returned list is all the same.
     """
-    if isinstance(disableNumparse, Iterable):
+    if isinstance(disableNumParse, Iterable):
         numparses = [True] * columnCount
-        for index in disableNumparse:
+        for index in disableNumParse:
             numparses[index] = False
         return numparses
     else:
-        return [not disableNumparse] * columnCount
+        return [not disableNumParse] * columnCount
 
 
 def _expandIterable(original, numDesired, default):
@@ -1451,19 +1451,19 @@ def _buildSimpleRow(paddedCells, rowfmt):
     return (begin + sep.join(paddedCells) + end).rstrip()
 
 
-def _buildRow(paddedCells, colwidths, colaligns, rowfmt):
+def _buildRow(paddedCells, colwidths, colAligns, rowfmt):
     """Return a string which represents a row of data cells."""
     if not rowfmt:
         return None
     if hasattr(rowfmt, "__call__"):
-        return rowfmt(paddedCells, colwidths, colaligns)
+        return rowfmt(paddedCells, colwidths, colAligns)
     else:
         return _buildSimpleRow(paddedCells, rowfmt)
 
 
-def _appendBasicRow(lines, paddedCells, colwidths, colaligns, rowfmt, rowalign=None):
+def _appendBasicRow(lines, paddedCells, colwidths, colAligns, rowfmt, rowalign=None):
     # NOTE: rowalign is ignored and exists for api compatibility with _appendMultilineRow
-    lines.append(_buildRow(paddedCells, colwidths, colaligns, rowfmt))
+    lines.append(_buildRow(paddedCells, colwidths, colAligns, rowfmt))
     return lines
 
 
@@ -1481,7 +1481,7 @@ def _alignCellVeritically(textLines, numLines, columnWidth, rowAlignment):
 
 
 def _appendMultilineRow(
-    lines, paddedMultilineCells, paddedWidths, colaligns, rowfmt, pad, rowalign=None
+    lines, paddedMultilineCells, paddedWidths, colAligns, rowfmt, pad, rowalign=None
 ):
     colwidths = [w - 2 * pad for w in paddedWidths]
     cellsLines = [c.splitlines() for c in paddedMultilineCells]
@@ -1494,30 +1494,30 @@ def _appendMultilineRow(
     linesCells = [[cl[i] for cl in cellsLines] for i in range(nlines)]
     for ln in linesCells:
         paddedLn = _padRow(ln, pad)
-        _appendBasicRow(lines, paddedLn, colwidths, colaligns, rowfmt)
+        _appendBasicRow(lines, paddedLn, colwidths, colAligns, rowfmt)
 
     return lines
 
 
-def _buildLine(colwidths, colaligns, linefmt):
+def _buildLine(colwidths, colAligns, linefmt):
     """Return a string which represents a horizontal line."""
     if not linefmt:
         return None
     if hasattr(linefmt, "__call__"):
-        return linefmt(colwidths, colaligns)
+        return linefmt(colwidths, colAligns)
     else:
         begin, fill, sep, end = linefmt
         cells = [fill * w for w in colwidths]
         return _buildSimpleRow(cells, (begin, sep, end))
 
 
-def _appendLine(lines, colwidths, colaligns, linefmt):
-    lines.append(_buildLine(colwidths, colaligns, linefmt))
+def _appendLine(lines, colwidths, colAligns, linefmt):
+    lines.append(_buildLine(colwidths, colAligns, linefmt))
     return lines
 
 
 def _formatTable(
-    fmt, headers, headersaligns, rows, colwidths, colaligns, isMultiline, rowaligns
+    fmt, headers, headersaligns, rows, colwidths, colAligns, isMultiline, rowaligns
 ):
     """Produce a plain-text representation of the table."""
     lines = []
@@ -1537,24 +1537,24 @@ def _formatTable(
     paddedRows = [padRow(row, pad) for row in rows]
 
     if fmt.lineabove and "lineabove" not in hidden:
-        _appendLine(lines, paddedWidths, colaligns, fmt.lineabove)
+        _appendLine(lines, paddedWidths, colAligns, fmt.lineabove)
 
     if paddedHeaders:
         appendRow(lines, paddedHeaders, paddedWidths, headersaligns, headerrow)
         if fmt.linebelowheader and "linebelowheader" not in hidden:
-            _appendLine(lines, paddedWidths, colaligns, fmt.linebelowheader)
+            _appendLine(lines, paddedWidths, colAligns, fmt.linebelowheader)
 
     if paddedRows and fmt.linebetweenrows and "linebetweenrows" not in hidden:
         # initial rows with a line below
         for row, ralign in zip(paddedRows[:-1], rowaligns):
-            appendRow(lines, row, paddedWidths, colaligns, fmt.datarow, rowalign=ralign)
-            _appendLine(lines, paddedWidths, colaligns, fmt.linebetweenrows)
+            appendRow(lines, row, paddedWidths, colAligns, fmt.datarow, rowalign=ralign)
+            _appendLine(lines, paddedWidths, colAligns, fmt.linebetweenrows)
         # the last row without a line below
         appendRow(
             lines,
             paddedRows[-1],
             paddedWidths,
-            colaligns,
+            colAligns,
             fmt.datarow,
             rowalign=rowaligns[-1],
         )
@@ -1570,12 +1570,12 @@ def _formatTable(
             # test to see if either the 1st column or the 2nd column (account for showIndex) has the
             # SEPARATING_LINE flag
             if _isSeparatingLine(row):
-                _appendLine(lines, paddedWidths, colaligns, separatingLine)
+                _appendLine(lines, paddedWidths, colAligns, separatingLine)
             else:
-                appendRow(lines, row, paddedWidths, colaligns, fmt.datarow)
+                appendRow(lines, row, paddedWidths, colAligns, fmt.datarow)
 
     if fmt.linebelow and "linebelow" not in hidden:
-        _appendLine(lines, paddedWidths, colaligns, fmt.linebelow)
+        _appendLine(lines, paddedWidths, colAligns, fmt.linebelow)
 
     if headers or rows:
         return "\n".join(lines)

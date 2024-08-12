@@ -824,7 +824,7 @@ class TestTabulateOutput(unittest.TestCase):
             ]
         )
         # Grid makes showing the alignment difference a little easier
-        result = tabulate(table, tablefmt="grid", maxcolwidths=6, disableNumparse=[2])
+        result = tabulate(table, tablefmt="grid", maxcolwidths=6, disableNumParse=[2])
         self.assertEqual(expected, result)
 
     def test_plainMaxheadercolwidthsAutowraps(self):
@@ -1441,30 +1441,30 @@ class TestTabulateOutput(unittest.TestCase):
         expected = "0.1  0.123  0.12345"
         self.assertEqual(expected, result)
 
-    def test_colalignMulti(self):
-        """Output: string columns with custom colalign."""
+    def test_colAlignMulti(self):
+        """Output: string columns with custom colAlign."""
         result = tabulate(
-            [["one", "two"], ["three", "four"]], colalign=("right",), tablefmt="plain"
+            [["one", "two"], ["three", "four"]], colAlign=("right",), tablefmt="plain"
         )
         expected = "  one  two\nthree  four"
         self.assertEqual(expected, result)
 
-    def test_colalignMultiWithSepLine(self):
-        """Output: string columns with custom colalign."""
+    def test_colAlignMultiWithSepLine(self):
+        """Output: string columns with custom colAlign."""
         result = tabulate(
             [["one", "two"], SEPARATING_LINE, ["three", "four"]],
-            colalign=("right",),
+            colAlign=("right",),
             tablefmt="plain",
         )
         expected = "  one  two\n\nthree  four"
         self.assertEqual(expected, result)
 
     def test_columnGlobalAndSpecificAlignment(self):
-        """Test `colglobalalign` and `"global"` parameter for `colalign`."""
+        """Test `colGlobalAlign` and `"global"` parameter for `colAlign`."""
         table = [[1, 2, 3, 4], [111, 222, 333, 444]]
-        colglobalalign = "center"
-        colalign = ("global", "left", "right")
-        result = tabulate(table, colglobalalign=colglobalalign, colalign=colalign)
+        colGlobalAlign = "center"
+        colAlign = ("global", "left", "right")
+        result = tabulate(table, colGlobalAlign=colGlobalAlign, colAlign=colAlign)
         expected = "\n".join(
             [
                 "---  ---  ---  ---",
@@ -1478,16 +1478,16 @@ class TestTabulateOutput(unittest.TestCase):
     def test_headersGlobalAndSpecificAlignment(self):
         """Test `headersglobalalign` and `headersalign`."""
         table = [[1, 2, 3, 4, 5, 6], [111, 222, 333, 444, 555, 666]]
-        colglobalalign = "center"
-        colalign = ("left",)
+        colGlobalAlign = "center"
+        colAlign = ("left",)
         headers = ["h", "e", "a", "d", "e", "r"]
         headersglobalalign = "right"
         headersalign = ("same", "same", "left", "global", "center")
         result = tabulate(
             table,
             headers=headers,
-            colglobalalign=colglobalalign,
-            colalign=colalign,
+            colGlobalAlign=colGlobalAlign,
+            colAlign=colAlign,
             headersglobalalign=headersglobalalign,
             headersalign=headersalign,
         )
@@ -1501,14 +1501,14 @@ class TestTabulateOutput(unittest.TestCase):
         )
         self.assertEqual(expected, result)
 
-    def test_colalignOrHeadersalignTooLong(self):
-        """Test `colalign` and `headersalign` too long."""
+    def test_colAlignOrHeadersalignTooLong(self):
+        """Test `colAlign` and `headersalign` too long."""
         table = [[1, 2], [111, 222]]
-        colalign = ("global", "left", "center")
+        colAlign = ("global", "left", "center")
         headers = ["h"]
         headersalign = ("center", "right", "same")
         result = tabulate(
-            table, headers=headers, colalign=colalign, headersalign=headersalign
+            table, headers=headers, colAlign=colAlign, headersalign=headersalign
         )
         expected = "\n".join(["      h", "---  ---", "  1  2", "111  222"])
         self.assertEqual(expected, result)
@@ -1648,7 +1648,7 @@ class TestTabulateOutput(unittest.TestCase):
         with self.assertRaises(ValueError):
             tabulate(dd, headers="firstrow", showIndex=[1, 2])
 
-    def test_disableNumparseDefault(self):
+    def test_disableNumParseDefault(self):
         """Output: Default table output with number parsing and alignment."""
         expected = "\n".join(
             [
@@ -1660,10 +1660,10 @@ class TestTabulateOutput(unittest.TestCase):
         )
         result = tabulate(self.testTable, self.testTableHeaders)
         self.assertEqual(expected, result)
-        result = tabulate(self.testTable, self.testTableHeaders, disableNumparse=False)
+        result = tabulate(self.testTable, self.testTableHeaders, disableNumParse=False)
         self.assertEqual(expected, result)
 
-    def test_disableNumparseTrue(self):
+    def test_disableNumParseTrue(self):
         """Output: Default table output, but without number parsing and alignment."""
         expected = "\n".join(
             [
@@ -1673,21 +1673,21 @@ class TestTabulateOutput(unittest.TestCase):
                 "eggs       451.0",
             ]
         )
-        result = tabulate(self.testTable, self.testTableHeaders, disableNumparse=True)
+        result = tabulate(self.testTable, self.testTableHeaders, disableNumParse=True)
         self.assertEqual(expected, result)
 
-    def test_disableNumparseList(self):
+    def test_disableNumParseList(self):
         """Output: Default table output, but with number parsing selectively disabled."""
         tableHeaders = ["h1", "h2", "h3"]
         testTable = [["foo", "bar", "42992e1"]]
         expected = "\n".join(
             ["h1    h2    h3", "----  ----  -------", "foo   bar   42992e1"]
         )
-        result = tabulate(testTable, tableHeaders, disableNumparse=[2])
+        result = tabulate(testTable, tableHeaders, disableNumParse=[2])
         self.assertEqual(expected, result)
 
         expected = "\n".join(
             ["h1    h2        h3", "----  ----  ------", "foo   bar   429920"]
         )
-        result = tabulate(testTable, tableHeaders, disableNumparse=[0, 1])
+        result = tabulate(testTable, tableHeaders, disableNumParse=[0, 1])
         self.assertEqual(expected, result)
