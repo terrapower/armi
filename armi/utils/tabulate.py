@@ -1484,14 +1484,14 @@ def _appendMultilineRow(
     lines, paddedMultilineCells, paddedWidths, colaligns, rowfmt, pad, rowalign=None
 ):
     colwidths = [w - 2 * pad for w in paddedWidths]
-    cells_lines = [c.splitlines() for c in paddedMultilineCells]
-    nlines = max(map(len, cells_lines))  # number of lines in the row
+    cellsLines = [c.splitlines() for c in paddedMultilineCells]
+    nlines = max(map(len, cellsLines))  # number of lines in the row
 
-    cells_lines = [
+    cellsLines = [
         _alignCellVeritically(cl, nlines, w, rowalign)
-        for cl, w in zip(cells_lines, colwidths)
+        for cl, w in zip(cellsLines, colwidths)
     ]
-    linesCells = [[cl[i] for cl in cells_lines] for i in range(nlines)]
+    linesCells = [[cl[i] for cl in cellsLines] for i in range(nlines)]
     for ln in linesCells:
         paddedLn = _padRow(ln, pad)
         _appendBasicRow(lines, paddedLn, colwidths, colaligns, rowfmt)
