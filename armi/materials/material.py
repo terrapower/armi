@@ -25,6 +25,7 @@ import numpy
 from armi import runLog
 from armi.nucDirectory import nuclideBases
 from armi.reactor.flags import TypeSpec
+from armi.reactor import blocks
 from armi.utils import densityTools
 from armi.utils.units import getTk, getTc
 
@@ -155,7 +156,11 @@ class Material:
         """Return the grandparent (typically block) associated with this material"""
         # would be nice to use composite.getAncestor, but material is not a composite
         component = self.parent
-        return None if component is None else component.parent
+        return (
+            None
+            if component is None
+            else component.getAncestor(lambda x: isinstance(x, blocks.Block))
+        )
 
     def getChildrenWithFlags(self, typeSpec: TypeSpec, exactMatch=True):
         """Return empty list, representing that this object has no children."""
@@ -874,7 +879,7 @@ class FuelMaterial(Material):
         return self_puFrac
 
     @puFrac.setter
-    def x(self, puFrac):
+    def puFrac(self, puFrac):
         runLog.warning(
             "Materials should not store state, so this component will look at its (grand)parent for Pu fraction unless it us detached. "
             "Storing properties on the material objected will be deprecated in the near future.",
