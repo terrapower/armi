@@ -126,7 +126,7 @@ def _rstEscapeFirstColumn(rows, headers):
     return newRows, newHeaders
 
 
-_table_formats = {
+_tableFormats = {
     "armi": TableFormat(
         lineabove=Line("", "-", "  ", ""),
         linebelowheader=Line("", "-", "  ", ""),
@@ -220,7 +220,7 @@ _table_formats = {
 }
 
 
-tabulateFormats = list(sorted(_table_formats.keys()))
+tabulateFormats = list(sorted(_tableFormats.keys()))
 
 # The table formats for which multiline cells will be folded into subsequent table rows. The key is
 # the original format specified at the API. The value is the format that will be used to represent
@@ -1387,7 +1387,7 @@ def tabulate(
         rows = list(zip(*cols))
 
     if not isinstance(tablefmt, TableFormat):
-        tablefmt = _table_formats.get(tablefmt, _table_formats["simple"])
+        tablefmt = _tableFormats.get(tablefmt, _tableFormats["simple"])
 
     raDefault = rowAlign if isinstance(rowAlign, str) else None
     rowAligns = _expandIterable(rowAlign, len(rows), raDefault)

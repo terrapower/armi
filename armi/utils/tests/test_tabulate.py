@@ -37,7 +37,7 @@ from armi.utils.tabulate import _format
 from armi.utils.tabulate import _isMultiline
 from armi.utils.tabulate import _multilineWidth
 from armi.utils.tabulate import _normalizeTabularData
-from armi.utils.tabulate import _table_formats
+from armi.utils.tabulate import _tableFormats
 from armi.utils.tabulate import _type
 from armi.utils.tabulate import _visibleWidth
 from armi.utils.tabulate import _wrapTextToColWidths
@@ -530,7 +530,7 @@ class TestTabulateInternal(unittest.TestCase):
 
     def test_buildLine(self):
         """Basic sanity test of internal _buildLine() function."""
-        lineFormat = _table_formats["armi"].lineabove
+        lineFormat = _tableFormats["armi"].lineabove
         self.assertEqual(_buildLine([2, 2], ["center", "center"], lineFormat), "--  --")
 
         formatter = lambda a, b: "xyz"
@@ -540,7 +540,7 @@ class TestTabulateInternal(unittest.TestCase):
 
     def test_buildRow(self):
         """Basic sanity test of internal _buildRow() function."""
-        rowFormat = _table_formats["armi"].datarow
+        rowFormat = _tableFormats["armi"].datarow
         self.assertEqual(_buildRow("", [2, 2], ["center", "center"], rowFormat), "")
 
         formatter = lambda a, b, c: "xyz"
