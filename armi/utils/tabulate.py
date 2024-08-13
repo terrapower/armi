@@ -223,8 +223,7 @@ _tableFormats = {
 tabulateFormats = list(sorted(_tableFormats.keys()))
 
 # The table formats for which multiline cells will be folded into subsequent table rows. The key is
-# the original format specified at the API. The value is the format that will be used to represent
-# the original format.
+# the original format, the value is the format that will be used to represent it.
 multilineFormats = {
     "armi": "armi",
     "plain": "plain",
@@ -307,8 +306,6 @@ def _isnumberWithThousandsSeparator(string):
     True
     >>> _isnumberWithThousandsSeparator("1,0000")
     False
-    >>> _isnumberWithThousandsSeparator("1,000.1234")
-    True
     >>> _isnumberWithThousandsSeparator(b"1,000.1234")
     True
     >>> _isnumberWithThousandsSeparator("+1,000.1234")
@@ -818,8 +815,8 @@ def _normalizeTabularData(data, headers, showIndex="default"):
     * NumPy record arrays (usually used with headers="keys")
     * dict of iterables (usually used with headers="keys")
 
-    The first row can be used as headers if headers="firstrow",
-    column indices can be used as headers if headers="keys".
+    The first row can be used as headers if headers="firstrow", column indices can be used as
+    headers if headers="keys".
 
     If showIndex="always", show row indices for all types of data.
     If showIndex="never", don't show row indices for all types of data.
@@ -960,9 +957,8 @@ def _wrapTextToColWidths(listOfLists, colwidths, numparses=True):
 
             if width is not None:
                 wrapper = TextWrapper(width=width)
-                # Cast based on our internal type handling
-                # Any future custom formatting of types (such as datetimes)
-                # may need to be more explicit than just `str` of the object
+                # Cast based on our internal type handling. Any future custom formatting of types
+                # (such as datetimes) may need to be more explicit than just `str` of the object
                 castedCell = (
                     str(cell) if _isnumber(cell) else _type(cell, numparse)(cell)
                 )
@@ -1039,7 +1035,6 @@ def tabulate(
 
     Table headers
     -------------
-
     To print nice column headers, supply the second argument (`headers`):
 
       - `headers` can be an explicit list of column headers
@@ -1060,7 +1055,6 @@ def tabulate(
 
     Column and Headers alignment
     ----------------------------
-
     `tabulate` tries to detect column types automatically, and aligns the values properly. By
     default it aligns decimal points of the numbers (or flushes integer numbers to the right), and
     flushes everything else to the left. Possible column alignments (`numAlign`, `strAlign`) are:
@@ -1247,7 +1241,7 @@ def tabulate(
     if tableFmt == "rst":
         listOfLists, headers = _rstEscapeFirstColumn(listOfLists, headers)
 
-    # PrettyTable formatting does not use any extra padding. Numbers are not parsed and are treated
+    # Pretty table formatting does not use any extra padding. Numbers are not parsed and are treated
     # the same as strings for alignment. Check if pretty is the format being used and override the
     # defaults so it does not impact other formats.
     minPadding = MIN_PADDING
@@ -1270,7 +1264,7 @@ def tabulate(
             # headers
             map(_toStr, headers),
             # rows: chain the rows together into a single iterable after mapping the bytestring
-            # conversino to each cell value
+            # conversion to each cell value
             chain.from_iterable(map(_toStr, row) for row in listOfLists),
         )
     )
@@ -1427,7 +1421,7 @@ def _expandIterable(original, numDesired, default):
     is shorter than `numDesired`, it will be padded with the value in `default`.
 
     If `original` is not a list to begin with (i.e. scalar value) a list of length `numDesired`
-    completely populated with `default will be returned
+    completely populated with `default` will be returned
     """
     if isinstance(original, Iterable) and not isinstance(original, str):
         return original + [default] * (numDesired - len(original))
@@ -1566,8 +1560,7 @@ def _formatTable(
             or Line("", "", "", "")
         )
         for row in paddedRows:
-            # test to see if either the 1st column or the 2nd column (account for showIndex) has the
-            # SEPARATING_LINE flag
+            # test to see if either the 1st column or the 2nd column has the SEPARATING_LINE flag
             if _isSeparatingLine(row):
                 _appendLine(lines, paddedWidths, colAligns, separatingLine)
             else:
@@ -1578,5 +1571,5 @@ def _formatTable(
 
     if headers or rows:
         return "\n".join(lines)
-    else:  # a completely empty table
+    else:
         return ""
